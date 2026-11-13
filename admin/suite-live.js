@@ -3,10 +3,10 @@
 (function () {
   'use strict';
 
-  var CONTENT = [['current-affairs', 'Current Affairs'], ['jobs', 'Job Alerts']];
+  var CONTENT = [['current-affairs', 'Current Affairs'], ['jobs', 'Job Alerts'], ['jobs-directory', 'Jobs Directory'], ['schemes', 'Schemes']];
   var EDU = [['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']];
   var SITE = [['pages', 'All Pages'], ['pages/legal', 'Info & Legal'], ['banner', 'Homepage & Banner'], ['seo', 'SEO & Sitemaps']];
-  var OPS = [['dashboard', 'Overview'], ['operations', 'Operations & Backups'], ['diagnostics', 'Site Health']];
+  var OPS = [['dashboard', 'Overview'], ['freshness', 'Freshness Audit'], ['feedback', 'Feedback Queue'], ['operations', 'Operations & Backups'], ['diagnostics', 'Site Health']];
   var SEC = [['audit/security', 'Security Audit'], ['incidents', 'Incidents'], ['audit', 'All Events']];
 
   var ROUTES = {
@@ -83,10 +83,10 @@
     'folder-17': ['operations', OPS],
     'folder-18': ['banner', SITE],
     'folder-19': ['registry'],
-    'folder-jobs-careers': ['jobs', CONTENT],
-    'folder-schemes-benefits': ['current-affairs', CONTENT],
+    'folder-jobs-careers': ['jobs-directory', CONTENT],
+    'folder-schemes-benefits': ['schemes', CONTENT],
     'folder-study-library': ['syllabus', EDU],
-    'folder-community': ['users']
+    'folder-community': ['feedback', [['feedback', 'Community Feedback'], ['users', 'Candidate Accounts']]]
   };
 
   function resolveRoute(folderId, moduleId) {

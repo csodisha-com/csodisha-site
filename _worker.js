@@ -214,6 +214,35 @@ async function handleStrictD1Login(request, env) {
   }
 }
 
+// Track anonymous GET cache URLs (including query strings) for immediate invalidation on admin mutations
+const TRACKED_PUBLIC_CACHE_URLS = new Set();
+
+function recordPublicCachePut(edgeCache, request, response, ctx) {
+  if (!edgeCache || !response || response.status !== 200) return;
+  try {
+    if (TRACKED_PUBLIC_CACHE_URLS.size > 500) TRACKED_PUBLIC_CACHE_URLS.clear();
+    TRACKED_PUBLIC_CACHE_URLS.add(request.url);
+    const putPromise = edgeCache.put(request, response.clone()).catch(() => {});
+    if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(putPromise);
+  } catch {}
+}
+
+async function invalidatePublicEdgeCache(edgeCache, origin) {
+  if (!edgeCache) return;
+  const basePaths = [
+    '/sitemap.xml', '/feed.xml', '/rss.xml',
+    '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
+    '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources',
+    '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
+  ];
+  const allUrls = new Set(basePaths.map(p => `${origin}${p}`));
+  for (const cachedUrl of TRACKED_PUBLIC_CACHE_URLS) {
+    allUrls.add(cachedUrl);
+  }
+  TRACKED_PUBLIC_CACHE_URLS.clear();
+  await Promise.all([...allUrls].map(u => edgeCache.delete(new Request(u)).catch(() => false)));
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -233,21 +262,44 @@ export default {
 
     // 0c. CMS: admin JSON API (requireRole + CSRF + rate limits live in the router)
     if (pathname === '/api/admin' || pathname.startsWith('/api/admin/')) {
-      return handleAdminApi(request, env);
+      const adminRes = await handleAdminApi(request, env);
+      if (request.method !== 'GET' && request.method !== 'HEAD' && adminRes.status >= 200 && adminRes.status < 400) {
+        const edgeCache = typeof caches !== 'undefined' && caches.default ? caches.default : null;
+        await invalidatePublicEdgeCache(edgeCache, url.origin);
+      }
+      return adminRes;
     }
 
     // 0d. CMS: public content API + R2 media delivery + authenticated user progress/bookmarks API + Dynamic SEO
-    if (pathname === '/sitemap.xml') return handleSitemapXml(request, env);
-    if (pathname === '/feed.xml' || pathname === '/rss.xml') return handleRssFeed(request, env);
-    if (pathname.startsWith('/api/content/') || /^\/api\/(jobs|current-affairs|mock-tests|resources)(\/|$)/.test(pathname)) {
-      const apiRes = await handleContent(request, env);
-      const hasSession = (request.headers.get('Cookie') || '').includes('cso_session=');
-      if ((request.method === 'GET' || request.method === 'HEAD') && apiRes.status === 200 && !hasSession && !apiRes.headers.has('Cache-Control')) {
-        const h = new Headers(apiRes.headers);
-        h.set('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
-        return new Response(apiRes.body, { status: apiRes.status, statusText: apiRes.statusText, headers: h });
+    const edgeCache = typeof caches !== 'undefined' && caches.default ? caches.default : null;
+    const isAnonGet = (request.method === 'GET' || request.method === 'HEAD') && !(request.headers.get('Cookie') || '').includes('cso_session=');
+    if (pathname === '/sitemap.xml' || pathname === '/feed.xml' || pathname === '/rss.xml') {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
       }
-      return apiRes;
+      const seoRes = pathname === '/sitemap.xml' ? await handleSitemapXml(request, env) : await handleRssFeed(request, env);
+      if (isAnonGet && seoRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, seoRes, ctx);
+      }
+      return seoRes;
+    }
+    if (pathname.startsWith('/api/content/') || /^\/api\/(jobs|current-affairs|mock-tests|resources)(\/|$)/.test(pathname)) {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const apiRes = await handleContent(request, env);
+      let finalRes = apiRes;
+      if (isAnonGet && apiRes.status === 200) {
+        if (!apiRes.headers.has('Cache-Control')) {
+          const h = new Headers(apiRes.headers);
+          h.set('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
+          finalRes = new Response(apiRes.body, { status: apiRes.status, statusText: apiRes.statusText, headers: h });
+        }
+        recordPublicCachePut(edgeCache, request, finalRes, ctx);
+      }
+      return finalRes;
     }
     if (pathname === '/api/user' || pathname.startsWith('/api/user/')) return handleUserApi(request, env);
     if (pathname.startsWith('/api/media/')) return handleMedia(request, env, ctx);
@@ -386,7 +438,7 @@ export default {
           }
         }
       }
-      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|current-affairs|mock-tests|resources|student-dashboard)(\/|$)/.test(pathname)) {
+      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|schemes-benefits|current-affairs|mock-tests|resources|student-dashboard)(\/|$)/.test(pathname)) {
         const headers = new Headers(res.headers);
         headers.set(
           'Content-Security-Policy',

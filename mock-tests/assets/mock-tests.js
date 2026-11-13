@@ -195,15 +195,20 @@
     container.appendChild(wrap);
   }
 
-  async function loadLeaderboardInto(container, slugOrId, titleLabel) {
-    if (!container || !slugOrId) return;
+  async function loadLeaderboardInto(container, slugOrId, titleLabel, examFilter = '') {
+    if (!container || (!slugOrId && !examFilter)) return;
     container.replaceChildren(el('p', 'pc-card__summary', 'Loading Top-10 leaderboard…'));
     try {
-      const res = await fetch(`/api/content/mock-tests/${encodeURIComponent(slugOrId)}/leaderboard`, { credentials: 'same-origin' });
+      const endpoint = examFilter
+        ? `/api/content/leaderboard?exam=${encodeURIComponent(examFilter)}`
+        : `/api/content/mock-tests/${encodeURIComponent(slugOrId)}/leaderboard`;
+      const res = await fetch(endpoint, { credentials: 'same-origin' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      if (titleLabel && data.title) {
-        titleLabel.textContent = `🏆 Top-10 Leaderboard — ${data.title}`;
+      if (titleLabel) {
+        titleLabel.textContent = examFilter
+          ? `🏆 Exam-Wide Leaderboard — ${examFilter}`
+          : (data.title ? `🏆 Top-10 Leaderboard — ${data.title}` : titleLabel.textContent);
       }
       renderLeaderboardTable(container, data.items || []);
     } catch (_) {
@@ -607,9 +612,42 @@
         })
       });
 
+      if (res.status === 403) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'CBT access is currently restricted for this account.');
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       session.submitted = true;
+
+      // Sync wrong answers directly to Candidate Hub Mistake Notebook
+      try {
+        const wrongs = (data.breakdown || []).filter(b => b.status === 'wrong');
+        if (wrongs.length) {
+          const existing = JSON.parse(localStorage.getItem('cso_mistakes_v1') || '[]');
+          const seen = new Set(existing.map(m => String(m.questionId || m.id || '')));
+          wrongs.forEach(w => {
+            const qid = String(w.questionId || '');
+            if (!qid || seen.has(qid)) return;
+            seen.add(qid);
+            existing.unshift({
+              id: qid,
+              questionId: qid,
+              testSlug: slugOrId,
+              exam: session.test.target_exam || 'Mock Test',
+              question: w.question_en || '',
+              question_or: w.question_or || '',
+              options: { A: w.option_a, B: w.option_b, C: w.option_c, D: w.option_d },
+              selectedOption: w.selectedOption || '',
+              correctOption: w.correctOption || '',
+              explanation: w.explanation || '',
+              mastered: false,
+              recordedAt: new Date().toISOString()
+            });
+          });
+          localStorage.setItem('cso_mistakes_v1', JSON.stringify(existing.slice(0, 200)));
+        }
+      } catch (_) {}
 
       summarySubtitleEl.textContent = `${session.test.title || 'Mock Test'} — Official server-graded scorecard.`;
 
@@ -691,6 +729,23 @@
     }
 
     try {
+      // Enforce Admin Governance (restricted / canTakeCbt) for signed-in candidates
+      try {
+        const meRes = await fetch('/api/auth/me', { credentials: 'same-origin' });
+        if (meRes.ok) {
+          const meData = await meRes.json();
+          const controls = meData && meData.controls ? meData.controls : {};
+          if (meData.signedIn && (controls.restricted || controls.canTakeCbt === false)) {
+            qStemEnEl.textContent = controls.restrictionReason
+              ? `Access Restricted: ${controls.restrictionReason}`
+              : 'CBT access is currently restricted for your account by Command Studio Governance.';
+            cbtTitleEl.textContent = 'CBT Access Restricted';
+            cbtExamEl.textContent = 'Governance Notice';
+            return;
+          }
+        }
+      } catch (_) {}
+
       const res = await fetch(`/api/content/mock-tests/${encodeURIComponent(slugOrId)}`, { credentials: 'same-origin' });
       if (!res.ok) throw new Error(res.status === 404 ? 'Mock test not found or no longer active.' : `HTTP ${res.status}`);
       const test = await res.json();
@@ -958,7 +1013,25 @@
     if (searchInput) searchInput.value = initialQ;
   }
 
+  async function loadExamTaxonomyChips() {
+    try {
+      const res = await fetch('/api/content/exam-taxonomy', { credentials: 'same-origin' });
+      if (!res.ok) return;
+      const data = await res.json();
+      const rows = Array.isArray(data.items) ? data.items : [];
+      rows.forEach(r => {
+        const code = r.short_code || r.exam_label || r.id;
+        if (code) ensureExamChip(code);
+      });
+    } catch (_) {}
+  }
+
+  loadExamTaxonomyChips();
   loadList();
+  if (initialExam && leaderboardPanelEl && leaderboardBodyEl) {
+    leaderboardPanelEl.hidden = false;
+    loadLeaderboardInto(leaderboardBodyEl, '', leaderboardTitleEl, initialExam);
+  }
   if (initialTest) {
     startTest(initialTest, false);
   }

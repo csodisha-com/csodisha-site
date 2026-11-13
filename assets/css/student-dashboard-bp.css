@@ -1788,3 +1788,110 @@ html[data-cso-student-theme="obsidian-mint"] .cso-pwa-btn-install {
   border-color: var(--cso-danger);
   color: var(--cso-danger);
 }
+
+/* Phase 3 Active Learning Suite, Flashcards, Eligibility, Study Plan & Print Rules */
+.cso-capsule-badges,
+.cso-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-input--sm {
+  max-width: 150px;
+}
+
+.cso-study-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.cso-plan-week-card {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-bg);
+}
+
+.cso-plan-week-card h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--cso-primary);
+}
+
+.cso-plan-week-card ul {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.cso-fc-stage {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cso-fc-answer {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--cso-primary-soft);
+  border-left: 3px solid var(--cso-primary);
+  font-size: 13.5px;
+}
+
+.cso-status-ok {
+  color: #15803d;
+  background: rgba(22, 163, 74, 0.12);
+}
+
+.cso-status-warn {
+  color: #b45309;
+  background: rgba(217, 119, 6, 0.14);
+}
+
+.cso-status-bad {
+  color: #b91c1c;
+  background: rgba(220, 38, 38, 0.12);
+}
+
+.cso-drill-opt.is-correct {
+  border-color: #16a34a;
+  background: rgba(22, 163, 74, 0.12);
+}
+
+.cso-drill-opt.is-wrong {
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.12);
+}
+
+@media print {
+  .bp-sidebar,
+  .bp-topbar,
+  .bp-bottom-nav,
+  #cso-goal-alerts-panel,
+  #cso-print-plan-btn {
+    display: none !important;
+  }
+  .bp-shell {
+    display: block !important;
+  }
+  .bp-tab-view {
+    display: none !important;
+  }
+  #tab-my-learning {
+    display: block !important;
+  }
+  .cso-print-sheet {
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+}
+

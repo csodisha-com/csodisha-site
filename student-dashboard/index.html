@@ -347,6 +347,19 @@
           </section>
         </div>
 
+        <!-- Daily 5-Question Morning Odisha + Target Exam Capsule -->
+        <section class="bp-panel cso-panel-mt" id="cso-morning-capsule" aria-labelledby="cso-capsule-heading">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>☀️</span><span id="cso-capsule-heading">Daily 5-Question Morning Odisha + Target Exam Capsule</span></div>
+            <div class="cso-capsule-badges">
+              <span class="cso-pill-badge" id="cso-capsule-streak-badge">🔥 Streak: 0d</span>
+              <span class="cso-pill-badge" id="cso-capsule-progress-badge">0 / 5 Done</span>
+            </div>
+          </div>
+          <p class="cso-muted-note">Finish today&apos;s 5-question capsule to keep your Odisha streak alive and boost your Readiness Score.</p>
+          <div id="cso-capsule-body" class="cso-drill-card"></div>
+        </section>
+
       </div>
 
       <!-- TAB 2: MY LEARNING & SYLLABI -->
@@ -359,6 +372,30 @@
           <p class="cso-muted-note">Select any of your target exams below. Topic blueprints are hydrated from D1 and synced offline-first.</p>
           <div class="cso-stack-list" id="candidate-tracker-list"></div>
         </section>
+
+        <div class="bp-bento-grid cso-panel-mt">
+          <section class="bp-panel cso-print-sheet" id="cso-study-plan-section">
+            <div class="bp-panel-header">
+              <div class="bp-panel-title"><span>🗓️</span><span>Printable A4 30-Day Study Plan &amp; Exam-Day Checklist</span></div>
+              <button type="button" id="cso-print-plan-btn" class="cso-btn cso-btn-primary">🖨️ Print A4 Plan</button>
+            </div>
+            <p class="cso-muted-note">Auto-generated from your active target exam milestones plus mandatory exam-hall document verification.</p>
+            <div id="cso-study-plan-grid" class="cso-study-plan-grid"></div>
+            <div id="cso-exam-day-checklist" class="cso-stack-list cso-panel-mt"></div>
+          </section>
+
+          <section class="bp-panel" id="cso-goal-alerts-panel">
+            <div class="bp-panel-header">
+              <div class="bp-panel-title"><span>🔔</span><span>Goal Alerts Push &amp; Notification Sync</span></div>
+              <span class="cso-pill-badge" id="cso-push-status-badge">Checking…</span>
+            </div>
+            <p class="cso-muted-note">Subscribe to receive instant alerts whenever new OPSC, OSSC, OSSSC, or scholarship notices match your selected target exams.</p>
+            <div class="cso-inline-actions">
+              <button type="button" id="cso-push-toggle-btn" class="cso-btn cso-btn-primary">Enable Goal Alerts</button>
+              <span id="cso-push-endpoint-note" class="cso-muted-note"></span>
+            </div>
+          </section>
+        </div>
       </div>
 
       <!-- TAB 3: PRIVATE LIBRARY & BOOKMARKS -->
@@ -414,6 +451,29 @@
           <p class="cso-muted-note">Track your mandatory Odisha recruitment &amp; scholarship document readiness before application windows close.</p>
           <div class="cso-locker-grid" id="candidate-locker-grid"></div>
         </section>
+
+        <section class="bp-panel cso-panel-mt" id="cso-cert-guard-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>🛡️</span><span>Certificate Validity &amp; Expiry Guard</span></div>
+            <span class="cso-pill-badge" id="cso-cert-guard-summary">0 Tracked</span>
+          </div>
+          <p class="cso-muted-note">Never miss an OSSC/OSSSC verification deadline because of an expired SEBC/OBC, EWS, Income, or Residence certificate.</p>
+          <form id="cso-cert-guard-form" class="cso-inline-form">
+            <select id="cso-cert-type" class="cso-input" aria-label="Certificate type">
+              <option value="SEBC / OBC Non-Creamy Layer">SEBC / OBC Non-Creamy Layer (1 yr)</option>
+              <option value="EWS Certificate">EWS Asset &amp; Income Certificate (FY)</option>
+              <option value="Income Certificate">Income Certificate (6-12 mo)</option>
+              <option value="Odisha Resident / Domicile">Odisha Resident / Domicile Certificate</option>
+              <option value="Caste Certificate (SC/ST)">Caste Certificate (SC / ST)</option>
+              <option value="OTET / OSSTET / CTET Eligibility">OTET / OSSTET / CTET Score Card</option>
+              <option value="Employment Exchange Registration">Employment Exchange Regd.</option>
+            </select>
+            <input type="text" id="cso-cert-ref" class="cso-input" placeholder="Cert / Ref No. (optional)">
+            <input type="date" id="cso-cert-expiry" class="cso-input" aria-label="Valid up to date" required>
+            <button type="submit" class="cso-btn cso-btn-primary">Track Expiry</button>
+          </form>
+          <div class="cso-stack-list" id="cso-cert-guard-list"></div>
+        </section>
       </div>
 
       <!-- TOOL: REVISION SCRATCHPAD & NOTES -->
@@ -423,7 +483,23 @@
             <div class="bp-panel-title"><span>📝</span><span>Revision Scratchpad &amp; Daily Notes</span></div>
             <span class="cso-save-indicator" id="scratchpad-save-indicator">Saved</span>
           </div>
-          <textarea id="bp-candidate-scratchpad" class="cso-scratchpad" rows="12" placeholder="Jot down Odisha GK facts, Article numbers, B.Ed pedagogy formulas, or quick revision points..."></textarea>
+          <textarea id="bp-candidate-scratchpad" class="cso-scratchpad" rows="10" placeholder="Jot down Odisha GK facts, Article numbers, B.Ed pedagogy formulas, or quick revision points..."></textarea>
+        </section>
+
+        <section class="bp-panel cso-panel-mt" id="cso-flashcards-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>🧠</span><span>Offline-First Spaced-Repetition Flashcards (IndexedDB)</span></div>
+            <span class="cso-pill-badge" id="cso-flashcards-due-badge">0 Due Today</span>
+          </div>
+          <p class="cso-muted-note">Stored offline via cso-idb.js with smart 1-day (Hard), 3-day (Good), and 7-day (Mastered) review scheduling.</p>
+          <form id="cso-flashcard-form" class="cso-inline-form">
+            <input type="text" id="cso-fc-front" class="cso-input" placeholder="Prompt / Concept (e.g. Article 243G)" required>
+            <input type="text" id="cso-fc-back" class="cso-input" placeholder="Answer / Key Point (e.g. Powers of Panchayats)" required>
+            <input type="text" id="cso-fc-exam" class="cso-input cso-input--sm" placeholder="Exam tag (OPSC/B.Ed)">
+            <button type="submit" class="cso-btn cso-btn-primary">Add Flashcard</button>
+          </form>
+          <div id="cso-flashcard-review-deck" class="cso-drill-card cso-panel-mt"></div>
+          <div id="cso-flashcard-list" class="cso-stack-list cso-panel-mt"></div>
         </section>
       </div>
 
@@ -466,6 +542,19 @@
             <button type="submit" class="cso-btn cso-btn-primary">Save Score</button>
           </form>
           <div class="cso-stack-list" id="candidate-scores-list"></div>
+        </section>
+
+        <!-- Interactive 15-Q Weak-Area Re-Test Drill -->
+        <section class="bp-panel cso-panel-mt" id="cso-weak-drill-section">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>🎯</span><span>15-Q Weak-Area Re-Test Drill Runner</span></div>
+            <div class="cso-capsule-badges">
+              <span class="cso-pill-badge" id="cso-weak-drill-timer">⏱ 15:00</span>
+              <span class="cso-pill-badge" id="cso-weak-drill-score">0 / 15 Mastered</span>
+            </div>
+          </div>
+          <p class="cso-muted-note">Builds a targeted 15-question re-test from your Mistake Notebook, CBT wrong answers, and weak Odisha exam topics with live timer and explanations.</p>
+          <div id="cso-weak-drill-runner" class="cso-drill-card"></div>
         </section>
       </div>
 
@@ -519,6 +608,53 @@
             <span>Calculated Net Score:</span>
             <strong id="calc-net-score">60.50</strong>
           </div>
+        </section>
+
+        <section class="bp-panel cso-panel-mt" id="cso-age-elig-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>⚖️</span><span>Odisha Govt Exam Age, Category &amp; Attempt Eligibility Simulator</span></div>
+            <span class="cso-pill-badge">OPSC · OSSC · OSSSC · LTR/OAVS · Police</span>
+          </div>
+          <p class="cso-muted-note">Check exact upper-age ceiling, category/women/PwD relaxations, and OPSC attempt limits against the standard Jan 1 cutoff year.</p>
+          <form id="cso-age-elig-form" class="cso-calc-grid">
+            <div class="cso-field">
+              <label for="elig-dob">Date of Birth</label>
+              <input type="date" id="elig-dob" class="cso-input" value="2000-05-15" required>
+            </div>
+            <div class="cso-field">
+              <label for="elig-ref-year">Cutoff Year (Jan 1)</label>
+              <input type="number" id="elig-ref-year" class="cso-input" value="2026" min="2025" max="2030">
+            </div>
+            <div class="cso-field">
+              <label for="elig-category">Category</label>
+              <select id="elig-category" class="cso-input">
+                <option value="UR">UR / General</option>
+                <option value="SEBC">SEBC (+5 yrs)</option>
+                <option value="SC">SC (+5 yrs)</option>
+                <option value="ST">ST (+5 yrs)</option>
+              </select>
+            </div>
+            <div class="cso-field">
+              <label for="elig-gender">Gender</label>
+              <select id="elig-gender" class="cso-input">
+                <option value="male">Male / Other</option>
+                <option value="female">Women (+5 yrs civil)</option>
+              </select>
+            </div>
+            <div class="cso-field">
+              <label for="elig-pwd">PwD / Ex-SM</label>
+              <select id="elig-pwd" class="cso-input">
+                <option value="none">None</option>
+                <option value="pwd">PwD (+10 yrs)</option>
+                <option value="exsm">Ex-Serviceman (Service + 3 yrs)</option>
+              </select>
+            </div>
+            <div class="cso-field">
+              <label for="elig-attempts">OPSC OAS Attempts Used</label>
+              <input type="number" id="elig-attempts" class="cso-input" value="0" min="0" max="20">
+            </div>
+          </form>
+          <div id="cso-age-elig-results" class="cso-stack-list cso-panel-mt"></div>
         </section>
       </div>
 
@@ -682,6 +818,7 @@
 <script src="/assets/js/candidate-sync.js" defer></script>
 <script src="/assets/js/pwa-install.js" defer></script>
 <script src="/assets/js/student-dashboard.js" defer></script>
+<script src="/assets/js/cso-global-enhancements.js" defer></script>
 
 </body>
 </html>

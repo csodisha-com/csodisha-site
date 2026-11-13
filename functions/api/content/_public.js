@@ -10,26 +10,41 @@ import { enforceCandidateControls } from '../../_lib/candidate-controls.js';
 
 const CACHE = 'public, max-age=60, s-maxage=300, stale-while-revalidate=600';
 const notFound = () => json({ error: 'Not found', code: 'NOT_FOUND' }, 404, { 'Cache-Control': 'public, max-age=30' });
-const media = k => (k ? `/api/media/${k}` : null);
+const media = k => {
+  if (!k) return null;
+  const s = String(k);
+  return s.startsWith('external:') ? s.slice(9) : `/api/media/${s}`;
+};
+
+function safeJsonArr(v) {
+  try {
+    const p = JSON.parse(v || '[]');
+    return Array.isArray(p) ? p : [];
+  } catch {
+    return [];
+  }
+}
 
 function postSummary(r) {
   const isExpired = r.type === 'job' && (r.status === 'expired' || Boolean(r.last_date && r.last_date < new Date().toISOString().slice(0, 10)));
   return {
     id: r.id, slug: r.slug, title: r.title, title_or: r.title_or, summary: r.summary, summary_or: r.summary_or,
-    category: r.category, tags: JSON.parse(r.tags || '[]'), cover_url: media(r.cover_media_key),
+    category: r.category, tags: safeJsonArr(r.tags), cover_url: media(r.cover_media_key),
+    goal_exam_ids: safeJsonArr(r.goal_exam_ids),
     status: r.status === 'scheduled' ? 'published' : r.status,
     published_at: r.published_at, event_date: r.event_date,
     ...(r.type === 'job' ? {
       organisation: r.organisation, vacancies: r.vacancies, qualification: r.qualification, last_date: r.last_date,
       apply_url: r.apply_url, notification_url: media(r.notification_media_key), state: r.state,
+      age_limit: r.age_limit || null, salary_pay: r.salary_pay || null, source_url: r.source_url || null,
       expired: isExpired,
       badge: isExpired ? 'Application Closed' : 'Active'
     } : {})
   };
 }
 
-const LIST_COLS = `id, type, slug, title, title_or, summary, summary_or, category, tags, cover_media_key, status, published_at, event_date,
-  organisation, vacancies, qualification, last_date, apply_url, notification_media_key, state`;
+const LIST_COLS = `id, type, slug, title, title_or, summary, summary_or, category, tags, goal_exam_ids, cover_media_key, status, published_at, event_date,
+  organisation, vacancies, qualification, last_date, apply_url, notification_media_key, state, age_limit, salary_pay, source_url`;
 
 async function listPosts(env, request, type, orderBy) {
   const url = new URL(request.url);
@@ -318,6 +333,349 @@ async function handleMockTestSubmit(request, env, key) {
   }, 200, { 'Cache-Control': 'no-store' });
 }
 
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(str || '')));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function handlePublicFeedback(request, env) {
+  const ip = clientIp(request);
+  await rateLimit(env, `feedback:${ip}`, 8, 600);
+  const body = await readJson(request, 25000);
+  const allowedKinds = new Set(['error', 'suggestion', 'broken_link', 'outdated']);
+  const kind = allowedKinds.has(body.kind) ? body.kind : 'error';
+  const pageUrl = String(body.page_url || '/').trim().slice(0, 500) || '/';
+  const pageTitle = String(body.page_title || '').trim().slice(0, 200);
+  const subject = String(body.subject || '').replace(/\s+/g, ' ').trim().slice(0, 160);
+  const details = String(body.details || '').trim().slice(0, 2000);
+  const contactEmail = String(body.contact_email || '').trim().slice(0, 120);
+
+  if (!subject || subject.length < 3) {
+    throw new HttpError(422, 'VALIDATION_ERROR', 'Please enter a brief subject (at least 3 characters)', { fields: { subject: 'Subject too short' } });
+  }
+  if (!details || details.length < 8) {
+    throw new HttpError(422, 'VALIDATION_ERROR', 'Please provide clear details (at least 8 characters)', { fields: { details: 'Details too short' } });
+  }
+  if (contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
+    throw new HttpError(422, 'VALIDATION_ERROR', 'Enter a valid email or leave blank', { fields: { contact_email: 'Invalid email' } });
+  }
+
+  const actor = await getActor(request, env).catch(() => null);
+  const id = `fb-${crypto.randomUUID()}`;
+  const ipHash = await sha256Hex(ip);
+
+  await env.DB.prepare(
+    `INSERT INTO community_feedback (id, kind, page_url, page_title, subject, details, contact_email, user_id, ip_hash, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open')`
+  ).bind(id, kind, pageUrl, pageTitle || null, subject, details, contactEmail || null, actor ? actor.userId : null, ipHash).run();
+
+  return json({ ok: true, id, message: 'Thank you. Your report has been queued for editorial review.' }, 201, { 'Cache-Control': 'no-store' });
+}
+
+async function handleJobsDirectory(env) {
+  const { results } = await env.DB.prepare(
+    `SELECT id, parent_id, level, code, title, title_or, description, description_or, group_slug, url, exam_slug, notes_json, tags, sort_order
+     FROM jobs_directory_nodes WHERE is_active = 1
+     ORDER BY level ASC, sort_order ASC, id ASC`
+  ).all();
+
+  const nodeMap = new Map();
+  const counts = { groups: 0, sections: 0, subcategories: 0, entries: 0, notes: 0 };
+  const roots = [];
+
+  for (const r of results) {
+    const notesArr = safeJsonArr(r.notes_json).map(t => (typeof t === 'string' ? { text: t } : t));
+    counts.notes += notesArr.length;
+    if (r.level === 0) counts.groups++;
+    else if (r.level === 1) counts.sections++;
+    else if (r.level === 2) counts.subcategories++;
+    else counts.entries++;
+
+    nodeMap.set(r.id, {
+      id: r.id,
+      parent_id: r.parent_id,
+      level: r.level,
+      number: r.code || '',
+      title: r.title,
+      title_or: r.title_or || '',
+      description: r.description || '',
+      description_or: r.description_or || '',
+      group_slug: r.group_slug || '',
+      url: r.url || '',
+      exam_slug: r.exam_slug || '',
+      tags: safeJsonArr(r.tags),
+      notes: notesArr,
+      children: []
+    });
+  }
+
+  for (const r of results) {
+    const node = nodeMap.get(r.id);
+    if (r.parent_id && nodeMap.has(r.parent_id)) {
+      nodeMap.get(r.parent_id).children.push(node);
+    } else if (r.level === 0) {
+      roots.push(node);
+    }
+  }
+
+  return json({ source: 'd1:jobs_directory_nodes', counts, sections: roots }, 200, { 'Cache-Control': CACHE });
+}
+
+function presentScheme(r) {
+  return {
+    id: r.id,
+    slug: r.slug,
+    title: r.title,
+    title_or: r.title_or || '',
+    summary: r.summary || '',
+    summary_or: r.summary_or || '',
+    body_html: r.body_md ? renderMarkdown(r.body_md) : '',
+    body_html_or: r.body_md_or ? renderMarkdown(r.body_md_or) : '',
+    category: r.category,
+    department: r.department || '',
+    gov_level: r.gov_level || 'Odisha',
+    target_groups: safeJsonArr(r.target_groups),
+    min_age: r.min_age,
+    max_age: r.max_age,
+    max_income: r.max_income,
+    gender_eligible: r.gender_eligible || 'all',
+    beneficiary_categories: safeJsonArr(r.beneficiary_categories),
+    benefit_summary: r.benefit_summary || '',
+    benefit_summary_or: r.benefit_summary_or || '',
+    documents_required: safeJsonArr(r.documents_required),
+    apply_url: r.apply_url || '',
+    is_featured: Boolean(r.is_featured),
+    sort_order: r.sort_order || 0,
+    updated_at: r.updated_at
+  };
+}
+
+async function handleSchemesDirectory(env, url, slugKey) {
+  if (slugKey) {
+    const r = await env.DB.prepare(
+      `SELECT * FROM schemes_directory WHERE (slug = ? OR id = ?) AND status = 'published' AND deleted_at IS NULL`
+    ).bind(slugKey, slugKey).first();
+    if (!r) return notFound();
+    return json(presentScheme(r), 200, { 'Cache-Control': CACHE });
+  }
+
+  const where = [`status = 'published'`, `deleted_at IS NULL`];
+  const binds = [];
+
+  const gov = (url.searchParams.get('gov') || url.searchParams.get('gov_level') || '').trim().slice(0, 40);
+  if (gov) { where.push('gov_level = ?'); binds.push(gov); }
+
+  const cat = (url.searchParams.get('category') || '').trim().slice(0, 60);
+  if (cat) { where.push('category = ?'); binds.push(cat); }
+
+  const gender = (url.searchParams.get('gender') || '').trim().toLowerCase();
+  if (gender === 'female' || gender === 'male') {
+    where.push(`(gender_eligible = 'all' OR gender_eligible = ?)`);
+    binds.push(gender);
+  }
+
+  const ageRaw = url.searchParams.get('age');
+  if (ageRaw !== null && ageRaw !== '') {
+    const age = Number(ageRaw);
+    if (Number.isFinite(age) && age >= 0 && age <= 120) {
+      where.push(`(min_age IS NULL OR min_age <= ?) AND (max_age IS NULL OR max_age >= ?)`);
+      binds.push(Math.floor(age), Math.floor(age));
+    }
+  }
+
+  const incomeRaw = url.searchParams.get('income');
+  if (incomeRaw !== null && incomeRaw !== '') {
+    const inc = Number(incomeRaw);
+    if (Number.isFinite(inc) && inc >= 0) {
+      where.push(`(max_income IS NULL OR max_income >= ?)`);
+      binds.push(Math.floor(inc));
+    }
+  }
+
+  const q = (url.searchParams.get('q') || '').trim().slice(0, 100);
+  if (q) {
+    where.push(`(title LIKE ? ESCAPE '\\' OR title_or LIKE ? ESCAPE '\\' OR summary LIKE ? ESCAPE '\\' OR department LIKE ? ESCAPE '\\' OR benefit_summary LIKE ? ESCAPE '\\')`);
+    const l = likeEscape(q);
+    binds.push(l, l, l, l, l);
+  }
+
+  const { results } = await env.DB.prepare(
+    `SELECT * FROM schemes_directory WHERE ${where.join(' AND ')} ORDER BY is_featured DESC, sort_order ASC, title ASC`
+  ).bind(...binds).all();
+
+  let items = results.map(presentScheme);
+  const group = (url.searchParams.get('group') || '').trim().toLowerCase();
+  if (group) {
+    items = items.filter(s => s.target_groups.includes(group));
+  }
+  const caste = (url.searchParams.get('beneficiary') || url.searchParams.get('caste') || '').trim().toLowerCase();
+  if (caste) {
+    items = items.filter(s => s.beneficiary_categories.some(c => String(c).toLowerCase() === caste));
+  }
+
+  return json({ items, total: items.length }, 200, { 'Cache-Control': CACHE });
+}
+
+async function handleUnifiedSearch(env, url) {
+  const q = (url.searchParams.get('q') || '').trim().slice(0, 100);
+  const typeFilter = (url.searchParams.get('type') || '').trim().toLowerCase();
+  const limit = Math.min(24, Math.max(4, parseInt(url.searchParams.get('limit') || '12', 10) || 12));
+  if (!q) {
+    return json({ query: '', items: [], counts: {}, total: 0 }, 200, { 'Cache-Control': 'public, max-age=30' });
+  }
+  const l = likeEscape(q);
+
+  const [jobsRes, caRes, schemesRes, dirRes, testsRes, resRes, examRes] = await Promise.all([
+    env.DB.prepare(
+      `SELECT id, slug, title, title_or, organisation, category, last_date, status FROM posts
+       WHERE type = 'job' AND ${PUBLIC_VISIBLE_SQL}
+         AND (title LIKE ? ESCAPE '\\' OR title_or LIKE ? ESCAPE '\\' OR organisation LIKE ? ESCAPE '\\' OR category LIKE ? ESCAPE '\\' OR tags LIKE ? ESCAPE '\\')
+       ORDER BY published_at DESC LIMIT 8`
+    ).bind(l, l, l, l, l).all(),
+    env.DB.prepare(
+      `SELECT id, slug, title, title_or, category, event_date FROM posts
+       WHERE type = 'current_affair' AND ${PUBLIC_VISIBLE_SQL}
+         AND (title LIKE ? ESCAPE '\\' OR title_or LIKE ? ESCAPE '\\' OR summary LIKE ? ESCAPE '\\' OR category LIKE ? ESCAPE '\\')
+       ORDER BY published_at DESC LIMIT 6`
+    ).bind(l, l, l, l).all(),
+    env.DB.prepare(
+      `SELECT id, slug, title, title_or, category, gov_level, department FROM schemes_directory
+       WHERE status = 'published' AND deleted_at IS NULL
+         AND (title LIKE ? ESCAPE '\\' OR title_or LIKE ? ESCAPE '\\' OR summary LIKE ? ESCAPE '\\' OR category LIKE ? ESCAPE '\\')
+       ORDER BY is_featured DESC, sort_order ASC LIMIT 8`
+    ).bind(l, l, l, l).all(),
+    env.DB.prepare(
+      `SELECT id, level, code, title, title_or, description, exam_slug FROM jobs_directory_nodes
+       WHERE is_active = 1
+         AND (title LIKE ? ESCAPE '\\' OR title_or LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\' OR notes_json LIKE ? ESCAPE '\\')
+       ORDER BY level ASC, sort_order ASC LIMIT 8`
+    ).bind(l, l, l, l).all(),
+    env.DB.prepare(
+      `SELECT id, slug, title, title_or, target_exam, duration_minutes FROM mock_tests
+       WHERE ${PUBLIC_VISIBLE_SQL}
+         AND (title LIKE ? ESCAPE '\\' OR title_or LIKE ? ESCAPE '\\' OR target_exam LIKE ? ESCAPE '\\')
+       ORDER BY published_at DESC LIMIT 6`
+    ).bind(l, l, l).all(),
+    env.DB.prepare(
+      `SELECT id, kind, title, exam, year FROM resources
+       WHERE deleted_at IS NULL AND status = 'published'
+         AND (title LIKE ? ESCAPE '\\' OR exam LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\')
+       ORDER BY year DESC LIMIT 6`
+    ).bind(l, l, l).all(),
+    env.DB.prepare(
+      `SELECT id, exam_label, short_code, track_label, domain_slug FROM exam_taxonomy
+       WHERE is_active = 1
+         AND (exam_label LIKE ? ESCAPE '\\' OR short_code LIKE ? ESCAPE '\\' OR track_label LIKE ? ESCAPE '\\')
+       ORDER BY sort_order ASC LIMIT 6`
+    ).bind(l, l, l).all()
+  ]);
+
+  const all = [
+    ...(jobsRes.results || []).map(r => ({
+      type: 'job', id: r.id, title: r.title, title_or: r.title_or || '',
+      subtitle: [r.organisation, r.category, r.last_date ? `Last date: ${r.last_date}` : ''].filter(Boolean).join(' · '),
+      badge: r.status === 'expired' ? 'Closed Job' : 'Job Notice',
+      url: `/jobs-careers/?job=${encodeURIComponent(r.slug)}`
+    })),
+    ...(schemesRes.results || []).map(r => ({
+      type: 'scheme', id: r.id, title: r.title, title_or: r.title_or || '',
+      subtitle: [r.gov_level, r.category, r.department].filter(Boolean).join(' · '),
+      badge: 'Govt Scheme',
+      url: `/schemes-benefits/?scheme=${encodeURIComponent(r.slug)}`
+    })),
+    ...(caRes.results || []).map(r => ({
+      type: 'current_affair', id: r.id, title: r.title, title_or: r.title_or || '',
+      subtitle: [r.category, r.event_date].filter(Boolean).join(' · '),
+      badge: 'Current Affairs',
+      url: `/current-affairs/?slug=${encodeURIComponent(r.slug)}`
+    })),
+    ...(testsRes.results || []).map(r => ({
+      type: 'mock_test', id: r.id, title: r.title, title_or: r.title_or || '',
+      subtitle: [r.target_exam, `${r.duration_minutes} mins`].filter(Boolean).join(' · '),
+      badge: 'Mock Test',
+      url: `/mock-tests/?test=${encodeURIComponent(r.slug)}`
+    })),
+    ...(resourcesResMap(resRes.results || [])),
+    ...(examRes.results || []).map(r => ({
+      type: 'exam', id: r.id, title: `${r.short_code} — ${r.exam_label}`, title_or: '',
+      subtitle: r.track_label || r.domain_slug,
+      badge: 'Exam Track',
+      url: `/jobs-careers/?q=${encodeURIComponent(r.short_code)}`
+    })),
+    ...(dirRes.results || []).map(r => ({
+      type: 'directory', id: r.id, title: r.code ? `${r.code} ${r.title}` : r.title, title_or: r.title_or || '',
+      subtitle: r.description || 'Career & Recruitment Directory Node',
+      badge: 'Directory',
+      url: `/jobs-careers/?q=${encodeURIComponent(r.title)}`
+    }))
+  ];
+
+  const counts = {
+    jobs: (jobsRes.results || []).length,
+    schemes: (schemesRes.results || []).length,
+    current_affairs: (caRes.results || []).length,
+    mock_tests: (testsRes.results || []).length,
+    resources: (resRes.results || []).length,
+    exams: (examRes.results || []).length,
+    directory: (dirRes.results || []).length
+  };
+  const filtered = typeFilter ? all.filter(i => i.type === typeFilter) : all;
+  return json({ query: q, counts, total: filtered.length, items: filtered.slice(0, limit) }, 200, { 'Cache-Control': 'public, max-age=30, s-maxage=60' });
+}
+
+function resourcesResMap(rows) {
+  return rows.map(r => ({
+    type: 'resource', id: r.id, title: r.title, title_or: '',
+    subtitle: [r.exam, r.kind, r.year].filter(Boolean).join(' · '),
+    badge: String(r.kind || 'Resource').toUpperCase(),
+    url: `/resources/?q=${encodeURIComponent(r.title)}`
+  }));
+}
+
+async function handleExamLeaderboard(env, url) {
+  const exam = (url.searchParams.get('exam') || '').trim().slice(0, 100);
+  const where = ['1=1'];
+  const binds = [];
+  if (exam) {
+    where.push(`(t.target_exam = ? OR t.slug = ? OR t.target_exam LIKE ? ESCAPE '\\')`);
+    binds.push(exam, exam, likeEscape(exam));
+  }
+  const { results } = await env.DB.prepare(
+    `SELECT
+       a.user_id,
+       ROUND(AVG(a.score), 2) AS avg_score,
+       MAX(a.score) AS best_score,
+       MAX(a.max_score) AS max_score,
+       ROUND(AVG(a.accuracy), 1) AS avg_accuracy,
+       COUNT(*) AS attempts_count,
+       MIN(a.time_taken_sec) AS fastest_sec,
+       c.full_name,
+       u.email
+     FROM test_attempts a
+     JOIN mock_tests t ON t.id = a.test_id
+     LEFT JOIN candidates c ON c.id = a.user_id
+     LEFT JOIN users u ON u.id = a.user_id
+     WHERE ${where.join(' AND ')} AND t.deleted_at IS NULL
+     GROUP BY a.user_id
+     ORDER BY best_score DESC, avg_accuracy DESC, fastest_sec ASC
+     LIMIT 20`
+  ).bind(...binds).all();
+
+  const items = (results || []).map((row, idx) => ({
+    rank: idx + 1,
+    displayName: maskDisplayName(row.full_name, row.email),
+    display_name: maskDisplayName(row.full_name, row.email),
+    bestScore: row.best_score,
+    avgScore: row.avg_score,
+    maxScore: row.max_score,
+    accuracy: row.avg_accuracy,
+    attemptsCount: row.attempts_count,
+    fastestSec: row.fastest_sec
+  }));
+
+  return json({ exam: exam || 'All Exams', items }, 200, { 'Cache-Control': 'public, max-age=30, s-maxage=60' });
+}
+
 export async function handleContent(request, env) {
   if (!env.DB) return json({ error: 'Database unavailable', code: 'NO_DATABASE' }, 500);
   try {
@@ -327,6 +685,9 @@ export async function handleContent(request, env) {
     if (request.method === 'POST') {
       if (resource === 'mock-tests' && key && action === 'submit') {
         return await handleMockTestSubmit(request, env, key);
+      }
+      if (resource === 'feedback') {
+        return await handlePublicFeedback(request, env);
       }
       return json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' }, 405, { Allow: 'GET, HEAD, POST' });
     }
@@ -342,6 +703,15 @@ export async function handleContent(request, env) {
     if (resource === 'jobs') {
       return key ? await postDetail(env, 'job', key)
         : await listPosts(env, request, 'job', "(last_date IS NULL OR last_date < date('now')) ASC, last_date ASC, published_at DESC");
+    }
+    if (resource === 'jobs-directory') {
+      return await handleJobsDirectory(env);
+    }
+    if (resource === 'search') {
+      return await handleUnifiedSearch(env, url);
+    }
+    if (resource === 'leaderboard') {
+      return await handleExamLeaderboard(env, url);
     }
     if (resource === 'banner') {
       const b = await readBanner(env);
@@ -363,29 +733,13 @@ export async function handleContent(request, env) {
       return json({ items: results.map(formatTaxonomyRow), total: results.length }, 200, { 'Cache-Control': CACHE });
     }
     if (resource === 'schemes') {
-      const { results } = await env.DB.prepare(
-        `SELECT id, exam_label, short_code, track_label, streams_json, next_exam_date, countdown_status, parent_tags
-         FROM exam_taxonomy WHERE domain_slug = 'scholarships-welfare' AND is_active = 1
-         ORDER BY sort_order ASC`
-      ).all();
-      const items = results.map(r => ({
-        id: r.id,
-        title: r.exam_label,
-        short_code: r.short_code,
-        category: r.track_label,
-        streams: JSON.parse(r.streams_json || '[]'),
-        deadline: r.next_exam_date || null,
-        status: r.countdown_status || 'TENTATIVE',
-        tags: JSON.parse(r.parent_tags || '[]'),
-        url: '/schemes-benefits/'
-      }));
-      return json({ items, total: items.length }, 200, { 'Cache-Control': CACHE });
+      return await handleSchemesDirectory(env, url, key);
     }
     if (resource === 'resources') {
       const { page, limit, offset } = parsePaging(url);
       const where = ["deleted_at IS NULL AND status = 'published'"]; const binds = [];
       const kind = url.searchParams.get('kind');
-      if (kind === 'syllabus' || kind === 'pyq') { where.push('kind = ?'); binds.push(kind); }
+      if (kind === 'syllabus' || kind === 'pyq' || kind === 'study_material') { where.push('kind = ?'); binds.push(kind); }
       const exam = (url.searchParams.get('exam') || '').trim().slice(0, 100);
       if (exam) { where.push('exam = ?'); binds.push(exam); }
       const q = (url.searchParams.get('q') || '').trim().slice(0, 100);

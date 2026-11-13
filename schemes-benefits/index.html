@@ -3,41 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#edf4ff">
-  <title>Schemes & Benefits Explorer | Common Sense Odisha</title>
+  <meta name="theme-color" content="#0F4C3A">
+  <title>Schemes &amp; Benefits Explorer | Common Sense Odisha</title>
   <!-- CSO-IN homepage header stylesheet v1 -->
-<link rel="stylesheet" href="../assets/style.css">
-<link rel="stylesheet" href="./assets/dashboard.css">
-  <script src="./assets/dashboard.js" defer></script>
-<!-- CSO-IN shared theme synchronization v1 -->
-<script>
-(function () {
-  function syncTheme() {
-    var settings = {};
-    try {
-      settings = JSON.parse(localStorage.getItem('cso') || '{}') || {};
-    } catch (error) {
-      settings = {};
-    }
-
-    var themes = ['light', 'dark', 'system', 'reading', 'sepia'];
-    var theme = themes.includes(settings.theme)
-      ? settings.theme
-      : 'system';
-
-    document.documentElement.setAttribute('data-theme', theme);
-  }
-
-  syncTheme();
-
-  window.addEventListener('storage', function (event) {
-    if (event.key === 'cso') syncTheme();
-  });
-
-  window.addEventListener('pageshow', syncTheme);
-})();
-</script>
-<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/style.css?v=20261114">
+  <link rel="stylesheet" href="./assets/dashboard.css?v=20261114">
+  <script src="../assets/js/public-content.js?v=20261114" defer></script>
+  <script src="./assets/dashboard.js?v=20261114" defer></script>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
 
@@ -48,9 +21,9 @@
   <img src="/assets/images/cso-logo.svg" alt="CSO - Common Sense Odisha" class="cso-brand-logo" width="112" height="40">
 </a>
 <a class="adm" href="/admin/" role="button" aria-label="Admin Portal - Authorised Access Only">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
-<span id="ctl" style="display:contents"></span>
+<span id="ctl" class="cso-contents"></span>
 <span class="sp"></span>
-<div class="acct"><span style="font-size:26px">👤</span><span id="auth" style="display:contents"></span></div>
+<div class="acct"><span class="cso-acct-icon" aria-hidden="true">👤</span><span id="auth" class="cso-contents"></span></div>
 </header>
 <nav><div class="w" id="navw"></div></nav>
 
@@ -106,8 +79,93 @@
 
         <section class="welcome">
           <div>
-            <h1 id="page-title">Schemes & Benefits Explorer</h1>
+            <h1 id="page-title">Schemes &amp; Benefits Explorer</h1>
             <p id="page-description" hidden></p>
+          </div>
+          <div class="scheme-hub-shortcuts" aria-label="Related welfare portals">
+            <a class="scheme-hub-pill" href="../jobs-careers/">💼 Jobs &amp; Careers</a>
+            <a class="scheme-hub-pill" href="../resources/">📚 Scholarships &amp; Resources</a>
+            <a class="scheme-hub-pill" href="../student-dashboard/">🧭 Candidate Hub</a>
+          </div>
+        </section>
+
+        <section id="live-schemes-section" class="live-schemes-section" aria-labelledby="live-schemes-heading">
+          <div class="live-schemes-header">
+            <div class="live-schemes-title-group">
+              <span class="live-pulse-dot" aria-hidden="true"></span>
+              <h2 id="live-schemes-heading">Check My Scheme Eligibility &amp; Live Govt Benefits</h2>
+              <span id="live-schemes-count" class="live-count-badge" aria-live="polite">Loading…</span>
+            </div>
+            <button id="scheme-elig-reset" class="scheme-filter-btn" type="button" hidden>Reset Filters</button>
+          </div>
+
+          <form id="scheme-elig-form" class="scheme-elig-bar" aria-label="Check scheme eligibility">
+            <input id="scheme-q" class="scheme-input" type="search" placeholder="Search scheme, pension, farmer, scholarship…">
+            <select id="scheme-gov" class="scheme-select" aria-label="Government level">
+              <option value="">Odisha + Central (All)</option>
+              <option value="Odisha">Odisha Govt Schemes</option>
+              <option value="Central">Central / National Schemes</option>
+            </select>
+            <select id="scheme-group" class="scheme-select" aria-label="Citizen category or target group">
+              <option value="">All Citizen Groups</option>
+              <option value="women">Women &amp; Girls</option>
+              <option value="farmers">Farmers &amp; Krushi</option>
+              <option value="students">Students &amp; Youth</option>
+              <option value="seniors">Senior Citizens / Pensioners</option>
+              <option value="workers">Workers &amp; MSME</option>
+              <option value="health">Health &amp; Families</option>
+              <option value="housing">Housing &amp; Rural</option>
+            </select>
+            <select id="scheme-gender" class="scheme-select" aria-label="Gender">
+              <option value="">Any Gender</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+            </select>
+            <select id="scheme-beneficiary" class="scheme-select" aria-label="Social or beneficiary category">
+              <option value="">All Categories (UR/SEBC/SC/ST)</option>
+              <option value="SC">SC</option>
+              <option value="ST">ST</option>
+              <option value="SEBC">SEBC / OBC</option>
+              <option value="EWS">EWS / BPL</option>
+              <option value="BPL">BPL</option>
+            </select>
+            <input id="scheme-age" class="scheme-input scheme-input--sm" type="number" min="0" max="100" placeholder="Age (yrs)" aria-label="Your age in years">
+            <input id="scheme-income" class="scheme-input scheme-input--sm" type="number" min="0" step="10000" placeholder="Annual Income ₹" aria-label="Annual family income in rupees">
+            <button type="submit" class="scheme-btn scheme-btn--primary">Check Eligibility</button>
+          </form>
+
+          <div class="scheme-quick-chips" role="group" aria-label="Quick scheme category chips">
+            <button type="button" class="scheme-chip is-active" data-group="" aria-pressed="true">All Flagship Schemes</button>
+            <button type="button" class="scheme-chip" data-group="women" aria-pressed="false">Subhadra &amp; Women</button>
+            <button type="button" class="scheme-chip" data-group="farmers" aria-pressed="false">CM-KISAN &amp; Farmers</button>
+            <button type="button" class="scheme-chip" data-group="students" aria-pressed="false">Scholarships &amp; Nua-O</button>
+            <button type="button" class="scheme-chip" data-group="health" aria-pressed="false">Gopabandhu Jan Arogya</button>
+            <button type="button" class="scheme-chip" data-group="seniors" aria-pressed="false">Madhu Babu Pension</button>
+          </div>
+
+          <div id="live-schemes-status" class="live-status-box" role="status" aria-live="polite">
+            Loading verified Odisha &amp; Central government schemes…
+          </div>
+
+          <div id="live-schemes-grid" class="live-schemes-grid" aria-live="polite"></div>
+
+          <div id="live-scheme-detail-modal" class="live-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="live-scheme-detail-title" hidden>
+            <article id="live-scheme-detail" class="live-scheme-detail live-modal-drawer">
+              <div class="live-scheme-detail__bar">
+                <button id="live-scheme-detail-close" class="scheme-btn" type="button">✕ Close Details</button>
+                <div id="live-scheme-detail-actions" class="live-scheme-detail__actions"></div>
+              </div>
+              <header class="live-scheme-detail__header">
+                <div id="live-scheme-detail-badges" class="live-scheme-card__badges"></div>
+                <h3 id="live-scheme-detail-title" class="live-scheme-detail__title"></h3>
+                <p id="live-scheme-detail-title-or" class="live-scheme-detail__title-or" hidden></p>
+                <div id="live-scheme-detail-meta" class="live-scheme-detail__meta"></div>
+              </header>
+              <div id="live-scheme-detail-summary" class="live-scheme-detail__summary" hidden></div>
+              <div id="live-scheme-detail-specs" class="live-detail-specs-grid"></div>
+              <div id="live-scheme-detail-docs" class="live-scheme-docs" hidden></div>
+              <div id="live-scheme-detail-body" class="cso-prose"></div>
+            </article>
           </div>
         </section>
 
@@ -194,6 +252,7 @@
 </div></footer>
 <script src="../assets/cso-auth-client.js" defer></script>
 <script src="../assets/shared-header.js" defer></script>
+<script src="../assets/js/cso-idb.js" defer></script>
 <script src="../assets/js/bookmark-manager.js" defer></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56e126fa86ae1d8',t:'MTc5NDA3MjY5MQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56e126fa86ae1d8',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

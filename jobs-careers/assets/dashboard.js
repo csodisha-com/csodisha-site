@@ -1046,6 +1046,7 @@
   }
 
   const jsonUrls = [
+    '/api/content/jobs-directory',
     './generated/directory.json',
     '/jobs-careers/generated/directory.json'
   ];
@@ -1399,11 +1400,62 @@
       footer.appendChild(applyLink);
     }
 
+    const waBtn = makeWhatsAppShareLink(job);
+    if (waBtn) footer.appendChild(waBtn);
+
     const bmBtn = makeDashboardBookmarkBtn(job);
     if (bmBtn) footer.appendChild(bmBtn);
 
     card.appendChild(footer);
     return card;
+  }
+
+  function makeWhatsAppShareLink(job) {
+    if (!job) return null;
+    const shareUrl = `${window.location.origin}/jobs-careers/?job=${encodeURIComponent(job.slug || '')}`;
+    const msg = `${job.title || 'Job Notification'}${job.last_date ? ' (Last Date: ' + job.last_date + ')' : ''} - ${shareUrl}`;
+    const a = el('a', 'live-btn live-btn--wa', '📲 Share');
+    a.href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.setAttribute('aria-label', 'Share on WhatsApp');
+    return a;
+  }
+
+  function jobToJsonLd(job) {
+    return {
+      '@type': 'JobPosting',
+      title: job.title || 'Government Recruitment Notice',
+      description: job.summary || job.title || 'Official Odisha and Central recruitment notice.',
+      datePosted: job.published_at || new Date().toISOString().slice(0, 10),
+      validThrough: job.last_date || undefined,
+      employmentType: 'FULL_TIME',
+      hiringOrganization: {
+        '@type': 'Organization',
+        name: job.organization || job.category || 'Common Sense Odisha Directory'
+      },
+      jobLocation: {
+        '@type': 'Place',
+        address: {
+          '@type': 'PostalAddress',
+          addressRegion: job.state || 'Odisha',
+          addressCountry: 'IN'
+        }
+      },
+      url: `${window.location.origin}/jobs-careers/?job=${encodeURIComponent(job.slug || '')}`
+    };
+  }
+
+  function injectJobJsonLd(payload) {
+    if (!payload || !document.head) return;
+    let scriptEl = document.getElementById('cso-jobposting-jsonld');
+    if (!scriptEl) {
+      scriptEl = document.createElement('script');
+      scriptEl.type = 'application/ld+json';
+      scriptEl.id = 'cso-jobposting-jsonld';
+      document.head.appendChild(scriptEl);
+    }
+    scriptEl.textContent = JSON.stringify(payload);
   }
 
   function renderLivePagination(page, limit, total) {
@@ -1584,8 +1636,13 @@
         liveDetailActionsEl.appendChild(applyLink);
       }
 
+      const detailWaBtn = makeWhatsAppShareLink(job);
+      if (detailWaBtn) liveDetailActionsEl.appendChild(detailWaBtn);
+
       const detailBmBtn = makeDashboardBookmarkBtn(job);
       if (detailBmBtn) liveDetailActionsEl.appendChild(detailBmBtn);
+
+      injectJobJsonLd(Object.assign({ '@context': 'https://schema.org' }, jobToJsonLd(job)));
 
       if (job.body_html && pc && typeof pc.renderSanitizedHtml === 'function') {
         pc.renderSanitizedHtml(liveDetailBodyEl, job.body_html);
@@ -1665,6 +1722,15 @@
       pagedItems.forEach(job => frag.appendChild(renderJobCard(job)));
       liveGridEl.appendChild(frag);
       renderLivePagination(displayPage, displayLimit, total);
+      injectJobJsonLd({
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        itemListElement: pagedItems.slice(0, 10).map((job, idx) => ({
+          '@type': 'ListItem',
+          position: idx + 1,
+          item: jobToJsonLd(job)
+        }))
+      });
 
       if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
         window.CSOBookmarks.updateUI();

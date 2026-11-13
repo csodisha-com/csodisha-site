@@ -1,6 +1,6 @@
 /**
  * Common Sense Odisha — Candidate Hub (Split-Focus Bento & 4-Tier Personalization)
- * Strict CSP-compliant: ZERO .innerHTML, ZERO .style.*, ZERO inline handlers.
+ * Strict CSP-compliant: zero unsafe DOM string injection, zero inline style properties.
  */
 (function () {
   'use strict';
@@ -589,7 +589,10 @@
     }
 
     const sprints = Number(readJsonStorage('cso_pomodoro_sprints_today', 0)) || 0;
-    const consistencyPct = Math.min(100, (state.attempts.length ? 50 : 20) + sprints * 15 + (doneTopics > 0 ? 30 : 0));
+    const streakState = readJsonStorage('cso_capsule_streak_v1', { streak: 0, lastCompletedDate: '' });
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const capsuleBoost = streakState.lastCompletedDate === todayStr ? 20 : Math.min(15, (Number(streakState.streak) || 0) * 3);
+    const consistencyPct = Math.min(100, (state.attempts.length ? 40 : 15) + sprints * 15 + (doneTopics > 0 ? 25 : 0) + capsuleBoost);
 
     const score = Math.round((syllabusPct * 0.4) + (cbtPct * 0.4) + (consistencyPct * 0.2));
 
@@ -1453,6 +1456,9 @@
     renderSchemes();
     renderResourcesShelf();
     renderBookmarksShelves();
+    if (typeof window.__csoRenderPhase3Views === 'function') {
+      window.__csoRenderPhase3Views();
+    }
   }
 
   /* ---------- Bootstrap & Data Hydration ---------- */
@@ -1550,7 +1556,627 @@
       window.CSOSync.reconcileChecklist().catch(() => {});
     }
 
+    initPhase3Suite();
     renderAllPersonalizedViews();
+  }
+
+  /* ---------- Phase 3 Active Learning Suite (CSP-Strict) ---------- */
+  const WEAK_AREA_FALLBACK_BANK = [
+    { id: 'wa-1', topic: 'Odisha Geography', q: 'Which Odisha lake is the largest brackish water lagoon in Asia?', opts: ['Ansupa Lake', 'Chilika Lake', 'Kanjia Lake', 'Tampara Lake'], ans: 1, exp: 'Chilika Lake across Puri, Khordha & Ganjam is Asia’s largest brackish water lagoon.' },
+    { id: 'wa-2', topic: 'Odisha History', q: 'When was the separate province of Odisha formed?', opts: ['1 April 1936', '15 August 1947', '26 January 1950', '1 April 1912'], ans: 0, exp: 'Utkala Dibasa on 1 April 1936 marks Odisha’s formation as a separate linguistic province.' },
+    { id: 'wa-3', topic: 'Indian Polity', q: 'Minimum age required to contest for Gram Panchayat Sarpanch in Odisha is:', opts: ['18 years', '21 years', '25 years', '30 years'], ans: 1, exp: 'Article 243F & Odisha Grama Panchayats Act prescribe 21 years as minimum age.' },
+    { id: 'wa-4', topic: 'Pedagogy (B.Ed/OTET)', q: 'Bloom’s Revised Taxonomy places which cognitive skill at the highest level?', opts: ['Evaluating', 'Analyzing', 'Creating', 'Applying'], ans: 2, exp: 'Anderson & Krathwohl (2001) placed Creating at the apex above Evaluating.' },
+    { id: 'wa-5', topic: 'Odisha Culture', q: 'Konark Sun Temple was built in the 13th century under which Eastern Ganga ruler?', opts: ['Anantavarman Chodaganga', 'Narasimhadeva I', 'Kapilendra Deva', 'Kharavela'], ans: 1, exp: 'King Narasimhadeva I commissioned Konark Sun Temple around 1250 CE.' },
+    { id: 'wa-6', topic: 'Constitution', q: 'Which Schedule of the Constitution contains the Anti-Defection Law?', opts: ['Eighth Schedule', 'Ninth Schedule', 'Tenth Schedule', 'Twelfth Schedule'], ans: 2, exp: 'Inserted by the 52nd Amendment Act, 1985.' },
+    { id: 'wa-7', topic: 'Computer Literacy', q: 'Which shortcut permanently deletes a file in Windows bypassing the Recycle Bin?', opts: ['Ctrl + Del', 'Shift + Del', 'Alt + Del', 'Ctrl + Shift + D'], ans: 1, exp: 'Shift + Delete removes files without moving them to the Recycle Bin.' },
+    { id: 'wa-8', topic: 'Odisha Economy', q: 'Which district in Odisha is known for Hirakud Multi-Purpose Dam across Mahanadi?', opts: ['Sambalpur', 'Koraput', 'Sundargarh', 'Keonjhar'], ans: 0, exp: 'Hirakud Dam near Sambalpur is one of the longest earthen dams in the world.' },
+    { id: 'wa-9', topic: 'Environment', q: 'Bhitarkanika National Park in Kendrapara is famous primarily for conserving:', opts: ['Olive Ridley Turtles & Saltwater Crocodiles', 'Snow Leopards', 'Great Indian Bustard', 'One-horned Rhino'], ans: 0, exp: 'Bhitarkanika mangrove ecosystem supports the largest Saltwater Crocodile population and Gahirmatha rookery.' },
+    { id: 'wa-10', topic: 'Reasoning / Math', q: 'If the ratio of boys to girls is 3:2 and total students are 45, how many girls are there?', opts: ['15', '18', '20', '27'], ans: 1, exp: '(2/5) × 45 = 18 girls.' },
+    { id: 'wa-11', topic: 'General Science', q: 'Which vitamin deficiency leads to Night Blindness?', opts: ['Vitamin A', 'Vitamin B12', 'Vitamin C', 'Vitamin D'], ans: 0, exp: 'Vitamin A (Retinol) is essential for photoreceptor function in the retina.' },
+    { id: 'wa-12', topic: 'Odisha Schemes', q: 'SUBHADRA Yojana of Government of Odisha provides annual financial assistance to eligible women aged:', opts: ['18–45 years', '21–60 years', '25–65 years', '18–60 years'], ans: 1, exp: 'SUBHADRA supports eligible women beneficiaries in Odisha aged 21 to 60 years.' },
+    { id: 'wa-13', topic: 'Pedagogy / RTE', q: 'Pupil-Teacher Ratio (PTR) norm at Primary level (Classes I–V) under RTE Act 2009 is:', opts: ['25:1', '30:1', '35:1', '40:1'], ans: 1, exp: 'RTE Schedule specifies 30:1 up to 120 admitted children at primary level.' },
+    { id: 'wa-14', topic: 'Odisha Literature', q: 'Who authored "Chha Mana Atha Guntha", a landmark realist novel in Odia?', opts: ['Gopabandhu Das', 'Fakir Mohan Senapati', 'Radhanath Ray', 'Gangadhar Meher'], ans: 1, exp: 'Fakir Mohan Senapati published Chha Mana Atha Guntha in serialised form in Utkala Sahitya.' },
+    { id: 'wa-15', topic: 'English Usage', q: 'Choose the correct passive form: "The committee will announce the results tomorrow."', opts: ['The results will be announced tomorrow by the committee.', 'The results are announced tomorrow.', 'The results were announced by committee.', 'The results will announce tomorrow.'], ans: 0, exp: 'Future simple active (will + V1) converts to passive (will be + V3).' }
+  ];
+
+  let phase3Initialized = false;
+  function initPhase3Suite() {
+    if (phase3Initialized) return;
+    phase3Initialized = true;
+
+    initWeakAreaDrill();
+    initFlashcardsTool();
+    initEligibilitySimulator();
+    initCertGuardTool();
+    initGoalAlertsPush();
+
+    document.getElementById('cso-print-plan-btn')?.addEventListener('click', () => {
+      window.print();
+    });
+
+    window.__csoRenderPhase3Views = () => {
+      renderMorningCapsule();
+      renderStudyPlanAndChecklist();
+    };
+  }
+
+  function renderMorningCapsule() {
+    const host = document.getElementById('cso-capsule-body');
+    const streakBadge = document.getElementById('cso-capsule-streak-badge');
+    const progBadge = document.getElementById('cso-capsule-progress-badge');
+    if (!host) return;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const prim = getExamById(state.preferences.primaryExam) || getActiveExams()[0];
+    const capsuleKey = 'cso_capsule_streak_v1';
+    const capsuleData = readJsonStorage(capsuleKey, { streak: 0, lastCompletedDate: '', date: '', answered: {}, score: 0 });
+    if (capsuleData.date !== today) {
+      capsuleData.date = today;
+      capsuleData.answered = {};
+      capsuleData.score = 0;
+    }
+
+    const questions = [
+      ...GK_DRILL_BANK.slice(0, 4),
+      {
+        q: prim
+          ? `For your primary goal (${prim.short_code}), which study strategy builds peak accuracy before exam day?`
+          : 'Which revision cadence gives optimal long-term retention for Odisha competitive exams?',
+        opts: [
+          'Spaced-repetition active recall (1d / 3d / 7d) + Mistake Notebook drills',
+          'Reading notes passively once a month without solving PYQs',
+          'Skipping negative-marking mock tests until the final day',
+          'Memorizing unverified social media forwards'
+        ],
+        ans: 0,
+        exp: 'Combining active recall flashcards with timed PYQ & weak-area re-tests raises accuracy systematically.'
+      }
+    ];
+
+    const doneCount = Object.keys(capsuleData.answered).length;
+    if (streakBadge) streakBadge.textContent = `🔥 Streak: ${capsuleData.streak || 0}d`;
+    if (progBadge) progBadge.textContent = `${doneCount} / 5 Done`;
+
+    clear(host);
+    if (doneCount >= 5) {
+      host.appendChild(el('h3', '', `✅ Morning Capsule Complete! (${capsuleData.score} / 5 Correct)`));
+      host.appendChild(el('p', 'cso-muted-note', `Your ${capsuleData.streak || 1}-day streak is locked in for ${today}. Check back tomorrow or practice Weak-Area Re-Test in Analytics!`));
+      const resetBtn = el('button', 'cso-btn', 'Review Capsule Again');
+      resetBtn.type = 'button';
+      resetBtn.addEventListener('click', () => {
+        capsuleData.answered = {};
+        capsuleData.score = 0;
+        writeJsonStorage(capsuleKey, capsuleData);
+        renderMorningCapsule();
+      });
+      host.appendChild(resetBtn);
+      return;
+    }
+
+    const qIdx = doneCount;
+    const item = questions[qIdx];
+    host.appendChild(el('h3', '', `Capsule Q${qIdx + 1} of 5: ${item.q}`));
+    const optWrap = el('div', 'cso-drill-options');
+    const expBox = el('div', 'cso-drill-explanation');
+    expBox.hidden = true;
+    const nextBtn = el('button', 'cso-btn cso-btn-primary', qIdx === 4 ? 'Finish & Boost Readiness ✓' : 'Next Capsule Question →');
+    nextBtn.type = 'button';
+    nextBtn.hidden = true;
+
+    item.opts.forEach((opt, idx) => {
+      const btn = el('button', 'cso-drill-opt', `${String.fromCharCode(65 + idx)}. ${opt}`);
+      btn.type = 'button';
+      btn.addEventListener('click', () => {
+        optWrap.querySelectorAll('button').forEach((b, bIdx) => {
+          b.disabled = true;
+          if (bIdx === item.ans) b.classList.add('is-correct');
+          else if (bIdx === idx && idx !== item.ans) b.classList.add('is-wrong');
+        });
+        const isCorrect = idx === item.ans;
+        capsuleData.answered[qIdx] = idx;
+        if (isCorrect) capsuleData.score = (capsuleData.score || 0) + 1;
+        if (Object.keys(capsuleData.answered).length >= 5 && capsuleData.lastCompletedDate !== today) {
+          const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+          capsuleData.streak = capsuleData.lastCompletedDate === yesterday ? (Number(capsuleData.streak) || 0) + 1 : 1;
+          capsuleData.lastCompletedDate = today;
+          showToast(`☀️ Morning Capsule complete! Streak: ${capsuleData.streak}d`);
+        }
+        writeJsonStorage(capsuleKey, capsuleData);
+        expBox.textContent = (isCorrect ? '✓ Correct! ' : '✗ Incorrect. ') + item.exp;
+        expBox.hidden = false;
+        nextBtn.hidden = false;
+        renderReadinessHero();
+      });
+      optWrap.appendChild(btn);
+    });
+
+    nextBtn.addEventListener('click', renderMorningCapsule);
+    host.append(optWrap, expBox, nextBtn);
+  }
+
+  function initWeakAreaDrill() {
+    const runner = document.getElementById('cso-weak-drill-runner');
+    const timerBadge = document.getElementById('cso-weak-drill-timer');
+    const scoreBadge = document.getElementById('cso-weak-drill-score');
+    if (!runner) return;
+
+    let drillPool = [];
+    let idx = 0;
+    let masteredCount = 0;
+    let secsLeft = 900;
+    let intervalId = null;
+
+    function buildPool() {
+      const cbtWrongs = readJsonStorage('cso_mistakes_v1', []);
+      const mappedWrongs = cbtWrongs
+        .filter(w => w && w.question && w.options && w.correctOption && !w.mastered)
+        .map(w => {
+          const keys = ['A', 'B', 'C', 'D'];
+          const ansIdx = Math.max(0, keys.indexOf(String(w.correctOption).toUpperCase()));
+          return {
+            id: String(w.questionId || w.id || ''),
+            sourceWrong: true,
+            topic: w.exam || 'CBT Mistake',
+            q: w.question,
+            opts: keys.map(k => w.options[k] || `Option ${k}`),
+            ans: ansIdx,
+            exp: w.explanation || `Correct Answer: Option ${keys[ansIdx]}`
+          };
+        });
+      const pool = [...mappedWrongs];
+      for (const fallback of WEAK_AREA_FALLBACK_BANK) {
+        if (pool.length >= 15) break;
+        pool.push(fallback);
+      }
+      return pool.slice(0, 15);
+    }
+
+    function stopTimer() {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    }
+
+    function updateTimerUI() {
+      if (!timerBadge) return;
+      const m = String(Math.floor(secsLeft / 60)).padStart(2, '0');
+      const s = String(secsLeft % 60).padStart(2, '0');
+      timerBadge.textContent = `⏱ ${m}:${s}`;
+    }
+
+    function renderIdle() {
+      stopTimer();
+      drillPool = buildPool();
+      clear(runner);
+      const wrongCount = drillPool.filter(d => d.sourceWrong).length;
+      runner.appendChild(el('h3', '', `Ready for your 15-Question Targeted Re-Test (${wrongCount} from recent mistakes + Odisha high-yield bank)`));
+      runner.appendChild(el('p', 'cso-muted-note', 'Includes timed 15-minute sprint, instant explanations, mastery tracking, and offline-first sync.'));
+      const startBtn = el('button', 'cso-btn cso-btn-primary', '▶ Start 15-Q Weak-Area Drill');
+      startBtn.type = 'button';
+      startBtn.addEventListener('click', () => {
+        idx = 0;
+        masteredCount = 0;
+        secsLeft = 900;
+        if (scoreBadge) scoreBadge.textContent = '0 / 15 Mastered';
+        updateTimerUI();
+        intervalId = setInterval(() => {
+          if (secsLeft > 0) secsLeft--;
+          updateTimerUI();
+        }, 1000);
+        renderQuestion();
+      });
+      runner.appendChild(startBtn);
+    }
+
+    function finishDrill() {
+      stopTimer();
+      clear(runner);
+      runner.appendChild(el('h3', '', `🎯 Weak-Area Drill Completed: ${masteredCount} / ${drillPool.length} Mastered`));
+      runner.appendChild(el('p', 'cso-muted-note', 'Results saved locally & queued for cloud sync.'));
+      const stats = readJsonStorage('cso_weak_drill_stats_v1', []);
+      stats.unshift({ date: new Date().toISOString(), mastered: masteredCount, total: drillPool.length });
+      writeJsonStorage('cso_weak_drill_stats_v1', stats.slice(0, 20));
+      if (window.CSOIdb && typeof window.CSOIdb.enqueueSyncAction === 'function' && state.user && state.user.isAuthenticated !== false) {
+        window.CSOIdb.enqueueSyncAction({
+          url: '/api/sync',
+          method: 'POST',
+          body: { type: 'weak_drill', mastered: masteredCount, total: drillPool.length }
+        }).catch(() => {});
+      }
+      const restartBtn = el('button', 'cso-btn cso-btn-primary', '↺ Run Another 15-Q Drill');
+      restartBtn.type = 'button';
+      restartBtn.addEventListener('click', renderIdle);
+      runner.appendChild(restartBtn);
+    }
+
+    function renderQuestion() {
+      if (idx >= drillPool.length) {
+        finishDrill();
+        return;
+      }
+      const q = drillPool[idx];
+      clear(runner);
+      runner.appendChild(el('span', 'cso-pill-badge', `Q${idx + 1} / ${drillPool.length} · ${q.topic}`));
+      runner.appendChild(el('h3', '', q.q));
+      const opts = el('div', 'cso-drill-options');
+      const exp = el('div', 'cso-drill-explanation');
+      exp.hidden = true;
+      const next = el('button', 'cso-btn cso-btn-primary', idx + 1 >= drillPool.length ? 'View Drill Summary ✓' : 'Next Question →');
+      next.type = 'button';
+      next.hidden = true;
+
+      q.opts.forEach((optText, oIdx) => {
+        const b = el('button', 'cso-drill-opt', `${String.fromCharCode(65 + oIdx)}. ${optText}`);
+        b.type = 'button';
+        b.addEventListener('click', () => {
+          opts.querySelectorAll('button').forEach((btn, bIdx) => {
+            btn.disabled = true;
+            if (bIdx === q.ans) btn.classList.add('is-correct');
+            else if (bIdx === oIdx && oIdx !== q.ans) btn.classList.add('is-wrong');
+          });
+          if (oIdx === q.ans) {
+            masteredCount++;
+            if (q.sourceWrong && q.id) {
+              const wrongs = readJsonStorage('cso_mistakes_v1', []).map(w =>
+                String(w.questionId || w.id) === q.id ? { ...w, mastered: true } : w
+              );
+              writeJsonStorage('cso_mistakes_v1', wrongs);
+            }
+          }
+          if (scoreBadge) scoreBadge.textContent = `${masteredCount} / ${drillPool.length} Mastered`;
+          exp.textContent = (oIdx === q.ans ? '✓ Mastered! ' : '✗ Review Concept: ') + q.exp;
+          exp.hidden = false;
+          next.hidden = false;
+        });
+        opts.appendChild(b);
+      });
+
+      next.addEventListener('click', () => {
+        idx++;
+        renderQuestion();
+      });
+      runner.append(opts, exp, next);
+    }
+
+    renderIdle();
+  }
+
+  async function initFlashcardsTool() {
+    const form = document.getElementById('cso-flashcard-form');
+    const deckEl = document.getElementById('cso-flashcard-review-deck');
+    const listEl = document.getElementById('cso-flashcard-list');
+    const dueBadge = document.getElementById('cso-flashcards-due-badge');
+    if (!deckEl || !listEl || !window.CSOIdb) return;
+
+    let cards = [];
+    async function loadAndDraw() {
+      cards = await window.CSOIdb.getFlashcards().catch(() => []);
+      if (!cards.length) {
+        const defaults = [
+          { id: 'fc-seed-1', front: '73rd Constitutional Amendment relates to:', back: 'Panchayati Raj Institutions (Part IX, Art 243–243O, 11th Schedule).', exam: 'OPSC / OSSC', intervalDays: 1, nextReviewAt: Date.now() },
+          { id: 'fc-seed-2', front: 'NITI Aayog vs Planning Commission:', back: 'NITI Aayog replaced Planning Commission on 1 Jan 2015 as cooperative federalism think tank.', exam: 'General Studies', intervalDays: 1, nextReviewAt: Date.now() }
+        ];
+        await window.CSOIdb.putFlashcards(defaults).catch(() => {});
+        cards = defaults;
+      }
+
+      const now = Date.now();
+      const due = cards.filter(c => (Number(c.nextReviewAt) || 0) <= now);
+      if (dueBadge) dueBadge.textContent = `${due.length} Due Today`;
+
+      clear(deckEl);
+      if (!due.length) {
+        deckEl.appendChild(el('h3', '', '🎉 All Spaced-Repetition Flashcards Reviewed!'));
+        deckEl.appendChild(el('p', 'cso-muted-note', `Total cards in IndexedDB deck: ${cards.length}. Add custom flashcards above or review ahead.`));
+      } else {
+        const card = due[0];
+        const stage = el('div', 'cso-fc-stage');
+        stage.appendChild(el('span', 'cso-pill-badge', `${card.exam || 'General'} · Interval: ${card.intervalDays || 1}d`));
+        stage.appendChild(el('h3', '', card.front));
+        const ansBox = el('div', 'cso-fc-answer', card.back);
+        ansBox.hidden = true;
+        const flipBtn = el('button', 'cso-btn cso-btn-primary', 'Show Answer');
+        flipBtn.type = 'button';
+        const controls = el('div', 'cso-inline-actions');
+        controls.hidden = true;
+
+        [[1, 'Hard (1d)'], [3, 'Good (3d)'], [7, 'Mastered (7d)']].forEach(([days, label]) => {
+          const b = el('button', 'cso-btn', label);
+          b.type = 'button';
+          b.addEventListener('click', async () => {
+            await window.CSOIdb.scheduleFlashcardReview(card.id, days);
+            showToast(`Scheduled next review in ${days} day(s)`);
+            loadAndDraw();
+          });
+          controls.appendChild(b);
+        });
+
+        flipBtn.addEventListener('click', () => {
+          ansBox.hidden = false;
+          flipBtn.hidden = true;
+          controls.hidden = false;
+        });
+
+        stage.append(ansBox, flipBtn, controls);
+        deckEl.appendChild(stage);
+      }
+
+      clear(listEl);
+      cards.slice(0, 12).forEach(c => {
+        const row = el('div', 'cso-list-item');
+        const main = el('div', 'cso-list-item-main');
+        main.appendChild(el('h4', 'cso-list-item-title', c.front));
+        const nextDt = new Date(c.nextReviewAt || Date.now()).toISOString().slice(0, 10);
+        main.appendChild(el('span', 'cso-list-item-sub', `${c.exam || 'General'} · Next review: ${nextDt} (${c.intervalDays || 1}d)`));
+        const delBtn = el('button', 'cso-btn cso-btn-sm', 'Remove');
+        delBtn.type = 'button';
+        delBtn.addEventListener('click', async () => {
+          await window.CSOIdb.deleteFlashcard(c.id);
+          loadAndDraw();
+        });
+        row.append(main, delBtn);
+        listEl.appendChild(row);
+      });
+    }
+
+    if (form) {
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const front = document.getElementById('cso-fc-front')?.value.trim();
+        const back = document.getElementById('cso-fc-back')?.value.trim();
+        const exam = document.getElementById('cso-fc-exam')?.value.trim() || 'Odisha GK';
+        if (!front || !back) return;
+        await window.CSOIdb.saveFlashcard({ front, back, exam });
+        form.reset();
+        showToast('Flashcard saved offline to IndexedDB');
+        loadAndDraw();
+      });
+    }
+
+    loadAndDraw();
+  }
+
+  function initEligibilitySimulator() {
+    const form = document.getElementById('cso-age-elig-form');
+    const resultsHost = document.getElementById('cso-age-elig-results');
+    if (!form || !resultsHost) return;
+
+    const EXAM_RULES = [
+      { id: 'OPSC', name: 'OPSC OAS / Civil Services', minAge: 21, maxAgeBase: 38, attemptsBase: { UR: 6, SEBC: 9, SC: Infinity, ST: Infinity } },
+      { id: 'OSSC', name: 'OSSC CGL & Specialist Recruitment', minAge: 21, maxAgeBase: 38, attemptsBase: null },
+      { id: 'OSSSC', name: 'OSSSC CRE (RI / ARI / Amin / PEO)', minAge: 21, maxAgeBase: 38, attemptsBase: null },
+      { id: 'LTR_OAVS', name: 'Odisha LTR / TGT / OAVS Teacher', minAge: 21, maxAgeBase: 38, attemptsBase: null },
+      { id: 'POLICE', name: 'Odisha Police SI / Sepoy & Constable', minAge: 21, maxAgeBase: 25, attemptsBase: null }
+    ];
+
+    function evaluate() {
+      const dobRaw = document.getElementById('elig-dob')?.value || '2000-05-15';
+      const refYear = Number(document.getElementById('elig-ref-year')?.value || 2026);
+      const cat = document.getElementById('elig-category')?.value || 'UR';
+      const gender = document.getElementById('elig-gender')?.value || 'male';
+      const pwd = document.getElementById('elig-pwd')?.value || 'none';
+      const usedAttempts = Number(document.getElementById('elig-attempts')?.value || 0);
+
+      const dob = new Date(dobRaw);
+      const refDate = new Date(`${refYear}-01-01`);
+      let age = refDate.getFullYear() - dob.getFullYear();
+      if (refDate.getMonth() < dob.getMonth() || (refDate.getMonth() === dob.getMonth() && refDate.getDate() < dob.getDate())) {
+        age--;
+      }
+      if (!Number.isFinite(age)) age = 25;
+
+      // Standard Odisha cumulative cap rules (SC/ST/SEBC/Women +5, PwD +10)
+      let relax = 0;
+      if (cat === 'SEBC' || cat === 'SC' || cat === 'ST' || gender === 'female') relax += 5;
+      if (pwd === 'pwd') relax += 10;
+      if (pwd === 'exsm') relax += 8;
+
+      clear(resultsHost);
+      EXAM_RULES.forEach(rule => {
+        const effectiveMax = rule.maxAgeBase + (rule.id === 'POLICE' && pwd === 'pwd' ? 0 : relax);
+        const ageOk = age >= rule.minAge && age <= effectiveMax;
+        let attemptNote = 'Unlimited age-eligible attempts';
+        let attemptOk = true;
+        if (rule.attemptsBase) {
+          const cap = rule.attemptsBase[cat] ?? 6;
+          if (cap === Infinity) attemptNote = `${cat}: Unlimited attempts up to age ${effectiveMax}`;
+          else {
+            const rem = Math.max(0, cap - usedAttempts);
+            attemptOk = rem > 0;
+            attemptNote = `${cat} Limit: ${cap} max (${rem} left)`;
+          }
+        }
+        const ok = ageOk && attemptOk;
+        const row = el('div', 'cso-list-item');
+        const main = el('div', 'cso-list-item-main');
+        main.appendChild(el('h4', 'cso-list-item-title', rule.name));
+        main.appendChild(el('span', 'cso-list-item-sub', `Your Age on 1 Jan ${refYear}: ${age} yrs · Allowed: ${rule.minAge}–${effectiveMax} yrs · ${attemptNote}`));
+        const pill = el('span', `cso-pill-badge ${ok ? 'cso-status-ok' : 'cso-status-bad'}`, ok ? '✓ Eligible' : '✗ Ineligible');
+        row.append(main, pill);
+        resultsHost.appendChild(row);
+      });
+    }
+
+    form.querySelectorAll('input, select').forEach(inp => {
+      inp.addEventListener('input', evaluate);
+      inp.addEventListener('change', evaluate);
+    });
+    evaluate();
+  }
+
+  function initCertGuardTool() {
+    const form = document.getElementById('cso-cert-guard-form');
+    const listHost = document.getElementById('cso-cert-guard-list');
+    const summaryBadge = document.getElementById('cso-cert-guard-summary');
+    if (!listHost) return;
+    const CERT_KEY = 'cso_candidate_certs_v1';
+
+    function draw() {
+      const items = readJsonStorage(CERT_KEY, []);
+      if (summaryBadge) summaryBadge.textContent = `${items.length} Tracked`;
+      clear(listHost);
+      if (!items.length) {
+        listHost.appendChild(el('p', 'cso-muted-note', 'Add your SEBC/NCL, EWS, Income, or OTET certificate expiry dates above for renewal alerts.'));
+        return;
+      }
+      const now = Date.now();
+      items.forEach((c, i) => {
+        const daysLeft = Math.ceil((Date.parse(c.expiry) - now) / 86400000);
+        let statusClass = 'cso-status-ok';
+        let statusText = `Active (${daysLeft}d left)`;
+        if (daysLeft < 0) {
+          statusClass = 'cso-status-bad';
+          statusText = `Expired (${Math.abs(daysLeft)}d ago)`;
+        } else if (daysLeft <= 30) {
+          statusClass = 'cso-status-warn';
+          statusText = `Expiring Soon (${daysLeft}d left)`;
+        }
+        const row = el('div', 'cso-list-item');
+        const main = el('div', 'cso-list-item-main');
+        main.appendChild(el('h4', 'cso-list-item-title', c.type));
+        main.appendChild(el('span', 'cso-list-item-sub', `Valid until: ${c.expiry}${c.ref ? ' · Ref: ' + c.ref : ''}`));
+        const actions = el('div', 'cso-inline-actions');
+        actions.appendChild(el('span', `cso-pill-badge ${statusClass}`, statusText));
+        const rm = el('button', 'cso-btn cso-btn-sm', 'Remove');
+        rm.type = 'button';
+        rm.addEventListener('click', () => {
+          const cur = readJsonStorage(CERT_KEY, []);
+          cur.splice(i, 1);
+          writeJsonStorage(CERT_KEY, cur);
+          draw();
+        });
+        actions.appendChild(rm);
+        row.append(main, actions);
+        listHost.appendChild(row);
+      });
+    }
+
+    if (form) {
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const type = document.getElementById('cso-cert-type')?.value || 'Certificate';
+        const ref = document.getElementById('cso-cert-ref')?.value.trim() || '';
+        const expiry = document.getElementById('cso-cert-expiry')?.value || '';
+        if (!expiry) return;
+        const cur = readJsonStorage(CERT_KEY, []);
+        cur.unshift({ type, ref, expiry });
+        writeJsonStorage(CERT_KEY, cur.slice(0, 20));
+        form.reset();
+        showToast('Certificate validity saved to Expiry Guard');
+        draw();
+      });
+    }
+    draw();
+  }
+
+  function renderStudyPlanAndChecklist() {
+    const grid = document.getElementById('cso-study-plan-grid');
+    const examDayEl = document.getElementById('cso-exam-day-checklist');
+    if (!grid) return;
+
+    const prim = getExamById(state.preferences.primaryExam) || getActiveExams()[0];
+    const topics = (prim && Array.isArray(prim.syllabus) ? prim.syllabus : [])
+      .map(t => t.topic || t.title)
+      .filter(Boolean);
+    const weekNames = ['Week 1 (Days 1–7)', 'Week 2 (Days 8–14)', 'Week 3 (Days 15–21)', 'Week 4 (Days 22–30)'];
+
+    clear(grid);
+    weekNames.forEach((wk, wIdx) => {
+      const card = el('div', 'cso-plan-week-card');
+      card.appendChild(el('h4', '', `${wk} — ${prim ? prim.short_code : 'Target Exam'}`));
+      const ul = el('ul');
+      const slice = topics.slice(wIdx * 3, wIdx * 3 + 3);
+      if (slice.length) {
+        slice.forEach(t => ul.appendChild(el('li', '', t)));
+      } else {
+        ul.appendChild(el('li', '', wIdx === 3 ? 'Full-length timed CBT Mocks + Mistake Revision' : 'Core GS + Odisha GK + Previous Year Questions'));
+      }
+      card.appendChild(ul);
+      grid.appendChild(card);
+    });
+
+    if (examDayEl) {
+      clear(examDayEl);
+      const header = el('h4', '', '📌 Printable Exam-Day Verification Checklist');
+      examDayEl.appendChild(header);
+      [
+        'Printed Colour / Clear Admit Card (2 copies)',
+        'Original Valid Govt Photo ID (Aadhaar / Voter ID / PAN)',
+        '2 Passport-size Recent Colour Photographs',
+        'Black/Blue Ballpoint Pen (for OMR sheets) + Transparent Water Bottle'
+      ].forEach(item => {
+        const row = el('div', 'cso-list-item');
+        row.appendChild(el('span', '', `☐ ${item}`));
+        examDayEl.appendChild(row);
+      });
+    }
+  }
+
+  async function initGoalAlertsPush() {
+    const btn = document.getElementById('cso-push-toggle-btn');
+    const badge = document.getElementById('cso-push-status-badge');
+    const note = document.getElementById('cso-push-endpoint-note');
+    if (!btn || !badge) return;
+
+    let subscribed = false;
+    let currentEndpoint = '';
+
+    function draw() {
+      badge.textContent = subscribed ? 'Active' : 'Off';
+      badge.className = `cso-pill-badge ${subscribed ? 'cso-status-ok' : ''}`;
+      btn.textContent = subscribed ? 'Disable Goal Alerts' : 'Enable Goal Alerts';
+      if (note) {
+        note.textContent = subscribed
+          ? 'Synced to D1 for target exam recruitment & deadline notifications.'
+          : 'Tap to register this browser for D1 goal alerts.';
+      }
+    }
+
+    try {
+      const res = await fetch('/api/user/push-subscription', { credentials: 'same-origin' });
+      if (res.ok) {
+        const data = await res.json();
+        const items = Array.isArray(data.items) ? data.items : [];
+        if (items.length) {
+          subscribed = true;
+          currentEndpoint = items[0].endpoint || '';
+        }
+      }
+    } catch (_) {}
+    draw();
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      try {
+        if (!subscribed) {
+          const endpoint = `cso-web://${window.location.host}/candidate/${(state.user && state.user.id) || 'browser'}-${Date.now()}`;
+          const res = await fetch('/api/user/push-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSO-CSRF': '1' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ endpoint, examIds: state.preferences.selectedExams || [] })
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          currentEndpoint = endpoint;
+          subscribed = true;
+          showToast('🔔 Goal Alerts subscription enabled in D1');
+        } else {
+          await fetch(`/api/user/push-subscription${currentEndpoint ? '?endpoint=' + encodeURIComponent(currentEndpoint) : ''}`, {
+            method: 'DELETE',
+            headers: { 'X-CSO-CSRF': '1' },
+            credentials: 'same-origin'
+          });
+          subscribed = false;
+          showToast('Goal Alerts unsubscribed');
+        }
+        draw();
+      } catch (err) {
+        showToast(err.message || 'Sign in required to sync Goal Alerts', true);
+      } finally {
+        btn.disabled = false;
+      }
+    });
   }
 
   document.addEventListener('DOMContentLoaded', bootstrap);

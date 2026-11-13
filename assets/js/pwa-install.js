@@ -45,7 +45,7 @@
     });
   }
 
-  // 2. Custom Install Banner (100% Strict CSP: zero .style.*, zero .innerHTML)
+  // 2. Custom Install Banner (100% Strict CSP: zero inline style props, zero HTML string injection)
   let deferredPrompt = null;
   const BANNER_DISMISSED_KEY = 'cso_pwa_banner_dismissed_until';
 

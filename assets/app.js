@@ -103,23 +103,63 @@ function localize(root=document){
  }
 }
 
+function setSafeHtml(target, htmlStr) {
+ if (!target) return target;
+ while (target.firstChild) target.removeChild(target.firstChild);
+ appendSafeHtml(target, htmlStr);
+ return target;
+}
+function appendSafeHtml(target, htmlStr) {
+ if (!target || !htmlStr) return;
+ if (typeof DOMParser === 'undefined') { target.append(document.createTextNode(String(htmlStr))); return; }
+ var doc = new DOMParser().parseFromString(String(htmlStr), 'text/html');
+ var DROP = { SCRIPT: 1, STYLE: 1, IFRAME: 1, OBJECT: 1, EMBED: 1 };
+ function walk(node) {
+  if (!node) return null;
+  if (node.nodeType === 3) return document.createTextNode(node.nodeValue || '');
+  if (node.nodeType !== 1) return null;
+  var tag = node.tagName.toUpperCase();
+  if (DROP[tag]) return null;
+  var out = document.createElement(tag.toLowerCase());
+  Array.prototype.forEach.call(node.attributes, function (at) {
+   var n = at.name.toLowerCase();
+   if (n === 'style' || n.slice(0, 2) === 'on') return;
+   if ((n === 'href' || n === 'src') && /^\s*(javascript|data|vbscript):/i.test(at.value)) return;
+   out.setAttribute(at.name, at.value);
+  });
+  Array.prototype.forEach.call(node.childNodes, function (ch) {
+   var c = walk(ch);
+   if (c) out.appendChild(c);
+  });
+  return out;
+ }
+ Array.prototype.forEach.call(doc.body.childNodes, function (ch) {
+  var c = walk(ch);
+  if (c) target.appendChild(c);
+ });
+}
 const toast=m=>{const t=document.createElement('div');t.className='ts';t.textContent=m;document.body.append(t);localize(t);setTimeout(()=>t.remove(),2600)};
-const modal=h=>{const o=document.createElement('div');o.className='ov';o.innerHTML='<div class="md" role="dialog" aria-modal="true"><button class="x" data-x aria-label="Close">✕</button>'+h+'</div>';const k=e=>{if(e.key==='Escape')o.close()};o.close=()=>{o.remove();document.removeEventListener('keydown',k)};document.addEventListener('keydown',k);o.onclick=e=>{if(e.target===o||e.target.closest('[data-x]'))o.close()};document.body.append(o);localize(o);const f=$('input,select',o);if(f)f.focus();return o};
-const pop=(a,items)=>{$$('.pp').forEach(x=>x.remove());const m=document.createElement('div');m.className='pp';const r=a.getBoundingClientRect();m.style.top=r.bottom+4+'px';m.style.left=Math.max(8,Math.min(r.left,innerWidth-210))+'px';items.forEach(([l,f,on])=>{const b=document.createElement('button');b.textContent=(on?'✓ ':'')+l;b.onclick=()=>{f();m.remove()};m.append(b)});document.body.append(m);localize(m);setTimeout(()=>addEventListener('click',()=>m.remove(),{once:true}),0)};
+const modal=h=>{const o=document.createElement('div');o.className='ov';setSafeHtml(o,'<div class="md" role="dialog" aria-modal="true"><button class="x" data-x aria-label="Close">✕</button>'+h+'</div>');const k=e=>{if(e.key==='Escape')o.close()};o.close=()=>{o.remove();document.removeEventListener('keydown',k)};document.addEventListener('keydown',k);o.onclick=e=>{if(e.target===o||e.target.closest('[data-x]'))o.close()};document.body.append(o);localize(o);const f=$('input,select',o);if(f)f.focus();return o};
+const pop=(a,items)=>{$$('.pp').forEach(x=>x.remove());const m=document.createElement('div');m.className='pp';const anchor=a.closest('.cso-popup-anchor')||a.parentElement||document.body;items.forEach(([l,f,on])=>{const b=document.createElement('button');b.textContent=(on?'✓ ':'')+l;b.onclick=()=>{f();m.remove()};m.append(b)});anchor.append(m);localize(m);setTimeout(()=>addEventListener('click',()=>m.remove(),{once:true}),0)};
 const go=s=>{location.hash=s};
 let lastQ='';
 const getSearchInput=()=>$('#cso-ask-input')||$('#sf input')||$('#sq');
-const save=()=>ls.s('cso',S);
+const save=()=>{ls.s('cso',S);try{localStorage.setItem('cso_lang_pref',S.lang||'en');}catch(_){}};
 const THEMES=['light','dark','system','reading','sepia'];
 const THEME_ICONS={light:'☀️',dark:'🌙',system:'💻',reading:'📖',sepia:'☕'};
 const dark=()=>{const t=document.documentElement.dataset.theme;return t==='dark'||((!t||t==='system')&&matchMedia('(prefers-color-scheme:dark)').matches)};
-function apply(){const d=document.documentElement;d.dataset.theme=THEMES.includes(S.theme)?S.theme:'system';d.lang=S.lang;document.body.style.zoom=S.zoom;document.body.classList.toggle('hc',!!S.hc);document.body.classList.toggle('ul',!!S.ul);document.body.classList.toggle('rm',!!S.rm)}
+const ZOOM_CLS=['cso-zoom-85','cso-zoom-90','cso-zoom-95','cso-zoom-100','cso-zoom-105','cso-zoom-110','cso-zoom-115','cso-zoom-120','cso-zoom-125','cso-zoom-130'];
+function apply(){
+ const d=document.documentElement;d.dataset.theme=THEMES.includes(S.theme)?S.theme:'system';d.lang=S.lang;d.dataset.lang=S.lang||'en';
+ if(document.body){ZOOM_CLS.forEach(c=>document.body.classList.remove(c));const p=Math.round((S.zoom||1)*20)*5;document.body.classList.add('cso-zoom-'+Math.max(85,Math.min(130,p)));document.body.classList.toggle('hc',!!S.hc);document.body.classList.toggle('ul',!!S.ul);document.body.classList.toggle('rm',!!S.rm);}
+ try{if(window.CSOGlobal&&typeof window.CSOGlobal.syncA11yFromApp==='function')window.CSOGlobal.syncA11yFromApp();}catch(_){}
+}
 const LN={en:'English',or:'ଓଡ଼ିଆ',hi:'हिन्दी'};
 function ctl(){
- $('#ctl').innerHTML='<button class="pill cso-ctl-lang" id="bl" aria-label="Language selector"><span class="cso-lang-icon">🌐</span> <span class="cso-lang-name">'+LN[S.lang]+'</span> ⌄</button><button class="pill cso-ctl-theme" id="bt" aria-label="Change theme" title="Theme: '+(S.theme||'system')+'">'+THEME_ICONS[S.theme||'system']+'</button><button class="pill cso-ctl-a11y" id="ba">♿ Accessibility ⌄</button><span class="pill cso-ctl-zoom"><button class="fz" id="fm" aria-label="Smaller text">A–</button><button class="fz" id="fr" aria-label="Normal text">A</button><button class="fz" id="fp" aria-label="Larger text">A+</button></span>';
+ setSafeHtml($('#ctl'),'<span class="cso-popup-anchor"><button class="pill cso-ctl-lang" id="bl" aria-label="Language selector"><span class="cso-lang-icon">🌐</span> <span class="cso-lang-name">'+LN[S.lang]+'</span> ⌄</button></span><button class="pill cso-ctl-theme" id="bt" aria-label="Change theme" title="Theme: '+(S.theme||'system')+'">'+THEME_ICONS[S.theme||'system']+'</button><span class="cso-popup-anchor"><button class="pill cso-ctl-a11y" id="ba">♿ Accessibility ⌄</button></span><span class="pill cso-ctl-zoom"><button class="fz" id="fm" aria-label="Smaller text">A–</button><button class="fz" id="fr" aria-label="Normal text">A</button><button class="fz" id="fp" aria-label="Larger text">A+</button></span>');
  $('#bl').onclick=e=>pop(e.target,Object.keys(LN).map(k=>[LN[k],()=>{S.lang=k;save();apply();ctl();nav();authUI();lu();route();localize();toast('Language: '+LN[k])},S.lang===k]));
  $('#bt').onclick=()=>{const i=THEMES.indexOf(S.theme||'system');S.theme=THEMES[(i+1)%THEMES.length];save();apply();ctl()};
- $('#ba').onclick=e=>pop(e.target,[['High contrast',()=>{S.hc=+!S.hc;save();apply()},S.hc],['Underline links',()=>{S.ul=+!S.ul;save();apply()},S.ul],['Reduce motion',()=>{S.rm=+!S.rm;save();apply()},S.rm],['Reset',()=>{S.hc=S.ul=S.rm=0;S.zoom=1;save();apply()}]]);
+ $('#ba').onclick=e=>pop(e.target,[['High contrast',()=>{S.hc=+!S.hc;save();apply()},S.hc],['Dyslexia-friendly font',()=>{if(window.CSOGlobal)window.CSOGlobal.toggleA11y('dyslexia');},document.documentElement.classList.contains('cso-a11y-dyslexia')],['Lite mode (reduced graphics)',()=>{if(window.CSOGlobal)window.CSOGlobal.toggleA11y('lite');},document.documentElement.classList.contains('cso-a11y-lite')],['Underline links',()=>{S.ul=+!S.ul;save();apply()},S.ul],['Reduce motion',()=>{S.rm=+!S.rm;save();apply()},S.rm],['Reset',()=>{S.hc=S.ul=S.rm=0;S.zoom=1;save();apply();if(window.CSOGlobal)window.CSOGlobal.resetA11y();}]]);
  const z=d=>{S.zoom=d?Math.max(.85,Math.min(1.3,+(S.zoom+d).toFixed(2))):1;save();apply()};
  $('#fm').onclick=()=>z(-.05);$('#fr').onclick=()=>z(0);$('#fp').onclick=()=>z(.05);
 }
@@ -137,7 +177,7 @@ function heroLang(){
 }
 function nav(){
  const w=$('#navw');
- w.innerHTML='<div class="cso-nav-bar-container">'+
+ setSafeHtml(w,'<div class="cso-nav-bar-container">'+
  '<button type="button" class="cso-nav-mobile" id="cso-menu-toggle" aria-expanded="false" aria-controls="cso-nav-items" aria-label="Navigation Menu"><span aria-hidden="true">☰</span> Menu</button>'+
  '<div class="cso-mobile-acc-cluster">'+
  '<button type="button" class="pill cso-ctl-a11y-mobile acc-btn" id="ba-mobile" aria-label="Accessibility options">♿ Options</button>'+
@@ -160,7 +200,7 @@ function nav(){
   '<a href="'+s+'/?section='+index+'"><span class="dd-bullet" aria-hidden="true">›</span><span>'+esc(translateText(x))+'</span></a>'
  ).join('')+'</div>'+
  '</div>'
- ).join('')+'</div>';
+ ).join('')+'</div>');
  setActive(location.hash.slice(1));
 }
 function csoCloseNavDropdowns(except){
@@ -374,7 +414,7 @@ function authUI() {
     return;
   }
 
-  root.innerHTML =
+  setSafeHtml(root,
     '<div class="cso-desktop-auth-buttons">' +
       '<button class="btn cso-login-button" id="li" type="button">Login</button>' +
       '<button class="btn p" id="su" type="button">Sign Up</button>' +
@@ -389,7 +429,7 @@ function authUI() {
         '<a href="/login.html" class="cso-auth-item" id="cso-m-li">Login</a>' +
         '<a href="/signup.html" class="cso-auth-item" id="cso-m-su">Sign Up</a>' +
       '</div>' +
-    '</div>';
+    '</div>');
 
   const li = $('#li');
   if (li) li.onclick = login;
@@ -917,14 +957,8 @@ function csoSearchResultsHTML(query){
 
   if(!CSO_DIRECTORY_LOADED){
     html+='<div class="cso-search-loading" role="status" '+
-      'aria-live="polite" aria-busy="true" '+
-      'style="display:flex;align-items:center;gap:10px;'+
-      'padding:12px 0">'+
-      '<span class="cso-search-spinner" aria-hidden="true" '+
-      'style="display:inline-block;width:18px;height:18px;'+
-      'border:3px solid #cbd5e1;border-top-color:#1767a1;'+
-      'border-radius:50%;animation:cso-search-spin 0.8s linear infinite">'+
-      '</span>'+
+      'aria-live="polite" aria-busy="true">'+
+      '<span class="cso-search-spinner" aria-hidden="true"></span>'+
       '<span>Searching all directories…</span>'+
       '</div>';
   }
@@ -942,8 +976,7 @@ function csoSearchResultsHTML(query){
   }
 
   html+='<div class="cso-search-filters" '+
-    'role="group" aria-label="Filter search results" '+
-    'style="display:flex;flex-wrap:wrap;gap:8px;margin:18px 0">';
+    'role="group" aria-label="Filter search results">';
 
   filters.forEach(([key,label])=>{
     const active=key===selected;
@@ -951,13 +984,8 @@ function csoSearchResultsHTML(query){
     html+='<button type="button" '+
       'class="cso-search-filter" '+
       'data-cso-filter="'+esc(key)+'" '+
-      'aria-pressed="'+active+'" '+
-      'style="padding:11px 13px;min-height:44px;border-radius:22px;'+
-      'border:1px solid #9ca3af;cursor:pointer;'+
-      (active?
-        'background:#174b75;color:white;':
-        'background:transparent;color:inherit;')+
-      '">'+esc(label)+' ('+(counts[key]||0)+')'+
+      'aria-pressed="'+active+'">'+
+      esc(label)+' ('+(counts[key]||0)+')'+
       '</button>';
   });
 
@@ -1026,25 +1054,20 @@ function csoSearchResultsHTML(query){
   }
 
   if(pages>1){
-    html+='<nav aria-label="Search result pages" '+
-      'style="display:flex;align-items:center;'+
-      'justify-content:center;gap:12px;'+
-      'flex-wrap:wrap;margin:24px 0">';
+    html+='<nav aria-label="Search result pages" class="cso-search-pagination">';
 
-    html+='<button type="button" '+
+    html+='<button type="button" class="cso-search-page-btn" '+
       'data-cso-page="previous" '+
       (CSO_SEARCH_PAGE===1?'disabled ':'')+
-      'style="padding:10px 16px;cursor:pointer">'+
-      '← Previous</button>';
+      '>← Previous</button>';
 
     html+='<span>Page '+CSO_SEARCH_PAGE+
       ' of '+pages+'</span>';
 
-    html+='<button type="button" '+
+    html+='<button type="button" class="cso-search-page-btn" '+
       'data-cso-page="next" '+
       (CSO_SEARCH_PAGE===pages?'disabled ':'')+
-      'style="padding:10px 16px;cursor:pointer">'+
-      'Next →</button>';
+      '>Next →</button>';
 
     html+='</nav>';
   }
@@ -1251,13 +1274,12 @@ function csoAllUpdatesHTML(){
 
     /* CSO Latest Updates source grouping fix v2 */
     for(const u of filtered){
-      const colors=TG[u.tag]||TG.JOB;
+      const tagMod=u.tag==='SCHEME'?'tg--scheme':u.tag==='EDUCATION'?'tg--edu':u.tag==='GUIDE'?'tg--guide':'';
 
       html+='<article class="cso-update-result">'+
         '<a class="cso-all-update-card" href="#'+esc(u.id)+'" '+
         'data-h="'+esc(u.id)+'">'+
-        '<span class="tg" style="border-color:'+colors[0]+
-        ';background:'+colors[1]+'">'+esc(u.tag)+'</span>'+
+        '<span class="tg '+tagMod+'">'+esc(u.tag)+'</span>'+
         '<span class="cso-all-update-main">'+
         '<strong>'+esc(u.title)+'</strong>'+
         '<small>'+esc(u.src)+'</small></span>'+
@@ -1345,13 +1367,13 @@ function view(h){
       '<p class="cso-update-detail-badges">'+csoUpdateBadges(U)+'</p>'+
       (U.body||'<p class="mut">Detailed information has not yet been added. Please confirm the announcement directly with the issuing organisation before taking action.</p>')+
       (U.url&&/^https:\/\//i.test(U.url)
-        ?'<p><a class="btn p" style="display:inline-block" target="_blank" rel="noopener noreferrer" href="'+esc(U.url)+'">Visit source website</a></p>'
+        ?'<p><a class="btn p cso-btn-inline" target="_blank" rel="noopener noreferrer" href="'+esc(U.url)+'">Visit source website</a></p>'
         :'<p class="mut">A supporting source link has not yet been provided.</p>');
   }
   else if(window.CSO_TOOLS_V2 && window.CSO_TOOLS_V2.render(h)){const tool=window.CSO_TOOLS_V2.render(h);t=tool.title;b=tool.html;}
- else if(h==='age-calculator'){t='Age Calculator';b='<form class="fm" id="acf"><label>Date of birth<input type="date" id="dob" required></label><label>Age as on<input type="date" id="aon"></label><button class="btn p">Calculate</button></form><p id="aor" style="font-weight:600;margin-top:12px"></p>'}
+ else if(h==='age-calculator'){t='Age Calculator';b='<form class="fm" id="acf"><label>Date of birth<input type="date" id="dob" required></label><label>Age as on<input type="date" id="aon"></label><button class="btn p">Calculate</button></form><p id="aor" class="cso-age-out"></p>'}
  else{t=(C&&C.title)||TITLES[h]||h.replace(/-/g,' ');b=(C?C.html:'')+(MENUS[h]?list(MENUS[h].map(x=>[x,slug(x),''])):'');if(!C&&!MENUS[h])b='<p class="mut">Content for this page will be added soon.</p>'}
- return'<div class="card sec"><p class="crumb"><a data-h="">Home</a> › '+esc(t)+'</p><h1 style="margin:6px 0 12px;font-size:26px">'+esc(t)+'</h1>'+b+'<p><a class="btn" style="display:inline-block" data-h="">← Back to Home</a></p></div>'}
+ return'<div class="card sec"><p class="crumb"><a data-h="">Home</a> › '+esc(t)+'</p><h1 class="cso-detail-h1">'+esc(t)+'</h1>'+b+'<p><a class="btn cso-btn-inline" data-h="">← Back to Home</a></p></div>'}
 function after(h){if(window.CSO_TOOLS_V2&&window.CSO_TOOLS_V2.render(h)){window.CSO_TOOLS_V2.init(h);return;}if(h!=='age-calculator')return;const d=new Date();$('#aon').value=d.toISOString().slice(0,10);$('#acf').onsubmit=e=>{e.preventDefault();const a=new Date($('#dob').value),b=new Date($('#aon').value),r=$('#aor');if(isNaN(a)||isNaN(b))return r.textContent=T('Please enter both dates.');if(a>b)return r.textContent=T('Birth date must be before the "as on" date.');let y=b.getFullYear()-a.getFullYear(),m=b.getMonth()-a.getMonth(),dd=b.getDate()-a.getDate();if(dd<0){m--;dd+=new Date(b.getFullYear(),b.getMonth(),0).getDate()}if(m<0){y--;m+=12}r.textContent=T('Age:')+' '+y+' '+T('years')+', '+m+' '+T('months')+', '+dd+' '+T('days')}}
 
 /* Load published updates, retaining bundled records as fallback. */
@@ -1450,7 +1472,7 @@ function route(){
   if(h==='student-dashboard' && csoAuthUser){
     mn.hidden=true;
     v.hidden=false;
-    v.innerHTML=view(h);
+    setSafeHtml(v, view(h));
     after(h);
     v.onclick=null;
     v.oninput=null;
@@ -1463,7 +1485,7 @@ function route(){
   if(h==='student-dashboard'){
     mn.hidden=true;
     v.hidden=false;
-    v.innerHTML='<div class="card sec">Checking your secure student session...</div>';
+    setSafeHtml(v, '<div class="card sec">Checking your secure student session...</div>');
 
     if(!csoDashboardAuthPending){
       csoDashboardAuthPending=true;
@@ -1493,7 +1515,7 @@ function route(){
     return;
   }
 
-  if(!h){mn.hidden=false;v.hidden=true}else{mn.hidden=true;v.hidden=false;v.innerHTML=view(h);after(h);if(h==='search'){v.onclick=csoHandleSearchClick;v.onkeydown=csoHandleSearchKeydown;}
+  if(!h){mn.hidden=false;v.hidden=true}else{mn.hidden=true;v.hidden=false;setSafeHtml(v, view(h));after(h);if(h==='search'){v.onclick=csoHandleSearchClick;v.onkeydown=csoHandleSearchKeydown;}
     else if(h==='latest-updates'){
       v.onclick=csoAllUpdatesClick;
       v.oninput=csoAllUpdatesInput;
@@ -1518,8 +1540,7 @@ function csoUpdateBadges(u){
 
   return '<a class="cso-official-source-link" '+
     'href="'+esc(url)+'" '+
-    'target="_blank" rel="noopener noreferrer" '+
-    'onclick="event.stopPropagation()">'+
+    'target="_blank" rel="noopener noreferrer">'+
     '↗ Official Source</a>';
 }
 
@@ -1527,9 +1548,9 @@ function lu(){
   $$('.lu .it,.lu .em').forEach(x=>x.remove());
   const L=csoPublishedUpdates().filter(u=>cat==='All'||u.cat===cat).slice(0,5);
   const html=L.map(u=>{
-    const c=TG[u.tag]||TG.JOB;
+    const tagMod=u.tag==='SCHEME'?'tg--scheme':u.tag==='EDUCATION'?'tg--edu':u.tag==='GUIDE'?'tg--guide':'';
     return '<div class="it cso-update-row">'+
-      '<span class="tg" style="border-color:'+c[0]+';background:'+c[1]+'">'+esc(u.tag)+'</span>'+
+      '<span class="tg '+tagMod+'">'+esc(u.tag)+'</span>'+
       '<span class="cso-update-main"><a href="#'+esc(u.id)+'" data-h="'+esc(u.id)+'"><strong>'+esc(u.title)+'</strong></a>'+
       '<small>'+esc(u.src)+'</small></span>'+
       '<span class="d">'+
@@ -1545,10 +1566,11 @@ function lu(){
   panel.querySelectorAll('.cso-ticker-window').forEach(x=>x.remove());
 
   if(!L.length){
-    panel.insertAdjacentHTML(
-      'beforeend',
-      '<p class="em mut" role="status">No updates in this category yet.</p>'
-    );
+    const emptyP=document.createElement('p');
+    emptyP.className='em mut';
+    emptyP.setAttribute('role','status');
+    emptyP.textContent='No updates in this category yet.';
+    panel.appendChild(emptyP);
     return;
   }
 
@@ -1564,7 +1586,7 @@ function lu(){
 
   const original=document.createElement('div');
   original.className='cso-ticker-items';
-  original.innerHTML=html;
+  setSafeHtml(original, html);
 
   track.appendChild(original);
 
@@ -1594,7 +1616,7 @@ document.addEventListener('click',e=>{
  if(s==='browse-library'){location.href='study-library/';return}
  go(s in M?M[s]:s)});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'){const d=e.target.closest('.it[data-h], .card.rs[data-h]');if(d)go(d.dataset.h)}});
-function compass(){const m=modal('<h3>CSO Opportunity Compass</h3><p class="mut">What are you looking for?</p><div class="lst" style="grid-template-columns:1fr">'+[['job-opportunity-finder/','💼 I want a Job'],['study/','🎓 I want to Study'],['schemes-benefits/','🤲 I want a Scheme'],['career-guidance/','🧭 I want Career Guidance']].map(([s,t])=>'<a class="card rs" data-h="'+s+'">'+t+'</a>').join('')+'</div>');m.addEventListener('click',e=>{if(e.target.closest('[data-h]'))m.close()})}
+function compass(){const m=modal('<h3>CSO Opportunity Compass</h3><p class="mut">What are you looking for?</p><div class="lst cso-compass-lst">'+[['job-opportunity-finder/','💼 I want a Job'],['study/','🎓 I want to Study'],['schemes-benefits/','🤲 I want a Scheme'],['career-guidance/','🧭 I want Career Guidance']].map(([s,t])=>'<a class="card rs" data-h="'+s+'">'+t+'</a>').join('')+'</div>');m.addEventListener('click',e=>{if(e.target.closest('[data-h]'))m.close()})}
 function admin(){
   const m=modal(`
     <section class="cso-admin-login">
@@ -1724,7 +1746,7 @@ function closeSearchAutocomplete() {
   const input = getSearchInput();
   if (dropdown) {
     dropdown.hidden = true;
-    dropdown.innerHTML = '';
+    dropdown.replaceChildren();
   }
   if (input) {
     input.setAttribute('aria-expanded', 'false');
@@ -1787,7 +1809,7 @@ function renderSearchAutocomplete(query, suggestions) {
     });
     emptyHtml += '</div></div>';
 
-    dropdown.innerHTML = emptyHtml;
+    setSafeHtml(dropdown, emptyHtml);
     dropdown.hidden = false;
     input.setAttribute('aria-expanded', 'true');
     input.removeAttribute('aria-activedescendant');
@@ -1810,7 +1832,7 @@ function renderSearchAutocomplete(query, suggestions) {
   });
   html += '</div>';
 
-  dropdown.innerHTML = html;
+  setSafeHtml(dropdown, html);
   dropdown.hidden = false;
   input.setAttribute('aria-expanded', 'true');
 }
@@ -1889,9 +1911,11 @@ function setupGlobalSearch() {
 
   if (kbd) {
     const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform || navigator.userAgent || '');
-    kbd.innerHTML = isMac
-      ? '<span class="cso-kbd-key">⌘</span><span class="cso-kbd-plus">+</span><span class="cso-kbd-key">K</span>'
-      : '<span class="cso-kbd-key">Ctrl</span><span class="cso-kbd-plus">+</span><span class="cso-kbd-key">K</span>';
+    kbd.replaceChildren();
+    const k1 = document.createElement('span'); k1.className = 'cso-kbd-key'; k1.textContent = isMac ? '⌘' : 'Ctrl';
+    const kp = document.createElement('span'); kp.className = 'cso-kbd-plus'; kp.textContent = '+';
+    const k2 = document.createElement('span'); k2.className = 'cso-kbd-key'; k2.textContent = 'K';
+    kbd.append(k1, kp, k2);
   }
 
   document.addEventListener('keydown', e => {
@@ -2095,8 +2119,7 @@ function initPublicBroadcastBanner() {
 
     if (tagEl) {
       tagEl.textContent = (data.tag || sevTag).toUpperCase();
-      tagEl.style.background = sevColor;
-      tagEl.style.color = '#ffffff';
+      tagEl.className = 'cso-live-banner__tag';
     }
 
     if (textEl) {
@@ -2108,18 +2131,18 @@ function initPublicBroadcastBanner() {
       if (targetLink && typeof targetLink === 'string' && targetLink.trim() !== '' && targetLink !== '#') {
         linkEl.href = targetLink.trim();
         linkEl.textContent = data.ctaText || 'View details →';
-        linkEl.style.display = 'inline';
+        linkEl.hidden = false;
       } else {
-        linkEl.style.display = 'none';
+        linkEl.hidden = true;
       }
     }
 
-    banner.style.borderBottom = '3px solid ' + sevColor;
-    banner.style.display = 'flex';
+    banner.className = 'cso-live-banner ' + (sev === 'urgent' || sev === 'emergency' ? 'cso-live-banner--urgent' : sev === 'notice' || sev === 'warning' ? 'cso-live-banner--notice' : 'cso-live-banner--info');
+    banner.hidden = false;
 
     if (closeBtn) {
       closeBtn.onclick = () => {
-        banner.style.display = 'none';
+        banner.hidden = true;
         try {
           sessionStorage.setItem(dismissedKey, '1');
         } catch (_) {}

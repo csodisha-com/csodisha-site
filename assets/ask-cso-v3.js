@@ -95,24 +95,43 @@
       .slice(0,18);
 
     results.hidden = false;
+    results.replaceChildren();
 
-    const heading = '<div class="cso-ask3-heading"><strong>' +
-      esc(matches.length ? "Relevant CSO information" : "No matching entries found") +
-      '</strong><p>' + esc(matches.length
-        ? "These are matching website entries, not verified eligibility or application decisions."
-        : "Try a shorter phrase, a specific topic, or the full CSO search.") +
-      '</p></div>';
+    const headingEl = document.createElement("div");
+    headingEl.className = "cso-ask3-heading";
+    const strongH = document.createElement("strong");
+    strongH.textContent = matches.length ? "Relevant CSO information" : "No matching entries found";
+    const descP = document.createElement("p");
+    descP.textContent = matches.length
+      ? "These are matching website entries, not verified eligibility or application decisions."
+      : "Try a shorter phrase, a specific topic, or the full CSO search.";
+    headingEl.append(strongH, descP);
+    results.appendChild(headingEl);
 
-    const items = matches.map(item =>
-      '<a class="cso-ask2-result" href="' + esc(safeUrl(item.url)) + '">' +
-      '<strong>' + esc(item.title) + '</strong>' +
-      '<span>' + esc(item.type) + ' · ' + esc(item.source) + '</span>' +
-      '</a>').join("");
+    matches.forEach(item => {
+      const a = document.createElement("a");
+      a.className = "cso-ask2-result";
+      a.href = safeUrl(item.url);
+      const t = document.createElement("strong");
+      t.textContent = item.title || "";
+      const s = document.createElement("span");
+      s.textContent = (item.type || "") + " · " + (item.source || "");
+      a.append(t, s);
+      results.appendChild(a);
+    });
 
-    results.innerHTML = heading + items +
-      '<div class="cso-ask2-actions">' +
-      '<button type="button" id="cso-ask3-search">Search all CSO content</button>' +
-      '<button type="button" id="cso-ask3-clear">Clear results</button></div>';
+    const actDiv = document.createElement("div");
+    actDiv.className = "cso-ask2-actions";
+    const searchBtn = document.createElement("button");
+    searchBtn.type = "button";
+    searchBtn.id = "cso-ask3-search";
+    searchBtn.textContent = "Search all CSO content";
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.id = "cso-ask3-clear";
+    clearBtn.textContent = "Clear results";
+    actDiv.append(searchBtn, clearBtn);
+    results.appendChild(actDiv);
 
     document.getElementById("cso-ask3-search").onclick = () => {
       const searchInput = document.getElementById("cso-ask-input") || document.getElementById("sq") || document.querySelector("#sf input");

@@ -730,8 +730,8 @@
 
   /* ---------- post form ---------- */
   var POST_FIELDS = {
-    'current-affairs': [['title', 'Title', 'text'], ['title_or', 'Title (Odia, optional)', 'text'], ['slug', 'Slug', 'text', 'Leave blank to generate from the title'], ['event_date', 'Date', 'date'], ['category', 'Category', 'text'], ['tags', 'Tags', 'tags', 'Comma-separated, max 10'], ['summary', 'Summary', 'area'], ['summary_or', 'Summary (Odia)', 'area'], ['body_md', 'Body (Markdown)', 'md'], ['body_md_or', 'Body (Odia, Markdown)', 'md'], ['cover_media_key', 'Cover image', 'image']],
-    jobs: [['title', 'Title', 'text'], ['title_or', 'Title (Odia, optional)', 'text'], ['slug', 'Slug', 'text', 'Leave blank to generate from the title'], ['organisation', 'Organisation', 'text', 'e.g. OPSC, OSSC, OSSSC'], ['vacancies', 'Total vacancies', 'number'], ['qualification', 'Qualification', 'area'], ['last_date', 'Last date to apply', 'date'], ['apply_url', 'Official apply URL', 'url'], ['category', 'Category', 'text'], ['state', 'State', 'text'], ['tags', 'Tags', 'tags'], ['summary', 'Summary', 'area'], ['body_md', 'Details (Markdown)', 'md'], ['body_md_or', 'Details (Odia, Markdown)', 'md'], ['cover_media_key', 'Cover image', 'image'], ['notification_media_key', 'Notification PDF', 'pdf']]
+    'current-affairs': [['title', 'Title', 'text'], ['title_or', 'Title (Odia, optional)', 'text'], ['slug', 'Slug', 'text', 'Leave blank to generate from the title'], ['event_date', 'Date', 'date'], ['category', 'Category', 'text'], ['tags', 'Tags', 'tags', 'Comma-separated, max 10'], ['goal_exam_ids', 'Target Exam Goal IDs', 'text', 'Comma-separated exam_taxonomy IDs'], ['summary', 'Summary', 'area'], ['summary_or', 'Summary (Odia)', 'area'], ['body_md', 'Body (Markdown)', 'md'], ['body_md_or', 'Body (Odia, Markdown)', 'md'], ['cover_media_key', 'Cover image', 'image']],
+    jobs: [['title', 'Title', 'text'], ['title_or', 'Title (Odia, optional)', 'text'], ['slug', 'Slug', 'text', 'Leave blank to generate from the title'], ['organisation', 'Organisation', 'text', 'e.g. OPSC, OSSC, OSSSC'], ['vacancies', 'Total vacancies', 'number'], ['qualification', 'Qualification', 'area'], ['age_limit', 'Age Limit', 'text', 'e.g. 21-38 yrs (relaxation as per Odisha rules)'], ['salary_pay', 'Salary / Pay Scale', 'text', 'e.g. Level-9 / Rs. 35,400 - 1,12,400'], ['last_date', 'Last date to apply', 'date'], ['apply_url', 'Official apply URL', 'url'], ['source_url', 'Official source / circular URL', 'url'], ['category', 'Category', 'text'], ['state', 'State', 'text'], ['tags', 'Tags', 'tags'], ['goal_exam_ids', 'Target Exam Goal IDs', 'text', 'Comma-separated exam_taxonomy IDs'], ['summary', 'Summary', 'area'], ['body_md', 'Details (Markdown)', 'md'], ['body_md_or', 'Details (Odia, Markdown)', 'md'], ['cover_media_key', 'Cover image', 'image'], ['notification_media_key', 'Notification PDF', 'pdf']]
   };
   function parseImportantDates(md) {
     var rows = [];
@@ -769,6 +769,103 @@
     var dateRows = key === 'jobs' ? parseImportantDates(item.body_md) : [];
     var schedulePreviewRender = function () {};
 
+    function setFieldVal(fid, v) {
+      var node = left.querySelector('#' + fid);
+      if (node && v !== undefined && v !== null) {
+        node.value = Array.isArray(v) ? v.join(', ') : String(v);
+        node.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+
+    if (key === 'jobs') {
+      var parserTa = el('textarea', { rows: '3', placeholder: 'Paste raw OPSC / OSSC / OSSSC / IBPS official notification text here to auto-draft title, vacancies, deadline, age limit, pay & exam tags…', 'aria-label': 'Official Notification Text' });
+      var parseStatus = el('span', { class: 'hint' });
+      var parseBtn = el('button', { type: 'button', class: 'btn sm primary', text: '✨ Parse Notification Draft', onclick: function () {
+        var txt = (parserTa.value || '').trim();
+        if (!txt) { parseStatus.textContent = 'Paste notification text first.'; return; }
+        var lines = txt.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+        if (lines[0] && !left.querySelector('#f-title').value) setFieldVal('f-title', lines[0].slice(0, 140));
+        var orgMatch = txt.match(/\b(OPSC|OSSC|OSSSC|OAVS|ODISHA POLICE|SSB ODISHA|SSC|RRB|IBPS|UPSC|BSE ODISHA|CHSE)\b/i);
+        if (orgMatch) setFieldVal('f-organisation', orgMatch[1].toUpperCase());
+        var vacMatch = txt.match(/(\d{1,6})\s*(?:posts?|vacancies|seats?|positions?)/i) || txt.match(/vacancies\s*[:\-]\s*(\d{1,6})/i);
+        if (vacMatch) setFieldVal('f-vacancies', vacMatch[1]);
+        var dmyMatch = txt.match(/(?:last\s*date|closing\s*date|apply\s*(?:till|upto|by))[^\d]*(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](20\d{2})/i);
+        if (dmyMatch) {
+          var isoD = dmyMatch[3] + '-' + dmyMatch[2].padStart(2, '0') + '-' + dmyMatch[1].padStart(2, '0');
+          setFieldVal('f-last_date', isoD);
+        } else {
+          var ymdMatch = txt.match(/\b(20\d{2}-\d{2}-\d{2})\b/);
+          if (ymdMatch) setFieldVal('f-last_date', ymdMatch[1]);
+        }
+        var ageMatch = txt.match(/(?:age\s*(?:limit)?\s*[:\-]?\s*)(\d{2}\s*(?:to|\-|–)\s*\d{2}\s*(?:years|yrs)?)/i);
+        if (ageMatch) setFieldVal('f-age_limit', ageMatch[1]);
+        var payMatch = txt.match(/(?:pay\s*(?:level|matrix|scale)\s*[:\-]?\s*[^\n,;]{3,45}|level[\s\-]*\d{1,2}|rs\.?\s*[\d,]{4,8})/i);
+        if (payMatch) setFieldVal('f-salary_pay', payMatch[0].trim());
+        var qualMatch = txt.match(/(?:qualification|eligibility)\s*[:\-]\s*([^\n]{5,120})/i);
+        if (qualMatch) setFieldVal('f-qualification', qualMatch[1].trim());
+        setFieldVal('f-summary', lines.slice(0, 3).join(' ').slice(0, 420));
+        parseStatus.textContent = '✓ Extracted fields from official circular. Review before publishing.';
+        toast('Notification draft populated');
+      } });
+      left.appendChild(el('div', { class: 'card cso-parser-box' }, [
+        el('div', { class: 'cso-repeat-head' }, [el('strong', { text: '📄 Draft from Official Notification (Text Parser)' }), parseBtn]),
+        parserTa,
+        parseStatus
+      ]));
+    }
+
+    var tagSugHost = el('div', { class: 'actions cso-tag-suggestions' });
+    left.appendChild(el('div', { class: 'card' }, [
+      el('div', { class: 'cso-repeat-head' }, [
+        el('strong', { text: '🏷️ Keyword-to-Exam Taxonomy Auto-Tag Suggester' }),
+        el('button', { type: 'button', class: 'btn sm', text: 'Suggest Matching Tags', onclick: refreshTagSuggestions })
+      ]),
+      tagSugHost
+    ]));
+
+    var taxonomyCache = [];
+    function refreshTagSuggestions() {
+      clear(tagSugHost);
+      var titleEl = left.querySelector('#f-title');
+      var orgEl = left.querySelector('#f-organisation');
+      var sumEl = left.querySelector('#f-summary');
+      var hay = [titleEl ? titleEl.value : '', orgEl ? orgEl.value : '', sumEl ? sumEl.value : ''].join(' ').toLowerCase();
+      var matches = taxonomyCache.filter(function (ex) {
+        var tokens = [ex.short_code, ex.exam_label, ex.track_label, ex.id].filter(Boolean);
+        return tokens.some(function (tok) { return hay.includes(String(tok).toLowerCase().split(' ')[0]); });
+      }).slice(0, 8);
+      if (!matches.length) {
+        tagSugHost.appendChild(el('span', { class: 'hint', text: 'Type title/organisation (e.g. OPSC, OSSC, B.Ed, Police) to see matching exam_taxonomy IDs & tags.' }));
+        return;
+      }
+      matches.forEach(function (ex) {
+        tagSugHost.appendChild(el('button', {
+          type: 'button',
+          class: 'btn sm',
+          text: '+ ' + (ex.short_code || ex.exam_label) + ' (' + ex.id + ')',
+          onclick: function () {
+            var goalsInp = left.querySelector('#f-goal_exam_ids');
+            if (goalsInp) {
+              var gArr = goalsInp.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+              if (gArr.indexOf(ex.id) === -1) gArr.push(ex.id);
+              setFieldVal('f-goal_exam_ids', gArr.join(', '));
+            }
+            var tagsInp = left.querySelector('#f-tags');
+            if (tagsInp && ex.short_code) {
+              var tArr = tagsInp.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+              if (tArr.indexOf(ex.short_code) === -1 && tArr.length < 10) tArr.push(ex.short_code);
+              setFieldVal('f-tags', tArr.join(', '));
+            }
+            toast('Added taxonomy tag ' + ex.id);
+          }
+        }));
+      });
+    }
+    fetch('/api/content/exam-taxonomy', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : { items: [] }; })
+      .then(function (d) { taxonomyCache = Array.isArray(d.items) ? d.items : []; refreshTagSuggestions(); })
+      .catch(function () {});
+
     POST_FIELDS[key].forEach(function (f) {
       var name = f[0], type = f[2], fid = 'f-' + name, val = item[name];
       if (type === 'image' || type === 'pdf') {
@@ -784,7 +881,9 @@
         left.appendChild(el('div', {}, [el('label', { for: fid, text: f[1] }), el('div', { class: 'grid2' }, [ta, prev]), el('div', { class: 'err', 'data-err': fid, hidden: true })]));
       } else {
         var inp = type === 'area' ? el('textarea', { id: fid }) : el('input', { id: fid, type: type === 'tags' ? 'text' : type });
-        inp.value = type === 'tags' ? (val || []).join(', ') : (val === null || val === undefined ? '' : val);
+        inp.value = (type === 'tags' || name === 'goal_exam_ids') && Array.isArray(val)
+          ? val.join(', ')
+          : (val === null || val === undefined ? '' : val);
         inp.addEventListener('input', function () { schedulePreviewRender(); });
         inp.addEventListener('change', function () { schedulePreviewRender(); });
         getters[name] = function () { return inp.value; };
@@ -829,6 +928,11 @@
     }
 
     var sb = statusBlock(isNew ? null : item); left.appendChild(sb.node);
+    var alertChk = el('input', { type: 'checkbox', id: 'f-send-goal-alert' });
+    left.appendChild(el('label', { class: 'check-row', for: 'f-send-goal-alert' }, [
+      alertChk,
+      el('span', { text: '🔔 Send Goal Alert to matching push subscribers upon Publish' })
+    ]));
 
     var livePrevTimer;
     function renderLivePreview() {
@@ -892,10 +996,12 @@
       var body = {}; Object.keys(getters).forEach(function (k) { body[k] = getters[k](); });
       if (key === 'jobs') body.body_md = syncImportantDatesMd(body.body_md, dateRows);
       Object.assign(body, sb.get());
+      if (alertChk && alertChk.checked) body.send_goal_alert = true;
       try {
         showErrors(form, {});
         var r = isNew ? await api('POST', T.path, body) : await api('PUT', T.path + '/' + id, body);
-        toast('Saved'); if (isNew) go('/' + key + '/' + r.id); else { clear(main); await viewPostForm(key, id); return; }
+        toast(r.goal_alert_queued ? ('Saved & queued Goal Alert (' + r.goal_alert_queued + ' subscribers)') : 'Saved');
+        if (isNew) go('/' + key + '/' + r.id); else { clear(main); await viewPostForm(key, id); return; }
       } catch (err) { showErrors(form, err.fields); toast(err.message, true); }
       save.disabled = false;
     });
@@ -1545,15 +1651,295 @@
     ]));
   }
 
+  /* ---------- Phase 4 Ecosystem CMS Views (Jobs Directory, Schemes, Freshness, Feedback) ---------- */
+  async function viewJobsDirectory() {
+    setTitle('Jobs & Careers Directory (D1 Hierarchy)');
+    var st = { page: 1, limit: 35, level: '', q: '' };
+    var lvlSel = el('select', { 'aria-label': 'Filter hierarchy level' }, [
+      ['', 'All Levels (0-3)'], ['0', 'Level 0 (8 Groups)'], ['1', 'Level 1 (Sections)'], ['2', 'Level 2 (Subcategories)'], ['3', 'Level 3 (Entries)']
+    ].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+    var qInp = el('input', { type: 'search', placeholder: 'Search directory node, Odia title or code…' });
+    var createPanel = el('div', { class: 'panel' });
+    var box = el('div');
+    var formTitle = el('input', { type: 'text', placeholder: 'Node Title (English)', required: true });
+    var formTitleOr = el('input', { type: 'text', placeholder: 'Title (Odia _or, optional)' });
+    var formLevel = el('select', {}, ['0', '1', '2', '3'].map(function (lv) { return el('option', { value: lv, text: 'Level ' + lv }); }));
+    formLevel.value = '2';
+    var formCode = el('input', { type: 'text', placeholder: 'Code (e.g. 1.2)' });
+    var formSort = el('input', { type: 'number', value: '0', placeholder: 'Sort order' });
+    var formUrl = el('input', { type: 'url', placeholder: 'Official URL (optional)' });
+    var createForm = el('form', { class: 'grid2' }, [
+      field('Title *', formTitle), field('Title (Odia _or)', formTitleOr),
+      field('Level', formLevel), field('Code', formCode),
+      field('Sort Order', formSort), field('Official URL', formUrl),
+      el('div', { class: 'actions' }, [el('button', { type: 'submit', class: 'btn primary sm', text: '+ Add Directory Node' })])
+    ]);
+    createForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      try {
+        await api('POST', 'jobs-directory', {
+          title: formTitle.value.trim(),
+          title_or: formTitleOr.value.trim(),
+          level: Number(formLevel.value),
+          code: formCode.value.trim(),
+          sort_order: Number(formSort.value) || 0,
+          official_url: formUrl.value.trim()
+        });
+        formTitle.value = ''; formTitleOr.value = ''; formCode.value = ''; formUrl.value = '';
+        toast('Directory node created in D1');
+        load();
+      } catch (err) { toast(err.message, true); }
+    });
+    createPanel.appendChild(el('h2', { text: 'Add Jobs Directory Node' }));
+    createPanel.appendChild(createForm);
+
+    async function load() {
+      var d = await api('GET', 'jobs-directory?page=' + st.page + '&limit=' + st.limit + '&level=' + encodeURIComponent(st.level) + '&q=' + encodeURIComponent(st.q));
+      var tb = el('tbody');
+      (d.items || []).forEach(function (n) {
+        var titleInp = el('input', { type: 'text', value: n.title || '', 'aria-label': 'English title' });
+        var orInp = el('input', { type: 'text', value: n.title_or || '', placeholder: 'ଓଡ଼ିଆ ଶୀର୍ଷକ', 'aria-label': 'Odia title' });
+        var sortInp = el('input', { type: 'number', value: String(n.sort_order || 0), 'aria-label': 'Sort order' });
+        var saveBtn = el('button', { type: 'button', class: 'btn sm primary', text: 'Save', onclick: async function () {
+          try {
+            await api('PUT', 'jobs-directory/' + encodeURIComponent(n.id), {
+              title: titleInp.value.trim(),
+              title_or: orInp.value.trim(),
+              sort_order: Number(sortInp.value) || 0
+            });
+            toast('Updated node');
+          } catch (err) { toast(err.message, true); }
+        } });
+        var delBtn = el('button', { type: 'button', class: 'btn sm danger', text: n.is_active ? 'Deactivate' : 'Inactive', disabled: !n.is_active, onclick: async function () {
+          try {
+            await api('DELETE', 'jobs-directory/' + encodeURIComponent(n.id));
+            toast('Deactivated');
+            load();
+          } catch (err) { toast(err.message, true); }
+        } });
+        tb.appendChild(el('tr', {}, [
+          el('td', { text: 'L' + n.level + (n.code ? ' · ' + n.code : '') }),
+          el('td', {}, titleInp),
+          el('td', {}, orInp),
+          el('td', {}, sortInp),
+          el('td', {}, el('div', { class: 'actions' }, [saveBtn, delBtn]))
+        ]));
+      });
+      clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+        el('caption', { class: 'muted', text: 'Total nodes matching filter: ' + (d.total || 0) }),
+        el('thead', {}, el('tr', {}, ['Level / Code', 'Title (EN)', 'Title (Odia _or)', 'Sort Order', 'Actions'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+        tb
+      ])));
+      box.appendChild(pager(st, d.total || 0, load));
+    }
+
+    var t;
+    lvlSel.addEventListener('change', function () { st.level = lvlSel.value; st.page = 1; load(); });
+    qInp.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.q = qInp.value; st.page = 1; load(); }, 250); });
+    main.appendChild(el('div', { class: 'toolbar' }, [lvlSel, qInp]));
+    main.appendChild(createPanel);
+    main.appendChild(box);
+    await load();
+  }
+
+  async function viewSchemesManager(id) {
+    if (id) {
+      var isNew = id === 'new';
+      var s = isNew ? { gov_level: 'Odisha', category: 'Welfare', gender_eligible: 'all', status: 'published', sort_order: 0 } : await api('GET', 'schemes/' + encodeURIComponent(id));
+      setTitle(isNew ? 'New Government Scheme' : 'Edit Scheme: ' + (s.title || ''));
+      var form = el('form', { novalidate: true, class: 'panel' });
+      var fields = [
+        ['title', 'Scheme Title (EN)', 'text'], ['title_or', 'Scheme Title (Odia _or)', 'text'],
+        ['slug', 'Slug', 'text'], ['gov_level', 'Gov Level (Odisha / Central)', 'text'],
+        ['category', 'Category', 'text'], ['department', 'Department', 'text'],
+        ['benefit_summary', 'Benefit Summary (EN)', 'text'], ['benefit_summary_or', 'Benefit Summary (Odia _or)', 'text'],
+        ['summary', 'Overview Summary (EN)', 'area'], ['summary_or', 'Overview Summary (Odia _or)', 'area'],
+        ['min_age', 'Min Age', 'number'], ['max_age', 'Max Age', 'number'],
+        ['max_income', 'Max Annual Income (Rs)', 'number'], ['gender_eligible', 'Gender (all / female / male)', 'text'],
+        ['target_groups', 'Target Groups (comma-sep)', 'text'], ['beneficiary_categories', 'Beneficiary Categories (SC,ST,SEBC,EWS)', 'text'],
+        ['documents_required', 'Documents Required (comma-sep)', 'area'], ['apply_url', 'Official Apply URL', 'url'],
+        ['sort_order', 'Sort Order', 'number'], ['status', 'Status (published / draft / archived)', 'text']
+      ];
+      var inputs = {};
+      fields.forEach(function (f) {
+        var inp = f[2] === 'area' ? el('textarea', { id: 'sch-' + f[0] }) : el('input', { id: 'sch-' + f[0], type: f[2] });
+        var val = s[f[0]];
+        inp.value = Array.isArray(val) ? val.join(', ') : (val === null || val === undefined ? '' : val);
+        inputs[f[0]] = inp;
+        form.appendChild(field(f[1], inp, 'sch-' + f[0]));
+      });
+      var featChk = el('input', { type: 'checkbox', id: 'sch-featured' });
+      featChk.checked = Boolean(s.is_featured);
+      form.appendChild(el('label', { class: 'check-row', for: 'sch-featured' }, [featChk, el('span', { text: 'Feature as Flagship Odisha / Central Scheme' })]));
+      form.appendChild(el('div', { class: 'actions' }, [
+        el('button', { type: 'submit', class: 'btn primary', text: 'Save Scheme' }),
+        el('a', { class: 'btn', href: '#/schemes', text: 'Back to Schemes List' })
+      ]));
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var body = { is_featured: featChk.checked };
+        Object.keys(inputs).forEach(function (k) { body[k] = inputs[k].value; });
+        try {
+          if (isNew) {
+            var res = await api('POST', 'schemes', body);
+            toast('Scheme created');
+            go('/schemes/' + res.id);
+          } else {
+            await api('PUT', 'schemes/' + encodeURIComponent(id), body);
+            toast('Scheme updated');
+          }
+        } catch (err) { toast(err.message, true); }
+      });
+      main.appendChild(form);
+      return;
+    }
+
+    setTitle('Schemes & Welfare Directory (D1)');
+    var st = { page: 1, limit: 25, q: '' };
+    var qInp = el('input', { type: 'search', placeholder: 'Filter schemes by title, Odia name, or department…' });
+    var box = el('div');
+    async function load() {
+      var d = await api('GET', 'schemes?page=' + st.page + '&limit=' + st.limit + '&q=' + encodeURIComponent(st.q));
+      var tb = el('tbody');
+      (d.items || []).forEach(function (s) {
+        var sortInp = el('input', { type: 'number', value: String(s.sort_order || 0), 'aria-label': 'Sort order' });
+        var saveSortBtn = el('button', { type: 'button', class: 'btn sm', text: 'Sort', onclick: async function () {
+          try {
+            await api('PUT', 'schemes/' + encodeURIComponent(s.id), { sort_order: Number(sortInp.value) || 0 });
+            toast('Sort order saved');
+          } catch (err) { toast(err.message, true); }
+        } });
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, [el('strong', { text: s.title }), s.title_or ? el('div', { class: 'hint', text: s.title_or }) : null]),
+          el('td', { text: (s.gov_level || 'Odisha') + ' · ' + (s.category || '') }),
+          el('td', {}, badge(s.status || 'published')),
+          el('td', {}, sortInp),
+          el('td', {}, el('div', { class: 'actions' }, [
+            saveSortBtn,
+            el('a', { class: 'btn sm', href: '#/schemes/' + s.id, text: 'Edit / Odia' }),
+            el('button', { type: 'button', class: 'btn sm danger', text: 'Delete', onclick: async function () {
+              if (!(await confirmModal('Delete "' + s.title + '"?', 'Scheme will be soft-deleted from D1.', 'Delete', true))) return;
+              await api('DELETE', 'schemes/' + encodeURIComponent(s.id));
+              toast('Scheme removed');
+              load();
+            } })
+          ]))
+        ]));
+      });
+      clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+        el('caption', { class: 'muted', text: 'Live schemes in D1: ' + (d.total || 0) }),
+        el('thead', {}, el('tr', {}, ['Title & Odia (_or)', 'Gov / Category', 'Status', 'Sort', 'Actions'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+        tb
+      ])));
+      box.appendChild(pager(st, d.total || 0, load));
+    }
+    var t;
+    qInp.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.q = qInp.value; st.page = 1; load(); }, 220); });
+    main.appendChild(el('div', { class: 'toolbar' }, [qInp, el('span', { class: 'spacer' }), el('a', { class: 'btn primary sm', href: '#/schemes/new', text: '+ New Scheme' })]));
+    main.appendChild(box);
+    await load();
+  }
+
+  async function viewFreshnessAudit() {
+    setTitle('Content Freshness & Expiry Audit');
+    var data = await api('GET', 'freshness');
+    var expJobs = data.expired_but_published_jobs || [];
+    var soonJobs = data.expiring_within_7_days || [];
+    var staleCa = data.stale_current_affairs || [];
+    var drafts = data.drafts || {};
+    main.appendChild(el('div', { class: 'cards' }, [
+      stat('Past-Deadline Live Jobs', expJobs.length, 'Require expiry or +7d extension'),
+      stat('Expiring <= 7 Days', soonJobs.length, 'Verify deadlines now'),
+      stat('Open Feedback Reports', data.open_feedback_count || 0, 'Pending admin triage'),
+      stat('Goal Push Subscribers', data.push_subscriber_count || 0, 'Active candidate alerts')
+    ]));
+    main.appendChild(el('div', { class: 'panel' }, [
+      el('h2', { text: 'Jobs Past Last Date Still Status = Published (' + expJobs.length + ')' }),
+      expJobs.length
+        ? el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+            el('thead', {}, el('tr', {}, ['Title', 'Organisation', 'Last Date', 'Action'].map(function (h) { return el('th', { text: h }); }))),
+            el('tbody', {}, expJobs.map(function (j) {
+              return el('tr', {}, [
+                el('td', { text: j.title }),
+                el('td', { text: j.organisation || '—' }),
+                el('td', { text: j.last_date || '—' }),
+                el('td', {}, [el('a', { class: 'btn sm', href: '#/jobs/' + j.id, text: 'Edit / Archive' })])
+              ]);
+            }))
+          ]))
+        : el('p', { class: 'muted', text: 'All published job notices have valid upcoming deadlines.' })
+    ]));
+    main.appendChild(el('div', { class: 'panel' }, [
+      el('h2', { text: 'Expiring Within 7 Days (' + soonJobs.length + ') & Stale CA (>180d: ' + staleCa.length + ')' }),
+      el('p', { class: 'muted', text: 'Draft backlog: ' + (drafts.draft_posts || 0) + ' posts · ' + (drafts.draft_tests || 0) + ' mock tests · ' + (drafts.draft_schemes || 0) + ' schemes.' }),
+      el('div', { class: 'actions' }, [
+        el('button', { type: 'button', class: 'btn sm primary', text: 'Run Auto-Expiry Maintenance Now', onclick: async function () {
+          var r = await api('POST', 'maintenance/run', {});
+          toast('Expired ' + (r.expired || 0) + ' overdue jobs & promoted ' + (r.promoted || 0));
+          clear(main);
+          viewFreshnessAudit();
+        } }),
+        el('a', { class: 'btn sm', href: '#/feedback', text: 'Open Community Feedback Queue →' })
+      ])
+    ]));
+  }
+
+  async function viewFeedbackQueue() {
+    setTitle('Community Feedback & Error Queue');
+    var st = { page: 1, limit: 25, status: 'open' };
+    var sel = el('select', { 'aria-label': 'Feedback status filter' }, [
+      ['open', 'Open Reports'], ['reviewed', 'Reviewed'], ['resolved', 'Resolved'], ['dismissed', 'Dismissed'], ['', 'All Feedback']
+    ].map(function (o) { return el('option', { value: o[0], text: o[1], selected: o[0] === st.status }); }));
+    var box = el('div');
+    async function load() {
+      var d = await api('GET', 'feedback?page=' + st.page + '&limit=' + st.limit + '&status=' + encodeURIComponent(st.status));
+      var tb = el('tbody');
+      (d.items || []).forEach(function (f) {
+        var noteInp = el('input', { type: 'text', value: f.admin_note || '', placeholder: 'Resolution / admin note…' });
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, [badge(f.kind || 'error'), el('div', { class: 'hint', text: f.page_url || '/' })]),
+          el('td', {}, [el('strong', { text: f.subject || '(No subject)' }), el('div', { class: 'muted', text: f.message || '' }), el('div', { class: 'hint', text: f.contact || 'Anonymous' })]),
+          el('td', {}, noteInp),
+          el('td', {}, el('div', { class: 'actions' }, [
+            el('button', { type: 'button', class: 'btn sm primary', text: 'Resolve', onclick: async function () {
+              await api('PUT', 'feedback/' + encodeURIComponent(f.id), { status: 'resolved', admin_note: noteInp.value.trim() });
+              toast('Marked resolved');
+              load();
+            } }),
+            el('button', { type: 'button', class: 'btn sm', text: 'Dismiss', onclick: async function () {
+              await api('PUT', 'feedback/' + encodeURIComponent(f.id), { status: 'dismissed', admin_note: noteInp.value.trim() });
+              toast('Dismissed');
+              load();
+            } })
+          ]))
+        ]));
+      });
+      clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+        el('caption', { class: 'muted', text: 'Total feedback items: ' + (d.total || 0) }),
+        el('thead', {}, el('tr', {}, ['Type / Page', 'Message & Sender', 'Admin Note', 'Actions'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+        tb
+      ])));
+      box.appendChild(pager(st, d.total || 0, load));
+    }
+    sel.addEventListener('change', function () { st.status = sel.value; st.page = 1; load(); });
+    main.appendChild(el('div', { class: 'toolbar' }, [sel]));
+    main.appendChild(box);
+    await load();
+  }
+
   /* ---------- router ---------- */
   function buildNav() {
     var nav = clear(document.getElementById('nav'));
-    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
+    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/jobs-directory', 'Jobs Directory'], ['#/schemes', 'Schemes'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/freshness', 'Freshness Audit'], ['#/feedback', 'Feedback Queue'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
       .forEach(function (l) { nav.appendChild(el('a', { href: l[0] }, l[1])); });
   }
   var VIEWS = {
     dashboard: function () { return viewDashboard(); },
     pages: function (parts) { return viewSitePages(parts[1] === 'legal' ? 'Information & Legal' : (parts[1] === 'workspace' ? 'Candidate Workspace' : '')); },
+    'jobs-directory': function () { return viewJobsDirectory(); },
+    schemes: function (parts) { return viewSchemesManager(parts[1]); },
+    freshness: function () { return viewFreshnessAudit(); },
+    feedback: function () { return viewFeedbackQueue(); },
     seo: function () { return viewSeoDiscovery(); },
     operations: function () { return viewOperations(); },
     diagnostics: function () { return viewDiagnostics(); },

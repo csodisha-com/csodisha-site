@@ -1,7 +1,7 @@
 /**
  * CS Odisha Admin Studio — Zero-Dependency CSP-Safe SVG Analytics Module (admin/charts.js)
  * Strictly compliant with Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'
- * Zero inline styles, zero .style.* mutations, zero .innerHTML, pure createElementNS SVG geometry.
+ * Zero inline styles, zero direct style mutations, zero HTML string injection, pure createElementNS SVG geometry.
  */
 (function (window) {
   'use strict';

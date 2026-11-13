@@ -193,6 +193,61 @@
     return getRecord(STORE_META, 'exam_taxonomy_v1').then(rec => (rec && Array.isArray(rec.items)) ? rec.items : []);
   }
 
+  // ---- Offline-First Spaced-Repetition Flashcards (1d / 3d / 7d intervals) ----
+  function getFlashcards() {
+    return getRecord(STORE_META, 'flashcards_v1').then(rec => (rec && Array.isArray(rec.items)) ? rec.items : []);
+  }
+
+  function putFlashcards(items) {
+    return putRecord(STORE_META, {
+      key: 'flashcards_v1',
+      items: Array.isArray(items) ? items : [],
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  async function saveFlashcard(card) {
+    const list = await getFlashcards();
+    const id = card.id || ('fc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6));
+    const now = Date.now();
+    const entry = {
+      id,
+      front: String(card.front || '').trim(),
+      back: String(card.back || '').trim(),
+      exam: String(card.exam || 'General').trim(),
+      intervalDays: Number(card.intervalDays) || 1,
+      nextReviewAt: card.nextReviewAt || now,
+      reviewCount: Number(card.reviewCount) || 0,
+      updatedAt: new Date(now).toISOString()
+    };
+    const next = list.filter(x => x.id !== id);
+    next.unshift(entry);
+    await putFlashcards(next);
+    return entry;
+  }
+
+  async function scheduleFlashcardReview(id, days) {
+    const list = await getFlashcards();
+    const d = [1, 3, 7].includes(Number(days)) ? Number(days) : 1;
+    const now = Date.now();
+    const updated = list.map(c => c.id === id ? {
+      ...c,
+      intervalDays: d,
+      nextReviewAt: now + (d * 86400000),
+      reviewCount: (Number(c.reviewCount) || 0) + 1,
+      updatedAt: new Date(now).toISOString()
+    } : c);
+    await putFlashcards(updated);
+    return updated;
+  }
+
+  async function deleteFlashcard(id) {
+    const list = await getFlashcards();
+    const next = list.filter(c => c.id !== id);
+    await putFlashcards(next);
+    return next;
+  }
+
   return {
     DB_NAME,
     DB_VERSION,
@@ -219,6 +274,11 @@
     bumpRetryCount,
     clearSyncQueue,
     putTaxonomy,
-    getTaxonomy
+    getTaxonomy,
+    getFlashcards,
+    putFlashcards,
+    saveFlashcard,
+    scheduleFlashcardReview,
+    deleteFlashcard
   };
 });

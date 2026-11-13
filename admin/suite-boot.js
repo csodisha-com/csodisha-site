@@ -1,6 +1,6 @@
 /* Master Command Suite — CSP compatibility & session helpers. Loaded first.
    Strict /admin/ policy: default-src 'self'; script-src 'self'; style-src 'self'.
-   Zero inline scripts, zero inline style attributes, zero .style.* mutations, zero .innerHTML. */
+   Zero inline scripts, zero inline style attributes, zero direct style mutations, zero HTML string injection. */
 (function () {
   'use strict';
 

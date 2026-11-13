@@ -553,7 +553,7 @@
 
       // Bookmark action button
       const bmId = 'sch-' + (entry.id || entry.text.substring(0, 32).toLowerCase().replace(/[^a-z0-9]+/g, '-'));
-      const bmBtn = el('button', 'cso-bookmark-btn');
+      const bmBtn = el('button', 'cso-bookmark-btn cso-bookmark-btn--inline');
       bmBtn.type = 'button';
       bmBtn.dataset.bookmarkType = 'schemes';
       bmBtn.dataset.bookmarkId = bmId;
@@ -561,8 +561,10 @@
       bmBtn.dataset.bookmarkBadge = 'Schemes & Benefits';
       bmBtn.dataset.bookmarkUrl = window.location.href;
       bmBtn.title = 'Bookmark this welfare scheme';
-      bmBtn.style.cssText = 'background:transparent;border:1px solid #334155;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;color:#94a3b8;flex-shrink:0;margin-left:auto;';
-      bmBtn.innerHTML = '<span style="color:#94a3b8;" aria-hidden="true">☆</span> <span class="cso-bm-text">Bookmark</span>';
+      const starSpan = el('span', 'cso-bm-star', '☆');
+      starSpan.setAttribute('aria-hidden', 'true');
+      const labelSpan = el('span', 'cso-bm-text', 'Save');
+      bmBtn.append(starSpan, document.createTextNode(' '), labelSpan);
       item.append(bmBtn);
 
       explorerItems.append(item);
@@ -1010,7 +1012,6 @@
     syncFromUrl(false);
     if (loadStatus) {
       loadStatus.hidden = true;
-      loadStatus.style.display = 'none';
     }
   } else {
     // 2. Fallback to static JSON
@@ -1041,4 +1042,403 @@
         loadStatus.textContent = 'Unable to load directory: ' + error.message;
       });
   }
+
+  // Live D1 Schemes Directory + Interactive Check My Scheme Eligibility + Detail Modal
+  const liveSchemesGrid = document.getElementById('live-schemes-grid');
+  const liveSchemesStatus = document.getElementById('live-schemes-status');
+  const liveSchemesCount = document.getElementById('live-schemes-count');
+  const eligForm = document.getElementById('scheme-elig-form');
+  const eligResetBtn = document.getElementById('scheme-elig-reset');
+  const schemeQEl = document.getElementById('scheme-q');
+  const schemeGovEl = document.getElementById('scheme-gov');
+  const schemeGroupEl = document.getElementById('scheme-group');
+  const schemeGenderEl = document.getElementById('scheme-gender');
+  const schemeBenEl = document.getElementById('scheme-beneficiary');
+  const schemeAgeEl = document.getElementById('scheme-age');
+  const schemeIncomeEl = document.getElementById('scheme-income');
+  const quickChips = Array.from(document.querySelectorAll('.scheme-chip[data-group]'));
+
+  const modalOverlay = document.getElementById('live-scheme-detail-modal');
+  const modalCloseBtn = document.getElementById('live-scheme-detail-close');
+  const modalActionsEl = document.getElementById('live-scheme-detail-actions');
+  const modalBadgesEl = document.getElementById('live-scheme-detail-badges');
+  const modalTitleEl = document.getElementById('live-scheme-detail-title');
+  const modalTitleOrEl = document.getElementById('live-scheme-detail-title-or');
+  const modalMetaEl = document.getElementById('live-scheme-detail-meta');
+  const modalSummaryEl = document.getElementById('live-scheme-detail-summary');
+  const modalSpecsEl = document.getElementById('live-scheme-detail-specs');
+  const modalDocsEl = document.getElementById('live-scheme-detail-docs');
+  const modalBodyEl = document.getElementById('live-scheme-detail-body');
+
+  let schemeFilterState = { q: '', gov: '', group: '', gender: '', beneficiary: '', age: '', income: '' };
+  let liveSchemesCache = [];
+
+  function getActiveLang() {
+    try {
+      return localStorage.getItem('cso_lang_pref') === 'or' ? 'or' : 'en';
+    } catch (_) {
+      return 'en';
+    }
+  }
+
+  function makeSchemeBookmarkBtn(scheme) {
+    const btn = el('button', 'cso-bookmark-btn scheme-btn');
+    btn.type = 'button';
+    btn.dataset.bookmarkType = 'schemes';
+    btn.dataset.bookmarkId = String(scheme.id || scheme.slug || '');
+    btn.dataset.bookmarkTitle = String(scheme.title || 'Govt Scheme');
+    btn.dataset.bookmarkBadge = `${scheme.gov_level || 'Odisha'} Scheme`;
+    btn.dataset.bookmarkUrl = `/schemes-benefits/?scheme=${encodeURIComponent(scheme.slug || scheme.id || '')}`;
+    const star = el('span', 'cso-bm-star', '☆');
+    star.setAttribute('aria-hidden', 'true');
+    const lbl = el('span', 'cso-bm-text', 'Save');
+    btn.append(star, document.createTextNode(' '), lbl);
+    return btn;
+  }
+
+  function makeSchemeWhatsAppBtn(scheme) {
+    const url = `${window.location.origin}/schemes-benefits/?scheme=${encodeURIComponent(scheme.slug || scheme.id || '')}`;
+    const text = `${scheme.title} — ${scheme.benefit_summary || scheme.summary || 'Govt Welfare Scheme'} ${url}`;
+    const a = el('a', 'scheme-btn scheme-btn--wa', '📲 Share');
+    a.href = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.setAttribute('aria-label', 'Share scheme on WhatsApp');
+    return a;
+  }
+
+  function schemeToJsonLd(scheme) {
+    return {
+      '@type': 'GovernmentService',
+      name: scheme.title,
+      serviceType: scheme.category || 'Welfare Scheme',
+      description: scheme.summary || scheme.benefit_summary || scheme.title,
+      provider: {
+        '@type': 'GovernmentOrganization',
+        name: scheme.department || (scheme.gov_level === 'Central' ? 'Government of India' : 'Government of Odisha')
+      },
+      areaServed: {
+        '@type': 'AdministrativeArea',
+        name: scheme.gov_level === 'Central' ? 'India' : 'Odisha, India'
+      },
+      url: `${window.location.origin}/schemes-benefits/?scheme=${encodeURIComponent(scheme.slug || scheme.id || '')}`
+    };
+  }
+
+  function injectSchemesJsonLd(payload) {
+    if (!payload || !document.head) return;
+    let tag = document.getElementById('cso-scheme-jsonld');
+    if (!tag) {
+      tag = document.createElement('script');
+      tag.type = 'application/ld+json';
+      tag.id = 'cso-scheme-jsonld';
+      document.head.appendChild(tag);
+    }
+    tag.textContent = JSON.stringify(payload);
+  }
+
+  function closeSchemeDetail(pushHistory) {
+    if (!modalOverlay) return;
+    modalOverlay.hidden = true;
+    document.body.classList.remove('is-scheme-modal-open');
+    if (pushHistory) {
+      try {
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.delete('scheme');
+        window.history.replaceState({}, '', nextUrl.toString());
+      } catch (_) {}
+    }
+  }
+
+  async function openSchemeDetail(slugOrId, updateUrl = true) {
+    if (!modalOverlay || !slugOrId) return;
+    modalOverlay.hidden = false;
+    document.body.classList.add('is-scheme-modal-open');
+    modalTitleEl.textContent = 'Loading scheme details…';
+    if (modalTitleOrEl) { modalTitleOrEl.hidden = true; modalTitleOrEl.textContent = ''; }
+    if (modalBadgesEl) modalBadgesEl.replaceChildren();
+    if (modalMetaEl) modalMetaEl.replaceChildren();
+    if (modalSummaryEl) { modalSummaryEl.hidden = true; modalSummaryEl.textContent = ''; }
+    if (modalSpecsEl) modalSpecsEl.replaceChildren();
+    if (modalDocsEl) { modalDocsEl.hidden = true; modalDocsEl.replaceChildren(); }
+    if (modalActionsEl) modalActionsEl.replaceChildren();
+    if (modalBodyEl) modalBodyEl.replaceChildren();
+
+    if (updateUrl) {
+      try {
+        const u = new URL(window.location.href);
+        u.searchParams.set('scheme', slugOrId);
+        window.history.replaceState({}, '', u.toString());
+      } catch (_) {}
+    }
+
+    try {
+      let scheme = liveSchemesCache.find(s => s.slug === slugOrId || s.id === slugOrId);
+      const res = await fetch(`/api/content/schemes/${encodeURIComponent(slugOrId)}`, { credentials: 'same-origin' });
+      if (res.ok) scheme = await res.json();
+      if (!scheme) throw new Error('Scheme not found');
+
+      const isOdia = getActiveLang() === 'or';
+      modalTitleEl.textContent = (isOdia && scheme.title_or) ? scheme.title_or : scheme.title;
+      if (scheme.title_or && !isOdia && modalTitleOrEl) {
+        modalTitleOrEl.textContent = scheme.title_or;
+        modalTitleOrEl.hidden = false;
+      }
+
+      if (modalBadgesEl) {
+        modalBadgesEl.appendChild(el('span', `live-badge ${scheme.gov_level === 'Central' ? 'live-badge--central' : ''}`, scheme.gov_level === 'Central' ? '🇮🇳 Central Govt' : '🟢 Odisha Govt'));
+        if (scheme.category) modalBadgesEl.appendChild(el('span', 'live-badge', scheme.category));
+        if (scheme.is_featured) modalBadgesEl.appendChild(el('span', 'live-badge live-badge--featured', '★ Flagship'));
+      }
+
+      if (modalMetaEl) {
+        if (scheme.department) modalMetaEl.appendChild(el('span', '', `🏛 ${scheme.department}`));
+        if (scheme.gender_eligible && scheme.gender_eligible !== 'all') {
+          modalMetaEl.appendChild(el('span', '', `👤 Eligible Gender: ${scheme.gender_eligible}`));
+        }
+      }
+
+      const summaryTxt = (isOdia && scheme.summary_or) ? scheme.summary_or : (scheme.summary || scheme.benefit_summary);
+      if (summaryTxt && modalSummaryEl) {
+        modalSummaryEl.textContent = summaryTxt;
+        modalSummaryEl.hidden = false;
+      }
+
+      if (modalSpecsEl) {
+        const specs = [
+          { label: 'Financial / Key Benefit', val: (isOdia && scheme.benefit_summary_or) ? scheme.benefit_summary_or : (scheme.benefit_summary || 'See portal guidelines') },
+          { label: 'Age Limit', val: (scheme.min_age != null || scheme.max_age != null) ? `${scheme.min_age != null ? scheme.min_age : 0} – ${scheme.max_age != null ? scheme.max_age : 'No upper'} yrs` : 'All eligible ages' },
+          { label: 'Income Ceiling', val: scheme.max_income != null ? `Up to ₹${Number(scheme.max_income).toLocaleString('en-IN')}/yr` : 'Refer scheme norms' }
+        ];
+        specs.forEach(sp => {
+          const box = el('div', 'live-spec-box');
+          box.appendChild(el('span', 'live-spec-label', sp.label));
+          box.appendChild(el('span', 'live-spec-value', sp.val));
+          modalSpecsEl.appendChild(box);
+        });
+      }
+
+      if (Array.isArray(scheme.documents_required) && scheme.documents_required.length && modalDocsEl) {
+        const h4 = el('h4', '', '📋 Required Documents Checklist');
+        const ul = el('ul');
+        scheme.documents_required.forEach(doc => ul.appendChild(el('li', '', doc)));
+        modalDocsEl.append(h4, ul);
+        modalDocsEl.hidden = false;
+      }
+
+      const pc = window.CSOPublicContent;
+      if (scheme.apply_url && modalActionsEl && (!pc || pc.safeHref(scheme.apply_url))) {
+        const applyA = el('a', 'scheme-btn scheme-btn--primary', 'Official Portal / Apply ↗');
+        applyA.href = scheme.apply_url;
+        applyA.target = '_blank';
+        applyA.rel = 'noopener noreferrer nofollow';
+        modalActionsEl.appendChild(applyA);
+      }
+      if (modalActionsEl) {
+        modalActionsEl.appendChild(makeSchemeWhatsAppBtn(scheme));
+        modalActionsEl.appendChild(makeSchemeBookmarkBtn(scheme));
+      }
+
+      const bodyHtml = (isOdia && scheme.body_html_or) ? scheme.body_html_or : scheme.body_html;
+      if (bodyHtml && pc && typeof pc.renderSanitizedHtml === 'function') {
+        pc.renderSanitizedHtml(modalBodyEl, bodyHtml);
+      } else if (modalBodyEl) {
+        modalBodyEl.replaceChildren(el('p', '', scheme.benefit_summary || scheme.summary || 'Visit the official government portal linked above for application steps and verification guidelines.'));
+      }
+
+      injectSchemesJsonLd(Object.assign({ '@context': 'https://schema.org' }, schemeToJsonLd(scheme)));
+      if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
+        window.CSOBookmarks.updateUI();
+      }
+    } catch (err) {
+      modalTitleEl.textContent = 'Unable to load scheme';
+      if (modalBodyEl) modalBodyEl.replaceChildren(el('p', '', err.message || 'Please try again.'));
+    }
+  }
+
+  function renderSchemeCard(scheme) {
+    const isOdia = getActiveLang() === 'or';
+    const card = el('article', 'live-scheme-card');
+    const top = el('div');
+
+    const badges = el('div', 'live-scheme-card__badges');
+    badges.appendChild(el('span', `live-badge ${scheme.gov_level === 'Central' ? 'live-badge--central' : ''}`, scheme.gov_level === 'Central' ? '🇮🇳 Central' : '🟢 Odisha'));
+    if (scheme.category) badges.appendChild(el('span', 'live-badge', scheme.category));
+    if (scheme.is_featured) badges.appendChild(el('span', 'live-badge live-badge--featured', '★ Flagship'));
+    top.appendChild(badges);
+
+    top.appendChild(el('h3', 'live-scheme-card__title', (isOdia && scheme.title_or) ? scheme.title_or : scheme.title));
+    if (scheme.title_or && !isOdia) {
+      top.appendChild(el('p', 'live-scheme-card__title-or', scheme.title_or));
+    }
+    const summaryText = (isOdia && scheme.summary_or) ? scheme.summary_or : (scheme.summary || scheme.benefit_summary || '');
+    if (summaryText) top.appendChild(el('p', 'live-scheme-card__summary', summaryText));
+
+    const meta = el('div', 'live-scheme-card__meta');
+    if (scheme.benefit_summary) meta.appendChild(el('span', 'live-meta-pill', `💰 ${(isOdia && scheme.benefit_summary_or) ? scheme.benefit_summary_or : scheme.benefit_summary}`));
+    if (scheme.min_age != null || scheme.max_age != null) {
+      meta.appendChild(el('span', 'live-meta-pill', `🎂 Age: ${scheme.min_age != null ? scheme.min_age : 0}–${scheme.max_age != null ? scheme.max_age : 'Any'}`));
+    }
+    if (scheme.max_income != null) {
+      meta.appendChild(el('span', 'live-meta-pill', `📊 Income ≤ ₹${Number(scheme.max_income).toLocaleString('en-IN')}`));
+    }
+    top.appendChild(meta);
+    card.appendChild(top);
+
+    const footer = el('div', 'live-scheme-card__footer');
+    const detailsBtn = el('button', 'scheme-btn scheme-btn--primary', 'View Eligibility & Docs');
+    detailsBtn.type = 'button';
+    detailsBtn.addEventListener('click', () => openSchemeDetail(scheme.slug || scheme.id));
+    footer.appendChild(detailsBtn);
+
+    const pc = window.CSOPublicContent;
+    if (scheme.apply_url && (!pc || pc.safeHref(scheme.apply_url))) {
+      const applyA = el('a', 'scheme-btn', 'Apply ↗');
+      applyA.href = scheme.apply_url;
+      applyA.target = '_blank';
+      applyA.rel = 'noopener noreferrer nofollow';
+      footer.appendChild(applyA);
+    }
+    footer.appendChild(makeSchemeWhatsAppBtn(scheme));
+    footer.appendChild(makeSchemeBookmarkBtn(scheme));
+    card.appendChild(footer);
+    return card;
+  }
+
+  async function loadLiveSchemes() {
+    if (!liveSchemesGrid || !liveSchemesStatus) return;
+    const hasFilter = Object.values(schemeFilterState).some(v => String(v || '').trim() !== '');
+    if (eligResetBtn) eligResetBtn.hidden = !hasFilter;
+
+    liveSchemesStatus.hidden = false;
+    liveSchemesStatus.textContent = 'Checking scheme eligibility in live D1 directory…';
+    liveSchemesGrid.replaceChildren();
+
+    const params = new URLSearchParams();
+    if (schemeFilterState.q) params.set('q', schemeFilterState.q);
+    if (schemeFilterState.gov) params.set('gov', schemeFilterState.gov);
+    if (schemeFilterState.group) params.set('group', schemeFilterState.group);
+    if (schemeFilterState.gender) params.set('gender', schemeFilterState.gender);
+    if (schemeFilterState.beneficiary) params.set('beneficiary', schemeFilterState.beneficiary);
+    if (schemeFilterState.age) params.set('age', schemeFilterState.age);
+    if (schemeFilterState.income) params.set('income', schemeFilterState.income);
+
+    try {
+      const res = await fetch(`/api/content/schemes${params.toString() ? '?' + params.toString() : ''}`, { credentials: 'same-origin' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const items = Array.isArray(data.items) ? data.items : [];
+      liveSchemesCache = items;
+
+      if (liveSchemesCount) {
+        liveSchemesCount.textContent = `${items.length} ${items.length === 1 ? 'Eligible Scheme' : 'Eligible Schemes'}`;
+      }
+
+      if (items.length === 0) {
+        liveSchemesStatus.hidden = false;
+        liveSchemesStatus.textContent = 'No schemes match those exact age, income, or category filters. Try broadening or resetting your filters.';
+        return;
+      }
+
+      liveSchemesStatus.hidden = true;
+      const frag = document.createDocumentFragment();
+      items.forEach(s => frag.appendChild(renderSchemeCard(s)));
+      liveSchemesGrid.appendChild(frag);
+      injectSchemesJsonLd({
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        itemListElement: items.slice(0, 12).map((s, idx) => ({
+          '@type': 'ListItem',
+          position: idx + 1,
+          item: schemeToJsonLd(s)
+        }))
+      });
+      if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
+        window.CSOBookmarks.updateUI();
+      }
+    } catch (err) {
+      if (liveSchemesCount) liveSchemesCount.textContent = 'Unavailable';
+      liveSchemesStatus.hidden = false;
+      liveSchemesStatus.textContent = `Unable to load schemes: ${err.message}`;
+    }
+  }
+
+  function syncChipUI() {
+    quickChips.forEach(chip => {
+      const isAct = (chip.dataset.group || '') === schemeFilterState.group;
+      chip.classList.toggle('is-active', isAct);
+      chip.setAttribute('aria-pressed', String(isAct));
+    });
+  }
+
+  if (eligForm) {
+    eligForm.addEventListener('submit', e => {
+      e.preventDefault();
+      schemeFilterState.q = schemeQEl ? schemeQEl.value.trim() : '';
+      schemeFilterState.gov = schemeGovEl ? schemeGovEl.value : '';
+      schemeFilterState.group = schemeGroupEl ? schemeGroupEl.value : schemeFilterState.group;
+      schemeFilterState.gender = schemeGenderEl ? schemeGenderEl.value : '';
+      schemeFilterState.beneficiary = schemeBenEl ? schemeBenEl.value : '';
+      schemeFilterState.age = schemeAgeEl ? schemeAgeEl.value.trim() : '';
+      schemeFilterState.income = schemeIncomeEl ? schemeIncomeEl.value.trim() : '';
+      syncChipUI();
+      loadLiveSchemes();
+    });
+  }
+
+  [schemeGovEl, schemeGroupEl, schemeGenderEl, schemeBenEl].forEach(sel => {
+    if (sel) {
+      sel.addEventListener('change', () => {
+        if (sel === schemeGroupEl) schemeFilterState.group = sel.value;
+        if (sel === schemeGovEl) schemeFilterState.gov = sel.value;
+        if (sel === schemeGenderEl) schemeFilterState.gender = sel.value;
+        if (sel === schemeBenEl) schemeFilterState.beneficiary = sel.value;
+        syncChipUI();
+        loadLiveSchemes();
+      });
+    }
+  });
+
+  quickChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      schemeFilterState.group = chip.dataset.group || '';
+      if (schemeGroupEl) schemeGroupEl.value = schemeFilterState.group;
+      syncChipUI();
+      loadLiveSchemes();
+    });
+  });
+
+  if (eligResetBtn) {
+    eligResetBtn.addEventListener('click', () => {
+      schemeFilterState = { q: '', gov: '', group: '', gender: '', beneficiary: '', age: '', income: '' };
+      if (schemeQEl) schemeQEl.value = '';
+      if (schemeGovEl) schemeGovEl.value = '';
+      if (schemeGroupEl) schemeGroupEl.value = '';
+      if (schemeGenderEl) schemeGenderEl.value = '';
+      if (schemeBenEl) schemeBenEl.value = '';
+      if (schemeAgeEl) schemeAgeEl.value = '';
+      if (schemeIncomeEl) schemeIncomeEl.value = '';
+      syncChipUI();
+      loadLiveSchemes();
+    });
+  }
+
+  if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => closeSchemeDetail(true));
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', e => {
+      if (e.target === modalOverlay) closeSchemeDetail(true);
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !modalOverlay.hidden) closeSchemeDetail(true);
+    });
+  }
+
+  window.addEventListener('cso:langchange', loadLiveSchemes);
+
+  loadLiveSchemes();
+  try {
+    const sp = new URLSearchParams(window.location.search);
+    const initialScheme = sp.get('scheme');
+    if (initialScheme) openSchemeDetail(initialScheme, false);
+  } catch (_) {}
 })();

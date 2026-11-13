@@ -395,6 +395,70 @@ export async function handleUserApi(request, env) {
       throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
     }
 
+    if (resource === 'push-subscription') {
+      if (request.method === 'GET') {
+        const sub = await env.DB.prepare(
+          `SELECT id, endpoint, channel, goal_exams, enabled, last_alert_at, updated_at
+           FROM push_subscriptions WHERE user_id = ? AND enabled = 1 ORDER BY updated_at DESC LIMIT 1`
+        ).bind(actor.userId).first();
+        return json({
+          enabled: Boolean(sub),
+          subscription: sub ? {
+            id: sub.id,
+            endpoint: sub.endpoint,
+            channel: sub.channel,
+            goal_exams: JSON.parse(sub.goal_exams || '[]'),
+            enabled: Boolean(sub.enabled),
+            last_alert_at: sub.last_alert_at,
+            updated_at: sub.updated_at
+          } : null
+        });
+      }
+
+      if (request.method === 'POST') {
+        verifyCsrf(request);
+        await rateLimit(env, `user-push:${actor.userId}`, 30, 300);
+        const body = await readJson(request, 25000);
+        const enabled = body.enabled !== false;
+        const goalExams = Array.isArray(body.goal_exams)
+          ? [...new Set(body.goal_exams.map(x => cleanStr(x, 60)).filter(Boolean))].slice(0, 12)
+          : [];
+        const channel = body.channel === 'webpush' || body.channel === 'email_digest' ? body.channel : 'in_app';
+        const endpoint = cleanStr(body.endpoint, 500) || `in-app://user/${actor.userId}`;
+        const p256dh = cleanStr(body.p256dh, 300) || null;
+        const authSecret = cleanStr(body.auth_secret, 300) || null;
+        const id = `ps-${actor.userId}`;
+
+        if (!enabled) {
+          await env.DB.prepare(`UPDATE push_subscriptions SET enabled = 0, updated_at = datetime('now') WHERE user_id = ?`).bind(actor.userId).run();
+          return json({ ok: true, enabled: false });
+        }
+
+        await env.DB.prepare(
+          `INSERT INTO push_subscriptions (id, user_id, endpoint, p256dh, auth_secret, channel, goal_exams, enabled, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))
+           ON CONFLICT(endpoint) DO UPDATE SET
+             user_id = excluded.user_id,
+             p256dh = COALESCE(excluded.p256dh, push_subscriptions.p256dh),
+             auth_secret = COALESCE(excluded.auth_secret, push_subscriptions.auth_secret),
+             channel = excluded.channel,
+             goal_exams = excluded.goal_exams,
+             enabled = 1,
+             updated_at = datetime('now')`
+        ).bind(id, actor.userId, endpoint, p256dh, authSecret, channel, JSON.stringify(goalExams)).run();
+
+        return json({ ok: true, enabled: true, channel, goal_exams: goalExams }, 200);
+      }
+
+      if (request.method === 'DELETE') {
+        verifyCsrf(request);
+        await env.DB.prepare(`UPDATE push_subscriptions SET enabled = 0, updated_at = datetime('now') WHERE user_id = ?`).bind(actor.userId).run();
+        return json({ ok: true, enabled: false });
+      }
+
+      throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+    }
+
     throw new HttpError(404, 'NOT_FOUND', 'Unknown user API route');
   } catch (e) {
     return errorResponse(e);

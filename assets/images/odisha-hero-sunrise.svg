@@ -293,5 +293,5 @@
   </g>
 
   <!-- Golden Sunrise Horizon Mist / Atmospheric Glow at base -->
-  <rect x="0" y="340" width="1200" height="140" fill="url(#sunGlow)" opacity="0.22" style="mix-blend-mode: screen;" />
+  <rect x="0" y="340" width="1200" height="140" fill="url(#sunGlow)" opacity="0.22" />
 </svg>

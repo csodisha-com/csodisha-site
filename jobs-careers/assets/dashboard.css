@@ -1,26 +1,26 @@
 :root,
 :root[data-theme="light"] {
-  --cso-bg: #f4f7fb;
+  --cso-bg: #FAF9F6;
   --cso-surface: #ffffff;
   --cso-card-bg: #ffffff;
-  --cso-text: #14233b;
-  --cso-text-muted: #5b6b82;
-  --cso-border: #e3e9f1;
-  --cso-link: #1d4ed8;
-  --cso-shadow: 0 4px 20px rgba(20, 35, 59, 0.08);
+  --cso-text: #111827;
+  --cso-text-muted: #556270;
+  --cso-border: #E5E7EB;
+  --cso-link: #0F4C3A;
+  --cso-shadow: 0 4px 20px rgba(15, 76, 58, 0.08);
   --control-bg: #ffffff;
-  --control-tx: #14233b;
+  --control-tx: #111827;
   --bg: var(--cso-bg);
   --card: var(--cso-card-bg);
   --surface: var(--cso-surface);
   --tx: var(--cso-text);
   --mut: var(--cso-text-muted);
   --bd: var(--cso-border);
-  --bl: #1d4ed8;
+  --bl: #0F4C3A;
   --link-color: var(--cso-link);
-  --gr: #0f6b4a;
-  --dk: #0b4a43;
-  --or: #f26a1b;
+  --gr: #0F4C3A;
+  --dk: #0B3A2C;
+  --or: #D97706;
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
   color: var(--cso-text);
   background: var(--cso-bg);
@@ -30,27 +30,27 @@
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]),
   :root[data-theme="system"] {
-    --cso-bg: #f4f7fb;
+    --cso-bg: #FAF9F6;
     --cso-surface: #ffffff;
     --cso-card-bg: #ffffff;
-    --cso-text: #14233b;
-    --cso-text-muted: #5b6b82;
-    --cso-border: #e3e9f1;
-    --cso-link: #1d4ed8;
-    --cso-shadow: 0 4px 20px rgba(20, 35, 59, 0.08);
+    --cso-text: #111827;
+    --cso-text-muted: #556270;
+    --cso-border: #E5E7EB;
+    --cso-link: #0F4C3A;
+    --cso-shadow: 0 4px 20px rgba(15, 76, 58, 0.08);
     --control-bg: #ffffff;
-    --control-tx: #14233b;
+    --control-tx: #111827;
     --bg: var(--cso-bg);
     --card: var(--cso-card-bg);
     --surface: var(--cso-surface);
     --tx: var(--cso-text);
     --mut: var(--cso-text-muted);
     --bd: var(--cso-border);
-    --bl: #1d4ed8;
+    --bl: #0F4C3A;
     --link-color: var(--cso-link);
-    --gr: #0f6b4a;
-    --dk: #0b4a43;
-    --or: #f26a1b;
+    --gr: #0F4C3A;
+    --dk: #0B3A2C;
+    --or: #D97706;
     color: var(--cso-text);
     background: var(--cso-bg);
   }
@@ -3312,4 +3312,74 @@ body.is-live-modal-open {
     width: 100%;
   }
 }
+
+/* Homepage Ecosystem Parity (#FAF9F6 canvas + #0F4C3A forest green) */
+.app-shell {
+  background: var(--cso-bg, #FAF9F6);
+}
+
+.breadcrumb {
+  background: linear-gradient(135deg, #0F4C3A 0%, #14532D 100%);
+  padding: 9px 16px;
+  border-radius: 12px;
+  color: #ECFDF5;
+  box-shadow: 0 4px 14px rgba(15, 76, 58, 0.14);
+}
+
+.breadcrumb-item,
+.breadcrumb-item:not(:last-child)::after {
+  color: rgba(236, 253, 245, 0.78);
+}
+
+.breadcrumb-link {
+  color: #FFFFFF;
+}
+
+.breadcrumb-link:hover,
+.breadcrumb-link.breadcrumb-current:hover {
+  color: #FDE68A;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.breadcrumb-current,
+.breadcrumb strong {
+  color: #FDE68A;
+}
+
+.live-chip,
+.live-hub-pill {
+  border-radius: 999px;
+}
+
+.live-chip.is-active,
+.live-btn--primary {
+  background: #0F4C3A;
+  border-color: #0F4C3A;
+  color: #FFFFFF;
+}
+
+.live-chip:hover {
+  border-color: #0F4C3A;
+}
+
+.live-btn--primary:hover {
+  background: #0B3A2C;
+  border-color: #0B3A2C;
+}
+
+.live-btn--wa {
+  background: #ECFDF5;
+  border-color: #86EFAC;
+  color: #166534;
+}
+
+.live-btn--wa:hover {
+  background: #DCFCE7;
+  border-color: #4ADE80;
+}
+
+.live-job-detail__summary {
+  border-left-color: #0F4C3A;
+}
+
 

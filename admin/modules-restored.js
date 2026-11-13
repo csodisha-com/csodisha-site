@@ -1,5 +1,5 @@
 /* Common Sense Odisha — Restored Specialized Module Studios & Builders (admin/modules-restored.js)
-   Strict CSP-compliant: ZERO .innerHTML, ZERO .style.*, ZERO inline handlers, ZERO fake seed rows.
+   Strict CSP-compliant: zero HTML string injection, zero inline style props, zero inline handlers, zero fake seed rows.
    All tables, KPIs, and diagnostics use live D1/R2 (/api/admin/*), /admin/site-manifest.json, /sitemap.xml, /feed.xml. */
 (function (window, document) {
   'use strict';

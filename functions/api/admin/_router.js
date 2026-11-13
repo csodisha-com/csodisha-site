@@ -13,6 +13,12 @@ import { handleAiGeneratePage } from './_ai.js';
 import { runLifecycleMaintenance, readLastCronRun } from './_cron.js';
 import { handleExamTaxonomy } from './_taxonomy.js';
 import { handleAdminCandidates } from './_candidates.js';
+import {
+  handleJobsDirectoryAdmin,
+  handleSchemesAdmin,
+  handleFeedbackAdmin,
+  handleFreshnessAudit
+} from './_ecosystem.js';
 
 export async function handleAdminApi(request, env) {
   try {
@@ -93,6 +99,18 @@ export async function handleAdminApi(request, env) {
         return await handlePages(request, env, actor, id);
       case 'exam-taxonomy':
         if (!sub) return await handleExamTaxonomy(request, env, actor, id);
+        break;
+      case 'jobs-directory':
+        if (!sub) return await handleJobsDirectoryAdmin(request, env, actor, id);
+        break;
+      case 'schemes':
+        if (!sub) return await handleSchemesAdmin(request, env, actor, id);
+        break;
+      case 'feedback':
+        if (!sub) return await handleFeedbackAdmin(request, env, actor, id);
+        break;
+      case 'freshness':
+        if (!id && method === 'GET') return await handleFreshnessAudit(env);
         break;
       case 'ai':
         if (id === 'generate-page') return await handleAiGeneratePage(request, env, actor);

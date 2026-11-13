@@ -102,13 +102,26 @@
   function saveSettings() {
     try {
       localStorage.setItem('cso', JSON.stringify(S));
+      localStorage.setItem('cso_lang_pref', S.lang || 'en');
     } catch (e) {}
+  }
+
+  function ensureGlobalEnhancements() {
+    if (window.CSOGlobal) return;
+    if (!document.getElementById('cso-global-enhancements-script')) {
+      const s = document.createElement('script');
+      s.id = 'cso-global-enhancements-script';
+      s.src = '/assets/js/cso-global-enhancements.js';
+      s.defer = true;
+      document.head.appendChild(s);
+    }
   }
 
   function applySettings() {
     const d = document.documentElement;
     d.dataset.theme = THEMES.includes(S.theme) ? S.theme : 'system';
     d.lang = S.lang || 'en';
+    d.dataset.lang = S.lang || 'en';
     if (document.body) {
       ZOOM_CLASSES.forEach(cls => document.body.classList.remove(cls));
       const pct = Math.round((S.zoom || 1) * 20) * 5;
@@ -117,6 +130,9 @@
       document.body.classList.toggle('hc', !!S.hc);
       document.body.classList.toggle('ul', !!S.ul);
       document.body.classList.toggle('rm', !!S.rm);
+    }
+    if (window.CSOGlobal && typeof window.CSOGlobal.syncLang === 'function') {
+      window.CSOGlobal.syncLang(S.lang || 'en');
     }
   }
 
@@ -361,14 +377,27 @@
     a11yBtn.type = 'button';
     a11yBtn.addEventListener('click', e => {
       e.stopPropagation();
+      const hasG = Boolean(window.CSOGlobal);
       showPopup(a11yBtn, [
-        ['High contrast', () => { S.hc = +!S.hc; saveSettings(); applySettings(); }, !!S.hc],
+        ['High contrast', () => { S.hc = +!S.hc; saveSettings(); applySettings(); if (hasG) window.CSOGlobal.toggleA11y('contrast'); }, !!S.hc || document.documentElement.classList.contains('cso-a11y-contrast')],
+        ['Dyslexia-friendly font', () => { if (hasG) window.CSOGlobal.toggleA11y('dyslexia'); else document.documentElement.classList.toggle('cso-a11y-dyslexia'); }, document.documentElement.classList.contains('cso-a11y-dyslexia')],
+        ['Lite mode (low data)', () => { if (hasG) window.CSOGlobal.toggleA11y('lite'); else document.documentElement.classList.toggle('cso-a11y-lite'); }, document.documentElement.classList.contains('cso-a11y-lite')],
         ['Underline links', () => { S.ul = +!S.ul; saveSettings(); applySettings(); }, !!S.ul],
         ['Reduce motion', () => { S.rm = +!S.rm; saveSettings(); applySettings(); }, !!S.rm],
-        ['Reset', () => { S.hc = S.ul = S.rm = 0; S.zoom = 1; saveSettings(); applySettings(); }]
+        ['Reset', () => { S.hc = S.ul = S.rm = 0; S.zoom = 1; saveSettings(); applySettings(); if (hasG) window.CSOGlobal.resetA11y(); }]
       ]);
     });
     a11yWrap.appendChild(a11yBtn);
+
+    const searchBtn = el('button', 'pill cso-ctl-search', '🔍 Ctrl+K');
+    searchBtn.type = 'button';
+    searchBtn.id = 'cso-ctl-global-search';
+    searchBtn.setAttribute('aria-label', 'Open global D1 search (Ctrl+K)');
+    searchBtn.addEventListener('click', () => {
+      if (window.CSOGlobal && typeof window.CSOGlobal.openSearch === 'function') {
+        window.CSOGlobal.openSearch('');
+      }
+    });
 
     const setZoom = d => {
       S.zoom = d ? Math.max(0.85, Math.min(1.3, +(S.zoom + d).toFixed(2))) : 1;
@@ -396,7 +425,7 @@
     fp.addEventListener('click', () => setZoom(0.05));
 
     zoomSpan.append(fm, fr, fp);
-    ctl.append(savedBtn, langWrap, bt, a11yWrap, zoomSpan);
+    ctl.append(savedBtn, searchBtn, langWrap, bt, a11yWrap, zoomSpan);
   }
 
   function renderAuth() {
@@ -814,6 +843,7 @@
   }
 
   function init() {
+    ensureGlobalEnhancements();
     applySettings();
     renderControls();
     renderAuth();

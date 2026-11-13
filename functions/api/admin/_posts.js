@@ -62,7 +62,11 @@ async function normalizePost(env, type, body, existing) {
     if (!d && !existing) d = new Date().toISOString().slice(0, 10);
     if (d && !isIsoDate(d)) errors.event_date = 'Date must be YYYY-MM-DD';
     f.event_date = d || null;
-    Object.assign(f, { organisation: null, vacancies: null, qualification: null, last_date: null, apply_url: null, notification_media_key: null, state: null });
+    Object.assign(f, {
+      organisation: null, vacancies: null, qualification: null, last_date: null,
+      apply_url: null, notification_media_key: null, state: null,
+      age_limit: null, salary_pay: null, source_url: null
+    });
   } else {
     f.event_date = null;
     f.organisation = lim('organisation', 120, 'Organisation', { required: true });
@@ -88,7 +92,22 @@ async function normalizePost(env, type, body, existing) {
     }
     f.notification_media_key = pdf || null;
     f.state = lim('state', 60, 'State') || 'Odisha';
+    f.age_limit = lim('age_limit', 120, 'Age Limit');
+    f.salary_pay = lim('salary_pay', 120, 'Salary / Pay Matrix');
+    const srcUrl = cleanStr(v('source_url'), 500);
+    if (srcUrl) {
+      let okSrc = false;
+      try { const u = new URL(srcUrl); okSrc = u.protocol === 'https:' || u.protocol === 'http:'; } catch {}
+      if (!okSrc) errors.source_url = 'Source URL must be a valid http(s) link';
+    }
+    f.source_url = srcUrl || null;
   }
+
+  let goalIds = v('goal_exam_ids');
+  if (typeof goalIds === 'string') {
+    try { goalIds = JSON.parse(goalIds); } catch { goalIds = goalIds.split(',').map(s => s.trim()).filter(Boolean); }
+  }
+  f.goal_exam_ids = JSON.stringify(Array.isArray(goalIds) ? [...new Set(goalIds.map(g => cleanStr(g, 60)).filter(Boolean))].slice(0, 12) : []);
 
   const st = resolveStatus(body, existing, errors);
   f.status = st.status; f.published_at = st.published_at;
@@ -106,15 +125,26 @@ async function uniqueSlug(env, type, slug, auto, excludeId) {
     if (!auto) throw validationError({ slug: 'This slug is already in use' });
     candidate = `${slug}-${n + 2}`.slice(0, 80);
   }
+  if (auto) {
+    const fallback = `${slug.slice(0, 71)}-${crypto.randomUUID().slice(0, 8)}`;
+    const row = await env.DB.prepare(
+      'SELECT id FROM posts WHERE type = ? AND slug = ? AND deleted_at IS NULL AND id != ?'
+    ).bind(type, fallback, excludeId || '').first();
+    if (!row) return fallback;
+  }
   throw new HttpError(409, 'CONFLICT', 'Could not generate a unique slug');
 }
 
 const COLS = ['title', 'title_or', 'summary', 'summary_or', 'body_md', 'body_md_or', 'category', 'tags', 'cover_media_key',
   'event_date', 'organisation', 'vacancies', 'qualification', 'last_date', 'apply_url', 'notification_media_key', 'state',
-  'status', 'published_at', 'slug'];
+  'age_limit', 'salary_pay', 'source_url', 'goal_exam_ids', 'status', 'published_at', 'slug'];
 
 function present(row) {
-  return { ...row, tags: JSON.parse(row.tags || '[]') };
+  return {
+    ...row,
+    tags: JSON.parse(row.tags || '[]'),
+    goal_exam_ids: JSON.parse(row.goal_exam_ids || '[]')
+  };
 }
 
 export async function handlePosts(request, env, actor, typeKey, id, sub) {
@@ -155,8 +185,15 @@ export async function handlePosts(request, env, actor, typeKey, id, sub) {
         `INSERT INTO posts (id, type, ${COLS.join(', ')}, created_by, updated_by)
          VALUES (?, ?, ${COLS.map(() => '?').join(', ')}, ?, ?)`
       ).bind(newId, type, ...COLS.map(c => (c === 'slug' ? slug : f[c])), actor.userId, actor.userId).run();
+      let goalAlertCount = 0;
+      if (body.send_goal_alert && f.status === 'published') {
+        await env.DB.prepare(`UPDATE posts SET alert_sent_at = datetime('now') WHERE id = ?`).bind(newId).run().catch(() => {});
+        const subRow = await env.DB.prepare('SELECT COUNT(*) AS n FROM push_subscriptions').first().catch(() => ({ n: 0 }));
+        goalAlertCount = subRow ? subRow.n : 0;
+        await audit(env, request, actor, `${type}.goal_alert`, 'post', newId, { title: f.title, subscribers: goalAlertCount });
+      }
       await audit(env, request, actor, `${type}.create`, 'post', newId, { title: f.title, status: f.status });
-      return json({ id: newId, slug }, 201);
+      return json({ id: newId, slug, goal_alert_queued: goalAlertCount }, 201);
     }
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }
@@ -184,8 +221,15 @@ export async function handlePosts(request, env, actor, typeKey, id, sub) {
     await env.DB.prepare(
       `UPDATE posts SET ${COLS.map(c => `${c} = ?`).join(', ')}, updated_by = ?, updated_at = datetime('now') WHERE id = ?`
     ).bind(...COLS.map(c => (c === 'slug' ? slug : f[c])), actor.userId, id).run();
+    let goalAlertCount = 0;
+    if (body.send_goal_alert && f.status === 'published') {
+      await env.DB.prepare(`UPDATE posts SET alert_sent_at = datetime('now') WHERE id = ?`).bind(id).run().catch(() => {});
+      const subRow = await env.DB.prepare('SELECT COUNT(*) AS n FROM push_subscriptions').first().catch(() => ({ n: 0 }));
+      goalAlertCount = subRow ? subRow.n : 0;
+      await audit(env, request, actor, `${type}.goal_alert`, 'post', id, { title: f.title, subscribers: goalAlertCount });
+    }
     await audit(env, request, actor, `${type}.update`, 'post', id, { title: f.title, status: f.status });
-    return json({ id, slug });
+    return json({ id, slug, goal_alert_queued: goalAlertCount });
   }
   if (method === 'DELETE') {
     await env.DB.prepare('UPDATE posts SET deleted_at = datetime(\'now\'), updated_by = ?, updated_at = datetime(\'now\') WHERE id = ?').bind(actor.userId, id).run();

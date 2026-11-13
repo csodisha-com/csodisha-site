@@ -4,16 +4,16 @@
 
 :root,
 :root[data-theme="light"] {
-  --pc-bg: #f4f7fb;
+  --pc-bg: #FAF9F6;
   --pc-surface: #ffffff;
   --pc-card: #ffffff;
-  --pc-muted-bg: #eef4ff;
-  --pc-text: #14233b;
-  --pc-muted: #5b6b82;
-  --pc-border: #dce6f5;
-  --pc-accent: #1d4ed8;
-  --pc-accent-hover: #1e40af;
-  --pc-green: #0f6b4a;
+  --pc-muted-bg: #ECFDF5;
+  --pc-text: #111827;
+  --pc-muted: #556270;
+  --pc-border: #E5E7EB;
+  --pc-accent: #0F4C3A;
+  --pc-accent-hover: #0B3A2C;
+  --pc-green: #0F4C3A;
   --pc-amber: #d97706;
   --pc-red: #dc2626;
 }

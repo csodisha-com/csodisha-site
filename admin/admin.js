@@ -1,6 +1,6 @@
 /**
  * Common Sense Odisha — Editorial Studio & Master Command Suite Controller (admin/admin.js)
- * Strict CSP-compliant: ZERO .innerHTML, ZERO .style.*, ZERO inline handlers, ZERO mock data.
+ * Strict CSP-compliant: zero HTML string injection, zero inline style props, zero inline handlers, zero mock data.
  */
 (function (window, document) {
   'use strict';

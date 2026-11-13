@@ -21,131 +21,21 @@
 <meta name="twitter:image" content="https://assets.csodisha.org/img/cso-dashboard-og-preview.png">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="manifest" href="manifest.webmanifest"><title>Common Sense Odisha</title>
-<link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/cso-tools-v2.css">
+<link rel="stylesheet" href="assets/style.css?v=20261114"><link rel="stylesheet" href="assets/cso-tools-v2.css?v=20261114">
 </head><body>
 <div id="csoPublicAnnouncementMount"></div>
-<svg width="0" height="0" style="position:absolute"><defs><symbol id="lg" viewBox="0 0 120 56"><text x="0" y="40" font-size="46" font-weight="900" font-family="Arial" letter-spacing="-3"><tspan fill="#f2a31b">C</tspan><tspan fill="#2c8f3e">S</tspan><tspan fill="#1d4ed8">O</tspan></text><path d="M96 17l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="#f26a1b"/><path d="M2 50Q45 40 118 48" stroke="#f26a1b" stroke-width="3" fill="none"/></symbol><symbol id="temple" viewBox="0 0 100 140"><path d="M55 10C62 32 72 58 74 112H34C36 58 48 32 55 10Z" fill="currentColor"/><circle cx="55" cy="7" r="4" fill="currentColor"/><ellipse cx="55" cy="34" rx="13" ry="4" fill="#0002"/><path d="M2 112L6 92H30L26 112ZM6 92L10 80H26L30 92ZM10 80L14 70H22L26 80Z" fill="currentColor"/><path d="M74 112L78 92H98L98 112Z" fill="currentColor"/><rect x="0" y="112" width="100" height="16" fill="currentColor"/><path d="M48 112v-14h14v14z" fill="#0003"/></symbol><symbol id="palm" viewBox="0 0 60 120"><path d="M30 118Q35 70 28 30" stroke="#6b4423" stroke-width="4" fill="none"/><g stroke="#2f7a3a" stroke-width="3" fill="none" stroke-linecap="round"><path d="M28 30Q10 18 0 36"/><path d="M28 30Q12 8 2 14"/><path d="M28 30Q28 6 40 2"/><path d="M28 30Q46 14 58 28"/><path d="M28 30Q48 30 56 46"/><path d="M28 30Q8 34 4 50"/></g></symbol></defs></svg>
-<script>
-  (function() {
-    // Live broadcast banner — source of truth is D1 (/api/content/banner), edited in the admin suite.
-    var BANNER_COLORS = {
-      info:   { bg: 'linear-gradient(90deg, #064e3b 0%, #065f46 100%)', line: '#10b981', fg: '#ecfdf5', sub: '#a7f3d0', tagFg: '#064e3b', tag: 'NOTICE' },
-      notice: { bg: 'linear-gradient(90deg, #78350f 0%, #92400e 100%)', line: '#f59e0b', fg: '#fffbeb', sub: '#fde68a', tagFg: '#78350f', tag: 'NOTICE' },
-      urgent: { bg: 'linear-gradient(90deg, #7f1d1d 0%, #991b1b 100%)', line: '#ef4444', fg: '#fef2f2', sub: '#fecaca', tagFg: '#7f1d1d', tag: 'URGENT' }
-    };
-    function bannerEl(tag, css, text) {
-      var n = document.createElement(tag); n.style.cssText = css; if (text) n.textContent = text; return n;
-    }
-    function renderLiveBanner(data) {
-      var mount = document.getElementById('csoPublicAnnouncementMount');
-      if (!mount) return;
-      mount.textContent = '';
-      if (!data || !data.active || !data.headline) return;
-      var key = 'cso_dismissed_announcement_' + (data.updatedAt || data.headline);
-      try { if (sessionStorage.getItem(key)) return; } catch (_) {}
-      var c = BANNER_COLORS[data.severity] || BANNER_COLORS.info;
-      var bar = bannerEl('div', 'background:' + c.bg + ';border-bottom:1px solid ' + c.line + ';color:' + c.fg + ';padding:10px 16px;font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:9999;position:relative;');
-      bar.id = 'csoLiveBanner'; bar.setAttribute('role', 'status');
-      var left = bannerEl('div', 'display:flex;align-items:center;gap:8px;flex-wrap:wrap;');
-      left.appendChild(bannerEl('span', 'background:' + c.line + ';color:' + c.tagFg + ';font-weight:800;font-size:10px;padding:2px 6px;border-radius:4px;text-transform:uppercase;', c.tag));
-      left.appendChild(bannerEl('strong', 'color:#ffffff;', data.headline));
-      if (data.context) left.appendChild(bannerEl('span', 'color:' + c.sub + ';', data.context));
-      if (data.ctaText && data.ctaUrl) {
-        var cta = bannerEl('a', 'background:' + c.line + ';color:' + c.tagFg + ';padding:3px 10px;border-radius:4px;font-weight:700;text-decoration:none;font-size:11px;margin-left:6px;cursor:pointer;', data.ctaText + ' \u2192');
-        cta.setAttribute('href', data.ctaUrl);
-        left.appendChild(cta);
-      }
-      var close = bannerEl('button', 'background:none;border:none;color:' + c.sub + ';font-size:16px;cursor:pointer;padding:0 4px;', '\u00d7');
-      close.setAttribute('title', 'Dismiss'); close.setAttribute('aria-label', 'Dismiss announcement');
-      close.addEventListener('click', function () { bar.remove(); try { sessionStorage.setItem(key, 'true'); } catch (_) {} });
-      bar.appendChild(left); bar.appendChild(close); mount.appendChild(bar);
-    }
-    function mountLiveBanner() {
-      fetch('/api/content/banner', { credentials: 'same-origin' })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (d) { if (d) renderLiveBanner(d); })
-        .catch(function () {});
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', mountLiveBanner);
-    } else {
-      mountLiveBanner();
-    }
-    // Pick up admin changes without a reload.
-    setInterval(function () { if (!document.hidden) mountLiveBanner(); }, 60000);
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) mountLiveBanner(); });
-
-    // Hydrate dynamic homepage configuration
-    function hydrateHomepageConfig() {
-      try {
-        const raw = localStorage.getItem('cso_homepage_config');
-        if (!raw) return;
-        const config = JSON.parse(raw);
-        if (!config) return;
-
-        // Hydrate Hero Section
-        if (config.hero) {
-          const heroSec = document.getElementById('cso-hero');
-          if (heroSec && config.hero.enabled === false) {
-            heroSec.style.display = 'none';
-          } else if (heroSec) {
-            heroSec.style.display = '';
-          }
-
-          if (config.hero.tagline) {
-            const tagEl = document.querySelector('.cso-hero-tagline');
-            if (tagEl) tagEl.textContent = config.hero.tagline;
-          }
-          if (config.hero.subheadline) {
-            const subEl = document.querySelector('.cso-hero-subtagline');
-            if (subEl) subEl.textContent = config.hero.subheadline;
-          }
-        }
-
-        // Section Toggles
-        if (Array.isArray(config.sections)) {
-          config.sections.forEach(function(sec) {
-            if (sec.id === 'sec-badges') {
-              const chips = document.querySelector('.chips');
-              if (chips) chips.style.display = sec.enabled ? '' : 'none';
-            } else if (sec.id === 'sec-cards') {
-              const compass = document.getElementById('cso-opportunity-compass');
-              if (compass) compass.style.display = sec.enabled ? '' : 'none';
-            } else if (sec.id === 'sec-notice') {
-              const bannerMount = document.getElementById('csoPublicAnnouncementMount');
-              if (bannerMount && !sec.enabled) bannerMount.style.display = 'none';
-            }
-          });
-        }
-      } catch (err) {
-        console.warn('Homepage hydration error:', err);
-      }
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', hydrateHomepageConfig);
-    } else {
-      hydrateHomepageConfig();
-    }
-
-    window.addEventListener('storage', function(e) {
-      if (e.key === 'cso_homepage_config') {
-        hydrateHomepageConfig();
-      }
-    });
-  })();
-</script>
+<svg width="0" height="0" class="cso-sr-only-svg" aria-hidden="true"><defs><symbol id="lg" viewBox="0 0 120 56"><text x="0" y="40" font-size="46" font-weight="900" font-family="Arial" letter-spacing="-3"><tspan fill="#f2a31b">C</tspan><tspan fill="#2c8f3e">S</tspan><tspan fill="#1d4ed8">O</tspan></text><path d="M96 17l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="#f26a1b"/><path d="M2 50Q45 40 118 48" stroke="#f26a1b" stroke-width="3" fill="none"/></symbol><symbol id="temple" viewBox="0 0 100 140"><path d="M55 10C62 32 72 58 74 112H34C36 58 48 32 55 10Z" fill="currentColor"/><circle cx="55" cy="7" r="4" fill="currentColor"/><ellipse cx="55" cy="34" rx="13" ry="4" fill="#0002"/><path d="M2 112L6 92H30L26 112ZM6 92L10 80H26L30 92ZM10 80L14 70H22L26 80Z" fill="currentColor"/><path d="M74 112L78 92H98L98 112Z" fill="currentColor"/><rect x="0" y="112" width="100" height="16" fill="currentColor"/><path d="M48 112v-14h14v14z" fill="#0003"/></symbol><symbol id="palm" viewBox="0 0 60 120"><path d="M30 118Q35 70 28 30" stroke="#6b4423" stroke-width="4" fill="none"/><g stroke="#2f7a3a" stroke-width="3" fill="none" stroke-linecap="round"><path d="M28 30Q10 18 0 36"/><path d="M28 30Q12 8 2 14"/><path d="M28 30Q28 6 40 2"/><path d="M28 30Q46 14 58 28"/><path d="M28 30Q48 30 56 46"/><path d="M28 30Q8 34 4 50"/></g></symbol></defs></svg>
+<script src="assets/js/home-hydration.js" defer></script>
 <header class="top site-header__top" id="header-top" role="banner">
 <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
   <img src="/assets/images/cso-logo.svg" alt="CSO - Common Sense Odisha" class="cso-brand-logo" width="112" height="40">
 </a>
 <a class="adm" href="/admin/" role="button" aria-label="Admin Portal - Authorised Access Only">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
-<span id="ctl" style="display:contents"></span>
+<span id="ctl" class="cso-contents"></span>
 <span class="sp"></span>
 <div class="acct">
-  <span style="font-size:26px" aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
-  <span id="auth" style="display:contents"></span>
+  <span aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
+  <span id="auth" class="cso-contents"></span>
 </div>
 </header>
 <nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
@@ -162,10 +52,10 @@
 <aside class="card lu"><h3><span aria-hidden="true">🔔</span> Latest Updates <a href="#" data-route="view-all" data-h="latest-updates">View All →</a></h3>
 <div class="tabs" role="group" aria-label="Filter latest updates"><button type="button" class="a" aria-pressed="true">All</button><button type="button" aria-pressed="false">Jobs</button><button type="button" aria-pressed="false">Schemes</button><button type="button" aria-pressed="false">Education</button><button type="button" aria-pressed="false">Odisha</button><button type="button" aria-pressed="false">National</button></div>
 <div class="it"><div class="tg">JOB</div><div>Ravenshaw University ITEP Admissions 2026<small>Ravenshaw University</small></div><div class="d">Oct 28, 2026<br><span class="bd">⊙ Official</span><span class="bd r">⊗ New</span></div></div>
-<div class="it"><div class="tg" style="background:#e8f6ee;border-color:#2c8f3e">SCHEME</div><div>Odisha Post-Matric Scholarship 2025-26<small>Higher Education Dept., Govt. of Odisha</small></div><div class="d">Oct 27, 2026<br><span class="bd">⊙ Official</span></div></div>
-<div class="it"><div class="tg" style="background:#eee8fb;border-color:#6d28d9">EDUCATION</div><div>CTET Dec 2025 Notification Out<small>CBSE</small></div><div class="d">Oct 27, 2026<br><span class="bd">⊙ Official</span></div></div>
+<div class="it"><div class="tg tg--scheme">SCHEME</div><div>Odisha Post-Matric Scholarship 2025-26<small>Higher Education Dept., Govt. of Odisha</small></div><div class="d">Oct 27, 2026<br><span class="bd">⊙ Official</span></div></div>
+<div class="it"><div class="tg tg--edu">EDUCATION</div><div>CTET Dec 2025 Notification Out<small>CBSE</small></div><div class="d">Oct 27, 2026<br><span class="bd">⊙ Official</span></div></div>
 <div class="it"><div class="tg">ODISHA</div><div>Cyclone Arnab: Cancelled Trains List<small>Indian Railways</small></div><div class="d">Oct 26, 2026<br><span class="bd">⊙ Official</span><span class="bd r">⊗ Update</span></div></div>
-<div class="it"><div class="tg" style="background:#e6efff;border-color:#1d4ed8">GUIDE</div><div>How to apply for OPSC Group B posts<small>CSO Guide</small></div><div class="d">Oct 26, 2026<br><span class="bd" style="color:#1d4ed8;background:#e6efff;border-color:#c5d6fb">⊙ Guide</span></div></div>
+<div class="it"><div class="tg tg--guide">GUIDE</div><div>How to apply for OPSC Group B posts<small>CSO Guide</small></div><div class="d">Oct 26, 2026<br><span class="bd bd--guide">⊙ Guide</span></div></div>
 </aside></div>
 
      <section class="cso-compass-section w" id="cso-opportunity-compass" aria-label="CSO Opportunity Compass">
@@ -229,7 +119,7 @@
        </div>
      </section>
 
-<section class="card sec cso-trending-topics-sec" id="cso-trending-topics"><h2><span style="color:var(--or)">🔥</span><span style="color:var(--bl)">Trending &amp; Popular Topics</span><small>Explore education, careers, schemes and public services</small><a href="#" data-route="view-all-topics" data-h="popular-topics" style="margin-left:auto;font-size:13px;color:var(--bl)">View All Topics →</a></h2>
+<section class="card sec cso-trending-topics-sec" id="cso-trending-topics"><h2><span class="cso-h2-or">🔥</span><span class="cso-h2-bl">Trending &amp; Popular Topics</span><small>Explore education, careers, schemes and public services</small><a href="#" data-route="view-all-topics" data-h="popular-topics" class="cso-h2-link">View All Topics →</a></h2>
 <div class="row c6 topics-grid trending-grid">
      <!-- 1. Jobs & Recruitment -->
      <a href="/jobs-careers#jobs" class="cso-topic-card cso-topic-card--jobs">
@@ -298,14 +188,14 @@
      </a>
 </div></section>
 
-<section class="card sec cso-tools-sec" id="cso-tools"><h2><span style="color:var(--bl)">🔧</span><span style="color:var(--bl)">Important Tools</span><small>Six practical, interactive tools for applications, study and careers</small><a href="#" data-route="view-all-tools" data-h="important-tools" style="margin-left:auto;font-size:13px;color:var(--bl)">View All Tools →</a></h2>
+<section class="card sec cso-tools-sec" id="cso-tools"><h2><span class="cso-h2-bl">🔧</span><span class="cso-h2-bl">Important Tools</span><small>Six practical, interactive tools for applications, study and careers</small><a href="#" data-route="view-all-tools" data-h="important-tools" class="cso-h2-link">View All Tools →</a></h2>
 <div class="row c6 tools-grid" id="cso-tools-grid">
-<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#fde4ec">📅</span><span><b>Age &amp; Eligibility Date Calculator</b><small>Calculate your age on an exam or application cutoff date</small></span></div>
-<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#e8e0ff">🧮</span><span><b>Marks, Percentage &amp; CGPA Calculator</b><small>Calculate marks, percentage and institution-based CGPA</small></span></div>
-<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#dff3e8">📋</span><span><b>Application Document Checklist</b><small>Create and track your application document list</small></span></div>
-<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#ffe9d3">⏳</span><span><b>Exam Countdown &amp; Study Planner</b><small>Count down to exams and plan revision sessions</small></span></div>
-<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#e1ecff">📄</span><span><b>Resume &amp; Biodata Builder</b><small>Build and print a resume or biodata locally</small></span></div>
-<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#dff3ff">🧠</span><span><b>Flashcard &amp; Self-Quiz Maker</b><small>Make flashcards, import Q&amp;A and test yourself</small></span></div></div></section>
+<div class="card tl tool-card"><span class="ic cso-tool-ic-age">📅</span><span><b>Age &amp; Eligibility Date Calculator</b><small>Calculate your age on an exam or application cutoff date</small></span></div>
+<div class="card tl tool-card"><span class="ic cso-tool-ic-marks">🧮</span><span><b>Marks, Percentage &amp; CGPA Calculator</b><small>Calculate marks, percentage and institution-based CGPA</small></span></div>
+<div class="card tl tool-card"><span class="ic cso-tool-ic-doc">📋</span><span><b>Application Document Checklist</b><small>Create and track your application document list</small></span></div>
+<div class="card tl tool-card"><span class="ic cso-tool-ic-plan">⏳</span><span><b>Exam Countdown &amp; Study Planner</b><small>Count down to exams and plan revision sessions</small></span></div>
+<div class="card tl tool-card"><span class="ic cso-tool-ic-resume">📄</span><span><b>Resume &amp; Biodata Builder</b><small>Build and print a resume or biodata locally</small></span></div>
+<div class="card tl tool-card"><span class="ic cso-tool-ic-flash">🧠</span><span><b>Flashcard &amp; Self-Quiz Maker</b><small>Make flashcards, import Q&amp;A and test yourself</small></span></div></div></section>
 
      <section class="cso-action-hub-section" aria-label="CSO Community and Resources">
        <div class="cso-action-hub-grid">
@@ -389,5 +279,5 @@
     </div>
   </div>
 </div></footer>
-<script src="assets/odia.js"></script><script src="assets/hindi.js"></script><script src="assets/india-districts.js"></script><script src="assets/cso-tools-v2.js"></script><script src="assets/cso-auth-client.js"></script><script src="assets/js/pwa-install.js" defer></script><script src="assets/app.js?v=20261113"></script>
+<script src="assets/odia.js"></script><script src="assets/hindi.js"></script><script src="assets/india-districts.js"></script><script src="assets/cso-tools-v2.js"></script><script src="assets/cso-auth-client.js"></script><script src="assets/js/cso-global-enhancements.js" defer></script><script src="assets/js/pwa-install.js" defer></script><script src="assets/app.js?v=20261114"></script>
 </body></html>

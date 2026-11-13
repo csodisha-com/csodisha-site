@@ -10,7 +10,7 @@
  *    messaging the dashboard clients (with a SW-side fallback drain)
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v13';
+const CACHE_NAME = 'cso-candidate-cache-v15';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 const PRECACHE_URLS = [
@@ -29,10 +29,12 @@ const PRECACHE_URLS = [
   '/community/',
   '/community/index.html',
   '/assets/style.css',
+  '/assets/css/public-content.css',
   '/assets/css/student-dashboard-bp.css',
   '/assets/favicon.svg',
   '/manifest.webmanifest',
   '/assets/shared-header.js',
+  '/assets/js/cso-global-enhancements.js',
   '/assets/js/bookmark-manager.js',
   '/assets/js/cso-countdown.js',
   '/assets/js/cso-idb.js',

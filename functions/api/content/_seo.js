@@ -75,7 +75,7 @@ export async function handleSitemapXml(request, env) {
 
   if (env && env.DB) {
     try {
-      const [jobsRes, caRes, testsRes] = await Promise.all([
+      const [jobsRes, caRes, testsRes, schemesRes] = await Promise.all([
         env.DB.prepare(
           `SELECT slug, updated_at, published_at FROM posts
            WHERE type = 'job' AND ${PUBLIC_VISIBLE_SQL}
@@ -90,7 +90,12 @@ export async function handleSitemapXml(request, env) {
           `SELECT slug, updated_at, published_at FROM mock_tests
            WHERE ${PUBLIC_VISIBLE_SQL}
            ORDER BY COALESCE(published_at, updated_at) DESC LIMIT 500`
-        ).all()
+        ).all(),
+        env.DB.prepare(
+          `SELECT slug, updated_at FROM schemes_directory
+           WHERE status = 'published' AND deleted_at IS NULL
+           ORDER BY is_featured DESC, sort_order ASC LIMIT 500`
+        ).all().catch(() => ({ results: [] }))
       ]);
 
       for (const row of (jobsRes.results || [])) {
@@ -120,6 +125,16 @@ export async function handleSitemapXml(request, env) {
           lastmod: toIsoLastMod(row.updated_at || row.published_at),
           changefreq: 'weekly',
           priority: '0.8'
+        });
+      }
+
+      for (const row of (schemesRes.results || [])) {
+        if (!row.slug) continue;
+        urls.push({
+          loc: `${SITE_ORIGIN}/schemes-benefits/?scheme=${encodeURIComponent(row.slug)}`,
+          lastmod: toIsoLastMod(row.updated_at),
+          changefreq: 'weekly',
+          priority: '0.7'
         });
       }
     } catch (e) {

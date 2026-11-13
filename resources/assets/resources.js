@@ -287,5 +287,16 @@
     if (searchInput) searchInput.value = initialQ;
   }
 
+  async function loadExamTaxonomy() {
+    try {
+      const res = await fetch('/api/content/exam-taxonomy', { credentials: 'same-origin' });
+      if (!res.ok) return;
+      const data = await res.json();
+      const rows = Array.isArray(data.items) ? data.items : [];
+      syncExamOptions(rows.map(r => ({ exam: r.short_code || r.exam_label || r.id })).filter(r => r.exam));
+    } catch (_) {}
+  }
+
+  loadExamTaxonomy();
   loadResources();
 })();
