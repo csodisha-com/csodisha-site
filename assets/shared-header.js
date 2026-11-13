@@ -421,6 +421,11 @@
       const iconSpan = el('span', '', '👤');
       iconSpan.setAttribute('aria-hidden', 'true');
       dashLink.append(iconSpan, el('span', '', isAdmin ? 'Admin Studio' : 'My Dashboard'));
+      dashLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        window.location.assign(dashHref);
+      }, true);
 
       const doLogout = async () => {
         try {

@@ -342,20 +342,31 @@ function authUI() {
     };
 
     const isAdminUser = csoAuthUser.role === 'admin' || csoAuthUser.role === 'superadmin';
+    const targetDashUrl = isAdminUser ? '/admin/' : '/student-dashboard/';
     const dashboardLink = document.createElement('a');
     dashboardLink.className = 'btn p cso-dashboard-button';
-    dashboardLink.href = isAdminUser ? '/admin/' : '/student-dashboard/';
+    dashboardLink.href = targetDashUrl;
     dashboardLink.textContent = isAdminUser ? 'Admin Studio' : 'My Dashboard';
     dashboardLink.setAttribute(
       'aria-label',
       isAdminUser ? 'Open Admin Studio' : 'Open your student dashboard'
     );
+    dashboardLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      window.location.assign(targetDashUrl);
+    }, true);
 
     if (isAdminUser) {
       const candidateLink = document.createElement('a');
       candidateLink.className = 'btn cso-dashboard-button';
       candidateLink.href = '/student-dashboard/';
       candidateLink.textContent = 'Candidate Hub';
+      candidateLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        window.location.assign('/student-dashboard/');
+      }, true);
       root.append(dashboardLink, candidateLink, logoutButton);
     } else {
       root.append(dashboardLink, logoutButton);

@@ -140,7 +140,7 @@
 
   /* ---------- Tab & Sidebar Navigation ---------- */
   const TAB_META = {
-    'tab-overview': ['Candidate Overview', 'Personalized exam readiness, live deadlines & synced workspace'],
+    'tab-overview': ['Candidate Overview', 'Synced exam readiness & deadlines'],
     'tab-my-learning': ['My Learning & Syllabi', 'Auto-provisioned exam checklists synced with D1'],
     'tab-bookmarks': ['Private Library & Pins', 'Exam-matched PYQs, saved alerts, and mock tests'],
     'tab-achievements': ['Readiness & Streaks', 'Live preparation milestones computed from D1 activity'],
