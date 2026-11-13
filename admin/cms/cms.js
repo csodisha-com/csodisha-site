@@ -1742,6 +1742,152 @@
     await load();
   }
 
+  async function viewAboutDirectory() {
+    setTitle('About CSO Directory & Charter CMS (D1)');
+    var st = { page: 1, limit: 35, group: '', level: '', status: '', q: '' };
+    var grpSel = el('select', { 'aria-label': 'Filter parent group' }, [el('option', { value: '', text: 'All Groups' })]);
+    var lvlSel = el('select', { 'aria-label': 'Filter hierarchy level' }, [
+      ['', 'All Levels'], ['group', 'Groups (6)'], ['section', 'Sections (12)'], ['entry', 'Entries (Detailed)']
+    ].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+    var statusSel = el('select', { 'aria-label': 'Filter status' }, [
+      ['', 'All Statuses'], ['published', 'Published'], ['draft', 'Draft']
+    ].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+    var qInp = el('input', { type: 'search', placeholder: 'Search About CSO node, Odia title or slug…' });
+
+    var createPanel = el('div', { class: 'panel' });
+    var formTitle = el('input', { type: 'text', placeholder: 'Title (English)', required: true });
+    var formTitleOr = el('input', { type: 'text', placeholder: 'ଶୀର୍ଷକ (Odia _or)' });
+    var formLevel = el('select', {}, ['group', 'section', 'entry'].map(function (lv) { return el('option', { value: lv, text: lv }); }));
+    formLevel.value = 'entry';
+    var formParent = el('input', { type: 'text', placeholder: 'Parent slug (e.g. about-cso)' });
+    var formSub = el('input', { type: 'text', placeholder: 'Subtitle (EN)' });
+    var formSubOr = el('input', { type: 'text', placeholder: 'Subtitle (Odia _or)' });
+    var formBody = el('textarea', { rows: 2, placeholder: 'Body description (EN)' });
+    var formBodyOr = el('textarea', { rows: 2, placeholder: 'Body description (Odia _or)' });
+    var formBadge = el('input', { type: 'text', placeholder: 'Badge text (e.g. Charter)' });
+    var formIcon = el('input', { type: 'text', value: '📄', placeholder: 'Emoji icon' });
+    var formUrl = el('input', { type: 'text', placeholder: '/about/... or https://...' });
+    var formSort = el('input', { type: 'number', value: '10', placeholder: 'Sort order' });
+    var formStatus = el('select', {}, ['published', 'draft'].map(function (s) { return el('option', { value: s, text: s }); }));
+
+    var createForm = el('form', { class: 'grid2' }, [
+      field('Title (EN) *', formTitle), field('Title (Odia _or)', formTitleOr),
+      field('Level', formLevel), field('Parent Slug', formParent),
+      field('Subtitle (EN)', formSub), field('Subtitle (Odia _or)', formSubOr),
+      field('Body Text (EN)', formBody), field('Body Text (Odia _or)', formBodyOr),
+      field('Badge Text', formBadge), field('Icon', formIcon),
+      field('Official URL', formUrl), field('Sort Order', formSort),
+      field('Status', formStatus),
+      el('div', { class: 'actions' }, [el('button', { type: 'submit', class: 'btn primary sm', text: '+ Add About Node' })])
+    ]);
+
+    createForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      try {
+        await api('POST', 'about-directory', {
+          title: formTitle.value.trim(),
+          title_or: formTitleOr.value.trim(),
+          level: formLevel.value,
+          parent_slug: formParent.value.trim() || null,
+          subtitle: formSub.value.trim(),
+          subtitle_or: formSubOr.value.trim(),
+          body_text: formBody.value.trim(),
+          body_text_or: formBodyOr.value.trim(),
+          badge_text: formBadge.value.trim(),
+          icon_name: formIcon.value.trim() || '📄',
+          official_url: formUrl.value.trim(),
+          sort_order: Number(formSort.value) || 0,
+          status: formStatus.value
+        });
+        formTitle.value = ''; formTitleOr.value = ''; formSub.value = ''; formSubOr.value = '';
+        formBody.value = ''; formBodyOr.value = ''; formBadge.value = ''; formUrl.value = '';
+        toast('About CSO node created in D1');
+        load();
+      } catch (err) { toast(err.message, true); }
+    });
+    createPanel.appendChild(el('h2', { text: 'Add About Directory Node' }));
+    createPanel.appendChild(createForm);
+
+    var box = el('div');
+    var populatedParents = false;
+
+    async function load() {
+      var d = await api(
+        'GET',
+        'about-directory?page=' + st.page + '&limit=' + st.limit +
+        '&group=' + encodeURIComponent(st.group) +
+        '&level=' + encodeURIComponent(st.level) +
+        '&status=' + encodeURIComponent(st.status) +
+        '&q=' + encodeURIComponent(st.q)
+      );
+
+      if (!populatedParents && Array.isArray(d.parents)) {
+        populatedParents = true;
+        d.parents.filter(function (p) { return p.level === 'group'; }).forEach(function (p) {
+          grpSel.appendChild(el('option', { value: p.slug, text: p.title }));
+        });
+      }
+
+      var tb = el('tbody');
+      (d.items || []).forEach(function (n) {
+        var titleInp = el('input', { type: 'text', value: n.title || '', 'aria-label': 'English title' });
+        var orInp = el('input', { type: 'text', value: n.title_or || '', placeholder: 'ଓଡ଼ିଆ ଶୀର୍ଷକ', 'aria-label': 'Odia title' });
+        var bodyInp = el('textarea', { rows: 2, placeholder: 'Body copy (EN)', 'aria-label': 'Body copy' });
+        bodyInp.value = n.body_text || '';
+        var sortInp = el('input', { type: 'number', value: String(n.sort_order || 0), 'aria-label': 'Sort order' });
+        var statusNode = el('select', { 'aria-label': 'Publication status' }, ['published', 'draft'].map(function (s) {
+          return el('option', { value: s, text: s, selected: n.status === s });
+        }));
+
+        var saveBtn = el('button', { type: 'button', class: 'btn sm primary', text: 'Save', onclick: async function () {
+          try {
+            await api('PUT', 'about-directory/' + encodeURIComponent(n.id), {
+              title: titleInp.value.trim(),
+              title_or: orInp.value.trim(),
+              body_text: bodyInp.value.trim(),
+              sort_order: Number(sortInp.value) || 0,
+              status: statusNode.value
+            });
+            toast('Updated About CSO node');
+          } catch (err) { toast(err.message, true); }
+        } });
+
+        var delBtn = el('button', { type: 'button', class: 'btn sm danger', text: 'Delete', onclick: async function () {
+          try {
+            await api('DELETE', 'about-directory/' + encodeURIComponent(n.id));
+            toast('Removed About node');
+            load();
+          } catch (err) { toast(err.message, true); }
+        } });
+
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, [badge(n.level), el('div', { class: 'hint', text: n.slug + (n.parent_slug ? ' ← ' + n.parent_slug : '') })]),
+          el('td', {}, [titleInp, bodyInp]),
+          el('td', {}, orInp),
+          el('td', {}, [sortInp, statusNode]),
+          el('td', {}, el('div', { class: 'actions' }, [saveBtn, delBtn]))
+        ]));
+      });
+
+      clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+        el('caption', { class: 'muted', text: 'Total About CSO nodes matching filter: ' + (d.total || 0) }),
+        el('thead', {}, el('tr', {}, ['Level / Slug', 'Title & Body (EN)', 'Title (Odia _or)', 'Order & Status', 'Actions'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+        tb
+      ])));
+      box.appendChild(pager(st, d.total || 0, load));
+    }
+
+    var t;
+    grpSel.addEventListener('change', function () { st.group = grpSel.value; st.page = 1; load(); });
+    lvlSel.addEventListener('change', function () { st.level = lvlSel.value; st.page = 1; load(); });
+    statusSel.addEventListener('change', function () { st.status = statusSel.value; st.page = 1; load(); });
+    qInp.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.q = qInp.value; st.page = 1; load(); }, 250); });
+    main.appendChild(el('div', { class: 'toolbar' }, [grpSel, lvlSel, statusSel, qInp]));
+    main.appendChild(createPanel);
+    main.appendChild(box);
+    await load();
+  }
+
   async function viewSchemesManager(id) {
     if (id) {
       var isNew = id === 'new';
@@ -1930,13 +2076,14 @@
   /* ---------- router ---------- */
   function buildNav() {
     var nav = clear(document.getElementById('nav'));
-    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/jobs-directory', 'Jobs Directory'], ['#/schemes', 'Schemes'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/freshness', 'Freshness Audit'], ['#/feedback', 'Feedback Queue'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
+    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/about-directory', 'About CSO'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/jobs-directory', 'Jobs Directory'], ['#/schemes', 'Schemes'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/freshness', 'Freshness Audit'], ['#/feedback', 'Feedback Queue'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
       .forEach(function (l) { nav.appendChild(el('a', { href: l[0] }, l[1])); });
   }
   var VIEWS = {
     dashboard: function () { return viewDashboard(); },
     pages: function (parts) { return viewSitePages(parts[1] === 'legal' ? 'Information & Legal' : (parts[1] === 'workspace' ? 'Candidate Workspace' : '')); },
     'jobs-directory': function () { return viewJobsDirectory(); },
+    'about-directory': function () { return viewAboutDirectory(); },
     schemes: function (parts) { return viewSchemesManager(parts[1]); },
     freshness: function () { return viewFreshnessAudit(); },
     feedback: function () { return viewFeedbackQueue(); },

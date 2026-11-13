@@ -676,6 +676,218 @@ async function handleExamLeaderboard(env, url) {
   return json({ exam: exam || 'All Exams', items }, 200, { 'Cache-Control': 'public, max-age=30, s-maxage=60' });
 }
 
+function presentAboutNode(r) {
+  return {
+    id: r.id,
+    slug: r.slug,
+    parent_slug: r.parent_slug || null,
+    level: r.level,
+    title: r.title,
+    title_or: r.title_or || '',
+    subtitle: r.subtitle || '',
+    subtitle_or: r.subtitle_or || '',
+    body_text: r.body_text || '',
+    body_text_or: r.body_text_or || '',
+    badge_text: r.badge_text || '',
+    icon_name: r.icon_name || '📄',
+    official_url: r.official_url || '',
+    sort_order: Number(r.sort_order) || 0,
+    status: r.status || 'published',
+    updated_at: r.updated_at || null
+  };
+}
+
+async function handleAboutDirectory(env, url) {
+  const groupFilter = (url.searchParams.get('group') || '').trim().toLowerCase().slice(0, 100);
+  const sectionFilter = (url.searchParams.get('section') || '').trim().toLowerCase().slice(0, 100);
+  const q = (url.searchParams.get('q') || '').trim().toLowerCase().slice(0, 100);
+
+  const { results } = await env.DB.prepare(
+    `SELECT * FROM about_directory_nodes
+     WHERE status = 'published'
+     ORDER BY CASE level WHEN 'group' THEN 0 WHEN 'section' THEN 1 ELSE 2 END, sort_order ASC, title ASC`
+  ).all().catch(() => ({ results: [] }));
+
+  const allNodes = (results || []).map(presentAboutNode);
+  const rawGroups = allNodes.filter(n => n.level === 'group');
+  const rawSections = allNodes.filter(n => n.level === 'section');
+  const rawEntries = allNodes.filter(n => n.level === 'entry');
+
+  const sectionByParent = new Map();
+  rawSections.forEach(s => {
+    const key = s.parent_slug || '';
+    if (!sectionByParent.has(key)) sectionByParent.set(key, []);
+    sectionByParent.get(key).push(s);
+  });
+
+  const entryByParent = new Map();
+  rawEntries.forEach(e => {
+    const key = e.parent_slug || '';
+    if (!entryByParent.has(key)) entryByParent.set(key, []);
+    entryByParent.get(key).push(e);
+  });
+
+  const matchQ = n => !q || [n.title, n.title_or, n.subtitle, n.subtitle_or, n.body_text, n.body_text_or, n.badge_text]
+    .some(v => String(v || '').toLowerCase().includes(q));
+
+  let filteredGroups = rawGroups
+    .filter(g => !groupFilter || g.slug === groupFilter || g.id === groupFilter)
+    .map(g => {
+      const secs = (sectionByParent.get(g.slug) || [])
+        .filter(s => !sectionFilter || s.slug === sectionFilter || s.id === sectionFilter)
+        .map(s => {
+          const entries = (entryByParent.get(s.slug) || []).filter(e => !q || matchQ(e) || matchQ(s) || matchQ(g));
+          return { ...s, entries };
+        })
+        .filter(s => !q || matchQ(s) || matchQ(g) || s.entries.length > 0);
+      return { ...g, sections: secs };
+    })
+    .filter(g => (!sectionFilter && !q) || matchQ(g) || g.sections.length > 0);
+
+  const flatSections = filteredGroups.flatMap(g => g.sections);
+  const flatEntries = flatSections.flatMap(s => s.entries);
+
+  return json({
+    groups: filteredGroups,
+    sections: flatSections,
+    entries: flatEntries,
+    counts: {
+      groups: filteredGroups.length,
+      sections: flatSections.length,
+      entries: flatEntries.length
+    },
+    total_counts: {
+      groups: rawGroups.length,
+      sections: rawSections.length,
+      entries: rawEntries.length
+    }
+  }, 200, { 'Cache-Control': CACHE });
+}
+
+async function handlePlatformStats(env) {
+  const safeCount = async (sql, ...binds) => {
+    try {
+      const row = await env.DB.prepare(sql).bind(...binds).first();
+      return Number(row && (row.n ?? row.cnt)) || 0;
+    } catch {
+      return 0;
+    }
+  };
+
+  const [
+    examsCount,
+    jobsDirectoryCount,
+    aboutNodesCount,
+    aboutEntriesCount,
+    activeJobsCount,
+    schemesCount,
+    resourcesCount,
+    mockTestsCount,
+    resolvedFeedbackCount
+  ] = await Promise.all([
+    safeCount('SELECT COUNT(*) AS n FROM exam_taxonomy WHERE is_active = 1'),
+    safeCount('SELECT COUNT(*) AS n FROM jobs_directory_nodes WHERE is_active = 1'),
+    safeCount("SELECT COUNT(*) AS n FROM about_directory_nodes WHERE status = 'published'"),
+    safeCount("SELECT COUNT(*) AS n FROM about_directory_nodes WHERE level = 'entry' AND status = 'published'"),
+    safeCount(`SELECT COUNT(*) AS n FROM posts WHERE type = 'job' AND ${PUBLIC_VISIBLE_SQL} AND (last_date IS NULL OR last_date >= date('now'))`),
+    safeCount("SELECT COUNT(*) AS n FROM schemes_directory WHERE status = 'published' AND deleted_at IS NULL"),
+    safeCount("SELECT COUNT(*) AS n FROM resources WHERE deleted_at IS NULL AND status = 'published'"),
+    safeCount(`SELECT COUNT(*) AS n FROM mock_tests WHERE ${PUBLIC_VISIBLE_SQL}`),
+    safeCount("SELECT COUNT(*) AS n FROM community_feedback WHERE status = 'resolved'")
+  ]);
+
+  return json({
+    examsCount,
+    directoryNodesCount: jobsDirectoryCount,
+    aboutNodesCount,
+    aboutEntriesCount,
+    activeJobsCount,
+    schemesCount,
+    resourcesCount,
+    mockTestsCount,
+    resolvedFeedbackCount,
+    districtsCount: 30,
+    updatedAt: new Date().toISOString()
+  }, 200, { 'Cache-Control': CACHE });
+}
+
+async function handleChangelog(env, url) {
+  const limit = Math.min(30, Math.max(4, parseInt(url.searchParams.get('limit') || '12', 10) || 12));
+  const [aboutRes, jobsRes, caRes, feedbackRes] = await Promise.all([
+    env.DB.prepare(
+      `SELECT id, slug, title, title_or, subtitle, badge_text, official_url, updated_at
+       FROM about_directory_nodes
+       WHERE status = 'published' AND level = 'entry'
+       ORDER BY updated_at DESC LIMIT 6`
+    ).all().catch(() => ({ results: [] })),
+    env.DB.prepare(
+      `SELECT id, slug, title, title_or, organisation, published_at, updated_at
+       FROM posts
+       WHERE type = 'job' AND ${PUBLIC_VISIBLE_SQL}
+       ORDER BY COALESCE(updated_at, published_at) DESC LIMIT 6`
+    ).all().catch(() => ({ results: [] })),
+    env.DB.prepare(
+      `SELECT id, slug, title, title_or, category, published_at, updated_at
+       FROM posts
+       WHERE type = 'current_affair' AND ${PUBLIC_VISIBLE_SQL}
+       ORDER BY COALESCE(updated_at, published_at) DESC LIMIT 6`
+    ).all().catch(() => ({ results: [] })),
+    env.DB.prepare(
+      `SELECT id, kind, subject, admin_note, page_url, resolved_at
+       FROM community_feedback
+       WHERE status = 'resolved'
+       ORDER BY COALESCE(resolved_at, created_at) DESC LIMIT 6`
+    ).all().catch(() => ({ results: [] }))
+  ]);
+
+  const entries = [
+    ...(aboutRes.results || []).map(r => ({
+      id: `about-${r.id}`,
+      kind: 'directory',
+      badge: r.badge_text || 'Directory',
+      title: r.title,
+      title_or: r.title_or || '',
+      summary: r.subtitle || 'About CSO Directory Charter Update',
+      url: r.official_url || `/about/`,
+      timestamp: r.updated_at || ''
+    })),
+    ...(jobsRes.results || []).map(r => ({
+      id: `job-${r.id}`,
+      kind: 'job',
+      badge: 'Job Notice',
+      title: r.title,
+      title_or: r.title_or || '',
+      summary: r.organisation || 'Verified Recruitment Notice',
+      url: `/jobs-careers/?job=${encodeURIComponent(r.slug)}`,
+      timestamp: r.updated_at || r.published_at || ''
+    })),
+    ...(caRes.results || []).map(r => ({
+      id: `ca-${r.id}`,
+      kind: 'current_affair',
+      badge: 'Current Affairs',
+      title: r.title,
+      title_or: r.title_or || '',
+      summary: r.category || 'Daily Digest',
+      url: `/current-affairs/?slug=${encodeURIComponent(r.slug)}`,
+      timestamp: r.updated_at || r.published_at || ''
+    })),
+    ...(feedbackRes.results || []).map(r => ({
+      id: `fb-${r.id}`,
+      kind: 'correction',
+      badge: 'Correction Verified',
+      title: r.subject || 'Community Feedback Resolved',
+      title_or: '',
+      summary: r.admin_note || `Updated on ${r.page_url || '/'}`,
+      url: r.page_url || '/support/',
+      timestamp: r.resolved_at || ''
+    }))
+  ]
+    .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')))
+    .slice(0, limit);
+
+  return json({ items: entries, total: entries.length }, 200, { 'Cache-Control': CACHE });
+}
+
 export async function handleContent(request, env) {
   if (!env.DB) return json({ error: 'Database unavailable', code: 'NO_DATABASE' }, 500);
   try {
@@ -706,6 +918,15 @@ export async function handleContent(request, env) {
     }
     if (resource === 'jobs-directory') {
       return await handleJobsDirectory(env);
+    }
+    if (resource === 'about-directory') {
+      return await handleAboutDirectory(env, url);
+    }
+    if (resource === 'platform-stats') {
+      return await handlePlatformStats(env);
+    }
+    if (resource === 'changelog') {
+      return await handleChangelog(env, url);
     }
     if (resource === 'search') {
       return await handleUnifiedSearch(env, url);
