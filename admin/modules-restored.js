@@ -599,114 +599,206 @@
     var shell = el('div', { class: 'cso-mod-shell' });
     var kpiHost = el('div', { class: 'cso-mod-grid-4' });
     var drawerHost = el('div', {});
-    var previewHost = el('div', {});
     var tableHost = el('div', {});
 
     var allPages = [];
-    var state = { q: '', cat: '', status: '' };
+    var selected = {};
+    var state = { q: '', cat: '', status: '', page: 0, pageSize: '15' };
     var searchInp = el('input', { type: 'search', class: 'cso-mod-input', placeholder: 'Search title, route, or meta description…' });
+    var pageSizeSel = el('select', { class: 'cso-mod-select' }, [
+      el('option', { value: '15', text: '15 per page' }),
+      el('option', { value: '25', text: '25 per page' }),
+      el('option', { value: 'all', text: 'All pages' })
+    ]);
     var catRow = el('div', { class: 'cso-pill-row' });
     var statusRow = el('div', { class: 'cso-pill-row' });
 
-    function openPreview(p) {
-      clear(previewHost);
-      var mobile = false;
-      var src = p.route + (p.route.indexOf('?') === -1 ? '?' : '&') + 'preview=1&t=' + Date.now();
-      var frame = el('iframe', { src: src, class: 'cso-preview-frame', title: 'Live Preview: ' + p.route });
-      var toggleBtn = el('button', {
-        type: 'button',
-        class: 'cso-mod-btn cso-mod-btn-sm',
-        text: 'Mobile 375px',
-        onclick: function () {
-          mobile = !mobile;
-          frame.className = mobile ? 'cso-preview-frame-mobile' : 'cso-preview-frame';
-          toggleBtn.textContent = mobile ? 'Desktop 100%' : 'Mobile 375px';
-        }
-      });
-      previewHost.appendChild(el('div', { class: 'cso-drawer' }, [
-        el('div', { class: 'cso-drawer-head' }, [
-          el('strong', { text: 'Live Preview — ' + p.route }),
-          el('div', { class: 'cso-mod-toolbar' }, [
-            toggleBtn,
-            el('a', { href: p.route, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Open Live ↗' }),
-            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(previewHost); } })
-          ])
-        ]),
-        el('div', { class: 'cso-preview-frame-wrap' }, [frame])
-      ]));
+    function isSeoReady(p) {
+      var tl = (p.title || '').trim().length;
+      var dl = (p.meta_description || '').trim().length;
+      return tl >= 20 && tl <= 70 && dl >= 70 && dl <= 170;
     }
 
-    function openQuickEdit(p) {
+    function exportPagesJson() {
+      downloadFile('cso-pages-manifest-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(allPages, null, 2));
+      toast('Pages JSON exported', 'success');
+    }
+
+    function exportPagesCsv() {
+      var lines = ['route,title,category,status,source,seo_ready,meta_description'];
+      allPages.forEach(function (p) {
+        lines.push([p.route, p.title || '', p.category || '', p.status || 'published', p.source || 'static', isSeoReady(p) ? 'ready' : 'needs_meta', p.meta_description || ''].map(csvCell).join(','));
+      });
+      downloadFile('cso-pages-manifest.csv', lines.join('\n'), 'text/csv');
+      toast('Pages CSV exported', 'success');
+    }
+
+    async function bulkSetStatus(targetStatus) {
+      var routes = Object.keys(selected);
+      if (!routes.length) { toast('Select at least one page', 'amber'); return; }
+      var ok = 0, bad = [];
+      for (var i = 0; i < routes.length; i++) {
+        var p = selected[routes[i]];
+        try {
+          await api('PUT', 'pages', Object.assign({}, p, { route: p.route, status: targetStatus, publish_at: null, note: 'Bulk ' + targetStatus + ' from All Pages' }));
+          ok++;
+        } catch (e) { bad.push(p.route + ': ' + e.message); }
+      }
+      toast(ok + ' pages set to ' + targetStatus + (bad.length ? ' (' + bad.length + ' failed)' : ''), bad.length ? 'amber' : 'success');
+      selected = {};
+      await loadPages();
+    }
+
+    function openPageStudioDrawer(p) {
       clear(drawerHost);
+      var mobile = false;
       var titleInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.title || '' });
-      var metaInp = el('textarea', { class: 'cso-mod-textarea' });
-      metaInp.value = p.meta_description || '';
+      var metaInp = el('textarea', { class: 'cso-mod-textarea', rows: '3', text: p.meta_description || '' });
       var catSel = el('select', { class: 'cso-mod-select' }, [
         'Core Portal', 'Candidate Workspace', 'Information & Legal', 'Exam Guide', 'Recruitment'
       ].map(function (c) { return el('option', { value: c, text: c, selected: p.category === c }); }));
       var heroTitleInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.hero_title || '' });
       var heroSubInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.hero_subtitle || '' });
-      var ctaLblInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.cta_label || '' });
-      var ctaUrlInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.cta_url || '' });
       var statusSel = el('select', { class: 'cso-mod-select' }, [
         'published', 'draft', 'scheduled', 'archived', 'trash'
       ].map(function (s) { return el('option', { value: s, text: s, selected: (p.status || 'published') === s }); }));
 
-      var saveBtn = el('button', {
-        type: 'button',
-        class: 'cso-mod-btn cso-mod-btn-primary',
-        text: 'Save & Publish Live',
-        onclick: async function () {
-          saveBtn.disabled = true;
-          try {
-            await api('PUT', 'pages', {
-              route: p.route,
-              title: titleInp.value.trim(),
-              meta_description: metaInp.value.trim(),
-              category: catSel.value,
-              hero_title: heroTitleInp.value.trim(),
-              hero_subtitle: heroSubInp.value.trim(),
-              cta_label: ctaLblInp.value.trim(),
-              cta_url: ctaUrlInp.value.trim(),
-              status: statusSel.value,
-              note: 'Quick Edit SEO & Hero'
-            });
-            toast('Saved & pushed live: ' + p.route, 'success');
-            clear(drawerHost);
-            await loadPages();
-          } catch (e) {
-            toast(e.message, 'crimson');
-          } finally {
-            saveBtn.disabled = false;
-          }
-        }
-      });
+      var titleMeter = el('div', { class: 'cso-mod-toolbar' });
+      var metaMeter = el('div', { class: 'cso-mod-toolbar' });
+      var rightPane = el('div', { class: 'cso-mod-card' });
+      var revHost = el('div', { class: 'cso-mod-shell' });
+
+      var deskBtn = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Desktop', onclick: function () { mobile = false; syncVp(); renderRight(); } });
+      var mobBtn = el('button', { type: 'button', class: 'cso-pill', text: 'Mobile 375px', onclick: function () { mobile = true; syncVp(); renderRight(); } });
+      function syncVp() {
+        deskBtn.classList.toggle('cso-pill-active', !mobile);
+        mobBtn.classList.toggle('cso-pill-active', mobile);
+      }
+
+      function updateMeters() {
+        var tl = titleInp.value.trim().length, dl = metaInp.value.trim().length;
+        clear(titleMeter);
+        titleMeter.appendChild(el('span', { class: 'cso-mod-muted', text: tl + ' chars (optimal 50–60)' }));
+        titleMeter.appendChild(badge(tl >= 50 && tl <= 60 ? 'Optimal ✓' : tl >= 20 && tl <= 70 ? 'Acceptable' : tl < 20 ? 'Too short' : 'Too long', tl >= 50 && tl <= 60 ? 'ok' : 'warn'));
+        clear(metaMeter);
+        metaMeter.appendChild(el('span', { class: 'cso-mod-muted', text: dl + ' chars (optimal 145–160)' }));
+        metaMeter.appendChild(badge(dl >= 145 && dl <= 160 ? 'Optimal ✓' : dl >= 70 && dl <= 170 ? 'Acceptable' : dl < 70 ? 'Too short' : 'Too long', dl >= 145 && dl <= 160 ? 'ok' : 'warn'));
+      }
+
+      var src = p.route + (p.route.indexOf('?') === -1 ? '?' : '&') + 'preview=1&t=' + Date.now();
+      var frameEl = el('iframe', { src: src, class: 'cso-preview-frame', title: 'Live Preview: ' + p.route });
+      var serpUrl = el('div', { class: 'cso-serp-url', text: 'https://csodisha.com' + p.route });
+      var serpTitle = el('div', { class: 'cso-serp-title', text: p.title || p.route });
+      var serpDesc = el('p', { class: 'cso-serp-desc', text: p.meta_description || 'No meta description set.' });
+      var ogTitle = el('strong', { text: p.title || p.route });
+      var ogDesc = el('p', { class: 'cso-mod-muted', text: p.meta_description || 'No meta description set.' });
+      var heroPreview = el('div', { class: 'cso-mod-muted', text: '' });
+
+      rightPane.appendChild(el('div', { class: 'cso-mod-label', text: 'Google SERP Result Preview' }));
+      rightPane.appendChild(el('div', { class: 'cso-serp-card' }, [serpUrl, serpTitle, serpDesc]));
+      rightPane.appendChild(el('div', { class: 'cso-mod-label', text: 'OpenGraph Social Share Preview' }));
+      rightPane.appendChild(el('div', { class: 'cso-og-card' }, [
+        el('div', { class: 'cso-preview-kicker', text: 'CSODISHA.COM · ' + String(p.category || 'PORTAL').toUpperCase() }),
+        ogTitle, ogDesc, heroPreview
+      ]));
+      rightPane.appendChild(el('div', { class: 'cso-mod-label', text: 'Live Route <iframe> Preview' }));
+      rightPane.appendChild(el('div', { class: 'cso-preview-frame-wrap' }, [frameEl]));
+
+      function renderRight() {
+        updateMeters();
+        var t = titleInp.value.trim() || p.route;
+        var d = metaInp.value.trim() || 'No meta description set — add 145–160 chars for optimal search snippets.';
+        serpTitle.textContent = t;
+        serpDesc.textContent = d;
+        ogTitle.textContent = t;
+        ogDesc.textContent = d;
+        heroPreview.textContent = heroTitleInp.value.trim() ? ('Hero: ' + heroTitleInp.value.trim() + (heroSubInp.value.trim() ? ' — ' + heroSubInp.value.trim() : '')) : '';
+        frameEl.className = mobile ? 'cso-preview-frame-mobile' : 'cso-preview-frame';
+      }
+
+      async function savePageWithStatus(targetStatus) {
+        try {
+          await api('PUT', 'pages', Object.assign({}, p, {
+            route: p.route,
+            title: titleInp.value.trim(),
+            meta_description: metaInp.value.trim(),
+            category: catSel.value,
+            hero_title: heroTitleInp.value.trim(),
+            hero_subtitle: heroSubInp.value.trim(),
+            status: targetStatus || statusSel.value,
+            publish_at: null,
+            note: 'Page Studio Drawer (' + (targetStatus || statusSel.value) + ')'
+          }));
+          toast(targetStatus === 'published' ? 'Published live to Edge: ' + p.route : 'Saved draft: ' + p.route, 'success');
+          clear(drawerHost);
+          await loadPages();
+        } catch (e) { toast(e.message, 'crimson'); }
+      }
+
+      var leftPane = el('div', { class: 'cso-mod-card' }, [
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'SEO Title' }), titleInp, titleMeter]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), metaInp, metaMeter]),
+        el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Headline' }), heroTitleInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Subheadline' }), heroSubInp])
+        ]),
+        el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Category' }), catSel]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Status' }), statusSel])
+        ]),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Draft (Unpublished)', onclick: function () { savePageWithStatus('draft'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish Live to Edge', onclick: function () { savePageWithStatus('published'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn', text: 'Open in Visual Builder', onclick: function () { f02State.builderRoute = p.route; window.selectModule && window.selectModule('folder-02', 'module-02-003'); } })
+        ]),
+        el('details', {}, [
+          el('summary', { class: 'cso-mod-label', text: 'Revision History & 1-Click Rollback (' + (p.revisions || 0) + ' saved)' }),
+          revHost
+        ])
+      ]);
 
       drawerHost.appendChild(el('div', { class: 'cso-drawer' }, [
         el('div', { class: 'cso-drawer-head' }, [
-          el('div', {}, [el('strong', { text: 'Quick Edit SEO & Hero — ' }), el('code', { text: p.route })]),
-          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+          el('div', {}, [el('strong', { text: 'Page Studio & Pre-Publish Preview — ' }), el('code', { text: p.route }), f02SourceBadge(p.source), f02StatusBadge(p.status)]),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            deskBtn, mobBtn,
+            el('a', { href: p.route, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Open Live ↗' }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+          ])
         ]),
-        el('div', { class: 'cso-mod-grid-2' }, [
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Page / Meta Title' }), titleInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Category' }), catSel]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Headline' }), heroTitleInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Subtitle' }), heroSubInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Label' }), ctaLblInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), ctaUrlInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), metaInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Publish Status' }), statusSel])
-        ]),
-        el('div', { class: 'cso-mod-toolbar' }, [
-          saveBtn,
-          el('button', {
-            type: 'button',
-            class: 'cso-mod-btn',
-            text: 'Open in Visual Builder',
-            onclick: function () { f02State.builderRoute = p.route; window.selectModule && window.selectModule('folder-02', 'module-02-003'); }
-          })
-        ])
+        el('div', { class: 'cso-mod-grid-2' }, [leftPane, rightPane])
       ]));
+
+      [titleInp, metaInp, heroTitleInp, heroSubInp].forEach(function (inp) {
+        inp.addEventListener('input', renderRight);
+      });
+      renderRight();
+
+      revHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Loading revisions…' }));
+      api('GET', 'pages/revisions?route=' + encodeURIComponent(p.route)).then(function (res) {
+        clear(revHost);
+        var revs = res.revisions || [];
+        if (!revs.length) {
+          revHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'No D1 revisions recorded yet for this route.' }));
+          return;
+        }
+        revs.slice(0, 8).forEach(function (rv) {
+          revHost.appendChild(el('div', { class: 'cso-drawer-head' }, [
+            el('div', {}, [
+              el('strong', { text: '#' + rv.id + ' · ' + (rv.note || 'Page update') }),
+              el('div', { class: 'cso-mod-muted', text: (rv.editor_email || 'staff') + ' · ' + (rv.created_at || '') })
+            ]),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Rollback', onclick: async function () {
+              try {
+                await api('POST', 'pages/restore', { route: p.route, revision_id: rv.id, status: 'published' });
+                toast('Rolled back to revision #' + rv.id, 'success');
+                clear(drawerHost);
+                await loadPages();
+              } catch (e) { toast(e.message, 'crimson'); }
+            } })
+          ]));
+        });
+      }).catch(function () { clear(revHost); });
     }
 
     function renderPills() {
@@ -718,7 +810,7 @@
           type: 'button',
           class: 'cso-pill' + (state.cat === c ? ' is-active' : ''),
           text: c || 'All',
-          onclick: function () { state.cat = c; renderPills(); drawTable(); }
+          onclick: function () { state.cat = c; state.page = 0; renderPills(); drawTable(); }
         }));
       });
 
@@ -729,7 +821,7 @@
           type: 'button',
           class: 'cso-pill' + (state.status === s ? ' is-active' : ''),
           text: s || 'All',
-          onclick: function () { state.status = s; renderPills(); drawTable(); }
+          onclick: function () { state.status = s; state.page = 0; renderPills(); drawTable(); }
         }));
       });
     }
@@ -750,8 +842,19 @@
           (p.meta_description || '').toLowerCase().indexOf(term) !== -1;
       });
 
-      var rows = filtered.map(function (p) {
+      var pSize = state.pageSize === 'all' ? Math.max(filtered.length, 1) : Number(state.pageSize) || 15;
+      var totalPages = Math.max(1, Math.ceil(filtered.length / pSize));
+      if (state.page >= totalPages) state.page = totalPages - 1;
+      var slice = filtered.slice(state.page * pSize, (state.page + 1) * pSize);
+
+      var rows = slice.map(function (p) {
+        var ready = isSeoReady(p);
         return el('tr', {}, [
+          el('td', {}, el('input', {
+            type: 'checkbox',
+            checked: selected[p.route] ? true : false,
+            onchange: function (e) { if (e.target.checked) selected[p.route] = p; else delete selected[p.route]; }
+          })),
           el('td', {}, [
             el('strong', { text: p.title || p.route }),
             el('div', { class: 'cso-inline-row' }, [el('code', { text: p.route }), f02SourceBadge(p.source)])
@@ -761,10 +864,11 @@
             f02StatusBadge(p.status),
             p.revisions ? el('span', { class: 'cso-mod-muted', text: ' · ' + p.revisions + ' rev' }) : null
           ]),
-          el('td', { text: (p.meta_description || '').slice(0, 72) + ((p.meta_description || '').length > 72 ? '…' : '') || '—' }),
+          el('td', {}, badge(ready ? 'SEO Ready ✓' : 'Needs Meta', ready ? 'ok' : 'warn')),
+          el('td', { text: (p.meta_description || '').slice(0, 64) + ((p.meta_description || '').length > 64 ? '…' : '') || '—' }),
           el('td', {}, el('div', { class: 'cso-mod-toolbar' }, [
-            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Quick Edit', onclick: function () { openQuickEdit(p); } }),
-            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview', onclick: function () { openPreview(p); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Edit', onclick: function () { openPageStudioDrawer(p); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview', onclick: function () { openPageStudioDrawer(p); } }),
             el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Builder', onclick: function () { f02State.builderRoute = p.route; window.selectModule && window.selectModule('folder-02', 'module-02-003'); } }),
             el('a', { href: p.route, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Open Live ↗' }),
             (p.status !== 'trash' && p.status !== 'archived') ? el('button', {
@@ -783,8 +887,15 @@
         ]);
       });
 
-      tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Showing ' + filtered.length + ' of ' + allPages.length + ' routes (static + live D1 overrides + dynamic pages).' }));
-      tableHost.appendChild(safeTable(['Page & Route', 'Category', 'Status', 'Meta Description', 'Actions'], rows));
+      tableHost.appendChild(el('div', { class: 'cso-drawer-head' }, [
+        el('span', { class: 'cso-mod-muted', text: 'Showing ' + (filtered.length ? state.page * pSize + 1 : 0) + '–' + Math.min((state.page + 1) * pSize, filtered.length) + ' of ' + filtered.length + ' matching routes (' + allPages.length + ' total)' }),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '← Prev', disabled: state.page <= 0, onclick: function () { if (state.page > 0) { state.page--; drawTable(); } } }),
+          el('span', { class: 'cso-mod-muted', text: 'Page ' + (state.page + 1) + ' / ' + totalPages }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Next →', disabled: state.page >= totalPages - 1, onclick: function () { if (state.page < totalPages - 1) { state.page++; drawTable(); } } })
+        ])
+      ]));
+      tableHost.appendChild(safeTable(['Select', 'Page & Route', 'Category', 'Status', 'SEO Health', 'Meta Description', 'Actions'], rows));
     }
 
     async function loadPages() {
@@ -793,16 +904,17 @@
       try {
         var d = await api('GET', 'pages');
         allPages = d.pages || [];
-        var overrides = allPages.filter(function (p) { return p.source === 'override' || p.source === 'dynamic'; }).length;
+        var liveCount = allPages.filter(function (p) { return !p.status || p.status === 'published'; }).length;
         var drafts = allPages.filter(function (p) { return p.status === 'draft' || p.status === 'scheduled'; }).length;
-        var trashed = allPages.filter(function (p) { return p.status === 'trash' || p.status === 'archived'; }).length;
+        var seoReady = allPages.filter(isSeoReady).length;
+        var seoPct = allPages.length ? Math.round((seoReady / allPages.length) * 100) : 100;
 
         clear(kpiHost);
         [
-          ['Total Routes', allPages.length],
-          ['Live Overrides / Custom', overrides],
+          ['Total Pages', allPages.length],
+          ['Published Live', liveCount],
           ['Drafts & Scheduled', drafts],
-          ['Trash & Archived', trashed]
+          ['SEO Optimal %', seoPct + '%']
         ].forEach(function (k) {
           kpiHost.appendChild(el('div', { class: 'cso-mod-kpi' }, [
             el('div', { class: 'cso-mod-kpi-val', text: String(k[1]) }),
@@ -818,22 +930,25 @@
       }
     }
 
-    searchInp.addEventListener('input', function () { state.q = searchInp.value; drawTable(); });
+    searchInp.addEventListener('input', function () { state.q = searchInp.value; state.page = 0; drawTable(); });
+    pageSizeSel.addEventListener('change', function () { state.pageSize = pageSizeSel.value; state.page = 0; drawTable(); });
 
-    renderBanner(shell, 'All Website Pages', 'Live merged inventory of all 44 static portals + D1 live overrides + custom pages.', [
+    renderBanner(shell, 'All Website Pages', 'Live merged inventory of all static portals + D1 live overrides + custom pages with bulk controls & split-pane previews.', [
       el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: '+ Create New Page', onclick: function () { window.selectModule && window.selectModule('folder-02', 'module-02-002'); } }),
-      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Open Visual Builder', onclick: function () { window.selectModule && window.selectModule('folder-02', 'module-02-003'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Bulk Publish Live', onclick: function () { bulkSetStatus('published'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Bulk Set Draft', onclick: function () { bulkSetStatus('draft'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export JSON', onclick: exportPagesJson }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export CSV', onclick: exportPagesCsv }),
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: loadPages })
     ]);
 
     shell.appendChild(kpiHost);
     shell.appendChild(el('div', { class: 'cso-mod-card' }, [
-      el('div', { class: 'cso-mod-field' }, [searchInp]),
+      el('div', { class: 'cso-mod-grid-2' }, [searchInp, pageSizeSel]),
       catRow,
       statusRow
     ]));
     shell.appendChild(drawerHost);
-    shell.appendChild(previewHost);
     shell.appendChild(tableHost);
     root.appendChild(shell);
     loadPages();
