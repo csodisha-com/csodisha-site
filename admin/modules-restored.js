@@ -7923,7 +7923,23 @@
         { type: 'notice', title: 'Effective Date & Legal Contact', text: 'Effective Date: 2026-11-13 · Legal & Editorial Contact: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
       ]
     },
-    'module-03-006': { title: 'Cookie Policy', path: '/cookies.html', email: 'privacy@csodisha.com' },
+    'module-03-006': {
+      title: 'Cookie Policy',
+      seoTitle: 'Cookie Policy | Common Sense Odisha (csodisha.com)',
+      metaDescription: 'Learn how Common Sense Odisha (csodisha.com) uses essential security cookies and browser storage for login sessions, CBT mock tests, and theme settings.',
+      heroTitle: 'Cookie & Browser Storage Policy',
+      heroSubtitle: 'Transparent disclosure of essential cookies, Cloudflare security tokens, and local browser storage used on Common Sense Odisha.',
+      effectiveDate: '2026-11-13',
+      status: 'published',
+      path: '/cookies.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'What Are Cookies & Local Browser Storage?', text: 'Cookies and browser storage (localStorage / sessionStorage) are small data files stored on your device when you visit https://csodisha.com. They help keep your account signed in securely, preserve your active CBT mock test progress, remember bookmarked job alerts, and protect the portal against automated abuse.' },
+        { type: 'richtext', title: 'Categories of Cookies & Storage We Use', text: 'We rely strictly on functional and security-essential storage: (a) Authentication & Session Cookies (HttpOnly, Secure, SameSite session tokens) to keep registered students and editors logged in safely; (b) Cloudflare Edge Security Cookies used strictly to distinguish legitimate visitors from malicious bots; and (c) Preference & Study Storage (localStorage keys for saved bookmarks, offline PWA caching, and UI theme preferences). We do not use invasive cross-site behavioral tracking cookies.' },
+        { type: 'richtext', title: 'Managing or Clearing Cookies in Your Browser', text: 'You can view, block, or delete cookies and site storage anytime through your browser settings (Chrome, Firefox, Edge, Safari, or Brave). Please note that blocking strictly necessary session cookies may prevent account sign-in or reset saved CBT practice progress stored locally on your device.' },
+        { type: 'notice', title: 'Effective Date & Privacy Inquiries', text: 'Effective Date: 2026-11-13 · Privacy & Cookie Inquiries: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
+      ]
+    },
     'module-03-007': { title: 'Copyright & DMCA', path: '/copyright.html', email: 'dmca@csodisha.com' },
     'module-03-008': { title: 'Editorial Policy', path: '/editorial-policy.html', email: 'editorial@csodisha.com' },
     'module-03-009': { title: 'Corrections Policy', path: '/corrections.html', email: 'editorial@csodisha.com' },
