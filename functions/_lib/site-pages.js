@@ -38,20 +38,37 @@ export async function getPublishedPage(env, pathname) {
 }
 function parse(j) { try { const v = JSON.parse(j || '[]'); return Array.isArray(v) ? v : []; } catch { return []; } }
 
+export function extractOgImage(blocks) {
+  const list = parse(typeof blocks === 'string' ? blocks : JSON.stringify(blocks || []));
+  const og = list.find(b => b && b.type === 'og_meta' && b.og_image);
+  if (og) return safeUrl(og.og_image);
+  const img = list.find(b => b && (b.type === 'image' || (b.type === 'attachment' && b.is_image)) && b.url);
+  return img ? safeUrl(img.url) : '';
+}
+
 export function renderBlocks(blocks) {
   return parse(typeof blocks === 'string' ? blocks : JSON.stringify(blocks || [])).map(b => {
     const t = b && b.type;
+    if (t === 'og_meta') return '';
     const text = esc(b.text || b.title || '');
     if (t === 'heading') return `<h2>${text}</h2>`;
     if (t === 'list') return `<ul>${(Array.isArray(b.items) ? b.items : String(b.text || '').split('\n')).filter(Boolean).map(i => `<li>${esc(i)}</li>`).join('')}</ul>`;
-    if (t === 'image') return b.url ? `<img src="${esc(safeUrl(b.url))}" alt="${esc(b.alt || '')}" loading="lazy">` : '';
+    if (t === 'image') return b.url ? `<figure class="cso-live-figure"><img src="${esc(safeUrl(b.url))}" alt="${esc(b.alt || b.title || '')}" loading="lazy">${b.title ? `<figcaption>${esc(b.title)}</figcaption>` : ''}</figure>` : '';
+    if (t === 'attachment') {
+      const u = safeUrl(b.url);
+      const nt = b.new_tab !== false ? ' target="_blank" rel="noopener noreferrer"' : '';
+      const badge = esc(b.role || b.source_label || 'Document');
+      return `<div class="cso-live-attachment"><span class="cso-live-badge">${badge}</span> <strong>${esc(b.title || 'Resource')}</strong>${b.domain ? ` <span class="cso-live-domain">(${esc(b.domain)})</span>` : ''} <a class="btn btn-primary" href="${esc(u)}"${nt}>Open / Download</a></div>`;
+    }
+    if (t === 'official_links') return `<aside class="cso-live-notice"><strong>${esc(b.title || 'Official Links')}</strong><p>${esc(b.text || '')}</p>${b.url ? `<p><a href="${esc(safeUrl(b.url))}" target="_blank" rel="noopener noreferrer">${esc(b.url)}</a></p>` : ''}</aside>`;
+    if (t === 'key_dates') return `<section class="cso-live-notice"><h2>${esc(b.title || 'Key Dates')}</h2><p>${esc(b.text || '')}</p></section>`;
     if (t === 'cta') return `<p><a class="btn btn-primary" href="${esc(safeUrl(b.url))}">${esc(b.label || b.text || 'Learn more')}</a></p>`;
     const items = Array.isArray(b.items) ? b.items : String(b.items || '').split('\n').filter(Boolean);
     if (t === 'hero') return `<section class="cso-live-hero-block"><h2>${esc(b.title)}</h2>${b.text ? `<p>${esc(b.text)}</p>` : ''}${b.label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(b.url))}">${esc(b.label)}</a></p>` : ''}</section>`;
     if (t === 'ticker') return `<section class="cso-live-ticker"><h2>${esc(b.title || 'Latest Jobs')}</h2><p><a href="/jobs-careers/">View all live job notifications</a></p></section>`;
     if (t === 'examgrid') return `<section><h2>${esc(b.title)}</h2><ul class="cso-live-grid">${items.map(i => { const [l, u] = String(i).split('|'); return `<li><a href="${esc(safeUrl((u || '').trim()))}">${esc((l || '').trim())}</a></li>`; }).join('')}</ul></section>`;
     if (t === 'cbt') return `<section class="cso-live-cbt"><h2>${esc(b.title)}</h2><p>${esc(b.text)}</p><p><a class="btn btn-primary" href="${esc(safeUrl(b.url || '/mock-tests/'))}">${esc(b.label || 'Start mock test')}</a></p></section>`;
-    if (t === 'faq') return `<section><h2>${esc(b.title || 'FAQ')}</h2>${items.map(i => { const [q, a] = String(i).split('|'); return `<details><summary>${esc((q || '').trim())}</summary><p>${esc((a || '').trim())}</p></details>`; }).join('')}</section>`;
+    if (t === 'faq') return `<section><h2>${esc(b.title || 'FAQ')}</h2>${items.length ? items.map(i => { const [q, a] = String(i).split('|'); return `<details><summary>${esc((q || '').trim())}</summary><p>${esc((a || '').trim())}</p></details>`; }).join('') : `<p>${esc(b.text || '')}</p>`}</section>`;
     if (t === 'notice') return `<aside class="cso-live-notice" role="note"><strong>${esc(b.title)}</strong><p>${esc(b.text)}</p></aside>`;
     if (t === 'richtext') return String(b.text || '').split(/\n{2,}/).filter(Boolean).map(x => `<p>${esc(x)}</p>`).join('');
     if (t === 'quote') return `<blockquote>${text}</blockquote>`;
@@ -65,9 +82,11 @@ export function renderSections(sections) {
 }
 
 export function renderDynamicPage(row, sitewide) {
+  const ogImg = extractOgImage(row.blocks_json);
+  const ogMeta = ogImg ? `<meta property="og:image" content="${esc(ogImg)}">` : '';
   const hero = row.hero_title ? `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.hero_title)}</h1>${row.hero_subtitle ? `<p>${esc(row.hero_subtitle)}</p>` : ''}${row.cta_label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(row.cta_url))}">${esc(row.cta_label)}</a></p>` : ''}</div></section>` : `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.title)}</h1></div></section>`;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(row.title)}</title><meta name="description" content="${esc(row.meta_description)}">
+<title>${esc(row.title)}</title><meta name="description" content="${esc(row.meta_description)}">${ogMeta}
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/design-tokens.css"><link rel="stylesheet" href="/assets/css/ui-kit.css"><link rel="stylesheet" href="/assets/css/public-content.css"><link rel="stylesheet" href="/styles.css"></head>
 <body><header class="top site-header__top" role="banner"><div class="w"><a href="/" class="brand">Common Sense Odisha</a>
@@ -83,6 +102,8 @@ export function applyPageOverrides(res, row, sitewide) {
   if (sw) rw.on('body', { element(e) { e.append(sw, { html: true }); } });
   if (row.title) rw.on('title', { element(e) { e.setInnerContent(row.title); } });
   if (row.meta_description) rw.on('meta[name="description"]', { element(e) { e.setAttribute('content', row.meta_description); } });
+  const ogImg = extractOgImage(row.blocks_json);
+  if (ogImg) rw.on('head', { element(e) { e.append(`<meta property="og:image" content="${esc(ogImg)}">`, { html: true }); } });
   if (row.hero_title) rw.on('h1', (() => { let done = false; return { element(e) { if (done) return; done = true; e.setInnerContent(row.hero_title); e.removeAttribute('aria-label'); } }; })());
   if (row.hero_subtitle) rw.on('.hero p, #cso-hero p', (() => { let done = false; return { element(e) { if (done) return; done = true; e.setInnerContent(row.hero_subtitle); } }; })());
   const extra = renderBlocks(row.blocks_json) + renderSections(row.reusable_sections_json);

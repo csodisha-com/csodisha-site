@@ -1022,17 +1022,202 @@
     var heroSubInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Hero supporting subtitle', value: tpl ? (tpl.hero_subtitle || '') : '' });
     var ctaLblInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'e.g. Apply Online', value: tpl ? (tpl.cta_label || '') : '' });
     var ctaUrlInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/jobs-careers/', value: tpl ? (tpl.cta_url || '') : '' });
+    var ogImgInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/api/media/<key>.jpg or https://…' });
     var schedInp = el('input', { type: 'datetime-local', class: 'cso-mod-input' });
 
     var starterBlocks = tpl ? JSON.parse(JSON.stringify(tpl.blocks || [])) : [
       { type: 'hero', title: 'New Odisha Exam Portal', text: 'Verified syllabus, official links, and live alerts.', label: 'Explore Jobs', url: '/jobs-careers/' },
       { type: 'notice', title: 'Important Notice', text: 'Always verify final dates on the official commission portal.' }
     ];
+    var attachments = [];
+    var r2Open = false;
+    var r2Filter = 'All';
+    var r2Items = [];
+    var activeEmbedId = null;
+
     var blocksHost = el('div', { class: 'cso-mod-shell' });
+    var attachListHost = el('div', { class: 'cso-mod-shell' });
+    var attachPreviewHost = el('div', {});
+    var r2LibraryHost = el('div', { class: 'cso-mod-card cso-hidden' });
     var titleCount = el('div', { class: 'cso-char-count' });
     var descCount = el('div', { class: 'cso-char-count' });
     var slugStatusEl = el('div', { class: 'cso-mod-toolbar' });
     var previewHost = el('div', {});
+
+    function detectLinkMeta(rawUrl, linkType) {
+      var u = String(rawUrl || '').trim();
+      var domain = '';
+      var previewUrl = u;
+      var sourceKind = 'external';
+      var sourceLabel = linkType || 'Reference Link';
+      var isImage = /\.(png|jpe?g|webp|svg|gif)(\?|$)/i.test(u);
+      var isPdf = /\.pdf(\?|$)/i.test(u);
+      if (u.indexOf('/api/media/') === 0) {
+        domain = 'csodisha.com (R2)';
+        sourceKind = 'r2';
+        sourceLabel = isImage ? 'R2 Photo' : (isPdf ? 'R2 PDF' : 'R2 File');
+      } else {
+        try {
+          var parsed = new URL(u, window.location.origin);
+          domain = parsed.hostname;
+          if (/drive\.google\.com/i.test(domain)) {
+            sourceKind = 'gdrive';
+            sourceLabel = 'Google Drive';
+            var m = u.match(/\/file\/d\/([^\/?#]+)/) || u.match(/[?&]id=([^&]+)/);
+            if (m && m[1]) previewUrl = 'https://drive.google.com/file/d/' + m[1] + '/preview';
+          } else if (/\.(gov|nic)\.in$/i.test(domain)) {
+            sourceKind = 'gov';
+            sourceLabel = 'Official Portal';
+          } else if (isPdf) {
+            sourceKind = 'pdf';
+            sourceLabel = 'Direct PDF';
+          }
+        } catch (_) {}
+      }
+      return { domain: domain, preview_url: previewUrl, source_kind: sourceKind, source_label: sourceLabel, is_image: isImage, is_pdf: isPdf };
+    }
+
+    function addAttachment(item) {
+      attachments.push(item);
+      if (!ogImgInp.value.trim() && item.is_image) ogImgInp.value = item.url;
+      renderAttachments();
+      updateAll();
+    }
+
+    function openInlineAttachPreview(att) {
+      clear(attachPreviewHost);
+      var box = el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'Attachment Preview: ' + att.title }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(attachPreviewHost); } })
+        ])
+      ]);
+      if (att.is_image) {
+        box.appendChild(el('img', { src: att.url, alt: att.title, class: 'cso-asset-preview-img' }));
+      } else if (att.is_pdf || att.source_kind === 'gdrive') {
+        box.appendChild(el('iframe', { src: att.preview_url || att.url, class: 'cso-asset-preview-pdf', title: att.title }));
+      } else {
+        box.appendChild(el('p', { class: 'cso-mod-muted', text: att.source_label + ' · ' + att.url }));
+      }
+      attachPreviewHost.appendChild(box);
+    }
+
+    function renderAttachments() {
+      clear(attachListHost);
+      if (!attachments.length) {
+        attachListHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'No R2 files, photos, or official/Google Drive links attached yet.' }));
+        return;
+      }
+      var ROLES = ['Hero Cover Image', 'OpenGraph Social Image', 'Official Portal Link', 'Google Drive Document', 'Downloadable PDF/File', 'Inline Photo', 'Apply Online CTA'];
+      attachments.forEach(function (att, idx) {
+        var tInp = el('input', { type: 'text', class: 'cso-mod-input', value: att.title });
+        tInp.addEventListener('input', function () { att.title = tInp.value; updatePreviewPane(); });
+        var roleSel = el('select', { class: 'cso-mod-select' }, ROLES.map(function (r) {
+          return el('option', { value: r, text: r, selected: att.role === r });
+        }));
+        roleSel.addEventListener('change', function () {
+          att.role = roleSel.value;
+          if (att.role === 'OpenGraph Social Image' && att.is_image) ogImgInp.value = att.url;
+          updatePreviewPane();
+        });
+        var ntChk = el('input', { type: 'checkbox', checked: att.new_tab !== false });
+        ntChk.addEventListener('change', function () { att.new_tab = !!ntChk.checked; });
+
+        attachListHost.appendChild(el('div', { class: 'cso-builder-block' }, [
+          el('div', { class: 'cso-builder-block-head' }, [
+            el('div', { class: 'cso-inline-row' }, [
+              badge(att.source_label || 'Link', att.source_kind === 'gov' || att.source_kind === 'r2' ? 'ok' : 'info'),
+              el('span', { class: 'cso-mod-muted', text: att.domain || att.url })
+            ]),
+            el('div', { class: 'cso-mod-toolbar' }, [
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '↑', disabled: idx === 0, onclick: function () { var tmp = attachments[idx - 1]; attachments[idx - 1] = att; attachments[idx] = tmp; renderAttachments(); updatePreviewPane(); } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '↓', disabled: idx === attachments.length - 1, onclick: function () { var tmp = attachments[idx + 1]; attachments[idx + 1] = att; attachments[idx] = tmp; renderAttachments(); updatePreviewPane(); } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview', onclick: function () { openInlineAttachPreview(att); } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: 'Remove', onclick: function () { attachments.splice(idx, 1); renderAttachments(); updateAll(); } })
+            ])
+          ]),
+          el('div', { class: 'cso-mod-grid-3' }, [
+            tInp,
+            roleSel,
+            el('label', { class: 'cso-check-label' }, [ntChk, el('span', { text: 'Open in New Tab' })])
+          ])
+        ]));
+      });
+    }
+
+    async function toggleR2Browser(forceOpen) {
+      r2Open = forceOpen !== undefined ? forceOpen : !r2Open;
+      r2LibraryHost.classList.toggle('cso-hidden', !r2Open);
+      if (!r2Open) return;
+      clear(r2LibraryHost);
+      r2LibraryHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Loading R2 media library…' }));
+      try {
+        var res = await api('GET', 'media?limit=60');
+        r2Items = res.items || [];
+        drawR2Browser();
+      } catch (e) { fail(r2LibraryHost, e); }
+    }
+
+    function drawR2Browser() {
+      clear(r2LibraryHost);
+      var qInp = el('input', { type: 'search', class: 'cso-mod-input', placeholder: 'Filter R2 files by name or key…' });
+      var listBox = el('div', { class: 'cso-mod-shell' });
+      function drawList() {
+        clear(listBox);
+        var q = qInp.value.toLowerCase().trim();
+        var shown = r2Items.filter(function (m) {
+          var k = (m.kind || '').toLowerCase();
+          var typeOk = r2Filter === 'All' ||
+            (r2Filter === 'Images' && k === 'image') ||
+            (r2Filter === 'PDFs' && k === 'pdf') ||
+            (r2Filter === 'Docs/Archives' && k !== 'image' && k !== 'pdf');
+          var textOk = !q || ((m.original_name || '') + ' ' + (m.object_key || '')).toLowerCase().indexOf(q) >= 0;
+          return typeOk && textOk;
+        });
+        if (!shown.length) {
+          listBox.appendChild(el('p', { class: 'cso-mod-muted', text: 'No matching R2 assets found.' }));
+          return;
+        }
+        shown.slice(0, 20).forEach(function (m) {
+          var url = m.url || ('/api/media/' + m.object_key);
+          var isImg = m.kind === 'image';
+          var isPdf = m.kind === 'pdf';
+          listBox.appendChild(el('div', { class: 'cso-drawer-head' }, [
+            el('div', {}, [
+              el('strong', { text: m.original_name || m.object_key }),
+              el('div', { class: 'cso-mod-muted', text: (m.mime_type || m.kind) + ' · ' + Math.round((m.size_bytes || 0) / 1024) + ' KB' })
+            ]),
+            el('div', { class: 'cso-mod-toolbar' }, [
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Attach', onclick: function () {
+                addAttachment({
+                  id: 'att-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+                  title: m.original_name || m.object_key,
+                  url: url, preview_url: url,
+                  role: isImg ? 'Hero Cover Image' : 'Downloadable PDF/File',
+                  source_kind: 'r2', source_label: isImg ? 'R2 Photo' : (isPdf ? 'R2 PDF' : 'R2 File'),
+                  domain: 'csodisha.com (R2)', is_image: isImg, is_pdf: isPdf, new_tab: true
+                });
+                toast('Attached R2 asset: ' + (m.original_name || m.object_key), 'success');
+              } }),
+              isImg ? el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Set OG Image', onclick: function () {
+                ogImgInp.value = url;
+                updatePreviewPane();
+                toast('OG image set!', 'success');
+              } }) : null
+            ])
+          ]));
+        });
+      }
+      qInp.addEventListener('input', drawList);
+      r2LibraryHost.appendChild(el('div', { class: 'cso-drawer-head' }, [
+        el('strong', { text: 'R2 Media Library (' + r2Items.length + ' assets)' }),
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { toggleR2Browser(false); } })
+      ]));
+      r2LibraryHost.appendChild(pills(['All', 'Images', 'PDFs', 'Docs/Archives'], function (f) { r2Filter = f; drawList(); }));
+      r2LibraryHost.appendChild(qInp);
+      r2LibraryHost.appendChild(listBox);
+      drawList();
+    }
 
     function applyBlueprint(key) {
       var bp = BLUEPRINTS[key];
@@ -1081,6 +1266,9 @@
       var hTitle = heroTitleInp.value.trim() || t;
       var hSub = heroSubInp.value.trim() || 'Supporting summary for Odisha aspirants.';
       var cLbl = ctaLblInp.value.trim();
+      var heroImgAtt = attachments.find(function (a) { return a.is_image && a.role === 'Hero Cover Image'; });
+      var ogAtt = attachments.find(function (a) { return a.is_image && a.role === 'OpenGraph Social Image'; });
+      var ogUrl = ogImgInp.value.trim() || (ogAtt ? ogAtt.url : (heroImgAtt ? heroImgAtt.url : ''));
 
       var card = el('div', { class: mobileMode ? 'cso-preview-card-mobile' : 'cso-preview-card-desktop' });
       if (previewTab === 'serp') {
@@ -1090,11 +1278,13 @@
           el('p', { class: 'cso-serp-desc', text: d })
         ]));
       } else if (previewTab === 'og') {
-        card.appendChild(el('div', { class: 'cso-og-card' }, [
+        var ogCard = el('div', { class: 'cso-og-card' }, [
           el('div', { class: 'cso-preview-kicker', text: 'CSODISHA.COM · ' + catSel.value.toUpperCase() }),
+          ogUrl ? el('img', { src: ogUrl, alt: t, class: 'cso-asset-preview-img' }) : null,
           el('strong', { text: t }),
           el('p', { class: 'cso-mod-muted', text: d })
-        ]));
+        ]);
+        card.appendChild(ogCard);
       } else {
         card.appendChild(el('div', { class: 'cso-drawer-head' }, [
           el('strong', { text: 'Common Sense Odisha' }),
@@ -1102,6 +1292,7 @@
         ]));
         card.appendChild(el('div', { class: 'cso-og-card' }, [
           el('div', { class: 'cso-preview-kicker', text: catSel.value.toUpperCase() + ' · PREVIEW (UNPUBLISHED)' }),
+          heroImgAtt ? el('img', { src: heroImgAtt.url, alt: heroImgAtt.title, class: 'cso-asset-preview-img' }) : null,
           el('h3', { text: hTitle }),
           el('p', { class: 'cso-preview-body', text: hSub }),
           cLbl ? el('span', { class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: cLbl }) : null
@@ -1110,8 +1301,44 @@
           card.appendChild(el('div', { class: 'cso-builder-block' }, [
             el('div', { class: 'cso-builder-block-head' }, [badge((idx + 1) + '. ' + b.type, 'info')]),
             el('strong', { text: b.title || '(Untitled Block)' }),
-            el('p', { class: 'cso-mod-muted', text: b.text || '' })
+            el('p', { class: 'cso-mod-muted', text: b.text || '' }),
+            (b.url && b.type === 'image') ? el('img', { src: b.url, alt: b.title || '', class: 'cso-asset-preview-img' }) : null
           ]));
+        });
+        attachments.forEach(function (att) {
+          if (att.role === 'Hero Cover Image' || att.role === 'OpenGraph Social Image') return;
+          if (att.role === 'Inline Photo' && att.is_image) {
+            card.appendChild(el('div', { class: 'cso-builder-block' }, [
+              el('strong', { text: att.title }),
+              el('img', { src: att.url, alt: att.title, class: 'cso-asset-preview-img' })
+            ]));
+            return;
+          }
+          var embedOpen = activeEmbedId === att.id;
+          var attCard = el('div', { class: 'cso-builder-block' }, [
+            el('div', { class: 'cso-builder-block-head' }, [
+              el('div', { class: 'cso-inline-row' }, [
+                badge(att.source_label || att.role, att.source_kind === 'gov' || att.source_kind === 'r2' ? 'ok' : 'info'),
+                el('strong', { text: att.title }),
+                el('span', { class: 'cso-mod-muted', text: att.domain || '' })
+              ]),
+              el('div', { class: 'cso-mod-toolbar' }, [
+                (att.is_pdf || att.source_kind === 'gdrive' || att.is_image) ? el('button', {
+                  type: 'button',
+                  class: 'cso-mod-btn cso-mod-btn-sm',
+                  text: embedOpen ? 'Hide Embed' : 'Preview File / Drive Embed',
+                  onclick: function () { activeEmbedId = embedOpen ? null : att.id; updatePreviewPane(); }
+                }) : null,
+                el('span', { class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: att.role === 'Apply Online CTA' ? 'Apply Online ↗' : 'Open ↗' })
+              ])
+            ])
+          ]);
+          if (embedOpen) {
+            attCard.appendChild(att.is_image
+              ? el('img', { src: att.url, alt: att.title, class: 'cso-asset-preview-img' })
+              : el('iframe', { src: att.preview_url || att.url, class: 'cso-asset-preview-pdf', title: att.title }));
+          }
+          card.appendChild(attCard);
         });
       }
       previewHost.appendChild(card);
@@ -1168,7 +1395,7 @@
     });
     slugInp.addEventListener('input', function () { slugInp.dataset.touched = '1'; updateAll(); });
     heroTitleInp.addEventListener('input', function () { heroTitleInp.dataset.touched = '1'; updatePreviewPane(); });
-    [metaDescInp, heroSubInp, ctaLblInp, ctaUrlInp, catSel].forEach(function (inp) {
+    [metaDescInp, heroSubInp, ctaLblInp, ctaUrlInp, ogImgInp, catSel].forEach(function (inp) {
       inp.addEventListener('input', updateAll);
       inp.addEventListener('change', updateAll);
     });
@@ -1177,6 +1404,31 @@
       var route = f02NormalizeRoute(slugInp.value);
       if (!titleInp.value.trim()) { toast('Page title is required', 'crimson'); return; }
       if (status === 'scheduled' && !schedInp.value) { toast('Select a schedule date & time first', 'crimson'); return; }
+      var finalBlocks = starterBlocks.slice();
+      var ogVal = ogImgInp.value.trim();
+      if (ogVal) finalBlocks.push({ type: 'og_meta', og_image: ogVal });
+      attachments.forEach(function (att) {
+        if (att.role === 'OpenGraph Social Image') {
+          if (!ogVal) finalBlocks.push({ type: 'og_meta', og_image: att.url });
+          return;
+        }
+        if (att.is_image && (att.role === 'Hero Cover Image' || att.role === 'Inline Photo')) {
+          finalBlocks.push({ type: 'image', url: att.url, title: att.title, alt: att.title, role: att.role });
+        } else {
+          finalBlocks.push({
+            type: 'attachment',
+            title: att.title,
+            url: att.url,
+            preview_url: att.preview_url || att.url,
+            role: att.role,
+            source_kind: att.source_kind,
+            source_label: att.source_label,
+            domain: att.domain,
+            is_image: att.is_image,
+            new_tab: att.new_tab !== false
+          });
+        }
+      });
       var payload = {
         route: route,
         title: titleInp.value.trim(),
@@ -1186,7 +1438,7 @@
         hero_subtitle: heroSubInp.value.trim(),
         cta_label: ctaLblInp.value.trim(),
         cta_url: ctaUrlInp.value.trim(),
-        blocks_json: JSON.stringify(starterBlocks),
+        blocks_json: JSON.stringify(finalBlocks),
         status: status,
         publish_at: status === 'scheduled' ? new Date(schedInp.value).toISOString() : null,
         note: 'Created via Create New Page Wizard'
@@ -1258,6 +1510,13 @@
           el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Label' }), ctaLblInp]),
           el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), ctaUrlInp])
         ]),
+        el('div', { class: 'cso-mod-field' }, [
+          el('label', { class: 'cso-mod-label', text: 'OpenGraph Social Image URL' }),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            ogImgInp,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Pick / Upload OG Image', onclick: function () { toggleR2Browser(true); } })
+          ])
+        ]),
         el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Schedule Date/Time (if scheduling)' }), schedInp])
       ]),
       el('div', { class: 'cso-mod-card' }, [
@@ -1270,6 +1529,73 @@
       ])
     ]));
 
+    var r2UploadInp = el('input', { type: 'file', class: 'cso-mod-input', accept: '.pdf,.png,.jpg,.jpeg,.webp,.svg,.doc,.docx,.xls,.xlsx,.csv,.zip' });
+    r2UploadInp.addEventListener('change', async function () {
+      var f = r2UploadInp.files[0];
+      if (!f) return;
+      var fd = new FormData();
+      fd.append('file', f);
+      try {
+        var d = await api('POST', 'media/upload', fd, true);
+        var url = d.url || ('/api/media/' + (d.key || d.object_key));
+        var isImg = d.kind === 'image' || /\.(png|jpe?g|webp)$/i.test(url);
+        var isPdf = d.kind === 'pdf' || /\.pdf$/i.test(url);
+        addAttachment({
+          id: 'att-' + Date.now(),
+          title: f.name,
+          url: url, preview_url: url,
+          role: isImg ? 'Hero Cover Image' : 'Downloadable PDF/File',
+          source_kind: 'r2', source_label: isImg ? 'R2 Photo' : (isPdf ? 'R2 PDF' : 'R2 File'),
+          domain: 'csodisha.com (R2)', is_image: isImg, is_pdf: isPdf, new_tab: true
+        });
+        toast('Uploaded to R2 & attached: ' + f.name, 'success');
+      } catch (e) { toast(e.message, 'crimson'); }
+      r2UploadInp.value = '';
+    });
+
+    var extTitleInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Link Title (e.g. Official OPSC Notification PDF)' });
+    var extUrlInp = el('input', { type: 'url', class: 'cso-mod-input', placeholder: 'https://opsc.gov.in/... or https://drive.google.com/file/d/...' });
+    var extTypeSel = el('select', { class: 'cso-mod-select' }, [
+      'Official Website (.gov.in)', 'Google Drive File/Folder', 'Direct PDF URL', 'Apply Online CTA', 'Reference Link'
+    ].map(function (t) { return el('option', { value: t, text: t }); }));
+
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [
+      el('div', { class: 'cso-drawer-head' }, [
+        el('h3', { text: 'Media, Files & External Links (R2 + Official + Google Drive)' }),
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Pick from R2 Library', onclick: function () { toggleR2Browser(); } })
+      ]),
+      el('div', { class: 'cso-mod-grid-2' }, [
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Upload File to R2 (PDF, JPG, PNG, WebP)' }), r2UploadInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Link Type' }), extTypeSel])
+      ]),
+      el('div', { class: 'cso-mod-grid-3' }, [
+        extTitleInp,
+        extUrlInp,
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: '+ Attach External / Drive Link', onclick: function () {
+          var u = extUrlInp.value.trim();
+          var t = extTitleInp.value.trim();
+          if (!u || (!/^https?:\/\//i.test(u) && u.indexOf('/') !== 0)) { toast('Enter a valid http(s) or site-relative URL', 'amber'); return; }
+          var meta = detectLinkMeta(u, extTypeSel.value);
+          var role = extTypeSel.value === 'Apply Online CTA' ? 'Apply Online CTA' :
+                     meta.source_kind === 'gdrive' ? 'Google Drive Document' :
+                     meta.source_kind === 'gov' ? 'Official Portal Link' :
+                     meta.is_pdf ? 'Downloadable PDF/File' : 'Official Portal Link';
+          addAttachment({
+            id: 'att-' + Date.now(),
+            title: t || meta.source_label + ' Link',
+            url: u, preview_url: meta.preview_url,
+            role: role, source_kind: meta.source_kind, source_label: meta.source_label,
+            domain: meta.domain, is_image: meta.is_image, is_pdf: meta.is_pdf, new_tab: true
+          });
+          extTitleInp.value = ''; extUrlInp.value = '';
+          toast('Attached ' + meta.source_label + ' link', 'success');
+        } })
+      ]),
+      r2LibraryHost,
+      attachPreviewHost,
+      attachListHost
+    ]));
+
     shell.appendChild(el('div', { class: 'cso-mod-card' }, [
       el('div', { class: 'cso-drawer-head' }, [
         el('h3', { text: 'Initial Content Blocks' }),
@@ -1278,13 +1604,15 @@
           el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Notice', onclick: function () { starterBlocks.push({ type: 'notice', title: 'Notice', text: 'Important update for candidates.' }); renderInitialBlocks(); updateAll(); } }),
           el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Key Dates Table', onclick: function () { starterBlocks.push({ type: 'key_dates', title: 'Key Dates', text: 'Start Date: TBD | Last Date: TBD | Exam Date: TBD' }); renderInitialBlocks(); updateAll(); } }),
           el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ FAQ Item', onclick: function () { starterBlocks.push({ type: 'faq', title: 'Frequently Asked Question', text: 'Clear answer for Odisha aspirants.' }); renderInitialBlocks(); updateAll(); } }),
-          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Official Links', onclick: function () { starterBlocks.push({ type: 'official_links', title: 'Official Links', text: 'Official Portal: https://odisha.gov.in' }); renderInitialBlocks(); updateAll(); } })
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Official / Drive Link', onclick: function () { starterBlocks.push({ type: 'official_links', title: 'Official / Google Drive Link', text: 'Official Portal or Drive Document', url: 'https://odisha.gov.in' }); renderInitialBlocks(); updateAll(); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Photo / PDF Attachment', onclick: function () { toggleR2Browser(true); toast('Pick or upload a Photo/PDF in Media, Files & External Links above', 'info'); } })
         ])
       ]),
       blocksHost
     ]));
 
     root.appendChild(shell);
+    renderAttachments();
     renderInitialBlocks();
     updateAll();
 
