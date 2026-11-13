@@ -8042,7 +8042,23 @@
         { type: 'notice', title: 'Effective Date & Delivery Support Contact', text: 'Effective Date: 2026-11-13 · Digital Support Desk: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
       ]
     },
-    'module-03-013': { title: 'Community Guidelines', path: '/community-guidelines.html', email: 'community@csodisha.com' },
+    'module-03-013': {
+      title: 'Community Guidelines',
+      seoTitle: 'Community Guidelines | Common Sense Odisha (csodisha.com)',
+      metaDescription: 'Community Guidelines of Common Sense Odisha (csodisha.com) — standards for respectful student discussions, verified exam updates, and anti-spam rules.',
+      heroTitle: 'Community Guidelines',
+      heroSubtitle: 'Standards for respectful academic dialogue, verified exam discussions, and a safe, distraction-free learning environment across Odisha.',
+      effectiveDate: '2026-11-13',
+      status: 'published',
+      path: '/community-guidelines.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'Purpose of Our Learner Community', text: 'Common Sense Odisha (https://csodisha.com) is built to help students, job aspirants, and educators across all 30 districts of Odisha share verified study strategies, clarify exam syllabi, and support one another\'s preparation. Every interaction—whether through student feedback, study discussions, or correction submissions—must foster mutual respect and constructive learning.' },
+        { type: 'richtext', title: 'Prohibited Conduct, Rumors & Recruitment Scams', text: 'To protect aspirants from misinformation and fraud, the following are strictly prohibited: (a) Unverified Exam Rumors & Fake Notices (posting fabricated recruitment dates, leaked question paper claims, or unverified cutoffs); (b) Fraudulent Solicitations (asking for money, bank details, OTPs, or backdoor job guarantees); (c) Harassment & Hate Speech (abusive language, personal attacks, or discrimination based on region, language, caste, religion, or gender); and (d) Spam & Pirated Materials (promotional links, malware, or copyrighted commercial books).' },
+        { type: 'richtext', title: 'Moderation, Enforcement & Reporting Violations', text: 'Our editorial and moderation team reviews flagged submissions and user reports to maintain a trustworthy educational space. Content violating these guidelines is removed immediately, and accounts engaging in repeated spam, harassment, or fraudulent activity face permanent suspension. To report a violation or suspicious activity, email editorial@csodisha.com with the relevant page URL or screenshot.' },
+        { type: 'notice', title: 'Effective Date & Moderation Desk Contact', text: 'Effective Date: 2026-11-13 · Moderation & Safety Contact: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
+      ]
+    },
     'module-03-014': { title: 'Frequently Asked Questions', path: '/faq.html', email: 'support@csodisha.com' },
     'module-03-015': { title: 'Custom Information Pages', path: '/about.html', email: 'editorial@csodisha.com' },
     'module-03-016': { title: 'Legal Page Revision History', path: '/privacy.html', email: 'legal@csodisha.com' }
