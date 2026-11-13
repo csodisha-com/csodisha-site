@@ -2695,6 +2695,31 @@ html[data-theme="lime"] .cso-nav-folder-btn:hover {
   min-width: 140px;
 }
 
+.cso-legal-audit-table-wrap {
+  overflow-x: auto;
+}
+
+.cso-legal-audit-table-wrap table {
+  table-layout: auto;
+  width: 100%;
+}
+
+.cso-legal-audit-table-wrap th:nth-child(1),
+.cso-legal-audit-table-wrap td:nth-child(1),
+.cso-legal-audit-table-wrap th:nth-child(2),
+.cso-legal-audit-table-wrap td:nth-child(2),
+.cso-legal-audit-table-wrap th:nth-child(5),
+.cso-legal-audit-table-wrap td:nth-child(5),
+.cso-legal-audit-table-wrap th:nth-child(6),
+.cso-legal-audit-table-wrap td:nth-child(6) {
+  white-space: nowrap;
+}
+
+.cso-legal-audit-table-wrap td:nth-child(4) {
+  word-break: break-word;
+  min-width: 180px;
+}
+
 .cso-label-row {
   display: flex;
   align-items: center;

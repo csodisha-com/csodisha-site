@@ -8098,7 +8098,211 @@
     'module-03-016': { title: 'Legal Page Revision History', path: '/privacy.html', email: 'legal@csodisha.com' }
   };
 
+  function renderLegalRevisionHistory(root, actions) {
+    addHeaderPill(actions, '● Live Legal Revision Audit');
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var LEGAL_ROUTES = [
+      '/about.html', '/contact.html', '/privacy.html', '/disclaimer.html',
+      '/terms.html', '/cookies.html', '/copyright.html', '/editorial-policy.html',
+      '/corrections.html', '/accessibility.html', '/refund.html', '/delivery.html',
+      '/community-guidelines.html', '/faqs.html'
+    ];
+    function isLegalOrInfoRoute(r) {
+      if (!r) return false;
+      return LEGAL_ROUTES.indexOf(r) !== -1 || r === '/faq.html' || r.indexOf('/pages/') === 0;
+    }
+
+    var routeSel = el('select', { class: 'cso-mod-select' }, [
+      el('option', { value: 'all', text: 'All Legal & Info Pages' })
+    ]);
+    LEGAL_ROUTES.forEach(function (r) {
+      routeSel.appendChild(el('option', { value: r, text: r }));
+    });
+    var searchInp = el('input', { type: 'search', class: 'cso-mod-input', placeholder: 'Filter by editor email, route, or revision note…' });
+    var kpiHost = el('div', { class: 'cso-mod-grid-3' });
+    var tableHost = el('div', { class: 'cso-legal-audit-table-wrap' });
+    var allRevs = [];
+    var allPages = [];
+
+    function openInspectModal(rv) {
+      var modal = document.getElementById('globalModal');
+      var mTitle = document.getElementById('modalTitle');
+      var mBody = document.getElementById('modalBody');
+      var mFoot = document.getElementById('modalFooter');
+      if (!modal || !mTitle || !mBody || !mFoot) return;
+      var snap = {};
+      try { snap = JSON.parse(rv.snapshot_json || '{}'); } catch (_) {}
+      var blocks = f02ParseBlocks(snap.blocks_json).filter(function (b) {
+        return b && b.type !== 'page_meta' && b.type !== 'og_meta';
+      });
+      var effDate = '—';
+      blocks.forEach(function (b) {
+        if (b && b.type === 'notice') {
+          var m = String((b.text || '') + ' ' + (b.title || '')).match(/20\d{2}-\d{2}-\d{2}/);
+          if (m) effDate = m[0];
+        }
+      });
+
+      mTitle.textContent = 'Revision #' + rv.id + ' — ' + rv.route;
+      clear(mBody);
+      mBody.appendChild(el('div', { class: 'cso-mod-shell' }, [
+        el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'SEO Title' }), el('p', { text: snap.title || '—' })]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Effective Date / Status' }), el('p', { text: effDate + ' · ' + (snap.status || 'published') })])
+        ]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), el('p', { text: snap.meta_description || '—' })]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Headline' }), el('p', { text: snap.hero_title || '—' })]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Subheadline' }), el('p', { text: snap.hero_subtitle || '—' })]),
+        el('div', { class: 'cso-mod-field' }, [
+          el('label', { class: 'cso-mod-label', text: 'Structured Sections (' + blocks.length + ')' }),
+          el('div', { class: 'cso-mod-shell' }, blocks.length ? blocks.map(function (b, idx) {
+            var head = (idx + 1) + '. [' + (b.type || 'section') + (b.category ? ' · ' + b.category : '') + '] ' + (b.question || b.title || b.heading || '');
+            return el('div', { class: 'cso-builder-block' }, [
+              el('strong', { text: head }),
+              el('p', { class: 'cso-mod-muted', text: b.answer || b.text || b.body || '' })
+            ]);
+          }) : [el('p', { class: 'cso-mod-muted', text: 'No structured sections in snapshot.' })])
+        ])
+      ]));
+      clear(mFoot);
+      mFoot.appendChild(el('button', {
+        type: 'button',
+        class: 'cso-mod-btn cso-mod-btn-primary',
+        text: 'Restore Live',
+        onclick: async function () {
+          try {
+            await api('POST', 'pages/restore', { route: rv.route, revision_id: rv.id, status: 'published' });
+            toast('Restored ' + rv.route + ' to revision #' + rv.id + ' live!', 'success');
+            modal.hidden = true;
+            await loadAudit();
+          } catch (e) { toast(e.message, 'crimson'); }
+        }
+      }));
+      mFoot.appendChild(el('button', {
+        type: 'button',
+        class: 'cso-mod-btn',
+        text: 'Close',
+        onclick: function () { modal.hidden = true; }
+      }));
+      modal.hidden = false;
+    }
+
+    function renderAuditTable() {
+      var selectedRoute = routeSel.value;
+      var q = (searchInp.value || '').trim().toLowerCase();
+      var filtered = allRevs.filter(function (rv) {
+        if (!isLegalOrInfoRoute(rv.route)) return false;
+        if (selectedRoute !== 'all' && rv.route !== selectedRoute) return false;
+        if (q) {
+          var hay = (String(rv.route || '') + ' ' + String(rv.editor_email || '') + ' ' + String(rv.note || '')).toLowerCase();
+          if (hay.indexOf(q) === -1) return false;
+        }
+        return true;
+      });
+
+      var pubCount = allPages.filter(function (p) {
+        return p && p.status === 'published' && isLegalOrInfoRoute(p.route);
+      }).length;
+      var latestTs = filtered.length && filtered[0].created_at ? String(filtered[0].created_at).replace('T', ' ').slice(0, 19) : '—';
+
+      clear(kpiHost);
+      kpiHost.appendChild(el('div', { class: 'cso-kpi-card' }, [
+        el('div', { class: 'cso-kpi-label', text: 'Total Revisions' }),
+        el('div', { class: 'cso-kpi-value', text: String(filtered.length) })
+      ]));
+      kpiHost.appendChild(el('div', { class: 'cso-kpi-card' }, [
+        el('div', { class: 'cso-kpi-label', text: 'Published Legal & Info Pages' }),
+        el('div', { class: 'cso-kpi-value', text: String(pubCount) })
+      ]));
+      kpiHost.appendChild(el('div', { class: 'cso-kpi-card' }, [
+        el('div', { class: 'cso-kpi-label', text: 'Latest Audit Timestamp' }),
+        el('div', { class: 'cso-kpi-value', text: latestTs })
+      ]));
+
+      clear(tableHost);
+      if (!filtered.length) {
+        tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'No matching legal or information page revisions found in D1.' }));
+        return;
+      }
+      tableHost.appendChild(safeTable(['REV', 'ROUTE', 'EDITOR', 'NOTE', 'TIMESTAMP', 'ACTIONS'], filtered.map(function (rv) {
+        var compactTime = rv.created_at ? String(rv.created_at).replace('T', ' ').slice(0, 16) : '—';
+        return el('tr', {}, [
+          el('td', { text: '#' + rv.id }),
+          el('td', { text: rv.route }),
+          el('td', { text: rv.editor_email || '—' }),
+          el('td', { text: rv.note || 'update' }),
+          el('td', { text: compactTime }),
+          el('td', {}, el('div', { class: 'cso-mod-toolbar' }, [
+            el('button', {
+              type: 'button',
+              class: 'cso-mod-btn cso-mod-btn-sm',
+              text: 'Inspect',
+              onclick: function () { openInspectModal(rv); }
+            }),
+            el('button', {
+              type: 'button',
+              class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+              text: 'Restore Live',
+              onclick: async function () {
+                try {
+                  await api('POST', 'pages/restore', { route: rv.route, revision_id: rv.id, status: 'published' });
+                  toast('Restored ' + rv.route + ' to revision #' + rv.id + ' live!', 'success');
+                  await loadAudit();
+                } catch (e) { toast(e.message, 'crimson'); }
+              }
+            })
+          ]))
+        ]);
+      })));
+    }
+
+    async function loadAudit() {
+      try {
+        var selectedRoute = routeSel.value;
+        var revEndpoint = selectedRoute && selectedRoute !== 'all'
+          ? 'pages/revisions?route=' + encodeURIComponent(selectedRoute)
+          : 'pages/revisions?all=1';
+        var [pRes, rRes] = await Promise.all([
+          api('GET', 'pages'),
+          api('GET', revEndpoint)
+        ]);
+        allPages = pRes.pages || [];
+        allRevs = rRes.revisions || [];
+        allPages.forEach(function (p) {
+          if (p && p.route && p.route.indexOf('/pages/') === 0 && !routeSel.querySelector('option[value="' + p.route + '"]')) {
+            routeSel.appendChild(el('option', { value: p.route, text: p.route }));
+          }
+        });
+        renderAuditTable();
+      } catch (e) {
+        toast(e.message, 'crimson');
+      }
+    }
+
+    routeSel.addEventListener('change', loadAudit);
+    searchInp.addEventListener('input', renderAuditTable);
+
+    renderBanner(shell, 'Legal Page Revision History — Cross-Route Audit Console', 'Inspect archived D1 site_page_revisions snapshots across all Legal & Information pages and restore any revision live.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Refresh Audit Log', onclick: loadAudit })
+    ]);
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [
+      el('div', { class: 'cso-mod-grid-2' }, [
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Route / Page Filter' }), routeSel]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Search Editor, Route, or Note' }), searchInp])
+      ])
+    ]));
+    shell.appendChild(kpiHost);
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [
+      el('div', { class: 'cso-drawer-head' }, [el('h3', { text: 'Archived D1 Revisions (site_page_revisions)' }), badge('Audit Trail', 'info')]),
+      tableHost
+    ]));
+    root.appendChild(shell);
+    loadAudit();
+    return true;
+  }
+
   function renderLegalStudio(moduleId, root, actions) {
+    if (moduleId === 'module-03-016') return renderLegalRevisionHistory(root, actions);
     var cfg = LEGAL_PAGES[moduleId] || { title: 'Legal Document', path: '/privacy.html', email: 'legal@csodisha.com' };
     addHeaderPill(actions, '● Live Legal & Info Publisher');
 
