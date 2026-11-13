@@ -8008,7 +8008,23 @@
         { type: 'notice', title: 'Effective Date & Accessibility Feedback Desk', text: 'Effective Date: 2026-11-13 · Report an Accessibility Barrier: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
       ]
     },
-    'module-03-011': { title: 'Refund & Cancellation Policy', path: '/refund.html', email: 'billing@csodisha.com' },
+    'module-03-011': {
+      title: 'Refund & Cancellation Policy',
+      seoTitle: 'Refund & Cancellation Policy | Common Sense Odisha',
+      metaDescription: 'Refund & Cancellation Policy of Common Sense Odisha (csodisha.com) — free educational portal policy, anti-fraud advisory, and digital purchase terms.',
+      heroTitle: 'Refund & Cancellation Policy',
+      heroSubtitle: 'Transparent access terms for free educational resources, anti-scam payment warnings, and cancellation rules for any optional digital study materials.',
+      effectiveDate: '2026-11-13',
+      status: 'published',
+      path: '/refund.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'Free Public Access & Anti-Fraud Advisory', text: 'Common Sense Odisha (https://csodisha.com) provides recruitment alerts, exam syllabi, scholarship guides, current affairs digests, and CBT mock practice tests free of charge to students and aspirants. We never ask users for UPI transfers, bank details, OTPs, or recruitment registration fees. Official government application fees must be paid strictly on the respective official portal (such as OPSC, OSSC, OSSSC, or State Scholarship Portal).' },
+        { type: 'richtext', title: 'Optional Digital Study Resources & Cancellation Policy', text: 'In the event Common Sense Odisha offers optional paid digital study packs, downloadable PDF compilations, or premium mock test series in the future, users may cancel an unfulfilled order prior to digital access or download. Once a digital resource has been unlocked, streamed, or downloaded to your account, cancellations are generally not eligible except in cases of duplicate payment or verified technical non-delivery.' },
+        { type: 'richtext', title: 'Duplicate Billing & Technical Non-Delivery Refunds', text: 'If you experience an accidental duplicate charge or a technical failure preventing access to a paid digital resource, notify editorial@csodisha.com within 7 calendar days with your transaction reference ID and registered email address. Approved refunds are processed back to the original payment method within 5 to 7 business days in accordance with Indian banking and payment gateway norms.' },
+        { type: 'notice', title: 'Effective Date & Billing Support Contact', text: 'Effective Date: 2026-11-13 · Billing & Support Contact: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
+      ]
+    },
     'module-03-012': { title: 'Digital Delivery Policy', path: '/delivery.html', email: 'support@csodisha.com' },
     'module-03-013': { title: 'Community Guidelines', path: '/community-guidelines.html', email: 'community@csodisha.com' },
     'module-03-014': { title: 'Frequently Asked Questions', path: '/faq.html', email: 'support@csodisha.com' },
