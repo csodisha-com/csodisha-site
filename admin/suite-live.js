@@ -96,6 +96,9 @@
   }
 
   function render(folderId, moduleId, root, actions) {
+    if (window.CSORestoredModules && window.CSORestoredModules.render(folderId, moduleId, root, actions)) {
+      return true;
+    }
     if (!window.CSOCms) return false;
     var r = resolveRoute(folderId, moduleId);
     if (actions) {
