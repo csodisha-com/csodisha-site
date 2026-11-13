@@ -962,13 +962,60 @@
     var tpl = f02State.createTemplate;
     f02State.createTemplate = null;
 
+    var BLUEPRINTS = {
+      blank: {
+        title: '', slug: '/new-page/', category: 'Core Portal',
+        meta: '', heroTitle: '', heroSub: '', ctaLabel: 'Explore Portal', ctaUrl: '/jobs-careers/',
+        blocks: [{ type: 'richtext', title: 'Overview', text: 'Add page overview and candidate guidance here.' }]
+      },
+      exam: {
+        title: 'OPSC & OSSC Exam Guide 2026 | CS Odisha', slug: '/opsc-ossc-exam-guide-2026/', category: 'Exam Guide',
+        meta: 'Complete OPSC OAS & OSSC CGL 2026 exam guide: eligibility, syllabus, exam pattern, key dates, and free CBT mock tests on Common Sense Odisha.',
+        heroTitle: 'OPSC & OSSC Combined Exam Guide 2026', heroSub: 'Syllabus, exam pattern, key dates & free Odisha CBT practice tests.',
+        ctaLabel: 'Start Free Mock Test', ctaUrl: '/mock-tests/',
+        blocks: [
+          { type: 'notice', title: 'Official Exam Window', text: 'Verify final notification dates on opsc.gov.in and ossc.gov.in.' },
+          { type: 'key_dates', title: 'Tentative Exam Schedule 2026', text: 'Notification: Jan 2026 | Prelims: May 2026 | Mains: Sep 2026' },
+          { type: 'faq', title: 'Who can apply for OPSC & OSSC?', text: 'Graduates aged 21–38 years (with Odisha govt age relaxations).' },
+          { type: 'official_links', title: 'Official Commission Portals', text: 'OPSC: https://opsc.gov.in | OSSC: https://ossc.gov.in' }
+        ]
+      },
+      scheme: {
+        title: 'Odisha Govt Welfare & Student Schemes 2026', slug: '/odisha-govt-schemes-2026/', category: 'Core Portal',
+        meta: 'Updated directory of Odisha State Government scholarships, youth skill schemes, eligibility criteria, and official online application links.',
+        heroTitle: 'Odisha State Schemes & Scholarships', heroSub: 'Verified eligibility rules, documents checklist & official portal links.',
+        ctaLabel: 'Browse All Resources', ctaUrl: '/resources/',
+        blocks: [
+          { type: 'richtext', title: 'Eligibility & Documents Required', text: 'Aadhaar, Residence Certificate, Income Certificate, and Bank Passbook.' },
+          { type: 'key_dates', title: 'Application Deadlines', text: 'Fresh Registration: Open | Renewal Window: Closing Soon' },
+          { type: 'official_links', title: 'State Scholarship Portal', text: 'https://scholarship.odisha.gov.in' }
+        ]
+      },
+      policy: {
+        title: 'Editorial Policy & Verification Standards', slug: '/editorial-verification-policy/', category: 'Information & Legal',
+        meta: 'How Common Sense Odisha verifies OPSC, OSSC, and OSSSC recruitment notifications, answer keys, and syllabus updates for Odisha aspirants.',
+        heroTitle: 'Editorial & Verification Policy', heroSub: 'Our 3-step official gazette verification workflow for Odisha job alerts.',
+        ctaLabel: 'Contact Editorial Desk', ctaUrl: '/contact/',
+        blocks: [
+          { type: 'richtext', title: 'Primary Source Verification', text: 'Every alert is cross-checked against official Odisha commission PDFs before publishing.' },
+          { type: 'faq', title: 'How do I report a correction?', text: 'Reach out via the Contact page with the official notice reference number.' }
+        ]
+      }
+    };
+
     var shell = el('div', { class: 'cso-mod-shell' });
+    var kpiHost = el('div', { class: 'cso-mod-kpis' });
+    var resultBanner = el('div', {});
+    var existingRoutes = {};
+    var previewTab = 'page';
+    var mobileMode = false;
+
     var titleInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'e.g. OPSC OAS 2026 Complete Guide', value: tpl ? tpl.name : '' });
     var slugInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/opsc-oas-2026/', value: tpl ? '/' + tpl.id + '/' : '' });
     var catSel = el('select', { class: 'cso-mod-select' }, [
       'Core Portal', 'Candidate Workspace', 'Information & Legal', 'Exam Guide', 'Recruitment'
     ].map(function (c) { return el('option', { value: c, text: c, selected: tpl && tpl.category === c }); }));
-    var metaDescInp = el('textarea', { class: 'cso-mod-textarea', placeholder: 'Concise 140–160 char search snippet for Google…' });
+    var metaDescInp = el('textarea', { class: 'cso-mod-textarea', placeholder: 'Concise 145–160 char search snippet for Google…' });
     metaDescInp.value = tpl ? (tpl.meta_description || '') : '';
 
     var heroTitleInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Hero H1 headline', value: tpl ? (tpl.hero_title || '') : '' });
@@ -982,15 +1029,95 @@
       { type: 'notice', title: 'Important Notice', text: 'Always verify final dates on the official commission portal.' }
     ];
     var blocksHost = el('div', { class: 'cso-mod-shell' });
-
     var titleCount = el('div', { class: 'cso-char-count' });
     var descCount = el('div', { class: 'cso-char-count' });
-    var gsUrl = el('div', { class: 'cso-gs-url' });
-    var gsTitle = el('div', { class: 'cso-gs-title' });
-    var gsDesc = el('div', { class: 'cso-gs-desc' });
-    var resultBanner = el('div', {});
+    var slugStatusEl = el('div', { class: 'cso-mod-toolbar' });
+    var previewHost = el('div', {});
 
-    function updateSnippet() {
+    function applyBlueprint(key) {
+      var bp = BLUEPRINTS[key];
+      if (!bp) return;
+      titleInp.value = bp.title;
+      slugInp.value = bp.slug;
+      delete slugInp.dataset.touched;
+      catSel.value = bp.category;
+      metaDescInp.value = bp.meta;
+      heroTitleInp.value = bp.heroTitle;
+      delete heroTitleInp.dataset.touched;
+      heroSubInp.value = bp.heroSub;
+      ctaLblInp.value = bp.ctaLabel;
+      ctaUrlInp.value = bp.ctaUrl;
+      starterBlocks = JSON.parse(JSON.stringify(bp.blocks));
+      renderInitialBlocks();
+      updateAll();
+      toast('Applied blueprint: ' + key, 'info');
+    }
+
+    function renderReadinessKpis() {
+      clear(kpiHost);
+      var tl = titleInp.value.trim().length;
+      var dl = metaDescInp.value.trim().length;
+      var route = f02NormalizeRoute(slugInp.value || '/new-page/');
+      var taken = !!existingRoutes[route];
+      [
+        { l: 'SEO Title Score', v: tl + ' chars', s: tl >= 50 && tl <= 60 ? 'Optimal (50–60) ✓' : tl >= 20 && tl <= 70 ? 'Acceptable' : 'Aim for 50–60 chars' },
+        { l: 'Meta Description Score', v: dl + ' chars', s: dl >= 145 && dl <= 160 ? 'Optimal (145–160) ✓' : dl >= 70 && dl <= 170 ? 'Acceptable' : 'Aim for 145–160 chars' },
+        { l: 'Route Availability', v: taken ? 'Exists' : 'Available ✓', s: route },
+        { l: 'Block Count', v: String(starterBlocks.length), s: 'Structured content blocks' }
+      ].forEach(function (k) {
+        kpiHost.appendChild(el('div', { class: 'cso-mod-kpi' }, [
+          el('div', { class: 'cso-mod-kpi-label', text: k.l }),
+          el('div', { class: 'cso-mod-kpi-val', text: k.v }),
+          el('div', { class: 'cso-mod-kpi-sub', text: k.s })
+        ]));
+      });
+    }
+
+    function updatePreviewPane() {
+      clear(previewHost);
+      var t = titleInp.value.trim() || 'Page Title — Common Sense Odisha';
+      var d = metaDescInp.value.trim() || 'Meta description preview will appear here as you type…';
+      var r = f02NormalizeRoute(slugInp.value || '/new-page/');
+      var hTitle = heroTitleInp.value.trim() || t;
+      var hSub = heroSubInp.value.trim() || 'Supporting summary for Odisha aspirants.';
+      var cLbl = ctaLblInp.value.trim();
+
+      var card = el('div', { class: mobileMode ? 'cso-preview-card-mobile' : 'cso-preview-card-desktop' });
+      if (previewTab === 'serp') {
+        card.appendChild(el('div', { class: 'cso-serp-card' }, [
+          el('div', { class: 'cso-serp-url', text: 'https://csodisha.com' + r }),
+          el('div', { class: 'cso-serp-title', text: t }),
+          el('p', { class: 'cso-serp-desc', text: d })
+        ]));
+      } else if (previewTab === 'og') {
+        card.appendChild(el('div', { class: 'cso-og-card' }, [
+          el('div', { class: 'cso-preview-kicker', text: 'CSODISHA.COM · ' + catSel.value.toUpperCase() }),
+          el('strong', { text: t }),
+          el('p', { class: 'cso-mod-muted', text: d })
+        ]));
+      } else {
+        card.appendChild(el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'Common Sense Odisha' }),
+          el('div', { class: 'cso-mod-muted', text: 'Jobs · Current Affairs · Mock Tests · Resources' })
+        ]));
+        card.appendChild(el('div', { class: 'cso-og-card' }, [
+          el('div', { class: 'cso-preview-kicker', text: catSel.value.toUpperCase() + ' · PREVIEW (UNPUBLISHED)' }),
+          el('h3', { text: hTitle }),
+          el('p', { class: 'cso-preview-body', text: hSub }),
+          cLbl ? el('span', { class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: cLbl }) : null
+        ]));
+        starterBlocks.forEach(function (b, idx) {
+          card.appendChild(el('div', { class: 'cso-builder-block' }, [
+            el('div', { class: 'cso-builder-block-head' }, [badge((idx + 1) + '. ' + b.type, 'info')]),
+            el('strong', { text: b.title || '(Untitled Block)' }),
+            el('p', { class: 'cso-mod-muted', text: b.text || '' })
+          ]));
+        });
+      }
+      previewHost.appendChild(card);
+    }
+
+    function updateAll() {
       var t = titleInp.value.trim();
       var d = metaDescInp.value.trim();
       var r = f02NormalizeRoute(slugInp.value || '/new-page/');
@@ -998,9 +1125,15 @@
       titleCount.className = 'cso-char-count' + (t.length > 60 ? ' is-over' : '');
       descCount.textContent = d.length + ' / 160 chars';
       descCount.className = 'cso-char-count' + (d.length > 160 ? ' is-over' : '');
-      gsUrl.textContent = 'https://csodisha.com' + r;
-      gsTitle.textContent = t || 'Page Title — Common Sense Odisha';
-      gsDesc.textContent = d || 'Meta description preview will appear here as you type…';
+      clear(slugStatusEl);
+      if (existingRoutes[r]) {
+        slugStatusEl.appendChild(badge('Already Exists (will update)', 'warn'));
+      } else {
+        slugStatusEl.appendChild(badge('Slug Available ✓', 'ok'));
+      }
+      slugStatusEl.appendChild(el('code', { text: r }));
+      renderReadinessKpis();
+      updatePreviewPane();
     }
 
     function renderInitialBlocks() {
@@ -1008,12 +1141,17 @@
       starterBlocks.forEach(function (b, idx) {
         var bTitle = el('input', { type: 'text', class: 'cso-mod-input', value: b.title || '', placeholder: 'Block Title' });
         var bText = el('input', { type: 'text', class: 'cso-mod-input', value: b.text || '', placeholder: 'Block Text' });
-        bTitle.addEventListener('input', function () { b.title = bTitle.value; });
-        bText.addEventListener('input', function () { b.text = bText.value; });
+        bTitle.addEventListener('input', function () { b.title = bTitle.value; updatePreviewPane(); });
+        bText.addEventListener('input', function () { b.text = bText.value; updatePreviewPane(); });
         blocksHost.appendChild(el('div', { class: 'cso-builder-block' }, [
           el('div', { class: 'cso-builder-block-head' }, [
             badge((idx + 1) + '. ' + b.type, 'info'),
-            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: 'Remove', onclick: function () { starterBlocks.splice(idx, 1); renderInitialBlocks(); } })
+            el('div', { class: 'cso-mod-toolbar' }, [
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '↑', disabled: idx === 0, onclick: function () { var tmp = starterBlocks[idx - 1]; starterBlocks[idx - 1] = b; starterBlocks[idx] = tmp; renderInitialBlocks(); updateAll(); } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '↓', disabled: idx === starterBlocks.length - 1, onclick: function () { var tmp = starterBlocks[idx + 1]; starterBlocks[idx + 1] = b; starterBlocks[idx] = tmp; renderInitialBlocks(); updateAll(); } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Duplicate', onclick: function () { starterBlocks.splice(idx + 1, 0, JSON.parse(JSON.stringify(b))); renderInitialBlocks(); updateAll(); } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: 'Remove', onclick: function () { starterBlocks.splice(idx, 1); renderInitialBlocks(); updateAll(); } })
+            ])
           ]),
           el('div', { class: 'cso-mod-grid-2' }, [bTitle, bText])
         ]));
@@ -1026,11 +1164,14 @@
         slugInp.value = '/' + (s || 'new-page') + '/';
       }
       if (!heroTitleInp.dataset.touched && !tpl) heroTitleInp.value = titleInp.value;
-      updateSnippet();
+      updateAll();
     });
-    slugInp.addEventListener('input', function () { slugInp.dataset.touched = '1'; updateSnippet(); });
-    heroTitleInp.addEventListener('input', function () { heroTitleInp.dataset.touched = '1'; });
-    metaDescInp.addEventListener('input', updateSnippet);
+    slugInp.addEventListener('input', function () { slugInp.dataset.touched = '1'; updateAll(); });
+    heroTitleInp.addEventListener('input', function () { heroTitleInp.dataset.touched = '1'; updatePreviewPane(); });
+    [metaDescInp, heroSubInp, ctaLblInp, ctaUrlInp, catSel].forEach(function (inp) {
+      inp.addEventListener('input', updateAll);
+      inp.addEventListener('change', updateAll);
+    });
 
     async function submitPage(status) {
       var route = f02NormalizeRoute(slugInp.value);
@@ -1052,14 +1193,17 @@
       };
       try {
         var res = await api('POST', 'pages', payload);
+        existingRoutes[res.route] = 1;
+        updateAll();
         toast('Page ' + status + ': ' + res.route, 'success');
         clear(resultBanner);
         resultBanner.appendChild(el('div', { class: 'cso-drawer' }, [
           el('div', { class: 'cso-inline-row' }, [
             badge(status, status === 'published' ? 'ok' : 'warn'),
             el('strong', { text: 'Saved route ' + res.route }),
-            status === 'published' ? el('a', { href: res.route, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Open Live Page ↗' }) : null,
-            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Edit in Visual Builder', onclick: function () { f02State.builderRoute = res.route; window.selectModule && window.selectModule('folder-02', 'module-02-003'); } })
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Open in Visual Page Builder', onclick: function () { f02State.builderRoute = res.route; window.selectModule && window.selectModule('folder-02', 'module-02-003'); } }),
+            el('a', { href: res.route, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Inspect Live Route ↗' }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Create Another Page', onclick: function () { clear(resultBanner); applyBlueprint('blank'); } })
           ])
         ]));
       } catch (e) {
@@ -1067,36 +1211,62 @@
       }
     }
 
-    renderBanner(shell, 'Create New Page', 'Publish real public routes on csodisha.com/<slug>/ via POST /api/admin/pages.', [
+    renderBanner(shell, 'Create New Page', 'Publish real public routes on csodisha.com/<slug>/ with pre-publish full-page previews & slug validation.', [
       el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish Live Now', onclick: function () { submitPage('published'); } }),
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Draft', onclick: function () { submitPage('draft'); } }),
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Schedule', onclick: function () { submitPage('scheduled'); } })
     ]);
 
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [
+      el('div', { class: 'cso-drawer-head' }, [
+        el('strong', { text: 'Quick-Start Blueprints' }),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Blank Page', onclick: function () { applyBlueprint('blank'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Odisha Exam Guide (OPSC/OSSC)', onclick: function () { applyBlueprint('exam'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Scheme & Benefit Portal', onclick: function () { applyBlueprint('scheme'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Institutional / Policy Page', onclick: function () { applyBlueprint('policy'); } })
+        ])
+      ])
+    ]));
+
+    shell.appendChild(kpiHost);
     shell.appendChild(resultBanner);
+
+    var tabPageBtn = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Full Page Live Preview', onclick: function () { previewTab = 'page'; syncPreviewTabs(); updatePreviewPane(); } });
+    var tabSerpBtn = el('button', { type: 'button', class: 'cso-pill', text: 'Google SERP Snippet', onclick: function () { previewTab = 'serp'; syncPreviewTabs(); updatePreviewPane(); } });
+    var tabOgBtn = el('button', { type: 'button', class: 'cso-pill', text: 'Social OpenGraph Card', onclick: function () { previewTab = 'og'; syncPreviewTabs(); updatePreviewPane(); } });
+    var vpDeskBtn = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Desktop', onclick: function () { mobileMode = false; syncPreviewTabs(); updatePreviewPane(); } });
+    var vpMobBtn = el('button', { type: 'button', class: 'cso-pill', text: 'Mobile 375px', onclick: function () { mobileMode = true; syncPreviewTabs(); updatePreviewPane(); } });
+    function syncPreviewTabs() {
+      tabPageBtn.classList.toggle('cso-pill-active', previewTab === 'page');
+      tabSerpBtn.classList.toggle('cso-pill-active', previewTab === 'serp');
+      tabOgBtn.classList.toggle('cso-pill-active', previewTab === 'og');
+      vpDeskBtn.classList.toggle('cso-pill-active', !mobileMode);
+      vpMobBtn.classList.toggle('cso-pill-active', mobileMode);
+    }
+
     shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
       el('div', { class: 'cso-mod-card' }, [
-        el('h3', { text: 'Route & SEO Metadata' }),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Page Title (60 chars)' }), titleInp, titleCount]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Public Route / Slug' }), slugInp]),
+        el('h3', { text: 'Route, SEO & Hero Settings' }),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Page Title (50–60 chars optimal)' }), titleInp, titleCount]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Public Route / Slug' }), slugInp, slugStatusEl]),
         el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Category' }), catSel]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description (160 chars)' }), metaDescInp, descCount]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description (145–160 chars optimal)' }), metaDescInp, descCount]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Headline' }), heroTitleInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Subtitle' }), heroSubInp]),
+        el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Label' }), ctaLblInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), ctaUrlInp])
+        ]),
         el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Schedule Date/Time (if scheduling)' }), schedInp])
       ]),
-      el('div', { class: 'cso-mod-shell' }, [
-        el('div', { class: 'cso-mod-card' }, [
-          el('h3', { text: 'Google Snippet Preview' }),
-          el('div', { class: 'cso-google-snippet' }, [gsUrl, gsTitle, gsDesc])
+      el('div', { class: 'cso-mod-card' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('h3', { text: 'Real Pre-Publish Preview Studio' }),
+          el('div', { class: 'cso-mod-toolbar' }, [vpDeskBtn, vpMobBtn])
         ]),
-        el('div', { class: 'cso-mod-card' }, [
-          el('h3', { text: 'Hero & Call-to-Action' }),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Title' }), heroTitleInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Subtitle' }), heroSubInp]),
-          el('div', { class: 'cso-mod-grid-2' }, [
-            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Label' }), ctaLblInp]),
-            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), ctaUrlInp])
-          ])
-        ])
+        el('div', { class: 'cso-pill-row' }, [tabPageBtn, tabSerpBtn, tabOgBtn]),
+        previewHost
       ])
     ]));
 
@@ -1104,16 +1274,24 @@
       el('div', { class: 'cso-drawer-head' }, [
         el('h3', { text: 'Initial Content Blocks' }),
         el('div', { class: 'cso-mod-toolbar' }, [
-          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Rich Text', onclick: function () { starterBlocks.push({ type: 'richtext', title: 'Section', text: 'Add detailed information here.' }); renderInitialBlocks(); } }),
-          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Notice', onclick: function () { starterBlocks.push({ type: 'notice', title: 'Notice', text: 'Important update for candidates.' }); renderInitialBlocks(); } })
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Rich Text', onclick: function () { starterBlocks.push({ type: 'richtext', title: 'Section', text: 'Add detailed information here.' }); renderInitialBlocks(); updateAll(); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Notice', onclick: function () { starterBlocks.push({ type: 'notice', title: 'Notice', text: 'Important update for candidates.' }); renderInitialBlocks(); updateAll(); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Key Dates Table', onclick: function () { starterBlocks.push({ type: 'key_dates', title: 'Key Dates', text: 'Start Date: TBD | Last Date: TBD | Exam Date: TBD' }); renderInitialBlocks(); updateAll(); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ FAQ Item', onclick: function () { starterBlocks.push({ type: 'faq', title: 'Frequently Asked Question', text: 'Clear answer for Odisha aspirants.' }); renderInitialBlocks(); updateAll(); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Official Links', onclick: function () { starterBlocks.push({ type: 'official_links', title: 'Official Links', text: 'Official Portal: https://odisha.gov.in' }); renderInitialBlocks(); updateAll(); } })
         ])
       ]),
       blocksHost
     ]));
 
     root.appendChild(shell);
-    updateSnippet();
     renderInitialBlocks();
+    updateAll();
+
+    api('GET', 'pages').then(function (d) {
+      (d.pages || []).forEach(function (p) { existingRoutes[p.route] = 1; });
+      updateAll();
+    }).catch(function () {});
   }
 
   /* -------------------------------------------------------------------------
