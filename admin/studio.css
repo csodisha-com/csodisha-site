@@ -2301,6 +2301,36 @@ html[data-theme="lime"] #sidebarConsole.cso-sidebar {
   border-color: #dce3d5;
 }
 
+html[data-theme="lime"] .cso-brand-name {
+  color: #111827;
+  font-weight: 700;
+}
+
+html[data-theme="lime"] .cso-brand-sub {
+  color: #374151;
+}
+
+html[data-theme="lime"] .cso-brand-badge {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+html[data-theme="cobalt"] .cso-brand-name {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+html[data-theme="cobalt"] .cso-brand-sub {
+  color: #334155;
+}
+
+html[data-theme="cobalt"] .cso-brand-badge {
+  background: #e0ecff;
+  color: #1e56a0;
+  border-color: #bfdbfe;
+}
+
 html[data-theme="lime"] #sidebarConsole .cso-sidebar-search,
 html[data-theme="lime"] #sidebarConsole .cso-sidebar-footer {
   background: #f5f7f2;
