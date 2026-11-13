@@ -410,22 +410,41 @@
       if (raw) candidate = JSON.parse(raw);
     } catch (e) {}
 
-    if (candidate) {
+    const activeUser = candidate || (window.CSOAuthClient && typeof window.CSOAuthClient.getUser === 'function' ? window.CSOAuthClient.getUser() : null);
+
+    if (activeUser) {
+      const isAdmin = activeUser.role === 'admin' || activeUser.role === 'superadmin';
+      const dashHref = isAdmin ? '/admin/' : '/student-dashboard/';
       const deskRow = el('div', 'cso-desktop-auth-buttons cso-auth-row');
       const dashLink = el('a', 'btn-dashboard');
-      dashLink.href = '/student-dashboard/';
+      dashLink.href = dashHref;
       const iconSpan = el('span', '', '👤');
       iconSpan.setAttribute('aria-hidden', 'true');
-      dashLink.append(iconSpan, el('span', '', 'My Dashboard'));
+      dashLink.append(iconSpan, el('span', '', isAdmin ? 'Admin Studio' : 'My Dashboard'));
+
+      const doLogout = async () => {
+        try {
+          await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+        } catch (e) {}
+        try {
+          localStorage.removeItem('cso_candidate_session_v1');
+          localStorage.removeItem('cso_auth_token');
+        } catch (e) {}
+        window.location.reload();
+      };
 
       const logoutBtn = el('button', 'btn-header-logout', 'Logout');
       logoutBtn.type = 'button';
       logoutBtn.id = 'cso-header-logout-btn';
-      logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('cso_candidate_session_v1');
-        window.location.reload();
-      });
-      deskRow.append(dashLink, logoutBtn);
+      logoutBtn.addEventListener('click', doLogout);
+
+      if (isAdmin) {
+        const hubLink = el('a', 'btn-dashboard', 'Candidate Hub');
+        hubLink.href = '/student-dashboard/';
+        deskRow.append(dashLink, hubLink, logoutBtn);
+      } else {
+        deskRow.append(dashLink, logoutBtn);
+      }
 
       const mobWrap = el('div', 'cso-mobile-auth-wrapper');
       const trigger = el('button', 'cso-auth-trigger');
@@ -437,7 +456,8 @@
 
       const mIcon = el('span', 'auth-icon', '👤');
       mIcon.setAttribute('aria-hidden', 'true');
-      const firstName = candidate.name ? String(candidate.name).split(' ')[0] : 'Account';
+      const displayName = activeUser.name || activeUser.fullName || activeUser.email || 'Account';
+      const firstName = String(displayName).split(' ')[0];
       const mLabel = el('span', 'auth-label', firstName);
       mLabel.id = 'cso-auth-cand-label';
       const mArrow = el('span', 'auth-arrow', '▾');
@@ -448,30 +468,20 @@
       menu.id = 'cso-auth-menu';
       menu.hidden = true;
 
-      const mDash = el('a', 'cso-auth-item cso-auth-item--dash', '👤 My Dashboard');
-      mDash.href = '/student-dashboard/';
+      const mDash = el('a', 'cso-auth-item cso-auth-item--dash', isAdmin ? '🛡️ Admin Studio' : '👤 My Dashboard');
+      mDash.href = dashHref;
       const mLogout = el('a', 'cso-auth-item cso-auth-item--logout', 'Logout');
       mLogout.href = '#';
       mLogout.id = 'cso-header-mob-logout';
       mLogout.addEventListener('click', e => {
         e.preventDefault();
-        localStorage.removeItem('cso_candidate_session_v1');
-        window.location.reload();
+        doLogout();
       });
       menu.append(mDash, mLogout);
       mobWrap.append(trigger, menu);
 
       authEl.append(deskRow, mobWrap);
       return;
-    }
-
-    if (window.CSOAuthClient && typeof window.CSOAuthClient.getUser === 'function') {
-      const u = window.CSOAuthClient.getUser();
-      if (u) {
-        const span = el('span', 'mut cso-auth-user-label', u.fullName || u.email || 'User');
-        authEl.appendChild(span);
-        return;
-      }
     }
 
     const desk = el('div', 'cso-desktop-auth-buttons');

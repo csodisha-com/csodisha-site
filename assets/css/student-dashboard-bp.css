@@ -1709,3 +1709,26 @@ html[data-cso-student-theme="obsidian-mint"] .cso-pwa-btn-install {
     bottom: calc(76px + env(safe-area-inset-bottom));
   }
 }
+
+/* Sign Out / Danger Outline Controls */
+.cso-btn-danger-outline {
+  border: 1px solid rgba(220, 38, 38, 0.45);
+  color: var(--cso-danger);
+  background: transparent;
+}
+
+.cso-btn-danger-outline:hover {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: var(--cso-danger);
+}
+
+.cso-btn-logout-side {
+  width: 100%;
+  justify-content: center;
+  gap: 8px;
+}
+
+.cso-logout-icon-btn:hover {
+  border-color: var(--cso-danger);
+  color: var(--cso-danger);
+}

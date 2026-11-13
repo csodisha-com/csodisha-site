@@ -316,14 +316,9 @@ function authUI() {
   root.replaceChildren();
 
   if (csoAuthUser) {
-    const label = document.createElement('span');
-    label.className = 'mut';
-    label.textContent = csoAuthUser.fullName || csoAuthUser.email;
-    label.style.marginRight = '10px';
-
     const logoutButton = document.createElement('button');
     logoutButton.type = 'button';
-    logoutButton.className = 'btn';
+    logoutButton.className = 'btn cso-logout-button';
     logoutButton.textContent = 'Logout';
 
     logoutButton.onclick = async () => {
@@ -346,24 +341,25 @@ function authUI() {
       }
     };
 
-    const dashboardButton = document.createElement('button');
-    dashboardButton.type = 'button';
-    dashboardButton.className = 'btn p';
-    dashboardButton.textContent = 'My Dashboard';
-    dashboardButton.setAttribute(
+    const isAdminUser = csoAuthUser.role === 'admin' || csoAuthUser.role === 'superadmin';
+    const dashboardLink = document.createElement('a');
+    dashboardLink.className = 'btn p cso-dashboard-button';
+    dashboardLink.href = isAdminUser ? '/admin/' : '/student-dashboard/';
+    dashboardLink.textContent = isAdminUser ? 'Admin Studio' : 'My Dashboard';
+    dashboardLink.setAttribute(
       'aria-label',
-      'Open your student dashboard'
+      isAdminUser ? 'Open Admin Studio' : 'Open your student dashboard'
     );
 
-    dashboardButton.onclick = () => {
-      go('student-dashboard');
-    };
-
-    label.remove();
-    dashboardButton.classList.add('cso-dashboard-button');
-    logoutButton.classList.add('cso-logout-button');
-
-    root.append(dashboardButton, logoutButton);
+    if (isAdminUser) {
+      const candidateLink = document.createElement('a');
+      candidateLink.className = 'btn cso-dashboard-button';
+      candidateLink.href = '/student-dashboard/';
+      candidateLink.textContent = 'Candidate Hub';
+      root.append(dashboardLink, candidateLink, logoutButton);
+    } else {
+      root.append(dashboardLink, logoutButton);
+    }
     return;
   }
 
