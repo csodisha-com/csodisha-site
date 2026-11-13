@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>Staff sign-in — CS Odisha Admin</title>
-  <link rel="stylesheet" href="/admin/cms/cms.css?v=20261113-4themes">
+  <link rel="stylesheet" href="/admin/cms/cms.css?v=20261113-themepopover">
 </head>
 <body class="login-body">
   <main class="login-card" aria-labelledby="t">
@@ -13,12 +13,15 @@
       <a href="/" class="cso-login-logo-link" aria-label="Return to Common Sense Odisha Home" title="Return to Common Sense Odisha Home">
         <img src="/assets/images/cso-logo.svg" alt="Common Sense Odisha" width="130" height="44">
       </a>
-      <select id="themeSelect" class="cso-login-theme-select" aria-label="Studio Workspace Theme" title="Switch Studio Theme (Alt+T)">
-        <option value="apex">Apex Carbon (Dark)</option>
-        <option value="volt">Volt Noir (Dark)</option>
-        <option value="cobalt">Cobalt Enterprise (Light)</option>
-        <option value="lime">Botanical Light (Light)</option>
-      </select>
+      <div id="themeMenuWrap" class="cso-theme-menu-wrap">
+        <button type="button" id="themeMenuBtn" class="cso-theme-icon-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Switch Studio Theme" title="Switch Studio Theme (Alt+T)">◐ ▾</button>
+        <div id="themeMenuPopover" class="cso-theme-popover" role="menu" hidden>
+          <button type="button" role="menuitemradio" aria-checked="true" class="cso-theme-option" data-theme-value="apex"><span class="cso-theme-swatch is-apex" aria-hidden="true"></span><span>Apex Carbon (Dark)</span></button>
+          <button type="button" role="menuitemradio" aria-checked="false" class="cso-theme-option" data-theme-value="volt"><span class="cso-theme-swatch is-volt" aria-hidden="true"></span><span>Volt Noir (Dark)</span></button>
+          <button type="button" role="menuitemradio" aria-checked="false" class="cso-theme-option" data-theme-value="cobalt"><span class="cso-theme-swatch is-cobalt" aria-hidden="true"></span><span>Cobalt Enterprise (Light)</span></button>
+          <button type="button" role="menuitemradio" aria-checked="false" class="cso-theme-option" data-theme-value="lime"><span class="cso-theme-swatch is-lime" aria-hidden="true"></span><span>Botanical Light (Light)</span></button>
+        </div>
+      </div>
     </div>
     <h1 id="t">Staff sign-in</h1>
     <p class="muted">Editors and administrators only. Use your CS Odisha account.</p>

@@ -146,26 +146,101 @@
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.cso-pill-btn:hover,
-.cso-pill-select:hover {
-  border-color: var(--studio-blue);
-  background: rgba(56, 189, 248, 0.14);
-}
-
-.cso-pill-select {
+.cso-theme-menu-wrap {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  padding: 6px 12px;
-  border-radius: 999px;
+}
+
+.cso-theme-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 38px;
+  padding: 0 8px;
+  border-radius: 10px;
   border: 1px solid var(--studio-border);
   background: var(--studio-card);
   color: var(--studio-text);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
+
+.cso-theme-icon-btn:hover {
+  border-color: var(--studio-accent);
+  background: var(--studio-card-elev);
+}
+
+.cso-theme-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 220px;
+  z-index: 60;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid var(--studio-border-strong);
+  background: var(--studio-card);
+  color: var(--studio-text);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cso-theme-popover[hidden] {
+  display: none;
+}
+
+.cso-theme-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cso-theme-option:hover {
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.cso-theme-option[aria-checked="true"] {
+  background: rgba(16, 185, 129, 0.16);
+  color: var(--studio-accent);
+}
+
+.cso-theme-option[aria-checked="true"]::after {
+  content: '✓';
+  margin-left: auto;
+  font-weight: 800;
+}
+
+.cso-theme-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+}
+
+.cso-theme-swatch.is-apex { background: #10b981; }
+.cso-theme-swatch.is-volt { background: #bef264; }
+.cso-theme-swatch.is-cobalt { background: #1e56a0; }
+.cso-theme-swatch.is-lime { background: #65a30d; }
 
 .cso-brand-mark {
   width: 38px;
@@ -2351,14 +2426,54 @@ html[data-theme="lime"] .cso-bottom-bar {
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
 }
 
+html[data-theme="apex"] .cso-theme-popover,
+html[data-theme="volt"] .cso-theme-popover {
+  background: #0d1210;
+  color: #f8fafc;
+  border-color: #1f2926;
+}
+
+html[data-theme="volt"] .cso-theme-popover {
+  background: #151911;
+  border-color: #282e21;
+}
+
+html[data-theme="volt"] .cso-theme-option[aria-checked="true"] {
+  background: rgba(190, 242, 100, 0.16);
+  color: #bef264;
+}
+
+html[data-theme="cobalt"] .cso-theme-popover,
+html[data-theme="lime"] .cso-theme-popover {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+}
+
+html[data-theme="cobalt"] .cso-theme-option:hover,
+html[data-theme="lime"] .cso-theme-option:hover {
+  background: #f1f5f9;
+}
+
+html[data-theme="cobalt"] .cso-theme-option[aria-checked="true"] {
+  background: #e0ecff;
+  color: #1e56a0;
+}
+
+html[data-theme="lime"] .cso-theme-option[aria-checked="true"] {
+  background: #ecfccb;
+  color: #3f6212;
+}
+
 html[data-theme="cobalt"] .cso-pill-btn,
-html[data-theme="cobalt"] .cso-pill-select,
+html[data-theme="cobalt"] .cso-theme-icon-btn,
 html[data-theme="cobalt"] .cso-pill-link,
 html[data-theme="cobalt"] .cso-telemetry-pill,
 html[data-theme="cobalt"] .cso-icon-btn,
 html[data-theme="cobalt"] .cso-user-pill,
 html[data-theme="lime"] .cso-pill-btn,
-html[data-theme="lime"] .cso-pill-select,
+html[data-theme="lime"] .cso-theme-icon-btn,
 html[data-theme="lime"] .cso-pill-link,
 html[data-theme="lime"] .cso-telemetry-pill,
 html[data-theme="lime"] .cso-icon-btn,

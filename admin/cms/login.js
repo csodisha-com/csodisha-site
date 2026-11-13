@@ -7,7 +7,9 @@
   var togglePw = document.getElementById('togglePw');
   var capsHint = document.getElementById('capsHint');
   var rememberMe = document.getElementById('rememberMe');
-  var themeSelect = document.getElementById('themeSelect');
+  var themeMenuWrap = document.getElementById('themeMenuWrap');
+  var themeMenuBtn = document.getElementById('themeMenuBtn');
+  var themeMenuPopover = document.getElementById('themeMenuPopover');
   var THEME_ORDER = ['apex', 'volt', 'cobalt', 'lime'];
 
   function normalizeTheme(raw) {
@@ -27,8 +29,17 @@
   function applyTheme(theme) {
     var safe = normalizeTheme(theme);
     document.documentElement.dataset.theme = safe;
-    if (themeSelect) themeSelect.value = safe;
+    if (themeMenuPopover) {
+      themeMenuPopover.querySelectorAll('.cso-theme-option').forEach(function (opt) {
+        opt.setAttribute('aria-checked', opt.getAttribute('data-theme-value') === safe ? 'true' : 'false');
+      });
+    }
     return safe;
+  }
+
+  function closeThemePopover() {
+    if (themeMenuPopover) themeMenuPopover.hidden = true;
+    if (themeMenuBtn) themeMenuBtn.setAttribute('aria-expanded', 'false');
   }
 
   function setTheme(theme) {
@@ -44,13 +55,29 @@
   }
 
   applyTheme(readStoredTheme());
-  if (themeSelect) {
-    themeSelect.addEventListener('change', function () {
-      setTheme(themeSelect.value);
+  if (themeMenuBtn && themeMenuPopover) {
+    themeMenuBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var nextHidden = !themeMenuPopover.hidden;
+      themeMenuPopover.hidden = nextHidden;
+      themeMenuBtn.setAttribute('aria-expanded', String(!nextHidden));
+    });
+    themeMenuPopover.querySelectorAll('.cso-theme-option').forEach(function (opt) {
+      opt.addEventListener('click', function () {
+        setTheme(opt.getAttribute('data-theme-value'));
+        closeThemePopover();
+      });
+    });
+    document.addEventListener('click', function (e) {
+      if (!themeMenuPopover.hidden && themeMenuWrap && !themeMenuWrap.contains(e.target)) {
+        closeThemePopover();
+      }
     });
   }
   document.addEventListener('keydown', function (e) {
-    if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 't' || e.key === 'T')) {
+    if (e.key === 'Escape') {
+      closeThemePopover();
+    } else if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 't' || e.key === 'T')) {
       var tag = e.target && e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
       e.preventDefault();

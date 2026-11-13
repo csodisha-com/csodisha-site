@@ -42,7 +42,9 @@
     btnModalClose: document.getElementById('btnModalClose'),
     btnCreateNewMenu: document.getElementById('btnCreateNewMenu'),
     createNewDropdown: document.getElementById('createNewDropdown'),
-    themeSelect: document.getElementById('themeSelect'),
+    themeMenuWrap: document.getElementById('themeMenuWrap'),
+    themeMenuBtn: document.getElementById('themeMenuBtn'),
+    themeMenuPopover: document.getElementById('themeMenuPopover'),
     adminUserEmail: document.getElementById('adminUserEmail'),
     adminUserRole: document.getElementById('adminUserRole'),
     adminUserInitials: document.getElementById('adminUserInitials')
@@ -332,8 +334,17 @@
   function applyTheme(theme) {
     var safe = normalizeTheme(theme);
     document.documentElement.dataset.theme = safe;
-    if (dom.themeSelect) dom.themeSelect.value = safe;
+    if (dom.themeMenuPopover) {
+      dom.themeMenuPopover.querySelectorAll('.cso-theme-option').forEach(function (opt) {
+        opt.setAttribute('aria-checked', opt.getAttribute('data-theme-value') === safe ? 'true' : 'false');
+      });
+    }
     return safe;
+  }
+
+  function closeThemePopover() {
+    if (dom.themeMenuPopover) dom.themeMenuPopover.hidden = true;
+    if (dom.themeMenuBtn) dom.themeMenuBtn.setAttribute('aria-expanded', 'false');
   }
 
   function setTheme(theme) {
@@ -373,6 +384,7 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         closeCreateDropdown();
+        closeThemePopover();
         closeModal();
         closeMobileDrawer();
       } else if ((e.ctrlKey || e.metaKey) && e.key === '\\') {
@@ -390,9 +402,25 @@
       }
     });
 
-    if (dom.themeSelect) {
-      dom.themeSelect.addEventListener('change', function () {
-        setTheme(dom.themeSelect.value);
+    if (dom.themeMenuBtn && dom.themeMenuPopover) {
+      dom.themeMenuBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var nextHidden = !dom.themeMenuPopover.hidden;
+        dom.themeMenuPopover.hidden = nextHidden;
+        dom.themeMenuBtn.setAttribute('aria-expanded', String(!nextHidden));
+      });
+
+      dom.themeMenuPopover.querySelectorAll('.cso-theme-option').forEach(function (opt) {
+        opt.addEventListener('click', function () {
+          setTheme(opt.getAttribute('data-theme-value'));
+          closeThemePopover();
+        });
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!dom.themeMenuPopover.hidden && dom.themeMenuWrap && !dom.themeMenuWrap.contains(e.target)) {
+          closeThemePopover();
+        }
       });
     }
 
