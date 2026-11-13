@@ -1361,27 +1361,35 @@
   /* ---------- real site pages & portals inventory ---------- */
   async function viewSitePages(filterCategory) {
     setTitle(filterCategory ? 'Site Pages — ' + filterCategory : 'All Pages & Portals');
-    var manifest = { total: 0, pages: [] };
+    var allPages = [];
     try {
-      if (window.CSOLive && typeof window.CSOLive.getSiteManifest === 'function') {
-        manifest = await window.CSOLive.getSiteManifest();
-      }
+      var liveRes = await api('GET', 'pages');
+      if (Array.isArray(liveRes.pages)) allPages = liveRes.pages;
     } catch (_) {}
+    if (!allPages.length) {
+      try {
+        if (window.CSOLive && typeof window.CSOLive.getSiteManifest === 'function') {
+          var manifest = await window.CSOLive.getSiteManifest();
+          allPages = Array.isArray(manifest.pages) ? manifest.pages : [];
+        }
+      } catch (_) {}
+    }
 
-    var allPages = Array.isArray(manifest.pages) ? manifest.pages : [];
     var st = { q: '', cat: filterCategory || '' };
     var q = el('input', { type: 'search', placeholder: 'Search route, title, or file…', 'aria-label': 'Search site pages' });
     var sel = el('select', { 'aria-label': 'Filter by category' }, [
       ['', 'All categories (' + allPages.length + ')'],
       ['Core Portal', 'Core Portal'],
       ['Candidate Workspace', 'Candidate Workspace'],
-      ['Information & Legal', 'Information & Legal']
+      ['Information & Legal', 'Information & Legal'],
+      ['Exam Guide', 'Exam Guide'],
+      ['Recruitment', 'Recruitment']
     ].map(function (o) { return el('option', { value: o[0], text: o[1], selected: st.cat === o[0] }); }));
 
     var summaryRow = el('div', { class: 'cards' }, [
       stat('Total live pages', allPages.length, 'on csodisha.com'),
       stat('Core Portals', allPages.filter(function (p) { return p.category === 'Core Portal'; }).length),
-      stat('Candidate Workspace', allPages.filter(function (p) { return p.category === 'Candidate Workspace'; }).length),
+      stat('Overrides & Custom', allPages.filter(function (p) { return p.source === 'override' || p.source === 'dynamic'; }).length),
       stat('Information & Legal', allPages.filter(function (p) { return p.category === 'Information & Legal'; }).length)
     ]);
     main.appendChild(summaryRow);
@@ -1392,12 +1400,63 @@
       el('a', { class: 'btn primary', href: '#/banner', text: 'Homepage & Banner Studio' })
     ]));
 
+    var editBox = el('div');
     var box = el('div');
+    main.appendChild(editBox);
     main.appendChild(box);
+
+    function openQuickEdit(p) {
+      clear(editBox);
+      var tInp = el('input', { type: 'text', value: p.title || '' });
+      var dInp = el('textarea', {}, p.meta_description || p.description || '');
+      dInp.value = p.meta_description || p.description || '';
+      var hInp = el('input', { type: 'text', value: p.hero_title || '' });
+      var cLbl = el('input', { type: 'text', value: p.cta_label || '' });
+      var cUrl = el('input', { type: 'text', value: p.cta_url || '' });
+      editBox.appendChild(el('div', { class: 'panel' }, [
+        el('div', { class: 'toolbar' }, [
+          el('h2', { text: 'Quick Edit Live SEO & Hero — ' + p.route }),
+          el('span', { class: 'spacer' }),
+          el('button', { type: 'button', class: 'btn sm', text: 'Close', onclick: function () { clear(editBox); } })
+        ]),
+        el('div', { class: 'form' }, [
+          el('label', {}, ['Page / SEO Title', tInp]),
+          el('label', {}, ['Meta Description', dInp]),
+          el('label', {}, ['Hero Headline', hInp]),
+          el('label', {}, ['CTA Label', cLbl]),
+          el('label', {}, ['CTA URL', cUrl]),
+          el('div', { class: 'actions' }, [
+            el('button', {
+              type: 'button',
+              class: 'btn primary',
+              text: 'Publish Live',
+              onclick: async function () {
+                try {
+                  await api('PUT', 'pages', {
+                    route: p.route,
+                    title: tInp.value.trim(),
+                    meta_description: dInp.value.trim(),
+                    hero_title: hInp.value.trim(),
+                    cta_label: cLbl.value.trim(),
+                    cta_url: cUrl.value.trim(),
+                    status: 'published',
+                    note: 'CMS Quick Edit'
+                  });
+                  toast('Published live: ' + p.route);
+                  clear(editBox);
+                  viewSitePages(filterCategory);
+                } catch (e) { toast(e.message, 'error'); }
+              }
+            })
+          ])
+        ])
+      ]));
+    }
 
     function seoState(p) {
       var tLen = (p.title || '').length;
-      var dLen = (p.description || '').length;
+      var desc = p.meta_description || p.description || '';
+      var dLen = desc.length;
       if (dLen >= 40 && dLen <= 170 && tLen > 0 && tLen <= 75) return ['published', 'SEO Ready'];
       if (dLen > 0) return ['scheduled', 'Check length'];
       return ['draft', 'Missing meta'];
@@ -1405,7 +1464,7 @@
 
     function catBadge(cat) {
       var cls = cat === 'Core Portal' ? 'published' : (cat === 'Candidate Workspace' ? 'scheduled' : 'draft');
-      return el('span', { class: 'badge ' + cls, text: cat });
+      return el('span', { class: 'badge ' + cls, text: cat || 'Portal' });
     }
 
     function renderTable() {
@@ -1413,39 +1472,41 @@
       var rows = allPages.filter(function (p) {
         if (st.cat && p.category !== st.cat) return false;
         if (!term) return true;
+        var desc = p.meta_description || p.description || '';
         return (p.title || '').toLowerCase().includes(term) ||
           (p.route || '').toLowerCase().includes(term) ||
           (p.file || '').toLowerCase().includes(term) ||
-          (p.description || '').toLowerCase().includes(term);
+          desc.toLowerCase().includes(term);
       });
 
       var tb = el('tbody');
       rows.forEach(function (p) {
         var seo = seoState(p);
+        var desc = p.meta_description || p.description || '';
         var fullUrl = 'https://csodisha.com' + p.route;
         tb.appendChild(el('tr', {}, [
           el('td', {}, [
             el('strong', { text: p.title }),
-            el('div', {}, el('code', { text: p.route }))
+            el('div', {}, [el('code', { text: p.route }), ' ', p.source ? el('span', { class: 'badge ' + (p.source === 'static' ? 'draft' : 'published'), text: p.source }) : null])
           ]),
           el('td', {}, catBadge(p.category)),
           el('td', {}, [
-            el('div', { class: 'hint', text: p.description ? p.description.slice(0, 110) + (p.description.length > 110 ? '…' : '') : 'No meta description tag found.' }),
+            el('div', { class: 'hint', text: desc ? desc.slice(0, 110) + (desc.length > 110 ? '…' : '') : 'No meta description tag found.' }),
             el('div', { class: 'actions' }, [el('span', { class: 'badge ' + seo[0], text: seo[1] })])
           ]),
           el('td', {}, el('div', { class: 'actions' }, [
+            el('button', { type: 'button', class: 'btn sm primary', text: 'Quick Edit', onclick: function () { openQuickEdit(p); } }),
             el('a', { class: 'btn sm', href: p.route, target: '_blank', rel: 'noopener', text: 'Open Live ↗' }),
             el('button', { type: 'button', class: 'btn sm', text: 'Copy URL', onclick: function () {
               if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(fullUrl).then(function () { toast('Copied ' + fullUrl); }).catch(function () { toast(fullUrl); });
               } else { toast(fullUrl); }
-            } }),
-            el('a', { class: 'btn sm', href: '#/banner', text: 'Edit Banner / SEO' })
+            } })
           ]))
         ]));
       });
       if (!rows.length) {
-        tb.appendChild(el('tr', {}, el('td', { colspan: '4', class: 'muted', text: 'No matching pages found in site-manifest.json.' })));
+        tb.appendChild(el('tr', {}, el('td', { colspan: '4', class: 'muted', text: 'No matching pages found.' })));
       }
 
       var mainScrollEl = document.querySelector('.cso-main');

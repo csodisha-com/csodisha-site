@@ -464,33 +464,610 @@
   /* =========================================================================
      FOLDER 02: WEBSITE PAGES & BUILDER (module-02-001..011)
      ========================================================================= */
+  var f02State = { builderRoute: null, createTemplate: null, builderTemplate: null };
+
+  var F02_TEMPLATES = [
+    {
+      id: 'ossc-recruitment',
+      name: 'OSSC / OSSSC Recruitment Notification',
+      category: 'Core Portal',
+      meta_description: 'Official Odisha recruitment notification, vacancy breakdown, eligibility, important dates, and direct apply link.',
+      hero_title: 'OSSC / OSSSC Recruitment 2026 — Official Notification',
+      hero_subtitle: 'Verified vacancy details, age limit, educational qualification, and online application schedule.',
+      cta_label: 'Apply Online Now',
+      cta_url: '/jobs-careers/',
+      blocks: [
+        { type: 'hero', title: 'Odisha Recruitment Notification 2026', text: 'Complete official notification summary and key dates for Odisha aspirants.', label: 'View Official PDF', url: '/jobs-careers/' },
+        { type: 'notice', title: 'Important Dates & Fee', text: 'Check application start date, last date, and examination fee structure before applying.' },
+        { type: 'ticker', title: 'Latest Odisha Govt Job Alerts' },
+        { type: 'faq', title: 'Recruitment FAQs', items: ['Who can apply?|Candidates meeting age and educational criteria as per official notification.', 'How to download admit card?|Log in to the commission portal using your registration number.'] }
+      ]
+    },
+    {
+      id: 'opsc-oas-hub',
+      name: 'OPSC OAS Exam & Syllabus Hub',
+      category: 'Core Portal',
+      meta_description: 'OPSC OAS Prelims & Mains syllabus, exam pattern, previous year question papers, and preparation strategy.',
+      hero_title: 'OPSC Odisha Civil Services (OAS) Hub',
+      hero_subtitle: 'Complete Prelims, Mains & Interview syllabus, PYQ archives, and free mock tests.',
+      cta_label: 'Start OAS Mock Test',
+      cta_url: '/mock-tests/',
+      blocks: [
+        { type: 'hero', title: 'OPSC OAS 2026 Preparation Hub', text: 'Structured syllabus, Odisha GK notes, and bilingual test series.', label: 'Explore Syllabus', url: '/syllabus/' },
+        { type: 'examgrid', title: 'OAS Quick Links', items: ['Prelims Syllabus|/syllabus/', 'Previous Year Papers|/pyq/', 'Daily Current Affairs|/current-affairs/', 'Free Mock Tests|/mock-tests/'] },
+        { type: 'cbt', title: 'Practice OPSC Prelims CBT', text: 'Attempt timed GS Paper I & CSAT mock tests with instant scorecard.', label: 'Launch CBT', url: '/mock-tests/' }
+      ]
+    },
+    {
+      id: 'cbt-mock-portal',
+      name: 'Free CBT Mock Test Portal',
+      category: 'Candidate Workspace',
+      meta_description: 'Free bilingual Odia & English CBT mock tests for OSSC CGL, OSSSC RI/ARI, OPSC OAS, and Odisha Police.',
+      hero_title: 'Free Odisha CBT Mock Test Series',
+      hero_subtitle: 'Real exam interface with timer, negative marking, and detailed solutions.',
+      cta_label: 'Attempt Free Test',
+      cta_url: '/mock-tests/',
+      blocks: [
+        { type: 'cbt', title: 'Full-Length Odisha Exam CBT', text: 'Practice OSSC CGL, RI/ARI, Amin, and Constable papers in real-time mode.', label: 'Start Test Now', url: '/mock-tests/' },
+        { type: 'examgrid', title: 'Available Test Series', items: ['OSSC CGLRE Prelims|/mock-tests/', 'OSSSC Combined Exam|/mock-tests/', 'Odisha Police SI|/mock-tests/', 'OTET & OSSTET|/mock-tests/'] },
+        { type: 'richtext', text: 'All mock tests are updated regularly as per the latest OSSC, OSSSC, and OPSC exam patterns.' }
+      ]
+    },
+    {
+      id: 'odisha-scheme-guide',
+      name: 'Odisha Govt Scheme & Scholarship Guide',
+      category: 'Core Portal',
+      meta_description: 'Eligibility, required documents, benefits, and step-by-step online application guide for Odisha government schemes.',
+      hero_title: 'Odisha Government Scheme & Scholarship Guide',
+      hero_subtitle: 'Verified eligibility rules, document checklist, and official portal links.',
+      cta_label: 'Check Eligibility',
+      cta_url: '/schemes/',
+      blocks: [
+        { type: 'hero', title: 'Odisha Welfare & Scholarship Guide', text: 'Step-by-step application instructions and beneficiary status check.', label: 'Open Schemes Portal', url: '/schemes/' },
+        { type: 'notice', title: 'Required Documents', text: 'Keep Aadhaar card, residence certificate, income certificate, and bank passbook ready.' },
+        { type: 'faq', title: 'Scheme FAQs', items: ['Where to apply?|Apply only through the official Odisha state portal.', 'Is there any application fee?|No, government welfare and scholarship applications are free.'] }
+      ]
+    },
+    {
+      id: 'admit-card-tracker',
+      name: 'Admit Card & Result Tracker',
+      category: 'Core Portal',
+      meta_description: 'Direct official links to download Odisha exam admit cards, hall tickets, answer keys, and merit lists.',
+      hero_title: 'Odisha Exam Admit Card & Result Tracker',
+      hero_subtitle: 'Fast, verified links to commission hall tickets and final selection lists.',
+      cta_label: 'Check Live Results',
+      cta_url: '/jobs-careers/',
+      blocks: [
+        { type: 'ticker', title: 'Live Admit Card & Result Updates' },
+        { type: 'examgrid', title: 'Official Commission Portals', items: ['OSSC Portal|/jobs-careers/', 'OSSSC Portal|/jobs-careers/', 'OPSC Portal|/jobs-careers/', 'Student Dashboard|/student-dashboard/'] },
+        { type: 'notice', title: 'Candidate Advisory', text: 'Always verify your roll number and exam centre on the official PDF before exam day.' }
+      ]
+    },
+    {
+      id: 'official-notice-faq',
+      name: 'Official Notice & FAQ Page',
+      category: 'Information & Legal',
+      meta_description: 'Official portal notice, candidate guidelines, and frequently asked questions for Common Sense Odisha.',
+      hero_title: 'Official Notice & Candidate Guidelines',
+      hero_subtitle: 'Clear answers on portal access, mock tests, and official verification.',
+      cta_label: 'Contact Support',
+      cta_url: '/contact.html',
+      blocks: [
+        { type: 'notice', title: 'Portal Verification Notice', text: 'Common Sense Odisha provides verified educational guides and official commission links.' },
+        { type: 'richtext', text: 'Use this page template for statutory notices, exam advisories, or candidate helpdesks.' },
+        { type: 'faq', title: 'Frequently Asked Questions', items: ['How do I report an error?|Reach out via the Contact Us page with the page URL.', 'Are study resources free?|Yes, core syllabus, PYQs, and job alerts are free for Odisha aspirants.'] }
+      ]
+    }
+  ];
+
+  function f02NormalizeRoute(r) {
+    var s = String(r || '').trim();
+    if (!s) return '/';
+    if (!s.startsWith('/')) s = '/' + s;
+    s = s.replace(/\/{2,}/g, '/');
+    if (s !== '/' && !s.endsWith('/') && !/\.[a-z0-9]{2,5}$/i.test(s)) s += '/';
+    return s;
+  }
+
+  function f02ParseBlocks(raw) {
+    if (Array.isArray(raw)) return raw;
+    try {
+      var parsed = JSON.parse(raw || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function f02StatusBadge(status) {
+    var s = status || 'published';
+    var kind = s === 'published' ? 'ok' : (s === 'scheduled' ? 'warn' : (s === 'archived' || s === 'trash' ? 'danger' : 'info'));
+    return badge(s, kind);
+  }
+
+  function f02SourceBadge(source) {
+    var s = source || 'static';
+    var kind = s === 'override' ? 'warn' : (s === 'dynamic' ? 'ok' : 'info');
+    return badge(s, kind);
+  }
+
+  /* -------------------------------------------------------------------------
+     02-001: All Pages (Live D1 + Manifest merged inventory + Quick Edit)
+     ------------------------------------------------------------------------- */
+  function renderAllPagesStudio(root, actions) {
+    addHeaderPill(actions, '● Live Pages API');
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var kpiHost = el('div', { class: 'cso-mod-grid-4' });
+    var drawerHost = el('div', {});
+    var previewHost = el('div', {});
+    var tableHost = el('div', {});
+
+    var allPages = [];
+    var state = { q: '', cat: '', status: '' };
+    var searchInp = el('input', { type: 'search', class: 'cso-mod-input', placeholder: 'Search title, route, or meta description…' });
+    var catRow = el('div', { class: 'cso-pill-row' });
+    var statusRow = el('div', { class: 'cso-pill-row' });
+
+    function openPreview(p) {
+      clear(previewHost);
+      var mobile = false;
+      var src = p.route + (p.route.indexOf('?') === -1 ? '?' : '&') + 'preview=1&t=' + Date.now();
+      var frame = el('iframe', { src: src, class: 'cso-preview-frame', title: 'Live Preview: ' + p.route });
+      var toggleBtn = el('button', {
+        type: 'button',
+        class: 'cso-mod-btn cso-mod-btn-sm',
+        text: 'Mobile 375px',
+        onclick: function () {
+          mobile = !mobile;
+          frame.className = mobile ? 'cso-preview-frame-mobile' : 'cso-preview-frame';
+          toggleBtn.textContent = mobile ? 'Desktop 100%' : 'Mobile 375px';
+        }
+      });
+      previewHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'Live Preview — ' + p.route }),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            toggleBtn,
+            el('a', { href: p.route, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Open Live ↗' }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(previewHost); } })
+          ])
+        ]),
+        el('div', { class: 'cso-preview-frame-wrap' }, [frame])
+      ]));
+    }
+
+    function openQuickEdit(p) {
+      clear(drawerHost);
+      var titleInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.title || '' });
+      var metaInp = el('textarea', { class: 'cso-mod-textarea' });
+      metaInp.value = p.meta_description || '';
+      var catSel = el('select', { class: 'cso-mod-select' }, [
+        'Core Portal', 'Candidate Workspace', 'Information & Legal', 'Exam Guide', 'Recruitment'
+      ].map(function (c) { return el('option', { value: c, text: c, selected: p.category === c }); }));
+      var heroTitleInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.hero_title || '' });
+      var heroSubInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.hero_subtitle || '' });
+      var ctaLblInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.cta_label || '' });
+      var ctaUrlInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.cta_url || '' });
+      var statusSel = el('select', { class: 'cso-mod-select' }, [
+        'published', 'draft', 'scheduled', 'archived', 'trash'
+      ].map(function (s) { return el('option', { value: s, text: s, selected: (p.status || 'published') === s }); }));
+
+      var saveBtn = el('button', {
+        type: 'button',
+        class: 'cso-mod-btn cso-mod-btn-primary',
+        text: 'Save & Publish Live',
+        onclick: async function () {
+          saveBtn.disabled = true;
+          try {
+            await api('PUT', 'pages', {
+              route: p.route,
+              title: titleInp.value.trim(),
+              meta_description: metaInp.value.trim(),
+              category: catSel.value,
+              hero_title: heroTitleInp.value.trim(),
+              hero_subtitle: heroSubInp.value.trim(),
+              cta_label: ctaLblInp.value.trim(),
+              cta_url: ctaUrlInp.value.trim(),
+              status: statusSel.value,
+              note: 'Quick Edit SEO & Hero'
+            });
+            toast('Saved & pushed live: ' + p.route, 'success');
+            clear(drawerHost);
+            await loadPages();
+          } catch (e) {
+            toast(e.message, 'crimson');
+          } finally {
+            saveBtn.disabled = false;
+          }
+        }
+      });
+
+      drawerHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('div', {}, [el('strong', { text: 'Quick Edit SEO & Hero — ' }), el('code', { text: p.route })]),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+        ]),
+        el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Page / Meta Title' }), titleInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Category' }), catSel]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Headline' }), heroTitleInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Subtitle' }), heroSubInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Label' }), ctaLblInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), ctaUrlInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), metaInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Publish Status' }), statusSel])
+        ]),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          saveBtn,
+          el('button', {
+            type: 'button',
+            class: 'cso-mod-btn',
+            text: 'Open in Visual Builder',
+            onclick: function () { f02State.builderRoute = p.route; window.selectModule && window.selectModule('folder-02', 'module-02-003'); }
+          })
+        ])
+      ]));
+    }
+
+    function renderPills() {
+      clear(catRow);
+      catRow.appendChild(el('span', { class: 'cso-mod-muted', text: 'Category:' }));
+      var cats = [''].concat(['Core Portal', 'Candidate Workspace', 'Information & Legal', 'Exam Guide', 'Recruitment']);
+      cats.forEach(function (c) {
+        catRow.appendChild(el('button', {
+          type: 'button',
+          class: 'cso-pill' + (state.cat === c ? ' is-active' : ''),
+          text: c || 'All',
+          onclick: function () { state.cat = c; renderPills(); drawTable(); }
+        }));
+      });
+
+      clear(statusRow);
+      statusRow.appendChild(el('span', { class: 'cso-mod-muted', text: 'Status:' }));
+      ['', 'published', 'draft', 'scheduled', 'trash'].forEach(function (s) {
+        statusRow.appendChild(el('button', {
+          type: 'button',
+          class: 'cso-pill' + (state.status === s ? ' is-active' : ''),
+          text: s || 'All',
+          onclick: function () { state.status = s; renderPills(); drawTable(); }
+        }));
+      });
+    }
+
+    function drawTable() {
+      clear(tableHost);
+      var term = state.q.toLowerCase().trim();
+      var filtered = allPages.filter(function (p) {
+        if (state.cat && p.category !== state.cat) return false;
+        if (state.status) {
+          if (state.status === 'trash') {
+            if (p.status !== 'trash' && p.status !== 'archived') return false;
+          } else if ((p.status || 'published') !== state.status) return false;
+        }
+        if (!term) return true;
+        return (p.title || '').toLowerCase().indexOf(term) !== -1 ||
+          (p.route || '').toLowerCase().indexOf(term) !== -1 ||
+          (p.meta_description || '').toLowerCase().indexOf(term) !== -1;
+      });
+
+      var rows = filtered.map(function (p) {
+        return el('tr', {}, [
+          el('td', {}, [
+            el('strong', { text: p.title || p.route }),
+            el('div', { class: 'cso-inline-row' }, [el('code', { text: p.route }), f02SourceBadge(p.source)])
+          ]),
+          el('td', { text: p.category || '—' }),
+          el('td', {}, [
+            f02StatusBadge(p.status),
+            p.revisions ? el('span', { class: 'cso-mod-muted', text: ' · ' + p.revisions + ' rev' }) : null
+          ]),
+          el('td', { text: (p.meta_description || '').slice(0, 72) + ((p.meta_description || '').length > 72 ? '…' : '') || '—' }),
+          el('td', {}, el('div', { class: 'cso-mod-toolbar' }, [
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Quick Edit', onclick: function () { openQuickEdit(p); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview', onclick: function () { openPreview(p); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Builder', onclick: function () { f02State.builderRoute = p.route; window.selectModule && window.selectModule('folder-02', 'module-02-003'); } }),
+            el('a', { href: p.route, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Open Live ↗' }),
+            (p.status !== 'trash' && p.status !== 'archived') ? el('button', {
+              type: 'button',
+              class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm',
+              text: 'Trash',
+              onclick: async function () {
+                try {
+                  await api('PUT', 'pages', { route: p.route, status: 'trash', note: 'Moved to trash' });
+                  toast('Moved to Trash: ' + p.route, 'success');
+                  await loadPages();
+                } catch (e) { toast(e.message, 'crimson'); }
+              }
+            }) : null
+          ]))
+        ]);
+      });
+
+      tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Showing ' + filtered.length + ' of ' + allPages.length + ' routes (static + live D1 overrides + dynamic pages).' }));
+      tableHost.appendChild(safeTable(['Page & Route', 'Category', 'Status', 'Meta Description', 'Actions'], rows));
+    }
+
+    async function loadPages() {
+      clear(tableHost);
+      tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Loading live pages from /api/admin/pages…' }));
+      try {
+        var d = await api('GET', 'pages');
+        allPages = d.pages || [];
+        var overrides = allPages.filter(function (p) { return p.source === 'override' || p.source === 'dynamic'; }).length;
+        var drafts = allPages.filter(function (p) { return p.status === 'draft' || p.status === 'scheduled'; }).length;
+        var trashed = allPages.filter(function (p) { return p.status === 'trash' || p.status === 'archived'; }).length;
+
+        clear(kpiHost);
+        [
+          ['Total Routes', allPages.length],
+          ['Live Overrides / Custom', overrides],
+          ['Drafts & Scheduled', drafts],
+          ['Trash & Archived', trashed]
+        ].forEach(function (k) {
+          kpiHost.appendChild(el('div', { class: 'cso-mod-kpi' }, [
+            el('div', { class: 'cso-mod-kpi-val', text: String(k[1]) }),
+            el('div', { class: 'cso-mod-kpi-lbl', text: k[0] })
+          ]));
+        });
+
+        renderPills();
+        drawTable();
+      } catch (e) {
+        clear(tableHost);
+        tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Failed to load pages: ' + e.message }));
+      }
+    }
+
+    searchInp.addEventListener('input', function () { state.q = searchInp.value; drawTable(); });
+
+    renderBanner(shell, 'All Website Pages', 'Live merged inventory of all 44 static portals + D1 live overrides + custom pages.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: '+ Create New Page', onclick: function () { window.selectModule && window.selectModule('folder-02', 'module-02-002'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Open Visual Builder', onclick: function () { window.selectModule && window.selectModule('folder-02', 'module-02-003'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: loadPages })
+    ]);
+
+    shell.appendChild(kpiHost);
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [
+      el('div', { class: 'cso-mod-field' }, [searchInp]),
+      catRow,
+      statusRow
+    ]));
+    shell.appendChild(drawerHost);
+    shell.appendChild(previewHost);
+    shell.appendChild(tableHost);
+    root.appendChild(shell);
+    loadPages();
+  }
+
+  /* -------------------------------------------------------------------------
+     02-002: Create New Page (Live POST /api/admin/pages + Google Snippet)
+     ------------------------------------------------------------------------- */
+  function renderCreatePageWizard(root, actions) {
+    addHeaderPill(actions, '● Live Page Publisher');
+    var tpl = f02State.createTemplate;
+    f02State.createTemplate = null;
+
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var titleInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'e.g. OPSC OAS 2026 Complete Guide', value: tpl ? tpl.name : '' });
+    var slugInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/opsc-oas-2026/', value: tpl ? '/' + tpl.id + '/' : '' });
+    var catSel = el('select', { class: 'cso-mod-select' }, [
+      'Core Portal', 'Candidate Workspace', 'Information & Legal', 'Exam Guide', 'Recruitment'
+    ].map(function (c) { return el('option', { value: c, text: c, selected: tpl && tpl.category === c }); }));
+    var metaDescInp = el('textarea', { class: 'cso-mod-textarea', placeholder: 'Concise 140–160 char search snippet for Google…' });
+    metaDescInp.value = tpl ? (tpl.meta_description || '') : '';
+
+    var heroTitleInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Hero H1 headline', value: tpl ? (tpl.hero_title || '') : '' });
+    var heroSubInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Hero supporting subtitle', value: tpl ? (tpl.hero_subtitle || '') : '' });
+    var ctaLblInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'e.g. Apply Online', value: tpl ? (tpl.cta_label || '') : '' });
+    var ctaUrlInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/jobs-careers/', value: tpl ? (tpl.cta_url || '') : '' });
+    var schedInp = el('input', { type: 'datetime-local', class: 'cso-mod-input' });
+
+    var starterBlocks = tpl ? JSON.parse(JSON.stringify(tpl.blocks || [])) : [
+      { type: 'hero', title: 'New Odisha Exam Portal', text: 'Verified syllabus, official links, and live alerts.', label: 'Explore Jobs', url: '/jobs-careers/' },
+      { type: 'notice', title: 'Important Notice', text: 'Always verify final dates on the official commission portal.' }
+    ];
+    var blocksHost = el('div', { class: 'cso-mod-shell' });
+
+    var titleCount = el('div', { class: 'cso-char-count' });
+    var descCount = el('div', { class: 'cso-char-count' });
+    var gsUrl = el('div', { class: 'cso-gs-url' });
+    var gsTitle = el('div', { class: 'cso-gs-title' });
+    var gsDesc = el('div', { class: 'cso-gs-desc' });
+    var resultBanner = el('div', {});
+
+    function updateSnippet() {
+      var t = titleInp.value.trim();
+      var d = metaDescInp.value.trim();
+      var r = f02NormalizeRoute(slugInp.value || '/new-page/');
+      titleCount.textContent = t.length + ' / 60 chars';
+      titleCount.className = 'cso-char-count' + (t.length > 60 ? ' is-over' : '');
+      descCount.textContent = d.length + ' / 160 chars';
+      descCount.className = 'cso-char-count' + (d.length > 160 ? ' is-over' : '');
+      gsUrl.textContent = 'https://csodisha.com' + r;
+      gsTitle.textContent = t || 'Page Title — Common Sense Odisha';
+      gsDesc.textContent = d || 'Meta description preview will appear here as you type…';
+    }
+
+    function renderInitialBlocks() {
+      clear(blocksHost);
+      starterBlocks.forEach(function (b, idx) {
+        var bTitle = el('input', { type: 'text', class: 'cso-mod-input', value: b.title || '', placeholder: 'Block Title' });
+        var bText = el('input', { type: 'text', class: 'cso-mod-input', value: b.text || '', placeholder: 'Block Text' });
+        bTitle.addEventListener('input', function () { b.title = bTitle.value; });
+        bText.addEventListener('input', function () { b.text = bText.value; });
+        blocksHost.appendChild(el('div', { class: 'cso-builder-block' }, [
+          el('div', { class: 'cso-builder-block-head' }, [
+            badge((idx + 1) + '. ' + b.type, 'info'),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: 'Remove', onclick: function () { starterBlocks.splice(idx, 1); renderInitialBlocks(); } })
+          ]),
+          el('div', { class: 'cso-mod-grid-2' }, [bTitle, bText])
+        ]));
+      });
+    }
+
+    titleInp.addEventListener('input', function () {
+      if (!slugInp.dataset.touched) {
+        var s = titleInp.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        slugInp.value = '/' + (s || 'new-page') + '/';
+      }
+      if (!heroTitleInp.dataset.touched && !tpl) heroTitleInp.value = titleInp.value;
+      updateSnippet();
+    });
+    slugInp.addEventListener('input', function () { slugInp.dataset.touched = '1'; updateSnippet(); });
+    heroTitleInp.addEventListener('input', function () { heroTitleInp.dataset.touched = '1'; });
+    metaDescInp.addEventListener('input', updateSnippet);
+
+    async function submitPage(status) {
+      var route = f02NormalizeRoute(slugInp.value);
+      if (!titleInp.value.trim()) { toast('Page title is required', 'crimson'); return; }
+      if (status === 'scheduled' && !schedInp.value) { toast('Select a schedule date & time first', 'crimson'); return; }
+      var payload = {
+        route: route,
+        title: titleInp.value.trim(),
+        meta_description: metaDescInp.value.trim(),
+        category: catSel.value,
+        hero_title: heroTitleInp.value.trim() || titleInp.value.trim(),
+        hero_subtitle: heroSubInp.value.trim(),
+        cta_label: ctaLblInp.value.trim(),
+        cta_url: ctaUrlInp.value.trim(),
+        blocks_json: JSON.stringify(starterBlocks),
+        status: status,
+        publish_at: status === 'scheduled' ? new Date(schedInp.value).toISOString() : null,
+        note: 'Created via Create New Page Wizard'
+      };
+      try {
+        var res = await api('POST', 'pages', payload);
+        toast('Page ' + status + ': ' + res.route, 'success');
+        clear(resultBanner);
+        resultBanner.appendChild(el('div', { class: 'cso-drawer' }, [
+          el('div', { class: 'cso-inline-row' }, [
+            badge(status, status === 'published' ? 'ok' : 'warn'),
+            el('strong', { text: 'Saved route ' + res.route }),
+            status === 'published' ? el('a', { href: res.route, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Open Live Page ↗' }) : null,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Edit in Visual Builder', onclick: function () { f02State.builderRoute = res.route; window.selectModule && window.selectModule('folder-02', 'module-02-003'); } })
+          ])
+        ]));
+      } catch (e) {
+        toast(e.message, 'crimson');
+      }
+    }
+
+    renderBanner(shell, 'Create New Page', 'Publish real public routes on csodisha.com/<slug>/ via POST /api/admin/pages.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish Live Now', onclick: function () { submitPage('published'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Draft', onclick: function () { submitPage('draft'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Schedule', onclick: function () { submitPage('scheduled'); } })
+    ]);
+
+    shell.appendChild(resultBanner);
+    shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
+      el('div', { class: 'cso-mod-card' }, [
+        el('h3', { text: 'Route & SEO Metadata' }),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Page Title (60 chars)' }), titleInp, titleCount]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Public Route / Slug' }), slugInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Category' }), catSel]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description (160 chars)' }), metaDescInp, descCount]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Schedule Date/Time (if scheduling)' }), schedInp])
+      ]),
+      el('div', { class: 'cso-mod-shell' }, [
+        el('div', { class: 'cso-mod-card' }, [
+          el('h3', { text: 'Google Snippet Preview' }),
+          el('div', { class: 'cso-google-snippet' }, [gsUrl, gsTitle, gsDesc])
+        ]),
+        el('div', { class: 'cso-mod-card' }, [
+          el('h3', { text: 'Hero & Call-to-Action' }),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Title' }), heroTitleInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Subtitle' }), heroSubInp]),
+          el('div', { class: 'cso-mod-grid-2' }, [
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Label' }), ctaLblInp]),
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), ctaUrlInp])
+          ])
+        ])
+      ])
+    ]));
+
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [
+      el('div', { class: 'cso-drawer-head' }, [
+        el('h3', { text: 'Initial Content Blocks' }),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Rich Text', onclick: function () { starterBlocks.push({ type: 'richtext', title: 'Section', text: 'Add detailed information here.' }); renderInitialBlocks(); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Notice', onclick: function () { starterBlocks.push({ type: 'notice', title: 'Notice', text: 'Important update for candidates.' }); renderInitialBlocks(); } })
+        ])
+      ]),
+      blocksHost
+    ]));
+
+    root.appendChild(shell);
+    updateSnippet();
+    renderInitialBlocks();
+  }
+
+  /* -------------------------------------------------------------------------
+     02-003: Visual Page Builder (Live /api/admin/pages + 7 Rich Block Types)
+     ------------------------------------------------------------------------- */
   function renderVisualPageBuilder(root, actions) {
-    addHeaderPill(actions, '● Interactive Builder');
+    addHeaderPill(actions, '● Live Visual Builder');
     var shell = el('div', { class: 'cso-mod-shell' });
     var viewport = 'desktop';
-    var blocks = [
-      { id: 'b1', type: 'Hero Banner', heading: 'Odisha Government Jobs & Exam Portal', body: 'Verified recruitment alerts, syllabus PDFs, and CBT mock tests.', ctaText: 'Explore Jobs', ctaUrl: '/jobs-careers/' },
-      { id: 'b2', type: 'Exam Alert Card', heading: 'OSSC CGLRE 2026 — Important Dates', body: 'Check official notification, eligibility, and hall ticket schedule.', ctaText: 'View Schedule', ctaUrl: '/jobs-careers/' },
-      { id: 'b3', type: 'CTA Strip', heading: 'Start Free CBT Mock Tests', body: 'Practice bilingual Odia & English papers with instant explanations.', ctaText: 'Launch Tests', ctaUrl: '/student-dashboard/' }
-    ];
+    var pagesMap = {};
+    var currentRoute = f02State.builderRoute || '/custom-portal/';
+    f02State.builderRoute = null;
 
-    var pageSelect = el('select', { class: 'cso-mod-select' }, [el('option', { value: 'NEW_PAGE', text: '+ Blank Document Canvas' })]);
+    var tpl = f02State.builderTemplate;
+    f02State.builderTemplate = null;
+
+    var pageMeta = {
+      title: tpl ? tpl.name : 'Custom Odisha Portal',
+      meta_description: tpl ? tpl.meta_description : '',
+      category: tpl ? tpl.category : 'Core Portal',
+      hero_title: tpl ? tpl.hero_title : '',
+      hero_subtitle: tpl ? tpl.hero_subtitle : '',
+      cta_label: tpl ? tpl.cta_label : '',
+      cta_url: tpl ? tpl.cta_url : ''
+    };
+    var blocks = tpl ? JSON.parse(JSON.stringify(tpl.blocks || [])) : [
+      { type: 'hero', title: 'Odisha Government Jobs & Exam Portal', text: 'Verified recruitment alerts, syllabus PDFs, and CBT mock tests.', label: 'Explore Jobs', url: '/jobs-careers/' },
+      { type: 'ticker', title: 'Latest Odisha Job Notifications' },
+      { type: 'cbt', title: 'Start Free CBT Mock Tests', text: 'Practice bilingual Odia & English papers with instant explanations.', label: 'Launch Tests', url: '/mock-tests/' }
+    ];
+    if (tpl) currentRoute = '/' + tpl.id + '/';
+
+    var pageSelect = el('select', { class: 'cso-mod-select' }, [el('option', { value: '__CUSTOM__', text: '+ Custom / New Route' })]);
+    var routeInput = el('input', { type: 'text', class: 'cso-mod-input', value: currentRoute, placeholder: '/my-route/' });
     var canvasEl = el('div', { class: 'cso-builder-viewport-desktop' });
-    var propHost = el('div', { class: 'cso-mod-card' }, [el('h4', { text: 'Block Inspector' }), el('p', { class: 'cso-mod-muted', text: 'Select or add a block to edit its content.' })]);
+    var propHost = el('div', { class: 'cso-mod-card' });
+    var metaHost = el('div', { class: 'cso-mod-card' });
+    var openLiveLink = el('a', { href: currentRoute, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Open Live ↗' });
     var selectedIdx = 0;
+
+    var BLOCK_TYPES = [
+      { type: 'hero', label: 'Hero', def: { type: 'hero', title: 'Hero Headline', text: 'Supporting description for aspirants.', label: 'Explore', url: '/jobs-careers/' } },
+      { type: 'ticker', label: 'Live Job Ticker', def: { type: 'ticker', title: 'Latest Odisha Govt Jobs' } },
+      { type: 'examgrid', label: 'Exam Grid', def: { type: 'examgrid', title: 'Exam Portals', items: ['OSSC CGL|/jobs-careers/', 'OPSC OAS|/syllabus/', 'Mock Tests|/mock-tests/'] } },
+      { type: 'cbt', label: 'CBT Card', def: { type: 'cbt', title: 'Practice CBT Mock Test', text: 'Timed bilingual practice paper.', label: 'Start CBT', url: '/mock-tests/' } },
+      { type: 'faq', label: 'FAQ Accordion', def: { type: 'faq', title: 'Frequently Asked Questions', items: ['How to apply?|Visit the official commission link.', 'Is it free?|Yes, 100% free for candidates.'] } },
+      { type: 'notice', label: 'Notice Callout', def: { type: 'notice', title: 'Official Notice', text: 'Verify dates and roll numbers on the official portal.' } },
+      { type: 'richtext', label: 'Rich Text', def: { type: 'richtext', text: 'Write multi-paragraph guidance here.\n\nSeparate paragraphs with a blank line.' } }
+    ];
 
     function setViewport(vp) {
       viewport = vp;
       canvasEl.className = 'cso-builder-viewport-' + vp;
     }
 
-    function exportHtml() {
-      var html = blocks.map(function (b) {
-        return '<section class="cso-section"><h2>' + b.heading + '</h2><p>' + b.body + '</p>' +
-          (b.ctaText ? '<a href="' + (b.ctaUrl || '/') + '">' + b.ctaText + '</a>' : '') + '</section>';
-      }).join('\n');
-      downloadFile('page-builder-export.html', '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Exported Page</title></head><body>\n' + html + '\n</body></html>', 'text/html');
-      toast('Exported clean HTML page', 'success');
+    function renderMetaCard() {
+      clear(metaHost);
+      metaHost.appendChild(el('h4', { text: 'Page Route & SEO' }));
+      var tInp = el('input', { type: 'text', class: 'cso-mod-input', value: pageMeta.title || '' });
+      var dInp = el('input', { type: 'text', class: 'cso-mod-input', value: pageMeta.meta_description || '' });
+      tInp.addEventListener('input', function () { pageMeta.title = tInp.value; });
+      dInp.addEventListener('input', function () { pageMeta.meta_description = dInp.value; });
+      routeInput.addEventListener('input', function () {
+        currentRoute = f02NormalizeRoute(routeInput.value);
+        openLiveLink.setAttribute('href', currentRoute);
+      });
+      metaHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Target Route' }), routeInput]));
+      metaHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Page Title' }), tInp]));
+      metaHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), dInp]));
     }
 
     function renderInspector() {
@@ -498,29 +1075,49 @@
       propHost.appendChild(el('h4', { text: 'Block Inspector' }));
       var b = blocks[selectedIdx];
       if (!b) {
-        propHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'No block selected.' }));
+        propHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Select or add a block.' }));
         return;
       }
-      var hInp = el('input', { type: 'text', class: 'cso-mod-input', value: b.heading });
-      var bodyInp = el('textarea', { class: 'cso-mod-textarea', text: b.body });
-      bodyInp.value = b.body;
-      var ctaInp = el('input', { type: 'text', class: 'cso-mod-input', value: b.ctaText || '' });
-      var urlInp = el('input', { type: 'text', class: 'cso-mod-input', value: b.ctaUrl || '' });
-
-      hInp.addEventListener('input', function () { b.heading = hInp.value; renderCanvas(); });
-      bodyInp.addEventListener('input', function () { b.body = bodyInp.value; renderCanvas(); });
-      ctaInp.addEventListener('input', function () { b.ctaText = ctaInp.value; renderCanvas(); });
-      urlInp.addEventListener('input', function () { b.ctaUrl = urlInp.value; renderCanvas(); });
-
-      propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Block Type: ' + b.type })]));
-      propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Heading' }), hInp]));
-      propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Body Copy' }), bodyInp]));
-      propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Label' }), ctaInp]));
-      propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), urlInp]));
+      propHost.appendChild(el('div', { class: 'cso-mod-field' }, [badge('Type: ' + b.type, 'info')]));
+      if (b.type !== 'richtext') {
+        var hInp = el('input', { type: 'text', class: 'cso-mod-input', value: b.title || b.heading || '' });
+        hInp.addEventListener('input', function () { b.title = hInp.value; renderCanvas(); });
+        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Title / Heading' }), hInp]));
+      }
+      if (b.type === 'hero' || b.type === 'cbt' || b.type === 'notice' || b.type === 'richtext') {
+        var bodyInp = el('textarea', { class: 'cso-mod-textarea' });
+        bodyInp.value = b.text || b.body || '';
+        bodyInp.addEventListener('input', function () { b.text = bodyInp.value; renderCanvas(); });
+        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Body Text' }), bodyInp]));
+      }
+      if (b.type === 'hero' || b.type === 'cbt') {
+        var lblInp = el('input', { type: 'text', class: 'cso-mod-input', value: b.label || b.ctaText || '' });
+        var urlInp = el('input', { type: 'text', class: 'cso-mod-input', value: b.url || b.ctaUrl || '' });
+        lblInp.addEventListener('input', function () { b.label = lblInp.value; renderCanvas(); });
+        urlInp.addEventListener('input', function () { b.url = urlInp.value; renderCanvas(); });
+        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Label' }), lblInp]));
+        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), urlInp]));
+      }
+      if (b.type === 'examgrid' || b.type === 'faq') {
+        var itemsInp = el('textarea', { class: 'cso-mod-textarea' });
+        itemsInp.value = Array.isArray(b.items) ? b.items.join('\n') : (b.items || '');
+        itemsInp.addEventListener('input', function () {
+          b.items = itemsInp.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+          renderCanvas();
+        });
+        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [
+          el('label', { class: 'cso-mod-label', text: b.type === 'faq' ? 'Items (Question | Answer per line)' : 'Items (Label | /url per line)' }),
+          itemsInp
+        ]));
+      }
     }
 
     function renderCanvas() {
       clear(canvasEl);
+      if (!blocks.length) {
+        canvasEl.appendChild(el('p', { class: 'cso-mod-muted', text: 'No blocks yet. Click a block in the palette to add it.' }));
+        return;
+      }
       blocks.forEach(function (b, idx) {
         var blk = el('div', { class: 'cso-builder-block' }, [
           el('div', { class: 'cso-builder-block-head' }, [
@@ -532,26 +1129,87 @@
               el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: '✕', onclick: function () { blocks.splice(idx, 1); selectedIdx = Math.max(0, selectedIdx - 1); renderCanvas(); renderInspector(); } })
             ])
           ]),
-          el('h4', { text: b.heading }),
-          el('p', { class: 'cso-mod-muted', text: b.body }),
-          b.ctaText ? el('span', { class: 'cso-mod-badge cso-mod-badge-info', text: b.ctaText + ' → ' + (b.ctaUrl || '/') }) : null
+          el('h4', { text: b.title || b.heading || b.type.toUpperCase() }),
+          b.text || b.body ? el('p', { class: 'cso-mod-muted', text: b.text || b.body }) : null,
+          Array.isArray(b.items) && b.items.length ? el('ul', {}, b.items.map(function (it) { return el('li', { text: it }); })) : null,
+          (b.label || b.ctaText) ? el('span', { class: 'cso-mod-badge cso-mod-badge-info', text: (b.label || b.ctaText) + ' → ' + (b.url || b.ctaUrl || '/') }) : null
         ]);
         canvasEl.appendChild(blk);
       });
     }
 
-    var paletteTypes = ['Hero Banner', 'Exam Alert Card', 'Two-Column Feature', 'FAQ Accordion', 'Official Notice Box', 'CTA Strip'];
+    async function saveBuilder(status) {
+      var route = f02NormalizeRoute(routeInput.value || currentRoute);
+      if (!pageMeta.title) pageMeta.title = route;
+      try {
+        await api('PUT', 'pages', {
+          route: route,
+          title: pageMeta.title,
+          meta_description: pageMeta.meta_description,
+          category: pageMeta.category || 'Core Portal',
+          hero_title: pageMeta.hero_title,
+          hero_subtitle: pageMeta.hero_subtitle,
+          cta_label: pageMeta.cta_label,
+          cta_url: pageMeta.cta_url,
+          blocks_json: JSON.stringify(blocks),
+          status: status,
+          note: 'Visual Page Builder (' + blocks.length + ' blocks)'
+        });
+        openLiveLink.setAttribute('href', route);
+        toast((status === 'published' ? 'Published live: ' : 'Saved draft: ') + route, 'success');
+      } catch (e) {
+        toast(e.message, 'crimson');
+      }
+    }
+
+    function loadPageIntoBuilder(p) {
+      currentRoute = p.route;
+      routeInput.value = p.route;
+      openLiveLink.setAttribute('href', p.route);
+      pageMeta = {
+        title: p.title || '',
+        meta_description: p.meta_description || '',
+        category: p.category || 'Core Portal',
+        hero_title: p.hero_title || '',
+        hero_subtitle: p.hero_subtitle || '',
+        cta_label: p.cta_label || '',
+        cta_url: p.cta_url || ''
+      };
+      var parsed = f02ParseBlocks(p.blocks_json);
+      if (parsed.length) {
+        blocks = parsed;
+      } else {
+        blocks = [
+          { type: 'hero', title: p.hero_title || p.title || p.route, text: p.hero_subtitle || p.meta_description || '', label: p.cta_label || 'Explore', url: p.cta_url || '/' }
+        ];
+      }
+      selectedIdx = 0;
+      renderMetaCard();
+      renderCanvas();
+      renderInspector();
+    }
+
+    pageSelect.addEventListener('change', function () {
+      var v = pageSelect.value;
+      if (v === '__CUSTOM__') {
+        routeInput.value = '/custom-page/';
+        currentRoute = '/custom-page/';
+        return;
+      }
+      if (pagesMap[v]) loadPageIntoBuilder(pagesMap[v]);
+    });
+
     var paletteCard = el('div', { class: 'cso-mod-card' }, [
       el('h4', { text: 'Block Palette' }),
-      el('p', { class: 'cso-mod-muted', text: 'Click to append a section block:' })
+      el('p', { class: 'cso-mod-muted', text: 'Click to append a live block:' })
     ]);
-    paletteTypes.forEach(function (pt) {
+    BLOCK_TYPES.forEach(function (bt) {
       paletteCard.appendChild(el('button', {
         type: 'button',
         class: 'cso-mod-btn',
-        text: '+ ' + pt,
+        text: '+ ' + bt.label,
         onclick: function () {
-          blocks.push({ id: 'b-' + Date.now(), type: pt, heading: pt + ' Heading', body: 'Edit this section content in the Block Inspector.', ctaText: 'Learn More', ctaUrl: '/' });
+          blocks.push(JSON.parse(JSON.stringify(bt.def)));
           selectedIdx = blocks.length - 1;
           renderCanvas();
           renderInspector();
@@ -559,168 +1217,904 @@
       }));
     });
 
-    renderBanner(shell, 'Visual Page Builder', 'Responsive block-based page composer with Desktop / Tablet / Mobile viewport preview.', [
+    renderBanner(shell, 'Visual Page Builder', 'Compose responsive blocks for any route and publish live to csodisha.com.', [
       pageSelect,
       el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Desktop', onclick: function () { setViewport('desktop'); } }),
       el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '768px', onclick: function () { setViewport('tablet'); } }),
       el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '375px', onclick: function () { setViewport('mobile'); } }),
-      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Export HTML', onclick: exportHtml }),
-      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Export JSON', onclick: function () { downloadFile('page-layout.json', JSON.stringify(blocks, null, 2)); } })
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Publish Live to Website', onclick: function () { saveBuilder('published'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Save Draft', onclick: function () { saveBuilder('draft'); } }),
+      openLiveLink,
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Export JSON', onclick: function () { downloadFile('page-blocks.json', JSON.stringify(blocks, null, 2)); } })
     ]);
 
     shell.appendChild(el('div', { class: 'cso-builder-split' }, [
-      el('div', { class: 'cso-mod-shell' }, [paletteCard, propHost]),
+      el('div', { class: 'cso-mod-shell' }, [metaHost, paletteCard, propHost]),
       el('div', { class: 'cso-builder-canvas-wrap' }, [canvasEl])
     ]));
 
     root.appendChild(shell);
+    renderMetaCard();
     renderCanvas();
     renderInspector();
 
-    fetchManifest().then(function (m) {
-      (m.pages || m.routes || []).forEach(function (p) {
-        var val = p.route || p.path || p.url || p.file || p.title;
-        pageSelect.appendChild(el('option', { value: val, text: (p.title || val) + ' (' + val + ')' }));
+    api('GET', 'pages').then(function (d) {
+      (d.pages || []).forEach(function (p) {
+        pagesMap[p.route] = p;
+        pageSelect.appendChild(el('option', { value: p.route, text: (p.title || p.route) + ' (' + p.route + ')' }));
       });
+      if (!tpl && pagesMap[currentRoute]) {
+        pageSelect.value = currentRoute;
+        loadPageIntoBuilder(pagesMap[currentRoute]);
+      }
     }).catch(function () {});
   }
 
-  function renderCreatePageWizard(root, actions) {
-    addHeaderPill(actions, '● Page Provisioner');
+  /* -------------------------------------------------------------------------
+     02-004: Homepage Builder (Live /api/admin/banner + / in site_pages + iframe)
+     ------------------------------------------------------------------------- */
+  function renderHomepageBuilder(root, actions) {
+    addHeaderPill(actions, '● Live Homepage Studio');
     var shell = el('div', { class: 'cso-mod-shell' });
-    var titleInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'e.g. OPSC OAS 2026 Complete Guide' });
-    var slugInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/opsc-oas-2026/' });
-    var tplSel = el('select', { class: 'cso-mod-select' }, [
-      el('option', { value: 'exam-guide', text: 'Exam Guide & Syllabus' }),
-      el('option', { value: 'recruitment', text: 'Recruitment Alert Page' }),
-      el('option', { value: 'scheme', text: 'Government Scheme Page' }),
-      el('option', { value: 'legal', text: 'Information & Legal Page' })
-    ]);
-    var mdInp = el('textarea', { class: 'cso-mod-textarea cso-mod-textarea-tall', placeholder: '# Page Heading\n\nWrite Markdown content here…' });
-    mdInp.value = '# New Page Title\n\n- Official Notification Summary\n- Important Dates & Eligibility\n- Direct Portal Links';
-    var prevBox = el('div', { class: 'cso-live-preview-box' });
 
-    async function updatePreview() {
+    var activeChk = el('input', { type: 'checkbox' });
+    var sevSel = el('select', { class: 'cso-mod-select' }, ['info', 'notice', 'urgent'].map(function (s) { return el('option', { value: s, text: s.toUpperCase() }); }));
+    var bHeadInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Urgent announcement headline (max 160 chars)' });
+    var bCtxInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Supporting context (max 300 chars)' });
+    var bCtaInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Button label (max 40 chars)' });
+    var bUrlInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/jobs-careers/' });
+
+    var seoTitleInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Homepage SEO Title' });
+    var seoDescInp = el('textarea', { class: 'cso-mod-textarea', placeholder: 'Homepage Meta Description' });
+    var heroTitleInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Homepage Hero Headline' });
+    var heroSubInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Homepage Hero Subtitle' });
+    var ctaLblInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Primary CTA Label' });
+    var ctaUrlInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/jobs-careers/' });
+
+    var frame = el('iframe', { src: '/?preview=1&t=' + Date.now(), class: 'cso-preview-frame', title: 'Live Homepage Preview' });
+    function refreshFrame() { frame.src = '/?preview=1&t=' + Date.now(); }
+
+    async function loadHomepage() {
       try {
-        var res = await api('POST', 'preview', { markdown: mdInp.value });
-        renderSanitizedHtml(prevBox, res.html || '');
+        var [b, pRes] = await Promise.all([api('GET', 'banner'), api('GET', 'pages')]);
+        activeChk.checked = !!b.active;
+        sevSel.value = b.severity || 'info';
+        bHeadInp.value = b.headline || '';
+        bCtxInp.value = b.context || '';
+        bCtaInp.value = b.ctaText || '';
+        bUrlInp.value = b.ctaUrl || '';
+
+        var home = (pRes.pages || []).find(function (x) { return x.route === '/'; }) || {};
+        seoTitleInp.value = home.title || '';
+        seoDescInp.value = home.meta_description || '';
+        heroTitleInp.value = home.hero_title || '';
+        heroSubInp.value = home.hero_subtitle || '';
+        ctaLblInp.value = home.cta_label || '';
+        ctaUrlInp.value = home.cta_url || '';
       } catch (e) {
-        prevBox.textContent = mdInp.value;
+        toast(e.message, 'crimson');
       }
     }
 
-    titleInp.addEventListener('input', function () {
-      if (!slugInp.dataset.touched) {
-        slugInp.value = '/' + titleInp.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '/';
+    async function publishHomepage() {
+      try {
+        await api('PUT', 'banner', {
+          active: activeChk.checked,
+          severity: sevSel.value,
+          headline: bHeadInp.value.trim(),
+          context: bCtxInp.value.trim(),
+          ctaText: bCtaInp.value.trim(),
+          ctaUrl: bUrlInp.value.trim()
+        });
+        await api('PUT', 'pages', {
+          route: '/',
+          title: seoTitleInp.value.trim() || 'Common Sense Odisha',
+          meta_description: seoDescInp.value.trim(),
+          category: 'Core Portal',
+          hero_title: heroTitleInp.value.trim(),
+          hero_subtitle: heroSubInp.value.trim(),
+          cta_label: ctaLblInp.value.trim(),
+          cta_url: ctaUrlInp.value.trim(),
+          status: 'published',
+          note: 'Homepage Builder live publish'
+        });
+        toast('Homepage & Live Banner published!', 'success');
+        refreshFrame();
+      } catch (e) {
+        toast(e.message, 'crimson');
       }
-    });
-    slugInp.addEventListener('input', function () { slugInp.dataset.touched = '1'; });
+    }
 
-    renderBanner(shell, 'Create New Page Provisioning Wizard', 'Author a new static/editorial page with live D1 Markdown sanitization and HTML export.', [
-      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Preview Markdown', onclick: updatePreview }),
-      el('button', {
-        type: 'button',
-        class: 'cso-mod-btn cso-mod-btn-primary',
-        text: 'Export HTML File',
-        onclick: function () {
-          var doc = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' + (titleInp.value || 'CS Odisha') + '</title></head><body><main>' + prevBox.textContent + '</main></body></html>';
-          downloadFile((slugInp.value.replace(/\//g, '') || 'new-page') + '.html', doc, 'text/html');
-          toast('Exported page HTML', 'success');
-        }
-      })
+    renderBanner(shell, 'Homepage Builder', 'Real-time editor for / (Live Broadcast Banner + Homepage Hero & SEO) with live iframe preview.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish Homepage Live', onclick: publishHomepage }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh Preview', onclick: refreshFrame }),
+      el('a', { href: '/', target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn', text: 'Open Live / ↗' })
     ]);
 
     shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
-      el('div', { class: 'cso-mod-card' }, [
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Page Title' }), titleInp]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Target Route / Slug' }), slugInp]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Page Template' }), tplSel]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Markdown Body' }), mdInp])
+      el('div', { class: 'cso-mod-shell' }, [
+        el('div', { class: 'cso-mod-card' }, [
+          el('h3', { text: '1. Live Broadcast Banner (/api/admin/banner)' }),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-check-label' }, [activeChk, el('span', { text: 'Banner Active on Live Website' })])]),
+          el('div', { class: 'cso-mod-grid-2' }, [
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Severity' }), sevSel]),
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Headline' }), bHeadInp])
+          ]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Context' }), bCtxInp]),
+          el('div', { class: 'cso-mod-grid-2' }, [
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Button' }), bCtaInp]),
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), bUrlInp])
+          ])
+        ]),
+        el('div', { class: 'cso-mod-card' }, [
+          el('h3', { text: '2. Homepage Hero & SEO (site_pages /)' }),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'SEO Title' }), seoTitleInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), seoDescInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Headline' }), heroTitleInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Subtitle' }), heroSubInp]),
+          el('div', { class: 'cso-mod-grid-2' }, [
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero CTA Label' }), ctaLblInp]),
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero CTA URL' }), ctaUrlInp])
+          ])
+        ])
       ]),
       el('div', { class: 'cso-mod-card' }, [
-        el('h3', { text: 'Live Sanitized Preview' }),
-        prevBox
+        el('div', { class: 'cso-drawer-head' }, [
+          el('h3', { text: 'Live Homepage Preview (https://csodisha.com/)' }),
+          badge('Live', 'ok')
+        ]),
+        el('div', { class: 'cso-preview-frame-wrap' }, [frame])
       ])
     ]));
+
     root.appendChild(shell);
-    updatePreview();
+    loadHomepage();
   }
 
-  function renderFolder02(folderId, moduleId, root, actions) {
-    if (moduleId === 'module-02-001') {
-      addHeaderPill(actions, '● Site Manifest + CMS');
-      var shell = el('div', { class: 'cso-mod-shell' });
-      var host = el('div', {});
-      renderBanner(shell, 'All Website Pages', 'Live inventory from /admin/site-manifest.json plus D1 CMS pages.', [
-        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Open Visual Builder', onclick: function () { window.selectModule && window.selectModule('folder-02', 'module-02-003'); } })
-      ]);
-      shell.appendChild(host);
-      root.appendChild(shell);
-      fetchManifest().then(function (m) {
-        var pages = m.pages || m.routes || [];
-        var rows = pages.map(function (p) {
-          var path = typeof p === 'string' ? p : (p.route || p.path || p.url || '/');
-          var title = typeof p === 'string' ? p : (p.title || path);
+  /* -------------------------------------------------------------------------
+     02-005: Landing Pages (SEO/CTA Audits + Inline Edit + Clone Live)
+     ------------------------------------------------------------------------- */
+  function renderLandingPagesStudio(root, actions) {
+    addHeaderPill(actions, '● Landing Pages');
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var drawerHost = el('div', {});
+    var tableHost = el('div', {});
+
+    function openCloneDrawer(p) {
+      clear(drawerHost);
+      var base = p.route === '/' ? '/campaign-home/' : p.route.replace(/\/$/, '') + '-copy/';
+      var slugInp = el('input', { type: 'text', class: 'cso-mod-input', value: base });
+      var titleInp = el('input', { type: 'text', class: 'cso-mod-input', value: (p.title || 'Landing Page') + ' (Copy)' });
+      var cloneBtn = el('button', {
+        type: 'button',
+        class: 'cso-mod-btn cso-mod-btn-primary',
+        text: 'Clone & Publish Live',
+        onclick: async function () {
+          cloneBtn.disabled = true;
+          try {
+            var newRoute = f02NormalizeRoute(slugInp.value);
+            await api('POST', 'pages', {
+              route: newRoute,
+              title: titleInp.value.trim(),
+              meta_description: p.meta_description || '',
+              category: p.category || 'Core Portal',
+              hero_title: p.hero_title || titleInp.value.trim(),
+              hero_subtitle: p.hero_subtitle || '',
+              cta_label: p.cta_label || 'Explore Now',
+              cta_url: p.cta_url || '/jobs-careers/',
+              blocks_json: p.blocks_json || '[]',
+              status: 'published',
+              note: 'Cloned from ' + p.route
+            });
+            toast('Cloned & published live: ' + newRoute, 'success');
+            clear(drawerHost);
+            await loadLanding();
+          } catch (e) { toast(e.message, 'crimson'); }
+          finally { cloneBtn.disabled = false; }
+        }
+      });
+      drawerHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'Clone as New Live Landing Page — ' + p.route }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+        ]),
+        el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'New Live Route' }), slugInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'New Page Title' }), titleInp])
+        ]),
+        cloneBtn
+      ]));
+    }
+
+    function openInlineEdit(p) {
+      clear(drawerHost);
+      var tInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.title || '' });
+      var dInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.meta_description || '' });
+      var cLbl = el('input', { type: 'text', class: 'cso-mod-input', value: p.cta_label || '' });
+      var cUrl = el('input', { type: 'text', class: 'cso-mod-input', value: p.cta_url || '' });
+      drawerHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'Edit Landing Page SEO & CTA — ' + p.route }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+        ]),
+        el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Title' }), tInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), dInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Label' }), cLbl]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), cUrl])
+        ]),
+        el('button', {
+          type: 'button',
+          class: 'cso-mod-btn cso-mod-btn-primary',
+          text: 'Save Live',
+          onclick: async function () {
+            try {
+              await api('PUT', 'pages', { route: p.route, title: tInp.value.trim(), meta_description: dInp.value.trim(), cta_label: cLbl.value.trim(), cta_url: cUrl.value.trim(), status: 'published', note: 'Landing page inline edit' });
+              toast('Updated landing page: ' + p.route, 'success');
+              clear(drawerHost);
+              await loadLanding();
+            } catch (e) { toast(e.message, 'crimson'); }
+          }
+        })
+      ]));
+    }
+
+    async function loadLanding() {
+      clear(tableHost);
+      try {
+        var d = await api('GET', 'pages');
+        var list = (d.pages || []).filter(function (p) {
+          return p.category === 'Core Portal' || p.category === 'Exam Guide' || p.category === 'Recruitment' || p.source === 'dynamic';
+        });
+        var rows = list.map(function (p) {
+          var seoOk = (p.title || '').length > 0 && (p.meta_description || '').length >= 40;
+          var ctaOk = !!(p.cta_label && p.cta_url);
           return el('tr', {}, [
-            el('td', { text: title }),
-            el('td', { text: path }),
-            el('td', {}, badge('Live', 'ok')),
-            el('td', {}, el('a', { href: path, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview ↗' }))
+            el('td', {}, [el('strong', { text: p.title || p.route }), el('div', {}, el('code', { text: p.route }))]),
+            el('td', {}, [badge(seoOk ? 'SEO OK' : 'Check Meta', seoOk ? 'ok' : 'warn'), ' ', badge(ctaOk ? 'CTA Ready' : 'No CTA', ctaOk ? 'ok' : 'info')]),
+            el('td', {}, f02StatusBadge(p.status)),
+            el('td', {}, el('div', { class: 'cso-mod-toolbar' }, [
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Edit SEO/CTA', onclick: function () { openInlineEdit(p); } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Clone Live', onclick: function () { openCloneDrawer(p); } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Builder', onclick: function () { f02State.builderRoute = p.route; window.selectModule && window.selectModule('folder-02', 'module-02-003'); } }),
+              el('a', { href: p.route, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Open ↗' })
+            ]))
           ]);
         });
-        host.appendChild(safeTable(['Title', 'Route', 'Status', 'Open'], rows));
-      }).catch(function (e) { host.appendChild(el('p', { class: 'cso-mod-muted', text: e.message })); });
-      mountCms(root, 'pages', [['pages', 'All Pages'], ['pages/legal', 'Info & Legal'], ['banner', 'Homepage & Banner']]);
-      return true;
+        tableHost.appendChild(safeTable(['Landing Route', 'SEO & CTA Audit', 'Status', 'Actions'], rows));
+      } catch (e) {
+        tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: e.message }));
+      }
     }
-    if (moduleId === 'module-02-002') { renderCreatePageWizard(root, actions); return true; }
-    if (moduleId === 'module-02-003') { renderVisualPageBuilder(root, actions); return true; }
-    if (moduleId === 'module-02-004') {
-      addHeaderPill(actions, '● Live Banner & Hero');
-      mountCms(root, 'banner', [['banner', 'Homepage & Banner'], ['pages', 'All Pages']]);
-      return true;
-    }
-    if (moduleId === 'module-02-005' || moduleId === 'module-02-006' || moduleId === 'module-02-007') {
-      var kindMap = {
-        'module-02-005': { title: 'Campaign Landing Pages', sub: 'Create UTM-tagged recruitment & exam campaign landing pages.', items: ['OSSC CGL 2026 Campaign', 'OPSC OAS Prelims Hub', 'B.Ed Entrance Crash Course', 'Odisha Scholarship Portal'] },
-        'module-02-006': { title: 'Page Templates Gallery', sub: 'Reusable structural blueprints ready to load into the Visual Page Builder.', items: ['Recruitment Notification Blueprint', 'Government Scheme Guide Blueprint', 'Study Library Resource Hub', 'Legal & Policy Document'] },
-        'module-02-007': { title: 'Reusable Sections Library', sub: 'Modular sections (Header, Footer, Exam Callout, Admit Card Box, Alert CTA).', items: ['Urgent Exam Deadline Callout', 'Official Commission Link Box', 'Bilingual Study PDF Card', 'Candidate Support CTA'] }
-      };
-      var info = kindMap[moduleId];
-      addHeaderPill(actions, '● Studio Library');
-      var shell2 = el('div', { class: 'cso-mod-shell' });
-      renderBanner(shell2, info.title, info.sub, [
-        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Open Visual Page Builder', onclick: function () { window.selectModule && window.selectModule('folder-02', 'module-02-003'); } })
-      ]);
-      var grid = el('div', { class: 'cso-mod-grid-2' });
-      info.items.forEach(function (name) {
+
+    renderBanner(shell, 'Landing Pages Studio', 'Audit portal & campaign landing routes, edit SEO/CTAs inline, or clone as new live pages.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: '+ New Landing Page', onclick: function () { window.selectModule && window.selectModule('folder-02', 'module-02-002'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: loadLanding })
+    ]);
+    shell.appendChild(drawerHost);
+    shell.appendChild(tableHost);
+    root.appendChild(shell);
+    loadLanding();
+  }
+
+  /* -------------------------------------------------------------------------
+     02-006: Page Templates (6 Odisha Blueprints -> Create Page / Builder)
+     ------------------------------------------------------------------------- */
+  function renderPageTemplatesGallery(root, actions) {
+    addHeaderPill(actions, '● 6 Odisha Blueprints');
+    var shell = el('div', { class: 'cso-mod-shell' });
+    renderBanner(shell, 'Page Templates Gallery', '6 Odisha exam & portal starter blueprints ready to instantiate into Create Page or Visual Builder.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Open Visual Page Builder', onclick: function () { window.selectModule && window.selectModule('folder-02', 'module-02-003'); } })
+    ]);
+    var grid = el('div', { class: 'cso-mod-grid-2' });
+    F02_TEMPLATES.forEach(function (tpl) {
+      grid.appendChild(el('div', { class: 'cso-mod-card' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('h3', { text: tpl.name }),
+          badge(tpl.category, 'info')
+        ]),
+        el('p', { class: 'cso-mod-muted', text: tpl.meta_description }),
+        el('p', { class: 'cso-mod-muted', text: 'Includes ' + tpl.blocks.length + ' blocks: ' + tpl.blocks.map(function (b) { return b.type; }).join(', ') }),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          el('button', {
+            type: 'button',
+            class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+            text: 'Use in Create Page',
+            onclick: function () { f02State.createTemplate = tpl; window.selectModule && window.selectModule('folder-02', 'module-02-002'); }
+          }),
+          el('button', {
+            type: 'button',
+            class: 'cso-mod-btn cso-mod-btn-sm',
+            text: 'Open in Visual Builder',
+            onclick: function () { f02State.builderTemplate = tpl; window.selectModule && window.selectModule('folder-02', 'module-02-003'); }
+          })
+        ])
+      ]));
+    });
+    shell.appendChild(grid);
+    root.appendChild(shell);
+  }
+
+  /* -------------------------------------------------------------------------
+     02-007: Reusable Sections (/__sitewide + /api/admin/banner)
+     ------------------------------------------------------------------------- */
+  function renderReusableSectionsStudio(root, actions) {
+    addHeaderPill(actions, '● Sitewide Sections');
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var grid = el('div', { class: 'cso-mod-grid-2' });
+
+    var DEFAULT_SECTIONS = [
+      { id: 'candidate-cta', name: 'Candidate Portal CTA Strip', enabled: true, title: 'Candidate Workspace', text: 'Track exam deadlines, saved posts, and CBT scores in one dashboard.', label: 'Open Dashboard', url: '/student-dashboard/' },
+      { id: 'community-callout', name: 'Telegram/WhatsApp Community Callout', enabled: true, title: 'Odisha Aspirant Community', text: 'Join daily current affairs & instant job alert channels.', label: 'Join Community', url: '/community/' },
+      { id: 'footer-notice', name: 'Footer Statutory Notice', enabled: true, title: 'Disclaimer', text: 'Common Sense Odisha is an independent educational portal. Verify official dates on commission websites.', label: 'Read Disclaimer', url: '/disclaimer.html' }
+    ];
+
+    var sections = [];
+    var bannerState = { active: false, severity: 'info', headline: '', context: '', ctaText: '', ctaUrl: '' };
+
+    function renderCards() {
+      clear(grid);
+
+      // Card 1: Broadcast Banner (/api/admin/banner)
+      var bChk = el('input', { type: 'checkbox' }); bChk.checked = !!bannerState.active;
+      var bSev = el('select', { class: 'cso-mod-select' }, ['info', 'notice', 'urgent'].map(function (s) { return el('option', { value: s, text: s, selected: bannerState.severity === s }); }));
+      var bHead = el('input', { type: 'text', class: 'cso-mod-input', value: bannerState.headline || '' });
+      var bUrl = el('input', { type: 'text', class: 'cso-mod-input', value: bannerState.ctaUrl || '' });
+      grid.appendChild(el('div', { class: 'cso-mod-card' }, [
+        el('div', { class: 'cso-drawer-head' }, [el('h3', { text: 'Broadcast Banner' }), badge('/api/admin/banner', 'info')]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-check-label' }, [bChk, el('span', { text: 'Active across homepage & portals' })])]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Severity' }), bSev]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Headline' }), bHead]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), bUrl]),
+        el('button', {
+          type: 'button',
+          class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+          text: 'Save Broadcast Banner',
+          onclick: async function () {
+            try {
+              await api('PUT', 'banner', { active: bChk.checked, severity: bSev.value, headline: bHead.value.trim(), context: bannerState.context || '', ctaText: bannerState.ctaText || 'View', ctaUrl: bUrl.value.trim() });
+              toast('Broadcast Banner saved live!', 'success');
+            } catch (e) { toast(e.message, 'crimson'); }
+          }
+        })
+      ]));
+
+      // Cards 2-4: /__sitewide sections
+      sections.forEach(function (sec) {
+        var chk = el('input', { type: 'checkbox' }); chk.checked = sec.enabled !== false;
+        var tInp = el('input', { type: 'text', class: 'cso-mod-input', value: sec.title || '' });
+        var txtInp = el('textarea', { class: 'cso-mod-textarea' }); txtInp.value = sec.text || '';
+        var lblInp = el('input', { type: 'text', class: 'cso-mod-input', value: sec.label || '' });
+        var urlInp = el('input', { type: 'text', class: 'cso-mod-input', value: sec.url || '' });
+
+        chk.addEventListener('change', function () { sec.enabled = chk.checked; });
+        tInp.addEventListener('input', function () { sec.title = tInp.value; });
+        txtInp.addEventListener('input', function () { sec.text = txtInp.value; });
+        lblInp.addEventListener('input', function () { sec.label = lblInp.value; });
+        urlInp.addEventListener('input', function () { sec.url = urlInp.value; });
+
         grid.appendChild(el('div', { class: 'cso-mod-card' }, [
-          el('h3', { text: name }),
-          el('p', { class: 'cso-mod-muted', text: 'Responsive, strict-CSP compliant component ready for export or Visual Builder.' }),
-          el('div', { class: 'cso-mod-toolbar' }, [
-            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Use in Builder', onclick: function () { window.selectModule && window.selectModule('folder-02', 'module-02-003'); } }),
-            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Export JSON', onclick: function () { downloadFile(name.toLowerCase().replace(/\s+/g, '-') + '.json', JSON.stringify({ name: name, moduleId: moduleId }, null, 2)); } })
+          el('div', { class: 'cso-drawer-head' }, [el('h3', { text: sec.name || sec.id }), badge(sec.id, 'ok')]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-check-label' }, [chk, el('span', { text: 'Inject on public pages' })])]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Title' }), tInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Body Copy' }), txtInp]),
+          el('div', { class: 'cso-mod-grid-2' }, [
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Link Label' }), lblInp]),
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Link URL' }), urlInp])
           ])
         ]));
       });
-      shell2.appendChild(grid);
-      root.appendChild(shell2);
-      return true;
     }
-    if (moduleId === 'module-02-008') {
-      addHeaderPill(actions, '● Audit Revisions');
-      mountCms(root, 'audit', [['audit', 'All Events'], ['pages', 'All Pages']]);
-      return true;
+
+    async function saveSitewide() {
+      try {
+        await api('PUT', 'pages', {
+          route: '/__sitewide',
+          title: 'Sitewide Reusable Sections',
+          status: 'published',
+          reusable_sections_json: JSON.stringify(sections),
+          note: 'Updated reusable sitewide sections'
+        });
+        toast('Sitewide sections published live!', 'success');
+      } catch (e) {
+        toast(e.message, 'crimson');
+      }
     }
-    if (moduleId === 'module-02-009' || moduleId === 'module-02-010') {
-      renderPendingApprovals(root, actions);
-      return true;
+
+    async function loadSitewide() {
+      try {
+        var [sw, b] = await Promise.all([api('GET', 'pages/sitewide'), api('GET', 'banner')]);
+        bannerState = b || bannerState;
+        var saved = Array.isArray(sw.sections) && sw.sections.length ? sw.sections : [];
+        sections = DEFAULT_SECTIONS.map(function (def) {
+          var match = saved.find(function (x) { return x.id === def.id; });
+          return match ? Object.assign({}, def, match) : Object.assign({}, def);
+        });
+        renderCards();
+      } catch (e) {
+        sections = DEFAULT_SECTIONS.map(function (d) { return Object.assign({}, d); });
+        renderCards();
+        toast(e.message, 'crimson');
+      }
     }
-    if (moduleId === 'module-02-011') {
-      addHeaderPill(actions, '● Recovery & Maintenance');
-      mountCms(root, 'operations', [['operations', 'Operations & Backups'], ['diagnostics', 'Site Health']]);
-      return true;
+
+    renderBanner(shell, 'Reusable Sections', 'Edit shared sitewide strips injected across public pages via /__sitewide & /api/admin/banner.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish All Sitewide Sections Live', onclick: saveSitewide }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Reload', onclick: loadSitewide })
+    ]);
+    shell.appendChild(grid);
+    root.appendChild(shell);
+    loadSitewide();
+  }
+
+  /* -------------------------------------------------------------------------
+     02-008: Page Revisions (site_page_revisions + /api/admin/audit + Diff)
+     ------------------------------------------------------------------------- */
+  function renderPageRevisionsStudio(root, actions) {
+    addHeaderPill(actions, '● Page Revisions');
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var routeSel = el('select', { class: 'cso-mod-select' });
+    var revHost = el('div', {});
+    var diffHost = el('div', {});
+    var auditHost = el('div', {});
+    var pagesByRoute = {};
+
+    function showDiff(rev) {
+      clear(diffHost);
+      var snap = {};
+      try { snap = JSON.parse(rev.snapshot_json || '{}'); } catch (_) {}
+      var cur = pagesByRoute[rev.route] || {};
+      var fields = [
+        ['Title', cur.title || '', snap.title || ''],
+        ['Status', cur.status || 'published', snap.status || ''],
+        ['Meta Description', cur.meta_description || '', snap.meta_description || ''],
+        ['Hero Title', cur.hero_title || '', snap.hero_title || ''],
+        ['CTA Label', cur.cta_label || '', snap.cta_label || ''],
+        ['Blocks Count', String(f02ParseBlocks(cur.blocks_json).length), String(f02ParseBlocks(snap.blocks_json).length)]
+      ];
+
+      var curCol = el('div', { class: 'cso-diff-col' }, [el('h4', { text: 'Current Live State' })]);
+      var revCol = el('div', { class: 'cso-diff-col' }, [el('h4', { text: 'Revision #' + rev.id + ' (' + (rev.created_at || '') + ')' })]);
+      fields.forEach(function (f) {
+        var changed = f[1] !== f[2];
+        curCol.appendChild(el('div', { class: 'cso-diff-row' + (changed ? ' cso-diff-changed' : ''), text: f[0] + ': ' + (f[1] || '—') }));
+        revCol.appendChild(el('div', { class: 'cso-diff-row' + (changed ? ' cso-diff-changed' : ''), text: f[0] + ': ' + (f[2] || '—') }));
+      });
+
+      diffHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'Side-by-Side Diff — ' + rev.route }),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            el('button', {
+              type: 'button',
+              class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+              text: 'Restore Version Live',
+              onclick: async function () {
+                try {
+                  await api('POST', 'pages/restore', { route: rev.route, revision_id: rev.id, status: 'published' });
+                  toast('Restored revision #' + rev.id + ' live!', 'success');
+                  await loadRevisions(rev.route);
+                } catch (e) { toast(e.message, 'crimson'); }
+              }
+            }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close Diff', onclick: function () { clear(diffHost); } })
+          ])
+        ]),
+        el('div', { class: 'cso-diff-grid' }, [curCol, revCol])
+      ]));
     }
+
+    async function loadRevisions(route) {
+      clear(revHost);
+      clear(diffHost);
+      if (!route) return;
+      revHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Loading snapshots for ' + route + '…' }));
+      try {
+        var d = await api('GET', 'pages/revisions?route=' + encodeURIComponent(route));
+        var revs = d.revisions || [];
+        clear(revHost);
+        if (!revs.length) {
+          revHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'No D1 snapshots recorded yet for ' + route + '. Edit and save the page to create its first revision.' }));
+          return;
+        }
+        var rows = revs.map(function (r) {
+          return el('tr', {}, [
+            el('td', { text: '#' + r.id }),
+            el('td', { text: r.editor_email || '—' }),
+            el('td', { text: r.note || 'update' }),
+            el('td', { text: r.created_at || '—' }),
+            el('td', {}, el('div', { class: 'cso-mod-toolbar' }, [
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Compare Diff', onclick: function () { showDiff(r); } }),
+              el('button', {
+                type: 'button',
+                class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+                text: 'Restore Live',
+                onclick: async function () {
+                  try {
+                    await api('POST', 'pages/restore', { route: r.route, revision_id: r.id, status: 'published' });
+                    toast('Restored revision #' + r.id + ' live!', 'success');
+                    loadRevisions(r.route);
+                  } catch (e) { toast(e.message, 'crimson'); }
+                }
+              })
+            ]))
+          ]);
+        });
+        revHost.appendChild(safeTable(['Revision', 'Editor', 'Note', 'Timestamp', 'Actions'], rows));
+      } catch (e) {
+        clear(revHost);
+        revHost.appendChild(el('p', { class: 'cso-mod-muted', text: e.message }));
+      }
+    }
+
+    async function init() {
+      try {
+        var [pRes, aRes] = await Promise.all([api('GET', 'pages'), api('GET', 'audit?limit=25')]);
+        var pages = (pRes.pages || []).sort(function (a, b) { return (b.revisions || 0) - (a.revisions || 0); });
+        clear(routeSel);
+        pages.forEach(function (p) {
+          pagesByRoute[p.route] = p;
+          routeSel.appendChild(el('option', { value: p.route, text: p.route + ' (' + (p.revisions || 0) + ' revisions)' }));
+        });
+        if (pages.length) loadRevisions(pages[0].route);
+
+        var logs = (aRes.items || aRes.logs || []).filter(function (x) { return String(x.action || '').indexOf('page.') === 0 || String(x.action || '').indexOf('banner.') === 0; });
+        clear(auditHost);
+        if (logs.length) {
+          var aRows = logs.slice(0, 12).map(function (l) {
+            return el('tr', {}, [
+              el('td', { text: l.action || '—' }),
+              el('td', { text: l.target_id || l.entity_id || '—' }),
+              el('td', { text: l.actor_email || '—' }),
+              el('td', { text: l.created_at || '—' })
+            ]);
+          });
+          auditHost.appendChild(safeTable(['Action', 'Route / Key', 'Actor', 'Time'], aRows));
+        } else {
+          auditHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'No recent page audit events.' }));
+        }
+      } catch (e) {
+        toast(e.message, 'crimson');
+      }
+    }
+
+    routeSel.addEventListener('change', function () { loadRevisions(routeSel.value); });
+    renderBanner(shell, 'Page Revisions & Rollback', 'Inspect D1 site_page_revisions snapshots, compare side-by-side diffs, and restore any version live.', [
+      routeSel,
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: init })
+    ]);
+    shell.appendChild(diffHost);
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [el('h3', { text: 'Page Snapshots' }), revHost]));
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [el('h3', { text: 'Recent Page & Banner Audit Events' }), auditHost]));
+    root.appendChild(shell);
+    init();
+  }
+
+  /* -------------------------------------------------------------------------
+     02-009: Drafts & Previews (Unified draft pages + content queue)
+     ------------------------------------------------------------------------- */
+  function renderDraftsAndPreviewsStudio(root, actions) {
+    addHeaderPill(actions, '● Drafts & Previews');
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var previewHost = el('div', {});
+    var tableHost = el('div', {});
+
+    function showDraftPreview(entry) {
+      clear(previewHost);
+      var mobile = false;
+      if (entry.kind === 'page') {
+        var frame = el('iframe', { src: entry.route + '?preview=1&t=' + Date.now(), class: 'cso-preview-frame', title: 'Draft Preview' });
+        var tBtn = el('button', {
+          type: 'button',
+          class: 'cso-mod-btn cso-mod-btn-sm',
+          text: 'Mobile 375px',
+          onclick: function () {
+            mobile = !mobile;
+            frame.className = mobile ? 'cso-preview-frame-mobile' : 'cso-preview-frame';
+            tBtn.textContent = mobile ? 'Desktop 100%' : 'Mobile 375px';
+          }
+        });
+        previewHost.appendChild(el('div', { class: 'cso-drawer' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('strong', { text: 'Draft Preview — ' + entry.route }),
+            el('div', { class: 'cso-mod-toolbar' }, [
+              tBtn,
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(previewHost); } })
+            ])
+          ]),
+          el('div', { class: 'cso-preview-frame-wrap' }, [frame])
+        ]));
+      } else {
+        previewHost.appendChild(el('div', { class: 'cso-drawer' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('strong', { text: 'Draft Preview — ' + entry.title }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(previewHost); } })
+          ]),
+          el('p', { class: 'cso-mod-muted', text: entry.summary || 'No summary provided.' })
+        ]));
+      }
+    }
+
+    async function loadDrafts() {
+      clear(tableHost);
+      tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Loading draft pages & content from D1…' }));
+      try {
+        var [pRes, ca, jobs, tests] = await Promise.all([
+          api('GET', 'pages'),
+          api('GET', 'current-affairs?limit=50'),
+          api('GET', 'jobs?limit=50'),
+          api('GET', 'mock-tests?limit=50')
+        ]);
+        var items = [];
+        (pRes.pages || []).forEach(function (p) {
+          if (p.status === 'draft') items.push({ kind: 'page', label: 'Page', route: p.route, title: p.title || p.route, updated_at: p.updated_at });
+        });
+        [['current-affairs', 'Current Affairs', ca], ['jobs', 'Job Alert', jobs], ['mock-tests', 'Mock Test', tests]].forEach(function (g) {
+          (g[2].items || []).forEach(function (x) {
+            if (x.status === 'draft') items.push({ kind: g[0], label: g[1], id: x.id, title: x.title || x.slug || x.id, summary: x.summary || x.description || '', updated_at: x.updated_at });
+          });
+        });
+
+        clear(tableHost);
+        if (!items.length) {
+          tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'All pages and content items are published — 0 drafts pending.' }));
+          return;
+        }
+        var rows = items.map(function (it) {
+          return el('tr', {}, [
+            el('td', {}, badge(it.label, 'info')),
+            el('td', { text: it.title + (it.route ? ' (' + it.route + ')' : '') }),
+            el('td', { text: it.updated_at || '—' }),
+            el('td', {}, el('div', { class: 'cso-mod-toolbar' }, [
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview', onclick: function () { showDraftPreview(it); } }),
+              el('button', {
+                type: 'button',
+                class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+                text: 'Publish Live Now',
+                onclick: async function () {
+                  try {
+                    if (it.kind === 'page') await api('PUT', 'pages', { route: it.route, status: 'published', note: 'Published from Drafts' });
+                    else await api('POST', it.kind + '/' + encodeURIComponent(it.id) + '/status', { status: 'published' });
+                    toast('Published live: ' + it.title, 'success');
+                    loadDrafts();
+                  } catch (e) { toast(e.message, 'crimson'); }
+                }
+              })
+            ]))
+          ]);
+        });
+        tableHost.appendChild(safeTable(['Type', 'Title / Route', 'Last Updated', 'Actions'], rows));
+      } catch (e) {
+        clear(tableHost);
+        tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: e.message }));
+      }
+    }
+
+    renderBanner(shell, 'Drafts & Previews', 'Unified draft queue for Website Pages & D1 content with Desktop/Mobile preview and one-click publish.', [
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh Queue', onclick: loadDrafts })
+    ]);
+    shell.appendChild(previewHost);
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [tableHost]));
+    root.appendChild(shell);
+    loadDrafts();
+  }
+
+  /* -------------------------------------------------------------------------
+     02-010: Scheduled Pages (Countdowns + Inline Reschedule + Publish Now)
+     ------------------------------------------------------------------------- */
+  function renderScheduledPagesStudio(root, actions) {
+    addHeaderPill(actions, '● Scheduled Queue');
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var tableHost = el('div', {});
+
+    function formatCountdown(iso) {
+      if (!iso) return 'No date';
+      var diff = new Date(iso).getTime() - Date.now();
+      if (isNaN(diff)) return iso;
+      if (diff <= 0) return 'Due now';
+      var mins = Math.floor(diff / 60000);
+      var d = Math.floor(mins / 1440);
+      var h = Math.floor((mins % 1440) / 60);
+      var m = mins % 60;
+      return d + 'd ' + h + 'h ' + m + 'm';
+    }
+
+    async function loadScheduled() {
+      clear(tableHost);
+      try {
+        var [pRes, ca, jobs, tests] = await Promise.all([
+          api('GET', 'pages'),
+          api('GET', 'current-affairs?limit=50'),
+          api('GET', 'jobs?limit=50'),
+          api('GET', 'mock-tests?limit=50')
+        ]);
+        var items = [];
+        (pRes.pages || []).forEach(function (p) {
+          if (p.status === 'scheduled') items.push({ kind: 'page', label: 'Page', route: p.route, title: p.title || p.route, publish_at: p.publish_at });
+        });
+        [['current-affairs', 'Current Affairs', ca], ['jobs', 'Job Alert', jobs], ['mock-tests', 'Mock Test', tests]].forEach(function (g) {
+          (g[2].items || []).forEach(function (x) {
+            if (x.status === 'scheduled') items.push({ kind: g[0], label: g[1], id: x.id, title: x.title || x.slug || x.id, publish_at: x.publish_at || x.updated_at });
+          });
+        });
+
+        if (!items.length) {
+          tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'No scheduled pages or posts in queue.' }));
+          return;
+        }
+        var rows = items.map(function (it) {
+          var dtInp = el('input', { type: 'datetime-local', class: 'cso-mod-input' });
+          if (it.publish_at) {
+            var dt = new Date(it.publish_at);
+            if (!isNaN(dt.getTime())) dtInp.value = dt.toISOString().slice(0, 16);
+          }
+          return el('tr', {}, [
+            el('td', {}, badge(it.label, 'warn')),
+            el('td', { text: it.title + (it.route ? ' (' + it.route + ')' : '') }),
+            el('td', {}, badge(formatCountdown(it.publish_at), 'info')),
+            el('td', {}, it.kind === 'page' ? el('div', { class: 'cso-inline-row' }, [
+              dtInp,
+              el('button', {
+                type: 'button',
+                class: 'cso-mod-btn cso-mod-btn-sm',
+                text: 'Reschedule',
+                onclick: async function () {
+                  if (!dtInp.value) return;
+                  try {
+                    await api('PUT', 'pages', { route: it.route, status: 'scheduled', publish_at: new Date(dtInp.value).toISOString(), note: 'Rescheduled' });
+                    toast('Rescheduled: ' + it.route, 'success');
+                    loadScheduled();
+                  } catch (e) { toast(e.message, 'crimson'); }
+                }
+              })
+            ]) : el('span', { class: 'cso-mod-muted', text: it.publish_at || '—' })),
+            el('td', {}, el('button', {
+              type: 'button',
+              class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+              text: 'Publish Immediately',
+              onclick: async function () {
+                try {
+                  if (it.kind === 'page') await api('PUT', 'pages', { route: it.route, status: 'published', publish_at: null, note: 'Published immediately' });
+                  else await api('POST', it.kind + '/' + encodeURIComponent(it.id) + '/status', { status: 'published' });
+                  toast('Published immediately: ' + it.title, 'success');
+                  loadScheduled();
+                } catch (e) { toast(e.message, 'crimson'); }
+              }
+            }))
+          ]);
+        });
+        tableHost.appendChild(safeTable(['Type', 'Title / Route', 'Countdown', 'Reschedule', 'Action'], rows));
+      } catch (e) {
+        tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: e.message }));
+      }
+    }
+
+    renderBanner(shell, 'Scheduled Pages', 'Live scheduled publication queue with countdowns, inline rescheduler, and immediate publish.', [
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: loadScheduled })
+    ]);
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [tableHost]));
+    root.appendChild(shell);
+    loadScheduled();
+  }
+
+  /* -------------------------------------------------------------------------
+     02-011: Trash & Restore (Archived/Trash vault + Bulk Restore)
+     ------------------------------------------------------------------------- */
+  function renderTrashAndRestoreStudio(root, actions) {
+    addHeaderPill(actions, '● Trash & Restore');
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var tableHost = el('div', {});
+    var selected = [];
+
+    async function bulkRestore(targetStatus) {
+      if (!selected.length) { toast('Select at least one item to restore', 'crimson'); return; }
+      try {
+        for (var i = 0; i < selected.length; i++) {
+          var it = selected[i];
+          if (it.kind === 'page') await api('POST', 'pages/restore', { route: it.route, status: targetStatus });
+          else await api('POST', it.kind + '/' + encodeURIComponent(it.id) + '/status', { status: targetStatus });
+        }
+        toast('Restored ' + selected.length + ' item(s) to ' + targetStatus, 'success');
+        selected = [];
+        loadTrash();
+      } catch (e) {
+        toast(e.message, 'crimson');
+      }
+    }
+
+    async function loadTrash() {
+      clear(tableHost);
+      selected = [];
+      try {
+        var [pRes, ca, jobs, tests] = await Promise.all([
+          api('GET', 'pages'),
+          api('GET', 'current-affairs?limit=50'),
+          api('GET', 'jobs?limit=50'),
+          api('GET', 'mock-tests?limit=50')
+        ]);
+        var items = [];
+        (pRes.pages || []).forEach(function (p) {
+          if (p.status === 'trash' || p.status === 'archived') items.push({ kind: 'page', label: 'Page', route: p.route, title: p.title || p.route, status: p.status, updated_at: p.updated_at });
+        });
+        [['current-affairs', 'Current Affairs', ca], ['jobs', 'Job Alert', jobs], ['mock-tests', 'Mock Test', tests]].forEach(function (g) {
+          (g[2].items || []).forEach(function (x) {
+            if (x.status === 'trash' || x.status === 'archived') items.push({ kind: g[0], label: g[1], id: x.id, title: x.title || x.slug || x.id, status: x.status, updated_at: x.updated_at });
+          });
+        });
+
+        if (!items.length) {
+          tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Trash & archive vault is empty.' }));
+          return;
+        }
+        var rows = items.map(function (it) {
+          var chk = el('input', { type: 'checkbox' });
+          chk.addEventListener('change', function () {
+            if (chk.checked) selected.push(it);
+            else selected = selected.filter(function (x) { return x !== it; });
+          });
+          return el('tr', {}, [
+            el('td', {}, chk),
+            el('td', {}, badge(it.label, 'danger')),
+            el('td', { text: it.title + (it.route ? ' (' + it.route + ')' : '') }),
+            el('td', {}, f02StatusBadge(it.status)),
+            el('td', {}, el('div', { class: 'cso-mod-toolbar' }, [
+              el('button', {
+                type: 'button',
+                class: 'cso-mod-btn cso-mod-btn-sm',
+                text: 'Restore to Draft',
+                onclick: async function () {
+                  try {
+                    if (it.kind === 'page') await api('POST', 'pages/restore', { route: it.route, status: 'draft' });
+                    else await api('POST', it.kind + '/' + encodeURIComponent(it.id) + '/status', { status: 'draft' });
+                    toast('Restored to draft: ' + it.title, 'success');
+                    loadTrash();
+                  } catch (e) { toast(e.message, 'crimson'); }
+                }
+              }),
+              el('button', {
+                type: 'button',
+                class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+                text: 'Re-Publish Live',
+                onclick: async function () {
+                  try {
+                    if (it.kind === 'page') await api('POST', 'pages/restore', { route: it.route, status: 'published' });
+                    else await api('POST', it.kind + '/' + encodeURIComponent(it.id) + '/status', { status: 'published' });
+                    toast('Re-published live: ' + it.title, 'success');
+                    loadTrash();
+                  } catch (e) { toast(e.message, 'crimson'); }
+                }
+              })
+            ]))
+          ]);
+        });
+        tableHost.appendChild(safeTable(['', 'Type', 'Title / Route', 'State', 'Actions'], rows));
+      } catch (e) {
+        tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: e.message }));
+      }
+    }
+
+    renderBanner(shell, 'Trash & Restore Vault', 'Recover archived or trashed pages and content to Draft or Live with single or bulk restore.', [
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Bulk Restore to Draft', onclick: function () { bulkRestore('draft'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Bulk Re-Publish Live', onclick: function () { bulkRestore('published'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: loadTrash })
+    ]);
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [tableHost]));
+    root.appendChild(shell);
+    loadTrash();
+  }
+
+  function renderFolder02(folderId, moduleId, root, actions) {
+    if (moduleId === 'module-02-001') { renderAllPagesStudio(root, actions); return true; }
+    if (moduleId === 'module-02-002') { renderCreatePageWizard(root, actions); return true; }
+    if (moduleId === 'module-02-003') { renderVisualPageBuilder(root, actions); return true; }
+    if (moduleId === 'module-02-004') { renderHomepageBuilder(root, actions); return true; }
+    if (moduleId === 'module-02-005') { renderLandingPagesStudio(root, actions); return true; }
+    if (moduleId === 'module-02-006') { renderPageTemplatesGallery(root, actions); return true; }
+    if (moduleId === 'module-02-007') { renderReusableSectionsStudio(root, actions); return true; }
+    if (moduleId === 'module-02-008') { renderPageRevisionsStudio(root, actions); return true; }
+    if (moduleId === 'module-02-009') { renderDraftsAndPreviewsStudio(root, actions); return true; }
+    if (moduleId === 'module-02-010') { renderScheduledPagesStudio(root, actions); return true; }
+    if (moduleId === 'module-02-011') { renderTrashAndRestoreStudio(root, actions); return true; }
     return false;
   }
 
