@@ -9,6 +9,8 @@
  */
 
 import { getSessionFromRequest } from './auth/_utils.js';
+import { HttpError, errorResponse } from '../_lib/http.js';
+import { enforceCandidateControls } from '../_lib/candidate-controls.js';
 import {
   flattenChecklistPayload,
   upsertStatement,
@@ -46,6 +48,9 @@ export async function onRequestGet({ request, env }) {
       }, 401);
     }
     const candidateId = session.userId;
+    if (env && env.DB) {
+      await enforceCandidateControls(env, candidateId, { isWrite: false });
+    }
 
     if (!env || !env.DB) {
       return jsonResponse({
@@ -98,6 +103,7 @@ export async function onRequestGet({ request, env }) {
     });
 
   } catch (error) {
+    if (error instanceof HttpError) return errorResponse(error);
     console.error('Fatal Edge Sync GET Error:', error);
     return jsonResponse({
       success: false,
@@ -125,6 +131,9 @@ export async function onRequestPost({ request, env }) {
 
     const { locker, notes, mockScores } = payload;
     const candidateId = session.userId;
+    if (env && env.DB) {
+      await enforceCandidateControls(env, candidateId, { isWrite: false });
+    }
 
     if (!env || !env.DB) {
       return jsonResponse({
@@ -133,6 +142,7 @@ export async function onRequestPost({ request, env }) {
         syncedOperations: 0
       });
     }
+    await enforceCandidateControls(env, candidateId, { isWrite: true, permission: 'canSyncCloud' });
 
     const batchStatements = [];
 
@@ -209,6 +219,7 @@ export async function onRequestPost({ request, env }) {
     });
 
   } catch (error) {
+    if (error instanceof HttpError) return errorResponse(error);
     console.error('Fatal Edge Sync POST Error:', error);
     return jsonResponse({
       success: false,

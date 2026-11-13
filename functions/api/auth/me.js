@@ -11,6 +11,7 @@ import {
   jsonResponse,
   getSessionFromRequest
 } from './_utils.js';
+import { getCandidateControls } from '../../_lib/candidate-controls.js';
 
 export async function onRequestOptions() {
   return new Response(null, {
@@ -45,6 +46,38 @@ export async function onRequestGet({ request, env }) {
 
     // users.role is authoritative (sessions.role may be stale)
     const roleRow = await env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(session.userId).first().catch(() => null);
+    const controls = await getCandidateControls(env, session.userId);
+    if (controls.account_status === 'banned' || controls.account_status === 'suspended') {
+      return jsonResponse({
+        success: false,
+        authenticated: false,
+        code: 'ACCOUNT_RESTRICTED',
+        error: controls.restriction_reason || `Account is ${controls.account_status}.`,
+        account_status: controls.account_status,
+        restriction_reason: controls.restriction_reason,
+        suspended_until: controls.suspended_until
+      }, 403);
+    }
+
+    const prefsRow = await env.DB.prepare(
+      'SELECT domain_slug, track_slug, primary_exam, selected_exams_json, selected_streams_json, updated_at FROM candidate_exam_preferences WHERE user_id = ?'
+    ).bind(session.userId).first().catch(() => null);
+
+    let preferences = null;
+    if (prefsRow) {
+      let selectedExams = [];
+      let selectedStreams = {};
+      try { selectedExams = JSON.parse(prefsRow.selected_exams_json || '[]'); } catch (e) {}
+      try { selectedStreams = JSON.parse(prefsRow.selected_streams_json || '{}'); } catch (e) {}
+      preferences = {
+        domain: prefsRow.domain_slug || null,
+        track: prefsRow.track_slug || null,
+        primaryExam: prefsRow.primary_exam || null,
+        selectedExams: Array.isArray(selectedExams) ? selectedExams : [],
+        selectedStreams: selectedStreams && typeof selectedStreams === 'object' ? selectedStreams : {},
+        updatedAt: prefsRow.updated_at || null
+      };
+    }
 
     const user = {
       id: session.userId,
@@ -60,7 +93,9 @@ export async function onRequestGet({ request, env }) {
     return jsonResponse({
       success: true,
       authenticated: true,
-      user
+      user,
+      controls,
+      preferences
     }, 200);
 
   } catch (error) {

@@ -2,6 +2,7 @@
 import { HttpError, json, readJson, validationError, errorResponse } from '../../_lib/http.js';
 import { ALL_ROLES, requireRole, rateLimit } from '../../_lib/rbac.js';
 import { cleanStr } from '../../_lib/validate.js';
+import { enforceCandidateControls, logCandidateAudit } from '../../_lib/candidate-controls.js';
 
 export const BOOKMARK_TYPES = ['job', 'current-affair', 'mock-test', 'resource'];
 
@@ -135,9 +136,89 @@ export async function handleUserApi(request, env) {
     const url = new URL(request.url);
     const parts = url.pathname.replace(/^\/api\/user\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
     const [resource, seg1, seg2] = parts;
+    const isWrite = request.method !== 'GET' && request.method !== 'HEAD';
 
-    if (request.method !== 'GET' && request.method !== 'HEAD') {
+    const permNeeded = (isWrite && resource === 'bookmarks') ? 'canBookmark' : null;
+    const controls = await enforceCandidateControls(env, actor.userId, { isWrite, permission: permNeeded });
+
+    if (isWrite) {
       await rateLimit(env, `user-write:${actor.userId}`, 60, 60);
+    }
+
+    // GET / POST /api/user/preferences
+    if (resource === 'preferences' && !seg1) {
+      if (request.method === 'GET') {
+        const row = await env.DB.prepare(
+          'SELECT domain_slug, track_slug, primary_exam, selected_exams_json, selected_streams_json, updated_at FROM candidate_exam_preferences WHERE user_id = ?'
+        ).bind(actor.userId).first().catch(() => null);
+        return json({
+          preferences: row ? {
+            domain: row.domain_slug || null,
+            track: row.track_slug || null,
+            primaryExam: row.primary_exam || null,
+            selectedExams: parseMeta(row.selected_exams_json),
+            selectedStreams: parseMeta(row.selected_streams_json),
+            updatedAt: row.updated_at || null
+          } : null,
+          locked: controls.lock_exam_preferences,
+          assignedExams: controls.assigned_exams
+        });
+      }
+      if (request.method === 'POST') {
+        if (controls.lock_exam_preferences) {
+          throw new HttpError(403, 'PREFERENCES_LOCKED', 'Your exam preferences are locked by an administrator.');
+        }
+        const body = await readJson(request, 20000);
+        const domain = cleanStr(body.domain || body.domain_slug, 80) || null;
+        const track = cleanStr(body.track || body.track_slug, 80) || null;
+        const rawExams = Array.isArray(body.selectedExams) ? body.selectedExams : [];
+        const selectedExams = [...new Set(rawExams.map(x => cleanStr(x, 80)).filter(Boolean))].slice(0, 20);
+        const primaryExam = cleanStr(body.primaryExam || body.primary_exam, 80) || selectedExams[0] || null;
+        const rawStreams = (body.selectedStreams && typeof body.selectedStreams === 'object' && !Array.isArray(body.selectedStreams))
+          ? body.selectedStreams : {};
+        const selectedStreams = {};
+        for (const [k, v] of Object.entries(rawStreams)) {
+          const ck = cleanStr(k, 80);
+          const cv = cleanStr(v, 120);
+          if (ck && cv) selectedStreams[ck] = cv;
+        }
+
+        await env.DB.prepare(
+          `INSERT INTO candidate_exam_preferences (
+             user_id, domain_slug, track_slug, primary_exam, selected_exams_json, selected_streams_json, updated_at
+           ) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+           ON CONFLICT(user_id) DO UPDATE SET
+             domain_slug = excluded.domain_slug,
+             track_slug = excluded.track_slug,
+             primary_exam = excluded.primary_exam,
+             selected_exams_json = excluded.selected_exams_json,
+             selected_streams_json = excluded.selected_streams_json,
+             updated_at = datetime('now')`
+        ).bind(
+          actor.userId,
+          domain,
+          track,
+          primaryExam,
+          JSON.stringify(selectedExams),
+          JSON.stringify(selectedStreams)
+        ).run();
+
+        if (selectedExams.length > 0) {
+          await env.DB.prepare(
+            'UPDATE candidates SET target_streams = ? WHERE id = ? OR email = ?'
+          ).bind(JSON.stringify(selectedExams), actor.userId, actor.email).run().catch(() => {});
+        }
+
+        await logCandidateAudit(env, actor.userId, 'preferences.update', actor.email, {
+          domain, track, primaryExam, selectedExams
+        });
+
+        return json({
+          ok: true,
+          preferences: { domain, track, primaryExam, selectedExams, selectedStreams }
+        });
+      }
+      throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
     }
 
     // GET /api/user/attempts

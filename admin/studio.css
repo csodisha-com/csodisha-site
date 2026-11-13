@@ -2742,3 +2742,109 @@ html[data-theme="lime"] .cso-nav-folder-btn:hover {
   border-color: var(--studio-amber);
   color: var(--studio-amber);
 }
+
+/* 4-Tier Exam Taxonomy & Candidate Governance Studios */
+.cso-gov-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.cso-gov-table-wrap .cso-table {
+  table-layout: auto;
+  width: 100%;
+}
+.cso-muted-sm {
+  font-size: 11px;
+  color: var(--muted, #64748b);
+  margin-top: 2px;
+}
+.cso-actions-cell {
+  white-space: nowrap;
+  display: flex;
+  gap: 6px;
+}
+.cso-gov-badges-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.cso-gov-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: rgba(100, 116, 139, 0.16);
+  color: #cbd5e1;
+}
+.cso-gov-badge.is-active {
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+}
+.cso-gov-badge.is-info {
+  background: rgba(56, 189, 248, 0.16);
+  color: #38bdf8;
+}
+.cso-gov-badge.is-warning {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+}
+.cso-gov-badge.is-danger {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+}
+.cso-gov-summary {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  margin-bottom: 12px;
+}
+.cso-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.cso-span-full {
+  grid-column: 1 / -1;
+}
+.cso-check-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.cso-gov-perm-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.35);
+}
+.cso-gov-actions-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+.cso-gov-subhead {
+  margin: 12px 0 6px;
+  font-size: 13px;
+}
+.cso-gov-audit-list {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cso-gov-audit-row {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.4);
+  font-size: 12px;
+}

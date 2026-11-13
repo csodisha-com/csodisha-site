@@ -15,6 +15,8 @@ import {
   jsonResponse,
   getSessionFromRequest
 } from '../auth/_utils.js';
+import { HttpError, errorResponse } from '../../_lib/http.js';
+import { enforceCandidateControls } from '../../_lib/candidate-controls.js';
 import {
   flattenChecklistPayload,
   upsertStatement,
@@ -43,6 +45,8 @@ export async function onRequestGet({ request, env }) {
     if (!env || !env.DB) {
       return jsonResponse({ success: false, error: 'Database service unavailable' }, 500);
     }
+    await enforceCandidateControls(env, session.userId, { isWrite: true, permission: 'canSyncCloud' });
+    await enforceCandidateControls(env, session.userId, { isWrite: false });
 
     return jsonResponse({
       success: true,
@@ -50,6 +54,7 @@ export async function onRequestGet({ request, env }) {
     }, 200);
 
   } catch (err) {
+    if (err instanceof HttpError) return errorResponse(err);
     console.error('Candidate Checklist GET Error:', err);
     return jsonResponse({ success: false, error: 'Failed to retrieve checklist state' }, 500);
   }
@@ -64,6 +69,7 @@ export async function onRequestPost({ request, env }) {
     if (!env || !env.DB) {
       return jsonResponse({ success: false, error: 'Database service unavailable' }, 500);
     }
+    await enforceCandidateControls(env, session.userId, { isWrite: true, permission: 'canSyncCloud' });
 
     let body = {};
     try {
@@ -91,6 +97,7 @@ export async function onRequestPost({ request, env }) {
     }, 200);
 
   } catch (err) {
+    if (err instanceof HttpError) return errorResponse(err);
     console.error('Candidate Checklist POST Error:', err);
     return jsonResponse({ success: false, error: 'Failed to update checklist' }, 500);
   }

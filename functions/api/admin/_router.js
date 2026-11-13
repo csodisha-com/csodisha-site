@@ -11,6 +11,8 @@ import { handlePages } from './pages.js';
 import { handleSeedOdisha } from './seed-odisha.js';
 import { handleAiGeneratePage } from './_ai.js';
 import { runLifecycleMaintenance, readLastCronRun } from './_cron.js';
+import { handleExamTaxonomy } from './_taxonomy.js';
+import { handleAdminCandidates } from './_candidates.js';
 
 export async function handleAdminApi(request, env) {
   try {
@@ -21,11 +23,16 @@ export async function handleAdminApi(request, env) {
     const method = request.method;
     const write = method !== 'GET' && method !== 'HEAD';
 
-    // Admin-only: user role management.
+    // Admin-only: user role management & candidate behavior governance.
     if (resource === 'users') {
       const actor = await requireRole(request, env, ['admin']);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
       return await handleUsers(request, env, actor, id, sub);
+    }
+    if (resource === 'candidates') {
+      const actor = await requireRole(request, env, ['admin']);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handleAdminCandidates(request, env, actor, id);
     }
 
     // Admin-only: manual lifecycle & D1 maintenance trigger.
@@ -84,6 +91,9 @@ export async function handleAdminApi(request, env) {
         break;
       case 'pages':
         return await handlePages(request, env, actor, id);
+      case 'exam-taxonomy':
+        if (!sub) return await handleExamTaxonomy(request, env, actor, id);
+        break;
       case 'ai':
         if (id === 'generate-page') return await handleAiGeneratePage(request, env, actor);
         break;

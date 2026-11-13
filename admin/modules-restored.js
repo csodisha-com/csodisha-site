@@ -11506,6 +11506,462 @@
   }
 
   /* =========================================================================
+     4-TIER EXAM & COHORT CATALOG MANAGER (module-05-007 / module-05-008)
+     ========================================================================= */
+  function renderExamTaxonomyStudio(root, actions) {
+    clear(root);
+    if (actions) clear(actions);
+
+    var kpiHost = el('div', { class: 'cso-kpi-row' });
+    var filterBar = el('div', { class: 'cso-toolbar' });
+    var domainSel = el('select', { class: 'cso-mod-select' }, [el('option', { value: '', text: 'All 5 Domains' })]);
+    var searchInp = el('input', { type: 'search', class: 'cso-mod-input', placeholder: 'Search exam, code, or track...' });
+    var addBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: '+ Add Exam' });
+    filterBar.appendChild(domainSel);
+    filterBar.appendChild(searchInp);
+    filterBar.appendChild(addBtn);
+
+    var tableHost = el('div', { class: 'cso-gov-table-wrap' });
+    root.appendChild(kpiHost);
+    root.appendChild(filterBar);
+    root.appendChild(tableHost);
+
+    var allItems = [];
+
+    function openExamModal(existing) {
+      var modal = document.getElementById('globalModal');
+      var mTitle = document.getElementById('modalTitle');
+      var mBody = document.getElementById('modalBody');
+      var mFoot = document.getElementById('modalFooter');
+      if (!modal || !mTitle || !mBody || !mFoot) return;
+
+      var isEdit = Boolean(existing);
+      mTitle.textContent = isEdit ? ('Edit Exam: ' + existing.exam_label) : 'Create New Exam Taxonomy Entry';
+      clear(mBody);
+      clear(mFoot);
+
+      var idInp = el('input', { type: 'text', class: 'cso-mod-input', value: isEdit ? existing.id : '', placeholder: 'e.g. opsc-oas', disabled: isEdit });
+      var domSlugInp = el('input', { type: 'text', class: 'cso-mod-input', value: isEdit ? existing.domain_slug : 'odisha-state-recruitment' });
+      var domLblInp = el('input', { type: 'text', class: 'cso-mod-input', value: isEdit ? existing.domain_label : 'Odisha State Recruitment' });
+      var trkSlugInp = el('input', { type: 'text', class: 'cso-mod-input', value: isEdit ? existing.track_slug : 'opsc-gazetted' });
+      var trkLblInp = el('input', { type: 'text', class: 'cso-mod-input', value: isEdit ? existing.track_label : 'OPSC Gazetted & Civil Services' });
+      var examLblInp = el('input', { type: 'text', class: 'cso-mod-input', value: isEdit ? existing.exam_label : '', placeholder: 'Full exam title' });
+      var codeInp = el('input', { type: 'text', class: 'cso-mod-input', value: isEdit ? existing.short_code : '', placeholder: 'e.g. OPSC OAS' });
+      var streamsInp = el('input', { type: 'text', class: 'cso-mod-input', value: isEdit ? JSON.stringify(existing.streams || []) : '[]' });
+      var tagsInp = el('input', { type: 'text', class: 'cso-mod-input', value: isEdit ? JSON.stringify(existing.parent_tags || []) : '[]' });
+      var dateInp = el('input', { type: 'date', class: 'cso-mod-input', value: isEdit && existing.next_exam_date ? existing.next_exam_date : '' });
+      var cdStatusSel = el('select', { class: 'cso-mod-select' }, [
+        el('option', { value: 'TENTATIVE', text: 'TENTATIVE' }),
+        el('option', { value: 'OFFICIAL', text: 'OFFICIAL' })
+      ]);
+      cdStatusSel.value = isEdit ? (existing.countdown_status || 'TENTATIVE') : 'TENTATIVE';
+      var sortInp = el('input', { type: 'number', class: 'cso-mod-input', value: isEdit ? String(existing.sort_order || 0) : '500' });
+      var activeChk = el('input', { type: 'checkbox', checked: isEdit ? existing.is_active : true });
+      var markingInp = el('textarea', { class: 'cso-mod-textarea', rows: '2' });
+      markingInp.value = JSON.stringify(isEdit ? existing.marking_scheme : { correct: 1, negative: 0.25, totalMarks: 100 });
+      var syllabusInp = el('textarea', { class: 'cso-mod-textarea', rows: '4' });
+      syllabusInp.value = JSON.stringify(isEdit ? existing.syllabus : [], null, 2);
+
+      var formGrid = el('div', { class: 'cso-form-grid' }, [
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Exam Slug ID' }), idInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Short Code' }), codeInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Exam Label (Tier 3)' }), examLblInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Sort Order' }), sortInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Domain Slug (Tier 1)' }), domSlugInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Domain Label' }), domLblInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Track Slug (Tier 2)' }), trkSlugInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Track Label' }), trkLblInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Next Exam Date' }), dateInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Countdown Status' }), cdStatusSel]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Tier 4 Streams (JSON Array)' }), streamsInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Parent Tags (JSON Array)' }), tagsInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Marking Scheme (JSON)' }), markingInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Active Status' }), el('label', { class: 'cso-check-inline' }, [activeChk, document.createTextNode(' Active in Catalog')])]),
+        el('div', { class: 'cso-mod-field cso-span-full' }, [el('label', { class: 'cso-mod-label', text: 'Default Syllabus Blueprint (JSON Array)' }), syllabusInp])
+      ]);
+      mBody.appendChild(formGrid);
+
+      var cancelBtn = el('button', { type: 'button', class: 'cso-mod-btn', text: 'Cancel', onclick: function () { modal.classList.remove('is-open'); } });
+      var saveBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: isEdit ? 'Save Exam Changes' : 'Create Exam' });
+      saveBtn.addEventListener('click', function () {
+        var payload = {
+          id: idInp.value.trim(),
+          domain_slug: domSlugInp.value.trim(),
+          domain_label: domLblInp.value.trim(),
+          track_slug: trkSlugInp.value.trim(),
+          track_label: trkLblInp.value.trim(),
+          exam_label: examLblInp.value.trim(),
+          short_code: codeInp.value.trim(),
+          streams_json: streamsInp.value.trim() || '[]',
+          parent_tags: tagsInp.value.trim() || '[]',
+          next_exam_date: dateInp.value || null,
+          countdown_status: cdStatusSel.value,
+          marking_scheme_json: markingInp.value.trim() || '{"correct":1,"negative":0.25,"totalMarks":100}',
+          syllabus_json: syllabusInp.value.trim() || '[]',
+          sort_order: Number(sortInp.value || 0),
+          is_active: activeChk.checked ? 1 : 0
+        };
+        saveBtn.disabled = true;
+        var req = isEdit
+          ? api('/api/admin/exam-taxonomy/' + encodeURIComponent(existing.id), { method: 'PUT', body: JSON.stringify(payload) })
+          : api('/api/admin/exam-taxonomy', { method: 'POST', body: JSON.stringify(payload) });
+        req.then(function () {
+          toast('Exam taxonomy saved to D1', 'success');
+          modal.classList.remove('is-open');
+          loadTaxonomy();
+        }).catch(function (e) {
+          toast(e.message || 'Save failed', 'error');
+        }).finally(function () {
+          saveBtn.disabled = false;
+        });
+      });
+      mFoot.appendChild(cancelBtn);
+      mFoot.appendChild(saveBtn);
+      modal.classList.add('is-open');
+    }
+
+    function draw() {
+      clear(tableHost);
+      var dom = domainSel.value;
+      var q = searchInp.value.trim().toLowerCase();
+      var filtered = allItems.filter(function (it) {
+        if (dom && it.domain_slug !== dom) return false;
+        if (q) {
+          var hay = (it.id + ' ' + it.exam_label + ' ' + it.short_code + ' ' + it.track_label + ' ' + it.domain_label).toLowerCase();
+          if (hay.indexOf(q) === -1) return false;
+        }
+        return true;
+      });
+
+      if (!filtered.length) {
+        tableHost.appendChild(emptyState('No exam taxonomy entries match your filters.'));
+        return;
+      }
+
+      var table = el('table', { class: 'cso-table' });
+      table.appendChild(el('thead', {}, el('tr', {}, [
+        el('th', { text: 'Exam (Tier 3)' }),
+        el('th', { text: 'Domain & Track (Tier 1/2)' }),
+        el('th', { text: 'Streams (Tier 4)' }),
+        el('th', { text: 'Countdown' }),
+        el('th', { text: 'Status' }),
+        el('th', { text: 'Actions' })
+      ])));
+      var tbody = el('tbody');
+      filtered.forEach(function (it) {
+        var editBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Edit', onclick: function () { openExamModal(it); } });
+        var toggleBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: it.is_active ? 'Disable' : 'Enable', onclick: function () {
+          api('/api/admin/exam-taxonomy/' + encodeURIComponent(it.id), { method: 'PUT', body: JSON.stringify({ is_active: it.is_active ? 0 : 1 }) })
+            .then(function () { toast('Updated ' + it.short_code, 'success'); loadTaxonomy(); })
+            .catch(function (e) { toast(e.message || 'Toggle failed', 'error'); });
+        } });
+        tbody.appendChild(el('tr', {}, [
+          el('td', {}, [
+            el('strong', { text: it.exam_label }),
+            el('div', { class: 'cso-muted-sm', text: it.short_code + ' · ' + it.id })
+          ]),
+          el('td', {}, [
+            el('div', { text: it.domain_label }),
+            el('div', { class: 'cso-muted-sm', text: it.track_label })
+          ]),
+          el('td', { text: (it.streams && it.streams.length) ? it.streams.join(', ') : 'Single Stream' }),
+          el('td', {}, [
+            el('div', { text: it.next_exam_date || 'TBA' }),
+            el('span', { class: 'cso-gov-badge ' + (it.countdown_status === 'OFFICIAL' ? 'is-active' : 'is-info'), text: it.countdown_status || 'TENTATIVE' })
+          ]),
+          el('td', {}, el('span', { class: 'cso-gov-badge ' + (it.is_active ? 'is-active' : 'is-muted'), text: it.is_active ? 'Active' : 'Disabled' })),
+          el('td', { class: 'cso-actions-cell' }, [editBtn, toggleBtn])
+        ]));
+      });
+      table.appendChild(tbody);
+      tableHost.appendChild(table);
+    }
+
+    function loadTaxonomy() {
+      tableHost.textContent = 'Loading 4-tier exam taxonomy...';
+      api('/api/admin/exam-taxonomy').then(function (data) {
+        allItems = (data && data.items) || [];
+        var domains = {};
+        var officialCnt = 0;
+        var streamCnt = 0;
+        allItems.forEach(function (it) {
+          domains[it.domain_slug] = it.domain_label;
+          if (it.countdown_status === 'OFFICIAL') officialCnt++;
+          if (it.streams && it.streams.length) streamCnt++;
+        });
+        var curDom = domainSel.value;
+        clear(domainSel);
+        domainSel.appendChild(el('option', { value: '', text: 'All Domains (' + Object.keys(domains).length + ')' }));
+        Object.keys(domains).forEach(function (slug) {
+          domainSel.appendChild(el('option', { value: slug, text: domains[slug] }));
+        });
+        domainSel.value = curDom;
+
+        clear(kpiHost);
+        kpiHost.appendChild(kpiCard('Total Exams', String(allItems.length), '4-Tier D1 Catalog'));
+        kpiHost.appendChild(kpiCard('Active Domains', String(Object.keys(domains).length), 'Tier 1 Categories'));
+        kpiHost.appendChild(kpiCard('Official Dates', String(officialCnt), 'Verified Countdowns'));
+        kpiHost.appendChild(kpiCard('Multi-Stream', String(streamCnt), 'Tier 4 Sub-Streams'));
+        draw();
+      }).catch(function (e) { fail(tableHost, e); });
+    }
+
+    addBtn.addEventListener('click', function () { openExamModal(null); });
+    domainSel.addEventListener('change', draw);
+    searchInp.addEventListener('input', draw);
+    loadTaxonomy();
+  }
+
+  /* =========================================================================
+     CANDIDATE BEHAVIOR GOVERNANCE CONSOLE (folder-09)
+     ========================================================================= */
+  function renderCandidateGovernanceStudio(root, actions) {
+    clear(root);
+    if (actions) clear(actions);
+
+    var kpiHost = el('div', { class: 'cso-kpi-row' });
+    var filterBar = el('div', { class: 'cso-toolbar' });
+    var searchInp = el('input', { type: 'search', class: 'cso-mod-input', placeholder: 'Search candidate email, name, phone, or district...' });
+    var statusSel = el('select', { class: 'cso-mod-select' }, [
+      el('option', { value: '', text: 'All Account Statuses' }),
+      el('option', { value: 'active', text: 'Active' }),
+      el('option', { value: 'restricted', text: 'Restricted (Read-Only)' }),
+      el('option', { value: 'suspended', text: 'Suspended' }),
+      el('option', { value: 'banned', text: 'Banned' })
+    ]);
+    var refreshBtn = el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh' });
+    filterBar.appendChild(searchInp);
+    filterBar.appendChild(statusSel);
+    filterBar.appendChild(refreshBtn);
+
+    var tableHost = el('div', { class: 'cso-gov-table-wrap' });
+    root.appendChild(kpiHost);
+    root.appendChild(filterBar);
+    root.appendChild(tableHost);
+
+    function statusBadgeClass(st) {
+      if (st === 'banned') return 'is-danger';
+      if (st === 'suspended') return 'is-warning';
+      if (st === 'restricted') return 'is-info';
+      return 'is-active';
+    }
+
+    function openGovernanceModal(userId) {
+      var modal = document.getElementById('globalModal');
+      var mTitle = document.getElementById('modalTitle');
+      var mBody = document.getElementById('modalBody');
+      var mFoot = document.getElementById('modalFooter');
+      if (!modal || !mTitle || !mBody || !mFoot) return;
+
+      mTitle.textContent = 'Candidate Governance & Controls';
+      clear(mBody);
+      clear(mFoot);
+      mBody.appendChild(el('p', { text: 'Loading candidate controls & audit history...' }));
+      modal.classList.add('is-open');
+
+      api('/api/admin/candidates/' + encodeURIComponent(userId)).then(function (data) {
+        clear(mBody);
+        clear(mFoot);
+        var c = data.candidate;
+        var ctrl = data.controls;
+        var logs = data.audit_logs || [];
+        mTitle.textContent = 'Govern Candidate: ' + (c.full_name || c.email);
+
+        var infoBanner = el('div', { class: 'cso-gov-summary' }, [
+          el('div', {}, [el('strong', { text: c.email }), document.createTextNode(' · ' + (c.district || 'Odisha') + ' · Role: ' + c.role)]),
+          el('div', { class: 'cso-muted-sm', text: 'Session Version: v' + ctrl.session_version + (c.last_login_at ? (' · Last Login: ' + c.last_login_at) : '') })
+        ]);
+        mBody.appendChild(infoBanner);
+
+        var stSel = el('select', { class: 'cso-mod-select' }, [
+          el('option', { value: 'active', text: 'Active (Full Access)' }),
+          el('option', { value: 'restricted', text: 'Restricted (Read-Only)' }),
+          el('option', { value: 'suspended', text: 'Suspended (Blocked)' }),
+          el('option', { value: 'banned', text: 'Banned (Permanent)' })
+        ]);
+        stSel.value = ctrl.account_status || 'active';
+
+        var reasonInp = el('input', { type: 'text', class: 'cso-mod-input', value: ctrl.restriction_reason || '', placeholder: 'Reason shown to candidate if restricted/suspended' });
+        var untilInp = el('input', { type: 'date', class: 'cso-mod-input', value: ctrl.suspended_until ? String(ctrl.suspended_until).slice(0, 10) : '' });
+        var assignedInp = el('input', { type: 'text', class: 'cso-mod-input', value: (ctrl.assigned_exams || []).join(', '), placeholder: 'Comma-separated exam IDs e.g. opsc-oas, odisha-bed' });
+        var lockChk = el('input', { type: 'checkbox', checked: Boolean(ctrl.lock_exam_preferences) });
+
+        var noticeTxt = el('input', { type: 'text', class: 'cso-mod-input', value: ctrl.admin_notice_text || '', placeholder: 'Targeted alert banner on candidate dashboard' });
+        var noticeLvl = el('select', { class: 'cso-mod-select' }, [
+          el('option', { value: 'info', text: 'Info' }),
+          el('option', { value: 'warning', text: 'Warning' }),
+          el('option', { value: 'urgent', text: 'Urgent' })
+        ]);
+        noticeLvl.value = ctrl.admin_notice_level || 'info';
+
+        var perms = ctrl.permissions || {};
+        var permChecks = {
+          canTakeCbt: el('input', { type: 'checkbox', checked: perms.canTakeCbt !== false }),
+          canEditProfile: el('input', { type: 'checkbox', checked: perms.canEditProfile !== false }),
+          canSyncCloud: el('input', { type: 'checkbox', checked: perms.canSyncCloud !== false }),
+          canBookmark: el('input', { type: 'checkbox', checked: perms.canBookmark !== false }),
+          canExportData: el('input', { type: 'checkbox', checked: perms.canExportData !== false })
+        };
+
+        var permGrid = el('div', { class: 'cso-gov-perm-grid' }, [
+          el('label', { class: 'cso-check-inline' }, [permChecks.canTakeCbt, document.createTextNode(' Can Take CBT')]),
+          el('label', { class: 'cso-check-inline' }, [permChecks.canEditProfile, document.createTextNode(' Can Edit Profile')]),
+          el('label', { class: 'cso-check-inline' }, [permChecks.canSyncCloud, document.createTextNode(' Can Sync Cloud')]),
+          el('label', { class: 'cso-check-inline' }, [permChecks.canBookmark, document.createTextNode(' Can Bookmark')]),
+          el('label', { class: 'cso-check-inline' }, [permChecks.canExportData, document.createTextNode(' Can Export Data')])
+        ]);
+
+        var formGrid = el('div', { class: 'cso-form-grid' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Account Status' }), stSel]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Suspended Until (Optional)' }), untilInp]),
+          el('div', { class: 'cso-mod-field cso-span-full' }, [el('label', { class: 'cso-mod-label', text: 'Restriction / Suspension Reason' }), reasonInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Assigned Exam IDs' }), assignedInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Lock Preferences' }), el('label', { class: 'cso-check-inline' }, [lockChk, document.createTextNode(' Lock Candidate Exam Choices')])]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Targeted Admin Notice' }), noticeTxt]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Notice Level' }), noticeLvl]),
+          el('div', { class: 'cso-mod-field cso-span-full' }, [el('label', { class: 'cso-mod-label', text: 'Granular Feature Permissions' }), permGrid])
+        ]);
+        mBody.appendChild(formGrid);
+
+        var actionRow = el('div', { class: 'cso-gov-actions-bar' }, [
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Force Sign-Out All Devices', onclick: function () {
+            api('/api/admin/candidates/' + encodeURIComponent(userId), { method: 'POST', body: JSON.stringify({ action: 'force_logout' }) })
+              .then(function () { toast('All candidate sessions revoked', 'success'); openGovernanceModal(userId); loadCandidates(); })
+              .catch(function (e) { toast(e.message || 'Action failed', 'error'); });
+          } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Reset CBT Attempts', onclick: function () {
+            api('/api/admin/candidates/' + encodeURIComponent(userId), { method: 'POST', body: JSON.stringify({ action: 'reset_cbt' }) })
+              .then(function (r) { toast('Cleared ' + (r.deleted || 0) + ' CBT attempts', 'success'); openGovernanceModal(userId); loadCandidates(); })
+              .catch(function (e) { toast(e.message || 'Action failed', 'error'); });
+          } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Reset Checklist', onclick: function () {
+            api('/api/admin/candidates/' + encodeURIComponent(userId), { method: 'POST', body: JSON.stringify({ action: 'reset_checklist' }) })
+              .then(function (r) { toast('Cleared ' + (r.deleted || 0) + ' checklist rows', 'success'); openGovernanceModal(userId); })
+              .catch(function (e) { toast(e.message || 'Action failed', 'error'); });
+          } })
+        ]);
+        mBody.appendChild(actionRow);
+
+        var auditTitle = el('h4', { class: 'cso-gov-subhead', text: 'Candidate Audit Trail (' + logs.length + ')' });
+        mBody.appendChild(auditTitle);
+        if (!logs.length) {
+          mBody.appendChild(el('p', { class: 'cso-muted-sm', text: 'No governance events logged for this candidate yet.' }));
+        } else {
+          var logList = el('div', { class: 'cso-gov-audit-list' });
+          logs.slice(0, 12).forEach(function (lg) {
+            logList.appendChild(el('div', { class: 'cso-gov-audit-row' }, [
+              el('strong', { text: lg.action }),
+              el('span', { class: 'cso-muted-sm', text: ' by ' + lg.actor + ' · ' + lg.created_at })
+            ]));
+          });
+          mBody.appendChild(logList);
+        }
+
+        var closeBtn = el('button', { type: 'button', class: 'cso-mod-btn', text: 'Close', onclick: function () { modal.classList.remove('is-open'); } });
+        var saveBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Save Controls' });
+        saveBtn.addEventListener('click', function () {
+          saveBtn.disabled = true;
+          var payload = {
+            action: 'update_controls',
+            account_status: stSel.value,
+            restriction_reason: reasonInp.value.trim(),
+            suspended_until: untilInp.value || null,
+            assigned_exams: assignedInp.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean),
+            lock_exam_preferences: lockChk.checked,
+            admin_notice_text: noticeTxt.value.trim(),
+            admin_notice_level: noticeLvl.value,
+            permissions: {
+              canTakeCbt: permChecks.canTakeCbt.checked,
+              canEditProfile: permChecks.canEditProfile.checked,
+              canSyncCloud: permChecks.canSyncCloud.checked,
+              canBookmark: permChecks.canBookmark.checked,
+              canExportData: permChecks.canExportData.checked
+            }
+          };
+          api('/api/admin/candidates/' + encodeURIComponent(userId), { method: 'POST', body: JSON.stringify(payload) })
+            .then(function () {
+              toast('Candidate controls updated', 'success');
+              modal.classList.remove('is-open');
+              loadCandidates();
+            })
+            .catch(function (e) { toast(e.message || 'Update failed', 'error'); })
+            .finally(function () { saveBtn.disabled = false; });
+        });
+        mFoot.appendChild(closeBtn);
+        mFoot.appendChild(saveBtn);
+      }).catch(function (e) {
+        clear(mBody);
+        mBody.appendChild(el('p', { text: e.message || 'Failed to load candidate details' }));
+      });
+    }
+
+    function loadCandidates() {
+      tableHost.textContent = 'Loading candidates from D1...';
+      var params = [];
+      if (searchInp.value.trim()) params.push('q=' + encodeURIComponent(searchInp.value.trim()));
+      if (statusSel.value) params.push('status=' + encodeURIComponent(statusSel.value));
+      var qs = params.length ? ('?' + params.join('&')) : '';
+
+      api('/api/admin/candidates' + qs).then(function (data) {
+        var items = (data && data.items) || [];
+        var restrictedCnt = 0;
+        var lockedCnt = 0;
+        items.forEach(function (it) {
+          if (it.account_status !== 'active') restrictedCnt++;
+          if (it.lock_exam_preferences) lockedCnt++;
+        });
+        clear(kpiHost);
+        kpiHost.appendChild(kpiCard('Matched Accounts', String(data.total || items.length), 'D1 Users & Candidates'));
+        kpiHost.appendChild(kpiCard('Active (Page)', String(items.length - restrictedCnt), 'Full Workspace Access'));
+        kpiHost.appendChild(kpiCard('Restricted / Blocked', String(restrictedCnt), 'Enforced at Edge'));
+        kpiHost.appendChild(kpiCard('Locked Goals', String(lockedCnt), 'Admin-Assigned Exams'));
+
+        clear(tableHost);
+        if (!items.length) {
+          tableHost.appendChild(emptyState('No candidate accounts match your filter.'));
+          return;
+        }
+        var table = el('table', { class: 'cso-table' });
+        table.appendChild(el('thead', {}, el('tr', {}, [
+          el('th', { text: 'Candidate' }),
+          el('th', { text: 'District & Target Exams' }),
+          el('th', { text: 'Governance Status' }),
+          el('th', { text: 'CBT / Bookmarks' }),
+          el('th', { text: 'Actions' })
+        ])));
+        var tbody = el('tbody');
+        items.forEach(function (it) {
+          var badges = [el('span', { class: 'cso-gov-badge ' + statusBadgeClass(it.account_status), text: it.account_status.toUpperCase() })];
+          if (it.lock_exam_preferences) badges.push(el('span', { class: 'cso-gov-badge is-info', text: 'LOCKED' }));
+          if (it.has_notice) badges.push(el('span', { class: 'cso-gov-badge is-warning', text: 'NOTICE' }));
+
+          var governBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Govern', onclick: function () { openGovernanceModal(it.id); } });
+          tbody.appendChild(el('tr', {}, [
+            el('td', {}, [
+              el('strong', { text: it.full_name }),
+              el('div', { class: 'cso-muted-sm', text: it.email + (it.phone ? (' · ' + it.phone) : '') })
+            ]),
+            el('td', {}, [
+              el('div', { text: it.district || 'Odisha' }),
+              el('div', { class: 'cso-muted-sm', text: (it.selected_exams && it.selected_exams.length) ? it.selected_exams.join(', ') : (it.primary_exam || 'Unconfigured') })
+            ]),
+            el('td', { class: 'cso-gov-badges-cell' }, badges),
+            el('td', { text: it.attempts_count + ' CBT · ' + it.bookmarks_count + ' Pins' }),
+            el('td', { class: 'cso-actions-cell' }, [governBtn])
+          ]));
+        });
+        table.appendChild(tbody);
+        tableHost.appendChild(table);
+      }).catch(function (e) { fail(tableHost, e); });
+    }
+
+    refreshBtn.addEventListener('click', loadCandidates);
+    statusSel.addEventListener('change', loadCandidates);
+    searchInp.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadCandidates(); });
+    loadCandidates();
+  }
+
+  /* =========================================================================
      MAIN DISPATCHER
      ========================================================================= */
   function render(folderId, moduleId, root, actions) {
@@ -11531,6 +11987,18 @@
 
     // Folder 04: Content & Publishing specialized modules
     if (folderId === 'folder-04' && renderFolder04(moduleId, root, actions)) {
+      return true;
+    }
+
+    // Folder 05: 4-Tier Exam & Cohort Catalog Manager
+    if (moduleId === 'module-05-007' || moduleId === 'module-05-008') {
+      renderExamTaxonomyStudio(root, actions);
+      return true;
+    }
+
+    // Folder 09: Candidate Behavior Governance Console
+    if (folderId === 'folder-09' && (moduleId === 'module-09-001' || moduleId === 'module-09-002' || moduleId === 'module-09-005' || moduleId === 'module-09-012' || moduleId === 'module-09-013')) {
+      renderCandidateGovernanceStudio(root, actions);
       return true;
     }
 

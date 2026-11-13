@@ -5,6 +5,8 @@ import { getActor, verifyCsrf, rateLimit } from '../../_lib/rbac.js';
 import { readBanner } from '../admin/_site.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
 import { PUBLIC_VISIBLE_SQL, parsePaging, likeEscape } from '../../_lib/validate.js';
+import { formatTaxonomyRow } from '../admin/_taxonomy.js';
+import { enforceCandidateControls } from '../../_lib/candidate-controls.js';
 
 const CACHE = 'public, max-age=60, s-maxage=300, stale-while-revalidate=600';
 const notFound = () => json({ error: 'Not found', code: 'NOT_FOUND' }, 404, { 'Cache-Control': 'public, max-age=30' });
@@ -148,6 +150,9 @@ async function handleMockTestLeaderboard(env, key) {
 async function handleMockTestSubmit(request, env, key) {
   verifyCsrf(request);
   const actor = await getActor(request, env);
+  if (actor) {
+    await enforceCandidateControls(env, actor.userId, { isWrite: true, permission: 'canTakeCbt' });
+  }
   await rateLimit(env, `cbt-submit:${actor ? actor.userId : clientIp(request)}`, 30, 60);
 
   const t = await env.DB.prepare(`SELECT ${TEST_COLS} FROM mock_tests WHERE (slug = ? OR id = ?) AND ${PUBLIC_VISIBLE_SQL}`).bind(key, key).first();
@@ -343,6 +348,19 @@ export async function handleContent(request, env) {
       const live = b.active && b.headline;
       return json(live ? { active: true, headline: b.headline, context: b.context, severity: b.severity, ctaText: b.ctaText, ctaUrl: b.ctaUrl, updatedAt: b.updatedAt } : { active: false },
         200, { 'Cache-Control': 'public, max-age=15, s-maxage=15' });
+    }
+    if (resource === 'exam-taxonomy') {
+      const domain = (url.searchParams.get('domain') || '').trim().slice(0, 80);
+      const where = ['is_active = 1'];
+      const binds = [];
+      if (domain) {
+        where.push('domain_slug = ?');
+        binds.push(domain);
+      }
+      const { results } = await env.DB.prepare(
+        `SELECT * FROM exam_taxonomy WHERE ${where.join(' AND ')} ORDER BY sort_order ASC, exam_label ASC`
+      ).bind(...binds).all();
+      return json({ items: results.map(formatTaxonomyRow), total: results.length }, 200, { 'Cache-Control': CACHE });
     }
     if (resource === 'resources') {
       const { page, limit, offset } = parsePaging(url);

@@ -11,6 +11,8 @@
  */
 
 import { CORS_HEADERS, jsonResponse, getSessionFromRequest } from '../auth/_utils.js';
+import { HttpError, errorResponse } from '../../_lib/http.js';
+import { enforceCandidateControls } from '../../_lib/candidate-controls.js';
 
 const ALLOWED_CATEGORIES = ['OPSC', 'OSSC', 'OSSSC', 'TEACHING', 'OTHER'];
 
@@ -86,6 +88,8 @@ export async function onRequestGet({ request, env }) {
     if (!env || !env.DB) {
       return jsonResponse({ success: false, error: 'Database service unavailable' }, 500);
     }
+    await enforceCandidateControls(env, session.userId, { isWrite: true, permission: 'canBookmark' });
+    await enforceCandidateControls(env, session.userId, { isWrite: false });
 
     return jsonResponse({
       success: true,
@@ -93,6 +97,7 @@ export async function onRequestGet({ request, env }) {
     }, 200);
 
   } catch (err) {
+    if (err instanceof HttpError) return errorResponse(err);
     console.error('Candidate Bookmarks GET Error:', err);
     return jsonResponse({ success: false, error: 'Failed to retrieve bookmarks' }, 500);
   }
@@ -107,6 +112,7 @@ export async function onRequestPost({ request, env }) {
     if (!env || !env.DB) {
       return jsonResponse({ success: false, error: 'Database service unavailable' }, 500);
     }
+    await enforceCandidateControls(env, session.userId, { isWrite: true, permission: 'canBookmark' });
 
     let body = {};
     try {
@@ -205,6 +211,7 @@ export async function onRequestPost({ request, env }) {
     }, 200);
 
   } catch (err) {
+    if (err instanceof HttpError) return errorResponse(err);
     console.error('Candidate Bookmarks POST Error:', err);
     return jsonResponse({ success: false, error: 'Failed to update bookmarks' }, 500);
   }
