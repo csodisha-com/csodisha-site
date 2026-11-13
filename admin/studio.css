@@ -1739,3 +1739,18 @@ input[type="checkbox"] {
   line-height: 1.6;
   color: var(--studio-text);
 }
+
+/* Command Centre 1-4 */
+.cso-spark { width: 100%; height: 32px; margin-top: 6px; }
+.cso-spark-line { stroke: var(--studio-accent); }
+.cso-spark.is-warn .cso-spark-line { stroke: var(--studio-amber); }
+.cso-bar-svg { width: 100%; height: auto; max-height: 340px; }
+.cso-bar-lbl { fill: var(--studio-muted); font-size: 11px; }
+.cso-bar-ok { fill: var(--studio-accent); }
+.cso-bar-warn { fill: var(--studio-amber); }
+.cso-bar-err { fill: var(--studio-red); }
+.cso-inspector-frame { width: 100%; height: 360px; border: 1px solid var(--studio-border); border-radius: 8px; background: #fff; margin-top: 10px; }
+.cso-audit-day { margin: 14px 0 6px; color: var(--studio-blue); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+.cso-audit-row { background: var(--studio-surface); border: 1px solid var(--studio-border); border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; }
+.cso-audit-row summary { cursor: pointer; font-size: 12.5px; }
+.cso-audit-row .cso-mod-card { margin-top: 8px; }

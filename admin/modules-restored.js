@@ -1186,12 +1186,338 @@
   }
 
   /* =========================================================================
+     COMMAND CENTRE 1-4: Overview, Edge Telemetry, Launchpad, Audit Timeline
+     ========================================================================= */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function svg(tag, attrs, kids) {
+    var n = document.createElementNS(SVGNS, tag);
+    Object.keys(attrs || {}).forEach(function (k) { n.setAttribute(k, String(attrs[k])); });
+    [].concat(kids || []).forEach(function (c) { if (c) n.appendChild(c); });
+    return n;
+  }
+  function sparkline(values, cls) {
+    var w = 120, h = 32, max = Math.max.apply(null, values.concat([1]));
+    var step = values.length > 1 ? w / (values.length - 1) : w;
+    var pts = values.map(function (v, i) { return (i * step).toFixed(1) + ',' + (h - 3 - (v / max) * (h - 6)).toFixed(1); }).join(' ');
+    return svg('svg', { viewBox: '0 0 ' + w + ' ' + h, class: 'cso-spark ' + (cls || ''), role: 'img', 'aria-label': 'trend ' + values.join(',') }, [
+      svg('polyline', { points: pts, fill: 'none', 'stroke-width': 2, class: 'cso-spark-line' })
+    ]);
+  }
+  function dayBuckets(items, days) {
+    var out = [], now = new Date();
+    for (var i = days - 1; i >= 0; i--) {
+      var d = new Date(now.getTime() - i * 86400000).toISOString().slice(0, 10);
+      out.push(items.filter(function (a) { return String(a.created_at || '').slice(0, 10) === d; }).length);
+    }
+    return out;
+  }
+  function pubUrl(kind, slug) {
+    if (kind === 'jobs') return '/jobs-careers/?job=' + encodeURIComponent(slug || '');
+    if (kind === 'current-affairs') return '/current-affairs/?slug=' + encodeURIComponent(slug || '');
+    return '/mock-tests/?test=' + encodeURIComponent(slug || '');
+  }
+  function openLink(href, text) {
+    return el('a', { href: href, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: text || 'Preview ↗' });
+  }
+  function pills(options, onPick) {
+    var wrap = el('div', { class: 'cso-mod-tabs' });
+    function mark(v) { Array.prototype.forEach.call(wrap.children, function (b) { b.classList.toggle('is-active', b.getAttribute('data-v') === v); }); }
+    options.forEach(function (o, i) {
+      wrap.appendChild(el('button', { type: 'button', 'data-v': o, class: 'cso-mod-tab' + (i === 0 ? ' is-active' : ''), text: o, onclick: function () { mark(o); onPick(o); } }));
+    });
+    return wrap;
+  }
+  function loading(host, msg) { clear(host); host.appendChild(el('p', { class: 'cso-mod-muted', text: msg })); }
+  function fail(host, e) { clear(host); host.appendChild(el('p', { class: 'cso-mod-badge cso-mod-badge-err', text: 'Error: ' + e.message })); }
+
+  function renderOverviewCC(root, actions) {
+    addHeaderPill(actions, '● Live D1 Command Overview');
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var host = el('div', { class: 'cso-mod-shell' });
+    renderBanner(shell, 'Executive Command Overview', 'Live D1 KPIs, activity trends, triage queue and homepage broadcast control.', [
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: load })
+    ]);
+    shell.appendChild(host);
+    root.appendChild(shell);
+
+    async function load() {
+      loading(host, 'Loading live D1 telemetry…');
+      try {
+        var r = await Promise.all([api('GET', 'stats'), api('GET', 'jobs?limit=100'), api('GET', 'current-affairs?limit=100'), api('GET', 'audit?limit=100'), api('GET', 'banner')]);
+        var stats = r[0], jobs = r[1].items || [], cas = r[2].items || [], audits = r[3].items || [], banner = r[4];
+        var now = Date.now();
+        var expiring = jobs.filter(function (j) {
+          if (j.status !== 'published' || !j.last_date) return false;
+          var t = Date.parse(j.last_date + 'T23:59:59+05:30') - now;
+          return t > 0 && t < 72 * 3600000;
+        });
+        var trend = dayBuckets(audits, 7);
+        var kpis = [
+          ['Active Jobs', (stats.jobs && stats.jobs.live) || 0, trend],
+          ['Expiring <72h', expiring.length, null],
+          ['Current Affairs', (stats.current_affairs && stats.current_affairs.live) || 0, trend],
+          ['Mock Tests', (stats.mock_tests && stats.mock_tests.live) || 0, null],
+          ['CBT Attempts', stats.attempts_total || 0, null],
+          ['Bookmarks', stats.bookmarks_total || 0, null],
+          ['Registered Users', (stats.accounts && stats.accounts.total) || 0, null]
+        ];
+        clear(host);
+        host.appendChild(el('div', { class: 'cso-mod-grid-4' }, kpis.map(function (k) {
+          var b = kpiBox(String(k[1]), k[0]);
+          b.appendChild(sparkline(k[2] || [0, k[1]], k[0] === 'Expiring <72h' && k[1] ? 'is-warn' : ''));
+          return b;
+        })));
+
+        // Banner quick toggle
+        var bBadge = badge(banner.active ? 'LIVE: ' + banner.headline : 'Inactive', banner.active ? 'ok' : 'info');
+        var toggle = el('button', {
+          type: 'button', class: 'cso-mod-btn ' + (banner.active ? 'cso-mod-btn-danger' : 'cso-mod-btn-primary'),
+          text: banner.active ? 'Deactivate Banner' : 'Activate Banner',
+          onclick: async function () {
+            if (!banner.active && !banner.headline) { toast('Set a headline in Homepage Broadcast first', 'amber'); window.CSOStudio && window.CSOStudio.openRoute('banner'); return; }
+            try {
+              await api('PUT', 'banner', { active: !banner.active, severity: banner.severity, headline: banner.headline, context: banner.context, ctaText: banner.ctaText, ctaUrl: banner.ctaUrl });
+              toast('Banner ' + (banner.active ? 'deactivated' : 'activated'), 'success'); load();
+            } catch (e) { toast(e.message, 'crimson'); }
+          }
+        });
+        host.appendChild(el('div', { class: 'cso-mod-card' }, [
+          el('h3', { text: 'Homepage Broadcast Banner' }), bBadge,
+          el('p', { class: 'cso-mod-muted', text: banner.context || 'No context text.' }),
+          el('div', { class: 'cso-mod-toolbar' }, [toggle, el('button', { type: 'button', class: 'cso-mod-btn', text: 'Edit Banner', onclick: function () { window.CSOStudio && window.CSOStudio.openRoute('banner'); } })])
+        ]));
+
+        // Triage
+        var queue = [];
+        jobs.forEach(function (j) {
+          if (j.status === 'draft' || j.status === 'scheduled') queue.push({ kind: 'jobs', it: j, why: j.status });
+          else if (expiring.indexOf(j) >= 0) queue.push({ kind: 'jobs', it: j, why: 'expires ' + j.last_date });
+          else if (j.status === 'expired') queue.push({ kind: 'jobs', it: j, why: 'expired' });
+        });
+        cas.forEach(function (c) { if (c.status === 'draft' || c.status === 'scheduled') queue.push({ kind: 'current-affairs', it: c, why: c.status }); });
+        var rows = queue.slice(0, 30).map(function (q) {
+          var it = q.it, btns = [];
+          if (it.status !== 'published') btns.push(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Publish', onclick: async function () {
+            try { await api('POST', q.kind + '/' + encodeURIComponent(it.id) + '/status', { status: 'published' }); toast('Published', 'success'); load(); } catch (e) { toast(e.message, 'crimson'); }
+          } }));
+          if (q.kind === 'jobs') btns.push(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Extend +7d', onclick: async function () {
+            try {
+              var full = await api('GET', 'jobs/' + encodeURIComponent(it.id));
+              var base = full.last_date ? new Date(full.last_date + 'T00:00:00Z') : new Date();
+              if (base.getTime() < now) base = new Date();
+              full.last_date = new Date(base.getTime() + 7 * 86400000).toISOString().slice(0, 10);
+              if (full.status === 'expired') full.status = 'published';
+              await api('PUT', 'jobs/' + encodeURIComponent(it.id), full);
+              toast('Deadline extended to ' + full.last_date, 'success'); load();
+            } catch (e) { toast(e.message, 'crimson'); }
+          } }));
+          btns.push(openLink(pubUrl(q.kind, it.slug)));
+          return el('tr', {}, [el('td', {}, badge(q.kind === 'jobs' ? 'Job' : 'Current Affairs', 'info')), el('td', { text: it.title }), el('td', {}, badge(q.why, 'warn')), el('td', {}, el('div', { class: 'cso-mod-toolbar' }, btns))]);
+        });
+        host.appendChild(el('div', { class: 'cso-mod-card' }, [el('h3', { text: 'Needs Attention — Triage Queue (' + queue.length + ')' }), safeTable(['Type', 'Title', 'Reason', 'Actions'], rows)]));
+      } catch (e) { fail(host, e); }
+    }
+    load();
+  }
+
+  var PROBES = ['/', '/jobs-careers/', '/current-affairs/', '/mock-tests/', '/resources/', '/sitemap.xml', '/feed.xml', '/robots.txt', '/api/health', '/admin/site-manifest.json'];
+  function renderEdgeStudio(root, actions) {
+    addHeaderPill(actions, '● Edge & Endpoint Telemetry');
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var chartHost = el('div', { class: 'cso-mod-card' }), tableHost = el('div', {}), drawer = el('div', { class: 'cso-mod-card cso-hidden' });
+    var results = [], filter = 'All';
+    renderBanner(shell, 'Edge & Endpoint Telemetry Studio', 'Real fetch() probes: latency, status, Cache-Control, CSP and Content-Type.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Re-Probe All Endpoints', onclick: probeAll })
+    ]);
+    shell.appendChild(pills(['All', 'Healthy 200', 'Slow >400ms', 'Errors'], function (f) { filter = f; draw(); }));
+    shell.appendChild(chartHost); shell.appendChild(tableHost); shell.appendChild(drawer);
+    root.appendChild(shell);
+
+    function pass(r) {
+      if (filter === 'Healthy 200') return r.status === 200 && r.ms <= 400;
+      if (filter === 'Slow >400ms') return r.ms > 400;
+      if (filter === 'Errors') return !r.status || r.status >= 400;
+      return true;
+    }
+    function inspect(r) {
+      clear(drawer); drawer.classList.remove('cso-hidden');
+      drawer.appendChild(el('h3', { text: 'Page Inspector — ' + r.path }));
+      var hrows = Object.keys(r.headers).map(function (k) { return el('tr', {}, [el('td', { text: k }), el('td', { text: r.headers[k] })]); });
+      drawer.appendChild(safeTable(['Header', 'Value'], hrows));
+      drawer.appendChild(el('div', { class: 'cso-mod-toolbar' }, [openLink(r.path, 'Open in tab ↗'), el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { drawer.classList.add('cso-hidden'); } })]));
+      drawer.appendChild(el('iframe', { src: r.path, class: 'cso-inspector-frame', title: 'Preview ' + r.path, sandbox: 'allow-same-origin' }));
+    }
+    function draw() {
+      var shown = results.filter(pass);
+      clear(chartHost);
+      chartHost.appendChild(el('h3', { text: 'Response Time (ms)' }));
+      var max = Math.max.apply(null, results.map(function (r) { return r.ms; }).concat([100]));
+      var g = svg('svg', { viewBox: '0 0 600 ' + (shown.length * 22 + 6), class: 'cso-bar-svg', role: 'img', 'aria-label': 'Response time bar chart' });
+      shown.forEach(function (r, i) {
+        var w = Math.max(2, (r.ms / max) * 330);
+        g.appendChild(svg('text', { x: 0, y: i * 22 + 15, class: 'cso-bar-lbl' }, [])); g.lastChild.textContent = r.path;
+        g.appendChild(svg('rect', { x: 190, y: i * 22 + 4, width: w.toFixed(1), height: 14, rx: 3, class: r.status >= 400 || !r.status ? 'cso-bar-err' : r.ms > 400 ? 'cso-bar-warn' : 'cso-bar-ok' }));
+        g.appendChild(svg('text', { x: 196 + w, y: i * 22 + 15, class: 'cso-bar-lbl' }, [])); g.lastChild.textContent = r.ms + ' ms';
+      });
+      chartHost.appendChild(g);
+      var rows = shown.map(function (r) {
+        return el('tr', {}, [el('td', { text: r.path }), el('td', {}, badge(String(r.status || 'ERR'), r.status === 200 ? 'ok' : 'err')), el('td', { text: r.ms + ' ms' }),
+          el('td', { text: r.headers['cache-control'] || '—' }), el('td', {}, badge(r.headers['content-security-policy'] ? 'CSP ✓' : 'no CSP', r.headers['content-security-policy'] ? 'ok' : 'warn')),
+          el('td', { text: r.headers['content-type'] || '—' }),
+          el('td', {}, el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Inspect', onclick: function () { inspect(r); } }))]);
+      });
+      clear(tableHost); tableHost.appendChild(safeTable(['Path', 'HTTP', 'Latency', 'Cache-Control', 'CSP', 'Content-Type', 'Inspect'], rows));
+    }
+    async function probeAll() {
+      loading(tableHost, 'Probing…');
+      results = await Promise.all(PROBES.map(async function (p) {
+        var t0 = performance.now(), out = { path: p, status: 0, ms: 0, headers: {} };
+        try {
+          var res = await fetch(p, { credentials: 'same-origin', cache: 'no-store' });
+          await res.clone().arrayBuffer();
+          out.status = res.status; out.ms = Math.round(performance.now() - t0);
+          res.headers.forEach(function (v, k) { out.headers[k] = v; });
+        } catch (e) { out.ms = Math.round(performance.now() - t0); out.headers = { error: e.message }; }
+        return out;
+      }));
+      draw();
+    }
+    probeAll();
+  }
+
+  function renderLaunchpad(root, actions) {
+    addHeaderPill(actions, '● Command Launchpad');
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var host = el('div', { class: 'cso-mod-shell' }), maint = el('div', { class: 'cso-mod-card' }), diffPre = el('pre', { class: 'cso-code-pre cso-hidden' });
+    renderBanner(shell, 'Command Launchpad & Maintenance Studio', 'Create, import, upload and back up live D1/R2 content; run lifecycle maintenance.');
+    shell.appendChild(host); shell.appendChild(maint); root.appendChild(shell);
+    var fileInp = el('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp,application/pdf', class: 'cso-hidden' });
+    fileInp.addEventListener('change', async function () {
+      if (!fileInp.files[0]) return;
+      var fd = new FormData(); fd.append('file', fileInp.files[0]);
+      try { var d = await api('POST', 'media/upload', fd, true); toast('Uploaded to R2: ' + (d.key || d.object_key || 'ok'), 'success'); load(); } catch (e) { toast(e.message, 'crimson'); }
+      fileInp.value = '';
+    });
+    shell.appendChild(fileInp);
+    function snap(s) { return { ca_live: s.current_affairs && s.current_affairs.live, jobs_live: s.jobs && s.jobs.live, jobs_expired: s.jobs && s.jobs.expired, tests_live: s.mock_tests && s.mock_tests.live, scheduled_pending: s.scheduled_pending }; }
+    async function backup() {
+      try {
+        var r = await Promise.all([api('GET', 'current-affairs?limit=100'), api('GET', 'jobs?limit=100'), api('GET', 'mock-tests?limit=100'), api('GET', 'resources?limit=100'), api('GET', 'audit?limit=100')]);
+        downloadFile('cso-d1-backup-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify({ exported_at: new Date().toISOString(), current_affairs: r[0].items, jobs: r[1].items, mock_tests: r[2].items, resources: r[3].items, audit: r[4].items }, null, 2));
+        toast('D1 JSON backup downloaded', 'success');
+      } catch (e) { toast(e.message, 'crimson'); }
+    }
+    async function load() {
+      loading(host, 'Loading live counts…');
+      try {
+        var r = await Promise.all([api('GET', 'stats'), api('GET', 'jobs?limit=100'), api('GET', 'current-affairs?limit=100'), api('GET', 'maintenance').catch(function () { return {}; })]);
+        var s = r[0], jobs = r[1].items || [], cas = r[2].items || [], cron = (r[3] && r[3].last_cron_run) || s.last_cron_run;
+        var open = function (rt) { return function () { window.CSOStudio && window.CSOStudio.openRoute(rt); }; };
+        var cards = [
+          ['Job Alerts', (s.jobs && s.jobs.total || 0) + ' total · ' + (s.jobs && s.jobs.live || 0) + ' live', [['Create', open('jobs/new'), true], ['Manage', function () { window.selectModule('folder-05', 'module-05-008'); }]]],
+          ['Current Affairs', (s.current_affairs && s.current_affairs.total || 0) + ' total · ' + (s.current_affairs && s.current_affairs.live || 0) + ' live', [['Create', open('current-affairs/new'), true], ['Manage', function () { window.selectModule('folder-04', 'module-04-004'); }]]],
+          ['Mock Tests', (s.mock_tests && s.mock_tests.total || 0) + ' total · ' + (s.mock_tests && s.mock_tests.live || 0) + ' live', [['Create', open('mock-tests/new'), true], ['Manage', function () { window.selectModule('folder-05', 'module-05-014'); }]]],
+          ['Question CSV/JSON Import', 'Dry-run + commit import inside a mock test', [['Open Mock Tests', function () { window.selectModule('folder-05', 'module-05-012'); }, true]]],
+          ['R2 Media Upload', (s.media && s.media.total || 0) + ' assets · ' + Math.round((s.media && s.media.bytes || 0) / 1024) + ' KB', [['Upload File', function () { fileInp.click(); }, true], ['Library', function () { window.selectModule('folder-07', 'module-07-001'); }]]],
+          ['D1 JSON Backup', 'Download posts, tests, resources and audit', [['Download Backup', backup, true]]]
+        ];
+        clear(host);
+        host.appendChild(el('div', { class: 'cso-mod-grid-3' }, cards.map(function (c) {
+          return el('div', { class: 'cso-mod-card' }, [el('h3', { text: c[0] }), el('p', { class: 'cso-mod-muted', text: c[1] }),
+            el('div', { class: 'cso-mod-toolbar' }, c[2].map(function (b) { return el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm' + (b[2] ? ' cso-mod-btn-primary' : ''), text: b[0], onclick: b[1] }); }))]);
+        })));
+        var soon = jobs.filter(function (j) { return j.status === 'published' && j.last_date && Date.parse(j.last_date) - Date.now() < 7 * 86400000 && Date.parse(j.last_date) > Date.now() - 86400000; });
+        var sched = jobs.concat(cas).filter(function (x) { return x.status === 'scheduled'; });
+        clear(maint);
+        maint.appendChild(el('h3', { text: 'Scheduled Lifecycle & Maintenance' }));
+        maint.appendChild(el('p', { class: 'cso-mod-muted', text: 'Last cron run: ' + (cron ? JSON.stringify(cron) : 'no run recorded yet') }));
+        maint.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', {}, [el('h4', { text: 'Upcoming scheduled (' + sched.length + ')' }), safeTable(['Title', 'Publishes'], sched.slice(0, 8).map(function (x) { return el('tr', {}, [el('td', { text: x.title }), el('td', { text: x.published_at || '—' })]); }))]),
+          el('div', {}, [el('h4', { text: 'Expiring within 7 days (' + soon.length + ')' }), safeTable(['Title', 'Last date'], soon.slice(0, 8).map(function (x) { return el('tr', {}, [el('td', { text: x.title }), el('td', { text: x.last_date })]); }))])
+        ]));
+        maint.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Run Maintenance & Cleanup Now', onclick: async function () {
+          try {
+            var before = snap(await api('GET', 'stats'));
+            var res = await api('POST', 'maintenance/run');
+            var after = snap(await api('GET', 'stats'));
+            var diff = Object.keys(after).map(function (k) { return k + ': ' + before[k] + ' → ' + after[k] + (before[k] !== after[k] ? '  (changed)' : ''); });
+            diffPre.classList.remove('cso-hidden');
+            diffPre.textContent = diff.join('\n') + '\n\nrun summary:\n' + JSON.stringify(res.last_cron_run || res, null, 2);
+            toast('Maintenance complete', 'success');
+          } catch (e) { toast(e.status === 403 ? 'Maintenance requires admin role' : e.message, 'crimson'); }
+        } }));
+        maint.appendChild(diffPre);
+      } catch (e) { fail(host, e); }
+    }
+    load();
+  }
+
+  function renderAuditTimeline(root, actions) {
+    addHeaderPill(actions, '● Live Audit Timeline');
+    var shell = el('div', { class: 'cso-mod-shell' }), host = el('div', {});
+    var items = [], kind = 'All';
+    var q = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Search action or actor…' });
+    var actor = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Filter by actor email…' });
+    renderBanner(shell, 'Live Audit Timeline & Diff Inspector', 'Real entries from /api/admin/audit grouped by date.', [el('button', { type: 'button', class: 'cso-mod-btn', text: 'Reload', onclick: load })]);
+    shell.appendChild(pills(['All', 'Create', 'Update', 'Publish', 'Delete', 'Cron/System'], function (k) { kind = k; draw(); }));
+    shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [q, actor]));
+    shell.appendChild(host); root.appendChild(shell);
+    q.addEventListener('input', draw); actor.addEventListener('input', draw);
+    function match(a) {
+      var act = String(a.action || '');
+      if (kind === 'Create' && !/create/.test(act)) return false;
+      if (kind === 'Update' && !/update|role_change|deactivate|resolved/.test(act)) return false;
+      if (kind === 'Publish' && !/publish/.test(act)) return false;
+      if (kind === 'Delete' && !/delete/.test(act)) return false;
+      if (kind === 'Cron/System' && !(/maintenance|cron/.test(act) || !a.actor_email)) return false;
+      if (actor.value && !String(a.actor_email || 'system').toLowerCase().includes(actor.value.toLowerCase())) return false;
+      var s = q.value.toLowerCase();
+      return !s || act.toLowerCase().includes(s) || String(a.actor_email || '').toLowerCase().includes(s);
+    }
+    function jump(a) {
+      var act = String(a.action || '');
+      var map = [[/^jobs\./, ['folder-05', 'module-05-008']], [/^current-affairs\./, ['folder-04', 'module-04-004']], [/^mock/, ['folder-05', 'module-05-014']], [/^banner/, ['folder-04', 'module-04-005']], [/^resource/, ['folder-05', 'module-05-010']], [/^user/, ['folder-09', 'module-09-001']], [/^incident/, ['folder-16', 'module-16-013']]];
+      for (var i = 0; i < map.length; i++) if (map[i][0].test(act)) return map[i][1];
+      return null;
+    }
+    function draw() {
+      clear(host);
+      var shown = items.filter(match), lastDay = '';
+      host.appendChild(el('p', { class: 'cso-mod-muted', text: shown.length + ' of ' + items.length + ' events' }));
+      shown.forEach(function (a) {
+        var day = String(a.created_at || '').slice(0, 10);
+        if (day !== lastDay) { host.appendChild(el('h4', { class: 'cso-audit-day', text: day || 'Unknown date' })); lastDay = day; }
+        var meta = {}; try { meta = JSON.parse(a.metadata_json || '{}'); } catch (_) { meta = { raw: a.metadata_json }; }
+        var det = el('details', { class: 'cso-audit-row' });
+        det.appendChild(el('summary', {}, [badge(a.action, /delete/.test(a.action) ? 'err' : /publish/.test(a.action) ? 'ok' : 'info'), ' ' + (a.actor_email || 'system') + ' · ' + (a.created_at || '')]));
+        var body = el('div', { class: 'cso-mod-card' });
+        body.appendChild(el('p', { class: 'cso-mod-muted', text: 'Target: ' + (a.target_type || '—') + ' / ' + (a.target_id || '—') + ' · IP ' + (a.ip_address || '—') }));
+        body.appendChild(el('pre', { class: 'cso-code-pre', text: JSON.stringify(meta, null, 2) }));
+        var j = jump(a);
+        var bar = el('div', { class: 'cso-mod-toolbar' });
+        if (j) bar.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Jump to Record', onclick: function () { window.selectModule(j[0], j[1]); } }));
+        if (/^jobs\./.test(a.action)) bar.appendChild(openLink('/jobs-careers/'));
+        if (/^current-affairs\./.test(a.action)) bar.appendChild(openLink('/current-affairs/'));
+        bar.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Copy JSON', onclick: function () { navigator.clipboard && navigator.clipboard.writeText(JSON.stringify(a, null, 2)); toast('Copied', 'success'); } }));
+        body.appendChild(bar); det.appendChild(body); host.appendChild(det);
+      });
+    }
+    async function load() {
+      loading(host, 'Loading audit log…');
+      try { items = (await api('GET', 'audit?limit=100')).items || []; draw(); } catch (e) { fail(host, e); }
+    }
+    load();
+  }
+
+  /* =========================================================================
      MAIN DISPATCHER
      ========================================================================= */
   function render(folderId, moduleId, root, actions) {
     // Folder 01 specialized tools
-    if (moduleId === 'module-01-002') { renderLiveSiteStatus(root, actions); return true; }
-    if (moduleId === 'module-01-003') { renderQuickActions(root, actions); return true; }
+    if (moduleId === 'module-01-001') { renderOverviewCC(root, actions); return true; }
+    if (moduleId === 'module-01-002') { renderEdgeStudio(root, actions); return true; }
+    if (moduleId === 'module-01-003') { renderLaunchpad(root, actions); return true; }
+    if (moduleId === 'module-01-004') { renderAuditTimeline(root, actions); return true; }
     if (moduleId === 'module-01-006') { renderPendingApprovals(root, actions); return true; }
     if (moduleId === 'module-01-007') { renderWebsiteAnalytics(root, actions); return true; }
     if (moduleId === 'module-01-008') { renderMasterRegistry(root, actions); return true; }
