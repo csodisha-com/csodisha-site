@@ -8078,7 +8078,23 @@
         { type: 'faq', category: 'Corrections', question: 'How can I report a broken official link or outdated exam date?', answer: 'Email editorial@csodisha.com with the article URL and reference to the official corrigendum or notice. Verified corrections are updated within 24 hours.' }
       ]
     },
-    'module-03-015': { title: 'Custom Information Pages', path: '/about.html', email: 'editorial@csodisha.com' },
+    'module-03-015': {
+      title: 'Custom Information Pages',
+      seoTitle: 'Odisha 30 Districts & Divisions Guide | Common Sense Odisha',
+      metaDescription: 'Complete reference guide to all 30 districts and 3 revenue divisions (Central, Northern, Southern) of Odisha for OPSC, OSSC, and OSSSC exam aspirants.',
+      heroTitle: 'Odisha 30 Districts & Revenue Divisions Guide',
+      heroSubtitle: 'Quick general-knowledge reference of Odisha\'s 30 districts, headquarters, and 3 administrative revenue divisions for state competitive exams.',
+      effectiveDate: '2026-11-13',
+      status: 'published',
+      path: '/pages/odisha-districts-guide.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'Overview of Odisha\'s Administrative Structure', text: 'Odisha comprises 30 districts organized into three Revenue Divisions—Central Division (headquartered at Cuttack), Northern Division (headquartered at Sambalpur), and Southern Division (headquartered at Berhampur)—each administered by a Revenue Divisional Commissioner (RDC).' },
+        { type: 'richtext', title: 'Central & Northern Revenue Division Districts (20 Districts)', text: 'Central Division (10 Districts): Balasore, Bhadrak, Cuttack, Jagatsinghpur, Jajpur, Kendrapara, Khordha, Mayurbhanj, Nayagarh, and Puri. Northern Division (10 Districts): Angul, Balangir, Bargarh, Deogarh, Dhenkanal, Jharsuguda, Kendujhar (Keonjhar), Sambalpur, Subarnapur (Sonepur), and Sundargarh.' },
+        { type: 'richtext', title: 'Southern Revenue Division Districts (10 Districts)', text: 'Southern Division (10 Districts): Boudh, Gajapati, Ganjam, Kalahandi, Kandhamal, Koraput, Malkangiri, Nabarangpur, Nuapada, and Rayagada.' },
+        { type: 'notice', title: 'Exam Preparation Note & Effective Date', text: 'Effective Date: 2026-11-13 · Verified Educational Reference by Common Sense Odisha (csodisha.com) · Editorial Contact: editorial@csodisha.com' }
+      ]
+    },
     'module-03-016': { title: 'Legal Page Revision History', path: '/privacy.html', email: 'legal@csodisha.com' }
   };
 
@@ -8101,6 +8117,16 @@
     statusSel.value = cfg.status === 'draft' ? 'draft' : 'published';
 
     var isFaq = moduleId === 'module-03-014';
+    var isCustom = moduleId === 'module-03-015';
+    var customListHost = isCustom ? el('div', { class: 'cso-rev-table-wrap' }) : null;
+    var FIXED_LEGAL_ROUTES = ['/about.html', '/contact.html', '/privacy.html', '/disclaimer.html', '/terms.html', '/cookies.html', '/copyright.html', '/editorial-policy.html', '/corrections.html', '/accessibility.html', '/refund.html', '/delivery.html', '/community-guidelines.html', '/faqs.html', '/faq.html'];
+    function normalizeCustomSlug(raw) {
+      var s = String(raw || '').trim().toLowerCase().replace(/[^a-z0-9/_.-]+/g, '-').replace(/^-+|-+$/g, '');
+      if (!s) return '';
+      if (s.indexOf('/') !== 0) s = '/pages/' + s;
+      if (!/\.(html|htm)$/.test(s) && !s.endsWith('/')) s += '.html';
+      return f02NormalizeRoute(s);
+    }
     var sections = Array.isArray(cfg.sections) && cfg.sections.length
       ? cfg.sections.map(function (s) {
           return {
@@ -8206,6 +8232,33 @@
           api('GET', 'pages/revisions?route=' + encodeURIComponent(targetRoute)).catch(function () { return { revisions: [] }; })
         ]);
         var match = (pRes.pages || []).find(function (p) { return p.route === targetRoute || p.route === cfg.path; });
+        if (isCustom && customListHost) {
+          clear(customListHost);
+          var customPages = (pRes.pages || []).filter(function (p) {
+            return p && p.route && FIXED_LEGAL_ROUTES.indexOf(p.route) === -1 && p.category === 'Information & Legal';
+          });
+          if (customPages.length) {
+            customListHost.appendChild(safeTable(['Route', 'Title', 'Status', 'Action'], customPages.map(function (cp) {
+              return el('tr', {}, [
+                el('td', { text: cp.route }),
+                el('td', { text: cp.title || '—' }),
+                el('td', {}, badge(cp.status || 'published', cp.status === 'draft' ? 'warning' : 'success')),
+                el('td', {}, el('button', {
+                  type: 'button',
+                  class: 'cso-mod-btn cso-mod-btn-sm',
+                  text: 'Edit Page',
+                  onclick: function () {
+                    routeInp.value = cp.route;
+                    loadLive();
+                    refreshFrame();
+                  }
+                }))
+              ]);
+            })));
+          } else {
+            customListHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'No custom information pages saved in D1 yet. Use the slug creator below to publish one.' }));
+          }
+        }
         if (match) {
           titleInp.value = match.title || cfg.seoTitle || cfg.title;
           metaInp.value = match.meta_description || cfg.metaDescription || '';
@@ -8285,6 +8338,46 @@
       liveLink
     ]);
 
+    if (isCustom) {
+      var newSlugInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'e.g. odisha-districts-guide or /pages/odisha-rivers.html' });
+      shell.appendChild(el('div', { class: 'cso-mod-card' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('h3', { text: 'Custom Information Pages Directory' }),
+          badge('D1 Dynamic Routes', 'info')
+        ]),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          newSlugInp,
+          el('button', {
+            type: 'button',
+            class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+            text: '+ New Custom Page',
+            onclick: function () {
+              var nr = normalizeCustomSlug(newSlugInp.value);
+              if (!nr || FIXED_LEGAL_ROUTES.indexOf(nr) !== -1) {
+                toast('Enter a valid custom slug (not a fixed legal route).', 'crimson');
+                return;
+              }
+              routeInp.value = nr;
+              titleInp.value = '';
+              metaInp.value = '';
+              heroTitleInp.value = '';
+              heroSubInp.value = '';
+              statusSel.value = 'draft';
+              sections = [
+                { type: 'richtext', title: 'Overview', text: '' },
+                { type: 'notice', title: 'Effective Date & Contact', text: 'Effective Date: ' + (dateInp.value || '2026-11-13') + ' · Contact: editorial@csodisha.com' }
+              ];
+              updateSeoCounts();
+              renderSections();
+              refreshFrame();
+              toast('Ready to author ' + nr, 'success');
+            }
+          })
+        ]),
+        customListHost
+      ]));
+    }
+
     shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
       el('div', { class: 'cso-mod-shell' }, [
         el('div', { class: 'cso-mod-card' }, [
@@ -8303,7 +8396,7 @@
           el('div', { class: 'cso-drawer-head' }, [
             el('h3', { text: isFaq ? 'Structured FAQ Items' : 'Structured Policy / Info Sections' }),
             el('div', { class: 'cso-mod-toolbar' }, [
-              isFaq ? el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ FAQ Item', onclick: function () { sections.push({ type: 'faq', category: 'General', question: '', answer: '', title: '', text: '' }); renderSections(); } }) : null,
+              (isFaq || isCustom) ? el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: isCustom ? '+ FAQ' : '+ FAQ Item', onclick: function () { sections.push({ type: 'faq', category: 'General', question: '', answer: '', title: '', text: '' }); renderSections(); } }) : null,
               el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Notice', onclick: function () { sections.push({ type: 'notice', title: 'Notice', text: '' }); renderSections(); } }),
               el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Rich Text', onclick: function () { sections.push({ type: 'richtext', title: 'Section', text: '' }); renderSections(); } })
             ])

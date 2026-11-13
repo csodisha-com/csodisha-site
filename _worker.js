@@ -373,7 +373,7 @@ export default {
         if (live || (sitewide && res.status === 200 && (res.headers.get('Content-Type') || '').includes('text/html'))) {
           const csp = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'";
           if (res.status === 404 && live) {
-            return new Response(request.method === 'HEAD' ? null : renderDynamicPage(live, sitewide), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': csp, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-cache' } });
+            return new Response(request.method === 'HEAD' ? null : renderDynamicPage(live, sitewide), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': csp, 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Cache-Control': 'no-cache' } });
           }
           if (res.status === 200 && (res.headers.get('Content-Type') || '').includes('text/html')) {
             res = applyPageOverrides(res, live, sitewide);
