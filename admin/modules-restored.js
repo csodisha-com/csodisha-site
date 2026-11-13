@@ -5972,8 +5972,8 @@
     var shell = el('div', { class: 'cso-mod-shell' });
     var kpiHost = el('div', {});
     var drawerHost = el('div', {});
-    var splitHost = el('div', { class: 'cso-mod-grid-2' });
-    var leftCol = el('div', {});
+    var splitHost = el('div', { class: 'cso-sitewide-split' });
+    var leftCol = el('div', { class: 'cso-sitewide-editor' });
     var rightCol = el('div', { class: 'cso-sticky-preview' });
     var fullscreenHost = el('div', {});
 
