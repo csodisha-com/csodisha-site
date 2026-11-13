@@ -9,6 +9,7 @@ import { handleUpload } from './_media.js';
 import { handleBanner, handleSettings, handleResources, handleMediaList, handleIncidents, extraStats } from './_site.js';
 import { handlePages } from './pages.js';
 import { handleSeedOdisha } from './seed-odisha.js';
+import { handleAiGeneratePage } from './_ai.js';
 import { runLifecycleMaintenance, readLastCronRun } from './_cron.js';
 
 export async function handleAdminApi(request, env) {
@@ -83,6 +84,9 @@ export async function handleAdminApi(request, env) {
         break;
       case 'pages':
         return await handlePages(request, env, actor, id);
+      case 'ai':
+        if (id === 'generate-page') return await handleAiGeneratePage(request, env, actor);
+        break;
       case 'incidents':
         return await handleIncidents(request, env, actor, id, sub);
       case 'media':

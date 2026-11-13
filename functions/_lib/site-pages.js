@@ -46,11 +46,44 @@ export function extractOgImage(blocks) {
   return img ? safeUrl(img.url) : '';
 }
 
+export function extractPageMeta(blocks) {
+  const list = parse(typeof blocks === 'string' ? blocks : JSON.stringify(blocks || []));
+  const m = list.find(b => b && b.type === 'page_meta');
+  return m && typeof m === 'object' ? m : {};
+}
+
+export function buildJsonLd(row, blocks) {
+  const list = parse(typeof blocks === 'string' ? blocks : JSON.stringify(blocks || []));
+  const route = normalizeRoute(row.route || '/');
+  const crumbs = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://csodisha.com/' },
+      { '@type': 'ListItem', position: 2, name: row.title || route, item: 'https://csodisha.com' + route }
+    ]
+  };
+  const out = [crumbs];
+  const faqs = list.filter(b => b && b.type === 'faq');
+  if (faqs.length) {
+    const mainEntity = [];
+    faqs.forEach(f => {
+      if (f.question && f.answer) {
+        mainEntity.push({ '@type': 'Question', name: f.question, acceptedAnswer: { '@type': 'Answer', text: f.answer } });
+      } else if (f.title && f.text) {
+        mainEntity.push({ '@type': 'Question', name: f.title, acceptedAnswer: { '@type': 'Answer', text: f.text } });
+      }
+    });
+    if (mainEntity.length) out.push({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity });
+  }
+  return out.map(obj => `<script type="application/ld+json">${JSON.stringify(obj).replace(/</g, '\\u003c')}</script>`).join('');
+}
+
 export function renderBlocks(blocks) {
   return parse(typeof blocks === 'string' ? blocks : JSON.stringify(blocks || [])).map(b => {
     const t = b && b.type;
-    if (t === 'og_meta') return '';
-    const text = esc(b.text || b.title || '');
+    if (t === 'og_meta' || t === 'page_meta') return '';
+    const text = esc(b.text || b.body || b.title || b.heading || '');
     if (t === 'heading') return `<h2>${text}</h2>`;
     if (t === 'list') return `<ul>${(Array.isArray(b.items) ? b.items : String(b.text || '').split('\n')).filter(Boolean).map(i => `<li>${esc(i)}</li>`).join('')}</ul>`;
     if (t === 'image') return b.url ? `<figure class="cso-live-figure"><img src="${esc(safeUrl(b.url))}" alt="${esc(b.alt || b.title || '')}" loading="lazy">${b.title ? `<figcaption>${esc(b.title)}</figcaption>` : ''}</figure>` : '';
@@ -60,17 +93,24 @@ export function renderBlocks(blocks) {
       const badge = esc(b.role || b.source_label || 'Document');
       return `<div class="cso-live-attachment"><span class="cso-live-badge">${badge}</span> <strong>${esc(b.title || 'Resource')}</strong>${b.domain ? ` <span class="cso-live-domain">(${esc(b.domain)})</span>` : ''} <a class="btn btn-primary" href="${esc(u)}"${nt}>Open / Download</a></div>`;
     }
-    if (t === 'official_links') return `<aside class="cso-live-notice"><strong>${esc(b.title || 'Official Links')}</strong><p>${esc(b.text || '')}</p>${b.url ? `<p><a href="${esc(safeUrl(b.url))}" target="_blank" rel="noopener noreferrer">${esc(b.url)}</a></p>` : ''}</aside>`;
-    if (t === 'key_dates') return `<section class="cso-live-notice"><h2>${esc(b.title || 'Key Dates')}</h2><p>${esc(b.text || '')}</p></section>`;
+    if (t === 'official_links') return `<aside class="cso-live-notice"><strong>${esc(b.title || b.heading || 'Official Links')}</strong><p>${esc(b.text || b.body || '')}</p>${b.url ? `<p><a href="${esc(safeUrl(b.url))}" target="_blank" rel="noopener noreferrer">${esc(b.url)}</a></p>` : ''}</aside>`;
+    if (t === 'key_dates') {
+      const rows = Array.isArray(b.rows) ? b.rows : [];
+      const tbl = rows.length ? `<table><tbody>${rows.map(r => `<tr><th>${esc(r.label)}</th><td>${esc(r.value)}</td></tr>`).join('')}</tbody></table>` : `<p>${esc(b.text || b.body || '')}</p>`;
+      return `<section class="cso-live-notice"><h2>${esc(b.title || b.heading || 'Key Dates')}</h2>${tbl}</section>`;
+    }
     if (t === 'cta') return `<p><a class="btn btn-primary" href="${esc(safeUrl(b.url))}">${esc(b.label || b.text || 'Learn more')}</a></p>`;
     const items = Array.isArray(b.items) ? b.items : String(b.items || '').split('\n').filter(Boolean);
-    if (t === 'hero') return `<section class="cso-live-hero-block"><h2>${esc(b.title)}</h2>${b.text ? `<p>${esc(b.text)}</p>` : ''}${b.label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(b.url))}">${esc(b.label)}</a></p>` : ''}</section>`;
+    if (t === 'hero') return `<section class="cso-live-hero-block"><h2>${esc(b.title || b.heading)}</h2>${(b.text || b.body) ? `<p>${esc(b.text || b.body)}</p>` : ''}${b.label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(b.url))}">${esc(b.label)}</a></p>` : ''}</section>`;
     if (t === 'ticker') return `<section class="cso-live-ticker"><h2>${esc(b.title || 'Latest Jobs')}</h2><p><a href="/jobs-careers/">View all live job notifications</a></p></section>`;
     if (t === 'examgrid') return `<section><h2>${esc(b.title)}</h2><ul class="cso-live-grid">${items.map(i => { const [l, u] = String(i).split('|'); return `<li><a href="${esc(safeUrl((u || '').trim()))}">${esc((l || '').trim())}</a></li>`; }).join('')}</ul></section>`;
     if (t === 'cbt') return `<section class="cso-live-cbt"><h2>${esc(b.title)}</h2><p>${esc(b.text)}</p><p><a class="btn btn-primary" href="${esc(safeUrl(b.url || '/mock-tests/'))}">${esc(b.label || 'Start mock test')}</a></p></section>`;
-    if (t === 'faq') return `<section><h2>${esc(b.title || 'FAQ')}</h2>${items.length ? items.map(i => { const [q, a] = String(i).split('|'); return `<details><summary>${esc((q || '').trim())}</summary><p>${esc((a || '').trim())}</p></details>`; }).join('') : `<p>${esc(b.text || '')}</p>`}</section>`;
-    if (t === 'notice') return `<aside class="cso-live-notice" role="note"><strong>${esc(b.title)}</strong><p>${esc(b.text)}</p></aside>`;
-    if (t === 'richtext') return String(b.text || '').split(/\n{2,}/).filter(Boolean).map(x => `<p>${esc(x)}</p>`).join('');
+    if (t === 'faq') {
+      if (b.question && b.answer) return `<section><details open><summary>${esc(b.question)}</summary><p>${esc(b.answer)}</p></details></section>`;
+      return `<section><h2>${esc(b.title || b.heading || 'FAQ')}</h2>${items.length ? items.map(i => { const [q, a] = String(i).split('|'); return `<details><summary>${esc((q || '').trim())}</summary><p>${esc((a || '').trim())}</p></details>`; }).join('') : `<p>${esc(b.text || b.body || '')}</p>`}</section>`;
+    }
+    if (t === 'notice') return `<aside class="cso-live-notice" role="note"><strong>${esc(b.title || b.heading)}</strong><p>${esc(b.text || b.body)}</p></aside>`;
+    if (t === 'richtext') return `${(b.title || b.heading) ? `<h2>${esc(b.title || b.heading)}</h2>` : ''}${String(b.text || b.body || '').split(/\n{2,}/).filter(Boolean).map(x => `<p>${esc(x)}</p>`).join('')}`;
     if (t === 'quote') return `<blockquote>${text}</blockquote>`;
     return text ? `<p>${text}</p>` : '';
   }).join('\n');
@@ -83,10 +123,14 @@ export function renderSections(sections) {
 
 export function renderDynamicPage(row, sitewide) {
   const ogImg = extractOgImage(row.blocks_json);
+  const meta = extractPageMeta(row.blocks_json);
   const ogMeta = ogImg ? `<meta property="og:image" content="${esc(ogImg)}">` : '';
-  const hero = row.hero_title ? `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.hero_title)}</h1>${row.hero_subtitle ? `<p>${esc(row.hero_subtitle)}</p>` : ''}${row.cta_label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(row.cta_url))}">${esc(row.cta_label)}</a></p>` : ''}</div></section>` : `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.title)}</h1></div></section>`;
+  const robotsMeta = meta.noindex ? '<meta name="robots" content="noindex,nofollow">' : '';
+  const jsonLd = buildJsonLd(row, row.blocks_json);
+  const odiaSub = meta.odia_subtitle ? `<p class="cso-live-odia">${esc(meta.odia_subtitle)}</p>` : '';
+  const hero = row.hero_title ? `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.hero_title)}</h1>${row.hero_subtitle ? `<p>${esc(row.hero_subtitle)}</p>` : ''}${odiaSub}${row.cta_label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(row.cta_url))}">${esc(row.cta_label)}</a></p>` : ''}</div></section>` : `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.title)}</h1>${odiaSub}</div></section>`;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(row.title)}</title><meta name="description" content="${esc(row.meta_description)}">${ogMeta}
+<title>${esc(row.title)}</title><meta name="description" content="${esc(row.meta_description)}">${robotsMeta}${ogMeta}${jsonLd}
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/design-tokens.css"><link rel="stylesheet" href="/assets/css/ui-kit.css"><link rel="stylesheet" href="/assets/css/public-content.css"><link rel="stylesheet" href="/styles.css"></head>
 <body><header class="top site-header__top" role="banner"><div class="w"><a href="/" class="brand">Common Sense Odisha</a>
@@ -103,7 +147,11 @@ export function applyPageOverrides(res, row, sitewide) {
   if (row.title) rw.on('title', { element(e) { e.setInnerContent(row.title); } });
   if (row.meta_description) rw.on('meta[name="description"]', { element(e) { e.setAttribute('content', row.meta_description); } });
   const ogImg = extractOgImage(row.blocks_json);
-  if (ogImg) rw.on('head', { element(e) { e.append(`<meta property="og:image" content="${esc(ogImg)}">`, { html: true }); } });
+  const meta = extractPageMeta(row.blocks_json);
+  const headExtra = (ogImg ? `<meta property="og:image" content="${esc(ogImg)}">` : '') +
+    (meta.noindex ? '<meta name="robots" content="noindex,nofollow">' : '') +
+    buildJsonLd(row, row.blocks_json);
+  if (headExtra) rw.on('head', { element(e) { e.append(headExtra, { html: true }); } });
   if (row.hero_title) rw.on('h1', (() => { let done = false; return { element(e) { if (done) return; done = true; e.setInnerContent(row.hero_title); e.removeAttribute('aria-label'); } }; })());
   if (row.hero_subtitle) rw.on('.hero p, #cso-hero p', (() => { let done = false; return { element(e) { if (done) return; done = true; e.setInnerContent(row.hero_subtitle); } }; })());
   const extra = renderBlocks(row.blocks_json) + renderSections(row.reusable_sections_json);

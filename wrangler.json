@@ -21,6 +21,9 @@
       "bucket_name": "cso-media"
     }
   ],
+  "ai": {
+    "binding": "AI"
+  },
   "triggers": {
     "crons": [
       "*/15 * * * *"
