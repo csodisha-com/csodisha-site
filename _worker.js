@@ -239,7 +239,16 @@ export default {
     // 0d. CMS: public content API + R2 media delivery + authenticated user progress/bookmarks API + Dynamic SEO
     if (pathname === '/sitemap.xml') return handleSitemapXml(request, env);
     if (pathname === '/feed.xml' || pathname === '/rss.xml') return handleRssFeed(request, env);
-    if (pathname.startsWith('/api/content/')) return handleContent(request, env);
+    if (pathname.startsWith('/api/content/') || /^\/api\/(jobs|current-affairs|mock-tests|resources)(\/|$)/.test(pathname)) {
+      const apiRes = await handleContent(request, env);
+      const hasSession = (request.headers.get('Cookie') || '').includes('cso_session=');
+      if ((request.method === 'GET' || request.method === 'HEAD') && apiRes.status === 200 && !hasSession && !apiRes.headers.has('Cache-Control')) {
+        const h = new Headers(apiRes.headers);
+        h.set('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
+        return new Response(apiRes.body, { status: apiRes.status, statusText: apiRes.statusText, headers: h });
+      }
+      return apiRes;
+    }
     if (pathname === '/api/user' || pathname.startsWith('/api/user/')) return handleUserApi(request, env);
     if (pathname.startsWith('/api/media/')) return handleMedia(request, env, ctx);
 
@@ -365,7 +374,7 @@ export default {
           }
         }
       }
-      if (/^\/(jobs-careers|current-affairs|mock-tests|resources)(\/|$)/.test(pathname)) {
+      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|current-affairs|mock-tests|resources)(\/|$)/.test(pathname)) {
         const headers = new Headers(res.headers);
         headers.set(
           'Content-Security-Policy',

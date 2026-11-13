@@ -1792,4 +1792,7 @@ input[type="checkbox"] {
 
 .cso-check-label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--studio-text); cursor: pointer; }
 .cso-inline-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.cso-kpi-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+.cso-kpi-plus { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--studio-border-strong); background: var(--studio-surface); color: var(--studio-blue); font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: none; }
+.cso-kpi-plus:hover { background: rgba(56, 189, 248, 0.16); border-color: var(--studio-blue); }
 

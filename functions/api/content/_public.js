@@ -6,7 +6,7 @@ import { readBanner } from '../admin/_site.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
 import { PUBLIC_VISIBLE_SQL, parsePaging, likeEscape } from '../../_lib/validate.js';
 
-const CACHE = 'public, max-age=60, s-maxage=300';
+const CACHE = 'public, max-age=60, s-maxage=300, stale-while-revalidate=600';
 const notFound = () => json({ error: 'Not found', code: 'NOT_FOUND' }, 404, { 'Cache-Control': 'public, max-age=30' });
 const media = k => (k ? `/api/media/${k}` : null);
 

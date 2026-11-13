@@ -8,6 +8,7 @@ import { handleMockTests, handleQuestion } from './_mock.js';
 import { handleUpload } from './_media.js';
 import { handleBanner, handleResources, handleMediaList, handleIncidents, extraStats } from './_site.js';
 import { handlePages } from './pages.js';
+import { handleSeedOdisha } from './seed-odisha.js';
 import { runLifecycleMaintenance, readLastCronRun } from './_cron.js';
 
 export async function handleAdminApi(request, env) {
@@ -40,6 +41,13 @@ export async function handleAdminApi(request, env) {
         return json({ last_cron_run: await readLastCronRun(env) });
       }
       throw new HttpError(404, 'NOT_FOUND', 'Unknown admin route');
+    }
+
+    // Admin-only: idempotent Odisha starter content seeder.
+    if (resource === 'seed-odisha' && !id) {
+      const actor = await requireRole(request, env, ['admin']);
+      await rateLimit(env, `admin-write:${actor.userId}`, 30, 300);
+      return await handleSeedOdisha(request, env, actor);
     }
 
     const actor = await requireRole(request, env, STAFF_ROLES);

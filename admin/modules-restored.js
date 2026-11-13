@@ -2628,17 +2628,39 @@
     addHeaderPill(actions, '● Live D1 Command Overview');
     var shell = el('div', { class: 'cso-mod-shell' });
     var host = el('div', { class: 'cso-mod-shell' });
-    renderBanner(shell, 'Executive Command Overview', 'Live D1 KPIs, activity trends, triage queue and homepage broadcast control.', [
+    renderBanner(shell, 'Executive Command Overview', 'Live D1 KPIs, activity trends, triage queue, operational pulse, and homepage broadcast control.', [
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: load })
     ]);
     shell.appendChild(host);
     root.appendChild(shell);
 
+    async function runSeed(btn) {
+      if (btn) btn.disabled = true;
+      try {
+        var res = await api('POST', 'seed-odisha');
+        var ins = res.inserted || {};
+        var totalIns = (ins.jobs || 0) + (ins.current_affairs || 0) + (ins.mock_tests || 0) + (ins.resources || 0);
+        toast(totalIns ? ('Seeded ' + totalIns + ' Odisha starter records into D1!') : 'Starter content already present in D1.', 'success');
+        await load();
+      } catch (e) {
+        toast(e.message, 'crimson');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
     async function load() {
       loading(host, 'Loading live D1 telemetry…');
       try {
-        var r = await Promise.all([api('GET', 'stats'), api('GET', 'jobs?limit=100'), api('GET', 'current-affairs?limit=100'), api('GET', 'audit?limit=100'), api('GET', 'banner')]);
-        var stats = r[0], jobs = r[1].items || [], cas = r[2].items || [], audits = r[3].items || [], banner = r[4];
+        var r = await Promise.all([
+          api('GET', 'stats'),
+          api('GET', 'jobs?limit=100'),
+          api('GET', 'current-affairs?limit=100'),
+          api('GET', 'audit?limit=100'),
+          api('GET', 'banner'),
+          api('GET', 'pages').catch(function () { return { total: 0, pages: [] }; })
+        ]);
+        var stats = r[0], jobs = r[1].items || [], cas = r[2].items || [], audits = r[3].items || [], banner = r[4], pagesRes = r[5];
         var now = Date.now();
         var expiring = jobs.filter(function (j) {
           if (j.status !== 'published' || !j.last_date) return false;
@@ -2646,42 +2668,155 @@
           return t > 0 && t < 72 * 3600000;
         });
         var trend = dayBuckets(audits, 7);
+        var openMod = function (f, m) { return function () { window.selectModule && window.selectModule(f, m); }; };
+        var openRt = function (rt) { return function () { window.CSOStudio && window.CSOStudio.openRoute(rt); }; };
+
+        // 8-card (4x2) balanced KPI grid with quick-create + action links
         var kpis = [
-          ['Active Jobs', (stats.jobs && stats.jobs.live) || 0, trend],
-          ['Expiring <72h', expiring.length, null],
-          ['Current Affairs', (stats.current_affairs && stats.current_affairs.live) || 0, trend],
-          ['Mock Tests', (stats.mock_tests && stats.mock_tests.live) || 0, null],
-          ['CBT Attempts', stats.attempts_total || 0, null],
-          ['Bookmarks', stats.bookmarks_total || 0, null],
-          ['Registered Users', (stats.accounts && stats.accounts.total) || 0, null]
+          ['Active Jobs', (stats.jobs && stats.jobs.live) || 0, trend, openRt('jobs/new'), 'Create Job'],
+          ['Expiring <72h', expiring.length, null, openMod('folder-05', 'module-05-008'), 'Manage Jobs'],
+          ['Current Affairs', (stats.current_affairs && stats.current_affairs.live) || 0, trend, openRt('current-affairs/new'), 'Create Digest'],
+          ['Mock Tests', (stats.mock_tests && stats.mock_tests.live) || 0, null, openRt('mock-tests/new'), 'Create Mock Test'],
+          ['Live Pages & Portals', pagesRes.total || (pagesRes.pages && pagesRes.pages.length) || 0, null, openMod('folder-02', 'module-02-002'), 'Create Page'],
+          ['CBT Attempts', stats.attempts_total || 0, null, openMod('folder-05', 'module-05-014'), 'View Tests'],
+          ['Bookmarks', stats.bookmarks_total || 0, null, openMod('folder-10', 'module-10-001'), 'Analytics'],
+          ['Registered Users', (stats.accounts && stats.accounts.total) || 0, null, openMod('folder-09', 'module-09-001'), 'Manage Users']
         ];
         clear(host);
         host.appendChild(el('div', { class: 'cso-mod-grid-4' }, kpis.map(function (k) {
-          var b = kpiBox(String(k[1]), k[0]);
-          b.appendChild(sparkline(k[2] || [0, k[1]], k[0] === 'Expiring <72h' && k[1] ? 'is-warn' : ''));
-          return b;
+          var card = el('div', { class: 'cso-mod-kpi' }, [
+            el('div', { class: 'cso-kpi-head' }, [
+              el('div', {}, [
+                el('div', { class: 'cso-mod-kpi-val', text: String(k[1]) }),
+                el('div', { class: 'cso-mod-kpi-lbl', text: k[0] })
+              ]),
+              el('button', { type: 'button', class: 'cso-kpi-plus', title: k[4], 'aria-label': k[4], text: '+', onclick: k[3] })
+            ]),
+            sparkline(k[2] || [0, k[1]], k[0] === 'Expiring <72h' && k[1] ? 'is-warn' : '')
+          ]);
+          return card;
         })));
 
-        // Banner quick toggle
+        // Inline expandable Homepage Broadcast Banner composer
+        var composerOpen = false;
+        var composerBody = el('div', { class: 'cso-mod-shell cso-hidden' });
+        var bHeadInp = el('input', { type: 'text', class: 'cso-mod-input', value: banner.headline || '', placeholder: 'Urgent announcement headline…' });
+        var bSevSel = el('select', { class: 'cso-mod-select' }, ['info', 'notice', 'urgent'].map(function (s) {
+          return el('option', { value: s, text: s.toUpperCase(), selected: (banner.severity || 'info') === s });
+        }));
+        var bUrlInp = el('input', { type: 'text', class: 'cso-mod-input', value: banner.ctaUrl || '', placeholder: '/jobs-careers/' });
+        var bActChk = el('input', { type: 'checkbox' });
+        bActChk.checked = !!banner.active;
+        var prevStrip = el('div', { class: 'cso-banner-preview cso-banner-' + (banner.severity || 'info') + (banner.active ? '' : ' is-off') });
+
+        function syncBannerPreview() {
+          prevStrip.className = 'cso-banner-preview cso-banner-' + bSevSel.value + (bActChk.checked ? '' : ' is-off');
+          prevStrip.textContent = (bActChk.checked ? '[LIVE ' : '[INACTIVE ') + bSevSel.value.toUpperCase() + '] ' + (bHeadInp.value.trim() || 'No headline set') + (bUrlInp.value.trim() ? ' → ' + bUrlInp.value.trim() : '');
+        }
+        bHeadInp.addEventListener('input', syncBannerPreview);
+        bSevSel.addEventListener('change', syncBannerPreview);
+        bUrlInp.addEventListener('input', syncBannerPreview);
+        bActChk.addEventListener('change', syncBannerPreview);
+        syncBannerPreview();
+
+        composerBody.appendChild(el('div', { class: 'cso-mod-grid-3' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Headline' }), bHeadInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Badge / Severity' }), bSevSel]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Link URL' }), bUrlInp])
+        ]));
+        composerBody.appendChild(el('div', { class: 'cso-inline-row' }, [
+          el('label', { class: 'cso-check-label' }, [bActChk, el('span', { text: 'Active on Homepage' })]),
+          el('button', {
+            type: 'button',
+            class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+            text: 'Save & Publish Banner',
+            onclick: async function () {
+              try {
+                await api('PUT', 'banner', {
+                  active: bActChk.checked,
+                  severity: bSevSel.value,
+                  headline: bHeadInp.value.trim(),
+                  context: banner.context || '',
+                  ctaText: banner.ctaText || (bUrlInp.value.trim() ? 'View' : ''),
+                  ctaUrl: bUrlInp.value.trim()
+                });
+                toast(bActChk.checked ? 'Homepage banner published live!' : 'Homepage banner saved (inactive)', 'success');
+                load();
+              } catch (e) { toast(e.message, 'crimson'); }
+            }
+          })
+        ]));
+
         var bBadge = badge(banner.active ? 'LIVE: ' + banner.headline : 'Inactive', banner.active ? 'ok' : 'info');
-        var toggle = el('button', {
-          type: 'button', class: 'cso-mod-btn ' + (banner.active ? 'cso-mod-btn-danger' : 'cso-mod-btn-primary'),
-          text: banner.active ? 'Deactivate Banner' : 'Activate Banner',
-          onclick: async function () {
-            if (!banner.active && !banner.headline) { toast('Set a headline in Homepage Broadcast first', 'amber'); window.CSOStudio && window.CSOStudio.openRoute('banner'); return; }
-            try {
-              await api('PUT', 'banner', { active: !banner.active, severity: banner.severity, headline: banner.headline, context: banner.context, ctaText: banner.ctaText, ctaUrl: banner.ctaUrl });
-              toast('Banner ' + (banner.active ? 'deactivated' : 'activated'), 'success'); load();
-            } catch (e) { toast(e.message, 'crimson'); }
+        var expandBtn = el('button', {
+          type: 'button',
+          class: 'cso-mod-btn cso-mod-btn-sm',
+          text: 'Compose Inline ▾',
+          onclick: function () {
+            composerOpen = !composerOpen;
+            composerBody.classList.toggle('cso-hidden', !composerOpen);
+            expandBtn.textContent = composerOpen ? 'Hide Composer ▴' : 'Compose Inline ▾';
           }
         });
         host.appendChild(el('div', { class: 'cso-mod-card' }, [
-          el('h3', { text: 'Homepage Broadcast Banner' }), bBadge,
-          el('p', { class: 'cso-mod-muted', text: banner.context || 'No context text.' }),
-          el('div', { class: 'cso-mod-toolbar' }, [toggle, el('button', { type: 'button', class: 'cso-mod-btn', text: 'Edit Banner', onclick: function () { window.CSOStudio && window.CSOStudio.openRoute('banner'); } })])
+          el('div', { class: 'cso-drawer-head' }, [
+            el('div', { class: 'cso-inline-row' }, [el('h3', { text: 'Homepage Broadcast Banner' }), bBadge]),
+            el('div', { class: 'cso-mod-toolbar' }, [
+              expandBtn,
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Homepage Builder', onclick: openMod('folder-02', 'module-02-004') })
+            ])
+          ]),
+          prevStrip,
+          composerBody
         ]));
 
-        // Triage
+        // 2-Column Operational Pulse Row (5 latest audit entries + Site/Edge/CSP readiness)
+        var pulseLeft = el('div', { class: 'cso-mod-card' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('h3', { text: 'Operational Pulse — Latest Audit' }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Full Timeline', onclick: openMod('folder-01', 'module-01-004') })
+          ]),
+          audits.length ? safeTable(['Action', 'Target', 'Actor', 'Time'], audits.slice(0, 5).map(function (a) {
+            return el('tr', {}, [
+              el('td', {}, badge(a.action || 'event', 'info')),
+              el('td', { text: a.target_id || a.target_type || '—' }),
+              el('td', { text: a.actor_email || 'system' }),
+              el('td', { text: a.created_at || '—' })
+            ]);
+          })) : el('p', { class: 'cso-mod-muted', text: 'No audit events recorded yet.' })
+        ]);
+
+        var readinessHost = el('div', { class: 'cso-mod-shell' }, [el('p', { class: 'cso-mod-muted', text: 'Checking live edge & CSP readiness…' })]);
+        var pulseRight = el('div', { class: 'cso-mod-card' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('h3', { text: 'Site / Edge / CSP Readiness' }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Live Site Status', onclick: openMod('folder-01', 'module-01-002') })
+          ]),
+          readinessHost
+        ]);
+        host.appendChild(el('div', { class: 'cso-mod-grid-2' }, [pulseLeft, pulseRight]));
+
+        Promise.all(['/', '/api/health', '/api/content/jobs'].map(async function (p) {
+          var t0 = performance.now();
+          try {
+            var res = await fetch(p, { credentials: 'same-origin', cache: 'no-store' });
+            return { path: p, ok: res.ok, status: res.status, ms: Math.round(performance.now() - t0), csp: !!res.headers.get('content-security-policy'), cc: res.headers.get('cache-control') || '—' };
+          } catch (e) {
+            return { path: p, ok: false, status: 0, ms: Math.round(performance.now() - t0), csp: false, cc: e.message };
+          }
+        })).then(function (probes) {
+          clear(readinessHost);
+          readinessHost.appendChild(safeTable(['Endpoint', 'Status', 'Latency', 'CSP / Cache'], probes.map(function (pr) {
+            return el('tr', {}, [
+              el('td', { text: pr.path }),
+              el('td', {}, badge(String(pr.status || 'ERR'), pr.ok ? 'ok' : 'err')),
+              el('td', { text: pr.ms + ' ms' }),
+              el('td', {}, [pr.csp ? badge('CSP ✓', 'ok') : badge(pr.cc.slice(0, 24), 'info')])
+            ]);
+          })));
+        }).catch(function () {});
+
+        // Triage + Empty-state Odisha Seeder
         var queue = [];
         jobs.forEach(function (j) {
           if (j.status === 'draft' || j.status === 'scheduled') queue.push({ kind: 'jobs', it: j, why: j.status });
@@ -2708,7 +2843,23 @@
           btns.push(openLink(pubUrl(q.kind, it.slug)));
           return el('tr', {}, [el('td', {}, badge(q.kind === 'jobs' ? 'Job' : 'Current Affairs', 'info')), el('td', { text: it.title }), el('td', {}, badge(q.why, 'warn')), el('td', {}, el('div', { class: 'cso-mod-toolbar' }, btns))]);
         });
-        host.appendChild(el('div', { class: 'cso-mod-card' }, [el('h3', { text: 'Needs Attention — Triage Queue (' + queue.length + ')' }), safeTable(['Type', 'Title', 'Reason', 'Actions'], rows)]));
+
+        var triageCard = el('div', { class: 'cso-mod-card' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('h3', { text: 'Needs Attention — Triage Queue (' + queue.length + ')' }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Seed Odisha Starter Content', onclick: function (ev) { runSeed(ev.currentTarget); } })
+          ])
+        ]);
+        if (queue.length) {
+          triageCard.appendChild(safeTable(['Type', 'Title', 'Reason', 'Actions'], rows));
+        } else {
+          var seedBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Seed Odisha Starter Content', onclick: function () { runSeed(seedBtn); } });
+          triageCard.appendChild(el('div', { class: 'cso-inline-row' }, [
+            el('p', { class: 'cso-mod-muted', text: 'Triage queue is clear. Need realistic OPSC / OSSC / OSSSC jobs, digests, mock tests, and syllabus records in D1?' }),
+            seedBtn
+          ]));
+        }
+        host.appendChild(triageCard);
       } catch (e) { fail(host, e); }
     }
     load();
@@ -2813,7 +2964,16 @@
           ['Mock Tests', (s.mock_tests && s.mock_tests.total || 0) + ' total · ' + (s.mock_tests && s.mock_tests.live || 0) + ' live', [['Create', open('mock-tests/new'), true], ['Manage', function () { window.selectModule('folder-05', 'module-05-014'); }]]],
           ['Question CSV/JSON Import', 'Dry-run + commit import inside a mock test', [['Open Mock Tests', function () { window.selectModule('folder-05', 'module-05-012'); }, true]]],
           ['R2 Media Upload', (s.media && s.media.total || 0) + ' assets · ' + Math.round((s.media && s.media.bytes || 0) / 1024) + ' KB', [['Upload File', function () { fileInp.click(); }, true], ['Library', function () { window.selectModule('folder-07', 'module-07-001'); }]]],
-          ['D1 JSON Backup', 'Download posts, tests, resources and audit', [['Download Backup', backup, true]]]
+          ['D1 JSON Backup', 'Download posts, tests, resources and audit', [['Download Backup', backup, true]]],
+          ['Odisha Starter Content', 'Idempotently seed OPSC/OSSC/OSSSC jobs, digests, tests & syllabus', [['Seed Odisha Starter Content', async function () {
+            try {
+              var res = await api('POST', 'seed-odisha');
+              var ins = res.inserted || {};
+              var n = (ins.jobs || 0) + (ins.current_affairs || 0) + (ins.mock_tests || 0) + (ins.resources || 0);
+              toast(n ? ('Seeded ' + n + ' Odisha starter records into D1!') : 'Starter content already present.', 'success');
+              load();
+            } catch (e) { toast(e.message, 'crimson'); }
+          }, true]]]
         ];
         clear(host);
         host.appendChild(el('div', { class: 'cso-mod-grid-3' }, cards.map(function (c) {
