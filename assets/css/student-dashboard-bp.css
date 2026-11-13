@@ -360,6 +360,60 @@ body.cso-student-dashboard-page {
   background: var(--cso-primary-soft);
 }
 
+@media (min-width: 1024px) {
+  .bp-topbar {
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 10px 20px;
+  }
+
+  .bp-topbar-left {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .bp-page-header {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .bp-page-header h1,
+  .bp-page-header p {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bp-topbar-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .bp-search-trigger {
+    width: 185px;
+    min-width: 155px;
+    padding: 0.42rem 0.65rem;
+  }
+
+  .bp-search-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bp-topbar-actions .bp-icon-action-btn,
+  .bp-topbar-actions .bp-topbar-user {
+    padding: 0.4rem 0.65rem;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+}
+
 .bp-badge-dot {
   position: absolute;
   top: 5px;
