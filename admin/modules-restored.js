@@ -7852,7 +7852,7 @@
       email: 'editorial@csodisha.com',
       sections: [
         { type: 'richtext', title: 'Our Mission & Editorial Independence', text: 'Common Sense Odisha (csodisha.com) is an independent educational and career-intelligence portal built for aspirants across all 30 districts of Odisha. Every recruitment notice, syllabus, and scheme deadline is cross-checked against official government gazettes and commission portals.' },
-        { type: 'richtext', title: 'Founder & Editorial Base', text: 'Founder & Editor-in-Chief: Ramesh Biswal · Editorial Base: Basta, Balasore, 756029 · Contact: editorial@csodisha.com · Official Portal: https://csodisha.com' },
+        { type: 'richtext', title: 'Founder & Editorial Leadership', text: 'Common Sense Odisha is founded and edited by Ramesh Biswal — an educator, technology enthusiast, creative writer, and literature lover based in Basta, Balasore, 756029. He holds a Post Graduation in English from Ravenshaw University, a Bachelor of Education (B.Ed.) from UGCTE, Baripada, and is UGC NET qualified in both English and Education. Combining academic rigor in pedagogy and literature with modern web engineering, his editorial vision ensures every study guide, syllabus breakdown, and recruitment update is accurate and accessible. Contact: editorial@csodisha.com · Official Portal: https://csodisha.com' },
         { type: 'notice', title: 'Verification & Non-Affiliation Notice', text: 'Common Sense Odisha is not affiliated with any government ministry or recruitment commission. Always confirm final submission dates on the official notification linked in each post.' }
       ]
     },
@@ -7889,7 +7889,22 @@
         { type: 'notice', title: 'Data Grievance Contact & Effective Date', text: 'Effective Date: 2026-11-13 · Grievance & Privacy Contact: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
       ]
     },
-    'module-03-004': { title: 'Disclaimer', path: '/disclaimer.html', email: 'legal@csodisha.com' },
+    'module-03-004': {
+      title: 'Disclaimer',
+      seoTitle: 'Disclaimer | Common Sense Odisha (csodisha.com)',
+      metaDescription: 'Official Disclaimer of Common Sense Odisha (csodisha.com) — independent educational and Odisha recruitment portal not affiliated with any government ministry.',
+      heroTitle: 'Disclaimer',
+      heroSubtitle: 'Important legal and editorial notices regarding educational guides, recruitment summaries, and official government links published on Common Sense Odisha.',
+      effectiveDate: '2026-11-13',
+      path: '/disclaimer.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'Non-Affiliation with Government Bodies', text: 'Common Sense Odisha (csodisha.com) is an independent digital educational and information portal. We are not affiliated with, associated with, authorized by, endorsed by, or in any way officially connected with the Government of Odisha, OPSC, OSSC, OSSSC, UPSC, SSC, or any central/state ministry, board, or recruitment agency.' },
+        { type: 'richtext', title: 'Informational Purpose & Official Verification', text: 'All recruitment summaries, exam dates, syllabi, scholarship updates, and CBT mock practice materials on this website are published in good faith for general educational and informational purposes only. While we strive for strict accuracy, readers must always verify final eligibility criteria, application deadlines, and official notices directly on the respective government portal linked in each article before submitting any application.' },
+        { type: 'richtext', title: 'External Links & Limitation of Liability', text: 'External links to official recruitment notifications, PDFs, and government portals are provided solely for user convenience. Common Sense Odisha makes no warranties regarding the uninterrupted availability or third-party content of external websites and shall not be liable for any loss or discrepancy arising from reliance on summarized information.' },
+        { type: 'notice', title: 'Effective Date & Corrections Contact', text: 'Effective Date: 2026-11-13 · Report any discrepancy to editorial@csodisha.com · Address: Basta, Balasore, 756029' }
+      ]
+    },
     'module-03-005': { title: 'Terms & Conditions', path: '/terms.html', email: 'legal@csodisha.com' },
     'module-03-006': { title: 'Cookie Policy', path: '/cookies.html', email: 'privacy@csodisha.com' },
     'module-03-007': { title: 'Copyright & DMCA', path: '/copyright.html', email: 'dmca@csodisha.com' },
@@ -7928,7 +7943,22 @@
           { type: 'richtext', title: 'Policy Overview', text: 'Common Sense Odisha (csodisha.com) maintains transparent editorial, accessibility, and DPDP-aligned standards.' }
         ];
     var sectionsHost = el('div', { class: 'cso-mod-shell' });
-    var revHost = el('div', {});
+    var revHost = el('div', { class: 'cso-rev-table-wrap' });
+    var titleCountBadge = el('span', { class: 'cso-seo-count', text: '0 / 60' });
+    var metaCountBadge = el('span', { class: 'cso-seo-count', text: '0 / 160' });
+
+    function updateSeoCounts() {
+      var tLen = (titleInp.value || '').length;
+      var mLen = (metaInp.value || '').length;
+      titleCountBadge.textContent = tLen + ' / 60';
+      titleCountBadge.classList.toggle('is-over', tLen > 60);
+      metaCountBadge.textContent = mLen + ' / 160';
+      metaCountBadge.classList.toggle('is-over', mLen > 160);
+    }
+    titleInp.addEventListener('input', updateSeoCounts);
+    metaInp.addEventListener('input', updateSeoCounts);
+    updateSeoCounts();
+
     var liveLink = el('a', { href: cfg.path, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn', text: 'Open Live ↗' });
     var frame = el('iframe', { src: cfg.path + '?preview=1&t=' + Date.now(), class: 'cso-preview-frame', title: 'Live Legal Preview' });
 
@@ -7946,10 +7976,26 @@
         sText.value = sec.text || '';
         sTitle.addEventListener('input', function () { sec.title = sTitle.value; });
         sText.addEventListener('input', function () { sec.text = sText.value; });
+        var upBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', title: 'Move Up', text: '↑', onclick: function () {
+          if (idx <= 0) return;
+          var tmp = sections[idx - 1]; sections[idx - 1] = sections[idx]; sections[idx] = tmp;
+          renderSections();
+        } });
+        if (idx === 0) upBtn.disabled = true;
+        var downBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', title: 'Move Down', text: '↓', onclick: function () {
+          if (idx >= sections.length - 1) return;
+          var tmp = sections[idx + 1]; sections[idx + 1] = sections[idx]; sections[idx] = tmp;
+          renderSections();
+        } });
+        if (idx === sections.length - 1) downBtn.disabled = true;
         sectionsHost.appendChild(el('div', { class: 'cso-builder-block' }, [
           el('div', { class: 'cso-builder-block-head' }, [
             badge((idx + 1) + '. ' + sec.type, 'info'),
-            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: '✕', onclick: function () { sections.splice(idx, 1); renderSections(); } })
+            el('div', { class: 'cso-mod-toolbar' }, [
+              upBtn,
+              downBtn,
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', title: 'Remove Section', text: '✕', onclick: function () { sections.splice(idx, 1); renderSections(); } })
+            ])
           ]),
           el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Section Title' }), sTitle]),
           el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Section Content' }), sText])
@@ -7966,24 +8012,28 @@
         ]);
         var match = (pRes.pages || []).find(function (p) { return p.route === targetRoute || p.route === cfg.path; });
         if (match) {
-          titleInp.value = match.title || cfg.title;
-          metaInp.value = match.meta_description || '';
-          heroTitleInp.value = match.hero_title || match.title || cfg.title;
-          heroSubInp.value = match.hero_subtitle || '';
+          titleInp.value = match.title || cfg.seoTitle || cfg.title;
+          metaInp.value = match.meta_description || cfg.metaDescription || '';
+          heroTitleInp.value = match.hero_title || match.title || cfg.heroTitle || cfg.title;
+          heroSubInp.value = match.hero_subtitle || cfg.heroSubtitle || '';
           statusSel.value = match.status === 'draft' ? 'draft' : 'published';
-          var parsed = f02ParseBlocks(match.blocks_json);
+          var parsed = f02ParseBlocks(match.blocks_json).filter(function (b) {
+            return b && b.type !== 'page_meta' && b.type !== 'og_meta' && !(b.type === 'page_intro' && !b.title && !b.text);
+          });
           if (parsed.length) sections = parsed;
         }
+        updateSeoCounts();
         renderSections();
         clear(revHost);
         var revs = revRes.revisions || [];
         if (revs.length) {
           revHost.appendChild(safeTable(['Rev', 'Editor', 'Note', 'Time', 'Restore'], revs.slice(0, 6).map(function (rv) {
+            var compactTime = rv.created_at ? String(rv.created_at).replace('T', ' ').slice(0, 16) : '—';
             return el('tr', {}, [
               el('td', { text: '#' + rv.id }),
               el('td', { text: rv.editor_email || '—' }),
               el('td', { text: rv.note || 'update' }),
-              el('td', { text: rv.created_at || '—' }),
+              el('td', { text: compactTime }),
               el('td', {}, el('button', {
                 type: 'button',
                 class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
@@ -8048,8 +8098,8 @@
             el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Public Route' }), routeInp]),
             el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Status' }), statusSel])
           ]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'SEO Title' }), titleInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), metaInp]),
+          el('div', { class: 'cso-mod-field' }, [el('div', { class: 'cso-label-row' }, [el('label', { class: 'cso-mod-label', text: 'SEO Title' }), titleCountBadge]), titleInp]),
+          el('div', { class: 'cso-mod-field' }, [el('div', { class: 'cso-label-row' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), metaCountBadge]), metaInp]),
           el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Headline' }), heroTitleInp]),
           el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Subheadline' }), heroSubInp]),
           el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Last-Updated Effective Date' }), dateInp])

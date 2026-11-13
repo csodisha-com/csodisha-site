@@ -2674,3 +2674,46 @@ html[data-theme="lime"] .cso-nav-folder-btn:hover {
     transform: none;
   }
 }
+
+/* ---------- Legal Studio Revision Table & SEO Counters ---------- */
+.cso-rev-table-wrap table {
+  table-layout: auto;
+  width: 100%;
+}
+
+.cso-rev-table-wrap th:nth-child(1),
+.cso-rev-table-wrap td:nth-child(1),
+.cso-rev-table-wrap th:nth-child(4),
+.cso-rev-table-wrap td:nth-child(4),
+.cso-rev-table-wrap th:nth-child(5),
+.cso-rev-table-wrap td:nth-child(5) {
+  white-space: nowrap;
+}
+
+.cso-rev-table-wrap td:nth-child(3) {
+  word-break: break-word;
+  min-width: 140px;
+}
+
+.cso-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cso-seo-count {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--studio-border);
+  background: var(--studio-bg);
+  color: var(--studio-muted);
+}
+
+.cso-seo-count.is-over {
+  border-color: var(--studio-amber);
+  color: var(--studio-amber);
+}

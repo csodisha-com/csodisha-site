@@ -379,6 +379,10 @@ export default {
             res = applyPageOverrides(res, live, sitewide);
             res = new Response(res.body, { status: 200, headers: new Headers(res.headers) });
             res.headers.set('Cache-Control', 'no-cache');
+            res.headers.set('X-Frame-Options', 'SAMEORIGIN');
+            if (!res.headers.get('Content-Security-Policy')) {
+              res.headers.set('Content-Security-Policy', csp);
+            }
           }
         }
       }
