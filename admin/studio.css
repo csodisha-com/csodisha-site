@@ -2522,3 +2522,125 @@ html[data-theme="lime"] .cso-signout-btn:hover {
   border-color: #dc2626;
   color: #b91c1c;
 }
+
+/* ---------- Multicolour Workspace Gradient Meshes (Zero Layout Changes) ---------- */
+html[data-theme="apex"] {
+  --studio-bg: #030712;
+}
+
+html[data-theme="apex"] .cso-studio-body,
+html[data-theme="apex"] .cso-main {
+  background:
+    radial-gradient(ellipse 80% 55% at 15% -10%, rgba(16, 185, 129, 0.14), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 88% 5%, rgba(6, 182, 212, 0.12), transparent 55%),
+    radial-gradient(ellipse 65% 55% at 50% 105%, rgba(99, 102, 241, 0.12), transparent 60%),
+    #030712;
+}
+
+html[data-theme="volt"] .cso-studio-body,
+html[data-theme="volt"] .cso-main {
+  background:
+    radial-gradient(ellipse 75% 50% at 20% 0%, rgba(163, 230, 53, 0.1), transparent 58%),
+    radial-gradient(ellipse 65% 45% at 85% 95%, rgba(245, 158, 11, 0.08), transparent 55%),
+    #0b0d09;
+}
+
+html[data-theme="volt"] .cso-card,
+html[data-theme="volt"] .cso-kpi-card {
+  background: #131610;
+}
+
+html[data-theme="cobalt"] .cso-studio-body,
+html[data-theme="cobalt"] .cso-main {
+  background:
+    radial-gradient(ellipse 75% 55% at 85% 0%, rgba(30, 86, 160, 0.07), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 10% 100%, rgba(13, 148, 136, 0.06), transparent 55%),
+    #eef3f9;
+}
+
+html[data-theme="lime"] .cso-studio-body,
+html[data-theme="lime"] .cso-main {
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 0%, rgba(245, 158, 11, 0.07), transparent 55%),
+    radial-gradient(ellipse 75% 55% at 90% 10%, rgba(101, 163, 13, 0.08), transparent 58%),
+    radial-gradient(ellipse 65% 50% at 50% 105%, rgba(13, 148, 136, 0.06), transparent 60%),
+    #f5f7f2;
+}
+
+/* ---------- Hardware-Accelerated Hover-Pop & Dynamic Glows ---------- */
+.cso-card,
+.cso-kpi-card,
+.cso-pill-btn,
+.cso-nav-mod-btn,
+.cso-nav-folder-btn,
+.cso-theme-icon-btn {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.cso-card:hover,
+.cso-kpi-card:hover,
+.cso-pill-btn:hover,
+.cso-theme-icon-btn:hover,
+.cso-nav-mod-btn:hover,
+.cso-nav-folder-btn:hover {
+  transform: translateY(-2px) scale(1.01);
+}
+
+html[data-theme="apex"] .cso-card:hover,
+html[data-theme="apex"] .cso-kpi-card:hover,
+html[data-theme="apex"] .cso-pill-btn:hover,
+html[data-theme="apex"] .cso-theme-icon-btn:hover,
+html[data-theme="apex"] .cso-nav-mod-btn:hover,
+html[data-theme="apex"] .cso-nav-folder-btn:hover {
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.25), 0 8px 10px -6px rgba(6, 182, 212, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+html[data-theme="volt"] .cso-card:hover,
+html[data-theme="volt"] .cso-kpi-card:hover,
+html[data-theme="volt"] .cso-pill-btn:hover,
+html[data-theme="volt"] .cso-theme-icon-btn:hover,
+html[data-theme="volt"] .cso-nav-mod-btn:hover,
+html[data-theme="volt"] .cso-nav-folder-btn:hover {
+  box-shadow: 0 10px 25px -5px rgba(190, 242, 100, 0.3), 0 8px 10px -6px rgba(163, 230, 53, 0.15);
+  border-color: rgba(190, 242, 100, 0.4);
+}
+
+html[data-theme="cobalt"] .cso-card:hover,
+html[data-theme="cobalt"] .cso-kpi-card:hover,
+html[data-theme="cobalt"] .cso-pill-btn:hover,
+html[data-theme="cobalt"] .cso-theme-icon-btn:hover,
+html[data-theme="cobalt"] .cso-nav-mod-btn:hover,
+html[data-theme="cobalt"] .cso-nav-folder-btn:hover {
+  box-shadow: 0 10px 20px -5px rgba(30, 86, 160, 0.15), 0 8px 10px -6px rgba(13, 148, 136, 0.1);
+  border-color: #1e56a0;
+}
+
+html[data-theme="lime"] .cso-card:hover,
+html[data-theme="lime"] .cso-kpi-card:hover,
+html[data-theme="lime"] .cso-pill-btn:hover,
+html[data-theme="lime"] .cso-theme-icon-btn:hover,
+html[data-theme="lime"] .cso-nav-mod-btn:hover,
+html[data-theme="lime"] .cso-nav-folder-btn:hover {
+  box-shadow: 0 10px 20px -5px rgba(101, 163, 13, 0.2), 0 8px 10px -6px rgba(132, 204, 22, 0.12);
+  border-color: #65a30d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-card,
+  .cso-kpi-card,
+  .cso-pill-btn,
+  .cso-nav-mod-btn,
+  .cso-nav-folder-btn,
+  .cso-theme-icon-btn {
+    transition: none;
+  }
+  .cso-card:hover,
+  .cso-kpi-card:hover,
+  .cso-pill-btn:hover,
+  .cso-theme-icon-btn:hover,
+  .cso-nav-mod-btn:hover,
+  .cso-nav-folder-btn:hover {
+    transform: none;
+  }
+}
