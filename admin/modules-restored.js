@@ -4570,37 +4570,85 @@
 
   function renderAnalyticsStudio(root, actions) {
     addHeaderPill(actions, '● D1 Content, CBT & SEO Analytics');
-    var shell = el('div', { class: 'cso-mod-shell' }), host = el('div', { class: 'cso-mod-shell' });
-    var data = null, catSel = el('select', { class: 'cso-mod-select' }), statSel = el('select', { class: 'cso-mod-select' });
-    ['All statuses', 'published', 'draft', 'scheduled', 'expired', 'archived'].forEach(function (s) { statSel.appendChild(el('option', { value: s, text: s })); });
-    renderBanner(shell, 'Website Analytics Studio', 'Live D1 pipeline, coverage, CBT performance and manifest SEO readiness.', [
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var drawer = el('div', { class: 'cso-drawer cso-hidden' });
+    var host = el('div', { class: 'cso-mod-shell' });
+    var data = null;
+    var catSel = el('select', { class: 'cso-mod-select' });
+    var statSel = el('select', { class: 'cso-mod-select' });
+    var searchInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Search route, title, exam or category…' });
+    ['All statuses', 'published', 'draft', 'scheduled', 'expired', 'archived'].forEach(function (s) {
+      statSel.appendChild(el('option', { value: s, text: s }));
+    });
+    renderBanner(shell, 'Website Analytics Studio', 'Live D1 pipeline, CBT performance, and interactive SEO remediation with SERP & route previews.', [
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: loadAnalytics }),
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export JSON', onclick: function () { if (data) downloadFile('cso-analytics-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(report(), null, 2)); } }),
       el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Export CSV', onclick: exportCsv })
     ]);
-    shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Category / Exam' }), catSel]), el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Status' }), statSel])]));
-    shell.appendChild(host); root.appendChild(shell);
-    catSel.addEventListener('change', draw); statSel.addEventListener('change', draw);
+    shell.appendChild(el('div', { class: 'cso-mod-grid-3' }, [
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Category / Exam' }), catSel]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Status' }), statSel]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Quick Search' }), searchInp])
+    ]));
+    shell.appendChild(drawer);
+    shell.appendChild(host);
+    root.appendChild(shell);
+    catSel.addEventListener('change', draw);
+    statSel.addEventListener('change', draw);
+    searchInp.addEventListener('input', draw);
 
     function items() {
       var out = [];
-      data.jobs.forEach(function (x) { out.push({ t: 'Job', cat: x.category || 'Uncategorized', status: x.status }); });
-      data.cas.forEach(function (x) { out.push({ t: 'Current Affairs', cat: x.category || 'Uncategorized', status: x.status }); });
-      data.tests.forEach(function (x) { out.push({ t: 'Mock Test', cat: x.target_exam || 'Uncategorized', status: x.status }); });
+      data.jobs.forEach(function (x) { out.push({ t: 'Job', title: x.title || '', cat: x.category || 'Uncategorized', status: x.status }); });
+      data.cas.forEach(function (x) { out.push({ t: 'Current Affairs', title: x.title || '', cat: x.category || 'Uncategorized', status: x.status }); });
+      data.tests.forEach(function (x) { out.push({ t: 'Mock Test', title: x.title || '', cat: x.target_exam || 'Uncategorized', status: x.status }); });
       return out;
     }
-    function filtered() { return items().filter(function (i) { return (catSel.value === 'All categories' || i.cat === catSel.value) && (statSel.value === 'All statuses' || i.status === statSel.value); }); }
+    function filtered() {
+      var q = searchInp.value.toLowerCase().trim();
+      return items().filter(function (i) {
+        return (catSel.value === 'All categories' || i.cat === catSel.value) &&
+          (statSel.value === 'All statuses' || i.status === statSel.value) &&
+          (!q || (i.title + ' ' + i.cat + ' ' + i.t).toLowerCase().indexOf(q) >= 0);
+      });
+    }
+    function suggestOdishaSeo(p) {
+      var label = (p.hero_title || p.title || p.route.replace(/\//g, ' ').trim() || 'Odisha Govt Exams').replace(/\s+/g, ' ').trim();
+      var titleBase = label.length > 36 ? label.slice(0, 36).trim() : label;
+      var title = titleBase + ' | CS Odisha Portal';
+      if (title.length < 50) title = titleBase + ' — OPSC, OSSC & OSSSC | CS Odisha';
+      if (title.length > 60) title = title.slice(0, 57).trim() + '…';
+      var desc = 'Explore ' + label + ' on Common Sense Odisha (csodisha.com): latest OPSC, OSSC, OSSSC updates, syllabus, free CBT mock tests, and official notifications.';
+      if (desc.length < 145) desc += ' Updated daily for Odisha aspirants.';
+      if (desc.length > 160) desc = desc.slice(0, 157).trim() + '…';
+      return { title: title, description: desc };
+    }
     function seoRows() {
-      return data.pages.map(function (p) {
-        var tl = (p.title || '').length, dl = (p.description || '').length, issues = [];
+      var q = searchInp.value.toLowerCase().trim();
+      return data.pages.filter(function (p) {
+        var catOk = catSel.value === 'All categories' || (p.category || '') === catSel.value;
+        var stOk = statSel.value === 'All statuses' || (p.status || 'published') === statSel.value;
+        var qOk = !q || ((p.route || '') + ' ' + (p.title || '') + ' ' + (p.category || '')).toLowerCase().indexOf(q) >= 0;
+        return catOk && stOk && qOk;
+      }).map(function (p) {
+        var desc = p.meta_description != null ? p.meta_description : (p.description || '');
+        var tl = (p.title || '').trim().length, dl = desc.trim().length, issues = [];
         if (tl < 20 || tl > 70) issues.push('title ' + tl + ' chars');
         if (dl < 70 || dl > 170) issues.push('description ' + dl + ' chars');
-        return { route: p.route, category: p.category, issues: issues };
+        return { page: p, route: p.route, category: p.category, titleLen: tl, descLen: dl, issues: issues };
       });
     }
     function cbtRows() {
-      return data.board.map(function (b) { var it = b.items; var acc = it.length ? it.reduce(function (s, x) { return s + (Number(x.accuracy) || 0); }, 0) / it.length : 0; return { title: b.test.title, participants: it.length, avgAcc: Math.round(acc * 10) / 10, top: it[0] ? it[0].score + '/' + (it[0].maxScore || it[0].max_score) : '—' }; }).filter(function (r) { return r.participants; }).sort(function (a, b) { return b.avgAcc - a.avgAcc; });
+      var q = searchInp.value.toLowerCase().trim();
+      return data.board.map(function (b) {
+        var it = b.items;
+        var acc = it.length ? it.reduce(function (s, x) { return s + (Number(x.accuracy) || 0); }, 0) / it.length : 0;
+        return { title: b.test.title, cat: b.test.target_exam || 'Uncategorized', status: b.test.status, participants: it.length, avgAcc: Math.round(acc * 10) / 10, top: it[0] ? it[0].score + '/' + (it[0].maxScore || it[0].max_score) : '—' };
+      }).filter(function (r) {
+        return r.participants && (catSel.value === 'All categories' || r.cat === catSel.value) && (statSel.value === 'All statuses' || r.status === statSel.value) && (!q || r.title.toLowerCase().indexOf(q) >= 0);
+      }).sort(function (a, b) { return b.avgAcc - a.avgAcc; });
     }
-    function report() { return { generated_at: new Date().toISOString(), stats: data.stats, pipeline: tally(function (i) { return i.status; }), coverage: tally(function (i) { return i.cat; }), cbt: cbtRows(), seo: seoRows() }; }
+    function report() { return { generated_at: new Date().toISOString(), stats: data.stats, pipeline: tally(function (i) { return i.status; }), coverage: tally(function (i) { return i.cat; }), cbt: cbtRows(), seo: seoRows().map(function (r) { return { route: r.route, category: r.category, issues: r.issues }; }) }; }
     function tally(keyFn) { var c = {}; filtered().forEach(function (i) { var k = keyFn(i); c[k] = (c[k] || 0) + 1; }); return c; }
     function exportCsv() {
       if (!data) return;
@@ -4612,38 +4660,253 @@
       downloadFile('cso-analytics.csv', lines.join('\n'), 'text/csv'); toast('CSV exported', 'success');
     }
     function chartCard(title, node) { return el('div', { class: 'cso-mod-card' }, [el('h3', { text: title }), node]); }
+    function emptyChartCard(title, msg) {
+      return el('div', { class: 'cso-mod-card' }, [
+        el('h3', { text: title }),
+        el('p', { class: 'cso-mod-muted', text: msg }),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Create Job', onclick: function () { goTo(['folder-05', 'module-05-008']); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Create Current Affair', onclick: function () { goTo(['folder-04', 'module-04-004']); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Create Mock Test', onclick: function () { goTo(['folder-05', 'module-05-014']); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Seed Odisha Starter Content', onclick: async function () {
+            try { await api('POST', 'seed-odisha', {}); toast('Odisha starter content seeded!', 'success'); loadAnalytics(); } catch (e) { toast(e.message, 'crimson'); }
+          } })
+        ])
+      ]);
+    }
+
+    function openSeoDrawer(row) {
+      clear(drawer);
+      drawer.classList.remove('cso-hidden');
+      var p = row.page;
+      var mobileMode = false;
+      var deskBtn = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Desktop', onclick: function () { mobileMode = false; syncViewport(); renderPreview(); } });
+      var mobBtn = el('button', { type: 'button', class: 'cso-pill', text: 'Mobile 375px', onclick: function () { mobileMode = true; syncViewport(); renderPreview(); } });
+      function syncViewport() {
+        deskBtn.classList.toggle('cso-pill-active', !mobileMode);
+        mobBtn.classList.toggle('cso-pill-active', mobileMode);
+      }
+      drawer.appendChild(el('div', { class: 'cso-drawer-head' }, [
+        el('div', {}, [
+          el('strong', { text: 'SEO Remediation & Pre-Publish Preview — ' + p.route }),
+          el('div', { class: 'cso-mod-muted', text: 'Category: ' + (p.category || 'General') + ' · Current Status: ' + (p.status || 'published') })
+        ]),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          deskBtn, mobBtn,
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { drawer.classList.add('cso-hidden'); } })
+        ])
+      ]));
+
+      var left = el('div', { class: 'cso-mod-card' });
+      var right = el('div', { class: 'cso-mod-card' });
+      drawer.appendChild(el('div', { class: 'cso-mod-grid-2' }, [left, right]));
+
+      var titleInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.title || '' });
+      var descInp = el('textarea', { class: 'cso-mod-textarea', rows: '3', text: p.meta_description != null ? p.meta_description : (p.description || '') });
+      var heroInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.hero_title || '' });
+      var titleMeter = el('div', { class: 'cso-mod-toolbar' });
+      var descMeter = el('div', { class: 'cso-mod-toolbar' });
+
+      function updateMeters() {
+        var tl = titleInp.value.trim().length, dl = descInp.value.trim().length;
+        clear(titleMeter);
+        titleMeter.appendChild(el('span', { class: 'cso-mod-muted', text: tl + ' chars (optimal 50–60)' }));
+        titleMeter.appendChild(badge(tl >= 50 && tl <= 60 ? 'Optimal ✓' : tl >= 20 && tl <= 70 ? 'Acceptable' : tl < 20 ? 'Too short' : 'Too long', tl >= 50 && tl <= 60 ? 'ok' : 'warn'));
+        clear(descMeter);
+        descMeter.appendChild(el('span', { class: 'cso-mod-muted', text: dl + ' chars (optimal 145–160)' }));
+        descMeter.appendChild(badge(dl >= 145 && dl <= 160 ? 'Optimal ✓' : dl >= 70 && dl <= 170 ? 'Acceptable' : dl < 70 ? 'Too short' : 'Too long', dl >= 145 && dl <= 160 ? 'ok' : 'warn'));
+      }
+
+      left.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'SEO Title' }), titleInp, titleMeter]));
+      left.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), descInp, descMeter]));
+      left.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Headline (optional override)' }), heroInp]));
+
+      async function savePageSeo(status) {
+        try {
+          await api('PUT', 'pages', Object.assign({}, p, {
+            route: p.route,
+            title: titleInp.value.trim(),
+            meta_description: descInp.value.trim(),
+            hero_title: heroInp.value.trim(),
+            status: status,
+            publish_at: null,
+            note: 'SEO remediation from Website Analytics'
+          }));
+          toast(status === 'published' ? 'SEO published live!' : 'SEO draft saved', 'success');
+          drawer.classList.add('cso-hidden');
+          loadAnalytics();
+        } catch (e) { toast(e.message, 'crimson'); }
+      }
+
+      left.appendChild(el('div', { class: 'cso-mod-toolbar' }, [
+        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Generate Odisha SEO Suggestion', onclick: function () {
+          var sug = suggestOdishaSeo(p);
+          titleInp.value = sug.title;
+          descInp.value = sug.description;
+          updateMeters();
+          renderPreview();
+        } }),
+        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Draft', onclick: function () { savePageSeo('draft'); } }),
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish Live Now', onclick: function () { savePageSeo('published'); } })
+      ]));
+
+      function renderPreview() {
+        updateMeters();
+        clear(right);
+        var curT = titleInp.value.trim() || '(Missing Title)';
+        var curD = descInp.value.trim() || 'No meta description set — search engines will auto-snippet page text.';
+        right.appendChild(el('div', { class: 'cso-mod-label', text: 'Google SERP Result Preview' }));
+        right.appendChild(el('div', { class: 'cso-serp-card' }, [
+          el('div', { class: 'cso-serp-url', text: 'https://csodisha.com' + p.route }),
+          el('div', { class: 'cso-serp-title', text: curT }),
+          el('p', { class: 'cso-serp-desc', text: curD })
+        ]));
+        right.appendChild(el('div', { class: 'cso-mod-label', text: 'Social Share Card Preview' }));
+        right.appendChild(el('div', { class: 'cso-og-card' }, [
+          el('div', { class: 'cso-preview-kicker', text: 'CSODISHA.COM · ' + String(p.category || 'PORTAL').toUpperCase() }),
+          el('strong', { text: curT }),
+          el('p', { class: 'cso-mod-muted', text: curD })
+        ]));
+        right.appendChild(el('div', { class: 'cso-mod-label', text: 'Embedded Live Route Preview (' + (mobileMode ? 'Mobile 375px' : 'Desktop') + ')' }));
+        right.appendChild(el('div', { class: 'cso-preview-frame-wrap' }, [
+          el('iframe', { class: mobileMode ? 'cso-preview-frame-mobile' : 'cso-preview-frame', src: p.route, title: 'Live preview ' + p.route })
+        ]));
+      }
+
+      [titleInp, descInp, heroInp].forEach(function (inp) { inp.addEventListener('input', renderPreview); });
+      renderPreview();
+    }
+
+    function openBulkSeoDrawer(seoList) {
+      clear(drawer);
+      drawer.classList.remove('cso-hidden');
+      var targets = seoList.filter(function (r) { return r.descLen === 0 || r.descLen < 20; }).map(function (r) {
+        return { page: r.page, route: r.route, sug: suggestOdishaSeo(r.page) };
+      });
+      drawer.appendChild(el('div', { class: 'cso-drawer-head' }, [
+        el('strong', { text: 'Preview Bulk SEO Fixes (' + targets.length + ' pages with 0/short descriptions)' }),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          targets.length ? el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Apply & Publish All (' + targets.length + ')', onclick: async function () {
+            var ok = 0;
+            for (var i = 0; i < targets.length; i++) {
+              var t = targets[i];
+              try {
+                await api('PUT', 'pages', Object.assign({}, t.page, {
+                  route: t.route, title: t.sug.title, meta_description: t.sug.description, status: 'published', publish_at: null, note: 'Bulk SEO remediation'
+                }));
+                ok++;
+              } catch (_) {}
+            }
+            toast('Published ' + ok + ' SEO page fixes!', 'success');
+            drawer.classList.add('cso-hidden');
+            loadAnalytics();
+          } }) : el('span', { class: 'cso-mod-muted', text: 'All pages have descriptions' }),
+          el('button', { type: 'button', class: 'cso-mod-btn', text: 'Close', onclick: function () { drawer.classList.add('cso-hidden'); } })
+        ])
+      ]));
+      if (!targets.length) {
+        drawer.appendChild(el('p', { class: 'cso-mod-muted', text: 'Zero pages have 0-char descriptions under the current filter.' }));
+        return;
+      }
+      drawer.appendChild(safeTable(['Route', 'Suggested Title', 'Suggested Description'], targets.slice(0, 30).map(function (t) {
+        return el('tr', {}, [
+          el('td', { text: t.route }),
+          el('td', { text: t.sug.title }),
+          el('td', { text: t.sug.description })
+        ]);
+      })));
+    }
+
     function draw() {
       clear(host);
       var s = data.stats;
-      host.appendChild(el('div', { class: 'cso-mod-grid-4' }, [kpiBox(String(s.attempts_total || 0), 'CBT Attempts'), kpiBox(String(s.bookmarks_total || 0), 'Bookmarks'), kpiBox(String(s.accounts ? s.accounts.total : 0), 'Registered Users'), kpiBox(String(s.audit_24h || 0), 'Audit events 24h')]));
-      var pipe = tally(function (i) { return i.status; });
-      host.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
-        chartCard('Content Status Pipeline', barChart(Object.keys(pipe).map(function (k) { return { label: k, value: pipe[k], cls: k === 'published' ? 'cso-bar-ok' : k === 'draft' ? 'cso-bar-warn' : 'cso-bar-info' }; }), 'Content status pipeline')),
-        chartCard('Exam Category Coverage', barChart((function () { var c = tally(function (i) { return i.cat; }); return Object.keys(c).sort(function (a, b) { return c[b] - c[a]; }).slice(0, 12).map(function (k) { return { label: k, value: c[k] }; }); })(), 'Exam category coverage'))
-      ]));
+      var filt = filtered();
       var cbt = cbtRows(), seo = seoRows();
       var ready = seo.filter(function (r) { return !r.issues.length; }).length;
+      var seoPct = seo.length ? Math.round((ready / seo.length) * 100) : 100;
+
+      var kpiStrip = el('div', { class: 'cso-mod-kpis' });
+      [
+        { l: 'CBT Attempts', v: String(s.attempts_total || 0), sub: data.tests.filter(function (t) { return t.status === 'published'; }).length + ' live mock tests' },
+        { l: 'Bookmarks', v: String(s.bookmarks_total || 0), sub: 'Saved across candidate accounts' },
+        { l: 'Registered Users', v: String(s.accounts ? s.accounts.total : 0), sub: filt.length + ' filtered D1 items' },
+        { l: 'Audit Events 24h', v: String(s.audit_24h || 0), sub: (s.jobs ? s.jobs.live : 0) + ' live jobs · ' + (s.current_affairs ? s.current_affairs.live : 0) + ' CA' },
+        { l: 'SEO Readiness Score', v: seoPct + '%', sub: ready + ' / ' + seo.length + ' pages optimal' }
+      ].forEach(function (k) {
+        kpiStrip.appendChild(el('div', { class: 'cso-mod-kpi' }, [
+          el('div', { class: 'cso-mod-kpi-label', text: k.l }),
+          el('div', { class: 'cso-mod-kpi-val', text: k.v }),
+          el('div', { class: 'cso-mod-kpi-sub', text: k.sub })
+        ]));
+      });
+      host.appendChild(kpiStrip);
+
+      var pipe = tally(function (i) { return i.status; });
+      var pipeKeys = Object.keys(pipe);
+      var covMap = tally(function (i) { return i.cat; });
+      var covKeys = Object.keys(covMap).sort(function (a, b) { return covMap[b] - covMap[a]; }).slice(0, 12);
+
       host.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
-        chartCard('CBT Attempts & Average Accuracy (top-10 best attempts per test)', barChart(cbt.slice(0, 10).map(function (r) { return { label: r.title, value: r.avgAcc, text: r.avgAcc + '% · ' + r.participants + ' users', cls: 'cso-bar-info' }; }), 'CBT breakdown')),
-        chartCard('Site Page SEO Readiness (' + seo.length + ' manifest pages)', barChart([{ label: 'Ready', value: ready, cls: 'cso-bar-ok' }, { label: 'Needs title/description fix', value: seo.length - ready, cls: 'cso-bar-warn' }], 'SEO readiness'))
+        pipeKeys.length
+          ? chartCard('Content Status Pipeline', barChart(pipeKeys.map(function (k) { return { label: k, value: pipe[k], cls: k === 'published' ? 'cso-bar-ok' : k === 'draft' ? 'cso-bar-warn' : 'cso-bar-info' }; }), 'Content status pipeline'))
+          : emptyChartCard('Content Status Pipeline', '0 D1 content records match the current filter (' + data.pages.length + ' static/override routes remain live).'),
+        covKeys.length
+          ? chartCard('Exam Category Coverage', barChart(covKeys.map(function (k) { return { label: k, value: covMap[k] }; }), 'Exam category coverage'))
+          : emptyChartCard('Exam Category Coverage', 'No D1 items categorized under this filter yet. Create content or seed Odisha starter data.')
       ]));
-      host.appendChild(chartCard('Top-Performing Mock Tests Leaderboard', safeTable(['Rank', 'Mock Test', 'Participants', 'Avg accuracy', 'Top score'], cbt.map(function (r, i) { return el('tr', {}, [el('td', { text: String(i + 1) }), el('td', { text: r.title }), el('td', { text: String(r.participants) }), el('td', { text: r.avgAcc + '%' }), el('td', { text: r.top })]); }))));
-      host.appendChild(chartCard('SEO Issues', safeTable(['Route', 'Category', 'Issues'], seo.filter(function (r) { return r.issues.length; }).slice(0, 25).map(function (r) { return el('tr', {}, [el('td', { text: r.route }), el('td', { text: r.category || '—' }), el('td', {}, badge(r.issues.join(', '), 'warn'))]); }))));
+
+      host.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
+        cbt.length
+          ? chartCard('CBT Attempts & Average Accuracy (top-10 best attempts per test)', barChart(cbt.slice(0, 10).map(function (r) { return { label: r.title, value: r.avgAcc, text: r.avgAcc + '% · ' + r.participants + ' users', cls: 'cso-bar-info' }; }), 'CBT breakdown'))
+          : emptyChartCard('CBT Attempts & Average Accuracy', '0 CBT attempts recorded for matching tests yet. Publish a mock test or seed starter data.'),
+        chartCard('Site Page SEO Readiness (' + seo.length + ' pages)', barChart([{ label: 'Ready', value: ready, cls: 'cso-bar-ok' }, { label: 'Needs title/description fix', value: seo.length - ready, cls: 'cso-bar-warn' }], 'SEO readiness'))
+      ]));
+
+      host.appendChild(chartCard('Top-Performing Mock Tests Leaderboard', safeTable(['Rank', 'Mock Test', 'Participants', 'Avg accuracy', 'Top score'], cbt.map(function (r, i) {
+        return el('tr', {}, [el('td', { text: String(i + 1) }), el('td', { text: r.title }), el('td', { text: String(r.participants) }), el('td', { text: r.avgAcc + '%' }), el('td', { text: r.top })]);
+      }))));
+
+      var seoWithIssues = seo.filter(function (r) { return r.issues.length; });
+      var seoCard = el('div', { class: 'cso-mod-card' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('h3', { text: 'SEO Issues (' + seoWithIssues.length + ' routes needing attention)' }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Preview Bulk SEO Fixes', onclick: function () { openBulkSeoDrawer(seoWithIssues); } })
+        ]),
+        safeTable(['Route', 'Category', 'Issues', 'Actions'], seoWithIssues.slice(0, 30).map(function (r) {
+          return el('tr', {}, [
+            el('td', { text: r.route }),
+            el('td', { text: r.category || '—' }),
+            el('td', {}, badge(r.issues.join(', '), 'warn')),
+            el('td', {}, el('div', { class: 'cso-mod-toolbar' }, [
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Fix & Preview', onclick: function () { openSeoDrawer(r); } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview Route', onclick: function () { openSeoDrawer(r); } })
+            ]))
+          ]);
+        }))
+      ]);
+      host.appendChild(seoCard);
     }
-    (async function () {
+
+    async function loadAnalytics() {
       loading(host, 'Loading analytics…');
       try {
-        var r = await Promise.all([api('GET', 'stats'), api('GET', 'jobs?limit=100'), api('GET', 'current-affairs?limit=100'), api('GET', 'mock-tests?limit=100'), fetchManifest()]);
+        var r = await Promise.all([api('GET', 'stats'), api('GET', 'jobs?limit=100'), api('GET', 'current-affairs?limit=100'), api('GET', 'mock-tests?limit=100'), api('GET', 'pages')]);
         var tests = r[3].items || [];
         var pub = tests.filter(function (t) { return t.status === 'published'; }).slice(0, 20);
         var board = await Promise.all(pub.map(async function (t) { try { var lb = await (await fetch('/api/content/mock-tests/' + encodeURIComponent(t.slug || t.id) + '/leaderboard', { credentials: 'same-origin' })).json(); return { test: t, items: lb.items || [] }; } catch (_) { return { test: t, items: [] }; } }));
-        data = { stats: r[0], jobs: r[1].items || [], cas: r[2].items || [], tests: tests, pages: r[4].pages || [], board: board };
-        var cats = {}; items().forEach(function (i) { cats[i.cat] = 1; });
+        data = { stats: r[0], jobs: r[1].items || [], cas: r[2].items || [], tests: tests, pages: r[4].items || [], board: board };
+        var prevCat = catSel.value || 'All categories';
+        clear(catSel);
+        var cats = {};
+        items().forEach(function (i) { cats[i.cat] = 1; });
+        data.pages.forEach(function (p) { if (p.category) cats[p.category] = 1; });
         catSel.appendChild(el('option', { value: 'All categories', text: 'All categories' }));
         Object.keys(cats).sort().forEach(function (c) { catSel.appendChild(el('option', { value: c, text: c })); });
+        if (cats[prevCat]) catSel.value = prevCat;
         draw();
       } catch (e) { fail(host, e); }
-    })();
+    }
+    loadAnalytics();
   }
 
   var DIR_EP = { 'folder-01': ['/api/admin/stats', '/api/admin/audit', '/api/admin/banner', '/api/admin/maintenance'], 'folder-02': ['/api/admin/preview', '/admin/site-manifest.json'], 'folder-03': ['/api/admin/preview', '/admin/site-manifest.json'], 'folder-04': ['/api/admin/current-affairs', '/api/admin/jobs'], 'folder-05': ['/api/admin/mock-tests', '/api/admin/resources', '/api/admin/jobs'], 'folder-06': ['/admin/site-manifest.json'], 'folder-07': ['/api/admin/media', '/api/admin/media/upload'], 'folder-09': ['/api/admin/users'], 'folder-10': ['/api/admin/stats', '/api/admin/audit'], 'folder-13': ['/sitemap.xml', '/feed.xml', '/robots.txt'], 'folder-14': ['/api/admin/current-affairs', '/api/admin/jobs'], 'folder-15': ['/api/health', '/sitemap.xml'], 'folder-16': ['/api/admin/audit', '/api/admin/incidents'], 'folder-17': ['/api/admin/maintenance', '/api/admin/stats'], 'folder-19': ['/admin/data/master-navigation.json'] };
