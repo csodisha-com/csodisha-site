@@ -62,13 +62,13 @@
   document.addEventListener('click', function (e) {
     var t = e.target && e.target.closest ? e.target.closest('#btnSignOut, #btnConfirmLockModal') : null;
     if (!t) return;
-    var activeHash = (window.location.hash && /^#module-\d{2}-\d{3}$/.test(window.location.hash)) ? window.location.hash : '';
     try {
+      localStorage.removeItem('cso_active_module_id');
+      sessionStorage.removeItem('cso_post_login_hash');
       sessionStorage.clear();
-      if (activeHash) sessionStorage.setItem('cso_post_login_hash', activeHash);
     } catch (_) {}
     fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin', keepalive: true, headers: { 'X-CSO-CSRF': '1' } })
       .catch(function () {})
-      .then(function () { window.location.replace('/admin/login?reason=out' + activeHash); });
+      .then(function () { window.location.replace('/admin/login?reason=out'); });
   }, true);
 })();

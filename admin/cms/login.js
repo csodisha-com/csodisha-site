@@ -12,17 +12,6 @@
   var next = params.get('next') || '/admin/';
   if (!/^\/admin(\/|$)/.test(next) || next.indexOf('//') !== -1) next = '/admin/';
 
-  var postHash = '';
-  try {
-    if (location.hash && /^#module-\d{2}-\d{3}$/.test(location.hash)) {
-      postHash = location.hash;
-      sessionStorage.setItem('cso_post_login_hash', postHash);
-    } else {
-      var savedHash = sessionStorage.getItem('cso_post_login_hash') || '';
-      if (/^#module-\d{2}-\d{3}$/.test(savedHash)) postHash = savedHash;
-    }
-  } catch (_e) {}
-
   function show(t, kind) {
     msg.textContent = t;
     msg.hidden = !t;
@@ -32,6 +21,10 @@
 
   var reason = params.get('reason');
   if (reason === 'out' || params.get('logged_out') === '1') {
+    try {
+      localStorage.removeItem('cso_active_module_id');
+      sessionStorage.removeItem('cso_post_login_hash');
+    } catch (_e) {}
     show('You have been signed out.', 'info');
   } else if (reason === 'locked') {
     show('Session locked or expired. Please sign in again.', 'error');
@@ -82,10 +75,12 @@
         await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
         throw new Error('This account does not have staff access.');
       }
-      var target = next;
-      if (postHash && target.indexOf('#') === -1) target += postHash;
-      try { sessionStorage.removeItem('cso_post_login_hash'); } catch (_e) {}
-      location.replace(target);
+      try {
+        localStorage.removeItem('cso_active_module_id');
+        sessionStorage.removeItem('cso_post_login_hash');
+      } catch (_e) {}
+      var baseNext = (next || '/admin/').split('#')[0] || '/admin/';
+      location.replace(baseNext + '#module-01-001');
     } catch (err) {
       show(err.message || 'Sign-in failed.', 'error');
       go.disabled = false; go.textContent = 'Sign in';
