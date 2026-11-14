@@ -3,7 +3,8 @@
 import { PUBLIC_VISIBLE_SQL } from '../../_lib/validate.js';
 
 const SITE_ORIGIN = 'https://csodisha.com';
-const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/assets/images/cso-logo.svg`;
+const DEFAULT_OG_IMAGE = "https://assets.csodisha.org/img/cso-dashboard-og-preview.png";
+const OG_TITLE_SUFFIX = " | Common Sense Odisha";
 const SEO_CACHE = 'public, max-age=300, s-maxage=900';
 
 const STATIC_SITEMAP_ROUTES = [
@@ -386,6 +387,8 @@ export async function handleLlmsTxt(request, env) {
 
 function resolveImageMediaUrl(mediaKey) {
   if (!mediaKey || typeof mediaKey !== 'string') return DEFAULT_OG_IMAGE;
+  const ext = mediaKey.trim().match(/^external:(https:\/\/[^\s"<>]+\.(?:jpe?g|png|webp)(?:\?[^\s"<>]*)?)$/i);
+  if (ext) return ext[1];
   if (/^[0-9a-f-]{36}\.(jpg|jpeg|png|webp)$/i.test(mediaKey.trim())) {
     return `${SITE_ORIGIN}/api/media/${mediaKey.trim()}`;
   }
@@ -420,7 +423,7 @@ export async function resolveDeepLinkMeta(url, env) {
         const ogImage = resolveImageMediaUrl(job.cover_media_key || job.notification_media_key);
 
         return {
-          pageTitle: `${job.title} | CS Odisha`,
+          pageTitle: `${job.title} — CS Odisha`,
           title: job.title,
           description,
           canonicalUrl,
@@ -466,7 +469,7 @@ export async function resolveDeepLinkMeta(url, env) {
           160
         );
         return {
-          pageTitle: `${sch.title} | Schemes & Benefits | CS Odisha`,
+          pageTitle: `${sch.title} — CS Odisha`,
           title: sch.title,
           description,
           canonicalUrl: `${SITE_ORIGIN}/schemes-benefits/?scheme=${encodeURIComponent(sch.slug)}`,
@@ -625,13 +628,13 @@ export function rewriteHtmlWithMeta(response, meta) {
     `<meta name="description" content="${xmlEscape(meta.description)}">`,
     `<link rel="canonical" href="${xmlEscape(meta.canonicalUrl)}">`,
     `<meta property="og:type" content="article">`,
-    `<meta property="og:site_name" content="CS Odisha">`,
-    `<meta property="og:title" content="${xmlEscape(meta.title)}">`,
+    `<meta property="og:site_name" content="Common Sense Odisha (CS Odisha)">`,
+    `<meta property="og:title" content="${xmlEscape(meta.title + OG_TITLE_SUFFIX)}">`,
     `<meta property="og:description" content="${xmlEscape(meta.description)}">`,
     `<meta property="og:url" content="${xmlEscape(meta.canonicalUrl)}">`,
     `<meta property="og:image" content="${xmlEscape(meta.ogImage)}">`,
     `<meta name="twitter:card" content="summary_large_image">`,
-    `<meta name="twitter:title" content="${xmlEscape(meta.title)}">`,
+    `<meta name="twitter:title" content="${xmlEscape(meta.title + OG_TITLE_SUFFIX)}">`,
     `<meta name="twitter:description" content="${xmlEscape(meta.description)}">`,
     `<meta name="twitter:image" content="${xmlEscape(meta.ogImage)}">`
   ].join('\n  ');
