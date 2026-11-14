@@ -2848,3 +2848,60 @@ html[data-theme="lime"] .cso-nav-folder-btn:hover {
   background: rgba(15, 23, 42, 0.4);
   font-size: 12px;
 }
+
+/* ---------- Bilingual Social Post Generator (Warm Alabaster & Deep Forest Green) ---------- */
+.cms-embed .btn.cso-social-trigger {
+  background: #faf8f4;
+  color: #093824;
+  border-color: #0f4c3a;
+  font-weight: 600;
+}
+.cms-embed .btn.cso-social-trigger:hover,
+.cms-embed .btn.cso-social-trigger:focus-visible {
+  background: #093824;
+  color: #ffffff;
+  border-color: #093824;
+}
+.cms-embed .cso-social-panel,
+.cms-embed .modal.cso-social-modal {
+  background: #faf8f4;
+  color: #14261c;
+  border-color: #c9d4cc;
+}
+.cms-embed .cso-social-modal-head h2 {
+  color: #093824;
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+.cms-embed textarea.cso-social-textarea {
+  background: #faf8f4;
+  color: #14261c;
+  border-color: #cbd5ce;
+}
+.cms-embed textarea.cso-social-textarea:focus {
+  border-color: #0f4c3a;
+  box-shadow: 0 0 0 3px rgba(15, 76, 58, 0.16);
+}
+.cms-embed .btn.cso-btn-forest {
+  background: #093824;
+  border-color: #093824;
+  color: #ffffff;
+}
+.cms-embed .btn.cso-btn-forest:hover,
+.cms-embed .btn.cso-btn-forest:focus-visible {
+  background: #0f4c3a;
+  border-color: #0f4c3a;
+  color: #ffffff;
+}
+.cms-embed .btn.cso-btn-forest-outline {
+  background: #ffffff;
+  border-color: #0f4c3a;
+  color: #093824;
+}
+.cms-embed .btn.cso-btn-forest-outline:hover,
+.cms-embed .btn.cso-btn-forest-outline:focus-visible {
+  background: #e7f3ec;
+  border-color: #093824;
+  color: #093824;
+}

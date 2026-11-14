@@ -147,3 +147,38 @@ html[data-theme="apex"] .login-card:hover,html[data-theme="apex"] .btn:hover,htm
 html[data-theme="volt"] .login-card:hover,html[data-theme="volt"] .btn:hover,html[data-theme="volt"] .cso-theme-icon-btn:hover{box-shadow:0 10px 25px -5px rgba(190,242,100,.3),0 8px 10px -6px rgba(163,230,53,.15);border-color:rgba(190,242,100,.4)}
 html[data-theme="cobalt"] .login-card:hover,html[data-theme="cobalt"] .btn:hover,html[data-theme="cobalt"] .cso-theme-icon-btn:hover{box-shadow:0 10px 20px -5px rgba(30,86,160,.15),0 8px 10px -6px rgba(13,148,136,.1);border-color:#1e56a0}
 html[data-theme="lime"] .login-card:hover,html[data-theme="lime"] .btn:hover,html[data-theme="lime"] .cso-theme-icon-btn:hover{box-shadow:0 10px 20px -5px rgba(101,163,13,.2),0 8px 10px -6px rgba(132,204,22,.12);border-color:#65a30d}
+
+/* Bilingual Social Post Generator (Warm Alabaster & Deep Forest Green) */
+.cso-sr-copy-ta{position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0}
+.btn.cso-social-trigger{background:#faf8f4;color:#093824;border:1px solid #0f4c3a;font-weight:600}
+.btn.cso-social-trigger:hover,.btn.cso-social-trigger:focus-visible{background:#093824;color:#ffffff;border-color:#093824}
+.cso-social-panel{margin:16px 0;background:#faf8f4;color:#14261c;border:1px solid #c9d4cc;border-left:4px solid #093824;border-radius:12px;overflow:hidden}
+.cso-social-panel-summary{padding:12px 16px;font-weight:700;font-size:14px;color:#093824;background:#f3efe6;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between}
+.cso-social-panel-summary::-webkit-details-marker{display:none}
+.cso-social-panel-summary::after{content:'▾';font-size:12px;color:#0f4c3a}
+.cso-social-panel[open] .cso-social-panel-summary{border-bottom:1px solid #d6cfc2}
+.cso-social-panel[open] .cso-social-panel-summary::after{content:'▴'}
+.cso-social-body{padding:14px 16px;background:#faf8f4;color:#14261c}
+.cso-social-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}
+.cso-social-box{display:flex;flex-direction:column;gap:8px;background:#ffffff;border:1px solid #dcd6ca;border-radius:10px;padding:12px}
+.cso-social-box-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;color:#093824}
+.cso-social-meta-badges{display:inline-flex;align-items:center;gap:6px}
+.cso-social-textarea{width:100%;background:#faf8f4;color:#14261c;border:1px solid #cbd5ce;border-radius:8px;padding:9px 10px;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;resize:vertical}
+.cso-social-textarea:focus{outline:none;border-color:#0f4c3a;box-shadow:0 0 0 3px rgba(15,76,58,.15)}
+.cso-social-textarea-lg{min-height:210px}
+.cso-social-textarea-sm{min-height:110px}
+.cso-social-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:auto}
+.btn.cso-btn-forest{background:#093824;border-color:#093824;color:#ffffff;font-weight:600}
+.btn.cso-btn-forest:hover,.btn.cso-btn-forest:focus-visible{background:#0f4c3a;border-color:#0f4c3a;color:#ffffff}
+.btn.cso-btn-forest-outline{background:#ffffff;border-color:#0f4c3a;color:#093824;font-weight:600}
+.btn.cso-btn-forest-outline:hover,.btn.cso-btn-forest-outline:focus-visible{background:#e7f3ec;border-color:#093824;color:#093824}
+.btn.cso-btn-forest.is-copied,.btn.cso-btn-forest-outline.is-copied{border-color:#065f46;box-shadow:0 0 0 2px rgba(6,95,70,.2)}
+.cso-copied-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
+.cso-copied-badge[hidden]{display:none}
+.cso-social-count{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#f3efe6;color:#093824;border:1px solid #d6cfc2;font-variant-numeric:tabular-nums}
+.cso-social-count.is-over{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.modal.cso-social-modal{background:#faf8f4;color:#14261c;border:1px solid #c9d4cc}
+.cso-social-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #dcd6ca}
+.cso-social-modal-head h2{margin:0;color:#093824;font-size:18px}
+.cso-social-modal-sub{margin:4px 0 0;font-size:13px;color:#3d5245;font-weight:600}
+@media (max-width:860px){.cso-social-grid{grid-template-columns:1fr}}

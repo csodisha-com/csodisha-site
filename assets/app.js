@@ -1,7 +1,7 @@
 /* CSO independent source links v3 */
 (()=>{
 /* ================= EDIT YOUR CONTENT HERE ================= */
-const CFG={social:{instagram:'https://www.instagram.com/csodisha.official/',facebook:'https://www.facebook.com/profile.php?id=61596187936770',x:'https://x.com/csodisha',telegram:'https://t.me/csodisha',whatsapp:'https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w'}};
+const CFG={email:'contact@csodisha.com',social:{instagram:'https://www.instagram.com/csodisha.official/',facebook:'https://www.facebook.com/profile.php?id=61596187936770',x:'https://x.com/csodisha',telegram:'https://t.me/csodisha',whatsapp:'https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w',youtube:'https://www.youtube.com/@CSOdisha'}};
 const NAV=[['jobs-careers','Jobs & Careers','💼'],['schemes-benefits','Schemes & Benefits','🏛'],['study-library','Study Library','📖'],['community','Community','👥'],['about','About','ⓘ']];
 const MENUS={
  'jobs-careers':[

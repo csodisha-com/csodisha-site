@@ -2449,6 +2449,25 @@ footer {
   color: #8da4bc;
 }
 
+.cso-footer-contact {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #a8c2dc;
+}
+
+.cso-footer-contact-link {
+  color: #cfe0f2;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.cso-footer-contact-link:hover,
+.cso-footer-contact-link:focus-visible {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
 .cso-footer-social {
   display: flex;
   flex-wrap: wrap;
@@ -2636,7 +2655,8 @@ footer {
   }
 
   .cso-footer-desc,
-  .cso-footer-copy {
+  .cso-footer-copy,
+  .cso-footer-contact {
     text-align: center;
   }
 

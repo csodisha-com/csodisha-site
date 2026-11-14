@@ -107,6 +107,7 @@ export function buildJsonLd(row, blocks) {
           name: 'Common Sense Odisha',
           alternateName: ['CS Odisha', 'CSOdisha', 'କମନ୍ ସେନ୍ସ ଓଡ଼ିଶା'],
           url: 'https://csodisha.com/',
+          email: 'contact@csodisha.com',
           logo: 'https://csodisha.com/assets/images/cso-logo.svg',
           areaServed: 'Odisha, India',
           sameAs: [
@@ -114,7 +115,8 @@ export function buildJsonLd(row, blocks) {
             'https://www.facebook.com/profile.php?id=61596187936770',
             'https://x.com/csodisha',
             'https://t.me/csodisha',
-            'https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w'
+            'https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w',
+            'https://www.youtube.com/@CSOdisha'
           ]
         },
         {
@@ -321,7 +323,7 @@ export function renderDynamicPage(row, sitewide) {
   const odiaSub = meta.odia_subtitle ? `<p class="cso-live-odia">${esc(meta.odia_subtitle)}</p>` : '';
   const focused = !!meta.focused_landing_mode;
   const navHtml = focused ? '' : `<nav aria-label="Primary"><a href="/jobs-careers/">Jobs</a> <a href="/current-affairs/">Current Affairs</a> <a href="/mock-tests/">Mock Tests</a> <a href="/study-library/">Study Library</a></nav>`;
-  const footerHtml = focused ? '' : `<footer><div class="w"><p>&copy; Common Sense Odisha · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="/contact.html">Contact</a></p><div class="cso-footer-social" role="navigation" aria-label="Official Social Channels"><a class="cso-footer-social-link" href="https://www.instagram.com/csodisha.official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">Instagram</a> <a class="cso-footer-social-link" href="https://www.facebook.com/profile.php?id=61596187936770" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">Facebook</a> <a class="cso-footer-social-link" href="https://x.com/csodisha" target="_blank" rel="noopener noreferrer" aria-label="X" title="X">X</a> <a class="cso-footer-social-link" href="https://t.me/csodisha" target="_blank" rel="noopener noreferrer" aria-label="Telegram" title="Telegram">Telegram</a> <a class="cso-footer-social-link" href="https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp">WhatsApp</a></div></div></footer>`;
+  const footerHtml = focused ? '' : `<footer><div class="w"><p>&copy; Common Sense Odisha · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="/contact.html">Contact</a> · <a href="mailto:contact@csodisha.com">contact@csodisha.com</a></p><div class="cso-footer-social" role="navigation" aria-label="Official Social Channels"><a class="cso-footer-social-link" href="https://www.instagram.com/csodisha.official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">Instagram</a> <a class="cso-footer-social-link" href="https://www.facebook.com/profile.php?id=61596187936770" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">Facebook</a> <a class="cso-footer-social-link" href="https://x.com/csodisha" target="_blank" rel="noopener noreferrer" aria-label="X" title="X">X</a> <a class="cso-footer-social-link" href="https://t.me/csodisha" target="_blank" rel="noopener noreferrer" aria-label="Telegram" title="Telegram">Telegram</a> <a class="cso-footer-social-link" href="https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp">WhatsApp</a> <a class="cso-footer-social-link" href="https://www.youtube.com/@CSOdisha" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube">YouTube</a></div></div></footer>`;
   const hero = row.hero_title ? `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.hero_title)}</h1>${row.hero_subtitle ? `<p>${esc(row.hero_subtitle)}</p>` : ''}${odiaSub}${row.cta_label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(row.cta_url))}">${esc(row.cta_label)}</a></p>` : ''}</div></section>` : `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.title)}</h1>${odiaSub}</div></section>`;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(row.title)}</title><meta name="description" content="${esc(row.meta_description)}">${robotsMeta}${ogMeta}${jsonLd}

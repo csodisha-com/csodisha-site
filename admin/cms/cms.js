@@ -161,6 +161,233 @@
     return wrap;
   }
 
+  /* ---------- bilingual social post generator (Jobs & Schemes) ---------- */
+  var SOCIAL_URLS = {
+    telegram: 'https://t.me/csodisha',
+    whatsapp: 'https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w',
+    youtube: 'https://www.youtube.com/@CSOdisha'
+  };
+  function cleanSocialText(v, maxLen) {
+    var s = String(v || '').replace(/\s+/g, ' ').trim();
+    if (!maxLen || s.length <= maxLen) return s;
+    return s.slice(0, Math.max(0, maxLen - 1)).trim() + '…';
+  }
+  function buildSocialDeepLink(kind, item) {
+    var slug = cleanSocialText(item && (item.slug || item.id));
+    if (kind === 'schemes') {
+      return slug ? ('https://csodisha.com/schemes-benefits/?scheme=' + encodeURIComponent(slug)) : 'https://csodisha.com/schemes-benefits/';
+    }
+    return slug ? ('https://csodisha.com/jobs-careers/?job=' + encodeURIComponent(slug)) : 'https://csodisha.com/jobs-careers/';
+  }
+  function buildBilingualSocialPosts(kind, item) {
+    var it = item || {};
+    var deepUrl = buildSocialDeepLink(kind, it);
+    var titleEn = cleanSocialText(it.title) || (kind === 'schemes' ? 'Odisha Welfare Scheme' : 'Odisha Job Notification');
+    var titleOr = cleanSocialText(it.title_or);
+    var longLines = [];
+    var shortPost = '';
+
+    if (kind === 'schemes') {
+      var dept = cleanSocialText(it.department);
+      var gov = cleanSocialText(it.gov_level) || 'Odisha';
+      var cat = cleanSocialText(it.category);
+      var deptCat = [dept, gov, cat].filter(Boolean).join(' · ') || 'Odisha Welfare Scheme';
+      var benefitEn = cleanSocialText(it.benefit_summary || it.summary, 220) || 'Check scheme benefits, eligibility, and required documents on Common Sense Odisha.';
+      var benefitOr = cleanSocialText(it.benefit_summary_or || it.summary_or, 220);
+      var eligParts = [];
+      if (it.min_age || it.max_age) eligParts.push('Age: ' + (it.min_age || '0') + '–' + (it.max_age || 'Any') + ' yrs');
+      if (it.max_income) eligParts.push('Income <= Rs. ' + it.max_income);
+      if (it.gender_eligible && it.gender_eligible !== 'all') eligParts.push('Gender: ' + it.gender_eligible);
+      if (it.target_groups) eligParts.push(cleanSocialText(Array.isArray(it.target_groups) ? it.target_groups.join(', ') : it.target_groups, 80));
+      var windowLabel = cleanSocialText(it.application_status_label) || (it.verified_date ? 'Verified: ' + cleanSocialText(it.verified_date) : 'Open / Check Official Portal');
+
+      longLines.push('🏛️ Odisha Scheme Alert | ସରକାରୀ ଯୋଜନା ସୂଚନା');
+      longLines.push('');
+      longLines.push('📌 ' + titleEn + (titleOr ? ' (' + titleOr + ')' : ''));
+      longLines.push('🏢 Dept / Category: ' + deptCat);
+      longLines.push('🎁 Benefit / ଲାଭ: ' + benefitEn);
+      if (eligParts.length) longLines.push('✅ Eligibility: ' + eligParts.join(' · '));
+      if (benefitOr) longLines.push('📝 ଓଡ଼ିଆ ସୂଚନା: ' + benefitOr);
+      longLines.push('🗓️ Last Date / Window: ' + windowLabel);
+      longLines.push('');
+      longLines.push('👉 ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ଓ ଆବେଦନ ପ୍ରକ୍ରିୟା:');
+      longLines.push('🔗 ' + deepUrl);
+      longLines.push('');
+      longLines.push('📲 Follow Common Sense Odisha:');
+      longLines.push('• Telegram: ' + SOCIAL_URLS.telegram);
+      longLines.push('• WhatsApp: ' + SOCIAL_URLS.whatsapp);
+      longLines.push('• YouTube: ' + SOCIAL_URLS.youtube);
+
+      var schTags = '#OdishaSchemes #CSOdisha';
+      var schSuffix = '\n\n🔗 ' + deepUrl + '\n' + schTags;
+      var schPrefix = '🏛️ ' + (dept ? dept + ': ' : (gov ? gov + ' Scheme: ' : ''));
+      var schExtra = it.benefit_summary ? ' — ' + cleanSocialText(it.benefit_summary, 70) : '';
+      var schBudget = Math.max(0, 279 - schSuffix.length);
+      var schBody = cleanSocialText(schPrefix + titleEn + schExtra, schBudget);
+      shortPost = (schBody + schSuffix).slice(0, 279);
+      if ((schBody + schSuffix).length > 279) {
+        shortPost = (cleanSocialText(titleEn, Math.max(0, 279 - schSuffix.length)) + schSuffix).slice(0, 279);
+      }
+    } else {
+      var org = cleanSocialText(it.organisation);
+      var jobCat = cleanSocialText(it.category);
+      var orgDept = [org, jobCat].filter(Boolean).join(' · ') || 'Odisha Govt / Public Sector';
+      var vacText = (it.vacancies !== null && it.vacancies !== undefined && String(it.vacancies) !== '') ? String(it.vacancies) + ' Vacancies' : '';
+      var eligSummary = cleanSocialText(it.qualification || it.summary, 220) || 'Check full eligibility criteria, age limit, and official PDF on Common Sense Odisha.';
+      var odiaSummary = cleanSocialText(it.summary_or, 220);
+      var lastDate = cleanSocialText(it.last_date) || 'See Official Notification';
+
+      longLines.push('📢 Job Alert | ଚାକିରି ସୂଚନା');
+      longLines.push('');
+      longLines.push('📌 ' + titleEn + (titleOr ? ' (' + titleOr + ')' : ''));
+      longLines.push('🏢 Dept / Category: ' + orgDept + (vacText ? ' (' + vacText + ')' : ''));
+      longLines.push('🎓 Eligibility / Summary: ' + eligSummary);
+      if (odiaSummary) longLines.push('📝 ଓଡ଼ିଆ ସୂଚନା: ' + odiaSummary);
+      longLines.push('🗓️ Last Date / ଶେଷ ତାରିଖ: ' + lastDate);
+      longLines.push('');
+      longLines.push('👉 ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ଓ ଅଫିସିଆଲ୍ ଲିଙ୍କ୍:');
+      longLines.push('🔗 ' + deepUrl);
+      longLines.push('');
+      longLines.push('📲 Follow Common Sense Odisha:');
+      longLines.push('• Telegram: ' + SOCIAL_URLS.telegram);
+      longLines.push('• WhatsApp: ' + SOCIAL_URLS.whatsapp);
+      longLines.push('• YouTube: ' + SOCIAL_URLS.youtube);
+
+      var jobTags = '#OdishaJobs #CSOdisha';
+      var jobSuffix = '\n\n🔗 ' + deepUrl + '\n' + jobTags;
+      var jobPrefix = '📢 ' + (org ? org + ': ' : '');
+      var jobTail = (vacText ? ' (' + vacText + ')' : '') + (it.last_date ? ' | Last Date: ' + cleanSocialText(it.last_date) : '');
+      var jobBudget = Math.max(0, 279 - jobSuffix.length);
+      var jobBody = cleanSocialText(jobPrefix + titleEn + jobTail, jobBudget);
+      shortPost = (jobBody + jobSuffix).slice(0, 279);
+      if ((jobBody + jobSuffix).length > 279) {
+        shortPost = (cleanSocialText(titleEn, Math.max(0, 279 - jobSuffix.length)) + jobSuffix).slice(0, 279);
+      }
+    }
+    return { longPost: longLines.join('\n'), shortPost: shortPost, deepUrl: deepUrl };
+  }
+  async function copySocialText(text, badgeEl, btnEl) {
+    var copied = false;
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        await navigator.clipboard.writeText(text);
+        copied = true;
+      }
+    } catch (_) {}
+    if (!copied) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.className = 'cso-sr-copy-ta';
+        document.body.appendChild(ta);
+        ta.select();
+        copied = document.execCommand('copy');
+        ta.remove();
+      } catch (_) {}
+    }
+    if (copied) {
+      if (badgeEl) {
+        badgeEl.textContent = 'Copied!';
+        badgeEl.hidden = false;
+        clearTimeout(badgeEl._copyTimer);
+        badgeEl._copyTimer = setTimeout(function () { badgeEl.hidden = true; }, 2200);
+      }
+      if (btnEl) {
+        btnEl.classList.add('is-copied');
+        clearTimeout(btnEl._copyBtnTimer);
+        btnEl._copyBtnTimer = setTimeout(function () { btnEl.classList.remove('is-copied'); }, 2200);
+      }
+      toast('Copied social post to clipboard');
+    } else {
+      toast('Clipboard permission unavailable — select and copy from the preview box', true);
+    }
+  }
+  function createSocialPostPanel(kind, getItemFn, opts) {
+    var o = opts || {};
+    var longTa = el('textarea', { class: 'cso-social-textarea cso-social-textarea-lg', rows: '10', 'aria-label': 'Telegram WhatsApp Facebook bilingual post' });
+    var shortTa = el('textarea', { class: 'cso-social-textarea cso-social-textarea-sm', rows: '4', 'aria-label': 'X and Instagram short post' });
+    var charBadge = el('span', { class: 'cso-social-count', text: '0 / 280 chars' });
+    var longCopied = el('span', { class: 'cso-copied-badge', text: 'Copied!', hidden: true });
+    var shortCopied = el('span', { class: 'cso-copied-badge', text: 'Copied!', hidden: true });
+    var longBtn = el('button', { type: 'button', class: 'btn sm cso-btn-forest', text: 'Copy Telegram / WhatsApp / FB Post (EN + ଓଡ଼ିଆ)', onclick: function () {
+      copySocialText(longTa.value, longCopied, longBtn);
+    } });
+    var shortBtn = el('button', { type: 'button', class: 'btn sm cso-btn-forest-outline', text: 'Copy Short X / Instagram Post (<280 chars)', onclick: function () {
+      copySocialText(shortTa.value, shortCopied, shortBtn);
+    } });
+
+    function updateCharCount() {
+      var len = shortTa.value.length;
+      charBadge.textContent = len + ' / 280 chars';
+      charBadge.classList.toggle('is-over', len >= 280);
+    }
+    shortTa.addEventListener('input', updateCharCount);
+
+    function refresh() {
+      var gen = buildBilingualSocialPosts(kind, typeof getItemFn === 'function' ? getItemFn() : {});
+      longTa.value = gen.longPost;
+      shortTa.value = gen.shortPost;
+      updateCharCount();
+    }
+    refresh();
+
+    var content = el('div', { class: 'cso-social-body' }, [
+      el('div', { class: 'cso-social-grid' }, [
+        el('div', { class: 'cso-social-box' }, [
+          el('div', { class: 'cso-social-box-head' }, [
+            el('strong', { text: 'Telegram / WhatsApp / Facebook (EN + ଓଡ଼ିଆ)' }),
+            longCopied
+          ]),
+          longTa,
+          el('div', { class: 'cso-social-actions' }, [longBtn])
+        ]),
+        el('div', { class: 'cso-social-box' }, [
+          el('div', { class: 'cso-social-box-head' }, [
+            el('strong', { text: 'X / Instagram Alert (<280 chars)' }),
+            el('div', { class: 'cso-social-meta-badges' }, [charBadge, shortCopied])
+          ]),
+          shortTa,
+          el('div', { class: 'cso-social-actions' }, [shortBtn])
+        ])
+      ])
+    ]);
+
+    if (o.modalMode) {
+      return { node: content, refresh: refresh };
+    }
+    var det = el('details', { class: 'cso-social-panel' }, [
+      el('summary', { class: 'cso-social-panel-summary', text: '📣 Bilingual Social Post Generator (Telegram / WhatsApp / FB & X / Instagram)' }),
+      content
+    ]);
+    det.addEventListener('toggle', function () { if (det.open) refresh(); });
+    return { node: det, refresh: refresh };
+  }
+  function openSocialPostModal(kind, item) {
+    var prev = document.activeElement;
+    var done = function () { ov.remove(); document.removeEventListener('keydown', onKey); if (prev && prev.focus) prev.focus(); };
+    var onKey = function (e) { if (e.key === 'Escape') done(); };
+    var panel = createSocialPostPanel(kind, function () { return item; }, { modalMode: true });
+    var closeTopBtn = el('button', { type: 'button', class: 'btn sm', text: '✕', 'aria-label': 'Close modal', onclick: done });
+    var closeFootBtn = el('button', { type: 'button', class: 'btn sm', text: 'Close', onclick: done });
+    var ov = el('div', { class: 'overlay' }, el('div', { class: 'modal wide cso-social-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Social Post Generator' }, [
+      el('div', { class: 'cso-social-modal-head' }, [
+        el('div', {}, [
+          el('h2', { text: 'Bilingual Social Post Generator' }),
+          el('p', { class: 'cso-social-modal-sub', text: (item && item.title) ? item.title : (kind === 'schemes' ? 'Scheme Post' : 'Job Alert Post') })
+        ]),
+        closeTopBtn
+      ]),
+      panel.node,
+      el('div', { class: 'actions' }, [closeFootBtn])
+    ]));
+    ov.addEventListener('click', function (e) { if (e.target === ov) done(); });
+    document.addEventListener('keydown', onKey);
+    overlayHost().appendChild(ov);
+    var firstBtn = ov.querySelector('.cso-btn-forest');
+    if (firstBtn) firstBtn.focus();
+  }
+
   /* ---------- uploader ---------- */
   function uploader(id, kind, current, onChange) {
     var accept = kind === 'pdf' ? 'application/pdf' : kind === 'any' ? 'application/pdf,image/jpeg,image/png,image/webp' : 'image/jpeg,image/png,image/webp';
@@ -669,6 +896,11 @@
         await api('POST', T.path + '/' + r.id + '/status', body); toast('Updated'); load();
       } catch (e) { toast(e.message, true); }
     }
+    async function openJobSocial(r) {
+      var item = r;
+      try { item = await api('GET', 'jobs/' + encodeURIComponent(r.id)); } catch (_) {}
+      openSocialPostModal('jobs', item);
+    }
     async function del(r) {
       if (!(await confirmModal('Delete "' + r.title + '"?', 'It will be removed from the site and can only be restored by a database admin.', 'Delete', true))) return;
       try { await api('DELETE', T.path + '/' + r.id); toast('Deleted'); load(); } catch (e) { toast(e.message, true); }
@@ -689,6 +921,7 @@
           var a = [el('a', { class: 'btn sm', href: '#/' + key + '/' + r.id, text: 'Edit' })];
           if (r.status !== 'published') a.push(el('button', { class: 'btn sm', text: 'Publish', onclick: function () { act(r, 'published'); } }));
           if (r.status === 'published') a.push(el('button', { class: 'btn sm', text: 'Unpublish', onclick: function () { act(r, 'draft'); } }));
+          if (key === 'jobs' && r.status === 'published') a.push(el('button', { type: 'button', class: 'btn sm cso-social-trigger', text: 'Copy Social Post', onclick: function () { openJobSocial(r); } }));
           if (key === 'jobs') a.push(el('button', { class: 'btn sm', text: '+7d Deadline', onclick: function () { extendDeadline(r); } }));
           a.push(el('button', { class: 'btn sm', text: 'Duplicate', onclick: function () { duplicateRow(r); } }));
           a.push(el('button', { class: 'btn sm', text: 'Schedule', onclick: function () { act(r, 'scheduled'); } }));
@@ -939,11 +1172,20 @@
       el('span', { text: '🔔 Send Goal Alert to matching push subscribers upon Publish' })
     ]));
 
+    var jobSocialPanel = key === 'jobs' ? createSocialPostPanel('jobs', function () {
+      var snap = { id: item && item.id };
+      Object.keys(getters).forEach(function (k) { snap[k] = getters[k](); });
+      Object.assign(snap, sb.get());
+      return snap;
+    }) : null;
+    if (jobSocialPanel) left.appendChild(jobSocialPanel.node);
+
     var livePrevTimer;
     function renderLivePreview() {
       var snap = {};
       Object.keys(getters).forEach(function (k) { snap[k] = getters[k](); });
       Object.assign(snap, sb.get());
+      if (jobSocialPanel) jobSocialPanel.refresh();
       clear(previewPane);
       previewPane.appendChild(el('h3', { text: key === 'jobs' ? 'Live Job Alert Preview' : 'Live Article Reader Preview' }));
       var card = el('div', { class: 'cso-preview-card' });
@@ -1934,6 +2176,15 @@
       var featChk = el('input', { type: 'checkbox', id: 'sch-featured' });
       featChk.checked = Boolean(s.is_featured);
       form.appendChild(el('label', { class: 'check-row', for: 'sch-featured' }, [featChk, el('span', { text: 'Feature as Flagship Odisha / Central Scheme' })]));
+      var schemeSocialPanel = createSocialPostPanel('schemes', function () {
+        var snap = { id: s && s.id };
+        Object.keys(inputs).forEach(function (k) { snap[k] = inputs[k].value; });
+        return snap;
+      });
+      Object.keys(inputs).forEach(function (k) {
+        inputs[k].addEventListener('input', function () { schemeSocialPanel.refresh(); });
+      });
+      form.appendChild(schemeSocialPanel.node);
       form.appendChild(el('div', { class: 'actions' }, [
         el('button', { type: 'submit', class: 'btn primary', text: 'Save Scheme' }),
         el('a', { class: 'btn', href: '#/schemes', text: 'Back to Schemes List' })
@@ -1980,6 +2231,7 @@
           el('td', {}, el('div', { class: 'actions' }, [
             saveSortBtn,
             el('a', { class: 'btn sm', href: '#/schemes/' + s.id, text: 'Edit / Odia' }),
+            (s.status || 'published') === 'published' ? el('button', { type: 'button', class: 'btn sm cso-social-trigger', text: 'Copy Social Post', onclick: function () { openSocialPostModal('schemes', s); } }) : null,
             el('button', { type: 'button', class: 'btn sm danger', text: 'Delete', onclick: async function () {
               if (!(await confirmModal('Delete "' + s.title + '"?', 'Scheme will be soft-deleted from D1.', 'Delete', true))) return;
               await api('DELETE', 'schemes/' + encodeURIComponent(s.id));
