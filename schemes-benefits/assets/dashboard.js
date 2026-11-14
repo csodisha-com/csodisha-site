@@ -832,22 +832,45 @@
     sidebarClose.addEventListener('click', closeMobileMenu);
   }
 
-  menuToggle.addEventListener('click', () => {
-    if (window.matchMedia('(max-width: 768px)').matches) {
-      if (document.body.classList.contains('menu-open')) {
-        closeMobileMenu();
-      } else {
-        openMobileMenu();
-      }
-    } else {
-      const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
-      menuToggle.setAttribute('aria-expanded', String(!isCollapsed));
-      menuToggle.setAttribute(
-        'aria-label',
-        isCollapsed ? 'Expand navigation' : 'Collapse navigation'
-      );
+  const SIDEBAR_PREF_KEY = 'cso_schemes_sidebar_collapsed';
+  const sidebarToggleBtn = document.getElementById('cso-sidebar-toggle');
+  const sidebarToggleTopBtn = document.getElementById('cso-sidebar-toggle-top');
+
+  function applyDesktopSidebarState(collapsed) {
+    document.body.classList.toggle('cso-sidebar-collapsed', collapsed);
+    document.body.classList.toggle('sidebar-collapsed', collapsed);
+    const expanded = String(!collapsed);
+    if (menuToggle) {
+      menuToggle.setAttribute('aria-expanded', expanded);
+      menuToggle.setAttribute('aria-label', collapsed ? 'Expand navigation' : 'Collapse navigation');
     }
-  });
+    if (sidebarToggleBtn) {
+      sidebarToggleBtn.setAttribute('aria-expanded', expanded);
+      sidebarToggleBtn.textContent = collapsed ? '▶' : '◀';
+    }
+    if (sidebarToggleTopBtn) sidebarToggleTopBtn.setAttribute('aria-expanded', expanded);
+  }
+
+  function toggleDesktopSidebar() {
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      if (document.body.classList.contains('menu-open')) closeMobileMenu();
+      else openMobileMenu();
+    } else {
+      const next = !document.body.classList.contains('cso-sidebar-collapsed');
+      applyDesktopSidebarState(next);
+      try { localStorage.setItem(SIDEBAR_PREF_KEY, next ? '1' : '0'); } catch {}
+    }
+  }
+
+  try {
+    if (!window.matchMedia('(max-width: 768px)').matches && localStorage.getItem(SIDEBAR_PREF_KEY) === '1') {
+      applyDesktopSidebarState(true);
+    }
+  } catch {}
+
+  if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleDesktopSidebar);
+  if (sidebarToggleTopBtn) sidebarToggleTopBtn.addEventListener('click', toggleDesktopSidebar);
+  if (menuToggle) menuToggle.addEventListener('click', toggleDesktopSidebar);
 
   search.addEventListener('input', renderSearch);
 

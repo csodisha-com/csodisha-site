@@ -921,16 +921,47 @@
   const sidebarClose = $('sidebar-close');
   if (sidebarClose) sidebarClose.addEventListener('click', closeMobileMenu);
 
+  const SIDEBAR_PREF_KEY = 'cso_about_sidebar_collapsed';
+  const sidebarToggleBtn = $('cso-sidebar-toggle');
+  const sidebarToggleTopBtn = $('cso-sidebar-toggle-top');
+
+  function applyDesktopSidebarState(collapsed) {
+    document.body.classList.toggle('cso-sidebar-collapsed', collapsed);
+    document.body.classList.toggle('sidebar-collapsed', collapsed);
+    const expanded = String(!collapsed);
+    if (menuToggle) menuToggle.setAttribute('aria-expanded', expanded);
+    if (sidebarToggleBtn) {
+      sidebarToggleBtn.setAttribute('aria-expanded', expanded);
+      sidebarToggleBtn.textContent = collapsed ? '▶' : '◀';
+      sidebarToggleBtn.title = collapsed ? 'Expand Sidebar' : 'Collapse Sidebar';
+    }
+    if (sidebarToggleTopBtn) {
+      sidebarToggleTopBtn.setAttribute('aria-expanded', expanded);
+    }
+  }
+
+  function toggleDesktopSidebar() {
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      if (document.body.classList.contains('menu-open')) closeMobileMenu();
+      else openMobileMenu();
+      return;
+    }
+    const next = !document.body.classList.contains('cso-sidebar-collapsed');
+    applyDesktopSidebarState(next);
+    try { localStorage.setItem(SIDEBAR_PREF_KEY, next ? '1' : '0'); } catch {}
+  }
+
+  try {
+    if (!window.matchMedia('(max-width: 768px)').matches && localStorage.getItem(SIDEBAR_PREF_KEY) === '1') {
+      applyDesktopSidebarState(true);
+    }
+  } catch {}
+
+  if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleDesktopSidebar);
+  if (sidebarToggleTopBtn) sidebarToggleTopBtn.addEventListener('click', toggleDesktopSidebar);
+
   if (menuToggle) {
-    menuToggle.addEventListener('click', () => {
-      if (window.matchMedia('(max-width: 768px)').matches) {
-        if (document.body.classList.contains('menu-open')) closeMobileMenu();
-        else openMobileMenu();
-      } else {
-        const collapsed = document.body.classList.toggle('sidebar-collapsed');
-        menuToggle.setAttribute('aria-expanded', String(!collapsed));
-      }
-    });
+    menuToggle.addEventListener('click', toggleDesktopSidebar);
   }
 
   if (search) search.addEventListener('input', runDirectorySearch);
