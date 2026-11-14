@@ -520,7 +520,12 @@
     var st = { page: 1, limit: 20, q: '' }; var box = el('div'); var t;
     var q = el('input', { type: 'search', placeholder: 'Search title or exam…', 'aria-label': 'Search' });
     q.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.q = q.value; st.page = 1; load(); }, 300); });
-    main.appendChild(el('div', { class: 'toolbar' }, [q, el('span', { class: 'spacer' }), el('button', { class: 'btn primary', text: '+ Add ' + (kind === 'syllabus' ? 'syllabus' : 'question paper'), onclick: function () { form(null); } })]));
+    main.appendChild(el('div', { class: 'toolbar' }, [
+      q,
+      el('span', { class: 'spacer' }),
+      el('a', { class: 'btn sm', href: '#/study-library-directory', text: '🗂 Study Tree (1,681 Nodes)' }),
+      el('button', { class: 'btn primary', text: '+ Add ' + (kind === 'syllabus' ? 'syllabus' : 'question paper'), onclick: function () { form(null); } })
+    ]));
     main.appendChild(box);
     function form(item) {
       var isNew = !item; var key = item ? item.media_key : '';
@@ -2143,6 +2148,146 @@
     await load();
   }
 
+  async function viewStudyLibraryDirectory() {
+    setTitle('Study Library Directory Tree (D1 · 1,681 Nodes)');
+    var st = { page: 1, limit: 30, group: '', level: '', status: '', q: '' };
+    var grpSel = el('select', { 'aria-label': 'Filter by Parent Group' }, [el('option', { value: '', text: 'All 10 Academic Groups' })]);
+    var lvlSel = el('select', { 'aria-label': 'Filter by Level' }, [
+      ['', 'All Levels'], ['group', 'Groups'], ['section', 'Sections'], ['subcategory', 'Subcategories'], ['entry', 'Entries']
+    ].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+    var statusSel = el('select', { 'aria-label': 'Filter by Status' }, [
+      ['', 'All Status'], ['published', 'Published'], ['draft', 'Draft']
+    ].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+    var qInp = el('input', { type: 'search', placeholder: 'Search 1,681 study nodes (title, Odia, exam_slug, badge)…' });
+
+    var createPanel = el('details', { class: 'panel cso-create-details' });
+    createPanel.appendChild(el('summary', { class: 'btn sm', text: '+ Add Study Library Node (D1)' }));
+    var formTitle = el('input', { type: 'text', required: true, placeholder: 'Node Title (EN)' });
+    var formTitleOr = el('input', { type: 'text', placeholder: 'Odia Title (_or)' });
+    var formLevel = el('select', {}, ['entry', 'subcategory', 'section', 'group'].map(function (l) { return el('option', { value: l, text: l }); }));
+    var formParent = el('input', { type: 'text', placeholder: 'Parent Slug (e.g. competitive-exams-teacher-education)' });
+    var formExamSlug = el('input', { type: 'text', placeholder: 'Exam Slug (opsc-oas, ossc-cgl, ugc-net, odisha-bed-otet…)' });
+    var formSub = el('input', { type: 'text', placeholder: 'Subtitle (EN)' });
+    var formBadge = el('input', { type: 'text', placeholder: 'Badge / Number (e.g. 4.1.9)' });
+    var formIcon = el('input', { type: 'text', value: '📚', placeholder: 'Emoji icon' });
+    var formUrl = el('input', { type: 'text', placeholder: 'Official Academic https://... URL' });
+    var formSort = el('input', { type: 'number', value: '10', placeholder: 'Sort order' });
+    var formStatus = el('select', {}, ['published', 'draft'].map(function (s) { return el('option', { value: s, text: s }); }));
+
+    var createForm = el('form', { class: 'grid2' }, [
+      field('Title (EN) *', formTitle), field('Title (Odia _or)', formTitleOr),
+      field('Level', formLevel), field('Parent Slug', formParent),
+      field('Exam Track Slug', formExamSlug), field('Subtitle (EN)', formSub),
+      field('Badge / Code', formBadge), field('Icon', formIcon),
+      field('Resource URL', formUrl), field('Sort Order', formSort),
+      field('Status', formStatus),
+      el('div', { class: 'actions' }, [el('button', { type: 'submit', class: 'btn primary sm', text: '+ Create Study Node' })])
+    ]);
+
+    createForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      try {
+        await api('POST', 'study-library-directory', {
+          title: formTitle.value.trim(),
+          title_or: formTitleOr.value.trim(),
+          level: formLevel.value,
+          parent_slug: formParent.value.trim() || null,
+          exam_slug: formExamSlug.value.trim(),
+          subtitle: formSub.value.trim(),
+          badge_text: formBadge.value.trim(),
+          icon_name: formIcon.value.trim() || '📚',
+          resource_url: formUrl.value.trim(),
+          sort_order: Number(formSort.value) || 0,
+          status: formStatus.value
+        });
+        formTitle.value = ''; formTitleOr.value = ''; formExamSlug.value = '';
+        formSub.value = ''; formBadge.value = ''; formUrl.value = '';
+        toast('Study library node saved in D1');
+        load();
+      } catch (err) { toast(err.message, true); }
+    });
+    createPanel.appendChild(createForm);
+
+    var box = el('div');
+    var populatedGroups = false;
+
+    async function load() {
+      var d = await api(
+        'GET',
+        'study-library-directory?page=' + st.page + '&limit=' + st.limit +
+        '&group=' + encodeURIComponent(st.group) +
+        '&level=' + encodeURIComponent(st.level) +
+        '&status=' + encodeURIComponent(st.status) +
+        '&q=' + encodeURIComponent(st.q)
+      );
+
+      if (!populatedGroups && Array.isArray(d.parents)) {
+        populatedGroups = true;
+        d.parents.filter(function (p) { return p.level === 'group'; }).forEach(function (p) {
+          grpSel.appendChild(el('option', { value: p.slug, text: p.title }));
+        });
+      }
+
+      var tb = el('tbody');
+      (d.items || []).forEach(function (n) {
+        var titleInp = el('input', { type: 'text', value: n.title || '', 'aria-label': 'Node title EN' });
+        var examInp = el('input', { type: 'text', value: n.exam_slug || '', placeholder: 'exam-slug', 'aria-label': 'Exam slug' });
+        var orInp = el('input', { type: 'text', value: n.title_or || '', placeholder: 'ଓଡ଼ିଆ ଶୀର୍ଷକ', 'aria-label': 'Odia title' });
+        var sortInp = el('input', { type: 'number', value: String(n.sort_order || 0), 'aria-label': 'Sort order' });
+        var statusNode = el('select', { 'aria-label': 'Node status' }, ['published', 'draft'].map(function (s) {
+          return el('option', { value: s, text: s, selected: n.status === s });
+        }));
+
+        var saveBtn = el('button', { type: 'button', class: 'btn sm primary', text: 'Save', onclick: async function () {
+          try {
+            await api('PUT', 'study-library-directory/' + encodeURIComponent(n.id), {
+              title: titleInp.value.trim(),
+              title_or: orInp.value.trim(),
+              exam_slug: examInp.value.trim(),
+              sort_order: Number(sortInp.value) || 0,
+              status: statusNode.value
+            });
+            toast('Updated Study Library node');
+          } catch (err) { toast(err.message, true); }
+        } });
+
+        var delBtn = el('button', { type: 'button', class: 'btn sm danger', text: 'Delete', onclick: async function () {
+          if (!(await confirmModal('Delete "' + n.title + '"?', 'Remove study node permanently from D1 tree.', 'Delete', true))) return;
+          try {
+            await api('DELETE', 'study-library-directory/' + encodeURIComponent(n.id));
+            toast('Removed study node');
+            load();
+          } catch (err) { toast(err.message, true); }
+        } });
+
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, [badge(n.level), n.badge_text ? el('div', { class: 'hint', text: n.badge_text }) : null, el('div', { class: 'hint', text: n.slug + (n.parent_slug ? ' ← ' + n.parent_slug : '') })]),
+          el('td', {}, [titleInp, examInp]),
+          el('td', {}, orInp),
+          el('td', {}, [sortInp, statusNode]),
+          el('td', {}, el('div', { class: 'actions' }, [saveBtn, delBtn]))
+        ]));
+      });
+
+      clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+        el('caption', { class: 'muted', text: 'Study Library nodes matching filter: ' + (d.total || 0) }),
+        el('thead', {}, el('tr', {}, ['Level / Slug', 'Title & Exam Slug', 'Title (Odia _or)', 'Order & Status', 'Actions'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+        tb
+      ])));
+      box.appendChild(pager(st, d.total || 0, load));
+    }
+
+    var t;
+    grpSel.addEventListener('change', function () { st.group = grpSel.value; st.page = 1; load(); });
+    lvlSel.addEventListener('change', function () { st.level = lvlSel.value; st.page = 1; load(); });
+    statusSel.addEventListener('change', function () { st.status = statusSel.value; st.page = 1; load(); });
+    qInp.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.q = qInp.value; st.page = 1; load(); }, 250); });
+    main.appendChild(el('div', { class: 'toolbar' }, [grpSel, lvlSel, statusSel, qInp, el('a', { class: 'btn sm', href: '#/syllabus', text: 'Syllabus' }), el('a', { class: 'btn sm', href: '#/pyq', text: 'PYQs' })]));
+    main.appendChild(createPanel);
+    main.appendChild(box);
+    await load();
+  }
+
   async function viewFreshnessAudit() {
     setTitle('Content Freshness & Expiry Audit');
     var data = await api('GET', 'freshness');
@@ -2233,7 +2378,7 @@
   /* ---------- router ---------- */
   function buildNav() {
     var nav = clear(document.getElementById('nav'));
-    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/about-directory', 'About CSO'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/jobs-directory', 'Jobs Directory'], ['#/schemes', 'Schemes'], ['#/schemes-directory', 'Schemes Tree'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/freshness', 'Freshness Audit'], ['#/feedback', 'Feedback Queue'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
+    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/about-directory', 'About CSO'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/jobs-directory', 'Jobs Directory'], ['#/schemes', 'Schemes'], ['#/schemes-directory', 'Schemes Tree'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/study-library-directory', 'Study Directory'], ['#/freshness', 'Freshness Audit'], ['#/feedback', 'Feedback Queue'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
       .forEach(function (l) { nav.appendChild(el('a', { href: l[0] }, l[1])); });
   }
   var VIEWS = {
@@ -2243,6 +2388,7 @@
     'about-directory': function () { return viewAboutDirectory(); },
     schemes: function (parts) { return viewSchemesManager(parts[1]); },
     'schemes-directory': function () { return viewSchemesDirectoryTree(); },
+    'study-library-directory': function () { return viewStudyLibraryDirectory(); },
     freshness: function () { return viewFreshnessAudit(); },
     feedback: function () { return viewFeedbackQueue(); },
     seo: function () { return viewSeoDiscovery(); },

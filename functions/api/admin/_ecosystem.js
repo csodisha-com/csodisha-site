@@ -776,3 +776,171 @@ export async function handleSchemesDirectoryTreeAdmin(request, env, actor, id) {
 
   throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
 }
+
+export async function handleStudyLibraryDirectoryAdmin(request, env, actor, id) {
+  const url = new URL(request.url);
+  const method = request.method;
+  const LEVELS = ['group', 'section', 'subcategory', 'entry'];
+
+  if (!id) {
+    if (method === 'GET') {
+      const { page, limit, offset } = parsePaging(url, 50, 200);
+      const level = (url.searchParams.get('level') || '').trim();
+      const groupSlug = (url.searchParams.get('group') || '').trim();
+      const status = (url.searchParams.get('status') || '').trim();
+      const q = (url.searchParams.get('q') || '').trim().slice(0, 100);
+
+      const where = ['1=1'];
+      const binds = [];
+      if (level && LEVELS.includes(level)) {
+        where.push('level = ?');
+        binds.push(level);
+      }
+      if (status && ['published', 'draft'].includes(status)) {
+        where.push('status = ?');
+        binds.push(status);
+      }
+      if (groupSlug) {
+        where.push(`(
+          slug = ? OR parent_slug = ?
+          OR parent_slug IN (SELECT slug FROM study_library_nodes WHERE parent_slug = ? AND level = 'section')
+          OR parent_slug IN (SELECT slug FROM study_library_nodes WHERE level = 'subcategory' AND parent_slug IN (
+            SELECT slug FROM study_library_nodes WHERE parent_slug = ? AND level = 'section'
+          ))
+        )`);
+        binds.push(groupSlug, groupSlug, groupSlug, groupSlug);
+      }
+      if (q) {
+        where.push(`(title LIKE ? ESCAPE '\\' OR title_or LIKE ? ESCAPE '\\' OR subtitle LIKE ? ESCAPE '\\' OR badge_text LIKE ? ESCAPE '\\' OR slug LIKE ? ESCAPE '\\' OR exam_slug LIKE ? ESCAPE '\\')`);
+        const l = likeEscape(q);
+        binds.push(l, l, l, l, l, l);
+      }
+
+      const w = where.join(' AND ');
+      const total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM study_library_nodes WHERE ${w}`).bind(...binds).first()).n;
+      const { results } = await env.DB.prepare(
+        `SELECT * FROM study_library_nodes
+         WHERE ${w}
+         ORDER BY CASE level WHEN 'group' THEN 0 WHEN 'section' THEN 1 WHEN 'subcategory' THEN 2 ELSE 3 END, sort_order ASC, title ASC
+         LIMIT ? OFFSET ?`
+      ).bind(...binds, limit, offset).all();
+      const { results: parentList } = await env.DB.prepare(
+        `SELECT slug, title, level, parent_slug FROM study_library_nodes
+         WHERE level IN ('group', 'section', 'subcategory')
+         ORDER BY CASE level WHEN 'group' THEN 0 WHEN 'section' THEN 1 ELSE 2 END, sort_order ASC, title ASC`
+      ).all();
+      return json({ items: results || [], parents: parentList || [], page, limit, total });
+    }
+
+    if (method === 'POST') {
+      const body = await readJson(request);
+      const errors = {};
+      const title = cleanStr(body.title, 240, { required: true });
+      if (!title) errors.title = 'Title is required';
+      const level = cleanStr(body.level, 20) || 'entry';
+      if (!LEVELS.includes(level)) errors.level = 'Level must be group, section, subcategory, or entry';
+      const status = body.status === 'draft' ? 'draft' : 'published';
+      const resUrl = cleanStr(body.resource_url, 500);
+      if (resUrl && !/^(\/|https?:\/\/)/i.test(resUrl)) {
+        errors.resource_url = 'Resource URL must start with / or http(s)://';
+      }
+      if (Object.keys(errors).length) throw validationError(errors);
+
+      const rawSlug = cleanStr(body.slug, 100) || slugify(title);
+      let finalSlug = rawSlug || `study-node-${Date.now().toString(36)}`;
+      const dup = await env.DB.prepare('SELECT id FROM study_library_nodes WHERE slug = ?').bind(finalSlug).first();
+      if (dup) finalSlug = `${finalSlug}-${Date.now().toString(36).slice(-4)}`;
+
+      let metaJson = '{}';
+      if (typeof body.metadata_json === 'string' && body.metadata_json.trim()) {
+        try { JSON.parse(body.metadata_json); metaJson = body.metadata_json.trim().slice(0, 2000); } catch { metaJson = '{}'; }
+      } else if (body.metadata && typeof body.metadata === 'object') {
+        metaJson = JSON.stringify(body.metadata).slice(0, 2000);
+      }
+
+      const nodeId = cleanStr(body.id, 120) || `study-node-${level}-${crypto.randomUUID().slice(0, 8)}`;
+      await env.DB.prepare(
+        `INSERT INTO study_library_nodes (
+           id, slug, parent_slug, level, title, title_or, subtitle, subtitle_or,
+           badge_text, icon_name, exam_slug, resource_url, metadata_json, sort_order, status, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+      ).bind(
+        nodeId,
+        finalSlug,
+        cleanStr(body.parent_slug, 100) || null,
+        level,
+        title,
+        cleanStr(body.title_or, 240) || '',
+        cleanStr(body.subtitle, 320) || '',
+        cleanStr(body.subtitle_or, 320) || '',
+        cleanStr(body.badge_text, 60) || '',
+        cleanStr(body.icon_name, 16) || '📚',
+        cleanStr(body.exam_slug, 80) || '',
+        resUrl || '',
+        metaJson,
+        Number(body.sort_order) || 0,
+        status
+      ).run();
+      await audit(env, request, actor, 'study_library_directory.create', 'study_library_node', nodeId, { title, level, slug: finalSlug });
+      return json({ id: nodeId, slug: finalSlug }, 201);
+    }
+
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  const existing = await env.DB.prepare('SELECT * FROM study_library_nodes WHERE id = ? OR slug = ?').bind(id, id).first();
+  if (!existing) throw new HttpError(404, 'NOT_FOUND', 'Study library node not found');
+
+  if (method === 'PUT') {
+    const body = await readJson(request);
+    const errors = {};
+    const title = body.title !== undefined ? cleanStr(body.title, 240, { required: true }) : existing.title;
+    if (!title) errors.title = 'Title is required';
+    const level = body.level !== undefined ? cleanStr(body.level, 20) : existing.level;
+    if (!LEVELS.includes(level)) errors.level = 'Level must be group, section, subcategory, or entry';
+    const resUrl = body.resource_url !== undefined ? cleanStr(body.resource_url, 500) : existing.resource_url;
+    if (resUrl && !/^(\/|https?:\/\/)/i.test(resUrl)) {
+      errors.resource_url = 'Resource URL must start with / or http(s)://';
+    }
+    if (Object.keys(errors).length) throw validationError(errors);
+
+    let metaJson = existing.metadata_json || '{}';
+    if (typeof body.metadata_json === 'string' && body.metadata_json.trim()) {
+      try { JSON.parse(body.metadata_json); metaJson = body.metadata_json.trim().slice(0, 2000); } catch {}
+    }
+
+    const status = body.status !== undefined ? (body.status === 'draft' ? 'draft' : 'published') : existing.status;
+    await env.DB.prepare(
+      `UPDATE study_library_nodes
+       SET parent_slug = ?, level = ?, title = ?, title_or = ?, subtitle = ?, subtitle_or = ?,
+           badge_text = ?, icon_name = ?, exam_slug = ?, resource_url = ?, metadata_json = ?,
+           sort_order = ?, status = ?, updated_at = datetime('now')
+       WHERE id = ?`
+    ).bind(
+      body.parent_slug !== undefined ? (cleanStr(body.parent_slug, 100) || null) : existing.parent_slug,
+      level,
+      title,
+      body.title_or !== undefined ? cleanStr(body.title_or, 240) : existing.title_or,
+      body.subtitle !== undefined ? cleanStr(body.subtitle, 320) : existing.subtitle,
+      body.subtitle_or !== undefined ? cleanStr(body.subtitle_or, 320) : existing.subtitle_or,
+      body.badge_text !== undefined ? cleanStr(body.badge_text, 60) : existing.badge_text,
+      body.icon_name !== undefined ? (cleanStr(body.icon_name, 16) || '📚') : existing.icon_name,
+      body.exam_slug !== undefined ? cleanStr(body.exam_slug, 80) : existing.exam_slug,
+      resUrl || '',
+      metaJson,
+      body.sort_order !== undefined ? (Number(body.sort_order) || 0) : existing.sort_order,
+      status,
+      existing.id
+    ).run();
+    await audit(env, request, actor, 'study_library_directory.update', 'study_library_node', existing.id, { title, status });
+    return json({ id: existing.id, updated: true, status });
+  }
+
+  if (method === 'DELETE') {
+    await env.DB.prepare('DELETE FROM study_library_nodes WHERE id = ?').bind(existing.id).run();
+    await audit(env, request, actor, 'study_library_directory.delete', 'study_library_node', existing.id, { title: existing.title });
+    return json({ id: existing.id, deleted: true });
+  }
+
+  throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+}

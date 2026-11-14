@@ -75,7 +75,7 @@ export async function handleSitemapXml(request, env) {
 
   if (env && env.DB) {
     try {
-      const [jobsRes, caRes, testsRes, schemesRes, aboutGroupsRes, schemeGroupsRes] = await Promise.all([
+      const [jobsRes, caRes, testsRes, schemesRes, aboutGroupsRes, schemeGroupsRes, studyGroupsRes] = await Promise.all([
         env.DB.prepare(
           `SELECT slug, updated_at, published_at FROM posts
            WHERE type = 'job' AND ${PUBLIC_VISIBLE_SQL}
@@ -103,6 +103,11 @@ export async function handleSitemapXml(request, env) {
         ).all().catch(() => ({ results: [] })),
         env.DB.prepare(
           `SELECT slug, updated_at FROM schemes_directory_nodes
+           WHERE level = 'group' AND status = 'published'
+           ORDER BY sort_order ASC LIMIT 50`
+        ).all().catch(() => ({ results: [] })),
+        env.DB.prepare(
+          `SELECT slug, updated_at FROM study_library_nodes
            WHERE level = 'group' AND status = 'published'
            ORDER BY sort_order ASC LIMIT 50`
         ).all().catch(() => ({ results: [] }))
@@ -165,6 +170,16 @@ export async function handleSitemapXml(request, env) {
           lastmod: toIsoLastMod(row.updated_at),
           changefreq: 'weekly',
           priority: '0.6'
+        });
+      }
+
+      for (const row of (studyGroupsRes.results || [])) {
+        if (!row.slug) continue;
+        urls.push({
+          loc: `${SITE_ORIGIN}/study-library/?group=${encodeURIComponent(row.slug)}`,
+          lastmod: toIsoLastMod(row.updated_at),
+          changefreq: 'weekly',
+          priority: '0.7'
         });
       }
     } catch (e) {

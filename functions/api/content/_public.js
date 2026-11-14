@@ -644,6 +644,113 @@ async function handleSchemesDirectoryTree(env, url) {
   }, 200, { 'Cache-Control': CACHE });
 }
 
+function presentStudyNode(r) {
+  let meta = {};
+  try { meta = JSON.parse(r.metadata_json || '{}') || {}; } catch {}
+  return {
+    id: r.id,
+    slug: r.slug,
+    parent_slug: r.parent_slug || null,
+    level: r.level,
+    number: meta.number ? String(meta.number) : '',
+    title: r.title,
+    title_or: r.title_or || '',
+    subtitle: r.subtitle || '',
+    subtitle_or: r.subtitle_or || '',
+    badge_text: r.badge_text || '',
+    icon_name: r.icon_name || '📚',
+    exam_slug: r.exam_slug || '',
+    resource_url: r.resource_url || '',
+    metadata: meta,
+    sort_order: Number(r.sort_order) || 0,
+    updated_at: r.updated_at || null
+  };
+}
+
+async function handleStudyLibraryDirectory(env, url) {
+  const groupFilter = (url.searchParams.get('group') || '').trim().toLowerCase().slice(0, 100);
+  const sectionFilter = (url.searchParams.get('section') || '').trim().toLowerCase().slice(0, 100);
+  const examSlug = (url.searchParams.get('exam_slug') || '').trim().toLowerCase().slice(0, 80);
+  const q = (url.searchParams.get('q') || '').trim().toLowerCase().slice(0, 100);
+
+  const { results } = await env.DB.prepare(
+    `SELECT * FROM study_library_nodes
+     WHERE status = 'published'
+     ORDER BY CASE level WHEN 'group' THEN 0 WHEN 'section' THEN 1 WHEN 'subcategory' THEN 2 ELSE 3 END, sort_order ASC, title ASC`
+  ).all().catch(() => ({ results: [] }));
+
+  const allNodes = (results || []).map(presentStudyNode);
+  const rawGroups = allNodes.filter(n => n.level === 'group');
+  const rawSections = allNodes.filter(n => n.level === 'section');
+  const rawSubcats = allNodes.filter(n => n.level === 'subcategory');
+  const rawEntries = allNodes.filter(n => n.level === 'entry');
+
+  const groupMap = (arr, field = 'parent_slug') => {
+    const m = new Map();
+    arr.forEach(item => {
+      const k = item[field] || '';
+      if (!m.has(k)) m.set(k, []);
+      m.get(k).push(item);
+    });
+    return m;
+  };
+
+  const secByGroup = groupMap(rawSections);
+  const subBySec = groupMap(rawSubcats);
+  const entBySub = groupMap(rawEntries);
+
+  const matchNode = n => {
+    const examOk = !examSlug || String(n.exam_slug || '').toLowerCase() === examSlug;
+    const qOk = !q || [n.title, n.title_or, n.subtitle, n.subtitle_or, n.badge_text, n.number, n.exam_slug]
+      .some(v => String(v || '').toLowerCase().includes(q));
+    return examOk && qOk;
+  };
+
+  const filteredGroups = rawGroups
+    .filter(g => !groupFilter || g.slug === groupFilter || g.id === groupFilter || (g.metadata && g.metadata.legacy_id === groupFilter) || g.number === groupFilter)
+    .map(g => {
+      const gHit = !examSlug && !q ? true : (q && [g.title, g.title_or, g.subtitle, g.subtitle_or].some(v => String(v || '').toLowerCase().includes(q)));
+      const secs = (secByGroup.get(g.slug) || [])
+        .filter(s => !sectionFilter || s.slug === sectionFilter || s.id === sectionFilter || s.number === sectionFilter)
+        .map(s => {
+          const sHit = gHit || (q && [s.title, s.title_or, s.number].some(v => String(v || '').toLowerCase().includes(q)));
+          const subs = (subBySec.get(s.slug) || [])
+            .map(sub => {
+              const subHit = sHit || (q && [sub.title, sub.title_or, sub.number].some(v => String(v || '').toLowerCase().includes(q)));
+              const entries = (entBySub.get(sub.slug) || []).filter(e => (!examSlug && !q) || (subHit && (!examSlug || e.exam_slug === examSlug)) || matchNode(e));
+              return { ...sub, children: entries };
+            })
+            .filter(sub => (!examSlug && !q) || sub.children.length > 0 || (!examSlug && sHit) || matchNode(sub));
+          return { ...s, children: subs };
+        })
+        .filter(s => (!examSlug && !q) || s.children.length > 0 || (!examSlug && gHit) || matchNode(s));
+      return { ...g, sections: secs };
+    })
+    .filter(g => (!sectionFilter && !examSlug && !q) || g.sections.length > 0 || matchNode(g));
+
+  const flatSecs = filteredGroups.flatMap(g => g.sections);
+  const flatSubs = flatSecs.flatMap(s => s.children);
+  const flatEntries = flatSubs.flatMap(sub => sub.children);
+
+  return json({
+    groups: filteredGroups,
+    counts: {
+      groups: filteredGroups.length,
+      sections: flatSecs.length,
+      subcategories: flatSubs.length,
+      entries: flatEntries.length,
+      totalNodes: filteredGroups.length + flatSecs.length + flatSubs.length + flatEntries.length
+    },
+    total_counts: {
+      groups: rawGroups.length,
+      sections: rawSections.length,
+      subcategories: rawSubcats.length,
+      entries: rawEntries.length,
+      totalNodes: allNodes.length
+    }
+  }, 200, { 'Cache-Control': CACHE });
+}
+
 async function handleUnifiedSearch(env, url) {
   const q = (url.searchParams.get('q') || '').trim().slice(0, 100);
   const typeFilter = (url.searchParams.get('type') || '').trim().toLowerCase();
@@ -1087,24 +1194,50 @@ export async function handleContent(request, env) {
     if (resource === 'schemes-directory') {
       return await handleSchemesDirectoryTree(env, url);
     }
+    if (resource === 'study-library-directory') {
+      return await handleStudyLibraryDirectory(env, url);
+    }
     if (resource === 'resources') {
       const { page, limit, offset } = parsePaging(url);
       const where = ["deleted_at IS NULL AND status = 'published'"]; const binds = [];
       const kind = url.searchParams.get('kind');
-      if (kind === 'syllabus' || kind === 'pyq' || kind === 'study_material') { where.push('kind = ?'); binds.push(kind); }
+      if (kind === 'syllabus' || kind === 'pyq') { where.push('kind = ?'); binds.push(kind); }
+      const resourceType = (url.searchParams.get('resource_type') || '').trim().toLowerCase();
+      if (['syllabus', 'pyq', 'study_notes', 'odisha_gk'].includes(resourceType)) {
+        where.push('resource_type = ?'); binds.push(resourceType);
+      }
       const exam = (url.searchParams.get('exam') || '').trim().slice(0, 100);
       if (exam) { where.push('exam = ?'); binds.push(exam); }
+      const examSlug = (url.searchParams.get('exam_slug') || '').trim().toLowerCase().slice(0, 80);
+      if (examSlug) { where.push('LOWER(exam_slug) = ?'); binds.push(examSlug); }
       const q = (url.searchParams.get('q') || '').trim().slice(0, 100);
       if (q) {
-        where.push(`(title LIKE ? ESCAPE '\\' OR exam LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\')`);
-        const l = likeEscape(q); binds.push(l, l, l);
+        where.push(`(title LIKE ? ESCAPE '\\' OR title_or LIKE ? ESCAPE '\\' OR exam LIKE ? ESCAPE '\\' OR exam_slug LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\' OR description_or LIKE ? ESCAPE '\\')`);
+        const l = likeEscape(q); binds.push(l, l, l, l, l, l);
       }
       const w = where.join(' AND ');
       const total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM resources WHERE ${w}`).bind(...binds).first()).n;
       const { results } = await env.DB.prepare(
-        `SELECT id, kind, title, exam, year, description, media_key, published_at FROM resources WHERE ${w} ORDER BY year DESC, published_at DESC LIMIT ? OFFSET ?`
+        `SELECT id, kind, resource_type, title, title_or, exam, exam_slug, year, verified_date,
+                description, description_or, media_key, official_source_url,
+                syllabus_units_json, key_takeaways_json, published_at
+         FROM resources WHERE ${w} ORDER BY year DESC, published_at DESC LIMIT ? OFFSET ?`
       ).bind(...binds, limit, offset).all();
-      return json({ items: results.map(({ media_key, ...r }) => ({ ...r, file_url: media(media_key) })), page, limit, total }, 200, { 'Cache-Control': CACHE });
+      const items = (results || []).map(({ media_key, syllabus_units_json, key_takeaways_json, ...r }) => {
+        let syllabus_units = [];
+        let key_takeaways = [];
+        try { syllabus_units = JSON.parse(syllabus_units_json || '[]') || []; } catch {}
+        try { key_takeaways = JSON.parse(key_takeaways_json || '[]') || []; } catch {}
+        return {
+          ...r,
+          resource_type: r.resource_type || r.kind || 'syllabus',
+          file_url: media(media_key),
+          official_source_url: r.official_source_url || media(media_key),
+          syllabus_units,
+          key_takeaways
+        };
+      });
+      return json({ items, page, limit, total }, 200, { 'Cache-Control': CACHE });
     }
     if (resource === 'mock-tests') {
       if (!key) {

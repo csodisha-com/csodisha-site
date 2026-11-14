@@ -3,54 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#edf4ff">
-  <title>Study Library Explorer | Common Sense Odisha</title>
+  <meta name="theme-color" content="#0F4C3A">
+  <title>Study Library, Syllabi &amp; Exam Notes | Common Sense Odisha</title>
+  <meta name="description" content="Verified Odisha &amp; National exam syllabi, solved PYQs, Odisha GK capsules, BSE/CHSE textbooks, UGC NET modules, and 1,681-node academic directory on Common Sense Odisha.">
   <!-- CSO-IN homepage header stylesheet v1 -->
-<link rel="stylesheet" href="../assets/style.css">
-<link rel="stylesheet" href="./assets/dashboard.css">
-  <script src="./assets/dashboard.js" defer></script>
-<!-- CSO-IN shared theme synchronization v1 -->
-<script>
-(function () {
-  function syncTheme() {
-    var settings = {};
-    try {
-      settings = JSON.parse(localStorage.getItem('cso') || '{}') || {};
-    } catch (error) {
-      settings = {};
-    }
-
-    var themes = ['light', 'dark', 'system', 'reading', 'sepia'];
-    var theme = themes.includes(settings.theme)
-      ? settings.theme
-      : 'system';
-
-    document.documentElement.setAttribute('data-theme', theme);
+  <link rel="stylesheet" href="../assets/style.css?v=20261114f">
+  <link rel="stylesheet" href="./assets/dashboard.css?v=20261114f">
+  <script src="../assets/js/cso-idb.js?v=20261114f" defer></script>
+  <script src="../assets/js/public-content.js?v=20261114f" defer></script>
+  <script src="./assets/dashboard.js?v=20261114f" defer></script>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "name": "Study Library, Syllabi & Exam Notes — Common Sense Odisha",
+        "url": "https://csodisha.com/study-library/",
+        "description": "Open-access Odisha & National study library featuring verified syllabi, solved previous year papers, Odisha GK modules, and a 1,681-node academic directory.",
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "Common Sense Odisha",
+          "url": "https://csodisha.com/"
+        }
+      },
+      {
+        "@type": "ItemList",
+        "name": "Featured Odisha Study Tracks & Courses",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "item": {
+              "@type": "Course",
+              "name": "OPSC Civil Services (OAS) Prelims & Mains Complete Syllabus & Odisha GK",
+              "description": "Complete 9-paper OPSC OAS blueprint with Odisha History, Geography, Polity and Economic Survey notes.",
+              "provider": { "@type": "Organization", "name": "Common Sense Odisha", "sameAs": "https://csodisha.com/" }
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "item": {
+              "@type": "Course",
+              "name": "OSSC CGLRE & OSSSC RI/ARI/Amin Syllabus + Solved PYQs",
+              "description": "Structured Arithmetic, DI, Reasoning, Odia Grammar, Computer Skill & Previous Year Papers for OSSC and OSSSC exams.",
+              "provider": { "@type": "Organization", "name": "Common Sense Odisha", "sameAs": "https://csodisha.com/" }
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "item": {
+              "@type": "Course",
+              "name": "Odisha B.Ed., OTET, OSSTET & UGC NET Pedagogy & Literature",
+              "description": "Official SAMS B.Ed., BSE OTET/OSSTET pedagogy capsules and NTA UGC NET English & Education modules.",
+              "provider": { "@type": "Organization", "name": "Common Sense Odisha", "sameAs": "https://csodisha.com/" }
+            }
+          }
+        ]
+      }
+    ]
   }
-
-  syncTheme();
-
-  window.addEventListener('storage', function (event) {
-    if (event.key === 'cso') syncTheme();
-  });
-
-  window.addEventListener('pageshow', syncTheme);
-})();
-</script>
-<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  </script>
 </head>
 <body>
 
 <!-- CSO-IN original homepage header v2 -->
-<!-- CSO-IN homepage header and navigation template -->
 <header class="top">
 <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
   <img src="/assets/images/cso-logo.svg" alt="CSO - Common Sense Odisha" class="cso-brand-logo" width="112" height="40">
 </a>
 <a class="adm" href="/admin/" role="button" aria-label="Admin Portal - Authorised Access Only">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
-<span id="ctl" style="display:contents"></span>
+<span id="ctl" class="cso-contents"></span>
 <span class="sp"></span>
-<div class="acct"><span style="font-size:26px">👤</span><span id="auth" style="display:contents"></span></div>
+<div class="acct"><span class="cso-acct-icon" aria-hidden="true">👤</span><span id="auth" class="cso-contents"></span></div>
 </header>
 <nav><div class="w" id="navw"></div></nav>
 
@@ -60,20 +88,22 @@
     <aside class="sidebar" id="sidebar" aria-label="Study Library navigation">
       <div class="sidebar-header">
         <a aria-label="Study Library Dashboard Home" title="Study Library Dashboard Home" class="brand" href="./">
-          <span class="brand-logo"><img src="/assets/images/cso-logo.svg" alt="CSO" class="cso-sidebar-emblem" width="44" height="44"></span>
+          <span class="brand-logo"><img src="/assets/images/cso-logo.svg" alt="CSO" class="cso-sidebar-emblem" width="32" height="32"></span>
           <span class="brand-name">
             <strong>CS ODISHA</strong>
             <small>STUDY LIBRARY</small>
           </span>
         </a>
+        <button type="button" class="cso-sidebar-toggle" id="cso-sidebar-toggle" aria-controls="sidebar" aria-expanded="true" aria-label="Toggle directory sidebar" title="Collapse / Expand Sidebar">◀</button>
         <button type="button" class="sidebar-close" id="sidebar-close" aria-label="Close sections menu">✕</button>
       </div>
 
-      <div class="sidebar-heading">DIRECTORY SECTIONS</div>
+      <div class="sidebar-heading">ACADEMIC TRACKS</div>
       <nav id="side-navigation" aria-label="Directory sections"></nav>
 
       <div class="sidebar-footer">
-        <a href="../study/">← Back to I Want to Study</a><br><a href="../index.html">CSO Homepage</a>
+        <a href="../mock-tests/">📝 Practice Mock Tests</a><br>
+        <a href="../index.html">← Back to CSO Home</a>
       </div>
     </aside>
 
@@ -85,12 +115,13 @@
           <span class="menu-toggle-icon" aria-hidden="true">☰</span>
           <span class="menu-toggle-label">Sections</span>
         </button>
+        <button aria-controls="sidebar" aria-expanded="true" aria-label="Toggle directory sidebar" class="cso-sidebar-toggle cso-sidebar-toggle--top" id="cso-sidebar-toggle-top" title="Collapse / Expand Sidebar" type="button">☰</button>
 
         <div class="top-search">
           <span aria-hidden="true">⌕</span>
           <input id="directory-search" type="search"
-                 placeholder="Search subjects, notes, exams, courses..."
-                 aria-label="Search Study Library directory">
+                 placeholder="Search OPSC syllabus, OSSC PYQ, BSE Class 10, UGC NET, subjects…"
+                 aria-label="Search Study Library materials and directory">
           <button id="clear-search" class="clear-search"
                   type="button" aria-label="Clear search"
                   title="Clear search" hidden>×</button>
@@ -109,10 +140,62 @@
             <h1 id="page-title">Study Library Explorer</h1>
             <p id="page-description" hidden></p>
           </div>
+          <div class="study-hub-shortcuts" aria-label="Connected learning hubs">
+            <a class="study-hub-pill" href="../mock-tests/">📝 CBT Mock Tests</a>
+            <a class="study-hub-pill" href="../student-dashboard/#flashcards">🗂 Flashcards &amp; Notes</a>
+            <a class="study-hub-pill" href="../current-affairs/">📰 Current Affairs</a>
+            <a class="study-hub-pill" href="../jobs-careers/">💼 Exam Alerts</a>
+          </div>
+        </section>
+
+        <section id="study-continue-strip" class="study-continue-strip" aria-label="Continue where you left off" hidden>
+          <div class="study-continue-header">
+            <strong class="study-continue-title">⏱ Continue Where You Left Off</strong>
+            <button type="button" id="study-continue-clear" class="study-continue-clear">Clear</button>
+          </div>
+          <div id="study-continue-list" class="study-continue-list"></div>
+        </section>
+
+        <section id="live-study-section" class="live-study-section" aria-labelledby="live-study-heading">
+          <div class="live-study-header">
+            <div class="live-study-title-group">
+              <span class="live-pulse-dot" aria-hidden="true"></span>
+              <h2 id="live-study-heading">Explore Live Study Materials, Syllabi &amp; PYQs</h2>
+              <span id="live-study-count" class="live-count-badge" aria-live="polite">Loading…</span>
+            </div>
+            <div class="live-study-header-actions">
+              <div class="study-lang-toggle" role="group" aria-label="Material display language">
+                <button type="button" class="study-lang-btn is-active" data-lang="en">EN</button>
+                <button type="button" class="study-lang-btn" data-lang="or">ଓଡ଼ିଆ</button>
+              </div>
+              <button type="button" id="study-goal-match" class="study-goal-btn" aria-pressed="false">★ Match My Dashboard Goals</button>
+              <button type="button" id="study-filter-reset" class="study-reset-btn" hidden>Reset</button>
+            </div>
+          </div>
+
+          <div class="study-filter-bar">
+            <input id="study-q" class="study-input" type="search" placeholder="Filter live syllabi, solved PYQs, Odisha GK, UGC NET…" aria-label="Filter verified study materials">
+            <select id="study-exam-filter" class="study-select" aria-label="Filter by Exam Track">
+              <option value="">All Exam &amp; Board Tracks</option>
+            </select>
+          </div>
+
+          <div id="study-type-pills" class="study-type-pills" role="tablist" aria-label="Material type">
+            <button type="button" class="study-type-pill is-active" role="tab" aria-selected="true" data-type="">All Materials</button>
+            <button type="button" class="study-type-pill" role="tab" aria-selected="false" data-type="syllabus">Syllabus</button>
+            <button type="button" class="study-type-pill" role="tab" aria-selected="false" data-type="pyq">Previous Year Papers</button>
+            <button type="button" class="study-type-pill" role="tab" aria-selected="false" data-type="study_notes">Study Notes</button>
+            <button type="button" class="study-type-pill" role="tab" aria-selected="false" data-type="odisha_gk">Odisha GK &amp; Current Affairs</button>
+          </div>
+
+          <div id="study-materials-grid" class="study-materials-grid" role="region" aria-live="polite"></div>
         </section>
 
         <section id="overview" aria-label="Directory overview">
-          <h2>Explore All Categories</h2>
+          <div class="overview-heading-row">
+            <h2>Explore All 10 Curriculum Groups (1,681 Nodes)</h2>
+            <span id="directory-sync-badge" class="directory-sync-badge">Syncing D1…</span>
+          </div>
           <div class="dashboard-grid" id="dashboard-grid"></div>
 
           <section class="statistics-section" aria-label="Directory statistics">
@@ -123,10 +206,8 @@
           <section class="recent-section" id="recent-section"
                    aria-label="Recently viewed categories" hidden>
             <div class="recent-heading">
-              <h2>Recently Viewed Categories</h2>
-              <button id="clear-recent" type="button">
-                Clear History
-              </button>
+              <h2>Recently Viewed Directory Nodes</h2>
+              <button id="clear-recent" type="button">Clear History</button>
             </div>
             <div class="recent-grid" id="recent-grid"></div>
           </section>
@@ -144,14 +225,44 @@
         <section id="search-results" hidden>
           <h2>Search Results</h2>
           <p id="search-status"></p>
-          <div id="search-items" class="explorer-items"></div>
+          <div id="search-live-materials" class="search-materials-section" hidden>
+            <h3 class="search-section-label">Verified Syllabi, PYQs &amp; Notes Matching Query</h3>
+            <div id="search-materials-grid" class="study-materials-grid"></div>
+          </div>
+          <div id="search-directory-wrap">
+            <h3 class="search-section-label">1,681-Node Academic &amp; Exam Directory Matches</h3>
+            <div id="search-items" class="explorer-items"></div>
+          </div>
         </section>
 
-        <p id="load-status" role="status">Loading directory...</p>
+        <p id="load-status" role="status">Loading directory…</p>
       </main>
     </div>
   </div>
-  <!-- CSO-IN shared header functionality -->
+
+  <div id="study-reader-modal" class="study-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="study-modal-title" hidden>
+    <div class="study-modal-card">
+      <div class="study-modal-head">
+        <div>
+          <div id="study-modal-badges" class="study-modal-badges"></div>
+          <h2 id="study-modal-title">Study Brief</h2>
+          <p id="study-modal-subtitle" class="study-modal-subtitle"></p>
+        </div>
+        <button type="button" id="study-modal-close" class="study-modal-close" aria-label="Close study reader">✕</button>
+      </div>
+      <div id="study-modal-body" class="study-modal-body"></div>
+      <div class="study-modal-foot">
+        <a id="study-modal-mock-btn" class="study-btn study-btn--primary" href="../mock-tests/">Start Mock →</a>
+        <button type="button" id="study-modal-flashcard-btn" class="study-btn">+ Send to Flashcards</button>
+        <button type="button" id="study-modal-offline-btn" class="study-btn">📥 Save Offline</button>
+        <button type="button" id="study-modal-print-btn" class="study-btn">🖨 Print / Save Study Sheet</button>
+        <a id="study-modal-official-btn" class="study-btn" href="https://www.opsc.gov.in/" target="_blank" rel="noopener">Official Source ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="study-toast" class="study-toast" role="status" aria-live="polite" hidden></div>
+
   <!-- CSO global footer v1 -->
 <footer><div class="w cso-footer-grid">
   <div class="cso-footer-zone1">
@@ -195,5 +306,5 @@
 <script src="../assets/cso-auth-client.js" defer></script>
 <script src="../assets/shared-header.js" defer></script>
 <script src="../assets/js/bookmark-manager.js" defer></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56e1263ac35aa81',t:'MTc5NDA3MjY4OQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56e1263ac35aa81',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

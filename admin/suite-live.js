@@ -4,7 +4,7 @@
   'use strict';
 
   var CONTENT = [['current-affairs', 'Current Affairs'], ['jobs', 'Job Alerts'], ['jobs-directory', 'Jobs Directory'], ['schemes', 'Schemes'], ['schemes-directory', 'Schemes Tree']];
-  var EDU = [['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']];
+  var EDU = [['study-library-directory', 'Study Directory'], ['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']];
   var SITE = [['pages', 'All Pages'], ['about-directory', 'About CSO Directory'], ['pages/legal', 'Info & Legal'], ['banner', 'Homepage & Banner'], ['seo', 'SEO & Sitemaps']];
   var OPS = [['dashboard', 'Overview'], ['freshness', 'Freshness Audit'], ['feedback', 'Feedback Queue'], ['operations', 'Operations & Backups'], ['diagnostics', 'Site Health']];
   var SEC = [['audit/security', 'Security Audit'], ['incidents', 'Incidents'], ['audit', 'All Events']];
@@ -85,7 +85,7 @@
     'folder-19': ['registry'],
     'folder-jobs-careers': ['jobs-directory', CONTENT],
     'folder-schemes-benefits': ['schemes', CONTENT],
-    'folder-study-library': ['syllabus', EDU],
+    'folder-study-library': ['study-library-directory', EDU],
     'folder-community': ['feedback', [['feedback', 'Community Feedback'], ['users', 'Candidate Accounts']]],
     'folder-about': ['about-directory', SITE]
   };

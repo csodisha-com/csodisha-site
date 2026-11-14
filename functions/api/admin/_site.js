@@ -96,16 +96,35 @@ async function normalizeResource(env, body, existing) {
   if (year === '' || year === null || year === undefined) year = null;
   else if (!Number.isInteger(Number(year)) || Number(year) < 1990 || Number(year) > 2100) { errors.year = 'Year must be between 1990 and 2100'; year = null; }
   else year = Number(year);
-  const key = cleanStr(v('media_key'), 100);
+  const key = cleanStr(v('media_key'), 500);
+  const isExternal = key.startsWith('external:') && safeLink(key.slice(9));
   if (!key) errors.media_key = 'Upload a PDF or image first';
-  else if (!MEDIA_KEY_RE.test(key) || !(await env.DB.prepare('SELECT 1 AS ok FROM media_assets WHERE object_key = ? AND deleted_at IS NULL').bind(key).first())) errors.media_key = 'File must be an uploaded media asset';
+  else if (!isExternal && (!MEDIA_KEY_RE.test(key) || !(await env.DB.prepare('SELECT 1 AS ok FROM media_assets WHERE object_key = ? AND deleted_at IS NULL').bind(key).first()))) errors.media_key = 'File must be an uploaded media asset';
   const status = v('status') === undefined ? 'draft' : String(v('status'));
   if (!['draft', 'published'].includes(status)) errors.status = 'Status must be draft or published';
   if (Object.keys(errors).length) throw validationError(errors);
   return { kind, title, exam, description, year, media_key: key, status };
 }
 
-const RES_COLS = 'id, kind, title, exam, year, description, media_key, status, published_at, updated_at';
+const RES_COLS = 'id, kind, resource_type, title, title_or, exam, exam_slug, year, verified_date, description, description_or, media_key, official_source_url, syllabus_units_json, key_takeaways_json, status, published_at, updated_at';
+
+function jsonArrayStr(v, maxLen = 8000) {
+  if (Array.isArray(v)) return JSON.stringify(v).slice(0, maxLen);
+  if (typeof v === 'string' && v.trim()) {
+    try {
+      const parsed = JSON.parse(v);
+      if (Array.isArray(parsed)) return JSON.stringify(parsed).slice(0, maxLen);
+    } catch {}
+  }
+  return '[]';
+}
+
+function presentAdminResource(r) {
+  return {
+    ...r,
+    file_url: r.media_key && r.media_key.startsWith('external:') ? r.media_key.slice(9) : `/api/media/${r.media_key}`
+  };
+}
 
 export async function handleResources(request, env, actor, id) {
   const method = request.method; const url = new URL(request.url);
@@ -116,19 +135,30 @@ export async function handleResources(request, env, actor, id) {
       const kind = url.searchParams.get('kind');
       if (kind) { if (!RESOURCE_KINDS.includes(kind)) throw validationError({ kind: 'Unknown kind' }); where.push('kind = ?'); binds.push(kind); }
       const q = (url.searchParams.get('q') || '').trim().slice(0, 100);
-      if (q) { where.push("(title LIKE ? ESCAPE '\\' OR exam LIKE ? ESCAPE '\\')"); const l = likeEscape(q); binds.push(l, l); }
+      if (q) { where.push("(title LIKE ? ESCAPE '\\' OR title_or LIKE ? ESCAPE '\\' OR exam LIKE ? ESCAPE '\\' OR exam_slug LIKE ? ESCAPE '\\')"); const l = likeEscape(q); binds.push(l, l, l, l); }
       const w = where.join(' AND ');
       const total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM resources WHERE ${w}`).bind(...binds).first()).n;
       const { results } = await env.DB.prepare(`SELECT ${RES_COLS} FROM resources WHERE ${w} ORDER BY updated_at DESC LIMIT ? OFFSET ?`).bind(...binds, limit, offset).all();
-      return json({ items: results.map(r => ({ ...r, file_url: `/api/media/${r.media_key}` })), page, limit, total });
+      return json({ items: results.map(presentAdminResource), page, limit, total });
     }
     if (method === 'POST') {
-      const f = await normalizeResource(env, await readJson(request), null);
+      const body = await readJson(request);
+      const f = await normalizeResource(env, body, null);
       const newId = crypto.randomUUID();
+      const resType = ['syllabus', 'pyq', 'study_notes', 'odisha_gk'].includes(body.resource_type) ? body.resource_type : f.kind;
       await env.DB.prepare(
-        `INSERT INTO resources (id, kind, title, exam, year, description, media_key, status, published_at, created_by, updated_by)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${f.status === 'published' ? "datetime('now')" : 'NULL'}, ?, ?)`
-      ).bind(newId, f.kind, f.title, f.exam, f.year, f.description, f.media_key, f.status, actor.userId, actor.userId).run();
+        `INSERT INTO resources (
+           id, kind, resource_type, title, title_or, exam, exam_slug, year, verified_date,
+           description, description_or, media_key, official_source_url, syllabus_units_json, key_takeaways_json,
+           status, published_at, created_by, updated_by
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${f.status === 'published' ? "datetime('now')" : 'NULL'}, ?, ?)`
+      ).bind(
+        newId, f.kind, resType, f.title, cleanStr(body.title_or, 240) || '', f.exam, cleanStr(body.exam_slug, 80) || '',
+        f.year, cleanStr(body.verified_date, 24) || new Date().toISOString().slice(0, 10),
+        f.description, cleanStr(body.description_or, 2000) || '', f.media_key, cleanStr(body.official_source_url, 500) || '',
+        jsonArrayStr(body.syllabus_units ?? body.syllabus_units_json), jsonArrayStr(body.key_takeaways ?? body.key_takeaways_json),
+        f.status, actor.userId, actor.userId
+      ).run();
       await audit(env, request, actor, `resource.create`, 'resource', newId, { kind: f.kind, title: f.title, status: f.status });
       return json({ id: newId }, 201);
     }
@@ -136,15 +166,36 @@ export async function handleResources(request, env, actor, id) {
   }
   const existing = await env.DB.prepare('SELECT * FROM resources WHERE id = ? AND deleted_at IS NULL').bind(id).first();
   if (!existing) throw new HttpError(404, 'NOT_FOUND', 'Resource not found');
-  if (method === 'GET') return json({ ...existing, file_url: `/api/media/${existing.media_key}` });
+  if (method === 'GET') return json(presentAdminResource(existing));
   if (method === 'PUT') {
-    const f = await normalizeResource(env, await readJson(request), existing);
+    const body = await readJson(request);
+    const f = await normalizeResource(env, body, existing);
     const publishedAt = f.status === 'published' ? (existing.published_at || null) : null;
+    const resType = body.resource_type !== undefined
+      ? (['syllabus', 'pyq', 'study_notes', 'odisha_gk'].includes(body.resource_type) ? body.resource_type : f.kind)
+      : (existing.resource_type || f.kind);
     await env.DB.prepare(
-      `UPDATE resources SET kind = ?, title = ?, exam = ?, year = ?, description = ?, media_key = ?, status = ?,
-         published_at = ${f.status === 'published' && !publishedAt ? "datetime('now')" : '?'}, updated_by = ?, updated_at = datetime('now') WHERE id = ?`
-    ).bind(...[f.kind, f.title, f.exam, f.year, f.description, f.media_key, f.status,
-      ...(f.status === 'published' && !publishedAt ? [] : [publishedAt]), actor.userId, id]).run();
+      `UPDATE resources SET
+         kind = ?, resource_type = ?, title = ?, title_or = ?, exam = ?, exam_slug = ?, year = ?, verified_date = ?,
+         description = ?, description_or = ?, media_key = ?, official_source_url = ?, syllabus_units_json = ?, key_takeaways_json = ?,
+         status = ?, published_at = ${f.status === 'published' && !publishedAt ? "datetime('now')" : '?'},
+         updated_by = ?, updated_at = datetime('now')
+       WHERE id = ?`
+    ).bind(...[
+      f.kind, resType, f.title,
+      body.title_or !== undefined ? cleanStr(body.title_or, 240) : (existing.title_or || ''),
+      f.exam,
+      body.exam_slug !== undefined ? cleanStr(body.exam_slug, 80) : (existing.exam_slug || ''),
+      f.year,
+      body.verified_date !== undefined ? cleanStr(body.verified_date, 24) : (existing.verified_date || ''),
+      f.description,
+      body.description_or !== undefined ? cleanStr(body.description_or, 2000) : (existing.description_or || ''),
+      f.media_key,
+      body.official_source_url !== undefined ? cleanStr(body.official_source_url, 500) : (existing.official_source_url || ''),
+      body.syllabus_units !== undefined || body.syllabus_units_json !== undefined ? jsonArrayStr(body.syllabus_units ?? body.syllabus_units_json) : (existing.syllabus_units_json || '[]'),
+      body.key_takeaways !== undefined || body.key_takeaways_json !== undefined ? jsonArrayStr(body.key_takeaways ?? body.key_takeaways_json) : (existing.key_takeaways_json || '[]'),
+      f.status, ...(f.status === 'published' && !publishedAt ? [] : [publishedAt]), actor.userId, id
+    ]).run();
     await audit(env, request, actor, 'resource.update', 'resource', id, { kind: f.kind, title: f.title, status: f.status });
     return json({ id });
   }
