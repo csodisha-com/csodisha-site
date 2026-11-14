@@ -2449,6 +2449,42 @@ footer {
   color: #8da4bc;
 }
 
+.cso-footer-social {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.cso-footer-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cfe0f2;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.cso-footer-social-link:hover,
+.cso-footer-social-link:focus-visible {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+  text-decoration: none;
+}
+
+.cso-footer-social-link svg {
+  flex-shrink: 0;
+}
+
 /* Zone 2: Links */
 .cso-footer-zone2 {
   display: grid;
@@ -2602,6 +2638,10 @@ footer {
   .cso-footer-desc,
   .cso-footer-copy {
     text-align: center;
+  }
+
+  .cso-footer-social {
+    justify-content: center;
   }
 
   .cso-footer-zone2 {
@@ -6564,6 +6604,14 @@ html, body {
   footer li, footer a, footer .cso-footer-col a {
     font-size: 0.85rem !important;
     line-height: 1.3 !important;
+  }
+
+  footer .cso-footer-social {
+    justify-content: center;
+  }
+
+  footer .cso-footer-social-link {
+    font-size: 11.5px !important;
   }
 
   /* Bottom region with map and language buttons */
