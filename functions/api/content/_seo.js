@@ -282,6 +282,108 @@ export async function handleRssFeed(request, env) {
   });
 }
 
+export function handleRobotsTxt(request) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
+  }
+  const body = [
+    'User-agent: *',
+    'Allow: /',
+    'Allow: /jobs-careers/',
+    'Allow: /schemes-benefits/',
+    'Allow: /study-library/',
+    'Allow: /mock-tests/',
+    'Allow: /resources/',
+    'Allow: /about/',
+    'Allow: /current-affairs/',
+    'Disallow: /admin/',
+    'Disallow: /student-dashboard/',
+    'Disallow: /api/admin/',
+    'Disallow: /api/candidate/',
+    'Disallow: /api/',
+    '',
+    `Sitemap: ${SITE_ORIGIN}/sitemap.xml`,
+    ''
+  ].join('\n');
+
+  return new Response(request.method === 'HEAD' ? null : body, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': SEO_CACHE,
+      'X-Content-Type-Options': 'nosniff'
+    }
+  });
+}
+
+export async function handleLlmsTxt(request, env) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
+  }
+  let counts = {
+    exams: '44+',
+    careerNodes: '417+',
+    schemes: '25+',
+    studyNodes: '1,681',
+    resources: '14+'
+  };
+  if (env && env.DB) {
+    try {
+      const [exRow, jobNodeRow, schRow, studyRow, resRow] = await Promise.all([
+        env.DB.prepare('SELECT COUNT(*) AS n FROM exam_taxonomy WHERE is_active = 1').first().catch(() => null),
+        env.DB.prepare('SELECT COUNT(*) AS n FROM jobs_directory_nodes WHERE is_active = 1').first().catch(() => null),
+        env.DB.prepare("SELECT COUNT(*) AS n FROM schemes_directory WHERE status = 'published' AND deleted_at IS NULL").first().catch(() => null),
+        env.DB.prepare("SELECT COUNT(*) AS n FROM study_library_nodes WHERE status = 'published'").first().catch(() => null),
+        env.DB.prepare("SELECT COUNT(*) AS n FROM resources WHERE status = 'published' AND deleted_at IS NULL").first().catch(() => null)
+      ]);
+      if (exRow && exRow.n > 0) counts.exams = `${exRow.n}+`;
+      if (jobNodeRow && jobNodeRow.n > 0) counts.careerNodes = `${jobNodeRow.n}+`;
+      if (schRow && schRow.n > 0) counts.schemes = `${schRow.n}+`;
+      if (studyRow && studyRow.n > 0) counts.studyNodes = String(studyRow.n);
+      if (resRow && resRow.n > 0) counts.resources = String(resRow.n);
+    } catch {}
+  }
+
+  const lines = [
+    '# Common Sense Odisha (CS Odisha)',
+    '',
+    '> Independent, open-access civic, career, welfare, and competitive exam preparation platform for citizens and aspirants in Odisha, India.',
+    '',
+    '## Key Identity & Bilingual Brand Names',
+    '- Brand: Common Sense Odisha (also known as CS Odisha, CSOdisha, କମନ୍ ସେନ୍ସ ଓଡ଼ିଶା)',
+    `- Canonical Origin: ${SITE_ORIGIN}/`,
+    '- Languages: English, Odia (ଓଡ଼ିଆ), Hindi',
+    '',
+    '## Core Public Knowledge Portals',
+    `- [Jobs & Careers Directory](${SITE_ORIGIN}/jobs-careers/): ${counts.careerNodes} structured career nodes, ${counts.exams} Odisha & National exam tracks (OPSC OAS, OSSC CGL, OSSSC RI/ARI/Amin, OTET, OSSTET, B.Ed., UGC NET), and live recruitment alerts.`,
+    `- [Schemes & Benefits Explorer](${SITE_ORIGIN}/schemes-benefits/): ${counts.schemes} verified Odisha State & Central welfare/scholarship schemes plus eligibility filters and document checklists.`,
+    `- [Study Library & Syllabi](${SITE_ORIGIN}/study-library/): ${counts.studyNodes} structured academic & exam curriculum nodes alongside ${counts.resources} verified syllabi, solved PYQs, Odisha GK notes, BSE Class 10 & CHSE +2 blueprints.`,
+    `- [Online CBT Mock Tests](${SITE_ORIGIN}/mock-tests/): Server-graded Odisha exam practice tests with leaderboards and negative-marking rules.`,
+    `- [Daily Current Affairs](${SITE_ORIGIN}/current-affairs/): Odisha & National exam-oriented daily briefings.`,
+    `- [About CSO & Governance](${SITE_ORIGIN}/about/): Platform mission, editorial standards, source verification, and institutional transparency.`,
+    '',
+    '## Sitemaps, Feeds & Read-Only Public APIs',
+    `- Dynamic XML Sitemap: ${SITE_ORIGIN}/sitemap.xml`,
+    `- RSS 2.0 Feed: ${SITE_ORIGIN}/feed.xml`,
+    `- Public Jobs API: ${SITE_ORIGIN}/api/content/jobs`,
+    `- Public Schemes API: ${SITE_ORIGIN}/api/content/schemes`,
+    `- Public Study Resources API: ${SITE_ORIGIN}/api/content/resources`,
+    `- Public Study Library Tree API: ${SITE_ORIGIN}/api/content/study-library-directory`,
+    `- Public Exam Taxonomy API: ${SITE_ORIGIN}/api/content/exam-taxonomy`,
+    `- Robots Policy: ${SITE_ORIGIN}/robots.txt`,
+    ''
+  ].join('\n');
+
+  return new Response(request.method === 'HEAD' ? null : lines, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': SEO_CACHE,
+      'X-Content-Type-Options': 'nosniff'
+    }
+  });
+}
+
 function resolveImageMediaUrl(mediaKey) {
   if (!mediaKey || typeof mediaKey !== 'string') return DEFAULT_OG_IMAGE;
   if (/^[0-9a-f-]{36}\.(jpg|jpeg|png|webp)$/i.test(mediaKey.trim())) {
@@ -297,32 +399,168 @@ export async function resolveDeepLinkMeta(url, env) {
   try {
     if (/^\/jobs-careers(\/|\/index\.html)?$/.test(pathname)) {
       const slug = (url.searchParams.get('job') || '').trim().slice(0, 120);
-      if (!slug) return null;
-      const job = await env.DB.prepare(
-        `SELECT slug, title, summary, body_md, organisation, vacancies, qualification, last_date, cover_media_key, notification_media_key
-         FROM posts
-         WHERE type = 'job' AND (slug = ? OR id = ?) AND ${PUBLIC_VISIBLE_SQL}`
-      ).bind(slug, slug).first();
-      if (!job) return null;
+      if (slug) {
+        const job = await env.DB.prepare(
+          `SELECT slug, title, summary, body_md, organisation, vacancies, qualification, last_date, cover_media_key, notification_media_key
+           FROM posts
+           WHERE type = 'job' AND (slug = ? OR id = ?) AND ${PUBLIC_VISIBLE_SQL}`
+        ).bind(slug, slug).first();
+        if (!job) return null;
 
-      const fallbackSummary = [
-        job.organisation ? `${job.organisation}:` : '',
-        job.title,
-        job.vacancies ? `(${job.vacancies} Vacancies)` : '',
-        job.qualification ? `· Qualification: ${job.qualification}` : '',
-        job.last_date ? `· Last Date: ${job.last_date}` : ''
-      ].filter(Boolean).join(' ');
+        const fallbackSummary = [
+          job.organisation ? `${job.organisation}:` : '',
+          job.title,
+          job.vacancies ? `(${job.vacancies} Vacancies)` : '',
+          job.qualification ? `· Qualification: ${job.qualification}` : '',
+          job.last_date ? `· Last Date: ${job.last_date}` : ''
+        ].filter(Boolean).join(' ');
 
-      const description = plainTextExcerpt(job.summary || job.body_md || fallbackSummary, 160);
-      const canonicalUrl = `${SITE_ORIGIN}/jobs-careers/?job=${encodeURIComponent(job.slug)}`;
-      const ogImage = resolveImageMediaUrl(job.cover_media_key || job.notification_media_key);
+        const description = plainTextExcerpt(job.summary || job.body_md || fallbackSummary, 160);
+        const canonicalUrl = `${SITE_ORIGIN}/jobs-careers/?job=${encodeURIComponent(job.slug)}`;
+        const ogImage = resolveImageMediaUrl(job.cover_media_key || job.notification_media_key);
 
+        return {
+          pageTitle: `${job.title} | CS Odisha`,
+          title: job.title,
+          description,
+          canonicalUrl,
+          ogImage
+        };
+      }
+
+      const groupSlug = (url.searchParams.get('group') || '').trim().slice(0, 120);
+      if (!groupSlug) return null;
+      const groupNode = await env.DB.prepare(
+        `SELECT id, group_slug, title, description
+         FROM jobs_directory_nodes
+         WHERE is_active = 1 AND (LOWER(group_slug) = LOWER(?) OR id = ?)
+         ORDER BY level ASC, sort_order ASC LIMIT 1`
+      ).bind(groupSlug, groupSlug).first();
+      if (!groupNode) return null;
+      const gKey = groupNode.group_slug || groupNode.id;
+      const description = plainTextExcerpt(
+        groupNode.description || `${groupNode.title} — verified Odisha & Central recruitment notices, exam dates, and eligibility tracks on CS Odisha.`,
+        160
+      );
       return {
-        pageTitle: `${job.title} | CS Odisha`,
-        title: job.title,
+        pageTitle: `${groupNode.title} | Jobs & Careers | CS Odisha`,
+        title: `${groupNode.title} — Jobs & Careers`,
         description,
-        canonicalUrl,
-        ogImage
+        canonicalUrl: `${SITE_ORIGIN}/jobs-careers/?group=${encodeURIComponent(gKey)}`,
+        ogImage: DEFAULT_OG_IMAGE
+      };
+    }
+
+    if (/^\/schemes-benefits(\/|\/index\.html)?$/.test(pathname)) {
+      const schemeSlug = (url.searchParams.get('scheme') || '').trim().slice(0, 120);
+      if (schemeSlug) {
+        const sch = await env.DB.prepare(
+          `SELECT slug, title, summary, benefit_summary, body_md, department, gov_level
+           FROM schemes_directory
+           WHERE (slug = ? OR id = ?) AND status = 'published' AND deleted_at IS NULL
+           LIMIT 1`
+        ).bind(schemeSlug, schemeSlug).first();
+        if (!sch) return null;
+        const description = plainTextExcerpt(
+          sch.summary || sch.benefit_summary || sch.body_md || `${sch.title} (${sch.gov_level || 'Odisha'} Govt Scheme) — eligibility, documents & application guide on CS Odisha.`,
+          160
+        );
+        return {
+          pageTitle: `${sch.title} | Schemes & Benefits | CS Odisha`,
+          title: sch.title,
+          description,
+          canonicalUrl: `${SITE_ORIGIN}/schemes-benefits/?scheme=${encodeURIComponent(sch.slug)}`,
+          ogImage: DEFAULT_OG_IMAGE
+        };
+      }
+
+      const groupSlug = (url.searchParams.get('group') || '').trim().slice(0, 120);
+      if (!groupSlug) return null;
+      const grp = await env.DB.prepare(
+        `SELECT slug, title, subtitle
+         FROM schemes_directory_nodes
+         WHERE level = 'group' AND (slug = ? OR id = ?) AND status = 'published'
+         LIMIT 1`
+      ).bind(groupSlug, groupSlug).first();
+      if (!grp) return null;
+      const description = plainTextExcerpt(
+        grp.subtitle || `${grp.title} — verified Odisha & Central citizen welfare schemes, eligibility rules, and application portals on CS Odisha.`,
+        160
+      );
+      return {
+        pageTitle: `${grp.title} | Schemes & Benefits | CS Odisha`,
+        title: grp.title,
+        description,
+        canonicalUrl: `${SITE_ORIGIN}/schemes-benefits/?group=${encodeURIComponent(grp.slug)}`,
+        ogImage: DEFAULT_OG_IMAGE
+      };
+    }
+
+    if (/^\/study-library(\/|\/index\.html)?$/.test(pathname)) {
+      const resSlug = (url.searchParams.get('resource') || '').trim().slice(0, 120);
+      if (resSlug) {
+        const res = await env.DB.prepare(
+          `SELECT id, title, exam, year, description
+           FROM resources
+           WHERE (id = ? OR LOWER(exam_slug) = LOWER(?)) AND status = 'published' AND deleted_at IS NULL
+           LIMIT 1`
+        ).bind(resSlug, resSlug).first();
+        if (!res) return null;
+        const description = plainTextExcerpt(
+          res.description || `${res.title} (${res.exam || 'Odisha Exam'}) — verified syllabus, solved PYQ and study brief on CS Odisha.`,
+          160
+        );
+        return {
+          pageTitle: `${res.title} | Study Library | CS Odisha`,
+          title: res.title,
+          description,
+          canonicalUrl: `${SITE_ORIGIN}/study-library/?resource=${encodeURIComponent(res.id)}`,
+          ogImage: DEFAULT_OG_IMAGE
+        };
+      }
+
+      const groupSlug = (url.searchParams.get('group') || '').trim().slice(0, 120);
+      if (!groupSlug) return null;
+      const grp = await env.DB.prepare(
+        `SELECT slug, title, subtitle
+         FROM study_library_nodes
+         WHERE level = 'group' AND (slug = ? OR id = ?) AND status = 'published'
+         LIMIT 1`
+      ).bind(groupSlug, groupSlug).first();
+      if (!grp) return null;
+      const description = plainTextExcerpt(
+        grp.subtitle || `${grp.title} — curated Odisha & National syllabi, solved PYQs, and study topics on CS Odisha.`,
+        160
+      );
+      return {
+        pageTitle: `${grp.title} | Study Library | CS Odisha`,
+        title: grp.title,
+        description,
+        canonicalUrl: `${SITE_ORIGIN}/study-library/?group=${encodeURIComponent(grp.slug)}`,
+        ogImage: DEFAULT_OG_IMAGE
+      };
+    }
+
+    if (/^\/about(\/|\/index\.html)?$/.test(pathname)) {
+      const groupSlug = (url.searchParams.get('group') || '').trim().slice(0, 120);
+      if (!groupSlug) return null;
+      const grp = await env.DB.prepare(
+        `SELECT slug, title, subtitle, body_text
+         FROM about_directory_nodes
+         WHERE level = 'group' AND (slug = ? OR id = ?) AND status = 'published'
+         LIMIT 1`
+      ).bind(groupSlug, groupSlug).first();
+      if (!grp) return null;
+      const description = plainTextExcerpt(
+        grp.subtitle || grp.body_text || `${grp.title} — Common Sense Odisha editorial standards, source verification, and citizen mission.`,
+        160
+      );
+      return {
+        pageTitle: `${grp.title} | About CS Odisha`,
+        title: grp.title,
+        description,
+        canonicalUrl: `${SITE_ORIGIN}/about/?group=${encodeURIComponent(grp.slug)}`,
+        ogImage: DEFAULT_OG_IMAGE
       };
     }
 

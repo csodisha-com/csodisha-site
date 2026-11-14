@@ -1,6 +1,16 @@
 User-agent: *
 Allow: /
+Allow: /jobs-careers/
+Allow: /schemes-benefits/
+Allow: /study-library/
+Allow: /mock-tests/
+Allow: /resources/
+Allow: /about/
+Allow: /current-affairs/
 Disallow: /admin/
+Disallow: /student-dashboard/
+Disallow: /api/admin/
+Disallow: /api/candidate/
 Disallow: /api/
 
 Sitemap: https://csodisha.com/sitemap.xml

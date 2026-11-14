@@ -17,7 +17,7 @@ import { checkRateLimit, createSession, buildSessionCookie } from './functions/a
 import { handleAdminApi } from './functions/api/admin/_router.js';
 import { runLifecycleMaintenance } from './functions/api/admin/_cron.js';
 import { handleContent } from './functions/api/content/_public.js';
-import { handleSitemapXml, handleRssFeed, resolveDeepLinkMeta, rewriteHtmlWithMeta } from './functions/api/content/_seo.js';
+import { handleSitemapXml, handleRssFeed, handleRobotsTxt, handleLlmsTxt, resolveDeepLinkMeta, rewriteHtmlWithMeta } from './functions/api/content/_seo.js';
 import { getPublishedPage, getPageRedirect, getExpiredRedirect, renderDynamicPage, applyPageOverrides, publishDueScheduledPages, getSitewide } from './functions/_lib/site-pages.js';
 import { handleUserApi } from './functions/api/user/_router.js';
 import { handleMedia } from './functions/api/media/_serve.js';
@@ -230,7 +230,7 @@ function recordPublicCachePut(edgeCache, request, response, ctx) {
 async function invalidatePublicEdgeCache(edgeCache, origin) {
   if (!edgeCache) return;
   const basePaths = [
-    '/sitemap.xml', '/feed.xml', '/rss.xml',
+    '/sitemap.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
     '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources',
@@ -274,12 +274,16 @@ export default {
     // 0d. CMS: public content API + R2 media delivery + authenticated user progress/bookmarks API + Dynamic SEO
     const edgeCache = typeof caches !== 'undefined' && caches.default ? caches.default : null;
     const isAnonGet = (request.method === 'GET' || request.method === 'HEAD') && !(request.headers.get('Cookie') || '').includes('cso_session=');
-    if (pathname === '/sitemap.xml' || pathname === '/feed.xml' || pathname === '/rss.xml') {
+    if (pathname === '/sitemap.xml' || pathname === '/feed.xml' || pathname === '/rss.xml' || pathname === '/robots.txt' || pathname === '/llms.txt') {
       if (edgeCache && isAnonGet) {
         const hit = await edgeCache.match(request);
         if (hit) return hit;
       }
-      const seoRes = pathname === '/sitemap.xml' ? await handleSitemapXml(request, env) : await handleRssFeed(request, env);
+      let seoRes;
+      if (pathname === '/sitemap.xml') seoRes = await handleSitemapXml(request, env);
+      else if (pathname === '/robots.txt') seoRes = handleRobotsTxt(request);
+      else if (pathname === '/llms.txt') seoRes = await handleLlmsTxt(request, env);
+      else seoRes = await handleRssFeed(request, env);
       if (isAnonGet && seoRes.status === 200) {
         recordPublicCachePut(edgeCache, request, seoRes, ctx);
       }
@@ -439,7 +443,7 @@ export default {
           }
         }
       }
-      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|schemes-benefits|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname)) {
+      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|schemes-benefits|study-library|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname)) {
         const headers = new Headers(res.headers);
         headers.set(
           'Content-Security-Policy',
