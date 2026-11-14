@@ -154,9 +154,14 @@
   function embedTabs() {
     var wrap = el('div', { class: 'tabs', role: 'tablist' });
     if (!embedGroup) return wrap;
-    var cur = curPath.replace(/^\//, '').split('/')[0];
+    var cleanCur = curPath.replace(/^\//, '');
+    var curBase = cleanCur.split('/')[0];
+    var curTwo = cleanCur.split('/').slice(0, 2).join('/');
+    var exactMatch = embedGroup.some(function (t) { return t[0] === cleanCur; });
+    var twoMatch = !exactMatch && embedGroup.some(function (t) { return t[0] === curTwo; });
     embedGroup.forEach(function (t) {
-      wrap.appendChild(el('a', { class: 'tab', role: 'tab', href: '#/' + t[0], 'aria-selected': String(t[0] === cur), text: t[1] }));
+      var selected = exactMatch ? (t[0] === cleanCur) : (twoMatch ? (t[0] === curTwo) : (t[0] === curBase));
+      wrap.appendChild(el('a', { class: 'tab', role: 'tab', href: '#/' + t[0], 'aria-selected': String(selected), text: t[1] }));
     });
     return wrap;
   }
@@ -1555,8 +1560,1421 @@
     else main.appendChild(el('div', { class: 'alert', text: 'Security settings are visible to administrators only.' }));
   }
 
-  async function viewOperations() {
-    setTitle('Operations & Backups');
+  function fmtBytes(n) {
+    var b = Number(n) || 0;
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
+  function opsSnapshotVaultPanel(mode) {
+    var titleMap = {
+      vault: 'Cloudflare R2 Immutable Storage Cold Vault',
+      verify: 'Snapshot Integrity Hash & Cryptographic Signature Check',
+      snapshots: 'Automated Platform Snapshot & Global State Backup'
+    };
+    var subMap = {
+      vault: 'R2 cold storage objects (cso-media › backups/snapshots/*) with SHA-256 custom metadata & D1 row count ledger.',
+      verify: 'Recomputes Web Crypto SHA-256 digests over raw R2 snapshot payloads and verifies 1:1 parity with D1 & R2 metadata.',
+      snapshots: 'Creates deterministic JSON snapshots of live D1 tables (site_settings, site_pages, revisions, posts, schemes, resources, media_assets, users), persists to R2, and records SHA-256 checksums.'
+    };
+    var heading = titleMap[mode] || titleMap.snapshots;
+    var subtitle = subMap[mode] || subMap.snapshots;
+
+    var wrap = el('div', { class: 'panel cso-ops-vault-panel' });
+    wrap.appendChild(el('h2', { text: heading }));
+    wrap.appendChild(el('p', { class: 'muted', text: subtitle }));
+
+    var labelInp = el('input', {
+      type: 'text',
+      id: 'f-ops-snap-label',
+      class: 'cso-ops-label-input',
+      maxlength: '120',
+      placeholder: 'Optional snapshot label (e.g., Pre-v27 Baseline)…'
+    });
+    var createBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      text: 'Create Full Platform Snapshot Now'
+    });
+    var refreshBtn = el('button', {
+      type: 'button',
+      class: 'btn',
+      text: 'Refresh Vault'
+    });
+
+    if (me && me.role === 'admin') {
+      var formRow = el('div', { class: 'cso-ops-create-row' }, [
+        el('label', { for: 'f-ops-snap-label', class: 'cso-ops-create-label', text: 'Snapshot Label' }),
+        labelInp,
+        createBtn,
+        refreshBtn
+      ]);
+      wrap.appendChild(formRow);
+    } else {
+      wrap.appendChild(el('div', { class: 'actions' }, [refreshBtn]));
+    }
+
+    var summaryBar = el('p', { class: 'hint cso-ops-vault-summary', text: 'Loading R2 snapshot vault…' });
+    var tableHost = el('div', { class: 'cso-ops-vault-table-host' });
+    wrap.appendChild(summaryBar);
+    wrap.appendChild(tableHost);
+
+    async function loadVault() {
+      clear(tableHost);
+      summaryBar.textContent = 'Loading R2 snapshot vault…';
+      try {
+        var d = await api('GET', 'ops/snapshots');
+        var items = (d && d.items) || [];
+        var totalBytes = items.reduce(function (acc, it) { return acc + (Number(it.size_bytes) || 0); }, 0);
+        summaryBar.textContent = items.length + ' R2 snapshot(s) in cold vault · Total stored: ' + fmtBytes(totalBytes) + ' · Bucket: cso-media (backups/snapshots/)';
+
+        if (!items.length) {
+          tableHost.appendChild(el('p', { class: 'muted', text: 'No platform snapshots recorded yet. Click "Create Full Platform Snapshot Now" to archive the first baseline to R2.' }));
+          return;
+        }
+
+        var tb = el('tbody');
+        items.forEach(function (snap) {
+          var shaShort = snap.sha256 ? (snap.sha256.slice(0, 12) + '…' + snap.sha256.slice(-6)) : '—';
+          var shaCode = el('code', { class: 'cso-ops-sha-code', title: 'SHA-256: ' + (snap.sha256 || '') + '\nR2 Key: ' + (snap.r2_key || ''), text: shaShort });
+          var verifyBadge = el('span', {
+            class: 'badge ' + (snap.r2_exists ? 'published' : 'expired'),
+            text: snap.r2_exists ? 'R2 Stored' : 'Missing in R2'
+          });
+          var verifyDetail = el('div', { class: 'hint cso-ops-verify-detail', hidden: true });
+
+          var verifyBtn = el('button', {
+            type: 'button',
+            class: 'btn sm cso-btn-forest-outline',
+            text: 'Verify SHA-256',
+            onclick: async function () {
+              verifyBtn.disabled = true;
+              verifyBtn.textContent = 'Verifying…';
+              try {
+                var res = await api('POST', 'ops/snapshots/' + encodeURIComponent(snap.id) + '/verify', {});
+                verifyBadge.className = 'badge ' + (res.valid ? 'published' : 'expired');
+                verifyBadge.textContent = res.valid ? '✓ SHA-256 Verified' : '✗ Checksum Mismatch';
+                verifyDetail.hidden = false;
+                verifyDetail.textContent = res.valid
+                  ? ('Match: ' + (res.actual_sha256 || '').slice(0, 16) + '… (' + fmtBytes(res.size_bytes) + ')')
+                  : ('Expected ' + (res.expected_sha256 || '').slice(0, 12) + '…, got ' + (res.actual_sha256 || res.reason || 'none'));
+                toast(res.valid ? 'Snapshot integrity verified (SHA-256 match)' : 'Snapshot integrity check FAILED', !res.valid);
+              } catch (err) {
+                toast(err.message, true);
+              }
+              verifyBtn.disabled = false;
+              verifyBtn.textContent = 'Verify SHA-256';
+            }
+          });
+
+          var drillRestoreBtn = el('button', {
+            type: 'button',
+            class: 'btn sm',
+            text: 'Drill / Restore',
+            onclick: function () {
+              go('operations/drill/' + encodeURIComponent(snap.id));
+            }
+          });
+
+          var dlLink = el('a', {
+            class: 'btn sm cso-btn-forest',
+            href: '/api/admin/ops/snapshots/' + encodeURIComponent(snap.id) + '/download',
+            download: 'cso-snapshot-' + snap.id + '.json',
+            text: 'Download JSON'
+          });
+
+          var counts = snap.row_counts || {};
+          var countsHint = Object.keys(counts).map(function (k) { return k + ': ' + counts[k]; }).join(' · ');
+
+          tb.appendChild(el('tr', {}, [
+            el('td', {}, [
+              el('div', { class: 'cso-tabular', text: fmtDate(snap.created_at) }),
+              el('div', { class: 'hint', text: (snap.created_by || 'staff') + ' · ' + (snap.trigger_type || 'manual') })
+            ]),
+            el('td', {}, [
+              el('strong', { text: snap.label }),
+              el('div', { class: 'hint cso-ops-r2key', text: snap.r2_key })
+            ]),
+            el('td', {}, [
+              el('strong', { class: 'cso-tabular', text: String(snap.total_rows || 0) + ' rows' }),
+              countsHint ? el('div', { class: 'hint', text: countsHint }) : null
+            ]),
+            el('td', { class: 'cso-tabular', text: fmtBytes(snap.size_bytes) }),
+            el('td', {}, [shaCode, el('div', { class: 'cso-ops-badge-wrap' }, [verifyBadge]), verifyDetail]),
+            el('td', {}, el('div', { class: 'actions' }, [verifyBtn, drillRestoreBtn, dlLink]))
+          ]));
+        });
+
+        tableHost.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+          el('caption', { class: 'muted', text: 'R2 Snapshot Cold Vault & Cryptographic Checksums' }),
+          el('thead', {}, el('tr', {}, ['Timestamp', 'Label & R2 Key', 'D1 Rows', 'Size', 'SHA-256 & Status', 'Actions'].map(function (h) {
+            return el('th', { scope: 'col', text: h });
+          }))),
+          tb
+        ])));
+      } catch (e) {
+        summaryBar.textContent = 'Could not load snapshots: ' + e.message;
+      }
+    }
+
+    createBtn.addEventListener('click', async function () {
+      createBtn.disabled = true;
+      createBtn.textContent = 'Creating Snapshot…';
+      try {
+        var r = await api('POST', 'ops/snapshots', { label: labelInp.value.trim() });
+        var sn = r.snapshot || {};
+        labelInp.value = '';
+        toast('Snapshot saved to R2 (' + fmtBytes(sn.size_bytes) + ', SHA-256 ' + String(sn.sha256 || '').slice(0, 10) + '…)');
+        await loadVault();
+      } catch (err) {
+        toast(err.message, true);
+      }
+      createBtn.disabled = false;
+      createBtn.textContent = 'Create Full Platform Snapshot Now';
+    });
+
+    refreshBtn.addEventListener('click', loadVault);
+    loadVault();
+    return wrap;
+  }
+
+  var DR_RESTORABLE_TABLES = [
+    ['site_settings', 'Site Settings & Broadcast Flags'],
+    ['site_pages', 'Published & Draft Site Pages'],
+    ['site_page_revisions', 'Page Revision History'],
+    ['posts', 'Job Alerts & Current Affairs'],
+    ['schemes_directory', 'Schemes & Benefits Directory'],
+    ['resources', 'Syllabus & PYQ Study Resources'],
+    ['media_assets', 'R2 Media Asset Ledger']
+  ];
+
+  function opsDrillAndRestorePanel(mode, preselectedId) {
+    var isRestoreFocus = mode === 'restore';
+    var wrap = el('div', { class: 'panel cso-ops-drill-panel' });
+    wrap.appendChild(el('h2', {
+      text: isRestoreFocus
+        ? 'Point-in-Time Rollback & Granular Engine Restorer'
+        : 'Disaster Recovery Drill & Granular Restorer Studio'
+    }));
+    wrap.appendChild(el('p', {
+      class: 'muted',
+      text: 'Verify SHA-256 snapshot integrity, run non-destructive live D1 diff drills, or execute granular point-in-time table restorations (protected by an automatic pre-restore R2 backup).'
+    }));
+
+    var snapSel = el('select', { id: 'f-ops-drill-snap', class: 'cso-ops-snap-select', 'aria-label': 'Select target R2 snapshot' });
+    var shaBadge = el('span', { class: 'badge published', text: 'SHA-256 Ready' });
+    var reloadBtn = el('button', { type: 'button', class: 'btn sm', text: 'Reload List' });
+
+    wrap.appendChild(el('div', { class: 'cso-ops-selector-bar' }, [
+      el('label', { for: 'f-ops-drill-snap', class: 'cso-ops-create-label', text: 'Target R2 Snapshot:' }),
+      snapSel,
+      shaBadge,
+      reloadBtn
+    ]));
+
+    var checkMap = {};
+    var checksGrid = el('div', { class: 'cso-ops-table-checks' });
+    DR_RESTORABLE_TABLES.forEach(function (pair) {
+      var tbl = pair[0], lbl = pair[1];
+      var chk = el('input', { type: 'checkbox', checked: true, 'data-table': tbl });
+      checkMap[tbl] = chk;
+      checksGrid.appendChild(el('label', { class: 'cso-ops-check-card' }, [
+        chk,
+        el('span', {}, [
+          el('strong', { text: tbl }),
+          el('span', { class: 'hint cso-ops-check-sub', text: lbl })
+        ])
+      ]));
+    });
+
+    var selAllBtn = el('button', {
+      type: 'button',
+      class: 'btn sm',
+      text: 'Select All',
+      onclick: function () {
+        Object.keys(checkMap).forEach(function (k) { checkMap[k].checked = true; });
+      }
+    });
+    var selNoneBtn = el('button', {
+      type: 'button',
+      class: 'btn sm',
+      text: 'Select None',
+      onclick: function () {
+        Object.keys(checkMap).forEach(function (k) { checkMap[k].checked = false; });
+      }
+    });
+
+    wrap.appendChild(el('div', { class: 'cso-ops-checks-head' }, [
+      el('strong', { text: 'Granular D1 Tables (Allowlisted — excludes users credentials & snapshot ledger)' }),
+      el('div', { class: 'actions' }, [selAllBtn, selNoneBtn])
+    ]));
+    wrap.appendChild(checksGrid);
+
+    function selectedTables() {
+      return Object.keys(checkMap).filter(function (k) { return checkMap[k].checked; });
+    }
+
+    var drillBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      text: 'Run Non-Destructive DR Drill'
+    });
+    var drillOut = el('div', { class: 'cso-ops-drill-output' });
+
+    wrap.appendChild(el('div', { class: 'actions cso-ops-drill-actions' }, [drillBtn]));
+    wrap.appendChild(drillOut);
+
+    drillBtn.addEventListener('click', async function () {
+      var snapId = snapSel.value;
+      if (!snapId) { toast('Select a snapshot first', true); return; }
+      var tbls = selectedTables();
+      if (!tbls.length) { toast('Select at least one table for the DR drill', true); return; }
+      drillBtn.disabled = true;
+      drillBtn.textContent = 'Running DR Drill…';
+      clear(drillOut);
+      try {
+        var rep = await api('POST', 'ops/snapshots/' + encodeURIComponent(snapId) + '/drill', { tables: tbls });
+        var kpis = el('div', { class: 'cso-ops-drill-kpis' }, [
+          el('span', { class: 'badge published', text: 'DR Readiness: ' + (rep.readiness || 'PASS') }),
+          el('span', { class: 'badge published', text: '✓ SHA-256 Verified' }),
+          el('span', { class: 'cso-social-count', text: 'Latency: ' + (rep.latency_ms || 1) + ' ms' }),
+          el('span', { class: 'cso-social-count', text: 'Snapshot Rows: ' + ((rep.totals && rep.totals.snapshot_rows) || 0) }),
+          el('span', { class: 'cso-social-count', text: 'Live Rows: ' + ((rep.totals && rep.totals.live_rows) || 0) })
+        ]);
+        drillOut.appendChild(kpis);
+
+        var tb = el('tbody');
+        var diffs = rep.table_diffs || {};
+        (rep.tables_checked || tbls).forEach(function (tName) {
+          var d = diffs[tName] || {};
+          var drift = (d.to_insert || 0) + (d.to_update || 0) + (d.live_only_rows || 0);
+          tb.appendChild(el('tr', {}, [
+            el('td', {}, el('code', { text: tName })),
+            el('td', { class: 'cso-tabular', text: String(d.snapshot_rows || 0) }),
+            el('td', { class: 'cso-tabular', text: String(d.live_rows || 0) }),
+            el('td', { class: 'cso-tabular', text: '+' + String(d.to_insert || 0) }),
+            el('td', { class: 'cso-tabular', text: '~' + String(d.to_update || 0) }),
+            el('td', { class: 'cso-tabular', text: String(d.live_only_rows || 0) + ' live-only' }),
+            el('td', {}, el('span', {
+              class: 'badge ' + (drift === 0 ? 'published' : 'sev-medium'),
+              text: drift === 0 ? 'In Sync (0 drift)' : (drift + ' row delta')
+            }))
+          ]));
+        });
+
+        drillOut.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+          el('caption', { class: 'muted', text: 'Non-Destructive DR Drill Comparison Matrix — ' + (rep.snapshot_label || snapId) }),
+          el('thead', {}, el('tr', {}, ['D1 Table', 'Snapshot Rows', 'Live Rows', 'Inserts', 'Updates', 'Live-Only', 'Drift Status'].map(function (h) {
+            return el('th', { scope: 'col', text: h });
+          }))),
+          tb
+        ])));
+        toast('DR drill complete (' + (rep.latency_ms || 1) + ' ms · Readiness: ' + (rep.readiness || 'PASS') + ')');
+      } catch (err) {
+        drillOut.appendChild(el('div', { class: 'alert', text: 'DR Drill failed: ' + err.message }));
+        toast(err.message, true);
+      }
+      drillBtn.disabled = false;
+      drillBtn.textContent = 'Run Non-Destructive DR Drill';
+    });
+
+    if (me && me.role === 'admin') {
+      var restoreBox = el('div', { class: 'cso-ops-restore-box' });
+      restoreBox.appendChild(el('h3', { text: 'Granular Point-in-Time Restore Engine' }));
+      restoreBox.appendChild(el('p', {
+        class: 'hint',
+        text: 'Safety Guard: Before modifying any live D1 table, the engine automatically archives an "Auto-Pre-Restore Safety Backup" snapshot to R2 so any restore is immediately reversible.'
+      }));
+
+      var modeSel = el('select', { id: 'f-ops-restore-mode', class: 'cso-ops-mode-select' }, [
+        el('option', { value: 'upsert', text: 'Upsert / Merge (INSERT OR REPLACE — preserves newer live-only rows)' }),
+        el('option', { value: 'replace', text: 'Full Table Replace (DELETE + INSERT — exact point-in-time table state)' })
+      ]);
+      var confirmInp = el('input', {
+        type: 'text',
+        id: 'f-ops-restore-confirm',
+        class: 'cso-ops-confirm-input',
+        placeholder: 'Type RESTORE to confirm',
+        autocomplete: 'off',
+        spellcheck: 'false'
+      });
+      var restoreBtn = el('button', {
+        type: 'button',
+        class: 'btn danger',
+        text: 'Execute Granular Restore'
+      });
+      var restoreOut = el('div', { class: 'cso-ops-restore-output' });
+
+      restoreBox.appendChild(el('div', { class: 'cso-ops-restore-controls' }, [
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { for: 'f-ops-restore-mode', text: 'Restore Mode' }),
+          modeSel
+        ]),
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { for: 'f-ops-restore-confirm', text: 'Safety Confirmation (type RESTORE)' }),
+          confirmInp
+        ]),
+        restoreBtn
+      ]));
+      restoreBox.appendChild(restoreOut);
+      wrap.appendChild(restoreBox);
+
+      restoreBtn.addEventListener('click', async function () {
+        var snapId = snapSel.value;
+        if (!snapId) { toast('Select a target snapshot first', true); return; }
+        var tbls = selectedTables();
+        if (!tbls.length) { toast('Select at least one table to restore', true); return; }
+        if (confirmInp.value.trim() !== 'RESTORE') {
+          toast('Type RESTORE in the confirmation box to proceed', true);
+          confirmInp.focus();
+          return;
+        }
+        restoreBtn.disabled = true;
+        restoreBtn.textContent = 'Creating Safety Backup & Restoring…';
+        clear(restoreOut);
+        try {
+          var res = await api('POST', 'ops/snapshots/' + encodeURIComponent(snapId) + '/restore', {
+            tables: tbls,
+            mode: modeSel.value,
+            confirm_phrase: confirmInp.value.trim()
+          });
+          confirmInp.value = '';
+          var summaryParts = Object.keys(res.row_summary || {}).map(function (k) {
+            return k + ': ' + (res.row_summary[k].restored_rows || 0) + ' rows (' + res.row_summary[k].mode + ')';
+          });
+          restoreOut.appendChild(el('div', {
+            class: 'alert ok',
+            text: '✓ Restore complete! Pre-restore safety snapshot ID: ' + res.safety_snapshot_id + ' · Restored: ' + summaryParts.join(' · ')
+          }));
+          toast('Point-in-time restore succeeded (Safety backup: ' + String(res.safety_snapshot_id).slice(0, 8) + '…)');
+          await populateSnapshots(snapId);
+        } catch (err) {
+          restoreOut.appendChild(el('div', { class: 'alert', text: 'Restore aborted: ' + err.message }));
+          toast(err.message, true);
+        }
+        restoreBtn.disabled = false;
+        restoreBtn.textContent = 'Execute Granular Restore';
+      });
+    }
+
+    var snapMetaMap = {};
+    function updateShaBadge() {
+      var cur = snapMetaMap[snapSel.value];
+      if (!cur) {
+        shaBadge.textContent = 'No Snapshot Selected';
+        shaBadge.className = 'badge expired';
+        return;
+      }
+      shaBadge.className = 'badge ' + (cur.r2_exists ? 'published' : 'expired');
+      shaBadge.textContent = 'SHA-256: ' + String(cur.sha256 || '').slice(0, 12) + '… (' + fmtBytes(cur.size_bytes) + ')';
+    }
+    snapSel.addEventListener('change', updateShaBadge);
+
+    async function populateSnapshots(preferId) {
+      clear(snapSel);
+      snapMetaMap = {};
+      try {
+        var d = await api('GET', 'ops/snapshots');
+        var items = (d && d.items) || [];
+        if (!items.length) {
+          snapSel.appendChild(el('option', { value: '', text: 'No snapshots in R2 vault — create one first' }));
+          updateShaBadge();
+          return;
+        }
+        items.forEach(function (it) {
+          snapMetaMap[it.id] = it;
+          var lbl = fmtDate(it.created_at) + ' — ' + it.label + ' (' + (it.total_rows || 0) + ' rows · ' + String(it.sha256 || '').slice(0, 8) + '…)';
+          snapSel.appendChild(el('option', { value: it.id, text: lbl, selected: preferId && it.id === preferId }));
+        });
+        if (preferId && snapMetaMap[preferId]) snapSel.value = preferId;
+        updateShaBadge();
+      } catch (e) {
+        snapSel.appendChild(el('option', { value: '', text: 'Error loading snapshots: ' + e.message }));
+        updateShaBadge();
+      }
+    }
+
+    reloadBtn.addEventListener('click', function () { populateSnapshots(snapSel.value); });
+    populateSnapshots(preselectedId);
+    return wrap;
+  }
+
+  /* ---------- Folder 17: Sentinel, Read-Only Freeze & Edge Cache Studio (Modules #7, #9, #12, #15) ---------- */
+  function opsSentinelFreezeCachePanel(focusMode) {
+    var isAdmin = me && me.role === 'admin';
+    var headingMap = {
+      freeze: 'Emergency Read-Only Freeze & Outage Fallback Mode',
+      cache: 'Edge Cache State Preservation & Warmer Daemon',
+      health: 'Multi-Region Failover Sentinel & Health Heartbeat',
+      canary: 'Zero-Downtime Deployment & Rolling Canary Health'
+    };
+    var wrap = el('div', { class: 'panel cso-ops-sentinel-panel' }, [
+      el('h2', { text: headingMap[focusMode] || 'Sentinel, Read-Only Freeze & Edge Cache Studio' }),
+      el('p', {
+        class: 'muted',
+        text: 'Real-time D1 + R2 health probes, Cloudflare edge colo telemetry, rolling canary inspection, edge cache warmer/purger, and instant read-only lockdown.'
+      })
+    ]);
+
+    /* 1. Emergency Read-Only Freeze Switch (Module #12) */
+    var freezeState = { enabled: false, reason: '', activated_by: null, activated_at: null };
+    var freezeBanner = el('div', { class: 'alert ok cso-ops-freeze-banner', text: 'Checking platform write-lock state…' });
+    var reasonInput = el('input', {
+      type: 'text',
+      class: 'cso-ops-freeze-input',
+      maxLength: '240',
+      placeholder: 'Outage / maintenance reason (e.g. D1 schema migration window — read-only mode)'
+    });
+    var freezeBtn = el('button', {
+      type: 'button',
+      class: 'btn danger',
+      disabled: !isAdmin,
+      text: 'Activate Read-Only Freeze',
+      onclick: async function () {
+        if (!isAdmin) return;
+        var nextEnabled = !freezeState.enabled;
+        freezeBtn.disabled = true;
+        freezeBtn.textContent = nextEnabled ? 'Activating Freeze…' : 'Lifting Freeze…';
+        try {
+          var res = await api('POST', 'ops/freeze', {
+            enabled: nextEnabled,
+            reason: (reasonInput.value || '').trim()
+          });
+          applyFreezeUi(res.freeze || { enabled: nextEnabled, reason: reasonInput.value });
+          toast(nextEnabled ? 'Emergency Read-Only Freeze ACTIVATED (503 on public/editor writes)' : 'Read-Only Freeze lifted — live writes restored');
+          runHealthProbe();
+        } catch (err) {
+          toast(err.message || 'Failed to toggle freeze mode', true);
+          freezeBtn.disabled = false;
+          applyFreezeUi(freezeState);
+        }
+      }
+    });
+
+    function applyFreezeUi(st) {
+      freezeState = st || { enabled: false, reason: '' };
+      if (freezeState.enabled) {
+        freezeBanner.className = 'alert cso-ops-freeze-banner is-frozen';
+        freezeBanner.textContent = 'FROZEN — READ-ONLY LOCKDOWN · Public & editor writes blocked with HTTP 503 (' +
+          (freezeState.reason || 'Emergency maintenance') + ')' +
+          (freezeState.activated_by ? ' · by ' + freezeState.activated_by : '');
+        if (!reasonInput.value && freezeState.reason) reasonInput.value = freezeState.reason;
+        freezeBtn.className = 'btn primary';
+        freezeBtn.textContent = 'Lift Freeze & Restore Live Writes';
+      } else {
+        freezeBanner.className = 'alert ok cso-ops-freeze-banner';
+        freezeBanner.textContent = 'ACTIVE — LIVE WRITES · All public and editorial endpoints accepting normal traffic.';
+        freezeBtn.className = 'btn danger';
+        freezeBtn.textContent = 'Activate Read-Only Freeze';
+      }
+      freezeBtn.disabled = !isAdmin;
+    }
+
+    var freezeBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: '1. Emergency Read-Only Freeze Switch (Module #12)' }),
+        el('span', { class: 'muted sm', text: 'Allowlists /api/admin/login, /api/admin/auth/*, /api/admin/ops/*, and /api/admin/session' })
+      ]),
+      freezeBanner,
+      el('div', { class: 'cso-ops-freeze-controls' }, [
+        reasonInput,
+        freezeBtn
+      ])
+    ]);
+    wrap.appendChild(freezeBox);
+
+    /* 2. Live Health & Rolling Canary Telemetry Cards (Modules #9 & #15) */
+    var probeGrid = el('div', { class: 'cso-ops-telemetry-grid' });
+    var probeBtn = el('button', {
+      type: 'button',
+      class: 'btn sm primary',
+      text: 'Run Live Health & Canary Probe',
+      onclick: function () { runHealthProbe(true); }
+    });
+    var healthBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: '2. Multi-Region Failover Sentinel & Rolling Canary Health (Modules #9 & #15)' }),
+        probeBtn
+      ]),
+      probeGrid
+    ]);
+    wrap.appendChild(healthBox);
+
+    async function runHealthProbe(showToast) {
+      probeBtn.disabled = true;
+      probeBtn.textContent = 'Probing Edge, D1 & R2…';
+      try {
+        var h = await api('GET', 'ops/health');
+        if (h && h.freeze) applyFreezeUi(h.freeze);
+        clear(probeGrid);
+        var d1 = h.d1 || {};
+        var r2 = h.r2 || {};
+        var edge = h.edge || {};
+        var can = h.canary || {};
+        var counts = d1.counts || {};
+        var statusCls = h.status === 'HEALTHY' ? 'published' : (h.status === 'FROZEN' ? 'scheduled' : 'expired');
+
+        probeGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Platform & Canary Status' }),
+          el('div', { class: 'cso-ops-telemetry-val' }, [
+            el('span', { class: 'badge ' + statusCls, text: h.status || 'UNKNOWN' }),
+            el('span', { class: 'muted sm cso-tabular', text: ' ' + (h.total_latency_ms || 1) + ' ms total' })
+          ]),
+          el('div', { class: 'muted sm cso-ops-mono', text: 'SW: ' + (can.sw_cache_name || 'v26') + ' (' + (can.sw_status || 'READY') + ')' })
+        ]));
+
+        probeGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Cloudflare D1 Primary' }),
+          el('div', { class: 'cso-ops-telemetry-val' }, [
+            el('span', { class: 'badge ' + (d1.status === 'UP' ? 'published' : 'expired'), text: d1.status || 'DOWN' }),
+            el('span', { class: 'cso-tabular', text: ' ' + (d1.latency_ms || 0) + ' ms' })
+          ]),
+          el('div', { class: 'muted sm cso-tabular', text: 'Posts: ' + (counts.posts || 0) + ' · Schemes: ' + (counts.schemes || 0) + ' · Snaps: ' + (counts.snapshots || 0) })
+        ]));
+
+        probeGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Cloudflare R2 Cold Vault' }),
+          el('div', { class: 'cso-ops-telemetry-val' }, [
+            el('span', { class: 'badge ' + (r2.status === 'UP' ? 'published' : 'expired'), text: r2.status || 'DOWN' }),
+            el('span', { class: 'cso-tabular', text: ' ' + (r2.latency_ms || 0) + ' ms' })
+          ]),
+          el('div', { class: 'muted sm cso-ops-mono', text: 'Bucket: ' + (r2.bucket || 'cso-media') })
+        ]));
+
+        probeGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Edge Data Center (request.cf)' }),
+          el('div', { class: 'cso-ops-telemetry-val' }, [
+            el('code', { class: 'cso-ops-sha-code', text: (edge.colo || 'LOCAL') + ' · ' + (edge.country || 'IN') })
+          ]),
+          el('div', { class: 'muted sm cso-ops-mono', text: (edge.httpProtocol || 'HTTP/2') + ' · ' + (edge.tlsVersion || 'TLSv1.3') })
+        ]));
+
+        if (showToast) toast('Health & Canary probe complete (' + h.status + ' · D1 ' + d1.latency_ms + 'ms · R2 ' + r2.latency_ms + 'ms)');
+      } catch (err) {
+        clear(probeGrid).appendChild(el('div', { class: 'alert', text: err.message || 'Health probe failed' }));
+      }
+      probeBtn.disabled = false;
+      probeBtn.textContent = 'Run Live Health & Canary Probe';
+    }
+
+    /* 3. Edge Cache State Preservation & Warmer / Purger Panel (Module #7) */
+    var cacheResultHost = el('div');
+    var warmBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      disabled: !isAdmin,
+      text: 'Warm Core Routes',
+      onclick: function () { runCacheAction('warm'); }
+    });
+    var purgeBtn = el('button', {
+      type: 'button',
+      class: 'btn',
+      disabled: !isAdmin,
+      text: 'Purge Edge Cache',
+      onclick: function () { runCacheAction('purge'); }
+    });
+
+    async function runCacheAction(act) {
+      warmBtn.disabled = true;
+      purgeBtn.disabled = true;
+      if (act === 'warm') warmBtn.textContent = 'Warming Edge Cache…';
+      else purgeBtn.textContent = 'Purging Edge Cache…';
+      clear(cacheResultHost).appendChild(el('p', { class: 'muted', text: (act === 'warm' ? 'Pre-fetching and populating edge cache' : 'Evicting canonical routes from caches.default') + '…' }));
+      try {
+        var res = await api('POST', 'ops/cache', { action: act });
+        clear(cacheResultHost);
+        var summaryTxt = act === 'warm'
+          ? ('Warmed ' + (res.warmed_count || 0) + ' of ' + (res.routes ? res.routes.length : 0) + ' core routes in ' + (res.total_latency_ms || 1) + ' ms.')
+          : ('Purged edge cache entries across ' + (res.routes ? res.routes.length : 0) + ' core routes (' + (res.purged_count || 0) + ' active entries evicted) in ' + (res.total_latency_ms || 1) + ' ms.');
+        cacheResultHost.appendChild(el('div', { class: 'alert ok', text: summaryTxt }));
+        var tb = el('tbody');
+        (res.routes || []).forEach(function (r) {
+          var okStatus = r.status >= 200 && r.status < 400;
+          var stateBadge = act === 'warm'
+            ? el('span', { class: 'badge ' + (r.cached ? 'published' : 'scheduled'), text: r.cached ? 'WARMED' : 'FETCHED' })
+            : el('span', { class: 'badge ' + (r.evicted ? 'published' : 'draft'), text: r.evicted ? 'EVICTED' : 'CLEAN' });
+          tb.appendChild(el('tr', {}, [
+            el('td', {}, el('code', { class: 'cso-ops-r2key', text: r.route })),
+            el('td', {}, el('span', { class: 'badge ' + (okStatus ? 'published' : 'expired'), text: 'HTTP ' + r.status })),
+            el('td', {}, stateBadge),
+            el('td', { class: 'cso-tabular', text: (r.latency_ms || 1) + ' ms' })
+          ]));
+        });
+        cacheResultHost.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+          el('thead', {}, el('tr', {}, ['Canonical Route', 'HTTP Status', 'Edge Cache State', 'Latency'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+          tb
+        ])));
+        toast(summaryTxt);
+      } catch (err) {
+        clear(cacheResultHost).appendChild(el('div', { class: 'alert', text: err.message || 'Edge cache operation failed' }));
+        toast(err.message || 'Edge cache operation failed', true);
+      }
+      warmBtn.disabled = !isAdmin;
+      purgeBtn.disabled = !isAdmin;
+      warmBtn.textContent = 'Warm Core Routes';
+      purgeBtn.textContent = 'Purge Edge Cache';
+    }
+
+    var cacheBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: '3. Edge Cache State Preservation & Warmer Daemon (Module #7)' }),
+        el('div', { class: 'actions' }, [warmBtn, purgeBtn])
+      ]),
+      el('p', { class: 'muted sm', text: 'Target routes: /, /jobs-careers/, /schemes-benefits/, /study-library/, /api/posts?limit=20, /api/schemes?limit=20' }),
+      cacheResultHost
+    ]);
+    wrap.appendChild(cacheBox);
+
+    runHealthProbe(false);
+    return wrap;
+  }
+
+  /* ---------- Folder 17: Schema Journal, Vacuum, Forensics & Retention Studio (Modules #6, #11, #13, #14) ---------- */
+  function opsSchemaVacuumForensicsPanel(focusMode) {
+    var isAdmin = me && me.role === 'admin';
+    var headingMap = {
+      schema: 'Database Migration Version & DDL Schema Journal',
+      vacuum: 'Dead-Letter Message Vacuum & Retention Expiry Purge',
+      forensics: 'Post-Incident Forensic Audit & State Diff Inspector',
+      retention: 'Automated Daily Backup Schedule & Retention Policy'
+    };
+    var wrap = el('div', { class: 'panel cso-ops-hygiene-panel' }, [
+      el('h2', { text: headingMap[focusMode] || 'Schema Journal, Vacuum, Forensics & Retention Studio' }),
+      el('p', {
+        class: 'muted',
+        text: 'Inspect live sqlite_master DDL and SHA-256 schema fingerprints, vacuum expired tokens/revisions, inspect field-level audit diffs, and configure automated Cron backup retention.'
+      })
+    ]);
+
+    /* 1. Database Migration Version & DDL Schema Journal (Module #6) */
+    var schemaHost = el('div', {}, el('p', { class: 'muted sm', text: 'Loading live D1 schema journal…' }));
+    var refreshSchemaBtn = el('button', {
+      type: 'button',
+      class: 'btn sm',
+      text: 'Refresh DDL Journal',
+      onclick: function () { loadSchemaJournal(true); }
+    });
+    var schemaBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: '1. Database Migration Version & DDL Schema Journal (Module #6)' }),
+        refreshSchemaBtn
+      ]),
+      schemaHost
+    ]);
+    wrap.appendChild(schemaBox);
+
+    async function loadSchemaJournal(showToast) {
+      refreshSchemaBtn.disabled = true;
+      refreshSchemaBtn.textContent = 'Inspecting…';
+      try {
+        var s = await api('GET', 'ops/schema');
+        clear(schemaHost);
+        schemaHost.appendChild(el('div', { class: 'cso-ops-drill-kpis' }, [
+          el('span', { class: 'badge published', text: (s.table_count || 0) + ' Tables · ' + (s.index_count || 0) + ' Indexes' }),
+          el('span', { class: 'muted sm cso-tabular', text: 'Total Rows: ' + (s.total_rows || 0) + ' · Migrations: ' + ((s.migrations && s.migrations.length) || 0) }),
+          el('code', { class: 'cso-ops-sha-code', title: s.schema_sha256 || '', text: 'Schema SHA-256: ' + String(s.schema_sha256 || '').slice(0, 20) + '…' })
+        ]));
+
+        var ddlList = el('div', { class: 'cso-ops-ddl-list' });
+        (s.tables || []).forEach(function (tbl) {
+          var det = el('details', { class: 'cso-ops-ddl-details' }, [
+            el('summary', { class: 'cso-ops-ddl-summary' }, [
+              el('code', { class: 'cso-ops-r2key', text: tbl.name }),
+              el('span', { class: 'muted sm cso-tabular', text: (tbl.column_count || 0) + ' cols · ' + (tbl.row_count || 0) + ' rows' })
+            ]),
+            el('pre', { class: 'cso-ops-ddl-pre', text: tbl.ddl_sql || '-- No DDL SQL available' })
+          ]);
+          ddlList.appendChild(det);
+        });
+        schemaHost.appendChild(ddlList);
+        if (showToast) toast('DDL Schema fingerprint verified (' + (s.table_count || 0) + ' tables)');
+      } catch (err) {
+        clear(schemaHost).appendChild(el('div', { class: 'alert', text: err.message || 'Failed to inspect schema' }));
+      }
+      refreshSchemaBtn.disabled = false;
+      refreshSchemaBtn.textContent = 'Refresh DDL Journal';
+    }
+
+    /* 2. Dead-Letter Message Vacuum & Retention Expiry Purge (Module #11) */
+    var trimRevChk = el('input', { type: 'checkbox', checked: 'checked' });
+    var vacuumResultHost = el('div');
+    var dryVacuumBtn = el('button', {
+      type: 'button',
+      class: 'btn',
+      disabled: !isAdmin,
+      text: 'Preview Vacuum (Dry Run)',
+      onclick: function () { executeVacuum(true); }
+    });
+    var runVacuumBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      disabled: !isAdmin,
+      text: 'Execute Purge Now',
+      onclick: function () { executeVacuum(false); }
+    });
+
+    async function executeVacuum(isDry) {
+      dryVacuumBtn.disabled = true;
+      runVacuumBtn.disabled = true;
+      if (isDry) dryVacuumBtn.textContent = 'Scanning…';
+      else runVacuumBtn.textContent = 'Purging…';
+      try {
+        var res = await api('POST', 'ops/vacuum', {
+          dry_run: isDry,
+          trim_revisions: Boolean(trimRevChk.checked),
+          revision_keep_limit: 25
+        });
+        clear(vacuumResultHost);
+        var t = res.tables || {};
+        var bannerMsg = (isDry ? 'Dry-Run Vacuum Preview: ' : 'Dead-Letter Vacuum Complete: ') +
+          (res.total_reclaimed || 0) + (isDry ? ' stale row(s) eligible for purge.' : ' stale row(s) permanently reclaimed.');
+        vacuumResultHost.appendChild(el('div', { class: 'alert ok', text: bannerMsg }));
+        var tb = el('tbody');
+        [
+          ['admin_otps', 'Expired / Stale Admin 2FA OTPs (>24h)', t.admin_otps || 0],
+          ['sessions', 'Expired Authentication Sessions', t.sessions || 0],
+          ['admin_rate_limits', 'Stale Fixed-Window Rate Limits (>24h)', t.admin_rate_limits || 0],
+          ['site_page_revisions', 'Excess Page Revisions (>25 per route)', t.site_page_revisions || 0]
+        ].forEach(function (row) {
+          tb.appendChild(el('tr', {}, [
+            el('td', {}, el('code', { class: 'cso-ops-r2key', text: row[0] })),
+            el('td', { text: row[1] }),
+            el('td', {}, el('span', { class: 'badge ' + (row[2] > 0 ? 'scheduled' : 'published'), text: isDry ? 'ELIGIBLE' : 'RECLAIMED' })),
+            el('td', { class: 'cso-tabular', text: String(row[2]) })
+          ]));
+        });
+        vacuumResultHost.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+          el('thead', {}, el('tr', {}, ['Table', 'Retention Target', 'Mode', 'Rows'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+          tb
+        ])));
+        toast(bannerMsg);
+      } catch (err) {
+        clear(vacuumResultHost).appendChild(el('div', { class: 'alert', text: err.message || 'Vacuum failed' }));
+        toast(err.message || 'Vacuum failed', true);
+      }
+      dryVacuumBtn.disabled = !isAdmin;
+      runVacuumBtn.disabled = !isAdmin;
+      dryVacuumBtn.textContent = 'Preview Vacuum (Dry Run)';
+      runVacuumBtn.textContent = 'Execute Purge Now';
+    }
+
+    var vacuumBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: '2. Dead-Letter Message Vacuum & Retention Expiry Purge (Module #11)' }),
+        el('div', { class: 'actions' }, [dryVacuumBtn, runVacuumBtn])
+      ]),
+      el('label', { class: 'cso-ops-inline-check' }, [
+        trimRevChk,
+        el('span', { text: 'Trim excess site_page_revisions beyond newest 25 revisions per page' })
+      ]),
+      vacuumResultHost
+    ]);
+    wrap.appendChild(vacuumBox);
+
+    /* 3. Post-Incident Forensic Audit & State Diff Inspector (Module #13) */
+    var actionFilterInput = el('input', {
+      type: 'text',
+      class: 'cso-ops-filter-input',
+      placeholder: 'Filter by action prefix (e.g. ops., user., page.)'
+    });
+    var actorFilterInput = el('input', {
+      type: 'text',
+      class: 'cso-ops-filter-input',
+      placeholder: 'Filter by actor email or ID'
+    });
+    var forensicsBtn = el('button', {
+      type: 'button',
+      class: 'btn sm primary',
+      text: 'Inspect Forensics',
+      onclick: function () { loadForensics(true); }
+    });
+    var forensicsHost = el('div', {}, el('p', { class: 'muted sm', text: 'Loading forensic audit trail…' }));
+
+    function formatDiffSummary(diff) {
+      if (!diff) return el('span', { class: 'muted sm', text: '—' });
+      var lines = [];
+      (diff.added || []).forEach(function (a) {
+        lines.push('+ ' + a.field + ': ' + JSON.stringify(a.after));
+      });
+      (diff.modified || []).forEach(function (m) {
+        lines.push('~ ' + m.field + ': ' + JSON.stringify(m.before) + ' → ' + JSON.stringify(m.after));
+      });
+      (diff.removed || []).forEach(function (r) {
+        lines.push('- ' + r.field + ': ' + JSON.stringify(r.before));
+      });
+      if (!lines.length && diff.payload_fields && diff.payload_fields.length) {
+        diff.payload_fields.forEach(function (p) {
+          lines.push('• ' + p.field + ': ' + JSON.stringify(p.value));
+        });
+      }
+      if (!lines.length) return el('span', { class: 'muted sm', text: 'No field mutations' });
+      return el('pre', { class: 'cso-ops-diff-pre', text: lines.join('\n') });
+    }
+
+    async function loadForensics(showToast) {
+      forensicsBtn.disabled = true;
+      forensicsBtn.textContent = 'Loading…';
+      try {
+        var qs = '?limit=25';
+        if ((actionFilterInput.value || '').trim()) qs += '&action=' + encodeURIComponent(actionFilterInput.value.trim());
+        if ((actorFilterInput.value || '').trim()) qs += '&actor=' + encodeURIComponent(actorFilterInput.value.trim());
+        var res = await api('GET', 'ops/forensics' + qs);
+        clear(forensicsHost);
+        var items = res.items || [];
+        if (!items.length) {
+          forensicsHost.appendChild(el('p', { class: 'muted sm', text: 'No matching audit_log entries found.' }));
+        } else {
+          var tb = el('tbody');
+          items.forEach(function (item) {
+            tb.appendChild(el('tr', {}, [
+              el('td', { class: 'muted sm cso-tabular', text: fmtDate(item.created_at) }),
+              el('td', {}, el('code', { class: 'cso-ops-sha-code', text: item.action })),
+              el('td', { class: 'sm', text: item.actor_email || 'system' }),
+              el('td', { class: 'muted sm', text: (item.target_type || '—') + (item.target_id ? ' (' + item.target_id + ')' : '') }),
+              el('td', {}, formatDiffSummary(item.diff))
+            ]));
+          });
+          forensicsHost.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+            el('thead', {}, el('tr', {}, ['Timestamp', 'Action', 'Actor', 'Target', 'Forensic State Diff / Payload'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+            tb
+          ])));
+        }
+        if (showToast) toast('Loaded ' + items.length + ' forensic audit entries');
+      } catch (err) {
+        clear(forensicsHost).appendChild(el('div', { class: 'alert', text: err.message || 'Failed to load forensic audit' }));
+      }
+      forensicsBtn.disabled = false;
+      forensicsBtn.textContent = 'Inspect Forensics';
+    }
+
+    var forensicsBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: '3. Post-Incident Forensic Audit & State Diff Inspector (Module #13)' }),
+        el('div', { class: 'cso-ops-filter-bar' }, [actionFilterInput, actorFilterInput, forensicsBtn])
+      ]),
+      forensicsHost
+    ]);
+    wrap.appendChild(forensicsBox);
+
+    /* 4. Automated Daily Backup Schedule & Retention Policy (Module #14) */
+    var policyEnabledChk = el('input', { type: 'checkbox' });
+    var intervalSel = el('select', { class: 'cso-ops-policy-select' }, [
+      el('option', { value: '6', text: 'Every 6 Hours' }),
+      el('option', { value: '12', text: 'Every 12 Hours' }),
+      el('option', { value: '24', text: 'Every 24 Hours (Daily)' })
+    ]);
+    var maxSnapsSel = el('select', { class: 'cso-ops-policy-select' }, [
+      el('option', { value: '14', text: '14 Scheduled Snapshots' }),
+      el('option', { value: '30', text: '30 Scheduled Snapshots' }),
+      el('option', { value: '60', text: '60 Scheduled Snapshots' })
+    ]);
+    var maxAgeInput = el('input', {
+      type: 'number',
+      class: 'cso-ops-policy-age',
+      min: '1',
+      max: '365',
+      value: '30'
+    });
+    var policyStatusText = el('div', { class: 'muted sm', text: 'Loading backup retention policy…' });
+    var savePolicyBtn = el('button', {
+      type: 'button',
+      class: 'btn',
+      disabled: !isAdmin,
+      text: 'Save Retention Policy',
+      onclick: function () { submitRetentionPolicy(false); }
+    });
+    var runPolicyBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      disabled: !isAdmin,
+      text: 'Run Policy Now',
+      onclick: function () { submitRetentionPolicy(true); }
+    });
+
+    function applyPolicyUi(p) {
+      if (!p) return;
+      policyEnabledChk.checked = Boolean(p.enabled);
+      intervalSel.value = String(p.interval_hours || 24);
+      if (!intervalSel.value) intervalSel.value = '24';
+      maxSnapsSel.value = String(p.max_snapshots || 30);
+      if (!maxSnapsSel.value) maxSnapsSel.value = '30';
+      maxAgeInput.value = String(p.max_age_days || 30);
+      policyStatusText.textContent = 'Status: ' + (p.enabled ? 'ENABLED' : 'DISABLED') +
+        ' · Interval: ' + (p.interval_hours || 24) + 'h' +
+        ' · Max Scheduled Snapshots: ' + (p.max_snapshots || 30) +
+        ' · Max Age: ' + (p.max_age_days || 30) + 'd' +
+        (p.last_auto_snapshot_at ? (' · Last Auto-Backup: ' + fmtDate(p.last_auto_snapshot_at)) : ' · Last Auto-Backup: Never');
+    }
+
+    async function loadRetentionPolicy() {
+      try {
+        var res = await api('GET', 'ops/retention');
+        if (res && res.policy) applyPolicyUi(res.policy);
+      } catch (err) {
+        policyStatusText.textContent = 'Could not load retention policy: ' + (err.message || 'error');
+      }
+    }
+
+    async function submitRetentionPolicy(runNow) {
+      savePolicyBtn.disabled = true;
+      runPolicyBtn.disabled = true;
+      if (runNow) runPolicyBtn.textContent = 'Running Policy…';
+      else savePolicyBtn.textContent = 'Saving…';
+      try {
+        var res = await api('POST', 'ops/retention', {
+          enabled: Boolean(policyEnabledChk.checked),
+          interval_hours: Number(intervalSel.value) || 24,
+          max_snapshots: Number(maxSnapsSel.value) || 30,
+          max_age_days: Number(maxAgeInput.value) || 30,
+          run_now: Boolean(runNow)
+        });
+        if (res && res.policy) applyPolicyUi(res.policy);
+        if (runNow) {
+          toast('Scheduled backup policy executed (Snapshot: ' + ((res.created_snapshot && res.created_snapshot.id) || 'created') + ' · Pruned: ' + (res.pruned_count || 0) + ')');
+        } else {
+          toast('Automated backup schedule & retention policy saved');
+        }
+      } catch (err) {
+        toast(err.message || 'Failed to update retention policy', true);
+      }
+      savePolicyBtn.disabled = !isAdmin;
+      runPolicyBtn.disabled = !isAdmin;
+      savePolicyBtn.textContent = 'Save Retention Policy';
+      runPolicyBtn.textContent = 'Run Policy Now';
+    }
+
+    var retentionBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: '4. Automated Daily Backup Schedule & Retention Policy (Module #14)' }),
+        el('div', { class: 'actions' }, [savePolicyBtn, runPolicyBtn])
+      ]),
+      policyStatusText,
+      el('div', { class: 'cso-ops-restore-controls' }, [
+        el('label', { class: 'cso-ops-inline-check' }, [
+          policyEnabledChk,
+          el('span', { text: 'Enable automatic Cron R2 snapshots' })
+        ]),
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { class: 'muted sm', text: 'Backup Interval' }),
+          intervalSel
+        ]),
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { class: 'muted sm', text: 'Max Retained Snapshots' }),
+          maxSnapsSel
+        ]),
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { class: 'muted sm', text: 'Max Retention Age (Days)' }),
+          maxAgeInput
+        ])
+      ])
+    ]);
+    wrap.appendChild(retentionBox);
+
+    loadSchemaJournal(false);
+    loadForensics(false);
+    loadRetentionPolicy();
+    return wrap;
+  }
+
+  /* ---------- Folder 17: D1 Replica Switchover, Air-Gapped Bundle & DR Runbook Studio (Modules #4, #8, #16) ---------- */
+  function opsContinuityAirgapRunbookPanel(focusMode) {
+    var isAdmin = me && me.role === 'admin';
+    var headingMap = {
+      replica: 'Cloudflare D1 Distributed Replica Switchover',
+      airgap: 'Offline Air-Gapped Manifest & ZIP Bundle Packager',
+      runbooks: 'Disaster Recovery Playbook, SOP & Runbook Studio'
+    };
+    var wrap = el('div', { class: 'panel cso-ops-continuity-panel' }, [
+      el('h2', { text: headingMap[focusMode] || 'Continuity, Air-Gap Bundle & DR Runbook Studio' }),
+      el('p', {
+        class: 'muted',
+        text: 'D1 read-replica routing & latency telemetry, cryptographically signed offline air-gapped DR bundles, and interactive SOP runbook checklists.'
+      })
+    ]);
+
+    /* 1. Cloudflare D1 Distributed Replica & Read-Routing Telemetry (Module #4) */
+    var d1TelemetryGrid = el('div', { class: 'cso-ops-telemetry-grid' });
+    var routingModeSel = el('select', { class: 'cso-ops-policy-select' }, [
+      el('option', { value: 'read_replica_preferred', text: 'Read-Replica Preferred (Global Edge Reads)' }),
+      el('option', { value: 'primary_only', text: 'Primary Leader Only (Strict Linearizable)' })
+    ]);
+    var thresholdInput = el('input', {
+      type: 'number',
+      class: 'cso-ops-policy-age',
+      min: '25',
+      max: '5000',
+      value: '250'
+    });
+    var saveRoutingBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      disabled: !isAdmin,
+      text: 'Save Routing Policy & Probe D1',
+      onclick: function () { updateRoutingAndProbe(true); }
+    });
+
+    function renderD1Telemetry(rep) {
+      clear(d1TelemetryGrid);
+      var tel = (rep && rep.telemetry) || {};
+      var pol = (rep && rep.routing_policy) || {};
+      if (pol.mode) routingModeSel.value = pol.mode;
+      if (pol.failover_threshold_ms) thresholdInput.value = String(pol.failover_threshold_ms);
+
+      d1TelemetryGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Replica Sync & Routing Mode' }),
+        el('div', { class: 'cso-ops-telemetry-val' }, [
+          el('span', { class: 'badge ' + (tel.replica_status === 'SYNCHRONIZED' ? 'published' : 'scheduled'), text: tel.replica_status || 'SYNCHRONIZED' })
+        ]),
+        el('div', { class: 'muted sm cso-ops-mono', text: 'Mode: ' + (pol.mode || 'read_replica_preferred') })
+      ]));
+
+      d1TelemetryGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Read vs. Write Roundtrip' }),
+        el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: 'Read: ' + (tel.read_latency_ms || 1) + ' ms · Write: ' + (tel.write_latency_ms || 1) + ' ms' }),
+        el('div', { class: 'muted sm cso-tabular', text: 'Failover Threshold: ' + (pol.failover_threshold_ms || 250) + ' ms' })
+      ]));
+
+      d1TelemetryGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'SQLite Journal & Storage' }),
+        el('div', { class: 'cso-ops-telemetry-val cso-ops-mono', text: 'Journal: ' + String(tel.journal_mode || 'wal').toUpperCase() }),
+        el('div', { class: 'muted sm cso-tabular', text: (tel.page_count || 0) + ' pages · ' + fmtBytes(tel.estimated_size_bytes || 0) })
+      ]));
+
+      d1TelemetryGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Serving Edge Region' }),
+        el('div', { class: 'cso-ops-telemetry-val' }, [
+          el('code', { class: 'cso-ops-sha-code', text: (tel.edge_colo || 'LOCAL') + ' · ' + (tel.edge_country || 'IN') })
+        ]),
+        el('div', { class: 'muted sm', text: tel.binding || 'DB (cso-database)' })
+      ]));
+    }
+
+    async function loadD1Telemetry() {
+      try {
+        var rep = await api('GET', 'ops/replica');
+        renderD1Telemetry(rep);
+      } catch (err) {
+        clear(d1TelemetryGrid).appendChild(el('div', { class: 'alert', text: err.message || 'Failed to inspect D1 replica telemetry' }));
+      }
+    }
+
+    async function updateRoutingAndProbe(showToast) {
+      saveRoutingBtn.disabled = true;
+      saveRoutingBtn.textContent = 'Updating & Probing…';
+      try {
+        var rep = await api('POST', 'ops/replica', {
+          mode: routingModeSel.value,
+          failover_threshold_ms: Number(thresholdInput.value) || 250,
+          auto_switchover: true
+        });
+        renderD1Telemetry(rep);
+        if (showToast) toast('D1 read-routing policy updated (' + routingModeSel.value + ')');
+      } catch (err) {
+        toast(err.message || 'Failed to update D1 routing policy', true);
+      }
+      saveRoutingBtn.disabled = !isAdmin;
+      saveRoutingBtn.textContent = 'Save Routing Policy & Probe D1';
+    }
+
+    var replicaBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: '1. Cloudflare D1 Distributed Replica Switchover & Telemetry (Module #4)' })
+      ]),
+      d1TelemetryGrid,
+      el('div', { class: 'cso-ops-restore-controls' }, [
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { class: 'muted sm', text: 'Read-Preference Routing Policy' }),
+          routingModeSel
+        ]),
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { class: 'muted sm', text: 'Failover Latency Threshold (ms)' }),
+          thresholdInput
+        ]),
+        saveRoutingBtn
+      ])
+    ]);
+    wrap.appendChild(replicaBox);
+
+    /* 2. Offline Air-Gapped Manifest & Signed Bundle Packager (Module #8) */
+    var airgapSummaryHost = el('div', {}, el('p', { class: 'muted sm', text: 'Calculating live air-gapped DR bundle manifest…' }));
+    var downloadAirgapBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      disabled: !isAdmin,
+      text: 'Download Signed Air-Gapped DR Bundle',
+      onclick: async function () {
+        downloadAirgapBtn.disabled = true;
+        downloadAirgapBtn.textContent = 'Packaging Signed Bundle…';
+        try {
+          var r = await fetch('/api/admin/ops/airgap-bundle', { method: 'GET', credentials: 'same-origin' });
+          if (!r.ok) {
+            var errBody = await r.json().catch(function () { return {}; });
+            throw new Error((errBody && errBody.message) || ('HTTP ' + r.status));
+          }
+          var blob = await r.blob();
+          var objUrl = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = objUrl;
+          a.download = 'cso-airgap-bundle-' + new Date().toISOString().slice(0, 10) + '.cso-bundle.json';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(function () { URL.revokeObjectURL(objUrl); }, 1500);
+          toast('Signed Air-Gapped DR Bundle downloaded');
+          loadAirgapSummary();
+        } catch (err) {
+          toast(err.message || 'Failed to export air-gapped bundle', true);
+        }
+        downloadAirgapBtn.disabled = !isAdmin;
+        downloadAirgapBtn.textContent = 'Download Signed Air-Gapped DR Bundle';
+      }
+    });
+
+    async function loadAirgapSummary() {
+      if (!isAdmin) {
+        clear(airgapSummaryHost).appendChild(el('p', { class: 'muted sm', text: 'Super Administrator role required to inspect or export air-gapped recovery bundles.' }));
+        return;
+      }
+      try {
+        var res = await api('GET', 'ops/airgap-bundle?summary=1');
+        var m = (res && res.manifest) || {};
+        clear(airgapSummaryHost).appendChild(el('div', { class: 'cso-ops-drill-kpis' }, [
+          el('span', { class: 'badge published', text: (m.bundle_format || 'cso.airgap.dr.bundle.v1') + ' (' + (m.bundle_version || 'v27') + ')' }),
+          el('span', { class: 'muted sm cso-tabular', text: (m.table_count || 8) + ' tables · ' + (m.total_rows || 0) + ' rows · ' + (m.runbook_count || 0) + ' SOP runbooks' }),
+          el('code', { class: 'cso-ops-sha-code', title: m.payload_sha256 || '', text: 'Payload SHA-256: ' + String(m.payload_sha256 || '').slice(0, 18) + '…' }),
+          el('code', { class: 'cso-ops-sha-code', title: m.schema_sha256 || '', text: 'Schema SHA-256: ' + String(m.schema_sha256 || '').slice(0, 18) + '…' })
+        ]));
+      } catch (err) {
+        clear(airgapSummaryHost).appendChild(el('div', { class: 'alert', text: err.message || 'Could not compute air-gap bundle summary' }));
+      }
+    }
+
+    var airgapBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: '2. Offline Air-Gapped Manifest & Signed Bundle Packager (Module #8)' }),
+        downloadAirgapBtn
+      ]),
+      el('p', { class: 'muted sm', text: 'Exports a single cryptographically signed .cso-bundle.json containing all non-sensitive D1 tables, DDL schema SHA-256, migration manifest, R2 snapshot inventory, and SOP runbooks.' }),
+      airgapSummaryHost
+    ]);
+    wrap.appendChild(airgapBox);
+
+    /* 3. Disaster Recovery Playbook, SOP & Runbook Studio (Module #16) */
+    var runbookListHost = el('div', { class: 'cso-ops-runbook-grid' });
+    var rbIdInput = el('input', { type: 'text', class: 'cso-ops-rb-id', placeholder: 'ID (e.g. SOP-05)' });
+    var rbTitleInput = el('input', { type: 'text', class: 'cso-ops-rb-title', placeholder: 'Runbook Title (e.g. SOP-05: R2 Bucket Failover Drill)' });
+    var rbSevSel = el('select', { class: 'cso-ops-rb-sev' }, [
+      el('option', { value: 'CRITICAL', text: 'CRITICAL' }),
+      el('option', { value: 'HIGH', text: 'HIGH' }),
+      el('option', { value: 'MEDIUM', text: 'MEDIUM' }),
+      el('option', { value: 'LOW', text: 'LOW' })
+    ]);
+    var rbRtoInput = el('input', { type: 'number', class: 'cso-ops-policy-age', min: '0', max: '10080', value: '10', title: 'RTO (Minutes)' });
+    var rbRpoInput = el('input', { type: 'number', class: 'cso-ops-policy-age', min: '0', max: '10080', value: '15', title: 'RPO (Minutes)' });
+    var rbStepsArea = el('textarea', {
+      class: 'cso-ops-rb-steps',
+      rows: '4',
+      placeholder: 'Enter one SOP checklist step per line…'
+    });
+    var saveRbBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      disabled: !isAdmin,
+      text: 'Save SOP Runbook',
+      onclick: async function () {
+        var title = (rbTitleInput.value || '').trim();
+        var lines = (rbStepsArea.value || '').split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+        if (!title || !lines.length) {
+          toast('Provide a runbook title and at least one checklist step', true);
+          return;
+        }
+        saveRbBtn.disabled = true;
+        saveRbBtn.textContent = 'Saving…';
+        try {
+          await api('POST', 'ops/runbooks', {
+            id: (rbIdInput.value || '').trim(),
+            title: title,
+            severity: rbSevSel.value,
+            rto_minutes: Number(rbRtoInput.value) || 10,
+            rpo_minutes: Number(rbRpoInput.value) || 15,
+            steps: lines
+          });
+          toast('SOP Runbook saved');
+          rbIdInput.value = '';
+          rbTitleInput.value = '';
+          rbStepsArea.value = '';
+          await loadRunbooks();
+        } catch (err) {
+          toast(err.message || 'Failed to save runbook', true);
+        }
+        saveRbBtn.disabled = !isAdmin;
+        saveRbBtn.textContent = 'Save SOP Runbook';
+      }
+    });
+
+    async function loadRunbooks() {
+      try {
+        var res = await api('GET', 'ops/runbooks');
+        clear(runbookListHost);
+        (res.items || []).forEach(function (rb) {
+          var sevCls = rb.severity === 'CRITICAL' ? 'expired' : (rb.severity === 'HIGH' ? 'scheduled' : 'published');
+          var stepChecks = [];
+          var stepListEl = el('div', { class: 'cso-ops-rb-checklist' });
+          (rb.steps || []).forEach(function (st, idx) {
+            var chk = el('input', { type: 'checkbox' });
+            chk.checked = Boolean(st.done);
+            stepChecks.push({ chk: chk, text: st.step });
+            stepListEl.appendChild(el('label', { class: 'cso-ops-rb-step' }, [
+              chk,
+              el('span', { text: (idx + 1) + '. ' + st.step })
+            ]));
+          });
+
+          var drillBtn = el('button', {
+            type: 'button',
+            class: 'btn sm primary',
+            disabled: !isAdmin,
+            text: 'Mark Drill Completed',
+            onclick: async function () {
+              drillBtn.disabled = true;
+              drillBtn.textContent = 'Recording Drill…';
+              try {
+                var updatedSteps = stepChecks.map(function (sc) {
+                  return { step: sc.text, done: true };
+                });
+                await api('POST', 'ops/runbooks/' + encodeURIComponent(rb.id) + '/drill', {
+                  mark_drilled: true,
+                  steps: updatedSteps
+                });
+                toast('Recorded DR drill completion for ' + rb.id);
+                await loadRunbooks();
+              } catch (err) {
+                toast(err.message || 'Could not record drill completion', true);
+                drillBtn.disabled = !isAdmin;
+                drillBtn.textContent = 'Mark Drill Completed';
+              }
+            }
+          });
+
+          var editBtn = el('button', {
+            type: 'button',
+            class: 'btn sm',
+            disabled: !isAdmin,
+            text: 'Load into Editor',
+            onclick: function () {
+              rbIdInput.value = rb.id;
+              rbTitleInput.value = rb.title;
+              rbSevSel.value = rb.severity || 'HIGH';
+              rbRtoInput.value = String(rb.rto_minutes || 5);
+              rbRpoInput.value = String(rb.rpo_minutes || 0);
+              rbStepsArea.value = (rb.steps || []).map(function (s) { return s.step; }).join('\n');
+              rbTitleInput.focus();
+            }
+          });
+
+          runbookListHost.appendChild(el('div', { class: 'cso-ops-rb-card' }, [
+            el('div', { class: 'cso-ops-subhead' }, [
+              el('strong', { text: rb.title }),
+              el('div', { class: 'actions' }, [
+                el('span', { class: 'badge ' + sevCls, text: rb.severity }),
+                el('span', { class: 'badge draft cso-tabular', text: 'RTO ' + rb.rto_minutes + 'm · RPO ' + rb.rpo_minutes + 'm' })
+              ])
+            ]),
+            stepListEl,
+            el('div', { class: 'cso-ops-subhead cso-ops-rb-foot' }, [
+              el('span', {
+                class: 'muted sm cso-tabular',
+                text: rb.last_drilled_at ? ('Last Drilled: ' + fmtDate(rb.last_drilled_at) + (rb.updated_by ? ' by ' + rb.updated_by : '')) : 'Not drilled yet'
+              }),
+              el('div', { class: 'actions' }, [editBtn, drillBtn])
+            ])
+          ]));
+        });
+      } catch (err) {
+        clear(runbookListHost).appendChild(el('div', { class: 'alert', text: err.message || 'Failed to load DR runbooks' }));
+      }
+    }
+
+    var runbookEditor = el('div', { class: 'cso-ops-rb-editor' }, [
+      el('strong', { class: 'sm', text: 'Create or Update SOP Runbook' }),
+      el('div', { class: 'cso-ops-restore-controls' }, [
+        rbIdInput,
+        rbTitleInput,
+        rbSevSel,
+        el('label', { class: 'muted sm', text: 'RTO (m):' }),
+        rbRtoInput,
+        el('label', { class: 'muted sm', text: 'RPO (m):' }),
+        rbRpoInput
+      ]),
+      rbStepsArea,
+      el('div', { class: 'actions' }, [saveRbBtn])
+    ]);
+
+    var runbooksBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: '3. Disaster Recovery Playbook, SOP & Runbook Studio (Module #16)' })
+      ]),
+      runbookListHost,
+      runbookEditor
+    ]);
+    wrap.appendChild(runbooksBox);
+
+    loadD1Telemetry();
+    loadAirgapSummary();
+    loadRunbooks();
+    return wrap;
+  }
+
+  async function viewOperations(subMode, targetSnapId) {
+    var mode = subMode || 'snapshots';
+    var titleMap = {
+      vault: 'R2 Immutable Storage Cold Vault',
+      verify: 'Snapshot Integrity & SHA-256 Check',
+      drill: 'Disaster Recovery Drill & State Restorer Engine',
+      restore: 'Point-in-Time Rollback & Granular Engine Restorer',
+      replica: 'Cloudflare D1 Distributed Replica Switchover',
+      airgap: 'Offline Air-Gapped Manifest & ZIP Bundle Packager',
+      runbooks: 'Disaster Recovery Playbook, SOP & Runbook Studio',
+      freeze: 'Emergency Read-Only Freeze & Outage Fallback Mode',
+      cache: 'Edge Cache State Preservation & Warmer Daemon',
+      health: 'Multi-Region Failover Sentinel & Health Heartbeat',
+      canary: 'Zero-Downtime Deployment & Rolling Canary Health',
+      schema: 'Database Migration Version & DDL Schema Journal',
+      vacuum: 'Dead-Letter Message Vacuum & Retention Expiry Purge',
+      forensics: 'Post-Incident Forensic Audit & State Diff Inspector',
+      retention: 'Automated Daily Backup Schedule & Retention Policy',
+      snapshots: 'Operations, Backups & Recovery'
+    };
+    setTitle(titleMap[mode] || titleMap.snapshots);
+    if (mode === 'replica' || mode === 'airgap' || mode === 'runbooks') {
+      main.appendChild(opsContinuityAirgapRunbookPanel(mode));
+      main.appendChild(opsSnapshotVaultPanel('snapshots'));
+      main.appendChild(opsSentinelFreezeCachePanel('health'));
+    } else if (mode === 'schema' || mode === 'vacuum' || mode === 'forensics' || mode === 'retention') {
+      main.appendChild(opsSchemaVacuumForensicsPanel(mode));
+      main.appendChild(opsSnapshotVaultPanel('snapshots'));
+      main.appendChild(opsSentinelFreezeCachePanel('health'));
+      main.appendChild(opsContinuityAirgapRunbookPanel('runbooks'));
+    } else if (mode === 'freeze' || mode === 'cache' || mode === 'health' || mode === 'canary') {
+      main.appendChild(opsSentinelFreezeCachePanel(mode));
+      main.appendChild(opsSnapshotVaultPanel('snapshots'));
+      main.appendChild(opsDrillAndRestorePanel('drill', targetSnapId));
+      main.appendChild(opsSchemaVacuumForensicsPanel('schema'));
+      main.appendChild(opsContinuityAirgapRunbookPanel('runbooks'));
+    } else if (mode === 'drill' || mode === 'restore') {
+      main.appendChild(opsDrillAndRestorePanel(mode, targetSnapId));
+      main.appendChild(opsSnapshotVaultPanel('snapshots'));
+      main.appendChild(opsSentinelFreezeCachePanel('health'));
+      main.appendChild(opsSchemaVacuumForensicsPanel('schema'));
+      main.appendChild(opsContinuityAirgapRunbookPanel('runbooks'));
+    } else {
+      main.appendChild(opsSnapshotVaultPanel(mode));
+      main.appendChild(opsDrillAndRestorePanel('drill', targetSnapId));
+      main.appendChild(opsSentinelFreezeCachePanel('health'));
+      main.appendChild(opsSchemaVacuumForensicsPanel('schema'));
+      main.appendChild(opsContinuityAirgapRunbookPanel('runbooks'));
+    }
     if (me && me.role === 'admin') main.appendChild(securityBackupPanel());
     var s = await api('GET', 'stats');
     var cr = s.last_cron_run || {};
@@ -2682,7 +4100,7 @@
     freshness: function () { return viewFreshnessAudit(); },
     feedback: function () { return viewFeedbackQueue(); },
     seo: function () { return viewSeoDiscovery(); },
-    operations: function () { return viewOperations(); },
+    operations: function (parts) { return viewOperations(parts[1], parts[2]); },
     security: function () { return viewSecurity(); },
     diagnostics: function () { return viewDiagnostics(); },
     registry: function () { return viewRegistry(); },

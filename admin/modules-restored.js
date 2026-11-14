@@ -11219,11 +11219,11 @@
     loadAnalytics();
   }
 
-  var DIR_EP = { 'folder-01': ['/api/admin/stats', '/api/admin/audit', '/api/admin/banner', '/api/admin/maintenance'], 'folder-02': ['/api/admin/preview', '/admin/site-manifest.json'], 'folder-03': ['/api/admin/preview', '/admin/site-manifest.json'], 'folder-04': ['/api/admin/current-affairs', '/api/admin/jobs'], 'folder-05': ['/api/admin/mock-tests', '/api/admin/resources', '/api/admin/jobs'], 'folder-06': ['/admin/site-manifest.json'], 'folder-07': ['/api/admin/media', '/api/admin/media/upload'], 'folder-09': ['/api/admin/users'], 'folder-10': ['/api/admin/stats', '/api/admin/audit'], 'folder-13': ['/sitemap.xml', '/feed.xml', '/robots.txt'], 'folder-14': ['/api/admin/current-affairs', '/api/admin/jobs'], 'folder-15': ['/api/health', '/sitemap.xml'], 'folder-16': ['/api/admin/audit', '/api/admin/incidents'], 'folder-17': ['/api/admin/maintenance', '/api/admin/stats'], 'folder-19': ['/admin/data/master-navigation.json'] };
+  var DIR_EP = { 'folder-01': ['/api/admin/stats', '/api/admin/audit', '/api/admin/banner', '/api/admin/maintenance'], 'folder-02': ['/api/admin/preview', '/admin/site-manifest.json'], 'folder-03': ['/api/admin/preview', '/admin/site-manifest.json'], 'folder-04': ['/api/admin/current-affairs', '/api/admin/jobs'], 'folder-05': ['/api/admin/mock-tests', '/api/admin/resources', '/api/admin/jobs'], 'folder-06': ['/admin/site-manifest.json'], 'folder-07': ['/api/admin/media', '/api/admin/media/upload'], 'folder-09': ['/api/admin/users'], 'folder-10': ['/api/admin/stats', '/api/admin/audit'], 'folder-13': ['/sitemap.xml', '/feed.xml', '/robots.txt'], 'folder-14': ['/api/admin/current-affairs', '/api/admin/jobs'], 'folder-15': ['/api/health', '/sitemap.xml'], 'folder-16': ['/api/admin/audit', '/api/admin/incidents'], 'folder-17': ['/api/admin/ops/snapshots', '/api/admin/maintenance', '/api/admin/stats'], 'folder-19': ['/admin/data/master-navigation.json'] };
   function dirCaps(folderId, eps) {
     var caps = [];
     if (eps.some(function (e) { return e.indexOf('/api/admin/') === 0; })) caps.push('Live D1');
-    if (eps.some(function (e) { return /media|resources/.test(e); })) caps.push('R2 Storage');
+    if (eps.some(function (e) { return /media|resources|snapshots/.test(e); })) caps.push('R2 Storage');
     if (/folder-0[2-3]|folder-04/.test(folder_re(folderId)) || eps.indexOf('/api/admin/preview') >= 0) caps.push('Preview Studio');
     if (/folder-10|folder-01|folder-13/.test(folder_re(folderId))) caps.push('SVG Analytics');
     if (eps.some(function (e) { return /manifest|sitemap|feed|robots|navigation/.test(e); })) caps.push('Manifest');
@@ -11245,7 +11245,7 @@
     'folder-14': ['posts', 'audit_log'],
     'folder-15': ['site_settings', 'audit_log'],
     'folder-16': ['incidents', 'audit_log'],
-    'folder-17': ['site_settings', 'posts', 'audit_log']
+    'folder-17': ['ops_snapshots', 'site_settings', 'posts', 'audit_log']
   };
   var FOLDER_PUBLIC_ROUTE = {
     'folder-01': '/', 'folder-02': '/', 'folder-03': '/about/', 'folder-04': '/current-affairs/',
@@ -11489,7 +11489,7 @@
           var route = window.CSOLive && window.CSOLive.routes && window.CSOLive.routes[m.id];
           var eps = (DIR_EP[fo.id] || []).slice();
           if (route && window.CSOLive.resolveRoute) {
-            var map = { 'current-affairs': '/api/admin/current-affairs', jobs: '/api/admin/jobs', 'mock-tests': '/api/admin/mock-tests', syllabus: '/api/admin/resources', pyq: '/api/admin/resources', media: '/api/admin/media', users: '/api/admin/users', banner: '/api/admin/banner', audit: '/api/admin/audit', 'audit/security': '/api/admin/audit', incidents: '/api/admin/incidents', operations: '/api/admin/maintenance', dashboard: '/api/admin/stats' };
+            var map = { 'current-affairs': '/api/admin/current-affairs', jobs: '/api/admin/jobs', 'mock-tests': '/api/admin/mock-tests', syllabus: '/api/admin/resources', pyq: '/api/admin/resources', media: '/api/admin/media', users: '/api/admin/users', banner: '/api/admin/banner', audit: '/api/admin/audit', 'audit/security': '/api/admin/audit', incidents: '/api/admin/incidents', operations: '/api/admin/ops/snapshots', 'operations/snapshots': '/api/admin/ops/snapshots', 'operations/drill': '/api/admin/ops/snapshots', 'operations/restore': '/api/admin/ops/snapshots', 'operations/replica': '/api/admin/ops/replica', 'operations/vault': '/api/admin/ops/snapshots', 'operations/schema': '/api/admin/ops/schema', 'operations/cache': '/api/admin/ops/cache', 'operations/airgap': '/api/admin/ops/airgap-bundle', 'operations/health': '/api/admin/ops/health', 'operations/verify': '/api/admin/ops/snapshots', 'operations/vacuum': '/api/admin/ops/vacuum', 'operations/freeze': '/api/admin/ops/freeze', 'operations/forensics': '/api/admin/ops/forensics', 'operations/retention': '/api/admin/ops/retention', 'operations/canary': '/api/admin/ops/health', 'operations/runbooks': '/api/admin/ops/runbooks', dashboard: '/api/admin/stats' };
             var ep = map[window.CSOLive.resolveRoute(fo.id, m.id)[0]];
             if (ep && eps.indexOf(ep) < 0) eps.push(ep);
           }

@@ -8,3 +8,73 @@
 .cso-otp-status.is-bad{color:var(--red)}
 .cso-sec-codes{margin:12px 0;padding:14px 16px;border:1px dashed var(--line);border-radius:10px;background:var(--card);color:var(--txt);font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.08em;white-space:pre;user-select:all}
 .cms-embed .cso-sec-codes,.cso-sec-panel .cso-sec-codes{background:var(--card)}
+
+/* Folder 17: Platform Snapshot Engine, R2 Cold Vault & SHA-256 Verifier */
+.cso-ops-vault-panel{margin-bottom:18px}
+.cso-ops-create-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0 10px}
+.cso-ops-create-label{margin:0;font-weight:600;font-size:13px;white-space:nowrap}
+.cso-ops-label-input,.cms-embed .cso-ops-label-input{flex:1 1 260px;min-width:220px;max-width:420px}
+.cso-ops-vault-summary{margin:8px 0 12px}
+.cso-ops-sha-code{display:inline-block;padding:2px 6px;border-radius:6px;background:var(--bg);border:1px solid var(--line);font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.cso-ops-r2key{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-all}
+.cso-ops-badge-wrap{margin-top:4px}
+.cso-ops-verify-detail{margin-top:4px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.cso-tabular{font-variant-numeric:tabular-nums}
+
+/* Folder 17: Module #2 (DR Drill) & Module #3 (Point-in-Time Granular Restore) */
+.cso-ops-drill-panel{margin-bottom:18px}
+.cso-ops-selector-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0 10px}
+.cso-ops-snap-select,.cms-embed .cso-ops-snap-select{flex:1 1 320px;min-width:240px;max-width:560px}
+.cso-ops-checks-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:12px 0 8px}
+.cso-ops-table-checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin:8px 0 12px}
+.cso-ops-check-card{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer;font-size:13px}
+.cso-ops-check-card input[type="checkbox"]{margin-top:3px;width:auto}
+.cso-ops-check-sub{display:block;font-size:11px;margin-top:2px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.cso-ops-drill-actions{margin:10px 0}
+.cso-ops-drill-kpis{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:10px 0;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.cso-ops-restore-box{margin-top:14px;padding:12px 14px;border:1px dashed var(--line);border-radius:10px;background:var(--bg)}
+.cso-ops-restore-controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;margin:10px 0}
+.cso-ops-restore-field{display:flex;flex-direction:column;gap:4px;min-width:220px}
+.cso-ops-mode-select,.cms-embed .cso-ops-mode-select{min-width:260px}
+.cso-ops-confirm-input,.cms-embed .cso-ops-confirm-input{min-width:220px;max-width:280px;letter-spacing:.08em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+/* Folder 17: Modules #7 (Edge Cache), #9 (Failover Sentinel), #12 (Read-Only Freeze), #15 (Canary Health) */
+.cso-ops-sentinel-panel{margin-bottom:18px}
+.cso-ops-subbox{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.cso-ops-subhead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.cso-ops-freeze-banner{margin:8px 0;font-weight:600}
+.cso-ops-freeze-banner.is-frozen{border-color:var(--red);color:var(--red)}
+.cso-ops-freeze-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:8px}
+.cso-ops-freeze-input,.cms-embed .cso-ops-freeze-input{flex:1 1 320px;min-width:240px}
+.cso-ops-telemetry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:8px}
+.cso-ops-telemetry-card{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);display:flex;flex-direction:column;gap:4px}
+.cso-ops-telemetry-val{display:flex;align-items:center;gap:6px;font-weight:600;font-size:14px;margin:2px 0}
+.cso-ops-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+/* Folder 17: Modules #6 (Schema Journal), #11 (Dead-Letter Vacuum), #13 (Forensic Diffs), #14 (Backup Retention) */
+.cso-ops-hygiene-panel{margin-bottom:18px}
+.cso-ops-ddl-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;max-height:320px;overflow-y:auto}
+.cso-ops-ddl-details{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:6px 10px}
+.cso-ops-ddl-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;font-size:13px}
+.cso-ops-ddl-pre{margin:8px 0 4px;padding:8px 10px;border-radius:6px;background:var(--bg);border:1px solid var(--line);font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.cso-ops-inline-check{display:inline-flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin:6px 0}
+.cso-ops-inline-check input[type="checkbox"]{width:auto;margin:0}
+.cso-ops-filter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.cso-ops-filter-input,.cms-embed .cso-ops-filter-input{min-width:190px;max-width:240px}
+.cso-ops-diff-pre{margin:0;padding:6px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--line);font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word;max-width:440px}
+.cso-ops-policy-select,.cms-embed .cso-ops-policy-select{min-width:190px}
+.cso-ops-policy-age,.cms-embed .cso-ops-policy-age{width:110px}
+
+/* Folder 17: Modules #4 (D1 Replica Switchover), #8 (Air-Gapped Bundle), #16 (DR Runbook Studio) */
+.cso-ops-continuity-panel{margin-bottom:18px}
+.cso-ops-runbook-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;margin:10px 0 14px}
+.cso-ops-rb-card{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);display:flex;flex-direction:column;gap:8px}
+.cso-ops-rb-checklist{display:flex;flex-direction:column;gap:6px;margin:4px 0}
+.cso-ops-rb-step{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.45;cursor:pointer}
+.cso-ops-rb-step input[type="checkbox"]{width:auto;margin-top:3px}
+.cso-ops-rb-foot{margin-top:auto;padding-top:8px;border-top:1px dashed var(--line);margin-bottom:0}
+.cso-ops-rb-editor{margin-top:12px;padding:12px 14px;border:1px dashed var(--line);border-radius:10px;background:var(--card);display:flex;flex-direction:column;gap:8px}
+.cso-ops-rb-id,.cms-embed .cso-ops-rb-id{width:130px}
+.cso-ops-rb-title,.cms-embed .cso-ops-rb-title{flex:1 1 260px;min-width:220px}
+.cso-ops-rb-sev,.cms-embed .cso-ops-rb-sev{width:140px}
+.cso-ops-rb-steps,.cms-embed .cso-ops-rb-steps{width:100%;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}

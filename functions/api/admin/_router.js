@@ -3,6 +3,10 @@ import { HttpError, json, errorResponse, readJson, validationError, clientIp } f
 import { requireRole, rateLimit, audit, STAFF_ROLES, ALL_ROLES } from '../../_lib/rbac.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
 import { backupCodeStatus, generateBackupCodes, twoFactorChannels, isTwoFactorConfigured } from '../../_lib/admin-2fa.js';
+import { handleOpsSnapshots } from '../../_lib/ops-snapshots.js';
+import { handleOpsSentinel } from '../../_lib/ops-sentinel.js';
+import { handleOpsHygiene } from '../../_lib/ops-hygiene.js';
+import { handleOpsContinuity } from '../../_lib/ops-continuity.js';
 import { parsePaging, likeEscape } from '../../_lib/validate.js';
 import { handlePosts, POST_TYPES } from './_posts.js';
 import { handleMockTests, handleQuestion } from './_mock.js';
@@ -29,7 +33,7 @@ export async function handleAdminApi(request, env) {
     if (!env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');
     const url = new URL(request.url);
     const parts = url.pathname.replace(/^\/api\/admin\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
-    const [resource, id, sub] = parts;
+    const [resource, id, sub, extra] = parts;
     const method = request.method;
     const write = method !== 'GET' && method !== 'HEAD';
 
@@ -147,6 +151,12 @@ export async function handleAdminApi(request, env) {
         break;
       case 'incidents':
         return await handleIncidents(request, env, actor, id, sub);
+      case 'ops':
+        if (id === 'snapshots') return await handleOpsSnapshots(request, env, actor, sub, extra);
+        if (id === 'freeze' || id === 'cache' || id === 'health') return await handleOpsSentinel(request, env, actor, id);
+        if (id === 'schema' || id === 'vacuum' || id === 'forensics' || id === 'retention') return await handleOpsHygiene(request, env, actor, id);
+        if (id === 'replica' || id === 'airgap-bundle' || id === 'runbooks') return await handleOpsContinuity(request, env, actor, id, sub, extra);
+        break;
       case 'media':
         if (!id && method === 'GET') return await handleMediaList(request, env);
         if (id === 'upload' && method === 'POST') {

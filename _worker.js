@@ -16,6 +16,8 @@ import { onRequestPost as handleVerifyResetTokenPost, onRequestOptions as handle
 import { checkRateLimit, createSession, buildSessionCookie } from './functions/api/auth/_utils.js';
 import { handleAdminApi } from './functions/api/admin/_router.js';
 import { isTwoFactorConfigured, canSendOtp, issueOtp, deliverOtp, verifyTwoFactor, OTP_RESEND_SECONDS } from './functions/_lib/admin-2fa.js';
+import { checkReadOnlyFreezeGuard } from './functions/_lib/ops-sentinel.js';
+import { runScheduledBackupPolicy } from './functions/_lib/ops-hygiene.js';
 import { runLifecycleMaintenance } from './functions/api/admin/_cron.js';
 import { handleContent } from './functions/api/content/_public.js';
 import { handleSitemapXml, handleRssFeed, handleRobotsTxt, handleLlmsTxt, resolveDeepLinkMeta, rewriteHtmlWithMeta } from './functions/api/content/_seo.js';
@@ -315,6 +317,17 @@ export default {
       return handleAdminPage(request, env);
     }
 
+    // 0b-freeze. Emergency Read-Only Freeze guard (Module #12): blocks mutating requests
+    // with 503 READ_ONLY_FREEZE except allowlisted admin login/auth/ops/session routes.
+    const freezeBlocked = await checkReadOnlyFreezeGuard(request, env);
+    if (freezeBlocked) return freezeBlocked;
+
+    // 0c-login. Alias /api/admin/login to strict D1 login handler
+    if (pathname === '/api/admin/login') {
+      if (request.method === 'POST') return handleStrictD1Login(request, env);
+      return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: { 'Content-Type': 'application/json', Allow: 'POST' } });
+    }
+
     // 0c-pre. Pre-auth: staff password check + push OTP (must precede the role-gated admin router)
     if (pathname === '/api/admin/auth/send-otp') {
       if (request.method === 'POST') return handleAdminSendOtp(request, env);
@@ -528,7 +541,16 @@ export default {
   },
 
   async scheduled(event, env, ctx) {
-    const task = (async () => { await publishDueScheduledPages(env); return runLifecycleMaintenance(env, { actorId: 'system:cron' }); })();
+    const task = (async () => {
+      await publishDueScheduledPages(env);
+      const maint = await runLifecycleMaintenance(env, { actorId: 'system:cron' });
+      try {
+        await runScheduledBackupPolicy(env, { force: false, actorEmail: 'system:cron' });
+      } catch (e) {
+        console.error('Scheduled backup policy error:', e);
+      }
+      return maint;
+    })();
     if (ctx && typeof ctx.waitUntil === 'function') {
       ctx.waitUntil(task);
     }

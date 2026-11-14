@@ -10,7 +10,7 @@
  *    messaging the dashboard clients (with a SW-side fallback drain)
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v26';
+const CACHE_NAME = 'cso-candidate-cache-v27';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 const PRECACHE_URLS = [

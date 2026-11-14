@@ -7,6 +7,24 @@
   var EDU = [['study-library-directory', 'Study Directory'], ['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']];
   var SITE = [['pages', 'All Pages'], ['about-directory', 'About CSO Directory'], ['pages/legal', 'Info & Legal'], ['banner', 'Homepage & Banner'], ['seo', 'SEO & Sitemaps']];
   var OPS = [['dashboard', 'Overview'], ['freshness', 'Freshness Audit'], ['feedback', 'Feedback Queue'], ['operations', 'Operations & Backups'], ['diagnostics', 'Site Health']];
+  var OPS_SUITE = [
+    ['operations/snapshots', 'Platform Snapshots'],
+    ['operations/drill', 'DR Drill'],
+    ['operations/restore', 'Granular Restore'],
+    ['operations/replica', 'D1 Replica Switchover'],
+    ['operations/vault', 'R2 Cold Vault'],
+    ['operations/schema', 'DDL Schema Journal'],
+    ['operations/cache', 'Edge Cache Warmer'],
+    ['operations/airgap', 'Air-Gapped Bundle'],
+    ['operations/health', 'Failover Sentinel'],
+    ['operations/verify', 'SHA-256 Integrity'],
+    ['operations/vacuum', 'Dead-Letter Vacuum'],
+    ['operations/freeze', 'Read-Only Freeze'],
+    ['operations/forensics', 'Forensic Diffs'],
+    ['operations/retention', 'Backup Retention'],
+    ['operations/canary', 'Canary Health'],
+    ['operations/runbooks', 'DR Playbook & SOPs']
+  ];
   var SEC = [['audit/security', 'Security Audit'], ['incidents', 'Incidents'], ['audit', 'All Events']];
 
   var ROUTES = {
@@ -58,9 +76,38 @@
     'module-14-009': ['dashboard', OPS],
     'module-16-012': ['audit/security', SEC],
     'module-16-013': ['incidents', SEC],
-    'module-17-001': ['operations', OPS],
-    'module-17-010': ['dashboard', OPS],
-    'module-17-016': ['operations', OPS]
+    'module-ops-001': ['operations/snapshots', OPS_SUITE],
+    'module-ops-002': ['operations/drill', OPS_SUITE],
+    'module-ops-003': ['operations/restore', OPS_SUITE],
+    'module-ops-004': ['operations/replica', OPS_SUITE],
+    'module-ops-005': ['operations/vault', OPS_SUITE],
+    'module-ops-006': ['operations/schema', OPS_SUITE],
+    'module-ops-007': ['operations/cache', OPS_SUITE],
+    'module-ops-008': ['operations/airgap', OPS_SUITE],
+    'module-ops-009': ['operations/health', OPS_SUITE],
+    'module-ops-010': ['operations/verify', OPS_SUITE],
+    'module-ops-011': ['operations/vacuum', OPS_SUITE],
+    'module-ops-012': ['operations/freeze', OPS_SUITE],
+    'module-ops-013': ['operations/forensics', OPS_SUITE],
+    'module-ops-014': ['operations/retention', OPS_SUITE],
+    'module-ops-015': ['operations/canary', OPS_SUITE],
+    'module-ops-016': ['operations/runbooks', OPS_SUITE],
+    'module-17-001': ['operations/snapshots', OPS_SUITE],
+    'module-17-002': ['operations/drill', OPS_SUITE],
+    'module-17-003': ['operations/restore', OPS_SUITE],
+    'module-17-004': ['operations/replica', OPS_SUITE],
+    'module-17-005': ['operations/vault', OPS_SUITE],
+    'module-17-006': ['operations/schema', OPS_SUITE],
+    'module-17-007': ['operations/cache', OPS_SUITE],
+    'module-17-008': ['operations/airgap', OPS_SUITE],
+    'module-17-009': ['operations/health', OPS_SUITE],
+    'module-17-010': ['operations/verify', OPS_SUITE],
+    'module-17-011': ['operations/vacuum', OPS_SUITE],
+    'module-17-012': ['operations/freeze', OPS_SUITE],
+    'module-17-013': ['operations/forensics', OPS_SUITE],
+    'module-17-014': ['operations/retention', OPS_SUITE],
+    'module-17-015': ['operations/canary', OPS_SUITE],
+    'module-17-016': ['operations/runbooks', OPS_SUITE]
   };
 
   var FOLDER_FALLBACKS = {
@@ -80,7 +127,7 @@
     'folder-14': ['jobs', CONTENT],
     'folder-15': ['diagnostics', OPS],
     'folder-16': ['audit/security', SEC],
-    'folder-17': ['operations', OPS],
+    'folder-17': ['operations/snapshots', OPS_SUITE],
     'folder-18': ['banner', SITE],
     'folder-19': ['registry'],
     'folder-jobs-careers': ['jobs-directory', CONTENT],
