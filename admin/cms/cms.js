@@ -1518,8 +1518,46 @@
   }
 
   /* ---------- operations, backups, diagnostics & registry ---------- */
+  /* ---------- admin security: single-use backup recovery codes ---------- */
+  function securityBackupPanel() {
+    var status = el('p', { class: 'muted cso-sec-status', text: 'Loading…' });
+    var list = el('pre', { class: 'cso-sec-codes', hidden: true });
+    var copiedBadge = el('span', { class: 'cso-copied-badge', text: 'Copied!', hidden: true });
+    var latest = [];
+    var copyBtn = el('button', { type: 'button', class: 'btn sm cso-btn-forest', text: 'Copy All Backup Codes', hidden: true, onclick: function () { copySocialText(latest.join('\n'), copiedBadge, copyBtn); } });
+    var genBtn = el('button', { type: 'button', class: 'btn primary', text: 'Generate 8 Backup Codes', onclick: async function () {
+      if (!(await confirmModal('Generate new backup codes?', 'This replaces ALL existing backup codes. Store the new codes somewhere safe — they are shown only once.', 'Generate', false))) return;
+      genBtn.disabled = true;
+      try {
+        var d = await api('POST', 'auth/backup-codes', {});
+        latest = d.codes || [];
+        list.textContent = latest.join('\n'); list.hidden = false; copyBtn.hidden = false;
+        status.textContent = d.remaining + ' of ' + d.total + ' backup codes unused. Save them now — they will not be shown again.';
+        toast('8 backup codes generated');
+      } catch (e) { toast(e.message, true); }
+      genBtn.disabled = false;
+    } });
+    api('GET', 'auth/backup-codes').then(function (d) {
+      var ch = d.channels || {};
+      var on = [ch.totp ? 'Authenticator app' : null, ch.telegram ? 'Telegram OTP' : null, ch.email ? 'Email OTP' : null].filter(Boolean);
+      status.textContent = d.remaining + ' of ' + d.total + ' backup codes unused. 2FA is ' + (d.enforced ? 'ENFORCED (' + on.join(', ') + ').' : 'not enforced yet — set ADMIN_TOTP_SECRET, ADMIN_TG_BOT_TOKEN + ADMIN_TG_CHAT_ID, or ADMIN_2FA_EMAIL to enable it.');
+    }).catch(function (e) { status.textContent = e.message; });
+    return el('div', { class: 'panel cso-sec-panel' }, [
+      el('h2', { text: 'Two-factor recovery codes' }),
+      el('p', { class: 'hint', text: 'Each code works once at sign-in in place of an authenticator/OTP code. Generating a new set invalidates the old one.' }),
+      status, list,
+      el('div', { class: 'actions' }, [genBtn, copyBtn, copiedBadge])
+    ]);
+  }
+  async function viewSecurity() {
+    setTitle('Security');
+    if (me && me.role === 'admin') main.appendChild(securityBackupPanel());
+    else main.appendChild(el('div', { class: 'alert', text: 'Security settings are visible to administrators only.' }));
+  }
+
   async function viewOperations() {
     setTitle('Operations & Backups');
+    if (me && me.role === 'admin') main.appendChild(securityBackupPanel());
     var s = await api('GET', 'stats');
     var cr = s.last_cron_run || {};
     var cronCard = el('div', { class: 'panel' }, [
@@ -2630,7 +2668,7 @@
   /* ---------- router ---------- */
   function buildNav() {
     var nav = clear(document.getElementById('nav'));
-    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/about-directory', 'About CSO'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/jobs-directory', 'Jobs Directory'], ['#/schemes', 'Schemes'], ['#/schemes-directory', 'Schemes Tree'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/study-library-directory', 'Study Directory'], ['#/freshness', 'Freshness Audit'], ['#/feedback', 'Feedback Queue'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
+    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/about-directory', 'About CSO'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/jobs-directory', 'Jobs Directory'], ['#/schemes', 'Schemes'], ['#/schemes-directory', 'Schemes Tree'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/study-library-directory', 'Study Directory'], ['#/freshness', 'Freshness Audit'], ['#/feedback', 'Feedback Queue'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/security', 'Security'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
       .forEach(function (l) { nav.appendChild(el('a', { href: l[0] }, l[1])); });
   }
   var VIEWS = {
@@ -2645,6 +2683,7 @@
     feedback: function () { return viewFeedbackQueue(); },
     seo: function () { return viewSeoDiscovery(); },
     operations: function () { return viewOperations(); },
+    security: function () { return viewSecurity(); },
     diagnostics: function () { return viewDiagnostics(); },
     registry: function () { return viewRegistry(); },
     audit: function (parts) { return viewAudit(parts[1]); },
@@ -2698,7 +2737,7 @@
     document.getElementById('who').textContent = me.email + ' (' + me.role + ')';
     buildNav();
     document.getElementById('navToggle').addEventListener('click', function () { var o = document.getElementById('nav').classList.toggle('open'); this.setAttribute('aria-expanded', String(o)); });
-    document.getElementById('signOut').addEventListener('click', async function () { try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/admin/login?reason=out'); } });
+    document.getElementById('signOut').addEventListener('click', async function () { try { localStorage.removeItem('cso_admin_active'); await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/admin/login?reason=out'); } });
     window.addEventListener('hashchange', route); route();
   }
   if (document.getElementById('nav')) init();

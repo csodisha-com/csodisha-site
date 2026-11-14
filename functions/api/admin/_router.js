@@ -2,6 +2,7 @@
 import { HttpError, json, errorResponse, readJson, validationError, clientIp } from '../../_lib/http.js';
 import { requireRole, rateLimit, audit, STAFF_ROLES, ALL_ROLES } from '../../_lib/rbac.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
+import { backupCodeStatus, generateBackupCodes, twoFactorChannels, isTwoFactorConfigured } from '../../_lib/admin-2fa.js';
 import { parsePaging, likeEscape } from '../../_lib/validate.js';
 import { handlePosts, POST_TYPES } from './_posts.js';
 import { handleMockTests, handleQuestion } from './_mock.js';
@@ -58,6 +59,20 @@ export async function handleAdminApi(request, env) {
         return json({ last_cron_run: await readLastCronRun(env) });
       }
       throw new HttpError(404, 'NOT_FOUND', 'Unknown admin route');
+    }
+
+    // Admin-only: multi-factor recovery codes. GET => remaining unused count, POST => regenerate 8 fresh codes.
+    if (resource === 'auth' && id === 'backup-codes' && !sub) {
+      if (method !== 'GET' && method !== 'POST') throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+      const actor = await requireRole(request, env, ['admin']);
+      if (method === 'GET') {
+        const st = await backupCodeStatus(env);
+        return json({ ...st, channels: twoFactorChannels(env), enforced: isTwoFactorConfigured(env) }, 200, { 'Cache-Control': 'no-store' });
+      }
+      await rateLimit(env, `admin-backup-codes:${actor.userId}`, 5, 3600);
+      const codes = await generateBackupCodes(env);
+      await audit(env, request, actor, 'auth.backup_codes.regenerate', 'admin_backup_codes', null, { count: codes.length });
+      return json({ codes, remaining: codes.length, total: codes.length }, 200, { 'Cache-Control': 'no-store' });
     }
 
     // Admin-only: idempotent Odisha starter content seeder.

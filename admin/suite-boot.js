@@ -64,6 +64,7 @@
     if (!t) return;
     try {
       localStorage.removeItem('cso_active_module_id');
+      localStorage.removeItem('cso_admin_active');
       sessionStorage.removeItem('cso_post_login_hash');
       sessionStorage.clear();
     } catch (_) {}

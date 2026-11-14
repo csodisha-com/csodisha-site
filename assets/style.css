@@ -7194,3 +7194,25 @@ html.cso-a11y-lite .cso-footer-odisha-map {
 
 
 
+
+/* v26: stealth Admin Portal link — hidden for public visitors, revealed only for an active staff session flag */
+.top .adm.cso-adm-stealth:not(.is-admin-visible) { display: none; }
+.top .adm .adm-ico { display: none; }
+@media (max-width: 768px) {
+  .top .adm.cso-adm-stealth.is-admin-visible {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    min-height: 28px;
+    padding: 0;
+    gap: 0;
+    border-radius: 6px;
+    background: rgba(220, 38, 38, 0.2);
+    border: 1px solid rgba(248, 113, 113, 0.55);
+    color: #f87171;
+  }
+  .top .adm.cso-adm-stealth.is-admin-visible .adm-txt { display: none; }
+  .top .adm.cso-adm-stealth.is-admin-visible .adm-ico { display: block; }
+}

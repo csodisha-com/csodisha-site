@@ -128,6 +128,7 @@
       if (!res.ok) return;
       var d = await res.json();
       if (d && d.user) {
+        try { localStorage.setItem('cso_admin_active', '1'); } catch (_) {}
         if (dom.adminUserEmail) dom.adminUserEmail.textContent = d.user.email || 'Staff Account';
         if (dom.adminUserRole) dom.adminUserRole.textContent = String(d.user.role || 'staff').toUpperCase();
         if (dom.adminUserInitials) {

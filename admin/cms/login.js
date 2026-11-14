@@ -7,6 +7,9 @@
   var togglePw = document.getElementById('togglePw');
   var capsHint = document.getElementById('capsHint');
   var rememberMe = document.getElementById('rememberMe');
+  var twofa = document.getElementById('twofa');
+  var sendOtp = document.getElementById('sendOtp');
+  var otpStatus = document.getElementById('otpStatus');
   var themeMenuWrap = document.getElementById('themeMenuWrap');
   var themeMenuBtn = document.getElementById('themeMenuBtn');
   var themeMenuPopover = document.getElementById('themeMenuPopover');
@@ -100,6 +103,7 @@
   if (reason === 'out' || params.get('logged_out') === '1') {
     try {
       localStorage.removeItem('cso_active_module_id');
+      localStorage.removeItem('cso_admin_active');
       sessionStorage.removeItem('cso_post_login_hash');
     } catch (_e) {}
     show('You have been signed out.', 'info');
@@ -128,6 +132,59 @@
     pw.addEventListener('blur', function () { capsHint.hidden = true; });
   }
 
+
+  /* Push OTP (Telegram / Email) with 60-second resend countdown */
+  var otpTimer = null;
+  function setOtpStatus(t, bad) {
+    if (!otpStatus) return;
+    otpStatus.textContent = t || '';
+    otpStatus.classList.toggle('is-bad', !!bad);
+  }
+  function startOtpCountdown(seconds) {
+    clearInterval(otpTimer);
+    var left = seconds;
+    sendOtp.disabled = true;
+    sendOtp.textContent = 'Resend in ' + left + 's';
+    otpTimer = setInterval(function () {
+      left -= 1;
+      if (left <= 0) {
+        clearInterval(otpTimer);
+        sendOtp.disabled = false;
+        sendOtp.textContent = 'Send OTP (Telegram / Email)';
+        return;
+      }
+      sendOtp.textContent = 'Resend in ' + left + 's';
+    }, 1000);
+  }
+  if (sendOtp) {
+    sendOtp.addEventListener('click', async function () {
+      var email = f.email.value.trim().toLowerCase(), password = f.password.value;
+      if (!email || !password) { setOtpStatus('Enter your email and password first.', true); return; }
+      sendOtp.disabled = true;
+      setOtpStatus('Sending…');
+      try {
+        var r = await fetch('/api/admin/auth/send-otp', {
+          method: 'POST', credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: password })
+        });
+        var d = await r.json().catch(function () { return {}; });
+        if (!r.ok) {
+          setOtpStatus(d.error || 'Could not send OTP.', true);
+          if (r.status === 429 && d.retry_after) startOtpCountdown(Number(d.retry_after) || 60);
+          else sendOtp.disabled = false;
+          return;
+        }
+        setOtpStatus('Code sent via ' + (d.channels || []).join(' + ') + '. Valid for 10 minutes.');
+        startOtpCountdown(Number(d.cooldown) || 60);
+        if (twofa) twofa.focus();
+      } catch (_e) {
+        setOtpStatus('Network error. Please try again.', true);
+        sendOtp.disabled = false;
+      }
+    });
+  }
+
   f.addEventListener('submit', async function (e) {
     e.preventDefault();
     if (go.disabled) return;
@@ -142,11 +199,15 @@
         body: JSON.stringify({
           email: email,
           password: password,
+          twofa_code: twofa ? twofa.value.trim() : '',
           remember_me: !!(rememberMe && rememberMe.checked)
         })
       });
       var d = await r.json().catch(function () { return {}; });
-      if (!r.ok) throw new Error(d.error || 'Sign-in failed.');
+      if (!r.ok) {
+        if (d.requires_2fa && twofa) twofa.focus();
+        throw new Error(d.error || 'Sign-in failed.');
+      }
       var s = await fetch('/api/admin/session', { credentials: 'same-origin' });
       if (!s.ok) {
         await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
@@ -154,6 +215,7 @@
       }
       try {
         localStorage.removeItem('cso_active_module_id');
+        localStorage.setItem('cso_admin_active', '1');
         sessionStorage.removeItem('cso_post_login_hash');
       } catch (_e) {}
       var baseNext = (next || '/admin/').split('#')[0] || '/admin/';

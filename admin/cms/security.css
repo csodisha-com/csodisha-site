@@ -1,0 +1,10 @@
+/* Admin 2FA login controls + backup-code panel (external CSS only, strict-CSP safe). */
+.cso-2fa-block{margin:12px 0 4px}
+.cso-2fa-block input{letter-spacing:.12em;text-transform:uppercase}
+.cso-otp-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:10px 0 2px}
+.cso-otp-btn{font-size:13px;padding:7px 12px}
+.cso-otp-btn[disabled]{opacity:.6;cursor:not-allowed}
+.cso-otp-status{font-size:12px;color:var(--mut)}
+.cso-otp-status.is-bad{color:var(--red)}
+.cso-sec-codes{margin:12px 0;padding:14px 16px;border:1px dashed var(--line);border-radius:10px;background:var(--card);color:var(--txt);font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.08em;white-space:pre;user-select:all}
+.cms-embed .cso-sec-codes,.cso-sec-panel .cso-sec-codes{background:var(--card)}

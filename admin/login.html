@@ -6,6 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Staff sign-in — CS Odisha Admin</title>
   <link rel="stylesheet" href="/admin/cms/cms.css?v=20261113-glow4">
+  <link rel="stylesheet" href="/admin/cms/security.css?v=20261114h">
 </head>
 <body class="login-body">
   <main class="login-card" aria-labelledby="t">
@@ -35,6 +36,14 @@
         <button id="togglePw" type="button" class="cso-pw-toggle" aria-label="Show password">Show</button>
       </div>
       <p id="capsHint" class="cso-caps-hint" hidden>Caps Lock is on</p>
+      <div class="cso-2fa-block" id="twofaBlock">
+        <label for="twofa">2FA / Backup Code <span class="muted">(if enabled)</span></label>
+        <input id="twofa" name="twofa_code" type="text" inputmode="text" autocomplete="one-time-code" maxlength="12" spellcheck="false" autocapitalize="characters" placeholder="123456 or XXXX-XXXX">
+        <div class="cso-otp-row">
+          <button id="sendOtp" type="button" class="btn cso-otp-btn">Send OTP (Telegram / Email)</button>
+          <span id="otpStatus" class="cso-otp-status" role="status" aria-live="polite"></span>
+        </div>
+      </div>
       <label class="cso-remember-row">
         <input id="rememberMe" name="remember_me" type="checkbox">
         <span>Keep me signed in on this device</span>

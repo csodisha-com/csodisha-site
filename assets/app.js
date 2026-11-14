@@ -2172,3 +2172,21 @@ document.addEventListener('click', function(event) {
   event.stopImmediatePropagation();
   window.location.assign(new URL(href, document.baseURI).href);
 }, true);
+
+/* v26: reveal the stealth Admin Portal link only when a staff session flag exists (validated once against the server). */
+(function csoRevealAdminLink(){
+  function apply(){
+    var links=document.querySelectorAll('.top .adm.cso-adm-stealth');
+    if(!links.length)return;
+    var flag=false;
+    try{flag=localStorage.getItem('cso_admin_active')==='1'}catch(_){}
+    links.forEach(function(a){a.classList.toggle('is-admin-visible',flag)});
+    if(!flag||window.__csoAdminChecked)return;
+    window.__csoAdminChecked=true;
+    fetch('/api/admin/session',{credentials:'same-origin'}).then(function(r){
+      if(r.status===401||r.status===403){try{localStorage.removeItem('cso_admin_active')}catch(_){}links.forEach(function(a){a.classList.remove('is-admin-visible')})}
+    }).catch(function(){});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
+  window.addEventListener('storage',function(e){if(e.key==='cso_admin_active')apply()});
+})();

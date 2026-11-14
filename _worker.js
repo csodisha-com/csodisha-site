@@ -15,6 +15,7 @@ import { onRequestPost as handleResetPasswordPost, onRequestOptions as handleRes
 import { onRequestPost as handleVerifyResetTokenPost, onRequestOptions as handleVerifyResetTokenOptions } from './functions/api/auth/verify-reset-token.js';
 import { checkRateLimit, createSession, buildSessionCookie } from './functions/api/auth/_utils.js';
 import { handleAdminApi } from './functions/api/admin/_router.js';
+import { isTwoFactorConfigured, canSendOtp, issueOtp, deliverOtp, verifyTwoFactor, OTP_RESEND_SECONDS } from './functions/_lib/admin-2fa.js';
 import { runLifecycleMaintenance } from './functions/api/admin/_cron.js';
 import { handleContent } from './functions/api/content/_public.js';
 import { handleSitemapXml, handleRssFeed, handleRobotsTxt, handleLlmsTxt, resolveDeepLinkMeta, rewriteHtmlWithMeta } from './functions/api/content/_seo.js';
@@ -40,6 +41,40 @@ function bufToHex(buffer) {
   return Array.from(new Uint8Array(buffer))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
+}
+
+// POST /api/admin/auth/send-otp  { email, password }
+// Validates the staff password first, then pushes a one-time code via Telegram and/or email.
+async function handleAdminSendOtp(request, env) {
+  const J = (obj, status = 200, extra = {}) => new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...extra } });
+  try {
+    if (!env || !env.DB) return J({ error: 'Database binding unavailable' }, 500);
+    let body = {};
+    try { body = await request.json(); } catch { return J({ error: 'Invalid JSON request payload' }, 400); }
+    const email = String(body.email || '').trim().toLowerCase();
+    const password = String(body.password || '');
+    if (!email || !password) return J({ error: 'Invalid email or password' }, 401);
+    const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown-ip';
+    const rate = checkRateLimit('sendotp_' + ip, 10, 15 * 60 * 1000);
+    if (!rate.allowed) return J({ error: 'Too many requests. Please try again later.' }, 429, { 'Retry-After': String(rate.retryAfter) });
+    const user = await env.DB.prepare('SELECT id, email, password_hash, salt, lockout_until, role FROM users WHERE email = ?').bind(email).first();
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), { name: 'PBKDF2' }, false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: user ? hexToBuf(user.salt) : new Uint8Array(16), iterations: 100000, hash: 'SHA-256' }, key, 256);
+    const now = Math.floor(Date.now() / 1000);
+    if (!user || bufToHex(bits) !== user.password_hash || (user.role !== 'admin' && user.role !== 'editor')) {
+      return J({ error: 'Invalid email or password' }, 401);
+    }
+    if (user.lockout_until && user.lockout_until > now) return J({ error: 'Account temporarily locked. Please try again later.' }, 429);
+    if (!canSendOtp(env)) return J({ error: 'No OTP delivery channel (Telegram/Email) is configured.' }, 400);
+    const issued = await issueOtp(env, user.id, now);
+    if (!issued.ok) return J({ error: 'Please wait ' + issued.retryAfter + 's before requesting another code.', retry_after: issued.retryAfter }, 429, { 'Retry-After': String(issued.retryAfter) });
+    const channels = await deliverOtp(env, issued.code);
+    if (!channels.length) return J({ error: 'Could not deliver the OTP. Check the Telegram/Email configuration.' }, 502);
+    return J({ ok: true, channels, cooldown: OTP_RESEND_SECONDS, expires_in: 600 });
+  } catch (e) {
+    console.error('send-otp error:', e);
+    return J({ error: 'Could not send OTP.' }, 500);
+  }
 }
 
 // Strict D1-backed login handler
@@ -161,6 +196,25 @@ async function handleStrictD1Login(request, env) {
       });
     }
 
+    // Multi-factor gate (staff only). Enforced only once a 2FA secret is configured,
+    // so initial setup can never lock the admin out. No session is issued before this passes.
+    if ((user.role === 'admin' || user.role === 'editor') && isTwoFactorConfigured(env)) {
+      const submitted = String(body.twofa_code || '').trim().slice(0, 16);
+      if (!submitted) {
+        return new Response(JSON.stringify({ error: 'Enter your 2FA code, a Telegram/Email OTP, or a backup code.', requires_2fa: true, can_send_otp: canSendOtp(env) }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      const okTwoFactor = await verifyTwoFactor(env, user.id, submitted);
+      if (!okTwoFactor) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired 2FA code.', requires_2fa: true, can_send_otp: canSendOtp(env) }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
     // On match: reset attempts and lockout
     await env.DB.prepare(
       'UPDATE users SET failed_attempts = 0, lockout_until = 0 WHERE id = ?'
@@ -259,6 +313,12 @@ export default {
     // 0b. CMS: server-enforced admin pages (role from D1; noindex + CSP headers)
     if (pathname === '/admin' || pathname.startsWith('/admin/')) {
       return handleAdminPage(request, env);
+    }
+
+    // 0c-pre. Pre-auth: staff password check + push OTP (must precede the role-gated admin router)
+    if (pathname === '/api/admin/auth/send-otp') {
+      if (request.method === 'POST') return handleAdminSendOtp(request, env);
+      return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: { 'Content-Type': 'application/json', Allow: 'POST' } });
     }
 
     // 0c. CMS: admin JSON API (requireRole + CSRF + rate limits live in the router)
