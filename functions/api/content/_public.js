@@ -443,6 +443,13 @@ function presentScheme(r) {
     benefit_summary: r.benefit_summary || '',
     benefit_summary_or: r.benefit_summary_or || '',
     documents_required: safeJsonArr(r.documents_required),
+    required_docs_json: safeJsonArr(r.required_docs_json),
+    application_steps_json: safeJsonArr(r.application_steps_json),
+    disbursement_mode: r.disbursement_mode || '',
+    helpline: r.helpline || '',
+    verified_date: r.verified_date || '',
+    application_status_label: r.application_status_label || 'Open Year-Round',
+    exam_slug: r.exam_slug || '',
     apply_url: r.apply_url || '',
     is_featured: Boolean(r.is_featured),
     sort_order: r.sort_order || 0,
@@ -499,6 +506,12 @@ async function handleSchemesDirectory(env, url, slugKey) {
     binds.push(l, l, l, l, l);
   }
 
+  const statusLabel = (url.searchParams.get('status_label') || '').trim().slice(0, 60);
+  if (statusLabel) {
+    where.push('application_status_label = ?');
+    binds.push(statusLabel);
+  }
+
   const { results } = await env.DB.prepare(
     `SELECT * FROM schemes_directory WHERE ${where.join(' AND ')} ORDER BY is_featured DESC, sort_order ASC, title ASC`
   ).bind(...binds).all();
@@ -506,14 +519,129 @@ async function handleSchemesDirectory(env, url, slugKey) {
   let items = results.map(presentScheme);
   const group = (url.searchParams.get('group') || '').trim().toLowerCase();
   if (group) {
-    items = items.filter(s => s.target_groups.includes(group));
+    const groupAliases = {
+      seniors: ['seniors', 'senior'],
+      health: ['health', 'healthcare'],
+      housing: ['housing', 'rural', 'housing & civic'],
+      workers: ['workers', 'artisans', 'msme'],
+      farmers: ['farmers', 'farmers & rural'],
+      students: ['students', 'scholarship', 'youth']
+    };
+    const aliases = groupAliases[group] || [group];
+    items = items.filter(s => {
+      const tgMatch = s.target_groups.some(tg => aliases.includes(String(tg).toLowerCase()));
+      const catMatch = aliases.includes(String(s.category || '').toLowerCase());
+      return tgMatch || catMatch;
+    });
   }
   const caste = (url.searchParams.get('beneficiary') || url.searchParams.get('caste') || '').trim().toLowerCase();
   if (caste) {
-    items = items.filter(s => s.beneficiary_categories.some(c => String(c).toLowerCase() === caste));
+    const casteAliases = caste === 'sebc' ? ['sebc', 'obc'] : caste === 'bpl' ? ['bpl', 'ews'] : [caste];
+    items = items.filter(s => s.beneficiary_categories.some(c => casteAliases.includes(String(c).toLowerCase())));
   }
 
   return json({ items, total: items.length }, 200, { 'Cache-Control': CACHE });
+}
+
+function presentSchemesTreeNode(r) {
+  let meta = {};
+  try { meta = JSON.parse(r.metadata_json || '{}') || {}; } catch {}
+  return {
+    id: r.id,
+    slug: r.slug,
+    parent_slug: r.parent_slug || null,
+    level: r.level,
+    number: meta.number ? String(meta.number) : '',
+    title: r.title,
+    title_or: r.title_or || '',
+    subtitle: r.subtitle || '',
+    subtitle_or: r.subtitle_or || '',
+    badge_text: r.badge_text || '',
+    icon_name: r.icon_name || '📄',
+    official_url: r.official_url || '',
+    metadata: meta,
+    sort_order: Number(r.sort_order) || 0,
+    updated_at: r.updated_at || null
+  };
+}
+
+async function handleSchemesDirectoryTree(env, url) {
+  const groupFilter = (url.searchParams.get('group') || '').trim().toLowerCase().slice(0, 100);
+  const sectionFilter = (url.searchParams.get('section') || '').trim().toLowerCase().slice(0, 100);
+  const q = (url.searchParams.get('q') || '').trim().toLowerCase().slice(0, 100);
+
+  const { results } = await env.DB.prepare(
+    `SELECT * FROM schemes_directory_nodes
+     WHERE status = 'published'
+     ORDER BY CASE level WHEN 'group' THEN 0 WHEN 'section' THEN 1 WHEN 'subcategory' THEN 2 ELSE 3 END, sort_order ASC, title ASC`
+  ).all().catch(() => ({ results: [] }));
+
+  const allNodes = (results || []).map(presentSchemesTreeNode);
+  const rawGroups = allNodes.filter(n => n.level === 'group');
+  const rawSections = allNodes.filter(n => n.level === 'section');
+  const rawSubcats = allNodes.filter(n => n.level === 'subcategory');
+  const rawEntries = allNodes.filter(n => n.level === 'entry');
+
+  const groupMap = (arr, field = 'parent_slug') => {
+    const m = new Map();
+    arr.forEach(item => {
+      const k = item[field] || '';
+      if (!m.has(k)) m.set(k, []);
+      m.get(k).push(item);
+    });
+    return m;
+  };
+
+  const secByGroup = groupMap(rawSections);
+  const subBySec = groupMap(rawSubcats);
+  const entBySub = groupMap(rawEntries);
+
+  const matchQ = n => !q || [n.title, n.title_or, n.subtitle, n.subtitle_or, n.badge_text, n.number]
+    .some(v => String(v || '').toLowerCase().includes(q));
+
+  const filteredGroups = rawGroups
+    .filter(g => !groupFilter || g.slug === groupFilter || g.id === groupFilter || g.number === groupFilter)
+    .map(g => {
+      const gHit = matchQ(g);
+      const secs = (secByGroup.get(g.slug) || [])
+        .filter(s => !sectionFilter || s.slug === sectionFilter || s.id === sectionFilter || s.number === sectionFilter)
+        .map(s => {
+          const sHit = gHit || matchQ(s);
+          const subs = (subBySec.get(s.slug) || [])
+            .map(sub => {
+              const subHit = sHit || matchQ(sub);
+              const entries = (entBySub.get(sub.slug) || []).filter(e => !q || subHit || matchQ(e));
+              return { ...sub, children: entries };
+            })
+            .filter(sub => !q || sHit || matchQ(sub) || sub.children.length > 0);
+          return { ...s, children: subs };
+        })
+        .filter(s => !q || gHit || matchQ(s) || s.children.length > 0);
+      return { ...g, sections: secs };
+    })
+    .filter(g => (!sectionFilter && !q) || matchQ(g) || g.sections.length > 0);
+
+  const flatSecs = filteredGroups.flatMap(g => g.sections);
+  const flatSubs = flatSecs.flatMap(s => s.children);
+  const flatEntries = flatSubs.flatMap(sub => sub.children);
+
+  return json({
+    groups: filteredGroups,
+    counts: {
+      groups: filteredGroups.length,
+      sections: flatSecs.length,
+      subcategories: flatSubs.length,
+      entries: flatEntries.length,
+      totalNodes: filteredGroups.length + flatSecs.length + flatSubs.length + flatEntries.length
+    },
+    total_counts: {
+      groups: rawGroups.length,
+      sections: rawSections.length,
+      subcategories: rawSubcats.length,
+      entries: rawEntries.length,
+      totalNodes: allNodes.length
+    }
+  }, 200, { 'Cache-Control': CACHE });
 }
 
 async function handleUnifiedSearch(env, url) {
@@ -955,6 +1083,9 @@ export async function handleContent(request, env) {
     }
     if (resource === 'schemes') {
       return await handleSchemesDirectory(env, url, key);
+    }
+    if (resource === 'schemes-directory') {
+      return await handleSchemesDirectoryTree(env, url);
     }
     if (resource === 'resources') {
       const { page, limit, offset } = parsePaging(url);

@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#0F4C3A">
   <title>Schemes &amp; Benefits Explorer | Common Sense Odisha</title>
   <!-- CSO-IN homepage header stylesheet v1 -->
-  <link rel="stylesheet" href="../assets/style.css?v=20261114d">
-  <link rel="stylesheet" href="./assets/dashboard.css?v=20261114d">
-  <script src="../assets/js/public-content.js?v=20261114d" defer></script>
-  <script src="./assets/dashboard.js?v=20261114d" defer></script>
+  <link rel="stylesheet" href="../assets/style.css?v=20261114e">
+  <link rel="stylesheet" href="./assets/dashboard.css?v=20261114e">
+  <script src="../assets/js/public-content.js?v=20261114e" defer></script>
+  <script src="./assets/dashboard.js?v=20261114e" defer></script>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -145,11 +145,40 @@
             <button type="button" class="scheme-chip" data-group="seniors" aria-pressed="false">Madhu Babu Pension</button>
           </div>
 
+          <div class="scheme-status-pills" role="group" aria-label="Filter by application status window">
+            <span class="scheme-status-pills__label">Window:</span>
+            <button type="button" class="scheme-status-pill is-active" data-status-label="" aria-pressed="true">All Windows</button>
+            <button type="button" class="scheme-status-pill" data-status-label="Open Year-Round" aria-pressed="false">🟢 Open Year-Round</button>
+            <button type="button" class="scheme-status-pill" data-status-label="Closing Soon" aria-pressed="false">⏰ Closing Soon</button>
+            <button type="button" class="scheme-status-pill" data-status-label="Renewal Window Open" aria-pressed="false">🔄 Renewal Window Open</button>
+          </div>
+
           <div id="live-schemes-status" class="live-status-box" role="status" aria-live="polite">
             Loading verified Odisha &amp; Central government schemes…
           </div>
 
           <div id="live-schemes-grid" class="live-schemes-grid" aria-live="polite"></div>
+
+          <details class="scheme-prep-guide" id="scheme-prep-guide">
+            <summary class="scheme-prep-guide__summary">
+              <span>📋 Before You Apply: DBT Bank Seeding, e-District Certificates &amp; Anti-Scam Checklist</span>
+              <span class="scheme-prep-guide__hint">Expand guide</span>
+            </summary>
+            <div class="scheme-prep-guide__grid">
+              <div class="scheme-prep-card">
+                <h3>1. NPCI Aadhaar Bank Seeding (DBT)</h3>
+                <p>Subhadra, CM-KISAN, Post-Matric Scholarship, and Madhu Babu Pension disburse strictly via the Aadhaar-linked NPCI mapper. Ask your bank branch for <strong>DBT Seeding / NPCI Consent</strong> or verify status at <a href="https://myaadhaar.uidai.gov.in/" target="_blank" rel="noopener noreferrer">myaadhaar.uidai.gov.in ↗</a>.</p>
+              </div>
+              <div class="scheme-prep-card">
+                <h3>2. e-District Odisha Certificates</h3>
+                <p>Keep fresh digital copies (valid within 1 year for Income) of Caste, Residence, and Family Income certificates ready through <a href="https://edistrict.odisha.gov.in/" target="_blank" rel="noopener noreferrer">edistrict.odisha.gov.in ↗</a> or your nearest Mo Seba Kendra before scholarship deadlines.</p>
+              </div>
+              <div class="scheme-prep-card">
+                <h3>3. Official Portal &amp; Zero-Fee Verification</h3>
+                <p>Common Sense Odisha only links to verified <code>.gov.in</code> / <code>.nic.in</code> official portals. Government DBT schemes <strong>never ask for OTPs, UPI PINs, or private agent commissions</strong>.</p>
+              </div>
+            </div>
+          </details>
 
           <div id="live-scheme-detail-modal" class="live-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="live-scheme-detail-title" hidden>
             <article id="live-scheme-detail" class="live-scheme-detail live-modal-drawer">
@@ -165,8 +194,32 @@
               </header>
               <div id="live-scheme-detail-summary" class="live-scheme-detail__summary" hidden></div>
               <div id="live-scheme-detail-specs" class="live-detail-specs-grid"></div>
+              <div id="live-scheme-detail-helpline-bar" class="live-scheme-helpline" hidden></div>
               <div id="live-scheme-detail-docs" class="live-scheme-docs" hidden></div>
+              <div id="live-scheme-detail-timeline" class="live-scheme-timeline" hidden></div>
+              <div id="live-scheme-detail-exam-cta" class="live-scheme-exam-cta" hidden></div>
               <div id="live-scheme-detail-body" class="cso-prose"></div>
+            </article>
+          </div>
+
+          <div id="scheme-compare-bar" class="scheme-compare-bar" hidden aria-live="polite">
+            <span id="scheme-compare-summary" class="scheme-compare-bar__label">0 schemes selected for comparison</span>
+            <div class="scheme-compare-bar__btns">
+              <button id="scheme-compare-open" type="button" class="scheme-btn scheme-btn--primary">Compare Side-by-Side</button>
+              <button id="scheme-compare-clear" type="button" class="scheme-btn">Clear</button>
+            </div>
+          </div>
+
+          <div id="scheme-compare-modal" class="live-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="scheme-compare-title" hidden>
+            <article class="live-modal-drawer scheme-compare-drawer">
+              <div class="live-scheme-detail__bar">
+                <h3 id="scheme-compare-title" class="live-scheme-detail__title">Compare Government Schemes Side-by-Side</h3>
+                <div class="live-scheme-detail__actions">
+                  <button id="scheme-compare-print" class="scheme-btn" type="button">🖨 Print Comparison</button>
+                  <button id="scheme-compare-close" class="scheme-btn" type="button">✕ Close</button>
+                </div>
+              </div>
+              <div id="scheme-compare-table-wrap" class="scheme-compare-table-wrap"></div>
             </article>
           </div>
         </section>

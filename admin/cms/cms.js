@@ -1903,14 +1903,26 @@
         ['min_age', 'Min Age', 'number'], ['max_age', 'Max Age', 'number'],
         ['max_income', 'Max Annual Income (Rs)', 'number'], ['gender_eligible', 'Gender (all / female / male)', 'text'],
         ['target_groups', 'Target Groups (comma-sep)', 'text'], ['beneficiary_categories', 'Beneficiary Categories (SC,ST,SEBC,EWS)', 'text'],
-        ['documents_required', 'Documents Required (comma-sep)', 'area'], ['apply_url', 'Official Apply URL', 'url'],
+        ['documents_required', 'Documents Required (comma-sep)', 'area'],
+        ['required_docs_json', 'Structured Required Docs JSON (optional [{"doc","where","mandatory"}])', 'area'],
+        ['application_steps_json', 'Application Steps (comma-sep or JSON array)', 'area'],
+        ['disbursement_mode', 'Disbursement Mode (e.g. DBT / Portal)', 'text'],
+        ['helpline', 'Official Helpline', 'text'],
+        ['verified_date', 'Verified Date (YYYY-MM-DD)', 'text'],
+        ['application_status_label', 'Window Status (Open Year-Round / Closing Soon / Renewal Window Open)', 'text'],
+        ['exam_slug', 'Exam / Scholarship Cross-Link Slug (optional)', 'text'],
+        ['apply_url', 'Official Apply URL', 'url'],
         ['sort_order', 'Sort Order', 'number'], ['status', 'Status (published / draft / archived)', 'text']
       ];
       var inputs = {};
       fields.forEach(function (f) {
         var inp = f[2] === 'area' ? el('textarea', { id: 'sch-' + f[0] }) : el('input', { id: 'sch-' + f[0], type: f[2] });
         var val = s[f[0]];
-        inp.value = Array.isArray(val) ? val.join(', ') : (val === null || val === undefined ? '' : val);
+        if (f[0] === 'required_docs_json') {
+          inp.value = Array.isArray(val) && val.length ? JSON.stringify(val) : '';
+        } else {
+          inp.value = Array.isArray(val) ? val.join(', ') : (val === null || val === undefined ? '' : val);
+        }
         inputs[f[0]] = inp;
         form.appendChild(field(f[1], inp, 'sch-' + f[0]));
       });
@@ -1981,7 +1993,152 @@
     }
     var t;
     qInp.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.q = qInp.value; st.page = 1; load(); }, 220); });
-    main.appendChild(el('div', { class: 'toolbar' }, [qInp, el('span', { class: 'spacer' }), el('a', { class: 'btn primary sm', href: '#/schemes/new', text: '+ New Scheme' })]));
+    main.appendChild(el('div', { class: 'toolbar' }, [
+      qInp,
+      el('span', { class: 'spacer' }),
+      el('a', { class: 'btn sm', href: '#/schemes-directory', text: '🗂 Schemes Tree (1,264 Nodes)' }),
+      el('a', { class: 'btn primary sm', href: '#/schemes/new', text: '+ New Scheme' })
+    ]));
+    main.appendChild(box);
+    await load();
+  }
+
+  async function viewSchemesDirectoryTree() {
+    setTitle('Schemes & Benefits Directory Tree (D1)');
+    var st = { page: 1, limit: 30, group: '', level: '', status: '', q: '' };
+    var grpSel = el('select', { 'aria-label': 'Filter by Parent Group' }, [el('option', { value: '', text: 'All 8 Groups' })]);
+    var lvlSel = el('select', { 'aria-label': 'Filter by Level' }, [
+      ['', 'All Levels'], ['group', 'Groups'], ['section', 'Sections'], ['subcategory', 'Subcategories'], ['entry', 'Entries']
+    ].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+    var statusSel = el('select', { 'aria-label': 'Filter by Status' }, [
+      ['', 'All Status'], ['published', 'Published'], ['draft', 'Draft']
+    ].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+    var qInp = el('input', { type: 'search', placeholder: 'Search 1,264 tree nodes (title, Odia, badge, slug)…' });
+
+    var createPanel = el('details', { class: 'panel cso-create-details' });
+    createPanel.appendChild(el('summary', { class: 'btn sm', text: '+ Add Schemes Directory Node (D1)' }));
+    var formTitle = el('input', { type: 'text', required: true, placeholder: 'Node Title (EN)' });
+    var formTitleOr = el('input', { type: 'text', placeholder: 'Odia Title (_or)' });
+    var formLevel = el('select', {}, ['entry', 'subcategory', 'section', 'group'].map(function (l) { return el('option', { value: l, text: l }); }));
+    var formParent = el('input', { type: 'text', placeholder: 'Parent Slug (e.g. government-schemes)' });
+    var formSub = el('input', { type: 'text', placeholder: 'Subtitle (EN)' });
+    var formSubOr = el('input', { type: 'text', placeholder: 'Subtitle (Odia _or)' });
+    var formBadge = el('input', { type: 'text', placeholder: 'Badge / Number (e.g. 1.1.9)' });
+    var formIcon = el('input', { type: 'text', value: '📄', placeholder: 'Emoji icon' });
+    var formUrl = el('input', { type: 'text', placeholder: 'Official https://... portal' });
+    var formSort = el('input', { type: 'number', value: '10', placeholder: 'Sort order' });
+    var formStatus = el('select', {}, ['published', 'draft'].map(function (s) { return el('option', { value: s, text: s }); }));
+
+    var createForm = el('form', { class: 'grid2' }, [
+      field('Title (EN) *', formTitle), field('Title (Odia _or)', formTitleOr),
+      field('Level', formLevel), field('Parent Slug', formParent),
+      field('Subtitle (EN)', formSub), field('Subtitle (Odia _or)', formSubOr),
+      field('Badge / Code', formBadge), field('Icon', formIcon),
+      field('Official URL', formUrl), field('Sort Order', formSort),
+      field('Status', formStatus),
+      el('div', { class: 'actions' }, [el('button', { type: 'submit', class: 'btn primary sm', text: '+ Create Tree Node' })])
+    ]);
+
+    createForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      try {
+        await api('POST', 'schemes-directory', {
+          title: formTitle.value.trim(),
+          title_or: formTitleOr.value.trim(),
+          level: formLevel.value,
+          parent_slug: formParent.value.trim() || null,
+          subtitle: formSub.value.trim(),
+          subtitle_or: formSubOr.value.trim(),
+          badge_text: formBadge.value.trim(),
+          icon_name: formIcon.value.trim() || '📄',
+          official_url: formUrl.value.trim(),
+          sort_order: Number(formSort.value) || 0,
+          status: formStatus.value
+        });
+        formTitle.value = ''; formTitleOr.value = ''; formSub.value = ''; formSubOr.value = '';
+        formBadge.value = ''; formUrl.value = '';
+        toast('Schemes directory node saved in D1');
+        load();
+      } catch (err) { toast(err.message, true); }
+    });
+    createPanel.appendChild(createForm);
+
+    var box = el('div');
+    var populatedGroups = false;
+
+    async function load() {
+      var d = await api(
+        'GET',
+        'schemes-directory?page=' + st.page + '&limit=' + st.limit +
+        '&group=' + encodeURIComponent(st.group) +
+        '&level=' + encodeURIComponent(st.level) +
+        '&status=' + encodeURIComponent(st.status) +
+        '&q=' + encodeURIComponent(st.q)
+      );
+
+      if (!populatedGroups && Array.isArray(d.parents)) {
+        populatedGroups = true;
+        d.parents.filter(function (p) { return p.level === 'group'; }).forEach(function (p) {
+          grpSel.appendChild(el('option', { value: p.slug, text: p.title }));
+        });
+      }
+
+      var tb = el('tbody');
+      (d.items || []).forEach(function (n) {
+        var titleInp = el('input', { type: 'text', value: n.title || '', 'aria-label': 'Node title EN' });
+        var subInp = el('input', { type: 'text', value: n.subtitle || '', placeholder: 'Subtitle', 'aria-label': 'Subtitle EN' });
+        var orInp = el('input', { type: 'text', value: n.title_or || '', placeholder: 'ଓଡ଼ିଆ ଶୀର୍ଷକ', 'aria-label': 'Odia title' });
+        var sortInp = el('input', { type: 'number', value: String(n.sort_order || 0), 'aria-label': 'Sort order' });
+        var statusNode = el('select', { 'aria-label': 'Node status' }, ['published', 'draft'].map(function (s) {
+          return el('option', { value: s, text: s, selected: n.status === s });
+        }));
+
+        var saveBtn = el('button', { type: 'button', class: 'btn sm primary', text: 'Save', onclick: async function () {
+          try {
+            await api('PUT', 'schemes-directory/' + encodeURIComponent(n.id), {
+              title: titleInp.value.trim(),
+              title_or: orInp.value.trim(),
+              subtitle: subInp.value.trim(),
+              sort_order: Number(sortInp.value) || 0,
+              status: statusNode.value
+            });
+            toast('Updated Schemes node');
+          } catch (err) { toast(err.message, true); }
+        } });
+
+        var delBtn = el('button', { type: 'button', class: 'btn sm danger', text: 'Delete', onclick: async function () {
+          if (!(await confirmModal('Delete "' + n.title + '"?', 'Remove node permanently from D1 tree.', 'Delete', true))) return;
+          try {
+            await api('DELETE', 'schemes-directory/' + encodeURIComponent(n.id));
+            toast('Removed node');
+            load();
+          } catch (err) { toast(err.message, true); }
+        } });
+
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, [badge(n.level), n.badge_text ? el('div', { class: 'hint', text: n.badge_text }) : null, el('div', { class: 'hint', text: n.slug + (n.parent_slug ? ' ← ' + n.parent_slug : '') })]),
+          el('td', {}, [titleInp, subInp]),
+          el('td', {}, orInp),
+          el('td', {}, [sortInp, statusNode]),
+          el('td', {}, el('div', { class: 'actions' }, [saveBtn, delBtn]))
+        ]));
+      });
+
+      clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+        el('caption', { class: 'muted', text: 'Schemes tree nodes matching filter: ' + (d.total || 0) }),
+        el('thead', {}, el('tr', {}, ['Level / Slug', 'Title & Subtitle (EN)', 'Title (Odia _or)', 'Order & Status', 'Actions'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+        tb
+      ])));
+      box.appendChild(pager(st, d.total || 0, load));
+    }
+
+    var t;
+    grpSel.addEventListener('change', function () { st.group = grpSel.value; st.page = 1; load(); });
+    lvlSel.addEventListener('change', function () { st.level = lvlSel.value; st.page = 1; load(); });
+    statusSel.addEventListener('change', function () { st.status = statusSel.value; st.page = 1; load(); });
+    qInp.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.q = qInp.value; st.page = 1; load(); }, 250); });
+    main.appendChild(el('div', { class: 'toolbar' }, [grpSel, lvlSel, statusSel, qInp, el('a', { class: 'btn sm', href: '#/schemes', text: '← Flagship Schemes' })]));
+    main.appendChild(createPanel);
     main.appendChild(box);
     await load();
   }
@@ -2076,7 +2233,7 @@
   /* ---------- router ---------- */
   function buildNav() {
     var nav = clear(document.getElementById('nav'));
-    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/about-directory', 'About CSO'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/jobs-directory', 'Jobs Directory'], ['#/schemes', 'Schemes'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/freshness', 'Freshness Audit'], ['#/feedback', 'Feedback Queue'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
+    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/about-directory', 'About CSO'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/jobs-directory', 'Jobs Directory'], ['#/schemes', 'Schemes'], ['#/schemes-directory', 'Schemes Tree'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/freshness', 'Freshness Audit'], ['#/feedback', 'Feedback Queue'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
       .forEach(function (l) { nav.appendChild(el('a', { href: l[0] }, l[1])); });
   }
   var VIEWS = {
@@ -2085,6 +2242,7 @@
     'jobs-directory': function () { return viewJobsDirectory(); },
     'about-directory': function () { return viewAboutDirectory(); },
     schemes: function (parts) { return viewSchemesManager(parts[1]); },
+    'schemes-directory': function () { return viewSchemesDirectoryTree(); },
     freshness: function () { return viewFreshnessAudit(); },
     feedback: function () { return viewFeedbackQueue(); },
     seo: function () { return viewSeoDiscovery(); },

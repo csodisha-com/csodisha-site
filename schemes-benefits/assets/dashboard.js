@@ -136,6 +136,7 @@
         }
       } else {
         url.searchParams.delete('section');
+        url.searchParams.delete('group');
         url.searchParams.delete('path');
         const state = { sectionIndex: -1, slug: '', path: [] };
         if (replaceUrl || url.href === window.location.href) {
@@ -149,11 +150,32 @@
     }
   }
 
-  const icons = ['💼','🧭','📋','📚','🎓','🌍','📈','🏛️'];
+  const icons = ['🏛️', '🎓', '🌾', '🏥', '🤝', '🔬', '🎯', '🛡️'];
 
   let sections = [];
+  let treeCountsCache = null;
   let path = [];
   let currentSection = -1;
+
+  function getActiveLang() {
+    try {
+      return localStorage.getItem('cso_lang_pref') === 'or' ? 'or' : 'en';
+    } catch (_) {
+      return 'en';
+    }
+  }
+
+  function localizedNodeTitle(node) {
+    if (!node) return '';
+    const isOr = getActiveLang() === 'or';
+    return (isOr && node.title_or) ? node.title_or : (node.title || '');
+  }
+
+  function localizedNodeSub(node) {
+    if (!node) return '';
+    const isOr = getActiveLang() === 'or';
+    return (isOr && node.subtitle_or) ? node.subtitle_or : (node.subtitle || node.description || '');
+  }
 
   function el(tag, className, text) {
     const node = document.createElement(tag);
@@ -167,6 +189,14 @@
       (sum, node) => sum + 1 + countNodes(node.children || []),
       0
     );
+  }
+
+  function countEntries(nodes) {
+    return nodes.reduce((sum, node) => {
+      const ch = node.children || [];
+      if (ch.length === 0) return sum + 1;
+      return sum + countEntries(ch);
+    }, 0);
   }
 
   function countNotes(nodes) {
@@ -486,7 +516,7 @@
     explorer.hidden = false;
 
     // Display the current category title only once.
-    const cleanTitle = node.title
+    const cleanTitle = localizedNodeTitle(node)
       .replace(/\s+Directory$/i, '')
       .trim();
 
@@ -497,12 +527,24 @@
     setActiveSidebar();
     updateDocumentTitle(cleanTitle);
 
-    explorerDescription.textContent =
-      children.length
-        ? `${children.length} subcategories available`
-        : 'Detailed schemes and benefits categories';
+    const subText = localizedNodeSub(node);
+    explorerDescription.hidden = false;
+    explorerDescription.textContent = children.length
+      ? `${children.length} categories${subText ? ' · ' + subText : ''}`
+      : (subText || 'Detailed schemes and benefits categories');
 
     explorerItems.replaceChildren();
+
+    if (node.official_url && (!window.CSOPublicContent || window.CSOPublicContent.safeHref(node.official_url))) {
+      const portalBanner = el('div', 'live-scheme-helpline');
+      portalBanner.appendChild(el('span', '', '🔗 Official Government Portal for this Section'));
+      const portalLink = el('a', 'scheme-btn scheme-btn--primary', 'Open Official Portal ↗');
+      portalLink.href = node.official_url;
+      portalLink.target = '_blank';
+      portalLink.rel = 'noopener noreferrer nofollow';
+      portalBanner.appendChild(portalLink);
+      explorerItems.append(portalBanner);
+    }
 
     children.forEach((child, index) => {
       const button = el('button', 'explorer-item dashboard-card');
@@ -515,10 +557,11 @@
         '🗂️', '⚙️', '📌', '🎯'
       ];
 
-      const icon = symbols[index % symbols.length];
-      const title = (child.number ? child.number + ' ' : '') + child.title;
-      const nested = countNodes(child.children || []);
-      const notes = countNotes([child]);
+      const icon = child.icon_name || symbols[index % symbols.length];
+      const childTitleText = localizedNodeTitle(child);
+      const title = (child.number ? child.number + ' ' : '') + childTitleText;
+      const nested = (child.children || []).length ? countNodes(child.children || []) : 0;
+      const entries = (child.children || []).length ? countEntries(child.children || []) : 0;
 
       button.append(el('span', 'card-icon', icon));
 
@@ -527,8 +570,10 @@
 
       const metaParts = [];
       if (nested > 0) metaParts.push(`${nested.toLocaleString('en-IN')} categories`);
-      if (notes > 0) metaParts.push(`${notes.toLocaleString('en-IN')} entries`);
-      content.append(el('span', 'card-meta', metaParts.length ? metaParts.join(' · ') : 'Explore category'));
+      if (entries > 0) metaParts.push(`${entries.toLocaleString('en-IN')} entries`);
+      const childSub = localizedNodeSub(child);
+      if (!metaParts.length && childSub) metaParts.push(childSub);
+      content.append(el('span', 'card-meta', metaParts.length ? metaParts.join(' · ') : 'View scheme entry details'));
       button.append(content);
 
       const arrow = el('span', 'card-arrow', '›');
@@ -536,9 +581,17 @@
       button.append(arrow);
 
       button.addEventListener('click', () => {
-        path.push(index);
-        updateUrlState(true);
-        renderExplorer();
+        if ((child.children || []).length > 0 || (child.notes || []).length > 0) {
+          path.push(index);
+          updateUrlState(true);
+          renderExplorer();
+        } else if (schemeQEl) {
+          schemeQEl.value = childTitleText;
+          schemeFilterState.q = childTitleText;
+          loadLiveSchemes();
+          const secEl = document.getElementById('live-schemes-section');
+          if (secEl) secEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       });
 
       explorerItems.append(button);
@@ -654,25 +707,57 @@
     const results = [];
 
     sections.forEach((section, sectionIndex) => {
-      if (section.title.toLowerCase().includes(query)) {
+      const sTitle = localizedNodeTitle(section);
+      if (sTitle.toLowerCase().includes(query) || String(section.title || '').toLowerCase().includes(query)) {
         results.push({
-          label: section.title,
-          trail: 'Main section',
+          label: sTitle,
+          trail: 'Main group',
           sectionIndex,
           nodePath: []
         });
       }
 
-      section.children.forEach((node, index) => {
+      (section.children || []).forEach((node, index) => {
         searchNode(
-          node, query, [section.title], results,
+          node, query, [sTitle], results,
           sectionIndex, [index]
         );
       });
     });
 
+    const matchingFlagship = (liveSchemesCache || []).filter(s => {
+      const hay = [s.title, s.title_or, s.summary, s.summary_or, s.benefit_summary, s.department, s.category]
+        .map(v => String(v || '').toLowerCase())
+        .join(' ');
+      return hay.includes(query);
+    });
+
     searchItems.replaceChildren();
-    searchStatus.textContent = `${results.length} matching categories found`;
+    searchStatus.textContent = `${matchingFlagship.length} flagship D1 schemes & ${results.length} directory categories found`;
+
+    if (matchingFlagship.length) {
+      const flagshipWrap = el('div', 'search-schemes-section');
+      flagshipWrap.appendChild(el('h3', 'search-section-label', `Verified Flagship Schemes (${matchingFlagship.length})`));
+      matchingFlagship.slice(0, 12).forEach(s => {
+        const item = el('button', 'explorer-item');
+        item.type = 'button';
+        item.append(el('span', 'card-icon', '🏛️'));
+        const content = el('div', 'card-content');
+        content.append(el('span', 'card-title', (getActiveLang() === 'or' && s.title_or) ? s.title_or : s.title));
+        content.append(el('span', 'card-meta', `${s.gov_level || 'Odisha'} · ${s.category} · ${s.benefit_summary || s.department}`));
+        item.append(content);
+        const arrow = el('span', 'card-arrow', '›');
+        arrow.setAttribute('aria-hidden', 'true');
+        item.append(arrow);
+        item.addEventListener('click', () => openSchemeDetail(s.slug || s.id));
+        flagshipWrap.appendChild(item);
+      });
+      searchItems.appendChild(flagshipWrap);
+    }
+
+    if (results.length) {
+      searchItems.appendChild(el('h3', 'search-section-label', `Directory Categories & Schemes (${results.length})`));
+    }
 
     results.slice(0, 200).forEach(result => {
       const item = el('button', 'explorer-item');
@@ -696,48 +781,52 @@
 
     if (results.length > 200) {
       searchItems.append(
-        el('p', '', 'Showing the first 200 results. Refine your search.')
+        el('p', '', 'Showing the first 200 directory results. Refine your search.')
       );
     }
 
-    if (!results.length) {
-      searchItems.append(el('p', '', 'No matching categories found.'));
+    if (!results.length && !matchingFlagship.length) {
+      searchItems.append(el('p', '', 'No matching schemes or directory categories found.'));
     }
   }
 
   function renderStatistics(data) {
     const container = $('statistics-grid');
 
-    const mainCount = sections.reduce(
-      (total, group) => total + (group.children || []).length,
-      0
-    );
+    const tc = treeCountsCache || (data && data.counts) || null;
+    const mainCount = tc && tc.sections != null
+      ? Number(tc.sections)
+      : sections.reduce((total, group) => total + (group.children || []).length, 0);
 
-    const subCount = sections.reduce(
-      (total, group) => total + (group.children || []).reduce(
-        (sum, section) => sum + (section.children || []).length,
+    const subCount = tc && tc.subcategories != null
+      ? Number(tc.subcategories)
+      : sections.reduce(
+        (total, group) => total + (group.children || []).reduce(
+          (sum, section) => sum + (section.children || []).length,
+          0
+        ),
         0
-      ),
-      0
-    );
+      );
 
-    const detailCount = sections.reduce(
-      (total, group) => total + (group.children || []).reduce(
-        (sectionTotal, section) =>
-          sectionTotal + (section.children || []).reduce(
-            (subTotal, sub) => subTotal + (sub.children || []).length,
-            0
-          ),
+    const detailCount = tc && tc.entries != null
+      ? Number(tc.entries)
+      : sections.reduce(
+        (total, group) => total + (group.children || []).reduce(
+          (sectionTotal, section) =>
+            sectionTotal + (section.children || []).reduce(
+              (subTotal, sub) => subTotal + (sub.children || []).length,
+              0
+            ),
+          0
+        ),
         0
-      ),
-      0
-    );
+      );
 
     const items = [
-      ['🗂️', 'Navigation Groups', sections.length],
-      ['📁', 'Original Main Sections', mainCount],
+      ['🗂️', 'Navigation Groups', tc && tc.groups != null ? Number(tc.groups) : sections.length],
+      ['📁', 'Main Scheme Sections', mainCount],
       ['📋', 'Subcategories', subCount],
-      ['📝', 'Detailed Categories', detailCount]
+      ['📝', 'Scheme Entries', detailCount]
     ];
 
     container.replaceChildren();
@@ -774,14 +863,18 @@
     sectionsNav.append(overviewButton);
 
     sections.forEach((section, index) => {
+      const sectionIcon = section.icon_name || icons[index % icons.length];
+      const sectionLabel = localizedNodeTitle(section);
       const navButton = el('button', 'side-link');
       navButton.type = 'button';
       navButton.dataset.sectionIndex = String(index);
-      navButton.append(el('span', 'side-icon', icons[index % icons.length]));
-      navButton.append(el('span', 'side-title', section.title));
+      navButton.append(el('span', 'side-icon', sectionIcon));
+      navButton.append(el('span', 'side-title', sectionLabel));
+      const directSections = (section.children || []).length;
       const categories = countNodes(section.children || []);
+      const entries = countEntries(section.children || []);
       if (categories > 0) {
-        navButton.append(el('span', 'side-count', String(categories)));
+        navButton.append(el('span', 'side-count', String(entries || categories)));
       }
       const sideArrow = el('span', 'side-arrow', '›');
       sideArrow.setAttribute('aria-hidden', 'true');
@@ -791,12 +884,12 @@
 
       const card = el('button', 'dashboard-card');
       card.type = 'button';
-      card.append(el('span', 'card-icon', icons[index % icons.length]));
+      card.append(el('span', 'card-icon', sectionIcon));
 
       const content = el('div', 'card-content');
-      content.append(el('span', 'card-title', section.title));
-      const entries = countNotes(section.children || []);
+      content.append(el('span', 'card-title', sectionLabel));
       const metaParts = [];
+      if (directSections > 0) metaParts.push(`${directSections} sections`);
       if (categories > 0) metaParts.push(`${categories.toLocaleString('en-IN')} categories`);
       if (entries > 0) metaParts.push(`${entries.toLocaleString('en-IN')} entries`);
       content.append(el('span', 'card-meta', metaParts.length ? metaParts.join(' · ') : 'Explore category'));
@@ -924,17 +1017,37 @@
     if (!sections || !sections.length) return;
 
     const params = new URLSearchParams(window.location.search);
-    const requestedSection = params.get('section');
+    const requestedQ = params.get('q');
+    if (requestedQ && search) {
+      search.value = requestedQ;
+      renderSearch();
+      return;
+    }
 
-    if (requestedSection !== null && requestedSection !== '') {
-      const idx = resolveSectionIndex(requestedSection);
+    const requestedGroup = params.get('group');
+    const requestedSection = params.get('section');
+    const targetSlug = requestedGroup || requestedSection;
+
+    if (targetSlug !== null && targetSlug !== '') {
+      let idx = resolveSectionIndex(targetSlug);
+      let directPath = null;
+      if (idx === -1 && requestedSection) {
+        sections.forEach((grp, gIdx) => {
+          (grp.children || []).forEach((sec, sIdx) => {
+            if (idx === -1 && (sec.slug === requestedSection || slugify(sec.title) === slugify(requestedSection))) {
+              idx = gIdx;
+              directPath = [sIdx];
+            }
+          });
+        });
+      }
       if (idx !== -1 && idx < sections.length) {
         currentSection = idx;
-        path = [];
+        path = directPath || [];
 
         const hasSingleWrapper = isSingleWrapperSection(idx);
         const requestedPath = params.get('path');
-        if (requestedPath !== null) {
+        if (!directPath && requestedPath !== null) {
           const parts = requestedPath.split('.');
           if (
             parts.length > 0 &&
@@ -1026,47 +1139,70 @@
     }
   }
 
-  // 1. Prioritize SuperStore dynamic state engine
-  const liveSections = loadSuperStoreTree();
-  if (liveSections) {
-    sections = liveSections;
-    buildDashboard();
-    renderStatistics({ navigation: liveSections });
-    syncFromUrl(false);
-    if (loadStatus) {
-      loadStatus.hidden = true;
+  async function loadDirectoryFromD1OrStatic() {
+    const liveSections = loadSuperStoreTree();
+    if (liveSections) {
+      sections = liveSections;
+      buildDashboard();
+      renderStatistics({ navigation: liveSections });
+      syncFromUrl(false);
+      if (loadStatus) loadStatus.hidden = true;
+      return;
     }
-  } else {
-    // 2. Fallback to static JSON
-    fetch('./generated/directory.json')
-      .then(response => {
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        return response.json();
-      })
-      .then(data => {
-        if (!Array.isArray(data.navigation) || data.navigation.length !== 8) {
-          throw new Error('Invalid Schemes & Benefits directory structure');
+
+    try {
+      const apiRes = await fetch('/api/content/schemes-directory', { credentials: 'same-origin' });
+      if (apiRes.ok) {
+        const d1Data = await apiRes.json();
+        if (Array.isArray(d1Data.groups) && d1Data.groups.length > 0) {
+          treeCountsCache = d1Data.total_counts || d1Data.counts || null;
+          sections = d1Data.groups.map(group => ({
+            id: group.id,
+            slug: group.slug,
+            number: group.number,
+            title: group.title,
+            title_or: group.title_or || '',
+            subtitle: group.subtitle || '',
+            subtitle_or: group.subtitle_or || '',
+            icon_name: group.icon_name || '🗂️',
+            official_url: group.official_url || '',
+            children: group.sections || [],
+            notes: []
+          }));
+          buildDashboard();
+          renderStatistics(d1Data);
+          syncFromUrl(false);
+          if (loadStatus) loadStatus.hidden = true;
+          return;
         }
+      }
+    } catch (_) {}
 
-        sections = data.navigation.map(group => ({
-          number: group.number,
-          title: group.title,
-          children: group.sections || [],
-          notes: []
-        }));
-        buildDashboard();
-        renderStatistics(data);
-
-        syncFromUrl(false);
-
-        loadStatus.hidden = true;
-      })
-      .catch(error => {
-        loadStatus.textContent = 'Unable to load directory: ' + error.message;
-      });
+    try {
+      const response = await fetch('./generated/directory.json');
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const data = await response.json();
+      if (!Array.isArray(data.navigation) || data.navigation.length !== 8) {
+        throw new Error('Invalid Schemes & Benefits directory structure');
+      }
+      sections = data.navigation.map(group => ({
+        number: group.number,
+        title: group.title,
+        children: group.sections || [],
+        notes: []
+      }));
+      buildDashboard();
+      renderStatistics(data);
+      syncFromUrl(false);
+      if (loadStatus) loadStatus.hidden = true;
+    } catch (error) {
+      if (loadStatus) loadStatus.textContent = 'Unable to load directory: ' + error.message;
+    }
   }
 
-  // Live D1 Schemes Directory + Interactive Check My Scheme Eligibility + Detail Modal
+  loadDirectoryFromD1OrStatic();
+
+  // Live D1 Schemes Directory + Interactive Check My Scheme Eligibility + Compare + Detail Modal
   const liveSchemesGrid = document.getElementById('live-schemes-grid');
   const liveSchemesStatus = document.getElementById('live-schemes-status');
   const liveSchemesCount = document.getElementById('live-schemes-count');
@@ -1080,6 +1216,7 @@
   const schemeAgeEl = document.getElementById('scheme-age');
   const schemeIncomeEl = document.getElementById('scheme-income');
   const quickChips = Array.from(document.querySelectorAll('.scheme-chip[data-group]'));
+  const statusPills = Array.from(document.querySelectorAll('.scheme-status-pill[data-status-label]'));
 
   const modalOverlay = document.getElementById('live-scheme-detail-modal');
   const modalCloseBtn = document.getElementById('live-scheme-detail-close');
@@ -1090,17 +1227,117 @@
   const modalMetaEl = document.getElementById('live-scheme-detail-meta');
   const modalSummaryEl = document.getElementById('live-scheme-detail-summary');
   const modalSpecsEl = document.getElementById('live-scheme-detail-specs');
+  const modalHelplineEl = document.getElementById('live-scheme-detail-helpline-bar');
   const modalDocsEl = document.getElementById('live-scheme-detail-docs');
+  const modalTimelineEl = document.getElementById('live-scheme-detail-timeline');
+  const modalExamCtaEl = document.getElementById('live-scheme-detail-exam-cta');
   const modalBodyEl = document.getElementById('live-scheme-detail-body');
 
-  let schemeFilterState = { q: '', gov: '', group: '', gender: '', beneficiary: '', age: '', income: '' };
-  let liveSchemesCache = [];
+  const compareBar = document.getElementById('scheme-compare-bar');
+  const compareSummary = document.getElementById('scheme-compare-summary');
+  const compareOpenBtn = document.getElementById('scheme-compare-open');
+  const compareClearBtn = document.getElementById('scheme-compare-clear');
+  const compareModal = document.getElementById('scheme-compare-modal');
+  const compareCloseBtn = document.getElementById('scheme-compare-close');
+  const comparePrintBtn = document.getElementById('scheme-compare-print');
+  const compareTableWrap = document.getElementById('scheme-compare-table-wrap');
 
-  function getActiveLang() {
+  const DOCS_CHECKED_KEY = 'cso_scheme_docs_checked_v1';
+  const DOC_LOCKER_KEY = 'cso_doc_locker_v1';
+
+  let schemeFilterState = { q: '', gov: '', group: '', gender: '', beneficiary: '', age: '', income: '', status_label: '' };
+  let liveSchemesCache = [];
+  let compareList = [];
+
+  function readJsonStorage(key, fallback) {
     try {
-      return localStorage.getItem('cso_lang_pref') === 'or' ? 'or' : 'en';
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
     } catch (_) {
-      return 'en';
+      return fallback;
+    }
+  }
+
+  function writeJsonStorage(key, val) {
+    try {
+      localStorage.setItem(key, JSON.stringify(val));
+    } catch (_) {}
+  }
+
+  function statusBadgeClass(label) {
+    const t = String(label || '').toLowerCase();
+    if (t.includes('closing')) return 'live-badge--closing';
+    if (t.includes('renewal')) return 'live-badge--renewal';
+    return 'live-badge--open';
+  }
+
+  function getNormalizedDocs(scheme) {
+    if (Array.isArray(scheme.required_docs_json) && scheme.required_docs_json.length) {
+      return scheme.required_docs_json.map(item => {
+        if (item && typeof item === 'object') {
+          return {
+            doc: String(item.doc || item.name || ''),
+            where: String(item.where || item.source || ''),
+            mandatory: item.mandatory !== false
+          };
+        }
+        return { doc: String(item || ''), where: '', mandatory: true };
+      }).filter(d => d.doc);
+    }
+    if (Array.isArray(scheme.documents_required)) {
+      return scheme.documents_required.map(d => ({ doc: String(d || ''), where: '', mandatory: true })).filter(d => d.doc);
+    }
+    return [];
+  }
+
+  async function pinDocsToLocker(scheme, docs, triggerBtn) {
+    const entry = {
+      scheme_slug: scheme.slug || scheme.id,
+      scheme_title: scheme.title,
+      apply_url: scheme.apply_url || '',
+      helpline: scheme.helpline || '',
+      pinned_at: new Date().toISOString(),
+      docs: docs.map(d => d.doc)
+    };
+
+    const existing = readJsonStorage(DOC_LOCKER_KEY, []);
+    const next = [entry, ...(Array.isArray(existing) ? existing.filter(x => x.scheme_slug !== entry.scheme_slug) : [])].slice(0, 40);
+    writeJsonStorage(DOC_LOCKER_KEY, next);
+
+    try {
+      if (window.CSOIdb && typeof window.CSOIdb.put === 'function') {
+        await window.CSOIdb.put('bookmarks', {
+          id: 'locker:' + entry.scheme_slug,
+          type: 'scheme_docs',
+          title: 'Docs Checklist: ' + scheme.title,
+          badge: docs.length + ' Documents',
+          url: '/schemes-benefits/?scheme=' + encodeURIComponent(entry.scheme_slug),
+          updatedAt: Date.now()
+        });
+      }
+    } catch (_) {}
+
+    try {
+      await fetch('/api/candidate/bookmarks', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookmark_type: 'schemes',
+          item_id: 'docs-' + String(scheme.slug || scheme.id || '').slice(0, 60),
+          title: 'Docs: ' + String(scheme.title || '').slice(0, 140),
+          url: '/schemes-benefits/?scheme=' + encodeURIComponent(entry.scheme_slug)
+        })
+      });
+    } catch (_) {}
+
+    if (triggerBtn) {
+      triggerBtn.textContent = '✓ Pinned to Dashboard Locker';
+      triggerBtn.disabled = true;
+      setTimeout(() => {
+        triggerBtn.textContent = '📌 Pin Required Docs to My Dashboard Locker';
+        triggerBtn.disabled = false;
+      }, 2600);
     }
   }
 
@@ -1128,6 +1365,96 @@
     a.rel = 'noopener noreferrer';
     a.setAttribute('aria-label', 'Share scheme on WhatsApp');
     return a;
+  }
+
+  function syncCompareUI() {
+    if (!compareBar || !compareSummary) return;
+    if (compareList.length === 0) {
+      compareBar.hidden = true;
+    } else {
+      compareBar.hidden = false;
+      compareSummary.textContent = `${compareList.length} of 3 schemes selected for comparison`;
+    }
+    if (liveSchemesGrid) {
+      liveSchemesGrid.querySelectorAll('.scheme-btn--compare').forEach(btn => {
+        const key = btn.dataset.schemeSlug;
+        const active = compareList.some(s => (s.slug || s.id) === key);
+        btn.classList.toggle('is-selected', active);
+        btn.textContent = active ? '✓ Comparing' : '+ Compare';
+        btn.setAttribute('aria-pressed', String(active));
+      });
+    }
+  }
+
+  function toggleCompareScheme(scheme) {
+    const key = scheme.slug || scheme.id;
+    const idx = compareList.findIndex(s => (s.slug || s.id) === key);
+    if (idx !== -1) {
+      compareList.splice(idx, 1);
+    } else {
+      if (compareList.length >= 3) compareList.shift();
+      compareList.push(scheme);
+    }
+    syncCompareUI();
+  }
+
+  function openCompareModal() {
+    if (!compareModal || !compareTableWrap || compareList.length === 0) return;
+    compareTableWrap.replaceChildren();
+    const table = el('table', 'scheme-compare-table');
+    const thead = el('thead');
+    const headRow = el('tr');
+    headRow.appendChild(el('th', '', 'Parameter'));
+    compareList.forEach(s => {
+      headRow.appendChild(el('th', '', (getActiveLang() === 'or' && s.title_or) ? s.title_or : s.title));
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = el('tbody');
+    const rows = [
+      ['Government Level', s => `${s.gov_level || 'Odisha'} (${s.category || 'Welfare'})`],
+      ['Financial / Key Benefit', s => (getActiveLang() === 'or' && s.benefit_summary_or) ? s.benefit_summary_or : (s.benefit_summary || 'See portal')],
+      ['Age Limit', s => (s.min_age != null || s.max_age != null) ? `${s.min_age != null ? s.min_age : 0}–${s.max_age != null ? s.max_age : 'No limit'} yrs` : 'All ages'],
+      ['Income Limit', s => s.max_income != null ? `≤ ₹${Number(s.max_income).toLocaleString('en-IN')}/yr` : 'Refer guidelines'],
+      ['Disbursement Mode', s => s.disbursement_mode || 'DBT / Portal Transfer'],
+      ['Application Window', s => s.application_status_label || 'Open Year-Round'],
+      ['Required Documents', s => `${getNormalizedDocs(s).length} core docs (${getNormalizedDocs(s).slice(0, 2).map(d => d.doc).join(', ')}…)`],
+      ['Official Helpline', s => s.helpline || 'See portal'],
+      ['Official Apply Link', s => s.apply_url || 'Check scheme details']
+    ];
+
+    rows.forEach(([label, fn]) => {
+      const tr = el('tr');
+      tr.appendChild(el('th', '', label));
+      compareList.forEach(s => {
+        const val = fn(s);
+        const td = el('td');
+        if (label === 'Official Apply Link' && s.apply_url && (!window.CSOPublicContent || window.CSOPublicContent.safeHref(s.apply_url))) {
+          const a = el('a', 'scheme-btn scheme-btn--primary', 'Apply Portal ↗');
+          a.href = s.apply_url;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer nofollow';
+          td.appendChild(a);
+        } else {
+          td.textContent = val;
+        }
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    compareTableWrap.appendChild(table);
+    compareModal.hidden = false;
+    document.body.classList.add('is-scheme-modal-open');
+  }
+
+  function closeCompareModal() {
+    if (!compareModal) return;
+    compareModal.hidden = true;
+    if (!modalOverlay || modalOverlay.hidden) {
+      document.body.classList.remove('is-scheme-modal-open');
+    }
   }
 
   function schemeToJsonLd(scheme) {
@@ -1163,7 +1490,9 @@
   function closeSchemeDetail(pushHistory) {
     if (!modalOverlay) return;
     modalOverlay.hidden = true;
-    document.body.classList.remove('is-scheme-modal-open');
+    if (!compareModal || compareModal.hidden) {
+      document.body.classList.remove('is-scheme-modal-open');
+    }
     if (pushHistory) {
       try {
         const nextUrl = new URL(window.location.href);
@@ -1183,7 +1512,10 @@
     if (modalMetaEl) modalMetaEl.replaceChildren();
     if (modalSummaryEl) { modalSummaryEl.hidden = true; modalSummaryEl.textContent = ''; }
     if (modalSpecsEl) modalSpecsEl.replaceChildren();
+    if (modalHelplineEl) { modalHelplineEl.hidden = true; modalHelplineEl.replaceChildren(); }
     if (modalDocsEl) { modalDocsEl.hidden = true; modalDocsEl.replaceChildren(); }
+    if (modalTimelineEl) { modalTimelineEl.hidden = true; modalTimelineEl.replaceChildren(); }
+    if (modalExamCtaEl) { modalExamCtaEl.hidden = true; modalExamCtaEl.replaceChildren(); }
     if (modalActionsEl) modalActionsEl.replaceChildren();
     if (modalBodyEl) modalBodyEl.replaceChildren();
 
@@ -1211,6 +1543,12 @@
       if (modalBadgesEl) {
         modalBadgesEl.appendChild(el('span', `live-badge ${scheme.gov_level === 'Central' ? 'live-badge--central' : ''}`, scheme.gov_level === 'Central' ? '🇮🇳 Central Govt' : '🟢 Odisha Govt'));
         if (scheme.category) modalBadgesEl.appendChild(el('span', 'live-badge', scheme.category));
+        if (scheme.application_status_label) {
+          modalBadgesEl.appendChild(el('span', `live-badge ${statusBadgeClass(scheme.application_status_label)}`, scheme.application_status_label));
+        }
+        if (scheme.verified_date) {
+          modalBadgesEl.appendChild(el('span', 'live-badge live-badge--verified', `✓ Verified ${scheme.verified_date}`));
+        }
         if (scheme.is_featured) modalBadgesEl.appendChild(el('span', 'live-badge live-badge--featured', '★ Flagship'));
       }
 
@@ -1230,8 +1568,8 @@
       if (modalSpecsEl) {
         const specs = [
           { label: 'Financial / Key Benefit', val: (isOdia && scheme.benefit_summary_or) ? scheme.benefit_summary_or : (scheme.benefit_summary || 'See portal guidelines') },
-          { label: 'Age Limit', val: (scheme.min_age != null || scheme.max_age != null) ? `${scheme.min_age != null ? scheme.min_age : 0} – ${scheme.max_age != null ? scheme.max_age : 'No upper'} yrs` : 'All eligible ages' },
-          { label: 'Income Ceiling', val: scheme.max_income != null ? `Up to ₹${Number(scheme.max_income).toLocaleString('en-IN')}/yr` : 'Refer scheme norms' }
+          { label: 'Age & Income Criteria', val: `${(scheme.min_age != null || scheme.max_age != null) ? `${scheme.min_age != null ? scheme.min_age : 0}–${scheme.max_age != null ? scheme.max_age : 'Any'} yrs` : 'All ages'} · ${scheme.max_income != null ? `≤ ₹${Number(scheme.max_income).toLocaleString('en-IN')}/yr` : 'Refer norms'}` },
+          { label: 'Disbursement Mode', val: scheme.disbursement_mode || 'DBT / Official Portal' }
         ];
         specs.forEach(sp => {
           const box = el('div', 'live-spec-box');
@@ -1241,12 +1579,85 @@
         });
       }
 
-      if (Array.isArray(scheme.documents_required) && scheme.documents_required.length && modalDocsEl) {
-        const h4 = el('h4', '', '📋 Required Documents Checklist');
-        const ul = el('ul');
-        scheme.documents_required.forEach(doc => ul.appendChild(el('li', '', doc)));
-        modalDocsEl.append(h4, ul);
+      if (modalHelplineEl && (scheme.helpline || scheme.verified_date)) {
+        const metaWrap = el('div', 'live-scheme-helpline__meta');
+        if (scheme.helpline) metaWrap.appendChild(el('strong', '', `📞 Helpline: ${scheme.helpline}`));
+        if (scheme.verified_date) metaWrap.appendChild(el('span', '', `Verified on Official Portal: ${scheme.verified_date}`));
+        modalHelplineEl.appendChild(metaWrap);
+        if (scheme.helpline) {
+          const copyBtn = el('button', 'scheme-btn', '📋 Copy Helpline');
+          copyBtn.type = 'button';
+          copyBtn.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(scheme.helpline);
+              copyBtn.textContent = '✓ Helpline Copied';
+            } catch (_) {
+              copyBtn.textContent = scheme.helpline;
+            }
+            setTimeout(() => { copyBtn.textContent = '📋 Copy Helpline'; }, 2200);
+          });
+          modalHelplineEl.appendChild(copyBtn);
+        }
+        modalHelplineEl.hidden = false;
+      }
+
+      const docsList = getNormalizedDocs(scheme);
+      if (docsList.length && modalDocsEl) {
+        const head = el('div', 'live-scheme-docs__head');
+        head.appendChild(el('h4', '', '📋 Interactive Required Documents Checklist'));
+        const pinBtn = el('button', 'scheme-btn scheme-btn--primary', '📌 Pin Required Docs to My Dashboard Locker');
+        pinBtn.type = 'button';
+        pinBtn.addEventListener('click', () => pinDocsToLocker(scheme, docsList, pinBtn));
+        head.appendChild(pinBtn);
+
+        const ul = el('ul', 'live-scheme-checklist');
+        const checkedMap = readJsonStorage(DOCS_CHECKED_KEY, {});
+        const schemeKey = scheme.slug || scheme.id;
+        docsList.forEach((item, idx) => {
+          const li = el('li');
+          const lbl = el('label', 'live-scheme-check-item');
+          const cb = el('input');
+          cb.type = 'checkbox';
+          const checkKey = `${schemeKey}:${idx}`;
+          cb.checked = Boolean(checkedMap[checkKey]);
+          cb.addEventListener('change', () => {
+            const latest = readJsonStorage(DOCS_CHECKED_KEY, {});
+            if (cb.checked) latest[checkKey] = true;
+            else delete latest[checkKey];
+            writeJsonStorage(DOCS_CHECKED_KEY, latest);
+          });
+          const textWrap = el('div');
+          textWrap.appendChild(el('strong', '', `${item.doc}${item.mandatory === false ? ' (If applicable)' : ''}`));
+          if (item.where) {
+            textWrap.appendChild(el('span', 'live-scheme-check-item__where', `Source: ${item.where}`));
+          }
+          lbl.append(cb, textWrap);
+          li.appendChild(lbl);
+          ul.appendChild(li);
+        });
+        modalDocsEl.append(head, ul);
         modalDocsEl.hidden = false;
+      }
+
+      const steps = Array.isArray(scheme.application_steps_json) ? scheme.application_steps_json : [];
+      if (steps.length && modalTimelineEl) {
+        modalTimelineEl.appendChild(el('h4', '', '🗓 Application Steps & Verification Flow'));
+        const ol = el('ol', 'live-scheme-steps');
+        steps.forEach(st => ol.appendChild(el('li', '', String(st))));
+        modalTimelineEl.appendChild(ol);
+        modalTimelineEl.hidden = false;
+      }
+
+      if (scheme.exam_slug && modalExamCtaEl) {
+        modalExamCtaEl.appendChild(el('span', '', `🎓 Preparing for ${scheme.exam_slug.toUpperCase()} scholarship or civil service test?`));
+        const examLinkWrap = el('div', 'live-scheme-detail__actions');
+        const resLink = el('a', 'scheme-btn scheme-btn--primary', 'Open Exam Syllabus & PYQs →');
+        resLink.href = `/resources/?exam=${encodeURIComponent(scheme.exam_slug)}`;
+        const mockLink = el('a', 'scheme-btn', 'Practice Mock Drill →');
+        mockLink.href = `/mock-tests/?exam=${encodeURIComponent(scheme.exam_slug)}`;
+        examLinkWrap.append(resLink, mockLink);
+        modalExamCtaEl.appendChild(examLinkWrap);
+        modalExamCtaEl.hidden = false;
       }
 
       const pc = window.CSOPublicContent;
@@ -1258,6 +1669,10 @@
         modalActionsEl.appendChild(applyA);
       }
       if (modalActionsEl) {
+        const printBtn = el('button', 'scheme-btn', '🖨 Print / Save Slip');
+        printBtn.type = 'button';
+        printBtn.addEventListener('click', () => window.print());
+        modalActionsEl.appendChild(printBtn);
         modalActionsEl.appendChild(makeSchemeWhatsAppBtn(scheme));
         modalActionsEl.appendChild(makeSchemeBookmarkBtn(scheme));
       }
@@ -1287,13 +1702,16 @@
     const badges = el('div', 'live-scheme-card__badges');
     badges.appendChild(el('span', `live-badge ${scheme.gov_level === 'Central' ? 'live-badge--central' : ''}`, scheme.gov_level === 'Central' ? '🇮🇳 Central' : '🟢 Odisha'));
     if (scheme.category) badges.appendChild(el('span', 'live-badge', scheme.category));
+    if (scheme.application_status_label) {
+      badges.appendChild(el('span', `live-badge ${statusBadgeClass(scheme.application_status_label)}`, scheme.application_status_label));
+    }
+    if (scheme.verified_date) {
+      badges.appendChild(el('span', 'live-badge live-badge--verified', `✓ ${scheme.verified_date}`));
+    }
     if (scheme.is_featured) badges.appendChild(el('span', 'live-badge live-badge--featured', '★ Flagship'));
     top.appendChild(badges);
 
     top.appendChild(el('h3', 'live-scheme-card__title', (isOdia && scheme.title_or) ? scheme.title_or : scheme.title));
-    if (scheme.title_or && !isOdia) {
-      top.appendChild(el('p', 'live-scheme-card__title-or', scheme.title_or));
-    }
     const summaryText = (isOdia && scheme.summary_or) ? scheme.summary_or : (scheme.summary || scheme.benefit_summary || '');
     if (summaryText) top.appendChild(el('p', 'live-scheme-card__summary', summaryText));
 
@@ -1322,6 +1740,19 @@
       applyA.rel = 'noopener noreferrer nofollow';
       footer.appendChild(applyA);
     }
+
+    const compareBtn = el('button', 'scheme-btn scheme-btn--compare', '+ Compare');
+    compareBtn.type = 'button';
+    compareBtn.dataset.schemeSlug = String(scheme.slug || scheme.id || '');
+    const isSelected = compareList.some(s => (s.slug || s.id) === compareBtn.dataset.schemeSlug);
+    if (isSelected) {
+      compareBtn.classList.add('is-selected');
+      compareBtn.textContent = '✓ Comparing';
+    }
+    compareBtn.setAttribute('aria-pressed', String(isSelected));
+    compareBtn.addEventListener('click', () => toggleCompareScheme(scheme));
+    footer.appendChild(compareBtn);
+
     footer.appendChild(makeSchemeWhatsAppBtn(scheme));
     footer.appendChild(makeSchemeBookmarkBtn(scheme));
     card.appendChild(footer);
@@ -1345,6 +1776,7 @@
     if (schemeFilterState.beneficiary) params.set('beneficiary', schemeFilterState.beneficiary);
     if (schemeFilterState.age) params.set('age', schemeFilterState.age);
     if (schemeFilterState.income) params.set('income', schemeFilterState.income);
+    if (schemeFilterState.status_label) params.set('status_label', schemeFilterState.status_label);
 
     try {
       const res = await fetch(`/api/content/schemes${params.toString() ? '?' + params.toString() : ''}`, { credentials: 'same-origin' });
@@ -1359,7 +1791,7 @@
 
       if (items.length === 0) {
         liveSchemesStatus.hidden = false;
-        liveSchemesStatus.textContent = 'No schemes match those exact age, income, or category filters. Try broadening or resetting your filters.';
+        liveSchemesStatus.textContent = 'No schemes match those exact age, income, or window filters. Try broadening or resetting your filters.';
         return;
       }
 
@@ -1367,10 +1799,11 @@
       const frag = document.createDocumentFragment();
       items.forEach(s => frag.appendChild(renderSchemeCard(s)));
       liveSchemesGrid.appendChild(frag);
+      syncCompareUI();
       injectSchemesJsonLd({
         '@context': 'https://schema.org',
         '@type': 'ItemList',
-        itemListElement: items.slice(0, 12).map((s, idx) => ({
+        itemListElement: items.slice(0, 15).map((s, idx) => ({
           '@type': 'ListItem',
           position: idx + 1,
           item: schemeToJsonLd(s)
@@ -1391,6 +1824,11 @@
       const isAct = (chip.dataset.group || '') === schemeFilterState.group;
       chip.classList.toggle('is-active', isAct);
       chip.setAttribute('aria-pressed', String(isAct));
+    });
+    statusPills.forEach(pill => {
+      const isAct = (pill.dataset.statusLabel || '') === schemeFilterState.status_label;
+      pill.classList.toggle('is-active', isAct);
+      pill.setAttribute('aria-pressed', String(isAct));
     });
   }
 
@@ -1431,9 +1869,17 @@
     });
   });
 
+  statusPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      schemeFilterState.status_label = pill.dataset.statusLabel || '';
+      syncChipUI();
+      loadLiveSchemes();
+    });
+  });
+
   if (eligResetBtn) {
     eligResetBtn.addEventListener('click', () => {
-      schemeFilterState = { q: '', gov: '', group: '', gender: '', beneficiary: '', age: '', income: '' };
+      schemeFilterState = { q: '', gov: '', group: '', gender: '', beneficiary: '', age: '', income: '', status_label: '' };
       if (schemeQEl) schemeQEl.value = '';
       if (schemeGovEl) schemeGovEl.value = '';
       if (schemeGroupEl) schemeGroupEl.value = '';
@@ -1446,17 +1892,37 @@
     });
   }
 
+  if (compareOpenBtn) compareOpenBtn.addEventListener('click', openCompareModal);
+  if (compareClearBtn) compareClearBtn.addEventListener('click', () => { compareList = []; syncCompareUI(); });
+  if (compareCloseBtn) compareCloseBtn.addEventListener('click', closeCompareModal);
+  if (comparePrintBtn) comparePrintBtn.addEventListener('click', () => window.print());
+  if (compareModal) {
+    compareModal.addEventListener('click', e => {
+      if (e.target === compareModal) closeCompareModal();
+    });
+  }
+
   if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => closeSchemeDetail(true));
   if (modalOverlay) {
     modalOverlay.addEventListener('click', e => {
       if (e.target === modalOverlay) closeSchemeDetail(true);
     });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && !modalOverlay.hidden) closeSchemeDetail(true);
+      if (e.key === 'Escape') {
+        if (compareModal && !compareModal.hidden) closeCompareModal();
+        else if (!modalOverlay.hidden) closeSchemeDetail(true);
+      }
     });
   }
 
-  window.addEventListener('cso:langchange', loadLiveSchemes);
+  window.addEventListener('cso:langchange', () => {
+    loadLiveSchemes();
+    if (sections.length) {
+      buildDashboard();
+      if (currentSection >= 0) renderExplorer();
+      else setActiveSidebar();
+    }
+  });
 
   loadLiveSchemes();
   try {

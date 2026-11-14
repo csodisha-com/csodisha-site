@@ -18,7 +18,8 @@ import {
   handleSchemesAdmin,
   handleFeedbackAdmin,
   handleFreshnessAudit,
-  handleAboutDirectoryAdmin
+  handleAboutDirectoryAdmin,
+  handleSchemesDirectoryTreeAdmin
 } from './_ecosystem.js';
 
 export async function handleAdminApi(request, env) {
@@ -109,6 +110,9 @@ export async function handleAdminApi(request, env) {
         break;
       case 'schemes':
         if (!sub) return await handleSchemesAdmin(request, env, actor, id);
+        break;
+      case 'schemes-directory':
+        if (!sub) return await handleSchemesDirectoryTreeAdmin(request, env, actor, id);
         break;
       case 'feedback':
         if (!sub) return await handleFeedbackAdmin(request, env, actor, id);
