@@ -12,8 +12,9 @@ import { HttpError, json, readJson, validationError } from './http.js';
 import { audit } from './rbac.js';
 import { cleanStr, slugify, SLUG_RE, likeEscape } from './validate.js';
 import { enrichJobsRecruitmentCategory01 } from './jobs-recruitment-cat01-enrichment.js';
+import { enrichCareerExplorerCategory02 } from './jobs-career-cat02-enrichment.js';
 
-export { enrichJobsRecruitmentCategory01 };
+export { enrichJobsRecruitmentCategory01, enrichCareerExplorerCategory02 };
 
 export const JOBS_DOMAINS = [
   'jobs-recruitment',
@@ -601,6 +602,12 @@ export async function ensureJobsDirectoryStudioSchema(db) {
     ['pst_pet_skill_norms', "TEXT NOT NULL DEFAULT ''"],
     ['documents_checklist', "TEXT NOT NULL DEFAULT ''"],
     ['application_steps', "TEXT NOT NULL DEFAULT ''"],
+    ['academic_pathways', "TEXT NOT NULL DEFAULT ''"],
+    ['premier_institutions', "TEXT NOT NULL DEFAULT ''"],
+    ['entrance_licensing', "TEXT NOT NULL DEFAULT ''"],
+    ['skills_certifications', "TEXT NOT NULL DEFAULT ''"],
+    ['salary_progression', "TEXT NOT NULL DEFAULT ''"],
+    ['career_ladder', "TEXT NOT NULL DEFAULT ''"],
     ['qualification_tag', "TEXT NOT NULL DEFAULT ''"],
     ['vacancies', "TEXT NOT NULL DEFAULT ''"],
     ['start_date', "TEXT NOT NULL DEFAULT ''"],
@@ -717,6 +724,7 @@ export async function ensureJobsDirectoryStudioSchema(db) {
 
   await bridgeLegacyJobsNodes(db, now);
   await enrichJobsRecruitmentCategory01(db, now);
+  await enrichCareerExplorerCategory02(db, now);
 
   _schemaReady.add(db);
 }
@@ -1274,10 +1282,11 @@ async function handleItems(request, env, actor, id, action) {
       (id, domain_slug, folder_id, title, title_or, slug, item_type, recruiting_body, conducting_body,
        exam_code, cadre_group, pay_matrix, age_limit_relaxation, qualification_odia_rule,
        selection_stages, pst_pet_skill_norms, documents_checklist, application_steps,
+       academic_pathways, premier_institutions, entrance_licensing, skills_certifications, salary_progression, career_ladder,
        qualification_tag, vacancies, start_date, deadline_date, exam_date,
        official_apply_url, official_portal_url, cover_image_url, cover_image_alt, attachments_json, links_json, tags_json, language, status, featured,
        summary, body_html, seo_title, seo_description, verified_by, verified_at, created_by, updated_by, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?)`)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?)`)
       .bind(
         itemId,
         domain,
@@ -1297,6 +1306,12 @@ async function handleItems(request, env, actor, id, action) {
         cleanStr(body.pst_pet_skill_norms, 400),
         cleanStr(body.documents_checklist, 500),
         cleanStr(body.application_steps, 500),
+        cleanStr(body.academic_pathways, 600),
+        cleanStr(body.premier_institutions, 600),
+        cleanStr(body.entrance_licensing, 500),
+        cleanStr(body.skills_certifications, 500),
+        cleanStr(body.salary_progression, 500),
+        cleanStr(body.career_ladder, 600),
         cleanStr(body.qualification_tag, 120),
         cleanStr(body.vacancies, 80),
         cleanStr(body.start_date, 40),
@@ -1386,6 +1401,7 @@ async function handleItems(request, env, actor, id, action) {
       SET folder_id = ?, title = ?, title_or = ?, slug = ?, item_type = ?, recruiting_body = ?, conducting_body = ?,
           exam_code = ?, cadre_group = ?, pay_matrix = ?, age_limit_relaxation = ?, qualification_odia_rule = ?,
           selection_stages = ?, pst_pet_skill_norms = ?, documents_checklist = ?, application_steps = ?,
+          academic_pathways = ?, premier_institutions = ?, entrance_licensing = ?, skills_certifications = ?, salary_progression = ?, career_ladder = ?,
           qualification_tag = ?, vacancies = ?,
           start_date = ?, deadline_date = ?, exam_date = ?, official_apply_url = ?, official_portal_url = ?, cover_image_url = ?, cover_image_alt = ?,
           attachments_json = ?, links_json = ?, tags_json = ?, language = ?, status = ?, featured = ?,
@@ -1408,6 +1424,12 @@ async function handleItems(request, env, actor, id, action) {
         body.pst_pet_skill_norms !== undefined ? cleanStr(body.pst_pet_skill_norms, 400) : (existing.pst_pet_skill_norms || ''),
         body.documents_checklist !== undefined ? cleanStr(body.documents_checklist, 500) : (existing.documents_checklist || ''),
         body.application_steps !== undefined ? cleanStr(body.application_steps, 500) : (existing.application_steps || ''),
+        body.academic_pathways !== undefined ? cleanStr(body.academic_pathways, 600) : (existing.academic_pathways || ''),
+        body.premier_institutions !== undefined ? cleanStr(body.premier_institutions, 600) : (existing.premier_institutions || ''),
+        body.entrance_licensing !== undefined ? cleanStr(body.entrance_licensing, 500) : (existing.entrance_licensing || ''),
+        body.skills_certifications !== undefined ? cleanStr(body.skills_certifications, 500) : (existing.skills_certifications || ''),
+        body.salary_progression !== undefined ? cleanStr(body.salary_progression, 500) : (existing.salary_progression || ''),
+        body.career_ladder !== undefined ? cleanStr(body.career_ladder, 600) : (existing.career_ladder || ''),
         body.qualification_tag !== undefined ? cleanStr(body.qualification_tag, 120) : existing.qualification_tag,
         body.vacancies !== undefined ? cleanStr(body.vacancies, 80) : existing.vacancies,
         body.start_date !== undefined ? cleanStr(body.start_date, 40) : existing.start_date,

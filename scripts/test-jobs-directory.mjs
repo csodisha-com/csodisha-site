@@ -5,6 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import {
   ensureJobsDirectoryStudioSchema,
   enrichJobsRecruitmentCategory01,
+  enrichCareerExplorerCategory02,
   handleJobsDirectoryStudio,
   handlePublicJobsOverviewApi,
   handlePublicJobsItemsApi,
@@ -535,6 +536,113 @@ async function main() {
   const jobsIndexHtml = fs.readFileSync(path.resolve('jobs/index.html'), 'utf8');
   assert.ok(!/\sstyle\s*=/i.test(jobsIndexHtml), 'jobs/index.html must have zero inline style="" attributes');
   assert.ok(jobsIndexHtml.includes('OSSC / OSSSC') && jobsIndexHtml.includes('Odisha PSUs'), 'jobs/index.html must include aligned Quick Jump pills');
+
+  // 13. Category #02 (v69) Exhaustive Enrichment across all 127 subcategories + 16 Career Roadmaps + Admin Sync + SSR
+  const cat02Raw = new DatabaseSync(':memory:');
+  cat02Raw.exec(`
+    CREATE TABLE audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, actor_user_id TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, metadata_json TEXT, ip_address TEXT, created_at INTEGER NOT NULL DEFAULT (unixepoch()));
+    CREATE TABLE jobs_directory_nodes (id INTEGER PRIMARY KEY, parent_id INTEGER, level INTEGER, code TEXT, title TEXT, title_or TEXT, description TEXT, description_or TEXT, group_slug TEXT, url TEXT, exam_slug TEXT, notes_json TEXT, tags TEXT, sort_order INTEGER, is_active INTEGER);
+  `);
+  const ceSection = dirJson.sections[1];
+  let ceSeq = 1;
+  const insCeNode = cat02Raw.prepare('INSERT INTO jobs_directory_nodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)');
+  insCeNode.run(1, null, 0, '02', ceSection.title, '', 'Career Explorer', '', 'career-explorer', '', '', '[]', '[]', 1);
+  function insertCeChildren(children, parentId, level) {
+    for (let i = 0; i < (children || []).length; i++) {
+      const ch = children[i];
+      ceSeq += 1;
+      const myId = ceSeq;
+      insCeNode.run(myId, parentId, level, ch.number || '', ch.title, '', '', '', 'career-explorer', '', '', '[]', '[]', i + 1);
+      insertCeChildren(ch.children, myId, level + 1);
+    }
+  }
+  insertCeChildren(ceSection.children, 1, 1);
+  assert.equal(ceSeq - 1, 127, 'directory.json should contain all 127 subcategories under Career Explorer');
+
+  function wrapCat02(sql, args = []) {
+    return {
+      async first() { return cat02Raw.prepare(sql).get(...args) || null; },
+      async all() { return { results: cat02Raw.prepare(sql).all(...args) }; },
+      async run() { const info = cat02Raw.prepare(sql).run(...args); return { success: true, meta: { changes: info.changes } }; }
+    };
+  }
+  const cat02Env = {
+    DB: {
+      prepare(sql) { return { bind(...a) { return wrapCat02(sql, a); }, ...wrapCat02(sql, []) }; },
+      async batch(stmts) { const out = []; for (const s of stmts) out.push(await s.run()); return out; }
+    }
+  };
+
+  await ensureJobsDirectoryStudioSchema(cat02Env.DB);
+
+  const ceTreeRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/tree?domain=career-explorer'),
+    cat02Env,
+    admin,
+    'tree'
+  );
+  assert.equal(ceTreeRes.status, 200);
+  const ceTreeData = await ceTreeRes.json();
+  assert.ok(ceTreeData.folders.length >= 127, `Expected >= 127 career-explorer folders, got ${ceTreeData.folders.length}`);
+  for (const f of ceTreeData.folders) {
+    assert.ok((f.description_en || '').length >= 140, `Career folder "${f.title}" description_en < 140 chars`);
+    assert.ok((f.description_or || '').length >= 140, `Career folder "${f.title}" description_or < 140 chars`);
+    assert.ok(Boolean(f.seo_title), `Career folder "${f.title}" missing seo_title`);
+    assert.ok(Boolean(f.seo_description), `Career folder "${f.title}" missing seo_description`);
+    assert.ok(Boolean(f.featured_badge), `Career folder "${f.title}" missing featured_badge`);
+    assert.ok(Boolean(f.verified_at), `Career folder "${f.title}" missing verified_at`);
+  }
+
+  const ceItemsRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/items?domain=career-explorer'),
+    cat02Env,
+    admin,
+    'items'
+  );
+  assert.equal(ceItemsRes.status, 200);
+  const ceItemsData = await ceItemsRes.json();
+  const roadmaps = ceItemsData.items.filter(it => Boolean(it.academic_pathways && it.premier_institutions && it.career_ladder));
+  assert.ok(roadmaps.length >= 16, `Expected >= 16 career roadmaps, got ${roadmaps.length}`);
+  for (const rm of roadmaps) {
+    assert.ok(Boolean(rm.title_or), `Roadmap "${rm.title}" missing title_or`);
+    assert.ok(Boolean(rm.entrance_licensing), `Roadmap "${rm.title}" missing entrance_licensing`);
+    assert.ok(Boolean(rm.skills_certifications), `Roadmap "${rm.title}" missing skills_certifications`);
+    assert.ok(Boolean(rm.salary_progression), `Roadmap "${rm.title}" missing salary_progression`);
+    assert.ok(Boolean(rm.verified_at), `Roadmap "${rm.title}" missing verified_at`);
+  }
+
+  // Verify Admin two-way sync PUT on Career Roadmap & preservation on re-enrichment
+  const sampleRm = roadmaps[0];
+  const putRmRes = await handleJobsDirectoryStudio(
+    makeReq('PUT', `https://csodisha.com/api/admin/jobs-directory/items/${sampleRm.id}`, {
+      salary_progression: 'Custom Admin Salary Progression Verified'
+    }),
+    cat02Env,
+    admin,
+    'items',
+    sampleRm.id
+  );
+  assert.equal(putRmRes.status, 200);
+  await enrichCareerExplorerCategory02(cat02Env.DB, new Date().toISOString());
+  const ceItemAfter = await (await handleJobsDirectoryStudio(
+    makeReq('GET', `https://csodisha.com/api/admin/jobs-directory/items/${sampleRm.id}`),
+    cat02Env,
+    admin,
+    'items',
+    sampleRm.id
+  )).json();
+  assert.equal(ceItemAfter.item.salary_progression, 'Custom Admin Salary Progression Verified');
+
+  // Verify SSR Career Roadmap page renders new fields with zero inline style="" attributes
+  const ssrCe = await handlePublicJobsRoute(
+    makeReq('GET', 'https://csodisha.com/jobs/item/software-engineering-ai-data-science-cloud-roadmap/'),
+    cat02Env,
+    new URL('https://csodisha.com/jobs/item/software-engineering-ai-data-science-cloud-roadmap/')
+  );
+  assert.equal(ssrCe.status, 200);
+  const ssrCeHtml = await ssrCe.text();
+  assert.ok(ssrCeHtml.includes('Academic Entry Pathways') && ssrCeHtml.includes('5-to-15 Yr Career Ladder'));
+  assert.ok(!/\sstyle\s*=/i.test(ssrCeHtml), 'SSR career roadmap page must have zero inline style="" attributes');
 
   console.log('ALL JOBS DIRECTORY STUDIO TESTS PASSED');
 }

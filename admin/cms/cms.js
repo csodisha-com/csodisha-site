@@ -13812,6 +13812,18 @@
       docsCheckTa.value = (editing && editing.documents_checklist) || '';
       var appStepsTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Step-by-Step OTR & Application Process...' });
       appStepsTa.value = (editing && editing.application_steps) || '';
+      var acadPathTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Academic Entry Pathways (After 10th / +2 / Graduation)...' });
+      acadPathTa.value = (editing && editing.academic_pathways) || '';
+      var premierInstTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Premier Odisha & National Institutions (NISER, IIT, NIT, AIIMS, OUAT, NLUO...)' });
+      premierInstTa.value = (editing && editing.premier_institutions) || '';
+      var entranceLicTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Key Entrance Exams & Licensing Bodies...' });
+      entranceLicTa.value = (editing && editing.entrance_licensing) || '';
+      var skillsCertTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Core Technical & Soft Skills / Certifications...' });
+      skillsCertTa.value = (editing && editing.skills_certifications) || '';
+      var salaryProgTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Entry to Senior Compensation (Odisha vs Metro vs Global)...' });
+      salaryProgTa.value = (editing && editing.salary_progression) || '';
+      var careerLadderTa = el('textarea', { class: 'textarea', rows: '2', placeholder: '5-to-15 Year Career Progression Ladder & Posting Realities...' });
+      careerLadderTa.value = (editing && editing.career_ladder) || '';
       var qualInp = el('input', { class: 'input', type: 'text', value: (editing && editing.qualification_tag) || '', placeholder: cfg.qualPlaceholder || 'e.g. Graduate (Any Stream)' });
       var vacInp = el('input', { class: 'input', type: 'text', value: (editing && editing.vacancies) || '', placeholder: 'e.g. 399 Posts' });
       var startInp = el('input', { class: 'input', type: 'text', value: (editing && editing.start_date) || '', placeholder: 'YYYY-MM-DD' });
@@ -14014,6 +14026,12 @@
             pst_pet_skill_norms: pstPetTa.value.trim(),
             documents_checklist: docsCheckTa.value.trim(),
             application_steps: appStepsTa.value.trim(),
+            academic_pathways: acadPathTa.value.trim(),
+            premier_institutions: premierInstTa.value.trim(),
+            entrance_licensing: entranceLicTa.value.trim(),
+            skills_certifications: skillsCertTa.value.trim(),
+            salary_progression: salaryProgTa.value.trim(),
+            career_ladder: careerLadderTa.value.trim(),
             qualification_tag: qualInp.value.trim(),
             vacancies: vacInp.value.trim(),
             start_date: startInp.value.trim(),
@@ -14084,6 +14102,14 @@
           el('div', { class: 'field' }, [el('label', { text: 'Mandatory Documents Checklist' }), docsCheckTa])
         ]),
         el('div', { class: 'field' }, [el('label', { text: 'Step-by-Step OTR & Application Process' }), appStepsTa]),
+        el('div', { class: 'cso-ops-grid-2' }, [
+          el('div', { class: 'field' }, [el('label', { text: 'Academic Entry Pathways (10th/+2/Grad)' }), acadPathTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Premier Odisha & National Institutions' }), premierInstTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Key Entrance Exams & Licensing' }), entranceLicTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Core Skills & Certifications' }), skillsCertTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Compensation & Pay Progression' }), salaryProgTa]),
+          el('div', { class: 'field' }, [el('label', { text: '5-to-15 Year Career Ladder' }), careerLadderTa])
+        ]),
         el('div', { class: 'cso-ops-grid-2' }, [
           el('div', { class: 'field' }, [el('label', { text: 'Cover Image URL (R2 max 5MB)' }), coverUrlInp, coverFileInp]),
           el('div', { class: 'field' }, [el('label', { text: 'Cover Image Alt' }), coverAltInp])

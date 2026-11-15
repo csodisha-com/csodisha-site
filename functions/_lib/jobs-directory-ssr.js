@@ -299,6 +299,15 @@ function renderItemReaderPage(data) {
         <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Age Limit &amp; Relaxations</div><div class="cso-ssr-fact-v">${escHtml(item.age_limit_relaxation || item.deadline_date || 'As per Govt norms')}</div></div>
         <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Verification Status</div><div class="cso-ssr-fact-v">${item.verified_at ? 'Verified (' + escHtml(item.verified_at.slice(0, 10)) + ')' : 'Editorial Review'}</div></div>
       </div>
+      ${(item.academic_pathways || item.premier_institutions || item.entrance_licensing || item.skills_certifications || item.salary_progression || item.career_ladder) ? `
+      <div class="cso-ssr-facts">
+        ${item.academic_pathways ? `<div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Academic Entry Pathways</div><div class="cso-ssr-fact-v">${escHtml(item.academic_pathways)}</div></div>` : ''}
+        ${item.premier_institutions ? `<div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Premier Institutions</div><div class="cso-ssr-fact-v">${escHtml(item.premier_institutions)}</div></div>` : ''}
+        ${item.entrance_licensing ? `<div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Entrance &amp; Licensing</div><div class="cso-ssr-fact-v">${escHtml(item.entrance_licensing)}</div></div>` : ''}
+        ${item.skills_certifications ? `<div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Core Skills &amp; Certs</div><div class="cso-ssr-fact-v">${escHtml(item.skills_certifications)}</div></div>` : ''}
+        ${item.salary_progression ? `<div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Compensation Progression</div><div class="cso-ssr-fact-v">${escHtml(item.salary_progression)}</div></div>` : ''}
+        ${item.career_ladder ? `<div class="cso-ssr-fact"><div class="cso-ssr-fact-k">5-to-15 Yr Career Ladder</div><div class="cso-ssr-fact-v">${escHtml(item.career_ladder)}</div></div>` : ''}
+      </div>` : ''}
       <div>${sanitizeRichBody(item.body_html) || `<p>${escHtml(item.summary || '')}</p>`}</div>
     </section>
 
