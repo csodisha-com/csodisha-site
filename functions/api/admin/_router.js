@@ -8,6 +8,7 @@ import { handleOpsSentinel } from '../../_lib/ops-sentinel.js';
 import { handleOpsHygiene } from '../../_lib/ops-hygiene.js';
 import { handleOpsContinuity } from '../../_lib/ops-continuity.js';
 import { handleSecurityRbac } from '../../_lib/security-rbac.js';
+import { handleSecurityEdge } from '../../_lib/security-edge.js';
 import { parsePaging, likeEscape } from '../../_lib/validate.js';
 import { handlePosts, POST_TYPES } from './_posts.js';
 import { handleMockTests, handleQuestion } from './_mock.js';
@@ -153,6 +154,9 @@ export async function handleAdminApi(request, env) {
       case 'incidents':
         return await handleIncidents(request, env, actor, id, sub);
       case 'security':
+        if (id === 'bot-deterrence' || id === 'audit-stream' || id === 'ip-geofence' || id === '2fa') {
+          return await handleSecurityEdge(request, env, actor, id, sub);
+        }
         return await handleSecurityRbac(request, env, actor, id, sub);
       case 'ops':
         if (id === 'snapshots') return await handleOpsSnapshots(request, env, actor, sub, extra);

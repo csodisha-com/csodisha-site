@@ -8,6 +8,8 @@ import {
   getEngineGuardsState,
   getSessionLifecycleState
 } from '../functions/_lib/security-rbac.js';
+import { handleSecurityEdge } from '../functions/_lib/security-edge.js';
+import { totpCode } from '../functions/_lib/admin-2fa.js';
 
 function makeD1() {
   const db = new DatabaseSync(':memory:');
@@ -388,4 +390,226 @@ assert.equal(afterSess.active_count, 1);
 assert.equal(afterSess.sessions[0].is_current, true);
 assert.equal((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'security.session.revoke'`).first()).n, 2);
 
-console.log('SECURITY & RBAC SUITE MODULES #1, #2 & #3 TESTS PASSED');
+// ============================================================================
+// 4. Module #4: Cloudflare Turnstile & Edge Bot Deterrence Rules
+// ============================================================================
+const botInit = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/bot-deterrence', { method: 'GET' }),
+  env, adminActor, 'bot-deterrence'
+)).json();
+assert.equal(botInit.ok, true);
+assert.equal(botInit.config.turnstile_mode, 'managed');
+assert.equal(botInit.env_bindings.turnstile_secret_key_configured, false);
+
+await assert.rejects(
+  () => handleSecurityEdge(
+    new Request('https://csodisha.com/api/admin/security/bot-deterrence', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login_rate_limit_max: 2 })
+    }),
+    env, adminActor, 'bot-deterrence'
+  ),
+  err => err.status === 400 && err.code === 'INVALID_RATE_LIMIT'
+);
+
+const botPut = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/bot-deterrence', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ turnstile_mode: 'non_interactive', login_rate_limit_max: 5, login_window_minutes: 10, block_empty_user_agent: true })
+  }),
+  env, adminActor, 'bot-deterrence'
+)).json();
+assert.equal(botPut.config.login_rate_limit_max, 5);
+
+const simChallenge = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/bot-deterrence/simulate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: '/api/auth/login', user_agent: 'Mozilla/5.0', attempts_in_window: 1, has_turnstile_token: false })
+  }),
+  env, adminActor, 'bot-deterrence', 'simulate'
+)).json();
+assert.equal(simChallenge.verdict, 'CHALLENGE');
+
+const simRateLimited = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/bot-deterrence/simulate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: '/api/auth/login', user_agent: 'Mozilla/5.0', attempts_in_window: 5, has_turnstile_token: true })
+  }),
+  env, adminActor, 'bot-deterrence', 'simulate'
+)).json();
+assert.equal(simRateLimited.verdict, 'RATE_LIMITED');
+
+const simPass = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/bot-deterrence/simulate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: '/api/auth/login', user_agent: 'Mozilla/5.0', attempts_in_window: 1, has_turnstile_token: true })
+  }),
+  env, adminActor, 'bot-deterrence', 'simulate'
+)).json();
+assert.equal(simPass.verdict, 'PASS');
+
+// ============================================================================
+// 5. Module #5: Visual Audit Log Timeline Explorer & DPDP Redaction
+// ============================================================================
+await env.DB.prepare(
+  `INSERT INTO audit_log (actor_user_id, action, target_type, target_id, metadata_json, ip_address)
+   VALUES (?, ?, ?, ?, ?, ?)`
+).bind(
+  'u-admin',
+  'auth.token_issue',
+  'session',
+  's-1',
+  JSON.stringify({ token: 'SENSITIVE_TOKEN_ABC', password_hash: 'SENSITIVE_HASH_XYZ', note: 'Timeline test event' }),
+  '203.0.113.10'
+).run();
+
+const streamAuth = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/audit-stream?category=auth&q=Timeline', { method: 'GET' }),
+  env, adminActor, 'audit-stream'
+)).json();
+assert.equal(streamAuth.ok, true);
+assert.equal(streamAuth.dpdp_redacted, true);
+assert.equal(streamAuth.total, 1);
+assert.equal(streamAuth.items[0].metadata.token, '[REDACTED_DPDP]');
+assert.equal(streamAuth.items[0].metadata.password_hash, '[REDACTED_DPDP]');
+assert.equal(streamAuth.items[0].metadata.note, 'Timeline test event');
+assert.ok(Array.isArray(streamAuth.velocity_buckets) && streamAuth.velocity_buckets.length === 4);
+
+// ============================================================================
+// 6. Module #6: IP Access Control Lists & Anti-Self-Lockout Geofencing
+// ============================================================================
+const callerReqHeaders = { 'CF-Connecting-IP': '203.0.113.42', 'CF-IPCountry': 'IN', 'Content-Type': 'application/json' };
+const ipInit = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/ip-geofence', { method: 'GET', headers: callerReqHeaders }),
+  env, adminActor, 'ip-geofence'
+)).json();
+assert.equal(ipInit.caller.ip, '203.0.113.42');
+assert.equal(ipInit.caller.country, 'IN');
+
+// Reject enforce mode if caller's own IP/country would be blocked (Anti-Self-Lockout Guard)
+await assert.rejects(
+  () => handleSecurityEdge(
+    new Request('https://csodisha.com/api/admin/security/ip-geofence', {
+      method: 'PUT',
+      headers: callerReqHeaders,
+      body: JSON.stringify({
+        enforcement_mode: 'enforce',
+        allowed_countries: ['US'],
+        allowlist_ips: [],
+        blocklist_ips: []
+      })
+    }),
+    env, adminActor, 'ip-geofence'
+  ),
+  err => err.status === 400 && err.code === 'SELF_LOCKOUT_PREVENTED'
+);
+
+// Reject invalid CIDR
+await assert.rejects(
+  () => handleSecurityEdge(
+    new Request('https://csodisha.com/api/admin/security/ip-geofence', {
+      method: 'PUT',
+      headers: callerReqHeaders,
+      body: JSON.stringify({
+        enforcement_mode: 'monitor_only',
+        allowlist_ips: ['999.999.1.1']
+      })
+    }),
+    env, adminActor, 'ip-geofence'
+  ),
+  err => err.status === 400 && err.code === 'INVALID_IP_OR_CIDR'
+);
+
+// Save enforce policy with caller's CIDR allowlisted & foreign country blocked
+const ipPut = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/ip-geofence', {
+    method: 'PUT',
+    headers: callerReqHeaders,
+    body: JSON.stringify({
+      enforcement_mode: 'enforce',
+      allowed_countries: ['IN'],
+      blocked_countries: ['KP'],
+      allowlist_ips: ['203.0.113.0/24'],
+      blocklist_ips: ['198.51.100.7']
+    })
+  }),
+  env, adminActor, 'ip-geofence'
+)).json();
+assert.equal(ipPut.policy.enforcement_mode, 'enforce');
+
+const ipSimAllow = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/ip-geofence/simulate', {
+    method: 'POST',
+    headers: callerReqHeaders,
+    body: JSON.stringify({ ip: '203.0.113.99', country: 'US' })
+  }),
+  env, adminActor, 'ip-geofence', 'simulate'
+)).json();
+assert.equal(ipSimAllow.decision, 'ALLOW');
+
+const ipSimBlock = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/ip-geofence/simulate', {
+    method: 'POST',
+    headers: callerReqHeaders,
+    body: JSON.stringify({ ip: '198.51.100.7', country: 'IN' })
+  }),
+  env, adminActor, 'ip-geofence', 'simulate'
+)).json();
+assert.equal(ipSimBlock.decision, 'BLOCKED');
+
+// ============================================================================
+// 7. Module #7: Two-Factor Authentication (2FA / TOTP) & RFC 6238 Sandbox
+// ============================================================================
+const twofaInit = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/2fa', { method: 'GET' }),
+  env, adminActor, '2fa'
+)).json();
+assert.equal(twofaInit.binding_posture, 'ENV_SECRET_UNSET_DEV_MODE');
+assert.equal(twofaInit.total_staff, 3);
+
+const twofaPut = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/2fa/policy', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enforcement: 'admins_only', grace_period_days: 14, allow_webauthn_passkeys: true })
+  }),
+  env, adminActor, '2fa', 'policy'
+)).json();
+assert.equal(twofaPut.policy.enforcement, 'admins_only');
+assert.equal(twofaPut.policy.grace_period_days, 14);
+
+const setupPreview = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/2fa/setup-preview', { method: 'POST' }),
+  env, adminActor, '2fa', 'setup-preview'
+)).json();
+assert.match(setupPreview.secret_base32, /^[A-Z2-7]{32}$/);
+assert.match(setupPreview.otpauth_uri, /^otpauth:\/\/totp\//);
+assert.equal(setupPreview.recovery_codes.length, 8);
+
+const liveCode = await totpCode(setupPreview.secret_base32);
+const verifyValid = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/2fa/verify-code', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ secret_base32: setupPreview.secret_base32, code: liveCode })
+  }),
+  env, adminActor, '2fa', 'verify-code'
+)).json();
+assert.equal(verifyValid.valid, true);
+
+const verifyInvalid = await (await handleSecurityEdge(
+  new Request('https://csodisha.com/api/admin/security/2fa/verify-code', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ secret_base32: setupPreview.secret_base32, code: '000000' })
+  }),
+  env, adminActor, '2fa', 'verify-code'
+)).json();
+assert.equal(verifyInvalid.valid, false);
+
+console.log('SECURITY & RBAC SUITE MODULES #1-#7 TESTS PASSED');

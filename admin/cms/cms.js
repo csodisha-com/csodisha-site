@@ -2166,6 +2166,697 @@
     return wrap;
   }
 
+  /* ---------- Folder 16: Module #4 Cloudflare Turnstile & Edge Bot Deterrence ---------- */
+  function securityTurnstileBotPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-sec-studio' }, [
+      el('h2', { text: 'Cloudflare Turnstile & Edge Bot Deterrence Rules' }),
+      el('p', { class: 'muted', text: 'Configure Turnstile challenge posture, brute-force rate-limit thresholds, and simulate edge bot requests.' })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var modeSel = el('select', { id: 'f-sec-ts-mode', class: 'cso-ops-policy-select', disabled: !isAdmin }, [
+      el('option', { value: 'managed', text: 'Managed (Adaptive Challenge)' }),
+      el('option', { value: 'non_interactive', text: 'Non-Interactive' }),
+      el('option', { value: 'invisible', text: 'Invisible' }),
+      el('option', { value: 'off', text: 'Off (Monitor Rate Limits Only)' })
+    ]);
+    var rlMaxInp = el('input', { type: 'number', id: 'f-sec-ts-rlmax', min: '3', max: '30', value: '10', disabled: !isAdmin });
+    var rlWinInp = el('input', { type: 'number', id: 'f-sec-ts-rlwin', min: '5', max: '60', value: '15', disabled: !isAdmin });
+    var loginCb = el('input', { type: 'checkbox', id: 'f-sec-ts-login', checked: true, disabled: !isAdmin });
+    var formCb = el('input', { type: 'checkbox', id: 'f-sec-ts-forms', checked: true, disabled: !isAdmin });
+    var searchCb = el('input', { type: 'checkbox', id: 'f-sec-ts-search', disabled: !isAdmin });
+    var uaCb = el('input', { type: 'checkbox', id: 'f-sec-ts-ua', checked: true, disabled: !isAdmin });
+    var saveBtn = el('button', { type: 'button', class: 'btn primary', disabled: !isAdmin, text: 'Save Bot Deterrence Rules' });
+
+    var policyBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Turnstile & Brute-Force Guardrails' }),
+        saveBtn
+      ]),
+      el('div', { class: 'cso-sec-policy-grid' }, [
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ts-mode', class: 'muted sm', text: 'Challenge Mode' }), modeSel]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ts-rlmax', class: 'muted sm', text: 'Login Rate-Limit Max (3–30)' }), rlMaxInp]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ts-rlwin', class: 'muted sm', text: 'Window (5–60 min)' }), rlWinInp])
+      ]),
+      el('div', { class: 'cso-sec-toggle-list' }, [
+        el('label', { class: 'cso-sec-toggle-item' }, [loginCb, el('span', { text: 'Protect Login & Auth Endpoints (/api/auth/*)' })]),
+        el('label', { class: 'cso-sec-toggle-item' }, [formCb, el('span', { text: 'Protect Public Feedback & Contact Forms' })]),
+        el('label', { class: 'cso-sec-toggle-item' }, [searchCb, el('span', { text: 'Protect Public Search & Directory APIs' })]),
+        el('label', { class: 'cso-sec-toggle-item' }, [uaCb, el('span', { text: 'Challenge Empty User-Agent Automated Requests' })])
+      ])
+    ]);
+
+    // Edge Request Challenge Simulator
+    var simPathInp = el('input', { type: 'text', id: 'f-sec-bot-path', value: '/api/auth/login', class: 'cso-ops-filter-input' });
+    var simUaInp = el('input', { type: 'text', id: 'f-sec-bot-ua', value: 'Mozilla/5.0', class: 'cso-ops-filter-input' });
+    var simAttInp = el('input', { type: 'number', id: 'f-sec-bot-att', min: '0', max: '100', value: '1' });
+    var simTokCb = el('input', { type: 'checkbox', id: 'f-sec-bot-tok' });
+    var simBtn = el('button', { type: 'button', class: 'btn primary sm', text: 'Simulate Edge Request' });
+    var simOut = el('div', { 'aria-live': 'polite' });
+
+    var simBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Edge Request Challenge Simulator' }),
+        simBtn
+      ]),
+      el('div', { class: 'cso-sec-policy-grid' }, [
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-bot-path', class: 'muted sm', text: 'Request Path' }), simPathInp]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-bot-ua', class: 'muted sm', text: 'User-Agent Header' }), simUaInp]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-bot-att', class: 'muted sm', text: 'Attempts in Window' }), simAttInp])
+      ]),
+      el('label', { class: 'cso-ops-inline-check' }, [simTokCb, el('span', { text: 'Request includes verified Turnstile token' })]),
+      simOut
+    ]);
+
+    var statusEl = el('div', { 'aria-live': 'polite' });
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(statusEl);
+    wrap.appendChild(policyBox);
+    wrap.appendChild(simBox);
+
+    var saveBusy = false;
+    var simBusy = false;
+
+    function renderKpis(d) {
+      clear(kpiStrip);
+      var cfg = d.config || {};
+      var eb = d.env_bindings || {};
+      var cards = [
+        ['Turnstile Binding Status', (eb.turnstile_site_key_configured && eb.turnstile_secret_key_configured) ? 'ACTIVE' : 'ENV UNSET', eb.turnstile_site_key_configured ? 'Site + Secret keys bound' : 'Set TURNSTILE_* bindings in CF Pages'],
+        ['Active Challenge Mode', String(cfg.turnstile_mode || 'managed').toUpperCase(), cfg.block_empty_user_agent ? 'Empty UA challenged' : 'Empty UA allowed'],
+        ['Login Rate-Limit', (cfg.login_rate_limit_max || 10) + ' / ' + (cfg.login_window_minutes || 15) + 'm', 'Max attempts per window'],
+        ['Blocked Rate Buckets', String(d.rate_limit_blocks || 0), 'D1 admin_rate_limits hits']
+      ];
+      cards.forEach(function (c) {
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('span', { class: 'muted sm', text: c[0] }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: c[1] }),
+          el('span', { class: 'muted sm', text: c[2] })
+        ]));
+      });
+    }
+
+    async function load() {
+      clear(statusEl);
+      try {
+        var d = await api('GET', 'security/bot-deterrence');
+        var cfg = d.config || {};
+        modeSel.value = cfg.turnstile_mode || 'managed';
+        rlMaxInp.value = String(cfg.login_rate_limit_max || 10);
+        rlWinInp.value = String(cfg.login_window_minutes || 15);
+        loginCb.checked = Boolean(cfg.protect_login);
+        formCb.checked = Boolean(cfg.protect_contact_forms);
+        searchCb.checked = Boolean(cfg.protect_public_search_api);
+        uaCb.checked = Boolean(cfg.block_empty_user_agent);
+        renderKpis(d);
+      } catch (e) {
+        statusEl.appendChild(el('div', { class: 'alert', text: e.message || 'Failed to load Turnstile policy' }));
+      }
+    }
+
+    saveBtn.addEventListener('click', async function () {
+      if (!isAdmin || saveBusy) return;
+      saveBusy = true;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+      try {
+        var res = await api('PUT', 'security/bot-deterrence', {
+          turnstile_mode: modeSel.value,
+          login_rate_limit_max: parseInt(rlMaxInp.value, 10),
+          login_window_minutes: parseInt(rlWinInp.value, 10),
+          protect_login: loginCb.checked,
+          protect_contact_forms: formCb.checked,
+          protect_public_search_api: searchCb.checked,
+          block_empty_user_agent: uaCb.checked
+        });
+        renderKpis(res);
+        toast('Turnstile & bot deterrence rules saved');
+      } catch (e) {
+        toast(e.message || 'Failed to save bot deterrence rules', true);
+      } finally {
+        saveBusy = false;
+        saveBtn.disabled = !isAdmin;
+        saveBtn.textContent = 'Save Bot Deterrence Rules';
+      }
+    });
+
+    simBtn.addEventListener('click', async function () {
+      if (simBusy) return;
+      simBusy = true;
+      simBtn.disabled = true;
+      clear(simOut);
+      try {
+        var res = await api('POST', 'security/bot-deterrence/simulate', {
+          path: simPathInp.value.trim(),
+          user_agent: simUaInp.value.trim(),
+          attempts_in_window: parseInt(simAttInp.value, 10) || 0,
+          has_turnstile_token: simTokCb.checked
+        });
+        var isPass = res.verdict === 'PASS';
+        simOut.appendChild(el('div', { class: 'cso-sec-sim-result ' + (isPass ? 'is-allow' : 'is-deny') }, [
+          el('div', { class: 'cso-ops-subhead' }, [
+            el('strong', { text: res.path + ' (' + res.reason_code + ')' }),
+            el('span', { class: 'badge ' + (isPass ? 'ok' : 'bad'), text: res.verdict })
+          ]),
+          el('span', { class: 'muted sm', text: res.rationale })
+        ]));
+      } catch (e) {
+        simOut.appendChild(el('div', { class: 'alert', text: e.message || 'Simulation failed' }));
+      } finally {
+        simBusy = false;
+        simBtn.disabled = false;
+      }
+    });
+
+    load();
+    return wrap;
+  }
+
+  /* ---------- Folder 16: Module #5 Visual Audit Log Timeline Explorer ---------- */
+  function securityAuditTimelinePanel() {
+    var wrap = el('div', { class: 'panel cso-sec-studio' }, [
+      el('h2', { text: 'Visual Audit Log Timeline Explorer & Event Streams' }),
+      el('p', { class: 'muted', text: 'Explore DPDP-redacted security, auth, content, and operations event streams with velocity telemetry and JSON export.' })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var velocityHost = el('div', { class: 'cso-ops-subbox' });
+
+    var state = { category: 'all', offset: 0, limit: 25, total: 0 };
+    var categories = [
+      ['all', 'All Events'],
+      ['auth', 'Auth'],
+      ['security', 'Security & RBAC'],
+      ['content', 'Content'],
+      ['ops', 'Ops & DR']
+    ];
+    var pillBar = el('div', { class: 'cso-sec-cat-pills' });
+    var pillButtons = {};
+    categories.forEach(function (c) {
+      var b = el('button', {
+        type: 'button',
+        class: 'btn sm cso-sec-cat-pill' + (c[0] === 'all' ? ' is-active' : ''),
+        text: c[1]
+      });
+      b.addEventListener('click', function () {
+        state.category = c[0];
+        state.offset = 0;
+        Object.keys(pillButtons).forEach(function (k) {
+          pillButtons[k].classList.toggle('is-active', k === state.category);
+        });
+        load();
+      });
+      pillButtons[c[0]] = b;
+      pillBar.appendChild(b);
+    });
+
+    var qInp = el('input', { type: 'search', id: 'f-sec-tl-q', class: 'cso-ops-filter-input', placeholder: 'Search action, target, metadata…' });
+    var actorInp = el('input', { type: 'text', id: 'f-sec-tl-actor', class: 'cso-ops-filter-input', placeholder: 'Actor email/id…' });
+    var hoursSel = el('select', { id: 'f-sec-tl-hrs', class: 'cso-ops-policy-select' }, [
+      el('option', { value: '0', text: 'All Time' }),
+      el('option', { value: '24', text: 'Last 24 Hours' }),
+      el('option', { value: '168', text: 'Last 7 Days' }),
+      el('option', { value: '720', text: 'Last 30 Days' })
+    ]);
+    var applyBtn = el('button', { type: 'button', class: 'btn primary sm', text: 'Filter Stream' });
+    var exportLink = el('a', { class: 'btn sm', href: '/api/admin/security/audit-stream?download=1&limit=100', download: 'cso-audit-stream.json', text: 'Export Filtered Stream (JSON)' });
+
+    var filterBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Stream Filters & Export' }),
+        exportLink
+      ]),
+      pillBar,
+      el('div', { class: 'cso-ops-filter-bar' }, [qInp, actorInp, hoursSel, applyBtn])
+    ]);
+
+    var listHost = el('div', { class: 'cso-sec-timeline-list' });
+    var pagerBar = el('div', { class: 'cso-ops-subhead' });
+
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(velocityHost);
+    wrap.appendChild(filterBox);
+    wrap.appendChild(listHost);
+    wrap.appendChild(pagerBar);
+
+    function syncExportUrl() {
+      var qs = 'download=1&category=' + encodeURIComponent(state.category) +
+        '&actor=' + encodeURIComponent(actorInp.value.trim()) +
+        '&hours=' + encodeURIComponent(hoursSel.value || '0') +
+        '&q=' + encodeURIComponent(qInp.value.trim()) + '&limit=100';
+      exportLink.setAttribute('href', '/api/admin/security/audit-stream?' + qs);
+    }
+
+    function renderKpis(d) {
+      clear(kpiStrip);
+      var cards = [
+        ['Total Audit Events', String(d.total_all_events || 0), (d.total || 0) + ' matching filter'],
+        ['High-Risk Security Events', String(d.high_risk_events || 0), 'security.*, auth.fail*, incident.*'],
+        ['Active Contributors', String(d.active_contributors || 0), 'Distinct actors logged'],
+        ['DPDP Redaction Shield', d.dpdp_redacted ? 'ENFORCED' : 'OFF', 'Secrets scrubbed to [REDACTED_DPDP]']
+      ];
+      cards.forEach(function (c) {
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('span', { class: 'muted sm', text: c[0] }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: c[1] }),
+          el('span', { class: 'muted sm', text: c[2] })
+        ]));
+      });
+    }
+
+    function renderVelocity(d) {
+      clear(velocityHost);
+      velocityHost.appendChild(el('strong', { text: 'Event Stream Velocity by Domain' }));
+      var grid = el('div', { class: 'cso-sec-vel-grid' });
+      (d.velocity_buckets || []).forEach(function (b) {
+        grid.appendChild(el('div', { class: 'cso-sec-vel-item' }, [
+          el('div', { class: 'cso-sec-vel-head' }, [
+            el('span', { text: b.label }),
+            el('strong', { class: 'cso-tabular', text: b.count + ' (' + b.pct + '%)' })
+          ]),
+          el('progress', { class: 'cso-sec-vel-prog', max: '100', value: String(b.pct || 0) })
+        ]));
+      });
+      velocityHost.appendChild(grid);
+    }
+
+    function renderTimeline(d) {
+      clear(listHost);
+      var items = d.items || [];
+      if (!items.length) {
+        listHost.appendChild(el('p', { class: 'muted sm', text: 'No audit events match the active filters.' }));
+        return;
+      }
+      items.forEach(function (it) {
+        var metaPre = el('pre', { class: 'cso-ops-diff-pre', text: JSON.stringify(it.metadata || {}, null, 2) });
+        listHost.appendChild(el('div', { class: 'cso-sec-tl-card' }, [
+          el('div', { class: 'cso-sec-tl-head' }, [
+            el('div', {}, [
+              el('span', { class: 'cso-ops-mono', text: it.action }),
+              el('span', { class: 'muted sm', text: ' · ' + (it.actor_email || 'system') + (it.ip_address ? ' (' + it.ip_address + ')' : '') })
+            ]),
+            el('span', { class: 'muted sm cso-tabular', text: String(it.created_at || '').slice(0, 19).replace('T', ' ') })
+          ]),
+          el('details', {}, [
+            el('summary', { class: 'muted sm', text: 'Inspect DPDP-redacted event metadata' + (it.target_type ? ' (' + it.target_type + ':' + (it.target_id || '') + ')' : '') }),
+            metaPre
+          ])
+        ]));
+      });
+    }
+
+    function renderPager(d) {
+      clear(pagerBar);
+      var total = Number(d.total || 0);
+      var prevBtn = el('button', { type: 'button', class: 'btn sm', disabled: state.offset <= 0, text: '← Newer' });
+      var nextBtn = el('button', { type: 'button', class: 'btn sm', disabled: state.offset + state.limit >= total, text: 'Older →' });
+      prevBtn.addEventListener('click', function () {
+        state.offset = Math.max(0, state.offset - state.limit);
+        load();
+      });
+      nextBtn.addEventListener('click', function () {
+        state.offset += state.limit;
+        load();
+      });
+      pagerBar.appendChild(el('span', { class: 'muted sm cso-tabular', text: 'Showing ' + (total ? state.offset + 1 : 0) + '–' + Math.min(total, state.offset + state.limit) + ' of ' + total }));
+      pagerBar.appendChild(el('div', { class: 'actions' }, [prevBtn, nextBtn]));
+    }
+
+    async function load() {
+      syncExportUrl();
+      try {
+        var qs = 'category=' + encodeURIComponent(state.category) +
+          '&actor=' + encodeURIComponent(actorInp.value.trim()) +
+          '&hours=' + encodeURIComponent(hoursSel.value || '0') +
+          '&q=' + encodeURIComponent(qInp.value.trim()) +
+          '&limit=' + state.limit + '&offset=' + state.offset;
+        var d = await api('GET', 'security/audit-stream?' + qs);
+        state.total = d.total || 0;
+        renderKpis(d);
+        renderVelocity(d);
+        renderTimeline(d);
+        renderPager(d);
+      } catch (e) {
+        clear(listHost);
+        listHost.appendChild(el('div', { class: 'alert', text: e.message || 'Failed to load audit stream' }));
+      }
+    }
+
+    applyBtn.addEventListener('click', function () { state.offset = 0; load(); });
+    load();
+    return wrap;
+  }
+
+  /* ---------- Folder 16: Module #6 IP Access Control Lists & Geofencing ---------- */
+  function securityIpGeofencePanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-sec-studio' }, [
+      el('h2', { text: 'IP Access Control Lists (Allowlist / Blocklist) & Geofencing' }),
+      el('p', { class: 'muted', text: 'Enforce IPv4/IPv6 CIDR access rules and ISO country geofences with built-in anti-self-lockout protection.' })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var modeSel = el('select', { id: 'f-sec-ip-mode', class: 'cso-ops-policy-select', disabled: !isAdmin }, [
+      el('option', { value: 'monitor_only', text: 'Monitor Only (Log Would-Block)' }),
+      el('option', { value: 'enforce', text: 'Enforce (Active Edge Block)' })
+    ]);
+    var addSelfBtn = el('button', { type: 'button', class: 'btn sm', disabled: !isAdmin, text: 'Add My Current IP to Allowlist' });
+    var saveBtn = el('button', { type: 'button', class: 'btn primary', disabled: !isAdmin, text: 'Save IP & Geofence Rules' });
+
+    var allowIpTa = el('textarea', { id: 'f-sec-ip-allow', class: 'cso-sec-acl-textarea', placeholder: 'One IP or CIDR per line (e.g. 203.0.113.0/24)', disabled: !isAdmin });
+    var blockIpTa = el('textarea', { id: 'f-sec-ip-block', class: 'cso-sec-acl-textarea', placeholder: 'One IP or CIDR per line', disabled: !isAdmin });
+    var allowCountryTa = el('textarea', { id: 'f-sec-ctry-allow', class: 'cso-sec-acl-textarea', placeholder: '2-letter ISO codes (e.g. IN)', disabled: !isAdmin });
+    var blockCountryTa = el('textarea', { id: 'f-sec-ctry-block', class: 'cso-sec-acl-textarea', placeholder: '2-letter ISO codes', disabled: !isAdmin });
+
+    var editorBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'ACL & Country Geofence Policy' }),
+        el('div', { class: 'actions' }, [addSelfBtn, saveBtn])
+      ]),
+      el('div', { class: 'cso-ops-restore-field' }, [
+        el('label', { for: 'f-sec-ip-mode', class: 'muted sm', text: 'Enforcement Mode' }),
+        modeSel
+      ]),
+      el('div', { class: 'cso-sec-acl-grid' }, [
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ip-allow', class: 'muted sm', text: 'Allowlisted IPs / CIDRs' }), allowIpTa]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ip-block', class: 'muted sm', text: 'Blocklisted IPs / CIDRs' }), blockIpTa]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ctry-allow', class: 'muted sm', text: 'Allowed Countries (ISO-2)' }), allowCountryTa]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ctry-block', class: 'muted sm', text: 'Blocked Countries (ISO-2)' }), blockCountryTa])
+      ])
+    ]);
+
+    // Simulator
+    var simIpInp = el('input', { type: 'text', id: 'f-sec-sim-ip', placeholder: '203.0.113.42', class: 'cso-ops-filter-input' });
+    var simCountryInp = el('input', { type: 'text', id: 'f-sec-sim-country', value: 'IN', maxlength: '2', class: 'cso-ops-policy-age' });
+    var simBtn = el('button', { type: 'button', class: 'btn primary sm', text: 'Simulate IP / Country Access' });
+    var simOut = el('div', { 'aria-live': 'polite' });
+
+    var simBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'IP / Country Access Simulator' }),
+        simBtn
+      ]),
+      el('div', { class: 'cso-ops-filter-bar' }, [
+        el('label', { for: 'f-sec-sim-ip', class: 'muted sm', text: 'IP:' }), simIpInp,
+        el('label', { for: 'f-sec-sim-country', class: 'muted sm', text: 'Country:' }), simCountryInp
+      ]),
+      simOut
+    ]);
+
+    var statusEl = el('div', { 'aria-live': 'polite' });
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(statusEl);
+    wrap.appendChild(editorBox);
+    wrap.appendChild(simBox);
+
+    var callerCtx = { ip: '', country: 'IN' };
+    var saveBusy = false;
+    var simBusy = false;
+
+    function splitLines(txt) {
+      return String(txt || '').split(/[\r\n,]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+    }
+
+    function renderKpis(d) {
+      clear(kpiStrip);
+      var p = d.policy || {};
+      var st = d.stats || {};
+      var c = d.caller || {};
+      var cards = [
+        ['Enforcement Posture', p.enforcement_mode === 'enforce' ? 'ENFORCE' : 'MONITOR ONLY', 'Anti-self-lockout active'],
+        ['Your Current Edge IP', c.ip || 'Unknown', 'Country: ' + (c.country || 'IN')],
+        ['Allowlisted IPs', String(st.allowlist_count || 0), (st.allowed_countries_count || 0) + ' allowed countries'],
+        ['Blocklisted Rules', String((st.blocklist_count || 0) + (st.blocked_countries_count || 0)), st.blocklist_count + ' IPs · ' + st.blocked_countries_count + ' countries']
+      ];
+      cards.forEach(function (card) {
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('span', { class: 'muted sm', text: card[0] }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: card[1] }),
+          el('span', { class: 'muted sm', text: card[2] })
+        ]));
+      });
+    }
+
+    async function load() {
+      clear(statusEl);
+      try {
+        var d = await api('GET', 'security/ip-geofence');
+        callerCtx = d.caller || { ip: '', country: 'IN' };
+        var p = d.policy || {};
+        modeSel.value = p.enforcement_mode || 'monitor_only';
+        allowIpTa.value = (p.allowlist_ips || []).join('\n');
+        blockIpTa.value = (p.blocklist_ips || []).join('\n');
+        allowCountryTa.value = (p.allowed_countries || []).join('\n');
+        blockCountryTa.value = (p.blocked_countries || []).join('\n');
+        if (!simIpInp.value && callerCtx.ip) simIpInp.value = callerCtx.ip;
+        renderKpis(d);
+      } catch (e) {
+        statusEl.appendChild(el('div', { class: 'alert', text: e.message || 'Failed to load IP & geofence policy' }));
+      }
+    }
+
+    addSelfBtn.addEventListener('click', function () {
+      if (!callerCtx.ip) return;
+      var lines = splitLines(allowIpTa.value);
+      if (lines.indexOf(callerCtx.ip) === -1) {
+        lines.push(callerCtx.ip);
+        allowIpTa.value = lines.join('\n');
+      }
+      toast('Added ' + callerCtx.ip + ' to allowlist draft (click Save to persist)');
+    });
+
+    saveBtn.addEventListener('click', async function () {
+      if (!isAdmin || saveBusy) return;
+      saveBusy = true;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+      try {
+        var res = await api('PUT', 'security/ip-geofence', {
+          enforcement_mode: modeSel.value,
+          allowlist_ips: splitLines(allowIpTa.value),
+          blocklist_ips: splitLines(blockIpTa.value),
+          allowed_countries: splitLines(allowCountryTa.value),
+          blocked_countries: splitLines(blockCountryTa.value)
+        });
+        renderKpis(res);
+        toast('IP ACL & geofencing rules saved');
+      } catch (e) {
+        toast(e.message || 'Failed to save IP & geofence rules', true);
+      } finally {
+        saveBusy = false;
+        saveBtn.disabled = !isAdmin;
+        saveBtn.textContent = 'Save IP & Geofence Rules';
+      }
+    });
+
+    simBtn.addEventListener('click', async function () {
+      if (simBusy) return;
+      simBusy = true;
+      simBtn.disabled = true;
+      clear(simOut);
+      try {
+        var res = await api('POST', 'security/ip-geofence/simulate', {
+          ip: simIpInp.value.trim(),
+          country: simCountryInp.value.trim().toUpperCase()
+        });
+        var isAllow = res.decision === 'ALLOW';
+        simOut.appendChild(el('div', { class: 'cso-sec-sim-result ' + (isAllow ? 'is-allow' : 'is-deny') }, [
+          el('div', { class: 'cso-ops-subhead' }, [
+            el('strong', { text: res.ip + ' (' + res.country + ') · ' + res.matching_rule }),
+            el('span', { class: 'badge ' + (isAllow ? 'ok' : 'bad'), text: res.decision })
+          ]),
+          el('span', { class: 'muted sm', text: res.rationale })
+        ]));
+      } catch (e) {
+        simOut.appendChild(el('div', { class: 'alert', text: e.message || 'Simulation failed' }));
+      } finally {
+        simBusy = false;
+        simBtn.disabled = false;
+      }
+    });
+
+    load();
+    return wrap;
+  }
+
+  /* ---------- Folder 16: Module #7 Two-Factor Authentication (2FA / TOTP) & Hardware Keys ---------- */
+  function securityTwoFactorStudioPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-sec-studio' }, [
+      el('h2', { text: 'Two-Factor Authentication (2FA / TOTP) & Hardware Keys' }),
+      el('p', { class: 'muted', text: 'Monitor Cloudflare env secret bindings, manage staff 2FA rollout policy, and test RFC 6238 TOTP enrollment.' })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var enfSel = el('select', { id: 'f-sec-2fa-enf', class: 'cso-ops-policy-select', disabled: !isAdmin }, [
+      el('option', { value: 'optional', text: 'Optional (Dev / Gradual Rollout)' }),
+      el('option', { value: 'admins_only', text: 'Super Admins Required' }),
+      el('option', { value: 'all_staff', text: 'All Staff Required' })
+    ]);
+    var graceInp = el('input', { type: 'number', id: 'f-sec-2fa-grace', min: '0', max: '90', value: '7', disabled: !isAdmin });
+    var webauthnCb = el('input', { type: 'checkbox', id: 'f-sec-2fa-wa', checked: true, disabled: !isAdmin });
+    var savePolicyBtn = el('button', { type: 'button', class: 'btn primary', disabled: !isAdmin, text: 'Save 2FA Rollout Policy' });
+
+    var policyBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: '2FA & WebAuthn Governance Policy' }),
+        savePolicyBtn
+      ]),
+      el('div', { class: 'cso-sec-policy-grid' }, [
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-2fa-enf', class: 'muted sm', text: 'Enforcement Scope' }), enfSel]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-2fa-grace', class: 'muted sm', text: 'Grace Period (0–90 days)' }), graceInp])
+      ]),
+      el('label', { class: 'cso-ops-inline-check' }, [webauthnCb, el('span', { text: 'Allow WebAuthn / FIDO2 Hardware Passkeys' })])
+    ]);
+
+    // TOTP Enrollment & RFC 6238 Sandbox
+    var genSecretBtn = el('button', { type: 'button', class: 'btn sm', disabled: !isAdmin, text: 'Generate TOTP Setup Preview' });
+    var secretInp = el('input', { type: 'text', id: 'f-sec-totp-secret', class: 'cso-ops-confirm-input', placeholder: 'Base32 Secret', disabled: !isAdmin });
+    var codeInp = el('input', { type: 'text', id: 'f-sec-totp-code', class: 'cso-ops-policy-age', placeholder: '6-digit code', maxlength: '6', disabled: !isAdmin });
+    var verifyBtn = el('button', { type: 'button', class: 'btn primary sm', disabled: !isAdmin, text: 'Verify RFC 6238 Code' });
+    var sandboxOut = el('div', { 'aria-live': 'polite' });
+    var verifyOut = el('div', { 'aria-live': 'polite' });
+
+    var sandboxBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'TOTP Enrollment & RFC 6238 Code Verifier Sandbox' }),
+        genSecretBtn
+      ]),
+      sandboxOut,
+      el('div', { class: 'cso-ops-filter-bar' }, [
+        secretInp,
+        codeInp,
+        verifyBtn
+      ]),
+      verifyOut
+    ]);
+
+    var staffHost = el('div', { class: 'cso-ops-vault-table-host' });
+    var statusEl = el('div', { 'aria-live': 'polite' });
+
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(statusEl);
+    wrap.appendChild(policyBox);
+    wrap.appendChild(sandboxBox);
+    wrap.appendChild(staffHost);
+    if (isAdmin) wrap.appendChild(securityBackupPanel());
+
+    var saveBusy = false;
+
+    function renderKpis(d) {
+      clear(kpiStrip);
+      var p = d.policy || {};
+      var ch = d.channels || {};
+      var cards = [
+        ['Runtime 2FA Binding', d.binding_posture === 'ENV_SECRET_ACTIVE' ? 'ACTIVE' : 'DEV MODE', ch.totp ? 'TOTP secret active' : 'ENV_SECRET_UNSET_DEV_MODE'],
+        ['Rollout Policy', String(p.enforcement || 'optional').toUpperCase(), (p.grace_period_days || 0) + 'd grace window'],
+        ['Enrolled Staff', (d.enrolled_count || 0) + ' / ' + (d.total_staff || 0), (d.backup_codes_remaining || 0) + ' backup codes unused'],
+        ['Hardware WebAuthn', p.allow_webauthn_passkeys ? 'ENABLED' : 'DISABLED', 'FIDO2 / Passkey readiness']
+      ];
+      cards.forEach(function (c) {
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('span', { class: 'muted sm', text: c[0] }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: c[1] }),
+          el('span', { class: 'muted sm', text: c[2] })
+        ]));
+      });
+    }
+
+    function renderStaffTable(d) {
+      clear(staffHost);
+      var list = d.staff_enrollment || [];
+      if (!list.length) return;
+      var tbl = el('table', { class: 'tbl' }, [
+        el('thead', {}, [el('tr', {}, [
+          el('th', { text: 'Staff Account' }),
+          el('th', { text: 'Role' }),
+          el('th', { text: 'TOTP Status' })
+        ])])
+      ]);
+      var tbody = el('tbody');
+      list.forEach(function (u) {
+        tbody.appendChild(el('tr', {}, [
+          el('td', { text: u.email }),
+          el('td', { text: u.role }),
+          el('td', {}, [el('span', { class: 'badge ' + (u.totp_enabled ? 'ok' : ''), text: u.totp_enabled ? 'Enrolled' : 'Pending' })])
+        ]));
+      });
+      tbl.appendChild(tbody);
+      staffHost.appendChild(tbl);
+    }
+
+    async function load() {
+      clear(statusEl);
+      try {
+        var d = await api('GET', 'security/2fa');
+        var p = d.policy || {};
+        enfSel.value = p.enforcement || 'optional';
+        graceInp.value = String(p.grace_period_days !== undefined ? p.grace_period_days : 7);
+        webauthnCb.checked = Boolean(p.allow_webauthn_passkeys);
+        renderKpis(d);
+        renderStaffTable(d);
+      } catch (e) {
+        statusEl.appendChild(el('div', { class: 'alert', text: e.message || 'Failed to load 2FA governance state' }));
+      }
+    }
+
+    savePolicyBtn.addEventListener('click', async function () {
+      if (!isAdmin || saveBusy) return;
+      saveBusy = true;
+      savePolicyBtn.disabled = true;
+      try {
+        var res = await api('PUT', 'security/2fa/policy', {
+          enforcement: enfSel.value,
+          grace_period_days: parseInt(graceInp.value, 10) || 0,
+          allow_webauthn_passkeys: webauthnCb.checked
+        });
+        renderKpis(res);
+        toast('2FA rollout policy updated');
+      } catch (e) {
+        toast(e.message || 'Failed to save 2FA policy', true);
+      } finally {
+        saveBusy = false;
+        savePolicyBtn.disabled = !isAdmin;
+      }
+    });
+
+    genSecretBtn.addEventListener('click', async function () {
+      if (!isAdmin) return;
+      clear(sandboxOut);
+      try {
+        var res = await api('POST', 'security/2fa/setup-preview', {});
+        secretInp.value = res.secret_base32;
+        sandboxOut.appendChild(el('div', { class: 'cso-sec-totp-uri', text: res.otpauth_uri }));
+        sandboxOut.appendChild(el('p', { class: 'muted sm', text: 'Preview recovery codes (not persisted to live D1): ' + (res.recovery_codes || []).join('  ') }));
+      } catch (e) {
+        sandboxOut.appendChild(el('div', { class: 'alert', text: e.message || 'Preview generation failed' }));
+      }
+    });
+
+    verifyBtn.addEventListener('click', async function () {
+      if (!isAdmin) return;
+      clear(verifyOut);
+      try {
+        var res = await api('POST', 'security/2fa/verify-code', {
+          secret_base32: secretInp.value.trim(),
+          code: codeInp.value.trim()
+        });
+        verifyOut.appendChild(el('div', { class: 'cso-sec-sim-result ' + (res.valid ? 'is-allow' : 'is-deny') }, [
+          el('div', { class: 'cso-ops-subhead' }, [
+            el('strong', { text: res.message }),
+            el('span', { class: 'badge ' + (res.valid ? 'ok' : 'bad'), text: res.valid ? 'VALID' : 'INVALID' })
+          ])
+        ]));
+      } catch (e) {
+        verifyOut.appendChild(el('div', { class: 'alert', text: e.message || 'Verification failed' }));
+      }
+    });
+
+    load();
+    return wrap;
+  }
+
   async function viewSecurity(sub) {
     if (sub === 'rbac') {
       setTitle('RBAC Hierarchy & Role Entitlements');
@@ -2180,6 +2871,26 @@
     if (sub === 'sessions') {
       setTitle('Session Lifecycle & Token Expiry');
       main.appendChild(securitySessionLifecyclePanel());
+      return;
+    }
+    if (sub === 'turnstile' || sub === 'bot') {
+      setTitle('Cloudflare Turnstile & Edge Bot Deterrence');
+      main.appendChild(securityTurnstileBotPanel());
+      return;
+    }
+    if (sub === 'audit-timeline' || sub === 'events') {
+      setTitle('Visual Audit Log Timeline Explorer');
+      main.appendChild(securityAuditTimelinePanel());
+      return;
+    }
+    if (sub === 'ip-acl' || sub === 'geofence') {
+      setTitle('IP Access Control Lists & Geofencing');
+      main.appendChild(securityIpGeofencePanel());
+      return;
+    }
+    if (sub === '2fa' || sub === 'totp') {
+      setTitle('Two-Factor Authentication & Hardware Keys');
+      main.appendChild(securityTwoFactorStudioPanel());
       return;
     }
     setTitle('Security');
