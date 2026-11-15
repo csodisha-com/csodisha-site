@@ -191,6 +191,30 @@ async function persistLastDrDrill(env, summary) {
   } catch {}
 }
 
+async function readLastRestore(env) {
+  try {
+    const row = await env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = 'ops_last_restore'`).first();
+    if (!row || !row.value_json) return null;
+    return JSON.parse(row.value_json);
+  } catch {
+    return null;
+  }
+}
+
+async function persistLastRestore(env, summary) {
+  try {
+    await ensureSiteSettingsTable(env);
+    await env.DB.prepare(
+      `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+       VALUES ('ops_last_restore', ?, ?, ?)
+       ON CONFLICT(key) DO UPDATE SET
+         value_json = excluded.value_json,
+         updated_by = excluded.updated_by,
+         updated_at = excluded.updated_at`
+    ).bind(JSON.stringify(summary), String(summary.actor || 'restore-engine'), summary.restored_at).run();
+  } catch {}
+}
+
 export async function previewPlatformSnapshotScope(env) {
   if (!env || !env.DB) return { discovered_tables: [], excluded_tables: [], scrubbed_columns: [] };
   const db = env.DB;
@@ -407,10 +431,11 @@ function presentSnapshotRow(row, r2Exists = true) {
 
 export async function listPlatformSnapshots(env) {
   await ensureOpsSnapshotsTable(env);
-  const [{ results }, preview, lastDrill] = await Promise.all([
+  const [{ results }, preview, lastDrill, lastRestore] = await Promise.all([
     env.DB.prepare('SELECT * FROM ops_snapshots ORDER BY created_at DESC, id DESC LIMIT 100').all(),
     previewPlatformSnapshotScope(env),
-    readLastDrDrill(env)
+    readLastDrDrill(env),
+    readLastRestore(env)
   ]);
   const rows = results || [];
 
@@ -440,7 +465,8 @@ export async function listPlatformSnapshots(env) {
     discovered_tables: preview.discovered_tables,
     excluded_tables: preview.excluded_tables,
     scrubbed_columns: preview.scrubbed_columns,
-    last_drill: lastDrill
+    last_drill: lastDrill,
+    last_restore: lastRestore
   };
 }
 
@@ -797,6 +823,7 @@ async function getLiveTableColumns(db, tableName) {
 
 // Module #3: Granular Point-in-Time Restore with Automatic Pre-Restore Safety Backup
 export async function restorePlatformSnapshot(env, id, { tables = [], mode = 'upsert', confirmPhrase = '', createdBy = 'staff' } = {}) {
+  const t0 = Date.now();
   if (String(confirmPhrase || '').trim() !== 'RESTORE') {
     throw new HttpError(400, 'CONFIRMATION_REQUIRED', 'Type RESTORE in the confirmation field to authorize state restoration');
   }
@@ -804,44 +831,91 @@ export async function restorePlatformSnapshot(env, id, { tables = [], mode = 'up
   if (!cleanMode) {
     throw new HttpError(400, 'INVALID_MODE', 'Restore mode must be "upsert" or "replace"');
   }
-
-  const targetTables = normalizeRequestedTables(tables);
-  if (!targetTables.length) {
-    throw new HttpError(400, 'EMPTY_TABLES', 'Select at least one allowlisted table to restore');
+  if (!Array.isArray(tables) || !tables.length) {
+    throw new HttpError(400, 'EMPTY_TABLES', 'Select at least one valid table to restore');
   }
 
   // 1. Re-verify target snapshot SHA-256 integrity BEFORE touching anything
   const { row, envelope, sha256 } = await loadVerifiedSnapshotEnvelope(env, id);
 
-  // 2. Mandatory Safety Guard: create an automatic pre-restore backup in R2 + D1
+  // 2. Dynamically validate requested tables against both snapshot payload and live sqlite_master
+  //    (never overwrite auth/session/credential tables or the ops_snapshots ledger)
+  const liveMasterSet = new Set(await discoverMasterTables(env.DB));
+  const snapshotTables = envelope.tables || {};
+  const seen = new Set();
+  const targetTables = [];
+  for (const raw of tables) {
+    const name = String(raw || '').trim();
+    if (
+      name &&
+      /^[a-zA-Z0-9_]+$/.test(name) &&
+      !EXCLUDED_SNAPSHOT_TABLES.has(name) &&
+      name !== 'ops_snapshots' &&
+      name !== 'users' &&
+      Object.prototype.hasOwnProperty.call(snapshotTables, name) &&
+      liveMasterSet.has(name) &&
+      !seen.has(name)
+    ) {
+      seen.add(name);
+      targetTables.push(name);
+    }
+  }
+  if (!targetTables.length) {
+    throw new HttpError(400, 'EMPTY_TABLES', 'No selected tables are eligible for restore in live D1');
+  }
+
+  // 3. Mandatory Safety Guard: create an automatic pre-restore backup in R2 + D1
   const safetySnapshot = await createPlatformSnapshot(env, {
-    label: `Auto-Pre-Restore Safety Backup (before ${row.label.slice(0, 50)})`,
+    label: `Auto-Pre-Restore Safety Backup (before ${row.label.slice(0, 40)})`,
     triggerType: 'pre_restore',
     createdBy
   });
 
-  // 3. Restore each selected allowlisted table using parameterized statements
+  // 4. Restore each selected table using column intersection & credential scrubbing
   const row_summary = {};
+  let totalRowsRestored = 0;
+
   for (const tbl of targetTables) {
-    const validCols = await getLiveTableColumns(env.DB, tbl);
-    if (!validCols.length) continue;
-    const validColSet = new Set(validCols);
-    const snapRows = Array.isArray(envelope.tables[tbl]) ? envelope.tables[tbl] : [];
+    const safeTbl = quoteIdent(tbl);
+    const schemaInfo = await getTableSchemaInfo(env.DB, tbl);
+    const safeLiveCols = schemaInfo.columns.filter(c => !SENSITIVE_SNAPSHOT_COLUMNS.has(c.toLowerCase()));
+    if (!safeLiveCols.length) {
+      row_summary[tbl] = {
+        mode: cleanMode,
+        restored_rows: 0,
+        rows_restored: 0,
+        columns_skipped: []
+      };
+      continue;
+    }
+
+    const safeLiveColSet = new Set(safeLiveCols);
+    const snapRows = Array.isArray(snapshotTables[tbl]) ? snapshotTables[tbl] : [];
+    const skippedColsSet = new Set();
 
     const stmts = [];
     if (cleanMode === 'replace') {
-      stmts.push(env.DB.prepare(`DELETE FROM ${tbl}`));
+      stmts.push(env.DB.prepare(`DELETE FROM ${safeTbl}`));
     }
 
     let restoredCount = 0;
     for (const sr of snapRows) {
       if (!sr || typeof sr !== 'object') continue;
-      const cols = Object.keys(sr).filter(c => validColSet.has(c) && /^[a-zA-Z0-9_]+$/.test(c));
+      const cols = [];
+      for (const c of Object.keys(sr)) {
+        if (!/^[a-zA-Z0-9_]+$/.test(c)) continue;
+        if (SENSITIVE_SNAPSHOT_COLUMNS.has(c.toLowerCase()) || !safeLiveColSet.has(c)) {
+          skippedColsSet.add(c);
+        } else {
+          cols.push(c);
+        }
+      }
       if (!cols.length) continue;
+      const quotedCols = cols.map(quoteIdent).join(', ');
       const placeholders = cols.map(() => '?').join(', ');
       const vals = cols.map(c => (sr[c] === undefined ? null : sr[c]));
       stmts.push(
-        env.DB.prepare(`INSERT OR REPLACE INTO ${tbl} (${cols.join(', ')}) VALUES (${placeholders})`).bind(...vals)
+        env.DB.prepare(`INSERT OR REPLACE INTO ${safeTbl} (${quotedCols}) VALUES (${placeholders})`).bind(...vals)
       );
       restoredCount++;
     }
@@ -854,11 +928,30 @@ export async function restorePlatformSnapshot(env, id, { tables = [], mode = 'up
       }
     }
 
+    totalRowsRestored += restoredCount;
     row_summary[tbl] = {
       mode: cleanMode,
-      restored_rows: restoredCount
+      restored_rows: restoredCount,
+      rows_restored: restoredCount,
+      columns_skipped: Array.from(skippedColsSet).sort()
     };
   }
+
+  const latencyMs = Math.max(1, Date.now() - t0);
+  const restoredAt = new Date().toISOString();
+  const lastRestoreSummary = {
+    restored_at: restoredAt,
+    snapshot_id: row.id,
+    snapshot_label: row.label,
+    mode: cleanMode,
+    safety_snapshot_id: safetySnapshot.id,
+    tables_restored: targetTables.length,
+    total_rows_restored: totalRowsRestored,
+    latency_ms: latencyMs,
+    actor: createdBy,
+    status: 'SUCCESS'
+  };
+  await persistLastRestore(env, lastRestoreSummary);
 
   return {
     ok: true,
@@ -870,9 +963,13 @@ export async function restorePlatformSnapshot(env, id, { tables = [], mode = 'up
     safety_snapshot_r2_key: safetySnapshot.r2_key,
     restored_tables: targetTables,
     row_summary,
-    restored_at: new Date().toISOString()
+    latency_ms: latencyMs,
+    restored_at: restoredAt,
+    last_restore: lastRestoreSummary
   };
 }
+
+export const executeGranularRestore = restorePlatformSnapshot;
 
 export async function renamePlatformSnapshot(env, id, newLabel) {
   if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
@@ -1000,16 +1097,20 @@ export async function handleOpsSnapshots(request, env, actor, subId, action) {
   if (action === 'restore' && method === 'POST') {
     if (actor.role !== 'admin') throw new HttpError(403, 'FORBIDDEN', 'Only administrators can execute point-in-time state restores');
     const body = await readJson(request, 20000);
+    const confirmPhrase = body && (body.confirm_phrase !== undefined ? body.confirm_phrase : body.confirm);
     const result = await restorePlatformSnapshot(env, subId, {
       tables: body && body.tables,
       mode: body && body.mode,
-      confirmPhrase: body && body.confirm_phrase,
+      confirmPhrase,
       createdBy: actor.email || actor.userId
     });
-    await audit(env, request, actor, 'ops.dr.restore', 'ops_snapshot', subId, {
+    await audit(env, request, actor, 'ops.restore.execute', 'ops_snapshot', subId, {
+      actor: actor.email || actor.userId,
+      snapshot_id: subId,
       mode: result.mode,
       safety_snapshot_id: result.safety_snapshot_id,
       restored_tables: result.restored_tables,
+      latency_ms: result.latency_ms,
       row_summary: result.row_summary
     });
     return json(result);

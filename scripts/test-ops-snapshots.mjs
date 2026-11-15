@@ -14,6 +14,7 @@ import {
   deletePlatformSnapshot,
   runDisasterRecoveryDrill,
   restorePlatformSnapshot,
+  executeGranularRestore,
   handleOpsSnapshots
 } from '../functions/_lib/ops-snapshots.js';
 
@@ -347,5 +348,56 @@ assert.equal(driftDrill.readiness, 'WARN', 'schema drift must set readiness to W
 assert.equal(driftDrill.schema_drift_warnings.length, 2, 'must report both column drift and dropped table warnings');
 assert.equal(driftDrill.table_diffs.custom_exam_notes.schema_status, 'DRIFT');
 assert.equal(driftDrill.table_diffs.resources.schema_status, 'DRIFT');
+
+// 12. Module #3 executeGranularRestore: dynamic table restore, column intersection,
+//     credential scrubbing, pre_restore safety backup & ops_last_restore telemetry
+const restoreEnv = { DB: makeD1(), MEDIA: makeR2() };
+// Add an extra column in live D1 before snapshot, then drop/recreate table without it after snapshot
+restoreEnv.DB.db.exec(`ALTER TABLE custom_exam_notes ADD COLUMN legacy_col TEXT;`);
+await restoreEnv.DB.prepare(`UPDATE custom_exam_notes SET legacy_col = 'old_val' WHERE id = 'note-1'`).run();
+
+const rSnap = await createPlatformSnapshot(restoreEnv, {
+  label: 'Restore Schema Align Baseline',
+  scope: 'all',
+  triggerType: 'manual',
+  createdBy: 'admin@csodisha.com'
+});
+
+// Simulate schema evolution: live D1 no longer has legacy_col, and note-1 was deleted
+restoreEnv.DB.db.exec(`
+  DROP TABLE custom_exam_notes;
+  CREATE TABLE custom_exam_notes (id TEXT PRIMARY KEY, note TEXT);
+`);
+
+const granRes = await executeGranularRestore(restoreEnv, rSnap.id, {
+  tables: ['custom_exam_notes'],
+  mode: 'upsert',
+  confirmPhrase: 'RESTORE',
+  createdBy: 'admin@csodisha.com'
+});
+assert.equal(granRes.ok, true);
+assert.ok(granRes.safety_snapshot_id, 'must create automatic pre_restore safety backup');
+assert.equal(granRes.row_summary.custom_exam_notes.rows_restored, 1, 'dynamically discovered custom_exam_notes must restore');
+assert.ok(granRes.row_summary.custom_exam_notes.columns_skipped.includes('legacy_col'), 'obsolete snapshot column must be gracefully skipped');
+
+const restoredNote = await restoreEnv.DB.prepare(`SELECT note FROM custom_exam_notes WHERE id = 'note-1'`).first();
+assert.equal(restoredNote.note, 'Dynamically discovered custom table');
+
+// Verify users & credential tables remain protected from restore
+await assert.rejects(
+  () => executeGranularRestore(restoreEnv, rSnap.id, { tables: ['users'], mode: 'upsert', confirmPhrase: 'RESTORE' }),
+  err => err && err.code === 'EMPTY_TABLES',
+  'users table must never be overwritten by restore'
+);
+
+// Verify ops_last_restore telemetry persisted in site_settings & returned by listPlatformSnapshots
+const storedRestoreRow = await restoreEnv.DB.prepare(`SELECT value_json FROM site_settings WHERE key = 'ops_last_restore'`).first();
+assert.ok(storedRestoreRow && storedRestoreRow.value_json, 'ops_last_restore must be persisted in site_settings');
+const parsedLastRestore = JSON.parse(storedRestoreRow.value_json);
+assert.equal(parsedLastRestore.snapshot_id, rSnap.id);
+assert.equal(parsedLastRestore.safety_snapshot_id, granRes.safety_snapshot_id);
+assert.equal(parsedLastRestore.status, 'SUCCESS');
+const listedWithRestore = await listPlatformSnapshots(restoreEnv);
+assert.ok(listedWithRestore.last_restore && listedWithRestore.last_restore.safety_snapshot_id === granRes.safety_snapshot_id);
 
 console.log('OPS SNAPSHOT, DR DRILL & GRANULAR RESTORE TESTS PASSED');

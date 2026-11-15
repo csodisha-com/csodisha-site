@@ -2060,8 +2060,11 @@
     }));
 
     var lastDrillStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-last-drill-strip', 'aria-live': 'polite' });
+    var lastRestoreStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-last-drill-strip', 'aria-live': 'polite' });
     if (!isRestoreFocus) {
       wrap.appendChild(lastDrillStrip);
+    } else {
+      wrap.appendChild(lastRestoreStrip);
     }
 
     function renderLastDrillBanner(lastDrill) {
@@ -2093,6 +2096,51 @@
       ]));
     }
 
+    function renderLastRestoreBanner(lastRestore) {
+      if (!isRestoreFocus) return;
+      clear(lastRestoreStrip);
+      var hasRestore = Boolean(lastRestore && lastRestore.restored_at);
+      var safetyId = hasRestore ? lastRestore.safety_snapshot_id : '';
+      var undoBtn = (hasRestore && safetyId)
+        ? el('button', {
+            type: 'button',
+            class: 'btn sm',
+            text: 'Load Safety Backup to Undo',
+            onclick: function () {
+              if (snapMetaMap[safetyId]) {
+                snapSel.value = safetyId;
+                updateShaBadge();
+                toast('Loaded pre-restore safety backup (' + safetyId.slice(0, 8) + '…)');
+              } else {
+                populateSnapshots(safetyId);
+              }
+            }
+          })
+        : null;
+
+      lastRestoreStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Last Restore Timestamp' }),
+        el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: hasRestore ? fmtDate(lastRestore.restored_at) : 'Never restored' })
+      ]));
+      lastRestoreStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Restored Snapshot & Mode' }),
+        el('div', { class: 'cso-ops-telemetry-val', text: hasRestore ? ((lastRestore.snapshot_label || lastRestore.snapshot_id) + ' (' + String(lastRestore.mode || 'upsert').toUpperCase() + ')') : '—' })
+      ]));
+      lastRestoreStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Auto-Safety Backup ID' }),
+        el('div', { class: 'cso-ops-telemetry-val' }, [
+          el('code', { text: safetyId ? (safetyId.slice(0, 12) + '…') : '—' }),
+          undoBtn
+        ])
+      ]));
+      lastRestoreStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Restore Status' }),
+        el('div', { class: 'cso-ops-telemetry-val' }, [
+          el('span', { class: 'badge ' + (hasRestore ? 'published' : 'draft'), text: hasRestore ? (lastRestore.status || 'SUCCESS') : 'Not Yet Restored' })
+        ])
+      ]));
+    }
+
     var snapSel = el('select', { id: 'f-ops-drill-snap', class: 'cso-ops-snap-select', 'aria-label': 'Select target R2 snapshot' });
     var shaBadge = el('span', { class: 'badge published', text: 'SHA-256 Ready' });
     var reloadBtn = el('button', { type: 'button', class: 'btn sm', text: 'Reload List' });
@@ -2113,8 +2161,10 @@
       clear(checksGrid);
       checkMap = {};
       var counts = (snap && snap.row_counts) || {};
-      var keys = Object.keys(counts).sort();
-      if (!keys.length || isRestoreFocus) {
+      var keys = Object.keys(counts).filter(function (k) {
+        return !isRestoreFocus || (k !== 'ops_snapshots' && k !== 'users');
+      }).sort();
+      if (!keys.length) {
         keys = DR_RESTORABLE_TABLES.map(function (p) { return p[0]; });
       }
       keys.forEach(function (tbl) {
@@ -2173,8 +2223,10 @@
     });
     var drillOut = el('div', { class: 'cso-ops-drill-output' });
 
-    wrap.appendChild(el('div', { class: 'actions cso-ops-drill-actions' }, [drillBtn]));
-    wrap.appendChild(drillOut);
+    if (!isRestoreFocus) {
+      wrap.appendChild(el('div', { class: 'actions cso-ops-drill-actions' }, [drillBtn]));
+      wrap.appendChild(drillOut);
+    }
 
     var isRunningDrill = false;
     drillBtn.addEventListener('click', async function () {
@@ -2259,83 +2311,200 @@
       }
     });
 
-    if (isRestoreFocus && me && me.role === 'admin') {
-      var restoreBox = el('div', { class: 'cso-ops-restore-box' });
-      restoreBox.appendChild(el('h3', { text: 'Granular Point-in-Time Restore Engine' }));
-      restoreBox.appendChild(el('p', {
-        class: 'hint',
-        text: 'Safety Guard: Before modifying any live D1 table, the engine automatically archives an "Auto-Pre-Restore Safety Backup" snapshot to R2 so any restore is immediately reversible.'
-      }));
+    var restoreOut = el('div', { class: 'cso-ops-restore-output' });
+    if (isRestoreFocus) {
+      if (me && me.role === 'admin') {
+        var restoreBox = el('div', { class: 'cso-ops-restore-box' });
+        restoreBox.appendChild(el('h3', { text: 'Granular Point-in-Time Restore Engine' }));
+        restoreBox.appendChild(el('p', {
+          class: 'hint',
+          text: 'Safety Guard: Before modifying any live D1 table, the engine automatically archives an "Auto-Pre-Restore Safety Backup" snapshot to R2 and scrubs credential columns (password_hash, salt, code_hash, totp_secret).'
+        }));
 
-      var modeSel = el('select', { id: 'f-ops-restore-mode', class: 'cso-ops-mode-select' }, [
-        el('option', { value: 'upsert', text: 'Upsert / Merge (INSERT OR REPLACE — preserves newer live-only rows)' }),
-        el('option', { value: 'replace', text: 'Full Table Replace (DELETE + INSERT — exact point-in-time table state)' })
-      ]);
-      var confirmInp = el('input', {
-        type: 'text',
-        id: 'f-ops-restore-confirm',
-        class: 'cso-ops-confirm-input',
-        placeholder: 'Type RESTORE to confirm',
-        autocomplete: 'off',
-        spellcheck: 'false'
-      });
-      var restoreBtn = el('button', {
-        type: 'button',
-        class: 'btn danger',
-        text: 'Execute Granular Restore'
-      });
-      var restoreOut = el('div', { class: 'cso-ops-restore-output' });
+        var modeSel = el('select', { id: 'f-ops-restore-mode', class: 'cso-ops-mode-select' }, [
+          el('option', { value: 'upsert', text: 'Upsert / Merge (INSERT OR REPLACE — preserves newer live-only rows)' }),
+          el('option', { value: 'replace', text: 'Full Table Replace (DELETE + INSERT — exact point-in-time table state)' })
+        ]);
+        var replaceWarn = el('div', {
+          class: 'alert cso-ops-replace-warn',
+          role: 'alert',
+          hidden: true,
+          text: 'Warning: Full Table Replace will DELETE all live-only rows in the selected tables after archiving an automatic R2 pre-restore safety snapshot.'
+        });
+        modeSel.addEventListener('change', function () {
+          replaceWarn.hidden = modeSel.value !== 'replace';
+        });
 
-      restoreBox.appendChild(el('div', { class: 'cso-ops-restore-controls' }, [
-        el('div', { class: 'cso-ops-restore-field' }, [
-          el('label', { for: 'f-ops-restore-mode', text: 'Restore Mode' }),
-          modeSel
-        ]),
-        el('div', { class: 'cso-ops-restore-field' }, [
-          el('label', { for: 'f-ops-restore-confirm', text: 'Safety Confirmation (type RESTORE)' }),
-          confirmInp
-        ]),
-        restoreBtn
-      ]));
-      restoreBox.appendChild(restoreOut);
-      wrap.appendChild(restoreBox);
+        var confirmInp = el('input', {
+          type: 'text',
+          id: 'f-ops-restore-confirm',
+          class: 'cso-ops-confirm-input',
+          placeholder: 'Type RESTORE to confirm',
+          autocomplete: 'off',
+          spellcheck: 'false'
+        });
+        var previewBtn = el('button', {
+          type: 'button',
+          class: 'btn',
+          text: 'Preview Restore Impact'
+        });
+        var restoreBtn = el('button', {
+          type: 'button',
+          class: 'btn danger',
+          text: 'Execute Granular Restore'
+        });
+        var restorePreviewOut = el('div', { class: 'cso-ops-drill-output' });
 
-      restoreBtn.addEventListener('click', async function () {
-        var snapId = snapSel.value;
-        if (!snapId) { toast('Select a target snapshot first', true); return; }
-        var tbls = selectedTables();
-        if (!tbls.length) { toast('Select at least one table to restore', true); return; }
-        if (confirmInp.value.trim() !== 'RESTORE') {
-          toast('Type RESTORE in the confirmation box to proceed', true);
-          confirmInp.focus();
-          return;
-        }
-        restoreBtn.disabled = true;
-        restoreBtn.textContent = 'Creating Safety Backup & Restoring…';
-        clear(restoreOut);
-        try {
-          var res = await api('POST', 'ops/snapshots/' + encodeURIComponent(snapId) + '/restore', {
-            tables: tbls,
-            mode: modeSel.value,
-            confirm_phrase: confirmInp.value.trim()
-          });
-          confirmInp.value = '';
-          var summaryParts = Object.keys(res.row_summary || {}).map(function (k) {
-            return k + ': ' + (res.row_summary[k].restored_rows || 0) + ' rows (' + res.row_summary[k].mode + ')';
-          });
-          restoreOut.appendChild(el('div', {
-            class: 'alert ok',
-            text: '✓ Restore complete! Pre-restore safety snapshot ID: ' + res.safety_snapshot_id + ' · Restored: ' + summaryParts.join(' · ')
-          }));
-          toast('Point-in-time restore succeeded (Safety backup: ' + String(res.safety_snapshot_id).slice(0, 8) + '…)');
-          await populateSnapshots(snapId);
-        } catch (err) {
-          restoreOut.appendChild(el('div', { class: 'alert', text: 'Restore aborted: ' + err.message }));
-          toast(err.message, true);
-        }
-        restoreBtn.disabled = false;
-        restoreBtn.textContent = 'Execute Granular Restore';
-      });
+        restoreBox.appendChild(el('div', { class: 'cso-ops-restore-controls' }, [
+          el('div', { class: 'cso-ops-restore-field' }, [
+            el('label', { for: 'f-ops-restore-mode', text: 'Restore Mode' }),
+            modeSel
+          ]),
+          el('div', { class: 'cso-ops-restore-field' }, [
+            el('label', { for: 'f-ops-restore-confirm', text: 'Safety Confirmation (type RESTORE)' }),
+            confirmInp
+          ]),
+          previewBtn,
+          restoreBtn
+        ]));
+        restoreBox.appendChild(replaceWarn);
+        restoreBox.appendChild(restorePreviewOut);
+        restoreBox.appendChild(restoreOut);
+        wrap.appendChild(restoreBox);
+
+        var isPreviewingRestore = false;
+        var isRestoring = false;
+
+        previewBtn.addEventListener('click', async function () {
+          if (isPreviewingRestore || isRestoring) return;
+          var snapId = snapSel.value;
+          if (!snapId) { toast('Select a target snapshot first', true); return; }
+          var tbls = selectedTables();
+          if (!tbls.length) { toast('Select at least one table to preview', true); return; }
+          isPreviewingRestore = true;
+          previewBtn.disabled = true;
+          previewBtn.textContent = 'Previewing Impact…';
+          clear(restorePreviewOut);
+          try {
+            var rep = await api('POST', 'ops/snapshots/' + encodeURIComponent(snapId) + '/drill', { tables: tbls });
+            var tb = el('tbody');
+            var diffs = rep.table_diffs || {};
+            (rep.tables_checked || tbls).forEach(function (tName) {
+              var d = diffs[tName] || {};
+              var hasDrift = d.schema_status === 'DRIFT';
+              tb.appendChild(el('tr', {}, [
+                el('td', {}, el('code', { text: tName })),
+                el('td', {}, el('code', { text: d.primary_key || 'id' })),
+                el('td', { class: 'cso-tabular', text: String(d.snapshot_rows || 0) }),
+                el('td', { class: 'cso-tabular', text: String(d.live_rows || 0) }),
+                el('td', { class: 'cso-tabular', text: '+' + String(d.to_insert || 0) }),
+                el('td', { class: 'cso-tabular', text: '~' + String(d.to_update || 0) }),
+                el('td', { class: 'cso-tabular', text: String(d.live_only_rows || 0) }),
+                el('td', {}, el('span', {
+                  class: 'badge ' + (hasDrift ? 'sev-medium' : 'published'),
+                  text: hasDrift ? 'Schema Drift' : 'No Drift'
+                }))
+              ]));
+            });
+            restorePreviewOut.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+              el('caption', { class: 'muted', text: 'Non-Destructive Pre-Restore Impact Preview — ' + (rep.snapshot_label || snapId) }),
+              el('thead', {}, el('tr', {}, ['Table', 'PK Column', 'Snapshot Rows', 'Live Rows', 'To Insert', 'To Update', 'Live-Only', 'Schema Status'].map(function (h) {
+                return el('th', { scope: 'col', text: h });
+              }))),
+              tb
+            ])));
+            toast('Impact preview ready (' + (rep.latency_ms || 1) + ' ms)');
+          } catch (err) {
+            restorePreviewOut.appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+              el('span', { text: 'Preview failed: ' + err.message }),
+              el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: function () { previewBtn.click(); } })
+            ]));
+            toast(err.message, true);
+          } finally {
+            isPreviewingRestore = false;
+            previewBtn.disabled = false;
+            previewBtn.textContent = 'Preview Restore Impact';
+          }
+        });
+
+        restoreBtn.addEventListener('click', async function () {
+          if (isRestoring) return;
+          var snapId = snapSel.value;
+          if (!snapId) { toast('Select a target snapshot first', true); return; }
+          var tbls = selectedTables();
+          if (!tbls.length) { toast('Select at least one table to restore', true); return; }
+          if (confirmInp.value.trim() !== 'RESTORE') {
+            toast('Type RESTORE in the confirmation box to proceed', true);
+            confirmInp.focus();
+            return;
+          }
+          isRestoring = true;
+          restoreBtn.disabled = true;
+          previewBtn.disabled = true;
+          modeSel.disabled = true;
+          confirmInp.disabled = true;
+          snapSel.disabled = true;
+          restoreBtn.textContent = 'Creating Safety Backup & Restoring…';
+          clear(restoreOut);
+          try {
+            var res = await api('POST', 'ops/snapshots/' + encodeURIComponent(snapId) + '/restore', {
+              tables: tbls,
+              mode: modeSel.value,
+              confirm_phrase: confirmInp.value.trim()
+            });
+            confirmInp.value = '';
+            if (res.last_restore) renderLastRestoreBanner(res.last_restore);
+
+            restoreOut.appendChild(el('div', {
+              class: 'alert ok',
+              text: '✓ Restore complete! Pre-restore safety backup: ' + res.safety_snapshot_id + ' · Latency: ' + (res.latency_ms || 1) + ' ms'
+            }));
+
+            var receiptTb = el('tbody');
+            var summaryMap = res.row_summary || {};
+            Object.keys(summaryMap).forEach(function (tbl) {
+              var info = summaryMap[tbl] || {};
+              var skipped = Array.isArray(info.columns_skipped) && info.columns_skipped.length
+                ? info.columns_skipped.join(', ')
+                : 'None';
+              receiptTb.appendChild(el('tr', {}, [
+                el('td', {}, el('code', { text: String(res.safety_snapshot_id || '').slice(0, 12) + '…' })),
+                el('td', {}, el('code', { text: tbl })),
+                el('td', { text: String(info.mode || res.mode || 'upsert') }),
+                el('td', { class: 'cso-tabular', text: String(info.rows_restored !== undefined ? info.rows_restored : (info.restored_rows || 0)) }),
+                el('td', { text: skipped }),
+                el('td', { class: 'cso-tabular', text: String(res.latency_ms || 1) + ' ms' })
+              ]));
+            });
+            restoreOut.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+              el('caption', { class: 'muted', text: 'Post-Restore Execution Receipt' }),
+              el('thead', {}, el('tr', {}, ['Safety Backup ID', 'Table', 'Mode', 'Rows Restored', 'Skipped Columns', 'Latency (ms)'].map(function (h) {
+                return el('th', { scope: 'col', text: h });
+              }))),
+              receiptTb
+            ])));
+
+            toast('Point-in-time restore succeeded (Safety backup: ' + String(res.safety_snapshot_id).slice(0, 8) + '…)');
+            await populateSnapshots(snapId);
+          } catch (err) {
+            restoreOut.appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+              el('span', { text: 'Restore aborted: ' + err.message }),
+              el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: function () { restoreBtn.click(); } })
+            ]));
+            toast(err.message, true);
+          } finally {
+            isRestoring = false;
+            restoreBtn.disabled = false;
+            previewBtn.disabled = false;
+            modeSel.disabled = false;
+            confirmInp.disabled = false;
+            snapSel.disabled = false;
+            restoreBtn.textContent = 'Execute Granular Restore';
+          }
+        });
+      } else {
+        wrap.appendChild(el('div', { class: 'alert', text: 'Administrator privileges are required to execute point-in-time state restorations.' }));
+      }
     }
 
     var snapMetaMap = {};
@@ -2355,44 +2524,50 @@
     async function populateSnapshots(preferId) {
       clear(snapSel);
       snapMetaMap = {};
+      var activeOut = isRestoreFocus ? restoreOut : drillOut;
       try {
         var d = await api('GET', 'ops/snapshots');
         if (!isRestoreFocus) {
           renderLastDrillBanner(d && d.last_drill ? d.last_drill : null);
+        } else {
+          renderLastRestoreBanner(d && d.last_restore ? d.last_restore : null);
         }
         var items = (d && d.items) || [];
         if (!items.length) {
           snapSel.appendChild(el('option', { value: '', text: 'No snapshots in R2 vault — create one first' }));
           updateShaBadge();
-          if (!isRestoreFocus) {
-            clear(drillOut);
-            var emptyBox = el('div', { class: 'cso-ops-empty-vault' }, [
-              el('p', { class: 'muted', text: 'No R2 snapshots exist yet. Create a baseline snapshot to run a non-destructive Disaster Recovery drill.' })
-            ]);
-            if (me && me.role === 'admin') {
-              var quickSnapBtn = el('button', {
-                type: 'button',
-                class: 'btn primary',
-                text: 'Create Baseline Snapshot Now',
-                onclick: async function () {
-                  quickSnapBtn.disabled = true;
-                  quickSnapBtn.textContent = 'Creating Baseline Snapshot…';
-                  try {
-                    var res = await api('POST', 'ops/snapshots', { label: 'DR Drill Baseline Snapshot', scope: 'all' });
-                    var newId = res && res.snapshot ? res.snapshot.id : '';
-                    toast('Baseline snapshot created (' + fmtBytes(res && res.snapshot ? res.snapshot.size_bytes : 0) + ')');
-                    await populateSnapshots(newId);
-                  } catch (err) {
-                    toast(err.message || 'Failed to create baseline snapshot', true);
-                    quickSnapBtn.disabled = false;
-                    quickSnapBtn.textContent = 'Create Baseline Snapshot Now';
-                  }
+          clear(activeOut);
+          var emptyBox = el('div', { class: 'cso-ops-empty-vault' }, [
+            el('p', {
+              class: 'muted',
+              text: isRestoreFocus
+                ? 'No R2 snapshots exist yet. Create a baseline snapshot before executing a point-in-time restore.'
+                : 'No R2 snapshots exist yet. Create a baseline snapshot to run a non-destructive Disaster Recovery drill.'
+            })
+          ]);
+          if (me && me.role === 'admin') {
+            var quickSnapBtn = el('button', {
+              type: 'button',
+              class: 'btn primary',
+              text: 'Create Baseline Snapshot Now',
+              onclick: async function () {
+                quickSnapBtn.disabled = true;
+                quickSnapBtn.textContent = 'Creating Baseline Snapshot…';
+                try {
+                  var res = await api('POST', 'ops/snapshots', { label: 'Baseline Snapshot', scope: 'all' });
+                  var newId = res && res.snapshot ? res.snapshot.id : '';
+                  toast('Baseline snapshot created (' + fmtBytes(res && res.snapshot ? res.snapshot.size_bytes : 0) + ')');
+                  await populateSnapshots(newId);
+                } catch (err) {
+                  toast(err.message || 'Failed to create baseline snapshot', true);
+                  quickSnapBtn.disabled = false;
+                  quickSnapBtn.textContent = 'Create Baseline Snapshot Now';
                 }
-              });
-              emptyBox.appendChild(quickSnapBtn);
-            }
-            drillOut.appendChild(emptyBox);
+              }
+            });
+            emptyBox.appendChild(quickSnapBtn);
           }
+          activeOut.appendChild(emptyBox);
           return;
         }
         items.forEach(function (it) {
@@ -2405,8 +2580,8 @@
       } catch (e) {
         snapSel.appendChild(el('option', { value: '', text: 'Error loading snapshots: ' + e.message }));
         updateShaBadge();
-        clear(drillOut);
-        drillOut.appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+        clear(activeOut);
+        activeOut.appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
           el('span', { text: 'Could not load R2 snapshots: ' + (e && e.message ? e.message : 'Network error') }),
           el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: function () { populateSnapshots(preferId); } })
         ]));
