@@ -16,9 +16,9 @@
     ['content/calendar', 'Editorial Calendar'],
     ['content/workflow', 'Publishing Workflow'],
     ['content/scheduled', 'Scheduled Content'],
-    ['current-affairs', 'Content Archive'],
-    ['current-affairs', 'Content Revisions'],
-    ['current-affairs', 'Bulk Content Operations']
+    ['content/archive', 'Content Archive'],
+    ['content/revisions', 'Content Revisions'],
+    ['content/bulk', 'Bulk Content Operations']
   ];
   var EDU = [['study-library-directory', 'Study Directory'], ['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']];
   var SITE = [['pages', 'All Pages'], ['about-directory', 'About CSO Directory'], ['pages/legal', 'Info & Legal'], ['banner', 'Homepage & Banner'], ['seo', 'SEO & Sitemaps']];
@@ -89,6 +89,9 @@
     'module-04-009': ['content/calendar', CONTENT_SUITE],
     'module-04-010': ['content/workflow', CONTENT_SUITE],
     'module-04-011': ['content/scheduled', CONTENT_SUITE],
+    'module-04-012': ['content/archive', CONTENT_SUITE],
+    'module-04-013': ['content/revisions', CONTENT_SUITE],
+    'module-04-014': ['content/bulk', CONTENT_SUITE],
     'module-05-007': ['mock-tests', EDU],
     'module-05-008': ['jobs', CONTENT],
     'module-05-009': ['jobs', CONTENT],

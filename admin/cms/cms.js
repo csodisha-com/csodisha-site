@@ -11008,6 +11008,547 @@
     return wrap;
   }
 
+  function contentArchiveStudioPanel() {
+    var canWrite = Boolean(me && (me.role === 'admin' || me.role === 'editor'));
+    var isAdmin = Boolean(me && me.role === 'admin');
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var tableBox = el('div');
+    var pagerBox = el('div', { class: 'cso-cnt-pager' });
+
+    var state = { type: 'all', q: '', limit: 25, offset: 0, total: 0 };
+
+    var eligSel = el('select', { class: 'select' });
+    var reasonInp = el('input', { class: 'input', type: 'text', placeholder: 'Archive reason (e.g. Exam cycle concluded)...' });
+    var archBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: 'Archive Selected Content' });
+    if (!canWrite) archBtn.disabled = true;
+
+    var typeSel = el('select', { class: 'select' }, [
+      el('option', { value: 'all', text: 'All Types' }),
+      el('option', { value: 'article', text: 'Articles & Blogs' }),
+      el('option', { value: 'news', text: 'News & Updates' }),
+      el('option', { value: 'current_affairs', text: 'Current Affairs' }),
+      el('option', { value: 'announcement', text: 'Announcements' })
+    ]);
+    var searchInp = el('input', { class: 'input', type: 'search', placeholder: 'Search archived title, slug, or reason...' });
+    var searchBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Search' });
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge warn', text: 'ARCHIVE VAULT' }),
+        el('h2', { text: 'Content Archive & Lifecycle Shield' }),
+        el('p', { class: 'muted', text: 'Safely retire outdated content without losing history, restore archived posts to draft, or execute guarded permanent purges.' })
+      ])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('h3', { text: 'Quick-Archive Live Content' }),
+      el('div', { class: 'cso-ops-grid-2' }, [
+        el('div', { class: 'field' }, [el('label', { text: 'Active / Published Post' }), eligSel]),
+        el('div', { class: 'field' }, [el('label', { text: 'Archive Reason' }), reasonInp])
+      ]),
+      archBtn
+    ]));
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-cnt-toolbar' }, [
+        el('div', { class: 'cso-cnt-toolbar-left' }, [searchInp, searchBtn]),
+        typeSel
+      ]),
+      tableBox,
+      pagerBox
+    ]));
+
+    var archBusy = false;
+    archBtn.addEventListener('click', async function () {
+      if (!canWrite || archBusy || !eligSel.value) return;
+      archBusy = true;
+      archBtn.disabled = true;
+      try {
+        await api('POST', 'content/archive', {
+          post_id: eligSel.value,
+          action: 'archive',
+          archive_reason: reasonInp.value.trim()
+        });
+        reasonInp.value = '';
+        toast('Content archived');
+        await load();
+      } catch (e) {
+        toast(e.message || 'Archive failed', true);
+      } finally {
+        archBusy = false;
+        archBtn.disabled = !canWrite;
+      }
+    });
+
+    async function load() {
+      try {
+        var qs = 'type=' + encodeURIComponent(state.type) +
+          '&q=' + encodeURIComponent(state.q) +
+          '&limit=' + String(state.limit) +
+          '&offset=' + String(state.offset);
+        var res = await api('GET', 'content/archive?' + qs);
+        clear(kpis);
+        clear(eligSel);
+        clear(tableBox);
+        clear(pagerBox);
+        var k = res.kpis || {};
+        [
+          ['Total Archived Items', String(k.total_archived || 0)],
+          ['Archived This Month', String(k.archived_this_month || 0)],
+          ['Active Eligible', String(k.reclaimable_active_count || 0)],
+          ['Redirect Safety Shield', 'ACTIVE']
+        ].forEach(function (pair) {
+          kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+            el('span', { class: 'muted sm', text: pair[0] }),
+            el('strong', { text: pair[1] })
+          ]));
+        });
+
+        var elig = Array.isArray(res.eligible_items) ? res.eligible_items : [];
+        if (!elig.length) {
+          eligSel.appendChild(el('option', { value: '', text: 'No active posts eligible to archive' }));
+        } else {
+          elig.forEach(function (it) {
+            eligSel.appendChild(el('option', { value: it.id, text: '[' + it.post_type + '] ' + it.title }));
+          });
+        }
+
+        var rows = Array.isArray(res.items) ? res.items : [];
+        state.total = Number((res.paging && res.paging.total) || rows.length);
+        if (!rows.length) {
+          tableBox.appendChild(el('div', { class: 'muted sm', text: 'No archived content matches the current filter.' }));
+        } else {
+          var tbody = el('tbody');
+          rows.forEach(function (it) {
+            var actTd = el('td', { class: 'cso-ops-actions' });
+            if (canWrite) {
+              var restBtn = el('button', { class: 'btn sm', type: 'button', text: 'Restore to Draft' });
+              restBtn.addEventListener('click', async function () {
+                restBtn.disabled = true;
+                try {
+                  await api('POST', 'content/archive', { post_id: it.id, action: 'restore_draft' });
+                  toast('Restored to draft');
+                  await load();
+                } catch (e) { toast(e.message || 'Restore failed', true); restBtn.disabled = false; }
+              });
+              actTd.appendChild(restBtn);
+            }
+            if (isAdmin) {
+              var purgeBtn = el('button', { class: 'btn sm danger', type: 'button', text: 'Purge' });
+              purgeBtn.addEventListener('click', async function () {
+                var phrase = window.prompt('Permanent purge cannot be undone. Type PURGE_ARCHIVED to confirm:');
+                if (!phrase) return;
+                purgeBtn.disabled = true;
+                try {
+                  await api('DELETE', 'content/archive/' + encodeURIComponent(it.id) + '?confirm=' + encodeURIComponent(phrase.trim()));
+                  toast('Archived item permanently purged');
+                  await load();
+                } catch (e) { toast(e.message || 'Purge failed', true); purgeBtn.disabled = false; }
+              });
+              actTd.appendChild(purgeBtn);
+            }
+            tbody.appendChild(el('tr', {}, [
+              el('td', {}, [el('strong', { text: it.title }), el('div', { class: 'muted sm', text: '/' + it.slug + ' · ' + it.post_type })]),
+              el('td', { text: it.archive_reason || '—' }),
+              el('td', { text: String(it.archived_at || it.updated_at || '').slice(0, 16).replace('T', ' ') }),
+              actTd
+            ]));
+          });
+          tableBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+            el('table', { class: 'table' }, [
+              el('thead', {}, [el('tr', {}, [
+                el('th', { text: 'Title & Slug' }),
+                el('th', { text: 'Reason' }),
+                el('th', { text: 'Archived At' }),
+                el('th', { text: 'Actions' })
+              ])]),
+              tbody
+            ])
+          ]));
+        }
+
+        var prevPage = el('button', { class: 'btn sm', type: 'button', text: '← Prev' });
+        prevPage.disabled = state.offset <= 0;
+        prevPage.addEventListener('click', function () { state.offset = Math.max(0, state.offset - state.limit); load(); });
+        var nextPage = el('button', { class: 'btn sm', type: 'button', text: 'Next →' });
+        nextPage.disabled = state.offset + state.limit >= state.total;
+        nextPage.addEventListener('click', function () { state.offset += state.limit; load(); });
+        pagerBox.appendChild(el('span', { class: 'muted sm', text: 'Showing ' + (state.total ? state.offset + 1 : 0) + '–' + Math.min(state.total, state.offset + rows.length) + ' of ' + state.total }));
+        pagerBox.appendChild(el('div', { class: 'cso-ops-actions' }, [prevPage, nextPage]));
+      } catch (e) {
+        toast(e.message || 'Failed to load archive', true);
+      }
+    }
+
+    typeSel.addEventListener('change', function () { state.type = typeSel.value; state.offset = 0; load(); });
+    searchBtn.addEventListener('click', function () { state.q = searchInp.value.trim(); state.offset = 0; load(); });
+    load();
+    return wrap;
+  }
+
+  function contentRevisionsStudioPanel() {
+    var canWrite = Boolean(me && (me.role === 'admin' || me.role === 'editor'));
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var diffBox = el('div');
+    var tableBox = el('div');
+    var pagerBox = el('div', { class: 'cso-cnt-pager' });
+
+    var state = { post_id: '', q: '', limit: 25, offset: 0, total: 0 };
+
+    var postSel = el('select', { class: 'select' });
+    var searchInp = el('input', { class: 'input', type: 'search', placeholder: 'Search revision title or change summary...' });
+    var searchBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Filter' });
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge ok', text: 'REVISION VAULT' }),
+        el('h2', { text: 'Content Revisions & Zero-Loss Rollback Studio' }),
+        el('p', { class: 'muted', text: 'Inspect field-level diffs against the live D1 post and roll back any version with automatic pre-restore snapshotting.' })
+      ])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(diffBox);
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-cnt-toolbar' }, [
+        el('div', { class: 'cso-cnt-toolbar-left' }, [postSel, searchInp, searchBtn])
+      ]),
+      tableBox,
+      pagerBox
+    ]));
+
+    async function inspectDiff(revId) {
+      clear(diffBox);
+      try {
+        var res = await api('POST', 'content/revisions/compare', { revision_id: revId, target_revision_id: 'LIVE_POST' });
+        var d = res.diffs || {};
+        var card = el('div', { class: 'cso-ops-card' }, [
+          el('div', { class: 'cso-ops-subhead' }, [
+            el('h3', { text: 'Diff Inspector: Revision ' + revId + ' vs. Live Post' }),
+            el('span', { class: 'badge ok', text: 'Word Delta: ' + (d.body_word_delta >= 0 ? '+' : '') + String(d.body_word_delta || 0) })
+          ])
+        ]);
+        var tbody = el('tbody');
+        ['title', 'slug', 'category_slug', 'workflow_stage', 'excerpt'].forEach(function (field) {
+          var fd = d[field] || {};
+          tbody.appendChild(el('tr', {}, [
+            el('td', { text: field }),
+            el('td', { text: String(fd.left || '—').slice(0, 120) }),
+            el('td', { text: String(fd.right || '—').slice(0, 120) }),
+            el('td', {}, [el('span', { class: 'badge ' + (fd.changed ? 'warn' : 'ok'), text: fd.changed ? 'CHANGED' : 'SAME' })])
+          ]));
+        });
+        card.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+          el('table', { class: 'table' }, [
+            el('thead', {}, [el('tr', {}, [
+              el('th', { text: 'Field' }),
+              el('th', { text: 'Revision Snapshot' }),
+              el('th', { text: 'Live Post' }),
+              el('th', { text: 'Status' })
+            ])]),
+            tbody
+          ])
+        ]));
+        diffBox.appendChild(card);
+      } catch (e) {
+        toast(e.message || 'Diff compare failed', true);
+      }
+    }
+
+    async function load() {
+      try {
+        var qs = 'post_id=' + encodeURIComponent(state.post_id) +
+          '&q=' + encodeURIComponent(state.q) +
+          '&limit=' + String(state.limit) +
+          '&offset=' + String(state.offset);
+        var res = await api('GET', 'content/revisions?' + qs);
+        clear(kpis);
+        clear(tableBox);
+        clear(pagerBox);
+        var k = res.kpis || {};
+        [
+          ['Total Saved Revisions', String(k.total_revisions || 0)],
+          ['Versioned Posts', String(k.posts_with_history || 0)],
+          ['Auto-Snapshot Guard', 'ON'],
+          ['Latest Revision', k.latest_revision_at ? String(k.latest_revision_at).slice(0, 16).replace('T', ' ') : 'None']
+        ].forEach(function (pair) {
+          kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+            el('span', { class: 'muted sm', text: pair[0] }),
+            el('strong', { text: pair[1] })
+          ]));
+        });
+
+        var curSelVal = state.post_id;
+        clear(postSel);
+        postSel.appendChild(el('option', { value: '', text: 'All Versioned Posts' }));
+        (res.posts_selector || []).forEach(function (ps) {
+          postSel.appendChild(el('option', { value: ps.post_id, text: (ps.title || ps.post_id) + ' (' + ps.rev_count + ')' }));
+        });
+        postSel.value = curSelVal;
+
+        var rows = Array.isArray(res.items) ? res.items : [];
+        state.total = Number((res.paging && res.paging.total) || rows.length);
+        if (!rows.length) {
+          tableBox.appendChild(el('div', { class: 'muted sm', text: 'No revisions recorded yet.' }));
+        } else {
+          var tbody = el('tbody');
+          rows.forEach(function (r) {
+            var actTd = el('td', { class: 'cso-ops-actions' });
+            var diffBtn = el('button', { class: 'btn sm', type: 'button', text: 'Diff vs Live' });
+            diffBtn.addEventListener('click', function () { inspectDiff(r.id); });
+            actTd.appendChild(diffBtn);
+
+            if (canWrite) {
+              var rollBtn = el('button', { class: 'btn sm primary', type: 'button', text: 'Rollback' });
+              rollBtn.addEventListener('click', async function () {
+                rollBtn.disabled = true;
+                try {
+                  await api('POST', 'content/revisions/' + encodeURIComponent(r.id) + '/restore', {});
+                  toast('Restored revision v' + r.revision_number + ' as draft (current state auto-snapshotted)');
+                  await load();
+                } catch (e) { toast(e.message || 'Restore failed', true); rollBtn.disabled = false; }
+              });
+              actTd.appendChild(rollBtn);
+            }
+            tbody.appendChild(el('tr', {}, [
+              el('td', { text: 'v' + String(r.revision_number || 1) }),
+              el('td', {}, [el('strong', { text: r.title }), el('div', { class: 'muted sm', text: r.post_id + ' · ' + r.change_summary })]),
+              el('td', { text: r.actor_email || 'admin' }),
+              el('td', { text: String(r.created_at || '').slice(0, 19).replace('T', ' ') }),
+              actTd
+            ]));
+          });
+          tableBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+            el('table', { class: 'table' }, [
+              el('thead', {}, [el('tr', {}, [
+                el('th', { text: 'Ver' }),
+                el('th', { text: 'Title & Change Note' }),
+                el('th', { text: 'Actor' }),
+                el('th', { text: 'Timestamp' }),
+                el('th', { text: 'Actions' })
+              ])]),
+              tbody
+            ])
+          ]));
+        }
+
+        var prevPage = el('button', { class: 'btn sm', type: 'button', text: '← Prev' });
+        prevPage.disabled = state.offset <= 0;
+        prevPage.addEventListener('click', function () { state.offset = Math.max(0, state.offset - state.limit); load(); });
+        var nextPage = el('button', { class: 'btn sm', type: 'button', text: 'Next →' });
+        nextPage.disabled = state.offset + state.limit >= state.total;
+        nextPage.addEventListener('click', function () { state.offset += state.limit; load(); });
+        pagerBox.appendChild(el('span', { class: 'muted sm', text: 'Showing ' + (state.total ? state.offset + 1 : 0) + '–' + Math.min(state.total, state.offset + rows.length) + ' of ' + state.total }));
+        pagerBox.appendChild(el('div', { class: 'cso-ops-actions' }, [prevPage, nextPage]));
+      } catch (e) {
+        toast(e.message || 'Failed to load revisions', true);
+      }
+    }
+
+    postSel.addEventListener('change', function () { state.post_id = postSel.value; state.offset = 0; load(); });
+    searchBtn.addEventListener('click', function () { state.q = searchInp.value.trim(); state.offset = 0; load(); });
+    load();
+    return wrap;
+  }
+
+  function contentBulkOperationsPanel() {
+    var canWrite = Boolean(me && (me.role === 'admin' || me.role === 'editor'));
+    var isAdmin = Boolean(me && me.role === 'admin');
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var receiptBox = el('div');
+    var tableBox = el('div');
+
+    var selected = new Set();
+    var visibleRows = [];
+    var lastOp = null;
+
+    var typeSel = el('select', { class: 'select' }, [
+      el('option', { value: 'all', text: 'All Types' }),
+      el('option', { value: 'article', text: 'Articles' }),
+      el('option', { value: 'news', text: 'News' }),
+      el('option', { value: 'current_affairs', text: 'Current Affairs' }),
+      el('option', { value: 'announcement', text: 'Announcements' })
+    ]);
+    var stageSel = el('select', { class: 'select' }, [
+      el('option', { value: 'all', text: 'All Stages' }),
+      el('option', { value: 'draft', text: 'draft' }),
+      el('option', { value: 'published', text: 'published' }),
+      el('option', { value: 'archived', text: 'archived' })
+    ]);
+    var searchInp = el('input', { class: 'input', type: 'search', placeholder: 'Filter posts...' });
+    var loadBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Filter' });
+
+    var actionSel = el('select', { class: 'select' }, [
+      el('option', { value: 'publish', text: 'publish — Publish Live (SEO Gate Enforced)' }),
+      el('option', { value: 'move_to_draft', text: 'move_to_draft — Move to Draft' }),
+      el('option', { value: 'archive', text: 'archive — Move to Archive' }),
+      el('option', { value: 'assign_category', text: 'assign_category — Assign Category Slug' }),
+      el('option', { value: 'add_tag', text: 'add_tag — Add Tag' }),
+      el('option', { value: 'feature', text: 'feature — Pin Featured' }),
+      el('option', { value: 'unfeature', text: 'unfeature — Unpin Featured' }),
+      el('option', { value: 'delete', text: 'delete — Permanent Soft Delete (Admin Only)' })
+    ]);
+    var paramInp = el('input', { class: 'input', type: 'text', placeholder: 'Category slug / Tag / BULK_DELETE confirmation...' });
+    var dryBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Preview Bulk Impact (Dry Run)' });
+    var execBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: 'Execute Bulk Operation' });
+    if (!canWrite) { dryBtn.disabled = true; execBtn.disabled = true; }
+
+    var selAllBtn = el('button', { class: 'btn sm', type: 'button', text: 'Select All Visible' });
+    var clrSelBtn = el('button', { class: 'btn sm', type: 'button', text: 'Clear Selection' });
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge warn', text: 'BULK ENGINE' }),
+        el('h2', { text: 'Bulk Content Operations Studio' }),
+        el('p', { class: 'muted', text: 'Execute dry-run validated batch operations (max 100 items) with automatic revision snapshotting and quality gate checks.' })
+      ])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('h3', { text: 'Batch Action Controls' }),
+      el('div', { class: 'cso-ops-grid-2' }, [
+        el('div', { class: 'field' }, [el('label', { text: 'Bulk Action' }), actionSel]),
+        el('div', { class: 'field' }, [el('label', { text: 'Parameter (Category Slug / Tag / BULK_DELETE)' }), paramInp])
+      ]),
+      el('div', { class: 'cso-ops-actions' }, [dryBtn, execBtn]),
+      receiptBox
+    ]));
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-cnt-toolbar' }, [
+        el('div', { class: 'cso-cnt-toolbar-left' }, [typeSel, stageSel, searchInp, loadBtn]),
+        el('div', { class: 'cso-ops-actions' }, [selAllBtn, clrSelBtn])
+      ]),
+      tableBox
+    ]));
+
+    function renderKpis() {
+      clear(kpis);
+      [
+        ['Selected Items', String(selected.size)],
+        ['Max Batch Cap', '100'],
+        ['Quality Gate Guard', 'ACTIVE'],
+        ['Last Bulk Operation', lastOp ? (lastOp.action + ' (' + lastOp.succeeded_count + ')') : 'None yet']
+      ].forEach(function (pair) {
+        kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+          el('span', { class: 'muted sm', text: pair[0] }),
+          el('strong', { text: pair[1] })
+        ]));
+      });
+    }
+
+    function renderRows() {
+      clear(tableBox);
+      if (!visibleRows.length) {
+        tableBox.appendChild(el('div', { class: 'muted sm', text: 'No posts match the current filter.' }));
+        return;
+      }
+      var tbody = el('tbody');
+      visibleRows.forEach(function (it) {
+        var cb = el('input', { type: 'checkbox' });
+        cb.checked = selected.has(it.id);
+        cb.addEventListener('change', function () {
+          if (cb.checked) selected.add(it.id);
+          else selected.delete(it.id);
+          renderKpis();
+        });
+        tbody.appendChild(el('tr', {}, [
+          el('td', {}, [cb]),
+          el('td', {}, [el('strong', { text: it.title }), el('div', { class: 'muted sm', text: it.post_type + ' · ' + (it.has_seo_meta ? 'SEO ✓' : 'No SEO') })]),
+          el('td', { text: it.category_slug || it.category || '—' }),
+          el('td', {}, [el('span', { class: 'badge ' + (it.status === 'published' ? 'ok' : 'warn'), text: it.workflow_stage || it.status })])
+        ]));
+      });
+      tableBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+        el('table', { class: 'table' }, [
+          el('thead', {}, [el('tr', {}, [
+            el('th', { text: 'Pick' }),
+            el('th', { text: 'Title & SEO' }),
+            el('th', { text: 'Category' }),
+            el('th', { text: 'Stage' })
+          ])]),
+          tbody
+        ])
+      ]));
+    }
+
+    async function load() {
+      try {
+        var qs = 'type=' + encodeURIComponent(typeSel.value) +
+          '&status=' + encodeURIComponent(stageSel.value) +
+          '&q=' + encodeURIComponent(searchInp.value.trim()) +
+          '&limit=50&offset=0';
+        var results = await Promise.all([api('GET', 'content/posts?' + qs), api('GET', 'content/bulk')]);
+        visibleRows = results[0].items || [];
+        lastOp = results[1].last_operation || null;
+        renderKpis();
+        renderRows();
+      } catch (e) {
+        toast(e.message || 'Failed to load bulk studio', true);
+      }
+    }
+
+    selAllBtn.addEventListener('click', function () {
+      visibleRows.forEach(function (r) { selected.add(r.id); });
+      renderKpis();
+      renderRows();
+    });
+    clrSelBtn.addEventListener('click', function () {
+      selected.clear();
+      renderKpis();
+      renderRows();
+    });
+
+    var bulkBusy = false;
+    async function runBulk(isDry) {
+      if (!canWrite || bulkBusy) return;
+      if (!selected.size) { toast('Select at least one post', true); return; }
+      if (!isDry && actionSel.value === 'delete' && !isAdmin) { toast('Admin role required for bulk delete', true); return; }
+      bulkBusy = true;
+      dryBtn.disabled = true;
+      execBtn.disabled = true;
+      clear(receiptBox);
+      try {
+        var res = await api('POST', 'content/bulk', {
+          post_ids: Array.from(selected),
+          action: actionSel.value,
+          dry_run: isDry,
+          category_slug: paramInp.value.trim(),
+          tag: paramInp.value.trim(),
+          confirm: paramInp.value.trim()
+        });
+        if (isDry) {
+          receiptBox.appendChild(el('div', { class: 'cso-sec-sim-result is-allow' }, [
+            el('strong', { text: 'Dry-Run: ' + String(res.eligible_count) + ' eligible, ' + String(res.blocked_count) + ' blocked' }),
+            el('div', { class: 'muted sm', text: (res.skipped_reasons || []).map(function (s) { return s.id + ': ' + s.reason; }).join(' · ') || 'All selected items pass guards.' })
+          ]));
+        } else {
+          receiptBox.appendChild(el('div', { class: 'cso-sec-sim-result is-allow' }, [
+            el('strong', { text: 'Executed ' + res.action + ': ' + String(res.succeeded_count) + ' succeeded, ' + String(res.skipped_count) + ' skipped, ' + String(res.failed_count) + ' failed' })
+          ]));
+          toast('Bulk operation complete');
+          selected.clear();
+          await load();
+        }
+      } catch (e) {
+        toast(e.message || 'Bulk operation failed', true);
+      } finally {
+        bulkBusy = false;
+        dryBtn.disabled = !canWrite;
+        execBtn.disabled = !canWrite;
+      }
+    }
+
+    dryBtn.addEventListener('click', function () { runBulk(true); });
+    execBtn.addEventListener('click', function () { runBulk(false); });
+    loadBtn.addEventListener('click', load);
+    typeSel.addEventListener('change', load);
+    stageSel.addEventListener('change', load);
+
+    load();
+    return wrap;
+  }
+
   async function viewContentStudio(sub) {
     var mode = sub || 'all';
     if (mode === 'articles') {
@@ -11058,6 +11599,21 @@
     if (mode === 'scheduled') {
       setTitle('Scheduled Content');
       main.appendChild(contentScheduledStudioPanel());
+      return;
+    }
+    if (mode === 'archive') {
+      setTitle('Content Archive');
+      main.appendChild(contentArchiveStudioPanel());
+      return;
+    }
+    if (mode === 'revisions') {
+      setTitle('Content Revisions');
+      main.appendChild(contentRevisionsStudioPanel());
+      return;
+    }
+    if (mode === 'bulk') {
+      setTitle('Bulk Content Operations');
+      main.appendChild(contentBulkOperationsPanel());
       return;
     }
     setTitle('All Content');

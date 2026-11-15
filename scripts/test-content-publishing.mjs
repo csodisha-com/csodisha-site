@@ -582,4 +582,140 @@ const resched = await (await handleContentPublishing(
 assert.equal(resched.item.workflow_stage, 'draft');
 assert.equal(resched.item.scheduled_for, null);
 
-console.log('CONTENT & PUBLISHING SUITE MODULES #1-#11 TESTS PASSED');
+// ============================================================================
+// 14. Module #12: Content Archive, Restore & PURGE_ARCHIVED Confirmation Guard
+// ============================================================================
+const archMove = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/archive', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ post_id: duePost.item.id, action: 'archive', archive_reason: 'Exam cycle ended' })
+  }),
+  env, editorActor, 'archive'
+)).json();
+assert.equal(archMove.item.workflow_stage, 'archived');
+assert.equal(archMove.item.archive_reason, 'Exam cycle ended');
+
+const archList = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/archive?type=all', { method: 'GET' }),
+  env, adminActor, 'archive'
+)).json();
+assert.ok(archList.items.some(i => i.id === duePost.item.id));
+
+await assert.rejects(
+  () => handleContentPublishing(
+    new Request(`https://csodisha.com/api/admin/content/archive/${duePost.item.id}?confirm=WRONG`, { method: 'DELETE' }),
+    env, adminActor, 'archive', duePost.item.id
+  ),
+  (e) => e.code === 'CONFIRMATION_REQUIRED'
+);
+
+const archRestore = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/archive', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ post_id: duePost.item.id, action: 'restore_draft' })
+  }),
+  env, editorActor, 'archive'
+)).json();
+assert.equal(archRestore.item.workflow_stage, 'draft');
+
+// Re-archive and test PURGE_ARCHIVED by admin
+await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/archive', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ post_id: duePost.item.id, action: 'archive', archive_reason: 'Final purge' })
+  }),
+  env, adminActor, 'archive'
+);
+const archPurge = await (await handleContentPublishing(
+  new Request(`https://csodisha.com/api/admin/content/archive/${duePost.item.id}?confirm=PURGE_ARCHIVED`, { method: 'DELETE' }),
+  env, adminActor, 'archive', duePost.item.id
+)).json();
+assert.equal(archPurge.purged, true);
+
+// ============================================================================
+// 15. Module #13: Content Revisions Diffing & Zero-Loss Rollback
+// ============================================================================
+const revList = await (await handleContentPublishing(
+  new Request(`https://csodisha.com/api/admin/content/revisions?post_id=${wfDraft.item.id}`, { method: 'GET' }),
+  env, adminActor, 'revisions'
+)).json();
+assert.ok(revList.items.length >= 2);
+const firstRev = revList.items[revList.items.length - 1];
+
+const diffRes = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/revisions/compare', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ revision_id: firstRev.id, target_revision_id: 'LIVE_POST' })
+  }),
+  env, adminActor, 'revisions', 'compare'
+)).json();
+assert.equal(diffRes.diffs.workflow_stage.left, 'draft');
+assert.equal(diffRes.diffs.workflow_stage.right, 'published');
+assert.equal(diffRes.diffs.workflow_stage.changed, true);
+
+const restoreRev = await (await handleContentPublishing(
+  new Request(`https://csodisha.com/api/admin/content/revisions/${firstRev.id}/restore`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}'
+  }),
+  env, editorActor, 'revisions', firstRev.id, 'restore'
+)).json();
+assert.ok(restoreRev.pre_restore_snapshot.id);
+assert.equal(restoreRev.item.workflow_stage, 'draft');
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'content.revision.restore'`).first()).n >= 1);
+
+// ============================================================================
+// 16. Module #14: Bulk Content Operations Dry-Run, SEO Gate Skipping & BULK_DELETE
+// ============================================================================
+const bulkDry = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/bulk', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      post_ids: [draftForFeat.item.id, wfDraft.item.id],
+      action: 'publish',
+      dry_run: true
+    })
+  }),
+  env, adminActor, 'bulk'
+)).json();
+assert.equal(bulkDry.dry_run, true);
+assert.equal(bulkDry.eligible_count, 1); // wfDraft has SEO meta
+assert.equal(bulkDry.blocked_count, 1);  // draftForFeat lacks SEO meta
+assert.equal(bulkDry.skipped_reasons[0].reason, 'SEO_META_REQUIRED');
+
+const bulkExec = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/bulk', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      post_ids: [draftForFeat.item.id, wfDraft.item.id],
+      action: 'publish',
+      dry_run: false
+    })
+  }),
+  env, adminActor, 'bulk'
+)).json();
+assert.equal(bulkExec.dry_run, false);
+assert.equal(bulkExec.succeeded_count, 1);
+assert.equal(bulkExec.skipped_count, 1);
+
+await assert.rejects(
+  () => handleContentPublishing(
+    new Request('https://csodisha.com/api/admin/content/bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post_ids: [draftForFeat.item.id], action: 'delete', dry_run: false, confirm: 'NOPE' })
+    }),
+    env, adminActor, 'bulk'
+  ),
+  (e) => e.code === 'CONFIRMATION_REQUIRED'
+);
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'content.bulk.execute'`).first()).n >= 1);
+
+console.log('CONTENT & PUBLISHING SUITE MODULES #1-#14 TESTS PASSED');

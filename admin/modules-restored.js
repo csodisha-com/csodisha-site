@@ -8630,56 +8630,6 @@
      FOLDER 04: CONTENT & PUBLISHING (module-04-001..014)
      ========================================================================= */
   function renderFolder04(moduleId, root, actions) {
-    if (moduleId === 'module-04-012') {
-      renderPendingApprovals(root, actions);
-      return true;
-    }
-
-    if (moduleId === 'module-04-014') {
-      addHeaderPill(actions, '● Bulk D1 Operations');
-      var shell3 = el('div', { class: 'cso-mod-shell' });
-      var host3 = el('div', {});
-      var selected = new Set();
-      var allItems = [];
-
-      async function loadBulk() {
-        clear(host3);
-        var res = await api('GET', 'current-affairs?limit=100');
-        allItems = res.items || [];
-        var rows = allItems.map(function (it) {
-          var chk = el('input', { type: 'checkbox' });
-          chk.addEventListener('change', function () { if (chk.checked) selected.add(it.id); else selected.delete(it.id); });
-          return el('tr', {}, [
-            el('td', {}, chk),
-            el('td', { text: it.title }),
-            el('td', { text: it.category || '—' }),
-            el('td', {}, badge(it.status, it.status === 'published' ? 'ok' : 'warn'))
-          ]);
-        });
-        host3.appendChild(safeTable(['Select', 'Title', 'Category', 'Status'], rows));
-      }
-
-      async function bulkStatus(nextStatus) {
-        if (!selected.size) { toast('Select at least one item', 'amber'); return; }
-        for (var id of selected) {
-          await api('POST', 'current-affairs/' + encodeURIComponent(id) + '/status', { status: nextStatus });
-        }
-        toast('Updated ' + selected.size + ' items to ' + nextStatus, 'success');
-        selected.clear();
-        loadBulk();
-      }
-
-      renderBanner(shell3, 'Bulk Content Operations', 'Multi-select live D1 posts to publish, archive, or export JSON.', [
-        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Bulk Publish', onclick: function () { bulkStatus('published'); } }),
-        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Bulk Draft', onclick: function () { bulkStatus('draft'); } }),
-        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export JSON', onclick: function () { downloadFile('current-affairs-export.json', JSON.stringify(allItems, null, 2)); } })
-      ]);
-      shell3.appendChild(host3);
-      root.appendChild(shell3);
-      loadBulk().catch(function (e) { toast(e.message, 'crimson'); });
-      return true;
-    }
-
     return false;
   }
 

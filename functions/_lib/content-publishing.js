@@ -14,6 +14,7 @@ export const NOTICE_PRIORITIES = ['normal', 'urgent', 'deadline'];
 export const TAG_REGISTRY_KEY = 'content_tag_registry';
 export const WORKFLOW_POLICY_KEY = 'content_workflow_policy';
 export const LAST_SCHEDULED_DISPATCH_KEY = 'ops_last_scheduled_dispatch';
+export const LAST_BULK_OP_KEY = 'content_last_bulk_op';
 
 const REQUIRED_POST_COLUMNS = [
   ['post_type', 'TEXT'],
@@ -35,6 +36,9 @@ const REQUIRED_POST_COLUMNS = [
   ['review_notes', 'TEXT'],
   ['reviewed_by', 'TEXT'],
   ['reviewed_at', 'TEXT'],
+  ['archived_at', 'TEXT'],
+  ['archived_by', 'TEXT'],
+  ['archive_reason', 'TEXT'],
   ['updated_by', 'TEXT'],
   ['updated_at', 'TEXT']
 ];
@@ -168,16 +172,41 @@ export async function ensureContentPublishingSchema(db) {
        id TEXT PRIMARY KEY,
        post_id TEXT NOT NULL,
        version_no INTEGER NOT NULL DEFAULT 1,
+       revision_number INTEGER NOT NULL DEFAULT 1,
        title TEXT NOT NULL,
+       slug TEXT,
+       excerpt TEXT,
+       body_html TEXT,
        post_type TEXT,
+       category_slug TEXT,
+       tags_json TEXT,
        status TEXT,
        workflow_stage TEXT,
        snapshot_json TEXT NOT NULL,
        edited_by TEXT,
+       actor_email TEXT,
        change_note TEXT,
+       change_summary TEXT,
        created_at TEXT NOT NULL
      )`
   ).run();
+
+  const revColsRes = await db.prepare(`PRAGMA table_info(content_revisions)`).all();
+  const revCols = new Set((revColsRes.results || []).map(c => c.name));
+  for (const [rName, rDef] of [
+    ['revision_number', 'INTEGER NOT NULL DEFAULT 1'],
+    ['slug', 'TEXT'],
+    ['excerpt', 'TEXT'],
+    ['body_html', 'TEXT'],
+    ['category_slug', 'TEXT'],
+    ['tags_json', 'TEXT'],
+    ['actor_email', 'TEXT'],
+    ['change_summary', 'TEXT']
+  ]) {
+    if (!revCols.has(rName)) {
+      await db.prepare(`ALTER TABLE content_revisions ADD COLUMN ${rName} ${rDef}`).run();
+    }
+  }
 
   await db.prepare(
     `CREATE INDEX IF NOT EXISTS idx_content_revisions_post ON content_revisions(post_id, version_no DESC)`
@@ -267,6 +296,9 @@ function normalizeRow(row) {
     review_notes: row.review_notes || '',
     reviewed_by: row.reviewed_by || null,
     reviewed_at: row.reviewed_at || null,
+    archived_at: row.archived_at || null,
+    archived_by: row.archived_by || null,
+    archive_reason: row.archive_reason || '',
     reading_time_minutes: readingMinutes,
     public_url: resolvePublicUrl(postType, row.slug),
     created_by: row.created_by || null,
@@ -317,28 +349,44 @@ async function enforcePublishGuards(env, actor, nextStage, candidate, priorRow =
 async function snapshotPostRevision(db, row, actorEmail, changeNote = 'editorial_update') {
   if (!row) return null;
   const verRow = await db.prepare(
-    `SELECT COALESCE(MAX(version_no), 0) AS max_v FROM content_revisions WHERE post_id = ?`
+    `SELECT COALESCE(MAX(COALESCE(revision_number, version_no)), 0) AS max_v FROM content_revisions WHERE post_id = ?`
   ).bind(row.id).first();
   const nextVer = (Number(verRow && verRow.max_v) || 0) + 1;
-  const revId = `rev_${Date.now().toString(36)}_${nextVer}`;
+  const revId = `rev_${Date.now().toString(36)}_${nextVer}_${Math.random().toString(36).slice(2, 5)}`;
   const nowIso = new Date().toISOString();
+  const effType = row.post_type || (row.type === 'current_affair' ? 'current_affairs' : row.type) || 'current_affairs';
+  const effCatSlug = row.category_slug || (row.category ? slugify(row.category) : '');
+  const effTagsJson = row.tags_json || row.tags || '[]';
+  const effStage = row.workflow_stage || row.status || 'draft';
+
   await db.prepare(
-    `INSERT INTO content_revisions (id, post_id, version_no, title, post_type, status, workflow_stage, snapshot_json, edited_by, change_note, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO content_revisions (
+       id, post_id, version_no, revision_number, title, slug, excerpt, body_html,
+       post_type, category_slug, tags_json, status, workflow_stage, snapshot_json,
+       edited_by, actor_email, change_note, change_summary, created_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     revId,
     row.id,
     nextVer,
+    nextVer,
     row.title || '',
-    row.post_type || row.type || 'current_affairs',
+    row.slug || '',
+    row.summary || '',
+    row.body_md || '',
+    effType,
+    effCatSlug,
+    effTagsJson,
     row.status || 'draft',
-    row.workflow_stage || row.status || 'draft',
+    effStage,
     JSON.stringify(row),
     actorEmail || 'admin',
+    actorEmail || 'admin',
+    changeNote,
     changeNote,
     nowIso
   ).run();
-  return { id: revId, version_no: nextVer };
+  return { id: revId, version_no: nextVer, revision_number: nextVer };
 }
 
 export async function listContentPosts(env, query = {}) {
@@ -1575,10 +1623,551 @@ export async function rescheduleScheduledPost(env, id, body = {}, actor) {
 }
 
 // ============================================================================
-// Admin Router Dispatcher for /api/admin/content/{posts|announcements|featured|categories|tags|calendar|workflow|scheduled}
+// Module #12: Content Archive
+// ============================================================================
+export async function listContentArchive(env, query = {}) {
+  await ensureContentPublishingSchema(env.DB);
+  const typeParam = String(query.type || 'all').trim().toLowerCase();
+  const qParam = String(query.q || '').trim();
+  const limit = Math.max(1, Math.min(100, Number(query.limit) || 25));
+  const offset = Math.max(0, Number(query.offset) || 0);
+  const typeExpr = effectivePostTypeExpr();
+  const stageExpr = effectiveWorkflowExpr();
+
+  const baseWhere = [`deleted_at IS NULL`, `${typeExpr} IN ('article', 'news', 'current_affairs', 'announcement')`, `(status = 'archived' OR ${stageExpr} = 'archived')`];
+  const baseBind = [];
+  if (typeParam !== 'all' && EDITORIAL_POST_TYPES.includes(typeParam)) {
+    baseWhere.push(`${typeExpr} = ?`);
+    baseBind.push(typeParam);
+  }
+  if (qParam) {
+    const like = `%${likeEscape(qParam)}%`;
+    baseWhere.push(`(title LIKE ? ESCAPE '\\' OR slug LIKE ? ESCAPE '\\' OR COALESCE(archive_reason,'') LIKE ? ESCAPE '\\')`);
+    baseBind.push(like, like, like);
+  }
+
+  const monthPrefix = new Date().toISOString().slice(0, 7);
+  const [kpiRow, eligCountRow, eligRes, countRow, rowsRes] = await Promise.all([
+    env.DB.prepare(
+      `SELECT
+         COUNT(*) AS total_archived,
+         SUM(CASE WHEN COALESCE(archived_at, updated_at) LIKE ? THEN 1 ELSE 0 END) AS archived_this_month
+       FROM posts
+       WHERE deleted_at IS NULL AND ${typeExpr} IN ('article', 'news', 'current_affairs', 'announcement')
+         AND (status = 'archived' OR ${stageExpr} = 'archived')`
+    ).bind(`${monthPrefix}%`).first(),
+    env.DB.prepare(
+      `SELECT COUNT(*) AS n FROM posts
+       WHERE deleted_at IS NULL AND ${typeExpr} IN ('article', 'news', 'current_affairs', 'announcement')
+         AND status != 'archived' AND ${stageExpr} != 'archived'`
+    ).first(),
+    env.DB.prepare(
+      `SELECT * FROM posts
+       WHERE deleted_at IS NULL AND ${typeExpr} IN ('article', 'news', 'current_affairs', 'announcement')
+         AND status != 'archived' AND ${stageExpr} != 'archived'
+       ORDER BY COALESCE(updated_at, created_at) DESC LIMIT 50`
+    ).all(),
+    env.DB.prepare(`SELECT COUNT(*) AS n FROM posts WHERE ${baseWhere.join(' AND ')}`).bind(...baseBind).first(),
+    env.DB.prepare(
+      `SELECT * FROM posts WHERE ${baseWhere.join(' AND ')}
+       ORDER BY COALESCE(archived_at, updated_at, created_at) DESC LIMIT ? OFFSET ?`
+    ).bind(...baseBind, limit, offset).all()
+  ]);
+
+  return {
+    ok: true,
+    kpis: {
+      total_archived: Number(kpiRow && kpiRow.total_archived) || 0,
+      archived_this_month: Number(kpiRow && kpiRow.archived_this_month) || 0,
+      reclaimable_active_count: Number(eligCountRow && eligCountRow.n) || 0
+    },
+    paging: {
+      total: Number(countRow && countRow.n) || 0,
+      limit,
+      offset
+    },
+    eligible_items: (eligRes.results || []).map(normalizeRow),
+    items: (rowsRes.results || []).map(normalizeRow)
+  };
+}
+
+export async function archiveOrRestorePost(env, body = {}, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  const postId = String(body.post_id || body.id || '').trim();
+  if (!postId) throw new HttpError(400, 'POST_ID_REQUIRED', 'post_id is required');
+
+  const existing = await env.DB.prepare(`SELECT * FROM posts WHERE id = ? AND deleted_at IS NULL`).bind(postId).first();
+  if (!existing) throw new HttpError(404, 'NOT_FOUND', `Post "${postId}" not found`);
+
+  const action = String(body.action || 'archive').trim().toLowerCase();
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  const nowIso = new Date().toISOString();
+
+  await snapshotPostRevision(env.DB, existing, actorEmail, `archive:${action}`);
+
+  if (action === 'restore_draft' || action === 'restore') {
+    await env.DB.prepare(
+      `UPDATE posts SET status = 'draft', workflow_stage = 'draft', archived_at = NULL, archived_by = NULL, archive_reason = NULL, updated_by = ?, updated_at = ? WHERE id = ?`
+    ).bind(actorEmail, nowIso, postId).run();
+  } else {
+    const reason = cleanStr(body.archive_reason || body.reason, 240) || 'Editorial lifecycle archive';
+    await env.DB.prepare(
+      `UPDATE posts SET status = 'archived', workflow_stage = 'archived', archived_at = ?, archived_by = ?, archive_reason = ?, is_featured = 0, updated_by = ?, updated_at = ? WHERE id = ?`
+    ).bind(nowIso, actorEmail, reason, actorEmail, nowIso, postId).run();
+  }
+
+  const row = await env.DB.prepare(`SELECT * FROM posts WHERE id = ?`).bind(postId).first();
+  return { ok: true, action, item: normalizeRow(row) };
+}
+
+export async function purgeArchivedPost(env, id, confirmPhrase, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  const guard = await getNewsPostsGuard(env);
+  if ((guard.block_editor_hard_delete && actor.role !== 'admin') || actor.role !== 'admin') {
+    throw new HttpError(403, 'HARD_DELETE_BLOCKED', 'Only Super Administrators can permanently purge archived content.');
+  }
+
+  const existing = await env.DB.prepare(`SELECT * FROM posts WHERE id = ? AND deleted_at IS NULL`).bind(id).first();
+  if (!existing) throw new HttpError(404, 'NOT_FOUND', `Post "${id}" not found`);
+
+  const stage = existing.workflow_stage || existing.status;
+  if (existing.status !== 'archived' && stage !== 'archived') {
+    throw new HttpError(400, 'NOT_ARCHIVED', 'Only archived items can be permanently purged.');
+  }
+
+  if (String(confirmPhrase || '').trim() !== 'PURGE_ARCHIVED') {
+    throw new HttpError(400, 'CONFIRMATION_REQUIRED', 'Type PURGE_ARCHIVED to permanently purge an archived post.');
+  }
+
+  const nowIso = new Date().toISOString();
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  await env.DB.prepare(
+    `UPDATE posts SET deleted_at = ?, updated_by = ?, updated_at = ? WHERE id = ?`
+  ).bind(nowIso, actorEmail, nowIso, id).run();
+
+  return { ok: true, purged: true, id };
+}
+
+// ============================================================================
+// Module #13: Content Revisions
+// ============================================================================
+function normalizeRevisionRow(r) {
+  let snap = {};
+  try { snap = JSON.parse(r.snapshot_json || '{}'); } catch {}
+  return {
+    id: r.id,
+    post_id: r.post_id,
+    revision_number: Number(r.revision_number || r.version_no || 1),
+    title: r.title || snap.title || '',
+    slug: r.slug || snap.slug || '',
+    excerpt: r.excerpt !== null && r.excerpt !== undefined ? r.excerpt : (snap.summary || ''),
+    body_html: r.body_html !== null && r.body_html !== undefined ? r.body_html : (snap.body_md || ''),
+    post_type: r.post_type || snap.post_type || 'current_affairs',
+    category_slug: r.category_slug || snap.category_slug || '',
+    workflow_stage: r.workflow_stage || r.status || snap.workflow_stage || 'draft',
+    change_summary: r.change_summary || r.change_note || 'editorial_update',
+    actor_email: r.actor_email || r.edited_by || 'admin',
+    created_at: r.created_at
+  };
+}
+
+export async function listContentRevisions(env, query = {}) {
+  await ensureContentPublishingSchema(env.DB);
+  const postId = String(query.post_id || '').trim();
+  const qParam = String(query.q || '').trim();
+  const limit = Math.max(1, Math.min(100, Number(query.limit) || 25));
+  const offset = Math.max(0, Number(query.offset) || 0);
+
+  const where = [];
+  const bind = [];
+  if (postId) {
+    where.push(`post_id = ?`);
+    bind.push(postId);
+  }
+  if (qParam) {
+    const like = `%${likeEscape(qParam)}%`;
+    where.push(`(title LIKE ? ESCAPE '\\' OR COALESCE(slug,'') LIKE ? ESCAPE '\\' OR COALESCE(change_summary, change_note, '') LIKE ? ESCAPE '\\')`);
+    bind.push(like, like, like);
+  }
+  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
+  const [kpiRow, selRes, countRow, rowsRes] = await Promise.all([
+    env.DB.prepare(
+      `SELECT COUNT(*) AS total_revisions, COUNT(DISTINCT post_id) AS posts_with_history, MAX(created_at) AS latest_revision_at FROM content_revisions`
+    ).first(),
+    env.DB.prepare(
+      `SELECT post_id, MAX(title) AS title, COUNT(*) AS rev_count, MAX(created_at) AS last_rev_at
+       FROM content_revisions GROUP BY post_id ORDER BY last_rev_at DESC LIMIT 60`
+    ).all(),
+    env.DB.prepare(`SELECT COUNT(*) AS n FROM content_revisions ${whereSql}`).bind(...bind).first(),
+    env.DB.prepare(
+      `SELECT * FROM content_revisions ${whereSql} ORDER BY created_at DESC, COALESCE(revision_number, version_no) DESC LIMIT ? OFFSET ?`
+    ).bind(...bind, limit, offset).all()
+  ]);
+
+  return {
+    ok: true,
+    kpis: {
+      total_revisions: Number(kpiRow && kpiRow.total_revisions) || 0,
+      posts_with_history: Number(kpiRow && kpiRow.posts_with_history) || 0,
+      latest_revision_at: (kpiRow && kpiRow.latest_revision_at) || null
+    },
+    posts_selector: selRes.results || [],
+    paging: {
+      total: Number(countRow && countRow.n) || 0,
+      limit,
+      offset
+    },
+    items: (rowsRes.results || []).map(normalizeRevisionRow)
+  };
+}
+
+export async function compareContentRevisions(env, body = {}) {
+  await ensureContentPublishingSchema(env.DB);
+  const revisionId = String(body.revision_id || '').trim();
+  const targetId = String(body.target_revision_id || 'LIVE_POST').trim();
+  if (!revisionId) throw new HttpError(400, 'REVISION_ID_REQUIRED', 'revision_id is required');
+
+  const revA = await env.DB.prepare(`SELECT * FROM content_revisions WHERE id = ?`).bind(revisionId).first();
+  if (!revA) throw new HttpError(404, 'NOT_FOUND', `Revision "${revisionId}" not found`);
+  const left = normalizeRevisionRow(revA);
+
+  let right = null;
+  if (targetId === 'LIVE_POST') {
+    const live = await env.DB.prepare(`SELECT * FROM posts WHERE id = ? AND deleted_at IS NULL`).bind(revA.post_id).first();
+    if (!live) throw new HttpError(404, 'NOT_FOUND', `Live post "${revA.post_id}" not found`);
+    right = {
+      id: 'LIVE_POST',
+      title: live.title || '',
+      slug: live.slug || '',
+      excerpt: live.summary || '',
+      body_html: live.body_md || '',
+      category_slug: live.category_slug || (live.category ? slugify(live.category) : ''),
+      workflow_stage: live.workflow_stage || live.status || 'draft'
+    };
+  } else {
+    const revB = await env.DB.prepare(`SELECT * FROM content_revisions WHERE id = ?`).bind(targetId).first();
+    if (!revB) throw new HttpError(404, 'NOT_FOUND', `Target revision "${targetId}" not found`);
+    right = normalizeRevisionRow(revB);
+  }
+
+  const wc = (s) => {
+    const t = String(s || '').trim();
+    return t ? t.split(/\s+/).filter(Boolean).length : 0;
+  };
+  const bodyWordDelta = wc(right.body_html) - wc(left.body_html);
+
+  const diffs = {
+    title: { left: left.title, right: right.title, changed: left.title !== right.title },
+    slug: { left: left.slug, right: right.slug, changed: left.slug !== right.slug },
+    category_slug: { left: left.category_slug, right: right.category_slug, changed: left.category_slug !== right.category_slug },
+    workflow_stage: { left: left.workflow_stage, right: right.workflow_stage, changed: left.workflow_stage !== right.workflow_stage },
+    excerpt: { left: left.excerpt, right: right.excerpt, changed: left.excerpt !== right.excerpt },
+    body_word_delta: bodyWordDelta
+  };
+
+  return {
+    ok: true,
+    revision_id: revisionId,
+    target_revision_id: targetId,
+    post_id: revA.post_id,
+    diffs
+  };
+}
+
+export async function restoreContentRevision(env, revisionId, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  const rev = await env.DB.prepare(`SELECT * FROM content_revisions WHERE id = ?`).bind(revisionId).first();
+  if (!rev) throw new HttpError(404, 'NOT_FOUND', `Revision "${revisionId}" not found`);
+
+  const existing = await env.DB.prepare(`SELECT * FROM posts WHERE id = ? AND deleted_at IS NULL`).bind(rev.post_id).first();
+  if (!existing) throw new HttpError(404, 'NOT_FOUND', `Post "${rev.post_id}" not found`);
+
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  const preSnap = await snapshotPostRevision(env.DB, existing, actorEmail, `pre_restore:${revisionId}`);
+
+  let snap = {};
+  try { snap = JSON.parse(rev.snapshot_json || '{}'); } catch {}
+  const restoredTitle = snap.title || rev.title || existing.title;
+  const restoredSummary = snap.summary !== undefined ? snap.summary : (rev.excerpt || existing.summary || '');
+  const restoredBody = snap.body_md !== undefined ? snap.body_md : (rev.body_html || existing.body_md || '');
+  const restoredCat = snap.category !== undefined ? snap.category : (existing.category || '');
+  const restoredCatSlug = snap.category_slug || rev.category_slug || existing.category_slug || '';
+  const restoredTags = snap.tags_json || snap.tags || rev.tags_json || existing.tags_json || '[]';
+  const nowIso = new Date().toISOString();
+
+  await env.DB.prepare(
+    `UPDATE posts SET
+       title = ?, summary = ?, body_md = ?, category = ?, category_slug = ?,
+       tags = ?, tags_json = ?, status = 'draft', workflow_stage = 'draft',
+       updated_by = ?, updated_at = ?
+     WHERE id = ?`
+  ).bind(
+    restoredTitle, restoredSummary, restoredBody, restoredCat, restoredCatSlug,
+    restoredTags, restoredTags, actorEmail, nowIso, existing.id
+  ).run();
+
+  const row = await env.DB.prepare(`SELECT * FROM posts WHERE id = ?`).bind(existing.id).first();
+  return { ok: true, pre_restore_snapshot: preSnap, restored_from: revisionId, item: normalizeRow(row) };
+}
+
+// ============================================================================
+// Module #14: Bulk Content Operations
+// ============================================================================
+export async function getBulkOperationsState(env) {
+  await ensureContentPublishingSchema(env.DB);
+  await ensureSiteSettingsTable(env.DB);
+  let lastOp = null;
+  try {
+    const row = await env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(LAST_BULK_OP_KEY).first();
+    if (row && row.value_json) lastOp = JSON.parse(row.value_json);
+  } catch {}
+  return { ok: true, max_batch: 100, last_operation: lastOp };
+}
+
+export async function executeBulkContentOperation(env, body = {}, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  const rawIds = body.post_ids;
+  if (!Array.isArray(rawIds) || rawIds.length === 0 || rawIds.length > 100) {
+    throw new HttpError(400, 'INVALID_BATCH', 'post_ids must be a non-empty array with at most 100 IDs');
+  }
+  const postIds = [...new Set(rawIds.map(x => String(x || '').trim()).filter(Boolean))];
+  const action = String(body.action || '').trim().toLowerCase();
+  const ALLOWED_BULK = ['publish', 'move_to_draft', 'archive', 'assign_category', 'add_tag', 'feature', 'unfeature', 'delete'];
+  if (!ALLOWED_BULK.includes(action)) {
+    throw new HttpError(400, 'INVALID_BULK_ACTION', `action must be one of: ${ALLOWED_BULK.join(', ')}`);
+  }
+
+  const dryRun = body.dry_run !== false;
+  const guard = await getNewsPostsGuard(env);
+
+  if (action === 'delete') {
+    if ((guard.block_editor_hard_delete && actor.role !== 'admin') || actor.role !== 'admin') {
+      throw new HttpError(403, 'HARD_DELETE_BLOCKED', 'Only Super Administrators can execute bulk delete.');
+    }
+    if (!dryRun && String(body.confirm || '').trim() !== 'BULK_DELETE') {
+      throw new HttpError(400, 'CONFIRMATION_REQUIRED', 'Type BULK_DELETE to confirm bulk deletion.');
+    }
+  }
+  if (action === 'assign_category' && !cleanStr(body.category_slug || body.category, 80)) {
+    throw new HttpError(400, 'CATEGORY_REQUIRED', 'category_slug is required for assign_category');
+  }
+  if (action === 'add_tag' && !cleanStr(body.tag, 40)) {
+    throw new HttpError(400, 'TAG_REQUIRED', 'tag is required for add_tag');
+  }
+
+  const previews = [];
+  const eligibleRows = [];
+  const skipped = [];
+
+  for (const pid of postIds) {
+    const row = await env.DB.prepare(`SELECT * FROM posts WHERE id = ? AND deleted_at IS NULL`).bind(pid).first();
+    if (!row) {
+      skipped.push({ id: pid, reason: 'NOT_FOUND' });
+      previews.push({ id: pid, title: pid, eligible: false, reason: 'NOT_FOUND' });
+      continue;
+    }
+    const norm = normalizeRow(row);
+    if (action === 'publish' && guard.require_seo_meta_before_publish && !norm.has_seo_meta) {
+      skipped.push({ id: pid, title: norm.title, reason: 'SEO_META_REQUIRED' });
+      previews.push({ id: pid, title: norm.title, eligible: false, reason: 'SEO_META_REQUIRED' });
+      continue;
+    }
+    if (action === 'publish' && guard.require_reviewer_signoff && actor.role !== 'admin' && norm.workflow_stage !== 'approved' && norm.workflow_stage !== 'published') {
+      skipped.push({ id: pid, title: norm.title, reason: 'REVIEWER_SIGNOFF_REQUIRED' });
+      previews.push({ id: pid, title: norm.title, eligible: false, reason: 'REVIEWER_SIGNOFF_REQUIRED' });
+      continue;
+    }
+    eligibleRows.push(row);
+    previews.push({ id: pid, title: norm.title, eligible: true, reason: null });
+  }
+
+  if (dryRun) {
+    return {
+      ok: true,
+      dry_run: true,
+      action,
+      eligible_count: eligibleRows.length,
+      blocked_count: skipped.length,
+      skipped_reasons: skipped,
+      items: previews
+    };
+  }
+
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  const nowIso = new Date().toISOString();
+  const succeeded = [];
+  const failed = [];
+
+  for (const row of eligibleRows) {
+    try {
+      await snapshotPostRevision(env.DB, row, actorEmail, `bulk:${action}`);
+      if (action === 'publish') {
+        await env.DB.prepare(
+          `UPDATE posts SET status = 'published', workflow_stage = 'published', published_at = COALESCE(published_at, ?), updated_by = ?, updated_at = ? WHERE id = ?`
+        ).bind(nowIso, actorEmail, nowIso, row.id).run();
+      } else if (action === 'move_to_draft') {
+        await env.DB.prepare(
+          `UPDATE posts SET status = 'draft', workflow_stage = 'draft', updated_by = ?, updated_at = ? WHERE id = ?`
+        ).bind(actorEmail, nowIso, row.id).run();
+      } else if (action === 'archive') {
+        await env.DB.prepare(
+          `UPDATE posts SET status = 'archived', workflow_stage = 'archived', archived_at = ?, archived_by = ?, archive_reason = 'Bulk archive', is_featured = 0, updated_by = ?, updated_at = ? WHERE id = ?`
+        ).bind(nowIso, actorEmail, actorEmail, nowIso, row.id).run();
+      } else if (action === 'assign_category') {
+        const catSlug = slugify(body.category_slug || body.category);
+        const catName = cleanStr(body.category_name || body.category || catSlug, 80);
+        await env.DB.prepare(
+          `UPDATE posts SET category = ?, category_slug = ?, updated_by = ?, updated_at = ? WHERE id = ?`
+        ).bind(catName, catSlug, actorEmail, nowIso, row.id).run();
+      } else if (action === 'add_tag') {
+        const newTag = cleanStr(body.tag, 40);
+        const existingTags = parseTags(row.tags_json || row.tags);
+        if (!existingTags.some(t => slugify(t) === slugify(newTag))) existingTags.push(newTag);
+        const jsonTags = JSON.stringify(existingTags);
+        await env.DB.prepare(
+          `UPDATE posts SET tags = ?, tags_json = ?, updated_by = ?, updated_at = ? WHERE id = ?`
+        ).bind(jsonTags, jsonTags, actorEmail, nowIso, row.id).run();
+      } else if (action === 'feature') {
+        await env.DB.prepare(
+          `UPDATE posts SET is_featured = 1, featured_rank = CASE WHEN COALESCE(featured_rank, 0) = 0 THEN 5 ELSE featured_rank END, updated_by = ?, updated_at = ? WHERE id = ?`
+        ).bind(actorEmail, nowIso, row.id).run();
+      } else if (action === 'unfeature') {
+        await env.DB.prepare(
+          `UPDATE posts SET is_featured = 0, featured_rank = 0, updated_by = ?, updated_at = ? WHERE id = ?`
+        ).bind(actorEmail, nowIso, row.id).run();
+      } else if (action === 'delete') {
+        await env.DB.prepare(
+          `UPDATE posts SET deleted_at = ?, updated_by = ?, updated_at = ? WHERE id = ?`
+        ).bind(nowIso, actorEmail, nowIso, row.id).run();
+      }
+      succeeded.push(row.id);
+    } catch (err) {
+      failed.push({ id: row.id, error: err.message });
+    }
+  }
+
+  await ensureSiteSettingsTable(env.DB);
+  const receipt = {
+    action,
+    executed_at: nowIso,
+    executed_by: actorEmail,
+    succeeded_count: succeeded.length,
+    skipped_count: skipped.length,
+    failed_count: failed.length
+  };
+  await env.DB.prepare(
+    `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+     VALUES (?, ?, ?, ?)
+     ON CONFLICT(key) DO UPDATE SET
+       value_json = excluded.value_json,
+       updated_by = excluded.updated_by,
+       updated_at = excluded.updated_at`
+  ).bind(LAST_BULK_OP_KEY, JSON.stringify(receipt), actorEmail, nowIso).run();
+
+  return {
+    ok: true,
+    dry_run: false,
+    action,
+    succeeded,
+    skipped,
+    failed,
+    succeeded_count: succeeded.length,
+    skipped_count: skipped.length,
+    failed_count: failed.length,
+    receipt
+  };
+}
+
+// ============================================================================
+// Admin Router Dispatcher for /api/admin/content/{posts|announcements|featured|categories|tags|calendar|workflow|scheduled|archive|revisions|bulk}
 // ============================================================================
 export async function handleContentPublishing(request, env, actor, subResource, id, action) {
   const method = request.method;
+
+  // Module #12: /api/admin/content/archive
+  if (subResource === 'archive') {
+    if (!id && method === 'GET') {
+      const u = new URL(request.url);
+      return json(await listContentArchive(env, {
+        type: u.searchParams.get('type') || 'all',
+        q: u.searchParams.get('q') || '',
+        limit: u.searchParams.get('limit') || 25,
+        offset: u.searchParams.get('offset') || 0
+      }), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (!id && method === 'POST') {
+      if (actor.role !== 'admin' && actor.role !== 'editor') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can archive or restore content');
+      }
+      const body = await readJson(request, 8192).catch(() => ({}));
+      const res = await archiveOrRestorePost(env, body, actor);
+      await audit(env, request, actor, (res.action === 'restore_draft' || res.action === 'restore') ? 'content.archive.restore' : 'content.archive.move', 'posts', res.item.id, {
+        action: res.action
+      });
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    if (id && !action && method === 'DELETE') {
+      const u = new URL(request.url);
+      const body = await readJson(request, 4096).catch(() => ({}));
+      const confirmPhrase = u.searchParams.get('confirm') || body.confirm || '';
+      const res = await purgeArchivedPost(env, id, confirmPhrase, actor);
+      await audit(env, request, actor, 'content.archive.purge', 'posts', id, { purged: true });
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  // Module #13: /api/admin/content/revisions
+  if (subResource === 'revisions') {
+    if (!id && method === 'GET') {
+      const u = new URL(request.url);
+      return json(await listContentRevisions(env, {
+        post_id: u.searchParams.get('post_id') || '',
+        q: u.searchParams.get('q') || '',
+        limit: u.searchParams.get('limit') || 25,
+        offset: u.searchParams.get('offset') || 0
+      }), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (id === 'compare' && method === 'POST') {
+      const body = await readJson(request, 4096).catch(() => ({}));
+      return json(await compareContentRevisions(env, body), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (id && action === 'restore' && method === 'POST') {
+      if (actor.role !== 'admin' && actor.role !== 'editor') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can restore revisions');
+      }
+      const res = await restoreContentRevision(env, id, actor);
+      await audit(env, request, actor, 'content.revision.restore', 'posts', res.item.id, {
+        restored_from: id
+      });
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  // Module #14: /api/admin/content/bulk
+  if (subResource === 'bulk') {
+    if (!id && method === 'GET') {
+      return json(await getBulkOperationsState(env), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (!id && method === 'POST') {
+      if (actor.role !== 'admin' && actor.role !== 'editor') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can run bulk operations');
+      }
+      const body = await readJson(request, 32768).catch(() => ({}));
+      const res = await executeBulkContentOperation(env, body, actor);
+      if (!res.dry_run) {
+        await audit(env, request, actor, 'content.bulk.execute', 'posts', res.action, {
+          succeeded_count: res.succeeded_count,
+          skipped_count: res.skipped_count,
+          failed_count: res.failed_count
+        });
+      }
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
 
   // Module #9: /api/admin/content/calendar
   if (subResource === 'calendar') {
