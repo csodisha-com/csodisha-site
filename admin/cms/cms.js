@@ -13346,6 +13346,864 @@
     return wrap;
   }
 
+  function jobsDirectoryStudioPanel(domainSlug) {
+    var DOMAINS = {
+      'jobs-recruitment': {
+        num: '01',
+        title: 'Jobs & Recruitment',
+        publicPath: '/jobs/',
+        defaultType: 'job-notification',
+        quickTags: ['OPSC', 'OSSC', 'OSSSC', 'Odisha Govt', 'PSU', 'Banking', 'Graduate']
+      },
+      'career-explorer': {
+        num: '02',
+        title: 'Career Explorer',
+        publicPath: '/jobs/careers/',
+        defaultType: 'career-guide',
+        quickTags: ['OAS', 'Civil Services', 'IT & Cloud', 'Healthcare', 'Teaching', 'Skilled Trades']
+      },
+      'eligibility-explorer': {
+        num: '03',
+        title: 'Eligibility & Qualification Explorer',
+        publicPath: '/jobs/eligibility/',
+        defaultType: 'eligibility-matrix',
+        quickTags: ['10th Pass', '12th Pass', 'ITI / Diploma', 'Graduate', 'Age Relaxation', 'SEBC/SC/ST']
+      },
+      'courses-exams': {
+        num: '04',
+        title: 'Courses, Entrance Exams & Certifications',
+        publicPath: '/jobs/courses-exams/',
+        defaultType: 'course-exam',
+        quickTags: ['OJEE', 'OTET', 'OSSTET', 'GATE', 'NEET', 'OSDA', 'World Skill Center']
+      },
+      'scholarships-support': {
+        num: '05',
+        title: 'Scholarships & Financial Support',
+        publicPath: '/jobs/scholarships/',
+        defaultType: 'scholarship',
+        quickTags: ['Post-Matric', 'Pre-Matric', 'Odisha State Scholarship', 'Gopabandhu']
+      },
+      'international-overseas': {
+        num: '06',
+        title: 'International & Overseas Opportunities',
+        publicPath: '/jobs/overseas/',
+        defaultType: 'overseas-track',
+        quickTags: ['Fellowship', 'MEA', 'Skilled Migration', 'Study Abroad']
+      },
+      'career-employability': {
+        num: '07',
+        title: 'Career Development & Employability',
+        publicPath: '/jobs/employability/',
+        defaultType: 'employability-guide',
+        quickTags: ['Resume', 'Interview Prep', 'NAPS', 'Apprenticeship', 'Employment Exchange']
+      },
+      'institutions-portals': {
+        num: '08',
+        title: 'Institutions, Official Portals & Verification',
+        publicPath: '/jobs/portals/',
+        defaultType: 'official-portal',
+        quickTags: ['Official Portal', 'Anti-Fraud', 'University', 'Commission']
+      }
+    };
+    var cfg = DOMAINS[domainSlug] || DOMAINS['jobs-recruitment'];
+    var activeDomain = DOMAINS[domainSlug] ? domainSlug : 'jobs-recruitment';
+    var canWrite = me && ['admin', 'editor', 'reviewer'].includes(me.role);
+    var canDelete = me && me.role === 'admin';
+
+    var state = {
+      tree: null,
+      parentId: null,
+      healthTab: 'all', // all | empty | stale | reports
+      q: '',
+      status: '',
+      undoTimer: null
+    };
+
+    var wrap = el('div', { class: 'cso-ops-wrap' });
+
+    // Top Domain Live Bar
+    var addSubBtn = el('button', { type: 'button', class: 'btn sm', text: '+ Add Sub-Directory' });
+    addSubBtn.disabled = !canWrite;
+    var addItemBtn = el('button', { type: 'button', class: 'btn primary sm', text: '+ Add Opportunity / Guide' });
+    addItemBtn.disabled = !canWrite;
+    var refreshBtn = el('button', { type: 'button', class: 'btn sm', text: 'Refresh' });
+
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-ops-head' }, [
+        el('div', {}, [
+          el('h2', { text: 'Module #' + cfg.num + ' — ' + cfg.title }),
+          el('p', { class: 'muted sm', text: '4-Layer Jobs & Careers Studio · Multi-level D1 Taxonomy, R2 Attachments & DPDP PII Guard' })
+        ]),
+        el('div', { class: 'cso-ops-badges' }, [
+          el('a', { class: 'btn sm', href: cfg.publicPath, target: '_blank', rel: 'noopener', text: 'View Public (' + cfg.publicPath + ')' }),
+          addSubBtn,
+          addItemBtn,
+          refreshBtn
+        ])
+      ])
+    ]));
+
+    var undoBar = el('div', { class: 'cso-jd-undo-bar' });
+    undoBar.hidden = true;
+    wrap.appendChild(undoBar);
+
+    var kpiRow = el('div', { class: 'cso-ops-kpi-row' });
+    wrap.appendChild(kpiRow);
+
+    var healthTabsBox = el('div', { class: 'cso-jd-health-tabs' });
+    wrap.appendChild(healthTabsBox);
+
+    var folderDrawerBox = el('div', { class: 'cso-ops-card' });
+    folderDrawerBox.hidden = true;
+    wrap.appendChild(folderDrawerBox);
+
+    var composerBox = el('div');
+    composerBox.hidden = true;
+    wrap.appendChild(composerBox);
+
+    var crumbBar = el('div', { class: 'cso-sl-crumb-bar' });
+    var folderGridBox = el('div', { class: 'cso-sl-folder-grid' });
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-ops-subhead' }, [el('h3', { text: 'Multi-Level Sub-Directory Explorer' })]),
+      crumbBar,
+      folderGridBox
+    ]));
+
+    var searchInp = el('input', { class: 'input', type: 'search', placeholder: 'Search opportunities, recruiting body, qualification...' });
+    var statusSel = el('select', { class: 'select' }, [
+      el('option', { value: '', text: 'All statuses' }),
+      el('option', { value: 'published', text: 'Published' }),
+      el('option', { value: 'in_review', text: 'In Review' }),
+      el('option', { value: 'draft', text: 'Draft' }),
+      el('option', { value: 'archived', text: 'Archived' })
+    ]);
+    var clearFilterBtn = el('button', { type: 'button', class: 'btn sm', text: 'Reset Filters' });
+    var listHost = el('div');
+
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-ops-subhead' }, [el('h3', { text: 'Opportunities, Guides & Citizen Reports' })]),
+      el('div', { class: 'cso-cnt-toolbar' }, [
+        el('div', { class: 'cso-cnt-filter-row' }, [searchInp, statusSel, clearFilterBtn])
+      ]),
+      listHost
+    ]));
+
+    function showUndo(msg, onUndo) {
+      if (state.undoTimer) clearTimeout(state.undoTimer);
+      clear(undoBar);
+      undoBar.hidden = false;
+      var undoBtn = el('button', { type: 'button', class: 'btn sm', text: 'Undo (5s)' });
+      undoBtn.addEventListener('click', async function () {
+        if (state.undoTimer) clearTimeout(state.undoTimer);
+        undoBar.hidden = true;
+        await onUndo();
+      });
+      undoBar.appendChild(el('span', { text: msg }));
+      undoBar.appendChild(undoBtn);
+      state.undoTimer = setTimeout(function () { undoBar.hidden = true; }, 5000);
+    }
+
+    function renderKpis() {
+      clear(kpiRow);
+      var k = (state.tree && state.tree.kpis) || {};
+      var total = Math.max(1, Number(k.totalItems || 0));
+      var cards = [
+        { label: 'Sub-Directories', val: k.totalFolders || 0, max: Math.max(1, k.totalFolders || 1), cur: k.totalFolders || 0, note: (k.emptyFolders || 0) + ' empty' },
+        { label: 'Published Items', val: (k.publishedItems || 0) + ' / ' + (k.totalItems || 0), max: total, cur: k.publishedItems || 0, note: 'Live directory entries' },
+        { label: 'Verified Records', val: (k.verifiedItems || 0) + ' / ' + (k.totalItems || 0), max: total, cur: k.verifiedItems || 0, note: (k.staleItems || 0) + ' stale > 180d' },
+        { label: 'Citizen Reports', val: k.pendingSuggestions || 0, max: Math.max(1, (k.pendingSuggestions || 0) + 5), cur: k.pendingSuggestions || 0, note: 'Pending moderation' }
+      ];
+      cards.forEach(function (c) {
+        var prog = el('progress', { class: 'cso-jd-progress', max: String(c.max), value: String(c.cur) });
+        kpiRow.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+          el('div', { class: 'cso-ops-kpi-label', text: c.label }),
+          el('div', { class: 'cso-ops-kpi-val', text: String(c.val) }),
+          prog,
+          el('div', { class: 'muted sm', text: c.note })
+        ]));
+      });
+    }
+
+    function renderHealthTabs() {
+      clear(healthTabsBox);
+      var k = (state.tree && state.tree.kpis) || {};
+      var tabs = [
+        { id: 'all', label: 'All Directories (' + (k.totalFolders || 0) + ')' },
+        { id: 'empty', label: 'Empty Directories (0 Items: ' + (k.emptyFolders || 0) + ')' },
+        { id: 'stale', label: 'Expired / Stale > 180 Days (' + (k.staleItems || 0) + ')' },
+        { id: 'reports', label: 'Citizen Reports (Pending: ' + (k.pendingSuggestions || 0) + ')' }
+      ];
+      tabs.forEach(function (t) {
+        var b = el('button', {
+          type: 'button',
+          class: state.healthTab === t.id ? 'btn primary sm' : 'btn sm',
+          text: t.label
+        });
+        b.addEventListener('click', function () {
+          state.healthTab = t.id;
+          renderHealthTabs();
+          renderFolders();
+          renderList();
+        });
+        healthTabsBox.appendChild(b);
+      });
+    }
+
+    function openFolderDrawer(editing, parentForNew) {
+      clear(folderDrawerBox);
+      folderDrawerBox.hidden = false;
+      var isEdit = Boolean(editing && editing.id);
+      var titleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title) || '', placeholder: 'e.g. OPSC Assistant Professor' });
+      var slugInp = el('input', { class: 'input', type: 'text', value: (editing && editing.slug) || '', placeholder: 'auto-generated-slug' });
+      var badgeInp = el('input', { class: 'input', type: 'text', value: (editing && editing.hero_badge) || '', placeholder: 'e.g. STATE GOVT' });
+      var sortInp = el('input', { class: 'input', type: 'number', value: String((editing && editing.sort_order) || 10) });
+      var pubCb = el('input', { type: 'checkbox' });
+      pubCb.checked = editing ? Boolean(editing.is_published) : true;
+      var descTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Short directory overview...' });
+      descTa.value = (editing && editing.description) || '';
+      var seoTitleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.seo_title) || '', placeholder: 'SEO Title (<= 60 chars)' });
+      var seoDescTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'SEO Meta Description (<= 160 chars)...' });
+      seoDescTa.value = (editing && editing.seo_description) || '';
+
+      var serpTitle = el('div', { class: 'cso-jd-wa-title' });
+      var serpDesc = el('div', { class: 'muted sm' });
+      function refreshSerp() {
+        serpTitle.textContent = seoTitleInp.value.trim() || (titleInp.value.trim() ? titleInp.value.trim() + ' — CSOdisha' : 'Directory Page Title');
+        serpDesc.textContent = seoDescTa.value.trim() || descTa.value.trim() || 'Directory meta description preview.';
+      }
+      [titleInp, seoTitleInp, descTa, seoDescTa].forEach(function (inp) {
+        inp.addEventListener('input', refreshSerp);
+      });
+      refreshSerp();
+
+      var saveBtn = el('button', { type: 'button', class: 'btn primary sm', text: isEdit ? 'Save Directory Page' : 'Create Sub-Directory' });
+      saveBtn.disabled = !canWrite;
+      var cancelBtn = el('button', { type: 'button', class: 'btn sm', text: 'Close' });
+      cancelBtn.addEventListener('click', function () { folderDrawerBox.hidden = true; clear(folderDrawerBox); });
+
+      saveBtn.addEventListener('click', async function () {
+        if (!titleInp.value.trim()) { toast('Sub-directory title is required', true); return; }
+        saveBtn.disabled = true;
+        try {
+          var payload = {
+            domain_slug: activeDomain,
+            parent_id: isEdit ? editing.parent_id : (parentForNew || state.parentId || null),
+            title: titleInp.value.trim(),
+            slug: slugInp.value.trim(),
+            hero_badge: badgeInp.value.trim(),
+            sort_order: Number(sortInp.value || 10),
+            is_published: pubCb.checked,
+            description: descTa.value.trim(),
+            seo_title: seoTitleInp.value.trim(),
+            seo_description: seoDescTa.value.trim()
+          };
+          if (isEdit) {
+            await api('PUT', 'jobs-directory/folders/' + encodeURIComponent(editing.id), payload);
+            toast('Updated sub-directory page & SEO');
+          } else {
+            await api('POST', 'jobs-directory/folders', payload);
+            toast('Created sub-directory');
+          }
+          folderDrawerBox.hidden = true;
+          clear(folderDrawerBox);
+          await loadAll();
+        } catch (err) {
+          toast(err.message || 'Save failed', true);
+        } finally {
+          saveBtn.disabled = !canWrite;
+        }
+      });
+
+      folderDrawerBox.appendChild(el('div', { class: 'cso-ops-subhead' }, [
+        el('h3', { text: isEdit ? 'Edit Page Info & SEO Preview (' + editing.title + ')' : 'Add Sub-Directory' }),
+        cancelBtn
+      ]));
+      folderDrawerBox.appendChild(el('div', { class: 'cso-sl-drawer-grid' }, [
+        el('div', { class: 'cso-cnt-editor-pane' }, [
+          el('div', { class: 'cso-sl-drawer-row' }, [
+            el('div', { class: 'field' }, [el('label', { text: 'Directory Title *' }), titleInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Slug' }), slugInp])
+          ]),
+          el('div', { class: 'cso-sl-drawer-row' }, [
+            el('div', { class: 'field' }, [el('label', { text: 'Hero Badge' }), badgeInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Sort Order' }), sortInp])
+          ]),
+          el('div', { class: 'field' }, [el('label', {}, [pubCb, document.createTextNode(' Published on public directory')])]),
+          el('div', { class: 'field' }, [el('label', { text: 'Description' }), descTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'SEO Title' }), seoTitleInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'SEO Meta Description' }), seoDescTa]),
+          el('div', { class: 'cso-ops-badges' }, [saveBtn, cancelBtn])
+        ]),
+        el('div', { class: 'cso-cnt-preview-pane' }, [
+          el('h4', { text: 'Google SERP Preview' }),
+          el('div', { class: 'cso-jd-wa-card' }, [
+            el('div', { class: 'cso-jd-wa-meta', text: 'https://csodisha.com' + cfg.publicPath + (slugInp.value.trim() || 'directory') }),
+            serpTitle,
+            serpDesc
+          ])
+        ])
+      ]));
+    }
+
+    function renderFolders() {
+      clear(crumbBar);
+      clear(folderGridBox);
+      var allFolders = (state.tree && state.tree.folders) || [];
+      var byId = {};
+      allFolders.forEach(function (f) { byId[f.id] = f; });
+
+      // Breadcrumbs
+      var chain = [];
+      var cur = state.parentId ? byId[state.parentId] : null;
+      while (cur) {
+        chain.unshift(cur);
+        cur = cur.parent_id ? byId[cur.parent_id] : null;
+      }
+      var rootCrumb = el('button', { type: 'button', class: !state.parentId ? 'btn primary sm' : 'btn sm', text: cfg.title + ' (Root)' });
+      rootCrumb.addEventListener('click', function () { state.parentId = null; renderFolders(); renderList(); });
+      crumbBar.appendChild(rootCrumb);
+      chain.forEach(function (c) {
+        crumbBar.appendChild(el('span', { class: 'muted', text: ' / ' }));
+        var cb = el('button', { type: 'button', class: state.parentId === c.id ? 'btn primary sm' : 'btn sm', text: c.title });
+        cb.addEventListener('click', function () { state.parentId = c.id; renderFolders(); renderList(); });
+        crumbBar.appendChild(cb);
+      });
+
+      var visible = state.healthTab === 'empty'
+        ? allFolders.filter(function (f) { return Number(f.item_count || 0) === 0; })
+        : allFolders.filter(function (f) { return (f.parent_id || null) === (state.parentId || null); });
+
+      if (!visible.length) {
+        folderGridBox.appendChild(el('p', { class: 'muted sm', text: state.healthTab === 'empty' ? 'No empty sub-directories in this domain.' : 'No child sub-directories at this level. Use "+ Add Sub-Directory" to create one.' }));
+        return;
+      }
+
+      visible.forEach(function (f) {
+        var openBtn = el('button', { type: 'button', class: 'btn sm', text: 'Open' });
+        openBtn.addEventListener('click', function () { state.parentId = f.id; state.healthTab = 'all'; renderHealthTabs(); renderFolders(); renderList(); });
+
+        var editBtn = el('button', { type: 'button', class: 'btn sm', text: 'Edit Page Info & Preview' });
+        editBtn.addEventListener('click', function () { openFolderDrawer(f, null); });
+
+        var subBtn = el('button', { type: 'button', class: 'btn sm', text: '+ Sub-Folder' });
+        subBtn.disabled = !canWrite || Number(f.depth || 1) >= 4;
+        subBtn.addEventListener('click', function () { openFolderDrawer(null, f.id); });
+
+        var delBtn = el('button', { type: 'button', class: 'btn sm', text: 'Delete' });
+        delBtn.disabled = !canDelete;
+        delBtn.addEventListener('click', async function () {
+          if (!confirm('Delete sub-directory "' + f.title + '"?')) return;
+          try {
+            await api('DELETE', 'jobs-directory/folders/' + encodeURIComponent(f.id));
+            toast('Deleted sub-directory');
+            await loadAll();
+          } catch (err) {
+            toast(err.message || 'Cannot delete non-empty folder', true);
+          }
+        });
+
+        folderGridBox.appendChild(el('div', { class: 'cso-sl-folder-card' }, [
+          el('div', { class: 'cso-sl-folder-head' }, [
+            el('div', {}, [
+              el('strong', { text: f.title }),
+              el('div', { class: 'muted sm', text: 'Depth ' + f.depth + ' · ' + (f.item_count || 0) + ' items · /' + f.slug })
+            ]),
+            el('span', { class: f.is_published ? 'badge ok' : 'badge', text: f.is_published ? 'Live' : 'Hidden' })
+          ]),
+          el('div', { class: 'cso-ops-badges' }, [openBtn, editBtn, subBtn, delBtn])
+        ]));
+      });
+    }
+
+    function openComposer(editing) {
+      clear(composerBox);
+      composerBox.hidden = false;
+      var isEdit = Boolean(editing && editing.id);
+      var card = el('div', { class: 'cso-cnt-composer' });
+
+      var titleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title) || '', placeholder: 'Opportunity / Guide Title...' });
+      var titleCount = el('span', { class: 'cso-cnt-counter', text: '0/80' });
+      var slugInp = el('input', { class: 'input', type: 'text', value: (editing && editing.slug) || '', placeholder: 'auto-generated-slug' });
+
+      var folderSel = el('select', { class: 'select' });
+      var allFolders = (state.tree && state.tree.folders) || [];
+      allFolders.forEach(function (f) {
+        folderSel.appendChild(el('option', { value: f.id, text: 'L' + f.depth + ' · ' + f.title }));
+      });
+      if (editing && editing.folder_id) folderSel.value = editing.folder_id;
+      else if (state.parentId) folderSel.value = state.parentId;
+
+      var typeSel = el('select', { class: 'select' }, [
+        el('option', { value: 'job-notification', text: 'Job Notification' }),
+        el('option', { value: 'career-guide', text: 'Career Guide' }),
+        el('option', { value: 'eligibility-matrix', text: 'Eligibility Matrix' }),
+        el('option', { value: 'course-exam', text: 'Course / Entrance Exam' }),
+        el('option', { value: 'scholarship', text: 'Scholarship' }),
+        el('option', { value: 'overseas-track', text: 'Overseas Track' }),
+        el('option', { value: 'employability-guide', text: 'Employability Guide' }),
+        el('option', { value: 'official-portal', text: 'Official Portal' })
+      ]);
+      typeSel.value = (editing && editing.item_type) || cfg.defaultType;
+
+      var statusSelComp = el('select', { class: 'select' }, [
+        el('option', { value: 'draft', text: 'draft' }),
+        el('option', { value: 'in_review', text: 'in_review' }),
+        el('option', { value: 'published', text: 'published' }),
+        el('option', { value: 'archived', text: 'archived' })
+      ]);
+      statusSelComp.value = (editing && editing.status) || 'draft';
+
+      var langSel = el('select', { class: 'select' }, [
+        el('option', { value: 'EN', text: 'EN (English)' }),
+        el('option', { value: 'OR', text: 'OR (Odia)' }),
+        el('option', { value: 'EN+OR', text: 'EN+OR (Bilingual)' })
+      ]);
+      langSel.value = (editing && editing.language) || 'EN';
+
+      var bodyInp = el('input', { class: 'input', type: 'text', value: (editing && editing.recruiting_body) || '', placeholder: 'e.g. OPSC / OSSSC / OSDA' });
+      var qualInp = el('input', { class: 'input', type: 'text', value: (editing && editing.qualification_tag) || '', placeholder: 'e.g. Graduate (Any Stream)' });
+      var vacInp = el('input', { class: 'input', type: 'text', value: (editing && editing.vacancies) || '', placeholder: 'e.g. 399 Posts' });
+      var startInp = el('input', { class: 'input', type: 'text', value: (editing && editing.start_date) || '', placeholder: 'YYYY-MM-DD' });
+      var deadInp = el('input', { class: 'input', type: 'text', value: (editing && editing.deadline_date) || '', placeholder: 'YYYY-MM-DD' });
+      var examInp = el('input', { class: 'input', type: 'text', value: (editing && editing.exam_date) || '', placeholder: 'Exam / Counselling Date' });
+      var applyUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.official_apply_url) || '', placeholder: 'https://www.opsc.gov.in/' });
+      var featCb = el('input', { type: 'checkbox' });
+      featCb.checked = Boolean(editing && editing.featured);
+
+      // R2 Cover Image Upload (max 5MB)
+      var coverUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.cover_image_url) || '', placeholder: 'https://... or upload below' });
+      var coverAltInp = el('input', { class: 'input', type: 'text', value: (editing && editing.cover_image_alt) || '', placeholder: 'Cover image alt text' });
+      var coverFileInp = el('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp' });
+      coverFileInp.addEventListener('change', async function () {
+        var f = coverFileInp.files && coverFileInp.files[0];
+        if (!f) return;
+        if (f.size > 5 * 1024 * 1024) { toast('Cover image must be <= 5 MB', true); return; }
+        var fd = new FormData();
+        fd.append('file', f);
+        fd.append('kind', 'image');
+        try {
+          var r = await fetch('/api/admin/content/upload', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSO-CSRF': '1' }, body: fd });
+          var j = await r.json();
+          if (!r.ok) throw new Error(j.message || 'Upload failed');
+          coverUrlInp.value = j.url || '';
+          toast('Uploaded cover image to R2');
+        } catch (err) { toast(err.message || 'Upload failed', true); }
+      });
+
+      // R2 PDF Notification Upload (max 15MB)
+      var attachments = (editing && Array.isArray(editing.attachments)) ? editing.attachments.slice() : [];
+      var attListBox = el('div', { class: 'cso-ops-badges' });
+      function renderAttachments() {
+        clear(attListBox);
+        attachments.forEach(function (a, i) {
+          var rm = el('button', { type: 'button', class: 'btn sm', text: '× ' + a.name });
+          rm.addEventListener('click', function () { attachments.splice(i, 1); renderAttachments(); });
+          attListBox.appendChild(rm);
+        });
+      }
+      renderAttachments();
+      var pdfFileInp = el('input', { type: 'file', accept: 'application/pdf' });
+      pdfFileInp.addEventListener('change', async function () {
+        var f = pdfFileInp.files && pdfFileInp.files[0];
+        if (!f) return;
+        if (f.size > 15 * 1024 * 1024) { toast('PDF attachment must be <= 15 MB', true); return; }
+        var fd = new FormData();
+        fd.append('file', f);
+        fd.append('kind', 'pdf');
+        try {
+          var r = await fetch('/api/admin/content/upload', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSO-CSRF': '1' }, body: fd });
+          var j = await r.json();
+          if (!r.ok) throw new Error(j.message || 'PDF upload failed');
+          attachments.push({ name: f.name, url: j.url, size: f.size, contentType: 'application/pdf' });
+          renderAttachments();
+          toast('Uploaded PDF notification to R2');
+        } catch (err) { toast(err.message || 'PDF upload failed', true); }
+      });
+
+      // Reference Links
+      var links = (editing && Array.isArray(editing.links)) ? editing.links.slice() : [];
+      var linksBox = el('div');
+      var linkLabelInp = el('input', { class: 'input', type: 'text', placeholder: 'Link label (e.g. Official Syllabus PDF)' });
+      var linkUrlInp = el('input', { class: 'input', type: 'url', placeholder: 'https://...' });
+      var addLinkBtn = el('button', { type: 'button', class: 'btn sm', text: '+ Add Link' });
+      function renderLinks() {
+        clear(linksBox);
+        links.forEach(function (l, i) {
+          var rm = el('button', { type: 'button', class: 'btn sm', text: 'Remove' });
+          rm.addEventListener('click', function () { links.splice(i, 1); renderLinks(); });
+          linksBox.appendChild(el('div', { class: 'cso-ops-badges' }, [
+            el('span', { class: 'sm', text: l.label + ' (' + l.url + ')' }),
+            rm
+          ]));
+        });
+      }
+      addLinkBtn.addEventListener('click', function () {
+        if (!linkUrlInp.value.trim()) return;
+        links.push({ label: linkLabelInp.value.trim() || 'Official Link', url: linkUrlInp.value.trim() });
+        linkLabelInp.value = '';
+        linkUrlInp.value = '';
+        renderLinks();
+      });
+      renderLinks();
+
+      // Interactive Tag Chips
+      var tagsState = (editing && Array.isArray(editing.tags)) ? editing.tags.slice() : [];
+      var tagChipsWrap = el('div', { class: 'cso-cnt-tag-chips' });
+      var tagInput = el('input', { class: 'cso-cnt-tag-input', type: 'text', placeholder: 'Add tag + Enter' });
+      var tagQuickWrap = el('div', { class: 'cso-cnt-tag-suggestions' });
+      function addTag(raw) {
+        var v = String(raw || '').trim().replace(/^#+/, '').slice(0, 40);
+        if (v && !tagsState.includes(v) && tagsState.length < 12) { tagsState.push(v); renderTags(); }
+      }
+      function renderTags() {
+        clear(tagChipsWrap);
+        tagsState.forEach(function (t, i) {
+          var rm = el('button', { type: 'button', class: 'cso-cnt-tag-chip-rm', text: '×' });
+          rm.addEventListener('click', function () { tagsState.splice(i, 1); renderTags(); });
+          tagChipsWrap.appendChild(el('span', { class: 'cso-cnt-tag-chip' }, [document.createTextNode(t), rm]));
+        });
+        tagChipsWrap.appendChild(tagInput);
+      }
+      tagInput.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' || ev.key === ',') { ev.preventDefault(); addTag(tagInput.value); tagInput.value = ''; }
+      });
+      renderTags();
+      cfg.quickTags.forEach(function (qt) {
+        var qb = el('button', { type: 'button', class: 'cso-cnt-tag-suggest', text: '+ ' + qt });
+        qb.addEventListener('click', function () { addTag(qt); });
+        tagQuickWrap.appendChild(qb);
+      });
+
+      var summaryTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Concise candidate summary...' });
+      summaryTa.value = (editing && editing.summary) || '';
+      var bodyTa = el('textarea', { class: 'textarea', rows: '6', placeholder: 'Detailed eligibility, selection stages, and application instructions...' });
+      bodyTa.value = (editing && editing.body_html) || '';
+      var seoTitleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.seo_title) || '', placeholder: 'SEO Title' });
+      var seoDescInp = el('textarea', { class: 'textarea', rows: '2', placeholder: 'SEO Meta Description...' });
+      seoDescInp.value = (editing && editing.seo_description) || '';
+
+      var piiWarnBox = el('div', { class: 'cso-cnt-pii-warn' });
+      piiWarnBox.hidden = true;
+
+      // Live Preview Pane (Reader / SERP / WhatsApp)
+      var previewMode = 'reader';
+      var previewTabs = el('div', { class: 'cso-jd-preview-tabs' });
+      var previewBody = el('div');
+      function renderPreview() {
+        titleCount.textContent = titleInp.value.length + '/80';
+        var pii = detectClientPii(titleInp.value + '\n' + summaryTa.value + '\n' + bodyTa.value);
+        if (pii.length) {
+          piiWarnBox.hidden = false;
+          piiWarnBox.textContent = 'DPDP Act 2023 PII Guard: Possible personal data detected (' + pii.join(', ') + '). Remove personal phone/email/Aadhaar/PAN before publishing.';
+        } else {
+          piiWarnBox.hidden = true;
+        }
+        clear(previewTabs);
+        [['reader', 'Reader Preview'], ['serp', 'Google SERP'], ['whatsapp', 'WhatsApp Share']].forEach(function (tab) {
+          var tb = el('button', { type: 'button', class: previewMode === tab[0] ? 'btn primary sm' : 'btn sm', text: tab[1] });
+          tb.addEventListener('click', function () { previewMode = tab[0]; renderPreview(); });
+          previewTabs.appendChild(tb);
+        });
+        clear(previewBody);
+        var t = titleInp.value.trim() || 'Untitled Opportunity / Guide';
+        var s = summaryTa.value.trim() || 'Summary preview appears here.';
+        if (previewMode === 'reader') {
+          previewBody.appendChild(el('div', { class: 'cso-jd-wa-card' }, [
+            el('div', { class: 'cso-jd-wa-title', text: t }),
+            el('div', { class: 'cso-jd-wa-meta', text: [bodyInp.value.trim(), qualInp.value.trim(), vacInp.value.trim()].filter(Boolean).join(' · ') || cfg.title }),
+            el('div', { class: 'sm', text: s }),
+            deadInp.value.trim() ? el('div', { class: 'muted sm', text: 'Deadline: ' + deadInp.value.trim() }) : document.createTextNode('')
+          ]));
+        } else if (previewMode === 'serp') {
+          previewBody.appendChild(el('div', { class: 'cso-jd-wa-card' }, [
+            el('div', { class: 'cso-jd-wa-meta', text: 'https://csodisha.com' + cfg.publicPath + (slugInp.value.trim() || 'item') }),
+            el('div', { class: 'cso-jd-wa-title', text: seoTitleInp.value.trim() || t + ' | CSOdisha' }),
+            el('div', { class: 'muted sm', text: seoDescInp.value.trim() || s })
+          ]));
+        } else {
+          previewBody.appendChild(el('div', { class: 'cso-jd-wa-card' }, [
+            el('div', { class: 'cso-jd-wa-title', text: 'CSOdisha Verified Alert: ' + t }),
+            el('div', { class: 'sm', text: s }),
+            el('div', { class: 'cso-jd-wa-meta', text: 'Official Portal: ' + (applyUrlInp.value.trim() || 'https://csodisha.com' + cfg.publicPath) })
+          ]));
+        }
+      }
+      [titleInp, slugInp, bodyInp, qualInp, vacInp, deadInp, applyUrlInp, summaryTa, bodyTa, seoTitleInp, seoDescInp].forEach(function (inp) {
+        inp.addEventListener('input', renderPreview);
+      });
+      renderPreview();
+
+      var saveBtn = el('button', { type: 'button', class: 'btn primary sm', text: isEdit ? 'Save Changes & Revision' : 'Create Opportunity / Guide' });
+      saveBtn.disabled = !canWrite;
+      var closeBtn = el('button', { type: 'button', class: 'btn sm', text: 'Close' });
+      closeBtn.addEventListener('click', function () { composerBox.hidden = true; clear(composerBox); });
+
+      saveBtn.addEventListener('click', async function () {
+        if (!titleInp.value.trim()) { toast('Title is required', true); return; }
+        if (!folderSel.value) { toast('Select a sub-directory', true); return; }
+        saveBtn.disabled = true;
+        try {
+          var payload = {
+            domain_slug: activeDomain,
+            folder_id: folderSel.value,
+            title: titleInp.value.trim(),
+            slug: slugInp.value.trim(),
+            item_type: typeSel.value,
+            status: statusSelComp.value,
+            language: langSel.value,
+            recruiting_body: bodyInp.value.trim(),
+            qualification_tag: qualInp.value.trim(),
+            vacancies: vacInp.value.trim(),
+            start_date: startInp.value.trim(),
+            deadline_date: deadInp.value.trim(),
+            exam_date: examInp.value.trim(),
+            official_apply_url: applyUrlInp.value.trim(),
+            cover_image_url: coverUrlInp.value.trim(),
+            cover_image_alt: coverAltInp.value.trim(),
+            attachments: attachments,
+            links: links,
+            tags: tagsState,
+            featured: featCb.checked,
+            summary: summaryTa.value.trim(),
+            body_html: bodyTa.value,
+            seo_title: seoTitleInp.value.trim(),
+            seo_description: seoDescInp.value.trim()
+          };
+          if (isEdit) {
+            await api('PUT', 'jobs-directory/items/' + encodeURIComponent(editing.id), payload);
+            toast('Updated item & recorded revision');
+          } else {
+            await api('POST', 'jobs-directory/items', payload);
+            toast('Created opportunity / guide');
+          }
+          composerBox.hidden = true;
+          clear(composerBox);
+          await loadAll();
+        } catch (err) {
+          toast(err.message || 'Save failed', true);
+        } finally {
+          saveBtn.disabled = !canWrite;
+        }
+      });
+
+      card.appendChild(el('div', { class: 'cso-ops-subhead' }, [
+        el('h3', { text: isEdit ? 'Edit Item (' + editing.id + ')' : 'Add Opportunity / Career Guide' }),
+        closeBtn
+      ]));
+      card.appendChild(piiWarnBox);
+
+      var leftPane = el('div', { class: 'cso-cnt-editor-pane' }, [
+        el('div', { class: 'cso-ops-grid-2' }, [
+          el('div', { class: 'field' }, [el('label', {}, [document.createTextNode('Title * '), titleCount]), titleInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Slug' }), slugInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Sub-Directory *' }), folderSel]),
+          el('div', { class: 'field' }, [el('label', { text: 'Item Type' }), typeSel]),
+          el('div', { class: 'field' }, [el('label', { text: 'Status' }), statusSelComp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Language' }), langSel]),
+          el('div', { class: 'field' }, [el('label', { text: 'Recruiting Body / Authority' }), bodyInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Qualification Tag' }), qualInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Vacancies / Seats' }), vacInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Official Apply / Portal URL' }), applyUrlInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Start Date' }), startInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Deadline Date' }), deadInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Exam / Event Date' }), examInp]),
+          el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Featured in directory')])])
+        ]),
+        el('div', { class: 'cso-ops-grid-2' }, [
+          el('div', { class: 'field' }, [el('label', { text: 'Cover Image URL (R2 max 5MB)' }), coverUrlInp, coverFileInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Cover Image Alt' }), coverAltInp])
+        ]),
+        el('div', { class: 'field' }, [el('label', { text: 'Official Notification PDF (R2 max 15MB)' }), pdfFileInp, attListBox]),
+        el('div', { class: 'field' }, [
+          el('label', { text: 'Structured Reference Links' }),
+          el('div', { class: 'cso-ops-grid-2' }, [linkLabelInp, linkUrlInp]),
+          addLinkBtn,
+          linksBox
+        ]),
+        el('div', { class: 'field' }, [el('label', { text: 'Tags' }), tagChipsWrap, tagQuickWrap]),
+        el('div', { class: 'field' }, [el('label', { text: 'Summary' }), summaryTa]),
+        el('div', { class: 'field' }, [el('label', { text: 'Body HTML / Guide Content' }), bodyTa]),
+        el('div', { class: 'cso-ops-grid-2' }, [
+          el('div', { class: 'field' }, [el('label', { text: 'SEO Title' }), seoTitleInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'SEO Description' }), seoDescInp])
+        ]),
+        el('div', { class: 'cso-ops-badges' }, [saveBtn, closeBtn])
+      ]);
+
+      var rightPane = el('div', { class: 'cso-cnt-preview-pane' }, [
+        el('h4', { text: 'Live Multi-Channel Preview' }),
+        previewTabs,
+        previewBody
+      ]);
+
+      card.appendChild(el('div', { class: 'cso-cnt-split' }, [leftPane, rightPane]));
+      composerBox.appendChild(card);
+    }
+
+    async function renderList() {
+      clear(listHost);
+      if (state.healthTab === 'reports') {
+        try {
+          var sugRes = await api('GET', 'jobs-directory/suggestions?domain=' + encodeURIComponent(activeDomain));
+          var sugs = sugRes.suggestions || [];
+          if (!sugs.length) {
+            listHost.appendChild(el('p', { class: 'muted sm', text: 'No citizen reports or suggestions for this domain.' }));
+            return;
+          }
+          sugs.forEach(function (s) {
+            var resolveBtn = el('button', { type: 'button', class: 'btn primary sm', text: 'Mark Resolved' });
+            resolveBtn.disabled = !canWrite || s.status === 'resolved';
+            resolveBtn.addEventListener('click', async function () {
+              await api('PATCH', 'jobs-directory/suggestions/' + encodeURIComponent(s.id), { status: 'resolved', moderator_note: 'Verified by editorial desk' });
+              toast('Marked citizen report resolved');
+              await loadAll();
+            });
+            var dismissBtn = el('button', { type: 'button', class: 'btn sm', text: 'Dismiss' });
+            dismissBtn.disabled = !canWrite || s.status === 'dismissed';
+            dismissBtn.addEventListener('click', async function () {
+              await api('PATCH', 'jobs-directory/suggestions/' + encodeURIComponent(s.id), { status: 'dismissed' });
+              toast('Dismissed report');
+              await loadAll();
+            });
+            listHost.appendChild(el('div', { class: 'cso-jd-sug-card' }, [
+              el('div', { class: 'cso-sl-folder-head' }, [
+                el('strong', { text: (s.reporter_name || 'Citizen') + ' · ' + s.category }),
+                el('span', { class: s.status === 'pending' ? 'badge warn' : 'badge ok', text: s.status })
+              ]),
+              el('div', { class: 'sm', text: s.message }),
+              el('div', { class: 'cso-ops-badges' }, [resolveBtn, dismissBtn])
+            ]));
+          });
+        } catch (err) {
+          listHost.appendChild(el('div', { class: 'alert', text: err.message || 'Failed to load suggestions' }));
+        }
+        return;
+      }
+
+      var items = (state.tree && state.tree.items) || [];
+      if (!items.length) {
+        listHost.appendChild(el('p', { class: 'muted sm', text: 'No items match the current folder or filter.' }));
+        return;
+      }
+
+      var tbl = el('table', { class: 'table' });
+      tbl.appendChild(el('thead', {}, [
+        el('tr', {}, [
+          el('th', { text: 'Title / Recruiting Body' }),
+          el('th', { text: 'Type & Qualification' }),
+          el('th', { text: 'Status' }),
+          el('th', { text: 'Verified' }),
+          el('th', { text: 'Actions' })
+        ])
+      ]));
+      var tb = el('tbody');
+      items.forEach(function (it) {
+        var editBtn = el('button', { type: 'button', class: 'btn sm', text: 'Edit' });
+        editBtn.addEventListener('click', async function () {
+          try {
+            var full = await api('GET', 'jobs-directory/items/' + encodeURIComponent(it.id));
+            openComposer(full.item || it);
+          } catch (err) {
+            toast(err.message || 'Failed to load item', true);
+          }
+        });
+
+        var toggleNext = it.status === 'published' ? 'draft' : 'published';
+        var pubBtn = el('button', { type: 'button', class: 'btn sm', text: it.status === 'published' ? 'Unpublish' : 'Publish' });
+        pubBtn.disabled = !canWrite;
+        pubBtn.addEventListener('click', async function () {
+          try {
+            var res = await api('PATCH', 'jobs-directory/items/' + encodeURIComponent(it.id) + '/status', { status: toggleNext });
+            var prev = res.previous_status || it.status;
+            await loadAll();
+            showUndo('Changed "' + it.title + '" to ' + toggleNext, async function () {
+              await api('PATCH', 'jobs-directory/items/' + encodeURIComponent(it.id) + '/status', { status: prev });
+              toast('Restored status to ' + prev);
+              await loadAll();
+            });
+          } catch (err) {
+            toast(err.message || 'Status update failed', true);
+          }
+        });
+
+        var verBtn = el('button', { type: 'button', class: 'btn sm', text: 'Verify' });
+        verBtn.disabled = !canWrite;
+        verBtn.addEventListener('click', async function () {
+          try {
+            await api('POST', 'jobs-directory/items/' + encodeURIComponent(it.id) + '/verify', {});
+            toast('Marked verified');
+            await loadAll();
+          } catch (err) {
+            toast(err.message || 'Verify failed', true);
+          }
+        });
+
+        var delBtn = el('button', { type: 'button', class: 'btn sm', text: 'Delete' });
+        delBtn.disabled = !canDelete;
+        delBtn.addEventListener('click', async function () {
+          if (!confirm('Delete "' + it.title + '"?')) return;
+          try {
+            await api('DELETE', 'jobs-directory/items/' + encodeURIComponent(it.id));
+            toast('Deleted item');
+            await loadAll();
+          } catch (err) {
+            toast(err.message || 'Delete failed', true);
+          }
+        });
+
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, [
+            el('strong', { text: it.title }),
+            el('div', { class: 'muted sm', text: (it.recruiting_body || cfg.title) + (it.deadline_date ? ' · Deadline: ' + it.deadline_date : '') })
+          ]),
+          el('td', { class: 'sm', text: it.item_type + (it.qualification_tag ? ' · ' + it.qualification_tag : '') }),
+          el('td', {}, [el('span', { class: it.status === 'published' ? 'badge ok' : 'badge', text: it.status })]),
+          el('td', { class: 'sm', text: it.verified_at ? it.verified_at.slice(0, 10) : 'Unverified' }),
+          el('td', {}, [el('div', { class: 'cso-ops-badges' }, [editBtn, pubBtn, verBtn, delBtn])])
+        ]));
+      });
+      tbl.appendChild(tb);
+      listHost.appendChild(tbl);
+    }
+
+    async function loadAll() {
+      var qs = new URLSearchParams();
+      qs.set('domain', activeDomain);
+      if (state.parentId) qs.set('folder_id', state.parentId);
+      if (state.status) qs.set('status', state.status);
+      if (state.q) qs.set('q', state.q);
+      if (state.healthTab === 'stale') qs.set('health', 'stale');
+      state.tree = await api('GET', 'jobs-directory/tree?' + qs.toString());
+      renderKpis();
+      renderHealthTabs();
+      renderFolders();
+      await renderList();
+    }
+
+    addSubBtn.addEventListener('click', function () { openFolderDrawer(null, state.parentId); });
+    addItemBtn.addEventListener('click', function () { openComposer(null); });
+    refreshBtn.addEventListener('click', function () { loadAll(); });
+    searchInp.addEventListener('input', function () { state.q = searchInp.value.trim(); loadAll(); });
+    statusSel.addEventListener('change', function () { state.status = statusSel.value; loadAll(); });
+    clearFilterBtn.addEventListener('click', function () {
+      state.parentId = null;
+      state.status = '';
+      state.q = '';
+      state.healthTab = 'all';
+      searchInp.value = '';
+      statusSel.value = '';
+      loadAll();
+    });
+
+    loadAll();
+    return wrap;
+  }
+
+  function viewJobsDirectoryStudio(domainSlug) {
+    setTitle('Jobs & Careers Studio');
+    main.appendChild(jobsDirectoryStudioPanel(domainSlug || 'jobs-recruitment'));
+  }
+
   function viewStudyLibraryStudio(domainSlug) {
     setTitle('Study Library Studio');
     main.appendChild(studyLibraryStudioPanel(domainSlug || 'early-childhood'));
@@ -13356,7 +14214,7 @@
     content: function (parts) { return viewContentStudio(parts[1]); },
     'study-library': function (parts) { return viewStudyLibraryStudio(parts[1]); },
     pages: function (parts) { return viewSitePages(parts[1] === 'legal' ? 'Information & Legal' : (parts[1] === 'workspace' ? 'Candidate Workspace' : '')); },
-    'jobs-directory': function () { return viewJobsDirectory(); },
+    'jobs-directory': function (parts) { return parts[1] ? viewJobsDirectoryStudio(parts[1]) : viewJobsDirectory(); },
     'about-directory': function () { return viewAboutDirectory(); },
     schemes: function (parts) { return viewSchemesManager(parts[1]); },
     'schemes-directory': function () { return viewSchemesDirectoryTree(); },

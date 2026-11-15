@@ -13,6 +13,7 @@ import { handleSecurityGovernance } from '../../_lib/security-governance.js';
 import { handleSecurityCompliance } from '../../_lib/security-compliance.js';
 import { handleContentPublishing } from '../../_lib/content-publishing.js';
 import { handleStudyLibraryStudio } from '../../_lib/study-library-studio.js';
+import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { parsePaging, likeEscape } from '../../_lib/validate.js';
 import { handlePosts, POST_TYPES } from './_posts.js';
 import { handleMockTests, handleQuestion } from './_mock.js';
@@ -129,6 +130,9 @@ export async function handleAdminApi(request, env) {
         if (!sub) return await handleExamTaxonomy(request, env, actor, id);
         break;
       case 'jobs-directory':
+        if (id === 'tree' || id === 'folders' || id === 'items' || id === 'suggestions') {
+          return await handleJobsDirectoryStudio(request, env, actor, id, sub, extra);
+        }
         if (!sub) return await handleJobsDirectoryAdmin(request, env, actor, id);
         break;
       case 'about-directory':

@@ -11902,8 +11902,8 @@
       return true;
     }
 
-    // Folder 06 & Directory Folders 20-23: Category & Navigation Tree Studios (all 10 Study Library modules handled by Master Study Library Studio)
-    if (folderId === 'folder-06' || folderId === 'folder-jobs-careers' || folderId === 'folder-schemes-benefits' || folderId === 'folder-community') {
+    // Folder 06 & Directory Folders 21-23: Category & Navigation Tree Studios (Study Library & Jobs & Careers handled by Master Studios)
+    if (folderId === 'folder-06' || folderId === 'folder-schemes-benefits' || folderId === 'folder-community') {
       var meta = moduleMeta(folderId, moduleId);
       return renderCategoryTreeStudio(meta.title, meta.folderTitle + ' — Interactive navigation & taxonomy tree hydrated from site-manifest.json.', root, actions);
     }

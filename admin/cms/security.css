@@ -336,3 +336,14 @@
 .cso-sl-prev-wa{padding:12px;border-radius:8px;background:#ecfdf5;border-left:4px solid #14532d}
 .cso-sl-prev-wa p{margin:4px 0 6px;font-size:13px;color:#334155}
 @media(max-width:960px){.cso-sl-drawer-grid{grid-template-columns:1fr}.cso-sl-drawer-row{grid-template-columns:1fr}}
+.cso-jd-progress{width:100%;height:6px;margin-top:6px;border-radius:999px;overflow:hidden;appearance:none;background:#e5e7eb}
+.cso-jd-progress::-webkit-progress-bar{background:#e5e7eb;border-radius:999px}
+.cso-jd-progress::-webkit-progress-value{background:#16a34a;border-radius:999px}
+.cso-jd-progress::-moz-progress-bar{background:#16a34a;border-radius:999px}
+.cso-jd-undo-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:10px;background:#14532d;color:#ffffff;font-size:.86rem;margin-bottom:12px}
+.cso-jd-wa-card{border:1px solid #bbf7d0;background:#f0fdf4;border-radius:10px;padding:12px;display:grid;gap:4px}
+.cso-jd-wa-title{font-weight:700;color:#14532d;font-size:.94rem}
+.cso-jd-wa-meta{font-size:.8rem;color:#166534}
+.cso-jd-preview-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.cso-jd-health-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.cso-jd-sug-card{border:1px solid #e5e7eb;border-radius:10px;padding:12px;display:grid;gap:8px;background:#fff}

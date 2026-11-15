@@ -69,6 +69,16 @@
     ['security/dpdp', 'DPDP Act 2023 Compliance Vault'],
     ['security/incidents', 'Incident Response & Audit Export']
   ];
+  var JOBS_SUITE = [
+    ['jobs-directory/jobs-recruitment', 'Jobs & Recruitment'],
+    ['jobs-directory/career-explorer', 'Career Explorer'],
+    ['jobs-directory/eligibility-explorer', 'Eligibility & Qualification Explorer'],
+    ['jobs-directory/courses-exams', 'Courses, Entrance Exams & Certifications'],
+    ['jobs-directory/scholarships-support', 'Scholarships & Financial Support'],
+    ['jobs-directory/international-overseas', 'International & Overseas Opportunities'],
+    ['jobs-directory/career-employability', 'Career Development & Employability'],
+    ['jobs-directory/institutions-portals', 'Institutions, Official Portals & Verification']
+  ];
 
   var ROUTES = {
     'module-01-001': ['dashboard', OPS],
@@ -193,7 +203,15 @@
     'module-sl-007': ['study-library/international-inclusive', STUDY_SUITE],
     'module-sl-008': ['study-library/life-skills-culture', STUDY_SUITE],
     'module-sl-009': ['study-library/libraries-support', STUDY_SUITE],
-    'module-sl-010': ['study-library/odisha-study-hub', STUDY_SUITE]
+    'module-sl-010': ['study-library/odisha-study-hub', STUDY_SUITE],
+    'module-jc-001': ['jobs-directory/jobs-recruitment', JOBS_SUITE],
+    'module-jc-002': ['jobs-directory/career-explorer', JOBS_SUITE],
+    'module-jc-003': ['jobs-directory/eligibility-explorer', JOBS_SUITE],
+    'module-jc-004': ['jobs-directory/courses-exams', JOBS_SUITE],
+    'module-jc-005': ['jobs-directory/scholarships-support', JOBS_SUITE],
+    'module-jc-006': ['jobs-directory/international-overseas', JOBS_SUITE],
+    'module-jc-007': ['jobs-directory/career-employability', JOBS_SUITE],
+    'module-jc-008': ['jobs-directory/institutions-portals', JOBS_SUITE]
   };
 
   var FOLDER_FALLBACKS = {
@@ -216,7 +234,7 @@
     'folder-17': ['operations/snapshots', OPS_SUITE],
     'folder-18': ['banner', SITE],
     'folder-19': ['registry'],
-    'folder-jobs-careers': ['jobs-directory', CONTENT],
+    'folder-jobs-careers': ['jobs-directory/jobs-recruitment', JOBS_SUITE],
     'folder-schemes-benefits': ['schemes', CONTENT],
     'folder-study-library': ['study-library/early-childhood', STUDY_SUITE],
     'folder-community': ['feedback', [['feedback', 'Community Feedback'], ['users', 'Candidate Accounts']]],
@@ -349,6 +367,10 @@
       window.CSOCms.mount(host, r[0], null);
     } else if (r[1] === STUDY_SUITE) {
       renderSuiteStepper(STUDY_SUITE, 'module-sl-', 'folder-study-library', folderId, moduleId, r[0], root, host, 'Study Library Directory Module Stepper');
+      root.appendChild(host);
+      window.CSOCms.mount(host, r[0], null);
+    } else if (r[1] === JOBS_SUITE) {
+      renderSuiteStepper(JOBS_SUITE, 'module-jc-', 'folder-jobs-careers', folderId, moduleId, r[0], root, host, 'Jobs & Careers Directory Module Stepper');
       root.appendChild(host);
       window.CSOCms.mount(host, r[0], null);
     } else {
