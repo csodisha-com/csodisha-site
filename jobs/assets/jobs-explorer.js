@@ -141,7 +141,7 @@
       domains.forEach(function (d) {
         domainsEl.appendChild(el('a', { class: 'cso-jobs-domain-card', href: d.publicPath }, [
           el('div', { class: 'cso-jobs-domain-top' }, [
-            el('span', { text: 'MODULE #' + d.num }),
+            el('span', { text: '#' + d.num }),
             el('span', { text: d.folder_count + ' categories · ' + d.item_count + ' entries' })
           ]),
           el('div', { class: 'cso-jobs-domain-title', text: d.title }),

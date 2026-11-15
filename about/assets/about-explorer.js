@@ -161,12 +161,12 @@
 
     const kpis = [
       { val: formatNum(t.totalPublishedResources || 0), lbl: pick('Total Verified Resources', 'ମୋଟ ଯାଞ୍ଚ ହୋଇଥିବା ସମ୍ବଳ') },
-      { val: formatNum(t.totalFolders || 0), lbl: pick('Directory Sections & Topics', 'ଡିରେକ୍ଟୋରୀ ବିଭାଗ') },
       { val: formatNum(t.studyItems || 0), lbl: pick('Study Library Guides', 'ଅଧ୍ୟୟନ ଗାଇଡ୍') },
       { val: formatNum(t.jobsItems || 0), lbl: pick('Jobs & Career Notices', 'ନିଯୁକ୍ତି ସୂଚନା') },
       { val: formatNum(t.schemesItems || 0), lbl: pick('Welfare Schemes', 'ସରକାରୀ ଯୋଜନା') },
       { val: formatNum(t.communityItems || 0), lbl: pick('Community Chapters', 'ସମୁଦାୟ ଶାଖା') },
-      { val: formatNum(t.resolvedFeedbackCount || 0), lbl: pick('Verified Fixes Logged', 'ସମାଧାନ ହୋଇଥିବା ତ୍ରୁଟି') },
+      { val: formatNum(t.totalFolders || 0), lbl: pick('Topic Collections', 'ବିଷୟ ସଂଗ୍ରହ') },
+      { val: formatNum(t.resolvedFeedbackCount || 0), lbl: pick('Verified Corrections', 'ସମାଧାନ ହୋଇଥିବା ତ୍ରୁଟି') },
       { val: String(t.districtsCount || 30), lbl: pick('Odisha Districts Covered', 'ଓଡ଼ିଶାର ଜିଲ୍ଲା') }
     ];
 
@@ -177,7 +177,6 @@
       kpiMount.appendChild(card);
     }
 
-    const maxFolders = Math.max(1, ...dirs.map((d) => Number(d.folders || 0)));
     barMount.textContent = '';
     for (const d of dirs) {
       const card = el('a', 'cso-about-telemetry-card');
@@ -185,13 +184,10 @@
       const top = el('div', 'cso-about-telemetry-top');
       top.append(
         el('span', '', pick(d.label, d.labelOr)),
-        el('span', '', `${formatNum(d.items)} ${pick('items', 'ଟି')}`)
+        el('span', '', `${formatNum(d.items)} ${pick('guides', 'ଟି')}`)
       );
-      const prog = el('progress', 'cso-about-progress');
-      prog.max = maxFolders;
-      prog.value = Math.max(1, Number(d.folders || 0));
-      const sub = el('div', 'cso-about-telemetry-sub', `${formatNum(d.folders)} ${pick('directory folders', 'ଫୋଲ୍ଡର୍')}`);
-      card.append(top, prog, sub);
+      const sub = el('div', 'cso-about-telemetry-sub', `${formatNum(d.folders)} ${pick('topic sections →', 'ବିଭାଗ →')}`);
+      card.append(top, sub);
       barMount.appendChild(card);
     }
   }
@@ -414,8 +410,9 @@
           const row = el('a', 'cso-about-changelog-item');
           row.href = entry.url || '/about/';
           const meta = el('div', 'cso-about-changelog-meta');
+          const cleanBadge = String(entry.badge || 'Update').replace(/\bv\d+(?:\.\d+)*\b/gi, '').trim() || 'Update';
           meta.append(
-            el('span', 'cso-about-tag', entry.badge || 'Update'),
+            el('span', 'cso-about-tag', cleanBadge),
             el('strong', '', pick(entry.title, entry.title_or)),
             el('span', 'cso-about-muted', entry.summary || '')
           );
@@ -428,9 +425,9 @@
     } catch { /* fallback below */ }
 
     const fallback = [
-      { badge: 'v64 Release', title: 'Unified /about/ Citizen Charter & Live Cross-Suite D1 Telemetry', summary: 'Added live counts across Study Library, Jobs, Schemes & Community + Anti-Scam URL Checker.', url: '/about/', time: '2026-11-15' },
-      { badge: 'v63 Release', title: '10-Domain Community & Civic Networks Explorer + XML Sitemap', summary: 'Launched bilingual Odisha district chapters, FPOs, SHGs, NGOs & safety governance.', url: '/community/', time: '2026-11-15' },
-      { badge: 'v61 Release', title: '8-Domain Schemes & Benefits Directory Unified', summary: 'Unified 4,192+ welfare taxonomy nodes and eligibility guidance across Odisha.', url: '/schemes/', time: '2026-11-14' }
+      { badge: 'Platform Update', title: 'Unified Citizen Charter & Live Cross-Directory Metrics', summary: 'Added live verified counts across Study Library, Jobs, Schemes & Community plus Anti-Scam URL Checker.', url: '/about/', time: '2026-11-15' },
+      { badge: 'Community', title: 'Odisha District Chapters, SHGs, FPOs & Civic Networks', summary: 'Launched bilingual Odisha district chapters, student mentorship circles, NGOs & safety governance.', url: '/community/', time: '2026-11-15' },
+      { badge: 'Schemes & Benefits', title: 'Unified Odisha & Central Welfare Schemes Explorer', summary: 'Organised welfare scheme eligibility checklists, required documents, and official portals across Odisha.', url: '/schemes/', time: '2026-11-14' }
     ];
     list.textContent = '';
     fallback.forEach((entry) => {

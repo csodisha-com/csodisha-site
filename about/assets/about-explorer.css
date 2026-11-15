@@ -42,12 +42,20 @@ a { color: var(--forest); }
   height: 100vh;
   overflow-y: auto;
   background: #ffffff;
-  border-right: 1px solid var(--line);
+  border-right: 1px solid #e5e0d8;
   padding: 14px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   z-index: 30;
+}
+.cso-about-rail nav,
+nav.cso-about-nav {
+  background: transparent;
+  color: #1f2937;
+  border-radius: 0;
+  position: static;
+  box-shadow: none;
 }
 .cso-about-brand {
   display: flex;
@@ -113,17 +121,25 @@ a { color: var(--forest); }
   gap: 8px;
   padding: 8px 10px;
   border-radius: 10px;
-  color: var(--ink);
+  color: #1f2937;
   text-decoration: none;
   font-size: 0.86rem;
   font-weight: 600;
   border: 1px solid transparent;
 }
-.cso-about-nav-link:hover,
-.cso-about-nav-link.is-active {
-  background: var(--accent-soft);
-  color: var(--forest);
+.cso-about-nav-link:hover {
+  background: #f0fdf4;
+  color: #14532d;
   border-color: #bbf7d0;
+}
+.cso-about-nav-link.is-active {
+  background: #14532d;
+  color: #ffffff;
+  border-color: #14532d;
+}
+.cso-about-nav-link.is-active .cso-about-nav-num {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 .cso-about-nav-num {
   width: 24px;

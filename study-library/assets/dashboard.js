@@ -704,11 +704,7 @@
           el('span', 'telemetry-name', g.title),
           el('span', 'telemetry-count', `${topics} topics`)
         );
-        const prog = el('progress', 'telemetry-progress');
-        prog.max = totalTopics;
-        prog.value = topics;
-        prog.setAttribute('aria-label', `${g.title}: ${topics} topics`);
-        row.append(head, prog);
+        row.append(head);
         trackList.appendChild(row);
       });
       trackPanel.appendChild(trackList);
@@ -719,7 +715,6 @@
         { key: 'study_notes', label: 'Study Notes' },
         { key: 'odisha_gk', label: 'Odisha GK & Current Affairs' }
       ];
-      const totalRes = Math.max(1, state.resources.length || 1);
       const resPanel = el('div', 'telemetry-panel');
       resPanel.appendChild(el('h3', 'telemetry-panel-title', 'Verified Resource Type Breakdown'));
       const resList = el('div', 'telemetry-list');
@@ -731,11 +726,7 @@
           el('span', 'telemetry-name', tc.label),
           el('span', 'telemetry-count', `${count} verified`)
         );
-        const prog = el('progress', 'telemetry-progress telemetry-progress--accent');
-        prog.max = totalRes;
-        prog.value = count;
-        prog.setAttribute('aria-label', `${tc.label}: ${count} verified resources`);
-        row.append(head, prog);
+        row.append(head);
         resList.appendChild(row);
       });
       resPanel.appendChild(resList);
@@ -1122,7 +1113,7 @@
 
     if (syncBadge) {
       syncBadge.textContent = dirLoadedFromD1
-        ? `● Live from D1 (${state.counts.totalNodes || 1681} Nodes)`
+        ? `● Live Verified Directory (${state.counts.totalNodes || 1681} Topics)`
         : `Offline Fallback (${state.groups.length} Groups)`;
     }
 

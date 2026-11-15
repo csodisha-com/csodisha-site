@@ -87,7 +87,7 @@
       if (grid) {
         grid.appendChild(el('a', { class: 'cso-schemes-domain-card', href: href }, [
           el('div', { class: 'cso-schemes-domain-top' }, [
-            el('span', { text: 'MODULE #' + d.num }),
+            el('span', { text: '#' + d.num }),
             el('span', { text: (d.folder_count || 0) + ' categories · ' + (d.item_count || 0) + ' entries' })
           ]),
           el('div', { class: 'cso-schemes-domain-title', text: title }),

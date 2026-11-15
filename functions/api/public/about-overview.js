@@ -26,7 +26,6 @@ export async function getAboutOverviewData(env) {
     communityItems,
     postsCount,
     activeJobsPosts,
-    aboutNodesCount,
     resolvedFeedbackCount
   ] = await Promise.all([
     safeCount(db, 'SELECT COUNT(*) AS n FROM study_library_folders WHERE is_active = 1'),
@@ -39,7 +38,6 @@ export async function getAboutOverviewData(env) {
     safeCount(db, "SELECT COUNT(*) AS n FROM community_directory_items WHERE status = 'published'"),
     safeCount(db, `SELECT COUNT(*) AS n FROM posts WHERE ${PUBLIC_VISIBLE_SQL}`),
     safeCount(db, `SELECT COUNT(*) AS n FROM posts WHERE type = 'job' AND ${PUBLIC_VISIBLE_SQL} AND (last_date IS NULL OR last_date >= date('now'))`),
-    safeCount(db, "SELECT COUNT(*) AS n FROM about_directory_nodes WHERE status = 'published'"),
     safeCount(db, "SELECT COUNT(*) AS n FROM community_feedback WHERE status = 'resolved'")
   ]);
 
@@ -101,8 +99,6 @@ export async function getAboutOverviewData(env) {
       schemesItems,
       communityFolders,
       communityItems,
-      postsCount,
-      aboutNodesCount,
       resolvedFeedbackCount,
       districtsCount: 30
     },
