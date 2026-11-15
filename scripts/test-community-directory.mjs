@@ -3,8 +3,13 @@ import { DatabaseSync } from 'node:sqlite';
 import {
   ensureCommunityDirectoryStudioSchema,
   handleCommunityDirectoryStudio,
+  handlePublicCommunityOverviewApi,
+  handlePublicCommunityItemsApi,
+  handlePublicCommunitySuggestApi,
+  handleCommunityDirectorySitemapXml,
   COMMUNITY_DOMAINS
 } from '../functions/_lib/community-directory-studio.js';
+import { handlePublicCommunityRoute } from '../functions/_lib/community-directory-ssr.js';
 
 function createMockDb() {
   const db = new DatabaseSync(':memory:');
@@ -242,7 +247,89 @@ async function main() {
   const bridged = await legEnv.DB.prepare('SELECT COUNT(*) AS cnt FROM community_directory_folders WHERE legacy_node_id IS NOT NULL').first();
   assert.equal(bridged.cnt, 1);
 
-  // 6. Cleanup
+  // 6. Public Overview, Paginated Items, SSR Routes, DPDP Suggest & Sitemap (v63)
+  assert.equal(COMMUNITY_DOMAINS.length, 10);
+  const ovRes = await handlePublicCommunityOverviewApi(
+    new Request('https://csodisha.com/api/public/community-directory/overview'),
+    env
+  );
+  assert.equal(ovRes.status, 200);
+  const ovJson = await ovRes.json();
+  assert.equal(ovJson.domains.length, 10);
+  assert.ok(ovJson.totals.totalFolders >= 20);
+  assert.ok(ovJson.totals.totalPublished >= 5);
+
+  const itemsPageRes = await handlePublicCommunityItemsApi(
+    new Request('https://csodisha.com/api/public/community-directory/items?page=1&limit=4'),
+    env
+  );
+  assert.equal(itemsPageRes.status, 200);
+  const itemsPageJson = await itemsPageRes.json();
+  assert.ok(Array.isArray(itemsPageJson.items));
+  assert.ok(itemsPageJson.items.length >= 1 && itemsPageJson.items.length <= 4);
+  assert.equal(itemsPageJson.page, 1);
+  assert.ok(itemsPageJson.totalPages >= 1);
+
+  const firstItem = itemsPageJson.items[0];
+  const ssrDirRes = await handlePublicCommunityRoute(
+    new Request(`https://csodisha.com/community/${firstItem.domain_slug}/`),
+    env,
+    `/community/${firstItem.domain_slug}/`
+  );
+  assert.equal(ssrDirRes.status, 200);
+  const ssrDirHtml = await ssrDirRes.text();
+  assert.ok(ssrDirHtml.includes('application/ld+json'));
+  assert.ok(!/style\s*=/i.test(ssrDirHtml), 'SSR directory must have zero style= attributes');
+
+  const ssrItemRes = await handlePublicCommunityRoute(
+    new Request(`https://csodisha.com/community/item/${firstItem.slug}/`),
+    env,
+    `/community/item/${firstItem.slug}/`
+  );
+  assert.equal(ssrItemRes.status, 200);
+  const ssrItemHtml = await ssrItemRes.text();
+  assert.ok(ssrItemHtml.includes(firstItem.title));
+  assert.ok(!/style\s*=/i.test(ssrItemHtml), 'SSR item page must have zero style= attributes');
+
+  const ssr404Res = await handlePublicCommunityRoute(
+    new Request('https://csodisha.com/community/item/nonexistent-community-xyz/'),
+    env,
+    '/community/item/nonexistent-community-xyz/'
+  );
+  assert.equal(ssr404Res.status, 404);
+
+  const suggestRes = await handlePublicCommunitySuggestApi(
+    new Request('https://csodisha.com/api/public/community-directory/suggest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        domain_slug: 'youth-ngos-volunteering',
+        suggestion_type: 'new_community',
+        reporter_name: 'Asha',
+        message: 'Cuttack Youth Eco Volunteers: contact lead@example.org or 9876543210 for weekend plantation.',
+        suggested_url: 'https://example.org/eco'
+      })
+    }),
+    env
+  );
+  assert.equal(suggestRes.status, 201);
+  const suggestJson = await suggestRes.json();
+  assert.ok(suggestJson.id);
+  const savedSuggest = await env.DB.prepare('SELECT message FROM community_directory_suggestions WHERE id = ?').bind(suggestJson.id).first();
+  assert.ok(!savedSuggest.message.includes('lead@example.org'), 'Email must be DPDP redacted');
+  assert.ok(!savedSuggest.message.includes('9876543210'), 'Phone must be DPDP redacted');
+
+  const sitemapRes = await handleCommunityDirectorySitemapXml(
+    new Request('https://csodisha.com/sitemap-community.xml'),
+    env
+  );
+  assert.equal(sitemapRes.status, 200);
+  const sitemapXml = await sitemapRes.text();
+  assert.ok(sitemapXml.includes('<urlset'));
+  assert.ok(sitemapXml.includes('https://csodisha.com/community/'));
+  assert.ok(sitemapXml.includes(`/community/item/${firstItem.slug}/`));
+
+  // 7. Cleanup
   assert.equal((await handleCommunityDirectoryStudio(makeReq('DELETE', `https://csodisha.com/api/admin/community-directory/items/${createdItem.id}`), env, admin, 'items', createdItem.id)).status, 200);
   assert.equal((await handleCommunityDirectoryStudio(makeReq('DELETE', `https://csodisha.com/api/admin/community-directory/folders/${childFolder.id}`), env, admin, 'folders', childFolder.id)).status, 200);
   assert.equal((await handleCommunityDirectoryStudio(makeReq('DELETE', `https://csodisha.com/api/admin/community-directory/folders/${parentFolder.id}`), env, admin, 'folders', parentFolder.id)).status, 200);

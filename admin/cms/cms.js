@@ -14896,20 +14896,20 @@
 
   function communityDirectoryStudioPanel(domainSlug) {
     var DOMAINS = {
-      'local-odisha-communities': { num: '01', title: 'Local & Odisha Communities', defaultRegion: 'All Odisha (30 Districts)', quickTags: ['30 Districts', 'Civic Chapter', 'Reading Circle', 'Panchayat', 'Bhubaneswar'] },
-      'students-educators-mentorship': { num: '02', title: 'Students, Educators & Mentorship', defaultRegion: 'All Odisha (30 Districts)', quickTags: ['OPSC', 'OSSSC', 'UGC NET', 'Teachers Forum', 'First-Gen'] },
-      'careers-business-networks': { num: '03', title: 'Careers, Business & Professional Networks', defaultRegion: 'Bhubaneswar & Cuttack', quickTags: ['Startup Odisha', 'MSME', 'Handloom', 'Alumni', 'Artisans'] },
-      'agriculture-rural-livelihoods': { num: '04', title: 'Agriculture & Rural Livelihoods', defaultRegion: 'Koraput & KBK Region', quickTags: ['FPO', 'Shree Anna', 'Millets', 'Chilika', 'Organic'] },
-      'women-families-inclusion': { num: '05', title: 'Women, Families, Health & Inclusion', defaultRegion: 'All Odisha (30 Districts)', quickTags: ['Mission Shakti', 'SHG', 'Women in STEM', 'Nutrition', 'Divyangjan'] },
-      'youth-ngos-volunteering': { num: '06', title: 'Youth, NGOs & Volunteering', defaultRegion: 'All Odisha (30 Districts)', quickTags: ['NSS', 'NYKS', 'Red Cross', 'Volunteering', 'NGO'] },
-      'culture-sports-traditional': { num: '07', title: 'Culture, Sports & Traditional Communities', defaultRegion: 'Puri & Konark', quickTags: ['Odissi', 'Sambalpuri', 'Hockey', 'Literature', 'Heritage'] },
-      'environment-science-tech': { num: '08', title: 'Environment, Science & Technology', defaultRegion: 'Bhubaneswar & Cuttack', quickTags: ['Conservation', 'Chilika', 'Citizen Science', 'Open Source', 'STEM'] },
-      'digital-international-forums': { num: '09', title: 'Digital, International & Community Forums', defaultRegion: 'Global Odia Diaspora', quickTags: ['Diaspora', 'Telegram', 'WhatsApp', 'Q&A Forum', 'Global Odia'] },
-      'community-safety-governance': { num: '10', title: 'Community Directory, Safety & Governance', defaultRegion: 'All Odisha (30 Districts)', quickTags: ['DPDP Charter', 'Safety Verified', 'Moderation', 'Anti-Spam'] }
+      'local-odisha-communities': { num: '01', title: 'Local & Odisha Communities', defaultRegion: 'All Odisha (30 Districts)', regionPlaceholder: 'e.g. Balasore, Bhadrak & Mayurbhanj', publicPath: '/community/local-odisha-communities/', defaultBody: '<p>Verified district & block civic circle open to Odisha residents.</p>', quickTags: ['30 Districts', 'Civic Chapter', 'Reading Circle', 'Panchayat', 'Bhubaneswar'] },
+      'students-educators-mentorship': { num: '02', title: 'Students, Educators & Mentorship', defaultRegion: 'All Odisha (30 Districts)', regionPlaceholder: 'e.g. All Odisha (30 Districts)', publicPath: '/community/students-educators-mentorship/', defaultBody: '<p>Peer exam preparation & educator mentorship circle.</p>', quickTags: ['OPSC', 'OSSSC', 'UGC NET', 'Teachers Forum', 'First-Gen'] },
+      'careers-business-networks': { num: '03', title: 'Careers, Business & Professional Networks', defaultRegion: 'Bhubaneswar & Cuttack', regionPlaceholder: 'e.g. Sambalpur, Burla & Rourkela', publicPath: '/community/careers-business-networks/', defaultBody: '<p>Startup, MSME, artisan & alumni professional chapter.</p>', quickTags: ['Startup Odisha', 'MSME', 'Handloom', 'Alumni', 'Artisans'] },
+      'agriculture-rural-livelihoods': { num: '04', title: 'Agriculture & Rural Livelihoods', defaultRegion: 'Koraput & KBK Region', regionPlaceholder: 'e.g. Koraput & KBK Region', publicPath: '/community/agriculture-rural-livelihoods/', defaultBody: '<p>FPO, Shree Anna millet & rural livelihood collective.</p>', quickTags: ['FPO', 'Shree Anna', 'Millets', 'Chilika', 'Organic'] },
+      'women-families-inclusion': { num: '05', title: 'Women, Families, Health & Inclusion', defaultRegion: 'All Odisha (30 Districts)', regionPlaceholder: 'e.g. All Odisha (30 Districts)', publicPath: '/community/women-families-inclusion/', defaultBody: '<p>Mission Shakti SHG, Women in STEM & Divyangjan inclusion circle.</p>', quickTags: ['Mission Shakti', 'SHG', 'Women in STEM', 'Nutrition', 'Divyangjan'] },
+      'youth-ngos-volunteering': { num: '06', title: 'Youth, NGOs & Volunteering', defaultRegion: 'All Odisha (30 Districts)', regionPlaceholder: 'e.g. Puri & Konark (Coastal)', publicPath: '/community/youth-ngos-volunteering/', defaultBody: '<p>NSS, NYKS, Apada Mitra & verified Odisha NGO volunteer corps.</p>', quickTags: ['NSS', 'NYKS', 'Red Cross', 'Volunteering', 'NGO'] },
+      'culture-sports-traditional': { num: '07', title: 'Culture, Sports & Traditional Communities', defaultRegion: 'Puri & Konark', regionPlaceholder: 'e.g. Sundargarh / Puri & Konark', publicPath: '/community/culture-sports-traditional/', defaultBody: '<p>Odia Sahitya, classical arts & grassroots hockey/sports circle.</p>', quickTags: ['Odissi', 'Sambalpuri', 'Hockey', 'Literature', 'Heritage'] },
+      'environment-science-tech': { num: '08', title: 'Environment, Science & Technology', defaultRegion: 'Bhubaneswar & Cuttack', regionPlaceholder: 'e.g. Bhubaneswar / Chilika', publicPath: '/community/environment-science-tech/', defaultBody: '<p>Eco-club, wildlife conservation & open-source STEM community.</p>', quickTags: ['Conservation', 'Chilika', 'Citizen Science', 'Open Source', 'STEM'] },
+      'digital-international-forums': { num: '09', title: 'Digital, International & Community Forums', defaultRegion: 'Global Odia Diaspora', regionPlaceholder: 'e.g. Global Odia Diaspora', publicPath: '/community/digital-international-forums/', defaultBody: '<p>Global Odia diaspora chapter & verified open-knowledge forum.</p>', quickTags: ['Diaspora', 'Telegram', 'WhatsApp', 'Q&A Forum', 'Global Odia'] },
+      'community-safety-governance': { num: '10', title: 'Community Directory, Safety & Governance', defaultRegion: 'All Odisha (30 Districts)', regionPlaceholder: 'e.g. All Odisha (30 Districts)', publicPath: '/community/community-safety-governance/', defaultBody: '<p>Community safety, anti-scam & DPDP Act 2023 governance charter.</p>', quickTags: ['DPDP Charter', 'Safety Verified', 'Moderation', 'Anti-Spam'] }
     };
     var activeDomain = DOMAINS[domainSlug] ? domainSlug : 'local-odisha-communities';
     var cfg = DOMAINS[activeDomain];
-    var publicUrl = 'https://csodisha.com/community/' + activeDomain + '/';
+    var publicUrl = 'https://csodisha.com' + cfg.publicPath;
     var canWrite = me && ['admin', 'editor', 'reviewer'].includes(me.role);
     var canDelete = me && me.role === 'admin';
 
@@ -15007,12 +15007,23 @@
       clear(kpiRow);
       var k = (state.tree && state.tree.kpis) || {};
       var total = Math.max(1, Number(k.totalItems || 0));
-      [
+      var cards = [
         { label: 'Total Directories', val: k.totalDirectories || 0, max: Math.max(1, k.totalDirectories || 1), cur: k.totalDirectories || 0, note: (k.emptyDirectories || 0) + ' empty' },
         { label: 'Published Communities', val: (k.publishedCommunities || 0) + ' / ' + (k.totalItems || 0), max: total, cur: k.publishedCommunities || 0, note: 'Live directory entries' },
         { label: 'Safety-Verified Circles', val: k.safetyVerifiedCircles || 0, max: total, cur: k.safetyVerifiedCircles || 0, note: (k.pendingSuggestions || 0) + ' citizen reports' },
         { label: 'All-Odisha Chapters', val: k.allOdishaChapters || 0, max: total, cur: k.allOdishaChapters || 0, note: '30-district coverage' }
-      ].forEach(function (c) {
+      ];
+      if (activeDomain === 'community-safety-governance' && state.tree && state.tree.crossDomainStats) {
+        var cs = state.tree.crossDomainStats;
+        cards.push({
+          label: 'Community Directory Hub',
+          val: 'All ' + (cs.totalDomains || 10) + ' Domains: ' + (cs.totalFolders || 0) + ' directories · ' + (cs.totalPublished || 0) + ' verified communities',
+          max: Math.max(1, cs.totalFolders || 1),
+          cur: cs.totalPublished || 0,
+          note: 'Cross-domain coverage'
+        });
+      }
+      cards.forEach(function (c) {
         kpiRow.appendChild(el('div', { class: 'cso-ops-kpi' }, [
           el('div', { class: 'cso-ops-kpi-label', text: c.label }),
           el('div', { class: 'cso-ops-kpi-val', text: String(c.val) }),

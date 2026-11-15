@@ -294,6 +294,51 @@ const SEED_FOLDERS_BY_DOMAIN = {
     { id: 'cf-wom-care', parent: null, name: 'Maternal Health, Senior Care & PwD Inclusion', title_or: 'ମାତୃ ସ୍ୱାସ୍ଥ୍ୟ, ବରିଷ୍ଠ ନାଗରିକ ଓ ଦିବ୍ୟାଙ୍ଗ ସହାୟତା', slug: 'maternal-health-senior-pwd-inclusion', desc: 'Community health, senior citizen & Divyangjan inclusion groups.' },
     { id: 'cf-wom-nutr', parent: 'cf-wom-care', name: 'Community Nutrition & Anemia Awareness Circles', title_or: 'ପୋଷଣ ଓ ରକ୍ତହୀନତା ସଚେତନତା', slug: 'community-nutrition-anemia-circles', desc: 'ASHA, Anganwadi & mother support circles.' },
     { id: 'cf-wom-pwd', parent: 'cf-wom-care', name: 'Divyangjan (PwD) Peer Support & Accessibility Network', title_or: 'ଦିବ୍ୟାଙ୍ଗ ସହାୟତା ନେଟୱାର୍କ', slug: 'divyangjan-pwd-support-network', desc: 'Assistive devices, UDID guidance & inclusive education circles.' }
+  ],
+  'youth-ngos-volunteering': [
+    { id: 'cf-yth-nss', parent: null, name: 'NSS, NYKS & Student Volunteer Corps', title_or: 'NSS, NYKS ଓ ଛାତ୍ର ସ୍ୱେଚ୍ଛାସେବୀ', slug: 'nss-nyks-student-volunteers', badge: 'VOLUNTEER', desc: 'University NSS, Nehru Yuva Kendra & Youth Red Cross units.' },
+    { id: 'cf-yth-units', parent: 'cf-yth-nss', name: 'Odisha NSS & Red Cross University Units', title_or: 'NSS ଓ ରେଡ୍ କ୍ରସ୍ ୟୁନିଟ୍', slug: 'odisha-nss-red-cross-units', desc: 'Campus blood donation, literacy & health camps.' },
+    { id: 'cf-yth-osdma', parent: 'cf-yth-nss', name: 'Disaster Relief & Cyclone Preparedness Volunteers (OSDMA)', title_or: 'ବିପର୍ଯ୍ୟୟ ପ୍ରଶମନ ସ୍ୱେଚ୍ଛାସେବୀ', slug: 'osdma-cyclone-preparedness-volunteers', desc: 'Apada Mitra & coastal cyclone shelter volunteer teams.' },
+    { id: 'cf-yth-osdma-coast', parent: 'cf-yth-osdma', name: 'Coastal District Apada Mitra Volunteer Circles', title_or: 'ଉପକୂଳ ଆପଦା ମିତ୍ର ମଣ୍ଡଳୀ', slug: 'coastal-apada-mitra-circles', desc: 'First-aid, early warning & relief coordination across coastal Odisha.' },
+    { id: 'cf-yth-ngo', parent: null, name: 'Registered NGOs, Blood Donors & Civic Trusts', title_or: 'ପଞ୍ଜୀକୃତ NGO ଓ ରକ୍ତଦାତା ସଂଘ', slug: 'registered-ngos-blood-donors', desc: 'Verified social trusts, blood donor registries & rural literacy NGOs.' },
+    { id: 'cf-yth-blood', parent: 'cf-yth-ngo', name: 'District Blood Donor & Emergency Response Networks', title_or: 'ଜିଲ୍ଲା ରକ୍ତଦାତା ନେଟୱାର୍କ', slug: 'district-blood-donor-networks', desc: '24x7 voluntary blood donation & hospital support.' },
+    { id: 'cf-yth-lit', parent: 'cf-yth-ngo', name: 'Rural Literacy & Digital Inclusion NGOs', title_or: 'ଗ୍ରାମୀଣ ସାକ୍ଷରତା ଓ ଡିଜିଟାଲ୍ NGO', slug: 'rural-literacy-digital-ngos', desc: 'Community learning centres and rural digital literacy.' }
+  ],
+  'culture-sports-traditional': [
+    { id: 'cf-cul-art', parent: null, name: 'Odia Literature, Classical Arts & Heritage', title_or: 'ଓଡ଼ିଆ ସାହିତ୍ୟ, ଶାସ୍ତ୍ରୀୟ କଳା ଓ ଐତିହ୍ୟ', slug: 'odia-literature-arts-heritage', badge: 'HERITAGE', desc: 'Odia Sahitya, Odissi, Gotipua, Sambalpuri & Pattachitra guilds.' },
+    { id: 'cf-cul-lit', parent: 'cf-cul-art', name: 'Odia Sahitya, Poetry & Book Reading Circles', title_or: 'ଓଡ଼ିଆ ସାହିତ୍ୟ ଓ ପାଠକ ମଣ୍ଡଳୀ', slug: 'odia-sahitya-book-circles', desc: 'Fakir Mohan, Gangadhar Meher & contemporary Odia book clubs.' },
+    { id: 'cf-cul-guild', parent: 'cf-cul-art', name: 'Odissi, Gotipua, Sambalpuri & Pattachitra Guilds', title_or: 'ଓଡ଼ିଶୀ, ଗୋଟିପୁଅ ଓ ପଟ୍ଟଚିତ୍ର ସଂଘ', slug: 'odissi-gotipua-pattachitra-guilds', desc: 'Raghurajpur Pattachitra, Odissi & folk dance artist collectives.' },
+    { id: 'cf-cul-raghu', parent: 'cf-cul-guild', name: 'Raghurajpur & Pipili Heritage Artisan Circle', title_or: 'ରଘୁରାଜପୁର ଓ ପିପିଲି କଳାକାର ସଂଘ', slug: 'raghurajpur-pipili-artisan-circle', desc: 'Traditional Pattachitra & Applique craft preservation.' },
+    { id: 'cf-cul-spt', parent: null, name: 'Grassroots Sports, Hockey & Traditional Games', title_or: 'କ୍ରୀଡ଼ା, ହକି ଓ ପାରମ୍ପରିକ ଖେଳ', slug: 'grassroots-sports-hockey-games', desc: 'Odisha hockey academies, athletics & traditional rural sports.' },
+    { id: 'cf-cul-hky', parent: 'cf-cul-spt', name: 'Sundargarh & Odisha Hockey Fan & Academy Clubs', title_or: 'ସୁନ୍ଦରଗଡ଼ ହକି ଏକାଡେମୀ ଓ କ୍ଲବ୍', slug: 'sundargarh-odisha-hockey-clubs', desc: 'Rourkela & Sundargarh grassroots hockey training & fan clubs.' },
+    { id: 'cf-cul-ath', parent: 'cf-cul-spt', name: 'Rural Athletics, Kabaddi & Kho-Kho Associations', title_or: 'ଗ୍ରାମୀଣ ଆଥଲେଟିକ୍ସ, କବାଡ଼ି ଓ ଖୋ-ଖୋ', slug: 'rural-athletics-kabaddi-khokho', desc: 'Block-level youth sports tournaments and talent scouting.' }
+  ],
+  'environment-science-tech': [
+    { id: 'cf-env-eco', parent: null, name: 'Climate Action, Mangroves & Wildlife Conservation', title_or: 'ଜଳବାୟୁ, ହେନ୍ତାଳ ବନ ଓ ବନ୍ୟପ୍ରାଣୀ ସଂରକ୍ଷଣ', slug: 'climate-mangroves-wildlife', badge: 'ECO', desc: 'Bhitarkanika, Chilika & Similipal conservation & eco-clubs.' },
+    { id: 'cf-env-clubs', parent: 'cf-env-eco', name: 'Bhitarkanika, Chilika & Similipal Eco-Clubs', title_or: 'ଭିତରକନିକା, ଚିଲିକା ଓ ଶିମିଳିପାଳ ଇକୋ-କ୍ଲବ୍', slug: 'bhitarkanika-chilika-similipal-ecoclubs', desc: 'Wetland birding, Olive Ridley & mangrove conservation circles.' },
+    { id: 'cf-env-river', parent: 'cf-env-eco', name: 'Urban Tree Plantation & River Cleanup Chapters', title_or: 'ବୃକ୍ଷରୋପଣ ଓ ନଦୀ ସଫେଇ ମଣ୍ଡଳୀ', slug: 'urban-plantation-river-cleanup', desc: 'Mahanadi, Kathajodi & Kuakhai riverfront cleanup drives.' },
+    { id: 'cf-env-stem', parent: null, name: 'STEM Clubs, Open Source & Rural Innovation', title_or: 'STEM କ୍ଲବ୍, ଓପନ୍ ସୋର୍ସ ଓ ଗ୍ରାମୀଣ ଉଦ୍ଭାବନ', slug: 'stem-open-source-innovation', desc: 'Open-source developer groups & school tinkering labs.' },
+    { id: 'cf-env-oss', parent: 'cf-env-stem', name: 'Bhubaneswar Open-Source, AI & Linux User Groups', title_or: 'ଭୁବନେଶ୍ୱର ଓପନ୍ ସୋର୍ସ ଓ AI ମଣ୍ଡଳୀ', slug: 'bhubaneswar-opensource-ai-lug', desc: 'Odia NLP, FOSS meetups & student coding workshops.' },
+    { id: 'cf-env-oss-odia', parent: 'cf-env-oss', name: 'Odia Open-Source & Civic Tech Builders', title_or: 'ଓଡ଼ିଆ ଓପନ୍ ସୋର୍ସ ଟେକ୍ ମଣ୍ଡଳୀ', slug: 'odia-opensource-civic-tech', desc: 'Unicode Odia fonts, accessibility & open public data tools.' },
+    { id: 'cf-env-atl', parent: 'cf-env-stem', name: 'School Science Clubs & Tinkering Labs Odisha', title_or: 'ବିଦ୍ୟାଳୟ ବିଜ୍ଞାନ କ୍ଲବ୍ ଓ ଟିଙ୍କରିଂ ଲ୍ୟାବ୍', slug: 'school-science-tinkering-labs', desc: 'Atal Tinkering Labs & rural science exhibition networks.' }
+  ],
+  'digital-international-forums': [
+    { id: 'cf-dig-dia', parent: null, name: 'Global Odia Diaspora & Cultural Associations', title_or: 'ବିଶ୍ୱସ୍ତରୀୟ ଓଡ଼ିଆ ପ୍ରବାସୀ ସଂଘ', slug: 'global-odia-diaspora', badge: 'GLOBAL', desc: 'OSA, UK, Europe, Gulf & Asia-Pacific Odia community chapters.' },
+    { id: 'cf-dig-osa', parent: 'cf-dig-dia', name: 'OSA (Odisha Society of the Americas), UK, Europe & Gulf Chapters', title_or: 'OSA, UK, ୟୁରୋପ ଓ ଗଲ୍ଫ ଓଡ଼ିଆ ସଂଘ', slug: 'osa-uk-europe-gulf-chapters', desc: 'International Odia cultural, scholarship & diaspora support chapters.' },
+    { id: 'cf-dig-gstu', parent: 'cf-dig-dia', name: 'Global Odia Students & Researchers Network', title_or: 'ବିଦେଶରେ ଓଡ଼ିଆ ଛାତ୍ର ଓ ଗବେଷକ', slug: 'global-odia-students-researchers', desc: 'Peer mentorship for Odisha scholars studying abroad.' },
+    { id: 'cf-dig-for', parent: null, name: 'Verified Online Knowledge & Peer Forums', title_or: 'ଯାଞ୍ଚିତ ଅନଲାଇନ୍ ଜ୍ଞାନ ମଞ୍ଚ', slug: 'verified-online-knowledge-forums', desc: 'Odia Wikimedia & moderated CS Odisha civic Q&A channels.' },
+    { id: 'cf-dig-wiki', parent: 'cf-dig-for', name: 'Odia Wikipedia & Wikimedia Commons Contributors', title_or: 'ଓଡ଼ିଆ ଉଇକିପିଡ଼ିଆ ସମ୍ପାଦକ ମଣ୍ଡଳୀ', slug: 'odia-wikipedia-wikimedia-contributors', desc: 'Open-knowledge Odia encyclopedia & heritage photo contributors.' },
+    { id: 'cf-dig-wiki-edit', parent: 'cf-dig-wiki', name: 'Odia Wikisource & Digital Archive Circle', title_or: 'ଓଡ଼ିଆ ଉଇକିପାଠାଗାର ମଣ୍ଡଳୀ', slug: 'odia-wikisource-archive-circle', desc: 'Digitizing classic public-domain Odia books & journals.' },
+    { id: 'cf-dig-qa', parent: 'cf-dig-for', name: 'CS Odisha Open Civic & Exam Q&A Channels', title_or: 'CS ଓଡ଼ିଶା ଖୋଲା ପ୍ରଶ୍ନୋତ୍ତର ମଞ୍ଚ', slug: 'csodisha-open-qa-channels', desc: 'Verified Telegram & web Q&A channels for aspirants & citizens.' }
+  ],
+  'community-safety-governance': [
+    { id: 'cf-saf-std', parent: null, name: 'Community Verification Standards & Anti-Scam Charter', title_or: 'ସମୁଦାୟ ଯାଞ୍ଚ ମାନଦଣ୍ଡ ଓ ଠକେଇ ନିରୋଧ', slug: 'verification-standards-anti-scam', badge: 'SAFETY', desc: 'Verification policy, code of conduct & cyber-fraud reporting.' },
+    { id: 'cf-saf-guide', parent: 'cf-saf-std', name: 'CSO Verified Community Guidelines & Code of Conduct', title_or: 'CSO ସମୁଦାୟ ମାର୍ଗଦର୍ଶିକା', slug: 'cso-verified-community-guidelines', desc: 'Mandatory rules for listed Odisha chapters & peer groups.' },
+    { id: 'cf-saf-fraud', parent: 'cf-saf-std', name: 'Fake Group, Financial Fraud & Cyber Safety Reporting', title_or: 'ନକଲି ଗ୍ରୁପ୍ ଓ ସାଇବର ସୁରକ୍ଷା ରିପୋର୍ଟିଂ', slug: 'fake-group-cyber-safety-reporting', desc: 'Report fake job/scheme groups or suspicious links immediately.' },
+    { id: 'cf-saf-dpdp', parent: null, name: 'Child Protection, Women Safety & DPDP Privacy', title_or: 'ଶିଶୁ, ମହିଳା ସୁରକ୍ଷା ଓ DPDP ଗୋପନୀୟତା', slug: 'child-women-safety-dpdp-privacy', desc: 'Safe moderation standards & DPDP Act 2023 consent charter.' },
+    { id: 'cf-saf-youth', parent: 'cf-saf-dpdp', name: 'Safe Youth & Student Group Moderation Standards', title_or: 'ଛାତ୍ର ଗ୍ରୁପ୍ ସୁରକ୍ଷା ମାନଦଣ୍ଡ', slug: 'safe-youth-moderation-standards', desc: 'Zero-harassment and verified-admin rules for student circles.' },
+    { id: 'cf-saf-act', parent: 'cf-saf-dpdp', name: 'DPDP Act 2023 Community Data & Consent Charter', title_or: 'DPDP ଆଇନ ୨୦୨୩ ତଥ୍ୟ ସୁରକ୍ଷା ଚାର୍ଟର', slug: 'dpdp-act-2023-community-charter', desc: 'Zero public posting of personal phone numbers, Aadhaar, or emails.' },
+    { id: 'cf-saf-act-audit', parent: 'cf-saf-act', name: 'Community Privacy & PII Redaction Audit Log', title_or: 'ତଥ୍ୟ ଗୋପନୀୟତା ସମୀକ୍ଷା', slug: 'community-privacy-redaction-audit', desc: 'Automated PII scrubbing and citizen consent verification.' }
   ]
 };
 
@@ -386,6 +431,96 @@ const SEED_ITEMS_BY_DOMAIN = {
       charter_guidelines: 'Safe, respectful, women-led moderation. Zero unsolicited commercial messages.',
       activities_highlights: 'Monthly SHG digital accounting clinics and STEM scholarship mentoring.',
       tags: ['Mission Shakti', 'Women in STEM', 'SHG', 'Inclusion']
+    }
+  ],
+  'youth-ngos-volunteering': [
+    {
+      id: 'ci-yth-apada',
+      folder_id: 'cf-yth-osdma-coast',
+      title: 'Coastal Odisha Apada Mitra & Cyclone Response Volunteer Corps',
+      title_or: 'ଉପକୂଳ ଓଡ଼ିଶା ଆପଦା ମିତ୍ର ସ୍ୱେଚ୍ଛାସେବୀ ବାହିନୀ',
+      slug: 'coastal-odisha-apada-mitra-volunteers',
+      community_type: 'ngo_volunteering',
+      district_region: 'Puri & Konark',
+      membership_model: 'Volunteer Registration',
+      platform_channel: 'In-Person & Local Chapter',
+      join_or_portal_url: 'https://www.osdma.org/',
+      summary: 'Trained community disaster-response volunteers supporting cyclone shelter readiness, first aid, and relief distribution across coastal districts.',
+      charter_guidelines: 'Follow OSDMA & district administration emergency protocols. Non-partisan humanitarian service.',
+      activities_highlights: 'Pre-monsoon mock drills, first-aid certification, and community early-warning outreach.',
+      tags: ['OSDMA', 'Apada Mitra', 'Disaster Relief', 'Volunteering']
+    }
+  ],
+  'culture-sports-traditional': [
+    {
+      id: 'ci-cul-hockey',
+      folder_id: 'cf-cul-hky',
+      title: 'Sundargarh & Rourkela Grassroots Hockey & Youth Athletics Circle',
+      title_or: 'ସୁନ୍ଦରଗଡ଼ ଓ ରାଉରକେଲା ତୃଣମୂଳ ହକି ମଣ୍ଡଳୀ',
+      slug: 'sundargarh-rourkela-grassroots-hockey',
+      community_type: 'cultural_sports',
+      district_region: 'Sambalpur, Burla & Rourkela',
+      membership_model: 'Open & Free',
+      platform_channel: 'In-Person & Local Chapter',
+      join_or_portal_url: 'https://sportsodisha.gov.in/',
+      summary: 'Connects rural hockey clubs, Birsa Munda Stadium youth fans, and block-level athletics coaches in Sundargarh district.',
+      charter_guidelines: 'Fair play, anti-doping awareness, and equal opportunity for girls and boys hockey teams.',
+      activities_highlights: 'Village turf practice schedules, district sub-junior trials alerts, and kit-sharing drives.',
+      tags: ['Hockey', 'Sundargarh', 'Rourkela', 'Grassroots Sports']
+    }
+  ],
+  'environment-science-tech': [
+    {
+      id: 'ci-env-odiaoss',
+      folder_id: 'cf-env-oss-odia',
+      title: 'Bhubaneswar Open-Source, Odia NLP & Civic Tech Builders',
+      title_or: 'ଭୁବନେଶ୍ୱର ଓପନ୍ ସୋର୍ସ ଓ ଓଡ଼ିଆ ଟେକ୍ ମଣ୍ଡଳୀ',
+      slug: 'bhubaneswar-opensource-odia-civic-tech',
+      community_type: 'stem_club',
+      district_region: 'Bhubaneswar & Cuttack',
+      membership_model: 'Open & Free',
+      platform_channel: 'Hybrid',
+      join_or_portal_url: 'https://csodisha.com/community/',
+      summary: 'Developer and student STEM community building open-source Odia language tools, Unicode resources, and civic-tech projects.',
+      charter_guidelines: 'Open-source MIT/GPL spirit. Welcoming to beginners, college students, and researchers.',
+      activities_highlights: 'Monthly FOSS & Linux meetups, Odia dataset hackathons, and student Git workshops.',
+      tags: ['Open Source', 'Odia Tech', 'STEM', 'Bhubaneswar']
+    }
+  ],
+  'digital-international-forums': [
+    {
+      id: 'ci-dig-odiawiki',
+      folder_id: 'cf-dig-wiki-edit',
+      title: 'Odia Wikipedia & Wikisource Open-Knowledge Contributors',
+      title_or: 'ଓଡ଼ିଆ ଉଇକିପିଡ଼ିଆ ଓ ଉଇକିପାଠାଗାର ସମ୍ପାଦକ ମଣ୍ଡଳୀ',
+      slug: 'odia-wikipedia-wikisource-contributors',
+      community_type: 'online_forum',
+      district_region: 'Global Odia Diaspora',
+      membership_model: 'Open & Free',
+      platform_channel: 'Web Forum / Portal',
+      join_or_portal_url: 'https://or.wikipedia.org/',
+      summary: 'Global volunteer editors documenting Odisha history, districts, literature, and digitizing public-domain Odia books on Wikisource.',
+      charter_guidelines: 'Neutral point of view, verifiable citations, and Creative Commons open licensing.',
+      activities_highlights: 'Monthly Odia edit-a-thons, heritage photo uploads, and proof-reading sprints.',
+      tags: ['Odia Wikipedia', 'Wikimedia', 'Diaspora', 'Open Knowledge']
+    }
+  ],
+  'community-safety-governance': [
+    {
+      id: 'ci-saf-dpdpcharter',
+      folder_id: 'cf-saf-act-audit',
+      title: 'CS Odisha Community Safety, Anti-Scam & DPDP Privacy Charter',
+      title_or: 'CS ଓଡ଼ିଶା ସମୁଦାୟ ସୁରକ୍ଷା ଓ DPDP ଗୋପନୀୟତା ଚାର୍ଟର',
+      slug: 'cso-community-safety-dpdp-charter',
+      community_type: 'safety_governance',
+      district_region: 'All Odisha (30 Districts)',
+      membership_model: 'Open & Free',
+      platform_channel: 'Web Forum / Portal',
+      join_or_portal_url: 'https://csodisha.com/community-guidelines.html',
+      summary: 'Official verification rules protecting Odisha citizens and students from fake recruitment groups, paid scam links, and PII leaks.',
+      charter_guidelines: 'Never share Aadhaar, PAN, OTP, or personal phone numbers in public forums. Report suspicious links immediately.',
+      activities_highlights: 'Quarterly safety audits, automated PII redaction, and 24-hour dead/fake link takedowns.',
+      tags: ['Safety Charter', 'DPDP Act 2023', 'Anti-Scam', 'Verification']
     }
   ]
 };
@@ -1212,4 +1347,381 @@ export async function handleCommunityDirectoryStudio(request, env, actor, resour
   }
 
   throw new HttpError(404, 'NOT_FOUND', 'Unknown community directory studio endpoint.');
+}
+
+// ---------- Public Read-Only Resolvers, APIs & XML Sitemap (Batch 2 / v63) ----------
+
+function normalizePublicDomain(raw) {
+  const d = cleanStr(raw, 60);
+  if (!d) return '';
+  return COMMUNITY_DOMAINS.includes(d) ? d : '';
+}
+
+export async function resolvePublicCommunityDirectory(env, segments = []) {
+  await ensureCommunityDirectoryStudioSchema(env.DB);
+  const rawDom = segments[0];
+  const domain = normalizePublicDomain(rawDom);
+  if (!domain) return null;
+  const meta = COMMUNITY_DOMAIN_META[domain];
+
+  const foldersRes = await env.DB
+    .prepare('SELECT * FROM community_directory_folders WHERE domain_slug = ? AND is_active = 1 ORDER BY depth ASC, sort_order ASC, name_en ASC')
+    .bind(domain)
+    .all();
+  const activeFolders = foldersRes.results || [];
+  const byId = new Map(activeFolders.map(f => [f.id, f]));
+
+  function hasAllAncestorsActive(f) {
+    let cur = f;
+    const seen = new Set();
+    while (cur && cur.parent_id) {
+      if (seen.has(cur.id)) return false;
+      seen.add(cur.id);
+      const parent = byId.get(cur.parent_id);
+      if (!parent) return false;
+      cur = parent;
+    }
+    return true;
+  }
+
+  const reachableFolders = activeFolders.filter(hasAllAncestorsActive);
+  const byParentAndSlug = new Map();
+  for (const f of reachableFolders) {
+    byParentAndSlug.set(`${f.parent_id || 'root'}:${f.slug}`, f);
+  }
+
+  let currentFolder = null;
+  const breadcrumbs = [
+    { label: 'Community Directory', url: '/community/' },
+    { label: meta.title, url: `/community/${domain}/` }
+  ];
+
+  const folderSegments = segments.slice(1).filter(Boolean);
+  for (const seg of folderSegments) {
+    const cleanSeg = slugify(seg);
+    const parentKey = currentFolder ? currentFolder.id : 'root';
+    let match = byParentAndSlug.get(`${parentKey}:${cleanSeg}`);
+    if (!match && folderSegments.length === 1) {
+      match = reachableFolders.find(f => f.slug === cleanSeg) || null;
+    }
+    if (!match) return null;
+    currentFolder = match;
+    const prevUrl = breadcrumbs[breadcrumbs.length - 1].url;
+    breadcrumbs.push({ label: match.name_en, url: `${prevUrl}${encodeURIComponent(match.slug)}/` });
+  }
+
+  const children = reachableFolders.filter(f => (f.parent_id || null) === (currentFolder ? currentFolder.id : null));
+  const itemCountsRes = await env.DB
+    .prepare("SELECT folder_id, COUNT(*) AS cnt FROM community_directory_items WHERE domain_slug = ? AND status = 'published' GROUP BY folder_id")
+    .bind(domain)
+    .all();
+  const countMap = new Map((itemCountsRes.results || []).map(r => [r.folder_id, Number(r.cnt || 0)]));
+
+  let items = [];
+  if (currentFolder) {
+    const descendantIds = [currentFolder.id];
+    const queue = [currentFolder.id];
+    while (queue.length) {
+      const pid = queue.shift();
+      for (const f of reachableFolders) {
+        if (f.parent_id === pid) {
+          descendantIds.push(f.id);
+          queue.push(f.id);
+        }
+      }
+    }
+    const placeholders = descendantIds.map(() => '?').join(', ');
+    const itemsRes = await env.DB
+      .prepare(`SELECT * FROM community_directory_items WHERE domain_slug = ? AND status = 'published' AND folder_id IN (${placeholders}) ORDER BY safety_verified DESC, updated_at DESC LIMIT 80`)
+      .bind(domain, ...descendantIds)
+      .all();
+    items = (itemsRes.results || []).map(hydrateItemRow);
+  } else {
+    const itemsRes = await env.DB
+      .prepare("SELECT * FROM community_directory_items WHERE domain_slug = ? AND status = 'published' ORDER BY safety_verified DESC, updated_at DESC LIMIT 80")
+      .bind(domain)
+      .all();
+    items = (itemsRes.results || []).map(hydrateItemRow);
+  }
+
+  return {
+    domain,
+    meta,
+    canonicalPath: breadcrumbs[breadcrumbs.length - 1].url,
+    breadcrumbs,
+    folder: currentFolder,
+    children: children.map(c => ({ ...c, item_count: countMap.get(c.id) || 0 })),
+    items
+  };
+}
+
+export async function resolvePublicCommunityItem(env, slugOrId) {
+  await ensureCommunityDirectoryStudioSchema(env.DB);
+  const key = cleanStr(slugOrId, 160);
+  if (!key) return null;
+  const row = await env.DB
+    .prepare("SELECT * FROM community_directory_items WHERE (slug = ? OR id = ?) AND status = 'published' LIMIT 1")
+    .bind(key, key)
+    .first();
+  if (!row) return null;
+
+  const folder = await env.DB
+    .prepare('SELECT * FROM community_directory_folders WHERE id = ? AND is_active = 1')
+    .bind(row.folder_id)
+    .first();
+  if (!folder) return null;
+
+  const domain = normalizePublicDomain(row.domain_slug) || 'local-odisha-communities';
+  const meta = COMMUNITY_DOMAIN_META[domain];
+  const breadcrumbs = [
+    { label: 'Community Directory', url: '/community/' },
+    { label: meta.title, url: `/community/${domain}/` },
+    { label: folder.name_en, url: `/community/${domain}/${encodeURIComponent(folder.slug)}/` },
+    { label: row.title, url: `/community/item/${encodeURIComponent(row.slug || row.id)}/` }
+  ];
+
+  return {
+    item: hydrateItemRow(row),
+    folder,
+    domain,
+    meta,
+    breadcrumbs
+  };
+}
+
+export async function listPublicCommunityOverview(env) {
+  await ensureCommunityDirectoryStudioSchema(env.DB);
+  const [fRes, iRes, rRes, tRes] = await Promise.all([
+    env.DB.prepare('SELECT domain_slug, depth, COUNT(*) AS cnt FROM community_directory_folders WHERE is_active = 1 GROUP BY domain_slug, depth').all(),
+    env.DB.prepare("SELECT domain_slug, COUNT(*) AS cnt, SUM(CASE WHEN safety_verified = 1 OR verified_at IS NOT NULL THEN 1 ELSE 0 END) AS verified_cnt FROM community_directory_items WHERE status = 'published' GROUP BY domain_slug").all(),
+    env.DB.prepare("SELECT district_region, COUNT(*) AS cnt FROM community_directory_items WHERE status = 'published' GROUP BY district_region").all(),
+    env.DB.prepare("SELECT community_type, COUNT(*) AS cnt FROM community_directory_items WHERE status = 'published' GROUP BY community_type").all()
+  ]);
+
+  const fMap = new Map();
+  let totalSections = 0;
+  let totalSubcategories = 0;
+  let totalEntries = 0;
+  for (const r of (fRes.results || [])) {
+    const cur = fMap.get(r.domain_slug) || { total: 0, d1: 0, d2: 0, d3: 0 };
+    const cnt = Number(r.cnt || 0);
+    cur.total += cnt;
+    if (Number(r.depth) === 1) { cur.d1 += cnt; totalSections += cnt; }
+    else if (Number(r.depth) === 2) { cur.d2 += cnt; totalSubcategories += cnt; }
+    else { cur.d3 += cnt; totalEntries += cnt; }
+    fMap.set(r.domain_slug, cur);
+  }
+
+  const iMap = new Map((iRes.results || []).map(r => [r.domain_slug, { cnt: Number(r.cnt || 0), verified: Number(r.verified_cnt || 0) }]));
+  let totalFolders = 0;
+  let totalPublished = 0;
+  let totalVerified = 0;
+
+  const domains = COMMUNITY_DOMAINS.map(slug => {
+    const meta = COMMUNITY_DOMAIN_META[slug];
+    const fcObj = fMap.get(slug) || { total: 0, d1: 0, d2: 0, d3: 0 };
+    const ic = iMap.get(slug)?.cnt || 0;
+    const vc = iMap.get(slug)?.verified || 0;
+    totalFolders += fcObj.total;
+    totalPublished += ic;
+    totalVerified += vc;
+    return {
+      slug,
+      num: meta.num,
+      title: meta.title,
+      summary: meta.summary,
+      publicPath: meta.publicPath,
+      folder_count: fcObj.total,
+      depth1_count: fcObj.d1,
+      depth2_count: fcObj.d2,
+      depth3_count: fcObj.d3,
+      item_count: ic,
+      verified_count: vc
+    };
+  });
+
+  const regionBreakdown = {};
+  for (const r of (rRes.results || [])) {
+    if (r.district_region) regionBreakdown[r.district_region] = Number(r.cnt || 0);
+  }
+  const typeBreakdown = {};
+  for (const r of (tRes.results || [])) {
+    if (r.community_type) typeBreakdown[r.community_type] = Number(r.cnt || 0);
+  }
+
+  return {
+    domains,
+    regionBreakdown,
+    typeBreakdown,
+    totals: {
+      totalDomains: domains.length,
+      totalSections,
+      totalSubcategories,
+      totalEntries,
+      totalFolders,
+      totalPublished,
+      totalVerified
+    }
+  };
+}
+
+export async function listPublicCommunityItems(env, opts = {}) {
+  await ensureCommunityDirectoryStudioSchema(env.DB);
+  const domain = normalizePublicDomain(opts.domain);
+  const commType = cleanStr(opts.community_type, 40);
+  const region = cleanStr(opts.district_region, 80);
+  const membership = cleanStr(opts.membership_model, 60);
+  const channel = cleanStr(opts.platform_channel, 60);
+  const lang = cleanStr(opts.language, 20);
+  const q = cleanStr(opts.q, 120);
+  const page = Math.max(1, Number(opts.page || 1));
+  const limit = Math.min(100, Math.max(1, Number(opts.limit || 12)));
+  const offset = (page - 1) * limit;
+
+  const clauses = ["i.status = 'published'", 'f.is_active = 1'];
+  const binds = [];
+  if (domain) {
+    clauses.push('i.domain_slug = ?');
+    binds.push(domain);
+  }
+  if (commType && COMMUNITY_TYPES.includes(commType)) {
+    clauses.push('i.community_type = ?');
+    binds.push(commType);
+  }
+  if (region) {
+    clauses.push("LOWER(i.district_region) LIKE ? ESCAPE '\\'");
+    binds.push('%' + likeEscape(region.toLowerCase()) + '%');
+  }
+  if (membership && MEMBERSHIP_MODELS.includes(membership)) {
+    clauses.push('i.membership_model = ?');
+    binds.push(membership);
+  }
+  if (channel && PLATFORM_CHANNELS.includes(channel)) {
+    clauses.push('i.platform_channel = ?');
+    binds.push(channel);
+  }
+  if (lang && COMMUNITY_LANGUAGES.includes(lang)) {
+    clauses.push("(i.language_parity = ? OR i.language_parity = 'EN+OR')");
+    binds.push(lang);
+  }
+  if (q) {
+    const pat = '%' + likeEscape(q.toLowerCase()) + '%';
+    clauses.push("(LOWER(i.title) LIKE ? ESCAPE '\\' OR LOWER(i.district_region) LIKE ? ESCAPE '\\' OR LOWER(i.summary) LIKE ? ESCAPE '\\' OR LOWER(i.activities_highlights) LIKE ? ESCAPE '\\')");
+    binds.push(pat, pat, pat, pat);
+  }
+
+  const whereSql = clauses.join(' AND ');
+  const countRow = await env.DB.prepare(
+    `SELECT COUNT(*) AS total FROM community_directory_items i JOIN community_directory_folders f ON f.id = i.folder_id WHERE ${whereSql}`
+  ).bind(...binds).first();
+  const total = Number(countRow?.total || 0);
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  const sql = `SELECT i.*, f.name_en AS folder_title, f.slug AS folder_slug
+    FROM community_directory_items i
+    JOIN community_directory_folders f ON f.id = i.folder_id
+    WHERE ${whereSql}
+    ORDER BY i.safety_verified DESC, i.updated_at DESC
+    LIMIT ? OFFSET ?`;
+  const res = await env.DB.prepare(sql).bind(...binds, limit, offset).all();
+  const items = (res.results || []).map(hydrateItemRow);
+  return { items, total, page, limit, totalPages, hasMore: page < totalPages };
+}
+
+export async function submitPublicCommunitySuggestion(env, payload = {}) {
+  await ensureCommunityDirectoryStudioSchema(env.DB);
+  const domain = normalizePublicDomain(payload.domain_slug) || 'local-odisha-communities';
+  const message = redactPii(cleanStr(payload.message || payload.details || payload.title, 1000));
+  if (!message || message.length < 4) {
+    throw validationError('Please enter at least 4 characters describing the community or safety concern.');
+  }
+  const rawType = payload.suggestion_type || payload.category;
+  const sugType = COMMUNITY_SUGGESTION_TYPES.includes(rawType) ? rawType : 'correction';
+  const suggestedUrl = payload.suggested_url || payload.source_url
+    ? validateSafePortalUrl(payload.suggested_url || payload.source_url)
+    : '';
+  const sugId = 'csug-' + crypto.randomUUID().slice(0, 12);
+  const now = nowIso();
+  await env.DB.prepare(`INSERT INTO community_directory_suggestions
+    (id, domain_slug, folder_id, item_id, suggestion_type, reporter_name, message, suggested_url, status, moderator_note, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', '', ?, ?)`)
+    .bind(
+      sugId, domain, cleanStr(payload.folder_id, 80) || null, cleanStr(payload.item_id, 80) || null,
+      sugType, redactPii(cleanStr(payload.reporter_name, 80) || 'Citizen'), message, suggestedUrl, now, now
+    ).run();
+  return { ok: true, id: sugId };
+}
+
+export async function handlePublicCommunityOverviewApi(request, env) {
+  const data = await listPublicCommunityOverview(env);
+  return json({ ok: true, ...data }, 200, { 'Cache-Control': 'public, max-age=120, s-maxage=300' });
+}
+
+export async function handlePublicCommunityItemsApi(request, env) {
+  const url = new URL(request.url);
+  const data = await listPublicCommunityItems(env, {
+    domain: url.searchParams.get('domain'),
+    community_type: url.searchParams.get('community_type'),
+    district_region: url.searchParams.get('district_region'),
+    membership_model: url.searchParams.get('membership_model'),
+    platform_channel: url.searchParams.get('platform_channel'),
+    language: url.searchParams.get('language'),
+    q: url.searchParams.get('q'),
+    page: url.searchParams.get('page'),
+    limit: url.searchParams.get('limit')
+  });
+  return json({ ok: true, ...data }, 200, { 'Cache-Control': 'public, max-age=120, s-maxage=300' });
+}
+
+export async function handlePublicCommunitySuggestApi(request, env) {
+  try {
+    const body = await readJson(request);
+    const result = await submitPublicCommunitySuggestion(env, body);
+    return json(result, 201);
+  } catch (err) {
+    const status = err && err.status ? err.status : 400;
+    return json({ ok: false, message: (err && err.message) || 'Invalid suggestion payload' }, status);
+  }
+}
+
+export async function handleCommunityDirectorySitemapXml(request, env) {
+  await ensureCommunityDirectoryStudioSchema(env.DB);
+  const origin = 'https://csodisha.com';
+  const [foldersRes, itemsRes] = await Promise.all([
+    env.DB.prepare('SELECT id, domain_slug, parent_id, slug, updated_at FROM community_directory_folders WHERE is_active = 1').all(),
+    env.DB.prepare("SELECT id, slug, updated_at FROM community_directory_items WHERE status = 'published'").all()
+  ]);
+
+  const byId = new Map((foldersRes.results || []).map(f => [f.id, f]));
+  function folderPath(f) {
+    const parts = [];
+    let cur = f;
+    const seen = new Set();
+    while (cur && !seen.has(cur.id)) {
+      seen.add(cur.id);
+      parts.unshift(encodeURIComponent(cur.slug));
+      cur = cur.parent_id ? byId.get(cur.parent_id) : null;
+    }
+    return `${origin}/community/${f.domain_slug}/${parts.join('/')}/`;
+  }
+
+  const urls = [
+    `<url><loc>${origin}/community/</loc><changefreq>daily</changefreq><priority>0.9</priority></url>`,
+    ...COMMUNITY_DOMAINS.map(d => `<url><loc>${origin}/community/${d}/</loc><changefreq>daily</changefreq><priority>0.8</priority></url>`)
+  ];
+  for (const f of (foldersRes.results || [])) {
+    urls.push(`<url><loc>${folderPath(f)}</loc><lastmod>${String(f.updated_at || '').slice(0, 10) || '2026-11-15'}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>`);
+  }
+  for (const it of (itemsRes.results || [])) {
+    urls.push(`<url><loc>${origin}/community/item/${encodeURIComponent(it.slug || it.id)}/</loc><lastmod>${String(it.updated_at || '').slice(0, 10) || '2026-11-15'}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>`);
+  }
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  ${urls.join('\n  ')}\n</urlset>\n`;
+  return new Response(request.method === 'HEAD' ? null : xml, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=300'
+    }
+  });
 }
