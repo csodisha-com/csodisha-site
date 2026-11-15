@@ -268,6 +268,58 @@ const SEED_TREE_BY_DOMAIN = {
     { id: 'jf-cx-wsc-osda', parent_id: 'jf-cx-skill-cert', title: 'World Skill Center & OSDA Tracks', slug: 'world-skill-center-osda', sort_order: 10, description: 'Bhubaneswar WSC advanced mechatronics, cloud, hospitality & vertical transport.' },
     // Depth 3
     { id: 'jf-cx-ojee-counselling', parent_id: 'jf-cx-ojee-det', title: 'OJEE Counselling & Document Checklist', slug: 'ojee-counselling-checklist', sort_order: 10, description: 'Rank card, resident/nativity certificate, income certificate & seat allotment.' }
+  ],
+  'scholarships-support': [
+    // Depth 1
+    { id: 'jf-ss-odisha-state', parent_id: null, title: 'Odisha State Scholarships', slug: 'odisha-state-scholarships', sort_order: 10, hero_badge: 'STATE PORTAL', description: 'State Scholarship Portal Odisha schemes for SC, ST, OBC/SEBC, EBC, Minority & General students.' },
+    { id: 'jf-ss-national-central', parent_id: null, title: 'National & Central Scholarships', slug: 'national-central-scholarships', sort_order: 20, hero_badge: 'CENTRAL & NSP', description: 'NSP Central Sector, UGC NET JRF, CSIR, Maulana Azad & DST INSPIRE fellowships.' },
+    { id: 'jf-ss-loans-stipends', parent_id: null, title: 'Education Loans & Skill Stipends', slug: 'education-loans-skill-stipends', sort_order: 30, hero_badge: 'LOANS & STIPENDS', description: 'Vidya Lakshmi, Odisha Student Credit Card, NAPS apprenticeship & NATS stipends.' },
+    // Depth 2
+    { id: 'jf-ss-ssp-post-pre', parent_id: 'jf-ss-odisha-state', title: 'State Scholarship Portal (Post-Matric & Pre-Matric)', slug: 'state-scholarship-portal-post-pre-matric', sort_order: 10, description: 'Online application, Aadhaar seeding, college verification & DBT disbursement.' },
+    { id: 'jf-ss-kalia-gopabandhu', parent_id: 'jf-ss-odisha-state', title: 'KALIA, Gopabandhu & Nirman Shramik Student Aid', slug: 'kalia-gopabandhu-nirman-shramik-aid', sort_order: 20, description: 'Targeted Odisha farmer, journalist & construction worker family scholarships.' },
+    { id: 'jf-ss-odisha-merit', parent_id: 'jf-ss-odisha-state', title: 'Odisha Merit & Research Fellowships', slug: 'odisha-merit-research-fellowships', sort_order: 30, description: 'Biju Patnaik Research Fellowship, Pathani Samanta Math & Gopabandhu Merit.' },
+    { id: 'jf-ss-nsp-schemes', parent_id: 'jf-ss-national-central', title: 'NSP (National Scholarship Portal) Schemes', slug: 'nsp-national-scholarship-portal', sort_order: 10, description: 'PM-YASASVI, Central Sector Scheme of Scholarship (CSSS) & AICTE Pragati/Saksham.' },
+    { id: 'jf-ss-ugc-inspire', parent_id: 'jf-ss-national-central', title: 'UGC NET JRF, Maulana Azad & INSPIRE Fellowships', slug: 'ugc-net-jrf-inspire-fellowships', sort_order: 20, description: 'Doctoral, post-doctoral and science research fellowships.' },
+    { id: 'jf-ss-vidya-lakshmi', parent_id: 'jf-ss-loans-stipends', title: 'Vidya Lakshmi & Odisha Student Credit Cards', slug: 'vidya-lakshmi-student-credit-cards', sort_order: 10, description: 'Low-interest education loans and interest subvention schemes.' },
+    { id: 'jf-ss-naps-stipend', parent_id: 'jf-ss-loans-stipends', title: 'NAPS Apprenticeship & Internship Stipends', slug: 'naps-apprenticeship-stipends', sort_order: 20, description: 'Monthly DBT stipend support under National Apprenticeship Promotion Scheme.' },
+    // Depth 3
+    { id: 'jf-ss-ssp-renewal', parent_id: 'jf-ss-ssp-post-pre', title: 'Odisha Post-Matric Renewal & Bank Seeding', slug: 'odisha-post-matric-renewal-seeding', sort_order: 10, description: 'NPCI Aadhaar mapper verification and academic promotion upload guide.' }
+  ],
+  'international-overseas': [
+    // Depth 1
+    { id: 'jf-io-global-scholarships', parent_id: null, title: 'Global Scholarships & Study Abroad', slug: 'global-scholarships-study-abroad', sort_order: 10, hero_badge: 'STUDY ABROAD', description: 'Fully funded international Masters, PhD & postdoctoral scholarships for Indian/Odisha students.' },
+    { id: 'jf-io-fellowships-visas', parent_id: null, title: 'Global Fellowships, Visas & Remote Careers', slug: 'global-fellowships-visas-remote', sort_order: 20, hero_badge: 'GLOBAL CAREERS', description: 'UN, World Bank, ADB fellowships, skilled work visas & credential verification.' },
+    // Depth 2
+    { id: 'jf-io-chevening-fulbright', parent_id: 'jf-io-global-scholarships', title: 'Chevening, Fulbright, Commonwealth & DAAD', slug: 'chevening-fulbright-commonwealth-daad', sort_order: 10, description: 'UK, US, Germany & Commonwealth merit scholarships with timelines.' },
+    { id: 'jf-io-odisha-overseas', parent_id: 'jf-io-global-scholarships', title: 'Odisha Overseas Study & Research Grants', slug: 'odisha-overseas-study-grants', sort_order: 20, description: 'National Overseas Scholarship (NOS) & state-sponsored foreign study support.' },
+    { id: 'jf-io-un-worldbank', parent_id: 'jf-io-fellowships-visas', title: 'UN, World Bank & International Development Roles', slug: 'un-world-bank-development-roles', sort_order: 10, description: 'YPP, JPO, UNV & multilateral policy analyst pathways.' },
+    { id: 'jf-io-wes-visas', parent_id: 'jf-io-fellowships-visas', title: 'Skilled Work Visas & Credential Evaluation (WES)', slug: 'skilled-work-visas-wes-evaluation', sort_order: 20, description: 'MEA e-Migrate verification, WES/IQAS transcript attestation & anti-fraud checks.' },
+    // Depth 3
+    { id: 'jf-io-chevening-odisha', parent_id: 'jf-io-chevening-fulbright', title: 'Chevening & Commonwealth Essay & LOR Guide', slug: 'chevening-commonwealth-essay-guide', sort_order: 10, description: 'Leadership essay structure, unconditional offer timeline & interview prep.' }
+  ],
+  'career-employability': [
+    // Depth 1
+    { id: 'jf-cd-resume-interview', parent_id: null, title: 'Resume, CV & Interview Readiness', slug: 'resume-cv-interview-readiness', sort_order: 10, hero_badge: 'READINESS', description: 'ATS-friendly resumes, cover letters, and OPSC/UPSC/PSU interview board preparation.' },
+    { id: 'jf-cd-skills-internships', parent_id: null, title: 'Workplace Skills, Internships & Freelancing', slug: 'workplace-skills-internships-freelancing', sort_order: 20, hero_badge: 'EMPLOYABILITY', description: 'Verified Govt/PSU internships, District Employment Exchange & digital portfolios.' },
+    // Depth 2
+    { id: 'jf-cd-ats-resume', parent_id: 'jf-cd-resume-interview', title: 'ATS Resume & Cover Letter Templates', slug: 'ats-resume-cover-letter-templates', sort_order: 10, description: 'Clean single-column CV structures for freshers, engineers & researchers.' },
+    { id: 'jf-cd-opsc-viva', parent_id: 'jf-cd-resume-interview', title: 'OPSC / UPSC Personality Test & Viva Guides', slug: 'opsc-upsc-personality-test-viva', sort_order: 20, description: 'DAF analysis, Odisha current affairs, hobbies & ethical dilemma mock questions.' },
+    { id: 'jf-cd-govt-internships', parent_id: 'jf-cd-skills-internships', title: 'Govt & PSU Internship Directories', slug: 'govt-psu-internship-directories', sort_order: 10, description: 'AICTE, NITI Aayog, Odisha Secretariat, NALCO & IIT Bhubaneswar internships.' },
+    { id: 'jf-cd-digital-portfolio', parent_id: 'jf-cd-skills-internships', title: 'Digital Portfolio, Communication & Leadership', slug: 'digital-portfolio-communication-leadership', sort_order: 20, description: 'GitHub/LinkedIn hygiene, Odia-to-English workplace communication & freelancing.' },
+    // Depth 3
+    { id: 'jf-cd-oas-daf-prep', parent_id: 'jf-cd-opsc-viva', title: 'OPSC OAS DAF & District Profile Checklist', slug: 'opsc-oas-daf-district-checklist', sort_order: 10, description: 'Home district economy, GI tags, welfare schemes & administrative readiness.' }
+  ],
+  'institutions-portals': [
+    // Depth 1
+    { id: 'jf-ip-verified-portals', parent_id: null, title: 'Verified Odisha Recruitment & Education Portals', slug: 'verified-odisha-recruitment-education-portals', sort_order: 10, hero_badge: 'OFFICIAL LINKS', description: 'Direct .gov.in / .nic.in links for Odisha commissions, universities & exam boards.' },
+    { id: 'jf-ip-doc-antifraud', parent_id: null, title: 'Document Verification & Anti-Fraud Guides', slug: 'document-verification-antifraud-guides', sort_order: 20, hero_badge: 'ANTI-FRAUD', description: 'e-District Odisha certificate guides & fake recruitment scam verification.' },
+    // Depth 2
+    { id: 'jf-ip-commissions', parent_id: 'jf-ip-verified-portals', title: 'OPSC, OSSSC, OSSC & SSB Odisha Official Links', slug: 'opsc-osssc-ossc-ssb-official-links', sort_order: 10, description: 'Verified commission homepages, One-Time Registration (OTR) & helpline desks.' },
+    { id: 'jf-ip-sams-dhe', parent_id: 'jf-ip-verified-portals', title: 'SAMS Odisha, DHE, OSHEC & BSE/CHSE Portals', slug: 'sams-odisha-dhe-oshec-bse-chse', sort_order: 20, description: 'Higher education admissions, board results & DigiLocker academic verification.' },
+    { id: 'jf-ip-edistrict', parent_id: 'jf-ip-doc-antifraud', title: 'e-District Odisha Certificates (Caste, Residence, Income)', slug: 'edistrict-odisha-certificates-guide', sort_order: 10, description: 'Required documents, Tahasil processing timelines & online status tracking.' },
+    { id: 'jf-ip-antifraud', parent_id: 'jf-ip-doc-antifraud', title: 'Fake Job Alert Verification & Helpline Directory', slug: 'fake-job-alert-verification-helpline', sort_order: 20, description: 'How to spot fake .com/.org job portals, cybercrime 1930 & official gazette checks.' },
+    // Depth 3
+    { id: 'jf-ip-otr-login', parent_id: 'jf-ip-commissions', title: 'Official Commission OTR & Admit Card Portals', slug: 'official-commission-otr-admit-card', sort_order: 10, description: 'Step-by-step One-Time Registration and candidate grievance links.' }
   ]
 };
 
@@ -356,6 +408,71 @@ const SEED_ITEMS_BY_DOMAIN = {
       summary: 'Official OJEE portal guide covering choice filling, resident/nativity proof, caste certificate & reporting at nodal centres.',
       body_html: '<p>OJEE manages state-level admissions to B.Tech (Lateral), MBA, MCA, M.Tech, B.Pharm and integrated programmes across government and private colleges in Odisha.</p>',
       tags: ['OJEE', 'Entrance Exam', 'Counselling'],
+      featured: 1
+    }
+  ],
+  'scholarships-support': [
+    {
+      id: 'ji-ss-state-portal',
+      folder_id: 'jf-ss-ssp-renewal',
+      title: 'Odisha State Scholarship Portal (Post-Matric & Pre-Matric) Guide',
+      slug: 'odisha-state-scholarship-portal-guide',
+      item_type: 'scholarship',
+      recruiting_body: 'ST & SC Dev / Higher Education Dept, Odisha',
+      qualification_tag: 'Class 9 to PG / Technical',
+      deadline_date: '2026-12-31',
+      official_apply_url: 'https://scholarship.odisha.gov.in/',
+      summary: 'Complete eligibility, Aadhaar NPCI bank seeding, income certificate norms & renewal checklist for Odisha State Scholarship Portal.',
+      body_html: '<p>Students domiciled in Odisha studying in Post-Matric, Pre-Matric, and Technical/Professional courses can apply via scholarship.odisha.gov.in with Aadhaar-seeded bank accounts.</p>',
+      tags: ['Odisha Scholarship', 'Post-Matric', 'DBT'],
+      featured: 1
+    }
+  ],
+  'international-overseas': [
+    {
+      id: 'ji-io-chevening',
+      folder_id: 'jf-io-chevening-odisha',
+      title: 'Chevening & Commonwealth Masters Scholarship Guide for Odisha Graduates',
+      slug: 'chevening-commonwealth-masters-guide',
+      item_type: 'overseas-track',
+      recruiting_body: 'FCDO UK / Commonwealth Scholarship Commission',
+      qualification_tag: 'Graduate + 2 Yrs Experience',
+      official_apply_url: 'https://www.chevening.org/',
+      summary: 'Timeline, 2,800-hour work experience rule, leadership essays & unconditional UK university offer strategy.',
+      body_html: '<p>Chevening Scholarships cover full tuition, monthly stipend, and return airfare for a one-year Master\'s degree in the UK.</p>',
+      tags: ['Chevening', 'Study Abroad', 'UK Fellowship'],
+      featured: 1
+    }
+  ],
+  'career-employability': [
+    {
+      id: 'ji-cd-oas-daf',
+      folder_id: 'jf-cd-oas-daf-prep',
+      title: 'OPSC OAS Personality Test & Detailed Application Form (DAF) Prep Kit',
+      slug: 'opsc-oas-personality-test-daf-kit',
+      item_type: 'employability-guide',
+      recruiting_body: 'CSOdisha Career Readiness Desk',
+      qualification_tag: 'OPSC Mains Qualified / Aspirants',
+      official_apply_url: 'https://www.opsc.gov.in/',
+      summary: 'Structured checklist covering Odisha district profile, optional subject brush-up, hobby questions & ethical board scenarios.',
+      body_html: '<p>Prepare a crisp district and administrative brief covering local demographics, flagship Odisha schemes, and constitutional duties.</p>',
+      tags: ['Interview Prep', 'OAS Viva', 'Employability'],
+      featured: 1
+    }
+  ],
+  'institutions-portals': [
+    {
+      id: 'ji-ip-opsc-otr',
+      folder_id: 'jf-ip-otr-login',
+      title: 'Verified Odisha Recruitment Portals Directory (OPSC, OSSC, OSSSC, SSB)',
+      slug: 'verified-odisha-recruitment-portals-directory',
+      item_type: 'official-portal',
+      recruiting_body: 'Govt of Odisha Commissions',
+      qualification_tag: 'All Candidates',
+      official_apply_url: 'https://www.opsc.gov.in/',
+      summary: 'Authentic .gov.in / .nic.in links for One-Time Registration (OTR), admit cards, answer keys and fake job alert verification.',
+      body_html: '<p>Always verify recruitment notices directly on opsc.gov.in, ossc.gov.in, osssc.gov.in, or ssbodisha.ac.in before paying any application fee.</p>',
+      tags: ['Official Portal', 'Anti-Fraud', 'OPSC', 'OSSSC'],
       featured: 1
     }
   ]
@@ -571,8 +688,9 @@ export async function ensureJobsDirectoryStudioSchema(db) {
 }
 
 function resolveDomain(raw) {
-  const d = cleanStr(raw, 60);
+  let d = cleanStr(raw, 60);
   if (!d) return 'jobs-recruitment';
+  if (d === 'career-development') d = 'career-employability';
   if (!JOBS_DOMAINS.includes(d)) {
     throw validationError('Unknown jobs directory domain: ' + d);
   }
@@ -649,6 +767,13 @@ async function handleTree(request, env) {
     .first();
   const pendingSuggestions = Number(sugCountRow?.cnt || 0);
 
+  const crossFolderRow = await env.DB
+    .prepare('SELECT COUNT(*) AS cnt FROM jobs_directory_folders')
+    .first();
+  const crossItemRow = await env.DB
+    .prepare("SELECT COUNT(*) AS cnt FROM jobs_directory_items WHERE status = 'published'")
+    .first();
+
   const emptyFolders = folders.filter(f => (itemCountByFolder.get(f.id) || 0) === 0).length;
   const staleItems = allItems.filter(isStaleRow).length;
   const publishedItems = allItems.filter(i => i.status === 'published').length;
@@ -707,6 +832,11 @@ async function handleTree(request, env) {
       emptyFolders,
       staleItems,
       pendingSuggestions
+    },
+    crossDomainStats: {
+      totalDomains: JOBS_DOMAINS.length,
+      totalFolders: Number(crossFolderRow?.cnt || 0),
+      totalPublished: Number(crossItemRow?.cnt || 0)
     }
   });
 }
@@ -1162,4 +1292,384 @@ export async function handleJobsDirectoryStudio(request, env, actor, subResource
     default:
       throw new HttpError(404, 'NOT_FOUND', 'Unknown jobs-directory resource: ' + subResource);
   }
+}
+
+// =============================================================================
+// Public Read-Only Resolvers, APIs, DPDP-Safe Suggestions & /sitemap-jobs.xml
+// =============================================================================
+
+function normalizePublicDomain(raw) {
+  let d = cleanStr(raw, 60);
+  if (!d) return '';
+  if (d === 'career-development') d = 'career-employability';
+  return JOBS_DOMAINS.includes(d) ? d : '';
+}
+
+export async function resolvePublicJobsDirectory(env, segments = []) {
+  await ensureJobsDirectoryStudioSchema(env.DB);
+  const cleanSegs = (Array.isArray(segments) ? segments : [])
+    .map(s => cleanStr(s, 120))
+    .filter(Boolean);
+  if (!cleanSegs.length) return null;
+
+  const domain = normalizePublicDomain(cleanSegs[0]);
+  if (!domain) return null;
+  const meta = JOBS_DOMAIN_META[domain];
+
+  const foldersRes = await env.DB
+    .prepare('SELECT * FROM jobs_directory_folders WHERE domain_slug = ? AND is_published = 1 ORDER BY depth ASC, sort_order ASC, title ASC')
+    .bind(domain)
+    .all();
+  const activeFolders = foldersRes.results || [];
+  const byId = new Map(activeFolders.map(f => [f.id, f]));
+
+  // Keep only folders whose entire ancestor chain is active
+  function isChainActive(f) {
+    let cur = f;
+    const seen = new Set();
+    while (cur && cur.parent_id) {
+      if (seen.has(cur.id)) return false;
+      seen.add(cur.id);
+      const parent = byId.get(cur.parent_id);
+      if (!parent) return false;
+      cur = parent;
+    }
+    return true;
+  }
+  const validFolders = activeFolders.filter(isChainActive);
+
+  let currentFolder = null;
+  const breadcrumbs = [
+    { title: 'Jobs & Careers', path: '/jobs/' },
+    { title: meta.title, path: `/jobs/${domain}/` }
+  ];
+  let accPath = `/jobs/${domain}`;
+
+  for (let i = 1; i < cleanSegs.length; i++) {
+    const segSlug = cleanSegs[i];
+    const parentId = currentFolder ? currentFolder.id : null;
+    const match = validFolders.find(f => (f.parent_id || null) === parentId && f.slug === segSlug);
+    if (!match) return null;
+    currentFolder = match;
+    accPath += `/${match.slug}`;
+    breadcrumbs.push({ title: match.title, path: `${accPath}/` });
+  }
+
+  const children = validFolders
+    .filter(f => (f.parent_id || null) === (currentFolder ? currentFolder.id : null))
+    .map(f => ({ ...f, public_path: `${accPath}/${f.slug}/` }));
+
+  // Gather items in current folder (or all domain folders if at domain root)
+  const allowedFolderIds = new Set();
+  if (currentFolder) {
+    allowedFolderIds.add(currentFolder.id);
+    const queue = [currentFolder.id];
+    while (queue.length) {
+      const pid = queue.shift();
+      for (const f of validFolders) {
+        if (f.parent_id === pid && !allowedFolderIds.has(f.id)) {
+          allowedFolderIds.add(f.id);
+          queue.push(f.id);
+        }
+      }
+    }
+  } else {
+    for (const f of validFolders) allowedFolderIds.add(f.id);
+  }
+
+  const itemsRes = await env.DB
+    .prepare("SELECT * FROM jobs_directory_items WHERE domain_slug = ? AND status = 'published' ORDER BY featured DESC, updated_at DESC")
+    .bind(domain)
+    .all();
+  const items = (itemsRes.results || [])
+    .filter(it => allowedFolderIds.has(it.folder_id))
+    .map(hydrateItemRow);
+
+  return {
+    domain,
+    meta,
+    canonicalPath: `${accPath}/`,
+    breadcrumbs,
+    folder: currentFolder,
+    children,
+    items
+  };
+}
+
+export async function resolvePublicJobsItem(env, slugOrId) {
+  await ensureJobsDirectoryStudioSchema(env.DB);
+  const key = cleanStr(slugOrId, 160);
+  if (!key) return null;
+
+  const row = await env.DB
+    .prepare("SELECT * FROM jobs_directory_items WHERE (slug = ? OR id = ?) AND status = 'published' LIMIT 1")
+    .bind(key, key)
+    .first();
+  if (!row) return null;
+
+  const foldersRes = await env.DB
+    .prepare('SELECT * FROM jobs_directory_folders WHERE domain_slug = ? AND is_published = 1')
+    .bind(row.domain_slug)
+    .all();
+  const byId = new Map((foldersRes.results || []).map(f => [f.id, f]));
+  const folder = byId.get(row.folder_id);
+  if (!folder) return null;
+
+  const chain = [];
+  let cur = folder;
+  const seen = new Set();
+  while (cur) {
+    if (seen.has(cur.id)) return null;
+    seen.add(cur.id);
+    chain.unshift(cur);
+    if (!cur.parent_id) break;
+    cur = byId.get(cur.parent_id);
+    if (!cur) return null;
+  }
+
+  const meta = JOBS_DOMAIN_META[row.domain_slug];
+  const breadcrumbs = [
+    { title: 'Jobs & Careers', path: '/jobs/' },
+    { title: meta.title, path: `/jobs/${row.domain_slug}/` }
+  ];
+  let acc = `/jobs/${row.domain_slug}`;
+  for (const f of chain) {
+    acc += `/${f.slug}`;
+    breadcrumbs.push({ title: f.title, path: `${acc}/` });
+  }
+  breadcrumbs.push({ title: row.title, path: `/jobs/item/${row.slug}/` });
+
+  return {
+    item: hydrateItemRow(row),
+    folder,
+    domain: row.domain_slug,
+    meta,
+    breadcrumbs
+  };
+}
+
+export async function listPublicJobsOverview(env) {
+  await ensureJobsDirectoryStudioSchema(env.DB);
+  const [fRes, iRes] = await Promise.all([
+    env.DB.prepare('SELECT domain_slug, COUNT(*) AS cnt FROM jobs_directory_folders WHERE is_published = 1 GROUP BY domain_slug').all(),
+    env.DB.prepare("SELECT domain_slug, COUNT(*) AS cnt, SUM(CASE WHEN verified_at IS NOT NULL THEN 1 ELSE 0 END) AS verified_cnt FROM jobs_directory_items WHERE status = 'published' GROUP BY domain_slug").all()
+  ]);
+  const fMap = new Map((fRes.results || []).map(r => [r.domain_slug, Number(r.cnt || 0)]));
+  const iMap = new Map((iRes.results || []).map(r => [r.domain_slug, { cnt: Number(r.cnt || 0), verified: Number(r.verified_cnt || 0) }]));
+
+  const today = new Date().toISOString().slice(0, 10);
+  const activeRow = await env.DB
+    .prepare("SELECT COUNT(*) AS cnt FROM jobs_directory_items WHERE status = 'published' AND (deadline_date = '' OR deadline_date >= ?)")
+    .bind(today)
+    .first();
+
+  let totalFolders = 0;
+  let totalPublished = 0;
+  let totalVerified = 0;
+
+  const domains = JOBS_DOMAINS.map(slug => {
+    const meta = JOBS_DOMAIN_META[slug];
+    const fc = fMap.get(slug) || 0;
+    const ic = iMap.get(slug)?.cnt || 0;
+    const vc = iMap.get(slug)?.verified || 0;
+    totalFolders += fc;
+    totalPublished += ic;
+    totalVerified += vc;
+    return {
+      slug,
+      num: meta.num,
+      title: meta.title,
+      summary: meta.summary,
+      publicPath: `/jobs/${slug}/`,
+      folder_count: fc,
+      item_count: ic,
+      verified_count: vc
+    };
+  });
+
+  return {
+    domains,
+    totals: {
+      totalDomains: domains.length,
+      totalFolders,
+      totalPublished,
+      totalVerified,
+      activeDeadlines: Number(activeRow?.cnt || 0)
+    }
+  };
+}
+
+export async function listPublicJobsItems(env, opts = {}) {
+  await ensureJobsDirectoryStudioSchema(env.DB);
+  const domain = normalizePublicDomain(opts.domain);
+  const itemType = cleanStr(opts.item_type, 40);
+  const qual = cleanStr(opts.qualification, 80);
+  const lang = cleanStr(opts.language, 20);
+  const q = cleanStr(opts.q, 120);
+  const activeOnly = opts.active_only === true || opts.active_only === '1' || opts.active_only === 'true';
+  const limit = Math.min(200, Math.max(1, Number(opts.limit || 60)));
+
+  const clauses = ["i.status = 'published'", 'f.is_published = 1'];
+  const binds = [];
+  if (domain) {
+    clauses.push('i.domain_slug = ?');
+    binds.push(domain);
+  }
+  if (itemType && JOBS_ITEM_TYPES.includes(itemType)) {
+    clauses.push('i.item_type = ?');
+    binds.push(itemType);
+  }
+  if (lang && JOBS_LANGUAGES.includes(lang)) {
+    clauses.push('i.language = ?');
+    binds.push(lang);
+  }
+  if (qual) {
+    clauses.push("LOWER(i.qualification_tag) LIKE ? ESCAPE '\\'");
+    binds.push('%' + likeEscape(qual.toLowerCase()) + '%');
+  }
+  if (activeOnly) {
+    const today = new Date().toISOString().slice(0, 10);
+    clauses.push("(i.deadline_date = '' OR i.deadline_date >= ?)");
+    binds.push(today);
+  }
+  if (q) {
+    const pat = '%' + likeEscape(q.toLowerCase()) + '%';
+    clauses.push("(LOWER(i.title) LIKE ? ESCAPE '\\' OR LOWER(i.recruiting_body) LIKE ? ESCAPE '\\' OR LOWER(i.qualification_tag) LIKE ? ESCAPE '\\' OR LOWER(i.summary) LIKE ? ESCAPE '\\')");
+    binds.push(pat, pat, pat, pat);
+  }
+
+  const sql = `SELECT i.*, f.title AS folder_title, f.slug AS folder_slug
+    FROM jobs_directory_items i
+    JOIN jobs_directory_folders f ON f.id = i.folder_id
+    WHERE ${clauses.join(' AND ')}
+    ORDER BY i.featured DESC, i.updated_at DESC
+    LIMIT ?`;
+  const res = await env.DB.prepare(sql).bind(...binds, limit).all();
+  const items = (res.results || []).map(hydrateItemRow);
+  return { items, total: items.length };
+}
+
+export async function submitPublicJobsSuggestion(env, payload = {}) {
+  await ensureJobsDirectoryStudioSchema(env.DB);
+  const domain = normalizePublicDomain(payload.domain_slug) || 'jobs-recruitment';
+  const message = redactPii(cleanStr(payload.message || payload.details || payload.title, 1000));
+  if (!message || message.length < 4) {
+    throw validationError('Please enter at least 4 characters describing the correction or update.');
+  }
+  const suggestedUrl = payload.suggested_url || payload.source_url
+    ? validateSafeCtaUrl(payload.suggested_url || payload.source_url)
+    : '';
+  const sugId = 'jsug-' + crypto.randomUUID().slice(0, 12);
+  const now = nowIso();
+  await env.DB.prepare(`INSERT INTO jobs_directory_suggestions
+    (id, domain_slug, folder_id, item_id, reporter_name, category, message, suggested_url, status, moderator_note, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', '', ?, ?)`)
+    .bind(
+      sugId,
+      domain,
+      cleanStr(payload.folder_id, 80) || null,
+      cleanStr(payload.item_id, 80) || null,
+      redactPii(cleanStr(payload.reporter_name, 80) || 'Citizen'),
+      cleanStr(payload.category || payload.suggestion_type, 40) || 'correction',
+      message,
+      suggestedUrl,
+      now,
+      now
+    )
+    .run();
+  return { ok: true, id: sugId, message: 'Submitted for editorial review.' };
+}
+
+export async function handlePublicJobsOverviewApi(request, env) {
+  const data = await listPublicJobsOverview(env);
+  return json({ ok: true, ...data }, 200, { 'Cache-Control': 'public, max-age=120, s-maxage=300' });
+}
+
+export async function handlePublicJobsItemsApi(request, env) {
+  const url = new URL(request.url);
+  const data = await listPublicJobsItems(env, {
+    domain: url.searchParams.get('domain'),
+    item_type: url.searchParams.get('item_type'),
+    qualification: url.searchParams.get('qualification'),
+    language: url.searchParams.get('language'),
+    q: url.searchParams.get('q'),
+    active_only: url.searchParams.get('active_only'),
+    limit: url.searchParams.get('limit')
+  });
+  return json({ ok: true, ...data }, 200, { 'Cache-Control': 'public, max-age=120, s-maxage=300' });
+}
+
+export async function handlePublicJobsSuggestApi(request, env) {
+  try {
+    const body = await readJson(request);
+    const result = await submitPublicJobsSuggestion(env, body);
+    return json(result, 201);
+  } catch (err) {
+    const status = err && err.status ? err.status : 400;
+    return json({ ok: false, message: (err && err.message) || 'Invalid suggestion payload' }, status);
+  }
+}
+
+export async function handleJobsDirectorySitemapXml(request, env) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
+  }
+  await ensureJobsDirectoryStudioSchema(env.DB);
+  const origin = (env && env.PUBLIC_ORIGIN) || 'https://csodisha.com';
+  const urls = [{ loc: `${origin}/jobs/`, priority: '0.9', changefreq: 'daily' }];
+
+  for (const domain of JOBS_DOMAINS) {
+    urls.push({ loc: `${origin}/jobs/${domain}/`, priority: '0.8', changefreq: 'daily' });
+  }
+
+  const foldersRes = await env.DB
+    .prepare('SELECT id, domain_slug, parent_id, slug, updated_at FROM jobs_directory_folders WHERE is_published = 1 ORDER BY depth ASC, sort_order ASC')
+    .all();
+  const byId = new Map((foldersRes.results || []).map(f => [f.id, f]));
+  for (const f of (foldersRes.results || [])) {
+    const segs = [];
+    let cur = f;
+    let ok = true;
+    const seen = new Set();
+    while (cur) {
+      if (seen.has(cur.id)) { ok = false; break; }
+      seen.add(cur.id);
+      segs.unshift(cur.slug);
+      if (!cur.parent_id) break;
+      cur = byId.get(cur.parent_id);
+      if (!cur) { ok = false; break; }
+    }
+    if (!ok) continue;
+    urls.push({
+      loc: `${origin}/jobs/${f.domain_slug}/${segs.join('/')}/`,
+      lastmod: (f.updated_at || '').slice(0, 10),
+      priority: '0.7',
+      changefreq: 'weekly'
+    });
+  }
+
+  const itemsRes = await env.DB
+    .prepare("SELECT slug, updated_at FROM jobs_directory_items WHERE status = 'published' ORDER BY updated_at DESC LIMIT 1000")
+    .all();
+  for (const it of (itemsRes.results || [])) {
+    urls.push({
+      loc: `${origin}/jobs/item/${it.slug}/`,
+      lastmod: (it.updated_at || '').slice(0, 10),
+      priority: '0.8',
+      changefreq: 'daily'
+    });
+  }
+
+  const xmlEsc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
+    .map(u => `  <url><loc>${xmlEsc(u.loc)}</loc>${u.lastmod ? `<lastmod>${xmlEsc(u.lastmod)}</lastmod>` : ''}<changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`)
+    .join('\n')}\n</urlset>\n`;
+
+  return new Response(body, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=300, s-maxage=900'
+    }
+  });
 }

@@ -3,8 +3,13 @@ import { DatabaseSync } from 'node:sqlite';
 import {
   ensureJobsDirectoryStudioSchema,
   handleJobsDirectoryStudio,
+  handlePublicJobsOverviewApi,
+  handlePublicJobsItemsApi,
+  handlePublicJobsSuggestApi,
+  handleJobsDirectorySitemapXml,
   JOBS_DOMAINS
 } from '../functions/_lib/jobs-directory-studio.js';
+import { handlePublicJobsRoute } from '../functions/_lib/jobs-directory-ssr.js';
 
 function createMockDb() {
   const db = new DatabaseSync(':memory:');
@@ -291,6 +296,77 @@ async function main() {
     parentFolder.id
   );
   assert.equal(delParent.status, 200);
+
+  // 7. Verify all 8 domains (#01-#08) + career-development alias
+  for (const d of [...JOBS_DOMAINS, 'career-development']) {
+    const res = await handleJobsDirectoryStudio(
+      makeReq('GET', `https://csodisha.com/api/admin/jobs-directory/tree?domain=${d}`),
+      env,
+      admin,
+      'tree'
+    );
+    const data = await res.json();
+    assert.equal(res.status, 200);
+    assert.ok(data.folders.length >= 6, `${d} should have depth 1->2->3 folders`);
+    assert.ok(data.items.length >= 1, `${d} should have at least 1 published item`);
+    assert.equal(data.crossDomainStats.totalDomains, 8);
+  }
+
+  // 8. Public APIs: overview, items, suggest (with DPDP PII redaction)
+  const ovRes = await handlePublicJobsOverviewApi(makeReq('GET', 'https://csodisha.com/api/public/jobs-directory/overview'), env);
+  assert.equal(ovRes.status, 200);
+  const ovJson = await ovRes.json();
+  assert.equal(ovJson.domains.length, 8);
+  assert.ok(ovJson.totals.totalPublished >= 8);
+
+  const pubItemsRes = await handlePublicJobsItemsApi(makeReq('GET', 'https://csodisha.com/api/public/jobs-directory/items?q=Scholarship'), env);
+  assert.equal(pubItemsRes.status, 200);
+  const pubItemsJson = await pubItemsRes.json();
+  assert.ok(pubItemsJson.items.some(i => i.slug === 'odisha-state-scholarship-portal-guide'));
+
+  const pubSugRes = await handlePublicJobsSuggestApi(
+    makeReq('POST', 'https://csodisha.com/api/public/jobs-directory/suggest', {
+      domain_slug: 'scholarships-support',
+      category: 'outdated-link',
+      message: 'Check portal link; my phone 9876543210'
+    }),
+    env
+  );
+  assert.equal(pubSugRes.status, 201);
+
+  // 9. SSR directory & item reader pages (200 for published, 404 for missing/draft)
+  const dirOk = await handlePublicJobsRoute(
+    makeReq('GET', 'https://csodisha.com/jobs/scholarships-support/odisha-state-scholarships/'),
+    env,
+    new URL('https://csodisha.com/jobs/scholarships-support/odisha-state-scholarships/')
+  );
+  assert.equal(dirOk.status, 200);
+  const dirHtml = await dirOk.text();
+  assert.ok(dirHtml.includes('Odisha State Scholarships'));
+  assert.ok(!dirHtml.includes('style='));
+
+  const itemOk = await handlePublicJobsRoute(
+    makeReq('GET', 'https://csodisha.com/jobs/item/odisha-state-scholarship-portal-guide/'),
+    env,
+    new URL('https://csodisha.com/jobs/item/odisha-state-scholarship-portal-guide/')
+  );
+  assert.equal(itemOk.status, 200);
+  const itemHtml = await itemOk.text();
+  assert.ok(itemHtml.includes('Official Apply / Portal'));
+
+  const missing404 = await handlePublicJobsRoute(
+    makeReq('GET', 'https://csodisha.com/jobs/item/non-existent-draft-item/'),
+    env,
+    new URL('https://csodisha.com/jobs/item/non-existent-draft-item/')
+  );
+  assert.equal(missing404.status, 404);
+
+  // 10. /sitemap-jobs.xml
+  const smRes = await handleJobsDirectorySitemapXml(makeReq('GET', 'https://csodisha.com/sitemap-jobs.xml'), env);
+  assert.equal(smRes.status, 200);
+  const smXml = await smRes.text();
+  assert.ok(smXml.includes('<loc>https://csodisha.com/jobs/scholarships-support/</loc>'));
+  assert.ok(smXml.includes('<loc>https://csodisha.com/jobs/item/odisha-state-scholarship-portal-guide/</loc>'));
 
   console.log('ALL JOBS DIRECTORY STUDIO TESTS PASSED');
 }

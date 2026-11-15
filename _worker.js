@@ -27,6 +27,8 @@ import { handleMedia } from './functions/api/media/_serve.js';
 import { handleAdminPage } from './functions/_lib/admin-pages.js';
 import { handlePublicStudyLibraryRoute } from './functions/_lib/study-library-ssr.js';
 import { handlePublicStudyItemsApi, handlePublicStudySuggestApi, handleStudyLibrarySitemapXml } from './functions/_lib/study-library-studio.js';
+import { handlePublicJobsRoute } from './functions/_lib/jobs-directory-ssr.js';
+import { handlePublicJobsOverviewApi, handlePublicJobsItemsApi, handlePublicJobsSuggestApi, handleJobsDirectorySitemapXml } from './functions/_lib/jobs-directory-studio.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -288,9 +290,9 @@ function recordPublicCachePut(edgeCache, request, response, ctx) {
 async function invalidatePublicEdgeCache(edgeCache, origin) {
   if (!edgeCache) return;
   const basePaths = [
-    '/sitemap.xml', '/sitemap-study-library.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
+    '/sitemap.xml', '/sitemap-study-library.xml', '/sitemap-jobs.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
-    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/content/platform-stats', '/api/content/changelog',
+    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources',
     '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
@@ -365,6 +367,26 @@ export default {
     }
     if (pathname === '/api/public/study-library/suggest' && request.method === 'POST') {
       return handlePublicStudySuggestApi(request, env);
+    }
+    if (pathname === '/sitemap-jobs.xml') {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const jobsMapRes = await handleJobsDirectorySitemapXml(request, env);
+      if (isAnonGet && jobsMapRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, jobsMapRes, ctx);
+      }
+      return jobsMapRes;
+    }
+    if (pathname === '/api/public/jobs-directory/overview' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicJobsOverviewApi(request, env);
+    }
+    if (pathname === '/api/public/jobs-directory/items' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicJobsItemsApi(request, env);
+    }
+    if (pathname === '/api/public/jobs-directory/suggest' && request.method === 'POST') {
+      return handlePublicJobsSuggestApi(request, env);
     }
     if (pathname === '/sitemap.xml' || pathname === '/feed.xml' || pathname === '/rss.xml' || pathname === '/robots.txt' || pathname === '/llms.txt') {
       if (edgeCache && isAnonGet) {
@@ -507,6 +529,10 @@ export default {
     if (pathname.startsWith('/study-library/')) {
       const studyRes = await handlePublicStudyLibraryRoute(request, env, url);
       if (studyRes) return studyRes;
+    }
+    if (pathname.startsWith('/jobs/')) {
+      const jobsRes = await handlePublicJobsRoute(request, env, url);
+      if (jobsRes) return jobsRes;
     }
 
     // Fall back to static asset binding

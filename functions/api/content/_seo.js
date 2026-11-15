@@ -305,6 +305,7 @@ export function handleRobotsTxt(request) {
     '',
     `Sitemap: ${SITE_ORIGIN}/sitemap.xml`,
     `Sitemap: ${SITE_ORIGIN}/sitemap-study-library.xml`,
+    `Sitemap: ${SITE_ORIGIN}/sitemap-jobs.xml`,
     ''
   ].join('\n');
 

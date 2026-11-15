@@ -1,0 +1,100 @@
+:root {
+  --cso-bg: #faf8f5;
+  --cso-surface: #ffffff;
+  --cso-forest: #14532d;
+  --cso-emerald: #16a34a;
+  --cso-emerald-soft: #f0fdf4;
+  --cso-border: #e5e7eb;
+  --cso-text: #111827;
+  --cso-muted: #4b5563;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--cso-bg);color:var(--cso-text);line-height:1.55}
+a{color:var(--cso-forest);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.cso-jobs-shell{display:flex;min-height:100vh}
+.cso-jobs-rail{width:270px;flex:0 0 270px;background:var(--cso-surface);border-right:1px solid var(--cso-border);padding:18px 14px;display:flex;flex-direction:column;gap:14px;transition:width .2s ease}
+.cso-jobs-shell.is-collapsed .cso-jobs-rail{width:68px;flex:0 0 68px;padding:18px 8px}
+.cso-jobs-shell.is-collapsed .cso-jobs-rail-label,.cso-jobs-shell.is-collapsed .cso-jobs-rail-title,.cso-jobs-shell.is-collapsed .cso-jobs-rail-section{display:none}
+.cso-jobs-brand{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.cso-jobs-brand-link{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--cso-forest)}
+.cso-jobs-badge{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#16a34a,#14532d);color:#fff;font-weight:800;font-size:.78rem;letter-spacing:.03em;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.cso-jobs-rail-toggle{border:1px solid var(--cso-border);background:#fff;border-radius:8px;padding:6px 9px;cursor:pointer;font-size:.82rem;color:var(--cso-forest)}
+.cso-jobs-rail-section{font-size:.72rem;font-weight:700;letter-spacing:.08em;color:var(--cso-muted);text-transform:uppercase;padding:4px 8px}
+.cso-jobs-nav{display:grid;gap:4px}
+.cso-jobs-nav-link{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;color:var(--cso-text);font-size:.88rem;font-weight:500}
+.cso-jobs-nav-link:hover,.cso-jobs-nav-link.is-active{background:var(--cso-emerald-soft);color:var(--cso-forest);text-decoration:none}
+.cso-jobs-nav-num{width:24px;height:24px;border-radius:6px;background:#ecfdf5;color:var(--cso-forest);font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+
+.cso-jobs-main{flex:1;min-width:0;padding:20px 24px 48px;max-width:1280px;margin:0 auto}
+.cso-jobs-mobile-bar{display:none;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cso-jobs-drawer-backdrop{display:none}
+
+.cso-jobs-hero{background:linear-gradient(135deg,#14532d,#166534);color:#fff;border-radius:16px;padding:24px 26px;margin-bottom:20px}
+.cso-jobs-crumb{font-size:.82rem;color:#bbf7d0;margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap}
+.cso-jobs-crumb a{color:#dcfce7}
+.cso-jobs-hero h1{margin:0 0 8px;font-size:1.65rem;line-height:1.25}
+.cso-jobs-hero-sub{margin:0 0 14px;color:#ecfdf5;font-size:.96rem}
+.cso-jobs-quick-pills{display:flex;gap:8px;flex-wrap:wrap}
+.cso-jobs-pill{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:6px 12px;font-size:.82rem;font-weight:600;cursor:pointer}
+.cso-jobs-pill:hover,.cso-jobs-pill.is-active{background:#fff;color:var(--cso-forest)}
+
+.cso-jobs-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.cso-jobs-kpi{background:var(--cso-surface);border:1px solid var(--cso-border);border-radius:12px;padding:14px 16px}
+.cso-jobs-kpi-label{font-size:.78rem;color:var(--cso-muted);font-weight:600}
+.cso-jobs-kpi-val{font-size:1.45rem;font-weight:800;color:var(--cso-forest);margin-top:2px}
+.cso-jobs-progress{width:100%;height:6px;margin-top:8px;border-radius:999px;overflow:hidden;appearance:none;background:#e5e7eb}
+.cso-jobs-progress::-webkit-progress-bar{background:#e5e7eb;border-radius:999px}
+.cso-jobs-progress::-webkit-progress-value{background:var(--cso-emerald);border-radius:999px}
+
+.cso-jobs-panel{background:var(--cso-surface);border:1px solid var(--cso-border);border-radius:14px;padding:18px;margin-bottom:20px}
+.cso-jobs-panel h2{margin:0 0 12px;font-size:1.15rem;color:var(--cso-forest)}
+.cso-jobs-filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;align-items:center}
+.cso-jobs-input,.cso-jobs-select{width:100%;padding:9px 11px;border:1px solid #d1d5db;border-radius:9px;font-size:.9rem;background:#fff;color:var(--cso-text)}
+.cso-jobs-check{display:flex;align-items:center;gap:6px;font-size:.86rem;font-weight:600;color:var(--cso-forest);white-space:nowrap}
+
+.cso-jobs-domain-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.cso-jobs-domain-card{display:grid;gap:6px;background:var(--cso-surface);border:1px solid var(--cso-border);border-radius:12px;padding:14px;color:var(--cso-text);transition:border-color .15s,box-shadow .15s}
+.cso-jobs-domain-card:hover{border-color:var(--cso-emerald);box-shadow:0 4px 14px rgba(20,83,45,.08);text-decoration:none}
+.cso-jobs-domain-top{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--cso-emerald);font-weight:700}
+.cso-jobs-domain-title{font-weight:700;color:var(--cso-forest);font-size:.96rem}
+.cso-jobs-domain-desc{font-size:.82rem;color:var(--cso-muted)}
+
+.cso-jobs-items-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.cso-jobs-item-card{background:var(--cso-surface);border:1px solid var(--cso-border);border-radius:12px;padding:16px;display:grid;gap:8px}
+.cso-jobs-item-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:.78rem;color:var(--cso-muted)}
+.cso-jobs-tag{background:var(--cso-emerald-soft);color:var(--cso-forest);border:1px solid #bbf7d0;border-radius:999px;padding:2px 9px;font-size:.74rem;font-weight:700}
+.cso-jobs-item-title{font-size:1rem;font-weight:700;color:var(--cso-forest);margin:0}
+.cso-jobs-item-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.cso-jobs-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:9px;font-size:.84rem;font-weight:600;border:1px solid var(--cso-border);background:#fff;color:var(--cso-forest);cursor:pointer}
+.cso-jobs-btn-primary{background:var(--cso-forest);color:#fff;border-color:var(--cso-forest)}
+.cso-jobs-btn-primary:hover{background:#166534;text-decoration:none}
+
+/* SSR Header, Directory & Reader */
+.cso-pub-header{background:#fff;border-bottom:1px solid var(--cso-border);padding:12px 20px}
+.cso-pub-header-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.cso-pub-brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--cso-forest)}
+.cso-pub-nav{display:flex;gap:14px;flex-wrap:wrap;font-size:.9rem;font-weight:600}
+.cso-ssr-wrap{max-width:1180px;margin:0 auto;padding:22px 20px 48px}
+.cso-ssr-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.cso-ssr-fact{background:var(--cso-emerald-soft);border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px}
+.cso-ssr-fact-k{font-size:.74rem;color:var(--cso-muted);font-weight:600;text-transform:uppercase}
+.cso-ssr-fact-v{font-size:.92rem;font-weight:700;color:var(--cso-forest)}
+.cso-ssr-suggest-form{margin-top:12px;display:grid;gap:10px;max-width:560px}
+.cso-ssr-textarea{width:100%;padding:9px 11px;border:1px solid #d1d5db;border-radius:9px;font-size:.9rem;font-family:inherit}
+.cso-pub-footer{border-top:1px solid var(--cso-border);background:#fff;padding:18px 20px;text-align:center;font-size:.84rem;color:var(--cso-muted)}
+
+@media (max-width: 1023px) {
+  .cso-jobs-rail{position:fixed;left:-290px;top:0;bottom:0;z-index:50;transition:left .2s ease}
+  .cso-jobs-shell.is-mobile-open .cso-jobs-rail{left:0}
+  .cso-jobs-shell.is-mobile-open .cso-jobs-drawer-backdrop{display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40}
+  .cso-jobs-mobile-bar{display:flex}
+  .cso-jobs-kpis,.cso-jobs-domain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cso-jobs-filters,.cso-jobs-items-grid,.cso-ssr-facts{grid-template-columns:1fr}
+}
+@media print {
+  .cso-pub-header,.cso-pub-footer,.cso-jobs-item-actions,.cso-ssr-suggest-box,.cso-jobs-rail{display:none!important}
+  body{background:#fff}
+  .cso-jobs-panel{border:none;padding:0}
+}

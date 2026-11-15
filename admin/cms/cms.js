@@ -13351,22 +13351,28 @@
       'jobs-recruitment': {
         num: '01',
         title: 'Jobs & Recruitment',
-        publicPath: '/jobs/',
+        publicPath: '/jobs/jobs-recruitment/',
         defaultType: 'job-notification',
+        defaultBody: 'Odisha Public Service Commission (OPSC)',
+        qualPlaceholder: 'e.g. Graduate (Any Stream) / 12th Pass',
         quickTags: ['OPSC', 'OSSC', 'OSSSC', 'Odisha Govt', 'PSU', 'Banking', 'Graduate']
       },
       'career-explorer': {
         num: '02',
         title: 'Career Explorer',
-        publicPath: '/jobs/careers/',
+        publicPath: '/jobs/career-explorer/',
         defaultType: 'career-guide',
+        defaultBody: 'GA & PG Department / CSOdisha Career Desk',
+        qualPlaceholder: 'e.g. Graduate + OPSC OCS / B.Tech',
         quickTags: ['OAS', 'Civil Services', 'IT & Cloud', 'Healthcare', 'Teaching', 'Skilled Trades']
       },
       'eligibility-explorer': {
         num: '03',
         title: 'Eligibility & Qualification Explorer',
-        publicPath: '/jobs/eligibility/',
+        publicPath: '/jobs/eligibility-explorer/',
         defaultType: 'eligibility-matrix',
+        defaultBody: 'Govt of Odisha GA & PG Dept',
+        qualPlaceholder: 'e.g. 10th / 12th / ITI / Graduate',
         quickTags: ['10th Pass', '12th Pass', 'ITI / Diploma', 'Graduate', 'Age Relaxation', 'SEBC/SC/ST']
       },
       'courses-exams': {
@@ -13374,35 +13380,45 @@
         title: 'Courses, Entrance Exams & Certifications',
         publicPath: '/jobs/courses-exams/',
         defaultType: 'course-exam',
+        defaultBody: 'OJEE / OSDA / NTA',
+        qualPlaceholder: 'e.g. 12th / Diploma / Graduate',
         quickTags: ['OJEE', 'OTET', 'OSSTET', 'GATE', 'NEET', 'OSDA', 'World Skill Center']
       },
       'scholarships-support': {
         num: '05',
         title: 'Scholarships & Financial Support',
-        publicPath: '/jobs/scholarships/',
+        publicPath: '/jobs/scholarships-support/',
         defaultType: 'scholarship',
-        quickTags: ['Post-Matric', 'Pre-Matric', 'Odisha State Scholarship', 'Gopabandhu']
+        defaultBody: 'State Scholarship Portal Odisha / NSP',
+        qualPlaceholder: 'e.g. Class 9 to PG / SC-ST-SEBC-EBC',
+        quickTags: ['Post-Matric', 'Pre-Matric', 'State Scholarship Portal', 'KALIA', 'Gopabandhu', 'NSP', 'NAPS Stipend']
       },
       'international-overseas': {
         num: '06',
         title: 'International & Overseas Opportunities',
-        publicPath: '/jobs/overseas/',
+        publicPath: '/jobs/international-overseas/',
         defaultType: 'overseas-track',
-        quickTags: ['Fellowship', 'MEA', 'Skilled Migration', 'Study Abroad']
+        defaultBody: 'FCDO Chevening / Fulbright / MEA',
+        qualPlaceholder: 'e.g. Graduate + 2 Yrs Work Exp / PhD',
+        quickTags: ['Chevening', 'Fulbright', 'Commonwealth', 'DAAD', 'UN / World Bank', 'WES', 'Work Visa']
       },
       'career-employability': {
         num: '07',
         title: 'Career Development & Employability',
-        publicPath: '/jobs/employability/',
+        publicPath: '/jobs/career-employability/',
         defaultType: 'employability-guide',
-        quickTags: ['Resume', 'Interview Prep', 'NAPS', 'Apprenticeship', 'Employment Exchange']
+        defaultBody: 'CSOdisha Career Readiness Desk',
+        qualPlaceholder: 'e.g. Final Year / Fresher / Mains Aspirant',
+        quickTags: ['ATS Resume', 'OAS Viva', 'Interview Prep', 'Govt Internship', 'NAPS', 'Digital Portfolio']
       },
       'institutions-portals': {
         num: '08',
         title: 'Institutions, Official Portals & Verification',
-        publicPath: '/jobs/portals/',
+        publicPath: '/jobs/institutions-portals/',
         defaultType: 'official-portal',
-        quickTags: ['Official Portal', 'Anti-Fraud', 'University', 'Commission']
+        defaultBody: 'Govt of Odisha Commissions / SAMS / e-District',
+        qualPlaceholder: 'e.g. All Candidates / Citizen Verification',
+        quickTags: ['OPSC', 'OSSSC', 'OSSC', 'SAMS Odisha', 'e-District', 'Anti-Fraud', 'Helpline 1930']
       }
     };
     var cfg = DOMAINS[domainSlug] || DOMAINS['jobs-recruitment'];
@@ -13427,6 +13443,17 @@
     var addItemBtn = el('button', { type: 'button', class: 'btn primary sm', text: '+ Add Opportunity / Guide' });
     addItemBtn.disabled = !canWrite;
     var refreshBtn = el('button', { type: 'button', class: 'btn sm', text: 'Refresh' });
+    var crossSummaryPill = activeDomain === 'institutions-portals'
+      ? el('span', { class: 'badge ok', text: 'All 8 Domains: loading...' })
+      : null;
+
+    var headBadges = [
+      crossSummaryPill,
+      el('a', { class: 'btn sm', href: cfg.publicPath, target: '_blank', rel: 'noopener', text: 'View Public (' + cfg.publicPath + ')' }),
+      addSubBtn,
+      addItemBtn,
+      refreshBtn
+    ].filter(Boolean);
 
     wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
       el('div', { class: 'cso-ops-head' }, [
@@ -13434,12 +13461,7 @@
           el('h2', { text: 'Module #' + cfg.num + ' — ' + cfg.title }),
           el('p', { class: 'muted sm', text: '4-Layer Jobs & Careers Studio · Multi-level D1 Taxonomy, R2 Attachments & DPDP PII Guard' })
         ]),
-        el('div', { class: 'cso-ops-badges' }, [
-          el('a', { class: 'btn sm', href: cfg.publicPath, target: '_blank', rel: 'noopener', text: 'View Public (' + cfg.publicPath + ')' }),
-          addSubBtn,
-          addItemBtn,
-          refreshBtn
-        ])
+        el('div', { class: 'cso-ops-badges' }, headBadges)
       ])
     ]));
 
@@ -13760,8 +13782,8 @@
       ]);
       langSel.value = (editing && editing.language) || 'EN';
 
-      var bodyInp = el('input', { class: 'input', type: 'text', value: (editing && editing.recruiting_body) || '', placeholder: 'e.g. OPSC / OSSSC / OSDA' });
-      var qualInp = el('input', { class: 'input', type: 'text', value: (editing && editing.qualification_tag) || '', placeholder: 'e.g. Graduate (Any Stream)' });
+      var bodyInp = el('input', { class: 'input', type: 'text', value: (editing && editing.recruiting_body) || cfg.defaultBody || '', placeholder: 'e.g. ' + (cfg.defaultBody || 'OPSC / OSSSC / OSDA') });
+      var qualInp = el('input', { class: 'input', type: 'text', value: (editing && editing.qualification_tag) || '', placeholder: cfg.qualPlaceholder || 'e.g. Graduate (Any Stream)' });
       var vacInp = el('input', { class: 'input', type: 'text', value: (editing && editing.vacancies) || '', placeholder: 'e.g. 399 Posts' });
       var startInp = el('input', { class: 'input', type: 'text', value: (editing && editing.start_date) || '', placeholder: 'YYYY-MM-DD' });
       var deadInp = el('input', { class: 'input', type: 'text', value: (editing && editing.deadline_date) || '', placeholder: 'YYYY-MM-DD' });
@@ -14174,6 +14196,10 @@
       if (state.q) qs.set('q', state.q);
       if (state.healthTab === 'stale') qs.set('health', 'stale');
       state.tree = await api('GET', 'jobs-directory/tree?' + qs.toString());
+      if (crossSummaryPill && state.tree && state.tree.crossDomainStats) {
+        var cs = state.tree.crossDomainStats;
+        crossSummaryPill.textContent = 'All ' + (cs.totalDomains || 8) + ' Domains: ' + (cs.totalFolders || 0) + ' directories · ' + (cs.totalPublished || 0) + ' published';
+      }
       renderKpis();
       renderHealthTabs();
       renderFolders();
