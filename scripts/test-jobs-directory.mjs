@@ -11,6 +11,7 @@ import {
   enrichScholarshipsCategory05,
   enrichInternationalCategory06,
   enrichCareerDevelopmentCategory07,
+  enrichInstitutionsPortalsCategory08,
   handleJobsDirectoryStudio,
   handlePublicJobsOverviewApi,
   handlePublicJobsItemsApi,
@@ -1198,6 +1199,117 @@ async function main() {
   const ssrCdHtml = await ssrCd.text();
   assert.ok(ssrCdHtml.includes('Qualification &amp; Odia Rule') && ssrCdHtml.includes('opsc.gov.in'));
   assert.ok(!/\sstyle\s*=/i.test(ssrCdHtml), 'SSR employability guide page must have zero inline style="" attributes');
+
+  // 19. Category #08 (v75) Exhaustive Enrichment across all 27 subcategories + 12 Official Portal Handbooks + Admin Sync + SSR
+  const cat08Raw = new DatabaseSync(':memory:');
+  cat08Raw.exec(`
+    CREATE TABLE audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, actor_user_id TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, metadata_json TEXT, ip_address TEXT, created_at INTEGER NOT NULL DEFAULT (unixepoch()));
+    CREATE TABLE jobs_directory_nodes (id INTEGER PRIMARY KEY, parent_id INTEGER, level INTEGER, code TEXT, title TEXT, title_or TEXT, description TEXT, description_or TEXT, group_slug TEXT, url TEXT, exam_slug TEXT, notes_json TEXT, tags TEXT, sort_order INTEGER, is_active INTEGER);
+  `);
+  const ipSection = dirJson.sections[7];
+  let ipSeq = 1;
+  const insIpNode = cat08Raw.prepare('INSERT INTO jobs_directory_nodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)');
+  insIpNode.run(1, null, 0, '08', ipSection.title, '', 'Institutions, Official Portals & Verification', '', 'institutions-portals', '', '', '[]', '[]', 1);
+  function insertIpChildren(children, parentId, level) {
+    for (let i = 0; i < (children || []).length; i++) {
+      const ch = children[i];
+      ipSeq += 1;
+      const myId = ipSeq;
+      insIpNode.run(myId, parentId, level, ch.number || '', ch.title, '', '', '', 'institutions-portals', '', '', '[]', '[]', i + 1);
+      insertIpChildren(ch.children, myId, level + 1);
+    }
+  }
+  insertIpChildren(ipSection.children, 1, 1);
+  assert.equal(ipSeq - 1, 27, 'directory.json should contain all 27 subcategories under Institutions, Official Portals & Verification');
+
+  function wrapCat08(sql, args = []) {
+    return {
+      async first() { return cat08Raw.prepare(sql).get(...args) || null; },
+      async all() { return { results: cat08Raw.prepare(sql).all(...args) }; },
+      async run() { const info = cat08Raw.prepare(sql).run(...args); return { success: true, meta: { changes: info.changes } }; }
+    };
+  }
+  const cat08Env = {
+    DB: {
+      prepare(sql) { return { bind(...a) { return wrapCat08(sql, a); }, ...wrapCat08(sql, []) }; },
+      async batch(stmts) { const out = []; for (const s of stmts) out.push(await s.run()); return out; }
+    }
+  };
+
+  await ensureJobsDirectoryStudioSchema(cat08Env.DB);
+
+  const ipTreeRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/tree?domain=institutions-portals'),
+    cat08Env,
+    admin,
+    'tree'
+  );
+  assert.equal(ipTreeRes.status, 200);
+  const ipTreeData = await ipTreeRes.json();
+  assert.ok(ipTreeData.folders.length >= 27, `Expected >= 27 institutions-portals folders, got ${ipTreeData.folders.length}`);
+  for (const f of ipTreeData.folders) {
+    assert.ok((f.description_en || '').length >= 160, `Institutions folder "${f.title}" description_en < 160 chars`);
+    assert.ok((f.description_or || '').length >= 160, `Institutions folder "${f.title}" description_or < 160 chars`);
+    assert.ok(Boolean(f.seo_title), `Institutions folder "${f.title}" missing seo_title`);
+    assert.ok(Boolean(f.seo_description), `Institutions folder "${f.title}" missing seo_description`);
+    assert.ok(Boolean(f.featured_badge), `Institutions folder "${f.title}" missing featured_badge`);
+    assert.ok(Boolean(f.verified_at), `Institutions folder "${f.title}" missing verified_at`);
+  }
+
+  const ipItemsRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/items?domain=institutions-portals'),
+    cat08Env,
+    admin,
+    'items'
+  );
+  assert.equal(ipItemsRes.status, 200);
+  const ipItemsData = await ipItemsRes.json();
+  const ipGuides = ipItemsData.items.filter(it => it.item_type === 'official-portal' && Boolean(it.exam_code && it.qualification_odia_rule));
+  assert.ok(ipGuides.length >= 12, `Expected >= 12 official-portal items, got ${ipGuides.length}`);
+  for (const g of ipGuides) {
+    assert.ok(Boolean(g.title_or), `Official Portal guide "${g.title}" missing title_or`);
+    assert.ok(Boolean(g.pay_matrix), `Official Portal guide "${g.title}" missing pay_matrix`);
+    assert.ok(Boolean(g.documents_checklist), `Official Portal guide "${g.title}" missing documents_checklist`);
+    assert.ok(Boolean(g.application_steps), `Official Portal guide "${g.title}" missing application_steps`);
+    assert.ok(Boolean(g.official_portal_url), `Official Portal guide "${g.title}" missing official_portal_url`);
+    assert.ok(Boolean(g.verified_at), `Official Portal guide "${g.title}" missing verified_at`);
+  }
+
+  // Verify Admin two-way sync PUT & custom edit preservation
+  const sampleIp = ipGuides.find(g => g.slug === 'verified-odisha-recruitment-portals-directory') || ipGuides[0];
+  const customIpRule = 'Custom Admin OPSC OSSC OSSSC Verified Portal Rule Verified';
+  const putIpRes = await handleJobsDirectoryStudio(
+    makeReq('PUT', `https://csodisha.com/api/admin/jobs-directory/items/${sampleIp.id}`, {
+      qualification_odia_rule: customIpRule,
+      exam_code: 'PORTALS-CUSTOM-2026'
+    }),
+    cat08Env,
+    admin,
+    'items',
+    sampleIp.id
+  );
+  assert.equal(putIpRes.status, 200);
+  await enrichInstitutionsPortalsCategory08(cat08Env.DB, new Date().toISOString());
+  const ipItemAfter = await (await handleJobsDirectoryStudio(
+    makeReq('GET', `https://csodisha.com/api/admin/jobs-directory/items/${sampleIp.id}`),
+    cat08Env,
+    admin,
+    'items',
+    sampleIp.id
+  )).json();
+  assert.equal(ipItemAfter.item.qualification_odia_rule, customIpRule, 'Custom admin edit in Category #08 must not be overwritten');
+  assert.equal(ipItemAfter.item.exam_code, 'PORTALS-CUSTOM-2026');
+
+  // Verify SSR Official Portal guide renders cleanly with zero inline style="" attributes
+  const ssrIp = await handlePublicJobsRoute(
+    makeReq('GET', 'https://csodisha.com/jobs/item/verified-odisha-recruitment-portals-directory/'),
+    cat08Env,
+    new URL('https://csodisha.com/jobs/item/verified-odisha-recruitment-portals-directory/')
+  );
+  assert.equal(ssrIp.status, 200);
+  const ssrIpHtml = await ssrIp.text();
+  assert.ok(ssrIpHtml.includes('Qualification &amp; Odia Rule') && ssrIpHtml.includes('opsc.gov.in'));
+  assert.ok(!/\sstyle\s*=/i.test(ssrIpHtml), 'SSR official portal guide page must have zero inline style="" attributes');
 
   console.log('ALL JOBS DIRECTORY STUDIO TESTS PASSED');
 }
