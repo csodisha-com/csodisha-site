@@ -51,31 +51,50 @@ async function ensureSiteSettingsTable(db) {
 // ============================================================================
 // Module #6: Database Migration Version & DDL Schema Journal
 // ============================================================================
+export async function ensureOpsDdlJournalTable(db) {
+  await db.prepare(
+    `CREATE TABLE IF NOT EXISTS ops_ddl_journal (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       version_tag TEXT NOT NULL,
+       schema_sha256 TEXT NOT NULL,
+       table_count INTEGER NOT NULL DEFAULT 0,
+       index_count INTEGER NOT NULL DEFAULT 0,
+       trigger_count INTEGER NOT NULL DEFAULT 0,
+       note TEXT NOT NULL DEFAULT '',
+       diff_json TEXT NOT NULL DEFAULT '{}',
+       snapshot_json TEXT NOT NULL DEFAULT '{}',
+       created_by TEXT,
+       created_at TEXT NOT NULL DEFAULT (datetime('now')),
+       updated_at TEXT
+     )`
+  ).run();
+}
+
 export async function inspectDatabaseSchema(env) {
   if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
 
   const { results } = await env.DB.prepare(
     `SELECT type, name, tbl_name, sql
      FROM sqlite_master
-     WHERE type IN ('table', 'index')
+     WHERE type IN ('table', 'index', 'trigger')
        AND name NOT LIKE 'sqlite_%'
        AND name NOT LIKE '_cf_%'
-     ORDER BY CASE type WHEN 'table' THEN 0 ELSE 1 END, name ASC`
+     ORDER BY CASE type WHEN 'table' THEN 0 WHEN 'index' THEN 1 ELSE 2 END, name ASC`
   ).all();
 
   const items = results || [];
   const tables = [];
   const indexes = [];
+  const triggers = [];
   const canonicalLines = [];
   let totalRows = 0;
 
   for (const item of items) {
     const normSql = normalizeDdlSql(item.sql || '');
-    canonicalLines.push(`${item.type}:${item.name}:${normSql}`);
 
     if (item.type === 'table') {
       let rowCount = 0;
-      let columnCount = 0;
+      let columns = [];
       const safeIdent = String(item.name).replace(/"/g, '""');
       try {
         const cRow = await env.DB.prepare(`SELECT COUNT(*) AS n FROM "${safeIdent}"`).first();
@@ -85,20 +104,39 @@ export async function inspectDatabaseSchema(env) {
       }
       try {
         const cols = await env.DB.prepare(`PRAGMA table_info("${safeIdent}")`).all();
-        columnCount = Array.isArray(cols.results) ? cols.results.length : 0;
+        columns = Array.isArray(cols.results)
+          ? cols.results.map(c => ({
+              name: String(c.name || ''),
+              type: String(c.type || ''),
+              notnull: Boolean(c.notnull),
+              pk: Number(c.pk) || 0
+            }))
+          : [];
       } catch {
-        columnCount = 0;
+        columns = [];
       }
+      const colSig = columns.map(c => `${c.name}:${c.type}:${c.notnull ? 1 : 0}:${c.pk}`).join(',');
+      canonicalLines.push(`${item.type}:${item.name}:${normSql}:[${colSig}]`);
       totalRows += rowCount;
       tables.push({
         name: item.name,
         row_count: rowCount,
-        column_count: columnCount,
+        column_count: columns.length,
+        columns,
         ddl_sql: item.sql || '',
         normalized_ddl: normSql
       });
     } else if (item.type === 'index') {
+      canonicalLines.push(`${item.type}:${item.name}:${normSql}`);
       indexes.push({
+        name: item.name,
+        table_name: item.tbl_name,
+        ddl_sql: item.sql || '',
+        normalized_ddl: normSql
+      });
+    } else if (item.type === 'trigger') {
+      canonicalLines.push(`${item.type}:${item.name}:${normSql}`);
+      triggers.push({
         name: item.name,
         table_name: item.tbl_name,
         ddl_sql: item.sql || '',
@@ -130,12 +168,203 @@ export async function inspectDatabaseSchema(env) {
     ok: true,
     inspected_at: new Date().toISOString(),
     schema_sha256: schemaSha256,
+    live_schema_hash: schemaSha256,
     table_count: tables.length,
     index_count: indexes.length,
+    trigger_count: triggers.length,
     total_rows: totalRows,
     tables,
+    live_tables: tables,
     indexes,
+    triggers,
     migrations
+  };
+}
+
+function buildSchemaSnapshotMap(tables) {
+  const out = {};
+  for (const t of (tables || [])) {
+    out[t.name] = {
+      normalized_ddl: t.normalized_ddl || '',
+      columns: (t.columns || []).map(c => `${c.name}:${c.type}:${c.notnull ? 1 : 0}:${c.pk}`)
+    };
+  }
+  return out;
+}
+
+export function computeSchemaDiff(previousSnapshot, liveTables) {
+  const prevTables = (previousSnapshot && previousSnapshot.tables) ? previousSnapshot.tables : {};
+  const liveMap = buildSchemaSnapshotMap(liveTables);
+  const added_tables = [];
+  const removed_tables = [];
+  const altered_tables = [];
+
+  for (const name of Object.keys(liveMap).sort()) {
+    if (!prevTables[name]) {
+      added_tables.push(name);
+    } else {
+      const prevSig = `${prevTables[name].normalized_ddl || ''}|${(prevTables[name].columns || []).join(',')}`;
+      const liveSig = `${liveMap[name].normalized_ddl || ''}|${(liveMap[name].columns || []).join(',')}`;
+      if (prevSig !== liveSig) {
+        altered_tables.push(name);
+      }
+    }
+  }
+  for (const name of Object.keys(prevTables).sort()) {
+    if (!liveMap[name]) {
+      removed_tables.push(name);
+    }
+  }
+  return { added_tables, removed_tables, altered_tables };
+}
+
+function presentDdlJournalRow(row) {
+  let diff = { added_tables: [], removed_tables: [], altered_tables: [] };
+  try {
+    if (row.diff_json) diff = JSON.parse(row.diff_json);
+  } catch {}
+  return {
+    id: Number(row.id),
+    version_tag: row.version_tag,
+    schema_sha256: row.schema_sha256,
+    table_count: Number(row.table_count) || 0,
+    index_count: Number(row.index_count) || 0,
+    trigger_count: Number(row.trigger_count) || 0,
+    note: row.note || '',
+    diff,
+    created_by: row.created_by || 'admin',
+    created_at: row.created_at,
+    updated_at: row.updated_at || null
+  };
+}
+
+export async function getDdlJournalReport(env) {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  await ensureOpsDdlJournalTable(env.DB);
+  const schema = await inspectDatabaseSchema(env);
+
+  const { results } = await env.DB.prepare(
+    `SELECT id, version_tag, schema_sha256, table_count, index_count, trigger_count, note, diff_json, snapshot_json, created_by, created_at, updated_at
+     FROM ops_ddl_journal
+     ORDER BY id DESC
+     LIMIT 50`
+  ).all();
+
+  const rows = results || [];
+  const journal_history = rows.map(presentDdlJournalRow);
+  const latestRow = rows[0] || null;
+  const latest_checkpoint = latestRow ? journal_history[0] : null;
+  const baseline_missing = !latestRow;
+
+  let prevSnapshot = null;
+  if (latestRow && latestRow.snapshot_json) {
+    try { prevSnapshot = JSON.parse(latestRow.snapshot_json); } catch {}
+  }
+
+  const pending_diff = latestRow
+    ? computeSchemaDiff(prevSnapshot, schema.tables)
+    : {
+        added_tables: schema.tables.map(t => t.name),
+        removed_tables: [],
+        altered_tables: []
+      };
+
+  const drift_detected = latestRow
+    ? latestRow.schema_sha256 !== schema.schema_sha256
+    : true;
+
+  return {
+    ...schema,
+    drift_detected,
+    baseline_missing,
+    latest_checkpoint,
+    journal_history,
+    pending_diff
+  };
+}
+
+export async function recordDdlCheckpoint(env, { version_tag, note = '', actorEmail = 'admin' } = {}) {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  await ensureOpsDdlJournalTable(env.DB);
+
+  const cleanTag = String(version_tag || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 64);
+  if (!cleanTag) {
+    throw new HttpError(400, 'MISSING_VERSION_TAG', 'version_tag is required (e.g. v1.0.0-baseline)');
+  }
+  const cleanNote = String(note || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 400);
+
+  const current = await getDdlJournalReport(env);
+  const snapshotObj = { tables: buildSchemaSnapshotMap(current.tables) };
+  const nowIso = new Date().toISOString();
+
+  const ins = await env.DB.prepare(
+    `INSERT INTO ops_ddl_journal
+       (version_tag, schema_sha256, table_count, index_count, trigger_count, note, diff_json, snapshot_json, created_by, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(
+    cleanTag,
+    current.schema_sha256,
+    current.table_count,
+    current.index_count,
+    current.trigger_count,
+    cleanNote,
+    JSON.stringify(current.pending_diff),
+    JSON.stringify(snapshotObj),
+    actorEmail || 'admin',
+    nowIso
+  ).run();
+
+  const createdId = Number(ins && ins.meta && ins.meta.last_row_id) || null;
+  const updatedReport = await getDdlJournalReport(env);
+  const created = createdId
+    ? updatedReport.journal_history.find(j => j.id === createdId) || updatedReport.latest_checkpoint
+    : updatedReport.latest_checkpoint;
+
+  return {
+    ok: true,
+    checkpoint: created,
+    report: updatedReport
+  };
+}
+
+export async function updateDdlCheckpoint(env, id, { version_tag, note } = {}) {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  await ensureOpsDdlJournalTable(env.DB);
+
+  const numId = Number(id);
+  if (!Number.isInteger(numId) || numId <= 0) {
+    throw new HttpError(400, 'INVALID_CHECKPOINT_ID', 'Checkpoint id must be a positive integer');
+  }
+  const existing = await env.DB.prepare(
+    `SELECT id, version_tag, note FROM ops_ddl_journal WHERE id = ?`
+  ).bind(numId).first();
+  if (!existing) {
+    throw new HttpError(404, 'CHECKPOINT_NOT_FOUND', `DDL checkpoint #${numId} not found`);
+  }
+
+  const nextTag = version_tag !== undefined
+    ? String(version_tag || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 64)
+    : existing.version_tag;
+  if (!nextTag) {
+    throw new HttpError(400, 'MISSING_VERSION_TAG', 'version_tag cannot be empty');
+  }
+  const nextNote = note !== undefined
+    ? String(note || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 400)
+    : (existing.note || '');
+  const nowIso = new Date().toISOString();
+
+  await env.DB.prepare(
+    `UPDATE ops_ddl_journal SET version_tag = ?, note = ?, updated_at = ? WHERE id = ?`
+  ).bind(nextTag, nextNote, nowIso, numId).run();
+
+  const updated = await env.DB.prepare(
+    `SELECT id, version_tag, schema_sha256, table_count, index_count, trigger_count, note, diff_json, created_by, created_at, updated_at
+     FROM ops_ddl_journal WHERE id = ?`
+  ).bind(numId).first();
+
+  return {
+    ok: true,
+    checkpoint: presentDdlJournalRow(updated)
   };
 }
 
@@ -585,15 +814,50 @@ export async function runScheduledBackupPolicy(env, { force = false, actorEmail 
 // ============================================================================
 // Admin Router Dispatcher for /api/admin/ops/{schema|vacuum|forensics|retention}
 // ============================================================================
-export async function handleOpsHygiene(request, env, actor, subAction) {
+export async function handleOpsHygiene(request, env, actor, subAction, subId) {
   const method = request.method;
   const url = new URL(request.url);
 
-  // Module #6: GET /api/admin/ops/schema
-  if (subAction === 'schema') {
-    if (method !== 'GET') throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
-    const report = await inspectDatabaseSchema(env);
-    return json(report, 200, { 'Cache-Control': 'no-store' });
+  // Module #6: GET/POST /api/admin/ops/ddl-journal, PATCH /api/admin/ops/ddl-journal/:id, and GET /api/admin/ops/schema
+  if (subAction === 'schema' || subAction === 'ddl-journal') {
+    if (!subId && method === 'GET') {
+      const report = await getDdlJournalReport(env);
+      return json(report, 200, { 'Cache-Control': 'no-store' });
+    }
+    if (!subId && method === 'POST') {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can record DDL schema checkpoints');
+      }
+      const body = await readJson(request, 10000).catch(() => ({}));
+      const res = await recordDdlCheckpoint(env, {
+        version_tag: body && body.version_tag,
+        note: body && body.note,
+        actorEmail: actor.email || actor.userId
+      });
+      await audit(env, request, actor, 'ops.ddl.checkpoint', 'ops_ddl_journal', String(res.checkpoint.id), {
+        version_tag: res.checkpoint.version_tag,
+        schema_sha256: res.checkpoint.schema_sha256,
+        table_count: res.checkpoint.table_count,
+        diff: res.checkpoint.diff
+      });
+      return json(res, 201, { 'Cache-Control': 'no-store' });
+    }
+    if (subId && (method === 'PATCH' || method === 'PUT')) {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can edit DDL schema checkpoints');
+      }
+      const body = await readJson(request, 10000).catch(() => ({}));
+      const res = await updateDdlCheckpoint(env, subId, {
+        version_tag: body && body.version_tag,
+        note: body && body.note
+      });
+      await audit(env, request, actor, 'ops.ddl.update', 'ops_ddl_journal', String(res.checkpoint.id), {
+        version_tag: res.checkpoint.version_tag,
+        note: res.checkpoint.note
+      });
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }
 
   // Module #11: POST /api/admin/ops/vacuum

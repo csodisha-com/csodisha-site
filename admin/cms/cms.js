@@ -4032,6 +4032,707 @@
     return wrap;
   }
 
+  /* ---------- Folder 17: Module #6 Database Migration Version & DDL Schema Journal ---------- */
+  function opsDdlSchemaJournalPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-ops-hygiene-panel' }, [
+      el('h2', { text: 'Database Migration Version & DDL Schema Journal' }),
+      el('p', {
+        class: 'muted',
+        text: 'Introspect live sqlite_master tables, indexes, triggers, and PRAGMA table_info columns; track deterministic SHA-256 schema fingerprints and versioned DDL checkpoints.'
+      })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var emptyBaselineHost = el('div');
+    var driftHost = el('div');
+
+    var tagInp = el('input', {
+      type: 'text',
+      id: 'f-ops-ddl-tag',
+      placeholder: 'e.g. v1.0.0-baseline or 2026-11-15-ddl',
+      'aria-label': 'Checkpoint version tag'
+    });
+    var noteInp = el('input', {
+      type: 'text',
+      id: 'f-ops-ddl-note',
+      placeholder: 'Migration or schema checkpoint note…',
+      'aria-label': 'Checkpoint note'
+    });
+    var recordBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      disabled: !isAdmin,
+      text: 'Record DDL Checkpoint'
+    });
+    var refreshBtn = el('button', {
+      type: 'button',
+      class: 'btn',
+      text: 'Refresh Live DDL'
+    });
+
+    var recorderBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Record Versioned DDL Checkpoint' }),
+        refreshBtn
+      ]),
+      el('div', { class: 'cso-ops-restore-controls' }, [
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { for: 'f-ops-ddl-tag', class: 'muted sm', text: 'Version Tag' }),
+          tagInp
+        ]),
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { for: 'f-ops-ddl-note', class: 'muted sm', text: 'Checkpoint Note' }),
+          noteInp
+        ]),
+        recordBtn
+      ])
+    ]);
+
+    var journalHost = el('div', { class: 'cso-ops-vault-table-host' });
+    var ddlInspectorHost = el('div', { class: 'cso-ops-subbox' });
+
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(emptyBaselineHost);
+    wrap.appendChild(driftHost);
+    wrap.appendChild(recorderBox);
+    wrap.appendChild(journalHost);
+    wrap.appendChild(ddlInspectorHost);
+
+    var isRecording = false;
+
+    async function captureCheckpoint(tagVal, noteVal) {
+      if (isRecording || !isAdmin) return;
+      var tag = String(tagVal || '').trim();
+      if (!tag) {
+        toast('Enter a version tag before recording a DDL checkpoint', true);
+        tagInp.focus();
+        return;
+      }
+      isRecording = true;
+      recordBtn.disabled = true;
+      recordBtn.textContent = 'Recording…';
+      try {
+        await api('POST', 'ops/ddl-journal', {
+          version_tag: tag,
+          note: String(noteVal || '').trim()
+        });
+        toast('DDL checkpoint "' + tag + '" recorded');
+        tagInp.value = '';
+        noteInp.value = '';
+        await loadDdlJournal(false);
+      } catch (err) {
+        toast(err && err.message ? err.message : 'Failed to record DDL checkpoint', true);
+      } finally {
+        isRecording = false;
+        recordBtn.disabled = !isAdmin;
+        recordBtn.textContent = 'Record DDL Checkpoint';
+      }
+    }
+
+    async function loadDdlJournal(showToast) {
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = 'Inspecting…';
+      clear(kpiStrip).appendChild(el('p', { class: 'muted sm', text: 'Inspecting live D1 sqlite_master & DDL journal…' }));
+      clear(emptyBaselineHost);
+      clear(driftHost);
+      clear(journalHost);
+      clear(ddlInspectorHost);
+
+      try {
+        var r = await api('GET', 'ops/ddl-journal');
+        var sha = String(r.live_schema_hash || r.schema_sha256 || '');
+        var latestTag = r.latest_checkpoint ? r.latest_checkpoint.version_tag : 'None';
+        var syncLabel = r.baseline_missing ? 'No Baseline' : (r.drift_detected ? 'Schema Drift' : 'In Sync');
+        var syncBadgeCls = r.baseline_missing ? 'scheduled' : (r.drift_detected ? 'expired' : 'published');
+
+        clear(kpiStrip);
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Live Schema Objects' }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: (r.table_count || 0) + ' Tables · ' + (r.index_count || 0) + ' Indexes · ' + (r.trigger_count || 0) + ' Triggers' }),
+          el('div', { class: 'muted sm cso-tabular', text: 'Total Live Rows: ' + (r.total_rows || 0) })
+        ]));
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Canonical Schema SHA-256' }),
+          el('div', { class: 'cso-ops-telemetry-val' }, [
+            el('code', { class: 'cso-ops-sha-code', title: sha, text: sha ? (sha.slice(0, 18) + '…') : '—' }),
+            el('button', {
+              type: 'button',
+              class: 'btn sm',
+              text: 'Copy SHA-256',
+              onclick: function () {
+                if (!sha) return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(sha).then(function () { toast('Copied Schema SHA-256'); });
+                } else {
+                  toast('SHA-256: ' + sha);
+                }
+              }
+            })
+          ]),
+          el('div', { class: 'muted sm', text: 'Deterministic table/column/index hash' })
+        ]));
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Latest Checkpoint' }),
+          el('div', { class: 'cso-ops-telemetry-val', text: latestTag }),
+          el('div', { class: 'muted sm', text: r.latest_checkpoint ? fmtDate(r.latest_checkpoint.created_at) : 'No checkpoint recorded yet' })
+        ]));
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Schema Drift Posture' }),
+          el('div', { class: 'cso-ops-telemetry-val' }, el('span', { class: 'badge ' + syncBadgeCls, text: syncLabel })),
+          el('div', { class: 'muted sm', text: r.drift_detected ? 'Live DDL differs from checkpoint' : 'Matches latest checkpoint' })
+        ]));
+
+        if (r.baseline_missing) {
+          var baselineBtn = el('button', {
+            type: 'button',
+            class: 'btn primary',
+            disabled: !isAdmin,
+            text: 'Capture Initial Schema Baseline',
+            onclick: function () {
+              captureCheckpoint('v1.0.0-baseline', 'Initial D1 sqlite_master baseline');
+            }
+          });
+          emptyBaselineHost.appendChild(el('div', { class: 'cso-ops-empty-vault' }, [
+            el('strong', { text: 'No DDL baseline recorded yet' }),
+            el('p', { class: 'muted sm', text: 'Capture your initial schema baseline so future table, column, or index drift is detected automatically.' }),
+            baselineBtn
+          ]));
+        } else if (r.drift_detected && r.pending_diff) {
+          var d = r.pending_diff;
+          driftHost.appendChild(el('div', { class: 'alert' }, [
+            el('strong', { text: 'Pending Schema Drift Detected — ' }),
+            el('span', {
+              text: 'Added: ' + ((d.added_tables && d.added_tables.length) ? d.added_tables.join(', ') : 'none') +
+                ' · Removed: ' + ((d.removed_tables && d.removed_tables.length) ? d.removed_tables.join(', ') : 'none') +
+                ' · Altered: ' + ((d.altered_tables && d.altered_tables.length) ? d.altered_tables.join(', ') : 'none')
+            })
+          ]));
+        }
+
+        // Journal History Table with inline note/tag editing
+        var history = Array.isArray(r.journal_history) ? r.journal_history : [];
+        journalHost.appendChild(el('h3', { text: 'DDL Version Journal (' + history.length + ')' }));
+        if (history.length) {
+          var tb = el('tbody');
+          history.forEach(function (cp) {
+            var noteCell = el('td', { text: cp.note || '—' });
+            var tagCell = el('td', {}, el('code', { text: cp.version_tag }));
+            var editBtn = el('button', {
+              type: 'button',
+              class: 'btn sm',
+              disabled: !isAdmin,
+              text: 'Edit Note',
+              onclick: function () {
+                var editTagInp = el('input', { type: 'text', value: cp.version_tag || '', 'aria-label': 'Edit version tag' });
+                var editNoteInp = el('input', { type: 'text', value: cp.note || '', 'aria-label': 'Edit checkpoint note' });
+                var saveEditBtn = el('button', {
+                  type: 'button',
+                  class: 'btn sm primary',
+                  text: 'Save',
+                  onclick: async function () {
+                    saveEditBtn.disabled = true;
+                    try {
+                      await api('PATCH', 'ops/ddl-journal/' + cp.id, {
+                        version_tag: editTagInp.value.trim(),
+                        note: editNoteInp.value.trim()
+                      });
+                      toast('Checkpoint #' + cp.id + ' updated');
+                      await loadDdlJournal(false);
+                    } catch (e) {
+                      toast(e && e.message ? e.message : 'Update failed', true);
+                      saveEditBtn.disabled = false;
+                    }
+                  }
+                });
+                clear(tagCell).appendChild(editTagInp);
+                clear(noteCell).appendChild(el('div', { class: 'actions' }, [editNoteInp, saveEditBtn]));
+              }
+            });
+            tb.appendChild(el('tr', {}, [
+              el('td', { class: 'cso-tabular', text: '#' + cp.id }),
+              tagCell,
+              el('td', {}, el('code', { class: 'cso-ops-sha-code', title: cp.schema_sha256, text: String(cp.schema_sha256 || '').slice(0, 14) + '…' })),
+              el('td', { class: 'cso-tabular', text: (cp.table_count || 0) + 'T / ' + (cp.index_count || 0) + 'I' }),
+              noteCell,
+              el('td', { class: 'muted sm', text: (cp.created_by || 'admin') + ' · ' + fmtDate(cp.created_at) }),
+              el('td', {}, editBtn)
+            ]));
+          });
+          journalHost.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+            el('thead', {}, el('tr', {}, ['ID', 'Version Tag', 'Schema SHA-256', 'Objects', 'Note', 'Recorded', 'Actions'].map(function (h) {
+              return el('th', { scope: 'col', text: h });
+            }))),
+            tb
+          ])));
+        }
+
+        // Live D1 DDL Inspector
+        ddlInspectorHost.appendChild(el('div', { class: 'cso-ops-subhead' }, [
+          el('strong', { text: 'Live D1 DDL Inspector (' + ((r.tables && r.tables.length) || 0) + ' tables)' }),
+          el('span', { class: 'muted sm', text: 'PRAGMA table_info + sqlite_master' })
+        ]));
+        var ddlList = el('div', { class: 'cso-ops-ddl-list' });
+        (r.tables || []).forEach(function (tbl) {
+          var colNames = Array.isArray(tbl.columns) ? tbl.columns.map(function (c) { return c.name + (c.pk ? ' [PK]' : ''); }).join(', ') : '';
+          ddlList.appendChild(el('details', { class: 'cso-ops-ddl-details' }, [
+            el('summary', { class: 'cso-ops-ddl-summary' }, [
+              el('code', { class: 'cso-ops-r2key', text: tbl.name }),
+              el('span', { class: 'muted sm cso-tabular', text: (tbl.column_count || 0) + ' cols · ' + (tbl.row_count || 0) + ' rows' })
+            ]),
+            colNames ? el('p', { class: 'muted sm', text: 'Columns: ' + colNames }) : el('span'),
+            el('pre', { class: 'cso-ops-ddl-pre', text: tbl.ddl_sql || '-- No DDL SQL available' })
+          ]));
+        });
+        ddlInspectorHost.appendChild(ddlList);
+
+        if (showToast) toast('DDL Schema fingerprint verified (' + (r.table_count || 0) + ' tables)');
+      } catch (err) {
+        clear(kpiStrip).appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+          el('span', { text: 'Failed to inspect DDL journal: ' + (err && err.message ? err.message : 'Network error') }),
+          el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: function () { loadDdlJournal(false); } })
+        ]));
+      } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = 'Refresh Live DDL';
+      }
+    }
+
+    recordBtn.addEventListener('click', function () { captureCheckpoint(tagInp.value, noteInp.value); });
+    refreshBtn.addEventListener('click', function () { loadDdlJournal(true); });
+    loadDdlJournal(false);
+    return wrap;
+  }
+
+  /* ---------- Folder 17: Module #7 Edge Cache State Preservation & Warmer ---------- */
+  function opsEdgeCacheWarmerPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-ops-sentinel-panel' }, [
+      el('h2', { text: 'Edge Cache State Preservation & Warmer' }),
+      el('p', {
+        class: 'muted',
+        text: 'Manage custom edge-warmer target routes, preview warm scope via dry run, warm Cloudflare edge caches, and inspect per-route HTTP status, CF-Cache-Status, and latency.'
+      })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var routesArea = el('textarea', {
+      id: 'f-ops-warmer-routes',
+      rows: '6',
+      'aria-label': 'Custom warmer routes (one relative path per line)',
+      placeholder: '/\n/about/\n/schemes/\n/study/\n/jobs/\n/updates/\n/sw.js'
+    });
+    var saveRoutesBtn = el('button', {
+      type: 'button',
+      class: 'btn',
+      disabled: !isAdmin,
+      text: 'Save Route List'
+    });
+    var previewWarmBtn = el('button', {
+      type: 'button',
+      class: 'btn',
+      disabled: !isAdmin,
+      text: 'Preview Warm Scope (Dry Run)'
+    });
+    var warmNowBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      disabled: !isAdmin,
+      text: 'Warm Edge Cache Now'
+    });
+    var purgeBtn = el('button', {
+      type: 'button',
+      class: 'btn',
+      disabled: !isAdmin,
+      text: 'Purge Edge Cache'
+    });
+
+    var routeEditorBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Configured Warmer Routes (relative paths starting with /, max 30)' }),
+        saveRoutesBtn
+      ]),
+      el('div', { class: 'form' }, [
+        el('label', { for: 'f-ops-warmer-routes', text: 'One route per line' }),
+        routesArea
+      ]),
+      el('div', { class: 'actions' }, [previewWarmBtn, warmNowBtn, purgeBtn])
+    ]);
+
+    var matrixHost = el('div', { class: 'cso-ops-vault-table-host' });
+
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(routeEditorBox);
+    wrap.appendChild(matrixHost);
+
+    var isBusy = false;
+
+    function parseRoutesTextarea() {
+      return String(routesArea.value || '')
+        .split(/\r?\n/)
+        .map(function (l) { return l.trim(); })
+        .filter(Boolean);
+    }
+
+    function renderKpis(data) {
+      var lw = data && data.last_warm ? data.last_warm : null;
+      clear(kpiStrip);
+      kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Active sw.js Cache Version' }),
+        el('div', { class: 'cso-ops-telemetry-val' }, el('code', { class: 'cso-ops-sha-code', text: (data && data.cache_version) || 'cso-candidate-cache-v35' })),
+        el('div', { class: 'muted sm', text: 'Service Worker atomic asset cache' })
+      ]));
+      kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Monitored Routes Count' }),
+        el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: String((data && data.routes_count) || (data && data.routes ? data.routes.length : 0)) }),
+        el('div', { class: 'muted sm', text: 'Max 30 canonical routes' })
+      ]));
+      kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Avg Edge Latency' }),
+        el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: lw && lw.avg_latency_ms !== undefined ? (lw.avg_latency_ms + ' ms') : '—' }),
+        el('div', { class: 'muted sm', text: lw ? ('Warmed ' + (lw.warmed_count || 0) + '/' + (lw.routes_count || 0) + ' routes') : 'No warm run yet' })
+      ]));
+      kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Last Warm Timestamp' }),
+        el('div', { class: 'cso-ops-telemetry-val', text: lw && lw.ran_at ? fmtDate(lw.ran_at) : 'Never' }),
+        el('div', { class: 'muted sm', text: lw && lw.actor ? ('By ' + lw.actor) : 'Run Warm Edge Cache Now' })
+      ]));
+    }
+
+    function renderMatrix(routes, summaryBanner) {
+      clear(matrixHost);
+      if (summaryBanner) {
+        matrixHost.appendChild(el('div', { class: 'alert ok', text: summaryBanner }));
+      }
+      var list = Array.isArray(routes) ? routes : [];
+      if (!list.length) return;
+      var tb = el('tbody');
+      list.forEach(function (r) {
+        var isDry = r.status === 'PENDING_DRY_RUN';
+        var okStatus = typeof r.status === 'number' && r.status >= 200 && r.status < 400;
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, el('code', { class: 'cso-ops-r2key', text: r.route })),
+          el('td', {}, el('span', { class: 'badge ' + (isDry ? 'scheduled' : (okStatus ? 'published' : 'expired')), text: isDry ? 'DRY RUN' : ('HTTP ' + r.status) })),
+          el('td', {}, el('code', { text: r.cf_cache_status || (r.evicted ? 'EVICTED' : '—') })),
+          el('td', {}, el('span', { class: 'badge ' + (r.cached ? 'published' : 'draft'), text: r.cached ? 'WARMED' : (r.evicted ? 'PURGED' : (isDry ? 'PREVIEW' : 'FETCHED')) })),
+          el('td', { class: 'cso-tabular', text: (r.latency_ms || 0) + ' ms' })
+        ]));
+      });
+      matrixHost.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+        el('thead', {}, el('tr', {}, ['Canonical Route', 'HTTP Status', 'CF-Cache-Status', 'Edge Cache State', 'Latency'].map(function (h) {
+          return el('th', { scope: 'col', text: h });
+        }))),
+        tb
+      ])));
+    }
+
+    async function loadWarmerStatus() {
+      try {
+        var res = await api('GET', 'ops/cache-warmer');
+        routesArea.value = Array.isArray(res.routes) ? res.routes.join('\n') : '';
+        renderKpis(res);
+        if (res.last_warm && Array.isArray(res.last_warm.routes)) {
+          renderMatrix(res.last_warm.routes, null);
+        }
+      } catch (err) {
+        clear(kpiStrip).appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+          el('span', { text: 'Failed to load cache warmer status: ' + (err && err.message ? err.message : 'Network error') }),
+          el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: loadWarmerStatus })
+        ]));
+      }
+    }
+
+    async function saveRoutes() {
+      if (isBusy || !isAdmin) return;
+      isBusy = true;
+      saveRoutesBtn.disabled = true;
+      saveRoutesBtn.textContent = 'Saving…';
+      try {
+        var res = await api('PUT', 'ops/cache-warmer/routes', { routes: parseRoutesTextarea() });
+        routesArea.value = (res.routes || []).join('\n');
+        toast('Saved ' + (res.routes_count || 0) + ' warmer routes');
+        await loadWarmerStatus();
+      } catch (err) {
+        toast(err && err.message ? err.message : 'Failed to save routes', true);
+      } finally {
+        isBusy = false;
+        saveRoutesBtn.disabled = !isAdmin;
+        saveRoutesBtn.textContent = 'Save Route List';
+      }
+    }
+
+    async function executeWarm(dryRun) {
+      if (isBusy || !isAdmin) return;
+      isBusy = true;
+      previewWarmBtn.disabled = true;
+      warmNowBtn.disabled = true;
+      purgeBtn.disabled = true;
+      warmNowBtn.textContent = dryRun ? 'Warm Edge Cache Now' : 'Warming Edge Cache…';
+      previewWarmBtn.textContent = dryRun ? 'Previewing…' : 'Preview Warm Scope (Dry Run)';
+      try {
+        var res = await api('POST', 'ops/cache-warmer/warm', {
+          dry_run: Boolean(dryRun),
+          routes: parseRoutesTextarea()
+        });
+        var msg = dryRun
+          ? ('Dry-run preview: ' + (res.routes_count || 0) + ' routes queued for edge warming.')
+          : ('Warmed ' + (res.warmed_count || 0) + ' of ' + (res.routes_count || 0) + ' routes (avg ' + (res.avg_latency_ms || 0) + ' ms).');
+        renderMatrix(res.routes || [], msg);
+        if (!dryRun) await loadWarmerStatus();
+        toast(msg);
+      } catch (err) {
+        toast(err && err.message ? err.message : 'Cache warm failed', true);
+      } finally {
+        isBusy = false;
+        previewWarmBtn.disabled = !isAdmin;
+        warmNowBtn.disabled = !isAdmin;
+        purgeBtn.disabled = !isAdmin;
+        warmNowBtn.textContent = 'Warm Edge Cache Now';
+        previewWarmBtn.textContent = 'Preview Warm Scope (Dry Run)';
+      }
+    }
+
+    async function executePurge() {
+      if (isBusy || !isAdmin) return;
+      isBusy = true;
+      purgeBtn.disabled = true;
+      purgeBtn.textContent = 'Purging…';
+      try {
+        var res = await api('POST', 'ops/cache', { action: 'purge', routes: parseRoutesTextarea() });
+        var msg = 'Purged edge cache entries across ' + (res.routes ? res.routes.length : 0) + ' routes (' + (res.purged_count || 0) + ' active entries evicted).';
+        renderMatrix(res.routes || [], msg);
+        toast(msg);
+      } catch (err) {
+        toast(err && err.message ? err.message : 'Cache purge failed', true);
+      } finally {
+        isBusy = false;
+        purgeBtn.disabled = !isAdmin;
+        purgeBtn.textContent = 'Purge Edge Cache';
+      }
+    }
+
+    saveRoutesBtn.addEventListener('click', saveRoutes);
+    previewWarmBtn.addEventListener('click', function () { executeWarm(true); });
+    warmNowBtn.addEventListener('click', function () { executeWarm(false); });
+    purgeBtn.addEventListener('click', executePurge);
+    loadWarmerStatus();
+    return wrap;
+  }
+
+  /* ---------- Folder 17: Module #8 Offline Air-Gapped Manifest & ZIP Exporter ---------- */
+  function opsAirgapExporterPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-ops-continuity-panel' }, [
+      el('h2', { text: 'Offline Air-Gapped Manifest & Bundle Exporter' }),
+      el('p', {
+        class: 'muted',
+        text: 'Generate a portable, DPDP-scrubbed .cso-bundle.json archive with cryptographic SHA-256 manifest verification for offline disaster recovery.'
+      })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var scopeSel = el('select', { id: 'f-ops-airgap-scope', class: 'cso-ops-policy-select', 'aria-label': 'Bundle export scope' }, [
+      el('option', { value: 'full', text: 'Full Platform Bundle (All Non-Transient Tables)', selected: true }),
+      el('option', { value: 'core', text: 'Core Content Only (Pages, Posts, Schemes, Resources, Media)' })
+    ]);
+    var exportBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      disabled: !isAdmin,
+      text: 'Generate & Download Air-Gapped Bundle (.json)'
+    });
+    var summaryHost = el('div');
+
+    var exportBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Air-Gapped Bundle Generator' }),
+        el('span', { class: 'badge published', text: 'DPDP Act 2023 Scrubbed' })
+      ]),
+      el('div', { class: 'cso-ops-restore-controls' }, [
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { for: 'f-ops-airgap-scope', class: 'muted sm', text: 'Export Scope' }),
+          scopeSel
+        ]),
+        exportBtn
+      ]),
+      summaryHost
+    ]);
+
+    var fileInp = el('input', {
+      type: 'file',
+      id: 'f-ops-airgap-file',
+      accept: '.json,.cso-bundle.json',
+      'aria-label': 'Upload .cso-bundle.json file'
+    });
+    var jsonPaste = el('textarea', {
+      id: 'f-ops-airgap-json',
+      rows: '6',
+      placeholder: 'Or paste raw .cso-bundle.json contents here to verify its SHA-256 signature offline…',
+      'aria-label': 'Paste air-gapped bundle JSON'
+    });
+    var verifyBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      disabled: !isAdmin,
+      text: 'Verify Bundle Signature'
+    });
+    var verifyOut = el('div');
+
+    var verifierBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Offline Bundle Integrity Verifier' }),
+        verifyBtn
+      ]),
+      el('div', { class: 'form' }, [
+        el('label', { for: 'f-ops-airgap-file', text: 'Load .cso-bundle.json file' }),
+        fileInp,
+        el('label', { for: 'f-ops-airgap-json', text: 'Bundle JSON Payload' }),
+        jsonPaste
+      ]),
+      verifyOut
+    ]);
+
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(exportBox);
+    wrap.appendChild(verifierBox);
+
+    var isExporting = false;
+    var isVerifying = false;
+
+    function renderAirgapKpis(manifest) {
+      clear(kpiStrip);
+      kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'DPDP Privacy Scrubbing Status' }),
+        el('div', { class: 'cso-ops-telemetry-val' }, el('span', { class: 'badge published', text: 'ACTIVE · SCRUBBED' })),
+        el('div', { class: 'muted sm', text: 'Excludes sessions, OTPs, rate limits & secret columns' })
+      ]));
+      kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Last Bundle Export Timestamp' }),
+        el('div', { class: 'cso-ops-telemetry-val', text: manifest && manifest.generated_at ? fmtDate(manifest.generated_at) : 'Ready' }),
+        el('div', { class: 'muted sm cso-tabular', text: manifest ? ((manifest.table_count || 0) + ' tables · ' + (manifest.total_rows || 0) + ' rows') : 'Live manifest' })
+      ]));
+      kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Manifest Hash Algorithm' }),
+        el('div', { class: 'cso-ops-telemetry-val' }, el('code', { class: 'cso-ops-sha-code', text: 'SHA-256 (Canonical)' })),
+        el('div', { class: 'muted sm cso-ops-mono', text: manifest && manifest.payload_sha256 ? ('Payload: ' + manifest.payload_sha256.slice(0, 14) + '…') : 'cso.airgap.dr.bundle.v1' })
+      ]));
+    }
+
+    async function loadAirgapSummary() {
+      if (!isAdmin) {
+        renderAirgapKpis(null);
+        clear(summaryHost).appendChild(el('p', { class: 'muted sm', text: 'Super Administrator role required to inspect or export air-gapped recovery bundles.' }));
+        return;
+      }
+      try {
+        var res = await api('GET', 'ops/airgap-bundle?summary=1&scope=' + encodeURIComponent(scopeSel.value || 'full'));
+        var m = res.manifest || {};
+        renderAirgapKpis(m);
+        clear(summaryHost).appendChild(el('div', { class: 'cso-ops-drill-kpis' }, [
+          el('span', { class: 'badge published', text: (m.bundle_format || 'cso.airgap.dr.bundle.v1') + ' (' + (m.bundle_version || 'v35') + ')' }),
+          el('span', { class: 'muted sm cso-tabular', text: (m.table_count || 0) + ' Tables · ' + (m.total_rows || 0) + ' Rows · ' + (m.runbook_count || 0) + ' Runbooks' }),
+          el('code', { class: 'cso-ops-sha-code', title: m.payload_sha256 || '', text: 'Payload SHA-256: ' + String(m.payload_sha256 || '').slice(0, 18) + '…' })
+        ]));
+      } catch (err) {
+        renderAirgapKpis(null);
+        clear(summaryHost).appendChild(el('div', { class: 'alert', text: err && err.message ? err.message : 'Could not compute air-gap bundle summary' }));
+      }
+    }
+
+    async function generateAndDownload() {
+      if (isExporting || !isAdmin) return;
+      isExporting = true;
+      exportBtn.disabled = true;
+      exportBtn.textContent = 'Generating Bundle…';
+      try {
+        var r = await fetch('/api/admin/ops/airgap-bundle', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scope: scopeSel.value || 'full' })
+        });
+        if (!r.ok) {
+          var errTxt = await r.text().catch(function () { return 'Export failed'; });
+          throw new Error(errTxt || ('HTTP ' + r.status));
+        }
+        var blob = await r.blob();
+        var urlObj = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = urlObj;
+        a.download = 'cso-airgap-bundle-' + (scopeSel.value || 'full') + '-' + new Date().toISOString().slice(0, 10) + '.cso-bundle.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(urlObj);
+        toast('Air-Gapped DR Bundle downloaded');
+        await loadAirgapSummary();
+      } catch (err) {
+        toast(err && err.message ? err.message : 'Bundle export failed', true);
+      } finally {
+        isExporting = false;
+        exportBtn.disabled = !isAdmin;
+        exportBtn.textContent = 'Generate & Download Air-Gapped Bundle (.json)';
+      }
+    }
+
+    async function verifyBundle() {
+      if (isVerifying || !isAdmin) return;
+      var raw = String(jsonPaste.value || '').trim();
+      if (!raw) {
+        toast('Select or paste a .cso-bundle.json file first', true);
+        return;
+      }
+      isVerifying = true;
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying…';
+      clear(verifyOut);
+      try {
+        var res = await api('POST', 'ops/airgap-bundle/verify', { json_text: raw });
+        verifyOut.appendChild(el('div', { class: 'alert ' + (res.valid ? 'ok' : ''), text: res.valid ? 'VALID: Cryptographic SHA-256 signature & DPDP compliance verified.' : 'INVALID: Bundle signature mismatch or DPDP policy violation detected!' }));
+        verifyOut.appendChild(el('div', { class: 'cso-ops-drill-kpis' }, [
+          el('span', { class: 'badge ' + (res.signature_match ? 'published' : 'expired'), text: res.signature_match ? 'SHA-256 MATCH' : 'SHA-256 MISMATCH' }),
+          el('span', { class: 'badge ' + (res.dpdp_compliant ? 'published' : 'expired'), text: res.dpdp_compliant ? 'DPDP COMPLIANT' : 'DPDP VIOLATION' }),
+          el('span', { class: 'muted sm cso-tabular', text: (res.table_count || 0) + ' Tables · ' + (res.total_rows || 0) + ' Rows' })
+        ]));
+        var rcEntries = Object.entries(res.row_counts || {});
+        if (rcEntries.length) {
+          var tb = el('tbody');
+          rcEntries.forEach(function (pair) {
+            tb.appendChild(el('tr', {}, [
+              el('td', {}, el('code', { text: pair[0] })),
+              el('td', { class: 'cso-tabular', text: String(pair[1]) })
+            ]));
+          });
+          verifyOut.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+            el('thead', {}, el('tr', {}, [el('th', { scope: 'col', text: 'Table' }), el('th', { scope: 'col', text: 'Rows' })])),
+            tb
+          ])));
+        }
+      } catch (err) {
+        verifyOut.appendChild(el('div', { class: 'alert', text: err && err.message ? err.message : 'Verification failed' }));
+      } finally {
+        isVerifying = false;
+        verifyBtn.disabled = !isAdmin;
+        verifyBtn.textContent = 'Verify Bundle Signature';
+      }
+    }
+
+    fileInp.addEventListener('change', function () {
+      var f = fileInp.files && fileInp.files[0];
+      if (!f) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        jsonPaste.value = String(reader.result || '');
+      };
+      reader.readAsText(f);
+    });
+    scopeSel.addEventListener('change', loadAirgapSummary);
+    exportBtn.addEventListener('click', generateAndDownload);
+    verifyBtn.addEventListener('click', verifyBundle);
+    loadAirgapSummary();
+    return wrap;
+  }
+
   async function viewOperations(subMode, targetSnapId) {
     var mode = subMode || 'snapshots';
     var titleMap = {
@@ -4063,15 +4764,17 @@
       drill: 'drill',
       restore: 'drill',
       freeze: 'sentinel',
-      cache: 'sentinel',
+      cache: 'warmer',
+      warmer: 'warmer',
       health: 'sentinel',
       canary: 'sentinel',
-      schema: 'hygiene',
+      schema: 'ddl',
+      ddl: 'ddl',
       vacuum: 'hygiene',
       forensics: 'hygiene',
       retention: 'hygiene',
       replica: 'continuity',
-      airgap: 'continuity',
+      airgap: 'airgap',
       runbooks: 'continuity'
     };
     var activeGroup = groupMap[mode] || 'snapshots';
@@ -4080,8 +4783,14 @@
       main.appendChild(opsDrillAndRestorePanel(mode === 'restore' ? 'restore' : 'drill', targetSnapId));
     } else if (activeGroup === 'sentinel') {
       main.appendChild(opsSentinelFreezeCachePanel(mode));
+    } else if (activeGroup === 'warmer') {
+      main.appendChild(opsEdgeCacheWarmerPanel());
+    } else if (activeGroup === 'ddl') {
+      main.appendChild(opsDdlSchemaJournalPanel());
     } else if (activeGroup === 'hygiene') {
       main.appendChild(opsSchemaVacuumForensicsPanel(mode));
+    } else if (activeGroup === 'airgap') {
+      main.appendChild(opsAirgapExporterPanel());
     } else if (activeGroup === 'continuity') {
       main.appendChild(opsContinuityAirgapRunbookPanel(mode));
     } else if (activeGroup === 'r2vault') {

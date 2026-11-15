@@ -7,6 +7,19 @@ import { audit } from './rbac.js';
 import { handleContent } from '../api/content/_public.js';
 
 export const FREEZE_SETTING_KEY = 'ops_read_only_freeze';
+export const CACHE_WARMER_URLS_KEY = 'ops_cache_warmer_urls';
+export const LAST_CACHE_WARM_KEY = 'ops_last_cache_warm';
+export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v35';
+
+export const DEFAULT_CACHE_WARMER_ROUTES = [
+  '/',
+  '/about/',
+  '/schemes/',
+  '/study/',
+  '/jobs/',
+  '/updates/',
+  '/sw.js'
+];
 
 export const CORE_CACHE_ROUTES = [
   '/',
@@ -168,6 +181,211 @@ async function fetchRouteForWarm(fullUrl, routePath, env) {
 }
 
 // Module #7: Edge Cache State Preservation & Warmer Daemon
+async function ensureSiteSettingsTableSentinel(db) {
+  await db.prepare(
+    `CREATE TABLE IF NOT EXISTS site_settings (
+       key TEXT PRIMARY KEY,
+       value_json TEXT NOT NULL,
+       updated_by TEXT,
+       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+     )`
+  ).run();
+}
+
+export function validateWarmerRoutes(rawRoutes) {
+  if (!Array.isArray(rawRoutes)) {
+    throw new HttpError(400, 'INVALID_ROUTES', 'routes must be an array of relative paths starting with "/"');
+  }
+  const seen = new Set();
+  const clean = [];
+  for (const r of rawRoutes) {
+    const s = String(r || '').trim();
+    if (!s) continue;
+    if (!s.startsWith('/') || s.startsWith('//') || /^https?:/i.test(s) || /[\r\n\t\s]/.test(s)) {
+      throw new HttpError(400, 'INVALID_ROUTE_PATH', `Route "${s}" must be a relative path starting with "/" (no whitespace or external URLs)`);
+    }
+    if (!seen.has(s)) {
+      seen.add(s);
+      clean.push(s);
+    }
+  }
+  if (!clean.length) {
+    throw new HttpError(400, 'EMPTY_ROUTES', 'At least 1 valid relative route starting with "/" is required');
+  }
+  if (clean.length > 30) {
+    throw new HttpError(400, 'TOO_MANY_ROUTES', 'Maximum 30 custom warmer routes allowed');
+  }
+  return clean;
+}
+
+export async function getCacheWarmerStatus(env) {
+  let routes = DEFAULT_CACHE_WARMER_ROUTES.slice();
+  let lastWarm = null;
+  let updatedBy = null;
+  let updatedAt = null;
+  if (env && env.DB) {
+    try {
+      await ensureSiteSettingsTableSentinel(env.DB);
+      const [routesRow, warmRow] = await Promise.all([
+        env.DB.prepare(`SELECT value_json, updated_by, updated_at FROM site_settings WHERE key = ?`).bind(CACHE_WARMER_URLS_KEY).first(),
+        env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(LAST_CACHE_WARM_KEY).first()
+      ]);
+      if (routesRow && routesRow.value_json) {
+        const parsed = JSON.parse(routesRow.value_json);
+        if (Array.isArray(parsed) && parsed.length) {
+          routes = parsed;
+        }
+        updatedBy = routesRow.updated_by || null;
+        updatedAt = routesRow.updated_at || null;
+      }
+      if (warmRow && warmRow.value_json) {
+        lastWarm = JSON.parse(warmRow.value_json);
+      }
+    } catch {}
+  }
+  return {
+    ok: true,
+    cache_version: ACTIVE_SW_CACHE_VERSION,
+    routes,
+    routes_count: routes.length,
+    updated_by: updatedBy,
+    updated_at: updatedAt,
+    last_warm: lastWarm
+  };
+}
+
+export async function saveCacheWarmerRoutes(env, routes, actorEmail = 'admin') {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  await ensureSiteSettingsTableSentinel(env.DB);
+  const clean = validateWarmerRoutes(routes);
+  const nowIso = new Date().toISOString();
+  await env.DB.prepare(
+    `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+     VALUES (?, ?, ?, ?)
+     ON CONFLICT(key) DO UPDATE SET
+       value_json = excluded.value_json,
+       updated_by = excluded.updated_by,
+       updated_at = excluded.updated_at`
+  ).bind(CACHE_WARMER_URLS_KEY, JSON.stringify(clean), actorEmail || 'admin', nowIso).run();
+
+  return {
+    ok: true,
+    cache_version: ACTIVE_SW_CACHE_VERSION,
+    routes: clean,
+    routes_count: clean.length,
+    updated_by: actorEmail || 'admin',
+    updated_at: nowIso
+  };
+}
+
+export async function runCacheWarmer(request, env, { dryRun = false, routes = null, actorEmail = 'admin' } = {}) {
+  const statusRes = await getCacheWarmerStatus(env);
+  const targetRoutes = Array.isArray(routes) && routes.length
+    ? validateWarmerRoutes(routes)
+    : statusRes.routes;
+  const origin = new URL(request.url).origin;
+
+  if (dryRun) {
+    return {
+      ok: true,
+      dry_run: true,
+      cache_version: ACTIVE_SW_CACHE_VERSION,
+      routes_count: targetRoutes.length,
+      routes: targetRoutes.map(r => ({
+        route: r,
+        url: new URL(r, origin).toString(),
+        status: 'PENDING_DRY_RUN',
+        cf_cache_status: 'PREVIEW',
+        cached: false,
+        latency_ms: 0
+      }))
+    };
+  }
+
+  const edgeCache = resolveEdgeCache(env);
+  const results = [];
+  const tStart = Date.now();
+  for (const routePath of targetRoutes) {
+    const fullUrl = new URL(routePath, origin).toString();
+    const r0 = Date.now();
+    let status = 200;
+    let cfCacheStatus = 'MISS';
+    let cached = false;
+    try {
+      const res = await fetchRouteForWarm(fullUrl, routePath, env);
+      status = res ? res.status : 502;
+      cfCacheStatus = (res && res.headers && res.headers.get('cf-cache-status')) || (edgeCache && status === 200 ? 'HIT' : 'DYNAMIC');
+      if (edgeCache && res && res.status === 200) {
+        const headers = new Headers(res.headers);
+        if (!headers.has('Cache-Control')) {
+          headers.set('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
+        }
+        headers.set('X-CSO-Edge-Warmed', new Date().toISOString());
+        const bodyBytes = await res.clone().arrayBuffer();
+        const cacheableRes = new Response(bodyBytes, { status: res.status, headers });
+        await edgeCache.put(new Request(fullUrl, { method: 'GET' }), cacheableRes);
+        cached = true;
+      }
+    } catch {
+      status = 502;
+      cfCacheStatus = 'ERROR';
+    }
+    results.push({
+      route: routePath,
+      url: fullUrl,
+      status,
+      cf_cache_status: cfCacheStatus,
+      cached,
+      latency_ms: Math.max(1, Date.now() - r0)
+    });
+  }
+
+  const totalLatencyMs = Math.max(1, Date.now() - tStart);
+  const avgLatencyMs = Math.max(1, Math.round(results.reduce((a, r) => a + r.latency_ms, 0) / Math.max(1, results.length)));
+  const warmedCount = results.filter(r => r.status >= 200 && r.status < 400).length;
+  const nowIso = new Date().toISOString();
+
+  const lastWarm = {
+    ran_at: nowIso,
+    actor: actorEmail || 'admin',
+    cache_version: ACTIVE_SW_CACHE_VERSION,
+    routes_count: results.length,
+    warmed_count: warmedCount,
+    avg_latency_ms: avgLatencyMs,
+    total_latency_ms: totalLatencyMs,
+    routes: results
+  };
+
+  if (env && env.DB) {
+    try {
+      await ensureSiteSettingsTableSentinel(env.DB);
+      await env.DB.prepare(
+        `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT(key) DO UPDATE SET
+           value_json = excluded.value_json,
+           updated_by = excluded.updated_by,
+           updated_at = excluded.updated_at`
+      ).bind(LAST_CACHE_WARM_KEY, JSON.stringify(lastWarm), actorEmail || 'admin', nowIso).run();
+    } catch {}
+  }
+
+  return {
+    ok: true,
+    dry_run: false,
+    action: 'warm',
+    cache_version: ACTIVE_SW_CACHE_VERSION,
+    cache_available: Boolean(edgeCache),
+    warmed_count: warmedCount,
+    routes_count: results.length,
+    avg_latency_ms: avgLatencyMs,
+    total_latency_ms: totalLatencyMs,
+    executed_at: nowIso,
+    routes: results,
+    last_warm: lastWarm
+  };
+}
+
 export async function manageEdgeCache(request, env, { action = 'warm', routes = null } = {}) {
   const cleanAction = action === 'purge' ? 'purge' : (action === 'warm' ? 'warm' : null);
   if (!cleanAction) {
@@ -392,7 +610,7 @@ export async function runOpsHealthAndCanaryProbe(request, env) {
 }
 
 // Admin Router Dispatcher for /api/admin/ops/{freeze|cache|health}
-export async function handleOpsSentinel(request, env, actor, subAction) {
+export async function handleOpsSentinel(request, env, actor, subAction, subId) {
   const method = request.method;
 
   // Module #12: GET/POST /api/admin/ops/freeze
@@ -423,6 +641,47 @@ export async function handleOpsSentinel(request, env, actor, subAction) {
         { enabled: freeze.enabled, reason: freeze.reason }
       );
       return json({ ok: true, freeze }, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  // Module #7: GET /api/admin/ops/cache-warmer, PUT /api/admin/ops/cache-warmer/routes, POST /api/admin/ops/cache-warmer/warm
+  if (subAction === 'cache-warmer') {
+    if (!subId && method === 'GET') {
+      return json(await getCacheWarmerStatus(env), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (subId === 'routes' && method === 'PUT') {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can edit edge cache warmer routes');
+      }
+      const body = await readJson(request, 20000).catch(() => ({}));
+      const saved = await saveCacheWarmerRoutes(env, body && body.routes, actor.email || actor.userId);
+      await audit(env, request, actor, 'ops.cache.routes.update', 'site_settings', CACHE_WARMER_URLS_KEY, {
+        routes_count: saved.routes_count,
+        routes: saved.routes
+      });
+      return json(saved, 200, { 'Cache-Control': 'no-store' });
+    }
+    if ((subId === 'warm' || !subId) && method === 'POST') {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can warm the edge cache');
+      }
+      const body = await readJson(request, 20000).catch(() => ({}));
+      const dryRun = Boolean(body && body.dry_run);
+      const report = await runCacheWarmer(request, env, {
+        dryRun,
+        routes: body && body.routes ? body.routes : null,
+        actorEmail: actor.email || actor.userId
+      });
+      if (!dryRun) {
+        await audit(env, request, actor, 'ops.cache.warm', 'edge_cache', 'warmer', {
+          routes_count: report.routes_count,
+          warmed_count: report.warmed_count,
+          avg_latency_ms: report.avg_latency_ms,
+          total_latency_ms: report.total_latency_ms
+        });
+      }
+      return json(report, 200, { 'Cache-Control': 'no-store' });
     }
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }

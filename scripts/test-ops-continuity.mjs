@@ -209,7 +209,8 @@ assert.ok(drilledRb.steps.every(s => s.done === true), 'all steps must be marked
 // 3. Module #8: Offline Air-Gapped Manifest & Signed Bundle Packager
 const bundle = await buildAirGappedBundle(req, env, { actorEmail: 'admin@csodisha.com' });
 assert.equal(bundle.manifest.bundle_format, 'cso.airgap.dr.bundle.v1');
-assert.equal(bundle.manifest.bundle_version, 'v27');
+assert.equal(bundle.manifest.bundle_version, 'v35');
+assert.equal(bundle.manifest.dpdp_scrubbed, true);
 assert.equal(bundle.manifest.edge_colo, 'BOM');
 assert.match(bundle.manifest.schema_sha256, /^[0-9a-f]{64}$/);
 assert.match(bundle.manifest.payload_sha256, /^[0-9a-f]{64}$/);
@@ -218,6 +219,56 @@ assert.equal(bundle.manifest.runbook_count, 5);
 // Verify cryptographic signature over bundle.payload matches manifest.payload_sha256
 const recomputedSha = await computeSnapshotChecksum(bundle.payload);
 assert.equal(recomputedSha, bundle.manifest.payload_sha256, 'bundle payload SHA-256 signature must verify');
+
+// Verify HTTP POST export with core scope & verify endpoint
+const postBundleRes = await handleOpsContinuity(
+  new Request('https://csodisha.com/api/admin/ops/airgap-bundle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scope: 'core' })
+  }),
+  env,
+  adminActor,
+  'airgap-bundle'
+);
+assert.equal(postBundleRes.status, 200);
+const postBundleJson = await postBundleRes.json();
+assert.equal(postBundleJson.manifest.scope, 'core');
+
+const verifyValidRes = await handleOpsContinuity(
+  new Request('https://csodisha.com/api/admin/ops/airgap-bundle/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bundle: postBundleJson })
+  }),
+  env,
+  adminActor,
+  'airgap-bundle',
+  'verify'
+);
+assert.equal(verifyValidRes.status, 200);
+const verifyValidBody = await verifyValidRes.json();
+assert.equal(verifyValidBody.valid, true);
+assert.equal(verifyValidBody.signature_match, true);
+assert.equal(verifyValidBody.dpdp_compliant, true);
+
+// Tampered payload must fail signature verification
+const tamperedBundle = JSON.parse(JSON.stringify(postBundleJson));
+tamperedBundle.payload.table_count = 9999;
+const verifyTamperedRes = await handleOpsContinuity(
+  new Request('https://csodisha.com/api/admin/ops/airgap-bundle/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bundle: tamperedBundle })
+  }),
+  env,
+  adminActor,
+  'airgap-bundle',
+  'verify'
+);
+const verifyTamperedBody = await verifyTamperedRes.json();
+assert.equal(verifyTamperedBody.valid, false);
+assert.equal(verifyTamperedBody.signature_match, false);
 
 // Verify HTTP download response headers and credential exclusion
 const dlRes = await handleOpsContinuity(
@@ -228,8 +279,9 @@ const dlRes = await handleOpsContinuity(
 );
 assert.equal(dlRes.status, 200);
 assert.match(dlRes.headers.get('Content-Disposition') || '', /attachment; filename="cso-airgap-bundle-.*\.cso-bundle\.json"/);
-assert.equal(dlRes.headers.get('X-Airgap-Payload-SHA256'), bundle.manifest.payload_sha256);
 const rawBundleText = await dlRes.text();
+const dlParsed = JSON.parse(rawBundleText);
+assert.equal(dlRes.headers.get('X-Airgap-Payload-SHA256'), dlParsed.manifest.payload_sha256);
 assert.ok(!rawBundleText.includes('TOP_SECRET_PASSWORD_HASH'), 'air-gapped bundle must never include password_hash');
 assert.ok(!rawBundleText.includes('TOP_SECRET_SALT'), 'air-gapped bundle must never include salt');
 assert.ok(rawBundleText.includes('SOP-05: R2 Regional Cold-Vault Failover Drill'), 'air-gapped bundle must include SOP runbooks');

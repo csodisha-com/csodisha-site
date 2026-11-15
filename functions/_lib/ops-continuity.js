@@ -5,6 +5,8 @@ import { HttpError, json, readJson } from './http.js';
 import { audit } from './rbac.js';
 import {
   SNAPSHOT_TABLES,
+  EXCLUDED_SNAPSHOT_TABLES,
+  SENSITIVE_SNAPSHOT_COLUMNS,
   ensureOpsSnapshotsTable,
   collectPlatformSnapshotTables,
   listPlatformSnapshots,
@@ -569,14 +571,17 @@ export async function markRunbookDrillCompleted(env, id, { steps = null, actorEm
 // ============================================================================
 // Module #8: Offline Air-Gapped Manifest & Signed Bundle Packager
 // ============================================================================
-export async function buildAirGappedBundle(request, env, { actorEmail = 'admin' } = {}) {
+export async function buildAirGappedBundle(request, env, { actorEmail = 'admin', scope = 'full' } = {}) {
   if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
 
   await ensureOpsSnapshotsTable(env);
   await ensureOpsRunbooksTable(env);
 
+  const normalizedScope = scope === 'core' || scope === 'content_only' ? 'core' : 'full';
+  const snapScope = normalizedScope === 'core' ? 'content_only' : 'all';
+
   const [snapData, schemaReport, snapList, runbooksRes] = await Promise.all([
-    collectPlatformSnapshotTables(env),
+    collectPlatformSnapshotTables(env, snapScope),
     inspectDatabaseSchema(env),
     listPlatformSnapshots(env, { limit: 100 }).catch(() => ({ total: 0, items: [] })),
     listOpsRunbooks(env)
@@ -597,25 +602,97 @@ export async function buildAirGappedBundle(request, env, { actorEmail = 'admin' 
   const cf = (request && request.cf) || {};
   const edgeColo = String(cf.colo || (request && request.headers && request.headers.get('cf-ray')?.split('-')[1]) || 'LOCAL-DEV');
   const nowIso = new Date().toISOString();
+  const exportedTables = Object.keys(snapData.tables || {});
 
   const manifest = {
     bundle_format: 'cso.airgap.dr.bundle.v1',
-    bundle_version: 'v27',
+    bundle_version: 'v35',
+    scope: normalizedScope,
+    dpdp_scrubbed: true,
+    excluded_tables: Array.from(EXCLUDED_SNAPSHOT_TABLES),
+    scrubbed_columns: Array.from(SENSITIVE_SNAPSHOT_COLUMNS),
     generated_at: nowIso,
     generated_by: actorEmail || 'admin',
     edge_colo: edgeColo,
     schema_sha256: schemaReport.schema_sha256,
     payload_sha256: payloadSha256,
-    exported_tables: SNAPSHOT_TABLES,
-    table_count: SNAPSHOT_TABLES.length,
+    exported_tables: exportedTables,
+    table_count: exportedTables.length,
     total_rows: snapData.total_rows,
     snapshot_inventory_count: (snapList.items || []).length,
-    runbook_count: (runbooksRes.items || []).length
+    runbook_count: (runbooksRes.items || []).length,
+    verification_instructions: 'To verify offline: canonicalize bundle.payload with sorted keys (JSON.stringify(..., null, 2)), compute SHA-256 hex, and compare against bundle.manifest.payload_sha256.'
   };
 
   return {
     manifest,
     payload
+  };
+}
+
+export async function verifyAirGappedBundlePayload(input) {
+  let bundle = input;
+  if (bundle && typeof bundle.json_text === 'string') {
+    try {
+      bundle = JSON.parse(bundle.json_text);
+    } catch {
+      throw new HttpError(400, 'INVALID_BUNDLE_JSON', 'Uploaded bundle is not valid JSON');
+    }
+  } else if (bundle && bundle.bundle && typeof bundle.bundle === 'object') {
+    bundle = bundle.bundle;
+  }
+
+  if (!bundle || typeof bundle !== 'object' || !bundle.manifest || !bundle.payload || typeof bundle.payload !== 'object') {
+    throw new HttpError(400, 'INVALID_BUNDLE_STRUCTURE', 'Bundle must contain top-level "manifest" and "payload" objects');
+  }
+
+  const manifest = bundle.manifest;
+  const payload = bundle.payload;
+  const expectedSha = String(manifest.payload_sha256 || '').trim().toLowerCase();
+  if (!expectedSha || expectedSha.length !== 64) {
+    throw new HttpError(400, 'MISSING_MANIFEST_SHA256', 'manifest.payload_sha256 must be a 64-character SHA-256 hex digest');
+  }
+
+  const computedSha = await computeSnapshotChecksum(payload);
+  const signatureMatch = computedSha === expectedSha;
+
+  const tablesObj = payload.tables && typeof payload.tables === 'object' ? payload.tables : {};
+  const leakedTables = Object.keys(tablesObj).filter(t => EXCLUDED_SNAPSHOT_TABLES.has(t));
+  let leakedSensitiveFields = 0;
+  for (const rows of Object.values(tablesObj)) {
+    if (!Array.isArray(rows)) continue;
+    for (const row of rows) {
+      if (!row || typeof row !== 'object') continue;
+      for (const col of SENSITIVE_SNAPSHOT_COLUMNS) {
+        if (row[col] !== undefined && row[col] !== null && row[col] !== '[SCRUBBED_DPDP]') {
+          leakedSensitiveFields++;
+        }
+      }
+    }
+  }
+
+  const dpdpCompliant = leakedTables.length === 0 && leakedSensitiveFields === 0;
+  const rowCounts = payload.row_counts && typeof payload.row_counts === 'object' ? payload.row_counts : {};
+  const totalRows = Object.values(rowCounts).reduce((a, n) => a + (Number(n) || 0), 0);
+
+  return {
+    ok: true,
+    valid: signatureMatch && dpdpCompliant,
+    signature_match: signatureMatch,
+    dpdp_compliant: dpdpCompliant,
+    leaked_tables: leakedTables,
+    leaked_sensitive_fields: leakedSensitiveFields,
+    expected_sha256: expectedSha,
+    computed_sha256: computedSha,
+    schema_sha256: manifest.schema_sha256 || payload.schema_sha256 || null,
+    bundle_format: manifest.bundle_format || 'unknown',
+    bundle_version: manifest.bundle_version || 'unknown',
+    scope: manifest.scope || 'full',
+    generated_at: manifest.generated_at || null,
+    generated_by: manifest.generated_by || null,
+    table_count: Object.keys(tablesObj).length,
+    total_rows: totalRows,
+    row_counts: rowCounts
   };
 }
 
@@ -665,37 +742,50 @@ export async function handleOpsContinuity(request, env, actor, subAction, subId,
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }
 
-  // Module #8: GET /api/admin/ops/airgap-bundle
+  // Module #8: GET / POST /api/admin/ops/airgap-bundle and POST /api/admin/ops/airgap-bundle/verify
   if (subAction === 'airgap-bundle') {
-    if (method !== 'GET') throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
     if (actor.role !== 'admin') {
-      throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can export an Air-Gapped DR Bundle');
+      throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can export or verify an Air-Gapped DR Bundle');
     }
-    const bundle = await buildAirGappedBundle(request, env, { actorEmail: actor.email || actor.userId });
-    if (url.searchParams.get('summary') === '1') {
-      return json({
-        ok: true,
-        manifest: bundle.manifest,
-        row_counts: bundle.payload.row_counts
-      }, 200, { 'Cache-Control': 'no-store' });
+    if (subId === 'verify' && method === 'POST') {
+      const body = await readJson(request, 2_000_000).catch(() => ({}));
+      const report = await verifyAirGappedBundlePayload(body);
+      return json(report, 200, { 'Cache-Control': 'no-store' });
     }
-    await audit(env, request, actor, 'ops.airgap.export', 'airgap_bundle', bundle.manifest.payload_sha256.slice(0, 16), {
-      schema_sha256: bundle.manifest.schema_sha256,
-      payload_sha256: bundle.manifest.payload_sha256,
-      total_rows: bundle.manifest.total_rows
-    });
-    const serialized = serializeCanonicalSnapshot(bundle);
-    const dateSlug = bundle.manifest.generated_at.slice(0, 10);
-    return new Response(serialized, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Content-Disposition': `attachment; filename="cso-airgap-bundle-${dateSlug}.cso-bundle.json"`,
-        'Cache-Control': 'no-store',
-        'X-Airgap-Payload-SHA256': bundle.manifest.payload_sha256,
-        'X-Airgap-Schema-SHA256': bundle.manifest.schema_sha256
+    if (!subId && (method === 'GET' || method === 'POST')) {
+      const body = method === 'POST' ? await readJson(request, 10000).catch(() => ({})) : {};
+      const scope = (body && body.scope) || url.searchParams.get('scope') || 'full';
+      const bundle = await buildAirGappedBundle(request, env, {
+        actorEmail: actor.email || actor.userId,
+        scope
+      });
+      if (url.searchParams.get('summary') === '1') {
+        return json({
+          ok: true,
+          manifest: bundle.manifest,
+          row_counts: bundle.payload.row_counts
+        }, 200, { 'Cache-Control': 'no-store' });
       }
-    });
+      await audit(env, request, actor, 'ops.airgap.export', 'airgap_bundle', bundle.manifest.payload_sha256.slice(0, 16), {
+        scope: bundle.manifest.scope,
+        schema_sha256: bundle.manifest.schema_sha256,
+        payload_sha256: bundle.manifest.payload_sha256,
+        total_rows: bundle.manifest.total_rows
+      });
+      const serialized = serializeCanonicalSnapshot(bundle);
+      const dateSlug = bundle.manifest.generated_at.slice(0, 10);
+      return new Response(serialized, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Content-Disposition': `attachment; filename="cso-airgap-bundle-${dateSlug}.cso-bundle.json"`,
+          'Cache-Control': 'no-store',
+          'X-Airgap-Payload-SHA256': bundle.manifest.payload_sha256,
+          'X-Airgap-Schema-SHA256': bundle.manifest.schema_sha256
+        }
+      });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }
 
   // Module #16: GET / POST / PUT /api/admin/ops/runbooks (and POST /api/admin/ops/runbooks/:id/drill)

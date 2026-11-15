@@ -8,6 +8,9 @@ import { DatabaseSync } from 'node:sqlite';
 import { createPlatformSnapshot } from '../functions/_lib/ops-snapshots.js';
 import {
   inspectDatabaseSchema,
+  getDdlJournalReport,
+  recordDdlCheckpoint,
+  updateDdlCheckpoint,
   runDeadLetterVacuum,
   computeForensicDiff,
   inspectForensicAudit,
@@ -197,5 +200,36 @@ assert.ok(env.MEDIA.store.has(manualSnap.r2_key), 'manual snapshot R2 object mus
 
 const remainingScheduled = (await env.DB.prepare(`SELECT id FROM ops_snapshots WHERE trigger_type = 'scheduled'`).all()).results;
 assert.equal(remainingScheduled.length, 2, 'exactly max_snapshots=2 scheduled snapshots must remain');
+
+// 5. Module #6: DDL Journal Checkpoints, Drift Detection & Inline Update
+const ddlInit = await getDdlJournalReport(env);
+assert.equal(ddlInit.ok, true);
+assert.equal(ddlInit.baseline_missing, true);
+assert.equal(ddlInit.drift_detected, true);
+assert.match(ddlInit.live_schema_hash, /^[0-9a-f]{64}$/);
+
+const cpRes = await recordDdlCheckpoint(env, {
+  version_tag: 'v1.0.0-baseline',
+  note: 'Initial baseline',
+  actorEmail: 'admin@csodisha.com'
+});
+assert.equal(cpRes.ok, true);
+assert.equal(cpRes.checkpoint.version_tag, 'v1.0.0-baseline');
+assert.equal(cpRes.report.drift_detected, false);
+assert.equal(cpRes.report.baseline_missing, false);
+
+// Inline update checkpoint note & version_tag
+const updCp = await updateDdlCheckpoint(env, cpRes.checkpoint.id, {
+  version_tag: 'v1.0.1-baseline',
+  note: 'Updated baseline note'
+});
+assert.equal(updCp.checkpoint.version_tag, 'v1.0.1-baseline');
+assert.equal(updCp.checkpoint.note, 'Updated baseline note');
+
+// Introduce schema drift and verify pending_diff catches altered table
+env.DB.db.exec(`ALTER TABLE posts ADD COLUMN test_drift_col TEXT`);
+const ddlDrift = await getDdlJournalReport(env);
+assert.equal(ddlDrift.drift_detected, true);
+assert.ok(ddlDrift.pending_diff.altered_tables.includes('posts'), 'pending_diff must detect altered posts table');
 
 console.log('OPS SCHEMA JOURNAL, VACUUM, FORENSICS & RETENTION POLICY TESTS PASSED');

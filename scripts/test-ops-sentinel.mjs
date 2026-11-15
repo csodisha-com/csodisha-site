@@ -5,10 +5,14 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import {
   CORE_CACHE_ROUTES,
+  ACTIVE_SW_CACHE_VERSION,
   getReadOnlyFreezeState,
   setReadOnlyFreezeState,
   checkReadOnlyFreezeGuard,
   manageEdgeCache,
+  getCacheWarmerStatus,
+  saveCacheWarmerRoutes,
+  runCacheWarmer,
   runOpsHealthAndCanaryProbe,
   handleOpsSentinel
 } from '../functions/_lib/ops-sentinel.js';
@@ -204,5 +208,40 @@ assert.equal(purgeReport.ok, true);
 assert.equal(purgeReport.action, 'purge');
 assert.equal(purgeReport.purged_count, CORE_CACHE_ROUTES.length);
 assert.equal(env.EDGE_CACHE.map.size, 0, 'all core routes must be evicted from EDGE_CACHE after purge');
+
+// 5. Module #7 Hardened Cache Warmer Routes, Dry Run & Telemetry Persistence
+const warmerInit = await getCacheWarmerStatus(env);
+assert.equal(warmerInit.ok, true);
+assert.equal(warmerInit.cache_version, ACTIVE_SW_CACHE_VERSION);
+assert.ok(warmerInit.routes.includes('/'));
+
+await assert.rejects(
+  () => saveCacheWarmerRoutes(env, ['https://evil.example.com/'], 'admin@csodisha.com'),
+  err => err && err.status === 400 && err.code === 'INVALID_ROUTE_PATH'
+);
+
+const savedRoutes = await saveCacheWarmerRoutes(env, ['/', '/schemes/', '/study/'], 'admin@csodisha.com');
+assert.equal(savedRoutes.routes_count, 3);
+
+const dryWarm = await runCacheWarmer(
+  new Request('https://csodisha.com/api/admin/ops/cache-warmer/warm', { method: 'POST' }),
+  env,
+  { dryRun: true, actorEmail: 'admin@csodisha.com' }
+);
+assert.equal(dryWarm.dry_run, true);
+assert.equal(dryWarm.routes_count, 3);
+assert.equal(dryWarm.routes[0].status, 'PENDING_DRY_RUN');
+
+const liveWarm = await runCacheWarmer(
+  new Request('https://csodisha.com/api/admin/ops/cache-warmer/warm', { method: 'POST' }),
+  env,
+  { dryRun: false, actorEmail: 'admin@csodisha.com' }
+);
+assert.equal(liveWarm.dry_run, false);
+assert.equal(liveWarm.warmed_count, 3);
+assert.ok(liveWarm.avg_latency_ms >= 1);
+
+const warmerAfter = await getCacheWarmerStatus(env);
+assert.ok(warmerAfter.last_warm && warmerAfter.last_warm.warmed_count === 3);
 
 console.log('OPS SENTINEL, FREEZE, CACHE & CANARY TESTS PASSED');
