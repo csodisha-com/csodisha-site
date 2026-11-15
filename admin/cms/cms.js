@@ -14230,6 +14230,659 @@
     main.appendChild(jobsDirectoryStudioPanel(domainSlug || 'jobs-recruitment'));
   }
 
+  function schemesDirectoryStudioPanel(domainSlug) {
+    var DOMAINS = {
+      'govt-public-welfare': { num: '01', title: 'Government & Public Welfare', defaultDept: 'W&CD Dept Odisha', quickTags: ['Subhadra Yojana', 'MBPY', 'Mamata', 'NFSA', 'Mission Shakti'] },
+      'education-employment': { num: '02', title: 'Education, Employment & Talent', defaultDept: 'Higher Education Dept', quickTags: ['State Scholarship', 'NSP', 'Nua-O', 'Sudakshya', 'PMKVY', 'NAPS'] },
+      'agriculture-livelihoods': { num: '03', title: 'Agriculture, Business & Livelihoods', defaultDept: 'Agriculture & FE Dept', quickTags: ['CM-KISAN', 'KALIA', 'PM-KISAN', 'PMFBY', 'MKUY', 'Startup Odisha'] },
+      'health-housing-protection': { num: '04', title: 'Health, Housing & Financial Protection', defaultDept: 'Health & FW Dept', quickTags: ['GJAY', 'Ayushman Bharat', 'Niramaya', 'Antyodaya Gruha', 'PMAY', 'APY'] },
+      'communities-beneficiaries': { num: '05', title: 'Communities & Special Beneficiaries', defaultDept: 'SSEPD Odisha', quickTags: ['SC/ST', 'SEBC/OBC', 'Minority', 'Senior Citizens', 'PwD'] },
+      'private-global-innovation': { num: '06', title: 'Private, Global & Innovation Support', defaultDept: 'Startup Odisha / CSR', quickTags: ['CSR Grant', 'Innovation Fund', 'Global Fellowship'] },
+      'find-schemes-eligibility': { num: '07', title: 'Find Schemes & Check Eligibility', defaultDept: 'CSOdisha Eligibility Desk', quickTags: ['Income Limit', 'Age Criteria', 'Women', 'Farmers', 'Students'] },
+      'citizen-services-verification': { num: '08', title: 'Citizen Services & Verification', defaultDept: 'e-District / Mo Seba Kendra', quickTags: ['Mo Seba Kendra', 'e-District', 'Aadhaar Seeding', 'Grievance'] }
+    };
+    var activeDomain = DOMAINS[domainSlug] ? domainSlug : 'govt-public-welfare';
+    var cfg = DOMAINS[activeDomain];
+    var publicUrl = 'https://csodisha.com/schemes/' + activeDomain + '/';
+    var canWrite = me && ['admin', 'editor', 'reviewer'].includes(me.role);
+    var canDelete = me && me.role === 'admin';
+
+    var state = { tree: null, parentId: null, healthTab: 'all', q: '', status: '', undoTimer: null };
+    var wrap = el('div', { class: 'cso-ops-wrap' });
+
+    var copyUrlBtn = el('button', { type: 'button', class: 'btn sm', text: 'Copy Directory URL' });
+    copyUrlBtn.addEventListener('click', function () {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(publicUrl).then(function () { toast('Copied ' + publicUrl); });
+      }
+    });
+    var addSubBtn = el('button', { type: 'button', class: 'btn sm', text: '+ New Sub-Directory' });
+    addSubBtn.disabled = !canWrite;
+    var addItemBtn = el('button', { type: 'button', class: 'btn primary sm', text: '+ Add Scheme / Guide' });
+    addItemBtn.disabled = !canWrite;
+    var refreshBtn = el('button', { type: 'button', class: 'btn sm', text: 'Refresh' });
+
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-ops-head' }, [
+        el('div', {}, [
+          el('h2', { text: 'Module #' + cfg.num + ' — ' + cfg.title }),
+          el('p', { class: 'muted sm', text: '4-Layer Schemes & Benefits Studio · ' + publicUrl })
+        ]),
+        el('div', { class: 'cso-ops-badges' }, [
+          copyUrlBtn,
+          el('a', { class: 'btn sm', href: '/schemes/' + activeDomain + '/', target: '_blank', rel: 'noopener', text: 'View Live Directory ↗' }),
+          addSubBtn,
+          addItemBtn,
+          refreshBtn
+        ])
+      ])
+    ]));
+
+    var undoBar = el('div', { class: 'cso-jd-undo-bar' });
+    undoBar.hidden = true;
+    wrap.appendChild(undoBar);
+
+    var kpiRow = el('div', { class: 'cso-ops-kpi-row' });
+    wrap.appendChild(kpiRow);
+
+    var healthTabsBox = el('div', { class: 'cso-jd-health-tabs' });
+    wrap.appendChild(healthTabsBox);
+
+    var folderDrawerBox = el('div', { class: 'cso-ops-card' });
+    folderDrawerBox.hidden = true;
+    wrap.appendChild(folderDrawerBox);
+
+    var composerBox = el('div');
+    composerBox.hidden = true;
+    wrap.appendChild(composerBox);
+
+    var crumbBar = el('div', { class: 'cso-sl-crumb-bar' });
+    var folderGridBox = el('div', { class: 'cso-sl-folder-grid' });
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-ops-subhead' }, [el('h3', { text: 'Multi-Level Sub-Directory Explorer' })]),
+      crumbBar,
+      folderGridBox
+    ]));
+
+    var searchInp = el('input', { class: 'input', type: 'search', placeholder: 'Search schemes, department, beneficiary group...' });
+    var statusSel = el('select', { class: 'select' }, [
+      el('option', { value: '', text: 'All statuses' }),
+      el('option', { value: 'published', text: 'Published' }),
+      el('option', { value: 'draft', text: 'Draft' }),
+      el('option', { value: 'archived', text: 'Archived' })
+    ]);
+    var clearFilterBtn = el('button', { type: 'button', class: 'btn sm', text: 'Reset Filters' });
+    var listHost = el('div');
+
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-ops-subhead' }, [el('h3', { text: 'Schemes, Guides & Citizen Reports' })]),
+      el('div', { class: 'cso-cnt-toolbar' }, [
+        el('div', { class: 'cso-cnt-filter-row' }, [searchInp, statusSel, clearFilterBtn])
+      ]),
+      listHost
+    ]));
+
+    function showUndo(msg, onUndo) {
+      if (state.undoTimer) clearTimeout(state.undoTimer);
+      clear(undoBar);
+      undoBar.hidden = false;
+      var undoBtn = el('button', { type: 'button', class: 'btn sm', text: 'Undo (5s)' });
+      undoBtn.addEventListener('click', async function () {
+        if (state.undoTimer) clearTimeout(state.undoTimer);
+        undoBar.hidden = true;
+        await onUndo();
+      });
+      undoBar.appendChild(el('span', { text: msg }));
+      undoBar.appendChild(undoBtn);
+      state.undoTimer = setTimeout(function () { undoBar.hidden = true; }, 5000);
+    }
+
+    function renderKpis() {
+      clear(kpiRow);
+      var k = (state.tree && state.tree.kpis) || {};
+      var total = Math.max(1, Number(k.totalItems || 0));
+      [
+        { label: 'Total Directories', val: k.totalDirectories || 0, max: Math.max(1, k.totalDirectories || 1), cur: k.totalDirectories || 0, note: (k.emptyDirectories || 0) + ' empty' },
+        { label: 'Published Schemes', val: (k.publishedSchemes || 0) + ' / ' + (k.totalItems || 0), max: total, cur: k.publishedSchemes || 0, note: 'Live directory items' },
+        { label: 'Odisha State Schemes', val: k.odishaStateSchemes || 0, max: total, cur: k.odishaStateSchemes || 0, note: 'State flagship & welfare' },
+        { label: 'Verified Portals', val: k.verifiedPortals || 0, max: total, cur: k.verifiedPortals || 0, note: (k.pendingSuggestions || 0) + ' citizen reports' }
+      ].forEach(function (c) {
+        kpiRow.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+          el('div', { class: 'cso-ops-kpi-label', text: c.label }),
+          el('div', { class: 'cso-ops-kpi-val', text: String(c.val) }),
+          el('progress', { class: 'cso-jd-progress', max: String(c.max), value: String(c.cur) }),
+          el('div', { class: 'muted sm', text: c.note })
+        ]));
+      });
+    }
+
+    function renderHealthTabs() {
+      clear(healthTabsBox);
+      var k = (state.tree && state.tree.kpis) || {};
+      [
+        { id: 'all', label: 'All Directories (' + (k.totalDirectories || 0) + ')' },
+        { id: 'empty', label: 'Empty Directories (0 Items: ' + (k.emptyDirectories || 0) + ')' },
+        { id: 'stale', label: 'Stale > 180 Days (' + (k.staleItems || 0) + ')' },
+        { id: 'reports', label: 'Citizen Reports (Pending: ' + (k.pendingSuggestions || 0) + ')' }
+      ].forEach(function (t) {
+        var b = el('button', { type: 'button', class: state.healthTab === t.id ? 'btn primary sm' : 'btn sm', text: t.label });
+        b.addEventListener('click', function () { state.healthTab = t.id; renderHealthTabs(); renderFolders(); renderList(); });
+        healthTabsBox.appendChild(b);
+      });
+    }
+
+    function openFolderDrawer(editing, parentForNew) {
+      clear(folderDrawerBox);
+      folderDrawerBox.hidden = false;
+      var isEdit = Boolean(editing && editing.id);
+      var nameInp = el('input', { class: 'input', type: 'text', value: (editing && editing.name_en) || '', placeholder: 'e.g. Subhadra Yojana (Odisha)' });
+      var titleOrInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title_or) || '', placeholder: 'Odia Title (optional)' });
+      var slugInp = el('input', { class: 'input', type: 'text', value: (editing && editing.slug) || '', placeholder: 'auto-slug' });
+      var badgeInp = el('input', { class: 'input', type: 'text', value: (editing && editing.featured_badge) || '', placeholder: 'e.g. STATE FLAGSHIP' });
+      var sortInp = el('input', { class: 'input', type: 'number', value: String((editing && editing.sort_order) || 10) });
+      var activeCb = el('input', { type: 'checkbox' });
+      activeCb.checked = editing ? Boolean(editing.is_active) : true;
+      var verCb = el('input', { type: 'checkbox' });
+      verCb.checked = Boolean(editing && editing.verified_at);
+      var descEnTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'English intro...' });
+      descEnTa.value = (editing && editing.description_en) || '';
+      var descOrTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Odia intro (optional)...' });
+      descOrTa.value = (editing && editing.description_or) || '';
+      var seoTitleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.seo_title) || '', placeholder: 'SEO Title' });
+      var seoDescTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'SEO Meta Description...' });
+      seoDescTa.value = (editing && editing.seo_description) || '';
+
+      var previewMode = 'hero';
+      var previewTabs = el('div', { class: 'cso-jd-preview-tabs' });
+      var previewBox = el('div');
+      function renderFolderPreview() {
+        clear(previewTabs);
+        [['hero', 'Public Hero'], ['serp', 'Google SERP'], ['wa', 'WhatsApp Card']].forEach(function (tab) {
+          var tb = el('button', { type: 'button', class: previewMode === tab[0] ? 'btn primary sm' : 'btn sm', text: tab[1] });
+          tb.addEventListener('click', function () { previewMode = tab[0]; renderFolderPreview(); });
+          previewTabs.appendChild(tb);
+        });
+        clear(previewBox);
+        var t = nameInp.value.trim() || 'Scheme Directory';
+        var d = descEnTa.value.trim() || 'Directory overview.';
+        if (previewMode === 'hero') {
+          previewBox.appendChild(el('div', { class: 'cso-jd-wa-card' }, [
+            el('div', { class: 'cso-jd-wa-meta', text: (badgeInp.value.trim() || cfg.title) + (titleOrInp.value.trim() ? ' · ' + titleOrInp.value.trim() : '') }),
+            el('div', { class: 'cso-jd-wa-title', text: t }),
+            el('div', { class: 'sm', text: d })
+          ]));
+        } else if (previewMode === 'serp') {
+          previewBox.appendChild(el('div', { class: 'cso-jd-wa-card' }, [
+            el('div', { class: 'cso-jd-wa-meta', text: publicUrl + (slugInp.value.trim() || 'folder') + '/' }),
+            el('div', { class: 'cso-jd-wa-title', text: seoTitleInp.value.trim() || t + ' — CSOdisha' }),
+            el('div', { class: 'muted sm', text: seoDescTa.value.trim() || d })
+          ]));
+        } else {
+          previewBox.appendChild(el('div', { class: 'cso-jd-wa-card' }, [
+            el('div', { class: 'cso-jd-wa-title', text: 'CSOdisha Schemes: ' + t }),
+            el('div', { class: 'sm', text: d }),
+            el('div', { class: 'cso-jd-wa-meta', text: publicUrl + (slugInp.value.trim() || '') })
+          ]));
+        }
+      }
+      [nameInp, titleOrInp, slugInp, badgeInp, descEnTa, seoTitleInp, seoDescTa].forEach(function (inp) { inp.addEventListener('input', renderFolderPreview); });
+      renderFolderPreview();
+
+      var saveBtn = el('button', { type: 'button', class: 'btn primary sm', text: isEdit ? 'Save Directory Page' : 'Create Sub-Directory' });
+      saveBtn.disabled = !canWrite;
+      var closeBtn = el('button', { type: 'button', class: 'btn sm', text: 'Close' });
+      closeBtn.addEventListener('click', function () { folderDrawerBox.hidden = true; clear(folderDrawerBox); });
+
+      saveBtn.addEventListener('click', async function () {
+        if (!nameInp.value.trim()) { toast('Directory name is required', true); return; }
+        saveBtn.disabled = true;
+        try {
+          var payload = {
+            domain_slug: activeDomain,
+            parent_id: isEdit ? editing.parent_id : (parentForNew || state.parentId || null),
+            name_en: nameInp.value.trim(),
+            title_or: titleOrInp.value.trim(),
+            slug: slugInp.value.trim(),
+            featured_badge: badgeInp.value.trim(),
+            sort_order: Number(sortInp.value || 10),
+            is_active: activeCb.checked,
+            mark_verified: verCb.checked,
+            description_en: descEnTa.value.trim(),
+            description_or: descOrTa.value.trim(),
+            seo_title: seoTitleInp.value.trim(),
+            seo_description: seoDescTa.value.trim()
+          };
+          if (isEdit) {
+            await api('PUT', 'schemes-directory/folders/' + encodeURIComponent(editing.id), payload);
+            toast('Updated scheme sub-directory');
+          } else {
+            await api('POST', 'schemes-directory/folders', payload);
+            toast('Created scheme sub-directory');
+          }
+          folderDrawerBox.hidden = true;
+          clear(folderDrawerBox);
+          await loadAll();
+        } catch (err) {
+          toast(err.message || 'Save failed', true);
+        } finally {
+          saveBtn.disabled = !canWrite;
+        }
+      });
+
+      folderDrawerBox.appendChild(el('div', { class: 'cso-ops-subhead' }, [
+        el('h3', { text: isEdit ? 'Edit Page Info & Preview (' + editing.name_en + ')' : 'New Sub-Directory' }),
+        closeBtn
+      ]));
+      folderDrawerBox.appendChild(el('div', { class: 'cso-sl-drawer-grid' }, [
+        el('div', { class: 'cso-cnt-editor-pane' }, [
+          el('div', { class: 'cso-sl-drawer-row' }, [
+            el('div', { class: 'field' }, [el('label', { text: 'English Name *' }), nameInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Odia Title' }), titleOrInp])
+          ]),
+          el('div', { class: 'cso-sl-drawer-row' }, [
+            el('div', { class: 'field' }, [el('label', { text: 'Slug' }), slugInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Featured Badge' }), badgeInp])
+          ]),
+          el('div', { class: 'cso-sl-drawer-row' }, [
+            el('div', { class: 'field' }, [el('label', { text: 'Sort Order' }), sortInp]),
+            el('div', { class: 'field' }, [
+              el('label', {}, [activeCb, document.createTextNode(' Active / Visible ')]),
+              el('label', {}, [verCb, document.createTextNode(' Mark Verified Today')])
+            ])
+          ]),
+          el('div', { class: 'field' }, [el('label', { text: 'English Intro' }), descEnTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Odia Intro' }), descOrTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'SEO Title' }), seoTitleInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'SEO Description' }), seoDescTa]),
+          el('div', { class: 'cso-ops-badges' }, [saveBtn, closeBtn])
+        ]),
+        el('div', { class: 'cso-cnt-preview-pane' }, [el('h4', { text: 'Live Multi-Channel Preview' }), previewTabs, previewBox])
+      ]));
+    }
+
+    function renderFolders() {
+      clear(crumbBar);
+      clear(folderGridBox);
+      var allFolders = (state.tree && state.tree.folders) || [];
+      var byId = {};
+      allFolders.forEach(function (f) { byId[f.id] = f; });
+
+      var chain = [];
+      var cur = state.parentId ? byId[state.parentId] : null;
+      while (cur) { chain.unshift(cur); cur = cur.parent_id ? byId[cur.parent_id] : null; }
+      var rootCrumb = el('button', { type: 'button', class: !state.parentId ? 'btn primary sm' : 'btn sm', text: cfg.title + ' (Root)' });
+      rootCrumb.addEventListener('click', function () { state.parentId = null; renderFolders(); renderList(); });
+      crumbBar.appendChild(rootCrumb);
+      chain.forEach(function (c) {
+        crumbBar.appendChild(el('span', { class: 'muted', text: ' / ' }));
+        var cb = el('button', { type: 'button', class: state.parentId === c.id ? 'btn primary sm' : 'btn sm', text: c.name_en });
+        cb.addEventListener('click', function () { state.parentId = c.id; renderFolders(); renderList(); });
+        crumbBar.appendChild(cb);
+      });
+
+      var visible = state.healthTab === 'empty'
+        ? allFolders.filter(function (f) { return Number(f.item_count || 0) === 0; })
+        : allFolders.filter(function (f) { return (f.parent_id || null) === (state.parentId || null); });
+
+      if (!visible.length) {
+        folderGridBox.appendChild(el('p', { class: 'muted sm', text: 'No sub-directories at this level.' }));
+        return;
+      }
+
+      visible.forEach(function (f) {
+        var openBtn = el('button', { type: 'button', class: 'btn sm', text: 'Open' });
+        openBtn.addEventListener('click', function () { state.parentId = f.id; state.healthTab = 'all'; renderHealthTabs(); renderFolders(); renderList(); });
+        var editBtn = el('button', { type: 'button', class: 'btn sm', text: 'Edit Page Info & Preview' });
+        editBtn.addEventListener('click', function () { openFolderDrawer(f, null); });
+        var subBtn = el('button', { type: 'button', class: 'btn sm', text: '+ Sub-Folder' });
+        subBtn.disabled = !canWrite || Number(f.depth || 1) >= 6;
+        subBtn.addEventListener('click', function () { openFolderDrawer(null, f.id); });
+        var delBtn = el('button', { type: 'button', class: 'btn sm', text: 'Delete' });
+        delBtn.disabled = !canDelete;
+        delBtn.addEventListener('click', async function () {
+          if (!confirm('Delete "' + f.name_en + '"?')) return;
+          try {
+            await api('DELETE', 'schemes-directory/folders/' + encodeURIComponent(f.id));
+            toast('Deleted sub-directory');
+            await loadAll();
+          } catch (err) {
+            toast(err.message || 'Cannot delete non-empty folder', true);
+          }
+        });
+
+        folderGridBox.appendChild(el('div', { class: 'cso-sl-folder-card' }, [
+          el('div', { class: 'cso-sl-folder-head' }, [
+            el('div', {}, [
+              el('strong', { text: f.name_en }),
+              el('div', { class: 'muted sm', text: 'Depth ' + f.depth + ' · ' + (f.item_count || 0) + ' schemes · /' + f.slug })
+            ]),
+            el('span', { class: f.is_active ? 'badge ok' : 'badge', text: f.is_active ? 'Active' : 'Hidden' })
+          ]),
+          el('div', { class: 'cso-ops-badges' }, [openBtn, editBtn, subBtn, delBtn])
+        ]));
+      });
+    }
+
+    function openComposer(editing) {
+      clear(composerBox);
+      composerBox.hidden = false;
+      var isEdit = Boolean(editing && editing.id);
+      var card = el('div', { class: 'cso-cnt-composer' });
+
+      var titleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title) || '', placeholder: 'Scheme / Service Title...' });
+      var titleOrInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title_or) || '', placeholder: 'Odia Title (optional)' });
+      var slugInp = el('input', { class: 'input', type: 'text', value: (editing && editing.slug) || '', placeholder: 'auto-slug' });
+      var folderSel = el('select', { class: 'select' });
+      ((state.tree && state.tree.folders) || []).forEach(function (f) {
+        folderSel.appendChild(el('option', { value: f.id, text: 'L' + f.depth + ' · ' + f.name_en }));
+      });
+      if (editing && editing.folder_id) folderSel.value = editing.folder_id;
+      else if (state.parentId) folderSel.value = state.parentId;
+
+      var typeSel = el('select', { class: 'select' }, [
+        ['state_scheme', 'State Scheme'], ['central_scheme', 'Central Scheme'], ['scholarship', 'Scholarship'],
+        ['subsidy_loan', 'Subsidy / Loan'], ['health_insurance', 'Health Insurance'], ['pension_social', 'Pension / Social'],
+        ['eligibility_tool', 'Eligibility Tool'], ['citizen_service', 'Citizen Service']
+      ].map(function (p) { return el('option', { value: p[0], text: p[1] }); }));
+      typeSel.value = (editing && editing.scheme_type) || 'state_scheme';
+
+      var sponsorSel = el('select', { class: 'select' }, [
+        'Odisha State', 'Central Govt', 'Joint State-Central', 'CSR / Global'
+      ].map(function (s) { return el('option', { value: s, text: s }); }));
+      sponsorSel.value = (editing && editing.sponsor_level) || 'Odisha State';
+
+      var deptInp = el('input', { class: 'input', type: 'text', value: (editing && editing.department_name) || cfg.defaultDept, placeholder: 'Nodal Department' });
+      var benInp = el('input', { class: 'input', type: 'text', value: (editing && editing.beneficiary_group) || 'All Citizens', placeholder: 'e.g. Women & Mothers, Farmers' });
+      var amtInp = el('input', { class: 'input', type: 'text', value: (editing && editing.benefit_amount) || '', placeholder: 'e.g. Rs 10,000 / year' });
+      var incInp = el('input', { class: 'input', type: 'text', value: (editing && editing.income_limit) || '', placeholder: 'e.g. <= Rs 2.5 Lakh' });
+      var modeSel = el('select', { class: 'select' }, [
+        'Online Portal', 'Mo Seba Kendra / CSC', 'Offline / Block Office', 'Hybrid'
+      ].map(function (m) { return el('option', { value: m, text: m }); }));
+      modeSel.value = (editing && editing.application_mode) || 'Online Portal';
+
+      var deadInp = el('input', { class: 'input', type: 'text', value: (editing && editing.application_deadline) || '', placeholder: 'YYYY-MM-DD or Rolling' });
+      var applyInp = el('input', { class: 'input', type: 'url', value: (editing && editing.official_apply_url) || '', placeholder: 'https://...odisha.gov.in/' });
+      var statusCompSel = el('select', { class: 'select' }, [
+        el('option', { value: 'draft', text: 'draft' }),
+        el('option', { value: 'published', text: 'published' }),
+        el('option', { value: 'archived', text: 'archived' })
+      ]);
+      statusCompSel.value = (editing && editing.status) || 'draft';
+
+      var langSel = el('select', { class: 'select' }, [
+        el('option', { value: 'EN', text: 'EN' }),
+        el('option', { value: 'OR', text: 'OR' }),
+        el('option', { value: 'EN+OR', text: 'EN+OR' })
+      ]);
+      langSel.value = (editing && editing.language_parity) || 'EN+OR';
+
+      var pdfUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.pdf_url) || '', placeholder: 'Guideline PDF URL (R2 max 15MB)' });
+      var pdfSize = Number((editing && editing.pdf_size_bytes) || 0);
+      var pdfFileInp = el('input', { type: 'file', accept: 'application/pdf' });
+      pdfFileInp.addEventListener('change', async function () {
+        var f = pdfFileInp.files && pdfFileInp.files[0];
+        if (!f) return;
+        if (f.size > 15 * 1024 * 1024) { toast('PDF must be <= 15 MB', true); return; }
+        var fd = new FormData(); fd.append('file', f); fd.append('kind', 'pdf');
+        try {
+          var r = await fetch('/api/admin/content/upload', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSO-CSRF': '1' }, body: fd });
+          var j = await r.json();
+          if (!r.ok) throw new Error(j.message || 'Upload failed');
+          pdfUrlInp.value = j.url || ''; pdfSize = f.size; toast('Uploaded PDF to R2');
+        } catch (err) { toast(err.message || 'PDF upload failed', true); }
+      });
+
+      var coverUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.cover_image_url) || '', placeholder: 'Banner Image URL (R2 max 5MB)' });
+      var coverFileInp = el('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp' });
+      coverFileInp.addEventListener('change', async function () {
+        var f = coverFileInp.files && coverFileInp.files[0];
+        if (!f) return;
+        if (f.size > 5 * 1024 * 1024) { toast('Image must be <= 5 MB', true); return; }
+        var fd = new FormData(); fd.append('file', f); fd.append('kind', 'image');
+        try {
+          var r = await fetch('/api/admin/content/upload', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSO-CSRF': '1' }, body: fd });
+          var j = await r.json();
+          if (!r.ok) throw new Error(j.message || 'Upload failed');
+          coverUrlInp.value = j.url || ''; toast('Uploaded banner image to R2');
+        } catch (err) { toast(err.message || 'Image upload failed', true); }
+      });
+
+      var tagsState = (editing && Array.isArray(editing.tags)) ? editing.tags.slice() : [];
+      var tagChipsWrap = el('div', { class: 'cso-cnt-tag-chips' });
+      var tagInput = el('input', { class: 'cso-cnt-tag-input', type: 'text', placeholder: 'Add tag + Enter' });
+      var tagQuickWrap = el('div', { class: 'cso-cnt-tag-suggestions' });
+      function addTag(raw) {
+        var v = String(raw || '').trim().replace(/^#+/, '').slice(0, 40);
+        if (v && !tagsState.includes(v) && tagsState.length < 14) { tagsState.push(v); renderTags(); }
+      }
+      function renderTags() {
+        clear(tagChipsWrap);
+        tagsState.forEach(function (t, i) {
+          var rm = el('button', { type: 'button', class: 'cso-cnt-tag-chip-rm', text: '×' });
+          rm.addEventListener('click', function () { tagsState.splice(i, 1); renderTags(); });
+          tagChipsWrap.appendChild(el('span', { class: 'cso-cnt-tag-chip' }, [document.createTextNode(t), rm]));
+        });
+        tagChipsWrap.appendChild(tagInput);
+      }
+      tagInput.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' || ev.key === ',') { ev.preventDefault(); addTag(tagInput.value); tagInput.value = ''; }
+      });
+      renderTags();
+      cfg.quickTags.forEach(function (qt) {
+        var qb = el('button', { type: 'button', class: 'cso-cnt-tag-suggest', text: '+ ' + qt });
+        qb.addEventListener('click', function () { addTag(qt); });
+        tagQuickWrap.appendChild(qb);
+      });
+
+      var summaryTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Short scheme summary...' });
+      summaryTa.value = (editing && editing.summary) || '';
+      var eligTa = el('textarea', { class: 'textarea', rows: '3', placeholder: 'Eligibility criteria (age, domicile, income, category)...' });
+      eligTa.value = (editing && editing.eligibility_criteria) || '';
+      var docsTa = el('textarea', { class: 'textarea', rows: '3', placeholder: 'Required documents (Aadhaar, Ration Card, Income Certificate)...' });
+      docsTa.value = (editing && editing.documents_required) || '';
+      var bodyTa = el('textarea', { class: 'textarea', rows: '5', placeholder: 'Detailed step-by-step application guide HTML...' });
+      bodyTa.value = (editing && editing.body_html) || '';
+
+      var piiWarnBox = el('div', { class: 'cso-cnt-pii-warn' });
+      piiWarnBox.hidden = true;
+      var previewMode = 'reader';
+      var previewTabs = el('div', { class: 'cso-jd-preview-tabs' });
+      var previewBody = el('div');
+      function renderPreview() {
+        var pii = detectClientPii(titleInp.value + '\n' + summaryTa.value + '\n' + eligTa.value + '\n' + bodyTa.value);
+        if (pii.length) {
+          piiWarnBox.hidden = false;
+          piiWarnBox.textContent = 'DPDP Act 2023 PII Guard: Possible personal data detected (' + pii.join(', ') + ').';
+        } else { piiWarnBox.hidden = true; }
+        clear(previewTabs);
+        [['reader', 'Reader Preview'], ['serp', 'Google SERP'], ['wa', 'WhatsApp Share']].forEach(function (tab) {
+          var tb = el('button', { type: 'button', class: previewMode === tab[0] ? 'btn primary sm' : 'btn sm', text: tab[1] });
+          tb.addEventListener('click', function () { previewMode = tab[0]; renderPreview(); });
+          previewTabs.appendChild(tb);
+        });
+        clear(previewBody);
+        var t = titleInp.value.trim() || 'Untitled Scheme';
+        var s = summaryTa.value.trim() || 'Scheme summary preview.';
+        if (previewMode === 'reader') {
+          previewBody.appendChild(el('div', { class: 'cso-jd-wa-card' }, [
+            el('div', { class: 'cso-jd-wa-title', text: t }),
+            el('div', { class: 'cso-jd-wa-meta', text: [sponsorSel.value, deptInp.value.trim(), amtInp.value.trim()].filter(Boolean).join(' · ') }),
+            el('div', { class: 'sm', text: s })
+          ]));
+        } else if (previewMode === 'serp') {
+          previewBody.appendChild(el('div', { class: 'cso-jd-wa-card' }, [
+            el('div', { class: 'cso-jd-wa-meta', text: 'https://csodisha.com/schemes/item/' + (slugInp.value.trim() || 'scheme') + '/' }),
+            el('div', { class: 'cso-jd-wa-title', text: t + ' | CSOdisha' }),
+            el('div', { class: 'muted sm', text: s })
+          ]));
+        } else {
+          previewBody.appendChild(el('div', { class: 'cso-jd-wa-card' }, [
+            el('div', { class: 'cso-jd-wa-title', text: 'CSOdisha Scheme Guide: ' + t }),
+            el('div', { class: 'sm', text: s }),
+            el('div', { class: 'cso-jd-wa-meta', text: applyInp.value.trim() || publicUrl })
+          ]));
+        }
+      }
+      [titleInp, slugInp, deptInp, amtInp, applyInp, summaryTa, eligTa, bodyTa].forEach(function (inp) { inp.addEventListener('input', renderPreview); });
+      renderPreview();
+
+      var saveBtn = el('button', { type: 'button', class: 'btn primary sm', text: isEdit ? 'Save Scheme & Revision' : 'Create Scheme / Guide' });
+      saveBtn.disabled = !canWrite;
+      var closeBtn = el('button', { type: 'button', class: 'btn sm', text: 'Close' });
+      closeBtn.addEventListener('click', function () { composerBox.hidden = true; clear(composerBox); });
+
+      saveBtn.addEventListener('click', async function () {
+        if (!titleInp.value.trim() || !folderSel.value) { toast('Title and sub-directory are required', true); return; }
+        saveBtn.disabled = true;
+        try {
+          var payload = {
+            domain_slug: activeDomain, folder_id: folderSel.value, title: titleInp.value.trim(), title_or: titleOrInp.value.trim(),
+            slug: slugInp.value.trim(), scheme_type: typeSel.value, sponsor_level: sponsorSel.value, department_name: deptInp.value.trim(),
+            beneficiary_group: benInp.value.trim(), benefit_amount: amtInp.value.trim(), income_limit: incInp.value.trim(),
+            application_mode: modeSel.value, application_deadline: deadInp.value.trim(), official_apply_url: applyInp.value.trim(),
+            status: statusCompSel.value, language_parity: langSel.value, pdf_url: pdfUrlInp.value.trim(), pdf_size_bytes: pdfSize,
+            cover_image_url: coverUrlInp.value.trim(), tags: tagsState, summary: summaryTa.value.trim(),
+            eligibility_criteria: eligTa.value.trim(), documents_required: docsTa.value.trim(), body_html: bodyTa.value
+          };
+          if (isEdit) {
+            await api('PUT', 'schemes-directory/items/' + encodeURIComponent(editing.id), payload);
+            toast('Updated scheme & recorded revision');
+          } else {
+            await api('POST', 'schemes-directory/items', payload);
+            toast('Created scheme');
+          }
+          composerBox.hidden = true;
+          clear(composerBox);
+          await loadAll();
+        } catch (err) { toast(err.message || 'Save failed', true); } finally { saveBtn.disabled = !canWrite; }
+      });
+
+      card.appendChild(el('div', { class: 'cso-ops-subhead' }, [el('h3', { text: isEdit ? 'Edit Scheme (' + editing.id + ')' : 'Add Scheme / Citizen Guide' }), closeBtn]));
+      card.appendChild(piiWarnBox);
+      card.appendChild(el('div', { class: 'cso-cnt-split' }, [
+        el('div', { class: 'cso-cnt-editor-pane' }, [
+          el('div', { class: 'cso-ops-grid-2' }, [
+            el('div', { class: 'field' }, [el('label', { text: 'Scheme Title *' }), titleInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Odia Title' }), titleOrInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Slug' }), slugInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Sub-Directory *' }), folderSel]),
+            el('div', { class: 'field' }, [el('label', { text: 'Scheme Type' }), typeSel]),
+            el('div', { class: 'field' }, [el('label', { text: 'Sponsor Level' }), sponsorSel]),
+            el('div', { class: 'field' }, [el('label', { text: 'Nodal Department' }), deptInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Beneficiary Group' }), benInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Benefit Amount' }), amtInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Income Limit' }), incInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Application Mode' }), modeSel]),
+            el('div', { class: 'field' }, [el('label', { text: 'Deadline' }), deadInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Official Apply URL' }), applyInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Status' }), statusCompSel]),
+            el('div', { class: 'field' }, [el('label', { text: 'Language' }), langSel]),
+            el('div', { class: 'field' }, [el('label', { text: 'Guideline PDF (R2 max 15MB)' }), pdfUrlInp, pdfFileInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Banner Image (R2 max 5MB)' }), coverUrlInp, coverFileInp])
+          ]),
+          el('div', { class: 'field' }, [el('label', { text: 'Tags' }), tagChipsWrap, tagQuickWrap]),
+          el('div', { class: 'field' }, [el('label', { text: 'Summary' }), summaryTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Eligibility Criteria' }), eligTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Required Documents' }), docsTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Detailed Guide HTML' }), bodyTa]),
+          el('div', { class: 'cso-ops-badges' }, [saveBtn, closeBtn])
+        ]),
+        el('div', { class: 'cso-cnt-preview-pane' }, [el('h4', { text: 'Live Preview' }), previewTabs, previewBody])
+      ]));
+      composerBox.appendChild(card);
+    }
+
+    async function renderList() {
+      clear(listHost);
+      if (state.healthTab === 'reports') {
+        var sugRes = await api('GET', 'schemes-directory/suggestions?domain=' + encodeURIComponent(activeDomain));
+        var sugs = sugRes.suggestions || [];
+        if (!sugs.length) { listHost.appendChild(el('p', { class: 'muted sm', text: 'No citizen reports for this domain.' })); return; }
+        sugs.forEach(function (s) {
+          var resBtn = el('button', { type: 'button', class: 'btn primary sm', text: 'Mark Resolved' });
+          resBtn.disabled = !canWrite || s.status === 'resolved';
+          resBtn.addEventListener('click', async function () {
+            await api('PATCH', 'schemes-directory/suggestions/' + encodeURIComponent(s.id), { status: 'resolved', moderator_note: 'Verified' });
+            toast('Marked resolved'); await loadAll();
+          });
+          listHost.appendChild(el('div', { class: 'cso-jd-sug-card' }, [
+            el('div', { class: 'cso-sl-folder-head' }, [el('strong', { text: (s.reporter_name || 'Citizen') + ' · ' + s.suggestion_type }), el('span', { class: 'badge', text: s.status })]),
+            el('div', { class: 'sm', text: s.message }),
+            el('div', { class: 'cso-ops-badges' }, [resBtn])
+          ]));
+        });
+        return;
+      }
+
+      var items = (state.tree && state.tree.items) || [];
+      if (!items.length) { listHost.appendChild(el('p', { class: 'muted sm', text: 'No schemes match the current filter.' })); return; }
+
+      var tbl = el('table', { class: 'table' });
+      tbl.appendChild(el('thead', {}, [el('tr', {}, [el('th', { text: 'Scheme / Department' }), el('th', { text: 'Sponsor & Beneficiary' }), el('th', { text: 'Status' }), el('th', { text: 'Actions' })])]));
+      var tb = el('tbody');
+      items.forEach(function (it) {
+        var editBtn = el('button', { type: 'button', class: 'btn sm', text: 'Edit' });
+        editBtn.addEventListener('click', async function () {
+          var full = await api('GET', 'schemes-directory/items/' + encodeURIComponent(it.id));
+          openComposer(full.item || it);
+        });
+        var nextStatus = it.status === 'published' ? 'draft' : 'published';
+        var pubBtn = el('button', { type: 'button', class: 'btn sm', text: it.status === 'published' ? 'Unpublish' : 'Publish' });
+        pubBtn.disabled = !canWrite;
+        pubBtn.addEventListener('click', async function () {
+          var res = await api('PATCH', 'schemes-directory/items/' + encodeURIComponent(it.id) + '/status', { status: nextStatus });
+          var prev = res.previous_status || it.status;
+          await loadAll();
+          showUndo('Updated "' + it.title + '" to ' + nextStatus, async function () {
+            await api('PATCH', 'schemes-directory/items/' + encodeURIComponent(it.id) + '/status', { status: prev });
+            await loadAll();
+          });
+        });
+        var verBtn = el('button', { type: 'button', class: 'btn sm', text: 'Verify' });
+        verBtn.disabled = !canWrite;
+        verBtn.addEventListener('click', async function () { await api('POST', 'schemes-directory/items/' + encodeURIComponent(it.id) + '/verify', {}); toast('Portal verified'); await loadAll(); });
+        var delBtn = el('button', { type: 'button', class: 'btn sm', text: 'Delete' });
+        delBtn.disabled = !canDelete;
+        delBtn.addEventListener('click', async function () { if (!confirm('Delete "' + it.title + '"?')) return; await api('DELETE', 'schemes-directory/items/' + encodeURIComponent(it.id)); toast('Deleted'); await loadAll(); });
+
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, [el('strong', { text: it.title }), el('div', { class: 'muted sm', text: (it.department_name || cfg.title) + (it.benefit_amount ? ' · ' + it.benefit_amount : '') })]),
+          el('td', { class: 'sm', text: it.sponsor_level + ' · ' + (it.beneficiary_group || 'All Citizens') }),
+          el('td', {}, [el('span', { class: it.status === 'published' ? 'badge ok' : 'badge', text: it.status })]),
+          el('td', {}, [el('div', { class: 'cso-ops-badges' }, [editBtn, pubBtn, verBtn, delBtn])])
+        ]));
+      });
+      tbl.appendChild(tb);
+      listHost.appendChild(tbl);
+    }
+
+    async function loadAll() {
+      var qs = new URLSearchParams();
+      qs.set('domain', activeDomain);
+      if (state.parentId) qs.set('folder_id', state.parentId);
+      if (state.status) qs.set('status', state.status);
+      if (state.q) qs.set('q', state.q);
+      if (state.healthTab === 'stale') qs.set('health', 'stale');
+      state.tree = await api('GET', 'schemes-directory/tree?' + qs.toString());
+      renderKpis(); renderHealthTabs(); renderFolders(); await renderList();
+    }
+
+    addSubBtn.addEventListener('click', function () { openFolderDrawer(null, state.parentId); });
+    addItemBtn.addEventListener('click', function () { openComposer(null); });
+    refreshBtn.addEventListener('click', function () { loadAll(); });
+    searchInp.addEventListener('input', function () { state.q = searchInp.value.trim(); loadAll(); });
+    statusSel.addEventListener('change', function () { state.status = statusSel.value; loadAll(); });
+    clearFilterBtn.addEventListener('click', function () { state.parentId = null; state.status = ''; state.q = ''; state.healthTab = 'all'; searchInp.value = ''; statusSel.value = ''; loadAll(); });
+
+    loadAll();
+    return wrap;
+  }
+
+  function viewSchemesDirectoryStudio(domainSlug) {
+    setTitle('Schemes & Benefits Studio');
+    main.appendChild(schemesDirectoryStudioPanel(domainSlug || 'govt-public-welfare'));
+  }
+
   function viewStudyLibraryStudio(domainSlug) {
     setTitle('Study Library Studio');
     main.appendChild(studyLibraryStudioPanel(domainSlug || 'early-childhood'));
@@ -14243,7 +14896,7 @@
     'jobs-directory': function (parts) { return parts[1] ? viewJobsDirectoryStudio(parts[1]) : viewJobsDirectory(); },
     'about-directory': function () { return viewAboutDirectory(); },
     schemes: function (parts) { return viewSchemesManager(parts[1]); },
-    'schemes-directory': function () { return viewSchemesDirectoryTree(); },
+    'schemes-directory': function (parts) { return parts[1] ? viewSchemesDirectoryStudio(parts[1]) : viewSchemesDirectoryTree(); },
     'study-library-directory': function () { return viewStudyLibraryDirectory(); },
     freshness: function () { return viewFreshnessAudit(); },
     feedback: function () { return viewFeedbackQueue(); },

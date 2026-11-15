@@ -14,6 +14,7 @@ import { handleSecurityCompliance } from '../../_lib/security-compliance.js';
 import { handleContentPublishing } from '../../_lib/content-publishing.js';
 import { handleStudyLibraryStudio } from '../../_lib/study-library-studio.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
+import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
 import { parsePaging, likeEscape } from '../../_lib/validate.js';
 import { handlePosts, POST_TYPES } from './_posts.js';
 import { handleMockTests, handleQuestion } from './_mock.js';
@@ -142,6 +143,9 @@ export async function handleAdminApi(request, env) {
         if (!sub) return await handleSchemesAdmin(request, env, actor, id);
         break;
       case 'schemes-directory':
+        if (id === 'tree' || id === 'folders' || id === 'items' || id === 'suggestions') {
+          return await handleSchemesDirectoryStudio(request, env, actor, id, sub, extra);
+        }
         if (!sub) return await handleSchemesDirectoryTreeAdmin(request, env, actor, id);
         break;
       case 'study-library':

@@ -79,6 +79,16 @@
     ['jobs-directory/career-employability', 'Career Development & Employability'],
     ['jobs-directory/institutions-portals', 'Institutions, Official Portals & Verification']
   ];
+  var SCHEMES_SUITE = [
+    ['schemes-directory/govt-public-welfare', 'Government & Public Welfare'],
+    ['schemes-directory/education-employment', 'Education, Employment & Talent'],
+    ['schemes-directory/agriculture-livelihoods', 'Agriculture, Business & Livelihoods'],
+    ['schemes-directory/health-housing-protection', 'Health, Housing & Financial Protection'],
+    ['schemes-directory/communities-beneficiaries', 'Communities & Special Beneficiaries'],
+    ['schemes-directory/private-global-innovation', 'Private, Global & Innovation Support'],
+    ['schemes-directory/find-schemes-eligibility', 'Find Schemes & Check Eligibility'],
+    ['schemes-directory/citizen-services-verification', 'Citizen Services & Verification']
+  ];
 
   var ROUTES = {
     'module-01-001': ['dashboard', OPS],
@@ -211,7 +221,15 @@
     'module-jc-005': ['jobs-directory/scholarships-support', JOBS_SUITE],
     'module-jc-006': ['jobs-directory/international-overseas', JOBS_SUITE],
     'module-jc-007': ['jobs-directory/career-employability', JOBS_SUITE],
-    'module-jc-008': ['jobs-directory/institutions-portals', JOBS_SUITE]
+    'module-jc-008': ['jobs-directory/institutions-portals', JOBS_SUITE],
+    'module-sb-001': ['schemes-directory/govt-public-welfare', SCHEMES_SUITE],
+    'module-sb-002': ['schemes-directory/education-employment', SCHEMES_SUITE],
+    'module-sb-003': ['schemes-directory/agriculture-livelihoods', SCHEMES_SUITE],
+    'module-sb-004': ['schemes-directory/health-housing-protection', SCHEMES_SUITE],
+    'module-sb-005': ['schemes-directory/communities-beneficiaries', SCHEMES_SUITE],
+    'module-sb-006': ['schemes-directory/private-global-innovation', SCHEMES_SUITE],
+    'module-sb-007': ['schemes-directory/find-schemes-eligibility', SCHEMES_SUITE],
+    'module-sb-008': ['schemes-directory/citizen-services-verification', SCHEMES_SUITE]
   };
 
   var FOLDER_FALLBACKS = {
@@ -235,7 +253,7 @@
     'folder-18': ['banner', SITE],
     'folder-19': ['registry'],
     'folder-jobs-careers': ['jobs-directory/jobs-recruitment', JOBS_SUITE],
-    'folder-schemes-benefits': ['schemes', CONTENT],
+    'folder-schemes-benefits': ['schemes-directory/govt-public-welfare', SCHEMES_SUITE],
     'folder-study-library': ['study-library/early-childhood', STUDY_SUITE],
     'folder-community': ['feedback', [['feedback', 'Community Feedback'], ['users', 'Candidate Accounts']]],
     'folder-about': ['about-directory', SITE]
@@ -371,6 +389,10 @@
       window.CSOCms.mount(host, r[0], null);
     } else if (r[1] === JOBS_SUITE) {
       renderSuiteStepper(JOBS_SUITE, 'module-jc-', 'folder-jobs-careers', folderId, moduleId, r[0], root, host, 'Jobs & Careers Directory Module Stepper');
+      root.appendChild(host);
+      window.CSOCms.mount(host, r[0], null);
+    } else if (r[1] === SCHEMES_SUITE) {
+      renderSuiteStepper(SCHEMES_SUITE, 'module-sb-', 'folder-schemes-benefits', folderId, moduleId, r[0], root, host, 'Schemes & Benefits Directory Module Stepper');
       root.appendChild(host);
       window.CSOCms.mount(host, r[0], null);
     } else {
