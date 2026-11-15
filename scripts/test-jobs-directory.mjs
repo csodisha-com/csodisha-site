@@ -7,6 +7,7 @@ import {
   enrichJobsRecruitmentCategory01,
   enrichCareerExplorerCategory02,
   enrichEligibilityExplorerCategory03,
+  enrichCoursesExamsCategory04,
   handleJobsDirectoryStudio,
   handlePublicJobsOverviewApi,
   handlePublicJobsItemsApi,
@@ -750,6 +751,117 @@ async function main() {
   const ssrEeHtml = await ssrEe.text();
   assert.ok(ssrEeHtml.includes('Qualification &amp; Odia Rule') && ssrEeHtml.includes('BSE Odisha'));
   assert.ok(!/\sstyle\s*=/i.test(ssrEeHtml), 'SSR eligibility guide page must have zero inline style="" attributes');
+
+  // 15. Category #04 (v71) Exhaustive Enrichment across all 35 subcategories + 14 Course/Exam Handbooks + Admin Sync + SSR
+  const cat04Raw = new DatabaseSync(':memory:');
+  cat04Raw.exec(`
+    CREATE TABLE audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, actor_user_id TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, metadata_json TEXT, ip_address TEXT, created_at INTEGER NOT NULL DEFAULT (unixepoch()));
+    CREATE TABLE jobs_directory_nodes (id INTEGER PRIMARY KEY, parent_id INTEGER, level INTEGER, code TEXT, title TEXT, title_or TEXT, description TEXT, description_or TEXT, group_slug TEXT, url TEXT, exam_slug TEXT, notes_json TEXT, tags TEXT, sort_order INTEGER, is_active INTEGER);
+  `);
+  const cxSection = dirJson.sections[3];
+  let cxSeq = 1;
+  const insCxNode = cat04Raw.prepare('INSERT INTO jobs_directory_nodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)');
+  insCxNode.run(1, null, 0, '04', cxSection.title, '', 'Courses, Entrance Exams & Certifications', '', 'courses-exams', '', '', '[]', '[]', 1);
+  function insertCxChildren(children, parentId, level) {
+    for (let i = 0; i < (children || []).length; i++) {
+      const ch = children[i];
+      cxSeq += 1;
+      const myId = cxSeq;
+      insCxNode.run(myId, parentId, level, ch.number || '', ch.title, '', '', '', 'courses-exams', '', '', '[]', '[]', i + 1);
+      insertCxChildren(ch.children, myId, level + 1);
+    }
+  }
+  insertCxChildren(cxSection.children, 1, 1);
+  assert.equal(cxSeq - 1, 35, 'directory.json should contain all 35 subcategories under Courses, Entrance Exams & Certifications');
+
+  function wrapCat04(sql, args = []) {
+    return {
+      async first() { return cat04Raw.prepare(sql).get(...args) || null; },
+      async all() { return { results: cat04Raw.prepare(sql).all(...args) }; },
+      async run() { const info = cat04Raw.prepare(sql).run(...args); return { success: true, meta: { changes: info.changes } }; }
+    };
+  }
+  const cat04Env = {
+    DB: {
+      prepare(sql) { return { bind(...a) { return wrapCat04(sql, a); }, ...wrapCat04(sql, []) }; },
+      async batch(stmts) { const out = []; for (const s of stmts) out.push(await s.run()); return out; }
+    }
+  };
+
+  await ensureJobsDirectoryStudioSchema(cat04Env.DB);
+
+  const cxTreeRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/tree?domain=courses-exams'),
+    cat04Env,
+    admin,
+    'tree'
+  );
+  assert.equal(cxTreeRes.status, 200);
+  const cxTreeData = await cxTreeRes.json();
+  assert.ok(cxTreeData.folders.length >= 35, `Expected >= 35 courses-exams folders, got ${cxTreeData.folders.length}`);
+  for (const f of cxTreeData.folders) {
+    assert.ok((f.description_en || '').length >= 160, `Courses folder "${f.title}" description_en < 160 chars`);
+    assert.ok((f.description_or || '').length >= 160, `Courses folder "${f.title}" description_or < 160 chars`);
+    assert.ok(Boolean(f.seo_title), `Courses folder "${f.title}" missing seo_title`);
+    assert.ok(Boolean(f.seo_description), `Courses folder "${f.title}" missing seo_description`);
+    assert.ok(Boolean(f.featured_badge), `Courses folder "${f.title}" missing featured_badge`);
+    assert.ok(Boolean(f.verified_at), `Courses folder "${f.title}" missing verified_at`);
+  }
+
+  const cxItemsRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/items?domain=courses-exams'),
+    cat04Env,
+    admin,
+    'items'
+  );
+  assert.equal(cxItemsRes.status, 200);
+  const cxItemsData = await cxItemsRes.json();
+  const cxGuides = cxItemsData.items.filter(it => it.item_type === 'course-exam' && Boolean(it.exam_code && it.qualification_odia_rule));
+  assert.ok(cxGuides.length >= 14, `Expected >= 14 course-exam guides, got ${cxGuides.length}`);
+  for (const g of cxGuides) {
+    assert.ok(Boolean(g.title_or), `Course/Exam guide "${g.title}" missing title_or`);
+    assert.ok(Boolean(g.selection_stages), `Course/Exam guide "${g.title}" missing selection_stages`);
+    assert.ok(Boolean(g.documents_checklist), `Course/Exam guide "${g.title}" missing documents_checklist`);
+    assert.ok(Boolean(g.application_steps), `Course/Exam guide "${g.title}" missing application_steps`);
+    assert.ok(Boolean(g.official_portal_url), `Course/Exam guide "${g.title}" missing official_portal_url`);
+    assert.ok(Boolean(g.verified_at), `Course/Exam guide "${g.title}" missing verified_at`);
+  }
+
+  // Verify Admin two-way sync PUT & custom edit preservation
+  const sampleCx = cxGuides.find(g => g.slug === 'ojee-counselling-document-checklist') || cxGuides[0];
+  const customCxRule = 'Custom Admin OJEE TFW & Counselling Qualification Rule Verified';
+  const putCxRes = await handleJobsDirectoryStudio(
+    makeReq('PUT', `https://csodisha.com/api/admin/jobs-directory/items/${sampleCx.id}`, {
+      qualification_odia_rule: customCxRule,
+      exam_code: 'OJEE-CUSTOM-2026'
+    }),
+    cat04Env,
+    admin,
+    'items',
+    sampleCx.id
+  );
+  assert.equal(putCxRes.status, 200);
+  await enrichCoursesExamsCategory04(cat04Env.DB, new Date().toISOString());
+  const cxItemAfter = await (await handleJobsDirectoryStudio(
+    makeReq('GET', `https://csodisha.com/api/admin/jobs-directory/items/${sampleCx.id}`),
+    cat04Env,
+    admin,
+    'items',
+    sampleCx.id
+  )).json();
+  assert.equal(cxItemAfter.item.qualification_odia_rule, customCxRule, 'Custom admin edit in Category #04 must not be overwritten');
+  assert.equal(cxItemAfter.item.exam_code, 'OJEE-CUSTOM-2026');
+
+  // Verify SSR Course/Exam guide renders cleanly with zero inline style="" attributes
+  const ssrCx = await handlePublicJobsRoute(
+    makeReq('GET', 'https://csodisha.com/jobs/item/ojee-counselling-document-checklist/'),
+    cat04Env,
+    new URL('https://csodisha.com/jobs/item/ojee-counselling-document-checklist/')
+  );
+  assert.equal(ssrCx.status, 200);
+  const ssrCxHtml = await ssrCx.text();
+  assert.ok(ssrCxHtml.includes('Qualification &amp; Odia Rule') && ssrCxHtml.includes('OJEE'));
+  assert.ok(!/\sstyle\s*=/i.test(ssrCxHtml), 'SSR course/exam guide page must have zero inline style="" attributes');
 
   console.log('ALL JOBS DIRECTORY STUDIO TESTS PASSED');
 }
