@@ -8630,31 +8630,7 @@
      FOLDER 04: CONTENT & PUBLISHING (module-04-001..014)
      ========================================================================= */
   function renderFolder04(moduleId, root, actions) {
-    if (moduleId === 'module-04-009') {
-      addHeaderPill(actions, '● Live Editorial Calendar');
-      var shell2 = el('div', { class: 'cso-mod-shell' });
-      var grid = el('div', { class: 'cso-cal-grid' });
-      renderBanner(shell2, 'Editorial & Deadline Calendar', 'Upcoming scheduled posts and recruitment deadlines from D1.');
-      shell2.appendChild(grid);
-      root.appendChild(shell2);
-      Promise.all([api('GET', 'current-affairs?limit=50'), api('GET', 'jobs?limit=50')]).then(function (res) {
-        var events = [];
-        (res[0].items || []).forEach(function (x) { events.push({ date: x.published_at || x.updated_at, title: x.title, type: 'Current Affairs', status: x.status }); });
-        (res[1].items || []).forEach(function (x) { events.push({ date: x.deadline || x.published_at || x.updated_at, title: x.title, type: 'Job Deadline', status: x.status }); });
-        events.sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
-        if (!events.length) { grid.appendChild(el('p', { class: 'cso-mod-muted', text: 'No scheduled or dated items in D1 yet.' })); return; }
-        events.slice(0, 24).forEach(function (ev) {
-          grid.appendChild(el('div', { class: 'cso-cal-cell' }, [
-            badge(ev.type, ev.type === 'Job Deadline' ? 'warn' : 'info'),
-            el('strong', { text: ev.title }),
-            el('span', { class: 'cso-mod-muted', text: (ev.date || 'Unscheduled').slice(0, 16) })
-          ]));
-        });
-      }).catch(function (e) { grid.appendChild(el('p', { class: 'cso-mod-muted', text: e.message })); });
-      return true;
-    }
-
-    if (moduleId === 'module-04-010' || moduleId === 'module-04-011' || moduleId === 'module-04-012') {
+    if (moduleId === 'module-04-012') {
       renderPendingApprovals(root, actions);
       return true;
     }

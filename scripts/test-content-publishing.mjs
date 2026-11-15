@@ -427,4 +427,159 @@ assert.ok(!mergeLive.items.some(t => t.slug === 'opsc-oas'));
 assert.ok(mergeLive.items.some(t => t.slug === 'opsc'));
 assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'content.tag.merge'`).first()).n >= 1);
 
-console.log('CONTENT & PUBLISHING SUITE MODULES #1-#8 TESTS PASSED');
+// ============================================================================
+// 11. Module #9: Editorial Calendar Grouping & Date Slotting
+// ============================================================================
+const slotRes = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/calendar/slot', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ post_id: draftForFeat.item.id, target_date: '2026-12-15' })
+  }),
+  env, editorActor, 'calendar', 'slot'
+)).json();
+assert.equal(slotRes.item.workflow_stage, 'scheduled');
+assert.ok(slotRes.item.scheduled_for.startsWith('2026-12-15'));
+
+const calGet = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/calendar?month=2026-12&type=all', { method: 'GET' }),
+  env, adminActor, 'calendar'
+)).json();
+assert.equal(calGet.kpis.scheduled_in_month, 1);
+assert.ok(Array.isArray(calGet.days['2026-12-15']) && calGet.days['2026-12-15'].length === 1);
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'content.calendar.slot'`).first()).n >= 1);
+
+// ============================================================================
+// 12. Module #10: Publishing Workflow Policy Gates & Stage Transitions
+// ============================================================================
+const wfPol = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/workflow/policy', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ min_word_count: 10, require_seo_meta: true, require_reviewer_signoff: true })
+  }),
+  env, adminActor, 'workflow', 'policy'
+)).json();
+assert.equal(wfPol.policy.min_word_count, 10);
+assert.equal(wfPol.policy.require_reviewer_signoff, true);
+
+const wfDraft = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: 'Workflow Gate Test Article',
+      post_type: 'article',
+      workflow_stage: 'draft',
+      body_md: 'One two three four five six seven eight nine ten eleven twelve words here.',
+      seo_title: 'Workflow Gate Test SEO Title',
+      seo_description: 'Workflow Gate Test SEO Description.'
+    })
+  }),
+  env, editorActor, 'posts'
+)).json();
+
+// Editor cannot publish directly when require_reviewer_signoff = true
+await assert.rejects(
+  () => handleContentPublishing(
+    new Request('https://csodisha.com/api/admin/content/workflow/transition', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post_id: wfDraft.item.id, action: 'publish' })
+    }),
+    env, editorActor, 'workflow', 'transition'
+  ),
+  (e) => e.code === 'REVIEWER_SIGNOFF_REQUIRED'
+);
+
+// Submit -> Reviewer Approve -> Editor Publish
+await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/workflow/transition', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ post_id: wfDraft.item.id, action: 'submit_for_review', review_notes: 'Ready for review' })
+  }),
+  env, editorActor, 'workflow', 'transition'
+);
+
+const reviewerActor = { userId: 'u-rev', email: 'reviewer@csodisha.com', role: 'reviewer' };
+const wfApproved = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/workflow/transition', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ post_id: wfDraft.item.id, action: 'approve', review_notes: 'Looks accurate' })
+  }),
+  env, reviewerActor, 'workflow', 'transition'
+)).json();
+assert.equal(wfApproved.item.workflow_stage, 'approved');
+
+const wfPublished = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/workflow/transition', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ post_id: wfDraft.item.id, action: 'publish' })
+  }),
+  env, editorActor, 'workflow', 'transition'
+)).json();
+assert.equal(wfPublished.item.status, 'published');
+
+// ============================================================================
+// 13. Module #11: Scheduled Content Due-Queue Dry-Run, Dispatch & Reschedule
+// ============================================================================
+const duePost = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: 'Past Due Scheduled Post',
+      post_type: 'news',
+      workflow_stage: 'scheduled',
+      scheduled_for: '2025-01-01T08:00:00Z',
+      seo_title: 'Past Due Scheduled Post SEO',
+      seo_description: 'Ready for immediate scheduled dispatch.'
+    })
+  }),
+  env, adminActor, 'posts'
+)).json();
+
+const schedGet = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/scheduled', { method: 'GET' }),
+  env, adminActor, 'scheduled'
+)).json();
+assert.ok(schedGet.due_queue.some(i => i.id === duePost.item.id));
+assert.ok(schedGet.upcoming_queue.some(i => i.id === draftForFeat.item.id));
+
+const schedDry = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/scheduled/dispatch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dry_run: true })
+  }),
+  env, adminActor, 'scheduled', 'dispatch'
+)).json();
+assert.equal(schedDry.dry_run, true);
+assert.ok(schedDry.would_publish_count >= 1);
+
+const schedLive = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/scheduled/dispatch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dry_run: false })
+  }),
+  env, adminActor, 'scheduled', 'dispatch'
+)).json();
+assert.equal(schedLive.dry_run, false);
+assert.ok(schedLive.published.some(p => p.id === duePost.item.id));
+
+const resched = await (await handleContentPublishing(
+  new Request(`https://csodisha.com/api/admin/content/scheduled/${draftForFeat.item.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'unschedule' })
+  }),
+  env, editorActor, 'scheduled', draftForFeat.item.id
+)).json();
+assert.equal(resched.item.workflow_stage, 'draft');
+assert.equal(resched.item.scheduled_for, null);
+
+console.log('CONTENT & PUBLISHING SUITE MODULES #1-#11 TESTS PASSED');

@@ -155,3 +155,16 @@
 .cso-cnt-seo-title{font-size:15px;font-weight:700;color:var(--brand);margin-bottom:2px}
 .cso-cnt-seo-desc{font-size:12px;color:var(--muted)}
 .cso-cnt-pager{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.cso-cnt-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cso-cnt-cal-head{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);padding:4px 6px;text-align:center}
+.cso-cnt-cal-cell{min-height:92px;border:1px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);display:flex;flex-direction:column;gap:4px}
+.cso-cnt-cal-cell.is-empty{opacity:.4}
+.cso-cnt-cal-day{font-size:11px;font-weight:700;color:var(--muted)}
+.cso-cnt-cal-pill{font-size:11px;padding:3px 6px;border-radius:6px;background:var(--card);border:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cso-cnt-cal-pill.is-pub{border-left:3px solid var(--ok)}
+.cso-cnt-cal-pill.is-sched{border-left:3px solid var(--brand)}
+.cso-cnt-cal-pill.is-draft{border-left:3px solid var(--warn)}
+.cso-cnt-pipe-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.cso-cnt-pipe-col{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);display:flex;flex-direction:column;gap:8px}
+.cso-cnt-pipe-card{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--card);display:flex;flex-direction:column;gap:6px}
+@media(max-width:780px){.cso-cnt-cal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

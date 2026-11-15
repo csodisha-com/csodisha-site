@@ -12,6 +12,8 @@ export const EDITORIAL_POST_TYPES = ['article', 'news', 'current_affairs', 'anno
 export const WORKFLOW_STAGES = ['draft', 'in_review', 'approved', 'published', 'scheduled', 'archived'];
 export const NOTICE_PRIORITIES = ['normal', 'urgent', 'deadline'];
 export const TAG_REGISTRY_KEY = 'content_tag_registry';
+export const WORKFLOW_POLICY_KEY = 'content_workflow_policy';
+export const LAST_SCHEDULED_DISPATCH_KEY = 'ops_last_scheduled_dispatch';
 
 const REQUIRED_POST_COLUMNS = [
   ['post_type', 'TEXT'],
@@ -30,6 +32,9 @@ const REQUIRED_POST_COLUMNS = [
   ['notice_expires_at', 'TEXT'],
   ['notice_cta_url', 'TEXT'],
   ['notice_cta_label', 'TEXT'],
+  ['review_notes', 'TEXT'],
+  ['reviewed_by', 'TEXT'],
+  ['reviewed_at', 'TEXT'],
   ['updated_by', 'TEXT'],
   ['updated_at', 'TEXT']
 ];
@@ -259,6 +264,9 @@ function normalizeRow(row) {
     notice_cta_url: row.notice_cta_url || '',
     notice_cta_label: row.notice_cta_label || '',
     is_expired: isExpired,
+    review_notes: row.review_notes || '',
+    reviewed_by: row.reviewed_by || null,
+    reviewed_at: row.reviewed_at || null,
     reading_time_minutes: readingMinutes,
     public_url: resolvePublicUrl(postType, row.slug),
     created_by: row.created_by || null,
@@ -1137,10 +1145,527 @@ export async function deleteContentTag(env, rawSlug, actor) {
 }
 
 // ============================================================================
-// Admin Router Dispatcher for /api/admin/content/{posts|announcements|featured|categories|tags}
+// Module #9: Editorial Calendar
+// ============================================================================
+function currentIstMonth() {
+  return new Date(Date.now() + 19800000).toISOString().slice(0, 7);
+}
+
+export async function getEditorialCalendar(env, query = {}) {
+  await ensureContentPublishingSchema(env.DB);
+  const rawMonth = String(query.month || currentIstMonth()).trim();
+  if (!/^\d{4}-\d{2}$/.test(rawMonth)) {
+    throw new HttpError(400, 'INVALID_MONTH', 'month must be in YYYY-MM format');
+  }
+  const typeParam = String(query.type || 'all').trim().toLowerCase();
+  const typeExpr = effectivePostTypeExpr();
+
+  const where = [`deleted_at IS NULL`, `${typeExpr} IN ('article', 'news', 'current_affairs', 'announcement')`];
+  const bind = [];
+  if (typeParam !== 'all' && EDITORIAL_POST_TYPES.includes(typeParam)) {
+    where.push(`${typeExpr} = ?`);
+    bind.push(typeParam);
+  }
+
+  const res = await env.DB.prepare(
+    `SELECT * FROM posts WHERE ${where.join(' AND ')} ORDER BY COALESCE(scheduled_for, published_at, updated_at, created_at) ASC LIMIT 300`
+  ).bind(...bind).all();
+
+  const items = (res.results || []).map(normalizeRow);
+  const days = {};
+  const draftsBacklog = [];
+  let totalInMonth = 0;
+  let publishedInMonth = 0;
+  let scheduledInMonth = 0;
+
+  for (const it of items) {
+    if ((it.workflow_stage === 'draft' || it.status === 'draft') && !it.scheduled_for) {
+      if (draftsBacklog.length < 30) draftsBacklog.push(it);
+    }
+    const effDate = String(it.scheduled_for || it.published_at || it.updated_at || it.created_at || '');
+    if (effDate.slice(0, 7) === rawMonth) {
+      const dayKey = effDate.slice(0, 10);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) {
+        if (!days[dayKey]) days[dayKey] = [];
+        days[dayKey].push(it);
+        totalInMonth++;
+        if (it.status === 'published') publishedInMonth++;
+        else if (it.workflow_stage === 'scheduled' || it.status === 'scheduled') scheduledInMonth++;
+      }
+    }
+  }
+
+  return {
+    ok: true,
+    month: rawMonth,
+    type: typeParam,
+    kpis: {
+      total_in_month: totalInMonth,
+      published_in_month: publishedInMonth,
+      scheduled_in_month: scheduledInMonth,
+      drafts_backlog: draftsBacklog.length
+    },
+    days,
+    drafts_backlog: draftsBacklog
+  };
+}
+
+export async function slotCalendarPost(env, body = {}, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  const postId = String(body.post_id || body.id || '').trim();
+  if (!postId) throw new HttpError(400, 'POST_ID_REQUIRED', 'post_id is required');
+
+  const existing = await env.DB.prepare(`SELECT * FROM posts WHERE id = ? AND deleted_at IS NULL`).bind(postId).first();
+  if (!existing) throw new HttpError(404, 'NOT_FOUND', `Post "${postId}" not found`);
+
+  const rawDate = String(body.target_date || body.scheduled_for || '').trim();
+  if (!rawDate || Number.isNaN(Date.parse(rawDate))) {
+    throw new HttpError(400, 'INVALID_DATE', 'Provide a valid ISO-8601 target_date (YYYY-MM-DD or timestamp)');
+  }
+  const isoSlot = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? `${rawDate}T09:00:00Z` : new Date(rawDate).toISOString();
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  const nowIso = new Date().toISOString();
+
+  const nextStatus = existing.status === 'published' ? 'published' : 'scheduled';
+  const nextStage = existing.status === 'published' ? 'published' : 'scheduled';
+  const nextPublishedAt = existing.status === 'published' ? (existing.published_at || isoSlot) : null;
+
+  await env.DB.prepare(
+    `UPDATE posts SET status = ?, workflow_stage = ?, scheduled_for = ?, published_at = ?, updated_by = ?, updated_at = ? WHERE id = ?`
+  ).bind(nextStatus, nextStage, isoSlot, nextPublishedAt, actorEmail, nowIso, postId).run();
+
+  const row = await env.DB.prepare(`SELECT * FROM posts WHERE id = ?`).bind(postId).first();
+  return { ok: true, item: normalizeRow(row) };
+}
+
+// ============================================================================
+// Module #10: Publishing Workflow
+// ============================================================================
+export function defaultWorkflowPolicy() {
+  return {
+    require_seo_meta: true,
+    min_word_count: 20,
+    require_reviewer_signoff: false,
+    notify_on_submit: true
+  };
+}
+
+function normalizeWorkflowPolicy(raw) {
+  const def = defaultWorkflowPolicy();
+  if (!raw || typeof raw !== 'object') return def;
+  const minWords = Number(raw.min_word_count);
+  return {
+    require_seo_meta: raw.require_seo_meta !== undefined ? Boolean(raw.require_seo_meta) : def.require_seo_meta,
+    min_word_count: Number.isFinite(minWords) ? Math.max(0, Math.min(2000, Math.round(minWords))) : def.min_word_count,
+    require_reviewer_signoff: raw.require_reviewer_signoff !== undefined ? Boolean(raw.require_reviewer_signoff) : def.require_reviewer_signoff,
+    notify_on_submit: raw.notify_on_submit !== undefined ? Boolean(raw.notify_on_submit) : def.notify_on_submit
+  };
+}
+
+async function readWorkflowPolicy(db) {
+  await ensureSiteSettingsTable(db);
+  try {
+    const row = await db.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(WORKFLOW_POLICY_KEY).first();
+    if (row && row.value_json) return normalizeWorkflowPolicy(JSON.parse(row.value_json));
+  } catch {}
+  return defaultWorkflowPolicy();
+}
+
+function countWordsForRow(row) {
+  const txt = `${row.summary || ''} ${row.body_md || ''}`.trim();
+  return txt ? txt.split(/\s+/).filter(Boolean).length : 0;
+}
+
+export async function getWorkflowState(env) {
+  await ensureContentPublishingSchema(env.DB);
+  const policy = await readWorkflowPolicy(env.DB);
+  const typeExpr = effectivePostTypeExpr();
+  const res = await env.DB.prepare(
+    `SELECT * FROM posts
+     WHERE deleted_at IS NULL AND ${typeExpr} IN ('article', 'news', 'current_affairs', 'announcement')
+     ORDER BY COALESCE(updated_at, created_at) DESC
+     LIMIT 120`
+  ).all();
+
+  const stages = { draft: [], in_review: [], approved: [], published: [] };
+  let passCount = 0;
+  let evaluatedCount = 0;
+
+  for (const r of (res.results || [])) {
+    const item = normalizeRow(r);
+    const wc = countWordsForRow(r);
+    const meetsWordCount = wc >= policy.min_word_count;
+    const hasCategory = Boolean(item.category || item.category_slug);
+    const passesSeo = !policy.require_seo_meta || item.has_seo_meta;
+    const gatePassed = meetsWordCount && passesSeo;
+    const enriched = {
+      ...item,
+      word_count: wc,
+      meets_word_count: meetsWordCount,
+      has_category: hasCategory,
+      gate_passed: gatePassed
+    };
+    const st = item.workflow_stage || item.status || 'draft';
+    if (st === 'archived') continue;
+    evaluatedCount++;
+    if (gatePassed) passCount++;
+    if (st === 'in_review') stages.in_review.push(enriched);
+    else if (st === 'approved') stages.approved.push(enriched);
+    else if (st === 'published' || item.status === 'published') stages.published.push(enriched);
+    else stages.draft.push(enriched);
+  }
+
+  return {
+    ok: true,
+    policy,
+    kpis: {
+      drafts_count: stages.draft.length,
+      in_review_count: stages.in_review.length,
+      approved_count: stages.approved.length,
+      published_count: stages.published.length,
+      gate_pass_rate: evaluatedCount ? Math.round((passCount / evaluatedCount) * 100) : 100
+    },
+    stages
+  };
+}
+
+export async function saveWorkflowPolicy(env, body = {}, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  if (body.min_word_count !== undefined) {
+    const w = Number(body.min_word_count);
+    if (!Number.isInteger(w) || w < 0 || w > 2000) {
+      throw new HttpError(400, 'INVALID_WORD_COUNT', 'min_word_count must be an integer between 0 and 2000');
+    }
+  }
+  const current = await readWorkflowPolicy(env.DB);
+  const next = normalizeWorkflowPolicy({ ...current, ...body });
+  const nowIso = new Date().toISOString();
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  await env.DB.prepare(
+    `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+     VALUES (?, ?, ?, ?)
+     ON CONFLICT(key) DO UPDATE SET
+       value_json = excluded.value_json,
+       updated_by = excluded.updated_by,
+       updated_at = excluded.updated_at`
+  ).bind(WORKFLOW_POLICY_KEY, JSON.stringify(next), actorEmail, nowIso).run();
+
+  return await getWorkflowState(env);
+}
+
+export async function transitionWorkflowPost(env, body = {}, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  const postId = String(body.post_id || body.id || '').trim();
+  const action = String(body.action || '').trim().toLowerCase();
+  const reviewNotes = cleanStr(body.review_notes, 500) || '';
+
+  const ACTION_MAP = {
+    submit_for_review: 'in_review',
+    approve: 'approved',
+    request_changes: 'draft',
+    return_to_draft: 'draft',
+    publish: 'published'
+  };
+  if (!postId || !ACTION_MAP[action]) {
+    throw new HttpError(400, 'INVALID_TRANSITION', 'Provide post_id and valid action (submit_for_review, approve, request_changes, publish, return_to_draft)');
+  }
+
+  const existing = await env.DB.prepare(`SELECT * FROM posts WHERE id = ? AND deleted_at IS NULL`).bind(postId).first();
+  if (!existing) throw new HttpError(404, 'NOT_FOUND', `Post "${postId}" not found`);
+
+  const policy = await readWorkflowPolicy(env.DB);
+  const nextStage = ACTION_MAP[action];
+  const existingStage = existing.workflow_stage || existing.status || 'draft';
+
+  if (action === 'approve' && policy.require_reviewer_signoff && actor.role !== 'admin' && actor.role !== 'reviewer') {
+    throw new HttpError(403, 'REVIEWER_ROLE_REQUIRED', 'Only Reviewers or Super Administrators can approve submissions.');
+  }
+
+  if (nextStage === 'published') {
+    const wc = countWordsForRow(existing);
+    if (wc < policy.min_word_count) {
+      throw new HttpError(
+        400,
+        'MIN_WORD_COUNT_NOT_MET',
+        `Post has ${wc} word(s); workflow policy requires at least ${policy.min_word_count} words before publishing.`
+      );
+    }
+    const hasSeo = Boolean(String(existing.seo_title || '').trim() && String(existing.seo_description || '').trim());
+    if (policy.require_seo_meta && !hasSeo) {
+      throw new HttpError(403, 'SEO_META_REQUIRED', 'Workflow Policy: SEO Title and SEO Description are required before publishing.');
+    }
+    if (policy.require_reviewer_signoff && actor.role !== 'admin' && existingStage !== 'approved' && existingStage !== 'published') {
+      throw new HttpError(403, 'REVIEWER_SIGNOFF_REQUIRED', 'Workflow Policy: Reviewer approval is required before publishing.');
+    }
+    await enforcePublishGuards(env, actor, 'published', existing, existing);
+  }
+
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  const revision = await snapshotPostRevision(env.DB, existing, actorEmail, `workflow:${action}`);
+  const nextStatus = mapWorkflowToDbStatus(nextStage);
+  const nowIso = new Date().toISOString();
+  const publishedAt = nextStatus === 'published' ? (existing.published_at || nowIso) : existing.published_at;
+  const reviewedBy = (action === 'approve' || action === 'request_changes') ? actorEmail : existing.reviewed_by;
+  const reviewedAt = (action === 'approve' || action === 'request_changes') ? nowIso : existing.reviewed_at;
+  const notesToSave = reviewNotes || existing.review_notes || '';
+
+  await env.DB.prepare(
+    `UPDATE posts SET
+       status = ?, workflow_stage = ?, published_at = ?,
+       review_notes = ?, reviewed_by = ?, reviewed_at = ?,
+       updated_by = ?, updated_at = ?
+     WHERE id = ?`
+  ).bind(nextStatus, nextStage, publishedAt, notesToSave, reviewedBy, reviewedAt, actorEmail, nowIso, postId).run();
+
+  const row = await env.DB.prepare(`SELECT * FROM posts WHERE id = ?`).bind(postId).first();
+  return { ok: true, revision, item: normalizeRow(row) };
+}
+
+// ============================================================================
+// Module #11: Scheduled Content
+// ============================================================================
+export async function getScheduledContentState(env) {
+  await ensureContentPublishingSchema(env.DB);
+  await ensureSiteSettingsTable(env.DB);
+  const typeExpr = effectivePostTypeExpr();
+  const [res, lastRow] = await Promise.all([
+    env.DB.prepare(
+      `SELECT * FROM posts
+       WHERE deleted_at IS NULL
+         AND ${typeExpr} IN ('article', 'news', 'current_affairs', 'announcement')
+         AND (status = 'scheduled' OR workflow_stage = 'scheduled')
+       ORDER BY COALESCE(scheduled_for, created_at) ASC
+       LIMIT 100`
+    ).all(),
+    env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(LAST_SCHEDULED_DISPATCH_KEY).first()
+  ]);
+
+  const nowMs = Date.now();
+  const dueQueue = [];
+  const upcomingQueue = [];
+
+  for (const r of (res.results || [])) {
+    const it = normalizeRow(r);
+    const ts = it.scheduled_for ? Date.parse(it.scheduled_for) : nowMs;
+    const isDue = Number.isNaN(ts) || ts <= nowMs;
+    const entry = { ...it, is_due: isDue };
+    if (isDue) dueQueue.push(entry);
+    else upcomingQueue.push(entry);
+  }
+
+  let lastDispatch = null;
+  if (lastRow && lastRow.value_json) {
+    try { lastDispatch = JSON.parse(lastRow.value_json); } catch {}
+  }
+
+  return {
+    ok: true,
+    kpis: {
+      total_scheduled: dueQueue.length + upcomingQueue.length,
+      due_count: dueQueue.length,
+      upcoming_count: upcomingQueue.length,
+      next_go_live: upcomingQueue[0] ? upcomingQueue[0].scheduled_for : null,
+      last_dispatch_at: lastDispatch ? lastDispatch.dispatched_at : null
+    },
+    due_queue: dueQueue,
+    upcoming_queue: upcomingQueue,
+    last_dispatch: lastDispatch
+  };
+}
+
+export async function dispatchScheduledContent(env, body = {}, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  const dryRun = body.dry_run !== false;
+  const targetPostId = body.post_id ? String(body.post_id).trim() : null;
+  const state = await getScheduledContentState(env);
+
+  let candidates = [];
+  if (targetPostId) {
+    candidates = [...state.due_queue, ...state.upcoming_queue].filter(i => i.id === targetPostId);
+    if (!candidates.length) {
+      throw new HttpError(404, 'NOT_FOUND', `Scheduled post "${targetPostId}" not found`);
+    }
+  } else {
+    candidates = state.due_queue;
+  }
+
+  if (dryRun) {
+    return {
+      ok: true,
+      dry_run: true,
+      would_publish_count: candidates.length,
+      candidates
+    };
+  }
+
+  const guard = await getNewsPostsGuard(env);
+  const nowIso = new Date().toISOString();
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  const published = [];
+  const skipped = [];
+
+  for (const item of candidates) {
+    if (guard.require_seo_meta_before_publish && !item.has_seo_meta) {
+      if (targetPostId) {
+        throw new HttpError(403, 'SEO_META_REQUIRED', 'Security Engine Guard: SEO Title and SEO Description are required before publishing.');
+      }
+      skipped.push({ id: item.id, title: item.title, reason: 'SEO_META_REQUIRED' });
+      continue;
+    }
+    const rawRow = await env.DB.prepare(`SELECT * FROM posts WHERE id = ?`).bind(item.id).first();
+    await snapshotPostRevision(env.DB, rawRow, actorEmail, 'scheduled_dispatch');
+    await env.DB.prepare(
+      `UPDATE posts SET status = 'published', workflow_stage = 'published', published_at = ?, updated_by = ?, updated_at = ? WHERE id = ?`
+    ).bind(nowIso, actorEmail, nowIso, item.id).run();
+    published.push({ id: item.id, title: item.title });
+  }
+
+  await ensureSiteSettingsTable(env.DB);
+  const dispatchMeta = {
+    dispatched_at: nowIso,
+    dispatched_by: actorEmail,
+    published_count: published.length,
+    skipped_count: skipped.length
+  };
+  await env.DB.prepare(
+    `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+     VALUES (?, ?, ?, ?)
+     ON CONFLICT(key) DO UPDATE SET
+       value_json = excluded.value_json,
+       updated_by = excluded.updated_by,
+       updated_at = excluded.updated_at`
+  ).bind(LAST_SCHEDULED_DISPATCH_KEY, JSON.stringify(dispatchMeta), actorEmail, nowIso).run();
+
+  return {
+    ok: true,
+    dry_run: false,
+    published_count: published.length,
+    published,
+    skipped,
+    dispatch: dispatchMeta
+  };
+}
+
+export async function rescheduleScheduledPost(env, id, body = {}, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  const existing = await env.DB.prepare(`SELECT * FROM posts WHERE id = ? AND deleted_at IS NULL`).bind(id).first();
+  if (!existing) throw new HttpError(404, 'NOT_FOUND', `Post "${id}" not found`);
+
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  const nowIso = new Date().toISOString();
+  const action = String(body.action || '').trim().toLowerCase();
+
+  if (action === 'unschedule' || body.workflow_stage === 'draft') {
+    await env.DB.prepare(
+      `UPDATE posts SET status = 'draft', workflow_stage = 'draft', scheduled_for = NULL, updated_by = ?, updated_at = ? WHERE id = ?`
+    ).bind(actorEmail, nowIso, id).run();
+  } else {
+    const rawDate = String(body.scheduled_for || '').trim();
+    if (!rawDate || Number.isNaN(Date.parse(rawDate))) {
+      throw new HttpError(400, 'INVALID_DATE', 'Provide a valid ISO-8601 scheduled_for timestamp');
+    }
+    const iso = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? `${rawDate}T09:00:00Z` : new Date(rawDate).toISOString();
+    await env.DB.prepare(
+      `UPDATE posts SET status = 'scheduled', workflow_stage = 'scheduled', scheduled_for = ?, updated_by = ?, updated_at = ? WHERE id = ?`
+    ).bind(iso, actorEmail, nowIso, id).run();
+  }
+
+  const row = await env.DB.prepare(`SELECT * FROM posts WHERE id = ?`).bind(id).first();
+  return { ok: true, item: normalizeRow(row) };
+}
+
+// ============================================================================
+// Admin Router Dispatcher for /api/admin/content/{posts|announcements|featured|categories|tags|calendar|workflow|scheduled}
 // ============================================================================
 export async function handleContentPublishing(request, env, actor, subResource, id, action) {
   const method = request.method;
+
+  // Module #9: /api/admin/content/calendar
+  if (subResource === 'calendar') {
+    if (!id && method === 'GET') {
+      const u = new URL(request.url);
+      return json(await getEditorialCalendar(env, {
+        month: u.searchParams.get('month') || '',
+        type: u.searchParams.get('type') || 'all'
+      }), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (id === 'slot' && method === 'POST') {
+      if (actor.role !== 'admin' && actor.role !== 'editor') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can slot calendar dates');
+      }
+      const body = await readJson(request, 4096).catch(() => ({}));
+      const res = await slotCalendarPost(env, body, actor);
+      await audit(env, request, actor, 'content.calendar.slot', 'posts', res.item.id, {
+        scheduled_for: res.item.scheduled_for
+      });
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  // Module #10: /api/admin/content/workflow
+  if (subResource === 'workflow') {
+    if (!id && method === 'GET') {
+      return json(await getWorkflowState(env), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (id === 'policy' && method === 'PUT') {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can update workflow quality gates');
+      }
+      const body = await readJson(request, 4096).catch(() => ({}));
+      const res = await saveWorkflowPolicy(env, body, actor);
+      await audit(env, request, actor, 'content.workflow.policy.update', 'site_settings', WORKFLOW_POLICY_KEY, res.policy);
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    if (id === 'transition' && method === 'POST') {
+      if (actor.role !== 'admin' && actor.role !== 'editor' && actor.role !== 'reviewer') {
+        throw new HttpError(403, 'FORBIDDEN', 'Insufficient permissions to transition workflow stage');
+      }
+      const body = await readJson(request, 8192).catch(() => ({}));
+      const res = await transitionWorkflowPost(env, body, actor);
+      await audit(env, request, actor, 'content.workflow.transition', 'posts', res.item.id, {
+        action: body.action,
+        workflow_stage: res.item.workflow_stage
+      });
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  // Module #11: /api/admin/content/scheduled
+  if (subResource === 'scheduled') {
+    if (!id && method === 'GET') {
+      return json(await getScheduledContentState(env), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (id === 'dispatch' && method === 'POST') {
+      const body = await readJson(request, 4096).catch(() => ({}));
+      const dryRun = body.dry_run !== false;
+      if (!dryRun && actor.role !== 'admin' && actor.role !== 'editor') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can dispatch scheduled posts');
+      }
+      const res = await dispatchScheduledContent(env, body, actor);
+      if (!res.dry_run) {
+        await audit(env, request, actor, 'content.scheduled.dispatch', 'posts', body.post_id || 'batch', {
+          published_count: res.published_count,
+          skipped_count: res.skipped ? res.skipped.length : 0
+        });
+      }
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    if (id && !action && (method === 'PATCH' || method === 'PUT')) {
+      if (actor.role !== 'admin' && actor.role !== 'editor') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can reschedule posts');
+      }
+      const body = await readJson(request, 4096).catch(() => ({}));
+      const res = await rescheduleScheduledPost(env, id, body, actor);
+      await audit(env, request, actor, 'content.scheduled.reschedule', 'posts', id, {
+        workflow_stage: res.item.workflow_stage,
+        scheduled_for: res.item.scheduled_for
+      });
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
 
   // Module #5: /api/admin/content/announcements
   if (subResource === 'announcements') {

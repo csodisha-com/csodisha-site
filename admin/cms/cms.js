@@ -10540,6 +10540,474 @@
     return wrap;
   }
 
+  function contentEditorialCalendarPanel() {
+    var canWrite = Boolean(me && (me.role === 'admin' || me.role === 'editor'));
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var calBox = el('div');
+
+    var curMonth = new Date(Date.now() + 19800000).toISOString().slice(0, 7);
+    var curType = 'all';
+
+    var prevBtn = el('button', { class: 'btn sm', type: 'button', text: '← Prev Month' });
+    var curBtn = el('button', { class: 'btn sm', type: 'button', text: 'Current Month' });
+    var nextBtn = el('button', { class: 'btn sm', type: 'button', text: 'Next Month →' });
+    var monthLbl = el('strong', { text: curMonth });
+    var typeSel = el('select', { class: 'select' }, [
+      el('option', { value: 'all', text: 'All Types' }),
+      el('option', { value: 'article', text: 'Articles & Blogs' }),
+      el('option', { value: 'news', text: 'News & Updates' }),
+      el('option', { value: 'current_affairs', text: 'Current Affairs' }),
+      el('option', { value: 'announcement', text: 'Announcements' })
+    ]);
+
+    var draftSel = el('select', { class: 'select' });
+    var dateInp = el('input', { class: 'input', type: 'date', value: new Date(Date.now() + 19800000).toISOString().slice(0, 10) });
+    var slotBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: 'Slot Draft onto Date' });
+    if (!canWrite) slotBtn.disabled = true;
+
+    function shiftMonth(ym, delta) {
+      var parts = ym.split('-');
+      var d = new Date(Date.UTC(Number(parts[0]), Number(parts[1]) - 1 + delta, 1));
+      return d.toISOString().slice(0, 7);
+    }
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge ok', text: 'EDITORIAL CALENDAR' }),
+        el('h2', { text: 'Monthly Editorial & Publishing Calendar' }),
+        el('p', { class: 'muted', text: 'Visualize published and scheduled content day-by-day and slot draft backlog items onto target dates.' })
+      ])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('h3', { text: 'Quick-Slot Draft onto Date' }),
+      el('div', { class: 'cso-ops-grid-2' }, [
+        el('div', { class: 'field' }, [el('label', { text: 'Unscheduled Draft Backlog' }), draftSel]),
+        el('div', { class: 'field' }, [el('label', { text: 'Target Publish Date' }), dateInp])
+      ]),
+      slotBtn
+    ]));
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-cnt-toolbar' }, [
+        el('div', { class: 'cso-ops-actions' }, [prevBtn, curBtn, nextBtn, monthLbl]),
+        typeSel
+      ]),
+      calBox
+    ]));
+
+    function renderGrid(month, days) {
+      clear(calBox);
+      var parts = month.split('-');
+      var year = Number(parts[0]);
+      var monIdx = Number(parts[1]) - 1;
+      var firstDow = new Date(Date.UTC(year, monIdx, 1)).getUTCDay();
+      var daysInMonth = new Date(Date.UTC(year, monIdx + 1, 0)).getUTCDate();
+
+      var grid = el('div', { class: 'cso-cnt-cal-grid' });
+      ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(function (d) {
+        grid.appendChild(el('div', { class: 'cso-cnt-cal-head', text: d }));
+      });
+      for (var pad = 0; pad < firstDow; pad++) {
+        grid.appendChild(el('div', { class: 'cso-cnt-cal-cell is-empty' }));
+      }
+      for (var day = 1; day <= daysInMonth; day++) {
+        var key = month + '-' + String(day).padStart(2, '0');
+        var list = (days && days[key]) || [];
+        var cell = el('div', { class: 'cso-cnt-cal-cell' }, [
+          el('div', { class: 'cso-cnt-cal-day', text: String(day) })
+        ]);
+        list.slice(0, 4).forEach(function (it) {
+          var cls = it.status === 'published' ? 'is-pub' : (it.workflow_stage === 'scheduled' || it.status === 'scheduled' ? 'is-sched' : 'is-draft');
+          cell.appendChild(el('div', {
+            class: 'cso-cnt-cal-pill ' + cls,
+            title: '[' + it.post_type + '] ' + it.title + ' (' + (it.workflow_stage || it.status) + ')',
+            text: it.title
+          }));
+        });
+        if (list.length > 4) {
+          cell.appendChild(el('span', { class: 'muted sm', text: '+' + String(list.length - 4) + ' more' }));
+        }
+        grid.appendChild(cell);
+      }
+      calBox.appendChild(grid);
+    }
+
+    async function load() {
+      monthLbl.textContent = curMonth;
+      try {
+        var res = await api('GET', 'content/calendar?month=' + encodeURIComponent(curMonth) + '&type=' + encodeURIComponent(curType));
+        clear(kpis);
+        clear(draftSel);
+        var k = res.kpis || {};
+        [
+          ['Month Total Items', String(k.total_in_month || 0)],
+          ['Published on Schedule', String(k.published_in_month || 0)],
+          ['Upcoming Scheduled', String(k.scheduled_in_month || 0)],
+          ['Unscheduled Drafts', String(k.drafts_backlog || 0)]
+        ].forEach(function (pair) {
+          kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+            el('span', { class: 'muted sm', text: pair[0] }),
+            el('strong', { text: pair[1] })
+          ]));
+        });
+
+        var backlog = Array.isArray(res.drafts_backlog) ? res.drafts_backlog : [];
+        if (!backlog.length) {
+          draftSel.appendChild(el('option', { value: '', text: 'No unscheduled drafts in backlog' }));
+        } else {
+          backlog.forEach(function (d) {
+            draftSel.appendChild(el('option', { value: d.id, text: '[' + d.post_type + '] ' + d.title }));
+          });
+        }
+        renderGrid(res.month || curMonth, res.days || {});
+      } catch (e) {
+        toast(e.message || 'Failed to load editorial calendar', true);
+      }
+    }
+
+    prevBtn.addEventListener('click', function () { curMonth = shiftMonth(curMonth, -1); load(); });
+    curBtn.addEventListener('click', function () { curMonth = new Date(Date.now() + 19800000).toISOString().slice(0, 7); load(); });
+    nextBtn.addEventListener('click', function () { curMonth = shiftMonth(curMonth, 1); load(); });
+    typeSel.addEventListener('change', function () { curType = typeSel.value; load(); });
+
+    var slotBusy = false;
+    slotBtn.addEventListener('click', async function () {
+      if (!canWrite || slotBusy || !draftSel.value) return;
+      slotBusy = true;
+      slotBtn.disabled = true;
+      try {
+        await api('POST', 'content/calendar/slot', {
+          post_id: draftSel.value,
+          target_date: dateInp.value
+        });
+        toast('Draft slotted onto ' + dateInp.value);
+        await load();
+      } catch (e) {
+        toast(e.message || 'Slotting failed', true);
+      } finally {
+        slotBusy = false;
+        slotBtn.disabled = !canWrite;
+      }
+    });
+
+    load();
+    return wrap;
+  }
+
+  function contentPublishingWorkflowPanel() {
+    var isAdmin = Boolean(me && me.role === 'admin');
+    var canReview = Boolean(me && (me.role === 'admin' || me.role === 'reviewer'));
+    var canWrite = Boolean(me && (me.role === 'admin' || me.role === 'editor' || me.role === 'reviewer'));
+
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var policyCard = el('div', { class: 'cso-ops-card' });
+    var pipeBox = el('div');
+
+    var minWordsInp = el('input', { class: 'input', type: 'number', min: '0', max: '2000' });
+    var reqSeoCb = el('input', { type: 'checkbox' });
+    var reqSignoffCb = el('input', { type: 'checkbox' });
+    var savePolBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: 'Save Quality Gate Policy' });
+    if (!isAdmin) savePolBtn.disabled = true;
+
+    policyCard.appendChild(el('h3', { text: 'Editorial Quality Gate Policy' }));
+    policyCard.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
+      el('div', { class: 'field' }, [el('label', { text: 'Minimum Word Count (0-2000)' }), minWordsInp]),
+      el('div', { class: 'field' }, [
+        el('label', {}, [reqSeoCb, document.createTextNode(' Require SEO Title & Description')]),
+        el('label', {}, [reqSignoffCb, document.createTextNode(' Require Reviewer Sign-Off')])
+      ])
+    ]));
+    policyCard.appendChild(savePolBtn);
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge warn', text: 'APPROVAL PIPELINE' }),
+        el('h2', { text: 'Publishing Workflow & Quality Gates' }),
+        el('p', { class: 'muted', text: 'Move content through Draft → In Review → Approved → Published with automated SEO/word-count gates and reviewer notes.' })
+      ])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(policyCard);
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('h3', { text: 'Editorial Approval Pipeline' }),
+      pipeBox
+    ]));
+
+    var polBusy = false;
+    savePolBtn.addEventListener('click', async function () {
+      if (!isAdmin || polBusy) return;
+      polBusy = true;
+      savePolBtn.disabled = true;
+      try {
+        await api('PUT', 'content/workflow/policy', {
+          min_word_count: parseInt(minWordsInp.value, 10) || 0,
+          require_seo_meta: reqSeoCb.checked,
+          require_reviewer_signoff: reqSignoffCb.checked
+        });
+        toast('Workflow quality gate policy saved');
+        await load();
+      } catch (e) {
+        toast(e.message || 'Policy save failed', true);
+      } finally {
+        polBusy = false;
+        savePolBtn.disabled = !isAdmin;
+      }
+    });
+
+    async function doTransition(postId, action, notes) {
+      await api('POST', 'content/workflow/transition', {
+        post_id: postId,
+        action: action,
+        review_notes: notes
+      });
+      toast('Workflow stage updated (' + action + ')');
+      await load();
+    }
+
+    function renderPipeline(stages) {
+      clear(pipeBox);
+      var grid = el('div', { class: 'cso-cnt-pipe-grid' });
+      var defs = [
+        ['draft', 'Draft'],
+        ['in_review', 'In Review'],
+        ['approved', 'Approved'],
+        ['published', 'Published']
+      ];
+      defs.forEach(function (def) {
+        var key = def[0];
+        var list = (stages && stages[key]) || [];
+        var col = el('div', { class: 'cso-cnt-pipe-col' }, [
+          el('div', { class: 'cso-ops-subhead' }, [
+            el('strong', { text: def[1] }),
+            el('span', { class: 'badge ok', text: String(list.length) })
+          ])
+        ]);
+        if (!list.length) {
+          col.appendChild(el('div', { class: 'muted sm', text: 'No items in ' + def[1] + '.' }));
+        } else {
+          list.slice(0, 12).forEach(function (it) {
+            var notesInp = el('input', { class: 'input', type: 'text', value: it.review_notes || '', placeholder: 'Reviewer notes...' });
+            var btns = el('div', { class: 'cso-ops-actions' });
+            if (canWrite && key === 'draft') {
+              var subBtn = el('button', { class: 'btn sm', type: 'button', text: 'Submit for Review' });
+              subBtn.addEventListener('click', async function () {
+                subBtn.disabled = true;
+                try { await doTransition(it.id, 'submit_for_review', notesInp.value.trim()); }
+                catch (e) { toast(e.message || 'Failed', true); subBtn.disabled = false; }
+              });
+              btns.appendChild(subBtn);
+            }
+            if (canReview && key === 'in_review') {
+              var appBtn = el('button', { class: 'btn sm', type: 'button', text: 'Approve' });
+              appBtn.addEventListener('click', async function () {
+                appBtn.disabled = true;
+                try { await doTransition(it.id, 'approve', notesInp.value.trim()); }
+                catch (e) { toast(e.message || 'Failed', true); appBtn.disabled = false; }
+              });
+              var chgBtn = el('button', { class: 'btn sm danger', type: 'button', text: 'Request Changes' });
+              chgBtn.addEventListener('click', async function () {
+                chgBtn.disabled = true;
+                try { await doTransition(it.id, 'request_changes', notesInp.value.trim()); }
+                catch (e) { toast(e.message || 'Failed', true); chgBtn.disabled = false; }
+              });
+              btns.appendChild(appBtn);
+              btns.appendChild(chgBtn);
+            }
+            if (canWrite && (key === 'approved' || key === 'in_review' || key === 'draft')) {
+              var pubBtn = el('button', { class: 'btn sm primary', type: 'button', text: 'Publish Live' });
+              pubBtn.addEventListener('click', async function () {
+                pubBtn.disabled = true;
+                try { await doTransition(it.id, 'publish', notesInp.value.trim()); }
+                catch (e) { toast(e.message || 'Blocked by quality gate', true); pubBtn.disabled = false; }
+              });
+              btns.appendChild(pubBtn);
+            }
+            col.appendChild(el('div', { class: 'cso-cnt-pipe-card' }, [
+              el('strong', { text: it.title }),
+              el('div', { class: 'muted sm', text: it.post_type + ' · ' + String(it.word_count || 0) + ' words · ' + (it.has_seo_meta ? 'SEO ✓' : 'SEO ✗') }),
+              key !== 'published' ? notesInp : el('span', { class: 'muted sm', text: it.reviewed_by ? ('Reviewed by ' + it.reviewed_by) : 'Live' }),
+              btns
+            ]));
+          });
+        }
+        grid.appendChild(col);
+      });
+      pipeBox.appendChild(grid);
+    }
+
+    async function load() {
+      try {
+        var res = await api('GET', 'content/workflow');
+        clear(kpis);
+        var k = res.kpis || {};
+        [
+          ['Drafts in Progress', String(k.drafts_count || 0)],
+          ['Awaiting Review', String(k.in_review_count || 0)],
+          ['Approved Ready', String(k.approved_count || 0)],
+          ['Gate Pass Rate', String(k.gate_pass_rate || 100) + '%']
+        ].forEach(function (pair) {
+          kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+            el('span', { class: 'muted sm', text: pair[0] }),
+            el('strong', { text: pair[1] })
+          ]));
+        });
+
+        var pol = res.policy || {};
+        minWordsInp.value = String(pol.min_word_count !== undefined ? pol.min_word_count : 20);
+        reqSeoCb.checked = Boolean(pol.require_seo_meta);
+        reqSignoffCb.checked = Boolean(pol.require_reviewer_signoff);
+        renderPipeline(res.stages || {});
+      } catch (e) {
+        toast(e.message || 'Failed to load workflow state', true);
+      }
+    }
+
+    load();
+    return wrap;
+  }
+
+  function contentScheduledStudioPanel() {
+    var canWrite = Boolean(me && (me.role === 'admin' || me.role === 'editor'));
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var dryOut = el('div');
+    var tableBox = el('div');
+
+    var dryBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Preview Due Dispatch (Dry Run)' });
+    var liveBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: 'Dispatch All Due Scheduled Posts Now' });
+    if (!canWrite) liveBtn.disabled = true;
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge ok', text: 'SCHEDULED QUEUE' }),
+        el('h2', { text: 'Scheduled Content & Timed Dispatch Studio' }),
+        el('p', { class: 'muted', text: 'Inspect due and upcoming scheduled posts, preview batch go-live impact, or reschedule back to draft.' })
+      ]),
+      el('div', { class: 'cso-ops-actions' }, [dryBtn, liveBtn])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(dryOut);
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('h3', { text: 'Scheduled Publication Queue' }),
+      tableBox
+    ]));
+
+    var dispatchBusy = false;
+    async function runDispatch(isDry, postId) {
+      if (dispatchBusy) return;
+      if (!isDry && !canWrite) return;
+      dispatchBusy = true;
+      dryBtn.disabled = true;
+      liveBtn.disabled = true;
+      clear(dryOut);
+      try {
+        var res = await api('POST', 'content/scheduled/dispatch', {
+          dry_run: isDry,
+          post_id: postId || null
+        });
+        if (isDry) {
+          dryOut.appendChild(el('div', { class: 'cso-sec-sim-result is-allow' }, [
+            el('strong', { text: 'Dry-Run: ' + String(res.would_publish_count || 0) + ' due scheduled post(s) ready to publish.' }),
+            el('div', { class: 'muted sm', text: (res.candidates || []).map(function (c) { return c.title; }).join(' · ') || 'No due items right now.' })
+          ]));
+        } else {
+          toast('Published ' + String(res.published_count || 0) + ' scheduled post(s)');
+          await load();
+        }
+      } catch (e) {
+        toast(e.message || 'Scheduled dispatch failed', true);
+      } finally {
+        dispatchBusy = false;
+        dryBtn.disabled = false;
+        liveBtn.disabled = !canWrite;
+      }
+    }
+
+    dryBtn.addEventListener('click', function () { runDispatch(true, null); });
+    liveBtn.addEventListener('click', function () { runDispatch(false, null); });
+
+    async function load() {
+      try {
+        var res = await api('GET', 'content/scheduled');
+        clear(kpis);
+        clear(tableBox);
+        var k = res.kpis || {};
+        [
+          ['Total Scheduled Queue', String(k.total_scheduled || 0)],
+          ['Due / Ready to Dispatch', String(k.due_count || 0)],
+          ['Next Go-Live', k.next_go_live ? String(k.next_go_live).slice(0, 16).replace('T', ' ') : 'None'],
+          ['Last Queue Dispatch', k.last_dispatch_at ? String(k.last_dispatch_at).slice(0, 16).replace('T', ' ') : 'Never']
+        ].forEach(function (pair) {
+          kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+            el('span', { class: 'muted sm', text: pair[0] }),
+            el('strong', { text: pair[1] })
+          ]));
+        });
+
+        var all = [].concat(res.due_queue || [], res.upcoming_queue || []);
+        if (!all.length) {
+          tableBox.appendChild(el('div', { class: 'muted sm', text: 'No scheduled posts in the queue.' }));
+          return;
+        }
+        var tbody = el('tbody');
+        all.forEach(function (it) {
+          var actTd = el('td', { class: 'cso-ops-actions' });
+          if (canWrite) {
+            var pubNow = el('button', { class: 'btn sm primary', type: 'button', text: 'Publish Now' });
+            pubNow.addEventListener('click', function () { runDispatch(false, it.id); });
+            actTd.appendChild(pubNow);
+
+            var reschBtn = el('button', { class: 'btn sm', type: 'button', text: 'Reschedule' });
+            reschBtn.addEventListener('click', async function () {
+              var nextIso = window.prompt('Enter new ISO-8601 date/time (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ):', String(it.scheduled_for || '').slice(0, 10));
+              if (!nextIso) return;
+              try {
+                await api('PATCH', 'content/scheduled/' + encodeURIComponent(it.id), { action: 'reschedule', scheduled_for: nextIso.trim() });
+                toast('Rescheduled to ' + nextIso.trim());
+                await load();
+              } catch (e) { toast(e.message || 'Reschedule failed', true); }
+            });
+            actTd.appendChild(reschBtn);
+
+            var unBtn = el('button', { class: 'btn sm danger', type: 'button', text: 'To Draft' });
+            unBtn.addEventListener('click', async function () {
+              try {
+                await api('PATCH', 'content/scheduled/' + encodeURIComponent(it.id), { action: 'unschedule' });
+                toast('Moved back to draft');
+                await load();
+              } catch (e) { toast(e.message || 'Failed', true); }
+            });
+            actTd.appendChild(unBtn);
+          }
+          tbody.appendChild(el('tr', {}, [
+            el('td', {}, [el('strong', { text: it.title }), el('div', { class: 'muted sm', text: it.post_type + ' · ' + (it.has_seo_meta ? 'SEO ✓' : 'No SEO') })]),
+            el('td', { text: String(it.scheduled_for || '').slice(0, 19).replace('T', ' ') }),
+            el('td', {}, [el('span', { class: 'badge ' + (it.is_due ? 'warn' : 'ok'), text: it.is_due ? 'DUE NOW' : 'UPCOMING' })]),
+            actTd
+          ]));
+        });
+        tableBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+          el('table', { class: 'table' }, [
+            el('thead', {}, [el('tr', {}, [
+              el('th', { text: 'Post & SEO' }),
+              el('th', { text: 'Scheduled For' }),
+              el('th', { text: 'Queue State' }),
+              el('th', { text: 'Actions' })
+            ])]),
+            tbody
+          ])
+        ]));
+      } catch (e) {
+        toast(e.message || 'Failed to load scheduled queue', true);
+      }
+    }
+
+    load();
+    return wrap;
+  }
+
   async function viewContentStudio(sub) {
     var mode = sub || 'all';
     if (mode === 'articles') {
@@ -10575,6 +11043,21 @@
     if (mode === 'tags') {
       setTitle('Tags');
       main.appendChild(contentTagsStudioPanel());
+      return;
+    }
+    if (mode === 'calendar') {
+      setTitle('Editorial Calendar');
+      main.appendChild(contentEditorialCalendarPanel());
+      return;
+    }
+    if (mode === 'workflow') {
+      setTitle('Publishing Workflow');
+      main.appendChild(contentPublishingWorkflowPanel());
+      return;
+    }
+    if (mode === 'scheduled') {
+      setTitle('Scheduled Content');
+      main.appendChild(contentScheduledStudioPanel());
       return;
     }
     setTitle('All Content');
