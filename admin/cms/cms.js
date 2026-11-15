@@ -1576,7 +1576,7 @@
     var subMap = {
       vault: 'R2 cold storage objects (cso-media › backups/snapshots/*) with SHA-256 custom metadata & D1 row count ledger.',
       verify: 'Recomputes Web Crypto SHA-256 digests over raw R2 snapshot payloads and verifies 1:1 parity with D1 & R2 metadata.',
-      snapshots: 'Creates deterministic JSON snapshots of live D1 tables (site_settings, site_pages, revisions, posts, schemes, resources, media_assets, users), persists to R2, and records SHA-256 checksums.'
+      snapshots: 'Creates deterministic JSON snapshots via dynamic sqlite_master table discovery (with automatic credential, token, and session scrubbing), persists to Cloudflare R2, and records SHA-256 checksums.'
     };
     var heading = titleMap[mode] || titleMap.snapshots;
     var subtitle = subMap[mode] || subMap.snapshots;
@@ -1617,10 +1617,209 @@
 
     var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis' });
     var summaryBar = el('p', { class: 'hint cso-ops-vault-summary', text: 'Loading R2 snapshot vault…' });
+    var filterBar = el('div', { class: 'cso-ops-filter-bar cso-ops-vault-filter', role: 'group', 'aria-label': 'Filter snapshots by trigger type' });
     var tableHost = el('div', { class: 'cso-ops-vault-table-host' });
     wrap.appendChild(kpiStrip);
     wrap.appendChild(summaryBar);
+    wrap.appendChild(filterBar);
     wrap.appendChild(tableHost);
+
+    var cachedSnapshots = [];
+    var activeTriggerFilter = 'all';
+    var triggerOptions = [
+      { id: 'all', label: 'All' },
+      { id: 'manual', label: 'Manual' },
+      { id: 'scheduled', label: 'Scheduled' },
+      { id: 'pre_restore', label: 'Pre-Restore' }
+    ];
+
+    function normalizeTriggerType(raw) {
+      return String(raw || 'manual').toLowerCase().replace(/-/g, '_');
+    }
+
+    function renderFilterBar() {
+      clear(filterBar);
+      filterBar.appendChild(el('span', { class: 'muted sm', text: 'Trigger Filter:' }));
+      triggerOptions.forEach(function (opt) {
+        var isActive = activeTriggerFilter === opt.id;
+        filterBar.appendChild(el('button', {
+          type: 'button',
+          class: 'btn sm' + (isActive ? ' primary' : ''),
+          'aria-pressed': String(isActive),
+          text: opt.label,
+          onclick: function () {
+            if (activeTriggerFilter === opt.id) return;
+            activeTriggerFilter = opt.id;
+            renderFilterBar();
+            renderVaultTable();
+          }
+        }));
+      });
+    }
+
+    function renderVaultTable() {
+      clear(tableHost);
+      var filtered = cachedSnapshots.filter(function (snap) {
+        if (activeTriggerFilter === 'all') return true;
+        return normalizeTriggerType(snap.trigger_type) === activeTriggerFilter;
+      });
+
+      if (!cachedSnapshots.length) {
+        summaryBar.textContent = '0 R2 snapshot(s) in cold vault · Bucket: cso-media (backups/snapshots/)';
+        tableHost.appendChild(el('p', { class: 'muted', text: 'No platform snapshots recorded yet. Click "Create Full Platform Snapshot Now" to archive the first baseline to R2.' }));
+        return;
+      }
+
+      if (activeTriggerFilter === 'all') {
+        summaryBar.textContent = cachedSnapshots.length + ' R2 snapshot(s) in cold vault · Bucket: cso-media (backups/snapshots/)';
+      } else {
+        summaryBar.textContent = 'Showing ' + filtered.length + ' of ' + cachedSnapshots.length + ' R2 snapshot(s) · Bucket: cso-media (backups/snapshots/)';
+      }
+
+      if (!filtered.length) {
+        tableHost.appendChild(el('p', { class: 'muted', text: 'No snapshots match the selected trigger filter.' }));
+        return;
+      }
+
+      var tb = el('tbody');
+      filtered.forEach(function (snap) {
+        var shaShort = snap.sha256 ? (snap.sha256.slice(0, 12) + '…' + snap.sha256.slice(-6)) : '—';
+        var shaCode = el('code', { class: 'cso-ops-sha-code', title: 'SHA-256: ' + (snap.sha256 || '') + '\nR2 Key: ' + (snap.r2_key || ''), text: shaShort });
+        var copyShaBtn = el('button', {
+          type: 'button',
+          class: 'btn sm',
+          text: 'Copy SHA-256',
+          disabled: !snap.sha256,
+          onclick: function () {
+            if (!snap.sha256) return;
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+              navigator.clipboard.writeText(snap.sha256).then(function () {
+                toast('Copied SHA-256 (' + snap.sha256.slice(0, 12) + '…)');
+              }).catch(function () {
+                toast('Could not copy SHA-256 to clipboard', true);
+              });
+            } else {
+              toast('Clipboard API unavailable in this browser context', true);
+            }
+          }
+        });
+        var verifyBadge = el('span', {
+          class: 'badge ' + (snap.r2_exists ? 'published' : 'expired'),
+          text: snap.r2_exists ? 'R2 Stored' : 'Missing in R2'
+        });
+        var verifyDetail = el('div', { class: 'hint cso-ops-verify-detail', hidden: true });
+
+        var verifyBtn = el('button', {
+          type: 'button',
+          class: 'btn sm cso-btn-forest-outline',
+          text: 'Verify SHA-256',
+          onclick: async function () {
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verifying…';
+            try {
+              var res = await api('POST', 'ops/snapshots/' + encodeURIComponent(snap.id) + '/verify', {});
+              verifyBadge.className = 'badge ' + (res.valid ? 'published' : 'expired');
+              verifyBadge.textContent = res.valid ? '✓ SHA-256 Verified' : '✗ Checksum Mismatch';
+              verifyDetail.hidden = false;
+              verifyDetail.textContent = res.valid
+                ? ('Match: ' + (res.actual_sha256 || '').slice(0, 16) + '… (' + fmtBytes(res.size_bytes) + ')')
+                : ('Expected ' + (res.expected_sha256 || '').slice(0, 12) + '…, got ' + (res.actual_sha256 || res.reason || 'none'));
+              toast(res.valid ? 'Snapshot integrity verified (SHA-256 match)' : 'Snapshot integrity check FAILED', !res.valid);
+            } catch (err) {
+              toast(err.message, true);
+            }
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = 'Verify SHA-256';
+          }
+        });
+
+        var drillRestoreBtn = el('button', {
+          type: 'button',
+          class: 'btn sm',
+          text: 'Drill / Restore',
+          onclick: function () {
+            go('operations/drill/' + encodeURIComponent(snap.id));
+          }
+        });
+
+        var dlLink = el('a', {
+          class: 'btn sm cso-btn-forest',
+          href: '/api/admin/ops/snapshots/' + encodeURIComponent(snap.id) + '/download',
+          download: 'cso-snapshot-' + snap.id + '.json',
+          text: 'Download JSON'
+        });
+
+        var rowActions = [verifyBtn, drillRestoreBtn, dlLink];
+        if (me && me.role === 'admin') {
+          var delBtn = el('button', {
+            type: 'button',
+            class: 'btn sm danger',
+            text: 'Delete',
+            onclick: async function () {
+              if (!window.confirm('Delete snapshot "' + snap.label + '" from both R2 Cold Vault and D1?')) return;
+              delBtn.disabled = true;
+              delBtn.textContent = 'Deleting…';
+              try {
+                await api('DELETE', 'ops/snapshots/' + encodeURIComponent(snap.id));
+                toast('Deleted snapshot "' + snap.label + '" from R2 & D1');
+                await loadVault();
+              } catch (err) {
+                toast(err.message || 'Failed to delete snapshot', true);
+                delBtn.disabled = false;
+                delBtn.textContent = 'Delete';
+              }
+            }
+          });
+          rowActions.push(delBtn);
+        }
+
+        var counts = snap.row_counts || {};
+        var tableNames = Object.keys(counts).sort();
+        var breakdownEl = tableNames.length
+          ? el('details', { class: 'cso-ops-row-breakdown' }, [
+              el('summary', { class: 'cso-ops-row-breakdown-summary', text: 'Table Row Breakdown (' + tableNames.length + ' tables)' }),
+              el('ul', { class: 'cso-ops-row-breakdown-list' }, tableNames.map(function (tbl) {
+                return el('li', { class: 'cso-ops-row-breakdown-item' }, [
+                  el('code', { text: tbl }),
+                  el('span', { class: 'cso-tabular', text: String(counts[tbl]) })
+                ]);
+              }))
+            ])
+          : null;
+
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, [
+            el('div', { class: 'cso-tabular', text: fmtDate(snap.created_at) }),
+            el('div', { class: 'hint', text: (snap.created_by || 'staff') + ' · ' + (snap.trigger_type || 'manual') })
+          ]),
+          el('td', {}, [
+            el('strong', { text: snap.label }),
+            el('div', { class: 'hint cso-ops-r2key', text: snap.r2_key })
+          ]),
+          el('td', {}, [
+            el('strong', { class: 'cso-tabular', text: String(snap.total_rows || 0) + ' rows' }),
+            breakdownEl
+          ]),
+          el('td', { class: 'cso-tabular', text: fmtBytes(snap.size_bytes) }),
+          el('td', {}, [
+            el('div', { class: 'cso-ops-sha-row' }, [shaCode, copyShaBtn]),
+            el('div', { class: 'cso-ops-badge-wrap' }, [verifyBadge]),
+            verifyDetail
+          ]),
+          el('td', {}, el('div', { class: 'actions' }, rowActions))
+        ]));
+      });
+
+      tableHost.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+        el('caption', { class: 'muted', text: 'R2 Snapshot Cold Vault & Cryptographic Checksums' }),
+        el('thead', {}, el('tr', {}, ['Timestamp', 'Label & R2 Key', 'D1 Rows', 'Size', 'SHA-256 & Status', 'Actions'].map(function (h) {
+          return el('th', { scope: 'col', text: h });
+        }))),
+        tb
+      ])));
+    }
+
+    renderFilterBar();
 
     async function loadVault() {
       clear(tableHost);
@@ -1628,12 +1827,12 @@
       summaryBar.textContent = 'Loading R2 snapshot vault…';
       try {
         var d = await api('GET', 'ops/snapshots');
-        var items = (d && d.items) || [];
-        var totalBytes = items.reduce(function (acc, it) { return acc + (Number(it.size_bytes) || 0); }, 0);
-        var latestSnap = items[0] || null;
+        cachedSnapshots = (d && d.items) || [];
+        var totalBytes = cachedSnapshots.reduce(function (acc, it) { return acc + (Number(it.size_bytes) || 0); }, 0);
+        var latestSnap = cachedSnapshots[0] || null;
         kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
           el('div', { class: 'muted sm', text: 'Total Snapshots' }),
-          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: String(items.length) })
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: String(cachedSnapshots.length) })
         ]));
         kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
           el('div', { class: 'muted sm', text: 'Total R2 Storage Size' }),
@@ -1643,116 +1842,7 @@
           el('div', { class: 'muted sm', text: 'Latest Snapshot Timestamp' }),
           el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: latestSnap ? fmtDate(latestSnap.created_at) : 'None yet' })
         ]));
-        summaryBar.textContent = items.length + ' R2 snapshot(s) in cold vault · Bucket: cso-media (backups/snapshots/)';
-
-        if (!items.length) {
-          tableHost.appendChild(el('p', { class: 'muted', text: 'No platform snapshots recorded yet. Click "Create Full Platform Snapshot Now" to archive the first baseline to R2.' }));
-          return;
-        }
-
-        var tb = el('tbody');
-        items.forEach(function (snap) {
-          var shaShort = snap.sha256 ? (snap.sha256.slice(0, 12) + '…' + snap.sha256.slice(-6)) : '—';
-          var shaCode = el('code', { class: 'cso-ops-sha-code', title: 'SHA-256: ' + (snap.sha256 || '') + '\nR2 Key: ' + (snap.r2_key || ''), text: shaShort });
-          var verifyBadge = el('span', {
-            class: 'badge ' + (snap.r2_exists ? 'published' : 'expired'),
-            text: snap.r2_exists ? 'R2 Stored' : 'Missing in R2'
-          });
-          var verifyDetail = el('div', { class: 'hint cso-ops-verify-detail', hidden: true });
-
-          var verifyBtn = el('button', {
-            type: 'button',
-            class: 'btn sm cso-btn-forest-outline',
-            text: 'Verify SHA-256',
-            onclick: async function () {
-              verifyBtn.disabled = true;
-              verifyBtn.textContent = 'Verifying…';
-              try {
-                var res = await api('POST', 'ops/snapshots/' + encodeURIComponent(snap.id) + '/verify', {});
-                verifyBadge.className = 'badge ' + (res.valid ? 'published' : 'expired');
-                verifyBadge.textContent = res.valid ? '✓ SHA-256 Verified' : '✗ Checksum Mismatch';
-                verifyDetail.hidden = false;
-                verifyDetail.textContent = res.valid
-                  ? ('Match: ' + (res.actual_sha256 || '').slice(0, 16) + '… (' + fmtBytes(res.size_bytes) + ')')
-                  : ('Expected ' + (res.expected_sha256 || '').slice(0, 12) + '…, got ' + (res.actual_sha256 || res.reason || 'none'));
-                toast(res.valid ? 'Snapshot integrity verified (SHA-256 match)' : 'Snapshot integrity check FAILED', !res.valid);
-              } catch (err) {
-                toast(err.message, true);
-              }
-              verifyBtn.disabled = false;
-              verifyBtn.textContent = 'Verify SHA-256';
-            }
-          });
-
-          var drillRestoreBtn = el('button', {
-            type: 'button',
-            class: 'btn sm',
-            text: 'Drill / Restore',
-            onclick: function () {
-              go('operations/drill/' + encodeURIComponent(snap.id));
-            }
-          });
-
-          var dlLink = el('a', {
-            class: 'btn sm cso-btn-forest',
-            href: '/api/admin/ops/snapshots/' + encodeURIComponent(snap.id) + '/download',
-            download: 'cso-snapshot-' + snap.id + '.json',
-            text: 'Download JSON'
-          });
-
-          var rowActions = [verifyBtn, drillRestoreBtn, dlLink];
-          if (me && me.role === 'admin') {
-            var delBtn = el('button', {
-              type: 'button',
-              class: 'btn sm danger',
-              text: 'Delete',
-              onclick: async function () {
-                if (!window.confirm('Delete snapshot "' + snap.label + '" from both R2 Cold Vault and D1?')) return;
-                delBtn.disabled = true;
-                delBtn.textContent = 'Deleting…';
-                try {
-                  await api('DELETE', 'ops/snapshots/' + encodeURIComponent(snap.id));
-                  toast('Deleted snapshot "' + snap.label + '" from R2 & D1');
-                  await loadVault();
-                } catch (err) {
-                  toast(err.message || 'Failed to delete snapshot', true);
-                  delBtn.disabled = false;
-                  delBtn.textContent = 'Delete';
-                }
-              }
-            });
-            rowActions.push(delBtn);
-          }
-
-          var counts = snap.row_counts || {};
-          var countsHint = Object.keys(counts).map(function (k) { return k + ': ' + counts[k]; }).join(' · ');
-
-          tb.appendChild(el('tr', {}, [
-            el('td', {}, [
-              el('div', { class: 'cso-tabular', text: fmtDate(snap.created_at) }),
-              el('div', { class: 'hint', text: (snap.created_by || 'staff') + ' · ' + (snap.trigger_type || 'manual') })
-            ]),
-            el('td', {}, [
-              el('strong', { text: snap.label }),
-              el('div', { class: 'hint cso-ops-r2key', text: snap.r2_key })
-            ]),
-            el('td', {}, [
-              el('strong', { class: 'cso-tabular', text: String(snap.total_rows || 0) + ' rows' }),
-              countsHint ? el('div', { class: 'hint', text: countsHint }) : null
-            ]),
-            el('td', { class: 'cso-tabular', text: fmtBytes(snap.size_bytes) }),
-            el('td', {}, [shaCode, el('div', { class: 'cso-ops-badge-wrap' }, [verifyBadge]), verifyDetail]),
-            el('td', {}, el('div', { class: 'actions' }, rowActions))
-          ]));
-        });
-
-        tableHost.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
-          el('caption', { class: 'muted', text: 'R2 Snapshot Cold Vault & Cryptographic Checksums' }),
-          el('thead', {}, el('tr', {}, ['Timestamp', 'Label & R2 Key', 'D1 Rows', 'Size', 'SHA-256 & Status', 'Actions'].map(function (h) {
-            return el('th', { scope: 'col', text: h });
-          }))),
-          tb
-        ])));
+        renderVaultTable();
       } catch (e) {
         summaryBar.textContent = 'Could not load snapshots: ' + e.message;
       }
@@ -3007,24 +3097,6 @@
       runbooks: 'continuity'
     };
     var activeGroup = groupMap[mode] || 'snapshots';
-
-    var subNav = el('div', { class: 'tabs cso-ops-subnav', role: 'tablist', 'aria-label': 'Operations & Disaster Recovery Studios' });
-    [
-      ['snapshots', 'operations/snapshots', 'Snapshots & Vault'],
-      ['drill', 'operations/drill', 'DR Drill & Restore'],
-      ['sentinel', 'operations/health', 'Freeze, Cache & Health'],
-      ['hygiene', 'operations/schema', 'Schema, Vacuum & Forensics'],
-      ['continuity', 'operations/runbooks', 'Replica, Air-Gap & SOPs']
-    ].forEach(function (tab) {
-      subNav.appendChild(el('a', {
-        class: 'tab',
-        role: 'tab',
-        href: '#/' + tab[1],
-        'aria-selected': String(activeGroup === tab[0]),
-        text: tab[2]
-      }));
-    });
-    main.appendChild(subNav);
 
     if (activeGroup === 'drill') {
       main.appendChild(opsDrillAndRestorePanel(mode === 'restore' ? 'restore' : 'drill', targetSnapId));

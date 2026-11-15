@@ -109,12 +109,30 @@
     if (dom.btnToggleSidebar) dom.btnToggleSidebar.setAttribute('aria-expanded', 'false');
   }
 
+  function syncModuleCountLabels() {
+    if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
+    var total = masterNavigationSchema.folders.reduce(function (acc, f) {
+      return acc + (Array.isArray(f.modules) ? f.modules.length : 0);
+    }, 0);
+    if (!total) return;
+    document.title = 'CS Odisha — Editorial Studio & Command Suite (' + total + ' Modules)';
+    var brandSub = document.querySelector('.cso-brand-sub');
+    if (brandSub) brandSub.textContent = 'Editorial & Operations Suite (' + total + ' Modules)';
+    var searchLabel = document.querySelector('label[for="moduleSearchInput"]');
+    if (searchLabel) searchLabel.textContent = 'Filter ' + total + ' modules';
+    if (dom.moduleSearchInput) dom.moduleSearchInput.placeholder = 'Filter ' + total + ' modules...';
+    if (dom.accordionNav) dom.accordionNav.setAttribute('aria-label', masterNavigationSchema.folders.length + ' Folders Master Tree');
+    var coverageStrong = document.querySelector('.cso-sidebar-footer .cso-text-accent');
+    if (coverageStrong) coverageStrong.textContent = total + ' / ' + total;
+  }
+
   async function loadMasterNavigation() {
     if (masterNavigationSchema) return masterNavigationSchema;
     try {
       var res = await fetch('./data/master-navigation.json', { credentials: 'same-origin' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       masterNavigationSchema = await res.json();
+      syncModuleCountLabels();
       return masterNavigationSchema;
     } catch (err) {
       showToast('Failed to load navigation schema: ' + err.message, 'crimson');
