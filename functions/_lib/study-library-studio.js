@@ -14,7 +14,10 @@ export const STUDY_DOMAINS = [
   'competitive-teacher',
   'vocational-digital',
   'subjects-materials',
-  'international-inclusive'
+  'international-inclusive',
+  'life-skills-culture',
+  'libraries-support',
+  'odisha-study-hub'
 ];
 
 export const STUDY_RESOURCE_TYPES = [
@@ -218,7 +221,44 @@ const SEED_TREE = [
   { id: 'slf_ii_fell', domain: 'international-inclusive', parent: 'slf_ii_glob', depth: 2, name: 'National & International Fellowships', slug: 'national-international-fellowships', sort: 2 },
   { id: 'slf_ii_mle', domain: 'international-inclusive', parent: null, depth: 1, name: 'Tribal & Multilingual Education (MLE Odisha)', slug: 'tribal-multilingual-mle-odisha', sort: 3 },
   { id: 'slf_ii_bridge', domain: 'international-inclusive', parent: 'slf_ii_mle', depth: 2, name: 'Odia-Tribal Bridge Materials', slug: 'odia-tribal-bridge-materials', sort: 1 },
-  { id: 'slf_ii_ssd', domain: 'international-inclusive', parent: 'slf_ii_mle', depth: 2, name: 'Eklavya & SSD School Resources', slug: 'eklavya-ssd-school-resources', sort: 2 }
+  { id: 'slf_ii_ssd', domain: 'international-inclusive', parent: 'slf_ii_mle', depth: 2, name: 'Eklavya & SSD School Resources', slug: 'eklavya-ssd-school-resources', sort: 2 },
+
+  // Module #8: life-skills-culture
+  { id: 'slf_lc_her', domain: 'life-skills-culture', parent: null, depth: 1, name: 'Odisha Heritage, Art & Literature', slug: 'odisha-heritage-art-literature', sort: 1 },
+  { id: 'slf_lc_jag', domain: 'life-skills-culture', parent: 'slf_lc_her', depth: 2, name: 'Jagannath Culture & Temple Architecture', slug: 'jagannath-culture-architecture', sort: 1 },
+  { id: 'slf_lc_folk', domain: 'life-skills-culture', parent: 'slf_lc_her', depth: 2, name: 'Odia Folk, Classical Dance & Handloom', slug: 'odia-folk-dance-handloom', sort: 2 },
+  { id: 'slf_lc_ikat', domain: 'life-skills-culture', parent: 'slf_lc_folk', depth: 3, name: 'Sambalpuri & Ikat Craft Guides', slug: 'sambalpuri-ikat-craft-guides', sort: 1 },
+  { id: 'slf_lc_fin', domain: 'life-skills-culture', parent: null, depth: 1, name: 'Financial, Civic & Media Literacy', slug: 'financial-civic-media-literacy', sort: 2 },
+  { id: 'slf_lc_pf', domain: 'life-skills-culture', parent: 'slf_lc_fin', depth: 2, name: 'Personal Finance & Citizen Rights', slug: 'personal-finance-citizen-rights', sort: 1 },
+  { id: 'slf_lc_fact', domain: 'life-skills-culture', parent: 'slf_lc_fin', depth: 2, name: 'Fact-Checking & Misinformation Defense', slug: 'fact-checking-misinformation-defense', sort: 2 },
+  { id: 'slf_lc_well', domain: 'life-skills-culture', parent: null, depth: 1, name: 'Mental Wellness, Ethics & Leadership', slug: 'mental-wellness-ethics-leadership', sort: 3 },
+  { id: 'slf_lc_mind', domain: 'life-skills-culture', parent: 'slf_lc_well', depth: 2, name: 'Exam Stress Management & Mindfulness', slug: 'exam-stress-mindfulness', sort: 1 },
+  { id: 'slf_lc_speak', domain: 'life-skills-culture', parent: 'slf_lc_well', depth: 2, name: 'Public Speaking & Critical Thinking', slug: 'public-speaking-critical-thinking', sort: 2 },
+
+  // Module #9: libraries-support
+  { id: 'slf_ls_pub', domain: 'libraries-support', parent: null, depth: 1, name: 'Public & Institutional Libraries (Odisha)', slug: 'public-institutional-libraries-odisha', sort: 1 },
+  { id: 'slf_ls_dist', domain: 'libraries-support', parent: 'slf_ls_pub', depth: 2, name: 'District & State Central Library Guides', slug: 'district-state-central-library-guides', sort: 1 },
+  { id: 'slf_ls_dig', domain: 'libraries-support', parent: 'slf_ls_pub', depth: 2, name: 'Digital Library & Open Access Portals', slug: 'digital-library-open-access', sort: 2 },
+  { id: 'slf_ls_ndli', domain: 'libraries-support', parent: 'slf_ls_dig', depth: 3, name: 'NDLI & e-Pathshala Directory', slug: 'ndli-epathshala-directory', sort: 1 },
+  { id: 'slf_ls_edu', domain: 'libraries-support', parent: null, depth: 1, name: 'Educator & Pedagogy Toolkits', slug: 'educator-pedagogy-toolkits', sort: 2 },
+  { id: 'slf_ls_rub', domain: 'libraries-support', parent: 'slf_ls_edu', depth: 2, name: 'Lesson Planning & NEP Rubrics', slug: 'lesson-planning-nep-rubrics', sort: 1 },
+  { id: 'slf_ls_tlm', domain: 'libraries-support', parent: 'slf_ls_edu', depth: 2, name: 'Classroom Assessment & TLM Guides', slug: 'classroom-assessment-tlm-guides', sort: 2 },
+  { id: 'slf_ls_ment', domain: 'libraries-support', parent: null, depth: 1, name: 'Student Mentorship & Career Counseling', slug: 'student-mentorship-career-counseling', sort: 3 },
+  { id: 'slf_ls_schol', domain: 'libraries-support', parent: 'slf_ls_ment', depth: 2, name: 'Scholarship & Hostel Directories', slug: 'scholarship-hostel-directories', sort: 1 },
+  { id: 'slf_ls_peer', domain: 'libraries-support', parent: 'slf_ls_ment', depth: 2, name: 'Peer Study Circles & Doubt Clinics', slug: 'peer-study-circles-doubt-clinics', sort: 2 },
+
+  // Module #10: odisha-study-hub
+  { id: 'slf_oh_dist', domain: 'odisha-study-hub', parent: null, depth: 1, name: 'District-Wise Study Hubs (30 Districts)', slug: 'district-wise-study-hubs', sort: 1 },
+  { id: 'slf_oh_north', domain: 'odisha-study-hub', parent: 'slf_oh_dist', depth: 2, name: 'North Odisha (Balasore, Mayurbhanj, Bhadrak, Keonjhar)', slug: 'north-odisha-hubs', sort: 1 },
+  { id: 'slf_oh_cent', domain: 'odisha-study-hub', parent: 'slf_oh_dist', depth: 2, name: 'Central & Coastal (Khordha, Cuttack, Puri, Kendrapara)', slug: 'central-coastal-odisha-hubs', sort: 2 },
+  { id: 'slf_oh_west', domain: 'odisha-study-hub', parent: 'slf_oh_dist', depth: 2, name: 'Western & Southern Odisha (Sambalpur, Berhampur, Koraput)', slug: 'western-southern-odisha-hubs', sort: 3 },
+  { id: 'slf_oh_west_sbp', domain: 'odisha-study-hub', parent: 'slf_oh_west', depth: 3, name: 'Sambalpur & Western Odisha Reading Rooms', slug: 'sambalpur-reading-rooms', sort: 1 },
+  { id: 'slf_oh_idx', domain: 'odisha-study-hub', parent: null, depth: 1, name: 'Master Index & Cross-Domain Compendiums', slug: 'master-index-compendiums', sort: 2 },
+  { id: 'slf_oh_yb', domain: 'odisha-study-hub', parent: 'slf_oh_idx', depth: 2, name: 'Odisha Yearbook & Economic Survey Briefs', slug: 'odisha-yearbook-economic-survey', sort: 1 },
+  { id: 'slf_oh_cal', domain: 'odisha-study-hub', parent: 'slf_oh_idx', depth: 2, name: 'Master Exam Calendar & Syllabus Index', slug: 'master-exam-calendar-syllabus', sort: 2 },
+  { id: 'slf_oh_qual', domain: 'odisha-study-hub', parent: null, depth: 1, name: 'Resource Curation & Quality Standards', slug: 'resource-curation-quality-standards', sort: 3 },
+  { id: 'slf_oh_chk', domain: 'odisha-study-hub', parent: 'slf_oh_qual', depth: 2, name: 'Editorial Verification Checklists', slug: 'editorial-verification-checklists', sort: 1 },
+  { id: 'slf_oh_lic', domain: 'odisha-study-hub', parent: 'slf_oh_qual', depth: 2, name: 'Archival & Open-License Attribution', slug: 'archival-open-license-attribution', sort: 2 }
 ];
 
 export async function ensureStudyLibraryStudioSchema(db) {
@@ -642,6 +682,8 @@ export async function listStudyItems(env, opts = {}) {
      FROM study_library_items WHERE domain_slug = ?`
   ).bind(domain).first();
 
+  const crossRow = await env.DB.prepare(`SELECT COUNT(*) AS n FROM study_library_items`).first();
+
   return {
     ok: true,
     items: rows.map(normalizeStudyItem),
@@ -650,7 +692,8 @@ export async function listStudyItems(env, opts = {}) {
       published_items: Number((kpiRow && kpiRow.published_items) || 0),
       pyq_and_syllabus_count: Number((kpiRow && kpiRow.pyq_and_syllabus_count) || 0),
       bilingual_count: Number((kpiRow && kpiRow.bilingual_count) || 0),
-      folder_count: allFolders.length
+      folder_count: allFolders.length,
+      cross_domain_total_items: Number((crossRow && crossRow.n) || 0)
     },
     paging: { total, limit, offset }
   };

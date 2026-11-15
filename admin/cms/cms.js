@@ -12231,6 +12231,30 @@
         defaultBoard: 'Inclusive / MLE / Global',
         subjPlaceholder: 'Focus (e.g. CWSN Pedagogy, IELTS, MLE Odisha)',
         quickTags: ['Inclusive', 'CWSN', 'MLE Odisha', 'IELTS', 'Fellowships']
+      },
+      'life-skills-culture': {
+        badge: 'STUDY LIBRARY · MODULE 8',
+        title: 'Life Skills, Culture & Lifelong Learning',
+        sub: 'Odisha heritage, Jagannath culture, Sambalpuri handloom, personal finance, fact-checking, and exam wellness toolkits.',
+        defaultBoard: 'Odisha Culture / Life Skills',
+        subjPlaceholder: 'Theme (e.g. Jagannath Culture, Financial Literacy, Mindfulness)',
+        quickTags: ['Odisha Heritage', 'Sambalpuri', 'Financial Literacy', 'Fact-Check', 'Wellness']
+      },
+      'libraries-support': {
+        badge: 'STUDY LIBRARY · MODULE 9',
+        title: 'Libraries, Educators & Learning Support',
+        sub: 'Odisha district & central library guides, NDLI/e-Pathshala portals, NEP pedagogy rubrics, and scholarship/hostel directories.',
+        defaultBoard: 'Odisha Libraries / NEP Educators',
+        subjPlaceholder: 'Resource (e.g. Central Library, NDLI, TLM Rubric)',
+        quickTags: ['Odisha Libraries', 'NDLI', 'NEP Rubrics', 'TLM', 'Mentorship']
+      },
+      'odisha-study-hub': {
+        badge: 'STUDY LIBRARY · MODULE 10',
+        title: 'Odisha Study Hub & Resource Organisation',
+        sub: '30-district Odisha study hub directory, Odisha Yearbook & Economic Survey compendiums, master exam calendars, and curation standards.',
+        defaultBoard: '30 Districts / Master Index',
+        subjPlaceholder: 'Hub / Index (e.g. Khordha, Sambalpur, Economic Survey)',
+        quickTags: ['30 Districts', 'Odisha Yearbook', 'Economic Survey', 'Exam Calendar', 'Curation']
       }
     };
     var cfg = DOMAIN_CFG[domainSlug] || DOMAIN_CFG['early-childhood'];
@@ -12261,6 +12285,12 @@
 
     var createBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: '+ Add Study Resource' });
     if (!canWrite) createBtn.disabled = true;
+    var hubOverviewPill = activeDomain === 'odisha-study-hub'
+      ? el('span', { class: 'badge ok', text: 'All 10 Domains: 0 resources' })
+      : null;
+    var heroRight = hubOverviewPill
+      ? el('div', { class: 'cso-ops-actions' }, [hubOverviewPill, createBtn])
+      : el('div', {}, [createBtn]);
 
     wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
       el('div', {}, [
@@ -12268,7 +12298,7 @@
         el('h2', { text: cfg.title }),
         el('p', { class: 'muted', text: cfg.sub })
       ]),
-      el('div', {}, [createBtn])
+      heroRight
     ]));
     wrap.appendChild(kpis);
     wrap.appendChild(telemetryBox);
@@ -12814,6 +12844,9 @@
     createBtn.addEventListener('click', function () { openComposer(null); });
 
     function renderKpis(k) {
+      if (hubOverviewPill) {
+        hubOverviewPill.textContent = 'All 10 Domains: ' + String(k.cross_domain_total_items || 0) + ' resources';
+      }
       clear(kpis);
       var pairs = [
         ['Total Resources', String(k.total_items || 0)],

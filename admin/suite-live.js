@@ -29,9 +29,9 @@
     ['study-library/vocational-digital', 'Professional, Vocational & Digital Skills'],
     ['study-library/subjects-materials', 'Subjects, Languages & Study Materials'],
     ['study-library/international-inclusive', 'International & Inclusive Education'],
-    ['study-library-directory', 'Life Skills, Culture & Lifelong Learning'],
-    ['study-library-directory', 'Libraries, Educators & Learning Support'],
-    ['study-library-directory', 'Odisha Study Hub & Resource Organisation']
+    ['study-library/life-skills-culture', 'Life Skills, Culture & Lifelong Learning'],
+    ['study-library/libraries-support', 'Libraries, Educators & Learning Support'],
+    ['study-library/odisha-study-hub', 'Odisha Study Hub & Resource Organisation']
   ];
   var SITE = [['pages', 'All Pages'], ['about-directory', 'About CSO Directory'], ['pages/legal', 'Info & Legal'], ['banner', 'Homepage & Banner'], ['seo', 'SEO & Sitemaps']];
   var OPS = [['dashboard', 'Overview'], ['freshness', 'Freshness Audit'], ['feedback', 'Feedback Queue'], ['operations', 'Operations & Backups'], ['diagnostics', 'Site Health']];
@@ -191,9 +191,9 @@
     'module-sl-005': ['study-library/vocational-digital', STUDY_SUITE],
     'module-sl-006': ['study-library/subjects-materials', STUDY_SUITE],
     'module-sl-007': ['study-library/international-inclusive', STUDY_SUITE],
-    'module-sl-008': ['study-library-directory', STUDY_SUITE],
-    'module-sl-009': ['study-library-directory', STUDY_SUITE],
-    'module-sl-010': ['study-library-directory', STUDY_SUITE]
+    'module-sl-008': ['study-library/life-skills-culture', STUDY_SUITE],
+    'module-sl-009': ['study-library/libraries-support', STUDY_SUITE],
+    'module-sl-010': ['study-library/odisha-study-hub', STUDY_SUITE]
   };
 
   var FOLDER_FALLBACKS = {

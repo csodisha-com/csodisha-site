@@ -67,7 +67,10 @@ for (const domain of [
   'competitive-teacher',
   'vocational-digital',
   'subjects-materials',
-  'international-inclusive'
+  'international-inclusive',
+  'life-skills-culture',
+  'libraries-support',
+  'odisha-study-hub'
 ]) {
   const tree = await (await handleStudyLibraryStudio(
     new Request(`https://csodisha.com/api/admin/study-library/tree?domain=${domain}`, { method: 'GET' }),
@@ -212,7 +215,10 @@ assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE actio
 for (const [dom, subName, itemTitle, tags] of [
   ['vocational-digital', 'Prompt Engineering Lab', 'OS-CIT & AI Prompt Handbook', ['OS-CIT', 'AI Literacy']],
   ['subjects-materials', 'Odia Chhanda & Alankara', 'Odia Byakarana Master Guide', ['Odia Sahitya', 'STEM']],
-  ['international-inclusive', 'DAISY Audio Books', 'CWSN Assistive Pedagogy Kit', ['Inclusive', 'MLE Odisha']]
+  ['international-inclusive', 'DAISY Audio Books', 'CWSN Assistive Pedagogy Kit', ['Inclusive', 'MLE Odisha']],
+  ['life-skills-culture', 'Pattachitra & Palm Leaf', 'Jagannath Culture & Heritage Guide', ['Odisha Heritage', 'Wellness']],
+  ['libraries-support', 'State Central Library Catalog', 'NDLI & Odisha Library Access Manual', ['Odisha Libraries', 'NDLI']],
+  ['odisha-study-hub', 'Kalahandi & Nuapada Hub', 'Odisha 30-District Master Study Index', ['30 Districts', 'Odisha Yearbook']]
 ]) {
   const domTree = await (await handleStudyLibraryStudio(
     new Request(`https://csodisha.com/api/admin/study-library/tree?domain=${dom}`, { method: 'GET' }),
@@ -250,4 +256,10 @@ for (const [dom, subName, itemTitle, tags] of [
   assert.equal(created.item.tags.length, 2);
 }
 
-console.log('STUDY LIBRARY DIRECTORY MODULES #1-#7 TESTS PASSED');
+const hubItems = await (await handleStudyLibraryStudio(
+  new Request('https://csodisha.com/api/admin/study-library/items?domain=odisha-study-hub', { method: 'GET' }),
+  env, adminActor, 'items'
+)).json();
+assert.ok(hubItems.kpis.cross_domain_total_items >= 7);
+
+console.log('STUDY LIBRARY DIRECTORY MODULES #1-#10 TESTS PASSED');

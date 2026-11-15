@@ -11902,9 +11902,8 @@
       return true;
     }
 
-    // Folder 06 & Directory Folders 20-23: Category & Navigation Tree Studios (skip Study Library #1-#7, handled by Master Study Library Studio)
-    var isStudyStudioV1 = folderId === 'folder-study-library' && /^module-sl-00[1-7]$/.test(String(moduleId || ''));
-    if (!isStudyStudioV1 && (folderId === 'folder-06' || folderId === 'folder-jobs-careers' || folderId === 'folder-schemes-benefits' || folderId === 'folder-study-library' || folderId === 'folder-community')) {
+    // Folder 06 & Directory Folders 20-23: Category & Navigation Tree Studios (all 10 Study Library modules handled by Master Study Library Studio)
+    if (folderId === 'folder-06' || folderId === 'folder-jobs-careers' || folderId === 'folder-schemes-benefits' || folderId === 'folder-community') {
       var meta = moduleMeta(folderId, moduleId);
       return renderCategoryTreeStudio(meta.title, meta.folderTitle + ' — Interactive navigation & taxonomy tree hydrated from site-manifest.json.', root, actions);
     }
