@@ -85,9 +85,17 @@ async function ensureSiteSettingsTable(db) {
 // ============================================================================
 // Module #4: Cloudflare D1 Distributed Replica & Read-Routing Telemetry
 // ============================================================================
+export const VALID_REPLICA_MODES = ['auto_edge_replica', 'primary_only', 'pinned_region'];
+export const VALID_REPLICA_REGIONS = ['WNAM', 'ENAM', 'WEUR', 'EEUR', 'APAC', 'OC', 'ME', 'AFR'];
+
+const REPLICA_MODE_KEY = 'ops_d1_replica_mode';
+const REPLICA_REGION_KEY = 'ops_d1_replica_region';
+const REPLICA_LAST_SWITCHOVER_KEY = 'ops_d1_replica_last_switchover';
+
 export function defaultD1RoutingPolicy() {
   return {
-    mode: 'read_replica_preferred',
+    mode: 'auto_edge_replica',
+    region: 'APAC',
     failover_threshold_ms: 250,
     auto_switchover: true,
     updated_by: null,
@@ -95,57 +103,127 @@ export function defaultD1RoutingPolicy() {
   };
 }
 
+function normalizeReplicaMode(raw) {
+  const s = String(raw || '').trim();
+  if (s === 'read_replica_preferred') return 'auto_edge_replica';
+  if (VALID_REPLICA_MODES.includes(s)) return s;
+  return null;
+}
+
+function normalizeReplicaRegion(raw) {
+  if (raw === undefined || raw === null || raw === '') return 'APAC';
+  const r = String(raw).trim().toUpperCase();
+  return VALID_REPLICA_REGIONS.includes(r) ? r : null;
+}
+
+function consistencyPostureFor(mode, region) {
+  if (mode === 'primary_only') return 'Strict Linearizable Primary (Zero Replica Lag)';
+  if (mode === 'pinned_region') return `Regional Replica Pinned (${region} · Session Bookmark)`;
+  return 'Sequential Session Bookmarks (Read-Your-Writes)';
+}
+
 export async function getD1RoutingPolicy(env) {
   const def = defaultD1RoutingPolicy();
   if (!env || !env.DB) return def;
   try {
-    const row = await env.DB.prepare(
-      `SELECT value_json, updated_by, updated_at FROM site_settings WHERE key = ?`
-    ).bind(D1_ROUTING_POLICY_KEY).first();
-    if (!row || !row.value_json) return def;
-    const parsed = JSON.parse(row.value_json);
-    const mode = parsed && parsed.mode === 'primary_only' ? 'primary_only' : 'read_replica_preferred';
+    const [polRow, modeRow, regionRow, lastRow] = await Promise.all([
+      env.DB.prepare(`SELECT value_json, updated_by, updated_at FROM site_settings WHERE key = ?`).bind(D1_ROUTING_POLICY_KEY).first(),
+      env.DB.prepare(`SELECT value_json, updated_by, updated_at FROM site_settings WHERE key = ?`).bind(REPLICA_MODE_KEY).first(),
+      env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(REPLICA_REGION_KEY).first(),
+      env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(REPLICA_LAST_SWITCHOVER_KEY).first()
+    ]);
+
+    let parsed = {};
+    if (polRow && polRow.value_json) {
+      try { parsed = JSON.parse(polRow.value_json); } catch {}
+    }
+
+    let rawMode = parsed.mode;
+    if (modeRow && modeRow.value_json) {
+      try { rawMode = JSON.parse(modeRow.value_json); } catch { rawMode = modeRow.value_json; }
+    }
+    const mode = normalizeReplicaMode(rawMode) || 'auto_edge_replica';
+
+    let rawRegion = parsed.region;
+    if (regionRow && regionRow.value_json) {
+      try { rawRegion = JSON.parse(regionRow.value_json); } catch { rawRegion = regionRow.value_json; }
+    }
+    const region = normalizeReplicaRegion(rawRegion) || 'APAC';
+
+    let lastSwitchover = null;
+    if (lastRow && lastRow.value_json) {
+      try { lastSwitchover = JSON.parse(lastRow.value_json); } catch {}
+    }
+
     return {
       mode,
+      region,
       failover_threshold_ms: Math.max(25, Math.min(5000, Number(parsed?.failover_threshold_ms) || 250)),
       auto_switchover: parsed?.auto_switchover !== undefined ? Boolean(parsed.auto_switchover) : true,
-      updated_by: parsed?.updated_by || row.updated_by || null,
-      updated_at: parsed?.updated_at || row.updated_at || null
+      consistency_posture: consistencyPostureFor(mode, region),
+      last_switchover: lastSwitchover,
+      updated_by: parsed?.updated_by || (modeRow && modeRow.updated_by) || (polRow && polRow.updated_by) || null,
+      updated_at: parsed?.updated_at || (modeRow && modeRow.updated_at) || (polRow && polRow.updated_at) || null
     };
   } catch {
     return def;
   }
 }
 
-export async function saveD1RoutingPolicy(env, input = {}, actorEmail = 'admin') {
+export async function saveD1RoutingPolicy(env, input = {}, actorEmail = 'admin', { latencyMs = 1 } = {}) {
   if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
   await ensureSiteSettingsTable(env.DB);
-  const mode = input.mode === 'primary_only'
-    ? 'primary_only'
-    : (input.mode === 'read_replica_preferred' ? 'read_replica_preferred' : null);
+
+  const mode = normalizeReplicaMode(input.mode);
   if (!mode) {
-    throw new HttpError(400, 'INVALID_ROUTING_MODE', 'Routing mode must be "primary_only" or "read_replica_preferred"');
+    throw new HttpError(400, 'INVALID_ROUTING_MODE', 'Routing mode must be "auto_edge_replica", "primary_only", or "pinned_region"');
   }
-  const threshold = Math.max(25, Math.min(5000, Number(input.failover_threshold_ms) || 250));
+
+  const region = normalizeReplicaRegion(input.region);
+  if (!region) {
+    throw new HttpError(400, 'INVALID_REGION_HINT', 'Region hint must be one of: ' + VALID_REPLICA_REGIONS.join(', '));
+  }
+
+  const prev = await getD1RoutingPolicy(env);
+  const threshold = Math.max(25, Math.min(5000, Number(input.failover_threshold_ms) || prev.failover_threshold_ms || 250));
   const autoSwitchover = input.auto_switchover !== undefined ? Boolean(input.auto_switchover) : true;
   const nowIso = new Date().toISOString();
+  const actor = actorEmail || 'admin';
+
+  const lastSwitchover = {
+    switched_at: nowIso,
+    actor,
+    previous_mode: prev.mode,
+    new_mode: mode,
+    previous_region: prev.region,
+    region,
+    latency_ms: Math.max(1, Number(latencyMs) || 1)
+  };
 
   const policy = {
     mode,
+    region,
     failover_threshold_ms: threshold,
     auto_switchover: autoSwitchover,
-    updated_by: actorEmail || 'admin',
+    consistency_posture: consistencyPostureFor(mode, region),
+    last_switchover: lastSwitchover,
+    updated_by: actor,
     updated_at: nowIso
   };
 
-  await env.DB.prepare(
-    `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+  const upsertSql = `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
      VALUES (?, ?, ?, ?)
      ON CONFLICT(key) DO UPDATE SET
        value_json = excluded.value_json,
        updated_by = excluded.updated_by,
-       updated_at = excluded.updated_at`
-  ).bind(D1_ROUTING_POLICY_KEY, JSON.stringify(policy), actorEmail || 'admin', nowIso).run();
+       updated_at = excluded.updated_at`;
+
+  await Promise.all([
+    env.DB.prepare(upsertSql).bind(D1_ROUTING_POLICY_KEY, JSON.stringify(policy), actor, nowIso).run(),
+    env.DB.prepare(upsertSql).bind(REPLICA_MODE_KEY, JSON.stringify(mode), actor, nowIso).run(),
+    env.DB.prepare(upsertSql).bind(REPLICA_REGION_KEY, JSON.stringify(region), actor, nowIso).run(),
+    env.DB.prepare(upsertSql).bind(REPLICA_LAST_SWITCHOVER_KEY, JSON.stringify(lastSwitchover), actor, nowIso).run()
+  ]);
 
   return policy;
 }
@@ -154,11 +232,12 @@ export async function inspectD1ReplicaTelemetry(request, env) {
   if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
   await ensureSiteSettingsTable(env.DB);
 
-  // 1. Consecutive Read-Consistency Benchmark & PRAGMA inspection
+  // 1. Consecutive Read-Consistency Benchmark, PRAGMA & sqlite_master table count
   const r0 = Date.now();
   let journalMode = 'wal';
   let pageCount = 0;
   let pageSize = 4096;
+  let tableCount = 0;
   let databases = [{ seq: 0, name: 'main', file: 'cso-database' }];
 
   try {
@@ -196,6 +275,13 @@ export async function inspectD1ReplicaTelemetry(request, env) {
     }
   } catch {}
 
+  try {
+    const tblRow = await env.DB.prepare(
+      `SELECT COUNT(*) AS cnt FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'`
+    ).first();
+    tableCount = Number(tblRow && tblRow.cnt) || 0;
+  } catch {}
+
   // Second read probe to measure consecutive read consistency
   await env.DB.prepare('SELECT 1 AS read_probe').first();
   const readLatencyMs = Math.max(1, Date.now() - r0);
@@ -212,6 +298,45 @@ export async function inspectD1ReplicaTelemetry(request, env) {
   ).bind(D1_HEARTBEAT_KEY, JSON.stringify({ ts: nowIso }), nowIso).run();
   const writeLatencyMs = Math.max(1, Date.now() - w0);
 
+  // 3. R2 Warm-Standby Snapshot Age
+  let latestSnapshotAt = null;
+  let snapshotAgeMinutes = null;
+  try {
+    const snapRow = await env.DB.prepare(`SELECT created_at FROM ops_snapshots ORDER BY created_at DESC LIMIT 1`).first();
+    if (snapRow && snapRow.created_at) {
+      latestSnapshotAt = snapRow.created_at;
+      const msDiff = Date.now() - Date.parse(snapRow.created_at);
+      if (Number.isFinite(msDiff) && msDiff >= 0) {
+        snapshotAgeMinutes = Math.round(msDiff / 60000);
+      }
+    }
+  } catch {}
+
+  // 4. Recent Switchover History from audit_log
+  let switchoverHistory = [];
+  try {
+    const hist = await env.DB.prepare(
+      `SELECT id, actor_user_id, metadata_json, created_at
+       FROM audit_log
+       WHERE action = 'ops.replica.switchover'
+       ORDER BY id DESC
+       LIMIT 15`
+    ).all();
+    switchoverHistory = (hist && Array.isArray(hist.results) ? hist.results : []).map(r => {
+      let meta = {};
+      try { meta = JSON.parse(r.metadata_json || '{}'); } catch {}
+      return {
+        id: r.id,
+        created_at: r.created_at,
+        actor: meta.actor || r.actor_user_id || 'admin',
+        previous_mode: meta.previous_mode || '—',
+        new_mode: meta.new_mode || '—',
+        region: meta.region || 'APAC',
+        latency_ms: meta.latency_ms || null
+      };
+    });
+  } catch {}
+
   const policy = await getD1RoutingPolicy(env);
   const cf = (request && request.cf) || {};
   const edgeColo = String(cf.colo || (request && request.headers && request.headers.get('cf-ray')?.split('-')[1]) || 'LOCAL-DEV');
@@ -225,20 +350,64 @@ export async function inspectD1ReplicaTelemetry(request, env) {
     ok: true,
     checked_at: nowIso,
     routing_policy: policy,
+    switchover_history: switchoverHistory,
     telemetry: {
       binding: 'DB (cso-database)',
       replica_status: replicaStatus,
+      consistency_posture: policy.consistency_posture || consistencyPostureFor(policy.mode, policy.region),
       journal_mode: journalMode,
+      table_count: tableCount,
       page_count: pageCount,
       page_size: pageSize,
       estimated_size_bytes: estimatedSizeBytes,
       databases,
       read_latency_ms: readLatencyMs,
       write_latency_ms: writeLatencyMs,
+      latest_snapshot_at: latestSnapshotAt,
+      snapshot_age_minutes: snapshotAgeMinutes,
       edge_colo: edgeColo,
       edge_country: edgeCountry,
       edge_region: edgeRegion
     }
+  };
+}
+
+export const getReplicaSwitchoverStatus = inspectD1ReplicaTelemetry;
+
+export async function previewReplicaSwitchover(request, env, input = {}) {
+  const mode = normalizeReplicaMode(input.mode);
+  if (!mode) {
+    throw new HttpError(400, 'INVALID_ROUTING_MODE', 'Routing mode must be "auto_edge_replica", "primary_only", or "pinned_region"');
+  }
+  const region = normalizeReplicaRegion(input.region);
+  if (!region) {
+    throw new HttpError(400, 'INVALID_REGION_HINT', 'Region hint must be one of: ' + VALID_REPLICA_REGIONS.join(', '));
+  }
+
+  const current = await inspectD1ReplicaTelemetry(request, env);
+  const readEst = mode === 'primary_only'
+    ? 'Higher cross-region read RTT (routed to primary leader)'
+    : (mode === 'pinned_region'
+      ? `Low regional read RTT pinned to ${region} edge replica`
+      : 'Lowest global edge read RTT via nearest D1 replica');
+  const writeEst = 'All writes route to primary leader with sequential bookmark propagation';
+
+  return {
+    ok: true,
+    dry_run: true,
+    preview: {
+      proposed_mode: mode,
+      proposed_region: region,
+      current_mode: current.routing_policy.mode,
+      current_region: current.routing_policy.region,
+      consistency_posture: consistencyPostureFor(mode, region),
+      expected_read_impact: readEst,
+      expected_write_impact: writeEst,
+      measured_read_latency_ms: current.telemetry.read_latency_ms,
+      measured_write_latency_ms: current.telemetry.write_latency_ms
+    },
+    routing_policy: current.routing_policy,
+    telemetry: current.telemetry
   };
 }
 
@@ -457,10 +626,10 @@ export async function handleOpsContinuity(request, env, actor, subAction, subId,
   const method = request.method;
   const url = new URL(request.url);
 
-  // Module #4: GET / POST /api/admin/ops/replica
-  if (subAction === 'replica') {
+  // Module #4: GET / POST /api/admin/ops/replica and /api/admin/ops/replica-switchover
+  if (subAction === 'replica' || subAction === 'replica-switchover') {
     if (method === 'GET') {
-      const report = await inspectD1ReplicaTelemetry(request, env);
+      const report = await getReplicaSwitchoverStatus(request, env);
       return json(report, 200, { 'Cache-Control': 'no-store' });
     }
     if (method === 'POST') {
@@ -468,14 +637,30 @@ export async function handleOpsContinuity(request, env, actor, subAction, subId,
         throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can change D1 read-routing policy');
       }
       const body = await readJson(request, 10000).catch(() => ({}));
-      const policy = await saveD1RoutingPolicy(env, body, actor.email || actor.userId);
-      await audit(env, request, actor, 'ops.d1.routing', 'site_settings', D1_ROUTING_POLICY_KEY, {
-        mode: policy.mode,
-        failover_threshold_ms: policy.failover_threshold_ms,
-        auto_switchover: policy.auto_switchover
+      if (body && body.dry_run === true) {
+        const previewRes = await previewReplicaSwitchover(request, env, body);
+        return json(previewRes, 200, { 'Cache-Control': 'no-store' });
+      }
+      const confirmVal = String((body && (body.confirm !== undefined ? body.confirm : body.confirm_phrase)) || '').trim();
+      if (confirmVal !== 'SWITCHOVER') {
+        throw new HttpError(400, 'CONFIRMATION_REQUIRED', 'Type SWITCHOVER in the confirmation field to commit live D1 routing changes');
+      }
+      const prevPolicy = await getD1RoutingPolicy(env);
+      const probe = await inspectD1ReplicaTelemetry(request, env);
+      const policy = await saveD1RoutingPolicy(env, body, actor.email || actor.userId, {
+        latencyMs: probe.telemetry.read_latency_ms
+      });
+      await audit(env, request, actor, 'ops.replica.switchover', 'site_settings', REPLICA_MODE_KEY, {
+        actor: actor.email || actor.userId,
+        previous_mode: prevPolicy.mode,
+        new_mode: policy.mode,
+        previous_region: prevPolicy.region,
+        region: policy.region,
+        latency_ms: probe.telemetry.read_latency_ms,
+        failover_threshold_ms: policy.failover_threshold_ms
       });
       const report = await inspectD1ReplicaTelemetry(request, env);
-      return json(report, 200, { 'Cache-Control': 'no-store' });
+      return json({ ...report, switched: true }, 200, { 'Cache-Control': 'no-store' });
     }
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }

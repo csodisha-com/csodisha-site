@@ -155,7 +155,7 @@ export async function handleAdminApi(request, env) {
         if (id === 'snapshots') return await handleOpsSnapshots(request, env, actor, sub, extra);
         if (id === 'freeze' || id === 'cache' || id === 'health') return await handleOpsSentinel(request, env, actor, id);
         if (id === 'schema' || id === 'vacuum' || id === 'forensics' || id === 'retention') return await handleOpsHygiene(request, env, actor, id);
-        if (id === 'replica' || id === 'airgap-bundle' || id === 'runbooks') return await handleOpsContinuity(request, env, actor, id, sub, extra);
+        if (id === 'replica' || id === 'replica-switchover' || id === 'airgap-bundle' || id === 'runbooks') return await handleOpsContinuity(request, env, actor, id, sub, extra);
         break;
       case 'media':
         if (!id && method === 'GET') return await handleMediaList(request, env);

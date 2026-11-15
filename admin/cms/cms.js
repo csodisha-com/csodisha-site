@@ -3173,121 +3173,285 @@
   /* ---------- Folder 17: D1 Replica Switchover, Air-Gapped Bundle & DR Runbook Studio (Modules #4, #8, #16) ---------- */
   function opsContinuityAirgapRunbookPanel(focusMode) {
     var isAdmin = me && me.role === 'admin';
+    var isReplicaOnly = focusMode === 'replica';
     var headingMap = {
-      replica: 'Cloudflare D1 Distributed Replica Switchover',
+      replica: 'Cloudflare D1 Distributed Replica & Read-Replication Switchover Studio',
       airgap: 'Offline Air-Gapped Manifest & ZIP Bundle Packager',
       runbooks: 'Disaster Recovery Playbook, SOP & Runbook Studio'
     };
+    var subText = isReplicaOnly
+      ? 'Inspect live D1 read/write round-trip latency, sequential session bookmark consistency, R2 warm-standby snapshot age, dry-run routing impact, and audited switchover history.'
+      : 'D1 read-replica routing & latency telemetry, cryptographically signed offline air-gapped DR bundles, and interactive SOP runbook checklists.';
     var wrap = el('div', { class: 'panel cso-ops-continuity-panel' }, [
       el('h2', { text: headingMap[focusMode] || 'Continuity, Air-Gap Bundle & DR Runbook Studio' }),
-      el('p', {
-        class: 'muted',
-        text: 'D1 read-replica routing & latency telemetry, cryptographically signed offline air-gapped DR bundles, and interactive SOP runbook checklists.'
-      })
+      el('p', { class: 'muted', text: subText })
     ]);
 
     /* 1. Cloudflare D1 Distributed Replica & Read-Routing Telemetry (Module #4) */
-    var d1TelemetryGrid = el('div', { class: 'cso-ops-telemetry-grid' });
-    var routingModeSel = el('select', { class: 'cso-ops-policy-select' }, [
-      el('option', { value: 'read_replica_preferred', text: 'Read-Replica Preferred (Global Edge Reads)' }),
-      el('option', { value: 'primary_only', text: 'Primary Leader Only (Strict Linearizable)' })
+    var MODE_LABELS = {
+      auto_edge_replica: 'Auto Edge Read-Replica',
+      primary_only: 'Primary-Only Strict Consistency',
+      pinned_region: 'Pinned Edge Region'
+    };
+    var d1TelemetryGrid = el('div', { class: 'cso-ops-telemetry-grid', 'aria-live': 'polite' });
+    var replicaPreviewHost = el('div', { class: 'cso-ops-drill-output' });
+    var replicaHistoryHost = el('div', { class: 'cso-ops-drill-output' });
+
+    var routingModeSel = el('select', { id: 'f-ops-replica-mode', class: 'cso-ops-policy-select' }, [
+      el('option', { value: 'auto_edge_replica', text: 'Auto Edge Read-Replica (Global Sequential Bookmarks)' }),
+      el('option', { value: 'primary_only', text: 'Primary-Only Strict Consistency (Strong Leader Reads)' }),
+      el('option', { value: 'pinned_region', text: 'Pinned Edge Region (Regional Replica Hint)' })
+    ]);
+    var regionHintSel = el('select', { id: 'f-ops-replica-region', class: 'cso-ops-policy-select' }, [
+      el('option', { value: 'APAC', text: 'APAC — Asia Pacific / India' }),
+      el('option', { value: 'WEUR', text: 'WEUR — Western Europe' }),
+      el('option', { value: 'ENAM', text: 'ENAM — Eastern North America' }),
+      el('option', { value: 'WNAM', text: 'WNAM — Western North America' }),
+      el('option', { value: 'ME', text: 'ME — Middle East' }),
+      el('option', { value: 'AFR', text: 'AFR — Africa' }),
+      el('option', { value: 'EEUR', text: 'EEUR — Eastern Europe' }),
+      el('option', { value: 'OC', text: 'OC — Oceania' })
     ]);
     var thresholdInput = el('input', {
       type: 'number',
+      id: 'f-ops-replica-threshold',
       class: 'cso-ops-policy-age',
       min: '25',
       max: '5000',
       value: '250'
     });
+    var switchConfirmInp = el('input', {
+      type: 'text',
+      id: 'f-ops-replica-confirm',
+      class: 'cso-ops-confirm-input',
+      placeholder: 'Type SWITCHOVER to confirm',
+      autocomplete: 'off',
+      spellcheck: 'false'
+    });
+    var probeBtn = el('button', {
+      type: 'button',
+      class: 'btn sm',
+      text: 'Run Live Latency & Consistency Probe'
+    });
+    var dryRunBtn = el('button', {
+      type: 'button',
+      class: 'btn',
+      disabled: !isAdmin,
+      text: 'Preview Switchover Impact (Dry Run)'
+    });
     var saveRoutingBtn = el('button', {
       type: 'button',
       class: 'btn primary',
       disabled: !isAdmin,
-      text: 'Save Routing Policy & Probe D1',
-      onclick: function () { updateRoutingAndProbe(true); }
+      text: 'Commit Live Routing Switchover'
     });
 
     function renderD1Telemetry(rep) {
       clear(d1TelemetryGrid);
+      clear(replicaHistoryHost);
       var tel = (rep && rep.telemetry) || {};
       var pol = (rep && rep.routing_policy) || {};
+      var lastSw = pol.last_switchover || null;
       if (pol.mode) routingModeSel.value = pol.mode;
+      if (pol.region) regionHintSel.value = pol.region;
       if (pol.failover_threshold_ms) thresholdInput.value = String(pol.failover_threshold_ms);
 
+      var modeBadgeText = MODE_LABELS[pol.mode] || pol.mode || 'Auto Edge Read-Replica';
+      var snapAgeText = tel.snapshot_age_minutes !== null && tel.snapshot_age_minutes !== undefined
+        ? ('R2 Standby Age: ' + tel.snapshot_age_minutes + 'm')
+        : 'R2 Standby: No snapshot yet';
+
       d1TelemetryGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
-        el('div', { class: 'muted sm', text: 'Replica Sync & Routing Mode' }),
+        el('div', { class: 'muted sm', text: 'Active Routing Mode & Sync' }),
         el('div', { class: 'cso-ops-telemetry-val' }, [
-          el('span', { class: 'badge ' + (tel.replica_status === 'SYNCHRONIZED' ? 'published' : 'scheduled'), text: tel.replica_status || 'SYNCHRONIZED' })
+          el('span', { class: 'badge ' + (tel.replica_status === 'SYNCHRONIZED' ? 'published' : 'scheduled'), text: modeBadgeText })
         ]),
-        el('div', { class: 'muted sm cso-ops-mono', text: 'Mode: ' + (pol.mode || 'read_replica_preferred') })
+        el('div', { class: 'muted sm cso-ops-mono', text: (tel.replica_status || 'SYNCHRONIZED') + ' · ' + snapAgeText })
       ]));
 
       d1TelemetryGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
-        el('div', { class: 'muted sm', text: 'Read vs. Write Roundtrip' }),
+        el('div', { class: 'muted sm', text: 'Measured D1 Query Latency' }),
         el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: 'Read: ' + (tel.read_latency_ms || 1) + ' ms · Write: ' + (tel.write_latency_ms || 1) + ' ms' }),
-        el('div', { class: 'muted sm cso-tabular', text: 'Failover Threshold: ' + (pol.failover_threshold_ms || 250) + ' ms' })
+        el('div', { class: 'muted sm cso-tabular', text: (tel.table_count || 0) + ' D1 tables · Threshold: ' + (pol.failover_threshold_ms || 250) + ' ms' })
       ]));
 
       d1TelemetryGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
-        el('div', { class: 'muted sm', text: 'SQLite Journal & Storage' }),
-        el('div', { class: 'cso-ops-telemetry-val cso-ops-mono', text: 'Journal: ' + String(tel.journal_mode || 'wal').toUpperCase() }),
-        el('div', { class: 'muted sm cso-tabular', text: (tel.page_count || 0) + ' pages · ' + fmtBytes(tel.estimated_size_bytes || 0) })
-      ]));
-
-      d1TelemetryGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
-        el('div', { class: 'muted sm', text: 'Serving Edge Region' }),
+        el('div', { class: 'muted sm', text: 'Region & Bookmark Consistency' }),
         el('div', { class: 'cso-ops-telemetry-val' }, [
-          el('code', { class: 'cso-ops-sha-code', text: (tel.edge_colo || 'LOCAL') + ' · ' + (tel.edge_country || 'IN') })
+          el('code', { class: 'cso-ops-sha-code', text: (pol.region || 'APAC') + ' · Edge ' + (tel.edge_colo || 'LOCAL') })
         ]),
-        el('div', { class: 'muted sm', text: tel.binding || 'DB (cso-database)' })
+        el('div', { class: 'muted sm', text: tel.consistency_posture || pol.consistency_posture || 'Sequential Session Bookmarks' })
       ]));
-    }
 
-    async function loadD1Telemetry() {
-      try {
-        var rep = await api('GET', 'ops/replica');
-        renderD1Telemetry(rep);
-      } catch (err) {
-        clear(d1TelemetryGrid).appendChild(el('div', { class: 'alert', text: err.message || 'Failed to inspect D1 replica telemetry' }));
+      d1TelemetryGrid.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Last Switchover & Actor' }),
+        el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: lastSw && lastSw.switched_at ? fmtDate(lastSw.switched_at) : 'Default baseline' }),
+        el('div', { class: 'muted sm', text: lastSw && lastSw.actor ? ('By ' + lastSw.actor + ' → ' + (MODE_LABELS[lastSw.new_mode] || lastSw.new_mode)) : 'No switchover recorded yet' })
+      ]));
+
+      var hist = Array.isArray(rep && rep.switchover_history) ? rep.switchover_history : [];
+      if (hist.length) {
+        var hTb = el('tbody');
+        hist.forEach(function (h) {
+          hTb.appendChild(el('tr', {}, [
+            el('td', { class: 'cso-tabular', text: fmtDate(h.created_at) }),
+            el('td', { text: h.actor || 'admin' }),
+            el('td', {}, el('code', { text: h.previous_mode || '—' })),
+            el('td', {}, el('code', { text: h.new_mode || '—' })),
+            el('td', {}, el('code', { text: h.region || 'APAC' })),
+            el('td', { class: 'cso-tabular', text: h.latency_ms ? (h.latency_ms + ' ms') : '—' })
+          ]));
+        });
+        replicaHistoryHost.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+          el('caption', { class: 'muted', text: 'D1 Replica Switchover History & Audit Log' }),
+          el('thead', {}, el('tr', {}, ['Timestamp', 'Actor', 'Previous Mode', 'New Mode', 'Region Hint', 'Latency'].map(function (col) {
+            return el('th', { scope: 'col', text: col });
+          }))),
+          hTb
+        ])));
+      } else {
+        replicaHistoryHost.appendChild(el('p', { class: 'muted sm', text: 'No live switchover events recorded in audit_log yet.' }));
       }
     }
 
-    async function updateRoutingAndProbe(showToast) {
-      saveRoutingBtn.disabled = true;
-      saveRoutingBtn.textContent = 'Updating & Probing…';
+    var isProbingReplica = false;
+    var isSwitchingReplica = false;
+
+    async function loadD1Telemetry(showToast) {
+      if (isProbingReplica) return;
+      isProbingReplica = true;
+      probeBtn.disabled = true;
+      probeBtn.textContent = 'Probing D1…';
       try {
-        var rep = await api('POST', 'ops/replica', {
-          mode: routingModeSel.value,
-          failover_threshold_ms: Number(thresholdInput.value) || 250,
-          auto_switchover: true
-        });
+        var rep = await api('GET', 'ops/replica-switchover');
         renderD1Telemetry(rep);
-        if (showToast) toast('D1 read-routing policy updated (' + routingModeSel.value + ')');
+        if (showToast) toast('D1 probe complete (Read: ' + (rep.telemetry && rep.telemetry.read_latency_ms || 1) + ' ms)');
+      } catch (err) {
+        clear(d1TelemetryGrid).appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+          el('span', { text: err.message || 'Failed to inspect D1 replica telemetry' }),
+          el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: function () { loadD1Telemetry(false); } })
+        ]));
+      } finally {
+        isProbingReplica = false;
+        probeBtn.disabled = false;
+        probeBtn.textContent = 'Run Live Latency & Consistency Probe';
+      }
+    }
+
+    async function runDryRunPreview() {
+      if (isSwitchingReplica || !isAdmin) return;
+      dryRunBtn.disabled = true;
+      dryRunBtn.textContent = 'Simulating Switchover…';
+      clear(replicaPreviewHost);
+      try {
+        var res = await api('POST', 'ops/replica-switchover', {
+          mode: routingModeSel.value,
+          region: regionHintSel.value,
+          failover_threshold_ms: Number(thresholdInput.value) || 250,
+          dry_run: true
+        });
+        var pv = res.preview || {};
+        replicaPreviewHost.appendChild(el('div', { class: 'cso-ops-scope-preview' }, [
+          el('div', { class: 'cso-ops-scope-preview-head' }, [
+            el('span', { class: 'badge scheduled', text: 'Dry-Run Simulation (No Live Changes)' }),
+            el('span', { class: 'hint cso-tabular', text: 'Measured Read: ' + (pv.measured_read_latency_ms || 1) + ' ms · Write: ' + (pv.measured_write_latency_ms || 1) + ' ms' })
+          ]),
+          el('p', { class: 'cso-ops-privacy-note', text: 'Proposed: ' + (MODE_LABELS[pv.proposed_mode] || pv.proposed_mode) + ' (' + (pv.proposed_region || 'APAC') + ') · Consistency: ' + (pv.consistency_posture || '') }),
+          el('p', { class: 'hint cso-ops-privacy-note', text: 'Read Tradeoff: ' + (pv.expected_read_impact || '') + ' · Write Path: ' + (pv.expected_write_impact || '') })
+        ]));
+        toast('Dry-run switchover preview ready');
+      } catch (err) {
+        replicaPreviewHost.appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+          el('span', { text: 'Dry-run failed: ' + (err.message || 'Request failed') }),
+          el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: runDryRunPreview })
+        ]));
+        toast(err.message || 'Dry-run preview failed', true);
+      } finally {
+        dryRunBtn.disabled = !isAdmin;
+        dryRunBtn.textContent = 'Preview Switchover Impact (Dry Run)';
+      }
+    }
+
+    async function commitLiveSwitchover() {
+      if (isSwitchingReplica || !isAdmin) return;
+      if (switchConfirmInp.value.trim() !== 'SWITCHOVER') {
+        toast('Type SWITCHOVER in the confirmation field to commit live routing changes', true);
+        switchConfirmInp.focus();
+        return;
+      }
+      isSwitchingReplica = true;
+      saveRoutingBtn.disabled = true;
+      dryRunBtn.disabled = true;
+      routingModeSel.disabled = true;
+      regionHintSel.disabled = true;
+      thresholdInput.disabled = true;
+      switchConfirmInp.disabled = true;
+      saveRoutingBtn.textContent = 'Switching & Probing D1…';
+      try {
+        var rep = await api('POST', 'ops/replica-switchover', {
+          mode: routingModeSel.value,
+          region: regionHintSel.value,
+          failover_threshold_ms: Number(thresholdInput.value) || 250,
+          auto_switchover: true,
+          confirm: switchConfirmInp.value.trim()
+        });
+        switchConfirmInp.value = '';
+        clear(replicaPreviewHost);
+        renderD1Telemetry(rep);
+        toast('D1 routing switched to ' + (MODE_LABELS[routingModeSel.value] || routingModeSel.value) + ' (' + regionHintSel.value + ')');
       } catch (err) {
         toast(err.message || 'Failed to update D1 routing policy', true);
+      } finally {
+        isSwitchingReplica = false;
+        saveRoutingBtn.disabled = !isAdmin;
+        dryRunBtn.disabled = !isAdmin;
+        routingModeSel.disabled = false;
+        regionHintSel.disabled = false;
+        thresholdInput.disabled = false;
+        switchConfirmInp.disabled = false;
+        saveRoutingBtn.textContent = 'Commit Live Routing Switchover';
       }
-      saveRoutingBtn.disabled = !isAdmin;
-      saveRoutingBtn.textContent = 'Save Routing Policy & Probe D1';
     }
+
+    probeBtn.addEventListener('click', function () { loadD1Telemetry(true); });
+    dryRunBtn.addEventListener('click', runDryRunPreview);
+    saveRoutingBtn.addEventListener('click', commitLiveSwitchover);
 
     var replicaBox = el('div', { class: 'cso-ops-subbox' }, [
       el('div', { class: 'cso-ops-subhead' }, [
-        el('strong', { text: '1. Cloudflare D1 Distributed Replica Switchover & Telemetry (Module #4)' })
+        el('strong', { text: 'Cloudflare D1 Distributed Replica Switchover & Live Telemetry' }),
+        probeBtn
       ]),
       d1TelemetryGrid,
       el('div', { class: 'cso-ops-restore-controls' }, [
         el('div', { class: 'cso-ops-restore-field' }, [
-          el('label', { class: 'muted sm', text: 'Read-Preference Routing Policy' }),
+          el('label', { for: 'f-ops-replica-mode', class: 'muted sm', text: 'Routing Mode' }),
           routingModeSel
         ]),
         el('div', { class: 'cso-ops-restore-field' }, [
-          el('label', { class: 'muted sm', text: 'Failover Latency Threshold (ms)' }),
+          el('label', { for: 'f-ops-replica-region', class: 'muted sm', text: 'Region Hint' }),
+          regionHintSel
+        ]),
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { for: 'f-ops-replica-threshold', class: 'muted sm', text: 'Failover Threshold (ms)' }),
           thresholdInput
         ]),
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { for: 'f-ops-replica-confirm', class: 'muted sm', text: 'Confirmation (type SWITCHOVER)' }),
+          switchConfirmInp
+        ]),
+        dryRunBtn,
         saveRoutingBtn
-      ])
+      ]),
+      replicaPreviewHost,
+      replicaHistoryHost
     ]);
     wrap.appendChild(replicaBox);
+
+    if (isReplicaOnly) {
+      loadD1Telemetry(false);
+      return wrap;
+    }
 
     /* 2. Offline Air-Gapped Manifest & Signed Bundle Packager (Module #8) */
     var airgapSummaryHost = el('div', {}, el('p', { class: 'muted sm', text: 'Calculating live air-gapped DR bundle manifest…' }));
