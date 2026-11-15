@@ -1238,11 +1238,12 @@ export async function resolvePublicStudyDirectory(env, segments = [], opts = {})
   const includeDesc = opts.includeDescendants !== false;
   const where = ['domain_slug = ?', "status = 'published'"];
   const binds = [domainSlug];
+  let descendantIdSet = null;
   if (activeFolder) {
     if (includeDesc) {
-      const ids = getDescendantIds(childrenByParent, activeFolder.id);
-      where.push(`folder_id IN (${ids.map(() => '?').join(',')})`);
-      binds.push(...ids);
+      if (activeFolder.depth > 1) {
+        descendantIdSet = new Set(getDescendantIds(childrenByParent, activeFolder.id));
+      }
     } else {
       where.push('folder_id = ?');
       binds.push(activeFolder.id);
@@ -1257,9 +1258,13 @@ export async function resolvePublicStudyDirectory(env, segments = [], opts = {})
     binds.push(opts.lang);
   }
 
-  const rows = (await env.DB.prepare(
-    `SELECT * FROM study_library_items WHERE ${where.join(' AND ')} ORDER BY is_featured DESC, updated_at DESC, created_at DESC LIMIT 60`
+  let rows = (await env.DB.prepare(
+    `SELECT * FROM study_library_items WHERE ${where.join(' AND ')} ORDER BY is_featured DESC, updated_at DESC, created_at DESC LIMIT 200`
   ).bind(...binds).all()).results || [];
+  if (descendantIdSet) {
+    rows = rows.filter(r => r.folder_id && descendantIdSet.has(r.folder_id));
+  }
+  rows = rows.slice(0, 60);
 
   const effectiveFolder = activeFolder ? withSlugPath(activeFolder) : {
     id: domainSlug,
