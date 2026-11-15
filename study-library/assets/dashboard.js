@@ -170,18 +170,24 @@
   // ---- Sidebar Collapse & Mobile Drawer ----
   function applySidebarCollapsed(collapsed) {
     document.body.classList.toggle('cso-sidebar-collapsed', collapsed);
+    if (sidebar) {
+      sidebar.classList.toggle('is-collapsed', collapsed);
+      sidebar.dataset.sidebar = collapsed ? 'collapsed' : 'expanded';
+    }
     [sidebarToggle, sidebarToggleTop].forEach(btn => {
       if (!btn) return;
       btn.setAttribute('aria-expanded', String(!collapsed));
-      if (btn === sidebarToggle) btn.textContent = collapsed ? '▶' : '◀';
+      if (btn === sidebarToggle) btn.textContent = collapsed ? '▸' : '◂';
     });
     try { localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0'); } catch {}
   }
 
   function initSidebarControls() {
     try {
-      if (localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === '1' && window.innerWidth >= 769) {
+      if (localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === '1' && window.innerWidth >= 1024) {
         applySidebarCollapsed(true);
+      } else {
+        applySidebarCollapsed(false);
       }
     } catch {}
     [sidebarToggle, sidebarToggleTop].forEach(btn => {
@@ -564,6 +570,11 @@
   function renderBreadcrumb() {
     if (!breadcrumb) return;
     breadcrumb.replaceChildren();
+    if (state.view === 'overview') {
+      breadcrumb.hidden = true;
+      return;
+    }
+    breadcrumb.hidden = false;
 
     const addItem = (label, handler, isCurrent) => {
       const li = el('li', 'breadcrumb-item');

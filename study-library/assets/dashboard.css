@@ -4042,6 +4042,11 @@ body {
 }
 
 /* Full Desktop Left Sidebar (>= 1024px) & Drawer (< 1024px) */
+.breadcrumb:empty,
+.breadcrumb[hidden] {
+  display: none !important;
+}
+
 @media (min-width: 1024px) {
   .app-shell {
     display: grid !important;
@@ -4050,11 +4055,16 @@ body {
     padding: 16px !important;
   }
 
+  body.cso-sidebar-collapsed .app-shell {
+    grid-template-columns: 68px minmax(0, 1fr) !important;
+  }
+
   .sidebar {
     position: sticky !important;
     top: 16px !important;
     width: 270px !important;
     min-width: 270px !important;
+    flex: 0 0 270px !important;
     max-height: calc(100vh - 32px) !important;
     overflow-y: auto !important;
     transform: none !important;
@@ -4063,6 +4073,46 @@ body {
     background: #ffffff !important;
     border: 1px solid rgba(20, 83, 45, 0.14) !important;
     box-shadow: 0 4px 20px rgba(20, 83, 45, 0.06) !important;
+    align-items: stretch !important;
+  }
+
+  .app-shell #side-navigation .side-link {
+    justify-content: flex-start !important;
+    text-align: left !important;
+    height: auto !important;
+    min-height: 40px !important;
+    padding: 8px 10px !important;
+  }
+
+  .side-link-text {
+    display: inline !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+    line-height: 1.3 !important;
+  }
+
+  body.cso-sidebar-collapsed .sidebar,
+  .sidebar.is-collapsed,
+  .sidebar[data-sidebar="collapsed"] {
+    width: 68px !important;
+    min-width: 68px !important;
+    flex: 0 0 68px !important;
+    padding: 14px 8px !important;
+    align-items: center !important;
+  }
+
+  body.cso-sidebar-collapsed .app-shell #side-navigation .side-link,
+  .sidebar.is-collapsed #side-navigation .side-link,
+  .sidebar[data-sidebar="collapsed"] #side-navigation .side-link {
+    justify-content: center !important;
+    padding: 8px 0 !important;
+  }
+
+  body.cso-sidebar-collapsed .side-link-text,
+  .sidebar.is-collapsed .side-link-text,
+  .sidebar[data-sidebar="collapsed"] .side-link-text {
+    display: none !important;
   }
 
   .menu-toggle,
