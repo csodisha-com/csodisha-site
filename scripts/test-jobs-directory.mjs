@@ -10,6 +10,7 @@ import {
   enrichCoursesExamsCategory04,
   enrichScholarshipsCategory05,
   enrichInternationalCategory06,
+  enrichCareerDevelopmentCategory07,
   handleJobsDirectoryStudio,
   handlePublicJobsOverviewApi,
   handlePublicJobsItemsApi,
@@ -1086,6 +1087,117 @@ async function main() {
   const ssrIoHtml = await ssrIo.text();
   assert.ok(ssrIoHtml.includes('Qualification &amp; Odia Rule') && ssrIoHtml.includes('emigrate.gov.in'));
   assert.ok(!/\sstyle\s*=/i.test(ssrIoHtml), 'SSR overseas guide page must have zero inline style="" attributes');
+
+  // 18. Category #07 (v74) Exhaustive Enrichment across all 20 subcategories + 12 Employability Handbooks + Admin Sync + SSR
+  const cat07Raw = new DatabaseSync(':memory:');
+  cat07Raw.exec(`
+    CREATE TABLE audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, actor_user_id TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, metadata_json TEXT, ip_address TEXT, created_at INTEGER NOT NULL DEFAULT (unixepoch()));
+    CREATE TABLE jobs_directory_nodes (id INTEGER PRIMARY KEY, parent_id INTEGER, level INTEGER, code TEXT, title TEXT, title_or TEXT, description TEXT, description_or TEXT, group_slug TEXT, url TEXT, exam_slug TEXT, notes_json TEXT, tags TEXT, sort_order INTEGER, is_active INTEGER);
+  `);
+  const cdSection = dirJson.sections[6];
+  let cdSeq = 1;
+  const insCdNode = cat07Raw.prepare('INSERT INTO jobs_directory_nodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)');
+  insCdNode.run(1, null, 0, '07', cdSection.title, '', 'Career Development & Employability', '', 'career-employability', '', '', '[]', '[]', 1);
+  function insertCdChildren(children, parentId, level) {
+    for (let i = 0; i < (children || []).length; i++) {
+      const ch = children[i];
+      cdSeq += 1;
+      const myId = cdSeq;
+      insCdNode.run(myId, parentId, level, ch.number || '', ch.title, '', '', '', 'career-employability', '', '', '[]', '[]', i + 1);
+      insertCdChildren(ch.children, myId, level + 1);
+    }
+  }
+  insertCdChildren(cdSection.children, 1, 1);
+  assert.equal(cdSeq - 1, 20, 'directory.json should contain all 20 subcategories under Career Development & Employability');
+
+  function wrapCat07(sql, args = []) {
+    return {
+      async first() { return cat07Raw.prepare(sql).get(...args) || null; },
+      async all() { return { results: cat07Raw.prepare(sql).all(...args) }; },
+      async run() { const info = cat07Raw.prepare(sql).run(...args); return { success: true, meta: { changes: info.changes } }; }
+    };
+  }
+  const cat07Env = {
+    DB: {
+      prepare(sql) { return { bind(...a) { return wrapCat07(sql, a); }, ...wrapCat07(sql, []) }; },
+      async batch(stmts) { const out = []; for (const s of stmts) out.push(await s.run()); return out; }
+    }
+  };
+
+  await ensureJobsDirectoryStudioSchema(cat07Env.DB);
+
+  const cdTreeRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/tree?domain=career-employability'),
+    cat07Env,
+    admin,
+    'tree'
+  );
+  assert.equal(cdTreeRes.status, 200);
+  const cdTreeData = await cdTreeRes.json();
+  assert.ok(cdTreeData.folders.length >= 20, `Expected >= 20 career-employability folders, got ${cdTreeData.folders.length}`);
+  for (const f of cdTreeData.folders) {
+    assert.ok((f.description_en || '').length >= 160, `Career Dev folder "${f.title}" description_en < 160 chars`);
+    assert.ok((f.description_or || '').length >= 160, `Career Dev folder "${f.title}" description_or < 160 chars`);
+    assert.ok(Boolean(f.seo_title), `Career Dev folder "${f.title}" missing seo_title`);
+    assert.ok(Boolean(f.seo_description), `Career Dev folder "${f.title}" missing seo_description`);
+    assert.ok(Boolean(f.featured_badge), `Career Dev folder "${f.title}" missing featured_badge`);
+    assert.ok(Boolean(f.verified_at), `Career Dev folder "${f.title}" missing verified_at`);
+  }
+
+  const cdItemsRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/items?domain=career-employability'),
+    cat07Env,
+    admin,
+    'items'
+  );
+  assert.equal(cdItemsRes.status, 200);
+  const cdItemsData = await cdItemsRes.json();
+  const cdGuides = cdItemsData.items.filter(it => it.item_type === 'employability-guide' && Boolean(it.exam_code && it.qualification_odia_rule));
+  assert.ok(cdGuides.length >= 12, `Expected >= 12 employability-guide items, got ${cdGuides.length}`);
+  for (const g of cdGuides) {
+    assert.ok(Boolean(g.title_or), `Employability guide "${g.title}" missing title_or`);
+    assert.ok(Boolean(g.pay_matrix), `Employability guide "${g.title}" missing pay_matrix`);
+    assert.ok(Boolean(g.documents_checklist), `Employability guide "${g.title}" missing documents_checklist`);
+    assert.ok(Boolean(g.application_steps), `Employability guide "${g.title}" missing application_steps`);
+    assert.ok(Boolean(g.official_portal_url), `Employability guide "${g.title}" missing official_portal_url`);
+    assert.ok(Boolean(g.verified_at), `Employability guide "${g.title}" missing verified_at`);
+  }
+
+  // Verify Admin two-way sync PUT & custom edit preservation
+  const sampleCd = cdGuides.find(g => g.slug === 'opsc-oas-personality-test-daf-kit') || cdGuides[0];
+  const customCdRule = 'Custom Admin OPSC OAS DAF & Odisha District Viva Rule Verified';
+  const putCdRes = await handleJobsDirectoryStudio(
+    makeReq('PUT', `https://csodisha.com/api/admin/jobs-directory/items/${sampleCd.id}`, {
+      qualification_odia_rule: customCdRule,
+      exam_code: 'OPSC-DAF-CUSTOM-2026'
+    }),
+    cat07Env,
+    admin,
+    'items',
+    sampleCd.id
+  );
+  assert.equal(putCdRes.status, 200);
+  await enrichCareerDevelopmentCategory07(cat07Env.DB, new Date().toISOString());
+  const cdItemAfter = await (await handleJobsDirectoryStudio(
+    makeReq('GET', `https://csodisha.com/api/admin/jobs-directory/items/${sampleCd.id}`),
+    cat07Env,
+    admin,
+    'items',
+    sampleCd.id
+  )).json();
+  assert.equal(cdItemAfter.item.qualification_odia_rule, customCdRule, 'Custom admin edit in Category #07 must not be overwritten');
+  assert.equal(cdItemAfter.item.exam_code, 'OPSC-DAF-CUSTOM-2026');
+
+  // Verify SSR Employability guide renders cleanly with zero inline style="" attributes
+  const ssrCd = await handlePublicJobsRoute(
+    makeReq('GET', 'https://csodisha.com/jobs/item/opsc-oas-personality-test-daf-kit/'),
+    cat07Env,
+    new URL('https://csodisha.com/jobs/item/opsc-oas-personality-test-daf-kit/')
+  );
+  assert.equal(ssrCd.status, 200);
+  const ssrCdHtml = await ssrCd.text();
+  assert.ok(ssrCdHtml.includes('Qualification &amp; Odia Rule') && ssrCdHtml.includes('opsc.gov.in'));
+  assert.ok(!/\sstyle\s*=/i.test(ssrCdHtml), 'SSR employability guide page must have zero inline style="" attributes');
 
   console.log('ALL JOBS DIRECTORY STUDIO TESTS PASSED');
 }
