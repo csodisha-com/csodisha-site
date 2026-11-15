@@ -14894,6 +14894,623 @@
     main.appendChild(schemesDirectoryStudioPanel(domainSlug || 'govt-public-welfare'));
   }
 
+  function communityDirectoryStudioPanel(domainSlug) {
+    var DOMAINS = {
+      'local-odisha-communities': { num: '01', title: 'Local & Odisha Communities', defaultRegion: 'All Odisha (30 Districts)', quickTags: ['30 Districts', 'Civic Chapter', 'Reading Circle', 'Panchayat', 'Bhubaneswar'] },
+      'students-educators-mentorship': { num: '02', title: 'Students, Educators & Mentorship', defaultRegion: 'All Odisha (30 Districts)', quickTags: ['OPSC', 'OSSSC', 'UGC NET', 'Teachers Forum', 'First-Gen'] },
+      'careers-business-networks': { num: '03', title: 'Careers, Business & Professional Networks', defaultRegion: 'Bhubaneswar & Cuttack', quickTags: ['Startup Odisha', 'MSME', 'Handloom', 'Alumni', 'Artisans'] },
+      'agriculture-rural-livelihoods': { num: '04', title: 'Agriculture & Rural Livelihoods', defaultRegion: 'Koraput & KBK Region', quickTags: ['FPO', 'Shree Anna', 'Millets', 'Chilika', 'Organic'] },
+      'women-families-inclusion': { num: '05', title: 'Women, Families, Health & Inclusion', defaultRegion: 'All Odisha (30 Districts)', quickTags: ['Mission Shakti', 'SHG', 'Women in STEM', 'Nutrition', 'Divyangjan'] },
+      'youth-ngos-volunteering': { num: '06', title: 'Youth, NGOs & Volunteering', defaultRegion: 'All Odisha (30 Districts)', quickTags: ['NSS', 'NYKS', 'Red Cross', 'Volunteering', 'NGO'] },
+      'culture-sports-traditional': { num: '07', title: 'Culture, Sports & Traditional Communities', defaultRegion: 'Puri & Konark', quickTags: ['Odissi', 'Sambalpuri', 'Hockey', 'Literature', 'Heritage'] },
+      'environment-science-tech': { num: '08', title: 'Environment, Science & Technology', defaultRegion: 'Bhubaneswar & Cuttack', quickTags: ['Conservation', 'Chilika', 'Citizen Science', 'Open Source', 'STEM'] },
+      'digital-international-forums': { num: '09', title: 'Digital, International & Community Forums', defaultRegion: 'Global Odia Diaspora', quickTags: ['Diaspora', 'Telegram', 'WhatsApp', 'Q&A Forum', 'Global Odia'] },
+      'community-safety-governance': { num: '10', title: 'Community Directory, Safety & Governance', defaultRegion: 'All Odisha (30 Districts)', quickTags: ['DPDP Charter', 'Safety Verified', 'Moderation', 'Anti-Spam'] }
+    };
+    var activeDomain = DOMAINS[domainSlug] ? domainSlug : 'local-odisha-communities';
+    var cfg = DOMAINS[activeDomain];
+    var publicUrl = 'https://csodisha.com/community/' + activeDomain + '/';
+    var canWrite = me && ['admin', 'editor', 'reviewer'].includes(me.role);
+    var canDelete = me && me.role === 'admin';
+
+    var state = { tree: null, parentId: null, healthTab: 'all', q: '', status: '', undoTimer: null };
+    var wrap = el('div', { class: 'cso-ops-wrap' });
+
+    var copyUrlBtn = el('button', { type: 'button', class: 'btn sm', text: 'Copy Directory URL' });
+    copyUrlBtn.addEventListener('click', function () {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(publicUrl).then(function () { toast('Copied ' + publicUrl); });
+      }
+    });
+    var addSubBtn = el('button', { type: 'button', class: 'btn sm', text: '+ New Sub-Directory' });
+    addSubBtn.disabled = !canWrite;
+    var addItemBtn = el('button', { type: 'button', class: 'btn primary sm', text: '+ Add Community / Chapter' });
+    addItemBtn.disabled = !canWrite;
+    var refreshBtn = el('button', { type: 'button', class: 'btn sm', text: 'Refresh' });
+
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-ops-head' }, [
+        el('div', {}, [
+          el('h2', { text: 'Module #' + cfg.num + ' — ' + cfg.title }),
+          el('p', { class: 'muted sm', text: '4-Layer Community Directory Studio · ' + publicUrl })
+        ]),
+        el('div', { class: 'cso-ops-badges' }, [
+          copyUrlBtn,
+          el('a', { class: 'btn sm', href: '/community/' + activeDomain + '/', target: '_blank', rel: 'noopener', text: 'View Live Directory ↗' }),
+          addSubBtn,
+          addItemBtn,
+          refreshBtn
+        ])
+      ])
+    ]));
+
+    var undoBar = el('div', { class: 'cso-jd-undo-bar' });
+    undoBar.hidden = true;
+    wrap.appendChild(undoBar);
+
+    var kpiRow = el('div', { class: 'cso-ops-kpi-row' });
+    wrap.appendChild(kpiRow);
+
+    var healthTabsBox = el('div', { class: 'cso-jd-health-tabs' });
+    wrap.appendChild(healthTabsBox);
+
+    var folderDrawerBox = el('div', { class: 'cso-ops-card' });
+    folderDrawerBox.hidden = true;
+    wrap.appendChild(folderDrawerBox);
+
+    var composerBox = el('div');
+    composerBox.hidden = true;
+    wrap.appendChild(composerBox);
+
+    var crumbBar = el('div', { class: 'cso-sl-crumb-bar' });
+    var folderGridBox = el('div', { class: 'cso-sl-folder-grid' });
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-ops-subhead' }, [el('h3', { text: 'Multi-Level Sub-Directory Explorer' })]),
+      crumbBar,
+      folderGridBox
+    ]));
+
+    var searchInp = el('input', { class: 'input', type: 'search', placeholder: 'Search communities, district, activities...' });
+    var statusSel = el('select', { class: 'select' }, [
+      el('option', { value: '', text: 'All statuses' }),
+      el('option', { value: 'published', text: 'Published' }),
+      el('option', { value: 'draft', text: 'Draft' }),
+      el('option', { value: 'archived', text: 'Archived' })
+    ]);
+    var clearFilterBtn = el('button', { type: 'button', class: 'btn sm', text: 'Reset Filters' });
+    var listHost = el('div');
+
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-ops-subhead' }, [el('h3', { text: 'Communities, Chapters & Safety Reports' })]),
+      el('div', { class: 'cso-cnt-toolbar' }, [
+        el('div', { class: 'cso-cnt-filter-row' }, [searchInp, statusSel, clearFilterBtn])
+      ]),
+      listHost
+    ]));
+
+    function showUndo(msg, onUndo) {
+      if (state.undoTimer) clearTimeout(state.undoTimer);
+      clear(undoBar);
+      undoBar.hidden = false;
+      var undoBtn = el('button', { type: 'button', class: 'btn sm', text: 'Undo (5s)' });
+      undoBtn.addEventListener('click', async function () {
+        if (state.undoTimer) clearTimeout(state.undoTimer);
+        undoBar.hidden = true;
+        await onUndo();
+      });
+      undoBar.appendChild(el('span', { text: msg }));
+      undoBar.appendChild(undoBtn);
+      state.undoTimer = setTimeout(function () { undoBar.hidden = true; }, 5000);
+    }
+
+    function renderKpis() {
+      clear(kpiRow);
+      var k = (state.tree && state.tree.kpis) || {};
+      var total = Math.max(1, Number(k.totalItems || 0));
+      [
+        { label: 'Total Directories', val: k.totalDirectories || 0, max: Math.max(1, k.totalDirectories || 1), cur: k.totalDirectories || 0, note: (k.emptyDirectories || 0) + ' empty' },
+        { label: 'Published Communities', val: (k.publishedCommunities || 0) + ' / ' + (k.totalItems || 0), max: total, cur: k.publishedCommunities || 0, note: 'Live directory entries' },
+        { label: 'Safety-Verified Circles', val: k.safetyVerifiedCircles || 0, max: total, cur: k.safetyVerifiedCircles || 0, note: (k.pendingSuggestions || 0) + ' citizen reports' },
+        { label: 'All-Odisha Chapters', val: k.allOdishaChapters || 0, max: total, cur: k.allOdishaChapters || 0, note: '30-district coverage' }
+      ].forEach(function (c) {
+        kpiRow.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+          el('div', { class: 'cso-ops-kpi-label', text: c.label }),
+          el('div', { class: 'cso-ops-kpi-val', text: String(c.val) }),
+          el('progress', { class: 'cso-jd-progress', max: String(c.max), value: String(c.cur) }),
+          el('div', { class: 'muted sm', text: c.note })
+        ]));
+      });
+    }
+
+    function renderHealthTabs() {
+      clear(healthTabsBox);
+      var k = (state.tree && state.tree.kpis) || {};
+      [
+        { id: 'all', label: 'All Directories (' + (k.totalDirectories || 0) + ')' },
+        { id: 'empty', label: 'Empty Directories (0 Items: ' + (k.emptyDirectories || 0) + ')' },
+        { id: 'stale', label: 'Stale > 180 Days (' + (k.staleItems || 0) + ')' },
+        { id: 'reports', label: 'Safety & Citizen Reports (Pending: ' + (k.pendingSuggestions || 0) + ')' }
+      ].forEach(function (t) {
+        var b = el('button', { type: 'button', class: state.healthTab === t.id ? 'btn primary sm' : 'btn sm', text: t.label });
+        b.addEventListener('click', function () { state.healthTab = t.id; renderHealthTabs(); renderFolders(); renderList(); });
+        healthTabsBox.appendChild(b);
+      });
+    }
+
+    function openFolderDrawer(editing, parentForNew) {
+      clear(folderDrawerBox);
+      folderDrawerBox.hidden = false;
+      var nameInp = el('input', { class: 'input', type: 'text', value: (editing && editing.name_en) || '', placeholder: 'Directory Title (English)' });
+      var orInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title_or) || '', placeholder: 'Odia Title (ଓଡ଼ିଆ)' });
+      var slugInp = el('input', { class: 'input', type: 'text', value: (editing && editing.slug) || '', placeholder: 'url-slug' });
+      var badgeInp = el('input', { class: 'input', type: 'text', value: (editing && editing.featured_badge) || '', placeholder: 'Badge e.g. 30 DISTRICTS, ACTIVE' });
+      var descInp = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Directory intro (English)...' });
+      descInp.value = (editing && editing.description_en) || '';
+      var seoTitleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.seo_title) || '', placeholder: 'SEO Meta Title' });
+      var seoDescInp = el('textarea', { class: 'textarea', rows: '2', placeholder: 'SEO Meta Description...' });
+      seoDescInp.value = (editing && editing.seo_description) || '';
+      var activeChk = el('input', { type: 'checkbox' });
+      activeChk.checked = !editing || Number(editing.is_active) !== 0;
+
+      var prevHero = el('div', { class: 'cso-jd-preview-hero' });
+      var prevSerp = el('div', { class: 'cso-jd-serp' });
+      var prevWa = el('div', { class: 'cso-jd-wa' });
+      function updatePrev() {
+        var nm = nameInp.value.trim() || cfg.title;
+        var ds = descInp.value.trim() || 'Verified Odisha community & peer chapter directory.';
+        var st = seoTitleInp.value.trim() || (nm + ' — CSOdisha');
+        var sd = seoDescInp.value.trim() || ds;
+        var sl = slugInp.value.trim() || 'directory';
+        clear(prevHero);
+        prevHero.appendChild(el('div', { class: 'cso-jd-preview-crumb', text: 'CS ODISHA › COMMUNITY › ' + cfg.title.toUpperCase() }));
+        prevHero.appendChild(el('h4', { text: nm }));
+        prevHero.appendChild(el('p', { class: 'sm', text: ds }));
+        clear(prevSerp);
+        prevSerp.appendChild(el('div', { class: 'cso-jd-serp-url', text: 'https://csodisha.com/community/' + activeDomain + '/' + sl + '/' }));
+        prevSerp.appendChild(el('div', { class: 'cso-jd-serp-title', text: st }));
+        prevSerp.appendChild(el('div', { class: 'cso-jd-serp-desc', text: sd }));
+        clear(prevWa);
+        prevWa.appendChild(el('strong', { text: st }));
+        prevWa.appendChild(el('div', { class: 'muted sm', text: sd }));
+      }
+      [nameInp, slugInp, descInp, seoTitleInp, seoDescInp].forEach(function (i) { i.addEventListener('input', updatePrev); });
+      updatePrev();
+
+      var saveBtn = el('button', { type: 'button', class: 'btn primary sm', text: editing ? 'Save Directory' : 'Create Directory' });
+      saveBtn.disabled = !canWrite;
+      saveBtn.addEventListener('click', async function () {
+        var payload = {
+          domain_slug: activeDomain,
+          parent_id: editing ? editing.parent_id : (parentForNew || null),
+          name_en: nameInp.value.trim(),
+          title_or: orInp.value.trim(),
+          slug: slugInp.value.trim(),
+          featured_badge: badgeInp.value.trim(),
+          description_en: descInp.value.trim(),
+          seo_title: seoTitleInp.value.trim(),
+          seo_description: seoDescInp.value.trim(),
+          is_active: activeChk.checked
+        };
+        if (editing) await api('PUT', 'community-directory/folders/' + encodeURIComponent(editing.id), payload);
+        else await api('POST', 'community-directory/folders', payload);
+        folderDrawerBox.hidden = true;
+        toast(editing ? 'Directory updated' : 'Directory created');
+        await loadAll();
+      });
+
+      var verBtn = el('button', { type: 'button', class: 'btn sm', text: 'Mark Verified Today' });
+      verBtn.disabled = !editing || !canWrite;
+      verBtn.addEventListener('click', async function () {
+        await api('PUT', 'community-directory/folders/' + encodeURIComponent(editing.id), { mark_verified: true });
+        toast('Directory marked verified today');
+        await loadAll();
+      });
+
+      var cancelBtn = el('button', { type: 'button', class: 'btn sm', text: 'Close' });
+      cancelBtn.addEventListener('click', function () { folderDrawerBox.hidden = true; });
+
+      folderDrawerBox.appendChild(el('div', { class: 'cso-jd-split' }, [
+        el('div', { class: 'cso-jd-form-col' }, [
+          el('h3', { text: editing ? 'Edit Page Info: ' + editing.name_en : 'New Sub-Directory' }),
+          el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Title (EN)' }), nameInp]),
+          el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Title (Odia)' }), orInp]),
+          el('div', { class: 'cso-cnt-grid-2' }, [
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Slug' }), slugInp]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Badge' }), badgeInp])
+          ]),
+          el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Directory Intro' }), descInp]),
+          el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'SEO Title' }), seoTitleInp]),
+          el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'SEO Description' }), seoDescInp]),
+          el('label', { class: 'cso-cnt-check' }, [activeChk, el('span', { text: 'Visible on public site' })]),
+          el('div', { class: 'cso-ops-badges' }, [saveBtn, verBtn, cancelBtn])
+        ]),
+        el('div', { class: 'cso-jd-prev-col' }, [
+          el('h4', { text: 'Live Public Hero, Google SERP & WhatsApp Preview' }),
+          prevHero,
+          prevSerp,
+          prevWa
+        ])
+      ]));
+    }
+
+    function renderFolders() {
+      clear(crumbBar);
+      clear(folderGridBox);
+      var allFolders = (state.tree && state.tree.folders) || [];
+      var byId = new Map(allFolders.map(function (f) { return [f.id, f]; }));
+
+      var rootBtn = el('button', { type: 'button', class: !state.parentId ? 'btn primary sm' : 'btn sm', text: cfg.title });
+      rootBtn.addEventListener('click', function () { state.parentId = null; loadAll(); });
+      crumbBar.appendChild(rootBtn);
+
+      var trail = [];
+      var cur = state.parentId ? byId.get(state.parentId) : null;
+      while (cur) { trail.unshift(cur); cur = cur.parent_id ? byId.get(cur.parent_id) : null; }
+      trail.forEach(function (f) {
+        crumbBar.appendChild(el('span', { class: 'muted', text: '›' }));
+        var cb = el('button', { type: 'button', class: state.parentId === f.id ? 'btn primary sm' : 'btn sm', text: f.name_en });
+        cb.addEventListener('click', function () { state.parentId = f.id; loadAll(); });
+        crumbBar.appendChild(cb);
+      });
+
+      var visible = state.healthTab === 'empty'
+        ? allFolders.filter(function (f) { return Number(f.item_count || 0) === 0; })
+        : allFolders.filter(function (f) { return (f.parent_id || null) === (state.parentId || null); });
+
+      if (!visible.length) {
+        folderGridBox.appendChild(el('p', { class: 'muted sm', text: 'No sub-directories at this level. Use "+ New Sub-Directory" or "+ Add Community / Chapter" above.' }));
+        return;
+      }
+
+      visible.forEach(function (f) {
+        var openBtn = el('button', { type: 'button', class: 'btn sm', text: 'Open →' });
+        openBtn.addEventListener('click', function () { state.parentId = f.id; state.healthTab = 'all'; loadAll(); });
+        var infoBtn = el('button', { type: 'button', class: 'btn sm', text: 'Edit Page Info & Preview' });
+        infoBtn.addEventListener('click', function () { openFolderDrawer(f, null); });
+        var delBtn = el('button', { type: 'button', class: 'btn sm', text: 'Delete' });
+        delBtn.disabled = !canDelete;
+        delBtn.addEventListener('click', async function () {
+          if (!confirm('Delete directory "' + f.name_en + '"?')) return;
+          try {
+            await api('DELETE', 'community-directory/folders/' + encodeURIComponent(f.id));
+            toast('Directory deleted');
+            await loadAll();
+          } catch (err) { toast(err.message || 'Cannot delete non-empty directory', true); }
+        });
+
+        folderGridBox.appendChild(el('div', { class: 'cso-sl-folder-card' }, [
+          el('div', { class: 'cso-sl-folder-top' }, [
+            el('strong', { text: f.name_en }),
+            el('span', { class: 'badge', text: (f.item_count || 0) + ' items' })
+          ]),
+          el('div', { class: 'muted sm', text: '/' + f.slug + '/ · Depth ' + f.depth + (f.featured_badge ? ' · ' + f.featured_badge : '') }),
+          el('div', { class: 'cso-ops-badges' }, [openBtn, infoBtn, delBtn])
+        ]));
+      });
+    }
+
+    function openComposer(editing) {
+      clear(composerBox);
+      composerBox.hidden = false;
+      var folders = (state.tree && state.tree.folders) || [];
+
+      var titleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title) || '', placeholder: 'Community or Chapter Title (English)' });
+      var titleOrInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title_or) || '', placeholder: 'Odia Title (ଓଡ଼ିଆ)' });
+      var slugInp = el('input', { class: 'input', type: 'text', value: (editing && editing.slug) || '', placeholder: 'url-slug' });
+      var folderSel = el('select', { class: 'select' }, folders.map(function (f) {
+        return el('option', { value: f.id, text: ('— '.repeat(Math.max(0, (f.depth || 1) - 1))) + f.name_en });
+      }));
+      if (editing && editing.folder_id) folderSel.value = editing.folder_id;
+      else if (state.parentId) folderSel.value = state.parentId;
+
+      var typeSel = el('select', { class: 'select' }, [
+        ['district_chapter', 'District / Local Chapter'], ['study_mentorship', 'Student / Mentorship Circle'],
+        ['professional_network', 'Career / Business Network'], ['fpo_cooperative', 'FPO / Rural Cooperative'],
+        ['shg_welfare', 'SHG / Women & Inclusion'], ['ngo_volunteering', 'Youth / NGO Volunteering'],
+        ['cultural_sports', 'Culture / Sports Club'], ['stem_club', 'Environment / STEM Club'],
+        ['online_forum', 'Digital / Diaspora Forum'], ['safety_governance', 'Safety & Governance']
+      ].map(function (p) { return el('option', { value: p[0], text: p[1] }); }));
+      typeSel.value = (editing && editing.community_type) || 'district_chapter';
+
+      var regionSel = el('select', { class: 'select' }, [
+        'All Odisha (30 Districts)', 'Bhubaneswar & Cuttack', 'Balasore, Bhadrak & Mayurbhanj',
+        'Sambalpur, Burla & Rourkela', 'Berhampur & Ganjam', 'Puri & Konark',
+        'Koraput & KBK Region', 'Global Odia Diaspora'
+      ].map(function (r) { return el('option', { value: r, text: r }); }));
+      regionSel.value = (editing && editing.district_region) || cfg.defaultRegion;
+
+      var memSel = el('select', { class: 'select' }, [
+        'Open & Free', 'Verified Students / Educators', 'Registered Members', 'Volunteer Registration'
+      ].map(function (m) { return el('option', { value: m, text: m }); }));
+      memSel.value = (editing && editing.membership_model) || 'Open & Free';
+
+      var chanSel = el('select', { class: 'select' }, [
+        'In-Person & Local Chapter', 'Web Forum / Portal', 'Telegram / WhatsApp Verified', 'Hybrid'
+      ].map(function (c) { return el('option', { value: c, text: c }); }));
+      chanSel.value = (editing && editing.platform_channel) || 'Hybrid';
+
+      var joinInp = el('input', { class: 'input', type: 'url', value: (editing && editing.join_or_portal_url) || '', placeholder: 'https://csodisha.com/community/... or https://t.me/...' });
+      var statusCompSel = el('select', { class: 'select' }, [
+        el('option', { value: 'draft', text: 'draft' }),
+        el('option', { value: 'published', text: 'published' }),
+        el('option', { value: 'archived', text: 'archived' })
+      ]);
+      statusCompSel.value = (editing && editing.status) || 'draft';
+
+      var langSel = el('select', { class: 'select' }, [
+        el('option', { value: 'EN', text: 'EN' }),
+        el('option', { value: 'OR', text: 'OR' }),
+        el('option', { value: 'EN+OR', text: 'EN+OR' })
+      ]);
+      langSel.value = (editing && editing.language_parity) || 'EN+OR';
+
+      var sumInp = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Short summary (DPDP Act 2023: personal phones/emails auto-redacted)...' });
+      sumInp.value = (editing && editing.summary) || '';
+      var charterInp = el('textarea', { class: 'textarea', rows: '3', placeholder: 'Charter, Code of Conduct & membership rules...' });
+      charterInp.value = (editing && editing.charter_guidelines) || '';
+      var actInp = el('textarea', { class: 'textarea', rows: '3', placeholder: 'Key activities, meetups & mentorship highlights...' });
+      actInp.value = (editing && editing.activities_highlights) || '';
+      var bodyInp = el('textarea', { class: 'textarea', rows: '4', placeholder: 'Detailed community profile & schedule (HTML sanitized)...' });
+      bodyInp.value = (editing && editing.body_html) || '';
+
+      var pdfUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.pdf_url) || '', placeholder: 'Charter / Handbook PDF URL (R2 max 15MB)' });
+      var pdfSize = (editing && editing.pdf_size_bytes) || 0;
+      var pdfFileInp = el('input', { type: 'file', accept: 'application/pdf' });
+      pdfFileInp.addEventListener('change', async function () {
+        var f = pdfFileInp.files && pdfFileInp.files[0];
+        if (!f) return;
+        if (f.size > 15 * 1024 * 1024) { toast('PDF must be <= 15 MB', true); return; }
+        var fd = new FormData(); fd.append('file', f); fd.append('kind', 'pdf');
+        try {
+          var r = await fetch('/api/admin/content/upload', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSO-CSRF': '1' }, body: fd });
+          var j = await r.json();
+          if (!r.ok) throw new Error(j.message || 'Upload failed');
+          pdfUrlInp.value = j.url || ''; pdfSize = f.size; toast('Uploaded Charter PDF to R2');
+        } catch (err) { toast(err.message || 'PDF upload failed', true); }
+      });
+
+      var coverUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.cover_image_url) || '', placeholder: 'Cover Photo URL (R2 max 5MB)' });
+      var coverFileInp = el('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp' });
+      coverFileInp.addEventListener('change', async function () {
+        var f = coverFileInp.files && coverFileInp.files[0];
+        if (!f) return;
+        if (f.size > 5 * 1024 * 1024) { toast('Image must be <= 5 MB', true); return; }
+        var fd = new FormData(); fd.append('file', f); fd.append('kind', 'image');
+        try {
+          var r = await fetch('/api/admin/content/upload', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSO-CSRF': '1' }, body: fd });
+          var j = await r.json();
+          if (!r.ok) throw new Error(j.message || 'Upload failed');
+          coverUrlInp.value = j.url || ''; toast('Uploaded cover photo to R2');
+        } catch (err) { toast(err.message || 'Image upload failed', true); }
+      });
+
+      var tagsState = (editing && Array.isArray(editing.tags)) ? editing.tags.slice() : [];
+      var tagChipsWrap = el('div', { class: 'cso-cnt-tag-chips' });
+      var tagInput = el('input', { class: 'cso-cnt-tag-input', type: 'text', placeholder: 'Add tag + Enter' });
+      var tagQuickWrap = el('div', { class: 'cso-cnt-tag-suggestions' });
+      function addTag(raw) {
+        var v = String(raw || '').trim().replace(/^#+/, '').slice(0, 40);
+        if (v && !tagsState.includes(v) && tagsState.length < 14) { tagsState.push(v); renderTags(); }
+      }
+      function renderTags() {
+        clear(tagChipsWrap);
+        tagsState.forEach(function (t, i) {
+          var rm = el('button', { type: 'button', class: 'cso-cnt-tag-remove', text: '×' });
+          rm.addEventListener('click', function () { tagsState.splice(i, 1); renderTags(); });
+          tagChipsWrap.appendChild(el('span', { class: 'cso-cnt-tag-chip' }, [el('span', { text: '#' + t }), rm]));
+        });
+      }
+      tagInput.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagInput.value); tagInput.value = ''; } });
+      cfg.quickTags.forEach(function (qt) {
+        var b = el('button', { type: 'button', class: 'btn sm', text: '+ ' + qt });
+        b.addEventListener('click', function () { addTag(qt); });
+        tagQuickWrap.appendChild(b);
+      });
+      renderTags();
+
+      var prevCard = el('div', { class: 'cso-jd-preview-hero' });
+      var prevSerp = el('div', { class: 'cso-jd-serp' });
+      var prevWa = el('div', { class: 'cso-jd-wa' });
+      function updatePrev() {
+        var t = titleInp.value.trim() || 'Community / Chapter Title';
+        var s = sumInp.value.trim() || 'Verified Odisha community profile & charter.';
+        var sl = slugInp.value.trim() || 'community-entry';
+        clear(prevCard);
+        prevCard.appendChild(el('div', { class: 'cso-jd-preview-crumb', text: regionSel.value + ' · ' + memSel.value + ' · ' + chanSel.value }));
+        prevCard.appendChild(el('h4', { text: t }));
+        prevCard.appendChild(el('p', { class: 'sm', text: s }));
+        clear(prevSerp);
+        prevSerp.appendChild(el('div', { class: 'cso-jd-serp-url', text: 'https://csodisha.com/community/item/' + sl + '/' }));
+        prevSerp.appendChild(el('div', { class: 'cso-jd-serp-title', text: t + ' | CSOdisha Community' }));
+        prevSerp.appendChild(el('div', { class: 'cso-jd-serp-desc', text: s }));
+        clear(prevWa);
+        prevWa.appendChild(el('strong', { text: t }));
+        prevWa.appendChild(el('div', { class: 'muted sm', text: regionSel.value + ' · ' + memSel.value }));
+      }
+      [titleInp, slugInp, regionSel, memSel, chanSel, sumInp].forEach(function (i) {
+        i.addEventListener('input', updatePrev);
+        i.addEventListener('change', updatePrev);
+      });
+      updatePrev();
+
+      var saveBtn = el('button', { type: 'button', class: 'btn primary sm', text: editing ? 'Save Changes' : 'Create Community Entry' });
+      saveBtn.disabled = !canWrite;
+      saveBtn.addEventListener('click', async function () {
+        var payload = {
+          domain_slug: activeDomain,
+          folder_id: folderSel.value,
+          title: titleInp.value.trim(),
+          title_or: titleOrInp.value.trim(),
+          slug: slugInp.value.trim(),
+          community_type: typeSel.value,
+          district_region: regionSel.value,
+          membership_model: memSel.value,
+          platform_channel: chanSel.value,
+          join_or_portal_url: joinInp.value.trim(),
+          status: statusCompSel.value,
+          language_parity: langSel.value,
+          summary: sumInp.value.trim(),
+          charter_guidelines: charterInp.value.trim(),
+          activities_highlights: actInp.value.trim(),
+          body_html: bodyInp.value,
+          pdf_url: pdfUrlInp.value.trim(),
+          pdf_size_bytes: pdfSize,
+          cover_image_url: coverUrlInp.value.trim(),
+          tags: tagsState
+        };
+        if (editing) await api('PUT', 'community-directory/items/' + encodeURIComponent(editing.id), payload);
+        else await api('POST', 'community-directory/items', payload);
+        composerBox.hidden = true;
+        toast(editing ? 'Community updated' : 'Community created');
+        await loadAll();
+      });
+
+      var closeBtn = el('button', { type: 'button', class: 'btn sm', text: 'Close' });
+      closeBtn.addEventListener('click', function () { composerBox.hidden = true; });
+
+      composerBox.appendChild(el('div', { class: 'cso-ops-card' }, [
+        el('div', { class: 'cso-jd-split' }, [
+          el('div', { class: 'cso-jd-form-col' }, [
+            el('h3', { text: editing ? 'Edit Community: ' + editing.title : 'Add Community / Chapter' }),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Sub-Directory' }), folderSel]),
+            el('div', { class: 'cso-cnt-grid-2' }, [
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Title (EN)' }), titleInp]),
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Title (Odia)' }), titleOrInp])
+            ]),
+            el('div', { class: 'cso-cnt-grid-2' }, [
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Slug' }), slugInp]),
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Community Type' }), typeSel])
+            ]),
+            el('div', { class: 'cso-cnt-grid-2' }, [
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'District / Region' }), regionSel]),
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Membership Model' }), memSel])
+            ]),
+            el('div', { class: 'cso-cnt-grid-2' }, [
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Platform Channel' }), chanSel]),
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Join / Official URL' }), joinInp])
+            ]),
+            el('div', { class: 'cso-cnt-grid-2' }, [
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Status' }), statusCompSel]),
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Language' }), langSel])
+            ]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Summary (PII Auto-Redacted)' }), sumInp]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Charter & Code of Conduct' }), charterInp]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Key Activities & Schedule' }), actInp]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Detailed Overview (HTML)' }), bodyInp]),
+            el('div', { class: 'cso-cnt-grid-2' }, [
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Charter PDF (R2 max 15MB)' }), pdfUrlInp, pdfFileInp]),
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Cover Photo (R2 max 5MB)' }), coverUrlInp, coverFileInp])
+            ]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Tags' }), tagChipsWrap, tagInput, tagQuickWrap]),
+            el('div', { class: 'cso-ops-badges' }, [saveBtn, closeBtn])
+          ]),
+          el('div', { class: 'cso-jd-prev-col' }, [
+            el('h4', { text: 'Live Reader, Google SERP & WhatsApp Preview' }),
+            prevCard,
+            prevSerp,
+            prevWa
+          ])
+        ])
+      ]));
+    }
+
+    async function renderList() {
+      clear(listHost);
+      if (state.healthTab === 'reports') {
+        var sugs = (state.tree && state.tree.suggestions) || [];
+        if (!sugs.length) { listHost.appendChild(el('p', { class: 'muted sm', text: 'No safety or citizen reports in this domain.' })); return; }
+        sugs.forEach(function (s) {
+          var resBtn = el('button', { type: 'button', class: 'btn sm', text: 'Mark Resolved' });
+          resBtn.disabled = !canWrite || s.status === 'resolved';
+          resBtn.addEventListener('click', async function () {
+            await api('PATCH', 'community-directory/suggestions/' + encodeURIComponent(s.id), { status: 'resolved' });
+            toast('Report resolved');
+            await loadAll();
+          });
+          listHost.appendChild(el('div', { class: 'cso-ops-card' }, [
+            el('div', { class: 'cso-ops-head' }, [
+              el('div', {}, [el('strong', { text: s.suggestion_type + ' · ' + s.status }), el('p', { class: 'sm', text: s.message })]),
+              resBtn
+            ])
+          ]));
+        });
+        return;
+      }
+
+      var items = (state.tree && state.tree.items) || [];
+      if (state.healthTab === 'stale') {
+        var cut = Date.now() - 180 * 86400 * 1000;
+        items = items.filter(function (it) { var ts = Date.parse(it.verified_at || it.updated_at || ''); return !isNaN(ts) && ts < cut; });
+      }
+      if (!items.length) { listHost.appendChild(el('p', { class: 'muted sm', text: 'No community entries match this filter.' })); return; }
+
+      var tbl = el('table', { class: 'cso-ops-table' });
+      tbl.appendChild(el('thead', {}, [el('tr', {}, [
+        el('th', { text: 'Community / Chapter' }),
+        el('th', { text: 'Region & Channel' }),
+        el('th', { text: 'Status' }),
+        el('th', { text: 'Actions' })
+      ])]));
+      var tb = el('tbody');
+      items.forEach(function (it) {
+        var editBtn = el('button', { type: 'button', class: 'btn sm', text: 'Edit' });
+        editBtn.addEventListener('click', function () { openComposer(it); });
+        var nextStatus = it.status === 'published' ? 'draft' : 'published';
+        var pubBtn = el('button', { type: 'button', class: 'btn sm', text: it.status === 'published' ? 'Unpublish' : 'Publish' });
+        pubBtn.disabled = !canWrite;
+        pubBtn.addEventListener('click', async function () {
+          var res = await api('PATCH', 'community-directory/items/' + encodeURIComponent(it.id) + '/status', { status: nextStatus });
+          await loadAll();
+          showUndo('Set "' + it.title + '" to ' + nextStatus + '.', async function () {
+            await api('PATCH', 'community-directory/items/' + encodeURIComponent(it.id) + '/status', { status: res.previous_status });
+            toast('Status restored');
+            await loadAll();
+          });
+        });
+        var verBtn = el('button', { type: 'button', class: 'btn sm', text: 'Verify Safety' });
+        verBtn.disabled = !canWrite;
+        verBtn.addEventListener('click', async function () { await api('POST', 'community-directory/items/' + encodeURIComponent(it.id) + '/verify', {}); toast('Safety verified'); await loadAll(); });
+        var delBtn = el('button', { type: 'button', class: 'btn sm', text: 'Delete' });
+        delBtn.disabled = !canDelete;
+        delBtn.addEventListener('click', async function () { if (!confirm('Delete "' + it.title + '"?')) return; await api('DELETE', 'community-directory/items/' + encodeURIComponent(it.id)); toast('Deleted'); await loadAll(); });
+
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, [el('strong', { text: it.title }), el('div', { class: 'muted sm', text: (it.membership_model || 'Open & Free') + (it.safety_verified ? ' · Safety Verified' : '') })]),
+          el('td', { class: 'sm', text: (it.district_region || cfg.defaultRegion) + ' · ' + (it.platform_channel || 'Hybrid') }),
+          el('td', {}, [el('span', { class: it.status === 'published' ? 'badge ok' : 'badge', text: it.status })]),
+          el('td', {}, [el('div', { class: 'cso-ops-badges' }, [editBtn, pubBtn, verBtn, delBtn])])
+        ]));
+      });
+      tbl.appendChild(tb);
+      listHost.appendChild(tbl);
+    }
+
+    async function loadAll() {
+      var qs = new URLSearchParams();
+      qs.set('domain', activeDomain);
+      if (state.parentId) qs.set('folder_id', state.parentId);
+      if (state.status) qs.set('status', state.status);
+      if (state.q) qs.set('q', state.q);
+      state.tree = await api('GET', 'community-directory/tree?' + qs.toString());
+      renderKpis(); renderHealthTabs(); renderFolders(); await renderList();
+    }
+
+    addSubBtn.addEventListener('click', function () { openFolderDrawer(null, state.parentId); });
+    addItemBtn.addEventListener('click', function () { openComposer(null); });
+    refreshBtn.addEventListener('click', function () { loadAll(); });
+    searchInp.addEventListener('input', function () { state.q = searchInp.value.trim(); loadAll(); });
+    statusSel.addEventListener('change', function () { state.status = statusSel.value; loadAll(); });
+    clearFilterBtn.addEventListener('click', function () { state.parentId = null; state.status = ''; state.q = ''; state.healthTab = 'all'; searchInp.value = ''; statusSel.value = ''; loadAll(); });
+
+    loadAll();
+    return wrap;
+  }
+
+  function viewCommunityDirectoryStudio(domainSlug) {
+    setTitle('Community Directory Studio');
+    main.appendChild(communityDirectoryStudioPanel(domainSlug || 'local-odisha-communities'));
+  }
+
   function viewStudyLibraryStudio(domainSlug) {
     setTitle('Study Library Studio');
     main.appendChild(studyLibraryStudioPanel(domainSlug || 'early-childhood'));
@@ -14908,6 +15525,7 @@
     'about-directory': function () { return viewAboutDirectory(); },
     schemes: function (parts) { return viewSchemesManager(parts[1]); },
     'schemes-directory': function (parts) { return parts[1] ? viewSchemesDirectoryStudio(parts[1]) : viewSchemesDirectoryTree(); },
+    'community-directory': function (parts) { return viewCommunityDirectoryStudio(parts[1]); },
     'study-library-directory': function () { return viewStudyLibraryDirectory(); },
     freshness: function () { return viewFreshnessAudit(); },
     feedback: function () { return viewFeedbackQueue(); },

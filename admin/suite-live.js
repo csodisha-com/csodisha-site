@@ -89,6 +89,18 @@
     ['schemes-directory/find-schemes-eligibility', 'Find Schemes & Check Eligibility'],
     ['schemes-directory/citizen-services-verification', 'Citizen Services & Verification']
   ];
+  var COMMUNITY_SUITE = [
+    ['community-directory/local-odisha-communities', 'Local & Odisha Communities'],
+    ['community-directory/students-educators-mentorship', 'Students, Educators & Mentorship'],
+    ['community-directory/careers-business-networks', 'Careers, Business & Professional Networks'],
+    ['community-directory/agriculture-rural-livelihoods', 'Agriculture & Rural Livelihoods'],
+    ['community-directory/women-families-inclusion', 'Women, Families, Health & Inclusion'],
+    ['community-directory/youth-ngos-volunteering', 'Youth, NGOs & Volunteering'],
+    ['community-directory/culture-sports-traditional', 'Culture, Sports & Traditional Communities'],
+    ['community-directory/environment-science-tech', 'Environment, Science & Technology'],
+    ['community-directory/digital-international-forums', 'Digital, International & Community Forums'],
+    ['community-directory/community-safety-governance', 'Community Directory, Safety & Governance']
+  ];
 
   var ROUTES = {
     'module-01-001': ['dashboard', OPS],
@@ -229,7 +241,17 @@
     'module-sb-005': ['schemes-directory/communities-beneficiaries', SCHEMES_SUITE],
     'module-sb-006': ['schemes-directory/private-global-innovation', SCHEMES_SUITE],
     'module-sb-007': ['schemes-directory/find-schemes-eligibility', SCHEMES_SUITE],
-    'module-sb-008': ['schemes-directory/citizen-services-verification', SCHEMES_SUITE]
+    'module-sb-008': ['schemes-directory/citizen-services-verification', SCHEMES_SUITE],
+    'module-cm-001': ['community-directory/local-odisha-communities', COMMUNITY_SUITE],
+    'module-cm-002': ['community-directory/students-educators-mentorship', COMMUNITY_SUITE],
+    'module-cm-003': ['community-directory/careers-business-networks', COMMUNITY_SUITE],
+    'module-cm-004': ['community-directory/agriculture-rural-livelihoods', COMMUNITY_SUITE],
+    'module-cm-005': ['community-directory/women-families-inclusion', COMMUNITY_SUITE],
+    'module-cm-006': ['community-directory/youth-ngos-volunteering', COMMUNITY_SUITE],
+    'module-cm-007': ['community-directory/culture-sports-traditional', COMMUNITY_SUITE],
+    'module-cm-008': ['community-directory/environment-science-tech', COMMUNITY_SUITE],
+    'module-cm-009': ['community-directory/digital-international-forums', COMMUNITY_SUITE],
+    'module-cm-010': ['community-directory/community-safety-governance', COMMUNITY_SUITE]
   };
 
   var FOLDER_FALLBACKS = {
@@ -255,7 +277,7 @@
     'folder-jobs-careers': ['jobs-directory/jobs-recruitment', JOBS_SUITE],
     'folder-schemes-benefits': ['schemes-directory/govt-public-welfare', SCHEMES_SUITE],
     'folder-study-library': ['study-library/early-childhood', STUDY_SUITE],
-    'folder-community': ['feedback', [['feedback', 'Community Feedback'], ['users', 'Candidate Accounts']]],
+    'folder-community': ['community-directory/local-odisha-communities', COMMUNITY_SUITE],
     'folder-about': ['about-directory', SITE]
   };
 
@@ -393,6 +415,10 @@
       window.CSOCms.mount(host, r[0], null);
     } else if (r[1] === SCHEMES_SUITE) {
       renderSuiteStepper(SCHEMES_SUITE, 'module-sb-', 'folder-schemes-benefits', folderId, moduleId, r[0], root, host, 'Schemes & Benefits Directory Module Stepper');
+      root.appendChild(host);
+      window.CSOCms.mount(host, r[0], null);
+    } else if (r[1] === COMMUNITY_SUITE) {
+      renderSuiteStepper(COMMUNITY_SUITE, 'module-cm-', 'folder-community', folderId, moduleId, r[0], root, host, 'Community Directory Module Stepper');
       root.appendChild(host);
       window.CSOCms.mount(host, r[0], null);
     } else {
