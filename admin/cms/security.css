@@ -107,3 +107,5 @@
 .cso-ops-label-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .cso-ops-rename-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:4px}
 .cso-ops-rename-input,.cms-embed .cso-ops-rename-input{min-width:180px;max-width:260px}
+.cso-ops-last-drill-strip{margin:10px 0 12px}
+.cso-ops-drift-details{margin:10px 0 12px}

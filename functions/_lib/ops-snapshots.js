@@ -134,16 +134,61 @@ async function discoverMasterTables(db) {
   return (masterRows || []).map(r => String((r && r.name) || '').trim()).filter(Boolean);
 }
 
-async function getTableColumns(db, name) {
+async function getTableSchemaInfo(db, name) {
   const safeTbl = quoteIdent(name);
   try {
     const pragma = await db.prepare(`PRAGMA table_info(${safeTbl})`).all();
-    return (pragma && Array.isArray(pragma.results) ? pragma.results : [])
+    const rows = pragma && Array.isArray(pragma.results) ? pragma.results : [];
+    const columns = rows.map(c => String(c.name || '').trim()).filter(Boolean);
+    const pkColumns = rows
+      .filter(c => Number(c.pk) > 0)
+      .sort((a, b) => Number(a.pk) - Number(b.pk))
       .map(c => String(c.name || '').trim())
       .filter(Boolean);
+    return { columns, pkColumns };
   } catch {
-    return [];
+    return { columns: [], pkColumns: [] };
   }
+}
+
+async function getTableColumns(db, name) {
+  const info = await getTableSchemaInfo(db, name);
+  return info.columns;
+}
+
+async function ensureSiteSettingsTable(env) {
+  await env.DB.prepare(
+    `CREATE TABLE IF NOT EXISTS site_settings (
+      key TEXT PRIMARY KEY,
+      value_json TEXT,
+      updated_by TEXT,
+      updated_at TEXT
+    )`
+  ).run();
+}
+
+async function readLastDrDrill(env) {
+  try {
+    const row = await env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = 'ops_last_dr_drill'`).first();
+    if (!row || !row.value_json) return null;
+    return JSON.parse(row.value_json);
+  } catch {
+    return null;
+  }
+}
+
+async function persistLastDrDrill(env, summary) {
+  try {
+    await ensureSiteSettingsTable(env);
+    await env.DB.prepare(
+      `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+       VALUES ('ops_last_dr_drill', ?, 'dr-engine', ?)
+       ON CONFLICT(key) DO UPDATE SET
+         value_json = excluded.value_json,
+         updated_by = excluded.updated_by,
+         updated_at = excluded.updated_at`
+    ).bind(JSON.stringify(summary), summary.drilled_at).run();
+  } catch {}
 }
 
 export async function previewPlatformSnapshotScope(env) {
@@ -362,9 +407,10 @@ function presentSnapshotRow(row, r2Exists = true) {
 
 export async function listPlatformSnapshots(env) {
   await ensureOpsSnapshotsTable(env);
-  const [{ results }, preview] = await Promise.all([
+  const [{ results }, preview, lastDrill] = await Promise.all([
     env.DB.prepare('SELECT * FROM ops_snapshots ORDER BY created_at DESC, id DESC LIMIT 100').all(),
-    previewPlatformSnapshotScope(env)
+    previewPlatformSnapshotScope(env),
+    readLastDrDrill(env)
   ]);
   const rows = results || [];
 
@@ -393,7 +439,8 @@ export async function listPlatformSnapshots(env) {
     total: items.length,
     discovered_tables: preview.discovered_tables,
     excluded_tables: preview.excluded_tables,
-    scrubbed_columns: preview.scrubbed_columns
+    scrubbed_columns: preview.scrubbed_columns,
+    last_drill: lastDrill
   };
 }
 
@@ -503,20 +550,65 @@ function normalizeRequestedTables(tablesInput) {
   return out;
 }
 
+function buildRowKey(row, pkCols) {
+  if (!row || typeof row !== 'object') return null;
+  if (pkCols.length === 1) {
+    const k = pkCols[0];
+    if (row[k] === undefined || row[k] === null) return null;
+    return String(row[k]);
+  }
+  const parts = [];
+  for (const k of pkCols) {
+    if (row[k] === undefined || row[k] === null) return null;
+    parts.push(String(row[k]));
+  }
+  return parts.join('\u0000');
+}
+
+function projectCommonColumns(row, cols) {
+  const out = {};
+  for (const c of cols) {
+    if (Object.prototype.hasOwnProperty.call(row, c)) {
+      out[c] = row[c];
+    }
+  }
+  return out;
+}
+
 // Module #2: Non-Destructive Disaster Recovery Drill
 export async function runDisasterRecoveryDrill(env, id, { tables = null } = {}) {
   const t0 = Date.now();
-  const targetTables = tables && Array.isArray(tables) && tables.length
-    ? normalizeRequestedTables(tables)
-    : RESTORABLE_TABLES.slice();
-  if (!targetTables.length) {
-    throw new HttpError(400, 'INVALID_TABLES', 'Select at least one allowlisted table for the DR drill');
+  const { row, envelope, sha256, size_bytes } = await loadVerifiedSnapshotEnvelope(env, id);
+
+  const snapshotTableNames = Object.keys(envelope.tables || {})
+    .filter(t => /^[a-zA-Z0-9_]+$/.test(t) && !EXCLUDED_SNAPSHOT_TABLES.has(t))
+    .sort();
+
+  let targetTables;
+  if (tables && Array.isArray(tables) && tables.length) {
+    const seen = new Set();
+    targetTables = [];
+    for (const raw of tables) {
+      const name = String(raw || '').trim();
+      if (name && /^[a-zA-Z0-9_]+$/.test(name) && !EXCLUDED_SNAPSHOT_TABLES.has(name) && !seen.has(name)) {
+        seen.add(name);
+        targetTables.push(name);
+      }
+    }
+  } else {
+    targetTables = snapshotTableNames;
   }
 
-  const { row, envelope, sha256, size_bytes } = await loadVerifiedSnapshotEnvelope(env, id);
+  if (!targetTables.length) {
+    throw new HttpError(400, 'INVALID_TABLES', 'Select at least one valid table for the DR drill');
+  }
+
+  const liveMasterNames = await discoverMasterTables(env.DB);
+  const liveMasterSet = new Set(liveMasterNames);
   const live = await collectPlatformSnapshotTables(env);
 
   const table_diffs = {};
+  const schema_drift_warnings = [];
   let totalSnapshotRows = 0;
   let totalLiveRows = 0;
   let totalToInsert = 0;
@@ -525,14 +617,86 @@ export async function runDisasterRecoveryDrill(env, id, { tables = null } = {}) 
   let totalLiveOnly = 0;
 
   for (const tbl of targetTables) {
-    const pk = TABLE_PRIMARY_KEY[tbl] || 'id';
     const snapRows = Array.isArray(envelope.tables[tbl]) ? envelope.tables[tbl] : [];
-    const liveRows = Array.isArray(live.tables[tbl]) ? live.tables[tbl] : [];
+    const liveExists = liveMasterSet.has(tbl);
 
+    if (!liveExists) {
+      const fallbackPk = TABLE_PRIMARY_KEY[tbl] || 'id';
+      const warning = {
+        table: tbl,
+        type: 'TABLE_MISSING_IN_LIVE',
+        missing_in_live: [],
+        added_in_live: [],
+        message: `Table "${tbl}" exists in snapshot (${snapRows.length} rows) but is missing in live D1.`
+      };
+      schema_drift_warnings.push(warning);
+      table_diffs[tbl] = {
+        table: tbl,
+        primary_key: fallbackPk,
+        snapshot_rows: snapRows.length,
+        live_rows: 0,
+        to_insert: snapRows.length,
+        to_update: 0,
+        unchanged: 0,
+        live_only_rows: 0,
+        schema_status: 'DRIFT',
+        drift_warning: warning
+      };
+      totalSnapshotRows += snapRows.length;
+      totalToInsert += snapRows.length;
+      continue;
+    }
+
+    const schemaInfo = await getTableSchemaInfo(env.DB, tbl);
+    const pkCols = schemaInfo.pkColumns.length
+      ? schemaInfo.pkColumns
+      : [TABLE_PRIMARY_KEY[tbl] || 'id'];
+    const pkLabel = pkCols.join('+');
+
+    const liveCols = schemaInfo.columns.filter(c => !SENSITIVE_SNAPSHOT_COLUMNS.has(c.toLowerCase()));
+    const snapColsSet = new Set();
+    for (const sr of snapRows) {
+      if (sr && typeof sr === 'object') {
+        for (const k of Object.keys(sr)) {
+          if (!SENSITIVE_SNAPSHOT_COLUMNS.has(k.toLowerCase())) snapColsSet.add(k);
+        }
+      }
+    }
+
+    const liveColsSet = new Set(liveCols);
+    const missingInLive = snapRows.length
+      ? Array.from(snapColsSet).filter(c => !liveColsSet.has(c)).sort()
+      : [];
+    const addedInLive = snapRows.length
+      ? liveCols.filter(c => !snapColsSet.has(c)).sort()
+      : [];
+
+    let driftWarning = null;
+    if (missingInLive.length || addedInLive.length) {
+      const parts = [];
+      if (missingInLive.length) parts.push('missing in live: ' + missingInLive.join(', '));
+      if (addedInLive.length) parts.push('added in live: ' + addedInLive.join(', '));
+      driftWarning = {
+        table: tbl,
+        type: 'COLUMN_DRIFT',
+        missing_in_live: missingInLive,
+        added_in_live: addedInLive,
+        message: `Schema drift on "${tbl}" (${parts.join(' · ')})`
+      };
+      schema_drift_warnings.push(driftWarning);
+    }
+
+    const commonCols = driftWarning
+      ? liveCols.filter(c => snapColsSet.has(c)).sort()
+      : null;
+
+    const liveRows = Array.isArray(live.tables[tbl]) ? live.tables[tbl] : [];
     const liveMap = new Map();
     for (const lr of liveRows) {
-      if (lr && lr[pk] !== undefined && lr[pk] !== null) {
-        liveMap.set(String(lr[pk]), JSON.stringify(canonicalizeValue(lr)));
+      const key = buildRowKey(lr, pkCols);
+      if (key !== null) {
+        const val = commonCols ? projectCommonColumns(lr, commonCols) : lr;
+        liveMap.set(key, JSON.stringify(canonicalizeValue(val)));
       }
     }
 
@@ -542,13 +706,14 @@ export async function runDisasterRecoveryDrill(env, id, { tables = null } = {}) 
     let unchanged = 0;
 
     for (const sr of snapRows) {
-      if (!sr || sr[pk] === undefined || sr[pk] !== 0 && !sr[pk]) continue;
-      const k = String(sr[pk]);
+      const k = buildRowKey(sr, pkCols);
+      if (k === null) continue;
       seenKeys.add(k);
       if (!liveMap.has(k)) {
         toInsert++;
       } else {
-        const snapCanon = JSON.stringify(canonicalizeValue(sr));
+        const snapVal = commonCols ? projectCommonColumns(sr, commonCols) : sr;
+        const snapCanon = JSON.stringify(canonicalizeValue(snapVal));
         if (liveMap.get(k) === snapCanon) unchanged++;
         else toUpdate++;
       }
@@ -561,13 +726,15 @@ export async function runDisasterRecoveryDrill(env, id, { tables = null } = {}) 
 
     table_diffs[tbl] = {
       table: tbl,
-      primary_key: pk,
+      primary_key: pkLabel,
       snapshot_rows: snapRows.length,
       live_rows: liveRows.length,
       to_insert: toInsert,
       to_update: toUpdate,
       unchanged,
-      live_only_rows: liveOnly
+      live_only_rows: liveOnly,
+      schema_status: driftWarning ? 'DRIFT' : 'OK',
+      drift_warning: driftWarning
     };
 
     totalSnapshotRows += snapRows.length;
@@ -579,9 +746,27 @@ export async function runDisasterRecoveryDrill(env, id, { tables = null } = {}) 
   }
 
   const latencyMs = Math.max(1, Date.now() - t0);
+  const readiness = schema_drift_warnings.length > 0 ? 'WARN' : 'PASS';
+  const drilledAt = new Date().toISOString();
+
+  const lastDrillSummary = {
+    drilled_at: drilledAt,
+    snapshot_id: row.id,
+    snapshot_label: row.label,
+    tables_tested: targetTables.length,
+    total_inserts: totalToInsert,
+    total_updates: totalToUpdate,
+    total_unchanged: totalUnchanged,
+    total_live_only: totalLiveOnly,
+    drift_warnings_count: schema_drift_warnings.length,
+    latency_ms: latencyMs,
+    readiness
+  };
+  await persistLastDrDrill(env, lastDrillSummary);
+
   return {
     ok: true,
-    readiness: 'PASS',
+    readiness,
     snapshot_id: row.id,
     snapshot_label: row.label,
     snapshot_created_at: row.created_at,
@@ -589,8 +774,10 @@ export async function runDisasterRecoveryDrill(env, id, { tables = null } = {}) 
     sha256,
     size_bytes,
     latency_ms: latencyMs,
-    drilled_at: new Date().toISOString(),
+    drilled_at: drilledAt,
     tables_checked: targetTables,
+    schema_drift_warnings,
+    last_drill: lastDrillSummary,
     totals: {
       snapshot_rows: totalSnapshotRows,
       live_rows: totalLiveRows,
@@ -800,10 +987,11 @@ export async function handleOpsSnapshots(request, env, actor, subId, action) {
     const report = await runDisasterRecoveryDrill(env, subId, {
       tables: body && Array.isArray(body.tables) ? body.tables : null
     });
-    await audit(env, request, actor, 'ops.dr.drill', 'ops_snapshot', subId, {
+    await audit(env, request, actor, 'ops.drill.run', 'ops_snapshot', subId, {
       readiness: report.readiness,
       latency_ms: report.latency_ms,
       tables_checked: report.tables_checked,
+      drift_warnings_count: (report.schema_drift_warnings || []).length,
       totals: report.totals
     });
     return json(report);

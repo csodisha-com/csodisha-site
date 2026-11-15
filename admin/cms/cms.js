@@ -2050,12 +2050,48 @@
     wrap.appendChild(el('h2', {
       text: isRestoreFocus
         ? 'Point-in-Time Rollback & Granular Engine Restorer'
-        : 'Disaster Recovery Drill & Granular Restorer Studio'
+        : 'Non-Destructive Disaster Recovery Drill & Readiness Verification Studio'
     }));
     wrap.appendChild(el('p', {
       class: 'muted',
-      text: 'Verify SHA-256 snapshot integrity, run non-destructive live D1 diff drills, or execute granular point-in-time table restorations (protected by an automatic pre-restore R2 backup).'
+      text: isRestoreFocus
+        ? 'Execute granular point-in-time table restorations from verified R2 snapshots (protected by an automatic pre-restore R2 backup).'
+        : 'Verify SHA-256 snapshot integrity, detect live D1 schema drift via PRAGMA table_info, and measure exact row deltas without modifying any live D1 data.'
     }));
+
+    var lastDrillStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-last-drill-strip', 'aria-live': 'polite' });
+    if (!isRestoreFocus) {
+      wrap.appendChild(lastDrillStrip);
+    }
+
+    function renderLastDrillBanner(lastDrill) {
+      if (isRestoreFocus) return;
+      clear(lastDrillStrip);
+      var hasDrill = Boolean(lastDrill && lastDrill.drilled_at);
+      var statusText = hasDrill ? (lastDrill.readiness || 'PASS') : 'Not Yet Verified';
+      var statusClass = hasDrill
+        ? (lastDrill.readiness === 'WARN' ? 'sev-medium' : 'published')
+        : 'draft';
+
+      lastDrillStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Last Verified DR Drill' }),
+        el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: hasDrill ? fmtDate(lastDrill.drilled_at) : 'Never drilled' })
+      ]));
+      lastDrillStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Snapshot Tested' }),
+        el('div', { class: 'cso-ops-telemetry-val', text: hasDrill ? (lastDrill.snapshot_label || lastDrill.snapshot_id) : '—' })
+      ]));
+      lastDrillStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Measured Latency' }),
+        el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: hasDrill ? ((lastDrill.latency_ms || 1) + ' ms') : '—' })
+      ]));
+      lastDrillStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+        el('div', { class: 'muted sm', text: 'Readiness Status' }),
+        el('div', { class: 'cso-ops-telemetry-val' }, [
+          el('span', { class: 'badge ' + statusClass, text: statusText })
+        ])
+      ]));
+    }
 
     var snapSel = el('select', { id: 'f-ops-drill-snap', class: 'cso-ops-snap-select', 'aria-label': 'Select target R2 snapshot' });
     var shaBadge = el('span', { class: 'badge published', text: 'SHA-256 Ready' });
@@ -2070,18 +2106,34 @@
 
     var checkMap = {};
     var checksGrid = el('div', { class: 'cso-ops-table-checks' });
-    DR_RESTORABLE_TABLES.forEach(function (pair) {
-      var tbl = pair[0], lbl = pair[1];
-      var chk = el('input', { type: 'checkbox', checked: true, 'data-table': tbl });
-      checkMap[tbl] = chk;
-      checksGrid.appendChild(el('label', { class: 'cso-ops-check-card' }, [
-        chk,
-        el('span', {}, [
-          el('strong', { text: tbl }),
-          el('span', { class: 'hint cso-ops-check-sub', text: lbl })
-        ])
-      ]));
-    });
+    var tableDescMap = {};
+    DR_RESTORABLE_TABLES.forEach(function (pair) { tableDescMap[pair[0]] = pair[1]; });
+
+    function renderTableCheckboxes(snap) {
+      clear(checksGrid);
+      checkMap = {};
+      var counts = (snap && snap.row_counts) || {};
+      var keys = Object.keys(counts).sort();
+      if (!keys.length || isRestoreFocus) {
+        keys = DR_RESTORABLE_TABLES.map(function (p) { return p[0]; });
+      }
+      keys.forEach(function (tbl) {
+        var rowCount = Object.prototype.hasOwnProperty.call(counts, tbl) ? Number(counts[tbl] || 0) : null;
+        var subText = rowCount !== null
+          ? (rowCount + ' snapshot row' + (rowCount === 1 ? '' : 's') + (tableDescMap[tbl] ? ' · ' + tableDescMap[tbl] : ''))
+          : (tableDescMap[tbl] || 'D1 Table');
+        var chk = el('input', { type: 'checkbox', checked: true, 'data-table': tbl });
+        checkMap[tbl] = chk;
+        checksGrid.appendChild(el('label', { class: 'cso-ops-check-card' }, [
+          chk,
+          el('span', {}, [
+            el('strong', { text: tbl }),
+            el('span', { class: 'hint cso-ops-check-sub', text: subText })
+          ])
+        ]));
+      });
+    }
+    renderTableCheckboxes(null);
 
     var selAllBtn = el('button', {
       type: 'button',
@@ -2101,7 +2153,11 @@
     });
 
     wrap.appendChild(el('div', { class: 'cso-ops-checks-head' }, [
-      el('strong', { text: 'Granular D1 Tables (Allowlisted — excludes users credentials & snapshot ledger)' }),
+      el('strong', {
+        text: isRestoreFocus
+          ? 'Granular D1 Tables (Allowlisted — excludes users credentials & snapshot ledger)'
+          : 'Snapshot Table Scope (Dynamic from R2 Manifest)'
+      }),
       el('div', { class: 'actions' }, [selAllBtn, selNoneBtn])
     ]));
     wrap.appendChild(checksGrid);
@@ -2120,61 +2176,90 @@
     wrap.appendChild(el('div', { class: 'actions cso-ops-drill-actions' }, [drillBtn]));
     wrap.appendChild(drillOut);
 
+    var isRunningDrill = false;
     drillBtn.addEventListener('click', async function () {
+      if (isRunningDrill) return;
       var snapId = snapSel.value;
       if (!snapId) { toast('Select a snapshot first', true); return; }
       var tbls = selectedTables();
       if (!tbls.length) { toast('Select at least one table for the DR drill', true); return; }
+      isRunningDrill = true;
       drillBtn.disabled = true;
+      snapSel.disabled = true;
       drillBtn.textContent = 'Running DR Drill…';
       clear(drillOut);
       try {
         var rep = await api('POST', 'ops/snapshots/' + encodeURIComponent(snapId) + '/drill', { tables: tbls });
+        if (rep.last_drill) renderLastDrillBanner(rep.last_drill);
+
+        var driftWarnings = Array.isArray(rep.schema_drift_warnings) ? rep.schema_drift_warnings : [];
+        var isWarn = rep.readiness === 'WARN' || driftWarnings.length > 0;
         var kpis = el('div', { class: 'cso-ops-drill-kpis' }, [
-          el('span', { class: 'badge published', text: 'DR Readiness: ' + (rep.readiness || 'PASS') }),
+          el('span', { class: 'badge ' + (isWarn ? 'sev-medium' : 'published'), text: 'DR Readiness: ' + (rep.readiness || 'PASS') }),
           el('span', { class: 'badge published', text: '✓ SHA-256 Verified' }),
           el('span', { class: 'cso-social-count', text: 'Latency: ' + (rep.latency_ms || 1) + ' ms' }),
           el('span', { class: 'cso-social-count', text: 'Snapshot Rows: ' + ((rep.totals && rep.totals.snapshot_rows) || 0) }),
-          el('span', { class: 'cso-social-count', text: 'Live Rows: ' + ((rep.totals && rep.totals.live_rows) || 0) })
+          el('span', { class: 'cso-social-count', text: 'Live Rows: ' + ((rep.totals && rep.totals.live_rows) || 0) }),
+          el('span', { class: 'cso-social-count', text: 'Drift Warnings: ' + driftWarnings.length })
         ]);
         drillOut.appendChild(kpis);
+
+        if (driftWarnings.length) {
+          drillOut.appendChild(el('details', { class: 'cso-ops-row-breakdown cso-ops-drift-details', open: true }, [
+            el('summary', { class: 'cso-ops-row-breakdown-summary', text: 'Schema Drift Warnings (' + driftWarnings.length + ')' }),
+            el('ul', { class: 'cso-ops-row-breakdown-list' }, driftWarnings.map(function (w) {
+              return el('li', { class: 'cso-ops-row-breakdown-item' }, [
+                el('code', { text: w.table }),
+                el('span', { text: w.message || w.type })
+              ]);
+            }))
+          ]));
+        }
 
         var tb = el('tbody');
         var diffs = rep.table_diffs || {};
         (rep.tables_checked || tbls).forEach(function (tName) {
           var d = diffs[tName] || {};
-          var drift = (d.to_insert || 0) + (d.to_update || 0) + (d.live_only_rows || 0);
+          var hasSchemaDrift = d.schema_status === 'DRIFT';
           tb.appendChild(el('tr', {}, [
             el('td', {}, el('code', { text: tName })),
+            el('td', {}, el('code', { text: d.primary_key || 'id' })),
             el('td', { class: 'cso-tabular', text: String(d.snapshot_rows || 0) }),
             el('td', { class: 'cso-tabular', text: String(d.live_rows || 0) }),
             el('td', { class: 'cso-tabular', text: '+' + String(d.to_insert || 0) }),
             el('td', { class: 'cso-tabular', text: '~' + String(d.to_update || 0) }),
-            el('td', { class: 'cso-tabular', text: String(d.live_only_rows || 0) + ' live-only' }),
+            el('td', { class: 'cso-tabular', text: String(d.unchanged || 0) }),
+            el('td', { class: 'cso-tabular', text: String(d.live_only_rows || 0) }),
             el('td', {}, el('span', {
-              class: 'badge ' + (drift === 0 ? 'published' : 'sev-medium'),
-              text: drift === 0 ? 'In Sync (0 drift)' : (drift + ' row delta')
+              class: 'badge ' + (hasSchemaDrift ? 'sev-medium' : 'published'),
+              text: hasSchemaDrift ? 'Schema Drift' : 'No Drift'
             }))
           ]));
         });
 
         drillOut.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
           el('caption', { class: 'muted', text: 'Non-Destructive DR Drill Comparison Matrix — ' + (rep.snapshot_label || snapId) }),
-          el('thead', {}, el('tr', {}, ['D1 Table', 'Snapshot Rows', 'Live Rows', 'Inserts', 'Updates', 'Live-Only', 'Drift Status'].map(function (h) {
+          el('thead', {}, el('tr', {}, ['Table', 'PK Column', 'Snapshot Rows', 'Live Rows', 'To Insert', 'To Update', 'Unchanged', 'Live-Only', 'Schema Status'].map(function (h) {
             return el('th', { scope: 'col', text: h });
           }))),
           tb
         ])));
         toast('DR drill complete (' + (rep.latency_ms || 1) + ' ms · Readiness: ' + (rep.readiness || 'PASS') + ')');
       } catch (err) {
-        drillOut.appendChild(el('div', { class: 'alert', text: 'DR Drill failed: ' + err.message }));
+        drillOut.appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+          el('span', { text: 'DR Drill failed: ' + err.message }),
+          el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: function () { drillBtn.click(); } })
+        ]));
         toast(err.message, true);
+      } finally {
+        isRunningDrill = false;
+        drillBtn.disabled = false;
+        snapSel.disabled = false;
+        drillBtn.textContent = 'Run Non-Destructive DR Drill';
       }
-      drillBtn.disabled = false;
-      drillBtn.textContent = 'Run Non-Destructive DR Drill';
     });
 
-    if (me && me.role === 'admin') {
+    if (isRestoreFocus && me && me.role === 'admin') {
       var restoreBox = el('div', { class: 'cso-ops-restore-box' });
       restoreBox.appendChild(el('h3', { text: 'Granular Point-in-Time Restore Engine' }));
       restoreBox.appendChild(el('p', {
@@ -2256,6 +2341,7 @@
     var snapMetaMap = {};
     function updateShaBadge() {
       var cur = snapMetaMap[snapSel.value];
+      renderTableCheckboxes(cur || null);
       if (!cur) {
         shaBadge.textContent = 'No Snapshot Selected';
         shaBadge.className = 'badge expired';
@@ -2271,10 +2357,42 @@
       snapMetaMap = {};
       try {
         var d = await api('GET', 'ops/snapshots');
+        if (!isRestoreFocus) {
+          renderLastDrillBanner(d && d.last_drill ? d.last_drill : null);
+        }
         var items = (d && d.items) || [];
         if (!items.length) {
           snapSel.appendChild(el('option', { value: '', text: 'No snapshots in R2 vault — create one first' }));
           updateShaBadge();
+          if (!isRestoreFocus) {
+            clear(drillOut);
+            var emptyBox = el('div', { class: 'cso-ops-empty-vault' }, [
+              el('p', { class: 'muted', text: 'No R2 snapshots exist yet. Create a baseline snapshot to run a non-destructive Disaster Recovery drill.' })
+            ]);
+            if (me && me.role === 'admin') {
+              var quickSnapBtn = el('button', {
+                type: 'button',
+                class: 'btn primary',
+                text: 'Create Baseline Snapshot Now',
+                onclick: async function () {
+                  quickSnapBtn.disabled = true;
+                  quickSnapBtn.textContent = 'Creating Baseline Snapshot…';
+                  try {
+                    var res = await api('POST', 'ops/snapshots', { label: 'DR Drill Baseline Snapshot', scope: 'all' });
+                    var newId = res && res.snapshot ? res.snapshot.id : '';
+                    toast('Baseline snapshot created (' + fmtBytes(res && res.snapshot ? res.snapshot.size_bytes : 0) + ')');
+                    await populateSnapshots(newId);
+                  } catch (err) {
+                    toast(err.message || 'Failed to create baseline snapshot', true);
+                    quickSnapBtn.disabled = false;
+                    quickSnapBtn.textContent = 'Create Baseline Snapshot Now';
+                  }
+                }
+              });
+              emptyBox.appendChild(quickSnapBtn);
+            }
+            drillOut.appendChild(emptyBox);
+          }
           return;
         }
         items.forEach(function (it) {
@@ -2287,6 +2405,11 @@
       } catch (e) {
         snapSel.appendChild(el('option', { value: '', text: 'Error loading snapshots: ' + e.message }));
         updateShaBadge();
+        clear(drillOut);
+        drillOut.appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+          el('span', { text: 'Could not load R2 snapshots: ' + (e && e.message ? e.message : 'Network error') }),
+          el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: function () { populateSnapshots(preferId); } })
+        ]));
       }
     }
 

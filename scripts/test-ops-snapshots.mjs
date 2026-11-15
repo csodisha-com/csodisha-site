@@ -194,7 +194,7 @@ assert.equal(drillReport.table_diffs.schemes_directory.live_rows, 0);
 assert.equal(drillReport.table_diffs.schemes_directory.to_insert, 1);
 assert.equal(drillReport.totals.to_insert, 1);
 assert.equal(drillReport.totals.to_update, 1);
-assert.equal(drillReport.totals.live_only_rows, 1);
+assert.equal(drillReport.totals.live_only_rows, 2, '1 live-only in posts + 1 live-only in ops_snapshots (the snapshot row itself)');
 
 // Confirm DR drill is strictly non-destructive (live D1 unchanged)
 const postAfterDrill = await env.DB.prepare(`SELECT title FROM posts WHERE id = 'job-1'`).first();
@@ -302,5 +302,50 @@ await assert.rejects(
   err => err && err.code === 'INVALID_LABEL',
   'empty snapshot label must be rejected'
 );
+
+// 11. Module #2 DR Drill: PRAGMA table_info PK diffing on non-id table (site_settings keyed on 'key'),
+//     graceful schema drift warnings, and ops_last_dr_drill persistence
+const drillEnv = { DB: makeD1(), MEDIA: makeR2() };
+const baselineSnap = await createPlatformSnapshot(drillEnv, {
+  label: 'DR Drill Baseline',
+  scope: 'all',
+  triggerType: 'manual',
+  createdBy: 'admin@csodisha.com'
+});
+
+// Mutate site_settings (keyed on 'key') and add a live-only setting
+await drillEnv.DB.prepare(`UPDATE site_settings SET value_json = '{"active":false}' WHERE key = 'homepage_banner'`).run();
+await drillEnv.DB.prepare(`INSERT INTO site_settings VALUES ('maintenance_mode', '{"enabled":false}', 'admin-1', '2026-11-15')`).run();
+
+const cleanDrill = await runDisasterRecoveryDrill(drillEnv, baselineSnap.id, {
+  tables: ['site_settings', 'posts', 'custom_exam_notes']
+});
+assert.equal(cleanDrill.readiness, 'PASS');
+assert.equal(cleanDrill.schema_drift_warnings.length, 0);
+assert.equal(cleanDrill.table_diffs.site_settings.primary_key, 'key', 'PRAGMA table_info must resolve site_settings PK as key');
+assert.equal(cleanDrill.table_diffs.site_settings.to_update, 1, 'modified homepage_banner must be detected via key PK');
+assert.equal(cleanDrill.table_diffs.site_settings.live_only_rows, 1, 'live-only maintenance_mode must be detected');
+assert.equal(cleanDrill.table_diffs.posts.primary_key, 'id');
+assert.equal(cleanDrill.table_diffs.posts.unchanged, 1);
+
+// Verify ops_last_dr_drill persisted in site_settings and returned by listPlatformSnapshots
+const storedDrillRow = await drillEnv.DB.prepare(`SELECT value_json FROM site_settings WHERE key = 'ops_last_dr_drill'`).first();
+assert.ok(storedDrillRow && storedDrillRow.value_json, 'ops_last_dr_drill must be persisted in site_settings');
+const parsedLastDrill = JSON.parse(storedDrillRow.value_json);
+assert.equal(parsedLastDrill.snapshot_id, baselineSnap.id);
+assert.equal(parsedLastDrill.readiness, 'PASS');
+const listedWithDrill = await listPlatformSnapshots(drillEnv);
+assert.ok(listedWithDrill.last_drill && listedWithDrill.last_drill.snapshot_id === baselineSnap.id, 'listPlatformSnapshots must include last_drill');
+
+// Introduce schema drift (ALTER TABLE + DROP TABLE) and confirm graceful WARN without 500 error
+drillEnv.DB.db.exec(`ALTER TABLE custom_exam_notes ADD COLUMN extra_drift_col TEXT;`);
+drillEnv.DB.db.exec(`DROP TABLE resources;`);
+const driftDrill = await runDisasterRecoveryDrill(drillEnv, baselineSnap.id, {
+  tables: ['custom_exam_notes', 'resources']
+});
+assert.equal(driftDrill.readiness, 'WARN', 'schema drift must set readiness to WARN');
+assert.equal(driftDrill.schema_drift_warnings.length, 2, 'must report both column drift and dropped table warnings');
+assert.equal(driftDrill.table_diffs.custom_exam_notes.schema_status, 'DRIFT');
+assert.equal(driftDrill.table_diffs.resources.schema_status, 'DRIFT');
 
 console.log('OPS SNAPSHOT, DR DRILL & GRANULAR RESTORE TESTS PASSED');
