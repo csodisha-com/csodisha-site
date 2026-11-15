@@ -16,8 +16,9 @@ import { enrichCareerExplorerCategory02 } from './jobs-career-cat02-enrichment.j
 import { enrichEligibilityExplorerCategory03 } from './jobs-eligibility-cat03-enrichment.js';
 import { enrichCoursesExamsCategory04 } from './jobs-courses-cat04-enrichment.js';
 import { enrichScholarshipsCategory05 } from './jobs-scholarships-cat05-enrichment.js';
+import { enrichInternationalCategory06 } from './jobs-international-cat06-enrichment.js';
 
-export { enrichJobsRecruitmentCategory01, enrichCareerExplorerCategory02, enrichEligibilityExplorerCategory03, enrichCoursesExamsCategory04, enrichScholarshipsCategory05 };
+export { enrichJobsRecruitmentCategory01, enrichCareerExplorerCategory02, enrichEligibilityExplorerCategory03, enrichCoursesExamsCategory04, enrichScholarshipsCategory05, enrichInternationalCategory06 };
 
 export const JOBS_DOMAINS = [
   'jobs-recruitment',
@@ -731,6 +732,7 @@ export async function ensureJobsDirectoryStudioSchema(db) {
   await enrichEligibilityExplorerCategory03(db, now);
   await enrichCoursesExamsCategory04(db, now);
   await enrichScholarshipsCategory05(db, now);
+  await enrichInternationalCategory06(db, now);
 
   _schemaReady.add(db);
 }
