@@ -148,7 +148,7 @@
     ]);
   }
   function setTitle(t) {
-    if (embedded) { main.appendChild(embedTabs()); return; }
+    if (embedded) { if (embedGroup && embedGroup.length) main.appendChild(embedTabs()); return; }
     main.appendChild(el('h1', { text: t })); document.title = t + ' — CS Odisha Admin';
   }
   function embedTabs() {
@@ -1589,9 +1589,17 @@
       type: 'text',
       id: 'f-ops-snap-label',
       class: 'cso-ops-label-input',
-      maxlength: '120',
-      placeholder: 'Optional snapshot label (e.g., Pre-v27 Baseline)…'
+      maxlength: '80',
+      placeholder: 'Optional snapshot label (e.g., 2026-11-15-baseline)…'
     });
+    var scopeSel = el('select', {
+      id: 'f-ops-snap-scope',
+      class: 'cso-ops-scope-select',
+      'aria-label': 'Snapshot Scope'
+    }, [
+      el('option', { value: 'all', text: 'All Platform Tables' }),
+      el('option', { value: 'content_only', text: 'Core Content Only' })
+    ]);
     var createBtn = el('button', {
       type: 'button',
       class: 'btn primary',
@@ -1607,6 +1615,8 @@
       var formRow = el('div', { class: 'cso-ops-create-row' }, [
         el('label', { for: 'f-ops-snap-label', class: 'cso-ops-create-label', text: 'Snapshot Label' }),
         labelInp,
+        el('label', { for: 'f-ops-snap-scope', class: 'cso-ops-create-label', text: 'Scope' }),
+        scopeSel,
         createBtn,
         refreshBtn
       ]);
@@ -1615,17 +1625,29 @@
       wrap.appendChild(el('div', { class: 'actions' }, [refreshBtn]));
     }
 
+    var scopePreviewBox = el('div', { class: 'cso-ops-scope-preview', 'aria-live': 'polite' });
     var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis' });
     var summaryBar = el('p', { class: 'hint cso-ops-vault-summary', text: 'Loading R2 snapshot vault…' });
+    var searchInp = el('input', {
+      type: 'search',
+      id: 'f-ops-vault-search',
+      class: 'cso-ops-filter-input',
+      placeholder: 'Search by label or SHA-256…',
+      'aria-label': 'Search snapshots by label or SHA-256'
+    });
     var filterBar = el('div', { class: 'cso-ops-filter-bar cso-ops-vault-filter', role: 'group', 'aria-label': 'Filter snapshots by trigger type' });
     var tableHost = el('div', { class: 'cso-ops-vault-table-host' });
+    wrap.appendChild(scopePreviewBox);
     wrap.appendChild(kpiStrip);
     wrap.appendChild(summaryBar);
     wrap.appendChild(filterBar);
     wrap.appendChild(tableHost);
 
     var cachedSnapshots = [];
+    var cachedPreview = { discovered_tables: [], excluded_tables: [], scrubbed_columns: [] };
     var activeTriggerFilter = 'all';
+    var searchQuery = '';
+    var isCreatingSnapshot = false;
     var triggerOptions = [
       { id: 'all', label: 'All' },
       { id: 'manual', label: 'Manual' },
@@ -1637,8 +1659,72 @@
       return String(raw || 'manual').toLowerCase().replace(/-/g, '_');
     }
 
+    function renderScopePreview() {
+      clear(scopePreviewBox);
+      var discovered = cachedPreview.discovered_tables || [];
+      var excluded = cachedPreview.excluded_tables || [];
+      var scrubbed = cachedPreview.scrubbed_columns || [];
+      var selectedScope = scopeSel ? scopeSel.value : 'all';
+
+      var includedTables = discovered.filter(function (t) {
+        return selectedScope !== 'content_only' || t.is_core_content;
+      });
+      var totalIncludedRows = includedTables.reduce(function (acc, t) { return acc + (Number(t.rows) || 0); }, 0);
+
+      var shieldText = 'DPDP Act 2023 Privacy Shield: Excludes ' +
+        (excluded.length ? excluded.join(', ') : 'sessions, admin_otps, admin_rate_limits') +
+        ' · Scrubs ' +
+        (scrubbed.length ? scrubbed.join(', ') : 'password_hash, salt, code_hash, totp_secret');
+
+      scopePreviewBox.appendChild(el('div', { class: 'cso-ops-scope-preview-head' }, [
+        el('span', { class: 'badge published', text: 'DPDP Privacy Shield Active' }),
+        el('span', { class: 'hint cso-tabular', text: includedTables.length + ' D1 table(s) · ' + totalIncludedRows + ' live row(s) in scope' })
+      ]));
+      scopePreviewBox.appendChild(el('p', { class: 'hint cso-ops-privacy-note', text: shieldText }));
+
+      if (discovered.length) {
+        scopePreviewBox.appendChild(el('div', { class: 'cso-ops-table-chips' }, discovered.map(function (t) {
+          var activeInScope = selectedScope !== 'content_only' || t.is_core_content;
+          return el('span', {
+            class: 'cso-ops-table-chip' + (activeInScope ? ' is-included' : ' is-excluded'),
+            title: activeInScope ? 'Included in selected scope' : 'Skipped in Core Content Only scope',
+            text: t.table + ' (' + t.rows + ')'
+          });
+        })));
+      }
+    }
+
+    async function handleCreateSnapshot(customLabel) {
+      if (isCreatingSnapshot) return;
+      isCreatingSnapshot = true;
+      createBtn.disabled = true;
+      scopeSel.disabled = true;
+      labelInp.disabled = true;
+      createBtn.textContent = 'Archiving Snapshot to R2…';
+      try {
+        var rawLabel = typeof customLabel === 'string' ? customLabel : labelInp.value;
+        var r = await api('POST', 'ops/snapshots', {
+          label: String(rawLabel || '').trim().slice(0, 80),
+          scope: scopeSel.value || 'all'
+        });
+        var sn = r.snapshot || {};
+        if (typeof customLabel !== 'string') labelInp.value = '';
+        toast('Snapshot saved to R2 (' + fmtBytes(sn.size_bytes) + ', SHA-256 ' + String(sn.sha256 || '').slice(0, 10) + '…)');
+        await loadVault();
+      } catch (err) {
+        toast(err.message || 'Failed to create snapshot', true);
+      } finally {
+        isCreatingSnapshot = false;
+        createBtn.disabled = false;
+        scopeSel.disabled = false;
+        labelInp.disabled = false;
+        createBtn.textContent = 'Create Full Platform Snapshot Now';
+      }
+    }
+
     function renderFilterBar() {
       clear(filterBar);
+      filterBar.appendChild(searchInp);
       filterBar.appendChild(el('span', { class: 'muted sm', text: 'Trigger Filter:' }));
       triggerOptions.forEach(function (opt) {
         var isActive = activeTriggerFilter === opt.id;
@@ -1659,25 +1745,45 @@
 
     function renderVaultTable() {
       clear(tableHost);
+      var q = searchQuery.trim().toLowerCase();
       var filtered = cachedSnapshots.filter(function (snap) {
-        if (activeTriggerFilter === 'all') return true;
-        return normalizeTriggerType(snap.trigger_type) === activeTriggerFilter;
+        if (activeTriggerFilter !== 'all' && normalizeTriggerType(snap.trigger_type) !== activeTriggerFilter) {
+          return false;
+        }
+        if (q) {
+          var hay = (String(snap.label || '') + ' ' + String(snap.sha256 || '')).toLowerCase();
+          if (hay.indexOf(q) === -1) return false;
+        }
+        return true;
       });
 
       if (!cachedSnapshots.length) {
         summaryBar.textContent = '0 R2 snapshot(s) in cold vault · Bucket: cso-media (backups/snapshots/)';
-        tableHost.appendChild(el('p', { class: 'muted', text: 'No platform snapshots recorded yet. Click "Create Full Platform Snapshot Now" to archive the first baseline to R2.' }));
+        var emptyCard = el('div', { class: 'cso-ops-empty-vault' }, [
+          el('p', { class: 'muted', text: 'No platform snapshots recorded yet. Archive your first baseline snapshot to Cloudflare R2 with SHA-256 verification and DPDP credential scrubbing.' })
+        ]);
+        if (me && me.role === 'admin') {
+          emptyCard.appendChild(el('button', {
+            type: 'button',
+            class: 'btn primary',
+            text: 'Archive First Baseline Snapshot Now',
+            onclick: function () {
+              handleCreateSnapshot('Baseline Platform Snapshot');
+            }
+          }));
+        }
+        tableHost.appendChild(emptyCard);
         return;
       }
 
-      if (activeTriggerFilter === 'all') {
+      if (activeTriggerFilter === 'all' && !q) {
         summaryBar.textContent = cachedSnapshots.length + ' R2 snapshot(s) in cold vault · Bucket: cso-media (backups/snapshots/)';
       } else {
         summaryBar.textContent = 'Showing ' + filtered.length + ' of ' + cachedSnapshots.length + ' R2 snapshot(s) · Bucket: cso-media (backups/snapshots/)';
       }
 
       if (!filtered.length) {
-        tableHost.appendChild(el('p', { class: 'muted', text: 'No snapshots match the selected trigger filter.' }));
+        tableHost.appendChild(el('p', { class: 'muted', text: 'No snapshots match the selected trigger filter or search query.' }));
         return;
       }
 
@@ -1708,6 +1814,64 @@
           text: snap.r2_exists ? 'R2 Stored' : 'Missing in R2'
         });
         var verifyDetail = el('div', { class: 'hint cso-ops-verify-detail', hidden: true });
+
+        var labelStrong = el('strong', { text: snap.label });
+        var labelCell = el('td', {}, [
+          el('div', { class: 'cso-ops-label-row' }, [labelStrong]),
+          el('div', { class: 'hint cso-ops-r2key', text: snap.r2_key })
+        ]);
+
+        if (me && me.role === 'admin') {
+          var renameBtn = el('button', {
+            type: 'button',
+            class: 'btn sm',
+            text: 'Rename',
+            onclick: function () {
+              var editInp = el('input', {
+                type: 'text',
+                class: 'cso-ops-rename-input',
+                maxlength: '80',
+                value: snap.label,
+                'aria-label': 'Edit snapshot label'
+              });
+              var saveBtn = el('button', { type: 'button', class: 'btn sm primary', text: 'Save' });
+              var cancelBtn = el('button', { type: 'button', class: 'btn sm', text: 'Cancel' });
+              var editForm = el('div', { class: 'cso-ops-rename-row' }, [editInp, saveBtn, cancelBtn]);
+              var labelRow = labelCell.firstChild;
+              labelRow.hidden = true;
+              labelCell.insertBefore(editForm, labelRow);
+              editInp.focus();
+              editInp.select();
+
+              cancelBtn.addEventListener('click', function () {
+                editForm.remove();
+                labelRow.hidden = false;
+              });
+              saveBtn.addEventListener('click', async function () {
+                var nextLabel = editInp.value.trim().slice(0, 80);
+                if (!nextLabel) {
+                  toast('Snapshot label cannot be empty', true);
+                  return;
+                }
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving…';
+                try {
+                  var res = await api('PATCH', 'ops/snapshots/' + encodeURIComponent(snap.id), { label: nextLabel });
+                  snap.label = res.label || nextLabel;
+                  labelStrong.textContent = snap.label;
+                  editForm.remove();
+                  labelRow.hidden = false;
+                  toast('Snapshot renamed to "' + snap.label + '"');
+                } catch (err) {
+                  toast(err.message || 'Failed to rename snapshot', true);
+                  saveBtn.disabled = false;
+                  saveBtn.textContent = 'Save';
+                }
+              });
+            }
+          });
+          labelCell.firstChild.appendChild(renameBtn);
+        }
 
         var verifyBtn = el('button', {
           type: 'button',
@@ -1792,10 +1956,7 @@
             el('div', { class: 'cso-tabular', text: fmtDate(snap.created_at) }),
             el('div', { class: 'hint', text: (snap.created_by || 'staff') + ' · ' + (snap.trigger_type || 'manual') })
           ]),
-          el('td', {}, [
-            el('strong', { text: snap.label }),
-            el('div', { class: 'hint cso-ops-r2key', text: snap.r2_key })
-          ]),
+          labelCell,
           el('td', {}, [
             el('strong', { class: 'cso-tabular', text: String(snap.total_rows || 0) + ' rows' }),
             breakdownEl
@@ -1819,6 +1980,11 @@
       ])));
     }
 
+    searchInp.addEventListener('input', function () {
+      searchQuery = searchInp.value || '';
+      renderVaultTable();
+    });
+    scopeSel.addEventListener('change', renderScopePreview);
     renderFilterBar();
 
     async function loadVault() {
@@ -1828,6 +1994,13 @@
       try {
         var d = await api('GET', 'ops/snapshots');
         cachedSnapshots = (d && d.items) || [];
+        cachedPreview = {
+          discovered_tables: (d && d.discovered_tables) || [],
+          excluded_tables: (d && d.excluded_tables) || [],
+          scrubbed_columns: (d && d.scrubbed_columns) || []
+        };
+        renderScopePreview();
+
         var totalBytes = cachedSnapshots.reduce(function (acc, it) { return acc + (Number(it.size_bytes) || 0); }, 0);
         var latestSnap = cachedSnapshots[0] || null;
         kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
@@ -1844,24 +2017,16 @@
         ]));
         renderVaultTable();
       } catch (e) {
-        summaryBar.textContent = 'Could not load snapshots: ' + e.message;
+        summaryBar.textContent = 'Snapshot vault unavailable.';
+        tableHost.appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+          el('span', { text: 'Could not load snapshots: ' + (e && e.message ? e.message : 'Network error') }),
+          el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: loadVault })
+        ]));
       }
     }
 
-    createBtn.addEventListener('click', async function () {
-      createBtn.disabled = true;
-      createBtn.textContent = 'Creating Snapshot…';
-      try {
-        var r = await api('POST', 'ops/snapshots', { label: labelInp.value.trim() });
-        var sn = r.snapshot || {};
-        labelInp.value = '';
-        toast('Snapshot saved to R2 (' + fmtBytes(sn.size_bytes) + ', SHA-256 ' + String(sn.sha256 || '').slice(0, 10) + '…)');
-        await loadVault();
-      } catch (err) {
-        toast(err.message, true);
-      }
-      createBtn.disabled = false;
-      createBtn.textContent = 'Create Full Platform Snapshot Now';
+    createBtn.addEventListener('click', function () {
+      handleCreateSnapshot();
     });
 
     refreshBtn.addEventListener('click', loadVault);

@@ -102,15 +102,28 @@ export const EXCLUDED_SNAPSHOT_TABLES = new Set([
 export const SENSITIVE_SNAPSHOT_COLUMNS = new Set([
   'password_hash',
   'salt',
-  'code_hash'
+  'code_hash',
+  'totp_secret'
 ]);
+
+export const CORE_CONTENT_TABLES = new Set(RESTORABLE_TABLES);
+
+export function sanitizeSnapshotLabel(raw) {
+  return String(raw || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 80);
+}
+
+export function normalizeSnapshotScope(raw) {
+  if (raw === undefined || raw === null || raw === '') return 'all';
+  const s = String(raw).trim();
+  if (s === 'all' || s === 'content_only') return s;
+  throw new HttpError(400, 'INVALID_SCOPE', 'Snapshot scope must be "all" or "content_only"');
+}
 
 function quoteIdent(name) {
   return '"' + String(name || '').replace(/"/g, '""') + '"';
 }
 
-export async function collectPlatformSnapshotTables(env) {
-  const db = env.DB;
+async function discoverMasterTables(db) {
   const { results: masterRows } = await db.prepare(
     `SELECT name FROM sqlite_master
      WHERE type = 'table'
@@ -118,10 +131,81 @@ export async function collectPlatformSnapshotTables(env) {
        AND name NOT LIKE '_cf_%'
      ORDER BY name ASC`
   ).all();
+  return (masterRows || []).map(r => String((r && r.name) || '').trim()).filter(Boolean);
+}
 
-  const discoveredNames = (masterRows || [])
-    .map(r => String(r && r.name || '').trim())
-    .filter(name => name && !EXCLUDED_SNAPSHOT_TABLES.has(name));
+async function getTableColumns(db, name) {
+  const safeTbl = quoteIdent(name);
+  try {
+    const pragma = await db.prepare(`PRAGMA table_info(${safeTbl})`).all();
+    return (pragma && Array.isArray(pragma.results) ? pragma.results : [])
+      .map(c => String(c.name || '').trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+export async function previewPlatformSnapshotScope(env) {
+  if (!env || !env.DB) return { discovered_tables: [], excluded_tables: [], scrubbed_columns: [] };
+  const db = env.DB;
+  const masterNames = await discoverMasterTables(db);
+  const excludedSet = new Set();
+  const scrubbedColsSet = new Set();
+  const discovered_tables = [];
+
+  for (const name of masterNames) {
+    if (EXCLUDED_SNAPSHOT_TABLES.has(name)) {
+      excludedSet.add(name);
+      continue;
+    }
+    const cols = await getTableColumns(db, name);
+    for (const c of cols) {
+      if (SENSITIVE_SNAPSHOT_COLUMNS.has(c.toLowerCase())) {
+        scrubbedColsSet.add(c.toLowerCase());
+      }
+    }
+    const safeTbl = quoteIdent(name);
+    let rowsCount = 0;
+    try {
+      const cntRow = await db.prepare(`SELECT COUNT(*) AS cnt FROM ${safeTbl}`).first();
+      rowsCount = Number(cntRow && cntRow.cnt) || 0;
+    } catch {
+      rowsCount = 0;
+    }
+    discovered_tables.push({
+      table: name,
+      rows: rowsCount,
+      is_core_content: CORE_CONTENT_TABLES.has(name)
+    });
+  }
+
+  return {
+    discovered_tables,
+    excluded_tables: Array.from(excludedSet).sort(),
+    scrubbed_columns: Array.from(scrubbedColsSet).sort()
+  };
+}
+
+export async function collectPlatformSnapshotTables(env, { scope = 'all' } = {}) {
+  const cleanScope = normalizeSnapshotScope(scope);
+  const db = env.DB;
+  const masterNames = await discoverMasterTables(db);
+
+  const scrubbedTablesSet = new Set();
+  const scrubbedColsSet = new Set();
+  const discoveredNames = [];
+
+  for (const name of masterNames) {
+    if (EXCLUDED_SNAPSHOT_TABLES.has(name)) {
+      scrubbedTablesSet.add(name);
+      continue;
+    }
+    if (cleanScope === 'content_only' && !CORE_CONTENT_TABLES.has(name)) {
+      continue;
+    }
+    discoveredNames.push(name);
+  }
 
   const tables = {};
   const row_counts = {};
@@ -129,17 +213,15 @@ export async function collectPlatformSnapshotTables(env) {
 
   for (const name of discoveredNames) {
     const safeTbl = quoteIdent(name);
-    let cols = [];
-    try {
-      const pragma = await db.prepare(`PRAGMA table_info(${safeTbl})`).all();
-      cols = (pragma && Array.isArray(pragma.results) ? pragma.results : [])
-        .map(c => String(c.name || '').trim())
-        .filter(Boolean);
-    } catch {
-      cols = [];
+    const cols = await getTableColumns(db, name);
+    const safeCols = [];
+    for (const c of cols) {
+      if (SENSITIVE_SNAPSHOT_COLUMNS.has(c.toLowerCase())) {
+        scrubbedColsSet.add(c.toLowerCase());
+      } else {
+        safeCols.push(c);
+      }
     }
-
-    const safeCols = cols.filter(c => !SENSITIVE_SNAPSHOT_COLUMNS.has(c.toLowerCase()));
     if (!safeCols.length) {
       tables[name] = [];
       row_counts[name] = 0;
@@ -156,7 +238,9 @@ export async function collectPlatformSnapshotTables(env) {
     const cleanRows = rows.map(row => {
       const out = {};
       for (const k of Object.keys(row || {})) {
-        if (!SENSITIVE_SNAPSHOT_COLUMNS.has(k.toLowerCase())) {
+        if (SENSITIVE_SNAPSHOT_COLUMNS.has(k.toLowerCase())) {
+          scrubbedColsSet.add(k.toLowerCase());
+        } else {
           out[k] = row[k];
         }
       }
@@ -168,30 +252,41 @@ export async function collectPlatformSnapshotTables(env) {
     total_rows += cleanRows.length;
   }
 
-  return { tables, row_counts, total_rows };
+  return {
+    tables,
+    row_counts,
+    total_rows,
+    scope: cleanScope,
+    scrubbed_tables: Array.from(scrubbedTablesSet).sort(),
+    scrubbed_columns: Array.from(scrubbedColsSet).sort()
+  };
 }
 
-export async function createPlatformSnapshot(env, { label = '', triggerType = 'manual', createdBy = 'staff' } = {}) {
+export async function createPlatformSnapshot(env, { label = '', scope = 'all', triggerType = 'manual', createdBy = 'staff' } = {}) {
   if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
   if (!env.MEDIA) throw new HttpError(500, 'NO_STORAGE', 'R2 media storage binding unavailable');
 
+  const cleanScope = normalizeSnapshotScope(scope);
   await ensureOpsSnapshotsTable(env);
 
   const id = crypto.randomUUID();
   const createdAt = new Date().toISOString();
   const tsCompact = createdAt.replace(/[:.]/g, '-');
-  const cleanLabel = String(label || '').trim().slice(0, 120) || `Platform Snapshot (${createdAt.slice(0, 10)})`;
+  const cleanLabel = sanitizeSnapshotLabel(label) || `Platform Snapshot (${createdAt.slice(0, 10)})`;
   const r2Key = `backups/snapshots/${tsCompact}-${id}.json`;
 
-  const { tables, row_counts, total_rows } = await collectPlatformSnapshotTables(env);
+  const { tables, row_counts, total_rows, scrubbed_tables, scrubbed_columns } = await collectPlatformSnapshotTables(env, { scope: cleanScope });
 
   const snapshotEnvelope = {
     schema_version: 'cso-snapshot-v1',
     snapshot_id: id,
     label: cleanLabel,
+    scope: cleanScope,
     created_at: createdAt,
     created_by: createdBy,
     trigger_type: triggerType,
+    scrubbed_tables,
+    scrubbed_columns,
     row_counts,
     total_rows,
     tables
@@ -231,11 +326,14 @@ export async function createPlatformSnapshot(env, { label = '', triggerType = 'm
   return {
     id,
     label: cleanLabel,
+    scope: cleanScope,
     r2_key: r2Key,
     sha256,
     size_bytes: bytes.byteLength,
     row_counts,
     total_rows,
+    scrubbed_tables,
+    scrubbed_columns,
     trigger_type: triggerType,
     created_by: createdBy,
     created_at: createdAt,
@@ -264,9 +362,10 @@ function presentSnapshotRow(row, r2Exists = true) {
 
 export async function listPlatformSnapshots(env) {
   await ensureOpsSnapshotsTable(env);
-  const { results } = await env.DB.prepare(
-    'SELECT * FROM ops_snapshots ORDER BY created_at DESC, id DESC LIMIT 100'
-  ).all();
+  const [{ results }, preview] = await Promise.all([
+    env.DB.prepare('SELECT * FROM ops_snapshots ORDER BY created_at DESC, id DESC LIMIT 100').all(),
+    previewPlatformSnapshotScope(env)
+  ]);
   const rows = results || [];
 
   const items = await Promise.all(rows.map(async row => {
@@ -289,7 +388,13 @@ export async function listPlatformSnapshots(env) {
     return presentSnapshotRow(row, exists);
   }));
 
-  return { items, total: items.length };
+  return {
+    items,
+    total: items.length,
+    discovered_tables: preview.discovered_tables,
+    excluded_tables: preview.excluded_tables,
+    scrubbed_columns: preview.scrubbed_columns
+  };
 }
 
 export async function verifyPlatformSnapshot(env, id) {
@@ -582,6 +687,25 @@ export async function restorePlatformSnapshot(env, id, { tables = [], mode = 'up
   };
 }
 
+export async function renamePlatformSnapshot(env, id, newLabel) {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  await ensureOpsSnapshotsTable(env);
+  const cleanLabel = sanitizeSnapshotLabel(newLabel);
+  if (!cleanLabel) {
+    throw new HttpError(400, 'INVALID_LABEL', 'Snapshot label must be between 1 and 80 characters');
+  }
+  const row = await env.DB.prepare('SELECT id, label FROM ops_snapshots WHERE id = ?').bind(id).first();
+  if (!row) throw new HttpError(404, 'NOT_FOUND', 'Snapshot not found');
+
+  await env.DB.prepare('UPDATE ops_snapshots SET label = ? WHERE id = ?').bind(cleanLabel, id).run();
+  return {
+    ok: true,
+    id: row.id,
+    previous_label: row.label,
+    label: cleanLabel
+  };
+}
+
 export async function deletePlatformSnapshot(env, id) {
   if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
   await ensureOpsSnapshotsTable(env);
@@ -616,19 +740,34 @@ export async function handleOpsSnapshots(request, env, actor, subId, action) {
       const body = await readJson(request, 10000).catch(() => ({}));
       const snap = await createPlatformSnapshot(env, {
         label: body && body.label ? String(body.label) : '',
+        scope: body && body.scope !== undefined ? body.scope : 'all',
         triggerType: body && body.trigger_type === 'scheduled' ? 'scheduled' : 'manual',
         createdBy: actor.email || actor.userId
       });
       await audit(env, request, actor, 'ops.snapshot.create', 'ops_snapshot', snap.id, {
         label: snap.label,
+        scope: snap.scope,
         r2_key: snap.r2_key,
         sha256: snap.sha256,
         size_bytes: snap.size_bytes,
-        total_rows: snap.total_rows
+        total_rows: snap.total_rows,
+        scrubbed_tables: snap.scrubbed_tables,
+        scrubbed_columns: snap.scrubbed_columns
       });
       return json({ snapshot: snap }, 201);
     }
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  if (!action && method === 'PATCH') {
+    if (actor.role !== 'admin') throw new HttpError(403, 'FORBIDDEN', 'Only administrators can rename platform snapshots');
+    const body = await readJson(request, 10000).catch(() => ({}));
+    const result = await renamePlatformSnapshot(env, subId, body && body.label);
+    await audit(env, request, actor, 'ops.snapshot.rename', 'ops_snapshot', subId, {
+      previous_label: result.previous_label,
+      label: result.label
+    });
+    return json(result);
   }
 
   if (!action && method === 'DELETE') {

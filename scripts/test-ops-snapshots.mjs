@@ -8,11 +8,13 @@ import {
   computeSnapshotChecksum,
   createPlatformSnapshot,
   listPlatformSnapshots,
+  renamePlatformSnapshot,
   verifyPlatformSnapshot,
   downloadPlatformSnapshot,
   deletePlatformSnapshot,
   runDisasterRecoveryDrill,
-  restorePlatformSnapshot
+  restorePlatformSnapshot,
+  handleOpsSnapshots
 } from '../functions/_lib/ops-snapshots.js';
 
 function makeD1() {
@@ -25,7 +27,7 @@ function makeD1() {
     CREATE TABLE schemes_directory (id TEXT PRIMARY KEY, slug TEXT, title TEXT, status TEXT);
     CREATE TABLE resources (id TEXT PRIMARY KEY, kind TEXT, title TEXT, status TEXT);
     CREATE TABLE media_assets (id TEXT PRIMARY KEY, object_key TEXT, kind TEXT, mime_type TEXT, size_bytes INTEGER, original_name TEXT, uploaded_by TEXT, created_at TEXT, deleted_at TEXT);
-    CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT, password_hash TEXT, salt TEXT, code_hash TEXT, role TEXT, failed_attempts INTEGER, lockout_until INTEGER, created_at INTEGER, updated_at INTEGER);
+    CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT, password_hash TEXT, salt TEXT, code_hash TEXT, totp_secret TEXT, role TEXT, failed_attempts INTEGER, lockout_until INTEGER, created_at INTEGER, updated_at INTEGER);
     CREATE TABLE sessions (token TEXT PRIMARY KEY, user_id TEXT);
     CREATE TABLE admin_otps (user_id TEXT PRIMARY KEY, code_hash TEXT);
     CREATE TABLE admin_rate_limits (key TEXT PRIMARY KEY, window_start INTEGER);
@@ -33,7 +35,7 @@ function makeD1() {
     INSERT INTO site_settings VALUES ('homepage_banner', '{"active":true}', 'admin-1', '2026-11-14');
     INSERT INTO posts (id, type, slug, title, status) VALUES ('job-1', 'job', 'opsc-oas-2026', 'OPSC Civil Services', 'published');
     INSERT INTO schemes_directory VALUES ('sch-1', 'subhadra-yojana', 'Subhadra Yojana', 'published');
-    INSERT INTO users VALUES ('u-1', 'admin@csodisha.com', 'SECRET_HASH_DO_NOT_EXPORT', 'SECRET_SALT_DO_NOT_EXPORT', 'SECRET_CODE_HASH_DO_NOT_EXPORT', 'admin', 0, 0, 1700000000, 1700000000);
+    INSERT INTO users VALUES ('u-1', 'admin@csodisha.com', 'SECRET_HASH_DO_NOT_EXPORT', 'SECRET_SALT_DO_NOT_EXPORT', 'SECRET_CODE_HASH_DO_NOT_EXPORT', 'SECRET_TOTP_DO_NOT_EXPORT', 'admin', 0, 0, 1700000000, 1700000000);
     INSERT INTO sessions VALUES ('SECRET_SESSION_TOKEN', 'u-1');
     INSERT INTO admin_otps VALUES ('u-1', 'SECRET_OTP_HASH');
     INSERT INTO admin_rate_limits VALUES ('rl-1', 1700000000);
@@ -118,16 +120,22 @@ const rawText = new TextDecoder().decode(new Uint8Array(await rawObj.arrayBuffer
 assert.ok(!rawText.includes('SECRET_HASH_DO_NOT_EXPORT'), 'password_hash must never be exported in snapshots');
 assert.ok(!rawText.includes('SECRET_SALT_DO_NOT_EXPORT'), 'salt must never be exported in snapshots');
 assert.ok(!rawText.includes('SECRET_CODE_HASH_DO_NOT_EXPORT'), 'code_hash must never be exported in snapshots');
+assert.ok(!rawText.includes('SECRET_TOTP_DO_NOT_EXPORT'), 'totp_secret must never be exported in snapshots');
 assert.ok(!rawText.includes('SECRET_SESSION_TOKEN'), 'sessions rows must never be exported');
 assert.ok(!rawText.includes('SECRET_OTP_HASH'), 'admin_otps rows must never be exported');
 assert.ok(rawText.includes('Dynamically discovered custom table'), 'custom user table rows must be exported');
 assert.ok(rawText.includes('admin@csodisha.com'), 'safe user metadata is included');
+assert.ok(snap.scrubbed_tables.includes('sessions'), 'manifest must record scrubbed_tables');
+assert.ok(snap.scrubbed_columns.includes('totp_secret'), 'manifest must record scrubbed_columns including totp_secret');
 
-// 3. List snapshots
+// 3. List snapshots & live scope preview metadata
 const listed = await listPlatformSnapshots(env);
 assert.equal(listed.total, 1);
 assert.equal(listed.items[0].id, snap.id);
 assert.equal(listed.items[0].r2_exists, true);
+assert.ok(Array.isArray(listed.discovered_tables) && listed.discovered_tables.length >= 9, 'listPlatformSnapshots must return discovered_tables preview');
+assert.ok(listed.excluded_tables.includes('sessions'), 'excluded_tables must include sessions');
+assert.ok(listed.scrubbed_columns.includes('password_hash') && listed.scrubbed_columns.includes('totp_secret'), 'scrubbed_columns preview must list sensitive columns');
 
 // 4. Verify integrity (untampered -> valid: true)
 const verOk = await verifyPlatformSnapshot(env, snap.id);
@@ -254,5 +262,45 @@ assert.equal(delRes.deleted_id, snap.id);
 assert.ok(!env.MEDIA.store.has(snap.r2_key), 'snapshot R2 object must be deleted');
 const deletedRow = await env.DB.prepare(`SELECT id FROM ops_snapshots WHERE id = ?`).bind(snap.id).first();
 assert.equal(deletedRow, null, 'snapshot D1 row must be deleted');
+
+// 10. Scope 'content_only', input validation & PATCH inline label rename
+await assert.rejects(
+  () => createPlatformSnapshot(env, { label: 'Bad Scope', scope: 'invalid_scope', createdBy: 'admin@csodisha.com' }),
+  err => err && err.code === 'INVALID_SCOPE',
+  'invalid snapshot scope must be rejected'
+);
+
+const contentSnap = await createPlatformSnapshot(env, {
+  label: '  Core Content   Snapshot  ',
+  scope: 'content_only',
+  triggerType: 'manual',
+  createdBy: 'admin@csodisha.com'
+});
+assert.equal(contentSnap.scope, 'content_only');
+assert.equal(contentSnap.label, 'Core Content   Snapshot');
+assert.equal(contentSnap.row_counts.posts, 1);
+assert.equal(contentSnap.row_counts.schemes_directory, 1);
+assert.equal(contentSnap.row_counts.users, undefined, 'content_only scope must exclude users table');
+assert.equal(contentSnap.row_counts.custom_exam_notes, undefined, 'content_only scope must exclude non-core custom tables');
+
+// Rename via PATCH /api/admin/ops/snapshots/:id
+const patchReq = new Request('https://csodisha.com/api/admin/ops/snapshots/' + encodeURIComponent(contentSnap.id), {
+  method: 'PATCH',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ label: 'Renamed Baseline 2026-11-15' })
+});
+const patchRes = await handleOpsSnapshots(patchReq, env, { userId: 'u-1', email: 'admin@csodisha.com', role: 'admin' }, contentSnap.id, '');
+assert.equal(patchRes.status, 200);
+const patchBody = await patchRes.json();
+assert.equal(patchBody.ok, true);
+assert.equal(patchBody.label, 'Renamed Baseline 2026-11-15');
+const renamedRow = await env.DB.prepare(`SELECT label FROM ops_snapshots WHERE id = ?`).bind(contentSnap.id).first();
+assert.equal(renamedRow.label, 'Renamed Baseline 2026-11-15');
+
+await assert.rejects(
+  () => renamePlatformSnapshot(env, contentSnap.id, '   '),
+  err => err && err.code === 'INVALID_LABEL',
+  'empty snapshot label must be rejected'
+);
 
 console.log('OPS SNAPSHOT, DR DRILL & GRANULAR RESTORE TESTS PASSED');

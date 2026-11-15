@@ -143,6 +143,67 @@
     return ['dashboard', OPS];
   }
 
+  function renderOpsStepper(folderId, moduleId, currentRoute, root, host) {
+    var idx = OPS_SUITE.findIndex(function (item) { return item[0] === currentRoute; });
+    if (idx < 0) idx = 0;
+    var prefix = String(moduleId || '').indexOf('module-17-') === 0 ? 'module-17-' : 'module-ops-';
+    function moduleIdAt(i) {
+      return prefix + String(i + 1).padStart(3, '0');
+    }
+    function navigateTo(nextIdx) {
+      if (nextIdx < 0 || nextIdx >= OPS_SUITE.length) return;
+      var nextModId = moduleIdAt(nextIdx);
+      if (typeof window.selectModule === 'function') {
+        window.selectModule(folderId || 'folder-17', nextModId);
+      } else if (window.CSOCms) {
+        window.CSOCms.mount(host, OPS_SUITE[nextIdx][0], null);
+      }
+    }
+
+    var prevBtn = document.createElement('button');
+    prevBtn.type = 'button';
+    prevBtn.className = 'btn sm cso-ops-stepper-btn';
+    prevBtn.textContent = '← Previous Module';
+    prevBtn.disabled = idx <= 0;
+    if (idx > 0) {
+      prevBtn.setAttribute('aria-label', 'Previous Module: ' + OPS_SUITE[idx - 1][1]);
+      prevBtn.addEventListener('click', function () { navigateTo(idx - 1); });
+    } else {
+      prevBtn.setAttribute('aria-label', 'Previous Module (none)');
+    }
+
+    var meta = document.createElement('div');
+    meta.className = 'cso-ops-stepper-meta';
+    var countSpan = document.createElement('span');
+    countSpan.className = 'cso-ops-stepper-count cso-tabular';
+    countSpan.textContent = 'Module ' + (idx + 1) + ' of ' + OPS_SUITE.length;
+    var titleSpan = document.createElement('span');
+    titleSpan.className = 'cso-ops-stepper-title';
+    titleSpan.textContent = OPS_SUITE[idx][1];
+    meta.appendChild(countSpan);
+    meta.appendChild(titleSpan);
+
+    var nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.className = 'btn sm cso-ops-stepper-btn';
+    nextBtn.textContent = 'Next Module →';
+    nextBtn.disabled = idx >= OPS_SUITE.length - 1;
+    if (idx < OPS_SUITE.length - 1) {
+      nextBtn.setAttribute('aria-label', 'Next Module: ' + OPS_SUITE[idx + 1][1]);
+      nextBtn.addEventListener('click', function () { navigateTo(idx + 1); });
+    } else {
+      nextBtn.setAttribute('aria-label', 'Next Module (none)');
+    }
+
+    var nav = document.createElement('nav');
+    nav.className = 'cso-ops-stepper';
+    nav.setAttribute('aria-label', 'Operations & Disaster Recovery Module Stepper');
+    nav.appendChild(prevBtn);
+    nav.appendChild(meta);
+    nav.appendChild(nextBtn);
+    root.appendChild(nav);
+  }
+
   function render(folderId, moduleId, root, actions) {
     if (window.CSORestoredModules && window.CSORestoredModules.render(folderId, moduleId, root, actions)) {
       return true;
@@ -157,8 +218,14 @@
     }
     var host = document.createElement('div');
     host.className = 'cms-embed';
-    root.appendChild(host);
-    window.CSOCms.mount(host, r[0], r[1]);
+    if (r[1] === OPS_SUITE) {
+      renderOpsStepper(folderId, moduleId, r[0], root, host);
+      root.appendChild(host);
+      window.CSOCms.mount(host, r[0], null);
+    } else {
+      root.appendChild(host);
+      window.CSOCms.mount(host, r[0], r[1]);
+    }
     return true;
   }
 
