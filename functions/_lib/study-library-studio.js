@@ -299,8 +299,24 @@ const SEED_TREE = [
   { id: 'slf_oh_lic', domain: 'odisha-study-hub', parent: 'slf_oh_qual', depth: 2, name: 'Archival & Open-License Attribution', slug: 'archival-open-license-attribution', sort: 2 }
 ];
 
+const _ensuredDbs = new WeakSet();
+
+async function runBatch(db, stmts) {
+  if (!stmts.length) return;
+  const CHUNK = 100;
+  for (let i = 0; i < stmts.length; i += CHUNK) {
+    const slice = stmts.slice(i, i + CHUNK);
+    if (typeof db.batch === 'function') {
+      await db.batch(slice);
+    } else {
+      for (const s of slice) await s.run();
+    }
+  }
+}
+
 export async function ensureStudyLibraryStudioSchema(db) {
   if (!db) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  if (_ensuredDbs.has(db)) return;
 
   await db.prepare(
     `CREATE TABLE IF NOT EXISTS study_library_folders (
@@ -378,99 +394,115 @@ export async function ensureStudyLibraryStudioSchema(db) {
   ).run();
 
   // Bridge existing 1,681-node D1 taxonomy (study_library_nodes) into study_library_folders idempotently
-  const nodesTbl = await db.prepare(
-    `SELECT name FROM sqlite_master WHERE type='table' AND name='study_library_nodes'`
+  const bridgedNodesRow = await db.prepare(
+    `SELECT COUNT(*) AS cnt FROM study_library_folders WHERE id LIKE 'sln_%'`
   ).first();
-  if (nodesTbl) {
-    const legacyNodes = (await db.prepare(
-      `SELECT * FROM study_library_nodes
-       WHERE status = 'published'
-       ORDER BY CASE level WHEN 'group' THEN 1 WHEN 'section' THEN 2 WHEN 'subcategory' THEN 3 ELSE 4 END, sort_order ASC`
-    ).all()).results || [];
-    if (legacyNodes.length > 0) {
-      const nowIso = new Date().toISOString();
-      const idToFolder = new Map();
-      const slugToFolder = new Map();
-      for (const n of legacyNodes) {
-        const lvl = n.level === 'group' ? 1 : (n.level === 'section' ? 2 : (n.level === 'subcategory' ? 3 : 4));
-        let domainSlug = '';
-        let parentId = null;
-        if (lvl === 1) {
-          domainSlug = GROUP_SLUG_TO_DOMAIN[String(n.slug || '').toLowerCase()] || STUDY_DOMAINS[Math.max(0, Math.min(STUDY_DOMAINS.length - 1, (Number(n.sort_order) || 1) - 1))] || 'odisha-study-hub';
-        } else {
-          const pInfo = (n.parent_id != null ? idToFolder.get(n.parent_id) : null) || slugToFolder.get(n.parent_slug || '');
-          if (!pInfo) continue;
-          domainSlug = pInfo.domainSlug;
-          parentId = pInfo.id;
+  if (!bridgedNodesRow || Number(bridgedNodesRow.cnt || 0) === 0) {
+    const nodesTbl = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='study_library_nodes'`
+    ).first();
+    if (nodesTbl) {
+      const legacyNodes = (await db.prepare(
+        `SELECT * FROM study_library_nodes
+         WHERE status = 'published'
+         ORDER BY CASE level WHEN 'group' THEN 1 WHEN 'section' THEN 2 WHEN 'subcategory' THEN 3 ELSE 4 END, sort_order ASC`
+      ).all()).results || [];
+      if (legacyNodes.length > 0) {
+        const nowIso = new Date().toISOString();
+        const idToFolder = new Map();
+        const slugToFolder = new Map();
+        const insertSql = `INSERT OR IGNORE INTO study_library_folders (
+          id, domain_slug, parent_id, depth, name, title_or, slug, node_slug, description, sort_order, is_active, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`;
+        const stmts = [];
+        for (const n of legacyNodes) {
+          const lvl = n.level === 'group' ? 1 : (n.level === 'section' ? 2 : (n.level === 'subcategory' ? 3 : 4));
+          let domainSlug = '';
+          let parentId = null;
+          if (lvl === 1) {
+            domainSlug = GROUP_SLUG_TO_DOMAIN[String(n.slug || '').toLowerCase()] || STUDY_DOMAINS[Math.max(0, Math.min(STUDY_DOMAINS.length - 1, (Number(n.sort_order) || 1) - 1))] || 'odisha-study-hub';
+          } else {
+            const pInfo = (n.parent_id != null ? idToFolder.get(n.parent_id) : null) || slugToFolder.get(n.parent_slug || '');
+            if (!pInfo) continue;
+            domainSlug = pInfo.domainSlug;
+            parentId = pInfo.id;
+          }
+          const fId = `sln_${n.id}`;
+          idToFolder.set(n.id, { id: fId, domainSlug });
+          slugToFolder.set(n.slug, { id: fId, domainSlug });
+          stmts.push(
+            db.prepare(insertSql).bind(
+              fId,
+              domainSlug,
+              parentId,
+              lvl,
+              n.title || n.slug,
+              n.title_or || '',
+              n.slug,
+              n.slug,
+              n.description || n.subtitle || '',
+              Number(n.sort_order) || 0,
+              nowIso,
+              n.updated_at || nowIso
+            )
+          );
         }
-        const fId = `sln_${n.id}`;
-        idToFolder.set(n.id, { id: fId, domainSlug });
-        slugToFolder.set(n.slug, { id: fId, domainSlug });
-        await db.prepare(
-          `INSERT OR IGNORE INTO study_library_folders (
-             id, domain_slug, parent_id, depth, name, title_or, slug, node_slug, description, sort_order, is_active, created_at, updated_at
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`
-        ).bind(
-          fId,
-          domainSlug,
-          parentId,
-          lvl,
-          n.title || n.slug,
-          n.title_or || '',
-          n.slug,
-          n.slug,
-          n.description || n.subtitle || '',
-          Number(n.sort_order) || 0,
-          nowIso,
-          n.updated_at || nowIso
-        ).run();
+        await runBatch(db, stmts);
       }
     }
   }
 
   // Bridge existing published resources table into study_library_items idempotently
-  const resTbl = await db.prepare(
-    `SELECT name FROM sqlite_master WHERE type='table' AND name='resources'`
+  const bridgedItemsRow = await db.prepare(
+    `SELECT COUNT(*) AS cnt FROM study_library_items WHERE id LIKE 'res_%'`
   ).first();
-  if (resTbl) {
-    const legacyResources = ((await db.prepare(
-      `SELECT * FROM resources WHERE status = 'published'`
-    ).all()).results || []).filter((r) => !r.deleted_at);
-    if (legacyResources.length > 0) {
-      const nowIso = new Date().toISOString();
-      for (const r of legacyResources) {
-        const itemId = `res_${r.id}`;
-        const itemSlug = r.slug ? slugify(r.slug) : (slugify(r.title || r.id) + '-' + String(r.id).slice(-5));
-        const rType = STUDY_RESOURCE_TYPES.includes(r.resource_type) ? r.resource_type : 'syllabus';
-        const domainSlug = r.exam_slug ? 'competitive-teacher' : 'odisha-study-hub';
-        const summaryText = r.summary || r.description || '';
-        const bodyContent = r.body_html || r.description || '';
-        const pdfHref = r.pdf_url || r.file_url || r.official_source_url || r.source_url || '';
-        await db.prepare(
-          `INSERT OR IGNORE INTO study_library_items (
-             id, domain_slug, folder_id, folder_path, title, slug, resource_type,
-             board_or_exam, subject_tag, language_parity, summary, body_html,
-             pdf_url, pdf_size_bytes, cover_image_url, links_json, tags_json,
-             seo_title, seo_description, is_featured, status,
-             created_by, updated_by, created_at, updated_at
-           ) VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, 'EN', ?, ?, ?, 0, '', '[]', '[]', ?, ?, 0, 'published', 'system', 'system', ?, ?)`
-        ).bind(
-          itemId,
-          domainSlug,
-          DOMAIN_LABELS[domainSlug] || domainSlug,
-          r.title || 'Verified Study Resource',
-          itemSlug,
-          rType,
-          r.exam_slug || r.exam_type || 'Odisha',
-          r.category || '',
-          summaryText,
-          bodyContent,
-          pdfHref,
-          r.title || '',
-          summaryText.slice(0, 200),
-          nowIso,
-          r.updated_at || nowIso
-        ).run();
+  if (!bridgedItemsRow || Number(bridgedItemsRow.cnt || 0) === 0) {
+    const resTbl = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='resources'`
+    ).first();
+    if (resTbl) {
+      const legacyResources = ((await db.prepare(
+        `SELECT * FROM resources WHERE status = 'published'`
+      ).all()).results || []).filter((r) => !r.deleted_at);
+      if (legacyResources.length > 0) {
+        const nowIso = new Date().toISOString();
+        const insertItemSql = `INSERT OR IGNORE INTO study_library_items (
+          id, domain_slug, folder_id, folder_path, title, slug, resource_type,
+          board_or_exam, subject_tag, language_parity, summary, body_html,
+          pdf_url, pdf_size_bytes, cover_image_url, links_json, tags_json,
+          seo_title, seo_description, is_featured, status,
+          created_by, updated_by, created_at, updated_at
+        ) VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, 'EN', ?, ?, ?, 0, '', '[]', '[]', ?, ?, 0, 'published', 'system', 'system', ?, ?)`;
+        const itemStmts = [];
+        for (const r of legacyResources) {
+          const itemId = `res_${r.id}`;
+          const itemSlug = r.slug ? slugify(r.slug) : (slugify(r.title || r.id) + '-' + String(r.id).slice(-5));
+          const rType = STUDY_RESOURCE_TYPES.includes(r.resource_type) ? r.resource_type : 'syllabus';
+          const domainSlug = r.exam_slug ? 'competitive-teacher' : 'odisha-study-hub';
+          const summaryText = r.summary || r.description || '';
+          const bodyContent = r.body_html || r.description || '';
+          const pdfHref = r.pdf_url || r.file_url || r.official_source_url || r.source_url || '';
+          itemStmts.push(
+            db.prepare(insertItemSql).bind(
+              itemId,
+              domainSlug,
+              DOMAIN_LABELS[domainSlug] || domainSlug,
+              r.title || 'Verified Study Resource',
+              itemSlug,
+              rType,
+              r.exam_slug || r.exam_type || 'Odisha',
+              r.category || '',
+              summaryText,
+              bodyContent,
+              pdfHref,
+              r.title || '',
+              summaryText.slice(0, 200),
+              nowIso,
+              r.updated_at || nowIso
+            )
+          );
+        }
+        await runBatch(db, itemStmts);
       }
     }
   }
@@ -482,14 +514,15 @@ export async function ensureStudyLibraryStudioSchema(db) {
   const missingSeeds = SEED_TREE.filter(s => !seededDomains.has(s.domain));
   if (missingSeeds.length > 0) {
     const nowIso = new Date().toISOString();
-    for (const s of missingSeeds) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO study_library_folders (
-           id, domain_slug, parent_id, depth, name, slug, description, sort_order, is_active, created_at, updated_at
-         ) VALUES (?, ?, ?, ?, ?, ?, '', ?, 1, ?, ?)`
-      ).bind(s.id, s.domain, s.parent, s.depth, s.name, s.slug, s.sort, nowIso, nowIso).run();
-    }
+    const seedSql = `INSERT OR IGNORE INTO study_library_folders (
+      id, domain_slug, parent_id, depth, name, slug, description, sort_order, is_active, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, '', ?, 1, ?, ?)`;
+    await runBatch(
+      db,
+      missingSeeds.map(s => db.prepare(seedSql).bind(s.id, s.domain, s.parent, s.depth, s.name, s.slug, s.sort, nowIso, nowIso))
+    );
   }
+  _ensuredDbs.add(db);
 }
 
 function buildFolderAnalytics(allFolders, directCounts) {
