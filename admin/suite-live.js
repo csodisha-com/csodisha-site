@@ -272,6 +272,29 @@
     nav.appendChild(meta);
     nav.appendChild(nextBtn);
     root.appendChild(nav);
+
+    window._csoActiveStepperNav = {
+      prev: function () { if (idx > 0) navigateTo(idx - 1); },
+      next: function () { if (idx < suite.length - 1) navigateTo(idx + 1); },
+      el: nav
+    };
+    if (!window._csoStepperKeyBound) {
+      window._csoStepperKeyBound = true;
+      window.addEventListener('keydown', function (ev) {
+        if (!ev.altKey || ev.ctrlKey || ev.metaKey) return;
+        var tag = (ev.target && ev.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        var active = window._csoActiveStepperNav;
+        if (!active || !active.el || !active.el.isConnected) return;
+        if (ev.key === 'ArrowLeft') {
+          ev.preventDefault();
+          active.prev();
+        } else if (ev.key === 'ArrowRight') {
+          ev.preventDefault();
+          active.next();
+        }
+      });
+    }
   }
 
   function render(folderId, moduleId, root, actions) {

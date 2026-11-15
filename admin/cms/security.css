@@ -168,3 +168,100 @@
 .cso-cnt-pipe-col{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);display:flex;flex-direction:column;gap:8px}
 .cso-cnt-pipe-card{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--card);display:flex;flex-direction:column;gap:6px}
 @media(max-width:780px){.cso-cnt-cal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ==========================================================================
+   MASTER DARK-EMERALD STUDIO ARCHITECTURE (Content #1-14, Security #1-13, Ops #1-16)
+   ========================================================================== */
+.cso-ops-studio{display:flex;flex-direction:column;gap:14px;color:#e2e8f0}
+.cso-ops-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:4px;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,#0d1512 0%,#10201a 100%);border:1px solid rgba(52,211,153,0.22);box-shadow:0 8px 24px rgba(0,0,0,0.28)}
+.cso-ops-hero h2{margin:6px 0 4px;font-size:1.35rem;font-weight:700;color:#f8fafc;letter-spacing:-0.015em}
+.cso-ops-hero .muted,.cso-ops-hero p{margin:0;font-size:0.875rem;color:#94a3b8;max-width:68ch;line-height:1.45}
+.cso-ops-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 14px;border-radius:8px;border:1px solid rgba(148,163,184,0.28);background:#0f1915;color:#e2e8f0;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s ease,border-color .15s ease,transform .12s ease}
+.cso-ops-btn:hover:not(:disabled){background:#162720;border-color:rgba(52,211,153,0.45);color:#fff}
+.cso-ops-btn:disabled{opacity:.48;cursor:not-allowed}
+.cso-ops-btn--primary{background:linear-gradient(135deg,#15803d 0%,#16a34a 100%);border-color:#22c55e;color:#fff;box-shadow:0 4px 14px rgba(21,128,61,0.35)}
+.cso-ops-btn--primary:hover:not(:disabled){background:linear-gradient(135deg,#166534 0%,#15803d 100%);border-color:#4ade80}
+.cso-ops-btn--danger{background:rgba(153,27,27,0.25);border-color:rgba(248,113,113,0.45);color:#fecaca}
+.cso-ops-btn--danger:hover:not(:disabled){background:rgba(185,28,28,0.42);border-color:#f87171;color:#fff}
+.cso-ops-btn--sm{padding:4px 9px;font-size:11.5px;border-radius:6px}
+
+.cso-ops-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.cso-ops-kpi{background:#0d1512;border:1px solid rgba(52,211,153,0.22);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
+.cso-ops-kpi-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8}
+.cso-ops-kpi-val{font-size:1.45rem;font-weight:700;color:#f8fafc;font-variant-numeric:tabular-nums;line-height:1.15}
+.cso-ops-kpi-sub{font-size:11.5px;color:#64748b}
+
+.cso-ops-card{background:#0d1512;border:1px solid rgba(52,211,153,0.18);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.cso-ops-card h3{margin:0;font-size:1rem;font-weight:700;color:#f8fafc}
+.cso-ops-grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cso-ops-actions{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;white-space:nowrap}
+.cso-ops-table-wrap{overflow:auto;max-height:560px;border:1px solid rgba(52,211,153,0.18);border-radius:10px;background:#0a110e}
+.cso-ops-table-wrap table{width:100%;border-collapse:collapse;font-size:12.5px}
+.cso-ops-table-wrap thead th{position:sticky;top:0;z-index:2;background:#0f1b16;color:#94a3b8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;text-align:left;padding:10px 12px;border-bottom:1px solid rgba(52,211,153,0.22)}
+.cso-ops-table-wrap tbody td{padding:10px 12px;border-bottom:1px solid rgba(148,163,184,0.1);color:#e2e8f0;vertical-align:middle}
+.cso-ops-table-wrap tbody tr:hover{background:rgba(16,185,129,0.05)}
+.cso-ops-stepper{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;margin-bottom:12px;border-radius:10px;background:#0d1512;border:1px solid rgba(52,211,153,0.22)}
+.cso-ops-stepper-meta{font-size:12px;font-weight:600;color:#cbd5e1;font-variant-numeric:tabular-nums}
+.cso-ops-stepper-btn{padding:5px 11px;font-size:12px;border-radius:7px;border:1px solid rgba(52,211,153,0.25);background:#101d18;color:#e2e8f0;cursor:pointer}
+.cso-ops-stepper-btn:hover:not(:disabled){border-color:#34d399;color:#fff}
+.cso-ops-stepper-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Graphical Telemetry Bar (CSP-clean <progress> / <meter>) */
+.cso-cnt-telemetry-bar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:12px 14px;border-radius:10px;background:#0d1512;border:1px solid rgba(52,211,153,0.18)}
+.cso-cnt-tel-item{display:flex;flex-direction:column;gap:5px}
+.cso-cnt-tel-head{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#94a3b8;font-weight:600}
+.cso-cnt-tel-head strong{color:#f8fafc;font-variant-numeric:tabular-nums}
+.cso-cnt-tel-prog,.cso-cnt-tel-meter{width:100%;height:8px;border-radius:999px;overflow:hidden;border:none;background:#16251f;accent-color:#10b981}
+.cso-cnt-tel-prog::-webkit-progress-bar{background:#16251f;border-radius:999px}
+.cso-cnt-tel-prog::-webkit-progress-value{background:linear-gradient(90deg,#15803d,#34d399);border-radius:999px}
+.cso-cnt-tax-bars{display:flex;flex-wrap:wrap;gap:6px;font-size:11px;color:#cbd5e1;font-variant-numeric:tabular-nums}
+.cso-cnt-tax-chip{padding:2px 7px;border-radius:999px;background:#13211b;border:1px solid rgba(52,211,153,0.2)}
+
+/* Single-Row Toolbar & Interactive Table Badges */
+.cso-cnt-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;background:#0d1512;border:1px solid rgba(52,211,153,0.16)}
+.cso-cnt-toolbar-left{display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex:1 1 320px}
+.cso-cnt-inline-title{cursor:text;border-bottom:1px dashed transparent;transition:border-color .15s ease}
+.cso-cnt-inline-title:hover{border-bottom-color:rgba(52,211,153,0.55)}
+.cso-cnt-seo-pill{cursor:pointer;border:none;font:inherit}
+.cso-cnt-lang-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:0.04em;background:rgba(16,185,129,0.14);color:#6ee7b7;border:1px solid rgba(52,211,153,0.3)}
+.cso-cnt-slug-row{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11.5px;color:#94a3b8}
+.cso-cnt-slug-code{padding:2px 7px;border-radius:6px;background:#08100d;border:1px solid rgba(52,211,153,0.2);color:#6ee7b7;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+/* Split-Pane Editorial Workbench & Multi-Channel Live Preview */
+.cso-cnt-workbench{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,0.95fr);gap:14px;align-items:start}
+.cso-cnt-editor-pane{display:flex;flex-direction:column;gap:10px}
+.cso-cnt-preview-pane{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:10px;background:#08100d;border:1px solid rgba(52,211,153,0.22);position:sticky;top:12px}
+.cso-cnt-preview-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+.cso-cnt-preview-tabs{display:flex;flex-wrap:wrap;gap:6px}
+.cso-cnt-preview-frame{transition:max-width .2s ease;width:100%}
+.cso-cnt-preview-frame.is-mobile{max-width:360px;margin:0 auto}
+.cso-cnt-reader-card{background:#faf8f5;color:#1e293b;border-radius:10px;padding:16px;border:1px solid #e2ddd3;box-shadow:0 6px 18px rgba(0,0,0,0.22)}
+.cso-cnt-reader-kicker{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#14532d;margin-bottom:6px}
+.cso-cnt-reader-title{margin:0 0 6px;font-size:1.15rem;font-weight:800;color:#14532d;line-height:1.25}
+.cso-cnt-reader-meta{font-size:11.5px;color:#475569;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e2ddd3}
+.cso-cnt-reader-body{font-size:13px;line-height:1.58;color:#1e293b;white-space:pre-wrap}
+.cso-cnt-serp-card{background:#ffffff;color:#202124;border-radius:10px;padding:14px;border:1px solid #dadce0}
+.cso-cnt-serp-url{font-size:12px;color:#188038;margin-bottom:2px;word-break:break-all}
+.cso-cnt-serp-title{font-size:16px;font-weight:600;color:#1a0dab;margin-bottom:4px;line-height:1.3}
+.cso-cnt-serp-desc{font-size:12.5px;color:#4d5156;line-height:1.45}
+.cso-cnt-social-card{background:#0b141a;color:#e9edef;border-radius:10px;padding:12px;border:1px solid #233138;display:flex;flex-direction:column;gap:6px}
+.cso-cnt-social-bubble{background:#005c4b;color:#e9edef;border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.45}
+.cso-cnt-pii-warn{padding:8px 11px;border-radius:8px;background:rgba(180,83,9,0.2);border:1px solid rgba(251,191,36,0.5);color:#fde68a;font-size:12px;font-weight:600}
+.cso-cnt-counter{font-size:11px;color:#94a3b8;font-variant-numeric:tabular-nums;margin-left:6px}
+.cso-cnt-counter.is-over{color:#f87171;font-weight:700}
+
+/* 5-Second Undo Toast & Sidebar Index Badge */
+.cso-undo-toast{position:fixed;right:20px;bottom:20px;z-index:9999;display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;background:#0d1512;border:1px solid rgba(52,211,153,0.45);color:#f8fafc;box-shadow:0 12px 30px rgba(0,0,0,0.45);font-size:13px;font-weight:500}
+.cso-nav-mod-num{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;padding:0 5px;margin-right:6px;border-radius:5px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.24);color:#6ee7b7;font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;flex-shrink:0}
+
+@media(max-width:1024px){
+  .cso-ops-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cso-cnt-telemetry-bar{grid-template-columns:1fr}
+  .cso-cnt-workbench{grid-template-columns:1fr}
+  .cso-cnt-preview-pane{position:static}
+}
+@media(max-width:640px){
+  .cso-ops-kpis{grid-template-columns:1fr}
+  .cso-ops-grid-2{grid-template-columns:1fr}
+  .cso-ops-actions{flex-wrap:wrap}
+}

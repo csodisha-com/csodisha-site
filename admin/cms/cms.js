@@ -73,6 +73,25 @@
     document.getElementById('toasts').appendChild(t);
     setTimeout(function () { t.remove(); }, 4500);
   }
+  function toastWithUndo(msg, onUndo) {
+    var existing = document.querySelector('.cso-undo-toast');
+    if (existing) existing.remove();
+    var bar = el('div', { class: 'cso-undo-toast' });
+    bar.appendChild(el('span', { text: msg }));
+    var undoBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm cso-ops-btn--primary', type: 'button', text: 'Undo' });
+    var timer = setTimeout(function () { bar.remove(); }, 5000);
+    undoBtn.addEventListener('click', async function () {
+      clearTimeout(timer);
+      undoBtn.disabled = true;
+      try {
+        await onUndo();
+      } finally {
+        bar.remove();
+      }
+    });
+    bar.appendChild(undoBtn);
+    document.body.appendChild(bar);
+  }
   async function api(method, path, body, isForm) {
     var opts = { method: method, credentials: 'same-origin', headers: { 'X-CSO-CSRF': '1' } };
     if (body !== undefined) {
@@ -9433,6 +9452,7 @@
 
     var wrap = el('div', { class: 'cso-ops-studio' });
     var kpis = el('div', { class: 'cso-ops-kpis' });
+    var telemetryBox = el('div', { class: 'cso-cnt-telemetry-bar' });
     var composerBox = el('div');
     var pillsBox = el('div', { class: 'cso-cnt-pills' });
     var tableBox = el('div');
@@ -9460,6 +9480,7 @@
       el('div', {}, [createBtn])
     ]));
     wrap.appendChild(kpis);
+    wrap.appendChild(telemetryBox);
     wrap.appendChild(composerBox);
 
     var statusSel = el('select', { class: 'select' }, [
@@ -9499,12 +9520,25 @@
       });
     }
 
-    function openComposer(editing) {
+    function detectLangParity(it) {
+      if (it && it.language) return String(it.language).toUpperCase();
+      var txt = ((it && it.title) || '') + ' ' + ((it && it.summary) || '') + ' ' + ((it && it.body_md) || '');
+      var hasOr = /[\u0B00-\u0B7F]/.test(txt);
+      var hasEn = /[A-Za-z]{3,}/.test(txt);
+      if (hasOr && hasEn) return 'EN+OR';
+      if (hasOr) return 'OR';
+      return 'EN';
+    }
+
+    function openComposer(editing, focusField) {
       clear(composerBox);
       var isEdit = Boolean(editing && editing.id);
       var card = el('div', { class: 'cso-cnt-composer' });
       var titleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title) || '', placeholder: 'Headline / Title...' });
+      var titleCount = el('span', { class: 'cso-cnt-counter', text: '0/60' });
       var slugInp = el('input', { class: 'input', type: 'text', value: (editing && editing.slug) || '', placeholder: 'auto-generated-from-title' });
+      var slugPreviewCode = el('code', { class: 'cso-cnt-slug-code', text: '/updates/preview-slug/' });
+      var copySlugBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: 'Copy URL' });
       var postTypeSel = el('select', { class: 'select' }, [
         el('option', { value: 'article', text: 'Articles & Blogs' }),
         el('option', { value: 'news', text: 'News & Updates' }),
@@ -9524,6 +9558,13 @@
       ]);
       stageSel.value = (editing && (editing.workflow_stage || editing.status)) || 'draft';
 
+      var langSel = el('select', { class: 'select' }, [
+        el('option', { value: 'EN', text: 'EN (English)' }),
+        el('option', { value: 'OR', text: 'OR (Odia)' }),
+        el('option', { value: 'EN+OR', text: 'EN+OR (Bilingual)' })
+      ]);
+      langSel.value = editing ? detectLangParity(editing) : 'EN';
+
       var catInp = el('input', { class: 'input', type: 'text', value: (editing && editing.category) || '', placeholder: 'e.g. Odisha Polity, Economy, Exams' });
       var tagsInp = el('input', { class: 'input', type: 'text', value: (editing && Array.isArray(editing.tags) ? editing.tags.join(', ') : ''), placeholder: 'opsc, odisha, 2026' });
       var districtInp = el('input', { class: 'input', type: 'text', value: (editing && editing.district_tag) || '', placeholder: 'e.g. Bhubaneswar, Balasore, Statewide' });
@@ -9534,7 +9575,7 @@
 
       var summaryTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Concise excerpt / key takeaway bullets...' });
       summaryTa.value = (editing && editing.summary) || '';
-      var bodyTa = el('textarea', { class: 'textarea', rows: '5', placeholder: 'Markdown or structured editorial content...' });
+      var bodyTa = el('textarea', { class: 'textarea', rows: '6', placeholder: 'Markdown or structured editorial content...' });
       bodyTa.value = (editing && editing.body_md) || '';
 
       var seoTitleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.seo_title) || '', placeholder: 'SEO Meta Title (recommended 40-65 chars)' });
@@ -9543,31 +9584,159 @@
 
       var readBadge = el('span', { class: 'badge ok', text: '1 min read' });
       var seoBadge = el('span', { class: 'badge warn', text: 'SEO Meta Incomplete' });
-      var seoPrevBox = el('div', { class: 'cso-cnt-seo-preview' });
+      var seoScoreBadge = el('span', { class: 'badge', text: 'SEO Score: 0/100' });
+      var piiWarnBox = el('div', { class: 'cso-cnt-pii-warn' });
+      piiWarnBox.hidden = true;
+
+      var previewState = { channel: 'reader', device: 'desktop' };
+      var previewFrame = el('div', { class: 'cso-cnt-preview-frame' });
+      var chTabs = [
+        ['reader', 'csodisha.com Reader'],
+        ['serp', 'Google SERP'],
+        ['social', 'WhatsApp / Telegram']
+      ];
+      var chTabBtns = chTabs.map(function (ct) {
+        var b = el('button', {
+          type: 'button',
+          class: 'cso-cnt-pill' + (previewState.channel === ct[0] ? ' is-active' : ''),
+          text: ct[1]
+        });
+        b.addEventListener('click', function () {
+          previewState.channel = ct[0];
+          chTabBtns.forEach(function (btn, idx) {
+            btn.classList.toggle('is-active', chTabs[idx][0] === previewState.channel);
+          });
+          refreshLivePreview();
+        });
+        return b;
+      });
+      var deskBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Desktop' });
+      var mobBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Mobile' });
+      deskBtn.addEventListener('click', function () {
+        previewState.device = 'desktop';
+        previewFrame.classList.remove('is-mobile');
+      });
+      mobBtn.addEventListener('click', function () {
+        previewState.device = 'mobile';
+        previewFrame.classList.add('is-mobile');
+      });
+
+      function computeSeoScore(title, seoTitle, seoDesc, words, hasSlug) {
+        var score = 0;
+        var st = seoTitle || title;
+        if (st.length >= 30 && st.length <= 65) score += 30;
+        else if (st.length >= 10) score += 15;
+        if (seoDesc.length >= 100 && seoDesc.length <= 165) score += 30;
+        else if (seoDesc.length >= 40) score += 15;
+        if (words >= 120) score += 20;
+        else if (words >= 30) score += 10;
+        if (hasSlug) score += 10;
+        if (examInp.value.trim() || districtInp.value.trim()) score += 10;
+        return Math.min(100, score);
+      }
 
       function refreshLivePreview() {
+        var rawTitle = titleInp.value.trim();
+        titleCount.textContent = String(rawTitle.length) + '/60';
+        titleCount.classList.toggle('is-over', rawTitle.length > 60);
+
         var words = ((summaryTa.value || '') + ' ' + (bodyTa.value || '')).trim().split(/\s+/).filter(Boolean).length;
         var mins = Math.max(1, Math.ceil(words / 200));
         readBadge.textContent = mins + ' min read (' + words + ' words)';
 
-        var hasSeo = Boolean(seoTitleInp.value.trim() && seoDescInp.value.trim());
+        var st = seoTitleInp.value.trim();
+        var sd = seoDescInp.value.trim();
+        var hasSeo = Boolean(st && sd);
         seoBadge.className = 'badge ' + (hasSeo ? 'ok' : 'warn');
         seoBadge.textContent = hasSeo ? 'SEO Meta Ready' : 'SEO Required for Publish';
 
-        var autoSlug = (slugInp.value.trim() || titleInp.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'preview-slug');
-        clear(seoPrevBox);
-        seoPrevBox.appendChild(el('div', { class: 'cso-cnt-seo-url', text: 'https://csodisha.com' + (postTypeSel.value === 'news' || postTypeSel.value === 'article' ? '/news/' : '/updates/') + autoSlug + '/' }));
-        seoPrevBox.appendChild(el('div', { class: 'cso-cnt-seo-title', text: seoTitleInp.value.trim() || titleInp.value.trim() || 'Article SEO Title Preview' }));
-        seoPrevBox.appendChild(el('div', { class: 'cso-cnt-seo-desc', text: seoDescInp.value.trim() || summaryTa.value.trim() || 'Meta description preview appears here as you type.' }));
+        var autoSlug = (slugInp.value.trim() || rawTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'preview-slug');
+        var pathPrefix = (postTypeSel.value === 'news' || postTypeSel.value === 'article') ? '/news/' : '/updates/';
+        var fullUrl = 'https://csodisha.com' + pathPrefix + autoSlug + '/';
+        slugPreviewCode.textContent = pathPrefix + autoSlug + '/';
+
+        var seoScore = computeSeoScore(rawTitle, st, sd, words, Boolean(autoSlug));
+        seoScoreBadge.textContent = 'SEO Score: ' + seoScore + '/100';
+        seoScoreBadge.className = 'badge ' + (seoScore >= 75 ? 'ok' : (seoScore >= 45 ? 'warn' : 'bad'));
+
+        var combinedText = [rawTitle, summaryTa.value, bodyTa.value, sourceInp.value].join(' ');
+        var phoneHit = /\b[6-9]\d{9}\b/.test(combinedText);
+        var aadhaarHit = /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/.test(combinedText);
+        if (phoneHit || aadhaarHit) {
+          piiWarnBox.hidden = false;
+          piiWarnBox.textContent = 'DPDP Act 2023 PII Guard: Detected possible ' +
+            [phoneHit ? '10-digit mobile number' : '', aadhaarHit ? '12-digit Aadhaar ID' : ''].filter(Boolean).join(' & ') +
+            ' in public content. Redact before publishing.';
+        } else {
+          piiWarnBox.hidden = true;
+        }
+
+        clear(previewFrame);
+        if (previewState.channel === 'reader') {
+          var metaLine = [
+            postTypeSel.value.replace('_', ' ').toUpperCase(),
+            langSel.value,
+            mins + ' min read',
+            districtInp.value.trim() || 'Odisha',
+            examInp.value.trim()
+          ].filter(Boolean).join(' · ');
+          previewFrame.appendChild(el('div', { class: 'cso-cnt-reader-card' }, [
+            el('div', { class: 'cso-cnt-reader-kicker', text: catInp.value.trim() || 'CS ODISHA EDITORIAL' }),
+            el('h4', { class: 'cso-cnt-reader-title', text: rawTitle || 'Headline Preview on csodisha.com' }),
+            el('div', { class: 'cso-cnt-reader-meta', text: metaLine }),
+            el('div', { class: 'cso-cnt-reader-body', text: (summaryTa.value.trim() ? summaryTa.value.trim() + '\n\n' : '') + (bodyTa.value.trim() || 'Start writing your article or notice body to see live reader typography.') })
+          ]));
+        } else if (previewState.channel === 'serp') {
+          previewFrame.appendChild(el('div', { class: 'cso-cnt-serp-card' }, [
+            el('div', { class: 'cso-cnt-serp-url', text: fullUrl }),
+            el('div', { class: 'cso-cnt-serp-title', text: st || rawTitle || 'Article SEO Title Preview' }),
+            el('div', { class: 'cso-cnt-serp-desc', text: sd || summaryTa.value.trim() || 'Meta description preview appears here as you type (110-160 chars recommended).' })
+          ]));
+        } else {
+          var waMsg = '📢 *' + (rawTitle || 'CS Odisha Update') + '*\n' +
+            (examInp.value.trim() ? '🎯 Exam: ' + examInp.value.trim() + '\n' : '') +
+            (summaryTa.value.trim() ? summaryTa.value.trim().slice(0, 140) + '\n' : '') +
+            '🔗 Read full brief: ' + fullUrl;
+          previewFrame.appendChild(el('div', { class: 'cso-cnt-social-card' }, [
+            el('span', { class: 'muted sm', text: 'Aspirant Broadcast Preview (WhatsApp / Telegram)' }),
+            el('div', { class: 'cso-cnt-social-bubble', text: waMsg })
+          ]));
+        }
       }
-      [titleInp, slugInp, summaryTa, bodyTa, seoTitleInp, seoDescInp, postTypeSel].forEach(function (inp) {
+
+      copySlugBtn.addEventListener('click', function () {
+        var urlToCopy = 'https://csodisha.com' + slugPreviewCode.textContent;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(urlToCopy).then(function () { toast('Copied ' + urlToCopy); });
+        } else {
+          toast(urlToCopy);
+        }
+      });
+
+      [titleInp, slugInp, summaryTa, bodyTa, seoTitleInp, seoDescInp, postTypeSel, langSel, catInp, districtInp, examInp, sourceInp].forEach(function (inp) {
         inp.addEventListener('input', refreshLivePreview);
+        inp.addEventListener('change', refreshLivePreview);
       });
       refreshLivePreview();
 
+      function closeComposer() {
+        clear(composerBox);
+        if (window._csoComposerEscHandler) {
+          window.removeEventListener('keydown', window._csoComposerEscHandler);
+          window._csoComposerEscHandler = null;
+        }
+      }
+      if (window._csoComposerEscHandler) {
+        window.removeEventListener('keydown', window._csoComposerEscHandler);
+      }
+      window._csoComposerEscHandler = function (ev) {
+        if (ev.key === 'Escape') closeComposer();
+      };
+      window.addEventListener('keydown', window._csoComposerEscHandler);
+
       var saveBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: isEdit ? 'Save Revision & Update' : 'Create Content Item' });
-      var cancelBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Cancel' });
-      cancelBtn.addEventListener('click', function () { clear(composerBox); });
+      var cancelBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Cancel (Esc)' });
+      cancelBtn.addEventListener('click', closeComposer);
 
       var saveBusy = false;
       saveBtn.addEventListener('click', async function () {
@@ -9585,6 +9754,7 @@
             district_tag: districtInp.value.trim(),
             source_citation: sourceInp.value.trim(),
             exam_relevance: examInp.value.trim(),
+            language: langSel.value,
             is_featured: featCb.checked,
             summary: summaryTa.value.trim(),
             body_md: bodyTa.value,
@@ -9598,7 +9768,7 @@
             await api('POST', 'content/posts', payload);
             toast('Created new content item');
           }
-          clear(composerBox);
+          closeComposer();
           await load();
         } catch (err) {
           toast(err.message || 'Save failed', true);
@@ -9610,29 +9780,50 @@
 
       card.appendChild(el('div', { class: 'cso-ops-subhead' }, [
         el('h3', { text: isEdit ? 'Edit Content Item (' + editing.id + ')' : cfg.cta }),
-        el('div', { class: 'cso-ops-actions' }, [readBadge, seoBadge])
+        el('div', { class: 'cso-ops-actions' }, [readBadge, seoBadge, seoScoreBadge])
       ]));
-      card.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
-        el('div', { class: 'field' }, [el('label', { text: 'Title *' }), titleInp]),
-        el('div', { class: 'field' }, [el('label', { text: 'Slug (optional auto)' }), slugInp]),
-        el('div', { class: 'field' }, [el('label', { text: 'Content Type' }), postTypeSel]),
-        el('div', { class: 'field' }, [el('label', { text: 'Workflow Stage' }), stageSel]),
-        el('div', { class: 'field' }, [el('label', { text: 'Category' }), catInp]),
-        el('div', { class: 'field' }, [el('label', { text: 'Tags (comma-separated)' }), tagsInp]),
-        el('div', { class: 'field' }, [el('label', { text: 'District Tag (News / Regional)' }), districtInp]),
-        el('div', { class: 'field' }, [el('label', { text: 'Source Citation' }), sourceInp]),
-        el('div', { class: 'field' }, [el('label', { text: 'Exam Relevance (OPSC/OSSSC/OSSC)' }), examInp]),
-        el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Feature in Priority Slot')])])
-      ]));
-      card.appendChild(el('div', { class: 'field' }, [el('label', { text: 'Summary / Key Takeaways' }), summaryTa]));
-      card.appendChild(el('div', { class: 'field' }, [el('label', { text: 'Body (Markdown / Content)' }), bodyTa]));
-      card.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
-        el('div', { class: 'field' }, [el('label', { text: 'SEO Title' }), seoTitleInp]),
-        el('div', { class: 'field' }, [el('label', { text: 'SEO Description' }), seoDescInp])
-      ]));
-      card.appendChild(seoPrevBox);
-      card.appendChild(el('div', { class: 'cso-ops-actions' }, [saveBtn, cancelBtn]));
+      card.appendChild(piiWarnBox);
+
+      var leftPane = el('div', { class: 'cso-cnt-editor-pane' }, [
+        el('div', { class: 'cso-ops-grid-2' }, [
+          el('div', { class: 'field' }, [el('label', {}, [document.createTextNode('Title *'), titleCount]), titleInp]),
+          el('div', { class: 'field' }, [
+            el('label', { text: 'Slug (auto from title)' }),
+            slugInp,
+            el('div', { class: 'cso-cnt-slug-row' }, [slugPreviewCode, copySlugBtn])
+          ]),
+          el('div', { class: 'field' }, [el('label', { text: 'Content Type' }), postTypeSel]),
+          el('div', { class: 'field' }, [el('label', { text: 'Workflow Stage' }), stageSel]),
+          el('div', { class: 'field' }, [el('label', { text: 'Language Parity' }), langSel]),
+          el('div', { class: 'field' }, [el('label', { text: 'Category' }), catInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Tags (comma-separated)' }), tagsInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'District Tag (News / Regional)' }), districtInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Source Citation' }), sourceInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Exam Relevance (OPSC/OSSSC/OSSC)' }), examInp])
+        ]),
+        el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Feature in Priority Slot')])]),
+        el('div', { class: 'field' }, [el('label', { text: 'Summary / Key Takeaways' }), summaryTa]),
+        el('div', { class: 'field' }, [el('label', { text: 'Body (Markdown / Content)' }), bodyTa]),
+        el('div', { class: 'cso-ops-grid-2' }, [
+          el('div', { class: 'field' }, [el('label', { text: 'SEO Title' }), seoTitleInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'SEO Description' }), seoDescInp])
+        ]),
+        el('div', { class: 'cso-ops-actions' }, [saveBtn, cancelBtn])
+      ]);
+
+      var rightPane = el('div', { class: 'cso-cnt-preview-pane' }, [
+        el('div', { class: 'cso-cnt-preview-head' }, [
+          el('div', { class: 'cso-cnt-preview-tabs' }, chTabBtns),
+          el('div', { class: 'cso-ops-actions' }, [deskBtn, mobBtn])
+        ]),
+        previewFrame
+      ]);
+
+      card.appendChild(el('div', { class: 'cso-cnt-workbench' }, [leftPane, rightPane]));
       composerBox.appendChild(card);
+
+      if (focusField === 'seo') seoTitleInp.focus();
+      else titleInp.focus();
     }
 
     createBtn.addEventListener('click', function () { openComposer(null); });
@@ -9671,10 +9862,55 @@
       }
       items.forEach(function (pair) {
         kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
-          el('span', { class: 'muted sm', text: pair[0] }),
-          el('strong', { text: pair[1] })
+          el('span', { class: 'cso-ops-kpi-lbl', text: pair[0] }),
+          el('strong', { class: 'cso-ops-kpi-val', text: pair[1] })
         ]));
       });
+    }
+
+    function renderTelemetry(k, rows) {
+      clear(telemetryBox);
+      var total = Number(k.total_count || rows.length || 0);
+      var pub = Number(k.published_count || 0);
+      var pubPct = total > 0 ? Math.round((pub / total) * 100) : 0;
+
+      var seoReadyCount = rows.filter(function (r) { return Boolean(r.has_seo_meta); }).length;
+      var seoPct = rows.length > 0 ? Math.round((seoReadyCount / rows.length) * 100) : 0;
+
+      var pubProg = el('progress', { class: 'cso-cnt-tel-prog', max: String(Math.max(1, total)), value: String(pub) });
+      var seoMeter = el('meter', { class: 'cso-cnt-tel-meter', min: '0', max: '100', low: '40', high: '75', optimum: '95', value: String(seoPct) });
+
+      var counts = { article: 0, news: 0, current_affairs: 0, announcement: 0 };
+      rows.forEach(function (r) {
+        if (counts[r.post_type] !== undefined) counts[r.post_type] += 1;
+      });
+
+      telemetryBox.appendChild(el('div', { class: 'cso-cnt-tel-item' }, [
+        el('div', { class: 'cso-cnt-tel-head' }, [
+          el('span', { text: 'Publishing Ratio' }),
+          el('strong', { text: pub + ' / ' + total + ' (' + pubPct + '%)' })
+        ]),
+        pubProg
+      ]));
+      telemetryBox.appendChild(el('div', { class: 'cso-cnt-tel-item' }, [
+        el('div', { class: 'cso-cnt-tel-head' }, [
+          el('span', { text: 'Catalog SEO Readiness' }),
+          el('strong', { text: seoPct + '% Ready' })
+        ]),
+        seoMeter
+      ]));
+      telemetryBox.appendChild(el('div', { class: 'cso-cnt-tel-item' }, [
+        el('div', { class: 'cso-cnt-tel-head' }, [
+          el('span', { text: 'Odisha Taxonomy Mix' }),
+          el('strong', { text: String(rows.length) + ' shown' })
+        ]),
+        el('div', { class: 'cso-cnt-tax-bars' }, [
+          el('span', { class: 'cso-cnt-tax-chip', text: 'Articles ' + counts.article }),
+          el('span', { class: 'cso-cnt-tax-chip', text: 'News ' + counts.news }),
+          el('span', { class: 'cso-cnt-tax-chip', text: 'CA ' + counts.current_affairs }),
+          el('span', { class: 'cso-cnt-tax-chip', text: 'Notices ' + counts.announcement })
+        ])
+      ]));
     }
 
     function renderTable(res) {
@@ -9693,7 +9929,7 @@
           var actTd = el('td', { class: 'cso-ops-actions' });
 
           if (canWrite) {
-            var editBtn = el('button', { class: 'btn sm', type: 'button', text: 'Edit' });
+            var editBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: 'Edit' });
             editBtn.addEventListener('click', function () { openComposer(it); });
             actTd.appendChild(editBtn);
           }
@@ -9701,16 +9937,21 @@
           if (canStatus) {
             var nextStage = st === 'published' ? 'draft' : 'published';
             var toggleBtn = el('button', {
-              class: 'btn sm',
+              class: 'cso-ops-btn cso-ops-btn--sm',
               type: 'button',
               text: st === 'published' ? 'Unpublish' : 'Publish'
             });
             toggleBtn.addEventListener('click', async function () {
               toggleBtn.disabled = true;
+              var prevStage = st;
               try {
                 await api('PATCH', 'content/posts/' + encodeURIComponent(it.id) + '/status', { workflow_stage: nextStage });
-                toast('Status updated to ' + nextStage);
                 await load();
+                toastWithUndo('Status updated to ' + nextStage, async function () {
+                  await api('PATCH', 'content/posts/' + encodeURIComponent(it.id) + '/status', { workflow_stage: prevStage });
+                  toast('Reverted status to ' + prevStage);
+                  await load();
+                });
               } catch (err) {
                 toast(err.message || 'Status update blocked', true);
                 toggleBtn.disabled = false;
@@ -9719,7 +9960,7 @@
             actTd.appendChild(toggleBtn);
           }
 
-          var prevBtn = el('button', { class: 'btn sm', type: 'button', text: 'Preview' });
+          var prevBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: 'Preview' });
           prevBtn.addEventListener('click', function () {
             window.open(it.public_url || ('/updates/' + encodeURIComponent(it.slug) + '/'), '_blank', 'noopener');
           });
@@ -9727,7 +9968,7 @@
 
           if (isAdmin || !(state.guards && state.guards.block_editor_hard_delete)) {
             if (canWrite) {
-              var delBtn = el('button', { class: 'btn sm danger', type: 'button', text: 'Delete' });
+              var delBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm cso-ops-btn--danger', type: 'button', text: 'Delete' });
               delBtn.addEventListener('click', async function () {
                 delBtn.disabled = true;
                 try {
@@ -9747,15 +9988,64 @@
           if (it.district_tag) metaDetail += ' · ' + it.district_tag;
           if (it.exam_relevance) metaDetail += ' · ' + it.exam_relevance;
 
+          var titleEl = el('strong', {
+            class: canWrite ? 'cso-cnt-inline-title' : '',
+            text: it.title,
+            title: canWrite ? 'Double-click to rename headline inline' : ''
+          });
+          if (canWrite) {
+            titleEl.addEventListener('dblclick', function () {
+              var inlineInp = el('input', { class: 'input', type: 'text', value: it.title });
+              titleEl.replaceWith(inlineInp);
+              inlineInp.focus();
+              inlineInp.select();
+              var done = false;
+              async function commitRename(save) {
+                if (done) return;
+                done = true;
+                var nextTitle = inlineInp.value.trim();
+                if (!save || !nextTitle || nextTitle === it.title) {
+                  inlineInp.replaceWith(titleEl);
+                  return;
+                }
+                try {
+                  await api('PUT', 'content/posts/' + encodeURIComponent(it.id), { title: nextTitle });
+                  toast('Headline updated');
+                  await load();
+                } catch (err) {
+                  toast(err.message || 'Rename failed', true);
+                  inlineInp.replaceWith(titleEl);
+                }
+              }
+              inlineInp.addEventListener('keydown', function (ev) {
+                if (ev.key === 'Enter') { ev.preventDefault(); commitRename(true); }
+                else if (ev.key === 'Escape') { ev.preventDefault(); commitRename(false); }
+              });
+              inlineInp.addEventListener('blur', function () { commitRename(true); });
+            });
+          }
+
+          var seoPill = el('button', {
+            type: 'button',
+            class: 'badge cso-cnt-seo-pill ' + (it.has_seo_meta ? 'ok' : 'warn'),
+            text: it.has_seo_meta ? 'SEO Ready' : 'Missing Meta'
+          });
+          seoPill.addEventListener('click', function () {
+            if (canWrite) openComposer(it, 'seo');
+          });
+
           tbody.appendChild(el('tr', {}, [
             el('td', {}, [
-              el('strong', { text: it.title }),
+              titleEl,
               el('div', { class: 'muted sm', text: '/' + it.slug + ' · ' + String(it.reading_time_minutes || 1) + 'm read' })
             ]),
-            el('td', { text: metaDetail }),
+            el('td', {}, [
+              el('div', { text: metaDetail }),
+              el('span', { class: 'cso-cnt-lang-badge', text: detectLangParity(it) })
+            ]),
             el('td', {}, [
               el('span', { class: 'badge ' + stCls, text: st }),
-              el('div', { class: 'muted sm', text: it.has_seo_meta ? 'SEO ✓' : 'No SEO' })
+              el('div', {}, [seoPill])
             ]),
             el('td', { text: String(it.updated_at || it.created_at || '').slice(0, 16).replace('T', ' ') }),
             actTd
@@ -9766,7 +10056,7 @@
           el('table', { class: 'table' }, [
             el('thead', {}, [el('tr', {}, [
               el('th', { text: 'Title & Slug' }),
-              el('th', { text: 'Type / Scope' }),
+              el('th', { text: 'Type / Lang' }),
               el('th', { text: 'Stage & SEO' }),
               el('th', { text: 'Updated' }),
               el('th', { text: 'Actions' })
@@ -9776,13 +10066,13 @@
         ]));
       }
 
-      var prevPage = el('button', { class: 'btn sm', type: 'button', text: '← Prev' });
+      var prevPage = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: '← Prev' });
       prevPage.disabled = state.offset <= 0;
       prevPage.addEventListener('click', function () {
         state.offset = Math.max(0, state.offset - state.limit);
         load();
       });
-      var nextPage = el('button', { class: 'btn sm', type: 'button', text: 'Next →' });
+      var nextPage = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: 'Next →' });
       nextPage.disabled = state.offset + state.limit >= state.total;
       nextPage.addEventListener('click', function () {
         state.offset += state.limit;
@@ -9802,6 +10092,7 @@
         var res = await api('GET', 'content/posts?' + qs);
         if (res.guards) state.guards = res.guards;
         renderKpis(res.kpis || {});
+        renderTelemetry(res.kpis || {}, Array.isArray(res.items) ? res.items : []);
         renderTable(res);
       } catch (e) {
         toast(e.message || 'Failed to load content studio', true);

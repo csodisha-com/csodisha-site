@@ -199,11 +199,14 @@
       });
 
       var modList = el('div', 'cso-nav-modules' + (isExpanded ? '' : ' is-collapsed'));
-      filteredModules.forEach(function (mod) {
+      filteredModules.forEach(function (mod, idx) {
         var isActiveMod = CSOState.activeModuleId === mod.id;
         var isLiveRoute = !!(window.CSOLive && window.CSOLive.routes && window.CSOLive.routes[mod.id]);
         var modBtn = el('button', 'cso-nav-mod-btn' + (isActiveMod ? ' is-active' : ''));
         modBtn.type = 'button';
+        var numMatch = String(mod.id || '').match(/-(\d{2,3})$/);
+        var modNum = numMatch ? String(Number(numMatch[1])).padStart(2, '0') : String(idx + 1).padStart(2, '0');
+        modBtn.appendChild(el('span', 'cso-nav-mod-num', modNum));
         modBtn.appendChild(el('span', 'cso-nav-mod-title', mod.title));
         modBtn.appendChild(el('span', 'cso-nav-mod-tag' + (isLiveRoute ? ' is-live' : ''), isLiveRoute ? 'D1' : 'CMS'));
         modBtn.addEventListener('click', function () {
