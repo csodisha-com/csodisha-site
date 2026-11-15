@@ -18,6 +18,9 @@ import {
   saveSentinelConfig,
   runSentinelProbe,
   classifySentinelPosture,
+  getCanaryGateStatus,
+  saveCanaryConfig,
+  evaluateCanaryGate,
   handleOpsSentinel
 } from '../functions/_lib/ops-sentinel.js';
 
@@ -317,5 +320,72 @@ await assert.rejects(() => freezePost({ enabled: false, confirm: 'FREEZE' }), er
 const liftRes = await freezePost({ enabled: false, confirm: 'UNFREEZE' });
 assert.equal((await liftRes.json()).freeze.enabled, false);
 assert.equal((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'ops.freeze.toggle'`).first()).n, 2);
+
+// 8. Module #15: Zero-Downtime Deployment Canary & Health Gate (GO / NO-GO)
+assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v37');
+
+const canaryGetRes = await handleOpsSentinel(
+  new Request('https://csodisha.com/api/admin/ops/canary', { method: 'GET' }),
+  env, adminActor, 'canary'
+);
+assert.equal(canaryGetRes.status, 200);
+const canaryGetBody = await canaryGetRes.json();
+assert.equal(canaryGetBody.ok, true);
+assert.equal(canaryGetBody.config.require_sw_match, true);
+
+// Evaluation with sw.js returning v26 while target is v37 => NO-GO / BLOCKED
+const blockedSwRes = await handleOpsSentinel(
+  new Request('https://csodisha.com/api/admin/ops/canary/evaluate', { method: 'POST' }),
+  env, adminActor, 'canary', 'evaluate'
+);
+assert.equal(blockedSwRes.status, 200);
+const blockedSwBody = await blockedSwRes.json();
+assert.equal(blockedSwBody.verdict, 'NO-GO');
+assert.equal(blockedSwBody.release_status, 'BLOCKED');
+assert.equal(blockedSwBody.observed_sw_cache, 'cso-candidate-cache-v26');
+
+// Editor forbidden from updating canary config
+await assert.rejects(
+  () => handleOpsSentinel(
+    new Request('https://csodisha.com/api/admin/ops/canary/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ require_sw_match: false, max_latency_ms: 1500 })
+    }),
+    env, { userId: 'u-2', email: 'ed@csodisha.com', role: 'editor' }, 'canary', 'config'
+  ),
+  err => err.status === 403
+);
+
+// Disable strict SW version match when testing staging assets mock -> verdict becomes GO
+const cfgPutRes = await handleOpsSentinel(
+  new Request('https://csodisha.com/api/admin/ops/canary/config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ require_sw_match: false, require_d1_ok: true, require_r2_ok: true, max_latency_ms: 1500 })
+  }),
+  env, adminActor, 'canary', 'config'
+);
+assert.equal(cfgPutRes.status, 200);
+const passRes = await handleOpsSentinel(
+  new Request('https://csodisha.com/api/admin/ops/canary/evaluate', { method: 'POST' }),
+  env, adminActor, 'canary', 'evaluate'
+);
+const passBody = await passRes.json();
+assert.equal(passBody.verdict, 'GO');
+assert.equal(passBody.release_status, 'PASS');
+assert.equal(passBody.passed_count, passBody.total_checks);
+
+// When Emergency Freeze is active, Canary Gate MUST block release (NO-GO)
+await freezePost({ enabled: true, confirm: 'FREEZE', reason: 'Hold deploy for migration' });
+const frozenCanaryRes = await handleOpsSentinel(
+  new Request('https://csodisha.com/api/admin/ops/canary/evaluate', { method: 'POST' }),
+  env, adminActor, 'canary', 'evaluate'
+);
+const frozenCanaryBody = await frozenCanaryRes.json();
+assert.equal(frozenCanaryBody.verdict, 'NO-GO');
+assert.equal(frozenCanaryBody.release_status, 'BLOCKED');
+await freezePost({ enabled: false, confirm: 'UNFREEZE' });
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'ops.canary.evaluate'`).first()).n >= 3);
 
 console.log('OPS SENTINEL, FREEZE, CACHE, CANARY & FAILOVER SENTINEL TESTS PASSED');

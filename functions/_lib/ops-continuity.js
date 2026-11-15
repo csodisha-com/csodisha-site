@@ -421,26 +421,48 @@ export async function ensureOpsRunbooksTable(env) {
   await env.DB.prepare(
     `CREATE TABLE IF NOT EXISTS ops_runbooks (
        id TEXT PRIMARY KEY,
+       slug TEXT UNIQUE,
        title TEXT NOT NULL,
        severity TEXT NOT NULL,
        rto_minutes INTEGER NOT NULL,
        rpo_minutes INTEGER NOT NULL,
        steps_json TEXT NOT NULL,
        last_drilled_at TEXT,
+       last_executed_at TEXT,
+       last_executed_by TEXT,
+       operator_notes TEXT,
        updated_by TEXT,
        updated_at TEXT NOT NULL
      )`
   ).run();
+
+  // Idempotent migration for existing tables created without newer columns
+  try {
+    const pragma = await env.DB.prepare(`PRAGMA table_info("ops_runbooks")`).all();
+    const cols = new Set((pragma.results || []).map(c => c.name));
+    const additions = [
+      ['slug', 'TEXT'],
+      ['last_executed_at', 'TEXT'],
+      ['last_executed_by', 'TEXT'],
+      ['operator_notes', 'TEXT']
+    ];
+    for (const [col, typ] of additions) {
+      if (!cols.has(col)) {
+        await env.DB.prepare(`ALTER TABLE ops_runbooks ADD COLUMN ${col} ${typ}`).run();
+      }
+    }
+  } catch {}
 
   const countRow = await env.DB.prepare(`SELECT COUNT(*) AS n FROM ops_runbooks`).first();
   if (!countRow || Number(countRow.n) === 0) {
     const nowIso = new Date().toISOString();
     for (const rb of DEFAULT_DR_RUNBOOKS) {
       await env.DB.prepare(
-        `INSERT OR IGNORE INTO ops_runbooks (id, title, severity, rto_minutes, rpo_minutes, steps_json, last_drilled_at, updated_by, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, NULL, 'system:seed', ?)`
+        `INSERT OR IGNORE INTO ops_runbooks (id, slug, title, severity, rto_minutes, rpo_minutes, steps_json, last_drilled_at, last_executed_at, updated_by, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NULL, 'system:seed', ?)`
       ).bind(
         rb.id,
+        String(rb.id).toLowerCase(),
         rb.title,
         rb.severity,
         rb.rto_minutes,
@@ -462,14 +484,19 @@ function normalizeRunbookRow(row) {
   } catch {
     steps = [];
   }
+  const execAt = row.last_executed_at || row.last_drilled_at || null;
   return {
     id: row.id,
+    slug: row.slug || String(row.id || '').toLowerCase(),
     title: row.title,
     severity: row.severity,
     rto_minutes: Number(row.rto_minutes || 5),
     rpo_minutes: Number(row.rpo_minutes || 0),
     steps,
-    last_drilled_at: row.last_drilled_at || null,
+    last_drilled_at: row.last_drilled_at || execAt,
+    last_executed_at: execAt,
+    last_executed_by: row.last_executed_by || row.updated_by || null,
+    operator_notes: row.operator_notes || '',
     updated_by: row.updated_by || null,
     updated_at: row.updated_at
   };
@@ -478,7 +505,7 @@ function normalizeRunbookRow(row) {
 export async function listOpsRunbooks(env) {
   await ensureOpsRunbooksTable(env);
   const { results } = await env.DB.prepare(
-    `SELECT id, title, severity, rto_minutes, rpo_minutes, steps_json, last_drilled_at, updated_by, updated_at
+    `SELECT id, slug, title, severity, rto_minutes, rpo_minutes, steps_json, last_drilled_at, last_executed_at, last_executed_by, operator_notes, updated_by, updated_at
      FROM ops_runbooks
      ORDER BY id ASC`
   ).all();
@@ -490,11 +517,12 @@ export async function saveOpsRunbook(env, input = {}, actorEmail = 'admin') {
   await ensureOpsRunbooksTable(env);
   const rawId = String(input.id || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 32);
   const id = rawId || `SOP-${Date.now().toString(36).toUpperCase()}`;
+  const slug = String(input.slug || id).trim().toLowerCase().replace(/[^a-z0-9_-]+/g, '-').slice(0, 48) || id.toLowerCase();
   const title = String(input.title || '').trim().slice(0, 160);
   if (!title) {
     throw new HttpError(400, 'TITLE_REQUIRED', 'Runbook title is required');
   }
-  const allowedSeverities = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+  const allowedSeverities = ['P1-CRITICAL', 'P2-HIGH', 'P3-STANDARD', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
   const sevUpper = String(input.severity || 'HIGH').toUpperCase();
   const severity = allowedSeverities.includes(sevUpper) ? sevUpper : 'HIGH';
   const rtoMinutes = Math.max(0, Math.min(10080, Number(input.rto_minutes ?? 15)));
@@ -511,32 +539,45 @@ export async function saveOpsRunbook(env, input = {}, actorEmail = 'admin') {
     throw new HttpError(400, 'STEPS_REQUIRED', 'At least one SOP checklist step is required');
   }
 
-  const existing = await env.DB.prepare(`SELECT last_drilled_at FROM ops_runbooks WHERE id = ?`).bind(id).first();
+  const existing = await env.DB.prepare(`SELECT last_drilled_at, last_executed_at, last_executed_by, operator_notes FROM ops_runbooks WHERE id = ?`).bind(id).first();
   const lastDrilledAt = input.last_drilled_at !== undefined
     ? input.last_drilled_at
     : (existing ? existing.last_drilled_at : null);
+  const lastExecutedAt = existing ? (existing.last_executed_at || lastDrilledAt) : lastDrilledAt;
+  const lastExecutedBy = existing ? existing.last_executed_by : null;
+  const opNotes = input.operator_notes !== undefined
+    ? String(input.operator_notes || '').trim().slice(0, 500)
+    : (existing ? (existing.operator_notes || '') : '');
   const nowIso = new Date().toISOString();
 
   await env.DB.prepare(
-    `INSERT INTO ops_runbooks (id, title, severity, rto_minutes, rpo_minutes, steps_json, last_drilled_at, updated_by, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO ops_runbooks (id, slug, title, severity, rto_minutes, rpo_minutes, steps_json, last_drilled_at, last_executed_at, last_executed_by, operator_notes, updated_by, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
+       slug = excluded.slug,
        title = excluded.title,
        severity = excluded.severity,
        rto_minutes = excluded.rto_minutes,
        rpo_minutes = excluded.rpo_minutes,
        steps_json = excluded.steps_json,
        last_drilled_at = excluded.last_drilled_at,
+       last_executed_at = excluded.last_executed_at,
+       last_executed_by = excluded.last_executed_by,
+       operator_notes = excluded.operator_notes,
        updated_by = excluded.updated_by,
        updated_at = excluded.updated_at`
   ).bind(
     id,
+    slug,
     title,
     severity,
     rtoMinutes,
     rpoMinutes,
     JSON.stringify(steps),
     lastDrilledAt,
+    lastExecutedAt,
+    lastExecutedBy,
+    opNotes,
     actorEmail || 'admin',
     nowIso
   ).run();
@@ -545,7 +586,7 @@ export async function saveOpsRunbook(env, input = {}, actorEmail = 'admin') {
   return normalizeRunbookRow(saved);
 }
 
-export async function markRunbookDrillCompleted(env, id, { steps = null, actorEmail = 'admin' } = {}) {
+export async function markRunbookDrillCompleted(env, id, { steps = null, operatorNotes = '', actorEmail = 'admin' } = {}) {
   await ensureOpsRunbooksTable(env);
   const cleanId = String(id || '').trim();
   const existing = await env.DB.prepare(`SELECT * FROM ops_runbooks WHERE id = ?`).bind(cleanId).first();
@@ -556,13 +597,15 @@ export async function markRunbookDrillCompleted(env, id, { steps = null, actorEm
   const updatedSteps = Array.isArray(steps) && steps.length
     ? steps.map(s => ({ step: String(s?.step || s || '').trim(), done: Boolean(s?.done ?? true) })).filter(s => s.step)
     : norm.steps.map(s => ({ ...s, done: true }));
+  const cleanNotes = String(operatorNotes || '').trim().slice(0, 500);
   const nowIso = new Date().toISOString();
+  const actor = actorEmail || 'admin';
 
   await env.DB.prepare(
     `UPDATE ops_runbooks
-     SET steps_json = ?, last_drilled_at = ?, updated_by = ?, updated_at = ?
+     SET steps_json = ?, last_drilled_at = ?, last_executed_at = ?, last_executed_by = ?, operator_notes = ?, updated_by = ?, updated_at = ?
      WHERE id = ?`
-  ).bind(JSON.stringify(updatedSteps), nowIso, actorEmail || 'admin', nowIso, cleanId).run();
+  ).bind(JSON.stringify(updatedSteps), nowIso, nowIso, actor, cleanNotes, actor, nowIso, cleanId).run();
 
   const updated = await env.DB.prepare(`SELECT * FROM ops_runbooks WHERE id = ?`).bind(cleanId).first();
   return normalizeRunbookRow(updated);
@@ -788,8 +831,8 @@ export async function handleOpsContinuity(request, env, actor, subAction, subId,
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }
 
-  // Module #16: GET / POST / PUT /api/admin/ops/runbooks (and POST /api/admin/ops/runbooks/:id/drill)
-  if (subAction === 'runbooks') {
+  // Module #16: GET / POST / PUT /api/admin/ops/runbooks (and POST /api/admin/ops/runbooks/:id/{drill|complete})
+  if (subAction === 'runbooks' || subAction === 'sop' || subAction === 'playbook') {
     if (!subId && method === 'GET') {
       const res = await listOpsRunbooks(env);
       return json(res, 200, { 'Cache-Control': 'no-store' });
@@ -808,18 +851,23 @@ export async function handleOpsContinuity(request, env, actor, subAction, subId,
       });
       return json({ ok: true, item }, 200, { 'Cache-Control': 'no-store' });
     }
-    if (subId && (method === 'PUT' || (method === 'POST' && extraAction === 'drill'))) {
+    if (subId && (method === 'PUT' || (method === 'POST' && (extraAction === 'drill' || extraAction === 'complete')))) {
       if (actor.role !== 'admin') {
         throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can update or drill DR runbooks');
       }
       const body = await readJson(request, 50000).catch(() => ({}));
-      if (extraAction === 'drill' || body.mark_drilled) {
+      if (extraAction === 'drill' || extraAction === 'complete' || body.mark_drilled) {
+        const opNotes = body.operator_notes || body.note || '';
         const item = await markRunbookDrillCompleted(env, subId, {
           steps: body.steps || null,
+          operatorNotes: opNotes,
           actorEmail: actor.email || actor.userId
         });
-        await audit(env, request, actor, 'ops.runbook.drill', 'ops_runbooks', item.id, {
+        const auditAction = extraAction === 'complete' ? 'ops.runbook.execute' : 'ops.runbook.drill';
+        await audit(env, request, actor, auditAction, 'ops_runbooks', item.id, {
           title: item.title,
+          operator_notes: item.operator_notes,
+          last_executed_at: item.last_executed_at,
           last_drilled_at: item.last_drilled_at
         });
         return json({ ok: true, item }, 200, { 'Cache-Control': 'no-store' });

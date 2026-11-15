@@ -9,7 +9,7 @@ import { handleContent } from '../api/content/_public.js';
 export const FREEZE_SETTING_KEY = 'ops_read_only_freeze';
 export const CACHE_WARMER_URLS_KEY = 'ops_cache_warmer_urls';
 export const LAST_CACHE_WARM_KEY = 'ops_last_cache_warm';
-export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v36';
+export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v37';
 
 export const DEFAULT_CACHE_WARMER_ROUTES = [
   '/',
@@ -865,6 +865,214 @@ export async function runOpsHealthAndCanaryProbe(request, env) {
   };
 }
 
+// ============================================================================
+// Module #15: Zero-Downtime Deployment Canary & Health Gate
+// ============================================================================
+export const CANARY_CONFIG_KEY = 'ops_canary_config';
+export const LAST_CANARY_GATE_KEY = 'ops_last_canary_gate';
+
+export function defaultCanaryConfig() {
+  return {
+    max_latency_ms: 500,
+    require_d1_ok: true,
+    require_r2_ok: true,
+    require_sw_match: true,
+    updated_by: null,
+    updated_at: null
+  };
+}
+
+export async function getCanaryConfig(env) {
+  const def = defaultCanaryConfig();
+  if (!env || !env.DB) return def;
+  try {
+    await ensureSiteSettingsTable(env.DB);
+    const row = await env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(CANARY_CONFIG_KEY).first();
+    if (!row || !row.value_json) return def;
+    const p = JSON.parse(row.value_json) || {};
+    return {
+      max_latency_ms: Math.max(50, Math.min(5000, Number(p.max_latency_ms) || def.max_latency_ms)),
+      require_d1_ok: p.require_d1_ok !== undefined ? Boolean(p.require_d1_ok) : true,
+      require_r2_ok: p.require_r2_ok !== undefined ? Boolean(p.require_r2_ok) : true,
+      require_sw_match: p.require_sw_match !== undefined ? Boolean(p.require_sw_match) : true,
+      updated_by: p.updated_by || null,
+      updated_at: p.updated_at || null
+    };
+  } catch {
+    return def;
+  }
+}
+
+export async function saveCanaryConfig(env, input = {}, actorEmail = 'admin') {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  await ensureSiteSettingsTable(env.DB);
+  const prev = await getCanaryConfig(env);
+  let maxLat = prev.max_latency_ms;
+  if (input.max_latency_ms !== undefined) {
+    const n = Number(input.max_latency_ms);
+    if (!Number.isInteger(n) || n < 50 || n > 5000) {
+      throw new HttpError(400, 'INVALID_MAX_LATENCY', 'max_latency_ms must be an integer between 50 and 5000');
+    }
+    maxLat = n;
+  }
+  const nowIso = new Date().toISOString();
+  const cfg = {
+    max_latency_ms: maxLat,
+    require_d1_ok: input.require_d1_ok !== undefined ? Boolean(input.require_d1_ok) : prev.require_d1_ok,
+    require_r2_ok: input.require_r2_ok !== undefined ? Boolean(input.require_r2_ok) : prev.require_r2_ok,
+    require_sw_match: input.require_sw_match !== undefined ? Boolean(input.require_sw_match) : prev.require_sw_match,
+    updated_by: actorEmail || 'admin',
+    updated_at: nowIso
+  };
+  await env.DB.prepare(
+    `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+     VALUES (?, ?, ?, ?)
+     ON CONFLICT(key) DO UPDATE SET
+       value_json = excluded.value_json,
+       updated_by = excluded.updated_by,
+       updated_at = excluded.updated_at`
+  ).bind(CANARY_CONFIG_KEY, JSON.stringify(cfg), cfg.updated_by, nowIso).run();
+  return cfg;
+}
+
+async function readLastCanaryGate(env) {
+  if (!env || !env.DB) return null;
+  try {
+    const row = await env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(LAST_CANARY_GATE_KEY).first();
+    return row && row.value_json ? JSON.parse(row.value_json) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function evaluateCanaryGate(request, env, { persist = false, actorEmail = 'admin' } = {}) {
+  const cfg = await getCanaryConfig(env);
+  const base = await runOpsHealthAndCanaryProbe(request, env);
+
+  // Measure core route health via warm check or fetch if ASSETS/SELF_FETCH exists
+  let coreRouteOk = true;
+  let coreRouteLatencyMs = 1;
+  let coreRouteDetail = 'Edge router ready';
+  if (env && typeof env.SELF_FETCH === 'function') {
+    const t0 = Date.now();
+    try {
+      const origin = new URL(request.url).origin;
+      const r = await env.SELF_FETCH(new Request(new URL('/', origin).toString(), { method: 'GET' }), env);
+      coreRouteLatencyMs = Math.max(1, Date.now() - t0);
+      coreRouteOk = Boolean(r && r.status >= 200 && r.status < 400);
+      coreRouteDetail = `GET / -> HTTP ${r ? r.status : 502} (${coreRouteLatencyMs} ms)`;
+    } catch {
+      coreRouteOk = false;
+      coreRouteDetail = 'Core route probe failed';
+    }
+  } else if (env && env.ASSETS && typeof env.ASSETS.fetch === 'function') {
+    const t0 = Date.now();
+    try {
+      const origin = new URL(request.url).origin;
+      const r = await env.ASSETS.fetch(new Request(new URL('/', origin).toString(), { method: 'GET' }));
+      coreRouteLatencyMs = Math.max(1, Date.now() - t0);
+      coreRouteOk = Boolean(r && r.status >= 200 && r.status < 400);
+      coreRouteDetail = `ASSETS GET / -> HTTP ${r ? r.status : 502} (${coreRouteLatencyMs} ms)`;
+    } catch {
+      coreRouteOk = false;
+      coreRouteDetail = 'ASSETS core route failed';
+    }
+  }
+
+  const d1Pass = base.d1.status === 'UP' && base.d1.latency_ms <= cfg.max_latency_ms;
+  const r2Pass = base.r2.status === 'UP' && base.r2.latency_ms <= cfg.max_latency_ms;
+  const swMatch = base.canary.sw_status === 'READY' && (!cfg.require_sw_match || base.canary.sw_cache_name === ACTIVE_SW_CACHE_VERSION);
+  const freezeOff = !base.freeze.enabled;
+
+  const checks = [
+    {
+      id: 'd1_primary',
+      label: 'D1 Primary',
+      status: d1Pass ? 'PASS' : 'FAIL',
+      required: cfg.require_d1_ok,
+      detail: `${base.d1.status} · ${base.d1.latency_ms} ms (max ${cfg.max_latency_ms} ms)`,
+      latency_ms: base.d1.latency_ms
+    },
+    {
+      id: 'r2_cold_vault',
+      label: 'R2 Cold Vault',
+      status: r2Pass ? 'PASS' : 'FAIL',
+      required: cfg.require_r2_ok,
+      detail: `${base.r2.status} · ${base.r2.latency_ms} ms (max ${cfg.max_latency_ms} ms)`,
+      latency_ms: base.r2.latency_ms
+    },
+    {
+      id: 'sw_cache_version',
+      label: 'Service Worker Cache',
+      status: swMatch ? 'PASS' : 'FAIL',
+      required: cfg.require_sw_match,
+      detail: `${base.canary.sw_cache_name} (expected ${ACTIVE_SW_CACHE_VERSION})`,
+      latency_ms: null
+    },
+    {
+      id: 'freeze_posture',
+      label: 'Freeze Posture',
+      status: freezeOff ? 'PASS' : 'FAIL',
+      required: true,
+      detail: freezeOff ? 'Unfrozen (writes active)' : ('FROZEN: ' + (base.freeze.reason || 'Maintenance active')),
+      latency_ms: null
+    },
+    {
+      id: 'core_routes',
+      label: 'Core Routes',
+      status: coreRouteOk ? 'PASS' : 'FAIL',
+      required: true,
+      detail: coreRouteDetail,
+      latency_ms: coreRouteLatencyMs
+    }
+  ];
+
+  const allRequiredPassed = checks.every(c => !c.required || c.status === 'PASS');
+  const passedCount = checks.filter(c => c.status === 'PASS').length;
+  const evaluatedAt = new Date().toISOString();
+
+  const gate = {
+    ok: true,
+    verdict: allRequiredPassed ? 'GO' : 'NO-GO',
+    release_status: allRequiredPassed ? 'PASS' : 'BLOCKED',
+    passed_count: passedCount,
+    total_checks: checks.length,
+    active_cache_version: ACTIVE_SW_CACHE_VERSION,
+    observed_sw_cache: base.canary.sw_cache_name,
+    total_latency_ms: Math.max(base.total_latency_ms, coreRouteLatencyMs),
+    evaluated_at: evaluatedAt,
+    evaluated_by: actorEmail || 'admin',
+    checks
+  };
+
+  if (persist && env && env.DB) {
+    await ensureSiteSettingsTable(env.DB);
+    await env.DB.prepare(
+      `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(key) DO UPDATE SET
+         value_json = excluded.value_json,
+         updated_by = excluded.updated_by,
+         updated_at = excluded.updated_at`
+    ).bind(LAST_CANARY_GATE_KEY, JSON.stringify(gate), gate.evaluated_by, evaluatedAt).run();
+  }
+  return gate;
+}
+
+export async function getCanaryGateStatus(request, env) {
+  const [config, gate, last_gate] = await Promise.all([
+    getCanaryConfig(env),
+    evaluateCanaryGate(request, env, { persist: false }),
+    readLastCanaryGate(env)
+  ]);
+  return {
+    ok: true,
+    config,
+    gate,
+    last_gate
+  };
+}
+
 // Admin Router Dispatcher for /api/admin/ops/{freeze|cache|health}
 export async function handleOpsSentinel(request, env, actor, subAction, subId) {
   const method = request.method;
@@ -1015,6 +1223,43 @@ export async function handleOpsSentinel(request, env, actor, subAction, subId) {
       }
     );
     return json(report, 200, { 'Cache-Control': 'no-store' });
+  }
+
+  // Module #15: GET /api/admin/ops/canary, PUT /api/admin/ops/canary/config, POST /api/admin/ops/canary/evaluate
+  if (subAction === 'canary') {
+    if (!subId && method === 'GET') {
+      return json(await getCanaryGateStatus(request, env), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (subId === 'config' && method === 'PUT') {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can edit canary release gate thresholds');
+      }
+      const body = await readJson(request, 10000).catch(() => ({}));
+      const config = await saveCanaryConfig(env, body || {}, actor.email || actor.userId);
+      await audit(env, request, actor, 'ops.canary.config.update', 'site_settings', CANARY_CONFIG_KEY, {
+        max_latency_ms: config.max_latency_ms,
+        require_d1_ok: config.require_d1_ok,
+        require_r2_ok: config.require_r2_ok,
+        require_sw_match: config.require_sw_match
+      });
+      return json({ ok: true, config }, 200, { 'Cache-Control': 'no-store' });
+    }
+    if ((subId === 'evaluate' || !subId) && method === 'POST') {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can evaluate deployment canary gates');
+      }
+      const gate = await evaluateCanaryGate(request, env, { persist: true, actorEmail: actor.email || actor.userId });
+      await audit(env, request, actor, 'ops.canary.evaluate', 'site_settings', LAST_CANARY_GATE_KEY, {
+        verdict: gate.verdict,
+        release_status: gate.release_status,
+        passed_count: gate.passed_count,
+        total_checks: gate.total_checks,
+        active_cache_version: gate.active_cache_version,
+        observed_sw_cache: gate.observed_sw_cache
+      });
+      return json(gate, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }
 
   // Modules #9 & #15: GET /api/admin/ops/health

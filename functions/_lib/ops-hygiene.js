@@ -4,9 +4,11 @@
 // and Module #14 (Automated Daily Backup Schedule & Retention Policy).
 import { HttpError, json, readJson } from './http.js';
 import { audit } from './rbac.js';
-import { createPlatformSnapshot, canonicalizeValue } from './ops-snapshots.js';
+import { createPlatformSnapshot, canonicalizeValue, collectPlatformSnapshotTables } from './ops-snapshots.js';
 
 export const BACKUP_POLICY_KEY = 'ops_backup_policy';
+export const RETENTION_POLICY_KEY = 'ops_retention_policy';
+export const LAST_RETENTION_PRUNE_KEY = 'ops_last_retention_prune';
 
 export const KNOWN_MIGRATIONS = [
   { version: '0001', file: '0001_baseline.sql', description: 'Baseline users, candidates, sessions, checklists, bookmarks & verifications' },
@@ -575,6 +577,54 @@ export async function runDeadLetterVacuum(env, { dryRun = false, trimRevisions =
 // ============================================================================
 // Module #13: Post-Incident Forensic Audit & State Diff Inspector
 // ============================================================================
+const FORENSIC_REDACT_KEYS = new Set([
+  'password_hash',
+  'salt',
+  'code_hash',
+  'totp_secret',
+  'password',
+  'token',
+  'session_token',
+  'access_token',
+  'refresh_token',
+  'otp',
+  'otp_code',
+  'api_key',
+  'private_key',
+  'secret',
+  'authorization',
+  'cookie'
+]);
+
+async function ensureAuditLogTable(db) {
+  await db.prepare(
+    `CREATE TABLE IF NOT EXISTS audit_log (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       actor_user_id TEXT,
+       action TEXT NOT NULL,
+       target_type TEXT,
+       target_id TEXT,
+       metadata_json TEXT,
+       ip_address TEXT,
+       created_at TEXT NOT NULL DEFAULT (datetime('now'))
+     )`
+  ).run();
+}
+
+export function redactForensicPayload(val) {
+  if (val === null || val === undefined || typeof val !== 'object') return val;
+  if (Array.isArray(val)) return val.map(redactForensicPayload);
+  const out = {};
+  for (const k of Object.keys(val)) {
+    if (FORENSIC_REDACT_KEYS.has(k.toLowerCase())) {
+      out[k] = '[REDACTED_DPDP]';
+    } else {
+      out[k] = redactForensicPayload(val[k]);
+    }
+  }
+  return out;
+}
+
 function parseJsonObjectSafe(val) {
   if (!val) return null;
   if (typeof val === 'object' && !Array.isArray(val)) return val;
@@ -590,7 +640,7 @@ function parseJsonObjectSafe(val) {
 }
 
 export function computeForensicDiff(rawMetadata) {
-  const meta = parseJsonObjectSafe(rawMetadata) || {};
+  const meta = redactForensicPayload(parseJsonObjectSafe(rawMetadata) || {});
   const beforeCandidate = meta.before_json ?? meta.before ?? meta.previous ?? (meta.from !== undefined ? { value: meta.from } : null);
   const afterCandidate = meta.after_json ?? meta.after ?? meta.current ?? (meta.to !== undefined ? { value: meta.to } : null);
 
@@ -598,8 +648,8 @@ export function computeForensicDiff(rawMetadata) {
   const afterObj = parseJsonObjectSafe(afterCandidate);
 
   if (beforeObj || afterObj) {
-    const b = beforeObj || {};
-    const a = afterObj || {};
+    const b = redactForensicPayload(beforeObj || {});
+    const a = redactForensicPayload(afterObj || {});
     const keys = [...new Set([...Object.keys(b), ...Object.keys(a)])].sort();
     const added = [];
     const modified = [];
@@ -650,18 +700,24 @@ export function computeForensicDiff(rawMetadata) {
   };
 }
 
-export async function inspectForensicAudit(env, { actionFilter = '', actorFilter = '', limit = 50 } = {}) {
+export async function inspectForensicAudit(env, {
+  actionFilter = '',
+  actionPrefix = '',
+  actorFilter = '',
+  q = '',
+  limit = 25,
+  offset = 0
+} = {}) {
   if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
 
-  if (!(await tableExists(env.DB, 'audit_log'))) {
-    return { ok: true, total: 0, items: [] };
-  }
+  await ensureAuditLogTable(env.DB);
 
-  const cleanLimit = Math.max(1, Math.min(100, Number(limit) || 50));
+  const cleanLimit = Math.max(1, Math.min(100, Number(limit) || 25));
+  const cleanOffset = Math.max(0, Number(offset) || 0);
   const where = ['1=1'];
   const binds = [];
 
-  const cleanAction = String(actionFilter || '').trim().slice(0, 80);
+  const cleanAction = String(actionPrefix || actionFilter || '').trim().slice(0, 80);
   if (cleanAction) {
     where.push(`a.action LIKE ?`);
     binds.push(cleanAction.includes('%') ? cleanAction : `${cleanAction}%`);
@@ -679,23 +735,50 @@ export async function inspectForensicAudit(env, { actionFilter = '', actorFilter
     }
   }
 
+  const cleanQ = String(q || '').trim().slice(0, 120);
+  if (cleanQ) {
+    const likeQ = `%${cleanQ}%`;
+    where.push(`(a.action LIKE ? OR a.target_type LIKE ? OR a.target_id LIKE ? OR a.metadata_json LIKE ?)`);
+    binds.push(likeQ, likeQ, likeQ, likeQ);
+  }
+
+  const joinClause = hasUsers ? 'LEFT JOIN users u ON u.id = a.actor_user_id' : '';
+  const whereSql = where.join(' AND ');
+
+  const countRow = await env.DB.prepare(
+    `SELECT COUNT(*) AS n FROM audit_log a ${joinClause} WHERE ${whereSql}`
+  ).bind(...binds).first();
+  const totalMatching = Number(countRow && countRow.n) || 0;
+
+  let uniqueActors = 0;
+  let last24hCount = 0;
+  try {
+    const [uaRow, h24Row] = await Promise.all([
+      env.DB.prepare(`SELECT COUNT(DISTINCT actor_user_id) AS n FROM audit_log`).first(),
+      env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE created_at >= datetime('now', '-1 day')`).first()
+    ]);
+    uniqueActors = Number(uaRow && uaRow.n) || 0;
+    last24hCount = Number(h24Row && h24Row.n) || 0;
+  } catch {}
+
   const sql = hasUsers
     ? `SELECT a.id, a.actor_user_id, a.action, a.target_type, a.target_id, a.metadata_json, a.ip_address, a.created_at, u.email AS actor_email
        FROM audit_log a
        LEFT JOIN users u ON u.id = a.actor_user_id
-       WHERE ${where.join(' AND ')}
+       WHERE ${whereSql}
        ORDER BY a.id DESC
-       LIMIT ?`
+       LIMIT ? OFFSET ?`
     : `SELECT a.id, a.actor_user_id, a.action, a.target_type, a.target_id, a.metadata_json, a.ip_address, a.created_at, a.actor_user_id AS actor_email
        FROM audit_log a
-       WHERE ${where.join(' AND ')}
+       WHERE ${whereSql}
        ORDER BY a.id DESC
-       LIMIT ?`;
+       LIMIT ? OFFSET ?`;
 
-  const { results } = await env.DB.prepare(sql).bind(...binds, cleanLimit).all();
+  const { results } = await env.DB.prepare(sql).bind(...binds, cleanLimit, cleanOffset).all();
   const items = (results || []).map(row => {
-    const parsedMeta = parseJsonObjectSafe(row.metadata_json) || {};
-    const diff = computeForensicDiff(parsedMeta);
+    const rawParsed = parseJsonObjectSafe(row.metadata_json) || {};
+    const redactedMeta = redactForensicPayload(rawParsed);
+    const diff = computeForensicDiff(redactedMeta);
     return {
       id: row.id,
       action: row.action,
@@ -705,15 +788,144 @@ export async function inspectForensicAudit(env, { actionFilter = '', actorFilter
       target_id: row.target_id,
       ip_address: row.ip_address,
       created_at: row.created_at,
-      metadata: parsedMeta,
+      metadata: redactedMeta,
+      detail_json: JSON.stringify(redactedMeta),
       diff
     };
   });
 
   return {
     ok: true,
-    total: items.length,
+    total: totalMatching,
+    page_count: items.length,
+    limit: cleanLimit,
+    offset: cleanOffset,
+    unique_actors: uniqueActors,
+    last_24h_count: last24hCount,
+    dpdp_redacted: true,
     items
+  };
+}
+
+function csvCell(val) {
+  const s = String(val === null || val === undefined ? '' : val);
+  if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+export function formatForensicAuditCsv(items) {
+  const header = 'id,created_at,actor_email,action,target_type,target_id,ip_address,change_count';
+  const rows = (items || []).map(it => [
+    csvCell(it.id),
+    csvCell(it.created_at),
+    csvCell(it.actor_email),
+    csvCell(it.action),
+    csvCell(it.target_type || ''),
+    csvCell(it.target_id || ''),
+    csvCell(it.ip_address || ''),
+    csvCell(it.diff && it.diff.change_count !== undefined ? it.diff.change_count : 0)
+  ].join(','));
+  return [header, ...rows].join('\n');
+}
+
+async function loadSnapshotTablesForDiff(env, snapId) {
+  const cleanId = String(snapId || '').trim();
+  if (!cleanId || cleanId === 'LIVE_D1') {
+    const live = await collectPlatformSnapshotTables(env);
+    return { id: 'LIVE_D1', label: 'Live Cloudflare D1 Database', tables: live.tables || {} };
+  }
+  const row = await env.DB.prepare(`SELECT id, label, r2_key, created_at FROM ops_snapshots WHERE id = ?`).bind(cleanId).first();
+  if (!row) throw new HttpError(404, 'SNAPSHOT_NOT_FOUND', `Snapshot "${cleanId}" not found`);
+  if (!env.MEDIA) throw new HttpError(500, 'NO_STORAGE', 'R2 storage unavailable');
+  const obj = await env.MEDIA.get(row.r2_key);
+  if (!obj) throw new HttpError(404, 'MISSING_R2_OBJECT', `R2 blob missing for snapshot "${cleanId}"`);
+  const parsed = JSON.parse(new TextDecoder().decode(await obj.arrayBuffer()));
+  return {
+    id: row.id,
+    label: row.label,
+    created_at: row.created_at,
+    tables: parsed.tables || (parsed.payload && parsed.payload.tables) || {}
+  };
+}
+
+function rowDiffKey(row) {
+  if (!row || typeof row !== 'object') return String(row);
+  if (row.id !== undefined && row.id !== null) return 'id:' + String(row.id);
+  if (row.key !== undefined && row.key !== null) return 'key:' + String(row.key);
+  if (row.slug !== undefined && row.slug !== null) return 'slug:' + String(row.slug);
+  return JSON.stringify(canonicalizeValue(row));
+}
+
+export async function compareForensicSnapshots(env, { snapshotA, snapshotB = 'LIVE_D1' } = {}) {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  if (!String(snapshotA || '').trim()) {
+    throw new HttpError(400, 'MISSING_SNAPSHOT_A', 'snapshot_a is required');
+  }
+  const [a, b] = await Promise.all([
+    loadSnapshotTablesForDiff(env, snapshotA),
+    loadSnapshotTablesForDiff(env, snapshotB || 'LIVE_D1')
+  ]);
+
+  const tableNames = [...new Set([...Object.keys(a.tables || {}), ...Object.keys(b.tables || {})])].sort();
+  const table_diffs = [];
+  let total_changes = 0;
+
+  for (const tbl of tableNames) {
+    const rowsA = Array.isArray(a.tables[tbl]) ? a.tables[tbl] : [];
+    const rowsB = Array.isArray(b.tables[tbl]) ? b.tables[tbl] : [];
+    const mapA = new Map();
+    const mapB = new Map();
+    for (const r of rowsA) mapA.set(rowDiffKey(r), redactForensicPayload(r));
+    for (const r of rowsB) mapB.set(rowDiffKey(r), redactForensicPayload(r));
+
+    const allKeys = [...new Set([...mapA.keys(), ...mapB.keys()])].sort();
+    let added_rows = 0;
+    let removed_rows = 0;
+    let modified_rows = 0;
+    let unchanged_rows = 0;
+    const sample_diffs = [];
+
+    for (const k of allKeys) {
+      const ra = mapA.get(k);
+      const rb = mapB.get(k);
+      if (!ra && rb) {
+        added_rows++;
+        if (sample_diffs.length < 20) sample_diffs.push({ key: k, kind: 'added', after: rb });
+      } else if (ra && !rb) {
+        removed_rows++;
+        if (sample_diffs.length < 20) sample_diffs.push({ key: k, kind: 'removed', before: ra });
+      } else {
+        const canonA = JSON.stringify(canonicalizeValue(ra));
+        const canonB = JSON.stringify(canonicalizeValue(rb));
+        if (canonA === canonB) {
+          unchanged_rows++;
+        } else {
+          modified_rows++;
+          if (sample_diffs.length < 20) sample_diffs.push({ key: k, kind: 'modified', before: ra, after: rb });
+        }
+      }
+    }
+
+    total_changes += added_rows + removed_rows + modified_rows;
+    table_diffs.push({
+      table: tbl,
+      rows_a: rowsA.length,
+      rows_b: rowsB.length,
+      added_rows,
+      removed_rows,
+      modified_rows,
+      unchanged_rows,
+      sample_diffs
+    });
+  }
+
+  return {
+    ok: true,
+    snapshot_a: { id: a.id, label: a.label },
+    snapshot_b: { id: b.id, label: b.label },
+    tables_compared: tableNames.length,
+    total_changes,
+    table_diffs
   };
 }
 
@@ -723,9 +935,15 @@ export async function inspectForensicAudit(env, { actionFilter = '', actorFilter
 export function defaultBackupPolicy() {
   return {
     enabled: false,
+    auto_prune_enabled: false,
     interval_hours: 24,
     max_snapshots: 30,
+    max_total_snapshots: 30,
     max_age_days: 30,
+    keep_daily_days: 30,
+    keep_weekly_count: 12,
+    keep_monthly_count: 12,
+    protect_worm_locked: true,
     last_auto_snapshot_at: null,
     last_auto_snapshot_id: null,
     last_pruned_count: 0
@@ -736,16 +954,28 @@ export async function getBackupRetentionPolicy(env) {
   const def = defaultBackupPolicy();
   if (!env || !env.DB) return def;
   try {
-    const row = await env.DB.prepare(
-      `SELECT value_json, updated_by, updated_at FROM site_settings WHERE key = ?`
-    ).bind(BACKUP_POLICY_KEY).first();
+    await ensureSiteSettingsTable(env.DB);
+    const [retRow, bakRow] = await Promise.all([
+      env.DB.prepare(`SELECT value_json, updated_by, updated_at FROM site_settings WHERE key = ?`).bind(RETENTION_POLICY_KEY).first(),
+      env.DB.prepare(`SELECT value_json, updated_by, updated_at FROM site_settings WHERE key = ?`).bind(BACKUP_POLICY_KEY).first()
+    ]);
+    const row = (retRow && retRow.value_json) ? retRow : bakRow;
     if (!row || !row.value_json) return def;
     const parsed = JSON.parse(row.value_json);
+    const keepDailyDays = Math.max(1, Math.min(3650, Number(parsed?.keep_daily_days ?? parsed?.max_age_days) || 30));
+    const maxTotal = Math.max(1, Math.min(500, Number(parsed?.max_total_snapshots ?? parsed?.max_snapshots) || 30));
+    const autoPrune = Boolean(parsed && (parsed.auto_prune_enabled !== undefined ? parsed.auto_prune_enabled : parsed.enabled));
     return {
-      enabled: Boolean(parsed && parsed.enabled),
+      enabled: autoPrune,
+      auto_prune_enabled: autoPrune,
       interval_hours: Math.max(1, Math.min(168, Number(parsed?.interval_hours) || 24)),
-      max_snapshots: Math.max(1, Math.min(365, Number(parsed?.max_snapshots) || 30)),
-      max_age_days: Math.max(1, Math.min(365, Number(parsed?.max_age_days) || 30)),
+      max_snapshots: maxTotal,
+      max_total_snapshots: maxTotal,
+      max_age_days: keepDailyDays,
+      keep_daily_days: keepDailyDays,
+      keep_weekly_count: Math.max(0, Math.min(520, Number(parsed?.keep_weekly_count ?? 12))),
+      keep_monthly_count: Math.max(0, Math.min(120, Number(parsed?.keep_monthly_count ?? 12))),
+      protect_worm_locked: true,
       last_auto_snapshot_at: parsed?.last_auto_snapshot_at || null,
       last_auto_snapshot_id: parsed?.last_auto_snapshot_id || null,
       last_pruned_count: Number(parsed?.last_pruned_count || 0),
@@ -763,17 +993,48 @@ export async function saveBackupRetentionPolicy(env, input = {}, actorEmail = 'a
   const current = await getBackupRetentionPolicy(env);
   const nowIso = new Date().toISOString();
 
+  if (input.keep_daily_days !== undefined) {
+    const d = Number(input.keep_daily_days);
+    if (!Number.isInteger(d) || d < 1 || d > 3650) {
+      throw new HttpError(400, 'INVALID_KEEP_DAYS', 'keep_daily_days must be between 1 and 3650');
+    }
+  }
+  if (input.max_total_snapshots !== undefined) {
+    const m = Number(input.max_total_snapshots);
+    if (!Number.isInteger(m) || m < 1 || m > 500) {
+      throw new HttpError(400, 'INVALID_MAX_SNAPSHOTS', 'max_total_snapshots must be between 1 and 500');
+    }
+  }
+
+  const autoPrune = input.auto_prune_enabled !== undefined
+    ? Boolean(input.auto_prune_enabled)
+    : (input.enabled !== undefined ? Boolean(input.enabled) : current.auto_prune_enabled);
+  const keepDailyDays = input.keep_daily_days !== undefined
+    ? Number(input.keep_daily_days)
+    : (input.max_age_days !== undefined ? Math.max(1, Math.min(3650, Number(input.max_age_days) || 30)) : current.keep_daily_days);
+  const maxTotal = input.max_total_snapshots !== undefined
+    ? Number(input.max_total_snapshots)
+    : (input.max_snapshots !== undefined ? Math.max(1, Math.min(500, Number(input.max_snapshots) || 30)) : current.max_total_snapshots);
+  const keepWeekly = input.keep_weekly_count !== undefined
+    ? Math.max(0, Math.min(520, Number(input.keep_weekly_count) || 0))
+    : current.keep_weekly_count;
+  const keepMonthly = input.keep_monthly_count !== undefined
+    ? Math.max(0, Math.min(120, Number(input.keep_monthly_count) || 0))
+    : current.keep_monthly_count;
+
   const next = {
-    enabled: input.enabled !== undefined ? Boolean(input.enabled) : current.enabled,
+    enabled: autoPrune,
+    auto_prune_enabled: autoPrune,
     interval_hours: input.interval_hours !== undefined
       ? Math.max(1, Math.min(168, Number(input.interval_hours) || 24))
       : current.interval_hours,
-    max_snapshots: input.max_snapshots !== undefined
-      ? Math.max(1, Math.min(365, Number(input.max_snapshots) || 30))
-      : current.max_snapshots,
-    max_age_days: input.max_age_days !== undefined
-      ? Math.max(1, Math.min(365, Number(input.max_age_days) || 30))
-      : current.max_age_days,
+    max_snapshots: maxTotal,
+    max_total_snapshots: maxTotal,
+    max_age_days: keepDailyDays,
+    keep_daily_days: keepDailyDays,
+    keep_weekly_count: keepWeekly,
+    keep_monthly_count: keepMonthly,
+    protect_worm_locked: true,
     last_auto_snapshot_at: input.last_auto_snapshot_at !== undefined
       ? input.last_auto_snapshot_at
       : current.last_auto_snapshot_at,
@@ -785,16 +1046,179 @@ export async function saveBackupRetentionPolicy(env, input = {}, actorEmail = 'a
       : current.last_pruned_count
   };
 
-  await env.DB.prepare(
-    `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+  const upsertSql = `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
      VALUES (?, ?, ?, ?)
      ON CONFLICT(key) DO UPDATE SET
        value_json = excluded.value_json,
        updated_by = excluded.updated_by,
-       updated_at = excluded.updated_at`
-  ).bind(BACKUP_POLICY_KEY, JSON.stringify(next), actorEmail || 'admin', nowIso).run();
+       updated_at = excluded.updated_at`;
+  const actor = actorEmail || 'admin';
+  await Promise.all([
+    env.DB.prepare(upsertSql).bind(BACKUP_POLICY_KEY, JSON.stringify(next), actor, nowIso).run(),
+    env.DB.prepare(upsertSql).bind(RETENTION_POLICY_KEY, JSON.stringify(next), actor, nowIso).run()
+  ]);
 
-  return { ...next, updated_by: actorEmail || 'admin', updated_at: nowIso };
+  return { ...next, updated_by: actor, updated_at: nowIso };
+}
+
+async function readLastRetentionPrune(env) {
+  if (!env || !env.DB) return null;
+  try {
+    const row = await env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(LAST_RETENTION_PRUNE_KEY).first();
+    return row && row.value_json ? JSON.parse(row.value_json) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function evaluateRetentionCandidates(env, policyOverride = null, { nowMs = Date.now() } = {}) {
+  const policy = policyOverride || await getBackupRetentionPolicy(env);
+  if (!env || !env.DB || !(await tableExists(env.DB, 'ops_snapshots'))) {
+    return {
+      ok: true,
+      total_snapshots: 0,
+      worm_protected_count: 0,
+      pinned_count: 0,
+      policy_kept_count: 0,
+      prunable_count: 0,
+      reclaimable_bytes: 0,
+      candidates: []
+    };
+  }
+
+  // Backward compatible if legacy test ops_snapshots schema lacks immutable_until / vault_tier
+  let hasWormCols = false;
+  try {
+    const cols = await env.DB.prepare(`PRAGMA table_info("ops_snapshots")`).all();
+    hasWormCols = (cols.results || []).some(c => c.name === 'immutable_until');
+  } catch {}
+
+  const sql = hasWormCols
+    ? `SELECT id, label, r2_key, size_bytes, trigger_type, created_at, immutable_until, vault_tier
+       FROM ops_snapshots ORDER BY created_at DESC, rowid DESC`
+    : `SELECT id, label, r2_key, size_bytes, trigger_type, created_at
+       FROM ops_snapshots ORDER BY created_at DESC, rowid DESC`;
+  const { results } = await env.DB.prepare(sql).all();
+  const rows = results || [];
+  const cutoffMs = nowMs - Math.max(1, Number(policy.keep_daily_days ?? policy.max_age_days) || 30) * 86400 * 1000;
+  const maxKeep = Math.max(1, Number(policy.max_total_snapshots ?? policy.max_snapshots) || 30);
+
+  let scheduledIdx = 0;
+  let wormProtected = 0;
+  let pinnedCount = 0;
+  let policyKept = 0;
+  let prunableCount = 0;
+  let reclaimableBytes = 0;
+  const candidates = [];
+
+  for (const row of rows) {
+    const sizeBytes = Number(row.size_bytes) || 0;
+    const isWorm = Boolean(
+      (row.immutable_until && Date.parse(row.immutable_until) > nowMs) ||
+      row.vault_tier === 'cold_immutable'
+    );
+    let decision = 'KEEP_POLICY';
+    let isProtected = true;
+    let reason = 'Within retention window';
+
+    if (isWorm) {
+      decision = 'KEEP_WORM';
+      isProtected = true;
+      reason = 'WORM immutability lock active';
+      wormProtected++;
+    } else if (row.trigger_type === 'pre_restore' || row.trigger_type === 'manual') {
+      decision = 'KEEP_PINNED';
+      isProtected = true;
+      reason = 'Pinned manual / pre-restore safety snapshot';
+      pinnedCount++;
+    } else {
+      const createdMs = Date.parse(row.created_at);
+      const overCount = scheduledIdx >= maxKeep;
+      const overAge = Number.isFinite(createdMs) && createdMs < cutoffMs;
+      scheduledIdx++;
+      if (overCount || overAge) {
+        decision = 'PRUNE';
+        isProtected = false;
+        reason = overCount ? 'Exceeds max_total_snapshots' : 'Older than keep_daily_days';
+        prunableCount++;
+        reclaimableBytes += sizeBytes;
+      } else {
+        policyKept++;
+      }
+    }
+
+    candidates.push({
+      id: row.id,
+      label: row.label,
+      r2_key: row.r2_key,
+      size_bytes: sizeBytes,
+      trigger_type: row.trigger_type,
+      created_at: row.created_at,
+      immutable_until: row.immutable_until || null,
+      decision,
+      protected: isProtected,
+      reason
+    });
+  }
+
+  return {
+    ok: true,
+    total_snapshots: candidates.length,
+    worm_protected_count: wormProtected,
+    pinned_count: pinnedCount,
+    policy_kept_count: policyKept,
+    prunable_count: prunableCount,
+    reclaimable_bytes: reclaimableBytes,
+    candidates
+  };
+}
+
+export async function executeRetentionPrune(env, { dryRun = true, confirm = '', actorEmail = 'admin', nowMs = Date.now() } = {}) {
+  const preview = await evaluateRetentionCandidates(env, null, { nowMs });
+  if (dryRun !== false) {
+    return { ...preview, dry_run: true };
+  }
+  if (String(confirm || '').trim() !== 'PRUNE') {
+    throw new HttpError(400, 'CONFIRMATION_REQUIRED', 'Type PRUNE in the confirmation field to execute retention pruning');
+  }
+
+  const pruned_ids = [];
+  let reclaimed_bytes = 0;
+  for (const c of preview.candidates) {
+    if (c.decision !== 'PRUNE' || c.protected) continue;
+    if (env.MEDIA && c.r2_key && typeof env.MEDIA.delete === 'function') {
+      try { await env.MEDIA.delete(c.r2_key); } catch {}
+    }
+    await env.DB.prepare(`DELETE FROM ops_snapshots WHERE id = ? AND trigger_type = 'scheduled'`).bind(c.id).run();
+    pruned_ids.push(c.id);
+    reclaimed_bytes += Number(c.size_bytes) || 0;
+  }
+
+  const nowIso = new Date().toISOString();
+  const res = {
+    ok: true,
+    dry_run: false,
+    pruned_count: pruned_ids.length,
+    pruned_ids,
+    reclaimed_bytes,
+    worm_skipped_count: preview.worm_protected_count,
+    executed_at: nowIso,
+    executed_by: actorEmail || 'admin'
+  };
+
+  try {
+    await ensureSiteSettingsTable(env.DB);
+    await env.DB.prepare(
+      `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(key) DO UPDATE SET
+         value_json = excluded.value_json,
+         updated_by = excluded.updated_by,
+         updated_at = excluded.updated_at`
+    ).bind(LAST_RETENTION_PRUNE_KEY, JSON.stringify(res), res.executed_by, nowIso).run();
+  } catch {}
+
+  return res;
 }
 
 // Prunes old `scheduled` snapshots exceeding `max_snapshots` or `max_age_days`.
@@ -805,11 +1229,22 @@ export async function pruneScheduledSnapshots(env, { maxSnapshots = 30, maxAgeDa
     return { pruned_count: 0, pruned_ids: [] };
   }
 
+  let hasWormCols = false;
+  try {
+    const cols = await env.DB.prepare(`PRAGMA table_info("ops_snapshots")`).all();
+    hasWormCols = (cols.results || []).some(c => c.name === 'immutable_until');
+  } catch {}
+
   const { results } = await env.DB.prepare(
-    `SELECT id, r2_key, created_at, trigger_type
-     FROM ops_snapshots
-     WHERE trigger_type = 'scheduled'
-     ORDER BY created_at DESC, rowid DESC`
+    hasWormCols
+      ? `SELECT id, r2_key, created_at, trigger_type, immutable_until, vault_tier
+         FROM ops_snapshots
+         WHERE trigger_type = 'scheduled'
+         ORDER BY created_at DESC, rowid DESC`
+      : `SELECT id, r2_key, created_at, trigger_type
+         FROM ops_snapshots
+         WHERE trigger_type = 'scheduled'
+         ORDER BY created_at DESC, rowid DESC`
   ).all();
 
   const scheduledRows = results || [];
@@ -817,10 +1252,17 @@ export async function pruneScheduledSnapshots(env, { maxSnapshots = 30, maxAgeDa
   const maxKeep = Math.max(1, Number(maxSnapshots) || 30);
 
   const toDelete = [];
-  scheduledRows.forEach((row, idx) => {
+  let activeIdx = 0;
+  scheduledRows.forEach((row) => {
+    const isWorm = Boolean(
+      (row.immutable_until && Date.parse(row.immutable_until) > nowMs) ||
+      row.vault_tier === 'cold_immutable'
+    );
+    if (isWorm) return;
     const createdMs = Date.parse(row.created_at);
-    const overCount = idx >= maxKeep;
+    const overCount = activeIdx >= maxKeep;
     const overAge = Number.isFinite(createdMs) && createdMs < cutoffMs;
+    activeIdx++;
     if (overCount || overAge) {
       toDelete.push(row);
     }
@@ -993,24 +1435,99 @@ export async function handleOpsHygiene(request, env, actor, subAction, subId) {
     return json({ ...report, last_vacuum }, 200, { 'Cache-Control': 'no-store' });
   }
 
-  // Module #13: GET /api/admin/ops/forensics
+  // Module #13: GET /api/admin/ops/forensics and POST /api/admin/ops/forensics/diff
   if (subAction === 'forensics') {
-    if (method !== 'GET') throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
-    const report = await inspectForensicAudit(env, {
-      actionFilter: url.searchParams.get('action') || '',
-      actorFilter: url.searchParams.get('actor') || '',
-      limit: url.searchParams.get('limit') || 50
-    });
-    return json(report, 200, { 'Cache-Control': 'no-store' });
+    if (subId === 'diff' && method === 'POST') {
+      const body = await readJson(request, 20000).catch(() => ({}));
+      const report = await compareForensicSnapshots(env, {
+        snapshotA: body && body.snapshot_a,
+        snapshotB: body && body.snapshot_b ? body.snapshot_b : 'LIVE_D1'
+      });
+      return json(report, 200, { 'Cache-Control': 'no-store' });
+    }
+    if (!subId && method === 'GET') {
+      const format = url.searchParams.get('format') || 'json';
+      const report = await inspectForensicAudit(env, {
+        actionPrefix: url.searchParams.get('action_prefix') || url.searchParams.get('action') || '',
+        actorFilter: url.searchParams.get('actor') || '',
+        q: url.searchParams.get('q') || '',
+        limit: url.searchParams.get('limit') || 25,
+        offset: url.searchParams.get('offset') || 0
+      });
+      if (format === 'csv') {
+        const csv = formatForensicAuditCsv(report.items);
+        return new Response(csv, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': 'attachment; filename="cso-forensic-audit.csv"',
+            'Cache-Control': 'no-store'
+          }
+        });
+      }
+      if (url.searchParams.get('download') === '1') {
+        return new Response(JSON.stringify(report, null, 2), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Content-Disposition': 'attachment; filename="cso-forensic-audit.json"',
+            'Cache-Control': 'no-store'
+          }
+        });
+      }
+      return json(report, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }
 
-  // Module #14: GET / POST /api/admin/ops/retention
+  // Module #14: GET / PUT /api/admin/ops/retention and POST /api/admin/ops/retention[/prune]
   if (subAction === 'retention') {
-    if (method === 'GET') {
+    if (!subId && method === 'GET') {
       const policy = await getBackupRetentionPolicy(env);
-      return json({ ok: true, policy }, 200, { 'Cache-Control': 'no-store' });
+      const [preview, last_prune] = await Promise.all([
+        evaluateRetentionCandidates(env, policy),
+        readLastRetentionPrune(env)
+      ]);
+      return json({ ok: true, policy, preview, last_prune }, 200, { 'Cache-Control': 'no-store' });
     }
-    if (method === 'POST') {
+    if (!subId && method === 'PUT') {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can update backup retention policies');
+      }
+      const body = await readJson(request, 10000).catch(() => ({}));
+      const policy = await saveBackupRetentionPolicy(env, body, actor.email || actor.userId);
+      await audit(env, request, actor, 'ops.retention.policy.update', 'site_settings', RETENTION_POLICY_KEY, {
+        keep_daily_days: policy.keep_daily_days,
+        keep_weekly_count: policy.keep_weekly_count,
+        keep_monthly_count: policy.keep_monthly_count,
+        max_total_snapshots: policy.max_total_snapshots,
+        auto_prune_enabled: policy.auto_prune_enabled
+      });
+      const preview = await evaluateRetentionCandidates(env, policy);
+      return json({ ok: true, policy, preview }, 200, { 'Cache-Control': 'no-store' });
+    }
+    if (subId === 'prune' && method === 'POST') {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can execute retention pruning');
+      }
+      const body = await readJson(request, 10000).catch(() => ({}));
+      const dryRun = body.dry_run !== false;
+      const result = await executeRetentionPrune(env, {
+        dryRun,
+        confirm: body.confirm !== undefined ? body.confirm : body.confirm_phrase,
+        actorEmail: actor.email || actor.userId
+      });
+      if (!dryRun) {
+        await audit(env, request, actor, 'ops.retention.prune', 'ops_snapshots', 'retention', {
+          pruned_count: result.pruned_count,
+          pruned_ids: result.pruned_ids,
+          reclaimed_bytes: result.reclaimed_bytes,
+          worm_skipped_count: result.worm_skipped_count
+        });
+      }
+      return json(result, 200, { 'Cache-Control': 'no-store' });
+    }
+    if (!subId && method === 'POST') {
       if (actor.role !== 'admin') {
         throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can update backup retention policies');
       }

@@ -286,4 +286,83 @@ assert.ok(!rawBundleText.includes('TOP_SECRET_PASSWORD_HASH'), 'air-gapped bundl
 assert.ok(!rawBundleText.includes('TOP_SECRET_SALT'), 'air-gapped bundle must never include salt');
 assert.ok(rawBundleText.includes('SOP-05: R2 Regional Cold-Vault Failover Drill'), 'air-gapped bundle must include SOP runbooks');
 
+// 4. Module #16: Disaster Recovery Playbook & Automated Runbook SOPs
+const sopActor = { userId: 'u-sop-admin', email: 'admin@csodisha.com', role: 'admin' };
+const editorActor = { userId: 'u-sop-ed', email: 'ed@csodisha.com', role: 'editor' };
+
+// Non-admin blocked from creating/completing SOPs
+await assert.rejects(
+  () => handleOpsContinuity(
+    new Request('https://csodisha.com/api/admin/ops/runbooks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Unauthorized SOP', steps: ['step 1'] })
+    }),
+    env, editorActor, 'runbooks'
+  ),
+  err => err.status === 403
+);
+
+// Create custom P1-CRITICAL SOP
+const createSopRes = await handleOpsContinuity(
+  new Request('https://csodisha.com/api/admin/ops/runbooks', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      slug: 'sop-p1-d1-split-brain',
+      title: 'SOP-P1: D1 Primary Split-Brain Recovery',
+      severity: 'P1-CRITICAL',
+      rto_minutes: 10,
+      rpo_minutes: 0,
+      steps: ['Activate Emergency Read-Only Freeze', 'Verify R2 immutable snapshot SHA-256', 'Run Canary Gate before unfreeze']
+    })
+  }),
+  env, sopActor, 'runbooks'
+);
+assert.equal(createSopRes.status, 200);
+const createSopBody = await createSopRes.json();
+assert.equal(createSopBody.ok, true);
+assert.equal(createSopBody.item.severity, 'P1-CRITICAL');
+assert.equal(createSopBody.item.slug, 'sop-p1-d1-split-brain');
+assert.equal(createSopBody.item.rto_minutes, 10);
+assert.equal(createSopBody.item.steps.length, 3);
+const sopId = createSopBody.item.id;
+
+// Inline-edit SOP via PUT /api/admin/ops/runbooks/:id
+const updateSopRes = await handleOpsContinuity(
+  new Request(`https://csodisha.com/api/admin/ops/runbooks/${sopId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: 'SOP-P1: D1 Primary Split-Brain Recovery (Hardened)',
+      severity: 'P1-CRITICAL',
+      rto_minutes: 8,
+      rpo_minutes: 5,
+      steps: ['Freeze writes', 'Verify R2 snapshot', 'Execute restore', 'Verify Canary Gate']
+    })
+  }),
+  env, sopActor, 'runbooks', sopId
+);
+assert.equal(updateSopRes.status, 200);
+const updateSopBody = await updateSopRes.json();
+assert.equal(updateSopBody.item.rto_minutes, 8);
+assert.equal(updateSopBody.item.steps.length, 4);
+
+// Sign off execution drill via POST /api/admin/ops/runbooks/:id/complete
+const completeSopRes = await handleOpsContinuity(
+  new Request(`https://csodisha.com/api/admin/ops/runbooks/${sopId}/complete`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ operator_notes: 'Completed live failover table-top drill in 6m15s.' })
+  }),
+  env, sopActor, 'runbooks', sopId, 'complete'
+);
+assert.equal(completeSopRes.status, 200);
+const completeSopBody = await completeSopRes.json();
+assert.equal(completeSopBody.ok, true);
+assert.ok(completeSopBody.item.last_executed_at, 'last_executed_at must be populated');
+assert.equal(completeSopBody.item.last_executed_by, 'admin@csodisha.com');
+assert.equal(completeSopBody.item.operator_notes, 'Completed live failover table-top drill in 6m15s.');
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'ops.runbook.execute'`).first()).n >= 1);
+
 console.log('OPS CONTINUITY, AIR-GAP BUNDLE & DR RUNBOOK TESTS PASSED');

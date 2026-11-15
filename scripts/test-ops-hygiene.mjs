@@ -5,7 +5,7 @@
 // Run: node scripts/test-ops-hygiene.mjs
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { createPlatformSnapshot } from '../functions/_lib/ops-snapshots.js';
+import { createPlatformSnapshot, lockSnapshotImmutable } from '../functions/_lib/ops-snapshots.js';
 import {
   inspectDatabaseSchema,
   getDdlJournalReport,
@@ -15,7 +15,11 @@ import {
   runDeadLetterVacuum,
   computeForensicDiff,
   inspectForensicAudit,
+  compareForensicSnapshots,
+  getBackupRetentionPolicy,
   saveBackupRetentionPolicy,
+  evaluateRetentionCandidates,
+  executeRetentionPrune,
   runScheduledBackupPolicy
 } from '../functions/_lib/ops-hygiene.js';
 
@@ -289,5 +293,175 @@ const bareStmt = (sql, args = []) => ({
 const bareVac = await runDeadLetterVacuum({ DB: { prepare: s => bareStmt(s) } }, { dryRun: true });
 assert.equal(bareVac.total_reclaimed, 0);
 assert.equal(bareVac.tables_present.sessions, false);
+
+// 7. Module #13: Forensic Pagination, Search, DPDP PII Scrubbing, CSV Export & 2-Snapshot Diff
+const forensicsAdmin = { userId: 'u-1', email: 'admin@csodisha.com', role: 'admin' };
+await env.DB.prepare(
+  `INSERT INTO audit_log (actor_user_id, action, target_type, target_id, metadata_json, ip_address, created_at)
+   VALUES (?, ?, ?, ?, ?, ?, ?)`
+).bind(
+  'u-forensics-1',
+  'auth.session_rotate',
+  'admin_session',
+  'sess-99',
+  JSON.stringify({
+    password_hash: 'SUPER_SECRET_HASH_VALUE',
+    token: 'SECRET_BEARER_TOKEN_123',
+    otp_code: '654321',
+    note: 'Canary DPDP audit verification',
+    before: { status: 'pending', salt: 'SECRET_SALT' },
+    after: { status: 'verified', salt: 'SECRET_SALT_NEW' }
+  }),
+  '203.0.113.10',
+  new Date().toISOString()
+).run();
+
+const pageOne = await inspectForensicAudit(env, { limit: 1, offset: 0 });
+assert.equal(pageOne.ok, true);
+assert.ok(pageOne.total >= 2, 'forensic audit must include seeded and new entries');
+assert.equal(pageOne.page_count, 1);
+assert.equal(pageOne.limit, 1);
+assert.equal(pageOne.offset, 0);
+assert.ok(pageOne.unique_actors >= 2);
+assert.ok(pageOne.last_24h_count >= 1);
+assert.equal(pageOne.dpdp_redacted, true);
+
+const pageTwo = await inspectForensicAudit(env, { limit: 1, offset: 1 });
+assert.equal(pageTwo.page_count, 1);
+assert.notEqual(pageTwo.items[0].id, pageOne.items[0].id, 'offset pagination must return distinct audit entry');
+
+const searchRes = await inspectForensicAudit(env, { q: 'Canary DPDP' });
+assert.equal(searchRes.total, 1);
+const dpdpEntry = searchRes.items[0];
+assert.equal(dpdpEntry.metadata.password_hash, '[REDACTED_DPDP]');
+assert.equal(dpdpEntry.metadata.token, '[REDACTED_DPDP]');
+assert.equal(dpdpEntry.metadata.otp_code, '[REDACTED_DPDP]');
+assert.equal(dpdpEntry.metadata.note, 'Canary DPDP audit verification');
+assert.equal(dpdpEntry.diff.modified[0].field, 'status');
+assert.equal(dpdpEntry.diff.modified[0].after, 'verified');
+assert.equal(dpdpEntry.diff.unchanged_count, 1, 'redacted salt fields must both collapse to [REDACTED_DPDP]');
+const serializedEntry = JSON.stringify(dpdpEntry);
+assert.ok(!serializedEntry.includes('SUPER_SECRET_HASH_VALUE'), 'password_hash secret must never leak');
+assert.ok(!serializedEntry.includes('SECRET_BEARER_TOKEN_123'), 'token secret must never leak');
+assert.ok(!serializedEntry.includes('SECRET_SALT'), 'salt secret must never leak');
+
+const csvRes = await handleOpsHygiene(
+  new Request('https://csodisha.com/api/admin/ops/forensics?format=csv', { method: 'GET' }),
+  env, forensicsAdmin, 'forensics'
+);
+assert.equal(csvRes.status, 200);
+assert.match(csvRes.headers.get('Content-Type') || '', /text\/csv/);
+assert.match(csvRes.headers.get('Content-Disposition') || '', /\.csv/);
+const csvText = await csvRes.text();
+assert.ok(csvText.includes('id,created_at,actor_email,action,target_type,target_id,ip_address,change_count'));
+assert.ok(csvText.includes('auth.session_rotate'));
+assert.ok(!csvText.includes('SUPER_SECRET_HASH_VALUE'), 'CSV export must never leak password_hash');
+
+const snapForDiff = await createPlatformSnapshot(env, { label: 'Baseline for forensic diff', triggerType: 'manual', createdBy: 'admin@csodisha.com' });
+const diffHttp = await handleOpsHygiene(
+  new Request('https://csodisha.com/api/admin/ops/forensics/diff', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ snapshot_a: snapForDiff.id, snapshot_b: 'LIVE_D1' })
+  }),
+  env, forensicsAdmin, 'forensics', 'diff'
+);
+assert.equal(diffHttp.status, 200);
+const diffBody = await diffHttp.json();
+assert.equal(diffBody.ok, true);
+assert.equal(diffBody.snapshot_a.id, snapForDiff.id);
+assert.equal(diffBody.snapshot_b.id, 'LIVE_D1');
+assert.ok(Array.isArray(diffBody.table_diffs) && diffBody.table_diffs.length > 0);
+
+// 8. Module #14: Automated Retention Policy, WORM/Pre-Restore Protection & PRUNE Guard
+const wormSnap = await createPlatformSnapshot(env, { label: 'WORM locked scheduled snap', triggerType: 'scheduled', createdBy: 'admin@csodisha.com' });
+await env.DB.prepare(`UPDATE ops_snapshots SET created_at = '2020-01-01T00:00:00Z' WHERE id = ?`).bind(wormSnap.id).run();
+await lockSnapshotImmutable(env, wormSnap.id, { lockDays: 30, actorEmail: 'admin@csodisha.com' });
+
+const oldScheduled = await createPlatformSnapshot(env, { label: 'Expired scheduled snap', triggerType: 'scheduled', createdBy: 'admin@csodisha.com' });
+await env.DB.prepare(`UPDATE ops_snapshots SET created_at = '2020-01-02T00:00:00Z' WHERE id = ?`).bind(oldScheduled.id).run();
+
+// Non-admin blocked from updating retention policy
+await assert.rejects(
+  () => handleOpsHygiene(
+    new Request('https://csodisha.com/api/admin/ops/retention', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keep_daily_days: 30, max_total_snapshots: 5 })
+    }),
+    env, { userId: 'u-2', email: 'ed@csodisha.com', role: 'editor' }, 'retention'
+  ),
+  err => err.status === 403
+);
+
+const putPolicyRes = await handleOpsHygiene(
+  new Request('https://csodisha.com/api/admin/ops/retention', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ keep_daily_days: 30, max_total_snapshots: 5, auto_prune_enabled: true })
+  }),
+  env, forensicsAdmin, 'retention'
+);
+assert.equal(putPolicyRes.status, 200);
+const putPolicyBody = await putPolicyRes.json();
+assert.equal(putPolicyBody.ok, true);
+assert.equal(putPolicyBody.policy.keep_daily_days, 30);
+assert.equal(putPolicyBody.policy.max_total_snapshots, 5);
+
+const retStatusRes = await handleOpsHygiene(
+  new Request('https://csodisha.com/api/admin/ops/retention', { method: 'GET' }),
+  env, forensicsAdmin, 'retention'
+);
+const retStatusBody = await retStatusRes.json();
+assert.equal(retStatusBody.ok, true);
+const wormEval = retStatusBody.preview.candidates.find(c => c.id === wormSnap.id);
+assert.ok(wormEval, 'WORM snapshot must appear in retention preview');
+assert.equal(wormEval.decision, 'KEEP_WORM');
+assert.equal(wormEval.protected, true);
+
+// Reject prune without exact 'PRUNE' confirmation
+await assert.rejects(
+  () => handleOpsHygiene(
+    new Request('https://csodisha.com/api/admin/ops/retention/prune', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dry_run: false, confirm: 'NOPE' })
+    }),
+    env, forensicsAdmin, 'retention', 'prune'
+  ),
+  err => err.status === 400 && err.code === 'CONFIRMATION_REQUIRED'
+);
+
+// Dry-run must leave expired scheduled snapshot untouched
+const dryPruneRes = await handleOpsHygiene(
+  new Request('https://csodisha.com/api/admin/ops/retention/prune', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dry_run: true })
+  }),
+  env, forensicsAdmin, 'retention', 'prune'
+);
+const dryPruneBody = await dryPruneRes.json();
+assert.equal(dryPruneBody.dry_run, true);
+assert.ok(await env.DB.prepare(`SELECT id FROM ops_snapshots WHERE id = ?`).bind(oldScheduled.id).first(), 'dry-run prune must not delete snapshots');
+
+// Execute live PRUNE: expired non-WORM scheduled snap is pruned, WORM-locked snap survives!
+const livePruneRes = await handleOpsHygiene(
+  new Request('https://csodisha.com/api/admin/ops/retention/prune', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dry_run: false, confirm: 'PRUNE' })
+  }),
+  env, forensicsAdmin, 'retention', 'prune'
+);
+assert.equal(livePruneRes.status, 200);
+const livePruneBody = await livePruneRes.json();
+assert.equal(livePruneBody.dry_run, false);
+assert.ok(livePruneBody.pruned_count >= 1, 'expired unlocked scheduled snapshot must be pruned');
+assert.ok(livePruneBody.pruned_ids.includes(oldScheduled.id), 'expired unlocked scheduled snapshot must appear in pruned_ids');
+assert.ok(!livePruneBody.pruned_ids.includes(wormSnap.id), 'WORM-locked snapshot ID must never appear in pruned_ids');
+assert.ok(await env.DB.prepare(`SELECT id FROM ops_snapshots WHERE id = ?`).bind(wormSnap.id).first(), 'WORM-locked snapshot must strictly survive pruning');
+assert.equal(await env.DB.prepare(`SELECT id FROM ops_snapshots WHERE id = ?`).bind(oldScheduled.id).first(), null, 'expired scheduled snapshot must be deleted');
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'ops.retention.prune'`).first()).n >= 1);
 
 console.log('OPS SCHEMA JOURNAL, VACUUM, FORENSICS & RETENTION POLICY TESTS PASSED');
