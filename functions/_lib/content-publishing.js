@@ -10,6 +10,8 @@ import { getEngineGuardsState } from './security-rbac.js';
 
 export const EDITORIAL_POST_TYPES = ['article', 'news', 'current_affairs', 'announcement'];
 export const WORKFLOW_STAGES = ['draft', 'in_review', 'approved', 'published', 'scheduled', 'archived'];
+export const NOTICE_PRIORITIES = ['normal', 'urgent', 'deadline'];
+export const TAG_REGISTRY_KEY = 'content_tag_registry';
 
 const REQUIRED_POST_COLUMNS = [
   ['post_type', 'TEXT'],
@@ -24,9 +26,39 @@ const REQUIRED_POST_COLUMNS = [
   ['source_citation', 'TEXT'],
   ['seo_title', 'TEXT'],
   ['seo_description', 'TEXT'],
+  ['notice_priority', "TEXT DEFAULT 'normal'"],
+  ['notice_expires_at', 'TEXT'],
+  ['notice_cta_url', 'TEXT'],
+  ['notice_cta_label', 'TEXT'],
   ['updated_by', 'TEXT'],
   ['updated_at', 'TEXT']
 ];
+
+const DEFAULT_CATEGORIES = [
+  { slug: 'odisha-news', name: 'Odisha News', description: 'Statewide institutional, district, and governance updates.', sort_order: 1 },
+  { slug: 'current-affairs', name: 'Current Affairs', description: 'Daily and weekly current affairs digests for competitive exams.', sort_order: 2 },
+  { slug: 'government-schemes', name: 'Government Schemes', description: 'Odisha and Central welfare & beneficiary scheme briefings.', sort_order: 3 },
+  { slug: 'exam-alerts', name: 'Exam Alerts', description: 'OPSC, OSSSC, OSSC, and university recruitment notifications.', sort_order: 4 },
+  { slug: 'education-policy', name: 'Education Policy', description: 'Higher education, NEP, and scholarship policy analysis.', sort_order: 5 },
+  { slug: 'editorial-analysis', name: 'Editorial Analysis', description: 'Long-form essays and exam preparation strategies.', sort_order: 6 }
+];
+
+function validateSafeCtaUrl(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  if (/^(javascript|data|vbscript)\s*:/i.test(s)) {
+    throw new HttpError(400, 'INVALID_CTA_URL', 'CTA URL cannot use javascript:, data:, or vbscript: schemes.');
+  }
+  if (s.startsWith('/')) return s.slice(0, 500);
+  let u;
+  try { u = new URL(s); } catch {
+    throw new HttpError(400, 'INVALID_CTA_URL', 'CTA URL must be a relative path (/...) or valid http(s) URL.');
+  }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+    throw new HttpError(400, 'INVALID_CTA_URL', 'CTA URL must use http:// or https://.');
+  }
+  return u.toString().slice(0, 500);
+}
 
 function sanitizeEditorialText(raw, maxLen = 50000) {
   if (raw === undefined || raw === null) return '';
@@ -148,14 +180,42 @@ export async function ensureContentPublishingSchema(db) {
 
   await db.prepare(
     `CREATE TABLE IF NOT EXISTS content_categories (
+       id TEXT,
        slug TEXT PRIMARY KEY,
        name TEXT NOT NULL,
        post_type TEXT,
        description TEXT,
+       parent_slug TEXT,
        sort_order INTEGER NOT NULL DEFAULT 0,
-       created_at TEXT NOT NULL
+       is_active INTEGER NOT NULL DEFAULT 1,
+       created_at TEXT NOT NULL,
+       updated_at TEXT
      )`
   ).run();
+
+  const catColsRes = await db.prepare(`PRAGMA table_info(content_categories)`).all();
+  const catCols = new Set((catColsRes.results || []).map(c => c.name));
+  for (const [cName, cDef] of [
+    ['id', 'TEXT'],
+    ['parent_slug', 'TEXT'],
+    ['is_active', 'INTEGER NOT NULL DEFAULT 1'],
+    ['updated_at', 'TEXT']
+  ]) {
+    if (!catCols.has(cName)) {
+      await db.prepare(`ALTER TABLE content_categories ADD COLUMN ${cName} ${cDef}`).run();
+    }
+  }
+
+  const catCount = await db.prepare(`SELECT COUNT(*) AS n FROM content_categories`).first();
+  if (!catCount || Number(catCount.n) === 0) {
+    const nowIso = new Date().toISOString();
+    for (const c of DEFAULT_CATEGORIES) {
+      await db.prepare(
+        `INSERT OR IGNORE INTO content_categories (id, slug, name, description, parent_slug, sort_order, is_active, created_at, updated_at)
+         VALUES (?, ?, ?, ?, NULL, ?, 1, ?, ?)`
+      ).bind(`cat_${c.slug}`, c.slug, c.name, c.description, c.sort_order, nowIso, nowIso).run();
+    }
+  }
 }
 
 function normalizeRow(row) {
@@ -165,6 +225,8 @@ function normalizeRow(row) {
   const readingMinutes = computeReadingMinutes(row.body_md, row.summary);
   const seoTitle = row.seo_title || '';
   const seoDesc = row.seo_description || '';
+  const expiresAt = row.notice_expires_at || null;
+  const isExpired = Boolean(expiresAt && Date.parse(expiresAt) < Date.now());
   return {
     id: row.id,
     type: row.type,
@@ -192,6 +254,11 @@ function normalizeRow(row) {
     seo_title: seoTitle,
     seo_description: seoDesc,
     has_seo_meta: Boolean(seoTitle.trim() && seoDesc.trim()),
+    notice_priority: NOTICE_PRIORITIES.includes(row.notice_priority) ? row.notice_priority : 'normal',
+    notice_expires_at: expiresAt,
+    notice_cta_url: row.notice_cta_url || '',
+    notice_cta_label: row.notice_cta_label || '',
+    is_expired: isExpired,
     reading_time_minutes: readingMinutes,
     public_url: resolvePublicUrl(postType, row.slug),
     created_by: row.created_by || null,
@@ -401,6 +468,11 @@ function validateAndNormalizeInput(body = {}, existing = null) {
   const source_citation = cleanStr(pick('source_citation'), 240) || '';
   const seo_title = cleanStr(pick('seo_title'), 120) || '';
   const seo_description = cleanStr(pick('seo_description'), 240) || '';
+  const rawPriority = String(pick('notice_priority') || 'normal').trim().toLowerCase();
+  const notice_priority = NOTICE_PRIORITIES.includes(rawPriority) ? rawPriority : 'normal';
+  const notice_expires_at = cleanStr(pick('notice_expires_at'), 40) || null;
+  const notice_cta_url = validateSafeCtaUrl(pick('notice_cta_url'));
+  const notice_cta_label = cleanStr(pick('notice_cta_label'), 60) || '';
 
   if (Object.keys(errors).length) throw validationError(errors);
 
@@ -426,7 +498,11 @@ function validateAndNormalizeInput(body = {}, existing = null) {
     district_tag,
     source_citation,
     seo_title,
-    seo_description
+    seo_description,
+    notice_priority,
+    notice_expires_at,
+    notice_cta_url,
+    notice_cta_label
   };
 }
 
@@ -454,14 +530,17 @@ export async function createContentPost(env, body, actor) {
        category, category_slug, tags, tags_json, is_featured, featured_rank,
        status, workflow_stage, scheduled_for, published_at, event_date,
        exam_relevance, district_tag, source_citation, seo_title, seo_description,
+       notice_priority, notice_expires_at, notice_cta_url, notice_cta_label,
        created_by, updated_by, created_at, updated_at
-     ) VALUES (?, 'current_affair', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     ) VALUES (?, 'current_affair', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     id, data.post_type, data.slug, data.title, data.title_or, data.summary, data.summary_or,
     data.body_md, data.body_md_or, data.category, data.category_slug, data.tags_json, data.tags_json,
     data.is_featured, data.featured_rank, data.status, data.workflow_stage, data.scheduled_for,
     publishedAt, data.event_date, data.exam_relevance, data.district_tag, data.source_citation,
-    data.seo_title, data.seo_description, actorEmail, actorEmail, nowIso, nowIso
+    data.seo_title, data.seo_description,
+    data.notice_priority, data.notice_expires_at, data.notice_cta_url, data.notice_cta_label,
+    actorEmail, actorEmail, nowIso, nowIso
   ).run();
 
   const row = await env.DB.prepare(`SELECT * FROM posts WHERE id = ?`).bind(id).first();
@@ -497,14 +576,18 @@ export async function updateContentPost(env, id, body, actor) {
        body_md = ?, body_md_or = ?, category = ?, category_slug = ?, tags = ?, tags_json = ?,
        is_featured = ?, featured_rank = ?, status = ?, workflow_stage = ?, scheduled_for = ?,
        published_at = ?, event_date = ?, exam_relevance = ?, district_tag = ?, source_citation = ?,
-       seo_title = ?, seo_description = ?, updated_by = ?, updated_at = ?
+       seo_title = ?, seo_description = ?,
+       notice_priority = ?, notice_expires_at = ?, notice_cta_url = ?, notice_cta_label = ?,
+       updated_by = ?, updated_at = ?
      WHERE id = ?`
   ).bind(
     data.post_type, data.slug, data.title, data.title_or, data.summary, data.summary_or,
     data.body_md, data.body_md_or, data.category, data.category_slug, data.tags_json, data.tags_json,
     data.is_featured, data.featured_rank, data.status, data.workflow_stage, data.scheduled_for,
     publishedAt, data.event_date, data.exam_relevance, data.district_tag, data.source_citation,
-    data.seo_title, data.seo_description, actorEmail, nowIso, id
+    data.seo_title, data.seo_description,
+    data.notice_priority, data.notice_expires_at, data.notice_cta_url, data.notice_cta_label,
+    actorEmail, nowIso, id
   ).run();
 
   const row = await env.DB.prepare(`SELECT * FROM posts WHERE id = ?`).bind(id).first();
@@ -562,13 +645,622 @@ export async function deleteContentPost(env, id, actor) {
 }
 
 // ============================================================================
-// Admin Router Dispatcher for /api/admin/content/posts[...]
+// Module #5: Announcements & Notices
+// ============================================================================
+export async function listAnnouncements(env) {
+  await ensureContentPublishingSchema(env.DB);
+  const res = await env.DB.prepare(
+    `SELECT * FROM posts
+     WHERE deleted_at IS NULL AND COALESCE(post_type, '') = 'announcement'
+     ORDER BY
+       CASE COALESCE(notice_priority, 'normal')
+         WHEN 'urgent' THEN 0
+         WHEN 'deadline' THEN 1
+         ELSE 2
+       END ASC,
+       COALESCE(updated_at, created_at) DESC
+     LIMIT 100`
+  ).all();
+
+  const items = (res.results || []).map(normalizeRow);
+  const nowMs = Date.now();
+  const soonMs = nowMs + 7 * 86400000;
+
+  let activeLiveCount = 0;
+  let expiredCount = 0;
+  let urgentCount = 0;
+  let expiringSoonCount = 0;
+
+  for (const it of items) {
+    if (it.is_expired) expiredCount++;
+    else if (it.status === 'published') activeLiveCount++;
+    if (it.notice_priority === 'urgent' || it.notice_priority === 'deadline') urgentCount++;
+    if (it.notice_expires_at && !it.is_expired && Date.parse(it.notice_expires_at) <= soonMs) {
+      expiringSoonCount++;
+    }
+  }
+
+  const tickerPreview = items.filter(it => it.status === 'published' && !it.is_expired).slice(0, 8);
+
+  return {
+    ok: true,
+    kpis: {
+      total_count: items.length,
+      active_live_count: activeLiveCount,
+      expired_count: expiredCount,
+      urgent_count: urgentCount,
+      expiring_soon_count: expiringSoonCount
+    },
+    ticker_preview: tickerPreview,
+    items
+  };
+}
+
+// ============================================================================
+// Module #6: Featured Content
+// ============================================================================
+export async function getFeaturedContentState(env) {
+  await ensureContentPublishingSchema(env.DB);
+  const typeExpr = effectivePostTypeExpr();
+  const [featRes, eligRes] = await Promise.all([
+    env.DB.prepare(
+      `SELECT * FROM posts
+       WHERE deleted_at IS NULL AND COALESCE(is_featured, 0) = 1
+         AND ${typeExpr} IN ('article', 'news', 'current_affairs', 'announcement')
+       ORDER BY COALESCE(featured_rank, 999) ASC, COALESCE(updated_at, created_at) DESC
+       LIMIT 50`
+    ).all(),
+    env.DB.prepare(
+      `SELECT * FROM posts
+       WHERE deleted_at IS NULL AND COALESCE(is_featured, 0) = 0 AND status = 'published'
+         AND ${typeExpr} IN ('article', 'news', 'current_affairs', 'announcement')
+       ORDER BY COALESCE(updated_at, created_at) DESC
+       LIMIT 50`
+    ).all()
+  ]);
+
+  const featuredItems = (featRes.results || []).map(normalizeRow);
+  const eligibleItems = (eligRes.results || []).map(normalizeRow);
+  const typeMix = new Set(featuredItems.map(i => i.post_type)).size;
+  const heroLead = featuredItems[0] || null;
+
+  return {
+    ok: true,
+    kpis: {
+      active_featured_count: featuredItems.length,
+      hero_lead_id: heroLead ? heroLead.id : null,
+      hero_lead_title: heroLead ? heroLead.title : 'None pinned',
+      slots_used: featuredItems.length,
+      max_slots: 6,
+      type_mix: typeMix,
+      homepage_ready: featuredItems.some(i => i.status === 'published')
+    },
+    featured_items: featuredItems,
+    eligible_items: eligibleItems
+  };
+}
+
+export async function setFeaturedContentItem(env, body = {}, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  const postId = String(body.post_id || body.id || '').trim();
+  if (!postId) throw new HttpError(400, 'POST_ID_REQUIRED', 'post_id is required');
+
+  const existing = await env.DB.prepare(`SELECT * FROM posts WHERE id = ? AND deleted_at IS NULL`).bind(postId).first();
+  if (!existing) throw new HttpError(404, 'NOT_FOUND', `Post "${postId}" not found`);
+
+  const isFeatured = body.is_featured !== false;
+  if (isFeatured && existing.status !== 'published') {
+    throw new HttpError(
+      400,
+      'UNPUBLISHED_CANNOT_FEATURE',
+      'Unpublished drafts or archived items cannot be pinned to homepage Featured slots.'
+    );
+  }
+
+  let rank = body.featured_rank !== undefined ? Number(body.featured_rank) : (Number(existing.featured_rank) || 1);
+  if (!Number.isInteger(rank) || rank < 1 || rank > 50) {
+    rank = 1;
+  }
+
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  const nowIso = new Date().toISOString();
+
+  await env.DB.prepare(
+    `UPDATE posts SET is_featured = ?, featured_rank = ?, updated_by = ?, updated_at = ? WHERE id = ?`
+  ).bind(isFeatured ? 1 : 0, isFeatured ? rank : 0, actorEmail, nowIso, postId).run();
+
+  return await getFeaturedContentState(env);
+}
+
+// ============================================================================
+// Module #7: Content Categories
+// ============================================================================
+export async function listContentCategories(env) {
+  await ensureContentPublishingSchema(env.DB);
+  const [catsRes, countsRes, uncatRow] = await Promise.all([
+    env.DB.prepare(`SELECT * FROM content_categories ORDER BY sort_order ASC, name ASC`).all(),
+    env.DB.prepare(
+      `SELECT
+         COALESCE(NULLIF(category_slug, ''), LOWER(REPLACE(COALESCE(category, ''), ' ', '-'))) AS cat_key,
+         COUNT(*) AS post_count,
+         SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END) AS published_count
+       FROM posts
+       WHERE deleted_at IS NULL AND COALESCE(category_slug, category, '') != ''
+       GROUP BY cat_key`
+    ).all(),
+    env.DB.prepare(
+      `SELECT COUNT(*) AS n FROM posts WHERE deleted_at IS NULL AND COALESCE(NULLIF(category_slug, ''), NULLIF(category, ''), '') = ''`
+    ).first()
+  ]);
+
+  const countMap = new Map();
+  for (const r of (countsRes.results || [])) {
+    countMap.set(String(r.cat_key || '').toLowerCase(), {
+      post_count: Number(r.post_count) || 0,
+      published_count: Number(r.published_count) || 0
+    });
+  }
+
+  const items = (catsRes.results || []).map(c => {
+    const counts = countMap.get(String(c.slug).toLowerCase()) || { post_count: 0, published_count: 0 };
+    return {
+      id: c.id || `cat_${c.slug}`,
+      slug: c.slug,
+      name: c.name,
+      description: c.description || '',
+      parent_slug: c.parent_slug || null,
+      sort_order: Number(c.sort_order || 0),
+      is_active: c.is_active === undefined ? true : Boolean(c.is_active),
+      post_count: counts.post_count,
+      published_count: counts.published_count,
+      created_at: c.created_at,
+      updated_at: c.updated_at || c.created_at
+    };
+  });
+
+  const categorizedTotal = items.reduce((acc, c) => acc + c.post_count, 0);
+  return {
+    ok: true,
+    kpis: {
+      total_categories: items.length,
+      active_categories: items.filter(c => c.is_active).length,
+      categorized_posts: categorizedTotal,
+      uncategorized_posts: Number(uncatRow && uncatRow.n) || 0
+    },
+    items
+  };
+}
+
+export async function createContentCategory(env, body = {}) {
+  await ensureContentPublishingSchema(env.DB);
+  const name = cleanStr(body.name, 80, { required: true });
+  if (!name) throw validationError({ name: 'Category name is required (max 80 chars)' });
+
+  let slug = body.slug ? cleanStr(body.slug, 80).toLowerCase() : slugify(name);
+  if (!slug || !SLUG_RE.test(slug)) {
+    throw validationError({ slug: 'Slug must contain lowercase letters, digits, and hyphens only' });
+  }
+
+  const dup = await env.DB.prepare(`SELECT slug FROM content_categories WHERE slug = ?`).bind(slug).first();
+  if (dup) throw new HttpError(409, 'SLUG_CONFLICT', `Category slug "${slug}" already exists.`);
+
+  const id = `cat_${Date.now().toString(36)}`;
+  const nowIso = new Date().toISOString();
+  const sortOrder = Math.max(0, Math.min(999, Math.round(Number(body.sort_order) || 10)));
+  const isActive = body.is_active === false ? 0 : 1;
+
+  await env.DB.prepare(
+    `INSERT INTO content_categories (id, slug, name, description, parent_slug, sort_order, is_active, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(
+    id,
+    slug,
+    name,
+    cleanStr(body.description, 300) || '',
+    cleanStr(body.parent_slug, 80) || null,
+    sortOrder,
+    isActive,
+    nowIso,
+    nowIso
+  ).run();
+
+  return await listContentCategories(env);
+}
+
+export async function updateContentCategory(env, idOrSlug, body = {}) {
+  await ensureContentPublishingSchema(env.DB);
+  const existing = await env.DB.prepare(
+    `SELECT * FROM content_categories WHERE id = ? OR slug = ? LIMIT 1`
+  ).bind(idOrSlug, idOrSlug).first();
+  if (!existing) throw new HttpError(404, 'NOT_FOUND', `Category "${idOrSlug}" not found`);
+
+  const name = body.name !== undefined ? cleanStr(body.name, 80, { required: true }) : existing.name;
+  if (!name) throw validationError({ name: 'Category name is required' });
+
+  const nextSlug = body.slug !== undefined ? cleanStr(body.slug, 80).toLowerCase() : existing.slug;
+  if (!nextSlug || !SLUG_RE.test(nextSlug)) {
+    throw validationError({ slug: 'Slug must contain lowercase letters, digits, and hyphens only' });
+  }
+  if (nextSlug !== existing.slug) {
+    const dup = await env.DB.prepare(`SELECT slug FROM content_categories WHERE slug = ?`).bind(nextSlug).first();
+    if (dup) throw new HttpError(409, 'SLUG_CONFLICT', `Category slug "${nextSlug}" already exists.`);
+  }
+
+  const description = body.description !== undefined ? (cleanStr(body.description, 300) || '') : (existing.description || '');
+  const parentSlug = body.parent_slug !== undefined ? (cleanStr(body.parent_slug, 80) || null) : existing.parent_slug;
+  const sortOrder = body.sort_order !== undefined ? Math.max(0, Math.min(999, Math.round(Number(body.sort_order) || 0))) : Number(existing.sort_order || 0);
+  const isActive = body.is_active !== undefined ? (body.is_active ? 1 : 0) : (existing.is_active === undefined ? 1 : Number(existing.is_active));
+  const nowIso = new Date().toISOString();
+
+  await env.DB.prepare(
+    `UPDATE content_categories SET slug = ?, name = ?, description = ?, parent_slug = ?, sort_order = ?, is_active = ?, updated_at = ?
+     WHERE slug = ?`
+  ).bind(nextSlug, name, description, parentSlug, sortOrder, isActive, nowIso, existing.slug).run();
+
+  if (nextSlug !== existing.slug || name !== existing.name) {
+    await env.DB.prepare(
+      `UPDATE posts SET category = ?, category_slug = ? WHERE (category_slug = ? OR LOWER(COALESCE(category, '')) = LOWER(?)) AND deleted_at IS NULL`
+    ).bind(name, nextSlug, existing.slug, existing.name).run();
+  }
+
+  return await listContentCategories(env);
+}
+
+export async function deleteContentCategory(env, idOrSlug, reassignTo = '') {
+  await ensureContentPublishingSchema(env.DB);
+  const existing = await env.DB.prepare(
+    `SELECT * FROM content_categories WHERE id = ? OR slug = ? LIMIT 1`
+  ).bind(idOrSlug, idOrSlug).first();
+  if (!existing) throw new HttpError(404, 'NOT_FOUND', `Category "${idOrSlug}" not found`);
+
+  const refRow = await env.DB.prepare(
+    `SELECT COUNT(*) AS n FROM posts WHERE deleted_at IS NULL AND (category_slug = ? OR LOWER(COALESCE(category, '')) = LOWER(?))`
+  ).bind(existing.slug, existing.name).first();
+  const refCount = Number(refRow && refRow.n) || 0;
+
+  if (refCount > 0) {
+    const cleanTarget = String(reassignTo || '').trim();
+    if (!cleanTarget) {
+      throw new HttpError(
+        409,
+        'CATEGORY_IN_USE',
+        `Category "${existing.name}" is referenced by ${refCount} active post(s). Provide reassign_to to reassign them first.`
+      );
+    }
+    const targetCat = await env.DB.prepare(
+      `SELECT * FROM content_categories WHERE (id = ? OR slug = ?) AND slug != ? LIMIT 1`
+    ).bind(cleanTarget, cleanTarget, existing.slug).first();
+    if (!targetCat) {
+      throw new HttpError(400, 'INVALID_REASSIGN_TARGET', `Target category "${cleanTarget}" not found.`);
+    }
+    await env.DB.prepare(
+      `UPDATE posts SET category = ?, category_slug = ? WHERE deleted_at IS NULL AND (category_slug = ? OR LOWER(COALESCE(category, '')) = LOWER(?))`
+    ).bind(targetCat.name, targetCat.slug, existing.slug, existing.name).run();
+  }
+
+  await env.DB.prepare(`DELETE FROM content_categories WHERE slug = ?`).bind(existing.slug).run();
+  return await listContentCategories(env);
+}
+
+// ============================================================================
+// Module #8: Tags
+// ============================================================================
+async function ensureSiteSettingsTable(db) {
+  await db.prepare(
+    `CREATE TABLE IF NOT EXISTS site_settings (
+       key TEXT PRIMARY KEY,
+       value_json TEXT NOT NULL,
+       updated_by TEXT,
+       updated_at TEXT NOT NULL
+     )`
+  ).run();
+}
+
+async function readTagRegistry(db) {
+  await ensureSiteSettingsTable(db);
+  try {
+    const row = await db.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(TAG_REGISTRY_KEY).first();
+    if (row && row.value_json) {
+      const parsed = JSON.parse(row.value_json);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {}
+  return [];
+}
+
+async function writeTagRegistry(db, tags, actorEmail) {
+  await ensureSiteSettingsTable(db);
+  const nowIso = new Date().toISOString();
+  await db.prepare(
+    `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+     VALUES (?, ?, ?, ?)
+     ON CONFLICT(key) DO UPDATE SET
+       value_json = excluded.value_json,
+       updated_by = excluded.updated_by,
+       updated_at = excluded.updated_at`
+  ).bind(TAG_REGISTRY_KEY, JSON.stringify(tags), actorEmail || 'admin', nowIso).run();
+}
+
+export async function listContentTags(env) {
+  await ensureContentPublishingSchema(env.DB);
+  const [postsRes, registry] = await Promise.all([
+    env.DB.prepare(`SELECT id, title, status, tags, tags_json FROM posts WHERE deleted_at IS NULL`).all(),
+    readTagRegistry(env.DB)
+  ]);
+
+  const map = new Map();
+  for (const reg of registry) {
+    const s = slugify(reg.slug || reg.label || '');
+    if (!s) continue;
+    map.set(s, { slug: s, label: cleanStr(reg.label || s, 40), post_count: 0, published_count: 0, sample_titles: [] });
+  }
+
+  let taggedPostsCount = 0;
+  for (const p of (postsRes.results || [])) {
+    const tags = parseTags(p.tags_json || p.tags);
+    if (tags.length) taggedPostsCount++;
+    for (const rawLabel of tags) {
+      const s = slugify(rawLabel);
+      if (!s) continue;
+      if (!map.has(s)) {
+        map.set(s, { slug: s, label: rawLabel, post_count: 0, published_count: 0, sample_titles: [] });
+      }
+      const entry = map.get(s);
+      entry.post_count++;
+      if (p.status === 'published') entry.published_count++;
+      if (entry.sample_titles.length < 3) entry.sample_titles.push(p.title);
+    }
+  }
+
+  const items = [...map.values()].sort((a, b) => b.post_count - a.post_count || a.slug.localeCompare(b.slug));
+  const multiUse = items.filter(t => t.post_count > 1).length;
+  const orphans = items.filter(t => t.post_count <= 1).length;
+
+  return {
+    ok: true,
+    kpis: {
+      total_unique_tags: items.length,
+      tagged_posts_count: taggedPostsCount,
+      multi_use_tags: multiUse,
+      orphan_tags: orphans
+    },
+    items
+  };
+}
+
+export async function registerContentTag(env, body = {}, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  const label = cleanStr(body.label || body.name, 40, { required: true });
+  if (!label) throw validationError({ label: 'Tag label is required (max 40 chars)' });
+  const slug = slugify(body.slug || label);
+  if (!slug) throw validationError({ slug: 'Provide a valid alphanumeric tag slug' });
+
+  const reg = await readTagRegistry(env.DB);
+  if (!reg.some(r => slugify(r.slug || r.label) === slug)) {
+    reg.push({ slug, label });
+    await writeTagRegistry(env.DB, reg, actor && (actor.email || actor.userId));
+  }
+  return await listContentTags(env);
+}
+
+export async function renameOrMergeContentTag(env, body = {}, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  const fromSlug = slugify(body.from_tag || body.from_slug || '');
+  const toLabel = cleanStr(body.to_tag || body.to_label || '', 40);
+  const toSlug = slugify(toLabel);
+  if (!fromSlug || !toSlug) {
+    throw new HttpError(400, 'INVALID_TAG_PARAMS', 'Both from_tag and to_tag are required');
+  }
+  if (fromSlug === toSlug && toLabel === fromSlug) {
+    throw new HttpError(400, 'SAME_TAG', 'Source and target tags must differ');
+  }
+
+  const postsRes = await env.DB.prepare(`SELECT id, title, tags, tags_json FROM posts WHERE deleted_at IS NULL`).all();
+  const affected = [];
+  for (const p of (postsRes.results || [])) {
+    const tags = parseTags(p.tags_json || p.tags);
+    if (tags.some(t => slugify(t) === fromSlug)) {
+      affected.push({ id: p.id, title: p.title, tags });
+    }
+  }
+
+  if (body.dry_run === true) {
+    return {
+      ok: true,
+      dry_run: true,
+      from_slug: fromSlug,
+      to_slug: toSlug,
+      to_label: toLabel,
+      affected_posts_count: affected.length,
+      sample_titles: affected.slice(0, 5).map(a => a.title)
+    };
+  }
+
+  const nowIso = new Date().toISOString();
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  for (const p of affected) {
+    const mapped = [];
+    const seen = new Set();
+    for (const t of p.tags) {
+      const nextVal = slugify(t) === fromSlug ? toLabel : t;
+      const key = slugify(nextVal);
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        mapped.push(nextVal);
+      }
+    }
+    const jsonTags = JSON.stringify(mapped);
+    await env.DB.prepare(
+      `UPDATE posts SET tags = ?, tags_json = ?, updated_by = ?, updated_at = ? WHERE id = ?`
+    ).bind(jsonTags, jsonTags, actorEmail, nowIso, p.id).run();
+  }
+
+  const reg = await readTagRegistry(env.DB);
+  const nextReg = reg.filter(r => slugify(r.slug || r.label) !== fromSlug);
+  if (!nextReg.some(r => slugify(r.slug || r.label) === toSlug)) {
+    nextReg.push({ slug: toSlug, label: toLabel });
+  }
+  await writeTagRegistry(env.DB, nextReg, actorEmail);
+
+  const state = await listContentTags(env);
+  return { ...state, dry_run: false, affected_posts_count: affected.length };
+}
+
+export async function deleteContentTag(env, rawSlug, actor) {
+  await ensureContentPublishingSchema(env.DB);
+  const targetSlug = slugify(rawSlug || '');
+  if (!targetSlug) throw new HttpError(400, 'INVALID_SLUG', 'Valid tag slug is required');
+
+  const postsRes = await env.DB.prepare(`SELECT id, tags, tags_json FROM posts WHERE deleted_at IS NULL`).all();
+  const nowIso = new Date().toISOString();
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  let updatedCount = 0;
+
+  for (const p of (postsRes.results || [])) {
+    const tags = parseTags(p.tags_json || p.tags);
+    const filtered = tags.filter(t => slugify(t) !== targetSlug);
+    if (filtered.length !== tags.length) {
+      const jsonTags = JSON.stringify(filtered);
+      await env.DB.prepare(
+        `UPDATE posts SET tags = ?, tags_json = ?, updated_by = ?, updated_at = ? WHERE id = ?`
+      ).bind(jsonTags, jsonTags, actorEmail, nowIso, p.id).run();
+      updatedCount++;
+    }
+  }
+
+  const reg = await readTagRegistry(env.DB);
+  const nextReg = reg.filter(r => slugify(r.slug || r.label) !== targetSlug);
+  await writeTagRegistry(env.DB, nextReg, actorEmail);
+
+  const state = await listContentTags(env);
+  return { ...state, deleted_slug: targetSlug, affected_posts_count: updatedCount };
+}
+
+// ============================================================================
+// Admin Router Dispatcher for /api/admin/content/{posts|announcements|featured|categories|tags}
 // ============================================================================
 export async function handleContentPublishing(request, env, actor, subResource, id, action) {
+  const method = request.method;
+
+  // Module #5: /api/admin/content/announcements
+  if (subResource === 'announcements') {
+    if (!id && method === 'GET') {
+      return json(await listAnnouncements(env), 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  // Module #6: /api/admin/content/featured
+  if (subResource === 'featured') {
+    if (!id && method === 'GET') {
+      return json(await getFeaturedContentState(env), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (!id && method === 'POST') {
+      if (actor.role !== 'admin' && actor.role !== 'editor') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can manage featured slots');
+      }
+      const body = await readJson(request, 8192).catch(() => ({}));
+      const res = await setFeaturedContentItem(env, body, actor);
+      await audit(env, request, actor, 'content.featured.update', 'posts', String(body.post_id || body.id || ''), {
+        is_featured: body.is_featured !== false,
+        featured_rank: body.featured_rank || 1
+      });
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  // Module #7: /api/admin/content/categories
+  if (subResource === 'categories') {
+    if (!id && method === 'GET') {
+      return json(await listContentCategories(env), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (!id && method === 'POST') {
+      if (actor.role !== 'admin' && actor.role !== 'editor') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can create categories');
+      }
+      const body = await readJson(request, 8192).catch(() => ({}));
+      const res = await createContentCategory(env, body);
+      await audit(env, request, actor, 'content.category.save', 'content_categories', body.slug || body.name || '', {
+        action: 'create',
+        name: body.name
+      });
+      return json(res, 201, { 'Cache-Control': 'no-store' });
+    }
+    if (id && !action && method === 'PUT') {
+      if (actor.role !== 'admin' && actor.role !== 'editor') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can update categories');
+      }
+      const body = await readJson(request, 8192).catch(() => ({}));
+      const res = await updateContentCategory(env, id, body);
+      await audit(env, request, actor, 'content.category.save', 'content_categories', id, {
+        action: 'update',
+        name: body.name
+      });
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    if (id && !action && method === 'DELETE') {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can delete categories');
+      }
+      const u = new URL(request.url);
+      const body = await readJson(request, 4096).catch(() => ({}));
+      const reassignTo = u.searchParams.get('reassign_to') || body.reassign_to || '';
+      const res = await deleteContentCategory(env, id, reassignTo);
+      await audit(env, request, actor, 'content.category.delete', 'content_categories', id, {
+        reassign_to: reassignTo || null
+      });
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  // Module #8: /api/admin/content/tags
+  if (subResource === 'tags') {
+    if (!id && method === 'GET') {
+      return json(await listContentTags(env), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (!id && method === 'POST') {
+      if (actor.role !== 'admin' && actor.role !== 'editor') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can register tags');
+      }
+      const body = await readJson(request, 4096).catch(() => ({}));
+      const res = await registerContentTag(env, body, actor);
+      await audit(env, request, actor, 'content.tag.save', 'site_settings', TAG_REGISTRY_KEY, {
+        label: body.label || body.name
+      });
+      return json(res, 201, { 'Cache-Control': 'no-store' });
+    }
+    if ((id === 'rename' || id === 'merge') && method === 'POST') {
+      if (actor.role !== 'admin' && actor.role !== 'editor') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can rename or merge tags');
+      }
+      const body = await readJson(request, 4096).catch(() => ({}));
+      const res = await renameOrMergeContentTag(env, body, actor);
+      if (!res.dry_run) {
+        await audit(env, request, actor, id === 'merge' ? 'content.tag.merge' : 'content.tag.rename', 'posts', body.from_tag || '', {
+          to_tag: body.to_tag,
+          affected_posts_count: res.affected_posts_count
+        });
+      }
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    if (id && !action && method === 'DELETE') {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can delete tags');
+      }
+      const res = await deleteContentTag(env, id, actor);
+      await audit(env, request, actor, 'content.tag.delete', 'posts', id, {
+        affected_posts_count: res.affected_posts_count
+      });
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
   if (subResource !== 'posts') {
     throw new HttpError(404, 'NOT_FOUND', 'Unknown content publishing resource');
   }
-  const method = request.method;
 
   if (!id && method === 'GET') {
     const u = new URL(request.url);
@@ -589,7 +1281,7 @@ export async function handleContentPublishing(request, env, actor, subResource, 
     }
     const body = await readJson(request, 65536).catch(() => ({}));
     const res = await createContentPost(env, body, actor);
-    await audit(env, request, actor, 'content.post.create', 'posts', res.item.id, {
+    await audit(env, request, actor, res.item.post_type === 'announcement' ? 'content.announcement.save' : 'content.post.create', 'posts', res.item.id, {
       post_type: res.item.post_type,
       slug: res.item.slug,
       workflow_stage: res.item.workflow_stage
@@ -603,7 +1295,7 @@ export async function handleContentPublishing(request, env, actor, subResource, 
     }
     const body = await readJson(request, 65536).catch(() => ({}));
     const res = await updateContentPost(env, id, body, actor);
-    await audit(env, request, actor, 'content.post.update', 'posts', id, {
+    await audit(env, request, actor, res.item.post_type === 'announcement' ? 'content.announcement.save' : 'content.post.update', 'posts', id, {
       post_type: res.item.post_type,
       slug: res.item.slug,
       revision_version: res.revision ? res.revision.version_no : null
@@ -617,7 +1309,7 @@ export async function handleContentPublishing(request, env, actor, subResource, 
     }
     const body = await readJson(request, 8192).catch(() => ({}));
     const res = await updateContentPostStatus(env, id, body, actor);
-    await audit(env, request, actor, 'content.post.status', 'posts', id, {
+    await audit(env, request, actor, res.item.post_type === 'announcement' ? 'content.announcement.save' : 'content.post.status', 'posts', id, {
       workflow_stage: res.item.workflow_stage,
       status: res.item.status
     });

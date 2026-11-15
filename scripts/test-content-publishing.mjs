@@ -253,4 +253,178 @@ for (const action of ['content.post.create', 'content.post.update', 'content.pos
   assert.ok(row.n >= 1, `Expected audit_log entry for ${action}`);
 }
 
-console.log('CONTENT & PUBLISHING SUITE MODULES #1-#4 TESTS PASSED');
+// ============================================================================
+// 7. Module #5: Announcements & Notices + XSS CTA URI Blocking
+// ============================================================================
+await assert.rejects(
+  () => handleContentPublishing(
+    new Request('https://csodisha.com/api/admin/content/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: 'Malicious CTA Test',
+        post_type: 'announcement',
+        notice_priority: 'urgent',
+        notice_cta_url: 'javascript:alert(1)'
+      })
+    }),
+    env, adminActor, 'posts'
+  ),
+  (e) => e.code === 'INVALID_CTA_URL'
+);
+
+const annCreate = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: 'OSSC CGL Admit Card Window Open',
+      post_type: 'announcement',
+      workflow_stage: 'published',
+      notice_priority: 'urgent',
+      notice_cta_label: 'Download Now',
+      notice_cta_url: '/jobs-careers/',
+      seo_title: 'OSSC CGL Admit Card Notice',
+      seo_description: 'Official admit card release notice.'
+    })
+  }),
+  env, adminActor, 'posts'
+)).json();
+assert.equal(annCreate.item.post_type, 'announcement');
+assert.equal(annCreate.item.notice_priority, 'urgent');
+assert.equal(annCreate.item.notice_cta_url, '/jobs-careers/');
+
+const annGet = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/announcements', { method: 'GET' }),
+  env, adminActor, 'announcements'
+)).json();
+assert.equal(annGet.kpis.active_live_count, 1);
+assert.equal(annGet.kpis.urgent_count, 1);
+assert.ok(annGet.ticker_preview.some(t => t.id === annCreate.item.id));
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'content.announcement.save'`).first()).n >= 1);
+
+// ============================================================================
+// 8. Module #6: Featured Content Ranking & Unpublished Pin Guard
+// ============================================================================
+const draftForFeat = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: 'Draft Not Ready For Homepage',
+      post_type: 'article',
+      workflow_stage: 'draft'
+    })
+  }),
+  env, adminActor, 'posts'
+)).json();
+
+await assert.rejects(
+  () => handleContentPublishing(
+    new Request('https://csodisha.com/api/admin/content/featured', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post_id: draftForFeat.item.id, is_featured: true, featured_rank: 1 })
+    }),
+    env, adminActor, 'featured'
+  ),
+  (e) => e.code === 'UNPUBLISHED_CANNOT_FEATURE'
+);
+
+const featPin = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/featured', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ post_id: newsCreate.item.id, is_featured: true, featured_rank: 1 })
+  }),
+  env, adminActor, 'featured'
+)).json();
+assert.equal(featPin.kpis.hero_lead_id, newsCreate.item.id);
+assert.equal(featPin.kpis.homepage_ready, true);
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'content.featured.update'`).first()).n >= 1);
+
+// ============================================================================
+// 9. Module #7: Content Categories CRUD & 409 CATEGORY_IN_USE Reassignment
+// ============================================================================
+const catInit = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/categories', { method: 'GET' }),
+  env, adminActor, 'categories'
+)).json();
+assert.ok(catInit.kpis.total_categories >= 6); // 6 default CS Odisha categories seeded
+
+const catNew = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'District Bulletins', slug: 'district-bulletins', sort_order: 7 })
+  }),
+  env, adminActor, 'categories'
+)).json();
+assert.ok(catNew.items.some(c => c.slug === 'district-bulletins'));
+
+// Create a post referencing district-bulletins
+await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: 'Cuttack Heritage Corridor Update',
+      post_type: 'news',
+      category: 'District Bulletins',
+      category_slug: 'district-bulletins',
+      tags: ['opsc-oas', 'cuttack']
+    })
+  }),
+  env, adminActor, 'posts'
+);
+
+await assert.rejects(
+  () => handleContentPublishing(
+    new Request('https://csodisha.com/api/admin/content/categories/district-bulletins', { method: 'DELETE' }),
+    env, adminActor, 'categories', 'district-bulletins'
+  ),
+  (e) => e.code === 'CATEGORY_IN_USE'
+);
+
+const catDelReassign = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/categories/district-bulletins?reassign_to=odisha-news', { method: 'DELETE' }),
+  env, adminActor, 'categories', 'district-bulletins'
+)).json();
+assert.ok(!catDelReassign.items.some(c => c.slug === 'district-bulletins'));
+const odishaNewsCat = catDelReassign.items.find(c => c.slug === 'odisha-news');
+assert.ok(odishaNewsCat.post_count >= 1);
+
+// ============================================================================
+// 10. Module #8: Tags Aggregation, Dry-Run & Merge across posts.tags_json
+// ============================================================================
+const tagsGet = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/tags', { method: 'GET' }),
+  env, adminActor, 'tags'
+)).json();
+assert.ok(tagsGet.items.some(t => t.slug === 'opsc-oas'));
+
+const mergeDry = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/tags/merge', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from_tag: 'opsc-oas', to_tag: 'opsc', dry_run: true })
+  }),
+  env, adminActor, 'tags', 'merge'
+)).json();
+assert.equal(mergeDry.dry_run, true);
+assert.equal(mergeDry.affected_posts_count, 1);
+
+const mergeLive = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/tags/merge', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from_tag: 'opsc-oas', to_tag: 'opsc', dry_run: false })
+  }),
+  env, adminActor, 'tags', 'merge'
+)).json();
+assert.equal(mergeLive.dry_run, false);
+assert.ok(!mergeLive.items.some(t => t.slug === 'opsc-oas'));
+assert.ok(mergeLive.items.some(t => t.slug === 'opsc'));
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'content.tag.merge'`).first()).n >= 1);
+
+console.log('CONTENT & PUBLISHING SUITE MODULES #1-#8 TESTS PASSED');

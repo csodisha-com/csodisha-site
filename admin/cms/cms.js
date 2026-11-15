@@ -9841,6 +9841,705 @@
     return wrap;
   }
 
+  function contentAnnouncementsStudioPanel() {
+    var canWrite = Boolean(me && (me.role === 'admin' || me.role === 'editor'));
+    var canStatus = Boolean(me && (me.role === 'admin' || me.role === 'editor' || me.role === 'reviewer'));
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var previewBox = el('div', { class: 'cso-ops-card' });
+    var composerBox = el('div');
+    var tableBox = el('div');
+
+    var addBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: '+ Post Official Notice / Announcement' });
+    if (!canWrite) addBtn.disabled = true;
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge warn', text: 'OFFICIAL NOTICES' }),
+        el('h2', { text: 'Announcements & Notices Studio' }),
+        el('p', { class: 'muted', text: 'Publish priority announcements, exam deadline notices, and verified CTA banners with automatic expiry tracking.' })
+      ]),
+      el('div', {}, [addBtn])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(previewBox);
+    wrap.appendChild(composerBox);
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('h3', { text: 'Official Notices Ledger' }),
+      tableBox
+    ]));
+
+    function openForm(editing) {
+      clear(composerBox);
+      var isEdit = Boolean(editing && editing.id);
+      var card = el('div', { class: 'cso-cnt-composer' });
+      var titleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title) || '', placeholder: 'Official Notice Headline...' });
+      var prioSel = el('select', { class: 'select' }, [
+        el('option', { value: 'normal', text: 'normal — Standard Notice' }),
+        el('option', { value: 'urgent', text: 'urgent — High-Priority Alert' }),
+        el('option', { value: 'deadline', text: 'deadline — Exam / Application Deadline' })
+      ]);
+      prioSel.value = (editing && editing.notice_priority) || 'normal';
+      var stageSel = el('select', { class: 'select' }, [
+        el('option', { value: 'draft', text: 'draft' }),
+        el('option', { value: 'published', text: 'published' }),
+        el('option', { value: 'archived', text: 'archived' })
+      ]);
+      stageSel.value = (editing && (editing.workflow_stage || editing.status)) || 'draft';
+      var expInp = el('input', { class: 'input', type: 'text', value: (editing && editing.notice_expires_at) || '', placeholder: 'YYYY-MM-DDTHH:MM:SSZ (optional)' });
+      var ctaLblInp = el('input', { class: 'input', type: 'text', value: (editing && editing.notice_cta_label) || '', placeholder: 'e.g. View Notification' });
+      var ctaUrlInp = el('input', { class: 'input', type: 'text', value: (editing && editing.notice_cta_url) || '', placeholder: '/updates/... or https://...' });
+      var sumTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Short notice summary...' });
+      sumTa.value = (editing && editing.summary) || '';
+      var seoTitleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.seo_title) || '', placeholder: 'SEO Title (required to publish)' });
+      var seoDescInp = el('input', { class: 'input', type: 'text', value: (editing && editing.seo_description) || '', placeholder: 'SEO Description (required to publish)' });
+
+      var saveBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: isEdit ? 'Save Notice Changes' : 'Publish Notice' });
+      var cancelBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Cancel' });
+      cancelBtn.addEventListener('click', function () { clear(composerBox); });
+
+      var busy = false;
+      saveBtn.addEventListener('click', async function () {
+        if (!canWrite || busy) return;
+        busy = true;
+        saveBtn.disabled = true;
+        try {
+          var payload = {
+            title: titleInp.value.trim(),
+            post_type: 'announcement',
+            workflow_stage: stageSel.value,
+            notice_priority: prioSel.value,
+            notice_expires_at: expInp.value.trim() || null,
+            notice_cta_label: ctaLblInp.value.trim(),
+            notice_cta_url: ctaUrlInp.value.trim(),
+            summary: sumTa.value.trim(),
+            seo_title: seoTitleInp.value.trim() || titleInp.value.trim(),
+            seo_description: seoDescInp.value.trim() || sumTa.value.trim() || titleInp.value.trim()
+          };
+          if (isEdit) {
+            await api('PUT', 'content/posts/' + encodeURIComponent(editing.id), payload);
+            toast('Announcement updated');
+          } else {
+            await api('POST', 'content/posts', payload);
+            toast('Announcement saved');
+          }
+          clear(composerBox);
+          await load();
+        } catch (err) {
+          toast(err.message || 'Save failed', true);
+        } finally {
+          busy = false;
+          saveBtn.disabled = !canWrite;
+        }
+      });
+
+      card.appendChild(el('h3', { text: isEdit ? 'Edit Official Notice' : 'Post Official Notice / Announcement' }));
+      card.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
+        el('div', { class: 'field' }, [el('label', { text: 'Notice Headline *' }), titleInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Priority' }), prioSel]),
+        el('div', { class: 'field' }, [el('label', { text: 'Workflow Stage' }), stageSel]),
+        el('div', { class: 'field' }, [el('label', { text: 'Expires At (ISO)' }), expInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'CTA Button Label' }), ctaLblInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'CTA Target URL (/... or https://...)' }), ctaUrlInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'SEO Title' }), seoTitleInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'SEO Description' }), seoDescInp])
+      ]));
+      card.appendChild(el('div', { class: 'field' }, [el('label', { text: 'Summary' }), sumTa]));
+      card.appendChild(el('div', { class: 'cso-ops-actions' }, [saveBtn, cancelBtn]));
+      composerBox.appendChild(card);
+    }
+
+    addBtn.addEventListener('click', function () { openForm(null); });
+
+    async function load() {
+      try {
+        var res = await api('GET', 'content/announcements');
+        clear(kpis);
+        clear(previewBox);
+        clear(tableBox);
+        var k = res.kpis || {};
+        [
+          ['Total Notices', String(k.total_count || 0)],
+          ['Active Live Notices', String(k.active_live_count || 0)],
+          ['Urgent / Deadline', String(k.urgent_count || 0)],
+          ['Expiring Soon (7d)', String(k.expiring_soon_count || 0)]
+        ].forEach(function (pair) {
+          kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+            el('span', { class: 'muted sm', text: pair[0] }),
+            el('strong', { text: pair[1] })
+          ]));
+        });
+
+        previewBox.appendChild(el('h3', { text: 'Live Public Notice Banner Preview' }));
+        var ticker = Array.isArray(res.ticker_preview) ? res.ticker_preview : [];
+        if (!ticker.length) {
+          previewBox.appendChild(el('div', { class: 'muted sm', text: 'No active published notices currently live.' }));
+        } else {
+          ticker.slice(0, 3).forEach(function (t) {
+            previewBox.appendChild(el('div', { class: 'cso-sec-sim-result ' + (t.notice_priority === 'urgent' ? 'is-deny' : 'is-allow') }, [
+              el('div', { class: 'cso-ops-subhead' }, [
+                el('strong', { text: t.title }),
+                el('span', { class: 'badge ' + (t.notice_priority === 'urgent' ? 'bad' : 'ok'), text: t.notice_priority.toUpperCase() })
+              ]),
+              el('span', { class: 'muted sm', text: (t.summary || '') + (t.notice_cta_url ? ' · CTA: ' + t.notice_cta_url : '') })
+            ]));
+          });
+        }
+
+        var items = Array.isArray(res.items) ? res.items : [];
+        if (!items.length) {
+          tableBox.appendChild(el('div', { class: 'muted sm', text: 'No announcements created yet.' }));
+          return;
+        }
+        var tbody = el('tbody');
+        items.forEach(function (it) {
+          var prioCls = it.notice_priority === 'urgent' ? 'bad' : (it.notice_priority === 'deadline' ? 'warn' : 'ok');
+          var actTd = el('td', { class: 'cso-ops-actions' });
+          if (canWrite) {
+            var eb = el('button', { class: 'btn sm', type: 'button', text: 'Edit' });
+            eb.addEventListener('click', function () { openForm(it); });
+            actTd.appendChild(eb);
+          }
+          if (canStatus) {
+            var nextSt = it.status === 'published' ? 'archived' : 'published';
+            var sb = el('button', { class: 'btn sm', type: 'button', text: it.status === 'published' ? 'Expire / Archive' : 'Publish' });
+            sb.addEventListener('click', async function () {
+              sb.disabled = true;
+              try {
+                await api('PATCH', 'content/posts/' + encodeURIComponent(it.id) + '/status', { workflow_stage: nextSt });
+                toast('Notice updated to ' + nextSt);
+                await load();
+              } catch (err) {
+                toast(err.message || 'Status update failed', true);
+                sb.disabled = false;
+              }
+            });
+            actTd.appendChild(sb);
+          }
+          tbody.appendChild(el('tr', {}, [
+            el('td', {}, [el('strong', { text: it.title }), el('div', { class: 'muted sm', text: it.notice_cta_url || 'No CTA' })]),
+            el('td', {}, [el('span', { class: 'badge ' + prioCls, text: it.notice_priority })]),
+            el('td', {}, [el('span', { class: 'badge ' + (it.status === 'published' && !it.is_expired ? 'ok' : 'warn'), text: it.is_expired ? 'expired' : it.status })]),
+            el('td', { text: it.notice_expires_at ? String(it.notice_expires_at).slice(0, 10) : 'No expiry' }),
+            actTd
+          ]));
+        });
+        tableBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+          el('table', { class: 'table' }, [
+            el('thead', {}, [el('tr', {}, [
+              el('th', { text: 'Headline' }),
+              el('th', { text: 'Priority' }),
+              el('th', { text: 'Status' }),
+              el('th', { text: 'Expiry' }),
+              el('th', { text: 'Actions' })
+            ])]),
+            tbody
+          ])
+        ]));
+      } catch (e) {
+        toast(e.message || 'Failed to load announcements', true);
+      }
+    }
+
+    load();
+    return wrap;
+  }
+
+  function contentFeaturedStudioPanel() {
+    var canWrite = Boolean(me && (me.role === 'admin' || me.role === 'editor'));
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var previewBox = el('div', { class: 'cso-ops-card' });
+    var queueBox = el('div');
+
+    var pickSel = el('select', { class: 'select' });
+    var rankInp = el('input', { class: 'input', type: 'number', min: '1', max: '50', value: '1' });
+    var pinBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: 'Pin Published Content' });
+    if (!canWrite) pinBtn.disabled = true;
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge ok', text: 'HOMEPAGE SLOTS' }),
+        el('h2', { text: 'Featured Content Studio' }),
+        el('p', { class: 'muted', text: 'Curate the Hero #1 lead story and Top Highlights #2–#6 across all published editorial content.' })
+      ])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(previewBox);
+    wrap.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
+      el('div', { class: 'cso-ops-card' }, [
+        el('h3', { text: 'Pin Published Content to Featured' }),
+        el('div', { class: 'field' }, [el('label', { text: 'Eligible Published Post' }), pickSel]),
+        el('div', { class: 'field' }, [el('label', { text: 'Featured Slot Rank (1 = Hero Lead)' }), rankInp]),
+        pinBtn
+      ]),
+      el('div', { class: 'cso-ops-card' }, [
+        el('h3', { text: 'Ordered Featured Queue' }),
+        queueBox
+      ])
+    ]));
+
+    async function mutateFeatured(postId, isFeatured, rank) {
+      await api('POST', 'content/featured', { post_id: postId, is_featured: isFeatured, featured_rank: rank });
+      await load();
+    }
+
+    var pinBusy = false;
+    pinBtn.addEventListener('click', async function () {
+      if (!canWrite || pinBusy || !pickSel.value) return;
+      pinBusy = true;
+      pinBtn.disabled = true;
+      try {
+        await mutateFeatured(pickSel.value, true, parseInt(rankInp.value, 10) || 1);
+        toast('Pinned to Featured slot');
+      } catch (e) {
+        toast(e.message || 'Pin failed', true);
+      } finally {
+        pinBusy = false;
+        pinBtn.disabled = !canWrite;
+      }
+    });
+
+    async function load() {
+      try {
+        var res = await api('GET', 'content/featured');
+        clear(kpis);
+        clear(previewBox);
+        clear(queueBox);
+        clear(pickSel);
+        var k = res.kpis || {};
+        [
+          ['Active Featured Slots', String(k.slots_used || 0) + ' / ' + String(k.max_slots || 6)],
+          ['Hero #1 Lead Story', String(k.hero_lead_title || 'None').slice(0, 28)],
+          ['Content Type Mix', String(k.type_mix || 0) + ' types'],
+          ['Homepage Ready', k.homepage_ready ? 'READY' : 'EMPTY']
+        ].forEach(function (pair) {
+          kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+            el('span', { class: 'muted sm', text: pair[0] }),
+            el('strong', { text: pair[1] })
+          ]));
+        });
+
+        var elig = Array.isArray(res.eligible_items) ? res.eligible_items : [];
+        if (!elig.length) {
+          pickSel.appendChild(el('option', { value: '', text: 'No eligible published posts available' }));
+        } else {
+          elig.forEach(function (it) {
+            pickSel.appendChild(el('option', { value: it.id, text: '[' + it.post_type + '] ' + it.title }));
+          });
+        }
+
+        var feat = Array.isArray(res.featured_items) ? res.featured_items : [];
+        previewBox.appendChild(el('h3', { text: 'Homepage Featured Slot Preview' }));
+        if (!feat.length) {
+          previewBox.appendChild(el('div', { class: 'muted sm', text: 'Pin a published item to preview Hero #1 and Top Highlights.' }));
+        } else {
+          feat.slice(0, 6).forEach(function (it, idx) {
+            previewBox.appendChild(el('div', { class: 'cso-sec-sim-result is-allow' }, [
+              el('div', { class: 'cso-ops-subhead' }, [
+                el('strong', { text: (idx === 0 ? 'HERO #1: ' : 'SLOT #' + (idx + 1) + ': ') + it.title }),
+                el('span', { class: 'badge ok', text: it.post_type })
+              ]),
+              el('span', { class: 'muted sm', text: 'Rank #' + String(it.featured_rank || idx + 1) + ' · ' + (it.public_url || '') })
+            ]));
+          });
+        }
+
+        if (!feat.length) {
+          queueBox.appendChild(el('div', { class: 'muted sm', text: 'No featured posts pinned yet.' }));
+          return;
+        }
+        var tbody = el('tbody');
+        feat.forEach(function (it, idx) {
+          var actTd = el('td', { class: 'cso-ops-actions' });
+          if (canWrite) {
+            if (idx > 0) {
+              var upBtn = el('button', { class: 'btn sm', type: 'button', text: '↑' });
+              upBtn.addEventListener('click', function () { mutateFeatured(it.id, true, Math.max(1, (it.featured_rank || idx + 1) - 1)); });
+              actTd.appendChild(upBtn);
+            }
+            var dnBtn = el('button', { class: 'btn sm', type: 'button', text: '↓' });
+            dnBtn.addEventListener('click', function () { mutateFeatured(it.id, true, (it.featured_rank || idx + 1) + 1); });
+            actTd.appendChild(dnBtn);
+
+            if (idx !== 0) {
+              var heroBtn = el('button', { class: 'btn sm', type: 'button', text: 'Hero #1' });
+              heroBtn.addEventListener('click', function () { mutateFeatured(it.id, true, 1); });
+              actTd.appendChild(heroBtn);
+            }
+            var unpinBtn = el('button', { class: 'btn sm danger', type: 'button', text: 'Unpin' });
+            unpinBtn.addEventListener('click', function () { mutateFeatured(it.id, false, 0); });
+            actTd.appendChild(unpinBtn);
+          }
+          tbody.appendChild(el('tr', {}, [
+            el('td', { text: '#' + String(it.featured_rank || idx + 1) }),
+            el('td', { text: it.title }),
+            el('td', { text: it.post_type }),
+            actTd
+          ]));
+        });
+        queueBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+          el('table', { class: 'table' }, [
+            el('thead', {}, [el('tr', {}, [
+              el('th', { text: 'Rank' }),
+              el('th', { text: 'Title' }),
+              el('th', { text: 'Type' }),
+              el('th', { text: 'Actions' })
+            ])]),
+            tbody
+          ])
+        ]));
+      } catch (e) {
+        toast(e.message || 'Failed to load featured content', true);
+      }
+    }
+
+    load();
+    return wrap;
+  }
+
+  function contentCategoriesStudioPanel() {
+    var canWrite = Boolean(me && (me.role === 'admin' || me.role === 'editor'));
+    var isAdmin = Boolean(me && me.role === 'admin');
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var tableBox = el('div');
+
+    var nameInp = el('input', { class: 'input', type: 'text', placeholder: 'Category Name (e.g. Odisha Economy)' });
+    var slugInp = el('input', { class: 'input', type: 'text', placeholder: 'auto-slugified' });
+    var descInp = el('input', { class: 'input', type: 'text', placeholder: 'Short editorial description...' });
+    var sortInp = el('input', { class: 'input', type: 'number', value: '10' });
+    var activeCb = el('input', { type: 'checkbox' });
+    activeCb.checked = true;
+    var createBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: '+ Create Category' });
+    if (!canWrite) createBtn.disabled = true;
+
+    nameInp.addEventListener('input', function () {
+      if (!slugInp.dataset.manual) {
+        slugInp.value = nameInp.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      }
+    });
+    slugInp.addEventListener('input', function () { slugInp.dataset.manual = slugInp.value ? '1' : ''; });
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge ok', text: 'TAXONOMY GOVERNANCE' }),
+        el('h2', { text: 'Content Categories Studio' }),
+        el('p', { class: 'muted', text: 'Manage canonical CS Odisha content categories with live post counts and safe reassignment protection.' })
+      ])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
+      el('div', { class: 'cso-ops-card' }, [
+        el('h3', { text: 'Create Category' }),
+        el('div', { class: 'field' }, [el('label', { text: 'Category Name *' }), nameInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Slug Preview' }), slugInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Description' }), descInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Sort Order' }), sortInp]),
+        el('div', { class: 'field' }, [el('label', {}, [activeCb, document.createTextNode(' Active Category')])]),
+        createBtn
+      ]),
+      el('div', { class: 'cso-ops-card' }, [
+        el('h3', { text: 'Category Directory' }),
+        tableBox
+      ])
+    ]));
+
+    var busy = false;
+    createBtn.addEventListener('click', async function () {
+      if (!canWrite || busy) return;
+      busy = true;
+      createBtn.disabled = true;
+      try {
+        await api('POST', 'content/categories', {
+          name: nameInp.value.trim(),
+          slug: slugInp.value.trim(),
+          description: descInp.value.trim(),
+          sort_order: parseInt(sortInp.value, 10) || 10,
+          is_active: activeCb.checked
+        });
+        nameInp.value = '';
+        slugInp.value = '';
+        slugInp.dataset.manual = '';
+        descInp.value = '';
+        toast('Category created');
+        await load();
+      } catch (e) {
+        toast(e.message || 'Category creation failed', true);
+      } finally {
+        busy = false;
+        createBtn.disabled = !canWrite;
+      }
+    });
+
+    async function load() {
+      try {
+        var res = await api('GET', 'content/categories');
+        clear(kpis);
+        clear(tableBox);
+        var k = res.kpis || {};
+        [
+          ['Total Categories', String(k.total_categories || 0)],
+          ['Active Categories', String(k.active_categories || 0)],
+          ['Categorized Items', String(k.categorized_posts || 0)],
+          ['Uncategorized Items', String(k.uncategorized_posts || 0)]
+        ].forEach(function (pair) {
+          kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+            el('span', { class: 'muted sm', text: pair[0] }),
+            el('strong', { text: pair[1] })
+          ]));
+        });
+
+        var items = Array.isArray(res.items) ? res.items : [];
+        var tbody = el('tbody');
+        items.forEach(function (cat) {
+          var actTd = el('td', { class: 'cso-ops-actions' });
+          if (canWrite) {
+            var togBtn = el('button', { class: 'btn sm', type: 'button', text: cat.is_active ? 'Disable' : 'Enable' });
+            togBtn.addEventListener('click', async function () {
+              togBtn.disabled = true;
+              try {
+                await api('PUT', 'content/categories/' + encodeURIComponent(cat.slug), { is_active: !cat.is_active });
+                toast('Category updated');
+                await load();
+              } catch (e) {
+                toast(e.message || 'Update failed', true);
+                togBtn.disabled = false;
+              }
+            });
+            actTd.appendChild(togBtn);
+          }
+          if (isAdmin) {
+            var delBtn = el('button', { class: 'btn sm danger', type: 'button', text: 'Delete' });
+            delBtn.addEventListener('click', async function () {
+              var reassignTo = '';
+              if (cat.post_count > 0) {
+                var others = items.filter(function (o) { return o.slug !== cat.slug; }).map(function (o) { return o.slug; });
+                reassignTo = window.prompt('Category has ' + cat.post_count + ' post(s). Enter target category slug to reassign (' + others.join(', ') + '):', others[0] || '');
+                if (!reassignTo) return;
+              }
+              delBtn.disabled = true;
+              try {
+                var qs = reassignTo ? ('?reassign_to=' + encodeURIComponent(reassignTo.trim())) : '';
+                await api('DELETE', 'content/categories/' + encodeURIComponent(cat.slug) + qs);
+                toast('Category deleted');
+                await load();
+              } catch (e) {
+                toast(e.message || 'Delete failed', true);
+                delBtn.disabled = false;
+              }
+            });
+            actTd.appendChild(delBtn);
+          }
+          tbody.appendChild(el('tr', {}, [
+            el('td', {}, [el('strong', { text: cat.name }), el('div', { class: 'muted sm', text: '/' + cat.slug })]),
+            el('td', { text: String(cat.post_count || 0) + ' (' + String(cat.published_count || 0) + ' live)' }),
+            el('td', {}, [el('span', { class: 'badge ' + (cat.is_active ? 'ok' : 'warn'), text: cat.is_active ? 'active' : 'inactive' })]),
+            actTd
+          ]));
+        });
+        tableBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+          el('table', { class: 'table' }, [
+            el('thead', {}, [el('tr', {}, [
+              el('th', { text: 'Category & Slug' }),
+              el('th', { text: 'Posts' }),
+              el('th', { text: 'Status' }),
+              el('th', { text: 'Actions' })
+            ])]),
+            tbody
+          ])
+        ]));
+      } catch (e) {
+        toast(e.message || 'Failed to load categories', true);
+      }
+    }
+
+    load();
+    return wrap;
+  }
+
+  function contentTagsStudioPanel() {
+    var canWrite = Boolean(me && (me.role === 'admin' || me.role === 'editor'));
+    var isAdmin = Boolean(me && me.role === 'admin');
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var mergePreview = el('div');
+    var tableBox = el('div');
+
+    var newTagInp = el('input', { class: 'input', type: 'text', placeholder: 'Canonical tag label (e.g. OPSC OAS)' });
+    var addTagBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Register Canonical Tag' });
+    if (!canWrite) addTagBtn.disabled = true;
+
+    var fromInp = el('input', { class: 'input', type: 'text', placeholder: 'Source tag (e.g. opsc-oas)' });
+    var toInp = el('input', { class: 'input', type: 'text', placeholder: 'Target tag (e.g. opsc)' });
+    var dryBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Preview Impact (Dry-Run)' });
+    var mergeBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: 'Rename / Merge Tags' });
+    if (!canWrite) { dryBtn.disabled = true; mergeBtn.disabled = true; }
+
+    var filterInp = el('input', { class: 'input', type: 'search', placeholder: 'Filter tags...' });
+    var allItems = [];
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge ok', text: 'TAG TAXONOMY' }),
+        el('h2', { text: 'Tags & Topic Normalization Studio' }),
+        el('p', { class: 'muted', text: 'Audit tag usage across all posts, register canonical tags, and atomically rename or merge duplicate tags.' })
+      ])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
+      el('div', { class: 'cso-ops-card' }, [
+        el('h3', { text: 'Register Canonical Tag' }),
+        el('div', { class: 'field' }, [el('label', { text: 'Tag Label' }), newTagInp]),
+        addTagBtn
+      ]),
+      el('div', { class: 'cso-ops-card' }, [
+        el('h3', { text: 'Rename / Merge Duplicate Tags' }),
+        el('div', { class: 'field' }, [el('label', { text: 'From Tag' }), fromInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'To Canonical Tag' }), toInp]),
+        el('div', { class: 'cso-ops-actions' }, [dryBtn, mergeBtn]),
+        mergePreview
+      ])
+    ]));
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-cnt-toolbar' }, [
+        el('h3', { text: 'Tag Cloud & Usage Ledger' }),
+        filterInp
+      ]),
+      tableBox
+    ]));
+
+    function renderTable() {
+      clear(tableBox);
+      var q = filterInp.value.trim().toLowerCase();
+      var rows = allItems.filter(function (t) {
+        return !q || t.slug.indexOf(q) !== -1 || t.label.toLowerCase().indexOf(q) !== -1;
+      });
+      if (!rows.length) {
+        tableBox.appendChild(el('div', { class: 'muted sm', text: 'No matching tags.' }));
+        return;
+      }
+      var tbody = el('tbody');
+      rows.forEach(function (t) {
+        var actTd = el('td', { class: 'cso-ops-actions' });
+        if (isAdmin) {
+          var delBtn = el('button', { class: 'btn sm danger', type: 'button', text: 'Delete' });
+          delBtn.addEventListener('click', async function () {
+            delBtn.disabled = true;
+            try {
+              await api('DELETE', 'content/tags/' + encodeURIComponent(t.slug));
+              toast('Tag removed');
+              await load();
+            } catch (e) {
+              toast(e.message || 'Delete failed', true);
+              delBtn.disabled = false;
+            }
+          });
+          actTd.appendChild(delBtn);
+        }
+        tbody.appendChild(el('tr', {}, [
+          el('td', {}, [el('strong', { text: t.label }), el('div', { class: 'muted sm', text: '#' + t.slug })]),
+          el('td', { text: String(t.post_count || 0) + ' posts (' + String(t.published_count || 0) + ' live)' }),
+          el('td', { text: (t.sample_titles || []).join(' · ') || '—' }),
+          actTd
+        ]));
+      });
+      tableBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+        el('table', { class: 'table' }, [
+          el('thead', {}, [el('tr', {}, [
+            el('th', { text: 'Tag' }),
+            el('th', { text: 'Usage' }),
+            el('th', { text: 'Linked Titles' }),
+            el('th', { text: 'Actions' })
+          ])]),
+          tbody
+        ])
+      ]));
+    }
+
+    filterInp.addEventListener('input', renderTable);
+
+    var addBusy = false;
+    addTagBtn.addEventListener('click', async function () {
+      if (!canWrite || addBusy) return;
+      addBusy = true;
+      addTagBtn.disabled = true;
+      try {
+        await api('POST', 'content/tags', { label: newTagInp.value.trim() });
+        newTagInp.value = '';
+        toast('Canonical tag registered');
+        await load();
+      } catch (e) {
+        toast(e.message || 'Failed to register tag', true);
+      } finally {
+        addBusy = false;
+        addTagBtn.disabled = !canWrite;
+      }
+    });
+
+    var mergeBusy = false;
+    async function runMerge(isDry) {
+      if (!canWrite || mergeBusy) return;
+      mergeBusy = true;
+      dryBtn.disabled = true;
+      mergeBtn.disabled = true;
+      clear(mergePreview);
+      try {
+        var res = await api('POST', 'content/tags/merge', {
+          from_tag: fromInp.value.trim(),
+          to_tag: toInp.value.trim(),
+          dry_run: isDry
+        });
+        if (isDry) {
+          mergePreview.appendChild(el('div', { class: 'cso-sec-sim-result is-allow' }, [
+            el('strong', { text: 'Dry-Run: ' + String(res.affected_posts_count || 0) + ' post(s) will update (' + res.from_slug + ' → ' + res.to_slug + ')' }),
+            el('div', { class: 'muted sm', text: (res.sample_titles || []).join(' · ') || 'No matching posts.' })
+          ]));
+        } else {
+          fromInp.value = '';
+          toInp.value = '';
+          toast('Merged tags across ' + String(res.affected_posts_count || 0) + ' post(s)');
+          await load();
+        }
+      } catch (e) {
+        toast(e.message || 'Tag merge failed', true);
+      } finally {
+        mergeBusy = false;
+        dryBtn.disabled = !canWrite;
+        mergeBtn.disabled = !canWrite;
+      }
+    }
+
+    dryBtn.addEventListener('click', function () { runMerge(true); });
+    mergeBtn.addEventListener('click', function () { runMerge(false); });
+
+    async function load() {
+      try {
+        var res = await api('GET', 'content/tags');
+        clear(kpis);
+        var k = res.kpis || {};
+        [
+          ['Total Unique Tags', String(k.total_unique_tags || 0)],
+          ['Tagged Content Items', String(k.tagged_posts_count || 0)],
+          ['Multi-Use Tags', String(k.multi_use_tags || 0)],
+          ['Orphan / Single-Use', String(k.orphan_tags || 0)]
+        ].forEach(function (pair) {
+          kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+            el('span', { class: 'muted sm', text: pair[0] }),
+            el('strong', { text: pair[1] })
+          ]));
+        });
+        allItems = Array.isArray(res.items) ? res.items : [];
+        renderTable();
+      } catch (e) {
+        toast(e.message || 'Failed to load tags', true);
+      }
+    }
+
+    load();
+    return wrap;
+  }
+
   async function viewContentStudio(sub) {
     var mode = sub || 'all';
     if (mode === 'articles') {
@@ -9856,6 +10555,26 @@
     if (mode === 'current-affairs') {
       setTitle('Current Affairs');
       main.appendChild(contentPublishingStudioPanel('current-affairs'));
+      return;
+    }
+    if (mode === 'announcements') {
+      setTitle('Announcements & Notices');
+      main.appendChild(contentAnnouncementsStudioPanel());
+      return;
+    }
+    if (mode === 'featured') {
+      setTitle('Featured Content');
+      main.appendChild(contentFeaturedStudioPanel());
+      return;
+    }
+    if (mode === 'categories') {
+      setTitle('Content Categories');
+      main.appendChild(contentCategoriesStudioPanel());
+      return;
+    }
+    if (mode === 'tags') {
+      setTitle('Tags');
+      main.appendChild(contentTagsStudioPanel());
       return;
     }
     setTitle('All Content');

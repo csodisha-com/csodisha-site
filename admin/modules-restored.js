@@ -8630,32 +8630,6 @@
      FOLDER 04: CONTENT & PUBLISHING (module-04-001..014)
      ========================================================================= */
   function renderFolder04(moduleId, root, actions) {
-    if (moduleId === 'module-04-007' || moduleId === 'module-04-008') {
-      addHeaderPill(actions, '● Live D1 Taxonomy');
-      var shell = el('div', { class: 'cso-mod-shell' });
-      var host = el('div', {});
-      renderBanner(shell, moduleId === 'module-04-007' ? 'Content Categories (Live D1)' : 'Tags & Topic Distribution (Live D1)', 'Computed directly from live Current Affairs and Job Alert records in D1.');
-      shell.appendChild(host);
-      root.appendChild(shell);
-      Promise.all([api('GET', 'current-affairs?limit=100'), api('GET', 'jobs?limit=100')]).then(function (res) {
-        var counts = {};
-        var isTags = moduleId === 'module-04-008';
-        [].concat(res[0].items || [], res[1].items || []).forEach(function (item) {
-          if (isTags) {
-            String(item.tags || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (t) { counts[t] = (counts[t] || 0) + 1; });
-          } else {
-            var c = item.category || 'Uncategorized';
-            counts[c] = (counts[c] || 0) + 1;
-          }
-        });
-        var rows = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; }).map(function (k) {
-          return el('tr', {}, [el('td', { text: k }), el('td', {}, badge(String(counts[k]) + ' items', 'info'))]);
-        });
-        host.appendChild(safeTable([isTags ? 'Tag' : 'Category', 'Live Count'], rows));
-      }).catch(function (e) { host.appendChild(el('p', { class: 'cso-mod-muted', text: e.message })); });
-      return true;
-    }
-
     if (moduleId === 'module-04-009') {
       addHeaderPill(actions, '● Live Editorial Calendar');
       var shell2 = el('div', { class: 'cso-mod-shell' });
