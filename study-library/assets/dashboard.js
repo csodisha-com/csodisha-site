@@ -544,20 +544,19 @@
     if (!sideNav) return;
     sideNav.replaceChildren();
     state.groups.forEach((g, idx) => {
-      const btn = el('button', 'side-link');
-      btn.type = 'button';
+      const link = el('a', 'side-link');
+      link.href = `/study-library/${encodeURIComponent(g.slug || g.id)}/`;
       if (state.view !== 'overview' && state.view !== 'search' && state.groupIdx === idx) {
-        btn.classList.add('active');
-        btn.setAttribute('aria-current', 'page');
+        link.classList.add('active');
+        link.setAttribute('aria-current', 'page');
       }
       const icon = el('span', 'side-icon', g.icon_name || GROUP_ICONS[idx % GROUP_ICONS.length]);
       const label = el('span', 'side-link-text', g.title);
-      btn.append(icon, label);
-      btn.addEventListener('click', () => {
-        navigateToGroup(idx, -1);
+      link.append(icon, label);
+      link.addEventListener('click', () => {
         document.body.classList.remove('menu-open');
       });
-      sideNav.appendChild(btn);
+      sideNav.appendChild(link);
     });
   }
 
@@ -645,8 +644,8 @@
       const subCount = secs.reduce((sum, s) => sum + ((s.children || []).length), 0);
       const entCount = secs.reduce((sum, s) => sum + (s.children || []).reduce((acc, sub) => acc + ((sub.children || []).length), 0), 0);
 
-      const card = el('button', 'dashboard-card');
-      card.type = 'button';
+      const card = el('a', 'dashboard-card');
+      card.href = `/study-library/${encodeURIComponent(g.slug || g.id)}/`;
       const icon = el('span', 'card-icon', g.icon_name || GROUP_ICONS[idx % GROUP_ICONS.length]);
       const title = el('span', 'card-title', state.lang === 'or' && g.title_or ? g.title_or : g.title);
       card.append(icon, title);
@@ -657,7 +656,6 @@
       }
       card.appendChild(el('span', 'card-count', `${secs.length} Sections · ${subCount} Categories · ${entCount} Topics`));
       card.appendChild(el('span', 'card-arrow', '→'));
-      card.addEventListener('click', () => navigateToGroup(idx, -1));
       dashboardGrid.appendChild(card);
     });
 

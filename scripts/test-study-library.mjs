@@ -4,6 +4,7 @@ import {
   ensureStudyLibraryStudioSchema,
   handleStudyLibraryStudio
 } from '../functions/_lib/study-library-studio.js';
+import { handlePublicStudyLibraryRoute } from '../functions/_lib/study-library-ssr.js';
 
 function createMockDb() {
   const db = new DatabaseSync(':memory:');
@@ -262,4 +263,136 @@ const hubItems = await (await handleStudyLibraryStudio(
 )).json();
 assert.ok(hubItems.kpis.cross_domain_total_items >= 7);
 
-console.log('STUDY LIBRARY DIRECTORY MODULES #1-#10 TESTS PASSED');
+// 8. Bridge 1,681-Node Public Taxonomy (study_library_nodes + resources) & SSR Clean-URL Directory Pages
+const bridgeDb = new DatabaseSync(':memory:');
+bridgeDb.exec(`
+  CREATE TABLE audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    actor_user_id TEXT,
+    action TEXT NOT NULL,
+    target_type TEXT,
+    target_id TEXT,
+    metadata_json TEXT,
+    ip_address TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+  CREATE TABLE study_library_nodes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    parent_id INTEGER,
+    level TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    title_or TEXT,
+    description TEXT,
+    icon_name TEXT,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    is_featured INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'published',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE TABLE resources (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    category TEXT NOT NULL,
+    exam_type TEXT NOT NULL,
+    language TEXT NOT NULL DEFAULT 'en',
+    summary TEXT,
+    body_html TEXT,
+    pdf_url TEXT,
+    source_url TEXT,
+    is_featured INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'published',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  INSERT INTO study_library_nodes (id, parent_id, level, slug, title, title_or, description, sort_order, status) VALUES
+    (1, NULL, 'group', 'competitive-exams-teacher-education', 'Competitive Exams & Teacher Education', 'ପ୍ରତିଯୋଗିତାମୂଳକ ପରୀକ୍ଷା', 'Odisha & National Exams', 4, 'published'),
+    (2, 1, 'section', 'opsc-odisha-civil-services', 'OPSC & Odisha Civil Services', 'ଓଡ଼ିଶା ସିଭିଲ୍ ସର୍ଭିସ୍', 'OPSC OAS/OCS syllabus & PYQs', 1, 'published'),
+    (3, 2, 'subcategory', 'prelims-general-studies', 'Prelims General Studies', 'ପ୍ରିଲିମ୍ସ ସାଧାରଣ ଅଧ୍ୟୟନ', 'GS Paper 1 & CSAT', 1, 'published'),
+    (4, 3, 'entry', 'odisha-history-culture', 'Odisha History & Culture', 'ଓଡ଼ିଶା ଇତିହାସ ଓ ସଂସ୍କୃତି', 'Kalinga, Gajapati & Freedom Movement notes', 1, 'published'),
+    (5, 3, 'entry', 'hidden-draft-topic', 'Hidden Draft Topic', '', 'Should not appear publicly', 2, 'draft');
+  INSERT INTO resources (id, title, slug, category, exam_type, language, summary, body_html, status) VALUES
+    (10, 'Odisha History Master Notes', 'odisha-history-master-notes', 'Notes', 'OPSC', 'en', 'Complete Kalinga to 1947 notes', '<p>Kalinga &amp; Utkal Sammilani summary.</p>', 'published'),
+    (11, 'Unpublished Draft Paper', 'unpublished-draft-paper', 'PYQ', 'OPSC', 'en', 'Draft only', '<p>Draft</p>', 'draft');
+`);
+const bridgeEnv = {
+  DB: {
+    prepare(sql) {
+      return {
+        bind(...args) {
+          return {
+            async first() { return bridgeDb.prepare(sql).get(...args) || null; },
+            async all() { return { results: bridgeDb.prepare(sql).all(...args) }; },
+            async run() {
+              const info = bridgeDb.prepare(sql).run(...args);
+              return { success: true, meta: { changes: info.changes } };
+            }
+          };
+        },
+        async first() { return bridgeDb.prepare(sql).get() || null; },
+        async all() { return { results: bridgeDb.prepare(sql).all() }; },
+        async run() {
+          const info = bridgeDb.prepare(sql).run();
+          return { success: true, meta: { changes: info.changes } };
+        }
+      };
+    }
+  }
+};
+
+await ensureStudyLibraryStudioSchema(bridgeEnv.DB);
+await ensureStudyLibraryStudioSchema(bridgeEnv.DB);
+
+// Verify bridged track group & 4-level SSR directory pages
+const trackRes = await handlePublicStudyLibraryRoute(
+  new Request('https://csodisha.com/study-library/competitive-exams-teacher-education/'),
+  bridgeEnv,
+  new URL('https://csodisha.com/study-library/competitive-exams-teacher-education/')
+);
+assert.equal(trackRes.status, 200);
+const trackHtml = await trackRes.text();
+assert.ok(trackHtml.includes('Competitive Exams &amp; Teacher Education'));
+assert.ok(trackHtml.includes('OPSC &amp; Odisha Civil Services'));
+assert.ok(!/style\s*=|<style\b/i.test(trackHtml), 'SSR track page must have zero inline styles');
+
+const deepRes = await handlePublicStudyLibraryRoute(
+  new Request('https://csodisha.com/study-library/competitive-exams-teacher-education/opsc-odisha-civil-services/prelims-general-studies/odisha-history-culture/'),
+  bridgeEnv,
+  new URL('https://csodisha.com/study-library/competitive-exams-teacher-education/opsc-odisha-civil-services/prelims-general-studies/odisha-history-culture/')
+);
+assert.equal(deepRes.status, 200);
+const deepHtml = await deepRes.text();
+assert.ok(deepHtml.includes('Odisha History &amp; Culture'));
+assert.ok(deepHtml.includes('BreadcrumbList'));
+assert.ok(!/style\s*=|<style\b/i.test(deepHtml), 'SSR deep topic page must have zero inline styles');
+
+// Draft folder must return 404
+const draftNodeRes = await handlePublicStudyLibraryRoute(
+  new Request('https://csodisha.com/study-library/competitive-exams-teacher-education/opsc-odisha-civil-services/prelims-general-studies/hidden-draft-topic/'),
+  bridgeEnv,
+  new URL('https://csodisha.com/study-library/competitive-exams-teacher-education/opsc-odisha-civil-services/prelims-general-studies/hidden-draft-topic/')
+);
+assert.equal(draftNodeRes.status, 404);
+
+// Published resource reader page must return 200, draft resource must return 404
+const ssrItemRes = await handlePublicStudyLibraryRoute(
+  new Request('https://csodisha.com/study-library/item/odisha-history-master-notes/'),
+  bridgeEnv,
+  new URL('https://csodisha.com/study-library/item/odisha-history-master-notes/')
+);
+assert.equal(ssrItemRes.status, 200);
+const itemHtml = await ssrItemRes.text();
+assert.ok(itemHtml.includes('Odisha History Master Notes'));
+assert.ok(itemHtml.includes('LearningResource'));
+assert.ok(!/style\s*=|<style\b/i.test(itemHtml), 'SSR item reader page must have zero inline styles');
+
+const draftItemRes = await handlePublicStudyLibraryRoute(
+  new Request('https://csodisha.com/study-library/item/unpublished-draft-paper/'),
+  bridgeEnv,
+  new URL('https://csodisha.com/study-library/item/unpublished-draft-paper/')
+);
+assert.equal(draftItemRes.status, 404);
+
+console.log('STUDY LIBRARY DIRECTORY MODULES #1-#10 + SSR TESTS PASSED');

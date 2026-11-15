@@ -25,6 +25,7 @@ import { getPublishedPage, getPageRedirect, getExpiredRedirect, renderDynamicPag
 import { handleUserApi } from './functions/api/user/_router.js';
 import { handleMedia } from './functions/api/media/_serve.js';
 import { handleAdminPage } from './functions/_lib/admin-pages.js';
+import { handlePublicStudyLibraryRoute } from './functions/_lib/study-library-ssr.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -483,6 +484,11 @@ export default {
       if (request.method === 'OPTIONS') return handleChecklistOptions();
       if (request.method === 'GET') return handleChecklistGet({ request, env, ctx });
       if (request.method === 'POST') return handleChecklistPost({ request, env, ctx });
+    }
+
+    if (pathname.startsWith('/study-library/')) {
+      const studyRes = await handlePublicStudyLibraryRoute(request, env, url);
+      if (studyRes) return studyRes;
     }
 
     // Fall back to static asset binding
