@@ -7,8 +7,10 @@
   <title>Jobs &amp; Careers Explorer | Common Sense Odisha</title>
   <meta name="description" content="Verified Odisha &amp; National recruitment notifications (OPSC, OSSC, OSSSC), career roadmaps, eligibility guides, scholarships, and official portals on Common Sense Odisha.">
   <link rel="canonical" href="https://csodisha.com/jobs/">
-  <link rel="stylesheet" href="/jobs/assets/jobs-explorer.css">
-  <script src="/jobs/assets/jobs-explorer.js" defer></script>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/style.css?v=20261114f">
+  <link rel="stylesheet" href="/jobs/assets/jobs-explorer.css?v=20261115g">
+  <script src="/jobs/assets/jobs-explorer.js?v=20261115g" defer></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -25,6 +27,17 @@
   </script>
 </head>
 <body>
+  <div id="csoPublicAnnouncementMount"></div>
+  <header class="top site-header__top" id="header-top" role="banner">
+    <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
+      <img src="/assets/images/cso-logo.svg" alt="CSO - Common Sense Odisha" class="cso-brand-logo" width="112" height="40">
+    </a>
+    <a class="adm cso-adm-stealth" href="/admin/" role="button" aria-label="Admin Portal - Authorised Access Only"><svg class="adm-ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg><span class="adm-txt">🛡 Admin Portal<br><small>Authorised Access Only</small></span></a>
+    <span id="ctl" class="cso-contents"></span>
+    <span class="sp"></span>
+    <div class="acct"><span class="cso-acct-icon" aria-hidden="true">👤</span><span id="auth" class="cso-contents"></span></div>
+  </header>
+  <nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
   <div id="jobs-shell" class="cso-jobs-shell">
     <div id="jobs-backdrop" class="cso-jobs-drawer-backdrop"></div>
     <aside class="cso-jobs-rail" aria-label="Directory Sections">
@@ -76,13 +89,7 @@
       </section>
 
       <section class="cso-jobs-panel">
-        <h2>Directory at a Glance</h2>
-        <div id="jobs-kpis" class="cso-jobs-kpis" aria-label="Directory at a Glance"></div>
-        <div id="jobs-telemetry-bars" class="cso-jobs-telemetry-grid" aria-label="Directory Coverage and Breakdown"></div>
-      </section>
-
-      <section class="cso-jobs-panel">
-        <h2>Explore All Categories</h2>
+        <h2>Explore All 8 Career Categories</h2>
         <div id="jobs-domains-grid" class="cso-jobs-domain-grid"></div>
       </section>
 
@@ -128,7 +135,55 @@
       </section>
 
       <section id="jobs-items-grid" class="cso-jobs-items-grid" aria-label="Filtered Opportunities"></section>
+
+      <section class="cso-jobs-panel">
+        <h2>Directory at a Glance</h2>
+        <div id="jobs-kpis" class="cso-jobs-kpis" aria-label="Directory at a Glance"></div>
+      </section>
     </main>
   </div>
+
+  <footer><div class="w cso-footer-grid">
+    <div class="cso-footer-zone1">
+      <div class="cso-footer-brand-header">
+        <img src="/assets/images/cso-logo.svg" alt="CSO" class="cso-footer-logo" width="96" height="34">
+        <div class="cso-footer-title">Common Sense Odisha</div>
+      </div>
+      <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
+      <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
+      <p class="cso-footer-contact">Contact: <a class="cso-footer-contact-link" href="mailto:contact@csodisha.com">contact@csodisha.com</a></p>
+    </div>
+    <div class="cso-footer-zone2">
+      <div class="cso-footer-col">
+        <h4>Explore</h4>
+        <a href="/jobs/">Jobs &amp; Careers</a>
+        <a href="/schemes/">Schemes &amp; Benefits</a>
+        <a href="/study-library/">Study Library</a>
+        <a href="/community/">Community</a>
+        <a href="/about/">About CSO</a>
+      </div>
+      <div class="cso-footer-col">
+        <h4>Support &amp; Legal</h4>
+        <a href="/support/#faqs">Help &amp; FAQs</a>
+        <a href="/support/#report-error">Report an Error</a>
+        <a href="/support/#suggest-resource">Suggest Resource</a>
+        <a href="/privacy-policy/">Privacy Policy</a>
+        <a href="/terms-of-use/">Terms of Use</a>
+      </div>
+    </div>
+    <div class="cso-footer-zone3">
+      <img class="cso-footer-odisha-map" src="/assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy">
+      <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
+      <div class="cso-footer-lang-pills">
+        <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>
+        <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+        <button type="button" class="cso-footer-lang-pill" data-cso-lang="or">ଓଡ଼ିଆ</button>
+        <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+        <button type="button" class="cso-footer-lang-pill" data-cso-lang="hi">हिन्दी</button>
+      </div>
+    </div>
+  </div></footer>
+  <script src="/assets/cso-auth-client.js?v=20261114f" defer></script>
+  <script src="/assets/shared-header.js?v=20261114f" defer></script>
 </body>
 </html>

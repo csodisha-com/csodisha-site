@@ -586,6 +586,10 @@
       break;
     }
   }
+  if (!activeSection) {
+    if (pathname.startsWith('/jobs')) activeSection = 'jobs-careers';
+    else if (pathname.startsWith('/schemes')) activeSection = 'schemes-benefits';
+  }
 
   function closeDropdowns(except) {
     document.querySelectorAll('#navw .ni').forEach(n => {

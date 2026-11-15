@@ -107,62 +107,17 @@
 
     if (kpisEl) {
       clear(kpisEl);
-      var totalFolders = Math.max(1, Number(totals.totalFolders || 1));
       [
-        { label: 'Navigation Groups', val: totals.totalDomains || 8, max: 8, cur: totals.totalDomains || 8 },
-        { label: 'Main Sections', val: totals.totalSections || 0, max: totalFolders, cur: totals.totalSections || 0 },
-        { label: 'Subcategories', val: totals.totalSubcategories || 0, max: totalFolders, cur: totals.totalSubcategories || 0 },
-        { label: 'Detailed Entries', val: (totals.totalPublished || 0) + '+', max: Math.max(1, (totals.totalPublished || 0) + (totals.totalEntries || 0)), cur: totals.totalPublished || 0 }
+        { label: 'Navigation Groups', val: totals.totalDomains || 8 },
+        { label: 'Main Sections', val: totals.totalSections || 0 },
+        { label: 'Subcategories', val: totals.totalSubcategories || 0 },
+        { label: 'Detailed Entries', val: Number(totals.totalPublished || 0).toLocaleString('en-IN') + '+' }
       ].forEach(function (k) {
         kpisEl.appendChild(el('div', { class: 'cso-jobs-kpi' }, [
           el('div', { class: 'cso-jobs-kpi-label', text: k.label }),
-          el('div', { class: 'cso-jobs-kpi-val', text: String(k.val) }),
-          el('progress', { class: 'cso-jobs-progress', max: String(k.max), value: String(k.cur) })
+          el('div', { class: 'cso-jobs-kpi-val', text: String(k.val) })
         ]));
       });
-    }
-
-    if (telemetryEl) {
-      clear(telemetryEl);
-      var maxDomainCount = Math.max(1, domains.reduce(function (m, d) {
-        return Math.max(m, Number(d.folder_count || 0) + Number(d.item_count || 0));
-      }, 1));
-
-      var covCard = el('div', { class: 'cso-jobs-telemetry-card' }, [
-        el('h3', { text: 'Directory & Entry Coverage Across 8 Career Domains' })
-      ]);
-      domains.forEach(function (d) {
-        var total = Number(d.folder_count || 0) + Number(d.item_count || 0);
-        covCard.appendChild(el('div', { class: 'cso-jobs-bar-row' }, [
-          el('div', { class: 'cso-jobs-bar-meta' }, [
-            el('span', { text: d.num + ' · ' + d.title }),
-            el('span', { text: d.folder_count + ' dirs · ' + d.item_count + ' entries' })
-          ]),
-          el('progress', { class: 'cso-jobs-progress', max: String(maxDomainCount), value: String(total) })
-        ]));
-      });
-
-      var totalType = Math.max(1, (tb.recruitment || 0) + (tb.guides || 0) + (tb.examsAndScholarships || 0) + (tb.portals || 0));
-      var typeCard = el('div', { class: 'cso-jobs-telemetry-card' }, [
-        el('h3', { text: 'Opportunity Type Breakdown' })
-      ]);
-      [
-        ['Recruitment & Notifications', tb.recruitment || 0],
-        ['Career & Eligibility Guides', tb.guides || 0],
-        ['Entrance Exams & Scholarships', tb.examsAndScholarships || 0],
-        ['Verified Official Portals', tb.portals || 0]
-      ].forEach(function (pair) {
-        typeCard.appendChild(el('div', { class: 'cso-jobs-bar-row' }, [
-          el('div', { class: 'cso-jobs-bar-meta' }, [
-            el('span', { text: pair[0] }),
-            el('span', { text: String(pair[1]) })
-          ]),
-          el('progress', { class: 'cso-jobs-progress', max: String(totalType), value: String(pair[1]) })
-        ]));
-      });
-
-      telemetryEl.appendChild(covCard);
-      telemetryEl.appendChild(typeCard);
     }
 
     if (navEl) {

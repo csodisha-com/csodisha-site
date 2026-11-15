@@ -43,58 +43,19 @@
     if (!kpis || !overview) return;
     clear(kpis);
     var totals = overview.totals || {};
-    var tb = overview.typeBreakdown || {};
     var domains = overview.domains || [];
-    var maxItems = Math.max(1, Number(totals.totalPublished || 1));
 
     [
-      { label: 'Community Domains', val: totals.totalDomains || domains.length || 10, max: 10, cur: totals.totalDomains || 10 },
-      { label: 'Directory Categories', val: totals.totalFolders || 0, max: Math.max(1, totals.totalFolders || 1), cur: totals.totalFolders || 0 },
-      { label: 'Published Communities', val: totals.totalPublished || 0, max: maxItems, cur: totals.totalPublished || 0 },
-      { label: 'Safety-Verified Circles', val: totals.totalVerified || 0, max: maxItems, cur: totals.totalVerified || 0 }
+      { label: 'Community Domains', val: totals.totalDomains || domains.length || 10 },
+      { label: 'Directory Categories', val: totals.totalFolders || 0 },
+      { label: 'Published Communities', val: totals.totalPublished || 0 },
+      { label: 'Safety-Verified Circles', val: totals.totalVerified || 0 }
     ].forEach(function (k) {
       kpis.appendChild(el('div', { class: 'cso-comm-kpi' }, [
         el('div', { class: 'cso-comm-kpi-label', text: k.label }),
-        el('div', { class: 'cso-comm-kpi-val', text: String(k.val) }),
-        el('progress', { class: 'cso-comm-progress', max: String(k.max), value: String(k.cur) })
+        el('div', { class: 'cso-comm-kpi-val', text: Number(k.val || 0).toLocaleString('en-IN') })
       ]));
     });
-
-    var tele = document.getElementById('community-telemetry-bars');
-    if (!tele) return;
-    clear(tele);
-
-    var domainCard = el('div', { class: 'cso-comm-telemetry-card' }, [el('h3', { text: '10-Domain Directory & Community Coverage' })]);
-    var maxDom = Math.max(1, domains.reduce(function (a, d) { return Math.max(a, Number(d.folder_count || 0) + Number(d.item_count || 0)); }, 0));
-    domains.forEach(function (d) {
-      var sum = Number(d.folder_count || 0) + Number(d.item_count || 0);
-      domainCard.appendChild(el('div', { class: 'cso-comm-bar-row' }, [
-        el('div', { class: 'cso-comm-bar-meta' }, [
-          el('span', { text: '#' + d.num + ' ' + d.title }),
-          el('span', { text: (d.folder_count || 0) + ' dirs · ' + (d.item_count || 0) + ' live' })
-        ]),
-        el('progress', { class: 'cso-comm-progress', max: String(maxDom), value: String(sum) })
-      ]));
-    });
-
-    var typeCard = el('div', { class: 'cso-comm-telemetry-card' }, [el('h3', { text: 'Community Type Breakdown' })]);
-    var typeRows = [
-      ['District & Civic Chapters', Number(tb.district_chapter || 0)],
-      ['Student & Mentorship Circles', Number(tb.study_mentorship || 0)],
-      ['Career, FPO & SHG Networks', Number(tb.professional_network || 0) + Number(tb.fpo_cooperative || 0) + Number(tb.shg_welfare || 0)],
-      ['Youth, NGOs & Culture/Sports', Number(tb.ngo_volunteering || 0) + Number(tb.cultural_sports || 0)],
-      ['STEM, Diaspora & Safety', Number(tb.stem_club || 0) + Number(tb.online_forum || 0) + Number(tb.safety_governance || 0)]
-    ];
-    var maxType = Math.max(1, typeRows.reduce(function (a, r) { return Math.max(a, r[1]); }, 0));
-    typeRows.forEach(function (pair) {
-      typeCard.appendChild(el('div', { class: 'cso-comm-bar-row' }, [
-        el('div', { class: 'cso-comm-bar-meta' }, [el('span', { text: pair[0] }), el('span', { text: String(pair[1]) })]),
-        el('progress', { class: 'cso-comm-progress', max: String(maxType), value: String(pair[1]) })
-      ]));
-    });
-
-    tele.appendChild(domainCard);
-    tele.appendChild(typeCard);
   }
 
   function renderDomains(overview) {

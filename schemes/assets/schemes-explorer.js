@@ -44,61 +44,20 @@
     if (!kpis || !overview) return;
     clear(kpis);
     var totals = overview.totals || {};
-    var sb = overview.sponsorBreakdown || {};
-    var tb = overview.typeBreakdown || {};
     var domains = overview.domains || [];
     var totalEntriesDisplay = Math.max(Number(totals.totalEntries || 0), Number(totals.totalPublished || 0));
-    var maxBar = Math.max(1, totalEntriesDisplay, Number(totals.totalFolders || 1));
 
     [
-      { label: 'Navigation Groups', val: totals.totalDomains || domains.length || 8, max: 8, cur: totals.totalDomains || 8 },
-      { label: 'Main Sections', val: totals.totalSections || 0, max: Math.max(1, totals.totalSections || 1), cur: totals.totalSections || 0 },
-      { label: 'Subcategories', val: totals.totalSubcategories || 0, max: Math.max(1, totals.totalSubcategories || 1), cur: totals.totalSubcategories || 0 },
-      { label: 'Detailed Entries', val: totalEntriesDisplay, max: maxBar, cur: totalEntriesDisplay }
+      { label: 'Navigation Groups', val: totals.totalDomains || domains.length || 8 },
+      { label: 'Main Sections', val: totals.totalSections || 0 },
+      { label: 'Subcategories', val: totals.totalSubcategories || 0 },
+      { label: 'Detailed Entries', val: totalEntriesDisplay }
     ].forEach(function (k) {
       kpis.appendChild(el('div', { class: 'cso-schemes-kpi' }, [
         el('div', { class: 'cso-schemes-kpi-label', text: k.label }),
-        el('div', { class: 'cso-schemes-kpi-val', text: String(k.val) }),
-        el('progress', { class: 'cso-schemes-progress', max: String(k.max), value: String(k.cur) })
+        el('div', { class: 'cso-schemes-kpi-val', text: Number(k.val || 0).toLocaleString('en-IN') })
       ]));
     });
-
-    var tele = document.getElementById('schemes-telemetry-bars');
-    if (!tele) return;
-    clear(tele);
-
-    var domainCard = el('div', { class: 'cso-schemes-telemetry-card' }, [el('h3', { text: 'Directory & Entry Coverage Across 8 Welfare Domains' })]);
-    var maxDom = Math.max(1, domains.reduce(function (a, d) { return Math.max(a, Number(d.folder_count || 0) + Number(d.item_count || 0)); }, 0));
-    domains.forEach(function (d) {
-      var sum = Number(d.folder_count || 0) + Number(d.item_count || 0);
-      domainCard.appendChild(el('div', { class: 'cso-schemes-bar-row' }, [
-        el('div', { class: 'cso-schemes-bar-meta' }, [
-          el('span', { text: '#' + d.num + ' ' + d.title }),
-          el('span', { text: (d.folder_count || 0) + ' cats · ' + (d.item_count || 0) + ' entries' })
-        ]),
-        el('progress', { class: 'cso-schemes-progress', max: String(maxDom), value: String(sum) })
-      ]));
-    });
-
-    var sponsorCard = el('div', { class: 'cso-schemes-telemetry-card' }, [el('h3', { text: 'Sponsor & Scheme Type Breakdown' })]);
-    var breakdownRows = [
-      ['Odisha State Schemes', Number(sb.odishaState || 0)],
-      ['Central Govt Schemes', Number(sb.centralGovt || 0)],
-      ['Joint State-Central', Number(sb.joint || 0)],
-      ['Scholarships & Fellowships', Number(tb.scholarship || 0)],
-      ['Health & Pension Protection', Number(tb.health_insurance || 0) + Number(tb.pension_social || 0)],
-      ['Citizen Services & Portals', Number(tb.citizen_service || 0) + Number(tb.eligibility_tool || 0)]
-    ];
-    var maxBreak = Math.max(1, breakdownRows.reduce(function (a, r) { return Math.max(a, r[1]); }, 0));
-    breakdownRows.forEach(function (pair) {
-      sponsorCard.appendChild(el('div', { class: 'cso-schemes-bar-row' }, [
-        el('div', { class: 'cso-schemes-bar-meta' }, [el('span', { text: pair[0] }), el('span', { text: String(pair[1]) })]),
-        el('progress', { class: 'cso-schemes-progress', max: String(maxBreak), value: String(pair[1]) })
-      ]));
-    });
-
-    tele.appendChild(domainCard);
-    tele.appendChild(sponsorCard);
   }
 
   function renderDomains(overview) {
