@@ -144,3 +144,14 @@
 .cso-sec-acl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin:10px 0}
 .cso-sec-acl-textarea{width:100%;min-height:84px;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 .cso-sec-totp-uri{font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-all;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.cso-cnt-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.cso-cnt-pill{padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:12px;font-weight:600;cursor:pointer}
+.cso-cnt-pill.is-active{background:var(--brand);border-color:var(--brand);color:#fff}
+.cso-cnt-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cso-cnt-toolbar-left{display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex:1 1 320px}
+.cso-cnt-composer{border:1px solid var(--brand);border-radius:10px;padding:14px;background:var(--card);margin-bottom:14px}
+.cso-cnt-seo-preview{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);margin-top:8px}
+.cso-cnt-seo-url{font-size:12px;color:var(--ok);margin-bottom:2px}
+.cso-cnt-seo-title{font-size:15px;font-weight:700;color:var(--brand);margin-bottom:2px}
+.cso-cnt-seo-desc{font-size:12px;color:var(--muted)}
+.cso-cnt-pager{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}

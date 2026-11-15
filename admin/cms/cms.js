@@ -9390,8 +9390,481 @@
     [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/about-directory', 'About CSO'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/jobs-directory', 'Jobs Directory'], ['#/schemes', 'Schemes'], ['#/schemes-directory', 'Schemes Tree'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/study-library-directory', 'Study Directory'], ['#/freshness', 'Freshness Audit'], ['#/feedback', 'Feedback Queue'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/security', 'Security'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
       .forEach(function (l) { nav.appendChild(el('a', { href: l[0] }, l[1])); });
   }
+  function contentPublishingStudioPanel(mode) {
+    var canWrite = Boolean(me && (me.role === 'admin' || me.role === 'editor'));
+    var canStatus = Boolean(me && (me.role === 'admin' || me.role === 'editor' || me.role === 'reviewer'));
+    var isAdmin = Boolean(me && me.role === 'admin');
+
+    var MODE_CFG = {
+      all: {
+        badge: 'EDITORIAL COMMAND',
+        title: 'All Content Management Studio',
+        sub: 'Unified cross-type command center for Articles, News Updates, Current Affairs, and Announcements with live SEO preview and revision history.',
+        cta: '+ Create New Content',
+        fixedType: null,
+        defaultCreateType: 'article'
+      },
+      articles: {
+        badge: 'LONG-FORM STUDIO',
+        title: 'Articles & Blogs Editorial Studio',
+        sub: 'Write, review, and publish long-form strategy essays and Odisha exam guides with live reading-time estimation and SEO gatekeeping.',
+        cta: '+ Write New Article',
+        fixedType: 'article',
+        defaultCreateType: 'article'
+      },
+      news: {
+        badge: 'NEWS DESK',
+        title: 'News & Updates Studio',
+        sub: 'Publish verified Odisha & National institutional updates with district tagging, source citations, and rapid editorial status toggles.',
+        cta: '+ Publish News Update',
+        fixedType: 'news',
+        defaultCreateType: 'news'
+      },
+      'current-affairs': {
+        badge: 'EXAM DIGEST',
+        title: 'Current Affairs Studio',
+        sub: 'Curate daily & weekly Current Affairs briefs tagged for OPSC, OSSSC, OSSC, UGC NET, and Banking examinations.',
+        cta: '+ Add Current Affairs Brief',
+        fixedType: 'current_affairs',
+        defaultCreateType: 'current_affairs'
+      }
+    };
+    var cfg = MODE_CFG[mode] || MODE_CFG.all;
+
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var composerBox = el('div');
+    var pillsBox = el('div', { class: 'cso-cnt-pills' });
+    var tableBox = el('div');
+    var pagerBox = el('div', { class: 'cso-cnt-pager' });
+
+    var state = {
+      type: cfg.fixedType || 'all',
+      status: 'all',
+      q: '',
+      limit: 25,
+      offset: 0,
+      total: 0,
+      guards: { require_seo_meta_before_publish: true, block_editor_hard_delete: true }
+    };
+
+    var createBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: cfg.cta });
+    if (!canWrite) createBtn.disabled = true;
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge ok', text: cfg.badge }),
+        el('h2', { text: cfg.title }),
+        el('p', { class: 'muted', text: cfg.sub })
+      ]),
+      el('div', {}, [createBtn])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(composerBox);
+
+    var statusSel = el('select', { class: 'select' }, [
+      el('option', { value: 'all', text: 'All Statuses' }),
+      el('option', { value: 'draft', text: 'Draft' }),
+      el('option', { value: 'in_review', text: 'In Review' }),
+      el('option', { value: 'approved', text: 'Approved' }),
+      el('option', { value: 'published', text: 'Published' }),
+      el('option', { value: 'scheduled', text: 'Scheduled' }),
+      el('option', { value: 'archived', text: 'Archived' })
+    ]);
+    var searchInp = el('input', { class: 'input', type: 'search', placeholder: 'Search title, slug, district, or exam...' });
+    var searchBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Search' });
+
+    if (!cfg.fixedType) {
+      var typeDefs = [
+        ['all', 'All'],
+        ['article', 'Articles & Blogs'],
+        ['news', 'News & Updates'],
+        ['current_affairs', 'Current Affairs'],
+        ['announcement', 'Announcements']
+      ];
+      typeDefs.forEach(function (td) {
+        var b = el('button', {
+          type: 'button',
+          class: 'cso-cnt-pill' + (state.type === td[0] ? ' is-active' : ''),
+          text: td[1]
+        });
+        b.addEventListener('click', function () {
+          state.type = td[0];
+          state.offset = 0;
+          Array.prototype.forEach.call(pillsBox.children, function (c) { c.classList.remove('is-active'); });
+          b.classList.add('is-active');
+          load();
+        });
+        pillsBox.appendChild(b);
+      });
+    }
+
+    function openComposer(editing) {
+      clear(composerBox);
+      var isEdit = Boolean(editing && editing.id);
+      var card = el('div', { class: 'cso-cnt-composer' });
+      var titleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title) || '', placeholder: 'Headline / Title...' });
+      var slugInp = el('input', { class: 'input', type: 'text', value: (editing && editing.slug) || '', placeholder: 'auto-generated-from-title' });
+      var postTypeSel = el('select', { class: 'select' }, [
+        el('option', { value: 'article', text: 'Articles & Blogs' }),
+        el('option', { value: 'news', text: 'News & Updates' }),
+        el('option', { value: 'current_affairs', text: 'Current Affairs' }),
+        el('option', { value: 'announcement', text: 'Announcements' })
+      ]);
+      postTypeSel.value = cfg.fixedType || (editing && editing.post_type) || cfg.defaultCreateType;
+      if (cfg.fixedType) postTypeSel.disabled = true;
+
+      var stageSel = el('select', { class: 'select' }, [
+        el('option', { value: 'draft', text: 'draft' }),
+        el('option', { value: 'in_review', text: 'in_review' }),
+        el('option', { value: 'approved', text: 'approved' }),
+        el('option', { value: 'published', text: 'published' }),
+        el('option', { value: 'scheduled', text: 'scheduled' }),
+        el('option', { value: 'archived', text: 'archived' })
+      ]);
+      stageSel.value = (editing && (editing.workflow_stage || editing.status)) || 'draft';
+
+      var catInp = el('input', { class: 'input', type: 'text', value: (editing && editing.category) || '', placeholder: 'e.g. Odisha Polity, Economy, Exams' });
+      var tagsInp = el('input', { class: 'input', type: 'text', value: (editing && Array.isArray(editing.tags) ? editing.tags.join(', ') : ''), placeholder: 'opsc, odisha, 2026' });
+      var districtInp = el('input', { class: 'input', type: 'text', value: (editing && editing.district_tag) || '', placeholder: 'e.g. Bhubaneswar, Balasore, Statewide' });
+      var sourceInp = el('input', { class: 'input', type: 'text', value: (editing && editing.source_citation) || '', placeholder: 'e.g. Odisha Gazette / PIB' });
+      var examInp = el('input', { class: 'input', type: 'text', value: (editing && editing.exam_relevance) || '', placeholder: 'e.g. OPSC OAS, OSSSC RI, OSSC CGL' });
+      var featCb = el('input', { type: 'checkbox' });
+      featCb.checked = Boolean(editing && editing.is_featured);
+
+      var summaryTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Concise excerpt / key takeaway bullets...' });
+      summaryTa.value = (editing && editing.summary) || '';
+      var bodyTa = el('textarea', { class: 'textarea', rows: '5', placeholder: 'Markdown or structured editorial content...' });
+      bodyTa.value = (editing && editing.body_md) || '';
+
+      var seoTitleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.seo_title) || '', placeholder: 'SEO Meta Title (recommended 40-65 chars)' });
+      var seoDescInp = el('textarea', { class: 'textarea', rows: '2', placeholder: 'SEO Meta Description (recommended 110-160 chars)' });
+      seoDescInp.value = (editing && editing.seo_description) || '';
+
+      var readBadge = el('span', { class: 'badge ok', text: '1 min read' });
+      var seoBadge = el('span', { class: 'badge warn', text: 'SEO Meta Incomplete' });
+      var seoPrevBox = el('div', { class: 'cso-cnt-seo-preview' });
+
+      function refreshLivePreview() {
+        var words = ((summaryTa.value || '') + ' ' + (bodyTa.value || '')).trim().split(/\s+/).filter(Boolean).length;
+        var mins = Math.max(1, Math.ceil(words / 200));
+        readBadge.textContent = mins + ' min read (' + words + ' words)';
+
+        var hasSeo = Boolean(seoTitleInp.value.trim() && seoDescInp.value.trim());
+        seoBadge.className = 'badge ' + (hasSeo ? 'ok' : 'warn');
+        seoBadge.textContent = hasSeo ? 'SEO Meta Ready' : 'SEO Required for Publish';
+
+        var autoSlug = (slugInp.value.trim() || titleInp.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'preview-slug');
+        clear(seoPrevBox);
+        seoPrevBox.appendChild(el('div', { class: 'cso-cnt-seo-url', text: 'https://csodisha.com' + (postTypeSel.value === 'news' || postTypeSel.value === 'article' ? '/news/' : '/updates/') + autoSlug + '/' }));
+        seoPrevBox.appendChild(el('div', { class: 'cso-cnt-seo-title', text: seoTitleInp.value.trim() || titleInp.value.trim() || 'Article SEO Title Preview' }));
+        seoPrevBox.appendChild(el('div', { class: 'cso-cnt-seo-desc', text: seoDescInp.value.trim() || summaryTa.value.trim() || 'Meta description preview appears here as you type.' }));
+      }
+      [titleInp, slugInp, summaryTa, bodyTa, seoTitleInp, seoDescInp, postTypeSel].forEach(function (inp) {
+        inp.addEventListener('input', refreshLivePreview);
+      });
+      refreshLivePreview();
+
+      var saveBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: isEdit ? 'Save Revision & Update' : 'Create Content Item' });
+      var cancelBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Cancel' });
+      cancelBtn.addEventListener('click', function () { clear(composerBox); });
+
+      var saveBusy = false;
+      saveBtn.addEventListener('click', async function () {
+        if (!canWrite || saveBusy) return;
+        saveBusy = true;
+        saveBtn.disabled = true;
+        try {
+          var payload = {
+            title: titleInp.value.trim(),
+            slug: slugInp.value.trim(),
+            post_type: postTypeSel.value,
+            workflow_stage: stageSel.value,
+            category: catInp.value.trim(),
+            tags: tagsInp.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean),
+            district_tag: districtInp.value.trim(),
+            source_citation: sourceInp.value.trim(),
+            exam_relevance: examInp.value.trim(),
+            is_featured: featCb.checked,
+            summary: summaryTa.value.trim(),
+            body_md: bodyTa.value,
+            seo_title: seoTitleInp.value.trim(),
+            seo_description: seoDescInp.value.trim()
+          };
+          if (isEdit) {
+            await api('PUT', 'content/posts/' + encodeURIComponent(editing.id), payload);
+            toast('Updated post and saved revision snapshot');
+          } else {
+            await api('POST', 'content/posts', payload);
+            toast('Created new content item');
+          }
+          clear(composerBox);
+          await load();
+        } catch (err) {
+          toast(err.message || 'Save failed', true);
+        } finally {
+          saveBusy = false;
+          saveBtn.disabled = !canWrite;
+        }
+      });
+
+      card.appendChild(el('div', { class: 'cso-ops-subhead' }, [
+        el('h3', { text: isEdit ? 'Edit Content Item (' + editing.id + ')' : cfg.cta }),
+        el('div', { class: 'cso-ops-actions' }, [readBadge, seoBadge])
+      ]));
+      card.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
+        el('div', { class: 'field' }, [el('label', { text: 'Title *' }), titleInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Slug (optional auto)' }), slugInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Content Type' }), postTypeSel]),
+        el('div', { class: 'field' }, [el('label', { text: 'Workflow Stage' }), stageSel]),
+        el('div', { class: 'field' }, [el('label', { text: 'Category' }), catInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Tags (comma-separated)' }), tagsInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'District Tag (News / Regional)' }), districtInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Source Citation' }), sourceInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Exam Relevance (OPSC/OSSSC/OSSC)' }), examInp]),
+        el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Feature in Priority Slot')])])
+      ]));
+      card.appendChild(el('div', { class: 'field' }, [el('label', { text: 'Summary / Key Takeaways' }), summaryTa]));
+      card.appendChild(el('div', { class: 'field' }, [el('label', { text: 'Body (Markdown / Content)' }), bodyTa]));
+      card.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
+        el('div', { class: 'field' }, [el('label', { text: 'SEO Title' }), seoTitleInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'SEO Description' }), seoDescInp])
+      ]));
+      card.appendChild(seoPrevBox);
+      card.appendChild(el('div', { class: 'cso-ops-actions' }, [saveBtn, cancelBtn]));
+      composerBox.appendChild(card);
+    }
+
+    createBtn.addEventListener('click', function () { openComposer(null); });
+
+    function renderKpis(k) {
+      clear(kpis);
+      var items = [];
+      if (mode === 'articles') {
+        items = [
+          ['Total Articles', String(k.total_count || 0)],
+          ['Published Articles', String(k.published_count || 0)],
+          ['Avg Reading Time', String(k.avg_reading_minutes || 1) + ' min'],
+          ['Featured Essays', String(k.featured_count || 0)]
+        ];
+      } else if (mode === 'news') {
+        items = [
+          ['Total News Stories', String(k.total_count || 0)],
+          ['Published Today', String(k.today_count || 0)],
+          ['Pending Review', String((k.in_review_count || 0) + (k.draft_count || 0))],
+          ['District-Tagged Stories', String(k.district_tagged_count || 0)]
+        ];
+      } else if (mode === 'current-affairs') {
+        items = [
+          ['Total CA Digests', String(k.total_count || 0)],
+          ['Exam-Tagged Entries', String(k.exam_tagged_count || 0)],
+          ['Published Today', String(k.today_count || 0)],
+          ['Published Live', String(k.published_count || 0)]
+        ];
+      } else {
+        items = [
+          ['Total Content Items', String(k.total_count || 0)],
+          ['Published Live', String(k.published_count || 0)],
+          ['In Review / Drafts', String((k.in_review_count || 0) + (k.draft_count || 0))],
+          ['Featured Items', String(k.featured_count || 0)]
+        ];
+      }
+      items.forEach(function (pair) {
+        kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+          el('span', { class: 'muted sm', text: pair[0] }),
+          el('strong', { text: pair[1] })
+        ]));
+      });
+    }
+
+    function renderTable(res) {
+      clear(tableBox);
+      clear(pagerBox);
+      var rows = Array.isArray(res.items) ? res.items : [];
+      state.total = Number((res.paging && res.paging.total) || rows.length);
+
+      if (!rows.length) {
+        tableBox.appendChild(el('div', { class: 'muted sm', text: 'No content items match the current filter.' }));
+      } else {
+        var tbody = el('tbody');
+        rows.forEach(function (it) {
+          var st = it.workflow_stage || it.status || 'draft';
+          var stCls = st === 'published' ? 'ok' : (st === 'archived' ? 'bad' : 'warn');
+          var actTd = el('td', { class: 'cso-ops-actions' });
+
+          if (canWrite) {
+            var editBtn = el('button', { class: 'btn sm', type: 'button', text: 'Edit' });
+            editBtn.addEventListener('click', function () { openComposer(it); });
+            actTd.appendChild(editBtn);
+          }
+
+          if (canStatus) {
+            var nextStage = st === 'published' ? 'draft' : 'published';
+            var toggleBtn = el('button', {
+              class: 'btn sm',
+              type: 'button',
+              text: st === 'published' ? 'Unpublish' : 'Publish'
+            });
+            toggleBtn.addEventListener('click', async function () {
+              toggleBtn.disabled = true;
+              try {
+                await api('PATCH', 'content/posts/' + encodeURIComponent(it.id) + '/status', { workflow_stage: nextStage });
+                toast('Status updated to ' + nextStage);
+                await load();
+              } catch (err) {
+                toast(err.message || 'Status update blocked', true);
+                toggleBtn.disabled = false;
+              }
+            });
+            actTd.appendChild(toggleBtn);
+          }
+
+          var prevBtn = el('button', { class: 'btn sm', type: 'button', text: 'Preview' });
+          prevBtn.addEventListener('click', function () {
+            window.open(it.public_url || ('/updates/' + encodeURIComponent(it.slug) + '/'), '_blank', 'noopener');
+          });
+          actTd.appendChild(prevBtn);
+
+          if (isAdmin || !(state.guards && state.guards.block_editor_hard_delete)) {
+            if (canWrite) {
+              var delBtn = el('button', { class: 'btn sm danger', type: 'button', text: 'Delete' });
+              delBtn.addEventListener('click', async function () {
+                delBtn.disabled = true;
+                try {
+                  await api('DELETE', 'content/posts/' + encodeURIComponent(it.id));
+                  toast('Post deleted');
+                  await load();
+                } catch (err) {
+                  toast(err.message || 'Delete failed', true);
+                  delBtn.disabled = false;
+                }
+              });
+              actTd.appendChild(delBtn);
+            }
+          }
+
+          var metaDetail = it.post_type;
+          if (it.district_tag) metaDetail += ' · ' + it.district_tag;
+          if (it.exam_relevance) metaDetail += ' · ' + it.exam_relevance;
+
+          tbody.appendChild(el('tr', {}, [
+            el('td', {}, [
+              el('strong', { text: it.title }),
+              el('div', { class: 'muted sm', text: '/' + it.slug + ' · ' + String(it.reading_time_minutes || 1) + 'm read' })
+            ]),
+            el('td', { text: metaDetail }),
+            el('td', {}, [
+              el('span', { class: 'badge ' + stCls, text: st }),
+              el('div', { class: 'muted sm', text: it.has_seo_meta ? 'SEO ✓' : 'No SEO' })
+            ]),
+            el('td', { text: String(it.updated_at || it.created_at || '').slice(0, 16).replace('T', ' ') }),
+            actTd
+          ]));
+        });
+
+        tableBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+          el('table', { class: 'table' }, [
+            el('thead', {}, [el('tr', {}, [
+              el('th', { text: 'Title & Slug' }),
+              el('th', { text: 'Type / Scope' }),
+              el('th', { text: 'Stage & SEO' }),
+              el('th', { text: 'Updated' }),
+              el('th', { text: 'Actions' })
+            ])]),
+            tbody
+          ])
+        ]));
+      }
+
+      var prevPage = el('button', { class: 'btn sm', type: 'button', text: '← Prev' });
+      prevPage.disabled = state.offset <= 0;
+      prevPage.addEventListener('click', function () {
+        state.offset = Math.max(0, state.offset - state.limit);
+        load();
+      });
+      var nextPage = el('button', { class: 'btn sm', type: 'button', text: 'Next →' });
+      nextPage.disabled = state.offset + state.limit >= state.total;
+      nextPage.addEventListener('click', function () {
+        state.offset += state.limit;
+        load();
+      });
+      pagerBox.appendChild(el('span', { class: 'muted sm', text: 'Showing ' + (state.total ? state.offset + 1 : 0) + '–' + Math.min(state.total, state.offset + rows.length) + ' of ' + state.total }));
+      pagerBox.appendChild(el('div', { class: 'cso-ops-actions' }, [prevPage, nextPage]));
+    }
+
+    async function load() {
+      try {
+        var qs = 'type=' + encodeURIComponent(state.type) +
+          '&status=' + encodeURIComponent(state.status) +
+          '&q=' + encodeURIComponent(state.q) +
+          '&limit=' + String(state.limit) +
+          '&offset=' + String(state.offset);
+        var res = await api('GET', 'content/posts?' + qs);
+        if (res.guards) state.guards = res.guards;
+        renderKpis(res.kpis || {});
+        renderTable(res);
+      } catch (e) {
+        toast(e.message || 'Failed to load content studio', true);
+      }
+    }
+
+    statusSel.addEventListener('change', function () {
+      state.status = statusSel.value;
+      state.offset = 0;
+      load();
+    });
+    searchBtn.addEventListener('click', function () {
+      state.q = searchInp.value.trim();
+      state.offset = 0;
+      load();
+    });
+    searchInp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        state.q = searchInp.value.trim();
+        state.offset = 0;
+        load();
+      }
+    });
+
+    var listCard = el('div', { class: 'cso-ops-card' });
+    if (!cfg.fixedType) listCard.appendChild(pillsBox);
+    listCard.appendChild(el('div', { class: 'cso-cnt-toolbar' }, [
+      el('div', { class: 'cso-cnt-toolbar-left' }, [searchInp, searchBtn]),
+      statusSel
+    ]));
+    listCard.appendChild(tableBox);
+    listCard.appendChild(pagerBox);
+    wrap.appendChild(listCard);
+
+    load();
+    return wrap;
+  }
+
+  async function viewContentStudio(sub) {
+    var mode = sub || 'all';
+    if (mode === 'articles') {
+      setTitle('Articles & Blogs');
+      main.appendChild(contentPublishingStudioPanel('articles'));
+      return;
+    }
+    if (mode === 'news') {
+      setTitle('News & Updates');
+      main.appendChild(contentPublishingStudioPanel('news'));
+      return;
+    }
+    if (mode === 'current-affairs') {
+      setTitle('Current Affairs');
+      main.appendChild(contentPublishingStudioPanel('current-affairs'));
+      return;
+    }
+    setTitle('All Content');
+    main.appendChild(contentPublishingStudioPanel('all'));
+  }
+
   var VIEWS = {
     dashboard: function () { return viewDashboard(); },
+    content: function (parts) { return viewContentStudio(parts[1]); },
     pages: function (parts) { return viewSitePages(parts[1] === 'legal' ? 'Information & Legal' : (parts[1] === 'workspace' ? 'Candidate Workspace' : '')); },
     'jobs-directory': function () { return viewJobsDirectory(); },
     'about-directory': function () { return viewAboutDirectory(); },

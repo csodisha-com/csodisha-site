@@ -4,6 +4,22 @@
   'use strict';
 
   var CONTENT = [['current-affairs', 'Current Affairs'], ['jobs', 'Job Alerts'], ['jobs-directory', 'Jobs Directory'], ['schemes', 'Schemes'], ['schemes-directory', 'Schemes Tree']];
+  var CONTENT_SUITE = [
+    ['content/all', 'All Content'],
+    ['content/articles', 'Articles & Blogs'],
+    ['content/news', 'News & Updates'],
+    ['content/current-affairs', 'Current Affairs'],
+    ['banner', 'Announcements & Notices'],
+    ['content/all', 'Featured Content'],
+    ['current-affairs', 'Content Categories'],
+    ['current-affairs', 'Tags'],
+    ['current-affairs', 'Editorial Calendar'],
+    ['current-affairs', 'Publishing Workflow'],
+    ['current-affairs', 'Scheduled Content'],
+    ['current-affairs', 'Content Archive'],
+    ['current-affairs', 'Content Revisions'],
+    ['current-affairs', 'Bulk Content Operations']
+  ];
   var EDU = [['study-library-directory', 'Study Directory'], ['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']];
   var SITE = [['pages', 'All Pages'], ['about-directory', 'About CSO Directory'], ['pages/legal', 'Info & Legal'], ['banner', 'Homepage & Banner'], ['seo', 'SEO & Sitemaps']];
   var OPS = [['dashboard', 'Overview'], ['freshness', 'Freshness Audit'], ['feedback', 'Feedback Queue'], ['operations', 'Operations & Backups'], ['diagnostics', 'Site Health']];
@@ -62,10 +78,10 @@
     'module-02-009': ['pages', SITE],
     'module-02-010': ['pages', SITE],
     'module-02-011': ['pages', SITE],
-    'module-04-001': ['current-affairs', CONTENT],
-    'module-04-002': ['current-affairs', CONTENT],
-    'module-04-003': ['current-affairs', CONTENT],
-    'module-04-004': ['current-affairs', CONTENT],
+    'module-04-001': ['content/all', CONTENT_SUITE],
+    'module-04-002': ['content/articles', CONTENT_SUITE],
+    'module-04-003': ['content/news', CONTENT_SUITE],
+    'module-04-004': ['content/current-affairs', CONTENT_SUITE],
     'module-04-005': ['banner', SITE],
     'module-05-007': ['mock-tests', EDU],
     'module-05-008': ['jobs', CONTENT],
@@ -153,7 +169,7 @@
     'folder-01': ['dashboard', OPS],
     'folder-02': ['pages', SITE],
     'folder-03': ['pages/legal', SITE],
-    'folder-04': ['current-affairs', CONTENT],
+    'folder-04': ['content/all', CONTENT_SUITE],
     'folder-05': ['mock-tests', EDU],
     'folder-06': ['pages', SITE],
     'folder-07': ['media'],
@@ -271,6 +287,10 @@
     } else if (r[1] === SEC_SUITE) {
       var secPrefix = String(moduleId || '').indexOf('module-16-') === 0 ? 'module-16-' : 'module-sec-';
       renderSuiteStepper(SEC_SUITE, secPrefix, 'folder-16', folderId, moduleId, r[0], root, host, 'Security, Privacy & RBAC Module Stepper');
+      root.appendChild(host);
+      window.CSOCms.mount(host, r[0], null);
+    } else if (r[1] === CONTENT_SUITE) {
+      renderSuiteStepper(CONTENT_SUITE, 'module-04-', 'folder-04', folderId, moduleId, r[0], root, host, 'Content & Publishing Module Stepper');
       root.appendChild(host);
       window.CSOCms.mount(host, r[0], null);
     } else {
