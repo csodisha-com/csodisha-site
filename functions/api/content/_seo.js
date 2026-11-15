@@ -304,6 +304,7 @@ export function handleRobotsTxt(request) {
     'Disallow: /api/',
     '',
     `Sitemap: ${SITE_ORIGIN}/sitemap.xml`,
+    `Sitemap: ${SITE_ORIGIN}/sitemap-study-library.xml`,
     ''
   ].join('\n');
 

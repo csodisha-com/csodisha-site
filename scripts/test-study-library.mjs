@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import {
   ensureStudyLibraryStudioSchema,
-  handleStudyLibraryStudio
+  handleStudyLibraryStudio,
+  handlePublicStudyItemsApi,
+  handlePublicStudySuggestApi,
+  handleStudyLibrarySitemapXml
 } from '../functions/_lib/study-library-studio.js';
 import { handlePublicStudyLibraryRoute } from '../functions/_lib/study-library-ssr.js';
 
@@ -395,4 +398,121 @@ const draftItemRes = await handlePublicStudyLibraryRoute(
 );
 assert.equal(draftItemRes.status, 404);
 
-console.log('STUDY LIBRARY DIRECTORY MODULES #1-#10 + SSR TESTS PASSED');
+// 9. Directory Page Control (description_en, seo_title, featured_badge, is_active), Live Sync, Sitemap & DPDP Citizen Suggestions
+const editDirRes = await (await handleStudyLibraryStudio(
+  new Request('https://csodisha.com/api/admin/study-library/folders/sln_4', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      description_en: 'Updated 2026 Odisha History & Culture syllabus guide.',
+      seo_title: 'Odisha History 2026 — OPSC OAS Guide',
+      featured_badge: 'Updated 2026',
+      is_active: true
+    })
+  }),
+  bridgeEnv, adminActor, 'folders', 'sln_4'
+)).json();
+assert.equal(editDirRes.ok, true);
+
+const liveEditedDirRes = await handlePublicStudyLibraryRoute(
+  new Request('https://csodisha.com/study-library/competitive-exams-teacher-education/opsc-odisha-civil-services/prelims-general-studies/odisha-history-culture/'),
+  bridgeEnv,
+  new URL('https://csodisha.com/study-library/competitive-exams-teacher-education/opsc-odisha-civil-services/prelims-general-studies/odisha-history-culture/')
+);
+assert.equal(liveEditedDirRes.status, 200);
+const liveEditedHtml = await liveEditedDirRes.text();
+assert.ok(liveEditedHtml.includes('Odisha History 2026 — OPSC OAS Guide'));
+assert.ok(liveEditedHtml.includes('Updated 2026'));
+
+// Hide folder -> SSR returns 404
+await handleStudyLibraryStudio(
+  new Request('https://csodisha.com/api/admin/study-library/folders/sln_4', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ is_active: false })
+  }),
+  bridgeEnv, adminActor, 'folders', 'sln_4'
+);
+const hiddenDirRes = await handlePublicStudyLibraryRoute(
+  new Request('https://csodisha.com/study-library/competitive-exams-teacher-education/opsc-odisha-civil-services/prelims-general-studies/odisha-history-culture/'),
+  bridgeEnv,
+  new URL('https://csodisha.com/study-library/competitive-exams-teacher-education/opsc-odisha-civil-services/prelims-general-studies/odisha-history-culture/')
+);
+assert.equal(hiddenDirRes.status, 404);
+
+// Re-enable folder & verify sitemap + public items API + publish/unpublish sync
+await handleStudyLibraryStudio(
+  new Request('https://csodisha.com/api/admin/study-library/folders/sln_4', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ is_active: true })
+  }),
+  bridgeEnv, adminActor, 'folders', 'sln_4'
+);
+const pubItemsBefore = await (await handlePublicStudyItemsApi(
+  new Request('https://csodisha.com/api/public/study-library/items'),
+  bridgeEnv
+)).json();
+assert.ok(pubItemsBefore.items.some(it => it.slug === 'odisha-history-master-notes'));
+
+await handleStudyLibraryStudio(
+  new Request('https://csodisha.com/api/admin/study-library/items/res_10/status', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'draft' })
+  }),
+  bridgeEnv, adminActor, 'items', 'res_10', 'status'
+);
+const pubItemsAfterUnpub = await (await handlePublicStudyItemsApi(
+  new Request('https://csodisha.com/api/public/study-library/items'),
+  bridgeEnv
+)).json();
+assert.ok(!pubItemsAfterUnpub.items.some(it => it.slug === 'odisha-history-master-notes'));
+
+await handleStudyLibraryStudio(
+  new Request('https://csodisha.com/api/admin/study-library/items/res_10/status', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'published' })
+  }),
+  bridgeEnv, adminActor, 'items', 'res_10', 'status'
+);
+const sitemapRes = await handleStudyLibrarySitemapXml(
+  new Request('https://csodisha.com/sitemap-study-library.xml'),
+  bridgeEnv
+);
+assert.equal(sitemapRes.status, 200);
+const sitemapXml = await sitemapRes.text();
+assert.ok(sitemapXml.includes('/study-library/competitive-exams-teacher-education/opsc-odisha-civil-services/prelims-general-studies/odisha-history-culture/'));
+assert.ok(sitemapXml.includes('/study-library/item/odisha-history-master-notes/'));
+
+// Citizen suggestion with DPDP PII redaction + Admin moderation
+const sugRes = await (await handlePublicStudySuggestApi(
+  new Request('https://csodisha.com/api/public/study-library/suggest', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      domain_slug: 'competitive-teacher',
+      folder_id: 'sln_4',
+      suggestion_type: 'topic',
+      title: 'Add 2026 OAS History Key contact user@example.com 9876543210',
+      details: 'Aadhaar 1234 5678 9012 should be redacted'
+    })
+  }),
+  bridgeEnv
+)).json();
+assert.equal(sugRes.ok, true);
+assert.ok(!sugRes.suggestion.title.includes('user@example.com'));
+assert.ok(!sugRes.suggestion.title.includes('9876543210'));
+
+const modRes = await (await handleStudyLibraryStudio(
+  new Request(`https://csodisha.com/api/admin/study-library/suggestions/${sugRes.suggestion.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'approved' })
+  }),
+  bridgeEnv, adminActor, 'suggestions', sugRes.suggestion.id
+)).json();
+assert.equal(modRes.suggestion.status, 'approved');
+
+console.log('STUDY LIBRARY DIRECTORY MODULES #1-#10 + SSR + SITEMAP + SUGGESTIONS TESTS PASSED');

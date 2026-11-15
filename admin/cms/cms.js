@@ -12257,16 +12257,34 @@
         quickTags: ['30 Districts', 'Odisha Yearbook', 'Economic Survey', 'Exam Calendar', 'Curation']
       }
     };
+    var DOMAIN_PUBLIC_SLUG = {
+      'early-childhood': 'early-childhood-primary-education',
+      'school-higher-sec': 'school-higher-secondary-education',
+      'ug-pg-research': 'undergraduate-postgraduate-research',
+      'competitive-teacher': 'competitive-exams-teacher-education',
+      'vocational-digital': 'professional-vocational-digital-skills',
+      'subjects-materials': 'subjects-languages-study-materials',
+      'international-inclusive': 'international-inclusive-education',
+      'life-skills-culture': 'life-skills-culture-lifelong-learning',
+      'libraries-support': 'libraries-educators-learning-support',
+      'odisha-study-hub': 'odisha-study-hub-resource-organisation'
+    };
     var cfg = DOMAIN_CFG[domainSlug] || DOMAIN_CFG['early-childhood'];
     var activeDomain = DOMAIN_CFG[domainSlug] ? domainSlug : 'early-childhood';
+    var domainPublicUrl = 'https://csodisha.com/study-library/' + (DOMAIN_PUBLIC_SLUG[activeDomain] || activeDomain) + '/';
 
     var wrap = el('div', { class: 'cso-ops-studio' });
     var kpis = el('div', { class: 'cso-ops-kpis' });
     var telemetryBox = el('div', { class: 'cso-cnt-telemetry-bar' });
     var composerBox = el('div');
     composerBox.hidden = true;
+    var folderDrawerBox = el('div');
+    folderDrawerBox.hidden = true;
+    var healthTabsBox = el('div', { class: 'cso-cnt-pills' });
     var breadcrumbBox = el('div', { class: 'cso-sl-breadcrumb' });
     var folderGridBox = el('div', { class: 'cso-sl-folder-grid' });
+    var suggestionsBox = el('div');
+    suggestionsBox.hidden = true;
     var pillsBox = el('div', { class: 'cso-cnt-pills' });
     var tableBox = el('div');
     var pagerBox = el('div', { class: 'cso-cnt-pager' });
@@ -12274,6 +12292,7 @@
     var state = {
       parentId: '',
       includeDescendants: true,
+      healthFilter: 'all',
       resourceType: 'all',
       status: 'all',
       q: '',
@@ -12300,6 +12319,32 @@
       ]),
       heroRight
     ]));
+
+    var copyDomainUrlBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Copy Directory URL' });
+    copyDomainUrlBtn.addEventListener('click', function () {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(domainPublicUrl).then(function () {
+          toast('Copied ' + domainPublicUrl);
+        }).catch(function () { toast(domainPublicUrl); });
+      } else {
+        toast(domainPublicUrl);
+      }
+    });
+    var viewDomainLiveLink = el('a', {
+      class: 'cso-ops-btn cso-ops-btn--sm cso-ops-btn--primary',
+      href: '/study-library/' + (DOMAIN_PUBLIC_SLUG[activeDomain] || activeDomain) + '/',
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      text: 'View Live Directory ↗'
+    });
+    wrap.appendChild(el('div', { class: 'cso-sl-domain-live-bar' }, [
+      el('div', { class: 'cso-sl-domain-url-wrap' }, [
+        el('span', { class: 'badge ok', text: 'LIVE PUBLIC DIRECTORY' }),
+        el('code', { class: 'cso-sl-domain-url', text: domainPublicUrl })
+      ]),
+      el('div', { class: 'cso-ops-actions' }, [copyDomainUrlBtn, viewDomainLiveLink])
+    ]));
+
     wrap.appendChild(kpis);
     wrap.appendChild(telemetryBox);
     wrap.appendChild(composerBox);
@@ -12339,22 +12384,234 @@
 
     var explorerCard = el('div', { class: 'cso-ops-card' }, [
       el('div', { class: 'cso-ops-subhead' }, [
-        el('h3', { text: 'Multi-Level Sub-Directory Explorer' }),
+        el('h3', { text: 'Multi-Level Sub-Directory Explorer & Page Control' }),
         el('label', { class: 'cso-sl-scope-toggle' }, [
           descToggleCb,
           document.createTextNode('Include All Sub-Directories')
         ])
       ]),
+      healthTabsBox,
       breadcrumbBox,
+      folderDrawerBox,
       folderGridBox,
+      suggestionsBox,
       el('div', { class: 'cso-sl-folder-new' }, [newFolderInp, newFolderBtn])
     ]);
     wrap.appendChild(explorerCard);
 
+    function openFolderDrawer(f) {
+      clear(folderDrawerBox);
+      folderDrawerBox.hidden = false;
+      var nameEnInp = el('input', { class: 'input', type: 'text', value: f.name || '' });
+      var titleOrInp = el('input', { class: 'input', type: 'text', value: f.title_or || '', placeholder: 'Odia title (ଓଡ଼ିଆ ଶୀର୍ଷକ)...' });
+      var slugInp = el('input', { class: 'input', type: 'text', value: f.slug || '' });
+      var badgeInp = el('input', { class: 'input', type: 'text', value: f.featured_badge || '', placeholder: 'e.g. Updated 2026 Syllabus' });
+      var introEnInp = el('textarea', { class: 'textarea', rows: '3', placeholder: 'Directory intro in English...' });
+      introEnInp.value = f.description_en || f.description || '';
+      var introOrInp = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Directory intro in Odia...' });
+      introOrInp.value = f.description_or || '';
+      var seoTitleInp = el('input', { class: 'input', type: 'text', value: f.seo_title || '', placeholder: 'Custom SEO Meta Title...' });
+      var seoDescInp = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Custom SEO Meta Description...' });
+      seoDescInp.value = f.seo_description || '';
+      var sortInp = el('input', { class: 'input', type: 'number', value: String(f.sort_order || 0) });
+      var visSel = el('select', { class: 'select' }, [
+        el('option', { value: '1', text: 'Published (Live on Web & Sitemap)' }),
+        el('option', { value: '0', text: 'Hidden (404 on Public Web)' })
+      ]);
+      visSel.value = Number(f.is_active ?? 1) === 1 ? '1' : '0';
+
+      var previewMode = 'hero';
+      var previewBody = el('div', { class: 'cso-sl-preview-surface' });
+      var previewTabs = el('div', { class: 'cso-cnt-pills' });
+      [
+        ['hero', 'Public Directory Hero'],
+        ['serp', 'Google Search SERP'],
+        ['wa', 'WhatsApp Share Card']
+      ].forEach(function (pair) {
+        var tb = el('button', { type: 'button', class: 'cso-cnt-pill' + (pair[0] === 'hero' ? ' is-active' : ''), text: pair[1] });
+        tb.addEventListener('click', function () {
+          previewMode = pair[0];
+          previewTabs.querySelectorAll('.cso-cnt-pill').forEach(function (b) { b.classList.remove('is-active'); });
+          tb.classList.add('is-active');
+          renderDrawerPreview();
+        });
+        previewTabs.appendChild(tb);
+      });
+
+      function renderDrawerPreview() {
+        clear(previewBody);
+        var tEn = nameEnInp.value.trim() || f.name || 'Directory Title';
+        var tOr = titleOrInp.value.trim();
+        var badge = badgeInp.value.trim();
+        var iEn = introEnInp.value.trim() || 'Explore verified syllabus notes, solved PYQs, and reference materials.';
+        var sTitle = seoTitleInp.value.trim() || (tEn + ' — CSOdisha Study Library');
+        var sDesc = seoDescInp.value.trim() || iEn;
+        var pUrl = 'https://csodisha.com' + (f.public_url || ('/study-library/' + (DOMAIN_PUBLIC_SLUG[activeDomain] || activeDomain) + '/'));
+
+        if (previewMode === 'hero') {
+          previewBody.appendChild(el('div', { class: 'cso-sl-prev-hero' }, [
+            badge ? el('span', { class: 'badge ok', text: badge }) : el('span', { class: 'badge ok', text: cfg.title }),
+            el('h4', { text: tEn }),
+            tOr ? el('div', { class: 'cso-sl-prev-or', text: tOr }) : el('span', {}),
+            el('p', { text: iEn })
+          ]));
+        } else if (previewMode === 'serp') {
+          previewBody.appendChild(el('div', { class: 'cso-sl-prev-serp' }, [
+            el('div', { class: 'cso-sl-prev-serp-url', text: pUrl }),
+            el('div', { class: 'cso-sl-prev-serp-title', text: sTitle }),
+            el('div', { class: 'cso-sl-prev-serp-desc', text: sDesc })
+          ]));
+        } else {
+          previewBody.appendChild(el('div', { class: 'cso-sl-prev-wa' }, [
+            el('strong', { text: sTitle }),
+            el('p', { text: sDesc }),
+            el('span', { class: 'muted sm', text: pUrl })
+          ]));
+        }
+      }
+      [nameEnInp, titleOrInp, badgeInp, introEnInp, seoTitleInp, seoDescInp].forEach(function (inp) {
+        inp.addEventListener('input', renderDrawerPreview);
+      });
+      renderDrawerPreview();
+
+      async function saveFolderForm(isActiveOverride, markVerified) {
+        var payload = {
+          name_en: nameEnInp.value.trim(),
+          title_or: titleOrInp.value.trim(),
+          slug: slugInp.value.trim(),
+          featured_badge: badgeInp.value.trim(),
+          description_en: introEnInp.value.trim(),
+          description_or: introOrInp.value.trim(),
+          seo_title: seoTitleInp.value.trim(),
+          seo_description: seoDescInp.value.trim(),
+          sort_order: Number(sortInp.value || 0),
+          is_active: isActiveOverride !== undefined ? isActiveOverride : (visSel.value === '1')
+        };
+        if (markVerified) payload.verified_at = new Date().toISOString();
+        try {
+          await api('PUT', 'study-library/folders/' + encodeURIComponent(f.id), payload);
+          toast(markVerified ? 'Directory verified & saved' : 'Directory page settings saved');
+          folderDrawerBox.hidden = true;
+          await loadAll();
+        } catch (err) {
+          toast(err.message || 'Failed to save directory settings', true);
+        }
+      }
+
+      var closeBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Close' });
+      closeBtn.addEventListener('click', function () { folderDrawerBox.hidden = true; });
+      var verifyBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Mark Verified Today' });
+      verifyBtn.addEventListener('click', function () { saveFolderForm(undefined, true); });
+      var draftBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Save Draft (Hide)' });
+      draftBtn.addEventListener('click', function () { saveFolderForm(false, false); });
+      var pubBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm cso-ops-btn--primary', text: 'Publish Live' });
+      pubBtn.addEventListener('click', function () { saveFolderForm(true, false); });
+
+      folderDrawerBox.appendChild(el('div', { class: 'cso-sl-drawer' }, [
+        el('div', { class: 'cso-ops-subhead' }, [
+          el('h4', { text: 'Directory Page Info & Live Preview: ' + f.name }),
+          closeBtn
+        ]),
+        el('div', { class: 'cso-sl-drawer-grid' }, [
+          el('div', { class: 'cso-sl-drawer-form' }, [
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'English Title' }), nameEnInp]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Odia Title (ଓଡ଼ିଆ)' }), titleOrInp]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'URL Slug' }), slugInp]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Featured Badge' }), badgeInp]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Directory Intro (EN)' }), introEnInp]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Directory Intro (OR)' }), introOrInp]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'SEO Meta Title' }), seoTitleInp]),
+            el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'SEO Meta Description' }), seoDescInp]),
+            el('div', { class: 'cso-sl-drawer-row' }, [
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Sort Order' }), sortInp]),
+              el('label', { class: 'cso-cnt-field' }, [el('span', { text: 'Visibility' }), visSel])
+            ]),
+            el('div', { class: 'cso-ops-actions' }, [verifyBtn, draftBtn, pubBtn])
+          ]),
+          el('div', { class: 'cso-sl-drawer-preview' }, [
+            previewTabs,
+            previewBody
+          ])
+        ])
+      ]));
+    }
+
+    async function loadSuggestions() {
+      clear(suggestionsBox);
+      try {
+        var sugRes = await api('GET', 'study-library/suggestions?domain=' + encodeURIComponent(activeDomain) + '&status=pending');
+        var list = Array.isArray(sugRes.suggestions) ? sugRes.suggestions : [];
+        if (!list.length) {
+          suggestionsBox.appendChild(el('div', { class: 'muted sm', text: 'No pending citizen suggestions or outdated-link reports for this domain.' }));
+          return;
+        }
+        list.forEach(function (s) {
+          var appBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm cso-ops-btn--primary', text: 'Approve' });
+          var disBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Dismiss' });
+          appBtn.addEventListener('click', async function () {
+            await api('PATCH', 'study-library/suggestions/' + encodeURIComponent(s.id), { status: 'approved' });
+            toast('Suggestion approved');
+            await loadAll();
+          });
+          disBtn.addEventListener('click', async function () {
+            await api('PATCH', 'study-library/suggestions/' + encodeURIComponent(s.id), { status: 'dismissed' });
+            toast('Suggestion dismissed');
+            await loadAll();
+          });
+          suggestionsBox.appendChild(el('div', { class: 'cso-sl-folder-card' }, [
+            el('div', { class: 'cso-sl-folder-head' }, [
+              el('strong', { text: '[' + String(s.suggestion_type || 'topic').toUpperCase() + '] ' + s.title }),
+              el('div', { class: 'muted sm', text: s.details || s.source_url || 'No extra details' })
+            ]),
+            el('div', { class: 'cso-ops-actions' }, [appBtn, disBtn])
+          ]));
+        });
+      } catch (err) {
+        suggestionsBox.appendChild(el('div', { class: 'muted sm', text: err.message || 'Could not load suggestions.' }));
+      }
+    }
+
     function renderTree(treeRes) {
       state.tree = treeRes;
+      clear(healthTabsBox);
       clear(breadcrumbBox);
       clear(folderGridBox);
+
+      var allFlat = Array.isArray(treeRes.folders) ? treeRes.folders : [];
+      var emptyCount = allFlat.filter(function (f) { return Number(f.total_item_count || 0) === 0; }).length;
+      var staleCutoff = Date.now() - (180 * 86400 * 1000);
+      var staleCount = allFlat.filter(function (f) {
+        var dt = Date.parse(f.verified_at || f.updated_at || '');
+        return !dt || dt < staleCutoff;
+      }).length;
+      var sugCount = Number((treeRes.metrics && treeRes.metrics.pending_suggestions) || 0);
+
+      [
+        ['all', 'All Directories (' + allFlat.length + ')'],
+        ['empty', 'Empty Directories (0 Items: ' + emptyCount + ')'],
+        ['stale', 'Stale > 180 Days (' + staleCount + ')'],
+        ['suggestions', 'Citizen Suggestions (Pending: ' + sugCount + ')']
+      ].forEach(function (pair) {
+        var btn = el('button', {
+          type: 'button',
+          class: 'cso-cnt-pill' + (state.healthFilter === pair[0] ? ' is-active' : ''),
+          text: pair[1]
+        });
+        btn.addEventListener('click', function () {
+          state.healthFilter = pair[0];
+          renderTree(treeRes);
+        });
+        healthTabsBox.appendChild(btn);
+      });
+
+      if (state.healthFilter === 'suggestions') {
+        folderGridBox.hidden = true;
+        suggestionsBox.hidden = false;
+        loadSuggestions();
+        return;
+      }
+      folderGridBox.hidden = false;
+      suggestionsBox.hidden = true;
 
       var rootBtn = el('button', {
         type: 'button',
@@ -12388,20 +12645,31 @@
         breadcrumbBox.appendChild(cb);
       });
 
-      var kids = Array.isArray(treeRes.children) ? treeRes.children : [];
+      var kids = state.healthFilter === 'all'
+        ? (Array.isArray(treeRes.children) ? treeRes.children : [])
+        : allFlat.filter(function (f) {
+            if (state.healthFilter === 'empty') return Number(f.total_item_count || 0) === 0;
+            var dt = Date.parse(f.verified_at || f.updated_at || '');
+            return !dt || dt < staleCutoff;
+          }).slice(0, 60);
+
       if (!kids.length) {
-        folderGridBox.appendChild(el('div', { class: 'muted sm', text: 'No nested sub-directories at this level. Add one below or upload resources directly here.' }));
+        folderGridBox.appendChild(el('div', { class: 'muted sm', text: 'No sub-directories match this view. Add one below or switch filter tabs.' }));
         return;
       }
 
       kids.forEach(function (f) {
+        var pubUrl = f.public_url || ('/study-library/' + (DOMAIN_PUBLIC_SLUG[activeDomain] || activeDomain) + '/' + f.slug + '/');
+        var isVis = Number(f.is_active ?? 1) === 1;
         var head = el('div', { class: 'cso-sl-folder-head' }, [
           el('div', {}, [
-            el('div', { class: 'cso-sl-folder-name', text: '📁 ' + f.name }),
-            el('div', { class: 'cso-sl-folder-meta', text: 'Depth ' + (f.depth || 1) + ' · ' + (f.child_count || 0) + ' sub-folders · ' + (f.total_item_count || 0) + ' resources' })
+            el('div', { class: 'cso-sl-folder-name', text: '📁 ' + f.name + (f.title_or ? ' · ' + f.title_or : '') }),
+            el('div', { class: 'cso-sl-folder-meta', text: 'L' + (f.depth || 1) + ' · ' + (f.child_count || 0) + ' sub-folders · ' + (f.total_item_count || 0) + ' resources · ' + (isVis ? 'Published' : 'Hidden') }),
+            el('div', { class: 'muted sm', text: pubUrl })
           ])
         ]);
         head.addEventListener('click', function () {
+          state.healthFilter = 'all';
           state.parentId = f.id;
           state.offset = 0;
           loadAll();
@@ -12410,6 +12678,7 @@
         var actRow = el('div', { class: 'cso-ops-actions' });
         var openBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Open' });
         openBtn.addEventListener('click', function () {
+          state.healthFilter = 'all';
           state.parentId = f.id;
           state.offset = 0;
           loadAll();
@@ -12417,18 +12686,26 @@
         actRow.appendChild(openBtn);
 
         if (canWrite) {
-          var renBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Rename' });
-          renBtn.addEventListener('click', async function () {
-            var nextName = window.prompt('Rename sub-directory:', f.name);
-            if (!nextName || nextName.trim() === f.name) return;
-            try {
-              await api('PUT', 'study-library/folders/' + encodeURIComponent(f.id), { name: nextName.trim() });
-              toast('Sub-directory renamed');
-              await loadAll();
-            } catch (err) {
-              toast(err.message || 'Rename failed', true);
-            }
-          });
+          var editPageBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm cso-ops-btn--primary', text: 'Edit Page Info & Preview' });
+          editPageBtn.addEventListener('click', function () { openFolderDrawer(f); });
+          actRow.appendChild(editPageBtn);
+        }
+
+        var copyBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Copy Link' });
+        copyBtn.addEventListener('click', function () {
+          var full = 'https://csodisha.com' + pubUrl;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(full).then(function () { toast('Copied ' + full); }).catch(function () { toast(full); });
+          } else {
+            toast(full);
+          }
+        });
+        actRow.appendChild(copyBtn);
+
+        var liveLink = el('a', { class: 'cso-ops-btn cso-ops-btn--sm', href: pubUrl, target: '_blank', rel: 'noopener noreferrer', text: 'View Live ↗' });
+        actRow.appendChild(liveLink);
+
+        if (canWrite) {
           var delBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm cso-ops-btn--danger', text: 'Delete' });
           delBtn.addEventListener('click', async function () {
             try {
@@ -12439,7 +12716,6 @@
               toast(err.message || 'Cannot delete non-empty folder', true);
             }
           });
-          actRow.appendChild(renBtn);
           actRow.appendChild(delBtn);
         }
 
@@ -12925,6 +13201,30 @@
             var editBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: 'Edit' });
             editBtn.addEventListener('click', function () { openComposer(it); });
             actTd.appendChild(editBtn);
+          }
+          if (canStatus) {
+            var verifyItemBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: 'Mark Verified Today' });
+            verifyItemBtn.addEventListener('click', async function () {
+              verifyItemBtn.disabled = true;
+              try {
+                await api('POST', 'study-library/items/' + encodeURIComponent(it.id) + '/verify', {});
+                toast('Marked resource verified today');
+                await loadItems();
+              } catch (err) {
+                toast(err.message || 'Verify failed', true);
+                verifyItemBtn.disabled = false;
+              }
+            });
+            actTd.appendChild(verifyItemBtn);
+          }
+          if (it.status === 'published') {
+            actTd.appendChild(el('a', {
+              class: 'cso-ops-btn cso-ops-btn--sm',
+              href: '/study-library/item/' + encodeURIComponent(it.slug || it.id) + '/',
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              text: 'View Live Page ↗'
+            }));
           }
           if (canStatus) {
             var nextSt = it.status === 'published' ? 'draft' : 'published';

@@ -107,11 +107,54 @@ const REQUIRED_FOLDER_COLS = [
   ['title_or', 'TEXT'],
   ['node_slug', 'TEXT'],
   ['description', 'TEXT'],
+  ['description_en', "TEXT DEFAULT ''"],
+  ['description_or', "TEXT DEFAULT ''"],
+  ['seo_title', "TEXT DEFAULT ''"],
+  ['seo_description', "TEXT DEFAULT ''"],
+  ['featured_badge', "TEXT DEFAULT ''"],
+  ['verified_at', "TEXT DEFAULT ''"],
   ['sort_order', 'INTEGER DEFAULT 0'],
   ['is_active', 'INTEGER DEFAULT 1'],
   ['created_at', 'TEXT'],
   ['updated_at', 'TEXT']
 ];
+
+export const DOMAIN_TO_GROUP_SLUG = {
+  'early-childhood': 'early-childhood-primary-education',
+  'school-higher-sec': 'school-higher-secondary-education',
+  'ug-pg-research': 'undergraduate-postgraduate-research',
+  'competitive-teacher': 'competitive-exams-teacher-education',
+  'vocational-digital': 'professional-vocational-digital-skills',
+  'subjects-materials': 'subjects-languages-study-materials',
+  'international-inclusive': 'international-inclusive-education',
+  'life-skills-culture': 'life-skills-culture-lifelong-learning',
+  'libraries-support': 'libraries-educators-learning-support',
+  'odisha-study-hub': 'odisha-study-hub-resource-organisation'
+};
+
+function redactPii(raw) {
+  let s = String(raw || '');
+  s = s.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[redacted-email]');
+  s = s.replace(/(?:\+91[\s-]?)?[6-9]\d{9}\b/g, '[redacted-phone]');
+  s = s.replace(/\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, '[redacted-id]');
+  return s;
+}
+
+async function purgeStudyLibraryEdgeCache(request) {
+  try {
+    if (typeof caches === 'undefined' || !caches.default || !request) return;
+    const origin = new URL(request.url).origin;
+    const keys = [
+      `${origin}/study-library/`,
+      `${origin}/api/public/study-library/items`,
+      `${origin}/api/content/study-library-directory`,
+      `${origin}/sitemap-study-library.xml`
+    ];
+    await Promise.all(keys.map(k => caches.default.delete(k).catch(() => false)));
+  } catch {
+    // Cache API unavailable in local Node test env
+  }
+}
 
 export const DOMAIN_LABELS = {
   'early-childhood': 'Early Childhood & Primary Education',
@@ -167,6 +210,8 @@ const REQUIRED_ITEM_COLS = [
   ['seo_description', 'TEXT'],
   ['is_featured', 'INTEGER DEFAULT 0'],
   ['status', "TEXT DEFAULT 'draft'"],
+  ['verified_at', "TEXT DEFAULT ''"],
+  ['entity_tags_json', "TEXT DEFAULT '[]'"],
   ['created_by', 'TEXT'],
   ['updated_by', 'TEXT'],
   ['created_at', 'TEXT'],
@@ -390,6 +435,23 @@ export async function ensureStudyLibraryStudioSchema(db) {
        edited_by TEXT,
        change_note TEXT,
        created_at TEXT NOT NULL
+     )`
+  ).run();
+
+  await db.prepare(
+    `CREATE TABLE IF NOT EXISTS study_library_suggestions (
+       id TEXT PRIMARY KEY,
+       domain_slug TEXT NOT NULL,
+       folder_id TEXT DEFAULT '',
+       item_slug TEXT DEFAULT '',
+       suggestion_type TEXT NOT NULL DEFAULT 'topic',
+       title TEXT NOT NULL,
+       details TEXT DEFAULT '',
+       source_url TEXT DEFAULT '',
+       status TEXT NOT NULL DEFAULT 'pending',
+       created_at TEXT NOT NULL,
+       reviewed_by TEXT DEFAULT '',
+       reviewed_at TEXT DEFAULT ''
      )`
   ).run();
 
@@ -629,10 +691,24 @@ function normalizeStudyItem(row) {
     has_seo_meta: Boolean(String(row.seo_title || '').trim() && String(row.seo_description || '').trim()),
     is_featured: Boolean(row.is_featured),
     status: row.status || 'draft',
+    verified_at: row.verified_at || '',
+    entity_tags: parseTags(row.entity_tags_json),
     created_by: row.created_by || null,
     updated_by: row.updated_by || null,
     created_at: row.created_at,
     updated_at: row.updated_at
+  };
+}
+
+function buildFolderPublicPath(chain, domainSlug) {
+  const trackSlug = DOMAIN_TO_GROUP_SLUG[domainSlug] || domainSlug;
+  const firstSlug = chain[0] ? String(chain[0].slug || '').toLowerCase() : '';
+  const hasTrackRoot = Boolean(GROUP_SLUG_TO_DOMAIN[firstSlug] || STUDY_DOMAINS.includes(firstSlug));
+  const segs = hasTrackRoot ? chain.map(x => x.slug) : [trackSlug, ...chain.map(x => x.slug)];
+  const slugPath = segs.filter(Boolean).join('/');
+  return {
+    slug_path: slugPath,
+    public_url: `/study-library/${slugPath}/`
   };
 }
 
@@ -661,29 +737,61 @@ export async function getStudyTree(env, { domain, parent_id = '' }) {
     throw new HttpError(404, 'FOLDER_NOT_FOUND', `Folder "${activeParentId}" not found in domain "${domainSlug}"`);
   }
 
+  const enrichFolder = (f) => {
+    const chain = computePath(f.id);
+    const { slug_path, public_url } = buildFolderPublicPath(chain, domainSlug);
+    return {
+      ...f,
+      title_or: f.title_or || '',
+      description_en: f.description_en || f.description || '',
+      description_or: f.description_or || '',
+      seo_title: f.seo_title || '',
+      seo_description: f.seo_description || '',
+      featured_badge: f.featured_badge || '',
+      verified_at: f.verified_at || '',
+      is_active: Number(f.is_active ?? 1),
+      slug_path,
+      public_url
+    };
+  };
+
   const breadcrumb = activeParentId
-    ? computePath(activeParentId).map(n => ({ id: n.id, name: n.name, slug: n.slug, depth: n.depth }))
+    ? computePath(activeParentId).map(n => {
+        const { slug_path, public_url } = buildFolderPublicPath(computePath(n.id), domainSlug);
+        return { id: n.id, name: n.name, slug: n.slug, depth: n.depth, slug_path, public_url };
+      })
     : [];
 
   const children = (childrenByParent.get(activeParentId || '__ROOT__') || [])
     .map(id => byId.get(id))
-    .sort((a, b) => (a.sort_order - b.sort_order) || a.name.localeCompare(b.name));
+    .filter(Boolean)
+    .sort((a, b) => (a.sort_order - b.sort_order) || a.name.localeCompare(b.name))
+    .map(enrichFolder);
+
+  const enrichedFlat = flatOrdered.map(enrichFolder);
 
   let maxDepth = 0;
   for (const f of allFolders) {
     if (Number(f.depth || 1) > maxDepth) maxDepth = Number(f.depth || 1);
   }
 
+  const pendingSugRow = await env.DB.prepare(
+    `SELECT COUNT(*) AS cnt FROM study_library_suggestions WHERE domain_slug = ? AND status = 'pending'`
+  ).bind(domainSlug).first();
+
   return {
     ok: true,
     domain_slug: domainSlug,
+    track_slug: DOMAIN_TO_GROUP_SLUG[domainSlug] || domainSlug,
+    public_url: `/study-library/${DOMAIN_TO_GROUP_SLUG[domainSlug] || domainSlug}/`,
     parent_id: activeParentId,
     breadcrumb,
     children,
-    folders: flatOrdered,
+    folders: enrichedFlat,
     metrics: {
       total_folders: allFolders.length,
-      max_depth: maxDepth
+      max_depth: maxDepth,
+      pending_suggestions: Number((pendingSugRow && pendingSugRow.cnt) || 0)
     }
   };
 }
@@ -739,7 +847,8 @@ export async function updateStudyFolder(env, id, body = {}) {
   const existing = await env.DB.prepare(`SELECT * FROM study_library_folders WHERE id = ?`).bind(id).first();
   if (!existing) throw new HttpError(404, 'NOT_FOUND', `Folder "${id}" not found`);
 
-  const name = body.name !== undefined ? cleanStr(body.name, 120, { required: true }) : existing.name;
+  const rawName = body.name_en !== undefined ? body.name_en : body.name;
+  const name = rawName !== undefined ? cleanStr(rawName, 120, { required: true }) : existing.name;
   if (!name) throw validationError({ name: 'Folder name cannot be empty' });
 
   const slug = body.slug !== undefined
@@ -747,7 +856,34 @@ export async function updateStudyFolder(env, id, body = {}) {
     : existing.slug;
   if (!SLUG_RE.test(slug)) throw validationError({ slug: 'Invalid folder slug' });
 
-  const description = body.description !== undefined ? cleanStr(body.description, 300) : (existing.description || '');
+  let parent_id = existing.parent_id || null;
+  let depth = Number(existing.depth || 1);
+  if (body.parent_id !== undefined) {
+    const nextParent = cleanStr(body.parent_id, 80) || null;
+    if (nextParent === id) throw validationError({ parent_id: 'Folder cannot be its own parent' });
+    if (nextParent) {
+      const pRow = await env.DB.prepare(`SELECT id, domain_slug, depth FROM study_library_folders WHERE id = ?`).bind(nextParent).first();
+      if (!pRow || pRow.domain_slug !== existing.domain_slug) {
+        throw new HttpError(404, 'PARENT_NOT_FOUND', 'Parent folder not found in this domain');
+      }
+      parent_id = pRow.id;
+      depth = Math.min(6, Number(pRow.depth || 1) + 1);
+    } else {
+      parent_id = null;
+      depth = 1;
+    }
+  }
+
+  const title_or = body.title_or !== undefined ? cleanStr(body.title_or, 140) : (existing.title_or || '');
+  const description_en = body.description_en !== undefined
+    ? cleanStr(body.description_en, 1200)
+    : (body.description !== undefined ? cleanStr(body.description, 1200) : (existing.description_en || existing.description || ''));
+  const description_or = body.description_or !== undefined ? cleanStr(body.description_or, 1200) : (existing.description_or || '');
+  const description = description_en.slice(0, 300);
+  const seo_title = body.seo_title !== undefined ? cleanStr(body.seo_title, 120) : (existing.seo_title || '');
+  const seo_description = body.seo_description !== undefined ? cleanStr(body.seo_description, 320) : (existing.seo_description || '');
+  const featured_badge = body.featured_badge !== undefined ? cleanStr(body.featured_badge, 40) : (existing.featured_badge || '');
+  const verified_at = body.verified_at !== undefined ? cleanStr(body.verified_at, 40) : (existing.verified_at || '');
   const sort_order = body.sort_order !== undefined
     ? Math.max(0, Math.min(999, Math.round(Number(body.sort_order) || 0)))
     : Number(existing.sort_order || 0);
@@ -755,8 +891,18 @@ export async function updateStudyFolder(env, id, body = {}) {
   const nowIso = new Date().toISOString();
 
   await env.DB.prepare(
-    `UPDATE study_library_folders SET name = ?, slug = ?, description = ?, sort_order = ?, is_active = ?, updated_at = ? WHERE id = ?`
-  ).bind(name, slug, description, sort_order, is_active, nowIso, id).run();
+    `UPDATE study_library_folders
+     SET name = ?, title_or = ?, slug = ?, parent_id = ?, depth = ?,
+         description = ?, description_en = ?, description_or = ?,
+         seo_title = ?, seo_description = ?, featured_badge = ?,
+         verified_at = ?, sort_order = ?, is_active = ?, updated_at = ?
+     WHERE id = ?`
+  ).bind(
+    name, title_or, slug, parent_id, depth,
+    description, description_en, description_or,
+    seo_title, seo_description, featured_badge,
+    verified_at, sort_order, is_active, nowIso, id
+  ).run();
 
   const updated = await env.DB.prepare(`SELECT * FROM study_library_folders WHERE id = ?`).bind(id).first();
   return { ok: true, folder: updated };
@@ -1039,6 +1185,56 @@ export async function deleteStudyItem(env, id) {
   return { ok: true, deleted_id: id };
 }
 
+export async function verifyStudyItem(env, id, actor) {
+  await ensureStudyLibraryStudioSchema(env.DB);
+  const existing = await env.DB.prepare(`SELECT * FROM study_library_items WHERE id = ?`).bind(id).first();
+  if (!existing) throw new HttpError(404, 'NOT_FOUND', `Study resource "${id}" not found`);
+  const nowIso = new Date().toISOString();
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  await env.DB.prepare(
+    `UPDATE study_library_items SET verified_at = ?, updated_by = ?, updated_at = ? WHERE id = ?`
+  ).bind(nowIso, actorEmail, nowIso, id).run();
+  const row = await env.DB.prepare(`SELECT * FROM study_library_items WHERE id = ?`).bind(id).first();
+  return { ok: true, item: normalizeStudyItem(row) };
+}
+
+export async function listStudySuggestions(env, { domain = '', status = 'all', limit = 50 } = {}) {
+  await ensureStudyLibraryStudioSchema(env.DB);
+  const where = [];
+  const binds = [];
+  const dom = cleanStr(domain, 60);
+  if (dom && STUDY_DOMAINS.includes(dom)) {
+    where.push('domain_slug = ?');
+    binds.push(dom);
+  }
+  const st = cleanStr(status, 20).toLowerCase();
+  if (st && st !== 'all' && ['pending', 'approved', 'dismissed'].includes(st)) {
+    where.push('status = ?');
+    binds.push(st);
+  }
+  const lim = Math.max(1, Math.min(200, Number(limit) || 50));
+  const sql = `SELECT * FROM study_library_suggestions${where.length ? ` WHERE ${where.join(' AND ')}` : ''} ORDER BY created_at DESC LIMIT ?`;
+  const rows = (await env.DB.prepare(sql).bind(...binds, lim).all()).results || [];
+  return { ok: true, suggestions: rows };
+}
+
+export async function updateStudySuggestion(env, id, body = {}, actor) {
+  await ensureStudyLibraryStudioSchema(env.DB);
+  const existing = await env.DB.prepare(`SELECT * FROM study_library_suggestions WHERE id = ?`).bind(id).first();
+  if (!existing) throw new HttpError(404, 'NOT_FOUND', `Suggestion "${id}" not found`);
+  const nextStatus = cleanStr(body.status, 20).toLowerCase();
+  if (!['pending', 'approved', 'dismissed'].includes(nextStatus)) {
+    throw validationError({ status: 'status must be pending, approved, or dismissed' });
+  }
+  const nowIso = new Date().toISOString();
+  const actorEmail = (actor && (actor.email || actor.userId)) || 'admin';
+  await env.DB.prepare(
+    `UPDATE study_library_suggestions SET status = ?, reviewed_by = ?, reviewed_at = ? WHERE id = ?`
+  ).bind(nextStatus, actorEmail, nowIso, id).run();
+  const updated = await env.DB.prepare(`SELECT * FROM study_library_suggestions WHERE id = ?`).bind(id).first();
+  return { ok: true, suggestion: updated };
+}
+
 export async function handleStudyLibraryStudio(request, env, actor, subResource, id, action) {
   const method = request.method;
 
@@ -1062,15 +1258,17 @@ export async function handleStudyLibraryStudio(request, env, actor, subResource,
         depth: res.folder.depth,
         name: res.folder.name
       });
+      await purgeStudyLibraryEdgeCache(request);
       return json(res, 201, { 'Cache-Control': 'no-store' });
     }
     if (id && !action && method === 'PUT') {
       if (actor.role !== 'admin' && actor.role !== 'editor') {
         throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can update sub-directories');
       }
-      const body = await readJson(request, 8192).catch(() => ({}));
+      const body = await readJson(request, 16384).catch(() => ({}));
       const res = await updateStudyFolder(env, id, body);
-      await audit(env, request, actor, 'study.folder.save', 'study_library_folders', id, { name: res.folder.name });
+      await audit(env, request, actor, 'study.folder.save', 'study_library_folders', id, { name: res.folder.name, is_active: res.folder.is_active });
+      await purgeStudyLibraryEdgeCache(request);
       return json(res, 200, { 'Cache-Control': 'no-store' });
     }
     if (id && !action && method === 'DELETE') {
@@ -1081,6 +1279,7 @@ export async function handleStudyLibraryStudio(request, env, actor, subResource,
       const reassignTo = u.searchParams.get('reassign_to') || '';
       const res = await deleteStudyFolder(env, id, reassignTo);
       await audit(env, request, actor, 'study.folder.delete', 'study_library_folders', id, { reassigned_to: res.reassigned_to });
+      await purgeStudyLibraryEdgeCache(request);
       return json(res, 200, { 'Cache-Control': 'no-store' });
     }
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
@@ -1110,6 +1309,7 @@ export async function handleStudyLibraryStudio(request, env, actor, subResource,
         domain_slug: res.item.domain_slug,
         folder_id: res.item.folder_id
       });
+      await purgeStudyLibraryEdgeCache(request);
       return json(res, 201, { 'Cache-Control': 'no-store' });
     }
     if (id && !action && method === 'PUT') {
@@ -1121,6 +1321,7 @@ export async function handleStudyLibraryStudio(request, env, actor, subResource,
       await audit(env, request, actor, 'study.item.update', 'study_library_items', id, {
         revision_version: res.revision.version_no
       });
+      await purgeStudyLibraryEdgeCache(request);
       return json(res, 200, { 'Cache-Control': 'no-store' });
     }
     if (id && action === 'status' && (method === 'PATCH' || method === 'PUT')) {
@@ -1130,6 +1331,16 @@ export async function handleStudyLibraryStudio(request, env, actor, subResource,
       const body = await readJson(request, 4096).catch(() => ({}));
       const res = await updateStudyItemStatus(env, id, body, actor);
       await audit(env, request, actor, 'study.item.status', 'study_library_items', id, { status: res.item.status });
+      await purgeStudyLibraryEdgeCache(request);
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    if (id && action === 'verify' && (method === 'POST' || method === 'PATCH')) {
+      if (actor.role !== 'admin' && actor.role !== 'editor' && actor.role !== 'reviewer') {
+        throw new HttpError(403, 'FORBIDDEN', 'Insufficient permissions to verify study resource');
+      }
+      const res = await verifyStudyItem(env, id, actor);
+      await audit(env, request, actor, 'study.item.verify', 'study_library_items', id, { verified_at: res.item.verified_at });
+      await purgeStudyLibraryEdgeCache(request);
       return json(res, 200, { 'Cache-Control': 'no-store' });
     }
     if (id && !action && method === 'DELETE') {
@@ -1138,6 +1349,28 @@ export async function handleStudyLibraryStudio(request, env, actor, subResource,
       }
       const res = await deleteStudyItem(env, id);
       await audit(env, request, actor, 'study.item.delete', 'study_library_items', id, { deleted: true });
+      await purgeStudyLibraryEdgeCache(request);
+      return json(res, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  if (subResource === 'suggestions') {
+    if (!id && method === 'GET') {
+      const u = new URL(request.url);
+      return json(await listStudySuggestions(env, {
+        domain: u.searchParams.get('domain') || '',
+        status: u.searchParams.get('status') || 'all',
+        limit: u.searchParams.get('limit') || 50
+      }), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (id && (method === 'PATCH' || method === 'PUT')) {
+      if (actor.role !== 'admin' && actor.role !== 'editor' && actor.role !== 'reviewer') {
+        throw new HttpError(403, 'FORBIDDEN', 'Insufficient permissions to moderate suggestions');
+      }
+      const body = await readJson(request, 4096).catch(() => ({}));
+      const res = await updateStudySuggestion(env, id, body, actor);
+      await audit(env, request, actor, 'study.suggestion.moderate', 'study_library_suggestions', id, { status: res.suggestion.status });
       return json(res, 200, { 'Cache-Control': 'no-store' });
     }
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
@@ -1154,9 +1387,19 @@ export async function resolvePublicStudyDirectory(env, segments = [], opts = {})
   const domainSlug = GROUP_SLUG_TO_DOMAIN[first] || (STUDY_DOMAINS.includes(first) ? first : '');
   if (!domainSlug) return null;
 
-  const allFolders = (await env.DB.prepare(
+  const rawFolders = (await env.DB.prepare(
     `SELECT * FROM study_library_folders WHERE domain_slug = ? AND is_active = 1 ORDER BY depth ASC, sort_order ASC, name ASC`
   ).bind(domainSlug).all()).results || [];
+  // Filter out folders whose ancestor was hidden (is_active = 0)
+  const activeIds = new Set(rawFolders.map(f => f.id));
+  const allFolders = [];
+  for (const f of rawFolders) {
+    if (!f.parent_id || activeIds.has(f.parent_id)) {
+      allFolders.push(f);
+    } else {
+      activeIds.delete(f.id);
+    }
+  }
 
   const countsRes = await env.DB.prepare(
     `SELECT COALESCE(folder_id, '') AS fid, COUNT(*) AS n FROM study_library_items WHERE domain_slug = ? AND status = 'published' GROUP BY fid`
@@ -1314,4 +1557,151 @@ export async function resolvePublicStudyItem(env, slugOrId) {
     domain_title: DOMAIN_LABELS[item.domain_slug] || item.domain_slug,
     related: relatedRows.map(normalizeStudyItem)
   };
+}
+
+export async function handlePublicStudyItemsApi(request, env) {
+  await ensureStudyLibraryStudioSchema(env.DB);
+  const u = new URL(request.url);
+  const domain = cleanStr(u.searchParams.get('domain') || '', 60);
+  const rType = cleanStr(u.searchParams.get('type') || '', 30).toLowerCase();
+  const lang = cleanStr(u.searchParams.get('lang') || '', 12).toUpperCase();
+  const q = cleanStr(u.searchParams.get('q') || '', 80);
+  const limit = Math.max(1, Math.min(100, Number(u.searchParams.get('limit') || 50)));
+
+  const where = ["status = 'published'"];
+  const binds = [];
+  if (domain && STUDY_DOMAINS.includes(domain)) {
+    where.push('domain_slug = ?');
+    binds.push(domain);
+  }
+  if (rType && STUDY_RESOURCE_TYPES.includes(rType)) {
+    where.push('resource_type = ?');
+    binds.push(rType);
+  }
+  if (lang && STUDY_LANGUAGES.includes(lang)) {
+    where.push('language_parity = ?');
+    binds.push(lang);
+  }
+  if (q) {
+    const pat = `%${likeEscape(q)}%`;
+    where.push("(title LIKE ? ESCAPE '\\' OR summary LIKE ? ESCAPE '\\' OR board_or_exam LIKE ? ESCAPE '\\')");
+    binds.push(pat, pat, pat);
+  }
+
+  const rows = (await env.DB.prepare(
+    `SELECT * FROM study_library_items WHERE ${where.join(' AND ')} ORDER BY is_featured DESC, updated_at DESC, created_at DESC LIMIT ?`
+  ).bind(...binds, limit).all()).results || [];
+
+  return json({
+    ok: true,
+    items: rows.map(normalizeStudyItem),
+    total: rows.length
+  }, 200, { 'Cache-Control': 'public, max-age=60, s-maxage=120' });
+}
+
+export async function handlePublicStudySuggestApi(request, env) {
+  await ensureStudyLibraryStudioSchema(env.DB);
+  const body = await readJson(request, 8192).catch(() => ({}));
+  const suggestionType = ['topic', 'correction'].includes(String(body.suggestion_type || '').toLowerCase())
+    ? String(body.suggestion_type).toLowerCase()
+    : 'topic';
+  const rawDomain = cleanStr(body.domain_slug || '', 60);
+  const domain_slug = STUDY_DOMAINS.includes(rawDomain) ? rawDomain : 'odisha-study-hub';
+  const folder_id = cleanStr(body.folder_id || '', 80);
+  const item_slug = cleanStr(body.item_slug || '', 120);
+  const title = redactPii(cleanStr(body.title || '', 160, { required: true }));
+  if (!title || title.length < 4) {
+    throw validationError({ title: 'Suggestion title must be at least 4 characters' });
+  }
+  const details = redactPii(cleanStr(body.details || '', 1200));
+  const source_url = body.source_url ? (validateSafeCtaUrl(body.source_url) || '') : '';
+
+  // Lightweight hourly rate cap against study_library_suggestions (max 30/hour global fallback)
+  const oneHourAgo = new Date(Date.now() - 3600 * 1000).toISOString();
+  const recentRow = await env.DB.prepare(
+    `SELECT COUNT(*) AS cnt FROM study_library_suggestions WHERE created_at >= ?`
+  ).bind(oneHourAgo).first();
+  if (recentRow && Number(recentRow.cnt || 0) >= 120) {
+    throw new HttpError(429, 'RATE_LIMITED', 'Too many suggestions submitted recently. Please try again later.');
+  }
+
+  const id = `slsug_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+  const nowIso = new Date().toISOString();
+  await env.DB.prepare(
+    `INSERT INTO study_library_suggestions (
+       id, domain_slug, folder_id, item_slug, suggestion_type, title, details, source_url, status, created_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`
+  ).bind(id, domain_slug, folder_id, item_slug, suggestionType, title, details, source_url, nowIso).run();
+
+  return json({
+    ok: true,
+    suggestion: { id, domain_slug, suggestion_type: suggestionType, title, status: 'pending', created_at: nowIso }
+  }, 201, { 'Cache-Control': 'no-store' });
+}
+
+function xmlEsc(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+export async function handleStudyLibrarySitemapXml(request, env) {
+  await ensureStudyLibraryStudioSchema(env.DB);
+  const origin = 'https://csodisha.com';
+  const rawFolders = (await env.DB.prepare(
+    `SELECT id, domain_slug, parent_id, slug, updated_at, is_active FROM study_library_folders WHERE is_active = 1 ORDER BY depth ASC, sort_order ASC`
+  ).all()).results || [];
+
+  const byId = new Map();
+  for (const f of rawFolders) {
+    if (!f.parent_id || byId.has(f.parent_id)) {
+      byId.set(f.id, f);
+    }
+  }
+
+  const urls = [{ loc: `${origin}/study-library/`, lastmod: new Date().toISOString().slice(0, 10) }];
+  const seenLoc = new Set([urls[0].loc]);
+
+  for (const f of byId.values()) {
+    const chain = [];
+    let cur = f;
+    const guard = new Set();
+    while (cur && !guard.has(cur.id)) {
+      guard.add(cur.id);
+      chain.unshift(cur);
+      cur = cur.parent_id ? byId.get(cur.parent_id) : null;
+    }
+    const { public_url } = buildFolderPublicPath(chain, f.domain_slug);
+    const loc = `${origin}${public_url}`;
+    if (!seenLoc.has(loc)) {
+      seenLoc.add(loc);
+      urls.push({ loc, lastmod: String(f.updated_at || '').slice(0, 10) || undefined });
+    }
+  }
+
+  const items = (await env.DB.prepare(
+    `SELECT id, slug, updated_at FROM study_library_items WHERE status = 'published' ORDER BY updated_at DESC`
+  ).all()).results || [];
+  for (const it of items) {
+    const loc = `${origin}/study-library/item/${encodeURIComponent(it.slug || it.id)}/`;
+    if (!seenLoc.has(loc)) {
+      seenLoc.add(loc);
+      urls.push({ loc, lastmod: String(it.updated_at || '').slice(0, 10) || undefined });
+    }
+  }
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
+    .map(u => `  <url><loc>${xmlEsc(u.loc)}</loc>${u.lastmod ? `<lastmod>${xmlEsc(u.lastmod)}</lastmod>` : ''}</url>`)
+    .join('\n')}\n</urlset>`;
+
+  return new Response(xml, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=300, s-maxage=600'
+    }
+  });
 }

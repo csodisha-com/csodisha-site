@@ -1023,16 +1023,41 @@
   async function hydrateData() {
     if (loadStatusEl) loadStatusEl.hidden = false;
 
-    const [resResp, taxResp, dirResp] = await Promise.allSettled([
+    const [resResp, pubItemsResp, taxResp, dirResp] = await Promise.allSettled([
       fetch('/api/content/resources?limit=50'),
+      fetch('/api/public/study-library/items?limit=50'),
       fetch('/api/content/exam-taxonomy'),
       fetch('/api/content/study-library-directory')
     ]);
 
+    const mergedMap = new Map();
+    if (pubItemsResp.status === 'fulfilled' && pubItemsResp.value.ok) {
+      const pubData = await pubItemsResp.value.json();
+      (Array.isArray(pubData.items) ? pubData.items : []).forEach(it => {
+        const mapped = {
+          id: it.id,
+          slug: it.slug,
+          title: it.title,
+          resource_type: it.resource_type === 'notes' ? 'study_notes' : (it.resource_type || 'study_notes'),
+          exam: it.board_or_exam || it.domain_slug || 'Odisha',
+          exam_slug: it.domain_slug || '',
+          description: it.summary || '',
+          pdf_url: it.pdf_url || '',
+          verified_date: it.verified_at ? String(it.verified_at).slice(0, 10) : '',
+          official_source_url: (Array.isArray(it.links) && it.links[0] && it.links[0].url) || ''
+        };
+        mergedMap.set(String(mapped.slug || mapped.id), mapped);
+      });
+    }
     if (resResp.status === 'fulfilled' && resResp.value.ok) {
       const data = await resResp.value.json();
-      state.resources = Array.isArray(data.items) ? data.items : [];
+      (Array.isArray(data.items) ? data.items : []).forEach(it => {
+        const key = String(it.slug || it.id);
+        if (!mergedMap.has(key)) mergedMap.set(key, it);
+      });
     }
+    state.resources = Array.from(mergedMap.values());
+    if (studyExamSelect) studyExamSelect.value = '';
 
     if (taxResp.status === 'fulfilled' && taxResp.value.ok && studyExamSelect) {
       const taxData = await taxResp.value.json();

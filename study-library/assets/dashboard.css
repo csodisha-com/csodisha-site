@@ -4374,3 +4374,87 @@ body {
     display: none !important;
   }
 }
+
+/* ============================================================
+   v55: Citizen Suggest Form, Offline Button & SSR Print Sheet
+   ============================================================ */
+.cso-sl-pub-offline-btn.is-saved {
+  background: #065f46 !important;
+  color: #ffffff !important;
+  border-color: #065f46 !important;
+}
+
+.cso-sl-pub-suggest-box {
+  margin-top: 28px;
+  padding: 18px 20px;
+  background: #ffffff;
+  border: 1px solid rgba(20, 83, 45, 0.14);
+  border-radius: 14px;
+}
+
+.cso-sl-pub-suggest-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cso-sl-pub-suggest-form {
+  margin-top: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.cso-sl-pub-suggest-grid {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .cso-sl-pub-suggest-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cso-sl-pub-suggest-form label {
+  display: grid;
+  gap: 5px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.cso-sl-pub-suggest-form input,
+.cso-sl-pub-suggest-form select,
+.cso-sl-pub-suggest-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 11px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font: inherit;
+  font-weight: 500;
+  background: #faf8f5;
+  color: #0f172a;
+}
+
+@media print {
+  .cso-sl-pub-header,
+  .cso-sl-pub-footer,
+  .cso-sl-pub-filters,
+  .cso-sl-pub-actions,
+  .cso-sl-pub-suggest-box,
+  .cso-sl-pub-offline-btn {
+    display: none !important;
+  }
+
+  .cso-sl-pub-body,
+  .cso-sl-pub-reader,
+  .cso-sl-pub-hero {
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+  }
+}

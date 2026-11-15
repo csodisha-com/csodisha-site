@@ -26,6 +26,7 @@ import { handleUserApi } from './functions/api/user/_router.js';
 import { handleMedia } from './functions/api/media/_serve.js';
 import { handleAdminPage } from './functions/_lib/admin-pages.js';
 import { handlePublicStudyLibraryRoute } from './functions/_lib/study-library-ssr.js';
+import { handlePublicStudyItemsApi, handlePublicStudySuggestApi, handleStudyLibrarySitemapXml } from './functions/_lib/study-library-studio.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -287,9 +288,9 @@ function recordPublicCachePut(edgeCache, request, response, ctx) {
 async function invalidatePublicEdgeCache(edgeCache, origin) {
   if (!edgeCache) return;
   const basePaths = [
-    '/sitemap.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
+    '/sitemap.xml', '/sitemap-study-library.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
-    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/content/platform-stats', '/api/content/changelog',
+    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources',
     '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
@@ -348,6 +349,23 @@ export default {
     // 0d. CMS: public content API + R2 media delivery + authenticated user progress/bookmarks API + Dynamic SEO
     const edgeCache = typeof caches !== 'undefined' && caches.default ? caches.default : null;
     const isAnonGet = (request.method === 'GET' || request.method === 'HEAD') && !(request.headers.get('Cookie') || '').includes('cso_session=');
+    if (pathname === '/sitemap-study-library.xml') {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const slMapRes = await handleStudyLibrarySitemapXml(request, env);
+      if (isAnonGet && slMapRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, slMapRes, ctx);
+      }
+      return slMapRes;
+    }
+    if (pathname === '/api/public/study-library/items' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicStudyItemsApi(request, env);
+    }
+    if (pathname === '/api/public/study-library/suggest' && request.method === 'POST') {
+      return handlePublicStudySuggestApi(request, env);
+    }
     if (pathname === '/sitemap.xml' || pathname === '/feed.xml' || pathname === '/rss.xml' || pathname === '/robots.txt' || pathname === '/llms.txt') {
       if (edgeCache && isAnonGet) {
         const hit = await edgeCache.match(request);

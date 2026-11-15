@@ -70,6 +70,7 @@ function buildHead({ title, description, canonicalUrl, jsonLdList = [] }) {
   <meta property="og:description" content="${escHtml(description)}">
   <meta property="og:url" content="${escHtml(canonicalUrl)}">
   <link rel="stylesheet" href="/study-library/assets/dashboard.css">
+  <script src="/study-library/assets/ssr-actions.js" defer></script>
   ${jsonLdScripts}
 </head>`;
 }
@@ -150,8 +151,51 @@ function renderNotFoundPage(pathLabel) {
   return htmlResponse(html, 404);
 }
 
+function formatVerifiedDate(iso) {
+  if (!iso) return '';
+  const d = String(iso).slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : '';
+}
+
+function renderSuggestBox({ domainSlug, folderId = '', itemSlug = '' }) {
+  return `<section class="cso-sl-pub-suggest-box" aria-label="Suggest Topic or Report Outdated Content">
+    <div class="cso-sl-pub-suggest-head">
+      <button type="button" class="cso-sl-pub-btn-secondary cso-sl-pub-suggest-toggle">Report Outdated / Suggest Topic</button>
+      <span class="cso-sl-pub-muted">DPDP Act 2023 safe — do not include phone numbers, emails, or personal IDs.</span>
+    </div>
+    <form class="cso-sl-pub-suggest-form" data-domain-slug="${escHtml(domainSlug)}" data-folder-id="${escHtml(folderId)}" data-item-slug="${escHtml(itemSlug)}" hidden>
+      <div class="cso-sl-pub-suggest-grid">
+        <label>
+          <span>Type</span>
+          <select name="suggestion_type">
+            <option value="topic">Suggest Study Topic</option>
+            <option value="correction">Report Outdated / Broken Link</option>
+          </select>
+        </label>
+        <label>
+          <span>Title / Summary</span>
+          <input type="text" name="title" required minlength="4" maxlength="160" placeholder="e.g. Add 2026 OPSC OAS Prelims Paper 1 Official Key">
+        </label>
+      </div>
+      <label>
+        <span>Details (No personal data)</span>
+        <textarea name="details" rows="2" maxlength="1200" placeholder="Describe the topic or outdated section..."></textarea>
+      </label>
+      <label>
+        <span>Official Source URL (Optional)</span>
+        <input type="url" name="source_url" placeholder="https://www.opsc.gov.in/...">
+      </label>
+      <div class="cso-sl-pub-actions">
+        <button type="submit" class="cso-sl-pub-btn-primary">Submit Suggestion</button>
+        <span class="cso-sl-pub-suggest-status cso-sl-pub-muted" role="status" aria-live="polite"></span>
+      </div>
+    </form>
+  </section>`;
+}
+
 function renderDirectoryPage(resolved, url) {
   const {
+    domain_slug,
     domain_title,
     folder,
     breadcrumb,
@@ -165,11 +209,16 @@ function renderDirectoryPage(resolved, url) {
   const activeLang = (url.searchParams.get('lang') || '').trim().toLowerCase();
   const basePath = `/study-library/${folder.slug_path}/`;
   const canonicalUrl = `${CANONICAL_ORIGIN}${basePath}`;
-  const pageTitle = folder.depth === 1
+  const defaultTitle = folder.depth === 1
     ? `${folder.name} — CSOdisha Study Library`
     : `${folder.name} · ${domain_title} — CSOdisha Study Library`;
-  const pageDesc = folder.description
+  const pageTitle = folder.seo_title || defaultTitle;
+  const folderIntroEn = folder.description_en || folder.description || '';
+  const folderIntroOr = folder.description_or || '';
+  const pageDesc = folder.seo_description
+    || folderIntroEn
     || `Explore ${folder.name} (${domain_title}) sub-directories, syllabus notes, PDFs, and verified study resources on CSOdisha.`;
+  const verifiedDate = formatVerifiedDate(folder.verified_at);
 
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
@@ -355,20 +404,25 @@ function renderDirectoryPage(resolved, url) {
       <div class="cso-sl-pub-hero-meta">
         <span class="cso-sl-pub-badge">${escHtml(domain_title)}</span>
         <span class="cso-sl-pub-badge-soft">Depth ${folder.depth}</span>
+        ${folder.featured_badge ? `<span class="cso-sl-pub-badge-featured">${escHtml(folder.featured_badge)}</span>` : ''}
+        ${verifiedDate ? `<span class="cso-sl-pub-badge-soft">Last Verified: ${escHtml(verifiedDate)}</span>` : ''}
       </div>
       <h1>${escHtml(folder.name)}</h1>
       ${folder.title_or ? `<p class="cso-sl-pub-title-or">${escHtml(folder.title_or)}</p>` : ''}
-      ${folder.description ? `<p class="cso-sl-pub-hero-desc">${escHtml(folder.description)}</p>` : ''}
+      ${folderIntroEn ? `<p class="cso-sl-pub-hero-desc">${escHtml(folderIntroEn)}</p>` : ''}
+      ${folderIntroOr ? `<p class="cso-sl-pub-hero-desc cso-sl-pub-title-or">${escHtml(folderIntroOr)}</p>` : ''}
       <div class="cso-sl-pub-stats-row">
         <span class="cso-sl-pub-stat"><strong>${children.length}</strong> Direct Sub-Directories</span>
         <span class="cso-sl-pub-stat"><strong>${folder.total_item_count}</strong> Total Published Resources</span>
         ${parentFolder ? `<a class="cso-sl-pub-stat-link" href="/study-library/${escHtml(parentFolder.slug_path)}/">↑ Parent: ${escHtml(parentFolder.name)}</a>` : ''}
+        <button type="button" class="cso-sl-pub-btn-secondary cso-sl-pub-offline-btn">Save for Offline</button>
       </div>
     </section>
 
     ${subDirsHtml}
     ${resourcesHtml}
     ${siblingsHtml}
+    ${renderSuggestBox({ domainSlug: domain_slug, folderId: folder.id })}
   </main>
   ${buildFooter()}
 </body>
@@ -451,6 +505,7 @@ function renderItemPage(resolved) {
         ${item.board_or_exam ? `<span class="cso-sl-pub-badge-soft">${escHtml(item.board_or_exam)}</span>` : ''}
         ${item.subject_tag ? `<span class="cso-sl-pub-badge-soft">${escHtml(item.subject_tag)}</span>` : ''}
         ${item.language_parity ? `<span class="cso-sl-pub-badge-soft">Lang: ${escHtml(item.language_parity.toUpperCase())}</span>` : ''}
+        ${formatVerifiedDate(item.verified_at) ? `<span class="cso-sl-pub-badge-soft">Last Verified: ${escHtml(formatVerifiedDate(item.verified_at))}</span>` : ''}
       </div>
 
       <h1>${escHtml(item.title)}</h1>
@@ -485,10 +540,13 @@ function renderItemPage(resolved) {
       </div>` : ''}
 
       <div class="cso-sl-pub-actions">
+        <button type="button" class="cso-sl-pub-btn-primary cso-sl-pub-offline-btn" data-pdf-url="${escHtml(item.pdf_url || '')}">Save for Offline</button>
         ${item.folder_path ? `<a class="cso-sl-pub-btn-secondary" href="/study-library/${escHtml(item.folder_path)}/">← Back to Directory</a>` : ''}
         <a class="cso-sl-pub-btn-secondary" href="/study-library/">All 10 Study Tracks</a>
       </div>
     </article>
+
+    ${renderSuggestBox({ domainSlug: item.domain_slug, folderId: item.folder_id || '', itemSlug: item.slug || item.id })}
 
     ${Array.isArray(related) && related.length > 0 ? `<section class="cso-sl-pub-section" aria-labelledby="related-heading">
       <div class="cso-sl-pub-section-head">
