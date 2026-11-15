@@ -3,7 +3,7 @@ import { HttpError, json, errorResponse, readJson, validationError, clientIp } f
 import { requireRole, rateLimit, audit, STAFF_ROLES, ALL_ROLES } from '../../_lib/rbac.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
 import { backupCodeStatus, generateBackupCodes, twoFactorChannels, isTwoFactorConfigured } from '../../_lib/admin-2fa.js';
-import { handleOpsSnapshots } from '../../_lib/ops-snapshots.js';
+import { handleOpsSnapshots, handleOpsR2Vault } from '../../_lib/ops-snapshots.js';
 import { handleOpsSentinel } from '../../_lib/ops-sentinel.js';
 import { handleOpsHygiene } from '../../_lib/ops-hygiene.js';
 import { handleOpsContinuity } from '../../_lib/ops-continuity.js';
@@ -153,6 +153,7 @@ export async function handleAdminApi(request, env) {
         return await handleIncidents(request, env, actor, id, sub);
       case 'ops':
         if (id === 'snapshots') return await handleOpsSnapshots(request, env, actor, sub, extra);
+        if (id === 'r2-vault') return await handleOpsR2Vault(request, env, actor, sub);
         if (id === 'freeze' || id === 'cache' || id === 'health') return await handleOpsSentinel(request, env, actor, id);
         if (id === 'schema' || id === 'vacuum' || id === 'forensics' || id === 'retention') return await handleOpsHygiene(request, env, actor, id);
         if (id === 'replica' || id === 'replica-switchover' || id === 'airgap-bundle' || id === 'runbooks') return await handleOpsContinuity(request, env, actor, id, sub, extra);

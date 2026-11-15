@@ -15,6 +15,9 @@ import {
   runDisasterRecoveryDrill,
   restorePlatformSnapshot,
   executeGranularRestore,
+  getR2ColdVaultStatus,
+  lockSnapshotImmutable,
+  reconcileR2ColdVault,
   handleOpsSnapshots
 } from '../functions/_lib/ops-snapshots.js';
 
@@ -87,6 +90,15 @@ function makeR2() {
     },
     async delete(key) {
       return store.delete(key);
+    },
+    async list({ prefix = '' } = {}) {
+      const objects = [];
+      for (const [key, item] of store.entries()) {
+        if (!prefix || key.startsWith(prefix)) {
+          objects.push({ key, size: item.bytes.byteLength, uploaded: new Date().toISOString() });
+        }
+      }
+      return { objects, truncated: false };
     }
   };
 }
@@ -400,4 +412,33 @@ assert.equal(parsedLastRestore.status, 'SUCCESS');
 const listedWithRestore = await listPlatformSnapshots(restoreEnv);
 assert.ok(listedWithRestore.last_restore && listedWithRestore.last_restore.safety_snapshot_id === granRes.safety_snapshot_id);
 
-console.log('OPS SNAPSHOT, DR DRILL & GRANULAR RESTORE TESTS PASSED');
+// 13. R2 Cold Vault WORM immutability lock, 409 delete block & orphan dry-run reconcile
+const lockedRes = await lockSnapshotImmutable(restoreEnv, granRes.safety_snapshot_id, { lockDays: 30, actorEmail: 'admin@csodisha.com' });
+assert.strictEqual(lockedRes.ok, true);
+assert.strictEqual(lockedRes.vault_tier, 'cold_immutable');
+assert.ok(lockedRes.immutable_until && Date.parse(lockedRes.immutable_until) > Date.now());
+
+let wormBlocked = false;
+try {
+  await deletePlatformSnapshot(restoreEnv, granRes.safety_snapshot_id);
+} catch (err) {
+  wormBlocked = err && err.status === 409 && err.code === 'IMMUTABLE_WORM_LOCKED';
+}
+assert.ok(wormBlocked, 'deletePlatformSnapshot must reject WORM-locked snapshots with 409 IMMUTABLE_WORM_LOCKED');
+
+// Put an unindexed orphan object under backups/
+await restoreEnv.MEDIA.put('backups/snapshots/orphan.json', new TextEncoder().encode('{"orphan":true}'));
+const vaultStatus = await getR2ColdVaultStatus(restoreEnv);
+assert.strictEqual(vaultStatus.ok, true);
+assert.ok(vaultStatus.immutable_locked_count >= 1);
+assert.strictEqual(vaultStatus.sync_health, 'ORPHANS_DETECTED');
+assert.ok(vaultStatus.orphan_objects.some(o => o.key === 'backups/snapshots/orphan.json'));
+
+const dryReconcile = await reconcileR2ColdVault(restoreEnv, { dryRun: true });
+assert.strictEqual(dryReconcile.ok, true);
+assert.strictEqual(dryReconcile.dry_run, true);
+assert.strictEqual(dryReconcile.orphan_count, 1);
+assert.ok(dryReconcile.reclaimable_bytes > 0);
+assert.ok(restoreEnv.MEDIA.store.has('backups/snapshots/orphan.json'), 'Dry-run reconcile must NOT delete orphan object');
+
+console.log('OPS SNAPSHOT, DR DRILL, GRANULAR RESTORE & R2 COLD VAULT TESTS PASSED');

@@ -79,9 +79,22 @@ export async function ensureOpsSnapshotsTable(env) {
       row_counts_json TEXT NOT NULL,
       trigger_type TEXT NOT NULL,
       created_by TEXT,
-      created_at TEXT NOT NULL
+      created_at TEXT NOT NULL,
+      immutable_until TEXT,
+      vault_tier TEXT NOT NULL DEFAULT 'standard'
     )`
   ).run();
+
+  try {
+    const cols = await getTableColumns(env.DB, 'ops_snapshots');
+    const colSet = new Set(cols.map(c => c.toLowerCase()));
+    if (!colSet.has('immutable_until')) {
+      await env.DB.prepare(`ALTER TABLE ops_snapshots ADD COLUMN immutable_until TEXT`).run();
+    }
+    if (!colSet.has('vault_tier')) {
+      await env.DB.prepare(`ALTER TABLE ops_snapshots ADD COLUMN vault_tier TEXT NOT NULL DEFAULT 'standard'`).run();
+    }
+  } catch {}
 }
 
 async function safeQueryAll(db, sql) {
@@ -414,6 +427,8 @@ function presentSnapshotRow(row, r2Exists = true) {
   let rowCounts = {};
   try { rowCounts = JSON.parse(row.row_counts_json || '{}'); } catch {}
   const totalRows = Object.values(rowCounts).reduce((acc, v) => acc + (Number(v) || 0), 0);
+  const immutableUntil = row.immutable_until || null;
+  const isLocked = Boolean(immutableUntil && Date.parse(immutableUntil) > Date.now());
   return {
     id: row.id,
     label: row.label,
@@ -425,6 +440,9 @@ function presentSnapshotRow(row, r2Exists = true) {
     trigger_type: row.trigger_type,
     created_by: row.created_by,
     created_at: row.created_at,
+    immutable_until: immutableUntil,
+    vault_tier: row.vault_tier || (isLocked ? 'cold_immutable' : 'standard'),
+    is_immutable_locked: isLocked,
     r2_exists: Boolean(r2Exists)
   };
 }
@@ -993,8 +1011,16 @@ export async function renamePlatformSnapshot(env, id, newLabel) {
 export async function deletePlatformSnapshot(env, id) {
   if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
   await ensureOpsSnapshotsTable(env);
-  const row = await env.DB.prepare('SELECT id, label, r2_key FROM ops_snapshots WHERE id = ?').bind(id).first();
+  const row = await env.DB.prepare('SELECT id, label, r2_key, immutable_until, vault_tier FROM ops_snapshots WHERE id = ?').bind(id).first();
   if (!row) throw new HttpError(404, 'NOT_FOUND', 'Snapshot not found');
+
+  if (row.immutable_until && Date.parse(row.immutable_until) > Date.now()) {
+    throw new HttpError(
+      409,
+      'IMMUTABLE_WORM_LOCKED',
+      `Snapshot "${row.label}" is WORM-locked until ${row.immutable_until} and cannot be deleted.`
+    );
+  }
 
   if (env.MEDIA && row.r2_key && typeof env.MEDIA.delete === 'function') {
     try {
@@ -1009,6 +1035,235 @@ export async function deletePlatformSnapshot(env, id) {
     label: row.label,
     r2_key: row.r2_key
   };
+}
+
+// ============================================================================
+// Module #5: Cloudflare R2 Immutable Storage & Cold Vault (WORM Locks & Reconcile)
+// ============================================================================
+export const ALLOWED_WORM_LOCK_DAYS = [7, 30, 90, 180, 365, 1095];
+
+async function listR2BackupObjects(env) {
+  if (!env || !env.MEDIA || typeof env.MEDIA.list !== 'function') return null;
+  const objects = [];
+  let cursor;
+  let pages = 0;
+  do {
+    const res = await env.MEDIA.list({ prefix: 'backups/', cursor, limit: 1000 });
+    const batch = Array.isArray(res && res.objects) ? res.objects : [];
+    for (const obj of batch) {
+      if (obj && obj.key) {
+        objects.push({
+          key: obj.key,
+          size: Number(obj.size) || 0,
+          uploaded: obj.uploaded ? new Date(obj.uploaded).toISOString() : null,
+          etag: obj.etag || null
+        });
+      }
+    }
+    cursor = res && res.truncated ? res.cursor : undefined;
+    pages++;
+  } while (cursor && pages < 10);
+  return objects;
+}
+
+export async function getR2ColdVaultStatus(env) {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  const listed = await listPlatformSnapshots(env);
+  const items = listed.items || [];
+  const r2Objects = await listR2BackupObjects(env);
+
+  const ledgerKeySet = new Set(items.map(it => it.r2_key));
+  const orphan_objects = [];
+  const missing_objects = [];
+
+  let totalColdVaultBytes = 0;
+  if (Array.isArray(r2Objects)) {
+    const r2KeySet = new Set();
+    for (const obj of r2Objects) {
+      r2KeySet.add(obj.key);
+      totalColdVaultBytes += obj.size;
+      if (!ledgerKeySet.has(obj.key)) {
+        orphan_objects.push(obj);
+      }
+    }
+    for (const it of items) {
+      if (!r2KeySet.has(it.r2_key)) {
+        missing_objects.push({
+          id: it.id,
+          label: it.label,
+          r2_key: it.r2_key,
+          size_bytes: it.size_bytes
+        });
+      }
+    }
+  } else {
+    for (const it of items) {
+      totalColdVaultBytes += it.size_bytes;
+      if (!it.r2_exists) {
+        missing_objects.push({
+          id: it.id,
+          label: it.label,
+          r2_key: it.r2_key,
+          size_bytes: it.size_bytes
+        });
+      }
+    }
+  }
+
+  const immutable_locked_count = items.filter(it => it.is_immutable_locked).length;
+  const unlocked_count = items.length - immutable_locked_count;
+  const sync_health = (orphan_objects.length === 0 && missing_objects.length === 0) ? 'SYNCED' : 'ORPHANS_DETECTED';
+
+  return {
+    ok: true,
+    total_objects: Array.isArray(r2Objects) ? r2Objects.length : items.length,
+    ledger_count: items.length,
+    total_bytes: totalColdVaultBytes,
+    immutable_locked_count,
+    unlocked_count,
+    orphan_objects,
+    missing_objects,
+    sync_health,
+    items
+  };
+}
+
+export async function lockSnapshotImmutable(env, id, { lockDays = 30, actorEmail = 'admin' } = {}) {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  await ensureOpsSnapshotsTable(env);
+
+  const days = Number(lockDays);
+  if (!ALLOWED_WORM_LOCK_DAYS.includes(days)) {
+    throw new HttpError(400, 'INVALID_LOCK_DAYS', 'lock_days must be one of: ' + ALLOWED_WORM_LOCK_DAYS.join(', '));
+  }
+
+  const row = await env.DB.prepare('SELECT id, label, r2_key, immutable_until, vault_tier FROM ops_snapshots WHERE id = ?').bind(id).first();
+  if (!row) throw new HttpError(404, 'NOT_FOUND', 'Snapshot not found');
+
+  const immutableUntil = new Date(Date.now() + days * 86400000).toISOString();
+  if (row.immutable_until && Date.parse(row.immutable_until) > Date.parse(immutableUntil)) {
+    throw new HttpError(
+      409,
+      'WORM_LOCK_CANNOT_SHORTEN',
+      `Existing WORM lock expires later (${row.immutable_until}) and cannot be shortened.`
+    );
+  }
+
+  await env.DB.prepare(
+    `UPDATE ops_snapshots SET immutable_until = ?, vault_tier = 'cold_immutable' WHERE id = ?`
+  ).bind(immutableUntil, id).run();
+
+  if (env.MEDIA && row.r2_key && typeof env.MEDIA.get === 'function' && typeof env.MEDIA.put === 'function') {
+    try {
+      const obj = await env.MEDIA.get(row.r2_key);
+      if (obj) {
+        const buf = await obj.arrayBuffer();
+        const prevMeta = obj.customMetadata || {};
+        await env.MEDIA.put(row.r2_key, new Uint8Array(buf), {
+          httpMetadata: obj.httpMetadata || { contentType: 'application/json; charset=utf-8' },
+          customMetadata: {
+            ...prevMeta,
+            immutable_until: immutableUntil,
+            vault_tier: 'cold_immutable',
+            locked_by: String(actorEmail || 'admin')
+          }
+        });
+      }
+    } catch {}
+  }
+
+  return {
+    ok: true,
+    id: row.id,
+    label: row.label,
+    lock_days: days,
+    immutable_until: immutableUntil,
+    vault_tier: 'cold_immutable'
+  };
+}
+
+export async function reconcileR2ColdVault(env, { dryRun = true, confirm = '' } = {}) {
+  const status = await getR2ColdVaultStatus(env);
+  const orphans = status.orphan_objects || [];
+  const reclaimable_bytes = orphans.reduce((acc, o) => acc + (Number(o.size) || 0), 0);
+
+  if (dryRun !== false) {
+    return {
+      ok: true,
+      dry_run: true,
+      orphan_count: orphans.length,
+      reclaimable_bytes,
+      orphan_objects: orphans
+    };
+  }
+
+  if (String(confirm || '').trim() !== 'RECONCILE') {
+    throw new HttpError(400, 'CONFIRMATION_REQUIRED', 'Type RECONCILE in the confirmation field to delete orphan R2 objects');
+  }
+
+  const deleted_keys = [];
+  let reclaimed_bytes = 0;
+  for (const obj of orphans) {
+    if (env.MEDIA && typeof env.MEDIA.delete === 'function') {
+      await env.MEDIA.delete(obj.key);
+      deleted_keys.push(obj.key);
+      reclaimed_bytes += Number(obj.size) || 0;
+    }
+  }
+
+  return {
+    ok: true,
+    dry_run: false,
+    deleted_count: deleted_keys.length,
+    reclaimed_bytes,
+    deleted_keys
+  };
+}
+
+export async function handleOpsR2Vault(request, env, actor, subAction) {
+  const method = request.method;
+
+  if (!subAction && method === 'GET') {
+    return json(await getR2ColdVaultStatus(env), 200, { 'Cache-Control': 'no-store' });
+  }
+
+  if (subAction === 'lock' && method === 'POST') {
+    if (actor.role !== 'admin') throw new HttpError(403, 'FORBIDDEN', 'Only administrators can apply WORM immutability locks');
+    const body = await readJson(request, 10000).catch(() => ({}));
+    const snapId = String((body && (body.id || body.snapshot_id)) || '').trim();
+    if (!snapId) throw new HttpError(400, 'MISSING_SNAPSHOT_ID', 'Snapshot id is required');
+    const result = await lockSnapshotImmutable(env, snapId, {
+      lockDays: body && body.lock_days !== undefined ? body.lock_days : 30,
+      actorEmail: actor.email || actor.userId
+    });
+    await audit(env, request, actor, 'ops.r2vault.lock', 'ops_snapshot', snapId, {
+      label: result.label,
+      lock_days: result.lock_days,
+      immutable_until: result.immutable_until,
+      vault_tier: result.vault_tier
+    });
+    return json(result, 200, { 'Cache-Control': 'no-store' });
+  }
+
+  if (subAction === 'reconcile' && method === 'POST') {
+    if (actor.role !== 'admin') throw new HttpError(403, 'FORBIDDEN', 'Only administrators can reconcile R2 cold-vault orphans');
+    const body = await readJson(request, 10000).catch(() => ({}));
+    const dryRun = !(body && body.dry_run === false);
+    const result = await reconcileR2ColdVault(env, {
+      dryRun,
+      confirm: body && (body.confirm !== undefined ? body.confirm : body.confirm_phrase)
+    });
+    if (!dryRun) {
+      await audit(env, request, actor, 'ops.r2vault.reconcile', 'r2_vault', 'backups/', {
+        deleted_count: result.deleted_count,
+        reclaimed_bytes: result.reclaimed_bytes,
+        deleted_keys: result.deleted_keys
+      });
+    }
+    return json(result, 200, { 'Cache-Control': 'no-store' });
+  }
+
+  throw new HttpError(404, 'NOT_FOUND', 'Unknown R2 cold-vault route');
 }
 
 // Route dispatcher for /api/admin/ops/snapshots[/:id[/download|/verify|/drill|/restore]]

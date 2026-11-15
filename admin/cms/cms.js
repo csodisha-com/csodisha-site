@@ -3683,10 +3683,360 @@
     return wrap;
   }
 
+  /* ---------- Folder 17: Module #5 Cloudflare R2 Immutable Storage & Cold Vault ---------- */
+  function opsR2ColdVaultPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-ops-vault-panel' }, [
+      el('h2', { text: 'Cloudflare R2 Immutable Storage & Cold Vault' }),
+      el('p', {
+        class: 'muted',
+        text: 'Seal platform snapshots with WORM immutability locks (DPDP Act 2023 audit retention), verify live R2 blob parity against D1, and reconcile unindexed orphan objects.'
+      })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var snapSel = el('select', { id: 'f-ops-r2-lock-snap', class: 'cso-ops-snap-select', 'aria-label': 'Select snapshot to lock' });
+    var lockDaysSel = el('select', { id: 'f-ops-r2-lock-days', class: 'cso-ops-policy-select', 'aria-label': 'Lock duration' }, [
+      el('option', { value: '7', text: '7 Days' }),
+      el('option', { value: '30', text: '30 Days', selected: true }),
+      el('option', { value: '90', text: '90 Days' }),
+      el('option', { value: '180', text: '180 Days' }),
+      el('option', { value: '365', text: '1 Year (365 Days)' }),
+      el('option', { value: '1095', text: '3 Years — Audit Archive (1095 Days)' })
+    ]);
+    var applyLockBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      disabled: !isAdmin,
+      text: 'Apply WORM Immutability Lock'
+    });
+    var refreshVaultBtn = el('button', {
+      type: 'button',
+      class: 'btn',
+      text: 'Refresh R2 Inventory'
+    });
+
+    var lockControlsBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'WORM Immutability Seal Controls' }),
+        el('span', { class: 'badge published', text: 'DPDP WORM Shield' })
+      ]),
+      el('div', { class: 'cso-ops-restore-controls' }, [
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { for: 'f-ops-r2-lock-snap', class: 'muted sm', text: 'Target Snapshot' }),
+          snapSel
+        ]),
+        el('div', { class: 'cso-ops-restore-field' }, [
+          el('label', { for: 'f-ops-r2-lock-days', class: 'muted sm', text: 'Immutability Duration' }),
+          lockDaysSel
+        ]),
+        applyLockBtn,
+        refreshVaultBtn
+      ])
+    ]);
+
+    var ledgerHost = el('div', { class: 'cso-ops-vault-table-host' });
+    var reconcileHost = el('div', { class: 'cso-ops-subbox' });
+    var previewOrphansBtn = el('button', {
+      type: 'button',
+      class: 'btn sm',
+      disabled: !isAdmin,
+      text: 'Scan R2 Orphans (Dry Run)'
+    });
+    var reconcileOut = el('div', { class: 'cso-ops-drill-output' });
+
+    reconcileHost.appendChild(el('div', { class: 'cso-ops-subhead' }, [
+      el('strong', { text: 'Reconcile R2 Orphans (Dry-Run Preview)' }),
+      previewOrphansBtn
+    ]));
+    reconcileHost.appendChild(el('p', {
+      class: 'hint',
+      text: 'Cross-checks live R2 objects under backups/ against the D1 ops_snapshots ledger to surface unindexed orphan blobs and reclaimable storage.'
+    }));
+    reconcileHost.appendChild(reconcileOut);
+
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(lockControlsBox);
+    wrap.appendChild(ledgerHost);
+    wrap.appendChild(reconcileHost);
+
+    var isLocking = false;
+    var isScanningOrphans = false;
+
+    async function applyWormLock(targetId, days) {
+      if (isLocking || !isAdmin) return;
+      var id = targetId || snapSel.value;
+      if (!id) { toast('Select a snapshot first', true); return; }
+      isLocking = true;
+      applyLockBtn.disabled = true;
+      snapSel.disabled = true;
+      lockDaysSel.disabled = true;
+      applyLockBtn.textContent = 'Sealing WORM Lock…';
+      try {
+        var res = await api('POST', 'ops/r2-vault/lock', {
+          id: id,
+          lock_days: Number(days || lockDaysSel.value || 30)
+        });
+        toast('WORM lock applied until ' + fmtDate(res.immutable_until));
+        await loadR2Vault();
+      } catch (err) {
+        toast(err.message || 'Failed to apply WORM lock', true);
+      } finally {
+        isLocking = false;
+        applyLockBtn.disabled = !isAdmin;
+        snapSel.disabled = false;
+        lockDaysSel.disabled = false;
+        applyLockBtn.textContent = 'Apply WORM Immutability Lock';
+      }
+    }
+
+    function renderOrphanPreview(res) {
+      clear(reconcileOut);
+      var orphans = Array.isArray(res && res.orphan_objects) ? res.orphan_objects : [];
+      if (!orphans.length) {
+        reconcileOut.appendChild(el('div', { class: 'alert ok', text: '✓ R2 cold vault is 100% synced with D1 — 0 orphan objects found (0 B reclaimable).' }));
+        return;
+      }
+
+      reconcileOut.appendChild(el('div', { class: 'alert', text: orphans.length + ' unindexed orphan R2 object(s) detected · Reclaimable: ' + fmtBytes(res.reclaimable_bytes || 0) }));
+      var tb = el('tbody');
+      orphans.forEach(function (o) {
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, el('code', { class: 'cso-ops-r2key', text: o.key })),
+          el('td', { class: 'cso-tabular', text: fmtBytes(o.size) }),
+          el('td', { class: 'cso-tabular', text: o.uploaded ? fmtDate(o.uploaded) : '—' })
+        ]));
+      });
+      reconcileOut.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+        el('thead', {}, el('tr', {}, ['Orphan R2 Key', 'Size', 'Uploaded'].map(function (h) {
+          return el('th', { scope: 'col', text: h });
+        }))),
+        tb
+      ])));
+
+      if (isAdmin) {
+        var recConfirm = el('input', {
+          type: 'text',
+          class: 'cso-ops-confirm-input',
+          placeholder: 'Type RECONCILE to purge orphans',
+          autocomplete: 'off',
+          spellcheck: 'false'
+        });
+        var recCleanBtn = el('button', {
+          type: 'button',
+          class: 'btn danger sm',
+          text: 'Purge Orphan Blobs',
+          onclick: async function () {
+            if (recConfirm.value.trim() !== 'RECONCILE') {
+              toast('Type RECONCILE to confirm orphan cleanup', true);
+              recConfirm.focus();
+              return;
+            }
+            recCleanBtn.disabled = true;
+            recCleanBtn.textContent = 'Purging Orphans…';
+            try {
+              var cleanRes = await api('POST', 'ops/r2-vault/reconcile', {
+                dry_run: false,
+                confirm: recConfirm.value.trim()
+              });
+              toast('Reconciled ' + (cleanRes.deleted_count || 0) + ' orphan(s), reclaimed ' + fmtBytes(cleanRes.reclaimed_bytes || 0));
+              await loadR2Vault();
+            } catch (err) {
+              toast(err.message || 'Orphan cleanup failed', true);
+              recCleanBtn.disabled = false;
+              recCleanBtn.textContent = 'Purge Orphan Blobs';
+            }
+          }
+        });
+        reconcileOut.appendChild(el('div', { class: 'cso-ops-restore-controls' }, [recConfirm, recCleanBtn]));
+      }
+    }
+
+    async function runOrphanDryRun() {
+      if (isScanningOrphans || !isAdmin) return;
+      isScanningOrphans = true;
+      previewOrphansBtn.disabled = true;
+      previewOrphansBtn.textContent = 'Scanning R2…';
+      try {
+        var res = await api('POST', 'ops/r2-vault/reconcile', { dry_run: true });
+        renderOrphanPreview(res);
+        toast('R2 orphan scan complete (' + (res.orphan_count || 0) + ' orphan(s))');
+      } catch (err) {
+        clear(reconcileOut).appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+          el('span', { text: 'Orphan scan failed: ' + (err.message || 'Network error') }),
+          el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: runOrphanDryRun })
+        ]));
+      } finally {
+        isScanningOrphans = false;
+        previewOrphansBtn.disabled = !isAdmin;
+        previewOrphansBtn.textContent = 'Scan R2 Orphans (Dry Run)';
+      }
+    }
+
+    async function loadR2Vault() {
+      clear(kpiStrip);
+      clear(ledgerHost);
+      clear(snapSel);
+      try {
+        var d = await api('GET', 'ops/r2-vault');
+        var items = Array.isArray(d && d.items) ? d.items : [];
+        var isSynced = d && d.sync_health === 'SYNCED';
+
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Total Cold-Vault Objects' }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: String((d && d.total_objects) || 0) })
+        ]));
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Total R2 Storage Footprint' }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: fmtBytes((d && d.total_bytes) || 0) })
+        ]));
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Immutable-Locked Count' }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular' }, [
+            el('span', { text: String((d && d.immutable_locked_count) || 0) + ' locked' }),
+            el('span', { class: 'badge published', text: 'DPDP WORM Shield' })
+          ])
+        ]));
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'R2-to-D1 Sync Health' }),
+          el('div', { class: 'cso-ops-telemetry-val' }, [
+            el('span', {
+              class: 'badge ' + (isSynced ? 'published' : 'sev-medium'),
+              text: isSynced ? 'Synced' : 'Orphans Detected'
+            })
+          ])
+        ]));
+
+        if (!items.length) {
+          snapSel.appendChild(el('option', { value: '', text: 'No snapshots in R2 cold vault' }));
+          var emptyCard = el('div', { class: 'cso-ops-empty-vault' }, [
+            el('p', { class: 'muted', text: 'No snapshots exist in Cloudflare R2 yet. Archive your first cold-vault snapshot to enable WORM immutability sealing.' })
+          ]);
+          if (isAdmin) {
+            var firstSnapBtn = el('button', {
+              type: 'button',
+              class: 'btn primary',
+              text: 'Archive First Cold-Vault Snapshot Now',
+              onclick: async function () {
+                firstSnapBtn.disabled = true;
+                firstSnapBtn.textContent = 'Archiving Snapshot…';
+                try {
+                  await api('POST', 'ops/snapshots', { label: 'Initial Cold-Vault Baseline', scope: 'all' });
+                  toast('Cold-vault baseline snapshot archived to R2');
+                  await loadR2Vault();
+                } catch (err) {
+                  toast(err.message || 'Failed to archive snapshot', true);
+                  firstSnapBtn.disabled = false;
+                  firstSnapBtn.textContent = 'Archive First Cold-Vault Snapshot Now';
+                }
+              }
+            });
+            emptyCard.appendChild(firstSnapBtn);
+          }
+          ledgerHost.appendChild(emptyCard);
+          return;
+        }
+
+        items.forEach(function (it) {
+          snapSel.appendChild(el('option', {
+            value: it.id,
+            text: it.label + ' (' + fmtBytes(it.size_bytes) + (it.is_immutable_locked ? ' · Locked' : '') + ')'
+          }));
+        });
+
+        var tb = el('tbody');
+        items.forEach(function (snap) {
+          var syncBadge = el('span', {
+            class: 'badge ' + (snap.r2_exists ? 'published' : 'expired'),
+            text: snap.r2_exists ? 'R2 Synced' : 'Missing in R2'
+          });
+          var lockBadge = el('span', {
+            class: 'badge ' + (snap.is_immutable_locked ? 'published' : 'draft'),
+            text: snap.is_immutable_locked ? ('WORM Until ' + fmtDate(snap.immutable_until)) : 'Unlocked'
+          });
+          var verifyBtn = el('button', {
+            type: 'button',
+            class: 'btn sm cso-btn-forest-outline',
+            text: 'Verify R2 Blob',
+            onclick: async function () {
+              verifyBtn.disabled = true;
+              verifyBtn.textContent = 'Verifying…';
+              try {
+                var res = await api('POST', 'ops/snapshots/' + encodeURIComponent(snap.id) + '/verify', {});
+                syncBadge.className = 'badge ' + (res.valid ? 'published' : 'expired');
+                syncBadge.textContent = res.valid ? '✓ Blob Verified' : '✗ Checksum Mismatch';
+                toast(res.valid ? 'R2 blob SHA-256 verified' : 'R2 blob verification FAILED', !res.valid);
+              } catch (err) {
+                toast(err.message || 'Verification failed', true);
+              }
+              verifyBtn.disabled = false;
+              verifyBtn.textContent = 'Verify R2 Blob';
+            }
+          });
+          var rowActions = [verifyBtn];
+          if (isAdmin) {
+            rowActions.unshift(el('button', {
+              type: 'button',
+              class: 'btn sm',
+              text: 'Seal 30d',
+              onclick: function () { applyWormLock(snap.id, 30); }
+            }));
+          }
+
+          tb.appendChild(el('tr', {}, [
+            el('td', {}, [
+              el('strong', { text: snap.label }),
+              el('div', { class: 'hint cso-ops-mono', text: String(snap.id || '').slice(0, 12) + '…' })
+            ]),
+            el('td', {}, el('span', {
+              class: 'badge ' + (snap.vault_tier === 'cold_immutable' ? 'published' : 'draft'),
+              text: snap.vault_tier || 'standard'
+            })),
+            el('td', {}, [
+              el('div', { class: 'hint cso-ops-r2key', text: snap.r2_key }),
+              el('div', { class: 'cso-tabular sm', text: fmtBytes(snap.size_bytes) })
+            ]),
+            el('td', {}, el('code', { class: 'cso-ops-sha-code', title: snap.sha256 || '', text: snap.sha256 ? (snap.sha256.slice(0, 12) + '…') : '—' })),
+            el('td', {}, lockBadge),
+            el('td', {}, syncBadge),
+            el('td', {}, el('div', { class: 'actions' }, rowActions))
+          ]));
+        });
+
+        ledgerHost.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+          el('caption', { class: 'muted', text: 'Cloudflare R2 Cold Vault Ledger & WORM Immutability Status' }),
+          el('thead', {}, el('tr', {}, ['Snapshot ID & Label', 'Tier', 'R2 Key & Size', 'SHA-256 Digest', 'Immutable Lock Status / Unlock Date', 'Sync State', 'Actions'].map(function (h) {
+            return el('th', { scope: 'col', text: h });
+          }))),
+          tb
+        ])));
+
+        if (Array.isArray(d && d.orphan_objects) && d.orphan_objects.length) {
+          renderOrphanPreview({
+            orphan_objects: d.orphan_objects,
+            reclaimable_bytes: d.orphan_objects.reduce(function (a, o) { return a + (Number(o.size) || 0); }, 0)
+          });
+        }
+      } catch (e) {
+        ledgerHost.appendChild(el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+          el('span', { text: 'Could not load R2 cold vault: ' + (e && e.message ? e.message : 'Network error') }),
+          el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: loadR2Vault })
+        ]));
+      }
+    }
+
+    applyLockBtn.addEventListener('click', function () { applyWormLock(snapSel.value, lockDaysSel.value); });
+    refreshVaultBtn.addEventListener('click', loadR2Vault);
+    previewOrphansBtn.addEventListener('click', runOrphanDryRun);
+    loadR2Vault();
+    return wrap;
+  }
+
   async function viewOperations(subMode, targetSnapId) {
     var mode = subMode || 'snapshots';
     var titleMap = {
       vault: 'R2 Immutable Storage Cold Vault',
+      r2vault: 'R2 Immutable Storage Cold Vault',
       verify: 'Snapshot Integrity & SHA-256 Check',
       drill: 'Disaster Recovery Drill & State Restorer Engine',
       restore: 'Point-in-Time Rollback & Granular Engine Restorer',
@@ -3707,7 +4057,8 @@
 
     var groupMap = {
       snapshots: 'snapshots',
-      vault: 'snapshots',
+      vault: 'r2vault',
+      r2vault: 'r2vault',
       verify: 'snapshots',
       drill: 'drill',
       restore: 'drill',
@@ -3733,6 +4084,8 @@
       main.appendChild(opsSchemaVacuumForensicsPanel(mode));
     } else if (activeGroup === 'continuity') {
       main.appendChild(opsContinuityAirgapRunbookPanel(mode));
+    } else if (activeGroup === 'r2vault') {
+      main.appendChild(opsR2ColdVaultPanel());
     } else {
       main.appendChild(opsSnapshotVaultPanel(mode));
     }
