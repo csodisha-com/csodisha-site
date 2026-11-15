@@ -6,23 +6,27 @@
   var mobileOpenBtn = document.getElementById('jobs-mobile-open');
   var backdrop = document.getElementById('jobs-backdrop');
   var kpisEl = document.getElementById('jobs-kpis');
+  var telemetryEl = document.getElementById('jobs-telemetry-bars');
   var domainsEl = document.getElementById('jobs-domains-grid');
   var itemsEl = document.getElementById('jobs-items-grid');
   var navEl = document.getElementById('jobs-rail-nav');
 
   var searchInp = document.getElementById('jobs-filter-q');
+  var stateSel = document.getElementById('jobs-filter-state');
   var typeSel = document.getElementById('jobs-filter-type');
   var qualSel = document.getElementById('jobs-filter-qual');
-  var langSel = document.getElementById('jobs-filter-lang');
   var activeCb = document.getElementById('jobs-filter-active');
+  var langToggleBtn = document.getElementById('jobs-lang-toggle');
 
   var state = {
     q: '',
     domain: '',
+    state_location: '',
     item_type: '',
     qualification: '',
-    language: '',
-    active_only: false
+    active_only: false,
+    uiLang: 'EN',
+    lastItems: []
   };
 
   function el(tag, attrs, children) {
@@ -63,6 +67,14 @@
     });
   }
 
+  if (langToggleBtn) {
+    langToggleBtn.addEventListener('click', function () {
+      state.uiLang = state.uiLang === 'EN' ? 'OR' : 'EN';
+      langToggleBtn.textContent = state.uiLang === 'OR' ? 'ଓଡ଼ିଆ (Active) / EN' : 'EN / ଓଡ଼ିଆ';
+      renderItems(state.lastItems);
+    });
+  }
+
   document.querySelectorAll('.cso-jobs-pill').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var qVal = btn.getAttribute('data-q') || '';
@@ -77,18 +89,30 @@
     });
   });
 
+  document.querySelectorAll('.cso-jobs-qfilter').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var qVal = btn.getAttribute('data-q') || '';
+      state.q = qVal;
+      if (searchInp) searchInp.value = qVal;
+      document.querySelectorAll('.cso-jobs-qfilter').forEach(function (p) { p.classList.remove('is-active'); });
+      btn.classList.add('is-active');
+      loadItems();
+    });
+  });
+
   function renderOverview(data) {
     var totals = data.totals || {};
     var domains = data.domains || [];
+    var tb = data.typeBreakdown || {};
 
     if (kpisEl) {
       clear(kpisEl);
-      var pub = Math.max(1, Number(totals.totalPublished || 1));
+      var totalFolders = Math.max(1, Number(totals.totalFolders || 1));
       [
-        { label: 'Jobs & Career Domains', val: totals.totalDomains || 8, max: 8, cur: totals.totalDomains || 8 },
-        { label: 'Active Sub-Directories', val: totals.totalFolders || 0, max: Math.max(1, totals.totalFolders || 1), cur: totals.totalFolders || 0 },
-        { label: 'Published Entries', val: totals.totalPublished || 0, max: pub, cur: totals.totalPublished || 0 },
-        { label: 'Verified & Active', val: totals.totalVerified || 0, max: pub, cur: totals.totalVerified || 0 }
+        { label: 'Navigation Groups', val: totals.totalDomains || 8, max: 8, cur: totals.totalDomains || 8 },
+        { label: 'Main Sections', val: totals.totalSections || 0, max: totalFolders, cur: totals.totalSections || 0 },
+        { label: 'Subcategories', val: totals.totalSubcategories || 0, max: totalFolders, cur: totals.totalSubcategories || 0 },
+        { label: 'Detailed Entries', val: (totals.totalPublished || 0) + '+', max: Math.max(1, (totals.totalPublished || 0) + (totals.totalEntries || 0)), cur: totals.totalPublished || 0 }
       ].forEach(function (k) {
         kpisEl.appendChild(el('div', { class: 'cso-jobs-kpi' }, [
           el('div', { class: 'cso-jobs-kpi-label', text: k.label }),
@@ -98,12 +122,61 @@
       });
     }
 
+    if (telemetryEl) {
+      clear(telemetryEl);
+      var maxDomainCount = Math.max(1, domains.reduce(function (m, d) {
+        return Math.max(m, Number(d.folder_count || 0) + Number(d.item_count || 0));
+      }, 1));
+
+      var covCard = el('div', { class: 'cso-jobs-telemetry-card' }, [
+        el('h3', { text: 'Directory & Entry Coverage Across 8 Career Domains' })
+      ]);
+      domains.forEach(function (d) {
+        var total = Number(d.folder_count || 0) + Number(d.item_count || 0);
+        covCard.appendChild(el('div', { class: 'cso-jobs-bar-row' }, [
+          el('div', { class: 'cso-jobs-bar-meta' }, [
+            el('span', { text: d.num + ' · ' + d.title }),
+            el('span', { text: d.folder_count + ' dirs · ' + d.item_count + ' entries' })
+          ]),
+          el('progress', { class: 'cso-jobs-progress', max: String(maxDomainCount), value: String(total) })
+        ]));
+      });
+
+      var totalType = Math.max(1, (tb.recruitment || 0) + (tb.guides || 0) + (tb.examsAndScholarships || 0) + (tb.portals || 0));
+      var typeCard = el('div', { class: 'cso-jobs-telemetry-card' }, [
+        el('h3', { text: 'Opportunity Type Breakdown' })
+      ]);
+      [
+        ['Recruitment & Notifications', tb.recruitment || 0],
+        ['Career & Eligibility Guides', tb.guides || 0],
+        ['Entrance Exams & Scholarships', tb.examsAndScholarships || 0],
+        ['Verified Official Portals', tb.portals || 0]
+      ].forEach(function (pair) {
+        typeCard.appendChild(el('div', { class: 'cso-jobs-bar-row' }, [
+          el('div', { class: 'cso-jobs-bar-meta' }, [
+            el('span', { text: pair[0] }),
+            el('span', { text: String(pair[1]) })
+          ]),
+          el('progress', { class: 'cso-jobs-progress', max: String(totalType), value: String(pair[1]) })
+        ]));
+      });
+
+      telemetryEl.appendChild(covCard);
+      telemetryEl.appendChild(typeCard);
+    }
+
     if (navEl) {
       clear(navEl);
+      navEl.appendChild(el('a', { class: 'cso-jobs-nav-link is-active', href: '/jobs/' }, [
+        el('span', { class: 'cso-jobs-nav-num', text: 'All' }),
+        el('span', { class: 'cso-jobs-rail-label', text: 'Overview' }),
+        el('span', { class: 'cso-jobs-nav-count', text: String(domains.length) })
+      ]));
       domains.forEach(function (d) {
         navEl.appendChild(el('a', { class: 'cso-jobs-nav-link', href: d.publicPath }, [
           el('span', { class: 'cso-jobs-nav-num', text: d.num }),
-          el('span', { class: 'cso-jobs-rail-label', text: d.title })
+          el('span', { class: 'cso-jobs-rail-label', text: d.title }),
+          el('span', { class: 'cso-jobs-nav-count', text: String(d.folder_count) })
         ]));
       });
     }
@@ -114,7 +187,7 @@
         domainsEl.appendChild(el('a', { class: 'cso-jobs-domain-card', href: d.publicPath }, [
           el('div', { class: 'cso-jobs-domain-top' }, [
             el('span', { text: 'MODULE #' + d.num }),
-            el('span', { text: d.folder_count + ' dirs · ' + d.item_count + ' live' })
+            el('span', { text: d.folder_count + ' categories · ' + d.item_count + ' entries' })
           ]),
           el('div', { class: 'cso-jobs-domain-title', text: d.title }),
           el('div', { class: 'cso-jobs-domain-desc', text: d.summary })
@@ -124,18 +197,20 @@
   }
 
   function renderItems(items) {
+    state.lastItems = items || [];
     if (!itemsEl) return;
     clear(itemsEl);
-    if (!items.length) {
+    if (!state.lastItems.length) {
       itemsEl.appendChild(el('p', { class: 'cso-jobs-domain-desc', text: 'No published opportunities or guides matched your current filters.' }));
       return;
     }
-    items.forEach(function (it) {
+    state.lastItems.forEach(function (it) {
+      var titleText = (state.uiLang === 'OR' && it.title_or) ? it.title_or : it.title;
       var actions = [
-        el('a', { class: 'cso-jobs-btn cso-jobs-btn-primary', href: '/jobs/item/' + encodeURIComponent(it.slug) + '/', text: 'Read Full Details' })
+        el('a', { class: 'cso-jobs-btn cso-jobs-btn-primary', href: '/jobs/item/' + encodeURIComponent(it.slug) + '/', text: 'View Details' })
       ];
       if (it.official_apply_url) {
-        actions.push(el('a', { class: 'cso-jobs-btn', href: it.official_apply_url, target: '_blank', rel: 'noopener noreferrer', text: 'Official Portal' }));
+        actions.push(el('a', { class: 'cso-jobs-btn', href: it.official_apply_url, target: '_blank', rel: 'noopener noreferrer', text: 'Apply Online ↗' }));
       }
       itemsEl.appendChild(el('article', { class: 'cso-jobs-item-card' }, [
         el('div', { class: 'cso-jobs-item-meta' }, [
@@ -144,7 +219,7 @@
           it.deadline_date ? el('span', { text: 'Deadline: ' + it.deadline_date }) : null,
           it.verified_at ? el('span', { class: 'cso-jobs-tag', text: 'Verified' }) : null
         ]),
-        el('h3', { class: 'cso-jobs-item-title', text: it.title }),
+        el('h3', { class: 'cso-jobs-item-title', text: titleText }),
         el('div', { class: 'cso-jobs-domain-desc', text: (it.recruiting_body ? it.recruiting_body + ' — ' : '') + (it.summary || '') }),
         el('div', { class: 'cso-jobs-item-actions' }, actions)
       ]));
@@ -163,9 +238,9 @@
     var qs = new URLSearchParams();
     if (state.q) qs.set('q', state.q);
     if (state.domain) qs.set('domain', state.domain);
+    if (state.state_location) qs.set('state_location', state.state_location);
     if (state.item_type) qs.set('item_type', state.item_type);
     if (state.qualification) qs.set('qualification', state.qualification);
-    if (state.language) qs.set('language', state.language);
     if (state.active_only) qs.set('active_only', '1');
     try {
       var res = await fetch('/api/public/jobs-directory/items?' + qs.toString());
@@ -175,9 +250,9 @@
   }
 
   if (searchInp) searchInp.addEventListener('input', function () { state.q = searchInp.value.trim(); loadItems(); });
+  if (stateSel) stateSel.addEventListener('change', function () { state.state_location = stateSel.value; loadItems(); });
   if (typeSel) typeSel.addEventListener('change', function () { state.item_type = typeSel.value; loadItems(); });
   if (qualSel) qualSel.addEventListener('change', function () { state.qualification = qualSel.value; loadItems(); });
-  if (langSel) langSel.addEventListener('change', function () { state.language = langSel.value; loadItems(); });
   if (activeCb) activeCb.addEventListener('change', function () { state.active_only = activeCb.checked; loadItems(); });
 
   loadOverview();

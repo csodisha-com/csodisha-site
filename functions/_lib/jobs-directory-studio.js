@@ -197,7 +197,14 @@ async function purgeJobsDirectoryCache(env) {
   try {
     if (typeof caches !== 'undefined' && caches.default) {
       const origin = (env && env.PUBLIC_ORIGIN) || 'https://csodisha.com';
-      const paths = ['/jobs/', '/api/public/jobs-directory', '/jobs/sitemap.xml'];
+      const paths = [
+        '/jobs/',
+        '/jobs-careers/',
+        '/api/public/jobs-directory/overview',
+        '/api/public/jobs-directory/items',
+        '/api/content/jobs-directory',
+        '/sitemap-jobs.xml'
+      ];
       await Promise.allSettled(paths.map(p => caches.default.delete(new Request(origin + p))));
     }
   } catch {
@@ -569,6 +576,10 @@ export async function ensureJobsDirectoryStudioSchema(db) {
     ['seo_title', "TEXT NOT NULL DEFAULT ''"],
     ['seo_description', "TEXT NOT NULL DEFAULT ''"],
     ['hero_badge', "TEXT NOT NULL DEFAULT ''"],
+    ['title_or', "TEXT NOT NULL DEFAULT ''"],
+    ['description_or', "TEXT NOT NULL DEFAULT ''"],
+    ['legacy_node_id', 'TEXT'],
+    ['legacy_code', 'TEXT'],
     ['updated_by', "TEXT NOT NULL DEFAULT 'system'"]
   ]);
 
@@ -589,6 +600,9 @@ export async function ensureJobsDirectoryStudioSchema(db) {
     ['featured', 'INTEGER NOT NULL DEFAULT 0'],
     ['verified_by', 'TEXT'],
     ['verified_at', 'TEXT'],
+    ['title_or', "TEXT NOT NULL DEFAULT ''"],
+    ['legacy_post_id', 'TEXT'],
+    ['state_location', "TEXT NOT NULL DEFAULT 'Odisha'"],
     ['created_by', "TEXT NOT NULL DEFAULT 'system'"],
     ['updated_by', "TEXT NOT NULL DEFAULT 'system'"]
   ]);
@@ -684,7 +698,198 @@ export async function ensureJobsDirectoryStudioSchema(db) {
   }
   if (itemStmts.length) await runBatched(db, itemStmts);
 
+  await bridgeLegacyJobsNodes(db, now);
+
   _schemaReady.add(db);
+}
+
+function mapLegacyGroupToDomain(node) {
+  const gs = String(node.group_slug || '').toLowerCase();
+  const t = String(node.title || '').toLowerCase();
+  if (gs.includes('career-explorer') || t.includes('career explorer')) return 'career-explorer';
+  if (gs.includes('eligibility') || t.includes('eligibility')) return 'eligibility-explorer';
+  if (gs.includes('course') || gs.includes('exam') || t.includes('entrance')) return 'courses-exams';
+  if (gs.includes('scholarship') || t.includes('scholarship')) return 'scholarships-support';
+  if (gs.includes('international') || gs.includes('overseas') || t.includes('overseas')) return 'international-overseas';
+  if (gs.includes('employability') || gs.includes('development') || t.includes('employability')) return 'career-employability';
+  if (gs.includes('institution') || gs.includes('portal') || t.includes('official portal')) return 'institutions-portals';
+  return 'jobs-recruitment';
+}
+
+async function bridgeLegacyJobsNodes(db, now) {
+  try {
+    const tblCheck = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='jobs_directory_nodes'").first();
+    if (tblCheck) {
+      const legacyCount = await db.prepare('SELECT COUNT(*) AS cnt FROM jobs_directory_folders WHERE legacy_node_id IS NOT NULL').first();
+      if (Number(legacyCount?.cnt || 0) === 0) {
+        const res = await db
+          .prepare('SELECT id, parent_id, level, code, title, title_or, description, description_or, group_slug, url, notes_json, tags, sort_order FROM jobs_directory_nodes WHERE is_active = 1 ORDER BY level ASC, sort_order ASC, id ASC')
+          .all();
+        const rows = res.results || [];
+        if (rows.length) {
+          const byId = new Map(rows.map(r => [r.id, r]));
+          const domainByNodeId = new Map();
+          for (const r of rows) {
+            if (Number(r.level) === 0) {
+              domainByNodeId.set(r.id, mapLegacyGroupToDomain(r));
+            } else {
+              let cur = r;
+              const seen = new Set();
+              while (cur && cur.parent_id && !seen.has(cur.id)) {
+                seen.add(cur.id);
+                if (domainByNodeId.has(cur.parent_id)) {
+                  domainByNodeId.set(r.id, domainByNodeId.get(cur.parent_id));
+                  break;
+                }
+                cur = byId.get(cur.parent_id);
+              }
+              if (!domainByNodeId.has(r.id)) domainByNodeId.set(r.id, mapLegacyGroupToDomain(r));
+            }
+          }
+
+          const existingSlugsRes = await db.prepare('SELECT domain_slug, slug FROM jobs_directory_folders').all();
+          const usedSlugs = new Set((existingSlugsRes.results || []).map(x => `${x.domain_slug}::${x.slug}`));
+          const folderIdByLegacyId = new Map();
+          const folderStmts = [];
+          const itemStmts = [];
+
+          for (const r of rows) {
+            if (Number(r.level) === 0) continue; // level 0 maps to the 8 canonical domain roots
+            const domain = domainByNodeId.get(r.id) || 'jobs-recruitment';
+            const parentNode = r.parent_id ? byId.get(r.parent_id) : null;
+            const parentFolderId = (parentNode && Number(parentNode.level) > 0)
+              ? (folderIdByLegacyId.get(parentNode.id) || null)
+              : null;
+            const depth = Math.min(4, Math.max(1, Number(r.level || 1)));
+            const folderId = 'jf-leg-' + String(r.id).replace(/[^a-zA-Z0-9_-]/g, '');
+            folderIdByLegacyId.set(r.id, folderId);
+
+            let baseSlug = slugify(r.title || ('node-' + r.id)) || ('node-' + r.id);
+            let finalSlug = baseSlug;
+            if (usedSlugs.has(`${domain}::${finalSlug}`)) {
+              finalSlug = `${baseSlug}-${String(r.id).toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 6) || 'x'}`;
+            }
+            usedSlugs.add(`${domain}::${finalSlug}`);
+
+            folderStmts.push(
+              db.prepare(`INSERT OR IGNORE INTO jobs_directory_folders
+                (id, domain_slug, parent_id, title, slug, depth, sort_order, is_published, description, intro_html, seo_title, seo_description, hero_badge, title_or, description_or, legacy_node_id, legacy_code, updated_by, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, '', ?, ?, ?, ?, ?, ?, ?, 'legacy-bridge', ?, ?)`)
+                .bind(
+                  folderId,
+                  domain,
+                  parentFolderId,
+                  cleanStr(r.title, 160) || 'Directory',
+                  finalSlug,
+                  depth,
+                  Number(r.sort_order || 10),
+                  cleanStr(r.description, 500),
+                  `${cleanStr(r.title, 120)} — CSOdisha`,
+                  cleanStr(r.description, 300),
+                  cleanStr(r.code, 40),
+                  cleanStr(r.title_or, 180),
+                  cleanStr(r.description_or, 500),
+                  String(r.id),
+                  cleanStr(r.code, 40),
+                  now,
+                  now
+                )
+            );
+
+            // Bridge level-3 detailed entries into jobs_directory_items
+            if (Number(r.level) >= 3) {
+              const itemId = 'ji-leg-node-' + String(r.id).replace(/[^a-zA-Z0-9_-]/g, '');
+              const itemSlug = `${finalSlug}-${String(r.id).toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'entry'}`;
+              let safeUrl = '';
+              try { safeUrl = r.url ? validateSafeCtaUrl(r.url) : ''; } catch { safeUrl = ''; }
+              const tags = parseTags(r.tags);
+              itemStmts.push(
+                db.prepare(`INSERT OR IGNORE INTO jobs_directory_items
+                  (id, domain_slug, folder_id, title, slug, item_type, recruiting_body, qualification_tag, vacancies, start_date, deadline_date, exam_date,
+                   official_apply_url, cover_image_url, cover_image_alt, attachments_json, links_json, tags_json, language, status, featured,
+                   summary, body_html, seo_title, seo_description, verified_by, verified_at, title_or, state_location, created_by, updated_by, created_at, updated_at)
+                  VALUES (?, ?, ?, ?, ?, ?, '', '', '', '', '', '', ?, '', '', '[]', '[]', ?, 'EN', 'published', 0, ?, ?, ?, ?, 'legacy-bridge@csodisha.com', ?, ?, 'Odisha', 'legacy-bridge', 'legacy-bridge', ?, ?)`)
+                  .bind(
+                    itemId,
+                    domain,
+                    folderId,
+                    cleanStr(r.title, 200),
+                    itemSlug,
+                    domain === 'scholarships-support' ? 'scholarship' : (domain === 'institutions-portals' ? 'official-portal' : 'career-guide'),
+                    safeUrl,
+                    JSON.stringify(tags),
+                    cleanStr(r.description, 500),
+                    r.description ? `<p>${cleanStr(r.description, 2000)}</p>` : '',
+                    `${cleanStr(r.title, 120)} | CSOdisha`,
+                    cleanStr(r.description, 300),
+                    now,
+                    cleanStr(r.title_or, 200),
+                    now,
+                    now
+                  )
+              );
+            }
+          }
+
+          if (folderStmts.length) await runBatched(db, folderStmts, 45);
+          if (itemStmts.length) await runBatched(db, itemStmts, 45);
+        }
+      }
+    }
+
+    // Bridge published job posts from legacy posts table if present
+    const postsCheck = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='posts'").first();
+    if (postsCheck) {
+      const legPostCount = await db.prepare('SELECT COUNT(*) AS cnt FROM jobs_directory_items WHERE legacy_post_id IS NOT NULL').first();
+      if (Number(legPostCount?.cnt || 0) === 0) {
+        const postsRes = await db
+          .prepare("SELECT id, slug, title, title_or, organisation, summary, body, apply_url, last_date, qualification, vacancies, status FROM posts WHERE type = 'job' AND status = 'published' LIMIT 100")
+          .all()
+          .catch(() => ({ results: [] }));
+        const defaultFolder = await db
+          .prepare("SELECT id FROM jobs_directory_folders WHERE domain_slug = 'jobs-recruitment' ORDER BY depth ASC, sort_order ASC LIMIT 1")
+          .first();
+        if (defaultFolder && (postsRes.results || []).length) {
+          const postStmts = [];
+          for (const p of postsRes.results) {
+            let safeUrl = '';
+            try { safeUrl = p.apply_url ? validateSafeCtaUrl(p.apply_url) : ''; } catch { safeUrl = ''; }
+            const pSlug = slugify(p.slug || p.title || ('job-' + p.id)) + '-job';
+            postStmts.push(
+              db.prepare(`INSERT OR IGNORE INTO jobs_directory_items
+                (id, domain_slug, folder_id, title, slug, item_type, recruiting_body, qualification_tag, vacancies, start_date, deadline_date, exam_date,
+                 official_apply_url, cover_image_url, cover_image_alt, attachments_json, links_json, tags_json, language, status, featured,
+                 summary, body_html, seo_title, seo_description, verified_by, verified_at, title_or, legacy_post_id, state_location, created_by, updated_by, created_at, updated_at)
+                VALUES (?, 'jobs-recruitment', ?, ?, ?, 'job-notification', ?, ?, ?, '', ?, '', ?, '', '', '[]', '[]', '["Odisha Govt","Recruitment"]', 'EN', 'published', 1, ?, ?, ?, ?, 'legacy-bridge@csodisha.com', ?, ?, ?, 'Odisha', 'legacy-bridge', 'legacy-bridge', ?, ?)`)
+                .bind(
+                  'ji-leg-post-' + String(p.id),
+                  defaultFolder.id,
+                  cleanStr(p.title, 200),
+                  pSlug,
+                  cleanStr(p.organisation, 160),
+                  cleanStr(p.qualification, 120),
+                  cleanStr(p.vacancies, 80),
+                  cleanStr(p.last_date, 40),
+                  safeUrl,
+                  cleanStr(p.summary, 500),
+                  sanitizeEditorialHtml(p.body || p.summary || ''),
+                  `${cleanStr(p.title, 120)} | CSOdisha`,
+                  cleanStr(p.summary, 300),
+                  now,
+                  cleanStr(p.title_or, 200),
+                  String(p.id),
+                  now,
+                  now
+                )
+            );
+          }
+          if (postStmts.length) await runBatched(db, postStmts, 45);
+        }
+      }
+    }
+  } catch {
+    // Non-fatal if legacy tables do not exist in isolated unit tests
+  }
 }
 
 function resolveDomain(raw) {
@@ -1450,12 +1655,26 @@ export async function resolvePublicJobsItem(env, slugOrId) {
 
 export async function listPublicJobsOverview(env) {
   await ensureJobsDirectoryStudioSchema(env.DB);
-  const [fRes, iRes] = await Promise.all([
-    env.DB.prepare('SELECT domain_slug, COUNT(*) AS cnt FROM jobs_directory_folders WHERE is_published = 1 GROUP BY domain_slug').all(),
-    env.DB.prepare("SELECT domain_slug, COUNT(*) AS cnt, SUM(CASE WHEN verified_at IS NOT NULL THEN 1 ELSE 0 END) AS verified_cnt FROM jobs_directory_items WHERE status = 'published' GROUP BY domain_slug").all()
+  const [fRes, iRes, tRes] = await Promise.all([
+    env.DB.prepare('SELECT domain_slug, depth, COUNT(*) AS cnt FROM jobs_directory_folders WHERE is_published = 1 GROUP BY domain_slug, depth').all(),
+    env.DB.prepare("SELECT domain_slug, COUNT(*) AS cnt, SUM(CASE WHEN verified_at IS NOT NULL THEN 1 ELSE 0 END) AS verified_cnt FROM jobs_directory_items WHERE status = 'published' GROUP BY domain_slug").all(),
+    env.DB.prepare("SELECT item_type, COUNT(*) AS cnt FROM jobs_directory_items WHERE status = 'published' GROUP BY item_type").all()
   ]);
-  const fMap = new Map((fRes.results || []).map(r => [r.domain_slug, Number(r.cnt || 0)]));
+  const fMap = new Map();
+  let totalSections = 0;
+  let totalSubcategories = 0;
+  let totalEntries = 0;
+  for (const r of (fRes.results || [])) {
+    const cur = fMap.get(r.domain_slug) || { total: 0, d1: 0, d2: 0, d3: 0 };
+    const cnt = Number(r.cnt || 0);
+    cur.total += cnt;
+    if (Number(r.depth) === 1) { cur.d1 += cnt; totalSections += cnt; }
+    else if (Number(r.depth) === 2) { cur.d2 += cnt; totalSubcategories += cnt; }
+    else { cur.d3 += cnt; totalEntries += cnt; }
+    fMap.set(r.domain_slug, cur);
+  }
   const iMap = new Map((iRes.results || []).map(r => [r.domain_slug, { cnt: Number(r.cnt || 0), verified: Number(r.verified_cnt || 0) }]));
+  const typeMap = new Map((tRes.results || []).map(r => [r.item_type, Number(r.cnt || 0)]));
 
   const today = new Date().toISOString().slice(0, 10);
   const activeRow = await env.DB
@@ -1469,10 +1688,10 @@ export async function listPublicJobsOverview(env) {
 
   const domains = JOBS_DOMAINS.map(slug => {
     const meta = JOBS_DOMAIN_META[slug];
-    const fc = fMap.get(slug) || 0;
+    const fcObj = fMap.get(slug) || { total: 0, d1: 0, d2: 0, d3: 0 };
     const ic = iMap.get(slug)?.cnt || 0;
     const vc = iMap.get(slug)?.verified || 0;
-    totalFolders += fc;
+    totalFolders += fcObj.total;
     totalPublished += ic;
     totalVerified += vc;
     return {
@@ -1481,16 +1700,30 @@ export async function listPublicJobsOverview(env) {
       title: meta.title,
       summary: meta.summary,
       publicPath: `/jobs/${slug}/`,
-      folder_count: fc,
+      folder_count: fcObj.total,
+      depth1_count: fcObj.d1,
+      depth2_count: fcObj.d2,
+      depth3_count: fcObj.d3,
       item_count: ic,
       verified_count: vc
     };
   });
 
+  const typeBreakdown = {
+    recruitment: (typeMap.get('job-notification') || 0),
+    guides: (typeMap.get('career-guide') || 0) + (typeMap.get('eligibility-matrix') || 0) + (typeMap.get('employability-guide') || 0),
+    examsAndScholarships: (typeMap.get('course-exam') || 0) + (typeMap.get('scholarship') || 0) + (typeMap.get('overseas-track') || 0),
+    portals: (typeMap.get('official-portal') || 0)
+  };
+
   return {
     domains,
+    typeBreakdown,
     totals: {
       totalDomains: domains.length,
+      totalSections,
+      totalSubcategories,
+      totalEntries,
       totalFolders,
       totalPublished,
       totalVerified,
@@ -1505,6 +1738,7 @@ export async function listPublicJobsItems(env, opts = {}) {
   const itemType = cleanStr(opts.item_type, 40);
   const qual = cleanStr(opts.qualification, 80);
   const lang = cleanStr(opts.language, 20);
+  const stateLoc = cleanStr(opts.state_location, 60);
   const q = cleanStr(opts.q, 120);
   const activeOnly = opts.active_only === true || opts.active_only === '1' || opts.active_only === 'true';
   const limit = Math.min(200, Math.max(1, Number(opts.limit || 60)));
@@ -1526,6 +1760,10 @@ export async function listPublicJobsItems(env, opts = {}) {
   if (qual) {
     clauses.push("LOWER(i.qualification_tag) LIKE ? ESCAPE '\\'");
     binds.push('%' + likeEscape(qual.toLowerCase()) + '%');
+  }
+  if (stateLoc) {
+    clauses.push("LOWER(i.state_location) LIKE ? ESCAPE '\\'");
+    binds.push('%' + likeEscape(stateLoc.toLowerCase()) + '%');
   }
   if (activeOnly) {
     const today = new Date().toISOString().slice(0, 10);
@@ -1592,6 +1830,7 @@ export async function handlePublicJobsItemsApi(request, env) {
     item_type: url.searchParams.get('item_type'),
     qualification: url.searchParams.get('qualification'),
     language: url.searchParams.get('language'),
+    state_location: url.searchParams.get('state_location'),
     q: url.searchParams.get('q'),
     active_only: url.searchParams.get('active_only'),
     limit: url.searchParams.get('limit')

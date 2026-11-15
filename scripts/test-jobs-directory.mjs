@@ -368,6 +368,48 @@ async function main() {
   assert.ok(smXml.includes('<loc>https://csodisha.com/jobs/scholarships-support/</loc>'));
   assert.ok(smXml.includes('<loc>https://csodisha.com/jobs/item/odisha-state-scholarship-portal-guide/</loc>'));
 
+  // 11. Legacy 417-node bridge test (jobs_directory_nodes level 0->1->2->3 + posts type='job')
+  const legacyRaw = new DatabaseSync(':memory:');
+  legacyRaw.exec(`
+    CREATE TABLE audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, actor_user_id TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, metadata_json TEXT, ip_address TEXT, created_at INTEGER NOT NULL DEFAULT (unixepoch()));
+    CREATE TABLE jobs_directory_nodes (id INTEGER PRIMARY KEY, parent_id INTEGER, level INTEGER, code TEXT, title TEXT, title_or TEXT, description TEXT, description_or TEXT, group_slug TEXT, url TEXT, exam_slug TEXT, notes_json TEXT, tags TEXT, sort_order INTEGER, is_active INTEGER);
+    CREATE TABLE posts (id TEXT PRIMARY KEY, type TEXT, slug TEXT, title TEXT, title_or TEXT, organisation TEXT, summary TEXT, body TEXT, apply_url TEXT, last_date TEXT, qualification TEXT, vacancies TEXT, status TEXT);
+    INSERT INTO jobs_directory_nodes VALUES (1, NULL, 0, '01', 'Jobs & Recruitment', 'ନିଯୁକ୍ତି', 'State & Central Jobs', '', 'jobs-recruitment', '', '', '[]', '[]', 1, 1);
+    INSERT INTO jobs_directory_nodes VALUES (2, 1, 1, '01.01', 'Odisha State Commissions', 'ଓଡ଼ିଶା କମିଶନ', 'OPSC & OSSC', '', 'jobs-recruitment', '', '', '[]', '[]', 1, 1);
+    INSERT INTO jobs_directory_nodes VALUES (3, 2, 2, '01.01.01', 'OSSC CGLRE', '', 'Combined Graduate Level', '', 'jobs-recruitment', '', '', '[]', '["OSSC"]', 1, 1);
+    INSERT INTO jobs_directory_nodes VALUES (4, 3, 3, '01.01.01.01', 'OSSC CGL Notification Portal', 'ଓଏସଏସସି ସିଜିଏଲ', 'Official OSSC CGL guide', '', 'jobs-recruitment', 'https://www.ossc.gov.in/', '', '[]', '["OSSC","CGL"]', 1, 1);
+    INSERT INTO posts VALUES ('p_opsc_1', 'job', 'opsc-aso-2026', 'OPSC ASO Recruitment 2026', 'ଓପିଏସସି ଏଏସଓ', 'OPSC', 'Assistant Section Officer', '<p>OPSC ASO details</p>', 'https://www.opsc.gov.in/', '2026-12-30', 'Graduate', '796 Posts', 'published');
+  `);
+  function wrapLegacy(sql, args = []) {
+    return {
+      async first() { return legacyRaw.prepare(sql).get(...args) || null; },
+      async all() { return { results: legacyRaw.prepare(sql).all(...args) }; },
+      async run() { const info = legacyRaw.prepare(sql).run(...args); return { success: true, meta: { changes: info.changes } }; }
+    };
+  }
+  const legacyEnv = {
+    DB: {
+      prepare(sql) { return { bind(...a) { return wrapLegacy(sql, a); }, ...wrapLegacy(sql, []) }; },
+      async batch(stmts) { const out = []; for (const s of stmts) out.push(await s.run()); return out; }
+    }
+  };
+  await ensureJobsDirectoryStudioSchema(legacyEnv.DB);
+  const legOverview = await handlePublicJobsOverviewApi(makeReq('GET', 'https://csodisha.com/api/public/jobs-directory/overview'), legacyEnv);
+  const legJson = await legOverview.json();
+  assert.ok(legJson.typeBreakdown.recruitment >= 1, 'Bridged job post should appear in typeBreakdown');
+  const legDir = await handlePublicJobsRoute(
+    makeReq('GET', 'https://csodisha.com/jobs/jobs-recruitment/odisha-state-commissions/ossc-cglre/'),
+    legacyEnv,
+    new URL('https://csodisha.com/jobs/jobs-recruitment/odisha-state-commissions/ossc-cglre/')
+  );
+  assert.equal(legDir.status, 200);
+  const legItem = await handlePublicJobsRoute(
+    makeReq('GET', 'https://csodisha.com/jobs/item/opsc-aso-2026-job/'),
+    legacyEnv,
+    new URL('https://csodisha.com/jobs/item/opsc-aso-2026-job/')
+  );
+  assert.equal(legItem.status, 200);
+
   console.log('ALL JOBS DIRECTORY STUDIO TESTS PASSED');
 }
 
