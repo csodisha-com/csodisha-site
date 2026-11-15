@@ -74,12 +74,24 @@
     }
     if (grid) clear(grid);
 
+    var icons = {
+      'government-public-welfare': '🏛',
+      'education-employment-talent': '🎓',
+      'agriculture-business-livelihoods': '🌾',
+      'health-housing-financial': '🏥',
+      'communities-special-beneficiaries': '🤝',
+      'private-global-innovation': '💡',
+      'find-schemes-eligibility': '🧭',
+      'citizen-services-verification': '✔'
+    };
+
     overview.domains.forEach(function (d) {
       var title = state.lang === 'or' && d.titleOr ? d.titleOr : d.title;
       var href = d.publicPath || ('/schemes/' + encodeURIComponent(d.slug) + '/');
+      var icon = icons[d.slug] || '•';
       if (rail) {
         rail.appendChild(el('a', { class: 'cso-schemes-nav-link', href: href }, [
-          el('span', { class: 'cso-schemes-nav-num', text: d.num }),
+          el('span', { class: 'cso-schemes-nav-num', text: icon }),
           el('span', { class: 'cso-schemes-rail-label', text: title }),
           el('span', { class: 'cso-schemes-nav-count', text: String(d.folder_count || 0) })
         ]));
@@ -87,7 +99,7 @@
       if (grid) {
         grid.appendChild(el('a', { class: 'cso-schemes-domain-card', href: href }, [
           el('div', { class: 'cso-schemes-domain-top' }, [
-            el('span', { text: '#' + d.num }),
+            el('span', { text: icon + ' Category' }),
             el('span', { text: (d.folder_count || 0) + ' categories · ' + (d.item_count || 0) + ' entries' })
           ]),
           el('div', { class: 'cso-schemes-domain-title', text: title }),

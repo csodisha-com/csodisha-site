@@ -72,11 +72,25 @@
     }
     if (grid) clear(grid);
 
+    var icons = {
+      'local-odisha-communities': '🏘',
+      'students-educators-mentorship': '🎓',
+      'careers-business-networks': '💼',
+      'agriculture-rural-livelihoods': '🌾',
+      'women-families-inclusion': '🤝',
+      'youth-ngos-volunteering': '🌱',
+      'culture-sports-traditional': '🎭',
+      'environment-science-tech': '🔬',
+      'digital-international-forums': '🌍',
+      'community-safety-governance': '🛡'
+    };
+
     overview.domains.forEach(function (d) {
       var href = d.publicPath || ('/community/' + encodeURIComponent(d.slug) + '/');
+      var icon = icons[d.slug] || '•';
       if (rail) {
         rail.appendChild(el('a', { class: 'cso-comm-nav-link', href: href }, [
-          el('span', { class: 'cso-comm-nav-num', text: d.num }),
+          el('span', { class: 'cso-comm-nav-num', text: icon }),
           el('span', { class: 'cso-comm-rail-label', text: d.title }),
           el('span', { class: 'cso-comm-nav-count', text: String(d.folder_count || 0) })
         ]));
@@ -84,7 +98,7 @@
       if (grid) {
         grid.appendChild(el('a', { class: 'cso-comm-domain-card', href: href }, [
           el('div', { class: 'cso-comm-domain-top' }, [
-            el('span', { text: '#' + d.num }),
+            el('span', { text: icon + ' Community' }),
             el('span', { text: (d.folder_count || 0) + ' dirs · ' + (d.item_count || 0) + ' live' })
           ]),
           el('div', { class: 'cso-comm-domain-title', text: d.title }),

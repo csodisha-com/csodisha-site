@@ -120,16 +120,28 @@
       });
     }
 
+    var icons = {
+      'jobs-recruitment': '💼',
+      'career-explorer': '🧭',
+      'eligibility-qualification': '📋',
+      'courses-exams-certifications': '📝',
+      'scholarships-financial-support': '🎓',
+      'international-overseas': '🌍',
+      'career-development-employability': '🚀',
+      'institutions-official-portals': '🏛'
+    };
+
     if (navEl) {
       clear(navEl);
       navEl.appendChild(el('a', { class: 'cso-jobs-nav-link is-active', href: '/jobs/' }, [
-        el('span', { class: 'cso-jobs-nav-num', text: 'All' }),
+        el('span', { class: 'cso-jobs-nav-num', text: '◆' }),
         el('span', { class: 'cso-jobs-rail-label', text: 'Overview' }),
         el('span', { class: 'cso-jobs-nav-count', text: String(domains.length) })
       ]));
       domains.forEach(function (d) {
+        var icon = icons[d.slug] || '•';
         navEl.appendChild(el('a', { class: 'cso-jobs-nav-link', href: d.publicPath }, [
-          el('span', { class: 'cso-jobs-nav-num', text: d.num }),
+          el('span', { class: 'cso-jobs-nav-num', text: icon }),
           el('span', { class: 'cso-jobs-rail-label', text: d.title }),
           el('span', { class: 'cso-jobs-nav-count', text: String(d.folder_count) })
         ]));
@@ -139,9 +151,10 @@
     if (domainsEl) {
       clear(domainsEl);
       domains.forEach(function (d) {
+        var icon = icons[d.slug] || '•';
         domainsEl.appendChild(el('a', { class: 'cso-jobs-domain-card', href: d.publicPath }, [
           el('div', { class: 'cso-jobs-domain-top' }, [
-            el('span', { text: '#' + d.num }),
+            el('span', { text: icon + ' Category' }),
             el('span', { text: d.folder_count + ' categories · ' + d.item_count + ' entries' })
           ]),
           el('div', { class: 'cso-jobs-domain-title', text: d.title }),
