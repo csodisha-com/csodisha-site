@@ -285,6 +285,22 @@
 .cso-cnt-reader-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .cso-cnt-reader-link-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;background:#14532d;color:#fff;font-size:11.5px;font-weight:600;text-decoration:none}
 
+/* Study Library Multi-Level Sub-Directory Explorer */
+.cso-sl-breadcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;background:#08100d;border:1px solid rgba(52,211,153,0.2)}
+.cso-sl-crumb-btn{background:none;border:none;color:#6ee7b7;font-size:12.5px;font-weight:600;cursor:pointer;padding:2px 6px;border-radius:5px}
+.cso-sl-crumb-btn:hover{background:rgba(16,185,129,0.14);color:#fff}
+.cso-sl-crumb-btn.is-current{color:#f8fafc;cursor:default;background:rgba(52,211,153,0.16)}
+.cso-sl-crumb-sep{color:#64748b;font-size:12px}
+.cso-sl-folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.cso-sl-folder-card{display:flex;flex-direction:column;justify-content:space-between;gap:8px;padding:11px 12px;border-radius:10px;background:#0a1310;border:1px solid rgba(52,211,153,0.2);transition:border-color .15s ease,background .15s ease}
+.cso-sl-folder-card:hover{border-color:#34d399;background:#0e1b16}
+.cso-sl-folder-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;cursor:pointer}
+.cso-sl-folder-name{font-size:13px;font-weight:700;color:#f8fafc;line-height:1.3}
+.cso-sl-folder-meta{font-size:11.5px;color:#94a3b8;font-variant-numeric:tabular-nums}
+.cso-sl-folder-new{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.cso-sl-folder-new .input{flex:1 1 220px;width:auto;min-width:160px}
+.cso-sl-scope-toggle{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#cbd5e1;cursor:pointer;white-space:nowrap}
+
 /* 5-Second Undo Toast & Sidebar Index Badge */
 .cso-undo-toast{position:fixed;right:20px;bottom:20px;z-index:9999;display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;background:#0d1512;border:1px solid rgba(52,211,153,0.45);color:#f8fafc;box-shadow:0 12px 30px rgba(0,0,0,0.45);font-size:13px;font-weight:500}
 .cso-nav-mod-num{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;padding:0 5px;margin-right:6px;border-radius:5px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.24);color:#6ee7b7;font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;flex-shrink:0}

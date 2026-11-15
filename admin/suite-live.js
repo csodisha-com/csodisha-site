@@ -21,6 +21,18 @@
     ['content/bulk', 'Bulk Content Operations']
   ];
   var EDU = [['study-library-directory', 'Study Directory'], ['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']];
+  var STUDY_SUITE = [
+    ['study-library/early-childhood', 'Early Childhood & Primary Education'],
+    ['study-library/school-higher-sec', 'School & Higher Secondary Education'],
+    ['study-library/ug-pg-research', 'Undergraduate, Postgraduate & Research'],
+    ['study-library/competitive-teacher', 'Competitive Exams & Teacher Education'],
+    ['study-library-directory', 'Professional, Vocational & Digital Skills'],
+    ['study-library-directory', 'Subjects, Languages & Study Materials'],
+    ['study-library-directory', 'International & Inclusive Education'],
+    ['study-library-directory', 'Life Skills, Culture & Lifelong Learning'],
+    ['study-library-directory', 'Libraries, Educators & Learning Support'],
+    ['study-library-directory', 'Odisha Study Hub & Resource Organisation']
+  ];
   var SITE = [['pages', 'All Pages'], ['about-directory', 'About CSO Directory'], ['pages/legal', 'Info & Legal'], ['banner', 'Homepage & Banner'], ['seo', 'SEO & Sitemaps']];
   var OPS = [['dashboard', 'Overview'], ['freshness', 'Freshness Audit'], ['feedback', 'Feedback Queue'], ['operations', 'Operations & Backups'], ['diagnostics', 'Site Health']];
   var OPS_SUITE = [
@@ -171,7 +183,17 @@
     'module-17-013': ['operations/forensics', OPS_SUITE],
     'module-17-014': ['operations/retention', OPS_SUITE],
     'module-17-015': ['operations/canary', OPS_SUITE],
-    'module-17-016': ['operations/runbooks', OPS_SUITE]
+    'module-17-016': ['operations/runbooks', OPS_SUITE],
+    'module-sl-001': ['study-library/early-childhood', STUDY_SUITE],
+    'module-sl-002': ['study-library/school-higher-sec', STUDY_SUITE],
+    'module-sl-003': ['study-library/ug-pg-research', STUDY_SUITE],
+    'module-sl-004': ['study-library/competitive-teacher', STUDY_SUITE],
+    'module-sl-005': ['study-library-directory', STUDY_SUITE],
+    'module-sl-006': ['study-library-directory', STUDY_SUITE],
+    'module-sl-007': ['study-library-directory', STUDY_SUITE],
+    'module-sl-008': ['study-library-directory', STUDY_SUITE],
+    'module-sl-009': ['study-library-directory', STUDY_SUITE],
+    'module-sl-010': ['study-library-directory', STUDY_SUITE]
   };
 
   var FOLDER_FALLBACKS = {
@@ -196,7 +218,7 @@
     'folder-19': ['registry'],
     'folder-jobs-careers': ['jobs-directory', CONTENT],
     'folder-schemes-benefits': ['schemes', CONTENT],
-    'folder-study-library': ['study-library-directory', EDU],
+    'folder-study-library': ['study-library/early-childhood', STUDY_SUITE],
     'folder-community': ['feedback', [['feedback', 'Community Feedback'], ['users', 'Candidate Accounts']]],
     'folder-about': ['about-directory', SITE]
   };
@@ -323,6 +345,10 @@
       window.CSOCms.mount(host, r[0], null);
     } else if (r[1] === CONTENT_SUITE) {
       renderSuiteStepper(CONTENT_SUITE, 'module-04-', 'folder-04', folderId, moduleId, r[0], root, host, 'Content & Publishing Module Stepper');
+      root.appendChild(host);
+      window.CSOCms.mount(host, r[0], null);
+    } else if (r[1] === STUDY_SUITE) {
+      renderSuiteStepper(STUDY_SUITE, 'module-sl-', 'folder-study-library', folderId, moduleId, r[0], root, host, 'Study Library Directory Module Stepper');
       root.appendChild(host);
       window.CSOCms.mount(host, r[0], null);
     } else {

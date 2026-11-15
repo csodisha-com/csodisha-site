@@ -12,6 +12,7 @@ import { handleSecurityEdge } from '../../_lib/security-edge.js';
 import { handleSecurityGovernance } from '../../_lib/security-governance.js';
 import { handleSecurityCompliance } from '../../_lib/security-compliance.js';
 import { handleContentPublishing } from '../../_lib/content-publishing.js';
+import { handleStudyLibraryStudio } from '../../_lib/study-library-studio.js';
 import { parsePaging, likeEscape } from '../../_lib/validate.js';
 import { handlePosts, POST_TYPES } from './_posts.js';
 import { handleMockTests, handleQuestion } from './_mock.js';
@@ -139,6 +140,8 @@ export async function handleAdminApi(request, env) {
       case 'schemes-directory':
         if (!sub) return await handleSchemesDirectoryTreeAdmin(request, env, actor, id);
         break;
+      case 'study-library':
+        return await handleStudyLibraryStudio(request, env, actor, id, sub, extra);
       case 'study-library-directory':
         if (!sub) return await handleStudyLibraryDirectoryAdmin(request, env, actor, id);
         break;

@@ -12177,9 +12177,813 @@
     main.appendChild(contentPublishingStudioPanel('all'));
   }
 
+  function studyLibraryStudioPanel(domainSlug) {
+    var canWrite = Boolean(me && (me.role === 'admin' || me.role === 'editor'));
+    var canStatus = Boolean(me && (me.role === 'admin' || me.role === 'editor' || me.role === 'reviewer'));
+
+    var DOMAIN_CFG = {
+      'early-childhood': {
+        badge: 'STUDY LIBRARY · MODULE 1',
+        title: 'Early Childhood & Primary Education',
+        sub: 'Multi-level Odisha academic directory for NIPUN Odisha FLN, Class 1–5 OSEPA textbooks, Odia Varnamala cards, and primary worksheets.',
+        defaultBoard: 'OSEPA / NIPUN Odisha'
+      },
+      'school-higher-sec': {
+        badge: 'STUDY LIBRARY · MODULE 2',
+        title: 'School & Higher Secondary Education',
+        sub: 'Structured BSE Odisha Class 9–10 HSC and CHSE Odisha +2 Science, Arts & Commerce notes, textbooks, and PYQ archives.',
+        defaultBoard: 'BSE / CHSE Odisha'
+      },
+      'ug-pg-research': {
+        badge: 'STUDY LIBRARY · MODULE 3',
+        title: 'Undergraduate, Postgraduate & Research',
+        sub: 'NEP 2020 FYUGP syllabus, MA/MSc/MCom university notes, and PhD research methodology synopses across Odisha universities.',
+        defaultBoard: 'Odisha Universities / NEP 2020'
+      },
+      'competitive-teacher': {
+        badge: 'STUDY LIBRARY · MODULE 4',
+        title: 'Competitive Exams & Teacher Education',
+        sub: 'Recursive exam vault for OPSC OAS, OSSSC RI/ARI/Amin, OSSC CGL, OTET/OSSTET/CTET/B.Ed., and UGC NET digests.',
+        defaultBoard: 'OPSC / OSSSC / OSSC / UGC NET'
+      }
+    };
+    var cfg = DOMAIN_CFG[domainSlug] || DOMAIN_CFG['early-childhood'];
+    var activeDomain = DOMAIN_CFG[domainSlug] ? domainSlug : 'early-childhood';
+
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var telemetryBox = el('div', { class: 'cso-cnt-telemetry-bar' });
+    var composerBox = el('div');
+    composerBox.hidden = true;
+    var breadcrumbBox = el('div', { class: 'cso-sl-breadcrumb' });
+    var folderGridBox = el('div', { class: 'cso-sl-folder-grid' });
+    var pillsBox = el('div', { class: 'cso-cnt-pills' });
+    var tableBox = el('div');
+    var pagerBox = el('div', { class: 'cso-cnt-pager' });
+
+    var state = {
+      parentId: '',
+      includeDescendants: true,
+      resourceType: 'all',
+      status: 'all',
+      q: '',
+      limit: 25,
+      offset: 0,
+      total: 0,
+      tree: null
+    };
+
+    var createBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: '+ Add Study Resource' });
+    if (!canWrite) createBtn.disabled = true;
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge ok', text: cfg.badge }),
+        el('h2', { text: cfg.title }),
+        el('p', { class: 'muted', text: cfg.sub })
+      ]),
+      el('div', {}, [createBtn])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(telemetryBox);
+    wrap.appendChild(composerBox);
+
+    // Multi-Level Sub-Directory Explorer Card
+    var newFolderInp = el('input', { class: 'input', type: 'text', placeholder: 'New sub-directory name inside current folder...' });
+    var newFolderBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: '+ New Sub-Directory' });
+    if (!canWrite) { newFolderInp.disabled = true; newFolderBtn.disabled = true; }
+
+    var descToggleCb = el('input', { type: 'checkbox' });
+    descToggleCb.checked = state.includeDescendants;
+    descToggleCb.addEventListener('change', function () {
+      state.includeDescendants = descToggleCb.checked;
+      state.offset = 0;
+      loadItems();
+    });
+
+    newFolderBtn.addEventListener('click', async function () {
+      var name = newFolderInp.value.trim();
+      if (!name || !canWrite) return;
+      newFolderBtn.disabled = true;
+      try {
+        await api('POST', 'study-library/folders', {
+          domain_slug: activeDomain,
+          parent_id: state.parentId || null,
+          name: name
+        });
+        newFolderInp.value = '';
+        toast('Sub-directory "' + name + '" created');
+        await loadAll();
+      } catch (err) {
+        toast(err.message || 'Failed to create sub-directory', true);
+      } finally {
+        newFolderBtn.disabled = !canWrite;
+      }
+    });
+
+    var explorerCard = el('div', { class: 'cso-ops-card' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('h3', { text: 'Multi-Level Sub-Directory Explorer' }),
+        el('label', { class: 'cso-sl-scope-toggle' }, [
+          descToggleCb,
+          document.createTextNode('Include All Sub-Directories')
+        ])
+      ]),
+      breadcrumbBox,
+      folderGridBox,
+      el('div', { class: 'cso-sl-folder-new' }, [newFolderInp, newFolderBtn])
+    ]);
+    wrap.appendChild(explorerCard);
+
+    function renderTree(treeRes) {
+      state.tree = treeRes;
+      clear(breadcrumbBox);
+      clear(folderGridBox);
+
+      var rootBtn = el('button', {
+        type: 'button',
+        class: 'cso-sl-crumb-btn' + (!state.parentId ? ' is-current' : ''),
+        text: cfg.title
+      });
+      rootBtn.addEventListener('click', function () {
+        if (!state.parentId) return;
+        state.parentId = '';
+        state.offset = 0;
+        loadAll();
+      });
+      breadcrumbBox.appendChild(rootBtn);
+
+      var crumbs = Array.isArray(treeRes.breadcrumb) ? treeRes.breadcrumb : [];
+      crumbs.forEach(function (c, idx) {
+        breadcrumbBox.appendChild(el('span', { class: 'cso-sl-crumb-sep', text: '/' }));
+        var isLast = idx === crumbs.length - 1;
+        var cb = el('button', {
+          type: 'button',
+          class: 'cso-sl-crumb-btn' + (isLast ? ' is-current' : ''),
+          text: c.name
+        });
+        if (!isLast) {
+          cb.addEventListener('click', function () {
+            state.parentId = c.id;
+            state.offset = 0;
+            loadAll();
+          });
+        }
+        breadcrumbBox.appendChild(cb);
+      });
+
+      var kids = Array.isArray(treeRes.children) ? treeRes.children : [];
+      if (!kids.length) {
+        folderGridBox.appendChild(el('div', { class: 'muted sm', text: 'No nested sub-directories at this level. Add one below or upload resources directly here.' }));
+        return;
+      }
+
+      kids.forEach(function (f) {
+        var head = el('div', { class: 'cso-sl-folder-head' }, [
+          el('div', {}, [
+            el('div', { class: 'cso-sl-folder-name', text: '📁 ' + f.name }),
+            el('div', { class: 'cso-sl-folder-meta', text: 'Depth ' + (f.depth || 1) + ' · ' + (f.child_count || 0) + ' sub-folders · ' + (f.total_item_count || 0) + ' resources' })
+          ])
+        ]);
+        head.addEventListener('click', function () {
+          state.parentId = f.id;
+          state.offset = 0;
+          loadAll();
+        });
+
+        var actRow = el('div', { class: 'cso-ops-actions' });
+        var openBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Open' });
+        openBtn.addEventListener('click', function () {
+          state.parentId = f.id;
+          state.offset = 0;
+          loadAll();
+        });
+        actRow.appendChild(openBtn);
+
+        if (canWrite) {
+          var renBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Rename' });
+          renBtn.addEventListener('click', async function () {
+            var nextName = window.prompt('Rename sub-directory:', f.name);
+            if (!nextName || nextName.trim() === f.name) return;
+            try {
+              await api('PUT', 'study-library/folders/' + encodeURIComponent(f.id), { name: nextName.trim() });
+              toast('Sub-directory renamed');
+              await loadAll();
+            } catch (err) {
+              toast(err.message || 'Rename failed', true);
+            }
+          });
+          var delBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm cso-ops-btn--danger', text: 'Delete' });
+          delBtn.addEventListener('click', async function () {
+            try {
+              await api('DELETE', 'study-library/folders/' + encodeURIComponent(f.id));
+              toast('Sub-directory deleted');
+              await loadAll();
+            } catch (err) {
+              toast(err.message || 'Cannot delete non-empty folder', true);
+            }
+          });
+          actRow.appendChild(renBtn);
+          actRow.appendChild(delBtn);
+        }
+
+        folderGridBox.appendChild(el('div', { class: 'cso-sl-folder-card' }, [head, actRow]));
+      });
+    }
+
+    function openComposer(editing) {
+      clear(composerBox);
+      composerBox.hidden = false;
+      var isEdit = Boolean(editing && editing.id);
+      var card = el('div', { class: 'cso-cnt-composer' });
+
+      var titleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title) || '', placeholder: 'Resource Title (e.g. OPSC OAS Prelims GS-1 Odisha History Notes)...' });
+      var titleCount = el('span', { class: 'cso-cnt-counter', text: '0/60' });
+      var slugInp = el('input', { class: 'input', type: 'text', value: (editing && editing.slug) || '', placeholder: 'auto-generated-from-title' });
+
+      var folderSel = el('select', { class: 'select' }, [
+        el('option', { value: '', text: 'Domain Root (' + cfg.title + ')' })
+      ]);
+      var allFolders = (state.tree && Array.isArray(state.tree.folders)) ? state.tree.folders : [];
+      allFolders.forEach(function (f) {
+        folderSel.appendChild(el('option', { value: f.id, text: f.full_path || f.name }));
+      });
+      folderSel.value = (editing && editing.folder_id) || state.parentId || '';
+
+      var typeSel = el('select', { class: 'select' }, [
+        el('option', { value: 'notes', text: 'Study Notes' }),
+        el('option', { value: 'pyq', text: 'PYQ Archive' }),
+        el('option', { value: 'syllabus', text: 'Official Syllabus' }),
+        el('option', { value: 'ebook', text: 'eBook / Textbook' }),
+        el('option', { value: 'model-paper', text: 'Model Paper' }),
+        el('option', { value: 'guide', text: 'Preparation Guide' })
+      ]);
+      typeSel.value = (editing && editing.resource_type) || 'notes';
+
+      var statusSelComp = el('select', { class: 'select' }, [
+        el('option', { value: 'draft', text: 'draft' }),
+        el('option', { value: 'in_review', text: 'in_review' }),
+        el('option', { value: 'published', text: 'published' }),
+        el('option', { value: 'archived', text: 'archived' })
+      ]);
+      statusSelComp.value = (editing && editing.status) || 'draft';
+
+      var langSel = el('select', { class: 'select' }, [
+        el('option', { value: 'EN', text: 'EN (English)' }),
+        el('option', { value: 'OR', text: 'OR (Odia)' }),
+        el('option', { value: 'EN+OR', text: 'EN+OR (Bilingual)' })
+      ]);
+      langSel.value = (editing && editing.language_parity) || 'EN';
+
+      var boardInp = el('input', { class: 'input', type: 'text', value: (editing && editing.board_or_exam) || cfg.defaultBoard, placeholder: 'Board / Exam (e.g. OPSC OAS, BSE Odisha)' });
+      var subjInp = el('input', { class: 'input', type: 'text', value: (editing && editing.subject_tag) || '', placeholder: 'Subject (e.g. Odisha Polity, Mathematics)' });
+      var featCb = el('input', { type: 'checkbox' });
+      featCb.checked = Boolean(editing && editing.is_featured);
+
+      // Interactive Tag Chips
+      var tagsState = (editing && Array.isArray(editing.tags)) ? editing.tags.slice() : [];
+      var tagChipsWrap = el('div', { class: 'cso-cnt-tag-chips' });
+      var tagInput = el('input', { class: 'cso-cnt-tag-input', type: 'text', placeholder: 'Type tag & press Enter or ,' });
+      function renderTagChips() {
+        clear(tagChipsWrap);
+        tagsState.forEach(function (t, idx) {
+          var rm = el('button', { type: 'button', class: 'cso-cnt-tag-chip-rm', text: '×' });
+          rm.addEventListener('click', function () { tagsState.splice(idx, 1); renderTagChips(); });
+          tagChipsWrap.appendChild(el('span', { class: 'cso-cnt-tag-chip' }, [document.createTextNode(t), rm]));
+        });
+        tagChipsWrap.appendChild(tagInput);
+      }
+      tagInput.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' || ev.key === ',') {
+          ev.preventDefault();
+          var val = tagInput.value.trim().replace(/^#+/, '').slice(0, 40);
+          if (val && !tagsState.includes(val) && tagsState.length < 12) {
+            tagsState.push(val);
+            renderTagChips();
+          }
+          tagInput.value = '';
+        } else if (ev.key === 'Backspace' && !tagInput.value && tagsState.length) {
+          tagsState.pop();
+          renderTagChips();
+        }
+      });
+      renderTagChips();
+
+      // R2 PDF Uploader (up to 15 MB)
+      var pdfUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.pdf_url) || '', placeholder: '/media/content/... or https://...' });
+      var pdfSizeBytes = Number((editing && editing.pdf_size_bytes) || 0);
+      var pdfFileInp = el('input', { class: 'cso-cnt-file-hidden', type: 'file', accept: 'application/pdf' });
+      var pdfPickBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: 'Upload PDF (R2)' });
+      var pdfBadge = el('span', { class: 'badge', text: pdfUrlInp.value.trim() ? 'PDF Attached' : 'No PDF' });
+      pdfPickBtn.addEventListener('click', function () { pdfFileInp.click(); });
+      pdfFileInp.addEventListener('change', async function () {
+        var f = pdfFileInp.files && pdfFileInp.files[0];
+        if (!f) return;
+        pdfPickBtn.disabled = true;
+        pdfBadge.className = 'badge warn';
+        pdfBadge.textContent = 'Uploading PDF...';
+        try {
+          var fd = new FormData();
+          fd.append('file', f);
+          fd.append('kind', 'pdf');
+          var up = await api('POST', 'content/upload', fd, true);
+          pdfUrlInp.value = up.url || '';
+          pdfSizeBytes = Number(up.size_bytes || f.size || 0);
+          pdfBadge.className = 'badge ok';
+          pdfBadge.textContent = 'PDF (' + Math.max(1, Math.round(pdfSizeBytes / 1024)) + ' KB)';
+          toast('PDF uploaded to R2');
+          refreshPreview();
+        } catch (err) {
+          pdfBadge.className = 'badge bad';
+          pdfBadge.textContent = 'Upload Failed';
+          toast(err.message || 'PDF upload failed', true);
+        } finally {
+          pdfPickBtn.disabled = false;
+          pdfFileInp.value = '';
+        }
+      });
+
+      // R2 Cover Image Uploader (up to 5 MB)
+      var coverUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.cover_image_url) || '', placeholder: '/media/content/... or https://...' });
+      var coverFileInp = el('input', { class: 'cso-cnt-file-hidden', type: 'file', accept: 'image/jpeg,image/png,image/webp,image/avif' });
+      var coverPickBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: 'Upload Cover Image' });
+      var coverBadge = el('span', { class: 'badge', text: coverUrlInp.value.trim() ? 'Cover Ready' : 'No Cover' });
+      coverPickBtn.addEventListener('click', function () { coverFileInp.click(); });
+      coverFileInp.addEventListener('change', async function () {
+        var f = coverFileInp.files && coverFileInp.files[0];
+        if (!f) return;
+        coverPickBtn.disabled = true;
+        coverBadge.className = 'badge warn';
+        coverBadge.textContent = 'Uploading...';
+        try {
+          var fd = new FormData();
+          fd.append('file', f);
+          fd.append('kind', 'image');
+          var up = await api('POST', 'content/upload', fd, true);
+          coverUrlInp.value = up.url || '';
+          coverBadge.className = 'badge ok';
+          coverBadge.textContent = 'Uploaded';
+          toast('Cover image uploaded to R2');
+          refreshPreview();
+        } catch (err) {
+          coverBadge.className = 'badge bad';
+          coverBadge.textContent = 'Failed';
+          toast(err.message || 'Image upload failed', true);
+        } finally {
+          coverPickBtn.disabled = false;
+          coverFileInp.value = '';
+        }
+      });
+
+      // Reference Links Builder
+      var linksState = (editing && Array.isArray(editing.links)) ? editing.links.slice() : [];
+      var linkLabelInp = el('input', { class: 'input', type: 'text', placeholder: 'Reference Label (e.g. Official Syllabus Link)' });
+      var linkUrlInp = el('input', { class: 'input', type: 'url', placeholder: 'https://...' });
+      var addLinkBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: '+ Add Reference Link' });
+      var linksBox = el('div', { class: 'cso-cnt-list-items' });
+      function renderLinks() {
+        clear(linksBox);
+        linksState.forEach(function (lnk, idx) {
+          var rm = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm cso-ops-btn--danger', text: 'Remove' });
+          rm.addEventListener('click', function () { linksState.splice(idx, 1); renderLinks(); refreshPreview(); });
+          linksBox.appendChild(el('div', { class: 'cso-cnt-list-row' }, [
+            el('div', { class: 'cso-cnt-list-meta' }, [el('strong', { text: lnk.label }), el('span', { text: lnk.url })]),
+            rm
+          ]));
+        });
+      }
+      renderLinks();
+      addLinkBtn.addEventListener('click', function () {
+        var u = linkUrlInp.value.trim();
+        if (!u || !/^(\/|https?:\/\/)/i.test(u)) { toast('Enter a valid https:// or /... URL', true); return; }
+        linksState.push({ label: linkLabelInp.value.trim() || 'Reference Link', url: u });
+        linkLabelInp.value = '';
+        linkUrlInp.value = '';
+        renderLinks();
+        refreshPreview();
+      });
+
+      var summaryTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Key syllabus topics or resource overview...' });
+      summaryTa.value = (editing && editing.summary) || '';
+      var bodyTa = el('textarea', { class: 'textarea', rows: '5', placeholder: 'Detailed study notes, unit breakdown, or instructions...' });
+      bodyTa.value = (editing && editing.body_html) || '';
+      var seoTitleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.seo_title) || '', placeholder: 'SEO Title (40-65 chars)' });
+      var seoDescInp = el('textarea', { class: 'textarea', rows: '2', placeholder: 'SEO Meta Description (110-160 chars)' });
+      seoDescInp.value = (editing && editing.seo_description) || '';
+
+      var piiWarnBox = el('div', { class: 'cso-cnt-pii-warn' });
+      piiWarnBox.hidden = true;
+
+      var previewState = { channel: 'reader', device: 'desktop' };
+      var previewFrame = el('div', { class: 'cso-cnt-preview-frame' });
+      var chTabs = [['reader', 'csodisha.com Reader'], ['serp', 'Google SERP'], ['social', 'WhatsApp Study Card']];
+      var chBtns = chTabs.map(function (ct) {
+        var b = el('button', { type: 'button', class: 'cso-cnt-pill' + (previewState.channel === ct[0] ? ' is-active' : ''), text: ct[1] });
+        b.addEventListener('click', function () {
+          previewState.channel = ct[0];
+          chBtns.forEach(function (btn, i) { btn.classList.toggle('is-active', chTabs[i][0] === previewState.channel); });
+          refreshPreview();
+        });
+        return b;
+      });
+      var deskBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Desktop' });
+      var mobBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: 'Mobile' });
+      deskBtn.addEventListener('click', function () { previewFrame.classList.remove('is-mobile'); });
+      mobBtn.addEventListener('click', function () { previewFrame.classList.add('is-mobile'); });
+
+      function refreshPreview() {
+        var rawTitle = titleInp.value.trim();
+        titleCount.textContent = String(rawTitle.length) + '/60';
+        titleCount.classList.toggle('is-over', rawTitle.length > 60);
+
+        var combinedText = [rawTitle, summaryTa.value, bodyTa.value].join(' ');
+        var phoneHit = /\b[6-9]\d{9}\b/.test(combinedText);
+        var aadhaarHit = /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/.test(combinedText);
+        if (phoneHit || aadhaarHit) {
+          piiWarnBox.hidden = false;
+          piiWarnBox.textContent = 'DPDP Act 2023 PII Guard: Detected possible unmasked ' +
+            [phoneHit ? '10-digit phone number' : '', aadhaarHit ? '12-digit Aadhaar ID' : ''].filter(Boolean).join(' & ') + '. Redact before publishing.';
+        } else {
+          piiWarnBox.hidden = true;
+        }
+
+        var selectedFolderText = folderSel.options[folderSel.selectedIndex] ? folderSel.options[folderSel.selectedIndex].textContent : cfg.title;
+        var autoSlug = slugInp.value.trim() || rawTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'study-resource';
+        var fullUrl = 'https://csodisha.com/study-library/' + activeDomain + '/' + autoSlug + '/';
+
+        clear(previewFrame);
+        if (previewState.channel === 'reader') {
+          var children = [
+            el('div', { class: 'cso-cnt-reader-kicker', text: selectedFolderText }),
+            el('h4', { class: 'cso-cnt-reader-title', text: rawTitle || 'Study Resource Preview' }),
+            el('div', { class: 'cso-cnt-reader-meta', text: [typeSel.value.toUpperCase(), langSel.value, boardInp.value.trim(), subjInp.value.trim()].filter(Boolean).join(' · ') })
+          ];
+          if (coverUrlInp.value.trim()) {
+            children.push(el('img', { class: 'cso-cnt-reader-cover', src: coverUrlInp.value.trim(), alt: rawTitle || 'Study resource cover' }));
+          }
+          children.push(el('div', { class: 'cso-cnt-reader-body', text: (summaryTa.value.trim() ? summaryTa.value.trim() + '\n\n' : '') + (bodyTa.value.trim() || 'Study notes and unit overview appear here.') }));
+          if (pdfUrlInp.value.trim()) {
+            children.push(el('div', { class: 'cso-cnt-reader-pdfs' }, [
+              el('a', { class: 'cso-cnt-reader-pdf-card', href: pdfUrlInp.value.trim(), target: '_blank', rel: 'noopener' }, [
+                el('span', { text: '📄 ' + (rawTitle || 'Downloadable Study PDF') }),
+                el('span', { text: 'Download PDF ↗' })
+              ])
+            ]));
+          }
+          if (linksState.length) {
+            children.push(el('div', { class: 'cso-cnt-reader-links' }, linksState.map(function (l) {
+              return el('a', { class: 'cso-cnt-reader-link-btn', href: l.url, target: '_blank', rel: 'noopener', text: l.label + ' ↗' });
+            })));
+          }
+          previewFrame.appendChild(el('div', { class: 'cso-cnt-reader-card' }, children));
+        } else if (previewState.channel === 'serp') {
+          previewFrame.appendChild(el('div', { class: 'cso-cnt-serp-card' }, [
+            el('div', { class: 'cso-cnt-serp-url', text: fullUrl }),
+            el('div', { class: 'cso-cnt-serp-title', text: seoTitleInp.value.trim() || rawTitle || 'Study Resource SEO Title' }),
+            el('div', { class: 'cso-cnt-serp-desc', text: seoDescInp.value.trim() || summaryTa.value.trim() || 'SEO meta description preview.' })
+          ]));
+        } else {
+          var wa = '📚 *' + (rawTitle || 'CS Odisha Study Material') + '*\n' +
+            '📂 ' + selectedFolderText + '\n' +
+            (pdfUrlInp.value.trim() ? '📄 PDF Included\n' : '') +
+            '🔗 ' + fullUrl;
+          var sKids = [el('span', { class: 'muted sm', text: 'Aspirant Study Broadcast' })];
+          if (coverUrlInp.value.trim()) sKids.push(el('img', { class: 'cso-cnt-social-cover', src: coverUrlInp.value.trim(), alt: 'Cover' }));
+          sKids.push(el('div', { class: 'cso-cnt-social-bubble', text: wa }));
+          previewFrame.appendChild(el('div', { class: 'cso-cnt-social-card' }, sKids));
+        }
+      }
+
+      [titleInp, slugInp, folderSel, typeSel, langSel, boardInp, subjInp, summaryTa, bodyTa, pdfUrlInp, coverUrlInp, seoTitleInp, seoDescInp].forEach(function (inp) {
+        inp.addEventListener('input', refreshPreview);
+        inp.addEventListener('change', refreshPreview);
+      });
+      refreshPreview();
+
+      function closeComposer() {
+        clear(composerBox);
+        composerBox.hidden = true;
+        if (window._csoComposerEscHandler) {
+          window.removeEventListener('keydown', window._csoComposerEscHandler);
+          window._csoComposerEscHandler = null;
+        }
+      }
+      if (window._csoComposerEscHandler) window.removeEventListener('keydown', window._csoComposerEscHandler);
+      window._csoComposerEscHandler = function (ev) { if (ev.key === 'Escape') closeComposer(); };
+      window.addEventListener('keydown', window._csoComposerEscHandler);
+
+      var saveBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: isEdit ? 'Save Revision & Update' : 'Create Study Resource' });
+      var cancelBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Cancel (Esc)' });
+      cancelBtn.addEventListener('click', closeComposer);
+
+      var busy = false;
+      saveBtn.addEventListener('click', async function () {
+        if (!canWrite || busy) return;
+        busy = true;
+        saveBtn.disabled = true;
+        try {
+          var payload = {
+            domain_slug: activeDomain,
+            folder_id: folderSel.value || null,
+            title: titleInp.value.trim(),
+            slug: slugInp.value.trim(),
+            resource_type: typeSel.value,
+            status: statusSelComp.value,
+            language_parity: langSel.value,
+            board_or_exam: boardInp.value.trim(),
+            subject_tag: subjInp.value.trim(),
+            is_featured: featCb.checked,
+            tags: tagsState.slice(),
+            pdf_url: pdfUrlInp.value.trim(),
+            pdf_size_bytes: pdfSizeBytes,
+            cover_image_url: coverUrlInp.value.trim(),
+            links: linksState.slice(),
+            summary: summaryTa.value.trim(),
+            body_html: bodyTa.value,
+            seo_title: seoTitleInp.value.trim(),
+            seo_description: seoDescInp.value.trim()
+          };
+          if (isEdit) {
+            await api('PUT', 'study-library/items/' + encodeURIComponent(editing.id), payload);
+            toast('Updated study resource & saved revision');
+          } else {
+            await api('POST', 'study-library/items', payload);
+            toast('Created study resource');
+          }
+          closeComposer();
+          await loadAll();
+        } catch (err) {
+          toast(err.message || 'Save failed', true);
+        } finally {
+          busy = false;
+          saveBtn.disabled = !canWrite;
+        }
+      });
+
+      card.appendChild(el('div', { class: 'cso-ops-subhead' }, [
+        el('h3', { text: isEdit ? 'Edit Study Resource (' + editing.id + ')' : 'Add Study Resource' })
+      ]));
+      card.appendChild(piiWarnBox);
+
+      var leftPane = el('div', { class: 'cso-cnt-editor-pane' }, [
+        el('div', { class: 'cso-ops-grid-2' }, [
+          el('div', { class: 'field' }, [el('label', {}, [document.createTextNode('Title *'), titleCount]), titleInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Slug (optional auto)' }), slugInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Sub-Directory Placement' }), folderSel]),
+          el('div', { class: 'field' }, [el('label', { text: 'Resource Type' }), typeSel]),
+          el('div', { class: 'field' }, [el('label', { text: 'Status' }), statusSelComp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Language Parity' }), langSel]),
+          el('div', { class: 'field' }, [el('label', { text: 'Board / Exam' }), boardInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Subject Tag' }), subjInp])
+        ]),
+        el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Feature in Priority Study Slot')])]),
+        el('div', { class: 'field' }, [el('label', { text: 'Interactive Tags' }), el('div', { class: 'cso-cnt-tag-box' }, [tagChipsWrap])]),
+        el('div', { class: 'cso-cnt-media-box' }, [
+          el('div', { class: 'cso-cnt-media-head' }, [el('strong', { text: 'PDF Study Material (R2, max 15 MB)' }), el('div', { class: 'cso-ops-actions' }, [pdfBadge, pdfPickBtn, pdfFileInp])]),
+          pdfUrlInp
+        ]),
+        el('div', { class: 'cso-cnt-media-box' }, [
+          el('div', { class: 'cso-cnt-media-head' }, [el('strong', { text: 'Cover Photo (R2, max 5 MB)' }), el('div', { class: 'cso-ops-actions' }, [coverBadge, coverPickBtn, coverFileInp])]),
+          coverUrlInp
+        ]),
+        el('div', { class: 'cso-cnt-media-box' }, [
+          el('div', { class: 'cso-cnt-media-head' }, [el('strong', { text: 'Reference Links' }), addLinkBtn]),
+          el('div', { class: 'cso-cnt-media-row' }, [linkLabelInp, linkUrlInp]),
+          linksBox
+        ]),
+        el('div', { class: 'field' }, [el('label', { text: 'Summary' }), summaryTa]),
+        el('div', { class: 'field' }, [el('label', { text: 'Study Notes / Body' }), bodyTa]),
+        el('div', { class: 'cso-ops-grid-2' }, [
+          el('div', { class: 'field' }, [el('label', { text: 'SEO Title' }), seoTitleInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'SEO Description' }), seoDescInp])
+        ]),
+        el('div', { class: 'cso-ops-actions' }, [saveBtn, cancelBtn])
+      ]);
+
+      var rightPane = el('div', { class: 'cso-cnt-preview-pane' }, [
+        el('div', { class: 'cso-cnt-preview-head' }, [
+          el('div', { class: 'cso-cnt-preview-tabs' }, chBtns),
+          el('div', { class: 'cso-ops-actions' }, [deskBtn, mobBtn])
+        ]),
+        previewFrame
+      ]);
+
+      card.appendChild(el('div', { class: 'cso-cnt-workbench' }, [leftPane, rightPane]));
+      composerBox.appendChild(card);
+      titleInp.focus();
+    }
+
+    createBtn.addEventListener('click', function () { openComposer(null); });
+
+    function renderKpis(k) {
+      clear(kpis);
+      var pairs = [
+        ['Total Resources', String(k.total_items || 0)],
+        ['Published Live', String(k.published_items || 0)],
+        ['Nested Sub-Directories', String(k.folder_count || 0)],
+        ['PYQ & Syllabus PDFs', String(k.pyq_and_syllabus_count || 0)]
+      ];
+      pairs.forEach(function (p) {
+        kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+          el('span', { class: 'cso-ops-kpi-lbl', text: p[0] }),
+          el('strong', { class: 'cso-ops-kpi-val', text: p[1] })
+        ]));
+      });
+    }
+
+    function renderTelemetry(k, rows) {
+      clear(telemetryBox);
+      var total = Number(k.total_items || rows.length || 0);
+      var pub = Number(k.published_items || 0);
+      var pubPct = total > 0 ? Math.round((pub / total) * 100) : 0;
+      var bi = Number(k.bilingual_count || 0);
+      var biPct = total > 0 ? Math.round((bi / total) * 100) : 0;
+      var pdfCount = rows.filter(function (r) { return Boolean(r.pdf_url); }).length;
+      var pdfPct = rows.length > 0 ? Math.round((pdfCount / rows.length) * 100) : 0;
+
+      telemetryBox.appendChild(el('div', { class: 'cso-cnt-tel-item' }, [
+        el('div', { class: 'cso-cnt-tel-head' }, [el('span', { text: 'Publishing Ratio' }), el('strong', { text: pub + ' / ' + total + ' (' + pubPct + '%)' })]),
+        el('progress', { class: 'cso-cnt-tel-prog', max: String(Math.max(1, total)), value: String(pub) })
+      ]));
+      telemetryBox.appendChild(el('div', { class: 'cso-cnt-tel-item' }, [
+        el('div', { class: 'cso-cnt-tel-head' }, [el('span', { text: 'Bilingual EN+OR Coverage' }), el('strong', { text: biPct + '%' })]),
+        el('meter', { class: 'cso-cnt-tel-meter', min: '0', max: '100', low: '25', high: '60', optimum: '90', value: String(biPct) })
+      ]));
+      telemetryBox.appendChild(el('div', { class: 'cso-cnt-tel-item' }, [
+        el('div', { class: 'cso-cnt-tel-head' }, [el('span', { text: 'PDF Attachment Rate' }), el('strong', { text: pdfPct + '%' })]),
+        el('meter', { class: 'cso-cnt-tel-meter', min: '0', max: '100', low: '30', high: '70', optimum: '95', value: String(pdfPct) })
+      ]));
+    }
+
+    var searchInp = el('input', { class: 'input', type: 'search', placeholder: 'Search title, exam, subject, or folder path...' });
+    var searchBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Search' });
+    var statusSel = el('select', { class: 'select' }, [
+      el('option', { value: 'all', text: 'All Statuses' }),
+      el('option', { value: 'draft', text: 'Draft' }),
+      el('option', { value: 'in_review', text: 'In Review' }),
+      el('option', { value: 'published', text: 'Published' }),
+      el('option', { value: 'archived', text: 'Archived' })
+    ]);
+
+    [['all', 'All'], ['notes', 'Notes'], ['pyq', 'PYQs'], ['syllabus', 'Syllabus'], ['ebook', 'eBooks'], ['model-paper', 'Model Papers']].forEach(function (td) {
+      var b = el('button', { type: 'button', class: 'cso-cnt-pill' + (state.resourceType === td[0] ? ' is-active' : ''), text: td[1] });
+      b.addEventListener('click', function () {
+        state.resourceType = td[0];
+        state.offset = 0;
+        Array.prototype.forEach.call(pillsBox.children, function (c) { c.classList.remove('is-active'); });
+        b.classList.add('is-active');
+        loadItems();
+      });
+      pillsBox.appendChild(b);
+    });
+
+    function renderTable(res) {
+      clear(tableBox);
+      clear(pagerBox);
+      var rows = Array.isArray(res.items) ? res.items : [];
+      state.total = Number((res.paging && res.paging.total) || rows.length);
+
+      if (!rows.length) {
+        tableBox.appendChild(el('div', { class: 'muted sm', text: 'No study resources in this folder scope yet. Click "+ Add Study Resource" to create one.' }));
+      } else {
+        var tbody = el('tbody');
+        rows.forEach(function (it) {
+          var stCls = it.status === 'published' ? 'ok' : (it.status === 'archived' ? 'bad' : 'warn');
+          var actTd = el('td', { class: 'cso-ops-actions' });
+          if (canWrite) {
+            var editBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: 'Edit' });
+            editBtn.addEventListener('click', function () { openComposer(it); });
+            actTd.appendChild(editBtn);
+          }
+          if (canStatus) {
+            var nextSt = it.status === 'published' ? 'draft' : 'published';
+            var prevSt = it.status;
+            var togBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: it.status === 'published' ? 'Unpublish' : 'Publish' });
+            togBtn.addEventListener('click', async function () {
+              togBtn.disabled = true;
+              try {
+                await api('PATCH', 'study-library/items/' + encodeURIComponent(it.id) + '/status', { status: nextSt });
+                await loadItems();
+                toastWithUndo('Resource status set to ' + nextSt, async function () {
+                  await api('PATCH', 'study-library/items/' + encodeURIComponent(it.id) + '/status', { status: prevSt });
+                  toast('Reverted status to ' + prevSt);
+                  await loadItems();
+                });
+              } catch (err) {
+                toast(err.message || 'Status update failed', true);
+                togBtn.disabled = false;
+              }
+            });
+            actTd.appendChild(togBtn);
+          }
+          if (canWrite) {
+            var delBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm cso-ops-btn--danger', type: 'button', text: 'Delete' });
+            delBtn.addEventListener('click', async function () {
+              delBtn.disabled = true;
+              try {
+                await api('DELETE', 'study-library/items/' + encodeURIComponent(it.id));
+                toast('Study resource deleted');
+                await loadAll();
+              } catch (err) {
+                toast(err.message || 'Delete failed', true);
+                delBtn.disabled = false;
+              }
+            });
+            actTd.appendChild(delBtn);
+          }
+
+          tbody.appendChild(el('tr', {}, [
+            el('td', {}, [
+              el('strong', { text: it.title }),
+              el('div', { class: 'muted sm', text: (it.folder_path || 'Domain Root') + (it.pdf_url ? ' · 📄 PDF' : '') })
+            ]),
+            el('td', {}, [
+              el('div', { text: it.resource_type.toUpperCase() + (it.board_or_exam ? ' · ' + it.board_or_exam : '') }),
+              el('span', { class: 'cso-cnt-lang-badge', text: it.language_parity || 'EN' })
+            ]),
+            el('td', {}, [el('span', { class: 'badge ' + stCls, text: it.status })]),
+            el('td', { text: String(it.updated_at || it.created_at || '').slice(0, 16).replace('T', ' ') }),
+            actTd
+          ]));
+        });
+
+        tableBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+          el('table', { class: 'table' }, [
+            el('thead', {}, [el('tr', {}, [
+              el('th', { text: 'Resource & Folder Path' }),
+              el('th', { text: 'Type / Lang' }),
+              el('th', { text: 'Status' }),
+              el('th', { text: 'Updated' }),
+              el('th', { text: 'Actions' })
+            ])]),
+            tbody
+          ])
+        ]));
+      }
+
+      var prevPage = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: '← Prev' });
+      prevPage.disabled = state.offset <= 0;
+      prevPage.addEventListener('click', function () { state.offset = Math.max(0, state.offset - state.limit); loadItems(); });
+      var nextPage = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: 'Next →' });
+      nextPage.disabled = state.offset + state.limit >= state.total;
+      nextPage.addEventListener('click', function () { state.offset += state.limit; loadItems(); });
+      pagerBox.appendChild(el('span', { class: 'muted sm', text: 'Showing ' + (state.total ? state.offset + 1 : 0) + '–' + Math.min(state.total, state.offset + rows.length) + ' of ' + state.total }));
+      pagerBox.appendChild(el('div', { class: 'cso-ops-actions' }, [prevPage, nextPage]));
+    }
+
+    async function loadItems() {
+      var qs = 'domain=' + encodeURIComponent(activeDomain) +
+        '&folder_id=' + encodeURIComponent(state.parentId) +
+        '&include_descendants=' + (state.includeDescendants ? '1' : '0') +
+        '&resource_type=' + encodeURIComponent(state.resourceType) +
+        '&status=' + encodeURIComponent(state.status) +
+        '&q=' + encodeURIComponent(state.q) +
+        '&limit=' + String(state.limit) +
+        '&offset=' + String(state.offset);
+      var res = await api('GET', 'study-library/items?' + qs);
+      renderKpis(res.kpis || {});
+      renderTelemetry(res.kpis || {}, Array.isArray(res.items) ? res.items : []);
+      renderTable(res);
+    }
+
+    async function loadAll() {
+      try {
+        var treeRes = await api('GET', 'study-library/tree?domain=' + encodeURIComponent(activeDomain) + '&parent_id=' + encodeURIComponent(state.parentId));
+        renderTree(treeRes);
+        await loadItems();
+      } catch (e) {
+        toast(e.message || 'Failed to load Study Library Studio', true);
+      }
+    }
+
+    statusSel.addEventListener('change', function () { state.status = statusSel.value; state.offset = 0; loadItems(); });
+    searchBtn.addEventListener('click', function () { state.q = searchInp.value.trim(); state.offset = 0; loadItems(); });
+    searchInp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); state.q = searchInp.value.trim(); state.offset = 0; loadItems(); } });
+
+    var listCard = el('div', { class: 'cso-ops-card' }, [
+      pillsBox,
+      el('div', { class: 'cso-cnt-toolbar' }, [
+        el('div', { class: 'cso-cnt-toolbar-left' }, [searchInp, searchBtn]),
+        statusSel
+      ]),
+      tableBox,
+      pagerBox
+    ]);
+    wrap.appendChild(listCard);
+
+    loadAll();
+    return wrap;
+  }
+
+  function viewStudyLibraryStudio(domainSlug) {
+    setTitle('Study Library Studio');
+    main.appendChild(studyLibraryStudioPanel(domainSlug || 'early-childhood'));
+  }
+
   var VIEWS = {
     dashboard: function () { return viewDashboard(); },
     content: function (parts) { return viewContentStudio(parts[1]); },
+    'study-library': function (parts) { return viewStudyLibraryStudio(parts[1]); },
     pages: function (parts) { return viewSitePages(parts[1] === 'legal' ? 'Information & Legal' : (parts[1] === 'workspace' ? 'Candidate Workspace' : '')); },
     'jobs-directory': function () { return viewJobsDirectory(); },
     'about-directory': function () { return viewAboutDirectory(); },
