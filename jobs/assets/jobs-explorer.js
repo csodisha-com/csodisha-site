@@ -68,9 +68,13 @@
   }
 
   if (langToggleBtn) {
+    var heroSubEl = document.getElementById('jobs-hero-sub');
+    var heroSubEn = heroSubEl ? heroSubEl.textContent : '';
+    var heroSubOr = 'ଓଡ଼ିଶା ସରକାରୀ ନିଯୁକ୍ତି (OPSC, OSSC, OSSSC, OPRB, OSEPA), କେନ୍ଦ୍ରୀୟ ଓ PSU ନିଯୁକ୍ତି, ବ୍ୟାଙ୍କିଂ ଏବଂ କ୍ୟାରିୟର ମାର୍ଗଦର୍ଶିକା — ସମସ୍ତ ୮ଟି ବିଭାଗର ପ୍ରାମାଣିକ ଯୋଗ୍ୟତା, ବେତନ ଢାଞ୍ଚା, ପରୀକ୍ଷା ପ୍ରକ୍ରିୟା ଏବଂ ସରକାରୀ ପୋର୍ଟାଲ୍ ସୂଚନା।';
     langToggleBtn.addEventListener('click', function () {
       state.uiLang = state.uiLang === 'EN' ? 'OR' : 'EN';
       langToggleBtn.textContent = state.uiLang === 'OR' ? 'ଓଡ଼ିଆ (Active) / EN' : 'EN / ଓଡ଼ିଆ';
+      if (heroSubEl) heroSubEl.textContent = state.uiLang === 'OR' ? heroSubOr : heroSubEn;
       renderItems(state.lastItems);
     });
   }

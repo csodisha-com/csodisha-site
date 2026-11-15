@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import {
   ensureJobsDirectoryStudioSchema,
+  enrichJobsRecruitmentCategory01,
   handleJobsDirectoryStudio,
   handlePublicJobsOverviewApi,
   handlePublicJobsItemsApi,
@@ -409,6 +412,129 @@ async function main() {
     new URL('https://csodisha.com/jobs/item/opsc-aso-2026-job/')
   );
   assert.equal(legItem.status, 200);
+
+  // 12. Category #01 (v68) Exhaustive Enrichment across all 137 subcategories + 18 Handbooks + Admin Sync + Zero inline style=""
+  const cat01Raw = new DatabaseSync(':memory:');
+  cat01Raw.exec(`
+    CREATE TABLE audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, actor_user_id TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, metadata_json TEXT, ip_address TEXT, created_at INTEGER NOT NULL DEFAULT (unixepoch()));
+    CREATE TABLE jobs_directory_nodes (id INTEGER PRIMARY KEY, parent_id INTEGER, level INTEGER, code TEXT, title TEXT, title_or TEXT, description TEXT, description_or TEXT, group_slug TEXT, url TEXT, exam_slug TEXT, notes_json TEXT, tags TEXT, sort_order INTEGER, is_active INTEGER);
+  `);
+  const dirJson = JSON.parse(fs.readFileSync(path.resolve('jobs-careers/generated/directory.json'), 'utf8'));
+  const jrSection = dirJson.sections[0];
+  let nodeSeq = 1;
+  const insNode = cat01Raw.prepare('INSERT INTO jobs_directory_nodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)');
+  insNode.run(1, null, 0, '01', jrSection.title, '', 'Jobs & Recruitment', '', 'jobs-recruitment', '', '', '[]', '[]', 1);
+  function insertChildren(children, parentId, level) {
+    for (let i = 0; i < (children || []).length; i++) {
+      const ch = children[i];
+      nodeSeq += 1;
+      const myId = nodeSeq;
+      insNode.run(myId, parentId, level, ch.number || '', ch.title, '', '', '', 'jobs-recruitment', '', '', '[]', '[]', i + 1);
+      insertChildren(ch.children, myId, level + 1);
+    }
+  }
+  insertChildren(jrSection.children, 1, 1);
+  assert.equal(nodeSeq - 1, 137, 'directory.json should contain all 137 subcategories under Jobs & Recruitment');
+
+  function wrapCat01(sql, args = []) {
+    return {
+      async first() { return cat01Raw.prepare(sql).get(...args) || null; },
+      async all() { return { results: cat01Raw.prepare(sql).all(...args) }; },
+      async run() { const info = cat01Raw.prepare(sql).run(...args); return { success: true, meta: { changes: info.changes } }; }
+    };
+  }
+  const cat01Env = {
+    DB: {
+      prepare(sql) { return { bind(...a) { return wrapCat01(sql, a); }, ...wrapCat01(sql, []) }; },
+      async batch(stmts) { const out = []; for (const s of stmts) out.push(await s.run()); return out; }
+    }
+  };
+
+  await ensureJobsDirectoryStudioSchema(cat01Env.DB);
+
+  // Verify GET /api/admin/jobs-directory/tree returns enriched bilingual fields for all 137+ folders
+  const treeRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/tree?domain=jobs-recruitment'),
+    cat01Env,
+    admin,
+    'tree'
+  );
+  assert.equal(treeRes.status, 200);
+  const treeData = await treeRes.json();
+  assert.ok(treeData.folders.length >= 137, `Expected >= 137 folders, got ${treeData.folders.length}`);
+  for (const f of treeData.folders) {
+    assert.ok((f.description_en || '').length >= 140, `Folder "${f.title}" description_en < 140 chars`);
+    assert.ok((f.description_or || '').length >= 140, `Folder "${f.title}" description_or < 140 chars`);
+    assert.ok(Boolean(f.seo_title), `Folder "${f.title}" missing seo_title`);
+    assert.ok(Boolean(f.seo_description), `Folder "${f.title}" missing seo_description`);
+    assert.ok(Boolean(f.featured_badge), `Folder "${f.title}" missing featured_badge`);
+    assert.ok(Boolean(f.verified_at), `Folder "${f.title}" missing verified_at`);
+  }
+
+  // Verify all 18 handbooks are returned by GET /api/admin/jobs-directory/items
+  const itemsRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/items?domain=jobs-recruitment'),
+    cat01Env,
+    admin,
+    'items'
+  );
+  assert.equal(itemsRes.status, 200);
+  const itemsData = await itemsRes.json();
+  const handbooks = itemsData.items.filter(it => Boolean(it.exam_code && it.pay_matrix && it.application_steps));
+  assert.ok(handbooks.length >= 18, `Expected >= 18 enriched handbooks, got ${handbooks.length}`);
+  for (const hb of handbooks) {
+    assert.ok(Boolean(hb.title_or), `Handbook "${hb.title}" missing title_or`);
+    assert.ok(Boolean(hb.conducting_body), `Handbook "${hb.title}" missing conducting_body`);
+    assert.ok(Boolean(hb.cadre_group), `Handbook "${hb.title}" missing cadre_group`);
+    assert.ok(Boolean(hb.age_limit_relaxation), `Handbook "${hb.title}" missing age_limit_relaxation`);
+    assert.ok(Boolean(hb.qualification_odia_rule), `Handbook "${hb.title}" missing qualification_odia_rule`);
+    assert.ok(Boolean(hb.selection_stages), `Handbook "${hb.title}" missing selection_stages`);
+    assert.ok(Boolean(hb.pst_pet_skill_norms), `Handbook "${hb.title}" missing pst_pet_skill_norms`);
+    assert.ok(Boolean(hb.documents_checklist), `Handbook "${hb.title}" missing documents_checklist`);
+    assert.ok(Boolean(hb.official_portal_url), `Handbook "${hb.title}" missing official_portal_url`);
+    assert.ok(Boolean(hb.verified_at), `Handbook "${hb.title}" missing verified_at`);
+  }
+
+  // Verify Admin two-way sync PUT preserves custom admin edits on re-enrichment
+  const sampleFolder = treeData.folders[0];
+  const customEn = 'Custom Admin English Description verified for Odisha aspirants with more than one hundred and forty characters so enrichment preserves it safely.';
+  const customOr = 'କଷ୍ଟମ୍ ଆଡମିନ୍ ଓଡ଼ିଆ ବିବରଣୀ ଯାହା ୧୪୦ ଅକ୍ଷରରୁ ଅଧିକ ଅଟେ ଏବଂ ଏହାକୁ ଏନରିଚମେଣ୍ଟ ଦ୍ୱାରା ପରିବର୍ତ୍ତନ କରାଯିବ ନାହିଁ ବୋଲି ସୁନିଶ୍ଚିତ କରାଯାଇଛି — ଓଡ଼ିଶା ସରକାରୀ ନିଯୁକ୍ତି ଏବଂ କ୍ୟାରିୟର ଡାଇରେକ୍ଟୋରୀ।';
+  const putFolderRes = await handleJobsDirectoryStudio(
+    makeReq('PUT', `https://csodisha.com/api/admin/jobs-directory/folders/${sampleFolder.id}`, {
+      description_en: customEn,
+      description_or: customOr,
+      featured_badge: 'CUSTOM'
+    }),
+    cat01Env,
+    admin,
+    'folders',
+    sampleFolder.id
+  );
+  assert.equal(putFolderRes.status, 200);
+  await enrichJobsRecruitmentCategory01(cat01Env.DB, new Date().toISOString());
+  const treeAfter = await (await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/tree?domain=jobs-recruitment'),
+    cat01Env,
+    admin,
+    'tree'
+  )).json();
+  const editedFolder = treeAfter.folders.find(f => f.id === sampleFolder.id);
+  assert.equal(editedFolder.description_en, customEn);
+  assert.equal(editedFolder.description_or, customOr);
+  assert.equal(editedFolder.featured_badge, 'CUSTOM');
+
+  // Verify SSR rendering of /jobs/ item page & /jobs/index.html have zero inline style="" attributes
+  const ssrHb = await handlePublicJobsRoute(
+    makeReq('GET', 'https://csodisha.com/jobs/item/opsc-odisha-civil-services-ocs-guide/'),
+    cat01Env,
+    new URL('https://csodisha.com/jobs/item/opsc-odisha-civil-services-ocs-guide/')
+  );
+  assert.equal(ssrHb.status, 200);
+  const ssrHbHtml = await ssrHb.text();
+  assert.ok(!/\sstyle\s*=/i.test(ssrHbHtml), 'SSR item page must have zero inline style="" attributes');
+  const jobsIndexHtml = fs.readFileSync(path.resolve('jobs/index.html'), 'utf8');
+  assert.ok(!/\sstyle\s*=/i.test(jobsIndexHtml), 'jobs/index.html must have zero inline style="" attributes');
+  assert.ok(jobsIndexHtml.includes('OSSC / OSSSC') && jobsIndexHtml.includes('Odisha PSUs'), 'jobs/index.html must include aligned Quick Jump pills');
 
   console.log('ALL JOBS DIRECTORY STUDIO TESTS PASSED');
 }

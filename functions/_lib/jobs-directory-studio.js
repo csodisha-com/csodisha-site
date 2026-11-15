@@ -11,6 +11,9 @@
 import { HttpError, json, readJson, validationError } from './http.js';
 import { audit } from './rbac.js';
 import { cleanStr, slugify, SLUG_RE, likeEscape } from './validate.js';
+import { enrichJobsRecruitmentCategory01 } from './jobs-recruitment-cat01-enrichment.js';
+
+export { enrichJobsRecruitmentCategory01 };
 
 export const JOBS_DOMAINS = [
   'jobs-recruitment',
@@ -572,10 +575,13 @@ export async function ensureJobsDirectoryStudioSchema(db) {
 
   await addMissingColumns(db, 'jobs_directory_folders', [
     ['description', "TEXT NOT NULL DEFAULT ''"],
+    ['description_en', "TEXT NOT NULL DEFAULT ''"],
     ['intro_html', "TEXT NOT NULL DEFAULT ''"],
     ['seo_title', "TEXT NOT NULL DEFAULT ''"],
     ['seo_description', "TEXT NOT NULL DEFAULT ''"],
     ['hero_badge', "TEXT NOT NULL DEFAULT ''"],
+    ['featured_badge', "TEXT NOT NULL DEFAULT ''"],
+    ['verified_at', 'TEXT'],
     ['title_or', "TEXT NOT NULL DEFAULT ''"],
     ['description_or', "TEXT NOT NULL DEFAULT ''"],
     ['legacy_node_id', 'TEXT'],
@@ -585,12 +591,23 @@ export async function ensureJobsDirectoryStudioSchema(db) {
 
   await addMissingColumns(db, 'jobs_directory_items', [
     ['recruiting_body', "TEXT NOT NULL DEFAULT ''"],
+    ['conducting_body', "TEXT NOT NULL DEFAULT ''"],
+    ['exam_code', "TEXT NOT NULL DEFAULT ''"],
+    ['cadre_group', "TEXT NOT NULL DEFAULT ''"],
+    ['pay_matrix', "TEXT NOT NULL DEFAULT ''"],
+    ['age_limit_relaxation', "TEXT NOT NULL DEFAULT ''"],
+    ['qualification_odia_rule', "TEXT NOT NULL DEFAULT ''"],
+    ['selection_stages', "TEXT NOT NULL DEFAULT ''"],
+    ['pst_pet_skill_norms', "TEXT NOT NULL DEFAULT ''"],
+    ['documents_checklist', "TEXT NOT NULL DEFAULT ''"],
+    ['application_steps', "TEXT NOT NULL DEFAULT ''"],
     ['qualification_tag', "TEXT NOT NULL DEFAULT ''"],
     ['vacancies', "TEXT NOT NULL DEFAULT ''"],
     ['start_date', "TEXT NOT NULL DEFAULT ''"],
     ['deadline_date', "TEXT NOT NULL DEFAULT ''"],
     ['exam_date', "TEXT NOT NULL DEFAULT ''"],
     ['official_apply_url', "TEXT NOT NULL DEFAULT ''"],
+    ['official_portal_url', "TEXT NOT NULL DEFAULT ''"],
     ['cover_image_url', "TEXT NOT NULL DEFAULT ''"],
     ['cover_image_alt', "TEXT NOT NULL DEFAULT ''"],
     ['attachments_json', "TEXT NOT NULL DEFAULT '[]'"],
@@ -699,6 +716,7 @@ export async function ensureJobsDirectoryStudioSchema(db) {
   if (itemStmts.length) await runBatched(db, itemStmts);
 
   await bridgeLegacyJobsNodes(db, now);
+  await enrichJobsRecruitmentCategory01(db, now);
 
   _schemaReady.add(db);
 }
@@ -1078,16 +1096,21 @@ async function handleFolders(request, env, actor, id) {
     const now = nowIso();
     const sortOrder = Number.isFinite(Number(body.sort_order)) ? Number(body.sort_order) : 10;
     const isPublished = body.is_published === undefined ? 1 : (body.is_published ? 1 : 0);
-    const description = cleanStr(body.description, 500);
+    const descriptionEn = cleanStr(body.description_en !== undefined ? body.description_en : body.description, 500);
+    const description = cleanStr(body.description !== undefined ? body.description : descriptionEn, 500);
+    const descriptionOr = cleanStr(body.description_or, 600);
+    const titleOr = cleanStr(body.title_or, 180);
     const introHtml = sanitizeEditorialHtml(body.intro_html, 15000);
     const seoTitle = cleanStr(body.seo_title, 160) || `${title} — CSOdisha`;
-    const seoDesc = cleanStr(body.seo_description, 320) || description;
-    const heroBadge = cleanStr(body.hero_badge, 40);
+    const seoDesc = cleanStr(body.seo_description, 320) || descriptionEn;
+    const heroBadge = cleanStr(body.hero_badge !== undefined ? body.hero_badge : body.featured_badge, 40);
+    const featuredBadge = cleanStr(body.featured_badge !== undefined ? body.featured_badge : heroBadge, 40);
+    const verifiedAt = cleanStr(body.verified_at, 40) || now;
 
     await env.DB.prepare(`INSERT INTO jobs_directory_folders
-      (id, domain_slug, parent_id, title, slug, depth, sort_order, is_published, description, intro_html, seo_title, seo_description, hero_badge, updated_by, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-      .bind(folderId, domain, parentId, title, rawSlug, depth, sortOrder, isPublished, description, introHtml, seoTitle, seoDesc, heroBadge, actor.email, now, now)
+      (id, domain_slug, parent_id, title, title_or, slug, depth, sort_order, is_published, description, description_en, description_or, intro_html, seo_title, seo_description, hero_badge, featured_badge, verified_at, updated_by, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(folderId, domain, parentId, title, titleOr, rawSlug, depth, sortOrder, isPublished, description, descriptionEn, descriptionOr, introHtml, seoTitle, seoDesc, heroBadge, featuredBadge, verifiedAt, actor.email, now, now)
       .run();
 
     await audit(env, request, actor, 'jobs_folder_create', 'jobs_directory_folder', folderId, { domain, title, parentId, depth }, request);
@@ -1114,21 +1137,30 @@ async function handleFolders(request, env, actor, id) {
       if (conflict) throw new HttpError(409, 'SLUG_EXISTS', 'Another sub-directory uses that slug.');
     }
 
-    const description = body.description !== undefined ? cleanStr(body.description, 500) : existing.description;
+    const descriptionEn = body.description_en !== undefined
+      ? cleanStr(body.description_en, 500)
+      : (body.description !== undefined ? cleanStr(body.description, 500) : existing.description_en);
+    const description = body.description !== undefined ? cleanStr(body.description, 500) : (body.description_en !== undefined ? descriptionEn : existing.description);
+    const descriptionOr = body.description_or !== undefined ? cleanStr(body.description_or, 600) : (existing.description_or || '');
+    const titleOr = body.title_or !== undefined ? cleanStr(body.title_or, 180) : (existing.title_or || '');
     const introHtml = body.intro_html !== undefined ? sanitizeEditorialHtml(body.intro_html, 15000) : existing.intro_html;
     const seoTitle = body.seo_title !== undefined ? cleanStr(body.seo_title, 160) : existing.seo_title;
     const seoDesc = body.seo_description !== undefined ? cleanStr(body.seo_description, 320) : existing.seo_description;
-    const heroBadge = body.hero_badge !== undefined ? cleanStr(body.hero_badge, 40) : existing.hero_badge;
+    const heroBadge = body.hero_badge !== undefined
+      ? cleanStr(body.hero_badge, 40)
+      : (body.featured_badge !== undefined ? cleanStr(body.featured_badge, 40) : existing.hero_badge);
+    const featuredBadge = body.featured_badge !== undefined ? cleanStr(body.featured_badge, 40) : (body.hero_badge !== undefined ? heroBadge : (existing.featured_badge || ''));
+    const now = nowIso();
+    const verifiedAt = body.verified_at !== undefined ? (cleanStr(body.verified_at, 40) || null) : (existing.verified_at || now);
     const sortOrder = body.sort_order !== undefined && Number.isFinite(Number(body.sort_order))
       ? Number(body.sort_order)
       : existing.sort_order;
     const isPublished = body.is_published !== undefined ? (body.is_published ? 1 : 0) : existing.is_published;
-    const now = nowIso();
 
     await env.DB.prepare(`UPDATE jobs_directory_folders
-      SET title = ?, slug = ?, description = ?, intro_html = ?, seo_title = ?, seo_description = ?, hero_badge = ?, sort_order = ?, is_published = ?, updated_by = ?, updated_at = ?
+      SET title = ?, title_or = ?, slug = ?, description = ?, description_en = ?, description_or = ?, intro_html = ?, seo_title = ?, seo_description = ?, hero_badge = ?, featured_badge = ?, verified_at = ?, sort_order = ?, is_published = ?, updated_by = ?, updated_at = ?
       WHERE id = ?`)
-      .bind(title, rawSlug, description, introHtml, seoTitle, seoDesc, heroBadge, sortOrder, isPublished, actor.email, now, id)
+      .bind(title, titleOr, rawSlug, description, descriptionEn, descriptionOr, introHtml, seoTitle, seoDesc, heroBadge, featuredBadge, verifiedAt, sortOrder, isPublished, actor.email, now, id)
       .run();
 
     await audit(env, request, actor, 'jobs_folder_update', 'jobs_directory_folder', id, { domain: existing.domain_slug, title }, request);
@@ -1224,7 +1256,10 @@ async function handleItems(request, env, actor, id, action) {
     const itemType = JOBS_ITEM_TYPES.includes(body.item_type) ? body.item_type : 'job-notification';
     const language = JOBS_LANGUAGES.includes(body.language) ? body.language : 'EN';
     const status = JOBS_STATUSES.includes(body.status) ? body.status : 'draft';
-    const officialApplyUrl = validateSafeCtaUrl(body.official_apply_url);
+    const officialApplyUrl = validateSafeCtaUrl(body.official_apply_url || body.official_portal_url);
+    const officialPortalUrl = validateSafeCtaUrl(body.official_portal_url || body.official_apply_url);
+    const conductingBody = cleanStr(body.conducting_body !== undefined ? body.conducting_body : body.recruiting_body, 160);
+    const recruitingBody = cleanStr(body.recruiting_body !== undefined ? body.recruiting_body : conductingBody, 160);
     const coverImageUrl = validateSafeCtaUrl(body.cover_image_url);
     const attachments = sanitizeAttachments(body.attachments || body.attachments_json);
     const links = sanitizeLinks(body.links || body.links_json);
@@ -1236,24 +1271,39 @@ async function handleItems(request, env, actor, id, action) {
     const now = nowIso();
 
     await env.DB.prepare(`INSERT INTO jobs_directory_items
-      (id, domain_slug, folder_id, title, slug, item_type, recruiting_body, qualification_tag, vacancies, start_date, deadline_date, exam_date,
-       official_apply_url, cover_image_url, cover_image_alt, attachments_json, links_json, tags_json, language, status, featured,
+      (id, domain_slug, folder_id, title, title_or, slug, item_type, recruiting_body, conducting_body,
+       exam_code, cadre_group, pay_matrix, age_limit_relaxation, qualification_odia_rule,
+       selection_stages, pst_pet_skill_norms, documents_checklist, application_steps,
+       qualification_tag, vacancies, start_date, deadline_date, exam_date,
+       official_apply_url, official_portal_url, cover_image_url, cover_image_alt, attachments_json, links_json, tags_json, language, status, featured,
        summary, body_html, seo_title, seo_description, verified_by, verified_at, created_by, updated_by, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?)`)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?)`)
       .bind(
         itemId,
         domain,
         folderId,
         title,
+        cleanStr(body.title_or, 220),
         finalSlug,
         itemType,
-        cleanStr(body.recruiting_body, 160),
+        recruitingBody,
+        conductingBody,
+        cleanStr(body.exam_code, 120),
+        cleanStr(body.cadre_group, 160),
+        cleanStr(body.pay_matrix, 400),
+        cleanStr(body.age_limit_relaxation, 400),
+        cleanStr(body.qualification_odia_rule, 400),
+        cleanStr(body.selection_stages, 600),
+        cleanStr(body.pst_pet_skill_norms, 400),
+        cleanStr(body.documents_checklist, 500),
+        cleanStr(body.application_steps, 500),
         cleanStr(body.qualification_tag, 120),
         cleanStr(body.vacancies, 80),
         cleanStr(body.start_date, 40),
         cleanStr(body.deadline_date, 40),
         cleanStr(body.exam_date, 80),
         officialApplyUrl,
+        officialPortalUrl,
         coverImageUrl,
         cleanStr(body.cover_image_alt, 180),
         JSON.stringify(attachments),
@@ -1306,7 +1356,18 @@ async function handleItems(request, env, actor, id, action) {
     const itemType = body.item_type !== undefined && JOBS_ITEM_TYPES.includes(body.item_type) ? body.item_type : existing.item_type;
     const language = body.language !== undefined && JOBS_LANGUAGES.includes(body.language) ? body.language : existing.language;
     const status = body.status !== undefined && JOBS_STATUSES.includes(body.status) ? body.status : existing.status;
-    const officialApplyUrl = body.official_apply_url !== undefined ? validateSafeCtaUrl(body.official_apply_url) : existing.official_apply_url;
+    const officialApplyUrl = body.official_apply_url !== undefined
+      ? validateSafeCtaUrl(body.official_apply_url)
+      : (body.official_portal_url !== undefined ? validateSafeCtaUrl(body.official_portal_url) : existing.official_apply_url);
+    const officialPortalUrl = body.official_portal_url !== undefined
+      ? validateSafeCtaUrl(body.official_portal_url)
+      : (body.official_apply_url !== undefined ? officialApplyUrl : (existing.official_portal_url || existing.official_apply_url || ''));
+    const conductingBody = body.conducting_body !== undefined
+      ? cleanStr(body.conducting_body, 160)
+      : (body.recruiting_body !== undefined ? cleanStr(body.recruiting_body, 160) : (existing.conducting_body || existing.recruiting_body || ''));
+    const recruitingBody = body.recruiting_body !== undefined
+      ? cleanStr(body.recruiting_body, 160)
+      : (body.conducting_body !== undefined ? conductingBody : existing.recruiting_body);
     const coverImageUrl = body.cover_image_url !== undefined ? validateSafeCtaUrl(body.cover_image_url) : existing.cover_image_url;
     const attachmentsJson = (body.attachments !== undefined || body.attachments_json !== undefined)
       ? JSON.stringify(sanitizeAttachments(body.attachments !== undefined ? body.attachments : body.attachments_json))
@@ -1322,23 +1383,38 @@ async function handleItems(request, env, actor, id, action) {
     const now = nowIso();
 
     await env.DB.prepare(`UPDATE jobs_directory_items
-      SET folder_id = ?, title = ?, slug = ?, item_type = ?, recruiting_body = ?, qualification_tag = ?, vacancies = ?,
-          start_date = ?, deadline_date = ?, exam_date = ?, official_apply_url = ?, cover_image_url = ?, cover_image_alt = ?,
+      SET folder_id = ?, title = ?, title_or = ?, slug = ?, item_type = ?, recruiting_body = ?, conducting_body = ?,
+          exam_code = ?, cadre_group = ?, pay_matrix = ?, age_limit_relaxation = ?, qualification_odia_rule = ?,
+          selection_stages = ?, pst_pet_skill_norms = ?, documents_checklist = ?, application_steps = ?,
+          qualification_tag = ?, vacancies = ?,
+          start_date = ?, deadline_date = ?, exam_date = ?, official_apply_url = ?, official_portal_url = ?, cover_image_url = ?, cover_image_alt = ?,
           attachments_json = ?, links_json = ?, tags_json = ?, language = ?, status = ?, featured = ?,
           summary = ?, body_html = ?, seo_title = ?, seo_description = ?, updated_by = ?, updated_at = ?
       WHERE id = ?`)
       .bind(
         folderId,
         title,
+        body.title_or !== undefined ? cleanStr(body.title_or, 220) : (existing.title_or || ''),
         rawSlug,
         itemType,
-        body.recruiting_body !== undefined ? cleanStr(body.recruiting_body, 160) : existing.recruiting_body,
+        recruitingBody,
+        conductingBody,
+        body.exam_code !== undefined ? cleanStr(body.exam_code, 120) : (existing.exam_code || ''),
+        body.cadre_group !== undefined ? cleanStr(body.cadre_group, 160) : (existing.cadre_group || ''),
+        body.pay_matrix !== undefined ? cleanStr(body.pay_matrix, 400) : (existing.pay_matrix || ''),
+        body.age_limit_relaxation !== undefined ? cleanStr(body.age_limit_relaxation, 400) : (existing.age_limit_relaxation || ''),
+        body.qualification_odia_rule !== undefined ? cleanStr(body.qualification_odia_rule, 400) : (existing.qualification_odia_rule || ''),
+        body.selection_stages !== undefined ? cleanStr(body.selection_stages, 600) : (existing.selection_stages || ''),
+        body.pst_pet_skill_norms !== undefined ? cleanStr(body.pst_pet_skill_norms, 400) : (existing.pst_pet_skill_norms || ''),
+        body.documents_checklist !== undefined ? cleanStr(body.documents_checklist, 500) : (existing.documents_checklist || ''),
+        body.application_steps !== undefined ? cleanStr(body.application_steps, 500) : (existing.application_steps || ''),
         body.qualification_tag !== undefined ? cleanStr(body.qualification_tag, 120) : existing.qualification_tag,
         body.vacancies !== undefined ? cleanStr(body.vacancies, 80) : existing.vacancies,
         body.start_date !== undefined ? cleanStr(body.start_date, 40) : existing.start_date,
         body.deadline_date !== undefined ? cleanStr(body.deadline_date, 40) : existing.deadline_date,
         body.exam_date !== undefined ? cleanStr(body.exam_date, 80) : existing.exam_date,
         officialApplyUrl,
+        officialPortalUrl,
         coverImageUrl,
         body.cover_image_alt !== undefined ? cleanStr(body.cover_image_alt, 180) : existing.cover_image_alt,
         attachmentsJson,

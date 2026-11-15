@@ -13576,13 +13576,17 @@
       folderDrawerBox.hidden = false;
       var isEdit = Boolean(editing && editing.id);
       var titleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title) || '', placeholder: 'e.g. OPSC Assistant Professor' });
+      var titleOrInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title_or) || '', placeholder: 'ଓଡ଼ିଆ ଶୀର୍ଷକ...' });
       var slugInp = el('input', { class: 'input', type: 'text', value: (editing && editing.slug) || '', placeholder: 'auto-generated-slug' });
-      var badgeInp = el('input', { class: 'input', type: 'text', value: (editing && editing.hero_badge) || '', placeholder: 'e.g. STATE GOVT' });
+      var badgeInp = el('input', { class: 'input', type: 'text', value: (editing && (editing.featured_badge || editing.hero_badge)) || '', placeholder: 'e.g. STATE GOVT' });
       var sortInp = el('input', { class: 'input', type: 'number', value: String((editing && editing.sort_order) || 10) });
+      var verifiedAtInp = el('input', { class: 'input', type: 'text', value: (editing && editing.verified_at) || '', placeholder: 'ISO timestamp (auto on save)' });
       var pubCb = el('input', { type: 'checkbox' });
       pubCb.checked = editing ? Boolean(editing.is_published) : true;
-      var descTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Short directory overview...' });
-      descTa.value = (editing && editing.description) || '';
+      var descTa = el('textarea', { class: 'textarea', rows: '3', placeholder: 'English directory overview (>= 140 chars)...' });
+      descTa.value = (editing && (editing.description_en || editing.description)) || '';
+      var descOrTa = el('textarea', { class: 'textarea', rows: '3', placeholder: 'ଓଡ଼ିଆ ବିବରଣୀ (>= 140 chars)...' });
+      descOrTa.value = (editing && editing.description_or) || '';
       var seoTitleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.seo_title) || '', placeholder: 'SEO Title (<= 60 chars)' });
       var seoDescTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'SEO Meta Description (<= 160 chars)...' });
       seoDescTa.value = (editing && editing.seo_description) || '';
@@ -13611,11 +13615,16 @@
             domain_slug: activeDomain,
             parent_id: isEdit ? editing.parent_id : (parentForNew || state.parentId || null),
             title: titleInp.value.trim(),
+            title_or: titleOrInp.value.trim(),
             slug: slugInp.value.trim(),
             hero_badge: badgeInp.value.trim(),
+            featured_badge: badgeInp.value.trim(),
             sort_order: Number(sortInp.value || 10),
+            verified_at: verifiedAtInp.value.trim(),
             is_published: pubCb.checked,
             description: descTa.value.trim(),
+            description_en: descTa.value.trim(),
+            description_or: descOrTa.value.trim(),
             seo_title: seoTitleInp.value.trim(),
             seo_description: seoDescTa.value.trim()
           };
@@ -13644,14 +13653,17 @@
         el('div', { class: 'cso-cnt-editor-pane' }, [
           el('div', { class: 'cso-sl-drawer-row' }, [
             el('div', { class: 'field' }, [el('label', { text: 'Directory Title *' }), titleInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Title (Odia / ଓଡ଼ିଆ)' }), titleOrInp]),
             el('div', { class: 'field' }, [el('label', { text: 'Slug' }), slugInp])
           ]),
           el('div', { class: 'cso-sl-drawer-row' }, [
-            el('div', { class: 'field' }, [el('label', { text: 'Hero Badge' }), badgeInp]),
-            el('div', { class: 'field' }, [el('label', { text: 'Sort Order' }), sortInp])
+            el('div', { class: 'field' }, [el('label', { text: 'Featured / Hero Badge' }), badgeInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Sort Order' }), sortInp]),
+            el('div', { class: 'field' }, [el('label', { text: 'Verified At' }), verifiedAtInp])
           ]),
           el('div', { class: 'field' }, [el('label', {}, [pubCb, document.createTextNode(' Published on public directory')])]),
-          el('div', { class: 'field' }, [el('label', { text: 'Description' }), descTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Description (English)' }), descTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Description (Odia / ଓଡ଼ିଆ)' }), descOrTa]),
           el('div', { class: 'field' }, [el('label', { text: 'SEO Title' }), seoTitleInp]),
           el('div', { class: 'field' }, [el('label', { text: 'SEO Meta Description' }), seoDescTa]),
           el('div', { class: 'cso-ops-badges' }, [saveBtn, cancelBtn])
@@ -13782,13 +13794,30 @@
       ]);
       langSel.value = (editing && editing.language) || 'EN';
 
-      var bodyInp = el('input', { class: 'input', type: 'text', value: (editing && editing.recruiting_body) || cfg.defaultBody || '', placeholder: 'e.g. ' + (cfg.defaultBody || 'OPSC / OSSSC / OSDA') });
+      var titleOrInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title_or) || '', placeholder: 'ଓଡ଼ିଆ ଶୀର୍ଷକ...' });
+      var bodyInp = el('input', { class: 'input', type: 'text', value: (editing && (editing.conducting_body || editing.recruiting_body)) || cfg.defaultBody || '', placeholder: 'e.g. ' + (cfg.defaultBody || 'OPSC / OSSSC / OSDA') });
+      var examCodeInp = el('input', { class: 'input', type: 'text', value: (editing && editing.exam_code) || '', placeholder: 'e.g. OPSC OCS / OSSC CGLRE' });
+      var cadreGroupInp = el('input', { class: 'input', type: 'text', value: (editing && editing.cadre_group) || '', placeholder: 'e.g. Group A & B / District Cadre' });
+      var payMatrixTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'ORSP 2017 / 7th CPC Pay Level & In-Hand...' });
+      payMatrixTa.value = (editing && editing.pay_matrix) || '';
+      var ageRelaxTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Age Limit & SC/ST/SEBC/Women/PwD Relaxations...' });
+      ageRelaxTa.value = (editing && editing.age_limit_relaxation) || '';
+      var qualOdiaTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Qualification & Odia ME/HSC Rule...' });
+      qualOdiaTa.value = (editing && editing.qualification_odia_rule) || '';
+      var selStagesTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Multi-Stage Selection Pattern & Negative Marking...' });
+      selStagesTa.value = (editing && editing.selection_stages) || '';
+      var pstPetTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'PST/PET or Computer Skill Test Norms...' });
+      pstPetTa.value = (editing && editing.pst_pet_skill_norms) || '';
+      var docsCheckTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Mandatory Documents Checklist...' });
+      docsCheckTa.value = (editing && editing.documents_checklist) || '';
+      var appStepsTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Step-by-Step OTR & Application Process...' });
+      appStepsTa.value = (editing && editing.application_steps) || '';
       var qualInp = el('input', { class: 'input', type: 'text', value: (editing && editing.qualification_tag) || '', placeholder: cfg.qualPlaceholder || 'e.g. Graduate (Any Stream)' });
       var vacInp = el('input', { class: 'input', type: 'text', value: (editing && editing.vacancies) || '', placeholder: 'e.g. 399 Posts' });
       var startInp = el('input', { class: 'input', type: 'text', value: (editing && editing.start_date) || '', placeholder: 'YYYY-MM-DD' });
       var deadInp = el('input', { class: 'input', type: 'text', value: (editing && editing.deadline_date) || '', placeholder: 'YYYY-MM-DD' });
       var examInp = el('input', { class: 'input', type: 'text', value: (editing && editing.exam_date) || '', placeholder: 'Exam / Counselling Date' });
-      var applyUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.official_apply_url) || '', placeholder: 'https://www.opsc.gov.in/' });
+      var applyUrlInp = el('input', { class: 'input', type: 'url', value: (editing && (editing.official_portal_url || editing.official_apply_url)) || '', placeholder: 'https://www.opsc.gov.in/' });
       var featCb = el('input', { type: 'checkbox' });
       featCb.checked = Boolean(editing && editing.featured);
 
@@ -13969,17 +13998,29 @@
             domain_slug: activeDomain,
             folder_id: folderSel.value,
             title: titleInp.value.trim(),
+            title_or: titleOrInp.value.trim(),
             slug: slugInp.value.trim(),
             item_type: typeSel.value,
             status: statusSelComp.value,
             language: langSel.value,
             recruiting_body: bodyInp.value.trim(),
+            conducting_body: bodyInp.value.trim(),
+            exam_code: examCodeInp.value.trim(),
+            cadre_group: cadreGroupInp.value.trim(),
+            pay_matrix: payMatrixTa.value.trim(),
+            age_limit_relaxation: ageRelaxTa.value.trim(),
+            qualification_odia_rule: qualOdiaTa.value.trim(),
+            selection_stages: selStagesTa.value.trim(),
+            pst_pet_skill_norms: pstPetTa.value.trim(),
+            documents_checklist: docsCheckTa.value.trim(),
+            application_steps: appStepsTa.value.trim(),
             qualification_tag: qualInp.value.trim(),
             vacancies: vacInp.value.trim(),
             start_date: startInp.value.trim(),
             deadline_date: deadInp.value.trim(),
             exam_date: examInp.value.trim(),
             official_apply_url: applyUrlInp.value.trim(),
+            official_portal_url: applyUrlInp.value.trim(),
             cover_image_url: coverUrlInp.value.trim(),
             cover_image_alt: coverAltInp.value.trim(),
             attachments: attachments,
@@ -14017,20 +14058,32 @@
       var leftPane = el('div', { class: 'cso-cnt-editor-pane' }, [
         el('div', { class: 'cso-ops-grid-2' }, [
           el('div', { class: 'field' }, [el('label', {}, [document.createTextNode('Title * '), titleCount]), titleInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Title (Odia / ଓଡ଼ିଆ)' }), titleOrInp]),
           el('div', { class: 'field' }, [el('label', { text: 'Slug' }), slugInp]),
           el('div', { class: 'field' }, [el('label', { text: 'Sub-Directory *' }), folderSel]),
           el('div', { class: 'field' }, [el('label', { text: 'Item Type' }), typeSel]),
           el('div', { class: 'field' }, [el('label', { text: 'Status' }), statusSelComp]),
           el('div', { class: 'field' }, [el('label', { text: 'Language' }), langSel]),
-          el('div', { class: 'field' }, [el('label', { text: 'Recruiting Body / Authority' }), bodyInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Conducting / Recruiting Body' }), bodyInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Exam Code' }), examCodeInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Cadre & Service Group' }), cadreGroupInp]),
           el('div', { class: 'field' }, [el('label', { text: 'Qualification Tag' }), qualInp]),
           el('div', { class: 'field' }, [el('label', { text: 'Vacancies / Seats' }), vacInp]),
-          el('div', { class: 'field' }, [el('label', { text: 'Official Apply / Portal URL' }), applyUrlInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Official Portal / Apply URL' }), applyUrlInp]),
           el('div', { class: 'field' }, [el('label', { text: 'Start Date' }), startInp]),
           el('div', { class: 'field' }, [el('label', { text: 'Deadline Date' }), deadInp]),
           el('div', { class: 'field' }, [el('label', { text: 'Exam / Event Date' }), examInp]),
           el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Featured in directory')])])
         ]),
+        el('div', { class: 'cso-ops-grid-2' }, [
+          el('div', { class: 'field' }, [el('label', { text: 'Pay Matrix (ORSP 2017 / 7th CPC)' }), payMatrixTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Age Limit & Category Relaxations' }), ageRelaxTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Qualification & Odia Language Rule' }), qualOdiaTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Multi-Stage Selection Pattern' }), selStagesTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'PST/PET or Computer Skill Norms' }), pstPetTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Mandatory Documents Checklist' }), docsCheckTa])
+        ]),
+        el('div', { class: 'field' }, [el('label', { text: 'Step-by-Step OTR & Application Process' }), appStepsTa]),
         el('div', { class: 'cso-ops-grid-2' }, [
           el('div', { class: 'field' }, [el('label', { text: 'Cover Image URL (R2 max 5MB)' }), coverUrlInp, coverFileInp]),
           el('div', { class: 'field' }, [el('label', { text: 'Cover Image Alt' }), coverAltInp])

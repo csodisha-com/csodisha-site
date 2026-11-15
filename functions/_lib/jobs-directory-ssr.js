@@ -150,7 +150,9 @@ function renderDirectoryPage(data) {
   const pageTitle = (folder && folder.seo_title) || (folder ? `${folder.title} — ${meta.title} | CSOdisha` : `${meta.title} | Common Sense Odisha`);
   const pageDesc = (folder && (folder.seo_description || folder.description)) || meta.summary;
   const heading = folder ? folder.title : meta.title;
-  const intro = (folder && (folder.intro_html || folder.description)) || meta.summary;
+  const headingOr = folder && folder.title_or ? folder.title_or : '';
+  const intro = (folder && (folder.intro_html || folder.description_en || folder.description)) || meta.summary;
+  const introOr = folder && folder.description_or ? folder.description_or : '';
   const canonicalUrl = `${CANONICAL_ORIGIN}${canonicalPath}`;
 
   const jsonLdList = [
@@ -207,7 +209,9 @@ function renderDirectoryPage(data) {
     <section class="cso-jobs-hero">
       <div class="cso-jobs-crumb">${buildBreadcrumbHtml(breadcrumbs)}</div>
       <h1>${escHtml(heading)}</h1>
+      ${headingOr ? `<p class="cso-jobs-hero-sub">${escHtml(headingOr)}</p>` : ''}
       <p class="cso-jobs-hero-sub">${sanitizeRichBody(intro)}</p>
+      ${introOr ? `<p class="cso-jobs-hero-sub">${escHtml(introOr)}</p>` : ''}
     </section>
     ${childrenHtml}
     ${itemsHtml}
@@ -277,9 +281,10 @@ function renderItemReaderPage(data) {
     <section class="cso-jobs-hero">
       <div class="cso-jobs-crumb">${buildBreadcrumbHtml(breadcrumbs)}</div>
       <h1>${escHtml(item.title)}</h1>
+      ${item.title_or ? `<p class="cso-jobs-hero-sub">${escHtml(item.title_or)}</p>` : ''}
       <p class="cso-jobs-hero-sub">${escHtml(item.summary || '')}</p>
       <div class="cso-jobs-item-actions">
-        ${item.official_apply_url ? `<a class="cso-jobs-btn cso-jobs-btn-primary" href="${escHtml(item.official_apply_url)}" target="_blank" rel="noopener noreferrer">Official Apply / Portal →</a>` : ''}
+        ${(item.official_portal_url || item.official_apply_url) ? `<a class="cso-jobs-btn cso-jobs-btn-primary" href="${escHtml(item.official_portal_url || item.official_apply_url)}" target="_blank" rel="noopener noreferrer">Official Apply / Portal →</a>` : ''}
         <button type="button" class="cso-jobs-btn cso-jobs-ssr-offline-btn" data-pdf-url="${escHtml(firstPdf ? firstPdf.url : '')}">Save for Offline</button>
         <button type="button" class="cso-jobs-btn cso-jobs-ssr-print-btn">Print Clean Sheet</button>
       </div>
@@ -287,11 +292,11 @@ function renderItemReaderPage(data) {
 
     <section class="cso-jobs-panel">
       <div class="cso-ssr-facts">
-        <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Recruiting / Issuing Body</div><div class="cso-ssr-fact-v">${escHtml(item.recruiting_body || meta.title)}</div></div>
-        <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Qualification</div><div class="cso-ssr-fact-v">${escHtml(item.qualification_tag || 'See details')}</div></div>
-        <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Vacancies / Scope</div><div class="cso-ssr-fact-v">${escHtml(item.vacancies || 'Notified in PDF')}</div></div>
-        <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Deadline Date</div><div class="cso-ssr-fact-v">${escHtml(item.deadline_date || 'Open / Rolling')}</div></div>
-        <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Exam / Event Date</div><div class="cso-ssr-fact-v">${escHtml(item.exam_date || 'To be notified')}</div></div>
+        <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Conducting / Recruiting Body</div><div class="cso-ssr-fact-v">${escHtml(item.conducting_body || item.recruiting_body || meta.title)}</div></div>
+        <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Qualification &amp; Odia Rule</div><div class="cso-ssr-fact-v">${escHtml(item.qualification_odia_rule || item.qualification_tag || 'See details')}</div></div>
+        <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Cadre / Vacancies</div><div class="cso-ssr-fact-v">${escHtml(item.cadre_group || item.vacancies || 'Notified in PDF')}</div></div>
+        <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Pay Matrix</div><div class="cso-ssr-fact-v">${escHtml(item.pay_matrix || 'ORSP 2017 / 7th CPC')}</div></div>
+        <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Age Limit &amp; Relaxations</div><div class="cso-ssr-fact-v">${escHtml(item.age_limit_relaxation || item.deadline_date || 'As per Govt norms')}</div></div>
         <div class="cso-ssr-fact"><div class="cso-ssr-fact-k">Verification Status</div><div class="cso-ssr-fact-v">${item.verified_at ? 'Verified (' + escHtml(item.verified_at.slice(0, 10)) + ')' : 'Editorial Review'}</div></div>
       </div>
       <div>${sanitizeRichBody(item.body_html) || `<p>${escHtml(item.summary || '')}</p>`}</div>
