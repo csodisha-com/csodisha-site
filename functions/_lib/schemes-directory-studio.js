@@ -741,95 +741,178 @@ function mapLegacySchemeGroup(slugOrTitle) {
   if (s.includes('education') || s.includes('employment') || s.includes('scholarship') || s.includes('talent')) return 'education-employment';
   if (s.includes('agri') || s.includes('livelihood') || s.includes('business') || s.includes('msme')) return 'agriculture-livelihoods';
   if (s.includes('health') || s.includes('housing') || s.includes('protection') || s.includes('insurance')) return 'health-housing-protection';
-  if (s.includes('communit') || s.includes('beneficiar') || s.includes('sc') || s.includes('st') || s.includes('pwd')) return 'communities-beneficiaries';
+  if (s.includes('communit') || s.includes('beneficiar') || /\bsc\b|\bst\b|\bpwd\b|sc\/st|sebc|obc|minority|senior/.test(s)) return 'communities-beneficiaries';
   if (s.includes('private') || s.includes('global') || s.includes('innovation') || s.includes('csr')) return 'private-global-innovation';
   if (s.includes('find') || s.includes('eligib')) return 'find-schemes-eligibility';
   if (s.includes('service') || s.includes('verif')) return 'citizen-services-verification';
   return 'govt-public-welfare';
 }
 
+function safeParseJsonObj(raw) {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(String(raw));
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 async function bridgeLegacySchemesTables(db, now) {
   try {
     const nodesTbl = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='schemes_directory_nodes'").first();
     if (nodesTbl) {
+      const res = await db
+        .prepare("SELECT id, slug, parent_slug, level, title, title_or, subtitle, subtitle_or, badge_text, official_url, metadata_json, sort_order, status FROM schemes_directory_nodes WHERE COALESCE(status, 'published') != 'archived' ORDER BY sort_order ASC, id ASC")
+        .all()
+        .catch(() => ({ results: [] }));
+      const rows = res.results || [];
+      const nonGroupRows = rows.filter(r => r.level !== 'group');
       const bridged = await db.prepare('SELECT COUNT(*) AS cnt FROM schemes_directory_folders WHERE legacy_node_id IS NOT NULL').first();
-      if (Number(bridged?.cnt || 0) === 0) {
-        const res = await db
-          .prepare("SELECT id, slug, parent_slug, level, title, title_or, description, description_or, sort_order FROM schemes_directory_nodes WHERE status != 'archived' ORDER BY sort_order ASC, id ASC")
-          .all()
-          .catch(() => ({ results: [] }));
-        const rows = res.results || [];
-        if (rows.length) {
-          const bySlug = new Map(rows.map(r => [r.slug, r]));
-          const domainBySlug = new Map();
-          for (const r of rows) {
-            if (r.level === 'group' || !r.parent_slug) {
-              domainBySlug.set(r.slug, mapLegacySchemeGroup(r.slug + ' ' + r.title));
-            }
+      if (nonGroupRows.length && Number(bridged?.cnt || 0) < nonGroupRows.length) {
+        const bySlug = new Map(rows.map(r => [r.slug, r]));
+        const domainBySlug = new Map();
+        for (const r of rows) {
+          if (r.level === 'group' || !r.parent_slug) {
+            domainBySlug.set(r.slug, mapLegacySchemeGroup(r.slug + ' ' + r.title));
           }
-          function resolveNodeDomain(r) {
-            let cur = r;
-            const seen = new Set();
-            while (cur && !seen.has(cur.slug)) {
-              seen.add(cur.slug);
-              if (domainBySlug.has(cur.slug)) return domainBySlug.get(cur.slug);
-              cur = cur.parent_slug ? bySlug.get(cur.parent_slug) : null;
-            }
-            return mapLegacySchemeGroup(r.slug + ' ' + r.title);
+        }
+        function resolveNodeDomain(r) {
+          let cur = r;
+          const seen = new Set();
+          while (cur && !seen.has(cur.slug)) {
+            seen.add(cur.slug);
+            if (domainBySlug.has(cur.slug)) return domainBySlug.get(cur.slug);
+            cur = cur.parent_slug ? bySlug.get(cur.parent_slug) : null;
           }
+          return mapLegacySchemeGroup(r.slug + ' ' + r.title);
+        }
 
-          const folderIdBySlug = new Map();
-          const stmts = [];
-          const order = { section: 1, subcategory: 2, entry: 3 };
-          const sorted = rows.filter(r => r.level !== 'group').sort((a, b) => (order[a.level] || 2) - (order[b.level] || 2));
-          for (const r of sorted) {
-            const domain = resolveNodeDomain(r);
-            const depth = order[r.level] || 1;
-            const parentFolderId = r.parent_slug ? (folderIdBySlug.get(r.parent_slug) || null) : null;
-            const fid = 'sf-leg-' + String(r.id).replace(/[^a-zA-Z0-9_-]/g, '');
-            folderIdBySlug.set(r.slug, fid);
-            const cleanSlug = slugify(r.slug || r.title || fid);
-            stmts.push(
-              db.prepare(`INSERT OR IGNORE INTO schemes_directory_folders
-                (id, domain_slug, parent_id, depth, name_en, title_or, slug, description_en, description_or, seo_title, seo_description, legacy_node_id, sort_order, is_active, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`)
+        const folderIdBySlug = new Map();
+        const usedFolderSlugs = new Set();
+        const usedItemSlugs = new Set();
+        const folderStmts = [];
+        const entryItemStmts = [];
+        const order = { section: 1, subcategory: 2, entry: 3 };
+        const sorted = nonGroupRows.slice().sort((a, b) => (order[a.level] || 2) - (order[b.level] || 2));
+
+        for (const r of sorted) {
+          const domain = resolveNodeDomain(r);
+          const depth = order[r.level] || 1;
+          const parentFolderId = r.parent_slug ? (folderIdBySlug.get(r.parent_slug) || null) : null;
+          const cleanId = String(r.id).replace(/[^a-zA-Z0-9_-]/g, '');
+          const fid = 'sf-leg-' + cleanId;
+          folderIdBySlug.set(r.slug, fid);
+          let cleanSlug = slugify(r.slug || r.title || fid);
+          if (usedFolderSlugs.has(domain + ':' + cleanSlug)) {
+            cleanSlug = cleanSlug + '-' + cleanId.slice(-6);
+          }
+          usedFolderSlugs.add(domain + ':' + cleanSlug);
+
+          const descEn = cleanStr(r.subtitle, 500);
+          const descOr = cleanStr(r.subtitle_or, 500);
+          folderStmts.push(
+            db.prepare(`INSERT OR IGNORE INTO schemes_directory_folders
+              (id, domain_slug, parent_id, depth, name_en, title_or, slug, description_en, description_or, seo_title, seo_description, featured_badge, legacy_node_id, legacy_code, sort_order, is_active, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`)
+              .bind(
+                fid, domain, parentFolderId, depth,
+                cleanStr(r.title, 160) || 'Scheme Directory',
+                cleanStr(r.title_or, 180),
+                cleanSlug,
+                descEn,
+                descOr,
+                `${cleanStr(r.title, 120)} — CSOdisha`,
+                descEn || cleanStr(r.title, 180),
+                cleanStr(r.badge_text, 60),
+                String(r.id),
+                cleanStr(r.slug, 120),
+                Number(r.sort_order || 10),
+                now, now
+              )
+          );
+
+          if (r.level === 'entry') {
+            const meta = safeParseJsonObj(r.metadata_json);
+            let safeUrl = '';
+            try {
+              const rawUrl = r.official_url || meta.official_url || meta.apply_url || '';
+              if (rawUrl) safeUrl = validateSafePortalUrl(rawUrl);
+            } catch {
+              safeUrl = '';
+            }
+            const sponsorRaw = cleanStr(meta.sponsor_level || meta.gov_level || '', 40);
+            const sponsorLevel = SPONSOR_LEVELS.includes(sponsorRaw)
+              ? sponsorRaw
+              : (/central|pm-|national|nsp/i.test(r.title + ' ' + r.slug) ? 'Central Govt' : 'Odisha State');
+            const deptName = cleanStr(meta.department || meta.department_name || (sponsorLevel === 'Central Govt' ? 'Govt of India' : 'Govt of Odisha'), 120);
+            const benGroup = cleanStr(meta.beneficiary || meta.beneficiary_group || 'Eligible Citizens', 120);
+            const benefitAmt = cleanStr(meta.benefit || meta.benefit_amount || '', 200);
+            const elig = cleanStr(meta.eligibility || descEn, 1500);
+            const docs = cleanStr(Array.isArray(meta.documents) ? meta.documents.join('\n') : (meta.documents || ''), 1500);
+            const tagsArr = Array.isArray(meta.tags) ? meta.tags.slice(0, 10) : [sponsorLevel, r.badge_text].filter(Boolean);
+            let itemSlug = slugify(r.slug || r.title || cleanId);
+            if (usedItemSlugs.has(itemSlug)) itemSlug = itemSlug + '-' + cleanId.slice(-6);
+            usedItemSlugs.add(itemSlug);
+
+            entryItemStmts.push(
+              db.prepare(`INSERT OR IGNORE INTO schemes_directory_items
+                (id, domain_slug, folder_id, title, title_or, slug, scheme_type, sponsor_level, department_name, beneficiary_group,
+                 benefit_amount, official_apply_url, official_portal_verified, language_parity, summary, eligibility_criteria, documents_required,
+                 tags_json, legacy_post_id, status, verified_at, published_at, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
                 .bind(
-                  fid, domain, parentFolderId, depth,
-                  cleanStr(r.title, 160) || 'Scheme Directory',
-                  cleanStr(r.title_or, 180),
-                  cleanSlug,
-                  cleanStr(r.description, 500),
-                  cleanStr(r.description_or, 500),
-                  `${cleanStr(r.title, 120)} — CSOdisha`,
-                  cleanStr(r.description, 300),
-                  String(r.id),
-                  Number(r.sort_order || 10),
-                  now, now
+                  'si-node-' + cleanId,
+                  domain,
+                  fid,
+                  cleanStr(r.title, 200) || 'Scheme Entry',
+                  cleanStr(r.title_or, 200),
+                  itemSlug,
+                  cleanStr(meta.scheme_type || (sponsorLevel === 'Central Govt' ? 'central_scheme' : 'state_scheme'), 40),
+                  sponsorLevel,
+                  deptName,
+                  benGroup,
+                  benefitAmt,
+                  safeUrl,
+                  safeUrl ? 1 : 0,
+                  r.title_or ? 'EN+OR' : 'EN',
+                  descEn || cleanStr(r.title, 240),
+                  elig,
+                  docs,
+                  JSON.stringify(tagsArr),
+                  'node:' + String(r.id),
+                  r.status === 'draft' ? 'draft' : 'published',
+                  safeUrl ? now : null,
+                  now, now, now
                 )
             );
           }
-          if (stmts.length) await runBatched(db, stmts, 45);
         }
+        if (folderStmts.length) await runBatched(db, folderStmts, 45);
+        if (entryItemStmts.length) await runBatched(db, entryItemStmts, 45);
       }
+    }
+
+    const folderRes = await db.prepare('SELECT id, domain_slug FROM schemes_directory_folders ORDER BY depth ASC, sort_order ASC').all();
+    const firstFolderByDomain = new Map();
+    let fallbackFolderId = null;
+    for (const f of (folderRes.results || [])) {
+      if (!fallbackFolderId) fallbackFolderId = f.id;
+      if (!firstFolderByDomain.has(f.domain_slug)) firstFolderByDomain.set(f.domain_slug, f.id);
     }
 
     const legSchemesTbl = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='schemes_directory'").first();
     if (legSchemesTbl) {
-      const bridgedItems = await db.prepare('SELECT COUNT(*) AS cnt FROM schemes_directory_items WHERE legacy_post_id IS NOT NULL').first();
+      const bridgedItems = await db.prepare("SELECT COUNT(*) AS cnt FROM schemes_directory_items WHERE legacy_post_id IS NOT NULL AND legacy_post_id NOT LIKE 'node:%' AND legacy_post_id NOT LIKE 'post:%'").first();
       if (Number(bridgedItems?.cnt || 0) === 0) {
         const rowsRes = await db
-          .prepare("SELECT id, slug, title, title_or, category, gov_level, department, summary, eligibility, benefits, documents, apply_url FROM schemes_directory WHERE status = 'published' AND deleted_at IS NULL LIMIT 150")
+          .prepare("SELECT id, slug, title, title_or, category, gov_level, department, summary, eligibility, benefits, documents, apply_url FROM schemes_directory WHERE status = 'published' AND deleted_at IS NULL")
           .all()
           .catch(() => ({ results: [] }));
-        const folderRes = await db.prepare('SELECT id, domain_slug FROM schemes_directory_folders ORDER BY depth ASC, sort_order ASC').all();
-        const firstFolderByDomain = new Map();
-        for (const f of (folderRes.results || [])) {
-          if (!firstFolderByDomain.has(f.domain_slug)) firstFolderByDomain.set(f.domain_slug, f.id);
-        }
         const stmts = [];
         for (const s of (rowsRes.results || [])) {
           const domain = mapLegacySchemeGroup(s.category || s.title);
-          const folderId = firstFolderByDomain.get(domain);
+          const folderId = firstFolderByDomain.get(domain) || fallbackFolderId;
           if (!folderId) continue;
           let safeUrl = '';
           try { safeUrl = s.apply_url ? validateSafePortalUrl(s.apply_url) : ''; } catch { safeUrl = ''; }
@@ -855,6 +938,41 @@ async function bridgeLegacySchemesTables(db, now) {
                 cleanStr(s.documents, 1500),
                 String(s.id),
                 now, now, now, now
+              )
+          );
+        }
+        if (stmts.length) await runBatched(db, stmts, 45);
+      }
+    }
+
+    const postsTbl = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='posts'").first();
+    if (postsTbl) {
+      const postBridged = await db.prepare("SELECT COUNT(*) AS cnt FROM schemes_directory_items WHERE legacy_post_id LIKE 'post:%'").first();
+      if (Number(postBridged?.cnt || 0) === 0) {
+        const postsRes = await db
+          .prepare("SELECT id, slug, title, summary, body, status FROM posts WHERE type = 'scheme' AND COALESCE(status, 'published') = 'published' LIMIT 500")
+          .all()
+          .catch(() => ({ results: [] }));
+        const stmts = [];
+        for (const p of (postsRes.results || [])) {
+          const domain = mapLegacySchemeGroup(p.title + ' ' + (p.summary || ''));
+          const folderId = firstFolderByDomain.get(domain) || fallbackFolderId;
+          if (!folderId) continue;
+          stmts.push(
+            db.prepare(`INSERT OR IGNORE INTO schemes_directory_items
+              (id, domain_slug, folder_id, title, slug, scheme_type, sponsor_level, department_name, beneficiary_group,
+               summary, body_html, legacy_post_id, status, published_at, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, 'state_scheme', 'Odisha State', 'Govt of Odisha', 'All Citizens', ?, ?, ?, 'published', ?, ?, ?)`)
+              .bind(
+                'si-post-' + String(p.id),
+                domain,
+                folderId,
+                cleanStr(p.title, 200),
+                slugify(p.slug || p.title) + '-post',
+                cleanStr(p.summary, 500),
+                String(p.body || ''),
+                'post:' + String(p.id),
+                now, now, now
               )
           );
         }
@@ -1518,10 +1636,11 @@ export async function resolvePublicSchemesItem(env, slugOrId) {
 
 export async function listPublicSchemesOverview(env) {
   await ensureSchemesDirectoryStudioSchema(env.DB);
-  const [fRes, iRes, sRes] = await Promise.all([
+  const [fRes, iRes, sRes, tRes] = await Promise.all([
     env.DB.prepare('SELECT domain_slug, depth, COUNT(*) AS cnt FROM schemes_directory_folders WHERE is_active = 1 GROUP BY domain_slug, depth').all(),
     env.DB.prepare("SELECT domain_slug, COUNT(*) AS cnt, SUM(CASE WHEN official_portal_verified = 1 OR verified_at IS NOT NULL THEN 1 ELSE 0 END) AS verified_cnt FROM schemes_directory_items WHERE status = 'published' GROUP BY domain_slug").all(),
-    env.DB.prepare("SELECT sponsor_level, COUNT(*) AS cnt FROM schemes_directory_items WHERE status = 'published' GROUP BY sponsor_level").all()
+    env.DB.prepare("SELECT sponsor_level, COUNT(*) AS cnt FROM schemes_directory_items WHERE status = 'published' GROUP BY sponsor_level").all(),
+    env.DB.prepare("SELECT scheme_type, COUNT(*) AS cnt FROM schemes_directory_items WHERE status = 'published' GROUP BY scheme_type").all()
   ]);
 
   const fMap = new Map();
@@ -1567,6 +1686,11 @@ export async function listPublicSchemesOverview(env) {
     };
   });
 
+  const typeBreakdown = {};
+  for (const r of (tRes.results || [])) {
+    if (r.scheme_type) typeBreakdown[r.scheme_type] = Number(r.cnt || 0);
+  }
+
   return {
     domains,
     sponsorBreakdown: {
@@ -1575,6 +1699,7 @@ export async function listPublicSchemesOverview(env) {
       joint: spMap.get('Joint State-Central') || 0,
       csrGlobal: spMap.get('CSR / Global') || 0
     },
+    typeBreakdown,
     totals: {
       totalDomains: domains.length,
       totalSections,
@@ -1591,11 +1716,14 @@ export async function listPublicSchemesItems(env, opts = {}) {
   await ensureSchemesDirectoryStudioSchema(env.DB);
   const domain = normalizePublicDomain(opts.domain);
   const sponsor = cleanStr(opts.sponsor_level, 40);
+  const schemeType = cleanStr(opts.scheme_type, 40);
   const beneficiary = cleanStr(opts.beneficiary_group, 80);
   const mode = cleanStr(opts.application_mode, 40);
   const lang = cleanStr(opts.language, 20);
   const q = cleanStr(opts.q, 120);
-  const limit = Math.min(200, Math.max(1, Number(opts.limit || 60)));
+  const page = Math.max(1, Number(opts.page || 1));
+  const limit = Math.min(100, Math.max(1, Number(opts.limit || 12)));
+  const offset = (page - 1) * limit;
 
   const clauses = ["i.status = 'published'", 'f.is_active = 1'];
   const binds = [];
@@ -1606,6 +1734,10 @@ export async function listPublicSchemesItems(env, opts = {}) {
   if (sponsor && SPONSOR_LEVELS.includes(sponsor)) {
     clauses.push('i.sponsor_level = ?');
     binds.push(sponsor);
+  }
+  if (schemeType && SCHEME_TYPES.includes(schemeType)) {
+    clauses.push('i.scheme_type = ?');
+    binds.push(schemeType);
   }
   if (beneficiary) {
     clauses.push("LOWER(i.beneficiary_group) LIKE ? ESCAPE '\\'");
@@ -1625,15 +1757,22 @@ export async function listPublicSchemesItems(env, opts = {}) {
     binds.push(pat, pat, pat, pat);
   }
 
+  const whereSql = clauses.join(' AND ');
+  const countRow = await env.DB.prepare(
+    `SELECT COUNT(*) AS total FROM schemes_directory_items i JOIN schemes_directory_folders f ON f.id = i.folder_id WHERE ${whereSql}`
+  ).bind(...binds).first();
+  const total = Number(countRow?.total || 0);
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
   const sql = `SELECT i.*, f.name_en AS folder_title, f.slug AS folder_slug
     FROM schemes_directory_items i
     JOIN schemes_directory_folders f ON f.id = i.folder_id
-    WHERE ${clauses.join(' AND ')}
+    WHERE ${whereSql}
     ORDER BY i.official_portal_verified DESC, i.updated_at DESC
-    LIMIT ?`;
-  const res = await env.DB.prepare(sql).bind(...binds, limit).all();
+    LIMIT ? OFFSET ?`;
+  const res = await env.DB.prepare(sql).bind(...binds, limit, offset).all();
   const items = (res.results || []).map(hydrateItemRow);
-  return { items, total: items.length };
+  return { items, total, page, limit, totalPages, hasMore: page < totalPages };
 }
 
 export async function submitPublicSchemesSuggestion(env, payload = {}) {
@@ -1671,10 +1810,12 @@ export async function handlePublicSchemesItemsApi(request, env) {
   const data = await listPublicSchemesItems(env, {
     domain: url.searchParams.get('domain'),
     sponsor_level: url.searchParams.get('sponsor_level'),
+    scheme_type: url.searchParams.get('scheme_type'),
     beneficiary_group: url.searchParams.get('beneficiary_group'),
     application_mode: url.searchParams.get('application_mode'),
     language: url.searchParams.get('language'),
     q: url.searchParams.get('q'),
+    page: url.searchParams.get('page'),
     limit: url.searchParams.get('limit')
   });
   return json({ ok: true, ...data }, 200, { 'Cache-Control': 'public, max-age=120, s-maxage=300' });

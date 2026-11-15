@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#14532d">
   <title>Schemes &amp; Benefits Explorer | Common Sense Odisha</title>
-  <meta name="description" content="Verified Odisha State &amp; Central Government welfare schemes, scholarships, KALIA/CM-KISAN, Subhadra Yojana, GJAY health cover, and citizen portals on Common Sense Odisha.">
+  <meta name="description" content="Verified Odisha State &amp; Central Government welfare schemes, scholarships, CM-KISAN/KALIA, Subhadra Yojana, GJAY health cover, and citizen portals on Common Sense Odisha.">
   <link rel="canonical" href="https://csodisha.com/schemes/">
   <link rel="stylesheet" href="/schemes/assets/schemes-explorer.css">
   <script src="/schemes/assets/schemes-explorer.js" defer></script>
@@ -27,7 +27,7 @@
 <body>
   <div id="schemes-shell" class="cso-schemes-shell">
     <div id="schemes-backdrop" class="cso-schemes-drawer-backdrop"></div>
-    <aside class="cso-schemes-rail" aria-label="Schemes Directory Domains">
+    <aside class="cso-schemes-rail" aria-label="Directory Sections">
       <div class="cso-schemes-brand">
         <a class="cso-schemes-brand-link" href="/">
           <span class="cso-schemes-badge" aria-hidden="true">CSO</span>
@@ -35,7 +35,7 @@
         </a>
         <button id="schemes-rail-toggle" type="button" class="cso-schemes-rail-toggle" aria-expanded="true" title="Collapse or Expand Sidebar">⇄</button>
       </div>
-      <div class="cso-schemes-rail-section">SCHEMES DOMAINS</div>
+      <div class="cso-schemes-rail-section">DIRECTORY SECTIONS</div>
       <nav id="schemes-rail-nav" class="cso-schemes-nav" aria-label="Domain Navigation"></nav>
       <div class="cso-schemes-rail-section">PORTAL LINKS</div>
       <nav class="cso-schemes-nav" aria-label="Site Navigation">
@@ -49,7 +49,7 @@
 
     <main class="cso-schemes-main">
       <div class="cso-schemes-mobile-bar">
-        <button id="schemes-mobile-open" type="button" class="cso-schemes-btn">☰ Schemes Domains</button>
+        <button id="schemes-mobile-open" type="button" class="cso-schemes-btn">☰ Directory Sections</button>
         <a class="cso-schemes-btn" href="/">Home</a>
       </div>
 
@@ -59,39 +59,37 @@
           <div class="cso-schemes-hero-actions">
             <a class="cso-schemes-action-pill" href="/jobs/">Jobs &amp; Careers</a>
             <a class="cso-schemes-action-pill" href="/study-library/">Study Library</a>
-            <a class="cso-schemes-action-pill" href="/current-affairs/">Current Affairs</a>
+            <button id="schemes-elig-pill" type="button" class="cso-schemes-action-pill" data-domain="find-schemes-eligibility">Check Eligibility</button>
             <button id="schemes-lang-toggle" type="button" class="cso-schemes-action-pill">EN / ଓଡ଼ିଆ</button>
           </div>
         </div>
         <h1>Schemes &amp; Benefits Explorer</h1>
-        <p class="cso-schemes-hero-sub">ଓଡ଼ିଶା ସରକାରୀ ଯୋଜନା, ଛାତ୍ରବୃତ୍ତି, କୃଷି ଓ ସ୍ୱାସ୍ଥ୍ୟ ସୁରକ୍ଷା ଏବଂ ନାଗରିକ ସେବା — Verified eligibility, documents checklist, and official portals across all 8 domains.</p>
+        <p class="cso-schemes-hero-sub">ଓଡ଼ିଶା ସରକାରୀ ଯୋଜନା, ଛାତ୍ରବୃତ୍ତି, କୃଷି ଓ ସ୍ୱାସ୍ଥ୍ୟ ସୁରକ୍ଷା ଏବଂ ନାଗରିକ ସେବା — Verified eligibility, documents checklist, and official portals across all 8 welfare domains.</p>
         <div class="cso-schemes-quick-pills">
           <button type="button" class="cso-schemes-pill is-active" data-q="" data-domain="">All Schemes</button>
-          <button type="button" class="cso-schemes-pill" data-q="Subhadra" data-domain="">Subhadra Yojana</button>
-          <button type="button" class="cso-schemes-pill" data-q="CM-KISAN" data-domain="">CM-KISAN</button>
-          <button type="button" class="cso-schemes-pill" data-q="GJAY" data-domain="">GJAY Health</button>
+          <button type="button" class="cso-schemes-pill" data-q="Subhadra" data-domain="">Subhadra</button>
+          <button type="button" class="cso-schemes-pill" data-q="KISAN" data-domain="">CM-KISAN / KALIA</button>
+          <button type="button" class="cso-schemes-pill" data-q="GJAY" data-domain="">Health (GJAY)</button>
           <button type="button" class="cso-schemes-pill" data-q="Scholarship" data-domain="">Scholarships</button>
-          <button type="button" class="cso-schemes-pill" data-q="Gruha" data-domain="">Housing</button>
-          <button type="button" class="cso-schemes-pill" data-q="" data-domain="citizen-services-verification">Mo Seba Kendra</button>
+          <button type="button" class="cso-schemes-pill" data-q="Pension" data-domain="">Pension</button>
+          <button type="button" class="cso-schemes-pill" data-q="e-District" data-domain="citizen-services-verification">e-District</button>
         </div>
       </section>
 
       <section class="cso-schemes-panel">
         <h2>Directory at a Glance</h2>
         <div id="schemes-kpis" class="cso-schemes-kpis" aria-label="Directory at a Glance"></div>
-        <div id="schemes-telemetry" class="cso-schemes-telemetry-grid"></div>
+        <div id="schemes-telemetry-bars" class="cso-schemes-telemetry-grid" aria-label="Directory Coverage and Breakdown"></div>
       </section>
 
       <section class="cso-schemes-panel">
-        <div class="cso-schemes-section-head">
-          <h2>Browse All 8 Schemes &amp; Benefits Domains</h2>
-        </div>
+        <h2>Explore All Categories</h2>
         <div id="schemes-domain-grid" class="cso-schemes-domain-grid"></div>
       </section>
 
       <section class="cso-schemes-panel">
         <div class="cso-schemes-section-head">
-          <h2>Verified Schemes, Scholarships &amp; Citizen Guides</h2>
+          <h2>Live Schemes &amp; Welfare Directory</h2>
           <span id="schemes-results-count" class="cso-schemes-tag">Loading...</span>
         </div>
         <div class="cso-schemes-filters">
@@ -102,6 +100,17 @@
             <option value="Central Govt">Central Govt</option>
             <option value="Joint State-Central">Joint State-Central</option>
             <option value="CSR / Global">CSR / Global</option>
+          </select>
+          <select id="schemes-type" class="cso-schemes-select" aria-label="Category">
+            <option value="">All Categories</option>
+            <option value="state_scheme">State Scheme</option>
+            <option value="central_scheme">Central Scheme</option>
+            <option value="scholarship">Scholarship</option>
+            <option value="subsidy_loan">Subsidy / Loan</option>
+            <option value="health_insurance">Health Insurance</option>
+            <option value="pension_social">Pension / Social</option>
+            <option value="eligibility_tool">Eligibility Guide</option>
+            <option value="citizen_service">Citizen Service</option>
           </select>
           <select id="schemes-beneficiary" class="cso-schemes-select" aria-label="Beneficiary Group">
             <option value="">All Beneficiaries</option>
@@ -122,6 +131,7 @@
           <button id="schemes-reset" type="button" class="cso-schemes-btn">Reset</button>
         </div>
         <div id="schemes-items-grid" class="cso-schemes-items-grid"></div>
+        <div id="schemes-pagination" class="cso-schemes-pagination" aria-label="Schemes Pagination"></div>
       </section>
     </main>
   </div>

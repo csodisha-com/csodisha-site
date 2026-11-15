@@ -310,7 +310,66 @@ async function main() {
   const sitemapXml = await sitemapRes.text();
   assert.ok(sitemapXml.includes('<urlset') && sitemapXml.includes('/schemes/govt-public-welfare/'));
 
-  // 6. Cleanup
+  // 6. Legacy 4-level schemes_directory_nodes + schemes_directory + posts bridge + pagination
+  const legEnv = { DB: createMockDb() };
+  await legEnv.DB.prepare(`CREATE TABLE schemes_directory_nodes (
+    id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, parent_slug TEXT, level TEXT NOT NULL,
+    title TEXT NOT NULL, title_or TEXT NOT NULL DEFAULT '', subtitle TEXT NOT NULL DEFAULT '',
+    subtitle_or TEXT NOT NULL DEFAULT '', badge_text TEXT NOT NULL DEFAULT '', icon_name TEXT NOT NULL DEFAULT '📄',
+    official_url TEXT NOT NULL DEFAULT '', metadata_json TEXT NOT NULL DEFAULT '{}',
+    sort_order INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'published', updated_at TEXT NOT NULL DEFAULT ''
+  )`).run();
+  await legEnv.DB.prepare(`CREATE TABLE schemes_directory (
+    id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, title_or TEXT NOT NULL DEFAULT '',
+    category TEXT NOT NULL DEFAULT '', gov_level TEXT NOT NULL DEFAULT 'Odisha State', department TEXT NOT NULL DEFAULT '',
+    summary TEXT NOT NULL DEFAULT '', eligibility TEXT NOT NULL DEFAULT '', benefits TEXT NOT NULL DEFAULT '',
+    documents TEXT NOT NULL DEFAULT '', apply_url TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'published', deleted_at TEXT
+  )`).run();
+  await legEnv.DB.prepare(`CREATE TABLE posts (
+    id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, type TEXT NOT NULL, title TEXT NOT NULL,
+    summary TEXT NOT NULL DEFAULT '', body TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'published'
+  )`).run();
+
+  await legEnv.DB.prepare(`INSERT INTO schemes_directory_nodes (id, slug, parent_slug, level, title, title_or, subtitle, badge_text, official_url, metadata_json, sort_order) VALUES
+    ('n0', 'grp-welfare', NULL, 'group', 'Government & Public Welfare', 'ସରକାରୀ ଯୋଜନା', 'Core welfare', '', '', '{}', 1),
+    ('n1', 'sec-women', 'grp-welfare', 'section', 'Women Empowerment Section', 'ମହିଳା ସଶକ୍ତିକରଣ', 'Women welfare', 'WOMEN', '', '{}', 2),
+    ('n2', 'sub-cash', 'sec-women', 'subcategory', 'Direct Benefit Cash Support', 'ସିଧାସଳଖ ସହାୟତା', 'DBT cash', '', '', '{}', 3),
+    ('n3', 'ent-subhadra-leg', 'sub-cash', 'entry', 'Subhadra Legacy Entry', 'ସୁଭଦ୍ରା', 'Annual Rs 10,000 DBT', 'HOT', 'https://subhadra.odisha.gov.in/', '{"sponsor_level":"Odisha State","department":"W&CD Dept","benefit":"Rs 10,000/yr"}', 4)
+  `).run();
+  await legEnv.DB.prepare(`INSERT INTO schemes_directory (id, slug, title, category, gov_level, department, summary, apply_url) VALUES
+    ('sd1', 'legacy-kalia-extra', 'Legacy KALIA Assistance', 'agriculture', 'Odisha State', 'Agriculture Dept', 'Farmer support', 'https://kalia.odisha.gov.in/')
+  `).run();
+  await legEnv.DB.prepare(`INSERT INTO posts (id, slug, type, title, summary, body) VALUES
+    ('p1', 'post-scheme-guide', 'scheme', 'Odisha Ration Card Guide', 'NFSA ration card steps', '<p>Apply via e-PDS</p>')
+  `).run();
+
+  await ensureSchemesDirectoryStudioSchema(legEnv.DB);
+  await ensureSchemesDirectoryStudioSchema(legEnv.DB); // idempotent re-run
+  const legFolderCount = (await legEnv.DB.prepare('SELECT COUNT(*) AS cnt FROM schemes_directory_folders WHERE legacy_node_id IS NOT NULL').first()).cnt;
+  assert.equal(legFolderCount, 3, 'Should bridge section, subcategory, and entry nodes');
+  const legEntryItem = await legEnv.DB.prepare("SELECT * FROM schemes_directory_items WHERE legacy_post_id = 'node:n3'").first();
+  assert.ok(legEntryItem && legEntryItem.status === 'published' && legEntryItem.official_apply_url === 'https://subhadra.odisha.gov.in/');
+  const legPostItem = await legEnv.DB.prepare("SELECT * FROM schemes_directory_items WHERE legacy_post_id = 'post:p1'").first();
+  assert.ok(legPostItem && legPostItem.title === 'Odisha Ration Card Guide');
+
+  // Verify nested 4-segment SSR route & pagination
+  const nestedRes = await handlePublicSchemesRoute(
+    makeReq('GET', 'https://csodisha.com/schemes/govt-public-welfare/sec-women/sub-cash/ent-subhadra-leg/'),
+    legEnv,
+    '/schemes/govt-public-welfare/sec-women/sub-cash/ent-subhadra-leg/'
+  );
+  assert.equal(nestedRes.status, 200);
+  const page1Res = await handlePublicSchemesItemsApi(
+    makeReq('GET', 'https://csodisha.com/api/public/schemes-directory/items?page=1&limit=2'),
+    legEnv
+  );
+  assert.equal(page1Res.status, 200);
+  const page1Json = await page1Res.json();
+  assert.equal(page1Json.page, 1);
+  assert.equal(page1Json.limit, 2);
+  assert.ok(page1Json.total >= 3 && page1Json.totalPages >= 2 && page1Json.hasMore === true);
+
+  // 7. Cleanup
   assert.equal((await handleSchemesDirectoryStudio(makeReq('DELETE', `https://csodisha.com/api/admin/schemes-directory/items/${createdItem.id}`), env, admin, 'items', createdItem.id)).status, 200);
   assert.equal((await handleSchemesDirectoryStudio(makeReq('DELETE', `https://csodisha.com/api/admin/schemes-directory/folders/${childFolder.id}`), env, admin, 'folders', childFolder.id)).status, 200);
   assert.equal((await handleSchemesDirectoryStudio(makeReq('DELETE', `https://csodisha.com/api/admin/schemes-directory/folders/${parentFolder.id}`), env, admin, 'folders', parentFolder.id)).status, 200);

@@ -556,6 +556,9 @@ export default {
       const jobsRes = await handlePublicJobsRoute(request, env, url);
       if (jobsRes) return jobsRes;
     }
+    if (pathname === '/schemes' || pathname === '/schemes-benefits' || pathname === '/schemes-benefits/') {
+      return Response.redirect(new URL('/schemes/', url.origin).toString(), 301);
+    }
     if (pathname.startsWith('/schemes/')) {
       const schemesRes = await handlePublicSchemesRoute(request, env, pathname);
       if (schemesRes) return schemesRes;
@@ -592,7 +595,7 @@ export default {
           }
         }
       }
-      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|schemes-benefits|study-library|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname)) {
+      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|schemes|schemes-benefits|study-library|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname)) {
         const headers = new Headers(res.headers);
         headers.set(
           'Content-Security-Policy',
