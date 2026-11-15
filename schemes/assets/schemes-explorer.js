@@ -74,14 +74,14 @@
 
     var domainCard = el('div', { class: 'cso-schemes-telemetry-card' }, [el('h3', { text: '8-Domain Coverage' })]);
     var domains = overview.domains || [];
-    var maxDom = Math.max(1, domains.reduce(function (a, d) { return Math.max(a, Number(d.folderCount || 0)); }, 0));
+    var maxDom = Math.max(1, domains.reduce(function (a, d) { return Math.max(a, Number(d.folder_count || 0)); }, 0));
     domains.forEach(function (d) {
       domainCard.appendChild(el('div', { class: 'cso-schemes-bar-row' }, [
         el('div', { class: 'cso-schemes-bar-meta' }, [
           el('span', { text: '#' + d.num + ' ' + d.title }),
-          el('span', { text: (d.folderCount || 0) + ' dirs · ' + (d.itemCount || 0) + ' schemes' })
+          el('span', { text: (d.folder_count || 0) + ' dirs · ' + (d.item_count || 0) + ' schemes' })
         ]),
-        el('progress', { class: 'cso-schemes-progress', max: String(maxDom), value: String(d.folderCount || 0) })
+        el('progress', { class: 'cso-schemes-progress', max: String(maxDom), value: String(d.folder_count || 0) })
       ]));
     });
 
@@ -98,21 +98,22 @@
 
     overview.domains.forEach(function (d) {
       var title = state.lang === 'or' && d.titleOr ? d.titleOr : d.title;
+      var href = d.publicPath || ('/schemes/' + encodeURIComponent(d.slug) + '/');
       if (rail) {
-        rail.appendChild(el('a', { class: 'cso-schemes-nav-link', href: d.url }, [
+        rail.appendChild(el('a', { class: 'cso-schemes-nav-link', href: href }, [
           el('span', { class: 'cso-schemes-nav-num', text: d.num }),
           el('span', { class: 'cso-schemes-rail-label', text: title }),
-          el('span', { class: 'cso-schemes-nav-count', text: String(d.itemCount || 0) })
+          el('span', { class: 'cso-schemes-nav-count', text: String(d.item_count || 0) })
         ]));
       }
       if (grid) {
-        grid.appendChild(el('a', { class: 'cso-schemes-domain-card', href: d.url }, [
+        grid.appendChild(el('a', { class: 'cso-schemes-domain-card', href: href }, [
           el('div', { class: 'cso-schemes-domain-top' }, [
             el('span', { text: 'MODULE #' + d.num }),
-            el('span', { text: (d.folderCount || 0) + ' dirs · ' + (d.itemCount || 0) + ' live' })
+            el('span', { text: (d.folder_count || 0) + ' dirs · ' + (d.item_count || 0) + ' live' })
           ]),
           el('div', { class: 'cso-schemes-domain-title', text: title }),
-          el('div', { class: 'cso-schemes-domain-desc', text: d.description || '' })
+          el('div', { class: 'cso-schemes-domain-desc', text: d.summary || '' })
         ]));
       }
     });
