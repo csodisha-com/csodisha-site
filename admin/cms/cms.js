@@ -9454,6 +9454,7 @@
     var kpis = el('div', { class: 'cso-ops-kpis' });
     var telemetryBox = el('div', { class: 'cso-cnt-telemetry-bar' });
     var composerBox = el('div');
+    composerBox.hidden = true;
     var pillsBox = el('div', { class: 'cso-cnt-pills' });
     var tableBox = el('div');
     var pagerBox = el('div', { class: 'cso-cnt-pager' });
@@ -9532,6 +9533,7 @@
 
     function openComposer(editing, focusField) {
       clear(composerBox);
+      composerBox.hidden = false;
       var isEdit = Boolean(editing && editing.id);
       var card = el('div', { class: 'cso-cnt-composer' });
       var titleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.title) || '', placeholder: 'Headline / Title...' });
@@ -9566,12 +9568,208 @@
       langSel.value = editing ? detectLangParity(editing) : 'EN';
 
       var catInp = el('input', { class: 'input', type: 'text', value: (editing && editing.category) || '', placeholder: 'e.g. Odisha Polity, Economy, Exams' });
-      var tagsInp = el('input', { class: 'input', type: 'text', value: (editing && Array.isArray(editing.tags) ? editing.tags.join(', ') : ''), placeholder: 'opsc, odisha, 2026' });
+
+      // Interactive Tag Chip Composer
+      var tagsState = (editing && Array.isArray(editing.tags)) ? editing.tags.slice() : [];
+      var tagChipsWrap = el('div', { class: 'cso-cnt-tag-chips' });
+      var tagInput = el('input', { class: 'cso-cnt-tag-input', type: 'text', placeholder: 'Type tag & press Enter or ,' });
+      var tagSuggestBox = el('div', { class: 'cso-cnt-tag-suggestions' });
+
+      function addTagChip(rawTag) {
+        var clean = String(rawTag || '').trim().replace(/^#+/, '').slice(0, 40);
+        if (!clean) return;
+        if (tagsState.length >= 12) { toast('Maximum 12 tags per post', true); return; }
+        if (tagsState.some(function (t) { return t.toLowerCase() === clean.toLowerCase(); })) return;
+        tagsState.push(clean);
+        renderTagChips();
+      }
+      function renderTagChips() {
+        clear(tagChipsWrap);
+        tagsState.forEach(function (t, idx) {
+          var rmBtn = el('button', { type: 'button', class: 'cso-cnt-tag-chip-rm', text: '×', 'aria-label': 'Remove tag ' + t });
+          rmBtn.addEventListener('click', function () {
+            tagsState.splice(idx, 1);
+            renderTagChips();
+          });
+          tagChipsWrap.appendChild(el('span', { class: 'cso-cnt-tag-chip' }, [
+            document.createTextNode(t),
+            rmBtn
+          ]));
+        });
+        tagChipsWrap.appendChild(tagInput);
+      }
+      tagInput.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' || ev.key === ',') {
+          ev.preventDefault();
+          addTagChip(tagInput.value);
+          tagInput.value = '';
+        } else if (ev.key === 'Backspace' && !tagInput.value && tagsState.length) {
+          tagsState.pop();
+          renderTagChips();
+        }
+      });
+      renderTagChips();
+
+      api('GET', 'content/tags').then(function (tagRes) {
+        var list = (tagRes && Array.isArray(tagRes.tags)) ? tagRes.tags.slice(0, 8) : [];
+        if (!list.length) return;
+        clear(tagSuggestBox);
+        tagSuggestBox.appendChild(el('span', { class: 'muted sm', text: 'Suggested:' }));
+        list.forEach(function (tg) {
+          var label = tg.label || tg.name || tg.slug;
+          if (!label) return;
+          var sb = el('button', { type: 'button', class: 'cso-cnt-tag-suggest', text: '+ ' + label });
+          sb.addEventListener('click', function () { addTagChip(label); });
+          tagSuggestBox.appendChild(sb);
+        });
+      }).catch(function () {});
+
       var districtInp = el('input', { class: 'input', type: 'text', value: (editing && editing.district_tag) || '', placeholder: 'e.g. Bhubaneswar, Balasore, Statewide' });
       var sourceInp = el('input', { class: 'input', type: 'text', value: (editing && editing.source_citation) || '', placeholder: 'e.g. Odisha Gazette / PIB' });
       var examInp = el('input', { class: 'input', type: 'text', value: (editing && editing.exam_relevance) || '', placeholder: 'e.g. OPSC OAS, OSSSC RI, OSSC CGL' });
       var featCb = el('input', { type: 'checkbox' });
       featCb.checked = Boolean(editing && editing.is_featured);
+
+      // Cover Photo / Image Uploader
+      var coverUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.cover_image_url) || '', placeholder: '/media/content/... or https://...' });
+      var coverAltInp = el('input', { class: 'input', type: 'text', value: (editing && editing.cover_image_alt) || '', placeholder: 'Descriptive alt text for accessibility & SEO' });
+      var coverFileInp = el('input', { class: 'cso-cnt-file-hidden', type: 'file', accept: 'image/jpeg,image/png,image/webp,image/avif' });
+      var coverPickBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: 'Choose Image' });
+      var coverStatusBadge = el('span', { class: 'badge', text: coverUrlInp.value.trim() ? 'Image Ready' : 'No Cover' });
+      var coverThumbImg = el('img', { class: 'cso-cnt-cover-thumb', alt: 'Cover preview' });
+      coverThumbImg.hidden = !coverUrlInp.value.trim();
+      if (coverUrlInp.value.trim()) coverThumbImg.src = coverUrlInp.value.trim();
+
+      coverPickBtn.addEventListener('click', function () { coverFileInp.click(); });
+      coverFileInp.addEventListener('change', async function () {
+        var f = coverFileInp.files && coverFileInp.files[0];
+        if (!f) return;
+        coverPickBtn.disabled = true;
+        coverStatusBadge.className = 'badge warn';
+        coverStatusBadge.textContent = 'Uploading to R2...';
+        try {
+          var fd = new FormData();
+          fd.append('file', f);
+          fd.append('kind', 'image');
+          var up = await api('POST', 'content/upload', fd, true);
+          coverUrlInp.value = up.url || '';
+          if (!coverAltInp.value.trim()) coverAltInp.value = titleInp.value.trim() || f.name.replace(/\.[^.]+$/, '');
+          coverStatusBadge.className = 'badge ok';
+          coverStatusBadge.textContent = 'Uploaded (' + Math.max(1, Math.round((up.size_bytes || 0) / 1024)) + ' KB)';
+          toast('Cover image uploaded to R2');
+          refreshLivePreview();
+        } catch (err) {
+          coverStatusBadge.className = 'badge bad';
+          coverStatusBadge.textContent = 'Upload Failed';
+          toast(err.message || 'Image upload failed', true);
+        } finally {
+          coverPickBtn.disabled = false;
+          coverFileInp.value = '';
+        }
+      });
+
+      // PDF & Official Document Attachment Builder
+      var attachmentsState = (editing && Array.isArray(editing.attachments)) ? editing.attachments.slice() : [];
+      var pdfTitleInp = el('input', { class: 'input', type: 'text', placeholder: 'Document Title (e.g. Official Notification PDF)' });
+      var pdfFileInp = el('input', { class: 'cso-cnt-file-hidden', type: 'file', accept: 'application/pdf' });
+      var pdfUploadBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: 'Upload PDF' });
+      var pdfStatusBadge = el('span', { class: 'badge', text: String(attachmentsState.length) + ' PDF(s)' });
+      var pdfListBox = el('div', { class: 'cso-cnt-list-items' });
+
+      function renderPdfList() {
+        clear(pdfListBox);
+        pdfStatusBadge.textContent = String(attachmentsState.length) + ' PDF(s)';
+        attachmentsState.forEach(function (att, idx) {
+          var rm = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm cso-ops-btn--danger', text: 'Remove' });
+          rm.addEventListener('click', function () {
+            attachmentsState.splice(idx, 1);
+            renderPdfList();
+            refreshLivePreview();
+          });
+          var kb = att.size_bytes ? ' · ' + Math.max(1, Math.round(att.size_bytes / 1024)) + ' KB' : '';
+          pdfListBox.appendChild(el('div', { class: 'cso-cnt-list-row' }, [
+            el('div', { class: 'cso-cnt-list-meta' }, [
+              el('strong', { text: att.label || 'Document PDF' }),
+              el('span', { text: (att.url || '') + kb })
+            ]),
+            rm
+          ]));
+        });
+      }
+      renderPdfList();
+
+      pdfUploadBtn.addEventListener('click', function () { pdfFileInp.click(); });
+      pdfFileInp.addEventListener('change', async function () {
+        var f = pdfFileInp.files && pdfFileInp.files[0];
+        if (!f) return;
+        pdfUploadBtn.disabled = true;
+        pdfStatusBadge.className = 'badge warn';
+        pdfStatusBadge.textContent = 'Uploading PDF...';
+        try {
+          var fd = new FormData();
+          fd.append('file', f);
+          fd.append('kind', 'pdf');
+          var up = await api('POST', 'content/upload', fd, true);
+          attachmentsState.push({
+            label: pdfTitleInp.value.trim() || f.name.replace(/\.pdf$/i, ''),
+            url: up.url,
+            size_bytes: up.size_bytes || f.size || 0
+          });
+          pdfTitleInp.value = '';
+          pdfStatusBadge.className = 'badge ok';
+          renderPdfList();
+          refreshLivePreview();
+          toast('PDF uploaded to R2');
+        } catch (err) {
+          pdfStatusBadge.className = 'badge bad';
+          pdfStatusBadge.textContent = 'PDF Failed';
+          toast(err.message || 'PDF upload failed', true);
+        } finally {
+          pdfUploadBtn.disabled = false;
+          pdfFileInp.value = '';
+        }
+      });
+
+      // Structured Reference & External Links Builder
+      var linksState = (editing && Array.isArray(editing.links)) ? editing.links.slice() : [];
+      var linkLabelInp = el('input', { class: 'input', type: 'text', placeholder: 'Link Label (e.g. OPSC Official Portal)' });
+      var linkUrlInp = el('input', { class: 'input', type: 'url', placeholder: 'https://...' });
+      var addLinkBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--sm', type: 'button', text: '+ Add Reference Link' });
+      var linksListBox = el('div', { class: 'cso-cnt-list-items' });
+
+      function renderLinksList() {
+        clear(linksListBox);
+        linksState.forEach(function (lnk, idx) {
+          var rm = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm cso-ops-btn--danger', text: 'Remove' });
+          rm.addEventListener('click', function () {
+            linksState.splice(idx, 1);
+            renderLinksList();
+            refreshLivePreview();
+          });
+          linksListBox.appendChild(el('div', { class: 'cso-cnt-list-row' }, [
+            el('div', { class: 'cso-cnt-list-meta' }, [
+              el('strong', { text: lnk.label || 'Reference Link' }),
+              el('span', { text: lnk.url || '' })
+            ]),
+            rm
+          ]));
+        });
+      }
+      renderLinksList();
+
+      addLinkBtn.addEventListener('click', function () {
+        var lbl = linkLabelInp.value.trim();
+        var url = linkUrlInp.value.trim();
+        if (!url || !/^(\/|https?:\/\/)/i.test(url)) {
+          toast('Enter a valid https:// or /... reference URL', true);
+          return;
+        }
+        linksState.push({ label: lbl || 'Reference Link', url: url });
+        linkLabelInp.value = '';
+        linkUrlInp.value = '';
+        renderLinksList();
+        refreshLivePreview();
+      });
 
       var summaryTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Concise excerpt / key takeaway bullets...' });
       summaryTa.value = (editing && editing.summary) || '';
@@ -9671,6 +9869,20 @@
           piiWarnBox.hidden = true;
         }
 
+        var coverUrl = coverUrlInp.value.trim();
+        var coverAlt = coverAltInp.value.trim() || rawTitle || 'Cover image';
+        if (coverUrl) {
+          coverThumbImg.src = coverUrl;
+          coverThumbImg.alt = coverAlt;
+          coverThumbImg.hidden = false;
+          if (coverStatusBadge.textContent === 'No Cover') {
+            coverStatusBadge.className = 'badge ok';
+            coverStatusBadge.textContent = 'Image Ready';
+          }
+        } else {
+          coverThumbImg.hidden = true;
+        }
+
         clear(previewFrame);
         if (previewState.channel === 'reader') {
           var metaLine = [
@@ -9680,12 +9892,30 @@
             districtInp.value.trim() || 'Odisha',
             examInp.value.trim()
           ].filter(Boolean).join(' · ');
-          previewFrame.appendChild(el('div', { class: 'cso-cnt-reader-card' }, [
+          var readerChildren = [
             el('div', { class: 'cso-cnt-reader-kicker', text: catInp.value.trim() || 'CS ODISHA EDITORIAL' }),
             el('h4', { class: 'cso-cnt-reader-title', text: rawTitle || 'Headline Preview on csodisha.com' }),
-            el('div', { class: 'cso-cnt-reader-meta', text: metaLine }),
-            el('div', { class: 'cso-cnt-reader-body', text: (summaryTa.value.trim() ? summaryTa.value.trim() + '\n\n' : '') + (bodyTa.value.trim() || 'Start writing your article or notice body to see live reader typography.') })
-          ]));
+            el('div', { class: 'cso-cnt-reader-meta', text: metaLine })
+          ];
+          if (coverUrl) {
+            readerChildren.push(el('img', { class: 'cso-cnt-reader-cover', src: coverUrl, alt: coverAlt }));
+          }
+          readerChildren.push(el('div', { class: 'cso-cnt-reader-body', text: (summaryTa.value.trim() ? summaryTa.value.trim() + '\n\n' : '') + (bodyTa.value.trim() || 'Start writing your article or notice body to see live reader typography.') }));
+          if (attachmentsState.length) {
+            readerChildren.push(el('div', { class: 'cso-cnt-reader-pdfs' }, attachmentsState.map(function (att) {
+              var kb = att.size_bytes ? ' (' + Math.max(1, Math.round(att.size_bytes / 1024)) + ' KB)' : '';
+              return el('a', { class: 'cso-cnt-reader-pdf-card', href: att.url, target: '_blank', rel: 'noopener' }, [
+                el('span', { text: '📄 ' + (att.label || 'Official Document PDF') + kb }),
+                el('span', { text: 'Download PDF ↗' })
+              ]);
+            })));
+          }
+          if (linksState.length) {
+            readerChildren.push(el('div', { class: 'cso-cnt-reader-links' }, linksState.map(function (lnk) {
+              return el('a', { class: 'cso-cnt-reader-link-btn', href: lnk.url, target: '_blank', rel: 'noopener', text: (lnk.label || 'Reference') + ' ↗' });
+            })));
+          }
+          previewFrame.appendChild(el('div', { class: 'cso-cnt-reader-card' }, readerChildren));
         } else if (previewState.channel === 'serp') {
           previewFrame.appendChild(el('div', { class: 'cso-cnt-serp-card' }, [
             el('div', { class: 'cso-cnt-serp-url', text: fullUrl }),
@@ -9697,10 +9927,14 @@
             (examInp.value.trim() ? '🎯 Exam: ' + examInp.value.trim() + '\n' : '') +
             (summaryTa.value.trim() ? summaryTa.value.trim().slice(0, 140) + '\n' : '') +
             '🔗 Read full brief: ' + fullUrl;
-          previewFrame.appendChild(el('div', { class: 'cso-cnt-social-card' }, [
-            el('span', { class: 'muted sm', text: 'Aspirant Broadcast Preview (WhatsApp / Telegram)' }),
-            el('div', { class: 'cso-cnt-social-bubble', text: waMsg })
-          ]));
+          var socialChildren = [
+            el('span', { class: 'muted sm', text: 'Aspirant Broadcast Preview (WhatsApp / Telegram)' })
+          ];
+          if (coverUrl) {
+            socialChildren.push(el('img', { class: 'cso-cnt-social-cover', src: coverUrl, alt: coverAlt }));
+          }
+          socialChildren.push(el('div', { class: 'cso-cnt-social-bubble', text: waMsg }));
+          previewFrame.appendChild(el('div', { class: 'cso-cnt-social-card' }, socialChildren));
         }
       }
 
@@ -9713,7 +9947,7 @@
         }
       });
 
-      [titleInp, slugInp, summaryTa, bodyTa, seoTitleInp, seoDescInp, postTypeSel, langSel, catInp, districtInp, examInp, sourceInp].forEach(function (inp) {
+      [titleInp, slugInp, summaryTa, bodyTa, seoTitleInp, seoDescInp, postTypeSel, langSel, catInp, districtInp, examInp, sourceInp, coverUrlInp, coverAltInp].forEach(function (inp) {
         inp.addEventListener('input', refreshLivePreview);
         inp.addEventListener('change', refreshLivePreview);
       });
@@ -9721,6 +9955,7 @@
 
       function closeComposer() {
         clear(composerBox);
+        composerBox.hidden = true;
         if (window._csoComposerEscHandler) {
           window.removeEventListener('keydown', window._csoComposerEscHandler);
           window._csoComposerEscHandler = null;
@@ -9750,12 +9985,16 @@
             post_type: postTypeSel.value,
             workflow_stage: stageSel.value,
             category: catInp.value.trim(),
-            tags: tagsInp.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean),
+            tags: tagsState.slice(),
             district_tag: districtInp.value.trim(),
             source_citation: sourceInp.value.trim(),
             exam_relevance: examInp.value.trim(),
             language: langSel.value,
             is_featured: featCb.checked,
+            cover_image_url: coverUrlInp.value.trim(),
+            cover_image_alt: coverAltInp.value.trim(),
+            attachments: attachmentsState.slice(),
+            links: linksState.slice(),
             summary: summaryTa.value.trim(),
             body_md: bodyTa.value,
             seo_title: seoTitleInp.value.trim(),
@@ -9796,12 +10035,39 @@
           el('div', { class: 'field' }, [el('label', { text: 'Workflow Stage' }), stageSel]),
           el('div', { class: 'field' }, [el('label', { text: 'Language Parity' }), langSel]),
           el('div', { class: 'field' }, [el('label', { text: 'Category' }), catInp]),
-          el('div', { class: 'field' }, [el('label', { text: 'Tags (comma-separated)' }), tagsInp]),
           el('div', { class: 'field' }, [el('label', { text: 'District Tag (News / Regional)' }), districtInp]),
           el('div', { class: 'field' }, [el('label', { text: 'Source Citation' }), sourceInp]),
-          el('div', { class: 'field' }, [el('label', { text: 'Exam Relevance (OPSC/OSSSC/OSSC)' }), examInp])
+          el('div', { class: 'field' }, [el('label', { text: 'Exam Relevance (OPSC/OSSSC/OSSC)' }), examInp]),
+          el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Feature in Priority Slot')])])
         ]),
-        el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Feature in Priority Slot')])]),
+        el('div', { class: 'field' }, [
+          el('label', { text: 'Interactive Tags (press Enter or , to add)' }),
+          el('div', { class: 'cso-cnt-tag-box' }, [tagChipsWrap, tagSuggestBox])
+        ]),
+        el('div', { class: 'cso-cnt-media-box' }, [
+          el('div', { class: 'cso-cnt-media-head' }, [
+            el('strong', { text: 'Cover Photo / Featured Image (R2)' }),
+            el('div', { class: 'cso-ops-actions' }, [coverStatusBadge, coverPickBtn, coverFileInp])
+          ]),
+          el('div', { class: 'cso-cnt-media-row' }, [coverUrlInp, coverAltInp]),
+          coverThumbImg
+        ]),
+        el('div', { class: 'cso-cnt-media-box' }, [
+          el('div', { class: 'cso-cnt-media-head' }, [
+            el('strong', { text: 'PDF & Official Document Attachments (R2)' }),
+            el('div', { class: 'cso-ops-actions' }, [pdfStatusBadge, pdfUploadBtn, pdfFileInp])
+          ]),
+          el('div', { class: 'cso-cnt-media-row' }, [pdfTitleInp]),
+          pdfListBox
+        ]),
+        el('div', { class: 'cso-cnt-media-box' }, [
+          el('div', { class: 'cso-cnt-media-head' }, [
+            el('strong', { text: 'Structured Reference & External Links' }),
+            addLinkBtn
+          ]),
+          el('div', { class: 'cso-cnt-media-row' }, [linkLabelInp, linkUrlInp]),
+          linksListBox
+        ]),
         el('div', { class: 'field' }, [el('label', { text: 'Summary / Key Takeaways' }), summaryTa]),
         el('div', { class: 'field' }, [el('label', { text: 'Body (Markdown / Content)' }), bodyTa]),
         el('div', { class: 'cso-ops-grid-2' }, [

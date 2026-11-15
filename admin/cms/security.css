@@ -250,6 +250,41 @@
 .cso-cnt-counter{font-size:11px;color:#94a3b8;font-variant-numeric:tabular-nums;margin-left:6px}
 .cso-cnt-counter.is-over{color:#f87171;font-weight:700}
 
+/* Single-Row Toolbar & Rich Media / Tag Chip / Attachment Builders */
+.cso-cnt-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:0.6rem;justify-content:space-between;padding:10px 12px;border-radius:10px;background:#0d1512;border:1px solid rgba(52,211,153,0.16)}
+.cso-cnt-toolbar-left{display:flex;flex-wrap:nowrap;align-items:center;gap:0.6rem;flex:1 1 320px;min-width:0}
+.cso-cnt-toolbar .input{flex:1 1 220px;width:auto;min-width:140px}
+.cso-cnt-toolbar .select{width:auto;min-width:150px;flex:0 0 auto}
+
+.cso-cnt-media-box{border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:10px 12px;background:#09110e;display:flex;flex-direction:column;gap:8px}
+.cso-cnt-media-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.cso-cnt-media-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.cso-cnt-media-row .input{flex:1 1 180px;width:auto;min-width:120px}
+.cso-cnt-file-hidden{display:none}
+.cso-cnt-cover-thumb{width:100%;max-height:140px;object-fit:cover;border-radius:8px;border:1px solid rgba(52,211,153,0.22);background:#050a08}
+.cso-cnt-list-items{display:flex;flex-direction:column;gap:6px}
+.cso-cnt-list-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 9px;border-radius:7px;background:#0e1914;border:1px solid rgba(52,211,153,0.18);font-size:12px}
+.cso-cnt-list-meta{display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden}
+.cso-cnt-list-meta strong{color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cso-cnt-list-meta span{color:#94a3b8;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.cso-cnt-tag-box{border:1px solid rgba(148,163,184,0.28);border-radius:8px;padding:6px 8px;background:#09110e;display:flex;flex-direction:column;gap:6px}
+.cso-cnt-tag-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.cso-cnt-tag-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;background:rgba(16,185,129,0.16);border:1px solid rgba(52,211,153,0.35);color:#6ee7b7;font-size:11.5px;font-weight:600}
+.cso-cnt-tag-chip-rm{background:none;border:none;color:#a7f3d0;cursor:pointer;font-size:13px;line-height:1;padding:0 2px}
+.cso-cnt-tag-chip-rm:hover{color:#fff}
+.cso-cnt-tag-input{flex:1 1 120px;min-width:100px;background:transparent;border:none;outline:none;color:#f8fafc;font-size:12.5px;padding:3px 4px}
+.cso-cnt-tag-suggestions{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.cso-cnt-tag-suggest{padding:2px 8px;border-radius:999px;border:1px dashed rgba(52,211,153,0.3);background:transparent;color:#94a3b8;font-size:11px;cursor:pointer}
+.cso-cnt-tag-suggest:hover{border-color:#34d399;color:#e2e8f0;background:rgba(16,185,129,0.1)}
+
+.cso-cnt-reader-cover{width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-bottom:10px;border:1px solid #e2ddd3}
+.cso-cnt-social-cover{width:100%;max-height:140px;object-fit:cover;border-radius:7px;margin-bottom:6px}
+.cso-cnt-reader-pdfs{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid #e2ddd3}
+.cso-cnt-reader-pdf-card{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:8px;background:#f1ede4;border:1px solid #dcd5c7;color:#14532d;font-size:12px;font-weight:600;text-decoration:none}
+.cso-cnt-reader-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cso-cnt-reader-link-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;background:#14532d;color:#fff;font-size:11.5px;font-weight:600;text-decoration:none}
+
 /* 5-Second Undo Toast & Sidebar Index Badge */
 .cso-undo-toast{position:fixed;right:20px;bottom:20px;z-index:9999;display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;background:#0d1512;border:1px solid rgba(52,211,153,0.45);color:#f8fafc;box-shadow:0 12px 30px rgba(0,0,0,0.45);font-size:13px;font-weight:500}
 .cso-nav-mod-num{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;padding:0 5px;margin-right:6px;border-radius:5px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.24);color:#6ee7b7;font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;flex-shrink:0}
@@ -264,4 +299,5 @@
   .cso-ops-kpis{grid-template-columns:1fr}
   .cso-ops-grid-2{grid-template-columns:1fr}
   .cso-ops-actions{flex-wrap:wrap}
+  .cso-cnt-toolbar-left{flex-wrap:wrap}
 }

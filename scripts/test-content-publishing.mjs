@@ -718,4 +718,99 @@ await assert.rejects(
 );
 assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'content.bulk.execute'`).first()).n >= 1);
 
+// ============================================================================
+// 17. R2 Media Upload Validation & Rich Attachment/Link Persistence
+// ============================================================================
+const r2Store = new Map();
+const mediaEnv = {
+  ...env,
+  MEDIA: {
+    async put(key, buf, opts) {
+      r2Store.set(key, { buf, opts });
+    }
+  }
+};
+
+const imgFd = new FormData();
+imgFd.append('kind', 'image');
+imgFd.append('file', new File([new Uint8Array([137, 80, 78, 71])], 'odisha-cover.png', { type: 'image/png' }));
+const imgRes = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/upload', { method: 'POST', body: imgFd }),
+  mediaEnv, editorActor, 'upload'
+)).json();
+assert.equal(imgRes.ok, true);
+assert.match(imgRes.url, /^\/media\/content\/\d{4}\/\d{2}\/\d+-odisha-cover\.png$/);
+assert.ok(r2Store.has(imgRes.key));
+
+const pdfFd = new FormData();
+pdfFd.append('kind', 'pdf');
+pdfFd.append('file', new File([new Uint8Array([37, 80, 68, 70])], 'opsc-notice.pdf', { type: 'application/pdf' }));
+const pdfRes = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/upload', { method: 'POST', body: pdfFd }),
+  mediaEnv, adminActor, 'upload'
+)).json();
+assert.equal(pdfRes.ok, true);
+assert.match(pdfRes.url, /^\/media\/content\/\d{4}\/\d{2}\/\d+-opsc-notice\.pdf$/);
+
+const badFd = new FormData();
+badFd.append('kind', 'image');
+badFd.append('file', new File(['<script>alert(1)</script>'], 'evil.html', { type: 'text/html' }));
+await assert.rejects(
+  () => handleContentPublishing(
+    new Request('https://csodisha.com/api/admin/content/upload', { method: 'POST', body: badFd }),
+    mediaEnv, adminActor, 'upload'
+  ),
+  (e) => e.code === 'UNSUPPORTED_MEDIA_TYPE' && e.status === 400
+);
+
+await assert.rejects(
+  () => handleContentPublishing(
+    new Request('https://csodisha.com/api/admin/content/upload', { method: 'POST', body: imgFd }),
+    mediaEnv, { userId: 'u_reviewer', email: 'reviewer@csodisha.com', role: 'reviewer' }, 'upload'
+  ),
+  (e) => e.code === 'FORBIDDEN' && e.status === 403
+);
+
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'content.media.upload'`).first()).n >= 2);
+
+const richPost = await (await handleContentPublishing(
+  new Request('https://csodisha.com/api/admin/content/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: 'OPSC OAS Notification With Attachments',
+      post_type: 'news',
+      cover_image_url: imgRes.url,
+      cover_image_alt: 'OPSC Notification Banner',
+      attachments: [{ label: 'Official Notice PDF', url: pdfRes.url, size_bytes: 4 }],
+      links: [{ label: 'OPSC Portal', url: 'https://www.opsc.gov.in/' }],
+      seo_title: 'OPSC OAS Official Notification PDF & Apply Links',
+      seo_description: 'Download OPSC OAS official PDF notification and access verified reference links on CS Odisha.'
+    })
+  }),
+  mediaEnv, adminActor, 'posts'
+)).json();
+assert.equal(richPost.ok, true);
+assert.equal(richPost.item.cover_image_url, imgRes.url);
+assert.equal(richPost.item.cover_image_alt, 'OPSC Notification Banner');
+assert.equal(richPost.item.attachments.length, 1);
+assert.equal(richPost.item.attachments[0].url, pdfRes.url);
+assert.equal(richPost.item.links.length, 1);
+assert.equal(richPost.item.links[0].url, 'https://www.opsc.gov.in/');
+
+await assert.rejects(
+  () => handleContentPublishing(
+    new Request('https://csodisha.com/api/admin/content/posts/' + richPost.item.id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: 'OPSC OAS Notification With Attachments',
+        links: [{ label: 'Bad Link', url: 'javascript:alert(1)' }]
+      })
+    }),
+    mediaEnv, adminActor, 'posts', richPost.item.id
+  ),
+  (e) => e.code === 'INVALID_CTA_URL'
+);
+
 console.log('CONTENT & PUBLISHING SUITE MODULES #1-#14 TESTS PASSED');

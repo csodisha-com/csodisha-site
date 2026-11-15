@@ -39,6 +39,10 @@ const REQUIRED_POST_COLUMNS = [
   ['archived_at', 'TEXT'],
   ['archived_by', 'TEXT'],
   ['archive_reason', 'TEXT'],
+  ['cover_image_url', 'TEXT'],
+  ['cover_image_alt', 'TEXT'],
+  ['attachments_json', 'TEXT'],
+  ['links_json', 'TEXT'],
   ['updated_by', 'TEXT'],
   ['updated_at', 'TEXT']
 ];
@@ -252,6 +256,50 @@ export async function ensureContentPublishingSchema(db) {
   }
 }
 
+function parseJsonArray(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw !== 'string' || !raw.trim()) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function sanitizeAttachmentList(raw) {
+  const list = parseJsonArray(raw);
+  const out = [];
+  for (const item of list) {
+    if (!item || typeof item !== 'object') continue;
+    const url = validateSafeCtaUrl(item.url);
+    if (!url) continue;
+    out.push({
+      label: cleanStr(item.label, 120) || 'Document',
+      url,
+      size_bytes: Math.max(0, Math.round(Number(item.size_bytes) || 0))
+    });
+    if (out.length >= 20) break;
+  }
+  return out;
+}
+
+function sanitizeLinksList(raw) {
+  const list = parseJsonArray(raw);
+  const out = [];
+  for (const item of list) {
+    if (!item || typeof item !== 'object') continue;
+    const url = validateSafeCtaUrl(item.url);
+    if (!url) continue;
+    out.push({
+      label: cleanStr(item.label, 120) || 'Reference Link',
+      url
+    });
+    if (out.length >= 20) break;
+  }
+  return out;
+}
+
 function normalizeRow(row) {
   const postType = row.post_type || (row.type === 'current_affair' ? 'current_affairs' : row.type);
   const workflowStage = row.workflow_stage || row.status || 'draft';
@@ -261,6 +309,8 @@ function normalizeRow(row) {
   const seoDesc = row.seo_description || '';
   const expiresAt = row.notice_expires_at || null;
   const isExpired = Boolean(expiresAt && Date.parse(expiresAt) < Date.now());
+  const attachments = parseJsonArray(row.attachments_json);
+  const links = parseJsonArray(row.links_json);
   return {
     id: row.id,
     type: row.type,
@@ -292,6 +342,12 @@ function normalizeRow(row) {
     notice_expires_at: expiresAt,
     notice_cta_url: row.notice_cta_url || '',
     notice_cta_label: row.notice_cta_label || '',
+    cover_image_url: row.cover_image_url || '',
+    cover_image_alt: row.cover_image_alt || '',
+    attachments,
+    attachments_json: row.attachments_json || '[]',
+    links,
+    links_json: row.links_json || '[]',
     is_expired: isExpired,
     review_notes: row.review_notes || '',
     reviewed_by: row.reviewed_by || null,
@@ -529,6 +585,16 @@ function validateAndNormalizeInput(body = {}, existing = null) {
   const notice_expires_at = cleanStr(pick('notice_expires_at'), 40) || null;
   const notice_cta_url = validateSafeCtaUrl(pick('notice_cta_url'));
   const notice_cta_label = cleanStr(pick('notice_cta_label'), 60) || '';
+  const cover_image_url = validateSafeCtaUrl(pick('cover_image_url'));
+  const cover_image_alt = cleanStr(pick('cover_image_alt'), 200) || '';
+  const attachmentsRaw = body.attachments !== undefined
+    ? body.attachments
+    : (body.attachments_json !== undefined ? body.attachments_json : (existing && existing.attachments_json));
+  const linksRaw = body.links !== undefined
+    ? body.links
+    : (body.links_json !== undefined ? body.links_json : (existing && existing.links_json));
+  const attachments_json = JSON.stringify(sanitizeAttachmentList(attachmentsRaw));
+  const links_json = JSON.stringify(sanitizeLinksList(linksRaw));
 
   if (Object.keys(errors).length) throw validationError(errors);
 
@@ -558,7 +624,11 @@ function validateAndNormalizeInput(body = {}, existing = null) {
     notice_priority,
     notice_expires_at,
     notice_cta_url,
-    notice_cta_label
+    notice_cta_label,
+    cover_image_url,
+    cover_image_alt,
+    attachments_json,
+    links_json
   };
 }
 
@@ -587,8 +657,9 @@ export async function createContentPost(env, body, actor) {
        status, workflow_stage, scheduled_for, published_at, event_date,
        exam_relevance, district_tag, source_citation, seo_title, seo_description,
        notice_priority, notice_expires_at, notice_cta_url, notice_cta_label,
+       cover_image_url, cover_image_alt, attachments_json, links_json,
        created_by, updated_by, created_at, updated_at
-     ) VALUES (?, 'current_affair', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     ) VALUES (?, 'current_affair', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     id, data.post_type, data.slug, data.title, data.title_or, data.summary, data.summary_or,
     data.body_md, data.body_md_or, data.category, data.category_slug, data.tags_json, data.tags_json,
@@ -596,6 +667,7 @@ export async function createContentPost(env, body, actor) {
     publishedAt, data.event_date, data.exam_relevance, data.district_tag, data.source_citation,
     data.seo_title, data.seo_description,
     data.notice_priority, data.notice_expires_at, data.notice_cta_url, data.notice_cta_label,
+    data.cover_image_url, data.cover_image_alt, data.attachments_json, data.links_json,
     actorEmail, actorEmail, nowIso, nowIso
   ).run();
 
@@ -634,6 +706,7 @@ export async function updateContentPost(env, id, body, actor) {
        published_at = ?, event_date = ?, exam_relevance = ?, district_tag = ?, source_citation = ?,
        seo_title = ?, seo_description = ?,
        notice_priority = ?, notice_expires_at = ?, notice_cta_url = ?, notice_cta_label = ?,
+       cover_image_url = ?, cover_image_alt = ?, attachments_json = ?, links_json = ?,
        updated_by = ?, updated_at = ?
      WHERE id = ?`
   ).bind(
@@ -643,6 +716,7 @@ export async function updateContentPost(env, id, body, actor) {
     publishedAt, data.event_date, data.exam_relevance, data.district_tag, data.source_citation,
     data.seo_title, data.seo_description,
     data.notice_priority, data.notice_expires_at, data.notice_cta_url, data.notice_cta_label,
+    data.cover_image_url, data.cover_image_alt, data.attachments_json, data.links_json,
     actorEmail, nowIso, id
   ).run();
 
@@ -2079,6 +2153,91 @@ export async function executeBulkContentOperation(env, body = {}, actor) {
   };
 }
 
+const ALLOWED_IMAGE_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
+const ALLOWED_IMAGE_EXTS = new Set(['jpg', 'jpeg', 'png', 'webp', 'avif']);
+const ALLOWED_PDF_MIMES = new Set(['application/pdf']);
+const ALLOWED_PDF_EXTS = new Set(['pdf']);
+
+export async function uploadContentMedia(request, env, actor) {
+  if (!actor || (actor.role !== 'admin' && actor.role !== 'editor')) {
+    throw new HttpError(403, 'FORBIDDEN', 'Only editors and administrators can upload content media');
+  }
+  if (!env.MEDIA) {
+    throw new HttpError(500, 'NO_MEDIA_BUCKET', 'R2 MEDIA bucket binding unavailable');
+  }
+
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    throw new HttpError(400, 'INVALID_MULTIPART', 'Expected multipart/form-data upload');
+  }
+
+  const file = form.get('file');
+  if (!file || typeof file.arrayBuffer !== 'function') {
+    throw new HttpError(400, 'FILE_REQUIRED', 'Multipart file field is required');
+  }
+
+  const rawKind = String(form.get('kind') || '').trim().toLowerCase();
+  const mimeType = String(file.type || '').trim().toLowerCase();
+  const rawName = String(file.name || '').trim();
+  const extMatch = rawName.match(/\.([a-zA-Z0-9]+)$/);
+  const ext = extMatch ? extMatch[1].toLowerCase() : '';
+
+  const kind = rawKind || (mimeType === 'application/pdf' || ext === 'pdf' ? 'pdf' : 'image');
+  if (kind !== 'image' && kind !== 'pdf') {
+    throw new HttpError(400, 'UNSUPPORTED_MEDIA_TYPE', 'kind must be "image" or "pdf"');
+  }
+
+  if (kind === 'image') {
+    if (!ALLOWED_IMAGE_MIMES.has(mimeType) || !ALLOWED_IMAGE_EXTS.has(ext)) {
+      throw new HttpError(400, 'UNSUPPORTED_MEDIA_TYPE', 'Image uploads must be JPEG, PNG, WebP, or AVIF');
+    }
+    if (file.size <= 0 || file.size > 5 * 1024 * 1024) {
+      throw new HttpError(400, 'FILE_TOO_LARGE', 'Cover image must be between 1 byte and 5 MB');
+    }
+  } else {
+    if (!ALLOWED_PDF_MIMES.has(mimeType) || !ALLOWED_PDF_EXTS.has(ext)) {
+      throw new HttpError(400, 'UNSUPPORTED_MEDIA_TYPE', 'Document uploads must be application/pdf (.pdf)');
+    }
+    if (file.size <= 0 || file.size > 15 * 1024 * 1024) {
+      throw new HttpError(400, 'FILE_TOO_LARGE', 'PDF document must be between 1 byte and 15 MB');
+    }
+  }
+
+  const sanitizedFilename = (rawName || (kind === 'pdf' ? 'document.pdf' : 'cover.png'))
+    .replace(/[^a-zA-Z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 120) || (kind === 'pdf' ? 'document.pdf' : 'cover.png');
+
+  const now = new Date();
+  const yyyy = String(now.getUTCFullYear());
+  const mm = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const key = `content/${yyyy}/${mm}/${Date.now()}-${sanitizedFilename}`;
+
+  await env.MEDIA.put(key, await file.arrayBuffer(), {
+    httpMetadata: { contentType: mimeType }
+  });
+
+  const url = `/media/${key}`;
+  await audit(env, request, actor, 'content.media.upload', 'r2_media', key, {
+    kind,
+    filename: sanitizedFilename,
+    size_bytes: file.size,
+    mime_type: mimeType
+  });
+
+  return {
+    ok: true,
+    url,
+    key,
+    filename: sanitizedFilename,
+    size_bytes: file.size,
+    mime_type: mimeType
+  };
+}
+
 // ============================================================================
 // Admin Router Dispatcher for /api/admin/content/{posts|announcements|featured|categories|tags|calendar|workflow|scheduled|archive|revisions|bulk}
 // ============================================================================
@@ -2370,6 +2529,12 @@ export async function handleContentPublishing(request, env, actor, subResource, 
       return json(res, 200, { 'Cache-Control': 'no-store' });
     }
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  if (subResource === 'upload') {
+    if (method !== 'POST') throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+    const res = await uploadContentMedia(request, env, actor);
+    return json(res, 201, { 'Cache-Control': 'no-store' });
   }
 
   if (subResource !== 'posts') {

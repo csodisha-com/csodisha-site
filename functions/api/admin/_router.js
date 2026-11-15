@@ -157,6 +157,9 @@ export async function handleAdminApi(request, env) {
       case 'incidents':
         return await handleIncidents(request, env, actor, id, sub);
       case 'content':
+        if (id === 'upload' && method === 'POST') {
+          await rateLimit(env, `admin-upload:${actor.userId}`, 30, 600);
+        }
         return await handleContentPublishing(request, env, actor, id, sub, extra);
       case 'security':
         if (id === 'lockdown' || id === 'dpdp' || id === 'incidents') {
