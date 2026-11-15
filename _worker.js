@@ -33,6 +33,7 @@ import { handlePublicSchemesRoute } from './functions/_lib/schemes-directory-ssr
 import { handlePublicSchemesOverviewApi, handlePublicSchemesItemsApi, handlePublicSchemesSuggestApi, handleSchemesDirectorySitemapXml } from './functions/_lib/schemes-directory-studio.js';
 import { handlePublicCommunityRoute } from './functions/_lib/community-directory-ssr.js';
 import { handlePublicCommunityOverviewApi, handlePublicCommunityItemsApi, handlePublicCommunitySuggestApi, handleCommunityDirectorySitemapXml } from './functions/_lib/community-directory-studio.js';
+import { handlePublicAboutOverviewApi } from './functions/api/public/about-overview.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -296,7 +297,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
   const basePaths = [
     '/sitemap.xml', '/sitemap-study-library.xml', '/sitemap-jobs.xml', '/sitemap-schemes.xml', '/sitemap-community.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
-    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/content/platform-stats', '/api/content/changelog',
+    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/public/about-overview', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources',
     '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
@@ -431,6 +432,17 @@ export default {
     }
     if (pathname === '/api/public/community-directory/suggest' && request.method === 'POST') {
       return handlePublicCommunitySuggestApi(request, env);
+    }
+    if (pathname === '/api/public/about-overview' && (request.method === 'GET' || request.method === 'HEAD')) {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const aboutRes = await handlePublicAboutOverviewApi(request, env);
+      if (isAnonGet && aboutRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, aboutRes, ctx);
+      }
+      return aboutRes;
     }
     if (pathname === '/sitemap.xml' || pathname === '/feed.xml' || pathname === '/rss.xml' || pathname === '/robots.txt' || pathname === '/llms.txt') {
       if (edgeCache && isAnonGet) {
