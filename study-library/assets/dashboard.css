@@ -4331,3 +4331,46 @@ body {
 .telemetry-progress--accent::-moz-progress-bar {
   background: linear-gradient(90deg, #166534, #059669);
 }
+
+/* ============================================================
+   v54: Clean Rounded-Square CSO Emerald Badge in Sidebar Header
+   ============================================================ */
+.sidebar-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+  overflow: hidden !important;
+  min-width: 0 !important;
+  text-decoration: none !important;
+}
+
+.cso-sl-brand-badge {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #16a34a, #14532d);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(20, 83, 45, 0.22);
+}
+
+@media (min-width: 1024px) {
+  body.cso-sidebar-collapsed .sidebar-brand,
+  .sidebar.is-collapsed .sidebar-brand,
+  .sidebar[data-sidebar="collapsed"] .sidebar-brand {
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+
+  body.cso-sidebar-collapsed .brand-name,
+  .sidebar.is-collapsed .brand-name,
+  .sidebar[data-sidebar="collapsed"] .brand-name {
+    display: none !important;
+  }
+}
