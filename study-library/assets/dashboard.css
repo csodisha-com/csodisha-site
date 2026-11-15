@@ -3913,3 +3913,371 @@ body.menu-open {
 .cso-sl-pub-footer-links a:hover {
   text-decoration: underline;
 }
+
+/* ============================================================
+   v52: Home-Aligned Warm Alabaster & Deep Forest Green Identity
+   ============================================================ */
+:root,
+:root[data-theme="light"],
+:root[data-theme="system"],
+:root[data-theme="dark"] {
+  --cso-bg: #faf8f5;
+  --cso-surface: #f3f7f4;
+  --cso-card-bg: #ffffff;
+  --cso-text: #0f172a;
+  --cso-text-muted: #475569;
+  --cso-border: rgba(20, 83, 45, 0.14);
+  --cso-link: #14532d;
+  --cso-active-bg: #14532d;
+  --cso-active-tx: #ffffff;
+}
+
+body {
+  background: #faf8f5;
+  color: #0f172a;
+}
+
+.app-shell {
+  background: #faf8f5 !important;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.main-content {
+  background: #ffffff !important;
+  border: 1px solid rgba(20, 83, 45, 0.14) !important;
+  box-shadow: 0 4px 20px rgba(20, 83, 45, 0.06) !important;
+}
+
+/* Deep Forest Green Hero Banner (Explorer + SSR Pages) */
+.welcome.cso-sl-hero-banner,
+.cso-sl-pub-hero {
+  background: linear-gradient(135deg, #14532d 0%, #166534 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-left: 5px solid #86efac !important;
+  border-radius: 18px !important;
+  padding: 26px 28px !important;
+  box-shadow: 0 12px 32px rgba(20, 83, 45, 0.18) !important;
+}
+
+.cso-sl-hero-main {
+  flex: 1 1 460px;
+  min-width: 0;
+}
+
+.cso-sl-hero-trail {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #bbf7d0;
+  margin-bottom: 6px;
+}
+
+.welcome.cso-sl-hero-banner h1,
+.cso-sl-pub-hero h1 {
+  color: #ffffff !important;
+  margin: 0 0 8px !important;
+}
+
+.cso-sl-hero-tagline,
+.cso-sl-pub-hero-desc {
+  margin: 0 0 14px !important;
+  color: #ecfdf5 !important;
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+}
+
+.cso-sl-pub-title-or {
+  color: #bbf7d0 !important;
+}
+
+.cso-sl-pub-stats-row,
+.cso-sl-pub-stat-link {
+  color: #ecfdf5 !important;
+}
+
+.cso-sl-hero-quickjump {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-sl-quickjump-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #bbf7d0;
+}
+
+.cso-sl-hero-pill {
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+.cso-sl-hero-pill:hover {
+  background: #ffffff;
+  color: #14532d;
+  transform: translateY(-1px);
+}
+
+.welcome.cso-sl-hero-banner .study-hub-pill {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+.welcome.cso-sl-hero-banner .study-hub-pill:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #14532d;
+}
+
+/* Full Desktop Left Sidebar (>= 1024px) & Drawer (< 1024px) */
+@media (min-width: 1024px) {
+  .app-shell {
+    display: grid !important;
+    grid-template-columns: 270px minmax(0, 1fr) !important;
+    gap: 18px !important;
+    padding: 16px !important;
+  }
+
+  .sidebar {
+    position: sticky !important;
+    top: 16px !important;
+    width: 270px !important;
+    min-width: 270px !important;
+    max-height: calc(100vh - 32px) !important;
+    overflow-y: auto !important;
+    transform: none !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(20, 83, 45, 0.14) !important;
+    box-shadow: 0 4px 20px rgba(20, 83, 45, 0.06) !important;
+  }
+
+  .menu-toggle,
+  .sidebar-close {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  .app-shell {
+    display: block !important;
+    padding: 10px 10px 28px !important;
+  }
+
+  .menu-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(20, 83, 45, 0.25);
+    background: #14532d;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .sidebar {
+    position: fixed !important;
+    z-index: 999 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: min(300px, calc(100vw - 44px)) !important;
+    height: 100vh !important;
+    overflow-y: auto !important;
+    transform: translateX(-105%) !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: transform 0.26s ease, visibility 0.26s ease !important;
+    background: #ffffff !important;
+    border-right: 1px solid rgba(20, 83, 45, 0.16) !important;
+    box-shadow: 6px 0 28px rgba(15, 23, 42, 0.22) !important;
+  }
+
+  body.menu-open .sidebar {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+}
+
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(20, 83, 45, 0.12);
+}
+
+.sidebar-footer a {
+  display: block;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #f3f7f4;
+  border: 1px solid rgba(20, 83, 45, 0.14);
+  color: #14532d;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.sidebar-footer a:hover {
+  background: #14532d;
+  color: #ffffff;
+}
+
+/* Elevated Curriculum Group & Study Resource Cards + 3->2->1 Responsive Grid */
+.study-materials-grid,
+.cso-sl-pub-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+@media (max-width: 1199px) {
+  .study-materials-grid,
+  .cso-sl-pub-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .study-materials-grid,
+  .cso-sl-pub-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.study-material-card,
+.dashboard-card,
+.cso-sl-pub-dir-card,
+.cso-sl-pub-resource-card {
+  border: 1px solid rgba(20, 83, 45, 0.14) !important;
+  box-shadow: 0 2px 10px rgba(20, 83, 45, 0.05) !important;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+.study-material-card:hover,
+.dashboard-card:hover,
+.cso-sl-pub-dir-card:hover,
+.cso-sl-pub-resource-card:hover {
+  border-color: rgba(20, 83, 45, 0.45) !important;
+  box-shadow: 0 10px 26px rgba(20, 83, 45, 0.12) !important;
+  transform: translateY(-2px) !important;
+}
+
+.study-btn--primary,
+.cso-sl-pub-btn-primary {
+  background: #14532d !important;
+  border-color: #14532d !important;
+  color: #ffffff !important;
+}
+
+.study-btn--primary:hover,
+.cso-sl-pub-btn-primary:hover {
+  background: #166534 !important;
+}
+
+/* Graphical Directory at a Glance Telemetry Strip */
+.directory-telemetry-bars {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+@media (max-width: 900px) {
+  .directory-telemetry-bars {
+    grid-template-columns: 1fr;
+  }
+}
+
+.telemetry-panel {
+  background: #faf8f5;
+  border: 1px solid rgba(20, 83, 45, 0.14);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+.telemetry-panel-title {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #14532d;
+}
+
+.telemetry-list {
+  display: grid;
+  gap: 10px;
+}
+
+.telemetry-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 12.5px;
+}
+
+.telemetry-name {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.telemetry-count {
+  font-weight: 700;
+  color: #14532d;
+  white-space: nowrap;
+}
+
+.telemetry-progress {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  border: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background: #dcfce7;
+  accent-color: #14532d;
+  overflow: hidden;
+  display: block;
+}
+
+.telemetry-progress::-webkit-progress-bar {
+  background: #dcfce7;
+  border-radius: 999px;
+}
+
+.telemetry-progress::-webkit-progress-value {
+  background: linear-gradient(90deg, #14532d, #16a34a);
+  border-radius: 999px;
+}
+
+.telemetry-progress::-moz-progress-bar {
+  background: linear-gradient(90deg, #14532d, #16a34a);
+  border-radius: 999px;
+}
+
+.telemetry-progress--accent::-webkit-progress-value {
+  background: linear-gradient(90deg, #166534, #059669);
+}
+
+.telemetry-progress--accent::-moz-progress-bar {
+  background: linear-gradient(90deg, #166534, #059669);
+}

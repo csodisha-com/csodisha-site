@@ -77,15 +77,16 @@ function buildHead({ title, description, canonicalUrl, jsonLdList = [] }) {
 function buildHeader(activeLabel = 'Study Library') {
   return `<header class="cso-sl-pub-header">
   <div class="cso-sl-pub-header-inner">
-    <a class="cso-sl-pub-brand" href="/study-library/">
+    <a class="cso-sl-pub-brand" href="/">
       <span class="cso-sl-pub-brand-mark">CSO</span>
-      <span class="cso-sl-pub-brand-text">CSOdisha Study Library</span>
+      <span class="cso-sl-pub-brand-text">Common Sense Odisha</span>
     </a>
     <nav class="cso-sl-pub-nav" aria-label="Primary">
       <a href="/">Home</a>
+      <a href="/jobs-careers/">Jobs &amp; Careers</a>
+      <a href="/schemes-benefits/">Schemes</a>
       <a href="/study-library/" aria-current="page">${escHtml(activeLabel)}</a>
-      <a href="/jobs/">Jobs</a>
-      <a href="/exams/">Exams</a>
+      <a href="/mock-tests/">Mock Tests</a>
     </nav>
   </div>
 </header>`;
@@ -94,11 +95,16 @@ function buildHeader(activeLabel = 'Study Library') {
 function buildFooter() {
   return `<footer class="cso-sl-pub-footer">
   <div class="cso-sl-pub-footer-inner">
-    <p>CSOdisha Academic &amp; Competitive Study Library — Structured Odisha &amp; National Curriculum Directory</p>
+    <div>
+      <strong>Common Sense Odisha</strong>
+      <p>Independent, open-access Odisha &amp; National Curriculum Study Library.</p>
+    </div>
     <div class="cso-sl-pub-footer-links">
-      <a href="/study-library/">All 10 Academic Tracks</a>
+      <a href="/jobs-careers/">Jobs &amp; Careers</a>
+      <a href="/schemes-benefits/">Schemes &amp; Benefits</a>
+      <a href="/study-library/">All 10 Study Tracks</a>
       <a href="/privacy-policy/">Privacy Policy</a>
-      <a href="/terms/">Terms</a>
+      <a href="/terms-of-use/">Terms of Use</a>
     </div>
   </div>
 </footer>`;

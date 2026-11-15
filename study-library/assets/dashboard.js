@@ -43,6 +43,7 @@
   const studyGoalBtn = $('study-goal-match');
   const studyResetBtn = $('study-filter-reset');
   const studyMaterialsGrid = $('study-materials-grid');
+  const telemetryBars = $('directory-telemetry-bars');
   const overviewEl = $('overview');
   const dashboardGrid = $('dashboard-grid');
   const syncBadge = $('directory-sync-badge');
@@ -674,6 +675,62 @@
       box.appendChild(el('span', 'stat-label', m.label));
       statsGrid.appendChild(box);
     });
+
+    if (telemetryBars) {
+      telemetryBars.replaceChildren();
+      const totalTopics = Math.max(1, state.counts.entries || 1);
+      const trackPanel = el('div', 'telemetry-panel');
+      trackPanel.appendChild(el('h3', 'telemetry-panel-title', 'Topic Coverage Across 10 Academic Track Groups'));
+      const trackList = el('div', 'telemetry-list');
+      state.groups.forEach(g => {
+        const topics = (g.sections || []).reduce(
+          (sum, s) => sum + (s.children || []).reduce((acc, sub) => acc + ((sub.children || []).length), 0),
+          0
+        );
+        const row = el('div', 'telemetry-row');
+        const head = el('div', 'telemetry-row-head');
+        head.append(
+          el('span', 'telemetry-name', g.title),
+          el('span', 'telemetry-count', `${topics} topics`)
+        );
+        const prog = el('progress', 'telemetry-progress');
+        prog.max = totalTopics;
+        prog.value = topics;
+        prog.setAttribute('aria-label', `${g.title}: ${topics} topics`);
+        row.append(head, prog);
+        trackList.appendChild(row);
+      });
+      trackPanel.appendChild(trackList);
+
+      const typeCounts = [
+        { key: 'syllabus', label: 'Syllabus' },
+        { key: 'pyq', label: 'Previous Year Papers' },
+        { key: 'study_notes', label: 'Study Notes' },
+        { key: 'odisha_gk', label: 'Odisha GK & Current Affairs' }
+      ];
+      const totalRes = Math.max(1, state.resources.length || 1);
+      const resPanel = el('div', 'telemetry-panel');
+      resPanel.appendChild(el('h3', 'telemetry-panel-title', 'Verified Resource Type Breakdown'));
+      const resList = el('div', 'telemetry-list');
+      typeCounts.forEach(tc => {
+        const count = state.resources.filter(r => r.resource_type === tc.key).length;
+        const row = el('div', 'telemetry-row');
+        const head = el('div', 'telemetry-row-head');
+        head.append(
+          el('span', 'telemetry-name', tc.label),
+          el('span', 'telemetry-count', `${count} verified`)
+        );
+        const prog = el('progress', 'telemetry-progress telemetry-progress--accent');
+        prog.max = totalRes;
+        prog.value = count;
+        prog.setAttribute('aria-label', `${tc.label}: ${count} verified resources`);
+        row.append(head, prog);
+        resList.appendChild(row);
+      });
+      resPanel.appendChild(resList);
+
+      telemetryBars.append(trackPanel, resPanel);
+    }
   }
 
   function renderRecentNodes() {
@@ -1128,6 +1185,20 @@
         renderMaterials();
       });
     }
+
+    document.querySelectorAll('.cso-sl-hero-pill[data-exam-jump]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const exam = btn.dataset.examJump || '';
+        state.filterQ = exam;
+        state.filterExam = '';
+        if (studyQInput) studyQInput.value = exam;
+        if (studyExamSelect) studyExamSelect.value = '';
+        renderMaterials();
+        if (liveStudySection && typeof liveStudySection.scrollIntoView === 'function') {
+          liveStudySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
     if (studyResetBtn) {
       studyResetBtn.addEventListener('click', () => {
         state.filterType = '';
@@ -1147,6 +1218,20 @@
         renderMaterials();
       });
     }
+
+    document.querySelectorAll('.cso-sl-hero-pill[data-exam-jump]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const exam = btn.dataset.examJump || '';
+        state.filterQ = exam;
+        state.filterExam = '';
+        if (studyQInput) studyQInput.value = exam;
+        if (studyExamSelect) studyExamSelect.value = '';
+        renderMaterials();
+        if (liveStudySection && typeof liveStudySection.scrollIntoView === 'function') {
+          liveStudySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
 
     if (dirSearch) {
       let st;

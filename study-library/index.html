@@ -102,7 +102,8 @@
       <nav id="side-navigation" aria-label="Directory sections"></nav>
 
       <div class="sidebar-footer">
-        <a href="../mock-tests/">📝 Practice Mock Tests</a><br>
+        <a href="../support/#suggest-resource">+ Suggest Study Topic</a>
+        <a href="../mock-tests/">📝 Practice Mock Tests</a>
         <a href="../index.html">← Back to CSO Home</a>
       </div>
     </aside>
@@ -110,10 +111,10 @@
     <div class="workspace">
       <header class="topbar">
         <button class="menu-toggle" id="menu-toggle"
-                type="button" aria-label="Directory Menu"
+                type="button" aria-label="Browse 10 Academic Tracks"
                 aria-controls="sidebar" aria-expanded="false">
           <span class="menu-toggle-icon" aria-hidden="true">☰</span>
-          <span class="menu-toggle-label">Sections</span>
+          <span class="menu-toggle-label">Browse 10 Academic Tracks</span>
         </button>
         <button aria-controls="sidebar" aria-expanded="true" aria-label="Toggle directory sidebar" class="cso-sidebar-toggle cso-sidebar-toggle--top" id="cso-sidebar-toggle-top" title="Collapse / Expand Sidebar" type="button">☰</button>
 
@@ -135,10 +136,20 @@
           <ol class="breadcrumb" id="breadcrumb"></ol>
         </nav>
 
-        <section class="welcome">
-          <div>
+        <section class="welcome cso-sl-hero-banner">
+          <div class="cso-sl-hero-main">
+            <div class="cso-sl-hero-trail">CS Odisha › Study Library</div>
             <h1 id="page-title">Study Library Explorer</h1>
+            <p class="cso-sl-hero-tagline">ଓଡ଼ିଶା ଓ ଜାତୀୟ ପରୀକ୍ଷା ପାଇଁ ଷ୍ଟଡି ଲାଇବ୍ରେରୀ · Open-Access Syllabi, Solved PYQs &amp; 1,681-Node Academic Directory</p>
             <p id="page-description" hidden></p>
+            <div class="cso-sl-hero-quickjump" role="group" aria-label="Quick-jump exam tracks">
+              <span class="cso-sl-quickjump-label">Quick Jump:</span>
+              <button type="button" class="cso-sl-hero-pill" data-exam-jump="OPSC">OPSC</button>
+              <button type="button" class="cso-sl-hero-pill" data-exam-jump="OSSSC">OSSSC</button>
+              <button type="button" class="cso-sl-hero-pill" data-exam-jump="OSSC">OSSC</button>
+              <button type="button" class="cso-sl-hero-pill" data-exam-jump="UGC NET">UGC NET</button>
+              <button type="button" class="cso-sl-hero-pill" data-exam-jump="BSE/CHSE">BSE/CHSE</button>
+            </div>
           </div>
           <div class="study-hub-shortcuts" aria-label="Connected learning hubs">
             <a class="study-hub-pill" href="../mock-tests/">📝 CBT Mock Tests</a>
@@ -201,6 +212,7 @@
           <section class="statistics-section" aria-label="Directory statistics">
             <h2 class="statistics-title">Directory at a Glance</h2>
             <div class="statistics-grid" id="statistics-grid" role="region" aria-label="Directory statistics metrics"></div>
+            <div class="directory-telemetry-bars" id="directory-telemetry-bars" role="region" aria-label="Topic and resource distribution"></div>
           </section>
 
           <section class="recent-section" id="recent-section"
