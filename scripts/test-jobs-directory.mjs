@@ -8,6 +8,7 @@ import {
   enrichCareerExplorerCategory02,
   enrichEligibilityExplorerCategory03,
   enrichCoursesExamsCategory04,
+  enrichScholarshipsCategory05,
   handleJobsDirectoryStudio,
   handlePublicJobsOverviewApi,
   handlePublicJobsItemsApi,
@@ -862,6 +863,117 @@ async function main() {
   const ssrCxHtml = await ssrCx.text();
   assert.ok(ssrCxHtml.includes('Qualification &amp; Odia Rule') && ssrCxHtml.includes('OJEE'));
   assert.ok(!/\sstyle\s*=/i.test(ssrCxHtml), 'SSR course/exam guide page must have zero inline style="" attributes');
+
+  // 16. Category #05 (v72) Exhaustive Enrichment across all 8 subcategories + 12 Scholarship Handbooks + Admin Sync + SSR
+  const cat05Raw = new DatabaseSync(':memory:');
+  cat05Raw.exec(`
+    CREATE TABLE audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, actor_user_id TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, metadata_json TEXT, ip_address TEXT, created_at INTEGER NOT NULL DEFAULT (unixepoch()));
+    CREATE TABLE jobs_directory_nodes (id INTEGER PRIMARY KEY, parent_id INTEGER, level INTEGER, code TEXT, title TEXT, title_or TEXT, description TEXT, description_or TEXT, group_slug TEXT, url TEXT, exam_slug TEXT, notes_json TEXT, tags TEXT, sort_order INTEGER, is_active INTEGER);
+  `);
+  const ssSection = dirJson.sections[4];
+  let ssSeq = 1;
+  const insSsNode = cat05Raw.prepare('INSERT INTO jobs_directory_nodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)');
+  insSsNode.run(1, null, 0, '05', ssSection.title, '', 'Scholarships & Financial Support', '', 'scholarships-support', '', '', '[]', '[]', 1);
+  function insertSsChildren(children, parentId, level) {
+    for (let i = 0; i < (children || []).length; i++) {
+      const ch = children[i];
+      ssSeq += 1;
+      const myId = ssSeq;
+      insSsNode.run(myId, parentId, level, ch.number || '', ch.title, '', '', '', 'scholarships-support', '', '', '[]', '[]', i + 1);
+      insertSsChildren(ch.children, myId, level + 1);
+    }
+  }
+  insertSsChildren(ssSection.children, 1, 1);
+  assert.equal(ssSeq - 1, 8, 'directory.json should contain all 8 subcategories under Scholarships & Financial Support');
+
+  function wrapCat05(sql, args = []) {
+    return {
+      async first() { return cat05Raw.prepare(sql).get(...args) || null; },
+      async all() { return { results: cat05Raw.prepare(sql).all(...args) }; },
+      async run() { const info = cat05Raw.prepare(sql).run(...args); return { success: true, meta: { changes: info.changes } }; }
+    };
+  }
+  const cat05Env = {
+    DB: {
+      prepare(sql) { return { bind(...a) { return wrapCat05(sql, a); }, ...wrapCat05(sql, []) }; },
+      async batch(stmts) { const out = []; for (const s of stmts) out.push(await s.run()); return out; }
+    }
+  };
+
+  await ensureJobsDirectoryStudioSchema(cat05Env.DB);
+
+  const ssTreeRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/tree?domain=scholarships-support'),
+    cat05Env,
+    admin,
+    'tree'
+  );
+  assert.equal(ssTreeRes.status, 200);
+  const ssTreeData = await ssTreeRes.json();
+  assert.ok(ssTreeData.folders.length >= 8, `Expected >= 8 scholarships-support folders, got ${ssTreeData.folders.length}`);
+  for (const f of ssTreeData.folders) {
+    assert.ok((f.description_en || '').length >= 160, `Scholarship folder "${f.title}" description_en < 160 chars`);
+    assert.ok((f.description_or || '').length >= 160, `Scholarship folder "${f.title}" description_or < 160 chars`);
+    assert.ok(Boolean(f.seo_title), `Scholarship folder "${f.title}" missing seo_title`);
+    assert.ok(Boolean(f.seo_description), `Scholarship folder "${f.title}" missing seo_description`);
+    assert.ok(Boolean(f.featured_badge), `Scholarship folder "${f.title}" missing featured_badge`);
+    assert.ok(Boolean(f.verified_at), `Scholarship folder "${f.title}" missing verified_at`);
+  }
+
+  const ssItemsRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/items?domain=scholarships-support'),
+    cat05Env,
+    admin,
+    'items'
+  );
+  assert.equal(ssItemsRes.status, 200);
+  const ssItemsData = await ssItemsRes.json();
+  const ssGuides = ssItemsData.items.filter(it => it.item_type === 'scholarship' && Boolean(it.exam_code && it.qualification_odia_rule));
+  assert.ok(ssGuides.length >= 12, `Expected >= 12 scholarship guides, got ${ssGuides.length}`);
+  for (const g of ssGuides) {
+    assert.ok(Boolean(g.title_or), `Scholarship guide "${g.title}" missing title_or`);
+    assert.ok(Boolean(g.pay_matrix), `Scholarship guide "${g.title}" missing pay_matrix`);
+    assert.ok(Boolean(g.documents_checklist), `Scholarship guide "${g.title}" missing documents_checklist`);
+    assert.ok(Boolean(g.application_steps), `Scholarship guide "${g.title}" missing application_steps`);
+    assert.ok(Boolean(g.official_portal_url), `Scholarship guide "${g.title}" missing official_portal_url`);
+    assert.ok(Boolean(g.verified_at), `Scholarship guide "${g.title}" missing verified_at`);
+  }
+
+  // Verify Admin two-way sync PUT & custom edit preservation
+  const sampleSs = ssGuides.find(g => g.slug === 'odisha-state-scholarship-portal-guide') || ssGuides[0];
+  const customSsRule = 'Custom Admin Odisha Scholarship DBT & Income Rule Verified';
+  const putSsRes = await handleJobsDirectoryStudio(
+    makeReq('PUT', `https://csodisha.com/api/admin/jobs-directory/items/${sampleSs.id}`, {
+      qualification_odia_rule: customSsRule,
+      exam_code: 'OSP-CUSTOM-2026'
+    }),
+    cat05Env,
+    admin,
+    'items',
+    sampleSs.id
+  );
+  assert.equal(putSsRes.status, 200);
+  await enrichScholarshipsCategory05(cat05Env.DB, new Date().toISOString());
+  const ssItemAfter = await (await handleJobsDirectoryStudio(
+    makeReq('GET', `https://csodisha.com/api/admin/jobs-directory/items/${sampleSs.id}`),
+    cat05Env,
+    admin,
+    'items',
+    sampleSs.id
+  )).json();
+  assert.equal(ssItemAfter.item.qualification_odia_rule, customSsRule, 'Custom admin edit in Category #05 must not be overwritten');
+  assert.equal(ssItemAfter.item.exam_code, 'OSP-CUSTOM-2026');
+
+  // Verify SSR Scholarship guide renders cleanly with zero inline style="" attributes
+  const ssrSs = await handlePublicJobsRoute(
+    makeReq('GET', 'https://csodisha.com/jobs/item/odisha-state-scholarship-portal-guide/'),
+    cat05Env,
+    new URL('https://csodisha.com/jobs/item/odisha-state-scholarship-portal-guide/')
+  );
+  assert.equal(ssrSs.status, 200);
+  const ssrSsHtml = await ssrSs.text();
+  assert.ok(ssrSsHtml.includes('Qualification &amp; Odia Rule') && ssrSsHtml.includes('scholarship.odisha.gov.in'));
+  assert.ok(!/\sstyle\s*=/i.test(ssrSsHtml), 'SSR scholarship guide page must have zero inline style="" attributes');
 
   console.log('ALL JOBS DIRECTORY STUDIO TESTS PASSED');
 }
