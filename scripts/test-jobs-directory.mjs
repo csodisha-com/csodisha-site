@@ -6,6 +6,7 @@ import {
   ensureJobsDirectoryStudioSchema,
   enrichJobsRecruitmentCategory01,
   enrichCareerExplorerCategory02,
+  enrichEligibilityExplorerCategory03,
   handleJobsDirectoryStudio,
   handlePublicJobsOverviewApi,
   handlePublicJobsItemsApi,
@@ -643,6 +644,112 @@ async function main() {
   const ssrCeHtml = await ssrCe.text();
   assert.ok(ssrCeHtml.includes('Academic Entry Pathways') && ssrCeHtml.includes('5-to-15 Yr Career Ladder'));
   assert.ok(!/\sstyle\s*=/i.test(ssrCeHtml), 'SSR career roadmap page must have zero inline style="" attributes');
+
+  // 14. Category #03 (v70) Exhaustive Enrichment across all 7 subcategories + 10 Eligibility Handbooks + Admin Sync + SSR
+  const cat03Raw = new DatabaseSync(':memory:');
+  cat03Raw.exec(`
+    CREATE TABLE audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, actor_user_id TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, metadata_json TEXT, ip_address TEXT, created_at INTEGER NOT NULL DEFAULT (unixepoch()));
+    CREATE TABLE jobs_directory_nodes (id INTEGER PRIMARY KEY, parent_id INTEGER, level INTEGER, code TEXT, title TEXT, title_or TEXT, description TEXT, description_or TEXT, group_slug TEXT, url TEXT, exam_slug TEXT, notes_json TEXT, tags TEXT, sort_order INTEGER, is_active INTEGER);
+  `);
+  const eeSection = dirJson.sections[2];
+  let eeSeq = 1;
+  const insEeNode = cat03Raw.prepare('INSERT INTO jobs_directory_nodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)');
+  insEeNode.run(1, null, 0, '03', eeSection.title, '', 'Eligibility & Qualification Explorer', '', 'eligibility-explorer', '', '', '[]', '[]', 1);
+  function insertEeChildren(children, parentId, level) {
+    for (let i = 0; i < (children || []).length; i++) {
+      const ch = children[i];
+      eeSeq += 1;
+      const myId = eeSeq;
+      insEeNode.run(myId, parentId, level, ch.number || '', ch.title, '', '', '', 'eligibility-explorer', '', '', '[]', '[]', i + 1);
+      insertEeChildren(ch.children, myId, level + 1);
+    }
+  }
+  insertEeChildren(eeSection.children, 1, 1);
+  assert.equal(eeSeq - 1, 7, 'directory.json should contain all 7 subcategories under Eligibility & Qualification Explorer');
+
+  function wrapCat03(sql, args = []) {
+    return {
+      async first() { return cat03Raw.prepare(sql).get(...args) || null; },
+      async all() { return { results: cat03Raw.prepare(sql).all(...args) }; },
+      async run() { const info = cat03Raw.prepare(sql).run(...args); return { success: true, meta: { changes: info.changes } }; }
+    };
+  }
+  const cat03Env = {
+    DB: {
+      prepare(sql) { return { bind(...a) { return wrapCat03(sql, a); }, ...wrapCat03(sql, []) }; },
+      async batch(stmts) { const out = []; for (const s of stmts) out.push(await s.run()); return out; }
+    }
+  };
+
+  await ensureJobsDirectoryStudioSchema(cat03Env.DB);
+
+  const eeTreeRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/tree?domain=eligibility-explorer'),
+    cat03Env,
+    admin,
+    'tree'
+  );
+  assert.equal(eeTreeRes.status, 200);
+  const eeTreeData = await eeTreeRes.json();
+  assert.ok(eeTreeData.folders.length >= 7, `Expected >= 7 eligibility-explorer folders, got ${eeTreeData.folders.length}`);
+  for (const f of eeTreeData.folders) {
+    assert.ok((f.description_en || '').length >= 160, `Eligibility folder "${f.title}" description_en < 160 chars`);
+    assert.ok((f.description_or || '').length >= 160, `Eligibility folder "${f.title}" description_or < 160 chars`);
+    assert.ok(Boolean(f.seo_title), `Eligibility folder "${f.title}" missing seo_title`);
+    assert.ok(Boolean(f.seo_description), `Eligibility folder "${f.title}" missing seo_description`);
+    assert.ok(Boolean(f.featured_badge), `Eligibility folder "${f.title}" missing featured_badge`);
+    assert.ok(Boolean(f.verified_at), `Eligibility folder "${f.title}" missing verified_at`);
+  }
+
+  const eeItemsRes = await handleJobsDirectoryStudio(
+    makeReq('GET', 'https://csodisha.com/api/admin/jobs-directory/items?domain=eligibility-explorer'),
+    cat03Env,
+    admin,
+    'items'
+  );
+  assert.equal(eeItemsRes.status, 200);
+  const eeItemsData = await eeItemsRes.json();
+  const eeGuides = eeItemsData.items.filter(it => it.item_type === 'eligibility-matrix' && Boolean(it.qualification_odia_rule && it.age_limit_relaxation));
+  assert.ok(eeGuides.length >= 10, `Expected >= 10 eligibility guides, got ${eeGuides.length}`);
+  for (const g of eeGuides) {
+    assert.ok(Boolean(g.title_or), `Eligibility guide "${g.title}" missing title_or`);
+    assert.ok(Boolean(g.documents_checklist), `Eligibility guide "${g.title}" missing documents_checklist`);
+    assert.ok(Boolean(g.official_portal_url), `Eligibility guide "${g.title}" missing official_portal_url`);
+    assert.ok(Boolean(g.verified_at), `Eligibility guide "${g.title}" missing verified_at`);
+  }
+
+  // Verify Admin two-way sync PUT & custom edit preservation
+  const sampleEe = eeGuides[0];
+  const putEeRes = await handleJobsDirectoryStudio(
+    makeReq('PUT', `https://csodisha.com/api/admin/jobs-directory/items/${sampleEe.id}`, {
+      qualification_odia_rule: 'Custom Admin Odia Qualification Rule Verified'
+    }),
+    cat03Env,
+    admin,
+    'items',
+    sampleEe.id
+  );
+  assert.equal(putEeRes.status, 200);
+  await enrichEligibilityExplorerCategory03(cat03Env.DB, new Date().toISOString());
+  const eeItemAfter = await (await handleJobsDirectoryStudio(
+    makeReq('GET', `https://csodisha.com/api/admin/jobs-directory/items/${sampleEe.id}`),
+    cat03Env,
+    admin,
+    'items',
+    sampleEe.id
+  )).json();
+  assert.equal(eeItemAfter.item.qualification_odia_rule, 'Custom Admin Odia Qualification Rule Verified');
+
+  // Verify SSR Eligibility guide renders cleanly with zero inline style="" attributes
+  const ssrEe = await handlePublicJobsRoute(
+    makeReq('GET', 'https://csodisha.com/jobs/item/odisha-mandatory-odia-language-rule-and-degree-equivalence/'),
+    cat03Env,
+    new URL('https://csodisha.com/jobs/item/odisha-mandatory-odia-language-rule-and-degree-equivalence/')
+  );
+  assert.equal(ssrEe.status, 200);
+  const ssrEeHtml = await ssrEe.text();
+  assert.ok(ssrEeHtml.includes('Qualification &amp; Odia Rule') && ssrEeHtml.includes('BSE Odisha'));
+  assert.ok(!/\sstyle\s*=/i.test(ssrEeHtml), 'SSR eligibility guide page must have zero inline style="" attributes');
 
   console.log('ALL JOBS DIRECTORY STUDIO TESTS PASSED');
 }

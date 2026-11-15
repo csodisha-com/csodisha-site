@@ -13,8 +13,9 @@ import { audit } from './rbac.js';
 import { cleanStr, slugify, SLUG_RE, likeEscape } from './validate.js';
 import { enrichJobsRecruitmentCategory01 } from './jobs-recruitment-cat01-enrichment.js';
 import { enrichCareerExplorerCategory02 } from './jobs-career-cat02-enrichment.js';
+import { enrichEligibilityExplorerCategory03 } from './jobs-eligibility-cat03-enrichment.js';
 
-export { enrichJobsRecruitmentCategory01, enrichCareerExplorerCategory02 };
+export { enrichJobsRecruitmentCategory01, enrichCareerExplorerCategory02, enrichEligibilityExplorerCategory03 };
 
 export const JOBS_DOMAINS = [
   'jobs-recruitment',
@@ -725,6 +726,7 @@ export async function ensureJobsDirectoryStudioSchema(db) {
   await bridgeLegacyJobsNodes(db, now);
   await enrichJobsRecruitmentCategory01(db, now);
   await enrichCareerExplorerCategory02(db, now);
+  await enrichEligibilityExplorerCategory03(db, now);
 
   _schemaReady.add(db);
 }
