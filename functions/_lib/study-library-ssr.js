@@ -157,7 +157,7 @@ function renderDirectoryPage(resolved, url) {
 
   const activeType = (url.searchParams.get('type') || '').trim().toLowerCase();
   const activeLang = (url.searchParams.get('lang') || '').trim().toLowerCase();
-  const basePath = `/study-library/${folder.full_path}/`;
+  const basePath = `/study-library/${folder.slug_path}/`;
   const canonicalUrl = `${CANONICAL_ORIGIN}${basePath}`;
   const pageTitle = folder.depth === 1
     ? `${folder.name} — CSOdisha Study Library`
@@ -179,7 +179,7 @@ function renderDirectoryPage(resolved, url) {
         '@type': 'ListItem',
         position: idx + 2,
         name: b.name,
-        item: `${CANONICAL_ORIGIN}/study-library/${b.full_path}/`,
+        item: `${CANONICAL_ORIGIN}/study-library/${b.slug_path}/`,
       })),
     ],
   };
@@ -193,7 +193,7 @@ function renderDirectoryPage(resolved, url) {
     hasPart: children.slice(0, 24).map((c) => ({
       '@type': 'CollectionPage',
       name: c.name,
-      url: `${CANONICAL_ORIGIN}/study-library/${c.full_path}/`,
+      url: `${CANONICAL_ORIGIN}/study-library/${c.slug_path}/`,
     })),
   };
 
@@ -204,7 +204,7 @@ function renderDirectoryPage(resolved, url) {
       if (isLast) {
         return `<span class="cso-sl-pub-crumb-current" aria-current="page">${escHtml(b.name)}</span>`;
       }
-      return `<a href="/study-library/${escHtml(b.full_path)}/">${escHtml(b.name)}</a>`;
+      return `<a href="/study-library/${escHtml(b.slug_path)}/">${escHtml(b.name)}</a>`;
     }),
   ].join('<span class="cso-sl-pub-crumb-sep" aria-hidden="true">/</span>');
 
@@ -216,7 +216,7 @@ function renderDirectoryPage(resolved, url) {
         </div>
         <div class="cso-sl-pub-grid">
           ${children.map((child) => {
-            const childUrl = `/study-library/${escHtml(child.full_path)}/`;
+            const childUrl = `/study-library/${escHtml(child.slug_path)}/`;
             const countParts = [];
             if (child.child_count > 0) {
               countParts.push(`${child.child_count} ${child.child_count === 1 ? 'Sub-Directory' : 'Sub-Directories'}`);
@@ -315,7 +315,7 @@ function renderDirectoryPage(resolved, url) {
             : 'Our editorial team is curating verified notes, PDFs, and reference links for this directory.'}</p>
           <div class="cso-sl-pub-actions">
             ${(activeType || activeLang) ? `<a class="cso-sl-pub-btn-primary" href="${escHtml(basePath)}">Clear Filters</a>` : ''}
-            ${parentFolder ? `<a class="cso-sl-pub-btn-secondary" href="/study-library/${escHtml(parentFolder.full_path)}/">↑ Up to ${escHtml(parentFolder.name)}</a>` : ''}
+            ${parentFolder ? `<a class="cso-sl-pub-btn-secondary" href="/study-library/${escHtml(parentFolder.slug_path)}/">↑ Up to ${escHtml(parentFolder.name)}</a>` : ''}
             <a class="cso-sl-pub-btn-secondary" href="/study-library/">All 10 Study Tracks</a>
           </div>
         </section>`
@@ -327,7 +327,7 @@ function renderDirectoryPage(resolved, url) {
           <h2 id="siblings-heading">Related Sibling Directories</h2>
         </div>
         <div class="cso-sl-pub-sibling-chips">
-          ${siblingFolders.slice(0, 12).map((sib) => `<a class="cso-sl-pub-sibling-chip" href="/study-library/${escHtml(sib.full_path)}/">${escHtml(sib.name)}</a>`).join('')}
+          ${siblingFolders.slice(0, 12).map((sib) => `<a class="cso-sl-pub-sibling-chip" href="/study-library/${escHtml(sib.slug_path)}/">${escHtml(sib.name)}</a>`).join('')}
         </div>
       </section>`
     : '';
@@ -356,7 +356,7 @@ function renderDirectoryPage(resolved, url) {
       <div class="cso-sl-pub-stats-row">
         <span class="cso-sl-pub-stat"><strong>${children.length}</strong> Direct Sub-Directories</span>
         <span class="cso-sl-pub-stat"><strong>${folder.total_item_count}</strong> Total Published Resources</span>
-        ${parentFolder ? `<a class="cso-sl-pub-stat-link" href="/study-library/${escHtml(parentFolder.full_path)}/">↑ Parent: ${escHtml(parentFolder.name)}</a>` : ''}
+        ${parentFolder ? `<a class="cso-sl-pub-stat-link" href="/study-library/${escHtml(parentFolder.slug_path)}/">↑ Parent: ${escHtml(parentFolder.name)}</a>` : ''}
       </div>
     </section>
 

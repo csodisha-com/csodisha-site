@@ -1199,25 +1199,41 @@ export async function resolvePublicStudyDirectory(env, segments = [], opts = {})
     activeFolder = match;
   }
 
-  // If still at domain root and there is a single depth-1 group wrapper matching the domain, expose its children cleanly
+  // If still at domain root and a bridged depth-1 group wrapper matches the track slug, expose it as the active folder
   let childParentKey = activeFolder ? activeFolder.id : '__ROOT__';
-  if (!activeFolder && rootMatches.length === 1 && (childrenByParent.get('__ROOT__') || []).length === 1) {
+  if (!activeFolder && rootMatches.length >= 1) {
     activeFolder = rootMatches[0];
     childParentKey = activeFolder.id;
   }
 
+  const withSlugPath = (f) => {
+    if (!f) return null;
+    const chain = computePath(f.id);
+    const firstSlug = chain[0] ? String(chain[0].slug || '').toLowerCase() : '';
+    const hasTrackRoot = Boolean(GROUP_SLUG_TO_DOMAIN[firstSlug] || STUDY_DOMAINS.includes(firstSlug));
+    const segs = hasTrackRoot ? chain.map(x => x.slug) : [first, ...chain.map(x => x.slug)];
+    return { ...f, slug_path: segs.filter(Boolean).join('/') };
+  };
+
   const children = (childrenByParent.get(childParentKey) || [])
     .map(id => byId.get(id))
     .filter(Boolean)
-    .sort((a, b) => (a.sort_order - b.sort_order) || a.name.localeCompare(b.name));
+    .sort((a, b) => (a.sort_order - b.sort_order) || a.name.localeCompare(b.name))
+    .map(withSlugPath);
 
-  const parentFolder = activeFolder && activeFolder.parent_id ? byId.get(activeFolder.parent_id) || null : null;
+  const parentFolder = activeFolder && activeFolder.parent_id ? withSlugPath(byId.get(activeFolder.parent_id)) : null;
   const siblingParentKey = activeFolder && activeFolder.parent_id ? activeFolder.parent_id : '__ROOT__';
   const siblingFolders = (childrenByParent.get(siblingParentKey) || [])
     .map(id => byId.get(id))
-    .filter(f => f && (!activeFolder || f.id !== activeFolder.id));
+    .filter(f => f && (!activeFolder || f.id !== activeFolder.id))
+    .map(withSlugPath);
 
-  const breadcrumb = activeFolder ? computePath(activeFolder.id) : [];
+  const breadcrumb = activeFolder ? computePath(activeFolder.id).map(withSlugPath) : [{
+    id: domainSlug,
+    name: DOMAIN_LABELS[domainSlug] || domainSlug,
+    slug: first,
+    slug_path: first,
+  }];
 
   const includeDesc = opts.includeDescendants !== false;
   const where = ['domain_slug = ?', "status = 'published'"];
@@ -1245,11 +1261,28 @@ export async function resolvePublicStudyDirectory(env, segments = [], opts = {})
     `SELECT * FROM study_library_items WHERE ${where.join(' AND ')} ORDER BY is_featured DESC, updated_at DESC, created_at DESC LIMIT 60`
   ).bind(...binds).all()).results || [];
 
+  const effectiveFolder = activeFolder ? withSlugPath(activeFolder) : {
+    id: domainSlug,
+    domain_slug: domainSlug,
+    parent_id: null,
+    depth: 1,
+    name: DOMAIN_LABELS[domainSlug] || domainSlug,
+    title_or: '',
+    slug: first,
+    node_slug: first,
+    slug_path: first,
+    description: `Structured curriculum directory for ${DOMAIN_LABELS[domainSlug] || domainSlug}.`,
+    direct_item_count: 0,
+    total_item_count: rows.length,
+    child_count: children.length,
+    full_path: DOMAIN_LABELS[domainSlug] || domainSlug,
+  };
+
   return {
     domain_slug: domainSlug,
     domain_title: DOMAIN_LABELS[domainSlug] || domainSlug,
     track_slug: first,
-    folder: activeFolder,
+    folder: effectiveFolder,
     breadcrumb,
     children,
     parentFolder,
