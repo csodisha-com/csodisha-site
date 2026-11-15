@@ -2857,6 +2857,511 @@
     return wrap;
   }
 
+  /* ---------- Folder 16: Module #8 Sensitive Field Masking & PII Redaction ---------- */
+  function securityPiiMaskingPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-sec-studio' }, [
+      el('h2', { text: 'Sensitive Field Masking & PII Redaction Controls' }),
+      el('p', { class: 'muted', text: 'Configure India DPDP Act 2023 PII masking rules, custom sensitive field patterns, and test live redaction output.' })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var emailCb = el('input', { type: 'checkbox', id: 'f-sec-pii-email', checked: true, disabled: !isAdmin });
+    var phoneCb = el('input', { type: 'checkbox', id: 'f-sec-pii-phone', checked: true, disabled: !isAdmin });
+    var ipCb = el('input', { type: 'checkbox', id: 'f-sec-pii-ip', checked: true, disabled: !isAdmin });
+    var credCb = el('input', { type: 'checkbox', id: 'f-sec-pii-cred', checked: true, disabled: true });
+    var fieldsTa = el('textarea', { id: 'f-sec-pii-fields', class: 'cso-sec-acl-textarea', placeholder: 'One snake_case field per line (e.g. aadhaar, pan, bank_account)', disabled: !isAdmin });
+    var saveBtn = el('button', { type: 'button', class: 'btn primary', disabled: !isAdmin, text: 'Save PII Redaction Rules' });
+
+    var policyBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'DPDP Act 2023 Masking & Field Redaction Rules' }),
+        saveBtn
+      ]),
+      el('div', { class: 'cso-sec-toggle-list' }, [
+        el('label', { class: 'cso-sec-toggle-item' }, [emailCb, el('span', { text: 'Mask email addresses for Reviewer role (e.g. c***@domain.com)' })]),
+        el('label', { class: 'cso-sec-toggle-item' }, [phoneCb, el('span', { text: 'Mask phone numbers for non-Super-Admin views' })]),
+        el('label', { class: 'cso-sec-toggle-item' }, [ipCb, el('span', { text: 'Mask last two IPv4 octets in non-admin telemetry' })]),
+        el('label', { class: 'cso-sec-toggle-item' }, [credCb, el('span', { text: 'Redact export credentials, password_hash, salts & tokens (Locked ON)' })])
+      ]),
+      el('div', { class: 'cso-sec-policy-field' }, [
+        el('label', { for: 'f-sec-pii-fields', class: 'muted sm', text: 'Custom Redacted Field Keys (one per line or comma-separated)' }),
+        fieldsTa
+      ])
+    ]);
+
+    // Live PII Redaction Sandbox
+    var samplePayload = JSON.stringify({
+      email: 'aspirant@csodisha.com',
+      phone: '+91-9876543210',
+      aadhaar: '1234-5678-9012',
+      pan: 'ABCDE1234F',
+      ip_address: '203.0.113.45',
+      password_hash: 'pbkdf2_secret_hash'
+    }, null, 2);
+    var simPayloadTa = el('textarea', { id: 'f-sec-pii-sample', class: 'cso-sec-acl-textarea', value: samplePayload });
+    var simRoleSel = el('select', { id: 'f-sec-pii-role', class: 'cso-ops-policy-select' }, [
+      el('option', { value: 'reviewer', text: 'Reviewer (reviewer)' }),
+      el('option', { value: 'editor', text: 'Senior Editor (editor)' }),
+      el('option', { value: 'admin', text: 'Super Admin (admin)' })
+    ]);
+    var simBtn = el('button', { type: 'button', class: 'btn primary sm', text: 'Preview Redacted Output' });
+    var simOut = el('div', { 'aria-live': 'polite' });
+
+    var simBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Live PII Redaction Previewer' }),
+        simBtn
+      ]),
+      el('div', { class: 'cso-ops-restore-field' }, [el('label', { for: 'f-sec-pii-role', class: 'muted sm', text: 'Viewer Role' }), simRoleSel]),
+      el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-pii-sample', class: 'muted sm', text: 'Sample JSON or Text Payload' }), simPayloadTa]),
+      simOut
+    ]);
+
+    var statusEl = el('div', { 'aria-live': 'polite' });
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(statusEl);
+    wrap.appendChild(policyBox);
+    wrap.appendChild(simBox);
+
+    var saveBusy = false;
+    var simBusy = false;
+
+    function parseFields(txt) {
+      return String(txt || '').split(/[\r\n,]+/).map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean);
+    }
+
+    function renderKpis(d) {
+      clear(kpiStrip);
+      var p = d.policy || {};
+      var cards = [
+        ['DPDP Compliance Mode', 'ENFORCED', 'India DPDP Act 2023 active'],
+        ['Protected Field Patterns', String(d.protected_field_count || 0), 'Custom redacted keys'],
+        ['Reviewer Email Masking', p.mask_emails_for_reviewers ? 'ON' : 'OFF', p.mask_phone_numbers ? 'Phones masked' : 'Phones unmasked'],
+        ['Last Policy Update', d.updated_at ? String(d.updated_at).slice(0, 16).replace('T', ' ') : 'Default', d.updated_by || 'System baseline']
+      ];
+      cards.forEach(function (c) {
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('span', { class: 'muted sm', text: c[0] }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: c[1] }),
+          el('span', { class: 'muted sm', text: c[2] })
+        ]));
+      });
+    }
+
+    async function load() {
+      clear(statusEl);
+      try {
+        var d = await api('GET', 'security/pii-masking');
+        var p = d.policy || {};
+        emailCb.checked = Boolean(p.mask_emails_for_reviewers);
+        phoneCb.checked = Boolean(p.mask_phone_numbers);
+        ipCb.checked = Boolean(p.mask_ip_addresses);
+        fieldsTa.value = (p.custom_redacted_fields || []).join('\n');
+        renderKpis(d);
+      } catch (e) {
+        statusEl.appendChild(el('div', { class: 'alert', text: e.message || 'Failed to load PII masking policy' }));
+      }
+    }
+
+    saveBtn.addEventListener('click', async function () {
+      if (!isAdmin || saveBusy) return;
+      saveBusy = true;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+      try {
+        var res = await api('PUT', 'security/pii-masking', {
+          mask_emails_for_reviewers: emailCb.checked,
+          mask_phone_numbers: phoneCb.checked,
+          mask_ip_addresses: ipCb.checked,
+          custom_redacted_fields: parseFields(fieldsTa.value)
+        });
+        renderKpis(res);
+        toast('DPDP PII masking rules saved');
+      } catch (e) {
+        toast(e.message || 'Failed to save PII masking rules', true);
+      } finally {
+        saveBusy = false;
+        saveBtn.disabled = !isAdmin;
+        saveBtn.textContent = 'Save PII Redaction Rules';
+      }
+    });
+
+    simBtn.addEventListener('click', async function () {
+      if (simBusy) return;
+      simBusy = true;
+      simBtn.disabled = true;
+      clear(simOut);
+      try {
+        var res = await api('POST', 'security/pii-masking/preview', {
+          payload: simPayloadTa.value,
+          viewer_role: simRoleSel.value
+        });
+        simOut.appendChild(el('div', { class: 'cso-sec-sim-result is-allow' }, [
+          el('div', { class: 'cso-ops-subhead' }, [
+            el('strong', { text: 'Redacted Preview (' + res.viewer_role + ')' }),
+            el('span', { class: 'badge ok', text: res.redaction_count + ' redactions' })
+          ]),
+          el('pre', { class: 'cso-ops-diff-pre', text: typeof res.redacted_payload === 'string' ? res.redacted_payload : JSON.stringify(res.redacted_payload, null, 2) })
+        ]));
+      } catch (e) {
+        simOut.appendChild(el('div', { class: 'alert', text: e.message || 'Preview failed' }));
+      } finally {
+        simBusy = false;
+        simBtn.disabled = false;
+      }
+    });
+
+    load();
+    return wrap;
+  }
+
+  /* ---------- Folder 16: Module #9 API Key Management & Token Scoping ---------- */
+  function securityApiKeysPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-sec-studio' }, [
+      el('h2', { text: 'API Key Management & Token Scoping' }),
+      el('p', { class: 'muted', text: 'Issue least-privilege scoped API tokens stored strictly as SHA-256 hashes in D1 with instant revocation.' })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var nameInp = el('input', { type: 'text', id: 'f-sec-ak-name', placeholder: 'Integration name (e.g. Mobile App Feed)', disabled: !isAdmin });
+    var expSel = el('select', { id: 'f-sec-ak-exp', class: 'cso-ops-policy-select', disabled: !isAdmin }, [
+      el('option', { value: '30', text: '30 Days' }),
+      el('option', { value: '90', text: '90 Days', selected: true }),
+      el('option', { value: '180', text: '180 Days' }),
+      el('option', { value: '365', text: '365 Days' })
+    ]);
+    var rpmInp = el('input', { type: 'number', id: 'f-sec-ak-rpm', min: '10', max: '600', value: '60', disabled: !isAdmin });
+    var scopesBox = el('div', { class: 'cso-sec-cat-pills' });
+    var scopeCheckboxes = {};
+    ['read:schemes', 'read:jobs', 'read:study', 'read:news', 'webhook:deploy'].forEach(function (sc) {
+      var cb = el('input', { type: 'checkbox', checked: sc === 'read:schemes', disabled: !isAdmin });
+      scopeCheckboxes[sc] = cb;
+      scopesBox.appendChild(el('label', { class: 'cso-sec-cell-check' }, [cb, el('span', { class: 'cso-ops-mono sm', text: sc })]));
+    });
+    var issueBtn = el('button', { type: 'button', class: 'btn primary', disabled: !isAdmin, text: 'Issue Scoped API Key' });
+    var receiptHost = el('div', { 'aria-live': 'polite' });
+
+    var issuerBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Issue New Scoped API Key' }),
+        issueBtn
+      ]),
+      el('div', { class: 'cso-sec-policy-grid' }, [
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ak-name', class: 'muted sm', text: 'Key Label' }), nameInp]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ak-exp', class: 'muted sm', text: 'Expiry Window' }), expSel]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ak-rpm', class: 'muted sm', text: 'Rate Limit (10–600 RPM)' }), rpmInp])
+      ]),
+      scopesBox,
+      receiptHost
+    ]);
+
+    var statusEl = el('div', { 'aria-live': 'polite' });
+    var tableHost = el('div', { class: 'cso-ops-vault-table-host' });
+
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(statusEl);
+    wrap.appendChild(issuerBox);
+    wrap.appendChild(tableHost);
+
+    var issueBusy = false;
+
+    function renderKpis(d) {
+      clear(kpiStrip);
+      var cards = [
+        ['Active Scoped Keys', String(d.active_count || 0), 'SHA-256 hashed in D1'],
+        ['Revoked Keys', String(d.revoked_count || 0), 'Invalidated tokens'],
+        ['Max RPM Ceiling', String(d.max_rpm_ceiling || 60), 'Per-key rate throttle'],
+        ['Plaintext Storage', 'ZERO', 'Tokens shown once at issue']
+      ];
+      cards.forEach(function (c) {
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('span', { class: 'muted sm', text: c[0] }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: c[1] }),
+          el('span', { class: 'muted sm', text: c[2] })
+        ]));
+      });
+    }
+
+    function renderLedger(d) {
+      clear(tableHost);
+      var list = d.items || [];
+      if (!list.length) {
+        tableHost.appendChild(el('p', { class: 'muted sm', text: 'No API keys issued yet.' }));
+        return;
+      }
+      var tbl = el('table', { class: 'tbl' }, [
+        el('thead', {}, [el('tr', {}, [
+          el('th', { text: 'Key Prefix & Name' }),
+          el('th', { text: 'Scopes' }),
+          el('th', { text: 'RPM / Expiry' }),
+          el('th', { text: 'Status' }),
+          el('th', { text: 'Action' })
+        ])])
+      ]);
+      var tbody = el('tbody');
+      list.forEach(function (k) {
+        var revBtn = el('button', {
+          type: 'button',
+          class: 'btn sm danger',
+          disabled: !isAdmin || k.status === 'revoked',
+          text: k.status === 'revoked' ? 'Revoked' : 'Revoke'
+        });
+        revBtn.addEventListener('click', async function () {
+          if (!isAdmin || k.status === 'revoked') return;
+          revBtn.disabled = true;
+          try {
+            await api('POST', 'security/api-keys/' + encodeURIComponent(k.id) + '/revoke', {});
+            toast('API key ' + k.key_prefix + ' revoked');
+            await load();
+          } catch (e) {
+            toast(e.message || 'Revocation failed', true);
+            revBtn.disabled = false;
+          }
+        });
+        tbody.appendChild(el('tr', {}, [
+          el('td', {}, [
+            el('div', { class: 'cso-ops-mono sm', text: k.key_prefix }),
+            el('span', { class: 'muted sm', text: k.name })
+          ]),
+          el('td', { class: 'cso-ops-mono sm', text: (k.scopes || []).join(', ') }),
+          el('td', { class: 'cso-tabular sm', text: k.rate_limit_rpm + ' RPM · ' + (k.expires_at ? k.expires_at.slice(0, 10) : '—') }),
+          el('td', {}, [el('span', { class: 'badge ' + (k.status === 'active' ? 'ok' : 'bad'), text: k.status })]),
+          el('td', {}, [revBtn])
+        ]));
+      });
+      tbl.appendChild(tbody);
+      tableHost.appendChild(tbl);
+    }
+
+    async function load() {
+      clear(statusEl);
+      if (!isAdmin) {
+        statusEl.appendChild(el('div', { class: 'alert', text: 'API key management is restricted to Super Administrators.' }));
+        return;
+      }
+      try {
+        var d = await api('GET', 'security/api-keys');
+        renderKpis(d);
+        renderLedger(d);
+      } catch (e) {
+        statusEl.appendChild(el('div', { class: 'alert', text: e.message || 'Failed to load API keys' }));
+      }
+    }
+
+    issueBtn.addEventListener('click', async function () {
+      if (!isAdmin || issueBusy) return;
+      var selectedScopes = Object.keys(scopeCheckboxes).filter(function (s) { return scopeCheckboxes[s].checked; });
+      issueBusy = true;
+      issueBtn.disabled = true;
+      clear(receiptHost);
+      try {
+        var res = await api('POST', 'security/api-keys', {
+          name: nameInp.value.trim(),
+          scopes: selectedScopes,
+          expires_in_days: parseInt(expSel.value, 10),
+          rate_limit_rpm: parseInt(rpmInp.value, 10)
+        });
+        nameInp.value = '';
+        var copyBtn = el('button', { type: 'button', class: 'btn sm', text: 'Copy New API Key' });
+        copyBtn.addEventListener('click', function () {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(res.plaintext_token).then(function () { toast('Copied API key to clipboard'); });
+          }
+        });
+        receiptHost.appendChild(el('div', { class: 'cso-sec-sim-result is-allow' }, [
+          el('div', { class: 'cso-ops-subhead' }, [
+            el('strong', { text: 'One-Time API Key Receipt (Store Securely Now)' }),
+            copyBtn
+          ]),
+          el('div', { class: 'cso-sec-totp-uri', text: res.plaintext_token })
+        ]));
+        toast('Scoped API key issued');
+        await load();
+      } catch (e) {
+        toast(e.message || 'Failed to issue API key', true);
+      } finally {
+        issueBusy = false;
+        issueBtn.disabled = !isAdmin;
+      }
+    });
+
+    load();
+    return wrap;
+  }
+
+  /* ---------- Folder 16: Module #10 CSRF Protection & Origin Integrity Headers ---------- */
+  function securityOriginHeadersPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-sec-studio' }, [
+      el('h2', { text: 'CSRF Protection & Origin Integrity Headers' }),
+      el('p', { class: 'muted', text: 'Manage trusted CORS/CSRF origins, cookie SameSite posture, CSP frame-ancestors, HSTS, and verify cross-origin requests.' })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var enforceCb = el('input', { type: 'checkbox', id: 'f-sec-ori-enf', checked: true, disabled: !isAdmin });
+    var sameSiteSel = el('select', { id: 'f-sec-ori-ss', class: 'cso-ops-policy-select', disabled: !isAdmin }, [
+      el('option', { value: 'Lax', text: 'Lax (Recommended)' }),
+      el('option', { value: 'Strict', text: 'Strict' })
+    ]);
+    var frameSel = el('select', { id: 'f-sec-ori-frame', class: 'cso-ops-policy-select', disabled: !isAdmin }, [
+      el('option', { value: "'none'", text: "'none' (X-Frame-Options: DENY)" }),
+      el('option', { value: "'self'", text: "'self' (X-Frame-Options: SAMEORIGIN)" })
+    ]);
+    var hstsInp = el('input', { type: 'number', id: 'f-sec-ori-hsts', min: '300', max: '63072000', value: '31536000', disabled: !isAdmin });
+    var originsTa = el('textarea', { id: 'f-sec-ori-list', class: 'cso-sec-acl-textarea', placeholder: 'https://csodisha.com', disabled: !isAdmin });
+    var saveBtn = el('button', { type: 'button', class: 'btn primary', disabled: !isAdmin, text: 'Save Origin & Header Policy' });
+
+    var policyBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Trusted Origins & Response Header Policy' }),
+        saveBtn
+      ]),
+      el('label', { class: 'cso-ops-inline-check' }, [enforceCb, el('span', { text: 'Enforce Origin/Referer & X-CSO-CSRF check on all mutating requests' })]),
+      el('div', { class: 'cso-sec-policy-grid' }, [
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ori-ss', class: 'muted sm', text: 'Cookie SameSite Policy' }), sameSiteSel]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ori-frame', class: 'muted sm', text: 'CSP frame-ancestors' }), frameSel]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ori-hsts', class: 'muted sm', text: 'HSTS Max-Age (seconds)' }), hstsInp])
+      ]),
+      el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ori-list', class: 'muted sm', text: 'Allowed Origins (one URL per line)' }), originsTa])
+    ]);
+
+    var matrixHost = el('div', { class: 'cso-ops-vault-table-host' });
+
+    // Cross-Origin Request Simulator
+    var testMethSel = el('select', { id: 'f-sec-csrf-m', class: 'cso-ops-policy-select' }, [
+      el('option', { value: 'POST', text: 'POST' }),
+      el('option', { value: 'PUT', text: 'PUT' }),
+      el('option', { value: 'DELETE', text: 'DELETE' }),
+      el('option', { value: 'GET', text: 'GET' })
+    ]);
+    var testOrigInp = el('input', { type: 'text', id: 'f-sec-csrf-o', value: 'https://evil-attacker.example', class: 'cso-ops-filter-input' });
+    var testBtn = el('button', { type: 'button', class: 'btn primary sm', text: 'Verify Cross-Origin Request' });
+    var testOut = el('div', { 'aria-live': 'polite' });
+
+    var simBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Cross-Origin & CSRF Request Verifier' }),
+        testBtn
+      ]),
+      el('div', { class: 'cso-ops-filter-bar' }, [testMethSel, testOrigInp]),
+      testOut
+    ]);
+
+    var statusEl = el('div', { 'aria-live': 'polite' });
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(statusEl);
+    wrap.appendChild(policyBox);
+    wrap.appendChild(matrixHost);
+    wrap.appendChild(simBox);
+
+    var saveBusy = false;
+
+    function renderKpis(d) {
+      clear(kpiStrip);
+      var p = d.policy || {};
+      var cards = [
+        ['CSP Inline-Zero Posture', d.csp_inline_zero ? 'STRICT' : 'WARN', 'Zero inline <script> / style=""'],
+        ['Allowed Origins', String((p.allowed_origins || []).length), p.enforce_origin_check ? 'Origin enforced' : 'Monitor'],
+        ['Cookie SameSite', String(p.samesite_cookie_policy || 'Lax'), 'Session cookie attribute'],
+        ['HSTS Max-Age', String(p.hsts_max_age_seconds || 31536000) + 's', 'preload + includeSubDomains']
+      ];
+      cards.forEach(function (c) {
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('span', { class: 'muted sm', text: c[0] }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: c[1] }),
+          el('span', { class: 'muted sm', text: c[2] })
+        ]));
+      });
+    }
+
+    function renderHeadersMatrix(d) {
+      clear(matrixHost);
+      var tbl = el('table', { class: 'tbl' }, [
+        el('thead', {}, [el('tr', {}, [
+          el('th', { text: 'Security Header' }),
+          el('th', { text: 'Active Directive' }),
+          el('th', { text: 'Status' })
+        ])])
+      ]);
+      var tbody = el('tbody');
+      (d.headers_audit || []).forEach(function (h) {
+        tbody.appendChild(el('tr', {}, [
+          el('td', { class: 'cso-ops-mono sm', text: h.header }),
+          el('td', { class: 'cso-ops-mono sm', text: h.value }),
+          el('td', {}, [el('span', { class: 'badge ok', text: h.status })])
+        ]));
+      });
+      tbl.appendChild(tbody);
+      matrixHost.appendChild(tbl);
+    }
+
+    async function load() {
+      clear(statusEl);
+      try {
+        var d = await api('GET', 'security/origin-headers');
+        var p = d.policy || {};
+        enforceCb.checked = Boolean(p.enforce_origin_check);
+        sameSiteSel.value = p.samesite_cookie_policy || 'Lax';
+        frameSel.value = p.csp_frame_ancestors || "'none'";
+        hstsInp.value = String(p.hsts_max_age_seconds || 31536000);
+        originsTa.value = (p.allowed_origins || []).join('\n');
+        renderKpis(d);
+        renderHeadersMatrix(d);
+      } catch (e) {
+        statusEl.appendChild(el('div', { class: 'alert', text: e.message || 'Failed to load origin header policy' }));
+      }
+    }
+
+    saveBtn.addEventListener('click', async function () {
+      if (!isAdmin || saveBusy) return;
+      saveBusy = true;
+      saveBtn.disabled = true;
+      try {
+        var origins = String(originsTa.value || '').split(/[\r\n,]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+        var res = await api('PUT', 'security/origin-headers', {
+          enforce_origin_check: enforceCb.checked,
+          samesite_cookie_policy: sameSiteSel.value,
+          csp_frame_ancestors: frameSel.value,
+          hsts_max_age_seconds: parseInt(hstsInp.value, 10),
+          allowed_origins: origins
+        });
+        renderKpis(res);
+        renderHeadersMatrix(res);
+        toast('Origin integrity & CSRF policy saved');
+      } catch (e) {
+        toast(e.message || 'Failed to save origin policy', true);
+      } finally {
+        saveBusy = false;
+        saveBtn.disabled = !isAdmin;
+      }
+    });
+
+    testBtn.addEventListener('click', async function () {
+      clear(testOut);
+      try {
+        var res = await api('POST', 'security/origin-headers/test', {
+          method: testMethSel.value,
+          origin: testOrigInp.value.trim(),
+          has_session_cookie: true
+        });
+        testOut.appendChild(el('div', { class: 'cso-sec-sim-result ' + (res.allowed ? 'is-allow' : 'is-deny') }, [
+          el('div', { class: 'cso-ops-subhead' }, [
+            el('strong', { text: res.method + ' · ' + (res.resolved_origin || 'missing-origin') }),
+            el('span', { class: 'badge ' + (res.allowed ? 'ok' : 'bad'), text: res.verdict })
+          ]),
+          el('span', { class: 'muted sm', text: res.rationale })
+        ]));
+      } catch (e) {
+        testOut.appendChild(el('div', { class: 'alert', text: e.message || 'Test failed' }));
+      }
+    });
+
+    load();
+    return wrap;
+  }
+
   async function viewSecurity(sub) {
     if (sub === 'rbac') {
       setTitle('RBAC Hierarchy & Role Entitlements');
@@ -2891,6 +3396,21 @@
     if (sub === '2fa' || sub === 'totp') {
       setTitle('Two-Factor Authentication & Hardware Keys');
       main.appendChild(securityTwoFactorStudioPanel());
+      return;
+    }
+    if (sub === 'pii' || sub === 'masking') {
+      setTitle('Sensitive Field Masking & PII Redaction');
+      main.appendChild(securityPiiMaskingPanel());
+      return;
+    }
+    if (sub === 'api-keys' || sub === 'tokens') {
+      setTitle('API Key Management & Token Scoping');
+      main.appendChild(securityApiKeysPanel());
+      return;
+    }
+    if (sub === 'csrf' || sub === 'origin' || sub === 'headers') {
+      setTitle('CSRF Protection & Origin Integrity Headers');
+      main.appendChild(securityOriginHeadersPanel());
       return;
     }
     setTitle('Security');

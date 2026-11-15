@@ -9,6 +9,7 @@ import {
   getSessionLifecycleState
 } from '../functions/_lib/security-rbac.js';
 import { handleSecurityEdge } from '../functions/_lib/security-edge.js';
+import { handleSecurityGovernance } from '../functions/_lib/security-governance.js';
 import { totpCode } from '../functions/_lib/admin-2fa.js';
 
 function makeD1() {
@@ -612,4 +613,125 @@ const verifyInvalid = await (await handleSecurityEdge(
 )).json();
 assert.equal(verifyInvalid.valid, false);
 
-console.log('SECURITY & RBAC SUITE MODULES #1-#7 TESTS PASSED');
+// ============================================================================
+// 8. Module #8: Sensitive Field Masking & PII Redaction Controls
+// ============================================================================
+const piiInit = await (await handleSecurityGovernance(
+  new Request('https://csodisha.com/api/admin/security/pii-masking', { method: 'GET' }),
+  env, adminActor, 'pii-masking'
+)).json();
+assert.equal(piiInit.ok, true);
+assert.equal(piiInit.dpdp_act_mode, 'INDIA_DPDP_2023_ENFORCED');
+assert.ok(piiInit.policy.custom_redacted_fields.includes('aadhaar'));
+
+// Prevent disabling core credential redaction
+await assert.rejects(
+  () => handleSecurityGovernance(
+    new Request('https://csodisha.com/api/admin/security/pii-masking', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ redact_export_credentials: false })
+    }),
+    env, adminActor, 'pii-masking'
+  ),
+  err => err.status === 400 && err.code === 'DPDP_LOCKED_RULE'
+);
+
+const piiPreview = await (await handleSecurityGovernance(
+  new Request('https://csodisha.com/api/admin/security/pii-masking/preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      viewer_role: 'reviewer',
+      payload: JSON.stringify({
+        email: 'aspirant@csodisha.com',
+        aadhaar: '1234-5678-9012',
+        ip_address: '203.0.113.45',
+        password_hash: 'SECRET_HASH'
+      })
+    })
+  }),
+  env, adminActor, 'pii-masking', 'preview'
+)).json();
+assert.equal(piiPreview.redacted_payload.email, 'a***@csodisha.com');
+assert.equal(piiPreview.redacted_payload.aadhaar, '[REDACTED_DPDP]');
+assert.equal(piiPreview.redacted_payload.password_hash, '[REDACTED_DPDP]');
+assert.equal(piiPreview.redacted_payload.ip_address, '203.0.•••.•••');
+
+// ============================================================================
+// 9. Module #9: API Key Management & SHA-256 Token Scoping
+// ============================================================================
+const apiCreateRes = await handleSecurityGovernance(
+  new Request('https://csodisha.com/api/admin/security/api-keys', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: 'Odisha Mobile App',
+      scopes: ['read:schemes', 'read:jobs'],
+      expires_in_days: 90,
+      rate_limit_rpm: 120
+    })
+  }),
+  env, adminActor, 'api-keys'
+);
+assert.equal(apiCreateRes.status, 201);
+const apiCreateBody = await apiCreateRes.json();
+assert.match(apiCreateBody.plaintext_token, /^cso_live_[0-9a-f]{32}$/);
+assert.ok(apiCreateBody.key.key_prefix.startsWith('cso_live_'));
+assert.equal(apiCreateBody.key.status, 'active');
+
+// Listing keys NEVER returns key_hash or plaintext_token
+const apiListRaw = await (await handleSecurityGovernance(
+  new Request('https://csodisha.com/api/admin/security/api-keys', { method: 'GET' }),
+  env, adminActor, 'api-keys'
+)).text();
+assert.ok(!apiListRaw.includes(apiCreateBody.plaintext_token), 'list endpoint must never leak plaintext token');
+assert.ok(!apiListRaw.includes('key_hash'), 'list endpoint must never expose key_hash');
+const apiList = JSON.parse(apiListRaw);
+assert.equal(apiList.active_count, 1);
+
+// Revoke key
+const revKeyRes = await (await handleSecurityGovernance(
+  new Request(`https://csodisha.com/api/admin/security/api-keys/${apiCreateBody.key.id}/revoke`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}'
+  }),
+  env, adminActor, 'api-keys', apiCreateBody.key.id, 'revoke'
+)).json();
+assert.equal(revKeyRes.key.status, 'revoked');
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'security.api_key.revoke'`).first()).n === 1);
+
+// ============================================================================
+// 10. Module #10: CSRF Protection & Origin Integrity Headers
+// ============================================================================
+const origGet = await (await handleSecurityGovernance(
+  new Request('https://csodisha.com/api/admin/security/origin-headers', { method: 'GET' }),
+  env, adminActor, 'origin-headers'
+)).json();
+assert.equal(origGet.csp_inline_zero, true);
+assert.ok(origGet.headers_audit.some(h => h.header === 'Content-Security-Policy'));
+
+const csrfBlock = await (await handleSecurityGovernance(
+  new Request('https://csodisha.com/api/admin/security/origin-headers/test', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ method: 'POST', origin: 'https://evil-attacker.example', has_session_cookie: true })
+  }),
+  env, adminActor, 'origin-headers', 'test'
+)).json();
+assert.equal(csrfBlock.allowed, false);
+assert.equal(csrfBlock.verdict, 'BLOCK_CSRF_ORIGIN_MISMATCH');
+
+const csrfAllow = await (await handleSecurityGovernance(
+  new Request('https://csodisha.com/api/admin/security/origin-headers/test', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ method: 'POST', origin: 'https://csodisha.com', has_session_cookie: true })
+  }),
+  env, adminActor, 'origin-headers', 'test'
+)).json();
+assert.equal(csrfAllow.allowed, true);
+assert.equal(csrfAllow.verdict, 'ALLOW');
+
+console.log('SECURITY & RBAC SUITE MODULES #1-#10 TESTS PASSED');
