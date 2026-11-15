@@ -110,3 +110,23 @@
 .cso-ops-last-drill-strip{margin:10px 0 12px}
 .cso-ops-drift-details{margin:10px 0 12px}
 .cso-ops-replace-warn{margin:8px 0 10px}
+
+/* Folder 16: Security, Privacy & RBAC Suite (Modules #1, #2 & #3) */
+.cso-sec-studio{margin-bottom:18px}
+.cso-sec-matrix-table th,.cso-sec-matrix-table td{vertical-align:middle}
+.cso-sec-cap-desc{display:block;font-size:12px;color:var(--mut);margin-top:2px}
+.cso-sec-cell-check{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px}
+.cso-sec-cell-check input[type="checkbox"]{width:auto;margin:0}
+.cso-sec-lock-tag{font-size:11px;padding:1px 6px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--mut)}
+.cso-sec-sim-result{margin-top:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);display:flex;flex-direction:column;gap:4px}
+.cso-sec-sim-result.is-allow{border-color:var(--accent, #10b981)}
+.cso-sec-sim-result.is-deny{border-color:var(--red, #dc2626)}
+.cso-sec-engine-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin:12px 0}
+.cso-sec-engine-card{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);display:flex;flex-direction:column;gap:8px}
+.cso-sec-engine-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.cso-sec-toggle-list{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.cso-sec-toggle-item{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.cso-sec-toggle-item input[type="checkbox"]{width:auto;margin:0}
+.cso-sec-policy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:10px 0}
+.cso-sec-policy-field{display:flex;flex-direction:column;gap:4px}
+.cso-sec-danger-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:10px 12px;border:1px dashed var(--red, #dc2626);border-radius:10px;background:var(--bg)}

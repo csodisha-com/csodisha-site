@@ -7,6 +7,7 @@ import { handleOpsSnapshots, handleOpsR2Vault } from '../../_lib/ops-snapshots.j
 import { handleOpsSentinel } from '../../_lib/ops-sentinel.js';
 import { handleOpsHygiene } from '../../_lib/ops-hygiene.js';
 import { handleOpsContinuity } from '../../_lib/ops-continuity.js';
+import { handleSecurityRbac } from '../../_lib/security-rbac.js';
 import { parsePaging, likeEscape } from '../../_lib/validate.js';
 import { handlePosts, POST_TYPES } from './_posts.js';
 import { handleMockTests, handleQuestion } from './_mock.js';
@@ -151,6 +152,8 @@ export async function handleAdminApi(request, env) {
         break;
       case 'incidents':
         return await handleIncidents(request, env, actor, id, sub);
+      case 'security':
+        return await handleSecurityRbac(request, env, actor, id, sub);
       case 'ops':
         if (id === 'snapshots') return await handleOpsSnapshots(request, env, actor, sub, extra);
         if (id === 'r2-vault') return await handleOpsR2Vault(request, env, actor, sub);

@@ -26,6 +26,21 @@
     ['operations/runbooks', 'DR Playbook & SOPs']
   ];
   var SEC = [['audit/security', 'Security Audit'], ['incidents', 'Incidents'], ['audit', 'All Events']];
+  var SEC_SUITE = [
+    ['security/rbac', 'RBAC Hierarchy & Role Entitlements'],
+    ['security/engine-guards', 'Publish & Mutation Guards (6 Engines)'],
+    ['security/sessions', 'Session Lifecycle & Token Expiry'],
+    ['audit/security', 'Turnstile & Edge Bot Deterrence'],
+    ['audit/security', 'Visual Audit Log Explorer'],
+    ['audit/security', 'IP Access Control & Geofencing'],
+    ['security', 'Two-Factor Authentication & Recovery'],
+    ['audit/security', 'Sensitive Field Masking & PII'],
+    ['audit/security', 'API Key & Token Scoping'],
+    ['audit/security', 'CSRF & Origin Integrity'],
+    ['operations/freeze', 'Emergency Maintenance Lockdown'],
+    ['audit/security', 'DPDP Act 2023 Compliance Vault'],
+    ['incidents', 'Incident Response & Audit Export']
+  ];
 
   var ROUTES = {
     'module-01-001': ['dashboard', OPS],
@@ -74,8 +89,32 @@
     'module-14-006': ['current-affairs', CONTENT],
     'module-14-007': ['jobs', CONTENT],
     'module-14-009': ['dashboard', OPS],
-    'module-16-012': ['audit/security', SEC],
-    'module-16-013': ['incidents', SEC],
+    'module-16-001': ['security/rbac', SEC_SUITE],
+    'module-16-002': ['security/engine-guards', SEC_SUITE],
+    'module-16-003': ['security/sessions', SEC_SUITE],
+    'module-16-004': ['audit/security', SEC_SUITE],
+    'module-16-005': ['audit/security', SEC_SUITE],
+    'module-16-006': ['audit/security', SEC_SUITE],
+    'module-16-007': ['security', SEC_SUITE],
+    'module-16-008': ['audit/security', SEC_SUITE],
+    'module-16-009': ['audit/security', SEC_SUITE],
+    'module-16-010': ['audit/security', SEC_SUITE],
+    'module-16-011': ['operations/freeze', SEC_SUITE],
+    'module-16-012': ['audit/security', SEC_SUITE],
+    'module-16-013': ['incidents', SEC_SUITE],
+    'module-sec-001': ['security/rbac', SEC_SUITE],
+    'module-sec-002': ['security/engine-guards', SEC_SUITE],
+    'module-sec-003': ['security/sessions', SEC_SUITE],
+    'module-sec-004': ['audit/security', SEC_SUITE],
+    'module-sec-005': ['audit/security', SEC_SUITE],
+    'module-sec-006': ['audit/security', SEC_SUITE],
+    'module-sec-007': ['security', SEC_SUITE],
+    'module-sec-008': ['audit/security', SEC_SUITE],
+    'module-sec-009': ['audit/security', SEC_SUITE],
+    'module-sec-010': ['audit/security', SEC_SUITE],
+    'module-sec-011': ['operations/freeze', SEC_SUITE],
+    'module-sec-012': ['audit/security', SEC_SUITE],
+    'module-sec-013': ['incidents', SEC_SUITE],
     'module-ops-001': ['operations/snapshots', OPS_SUITE],
     'module-ops-002': ['operations/drill', OPS_SUITE],
     'module-ops-003': ['operations/restore', OPS_SUITE],
@@ -126,7 +165,7 @@
     'folder-13': ['seo', SITE],
     'folder-14': ['jobs', CONTENT],
     'folder-15': ['diagnostics', OPS],
-    'folder-16': ['audit/security', SEC],
+    'folder-16': ['security/rbac', SEC_SUITE],
     'folder-17': ['operations/snapshots', OPS_SUITE],
     'folder-18': ['banner', SITE],
     'folder-19': ['registry'],
@@ -143,20 +182,26 @@
     return ['dashboard', OPS];
   }
 
-  function renderOpsStepper(folderId, moduleId, currentRoute, root, host) {
-    var idx = OPS_SUITE.findIndex(function (item) { return item[0] === currentRoute; });
+  function renderSuiteStepper(suite, prefix, fallbackFolder, folderId, moduleId, currentRoute, root, host, ariaLabel) {
+    var idx = -1;
+    var m = String(moduleId || '').match(/-(\d{3})$/);
+    if (m) {
+      var parsedIdx = Number(m[1]) - 1;
+      if (parsedIdx >= 0 && parsedIdx < suite.length) idx = parsedIdx;
+    }
+    if (idx < 0) idx = suite.findIndex(function (item) { return item[0] === currentRoute; });
     if (idx < 0) idx = 0;
-    var prefix = String(moduleId || '').indexOf('module-17-') === 0 ? 'module-17-' : 'module-ops-';
+
     function moduleIdAt(i) {
       return prefix + String(i + 1).padStart(3, '0');
     }
     function navigateTo(nextIdx) {
-      if (nextIdx < 0 || nextIdx >= OPS_SUITE.length) return;
+      if (nextIdx < 0 || nextIdx >= suite.length) return;
       var nextModId = moduleIdAt(nextIdx);
       if (typeof window.selectModule === 'function') {
-        window.selectModule(folderId || 'folder-17', nextModId);
+        window.selectModule(folderId || fallbackFolder, nextModId);
       } else if (window.CSOCms) {
-        window.CSOCms.mount(host, OPS_SUITE[nextIdx][0], null);
+        window.CSOCms.mount(host, suite[nextIdx][0], null);
       }
     }
 
@@ -166,7 +211,7 @@
     prevBtn.textContent = '← Previous Module';
     prevBtn.disabled = idx <= 0;
     if (idx > 0) {
-      prevBtn.setAttribute('aria-label', 'Previous Module: ' + OPS_SUITE[idx - 1][1]);
+      prevBtn.setAttribute('aria-label', 'Previous Module: ' + suite[idx - 1][1]);
       prevBtn.addEventListener('click', function () { navigateTo(idx - 1); });
     } else {
       prevBtn.setAttribute('aria-label', 'Previous Module (none)');
@@ -176,10 +221,10 @@
     meta.className = 'cso-ops-stepper-meta';
     var countSpan = document.createElement('span');
     countSpan.className = 'cso-ops-stepper-count cso-tabular';
-    countSpan.textContent = 'Module ' + (idx + 1) + ' of ' + OPS_SUITE.length;
+    countSpan.textContent = 'Module ' + (idx + 1) + ' of ' + suite.length;
     var titleSpan = document.createElement('span');
     titleSpan.className = 'cso-ops-stepper-title';
-    titleSpan.textContent = OPS_SUITE[idx][1];
+    titleSpan.textContent = suite[idx][1];
     meta.appendChild(countSpan);
     meta.appendChild(titleSpan);
 
@@ -187,9 +232,9 @@
     nextBtn.type = 'button';
     nextBtn.className = 'btn sm cso-ops-stepper-btn';
     nextBtn.textContent = 'Next Module →';
-    nextBtn.disabled = idx >= OPS_SUITE.length - 1;
-    if (idx < OPS_SUITE.length - 1) {
-      nextBtn.setAttribute('aria-label', 'Next Module: ' + OPS_SUITE[idx + 1][1]);
+    nextBtn.disabled = idx >= suite.length - 1;
+    if (idx < suite.length - 1) {
+      nextBtn.setAttribute('aria-label', 'Next Module: ' + suite[idx + 1][1]);
       nextBtn.addEventListener('click', function () { navigateTo(idx + 1); });
     } else {
       nextBtn.setAttribute('aria-label', 'Next Module (none)');
@@ -197,7 +242,7 @@
 
     var nav = document.createElement('nav');
     nav.className = 'cso-ops-stepper';
-    nav.setAttribute('aria-label', 'Operations & Disaster Recovery Module Stepper');
+    nav.setAttribute('aria-label', ariaLabel);
     nav.appendChild(prevBtn);
     nav.appendChild(meta);
     nav.appendChild(nextBtn);
@@ -219,7 +264,13 @@
     var host = document.createElement('div');
     host.className = 'cms-embed';
     if (r[1] === OPS_SUITE) {
-      renderOpsStepper(folderId, moduleId, r[0], root, host);
+      var opsPrefix = String(moduleId || '').indexOf('module-17-') === 0 ? 'module-17-' : 'module-ops-';
+      renderSuiteStepper(OPS_SUITE, opsPrefix, 'folder-17', folderId, moduleId, r[0], root, host, 'Operations & Disaster Recovery Module Stepper');
+      root.appendChild(host);
+      window.CSOCms.mount(host, r[0], null);
+    } else if (r[1] === SEC_SUITE) {
+      var secPrefix = String(moduleId || '').indexOf('module-16-') === 0 ? 'module-16-' : 'module-sec-';
+      renderSuiteStepper(SEC_SUITE, secPrefix, 'folder-16', folderId, moduleId, r[0], root, host, 'Security, Privacy & RBAC Module Stepper');
       root.appendChild(host);
       window.CSOCms.mount(host, r[0], null);
     } else {

@@ -1554,7 +1554,634 @@
       el('div', { class: 'actions' }, [genBtn, copyBtn, copiedBadge])
     ]);
   }
-  async function viewSecurity() {
+  /* ---------- Folder 16: Module #1 RBAC Hierarchy & Role Entitlements ---------- */
+  function securityRbacHierarchyPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-sec-studio' }, [
+      el('h2', { text: 'RBAC Hierarchy & Role Entitlements' }),
+      el('p', { class: 'muted', text: 'Govern Super Admin, Senior Editor, and Reviewer capability boundaries with lockout protection and live permission simulation.' })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var saveBtn = el('button', { type: 'button', class: 'btn primary', disabled: !isAdmin, text: 'Save Role Entitlements' });
+    var reloadBtn = el('button', { type: 'button', class: 'btn sm', text: 'Refresh Matrix' });
+    var statusEl = el('div', { class: 'cso-ops-vault-summary', 'aria-live': 'polite' });
+    var matrixHost = el('div', { class: 'cso-ops-vault-table-host' });
+
+    // Effective Permission Simulator
+    var simRoleSel = el('select', { id: 'f-sec-sim-role', class: 'cso-ops-policy-select', 'aria-label': 'Role to simulate' }, [
+      el('option', { value: 'admin', text: 'Super Admin (admin)' }),
+      el('option', { value: 'editor', text: 'Senior Editor (editor)', selected: true }),
+      el('option', { value: 'reviewer', text: 'Reviewer (reviewer)' }),
+      el('option', { value: 'candidate', text: 'Candidate (candidate)' })
+    ]);
+    var simActionSel = el('select', { id: 'f-sec-sim-action', class: 'cso-ops-policy-select', 'aria-label': 'Capability action to simulate' }, [
+      el('option', { value: 'publish', text: 'publish — Publish & Schedule' }),
+      el('option', { value: 'delete', text: 'delete — Soft / Hard Delete' }),
+      el('option', { value: 'restore', text: 'restore — DR Rollback & Snapshots' }),
+      el('option', { value: 'export_pii', text: 'export_pii — Export Candidate PII' }),
+      el('option', { value: 'manage_users', text: 'manage_users — Manage Staff Accounts' }),
+      el('option', { value: 'manage_security', text: 'manage_security — Modify RBAC Policies' })
+    ]);
+    var simBtn = el('button', { type: 'button', class: 'btn primary sm', text: 'Simulate Permission' });
+    var simOut = el('div', { 'aria-live': 'polite' });
+
+    var simBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Effective Permission Previewer (Non-Destructive)' }),
+        simBtn
+      ]),
+      el('div', { class: 'cso-ops-restore-controls' }, [
+        el('div', { class: 'cso-ops-restore-field' }, [el('label', { for: 'f-sec-sim-role', class: 'muted sm', text: 'Target Role' }), simRoleSel]),
+        el('div', { class: 'cso-ops-restore-field' }, [el('label', { for: 'f-sec-sim-action', class: 'muted sm', text: 'Target Action' }), simActionSel])
+      ]),
+      simOut
+    ]);
+
+    var auditHost = el('div', { class: 'cso-ops-subbox' });
+
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(el('div', { class: 'cso-ops-subhead' }, [
+      el('strong', { text: 'Role Entitlement Matrix' }),
+      el('div', { class: 'actions' }, [reloadBtn, saveBtn])
+    ]));
+    wrap.appendChild(statusEl);
+    wrap.appendChild(matrixHost);
+    wrap.appendChild(simBox);
+    wrap.appendChild(auditHost);
+
+    var draftMatrix = null;
+    var stateData = null;
+    var saveBusy = false;
+    var simBusy = false;
+
+    function renderKpis(d) {
+      clear(kpiStrip);
+      var uc = d.user_counts || {};
+      var cards = [
+        ['Active Staff Roles', '3', 'Admin (' + (uc.admin || 0) + ') · Editor (' + (uc.editor || 0) + ') · Reviewer (' + (uc.reviewer || 0) + ')'],
+        ['Total Staff Accounts', String(d.total_staff || 0), 'Live users table count'],
+        ['Custom Policy Overrides', String(d.custom_overrides || 0), d.custom_overrides ? 'Modified from baseline' : 'Baseline defaults active'],
+        ['Last Matrix Update', d.updated_at ? String(d.updated_at).slice(0, 16).replace('T', ' ') : 'Default', d.updated_by || 'System baseline']
+      ];
+      cards.forEach(function (c) {
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('span', { class: 'muted sm', text: c[0] }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: c[1] }),
+          el('span', { class: 'muted sm', text: c[2] })
+        ]));
+      });
+    }
+
+    function renderMatrixTable(d) {
+      clear(matrixHost);
+      var roles = ['admin', 'editor', 'reviewer'];
+      var locked = d.locked || {};
+      var tbl = el('table', { class: 'tbl cso-sec-matrix-table' }, [
+        el('thead', {}, [el('tr', {}, [
+          el('th', { text: 'Capability' }),
+          el('th', { text: 'Super Admin' }),
+          el('th', { text: 'Senior Editor' }),
+          el('th', { text: 'Reviewer' })
+        ])])
+      ]);
+      var tbody = el('tbody');
+      (d.capabilities || []).forEach(function (cap) {
+        var rowCells = [
+          el('td', {}, [
+            el('strong', { text: cap.label }),
+            el('span', { class: 'cso-sec-cap-desc', text: cap.description })
+          ])
+        ];
+        roles.forEach(function (rKey) {
+          var isLocked = Boolean(locked[rKey] && Object.prototype.hasOwnProperty.call(locked[rKey], cap.key));
+          var checked = Boolean(draftMatrix[rKey] && draftMatrix[rKey][cap.key]);
+          var cb = el('input', {
+            type: 'checkbox',
+            checked: checked,
+            disabled: !isAdmin || isLocked,
+            'aria-label': (d.role_labels[rKey] || rKey) + ' ' + cap.key
+          });
+          cb.addEventListener('change', function () {
+            if (!draftMatrix[rKey]) draftMatrix[rKey] = {};
+            draftMatrix[rKey][cap.key] = cb.checked;
+          });
+          var labelNodes = [cb, el('span', { text: checked ? 'Allow' : 'Deny' })];
+          if (isLocked) labelNodes.push(el('span', { class: 'cso-sec-lock-tag', text: 'Locked' }));
+          cb.addEventListener('change', function () {
+            labelNodes[1].textContent = cb.checked ? 'Allow' : 'Deny';
+          });
+          rowCells.push(el('td', {}, [el('label', { class: 'cso-sec-cell-check' }, labelNodes)]));
+        });
+        tbody.appendChild(el('tr', {}, rowCells));
+      });
+      tbl.appendChild(tbody);
+      matrixHost.appendChild(tbl);
+    }
+
+    function renderRecentAudit(d) {
+      clear(auditHost);
+      auditHost.appendChild(el('strong', { text: 'Recent RBAC & Role Changes' }));
+      var rows = d.recent_changes || [];
+      if (!rows.length) {
+        auditHost.appendChild(el('p', { class: 'muted sm', text: 'No RBAC matrix changes recorded yet.' }));
+        return;
+      }
+      var tbl = el('table', { class: 'tbl' }, [
+        el('thead', {}, [el('tr', {}, [
+          el('th', { text: 'Timestamp' }),
+          el('th', { text: 'Action' }),
+          el('th', { text: 'Actor' }),
+          el('th', { text: 'Overrides' })
+        ])])
+      ]);
+      var tbody = el('tbody');
+      rows.slice(0, 8).forEach(function (r) {
+        tbody.appendChild(el('tr', {}, [
+          el('td', { class: 'cso-tabular sm', text: String(r.created_at || '').slice(0, 19).replace('T', ' ') }),
+          el('td', { class: 'cso-ops-mono sm', text: r.action }),
+          el('td', { class: 'sm', text: r.actor_user_id || 'admin' }),
+          el('td', { class: 'cso-tabular sm', text: r.metadata && r.metadata.custom_overrides !== undefined ? String(r.metadata.custom_overrides) : '—' })
+        ]));
+      });
+      tbl.appendChild(tbody);
+      auditHost.appendChild(tbl);
+    }
+
+    async function load() {
+      clear(statusEl);
+      statusEl.appendChild(el('p', { class: 'muted sm', text: 'Loading RBAC entitlement matrix…' }));
+      try {
+        var d = await api('GET', 'security/rbac');
+        stateData = d;
+        draftMatrix = JSON.parse(JSON.stringify(d.matrix || {}));
+        clear(statusEl);
+        renderKpis(d);
+        renderMatrixTable(d);
+        renderRecentAudit(d);
+      } catch (e) {
+        clear(statusEl);
+        statusEl.appendChild(el('div', { class: 'alert', text: e.message || 'Failed to load RBAC matrix' }));
+      }
+    }
+
+    saveBtn.addEventListener('click', async function () {
+      if (!isAdmin || saveBusy || !draftMatrix) return;
+      saveBusy = true;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+      try {
+        var res = await api('PUT', 'security/rbac', { matrix: draftMatrix });
+        stateData = res;
+        draftMatrix = JSON.parse(JSON.stringify(res.matrix || {}));
+        renderKpis(res);
+        renderMatrixTable(res);
+        renderRecentAudit(res);
+        toast('RBAC role entitlements saved');
+      } catch (e) {
+        toast(e.message || 'Failed to save RBAC matrix', true);
+      } finally {
+        saveBusy = false;
+        saveBtn.disabled = !isAdmin;
+        saveBtn.textContent = 'Save Role Entitlements';
+      }
+    });
+
+    simBtn.addEventListener('click', async function () {
+      if (simBusy) return;
+      simBusy = true;
+      simBtn.disabled = true;
+      clear(simOut);
+      try {
+        var res = await api('POST', 'security/rbac/simulate', {
+          role: simRoleSel.value,
+          action: simActionSel.value
+        });
+        simOut.appendChild(el('div', {
+          class: 'cso-sec-sim-result ' + (res.allowed ? 'is-allow' : 'is-deny')
+        }, [
+          el('div', { class: 'cso-ops-subhead' }, [
+            el('strong', { text: (res.role_label || res.role) + ' → ' + (res.action_label || res.action) }),
+            el('span', { class: 'badge ' + (res.allowed ? 'ok' : 'bad'), text: res.decision })
+          ]),
+          el('span', { class: 'muted sm', text: res.rationale })
+        ]));
+      } catch (e) {
+        simOut.appendChild(el('div', { class: 'alert', text: e.message || 'Simulation failed' }));
+      } finally {
+        simBusy = false;
+        simBtn.disabled = false;
+      }
+    });
+
+    reloadBtn.addEventListener('click', load);
+    load();
+    return wrap;
+  }
+
+  /* ---------- Folder 16: Module #2 Publish & Mutation Guard (6 Engines) ---------- */
+  function securityEngineGuardsPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-sec-studio' }, [
+      el('h2', { text: 'Publish & Mutation Permissions Guard (6 Engines)' }),
+      el('p', { class: 'muted', text: 'Configure reviewer sign-off gates, hard-delete protections, and pre-publish SEO checks across all 6 CS Odisha content engines.' })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var saveBtn = el('button', { type: 'button', class: 'btn primary', disabled: !isAdmin, text: 'Save Engine Guardrails' });
+    var reloadBtn = el('button', { type: 'button', class: 'btn sm', text: 'Refresh' });
+    var statusEl = el('div', { 'aria-live': 'polite' });
+    var gridHost = el('div', { class: 'cso-sec-engine-grid' });
+
+    // Dry-run Mutation Gate Tester
+    var testRoleSel = el('select', { id: 'f-sec-gate-role', class: 'cso-ops-policy-select', 'aria-label': 'Actor role' }, [
+      el('option', { value: 'editor', text: 'Senior Editor (editor)' }),
+      el('option', { value: 'reviewer', text: 'Reviewer (reviewer)' }),
+      el('option', { value: 'admin', text: 'Super Admin (admin)' }),
+      el('option', { value: 'candidate', text: 'Candidate (candidate)' })
+    ]);
+    var testEngSel = el('select', { id: 'f-sec-gate-eng', class: 'cso-ops-policy-select', 'aria-label': 'Content engine' });
+    var testMutSel = el('select', { id: 'f-sec-gate-mut', class: 'cso-ops-policy-select', 'aria-label': 'Mutation type' }, [
+      el('option', { value: 'publish', text: 'publish' }),
+      el('option', { value: 'delete', text: 'delete (Hard Delete)' }),
+      el('option', { value: 'create', text: 'create (Draft)' })
+    ]);
+    var testSignoffCb = el('input', { type: 'checkbox', id: 'f-sec-gate-signoff' });
+    var testSeoCb = el('input', { type: 'checkbox', id: 'f-sec-gate-seo', checked: true });
+    var testBtn = el('button', { type: 'button', class: 'btn primary sm', text: 'Run Dry-Run Gate Check' });
+    var testOut = el('div', { 'aria-live': 'polite' });
+
+    var testerBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Dry-Run Mutation Gate Tester' }),
+        testBtn
+      ]),
+      el('div', { class: 'cso-ops-restore-controls' }, [
+        el('div', { class: 'cso-ops-restore-field' }, [el('label', { for: 'f-sec-gate-role', class: 'muted sm', text: 'Actor Role' }), testRoleSel]),
+        el('div', { class: 'cso-ops-restore-field' }, [el('label', { for: 'f-sec-gate-eng', class: 'muted sm', text: 'Content Engine' }), testEngSel]),
+        el('div', { class: 'cso-ops-restore-field' }, [el('label', { for: 'f-sec-gate-mut', class: 'muted sm', text: 'Mutation' }), testMutSel])
+      ]),
+      el('div', { class: 'cso-ops-label-row' }, [
+        el('label', { class: 'cso-ops-inline-check' }, [testSignoffCb, el('span', { text: 'Has Reviewer Sign-off' })]),
+        el('label', { class: 'cso-ops-inline-check' }, [testSeoCb, el('span', { text: 'Has Complete SEO Meta' })])
+      ]),
+      testOut
+    ]);
+
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(el('div', { class: 'cso-ops-subhead' }, [
+      el('strong', { text: '6-Engine Mutation Guardrails' }),
+      el('div', { class: 'actions' }, [reloadBtn, saveBtn])
+    ]));
+    wrap.appendChild(statusEl);
+    wrap.appendChild(gridHost);
+    wrap.appendChild(testerBox);
+
+    var draftGuards = null;
+    var saveBusy = false;
+    var testBusy = false;
+
+    function renderKpis(d) {
+      clear(kpiStrip);
+      var st = d.stats || {};
+      var cards = [
+        ['Protected Engines', (st.protected_engines || 6) + ' / ' + (st.total_engines || 6), 'Full CMS coverage'],
+        ['Active Approval Gates', String(st.active_approval_gates || 0), 'Reviewer sign-off enforced'],
+        ['Hard-Delete Protections', String(st.hard_delete_protections || 0), 'Non-admin delete blocked'],
+        ['Last Policy Audit', d.updated_at ? String(d.updated_at).slice(0, 16).replace('T', ' ') : 'Default', d.updated_by || 'System baseline']
+      ];
+      cards.forEach(function (c) {
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('span', { class: 'muted sm', text: c[0] }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: c[1] }),
+          el('span', { class: 'muted sm', text: c[2] })
+        ]));
+      });
+    }
+
+    function renderEngineCards(d) {
+      clear(gridHost);
+      clear(testEngSel);
+      (d.engines || []).forEach(function (eng) {
+        testEngSel.appendChild(el('option', { value: eng.key, text: eng.label }));
+        var g = draftGuards[eng.key] || {};
+        var toggleDefs = [
+          ['require_reviewer_signoff', 'Require Reviewer Sign-off before Publish'],
+          ['block_editor_hard_delete', 'Block Non-Admin Hard Delete'],
+          ['require_seo_meta_before_publish', 'Require SEO Meta before Publish']
+        ];
+        var list = el('div', { class: 'cso-sec-toggle-list' });
+        toggleDefs.forEach(function (td) {
+          var cb = el('input', { type: 'checkbox', checked: Boolean(g[td[0]]), disabled: !isAdmin });
+          cb.addEventListener('change', function () {
+            if (!draftGuards[eng.key]) draftGuards[eng.key] = {};
+            draftGuards[eng.key][td[0]] = cb.checked;
+          });
+          list.appendChild(el('label', { class: 'cso-sec-toggle-item' }, [cb, el('span', { text: td[1] })]));
+        });
+
+        gridHost.appendChild(el('div', { class: 'cso-sec-engine-card' }, [
+          el('div', { class: 'cso-sec-engine-head' }, [
+            el('strong', { text: eng.label }),
+            el('span', { class: 'badge ok', text: 'Guarded' })
+          ]),
+          el('span', { class: 'muted sm', text: eng.description }),
+          list
+        ]));
+      });
+    }
+
+    async function load() {
+      clear(statusEl);
+      statusEl.appendChild(el('p', { class: 'muted sm', text: 'Loading 6-engine guardrails…' }));
+      try {
+        var d = await api('GET', 'security/engine-guards');
+        draftGuards = JSON.parse(JSON.stringify(d.guards || {}));
+        clear(statusEl);
+        renderKpis(d);
+        renderEngineCards(d);
+      } catch (e) {
+        clear(statusEl);
+        statusEl.appendChild(el('div', { class: 'alert', text: e.message || 'Failed to load engine guards' }));
+      }
+    }
+
+    saveBtn.addEventListener('click', async function () {
+      if (!isAdmin || saveBusy || !draftGuards) return;
+      saveBusy = true;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+      try {
+        var res = await api('PUT', 'security/engine-guards', { guards: draftGuards });
+        draftGuards = JSON.parse(JSON.stringify(res.guards || {}));
+        renderKpis(res);
+        renderEngineCards(res);
+        toast('6-engine mutation guardrails saved');
+      } catch (e) {
+        toast(e.message || 'Failed to save engine guardrails', true);
+      } finally {
+        saveBusy = false;
+        saveBtn.disabled = !isAdmin;
+        saveBtn.textContent = 'Save Engine Guardrails';
+      }
+    });
+
+    testBtn.addEventListener('click', async function () {
+      if (testBusy) return;
+      testBusy = true;
+      testBtn.disabled = true;
+      clear(testOut);
+      try {
+        var res = await api('POST', 'security/engine-guards/test', {
+          role: testRoleSel.value,
+          engine: testEngSel.value,
+          mutation: testMutSel.value,
+          has_reviewer_signoff: testSignoffCb.checked,
+          has_seo_meta: testSeoCb.checked
+        });
+        testOut.appendChild(el('div', {
+          class: 'cso-sec-sim-result ' + (res.allowed ? 'is-allow' : 'is-deny')
+        }, [
+          el('div', { class: 'cso-ops-subhead' }, [
+            el('strong', { text: res.engine_label + ' · ' + res.mutation.toUpperCase() + ' (' + res.role_label + ')' }),
+            el('span', { class: 'badge ' + (res.allowed ? 'ok' : 'bad'), text: res.decision })
+          ]),
+          el('span', { class: 'muted sm', text: res.rationale })
+        ]));
+      } catch (e) {
+        testOut.appendChild(el('div', { class: 'alert', text: e.message || 'Gate check failed' }));
+      } finally {
+        testBusy = false;
+        testBtn.disabled = false;
+      }
+    });
+
+    reloadBtn.addEventListener('click', load);
+    load();
+    return wrap;
+  }
+
+  /* ---------- Folder 16: Module #3 Session Lifecycle & Token Expiry ---------- */
+  function securitySessionLifecyclePanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-sec-studio' }, [
+      el('h2', { text: 'Session Lifecycle, Inactivity Timeouts & Token Expiry' }),
+      el('p', { class: 'muted', text: 'Manage idle timeout windows, absolute session TTLs, concurrency caps, and masked active session revocation.' })
+    ]);
+
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var idleInp = el('input', { type: 'number', id: 'f-sec-idle-min', min: '15', max: '480', value: '60', disabled: !isAdmin });
+    var ttlInp = el('input', { type: 'number', id: 'f-sec-ttl-hrs', min: '1', max: '168', value: '24', disabled: !isAdmin });
+    var maxInp = el('input', { type: 'number', id: 'f-sec-max-sess', min: '1', max: '10', value: '3', disabled: !isAdmin });
+    var uaCb = el('input', { type: 'checkbox', id: 'f-sec-bind-ua', checked: true, disabled: !isAdmin });
+    var savePolicyBtn = el('button', { type: 'button', class: 'btn primary', disabled: !isAdmin, text: 'Save Session Policy' });
+
+    var policyBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [
+        el('strong', { text: 'Session Timeout & Concurrency Policy' }),
+        savePolicyBtn
+      ]),
+      el('div', { class: 'cso-sec-policy-grid' }, [
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-idle-min', class: 'muted sm', text: 'Idle Timeout (15–480 min)' }), idleInp]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-ttl-hrs', class: 'muted sm', text: 'Absolute Token TTL (1–168 hrs)' }), ttlInp]),
+        el('div', { class: 'cso-sec-policy-field' }, [el('label', { for: 'f-sec-max-sess', class: 'muted sm', text: 'Max Concurrent Sessions (1–10)' }), maxInp])
+      ]),
+      el('label', { class: 'cso-ops-inline-check' }, [uaCb, el('span', { text: 'Bind session fingerprint to User-Agent header' })])
+    ]);
+
+    var revokeConfirmInp = el('input', {
+      type: 'text',
+      id: 'f-sec-revoke-confirm',
+      class: 'cso-ops-confirm-input',
+      placeholder: 'Type REVOKE_OTHERS',
+      disabled: !isAdmin,
+      'aria-label': 'Confirmation phrase to revoke all other sessions'
+    });
+    var revokeAllBtn = el('button', { type: 'button', class: 'btn danger sm', disabled: !isAdmin, text: 'Revoke All Other Sessions' });
+    var dangerBar = el('div', { class: 'cso-sec-danger-bar' }, [
+      el('div', {}, [
+        el('strong', { text: 'Emergency Session Invalidation' }),
+        el('span', { class: 'cso-sec-cap-desc', text: 'Immediately invalidates every active session except your current session.' })
+      ]),
+      el('div', { class: 'actions' }, [revokeConfirmInp, revokeAllBtn])
+    ]);
+
+    var statusEl = el('div', { 'aria-live': 'polite' });
+    var tableHost = el('div', { class: 'cso-ops-vault-table-host' });
+    var refreshBtn = el('button', { type: 'button', class: 'btn sm', text: 'Refresh Sessions' });
+
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(policyBox);
+    wrap.appendChild(dangerBar);
+    wrap.appendChild(el('div', { class: 'cso-ops-subhead' }, [
+      el('strong', { text: 'Active Masked Session Inventory (Raw Tokens Never Exposed)' }),
+      refreshBtn
+    ]));
+    wrap.appendChild(statusEl);
+    wrap.appendChild(tableHost);
+
+    var saveBusy = false;
+    var revokeBusy = false;
+
+    function renderKpis(d) {
+      clear(kpiStrip);
+      var p = d.policy || {};
+      var cards = [
+        ['Active Sessions', String(d.active_count || 0), (d.admin_active_count || 0) + ' staff · ' + (d.expired_count || 0) + ' expired'],
+        ['Idle Timeout Window', (p.idle_timeout_minutes || 60) + ' min', 'Inactivity revocation threshold'],
+        ['Absolute Token TTL', (p.absolute_ttl_hours || 24) + ' hrs', 'Hard session expiry cap'],
+        ['Max Concurrent Cap', String(p.max_concurrent_sessions || 3), p.bind_user_agent ? 'User-Agent bound' : 'Flexible device']
+      ];
+      cards.forEach(function (c) {
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('span', { class: 'muted sm', text: c[0] }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: c[1] }),
+          el('span', { class: 'muted sm', text: c[2] })
+        ]));
+      });
+    }
+
+    function renderSessionsTable(d) {
+      clear(tableHost);
+      var list = d.sessions || [];
+      if (!list.length) {
+        tableHost.appendChild(el('p', { class: 'muted sm', text: 'No active sessions found in D1.' }));
+        return;
+      }
+      var tbl = el('table', { class: 'tbl' }, [
+        el('thead', {}, [el('tr', {}, [
+          el('th', { text: 'Masked Token' }),
+          el('th', { text: 'User & Role' }),
+          el('th', { text: 'Client' }),
+          el('th', { text: 'Expires (UTC)' }),
+          el('th', { text: 'Action' })
+        ])])
+      ]);
+      var tbody = el('tbody');
+      list.forEach(function (s) {
+        var revBtn = el('button', {
+          type: 'button',
+          class: 'btn sm danger',
+          disabled: !isAdmin || s.is_current,
+          text: s.is_current ? 'Current' : 'Revoke'
+        });
+        revBtn.addEventListener('click', async function () {
+          if (!isAdmin || s.is_current || revokeBusy) return;
+          revokeBusy = true;
+          revBtn.disabled = true;
+          try {
+            await api('POST', 'security/sessions/revoke', { session_id: s.session_id });
+            toast('Session ' + s.masked_token + ' revoked');
+            await load();
+          } catch (e) {
+            toast(e.message || 'Revocation failed', true);
+            revBtn.disabled = false;
+          } finally {
+            revokeBusy = false;
+          }
+        });
+        tbody.appendChild(el('tr', {}, [
+          el('td', { class: 'cso-ops-mono sm', text: s.masked_token }),
+          el('td', {}, [
+            el('div', { text: s.email || s.user_id }),
+            el('span', { class: 'badge ' + (s.role === 'admin' ? 'ok' : ''), text: s.role })
+          ]),
+          el('td', { class: 'sm', text: s.user_agent_summary || 'Browser' }),
+          el('td', { class: 'cso-tabular sm', text: s.expires_at_iso ? s.expires_at_iso.slice(0, 16).replace('T', ' ') : '—' }),
+          el('td', {}, [revBtn])
+        ]));
+      });
+      tbl.appendChild(tbody);
+      tableHost.appendChild(tbl);
+    }
+
+    async function load() {
+      clear(statusEl);
+      if (!isAdmin) {
+        statusEl.appendChild(el('div', { class: 'alert', text: 'Active session inventory is restricted to Super Administrators.' }));
+        return;
+      }
+      statusEl.appendChild(el('p', { class: 'muted sm', text: 'Loading active sessions…' }));
+      try {
+        var d = await api('GET', 'security/sessions');
+        clear(statusEl);
+        var p = d.policy || {};
+        idleInp.value = String(p.idle_timeout_minutes || 60);
+        ttlInp.value = String(p.absolute_ttl_hours || 24);
+        maxInp.value = String(p.max_concurrent_sessions || 3);
+        uaCb.checked = Boolean(p.bind_user_agent);
+        renderKpis(d);
+        renderSessionsTable(d);
+      } catch (e) {
+        clear(statusEl);
+        statusEl.appendChild(el('div', { class: 'alert', text: e.message || 'Failed to load sessions' }));
+      }
+    }
+
+    savePolicyBtn.addEventListener('click', async function () {
+      if (!isAdmin || saveBusy) return;
+      saveBusy = true;
+      savePolicyBtn.disabled = true;
+      savePolicyBtn.textContent = 'Saving…';
+      try {
+        await api('PUT', 'security/sessions/policy', {
+          idle_timeout_minutes: parseInt(idleInp.value, 10),
+          absolute_ttl_hours: parseInt(ttlInp.value, 10),
+          max_concurrent_sessions: parseInt(maxInp.value, 10),
+          bind_user_agent: uaCb.checked
+        });
+        toast('Session lifecycle policy updated');
+        await load();
+      } catch (e) {
+        toast(e.message || 'Failed to save session policy', true);
+      } finally {
+        saveBusy = false;
+        savePolicyBtn.disabled = !isAdmin;
+        savePolicyBtn.textContent = 'Save Session Policy';
+      }
+    });
+
+    revokeAllBtn.addEventListener('click', async function () {
+      if (!isAdmin || revokeBusy) return;
+      revokeBusy = true;
+      revokeAllBtn.disabled = true;
+      try {
+        var res = await api('POST', 'security/sessions/revoke', {
+          except_current: true,
+          confirm: revokeConfirmInp.value.trim()
+        });
+        revokeConfirmInp.value = '';
+        toast('Revoked ' + (res.revoked_count || 0) + ' other session(s)');
+        await load();
+      } catch (e) {
+        toast(e.message || 'Bulk revocation failed', true);
+      } finally {
+        revokeBusy = false;
+        revokeAllBtn.disabled = !isAdmin;
+      }
+    });
+
+    refreshBtn.addEventListener('click', load);
+    load();
+    return wrap;
+  }
+
+  async function viewSecurity(sub) {
+    if (sub === 'rbac') {
+      setTitle('RBAC Hierarchy & Role Entitlements');
+      main.appendChild(securityRbacHierarchyPanel());
+      return;
+    }
+    if (sub === 'engine-guards') {
+      setTitle('Publish & Mutation Permissions Guard');
+      main.appendChild(securityEngineGuardsPanel());
+      return;
+    }
+    if (sub === 'sessions') {
+      setTitle('Session Lifecycle & Token Expiry');
+      main.appendChild(securitySessionLifecyclePanel());
+      return;
+    }
     setTitle('Security');
     if (me && me.role === 'admin') main.appendChild(securityBackupPanel());
     else main.appendChild(el('div', { class: 'alert', text: 'Security settings are visible to administrators only.' }));
@@ -6920,7 +7547,7 @@
     feedback: function () { return viewFeedbackQueue(); },
     seo: function () { return viewSeoDiscovery(); },
     operations: function (parts) { return viewOperations(parts[1], parts[2]); },
-    security: function () { return viewSecurity(); },
+    security: function (parts) { return viewSecurity(parts[1]); },
     diagnostics: function () { return viewDiagnostics(); },
     registry: function () { return viewRegistry(); },
     audit: function (parts) { return viewAudit(parts[1]); },
