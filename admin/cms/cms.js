@@ -3362,6 +3362,615 @@
     return wrap;
   }
 
+  function securityLockdownDispatcherPanel() {
+    var isAdmin = Boolean(me && me.role === 'admin');
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var previewOut = el('div');
+    var histBox = el('div');
+    var levelSel = el('select', { class: 'select' }, [
+      el('option', { value: 'normal', text: 'normal — Normal Platform Operations' }),
+      el('option', { value: 'read_only_freeze', text: 'read_only_freeze — Read-Only Freeze (Admin Reads Only)' }),
+      el('option', { value: 'public_maintenance', text: 'public_maintenance — Public Maintenance Banner + Freeze' }),
+      el('option', { value: 'full_session_lockdown', text: 'full_session_lockdown — Revoke Non-Admin Sessions + Freeze' })
+    ]);
+    var titleInp = el('input', { class: 'input', type: 'text', placeholder: 'e.g. Scheduled Security Maintenance' });
+    var bodyTa = el('textarea', { class: 'textarea', rows: '3', placeholder: 'Public incident / maintenance banner message...' });
+    var confirmInp = el('input', { class: 'input', type: 'text', placeholder: 'Type LOCKDOWN (or RESTORE_NORMAL for normal)' });
+    var dryBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Preview Dry-Run Impact' });
+    var liveBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--danger', type: 'button', text: 'Dispatch Live Lockdown' });
+    if (!isAdmin) liveBtn.disabled = true;
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge warn', text: 'LOCKDOWN DISPATCHER' }),
+        el('h2', { text: 'Emergency Maintenance Mode & Lockdown Dispatcher' }),
+        el('p', { class: 'muted', text: 'Coordinate Read-Only Freeze, public maintenance banners, and emergency non-admin session revocation with Super Admin bypass.' })
+      ])
+    ]));
+    wrap.appendChild(kpis);
+
+    function renderState(res) {
+      clear(kpis);
+      clear(histBox);
+      var ld = (res && res.lockdown) || {};
+      var fr = (res && res.freeze) || {};
+      var levelBadge = ld.level === 'normal' ? 'ok' : (ld.level === 'full_session_lockdown' ? 'bad' : 'warn');
+      kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+        el('span', { class: 'muted sm', text: 'Lockdown Level' }),
+        el('strong', {}, [el('span', { class: 'badge ' + levelBadge, text: ld.level || 'normal' })])
+      ]));
+      kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+        el('span', { class: 'muted sm', text: 'Read-Only Freeze' }),
+        el('strong', { text: fr.enabled ? 'ENABLED' : 'OFF' })
+      ]));
+      kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+        el('span', { class: 'muted sm', text: 'Non-Admin Sessions' }),
+        el('strong', { text: String(res.non_admin_active_sessions || 0) })
+      ]));
+      kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+        el('span', { class: 'muted sm', text: 'Super Admin Bypass' }),
+        el('strong', { text: ld.allow_super_admin_bypass === false ? 'DISABLED' : 'ALWAYS ON' })
+      ]));
+
+      if (ld.level) levelSel.value = ld.level;
+      titleInp.value = ld.incident_banner_title || '';
+      bodyTa.value = ld.incident_banner_body || '';
+
+      var hist = Array.isArray(res.dispatch_history) ? res.dispatch_history : [];
+      if (!hist.length) {
+        histBox.appendChild(el('div', { class: 'muted sm', text: 'No live lockdown dispatches recorded yet.' }));
+      } else {
+        var tbody = el('tbody');
+        hist.forEach(function (item) {
+          var meta = item.metadata || {};
+          tbody.appendChild(el('tr', {}, [
+            el('td', { text: String(item.created_at || '').slice(0, 19).replace('T', ' ') }),
+            el('td', { text: meta.level || '—' }),
+            el('td', { text: String(meta.revoked_sessions || 0) }),
+            el('td', { text: item.actor_user_id || '—' })
+          ]));
+        });
+        histBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+          el('table', { class: 'table' }, [
+            el('thead', {}, [el('tr', {}, [
+              el('th', { text: 'Timestamp' }),
+              el('th', { text: 'Target Level' }),
+              el('th', { text: 'Sessions Revoked' }),
+              el('th', { text: 'Actor' })
+            ])]),
+            tbody
+          ])
+        ]));
+      }
+    }
+
+    async function load() {
+      try {
+        var res = await api('GET', 'security/lockdown');
+        renderState(res);
+      } catch (e) {
+        toast(e.message || 'Failed to load lockdown posture', true);
+      }
+    }
+
+    var busy = false;
+    async function dispatch(isDryRun) {
+      if (busy) return;
+      if (!isDryRun && !isAdmin) return;
+      busy = true;
+      dryBtn.disabled = true;
+      liveBtn.disabled = true;
+      clear(previewOut);
+      try {
+        var res = await api('POST', 'security/lockdown/dispatch', {
+          level: levelSel.value,
+          incident_banner_title: titleInp.value.trim(),
+          incident_banner_body: bodyTa.value.trim(),
+          dry_run: isDryRun,
+          confirm: confirmInp.value.trim()
+        });
+        if (isDryRun) {
+          previewOut.appendChild(el('div', { class: 'cso-sec-sim-result ' + (res.would_enable_freeze ? 'is-deny' : 'is-allow') }, [
+            el('div', { class: 'cso-ops-subhead' }, [
+              el('strong', { text: 'Dry-Run Target: ' + res.target_level }),
+              el('span', { class: 'badge ' + (res.would_enable_freeze ? 'warn' : 'ok'), text: res.would_enable_freeze ? 'FREEZE ON' : 'NORMAL' })
+            ]),
+            el('p', { class: 'muted sm', text: res.rationale }),
+            el('span', { class: 'muted sm', text: 'Sessions affected: ' + String(res.would_revoke_non_admin_sessions || 0) })
+          ]));
+        } else {
+          confirmInp.value = '';
+          toast('Live lockdown dispatched: ' + res.lockdown.level);
+          await load();
+        }
+      } catch (e) {
+        previewOut.appendChild(el('div', { class: 'alert', text: e.message || 'Dispatch failed' }));
+        toast(e.message || 'Dispatch failed', true);
+      } finally {
+        busy = false;
+        dryBtn.disabled = false;
+        liveBtn.disabled = !isAdmin;
+      }
+    }
+
+    dryBtn.addEventListener('click', function () { dispatch(true); });
+    liveBtn.addEventListener('click', function () { dispatch(false); });
+
+    wrap.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
+      el('div', { class: 'cso-ops-card' }, [
+        el('h3', { text: 'Lockdown Dispatch Controls' }),
+        el('div', { class: 'field' }, [el('label', { text: 'Lockdown Level' }), levelSel]),
+        el('div', { class: 'field' }, [el('label', { text: 'Incident Banner Title' }), titleInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Incident Banner Body' }), bodyTa]),
+        el('div', { class: 'field' }, [el('label', { text: 'Live Confirmation Phrase (LOCKDOWN or RESTORE_NORMAL)' }), confirmInp]),
+        el('div', { class: 'cso-ops-actions' }, [dryBtn, liveBtn]),
+        previewOut
+      ]),
+      el('div', { class: 'cso-ops-card' }, [
+        el('h3', { text: 'Recent Lockdown Dispatches' }),
+        histBox
+      ])
+    ]));
+
+    load();
+    return wrap;
+  }
+
+  function securityDpdpConsentVaultPanel() {
+    var isAdmin = Boolean(me && me.role === 'admin');
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var dsarBox = el('div');
+    var consentBox = el('div');
+
+    var dpoNameInp = el('input', { class: 'input', type: 'text' });
+    var dpoEmailInp = el('input', { class: 'input', type: 'email' });
+    var noticeVerInp = el('input', { class: 'input', type: 'text' });
+    var slaDaysInp = el('input', { class: 'input', type: 'number', min: '7', max: '30' });
+    var purgeDaysInp = el('input', { class: 'input', type: 'number', min: '1', max: '365' });
+    var savePolicyBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: 'Save DPDP Policy' });
+    if (!isAdmin) savePolicyBtn.disabled = true;
+
+    var dsarTypeSel = el('select', { class: 'select' }, [
+      el('option', { value: 'access', text: 'access — Data Principal Access Request' }),
+      el('option', { value: 'correction', text: 'correction — Data Correction Request' }),
+      el('option', { value: 'erasure', text: 'erasure — Right to Erasure Request' })
+    ]);
+    var dsarSubjInp = el('input', { class: 'input', type: 'text', placeholder: 'Email or Candidate ID (hashed server-side)' });
+    var dsarNotesInp = el('input', { class: 'input', type: 'text', placeholder: 'Optional verification notes...' });
+    var dsarAddBtn = el('button', { class: 'cso-ops-btn', type: 'button', text: 'Log DSAR Request' });
+    if (!isAdmin) dsarAddBtn.disabled = true;
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge ok', text: 'INDIA DPDP ACT 2023' }),
+        el('h2', { text: 'Data Privacy, DPDP Act 2023 Compliance & Consent Vault' }),
+        el('p', { class: 'muted', text: 'Manage Data Protection Officer governance, Data Principal Rights (DSAR) SLAs, and SHA-256 masked consent records.' })
+      ])
+    ]));
+    wrap.appendChild(kpis);
+
+    function renderState(res) {
+      clear(kpis);
+      clear(dsarBox);
+      clear(consentBox);
+      var pol = (res && res.policy) || {};
+      var cs = (res && res.consent_summary) || {};
+      var ds = (res && res.dsar_summary) || {};
+
+      kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+        el('span', { class: 'muted sm', text: 'Compliance Readiness' }),
+        el('strong', {}, [el('span', { class: 'badge ok', text: res.dpdp_readiness || 'COMPLIANT' })])
+      ]));
+      kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+        el('span', { class: 'muted sm', text: 'Consent Records' }),
+        el('strong', { text: String(cs.granted || 0) + ' granted / ' + String(cs.withdrawn || 0) + ' withdrawn' })
+      ]));
+      kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+        el('span', { class: 'muted sm', text: 'DSAR Queue' }),
+        el('strong', { text: String(ds.open_count || 0) + ' open / ' + String(ds.fulfilled_count || 0) + ' fulfilled' })
+      ]));
+      kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+        el('span', { class: 'muted sm', text: 'DSAR SLA Window' }),
+        el('strong', { text: String(pol.dsar_sla_days || 15) + ' days' })
+      ]));
+
+      dpoNameInp.value = pol.dpo_name || '';
+      dpoEmailInp.value = pol.dpo_email || '';
+      noticeVerInp.value = pol.privacy_notice_version || '';
+      slaDaysInp.value = String(pol.dsar_sla_days || 15);
+      purgeDaysInp.value = String(pol.auto_purge_withdrawn_days || 30);
+
+      var dsars = Array.isArray(res.dsar_requests) ? res.dsar_requests : [];
+      if (!dsars.length) {
+        dsarBox.appendChild(el('div', { class: 'muted sm', text: 'No DSAR requests logged.' }));
+      } else {
+        var dtbody = el('tbody');
+        dsars.forEach(function (d) {
+          var badgeCls = d.status === 'fulfilled' ? 'ok' : (d.status === 'rejected_with_reason' ? 'bad' : 'warn');
+          var actionsCell = el('td', { class: 'cso-ops-actions' });
+          if (isAdmin && (d.status === 'pending' || d.status === 'in_review')) {
+            ['in_review', 'fulfilled', 'rejected_with_reason'].forEach(function (nextSt) {
+              if (nextSt === d.status) return;
+              var label = nextSt === 'in_review' ? 'Review' : (nextSt === 'fulfilled' ? 'Fulfill' : 'Reject');
+              var b = el('button', { class: 'btn sm', type: 'button', text: label });
+              b.addEventListener('click', async function () {
+                b.disabled = true;
+                try {
+                  await api('PATCH', 'security/dpdp/dsar/' + encodeURIComponent(d.id), { status: nextSt });
+                  toast('DSAR updated to ' + nextSt);
+                  await load();
+                } catch (err) {
+                  toast(err.message || 'DSAR update failed', true);
+                  b.disabled = false;
+                }
+              });
+              actionsCell.appendChild(b);
+            });
+          } else {
+            actionsCell.appendChild(el('span', { class: 'muted sm', text: d.resolved_by || '—' }));
+          }
+          dtbody.appendChild(el('tr', {}, [
+            el('td', { text: d.request_type }),
+            el('td', { text: d.subject_masked }),
+            el('td', {}, [el('span', { class: 'badge ' + badgeCls, text: d.status })]),
+            el('td', { text: String(d.sla_due_at || '').slice(0, 10) }),
+            actionsCell
+          ]));
+        });
+        dsarBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+          el('table', { class: 'table' }, [
+            el('thead', {}, [el('tr', {}, [
+              el('th', { text: 'Type' }),
+              el('th', { text: 'Subject (Masked)' }),
+              el('th', { text: 'Status' }),
+              el('th', { text: 'SLA Due' }),
+              el('th', { text: 'Actions' })
+            ])]),
+            dtbody
+          ])
+        ]));
+      }
+
+      var consents = Array.isArray(res.recent_consents) ? res.recent_consents : [];
+      if (!consents.length) {
+        consentBox.appendChild(el('div', { class: 'muted sm', text: 'No consent ledger entries recorded yet.' }));
+      } else {
+        var ctbody = el('tbody');
+        consents.forEach(function (c) {
+          ctbody.appendChild(el('tr', {}, [
+            el('td', { text: c.subject_masked }),
+            el('td', { text: c.purpose_code }),
+            el('td', { text: c.lawful_basis }),
+            el('td', {}, [el('span', { class: 'badge ' + (c.status === 'granted' ? 'ok' : 'warn'), text: c.status })]),
+            el('td', { text: c.notice_version })
+          ]));
+        });
+        consentBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+          el('table', { class: 'table' }, [
+            el('thead', {}, [el('tr', {}, [
+              el('th', { text: 'Subject' }),
+              el('th', { text: 'Purpose' }),
+              el('th', { text: 'Lawful Basis' }),
+              el('th', { text: 'Status' }),
+              el('th', { text: 'Notice' })
+            ])]),
+            ctbody
+          ])
+        ]));
+      }
+    }
+
+    async function load() {
+      try {
+        var res = await api('GET', 'security/dpdp');
+        renderState(res);
+      } catch (e) {
+        toast(e.message || 'Failed to load DPDP vault', true);
+      }
+    }
+
+    var saveBusy = false;
+    savePolicyBtn.addEventListener('click', async function () {
+      if (!isAdmin || saveBusy) return;
+      saveBusy = true;
+      savePolicyBtn.disabled = true;
+      try {
+        var res = await api('PUT', 'security/dpdp/policy', {
+          dpo_name: dpoNameInp.value.trim(),
+          dpo_email: dpoEmailInp.value.trim(),
+          privacy_notice_version: noticeVerInp.value.trim(),
+          dsar_sla_days: parseInt(slaDaysInp.value, 10),
+          auto_purge_withdrawn_days: parseInt(purgeDaysInp.value, 10)
+        });
+        renderState(res);
+        toast('DPDP Act 2023 governance policy saved');
+      } catch (e) {
+        toast(e.message || 'Failed to save DPDP policy', true);
+      } finally {
+        saveBusy = false;
+        savePolicyBtn.disabled = !isAdmin;
+      }
+    });
+
+    var dsarBusy = false;
+    dsarAddBtn.addEventListener('click', async function () {
+      if (!isAdmin || dsarBusy) return;
+      dsarBusy = true;
+      dsarAddBtn.disabled = true;
+      try {
+        await api('POST', 'security/dpdp/dsar', {
+          request_type: dsarTypeSel.value,
+          subject_identifier: dsarSubjInp.value.trim(),
+          notes: dsarNotesInp.value.trim()
+        });
+        dsarSubjInp.value = '';
+        dsarNotesInp.value = '';
+        toast('DSAR request logged with SHA-256 subject hash');
+        await load();
+      } catch (e) {
+        toast(e.message || 'Failed to log DSAR request', true);
+      } finally {
+        dsarBusy = false;
+        dsarAddBtn.disabled = !isAdmin;
+      }
+    });
+
+    wrap.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
+      el('div', { class: 'cso-ops-card' }, [
+        el('h3', { text: 'DPDP Act 2023 Governance Policy' }),
+        el('div', { class: 'field' }, [el('label', { text: 'Data Protection Officer Name' }), dpoNameInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'DPO Contact Email' }), dpoEmailInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Privacy Notice Version' }), noticeVerInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'DSAR SLA Days (7-30)' }), slaDaysInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Auto-Purge Withdrawn Consents (Days)' }), purgeDaysInp]),
+        savePolicyBtn
+      ]),
+      el('div', { class: 'cso-ops-card' }, [
+        el('h3', { text: 'Log Data Principal Rights Request (DSAR)' }),
+        el('div', { class: 'field' }, [el('label', { text: 'Request Type' }), dsarTypeSel]),
+        el('div', { class: 'field' }, [el('label', { text: 'Data Principal Identifier' }), dsarSubjInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Verification Notes' }), dsarNotesInp]),
+        dsarAddBtn
+      ])
+    ]));
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('h3', { text: 'DSAR Fulfillment Queue' }),
+      dsarBox
+    ]));
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('h3', { text: 'Consent Vault Ledger (Masked)' }),
+      consentBox
+    ]));
+
+    load();
+    return wrap;
+  }
+
+  function securityIncidentResponsePanel() {
+    var isAdmin = Boolean(me && me.role === 'admin');
+    var wrap = el('div', { class: 'cso-ops-studio' });
+    var kpis = el('div', { class: 'cso-ops-kpis' });
+    var packOut = el('div');
+    var incBox = el('div');
+    var eventsBox = el('div');
+
+    var exportBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: 'Export Signed Evidence Pack (JSON)' });
+    if (!isAdmin) exportBtn.disabled = true;
+
+    var titleInp = el('input', { class: 'input', type: 'text', placeholder: 'Incident title (min 3 chars)...' });
+    var sevSel = el('select', { class: 'select' }, [
+      el('option', { value: 'P1-CRITICAL', text: 'P1-CRITICAL' }),
+      el('option', { value: 'P2-HIGH', text: 'P2-HIGH' }),
+      el('option', { value: 'P3-MEDIUM', text: 'P3-MEDIUM' }),
+      el('option', { value: 'P4-LOW', text: 'P4-LOW' })
+    ]);
+    var vecInp = el('input', { class: 'input', type: 'text', placeholder: 'e.g. credential-stuffing, csrf-probe' });
+    var sumTa = el('textarea', { class: 'textarea', rows: '3', placeholder: 'Incident summary & impact...' });
+    var openBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--danger', type: 'button', text: 'Open Security Incident' });
+    if (!isAdmin) openBtn.disabled = true;
+
+    wrap.appendChild(el('div', { class: 'cso-ops-hero' }, [
+      el('div', {}, [
+        el('span', { class: 'badge warn', text: 'INCIDENT & EVIDENCE STUDIO' }),
+        el('h2', { text: 'Security Incident Response & Audit Snapshot Export' }),
+        el('p', { class: 'muted', text: 'Track security incidents through containment and export a SHA-256 signed, DPDP-redacted compliance evidence pack.' })
+      ]),
+      el('div', {}, [exportBtn])
+    ]));
+    wrap.appendChild(kpis);
+    wrap.appendChild(packOut);
+
+    function renderState(res) {
+      clear(kpis);
+      clear(incBox);
+      clear(eventsBox);
+      var sum = (res && res.summary) || {};
+      var score = Number(sum.posture_score || 100);
+      kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+        el('span', { class: 'muted sm', text: 'Posture Score' }),
+        el('strong', {}, [el('span', { class: 'badge ' + (score >= 85 ? 'ok' : (score >= 60 ? 'warn' : 'bad')), text: String(score) + ' / 100' })])
+      ]));
+      kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+        el('span', { class: 'muted sm', text: 'Open Incidents' }),
+        el('strong', { text: String(sum.open_count || 0) })
+      ]));
+      kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+        el('span', { class: 'muted sm', text: 'Contained / Resolved' }),
+        el('strong', { text: String(sum.contained_or_resolved_count || 0) })
+      ]));
+      kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+        el('span', { class: 'muted sm', text: 'Last Evidence SHA-256' }),
+        el('strong', { text: res.last_pack_sha256 ? String(res.last_pack_sha256).slice(0, 14) + '…' : 'None yet' })
+      ]));
+
+      var items = Array.isArray(res.items) ? res.items : [];
+      if (!items.length) {
+        incBox.appendChild(el('div', { class: 'muted sm', text: 'No security incidents recorded.' }));
+      } else {
+        var tbody = el('tbody');
+        items.forEach(function (it) {
+          var stCls = it.status === 'resolved' || it.status === 'contained' ? 'ok' : (it.severity === 'P1-CRITICAL' ? 'bad' : 'warn');
+          var actCell = el('td', { class: 'cso-ops-actions' });
+          if (isAdmin && it.status !== 'resolved') {
+            var nextMap = { open: 'investigating', investigating: 'contained', contained: 'resolved' };
+            var lblMap = { open: 'Investigate', investigating: 'Contain', contained: 'Resolve' };
+            var nextSt = nextMap[it.status] || 'resolved';
+            var btn = el('button', { class: 'btn sm', type: 'button', text: lblMap[it.status] || 'Resolve' });
+            btn.addEventListener('click', async function () {
+              btn.disabled = true;
+              try {
+                await api('PATCH', 'security/incidents/' + encodeURIComponent(it.id), { status: nextSt });
+                toast('Incident ' + it.id + ' -> ' + nextSt);
+                await load();
+              } catch (err) {
+                toast(err.message || 'Failed to update incident', true);
+                btn.disabled = false;
+              }
+            });
+            actCell.appendChild(btn);
+          } else {
+            actCell.appendChild(el('span', { class: 'muted sm', text: it.closed_by || '—' }));
+          }
+          tbody.appendChild(el('tr', {}, [
+            el('td', { text: it.id }),
+            el('td', { text: it.title }),
+            el('td', {}, [el('span', { class: 'badge ' + (it.severity === 'P1-CRITICAL' ? 'bad' : 'warn'), text: it.severity })]),
+            el('td', {}, [el('span', { class: 'badge ' + stCls, text: it.status })]),
+            actCell
+          ]));
+        });
+        incBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+          el('table', { class: 'table' }, [
+            el('thead', {}, [el('tr', {}, [
+              el('th', { text: 'ID' }),
+              el('th', { text: 'Title' }),
+              el('th', { text: 'Severity' }),
+              el('th', { text: 'Status' }),
+              el('th', { text: 'Actions' })
+            ])]),
+            tbody
+          ])
+        ]));
+      }
+
+      var evs = Array.isArray(res.recent_security_events) ? res.recent_security_events : [];
+      if (!evs.length) {
+        eventsBox.appendChild(el('div', { class: 'muted sm', text: 'No recent security audit events.' }));
+      } else {
+        var etbody = el('tbody');
+        evs.forEach(function (ev) {
+          etbody.appendChild(el('tr', {}, [
+            el('td', { text: String(ev.created_at || '').slice(0, 19).replace('T', ' ') }),
+            el('td', { text: ev.action || '—' }),
+            el('td', { text: ev.actor_email || ev.actor_user_id || '—' })
+          ]));
+        });
+        eventsBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+          el('table', { class: 'table' }, [
+            el('thead', {}, [el('tr', {}, [
+              el('th', { text: 'Time' }),
+              el('th', { text: 'Action' }),
+              el('th', { text: 'Actor' })
+            ])]),
+            etbody
+          ])
+        ]));
+      }
+    }
+
+    async function load() {
+      try {
+        var res = await api('GET', 'security/incidents');
+        renderState(res);
+      } catch (e) {
+        toast(e.message || 'Failed to load security incidents', true);
+      }
+    }
+
+    var exportBusy = false;
+    exportBtn.addEventListener('click', async function () {
+      if (!isAdmin || exportBusy) return;
+      exportBusy = true;
+      exportBtn.disabled = true;
+      clear(packOut);
+      try {
+        var res = await api('POST', 'security/incidents/export-pack', {});
+        var blob = new Blob([JSON.stringify(res.pack, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = res.filename || 'cso-security-evidence-pack.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        packOut.appendChild(el('div', { class: 'cso-sec-sim-result is-allow' }, [
+          el('div', { class: 'cso-ops-subhead' }, [
+            el('strong', { text: 'Evidence Pack Exported: ' + res.filename }),
+            el('span', { class: 'badge ok', text: 'DPDP REDACTED' })
+          ]),
+          el('span', { class: 'muted sm', text: 'SHA-256: ' + res.pack_sha256 })
+        ]));
+        toast('Signed security evidence pack exported');
+        await load();
+      } catch (e) {
+        toast(e.message || 'Evidence pack export failed', true);
+      } finally {
+        exportBusy = false;
+        exportBtn.disabled = !isAdmin;
+      }
+    });
+
+    var openBusy = false;
+    openBtn.addEventListener('click', async function () {
+      if (!isAdmin || openBusy) return;
+      openBusy = true;
+      openBtn.disabled = true;
+      try {
+        await api('POST', 'security/incidents', {
+          title: titleInp.value.trim(),
+          severity: sevSel.value,
+          vector: vecInp.value.trim(),
+          summary: sumTa.value.trim()
+        });
+        titleInp.value = '';
+        vecInp.value = '';
+        sumTa.value = '';
+        toast('Security incident opened');
+        await load();
+      } catch (e) {
+        toast(e.message || 'Failed to open incident', true);
+      } finally {
+        openBusy = false;
+        openBtn.disabled = !isAdmin;
+      }
+    });
+
+    wrap.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
+      el('div', { class: 'cso-ops-card' }, [
+        el('h3', { text: 'Open Security Incident' }),
+        el('div', { class: 'field' }, [el('label', { text: 'Title' }), titleInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Severity' }), sevSel]),
+        el('div', { class: 'field' }, [el('label', { text: 'Attack Vector / Category' }), vecInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Summary' }), sumTa]),
+        openBtn
+      ]),
+      el('div', { class: 'cso-ops-card' }, [
+        el('h3', { text: 'Recent Security Audit Stream' }),
+        eventsBox
+      ])
+    ]));
+    wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
+      el('h3', { text: 'Security Incidents Registry' }),
+      incBox
+    ]));
+
+    load();
+    return wrap;
+  }
+
   async function viewSecurity(sub) {
     if (sub === 'rbac') {
       setTitle('RBAC Hierarchy & Role Entitlements');
@@ -3411,6 +4020,21 @@
     if (sub === 'csrf' || sub === 'origin' || sub === 'headers') {
       setTitle('CSRF Protection & Origin Integrity Headers');
       main.appendChild(securityOriginHeadersPanel());
+      return;
+    }
+    if (sub === 'lockdown' || sub === 'maintenance') {
+      setTitle('Emergency Maintenance Mode & Lockdown Dispatcher');
+      main.appendChild(securityLockdownDispatcherPanel());
+      return;
+    }
+    if (sub === 'dpdp' || sub === 'privacy' || sub === 'consent') {
+      setTitle('Data Privacy, DPDP Act 2023 Compliance & Consent Vault');
+      main.appendChild(securityDpdpConsentVaultPanel());
+      return;
+    }
+    if (sub === 'incidents' || sub === 'incident-response') {
+      setTitle('Security Incident Response & Audit Snapshot Export');
+      main.appendChild(securityIncidentResponsePanel());
       return;
     }
     setTitle('Security');

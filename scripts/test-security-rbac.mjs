@@ -10,6 +10,8 @@ import {
 } from '../functions/_lib/security-rbac.js';
 import { handleSecurityEdge } from '../functions/_lib/security-edge.js';
 import { handleSecurityGovernance } from '../functions/_lib/security-governance.js';
+import { handleSecurityCompliance } from '../functions/_lib/security-compliance.js';
+import { getReadOnlyFreezeState } from '../functions/_lib/ops-sentinel.js';
 import { totpCode } from '../functions/_lib/admin-2fa.js';
 
 function makeD1() {
@@ -734,4 +736,205 @@ const csrfAllow = await (await handleSecurityGovernance(
 assert.equal(csrfAllow.allowed, true);
 assert.equal(csrfAllow.verdict, 'ALLOW');
 
-console.log('SECURITY & RBAC SUITE MODULES #1-#10 TESTS PASSED');
+// ============================================================================
+// 11. Module #11: Emergency Maintenance Mode & Lockdown Dispatcher
+// ============================================================================
+// Seed a non-admin active session & an admin active session to verify full_session_lockdown
+const nowSecLock = Math.floor(Date.now() / 1000);
+const futureExp = nowSecLock + 3600;
+await env.DB.prepare(
+  `INSERT INTO sessions (token, user_id, email, role, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)`
+).bind('tok_cand_1', 'cand_1', 'candidate@example.com', 'candidate', nowSecLock, futureExp).run();
+await env.DB.prepare(
+  `INSERT INTO sessions (token, user_id, email, role, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)`
+).bind('tok_admin_1', 'admin_1', 'admin@csodisha.com', 'admin', nowSecLock, futureExp).run();
+
+const ldDry = await (await handleSecurityCompliance(
+  new Request('https://csodisha.com/api/admin/security/lockdown/dispatch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      level: 'full_session_lockdown',
+      incident_banner_title: 'Emergency Maintenance',
+      incident_banner_body: 'Systems locked for security verification.',
+      dry_run: true
+    })
+  }),
+  env, adminActor, 'lockdown', 'dispatch'
+)).json();
+assert.equal(ldDry.dry_run, true);
+assert.equal(ldDry.would_enable_freeze, true);
+assert.ok(ldDry.would_revoke_non_admin_sessions >= 1);
+
+await assert.rejects(
+  () => handleSecurityCompliance(
+    new Request('https://csodisha.com/api/admin/security/lockdown/dispatch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        level: 'full_session_lockdown',
+        dry_run: false,
+        confirm: 'WRONG_PHRASE'
+      })
+    }),
+    env, adminActor, 'lockdown', 'dispatch'
+  ),
+  (e) => e.code === 'CONFIRMATION_REQUIRED'
+);
+
+const ldLive = await (await handleSecurityCompliance(
+  new Request('https://csodisha.com/api/admin/security/lockdown/dispatch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      level: 'full_session_lockdown',
+      incident_banner_title: 'Security Lockdown',
+      incident_banner_body: 'Read-only mode active.',
+      dry_run: false,
+      confirm: 'LOCKDOWN'
+    })
+  }),
+  env, adminActor, 'lockdown', 'dispatch'
+)).json();
+assert.equal(ldLive.dry_run, false);
+assert.equal(ldLive.lockdown.level, 'full_session_lockdown');
+assert.ok(ldLive.revoked_sessions >= 1);
+assert.equal((await getReadOnlyFreezeState(env)).enabled, true);
+assert.equal(
+  (await env.DB.prepare(`SELECT COUNT(*) AS n FROM sessions WHERE token = 'tok_cand_1'`).first()).n,
+  0
+);
+assert.equal(
+  (await env.DB.prepare(`SELECT COUNT(*) AS n FROM sessions WHERE token = 'tok_admin_1'`).first()).n,
+  1
+);
+
+await assert.rejects(
+  () => handleSecurityCompliance(
+    new Request('https://csodisha.com/api/admin/security/lockdown/dispatch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level: 'normal', dry_run: false, confirm: 'LOCKDOWN' })
+    }),
+    env, adminActor, 'lockdown', 'dispatch'
+  ),
+  (e) => e.code === 'CONFIRMATION_REQUIRED'
+);
+
+const ldRestore = await (await handleSecurityCompliance(
+  new Request('https://csodisha.com/api/admin/security/lockdown/dispatch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ level: 'normal', dry_run: false, confirm: 'RESTORE_NORMAL' })
+  }),
+  env, adminActor, 'lockdown', 'dispatch'
+)).json();
+assert.equal(ldRestore.lockdown.level, 'normal');
+assert.equal((await getReadOnlyFreezeState(env)).enabled, false);
+
+// ============================================================================
+// 12. Module #12: Data Privacy, DPDP Act 2023 Compliance & Consent Vault
+// ============================================================================
+await assert.rejects(
+  () => handleSecurityCompliance(
+    new Request('https://csodisha.com/api/admin/security/dpdp/policy', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dpo_email: 'invalid-email' })
+    }),
+    env, adminActor, 'dpdp', 'policy'
+  ),
+  (e) => e.code === 'INVALID_DPO_EMAIL'
+);
+
+const dpdpPol = await (await handleSecurityCompliance(
+  new Request('https://csodisha.com/api/admin/security/dpdp/policy', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      dpo_name: 'Chief DPO Odisha',
+      dpo_email: 'privacy@csodisha.com',
+      dsar_sla_days: 14,
+      auto_purge_withdrawn_days: 30
+    })
+  }),
+  env, adminActor, 'dpdp', 'policy'
+)).json();
+assert.equal(dpdpPol.dpdp_readiness, 'INDIA_DPDP_2023_COMPLIANT');
+assert.equal(dpdpPol.policy.dsar_sla_days, 14);
+
+const dsarRes = await (await handleSecurityCompliance(
+  new Request('https://csodisha.com/api/admin/security/dpdp/dsar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      request_type: 'erasure',
+      subject_identifier: 'priya.sen@example.com',
+      notes: 'Candidate requested data erasure'
+    })
+  }),
+  env, adminActor, 'dpdp', 'dsar'
+)).json();
+assert.equal(dsarRes.item.request_type, 'erasure');
+assert.equal(dsarRes.item.status, 'pending');
+assert.ok(/^[0-9a-f]{64}$/.test(dsarRes.item.subject_hash));
+assert.ok(!dsarRes.item.subject_masked.includes('priya.sen'));
+
+const dsarFulfill = await (await handleSecurityCompliance(
+  new Request(`https://csodisha.com/api/admin/security/dpdp/dsar/${dsarRes.item.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'fulfilled' })
+  }),
+  env, adminActor, 'dpdp', 'dsar', dsarRes.item.id
+)).json();
+assert.equal(dsarFulfill.item.status, 'fulfilled');
+assert.ok(dsarFulfill.item.resolved_at);
+
+// ============================================================================
+// 13. Module #13: Security Incident Response & Audit Snapshot Export
+// ============================================================================
+const incOpen = await (await handleSecurityCompliance(
+  new Request('https://csodisha.com/api/admin/security/incidents', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: 'Suspicious Admin Brute Force Probe',
+      severity: 'P2-HIGH',
+      vector: 'credential-stuffing',
+      summary: 'Automated login probes blocked by Turnstile & IP ACL.'
+    })
+  }),
+  env, adminActor, 'incidents'
+)).json();
+assert.equal(incOpen.item.status, 'open');
+assert.equal(incOpen.item.severity, 'P2-HIGH');
+
+const incContain = await (await handleSecurityCompliance(
+  new Request(`https://csodisha.com/api/admin/security/incidents/${incOpen.item.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'contained', containment_actions: ['ip_blocked', 'turnstile_strict'] })
+  }),
+  env, adminActor, 'incidents', incOpen.item.id
+)).json();
+assert.equal(incContain.item.status, 'contained');
+assert.deepEqual(incContain.item.containment_actions, ['ip_blocked', 'turnstile_strict']);
+
+const packRes = await (await handleSecurityCompliance(
+  new Request('https://csodisha.com/api/admin/security/incidents/export-pack', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}'
+  }),
+  env, adminActor, 'incidents', 'export-pack'
+)).json();
+assert.equal(packRes.ok, true);
+assert.ok(/^[0-9a-f]{64}$/.test(packRes.pack_sha256));
+assert.equal(packRes.pack.manifest.dpdp_redacted, true);
+assert.ok(packRes.pack.incidents.some(i => i.id === incOpen.item.id));
+assert.ok(
+  (await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'security.incident.export_pack'`).first()).n === 1
+);
+
+console.log('SECURITY & RBAC SUITE MODULES #1-#13 TESTS PASSED');

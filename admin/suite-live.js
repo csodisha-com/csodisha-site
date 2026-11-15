@@ -37,9 +37,9 @@
     ['security/pii', 'Sensitive Field Masking & PII'],
     ['security/api-keys', 'API Key & Token Scoping'],
     ['security/csrf', 'CSRF & Origin Integrity'],
-    ['operations/freeze', 'Emergency Maintenance Lockdown'],
-    ['audit/security', 'DPDP Act 2023 Compliance Vault'],
-    ['incidents', 'Incident Response & Audit Export']
+    ['security/lockdown', 'Emergency Maintenance Lockdown'],
+    ['security/dpdp', 'DPDP Act 2023 Compliance Vault'],
+    ['security/incidents', 'Incident Response & Audit Export']
   ];
 
   var ROUTES = {
@@ -99,9 +99,9 @@
     'module-16-008': ['security/pii', SEC_SUITE],
     'module-16-009': ['security/api-keys', SEC_SUITE],
     'module-16-010': ['security/csrf', SEC_SUITE],
-    'module-16-011': ['operations/freeze', SEC_SUITE],
-    'module-16-012': ['audit/security', SEC_SUITE],
-    'module-16-013': ['incidents', SEC_SUITE],
+    'module-16-011': ['security/lockdown', SEC_SUITE],
+    'module-16-012': ['security/dpdp', SEC_SUITE],
+    'module-16-013': ['security/incidents', SEC_SUITE],
     'module-sec-001': ['security/rbac', SEC_SUITE],
     'module-sec-002': ['security/engine-guards', SEC_SUITE],
     'module-sec-003': ['security/sessions', SEC_SUITE],
@@ -112,9 +112,9 @@
     'module-sec-008': ['security/pii', SEC_SUITE],
     'module-sec-009': ['security/api-keys', SEC_SUITE],
     'module-sec-010': ['security/csrf', SEC_SUITE],
-    'module-sec-011': ['operations/freeze', SEC_SUITE],
-    'module-sec-012': ['audit/security', SEC_SUITE],
-    'module-sec-013': ['incidents', SEC_SUITE],
+    'module-sec-011': ['security/lockdown', SEC_SUITE],
+    'module-sec-012': ['security/dpdp', SEC_SUITE],
+    'module-sec-013': ['security/incidents', SEC_SUITE],
     'module-ops-001': ['operations/snapshots', OPS_SUITE],
     'module-ops-002': ['operations/drill', OPS_SUITE],
     'module-ops-003': ['operations/restore', OPS_SUITE],
