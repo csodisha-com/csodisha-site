@@ -60,7 +60,15 @@ const viewerActor = { userId: 'u_viewer', email: 'viewer@csodisha.com', role: 'r
 await ensureStudyLibraryStudioSchema(env.DB);
 await ensureStudyLibraryStudioSchema(env.DB);
 
-for (const domain of ['early-childhood', 'school-higher-sec', 'ug-pg-research', 'competitive-teacher']) {
+for (const domain of [
+  'early-childhood',
+  'school-higher-sec',
+  'ug-pg-research',
+  'competitive-teacher',
+  'vocational-digital',
+  'subjects-materials',
+  'international-inclusive'
+]) {
   const tree = await (await handleStudyLibraryStudio(
     new Request(`https://csodisha.com/api/admin/study-library/tree?domain=${domain}`, { method: 'GET' }),
     env, adminActor, 'tree'
@@ -200,4 +208,46 @@ await assert.rejects(
 assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'study.folder.save'`).first()).n >= 3);
 assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'study.item.create'`).first()).n >= 1);
 
-console.log('STUDY LIBRARY DIRECTORY MODULES #1-#4 TESTS PASSED');
+// 7. Modules #5-#7: Nested Sub-Directory Creation & Resource CRUD
+for (const [dom, subName, itemTitle, tags] of [
+  ['vocational-digital', 'Prompt Engineering Lab', 'OS-CIT & AI Prompt Handbook', ['OS-CIT', 'AI Literacy']],
+  ['subjects-materials', 'Odia Chhanda & Alankara', 'Odia Byakarana Master Guide', ['Odia Sahitya', 'STEM']],
+  ['international-inclusive', 'DAISY Audio Books', 'CWSN Assistive Pedagogy Kit', ['Inclusive', 'MLE Odisha']]
+]) {
+  const domTree = await (await handleStudyLibraryStudio(
+    new Request(`https://csodisha.com/api/admin/study-library/tree?domain=${dom}`, { method: 'GET' }),
+    env, adminActor, 'tree'
+  )).json();
+  assert.ok(domTree.metrics.max_depth >= 3, `Expected depth >= 3 seed tree for ${dom}`);
+  const rootId = domTree.children[0].id;
+  const nested = await (await handleStudyLibraryStudio(
+    new Request('https://csodisha.com/api/admin/study-library/folders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain_slug: dom, parent_id: rootId, name: subName })
+    }),
+    env, editorActor, 'folders'
+  )).json();
+  assert.equal(nested.folder.depth, 2);
+
+  const created = await (await handleStudyLibraryStudio(
+    new Request('https://csodisha.com/api/admin/study-library/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        domain_slug: dom,
+        folder_id: nested.folder.id,
+        title: itemTitle,
+        resource_type: 'guide',
+        language_parity: 'EN+OR',
+        tags
+      })
+    }),
+    env, adminActor, 'items'
+  )).json();
+  assert.equal(created.ok, true);
+  assert.equal(created.item.domain_slug, dom);
+  assert.equal(created.item.tags.length, 2);
+}
+
+console.log('STUDY LIBRARY DIRECTORY MODULES #1-#7 TESTS PASSED');

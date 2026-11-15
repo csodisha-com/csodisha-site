@@ -11,7 +11,10 @@ export const STUDY_DOMAINS = [
   'early-childhood',
   'school-higher-sec',
   'ug-pg-research',
-  'competitive-teacher'
+  'competitive-teacher',
+  'vocational-digital',
+  'subjects-materials',
+  'international-inclusive'
 ];
 
 export const STUDY_RESOURCE_TYPES = [
@@ -177,7 +180,45 @@ const SEED_TREE = [
   { id: 'slf_ct_tet', domain: 'competitive-teacher', parent: null, depth: 1, name: 'Teacher Eligibility (OTET / OSSTET / CTET / B.Ed.)', slug: 'teacher-eligibility-tet', sort: 4 },
   { id: 'slf_ct_net', domain: 'competitive-teacher', parent: null, depth: 1, name: 'UGC NET', slug: 'ugc-net', sort: 5 },
   { id: 'slf_ct_net_p1', domain: 'competitive-teacher', parent: 'slf_ct_net', depth: 2, name: 'Paper 1 (Teaching & Research Aptitude)', slug: 'paper-1-aptitude', sort: 1 },
-  { id: 'slf_ct_net_eng', domain: 'competitive-teacher', parent: 'slf_ct_net', depth: 2, name: 'English & Education', slug: 'english-education', sort: 2 }
+  { id: 'slf_ct_net_eng', domain: 'competitive-teacher', parent: 'slf_ct_net', depth: 2, name: 'English & Education', slug: 'english-education', sort: 2 },
+
+  // Module #5: vocational-digital
+  { id: 'slf_vd_dig', domain: 'vocational-digital', parent: null, depth: 1, name: 'Digital Literacy & IT Skills', slug: 'digital-literacy-it', sort: 1 },
+  { id: 'slf_vd_oscit', domain: 'vocational-digital', parent: 'slf_vd_dig', depth: 2, name: 'OS-CIT & Basic Computing', slug: 'os-cit-basic-computing', sort: 1 },
+  { id: 'slf_vd_oscit_lab', domain: 'vocational-digital', parent: 'slf_vd_oscit', depth: 3, name: 'MS Office & LibreOffice Lab', slug: 'office-libreoffice-lab', sort: 1 },
+  { id: 'slf_vd_ai', domain: 'vocational-digital', parent: 'slf_vd_dig', depth: 2, name: 'AI, Data & Prompt Literacy', slug: 'ai-data-prompt-literacy', sort: 2 },
+  { id: 'slf_vd_cyber', domain: 'vocational-digital', parent: 'slf_vd_dig', depth: 2, name: 'Cyber Hygiene & Digital Safety', slug: 'cyber-hygiene-safety', sort: 3 },
+  { id: 'slf_vd_skill', domain: 'vocational-digital', parent: null, depth: 1, name: 'Skill Odisha & Vocational Trades', slug: 'skill-odisha-vocational', sort: 2 },
+  { id: 'slf_vd_iti', domain: 'vocational-digital', parent: 'slf_vd_skill', depth: 2, name: 'ITI & Polytechnic Streams', slug: 'iti-polytechnic-streams', sort: 1 },
+  { id: 'slf_vd_hosp', domain: 'vocational-digital', parent: 'slf_vd_skill', depth: 2, name: 'Hospitality, Tourism & Handloom', slug: 'hospitality-tourism-handloom', sort: 2 },
+  { id: 'slf_vd_career', domain: 'vocational-digital', parent: null, depth: 1, name: 'Career Readiness & Entrepreneurship', slug: 'career-readiness-entrepreneurship', sort: 3 },
+  { id: 'slf_vd_resume', domain: 'vocational-digital', parent: 'slf_vd_career', depth: 2, name: 'Resume, Interview & Communication', slug: 'resume-interview-communication', sort: 1 },
+  { id: 'slf_vd_msme', domain: 'vocational-digital', parent: 'slf_vd_career', depth: 2, name: 'MSME & Startup Odisha Schemes', slug: 'msme-startup-odisha', sort: 2 },
+
+  // Module #6: subjects-materials
+  { id: 'slf_sm_lang', domain: 'subjects-materials', parent: null, depth: 1, name: 'Languages & Literature', slug: 'languages-literature', sort: 1 },
+  { id: 'slf_sm_odia', domain: 'subjects-materials', parent: 'slf_sm_lang', depth: 2, name: 'Odia Sahitya & Grammar', slug: 'odia-sahitya-grammar', sort: 1 },
+  { id: 'slf_sm_odia_bya', domain: 'subjects-materials', parent: 'slf_sm_odia', depth: 3, name: 'Prabandha & Byakarana Notes', slug: 'prabandha-byakarana-notes', sort: 1 },
+  { id: 'slf_sm_eng', domain: 'subjects-materials', parent: 'slf_sm_lang', depth: 2, name: 'English Literature & Communication', slug: 'english-literature-comm', sort: 2 },
+  { id: 'slf_sm_hinsan', domain: 'subjects-materials', parent: 'slf_sm_lang', depth: 2, name: 'Hindi & Sanskrit', slug: 'hindi-sanskrit', sort: 3 },
+  { id: 'slf_sm_soc', domain: 'subjects-materials', parent: null, depth: 1, name: 'Social Sciences & Odisha Studies', slug: 'social-sciences-odisha', sort: 2 },
+  { id: 'slf_sm_odhist', domain: 'subjects-materials', parent: 'slf_sm_soc', depth: 2, name: 'Odisha History, Culture & Geography', slug: 'odisha-history-culture-geo', sort: 1 },
+  { id: 'slf_sm_pol', domain: 'subjects-materials', parent: 'slf_sm_soc', depth: 2, name: 'Indian Polity, Economy & Governance', slug: 'indian-polity-economy-gov', sort: 2 },
+  { id: 'slf_sm_stem', domain: 'subjects-materials', parent: null, depth: 1, name: 'STEM & Quantitative Aptitude', slug: 'stem-quantitative-aptitude', sort: 3 },
+  { id: 'slf_sm_math', domain: 'subjects-materials', parent: 'slf_sm_stem', depth: 2, name: 'Mathematics & Reasoning', slug: 'mathematics-reasoning', sort: 1 },
+  { id: 'slf_sm_sci', domain: 'subjects-materials', parent: 'slf_sm_stem', depth: 2, name: 'General Science & Environment', slug: 'general-science-environment', sort: 2 },
+
+  // Module #7: international-inclusive
+  { id: 'slf_ii_inc', domain: 'international-inclusive', parent: null, depth: 1, name: 'Inclusive & Special Education (RPwD & NEP)', slug: 'inclusive-special-education', sort: 1 },
+  { id: 'slf_ii_cwsn', domain: 'international-inclusive', parent: 'slf_ii_inc', depth: 2, name: 'CWSN Pedagogy & Assistive Tools', slug: 'cwsn-pedagogy-assistive', sort: 1 },
+  { id: 'slf_ii_braille', domain: 'international-inclusive', parent: 'slf_ii_cwsn', depth: 3, name: 'Braille, Sign & Screen-Reader Guides', slug: 'braille-sign-screen-reader', sort: 1 },
+  { id: 'slf_ii_bed', domain: 'international-inclusive', parent: 'slf_ii_inc', depth: 2, name: 'B.Ed. Special Education Notes', slug: 'bed-special-education', sort: 2 },
+  { id: 'slf_ii_glob', domain: 'international-inclusive', parent: null, depth: 1, name: 'Global Scholarships & Study Abroad', slug: 'global-scholarships-abroad', sort: 2 },
+  { id: 'slf_ii_ielts', domain: 'international-inclusive', parent: 'slf_ii_glob', depth: 2, name: 'IELTS / TOEFL / GRE Prep', slug: 'ielts-toefl-gre-prep', sort: 1 },
+  { id: 'slf_ii_fell', domain: 'international-inclusive', parent: 'slf_ii_glob', depth: 2, name: 'National & International Fellowships', slug: 'national-international-fellowships', sort: 2 },
+  { id: 'slf_ii_mle', domain: 'international-inclusive', parent: null, depth: 1, name: 'Tribal & Multilingual Education (MLE Odisha)', slug: 'tribal-multilingual-mle-odisha', sort: 3 },
+  { id: 'slf_ii_bridge', domain: 'international-inclusive', parent: 'slf_ii_mle', depth: 2, name: 'Odia-Tribal Bridge Materials', slug: 'odia-tribal-bridge-materials', sort: 1 },
+  { id: 'slf_ii_ssd', domain: 'international-inclusive', parent: 'slf_ii_mle', depth: 2, name: 'Eklavya & SSD School Resources', slug: 'eklavya-ssd-school-resources', sort: 2 }
 ];
 
 export async function ensureStudyLibraryStudioSchema(db) {
@@ -256,10 +297,14 @@ export async function ensureStudyLibraryStudioSchema(db) {
      )`
   ).run();
 
-  const countRow = await db.prepare(`SELECT COUNT(*) AS n FROM study_library_folders`).first();
-  if ((Number(countRow && countRow.n) || 0) === 0) {
+  const domainCountsRes = await db.prepare(
+    `SELECT domain_slug, COUNT(*) AS n FROM study_library_folders GROUP BY domain_slug`
+  ).all();
+  const seededDomains = new Set((domainCountsRes.results || []).filter(r => Number(r.n) > 0).map(r => r.domain_slug));
+  const missingSeeds = SEED_TREE.filter(s => !seededDomains.has(s.domain));
+  if (missingSeeds.length > 0) {
     const nowIso = new Date().toISOString();
-    for (const s of SEED_TREE) {
+    for (const s of missingSeeds) {
       await db.prepare(
         `INSERT OR IGNORE INTO study_library_folders (
            id, domain_slug, parent_id, depth, name, slug, description, sort_order, is_active, created_at, updated_at

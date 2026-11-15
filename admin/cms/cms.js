@@ -12204,7 +12204,33 @@
         badge: 'STUDY LIBRARY · MODULE 4',
         title: 'Competitive Exams & Teacher Education',
         sub: 'Recursive exam vault for OPSC OAS, OSSSC RI/ARI/Amin, OSSC CGL, OTET/OSSTET/CTET/B.Ed., and UGC NET digests.',
-        defaultBoard: 'OPSC / OSSSC / OSSC / UGC NET'
+        defaultBoard: 'OPSC / OSSSC / OSSC / UGC NET',
+        subjPlaceholder: 'Subject (e.g. Odisha Polity, GS Paper 1)',
+        quickTags: ['OPSC OAS', 'OSSSC', 'OSSC CGL', 'OTET', 'UGC NET']
+      },
+      'vocational-digital': {
+        badge: 'STUDY LIBRARY · MODULE 5',
+        title: 'Professional, Vocational & Digital Skills',
+        sub: 'Skill Odisha, OS-CIT digital literacy, AI & prompt engineering, ITI/polytechnic trades, and MSME entrepreneurship resources.',
+        defaultBoard: 'OS-CIT / Skill Odisha / MSME',
+        subjPlaceholder: 'Trade / Skill (e.g. LibreOffice, Cyber Hygiene, ITI)',
+        quickTags: ['OS-CIT', 'Skill Odisha', 'AI Literacy', 'ITI', 'Startup Odisha']
+      },
+      'subjects-materials': {
+        badge: 'STUDY LIBRARY · MODULE 6',
+        title: 'Subjects, Languages & Study Materials',
+        sub: 'Cross-grade repository for Odia Sahitya & Byakarana, English literature, Odisha History & Geography, and STEM quantitative notes.',
+        defaultBoard: 'Odia / English / STEM',
+        subjPlaceholder: 'Subject (e.g. Odia Sahitya, Odisha History, Quant)',
+        quickTags: ['Odia Sahitya', 'English', 'Odisha History', 'Polity', 'STEM']
+      },
+      'international-inclusive': {
+        badge: 'STUDY LIBRARY · MODULE 7',
+        title: 'International & Inclusive Education',
+        sub: 'RPwD & NEP inclusive CWSN pedagogy, IELTS/TOEFL/GRE global fellowships, and Odisha Tribal Multilingual Education (MLE) bridge kits.',
+        defaultBoard: 'Inclusive / MLE / Global',
+        subjPlaceholder: 'Focus (e.g. CWSN Pedagogy, IELTS, MLE Odisha)',
+        quickTags: ['Inclusive', 'CWSN', 'MLE Odisha', 'IELTS', 'Fellowships']
       }
     };
     var cfg = DOMAIN_CFG[domainSlug] || DOMAIN_CFG['early-childhood'];
@@ -12435,15 +12461,23 @@
       ]);
       langSel.value = (editing && editing.language_parity) || 'EN';
 
-      var boardInp = el('input', { class: 'input', type: 'text', value: (editing && editing.board_or_exam) || cfg.defaultBoard, placeholder: 'Board / Exam (e.g. OPSC OAS, BSE Odisha)' });
-      var subjInp = el('input', { class: 'input', type: 'text', value: (editing && editing.subject_tag) || '', placeholder: 'Subject (e.g. Odisha Polity, Mathematics)' });
+      var boardInp = el('input', { class: 'input', type: 'text', value: (editing && editing.board_or_exam) || cfg.defaultBoard, placeholder: 'Board / Exam (e.g. ' + cfg.defaultBoard + ')' });
+      var subjInp = el('input', { class: 'input', type: 'text', value: (editing && editing.subject_tag) || '', placeholder: cfg.subjPlaceholder || 'Subject (e.g. Odisha Polity, Mathematics)' });
       var featCb = el('input', { type: 'checkbox' });
       featCb.checked = Boolean(editing && editing.is_featured);
 
-      // Interactive Tag Chips
+      // Interactive Tag Chips + Domain Quick-Tags
       var tagsState = (editing && Array.isArray(editing.tags)) ? editing.tags.slice() : [];
       var tagChipsWrap = el('div', { class: 'cso-cnt-tag-chips' });
       var tagInput = el('input', { class: 'cso-cnt-tag-input', type: 'text', placeholder: 'Type tag & press Enter or ,' });
+      var tagQuickWrap = el('div', { class: 'cso-cnt-tag-suggestions' });
+      function addStudyTag(raw) {
+        var val = String(raw || '').trim().replace(/^#+/, '').slice(0, 40);
+        if (val && !tagsState.includes(val) && tagsState.length < 12) {
+          tagsState.push(val);
+          renderTagChips();
+        }
+      }
       function renderTagChips() {
         clear(tagChipsWrap);
         tagsState.forEach(function (t, idx) {
@@ -12456,11 +12490,7 @@
       tagInput.addEventListener('keydown', function (ev) {
         if (ev.key === 'Enter' || ev.key === ',') {
           ev.preventDefault();
-          var val = tagInput.value.trim().replace(/^#+/, '').slice(0, 40);
-          if (val && !tagsState.includes(val) && tagsState.length < 12) {
-            tagsState.push(val);
-            renderTagChips();
-          }
+          addStudyTag(tagInput.value);
           tagInput.value = '';
         } else if (ev.key === 'Backspace' && !tagInput.value && tagsState.length) {
           tagsState.pop();
@@ -12468,6 +12498,14 @@
         }
       });
       renderTagChips();
+      if (Array.isArray(cfg.quickTags) && cfg.quickTags.length) {
+        tagQuickWrap.appendChild(el('span', { class: 'muted sm', text: 'Quick tags:' }));
+        cfg.quickTags.forEach(function (qt) {
+          var qb = el('button', { type: 'button', class: 'cso-cnt-tag-suggest', text: '+ ' + qt });
+          qb.addEventListener('click', function () { addStudyTag(qt); });
+          tagQuickWrap.appendChild(qb);
+        });
+      }
 
       // R2 PDF Uploader (up to 15 MB)
       var pdfUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.pdf_url) || '', placeholder: '/media/content/... or https://...' });
@@ -12737,7 +12775,7 @@
           el('div', { class: 'field' }, [el('label', { text: 'Subject Tag' }), subjInp])
         ]),
         el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Feature in Priority Study Slot')])]),
-        el('div', { class: 'field' }, [el('label', { text: 'Interactive Tags' }), el('div', { class: 'cso-cnt-tag-box' }, [tagChipsWrap])]),
+        el('div', { class: 'field' }, [el('label', { text: 'Interactive Tags' }), el('div', { class: 'cso-cnt-tag-box' }, [tagChipsWrap, tagQuickWrap])]),
         el('div', { class: 'cso-cnt-media-box' }, [
           el('div', { class: 'cso-cnt-media-head' }, [el('strong', { text: 'PDF Study Material (R2, max 15 MB)' }), el('div', { class: 'cso-ops-actions' }, [pdfBadge, pdfPickBtn, pdfFileInp])]),
           pdfUrlInp
