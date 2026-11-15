@@ -10,6 +10,7 @@ import {
   listPlatformSnapshots,
   verifyPlatformSnapshot,
   downloadPlatformSnapshot,
+  deletePlatformSnapshot,
   runDisasterRecoveryDrill,
   restorePlatformSnapshot
 } from '../functions/_lib/ops-snapshots.js';
@@ -24,11 +25,19 @@ function makeD1() {
     CREATE TABLE schemes_directory (id TEXT PRIMARY KEY, slug TEXT, title TEXT, status TEXT);
     CREATE TABLE resources (id TEXT PRIMARY KEY, kind TEXT, title TEXT, status TEXT);
     CREATE TABLE media_assets (id TEXT PRIMARY KEY, object_key TEXT, kind TEXT, mime_type TEXT, size_bytes INTEGER, original_name TEXT, uploaded_by TEXT, created_at TEXT, deleted_at TEXT);
-    CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT, password_hash TEXT, salt TEXT, role TEXT, failed_attempts INTEGER, lockout_until INTEGER, created_at INTEGER, updated_at INTEGER);
+    CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT, password_hash TEXT, salt TEXT, code_hash TEXT, role TEXT, failed_attempts INTEGER, lockout_until INTEGER, created_at INTEGER, updated_at INTEGER);
+    CREATE TABLE sessions (token TEXT PRIMARY KEY, user_id TEXT);
+    CREATE TABLE admin_otps (user_id TEXT PRIMARY KEY, code_hash TEXT);
+    CREATE TABLE admin_rate_limits (key TEXT PRIMARY KEY, window_start INTEGER);
+    CREATE TABLE custom_exam_notes (id TEXT PRIMARY KEY, note TEXT);
     INSERT INTO site_settings VALUES ('homepage_banner', '{"active":true}', 'admin-1', '2026-11-14');
     INSERT INTO posts (id, type, slug, title, status) VALUES ('job-1', 'job', 'opsc-oas-2026', 'OPSC Civil Services', 'published');
     INSERT INTO schemes_directory VALUES ('sch-1', 'subhadra-yojana', 'Subhadra Yojana', 'published');
-    INSERT INTO users VALUES ('u-1', 'admin@csodisha.com', 'SECRET_HASH_DO_NOT_EXPORT', 'SECRET_SALT_DO_NOT_EXPORT', 'admin', 0, 0, 1700000000, 1700000000);
+    INSERT INTO users VALUES ('u-1', 'admin@csodisha.com', 'SECRET_HASH_DO_NOT_EXPORT', 'SECRET_SALT_DO_NOT_EXPORT', 'SECRET_CODE_HASH_DO_NOT_EXPORT', 'admin', 0, 0, 1700000000, 1700000000);
+    INSERT INTO sessions VALUES ('SECRET_SESSION_TOKEN', 'u-1');
+    INSERT INTO admin_otps VALUES ('u-1', 'SECRET_OTP_HASH');
+    INSERT INTO admin_rate_limits VALUES ('rl-1', 1700000000);
+    INSERT INTO custom_exam_notes VALUES ('note-1', 'Dynamically discovered custom table');
   `);
 
   const stmt = (sql, args = []) => ({
@@ -72,6 +81,9 @@ function makeR2() {
           return item.bytes.buffer.slice(item.bytes.byteOffset, item.bytes.byteOffset + item.bytes.byteLength);
         }
       };
+    },
+    async delete(key) {
+      return store.delete(key);
     }
   };
 }
@@ -85,22 +97,30 @@ const hashB = await computeSnapshotChecksum(objB);
 assert.equal(hashA, hashB, 'SHA-256 checksum must be deterministic');
 assert.match(hashA, /^[0-9a-f]{64}$/);
 
-// 2. Create snapshot -> R2 storage + D1 ops_snapshots + password_hash exclusion
+// 2. Create snapshot -> R2 storage + D1 ops_snapshots + dynamic discovery + credential exclusion
 const env = { DB: makeD1(), MEDIA: makeR2() };
 const snap = await createPlatformSnapshot(env, { label: 'Pre-v27 Baseline', triggerType: 'manual', createdBy: 'admin@csodisha.com' });
 assert.equal(snap.label, 'Pre-v27 Baseline');
 assert.match(snap.r2_key, /^backups\/snapshots\/.+\.json$/);
 assert.match(snap.sha256, /^[0-9a-f]{64}$/);
-assert.equal(snap.total_rows, 4);
+assert.equal(snap.total_rows, 5);
 assert.equal(snap.row_counts.posts, 1);
 assert.equal(snap.row_counts.schemes_directory, 1);
 assert.equal(snap.row_counts.users, 1);
+assert.equal(snap.row_counts.custom_exam_notes, 1, 'sqlite_master dynamic discovery must include new user tables');
+assert.equal(snap.row_counts.sessions, undefined, 'sessions table must be excluded');
+assert.equal(snap.row_counts.admin_otps, undefined, 'admin_otps table must be excluded');
+assert.equal(snap.row_counts.admin_rate_limits, undefined, 'admin_rate_limits table must be excluded');
 
-// Verify raw R2 payload excludes sensitive password hashes & salts
+// Verify raw R2 payload excludes sensitive password hashes, salts, code hashes & transient tables
 const rawObj = await env.MEDIA.get(snap.r2_key);
 const rawText = new TextDecoder().decode(new Uint8Array(await rawObj.arrayBuffer()));
 assert.ok(!rawText.includes('SECRET_HASH_DO_NOT_EXPORT'), 'password_hash must never be exported in snapshots');
 assert.ok(!rawText.includes('SECRET_SALT_DO_NOT_EXPORT'), 'salt must never be exported in snapshots');
+assert.ok(!rawText.includes('SECRET_CODE_HASH_DO_NOT_EXPORT'), 'code_hash must never be exported in snapshots');
+assert.ok(!rawText.includes('SECRET_SESSION_TOKEN'), 'sessions rows must never be exported');
+assert.ok(!rawText.includes('SECRET_OTP_HASH'), 'admin_otps rows must never be exported');
+assert.ok(rawText.includes('Dynamically discovered custom table'), 'custom user table rows must be exported');
 assert.ok(rawText.includes('admin@csodisha.com'), 'safe user metadata is included');
 
 // 3. List snapshots
@@ -225,5 +245,14 @@ const allPostsAfterReplace = (await env.DB.prepare(`SELECT id, title FROM posts`
 assert.equal(allPostsAfterReplace.length, 1, 'replace mode must remove live-only rows not present in the snapshot');
 assert.equal(allPostsAfterReplace[0].id, 'job-1');
 assert.equal(allPostsAfterReplace[0].title, 'OPSC Civil Services');
+
+// 9. Delete Snapshot -> removes both R2 object and D1 ops_snapshots row
+assert.ok(env.MEDIA.store.has(snap.r2_key), 'snapshot R2 object must exist before delete');
+const delRes = await deletePlatformSnapshot(env, snap.id);
+assert.equal(delRes.ok, true);
+assert.equal(delRes.deleted_id, snap.id);
+assert.ok(!env.MEDIA.store.has(snap.r2_key), 'snapshot R2 object must be deleted');
+const deletedRow = await env.DB.prepare(`SELECT id FROM ops_snapshots WHERE id = ?`).bind(snap.id).first();
+assert.equal(deletedRow, null, 'snapshot D1 row must be deleted');
 
 console.log('OPS SNAPSHOT, DR DRILL & GRANULAR RESTORE TESTS PASSED');

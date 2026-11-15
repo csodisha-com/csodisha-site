@@ -78,3 +78,7 @@
 .cso-ops-rb-title,.cms-embed .cso-ops-rb-title{flex:1 1 260px;min-width:220px}
 .cso-ops-rb-sev,.cms-embed .cso-ops-rb-sev{width:140px}
 .cso-ops-rb-steps,.cms-embed .cso-ops-rb-steps{width:100%;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+/* Folder 17: Focused 5-Tab Sub-Navigation & Vault KPI Strip */
+.cso-ops-subnav{margin-bottom:14px}
+.cso-ops-vault-kpis{margin:10px 0 6px}

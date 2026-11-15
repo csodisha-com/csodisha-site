@@ -93,46 +93,79 @@ async function safeQueryAll(db, sql) {
   }
 }
 
+export const EXCLUDED_SNAPSHOT_TABLES = new Set([
+  'sessions',
+  'admin_otps',
+  'admin_rate_limits'
+]);
+
+export const SENSITIVE_SNAPSHOT_COLUMNS = new Set([
+  'password_hash',
+  'salt',
+  'code_hash'
+]);
+
+function quoteIdent(name) {
+  return '"' + String(name || '').replace(/"/g, '""') + '"';
+}
+
 export async function collectPlatformSnapshotTables(env) {
   const db = env.DB;
-  const [
-    site_settings,
-    site_pages,
-    site_page_revisions,
-    posts,
-    schemes_directory,
-    resources,
-    media_assets,
-    users
-  ] = await Promise.all([
-    safeQueryAll(db, 'SELECT key, value_json, updated_by, updated_at FROM site_settings ORDER BY key ASC'),
-    safeQueryAll(db, 'SELECT id, route, title, meta_description, category, hero_title, hero_subtitle, cta_label, cta_url, blocks_json, reusable_sections_json, status, publish_at, created_by, updated_by, created_at, updated_at FROM site_pages ORDER BY id ASC'),
-    safeQueryAll(db, 'SELECT id, route, snapshot_json, editor_email, note, created_at FROM site_page_revisions ORDER BY id ASC'),
-    safeQueryAll(db, 'SELECT id, type, slug, title, title_or, summary, summary_or, body_md, body_md_or, category, tags, goal_exam_ids, cover_media_key, event_date, organisation, vacancies, qualification, last_date, apply_url, notification_media_key, state, age_limit, salary_pay, source_url, status, published_at, created_by, updated_by, created_at, updated_at, deleted_at FROM posts ORDER BY id ASC'),
-    safeQueryAll(db, 'SELECT * FROM schemes_directory ORDER BY id ASC'),
-    safeQueryAll(db, 'SELECT * FROM resources ORDER BY id ASC'),
-    safeQueryAll(db, 'SELECT id, object_key, kind, mime_type, size_bytes, original_name, uploaded_by, created_at, deleted_at FROM media_assets ORDER BY id ASC'),
-    // Exclude raw password_hash, salt, and session tokens for security.
-    safeQueryAll(db, 'SELECT id, email, role, failed_attempts, lockout_until, created_at, updated_at FROM users ORDER BY id ASC')
-  ]);
+  const { results: masterRows } = await db.prepare(
+    `SELECT name FROM sqlite_master
+     WHERE type = 'table'
+       AND name NOT LIKE 'sqlite_%'
+       AND name NOT LIKE '_cf_%'
+     ORDER BY name ASC`
+  ).all();
 
-  const tables = {
-    site_settings,
-    site_pages,
-    site_page_revisions,
-    posts,
-    schemes_directory,
-    resources,
-    media_assets,
-    users
-  };
+  const discoveredNames = (masterRows || [])
+    .map(r => String(r && r.name || '').trim())
+    .filter(name => name && !EXCLUDED_SNAPSHOT_TABLES.has(name));
 
+  const tables = {};
   const row_counts = {};
   let total_rows = 0;
-  for (const name of SNAPSHOT_TABLES) {
-    const count = (tables[name] || []).length;
-    row_counts[name] = count;
-    total_rows += count;
+
+  for (const name of discoveredNames) {
+    const safeTbl = quoteIdent(name);
+    let cols = [];
+    try {
+      const pragma = await db.prepare(`PRAGMA table_info(${safeTbl})`).all();
+      cols = (pragma && Array.isArray(pragma.results) ? pragma.results : [])
+        .map(c => String(c.name || '').trim())
+        .filter(Boolean);
+    } catch {
+      cols = [];
+    }
+
+    const safeCols = cols.filter(c => !SENSITIVE_SNAPSHOT_COLUMNS.has(c.toLowerCase()));
+    if (!safeCols.length) {
+      tables[name] = [];
+      row_counts[name] = 0;
+      continue;
+    }
+
+    const selectCols = safeCols.map(quoteIdent).join(', ');
+    const orderCol = safeCols.includes('id')
+      ? quoteIdent('id')
+      : (safeCols.includes('key') ? quoteIdent('key') : 'rowid');
+
+    const rows = await safeQueryAll(db, `SELECT ${selectCols} FROM ${safeTbl} ORDER BY ${orderCol} ASC`);
+    // Defensive scrub in case any driver returns an unexpected sensitive key
+    const cleanRows = rows.map(row => {
+      const out = {};
+      for (const k of Object.keys(row || {})) {
+        if (!SENSITIVE_SNAPSHOT_COLUMNS.has(k.toLowerCase())) {
+          out[k] = row[k];
+        }
+      }
+      return out;
+    });
+
+    tables[name] = cleanRows;
+    row_counts[name] = cleanRows.length;
+    total_rows += cleanRows.length;
   }
 
   return { tables, row_counts, total_rows };
@@ -549,6 +582,27 @@ export async function restorePlatformSnapshot(env, id, { tables = [], mode = 'up
   };
 }
 
+export async function deletePlatformSnapshot(env, id) {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  await ensureOpsSnapshotsTable(env);
+  const row = await env.DB.prepare('SELECT id, label, r2_key FROM ops_snapshots WHERE id = ?').bind(id).first();
+  if (!row) throw new HttpError(404, 'NOT_FOUND', 'Snapshot not found');
+
+  if (env.MEDIA && row.r2_key && typeof env.MEDIA.delete === 'function') {
+    try {
+      await env.MEDIA.delete(row.r2_key);
+    } catch {}
+  }
+
+  await env.DB.prepare('DELETE FROM ops_snapshots WHERE id = ?').bind(id).run();
+  return {
+    ok: true,
+    deleted_id: row.id,
+    label: row.label,
+    r2_key: row.r2_key
+  };
+}
+
 // Route dispatcher for /api/admin/ops/snapshots[/:id[/download|/verify|/drill|/restore]]
 export async function handleOpsSnapshots(request, env, actor, subId, action) {
   const method = request.method;
@@ -575,6 +629,16 @@ export async function handleOpsSnapshots(request, env, actor, subId, action) {
       return json({ snapshot: snap }, 201);
     }
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  if (!action && method === 'DELETE') {
+    if (actor.role !== 'admin') throw new HttpError(403, 'FORBIDDEN', 'Only administrators can delete platform snapshots');
+    const result = await deletePlatformSnapshot(env, subId);
+    await audit(env, request, actor, 'ops.snapshot.delete', 'ops_snapshot', subId, {
+      label: result.label,
+      r2_key: result.r2_key
+    });
+    return json(result);
   }
 
   if (action === 'download' && method === 'GET') {

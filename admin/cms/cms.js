@@ -1615,19 +1615,35 @@
       wrap.appendChild(el('div', { class: 'actions' }, [refreshBtn]));
     }
 
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis' });
     var summaryBar = el('p', { class: 'hint cso-ops-vault-summary', text: 'Loading R2 snapshot vault…' });
     var tableHost = el('div', { class: 'cso-ops-vault-table-host' });
+    wrap.appendChild(kpiStrip);
     wrap.appendChild(summaryBar);
     wrap.appendChild(tableHost);
 
     async function loadVault() {
       clear(tableHost);
+      clear(kpiStrip);
       summaryBar.textContent = 'Loading R2 snapshot vault…';
       try {
         var d = await api('GET', 'ops/snapshots');
         var items = (d && d.items) || [];
         var totalBytes = items.reduce(function (acc, it) { return acc + (Number(it.size_bytes) || 0); }, 0);
-        summaryBar.textContent = items.length + ' R2 snapshot(s) in cold vault · Total stored: ' + fmtBytes(totalBytes) + ' · Bucket: cso-media (backups/snapshots/)';
+        var latestSnap = items[0] || null;
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Total Snapshots' }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: String(items.length) })
+        ]));
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Total R2 Storage Size' }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: fmtBytes(totalBytes) })
+        ]));
+        kpiStrip.appendChild(el('div', { class: 'cso-ops-telemetry-card' }, [
+          el('div', { class: 'muted sm', text: 'Latest Snapshot Timestamp' }),
+          el('div', { class: 'cso-ops-telemetry-val cso-tabular', text: latestSnap ? fmtDate(latestSnap.created_at) : 'None yet' })
+        ]));
+        summaryBar.textContent = items.length + ' R2 snapshot(s) in cold vault · Bucket: cso-media (backups/snapshots/)';
 
         if (!items.length) {
           tableHost.appendChild(el('p', { class: 'muted', text: 'No platform snapshots recorded yet. Click "Create Full Platform Snapshot Now" to archive the first baseline to R2.' }));
@@ -1684,6 +1700,30 @@
             text: 'Download JSON'
           });
 
+          var rowActions = [verifyBtn, drillRestoreBtn, dlLink];
+          if (me && me.role === 'admin') {
+            var delBtn = el('button', {
+              type: 'button',
+              class: 'btn sm danger',
+              text: 'Delete',
+              onclick: async function () {
+                if (!window.confirm('Delete snapshot "' + snap.label + '" from both R2 Cold Vault and D1?')) return;
+                delBtn.disabled = true;
+                delBtn.textContent = 'Deleting…';
+                try {
+                  await api('DELETE', 'ops/snapshots/' + encodeURIComponent(snap.id));
+                  toast('Deleted snapshot "' + snap.label + '" from R2 & D1');
+                  await loadVault();
+                } catch (err) {
+                  toast(err.message || 'Failed to delete snapshot', true);
+                  delBtn.disabled = false;
+                  delBtn.textContent = 'Delete';
+                }
+              }
+            });
+            rowActions.push(delBtn);
+          }
+
           var counts = snap.row_counts || {};
           var countsHint = Object.keys(counts).map(function (k) { return k + ': ' + counts[k]; }).join(' · ');
 
@@ -1702,7 +1742,7 @@
             ]),
             el('td', { class: 'cso-tabular', text: fmtBytes(snap.size_bytes) }),
             el('td', {}, [shaCode, el('div', { class: 'cso-ops-badge-wrap' }, [verifyBadge]), verifyDetail]),
-            el('td', {}, el('div', { class: 'actions' }, [verifyBtn, drillRestoreBtn, dlLink]))
+            el('td', {}, el('div', { class: 'actions' }, rowActions))
           ]));
         });
 
@@ -2947,143 +2987,56 @@
       snapshots: 'Operations, Backups & Recovery'
     };
     setTitle(titleMap[mode] || titleMap.snapshots);
-    if (mode === 'replica' || mode === 'airgap' || mode === 'runbooks') {
-      main.appendChild(opsContinuityAirgapRunbookPanel(mode));
-      main.appendChild(opsSnapshotVaultPanel('snapshots'));
-      main.appendChild(opsSentinelFreezeCachePanel('health'));
-    } else if (mode === 'schema' || mode === 'vacuum' || mode === 'forensics' || mode === 'retention') {
-      main.appendChild(opsSchemaVacuumForensicsPanel(mode));
-      main.appendChild(opsSnapshotVaultPanel('snapshots'));
-      main.appendChild(opsSentinelFreezeCachePanel('health'));
-      main.appendChild(opsContinuityAirgapRunbookPanel('runbooks'));
-    } else if (mode === 'freeze' || mode === 'cache' || mode === 'health' || mode === 'canary') {
+
+    var groupMap = {
+      snapshots: 'snapshots',
+      vault: 'snapshots',
+      verify: 'snapshots',
+      drill: 'drill',
+      restore: 'drill',
+      freeze: 'sentinel',
+      cache: 'sentinel',
+      health: 'sentinel',
+      canary: 'sentinel',
+      schema: 'hygiene',
+      vacuum: 'hygiene',
+      forensics: 'hygiene',
+      retention: 'hygiene',
+      replica: 'continuity',
+      airgap: 'continuity',
+      runbooks: 'continuity'
+    };
+    var activeGroup = groupMap[mode] || 'snapshots';
+
+    var subNav = el('div', { class: 'tabs cso-ops-subnav', role: 'tablist', 'aria-label': 'Operations & Disaster Recovery Studios' });
+    [
+      ['snapshots', 'operations/snapshots', 'Snapshots & Vault'],
+      ['drill', 'operations/drill', 'DR Drill & Restore'],
+      ['sentinel', 'operations/health', 'Freeze, Cache & Health'],
+      ['hygiene', 'operations/schema', 'Schema, Vacuum & Forensics'],
+      ['continuity', 'operations/runbooks', 'Replica, Air-Gap & SOPs']
+    ].forEach(function (tab) {
+      subNav.appendChild(el('a', {
+        class: 'tab',
+        role: 'tab',
+        href: '#/' + tab[1],
+        'aria-selected': String(activeGroup === tab[0]),
+        text: tab[2]
+      }));
+    });
+    main.appendChild(subNav);
+
+    if (activeGroup === 'drill') {
+      main.appendChild(opsDrillAndRestorePanel(mode === 'restore' ? 'restore' : 'drill', targetSnapId));
+    } else if (activeGroup === 'sentinel') {
       main.appendChild(opsSentinelFreezeCachePanel(mode));
-      main.appendChild(opsSnapshotVaultPanel('snapshots'));
-      main.appendChild(opsDrillAndRestorePanel('drill', targetSnapId));
-      main.appendChild(opsSchemaVacuumForensicsPanel('schema'));
-      main.appendChild(opsContinuityAirgapRunbookPanel('runbooks'));
-    } else if (mode === 'drill' || mode === 'restore') {
-      main.appendChild(opsDrillAndRestorePanel(mode, targetSnapId));
-      main.appendChild(opsSnapshotVaultPanel('snapshots'));
-      main.appendChild(opsSentinelFreezeCachePanel('health'));
-      main.appendChild(opsSchemaVacuumForensicsPanel('schema'));
-      main.appendChild(opsContinuityAirgapRunbookPanel('runbooks'));
+    } else if (activeGroup === 'hygiene') {
+      main.appendChild(opsSchemaVacuumForensicsPanel(mode));
+    } else if (activeGroup === 'continuity') {
+      main.appendChild(opsContinuityAirgapRunbookPanel(mode));
     } else {
       main.appendChild(opsSnapshotVaultPanel(mode));
-      main.appendChild(opsDrillAndRestorePanel('drill', targetSnapId));
-      main.appendChild(opsSentinelFreezeCachePanel('health'));
-      main.appendChild(opsSchemaVacuumForensicsPanel('schema'));
-      main.appendChild(opsContinuityAirgapRunbookPanel('runbooks'));
     }
-    if (me && me.role === 'admin') main.appendChild(securityBackupPanel());
-    var s = await api('GET', 'stats');
-    var cr = s.last_cron_run || {};
-    var cronCard = el('div', { class: 'panel' }, [
-      el('h2', { text: 'Cron Lifecycle & D1 Maintenance' }),
-      el('p', { class: 'muted', text: cr.ran_at ? ('Last run: ' + fmtDate(cr.ran_at) + ' · Promoted: ' + (cr.promoted || 0) + ' · Expired: ' + (cr.expired || 0) + ' · Cleaned: ' + (cr.cleaned || 0)) : 'No maintenance run recorded yet (Schedule: */15 * * * *)' })
-    ]);
-    if (me && me.role === 'admin') {
-      var runBtn = el('button', {
-        type: 'button',
-        class: 'btn primary',
-        text: 'Run maintenance now',
-        onclick: async function () {
-          runBtn.disabled = true;
-          runBtn.textContent = 'Running…';
-          try {
-            var res = await api('POST', 'maintenance/run', {});
-            toast('Maintenance complete: ' + (res.promoted || 0) + ' promoted, ' + (res.expired || 0) + ' expired');
-            clear(main);
-            await viewOperations();
-          } catch (err) {
-            toast(err.message, true);
-            runBtn.disabled = false;
-            runBtn.textContent = 'Run maintenance now';
-          }
-        }
-      });
-      cronCard.appendChild(el('div', { class: 'actions' }, runBtn));
-    }
-    main.appendChild(cronCard);
-
-    var healthBox = el('div', { class: 'panel' }, [
-      el('h2', { text: 'Content Health Audit' }),
-      el('p', { class: 'muted', text: 'Scans live D1 jobs, current affairs, mock tests, and resources for drafts, expired jobs, or missing metadata.' })
-    ]);
-    var healthList = el('div', { class: 'actions' });
-    healthBox.appendChild(healthList);
-    main.appendChild(healthBox);
-
-    var backupBtn = el('button', {
-      type: 'button',
-      class: 'btn primary',
-      text: 'Export Live D1 JSON Backup',
-      onclick: async function () {
-        backupBtn.disabled = true;
-        backupBtn.textContent = 'Exporting…';
-        try {
-          var [stats, ca, jobs, tests, syl, pyq, banner] = await Promise.all([
-            api('GET', 'stats'),
-            api('GET', 'current-affairs?limit=100'),
-            api('GET', 'jobs?limit=100'),
-            api('GET', 'mock-tests?limit=100'),
-            api('GET', 'resources?kind=syllabus&limit=100'),
-            api('GET', 'resources?kind=pyq&limit=100'),
-            api('GET', 'banner')
-          ]);
-          var payload = {
-            exported_at: new Date().toISOString(),
-            exported_by: me ? me.email : 'staff',
-            stats: stats,
-            banner: banner,
-            current_affairs: ca.items || [],
-            jobs: jobs.items || [],
-            mock_tests: tests.items || [],
-            syllabus: syl.items || [],
-            pyq: pyq.items || []
-          };
-          var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = url;
-          a.download = 'csodisha-d1-backup-' + new Date().toISOString().slice(0, 10) + '.json';
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-          toast('Live D1 JSON backup downloaded');
-        } catch (err) {
-          toast(err.message, true);
-        }
-        backupBtn.disabled = false;
-        backupBtn.textContent = 'Export Live D1 JSON Backup';
-      }
-    });
-
-    main.appendChild(el('div', { class: 'panel' }, [
-      el('h2', { text: 'Live D1 JSON Backup Export' }),
-      el('p', { class: 'muted', text: 'Downloads a full JSON snapshot of live D1 tables (stats, banner, jobs, current affairs, mock tests, syllabus, and PYQs).' }),
-      el('div', { class: 'actions' }, backupBtn)
-    ]));
-
-    try {
-      var [jRes, mRes] = await Promise.all([api('GET', 'jobs?limit=50'), api('GET', 'mock-tests?limit=50')]);
-      var warnings = [];
-      (jRes.items || []).forEach(function (j) {
-        if (j.status === 'expired') warnings.push('Expired job: ' + j.title);
-      });
-      (mRes.items || []).forEach(function (m) {
-        if (!m.question_count) warnings.push('Mock test with 0 questions: ' + m.title);
-      });
-      if (s.open_incidents > 0) warnings.push(s.open_incidents + ' open incident(s) require resolution');
-      if (!warnings.length) {
-        healthList.appendChild(el('div', { class: 'alert ok', text: 'All content health checks passed with zero warnings.' }));
-      } else {
-        warnings.slice(0, 10).forEach(function (w) {
-          healthList.appendChild(el('div', { class: 'alert', text: w }));
-        });
-      }
-    } catch (_) {}
   }
 
   async function viewDiagnostics() {
