@@ -14232,18 +14232,18 @@
 
   function schemesDirectoryStudioPanel(domainSlug) {
     var DOMAINS = {
-      'govt-public-welfare': { num: '01', title: 'Government & Public Welfare', defaultDept: 'W&CD Dept Odisha', quickTags: ['Subhadra Yojana', 'MBPY', 'Mamata', 'NFSA', 'Mission Shakti'] },
-      'education-employment': { num: '02', title: 'Education, Employment & Talent', defaultDept: 'Higher Education Dept', quickTags: ['State Scholarship', 'NSP', 'Nua-O', 'Sudakshya', 'PMKVY', 'NAPS'] },
-      'agriculture-livelihoods': { num: '03', title: 'Agriculture, Business & Livelihoods', defaultDept: 'Agriculture & FE Dept', quickTags: ['CM-KISAN', 'KALIA', 'PM-KISAN', 'PMFBY', 'MKUY', 'Startup Odisha'] },
-      'health-housing-protection': { num: '04', title: 'Health, Housing & Financial Protection', defaultDept: 'Health & FW Dept', quickTags: ['GJAY', 'Ayushman Bharat', 'Niramaya', 'Antyodaya Gruha', 'PMAY', 'APY'] },
-      'communities-beneficiaries': { num: '05', title: 'Communities & Special Beneficiaries', defaultDept: 'SSEPD Odisha', quickTags: ['SC/ST', 'SEBC/OBC', 'Minority', 'Senior Citizens', 'PwD'] },
-      'private-global-innovation': { num: '06', title: 'Private, Global & Innovation Support', defaultDept: 'Startup Odisha / CSR', quickTags: ['CSR Grant', 'Innovation Fund', 'Global Fellowship'] },
-      'find-schemes-eligibility': { num: '07', title: 'Find Schemes & Check Eligibility', defaultDept: 'CSOdisha Eligibility Desk', quickTags: ['Income Limit', 'Age Criteria', 'Women', 'Farmers', 'Students'] },
-      'citizen-services-verification': { num: '08', title: 'Citizen Services & Verification', defaultDept: 'e-District / Mo Seba Kendra', quickTags: ['Mo Seba Kendra', 'e-District', 'Aadhaar Seeding', 'Grievance'] }
+      'govt-public-welfare': { num: '01', title: 'Government & Public Welfare', defaultDept: 'W&CD Dept Odisha', beneficiaryPlaceholder: 'e.g. Women (21-60), Elderly, BPL Families', publicPath: '/schemes/govt-public-welfare/', quickTags: ['Subhadra Yojana', 'MBPY', 'Mamata', 'NFSA', 'Mission Shakti'] },
+      'education-employment': { num: '02', title: 'Education, Employment & Talent', defaultDept: 'Higher Education Dept', beneficiaryPlaceholder: 'e.g. Post-Matric Students, Youth (18-35)', publicPath: '/schemes/education-employment/', quickTags: ['State Scholarship', 'NSP', 'Nua-O', 'Sudakshya', 'PMKVY', 'NAPS'] },
+      'agriculture-livelihoods': { num: '03', title: 'Agriculture, Business & Livelihoods', defaultDept: 'Agriculture & FE Dept', beneficiaryPlaceholder: 'e.g. Small & Marginal Farmers, MSMEs, SHGs', publicPath: '/schemes/agriculture-livelihoods/', quickTags: ['CM-KISAN', 'KALIA', 'PM-KISAN', 'PMFBY', 'MKUY', 'Startup Odisha'] },
+      'health-housing-protection': { num: '04', title: 'Health, Housing & Financial Protection', defaultDept: 'Health & FW Dept', beneficiaryPlaceholder: 'e.g. Ration Card Families, Rural Kutcha Households', publicPath: '/schemes/health-housing-protection/', quickTags: ['GJAY', 'Ayushman Bharat', 'Niramaya', 'Antyodaya Gruha', 'PMAY', 'APY'] },
+      'communities-beneficiaries': { num: '05', title: 'Communities & Special Beneficiaries', defaultDept: 'SSEPD Odisha', beneficiaryPlaceholder: 'e.g. SC/ST, SEBC/OBC, PwD, Senior Citizens', publicPath: '/schemes/communities-beneficiaries/', quickTags: ['SC/ST', 'SEBC/OBC', 'Minority', 'Senior Citizens', 'PwD'] },
+      'private-global-innovation': { num: '06', title: 'Private, Global & Innovation Support', defaultDept: 'Startup Odisha / CSR', beneficiaryPlaceholder: 'e.g. Tech Startups, Researchers, Social Enterprises', publicPath: '/schemes/private-global-innovation/', quickTags: ['CSR Grant', 'Innovation Fund', 'Global Fellowship'] },
+      'find-schemes-eligibility': { num: '07', title: 'Find Schemes & Check Eligibility', defaultDept: 'CSOdisha Eligibility Desk', beneficiaryPlaceholder: 'e.g. Income Limit, Age Criteria, Rural/Urban', publicPath: '/schemes/find-schemes-eligibility/', quickTags: ['Income Limit', 'Age Criteria', 'Women', 'Farmers', 'Students'] },
+      'citizen-services-verification': { num: '08', title: 'Citizen Services & Verification', defaultDept: 'e-District / Mo Seba Kendra', beneficiaryPlaceholder: 'e.g. All Citizens, Aadhaar & Ration Card Holders', publicPath: '/schemes/citizen-services-verification/', quickTags: ['Mo Seba Kendra', 'e-District', 'Aadhaar Seeding', 'Grievance'] }
     };
     var activeDomain = DOMAINS[domainSlug] ? domainSlug : 'govt-public-welfare';
     var cfg = DOMAINS[activeDomain];
-    var publicUrl = 'https://csodisha.com/schemes/' + activeDomain + '/';
+    var publicUrl = 'https://csodisha.com' + cfg.publicPath;
     var canWrite = me && ['admin', 'editor', 'reviewer'].includes(me.role);
     var canDelete = me && me.role === 'admin';
 
@@ -14270,7 +14270,7 @@
         ]),
         el('div', { class: 'cso-ops-badges' }, [
           copyUrlBtn,
-          el('a', { class: 'btn sm', href: '/schemes/' + activeDomain + '/', target: '_blank', rel: 'noopener', text: 'View Live Directory ↗' }),
+          el('a', { class: 'btn sm', href: cfg.publicPath, target: '_blank', rel: 'noopener', text: 'View Live Directory ↗' }),
           addSubBtn,
           addItemBtn,
           refreshBtn
@@ -14341,12 +14341,23 @@
       clear(kpiRow);
       var k = (state.tree && state.tree.kpis) || {};
       var total = Math.max(1, Number(k.totalItems || 0));
-      [
+      var cards = [
         { label: 'Total Directories', val: k.totalDirectories || 0, max: Math.max(1, k.totalDirectories || 1), cur: k.totalDirectories || 0, note: (k.emptyDirectories || 0) + ' empty' },
         { label: 'Published Schemes', val: (k.publishedSchemes || 0) + ' / ' + (k.totalItems || 0), max: total, cur: k.publishedSchemes || 0, note: 'Live directory items' },
         { label: 'Odisha State Schemes', val: k.odishaStateSchemes || 0, max: total, cur: k.odishaStateSchemes || 0, note: 'State flagship & welfare' },
         { label: 'Verified Portals', val: k.verifiedPortals || 0, max: total, cur: k.verifiedPortals || 0, note: (k.pendingSuggestions || 0) + ' citizen reports' }
-      ].forEach(function (c) {
+      ];
+      if (activeDomain === 'citizen-services-verification' && state.tree && state.tree.crossDomainStats) {
+        var cs = state.tree.crossDomainStats;
+        cards.push({
+          label: 'Schemes & Benefits Hub',
+          val: 'All ' + (cs.totalDomains || 8) + ' Domains: ' + (cs.totalFolders || 0) + ' directories · ' + (cs.totalPublished || 0) + ' published',
+          max: Math.max(1, cs.totalFolders || 1),
+          cur: cs.totalPublished || 0,
+          note: 'Cross-domain coverage'
+        });
+      }
+      cards.forEach(function (c) {
         kpiRow.appendChild(el('div', { class: 'cso-ops-kpi' }, [
           el('div', { class: 'cso-ops-kpi-label', text: c.label }),
           el('div', { class: 'cso-ops-kpi-val', text: String(c.val) }),
@@ -14592,7 +14603,7 @@
       sponsorSel.value = (editing && editing.sponsor_level) || 'Odisha State';
 
       var deptInp = el('input', { class: 'input', type: 'text', value: (editing && editing.department_name) || cfg.defaultDept, placeholder: 'Nodal Department' });
-      var benInp = el('input', { class: 'input', type: 'text', value: (editing && editing.beneficiary_group) || 'All Citizens', placeholder: 'e.g. Women & Mothers, Farmers' });
+      var benInp = el('input', { class: 'input', type: 'text', value: (editing && editing.beneficiary_group) || 'All Citizens', placeholder: cfg.beneficiaryPlaceholder || 'e.g. Women & Mothers, Farmers' });
       var amtInp = el('input', { class: 'input', type: 'text', value: (editing && editing.benefit_amount) || '', placeholder: 'e.g. Rs 10,000 / year' });
       var incInp = el('input', { class: 'input', type: 'text', value: (editing && editing.income_limit) || '', placeholder: 'e.g. <= Rs 2.5 Lakh' });
       var modeSel = el('select', { class: 'select' }, [

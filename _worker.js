@@ -29,6 +29,8 @@ import { handlePublicStudyLibraryRoute } from './functions/_lib/study-library-ss
 import { handlePublicStudyItemsApi, handlePublicStudySuggestApi, handleStudyLibrarySitemapXml } from './functions/_lib/study-library-studio.js';
 import { handlePublicJobsRoute } from './functions/_lib/jobs-directory-ssr.js';
 import { handlePublicJobsOverviewApi, handlePublicJobsItemsApi, handlePublicJobsSuggestApi, handleJobsDirectorySitemapXml } from './functions/_lib/jobs-directory-studio.js';
+import { handlePublicSchemesRoute } from './functions/_lib/schemes-directory-ssr.js';
+import { handlePublicSchemesOverviewApi, handlePublicSchemesItemsApi, handlePublicSchemesSuggestApi, handleSchemesDirectorySitemapXml } from './functions/_lib/schemes-directory-studio.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -290,9 +292,9 @@ function recordPublicCachePut(edgeCache, request, response, ctx) {
 async function invalidatePublicEdgeCache(edgeCache, origin) {
   if (!edgeCache) return;
   const basePaths = [
-    '/sitemap.xml', '/sitemap-study-library.xml', '/sitemap-jobs.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
+    '/sitemap.xml', '/sitemap-study-library.xml', '/sitemap-jobs.xml', '/sitemap-schemes.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
-    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/content/platform-stats', '/api/content/changelog',
+    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources',
     '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
@@ -387,6 +389,26 @@ export default {
     }
     if (pathname === '/api/public/jobs-directory/suggest' && request.method === 'POST') {
       return handlePublicJobsSuggestApi(request, env);
+    }
+    if (pathname === '/sitemap-schemes.xml') {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const schemesMapRes = await handleSchemesDirectorySitemapXml(request, env);
+      if (isAnonGet && schemesMapRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, schemesMapRes, ctx);
+      }
+      return schemesMapRes;
+    }
+    if (pathname === '/api/public/schemes-directory/overview' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicSchemesOverviewApi(request, env);
+    }
+    if (pathname === '/api/public/schemes-directory/items' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicSchemesItemsApi(request, env);
+    }
+    if (pathname === '/api/public/schemes-directory/suggest' && request.method === 'POST') {
+      return handlePublicSchemesSuggestApi(request, env);
     }
     if (pathname === '/sitemap.xml' || pathname === '/feed.xml' || pathname === '/rss.xml' || pathname === '/robots.txt' || pathname === '/llms.txt') {
       if (edgeCache && isAnonGet) {
@@ -533,6 +555,10 @@ export default {
     if (pathname.startsWith('/jobs/')) {
       const jobsRes = await handlePublicJobsRoute(request, env, url);
       if (jobsRes) return jobsRes;
+    }
+    if (pathname.startsWith('/schemes/')) {
+      const schemesRes = await handlePublicSchemesRoute(request, env, pathname);
+      if (schemesRes) return schemesRes;
     }
 
     // Fall back to static asset binding

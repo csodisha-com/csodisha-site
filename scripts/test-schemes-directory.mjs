@@ -3,8 +3,13 @@ import { DatabaseSync } from 'node:sqlite';
 import {
   ensureSchemesDirectoryStudioSchema,
   handleSchemesDirectoryStudio,
+  handlePublicSchemesOverviewApi,
+  handlePublicSchemesItemsApi,
+  handlePublicSchemesSuggestApi,
+  handleSchemesDirectorySitemapXml,
   SCHEMES_DOMAINS
 } from '../functions/_lib/schemes-directory-studio.js';
+import { handlePublicSchemesRoute } from '../functions/_lib/schemes-directory-ssr.js';
 
 function createMockDb() {
   const db = new DatabaseSync(':memory:');
@@ -222,7 +227,90 @@ async function main() {
   assert.equal(getJson.item.benefit_amount, 'Rs 1,50,000');
   assert.ok(getJson.revisions.length >= 2);
 
-  // 5. Cleanup
+  // 5. Batch 2 (#05-#08 + aliases + crossDomainStats + public APIs + SSR + DPDP + sitemap)
+  for (const domain of ['communities-beneficiaries', 'private-global-innovation', 'find-schemes-eligibility', 'citizen-services-verification', 'communities-special', 'find-check-eligibility']) {
+    const res = await handleSchemesDirectoryStudio(
+      makeReq('GET', `https://csodisha.com/api/admin/schemes-directory/tree?domain=${domain}`),
+      env,
+      admin,
+      'tree'
+    );
+    const data = await res.json();
+    assert.equal(res.status, 200);
+    assert.ok(data.folders.length >= 4, `${domain} should have seeded folders`);
+    assert.ok(data.items.length >= 1, `${domain} should have seeded scheme`);
+    assert.ok(data.crossDomainStats && data.crossDomainStats.totalDomains === 8);
+  }
+
+  const ovRes = await handlePublicSchemesOverviewApi(
+    makeReq('GET', 'https://csodisha.com/api/public/schemes-directory/overview'),
+    env
+  );
+  assert.equal(ovRes.status, 200);
+  const ovJson = await ovRes.json();
+  assert.equal(ovJson.domains.length, 8);
+  assert.ok(ovJson.totals.totalFolders >= 20);
+  assert.ok(ovJson.totals.totalPublished >= 8);
+
+  const itemsRes = await handlePublicSchemesItemsApi(
+    makeReq('GET', 'https://csodisha.com/api/public/schemes-directory/items?q=Subhadra'),
+    env
+  );
+  assert.equal(itemsRes.status, 200);
+  const itemsJson = await itemsRes.json();
+  assert.ok(itemsJson.items.length >= 1);
+  const sampleSlug = itemsJson.items[0].slug || itemsJson.items[0].id;
+
+  const ssrDirRes = await handlePublicSchemesRoute(
+    makeReq('GET', 'https://csodisha.com/schemes/communities-special/'),
+    env,
+    '/schemes/communities-special/'
+  );
+  assert.equal(ssrDirRes.status, 200);
+  const ssrDirHtml = await ssrDirRes.text();
+  assert.ok(ssrDirHtml.includes('Communities &amp; Special Beneficiaries') || ssrDirHtml.includes('Communities'));
+  assert.ok(!/style\s*=/.test(ssrDirHtml), 'SSR directory HTML must not contain inline style=');
+
+  const ssrItemRes = await handlePublicSchemesRoute(
+    makeReq('GET', `https://csodisha.com/schemes/item/${sampleSlug}/`),
+    env,
+    `/schemes/item/${sampleSlug}/`
+  );
+  assert.equal(ssrItemRes.status, 200);
+  const ssrItemHtml = await ssrItemRes.text();
+  assert.ok(ssrItemHtml.includes('GovernmentService'));
+  assert.ok(ssrItemHtml.includes('Documents Checklist'));
+  assert.ok(!/style\s*=/.test(ssrItemHtml), 'SSR item HTML must not contain inline style=');
+
+  const ssr404Res = await handlePublicSchemesRoute(
+    makeReq('GET', 'https://csodisha.com/schemes/item/does-not-exist-999/'),
+    env,
+    '/schemes/item/does-not-exist-999/'
+  );
+  assert.equal(ssr404Res.status, 404);
+
+  const suggestRes = await handlePublicSchemesSuggestApi(
+    makeReq('POST', 'https://csodisha.com/api/public/schemes-directory/suggest', {
+      domain_slug: 'govt-public-welfare',
+      category: 'outdated-link',
+      message: 'Please check portal link. Contact me at citizen@example.com or 9876543210.',
+      suggested_url: 'https://subhadra.odisha.gov.in/'
+    }),
+    env
+  );
+  assert.equal(suggestRes.status, 201);
+  const storedSug = await env.DB.prepare(`SELECT message FROM schemes_directory_suggestions ORDER BY created_at DESC LIMIT 1`).first();
+  assert.ok(storedSug && !storedSug.message.includes('citizen@example.com') && !storedSug.message.includes('9876543210'), 'DPDP PII must be redacted');
+
+  const sitemapRes = await handleSchemesDirectorySitemapXml(
+    makeReq('GET', 'https://csodisha.com/sitemap-schemes.xml'),
+    env
+  );
+  assert.equal(sitemapRes.status, 200);
+  const sitemapXml = await sitemapRes.text();
+  assert.ok(sitemapXml.includes('<urlset') && sitemapXml.includes('/schemes/govt-public-welfare/'));
+
+  // 6. Cleanup
   assert.equal((await handleSchemesDirectoryStudio(makeReq('DELETE', `https://csodisha.com/api/admin/schemes-directory/items/${createdItem.id}`), env, admin, 'items', createdItem.id)).status, 200);
   assert.equal((await handleSchemesDirectoryStudio(makeReq('DELETE', `https://csodisha.com/api/admin/schemes-directory/folders/${childFolder.id}`), env, admin, 'folders', childFolder.id)).status, 200);
   assert.equal((await handleSchemesDirectoryStudio(makeReq('DELETE', `https://csodisha.com/api/admin/schemes-directory/folders/${parentFolder.id}`), env, admin, 'folders', parentFolder.id)).status, 200);

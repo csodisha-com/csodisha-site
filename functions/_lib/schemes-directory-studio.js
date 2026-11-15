@@ -256,6 +256,55 @@ const SEED_FOLDERS_BY_DOMAIN = {
     { id: 'sf-hh-pmjjby-apy', parent_id: 'sf-hh-housing-insurance', name_en: 'PMJJBY, PMSBY & Atal Pension Yojana', slug: 'pmjjby-pmsby-atal-pension', sort_order: 20, description_en: 'Affordable Rs 2 lakh life/accident insurance & guaranteed old-age pension.' },
     // Depth 3
     { id: 'sf-hh-gjay-hospitals', parent_id: 'sf-hh-gjay-ab', name_en: 'GJAY Empanelled Hospitals & Card Verification', slug: 'gjay-empanelled-hospitals-check', sort_order: 10, description_en: 'Verify ration-linked GJAY/Ayushman card and hospital list inside & outside Odisha.' }
+  ],
+  'communities-beneficiaries': [
+    // Depth 1
+    { id: 'sf-cb-sc-st-obc', parent_id: null, name_en: 'SC, ST, OBC & Minority Welfare', title_or: 'ଅନୁସୂଚିତ ଜାତି, ଜନଜାତି ଓ ପଛୁଆ ବର୍ଗ କଲ୍ୟାଣ', slug: 'sc-st-obc-minority-welfare', sort_order: 10, featured_badge: 'ST & SC DEV', description_en: 'Tribal hostels, forest rights, special development councils and minority welfare in Odisha.' },
+    { id: 'sf-cb-pwd-senior', parent_id: null, name_en: 'Persons with Disabilities (PwD), Senior Citizens & Artisans', title_or: 'ଭିନ୍ନକ୍ଷମ, ବରିଷ୍ଠ ନାଗରିକ ଓ କାରିଗର କଲ୍ୟାଣ', slug: 'pwd-senior-citizens-artisans', sort_order: 20, featured_badge: 'INCLUSIVE CARE', description_en: 'Assistive devices, UDID disability pensions, senior citizen care and artisan welfare.' },
+    // Depth 2
+    { id: 'sf-cb-anwesha-akankshya', parent_id: 'sf-cb-sc-st-obc', name_en: 'Anwesha, Akankshya & Post-Matric Tribal Hostels', slug: 'anwesha-akankshya-tribal-hostels', sort_order: 10, description_en: 'Quality English-medium education and urban hostel seats for SC/ST students.' },
+    { id: 'sf-cb-otelp-fra', parent_id: 'sf-cb-sc-st-obc', name_en: 'OTELP, Special Development Councils & Forest Rights', slug: 'otelp-sdc-forest-rights', sort_order: 20, description_en: 'Tribal livelihood empowerment, FRA land titles and cultural preservation.' },
+    { id: 'sf-cb-bbsa-pwd', parent_id: 'sf-cb-pwd-senior', name_en: 'Bhim Bhoi Bhinnakhyama Samarthya Abhiyan (BBSA)', slug: 'bhim-bhoi-bbsa-pwd-odisha', sort_order: 10, description_en: 'Statewide PwD camps, UDID registration, aids & appliances and marriage incentives.' },
+    { id: 'sf-cb-nsap-pensions', parent_id: 'sf-cb-pwd-senior', name_en: 'Indira Gandhi National Old Age / Widow / Disability Pensions', slug: 'ign-old-age-widow-disability-pensions', sort_order: 20, description_en: 'NSAP central pensions converged with Odisha state social security.' },
+    // Depth 3
+    { id: 'sf-cb-anwesha-adm', parent_id: 'sf-cb-anwesha-akankshya', name_en: 'Anwesha Urban Hostel Admission & Stipend Guide', slug: 'anwesha-urban-hostel-admission', sort_order: 10, description_en: 'District-level selection, free uniforms, books and monthly mess stipend.' }
+  ],
+  'private-global-innovation': [
+    // Depth 1
+    { id: 'sf-pg-startup-csr', parent_id: null, name_en: 'Startup Grants, Incubators & CSR Fellowships', title_or: 'ଷ୍ଟାର୍ଟଅପ୍ ଅନୁଦାନ ଏବଂ ସିଏସଆର ଫେଲୋସିପ୍', slug: 'startup-grants-incubators-csr', sort_order: 10, featured_badge: 'INNOVATION', description_en: 'O-Hub incubation, seed capital, corporate CSR grants and rural fellowships.' },
+    { id: 'sf-pg-global-climate', parent_id: null, name_en: 'Global Development, Climate & Agri-Tech Grants', title_or: 'ବିଶ୍ୱସ୍ତରୀୟ ବିକାଶ ଏବଂ କୃଷି-ଟେକ୍ ଅନୁଦାନ', slug: 'global-development-climate-agritech', sort_order: 20, featured_badge: 'GLOBAL & GREEN', description_en: 'Multilateral livelihood programmes, NABARD/SIDBI green enterprise & climate resilience.' },
+    // Depth 2
+    { id: 'sf-pg-startup-odisha', parent_id: 'sf-pg-startup-csr', name_en: 'Startup Odisha Seed Fund & O-Hub Incubation', slug: 'startup-odisha-seed-fund-ohub', sort_order: 10, description_en: 'Monthly sustenance allowance, product development grant & O-Hub Bhubaneswar workspace.' },
+    { id: 'sf-pg-csr-fellowships', parent_id: 'sf-pg-startup-csr', name_en: 'SBI Youth for India, Gandhi Fellowship & Azim Premji Grants', slug: 'sbi-youth-gandhi-azim-premji-grants', sort_order: 20, description_en: 'Paid rural development fellowships and grassroots NGO capacity grants.' },
+    { id: 'sf-pg-gates-undp', parent_id: 'sf-pg-global-climate', name_en: 'Gates Foundation, UNDP & CGIAR Odisha Livelihood Programs', slug: 'gates-undp-cgiar-odisha-programs', sort_order: 10, description_en: 'Climate-resilient rice, millet mission & women digital finance partnerships.' },
+    { id: 'sf-pg-nabard-sidbi', parent_id: 'sf-pg-global-climate', name_en: 'NABARD & SIDBI Green Enterprise Support', slug: 'nabard-sidbi-green-enterprise', sort_order: 20, description_en: 'FPO formation grants, solar micro-grid finance & green MSME credit.' },
+    // Depth 3
+    { id: 'sf-pg-ohub-grant', parent_id: 'sf-pg-startup-odisha', name_en: 'O-Hub Product Grant & Monthly Sustenance Guide', slug: 'ohub-product-grant-sustenance', sort_order: 10, description_en: 'DPIIT & Startup Odisha registration, pitch deck & Rs 15 Lakh need-based assistance.' }
+  ],
+  'find-schemes-eligibility': [
+    // Depth 1
+    { id: 'sf-fe-profile-stage', parent_id: null, name_en: 'By Beneficiary Profile & Life Stage', title_or: 'ହିତାଧିକାରୀଙ୍କ ବର୍ଗ ଅନୁଯାୟୀ ଯୋଜନା', slug: 'by-beneficiary-profile-life-stage', sort_order: 10, featured_badge: 'ELIGIBILITY', description_en: 'Quickly match schemes for Women, Farmers, Students, Youth, Senior Citizens & MSMEs.' },
+    { id: 'sf-fe-income-ekyc', parent_id: null, name_en: 'Income Certificate, BPL / Ration Card & e-KYC Guides', title_or: 'ଆୟ ପ୍ରମାଣପତ୍ର, ରାସନ କାର୍ଡ ଓ ଇ-କେୱାଇସି', slug: 'income-ration-card-ekyc-guides', sort_order: 20, featured_badge: 'CHECKLIST', description_en: 'Income thresholds, NFSA/SFSS ration card rules and NPCI Aadhaar-bank seeding.' },
+    // Depth 2
+    { id: 'sf-fe-women-shg', parent_id: 'sf-fe-profile-stage', name_en: 'Women & Self-Help Group (SHG) Eligibility Matrix', slug: 'women-shg-eligibility-matrix', sort_order: 10, description_en: 'Age, income and ration card rules for Subhadra, Mamata & Mission Shakti.' },
+    { id: 'sf-fe-farmers-rules', parent_id: 'sf-fe-profile-stage', name_en: 'Small & Marginal Farmers (CM-KISAN / PM-KISAN) Rules', slug: 'farmers-cmkisan-pmkisan-rules', sort_order: 20, description_en: 'Landholding limits, sharecropper & landless agri household criteria.' },
+    { id: 'sf-fe-students-finder', parent_id: 'sf-fe-profile-stage', name_en: 'Students (Class 9 to Ph.D.) Scholarship Finder', slug: 'students-scholarship-finder', sort_order: 30, description_en: 'Match State Scholarship Portal & NSP schemes by course and category.' },
+    { id: 'sf-fe-ration-ekyc', parent_id: 'sf-fe-income-ekyc', name_en: 'Ration Card (NFSA / SFSS) & Aadhaar-Bank Seeding Checklist', slug: 'ration-card-aadhaar-seeding-checklist', sort_order: 10, description_en: 'Verify NPCI mapper status so DBT scheme installments never fail.' },
+    { id: 'sf-fe-income-thresholds', parent_id: 'sf-fe-income-ekyc', name_en: 'Annual Family Income Thresholds Across Odisha Schemes', slug: 'income-thresholds-odisha-schemes', sort_order: 20, description_en: 'Compare Rs 24,000 BPL, Rs 2.5 Lakh scholarship & non-taxpayer rules.' },
+    // Depth 3
+    { id: 'sf-fe-women-matrix-detail', parent_id: 'sf-fe-women-shg', name_en: 'Subhadra, Mamata & Mission Shakti Eligibility Check', slug: 'subhadra-mamata-mission-shakti-check', sort_order: 10, description_en: 'Side-by-side comparison of age, income and bank account requirements.' }
+  ],
+  'citizen-services-verification': [
+    // Depth 1
+    { id: 'sf-cs-edistrict-grievance', parent_id: null, name_en: 'Mo Seba Kendra, e-District Odisha & Grievance Portals', title_or: 'ମୋ ସେବା କେନ୍ଦ୍ର, ଇ-ଡିଷ୍ଟ୍ରିକ୍ଟ ଓ ଜନ ଶୁଣାଣି', slug: 'mo-seba-kendra-edistrict-grievance', sort_order: 10, featured_badge: 'CITIZEN PORTALS', description_en: 'Official certificate portals, CM grievance redressal and RTI Odisha.' },
+    { id: 'sf-cs-tracking-antifraud', parent_id: null, name_en: 'Scheme Status Tracking & Anti-Fraud Guides', title_or: 'ଯୋଜନା ସ୍ଥିତି ଯାଞ୍ଚ ଏବଂ ଠକେଇ ସୁରକ୍ଷା', slug: 'scheme-status-tracking-antifraud', sort_order: 20, featured_badge: 'VERIFICATION', description_en: 'Check PFMS/DBT payments and verify authentic .gov.in scheme portals.' },
+    // Depth 2
+    { id: 'sf-cs-edistrict-certs', parent_id: 'sf-cs-edistrict-grievance', name_en: 'e-District Odisha (Caste, Resident, Income, Legal Heir Certificates)', slug: 'edistrict-odisha-certificates', sort_order: 10, description_en: 'Apply online or via Mo Seba Kendra with RTPS Odisha timelines.' },
+    { id: 'sf-cs-janasunani-rti', parent_id: 'sf-cs-edistrict-grievance', name_en: 'Jana Sunani (CM Grievance Portal) & RTI Odisha', slug: 'jana-sunani-cm-grievance-rti', sort_order: 20, description_en: 'File public grievances and track district collectorate resolution.' },
+    { id: 'sf-cs-dbt-pfms', parent_id: 'sf-cs-tracking-antifraud', name_en: 'DBT / PFMS Payment Status & Subhadra / KALIA Beneficiary Check', slug: 'dbt-pfms-payment-status-check', sort_order: 10, description_en: 'Track Aadhaar-based DBT credits via PFMS and official Odisha portals.' },
+    { id: 'sf-cs-antifraud', parent_id: 'sf-cs-tracking-antifraud', name_en: 'Fake Scheme Link & OTP Scam Verification Guide', slug: 'fake-scheme-link-otp-scam-guide', sort_order: 20, description_en: 'Spot fraudulent WhatsApp APK/link scams and report to Cyber Helpline 1930.' },
+    // Depth 3
+    { id: 'sf-cs-edistrict-tatkal', parent_id: 'sf-cs-edistrict-certs', name_en: 'Online Certificate Application & Application Status Tracking', slug: 'online-certificate-status-tracking', sort_order: 10, description_en: 'Download digitally signed Tahasil certificates with QR verification.' }
   ]
 };
 
@@ -366,6 +415,94 @@ const SEED_ITEMS_BY_DOMAIN = {
       documents_required: 'Ration Card (NFSA/SFSS), Aadhaar Card of family members.',
       body_html: '<p>Beneficiaries can avail cashless secondary and tertiary care at empanelled public and private hospitals across India.</p>',
       tags: ['GJAY', 'Ayushman Bharat', 'Health Insurance', 'Odisha']
+    }
+  ],
+  'communities-beneficiaries': [
+    {
+      id: 'si-cb-anwesha',
+      folder_id: 'sf-cb-anwesha-adm',
+      title: 'Anwesha & Akankshya Scheme — Free Urban Education & Hostels for SC/ST Students',
+      title_or: 'ଅନ୍ୱେଷା ଏବଂ ଆକାଂକ୍ଷା ଯୋଜନା',
+      slug: 'anwesha-akankshya-sc-st-hostels-odisha',
+      scheme_type: 'state_scheme',
+      sponsor_level: 'Odisha State',
+      department_name: 'ST & SC Dev Dept Odisha',
+      beneficiary_group: 'SC / ST / OBC / Minority',
+      benefit_amount: '100% Tuition, Hostel, Uniforms & Stipend',
+      income_limit: 'BPL / Annual family income <= Rs 2.50 Lakh',
+      application_mode: 'Offline / Block Office',
+      official_apply_url: 'https://stscodisha.gov.in/',
+      summary: 'Provides free education in leading private English-medium schools (Anwesha) and urban college hostels (Akankshya) for Odisha SC/ST students.',
+      eligibility_criteria: 'SC/ST student domiciled in Odisha; district-level lottery/merit selection via District Welfare Officer (DWO).',
+      documents_required: 'Caste Certificate, Income Certificate, Residence Proof, Birth/School Certificate, Aadhaar.',
+      body_html: '<p>Managed by the ST & SC Development, Minorities & Backward Classes Welfare Department, Govt of Odisha.</p>',
+      tags: ['Anwesha', 'Akankshya', 'SC/ST Welfare', 'Odisha']
+    }
+  ],
+  'private-global-innovation': [
+    {
+      id: 'si-pg-startup-odisha',
+      folder_id: 'sf-pg-ohub-grant',
+      title: 'Startup Odisha Seed Fund, O-Hub Incubation & Monthly Sustenance Grant',
+      title_or: 'ଷ୍ଟାର୍ଟଅପ୍ ଓଡ଼ିଶା ସିଡ୍ ଫଣ୍ଡ ଏବଂ ଓ-ହବ୍',
+      slug: 'startup-odisha-seed-fund-ohub-grant',
+      scheme_type: 'subsidy_loan',
+      sponsor_level: 'Odisha State',
+      department_name: 'MSME / Startup Odisha',
+      beneficiary_group: 'MSME & Entrepreneurs',
+      benefit_amount: 'Rs 20,000/month Sustenance + up to Rs 15 Lakh Product Grant',
+      income_limit: 'Recognised Odisha Startup (< 10 years, turnover < Rs 100 Cr)',
+      application_mode: 'Online Portal',
+      official_apply_url: 'https://startupodisha.gov.in/',
+      summary: 'Financial assistance, O-Hub co-working incubation, and commercialisation grants for innovative startups registered in Odisha.',
+      eligibility_criteria: 'Entity incorporated in Odisha with DPIIT and Startup Odisha recognition.',
+      documents_required: 'Incorporation Certificate, DPIIT Recognition, Pitch Deck, Bank Details, PAN.',
+      body_html: '<p>Apply through startupodisha.gov.in to access monthly sustenance, product development, and marketing assistance.</p>',
+      tags: ['Startup Odisha', 'O-Hub', 'Seed Fund', 'Entrepreneurs']
+    }
+  ],
+  'find-schemes-eligibility': [
+    {
+      id: 'si-fe-women-matrix',
+      folder_id: 'sf-fe-women-matrix-detail',
+      title: 'Odisha Women Welfare Eligibility Guide (Subhadra, Mamata & Mission Shakti)',
+      title_or: 'ଓଡ଼ିଶା ମହିଳା କଲ୍ୟାଣ ଯୋଗ୍ୟତା ମାର୍ଗଦର୍ଶିକା',
+      slug: 'odisha-women-welfare-eligibility-guide',
+      scheme_type: 'eligibility_tool',
+      sponsor_level: 'Odisha State',
+      department_name: 'W&CD / Mission Shakti Odisha',
+      beneficiary_group: 'Women & Mothers',
+      benefit_amount: 'Rs 5,000 – Rs 10,000+ DBT & 0% SHG Loans',
+      income_limit: 'Non-taxpayer / NFSA-SFSS or <= Rs 2.5 Lakh',
+      application_mode: 'Hybrid',
+      official_apply_url: 'https://subhadra.odisha.gov.in/',
+      summary: 'Compare age limits, Aadhaar-bank seeding rules, and income thresholds across Subhadra Yojana, Mamata, and Mission Shakti.',
+      eligibility_criteria: 'Varies by scheme: Subhadra (age 21–60), Mamata (pregnant/lactating mothers 19+), Mission Shakti (SHG members).',
+      documents_required: 'Aadhaar, Single-holder NPCI-seeded Bank Account, Ration Card, MCP Card (for Mamata).',
+      body_html: '<p>Use this matrix to check which Odisha women empowerment schemes you qualify for and prepare your e-KYC documents.</p>',
+      tags: ['Eligibility', 'Women', 'Subhadra', 'Mission Shakti']
+    }
+  ],
+  'citizen-services-verification': [
+    {
+      id: 'si-cs-edistrict',
+      folder_id: 'sf-cs-edistrict-tatkal',
+      title: 'e-District Odisha Portal — Caste, Resident, Income & Legal Heir Certificates',
+      title_or: 'ଇ-ଡିଷ୍ଟ୍ରିକ୍ଟ ଓଡ଼ିଶା — ଜାତି, ବାସିନ୍ଦା ଏବଂ ଆୟ ପ୍ରମାଣପତ୍ର',
+      slug: 'edistrict-odisha-certificates-portal-guide',
+      scheme_type: 'citizen_service',
+      sponsor_level: 'Odisha State',
+      department_name: 'Revenue & DM Dept Odisha',
+      beneficiary_group: 'All Citizens',
+      benefit_amount: 'Digital QR-Verified Tahasil Certificates',
+      income_limit: 'Open to all Odisha residents',
+      application_mode: 'Mo Seba Kendra / CSC',
+      official_apply_url: 'https://edistrict.odisha.gov.in/',
+      summary: 'Official portal to apply for and verify Resident, Income, Caste (SC/ST/SEBC/OBC), and Legal Heir certificates across Odisha.',
+      eligibility_criteria: 'Resident of Odisha with valid Aadhaar/identity and local Tahasil jurisdiction proof.',
+      documents_required: 'Aadhaar Card, Self-Declaration Form, Land RoR / Electricity Bill / Voter ID.',
+      body_html: '<p>Apply online at edistrict.odisha.gov.in or through your nearest Mo Seba Kendra and track status with your application reference number.</p>',
+      tags: ['e-District Odisha', 'Mo Seba Kendra', 'Certificates', 'Verification']
     }
   ]
 };
@@ -730,8 +867,10 @@ async function bridgeLegacySchemesTables(db, now) {
 }
 
 function resolveDomain(raw) {
-  const d = cleanStr(raw, 60);
+  let d = cleanStr(raw, 60);
   if (!d) return 'govt-public-welfare';
+  if (d === 'communities-special') d = 'communities-beneficiaries';
+  if (d === 'find-check-eligibility') d = 'find-schemes-eligibility';
   if (!SCHEMES_DOMAINS.includes(d)) {
     throw validationError('Unknown schemes directory domain: ' + d);
   }
@@ -803,6 +942,11 @@ async function handleTree(request, env) {
     .bind(domain)
     .first();
 
+  const [crossF, crossI] = await Promise.all([
+    env.DB.prepare('SELECT COUNT(*) AS cnt FROM schemes_directory_folders').first(),
+    env.DB.prepare("SELECT COUNT(*) AS cnt FROM schemes_directory_items WHERE status = 'published'").first()
+  ]);
+
   let filteredItems = allItems;
   if (folderFilter) {
     const childMap = new Map();
@@ -849,6 +993,11 @@ async function handleTree(request, env) {
       emptyDirectories: folders.filter(f => (itemCountByFolder.get(f.id) || 0) === 0).length,
       staleItems: allItems.filter(isStaleRow).length,
       pendingSuggestions: Number(sugRow?.cnt || 0)
+    },
+    crossDomainStats: {
+      totalDomains: SCHEMES_DOMAINS.length,
+      totalFolders: Number(crossF?.cnt || 0),
+      totalPublished: Number(crossI?.cnt || 0)
     }
   });
 }
@@ -1212,4 +1361,396 @@ export async function handleSchemesDirectoryStudio(request, env, actor, subResou
     default:
       throw new HttpError(404, 'NOT_FOUND', 'Unknown schemes-directory resource: ' + subResource);
   }
+}
+
+// =============================================================================
+// Public Read-Only Resolvers, APIs, DPDP-Safe Suggestions & /sitemap-schemes.xml
+// =============================================================================
+
+function normalizePublicDomain(raw) {
+  let d = cleanStr(raw, 60);
+  if (!d) return '';
+  if (d === 'communities-special') d = 'communities-beneficiaries';
+  if (d === 'find-check-eligibility') d = 'find-schemes-eligibility';
+  return SCHEMES_DOMAINS.includes(d) ? d : '';
+}
+
+export async function resolvePublicSchemesDirectory(env, segments = []) {
+  await ensureSchemesDirectoryStudioSchema(env.DB);
+  const cleanSegs = (Array.isArray(segments) ? segments : [])
+    .map(s => cleanStr(s, 120))
+    .filter(Boolean);
+  if (!cleanSegs.length) return null;
+
+  const domain = normalizePublicDomain(cleanSegs[0]);
+  if (!domain) return null;
+  const meta = SCHEMES_DOMAIN_META[domain];
+
+  const foldersRes = await env.DB
+    .prepare('SELECT * FROM schemes_directory_folders WHERE domain_slug = ? AND is_active = 1 ORDER BY depth ASC, sort_order ASC, name_en ASC')
+    .bind(domain)
+    .all();
+  const activeFolders = foldersRes.results || [];
+  const byId = new Map(activeFolders.map(f => [f.id, f]));
+
+  function isChainActive(f) {
+    let cur = f;
+    const seen = new Set();
+    while (cur && cur.parent_id) {
+      if (seen.has(cur.id)) return false;
+      seen.add(cur.id);
+      const parent = byId.get(cur.parent_id);
+      if (!parent) return false;
+      cur = parent;
+    }
+    return true;
+  }
+  const validFolders = activeFolders.filter(isChainActive);
+
+  let currentFolder = null;
+  const breadcrumbs = [
+    { title: 'Schemes & Benefits', path: '/schemes/' },
+    { title: meta.title, path: `/schemes/${domain}/` }
+  ];
+  let accPath = `/schemes/${domain}`;
+
+  for (let i = 1; i < cleanSegs.length; i++) {
+    const segSlug = cleanSegs[i];
+    const parentId = currentFolder ? currentFolder.id : null;
+    const match = validFolders.find(f => (f.parent_id || null) === parentId && f.slug === segSlug);
+    if (!match) return null;
+    currentFolder = match;
+    accPath += `/${match.slug}`;
+    breadcrumbs.push({ title: match.name_en, path: `${accPath}/` });
+  }
+
+  const children = validFolders
+    .filter(f => (f.parent_id || null) === (currentFolder ? currentFolder.id : null))
+    .map(f => ({ ...f, public_path: `${accPath}/${f.slug}/` }));
+
+  const allowedFolderIds = new Set();
+  if (currentFolder) {
+    allowedFolderIds.add(currentFolder.id);
+    const queue = [currentFolder.id];
+    while (queue.length) {
+      const pid = queue.shift();
+      for (const f of validFolders) {
+        if (f.parent_id === pid && !allowedFolderIds.has(f.id)) {
+          allowedFolderIds.add(f.id);
+          queue.push(f.id);
+        }
+      }
+    }
+  } else {
+    for (const f of validFolders) allowedFolderIds.add(f.id);
+  }
+
+  const itemsRes = await env.DB
+    .prepare("SELECT * FROM schemes_directory_items WHERE domain_slug = ? AND status = 'published' ORDER BY updated_at DESC")
+    .bind(domain)
+    .all();
+  const items = (itemsRes.results || [])
+    .filter(it => allowedFolderIds.has(it.folder_id))
+    .map(hydrateItemRow);
+
+  return {
+    domain,
+    meta,
+    canonicalPath: `${accPath}/`,
+    breadcrumbs,
+    folder: currentFolder,
+    children,
+    items
+  };
+}
+
+export async function resolvePublicSchemesItem(env, slugOrId) {
+  await ensureSchemesDirectoryStudioSchema(env.DB);
+  const key = cleanStr(slugOrId, 160);
+  if (!key) return null;
+
+  const row = await env.DB
+    .prepare("SELECT * FROM schemes_directory_items WHERE (slug = ? OR id = ?) AND status = 'published' LIMIT 1")
+    .bind(key, key)
+    .first();
+  if (!row) return null;
+
+  const foldersRes = await env.DB
+    .prepare('SELECT * FROM schemes_directory_folders WHERE domain_slug = ? AND is_active = 1')
+    .bind(row.domain_slug)
+    .all();
+  const byId = new Map((foldersRes.results || []).map(f => [f.id, f]));
+  const folder = byId.get(row.folder_id);
+  if (!folder) return null;
+
+  const chain = [];
+  let cur = folder;
+  const seen = new Set();
+  while (cur) {
+    if (seen.has(cur.id)) return null;
+    seen.add(cur.id);
+    chain.unshift(cur);
+    if (!cur.parent_id) break;
+    cur = byId.get(cur.parent_id);
+    if (!cur) return null;
+  }
+
+  const meta = SCHEMES_DOMAIN_META[row.domain_slug];
+  const breadcrumbs = [
+    { title: 'Schemes & Benefits', path: '/schemes/' },
+    { title: meta.title, path: `/schemes/${row.domain_slug}/` }
+  ];
+  let acc = `/schemes/${row.domain_slug}`;
+  for (const f of chain) {
+    acc += `/${f.slug}`;
+    breadcrumbs.push({ title: f.name_en, path: `${acc}/` });
+  }
+  breadcrumbs.push({ title: row.title, path: `/schemes/item/${row.slug}/` });
+
+  return {
+    item: hydrateItemRow(row),
+    folder,
+    domain: row.domain_slug,
+    meta,
+    breadcrumbs
+  };
+}
+
+export async function listPublicSchemesOverview(env) {
+  await ensureSchemesDirectoryStudioSchema(env.DB);
+  const [fRes, iRes, sRes] = await Promise.all([
+    env.DB.prepare('SELECT domain_slug, depth, COUNT(*) AS cnt FROM schemes_directory_folders WHERE is_active = 1 GROUP BY domain_slug, depth').all(),
+    env.DB.prepare("SELECT domain_slug, COUNT(*) AS cnt, SUM(CASE WHEN official_portal_verified = 1 OR verified_at IS NOT NULL THEN 1 ELSE 0 END) AS verified_cnt FROM schemes_directory_items WHERE status = 'published' GROUP BY domain_slug").all(),
+    env.DB.prepare("SELECT sponsor_level, COUNT(*) AS cnt FROM schemes_directory_items WHERE status = 'published' GROUP BY sponsor_level").all()
+  ]);
+
+  const fMap = new Map();
+  let totalSections = 0;
+  let totalSubcategories = 0;
+  let totalEntries = 0;
+  for (const r of (fRes.results || [])) {
+    const cur = fMap.get(r.domain_slug) || { total: 0, d1: 0, d2: 0, d3: 0 };
+    const cnt = Number(r.cnt || 0);
+    cur.total += cnt;
+    if (Number(r.depth) === 1) { cur.d1 += cnt; totalSections += cnt; }
+    else if (Number(r.depth) === 2) { cur.d2 += cnt; totalSubcategories += cnt; }
+    else { cur.d3 += cnt; totalEntries += cnt; }
+    fMap.set(r.domain_slug, cur);
+  }
+  const iMap = new Map((iRes.results || []).map(r => [r.domain_slug, { cnt: Number(r.cnt || 0), verified: Number(r.verified_cnt || 0) }]));
+  const spMap = new Map((sRes.results || []).map(r => [r.sponsor_level, Number(r.cnt || 0)]));
+
+  let totalFolders = 0;
+  let totalPublished = 0;
+  let totalVerified = 0;
+
+  const domains = SCHEMES_DOMAINS.map(slug => {
+    const meta = SCHEMES_DOMAIN_META[slug];
+    const fcObj = fMap.get(slug) || { total: 0, d1: 0, d2: 0, d3: 0 };
+    const ic = iMap.get(slug)?.cnt || 0;
+    const vc = iMap.get(slug)?.verified || 0;
+    totalFolders += fcObj.total;
+    totalPublished += ic;
+    totalVerified += vc;
+    return {
+      slug,
+      num: meta.num,
+      title: meta.title,
+      summary: meta.summary,
+      publicPath: `/schemes/${slug}/`,
+      folder_count: fcObj.total,
+      depth1_count: fcObj.d1,
+      depth2_count: fcObj.d2,
+      depth3_count: fcObj.d3,
+      item_count: ic,
+      verified_count: vc
+    };
+  });
+
+  return {
+    domains,
+    sponsorBreakdown: {
+      odishaState: spMap.get('Odisha State') || 0,
+      centralGovt: spMap.get('Central Govt') || 0,
+      joint: spMap.get('Joint State-Central') || 0,
+      csrGlobal: spMap.get('CSR / Global') || 0
+    },
+    totals: {
+      totalDomains: domains.length,
+      totalSections,
+      totalSubcategories,
+      totalEntries,
+      totalFolders,
+      totalPublished,
+      totalVerified
+    }
+  };
+}
+
+export async function listPublicSchemesItems(env, opts = {}) {
+  await ensureSchemesDirectoryStudioSchema(env.DB);
+  const domain = normalizePublicDomain(opts.domain);
+  const sponsor = cleanStr(opts.sponsor_level, 40);
+  const beneficiary = cleanStr(opts.beneficiary_group, 80);
+  const mode = cleanStr(opts.application_mode, 40);
+  const lang = cleanStr(opts.language, 20);
+  const q = cleanStr(opts.q, 120);
+  const limit = Math.min(200, Math.max(1, Number(opts.limit || 60)));
+
+  const clauses = ["i.status = 'published'", 'f.is_active = 1'];
+  const binds = [];
+  if (domain) {
+    clauses.push('i.domain_slug = ?');
+    binds.push(domain);
+  }
+  if (sponsor && SPONSOR_LEVELS.includes(sponsor)) {
+    clauses.push('i.sponsor_level = ?');
+    binds.push(sponsor);
+  }
+  if (beneficiary) {
+    clauses.push("LOWER(i.beneficiary_group) LIKE ? ESCAPE '\\'");
+    binds.push('%' + likeEscape(beneficiary.toLowerCase()) + '%');
+  }
+  if (mode && APPLICATION_MODES.includes(mode)) {
+    clauses.push('i.application_mode = ?');
+    binds.push(mode);
+  }
+  if (lang && SCHEMES_LANGUAGES.includes(lang)) {
+    clauses.push('(i.language_parity = ? OR i.language_parity = \'EN+OR\')');
+    binds.push(lang);
+  }
+  if (q) {
+    const pat = '%' + likeEscape(q.toLowerCase()) + '%';
+    clauses.push("(LOWER(i.title) LIKE ? ESCAPE '\\' OR LOWER(i.department_name) LIKE ? ESCAPE '\\' OR LOWER(i.beneficiary_group) LIKE ? ESCAPE '\\' OR LOWER(i.summary) LIKE ? ESCAPE '\\')");
+    binds.push(pat, pat, pat, pat);
+  }
+
+  const sql = `SELECT i.*, f.name_en AS folder_title, f.slug AS folder_slug
+    FROM schemes_directory_items i
+    JOIN schemes_directory_folders f ON f.id = i.folder_id
+    WHERE ${clauses.join(' AND ')}
+    ORDER BY i.official_portal_verified DESC, i.updated_at DESC
+    LIMIT ?`;
+  const res = await env.DB.prepare(sql).bind(...binds, limit).all();
+  const items = (res.results || []).map(hydrateItemRow);
+  return { items, total: items.length };
+}
+
+export async function submitPublicSchemesSuggestion(env, payload = {}) {
+  await ensureSchemesDirectoryStudioSchema(env.DB);
+  const domain = normalizePublicDomain(payload.domain_slug) || 'govt-public-welfare';
+  const message = redactPii(cleanStr(payload.message || payload.details || payload.title, 1000));
+  if (!message || message.length < 4) {
+    throw validationError('Please enter at least 4 characters describing the correction or update.');
+  }
+  const sugType = SCHEMES_SUGGESTION_TYPES.includes(payload.suggestion_type || payload.category)
+    ? (payload.suggestion_type || payload.category)
+    : 'correction';
+  const suggestedUrl = payload.suggested_url || payload.source_url
+    ? validateSafePortalUrl(payload.suggested_url || payload.source_url)
+    : '';
+  const sugId = 'ssug-' + crypto.randomUUID().slice(0, 12);
+  const now = nowIso();
+  await env.DB.prepare(`INSERT INTO schemes_directory_suggestions
+    (id, domain_slug, folder_id, item_id, suggestion_type, reporter_name, message, suggested_url, status, moderator_note, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', '', ?, ?)`)
+    .bind(
+      sugId, domain, cleanStr(payload.folder_id, 80) || null, cleanStr(payload.item_id, 80) || null,
+      sugType, redactPii(cleanStr(payload.reporter_name, 80) || 'Citizen'), message, suggestedUrl, now, now
+    ).run();
+  return { ok: true, id: sugId, message: 'Submitted for editorial review.' };
+}
+
+export async function handlePublicSchemesOverviewApi(request, env) {
+  const data = await listPublicSchemesOverview(env);
+  return json({ ok: true, ...data }, 200, { 'Cache-Control': 'public, max-age=120, s-maxage=300' });
+}
+
+export async function handlePublicSchemesItemsApi(request, env) {
+  const url = new URL(request.url);
+  const data = await listPublicSchemesItems(env, {
+    domain: url.searchParams.get('domain'),
+    sponsor_level: url.searchParams.get('sponsor_level'),
+    beneficiary_group: url.searchParams.get('beneficiary_group'),
+    application_mode: url.searchParams.get('application_mode'),
+    language: url.searchParams.get('language'),
+    q: url.searchParams.get('q'),
+    limit: url.searchParams.get('limit')
+  });
+  return json({ ok: true, ...data }, 200, { 'Cache-Control': 'public, max-age=120, s-maxage=300' });
+}
+
+export async function handlePublicSchemesSuggestApi(request, env) {
+  try {
+    const body = await readJson(request);
+    const result = await submitPublicSchemesSuggestion(env, body);
+    return json(result, 201);
+  } catch (err) {
+    const status = err && err.status ? err.status : 400;
+    return json({ ok: false, message: (err && err.message) || 'Invalid suggestion payload' }, status);
+  }
+}
+
+export async function handleSchemesDirectorySitemapXml(request, env) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
+  }
+  await ensureSchemesDirectoryStudioSchema(env.DB);
+  const origin = (env && env.PUBLIC_ORIGIN) || 'https://csodisha.com';
+  const urls = [{ loc: `${origin}/schemes/`, priority: '0.9', changefreq: 'daily' }];
+
+  for (const domain of SCHEMES_DOMAINS) {
+    urls.push({ loc: `${origin}/schemes/${domain}/`, priority: '0.8', changefreq: 'daily' });
+  }
+
+  const foldersRes = await env.DB
+    .prepare('SELECT id, domain_slug, parent_id, slug, updated_at FROM schemes_directory_folders WHERE is_active = 1 ORDER BY depth ASC, sort_order ASC')
+    .all();
+  const byId = new Map((foldersRes.results || []).map(f => [f.id, f]));
+  for (const f of (foldersRes.results || [])) {
+    const segs = [];
+    let cur = f;
+    let ok = true;
+    const seen = new Set();
+    while (cur) {
+      if (seen.has(cur.id)) { ok = false; break; }
+      seen.add(cur.id);
+      segs.unshift(cur.slug);
+      if (!cur.parent_id) break;
+      cur = byId.get(cur.parent_id);
+      if (!cur) { ok = false; break; }
+    }
+    if (!ok) continue;
+    urls.push({
+      loc: `${origin}/schemes/${f.domain_slug}/${segs.join('/')}/`,
+      lastmod: (f.updated_at || '').slice(0, 10),
+      priority: '0.7',
+      changefreq: 'weekly'
+    });
+  }
+
+  const itemsRes = await env.DB
+    .prepare("SELECT slug, updated_at FROM schemes_directory_items WHERE status = 'published' ORDER BY updated_at DESC LIMIT 1000")
+    .all();
+  for (const it of (itemsRes.results || [])) {
+    urls.push({
+      loc: `${origin}/schemes/item/${it.slug}/`,
+      lastmod: (it.updated_at || '').slice(0, 10),
+      priority: '0.8',
+      changefreq: 'daily'
+    });
+  }
+
+  const xmlEsc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
+    .map(u => `  <url><loc>${xmlEsc(u.loc)}</loc>${u.lastmod ? `<lastmod>${xmlEsc(u.lastmod)}</lastmod>` : ''}<changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`)
+    .join('\n')}\n</urlset>\n`;
+
+  return new Response(body, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=300, s-maxage=900'
+    }
+  });
 }
