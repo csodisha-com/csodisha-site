@@ -2632,7 +2632,8 @@
         try {
           var res = await api('POST', 'ops/freeze', {
             enabled: nextEnabled,
-            reason: (reasonInput.value || '').trim()
+            reason: (reasonInput.value || '').trim(),
+            confirm: nextEnabled ? 'FREEZE' : 'UNFREEZE'
           });
           applyFreezeUi(res.freeze || { enabled: nextEnabled, reason: reasonInput.value });
           toast(nextEnabled ? 'Emergency Read-Only Freeze ACTIVATED (503 on public/editor writes)' : 'Read-Only Freeze lifted — live writes restored');
@@ -2675,7 +2676,7 @@
         freezeBtn
       ])
     ]);
-    wrap.appendChild(freezeBox);
+    if (focusMode !== 'canary') wrap.appendChild(freezeBox);
 
     /* 2. Live Health & Rolling Canary Telemetry Cards (Modules #9 & #15) */
     var probeGrid = el('div', { class: 'cso-ops-telemetry-grid' });
@@ -2817,7 +2818,7 @@
       el('p', { class: 'muted sm', text: 'Target routes: /, /jobs-careers/, /schemes-benefits/, /study-library/, /api/posts?limit=20, /api/schemes?limit=20' }),
       cacheResultHost
     ]);
-    wrap.appendChild(cacheBox);
+    if (focusMode !== 'canary') wrap.appendChild(cacheBox);
 
     runHealthProbe(false);
     return wrap;
@@ -2855,7 +2856,7 @@
       ]),
       schemaHost
     ]);
-    wrap.appendChild(schemaBox);
+    if (!focusMode || focusMode === 'schema') wrap.appendChild(schemaBox);
 
     async function loadSchemaJournal(showToast) {
       refreshSchemaBtn.disabled = true;
@@ -2963,7 +2964,7 @@
       ]),
       vacuumResultHost
     ]);
-    wrap.appendChild(vacuumBox);
+    if (!focusMode || focusMode === 'vacuum') wrap.appendChild(vacuumBox);
 
     /* 3. Post-Incident Forensic Audit & State Diff Inspector (Module #13) */
     var actionFilterInput = el('input', {
@@ -3048,7 +3049,7 @@
       ]),
       forensicsHost
     ]);
-    wrap.appendChild(forensicsBox);
+    if (!focusMode || focusMode === 'forensics') wrap.appendChild(forensicsBox);
 
     /* 4. Automated Daily Backup Schedule & Retention Policy (Module #14) */
     var policyEnabledChk = el('input', { type: 'checkbox' });
@@ -3162,7 +3163,7 @@
         ])
       ])
     ]);
-    wrap.appendChild(retentionBox);
+    if (!focusMode || focusMode === 'retention') wrap.appendChild(retentionBox);
 
     loadSchemaJournal(false);
     loadForensics(false);
@@ -4733,6 +4734,456 @@
     return wrap;
   }
 
+  /* ---------- Folder 17 shared helpers for Modules #9–#12 ---------- */
+  function opsKpiCard(label, valueNode, sub) {
+    return el('div', { class: 'cso-ops-telemetry-card' }, [
+      el('div', { class: 'muted sm', text: label }),
+      el('div', { class: 'cso-ops-telemetry-val' }, valueNode),
+      el('div', { class: 'muted sm', text: sub || '' })
+    ]);
+  }
+  function opsErrorBanner(prefix, err, retryFn) {
+    return el('div', { class: 'alert cso-ops-error-banner', role: 'alert' }, [
+      el('span', { text: prefix + ': ' + (err && err.message ? err.message : 'Network error') }),
+      el('button', { type: 'button', class: 'btn sm', text: 'Retry', onclick: retryFn })
+    ]);
+  }
+  function opsCopyBtn(value, label) {
+    return el('button', {
+      type: 'button',
+      class: 'btn sm',
+      text: 'Copy',
+      'aria-label': 'Copy ' + (label || 'value'),
+      disabled: !value,
+      onclick: function () {
+        if (!value) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(value).then(function () { toast('Copied ' + (label || 'value')); }, function () { toast('Clipboard blocked — value: ' + value, true); });
+        } else {
+          toast((label || 'Value') + ': ' + value);
+        }
+      }
+    });
+  }
+  function opsTable(headers, tbody) {
+    return el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+      el('thead', {}, el('tr', {}, headers.map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+      tbody
+    ]));
+  }
+
+  /* ---------- Folder 17: Module #9 Multi-Region Failover Sentinel & Health Monitor ---------- */
+  function opsFailoverSentinelPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var SUBS = [['d1', 'D1 Primary'], ['r2', 'R2 Storage'], ['edge', 'Edge POP'], ['sw', 'sw.js Canary']];
+    var wrap = el('div', { class: 'panel cso-ops-sentinel-panel' }, [
+      el('h2', { text: 'Multi-Region Failover Sentinel & Health Monitor' }),
+      el('p', { class: 'muted', text: 'Live round-trip probes across Cloudflare D1, R2 object storage, the serving edge POP, and the service-worker canary — classified HEALTHY / DEGRADED / CRITICAL against your editable latency policy.' })
+    ]);
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var thresholdInp = el('input', { type: 'number', id: 'f-ops-sentinel-threshold', min: '50', max: '5000', step: '10', value: '250', 'aria-label': 'Latency warning threshold in milliseconds' });
+    var channelSel = el('select', { id: 'f-ops-sentinel-channel', class: 'cso-ops-policy-select', 'aria-label': 'Alert channel' }, [
+      el('option', { value: 'email', text: 'Email' }),
+      el('option', { value: 'webhook', text: 'Webhook' })
+    ]);
+    var alertsChk = el('input', { type: 'checkbox', id: 'f-ops-sentinel-alerts' });
+    var subChecks = {};
+    var subWrap = el('div', { class: 'cso-ops-restore-controls', role: 'group', 'aria-label': 'Monitored subsystems' });
+    SUBS.forEach(function (s) {
+      var cb = el('input', { type: 'checkbox', id: 'f-ops-sentinel-sub-' + s[0], checked: 'checked' });
+      subChecks[s[0]] = cb;
+      subWrap.appendChild(el('label', { for: 'f-ops-sentinel-sub-' + s[0], class: 'muted sm' }, [cb, ' ' + s[1]]));
+    });
+    var savePolicyBtn = el('button', { type: 'button', class: 'btn', disabled: !isAdmin, text: 'Save Threshold Policy' });
+    var probeBtn = el('button', { type: 'button', class: 'btn primary', disabled: !isAdmin, text: 'Run Live Failover Sentinel Probe' });
+    var policyBox = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [el('strong', { text: 'Threshold Policy' }), probeBtn]),
+      el('div', { class: 'cso-ops-restore-controls' }, [
+        el('div', { class: 'cso-ops-restore-field' }, [el('label', { for: 'f-ops-sentinel-threshold', class: 'muted sm', text: 'Latency Warning (50–5000 ms)' }), thresholdInp]),
+        el('div', { class: 'cso-ops-restore-field' }, [el('label', { for: 'f-ops-sentinel-channel', class: 'muted sm', text: 'Alert Channel' }), channelSel]),
+        el('label', { for: 'f-ops-sentinel-alerts', class: 'muted sm' }, [alertsChk, ' Alerts enabled']),
+        savePolicyBtn
+      ]),
+      subWrap
+    ]);
+    var breakdownHost = el('div', { class: 'cso-ops-vault-table-host' });
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(policyBox);
+    wrap.appendChild(breakdownHost);
+
+    var busy = false;
+    function postureCls(p) { return p === 'HEALTHY' ? 'published' : (p === 'DEGRADED' ? 'scheduled' : 'expired'); }
+
+    function render(probe, lastAt) {
+      var edge = probe.edge || {};
+      clear(kpiStrip);
+      kpiStrip.appendChild(opsKpiCard('Overall Posture', el('span', { class: 'badge ' + postureCls(probe.posture), text: probe.posture || 'UNKNOWN' }), 'Threshold ' + (probe.threshold_ms || 0) + ' ms'));
+      kpiStrip.appendChild(opsKpiCard('D1 Round-Trip Latency', el('span', { class: 'cso-tabular', text: (probe.d1_latency_ms || 0) + ' ms' }), 'SELECT 1 + row counts'));
+      kpiStrip.appendChild(opsKpiCard('R2 Storage Latency', el('span', { class: 'cso-tabular', text: (probe.r2_latency_ms || 0) + ' ms' }), 'list / head reachability'));
+      kpiStrip.appendChild(opsKpiCard('Edge Colo / Region', el('code', { class: 'cso-ops-sha-code', text: (edge.colo || 'LOCAL') + ' · ' + (edge.country || 'IN') }), lastAt ? ('Last persisted probe ' + fmtDate(lastAt)) : 'No persisted probe yet'));
+      var tb = el('tbody');
+      (probe.subsystems || []).forEach(function (s) {
+        var st = !s.monitored ? 'UNMONITORED' : (s.status === 'UP' && s.over_threshold ? 'SLOW' : s.status);
+        var cls = st === 'UP' ? 'published' : (st === 'SLOW' || st === 'DEGRADED' ? 'scheduled' : (st === 'UNMONITORED' ? 'draft' : 'expired'));
+        tb.appendChild(el('tr', {}, [
+          el('td', { text: s.label }),
+          el('td', {}, el('span', { class: 'badge ' + cls, text: st })),
+          el('td', { class: 'cso-tabular', text: s.latency_ms === null || s.latency_ms === undefined ? '—' : s.latency_ms + ' ms' }),
+          el('td', { class: 'muted sm', text: s.detail || '' })
+        ]));
+      });
+      clear(breakdownHost);
+      breakdownHost.appendChild(el('h3', { text: 'Subsystem Health Breakdown' }));
+      breakdownHost.appendChild(opsTable(['Subsystem', 'Status', 'Latency', 'Detail'], tb));
+    }
+
+    function applyConfig(cfg) {
+      if (!cfg) return;
+      thresholdInp.value = String(cfg.latency_warning_ms || 250);
+      channelSel.value = cfg.alert_channel || 'email';
+      alertsChk.checked = Boolean(cfg.alerts_enabled);
+      SUBS.forEach(function (s) { subChecks[s[0]].checked = (cfg.monitored_subsystems || []).indexOf(s[0]) !== -1; });
+    }
+
+    async function load() {
+      clear(kpiStrip).appendChild(el('p', { class: 'muted sm', text: 'Probing D1, R2 & edge…' }));
+      try {
+        var res = await api('GET', 'ops/sentinel');
+        applyConfig(res.config);
+        render(res.live, res.last_probe_at);
+      } catch (err) {
+        clear(kpiStrip).appendChild(opsErrorBanner('Sentinel status unavailable', err, load));
+      }
+    }
+
+    async function savePolicy() {
+      if (busy || !isAdmin) return;
+      var n = Number(thresholdInp.value);
+      if (!Number.isInteger(n) || n < 50 || n > 5000) { toast('Threshold must be a whole number between 50 and 5000 ms', true); thresholdInp.focus(); return; }
+      var subs = SUBS.map(function (s) { return s[0]; }).filter(function (k) { return subChecks[k].checked; });
+      if (!subs.length) { toast('Select at least one subsystem to monitor', true); return; }
+      busy = true; savePolicyBtn.disabled = true; savePolicyBtn.textContent = 'Saving…';
+      try {
+        var res = await api('PUT', 'ops/sentinel/config', { latency_warning_ms: n, monitored_subsystems: subs, alerts_enabled: alertsChk.checked, alert_channel: channelSel.value });
+        applyConfig(res.config);
+        toast('Sentinel policy saved (' + res.config.latency_warning_ms + ' ms)');
+      } catch (err) {
+        toast(err && err.message ? err.message : 'Failed to save policy', true);
+      } finally {
+        busy = false; savePolicyBtn.disabled = !isAdmin; savePolicyBtn.textContent = 'Save Threshold Policy';
+      }
+    }
+
+    async function probe() {
+      if (busy || !isAdmin) return;
+      busy = true; probeBtn.disabled = true; probeBtn.textContent = 'Probing…';
+      try {
+        var res = await api('POST', 'ops/sentinel/probe', {});
+        render(res, res.probed_at);
+        toast('Sentinel posture: ' + res.posture + ' (D1 ' + res.d1_latency_ms + ' ms · R2 ' + res.r2_latency_ms + ' ms)', res.posture === 'CRITICAL');
+      } catch (err) {
+        toast(err && err.message ? err.message : 'Sentinel probe failed', true);
+      } finally {
+        busy = false; probeBtn.disabled = !isAdmin; probeBtn.textContent = 'Run Live Failover Sentinel Probe';
+      }
+    }
+
+    savePolicyBtn.addEventListener('click', savePolicy);
+    probeBtn.addEventListener('click', probe);
+    load();
+    return wrap;
+  }
+
+  /* ---------- Folder 17: Module #10 Snapshot Integrity Hash & Cryptographic Verifier ---------- */
+  function opsIntegrityVerifierPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-ops-vault-panel' }, [
+      el('h2', { text: 'Snapshot Integrity Hash & Cryptographic Verifier' }),
+      el('p', { class: 'muted', text: 'Recomputes SHA-256 digests directly from live R2 snapshot bytes and compares them 1:1 with the D1 ledger to detect tampered, corrupted, or missing blobs.' })
+    ]);
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var verifyAllBtn = el('button', { type: 'button', class: 'btn primary', disabled: !isAdmin, text: 'Verify Entire R2 Vault Now' });
+    var controls = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [el('strong', { text: 'Vault-Wide Cryptographic Audit' }), verifyAllBtn]),
+      el('p', { class: 'hint', text: 'Read-only: no snapshot is modified. Each run is recorded as ops.integrity.audit in the audit log.' })
+    ]);
+    var tableHost = el('div', { class: 'cso-ops-vault-table-host' });
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(controls);
+    wrap.appendChild(tableHost);
+    var busy = false;
+
+    function renderKpis(a, snapCount) {
+      clear(kpiStrip);
+      kpiStrip.appendChild(opsKpiCard('Total Snapshots Audited', el('span', { class: 'cso-tabular', text: String(a ? a.total_audited : 0) }), (snapCount || 0) + ' in D1 ledger'));
+      kpiStrip.appendChild(opsKpiCard('Cryptographically Verified', el('span', { class: 'badge published', text: String(a ? a.verified_count : 0) }), 'SHA-256 parity confirmed'));
+      var bad = a ? (a.mismatch_count + a.missing_count) : 0;
+      kpiStrip.appendChild(opsKpiCard('Mismatches / Missing Blobs', el('span', { class: 'badge ' + (bad ? 'expired' : 'published'), text: (a ? a.mismatch_count : 0) + ' / ' + (a ? a.missing_count : 0) }), a ? ('Vault posture: ' + a.vault_posture) : 'Not audited yet'));
+      kpiStrip.appendChild(opsKpiCard('Last Full Audit', el('span', { text: a && a.audited_at ? fmtDate(a.audited_at) : 'Never' }), a && a.audited_by ? ('By ' + a.audited_by) : ''));
+    }
+
+    function renderTable(a, snapCount) {
+      clear(tableHost);
+      if (!snapCount && (!a || !a.total_audited)) {
+        tableHost.appendChild(el('div', { class: 'cso-ops-empty-vault' }, [
+          el('strong', { text: 'No snapshots to verify yet' }),
+          el('p', { class: 'muted sm', text: 'Create your first platform snapshot in Module #1, then return here to verify it cryptographically.' }),
+          el('a', { class: 'btn primary', href: '#/operations/snapshots', text: 'Open Snapshot Vault (Module #1)' })
+        ]));
+        return;
+      }
+      if (!a || !Array.isArray(a.items) || !a.items.length) {
+        tableHost.appendChild(el('p', { class: 'muted', text: 'Run "Verify Entire R2 Vault Now" to compute per-snapshot SHA-256 parity.' }));
+        return;
+      }
+      var tb = el('tbody');
+      a.items.forEach(function (it) {
+        var cls = it.status === 'VERIFIED' ? 'published' : 'expired';
+        tb.appendChild(el('tr', {}, [
+          el('td', { text: it.label || it.id }),
+          el('td', {}, [el('code', { class: 'cso-ops-sha-code', title: it.expected_sha256 || '', text: String(it.expected_sha256 || '—').slice(0, 16) + '…' }), ' ', opsCopyBtn(it.expected_sha256, 'expected SHA-256')]),
+          el('td', {}, [el('code', { class: 'cso-ops-sha-code', title: it.computed_sha256 || '', text: it.computed_sha256 ? it.computed_sha256.slice(0, 16) + '…' : '—' }), ' ', opsCopyBtn(it.computed_sha256, 'computed SHA-256')]),
+          el('td', {}, el('span', { class: 'badge ' + cls, text: it.status }))
+        ]));
+      });
+      tableHost.appendChild(el('h3', { text: 'Per-Snapshot SHA-256 Comparison' }));
+      tableHost.appendChild(opsTable(['Snapshot', 'Expected D1 SHA-256', 'Computed R2 SHA-256', 'Status'], tb));
+    }
+
+    async function load() {
+      clear(kpiStrip).appendChild(el('p', { class: 'muted sm', text: 'Loading last integrity audit…' }));
+      try {
+        var res = await api('GET', 'ops/snapshots/verify-all');
+        renderKpis(res.last_audit, res.snapshot_count);
+        renderTable(res.last_audit, res.snapshot_count);
+      } catch (err) {
+        clear(kpiStrip).appendChild(opsErrorBanner('Could not load integrity audit', err, load));
+      }
+    }
+
+    async function verifyAll() {
+      if (busy || !isAdmin) return;
+      busy = true; verifyAllBtn.disabled = true; verifyAllBtn.textContent = 'Hashing R2 blobs…';
+      try {
+        var res = await api('POST', 'ops/snapshots/verify-all', {});
+        renderKpis(res, res.total_audited);
+        renderTable(res, res.total_audited);
+        var bad = res.mismatch_count + res.missing_count;
+        toast(bad ? ('Integrity audit: ' + bad + ' snapshot(s) FAILED verification') : ('All ' + res.verified_count + ' snapshots verified'), bad > 0);
+      } catch (err) {
+        toast(err && err.message ? err.message : 'Integrity audit failed', true);
+      } finally {
+        busy = false; verifyAllBtn.disabled = !isAdmin; verifyAllBtn.textContent = 'Verify Entire R2 Vault Now';
+      }
+    }
+
+    verifyAllBtn.addEventListener('click', verifyAll);
+    load();
+    return wrap;
+  }
+
+  /* ---------- Folder 17: Module #11 Dead-Letter Queue & Orphaned Revision Vacuum ---------- */
+  function opsDeadLetterVacuumPanel() {
+    var isAdmin = me && me.role === 'admin';
+    var CATS = [
+      ['sessions', 'Expired sessions'],
+      ['admin_otps', 'Expired admin OTPs'],
+      ['admin_rate_limits', 'Stale rate-limit windows (>24h)'],
+      ['site_page_revisions', 'Excess page revisions (beyond keep limit)'],
+      ['orphaned_revisions', 'Orphaned revisions (deleted routes, beyond retention)'],
+      ['audit_log', 'Audit log entries beyond retention']
+    ];
+    var wrap = el('div', { class: 'panel cso-ops-hygiene-panel' }, [
+      el('h2', { text: 'Dead-Letter Queue & Orphaned Revision Vacuum' }),
+      el('p', { class: 'muted', text: 'Preview and purge expired auth tokens, stale rate-limit windows, orphaned page revisions, and audit entries beyond your retention window (DPDP Act 2023 storage limitation).' })
+    ]);
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis', 'aria-live': 'polite' });
+    var retentionSel = el('select', { id: 'f-ops-vac-retention', class: 'cso-ops-policy-select', 'aria-label': 'Retention window in days' },
+      [7, 30, 60, 90, 180, 365].map(function (d) { return el('option', { value: String(d), text: d + ' days', selected: d === 90 }); }));
+    var previewBtn = el('button', { type: 'button', class: 'btn', text: 'Preview Reclaimable Rows (Dry Run)' });
+    var confirmInp = el('input', { type: 'text', id: 'f-ops-vac-confirm', class: 'cso-ops-confirm-input', autocomplete: 'off', placeholder: 'Type VACUUM', 'aria-label': 'Type VACUUM to confirm' });
+    var execBtn = el('button', { type: 'button', class: 'btn danger', disabled: true, text: 'Execute Dead-Letter Vacuum' });
+    var controls = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [el('strong', { text: 'Retention Policy & Execution' }), el('span', { class: 'badge published', text: 'DPDP Storage Limitation' })]),
+      el('div', { class: 'cso-ops-restore-controls' }, [
+        el('div', { class: 'cso-ops-restore-field' }, [el('label', { for: 'f-ops-vac-retention', class: 'muted sm', text: 'Retention Window' }), retentionSel]),
+        previewBtn,
+        el('div', { class: 'cso-ops-restore-field' }, [el('label', { for: 'f-ops-vac-confirm', class: 'muted sm', text: 'Confirmation' }), confirmInp]),
+        execBtn
+      ])
+    ]);
+    var matrixHost = el('div', { class: 'cso-ops-vault-table-host' });
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(controls);
+    wrap.appendChild(matrixHost);
+    var busy = false;
+    var lastVacuum = null;
+
+    function syncExec() { execBtn.disabled = !isAdmin || busy || confirmInp.value.trim() !== 'VACUUM'; }
+
+    function render(rep) {
+      var t = rep.tables || {};
+      lastVacuum = rep.last_vacuum || lastVacuum;
+      clear(kpiStrip);
+      kpiStrip.appendChild(opsKpiCard(rep.dry_run ? 'Total Reclaimable Dead Rows' : 'Rows Purged', el('span', { class: 'cso-tabular', text: String(rep.total_reclaimed || 0) }), '≈ ' + fmtBytes(rep.estimated_reclaimable_bytes || 0)));
+      kpiStrip.appendChild(opsKpiCard('Orphaned Revisions', el('span', { class: 'cso-tabular', text: String((t.orphaned_revisions || 0) + (t.site_page_revisions || 0)) }), 'Orphaned + excess beyond keep limit'));
+      kpiStrip.appendChild(opsKpiCard('Expired Auth / OTP Records', el('span', { class: 'cso-tabular', text: String((t.sessions || 0) + (t.admin_otps || 0)) }), 'sessions + admin_otps'));
+      kpiStrip.appendChild(opsKpiCard('Last Vacuum', el('span', { text: lastVacuum && lastVacuum.executed_at ? fmtDate(lastVacuum.executed_at) : 'Never' }), lastVacuum ? ((lastVacuum.total_reclaimed || 0) + ' rows · ' + (lastVacuum.executed_by || 'admin')) : ''));
+      var tb = el('tbody');
+      CATS.forEach(function (c) {
+        var present = !rep.tables_present || rep.tables_present[c[0] === 'orphaned_revisions' ? 'site_page_revisions' : c[0]] !== false;
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, el('code', { text: c[0] })),
+          el('td', { text: c[1] }),
+          el('td', { class: 'cso-tabular', text: present ? String(t[c[0]] || 0) : '—' }),
+          el('td', {}, el('span', { class: 'badge ' + (!present ? 'draft' : ((t[c[0]] || 0) ? 'scheduled' : 'published')), text: !present ? 'TABLE ABSENT' : ((t[c[0]] || 0) ? (rep.dry_run ? 'RECLAIMABLE' : 'PURGED') : 'CLEAN') }))
+        ]));
+      });
+      clear(matrixHost);
+      matrixHost.appendChild(el('h3', { text: (rep.dry_run ? 'Dry-Run Preview' : 'Vacuum Result') + ' · retention ' + rep.retention_days + ' days' }));
+      matrixHost.appendChild(opsTable(['Table / Category', 'Description', 'Rows', 'State'], tb));
+    }
+
+    async function preview() {
+      if (busy) return;
+      busy = true; previewBtn.disabled = true; previewBtn.textContent = 'Scanning…'; syncExec();
+      try {
+        var res = await api('GET', 'ops/vacuum?retention_days=' + encodeURIComponent(retentionSel.value));
+        render(res);
+      } catch (err) {
+        clear(kpiStrip).appendChild(opsErrorBanner('Vacuum preview failed', err, preview));
+      } finally {
+        busy = false; previewBtn.disabled = false; previewBtn.textContent = 'Preview Reclaimable Rows (Dry Run)'; syncExec();
+      }
+    }
+
+    async function execute() {
+      if (busy || !isAdmin || confirmInp.value.trim() !== 'VACUUM') return;
+      busy = true; syncExec(); execBtn.textContent = 'Purging…'; previewBtn.disabled = true;
+      try {
+        var res = await api('POST', 'ops/vacuum', { dry_run: false, confirm: 'VACUUM', retention_days: Number(retentionSel.value) });
+        render(res);
+        confirmInp.value = '';
+        toast('Vacuum purged ' + (res.total_reclaimed || 0) + ' dead-letter rows');
+      } catch (err) {
+        toast(err && err.message ? err.message : 'Vacuum failed', true);
+      } finally {
+        busy = false; execBtn.textContent = 'Execute Dead-Letter Vacuum'; previewBtn.disabled = false; syncExec();
+      }
+    }
+
+    confirmInp.addEventListener('input', syncExec);
+    retentionSel.addEventListener('change', preview);
+    previewBtn.addEventListener('click', preview);
+    execBtn.addEventListener('click', execute);
+    preview();
+    return wrap;
+  }
+
+  /* ---------- Folder 17: Module #12 Emergency Read-Only Maintenance Freeze ---------- */
+  function opsMaintenanceFreezePanel() {
+    var isAdmin = me && me.role === 'admin';
+    var wrap = el('div', { class: 'panel cso-ops-sentinel-panel' }, [
+      el('h2', { text: 'Emergency Read-Only Maintenance Freeze' }),
+      el('p', { class: 'muted', text: 'Instantly block public and editor writes (HTTP 503) while Super Admins keep emergency recovery access to login, 2FA, and /api/admin/ops/*.' })
+    ]);
+    var postureBanner = el('div', { class: 'alert ok cso-ops-freeze-banner', role: 'status', 'aria-live': 'polite', text: 'Checking platform write-lock state…' });
+    var kpiStrip = el('div', { class: 'cso-ops-telemetry-grid cso-ops-vault-kpis' });
+    var reasonInp = el('input', { type: 'text', id: 'f-ops-freeze-reason', class: 'cso-ops-freeze-input', maxLength: '280', placeholder: 'Internal maintenance reason (shown in 503 responses)' });
+    var bannerInp = el('textarea', { id: 'f-ops-freeze-banner', rows: '2', maxLength: '280', placeholder: 'Public maintenance banner text' });
+    var bannerPreview = el('div', { class: 'alert cso-ops-freeze-banner', role: 'note' });
+    var confirmInp = el('input', { type: 'text', id: 'f-ops-freeze-confirm', class: 'cso-ops-confirm-input', autocomplete: 'off', 'aria-label': 'Confirmation phrase' });
+    var toggleBtn = el('button', { type: 'button', class: 'btn danger', disabled: true, text: 'Activate Read-Only Freeze' });
+    var historyHost = el('div', { class: 'cso-ops-vault-table-host' });
+    var editor = el('div', { class: 'cso-ops-subbox' }, [
+      el('div', { class: 'cso-ops-subhead' }, [el('strong', { text: 'Maintenance Notice & Lockdown Control' })]),
+      el('div', { class: 'form' }, [
+        el('label', { for: 'f-ops-freeze-reason', text: 'Maintenance Reason' }), reasonInp,
+        el('label', { for: 'f-ops-freeze-banner', text: 'Public Banner Text' }), bannerInp,
+        el('span', { class: 'muted sm', text: 'Live banner preview:' }), bannerPreview
+      ]),
+      el('div', { class: 'cso-ops-restore-controls' }, [
+        el('div', { class: 'cso-ops-restore-field' }, [el('label', { for: 'f-ops-freeze-confirm', class: 'muted sm', text: 'Confirmation' }), confirmInp]),
+        toggleBtn
+      ])
+    ]);
+    wrap.appendChild(postureBanner);
+    wrap.appendChild(kpiStrip);
+    wrap.appendChild(editor);
+    wrap.appendChild(historyHost);
+
+    var state = { enabled: false };
+    var busy = false;
+    function expected() { return state.enabled ? 'UNFREEZE' : 'FREEZE'; }
+    function syncBtn() { toggleBtn.disabled = !isAdmin || busy || confirmInp.value.trim() !== expected(); }
+    function syncPreview() { bannerPreview.textContent = (bannerInp.value || '').trim() || 'CS Odisha is in scheduled maintenance. Browsing works normally; submissions are paused for a few minutes.'; }
+
+    function render(freeze, history) {
+      state = freeze || { enabled: false };
+      postureBanner.className = 'alert cso-ops-freeze-banner' + (state.enabled ? ' is-frozen' : ' ok');
+      postureBanner.textContent = state.enabled ? 'EMERGENCY READ-ONLY FREEZE ACTIVE — public & editor writes return HTTP 503' : 'NORMAL READ/WRITE — all endpoints accepting traffic';
+      clear(kpiStrip);
+      kpiStrip.appendChild(opsKpiCard('Lockdown Posture', el('span', { class: 'badge ' + (state.enabled ? 'expired' : 'published'), text: state.enabled ? 'FROZEN' : 'NORMAL' }), state.enabled ? 'Writes blocked' : 'Writes allowed'));
+      kpiStrip.appendChild(opsKpiCard('Last Changed', el('span', { text: state.activated_at ? fmtDate(state.activated_at) : 'Never' }), state.activated_by ? ('By ' + state.activated_by) : ''));
+      kpiStrip.appendChild(opsKpiCard('Admin Recovery Access', el('span', { class: 'badge published', text: 'RETAINED' }), '/api/admin/login · auth · ops/*'));
+      if (document.activeElement !== reasonInp) reasonInp.value = state.reason || '';
+      if (document.activeElement !== bannerInp) bannerInp.value = state.banner || '';
+      syncPreview();
+      confirmInp.value = '';
+      confirmInp.placeholder = 'Type ' + expected();
+      toggleBtn.className = state.enabled ? 'btn primary' : 'btn danger';
+      toggleBtn.textContent = state.enabled ? 'Lift Freeze & Restore Writes' : 'Activate Read-Only Freeze';
+      syncBtn();
+      clear(historyHost);
+      historyHost.appendChild(el('h3', { text: 'Recent Freeze Audit History' }));
+      var list = Array.isArray(history) ? history : [];
+      if (!list.length) { historyHost.appendChild(el('p', { class: 'muted sm', text: 'No freeze toggles recorded yet.' })); return; }
+      var tb = el('tbody');
+      list.forEach(function (h) {
+        tb.appendChild(el('tr', {}, [
+          el('td', { class: 'muted sm', text: fmtDate(h.created_at) }),
+          el('td', { text: h.actor }),
+          el('td', {}, el('span', { class: 'badge ' + (h.enabled ? 'expired' : 'published'), text: h.enabled ? 'FROZE' : 'LIFTED' })),
+          el('td', { class: 'muted sm', text: h.reason || '—' })
+        ]));
+      });
+      historyHost.appendChild(opsTable(['When', 'Actor', 'Action', 'Reason'], tb));
+    }
+
+    async function load() {
+      try {
+        var res = await api('GET', 'ops/freeze');
+        render(res.freeze, res.history);
+      } catch (err) {
+        clear(kpiStrip).appendChild(opsErrorBanner('Could not load freeze state', err, load));
+      }
+    }
+
+    async function toggle() {
+      if (busy || !isAdmin || confirmInp.value.trim() !== expected()) return;
+      var next = !state.enabled;
+      busy = true; syncBtn(); toggleBtn.textContent = next ? 'Activating Freeze…' : 'Lifting Freeze…';
+      try {
+        var res = await api('POST', 'ops/freeze', { enabled: next, confirm: expected(), reason: reasonInp.value.trim(), banner: bannerInp.value.trim() });
+        busy = false;
+        render(res.freeze, res.history);
+        toast(next ? 'Emergency Read-Only Freeze ACTIVATED' : 'Freeze lifted — live writes restored');
+      } catch (err) {
+        busy = false;
+        toast(err && err.message ? err.message : 'Failed to toggle freeze', true);
+        render(state, null);
+        load();
+      }
+    }
+
+    confirmInp.addEventListener('input', syncBtn);
+    bannerInp.addEventListener('input', syncPreview);
+    toggleBtn.addEventListener('click', toggle);
+    syncPreview();
+    load();
+    return wrap;
+  }
+
   async function viewOperations(subMode, targetSnapId) {
     var mode = subMode || 'snapshots';
     var titleMap = {
@@ -4760,17 +5211,21 @@
       snapshots: 'snapshots',
       vault: 'r2vault',
       r2vault: 'r2vault',
-      verify: 'snapshots',
+      verify: 'integrity',
+      integrity: 'integrity',
+      sha256: 'integrity',
       drill: 'drill',
       restore: 'drill',
-      freeze: 'sentinel',
+      freeze: 'freeze',
       cache: 'warmer',
       warmer: 'warmer',
-      health: 'sentinel',
+      health: 'failover',
+      sentinel: 'failover',
+      failover: 'failover',
       canary: 'sentinel',
       schema: 'ddl',
       ddl: 'ddl',
-      vacuum: 'hygiene',
+      vacuum: 'vacuum',
       forensics: 'hygiene',
       retention: 'hygiene',
       replica: 'continuity',
@@ -4781,6 +5236,14 @@
 
     if (activeGroup === 'drill') {
       main.appendChild(opsDrillAndRestorePanel(mode === 'restore' ? 'restore' : 'drill', targetSnapId));
+    } else if (activeGroup === 'failover') {
+      main.appendChild(opsFailoverSentinelPanel());
+    } else if (activeGroup === 'integrity') {
+      main.appendChild(opsIntegrityVerifierPanel());
+    } else if (activeGroup === 'vacuum') {
+      main.appendChild(opsDeadLetterVacuumPanel());
+    } else if (activeGroup === 'freeze') {
+      main.appendChild(opsMaintenanceFreezePanel());
     } else if (activeGroup === 'sentinel') {
       main.appendChild(opsSentinelFreezeCachePanel(mode));
     } else if (activeGroup === 'warmer') {

@@ -18,6 +18,8 @@ import {
   getR2ColdVaultStatus,
   lockSnapshotImmutable,
   reconcileR2ColdVault,
+  verifyAllPlatformSnapshots,
+  readLastIntegrityAudit,
   handleOpsSnapshots
 } from '../functions/_lib/ops-snapshots.js';
 
@@ -441,4 +443,50 @@ assert.strictEqual(dryReconcile.orphan_count, 1);
 assert.ok(dryReconcile.reclaimable_bytes > 0);
 assert.ok(restoreEnv.MEDIA.store.has('backups/snapshots/orphan.json'), 'Dry-run reconcile must NOT delete orphan object');
 
-console.log('OPS SNAPSHOT, DR DRILL, GRANULAR RESTORE & R2 COLD VAULT TESTS PASSED');
+// 14. Module #10: Vault-wide SHA-256 integrity audit (VERIFIED / MISMATCH / MISSING_R2)
+const intEnv = { DB: makeD1(), MEDIA: makeR2() };
+const intA = await createPlatformSnapshot(intEnv, { label: 'Integrity A', createdBy: 'admin@csodisha.com' });
+const intB = await createPlatformSnapshot(intEnv, { label: 'Integrity B', createdBy: 'admin@csodisha.com' });
+const intC = await createPlatformSnapshot(intEnv, { label: 'Integrity C', createdBy: 'admin@csodisha.com' });
+const cleanAudit = await verifyAllPlatformSnapshots(intEnv, { actorEmail: 'admin@csodisha.com' });
+assert.equal(cleanAudit.total_audited, 3);
+assert.equal(cleanAudit.verified_count, 3);
+assert.equal(cleanAudit.vault_posture, 'INTACT');
+
+// Tamper B's bytes and delete C's blob
+const intStoredB = intEnv.MEDIA.store.get(intB.r2_key);
+intStoredB.bytes = new TextEncoder().encode('{"tampered":true}');
+intEnv.MEDIA.store.delete(intC.r2_key);
+
+const verifyAllRes = await handleOpsSnapshots(
+  new Request('https://csodisha.com/api/admin/ops/snapshots/verify-all', { method: 'POST' }),
+  intEnv,
+  { userId: 'u-1', email: 'admin@csodisha.com', role: 'admin' },
+  'verify-all'
+);
+assert.equal(verifyAllRes.status, 200);
+const dirtyAudit = await verifyAllRes.json();
+assert.equal(dirtyAudit.verified_count, 1);
+assert.equal(dirtyAudit.mismatch_count, 1);
+assert.equal(dirtyAudit.missing_count, 1);
+assert.equal(dirtyAudit.vault_posture, 'COMPROMISED');
+const byId = Object.fromEntries(dirtyAudit.items.map(i => [i.id, i]));
+assert.equal(byId[intA.id].status, 'VERIFIED');
+assert.equal(byId[intB.id].status, 'MISMATCH');
+assert.notEqual(byId[intB.id].computed_sha256, byId[intB.id].expected_sha256);
+assert.equal(byId[intC.id].status, 'MISSING_R2');
+
+const persistedAudit = await readLastIntegrityAudit(intEnv);
+assert.ok(persistedAudit && persistedAudit.mismatch_count === 1 && persistedAudit.missing_count === 1, 'ops_last_integrity_audit must persist');
+
+// Non-admin cannot run vault-wide audit
+await assert.rejects(
+  () => handleOpsSnapshots(new Request('https://csodisha.com/api/admin/ops/snapshots/verify-all', { method: 'POST' }), intEnv, { userId: 'u-2', email: 'ed@csodisha.com', role: 'editor' }, 'verify-all'),
+  err => err && err.status === 403
+);
+
+// Single-snapshot GET /:id/verify reports status badge
+const singleGet = await handleOpsSnapshots(new Request('https://csodisha.com/api/admin/ops/snapshots/x/verify', { method: 'GET' }), intEnv, { userId: 'u-1', email: 'admin@csodisha.com', role: 'admin' }, intA.id, 'verify');
+assert.equal((await singleGet.json()).status, 'VERIFIED');
+
+console.log('OPS SNAPSHOT, DR DRILL, GRANULAR RESTORE, R2 COLD VAULT & INTEGRITY AUDIT TESTS PASSED');

@@ -14,6 +14,10 @@ import {
   saveCacheWarmerRoutes,
   runCacheWarmer,
   runOpsHealthAndCanaryProbe,
+  getSentinelConfig,
+  saveSentinelConfig,
+  runSentinelProbe,
+  classifySentinelPosture,
   handleOpsSentinel
 } from '../functions/_lib/ops-sentinel.js';
 
@@ -244,4 +248,74 @@ assert.ok(liveWarm.avg_latency_ms >= 1);
 const warmerAfter = await getCacheWarmerStatus(env);
 assert.ok(warmerAfter.last_warm && warmerAfter.last_warm.warmed_count === 3);
 
-console.log('OPS SENTINEL, FREEZE, CACHE & CANARY TESTS PASSED');
+// 6. Module #9: Failover Sentinel config validation, probe classification & persistence
+const sentDefault = await getSentinelConfig(env);
+assert.equal(sentDefault.latency_warning_ms, 250);
+assert.deepEqual(sentDefault.monitored_subsystems, ['d1', 'r2', 'edge', 'sw']);
+await assert.rejects(() => saveSentinelConfig(env, { latency_warning_ms: 10 }), err => err.status === 400 && err.code === 'INVALID_THRESHOLD');
+await assert.rejects(() => saveSentinelConfig(env, { latency_warning_ms: 9000 }), err => err.status === 400 && err.code === 'INVALID_THRESHOLD');
+await assert.rejects(() => saveSentinelConfig(env, { monitored_subsystems: ['d1', 'bogus'] }), err => err.status === 400 && err.code === 'INVALID_SUBSYSTEMS');
+await assert.rejects(() => saveSentinelConfig(env, { monitored_subsystems: [] }), err => err.status === 400 && err.code === 'INVALID_SUBSYSTEMS');
+
+const cfgPut = await handleOpsSentinel(
+  new Request('https://csodisha.com/api/admin/ops/sentinel/config', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ latency_warning_ms: 400, monitored_subsystems: ['d1', 'r2'], alerts_enabled: true, alert_channel: 'webhook' })
+  }),
+  env, adminActor, 'sentinel', 'config'
+);
+assert.equal(cfgPut.status, 200);
+assert.equal((await cfgPut.json()).config.latency_warning_ms, 400);
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'ops.sentinel.config.update'`).first()).n >= 1);
+
+const probeHttp = await handleOpsSentinel(
+  new Request('https://csodisha.com/api/admin/ops/sentinel/probe', { method: 'POST' }),
+  env, adminActor, 'sentinel', 'probe'
+);
+assert.equal(probeHttp.status, 200);
+const probeBody = await probeHttp.json();
+assert.equal(probeBody.posture, 'HEALTHY');
+assert.equal(probeBody.threshold_ms, 400);
+assert.equal(probeBody.subsystems.find(s => s.id === 'edge').monitored, false);
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'ops.sentinel.probe'`).first()).n >= 1);
+
+const sentStatus = await handleOpsSentinel(new Request('https://csodisha.com/api/admin/ops/sentinel', { method: 'GET' }), env, adminActor, 'sentinel');
+const sentStatusBody = await sentStatus.json();
+assert.equal(sentStatusBody.last_probe_at, probeBody.probed_at, 'ops_last_sentinel_probe must persist');
+
+// Posture classifier
+assert.equal(classifySentinelPosture([{ monitored: true, status: 'UP', latency_ms: 500 }], 400), 'DEGRADED');
+assert.equal(classifySentinelPosture([{ monitored: true, status: 'DOWN', latency_ms: 5 }], 400), 'CRITICAL');
+assert.equal(classifySentinelPosture([{ monitored: false, status: 'DOWN', latency_ms: 5 }, { monitored: true, status: 'UP', latency_ms: 5 }], 400), 'HEALTHY');
+const brokenEnv = { ...env, MEDIA: { async list() { throw new Error('R2 unreachable'); } } };
+assert.equal((await runSentinelProbe(probeReq, brokenEnv)).posture, 'CRITICAL');
+
+// 7. Module #12: FREEZE / UNFREEZE confirmation guards, banner & mirror keys
+const freezePost = (body, actor = adminActor) => handleOpsSentinel(
+  new Request('https://csodisha.com/api/admin/ops/freeze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
+  env, actor, 'freeze'
+);
+await assert.rejects(() => freezePost({ enabled: true, reason: 'x' }), err => err.status === 400 && err.code === 'CONFIRMATION_REQUIRED');
+await assert.rejects(() => freezePost({ enabled: true, confirm: 'UNFREEZE' }), err => err.status === 400 && err.code === 'CONFIRMATION_REQUIRED');
+await assert.rejects(() => freezePost({ enabled: 'yes', confirm: 'FREEZE' }), err => err.status === 400 && err.code === 'INVALID_ENABLED_FLAG');
+await assert.rejects(() => freezePost({ enabled: true, confirm: 'FREEZE' }, { userId: 'u-2', email: 'ed@csodisha.com', role: 'editor' }), err => err.status === 403);
+assert.equal((await getReadOnlyFreezeState(env)).enabled, false, 'rejected requests must not change freeze state');
+
+const frozeRes = await freezePost({ enabled: true, confirm: 'FREEZE', reason: 'D1 migration window', banner: 'Maintenance <b>now</b>' });
+const frozeBody = await frozeRes.json();
+assert.equal(frozeBody.freeze.enabled, true);
+assert.equal(frozeBody.freeze.banner, 'Maintenance bnow/b', 'banner must strip angle brackets');
+assert.ok(frozeBody.history.length >= 1 && frozeBody.history[0].enabled === true);
+const mirror = await env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = 'ops_maintenance_freeze'`).first();
+assert.equal(JSON.parse(mirror.value_json), true);
+assert.ok(await env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = 'ops_freeze_updated_by'`).first());
+const blockedWhileFrozen = await checkReadOnlyFreezeGuard(new Request('https://csodisha.com/api/candidate/bookmarks', { method: 'POST' }), env);
+assert.equal(blockedWhileFrozen.status, 503);
+assert.equal(await checkReadOnlyFreezeGuard(new Request('https://csodisha.com/api/admin/ops/freeze', { method: 'POST' }), env), null, 'admins retain emergency access');
+
+await assert.rejects(() => freezePost({ enabled: false, confirm: 'FREEZE' }), err => err.code === 'CONFIRMATION_REQUIRED');
+const liftRes = await freezePost({ enabled: false, confirm: 'UNFREEZE' });
+assert.equal((await liftRes.json()).freeze.enabled, false);
+assert.equal((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'ops.freeze.toggle'`).first()).n, 2);
+
+console.log('OPS SENTINEL, FREEZE, CACHE, CANARY & FAILOVER SENTINEL TESTS PASSED');

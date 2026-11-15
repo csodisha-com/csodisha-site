@@ -11,6 +11,7 @@ import {
   getDdlJournalReport,
   recordDdlCheckpoint,
   updateDdlCheckpoint,
+  handleOpsHygiene,
   runDeadLetterVacuum,
   computeForensicDiff,
   inspectForensicAudit,
@@ -231,5 +232,62 @@ env.DB.db.exec(`ALTER TABLE posts ADD COLUMN test_drift_col TEXT`);
 const ddlDrift = await getDdlJournalReport(env);
 assert.equal(ddlDrift.drift_detected, true);
 assert.ok(ddlDrift.pending_diff.altered_tables.includes('posts'), 'pending_diff must detect altered posts table');
+
+// 6. Module #11: Vacuum retention window, orphaned revisions, audit_log retention & VACUUM confirmation guard
+const adminActorH = { userId: 'u-1', email: 'admin@csodisha.com', role: 'admin' };
+env.DB.db.exec(`
+  INSERT INTO site_page_revisions (route, snapshot_json, editor_email, note, created_at) VALUES ('/deleted-route/', '{}', 'a@b', 'old orphan', datetime('now', '-200 days'));
+  INSERT INTO site_page_revisions (route, snapshot_json, editor_email, note, created_at) VALUES ('/deleted-route/', '{}', 'a@b', 'fresh orphan', datetime('now'));
+  INSERT INTO audit_log (actor_user_id, action, created_at) VALUES ('u-1', 'old.event', datetime('now', '-400 days'));
+  INSERT INTO audit_log (actor_user_id, action, created_at) VALUES ('u-1', 'mid.event', datetime('now', '-100 days'));
+`);
+await assert.rejects(() => runDeadLetterVacuum(env, { dryRun: true, retentionDays: 3 }), err => err.status === 400 && err.code === 'INVALID_RETENTION_DAYS');
+await assert.rejects(() => runDeadLetterVacuum(env, { dryRun: true, retentionDays: 400 }), err => err.status === 400 && err.code === 'INVALID_RETENTION_DAYS');
+
+const getVac = await handleOpsHygiene(new Request('https://csodisha.com/api/admin/ops/vacuum?retention_days=90', { method: 'GET' }), env, adminActorH, 'vacuum');
+const getVacBody = await getVac.json();
+assert.equal(getVacBody.dry_run, true);
+assert.equal(getVacBody.retention_days, 90);
+assert.equal(getVacBody.tables.orphaned_revisions, 1, 'only the >90d orphan revision is reclaimable');
+assert.equal(getVacBody.tables.audit_log, 2, 'both >90d audit entries are reclaimable at 90d retention');
+assert.equal(getVacBody.last_vacuum.total_reclaimed, 6);
+
+const dry365 = await runDeadLetterVacuum(env, { dryRun: true, retentionDays: 365 });
+assert.equal(dry365.tables.audit_log, 1);
+
+const vacPost = (body) => handleOpsHygiene(
+  new Request('https://csodisha.com/api/admin/ops/vacuum', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
+  env, adminActorH, 'vacuum'
+);
+await assert.rejects(() => vacPost({ dry_run: false, retention_days: 90 }), err => err.status === 400 && err.code === 'CONFIRMATION_REQUIRED');
+await assert.rejects(() => vacPost({ dry_run: false, confirm: 'vacuum', retention_days: 90 }), err => err.code === 'CONFIRMATION_REQUIRED');
+await assert.rejects(
+  () => handleOpsHygiene(new Request('https://csodisha.com/api/admin/ops/vacuum', { method: 'POST', body: JSON.stringify({ dry_run: false, confirm: 'VACUUM' }) }), env, { userId: 'u-2', email: 'e@x', role: 'editor' }, 'vacuum'),
+  err => err.status === 403
+);
+// Missing dry_run defaults to a safe preview
+const implicitDry = await (await vacPost({ retention_days: 90 })).json();
+assert.equal(implicitDry.dry_run, true);
+assert.equal((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action IN ('old.event','mid.event')`).first()).n, 2, 'preview must not delete');
+
+const execVac = await (await vacPost({ dry_run: false, confirm: 'VACUUM', retention_days: 90 })).json();
+assert.equal(execVac.dry_run, false);
+assert.equal(execVac.tables.orphaned_revisions, 1);
+assert.equal(execVac.tables.audit_log, 2);
+assert.ok(execVac.last_vacuum && execVac.last_vacuum.executed_at, 'ops_last_vacuum must persist');
+assert.equal((await env.DB.prepare(`SELECT COUNT(*) AS n FROM site_page_revisions WHERE note = 'fresh orphan'`).first()).n, 1, 'fresh orphan within retention must survive');
+assert.ok((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'ops.vacuum.execute'`).first()).n === 1);
+
+// Fresh D1 without any vacuum tables must never fail
+const bareDb = new DatabaseSync(':memory:');
+const bareStmt = (sql, args = []) => ({
+  bind: (...a) => bareStmt(sql, a),
+  run: async () => ({ meta: { changes: Number(bareDb.prepare(sql).run(...args).changes) } }),
+  first: async () => bareDb.prepare(sql).get(...args) || null,
+  all: async () => ({ results: bareDb.prepare(sql).all(...args) || [] })
+});
+const bareVac = await runDeadLetterVacuum({ DB: { prepare: s => bareStmt(s) } }, { dryRun: true });
+assert.equal(bareVac.total_reclaimed, 0);
+assert.equal(bareVac.tables_present.sessions, false);
 
 console.log('OPS SCHEMA JOURNAL, VACUUM, FORENSICS & RETENTION POLICY TESTS PASSED');

@@ -9,7 +9,7 @@ import { handleContent } from '../api/content/_public.js';
 export const FREEZE_SETTING_KEY = 'ops_read_only_freeze';
 export const CACHE_WARMER_URLS_KEY = 'ops_cache_warmer_urls';
 export const LAST_CACHE_WARM_KEY = 'ops_last_cache_warm';
-export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v35';
+export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v36';
 
 export const DEFAULT_CACHE_WARMER_ROUTES = [
   '/',
@@ -68,10 +68,25 @@ async function ensureSiteSettingsTable(db) {
   ).run();
 }
 
+// Module #12 granular site_settings keys (mirrors of the canonical FREEZE_SETTING_KEY JSON state)
+export const FREEZE_MIRROR_KEYS = {
+  enabled: 'ops_maintenance_freeze',
+  reason: 'ops_freeze_reason',
+  banner: 'ops_freeze_banner',
+  updated_by: 'ops_freeze_updated_by',
+  updated_at: 'ops_freeze_updated_at'
+};
+export const DEFAULT_FREEZE_BANNER = 'CS Odisha is in scheduled maintenance. Browsing works normally; submissions are paused for a few minutes.';
+
+function sanitizeNoticeText(raw, max) {
+  return String(raw || '').replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/[<>]/g, '').trim().slice(0, max);
+}
+
 export async function getReadOnlyFreezeState(env) {
   const fallback = {
     enabled: false,
     reason: '',
+    banner: DEFAULT_FREEZE_BANNER,
     activated_by: null,
     activated_at: null
   };
@@ -85,6 +100,7 @@ export async function getReadOnlyFreezeState(env) {
     return {
       enabled: Boolean(parsed && parsed.enabled),
       reason: String((parsed && parsed.reason) || ''),
+      banner: String((parsed && parsed.banner) || DEFAULT_FREEZE_BANNER),
       activated_by: (parsed && parsed.activated_by) || row.updated_by || null,
       activated_at: (parsed && parsed.activated_at) || row.updated_at || null
     };
@@ -93,18 +109,152 @@ export async function getReadOnlyFreezeState(env) {
   }
 }
 
-export async function setReadOnlyFreezeState(env, { enabled, reason = '', actorEmail = 'admin' } = {}) {
+export async function setReadOnlyFreezeState(env, { enabled, reason = '', banner = '', actorEmail = 'admin' } = {}) {
   if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
   await ensureSiteSettingsTable(env.DB);
   const nowIso = new Date().toISOString();
   const cleanEnabled = Boolean(enabled);
-  const cleanReason = String(reason || '').trim().slice(0, 280) ||
+  const cleanReason = sanitizeNoticeText(reason, 280) ||
     (cleanEnabled ? 'Scheduled platform maintenance / emergency read-only protection active.' : '');
+  const cleanBanner = sanitizeNoticeText(banner, 280) || DEFAULT_FREEZE_BANNER;
+  const actor = actorEmail || 'admin';
   const state = {
     enabled: cleanEnabled,
     reason: cleanReason,
-    activated_by: actorEmail || 'admin',
+    banner: cleanBanner,
+    activated_by: actor,
     activated_at: nowIso
+  };
+  const upsert = `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+     VALUES (?, ?, ?, ?)
+     ON CONFLICT(key) DO UPDATE SET
+       value_json = excluded.value_json,
+       updated_by = excluded.updated_by,
+       updated_at = excluded.updated_at`;
+  await env.DB.prepare(upsert).bind(FREEZE_SETTING_KEY, JSON.stringify(state), actor, nowIso).run();
+  const mirrors = [
+    [FREEZE_MIRROR_KEYS.enabled, cleanEnabled],
+    [FREEZE_MIRROR_KEYS.reason, cleanReason],
+    [FREEZE_MIRROR_KEYS.banner, cleanBanner],
+    [FREEZE_MIRROR_KEYS.updated_by, actor],
+    [FREEZE_MIRROR_KEYS.updated_at, nowIso]
+  ];
+  for (const [k, v] of mirrors) {
+    await env.DB.prepare(upsert).bind(k, JSON.stringify(v), actor, nowIso).run();
+  }
+  return state;
+}
+
+export async function listFreezeAuditHistory(env, limit = 10) {
+  if (!env || !env.DB) return [];
+  try {
+    const { results } = await env.DB.prepare(
+      `SELECT id, actor_user_id, action, metadata_json, created_at
+       FROM audit_log
+       WHERE action LIKE 'ops.freeze.%'
+       ORDER BY id DESC
+       LIMIT ?`
+    ).bind(Math.max(1, Math.min(50, Number(limit) || 10))).all();
+    return (results || []).map(r => {
+      let meta = {};
+      try { meta = r.metadata_json ? JSON.parse(r.metadata_json) : {}; } catch {}
+      return {
+        id: r.id,
+        actor: (meta && meta.actor) || r.actor_user_id || 'admin',
+        action: r.action,
+        enabled: Boolean(meta && meta.enabled),
+        reason: (meta && meta.reason) || '',
+        created_at: r.created_at
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+// ============================================================================
+// Module #9: Multi-Region Failover Sentinel & Health Monitor
+// ============================================================================
+export const SENTINEL_CONFIG_KEY = 'ops_sentinel_config';
+export const LAST_SENTINEL_PROBE_KEY = 'ops_last_sentinel_probe';
+export const SENTINEL_SUBSYSTEMS = ['d1', 'r2', 'edge', 'sw'];
+const SENTINEL_LABELS = {
+  d1: 'Cloudflare D1 Primary Database',
+  r2: 'Cloudflare R2 Object Storage',
+  edge: 'Cloudflare Edge POP / Ray Metadata',
+  sw: 'Service Worker Canary (sw.js)'
+};
+
+export function defaultSentinelConfig() {
+  return {
+    latency_warning_ms: 250,
+    alerts_enabled: false,
+    alert_channel: 'email',
+    monitored_subsystems: SENTINEL_SUBSYSTEMS.slice(),
+    updated_by: null,
+    updated_at: null
+  };
+}
+
+export async function getSentinelConfig(env) {
+  const def = defaultSentinelConfig();
+  if (!env || !env.DB) return def;
+  try {
+    await ensureSiteSettingsTable(env.DB);
+    const row = await env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(SENTINEL_CONFIG_KEY).first();
+    if (!row || !row.value_json) return def;
+    const p = JSON.parse(row.value_json) || {};
+    const subs = Array.isArray(p.monitored_subsystems)
+      ? p.monitored_subsystems.filter(s => SENTINEL_SUBSYSTEMS.includes(s))
+      : def.monitored_subsystems;
+    return {
+      latency_warning_ms: Math.max(50, Math.min(5000, Number(p.latency_warning_ms) || def.latency_warning_ms)),
+      alerts_enabled: Boolean(p.alerts_enabled),
+      alert_channel: p.alert_channel === 'webhook' ? 'webhook' : 'email',
+      monitored_subsystems: subs.length ? subs : def.monitored_subsystems,
+      updated_by: p.updated_by || null,
+      updated_at: p.updated_at || null
+    };
+  } catch {
+    return def;
+  }
+}
+
+export async function saveSentinelConfig(env, input = {}, actorEmail = 'admin') {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  await ensureSiteSettingsTable(env.DB);
+  const prev = await getSentinelConfig(env);
+  let threshold = prev.latency_warning_ms;
+  if (input.latency_warning_ms !== undefined) {
+    const n = Number(input.latency_warning_ms);
+    if (!Number.isInteger(n) || n < 50 || n > 5000) {
+      throw new HttpError(400, 'INVALID_THRESHOLD', 'latency_warning_ms must be an integer between 50 and 5000');
+    }
+    threshold = n;
+  }
+  let subs = prev.monitored_subsystems;
+  if (input.monitored_subsystems !== undefined) {
+    if (!Array.isArray(input.monitored_subsystems)) {
+      throw new HttpError(400, 'INVALID_SUBSYSTEMS', 'monitored_subsystems must be an array');
+    }
+    const bad = input.monitored_subsystems.filter(s => !SENTINEL_SUBSYSTEMS.includes(s));
+    if (bad.length) {
+      throw new HttpError(400, 'INVALID_SUBSYSTEMS', 'Unknown subsystem(s): ' + bad.join(', ') + '. Allowed: ' + SENTINEL_SUBSYSTEMS.join(', '));
+    }
+    subs = [...new Set(input.monitored_subsystems)];
+    if (!subs.length) throw new HttpError(400, 'INVALID_SUBSYSTEMS', 'At least one subsystem must be monitored');
+  }
+  if (input.alert_channel !== undefined && !['email', 'webhook'].includes(input.alert_channel)) {
+    throw new HttpError(400, 'INVALID_ALERT_CHANNEL', 'alert_channel must be "email" or "webhook"');
+  }
+  const nowIso = new Date().toISOString();
+  const cfg = {
+    latency_warning_ms: threshold,
+    alerts_enabled: input.alerts_enabled !== undefined ? Boolean(input.alerts_enabled) : prev.alerts_enabled,
+    alert_channel: input.alert_channel || prev.alert_channel,
+    monitored_subsystems: subs,
+    updated_by: actorEmail || 'admin',
+    updated_at: nowIso
   };
   await env.DB.prepare(
     `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
@@ -113,8 +263,113 @@ export async function setReadOnlyFreezeState(env, { enabled, reason = '', actorE
        value_json = excluded.value_json,
        updated_by = excluded.updated_by,
        updated_at = excluded.updated_at`
-  ).bind(FREEZE_SETTING_KEY, JSON.stringify(state), actorEmail || 'admin', nowIso).run();
-  return state;
+  ).bind(SENTINEL_CONFIG_KEY, JSON.stringify(cfg), cfg.updated_by, nowIso).run();
+  return cfg;
+}
+
+async function readLastSentinelProbe(env) {
+  if (!env || !env.DB) return null;
+  try {
+    const row = await env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(LAST_SENTINEL_PROBE_KEY).first();
+    return row && row.value_json ? JSON.parse(row.value_json) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function classifySentinelPosture(subsystems, thresholdMs) {
+  const monitored = subsystems.filter(s => s.monitored);
+  if (monitored.some(s => s.status === 'DOWN')) return 'CRITICAL';
+  if (monitored.some(s => s.status === 'DEGRADED' || (s.latency_ms !== null && s.latency_ms > thresholdMs))) return 'DEGRADED';
+  return 'HEALTHY';
+}
+
+export async function runSentinelProbe(request, env, { persist = false, actorEmail = 'admin' } = {}) {
+  const config = await getSentinelConfig(env);
+  const base = await runOpsHealthAndCanaryProbe(request, env);
+  const threshold = config.latency_warning_ms;
+  const isMon = id => config.monitored_subsystems.includes(id);
+
+  const subsystems = [
+    {
+      id: 'd1',
+      label: SENTINEL_LABELS.d1,
+      status: base.d1.status,
+      latency_ms: base.d1.latency_ms,
+      detail: base.d1.error || `SELECT 1 OK · ${base.d1.counts.posts} posts · ${base.d1.counts.snapshots} snapshots`,
+      monitored: isMon('d1')
+    },
+    {
+      id: 'r2',
+      label: SENTINEL_LABELS.r2,
+      status: base.r2.status,
+      latency_ms: base.r2.latency_ms,
+      detail: base.r2.error || `list/head reachable · bucket ${base.r2.bucket}`,
+      monitored: isMon('r2')
+    },
+    {
+      id: 'edge',
+      label: SENTINEL_LABELS.edge,
+      status: 'UP',
+      latency_ms: null,
+      detail: `${base.edge.colo} · ${base.edge.city}, ${base.edge.country} · ${base.edge.httpProtocol} · ${base.edge.tlsVersion}`,
+      monitored: isMon('edge')
+    },
+    {
+      id: 'sw',
+      label: SENTINEL_LABELS.sw,
+      status: base.canary.sw_status === 'READY' ? 'UP' : 'DEGRADED',
+      latency_ms: null,
+      detail: `CACHE_NAME ${base.canary.sw_cache_name}`,
+      monitored: isMon('sw')
+    }
+  ].map(s => ({
+    ...s,
+    over_threshold: s.latency_ms !== null && s.latency_ms > threshold
+  }));
+
+  const posture = classifySentinelPosture(subsystems, threshold);
+  const probe = {
+    ok: true,
+    posture,
+    probed_at: new Date().toISOString(),
+    probed_by: actorEmail || 'admin',
+    threshold_ms: threshold,
+    total_latency_ms: base.total_latency_ms,
+    d1_latency_ms: base.d1.latency_ms,
+    r2_latency_ms: base.r2.latency_ms,
+    edge: base.edge,
+    freeze_enabled: Boolean(base.freeze && base.freeze.enabled),
+    subsystems
+  };
+
+  if (persist && env && env.DB) {
+    await ensureSiteSettingsTable(env.DB);
+    await env.DB.prepare(
+      `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(key) DO UPDATE SET
+         value_json = excluded.value_json,
+         updated_by = excluded.updated_by,
+         updated_at = excluded.updated_at`
+    ).bind(LAST_SENTINEL_PROBE_KEY, JSON.stringify(probe), probe.probed_by, probe.probed_at).run();
+  }
+  return probe;
+}
+
+export async function getSentinelStatus(request, env) {
+  const [config, lastProbe, live] = await Promise.all([
+    getSentinelConfig(env),
+    readLastSentinelProbe(env),
+    runSentinelProbe(request, env, { persist: false })
+  ]);
+  return {
+    ok: true,
+    config,
+    live,
+    last_probe: lastProbe,
+    last_probe_at: lastProbe ? lastProbe.probed_at : null
+  };
 }
 
 // Enforced in _worker.js on mutating HTTP verbs (POST, PUT, PATCH, DELETE)
@@ -133,6 +388,7 @@ export async function checkReadOnlyFreezeGuard(request, env) {
       freeze: {
         enabled: true,
         reason: msg,
+        banner: freeze.banner,
         activated_by: freeze.activated_by,
         activated_at: freeze.activated_at
       }
@@ -553,7 +809,7 @@ export async function runOpsHealthAndCanaryProbe(request, env) {
   };
 
   // 4. Canary & Service Worker Cache Readiness
-  let serviceWorkerCacheName = 'cso-candidate-cache-v26';
+  let serviceWorkerCacheName = ACTIVE_SW_CACHE_VERSION;
   let swStatus = 'READY';
   if (env && env.ASSETS && typeof env.ASSETS.fetch === 'function') {
     try {
@@ -616,31 +872,79 @@ export async function handleOpsSentinel(request, env, actor, subAction, subId) {
   // Module #12: GET/POST /api/admin/ops/freeze
   if (subAction === 'freeze') {
     if (method === 'GET') {
-      const freeze = await getReadOnlyFreezeState(env);
-      return json({ ok: true, freeze }, 200, { 'Cache-Control': 'no-store' });
+      const [freeze, history] = await Promise.all([
+        getReadOnlyFreezeState(env),
+        listFreezeAuditHistory(env, 10)
+      ]);
+      return json({ ok: true, freeze, history }, 200, { 'Cache-Control': 'no-store' });
     }
     if (method === 'POST') {
       if (actor.role !== 'admin') {
         throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can toggle Emergency Read-Only Freeze');
       }
       const body = await readJson(request, 10000).catch(() => ({}));
-      const enabled = Boolean(body.enabled);
-      const reason = String(body.reason || '').trim();
+      if (typeof body.enabled !== 'boolean') {
+        throw new HttpError(400, 'INVALID_ENABLED_FLAG', '"enabled" must be a boolean (true to freeze, false to lift)');
+      }
+      const enabled = body.enabled;
+      const expected = enabled ? 'FREEZE' : 'UNFREEZE';
+      const confirmVal = String((body.confirm !== undefined ? body.confirm : body.confirm_phrase) || '').trim();
+      if (confirmVal !== expected) {
+        throw new HttpError(400, 'CONFIRMATION_REQUIRED', `Type ${expected} in the confirmation field to ${enabled ? 'activate' : 'lift'} the read-only freeze`);
+      }
       const freeze = await setReadOnlyFreezeState(env, {
         enabled,
-        reason,
+        reason: body.reason,
+        banner: body.banner,
         actorEmail: actor.email || actor.userId
       });
       await audit(
         env,
         request,
         actor,
-        enabled ? 'ops.freeze.enable' : 'ops.freeze.disable',
+        'ops.freeze.toggle',
         'site_settings',
         FREEZE_SETTING_KEY,
-        { enabled: freeze.enabled, reason: freeze.reason }
+        { actor: actor.email || actor.userId, enabled: freeze.enabled, reason: freeze.reason, banner: freeze.banner }
       );
-      return json({ ok: true, freeze }, 200, { 'Cache-Control': 'no-store' });
+      const history = await listFreezeAuditHistory(env, 10);
+      return json({ ok: true, freeze, history }, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
+  // Module #9: GET /api/admin/ops/sentinel, PUT /api/admin/ops/sentinel/config, POST /api/admin/ops/sentinel/probe
+  if (subAction === 'sentinel') {
+    if (!subId && method === 'GET') {
+      return json(await getSentinelStatus(request, env), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (subId === 'config' && method === 'PUT') {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can edit the failover sentinel policy');
+      }
+      const body = await readJson(request, 10000).catch(() => ({}));
+      const config = await saveSentinelConfig(env, body || {}, actor.email || actor.userId);
+      await audit(env, request, actor, 'ops.sentinel.config.update', 'site_settings', SENTINEL_CONFIG_KEY, {
+        latency_warning_ms: config.latency_warning_ms,
+        monitored_subsystems: config.monitored_subsystems,
+        alerts_enabled: config.alerts_enabled,
+        alert_channel: config.alert_channel
+      });
+      return json({ ok: true, config }, 200, { 'Cache-Control': 'no-store' });
+    }
+    if (subId === 'probe' && method === 'POST') {
+      if (actor.role !== 'admin') {
+        throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can run persisted sentinel probes');
+      }
+      const probe = await runSentinelProbe(request, env, { persist: true, actorEmail: actor.email || actor.userId });
+      await audit(env, request, actor, 'ops.sentinel.probe', 'site_settings', LAST_SENTINEL_PROBE_KEY, {
+        posture: probe.posture,
+        d1_latency_ms: probe.d1_latency_ms,
+        r2_latency_ms: probe.r2_latency_ms,
+        threshold_ms: probe.threshold_ms,
+        edge_colo: probe.edge && probe.edge.colo
+      });
+      return json(probe, 200, { 'Cache-Control': 'no-store' });
     }
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }

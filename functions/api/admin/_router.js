@@ -154,7 +154,7 @@ export async function handleAdminApi(request, env) {
       case 'ops':
         if (id === 'snapshots') return await handleOpsSnapshots(request, env, actor, sub, extra);
         if (id === 'r2-vault') return await handleOpsR2Vault(request, env, actor, sub);
-        if (id === 'freeze' || id === 'cache' || id === 'cache-warmer' || id === 'health') return await handleOpsSentinel(request, env, actor, id, sub);
+        if (id === 'freeze' || id === 'cache' || id === 'cache-warmer' || id === 'health' || id === 'sentinel') return await handleOpsSentinel(request, env, actor, id, sub);
         if (id === 'schema' || id === 'ddl-journal' || id === 'vacuum' || id === 'forensics' || id === 'retention') return await handleOpsHygiene(request, env, actor, id, sub);
         if (id === 'replica' || id === 'replica-switchover' || id === 'airgap-bundle' || id === 'runbooks') return await handleOpsContinuity(request, env, actor, id, sub, extra);
         break;

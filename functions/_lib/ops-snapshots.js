@@ -527,6 +527,93 @@ export async function verifyPlatformSnapshot(env, id) {
   };
 }
 
+export const INTEGRITY_AUDIT_KEY = 'ops_last_integrity_audit';
+
+function integrityStatusFor(result) {
+  if (!result) return 'MISSING_R2';
+  if (result.reason === 'MISSING_R2_OBJECT') return 'MISSING_R2';
+  return result.valid ? 'VERIFIED' : 'MISMATCH';
+}
+
+export async function readLastIntegrityAudit(env) {
+  try {
+    const row = await env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(INTEGRITY_AUDIT_KEY).first();
+    return row && row.value_json ? JSON.parse(row.value_json) : null;
+  } catch {
+    return null;
+  }
+}
+
+// Module #10: Vault-wide cryptographic verification (recomputes SHA-256 from live R2 bytes vs D1 ledger)
+export async function verifyAllPlatformSnapshots(env, { actorEmail = 'admin', limit = 200 } = {}) {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
+  if (!env.MEDIA) throw new HttpError(500, 'NO_STORAGE', 'R2 storage unavailable');
+  await ensureOpsSnapshotsTable(env);
+  const cap = Math.max(1, Math.min(500, Number(limit) || 200));
+  const { results } = await env.DB.prepare(
+    `SELECT id, label, r2_key, sha256, size_bytes, trigger_type, created_at
+     FROM ops_snapshots ORDER BY created_at DESC LIMIT ?`
+  ).bind(cap).all();
+  const rows = results || [];
+  const t0 = Date.now();
+  const items = [];
+  for (const row of rows) {
+    let res = null;
+    let errorMsg = null;
+    try {
+      res = await verifyPlatformSnapshot(env, row.id);
+    } catch (e) {
+      errorMsg = e && e.message ? e.message : 'Verification failed';
+    }
+    const status = errorMsg ? 'MISMATCH' : integrityStatusFor(res);
+    items.push({
+      id: row.id,
+      label: row.label,
+      r2_key: row.r2_key,
+      trigger_type: row.trigger_type,
+      created_at: row.created_at,
+      status,
+      expected_sha256: row.sha256,
+      computed_sha256: res ? res.actual_sha256 : null,
+      r2_meta_sha256: res ? res.r2_meta_sha256 : null,
+      size_bytes: res ? res.size_bytes : 0,
+      error: errorMsg
+    });
+  }
+  const verified = items.filter(i => i.status === 'VERIFIED').length;
+  const mismatched = items.filter(i => i.status === 'MISMATCH').length;
+  const missing = items.filter(i => i.status === 'MISSING_R2').length;
+  const report = {
+    ok: true,
+    audited_at: new Date().toISOString(),
+    audited_by: actorEmail || 'admin',
+    algorithm: 'SHA-256',
+    total_audited: items.length,
+    verified_count: verified,
+    mismatch_count: mismatched,
+    missing_count: missing,
+    vault_posture: items.length === 0 ? 'EMPTY' : (mismatched + missing === 0 ? 'INTACT' : 'COMPROMISED'),
+    latency_ms: Math.max(1, Date.now() - t0),
+    items
+  };
+  try {
+    await ensureSiteSettingsTable(env);
+    // Persist a compact summary (per-item status without bulky fields) for the KPI strip
+    const summary = { ...report, items: items.map(i => ({ id: i.id, label: i.label, status: i.status, expected_sha256: i.expected_sha256, computed_sha256: i.computed_sha256 })) };
+    await env.DB.prepare(
+      `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(key) DO UPDATE SET
+         value_json = excluded.value_json,
+         updated_by = excluded.updated_by,
+         updated_at = excluded.updated_at`
+    ).bind(INTEGRITY_AUDIT_KEY, JSON.stringify(summary), report.audited_by, report.audited_at).run();
+  } catch (e) {
+    report.persist_warning = 'Integrity audit completed but summary could not be persisted: ' + (e && e.message ? e.message : 'unknown error');
+  }
+  return report;
+}
+
 export async function downloadPlatformSnapshot(env, id) {
   await ensureOpsSnapshotsTable(env);
   const row = await env.DB.prepare('SELECT * FROM ops_snapshots WHERE id = ?').bind(id).first();
@@ -1298,6 +1385,27 @@ export async function handleOpsSnapshots(request, env, actor, subId, action) {
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }
 
+  if (subId === 'verify-all') {
+    if (method === 'GET') {
+      const last = await readLastIntegrityAudit(env);
+      const listed = await listPlatformSnapshots(env);
+      return json({ ok: true, last_audit: last, snapshot_count: (listed.items || []).length }, 200, { 'Cache-Control': 'no-store' });
+    }
+    if (method === 'POST') {
+      if (actor.role !== 'admin') throw new HttpError(403, 'FORBIDDEN', 'Only administrators can run vault-wide integrity audits');
+      const report = await verifyAllPlatformSnapshots(env, { actorEmail: actor.email || actor.userId });
+      await audit(env, request, actor, 'ops.integrity.audit', 'ops_snapshot', 'vault', {
+        total_audited: report.total_audited,
+        verified_count: report.verified_count,
+        mismatch_count: report.mismatch_count,
+        missing_count: report.missing_count,
+        vault_posture: report.vault_posture
+      });
+      return json(report, 200, { 'Cache-Control': 'no-store' });
+    }
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+
   if (!action && method === 'PATCH') {
     if (actor.role !== 'admin') throw new HttpError(403, 'FORBIDDEN', 'Only administrators can rename platform snapshots');
     const body = await readJson(request, 10000).catch(() => ({}));
@@ -1324,14 +1432,16 @@ export async function handleOpsSnapshots(request, env, actor, subId, action) {
     return await downloadPlatformSnapshot(env, subId);
   }
 
-  if (action === 'verify' && method === 'POST') {
+  if (action === 'verify' && (method === 'POST' || method === 'GET')) {
     const result = await verifyPlatformSnapshot(env, subId);
+    result.status = integrityStatusFor(result);
     await audit(env, request, actor, 'ops.snapshot.verify', 'ops_snapshot', subId, {
       valid: result.valid,
+      status: result.status,
       expected_sha256: result.expected_sha256,
       actual_sha256: result.actual_sha256
     });
-    return json(result);
+    return json(result, 200, { 'Cache-Control': 'no-store' });
   }
 
   if (action === 'drill' && method === 'POST') {

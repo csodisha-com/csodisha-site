@@ -378,10 +378,32 @@ async function tableExists(db, tableName) {
   return Boolean(row && row.name);
 }
 
-export async function runDeadLetterVacuum(env, { dryRun = false, trimRevisions = true, revisionKeepLimit = 25 } = {}) {
+export const VACUUM_LAST_RUN_KEY = 'ops_last_vacuum';
+
+export function normalizeRetentionDays(raw) {
+  if (raw === undefined || raw === null || raw === '') return 90;
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 7 || n > 365) {
+    throw new HttpError(400, 'INVALID_RETENTION_DAYS', 'retention_days must be an integer between 7 and 365');
+  }
+  return n;
+}
+
+export async function readLastVacuumRun(env) {
+  try {
+    const row = await env.DB.prepare(`SELECT value_json FROM site_settings WHERE key = ?`).bind(VACUUM_LAST_RUN_KEY).first();
+    return row && row.value_json ? JSON.parse(row.value_json) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function runDeadLetterVacuum(env, { dryRun = false, trimRevisions = true, revisionKeepLimit = 25, retentionDays = 90, actorEmail = 'admin' } = {}) {
   if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
 
   const isDryRun = Boolean(dryRun);
+  const retDays = normalizeRetentionDays(retentionDays);
+  const retentionModifier = `-${retDays} days`;
   const doTrimRevs = Boolean(trimRevisions);
   const keepLimit = Math.max(1, Math.min(200, Number(revisionKeepLimit) || 25));
   const nowSec = Math.floor(Date.now() / 1000);
@@ -393,8 +415,11 @@ export async function runDeadLetterVacuum(env, { dryRun = false, trimRevisions =
     admin_otps: 0,
     sessions: 0,
     admin_rate_limits: 0,
-    site_page_revisions: 0
+    site_page_revisions: 0,
+    orphaned_revisions: 0,
+    audit_log: 0
   };
+  const tablesPresent = {};
 
   // 1. Expired / stale admin_otps (>24h old or expired)
   if (await tableExists(env.DB, 'admin_otps')) {
@@ -466,21 +491,85 @@ export async function runDeadLetterVacuum(env, { dryRun = false, trimRevisions =
     }
   }
 
+  // 5. Orphaned site_page_revisions: route no longer exists in site_pages AND older than retention window
+  const hasRevisions = await tableExists(env.DB, 'site_page_revisions');
+  const hasPages = await tableExists(env.DB, 'site_pages');
+  tablesPresent.site_page_revisions = hasRevisions;
+  if (hasRevisions && hasPages) {
+    const whereOrphan = `route NOT IN (SELECT route FROM site_pages WHERE route IS NOT NULL)
+      AND created_at < datetime('now', ?)`;
+    if (isDryRun) {
+      // Exclude rows already counted in the keep-limit trim so the preview never double-counts
+      const excl = doTrimRevs
+        ? ` AND id IN (SELECT r2.id FROM site_page_revisions r2 WHERE r2.id IN (
+              SELECT r3.id FROM site_page_revisions r3 WHERE r3.route = r2.route ORDER BY r3.id DESC LIMIT ?))`
+        : '';
+      const binds = doTrimRevs ? [retentionModifier, keepLimit] : [retentionModifier];
+      const r = await env.DB.prepare(`SELECT COUNT(*) AS n FROM site_page_revisions WHERE ${whereOrphan}${excl}`).bind(...binds).first();
+      breakdown.orphaned_revisions = Number(r?.n || 0);
+    } else {
+      const r = await env.DB.prepare(`DELETE FROM site_page_revisions WHERE ${whereOrphan}`).bind(retentionModifier).run();
+      breakdown.orphaned_revisions = Number(r?.meta?.changes || 0);
+    }
+  }
+
+  // 6. audit_log entries older than retention_days (minimum 7 days preserves recent forensic trail)
+  const hasAudit = await tableExists(env.DB, 'audit_log');
+  tablesPresent.audit_log = hasAudit;
+  if (hasAudit) {
+    const whereAudit = `created_at < datetime('now', ?)`;
+    if (isDryRun) {
+      const r = await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE ${whereAudit}`).bind(retentionModifier).first();
+      breakdown.audit_log = Number(r?.n || 0);
+    } else {
+      const r = await env.DB.prepare(`DELETE FROM audit_log WHERE ${whereAudit}`).bind(retentionModifier).run();
+      breakdown.audit_log = Number(r?.meta?.changes || 0);
+    }
+  }
+
+  for (const t of ['admin_otps', 'sessions', 'admin_rate_limits']) {
+    tablesPresent[t] = await tableExists(env.DB, t);
+  }
+
   const totalReclaimed =
     breakdown.admin_otps +
     breakdown.sessions +
     breakdown.admin_rate_limits +
-    breakdown.site_page_revisions;
+    breakdown.site_page_revisions +
+    breakdown.orphaned_revisions +
+    breakdown.audit_log;
 
-  return {
+  // Rough reclaimable estimate (~256 bytes avg per row, D1/SQLite page overhead included)
+  const report = {
     ok: true,
     dry_run: isDryRun,
+    retention_days: retDays,
     trim_revisions: doTrimRevs,
     revision_keep_limit: keepLimit,
     total_reclaimed: totalReclaimed,
+    estimated_reclaimable_bytes: totalReclaimed * 256,
     tables: breakdown,
-    executed_at: nowIso
+    tables_present: tablesPresent,
+    executed_at: nowIso,
+    executed_by: actorEmail || 'admin'
   };
+
+  if (!isDryRun) {
+    try {
+      await ensureSiteSettingsTable(env.DB);
+      await env.DB.prepare(
+        `INSERT INTO site_settings (key, value_json, updated_by, updated_at)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT(key) DO UPDATE SET
+           value_json = excluded.value_json,
+           updated_by = excluded.updated_by,
+           updated_at = excluded.updated_at`
+      ).bind(VACUUM_LAST_RUN_KEY, JSON.stringify(report), report.executed_by, nowIso).run();
+    } catch (e) {
+      report.persist_warning = 'Vacuum executed but last-run telemetry could not be persisted: ' + (e && e.message ? e.message : 'unknown error');
+    }
+  }
+  return report;
 }
 
 // ============================================================================
@@ -860,27 +949,48 @@ export async function handleOpsHygiene(request, env, actor, subAction, subId) {
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }
 
-  // Module #11: POST /api/admin/ops/vacuum
+  // Module #11: GET (dry-run preview + last run) / POST /api/admin/ops/vacuum
   if (subAction === 'vacuum') {
+    if (method === 'GET') {
+      const preview = await runDeadLetterVacuum(env, {
+        dryRun: true,
+        trimRevisions: url.searchParams.get('trim_revisions') !== '0',
+        revisionKeepLimit: url.searchParams.get('revision_keep_limit') || 25,
+        retentionDays: url.searchParams.get('retention_days') || 90
+      });
+      const last_vacuum = await readLastVacuumRun(env);
+      return json({ ...preview, last_vacuum }, 200, { 'Cache-Control': 'no-store' });
+    }
     if (method !== 'POST') throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
     if (actor.role !== 'admin') {
       throw new HttpError(403, 'FORBIDDEN', 'Only Super Administrators can run Dead-Letter Vacuum');
     }
     const body = await readJson(request, 10000).catch(() => ({}));
-    const dryRun = Boolean(body.dry_run);
+    // Safe default: anything other than an explicit dry_run:false is a non-destructive preview
+    const dryRun = body.dry_run !== false;
+    if (!dryRun) {
+      const confirmVal = String((body.confirm !== undefined ? body.confirm : body.confirm_phrase) || '').trim();
+      if (confirmVal !== 'VACUUM') {
+        throw new HttpError(400, 'CONFIRMATION_REQUIRED', 'Type VACUUM in the confirmation field to permanently purge dead-letter rows');
+      }
+    }
     const trimRevisions = body.trim_revisions !== undefined ? Boolean(body.trim_revisions) : true;
     const report = await runDeadLetterVacuum(env, {
       dryRun,
       trimRevisions,
-      revisionKeepLimit: body.revision_keep_limit || 25
+      revisionKeepLimit: body.revision_keep_limit || 25,
+      retentionDays: body.retention_days,
+      actorEmail: actor.email || actor.userId
     });
     if (!dryRun) {
-      await audit(env, request, actor, 'ops.vacuum.run', 'database', 'vacuum', {
+      await audit(env, request, actor, 'ops.vacuum.execute', 'database', 'vacuum', {
         total_reclaimed: report.total_reclaimed,
+        retention_days: report.retention_days,
         tables: report.tables
       });
     }
-    return json(report, 200, { 'Cache-Control': 'no-store' });
+    const last_vacuum = await readLastVacuumRun(env);
+    return json({ ...report, last_vacuum }, 200, { 'Cache-Control': 'no-store' });
   }
 
   // Module #13: GET /api/admin/ops/forensics
