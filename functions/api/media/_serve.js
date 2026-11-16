@@ -1,8 +1,17 @@
 // GET /api/media/<key> — public, immutable-cached R2 delivery.
 import { json } from '../../_lib/http.js';
 
-const KEY_RE = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf)|edu-resources\/(?:digital_library|study_material|notes_pdf|book_reference)\/\d{4}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf))$/;
-const SAFE_TYPES = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp', pdf: 'application/pdf' };
+const KEY_RE = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf)|edu-resources\/(?:digital_library|study_material|notes_pdf|book_reference)\/\d{4}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf)|vault\/(?:pdf|image|video|audio|document|archive)\/\d{4}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf|svg|mp3|mp4|zip))$/;
+const SAFE_TYPES = {
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  pdf: 'application/pdf',
+  svg: 'image/svg+xml',
+  mp3: 'audio/mpeg',
+  mp4: 'video/mp4',
+  zip: 'application/zip'
+};
 
 export async function handleMedia(request, env, ctx) {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
