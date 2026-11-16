@@ -11926,6 +11926,12 @@
       return window.CSOEduBatch6.render(moduleId, root, actions);
     }
 
+    // Folder 06: Categories & Navigation Batch 1 (01-04)
+    if ((moduleId === 'module-06-001' || moduleId === 'module-06-002' || moduleId === 'module-06-003' || moduleId === 'module-06-004') &&
+        window.CSOCatNavBatch1 && typeof window.CSOCatNavBatch1.render === 'function') {
+      return window.CSOCatNavBatch1.render(moduleId, root, actions);
+    }
+
     // Folder 05: 4-Tier Exam & Cohort Catalog Manager
     if (moduleId === 'module-05-007' || moduleId === 'module-05-008') {
       renderExamTaxonomyStudio(root, actions);

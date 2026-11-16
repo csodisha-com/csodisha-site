@@ -19,6 +19,7 @@ import { handleEduBatch3Admin, getBatch3Overview } from '../../_lib/edu-resource
 import { handleEduBatch4Admin, getBatch4Overview } from '../../_lib/edu-resources-batch4.js';
 import { handleEduBatch5Admin, getBatch5Overview } from '../../_lib/edu-resources-batch5.js';
 import { handleEduBatch6Admin, getBatch6Overview, getFull22ModuleOverview } from '../../_lib/edu-resources-batch6.js';
+import { handleCategoriesNavBatch1Admin } from '../../_lib/categories-nav-batch1.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
 import { handleCommunityDirectoryStudio } from '../../_lib/community-directory-studio.js';
@@ -184,6 +185,11 @@ export async function handleAdminApi(request, env) {
         const b2Res = await handleEduBatch2Admin(request, env, actor, id, sub);
         if (b2Res) return b2Res;
         return await handleEduBatch1Admin(request, env, actor, id, sub, extra);
+      }
+      case 'nav': {
+        const navRes = await handleCategoriesNavBatch1Admin(request, env, actor, id, sub);
+        if (navRes) return navRes;
+        break;
       }
       case 'study-library-directory':
         if (!sub) return await handleStudyLibraryDirectoryAdmin(request, env, actor, id);
