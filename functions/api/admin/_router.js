@@ -21,6 +21,7 @@ import { handleEduBatch5Admin, getBatch5Overview } from '../../_lib/edu-resource
 import { handleEduBatch6Admin, getBatch6Overview, getFull22ModuleOverview } from '../../_lib/edu-resources-batch6.js';
 import { handleCategoriesNavBatch1Admin, getCategoriesNavOverview } from '../../_lib/categories-nav-batch1.js';
 import { handleCategoriesNavBatch2Admin, getCategoriesNavBatch2Overview } from '../../_lib/categories-nav-batch2.js';
+import { handleCategoriesNavBatch3Admin, getFull11ModuleNavOverview } from '../../_lib/categories-nav-batch3.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
 import { handleCommunityDirectoryStudio } from '../../_lib/community-directory-studio.js';
@@ -191,8 +192,11 @@ export async function handleAdminApi(request, env) {
         if (id === 'overview' && method === 'GET') {
           const b1 = await getCategoriesNavOverview(env);
           const b2 = await getCategoriesNavBatch2Overview(env);
-          return json({ ok: true, ...b1, batch2: b2 });
+          const suite11 = await getFull11ModuleNavOverview(env);
+          return json({ ok: true, ...b1, batch2: b2, suite_11: suite11 });
         }
+        const nav3Res = await handleCategoriesNavBatch3Admin(request, env, actor, id, sub);
+        if (nav3Res) return nav3Res;
         const nav2Res = await handleCategoriesNavBatch2Admin(request, env, actor, id, sub);
         if (nav2Res) return nav2Res;
         const navRes = await handleCategoriesNavBatch1Admin(request, env, actor, id, sub);
