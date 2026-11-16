@@ -16,6 +16,7 @@ import { handleStudyLibraryStudio } from '../../_lib/study-library-studio.js';
 import { handleEduBatch1Admin } from '../../_lib/edu-resources-batch1.js';
 import { handleEduBatch2Admin, getBatch2Overview } from '../../_lib/edu-resources-batch2.js';
 import { handleEduBatch3Admin, getBatch3Overview } from '../../_lib/edu-resources-batch3.js';
+import { handleEduBatch4Admin, getBatch4Overview } from '../../_lib/edu-resources-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
 import { handleCommunityDirectoryStudio } from '../../_lib/community-directory-studio.js';
@@ -164,8 +165,11 @@ export async function handleAdminApi(request, env) {
           const b1 = await (await handleEduBatch1Admin(request, env, actor, id, sub, extra)).json();
           const b2 = await getBatch2Overview(env);
           const b3 = await getBatch3Overview(env);
-          return json({ ...b1, batch2: b2, batch3: b3 });
+          const b4 = await getBatch4Overview(env);
+          return json({ ...b1, batch2: b2, batch3: b3, batch4: b4 });
         }
+        const b4Res = await handleEduBatch4Admin(request, env, actor, id, sub);
+        if (b4Res) return b4Res;
         const b3Res = await handleEduBatch3Admin(request, env, actor, id, sub);
         if (b3Res) return b3Res;
         const b2Res = await handleEduBatch2Admin(request, env, actor, id, sub);
