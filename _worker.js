@@ -29,6 +29,7 @@ import { handlePublicStudyLibraryRoute } from './functions/_lib/study-library-ss
 import { handlePublicStudyItemsApi, handlePublicStudySuggestApi, handleStudyLibrarySitemapXml } from './functions/_lib/study-library-studio.js';
 import { handlePublicEduResourcesApi } from './functions/_lib/edu-resources-batch1.js';
 import { handlePublicEduTaxonomyApi, handlePublicEduExaminationsApi } from './functions/_lib/edu-resources-batch2.js';
+import { handlePublicEduAdmitResultsApi, handlePublicEduSyllabiApi, handlePublicEduPyqsApi } from './functions/_lib/edu-resources-batch3.js';
 import { handlePublicJobsRoute } from './functions/_lib/jobs-directory-ssr.js';
 import { handlePublicJobsOverviewApi, handlePublicJobsItemsApi, handlePublicJobsSuggestApi, handleJobsDirectorySitemapXml } from './functions/_lib/jobs-directory-studio.js';
 import { handlePublicSchemesRoute } from './functions/_lib/schemes-directory-ssr.js';
@@ -299,7 +300,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
   const basePaths = [
     '/sitemap.xml', '/sitemap-study-library.xml', '/sitemap-jobs.xml', '/sitemap-schemes.xml', '/sitemap-community.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
-    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/public/about-overview', '/api/content/platform-stats', '/api/content/changelog',
+    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/public/about-overview', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources',
     '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
@@ -404,6 +405,39 @@ export default {
         recordPublicCachePut(edgeCache, request, examRes, ctx);
       }
       return examRes;
+    }
+    if (pathname === '/api/edu/admit-results' && (request.method === 'GET' || request.method === 'HEAD')) {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const arRes = await handlePublicEduAdmitResultsApi(request, env);
+      if (isAnonGet && arRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, arRes, ctx);
+      }
+      return arRes;
+    }
+    if (pathname === '/api/edu/syllabi' && (request.method === 'GET' || request.method === 'HEAD')) {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const sylRes = await handlePublicEduSyllabiApi(request, env);
+      if (isAnonGet && sylRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, sylRes, ctx);
+      }
+      return sylRes;
+    }
+    if (pathname === '/api/edu/pyqs' && (request.method === 'GET' || request.method === 'HEAD')) {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const pyqRes = await handlePublicEduPyqsApi(request, env);
+      if (isAnonGet && pyqRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, pyqRes, ctx);
+      }
+      return pyqRes;
     }
     if (pathname === '/api/public/study-library/suggest' && request.method === 'POST') {
       return handlePublicStudySuggestApi(request, env);

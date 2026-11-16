@@ -11902,6 +11902,12 @@
       return window.CSOEduBatch2.render(moduleId, root, actions);
     }
 
+    // Folder 05: Educational Resources Batch 3 (09-12)
+    if ((moduleId === 'module-05-009' || moduleId === 'module-05-010' || moduleId === 'module-05-011' || moduleId === 'module-05-012') &&
+        window.CSOEduBatch3 && typeof window.CSOEduBatch3.render === 'function') {
+      return window.CSOEduBatch3.render(moduleId, root, actions);
+    }
+
     // Folder 05: 4-Tier Exam & Cohort Catalog Manager
     if (moduleId === 'module-05-007' || moduleId === 'module-05-008') {
       renderExamTaxonomyStudio(root, actions);
