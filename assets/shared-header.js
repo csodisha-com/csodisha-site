@@ -425,7 +425,7 @@
     fp.addEventListener('click', () => setZoom(0.05));
 
     zoomSpan.append(fm, fr, fp);
-    ctl.append(savedBtn, searchBtn, langWrap, bt, a11yWrap, zoomSpan);
+    ctl.append(searchBtn, langWrap, bt, a11yWrap, zoomSpan);
     syncMobileControlsVisibility();
   }
 
@@ -433,12 +433,7 @@
     const isMobileSearchHidden = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
       ? window.matchMedia('(max-width: 640px)').matches
       : window.innerWidth <= 640;
-    const savedBtn = document.getElementById('cso-ctl-saved');
     const searchBtn = document.getElementById('cso-ctl-global-search');
-    if (savedBtn) {
-      savedBtn.classList.remove('cso-hidden');
-      savedBtn.setAttribute('aria-hidden', 'false');
-    }
     if (searchBtn) {
       searchBtn.classList.toggle('cso-hidden', isMobileSearchHidden);
       searchBtn.setAttribute('aria-hidden', String(isMobileSearchHidden));
@@ -452,6 +447,15 @@
       if (raw) candidate = JSON.parse(raw);
     } catch (e) {}
     return candidate || (window.CSOAuthClient && typeof window.CSOAuthClient.getUser === 'function' ? window.CSOAuthClient.getUser() : null);
+  }
+
+  function formatAccountLabel(user) {
+    const raw = String((user && (user.name || user.fullName)) || '').trim();
+    if (!raw || /^common\s*sense/i.test(raw) || /^(account|user|admin|candidate)$/i.test(raw)) {
+      return 'Account';
+    }
+    const first = raw.split(/\s+/)[0];
+    return first && first.length <= 18 ? first : 'Account';
   }
 
   function renderAuth() {
@@ -516,9 +520,7 @@
 
       const mIcon = el('span', 'auth-icon', '👤');
       mIcon.setAttribute('aria-hidden', 'true');
-      const displayName = activeUser.name || activeUser.fullName || activeUser.email || 'Account';
-      const firstName = String(displayName).split(' ')[0];
-      const mLabel = el('span', 'auth-label', firstName);
+      const mLabel = el('span', 'auth-label', formatAccountLabel(activeUser));
       mLabel.id = 'cso-auth-cand-label';
       const mArrow = el('span', 'auth-arrow', '▾');
       mArrow.setAttribute('aria-hidden', 'true');
@@ -530,6 +532,8 @@
 
       const mDash = el('a', 'cso-auth-item cso-auth-item--dash', isAdmin ? '🛡️ Admin Studio' : '👤 My Dashboard');
       mDash.href = dashHref;
+      const mProfile = el('a', 'cso-auth-item', '★ Profile / Saved');
+      mProfile.href = '/student-dashboard/#saved';
       const mLogout = el('a', 'cso-auth-item cso-auth-item--logout', 'Logout');
       mLogout.href = '#';
       mLogout.id = 'cso-header-mob-logout';
@@ -537,7 +541,7 @@
         e.preventDefault();
         doLogout();
       });
-      menu.append(mDash, mLogout);
+      menu.append(mDash, mProfile, mLogout);
       mobWrap.append(trigger, menu);
 
       authEl.append(deskRow, mobWrap);
@@ -642,6 +646,18 @@
     ham.setAttribute('aria-hidden', 'true');
     mobToggle.append(ham, ' Menu');
 
+    const navSavedBtn = el('button', 'pill cso-ctl-saved cso-nav-saved-pill acc-btn');
+    navSavedBtn.id = 'cso-ctl-saved';
+    navSavedBtn.type = 'button';
+    navSavedBtn.setAttribute('aria-label', 'Open saved bookmarks');
+    const navSavedStar = el('span', '', '★');
+    navSavedStar.setAttribute('aria-hidden', 'true');
+    const navSavedTxt = el('span', '', 'Saved');
+    const navSavedCount = el('span', 'cso-saved-badge', String(getSavedBookmarksList().length));
+    navSavedCount.id = 'cso-saved-count';
+    navSavedBtn.append(navSavedStar, ' ', navSavedTxt, ' ', navSavedCount);
+    navSavedBtn.addEventListener('click', openSavedDrawer);
+
     const accCluster = el('div', 'cso-mobile-acc-cluster');
     const mobA11yWrap = el('span', 'cso-popup-anchor');
     const mobA11y = el('button', 'pill cso-ctl-a11y-mobile acc-btn', '♿ Options');
@@ -666,7 +682,7 @@
     mobZoom.append(mFm, mFr, mFp);
 
     accCluster.append(mobA11yWrap, mobZoom);
-    bar.append(mobToggle, accCluster);
+    bar.append(mobToggle, navSavedBtn, accCluster);
 
     const navItems = el('div', 'cso-nav-items');
     navItems.id = 'cso-nav-items';

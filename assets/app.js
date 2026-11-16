@@ -372,6 +372,15 @@ function setActive(h){
 
 let csoAuthUser = null;
 
+function formatAccountLabel(user) {
+  const raw = String((user && (user.name || user.fullName)) || '').trim();
+  if (!raw || /^common\s*sense/i.test(raw) || /^(account|user|admin|candidate)$/i.test(raw)) {
+    return 'Account';
+  }
+  const first = raw.split(/\s+/)[0];
+  return first && first.length <= 18 ? first : 'Account';
+}
+
 function authUI() {
   const root = $('#auth');
   if (!root) return;
@@ -459,11 +468,9 @@ function authUI() {
     mIcon.className = 'auth-icon';
     mIcon.setAttribute('aria-hidden', 'true');
     mIcon.textContent = '👤';
-    const displayName = csoAuthUser.name || csoAuthUser.fullName || csoAuthUser.email || 'Account';
-    const firstName = String(displayName).split(' ')[0];
     const mLabel = document.createElement('span');
     mLabel.className = 'auth-label';
-    mLabel.textContent = firstName;
+    mLabel.textContent = formatAccountLabel(csoAuthUser);
     const mArrow = document.createElement('span');
     mArrow.className = 'auth-arrow';
     mArrow.setAttribute('aria-hidden', 'true');
@@ -476,7 +483,7 @@ function authUI() {
     menu.hidden = true;
 
     const mDash = document.createElement('a');
-    mDash.className = 'cso-auth-item';
+    mDash.className = 'cso-auth-item cso-auth-item--dash';
     mDash.href = targetDashUrl;
     mDash.textContent = isAdminUser ? '🛡️ Admin Studio' : '👤 My Dashboard';
     mDash.addEventListener('click', (e) => {
@@ -485,8 +492,18 @@ function authUI() {
       window.location.assign(targetDashUrl);
     });
 
+    const mProfile = document.createElement('a');
+    mProfile.className = 'cso-auth-item';
+    mProfile.href = '/student-dashboard/#saved';
+    mProfile.textContent = '★ Profile / Saved';
+    mProfile.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeAuthDropdown();
+      window.location.assign('/student-dashboard/#saved');
+    });
+
     const mLogout = document.createElement('a');
-    mLogout.className = 'cso-auth-item';
+    mLogout.className = 'cso-auth-item cso-auth-item--logout';
     mLogout.href = '#';
     mLogout.textContent = 'Logout';
     mLogout.addEventListener('click', (e) => {
@@ -495,7 +512,7 @@ function authUI() {
       logoutButton.click();
     });
 
-    menu.append(mDash, mLogout);
+    menu.append(mDash, mProfile, mLogout);
     mobWrap.append(trigger, menu);
     root.append(deskRow, mobWrap);
     return;

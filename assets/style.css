@@ -4269,9 +4269,9 @@ mark.cso-search-highlight {
     min-height: 38px;
     padding: 6px 12px;
     border-radius: 8px;
-    border: 1px solid var(--cso-border, #e3e9f1);
-    background: var(--cso-surface, #ffffff);
-    color: var(--cso-text, #14233b);
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #102418;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -4282,8 +4282,8 @@ mark.cso-search-highlight {
 
   .cso-auth-trigger:hover,
   .cso-auth-trigger:focus-visible {
-    background: var(--cso-bg, #f4f7fb);
-    border-color: var(--cso-brand, #005a9c);
+    background: #f3f4f6;
+    border-color: #0f4c3a;
     outline: none;
   }
 
@@ -4307,13 +4307,14 @@ mark.cso-search-highlight {
     position: absolute;
     top: calc(100% + 6px);
     right: 0;
-    min-width: 160px;
-    background: var(--cso-card-bg, #ffffff);
-    border: 1px solid var(--cso-border, #e3e9f1);
+    min-width: 178px;
+    background: #ffffff !important;
+    color: #102418 !important;
+    border: 1px solid #d1d5db !important;
     border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 28px rgba(16, 36, 24, 0.18) !important;
     padding: 6px;
-    z-index: 1000;
+    z-index: 1200;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -4327,11 +4328,12 @@ mark.cso-search-highlight {
   .cso-auth-dropdown-menu .cso-auth-item {
     display: flex;
     align-items: center;
+    gap: 8px;
     min-height: 44px;
     height: 44px;
     padding: 8px 14px;
     border-radius: 6px;
-    color: var(--cso-text, #14233b);
+    color: #102418 !important;
     text-decoration: none;
     font-size: 14px;
     font-weight: 600;
@@ -4341,8 +4343,8 @@ mark.cso-search-highlight {
 
   .cso-auth-dropdown-menu .cso-auth-item:hover,
   .cso-auth-dropdown-menu .cso-auth-item:focus {
-    background: var(--cso-bg, #f4f7fb);
-    color: var(--cso-brand, #005a9c);
+    background: #ecfdf5 !important;
+    color: #14532d !important;
     text-decoration: none;
   }
 }
@@ -6698,11 +6700,11 @@ html, body {
   cursor: pointer;
 }
 .cso-auth-item--dash {
-  color: #0d9488 !important;
+  color: #0f4c3a !important;
   font-weight: 700 !important;
 }
 .cso-auth-item--logout {
-  color: #f43f5e !important;
+  color: #b91c1c !important;
 }
 .cso-auth-user-label {
   font-size: 13px;
@@ -7396,6 +7398,65 @@ html.cso-a11y-lite .cso-footer-odisha-map {
     font-size: 0.92rem !important;
     font-weight: 700 !important;
     box-sizing: border-box !important;
+  }
+}
+
+/* Single Saved button inside the second green navigation bar */
+.cso-nav-saved-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-radius: 8px !important;
+  padding: 5px 11px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+.cso-nav-saved-pill:hover {
+  background: rgba(255, 255, 255, 0.24) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+}
+.cso-nav-saved-pill .cso-saved-badge {
+  background: #ffffff !important;
+  color: #0f4c3a !important;
+}
+
+@media (min-width: 769px) {
+  nav .w,
+  #navw {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+  #cso-nav-items {
+    order: 1;
+    flex: 1 1 auto;
+  }
+  .cso-nav-bar-container {
+    order: 2;
+    display: inline-flex !important;
+    align-items: center !important;
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .cso-nav-bar-container {
+    gap: 6px !important;
+  }
+  .cso-nav-saved-pill {
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
   }
 }
 
