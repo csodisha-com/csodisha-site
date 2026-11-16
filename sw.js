@@ -10,7 +10,7 @@
  *    messaging the dashboard clients (with a SW-side fallback drain)
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v75';
+const CACHE_NAME = 'cso-candidate-cache-v76';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 const PRECACHE_URLS = [
@@ -22,8 +22,12 @@ const PRECACHE_URLS = [
   '/student-dashboard/index.html',
   '/login.html',
   '/reset-password.html',
+  '/jobs/',
+  '/jobs/index.html',
   '/jobs-careers/',
   '/jobs-careers/index.html',
+  '/schemes/',
+  '/schemes/index.html',
   '/schemes-benefits/',
   '/schemes-benefits/index.html',
   '/study-library/',

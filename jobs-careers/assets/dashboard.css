@@ -2244,9 +2244,10 @@ body:has(#explorer:not([hidden])) .welcome {
 .side-link > span:not(.side-icon):not(.side-count):not(.side-arrow) {
   flex: 1 1 auto !important;
   min-width: 0 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  line-height: 1.3 !important;
 }
 
 .side-link .side-count {
@@ -3376,6 +3377,104 @@ body.is-live-modal-open {
 .live-btn--wa:hover {
   background: #DCFCE7;
   border-color: #4ADE80;
+}
+
+/* Unified Deep Forest Green Hero Banner (Parity with /jobs/, /schemes/, /community/) */
+.cso-jobs-hero {
+  background: linear-gradient(135deg, #14532d, #166534);
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 24px 26px;
+  margin-bottom: 20px;
+}
+.cso-jobs-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.cso-jobs-hero .breadcrumb.cso-jc-crumb {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  font-size: 0.82rem;
+  color: #bbf7d0;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-link {
+  color: #dcfce7;
+  padding: 0;
+}
+.cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-current {
+  color: #fde68a;
+}
+.cso-jobs-hero-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.cso-jobs-action-pill {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+.cso-jobs-action-pill:hover {
+  background: #ffffff;
+  color: #14532d;
+  text-decoration: none;
+}
+.cso-jobs-hero h1 {
+  margin: 0 0 8px;
+  font-size: 1.65rem;
+  line-height: 1.25;
+  color: #ffffff;
+}
+.cso-jobs-hero-sub {
+  margin: 0 0 14px;
+  color: #ecfdf5;
+  font-size: 0.96rem;
+  line-height: 1.5;
+}
+.cso-jobs-quick-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.cso-jobs-pill {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cso-jobs-pill:hover,
+.cso-jobs-pill.is-active {
+  background: #ffffff;
+  color: #14532d;
+}
+@media (max-width: 768px) {
+  .cso-jobs-hero {
+    padding: 1rem 1.1rem;
+    border-radius: 14px;
+  }
+  .cso-jobs-hero h1 {
+    font-size: 1.35rem;
+  }
 }
 
 .live-job-detail__summary {

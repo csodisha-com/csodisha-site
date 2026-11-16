@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#edf4ff">
   <title>Jobs &amp; Careers Explorer | Common Sense Odisha</title>
-  <link rel="stylesheet" href="../assets/style.css?v=20261114d">
+  <link rel="stylesheet" href="../assets/style.css?v=20261116c">
   <link rel="stylesheet" href="./assets/dashboard.css?v=20261114d">
   <script src="../assets/js/public-content.js?v=20261114d" defer></script>
   <script src="./assets/dashboard.js?v=20261114d" defer></script>
@@ -18,7 +18,7 @@
 <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
   <img src="/assets/images/cso-logo.svg" alt="CSO - Common Sense Odisha" class="cso-brand-logo" width="112" height="40">
 </a>
-<a class="adm cso-adm-stealth" href="/admin/" role="button" aria-label="Admin Portal - Authorised Access Only"><svg class="adm-ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg><span class="adm-txt">🛡 Admin Portal<br><small>Authorised Access Only</small></span></a>
+<a class="adm cso-adm-icon-only" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a>
 <span id="ctl" class="cso-contents"></span>
 <span class="sp"></span>
 <div class="acct"><span class="cso-acct-icon" aria-hidden="true">👤</span><span id="auth" class="cso-contents"></span></div>
@@ -128,22 +128,32 @@
       </header>
 
       <main class="main-content">
-        <nav aria-label="Breadcrumb">
-          <ol class="breadcrumb" id="breadcrumb">
-            <li class="breadcrumb-item"><a class="breadcrumb-link" href="../index.html">Home</a></li>
-            <li class="breadcrumb-item" aria-current="page"><strong class="breadcrumb-current" aria-current="page">Jobs &amp; Careers</strong></li>
-          </ol>
-        </nav>
-
-        <section class="welcome">
-          <div>
-            <h1 id="page-title">Jobs &amp; Careers Explorer</h1>
-            <p id="page-description" hidden></p>
+        <section class="cso-jobs-hero cso-jc-hero" aria-label="Jobs and Careers Hero">
+          <div class="cso-jobs-hero-top">
+            <nav aria-label="Breadcrumb">
+              <ol class="breadcrumb cso-jc-crumb" id="breadcrumb">
+                <li class="breadcrumb-item"><a class="breadcrumb-link" href="../index.html">CS ODISHA</a></li>
+                <li class="breadcrumb-item" aria-current="page"><strong class="breadcrumb-current" aria-current="page">JOBS &amp; CAREERS</strong></li>
+              </ol>
+            </nav>
+            <div class="cso-jobs-hero-actions">
+              <a class="cso-jobs-action-pill" href="/schemes/">Schemes &amp; Benefits</a>
+              <a class="cso-jobs-action-pill" href="/study-library/">Study Library</a>
+              <a class="cso-jobs-action-pill" href="/community/">Community</a>
+              <button id="jc-lang-toggle" type="button" class="cso-jobs-action-pill">EN / ଓଡ଼ିଆ</button>
+            </div>
           </div>
-          <div class="live-hub-shortcuts" aria-label="Related exam portals">
-            <a class="live-hub-pill" href="../current-affairs/">📰 Current Affairs</a>
-            <a class="live-hub-pill" href="../mock-tests/">📝 Mock Tests</a>
-            <a class="live-hub-pill" href="../resources/">📚 Syllabus &amp; PYQs</a>
+          <h1 id="page-title">Jobs &amp; Careers Explorer</h1>
+          <p id="page-description" hidden></p>
+          <p id="jc-hero-sub" class="cso-jobs-hero-sub">ଓଡ଼ିଶା ସରକାରୀ ନିଯୁକ୍ତି (OPSC, OSSC, OSSSC, OPRB, OSEPA), କେନ୍ଦ୍ରୀୟ ଓ PSU ନିଯୁକ୍ତି, ବ୍ୟାଙ୍କିଂ ଏବଂ କ୍ୟାରିୟର ମାର୍ଗଦର୍ଶିକା — Verified eligibility, pay matrix, selection stages, and official portals across all 8 domains.</p>
+          <div class="cso-jobs-quick-pills" id="jc-quick-pills" role="group" aria-label="Quick Jump Categories">
+            <button type="button" class="cso-jobs-pill is-active" data-q="">All Jobs</button>
+            <button type="button" class="cso-jobs-pill" data-q="OPSC">OPSC</button>
+            <button type="button" class="cso-jobs-pill" data-q="OSSC">OSSC / OSSSC</button>
+            <button type="button" class="cso-jobs-pill" data-q="Teacher">Teaching &amp; Education</button>
+            <button type="button" class="cso-jobs-pill" data-q="Police">Police &amp; Defence</button>
+            <button type="button" class="cso-jobs-pill" data-q="SSC">Central &amp; Banking</button>
+            <button type="button" class="cso-jobs-pill" data-q="PSU">Odisha PSUs</button>
           </div>
         </section>
 
@@ -397,7 +407,7 @@
   </div>
 </div></footer>
 <script src="../assets/cso-auth-client.js" defer></script>
-<script src="../assets/shared-header.js" defer></script>
+<script src="../assets/shared-header.js?v=20261116c" defer></script>
 <script src="../assets/js/cso-idb.js" defer></script>
 <script src="../assets/js/bookmark-manager.js" defer></script>
 </body>

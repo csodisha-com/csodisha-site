@@ -4227,7 +4227,7 @@ mark.cso-search-highlight {
 }
 
 /* ==========================================================================
-   Responsive Authentication Controls (Desktop vs Mobile/Tablet <= 850px)
+   Responsive Authentication Controls (Desktop vs Mobile/Tablet <= 1024px)
    ========================================================================== */
 .cso-desktop-auth-buttons {
   display: inline-flex;
@@ -4240,9 +4240,10 @@ mark.cso-search-highlight {
   position: relative;
 }
 
-@media (max-width: 850px) {
-  .cso-desktop-auth-buttons,
-  .top .acct .cso-desktop-auth-icon {
+@media (max-width: 1024px) {
+  .cso-desktop-auth-buttons:not(.cso-auth-logged-out),
+  .top .acct .cso-desktop-auth-icon,
+  .top .acct .cso-acct-icon {
     display: none !important;
   }
 
@@ -5736,7 +5737,8 @@ mark.cso-search-highlight {
   color: #cbd5e1 !important;
 }
 
-.top .acct .cso-desktop-auth-icon {
+.top .acct .cso-desktop-auth-icon,
+.top .acct .cso-acct-icon {
   display: none !important;
 }
 
@@ -7037,7 +7039,9 @@ body.cso-zoom-130 { zoom: 1.30; }
 /* =========================================================================
    Ecosystem Unification: Strict CSP Helpers, A11y Modes, Ctrl+K Search, Feedback Modal
    ========================================================================= */
-.cso-hidden { display: none !important; }
+.cso-hidden,
+.top .cso-hidden,
+#header-top .cso-hidden { display: none !important; }
 .cso-contents { display: contents; }
 .cso-desktop-auth-icon { font-size: 26px; }
 .cso-sr-only-svg { position: absolute; width: 0; height: 0; overflow: hidden; }
@@ -7195,8 +7199,36 @@ html.cso-a11y-lite .cso-footer-odisha-map {
 
 
 
+/* Discreet tiny Admin icon button (zero "Admin Portal" text) */
+.top .adm.cso-adm-icon-only {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 26px !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  border-radius: 6px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: rgba(203, 213, 225, 0.55) !important;
+  flex-shrink: 0 !important;
+}
+.top .adm.cso-adm-icon-only:hover,
+.top .adm.cso-adm-icon-only:focus-visible {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+.top .adm.cso-adm-icon-only .adm-ico {
+  display: block !important;
+  width: 15px !important;
+  height: 15px !important;
+}
+
 /* v26: stealth Admin Portal link — hidden for public visitors, revealed only for an active staff session flag */
-.top .adm.cso-adm-stealth:not(.is-admin-visible) { display: none; }
+.top .adm.cso-adm-stealth:not(.is-admin-visible) { display: none !important; }
 .top .adm .adm-ico { display: none; }
 @media (max-width: 768px) {
   .top .adm.cso-adm-stealth.is-admin-visible {
@@ -7215,4 +7247,209 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   }
   .top .adm.cso-adm-stealth.is-admin-visible .adm-txt { display: none; }
   .top .adm.cso-adm-stealth.is-admin-visible .adm-ico { display: block; }
+}
+
+/* Mobile Header Overflow Prevention & Auth Visibility (<= 768px) */
+@media (min-width: 769px) {
+  .cso-nav-mobile-auth {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .top,
+  .site-header__top,
+  #header-top {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: clip !important;
+    box-sizing: border-box !important;
+  }
+
+  .top .cso-brand-link {
+    flex-shrink: 0 !important;
+  }
+
+  #auth:has(.cso-auth-logged-out) .cso-mobile-auth-wrapper {
+    display: none !important;
+  }
+  .top .acct {
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+    min-width: 0 !important;
+  }
+
+  /* Hide standalone acct icon on <= 1024px (Saved 0 stays in top bar; Ctrl+K hides <= 640px) */
+  .top .acct .cso-acct-icon,
+  .top .acct .cso-desktop-auth-icon {
+    display: none !important;
+  }
+
+  .cso-desktop-auth-buttons.cso-auth-logged-out {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .top .acct .cso-auth-logged-out .login-btn,
+  .top .acct .cso-auth-logged-out .signup-btn {
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .top,
+  .site-header__top,
+  #header-top {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: clip !important;
+    gap: 6px !important;
+    padding: 6px 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  .top .cso-brand-link {
+    flex-shrink: 0 !important;
+  }
+
+  .top .cso-brand-logo {
+    height: 28px !important;
+    width: auto !important;
+  }
+
+  /* Hide standalone acct icon on <= 768px */
+  .top .acct .cso-acct-icon,
+  .top .acct .cso-desktop-auth-icon {
+    display: none !important;
+  }
+
+  .top .pill {
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+  }
+
+  .top .acct {
+    min-height: 34px !important;
+    height: 34px !important;
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .top .cso-auth-trigger {
+    height: 34px !important;
+    min-height: 34px !important;
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+    max-width: 140px !important;
+  }
+
+  .top .cso-auth-trigger .auth-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cso-desktop-auth-buttons.cso-auth-logged-out {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .top .acct .cso-auth-logged-out .login-btn,
+  .top .acct .cso-auth-logged-out .signup-btn {
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Prominent Login & Sign Up buttons inside the mobile Menu drawer */
+  .cso-nav-mobile-auth {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    padding: 12px 4px 4px !important;
+    margin-top: 8px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.16) !important;
+    box-sizing: border-box !important;
+  }
+
+  .cso-nav-mobile-auth__btn {
+    flex: 1 1 0 !important;
+    justify-content: center !important;
+    min-height: 44px !important;
+    font-size: 0.92rem !important;
+    font-weight: 700 !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .top .cso-ctl-search,
+  .top #cso-ctl-global-search {
+    display: none !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .top,
+  .site-header__top,
+  #header-top {
+    gap: 4px !important;
+    padding: 6px 8px !important;
+  }
+
+  .top .cso-brand-logo {
+    height: 22px !important;
+  }
+
+  .top .adm.cso-adm-icon-only {
+    width: 24px !important;
+    height: 24px !important;
+    min-height: 24px !important;
+  }
+
+  .top .pill {
+    padding: 3px 6px !important;
+    font-size: 11px !important;
+    min-height: 32px !important;
+    height: 32px !important;
+  }
+
+  .top .cso-saved-badge {
+    min-width: 16px !important;
+    height: 16px !important;
+    padding: 0 4px !important;
+    font-size: 10px !important;
+  }
+
+  .top .cso-auth-trigger {
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 3px 8px !important;
+    font-size: 11.5px !important;
+  }
+
+  .top .acct .cso-auth-logged-out .login-btn,
+  .top .acct .cso-auth-logged-out .signup-btn {
+    padding: 3px 7px !important;
+    font-size: 11px !important;
+    min-height: 32px !important;
+    height: 32px !important;
+  }
 }

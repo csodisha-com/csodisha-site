@@ -426,6 +426,32 @@
 
     zoomSpan.append(fm, fr, fp);
     ctl.append(savedBtn, searchBtn, langWrap, bt, a11yWrap, zoomSpan);
+    syncMobileControlsVisibility();
+  }
+
+  function syncMobileControlsVisibility() {
+    const isMobileSearchHidden = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(max-width: 640px)').matches
+      : window.innerWidth <= 640;
+    const savedBtn = document.getElementById('cso-ctl-saved');
+    const searchBtn = document.getElementById('cso-ctl-global-search');
+    if (savedBtn) {
+      savedBtn.classList.remove('cso-hidden');
+      savedBtn.setAttribute('aria-hidden', 'false');
+    }
+    if (searchBtn) {
+      searchBtn.classList.toggle('cso-hidden', isMobileSearchHidden);
+      searchBtn.setAttribute('aria-hidden', String(isMobileSearchHidden));
+    }
+  }
+
+  function getActiveUser() {
+    let candidate = null;
+    try {
+      const raw = localStorage.getItem('cso_candidate_session_v1');
+      if (raw) candidate = JSON.parse(raw);
+    } catch (e) {}
+    return candidate || (window.CSOAuthClient && typeof window.CSOAuthClient.getUser === 'function' ? window.CSOAuthClient.getUser() : null);
   }
 
   function renderAuth() {
@@ -433,13 +459,13 @@
     if (!authEl) return;
     authEl.replaceChildren();
 
-    let candidate = null;
-    try {
-      const raw = localStorage.getItem('cso_candidate_session_v1');
-      if (raw) candidate = JSON.parse(raw);
-    } catch (e) {}
+    const acctEl = authEl.closest('.acct');
+    if (acctEl) {
+      acctEl.querySelectorAll('.cso-desktop-auth-icon, .cso-acct-icon').forEach(ic => ic.classList.add('cso-hidden'));
+    }
 
-    const activeUser = candidate || (window.CSOAuthClient && typeof window.CSOAuthClient.getUser === 'function' ? window.CSOAuthClient.getUser() : null);
+    const activeUser = getActiveUser();
+    syncMobileNavAuth(activeUser);
 
     if (activeUser) {
       const isAdmin = activeUser.role === 'admin' || activeUser.role === 'superadmin';
@@ -518,7 +544,7 @@
       return;
     }
 
-    const desk = el('div', 'cso-desktop-auth-buttons');
+    const desk = el('div', 'cso-desktop-auth-buttons cso-auth-logged-out');
     const loginA = el('a', 'cso-auth-item-link cso-login-link login-btn', 'Login');
     loginA.setAttribute('href', '/login.html');
     const signupA = el('a', 'cso-signup-pill signup-btn', 'Sign Up');
@@ -617,10 +643,6 @@
     mobToggle.append(ham, ' Menu');
 
     const accCluster = el('div', 'cso-mobile-acc-cluster');
-    const mobSaved = el('button', 'pill cso-ctl-saved acc-btn', '★ Saved');
-    mobSaved.type = 'button';
-    mobSaved.addEventListener('click', openSavedDrawer);
-
     const mobA11yWrap = el('span', 'cso-popup-anchor');
     const mobA11y = el('button', 'pill cso-ctl-a11y-mobile acc-btn', '♿ Options');
     mobA11y.type = 'button';
@@ -643,7 +665,7 @@
     mFp.setAttribute('aria-label', 'Larger text');
     mobZoom.append(mFm, mFr, mFp);
 
-    accCluster.append(mobSaved, mobA11yWrap, mobZoom);
+    accCluster.append(mobA11yWrap, mobZoom);
     bar.append(mobToggle, accCluster);
 
     const navItems = el('div', 'cso-nav-items');
@@ -691,7 +713,34 @@
       navItems.appendChild(ni);
     });
 
+    if (!getActiveUser()) {
+      const mobAuth = el('div', 'cso-nav-mobile-auth');
+      mobAuth.id = 'cso-nav-mobile-auth';
+      const mobLogin = el('a', 'cso-nav-mobile-auth__btn login-btn', 'Login');
+      mobLogin.setAttribute('href', '/login.html');
+      const mobSignup = el('a', 'cso-nav-mobile-auth__btn signup-btn', 'Sign Up');
+      mobSignup.setAttribute('href', '/signup.html');
+      mobAuth.append(mobLogin, mobSignup);
+      navItems.appendChild(mobAuth);
+    }
+
     navw.append(bar, navItems);
+  }
+
+  function syncMobileNavAuth(activeUser) {
+    const navItems = document.getElementById('cso-nav-items');
+    if (!navItems) return;
+    const existing = document.getElementById('cso-nav-mobile-auth');
+    if (existing) existing.remove();
+    if (activeUser) return;
+    const mobAuth = el('div', 'cso-nav-mobile-auth');
+    mobAuth.id = 'cso-nav-mobile-auth';
+    const mobLogin = el('a', 'cso-nav-mobile-auth__btn login-btn', 'Login');
+    mobLogin.setAttribute('href', '/login.html');
+    const mobSignup = el('a', 'cso-nav-mobile-auth__btn signup-btn', 'Sign Up');
+    mobSignup.setAttribute('href', '/signup.html');
+    mobAuth.append(mobLogin, mobSignup);
+    navItems.appendChild(mobAuth);
   }
 
   document.addEventListener('click', e => {
@@ -818,6 +867,7 @@
   });
 
   window.addEventListener('resize', () => {
+    syncMobileControlsVisibility();
     if (window.innerWidth > 768) {
       closeDropdowns();
       const items = document.getElementById('cso-nav-items');
@@ -842,8 +892,29 @@
     if (adminLink) {
       adminLink.setAttribute('href', '/admin/');
       adminLink.setAttribute('role', 'button');
-      adminLink.setAttribute('aria-label', 'Admin Portal - Authorised Access Only');
+      adminLink.setAttribute('aria-label', 'Admin');
+      adminLink.setAttribute('title', 'Admin');
     }
+  }
+
+  async function syncAuthSession() {
+    if (!window.CSOAuth || typeof window.CSOAuth.getCurrentUser !== 'function') return;
+    try {
+      const res = await window.CSOAuth.getCurrentUser();
+      if (res && res.ok === true && res.authenticated === true && res.user && typeof res.user === 'object') {
+        try {
+          localStorage.setItem('cso_candidate_session_v1', JSON.stringify(res.user));
+        } catch (e) {}
+        renderAuth();
+      } else if (res && (res.status === 401 || res.authenticated === false) && res.status !== 0) {
+        let hadLocal = false;
+        try {
+          hadLocal = Boolean(localStorage.getItem('cso_candidate_session_v1'));
+          localStorage.removeItem('cso_candidate_session_v1');
+        } catch (e) {}
+        if (hadLocal) renderAuth();
+      }
+    } catch (e) {}
   }
 
   function init() {
@@ -854,6 +925,7 @@
     renderNav();
     ensureAdminLink();
     updateSavedCountBadge();
+    syncAuthSession();
   }
 
   if (document.readyState === 'loading') {

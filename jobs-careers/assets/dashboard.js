@@ -1150,6 +1150,37 @@
   const liveDetailSyllabusEl = $('live-job-syllabus-box');
   const liveDetailSummaryEl = $('live-job-detail-summary');
   const liveDetailBodyEl = $('live-job-detail-body');
+  const quickPillsWrap = $('jc-quick-pills');
+  const langToggleBtn = $('jc-lang-toggle');
+  const heroSubEl = $('jc-hero-sub');
+  if (quickPillsWrap) {
+    quickPillsWrap.addEventListener('click', (e) => {
+      const btn = e.target.closest('.cso-jobs-pill');
+      if (!btn) return;
+      quickPillsWrap.querySelectorAll('.cso-jobs-pill').forEach(p => p.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      const q = btn.getAttribute('data-q') || '';
+      const searchInput = $('live-jobs-search');
+      if (searchInput) {
+        searchInput.value = q;
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      const liveSection = $('live-jobs-section');
+      if (liveSection && typeof liveSection.scrollIntoView === 'function') {
+        liveSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }
+  if (langToggleBtn && heroSubEl) {
+    let heroLang = 'bi';
+    langToggleBtn.addEventListener('click', () => {
+      heroLang = heroLang === 'or' ? 'en' : 'or';
+      heroSubEl.textContent = heroLang === 'or'
+        ? 'ଓଡ଼ିଶା ସରକାରୀ ନିଯୁକ୍ତି (OPSC, OSSC, OSSSC, OPRB, OSEPA), କେନ୍ଦ୍ରୀୟ ଓ PSU ନିଯୁକ୍ତି, ବ୍ୟାଙ୍କିଂ ଏବଂ କ୍ୟାରିୟର ମାର୍ଗଦର୍ଶିକା — ସମସ୍ତ ୮ଟି ଡୋମେନରେ ଯାଞ୍ଚ ହୋଇଥିବା ଯୋଗ୍ୟତା, ବେତନ ମ୍ୟାଟ୍ରିକ୍ସ ଓ ଅଫିସିଆଲ୍ ପୋର୍ଟାଲ୍।'
+        : 'Odisha State & Central Government recruitments (OPSC, OSSC, OSSSC, OPRB, OSEPA), PSU jobs, banking, and career roadmaps — verified eligibility, pay matrix, selection stages, and official portals across all 8 domains.';
+    });
+  }
+
   const liveChipsWrap = $('live-jobs-chips');
   const liveGoalToggleBtn = $('live-jobs-goal-toggle');
   const liveAuthHintEl = $('live-jobs-auth-hint');

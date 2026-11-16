@@ -201,7 +201,30 @@ function nav(){
  ).join('')+'</div>'+
  '</div>'
  ).join('')+'</div>');
+ syncMobileNavAuth();
  setActive(location.hash.slice(1));
+}
+function syncMobileNavAuth(){
+ const navItems=document.getElementById('cso-nav-items');
+ if(!navItems)return;
+ const existing=document.getElementById('cso-nav-mobile-auth');
+ if(existing)existing.remove();
+ if(csoAuthUser)return;
+ const wrap=document.createElement('div');
+ wrap.className='cso-nav-mobile-auth';
+ wrap.id='cso-nav-mobile-auth';
+ const mobLi=document.createElement('a');
+ mobLi.href='/login.html';
+ mobLi.className='cso-nav-mobile-auth__btn login-btn';
+ mobLi.textContent='Login';
+ mobLi.addEventListener('click',e=>{e.preventDefault();login();});
+ const mobSu=document.createElement('a');
+ mobSu.href='/signup.html';
+ mobSu.className='cso-nav-mobile-auth__btn signup-btn';
+ mobSu.textContent='Sign Up';
+ mobSu.addEventListener('click',e=>{e.preventDefault();signup();});
+ wrap.append(mobLi,mobSu);
+ navItems.appendChild(wrap);
 }
 function csoCloseNavDropdowns(except){
  $$('#navw .ni').forEach(n=>{
@@ -355,6 +378,13 @@ function authUI() {
 
   root.replaceChildren();
 
+  const acctEl = root.closest('.acct');
+  if (acctEl) {
+    acctEl.querySelectorAll('.cso-desktop-auth-icon, .cso-acct-icon').forEach(ic => ic.classList.add('cso-hidden'));
+  }
+
+  syncMobileNavAuth();
+
   if (csoAuthUser) {
     const logoutButton = document.createElement('button');
     logoutButton.type = 'button';
@@ -397,6 +427,9 @@ function authUI() {
       window.location.assign(targetDashUrl);
     }, true);
 
+    const deskRow = document.createElement('div');
+    deskRow.className = 'cso-desktop-auth-buttons cso-auth-row';
+
     if (isAdminUser) {
       const candidateLink = document.createElement('a');
       candidateLink.className = 'btn cso-dashboard-button';
@@ -407,17 +440,71 @@ function authUI() {
         e.stopImmediatePropagation();
         window.location.assign('/student-dashboard/');
       }, true);
-      root.append(dashboardLink, candidateLink, logoutButton);
+      deskRow.append(dashboardLink, candidateLink, logoutButton);
     } else {
-      root.append(dashboardLink, logoutButton);
+      deskRow.append(dashboardLink, logoutButton);
     }
+
+    const mobWrap = document.createElement('div');
+    mobWrap.className = 'cso-mobile-auth-wrapper';
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'cso-auth-trigger';
+    trigger.id = 'cso-auth-trigger';
+    trigger.setAttribute('aria-haspopup', 'true');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.setAttribute('aria-label', 'Account options');
+
+    const mIcon = document.createElement('span');
+    mIcon.className = 'auth-icon';
+    mIcon.setAttribute('aria-hidden', 'true');
+    mIcon.textContent = '👤';
+    const displayName = csoAuthUser.name || csoAuthUser.fullName || csoAuthUser.email || 'Account';
+    const firstName = String(displayName).split(' ')[0];
+    const mLabel = document.createElement('span');
+    mLabel.className = 'auth-label';
+    mLabel.textContent = firstName;
+    const mArrow = document.createElement('span');
+    mArrow.className = 'auth-arrow';
+    mArrow.setAttribute('aria-hidden', 'true');
+    mArrow.textContent = '▾';
+    trigger.append(mIcon, mLabel, mArrow);
+
+    const menu = document.createElement('div');
+    menu.className = 'cso-auth-dropdown-menu';
+    menu.id = 'cso-auth-menu';
+    menu.hidden = true;
+
+    const mDash = document.createElement('a');
+    mDash.className = 'cso-auth-item';
+    mDash.href = targetDashUrl;
+    mDash.textContent = isAdminUser ? '🛡️ Admin Studio' : '👤 My Dashboard';
+    mDash.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeAuthDropdown();
+      window.location.assign(targetDashUrl);
+    });
+
+    const mLogout = document.createElement('a');
+    mLogout.className = 'cso-auth-item';
+    mLogout.href = '#';
+    mLogout.textContent = 'Logout';
+    mLogout.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeAuthDropdown();
+      logoutButton.click();
+    });
+
+    menu.append(mDash, mLogout);
+    mobWrap.append(trigger, menu);
+    root.append(deskRow, mobWrap);
     return;
   }
 
   setSafeHtml(root,
-    '<div class="cso-desktop-auth-buttons">' +
-      '<button class="btn cso-login-button" id="li" type="button">Login</button>' +
-      '<button class="btn p" id="su" type="button">Sign Up</button>' +
+    '<div class="cso-desktop-auth-buttons cso-auth-logged-out">' +
+      '<button class="btn cso-login-button login-btn" id="li" type="button">Login</button>' +
+      '<button class="btn p signup-btn" id="su" type="button">Sign Up</button>' +
     '</div>' +
     '<div class="cso-mobile-auth-wrapper">' +
       '<button type="button" class="cso-auth-trigger" id="cso-auth-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account options">' +
