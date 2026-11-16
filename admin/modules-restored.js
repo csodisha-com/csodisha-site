@@ -11920,6 +11920,12 @@
       return window.CSOEduBatch5.render(moduleId, root, actions);
     }
 
+    // Folder 05: Educational Resources Batch 6 (21-22)
+    if ((moduleId === 'module-05-021' || moduleId === 'module-05-022') &&
+        window.CSOEduBatch6 && typeof window.CSOEduBatch6.render === 'function') {
+      return window.CSOEduBatch6.render(moduleId, root, actions);
+    }
+
     // Folder 05: 4-Tier Exam & Cohort Catalog Manager
     if (moduleId === 'module-05-007' || moduleId === 'module-05-008') {
       renderExamTaxonomyStudio(root, actions);
