@@ -13,6 +13,7 @@ import { handleSecurityGovernance } from '../../_lib/security-governance.js';
 import { handleSecurityCompliance } from '../../_lib/security-compliance.js';
 import { handleContentPublishing } from '../../_lib/content-publishing.js';
 import { handleStudyLibraryStudio } from '../../_lib/study-library-studio.js';
+import { handleEduBatch1Admin } from '../../_lib/edu-resources-batch1.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
 import { handleCommunityDirectoryStudio } from '../../_lib/community-directory-studio.js';
@@ -153,6 +154,11 @@ export async function handleAdminApi(request, env) {
         return await handleCommunityDirectoryStudio(request, env, actor, id, sub, extra);
       case 'study-library':
         return await handleStudyLibraryStudio(request, env, actor, id, sub, extra);
+      case 'edu':
+        if (id === 'resources' && sub === 'upload' && method === 'POST') {
+          await rateLimit(env, `admin-upload:${actor.userId}`, 30, 600);
+        }
+        return await handleEduBatch1Admin(request, env, actor, id, sub, extra);
       case 'study-library-directory':
         if (!sub) return await handleStudyLibraryDirectoryAdmin(request, env, actor, id);
         break;

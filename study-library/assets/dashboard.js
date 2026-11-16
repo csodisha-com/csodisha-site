@@ -1014,9 +1014,10 @@
   async function hydrateData() {
     if (loadStatusEl) loadStatusEl.hidden = false;
 
-    const [resResp, pubItemsResp, taxResp, dirResp] = await Promise.allSettled([
+    const [resResp, pubItemsResp, eduResp, taxResp, dirResp] = await Promise.allSettled([
       fetch('/api/content/resources?limit=50'),
       fetch('/api/public/study-library/items?limit=50'),
+      fetch('/api/edu/resources?limit=50'),
       fetch('/api/content/exam-taxonomy'),
       fetch('/api/content/study-library-directory')
     ]);
@@ -1038,6 +1039,27 @@
           official_source_url: (Array.isArray(it.links) && it.links[0] && it.links[0].url) || ''
         };
         mergedMap.set(String(mapped.slug || mapped.id), mapped);
+      });
+    }
+    if (eduResp.status === 'fulfilled' && eduResp.value.ok) {
+      const eduData = await eduResp.value.json();
+      (Array.isArray(eduData.items) ? eduData.items : []).forEach(it => {
+        const key = String(it.slug || it.id);
+        if (!mergedMap.has(key)) {
+          mergedMap.set(key, {
+            id: it.id,
+            slug: it.slug,
+            title: it.title_en || it.title_or || 'Educational Resource',
+            title_or: it.title_or || '',
+            resource_type: it.resource_type || 'study_material',
+            exam: it.exam_tag || it.stage_or_class || 'Odisha',
+            exam_slug: it.subject_name || '',
+            description: it.summary_en || it.summary_or || '',
+            pdf_url: it.file_url || '',
+            verified_date: it.updated_at ? String(it.updated_at).slice(0, 10) : '',
+            official_source_url: (Array.isArray(it.external_links) && it.external_links[0] && it.external_links[0].url) || ''
+          });
+        }
       });
     }
     if (resResp.status === 'fulfilled' && resResp.value.ok) {

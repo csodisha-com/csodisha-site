@@ -27,6 +27,7 @@ import { handleMedia } from './functions/api/media/_serve.js';
 import { handleAdminPage } from './functions/_lib/admin-pages.js';
 import { handlePublicStudyLibraryRoute } from './functions/_lib/study-library-ssr.js';
 import { handlePublicStudyItemsApi, handlePublicStudySuggestApi, handleStudyLibrarySitemapXml } from './functions/_lib/study-library-studio.js';
+import { handlePublicEduResourcesApi } from './functions/_lib/edu-resources-batch1.js';
 import { handlePublicJobsRoute } from './functions/_lib/jobs-directory-ssr.js';
 import { handlePublicJobsOverviewApi, handlePublicJobsItemsApi, handlePublicJobsSuggestApi, handleJobsDirectorySitemapXml } from './functions/_lib/jobs-directory-studio.js';
 import { handlePublicSchemesRoute } from './functions/_lib/schemes-directory-ssr.js';
@@ -297,7 +298,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
   const basePaths = [
     '/sitemap.xml', '/sitemap-study-library.xml', '/sitemap-jobs.xml', '/sitemap-schemes.xml', '/sitemap-community.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
-    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/public/about-overview', '/api/content/platform-stats', '/api/content/changelog',
+    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/public/about-overview', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources',
     '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
@@ -369,6 +370,17 @@ export default {
     }
     if (pathname === '/api/public/study-library/items' && (request.method === 'GET' || request.method === 'HEAD')) {
       return handlePublicStudyItemsApi(request, env);
+    }
+    if (pathname === '/api/edu/resources' && (request.method === 'GET' || request.method === 'HEAD')) {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const eduRes = await handlePublicEduResourcesApi(request, env);
+      if (isAnonGet && eduRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, eduRes, ctx);
+      }
+      return eduRes;
     }
     if (pathname === '/api/public/study-library/suggest' && request.method === 'POST') {
       return handlePublicStudySuggestApi(request, env);
