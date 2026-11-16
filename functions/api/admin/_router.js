@@ -19,7 +19,8 @@ import { handleEduBatch3Admin, getBatch3Overview } from '../../_lib/edu-resource
 import { handleEduBatch4Admin, getBatch4Overview } from '../../_lib/edu-resources-batch4.js';
 import { handleEduBatch5Admin, getBatch5Overview } from '../../_lib/edu-resources-batch5.js';
 import { handleEduBatch6Admin, getBatch6Overview, getFull22ModuleOverview } from '../../_lib/edu-resources-batch6.js';
-import { handleCategoriesNavBatch1Admin } from '../../_lib/categories-nav-batch1.js';
+import { handleCategoriesNavBatch1Admin, getCategoriesNavOverview } from '../../_lib/categories-nav-batch1.js';
+import { handleCategoriesNavBatch2Admin, getCategoriesNavBatch2Overview } from '../../_lib/categories-nav-batch2.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
 import { handleCommunityDirectoryStudio } from '../../_lib/community-directory-studio.js';
@@ -187,6 +188,13 @@ export async function handleAdminApi(request, env) {
         return await handleEduBatch1Admin(request, env, actor, id, sub, extra);
       }
       case 'nav': {
+        if (id === 'overview' && method === 'GET') {
+          const b1 = await getCategoriesNavOverview(env);
+          const b2 = await getCategoriesNavBatch2Overview(env);
+          return json({ ok: true, ...b1, batch2: b2 });
+        }
+        const nav2Res = await handleCategoriesNavBatch2Admin(request, env, actor, id, sub);
+        if (nav2Res) return nav2Res;
         const navRes = await handleCategoriesNavBatch1Admin(request, env, actor, id, sub);
         if (navRes) return navRes;
         break;

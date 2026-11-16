@@ -322,7 +322,7 @@ assert.equal((await liftRes.json()).freeze.enabled, false);
 assert.equal((await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE action = 'ops.freeze.toggle'`).first()).n, 2);
 
 // 8. Module #15: Zero-Downtime Deployment Canary & Health Gate (GO / NO-GO)
-assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v84');
+assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v85');
 
 const canaryGetRes = await handleOpsSentinel(
   new Request('https://csodisha.com/api/admin/ops/canary', { method: 'GET' }),

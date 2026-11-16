@@ -34,6 +34,7 @@ import { handlePublicEduQuizzesApi, handlePublicEduMockTestsApi, handlePublicEdu
 import { handlePublicEduScholarshipsApi, handlePublicEduCareersApi } from './functions/_lib/edu-resources-batch5.js';
 import { handlePublicEduStudentHubApi, handlePublicEduToolsApi } from './functions/_lib/edu-resources-batch6.js';
 import { handlePublicNavConfigApi } from './functions/_lib/categories-nav-batch1.js';
+import { getPublishedNavBatch2Config } from './functions/_lib/categories-nav-batch2.js';
 import { handlePublicJobsRoute } from './functions/_lib/jobs-directory-ssr.js';
 import { handlePublicJobsOverviewApi, handlePublicJobsItemsApi, handlePublicJobsSuggestApi, handleJobsDirectorySitemapXml } from './functions/_lib/jobs-directory-studio.js';
 import { handlePublicSchemesRoute } from './functions/_lib/schemes-directory-ssr.js';
@@ -539,7 +540,12 @@ export default {
         const hit = await edgeCache.match(request);
         if (hit) return hit;
       }
-      const navRes = await handlePublicNavConfigApi(request, env);
+      const b1Data = await (await handlePublicNavConfigApi(request, env)).json();
+      const b2Data = await getPublishedNavBatch2Config(env);
+      const navRes = new Response(JSON.stringify({ ...b1Data, ...b2Data }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=120' }
+      });
       if (isAnonGet && navRes.status === 200) {
         recordPublicCachePut(edgeCache, request, navRes, ctx);
       }
