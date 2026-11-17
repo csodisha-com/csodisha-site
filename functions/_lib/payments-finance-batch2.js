@@ -160,10 +160,11 @@ const ENTITIES = {
     cloneReset: { active_members_count: 0 }
   }
 };
-for (const ent of Object.values(ENTITIES)) {
-  // Register for revision rollback (shared fin_revisions table, handled by Batch 1 rollback endpoint).
-  REV_TABLES[ent.mod] = { table: ent.table, cols: ent.fields.map(f => f.n) };
+// Register an entity for revision rollback (shared fin_revisions table, handled by Batch 1 rollback endpoint).
+export function registerEntity(ent) {
+  REV_TABLES[ent.mod] = { table: ent.table, cols: ent.fields.map(f => f.n).filter(n => !(ent.revExclude || []).includes(n)) };
 }
+for (const ent of Object.values(ENTITIES)) registerEntity(ent);
 
 // ---------- Schema + seed ----------
 export async function ensurePaymentsFinanceBatch2Schema(db) {
@@ -313,23 +314,21 @@ async function seedBatch2(db) {
 }
 
 // ---------- Presentation ----------
-function present(ent, row) {
+export function present(ent, row) {
   if (!row) return row;
   const out = { ...row };
   for (const f of ent.fields) {
     if (f.k === 'json') out[f.key] = parseJson(row[f.n], []);
     if (f.k === 'bool') out[f.n] = Number(row[f.n]) === 1;
   }
-  out.price_inr = formatInr(row.price_paise);
-  if ('mrp_paise' in row) {
-    out.mrp_inr = formatInr(row.mrp_paise);
-    out.discount_pct = discountPct(row.price_paise, row.mrp_paise);
-  }
+  for (const k of Object.keys(row)) if (k.endsWith('_paise')) out[k.replace(/_paise$/, '_inr')] = formatInr(row[k]);
+  if ('mrp_paise' in row) out.discount_pct = discountPct(row.price_paise, row.mrp_paise);
+  if (ent.decorate) ent.decorate(out, row);
   return out;
 }
 
 // ---------- Generic validation ----------
-function readValues(ent, body, existing, errors) {
+export function readValues(ent, body, existing, errors) {
   const v = {};
   for (const f of ent.fields) {
     const has = body[f.n] !== undefined || (f.key && body[f.key] !== undefined);
@@ -355,6 +354,11 @@ function readValues(ent, body, existing, errors) {
         break;
       }
       case 'bool': v[f.n] = raw ? 1 : 0; break;
+      case 'date': {
+        const d = cleanStr(raw, 40);
+        if (d && (!/^\d{4}-\d{2}-\d{2}([T ][\d:.]+Z?)?$/.test(d) || Number.isNaN(Date.parse(d.length === 10 ? `${d}T00:00:00Z` : d)))) { errors[f.n] = `${f.n} must be a valid ISO date (YYYY-MM-DD)`; v[f.n] = cur; } else v[f.n] = d;
+        break;
+      }
       case 'json':
         try { v[f.n] = JSON.stringify(f.norm(raw)); } catch (e) { errors[f.key] = e.message; v[f.n] = cur; }
         break;
@@ -367,7 +371,7 @@ function readValues(ent, body, existing, errors) {
     else if (Number(v.mrp_paise) < Number(v.price_paise)) errors.mrp_paise = 'mrp_paise must be >= price_paise';
   }
   if (ent.cross) ent.cross(v, errors);
-  if (v.status === 'published' && !errors.price_paise && ent.needsPriceToPublish(v) && Number(v.price_paise) <= 0) errors.price_paise = 'Published items need price_paise > 0';
+  if (ent.needsPriceToPublish && v.status === 'published' && !errors.price_paise && ent.needsPriceToPublish(v) && Number(v.price_paise) <= 0) errors.price_paise = 'Published items need price_paise > 0';
   return v;
 }
 
@@ -389,6 +393,7 @@ async function assertUnique(env, ent, v, excludeId, errors) {
 }
 
 function autoSlug(ent, v, body) {
+  if (!ent.fields.some(f => f.n === 'slug')) return;
   if (!v.slug) v.slug = slugOf(body.slug || v[ent.titleCol]);
   if (!v.slug) v.slug = rid('item');
 }
@@ -398,13 +403,14 @@ async function bulkOrReorder(request, env, actor, ent) {
   const ids = Array.isArray(body.ids) ? body.ids.map(i => cleanStr(i, 100)).filter(Boolean).slice(0, 200) : [];
   if (!ids.length) throw validationError({ ids: 'ids must be a non-empty array' });
   if (body.action === 'bulk_status') {
-    if (!STATUSES.includes(body.status)) throw validationError({ status: `status must be one of: ${STATUSES.join(', ')}` });
+    const allowed = ent.statuses || STATUSES;
+    if (!allowed.includes(body.status)) throw validationError({ status: `status must be one of: ${allowed.join(', ')}` });
     let updated = 0; const skipped = [];
     for (const id of ids) {
       const row = await env.DB.prepare(`SELECT * FROM ${ent.table} WHERE id = ?`).bind(id).first();
       if (!row) { skipped.push({ id, reason: 'not_found' }); continue; }
-      if (body.status === 'published' && ent.needsPriceToPublish(row) && Number(row.price_paise) <= 0) { skipped.push({ id, reason: 'price_required' }); continue; }
-      await env.DB.prepare(`UPDATE ${ent.table} SET status = ?, updated_at = datetime('now') WHERE id = ?`).bind(body.status, id).run();
+      if (ent.needsPriceToPublish && body.status === 'published' && ent.needsPriceToPublish(row) && Number(row.price_paise) <= 0) { skipped.push({ id, reason: 'price_required' }); continue; }
+      await env.DB.prepare(`UPDATE ${ent.table} SET ${ent.statusCol || 'status'} = ?, updated_at = datetime('now') WHERE id = ?`).bind(body.status, id).run();
       await snapshotRevision(env, actor, ent.mod, id, `Bulk status -> ${body.status}`);
       updated++;
     }
@@ -424,8 +430,9 @@ async function bulkOrReorder(request, env, actor, ent) {
   throw validationError({ action: 'action must be bulk_status' + (ent.mod === '08' ? ' or reorder' : '') });
 }
 
-async function handleEntity(ent, request, env, actor, sub) {
+export async function handleEntity(ent, request, env, actor, sub) {
   const method = request.method;
+  const sc = ent.statusCol || 'status';
   if (method === 'GET') {
     if (sub) {
       const row = await env.DB.prepare(`SELECT * FROM ${ent.table} WHERE id = ?`).bind(sub).first();
@@ -441,13 +448,13 @@ async function handleEntity(ent, request, env, actor, sub) {
       ent.search.forEach(() => binds.push(like));
     }
     const status = url.searchParams.get('status');
-    if (status) { where.push('status = ?'); binds.push(status); }
+    if (status) { where.push(`${sc} = ?`); binds.push(status); }
     for (const f of ent.filters) { const v = url.searchParams.get(f); if (v) { where.push(`${f} = ?`); binds.push(v); } }
-    if (url.searchParams.get('featured') === '1') where.push('featured = 1');
+    if (url.searchParams.get('featured') === '1' && ent.fields.some(f => f.n === 'featured')) where.push('featured = 1');
     const { results } = await env.DB.prepare(`SELECT * FROM ${ent.table} WHERE ${where.join(' AND ')} ORDER BY ${ent.order} LIMIT 500`).bind(...binds).all();
-    const counts = await env.DB.prepare(`SELECT status, COUNT(*) AS n FROM ${ent.table} GROUP BY status`).all();
+    const counts = await env.DB.prepare(`SELECT ${sc} AS st, COUNT(*) AS n FROM ${ent.table} GROUP BY ${sc}`).all();
     const tally = { all: 0, published: 0, draft: 0, archived: 0 };
-    for (const c of counts.results || []) { tally[c.status] = Number(c.n); tally.all += Number(c.n); }
+    for (const c of counts.results || []) { tally[c.st] = Number(c.n); tally.all += Number(c.n); }
     return json({ ok: true, items: (results || []).map(r => present(ent, r)), counts: tally });
   }
   if (method === 'PATCH' && !sub) return bulkOrReorder(request, env, actor, ent);
@@ -457,6 +464,7 @@ async function handleEntity(ent, request, env, actor, sub) {
     const errors = {};
     const v = readValues(ent, body, null, errors);
     autoSlug(ent, v, body);
+    if (!Object.keys(errors).length && ent.prepare) await ent.prepare(env, v, null, body, errors);
     if (!Object.keys(errors).length) await assertUnique(env, ent, v, null, errors);
     if (Object.keys(errors).length) throw validationError(errors);
     const id = rid(ent.idPrefix);
@@ -471,14 +479,14 @@ async function handleEntity(ent, request, env, actor, sub) {
 
   if (method === 'POST' && sub) {
     const body = await readJson(request, 20_000);
-    if (body.action !== 'clone') throw validationError({ action: 'action must be clone' });
+    if (body.action !== 'clone' || ent.noClone) throw validationError({ action: ent.noClone ? 'clone is not supported for this module' : 'action must be clone' });
     const src = await env.DB.prepare(`SELECT * FROM ${ent.table} WHERE id = ?`).bind(sub).first();
     if (!src) throw new HttpError(404, 'NOT_FOUND', `${ent.label} not found`);
     const v = {};
     for (const f of ent.fields) v[f.n] = src[f.n];
     Object.assign(v, ent.cloneReset, { status: 'draft', featured: 0 });
     v[ent.titleCol] = `${src[ent.titleCol]} (Copy)`.slice(0, 200);
-    v.slug = await uniqueValue(env, ent, 'slug', src.slug, null);
+    if (ent.fields.some(f => f.n === 'slug')) v.slug = await uniqueValue(env, ent, 'slug', src.slug, null);
     for (const f of ent.fields.filter(x => x.unique && x.n !== 'slug')) v[f.n] = await uniqueValue(env, ent, f.n, src[f.n], null, { upper: true });
     if (ent.mod === '08') v.sort_order = Number(src.sort_order || 0) + 1;
     const id = rid(ent.idPrefix);
@@ -498,6 +506,7 @@ async function handleEntity(ent, request, env, actor, sub) {
     const errors = {};
     const v = readValues(ent, body, existing, errors);
     autoSlug(ent, v, body);
+    if (!Object.keys(errors).length && ent.prepare) await ent.prepare(env, v, existing, body, errors);
     if (!Object.keys(errors).length) await assertUnique(env, ent, v, sub, errors);
     if (Object.keys(errors).length) throw validationError(errors);
     const sets = ent.fields.map(f => `${f.n} = ?`).join(', ');
@@ -509,12 +518,15 @@ async function handleEntity(ent, request, env, actor, sub) {
   }
 
   if (method === 'DELETE' && sub) {
-    const existing = await env.DB.prepare(`SELECT id FROM ${ent.table} WHERE id = ?`).bind(sub).first();
+    const existing = await env.DB.prepare(`SELECT * FROM ${ent.table} WHERE id = ?`).bind(sub).first();
     if (!existing) throw new HttpError(404, 'NOT_FOUND', `${ent.label} not found`);
-    await env.DB.prepare(`UPDATE ${ent.table} SET status = 'archived', featured = 0, updated_at = datetime('now') WHERE id = ?`).bind(sub).run();
+    if (ent.canArchive) ent.canArchive(existing);
+    const archived = ent.archiveValue || 'archived';
+    const clearFeatured = ent.fields.some(f => f.n === 'featured') ? ', featured = 0' : '';
+    await env.DB.prepare(`UPDATE ${ent.table} SET ${sc} = ?${clearFeatured}, updated_at = datetime('now') WHERE id = ?`).bind(archived, sub).run();
     await snapshotRevision(env, actor, ent.mod, sub, 'Archived');
     await audit(env, request, actor, `finance.${ent.label}.archive`, ent.table, sub, null);
-    return json({ ok: true, status: 'archived' });
+    return json({ ok: true, status: archived });
   }
   throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
 }
