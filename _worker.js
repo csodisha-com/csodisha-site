@@ -59,7 +59,7 @@ import { handlePublicSeoAutocompleteApi } from './functions/_lib/seo-search-disc
 import { handlePublicEventsUpcomingBatch2Api } from './functions/_lib/events-scheduling-batch2.js';
 import { handlePublicEventsIcsFeedApi } from './functions/_lib/events-scheduling-batch3.js';
 import { handlePublicInboundWebhookApi } from './functions/_lib/integrations-webhooks-edge-batch2.js';
-import { handlePublicSiteConfigBatch3Api } from './functions/_lib/settings-configuration-batch3.js';
+import { handlePublicSiteConfigBatch4Api } from './functions/_lib/settings-configuration-batch4.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -487,7 +487,7 @@ export default {
         const hit = await edgeCache.match(request);
         if (hit) return hit;
       }
-      const cfgRes = await handlePublicSiteConfigBatch3Api(request, env);
+      const cfgRes = await handlePublicSiteConfigBatch4Api(request, env);
       if (isAnonGet && cfgRes.status === 200) {
         recordPublicCachePut(edgeCache, request, cfgRes, ctx);
       }

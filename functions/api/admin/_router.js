@@ -58,6 +58,7 @@ import { handleIntegrationsEdgeBatch3Admin, ensureIntegrationsEdgeBatch3Schema, 
 import { handleSettingsConfigBatch1Admin } from '../../_lib/settings-configuration-batch1.js';
 import { handleSettingsConfigBatch2Admin, ensureSettingsConfigBatch2Schema, getFull8ModuleSettingsOverview } from '../../_lib/settings-configuration-batch2.js';
 import { handleSettingsConfigBatch3Admin, ensureSettingsConfigBatch3Schema, getFull12ModuleSettingsOverview } from '../../_lib/settings-configuration-batch3.js';
+import { handleSettingsConfigBatch4Admin, ensureSettingsConfigBatch4Schema, getFull17ModuleSettingsOverview } from '../../_lib/settings-configuration-batch4.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -297,6 +298,9 @@ export async function handleAdminApi(request, env) {
         if (!id) return await handleBanner(request, env, actor);
         break;
       case 'settings':
+        if (['registration', 'comments', 'payments', 'environment', 'admin-preferences'].includes(id)) {
+          return await handleSettingsConfigBatch4Admin(request, env, actor, id, sub);
+        }
         if (['feature-toggles', 'email', 'upload-limits', 'content-defaults'].includes(id)) {
           return await handleSettingsConfigBatch3Admin(request, env, actor, id, sub, extra);
         }
@@ -304,10 +308,10 @@ export async function handleAdminApi(request, env) {
           return await handleSettingsConfigBatch2Admin(request, env, actor, id, sub, extra);
         }
         if (id === 'overview' && method === 'GET') {
-          return json(await getFull12ModuleSettingsOverview(env));
+          return json(await getFull17ModuleSettingsOverview(env));
         }
         if (id === 'revisions') {
-          await ensureSettingsConfigBatch3Schema(env.DB);
+          await ensureSettingsConfigBatch4Schema(env.DB);
         }
         if (['general', 'identity', 'contact', 'localization', 'revisions'].includes(id)) {
           return await handleSettingsConfigBatch1Admin(request, env, actor, id, sub);
