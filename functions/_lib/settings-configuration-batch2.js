@@ -1,6 +1,7 @@
 // Settings & Configuration Batch 2 (v122): Modules 05-08
 // 05 Languages | 06 Time Zone | 07 Date & Number Formats | 08 Homepage Settings
 import { HttpError, json, readJson, validationError } from './http.js';
+import { invalidateEdgePaths, SETTINGS_PUBLIC_PATHS } from './edge-cache-invalidator.js';
 import { audit } from './rbac.js';
 import { nowIstIso } from './events-scheduling-batch1.js';
 import {
@@ -440,11 +441,16 @@ async function handleHomepage(request, env, actor) {
 /* ================= ADMIN ROUTER DISPATCHER ================= */
 export async function handleSettingsConfigBatch2Admin(request, env, actor, id, sub, extra) {
   await ensureSettingsConfigBatch2Schema(env.DB);
-  if (id === 'languages') return handleLanguages(request, env, actor, sub, extra);
-  if (id === 'timezone') return handleTimezone(request, env, actor);
-  if (id === 'formats') return handleFormats(request, env, actor);
-  if (id === 'homepage') return handleHomepage(request, env, actor);
-  throw new HttpError(404, 'NOT_FOUND', 'Unknown settings batch 2 route');
+  let res = null;
+  if (id === 'languages') res = await handleLanguages(request, env, actor, sub, extra);
+  else if (id === 'timezone') res = await handleTimezone(request, env, actor);
+  else if (id === 'formats') res = await handleFormats(request, env, actor);
+  else if (id === 'homepage') res = await handleHomepage(request, env, actor);
+  else throw new HttpError(404, 'NOT_FOUND', 'Unknown settings batch 2 route');
+  if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 300) {
+    await invalidateEdgePaths(request, SETTINGS_PUBLIC_PATHS);
+  }
+  return res;
 }
 
 /* ================= PUBLIC ENRICHED SITE CONFIG API ================= */

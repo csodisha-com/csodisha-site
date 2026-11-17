@@ -1,6 +1,7 @@
 // SEO, Search & Discovery Batch 4 (v114): Modules 13-16
 // 13 Rich Snippet Previewer | 14 Internal Link Graph | 15 Slug Transliterator | 16 Search Intent Analytics
 import { HttpError, json, readJson, validationError } from './http.js';
+import { invalidateEdgePaths, SEO_PUBLIC_PATHS } from './edge-cache-invalidator.js';
 import { audit } from './rbac.js';
 import { cleanStr, likeEscape } from './validate.js';
 import {
@@ -671,9 +672,14 @@ async function handleSearchIntent(request, env, actor, sub) {
 
 export async function handleSeoSearchDiscoveryBatch4Admin(request, env, actor, id, sub, extra) {
   await ensureSeoSearchDiscoveryBatch4Schema(env.DB);
-  if (id === 'rich-snippets') return handleRichSnippets(request, env, actor, sub);
-  if (id === 'link-graph') return handleLinkGraph(request, env, actor, sub, extra);
-  if (id === 'slug-normalizer') return handleSlugNormalizer(request, env, actor, sub);
-  if (id === 'search-intent') return handleSearchIntent(request, env, actor, sub);
-  throw new HttpError(404, 'NOT_FOUND', 'Unknown SEO Batch 4 route');
+  let res = null;
+  if (id === 'rich-snippets') res = await handleRichSnippets(request, env, actor, sub);
+  else if (id === 'link-graph') res = await handleLinkGraph(request, env, actor, sub, extra);
+  else if (id === 'slug-normalizer') res = await handleSlugNormalizer(request, env, actor, sub);
+  else if (id === 'search-intent') res = await handleSearchIntent(request, env, actor, sub);
+  else throw new HttpError(404, 'NOT_FOUND', 'Unknown SEO Batch 4 route');
+  if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 300) {
+    await invalidateEdgePaths(request, SEO_PUBLIC_PATHS);
+  }
+  return res;
 }

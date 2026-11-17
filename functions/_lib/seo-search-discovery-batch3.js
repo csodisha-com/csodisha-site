@@ -1,6 +1,7 @@
 // SEO, Search & Discovery Batch 3 (v113): Modules 09-12
 // 09 Autocomplete & Typo Rules | 10 Zero-Result Fallbacks | 11 IndexNow & GSC | 12 Edge Pre-Render Hints
 import { HttpError, json, readJson, validationError } from './http.js';
+import { invalidateEdgePaths, SEO_PUBLIC_PATHS } from './edge-cache-invalidator.js';
 import { audit } from './rbac.js';
 import { cleanStr, likeEscape } from './validate.js';
 import {
@@ -721,11 +722,16 @@ async function handleEdgeHints(request, env, actor, sub, extra) {
 
 export async function handleSeoSearchDiscoveryBatch3Admin(request, env, actor, id, sub, extra) {
   await ensureSeoSearchDiscoveryBatch3Schema(env.DB);
-  if (id === 'autocomplete') return handleAutocomplete(request, env, actor, sub, extra);
-  if (id === 'zero-fallbacks') return handleZeroFallbacks(request, env, actor, sub, extra);
-  if (id === 'indexnow') return handleIndexNow(request, env, actor, sub);
-  if (id === 'edge-hints') return handleEdgeHints(request, env, actor, sub, extra);
-  throw new HttpError(404, 'NOT_FOUND', 'Unknown SEO Batch 3 route');
+  let res = null;
+  if (id === 'autocomplete') res = await handleAutocomplete(request, env, actor, sub, extra);
+  else if (id === 'zero-fallbacks') res = await handleZeroFallbacks(request, env, actor, sub, extra);
+  else if (id === 'indexnow') res = await handleIndexNow(request, env, actor, sub);
+  else if (id === 'edge-hints') res = await handleEdgeHints(request, env, actor, sub, extra);
+  else throw new HttpError(404, 'NOT_FOUND', 'Unknown SEO Batch 3 route');
+  if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 300) {
+    await invalidateEdgePaths(request, SEO_PUBLIC_PATHS);
+  }
+  return res;
 }
 
 /* ================= PUBLIC EDGE-CACHED AUTOCOMPLETE ================= */

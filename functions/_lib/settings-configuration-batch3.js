@@ -2,6 +2,7 @@
 // 09 Feature Toggles | 10 Email Settings | 11 Upload Limits | 12 Content Defaults
 // Security: Zero plaintext SMTP/mail credentials; executable MIME types/extensions blocked.
 import { HttpError, json, readJson, validationError } from './http.js';
+import { invalidateEdgePaths, SETTINGS_PUBLIC_PATHS } from './edge-cache-invalidator.js';
 import { audit } from './rbac.js';
 import { likeEscape } from './validate.js';
 import { nowIstIso } from './events-scheduling-batch1.js';
@@ -514,11 +515,16 @@ async function handleContentDefaults(request, env, actor) {
 /* ================= ADMIN ROUTER DISPATCHER ================= */
 export async function handleSettingsConfigBatch3Admin(request, env, actor, id, sub, extra) {
   await ensureSettingsConfigBatch3Schema(env.DB);
-  if (id === 'feature-toggles') return handleFeatureToggles(request, env, actor, sub, extra);
-  if (id === 'email') return handleEmailSettings(request, env, actor, sub);
-  if (id === 'upload-limits') return handleUploadLimits(request, env, actor);
-  if (id === 'content-defaults') return handleContentDefaults(request, env, actor);
-  throw new HttpError(404, 'NOT_FOUND', 'Unknown settings batch 3 route');
+  let res = null;
+  if (id === 'feature-toggles') res = await handleFeatureToggles(request, env, actor, sub, extra);
+  else if (id === 'email') res = await handleEmailSettings(request, env, actor, sub);
+  else if (id === 'upload-limits') res = await handleUploadLimits(request, env, actor);
+  else if (id === 'content-defaults') res = await handleContentDefaults(request, env, actor);
+  else throw new HttpError(404, 'NOT_FOUND', 'Unknown settings batch 3 route');
+  if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 300) {
+    await invalidateEdgePaths(request, SETTINGS_PUBLIC_PATHS);
+  }
+  return res;
 }
 
 /* ================= PUBLIC ENRICHED SITE CONFIG API ================= */

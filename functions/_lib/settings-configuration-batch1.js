@@ -1,6 +1,7 @@
 // Settings & Configuration Batch 1 (v121): Modules 01-04
 // 01 General Website Settings | 02 Website Identity | 03 Contact Information | 04 Localization
 import { HttpError, json, readJson, validationError } from './http.js';
+import { invalidateEdgePaths, SETTINGS_PUBLIC_PATHS } from './edge-cache-invalidator.js';
 import { audit } from './rbac.js';
 import { cleanStr } from './validate.js';
 
@@ -479,15 +480,19 @@ async function handleCfgRevisions(request, env, actor, sub) {
 /* ================= ADMIN ROUTER DISPATCHER ================= */
 export async function handleSettingsConfigBatch1Admin(request, env, actor, id, sub) {
   await ensureSettingsConfigBatch1Schema(env.DB);
+  let res = null;
   if (id === 'overview' && request.method === 'GET') {
-    return json(await getSettingsConfigBatch1Overview(env));
+    res = json(await getSettingsConfigBatch1Overview(env));
+  } else if (id === 'general') res = await handleGeneral(request, env, actor);
+  else if (id === 'identity') res = await handleIdentity(request, env, actor);
+  else if (id === 'contact') res = await handleContact(request, env, actor);
+  else if (id === 'localization') res = await handleLocalization(request, env, actor);
+  else if (id === 'revisions') res = await handleCfgRevisions(request, env, actor, sub);
+  else throw new HttpError(404, 'NOT_FOUND', 'Unknown settings batch 1 route');
+  if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 300) {
+    await invalidateEdgePaths(request, SETTINGS_PUBLIC_PATHS);
   }
-  if (id === 'general') return handleGeneral(request, env, actor);
-  if (id === 'identity') return handleIdentity(request, env, actor);
-  if (id === 'contact') return handleContact(request, env, actor);
-  if (id === 'localization') return handleLocalization(request, env, actor);
-  if (id === 'revisions') return handleCfgRevisions(request, env, actor, sub);
-  throw new HttpError(404, 'NOT_FOUND', 'Unknown settings batch 1 route');
+  return res;
 }
 
 /* ================= PUBLIC EDGE-CACHED SITE CONFIG API ================= */

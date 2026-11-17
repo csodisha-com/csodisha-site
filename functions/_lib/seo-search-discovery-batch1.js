@@ -2,6 +2,7 @@
 // 01 Meta Tags & OpenGraph | 02 Dynamic JSON-LD | 03 XML Sitemaps | 04 RSS/Atom Syndication
 // Sanitize all meta/schema/feed inputs so raw <script> tags or broken XML entities can never be emitted.
 import { HttpError, json, readJson, validationError } from './http.js';
+import { invalidateEdgePaths, SEO_PUBLIC_PATHS } from './edge-cache-invalidator.js';
 import { audit } from './rbac.js';
 import { cleanStr, likeEscape } from './validate.js';
 
@@ -779,13 +780,18 @@ async function handleSeoRevisions(request, env, actor, sub) {
 
 export async function handleSeoSearchDiscoveryBatch1Admin(request, env, actor, id, sub, extra) {
   await ensureSeoSearchDiscoveryBatch1Schema(env.DB);
-  if (id === 'overview' && request.method === 'GET') return json(await getSeoOverview(env.DB));
-  if (id === 'meta') return handleMeta(request, env, actor, sub, extra);
-  if (id === 'schemas') return handleSchemas(request, env, actor, sub);
-  if (id === 'sitemaps') return handleSitemaps(request, env, actor, sub, extra);
-  if (id === 'feeds') return handleFeeds(request, env, actor, sub, extra);
-  if (id === 'revisions') return handleSeoRevisions(request, env, actor, sub);
-  throw new HttpError(404, 'NOT_FOUND', 'Unknown SEO route');
+  let res = null;
+  if (id === 'overview' && request.method === 'GET') res = json(await getSeoOverview(env.DB));
+  else if (id === 'meta') res = await handleMeta(request, env, actor, sub, extra);
+  else if (id === 'schemas') res = await handleSchemas(request, env, actor, sub);
+  else if (id === 'sitemaps') res = await handleSitemaps(request, env, actor, sub, extra);
+  else if (id === 'feeds') res = await handleFeeds(request, env, actor, sub, extra);
+  else if (id === 'revisions') res = await handleSeoRevisions(request, env, actor, sub);
+  else throw new HttpError(404, 'NOT_FOUND', 'Unknown SEO route');
+  if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 300) {
+    await invalidateEdgePaths(request, SEO_PUBLIC_PATHS);
+  }
+  return res;
 }
 
 /* ================= PUBLIC EDGE-CACHED SEO & FEED ENDPOINTS ================= */

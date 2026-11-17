@@ -4,6 +4,7 @@
 // 09 Calendar Sync, ICS Feeds & Push Notification Dispatcher
 // All timestamps normalized to IST (Asia/Kolkata, +05:30). Zero raw PII or raw passcodes.
 import { HttpError, json, readJson, validationError } from './http.js';
+import { invalidateEdgePaths, EVENTS_PUBLIC_PATHS } from './edge-cache-invalidator.js';
 import { audit } from './rbac.js';
 import { likeEscape } from './validate.js';
 import {
@@ -931,10 +932,15 @@ async function handleCalendarSync(request, env, actor, id, sub) {
 /* ================= ADMIN ROUTER DISPATCHER ================= */
 export async function handleEventsSchedulingBatch3Admin(request, env, actor, id, sub, extra) {
   await ensureEventsSchedulingBatch3Schema(env.DB);
-  if (id === 'meetups') return handleMeetups(request, env, actor, sub, extra);
-  if (id === 'webinars') return handleWebinars(request, env, actor, sub, extra);
-  if (id === 'calendar-sync') return handleCalendarSync(request, env, actor, sub, extra);
-  throw new HttpError(404, 'NOT_FOUND', 'Unknown events batch 3 admin route');
+  let res = null;
+  if (id === 'meetups') res = await handleMeetups(request, env, actor, sub, extra);
+  else if (id === 'webinars') res = await handleWebinars(request, env, actor, sub, extra);
+  else if (id === 'calendar-sync') res = await handleCalendarSync(request, env, actor, sub, extra);
+  else throw new HttpError(404, 'NOT_FOUND', 'Unknown events batch 3 admin route');
+  if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 300) {
+    await invalidateEdgePaths(request, EVENTS_PUBLIC_PATHS);
+  }
+  return res;
 }
 
 /* ================= PUBLIC EDGE-CACHED RFC 5545 .ICS CALENDAR API ================= */

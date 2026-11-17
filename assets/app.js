@@ -717,14 +717,59 @@ function csoBuildDirectoryIndex(slug,label,data){
   return results;
 }
 
+const CSO_LIVE_DIR_APIS={
+  'jobs-careers':'/api/public/jobs-directory/overview',
+  'schemes':'/api/public/schemes-directory/overview',
+  'study-library':'/api/public/study-library/items?limit=100',
+  'community':'/api/public/community-directory/overview'
+};
+
+function csoNormalizeLiveDirectory(data){
+  if(!data||typeof data!=='object')return null;
+  if(Array.isArray(data.sections)||Array.isArray(data.navigation))return data;
+  if(Array.isArray(data.domains)&&data.domains.length){
+    return {
+      navigation:data.domains.map(d=>({
+        title:d.title||d.domain_slug||d.slug||'Directory',
+        sections:(d.folders||d.items||[]).map(x=>({
+          title:x.title||x.name||'',
+          line:x.summary||x.description||''
+        }))
+      }))
+    };
+  }
+  if(Array.isArray(data.items)&&data.items.length){
+    return {
+      navigation:[{
+        title:'Study Library',
+        sections:data.items.map(it=>({
+          title:it.title||'',
+          line:it.summary||it.board_or_exam||''
+        }))
+      }]
+    };
+  }
+  return null;
+}
+
 function csoLoadDirectories(){
   if(CSO_DIRECTORY_PROMISE)return CSO_DIRECTORY_PROMISE;
 
   CSO_DIRECTORY_PROMISE=Promise.allSettled(
     CSO_DIRECTORIES.map(async ([slug,label])=>{
-      const response=await fetch(slug+'/generated/directory.json',{cache:'no-store'});
-      if(!response.ok)throw Error(slug+': HTTP '+response.status);
-      const data=await response.json();
+      let data=null;
+      const liveUrl=CSO_LIVE_DIR_APIS[slug];
+      if(liveUrl){
+        try{
+          const liveRes=await fetch(liveUrl,{cache:'no-store'});
+          if(liveRes.ok)data=csoNormalizeLiveDirectory(await liveRes.json());
+        }catch(_){}
+      }
+      if(!data){
+        const response=await fetch(slug+'/generated/directory.json',{cache:'no-store'});
+        if(!response.ok)throw Error(slug+': HTTP '+response.status);
+        data=await response.json();
+      }
       if(!Array.isArray(data.sections)&&!Array.isArray(data.navigation)){
         throw Error(slug+': invalid directory data');
       }
@@ -1480,12 +1525,50 @@ function view(h){
  return'<div class="card sec"><p class="crumb"><a data-h="">Home</a> › '+esc(t)+'</p><h1 class="cso-detail-h1">'+esc(t)+'</h1>'+b+'<p><a class="btn cso-btn-inline" data-h="">← Back to Home</a></p></div>'}
 function after(h){if(window.CSO_TOOLS_V2&&window.CSO_TOOLS_V2.render(h)){window.CSO_TOOLS_V2.init(h);return;}if(h!=='age-calculator')return;const d=new Date();$('#aon').value=d.toISOString().slice(0,10);$('#acf').onsubmit=e=>{e.preventDefault();const a=new Date($('#dob').value),b=new Date($('#aon').value),r=$('#aor');if(isNaN(a)||isNaN(b))return r.textContent=T('Please enter both dates.');if(a>b)return r.textContent=T('Birth date must be before the "as on" date.');let y=b.getFullYear()-a.getFullYear(),m=b.getMonth()-a.getMonth(),dd=b.getDate()-a.getDate();if(dd<0){m--;dd+=new Date(b.getFullYear(),b.getMonth(),0).getDate()}if(m<0){y--;m+=12}r.textContent=T('Age:')+' '+y+' '+T('years')+', '+m+' '+T('months')+', '+dd+' '+T('days')}}
 
-/* Load published updates, retaining bundled records as fallback. */
+function csoMapEventsToUpdates(ev){
+  if(!ev||typeof ev!=='object')return null;
+  const out=[];
+  const seen=new Set();
+  const safeId=(raw,idx)=>String(raw||('evt-'+idx)).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||('evt-'+idx);
+  const safeHttps=u=>(u&&/^https:\/\//i.test(u))?u:'https://csodisha.com/';
+  const pushList=(arr,cat,tag,badge)=>{
+    (arr||[]).forEach((item,idx)=>{
+      const id=safeId(item.event_code||item.deadline_code||item.alert_code||item.result_code||item.id,(out.length+idx));
+      if(seen.has(id))return;
+      seen.add(id);
+      const title=String(item.title_en||item.exam_title_en||item.post_title_en||item.title||'Odisha Update').trim();
+      const dt=String(item.exam_date_ist||item.close_at_ist||item.release_at_ist||item.declared_at_ist||ev.generated_at_ist||'2026-11-17').slice(0,10);
+      out.push({
+        id,cat,tag,title,
+        src:String(item.conducting_body||item.department_name||'CS Odisha Live').trim(),
+        date:dt,
+        badges:[badge,String(item.language||'EN+OR')],
+        body:String(item.summary_en||item.note_en||item.stage_label||title).trim(),
+        url:safeHttps(item.official_portal_url||item.official_url),
+        status:'published'
+      });
+    });
+  };
+  pushList(ev.upcoming_exams,'Odisha','ODISHA','Exam');
+  pushList(ev.active_deadlines,'Jobs','JOB','Deadline');
+  pushList(ev.admit_cards,'Education','EDUCATION','Admit Card');
+  pushList(ev.results_dv,'Odisha','ODISHA','Result');
+  return out.length?out:null;
+}
+
+/* Load published updates from live D1 /api/events/upcoming, falling back to static JSON when offline. */
 function csoLoadPublishedUpdates(){
-  return fetch('data/latest-updates.json',{cache:'no-store'})
-    .then(response=>{
-      if(!response.ok)throw Error('Updates HTTP '+response.status);
-      return response.json();
+  return fetch('/api/events/upcoming',{cache:'no-store'})
+    .then(r=>r.ok?r.json():null)
+    .then(ev=>csoMapEventsToUpdates(ev))
+    .catch(()=>null)
+    .then(liveRecords=>{
+      if(liveRecords)return liveRecords;
+      return fetch('data/latest-updates.json',{cache:'no-store'})
+        .then(response=>{
+          if(!response.ok)throw Error('Updates HTTP '+response.status);
+          return response.json();
+        });
     })
     .then(records=>{
       const categories=new Set([

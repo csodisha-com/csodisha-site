@@ -986,44 +986,61 @@
     }
   }
 
-  // 1. Prioritize SuperStore dynamic state engine
-  const liveSections = loadSuperStoreTree();
-  if (liveSections) {
-    sections = liveSections;
-    buildDashboard();
-    renderStatistics({ navigation: liveSections });
-    syncFromUrl(false);
-    if (loadStatus) {
-      loadStatus.hidden = true;
-      loadStatus.style.display = 'none';
-    }
-  } else {
-    // 2. Fallback to static JSON
-    fetch('./generated/directory.json')
-      .then(response => {
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        return response.json();
-      })
-      .then(data => {
-        if (!Array.isArray(data.navigation) || data.navigation.length !== 10) {
-          throw new Error('Invalid Community directory structure');
-        }
-
-        sections = data.navigation.map(group => ({
-          number: group.number,
-          title: group.title,
-          children: group.sections || [],
+  // 1. Prioritize live D1 /api/public/community-directory/overview, falling back to localStorage / static JSON when offline
+  fetch('/api/public/community-directory/overview', { cache: 'no-store' })
+    .then(r => (r.ok ? r.json() : null))
+    .then(ov => {
+      if (ov && Array.isArray(ov.domains) && ov.domains.length) {
+        sections = ov.domains.map((dom, idx) => ({
+          number: String(dom.num || idx + 1).padStart(2, '0'),
+          title: dom.title || dom.domain_slug || 'Community',
+          children: (dom.folders || dom.items || []).map(x => nodeToExplorer({
+            title: x.title || x.name || '',
+            line: x.summary || x.description || '',
+            slug: x.slug || ''
+          })),
           notes: []
         }));
         buildDashboard();
-        renderStatistics(data);
-
+        renderStatistics({ navigation: sections });
         syncFromUrl(false);
-
-        loadStatus.hidden = true;
-      })
-      .catch(error => {
-        loadStatus.textContent = 'Unable to load directory: ' + error.message;
-      });
-  }
+        if (loadStatus) loadStatus.hidden = true;
+        return;
+      }
+      throw new Error('Empty live overview');
+    })
+    .catch(() => {
+      const liveSections = loadSuperStoreTree();
+      if (liveSections) {
+        sections = liveSections;
+        buildDashboard();
+        renderStatistics({ navigation: liveSections });
+        syncFromUrl(false);
+        if (loadStatus) loadStatus.hidden = true;
+        return;
+      }
+      fetch('./generated/directory.json')
+        .then(response => {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          return response.json();
+        })
+        .then(data => {
+          if (!Array.isArray(data.navigation) || data.navigation.length !== 10) {
+            throw new Error('Invalid Community directory structure');
+          }
+          sections = data.navigation.map(group => ({
+            number: group.number,
+            title: group.title,
+            children: group.sections || [],
+            notes: []
+          }));
+          buildDashboard();
+          renderStatistics(data);
+          syncFromUrl(false);
+          if (loadStatus) loadStatus.hidden = true;
+        })
+        .catch(error => {
+          if (loadStatus) loadStatus.textContent = 'Unable to load directory: ' + error.message;
+        });
+    });
 })();

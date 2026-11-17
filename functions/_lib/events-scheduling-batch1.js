@@ -3,6 +3,7 @@
 // All event dates & deadlines normalized to IST (Asia/Kolkata, +05:30).
 // Sanitize all text inputs so raw <script> tags or HTML markup can never be stored or emitted.
 import { HttpError, json, readJson, validationError } from './http.js';
+import { invalidateEdgePaths, EVENTS_PUBLIC_PATHS } from './edge-cache-invalidator.js';
 import { audit } from './rbac.js';
 import { cleanStr, likeEscape } from './validate.js';
 
@@ -911,14 +912,18 @@ async function handleEvtRevisions(request, env, actor, sub) {
 /* ================= ADMIN ROUTER DISPATCHER ================= */
 export async function handleEventsSchedulingBatch1Admin(request, env, actor, id, sub, extra) {
   await ensureEventsSchedulingBatch1Schema(env.DB);
+  let res = null;
   if (id === 'overview' && request.method === 'GET') {
-    return json(await getEventsSchedulingBatch1Overview(env));
+    res = json(await getEventsSchedulingBatch1Overview(env));
+  } else if (id === 'exam-calendar') res = await handleExamCalendar(request, env, actor, sub, extra);
+  else if (id === 'admissions') res = await handleAdmissions(request, env, actor, sub, extra);
+  else if (id === 'deadlines') res = await handleDeadlines(request, env, actor, sub, extra);
+  else if (id === 'revisions') res = await handleEvtRevisions(request, env, actor, sub);
+  else throw new HttpError(404, 'NOT_FOUND', 'Unknown events admin route');
+  if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 300) {
+    await invalidateEdgePaths(request, EVENTS_PUBLIC_PATHS);
   }
-  if (id === 'exam-calendar') return handleExamCalendar(request, env, actor, sub, extra);
-  if (id === 'admissions') return handleAdmissions(request, env, actor, sub, extra);
-  if (id === 'deadlines') return handleDeadlines(request, env, actor, sub, extra);
-  if (id === 'revisions') return handleEvtRevisions(request, env, actor, sub);
-  throw new HttpError(404, 'NOT_FOUND', 'Unknown events admin route');
+  return res;
 }
 
 /* ================= PUBLIC EDGE-CACHED CALENDAR & COUNTDOWN API ================= */

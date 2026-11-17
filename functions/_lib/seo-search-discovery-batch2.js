@@ -1,6 +1,7 @@
 // SEO, Search & Discovery Batch 2 (v112): Modules 05-08
 // 05 Canonical & Redirects | 06 Robots.txt Studio | 07 Odia Tokenizer | 08 Exam Synonyms
 import { HttpError, json, readJson, validationError } from './http.js';
+import { invalidateEdgePaths, SEO_PUBLIC_PATHS } from './edge-cache-invalidator.js';
 import { audit } from './rbac.js';
 import { cleanStr, likeEscape } from './validate.js';
 import {
@@ -817,11 +818,16 @@ async function handleSynonyms(request, env, actor, sub, extra) {
 
 export async function handleSeoSearchDiscoveryBatch2Admin(request, env, actor, id, sub, extra) {
   await ensureSeoSearchDiscoveryBatch2Schema(env.DB);
-  if (id === 'redirects') return handleRedirects(request, env, actor, sub, extra);
-  if (id === 'robots') return handleRobots(request, env, actor, sub);
-  if (id === 'tokenizer') return handleTokenizer(request, env, actor, sub);
-  if (id === 'synonyms') return handleSynonyms(request, env, actor, sub, extra);
-  throw new HttpError(404, 'NOT_FOUND', 'Unknown SEO Batch 2 route');
+  let res = null;
+  if (id === 'redirects') res = await handleRedirects(request, env, actor, sub, extra);
+  else if (id === 'robots') res = await handleRobots(request, env, actor, sub);
+  else if (id === 'tokenizer') res = await handleTokenizer(request, env, actor, sub);
+  else if (id === 'synonyms') res = await handleSynonyms(request, env, actor, sub, extra);
+  else throw new HttpError(404, 'NOT_FOUND', 'Unknown SEO Batch 2 route');
+  if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 300) {
+    await invalidateEdgePaths(request, SEO_PUBLIC_PATHS);
+  }
+  return res;
 }
 
 /* ================= PUBLIC EDGE-CACHED ROBOTS.TXT ================= */

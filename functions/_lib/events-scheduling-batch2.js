@@ -5,6 +5,7 @@
 // All timestamps normalized to IST (Asia/Kolkata, +05:30). INR fees stored in integer paise.
 // Never store raw candidate PII/roll lists in public rosters (range summaries only).
 import { HttpError, json, readJson, validationError } from './http.js';
+import { invalidateEdgePaths, EVENTS_PUBLIC_PATHS } from './edge-cache-invalidator.js';
 import { audit } from './rbac.js';
 import { likeEscape } from './validate.js';
 import {
@@ -776,10 +777,15 @@ async function handleResultsDv(request, env, actor, id, sub) {
 /* ================= ADMIN ROUTER DISPATCHER ================= */
 export async function handleEventsSchedulingBatch2Admin(request, env, actor, id, sub, extra) {
   await ensureEventsSchedulingBatch2Schema(env.DB);
-  if (id === 'admit-cards') return handleAdmitCards(request, env, actor, sub, extra);
-  if (id === 'answer-keys') return handleAnswerKeys(request, env, actor, sub, extra);
-  if (id === 'results-dv') return handleResultsDv(request, env, actor, sub, extra);
-  throw new HttpError(404, 'NOT_FOUND', 'Unknown events batch 2 admin route');
+  let res = null;
+  if (id === 'admit-cards') res = await handleAdmitCards(request, env, actor, sub, extra);
+  else if (id === 'answer-keys') res = await handleAnswerKeys(request, env, actor, sub, extra);
+  else if (id === 'results-dv') res = await handleResultsDv(request, env, actor, sub, extra);
+  else throw new HttpError(404, 'NOT_FOUND', 'Unknown events batch 2 admin route');
+  if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 300) {
+    await invalidateEdgePaths(request, EVENTS_PUBLIC_PATHS);
+  }
+  return res;
 }
 
 /* ================= PUBLIC ENRICHED UPCOMING EVENTS API ================= */

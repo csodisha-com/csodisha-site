@@ -2,6 +2,7 @@
 // 13 Registration Settings | 14 Comment Settings | 15 Payment Settings | 16 Environment Status | 17 Administrative Preferences
 // Security: DPDP Act 2023 explicit consent & age guardrails; zero plaintext payment secrets or raw env secrets.
 import { HttpError, json, readJson, validationError } from './http.js';
+import { invalidateEdgePaths, SETTINGS_PUBLIC_PATHS } from './edge-cache-invalidator.js';
 import { audit } from './rbac.js';
 import { nowIstIso } from './events-scheduling-batch1.js';
 import { formatInrFromPaise } from './events-scheduling-batch2.js';
@@ -474,12 +475,17 @@ async function handleAdminPreferences(request, env, actor) {
 /* ================= ADMIN ROUTER DISPATCHER ================= */
 export async function handleSettingsConfigBatch4Admin(request, env, actor, id, sub) {
   await ensureSettingsConfigBatch4Schema(env.DB);
-  if (id === 'registration') return handleRegistration(request, env, actor);
-  if (id === 'comments') return handleComments(request, env, actor);
-  if (id === 'payments') return handlePayments(request, env, actor);
-  if (id === 'environment') return handleEnvironment(request, env, actor, sub);
-  if (id === 'admin-preferences') return handleAdminPreferences(request, env, actor);
-  throw new HttpError(404, 'NOT_FOUND', 'Unknown settings batch 4 route');
+  let res = null;
+  if (id === 'registration') res = await handleRegistration(request, env, actor);
+  else if (id === 'comments') res = await handleComments(request, env, actor);
+  else if (id === 'payments') res = await handlePayments(request, env, actor);
+  else if (id === 'environment') res = await handleEnvironment(request, env, actor, sub);
+  else if (id === 'admin-preferences') res = await handleAdminPreferences(request, env, actor);
+  else throw new HttpError(404, 'NOT_FOUND', 'Unknown settings batch 4 route');
+  if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 300) {
+    await invalidateEdgePaths(request, SETTINGS_PUBLIC_PATHS);
+  }
+  return res;
 }
 
 /* ================= PUBLIC ENRICHED SITE CONFIG API ================= */
