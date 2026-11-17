@@ -276,10 +276,29 @@ export async function getAnalyticsOverview(db) {
     b3Active = true;
   } catch { /* Batch 3 tables not yet initialized */ }
 
+  let dpdpAuditsCount = 0;
+  let dpdpLeaks = 0;
+  let digestsCount = 0;
+  let latestDigest = null;
+  let b4Active = false;
+  try {
+    const [da, dlk, dg, ldg] = await Promise.all([
+      db.prepare(`SELECT COUNT(*) AS n FROM at_dpdp_privacy_audits`).first(),
+      db.prepare(`SELECT COALESCE(SUM(pii_leaks_detected), 0) AS n FROM at_dpdp_privacy_audits`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM at_executive_digests`).first(),
+      db.prepare(`SELECT id, digest_code, period_label, headline_en, delivery_status, created_at FROM at_executive_digests ORDER BY created_at DESC LIMIT 1`).first()
+    ]);
+    dpdpAuditsCount = Number(da?.n || 0);
+    dpdpLeaks = Number(dlk?.n || 0);
+    digestsCount = Number(dg?.n || 0);
+    latestDigest = ldg || null;
+    b4Active = true;
+  } catch { /* Batch 4 tables not yet initialized */ }
+
   const modules = {};
   for (let i = 1; i <= 14; i++) {
     const k = String(i).padStart(2, '0');
-    const active = i <= 4 || (b2Active && i <= 8) || (b3Active && i <= 12);
+    const active = i <= 4 || (b2Active && i <= 8) || (b3Active && i <= 12) || (b4Active && i <= 14);
     let count = 0;
     if (i === 1) count = Number(pv7d?.n || 0);
     else if (i === 2) count = Number(sqTot?.n || 0);
@@ -293,8 +312,13 @@ export async function getAnalyticsOverview(db) {
     else if (i === 10) count = funnelCount;
     else if (i === 11) count = bilingualCount;
     else if (i === 12) count = latestCommIdx;
+    else if (i === 13) count = dpdpAuditsCount;
+    else if (i === 14) count = digestsCount;
     modules[k] = { status: active ? 'active' : 'queued', count };
   }
+
+  const dpdpCompliant = dpdpLeaks === 0;
+  const dpdpLabel = dpdpCompliant ? '100% Compliant' : `${dpdpLeaks} Leak(s) Flagged`;
 
   return {
     cookieless_verified: true,
@@ -314,7 +338,28 @@ export async function getAnalyticsOverview(db) {
     avg_funnel_completion_pct: avgFunnelPct,
     overall_odia_share_pct: overallOdiaPct,
     latest_community_engagement_index: latestCommIdx,
-    modules
+    dpdp_privacy_compliant: dpdpCompliant,
+    dpdp_compliance_label: dpdpLabel,
+    latest_executive_digest: latestDigest,
+    modules,
+    suite_14: {
+      total_modules: 14,
+      active_modules: Object.values(modules).filter(m => m.status === 'active').length,
+      pageviews_7d: Number(pv7d?.n || 0),
+      total_search_volume: Number(sqTot?.n || 0),
+      open_zero_result_queries: Number(zeroOpen?.n || 0),
+      total_downloads: Number(dlTot?.n || 0),
+      top_odisha_district: topDistrict,
+      cwv_good_pass_rate_pct: cwvGoodPct,
+      avg_csat_score: avgCsat,
+      open_404_incidents: open404,
+      total_outbound_clicks_30d: outbound30d,
+      overall_odia_share_pct: overallOdiaPct,
+      latest_community_engagement_index: latestCommIdx,
+      dpdp_compliance_label: dpdpLabel,
+      latest_executive_digest: latestDigest,
+      modules
+    }
   };
 }
 

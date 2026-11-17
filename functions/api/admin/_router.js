@@ -38,6 +38,7 @@ import { handleUsersCommunityBatch5Admin, ensureUsersCommunityBatch5Schema, getF
 import { handleAnalyticsBatch1Admin } from '../../_lib/analytics-telemetry-batch1.js';
 import { handleAnalyticsBatch2Admin, ensureAnalyticsTelemetryBatch2Schema } from '../../_lib/analytics-telemetry-batch2.js';
 import { handleAnalyticsBatch3Admin, ensureAnalyticsTelemetryBatch3Schema } from '../../_lib/analytics-telemetry-batch3.js';
+import { handleAnalyticsBatch4Admin, ensureAnalyticsTelemetryBatch4Schema, getFull14ModuleAnalyticsOverview } from '../../_lib/analytics-telemetry-batch4.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -100,13 +101,19 @@ export async function handleAdminApi(request, env) {
     if (resource === 'analytics') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (['dpdp-audits', 'executive-digests'].includes(id)) {
+        return await handleAnalyticsBatch4Admin(request, env, actor, id, sub, extra);
+      }
       if (['outbound', 'funnels', 'bilingual', 'community-index'].includes(id)) {
         return await handleAnalyticsBatch3Admin(request, env, actor, id, sub, extra);
       }
       if (['demographics', 'web-vitals', 'feedback', 'sentinel-404'].includes(id)) {
         return await handleAnalyticsBatch2Admin(request, env, actor, id, sub, extra);
       }
-      if (id === 'overview' || id === 'revisions') await ensureAnalyticsTelemetryBatch3Schema(env.DB);
+      if (id === 'overview' && method === 'GET') {
+        return json(await getFull14ModuleAnalyticsOverview(env));
+      }
+      if (id === 'revisions') await ensureAnalyticsTelemetryBatch4Schema(env.DB);
       return await handleAnalyticsBatch1Admin(request, env, actor, id, sub, extra);
     }
     if (resource === 'candidates') {
