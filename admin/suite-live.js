@@ -428,18 +428,19 @@
     return true;
   }
 
-  async function publishFlash() {
+  async function publishFlash(payload) {
+    var cfg = payload && typeof payload === 'object' ? payload : {};
     var res = await fetch('/api/admin/banner', {
       method: 'PUT',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', 'X-CSO-CSRF': '1' },
       body: JSON.stringify({
-        active: true,
-        severity: 'urgent',
-        headline: 'Urgent: OSSC CGL 2026 official hall ticket download released',
-        context: 'Official examination portal has issued hall tickets. Download links and instructions verified.',
-        ctaText: 'Check hall ticket',
-        ctaUrl: '/jobs-careers/'
+        active: cfg.active !== undefined ? Boolean(cfg.active) : true,
+        severity: String(cfg.severity || cfg.category || 'info'),
+        headline: String(cfg.title || cfg.headline || ''),
+        context: String(cfg.body || cfg.context || ''),
+        ctaText: String(cfg.ctaText || 'View update'),
+        ctaUrl: String(cfg.ctaUrl || '/')
       })
     });
     var d = await res.json().catch(function () { return {}; });

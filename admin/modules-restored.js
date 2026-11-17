@@ -11862,9 +11862,9 @@
   }
 
   /* =========================================================================
-     MAIN DISPATCHER
+     MAIN DISPATCHER (WITH ON-DEMAND LAZY SUITE LOADING)
      ========================================================================= */
-  function render(folderId, moduleId, root, actions) {
+  function renderSync(folderId, moduleId, root, actions) {
     // Folder 01 specialized tools
     if (moduleId === 'module-01-001') { renderOverviewCC(root, actions); return true; }
     if (moduleId === 'module-01-002') { renderEdgeStudio(root, actions); return true; }
@@ -12254,7 +12254,33 @@
     return false;
   }
 
+  async function renderWithLazy(folderId, moduleId, root, actions) {
+    if (window.CSOLazySuiteLoader && typeof window.CSOLazySuiteLoader.ensureForModule === 'function') {
+      await window.CSOLazySuiteLoader.ensureForModule(moduleId, folderId);
+    }
+    return renderSync(folderId, moduleId, root, actions);
+  }
+
+  function render(folderId, moduleId, root, actions) {
+    var loader = window.CSOLazySuiteLoader;
+    if (loader && typeof loader.hasScriptsFor === 'function' && loader.hasScriptsFor(moduleId, folderId) && loader.needsLazyScripts(moduleId, folderId)) {
+      if (root) {
+        root.textContent = '';
+        var note = document.createElement('div');
+        note.className = 'cso-edu-muted';
+        note.textContent = 'Loading suite module...';
+        root.appendChild(note);
+      }
+      renderWithLazy(folderId, moduleId, root, actions).catch(function (err) {
+        if (root) root.textContent = (err && err.message) ? err.message : 'Failed to load module scripts';
+      });
+      return true;
+    }
+    return renderSync(folderId, moduleId, root, actions);
+  }
+
   window.CSORestoredModules = {
-    render: render
+    render: render,
+    renderAsync: renderWithLazy
   };
 })(window, document);
