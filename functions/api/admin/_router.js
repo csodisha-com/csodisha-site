@@ -60,6 +60,7 @@ import { handleSettingsConfigBatch2Admin, ensureSettingsConfigBatch2Schema, getF
 import { handleSettingsConfigBatch3Admin, ensureSettingsConfigBatch3Schema, getFull12ModuleSettingsOverview } from '../../_lib/settings-configuration-batch3.js';
 import { handleSettingsConfigBatch4Admin, ensureSettingsConfigBatch4Schema, getFull17ModuleSettingsOverview } from '../../_lib/settings-configuration-batch4.js';
 import { handleMasterFeatureRegistryBatch1Admin } from '../../_lib/master-feature-registry-batch1.js';
+import { handleMasterFeatureRegistryBatch2Admin, ensureMasterFeatureRegistryBatch2Schema, getFull8ModuleRegistryOverview } from '../../_lib/master-feature-registry-batch2.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -232,6 +233,15 @@ export async function handleAdminApi(request, env) {
     if (resource === 'registry') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (['api-endpoints', 'coverage-matrix', 'missing-controls', 'dependencies'].includes(id)) {
+        return await handleMasterFeatureRegistryBatch2Admin(request, env, actor, id, sub, extra);
+      }
+      if (id === 'overview' && method === 'GET') {
+        return json(await getFull8ModuleRegistryOverview(env));
+      }
+      if (id === 'revisions') {
+        await ensureMasterFeatureRegistryBatch2Schema(env.DB);
+      }
       return await handleMasterFeatureRegistryBatch1Admin(request, env, actor, id, sub, extra);
     }
     if (resource === 'candidates') {

@@ -12186,6 +12186,12 @@
       return window.CSORegistryBatch1.render(moduleId, root, actions);
     }
 
+    // Folder 19: Master Feature Registry Batch 2 (05-08)
+    if ((moduleId === 'module-19-005' || moduleId === 'module-19-006' || moduleId === 'module-19-007' || moduleId === 'module-19-008') &&
+        window.CSORegistryBatch2 && typeof window.CSORegistryBatch2.render === 'function') {
+      return window.CSORegistryBatch2.render(moduleId, root, actions);
+    }
+
     // Folder 19: Master Feature Registry
     if (folderId === 'folder-19' || moduleId.startsWith('module-19-') || moduleId.startsWith('module-mfr-')) {
       renderMasterRegistry(root, actions);

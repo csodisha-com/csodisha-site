@@ -280,3 +280,8 @@
 .cso-reg-badge.is-production_live, .cso-reg-badge.is-verified_200, .cso-reg-badge.is-active_live, .cso-reg-badge.is-synced_verified { background: #dcfce7; color: #166534; }
 .cso-reg-badge.is-beta_rollout, .cso-reg-badge.is-redirect_301, .cso-reg-badge.is-refactoring, .cso-reg-badge.is-pending_migration { background: #fef3c7; color: #92400e; }
 .cso-reg-badge.is-deprecated, .cso-reg-badge.is-needs_review, .cso-reg-badge.is-archived { background: #fee2e2; color: #991b1b; }
+
+/* Master Feature Registry Batch 2 (05-08) */
+.cso-reg-badge.is-verified_live, .cso-reg-badge.is-complete_100, .cso-reg-badge.is-resolved_wired, .cso-reg-badge.is-healthy_verified, .cso-reg-badge.is-p3_enhancement { background: #dcfce7; color: #166534; }
+.cso-reg-badge.is-in_progress, .cso-reg-badge.is-in_development, .cso-reg-badge.is-degraded_warning, .cso-reg-badge.is-p2_medium { background: #fef3c7; color: #92400e; }
+.cso-reg-badge.is-gap_detected, .cso-reg-badge.is-open_gap, .cso-reg-badge.is-broken_link, .cso-reg-badge.is-p1_high { background: #fee2e2; color: #991b1b; }
