@@ -188,3 +188,21 @@
 .cso-seo-sim-title { font-size: 14px; font-weight: 700; color: #1e40af; line-height: 1.3; }
 .cso-seo-sim-url { font-size: 11px; color: #15803d; word-break: break-all; }
 .cso-seo-sim-desc { font-size: 12px; color: #334155; line-height: 1.4; }
+
+
+/* Events & Scheduling Batch 1 (01-03) */
+.cso-evt-kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.cso-evt-kpi-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; }
+.cso-evt-kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; }
+.cso-evt-kpi-val { font-size: 20px; font-weight: 800; color: #0f172a; }
+.cso-evt-filter-stack { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.cso-evt-pill-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.cso-evt-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #f1f5f9; color: #334155; }
+.cso-evt-badge.is-confirmed, .cso-evt-badge.is-active_live, .cso-evt-badge.is-open_normal { background: #dcfce7; color: #166534; }
+.cso-evt-badge.is-tentative, .cso-evt-badge.is-upcoming, .cso-evt-badge.is-closing_72h, .cso-evt-badge.is-extended { background: #fef3c7; color: #92400e; }
+.cso-evt-badge.is-postponed, .cso-evt-badge.is-final_24h { background: #fee2e2; color: #991b1b; }
+.cso-evt-badge.is-completed, .cso-evt-badge.is-closed, .cso-evt-badge.is-expired, .cso-evt-badge.is-archived { background: #e2e8f0; color: #475569; }
+.cso-evt-countdown-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #eff6ff; color: #1d4ed8; }
+.cso-evt-countdown-pill.is-urgent { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.cso-evt-ticker-btn { cursor: pointer; }
+.cso-evt-ticker-btn.is-pinned { background: #0f766e; color: #ffffff; border-color: #0f766e; }

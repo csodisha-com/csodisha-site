@@ -12133,6 +12133,12 @@
       return renderSeoStudio(moduleId, root, actions);
     }
 
+    // Folder 14: Events & Scheduling Batch 1 (01-03)
+    if ((moduleId === 'module-es-001' || moduleId === 'module-es-002' || moduleId === 'module-es-003') &&
+        window.CSOEventsBatch1 && typeof window.CSOEventsBatch1.render === 'function') {
+      return window.CSOEventsBatch1.render(moduleId, root, actions);
+    }
+
     // Folder 14: Events & Scheduling -> Live Editorial/Deadline Calendar
     if (folderId === 'folder-14' && moduleId !== 'module-14-006' && moduleId !== 'module-14-007') {
       return renderFolder04('module-04-009', root, actions);

@@ -56,6 +56,7 @@ import { handlePublicMarketingLandingPagesApi } from './functions/_lib/marketing
 import { handlePublicSeoMetaApi, handlePublicSeoSitemapApi, handlePublicSeoFeedApi } from './functions/_lib/seo-search-discovery-batch1.js';
 import { handlePublicSeoRobotsTxt } from './functions/_lib/seo-search-discovery-batch2.js';
 import { handlePublicSeoAutocompleteApi } from './functions/_lib/seo-search-discovery-batch3.js';
+import { handlePublicEventsUpcomingApi } from './functions/_lib/events-scheduling-batch1.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -321,6 +322,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
     '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/community/posts', '/api/community/qna', '/api/search/synonyms', '/api/public/about-overview', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources', '/api/marketing/banners', '/api/marketing/landing-pages', '/api/seo/meta', '/api/seo/robots.txt', '/api/seo/autocomplete',
+    '/api/events/upcoming',
     '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
   const allUrls = new Set(basePaths.map(p => `${origin}${p}`));
@@ -449,6 +451,17 @@ export default {
         recordPublicCachePut(edgeCache, request, acRes, ctx);
       }
       return acRes;
+    }
+    if (pathname === '/api/events/upcoming' && (request.method === 'GET' || request.method === 'HEAD')) {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const evRes = await handlePublicEventsUpcomingApi(request, env);
+      if (isAnonGet && evRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, evRes, ctx);
+      }
+      return evRes;
     }
     if (pathname === '/api/seo/robots.txt' && (request.method === 'GET' || request.method === 'HEAD')) {
       if (edgeCache && isAnonGet) {
