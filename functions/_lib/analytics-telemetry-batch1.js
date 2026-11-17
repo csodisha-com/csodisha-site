@@ -249,10 +249,37 @@ export async function getAnalyticsOverview(db) {
     b2Active = true;
   } catch { /* Batch 2 tables not yet initialized */ }
 
+  let outbound30d = 0;
+  let outboundCount = 0;
+  let avgFunnelPct = 0;
+  let funnelCount = 0;
+  let overallOdiaPct = 0;
+  let bilingualCount = 0;
+  let latestCommIdx = 0;
+  let b3Active = false;
+  try {
+    const [ob, obc, fn, bi, ci] = await Promise.all([
+      db.prepare(`SELECT COALESCE(SUM(clicks_30d), 0) AS n FROM at_outbound_referrals`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM at_outbound_referrals`).first(),
+      db.prepare(`SELECT COUNT(*) AS n, COALESCE(AVG(CASE WHEN stage_1_discovery_views > 0 THEN (stage_5_official_apply_clicks * 100.0 / stage_1_discovery_views) ELSE 0 END), 0) AS avg_pct FROM at_exam_funnels`).first(),
+      db.prepare(`SELECT COUNT(*) AS n, COALESCE(SUM(english_views), 0) AS en_v, COALESCE(SUM(odia_views), 0) AS or_v FROM at_bilingual_usage`).first(),
+      db.prepare(`SELECT engagement_index_score FROM at_community_engagement_index ORDER BY bucket_week DESC LIMIT 1`).first()
+    ]);
+    outbound30d = Number(ob?.n || 0);
+    outboundCount = Number(obc?.n || 0);
+    funnelCount = Number(fn?.n || 0);
+    avgFunnelPct = funnelCount ? Number(Number(fn?.avg_pct || 0).toFixed(1)) : 0;
+    bilingualCount = Number(bi?.n || 0);
+    const totalBilingual = Number(bi?.en_v || 0) + Number(bi?.or_v || 0);
+    overallOdiaPct = totalBilingual > 0 ? Math.round((Number(bi?.or_v || 0) / totalBilingual) * 100) : 0;
+    latestCommIdx = Number(ci?.engagement_index_score || 0);
+    b3Active = true;
+  } catch { /* Batch 3 tables not yet initialized */ }
+
   const modules = {};
   for (let i = 1; i <= 14; i++) {
     const k = String(i).padStart(2, '0');
-    const active = i <= 4 || (b2Active && i <= 8);
+    const active = i <= 4 || (b2Active && i <= 8) || (b3Active && i <= 12);
     let count = 0;
     if (i === 1) count = Number(pv7d?.n || 0);
     else if (i === 2) count = Number(sqTot?.n || 0);
@@ -262,6 +289,10 @@ export async function getAnalyticsOverview(db) {
     else if (i === 6) count = cwvCount;
     else if (i === 7) count = fbCount;
     else if (i === 8) count = open404;
+    else if (i === 9) count = outboundCount;
+    else if (i === 10) count = funnelCount;
+    else if (i === 11) count = bilingualCount;
+    else if (i === 12) count = latestCommIdx;
     modules[k] = { status: active ? 'active' : 'queued', count };
   }
 
@@ -279,6 +310,10 @@ export async function getAnalyticsOverview(db) {
     cwv_good_pass_rate_pct: cwvGoodPct,
     avg_csat_score: avgCsat,
     open_404_incidents: open404,
+    total_outbound_clicks_30d: outbound30d,
+    avg_funnel_completion_pct: avgFunnelPct,
+    overall_odia_share_pct: overallOdiaPct,
+    latest_community_engagement_index: latestCommIdx,
     modules
   };
 }

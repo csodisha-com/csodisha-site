@@ -48,6 +48,7 @@ import { handlePublicCommunityQnaApi } from './functions/_lib/users-community-ba
 import { handlePublicCommunityContributeApi } from './functions/_lib/users-community-batch5.js';
 import { handlePublicTelemetryBeacon, handlePublicSearchSynonymsApi } from './functions/_lib/analytics-telemetry-batch1.js';
 import { handlePublicFeedbackSubmitApi } from './functions/_lib/analytics-telemetry-batch2.js';
+import { handlePublicTelemetryOutboundApi } from './functions/_lib/analytics-telemetry-batch3.js';
 import { handlePublicAboutOverviewApi } from './functions/api/public/about-overview.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
@@ -457,6 +458,17 @@ export default {
       } catch (e) {
         const status = e && e.status ? e.status : 500;
         return new Response(JSON.stringify({ error: (e && e.message) || 'Feedback failed' }), {
+          status,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+    if (pathname === '/api/telemetry/outbound' && request.method === 'POST') {
+      try {
+        return await handlePublicTelemetryOutboundApi(request, env);
+      } catch (e) {
+        const status = e && e.status ? e.status : 500;
+        return new Response(JSON.stringify({ error: (e && e.message) || 'Outbound telemetry failed' }), {
           status,
           headers: { 'Content-Type': 'application/json' }
         });
