@@ -214,3 +214,12 @@
 .cso-evt-badge.is-live_download, .cso-evt-badge.is-open_for_challenge, .cso-evt-badge.is-published_live { background: #dcfce7; color: #166534; }
 .cso-evt-badge.is-scheduled_soon, .cso-evt-badge.is-under_expert_review, .cso-evt-badge.is-dv_ongoing { background: #fef3c7; color: #92400e; }
 .cso-evt-badge.is-final_published { background: #dbeafe; color: #1e40af; }
+
+/* Events & Scheduling Batch 3 (07-09) */
+.cso-evt-seat-bar { width: 120px; height: 8px; border-radius: 999px; accent-color: #0f766e; vertical-align: middle; }
+.cso-evt-seat-bar.is-full { accent-color: #dc2626; }
+.cso-evt-badge.is-open_registration, .cso-evt-badge.is-upcoming_rsvp, .cso-evt-badge.is-live_now { background: #dcfce7; color: #166534; }
+.cso-evt-badge.is-almost_full { background: #fef3c7; color: #92400e; }
+.cso-evt-badge.is-housefull_closed, .cso-evt-badge.is-cancelled { background: #fee2e2; color: #991b1b; }
+.cso-evt-badge.is-recording_available { background: #dbeafe; color: #1e40af; }
+.cso-evt-ics-pre { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; font-size: 11.5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; max-height: 420px; overflow: auto; }

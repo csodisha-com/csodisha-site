@@ -51,6 +51,7 @@ import { handleSeoSearchDiscoveryBatch3Admin, ensureSeoSearchDiscoveryBatch3Sche
 import { handleSeoSearchDiscoveryBatch4Admin, ensureSeoSearchDiscoveryBatch4Schema, getFull16ModuleSeoOverview } from '../../_lib/seo-search-discovery-batch4.js';
 import { handleEventsSchedulingBatch1Admin } from '../../_lib/events-scheduling-batch1.js';
 import { handleEventsSchedulingBatch2Admin, ensureEventsSchedulingBatch2Schema, getFull6ModuleEventsOverview } from '../../_lib/events-scheduling-batch2.js';
+import { handleEventsSchedulingBatch3Admin, ensureEventsSchedulingBatch3Schema, getFull9ModuleEventsOverview } from '../../_lib/events-scheduling-batch3.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -189,14 +190,17 @@ export async function handleAdminApi(request, env) {
     if (resource === 'events') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (['meetups', 'webinars', 'calendar-sync'].includes(id)) {
+        return await handleEventsSchedulingBatch3Admin(request, env, actor, id, sub, extra);
+      }
       if (['admit-cards', 'answer-keys', 'results-dv'].includes(id)) {
         return await handleEventsSchedulingBatch2Admin(request, env, actor, id, sub, extra);
       }
       if (id === 'overview' && method === 'GET') {
-        return json(await getFull6ModuleEventsOverview(env));
+        return json(await getFull9ModuleEventsOverview(env));
       }
       if (id === 'revisions') {
-        await ensureEventsSchedulingBatch2Schema(env.DB);
+        await ensureEventsSchedulingBatch3Schema(env.DB);
       }
       return await handleEventsSchedulingBatch1Admin(request, env, actor, id, sub, extra);
     }

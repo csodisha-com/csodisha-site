@@ -57,6 +57,7 @@ import { handlePublicSeoMetaApi, handlePublicSeoSitemapApi, handlePublicSeoFeedA
 import { handlePublicSeoRobotsTxt } from './functions/_lib/seo-search-discovery-batch2.js';
 import { handlePublicSeoAutocompleteApi } from './functions/_lib/seo-search-discovery-batch3.js';
 import { handlePublicEventsUpcomingBatch2Api } from './functions/_lib/events-scheduling-batch2.js';
+import { handlePublicEventsIcsFeedApi } from './functions/_lib/events-scheduling-batch3.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -322,7 +323,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
     '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/community/posts', '/api/community/qna', '/api/search/synonyms', '/api/public/about-overview', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources', '/api/marketing/banners', '/api/marketing/landing-pages', '/api/seo/meta', '/api/seo/robots.txt', '/api/seo/autocomplete',
-    '/api/events/upcoming',
+    '/api/events/upcoming', '/api/events/calendar/odisha-all-exams.ics', '/api/events/calendar/opsc-ossc-osssc-deadlines.ics', '/api/events/calendar/admit-cards-results.ics', '/api/events/calendar/workshops-webinars.ics',
     '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
   const allUrls = new Set(basePaths.map(p => `${origin}${p}`));
@@ -462,6 +463,18 @@ export default {
         recordPublicCachePut(edgeCache, request, evRes, ctx);
       }
       return evRes;
+    }
+    if (pathname.startsWith('/api/events/calendar/') && (request.method === 'GET' || request.method === 'HEAD')) {
+      const slug = pathname.slice('/api/events/calendar/'.length);
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const icsRes = await handlePublicEventsIcsFeedApi(request, env, slug);
+      if (isAnonGet && icsRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, icsRes, ctx);
+      }
+      return icsRes;
     }
     if (pathname === '/api/seo/robots.txt' && (request.method === 'GET' || request.method === 'HEAD')) {
       if (edgeCache && isAnonGet) {
