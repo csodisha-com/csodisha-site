@@ -11968,6 +11968,12 @@
       return window.CSOFilesMediaBatch4.render(moduleId, root, actions);
     }
 
+    // Folder 08: Payments & Finance Batch 1 (01-04)
+    if ((moduleId === 'module-08-001' || moduleId === 'module-08-002' || moduleId === 'module-08-003' || moduleId === 'module-08-004') &&
+        window.CSOPaymentsFinanceBatch1 && typeof window.CSOPaymentsFinanceBatch1.render === 'function') {
+      return window.CSOPaymentsFinanceBatch1.render(moduleId, root, actions);
+    }
+
     // Folder 05: 4-Tier Exam & Cohort Catalog Manager
     if (moduleId === 'module-05-007' || moduleId === 'module-05-008') {
       renderExamTaxonomyStudio(root, actions);
