@@ -270,3 +270,13 @@
 .cso-cfg-cov-bar { width: 110px; height: 8px; border-radius: 999px; accent-color: #1B4332; vertical-align: middle; }
 .cso-cfg-preview-strip { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
 .cso-cfg-preview-item { display: flex; flex-direction: column; gap: 2px; }
+
+/* Master Feature Registry Batch 1 (01-04) */
+.cso-reg-kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.cso-reg-kpi-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; }
+.cso-reg-kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; }
+.cso-reg-kpi-val { font-size: 20px; font-weight: 800; color: #0f172a; }
+.cso-reg-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #f1f5f9; color: #334155; }
+.cso-reg-badge.is-production_live, .cso-reg-badge.is-verified_200, .cso-reg-badge.is-active_live, .cso-reg-badge.is-synced_verified { background: #dcfce7; color: #166534; }
+.cso-reg-badge.is-beta_rollout, .cso-reg-badge.is-redirect_301, .cso-reg-badge.is-refactoring, .cso-reg-badge.is-pending_migration { background: #fef3c7; color: #92400e; }
+.cso-reg-badge.is-deprecated, .cso-reg-badge.is-needs_review, .cso-reg-badge.is-archived { background: #fee2e2; color: #991b1b; }

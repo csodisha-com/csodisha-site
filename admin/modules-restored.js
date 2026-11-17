@@ -12180,6 +12180,12 @@
       return true;
     }
 
+    // Folder 19: Master Feature Registry Batch 1 (01-04)
+    if ((moduleId === 'module-19-001' || moduleId === 'module-19-002' || moduleId === 'module-19-003' || moduleId === 'module-19-004') &&
+        window.CSORegistryBatch1 && typeof window.CSORegistryBatch1.render === 'function') {
+      return window.CSORegistryBatch1.render(moduleId, root, actions);
+    }
+
     // Folder 19: Master Feature Registry
     if (folderId === 'folder-19' || moduleId.startsWith('module-19-') || moduleId.startsWith('module-mfr-')) {
       renderMasterRegistry(root, actions);
