@@ -12162,6 +12162,12 @@
       return window.CSOIntegrationsBatch1.render(moduleId, root, actions);
     }
 
+    // Folder 15: Integrations, Webhooks & Cloudflare Edge Batch 2 (05-08)
+    if ((moduleId === 'module-int-005' || moduleId === 'module-int-006' || moduleId === 'module-int-007' || moduleId === 'module-int-008') &&
+        window.CSOIntegrationsBatch2 && typeof window.CSOIntegrationsBatch2.render === 'function') {
+      return window.CSOIntegrationsBatch2.render(moduleId, root, actions);
+    }
+
     // Folder 15: Integrations & Cloudflare Edge -> Live Edge Prober
     if (folderId === 'folder-15') {
       renderLiveSiteStatus(root, actions);

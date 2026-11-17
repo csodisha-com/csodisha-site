@@ -58,6 +58,7 @@ import { handlePublicSeoRobotsTxt } from './functions/_lib/seo-search-discovery-
 import { handlePublicSeoAutocompleteApi } from './functions/_lib/seo-search-discovery-batch3.js';
 import { handlePublicEventsUpcomingBatch2Api } from './functions/_lib/events-scheduling-batch2.js';
 import { handlePublicEventsIcsFeedApi } from './functions/_lib/events-scheduling-batch3.js';
+import { handlePublicInboundWebhookApi } from './functions/_lib/integrations-webhooks-edge-batch2.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -475,6 +476,10 @@ export default {
         recordPublicCachePut(edgeCache, request, icsRes, ctx);
       }
       return icsRes;
+    }
+    if (pathname.startsWith('/api/webhooks/inbound/')) {
+      const slug = pathname.slice('/api/webhooks/inbound/'.length);
+      return await handlePublicInboundWebhookApi(request, env, slug);
     }
     if (pathname === '/api/seo/robots.txt' && (request.method === 'GET' || request.method === 'HEAD')) {
       if (edgeCache && isAnonGet) {

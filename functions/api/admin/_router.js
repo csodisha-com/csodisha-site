@@ -53,6 +53,7 @@ import { handleEventsSchedulingBatch1Admin } from '../../_lib/events-scheduling-
 import { handleEventsSchedulingBatch2Admin, ensureEventsSchedulingBatch2Schema, getFull6ModuleEventsOverview } from '../../_lib/events-scheduling-batch2.js';
 import { handleEventsSchedulingBatch3Admin, ensureEventsSchedulingBatch3Schema, getFull9ModuleEventsOverview } from '../../_lib/events-scheduling-batch3.js';
 import { handleIntegrationsEdgeBatch1Admin } from '../../_lib/integrations-webhooks-edge-batch1.js';
+import { handleIntegrationsEdgeBatch2Admin, ensureIntegrationsEdgeBatch2Schema, getFull8ModuleIntegrationsOverview } from '../../_lib/integrations-webhooks-edge-batch2.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -208,6 +209,15 @@ export async function handleAdminApi(request, env) {
     if (resource === 'integrations') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (['whatsapp-connectors', 'api-gateway', 'inbound-receivers', 'd1-sync'].includes(id)) {
+        return await handleIntegrationsEdgeBatch2Admin(request, env, actor, id, sub, extra);
+      }
+      if (id === 'overview' && method === 'GET') {
+        return json(await getFull8ModuleIntegrationsOverview(env));
+      }
+      if (id === 'revisions') {
+        await ensureIntegrationsEdgeBatch2Schema(env.DB);
+      }
       return await handleIntegrationsEdgeBatch1Admin(request, env, actor, id, sub, extra);
     }
     if (resource === 'candidates') {
