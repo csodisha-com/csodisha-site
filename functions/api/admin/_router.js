@@ -47,6 +47,7 @@ import { handleMarketingAdvertisingBatch2Admin, ensureMarketingAdvertisingBatch2
 import { handleMarketingAdvertisingBatch3Admin, ensureMarketingAdvertisingBatch3Schema, getFull10ModuleMarketingOverview } from '../../_lib/marketing-advertising-batch3.js';
 import { handleSeoSearchDiscoveryBatch1Admin } from '../../_lib/seo-search-discovery-batch1.js';
 import { handleSeoSearchDiscoveryBatch2Admin, ensureSeoSearchDiscoveryBatch2Schema, getFull8ModuleSeoOverview } from '../../_lib/seo-search-discovery-batch2.js';
+import { handleSeoSearchDiscoveryBatch3Admin, ensureSeoSearchDiscoveryBatch3Schema, getFull12ModuleSeoOverview } from '../../_lib/seo-search-discovery-batch3.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -163,14 +164,18 @@ export async function handleAdminApi(request, env) {
     if (resource === 'seo') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (['autocomplete', 'zero-fallbacks', 'indexnow', 'edge-hints'].includes(id)) {
+        return await handleSeoSearchDiscoveryBatch3Admin(request, env, actor, id, sub, extra);
+      }
       if (['redirects', 'robots', 'tokenizer', 'synonyms'].includes(id)) {
         return await handleSeoSearchDiscoveryBatch2Admin(request, env, actor, id, sub, extra);
       }
       if (id === 'overview' && method === 'GET') {
-        return json(await getFull8ModuleSeoOverview(env.DB));
+        return json(await getFull12ModuleSeoOverview(env.DB));
       }
       if (id === 'revisions') {
         await ensureSeoSearchDiscoveryBatch2Schema(env.DB);
+        await ensureSeoSearchDiscoveryBatch3Schema(env.DB);
       }
       return await handleSeoSearchDiscoveryBatch1Admin(request, env, actor, id, sub, extra);
     }
