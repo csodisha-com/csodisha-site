@@ -39,6 +39,7 @@ import { handleAnalyticsBatch1Admin } from '../../_lib/analytics-telemetry-batch
 import { handleAnalyticsBatch2Admin, ensureAnalyticsTelemetryBatch2Schema } from '../../_lib/analytics-telemetry-batch2.js';
 import { handleAnalyticsBatch3Admin, ensureAnalyticsTelemetryBatch3Schema } from '../../_lib/analytics-telemetry-batch3.js';
 import { handleAnalyticsBatch4Admin, ensureAnalyticsTelemetryBatch4Schema, getFull14ModuleAnalyticsOverview } from '../../_lib/analytics-telemetry-batch4.js';
+import { handleCommunicationsBatch1Admin } from '../../_lib/communications-batch1.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -115,6 +116,11 @@ export async function handleAdminApi(request, env) {
       }
       if (id === 'revisions') await ensureAnalyticsTelemetryBatch4Schema(env.DB);
       return await handleAnalyticsBatch1Admin(request, env, actor, id, sub, extra);
+    }
+    if (resource === 'communications') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handleCommunicationsBatch1Admin(request, env, actor, id, sub, extra);
     }
     if (resource === 'candidates') {
       const actor = await requireRole(request, env, ['admin']);
