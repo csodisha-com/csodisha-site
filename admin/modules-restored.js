@@ -12126,6 +12126,12 @@
       return true;
     }
 
+    // Folder 12: Marketing & Advertising Batch 2 (05-08)
+    if ((moduleId === 'module-12-005' || moduleId === 'module-12-006' || moduleId === 'module-12-007' || moduleId === 'module-12-008') &&
+        window.CSOMarketingBatch2 && typeof window.CSOMarketingBatch2.render === 'function') {
+      return window.CSOMarketingBatch2.render(moduleId, root, actions);
+    }
+
     // Folder 12: Marketing & Advertising Batch 1 (01-04)
     if ((moduleId === 'module-12-001' || moduleId === 'module-12-002' || moduleId === 'module-12-003' || moduleId === 'module-12-004') &&
         window.CSOMarketingBatch1 && typeof window.CSOMarketingBatch1.render === 'function') {

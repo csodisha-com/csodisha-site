@@ -43,6 +43,7 @@ import { handleCommunicationsBatch1Admin } from '../../_lib/communications-batch
 import { handleCommunicationsBatch2Admin, ensureCommunicationsBatch2Schema } from '../../_lib/communications-batch2.js';
 import { handleCommunicationsBatch3Admin, ensureCommunicationsBatch3Schema, getFull12ModuleCommunicationsOverview } from '../../_lib/communications-batch3.js';
 import { handleMarketingAdvertisingBatch1Admin } from '../../_lib/marketing-advertising-batch1.js';
+import { handleMarketingAdvertisingBatch2Admin, ensureMarketingAdvertisingBatch2Schema, getMarketingBatch2Overview } from '../../_lib/marketing-advertising-batch2.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -141,6 +142,13 @@ export async function handleAdminApi(request, env) {
     if (resource === 'marketing') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (['referrals', 'analytics', 'utm', 'social-cards'].includes(id)) {
+        return await handleMarketingAdvertisingBatch2Admin(request, env, actor, id, sub, extra);
+      }
+      if (id === 'overview' && method === 'GET') {
+        return json(await getMarketingBatch2Overview(env));
+      }
+      if (id === 'revisions') await ensureMarketingAdvertisingBatch2Schema(env.DB);
       return await handleMarketingAdvertisingBatch1Admin(request, env, actor, id, sub, extra);
     }
     if (resource === 'candidates') {

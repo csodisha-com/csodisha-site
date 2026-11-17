@@ -51,6 +51,7 @@ import { handlePublicFeedbackSubmitApi } from './functions/_lib/analytics-teleme
 import { handlePublicTelemetryOutboundApi } from './functions/_lib/analytics-telemetry-batch3.js';
 import { handlePublicAboutOverviewApi } from './functions/api/public/about-overview.js';
 import { handlePublicMarketingBannersApi } from './functions/_lib/marketing-advertising-batch1.js';
+import { handlePublicMarketingRefApi } from './functions/_lib/marketing-advertising-batch2.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -408,6 +409,9 @@ export default {
         recordPublicCachePut(edgeCache, request, mktBnrRes, ctx);
       }
       return mktBnrRes;
+    }
+    if (pathname === '/api/marketing/ref' && request.method === 'POST') {
+      return handlePublicMarketingRefApi(request, env);
     }
     if (pathname === '/api/community/posts' && (request.method === 'GET' || request.method === 'HEAD')) {
       if (edgeCache && isAnonGet) {
