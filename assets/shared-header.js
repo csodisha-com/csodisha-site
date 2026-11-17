@@ -1114,9 +1114,31 @@
     } catch (e) {}
   }
 
+  function syncBrandLogoMarks() {
+    const imgs = document.querySelectorAll('.cso-brand-logo, .cso-footer-logo, #cso-brand-logo');
+    imgs.forEach(node => {
+      if (node.tagName === 'IMG') {
+        node.src = '/assets/img/cso-logo-96.webp';
+        node.alt = 'Common Sense Odisha Logo';
+        node.width = 36;
+        node.height = 36;
+        node.classList.add('cso-brand-emblem');
+      } else {
+        const img = document.createElement('img');
+        img.src = '/assets/img/cso-logo-96.webp';
+        img.alt = 'Common Sense Odisha Logo';
+        img.width = 36;
+        img.height = 36;
+        img.className = 'cso-brand-emblem';
+        node.replaceChildren(img);
+      }
+    });
+  }
+
   function init() {
     ensureGlobalEnhancements();
     applySettings();
+    syncBrandLogoMarks();
     renderControls();
     renderAuth();
     renderNav();

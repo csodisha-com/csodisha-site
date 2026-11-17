@@ -10,9 +10,15 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "/assets/favicon.svg",
-      "sizes": "48x48 72x72 96x96 128x128 192x192 256x256 512x512",
-      "type": "image/svg+xml",
+      "src": "/assets/img/cso-logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/img/cso-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
@@ -22,19 +28,19 @@
       "name": "Candidate Overview",
       "short_name": "Overview",
       "url": "/student-dashboard/#tab-overview",
-      "icons": [{ "src": "/assets/favicon.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+      "icons": [{ "src": "/assets/img/cso-logo-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Daily GK Drill",
       "short_name": "Daily Drill",
       "url": "/student-dashboard/#tool-daily-drill",
-      "icons": [{ "src": "/assets/favicon.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+      "icons": [{ "src": "/assets/img/cso-logo-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Exam Calendar",
       "short_name": "Calendar",
       "url": "/student-dashboard/#tool-calendar",
-      "icons": [{ "src": "/assets/favicon.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+      "icons": [{ "src": "/assets/img/cso-logo-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

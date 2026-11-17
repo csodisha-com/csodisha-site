@@ -8257,3 +8257,26 @@ select:focus-visible {
   color: var(--cso-text-muted) !important;
 }
 
+/* ── v139: Circular Brand Emblem Sizing & Subtle Hover Glow ── */
+.cso-brand-emblem,
+.cso-brand-logo.cso-brand-emblem,
+.cso-footer-logo.cso-brand-emblem,
+.cso-sidebar-emblem.cso-brand-emblem,
+.cso-schemes-badge.cso-brand-emblem,
+.cso-comm-badge.cso-brand-emblem,
+.cso-sl-brand-badge.cso-brand-emblem {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: transparent;
+  flex-shrink: 0;
+  transition: transform 180ms ease, filter 180ms ease;
+}
+
+.cso-brand-emblem:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 6px var(--cso-highlight-ring, rgba(27, 67, 50, 0.25)));
+}
+
+
