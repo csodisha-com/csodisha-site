@@ -544,13 +544,35 @@ export async function getUsersOverview(db) {
     b3Active = true;
   } catch { /* Batch 3 tables not yet initialized */ }
 
+  let actEvents24h = 0;
+  let openDpdp = 0;
+  let activeThreads = 0;
+  let unansweredQna = 0;
+  let verifiedQna = 0;
+  let b4Active = false;
+  try {
+    const [ae, dp, ft, uq, vq] = await Promise.all([
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_user_activity_logs`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_data_access_requests WHERE fulfillment_status IN ('open', 'processing')`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_forum_threads WHERE status = 'published'`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_student_questions WHERE answer_status = 'unanswered'`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_student_questions WHERE answer_status IN ('answered_verified', 'featured_faq')`).first()
+    ]);
+    actEvents24h = Number(ae?.n || 0);
+    openDpdp = Number(dp?.n || 0);
+    activeThreads = Number(ft?.n || 0);
+    unansweredQna = Number(uq?.n || 0);
+    verifiedQna = Number(vq?.n || 0);
+    b4Active = true;
+  } catch { /* Batch 4 tables not yet initialized */ }
+
   const totalUsers = Number(tot?.n || 0);
   const activeAdmins = Number(admAct?.n || 0);
   const totalRoles = Number(rolesCnt?.n || 0);
   const modules = {};
   for (let i = 1; i <= 19; i++) {
     const k = String(i).padStart(2, '0');
-    const active = i <= 4 || (b2Active && i <= 8) || (b3Active && i <= 12);
+    const active = i <= 4 || (b2Active && i <= 8) || (b3Active && i <= 12) || (b4Active && i <= 16);
     let count = 0;
     if (i === 1 || i === 2) count = totalUsers;
     else if (i === 3) count = totalRoles;
@@ -563,6 +585,10 @@ export async function getUsersOverview(db) {
     else if (i === 10) count = pendingMod;
     else if (i === 11) count = openReports;
     else if (i === 12) count = activeBlocks;
+    else if (i === 13) count = actEvents24h;
+    else if (i === 14) count = openDpdp;
+    else if (i === 15) count = activeThreads;
+    else if (i === 16) count = unansweredQna + verifiedQna;
     modules[k] = { status: active ? 'active' : 'queued', count };
   }
   return {
@@ -581,6 +607,11 @@ export async function getUsersOverview(db) {
     pending_moderation_count: pendingMod,
     open_user_reports_count: openReports,
     active_blocked_accounts_count: activeBlocks,
+    activity_events_24h: actEvents24h,
+    open_dpdp_requests: openDpdp,
+    active_forum_threads: activeThreads,
+    unanswered_questions_count: unansweredQna,
+    verified_questions_count: verifiedQna,
     district_breakdown: districts || [],
     role_breakdown: roles || [],
     modules
