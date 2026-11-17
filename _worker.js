@@ -47,6 +47,7 @@ import { handlePublicCommunityPostsApi } from './functions/_lib/users-community-
 import { handlePublicCommunityQnaApi } from './functions/_lib/users-community-batch4.js';
 import { handlePublicCommunityContributeApi } from './functions/_lib/users-community-batch5.js';
 import { handlePublicTelemetryBeacon, handlePublicSearchSynonymsApi } from './functions/_lib/analytics-telemetry-batch1.js';
+import { handlePublicFeedbackSubmitApi } from './functions/_lib/analytics-telemetry-batch2.js';
 import { handlePublicAboutOverviewApi } from './functions/api/public/about-overview.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
@@ -449,6 +450,17 @@ export default {
         recordPublicCachePut(edgeCache, request, synRes, ctx);
       }
       return synRes;
+    }
+    if (pathname === '/api/feedback/submit' && request.method === 'POST') {
+      try {
+        return await handlePublicFeedbackSubmitApi(request, env);
+      } catch (e) {
+        const status = e && e.status ? e.status : 500;
+        return new Response(JSON.stringify({ error: (e && e.message) || 'Feedback failed' }), {
+          status,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
     }
     if (pathname === '/api/edu/resources' && (request.method === 'GET' || request.method === 'HEAD')) {
       if (edgeCache && isAnonGet) {

@@ -29,7 +29,7 @@ function pick(val, allowed, field, errors, def) {
 }
 
 /** Daily rotating salted hash for cookieless rate-limiting — never persisted as raw IP. */
-async function dailySaltedBucketHash(rawIp) {
+export async function dailySaltedBucketHash(rawIp) {
   const day = todayIso();
   const data = new TextEncoder().encode(`${day}:cso-cookieless-telemetry:${rawIp || 'anon'}`);
   const buf = await crypto.subtle.digest('SHA-256', data);
@@ -222,15 +222,47 @@ export async function getAnalyticsOverview(db) {
     db.prepare(`SELECT resource_slug, resource_title_en, downloads_count FROM at_download_metrics ORDER BY downloads_count DESC LIMIT 1`).first()
   ]);
 
+  let topDistrict = null;
+  let distCount = 0;
+  let cwvGoodPct = 0;
+  let cwvCount = 0;
+  let avgCsat = 0;
+  let fbCount = 0;
+  let open404 = 0;
+  let b2Active = false;
+  try {
+    const [td, dc, cwvTot, cwvGood, cs, o4] = await Promise.all([
+      db.prepare(`SELECT district_code, district_name_en, active_learners_count FROM at_district_demographics ORDER BY active_learners_count DESC LIMIT 1`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM at_district_demographics`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM at_web_vitals_metrics`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM at_web_vitals_metrics WHERE cwv_rating = 'good'`).first(),
+      db.prepare(`SELECT COUNT(*) AS n, COALESCE(AVG(csat_score), 0) AS avg_score FROM at_citizen_feedback`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM at_sentinel_404_inbox WHERE triage_status = 'open'`).first()
+    ]);
+    topDistrict = td || null;
+    distCount = Number(dc?.n || 0);
+    cwvCount = Number(cwvTot?.n || 0);
+    cwvGoodPct = cwvCount ? Math.round((Number(cwvGood?.n || 0) / cwvCount) * 100) : 0;
+    fbCount = Number(cs?.n || 0);
+    avgCsat = fbCount ? Number(Number(cs?.avg_score || 0).toFixed(2)) : 0;
+    open404 = Number(o4?.n || 0);
+    b2Active = true;
+  } catch { /* Batch 2 tables not yet initialized */ }
+
   const modules = {};
   for (let i = 1; i <= 14; i++) {
     const k = String(i).padStart(2, '0');
+    const active = i <= 4 || (b2Active && i <= 8);
     let count = 0;
     if (i === 1) count = Number(pv7d?.n || 0);
     else if (i === 2) count = Number(sqTot?.n || 0);
     else if (i === 3) count = Number(zeroOpen?.n || 0);
     else if (i === 4) count = Number(dlTot?.n || 0);
-    modules[k] = { status: i <= 4 ? 'active' : 'queued', count };
+    else if (i === 5) count = distCount;
+    else if (i === 6) count = cwvCount;
+    else if (i === 7) count = fbCount;
+    else if (i === 8) count = open404;
+    modules[k] = { status: active ? 'active' : 'queued', count };
   }
 
   return {
@@ -243,6 +275,10 @@ export async function getAnalyticsOverview(db) {
     active_synonyms_count: Number(synAct?.n || 0),
     total_downloads: Number(dlTot?.n || 0),
     top_downloaded_material: topDlRow || null,
+    top_odisha_district: topDistrict,
+    cwv_good_pass_rate_pct: cwvGoodPct,
+    avg_csat_score: avgCsat,
+    open_404_incidents: open404,
     modules
   };
 }
