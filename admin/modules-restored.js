@@ -12216,6 +12216,12 @@
       return window.CSOSettingsBatch2.render(moduleId, root, actions);
     }
 
+    // Folder 18: Settings & Configuration Batch 3 (09-12)
+    if ((moduleId === 'module-18-009' || moduleId === 'module-18-010' || moduleId === 'module-18-011' || moduleId === 'module-18-012') &&
+        window.CSOSettingsBatch3 && typeof window.CSOSettingsBatch3.render === 'function') {
+      return window.CSOSettingsBatch3.render(moduleId, root, actions);
+    }
+
     // Folder 08 (Payments Config), Folder 12 (Marketing), Folder 18 (Settings)
     if (folderId === 'folder-08' || folderId === 'folder-12' || folderId === 'folder-18') {
       return renderConfigStudio(folderId, moduleId, root, actions);
