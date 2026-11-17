@@ -162,3 +162,14 @@
 .cso-at-split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 900px) { .cso-at-split { grid-template-columns: 1fr; } .cso-at-bar-row { grid-template-columns: 1fr; } }
 
+
+/* Marketing & Advertising Batch 1: Pure CSS Banner Preview Themes */
+.cso-mkt-banner-preview { border-radius: 12px; padding: 18px 20px; border: 1px solid rgba(15,23,42,0.12); display: flex; flex-direction: column; gap: 8px; }
+.cso-mkt-banner-preview.theme-forest_gold { background: linear-gradient(135deg, #064e3b, #0f766e); color: #fef3c7; border-color: #d97706; }
+.cso-mkt-banner-preview.theme-alabaster_emerald { background: linear-gradient(135deg, #f8fafc, #ecfdf5); color: #064e3b; border-color: #10b981; }
+.cso-mkt-banner-preview.theme-amber_highlight { background: linear-gradient(135deg, #fffbeb, #fef3c7); color: #78350f; border-color: #f59e0b; }
+.cso-mkt-banner-preview.theme-royal_indigo { background: linear-gradient(135deg, #1e1b4b, #312e81); color: #e0e7ff; border-color: #6366f1; }
+.cso-mkt-banner-badge { display: inline-block; align-self: flex-start; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(255,255,255,0.2); }
+.cso-mkt-banner-head { margin: 0; font-size: 16px; font-weight: 700; }
+.cso-mkt-banner-sub { margin: 0; font-size: 13px; opacity: 0.92; }
+.cso-mkt-banner-cta { display: inline-block; align-self: flex-start; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; background: rgba(15,23,42,0.85); color: #ffffff; text-decoration: none; }

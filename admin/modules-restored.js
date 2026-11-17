@@ -12126,6 +12126,12 @@
       return true;
     }
 
+    // Folder 12: Marketing & Advertising Batch 1 (01-04)
+    if ((moduleId === 'module-12-001' || moduleId === 'module-12-002' || moduleId === 'module-12-003' || moduleId === 'module-12-004') &&
+        window.CSOMarketingBatch1 && typeof window.CSOMarketingBatch1.render === 'function') {
+      return window.CSOMarketingBatch1.render(moduleId, root, actions);
+    }
+
     // Folder 08 (Payments Config), Folder 12 (Marketing), Folder 18 (Settings)
     if (folderId === 'folder-08' || folderId === 'folder-12' || folderId === 'folder-18') {
       return renderConfigStudio(folderId, moduleId, root, actions);
