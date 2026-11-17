@@ -31,6 +31,7 @@ import { handlePublicEduResourcesApi } from './functions/_lib/edu-resources-batc
 import { handlePublicEduTaxonomyApi, handlePublicEduExaminationsApi } from './functions/_lib/edu-resources-batch2.js';
 import { handlePublicEduAdmitResultsApi, handlePublicEduSyllabiApi, handlePublicEduPyqsApi } from './functions/_lib/edu-resources-batch3.js';
 import { handlePublicEduQuizzesApi, handlePublicEduMockTestsApi, handlePublicEduAnswerKeysApi, handlePublicEduCollectionsApi, handlePublicEduAssessmentGradeApi } from './functions/_lib/edu-resources-batch4.js';
+import { handlePublicFinanceCatalogApi } from './functions/_lib/payments-finance-batch2.js';
 import { handlePublicEduScholarshipsApi, handlePublicEduCareersApi } from './functions/_lib/edu-resources-batch5.js';
 import { handlePublicEduStudentHubApi, handlePublicEduToolsApi } from './functions/_lib/edu-resources-batch6.js';
 import { handlePublicNavConfigApi } from './functions/_lib/categories-nav-batch1.js';
@@ -306,7 +307,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
   const basePaths = [
     '/sitemap.xml', '/sitemap-study-library.xml', '/sitemap-jobs.xml', '/sitemap-schemes.xml', '/sitemap-community.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
-    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/public/about-overview', '/api/content/platform-stats', '/api/content/changelog',
+    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/public/about-overview', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources',
     '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
@@ -378,6 +379,17 @@ export default {
     }
     if (pathname === '/api/public/study-library/items' && (request.method === 'GET' || request.method === 'HEAD')) {
       return handlePublicStudyItemsApi(request, env);
+    }
+    if (pathname === '/api/finance/catalog' && (request.method === 'GET' || request.method === 'HEAD')) {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const finCatRes = await handlePublicFinanceCatalogApi(request, env);
+      if (isAnonGet && finCatRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, finCatRes, ctx);
+      }
+      return finCatRes;
     }
     if (pathname === '/api/edu/resources' && (request.method === 'GET' || request.method === 'HEAD')) {
       if (edgeCache && isAnonGet) {

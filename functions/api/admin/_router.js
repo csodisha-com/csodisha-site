@@ -26,6 +26,7 @@ import { handleFilesMediaBatch1Admin, getFilesMediaOverview } from '../../_lib/f
 import { handleFilesMediaBatch2Admin, getFilesMediaBatch2Overview } from '../../_lib/files-media-batch2.js';
 import { handleFilesMediaBatch3Admin, getFilesMediaBatch3Overview } from '../../_lib/files-media-batch3.js';
 import { handlePaymentsFinanceBatch1Admin } from '../../_lib/payments-finance-batch1.js';
+import { handlePaymentsFinanceBatch2Admin } from '../../_lib/payments-finance-batch2.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -249,6 +250,8 @@ export async function handleAdminApi(request, env) {
         if (id === 'replica' || id === 'replica-switchover' || id === 'airgap-bundle' || id === 'runbooks' || id === 'sop' || id === 'playbook') return await handleOpsContinuity(request, env, actor, id, sub, extra);
         break;
       case 'finance': {
+        const fin2Res = await handlePaymentsFinanceBatch2Admin(request, env, actor, id, sub);
+        if (fin2Res) return fin2Res;
         const finRes = await handlePaymentsFinanceBatch1Admin(request, env, actor, id, sub);
         if (finRes) return finRes;
         break;

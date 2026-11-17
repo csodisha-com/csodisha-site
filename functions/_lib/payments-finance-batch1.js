@@ -25,7 +25,7 @@ const ORD_COLS = ['order_number', 'customer_name', 'customer_email', 'customer_p
 const TXN_COLS = ['txn_reference', 'order_id', 'gateway_key', 'gateway_payment_id', 'gateway_order_id', 'payment_method',
   'upi_vpa_or_last4', 'amount_paise', 'gateway_fee_paise', 'net_settled_paise', 'currency_code', 'txn_status',
   'failure_reason', 'captured_at'];
-const REV_TABLES = {
+export const REV_TABLES = {
   '02': { table: 'fin_gateways', cols: GW_COLS },
   '03': { table: 'fin_transactions', cols: TXN_COLS },
   '04': { table: 'fin_orders', cols: ORD_COLS }
@@ -245,7 +245,7 @@ async function seedFinance(db) {
 }
 
 // ---------- Revisions ----------
-async function snapshotRevision(env, actor, moduleCode, entityId, note) {
+export async function snapshotRevision(env, actor, moduleCode, entityId, note) {
   const def = REV_TABLES[moduleCode];
   const row = await env.DB.prepare(`SELECT * FROM ${def.table} WHERE id = ?`).bind(entityId).first();
   if (!row) return null;

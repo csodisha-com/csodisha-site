@@ -86,3 +86,21 @@
 .cso-fin-receipt dt { color: var(--cso-muted, #94a3b8); }
 .cso-fin-receipt dd { margin: 0; word-break: break-all; }
 @media (max-width: 720px) { .cso-fin-bar-row { grid-template-columns: 1fr; } .cso-fin-receipt { grid-template-columns: 1fr; } }
+
+/* Payments & Finance Batch 2 (v92) additive classes */
+.cso-fin-price { font-weight: 800; font-variant-numeric: tabular-nums; }
+.cso-fin-mrp { text-decoration: line-through; color: var(--cso-muted, #94a3b8); font-size: 12px; margin-left: 6px; }
+.cso-fin-discount { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: rgba(16, 185, 129, 0.18); color: #34d399; font-size: 11.5px; font-weight: 800; }
+.cso-fin-pricecard { border: 1px solid #bbf7d0; border-radius: 14px; padding: 16px; background: #ffffff; color: #102418; display: grid; gap: 6px; text-align: center; }
+.cso-fin-pricecard h3 { margin: 0; color: #14532d; }
+.cso-fin-pricecard .cso-fin-price { font-size: 26px; color: #166534; }
+.cso-fin-pricecard ul { margin: 4px 0 0; padding-left: 18px; text-align: left; font-size: 13px; }
+.cso-fin-perk-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; margin-bottom: 6px; }
+.cso-fin-picker { display: grid; gap: 6px; max-height: 220px; overflow: auto; }
+.cso-fin-picker-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--cso-border, #334155); border-radius: 8px; font-size: 12.5px; }
+.cso-fin-compare { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(180px, 1fr); gap: 10px; overflow-x: auto; }
+.cso-fin-compare-col { border: 1px solid var(--cso-border, #334155); border-radius: 12px; padding: 12px; display: grid; gap: 6px; align-content: start; font-size: 13px; }
+.cso-fin-compare-col h4 { margin: 0; }
+.cso-fin-yes { color: #34d399; font-weight: 700; }
+.cso-fin-no { color: var(--cso-muted, #94a3b8); }
+@media (max-width: 720px) { .cso-fin-perk-row { grid-template-columns: 1fr; } }
