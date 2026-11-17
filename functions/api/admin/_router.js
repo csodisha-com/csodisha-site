@@ -41,6 +41,7 @@ import { handleAnalyticsBatch3Admin, ensureAnalyticsTelemetryBatch3Schema } from
 import { handleAnalyticsBatch4Admin, ensureAnalyticsTelemetryBatch4Schema, getFull14ModuleAnalyticsOverview } from '../../_lib/analytics-telemetry-batch4.js';
 import { handleCommunicationsBatch1Admin } from '../../_lib/communications-batch1.js';
 import { handleCommunicationsBatch2Admin, ensureCommunicationsBatch2Schema } from '../../_lib/communications-batch2.js';
+import { handleCommunicationsBatch3Admin, ensureCommunicationsBatch3Schema, getFull12ModuleCommunicationsOverview } from '../../_lib/communications-batch3.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -121,10 +122,19 @@ export async function handleAdminApi(request, env) {
     if (resource === 'communications') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (['dpdp-optouts', 'variable-tags', 'dlr', 'queue'].includes(id)) {
+        return await handleCommunicationsBatch3Admin(request, env, actor, id, sub, extra);
+      }
       if (['scheme-alerts', 'whatsapp', 'telegram', 'frequency-caps'].includes(id)) {
         return await handleCommunicationsBatch2Admin(request, env, actor, id, sub, extra);
       }
-      if (id === 'overview' || id === 'revisions') await ensureCommunicationsBatch2Schema(env.DB);
+      if (id === 'overview' && method === 'GET') {
+        return json(await getFull12ModuleCommunicationsOverview(env));
+      }
+      if (id === 'revisions') {
+        await ensureCommunicationsBatch2Schema(env.DB);
+        await ensureCommunicationsBatch3Schema(env.DB);
+      }
       return await handleCommunicationsBatch1Admin(request, env, actor, id, sub, extra);
     }
     if (resource === 'candidates') {

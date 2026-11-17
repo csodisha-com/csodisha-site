@@ -12081,6 +12081,12 @@
       return true;
     }
 
+    // Folder 11: Communications, Alerts & Candidate Notifications Batch 3 (09-12)
+    if ((moduleId === 'module-comms-009' || moduleId === 'module-comms-010' || moduleId === 'module-comms-011' || moduleId === 'module-comms-012') &&
+        window.CSOCommunicationsBatch3 && typeof window.CSOCommunicationsBatch3.render === 'function') {
+      return window.CSOCommunicationsBatch3.render(moduleId, root, actions);
+    }
+
     // Folder 11: Communications, Alerts & Candidate Notifications Batch 2 (05-08)
     if ((moduleId === 'module-comms-005' || moduleId === 'module-comms-006' || moduleId === 'module-comms-007' || moduleId === 'module-comms-008') &&
         window.CSOCommunicationsBatch2 && typeof window.CSOCommunicationsBatch2.render === 'function') {
