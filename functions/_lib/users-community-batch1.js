@@ -156,7 +156,7 @@ function hasAllSuperAdminCorePerms(matrix) {
   return true;
 }
 
-const REV_TABLES = {
+export const REV_TABLES = {
   '01': {
     table: 'urc_users',
     cols: ['user_uid', 'full_name', 'email', 'phone', 'role_key', 'account_status', 'email_verified', 'district_odisha', 'preferred_lang', 'last_login_at', 'login_count']
@@ -175,7 +175,7 @@ const REV_TABLES = {
   }
 };
 
-async function snapshotRevision(db, moduleCode, entityId, actor, changeNote = 'update') {
+export async function snapshotRevision(db, moduleCode, entityId, actor, changeNote = 'update') {
   const cfg = REV_TABLES[moduleCode];
   if (!cfg || !entityId) return null;
   const row = await db.prepare(`SELECT * FROM ${cfg.table} WHERE id = ?`).bind(entityId).first();
@@ -192,7 +192,7 @@ async function snapshotRevision(db, moduleCode, entityId, actor, changeNote = 'u
   return { id: revId, version_num: nextVer };
 }
 
-async function nextUserUid(db) {
+export async function nextUserUid(db) {
   const row = await db.prepare(`SELECT COUNT(*) AS n FROM urc_users`).first();
   const seq = Number(row?.n || 0) + 1;
   return `USR-2026-${String(seq).padStart(4, '0')}`;
@@ -483,7 +483,7 @@ export async function ensureUsersCommunityBatch1Schema(db) {
 }
 
 /** Module 01-19 Overview KPIs */
-async function getUsersOverview(db) {
+export async function getUsersOverview(db) {
   const [tot, act, pend, susp, verEdu, admAct, rolesCnt] = await Promise.all([
     db.prepare(`SELECT COUNT(*) AS n FROM urc_users`).first(),
     db.prepare(`SELECT COUNT(*) AS n FROM urc_users WHERE account_status = 'active'`).first(),
@@ -500,16 +500,47 @@ async function getUsersOverview(db) {
     `SELECT role_key, COUNT(*) AS count FROM urc_users GROUP BY role_key ORDER BY count DESC`
   ).all();
 
+  let statusLogsCount = 0;
+  let pendingRegs = 0;
+  let totalRegs = 0;
+  let activeGrants = 0;
+  let publishedPosts = 0;
+  let totalPosts = 0;
+  let b2Active = false;
+  try {
+    const [sl, pr, tr, ag, pp, tp] = await Promise.all([
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_account_status_logs`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_registrations WHERE approval_status = 'pending_review'`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_registrations`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_membership_grants WHERE access_status IN ('active', 'expiring_soon')`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_community_posts WHERE status = 'published'`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_community_posts`).first()
+    ]);
+    statusLogsCount = Number(sl?.n || 0);
+    pendingRegs = Number(pr?.n || 0);
+    totalRegs = Number(tr?.n || 0);
+    activeGrants = Number(ag?.n || 0);
+    publishedPosts = Number(pp?.n || 0);
+    totalPosts = Number(tp?.n || 0);
+    b2Active = true;
+  } catch { /* Batch 2 tables not yet initialized */ }
+
   const totalUsers = Number(tot?.n || 0);
   const activeAdmins = Number(admAct?.n || 0);
   const totalRoles = Number(rolesCnt?.n || 0);
   const modules = {};
   for (let i = 1; i <= 19; i++) {
     const k = String(i).padStart(2, '0');
-    modules[k] = {
-      status: i <= 4 ? 'active' : 'queued',
-      count: i === 1 ? totalUsers : i === 2 ? totalUsers : i === 3 ? totalRoles : i === 4 ? activeAdmins : 0
-    };
+    const active = i <= 4 || (b2Active && i <= 8);
+    let count = 0;
+    if (i === 1 || i === 2) count = totalUsers;
+    else if (i === 3) count = totalRoles;
+    else if (i === 4) count = activeAdmins;
+    else if (i === 5) count = statusLogsCount;
+    else if (i === 6) count = totalRegs;
+    else if (i === 7) count = activeGrants;
+    else if (i === 8) count = totalPosts;
+    modules[k] = { status: active ? 'active' : 'queued', count };
   }
   return {
     total_users: totalUsers,
@@ -519,6 +550,10 @@ async function getUsersOverview(db) {
     verified_educators: Number(verEdu?.n || 0),
     active_admins: activeAdmins,
     total_roles: totalRoles,
+    status_transitions_count: statusLogsCount,
+    pending_registrations: pendingRegs,
+    active_membership_grants: activeGrants,
+    published_community_posts: publishedPosts,
     district_breakdown: districts || [],
     role_breakdown: roles || [],
     modules
