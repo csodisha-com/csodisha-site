@@ -52,6 +52,7 @@ import { handleSeoSearchDiscoveryBatch4Admin, ensureSeoSearchDiscoveryBatch4Sche
 import { handleEventsSchedulingBatch1Admin } from '../../_lib/events-scheduling-batch1.js';
 import { handleEventsSchedulingBatch2Admin, ensureEventsSchedulingBatch2Schema, getFull6ModuleEventsOverview } from '../../_lib/events-scheduling-batch2.js';
 import { handleEventsSchedulingBatch3Admin, ensureEventsSchedulingBatch3Schema, getFull9ModuleEventsOverview } from '../../_lib/events-scheduling-batch3.js';
+import { handleIntegrationsEdgeBatch1Admin } from '../../_lib/integrations-webhooks-edge-batch1.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -203,6 +204,11 @@ export async function handleAdminApi(request, env) {
         await ensureEventsSchedulingBatch3Schema(env.DB);
       }
       return await handleEventsSchedulingBatch1Admin(request, env, actor, id, sub, extra);
+    }
+    if (resource === 'integrations') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handleIntegrationsEdgeBatch1Admin(request, env, actor, id, sub, extra);
     }
     if (resource === 'candidates') {
       const actor = await requireRole(request, env, ['admin']);
