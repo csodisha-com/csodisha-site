@@ -12122,6 +12122,12 @@
       return window.CSOSeoBatch3.render(moduleId, root, actions);
     }
 
+    // Folder 13: SEO, Search & Discovery Batch 4 (13-16)
+    if ((moduleId === 'module-seo-013' || moduleId === 'module-seo-014' || moduleId === 'module-seo-015' || moduleId === 'module-seo-016') &&
+        window.CSOSeoBatch4 && typeof window.CSOSeoBatch4.render === 'function') {
+      return window.CSOSeoBatch4.render(moduleId, root, actions);
+    }
+
     // Folder 13: SEO, Search & Discovery
     if (folderId === 'folder-13' || moduleId.startsWith('module-seo-')) {
       return renderSeoStudio(moduleId, root, actions);
