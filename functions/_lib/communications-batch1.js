@@ -280,15 +280,48 @@ export async function getCommunicationsOverview(db) {
     db.prepare(`SELECT COUNT(*) AS n FROM comm_deadline_broadcasts`).first()
   ]);
 
+  let schemeAlertsDisp = 0;
+  let schemeAlertsTot = 0;
+  let approvedWaba = 0;
+  let wabaTot = 0;
+  let liveTg = 0;
+  let tgTot = 0;
+  let activeCaps = 0;
+  let b2Active = false;
+  try {
+    const [sa, sat, wa, wat, tg, tgt, cp] = await Promise.all([
+      db.prepare(`SELECT COUNT(*) AS n FROM comm_scheme_dbt_alerts WHERE alert_status = 'dispatched_live'`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM comm_scheme_dbt_alerts`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM comm_whatsapp_waba_templates WHERE meta_review_status = 'approved_meta'`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM comm_whatsapp_waba_templates`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM comm_telegram_broadcasts WHERE broadcast_status = 'posted_live'`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM comm_telegram_broadcasts`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM comm_frequency_caps WHERE is_active = 1`).first()
+    ]);
+    schemeAlertsDisp = Number(sa?.n || 0);
+    schemeAlertsTot = Number(sat?.n || 0);
+    approvedWaba = Number(wa?.n || 0);
+    wabaTot = Number(wat?.n || 0);
+    liveTg = Number(tg?.n || 0);
+    tgTot = Number(tgt?.n || 0);
+    activeCaps = Number(cp?.n || 0);
+    b2Active = true;
+  } catch { /* Batch 2 tables not yet initialized */ }
+
   const modules = {};
   for (let i = 1; i <= 12; i++) {
     const k = String(i).padStart(2, '0');
+    const active = i <= 4 || (b2Active && i <= 8);
     let count = 0;
     if (i === 1) count = Number(smsTot?.n || 0);
     else if (i === 2) count = Number(emlTot?.n || 0);
     else if (i === 3) count = Number(admLive?.n || 0);
     else if (i === 4) count = Number(ddlTot?.n || 0);
-    modules[k] = { status: i <= 4 ? 'active' : 'queued', count };
+    else if (i === 5) count = schemeAlertsTot;
+    else if (i === 6) count = wabaTot;
+    else if (i === 7) count = tgTot;
+    else if (i === 8) count = activeCaps;
+    modules[k] = { status: active ? 'active' : 'queued', count };
   }
 
   return {
@@ -297,6 +330,10 @@ export async function getCommunicationsOverview(db) {
     live_admit_card_alerts: Number(admLive?.n || 0),
     total_admit_dispatched: Number(admDisp?.n || 0),
     active_deadline_countdowns: Number(ddlAct?.n || 0),
+    scheme_dbt_alerts_dispatched: schemeAlertsDisp,
+    approved_waba_templates: approvedWaba,
+    live_telegram_posts: liveTg,
+    active_frequency_caps: activeCaps,
     modules
   };
 }
