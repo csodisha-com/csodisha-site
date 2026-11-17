@@ -173,3 +173,8 @@
 .cso-mkt-banner-head { margin: 0; font-size: 16px; font-weight: 700; }
 .cso-mkt-banner-sub { margin: 0; font-size: 13px; opacity: 0.92; }
 .cso-mkt-banner-cta { display: inline-block; align-self: flex-start; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; background: rgba(15,23,42,0.85); color: #ffffff; text-decoration: none; }
+.cso-seo-lock-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
+.cso-seo-boost-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #dbeafe; color: #1e40af; }
+.cso-seo-token-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.cso-seo-token-chip { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; }
+.cso-seo-pre-box { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-x: auto; }
