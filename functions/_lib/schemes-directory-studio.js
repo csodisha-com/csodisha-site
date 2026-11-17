@@ -9,6 +9,7 @@
 //   #07 find-schemes-eligibility    — Find Schemes & Check Eligibility
 //   #08 citizen-services-verification — Citizen Services & Verification
 import { HttpError, json, readJson, validationError } from './http.js';
+import { ensureLiveOdishaDirectoryContentSeeded } from './odisha-directory-seed.js';
 import { audit } from './rbac.js';
 import { cleanStr, slugify, SLUG_RE, likeEscape } from './validate.js';
 
@@ -732,6 +733,7 @@ export async function ensureSchemesDirectoryStudioSchema(db) {
     }
   }
   if (itemStmts.length) await runBatched(db, itemStmts, 45);
+  await ensureLiveOdishaDirectoryContentSeeded(db);
 
   _schemaReady.add(db);
 }

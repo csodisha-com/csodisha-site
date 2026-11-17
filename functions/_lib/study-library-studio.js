@@ -4,6 +4,7 @@
 // - Module #3: Undergraduate, Postgraduate & Research (ug-pg-research)
 // - Module #4: Competitive Exams & Teacher Education (competitive-teacher)
 import { HttpError, json, readJson, validationError } from './http.js';
+import { ensureLiveOdishaDirectoryContentSeeded } from './odisha-directory-seed.js';
 import { audit } from './rbac.js';
 import { cleanStr, slugify, SLUG_RE, likeEscape } from './validate.js';
 
@@ -584,6 +585,7 @@ export async function ensureStudyLibraryStudioSchema(db) {
       missingSeeds.map(s => db.prepare(seedSql).bind(s.id, s.domain, s.parent, s.depth, s.name, s.slug, s.sort, nowIso, nowIso))
     );
   }
+  await ensureLiveOdishaDirectoryContentSeeded(db);
   _ensuredDbs.add(db);
 }
 

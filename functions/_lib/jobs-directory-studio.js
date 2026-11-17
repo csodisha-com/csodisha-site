@@ -9,6 +9,7 @@
 //   #07 career-employability   — Career Development & Employability
 //   #08 institutions-portals   — Institutions, Official Portals & Verification
 import { HttpError, json, readJson, validationError } from './http.js';
+import { ensureLiveOdishaDirectoryContentSeeded } from './odisha-directory-seed.js';
 import { audit } from './rbac.js';
 import { cleanStr, slugify, SLUG_RE, likeEscape } from './validate.js';
 import { enrichJobsRecruitmentCategory01 } from './jobs-recruitment-cat01-enrichment.js';
@@ -737,6 +738,7 @@ export async function ensureJobsDirectoryStudioSchema(db) {
   await enrichInternationalCategory06(db, now);
   await enrichCareerDevelopmentCategory07(db, now);
   await enrichInstitutionsPortalsCategory08(db, now);
+  await ensureLiveOdishaDirectoryContentSeeded(db);
 
   _schemaReady.add(db);
 }
