@@ -25,6 +25,7 @@ import { handleCategoriesNavBatch3Admin, getFull11ModuleNavOverview } from '../.
 import { handleFilesMediaBatch1Admin, getFilesMediaOverview } from '../../_lib/files-media-batch1.js';
 import { handleFilesMediaBatch2Admin, getFilesMediaBatch2Overview } from '../../_lib/files-media-batch2.js';
 import { handleFilesMediaBatch3Admin, getFilesMediaBatch3Overview } from '../../_lib/files-media-batch3.js';
+import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
 import { handleCommunityDirectoryStudio } from '../../_lib/community-directory-studio.js';
@@ -252,7 +253,8 @@ export async function handleAdminApi(request, env) {
           const b1 = await getFilesMediaOverview(env);
           const b2 = await getFilesMediaBatch2Overview(env);
           const b3 = await getFilesMediaBatch3Overview(env);
-          return json({ ok: true, ...b1, batch2: b2, batch3: b3 });
+          const suite15 = await getFull15ModuleMediaOverview(env);
+          return json({ ok: true, ...b1, batch2: b2, batch3: b3, suite_15: suite15 });
         }
         if (id === 'upload' && method === 'POST') {
           await rateLimit(env, `admin-upload:${actor.userId}`, 30, 600);
@@ -260,6 +262,8 @@ export async function handleAdminApi(request, env) {
           if (vaultRes) return vaultRes;
         }
         if (id) {
+          const media4Res = await handleFilesMediaBatch4Admin(request, env, actor, id, sub);
+          if (media4Res) return media4Res;
           const media3Res = await handleFilesMediaBatch3Admin(request, env, actor, id, sub);
           if (media3Res) return media3Res;
           const media2Res = await handleFilesMediaBatch2Admin(request, env, actor, id, sub);
