@@ -46,6 +46,7 @@ import { handlePublicCommunityOverviewApi, handlePublicCommunityItemsApi, handle
 import { handlePublicCommunityPostsApi } from './functions/_lib/users-community-batch2.js';
 import { handlePublicCommunityQnaApi } from './functions/_lib/users-community-batch4.js';
 import { handlePublicCommunityContributeApi } from './functions/_lib/users-community-batch5.js';
+import { handlePublicTelemetryBeacon, handlePublicSearchSynonymsApi } from './functions/_lib/analytics-telemetry-batch1.js';
 import { handlePublicAboutOverviewApi } from './functions/api/public/about-overview.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
@@ -310,7 +311,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
   const basePaths = [
     '/sitemap.xml', '/sitemap-study-library.xml', '/sitemap-jobs.xml', '/sitemap-schemes.xml', '/sitemap-community.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
-    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/community/posts', '/api/community/qna', '/api/public/about-overview', '/api/content/platform-stats', '/api/content/changelog',
+    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/community/posts', '/api/community/qna', '/api/search/synonyms', '/api/public/about-overview', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources',
     '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
@@ -426,6 +427,28 @@ export default {
           headers: { 'Content-Type': 'application/json' }
         });
       }
+    }
+    if (pathname === '/api/telemetry/beacon' && request.method === 'POST') {
+      try {
+        return await handlePublicTelemetryBeacon(request, env);
+      } catch (e) {
+        const status = e && e.status ? e.status : 500;
+        return new Response(JSON.stringify({ error: (e && e.message) || 'Telemetry failed' }), {
+          status,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+    if (pathname === '/api/search/synonyms' && (request.method === 'GET' || request.method === 'HEAD')) {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const synRes = await handlePublicSearchSynonymsApi(request, env);
+      if (isAnonGet && synRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, synRes, ctx);
+      }
+      return synRes;
     }
     if (pathname === '/api/edu/resources' && (request.method === 'GET' || request.method === 'HEAD')) {
       if (edgeCache && isAnonGet) {

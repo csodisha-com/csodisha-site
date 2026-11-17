@@ -12051,6 +12051,12 @@
       return true;
     }
 
+    // Folder 10: Analytics, Telemetry & User Feedback Batch 1 (01-04)
+    if ((moduleId === 'module-ana-001' || moduleId === 'module-ana-002' || moduleId === 'module-ana-003' || moduleId === 'module-ana-004') &&
+        window.CSOAnalyticsTelemetryBatch1 && typeof window.CSOAnalyticsTelemetryBatch1.render === 'function') {
+      return window.CSOAnalyticsTelemetryBatch1.render(moduleId, root, actions);
+    }
+
     // Folder 10: Analytics
     if (folderId === 'folder-10' || moduleId.startsWith('module-ana-')) {
       renderWebsiteAnalytics(root, actions);
