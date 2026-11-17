@@ -11974,6 +11974,12 @@
       return window.CSOPaymentsFinanceBatch1.render(moduleId, root, actions);
     }
 
+    // Folder 08: Payments & Finance Batch 5 (17-18)
+    if ((moduleId === 'module-08-017' || moduleId === 'module-08-018') &&
+        window.CSOPaymentsFinanceBatch5 && typeof window.CSOPaymentsFinanceBatch5.render === 'function') {
+      return window.CSOPaymentsFinanceBatch5.render(moduleId, root, actions);
+    }
+
     // Folder 08: Payments & Finance Batch 4 (13-16)
     if ((moduleId === 'module-08-013' || moduleId === 'module-08-014' || moduleId === 'module-08-015' || moduleId === 'module-08-016') &&
         window.CSOPaymentsFinanceBatch4 && typeof window.CSOPaymentsFinanceBatch4.render === 'function') {
