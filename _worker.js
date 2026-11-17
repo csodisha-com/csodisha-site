@@ -56,7 +56,7 @@ import { handlePublicMarketingLandingPagesApi } from './functions/_lib/marketing
 import { handlePublicSeoMetaApi, handlePublicSeoSitemapApi, handlePublicSeoFeedApi } from './functions/_lib/seo-search-discovery-batch1.js';
 import { handlePublicSeoRobotsTxt } from './functions/_lib/seo-search-discovery-batch2.js';
 import { handlePublicSeoAutocompleteApi } from './functions/_lib/seo-search-discovery-batch3.js';
-import { handlePublicEventsUpcomingApi } from './functions/_lib/events-scheduling-batch1.js';
+import { handlePublicEventsUpcomingBatch2Api } from './functions/_lib/events-scheduling-batch2.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -457,7 +457,7 @@ export default {
         const hit = await edgeCache.match(request);
         if (hit) return hit;
       }
-      const evRes = await handlePublicEventsUpcomingApi(request, env);
+      const evRes = await handlePublicEventsUpcomingBatch2Api(request, env);
       if (isAnonGet && evRes.status === 200) {
         recordPublicCachePut(edgeCache, request, evRes, ctx);
       }

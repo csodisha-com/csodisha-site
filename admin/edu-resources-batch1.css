@@ -206,3 +206,11 @@
 .cso-evt-countdown-pill.is-urgent { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 .cso-evt-ticker-btn { cursor: pointer; }
 .cso-evt-ticker-btn.is-pinned { background: #0f766e; color: #ffffff; border-color: #0f766e; }
+
+/* Events & Scheduling Batch 2 (04-06) */
+.cso-evt-zone-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.cso-evt-zone-chip { display: inline-block; padding: 1px 7px; border-radius: 6px; font-size: 11px; font-weight: 600; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+.cso-evt-fee-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; background: #fefce8; color: #854d0e; border: 1px solid #fde047; }
+.cso-evt-badge.is-live_download, .cso-evt-badge.is-open_for_challenge, .cso-evt-badge.is-published_live { background: #dcfce7; color: #166534; }
+.cso-evt-badge.is-scheduled_soon, .cso-evt-badge.is-under_expert_review, .cso-evt-badge.is-dv_ongoing { background: #fef3c7; color: #92400e; }
+.cso-evt-badge.is-final_published { background: #dbeafe; color: #1e40af; }

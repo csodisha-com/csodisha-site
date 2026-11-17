@@ -50,6 +50,7 @@ import { handleSeoSearchDiscoveryBatch2Admin, ensureSeoSearchDiscoveryBatch2Sche
 import { handleSeoSearchDiscoveryBatch3Admin, ensureSeoSearchDiscoveryBatch3Schema, getFull12ModuleSeoOverview } from '../../_lib/seo-search-discovery-batch3.js';
 import { handleSeoSearchDiscoveryBatch4Admin, ensureSeoSearchDiscoveryBatch4Schema, getFull16ModuleSeoOverview } from '../../_lib/seo-search-discovery-batch4.js';
 import { handleEventsSchedulingBatch1Admin } from '../../_lib/events-scheduling-batch1.js';
+import { handleEventsSchedulingBatch2Admin, ensureEventsSchedulingBatch2Schema, getFull6ModuleEventsOverview } from '../../_lib/events-scheduling-batch2.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -188,6 +189,15 @@ export async function handleAdminApi(request, env) {
     if (resource === 'events') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (['admit-cards', 'answer-keys', 'results-dv'].includes(id)) {
+        return await handleEventsSchedulingBatch2Admin(request, env, actor, id, sub, extra);
+      }
+      if (id === 'overview' && method === 'GET') {
+        return json(await getFull6ModuleEventsOverview(env));
+      }
+      if (id === 'revisions') {
+        await ensureEventsSchedulingBatch2Schema(env.DB);
+      }
       return await handleEventsSchedulingBatch1Admin(request, env, actor, id, sub, extra);
     }
     if (resource === 'candidates') {
