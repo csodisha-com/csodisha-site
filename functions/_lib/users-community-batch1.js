@@ -525,13 +525,32 @@ export async function getUsersOverview(db) {
     b2Active = true;
   } catch { /* Batch 2 tables not yet initialized */ }
 
+  let pubComments = 0;
+  let pendingMod = 0;
+  let openReports = 0;
+  let activeBlocks = 0;
+  let b3Active = false;
+  try {
+    const [pc, pm, orpt, ab] = await Promise.all([
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_comments WHERE status = 'published'`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_moderation_queue WHERE decision_status = 'pending'`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_user_reports WHERE report_status IN ('open', 'investigating')`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_blocked_accounts WHERE block_status = 'active'`).first()
+    ]);
+    pubComments = Number(pc?.n || 0);
+    pendingMod = Number(pm?.n || 0);
+    openReports = Number(orpt?.n || 0);
+    activeBlocks = Number(ab?.n || 0);
+    b3Active = true;
+  } catch { /* Batch 3 tables not yet initialized */ }
+
   const totalUsers = Number(tot?.n || 0);
   const activeAdmins = Number(admAct?.n || 0);
   const totalRoles = Number(rolesCnt?.n || 0);
   const modules = {};
   for (let i = 1; i <= 19; i++) {
     const k = String(i).padStart(2, '0');
-    const active = i <= 4 || (b2Active && i <= 8);
+    const active = i <= 4 || (b2Active && i <= 8) || (b3Active && i <= 12);
     let count = 0;
     if (i === 1 || i === 2) count = totalUsers;
     else if (i === 3) count = totalRoles;
@@ -540,6 +559,10 @@ export async function getUsersOverview(db) {
     else if (i === 6) count = totalRegs;
     else if (i === 7) count = activeGrants;
     else if (i === 8) count = totalPosts;
+    else if (i === 9) count = pubComments;
+    else if (i === 10) count = pendingMod;
+    else if (i === 11) count = openReports;
+    else if (i === 12) count = activeBlocks;
     modules[k] = { status: active ? 'active' : 'queued', count };
   }
   return {
@@ -554,6 +577,10 @@ export async function getUsersOverview(db) {
     pending_registrations: pendingRegs,
     active_membership_grants: activeGrants,
     published_community_posts: publishedPosts,
+    published_comments_count: pubComments,
+    pending_moderation_count: pendingMod,
+    open_user_reports_count: openReports,
+    active_blocked_accounts_count: activeBlocks,
     district_breakdown: districts || [],
     role_breakdown: roles || [],
     modules

@@ -32,6 +32,7 @@ import { handlePaymentsFinanceBatch4Admin } from '../../_lib/payments-finance-ba
 import { handlePaymentsFinanceBatch5Admin } from '../../_lib/payments-finance-batch5.js';
 import { handleUsersCommunityBatch1Admin } from '../../_lib/users-community-batch1.js';
 import { handleUsersCommunityBatch2Admin, ensureUsersCommunityBatch2Schema } from '../../_lib/users-community-batch2.js';
+import { handleUsersCommunityBatch3Admin, ensureUsersCommunityBatch3Schema } from '../../_lib/users-community-batch3.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -66,15 +67,18 @@ export async function handleAdminApi(request, env) {
     const method = request.method;
     const write = method !== 'GET' && method !== 'HEAD';
 
-    // Admin-only: user role management, URC Batch 1-2 (01-08) & candidate behavior governance.
+    // Admin-only: user role management, URC Batch 1-3 (01-12) & candidate behavior governance.
     if (resource === 'users') {
       const actor = await requireRole(request, env, ['admin']);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (['comments', 'moderation', 'reports', 'blocked-accounts'].includes(id)) {
+        return await handleUsersCommunityBatch3Admin(request, env, actor, id, sub, extra);
+      }
       if (['account-status', 'registrations', 'membership-access', 'community-posts'].includes(id)) {
         return await handleUsersCommunityBatch2Admin(request, env, actor, id, sub, extra);
       }
       if (['overview', 'directory', 'profiles', 'roles', 'admins', 'revisions'].includes(id)) {
-        if (id === 'overview' || id === 'revisions') await ensureUsersCommunityBatch2Schema(env.DB);
+        if (id === 'overview' || id === 'revisions') await ensureUsersCommunityBatch3Schema(env.DB);
         return await handleUsersCommunityBatch1Admin(request, env, actor, id, sub, extra);
       }
       return await handleUsers(request, env, actor, id, sub);
