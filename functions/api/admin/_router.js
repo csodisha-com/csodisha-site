@@ -22,7 +22,8 @@ import { handleEduBatch6Admin, getBatch6Overview, getFull22ModuleOverview } from
 import { handleCategoriesNavBatch1Admin, getCategoriesNavOverview } from '../../_lib/categories-nav-batch1.js';
 import { handleCategoriesNavBatch2Admin, getCategoriesNavBatch2Overview } from '../../_lib/categories-nav-batch2.js';
 import { handleCategoriesNavBatch3Admin, getFull11ModuleNavOverview } from '../../_lib/categories-nav-batch3.js';
-import { handleFilesMediaBatch1Admin } from '../../_lib/files-media-batch1.js';
+import { handleFilesMediaBatch1Admin, getFilesMediaOverview } from '../../_lib/files-media-batch1.js';
+import { handleFilesMediaBatch2Admin, getFilesMediaBatch2Overview } from '../../_lib/files-media-batch2.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
 import { handleCommunityDirectoryStudio } from '../../_lib/community-directory-studio.js';
@@ -246,12 +247,19 @@ export async function handleAdminApi(request, env) {
         break;
       case 'media':
         if (!id && method === 'GET') return await handleMediaList(request, env);
+        if (id === 'overview' && method === 'GET') {
+          const b1 = await getFilesMediaOverview(env);
+          const b2 = await getFilesMediaBatch2Overview(env);
+          return json({ ok: true, ...b1, batch2: b2 });
+        }
         if (id === 'upload' && method === 'POST') {
           await rateLimit(env, `admin-upload:${actor.userId}`, 30, 600);
           const vaultRes = await handleFilesMediaBatch1Admin(request, env, actor, id, sub);
           if (vaultRes) return vaultRes;
         }
         if (id) {
+          const media2Res = await handleFilesMediaBatch2Admin(request, env, actor, id, sub);
+          if (media2Res) return media2Res;
           const media1Res = await handleFilesMediaBatch1Admin(request, env, actor, id, sub);
           if (media1Res) return media1Res;
         }
