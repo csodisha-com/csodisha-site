@@ -300,6 +300,55 @@ export async function getFull11ModuleIntegrationsOverview(env) {
 }
 
 /* ================= MODULE 09: SMS GATEWAY & ZERO-PII OTP ENGINE ================= */
+export async function dispatchSmsOtpViaCarrier(env, gateway, payload = {}) {
+  const phone_masked = maskPhoneNumber(payload.phone || '9437012109');
+  const ephemeralOtp = String(100000 + Math.floor(Math.random() * 900000));
+  const otp_hash_sha256 = await sha256Hex(`${ephemeralOtp}:${gateway.gateway_code}`);
+  const mode = String(payload.mode || 'live');
+
+  if (env?.SMS_GATEWAY_API_KEY && env?.SMS_GATEWAY_ENDPOINT && mode !== 'dry_run') {
+    try {
+      const res = await fetch(env.SMS_GATEWAY_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${env.SMS_GATEWAY_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          to: String(payload.phone || ''),
+          sender_id: gateway.sender_id,
+          pe_id: gateway.pe_id,
+          dlt_template_id: String(payload.dlt_template_id || gateway.default_dlt_template_id || ''),
+          otp: ephemeralOtp
+        })
+      });
+      return {
+        dispatch_mode: 'trai_dlt_carrier_live',
+        upstream_status: res ? res.status : 502,
+        upstream_ok: Boolean(res && res.ok),
+        phone_masked,
+        otp_hash_sha256
+      };
+    } catch {
+      return {
+        dispatch_mode: 'trai_dlt_carrier_live',
+        upstream_status: 502,
+        upstream_ok: false,
+        phone_masked,
+        otp_hash_sha256
+      };
+    }
+  }
+
+  return {
+    dispatch_mode: 'local_zero_pii_simulation',
+    upstream_status: 200,
+    upstream_ok: true,
+    phone_masked,
+    otp_hash_sha256
+  };
+}
+
 async function handleSmsOtpGateways(request, env, actor, id, sub) {
   const db = env.DB;
   const method = request.method;
@@ -383,9 +432,8 @@ async function handleSmsOtpGateways(request, env, actor, id, sub) {
     const existing = await db.prepare(`SELECT * FROM int_sms_otp_gateways WHERE id = ?`).bind(id).first();
     if (!existing) throw new HttpError(404, 'NOT_FOUND', 'SMS gateway not found');
     const b = await readJson(request, 8000).catch(() => ({}));
-    const phone_masked = maskPhoneNumber(b.phone || '9437012109');
-    const ephemeralOtp = String(100000 + Math.floor(Math.random() * 900000));
-    const otp_hash_sha256 = await sha256Hex(`${ephemeralOtp}:${existing.gateway_code}`);
+    const dispatched = await dispatchSmsOtpViaCarrier(env, existing, b);
+    const { phone_masked, otp_hash_sha256, dispatch_mode, upstream_status, upstream_ok } = dispatched;
     const ts = nowIstIso();
 
     const nextCount = Number(existing.dispatched_24h_count || 0) + 1;
@@ -395,19 +443,20 @@ async function handleSmsOtpGateways(request, env, actor, id, sub) {
 
     const logId = rid('int-dlq');
     const eventUid = `EVT-LOG-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const qState = upstream_ok ? 'delivered_ok' : 'dlq_failed_retryable';
     await db.prepare(
       `INSERT INTO int_webhook_dlq_logs
        (id, event_uid, direction, integration_ref_code, event_topic, endpoint_or_channel, sanitized_payload_json, http_status_code, attempt_count, max_retries, error_summary, queue_state, created_at_ist)
-       VALUES (?, ?, 'sms_otp', ?, 'otp.candidate_login', ?, ?, 200, 1, 3, '', 'delivered_ok', ?)`
+       VALUES (?, ?, 'sms_otp', ?, 'otp.candidate_login', ?, ?, ?, 1, 3, '', ?, ?)`
     ).bind(
       logId, eventUid, existing.gateway_code, existing.provider_name,
-      JSON.stringify({ phone_masked, otp_hash_sha256, sender_id: existing.sender_id }),
-      ts
+      JSON.stringify({ phone_masked, otp_hash_sha256, sender_id: existing.sender_id, dispatch_mode }),
+      upstream_status, qState, ts
     ).run();
 
-    await audit(env, request, actor, 'integrations.sms_otp.simulate', 'int_sms_otp_gateways', id, { phone_masked, zero_pii: true });
+    await audit(env, request, actor, 'integrations.sms_otp.simulate', 'int_sms_otp_gateways', id, { phone_masked, dispatch_mode, upstream_ok, zero_pii: true });
     const row = await db.prepare(`SELECT * FROM int_sms_otp_gateways WHERE id = ?`).bind(id).first();
-    return json({ ok: true, item: projectSmsGateway(row), phone_masked, otp_hash_sha256, log_event_uid: eventUid });
+    return json({ ok: true, item: projectSmsGateway(row), phone_masked, otp_hash_sha256, dispatch_mode, upstream_ok, log_event_uid: eventUid });
   }
 
   throw new HttpError(404, 'NOT_FOUND', 'Unknown sms-otp-gateways route');

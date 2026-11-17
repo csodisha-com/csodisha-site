@@ -582,7 +582,32 @@ async function handleCachePurge(request, env, actor, id) {
 
     const edgeCache = typeof caches !== 'undefined' && caches.default ? caches.default : null;
     if (edgeCache) {
-      await Promise.all(targets.map(p => edgeCache.delete(`${url.origin}${p}`).catch(() => false)));
+      await Promise.all(targets.map(p => edgeCache.delete(new Request(`${url.origin}${p}`, { method: 'GET' })).catch(() => false)));
+    }
+
+    let upstream_mode = 'worker_edge_cache_only';
+    let upstream_ok = true;
+    let purge_status = 'purged_edge_200';
+    if (env?.CF_API_TOKEN && env?.CF_ZONE_ID) {
+      upstream_mode = 'cloudflare_zone_api_live';
+      const purgeBody = purge_scope === 'full_api_cache'
+        ? { purge_everything: true }
+        : { files: targets.map(p => `${url.origin}${p}`) };
+      try {
+        const cfRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${encodeURIComponent(env.CF_ZONE_ID)}/purge_cache`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${env.CF_API_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(purgeBody)
+        });
+        upstream_ok = Boolean(cfRes && cfRes.ok);
+        if (!upstream_ok) purge_status = 'partial_retry_needed';
+      } catch {
+        upstream_ok = false;
+        purge_status = 'partial_retry_needed';
+      }
     }
 
     const newId = rid('int-prg');
@@ -591,12 +616,12 @@ async function handleCachePurge(request, env, actor, id) {
     await db.prepare(
       `INSERT INTO int_edge_cache_purges
        (id, purge_code, purge_scope, target_pattern, zone_identifier_masked, urls_invalidated_count, purge_status, triggered_by, created_at_ist)
-       VALUES (?, ?, ?, ?, ?, ?, 'purged_edge_200', ?, ?)`
-    ).bind(newId, purge_code, purge_scope, target_pattern, zone_identifier_masked, targets.length, actor?.email || actor?.userId || 'system', created_at_ist).run();
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(newId, purge_code, purge_scope, target_pattern, zone_identifier_masked, targets.length, purge_status, actor?.email || actor?.userId || 'system', created_at_ist).run();
 
-    await audit(env, request, actor, 'integrations.cache_purge.execute', 'int_edge_cache_purges', newId, { purge_scope, target_pattern, urls_invalidated_count: targets.length });
+    await audit(env, request, actor, 'integrations.cache_purge.execute', 'int_edge_cache_purges', newId, { purge_scope, target_pattern, urls_invalidated_count: targets.length, upstream_mode, upstream_ok });
     const item = await db.prepare(`SELECT * FROM int_edge_cache_purges WHERE id = ?`).bind(newId).first();
-    return json({ ok: true, item, invalidated_paths: targets }, 201);
+    return json({ ok: true, item, invalidated_paths: targets, upstream_mode, upstream_ok }, 201);
   }
 
   throw new HttpError(404, 'NOT_FOUND', 'Unknown cache-purge route');
