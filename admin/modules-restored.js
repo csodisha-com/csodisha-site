@@ -11956,6 +11956,12 @@
       return window.CSOFilesMediaBatch2.render(moduleId, root, actions);
     }
 
+    // Folder 07: Files, Media & Cloud Batch 3 (09-12)
+    if ((moduleId === 'module-07-009' || moduleId === 'module-07-010' || moduleId === 'module-07-011' || moduleId === 'module-07-012') &&
+        window.CSOFilesMediaBatch3 && typeof window.CSOFilesMediaBatch3.render === 'function') {
+      return window.CSOFilesMediaBatch3.render(moduleId, root, actions);
+    }
+
     // Folder 05: 4-Tier Exam & Cohort Catalog Manager
     if (moduleId === 'module-05-007' || moduleId === 'module-05-008') {
       renderExamTaxonomyStudio(root, actions);
