@@ -14,7 +14,16 @@
   function el(tag, cls, text) {
     const n = document.createElement(tag);
     if (cls) n.className = cls;
-    if (text !== undefined && text !== null) n.textContent = String(text);
+    if (Array.isArray(text)) {
+      text.forEach(ch => {
+        if (ch instanceof Node) n.appendChild(ch);
+        else if (ch !== undefined && ch !== null) n.appendChild(document.createTextNode(String(ch)));
+      });
+    } else if (text instanceof Node) {
+      n.appendChild(text);
+    } else if (text !== undefined && text !== null) {
+      n.textContent = String(text);
+    }
     return n;
   }
   function btn(label, cls, onClick) {
@@ -73,6 +82,26 @@
     backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
     document.body.appendChild(backdrop);
     return { backdrop, body, foot };
+  }
+  function attachRevisions(body, moduleCode, entityId, onDone) {
+    if (!entityId) return;
+    const hist = el('div', 'cso-edu-rev-list');
+    body.append(el('div', 'cso-edu-section-title', 'Revision history'), hist);
+    api(`${API}/revisions?module_code=${moduleCode}&entity_id=${encodeURIComponent(entityId)}`).then(r => {
+      if (!r.items.length) { hist.appendChild(el('div', 'cso-edu-empty', 'No revisions yet.')); return; }
+      r.items.slice(0, 8).forEach(rev => {
+        const row = el('div', 'cso-edu-rev-item');
+        row.appendChild(el('span', '', `v${rev.version_num} · ${rev.change_note || 'update'} · ${rev.created_at}`));
+        row.appendChild(btn('Rollback', '', async () => {
+          try {
+            await api(`${API}/revisions/rollback`, 'POST', { revision_id: rev.id });
+            toast(`Rolled back to v${rev.version_num}`, 'success');
+            onDone();
+          } catch (e) { toast(e.message, 'error'); }
+        }));
+        hist.appendChild(row);
+      });
+    }).catch(e => hist.appendChild(el('div', 'cso-edu-empty', e.message)));
   }
 
   function render(moduleId, root, actions) {
@@ -257,6 +286,7 @@
           onDone();
         } catch (e) { toast(e.message, 'error'); }
       }));
+      if (c) attachRevisions(d.body, '09', c.id, () => { d.backdrop.remove(); onDone(); });
     }
 
     function openRecordDonationModal(onDone) {
@@ -444,6 +474,7 @@
           onDone();
         } catch (e) { toast(e.message, 'error'); }
       }));
+      if (c) attachRevisions(d.body, '10', c.id, () => { d.backdrop.remove(); onDone(); });
     }
 
     function openCouponCalculatorModal() {
@@ -622,6 +653,7 @@
           onDone();
         } catch (e) { toast(e.message, 'error'); }
       }));
+      attachRevisions(d.body, '11', r.id, () => { d.backdrop.remove(); onDone(); });
     }
 
     load();
@@ -728,7 +760,10 @@
 
       sheet.append(head, grid, table, totals);
       const d = openDrawer(`Invoice ${inv.invoice_number}`, [sheet]);
-      d.foot.appendChild(btn('Close Preview', '', () => d.backdrop.remove()));
+      d.foot.append(
+        btn('Print Invoice', 'cso-edu-btn--primary', () => window.print()),
+        btn('Close Preview', '', () => d.backdrop.remove())
+      );
     }
 
     load();
