@@ -86,7 +86,59 @@
 
   const THEMES = ['light', 'dark', 'system', 'reading', 'sepia'];
   const THEME_ICONS = { light: '☀️', dark: '🌙', system: '💻', reading: '📖', sepia: '☕' };
+  const PORTAL_THEMES = [
+    { key: 'alabaster-forest', label: 'Alabaster Forest', icon: '🌿' },
+    { key: 'forest-gold', label: 'Forest Gold', icon: '🏛️' },
+    { key: 'chilika-teal', label: 'Chilika Teal', icon: '🌊' },
+    { key: 'konark-sandstone', label: 'Konark Sandstone', icon: '☀️' }
+  ];
+  const PORTAL_THEME_KEYS = PORTAL_THEMES.map(t => t.key);
   const LN = { en: 'English', or: 'ଓଡ଼ିଆ', hi: 'हिन्दी' };
+
+  function resolvePaletteToThemeKey(paletteName) {
+    const raw = String(paletteName || '').toLowerCase();
+    if (PORTAL_THEME_KEYS.includes(raw)) return raw;
+    if (raw.includes('forest gold') || raw.includes('canopy')) return 'forest-gold';
+    if (raw.includes('chilika') || raw.includes('teal')) return 'chilika-teal';
+    if (raw.includes('konark') || raw.includes('sandstone') || raw.includes('terracotta')) return 'konark-sandstone';
+    return 'alabaster-forest';
+  }
+
+  function getStoredPortalTheme() {
+    try {
+      const k = localStorage.getItem('cso_portal_theme');
+      return PORTAL_THEME_KEYS.includes(k) ? k : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function applyPortalTheme(themeKey, persist) {
+    const key = PORTAL_THEME_KEYS.includes(themeKey) ? themeKey : 'alabaster-forest';
+    document.documentElement.setAttribute('data-cso-theme', key);
+    if (persist) {
+      try { localStorage.setItem('cso_portal_theme', key); } catch (e) {}
+    }
+    return key;
+  }
+
+  let activePortalTheme = applyPortalTheme(getStoredPortalTheme() || 'alabaster-forest', false);
+  if (!getStoredPortalTheme() && typeof fetch === 'function') {
+    fetch('/api/config/public', { credentials: 'same-origin' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(cfg => {
+        if (!getStoredPortalTheme() && cfg && cfg.identity && cfg.identity.primary_palette_name) {
+          activePortalTheme = applyPortalTheme(resolvePaletteToThemeKey(cfg.identity.primary_palette_name), false);
+          const bt = document.getElementById('cso-ctl-theme');
+          const cur = PORTAL_THEMES.find(t => t.key === activePortalTheme);
+          if (bt && cur) {
+            bt.textContent = `${cur.icon} ${cur.label} ⌄`;
+            bt.title = `Theme: ${cur.label}`;
+          }
+        }
+      })
+      .catch(() => {});
+  }
   const ZOOM_CLASSES = [
     'cso-zoom-85', 'cso-zoom-90', 'cso-zoom-95', 'cso-zoom-100',
     'cso-zoom-105', 'cso-zoom-110', 'cso-zoom-115', 'cso-zoom-120',
@@ -358,18 +410,25 @@
     });
     langWrap.appendChild(langBtn);
 
-    const bt = el('button', 'pill cso-ctl-theme', THEME_ICONS[S.theme || 'system'] || '💻');
+    const themeWrap = el('span', 'cso-popup-anchor');
+    const curPortalTheme = PORTAL_THEMES.find(t => t.key === activePortalTheme) || PORTAL_THEMES[0];
+    const bt = el('button', 'pill cso-ctl-theme', `${curPortalTheme.icon} ${curPortalTheme.label} ⌄`);
     bt.id = 'cso-ctl-theme';
     bt.type = 'button';
-    bt.setAttribute('aria-label', 'Change theme');
-    bt.title = 'Theme: ' + (S.theme || 'system');
-    bt.addEventListener('click', () => {
-      const i = THEMES.indexOf(S.theme || 'system');
-      S.theme = THEMES[(i + 1) % THEMES.length];
-      saveSettings();
-      applySettings();
-      renderControls();
+    bt.setAttribute('aria-label', 'Select portal theme');
+    bt.title = `Theme: ${curPortalTheme.label}`;
+    bt.addEventListener('click', e => {
+      e.stopPropagation();
+      showPopup(bt, PORTAL_THEMES.map(t => [
+        `${t.icon} ${t.label}`,
+        () => {
+          activePortalTheme = applyPortalTheme(t.key, true);
+          renderControls();
+        },
+        activePortalTheme === t.key
+      ]));
     });
+    themeWrap.appendChild(bt);
 
     const a11yWrap = el('span', 'cso-popup-anchor');
     const a11yBtn = el('button', 'pill cso-ctl-a11y', '♿ Accessibility ⌄');
@@ -425,7 +484,7 @@
     fp.addEventListener('click', () => setZoom(0.05));
 
     zoomSpan.append(fm, fr, fp);
-    ctl.append(searchBtn, langWrap, bt, a11yWrap, zoomSpan);
+    ctl.append(searchBtn, langWrap, themeWrap, a11yWrap, zoomSpan);
     syncMobileControlsVisibility();
   }
 
