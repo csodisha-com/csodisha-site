@@ -56,6 +56,7 @@ import { handleIntegrationsEdgeBatch1Admin } from '../../_lib/integrations-webho
 import { handleIntegrationsEdgeBatch2Admin, ensureIntegrationsEdgeBatch2Schema, getFull8ModuleIntegrationsOverview } from '../../_lib/integrations-webhooks-edge-batch2.js';
 import { handleIntegrationsEdgeBatch3Admin, ensureIntegrationsEdgeBatch3Schema, getFull11ModuleIntegrationsOverview } from '../../_lib/integrations-webhooks-edge-batch3.js';
 import { handleSettingsConfigBatch1Admin } from '../../_lib/settings-configuration-batch1.js';
+import { handleSettingsConfigBatch2Admin, ensureSettingsConfigBatch2Schema, getFull8ModuleSettingsOverview } from '../../_lib/settings-configuration-batch2.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -295,7 +296,16 @@ export async function handleAdminApi(request, env) {
         if (!id) return await handleBanner(request, env, actor);
         break;
       case 'settings':
-        if (['overview', 'general', 'identity', 'contact', 'localization', 'revisions'].includes(id)) {
+        if (['languages', 'timezone', 'formats', 'homepage'].includes(id)) {
+          return await handleSettingsConfigBatch2Admin(request, env, actor, id, sub, extra);
+        }
+        if (id === 'overview' && method === 'GET') {
+          return json(await getFull8ModuleSettingsOverview(env));
+        }
+        if (id === 'revisions') {
+          await ensureSettingsConfigBatch2Schema(env.DB);
+        }
+        if (['general', 'identity', 'contact', 'localization', 'revisions'].includes(id)) {
           return await handleSettingsConfigBatch1Admin(request, env, actor, id, sub);
         }
         return await handleSettings(request, env, actor, id);
