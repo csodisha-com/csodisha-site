@@ -920,7 +920,8 @@ async function handleIntRevisions(request, env, actor, sub) {
     try { snap = JSON.parse(rev.snapshot_json); } catch { throw new HttpError(500, 'CORRUPT_SNAPSHOT', 'Invalid snapshot JSON'); }
     const setSql = cfg.cols.map(c => `${c} = ?`).join(', ');
     const vals = cfg.cols.map(c => snap[c] ?? '');
-    await db.prepare(`UPDATE ${cfg.table} SET ${setSql}, updated_at = datetime('now') WHERE id = ?`).bind(...vals, rev.entity_id).run();
+    const updSuffix = cfg.noUpdatedAt ? '' : `, updated_at = datetime('now')`;
+    await db.prepare(`UPDATE ${cfg.table} SET ${setSql}${updSuffix} WHERE id = ?`).bind(...vals, rev.entity_id).run();
 
     await snapshotIntRevision(db, rev.module_code, rev.entity_id, actor, `rollback to v${rev.version_num}`);
     await audit(env, request, actor, 'integrations.revisions.rollback', cfg.table, rev.entity_id, { revision_id: revId, version_num: rev.version_num });

@@ -54,6 +54,7 @@ import { handleEventsSchedulingBatch2Admin, ensureEventsSchedulingBatch2Schema, 
 import { handleEventsSchedulingBatch3Admin, ensureEventsSchedulingBatch3Schema, getFull9ModuleEventsOverview } from '../../_lib/events-scheduling-batch3.js';
 import { handleIntegrationsEdgeBatch1Admin } from '../../_lib/integrations-webhooks-edge-batch1.js';
 import { handleIntegrationsEdgeBatch2Admin, ensureIntegrationsEdgeBatch2Schema, getFull8ModuleIntegrationsOverview } from '../../_lib/integrations-webhooks-edge-batch2.js';
+import { handleIntegrationsEdgeBatch3Admin, ensureIntegrationsEdgeBatch3Schema, getFull11ModuleIntegrationsOverview } from '../../_lib/integrations-webhooks-edge-batch3.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -209,14 +210,17 @@ export async function handleAdminApi(request, env) {
     if (resource === 'integrations') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (['sms-otp-gateways', 'health-monitors', 'dlq-logs'].includes(id)) {
+        return await handleIntegrationsEdgeBatch3Admin(request, env, actor, id, sub, extra);
+      }
       if (['whatsapp-connectors', 'api-gateway', 'inbound-receivers', 'd1-sync'].includes(id)) {
         return await handleIntegrationsEdgeBatch2Admin(request, env, actor, id, sub, extra);
       }
       if (id === 'overview' && method === 'GET') {
-        return json(await getFull8ModuleIntegrationsOverview(env));
+        return json(await getFull11ModuleIntegrationsOverview(env));
       }
       if (id === 'revisions') {
-        await ensureIntegrationsEdgeBatch2Schema(env.DB);
+        await ensureIntegrationsEdgeBatch3Schema(env.DB);
       }
       return await handleIntegrationsEdgeBatch1Admin(request, env, actor, id, sub, extra);
     }
