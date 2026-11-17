@@ -1,90 +1,10 @@
-:root,
-:root[data-theme="light"],
-:root[data-theme="dark"] {
-  --cso-bg: #090e18;
-  --cso-surface: #0f172a;
-  --cso-card-bg: #131d33;
-  --cso-text: #f1f5f9;
-  --cso-text-muted: #94a3b8;
-  --cso-border: #1e293b;
-  --cso-link: #38bdf8;
-  --cso-active-bg: #0284c7;
-  --cso-active-tx: #ffffff;
-  --cso-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
-  --control-bg: #0f172a;
-  --control-tx: #f1f5f9;
-  --bg: #090e18;
-  --card: #131d33;
-  --surface: #0f172a;
-  --tx: #f1f5f9;
-  --mut: #94a3b8;
-  --bd: #1e293b;
-  --bl: #38bdf8;
-  --link-color: #38bdf8;
-  --gr: #10b981;
-  --dk: #064e3b;
-  --or: #f97316;
+:root {
+  --gr: #15803d;
+  --dk: #1b4332;
+  --or: #b45309;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]),
-  :root[data-theme="system"] {
-    --cso-bg: #090e18;
-    --cso-surface: #0f172a;
-    --cso-card-bg: #131d33;
-    --cso-text: #f1f5f9;
-    --cso-text-muted: #94a3b8;
-    --cso-border: #1e293b;
-    --cso-link: #38bdf8;
-    --cso-active-bg: #0284c7;
-    --cso-active-tx: #ffffff;
-    --cso-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
-    --control-bg: #0f172a;
-    --control-tx: #f1f5f9;
-    --bg: #090e18;
-    --card: #131d33;
-    --surface: #0f172a;
-    --tx: #f1f5f9;
-    --mut: #94a3b8;
-    --bd: #1e293b;
-    --bl: #38bdf8;
-    --link-color: #38bdf8;
-    --gr: #10b981;
-    --dk: #064e3b;
-    --or: #f97316;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]),
-  :root[data-theme="system"] {
-    --cso-bg: #090e18;
-    --cso-surface: #0f172a;
-    --cso-card-bg: #131d33;
-    --cso-text: #f1f5f9;
-    --cso-text-muted: #94a3b8;
-    --cso-border: #1e293b;
-    --cso-link: #38bdf8;
-    --cso-active-bg: #0284c7;
-    --cso-active-tx: #ffffff;
-    --cso-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
-    --control-bg: #0f172a;
-    --control-tx: #f1f5f9;
-    --bg: #090e18;
-    --card: #131d33;
-    --surface: #0f172a;
-    --tx: #f1f5f9;
-    --mut: #94a3b8;
-    --bd: #1e293b;
-    --bl: #38bdf8;
-    --link-color: #38bdf8;
-    --gr: #10b981;
-    --dk: #064e3b;
-    --or: #f97316;
-  }
 }
 *{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px);overflow-x:clip}
 body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 "Segoe UI",Roboto,Arial,sans-serif;overflow-x:clip}
@@ -7433,16 +7353,19 @@ html.cso-a11y-lite .cso-footer-odisha-map {
 }
 
 /* ==========================================================================
-   CSO Unified 4-Theme Design System (v135 — Authoritative Single Source)
+   CSO Unified 4-Theme Design System (v136: system | dark | reading | utkal-bharat)
    ========================================================================== */
 :root,
-:root[data-cso-theme="alabaster-forest"] {
+:root[data-cso-theme="system"],
+:root[data-cso-resolved-mode="light"] {
   --cso-bg: #FAF9F6;
   --cso-surface: #FFFFFF;
   --cso-surface-alt: #F4EFE6;
+  --cso-card-bg: #FFFFFF;
   --cso-hero-bg: linear-gradient(135deg, #F4EFE6 0%, #E8DFCE 100%);
   --cso-border: #D6CFC2;
   --cso-text: #18221D;
+  --cso-text-muted: #4A5550;
   --cso-muted: #4A5550;
   --cso-primary: #1B4332;
   --cso-primary-fg: #FAF9F6;
@@ -7451,7 +7374,7 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-highlight-fg: #1B4332;
   --cso-highlight-ring: rgba(27, 67, 50, 0.22);
   --cso-card-hover-border: #1B4332;
-  --cso-card-hover-shadow: 0 10px 26px rgba(27, 67, 50, 0.12);
+  --cso-card-hover-shadow: 0 10px 24px rgba(27, 67, 50, 0.12);
   --cso-selection-bg: #1B4332;
   --cso-selection-fg: #FAF9F6;
   --cso-word-1: #B45309;
@@ -7488,45 +7411,48 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --link-color: var(--cso-primary);
 }
 
-:root[data-cso-theme="forest-gold"] {
-  --cso-bg: #F6F8F7;
-  --cso-surface: #FFFFFF;
-  --cso-surface-alt: #ECF2EF;
-  --cso-hero-bg: linear-gradient(135deg, #0E241B 0%, #1B4332 55%, #265642 100%);
-  --cso-border: #2D6A4F;
-  --cso-text: #10281E;
-  --cso-muted: #3D564B;
-  --cso-primary: #1B4332;
-  --cso-primary-fg: #FAF9F6;
-  --cso-accent: #D97706;
-  --cso-highlight-bg: #FEF3C7;
-  --cso-highlight-fg: #92400E;
-  --cso-highlight-ring: rgba(243, 198, 105, 0.35);
-  --cso-card-hover-border: #D97706;
-  --cso-card-hover-shadow: 0 10px 26px rgba(16, 40, 30, 0.14);
+:root[data-cso-theme="dark"],
+:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] {
+  --cso-bg: #0B1218;
+  --cso-surface: #131E29;
+  --cso-surface-alt: #182635;
+  --cso-card-bg: #131E29;
+  --cso-hero-bg: linear-gradient(135deg, #0B1218 0%, #131E29 55%, #162B28 100%);
+  --cso-border: #1E2E3D;
+  --cso-text: #F1F5F9;
+  --cso-text-muted: #94A3B8;
+  --cso-muted: #94A3B8;
+  --cso-primary: #34D399;
+  --cso-primary-fg: #0B1218;
+  --cso-accent: #F3C669;
+  --cso-highlight-bg: rgba(52, 211, 153, 0.16);
+  --cso-highlight-fg: #34D399;
+  --cso-highlight-ring: rgba(243, 198, 105, 0.30);
+  --cso-card-hover-border: #F3C669;
+  --cso-card-hover-shadow: 0 10px 24px rgba(0, 0, 0, 0.38);
   --cso-selection-bg: #F3C669;
-  --cso-selection-fg: #0E241B;
+  --cso-selection-fg: #0B1218;
   --cso-word-1: #F3C669;
-  --cso-word-2: #FAF9F6;
-  --cso-word-3: #86EFAC;
+  --cso-word-2: #F1F5F9;
+  --cso-word-3: #34D399;
   --cso-tagline: #F3C669;
-  --cso-subtext: #E2ECE7;
-  --cso-search-bg: #FFFFFF;
-  --cso-search-border: #F3C669;
-  --cso-search-btn: #D97706;
-  --cso-search-btn-fg: #FFFFFF;
-  --cso-pill-bg: rgba(255, 255, 255, 0.96);
-  --cso-pill-border: #86EFAC;
-  --cso-pill-text: #10281E;
+  --cso-subtext: #CBD5E1;
+  --cso-search-bg: #131E29;
+  --cso-search-border: #2A3F54;
+  --cso-search-btn: #F3C669;
+  --cso-search-btn-fg: #0B1218;
+  --cso-pill-bg: #182635;
+  --cso-pill-border: #2A3F54;
+  --cso-pill-text: #F1F5F9;
   --cso-pill-hover-bg: #F3C669;
-  --cso-pill-hover-fg: #10281E;
-  --cso-badge-bg: rgba(243, 198, 105, 0.22);
+  --cso-pill-hover-fg: #0B1218;
+  --cso-badge-bg: rgba(243, 198, 105, 0.18);
   --cso-badge-fg: #F3C669;
   --cso-scene-sky: transparent;
-  --cso-scene-wheel: rgba(243, 198, 105, 0.24);
-  --cso-scene-temple: rgba(10, 26, 19, 0.45);
-  --cso-scene-water: rgba(134, 239, 172, 0.14);
-  --cso-scene-boat: rgba(243, 198, 105, 0.32);
+  --cso-scene-wheel: rgba(243, 198, 105, 0.22);
+  --cso-scene-temple: rgba(52, 211, 153, 0.14);
+  --cso-scene-water: rgba(52, 211, 153, 0.12);
+  --cso-scene-boat: rgba(243, 198, 105, 0.28);
   --cso-hero-overlay-opacity: 0.24;
   --bg: var(--cso-bg);
   --card: var(--cso-surface);
@@ -7540,46 +7466,93 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --link-color: var(--cso-primary);
 }
 
-:root[data-cso-theme="chilika-teal"] {
-  --cso-bg: #F8FBFB;
-  --cso-surface: #FFFFFF;
-  --cso-surface-alt: #EAF3F5;
-  --cso-hero-bg: linear-gradient(135deg, #E8F3F5 0%, #D4E8EC 100%);
-  --cso-border: #B2D2D8;
-  --cso-text: #0F2E36;
-  --cso-muted: #3B5258;
-  --cso-primary: #0F4C5C;
-  --cso-primary-fg: #FFFFFF;
-  --cso-accent: #B45309;
-  --cso-highlight-bg: #E0F2FE;
-  --cso-highlight-fg: #0F4C5C;
-  --cso-highlight-ring: rgba(15, 76, 92, 0.24);
-  --cso-card-hover-border: #0F4C5C;
-  --cso-card-hover-shadow: 0 10px 26px rgba(15, 76, 92, 0.12);
-  --cso-selection-bg: #0F4C5C;
-  --cso-selection-fg: #FFFFFF;
-  --cso-word-1: #B45309;
-  --cso-word-2: #0F4C5C;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-cso-theme]),
+  :root[data-cso-theme="system"] {
+    --cso-bg: #0B1218;
+    --cso-surface: #131E29;
+    --cso-surface-alt: #182635;
+    --cso-card-bg: #131E29;
+    --cso-hero-bg: linear-gradient(135deg, #0B1218 0%, #131E29 55%, #162B28 100%);
+    --cso-border: #1E2E3D;
+    --cso-text: #F1F5F9;
+    --cso-text-muted: #94A3B8;
+    --cso-muted: #94A3B8;
+    --cso-primary: #34D399;
+    --cso-primary-fg: #0B1218;
+    --cso-accent: #F3C669;
+    --cso-highlight-bg: rgba(52, 211, 153, 0.16);
+    --cso-highlight-fg: #34D399;
+    --cso-highlight-ring: rgba(243, 198, 105, 0.30);
+    --cso-card-hover-border: #F3C669;
+    --cso-card-hover-shadow: 0 10px 24px rgba(0, 0, 0, 0.38);
+    --cso-selection-bg: #F3C669;
+    --cso-selection-fg: #0B1218;
+    --cso-word-1: #F3C669;
+    --cso-word-2: #F1F5F9;
+    --cso-word-3: #34D399;
+    --cso-tagline: #F3C669;
+    --cso-subtext: #CBD5E1;
+    --cso-search-bg: #131E29;
+    --cso-search-border: #2A3F54;
+    --cso-search-btn: #F3C669;
+    --cso-search-btn-fg: #0B1218;
+    --cso-pill-bg: #182635;
+    --cso-pill-border: #2A3F54;
+    --cso-pill-text: #F1F5F9;
+    --cso-pill-hover-bg: #F3C669;
+    --cso-pill-hover-fg: #0B1218;
+    --cso-badge-bg: rgba(243, 198, 105, 0.18);
+    --cso-badge-fg: #F3C669;
+    --cso-scene-wheel: rgba(243, 198, 105, 0.22);
+    --cso-scene-temple: rgba(52, 211, 153, 0.14);
+    --cso-scene-water: rgba(52, 211, 153, 0.12);
+    --cso-scene-boat: rgba(243, 198, 105, 0.28);
+  }
+}
+
+:root[data-cso-theme="reading"] {
+  --cso-bg: #F5EFE2;
+  --cso-surface: #FBF7EE;
+  --cso-surface-alt: #EFE6D5;
+  --cso-card-bg: #FBF7EE;
+  --cso-hero-bg: linear-gradient(135deg, #F5EFE2 0%, #EADEC8 100%);
+  --cso-border: #DFD2BA;
+  --cso-text: #2C241B;
+  --cso-text-muted: #5E5040;
+  --cso-muted: #5E5040;
+  --cso-primary: #8C4A19;
+  --cso-primary-fg: #FBF7EE;
+  --cso-accent: #8C4A19;
+  --cso-highlight-bg: #EFE0CA;
+  --cso-highlight-fg: #8C4A19;
+  --cso-highlight-ring: rgba(140, 74, 25, 0.22);
+  --cso-card-hover-border: #8C4A19;
+  --cso-card-hover-shadow: 0 10px 24px rgba(44, 36, 27, 0.10);
+  --cso-selection-bg: #8C4A19;
+  --cso-selection-fg: #FBF7EE;
+  --cso-word-1: #8C4A19;
+  --cso-word-2: #2C241B;
   --cso-word-3: #1B4332;
-  --cso-tagline: #0F4C5C;
-  --cso-subtext: #3B5258;
-  --cso-search-bg: #FFFFFF;
-  --cso-search-border: #0F4C5C;
-  --cso-search-btn: #0F4C5C;
-  --cso-search-btn-fg: #FFFFFF;
-  --cso-pill-bg: #FFFFFF;
-  --cso-pill-border: #B2D2D8;
-  --cso-pill-text: #0F4C5C;
-  --cso-pill-hover-bg: #0F4C5C;
-  --cso-pill-hover-fg: #FFFFFF;
-  --cso-badge-bg: #E0F2FE;
-  --cso-badge-fg: #0F4C5C;
+  --cso-tagline: #8C4A19;
+  --cso-subtext: #5E5040;
+  --cso-search-bg: #FBF7EE;
+  --cso-search-border: #8C4A19;
+  --cso-search-btn: #8C4A19;
+  --cso-search-btn-fg: #FBF7EE;
+  --cso-pill-bg: #FBF7EE;
+  --cso-pill-border: #DFD2BA;
+  --cso-pill-text: #2C241B;
+  --cso-pill-hover-bg: #8C4A19;
+  --cso-pill-hover-fg: #FBF7EE;
+  --cso-badge-bg: #EFE0CA;
+  --cso-badge-fg: #8C4A19;
   --cso-scene-sky: transparent;
-  --cso-scene-wheel: rgba(15, 76, 92, 0.17);
-  --cso-scene-temple: rgba(15, 76, 92, 0.13);
-  --cso-scene-water: rgba(14, 116, 144, 0.16);
-  --cso-scene-boat: rgba(180, 83, 9, 0.22);
-  --cso-hero-overlay-opacity: 0.16;
+  --cso-scene-wheel: rgba(140, 74, 25, 0.16);
+  --cso-scene-temple: rgba(44, 36, 27, 0.12);
+  --cso-scene-water: rgba(140, 74, 25, 0.12);
+  --cso-scene-boat: rgba(27, 67, 50, 0.20);
+  --cso-hero-overlay-opacity: 0.14;
   --bg: var(--cso-bg);
   --card: var(--cso-surface);
   --surface: var(--cso-surface);
@@ -7592,45 +7565,53 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --link-color: var(--cso-primary);
 }
 
-:root[data-cso-theme="konark-sandstone"] {
+:root[data-cso-theme="reading"] body,
+:root[data-cso-theme="reading"] .card p,
+:root[data-cso-theme="reading"] .sec p {
+  line-height: 1.7;
+}
+
+:root[data-cso-theme="utkal-bharat"] {
   --cso-bg: #FDFBF7;
   --cso-surface: #FFFFFF;
-  --cso-surface-alt: #F6EFE3;
-  --cso-hero-bg: linear-gradient(135deg, #F7EFE2 0%, #ECDEC8 100%);
-  --cso-border: #D6C5AE;
-  --cso-text: #292524;
-  --cso-muted: #57534E;
-  --cso-primary: #9A3412;
-  --cso-primary-fg: #FFFBEB;
-  --cso-accent: #1B4332;
+  --cso-surface-alt: #F7EFE2;
+  --cso-card-bg: #FFFFFF;
+  --cso-hero-bg: linear-gradient(135deg, #F7EFE2 0%, #EFE2CD 100%);
+  --cso-border: #D9C7AE;
+  --cso-text: #1F2421;
+  --cso-text-muted: #524B43;
+  --cso-muted: #524B43;
+  --cso-primary: #1E3A8A;
+  --cso-primary-fg: #FFFFFF;
+  --cso-accent: #C2410C;
   --cso-highlight-bg: #FFEDD5;
-  --cso-highlight-fg: #9A3412;
-  --cso-highlight-ring: rgba(154, 52, 18, 0.24);
-  --cso-card-hover-border: #9A3412;
-  --cso-card-hover-shadow: 0 10px 26px rgba(154, 52, 18, 0.12);
-  --cso-selection-bg: #9A3412;
-  --cso-selection-fg: #FFFBEB;
-  --cso-word-1: #9A3412;
-  --cso-word-2: #292524;
-  --cso-word-3: #1B4332;
-  --cso-tagline: #9A3412;
-  --cso-subtext: #57534E;
+  --cso-highlight-fg: #C2410C;
+  --cso-highlight-ring: rgba(30, 58, 138, 0.24);
+  --cso-card-hover-border: #C2410C;
+  --cso-card-hover-shadow: 0 10px 24px rgba(194, 65, 12, 0.12);
+  --cso-selection-bg: #1E3A8A;
+  --cso-selection-fg: #FFFFFF;
+  --cso-word-1: #C2410C;
+  --cso-word-2: #1E3A8A;
+  --cso-word-3: #15803D;
+  --cso-tagline: #1E3A8A;
+  --cso-subtext: #524B43;
   --cso-search-bg: #FFFFFF;
-  --cso-search-border: #9A3412;
-  --cso-search-btn: #9A3412;
-  --cso-search-btn-fg: #FFFBEB;
+  --cso-search-border: #1E3A8A;
+  --cso-search-btn: #C2410C;
+  --cso-search-btn-fg: #FFFFFF;
   --cso-pill-bg: #FFFFFF;
-  --cso-pill-border: #D6C5AE;
-  --cso-pill-text: #292524;
-  --cso-pill-hover-bg: #9A3412;
-  --cso-pill-hover-fg: #FFFBEB;
+  --cso-pill-border: #D9C7AE;
+  --cso-pill-text: #1F2421;
+  --cso-pill-hover-bg: #1E3A8A;
+  --cso-pill-hover-fg: #FFFFFF;
   --cso-badge-bg: #FFEDD5;
-  --cso-badge-fg: #9A3412;
+  --cso-badge-fg: #C2410C;
   --cso-scene-sky: transparent;
-  --cso-scene-wheel: rgba(154, 52, 18, 0.17);
-  --cso-scene-temple: rgba(41, 37, 36, 0.14);
-  --cso-scene-water: rgba(180, 83, 9, 0.14);
-  --cso-scene-boat: rgba(27, 67, 50, 0.22);
+  --cso-scene-wheel: rgba(30, 58, 138, 0.18);
+  --cso-scene-temple: rgba(194, 65, 12, 0.16);
+  --cso-scene-water: rgba(21, 128, 61, 0.14);
+  --cso-scene-boat: rgba(194, 65, 12, 0.24);
   --cso-hero-overlay-opacity: 0.16;
   --bg: var(--cso-bg);
   --card: var(--cso-surface);
@@ -7738,54 +7719,9 @@ body {
   }
 }
 
-/* Labeled Theme Pills in Hero Bar & Header */
-.cso-hero-theme-bar {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  z-index: 4;
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 6px;
-  border-radius: 999px;
-  background: var(--cso-surface);
-  border: 1px solid var(--cso-border);
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
-}
-
-.cso-theme-pill,
-.cso-hero-theme-dot {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  border: 1px solid var(--cso-border);
-  background: var(--cso-surface-alt);
-  color: var(--cso-text);
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), background-color 180ms cubic-bezier(0.22, 1, 0.36, 1), color 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.cso-theme-pill:hover,
-.cso-hero-theme-dot:hover {
-  transform: translateY(-1px);
-  border-color: var(--cso-primary);
-}
-
-.cso-theme-pill[aria-pressed="true"],
-.cso-hero-theme-dot[aria-pressed="true"] {
-  background: var(--cso-primary);
-  color: var(--cso-primary-fg);
-  border-color: var(--cso-primary);
-  box-shadow: 0 0 0 3px var(--cso-highlight-ring);
-}
-
+/* Unified Theme-Reactive Swatches & Header Switcher */
 .cso-theme-swatch {
+  display: inline-block;
   width: 10px;
   height: 10px;
   border-radius: 999px;
@@ -7793,10 +7729,10 @@ body {
   flex-shrink: 0;
 }
 
-.cso-theme-swatch.is-alabaster-forest { background: #FAF9F6; border-color: #1B4332; }
-.cso-theme-swatch.is-forest-gold { background: #1B4332; border-color: #F3C669; }
-.cso-theme-swatch.is-chilika-teal { background: #0F4C5C; border-color: #B2D2D8; }
-.cso-theme-swatch.is-konark-sandstone { background: #9A3412; border-color: #ECDEC8; }
+.cso-theme-swatch.is-system { background: linear-gradient(135deg, #FAF9F6 50%, #0B1218 50%); border-color: #1B4332; }
+.cso-theme-swatch.is-dark { background: #0B1218; border-color: #F3C669; }
+.cso-theme-swatch.is-reading { background: #F5EFE2; border-color: #8C4A19; }
+.cso-theme-swatch.is-utkal-bharat { background: #C2410C; border-color: #1E3A8A; }
 
 .cso-hero-bg-overlay {
   opacity: var(--cso-hero-overlay-opacity) !important;
@@ -7945,31 +7881,85 @@ select:focus-visible {
   box-shadow: 0 6px 16px var(--cso-highlight-ring) !important;
 }
 
-/* Directory Cards, Job/Scheme Rows & Study Library Cards */
+/* Lower Homepage Cards: Opportunity Compass, Trending Topics, Important Tools & Action Hub CTA Cards */
+.cso-compass-section,
+.cso-trending-topics-sec,
+.cso-tools-sec {
+  background: var(--cso-surface) !important;
+  border: 1px solid var(--cso-border) !important;
+  color: var(--cso-text) !important;
+}
+
+.cso-compass-title,
+.cso-trending-topics-sec h2 .cso-h2-bl,
+.cso-tools-sec h2 .cso-h2-bl {
+  color: var(--cso-text) !important;
+}
+
+.cso-compass-sub,
+.cso-trending-topics-sec h2 small,
+.cso-tools-sec h2 small {
+  color: var(--cso-muted) !important;
+}
+
 .card,
 .dir-card,
 .update-item,
 .resource-card,
+.cso-compass-card,
+.cso-topic-card,
+.tools-grid .card.tl,
+#cso-tools-grid .card.tl,
+.tool-card,
 .cso-hub-card,
 .lu .it {
-  border-color: var(--cso-border);
-  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--cso-surface) !important;
+  border: 1px solid var(--cso-border) !important;
+  color: var(--cso-text) !important;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms cubic-bezier(0.22, 1, 0.36, 1), background-color 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.cso-compass-card__heading,
+.cso-topic-card__title,
+.tool-card b,
+.card.tl b,
+.cso-hub-card__title {
+  color: var(--cso-text) !important;
+  font-weight: 700 !important;
+}
+
+.cso-compass-card__desc,
+.cso-topic-card__desc,
+.tool-card small,
+.card.tl small,
+.cso-hub-card__desc {
+  color: var(--cso-muted) !important;
 }
 
 .card:hover,
 .dir-card:hover,
 .update-item:hover,
 .resource-card:hover,
+.cso-compass-card:hover,
+.cso-topic-card:hover,
+.tools-grid .card.tl:hover,
+#cso-tools-grid .card.tl:hover,
+.tool-card:hover,
 .cso-hub-card:hover,
 .lu .it:hover {
   border-color: var(--cso-card-hover-border) !important;
+  background: var(--cso-surface-alt) !important;
   transform: translateY(-2px);
-  box-shadow: var(--cso-card-hover-shadow);
+  box-shadow: var(--cso-card-hover-shadow) !important;
 }
 
 .dir-card:hover h3,
 .resource-card:hover h3,
-.cso-hub-card:hover h3,
+.cso-compass-card:hover .cso-compass-card__heading,
+.cso-topic-card:hover .cso-topic-card__title,
+.tool-card:hover b,
+.card.tl:hover b,
+.cso-hub-card:hover .cso-hub-card__title,
 .lu .it:hover {
-  color: var(--cso-primary);
+  color: var(--cso-primary) !important;
 }

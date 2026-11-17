@@ -229,11 +229,11 @@
 
       const codeIn = textInput('text', it.brand_short_code || 'CSO');
       const palIn = selectOf([
-        ['Warm Alabaster & Deep Forest Green', 'Alabaster Forest (Default)'],
-        ['Forest Gold', 'Forest Gold (Deep Canopy & Konark Gold)'],
-        ['Chilika Teal', 'Chilika Teal (Chilika Lagoon & Ivory)'],
-        ['Konark Sandstone', 'Konark Sandstone (Royal Terracotta)']
-      ], it.primary_palette_name || 'Warm Alabaster & Deep Forest Green');
+        ['System (Auto Light/Dark)', 'System (Auto Light/Dark)'],
+        ['Dark Night', 'Dark Night'],
+        ['Reading Mode (Kalinga Paper)', 'Reading Mode (Kalinga Paper)'],
+        ['Odisha & Bharat Heritage', 'Odisha & Bharat Heritage']
+      ], it.primary_palette_name || 'System (Auto Light/Dark)');
       const priIn = textInput('text', it.primary_hex || '#1B4332');
       const surfIn = textInput('text', it.surface_hex || '#FAF9F6');
       const accIn = textInput('text', it.accent_hex || '#D97706');

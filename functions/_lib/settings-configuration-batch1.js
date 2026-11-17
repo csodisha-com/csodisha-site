@@ -129,7 +129,7 @@ export async function ensureSettingsConfigBatch1Schema(db) {
     `CREATE TABLE IF NOT EXISTS cfg_website_identity (
       id TEXT PRIMARY KEY,
       brand_short_code TEXT NOT NULL DEFAULT 'CSO',
-      primary_palette_name TEXT NOT NULL DEFAULT 'Warm Alabaster & Deep Forest Green',
+      primary_palette_name TEXT NOT NULL DEFAULT 'System (Auto Light/Dark)',
       primary_hex TEXT NOT NULL DEFAULT '#1B4332',
       surface_hex TEXT NOT NULL DEFAULT '#FAF9F6',
       accent_hex TEXT NOT NULL DEFAULT '#D97706',

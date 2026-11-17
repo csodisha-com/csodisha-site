@@ -156,27 +156,29 @@ function apply(){
 }
 const LN={en:'English',or:'ଓଡ଼ିଆ',hi:'हिन्दी'};
 const CSO_PORTAL_THEMES=[
-  {key:'alabaster-forest',label:'Alabaster',fullLabel:'Alabaster Forest'},
-  {key:'forest-gold',label:'Forest Gold',fullLabel:'Forest Gold'},
-  {key:'chilika-teal',label:'Chilika Teal',fullLabel:'Chilika Teal'},
-  {key:'konark-sandstone',label:'Sandstone',fullLabel:'Konark Sandstone'}
+  {key:'system',label:'System',fullLabel:'System (Auto Light/Dark)'},
+  {key:'dark',label:'Dark',fullLabel:'Dark Night'},
+  {key:'reading',label:'Reading',fullLabel:'Reading Mode'},
+  {key:'utkal-bharat',label:'Odisha & Bharat',fullLabel:'Odisha & Bharat'}
 ];
 const CSO_PORTAL_THEME_KEYS=CSO_PORTAL_THEMES.map(t=>t.key);
 function csoResolvePalette(p){
   const r=String(p||'').toLowerCase();
   if(CSO_PORTAL_THEME_KEYS.includes(r))return r;
-  if(r.includes('forest gold')||r.includes('canopy'))return 'forest-gold';
-  if(r.includes('chilika')||r.includes('teal'))return 'chilika-teal';
-  if(r.includes('konark')||r.includes('sandstone')||r.includes('terracotta'))return 'konark-sandstone';
-  return 'alabaster-forest';
+  if(r.includes('dark')||r.includes('night')||r.includes('obsidian'))return 'dark';
+  if(r.includes('reading')||r.includes('kalinga')||r.includes('paper'))return 'reading';
+  if(r.includes('utkal')||r.includes('bharat')||r.includes('odisha')||r.includes('heritage')||r.includes('sandstone'))return 'utkal-bharat';
+  return 'system';
 }
 function csoGetStoredTheme(){
   try{const k=localStorage.getItem('cso_portal_theme');return CSO_PORTAL_THEME_KEYS.includes(k)?k:'';}catch(_){return '';}
 }
+function csoResolveMode(k){
+  if(k==='dark')return 'dark';
+  if(k==='reading'||k==='utkal-bharat')return 'light';
+  try{return (typeof window.matchMedia==='function'&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}catch(_){return 'light';}
+}
 function csoSyncThemeUi(key){
-  document.querySelectorAll('.cso-hero-theme-dot,.cso-theme-pill').forEach(el=>{
-    el.setAttribute('aria-pressed',el.dataset.themeChoice===key?'true':'false');
-  });
   const bt=$('#bt');
   const cur=CSO_PORTAL_THEMES.find(t=>t.key===key);
   if(bt&&cur){
@@ -188,17 +190,25 @@ function csoSyncThemeUi(key){
   }
 }
 if(!window.CSOTheme){
-  let _curTheme=csoGetStoredTheme()||'alabaster-forest';
+  let _curTheme=csoGetStoredTheme()||'system';
   const setTheme=(key,persist=true)=>{
-    const k=CSO_PORTAL_THEME_KEYS.includes(key)?key:'alabaster-forest';
+    const k=CSO_PORTAL_THEME_KEYS.includes(key)?key:'system';
     _curTheme=k;
     document.documentElement.setAttribute('data-cso-theme',k);
+    document.documentElement.setAttribute('data-cso-resolved-mode',csoResolveMode(k));
     if(persist){try{localStorage.setItem('cso_portal_theme',k);}catch(_){}}
     csoSyncThemeUi(k);
     return k;
   };
-  window.CSOTheme={THEMES:CSO_PORTAL_THEMES,getTheme:()=>_curTheme,setTheme,resolvePaletteToThemeKey:csoResolvePalette};
+  window.CSOTheme={THEMES:CSO_PORTAL_THEMES,getTheme:()=>_curTheme,getResolvedMode:()=>csoResolveMode(_curTheme),setTheme,resolvePaletteToThemeKey:csoResolvePalette};
   setTheme(_curTheme,false);
+  try{
+    if(typeof window.matchMedia==='function'){
+      const mq=window.matchMedia('(prefers-color-scheme: dark)');
+      const onMq=()=>{if(_curTheme==='system')document.documentElement.setAttribute('data-cso-resolved-mode',csoResolveMode('system'));};
+      if(typeof mq.addEventListener==='function')mq.addEventListener('change',onMq);
+    }
+  }catch(_){}
   window.addEventListener('storage',e=>{
     if(e.key==='cso_portal_theme'&&e.newValue&&CSO_PORTAL_THEME_KEYS.includes(e.newValue))setTheme(e.newValue,false);
   });
@@ -210,32 +220,6 @@ if(!window.CSOTheme){
     }).catch(()=>{});
   }
 }
-function csoMountHeroThemeBar(){
-  const hero=document.getElementById('cso-hero');
-  if(!hero||hero.querySelector('.cso-hero-theme-bar'))return;
-  const bar=document.createElement('div');
-  bar.className='cso-hero-theme-bar';
-  bar.setAttribute('role','group');
-  bar.setAttribute('aria-label','Switch portal theme');
-  CSO_PORTAL_THEMES.forEach(t=>{
-    const b=document.createElement('button');
-    b.type='button';
-    b.className='cso-theme-pill cso-hero-theme-dot is-'+t.key;
-    b.dataset.themeChoice=t.key;
-    b.setAttribute('aria-label','Theme: '+t.fullLabel);
-    b.title=t.fullLabel;
-    b.setAttribute('aria-pressed',window.CSOTheme.getTheme()===t.key?'true':'false');
-    const sw=document.createElement('span');
-    sw.className='cso-theme-swatch is-'+t.key;
-    sw.setAttribute('aria-hidden','true');
-    b.append(sw,document.createTextNode(t.label));
-    b.addEventListener('click',()=>window.CSOTheme.setTheme(t.key,true));
-    bar.appendChild(b);
-  });
-  hero.appendChild(bar);
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',csoMountHeroThemeBar);
-else csoMountHeroThemeBar();
 
 function ctl(){
  setSafeHtml($('#ctl'),'<span class="cso-popup-anchor"><button class="pill cso-ctl-lang" id="bl" aria-label="Language selector"><span class="cso-lang-icon">🌐</span> <span class="cso-lang-name">'+LN[S.lang]+'</span> ⌄</button></span><span class="cso-popup-anchor"><button class="pill cso-ctl-theme" id="bt" aria-label="Select portal theme"></button></span><span class="cso-popup-anchor"><button class="pill cso-ctl-a11y" id="ba">♿ Accessibility ⌄</button></span><span class="pill cso-ctl-zoom"><button class="fz" id="fm" aria-label="Smaller text">A–</button><button class="fz" id="fr" aria-label="Normal text">A</button><button class="fz" id="fp" aria-label="Larger text">A+</button></span>');

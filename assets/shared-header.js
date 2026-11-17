@@ -87,10 +87,10 @@
   const THEMES = ['light', 'dark', 'system', 'reading', 'sepia'];
   const THEME_ICONS = { light: '☀️', dark: '🌙', system: '💻', reading: '📖', sepia: '☕' };
   const PORTAL_THEMES = [
-    { key: 'alabaster-forest', label: 'Alabaster', fullLabel: 'Alabaster Forest' },
-    { key: 'forest-gold', label: 'Forest Gold', fullLabel: 'Forest Gold' },
-    { key: 'chilika-teal', label: 'Chilika Teal', fullLabel: 'Chilika Teal' },
-    { key: 'konark-sandstone', label: 'Sandstone', fullLabel: 'Konark Sandstone' }
+    { key: 'system', label: 'System', fullLabel: 'System (Auto Light/Dark)' },
+    { key: 'dark', label: 'Dark', fullLabel: 'Dark Night' },
+    { key: 'reading', label: 'Reading', fullLabel: 'Reading Mode' },
+    { key: 'utkal-bharat', label: 'Odisha & Bharat', fullLabel: 'Odisha & Bharat' }
   ];
   const PORTAL_THEME_KEYS = PORTAL_THEMES.map(t => t.key);
   const LN = { en: 'English', or: 'ଓଡ଼ିଆ', hi: 'हिन्दी' };
@@ -98,10 +98,10 @@
   function resolvePaletteToThemeKey(paletteName) {
     const raw = String(paletteName || '').toLowerCase();
     if (PORTAL_THEME_KEYS.includes(raw)) return raw;
-    if (raw.includes('forest gold') || raw.includes('canopy')) return 'forest-gold';
-    if (raw.includes('chilika') || raw.includes('teal')) return 'chilika-teal';
-    if (raw.includes('konark') || raw.includes('sandstone') || raw.includes('terracotta')) return 'konark-sandstone';
-    return 'alabaster-forest';
+    if (raw.includes('dark') || raw.includes('night') || raw.includes('obsidian')) return 'dark';
+    if (raw.includes('reading') || raw.includes('kalinga') || raw.includes('paper')) return 'reading';
+    if (raw.includes('utkal') || raw.includes('bharat') || raw.includes('odisha') || raw.includes('heritage') || raw.includes('sandstone')) return 'utkal-bharat';
+    return 'system';
   }
 
   function getStoredPortalTheme() {
@@ -113,10 +113,17 @@
     }
   }
 
-  function syncHeroThemeDots(activeKey) {
-    document.querySelectorAll('.cso-hero-theme-dot, .cso-theme-pill').forEach(dot => {
-      dot.setAttribute('aria-pressed', dot.dataset.themeChoice === activeKey ? 'true' : 'false');
-    });
+  function resolveEffectiveMode(themeKey) {
+    if (themeKey === 'dark') return 'dark';
+    if (themeKey === 'reading' || themeKey === 'utkal-bharat') return 'light';
+    try {
+      return (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    } catch (e) {
+      return 'light';
+    }
+  }
+
+  function syncHeaderThemeBtn(activeKey) {
     const bt = document.getElementById('cso-ctl-theme');
     const cur = PORTAL_THEMES.find(t => t.key === activeKey);
     if (bt && cur) {
@@ -127,73 +134,47 @@
     }
   }
 
-  let activePortalTheme = getStoredPortalTheme() || 'alabaster-forest';
+  let activePortalTheme = getStoredPortalTheme() || 'system';
 
   function setPortalTheme(themeKey, persist = true) {
-    const key = PORTAL_THEME_KEYS.includes(themeKey) ? themeKey : 'alabaster-forest';
+    const key = PORTAL_THEME_KEYS.includes(themeKey) ? themeKey : 'system';
     activePortalTheme = key;
     document.documentElement.setAttribute('data-cso-theme', key);
+    document.documentElement.setAttribute('data-cso-resolved-mode', resolveEffectiveMode(key));
     if (persist) {
       try { localStorage.setItem('cso_portal_theme', key); } catch (e) {}
     }
-    syncHeroThemeDots(key);
+    syncHeaderThemeBtn(key);
     return key;
-  }
-
-  function applyPortalTheme(themeKey, persist) {
-    return setPortalTheme(themeKey, persist);
   }
 
   window.CSOTheme = {
     THEMES: PORTAL_THEMES,
     getTheme: () => activePortalTheme,
+    getResolvedMode: () => resolveEffectiveMode(activePortalTheme),
     setTheme: (key, persist = true) => setPortalTheme(key, persist),
     resolvePaletteToThemeKey
   };
 
   setPortalTheme(activePortalTheme, false);
 
+  try {
+    if (typeof window.matchMedia === 'function') {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      const onMqChange = () => {
+        if (activePortalTheme === 'system') {
+          document.documentElement.setAttribute('data-cso-resolved-mode', resolveEffectiveMode('system'));
+        }
+      };
+      if (typeof mq.addEventListener === 'function') mq.addEventListener('change', onMqChange);
+    }
+  } catch (e) {}
+
   window.addEventListener('storage', e => {
     if (e.key === 'cso_portal_theme' && e.newValue && PORTAL_THEME_KEYS.includes(e.newValue)) {
       setPortalTheme(e.newValue, false);
     }
   });
-
-  function mountHeroThemeBar() {
-    const hero = document.getElementById('cso-hero');
-    if (!hero || hero.querySelector('.cso-hero-theme-bar')) return;
-    const bar = document.createElement('div');
-    bar.className = 'cso-hero-theme-bar';
-    bar.setAttribute('role', 'group');
-    bar.setAttribute('aria-label', 'Switch portal theme');
-    PORTAL_THEMES.forEach(t => {
-      const dot = document.createElement('button');
-      dot.type = 'button';
-      dot.className = `cso-theme-pill cso-hero-theme-dot is-${t.key}`;
-      dot.dataset.themeChoice = t.key;
-      dot.setAttribute('aria-label', `Theme: ${t.fullLabel}`);
-      dot.title = t.fullLabel;
-      dot.setAttribute('aria-pressed', activePortalTheme === t.key ? 'true' : 'false');
-      const sw = document.createElement('span');
-      sw.className = `cso-theme-swatch is-${t.key}`;
-      sw.setAttribute('aria-hidden', 'true');
-      dot.append(sw, document.createTextNode(t.label));
-      dot.addEventListener('click', () => {
-        setPortalTheme(t.key, true);
-        if (typeof renderControls === 'function') renderControls();
-      });
-      bar.appendChild(dot);
-    });
-    hero.appendChild(bar);
-  }
-
-  if (typeof document !== 'undefined') {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', mountHeroThemeBar);
-    } else {
-      mountHeroThemeBar();
-    }
-  }
 
   if (!getStoredPortalTheme() && typeof fetch === 'function') {
     fetch('/api/config/public', { credentials: 'same-origin' })
