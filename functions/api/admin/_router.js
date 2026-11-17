@@ -44,6 +44,7 @@ import { handleCommunicationsBatch2Admin, ensureCommunicationsBatch2Schema } fro
 import { handleCommunicationsBatch3Admin, ensureCommunicationsBatch3Schema, getFull12ModuleCommunicationsOverview } from '../../_lib/communications-batch3.js';
 import { handleMarketingAdvertisingBatch1Admin } from '../../_lib/marketing-advertising-batch1.js';
 import { handleMarketingAdvertisingBatch2Admin, ensureMarketingAdvertisingBatch2Schema, getMarketingBatch2Overview } from '../../_lib/marketing-advertising-batch2.js';
+import { handleMarketingAdvertisingBatch3Admin, ensureMarketingAdvertisingBatch3Schema, getFull10ModuleMarketingOverview } from '../../_lib/marketing-advertising-batch3.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -142,13 +143,19 @@ export async function handleAdminApi(request, env) {
     if (resource === 'marketing') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (['landing-pages', 'reports'].includes(id)) {
+        return await handleMarketingAdvertisingBatch3Admin(request, env, actor, id, sub, extra);
+      }
       if (['referrals', 'analytics', 'utm', 'social-cards'].includes(id)) {
         return await handleMarketingAdvertisingBatch2Admin(request, env, actor, id, sub, extra);
       }
       if (id === 'overview' && method === 'GET') {
-        return json(await getMarketingBatch2Overview(env));
+        return json(await getFull10ModuleMarketingOverview(env));
       }
-      if (id === 'revisions') await ensureMarketingAdvertisingBatch2Schema(env.DB);
+      if (id === 'revisions') {
+        await ensureMarketingAdvertisingBatch2Schema(env.DB);
+        await ensureMarketingAdvertisingBatch3Schema(env.DB);
+      }
       return await handleMarketingAdvertisingBatch1Admin(request, env, actor, id, sub, extra);
     }
     if (resource === 'candidates') {
