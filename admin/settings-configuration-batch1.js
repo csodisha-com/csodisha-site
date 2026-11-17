@@ -228,7 +228,12 @@
       const it = res.item || {};
 
       const codeIn = textInput('text', it.brand_short_code || 'CSO');
-      const palIn = textInput('text', it.primary_palette_name || '');
+      const palIn = selectOf([
+        ['Warm Alabaster & Deep Forest Green', 'Alabaster Forest (Default)'],
+        ['Forest Gold', 'Forest Gold (Deep Canopy & Konark Gold)'],
+        ['Chilika Teal', 'Chilika Teal (Chilika Lagoon & Ivory)'],
+        ['Konark Sandstone', 'Konark Sandstone (Royal Terracotta)']
+      ], it.primary_palette_name || 'Warm Alabaster & Deep Forest Green');
       const priIn = textInput('text', it.primary_hex || '#1B4332');
       const surfIn = textInput('text', it.surface_hex || '#FAF9F6');
       const accIn = textInput('text', it.accent_hex || '#D97706');

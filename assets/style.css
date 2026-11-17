@@ -327,90 +327,7 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible,input:focus-visibl
   .top .adm small { font-size: 9px; }
 }
 
-/* CSO five-theme palette */
-:root[data-theme="reading"] {
-  --cso-bg: #eaf4ed;
-  --cso-surface: #f8fcf8;
-  --cso-card-bg: #f8fcf8;
-  --cso-text: #213d30;
-  --cso-text-muted: #476858;
-  --cso-border: #c8dfd0;
-  --cso-link: #1b6348;
-  --cso-active-bg: #1b6348;
-  --cso-active-tx: #ffffff;
-  --control-bg: #f8fcf8;
-  --control-tx: #213d30;
-  --bg: var(--cso-bg);
-  --card: var(--cso-card-bg);
-  --surface: var(--cso-surface);
-  --tx: var(--cso-text);
-  --mut: var(--cso-text-muted);
-  --bd: var(--cso-border);
-  --bl: #1b6348;
-  --link-color: var(--cso-link);
-  --cso-shadow: 0 4px 20px rgba(33, 61, 48, 0.08);
-}
-:root[data-theme="sepia"] {
-  --cso-bg: #f4e8cf;
-  --cso-surface: #fff8e9;
-  --cso-card-bg: #fff8e9;
-  --cso-text: #432e1e;
-  --cso-text-muted: #6b533e;
-  --cso-border: #dfcba8;
-  --cso-link: #824716;
-  --cso-active-bg: #79502b;
-  --cso-active-tx: #ffffff;
-  --control-bg: #fff8e9;
-  --control-tx: #432e1e;
-  --bg: var(--cso-bg);
-  --card: var(--cso-card-bg);
-  --surface: var(--cso-surface);
-  --tx: var(--cso-text);
-  --mut: var(--cso-text-muted);
-  --bd: var(--cso-border);
-  --bl: #824716;
-  --link-color: var(--cso-link);
-  --cso-shadow: 0 4px 20px rgba(67, 46, 30, 0.08);
-}
-
-/* CSO theme contrast fixes v1 */
-
-/* Give controls appropriate text and background colors. */
-:root {
-  --control-bg: #ffffff;
-  --control-tx: #14233b;
-  --link-color: #1d4ed8;
-}
-
-:root[data-theme=dark] {
-  --control-bg: #202e42;
-  --control-tx: #f1f5fb;
-  --link-color: #93b9ff;
-  --bl: #93b9ff;
-}
-
-:root[data-theme=reading] {
-  --control-bg: #f8fcf8;
-  --control-tx: #213d30;
-  --link-color: #245b45;
-  --bl: #245b45;
-}
-
-:root[data-theme=sepia] {
-  --control-bg: #fff8e9;
-  --control-tx: #513b29;
-  --link-color: #79502b;
-  --bl: #79502b;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root[data-theme=system] {
-    --control-bg: #202e42;
-    --control-tx: #f1f5fb;
-    --link-color: #93b9ff;
-    --bl: #93b9ff;
-  }
-}
+/* Legacy 5-theme rules squashed into unified [data-cso-theme] system (v135) */
 
 /* Cards, fields and buttons must match their text colors. */
 .acct,
@@ -7516,13 +7433,27 @@ html.cso-a11y-lite .cso-footer-odisha-map {
 }
 
 /* ==========================================================================
-   CSO 4-Theme Portal Palette & Hero Transformation System (v133)
+   CSO Unified 4-Theme Design System (v135 — Authoritative Single Source)
    ========================================================================== */
 :root,
 :root[data-cso-theme="alabaster-forest"] {
   --cso-bg: #FAF9F6;
-  --cso-hero-bg: linear-gradient(135deg, #F4EFE6 0%, #EAE2D3 100%);
-  --cso-hero-border: #D6CFC2;
+  --cso-surface: #FFFFFF;
+  --cso-surface-alt: #F4EFE6;
+  --cso-hero-bg: linear-gradient(135deg, #F4EFE6 0%, #E8DFCE 100%);
+  --cso-border: #D6CFC2;
+  --cso-text: #18221D;
+  --cso-muted: #4A5550;
+  --cso-primary: #1B4332;
+  --cso-primary-fg: #FAF9F6;
+  --cso-accent: #B45309;
+  --cso-highlight-bg: #E6F2EC;
+  --cso-highlight-fg: #1B4332;
+  --cso-highlight-ring: rgba(27, 67, 50, 0.22);
+  --cso-card-hover-border: #1B4332;
+  --cso-card-hover-shadow: 0 10px 26px rgba(27, 67, 50, 0.12);
+  --cso-selection-bg: #1B4332;
+  --cso-selection-fg: #FAF9F6;
   --cso-word-1: #B45309;
   --cso-word-2: #1B4332;
   --cso-word-3: #2D6A4F;
@@ -7537,20 +7468,44 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-pill-text: #1B4332;
   --cso-pill-hover-bg: #1B4332;
   --cso-pill-hover-fg: #FAF9F6;
-  --cso-badge-bg: #E6EFE9;
+  --cso-badge-bg: #E6F2EC;
   --cso-badge-fg: #1B4332;
   --cso-scene-sky: transparent;
   --cso-scene-wheel: rgba(27, 67, 50, 0.16);
-  --cso-scene-temple: rgba(27, 67, 50, 0.14);
-  --cso-scene-water: rgba(45, 106, 79, 0.12);
+  --cso-scene-temple: rgba(27, 67, 50, 0.13);
+  --cso-scene-water: rgba(45, 106, 79, 0.14);
   --cso-scene-boat: rgba(180, 83, 9, 0.22);
-  --cso-hero-overlay-opacity: 0.14;
+  --cso-hero-overlay-opacity: 0.16;
+  --bg: var(--cso-bg);
+  --card: var(--cso-surface);
+  --surface: var(--cso-surface);
+  --tx: var(--cso-text);
+  --mut: var(--cso-muted);
+  --bd: var(--cso-border);
+  --bl: var(--cso-primary);
+  --control-bg: var(--cso-surface);
+  --control-tx: var(--cso-text);
+  --link-color: var(--cso-primary);
 }
 
 :root[data-cso-theme="forest-gold"] {
-  --cso-bg: #FAF9F6;
-  --cso-hero-bg: linear-gradient(135deg, #10281E 0%, #1B4332 55%, #275743 100%);
-  --cso-hero-border: #2D6A4F;
+  --cso-bg: #F6F8F7;
+  --cso-surface: #FFFFFF;
+  --cso-surface-alt: #ECF2EF;
+  --cso-hero-bg: linear-gradient(135deg, #0E241B 0%, #1B4332 55%, #265642 100%);
+  --cso-border: #2D6A4F;
+  --cso-text: #10281E;
+  --cso-muted: #3D564B;
+  --cso-primary: #1B4332;
+  --cso-primary-fg: #FAF9F6;
+  --cso-accent: #D97706;
+  --cso-highlight-bg: #FEF3C7;
+  --cso-highlight-fg: #92400E;
+  --cso-highlight-ring: rgba(243, 198, 105, 0.35);
+  --cso-card-hover-border: #D97706;
+  --cso-card-hover-shadow: 0 10px 26px rgba(16, 40, 30, 0.14);
+  --cso-selection-bg: #F3C669;
+  --cso-selection-fg: #0E241B;
   --cso-word-1: #F3C669;
   --cso-word-2: #FAF9F6;
   --cso-word-3: #86EFAC;
@@ -7565,20 +7520,44 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-pill-text: #10281E;
   --cso-pill-hover-bg: #F3C669;
   --cso-pill-hover-fg: #10281E;
-  --cso-badge-bg: rgba(243, 198, 105, 0.20);
+  --cso-badge-bg: rgba(243, 198, 105, 0.22);
   --cso-badge-fg: #F3C669;
   --cso-scene-sky: transparent;
-  --cso-scene-wheel: rgba(243, 198, 105, 0.22);
-  --cso-scene-temple: rgba(10, 28, 20, 0.42);
-  --cso-scene-water: rgba(243, 198, 105, 0.14);
-  --cso-scene-boat: rgba(243, 198, 105, 0.30);
+  --cso-scene-wheel: rgba(243, 198, 105, 0.24);
+  --cso-scene-temple: rgba(10, 26, 19, 0.45);
+  --cso-scene-water: rgba(134, 239, 172, 0.14);
+  --cso-scene-boat: rgba(243, 198, 105, 0.32);
   --cso-hero-overlay-opacity: 0.24;
+  --bg: var(--cso-bg);
+  --card: var(--cso-surface);
+  --surface: var(--cso-surface);
+  --tx: var(--cso-text);
+  --mut: var(--cso-muted);
+  --bd: var(--cso-border);
+  --bl: var(--cso-primary);
+  --control-bg: var(--cso-surface);
+  --control-tx: var(--cso-text);
+  --link-color: var(--cso-primary);
 }
 
 :root[data-cso-theme="chilika-teal"] {
-  --cso-bg: #FBF9F5;
-  --cso-hero-bg: linear-gradient(135deg, #EEF5F6 0%, #DCEBED 100%);
-  --cso-hero-border: #B8D4D8;
+  --cso-bg: #F8FBFB;
+  --cso-surface: #FFFFFF;
+  --cso-surface-alt: #EAF3F5;
+  --cso-hero-bg: linear-gradient(135deg, #E8F3F5 0%, #D4E8EC 100%);
+  --cso-border: #B2D2D8;
+  --cso-text: #0F2E36;
+  --cso-muted: #3B5258;
+  --cso-primary: #0F4C5C;
+  --cso-primary-fg: #FFFFFF;
+  --cso-accent: #B45309;
+  --cso-highlight-bg: #E0F2FE;
+  --cso-highlight-fg: #0F4C5C;
+  --cso-highlight-ring: rgba(15, 76, 92, 0.24);
+  --cso-card-hover-border: #0F4C5C;
+  --cso-card-hover-shadow: 0 10px 26px rgba(15, 76, 92, 0.12);
+  --cso-selection-bg: #0F4C5C;
+  --cso-selection-fg: #FFFFFF;
   --cso-word-1: #B45309;
   --cso-word-2: #0F4C5C;
   --cso-word-3: #1B4332;
@@ -7589,24 +7568,48 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-search-btn: #0F4C5C;
   --cso-search-btn-fg: #FFFFFF;
   --cso-pill-bg: #FFFFFF;
-  --cso-pill-border: #B8D4D8;
+  --cso-pill-border: #B2D2D8;
   --cso-pill-text: #0F4C5C;
   --cso-pill-hover-bg: #0F4C5C;
   --cso-pill-hover-fg: #FFFFFF;
-  --cso-badge-bg: #D5E8EC;
+  --cso-badge-bg: #E0F2FE;
   --cso-badge-fg: #0F4C5C;
   --cso-scene-sky: transparent;
-  --cso-scene-wheel: rgba(15, 76, 92, 0.18);
-  --cso-scene-temple: rgba(15, 76, 92, 0.14);
-  --cso-scene-water: rgba(15, 118, 138, 0.15);
-  --cso-scene-boat: rgba(15, 76, 92, 0.24);
-  --cso-hero-overlay-opacity: 0.14;
+  --cso-scene-wheel: rgba(15, 76, 92, 0.17);
+  --cso-scene-temple: rgba(15, 76, 92, 0.13);
+  --cso-scene-water: rgba(14, 116, 144, 0.16);
+  --cso-scene-boat: rgba(180, 83, 9, 0.22);
+  --cso-hero-overlay-opacity: 0.16;
+  --bg: var(--cso-bg);
+  --card: var(--cso-surface);
+  --surface: var(--cso-surface);
+  --tx: var(--cso-text);
+  --mut: var(--cso-muted);
+  --bd: var(--cso-border);
+  --bl: var(--cso-primary);
+  --control-bg: var(--cso-surface);
+  --control-tx: var(--cso-text);
+  --link-color: var(--cso-primary);
 }
 
 :root[data-cso-theme="konark-sandstone"] {
   --cso-bg: #FDFBF7;
-  --cso-hero-bg: linear-gradient(135deg, #F8F1E5 0%, #EFE3CE 100%);
-  --cso-hero-border: #D6C7B2;
+  --cso-surface: #FFFFFF;
+  --cso-surface-alt: #F6EFE3;
+  --cso-hero-bg: linear-gradient(135deg, #F7EFE2 0%, #ECDEC8 100%);
+  --cso-border: #D6C5AE;
+  --cso-text: #292524;
+  --cso-muted: #57534E;
+  --cso-primary: #9A3412;
+  --cso-primary-fg: #FFFBEB;
+  --cso-accent: #1B4332;
+  --cso-highlight-bg: #FFEDD5;
+  --cso-highlight-fg: #9A3412;
+  --cso-highlight-ring: rgba(154, 52, 18, 0.24);
+  --cso-card-hover-border: #9A3412;
+  --cso-card-hover-shadow: 0 10px 26px rgba(154, 52, 18, 0.12);
+  --cso-selection-bg: #9A3412;
+  --cso-selection-fg: #FFFBEB;
   --cso-word-1: #9A3412;
   --cso-word-2: #292524;
   --cso-word-3: #1B4332;
@@ -7617,31 +7620,64 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-search-btn: #9A3412;
   --cso-search-btn-fg: #FFFBEB;
   --cso-pill-bg: #FFFFFF;
-  --cso-pill-border: #D6C7B2;
+  --cso-pill-border: #D6C5AE;
   --cso-pill-text: #292524;
   --cso-pill-hover-bg: #9A3412;
   --cso-pill-hover-fg: #FFFBEB;
-  --cso-badge-bg: #F3E2CE;
+  --cso-badge-bg: #FFEDD5;
   --cso-badge-fg: #9A3412;
   --cso-scene-sky: transparent;
-  --cso-scene-wheel: rgba(154, 52, 18, 0.18);
-  --cso-scene-temple: rgba(154, 52, 18, 0.16);
-  --cso-scene-water: rgba(217, 119, 6, 0.14);
-  --cso-scene-boat: rgba(154, 52, 18, 0.24);
+  --cso-scene-wheel: rgba(154, 52, 18, 0.17);
+  --cso-scene-temple: rgba(41, 37, 36, 0.14);
+  --cso-scene-water: rgba(180, 83, 9, 0.14);
+  --cso-scene-boat: rgba(27, 67, 50, 0.22);
   --cso-hero-overlay-opacity: 0.16;
+  --bg: var(--cso-bg);
+  --card: var(--cso-surface);
+  --surface: var(--cso-surface);
+  --tx: var(--cso-text);
+  --mut: var(--cso-muted);
+  --bd: var(--cso-border);
+  --bl: var(--cso-primary);
+  --control-bg: var(--cso-surface);
+  --control-tx: var(--cso-text);
+  --link-color: var(--cso-primary);
+}
+
+::selection {
+  background: var(--cso-selection-bg);
+  color: var(--cso-selection-fg);
 }
 
 body {
   background: var(--cso-bg);
-  transition: background-color 0.25s ease;
+  color: var(--cso-text);
+  transition: background-color 180ms cubic-bezier(0.22, 1, 0.36, 1), color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Header Navigation & Active Page Highlight */
+.main-nav a,
+.site-header__nav a {
+  position: relative;
+  transition: background-color 180ms cubic-bezier(0.22, 1, 0.36, 1), color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.main-nav a:hover,
+.main-nav a.active,
+.main-nav a[aria-current="page"],
+.site-header__nav a:hover,
+.site-header__nav a.active {
+  background: var(--cso-highlight-bg) !important;
+  color: var(--cso-highlight-fg) !important;
+  box-shadow: inset 0 -2px 0 var(--cso-accent);
 }
 
 .hero,
 #cso-hero {
   background: var(--cso-hero-bg) !important;
-  border: 1px solid var(--cso-hero-border) !important;
+  border: 1px solid var(--cso-border) !important;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08) !important;
-  transition: background 0.28s ease, border-color 0.28s ease !important;
+  transition: background 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 .hero::before,
@@ -7649,7 +7685,6 @@ body {
   display: none !important;
 }
 
-/* Inline Theme-Reactive Vector Hero Artwork (Konark Chakra, Kalinga Spire, Chilika Lagoon) */
 .cso-hero-scene {
   position: absolute;
   inset: 0;
@@ -7659,16 +7694,14 @@ body {
   z-index: 0;
 }
 
-.cso-scene-sky {
-  fill: var(--cso-scene-sky);
-}
+.cso-scene-sky { fill: var(--cso-scene-sky); }
 
 .cso-scene-wheel,
 .cso-scene-spokes line {
   fill: none;
   stroke: var(--cso-scene-wheel);
   stroke-width: 2.2;
-  transition: stroke 0.28s ease;
+  transition: stroke 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .cso-scene-chakra-group {
@@ -7679,40 +7712,24 @@ body {
 
 .cso-scene-temple {
   fill: var(--cso-scene-temple);
-  transition: fill 0.28s ease;
+  transition: fill 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.cso-scene-water-group {
-  animation: cso-water-drift 18s ease-in-out infinite alternate;
-}
-
-.cso-scene-water {
-  fill: var(--cso-scene-water);
-  transition: fill 0.28s ease;
-}
+.cso-scene-water-group { animation: cso-water-drift 18s ease-in-out infinite alternate; }
+.cso-scene-water { fill: var(--cso-scene-water); transition: fill 180ms cubic-bezier(0.22, 1, 0.36, 1); }
 
 .cso-scene-water-line {
   fill: none;
   stroke: var(--cso-scene-boat);
   stroke-width: 1.8;
   opacity: 0.65;
-  transition: stroke 0.28s ease;
+  transition: stroke 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.cso-scene-boat {
-  fill: var(--cso-scene-boat);
-  transition: fill 0.28s ease;
-}
+.cso-scene-boat { fill: var(--cso-scene-boat); transition: fill 180ms cubic-bezier(0.22, 1, 0.36, 1); }
 
-@keyframes cso-chakra-rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes cso-water-drift {
-  from { transform: translateX(-8px); }
-  to { transform: translateX(8px); }
-}
+@keyframes cso-chakra-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes cso-water-drift { from { transform: translateX(-8px); } to { transform: translateX(8px); } }
 
 @media (prefers-reduced-motion: reduce) {
   .cso-scene-chakra-group,
@@ -7721,59 +7738,108 @@ body {
   }
 }
 
-/* Hero Top-Right 4-Theme Quick Switcher Pill Bar */
+/* Labeled Theme Pills in Hero Bar & Header */
 .cso-hero-theme-bar {
   position: absolute;
-  top: 12px;
-  right: 14px;
+  top: 10px;
+  right: 12px;
   z-index: 4;
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
+  gap: 5px;
+  padding: 4px 6px;
   border-radius: 999px;
-  background: var(--cso-pill-bg);
-  border: 1px solid var(--cso-pill-border);
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
 }
 
+.cso-theme-pill,
 .cso-hero-theme-dot {
-  width: 16px;
-  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
   border-radius: 999px;
-  border: 2px solid rgba(15, 23, 42, 0.25);
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt);
+  color: var(--cso-text);
+  font-size: 11px;
+  font-weight: 700;
   cursor: pointer;
-  padding: 0;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), background-color 180ms cubic-bezier(0.22, 1, 0.36, 1), color 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.cso-hero-theme-dot.is-alabaster-forest { background: #FAF9F6; border-color: #1B4332; }
-.cso-hero-theme-dot.is-forest-gold { background: #1B4332; border-color: #F3C669; }
-.cso-hero-theme-dot.is-chilika-teal { background: #0F4C5C; border-color: #B8D4D8; }
-.cso-hero-theme-dot.is-konark-sandstone { background: #9A3412; border-color: #EFE3CE; }
+.cso-theme-pill:hover,
+.cso-hero-theme-dot:hover {
+  transform: translateY(-1px);
+  border-color: var(--cso-primary);
+}
 
+.cso-theme-pill[aria-pressed="true"],
 .cso-hero-theme-dot[aria-pressed="true"] {
-  transform: scale(1.2);
-  box-shadow: 0 0 0 2px var(--cso-search-btn);
+  background: var(--cso-primary);
+  color: var(--cso-primary-fg);
+  border-color: var(--cso-primary);
+  box-shadow: 0 0 0 3px var(--cso-highlight-ring);
 }
+
+.cso-theme-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(15, 23, 42, 0.3);
+  flex-shrink: 0;
+}
+
+.cso-theme-swatch.is-alabaster-forest { background: #FAF9F6; border-color: #1B4332; }
+.cso-theme-swatch.is-forest-gold { background: #1B4332; border-color: #F3C669; }
+.cso-theme-swatch.is-chilika-teal { background: #0F4C5C; border-color: #B2D2D8; }
+.cso-theme-swatch.is-konark-sandstone { background: #9A3412; border-color: #ECDEC8; }
 
 .cso-hero-bg-overlay {
   opacity: var(--cso-hero-overlay-opacity) !important;
-  transition: opacity 0.28s ease !important;
+  transition: opacity 180ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
+/* Hero Wordmark with Hover Elevation & Accent Bar */
 .hero-brand-title {
+  position: relative;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  padding: 0 !important;
+  padding: 0 0 6px !important;
   border-radius: 0 !important;
-  display: flex !important;
+  display: inline-flex !important;
   flex-wrap: wrap !important;
   justify-content: center !important;
   gap: 0.35em !important;
   letter-spacing: 0.03em !important;
   text-shadow: none !important;
+  transition: letter-spacing 180ms cubic-bezier(0.22, 1, 0.36, 1), filter 180ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.hero-brand-title::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--cso-accent);
+  transform: translateX(-50%);
+  transition: width 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-brand-title:hover {
+  letter-spacing: 0.055em !important;
+  filter: drop-shadow(0 4px 12px var(--cso-highlight-ring));
+}
+
+.hero-brand-title:hover::after {
+  width: 72%;
 }
 
 .hero-brand-title .cso-hero-w1,
@@ -7808,22 +7874,35 @@ body {
   text-shadow: none !important;
 }
 
+/* Search Boxes, Inputs & Focus Halos */
 .hero .sr,
-#cso-hero #sf {
+#cso-hero #sf,
+.search-box {
   background: var(--cso-search-bg) !important;
   border: 1.5px solid var(--cso-search-border) !important;
+  transition: border-color 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 .hero .sr:focus-within,
-#cso-hero #sf:focus-within {
-  border-color: var(--cso-search-btn) !important;
-  box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.18) !important;
+#cso-hero #sf:focus-within,
+.search-box:focus-within,
+input:focus-visible,
+select:focus-visible {
+  border-color: var(--cso-primary) !important;
+  box-shadow: 0 0 0 4px var(--cso-highlight-ring) !important;
+  outline: none !important;
 }
 
 .hero .sr .sb {
   background: var(--cso-search-btn) !important;
   color: var(--cso-search-btn-fg) !important;
   border-radius: 8px !important;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), filter 180ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.hero .sr .sb:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
 }
 
 .hero .cso-search-kbd {
@@ -7836,20 +7915,61 @@ body {
 .popular-searches-label {
   background: var(--cso-badge-bg) !important;
   color: var(--cso-badge-fg) !important;
-  border: 1px solid var(--cso-pill-border) !important;
+  border: 1px solid var(--cso-border) !important;
   text-shadow: none !important;
 }
 
-.hero .search-chip {
+/* Popular Search Pills & Filter Chips */
+.hero .search-chip,
+.chip,
+.popular-chip,
+.filter-pill {
   background: var(--cso-pill-bg) !important;
   border: 1px solid var(--cso-pill-border) !important;
   color: var(--cso-pill-text) !important;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease !important;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), background-color 180ms cubic-bezier(0.22, 1, 0.36, 1), color 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 .hero .search-chip:hover,
-.hero .search-chip:focus-visible {
-  background: var(--cso-pill-hover-bg) !important;
-  color: var(--cso-pill-hover-fg) !important;
-  border-color: var(--cso-pill-hover-bg) !important;
+.hero .search-chip:focus-visible,
+.chip:hover,
+.chip:focus-visible,
+.popular-chip:hover,
+.popular-chip:focus-visible,
+.filter-pill:hover,
+.filter-pill:focus-visible {
+  transform: translateY(-2px);
+  background: var(--cso-primary) !important;
+  color: var(--cso-primary-fg) !important;
+  border-color: var(--cso-primary) !important;
+  box-shadow: 0 6px 16px var(--cso-highlight-ring) !important;
+}
+
+/* Directory Cards, Job/Scheme Rows & Study Library Cards */
+.card,
+.dir-card,
+.update-item,
+.resource-card,
+.cso-hub-card,
+.lu .it {
+  border-color: var(--cso-border);
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card:hover,
+.dir-card:hover,
+.update-item:hover,
+.resource-card:hover,
+.cso-hub-card:hover,
+.lu .it:hover {
+  border-color: var(--cso-card-hover-border) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--cso-card-hover-shadow);
+}
+
+.dir-card:hover h3,
+.resource-card:hover h3,
+.cso-hub-card:hover h3,
+.lu .it:hover {
+  color: var(--cso-primary);
 }

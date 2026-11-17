@@ -155,10 +155,93 @@ function apply(){
  try{if(window.CSOGlobal&&typeof window.CSOGlobal.syncA11yFromApp==='function')window.CSOGlobal.syncA11yFromApp();}catch(_){}
 }
 const LN={en:'English',or:'ଓଡ଼ିଆ',hi:'हिन्दी'};
+const CSO_PORTAL_THEMES=[
+  {key:'alabaster-forest',label:'Alabaster',fullLabel:'Alabaster Forest'},
+  {key:'forest-gold',label:'Forest Gold',fullLabel:'Forest Gold'},
+  {key:'chilika-teal',label:'Chilika Teal',fullLabel:'Chilika Teal'},
+  {key:'konark-sandstone',label:'Sandstone',fullLabel:'Konark Sandstone'}
+];
+const CSO_PORTAL_THEME_KEYS=CSO_PORTAL_THEMES.map(t=>t.key);
+function csoResolvePalette(p){
+  const r=String(p||'').toLowerCase();
+  if(CSO_PORTAL_THEME_KEYS.includes(r))return r;
+  if(r.includes('forest gold')||r.includes('canopy'))return 'forest-gold';
+  if(r.includes('chilika')||r.includes('teal'))return 'chilika-teal';
+  if(r.includes('konark')||r.includes('sandstone')||r.includes('terracotta'))return 'konark-sandstone';
+  return 'alabaster-forest';
+}
+function csoGetStoredTheme(){
+  try{const k=localStorage.getItem('cso_portal_theme');return CSO_PORTAL_THEME_KEYS.includes(k)?k:'';}catch(_){return '';}
+}
+function csoSyncThemeUi(key){
+  document.querySelectorAll('.cso-hero-theme-dot,.cso-theme-pill').forEach(el=>{
+    el.setAttribute('aria-pressed',el.dataset.themeChoice===key?'true':'false');
+  });
+  const bt=$('#bt');
+  const cur=CSO_PORTAL_THEMES.find(t=>t.key===key);
+  if(bt&&cur){
+    bt.textContent='';
+    const sw=document.createElement('span');
+    sw.className='cso-theme-swatch is-'+cur.key;
+    bt.append(sw,document.createTextNode(' '+cur.label+' ⌄'));
+    bt.title='Theme: '+cur.fullLabel;
+  }
+}
+if(!window.CSOTheme){
+  let _curTheme=csoGetStoredTheme()||'alabaster-forest';
+  const setTheme=(key,persist=true)=>{
+    const k=CSO_PORTAL_THEME_KEYS.includes(key)?key:'alabaster-forest';
+    _curTheme=k;
+    document.documentElement.setAttribute('data-cso-theme',k);
+    if(persist){try{localStorage.setItem('cso_portal_theme',k);}catch(_){}}
+    csoSyncThemeUi(k);
+    return k;
+  };
+  window.CSOTheme={THEMES:CSO_PORTAL_THEMES,getTheme:()=>_curTheme,setTheme,resolvePaletteToThemeKey:csoResolvePalette};
+  setTheme(_curTheme,false);
+  window.addEventListener('storage',e=>{
+    if(e.key==='cso_portal_theme'&&e.newValue&&CSO_PORTAL_THEME_KEYS.includes(e.newValue))setTheme(e.newValue,false);
+  });
+  if(!csoGetStoredTheme()){
+    fetch('/api/config/public',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(cfg=>{
+      if(!csoGetStoredTheme()&&cfg&&cfg.identity&&cfg.identity.primary_palette_name){
+        setTheme(csoResolvePalette(cfg.identity.primary_palette_name),false);
+      }
+    }).catch(()=>{});
+  }
+}
+function csoMountHeroThemeBar(){
+  const hero=document.getElementById('cso-hero');
+  if(!hero||hero.querySelector('.cso-hero-theme-bar'))return;
+  const bar=document.createElement('div');
+  bar.className='cso-hero-theme-bar';
+  bar.setAttribute('role','group');
+  bar.setAttribute('aria-label','Switch portal theme');
+  CSO_PORTAL_THEMES.forEach(t=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='cso-theme-pill cso-hero-theme-dot is-'+t.key;
+    b.dataset.themeChoice=t.key;
+    b.setAttribute('aria-label','Theme: '+t.fullLabel);
+    b.title=t.fullLabel;
+    b.setAttribute('aria-pressed',window.CSOTheme.getTheme()===t.key?'true':'false');
+    const sw=document.createElement('span');
+    sw.className='cso-theme-swatch is-'+t.key;
+    sw.setAttribute('aria-hidden','true');
+    b.append(sw,document.createTextNode(t.label));
+    b.addEventListener('click',()=>window.CSOTheme.setTheme(t.key,true));
+    bar.appendChild(b);
+  });
+  hero.appendChild(bar);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',csoMountHeroThemeBar);
+else csoMountHeroThemeBar();
+
 function ctl(){
- setSafeHtml($('#ctl'),'<span class="cso-popup-anchor"><button class="pill cso-ctl-lang" id="bl" aria-label="Language selector"><span class="cso-lang-icon">🌐</span> <span class="cso-lang-name">'+LN[S.lang]+'</span> ⌄</button></span><button class="pill cso-ctl-theme" id="bt" aria-label="Change theme" title="Theme: '+(S.theme||'system')+'">'+THEME_ICONS[S.theme||'system']+'</button><span class="cso-popup-anchor"><button class="pill cso-ctl-a11y" id="ba">♿ Accessibility ⌄</button></span><span class="pill cso-ctl-zoom"><button class="fz" id="fm" aria-label="Smaller text">A–</button><button class="fz" id="fr" aria-label="Normal text">A</button><button class="fz" id="fp" aria-label="Larger text">A+</button></span>');
+ setSafeHtml($('#ctl'),'<span class="cso-popup-anchor"><button class="pill cso-ctl-lang" id="bl" aria-label="Language selector"><span class="cso-lang-icon">🌐</span> <span class="cso-lang-name">'+LN[S.lang]+'</span> ⌄</button></span><span class="cso-popup-anchor"><button class="pill cso-ctl-theme" id="bt" aria-label="Select portal theme"></button></span><span class="cso-popup-anchor"><button class="pill cso-ctl-a11y" id="ba">♿ Accessibility ⌄</button></span><span class="pill cso-ctl-zoom"><button class="fz" id="fm" aria-label="Smaller text">A–</button><button class="fz" id="fr" aria-label="Normal text">A</button><button class="fz" id="fp" aria-label="Larger text">A+</button></span>');
+ csoSyncThemeUi(window.CSOTheme.getTheme());
  $('#bl').onclick=e=>pop(e.target,Object.keys(LN).map(k=>[LN[k],()=>{S.lang=k;save();apply();ctl();nav();authUI();lu();route();localize();toast('Language: '+LN[k])},S.lang===k]));
- $('#bt').onclick=()=>{const i=THEMES.indexOf(S.theme||'system');S.theme=THEMES[(i+1)%THEMES.length];save();apply();const map={light:'alabaster-forest',dark:'forest-gold',reading:'chilika-teal',sepia:'konark-sandstone',system:'alabaster-forest'};const pk=map[S.theme]||'alabaster-forest';document.documentElement.setAttribute('data-cso-theme',pk);try{localStorage.setItem('cso_portal_theme',pk);}catch(_){}ctl()};
+ $('#bt').onclick=e=>{e.stopPropagation();pop($('#bt'),CSO_PORTAL_THEMES.map(t=>[t.fullLabel,()=>{window.CSOTheme.setTheme(t.key,true);},window.CSOTheme.getTheme()===t.key]));};
  $('#ba').onclick=e=>pop(e.target,[['High contrast',()=>{S.hc=+!S.hc;save();apply()},S.hc],['Dyslexia-friendly font',()=>{if(window.CSOGlobal)window.CSOGlobal.toggleA11y('dyslexia');},document.documentElement.classList.contains('cso-a11y-dyslexia')],['Lite mode (reduced graphics)',()=>{if(window.CSOGlobal)window.CSOGlobal.toggleA11y('lite');},document.documentElement.classList.contains('cso-a11y-lite')],['Underline links',()=>{S.ul=+!S.ul;save();apply()},S.ul],['Reduce motion',()=>{S.rm=+!S.rm;save();apply()},S.rm],['Reset',()=>{S.hc=S.ul=S.rm=0;S.zoom=1;save();apply();if(window.CSOGlobal)window.CSOGlobal.resetA11y();}]]);
  const z=d=>{S.zoom=d?Math.max(.85,Math.min(1.3,+(S.zoom+d).toFixed(2))):1;save();apply()};
  $('#fm').onclick=()=>z(-.05);$('#fr').onclick=()=>z(0);$('#fp').onclick=()=>z(.05);
