@@ -3155,10 +3155,11 @@ body.is-live-modal-open {
   border-color: #4ADE80;
 }
 
-/* Unified Deep Forest Green Hero Banner (Parity with /jobs/, /schemes/, /community/) */
+/* Unified Theme-Reactive Explorer Hero Banner (Parity across all 4 themes) */
 .cso-jobs-hero {
-  background: linear-gradient(135deg, #14532d, #166534);
-  color: #ffffff;
+  background: var(--cso-hero-bg, linear-gradient(135deg, #F4EFE6, #E8DFCE));
+  color: var(--cso-hero-text, #374151);
+  border: 1px solid var(--cso-border, #D6CFC2);
   border-radius: 16px;
   padding: 24px 26px;
   margin-bottom: 20px;
@@ -3178,17 +3179,17 @@ body.is-live-modal-open {
   margin: 0;
   border-radius: 0;
   font-size: 0.82rem;
-  color: #bbf7d0;
+  color: var(--cso-hero-text, #374151);
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
 }
 .cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-link {
-  color: #dcfce7;
+  color: var(--cso-hero-title, #1B4332);
   padding: 0;
 }
 .cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-current {
-  color: #fde68a;
+  color: var(--cso-hero-text, #374151);
 }
 .cso-jobs-hero-actions {
   display: flex;
@@ -3196,9 +3197,9 @@ body.is-live-modal-open {
   flex-wrap: wrap;
 }
 .cso-jobs-action-pill {
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.14);
-  color: #ffffff;
+  border: 1px solid var(--cso-hero-pill-border, var(--cso-border));
+  background: var(--cso-hero-pill-bg, #FFFFFF);
+  color: var(--cso-hero-pill-fg, var(--cso-text));
   border-radius: 999px;
   padding: 5px 11px;
   font-size: 0.78rem;
@@ -3207,19 +3208,20 @@ body.is-live-modal-open {
   text-decoration: none;
 }
 .cso-jobs-action-pill:hover {
-  background: #ffffff;
-  color: #14532d;
+  background: var(--cso-hero-pill-active-bg, var(--cso-primary));
+  border-color: var(--cso-hero-pill-active-bg, var(--cso-primary));
+  color: var(--cso-hero-pill-active-fg, var(--cso-primary-fg));
   text-decoration: none;
 }
 .cso-jobs-hero h1 {
   margin: 0 0 8px;
   font-size: 1.65rem;
   line-height: 1.25;
-  color: #ffffff;
+  color: var(--cso-hero-title, #1B4332);
 }
 .cso-jobs-hero-sub {
   margin: 0 0 14px;
-  color: #ecfdf5;
+  color: var(--cso-hero-text, #374151);
   font-size: 0.96rem;
   line-height: 1.5;
 }
@@ -3229,9 +3231,9 @@ body.is-live-modal-open {
   flex-wrap: wrap;
 }
 .cso-jobs-pill {
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  border: 1px solid var(--cso-hero-pill-border, var(--cso-border));
+  background: var(--cso-hero-pill-bg, #FFFFFF);
+  color: var(--cso-hero-pill-fg, var(--cso-text));
   border-radius: 999px;
   padding: 6px 12px;
   font-size: 0.82rem;
@@ -3240,8 +3242,9 @@ body.is-live-modal-open {
 }
 .cso-jobs-pill:hover,
 .cso-jobs-pill.is-active {
-  background: #ffffff;
-  color: #14532d;
+  background: var(--cso-hero-pill-active-bg, var(--cso-primary));
+  border-color: var(--cso-hero-pill-active-bg, var(--cso-primary));
+  color: var(--cso-hero-pill-active-fg, var(--cso-primary-fg));
 }
 @media (max-width: 768px) {
   .cso-jobs-hero {

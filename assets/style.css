@@ -7363,6 +7363,13 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-surface-alt: #F4EFE6;
   --cso-card-bg: #FFFFFF;
   --cso-hero-bg: linear-gradient(135deg, #F4EFE6 0%, #E8DFCE 100%);
+  --cso-hero-title: #1B4332;
+  --cso-hero-text: #374151;
+  --cso-hero-pill-bg: #FFFFFF;
+  --cso-hero-pill-fg: #18221D;
+  --cso-hero-pill-border: #D6CFC2;
+  --cso-hero-pill-active-bg: #1B4332;
+  --cso-hero-pill-active-fg: #FAF9F6;
   --cso-border: #D6CFC2;
   --cso-text: #18221D;
   --cso-text-muted: #4A5550;
@@ -7418,6 +7425,13 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-surface-alt: #182635;
   --cso-card-bg: #131E29;
   --cso-hero-bg: linear-gradient(135deg, #0B1218 0%, #131E29 55%, #162B28 100%);
+  --cso-hero-title: #FAF9F6;
+  --cso-hero-text: #D1FAE5;
+  --cso-hero-pill-bg: #182635;
+  --cso-hero-pill-fg: #F1F5F9;
+  --cso-hero-pill-border: #2A3F54;
+  --cso-hero-pill-active-bg: #34D399;
+  --cso-hero-pill-active-fg: #0B1218;
   --cso-border: #1E2E3D;
   --cso-text: #F1F5F9;
   --cso-text-muted: #94A3B8;
@@ -7474,6 +7488,13 @@ html.cso-a11y-lite .cso-footer-odisha-map {
     --cso-surface-alt: #182635;
     --cso-card-bg: #131E29;
     --cso-hero-bg: linear-gradient(135deg, #0B1218 0%, #131E29 55%, #162B28 100%);
+  --cso-hero-title: #FAF9F6;
+  --cso-hero-text: #D1FAE5;
+  --cso-hero-pill-bg: #182635;
+  --cso-hero-pill-fg: #F1F5F9;
+  --cso-hero-pill-border: #2A3F54;
+  --cso-hero-pill-active-bg: #34D399;
+  --cso-hero-pill-active-fg: #0B1218;
     --cso-border: #1E2E3D;
     --cso-text: #F1F5F9;
     --cso-text-muted: #94A3B8;
@@ -7517,6 +7538,13 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-surface-alt: #EFE6D5;
   --cso-card-bg: #FBF7EE;
   --cso-hero-bg: linear-gradient(135deg, #F5EFE2 0%, #EADEC8 100%);
+  --cso-hero-title: #2C241B;
+  --cso-hero-text: #5E5040;
+  --cso-hero-pill-bg: #FFFFFF;
+  --cso-hero-pill-fg: #2C241B;
+  --cso-hero-pill-border: #DFD2BA;
+  --cso-hero-pill-active-bg: #8C4A19;
+  --cso-hero-pill-active-fg: #FBF7EE;
   --cso-border: #DFD2BA;
   --cso-text: #2C241B;
   --cso-text-muted: #5E5040;
@@ -7577,6 +7605,13 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-surface-alt: #F7EFE2;
   --cso-card-bg: #FFFFFF;
   --cso-hero-bg: linear-gradient(135deg, #F7EFE2 0%, #EFE2CD 100%);
+  --cso-hero-title: #1E3A8A;
+  --cso-hero-text: #374151;
+  --cso-hero-pill-bg: #FFFFFF;
+  --cso-hero-pill-fg: #1F2421;
+  --cso-hero-pill-border: #D9C7AE;
+  --cso-hero-pill-active-bg: #1E3A8A;
+  --cso-hero-pill-active-fg: #FFFFFF;
   --cso-border: #D9C7AE;
   --cso-text: #1F2421;
   --cso-text-muted: #524B43;
@@ -7964,7 +7999,7 @@ select:focus-visible {
   color: var(--cso-primary) !important;
 }
 
-/* ── v137: Header Ctrl+K Search Pill & Student Hub Single-Line Nav Alignment ── */
+/* ── v137/v138: Header Ctrl+K Search Pill & Single-Line Nav Alignment ── */
 #cso-ctl-global-search,
 .cso-ctl-search {
   display: inline-flex !important;
@@ -8098,16 +8133,69 @@ select:focus-visible {
 
 :root[data-cso-theme] .cso-schemes-hero,
 :root[data-cso-theme] .cso-comm-hero,
+:root[data-cso-theme] .cso-jobs-hero,
+:root[data-cso-theme] .welcome.cso-sl-hero-banner,
+:root[data-cso-theme] .cso-sl-pub-hero,
 :root[data-cso-theme] .hero-banner {
   background: var(--cso-hero-bg) !important;
+  color: var(--cso-hero-text) !important;
   border: 1px solid var(--cso-border) !important;
 }
 
-:root[data-cso-theme="dark"] .cso-schemes-hero,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .cso-schemes-hero,
-:root[data-cso-theme="dark"] .cso-comm-hero,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .cso-comm-hero {
-  color: var(--cso-text) !important;
+:root[data-cso-theme] .cso-schemes-hero h1,
+:root[data-cso-theme] .cso-comm-hero h1,
+:root[data-cso-theme] .cso-jobs-hero h1,
+:root[data-cso-theme] .welcome.cso-sl-hero-banner h1,
+:root[data-cso-theme] .cso-sl-pub-hero h1,
+:root[data-cso-theme] .cso-schemes-crumb a,
+:root[data-cso-theme] .cso-comm-crumb a,
+:root[data-cso-theme] .cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-link {
+  color: var(--cso-hero-title) !important;
+}
+
+:root[data-cso-theme] .cso-schemes-hero-sub,
+:root[data-cso-theme] .cso-comm-hero-sub,
+:root[data-cso-theme] .cso-jobs-hero-sub,
+:root[data-cso-theme] .cso-schemes-crumb,
+:root[data-cso-theme] .cso-comm-crumb,
+:root[data-cso-theme] .cso-jobs-hero .breadcrumb.cso-jc-crumb,
+:root[data-cso-theme] .cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-current,
+:root[data-cso-theme] .cso-sl-hero-trail,
+:root[data-cso-theme] .cso-sl-hero-tagline,
+:root[data-cso-theme] .cso-sl-pub-hero-desc,
+:root[data-cso-theme] .cso-sl-quickjump-label {
+  color: var(--cso-hero-text) !important;
+}
+
+:root[data-cso-theme] .cso-schemes-action-pill,
+:root[data-cso-theme] .cso-schemes-pill,
+:root[data-cso-theme] .cso-comm-action-pill,
+:root[data-cso-theme] .cso-comm-pill,
+:root[data-cso-theme] .cso-jobs-action-pill,
+:root[data-cso-theme] .cso-jobs-pill,
+:root[data-cso-theme] .cso-sl-hero-pill,
+:root[data-cso-theme] .welcome.cso-sl-hero-banner .study-hub-pill {
+  background: var(--cso-hero-pill-bg) !important;
+  color: var(--cso-hero-pill-fg) !important;
+  border: 1px solid var(--cso-hero-pill-border) !important;
+}
+
+:root[data-cso-theme] .cso-schemes-action-pill:hover,
+:root[data-cso-theme] .cso-schemes-pill:hover,
+:root[data-cso-theme] .cso-schemes-pill.is-active,
+:root[data-cso-theme] .cso-comm-action-pill:hover,
+:root[data-cso-theme] .cso-comm-pill:hover,
+:root[data-cso-theme] .cso-comm-pill.is-active,
+:root[data-cso-theme] .cso-jobs-action-pill:hover,
+:root[data-cso-theme] .cso-jobs-pill:hover,
+:root[data-cso-theme] .cso-jobs-pill.is-active,
+:root[data-cso-theme] .cso-sl-hero-pill:hover,
+:root[data-cso-theme] .cso-sl-hero-pill.is-active,
+:root[data-cso-theme] .welcome.cso-sl-hero-banner .study-hub-pill:hover,
+:root[data-cso-theme] .welcome.cso-sl-hero-banner .study-hub-pill.is-active {
+  background: var(--cso-hero-pill-active-bg) !important;
+  color: var(--cso-hero-pill-active-fg) !important;
+  border-color: var(--cso-hero-pill-active-bg) !important;
 }
 
 :root[data-cso-theme] .cso-schemes-nav-link,

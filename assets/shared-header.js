@@ -864,6 +864,12 @@
         if (!navItems) return;
         const user = getActiveUser();
         const visibleItems = data.header.filter(it => {
+          const urlStr = String(it.url || '').toLowerCase();
+          const labelStr = String(it.label_en || '').toLowerCase();
+          const idStr = String(it.id || '').toLowerCase();
+          if (urlStr.includes('student-hub') || /student\s*hub/.test(labelStr) || idStr.includes('student-hub')) {
+            return false;
+          }
           if (it.visibility_rule === 'logged_in') return Boolean(user);
           if (it.visibility_rule === 'logged_out') return !user;
           return true;

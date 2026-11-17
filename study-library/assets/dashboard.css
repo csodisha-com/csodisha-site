@@ -3712,16 +3712,16 @@ body {
   box-shadow: 0 4px 20px rgba(20, 83, 45, 0.06) !important;
 }
 
-/* Deep Forest Green Hero Banner (Explorer + SSR Pages) */
+/* Theme-Reactive Explorer Hero Banner (Explorer + SSR Pages) */
 .welcome.cso-sl-hero-banner,
 .cso-sl-pub-hero {
-  background: linear-gradient(135deg, #14532d 0%, #166534 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  border-left: 5px solid #86efac !important;
+  background: var(--cso-hero-bg, linear-gradient(135deg, #F4EFE6 0%, #E8DFCE 100%)) !important;
+  color: var(--cso-hero-text, #374151) !important;
+  border: 1px solid var(--cso-border, #D6CFC2) !important;
+  border-left: 5px solid var(--cso-primary, #1B4332) !important;
   border-radius: 18px !important;
   padding: 26px 28px !important;
-  box-shadow: 0 12px 32px rgba(20, 83, 45, 0.18) !important;
+  box-shadow: 0 12px 32px rgba(20, 83, 45, 0.08) !important;
 }
 
 .cso-sl-hero-main {
@@ -3734,31 +3734,31 @@ body {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #bbf7d0;
+  color: var(--cso-hero-text, #374151);
   margin-bottom: 6px;
 }
 
 .welcome.cso-sl-hero-banner h1,
 .cso-sl-pub-hero h1 {
-  color: #ffffff !important;
+  color: var(--cso-hero-title, #1B4332) !important;
   margin: 0 0 8px !important;
 }
 
 .cso-sl-hero-tagline,
 .cso-sl-pub-hero-desc {
   margin: 0 0 14px !important;
-  color: #ecfdf5 !important;
+  color: var(--cso-hero-text, #374151) !important;
   font-size: 15px !important;
   line-height: 1.55 !important;
 }
 
 .cso-sl-pub-title-or {
-  color: #bbf7d0 !important;
+  color: var(--cso-hero-text, #374151) !important;
 }
 
 .cso-sl-pub-stats-row,
 .cso-sl-pub-stat-link {
-  color: #ecfdf5 !important;
+  color: var(--cso-hero-text, #374151) !important;
 }
 
 .cso-sl-hero-quickjump {
@@ -3771,13 +3771,13 @@ body {
 .cso-sl-quickjump-label {
   font-size: 12px;
   font-weight: 700;
-  color: #bbf7d0;
+  color: var(--cso-hero-text, #374151);
 }
 
 .cso-sl-hero-pill {
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  background: rgba(255, 255, 255, 0.14);
-  color: #ffffff;
+  border: 1px solid var(--cso-hero-pill-border, var(--cso-border));
+  background: var(--cso-hero-pill-bg, #FFFFFF);
+  color: var(--cso-hero-pill-fg, var(--cso-text));
   padding: 5px 12px;
   border-radius: 999px;
   font-size: 12px;
@@ -3786,22 +3786,25 @@ body {
   transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
 }
 
-.cso-sl-hero-pill:hover {
-  background: #ffffff;
-  color: #14532d;
+.cso-sl-hero-pill:hover,
+.cso-sl-hero-pill.is-active {
+  background: var(--cso-hero-pill-active-bg, var(--cso-primary));
+  border-color: var(--cso-hero-pill-active-bg, var(--cso-primary));
+  color: var(--cso-hero-pill-active-fg, var(--cso-primary-fg));
   transform: translateY(-1px);
 }
 
 .welcome.cso-sl-hero-banner .study-hub-pill {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #ffffff;
+  background: var(--cso-hero-pill-bg, #FFFFFF);
+  border-color: var(--cso-hero-pill-border, var(--cso-border));
+  color: var(--cso-hero-pill-fg, var(--cso-text));
 }
 
-.welcome.cso-sl-hero-banner .study-hub-pill:hover {
-  background: #ffffff;
-  border-color: #ffffff;
-  color: #14532d;
+.welcome.cso-sl-hero-banner .study-hub-pill:hover,
+.welcome.cso-sl-hero-banner .study-hub-pill.is-active {
+  background: var(--cso-hero-pill-active-bg, var(--cso-primary));
+  border-color: var(--cso-hero-pill-active-bg, var(--cso-primary));
+  color: var(--cso-hero-pill-active-fg, var(--cso-primary-fg));
 }
 
 /* Full Desktop Left Sidebar (>= 1024px) & Drawer (< 1024px) */
