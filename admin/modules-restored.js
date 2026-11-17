@@ -12004,6 +12004,12 @@
       return true;
     }
 
+    // Folder 09: Users, Roles & Community Batch 5 (17-19)
+    if ((moduleId === 'module-09-017' || moduleId === 'module-09-018' || moduleId === 'module-09-019') &&
+        window.CSOUsersCommunityBatch5 && typeof window.CSOUsersCommunityBatch5.render === 'function') {
+      return window.CSOUsersCommunityBatch5.render(moduleId, root, actions);
+    }
+
     // Folder 09: Users, Roles & Community Batch 4 (13-16)
     if ((moduleId === 'module-09-013' || moduleId === 'module-09-014' || moduleId === 'module-09-015' || moduleId === 'module-09-016') &&
         window.CSOUsersCommunityBatch4 && typeof window.CSOUsersCommunityBatch4.render === 'function') {

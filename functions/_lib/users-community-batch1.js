@@ -566,13 +566,38 @@ export async function getUsersOverview(db) {
     b4Active = true;
   } catch { /* Batch 4 tables not yet initialized */ }
 
+  let pendingKnow = 0;
+  let totalKnow = 0;
+  let totalSuggs = 0;
+  let topVotedSuggs = [];
+  let openErrata = 0;
+  let totalErrata = 0;
+  let b5Active = false;
+  try {
+    const [pk, tk, ts, oe, te, topRows] = await Promise.all([
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_shared_knowledge WHERE review_status = 'pending_review'`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_shared_knowledge`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_topic_suggestions`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_error_reports WHERE fix_status IN ('open', 'verifying')`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM urc_error_reports`).first(),
+      db.prepare(`SELECT id, suggestion_code, topic_title_en, votes_count, workflow_status FROM urc_topic_suggestions ORDER BY votes_count DESC LIMIT 5`).all()
+    ]);
+    pendingKnow = Number(pk?.n || 0);
+    totalKnow = Number(tk?.n || 0);
+    totalSuggs = Number(ts?.n || 0);
+    openErrata = Number(oe?.n || 0);
+    totalErrata = Number(te?.n || 0);
+    topVotedSuggs = topRows?.results || [];
+    b5Active = true;
+  } catch { /* Batch 5 tables not yet initialized */ }
+
   const totalUsers = Number(tot?.n || 0);
   const activeAdmins = Number(admAct?.n || 0);
   const totalRoles = Number(rolesCnt?.n || 0);
   const modules = {};
   for (let i = 1; i <= 19; i++) {
     const k = String(i).padStart(2, '0');
-    const active = i <= 4 || (b2Active && i <= 8) || (b3Active && i <= 12) || (b4Active && i <= 16);
+    const active = i <= 4 || (b2Active && i <= 8) || (b3Active && i <= 12) || (b4Active && i <= 16) || (b5Active && i <= 19);
     let count = 0;
     if (i === 1 || i === 2) count = totalUsers;
     else if (i === 3) count = totalRoles;
@@ -589,14 +614,18 @@ export async function getUsersOverview(db) {
     else if (i === 14) count = openDpdp;
     else if (i === 15) count = activeThreads;
     else if (i === 16) count = unansweredQna + verifiedQna;
+    else if (i === 17) count = totalKnow;
+    else if (i === 18) count = totalSuggs;
+    else if (i === 19) count = totalErrata;
     modules[k] = { status: active ? 'active' : 'queued', count };
   }
+  const verifiedEducators = Number(verEdu?.n || 0);
   return {
     total_users: totalUsers,
     active_users: Number(act?.n || 0),
     pending_verifications: Number(pend?.n || 0),
     suspended_or_blocked: Number(susp?.n || 0),
-    verified_educators: Number(verEdu?.n || 0),
+    verified_educators: verifiedEducators,
     active_admins: activeAdmins,
     total_roles: totalRoles,
     status_transitions_count: statusLogsCount,
@@ -612,9 +641,25 @@ export async function getUsersOverview(db) {
     active_forum_threads: activeThreads,
     unanswered_questions_count: unansweredQna,
     verified_questions_count: verifiedQna,
+    pending_knowledge_submissions: pendingKnow,
+    open_errata_reports: openErrata,
+    top_voted_topic_suggestions: topVotedSuggs,
     district_breakdown: districts || [],
     role_breakdown: roles || [],
-    modules
+    modules,
+    suite_19: {
+      total_modules: 19,
+      active_modules: Object.values(modules).filter(m => m.status === 'active').length,
+      total_users: totalUsers,
+      verified_educators: verifiedEducators,
+      active_membership_grants: activeGrants,
+      pending_moderation_count: pendingMod,
+      open_user_reports_count: openReports,
+      pending_knowledge_submissions: pendingKnow,
+      open_errata_reports: openErrata,
+      top_voted_topic_suggestions: topVotedSuggs,
+      modules
+    }
   };
 }
 

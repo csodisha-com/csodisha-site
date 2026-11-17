@@ -34,6 +34,7 @@ import { handleUsersCommunityBatch1Admin } from '../../_lib/users-community-batc
 import { handleUsersCommunityBatch2Admin, ensureUsersCommunityBatch2Schema } from '../../_lib/users-community-batch2.js';
 import { handleUsersCommunityBatch3Admin, ensureUsersCommunityBatch3Schema } from '../../_lib/users-community-batch3.js';
 import { handleUsersCommunityBatch4Admin, ensureUsersCommunityBatch4Schema } from '../../_lib/users-community-batch4.js';
+import { handleUsersCommunityBatch5Admin, ensureUsersCommunityBatch5Schema, getFull19ModuleUsersOverview } from '../../_lib/users-community-batch5.js';
 import { handleFilesMediaBatch4Admin, getFull15ModuleMediaOverview } from '../../_lib/files-media-batch4.js';
 import { handleJobsDirectoryStudio } from '../../_lib/jobs-directory-studio.js';
 import { handleSchemesDirectoryStudio } from '../../_lib/schemes-directory-studio.js';
@@ -68,10 +69,13 @@ export async function handleAdminApi(request, env) {
     const method = request.method;
     const write = method !== 'GET' && method !== 'HEAD';
 
-    // Admin-only: user role management, URC Batch 1-4 (01-16) & candidate behavior governance.
+    // Admin-only: user role management, URC Batch 1-5 (01-19) & candidate behavior governance.
     if (resource === 'users') {
       const actor = await requireRole(request, env, ['admin']);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (['shared-knowledge', 'topic-suggestions', 'error-reports'].includes(id)) {
+        return await handleUsersCommunityBatch5Admin(request, env, actor, id, sub, extra);
+      }
       if (['activity', 'data-requests', 'forum', 'questions'].includes(id)) {
         return await handleUsersCommunityBatch4Admin(request, env, actor, id, sub, extra);
       }
@@ -81,8 +85,11 @@ export async function handleAdminApi(request, env) {
       if (['account-status', 'registrations', 'membership-access', 'community-posts'].includes(id)) {
         return await handleUsersCommunityBatch2Admin(request, env, actor, id, sub, extra);
       }
-      if (['overview', 'directory', 'profiles', 'roles', 'admins', 'revisions'].includes(id)) {
-        if (id === 'overview' || id === 'revisions') await ensureUsersCommunityBatch4Schema(env.DB);
+      if (id === 'overview' && method === 'GET') {
+        return json(await getFull19ModuleUsersOverview(env));
+      }
+      if (['directory', 'profiles', 'roles', 'admins', 'revisions'].includes(id)) {
+        if (id === 'revisions') await ensureUsersCommunityBatch5Schema(env.DB);
         return await handleUsersCommunityBatch1Admin(request, env, actor, id, sub, extra);
       }
       return await handleUsers(request, env, actor, id, sub);
