@@ -119,13 +119,26 @@ await jcall1('POST', 'revisions/rollback', 'revisions', 'rollback', null, { revi
 const afterApiRb = await jcall2('GET', 'api-endpoints?q=API-099', 'api-endpoints');
 assert.equal(afterApiRb.items[0].contract_status, 'verified_live');
 
-// 4. Module 06: Admin Coverage Matrix + Recalculate
+// 4. Module 06: Admin Coverage Matrix + Recalculate (23 suites, 299 modules, 100%)
 const covList = await jcall2('GET', 'coverage-matrix', 'coverage-matrix');
-assert.equal(covList.items.length, 13);
-assert.ok(covList.overall_coverage_pct >= 95 && covList.overall_coverage_pct <= 100);
+assert.equal(covList.items.length, 23);
+assert.equal(covList.total_suites, 23);
+assert.equal(covList.total_modules, 299);
+assert.equal(covList.implemented_modules, 299);
+assert.equal(covList.overall_coverage_pct, 100);
 const recalc = await jcall2('POST', 'coverage-matrix/recalculate', 'coverage-matrix', 'recalculate', null, {});
 assert.equal(recalc.ok, true);
-assert.equal(recalc.items.length, 13);
+assert.equal(recalc.items.length, 23);
+assert.equal(recalc.total_suites, 23);
+assert.equal(recalc.total_modules, 299);
+assert.equal(recalc.implemented_modules, 299);
+assert.equal(recalc.overall_coverage_pct, 100);
+
+// 4b. Full-Platform D1 Schema Introspection (zero raw row exposure)
+const intro = await jcall1('POST', 'db-entities/introspect-live-d1', 'db-entities', 'introspect-live-d1', null, {});
+assert.equal(intro.ok, true);
+assert.ok(intro.tables_introspected >= 10);
+assert.ok(intro.suites_covered >= 2);
 
 // 5. Module 07: Missing Admin Controls + Resolve + Revision Rollback
 const gaps = await jcall2('GET', 'missing-controls?remediation_status=open_gap', 'missing-controls');

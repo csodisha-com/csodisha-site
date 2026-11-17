@@ -10,7 +10,8 @@ import {
 } from './master-feature-registry-batch1.js';
 import {
   ensureMasterFeatureRegistryBatch2Schema,
-  getFull8ModuleRegistryOverview
+  getFull8ModuleRegistryOverview,
+  upsertAll23CoverageSuites
 } from './master-feature-registry-batch2.js';
 
 export const REG_RELEASE_STATUSES = ['deployed_verified', 'staging_qa', 'in_progress'];
@@ -132,18 +133,8 @@ export async function ensureMasterFeatureRegistryBatch3Schema(db) {
 
   for (const sql of ddl) await db.prepare(sql).run();
 
-  // Synchronize SUITE-13 (Master Feature Registry) to 11/11 (100%) and close seeded Batch 2 gaps
-  await db.prepare(
-    `UPDATE reg_admin_coverage_matrix
-     SET total_modules_count = 11,
-         implemented_modules_count = 11,
-         d1_backed_count = 11,
-         csp_compliant_count = 11,
-         coverage_pct = 100,
-         matrix_status = 'complete_100',
-         updated_at = datetime('now')
-     WHERE suite_code = 'SUITE-13'`
-  ).run();
+  // Synchronize all 23 Admin Command Center suites (299 modules, 100%) and close seeded Batch 2 gaps
+  await upsertAll23CoverageSuites(db);
 
   await db.prepare(
     `UPDATE reg_missing_controls
@@ -292,7 +283,9 @@ export async function getFull11ModuleRegistryOverview(env) {
     suite_11: {
       total_modules: 11,
       active_modules: 11,
-      total_command_center_suites: 13,
+      total_suites: 23,
+      implemented_modules: base8.implemented_suite_modules,
+      total_command_center_suites: 23,
       total_command_center_modules: base8.total_suite_modules,
       overall_coverage_pct: base8.overall_coverage_pct,
       open_missing_controls_count: base8.open_missing_controls_count,

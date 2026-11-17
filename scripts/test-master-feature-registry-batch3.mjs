@@ -79,7 +79,7 @@ assert.throws(
   err => err.status === 403
 );
 
-// 2. Ensure schema + unified 11-module overview + 100% 13-suite / 185-module completion
+// 2. Ensure schema + unified 11-module overview + 100% 23-suite / 299-module completion
 await ensureMasterFeatureRegistryBatch3Schema(env.DB);
 const ov = await getFull11ModuleRegistryOverview(env);
 assert.equal(Object.keys(ov.modules).length, 11);
@@ -88,8 +88,10 @@ assert.equal(ov.modules['10'].status, 'active');
 assert.equal(ov.modules['11'].status, 'active');
 assert.equal(ov.suite_11.total_modules, 11);
 assert.equal(ov.suite_11.active_modules, 11);
-assert.equal(ov.suite_11.total_command_center_suites, 13);
-assert.equal(ov.suite_11.total_command_center_modules, 185);
+assert.equal(ov.suite_11.total_suites, 23);
+assert.equal(ov.suite_11.implemented_modules, 299);
+assert.equal(ov.suite_11.total_command_center_suites, 23);
+assert.equal(ov.suite_11.total_command_center_modules, 299);
 assert.equal(ov.suite_11.overall_coverage_pct, 100);
 assert.equal(ov.suite_11.open_missing_controls_count, 0);
 assert.ok(ov.deployed_releases_count >= 12);
@@ -97,13 +99,18 @@ assert.ok(ov.passing_test_suites_count >= 6);
 assert.ok(ov.published_docs_count >= 5);
 
 const cov = await jcall2('GET', 'coverage-matrix', 'coverage-matrix');
-assert.equal(cov.total_modules, 185);
-assert.equal(cov.implemented_modules, 185);
+assert.equal(cov.total_suites, 23);
+assert.equal(cov.total_modules, 299);
+assert.equal(cov.implemented_modules, 299);
 assert.equal(cov.overall_coverage_pct, 100);
-const s13 = cov.items.find(s => s.suite_code === 'SUITE-13');
-assert.equal(s13.implemented_modules_count, 11);
-assert.equal(s13.coverage_pct, 100);
-assert.equal(s13.matrix_status, 'complete_100');
+const s19 = cov.items.find(s => s.suite_code === 'SUITE-19');
+assert.equal(s19.implemented_modules_count, 11);
+assert.equal(s19.coverage_pct, 100);
+assert.equal(s19.matrix_status, 'complete_100');
+
+const intro3 = await jcall1('POST', 'db-entities/introspect-live-d1', 'db-entities', 'introspect-live-d1', null, {});
+assert.equal(intro3.ok, true);
+assert.ok(intro3.tables_introspected >= 15);
 
 // 3. Module 09: Implementation Status (Releases) + Sanitization + Revision Rollback
 const seededRels = await jcall3('GET', 'releases', 'releases');

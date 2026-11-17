@@ -293,3 +293,4 @@
 .cso-reg-doc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 10px; }
 .cso-reg-doc-pane { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; }
 .cso-reg-doc-pre { white-space: pre-wrap; font-family: inherit; font-size: 13px; line-height: 1.55; color: #1e293b; margin: 8px 0 0; }
+.cso-reg-sync-banner { background: #ecfdf5; border: 1px solid #10b981; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; color: #065f46; }

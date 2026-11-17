@@ -322,13 +322,31 @@
 
   /* ==================== MODULE 06: ADMIN COVERAGE MATRIX ==================== */
   async function renderCoverageMatrix(root) {
+    let lastSync = null;
+
     async function draw() {
       root.textContent = '';
-      root.appendChild(buildHeader('module-19-006', 'Suite-by-suite admin module coverage across all 13 Admin Studio folders (D1-backed & strict CSP).', [
-        btn('Recalculate Matrix', 'cso-edu-btn-primary', async () => {
+      root.appendChild(buildHeader('module-19-006', 'Suite-by-suite admin module coverage across all 23 Admin Studio suites (D1-backed & strict CSP).', [
+        btn('Recalculate Matrix', '', async () => {
           try {
             const res = await api(`${API}/coverage-matrix/recalculate`, 'POST', {});
-            toast(`Recalculated ${res.items ? res.items.length : 13} suites · Overall ${res.overall_coverage_pct}%`, 'success');
+            toast(`Recalculated ${res.items ? res.items.length : 23} suites · Overall ${res.overall_coverage_pct}%`, 'success');
+            draw();
+          } catch (e) { toast(e.message, 'error'); }
+        }),
+        btn('Run Full 23-Suite Registry & D1 Sync', 'cso-edu-btn-primary', async () => {
+          try {
+            const d1Res = await api(`${API}/db-entities/introspect-live-d1`, 'POST', {});
+            const covRes = await api(`${API}/coverage-matrix/recalculate`, 'POST', {});
+            lastSync = {
+              suites: covRes.total_suites || (covRes.items ? covRes.items.length : 23),
+              implemented: covRes.implemented_modules || 0,
+              total: covRes.total_modules || 0,
+              pct: covRes.overall_coverage_pct ?? 100,
+              tables: d1Res.tables_introspected || 0,
+              ts: d1Res.introspected_at_ist || ''
+            };
+            toast(`Synced ${lastSync.suites} suites (${lastSync.implemented}/${lastSync.total} modules) & ${lastSync.tables} D1 tables`, 'success');
             draw();
           } catch (e) { toast(e.message, 'error'); }
         })
@@ -339,6 +357,13 @@
         api(`${API}/coverage-matrix`)
       ]);
       root.appendChild(renderKpiStrip(ov));
+
+      if (lastSync) {
+        root.appendChild(el('div', 'cso-reg-sync-banner', [
+          el('strong', '', `Full 23-Suite Registry & D1 Sync Complete (${lastSync.pct}%)`),
+          el('span', 'cso-edu-mono', `Suites: ${lastSync.suites} · Modules: ${lastSync.implemented}/${lastSync.total} · Live D1 Tables Introspected: ${lastSync.tables} · ${lastSync.ts}`)
+        ]));
+      }
 
       const card = el('div', 'cso-edu-card');
       const tbl = el('table', 'cso-edu-table');

@@ -85,14 +85,38 @@ export async function snapshotRegRevision(db, moduleCode, entityId, actor, chang
 
 function inferSuiteOwner(tableName) {
   if (tableName.startsWith('edu_')) return 'Educational Resources';
+  if (tableName.startsWith('cat_') || tableName.startsWith('nav_')) return 'Categories & Navigation';
+  if (tableName.startsWith('fmc_') || tableName.startsWith('file_') || tableName.startsWith('media_')) return 'Files, Media & Cloud';
   if (tableName.startsWith('pay_') || tableName.startsWith('fin_')) return 'Payments & Finance';
+  if (tableName.startsWith('usr_') || tableName === 'users' || tableName === 'sessions') return 'Users, Roles & Community';
+  if (tableName.startsWith('ana_') || tableName.startsWith('tel_')) return 'Analytics, Telemetry & User Feedback Intelligence';
+  if (tableName.startsWith('comm_') || tableName.startsWith('notif_')) return 'Communications, Alerts & Candidate Notifications';
+  if (tableName.startsWith('mkt_') || tableName.startsWith('ads_')) return 'Marketing & Advertising';
   if (tableName.startsWith('seo_')) return 'SEO, Search & Discovery';
   if (tableName.startsWith('evt_')) return 'Events & Scheduling';
-  if (tableName.startsWith('int_')) return 'Integrations & Edge';
+  if (tableName.startsWith('int_')) return 'Integrations, Webhooks & Cloudflare Edge Suite';
+  if (tableName.startsWith('sec_') || tableName.startsWith('rbac_') || tableName === 'audit_log' || tableName === 'admin_rate_limits') return 'Security, Privacy & RBAC Suite';
+  if (tableName.startsWith('ops_')) return 'Operations, Backups & Disaster Recovery Suite';
   if (tableName.startsWith('cfg_')) return 'Settings & Configuration';
   if (tableName.startsWith('reg_')) return 'Master Feature Registry';
-  if (tableName.startsWith('usr_') || tableName === 'users' || tableName === 'sessions') return 'Users & Community';
+  if (tableName.startsWith('job_')) return 'Jobs & Careers Directory';
+  if (tableName.startsWith('sch_')) return 'Schemes & Benefits Directory';
+  if (tableName.startsWith('lib_') || tableName.startsWith('study_')) return 'Study Library Directory';
+  if (tableName.startsWith('com_')) return 'Community Directory';
+  if (tableName.startsWith('cms_') || tableName.startsWith('page_')) return 'Content & Publishing';
   return 'Platform Core';
+}
+
+function inferMigrationFile(tableName) {
+  if (tableName.startsWith('reg_implementation_') || tableName.startsWith('reg_regression_') || tableName.startsWith('reg_feature_doc')) return 'migrations/0127_master_feature_registry_batch3.sql';
+  if (tableName.startsWith('reg_api_') || tableName.startsWith('reg_admin_') || tableName.startsWith('reg_missing_') || tableName.startsWith('reg_feature_dep')) return 'migrations/0126_master_feature_registry_batch2.sql';
+  if (tableName.startsWith('reg_')) return 'migrations/0125_master_feature_registry_batch1.sql';
+  if (tableName.startsWith('cfg_')) return 'migrations/0121_0124_settings_configuration.sql';
+  if (tableName.startsWith('int_')) return 'migrations/0118_0120_integrations_edge.sql';
+  if (tableName.startsWith('evt_')) return 'migrations/0115_0117_events_scheduling.sql';
+  if (tableName.startsWith('seo_')) return 'migrations/0111_0114_seo_search_discovery.sql';
+  if (tableName.startsWith('edu_')) return 'migrations/0078_0083_edu_resources.sql';
+  return 'migrations/auto_ensure_runtime.sql';
 }
 
 function inferDpdpPolicy(tableName) {
@@ -613,27 +637,31 @@ async function handleDbEntities(request, env, actor, id) {
       const cntRow = await db.prepare(`SELECT COUNT(*) AS n FROM "${tbl}"`).first();
       const rowCount = Number(cntRow?.n || 0);
       const suite = inferSuiteOwner(tbl);
+      const migFile = inferMigrationFile(tbl);
       const dpdp = inferDpdpPolicy(tbl);
       const hasPii = dpdp === 'sha256_hashed_only' ? 1 : 0;
 
       await db.prepare(
         `INSERT INTO reg_database_entities
          (id, table_name, suite_owner, migration_file, column_count, live_row_count, contains_pii_or_hashes, dpdp_retention_policy, schema_health, last_introspected_at)
-         VALUES (?, ?, ?, '', ?, ?, ?, ?, 'synced_verified', ?)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'synced_verified', ?)
          ON CONFLICT(table_name) DO UPDATE SET
            suite_owner = excluded.suite_owner,
+           migration_file = CASE WHEN COALESCE(reg_database_entities.migration_file, '') = '' THEN excluded.migration_file ELSE reg_database_entities.migration_file END,
            column_count = excluded.column_count,
            live_row_count = excluded.live_row_count,
            contains_pii_or_hashes = excluded.contains_pii_or_hashes,
            dpdp_retention_policy = excluded.dpdp_retention_policy,
            schema_health = 'synced_verified',
            last_introspected_at = excluded.last_introspected_at`
-      ).bind(`reg-db-${tbl}`, tbl, suite, colCount, rowCount, hasPii, dpdp, ts).run();
+      ).bind(`reg-db-${tbl}`, tbl, suite, migFile, colCount, rowCount, hasPii, dpdp, ts).run();
     }
 
     await audit(env, request, actor, 'registry.db_entities.introspect', 'reg_database_entities', 'all', { tables_introspected: tableNames.length });
     const { results } = await db.prepare(`SELECT * FROM reg_database_entities ORDER BY suite_owner ASC, table_name ASC`).all();
-    return json({ ok: true, tables_introspected: tableNames.length, introspected_at_ist: ts, items: results || [] });
+    const items = results || [];
+    const suites_covered = new Set(items.map(i => i.suite_owner)).size;
+    return json({ ok: true, tables_introspected: tableNames.length, suites_covered, introspected_at_ist: ts, items });
   }
 
   throw new HttpError(404, 'NOT_FOUND', 'Unknown db-entities route');

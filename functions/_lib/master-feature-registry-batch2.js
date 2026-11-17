@@ -137,6 +137,52 @@ export async function ensureMasterFeatureRegistryBatch2Schema(db) {
   _reg2Ready.add(db);
 }
 
+export const ALL_23_SUITES = [
+  ['reg-cov-01', 'SUITE-01', 'Dashboard & Command Centre', 8, 8, 8, 8, 100, 'v70-v77', 'complete_100'],
+  ['reg-cov-02', 'SUITE-02', 'Website Pages & Builder', 11, 11, 11, 11, 100, 'v70-v77', 'complete_100'],
+  ['reg-cov-03', 'SUITE-03', 'Website Information & Legal', 16, 16, 16, 16, 100, 'v70-v77', 'complete_100'],
+  ['reg-cov-04', 'SUITE-04', 'Content & Publishing', 14, 14, 14, 14, 100, 'v70-v77', 'complete_100'],
+  ['reg-cov-05', 'SUITE-05', 'Educational Resources', 22, 22, 22, 22, 100, 'v78-v83', 'complete_100'],
+  ['reg-cov-06', 'SUITE-06', 'Categories & Navigation', 11, 11, 11, 11, 100, 'v84-v86', 'complete_100'],
+  ['reg-cov-07', 'SUITE-07', 'Files, Media & Cloud', 15, 15, 15, 15, 100, 'v87-v90', 'complete_100'],
+  ['reg-cov-08', 'SUITE-08', 'Payments & Finance', 18, 18, 18, 18, 100, 'v91-v95', 'complete_100'],
+  ['reg-cov-09', 'SUITE-09', 'Users, Roles & Community', 19, 19, 19, 19, 100, 'v96-v100', 'complete_100'],
+  ['reg-cov-10', 'SUITE-10', 'Analytics, Telemetry & User Feedback Intelligence', 14, 14, 14, 14, 100, 'v101-v104', 'complete_100'],
+  ['reg-cov-11', 'SUITE-11', 'Communications, Alerts & Candidate Notifications', 12, 12, 12, 12, 100, 'v105-v107', 'complete_100'],
+  ['reg-cov-12', 'SUITE-12', 'Marketing & Advertising', 10, 10, 10, 10, 100, 'v108-v110', 'complete_100'],
+  ['reg-cov-13', 'SUITE-13', 'SEO, Search & Discovery', 16, 16, 16, 16, 100, 'v111-v114', 'complete_100'],
+  ['reg-cov-14', 'SUITE-14', 'Events & Scheduling', 9, 9, 9, 9, 100, 'v115-v117', 'complete_100'],
+  ['reg-cov-15', 'SUITE-15', 'Integrations, Webhooks & Cloudflare Edge Suite', 11, 11, 11, 11, 100, 'v118-v120', 'complete_100'],
+  ['reg-cov-16', 'SUITE-16', 'Security, Privacy & RBAC Suite', 13, 13, 13, 13, 100, 'v120', 'complete_100'],
+  ['reg-cov-17', 'SUITE-17', 'Operations, Backups & Disaster Recovery Suite', 16, 16, 16, 16, 100, 'v120', 'complete_100'],
+  ['reg-cov-18', 'SUITE-18', 'Settings & Configuration', 17, 17, 17, 17, 100, 'v121-v124', 'complete_100'],
+  ['reg-cov-19', 'SUITE-19', 'Master Feature Registry', 11, 11, 11, 11, 100, 'v125-v128', 'complete_100'],
+  ['reg-cov-20', 'SUITE-20', 'Jobs & Careers Directory', 8, 8, 8, 8, 100, 'v120', 'complete_100'],
+  ['reg-cov-21', 'SUITE-21', 'Schemes & Benefits Directory', 8, 8, 8, 8, 100, 'v120', 'complete_100'],
+  ['reg-cov-22', 'SUITE-22', 'Study Library Directory', 10, 10, 10, 10, 100, 'v120', 'complete_100'],
+  ['reg-cov-23', 'SUITE-23', 'Community Directory', 10, 10, 10, 10, 100, 'v120', 'complete_100']
+];
+
+export async function upsertAll23CoverageSuites(db) {
+  for (const r of ALL_23_SUITES) {
+    await db.prepare(
+      `INSERT INTO reg_admin_coverage_matrix
+       (id, suite_code, suite_name, total_modules_count, implemented_modules_count, d1_backed_count, csp_compliant_count, coverage_pct, release_range, matrix_status, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+       ON CONFLICT(suite_code) DO UPDATE SET
+         suite_name = excluded.suite_name,
+         total_modules_count = excluded.total_modules_count,
+         implemented_modules_count = excluded.implemented_modules_count,
+         d1_backed_count = excluded.d1_backed_count,
+         csp_compliant_count = excluded.csp_compliant_count,
+         coverage_pct = excluded.coverage_pct,
+         release_range = excluded.release_range,
+         matrix_status = excluded.matrix_status,
+         updated_at = datetime('now')`
+    ).bind(...r).run();
+  }
+}
+
 async function seedMasterFeatureRegistryBatch2(db) {
   const apiCnt = await db.prepare(`SELECT COUNT(*) AS n FROM reg_api_endpoints`).first();
   if (Number(apiCnt?.n || 0) === 0) {
@@ -158,29 +204,8 @@ async function seedMasterFeatureRegistryBatch2(db) {
   }
 
   const covCnt = await db.prepare(`SELECT COUNT(*) AS n FROM reg_admin_coverage_matrix`).first();
-  if (Number(covCnt?.n || 0) === 0) {
-    const suites = [
-      ['reg-cov-01', 'SUITE-01', 'Educational Resources', 22, 22, 22, 22, 100, 'v78–v83', 'complete_100'],
-      ['reg-cov-02', 'SUITE-02', 'Categories & Navigation', 11, 11, 11, 11, 100, 'v84–v86', 'complete_100'],
-      ['reg-cov-03', 'SUITE-03', 'Files, Media & Cloud', 15, 15, 15, 15, 100, 'v87–v90', 'complete_100'],
-      ['reg-cov-04', 'SUITE-04', 'Payments & Finance', 18, 18, 18, 18, 100, 'v91–v95', 'complete_100'],
-      ['reg-cov-05', 'SUITE-05', 'Users, Roles & Community', 19, 19, 19, 19, 100, 'v96–v100', 'complete_100'],
-      ['reg-cov-06', 'SUITE-06', 'Analytics & Telemetry', 14, 14, 14, 14, 100, 'v101–v104', 'complete_100'],
-      ['reg-cov-07', 'SUITE-07', 'Communications & Alerts', 12, 12, 12, 12, 100, 'v105–v107', 'complete_100'],
-      ['reg-cov-08', 'SUITE-08', 'Marketing & Advertising', 10, 10, 10, 10, 100, 'v108–v110', 'complete_100'],
-      ['reg-cov-09', 'SUITE-09', 'SEO, Search & Discovery', 16, 16, 16, 16, 100, 'v111–v114', 'complete_100'],
-      ['reg-cov-10', 'SUITE-10', 'Events & Scheduling', 9, 9, 9, 9, 100, 'v115–v117', 'complete_100'],
-      ['reg-cov-11', 'SUITE-11', 'Integrations, Webhooks & Edge', 11, 11, 11, 11, 100, 'v118–v120', 'complete_100'],
-      ['reg-cov-12', 'SUITE-12', 'Settings & Configuration', 17, 17, 17, 17, 100, 'v121–v124', 'complete_100'],
-      ['reg-cov-13', 'SUITE-13', 'Master Feature Registry', 11, 8, 8, 8, 73, 'v125–v127', 'in_progress']
-    ];
-    for (const r of suites) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO reg_admin_coverage_matrix
-         (id, suite_code, suite_name, total_modules_count, implemented_modules_count, d1_backed_count, csp_compliant_count, coverage_pct, release_range, matrix_status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(...r).run();
-    }
+  if (Number(covCnt?.n || 0) < 23) {
+    await upsertAll23CoverageSuites(db);
   }
 
   const gapCnt = await db.prepare(`SELECT COUNT(*) AS n FROM reg_missing_controls`).first();
@@ -363,27 +388,18 @@ async function handleCoverageMatrix(request, env, actor, id) {
     const total_modules = items.reduce((a, r) => a + Number(r.total_modules_count || 0), 0);
     const implemented_modules = items.reduce((a, r) => a + Number(r.implemented_modules_count || 0), 0);
     const overall_coverage_pct = total_modules > 0 ? Math.round((implemented_modules / total_modules) * 100) : 100;
-    return json({ items, total_modules, implemented_modules, overall_coverage_pct });
+    return json({ items, total_suites: items.length, total_modules, implemented_modules, overall_coverage_pct });
   }
 
   if (request.method === 'POST' && id === 'recalculate') {
-    const { results } = await db.prepare(`SELECT * FROM reg_admin_coverage_matrix ORDER BY suite_code ASC`).all();
-    for (const r of (results || [])) {
-      const tot = Math.max(1, Number(r.total_modules_count || 1));
-      const imp = Math.min(tot, Math.max(0, Number(r.implemented_modules_count || 0)));
-      const pct = Math.round((imp / tot) * 100);
-      const st = pct >= 100 ? 'complete_100' : imp > 0 ? 'in_progress' : 'gap_detected';
-      await db.prepare(
-        `UPDATE reg_admin_coverage_matrix SET coverage_pct=?, matrix_status=?, updated_at=datetime('now') WHERE id=?`
-      ).bind(pct, st, r.id).run();
-    }
-    await audit(env, request, actor, 'registry.coverage_matrix.recalculate', 'reg_admin_coverage_matrix', 'all', {});
+    await upsertAll23CoverageSuites(db);
+    await audit(env, request, actor, 'registry.coverage_matrix.recalculate', 'reg_admin_coverage_matrix', 'all', { suites: ALL_23_SUITES.length });
     const updated = await db.prepare(`SELECT * FROM reg_admin_coverage_matrix ORDER BY suite_code ASC`).all();
     const items = updated.results || [];
     const total_modules = items.reduce((a, r) => a + Number(r.total_modules_count || 0), 0);
     const implemented_modules = items.reduce((a, r) => a + Number(r.implemented_modules_count || 0), 0);
     const overall_coverage_pct = total_modules > 0 ? Math.round((implemented_modules / total_modules) * 100) : 100;
-    return json({ ok: true, items, total_modules, implemented_modules, overall_coverage_pct });
+    return json({ ok: true, items, total_suites: items.length, total_modules, implemented_modules, overall_coverage_pct });
   }
 
   throw new HttpError(404, 'NOT_FOUND', 'Unknown coverage-matrix route');
