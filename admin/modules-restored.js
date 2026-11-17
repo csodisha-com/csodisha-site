@@ -12004,8 +12004,14 @@
       return true;
     }
 
+    // Folder 09: Users, Roles & Community Batch 1 (01-04)
+    if ((moduleId === 'module-09-001' || moduleId === 'module-09-002' || moduleId === 'module-09-003' || moduleId === 'module-09-004') &&
+        window.CSOUsersCommunityBatch1 && typeof window.CSOUsersCommunityBatch1.render === 'function') {
+      return window.CSOUsersCommunityBatch1.render(moduleId, root, actions);
+    }
+
     // Folder 09: Candidate Behavior Governance Console
-    if (folderId === 'folder-09' && (moduleId === 'module-09-001' || moduleId === 'module-09-002' || moduleId === 'module-09-005' || moduleId === 'module-09-012' || moduleId === 'module-09-013')) {
+    if (folderId === 'folder-09' && (moduleId === 'module-09-005' || moduleId === 'module-09-012' || moduleId === 'module-09-013')) {
       renderCandidateGovernanceStudio(root, actions);
       return true;
     }

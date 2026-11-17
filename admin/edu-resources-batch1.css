@@ -120,3 +120,26 @@
 .cso-fin-inv-totals { margin-left: auto; width: 260px; display: grid; gap: 4px; }
 .cso-fin-inv-row { display: flex; justify-content: space-between; }
 .cso-fin-calc-res { background: #1e293b; border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 13px; display: grid; gap: 6px; }
+
+/* Users, Roles & Community Batch 1 (v96) additive classes */
+.cso-urc-progress { width: 110px; height: 9px; border-radius: 999px; accent-color: #10b981; vertical-align: middle; }
+.cso-urc-pct { font-size: 12px; font-weight: 700; margin-left: 6px; font-variant-numeric: tabular-nums; }
+.cso-urc-badge-district { display: inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(59, 130, 246, 0.16); color: #93c5fd; font-size: 11.5px; font-weight: 700; }
+.cso-urc-badge-edu { display: inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(16, 185, 129, 0.18); color: #34d399; font-size: 11.5px; font-weight: 700; }
+.cso-urc-badge-mfa { display: inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(245, 158, 11, 0.18); color: #fbbf24; font-size: 11.5px; font-weight: 700; }
+.cso-urc-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.cso-urc-tab { padding: 5px 12px; border-radius: 999px; border: 1px solid var(--cso-border, #334155); background: transparent; color: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.cso-urc-tab.is-active { background: #16a34a; border-color: #16a34a; color: #ffffff; }
+.cso-urc-bulkbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--cso-border, #334155); border-radius: 10px; margin-bottom: 10px; font-size: 12.5px; }
+.cso-urc-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.cso-urc-tag { display: inline-block; padding: 1px 7px; border-radius: 6px; background: rgba(148, 163, 184, 0.16); font-size: 11px; }
+.cso-urc-matrix { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+.cso-urc-matrix th, .cso-urc-matrix td { padding: 7px 8px; border-bottom: 1px solid var(--cso-border, #334155); text-align: center; }
+.cso-urc-matrix th:first-child, .cso-urc-matrix td:first-child { text-align: left; font-weight: 600; }
+.cso-urc-role-card { border: 1px solid var(--cso-border, #334155); border-radius: 12px; padding: 14px; margin-bottom: 14px; display: grid; gap: 8px; }
+.cso-urc-role-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.cso-urc-pubcard { border: 1px solid #bbf7d0; border-radius: 14px; padding: 18px; background: #ffffff; color: #0f172a; display: grid; gap: 10px; }
+.cso-urc-pubcard h3 { margin: 0; color: #14532d; }
+.cso-urc-pubcard-meta { font-size: 13px; color: #475569; }
+.cso-urc-pubcard-bio { font-size: 13.5px; line-height: 1.5; background: #f8fafc; padding: 10px; border-radius: 8px; }
+
