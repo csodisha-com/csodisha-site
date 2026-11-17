@@ -1,165 +1,4 @@
-:root,
-:root[data-theme="light"] {
-  --cso-bg: #FAF9F6;
-  --cso-surface: #ffffff;
-  --cso-card-bg: #ffffff;
-  --cso-text: #111827;
-  --cso-text-muted: #556270;
-  --cso-border: #E5E7EB;
-  --cso-link: #0F4C3A;
-  --cso-shadow: 0 4px 20px rgba(15, 76, 58, 0.08);
-  --control-bg: #ffffff;
-  --control-tx: #111827;
-  --bg: var(--cso-bg);
-  --card: var(--cso-card-bg);
-  --surface: var(--cso-surface);
-  --tx: var(--cso-text);
-  --mut: var(--cso-text-muted);
-  --bd: var(--cso-border);
-  --bl: #0F4C3A;
-  --link-color: var(--cso-link);
-  --gr: #0F4C3A;
-  --dk: #0B3A2C;
-  --or: #D97706;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  color: var(--cso-text);
-  background: var(--cso-bg);
-  font-synthesis: none;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]),
-  :root[data-theme="system"] {
-    --cso-bg: #FAF9F6;
-    --cso-surface: #ffffff;
-    --cso-card-bg: #ffffff;
-    --cso-text: #111827;
-    --cso-text-muted: #556270;
-    --cso-border: #E5E7EB;
-    --cso-link: #0F4C3A;
-    --cso-shadow: 0 4px 20px rgba(15, 76, 58, 0.08);
-    --control-bg: #ffffff;
-    --control-tx: #111827;
-    --bg: var(--cso-bg);
-    --card: var(--cso-card-bg);
-    --surface: var(--cso-surface);
-    --tx: var(--cso-text);
-    --mut: var(--cso-text-muted);
-    --bd: var(--cso-border);
-    --bl: #0F4C3A;
-    --link-color: var(--cso-link);
-    --gr: #0F4C3A;
-    --dk: #0B3A2C;
-    --or: #D97706;
-    color: var(--cso-text);
-    background: var(--cso-bg);
-  }
-}
-
-:root[data-theme="dark"] {
-  --cso-bg: #0e1522;
-  --cso-surface: #17202f;
-  --cso-card-bg: #17202f;
-  --cso-text: #e8eef7;
-  --cso-text-muted: #9fb0c6;
-  --cso-border: #27344a;
-  --cso-link: #93b9ff;
-  --cso-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-  --control-bg: #202e42;
-  --control-tx: #f1f5fb;
-  --bg: var(--cso-bg);
-  --card: var(--cso-card-bg);
-  --surface: var(--cso-surface);
-  --tx: var(--cso-text);
-  --mut: var(--cso-text-muted);
-  --bd: var(--cso-border);
-  --bl: #93b9ff;
-  --link-color: var(--cso-link);
-  --gr: #17835c;
-  --dk: #135d55;
-  --or: #f4803a;
-  color: var(--cso-text);
-  background: var(--cso-bg);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]),
-  :root[data-theme="system"] {
-    --cso-bg: #0e1522;
-    --cso-surface: #17202f;
-    --cso-card-bg: #17202f;
-    --cso-text: #e8eef7;
-    --cso-text-muted: #9fb0c6;
-    --cso-border: #27344a;
-    --cso-link: #93b9ff;
-    --cso-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-    --control-bg: #202e42;
-    --control-tx: #f1f5fb;
-    --bg: var(--cso-bg);
-    --card: var(--cso-card-bg);
-    --surface: var(--cso-surface);
-    --tx: var(--cso-text);
-    --mut: var(--cso-text-muted);
-    --bd: var(--cso-border);
-    --bl: #93b9ff;
-    --link-color: var(--cso-link);
-    --gr: #17835c;
-    --dk: #135d55;
-    --or: #f4803a;
-    color: var(--cso-text);
-    background: var(--cso-bg);
-  }
-}
-
-:root[data-theme="reading"] {
-  --cso-bg: #eaf4ed;
-  --cso-surface: #f8fcf8;
-  --cso-card-bg: #f8fcf8;
-  --cso-text: #213d30;
-  --cso-text-muted: #476858;
-  --cso-border: #c8dfd0;
-  --cso-link: #245b45;
-  --control-bg: #f8fcf8;
-  --control-tx: #213d30;
-  --bg: var(--cso-bg);
-  --card: var(--cso-card-bg);
-  --surface: var(--cso-surface);
-  --tx: var(--cso-text);
-  --mut: var(--cso-text-muted);
-  --bd: var(--cso-border);
-  --bl: #245b45;
-  --link-color: var(--cso-link);
-  --gr: #1b6348;
-  --dk: #164f3a;
-  --or: #c25a1b;
-  color: var(--cso-text);
-  background: var(--cso-bg);
-}
-
-:root[data-theme="sepia"] {
-  --cso-bg: #f4e8cf;
-  --cso-surface: #fff8e9;
-  --cso-card-bg: #fff8e9;
-  --cso-text: #513b29;
-  --cso-text-muted: #796149;
-  --cso-border: #dfcba8;
-  --cso-link: #79502b;
-  --control-bg: #fff8e9;
-  --control-tx: #513b29;
-  --bg: var(--cso-bg);
-  --card: var(--cso-card-bg);
-  --surface: var(--cso-surface);
-  --tx: var(--cso-text);
-  --mut: var(--cso-text-muted);
-  --bd: var(--cso-border);
-  --bl: #79502b;
-  --link-color: var(--cso-link);
-  --gr: #4a5c2d;
-  --dk: #3a4823;
-  --or: #bd5918;
-  color: var(--cso-text);
-  background: var(--cso-bg);
-}
+/* Directory theme tokens inherited from /assets/style.css (v137) */
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh}
 button,input{font:inherit}
@@ -173,15 +12,15 @@ a{text-decoration:none;color:inherit}
   gap:14px;
   min-height:100vh;
   padding:12px;
-  background:linear-gradient(135deg,#e7efff 0%,#f7f9ff 55%,#dceeff 100%);
+  background:var(--cso-bg, #f7f9ff);
 }
 
 .sidebar{
-  background:rgba(255,255,255,.94);
-  border:1px solid rgba(255,255,255,.9);
+  background:var(--cso-surface, rgba(255,255,255,.94));
+  border:1px solid var(--cso-border, rgba(255,255,255,.9));
   border-radius:25px;
   padding:20px 13px;
-  box-shadow:0 12px 35px rgba(50,91,158,.10);
+  box-shadow:0 12px 35px rgba(15,23,42,.10);
   display:flex;
   flex-direction:column;
   min-height:calc(100vh - 24px);
@@ -818,21 +657,7 @@ h2{font-size:21px;margin:0 0 20px}
 }
 
 
-/* CSO-IN unified homepage theme v1 */
-:root {
-  --bg: #f4f7fb;
-  --card: #ffffff;
-  --tx: #14233b;
-  --mut: #5b6b82;
-  --bd: #e3e9f1;
-  --bl: #1d4ed8;
-  --gr: #0f6b4a;
-  --dk: #0b4a43;
-  --or: #f26a1b;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  color: var(--tx);
-  background: var(--bg);
-}
+
 
 body {
   background: var(--bg);
@@ -886,19 +711,19 @@ body {
   color: #0b4a43;
 }
 
-:root[data-theme="dark"] .side-link:hover,
+:root[data-cso-theme="dark"] .side-link:hover,
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .side-link:hover,
-  :root[data-theme="system"] .side-link:hover {
+  :root[data-cso-theme="system"] .side-link:hover,
+  :root[data-cso-theme="system"] .side-link:hover {
     background: #1f2c3f;
     color: #93b9ff;
   }
 }
 
-:root[data-theme="dark"] .side-icon,
+:root[data-cso-theme="dark"] .side-icon,
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .side-icon,
-  :root[data-theme="system"] .side-icon {
+  :root[data-cso-theme="system"] .side-icon,
+  :root[data-cso-theme="system"] .side-icon {
     background: #202e42;
     color: #e8eef7;
   }
@@ -995,20 +820,20 @@ input:focus-visible {
   border-color: var(--bl);
 }
 
-:root[data-theme="dark"] #back-button:hover,
-:root[data-theme="dark"] #clear-recent:hover,
-:root[data-theme="dark"] .clear-search:hover,
+:root[data-cso-theme="dark"] #back-button:hover,
+:root[data-cso-theme="dark"] #clear-recent:hover,
+:root[data-cso-theme="dark"] .clear-search:hover,
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) #clear-recent:hover,
-  :root:not([data-theme]) .clear-search:hover,
-  :root[data-theme="system"] #clear-recent:hover,
-  :root[data-theme="system"] .clear-search:hover {
+  :root[data-cso-theme="system"] #clear-recent:hover,
+  :root[data-cso-theme="system"] .clear-search:hover,
+  :root[data-cso-theme="system"] #clear-recent:hover,
+  :root[data-cso-theme="system"] .clear-search:hover {
     background: #1f2c3f;
     color: #93b9ff;
     border-color: #93b9ff;
   }
-  :root:not([data-theme]) #back-button:hover,
-  :root[data-theme="system"] #back-button:hover {
+  :root[data-cso-theme="system"] #back-button:hover,
+  :root[data-cso-theme="system"] #back-button:hover {
     background: #173fae;
     color: #ffffff;
     border-color: #173fae;
@@ -1077,42 +902,13 @@ input:focus-visible {
 
 /* CSO-IN synchronized appearance v3 */
 
-/* Match homepage dark and system preferences. */
-:root[data-theme="dark"] {
-  --bg:#0e1522;
-  --card:#17202f;
-  --tx:#e8eef7;
-  --mut:#9fb0c6;
-  --bd:#27344a;
-}
 
-@media (prefers-color-scheme:dark) {
-  :root:not([data-theme]),
-  :root[data-theme="system"] {
-    --bg:#0e1522;
-    --card:#17202f;
-    --tx:#e8eef7;
-    --mut:#9fb0c6;
-    --bd:#27344a;
-  }
-}
 
-/* Reading and sepia appearance. */
-:root[data-theme="reading"] {
-  --bg:#eaf4ed;
-  --card:#ffffff;
-  --tx:#14233b;
-  --mut:#5b6b82;
-  --bd:#d4e5d9;
-}
 
-:root[data-theme="sepia"] {
-  --bg:#f5ecd9;
-  --card:#fff8e9;
-  --tx:#463b2b;
-  --mut:#766753;
-  --bd:#dfcfb3;
-}
+
+
+
+
 
 /* Ensure all dashboard surfaces follow the selected theme. */
 .sidebar,
@@ -1179,16 +975,16 @@ body,
 }
 
 /* Respect the homepage's dark appearance in auxiliary elements. */
-:root[data-theme="dark"] .summary-panel,
-:root[data-theme="dark"] .dashboard-card {
+:root[data-cso-theme="dark"] .summary-panel,
+:root[data-cso-theme="dark"] .dashboard-card {
   border-color:var(--bd);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .summary-panel,
-  :root:not([data-theme]) .dashboard-card,
-  :root[data-theme="system"] .summary-panel,
-  :root[data-theme="system"] .dashboard-card {
+  :root[data-cso-theme="system"] .summary-panel,
+  :root[data-cso-theme="system"] .dashboard-card,
+  :root[data-cso-theme="system"] .summary-panel,
+  :root[data-cso-theme="system"] .dashboard-card {
     border-color:var(--bd);
   }
 }
@@ -1281,61 +1077,61 @@ body,
 }
 
 /* Stronger dark-mode text contrast */
-:root[data-theme="dark"] #page-description,
-:root[data-theme="dark"] #explorer-description,
-:root[data-theme="dark"] .breadcrumb,
-:root[data-theme="dark"] .sidebar-heading,
-:root[data-theme="dark"] .brand-name small,
-:root[data-theme="dark"] .stat-label,
-:root[data-theme="dark"] #search-status,
-:root[data-theme="dark"] #load-status {
+:root[data-cso-theme="dark"] #page-description,
+:root[data-cso-theme="dark"] #explorer-description,
+:root[data-cso-theme="dark"] .breadcrumb,
+:root[data-cso-theme="dark"] .sidebar-heading,
+:root[data-cso-theme="dark"] .brand-name small,
+:root[data-cso-theme="dark"] .stat-label,
+:root[data-cso-theme="dark"] #search-status,
+:root[data-cso-theme="dark"] #load-status {
   color: #c2d0e3;
 }
 
-:root[data-theme="dark"] .side-link,
-:root[data-theme="dark"] .recent-card,
-:root[data-theme="dark"] .explorer-item {
+:root[data-cso-theme="dark"] .side-link,
+:root[data-cso-theme="dark"] .recent-card,
+:root[data-cso-theme="dark"] .explorer-item {
   color: #e8eef7;
 }
 
-:root[data-theme="dark"] .sidebar-footer a,
-:root[data-theme="dark"] #back-button {
+:root[data-cso-theme="dark"] .sidebar-footer a,
+:root[data-cso-theme="dark"] #back-button {
   color: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) #page-description,
-  :root:not([data-theme]) #explorer-description,
-  :root:not([data-theme]) .breadcrumb,
-  :root:not([data-theme]) .sidebar-heading,
-  :root:not([data-theme]) .brand-name small,
-  :root:not([data-theme]) .stat-label,
-  :root:not([data-theme]) #search-status,
-  :root:not([data-theme]) #load-status,
-  :root[data-theme="system"] #page-description,
-  :root[data-theme="system"] #explorer-description,
-  :root[data-theme="system"] .breadcrumb,
-  :root[data-theme="system"] .sidebar-heading,
-  :root[data-theme="system"] .brand-name small,
-  :root[data-theme="system"] .stat-label,
-  :root[data-theme="system"] #search-status,
-  :root[data-theme="system"] #load-status {
+  :root[data-cso-theme="system"] #page-description,
+  :root[data-cso-theme="system"] #explorer-description,
+  :root[data-cso-theme="system"] .breadcrumb,
+  :root[data-cso-theme="system"] .sidebar-heading,
+  :root[data-cso-theme="system"] .brand-name small,
+  :root[data-cso-theme="system"] .stat-label,
+  :root[data-cso-theme="system"] #search-status,
+  :root[data-cso-theme="system"] #load-status,
+  :root[data-cso-theme="system"] #page-description,
+  :root[data-cso-theme="system"] #explorer-description,
+  :root[data-cso-theme="system"] .breadcrumb,
+  :root[data-cso-theme="system"] .sidebar-heading,
+  :root[data-cso-theme="system"] .brand-name small,
+  :root[data-cso-theme="system"] .stat-label,
+  :root[data-cso-theme="system"] #search-status,
+  :root[data-cso-theme="system"] #load-status {
     color: #c2d0e3;
   }
 
-  :root:not([data-theme]) .side-link,
-  :root:not([data-theme]) .recent-card,
-  :root:not([data-theme]) .explorer-item,
-  :root[data-theme="system"] .side-link,
-  :root[data-theme="system"] .recent-card,
-  :root[data-theme="system"] .explorer-item {
+  :root[data-cso-theme="system"] .side-link,
+  :root[data-cso-theme="system"] .recent-card,
+  :root[data-cso-theme="system"] .explorer-item,
+  :root[data-cso-theme="system"] .side-link,
+  :root[data-cso-theme="system"] .recent-card,
+  :root[data-cso-theme="system"] .explorer-item {
     color: #e8eef7;
   }
 
-  :root:not([data-theme]) .sidebar-footer a,
-  :root:not([data-theme]) #back-button,
-  :root[data-theme="system"] .sidebar-footer a,
-  :root[data-theme="system"] #back-button {
+  :root[data-cso-theme="system"] .sidebar-footer a,
+  :root[data-cso-theme="system"] #back-button,
+  :root[data-cso-theme="system"] .sidebar-footer a,
+  :root[data-cso-theme="system"] #back-button {
     color: #ffffff;
   }
 }
@@ -1485,62 +1281,62 @@ body,
 }
 
 /* Dark theme */
-:root[data-theme="dark"] .cso-site-header {
+:root[data-cso-theme="dark"] .cso-site-header {
   background: #17202f;
   color: #e8eef7;
   border-color: #27344a;
 }
 
-:root[data-theme="dark"] .cso-site-dropdown {
+:root[data-cso-theme="dark"] .cso-site-dropdown {
   background: #17202f;
   border-color: #27344a;
 }
 
-:root[data-theme="dark"] .cso-site-dropdown a {
+:root[data-cso-theme="dark"] .cso-site-dropdown a {
   color: #e8eef7;
 }
 
-:root[data-theme="dark"] .cso-site-dropdown a:hover,
-:root[data-theme="dark"] .cso-site-dropdown a:focus-visible {
+:root[data-cso-theme="dark"] .cso-site-dropdown a:hover,
+:root[data-cso-theme="dark"] .cso-site-dropdown a:focus-visible {
   background: #263c46;
   color: #ffffff;
 }
 
-:root[data-theme="dark"] #cso-shared-theme {
+:root[data-cso-theme="dark"] #cso-shared-theme {
   background: #26344a;
   color: #e8eef7;
   border-color: #43536b;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .cso-site-header,
-  :root[data-theme="system"] .cso-site-header {
+  :root[data-cso-theme="system"] .cso-site-header,
+  :root[data-cso-theme="system"] .cso-site-header {
     background: #17202f;
     color: #e8eef7;
     border-color: #27344a;
   }
 
-  :root:not([data-theme]) .cso-site-dropdown,
-  :root[data-theme="system"] .cso-site-dropdown {
+  :root[data-cso-theme="system"] .cso-site-dropdown,
+  :root[data-cso-theme="system"] .cso-site-dropdown {
     background: #17202f;
     border-color: #27344a;
   }
 
-  :root:not([data-theme]) .cso-site-dropdown a,
-  :root[data-theme="system"] .cso-site-dropdown a {
+  :root[data-cso-theme="system"] .cso-site-dropdown a,
+  :root[data-cso-theme="system"] .cso-site-dropdown a {
     color: #e8eef7;
   }
 
-  :root:not([data-theme]) .cso-site-dropdown a:hover,
-  :root:not([data-theme]) .cso-site-dropdown a:focus-visible,
-  :root[data-theme="system"] .cso-site-dropdown a:hover,
-  :root[data-theme="system"] .cso-site-dropdown a:focus-visible {
+  :root[data-cso-theme="system"] .cso-site-dropdown a:hover,
+  :root[data-cso-theme="system"] .cso-site-dropdown a:focus-visible,
+  :root[data-cso-theme="system"] .cso-site-dropdown a:hover,
+  :root[data-cso-theme="system"] .cso-site-dropdown a:focus-visible {
     background: #263c46;
     color: #ffffff;
   }
 
-  :root:not([data-theme]) #cso-shared-theme,
-  :root[data-theme="system"] #cso-shared-theme {
+  :root[data-cso-theme="system"] #cso-shared-theme,
+  :root[data-cso-theme="system"] #cso-shared-theme {
     background: #26344a;
     color: #e8eef7;
     border-color: #43536b;
@@ -1873,35 +1669,15 @@ body:has(#explorer:not([hidden])) .welcome {
    CSO Navigation Architecture, Topbar, Sidebar & Compact Grids Refactor
    ========================================================================== */
 
-/* Active and theme variables for sidebar and cards */
-:root,
-:root[data-theme="light"] {
-  --cso-active-bg: #1d4ed8;
-  --cso-active-tx: #ffffff;
-}
 
-:root[data-theme="dark"] {
-  --cso-active-bg: #2563eb;
-  --cso-active-tx: #ffffff;
-}
 
-:root[data-theme="reading"] {
-  --cso-active-bg: #1b6348;
-  --cso-active-tx: #ffffff;
-}
 
-:root[data-theme="sepia"] {
-  --cso-active-bg: #79502b;
-  --cso-active-tx: #ffffff;
-}
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]),
-  :root[data-theme="system"] {
-    --cso-active-bg: #2563eb;
-    --cso-active-tx: #ffffff;
-  }
-}
+
+
+
+
+
 
 /* 1. Universal Category Explorer Grids (Compact Layout) */
 #dashboard-grid,

@@ -7963,3 +7963,209 @@ select:focus-visible {
 .lu .it:hover {
   color: var(--cso-primary) !important;
 }
+
+/* ── v137: Header Ctrl+K Search Pill & Student Hub Single-Line Nav Alignment ── */
+#cso-ctl-global-search,
+.cso-ctl-search {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px !important;
+  min-height: 32px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 0.82rem;
+  line-height: 1;
+}
+
+.cso-ctl-search-icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  font-size: 0.85em;
+}
+
+.cso-ctl-search-label {
+  display: inline-block;
+  line-height: 1;
+}
+
+.cso-ctl-search-kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.1;
+  background: var(--cso-surface-alt, rgba(15, 23, 42, 0.08));
+  color: var(--cso-text);
+  border: 1px solid var(--cso-border);
+  white-space: nowrap;
+}
+
+.main-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+
+.cso-nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: var(--cso-primary);
+  color: var(--cso-primary-fg);
+}
+
+/* ── v137: Global Sub-Page Theme Propagation (jobs-careers, schemes, study-library, community) ── */
+:root[data-cso-theme] {
+  --bg: var(--cso-bg);
+  --card: var(--cso-card-bg);
+  --tx: var(--cso-text);
+  --mut: var(--cso-text-muted);
+  --bd: var(--cso-border);
+  --bl: var(--cso-primary);
+  --gr: var(--cso-primary);
+  --dk: var(--cso-primary);
+  --cso-link: var(--cso-primary);
+  --cso-active-bg: var(--cso-primary);
+  --cso-active-tx: var(--cso-primary-fg);
+}
+
+:root[data-cso-theme] body,
+:root[data-cso-theme] .app-shell,
+:root[data-cso-theme] .cso-schemes-shell,
+:root[data-cso-theme] .cso-comm-shell {
+  background: var(--cso-bg) !important;
+  color: var(--cso-text) !important;
+}
+
+:root[data-cso-theme] .sidebar,
+:root[data-cso-theme] .topbar,
+:root[data-cso-theme] .cso-schemes-rail,
+:root[data-cso-theme] .cso-comm-rail,
+:root[data-cso-theme] .cso-schemes-panel,
+:root[data-cso-theme] .cso-comm-panel,
+:root[data-cso-theme] .cso-pub-header,
+:root[data-cso-theme] .cso-pub-footer {
+  background: var(--cso-surface) !important;
+  color: var(--cso-text) !important;
+  border-color: var(--cso-border) !important;
+}
+
+:root[data-cso-theme] .stat-card,
+:root[data-cso-theme] .dashboard-card,
+:root[data-cso-theme] .explorer-item,
+:root[data-cso-theme] .explorer-item.leaf,
+:root[data-cso-theme] #search-results,
+:root[data-cso-theme] .cso-schemes-kpi,
+:root[data-cso-theme] .cso-comm-kpi,
+:root[data-cso-theme] .cso-schemes-telemetry-card,
+:root[data-cso-theme] .cso-comm-telemetry-card,
+:root[data-cso-theme] .cso-schemes-domain-card,
+:root[data-cso-theme] .cso-comm-domain-card,
+:root[data-cso-theme] .cso-schemes-item-card,
+:root[data-cso-theme] .cso-comm-item-card,
+:root[data-cso-theme] .cso-schemes-summary-box,
+:root[data-cso-theme] .cso-comm-summary-box,
+:root[data-cso-theme] .cso-schemes-qfilter,
+:root[data-cso-theme] .cso-schemes-btn,
+:root[data-cso-theme] .cso-comm-btn,
+:root[data-cso-theme] .cso-schemes-input,
+:root[data-cso-theme] .cso-schemes-select,
+:root[data-cso-theme] .cso-comm-input,
+:root[data-cso-theme] .cso-comm-select,
+:root[data-cso-theme] .cso-ssr-textarea,
+:root[data-cso-theme] .search-wrap input {
+  background: var(--cso-card-bg) !important;
+  color: var(--cso-text) !important;
+  border-color: var(--cso-border) !important;
+}
+
+:root[data-cso-theme] .cso-schemes-hero,
+:root[data-cso-theme] .cso-comm-hero,
+:root[data-cso-theme] .hero-banner {
+  background: var(--cso-hero-bg) !important;
+  border: 1px solid var(--cso-border) !important;
+}
+
+:root[data-cso-theme="dark"] .cso-schemes-hero,
+:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .cso-schemes-hero,
+:root[data-cso-theme="dark"] .cso-comm-hero,
+:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .cso-comm-hero {
+  color: var(--cso-text) !important;
+}
+
+:root[data-cso-theme] .cso-schemes-nav-link,
+:root[data-cso-theme] .cso-comm-nav-link,
+:root[data-cso-theme] .side-link {
+  color: var(--cso-text) !important;
+}
+
+:root[data-cso-theme] .cso-schemes-nav-link:hover,
+:root[data-cso-theme] .cso-comm-nav-link:hover,
+:root[data-cso-theme] .side-link:hover {
+  background: var(--cso-surface-alt) !important;
+  color: var(--cso-primary) !important;
+}
+
+:root[data-cso-theme] .cso-schemes-nav-link.is-active,
+:root[data-cso-theme] .cso-comm-nav-link.is-active,
+:root[data-cso-theme] .cso-schemes-qfilter.is-active,
+:root[data-cso-theme] .cso-schemes-btn-primary,
+:root[data-cso-theme] .cso-comm-btn-primary {
+  background: var(--cso-primary) !important;
+  color: var(--cso-primary-fg) !important;
+  border-color: var(--cso-primary) !important;
+}
+
+:root[data-cso-theme] .cso-schemes-tag,
+:root[data-cso-theme] .cso-comm-tag,
+:root[data-cso-theme] .cso-schemes-nav-count,
+:root[data-cso-theme] .cso-comm-nav-count,
+:root[data-cso-theme] .cso-schemes-nav-num,
+:root[data-cso-theme] .cso-comm-nav-num,
+:root[data-cso-theme] .cso-ssr-fact {
+  background: var(--cso-highlight-bg) !important;
+  color: var(--cso-highlight-fg) !important;
+  border-color: var(--cso-border) !important;
+}
+
+:root[data-cso-theme] .cso-schemes-kpi-val,
+:root[data-cso-theme] .cso-comm-kpi-val,
+:root[data-cso-theme] .cso-schemes-panel h2,
+:root[data-cso-theme] .cso-comm-panel h2,
+:root[data-cso-theme] .cso-schemes-item-title,
+:root[data-cso-theme] .cso-comm-item-title,
+:root[data-cso-theme] .cso-schemes-domain-title,
+:root[data-cso-theme] .cso-comm-domain-title,
+:root[data-cso-theme] .cso-ssr-fact-v {
+  color: var(--cso-primary) !important;
+}
+
+:root[data-cso-theme] .cso-schemes-kpi-label,
+:root[data-cso-theme] .cso-comm-kpi-label,
+:root[data-cso-theme] .cso-schemes-item-meta,
+:root[data-cso-theme] .cso-comm-item-meta,
+:root[data-cso-theme] .cso-schemes-domain-desc,
+:root[data-cso-theme] .cso-comm-domain-desc,
+:root[data-cso-theme] .cso-schemes-page-info,
+:root[data-cso-theme] .cso-comm-page-info,
+:root[data-cso-theme] .cso-ssr-fact-k {
+  color: var(--cso-text-muted) !important;
+}
+

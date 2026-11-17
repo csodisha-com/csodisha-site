@@ -153,6 +153,7 @@
     getTheme: () => activePortalTheme,
     getResolvedMode: () => resolveEffectiveMode(activePortalTheme),
     setTheme: (key, persist = true) => setPortalTheme(key, persist),
+    apply: () => setPortalTheme(activePortalTheme, false),
     resolvePaletteToThemeKey
   };
 
@@ -496,10 +497,13 @@
     });
     a11yWrap.appendChild(a11yBtn);
 
-    const searchBtn = el('button', 'pill cso-ctl-search', '🔍 Ctrl+K');
+    const searchBtn = el('button', 'pill cso-ctl-search');
     searchBtn.type = 'button';
     searchBtn.id = 'cso-ctl-global-search';
     searchBtn.setAttribute('aria-label', 'Open global D1 search (Ctrl+K)');
+    searchBtn.appendChild(el('span', 'cso-ctl-search-icon', '🔍'));
+    searchBtn.appendChild(el('span', 'cso-ctl-search-label', 'Search'));
+    searchBtn.appendChild(el('kbd', 'cso-ctl-search-kbd', 'Ctrl+K'));
     searchBtn.addEventListener('click', () => {
       if (window.CSOGlobal && typeof window.CSOGlobal.openSearch === 'function') {
         window.CSOGlobal.openSearch('');
