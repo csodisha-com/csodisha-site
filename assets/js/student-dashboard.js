@@ -312,11 +312,7 @@
     const district = u.district || 'Odisha';
     const av = initials(name);
 
-    ['bp-top-avatar', 'cso-profile-avatar'].forEach(id => {
-      const n = document.getElementById(id);
-      if (n) n.textContent = av;
-    });
-    ['bp-side-name', 'bp-top-name', 'cso-profile-name', 'tab-settings-name'].forEach(id => {
+        ['bp-side-name', 'bp-top-name', 'cso-profile-name', 'tab-settings-name'].forEach(id => {
       const n = document.getElementById(id);
       if (n) n.textContent = name;
     });
@@ -1609,7 +1605,7 @@
     initManualScoreLogger();
     initWorkspaceTools();
 
-    ['cso-profile-signout-btn', 'bp-profile-logout-btn', 'bp-topbar-logout-btn'].forEach(id => {
+    ['bp-profile-logout-btn', 'bp-topbar-logout-btn'].forEach(id => {
       document.getElementById(id)?.addEventListener('click', performSignOut);
     });
     document.getElementById('cso-open-goal-modal-btn')?.addEventListener('click', openGoalModal);

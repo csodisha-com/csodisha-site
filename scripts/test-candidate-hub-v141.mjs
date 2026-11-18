@@ -54,8 +54,21 @@ for (const [name, src] of [[htmlPath, html], [jsPath, js]]) {
 assert.ok(!/<script(?![^>]*\ssrc=)[^>]*>/i.test(html), 'no inline <script> in hub HTML');
 assert.ok(!/\.style\.|insertAdjacentHTML/.test(js), 'no JS style injection');
 
-// 5. Cache bump
-assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v140'"), 'sw.js CACHE_NAME v140');
-assert.ok(read('functions/_lib/ops-sentinel.js').includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v140'"), 'ops-sentinel v140');
+// 4b. v142: single Sign Out, no clipping, emblem avatars
+const signOutBtns = (html.match(/<button[^>]*>[^<]*Sign Out[^<]*<\/button>/g) || []).filter(b => !b.includes('bp-profile-logout-btn'));
+assert.ok(!html.includes('cso-profile-signout'), 'no inner profile card Sign Out button in HTML');
+assert.ok(!js.includes('cso-profile-signout'), 'no inner profile card Sign Out wiring in JS');
+assert.equal((html.match(/id="bp-topbar-logout-btn"/g) || []).length, 1, 'exactly one top-bar Sign Out');
+assert.equal(signOutBtns.length, 0, 'no stray Sign Out text buttons outside top bar/settings');
+assert.match(css, /\.cso-logout-icon-btn \{[^}]*flex-shrink: 0;[^}]*white-space: nowrap;[^}]*padding: 8px 14px;/, 'top Sign Out flex-shrink: 0');
+assert.match(css, /\.bp-topbar \{\s*flex-wrap: nowrap;\s*gap: 8px;\s*padding-right: 16px;/, 'topbar nowrap');
+assert.ok(html.includes('id="bp-top-avatar"') && html.includes('id="cso-profile-avatar"'), 'avatars present');
+assert.ok(!/class="bp-avatar" id="bp-top-avatar"/.test(html), 'top avatar is emblem');
+assert.ok((html.match(/width="32" height="32" class="cso-brand-emblem"/g) || []).length >= 2, 'emblem avatars 32x32');
+assert.ok(html.includes('student-dashboard-bp.css?v=20261118v142') && html.includes('student-dashboard.js?v=20261118v142'), 'cache-bust query strings');
 
-console.log('Candidate Hub v140 checks passed.');
+// 5. Cache bump
+assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v142'"), 'sw.js CACHE_NAME v142');
+assert.ok(read('functions/_lib/ops-sentinel.js').includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v142'"), 'ops-sentinel v142');
+
+console.log('Candidate Hub v142 checks passed.');
