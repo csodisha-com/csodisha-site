@@ -1,0 +1,307 @@
+/* v152: extracted from inline <style> (CSP style-src 'self'); theme tokens: --cso-bg/surface/text/muted/border/hero-* */
+.cso-career-page{max-width:1120px;margin:30px auto 60px;padding:0 20px;color:var(--cso-text)}
+.cso-career-page *{box-sizing:border-box}
+.cso-career-hero,.cso-career-card,.cso-career-note{background:var(--cso-surface);border:1px solid var(--cso-border);border-radius:15px}
+.cso-career-hero{padding:clamp(22px,4vw,38px)}
+.cso-career-eyebrow{display:inline-block;color:#8b5cf6;font-weight:800;margin-bottom:12px}
+.cso-career-page h1{font-size:clamp(28px,4vw,42px);line-height:1.2;margin:0 0 14px}
+.cso-career-page h2{font-size:clamp(21px,3vw,27px);margin:0 0 16px}
+.cso-career-page h3{font-size:19px;margin:0 0 10px}
+.cso-career-page p{line-height:1.7}
+.cso-career-intro{max-width:790px}
+.cso-career-actions,.cso-career-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+.cso-career-button{display:inline-flex;align-items:center;justify-content:center;padding:12px 17px;border-radius:10px;background:#6d28d9;color:#fff!important;text-decoration:none;font-weight:700}
+.cso-career-button.secondary{background:var(--cso-surface);color:var(--cso-text)!important;border:1px solid var(--cso-border)}
+.cso-career-section{margin-top:30px}
+.cso-career-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.cso-career-card{min-width:0;padding:22px}
+.cso-career-card p{margin:0 0 13px}
+.cso-career-card a{color:var(--bl);font-weight:700}
+.cso-career-note{margin-top:30px;padding:20px}
+.cso-career-page a:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+@media(max-width:700px){.cso-career-grid{grid-template-columns:1fr}.cso-career-page{padding:0 14px}.cso-career-card{padding:18px}}
+
+#career-path-finder {
+  --cpf-accent: #2563eb;
+  --cpf-border: color-mix(in srgb, currentColor 19%, transparent);
+  margin: 24px 0 32px;
+  padding: clamp(18px, 3vw, 32px);
+  border: 1px solid var(--cpf-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--cso-surface, #ffffff) 94%, var(--cpf-accent) 6%);
+  color: inherit;
+}
+#career-path-finder *, #career-path-finder *::before,
+#career-path-finder *::after { box-sizing: border-box; }
+.cpf-eyebrow { font-size: .75rem; font-weight: 800; letter-spacing: .09em; color: #2563eb; }
+.cpf-intro h2 { margin: 8px 0 10px; font-size: clamp(1.4rem, 3vw, 2rem); }
+.cpf-intro p { max-width: 720px; line-height: 1.65; }
+.cpf-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.cpf-field label { display: block; font-weight: 700; margin-bottom: 9px; }
+.cpf-field select {
+  display: block; width: 100%; min-width: 0; padding: 12px;
+  border: 1px solid #94a3b8; border-radius: 9px;
+  background: #fff; color: #172033; font: inherit;
+}
+.cpf-field select:focus-visible, .cpf-actions button:focus-visible,
+.cpf-resources a:focus-visible { outline: 3px solid #60a5fa; outline-offset: 3px; }
+.cpf-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.cpf-actions button {
+  padding: 12px 20px; border: 1px solid var(--cpf-accent);
+  border-radius: 9px; background: var(--cpf-accent); color: #fff;
+  font: inherit; font-weight: 700; cursor: pointer;
+}
+.cpf-actions button.cpf-secondary { background: transparent; color: inherit; }
+.cpf-results { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--cpf-border); }
+.cpf-results[hidden] { display: none; }
+.cpf-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); gap: 12px; margin: 18px 0; }
+.cpf-option { padding: 17px; border: 1px solid var(--cpf-border); border-radius: 12px; background: color-mix(in srgb, currentColor 4%, transparent); }
+.cpf-option h4 { margin: 0 0 8px; font-size: 1rem; }
+.cpf-option p { margin: 0; line-height: 1.55; font-size: .92rem; }
+.cpf-next, .cpf-resources { margin-top: 22px; }
+.cpf-next li, .cpf-resources li { margin: 8px 0; line-height: 1.6; }
+.cpf-resources a { color: #2563eb; text-decoration: underline; text-underline-offset: 3px; }
+.cpf-disclaimer { margin-top: 24px; padding: 13px; border-left: 3px solid #d97706; font-size: .9rem; line-height: 1.6; }
+@media (max-width: 800px) { .cpf-grid { grid-template-columns: 1fr; } }
+@media (prefers-color-scheme: dark) {
+  #career-path-finder { --cpf-accent: #60a5fa; }
+  .cpf-eyebrow, .cpf-resources a { color: #93c5fd; }
+  .cpf-actions button:not(.cpf-secondary) { background: #2563eb; border-color: #2563eb; color: #fff; }
+}
+
+/* CSO Career Path Finder results refinement v2 */
+#career-path-finder .cpf-results > h3 {
+  margin-bottom: 10px;
+  font-size: 1.3rem;
+}
+#career-path-finder #cpf-summary {
+  line-height: 1.7;
+  max-width: 820px;
+}
+#career-path-finder .cpf-options {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 14px;
+}
+#career-path-finder .cpf-option {
+  padding: 20px;
+  border-radius: 13px;
+}
+#career-path-finder .cpf-card-label {
+  display: block;
+  margin-bottom: 10px;
+  color: #93c5fd;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+#career-path-finder .cpf-option h4 {
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+#career-path-finder .cpf-option p {
+  line-height: 1.7;
+}
+#career-path-finder .cpf-next {
+  margin-top: 28px;
+}
+#career-path-finder .cpf-next ol {
+  padding-left: 23px;
+}
+#career-path-finder .cpf-next li {
+  padding-left: 5px;
+  margin-bottom: 11px;
+}
+@media (max-width: 760px) {
+  #career-path-finder .cpf-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* CSO printable Career Plan v1 */
+#career-path-finder .cpf-plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 8px;
+}
+
+#career-path-finder .cpf-plan-actions button {
+  padding: 11px 17px;
+  border: 1px solid #3b82f6;
+  border-radius: 9px;
+  background: #2563eb;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#career-path-finder #cpf-copy {
+  background: transparent;
+  color: inherit;
+}
+
+#career-path-finder .cpf-plan-actions button:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+
+#career-path-finder #cpf-copy-status {
+  font-size: .85rem;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  body {
+    background: #fff !important;
+    color: #111827 !important;
+  }
+
+  body > header,
+  body > nav,
+  body > footer,
+  #career-path-finder .cpf-intro,
+  #career-path-finder .cpf-grid,
+  #career-path-finder .cpf-actions,
+  #career-path-finder .cpf-plan-actions {
+    display: none !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #career-path-finder,
+  #career-path-finder .cpf-results,
+  #career-path-finder .cpf-results * {
+    visibility: visible !important;
+  }
+
+  #career-path-finder {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: #fff !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+  }
+
+  #career-path-finder .cpf-results {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  #career-path-finder .cpf-options {
+    display: block !important;
+  }
+
+  #career-path-finder .cpf-option {
+    display: block !important;
+    margin: 12px 0 !important;
+    padding: 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #fff !important;
+    color: #111827 !important;
+    break-inside: avoid;
+  }
+
+  #career-path-finder .cpf-card-label,
+  #career-path-finder a {
+    color: #1d4ed8 !important;
+  }
+
+  #career-path-finder .cpf-next,
+  #career-path-finder .cpf-resources,
+  #career-path-finder .cpf-disclaimer {
+    color: #111827 !important;
+  }
+
+  #career-path-finder .cpf-next li,
+  #career-path-finder .cpf-resources li {
+    break-inside: avoid;
+  }
+
+  #career-path-finder .cpf-results::before {
+    content: "COMMON SENSE ODISHA | PERSONAL CAREER EXPLORATION PLAN";
+    display: block;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #1d4ed8;
+    font-size: 13pt;
+    font-weight: 800;
+    color: #111827;
+  }
+
+  #career-path-finder .cpf-results::after {
+    content: "CSO-IN | General guidance only. Verify all eligibility and deadlines with official authorities.";
+    display: block;
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #cbd5e1;
+    font-size: 9pt;
+    color: #334155;
+  }
+}
+
+#cpf-matched-resources {
+  margin: 26px 0;
+  padding: 22px 0;
+  border-top: 1px solid rgba(120,140,170,.35);
+  border-bottom: 1px solid rgba(120,140,170,.35);
+}
+#cpf-matched-resources[hidden] { display: none !important; }
+#cpf-matched-resources h3 { margin-bottom: 10px; }
+.cpf-match-group { margin-top: 24px; }
+.cpf-match-group h4 { margin-bottom: 12px; }
+.cpf-match-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,250px),1fr));
+  gap: 12px;
+}
+.cpf-match-card {
+  padding: 16px;
+  border: 1px solid rgba(120,140,170,.35);
+  border-radius: 12px;
+  background: rgba(120,140,170,.07);
+  overflow-wrap: anywhere;
+}
+.cpf-match-card h5 {
+  font-size: 1rem;
+  margin: 0 0 9px;
+}
+.cpf-match-card p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+.cpf-match-card a {
+  display: inline-block;
+  margin-top: 8px;
+  font-weight: 700;
+}
+.cpf-match-meta {
+  font-size: .88rem;
+  opacity: .9;
+}
+.cpf-match-status {
+  display: inline-block;
+  margin: 5px 0;
+  padding: 4px 9px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 700;
+}

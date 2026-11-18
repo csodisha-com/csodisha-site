@@ -15,7 +15,8 @@ Hero card: `border-radius: 20px; padding: 28px 32px; background: var(--cso-hero-
 
 ## CSP rules (strict: `script-src 'self'; style-src 'self'`)
 - 0 inline `<script>` (only `application/ld+json` data blocks are allowed). Put code in `/assets/js/pages/<slug>.js`.
-- 0 `style=""` attributes and no inline `<style>`. Add classes to `assets/style.css`.
+- 0 `style=""` attributes and 0 inline `<style>` blocks (enforced by the audit). Put page CSS in `/assets/css/pages/<slug>.css` and link it in `<head>`; use theme tokens (`--cso-bg`, `--cso-surface`, `--cso-text`, `--cso-muted`, `--cso-border`, `--cso-hero-*`).
+- Module/category sub-pages: add `data-cso-subpage-topbar data-cso-explorer-url="/explorer/"` to `<main>` and load `/assets/css/pages/cso-dir-topbar.css` + `/assets/js/pages/cso-subpage-filter.js` (defer) for the sticky Back / filter / context-pill bar.
 - 0 `.innerHTML`. Build DOM with `document.createElement` + `textContent`, or use `csoSetHtml(el, html)` from `/assets/js/cso-safe-dom.js` for trusted markup.
 
 ## Verify before committing

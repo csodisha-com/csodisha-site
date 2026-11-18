@@ -1,0 +1,163 @@
+/* v152: extracted from inline <style> (CSP style-src 'self'); theme tokens: --cso-bg/surface/text/muted/border/hero-* */
+.faqs-main {
+      max-width: 960px;
+      margin: 32px auto 64px;
+      padding: 0 20px;
+    }
+    .faqs-breadcrumbs {
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      color: var(--cso-muted, #64748b);
+    }
+    .faqs-breadcrumbs a {
+      color: #0fa968;
+      text-decoration: none;
+    }
+    .faqs-breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .faqs-hero {
+      background: var(--cso-surface, #ffffff);
+      border: 1px solid var(--cso-border, #d8e0e8);
+      border-radius: 16px;
+      padding: 36px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .faqs-badge-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .faqs-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(14, 165, 233, 0.1);
+      color: #0284c7;
+      border: 1px solid rgba(14, 165, 233, 0.2);
+    }
+    .faqs-version-badge {
+      font-size: 0.75rem;
+      font-family: monospace;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(15, 169, 104, 0.1);
+      color: #0fa968;
+      border: 1px solid rgba(15, 169, 104, 0.2);
+    }
+    .faqs-hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 34px);
+      color: var(--cso-text, #0f172a);
+      line-height: 1.25;
+    }
+    .faqs-meta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.88rem;
+      color: var(--cso-muted, #64748b);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--cso-border, #e2e8f0);
+    }
+
+    .faqs-filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--cso-border, #d8e0e8);
+      background: var(--cso-surface, #ffffff);
+      color: var(--cso-muted, #475569);
+      transition: all 0.15s ease;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: #0fa968;
+      color: #ffffff;
+      border-color: #0fa968;
+    }
+
+    .faq-card {
+      background: var(--cso-surface, #ffffff);
+      border: 1px solid var(--cso-border, #d8e0e8);
+      border-radius: 14px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+      transition: border-color 0.15s ease;
+    }
+    .faq-card:hover {
+      border-color: #0fa968;
+    }
+    .faq-card summary {
+      padding: 20px 24px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--cso-text, #0f172a);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      user-select: none;
+      list-style: none;
+    }
+    .faq-card summary::-webkit-details-marker {
+      display: none;
+    }
+    .faq-card summary::after {
+      content: '+';
+      font-size: 1.3rem;
+      color: #0fa968;
+      font-weight: bold;
+      transition: transform 0.2s ease;
+    }
+    .faq-card[open] summary::after {
+      content: '−';
+    }
+    .faq-content {
+      padding: 0 24px 20px;
+      color: var(--cso-muted, #475569);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 14px;
+    }
+    .faq-cat-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #64748b;
+      margin-right: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .faqs-hero {
+        padding: 24px 20px;
+      }
+      .faq-card summary {
+        padding: 16px 18px;
+        font-size: 0.95rem;
+      }
+      .faq-content {
+        padding: 0 18px 16px;
+      }
+    }

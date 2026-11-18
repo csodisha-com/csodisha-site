@@ -30,6 +30,7 @@ for (const f of files) {
   if (/class=["'][^"']*(?<![\w-])(brand-mark|logo-square|cs-badge|cso-badge)(?![\w-])/.test(h) || />\s*CSO?\s*</.test(h)) bad('legacy CS/CSO badge');
   if (shell && !autoF && !(/cso-footer-zone1/.test(h) && /cso-footer-zone2/.test(h) && /cso-footer-zone3/.test(h))) bad('missing 3-zone portal footer (or data-cso-auto-footer)');
   if (/\sstyle\s*=\s*["']/i.test(h)) bad('inline style="" attribute');
+  if (/<style[\s>]/i.test(h)) bad('inline <style> block (CSP style-src self): extract to /assets/css/pages/*.css');
   for (const m of h.matchAll(/<script\b([^>]*)>/gi)) if (!/\bsrc\s*=/.test(m[1]) && !/type=["']application\/(ld\+json)["']/.test(m[1])) bad('inline <script>');
   for (const m of h.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/gi)) if (m[1].startsWith('/')) scriptsSeen.add(m[1].split('?')[0]);
 }

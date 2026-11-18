@@ -67,7 +67,7 @@ for (const [name, js] of [
 }
 
 // 7. Cache version v150
-assert.ok(swJs.includes("const CACHE_NAME = 'cso-candidate-cache-v151'"), 'sw.js CACHE_NAME bumped to v150');
-assert.ok(opsSentinel.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v151'"), 'ops-sentinel ACTIVE_SW_CACHE_VERSION bumped to v150');
+assert.ok(swJs.includes("const CACHE_NAME = 'cso-candidate-cache-v152'"), 'sw.js CACHE_NAME bumped to v150');
+assert.ok(opsSentinel.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v152'"), 'ops-sentinel ACTIVE_SW_CACHE_VERSION bumped to v150');
 
 console.log('Uniform Heroes v150 tests passed.');

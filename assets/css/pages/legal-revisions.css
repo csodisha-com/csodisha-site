@@ -1,0 +1,179 @@
+/* v152: extracted from inline <style> (CSP style-src 'self'); theme tokens: --cso-bg/surface/text/muted/border/hero-* */
+.revisions-main {
+      max-width: 960px;
+      margin: 32px auto 64px;
+      padding: 0 20px;
+    }
+    .revisions-breadcrumbs {
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      color: var(--cso-muted, #64748b);
+    }
+    .revisions-breadcrumbs a {
+      color: #0fa968;
+      text-decoration: none;
+    }
+    .revisions-breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .revisions-hero {
+      background: var(--cso-surface, #ffffff);
+      border: 1px solid var(--cso-border, #d8e0e8);
+      border-radius: 16px;
+      padding: 36px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .revisions-badge-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .revisions-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(225, 29, 72, 0.1);
+      color: #e11d48;
+      border: 1px solid rgba(225, 29, 72, 0.2);
+    }
+    .revisions-version-badge {
+      font-size: 0.75rem;
+      font-family: monospace;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(15, 169, 104, 0.1);
+      color: #0fa968;
+      border: 1px solid rgba(15, 169, 104, 0.2);
+    }
+    .revisions-hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 34px);
+      color: var(--cso-text, #0f172a);
+      line-height: 1.25;
+    }
+    .revisions-meta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.88rem;
+      color: var(--cso-muted, #64748b);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--cso-border, #e2e8f0);
+    }
+
+    .timeline-container {
+      position: relative;
+      padding-left: 28px;
+      margin-top: 32px;
+    }
+    .timeline-container::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      bottom: 12px;
+      left: 10px;
+      width: 2px;
+      background: #e2e8f0;
+    }
+
+    .timeline-item {
+      position: relative;
+      background: var(--cso-surface, #ffffff);
+      border: 1px solid var(--cso-border, #d8e0e8);
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      top: 24px;
+      left: -24px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #e11d48;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.3);
+    }
+
+    .timeline-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .timeline-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .timeline-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--cso-text, #0f172a);
+      margin: 0;
+    }
+    .timeline-ver {
+      font-family: monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(14, 165, 233, 0.1);
+      color: #0284c7;
+      border: 1px solid rgba(14, 165, 233, 0.2);
+    }
+    .timeline-date {
+      font-size: 0.82rem;
+      color: var(--cso-muted, #64748b);
+      font-weight: 600;
+    }
+    .timeline-summary {
+      color: var(--cso-muted, #475569);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      margin: 0 0 12px;
+    }
+    .timeline-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.8rem;
+      padding-top: 10px;
+      border-top: 1px solid #f1f5f9;
+      color: var(--cso-muted, #64748b);
+    }
+    .timeline-route-link {
+      color: #0fa968;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .timeline-route-link:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      .revisions-hero {
+        padding: 24px 20px;
+      }
+      .timeline-container {
+        padding-left: 20px;
+      }
+      .timeline-item::before {
+        left: -16px;
+      }
+    }

@@ -1,0 +1,245 @@
+/* v152: extracted from inline <style> (CSP style-src 'self'); theme tokens: --cso-bg/surface/text/muted/border/hero-* */
+.copyright-main {
+      max-width: 960px;
+      margin: 32px auto 64px;
+      padding: 0 20px;
+    }
+    .copyright-breadcrumbs {
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      color: var(--cso-muted, #64748b);
+    }
+    .copyright-breadcrumbs a {
+      color: #0fa968;
+      text-decoration: none;
+    }
+    .copyright-breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .copyright-hero {
+      background: var(--cso-surface, #ffffff);
+      border: 1px solid var(--cso-border, #d8e0e8);
+      border-radius: 16px;
+      padding: 36px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .copyright-badge-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .copyright-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(15, 169, 104, 0.1);
+      color: #0fa968;
+      border: 1px solid rgba(15, 169, 104, 0.2);
+    }
+    .copyright-version-badge {
+      font-size: 0.75rem;
+      font-family: monospace;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(2, 132, 199, 0.1);
+      color: #0284c7;
+      border: 1px solid rgba(2, 132, 199, 0.2);
+    }
+    .copyright-hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 34px);
+      color: var(--cso-text, #0f172a);
+      line-height: 1.25;
+    }
+    .copyright-meta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.88rem;
+      color: var(--cso-muted, #64748b);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--cso-border, #e2e8f0);
+    }
+
+    .officer-card {
+      background: linear-gradient(135deg, rgba(240, 253, 250, 0.8), rgba(241, 245, 249, 0.9));
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    }
+    .officer-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .officer-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #0d9488;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .officer-title-block h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: #0f766e;
+    }
+    .officer-title-block p {
+      margin: 2px 0 0;
+      font-size: 0.82rem;
+      color: #134e4a;
+    }
+    .officer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      font-size: 0.88rem;
+    }
+    .officer-grid-item {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(20, 184, 166, 0.2);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .officer-grid-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #0f766e;
+      margin-bottom: 4px;
+    }
+    .officer-grid-val {
+      color: #1e293b;
+      word-break: break-word;
+    }
+    .officer-grid-val a {
+      color: #0d9488;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .officer-grid-val a:hover {
+      text-decoration: underline;
+    }
+
+    .clause-card {
+      background: var(--cso-surface, #ffffff);
+      border: 1px solid var(--cso-border, #d8e0e8);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .clause-card:hover {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    }
+    .clause-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .clause-badge-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .clause-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(15, 169, 104, 0.12);
+      color: #0fa968;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .clause-cat {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    .clause-cat.ip {
+      background: rgba(14, 165, 233, 0.1);
+      color: #0284c7;
+      border-color: rgba(14, 165, 233, 0.2);
+    }
+    .clause-cat.fair {
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    .clause-cat.dmca {
+      background: rgba(245, 158, 11, 0.1);
+      color: #d97706;
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+    .clause-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--cso-text, #0f172a);
+      margin: 0;
+    }
+    .clause-body {
+      color: var(--cso-muted, #475569);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      margin: 0;
+      white-space: pre-line;
+    }
+
+    .fair-use-card {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-top: 32px;
+      color: #92400e;
+    }
+    .fair-use-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      color: #78350f;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .fair-use-card p {
+      margin: 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: #92400e;
+    }
+
+    @media (max-width: 640px) {
+      .copyright-hero {
+        padding: 24px 20px;
+      }
+      .officer-card {
+        padding: 20px 16px;
+      }
+    }

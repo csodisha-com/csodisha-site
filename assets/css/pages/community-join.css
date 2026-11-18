@@ -1,0 +1,115 @@
+/* v152: extracted from inline <style> (CSP style-src 'self'); theme tokens: --cso-bg/surface/text/muted/border/hero-* */
+/* CSO registration form — isolated styles */
+.cso-join-main {
+  max-width: 850px;
+  margin: 35px auto;
+  padding: 0 18px 45px;
+}
+.cso-join-main .panel {
+  background: var(--cso-surface);
+  color: var(--cso-text);
+  border: 1px solid var(--cso-border);
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 8px 30px #00000012;
+}
+.cso-join-main h1 {
+  font-size: clamp(25px,4vw,34px);
+  margin: 0 0 8px;
+}
+.cso-join-main .intro {
+  color: var(--cso-muted);
+  margin: 0 0 23px;
+}
+.cso-join-main .grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 17px;
+}
+.cso-join-main .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 17px;
+}
+.cso-join-main .field label {
+  font-weight: 650;
+}
+.cso-join-main input:not([type="checkbox"]),
+.cso-join-main select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--cso-border);
+  border-radius: 9px;
+  background: var(--cso-surface);
+  color: var(--cso-text);
+  font: inherit;
+}
+.cso-join-main fieldset {
+  border: 1px solid var(--cso-border);
+  border-radius: 12px;
+  padding: 15px;
+  margin: 0 0 20px;
+}
+.cso-join-main legend {
+  font-weight: 700;
+  padding: 0 7px;
+}
+.cso-join-main .options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.cso-join-main .check {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+}
+.cso-join-main .check input {
+  width: auto;
+  margin-top: 4px;
+  accent-color: #16754e;
+}
+.cso-join-main .note {
+  background: var(--cso-bg);
+  border: 1px solid var(--cso-border);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 15px 0;
+}
+.cso-join-main .actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.cso-join-main .actions button,
+.cso-join-main .actions .back {
+  padding: 12px 18px;
+  border-radius: 9px;
+  font: inherit;
+}
+.cso-join-main .actions button {
+  background: #176a4b;
+  color: white;
+  border: 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cso-join-main .actions .back {
+  background: var(--cso-bg);
+  color: var(--cso-text);
+  border: 1px solid var(--cso-border);
+}
+.cso-join-main #status {
+  min-height: 20px;
+  margin: 12px 0 0;
+}
+@media(max-width:600px) {
+  .cso-join-main { margin: 16px auto; }
+  .cso-join-main .panel { padding: 19px; }
+  .cso-join-main .grid,
+  .cso-join-main .options {
+    grid-template-columns: 1fr;
+  }
+}

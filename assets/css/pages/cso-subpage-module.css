@@ -1,0 +1,10 @@
+/* v152: extracted from inline <style> (CSP style-src 'self'); theme tokens: --cso-bg/surface/text/muted/border/hero-* */
+.cso-legal-main{max-width:1000px;margin:28px auto 50px;padding:0 18px}
+.cso-legal-intro,.cso-legal-card{background:var(--cso-surface,#fff);border:1px solid var(--cso-border,#d8e0e8);border-radius:14px;padding:24px}
+.cso-legal-intro h1{font-size:clamp(26px,4vw,36px);margin:0 0 12px}
+.cso-legal-intro p,.cso-legal-card p{line-height:1.8}
+.cso-legal-card{margin-top:16px}
+.cso-legal-card h2{font-size:21px;margin:0 0 10px}
+.cso-legal-card p{margin:0}
+.cso-legal-note{font-size:14px;opacity:.85}
+@media(max-width:600px){.cso-legal-intro,.cso-legal-card{padding:18px}}

@@ -1,0 +1,216 @@
+/* v152: extracted from inline <style> (CSP style-src 'self'); theme tokens: --cso-bg/surface/text/muted/border/hero-* */
+.cso-job-page {
+  width: min(1120px, calc(100% - 32px));
+  margin: 28px auto 65px;
+}
+.cso-job-page__intro {
+  margin-bottom: 24px;
+}
+.cso-job-page__intro h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+}
+.cso-job-page__intro p {
+  max-width: 760px;
+  line-height: 1.7;
+}
+.cso-job-page__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0 25px;
+}
+.cso-job-page__links a {
+  display: inline-block;
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: #1749a2;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+.cso-job-page__links a:last-child {
+  background: transparent;
+  color: inherit;
+  border: 1px solid #64748b;
+}
+.cso-job-page__links a:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+
+#cso-job-finder {
+  margin: 24px 0;
+  padding: 24px;
+  border: 1px solid rgba(120,150,190,.35);
+  border-radius: 16px;
+  background: rgba(100,145,205,.07);
+  color: inherit;
+}
+#cso-job-finder * { box-sizing: border-box; }
+#cso-job-finder .jof-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 22px;
+}
+#cso-job-finder .jof-icon {
+  font-size: 28px;
+  background: rgba(100,145,205,.15);
+  padding: 12px;
+  border-radius: 13px;
+}
+#cso-job-finder h2,
+#cso-job-finder h3,
+#cso-job-finder h4 { margin-top: 0; }
+#cso-job-finder .jof-heading p {
+  margin: 8px 0 0;
+  line-height: 1.6;
+}
+#cso-job-finder .jof-grid {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 14px;
+}
+#cso-job-finder .jof-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  font-weight: 650;
+}
+#cso-job-finder select {
+  width: 100%;
+  min-height: 45px;
+  padding: 10px;
+  border: 1px solid #8296b5;
+  border-radius: 9px;
+  background: #fff;
+  color: #182536;
+  font: inherit;
+}
+#cso-job-finder .jof-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0 0;
+}
+#cso-job-finder button {
+  padding: 12px 18px;
+  border-radius: 9px;
+  border: 1px solid #2563eb;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+#jof-explore { background: #2563eb; color: #fff; }
+#jof-reset { background: transparent; color: inherit; }
+#cso-job-finder button:focus-visible,
+#cso-job-finder select:focus-visible,
+#cso-job-finder a:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+#cso-job-finder .jof-results {
+  margin-top: 25px;
+  padding-top: 23px;
+  border-top: 1px solid rgba(120,150,190,.35);
+}
+#cso-job-finder .jof-results[hidden] { display: none !important; }
+#cso-job-finder .jof-cards {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 13px;
+  margin: 19px 0 26px;
+}
+#cso-job-finder .jof-card {
+  padding: 18px;
+  border: 1px solid rgba(120,150,190,.4);
+  border-radius: 12px;
+  background: rgba(100,145,205,.08);
+}
+#cso-job-finder .jof-card small {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 800;
+  color: #60a5fa;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+#cso-job-finder .jof-card h4 { margin-bottom: 10px; }
+#cso-job-finder .jof-card p,
+#cso-job-finder .jof-results li { line-height: 1.7; }
+#cso-job-finder .jof-disclaimer {
+  margin-top: 20px;
+  padding: 12px;
+  border-left: 3px solid #e9a23b;
+  background: rgba(233,162,59,.09);
+  line-height: 1.6;
+}
+#cso-job-finder .jof-resources { margin-top: 22px; }
+#cso-job-finder .jof-resources a { color: #60a5fa; }
+@media (max-width: 850px) {
+  #cso-job-finder .jof-grid,
+  #cso-job-finder .jof-cards { grid-template-columns: 1fr; }
+}
+@media (max-width: 550px) {
+  #cso-job-finder { padding: 16px; }
+  #cso-job-finder .jof-heading { gap: 10px; }
+}
+
+/* CSO Job Plan actions v2 */
+#cso-job-finder .jof-plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 20px;
+}
+#cso-job-finder #jof-print {
+  background: #2563eb;
+  color: #fff;
+}
+#cso-job-finder #jof-copy {
+  background: transparent;
+  color: inherit;
+}
+#cso-job-finder #jof-action-status {
+  font-size: .9rem;
+  line-height: 1.5;
+}
+
+#jof-matched-resources {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(120,140,170,.35);
+}
+#jof-matched-resources[hidden] { display: none !important; }
+#jof-matched-resources h3 { margin-bottom: 10px; }
+.jof-resource-group { margin-top: 24px; }
+.jof-resource-group h4 { margin-bottom: 12px; }
+.jof-resource-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,250px),1fr));
+  gap: 12px;
+}
+.jof-resource-card {
+  padding: 16px;
+  border: 1px solid rgba(120,140,170,.35);
+  border-radius: 12px;
+  background: rgba(120,140,170,.07);
+  overflow-wrap: anywhere;
+}
+.jof-resource-card h5 {
+  font-size: 1rem;
+  margin: 0 0 9px;
+}
+.jof-resource-card p {
+  line-height: 1.6;
+  margin: 8px 0;
+}
+.jof-resource-card a {
+  display: inline-block;
+  margin-top: 8px;
+  font-weight: 700;
+}
+.jof-resource-meta { font-size: .88rem; opacity: .85; }
