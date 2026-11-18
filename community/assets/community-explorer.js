@@ -64,7 +64,7 @@
     if (!overview || !Array.isArray(overview.domains)) return;
     if (rail) {
       clear(rail);
-      rail.appendChild(el('a', { class: 'cso-comm-nav-link is-active', href: '/community/' }, [
+      rail.appendChild(el('a', { class: 'cso-comm-nav-link is-active', href: '/community/', 'data-domain': '' }, [
         el('span', { class: 'cso-comm-nav-num', text: 'All' }),
         el('span', { class: 'cso-comm-rail-label', text: 'Overview' }),
         el('span', { class: 'cso-comm-nav-count', text: String(overview.domains.length) })
@@ -89,7 +89,7 @@
       var href = d.publicPath || ('/community/' + encodeURIComponent(d.slug) + '/');
       var icon = icons[d.slug] || '•';
       if (rail) {
-        rail.appendChild(el('a', { class: 'cso-comm-nav-link', href: href }, [
+        rail.appendChild(el('a', { class: 'cso-comm-nav-link', href: href, 'data-domain': d.slug }, [
           el('span', { class: 'cso-comm-nav-num', text: icon }),
           el('span', { class: 'cso-comm-rail-label', text: d.title }),
           el('span', { class: 'cso-comm-nav-count', text: String(d.folder_count || 0) })
@@ -277,6 +277,121 @@
         loadItems(false);
       });
     }
+
+
+    /* v144 top directory search bar + section context pill */
+    var topSearch = document.getElementById('community-topbar-search');
+    var topClear = document.getElementById('community-topbar-clear');
+    var topToggle = document.getElementById('community-topbar-toggle');
+    var ctxPill = document.getElementById('community-context-pill');
+    var mainSearch = document.getElementById('community-search');
+    var topTimer = null;
+
+    function setContext(label) {
+      if (ctxPill) ctxPill.textContent = '⌂ ' + (label || 'Overview');
+    }
+    function highlightMatches(q) {
+      var needle = String(q || '').toLowerCase();
+      document.querySelectorAll('.cso-comm-domain-card, .cso-comm-nav-link').forEach(function (n) {
+        var hit = needle && (n.textContent || '').toLowerCase().indexOf(needle) !== -1;
+        n.classList.toggle('is-search-match', Boolean(hit) && n.classList.contains('cso-comm-domain-card'));
+        n.classList.toggle('is-search-dim', Boolean(needle) && !hit && n.classList.contains('cso-comm-domain-card'));
+      });
+    }
+    function applyTopSearch(scroll) {
+      var q = topSearch ? topSearch.value.trim() : '';
+      if (topClear) topClear.hidden = !q;
+      state.q = q;
+      state.page = 1;
+      if (mainSearch) mainSearch.value = q;
+      highlightMatches(q);
+      setContext(q ? 'Search: ' + q : (activeLabel || 'Overview'));
+      loadItems(false);
+      if (scroll) {
+        var g = document.getElementById('community-items-grid');
+        if (g && g.scrollIntoView) g.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+    var activeLabel = '';
+    if (topSearch) {
+      topSearch.addEventListener('input', function () {
+        clearTimeout(topTimer);
+        if (topClear) topClear.hidden = !topSearch.value;
+        topTimer = setTimeout(function () { applyTopSearch(false); }, 220);
+      });
+      topSearch.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); clearTimeout(topTimer); applyTopSearch(true); }
+        else if (e.key === 'Escape') { topSearch.value = ''; clearTimeout(topTimer); applyTopSearch(false); }
+      });
+    }
+    if (topClear) {
+      topClear.addEventListener('click', function () {
+        if (topSearch) { topSearch.value = ''; topSearch.focus(); }
+        applyTopSearch(false);
+      });
+    }
+    if (mainSearch) {
+      mainSearch.addEventListener('input', function () {
+        if (topSearch) topSearch.value = mainSearch.value;
+        if (topClear) topClear.hidden = !mainSearch.value;
+      });
+    }
+    if (topToggle && shell) {
+      topToggle.addEventListener('click', function () {
+        if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
+          shell.classList.add('is-mobile-open');
+          topToggle.setAttribute('aria-expanded', 'true');
+        } else {
+          var collapsed = shell.classList.toggle('is-collapsed');
+          topToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+          if (railToggle) railToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        }
+      });
+    }
+    var topReset = document.getElementById('community-reset');
+    if (topReset) {
+      topReset.addEventListener('click', function () {
+        activeLabel = '';
+        if (topSearch) topSearch.value = '';
+        if (topClear) topClear.hidden = true;
+        highlightMatches('');
+        setContext('Overview');
+      });
+    }
+    var railNavEl = document.getElementById('community-rail-nav');
+    if (railNavEl) {
+      railNavEl.addEventListener('click', function (e) {
+        var a = e.target.closest ? e.target.closest('a.cso-comm-nav-link') : null;
+        if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+        var slug = a.getAttribute('data-domain');
+        var labelEl = a.querySelector('.cso-comm-rail-label');
+        if (slug === null) return;
+        e.preventDefault();
+        railNavEl.querySelectorAll('a.cso-comm-nav-link').forEach(function (n) { n.classList.toggle('is-active', n === a); });
+        activeLabel = slug ? (labelEl ? labelEl.textContent : '') : '';
+        state.domain = slug;
+        state.q = '';
+        state.page = 1;
+        if (topSearch) topSearch.value = '';
+        if (topClear) topClear.hidden = true;
+        if (mainSearch) mainSearch.value = '';
+        highlightMatches('');
+        setContext(activeLabel || 'Overview');
+        loadItems(false);
+        shell && shell.classList.remove('is-mobile-open');
+        var g = document.getElementById('community-items-grid');
+        if (slug && g && g.scrollIntoView) g.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    document.querySelectorAll('.cso-comm-pill').forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        var lbl = pill.getAttribute('data-domain') ? pill.textContent : '';
+        activeLabel = lbl;
+        if (topSearch) topSearch.value = pill.getAttribute('data-q') || '';
+        if (topClear) topClear.hidden = !(topSearch && topSearch.value);
+        setContext(lbl || 'Overview');
+      });
+    });
 
     var ovRes = await fetch('/api/public/community-directory/overview');
     if (ovRes.ok) {

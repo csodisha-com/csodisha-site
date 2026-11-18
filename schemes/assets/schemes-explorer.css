@@ -114,3 +114,22 @@ a:hover{text-decoration:underline}
   body{background:#fff}
   .cso-schemes-panel{border:none;padding:0}
 }
+
+
+/* v144 Top sticky directory search bar (theme-bound) */
+.cso-dir-topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;margin:-20px -24px 18px;padding:10px 24px;background:var(--cso-surface);border-bottom:1px solid var(--cso-border);color:var(--cso-text)}
+.cso-dir-menu-toggle{flex-shrink:0;width:40px;height:40px;border-radius:10px;border:1px solid var(--cso-border);background:var(--cso-surface-alt, var(--cso-surface));color:var(--cso-text);font-size:1.05rem;cursor:pointer}
+.cso-dir-menu-toggle:hover,.cso-dir-menu-toggle:focus-visible{border-color:var(--cso-primary);outline:none;box-shadow:0 0 0 3px var(--cso-highlight-ring, rgba(27,67,50,.22))}
+.cso-dir-search{position:relative;flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-radius:12px;border:1px solid var(--cso-border);background:var(--cso-bg);color:var(--cso-text)}
+.cso-dir-search:focus-within{border-color:var(--cso-primary);box-shadow:0 0 0 3px var(--cso-highlight-ring, rgba(27,67,50,.22))}
+.cso-dir-search-icon{color:var(--cso-muted);font-size:1.1rem}
+.cso-dir-search-input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--cso-text);font:inherit;font-size:.95rem}
+.cso-dir-search-input::placeholder{color:var(--cso-muted);opacity:1}
+.cso-dir-clear{flex-shrink:0;border:0;background:transparent;color:var(--cso-muted);font-size:1.25rem;line-height:1;cursor:pointer;padding:0 4px}
+.cso-dir-clear:hover{color:var(--cso-text)}
+.cso-dir-clear[hidden]{display:none}
+.cso-dir-context-pill{flex-shrink:0;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:8px 14px;border-radius:999px;border:1px solid var(--cso-border);background:var(--cso-highlight-bg, var(--cso-surface-alt));color:var(--cso-highlight-fg, var(--cso-primary));font-size:.88rem;font-weight:700;text-decoration:none}
+.cso-dir-context-pill:hover{text-decoration:none;border-color:var(--cso-primary)}
+.is-search-match{outline:2px solid var(--cso-primary);box-shadow:0 0 0 4px var(--cso-highlight-ring, rgba(27,67,50,.22))}
+.is-search-dim{opacity:.45}
+@media (max-width:900px){.cso-dir-topbar{margin:-20px -14px 14px;padding:8px 14px}.cso-dir-context-pill{max-width:130px}}

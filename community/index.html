@@ -9,8 +9,8 @@
   <link rel="canonical" href="https://csodisha.com/community/">
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/style.css?v=20261116c">
-  <link rel="stylesheet" href="/community/assets/community-explorer.css?v=20261115g">
-  <script src="/community/assets/community-explorer.js?v=20261115g" defer></script>
+  <link rel="stylesheet" href="/community/assets/community-explorer.css?v=20261118v144">
+  <script src="/community/assets/community-explorer.js?v=20261118v144" defer></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -61,10 +61,15 @@
     </aside>
 
     <main class="cso-comm-main">
-      <div class="cso-comm-mobile-bar">
-        <button id="community-mobile-open" type="button" class="cso-comm-btn">☰ Directory Sections</button>
-        <a class="cso-comm-btn" href="/">Home</a>
-      </div>
+      <header class="cso-dir-topbar" id="community-topbar" role="search">
+        <button type="button" class="cso-dir-menu-toggle" id="community-topbar-toggle" aria-controls="community-shell" aria-expanded="true" aria-label="Toggle directory sidebar" title="Collapse / Expand Sidebar"><span aria-hidden="true">☰</span></button>
+        <div class="cso-dir-search">
+          <span class="cso-dir-search-icon" aria-hidden="true">⌕</span>
+          <input id="community-topbar-search" class="cso-dir-search-input" type="search" autocomplete="off" placeholder="Search communities, districts, mentorship, SHGs, charters..." aria-label="Search Community directory">
+          <button id="community-topbar-clear" class="cso-dir-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button>
+        </div>
+        <a class="cso-dir-context-pill" id="community-context-pill" href="/community/" aria-live="polite" aria-label="Community Explorer active section">⌂ Overview</a>
+      </header>
 
       <section class="cso-comm-hero">
         <div class="cso-comm-hero-top">
