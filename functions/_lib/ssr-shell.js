@@ -1,4 +1,4 @@
-/* v153: canonical homepage shell for every server-rendered (SSR) page. Zero inline <style>/<script>/style="". */
+/* v154: canonical homepage shell for every server-rendered (SSR) page. Zero inline <style>/<script>/style="". */
 
 export const CSO_SHELL_HEAD_LINKS = [
   '<link rel="stylesheet" href="/assets/style.css">',
@@ -92,11 +92,22 @@ export function renderKicker(crumbs, rootLabel = 'CS Odisha') {
   const parts = [`<a href="/">${escShell(rootLabel)}</a>`].concat(
     trail.map((b) => (b.url ? `<a href="${escShell(b.url)}">${escShell(b.label)}</a>` : `<span>${escShell(b.label)}</span>`))
   );
-  return `<nav class="cso-detail-kicker" aria-label="Breadcrumb">${parts.join('<span class="cso-detail-kicker-sep" aria-hidden="true">›</span>')}</nav>`;
+  return `<div class="cso-detail-kicker" role="navigation" aria-label="Breadcrumb">${parts.join('<span class="cso-detail-kicker-sep" aria-hidden="true">›</span>')}</div>`;
+}
+
+function decodeHtmlEntities(str) {
+  return String(str ?? '')
+    .replace(/&amp;/g, '&')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ');
 }
 
 function plainText(markup) {
-  return String(markup).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  return decodeHtmlEntities(String(markup).replace(/<[^>]*>/g, '')).replace(/\s+/g, ' ').trim();
 }
 
 function sectionLabel(text) {
@@ -138,7 +149,7 @@ export function decorateMain(html, { backHref = '/', backLabel = '← Back to Ex
   });
 
   const jump = pills.length
-    ? `<nav class="cso-dir-jump" aria-label="Jump to section">${pills.map((p) => `<a class="cso-dir-jump-pill" href="#${escShell(p.id)}">${escShell(p.label)}</a>`).join('')}</nav>`
+    ? `<div class="cso-dir-jump" role="navigation" aria-label="Jump to section">${pills.map((p) => `<a class="cso-dir-jump-pill" href="#${escShell(p.id)}">${escShell(p.label)}</a>`).join('')}</div>`
     : '';
   const bar = `<header class="cso-dir-topbar cso-dir-topbar--detail" id="cso-detail-topbar" role="navigation" aria-label="Page context">` +
     `<a class="cso-dir-back" href="${escShell(backHref)}">${escShell(backLabel)}</a>${jump}` +
