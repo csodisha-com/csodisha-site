@@ -1605,9 +1605,7 @@
     initManualScoreLogger();
     initWorkspaceTools();
 
-    ['bp-profile-logout-btn', 'bp-topbar-logout-btn'].forEach(id => {
-      document.getElementById(id)?.addEventListener('click', performSignOut);
-    });
+    document.getElementById('bp-topbar-logout-btn')?.addEventListener('click', performSignOut);
     document.getElementById('cso-open-goal-modal-btn')?.addEventListener('click', openGoalModal);
     document.getElementById('btn-open-goals-settings')?.addEventListener('click', openGoalModal);
     document.getElementById('cso-goal-modal-close')?.addEventListener('click', () => { document.getElementById('cso-goal-modal').hidden = true; });

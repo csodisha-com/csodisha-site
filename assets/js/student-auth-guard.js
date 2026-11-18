@@ -2,7 +2,7 @@
   'use strict';
 
   try {
-    var savedTheme = localStorage.getItem('cso_student_theme');
+    var savedTheme = localStorage.getItem('cso_portal_theme');
     var theme = (savedTheme === 'obsidian-mint' || savedTheme === 'alabaster-cobalt')
       ? savedTheme
       : 'alabaster-cobalt';

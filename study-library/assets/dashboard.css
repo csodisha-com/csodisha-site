@@ -4196,3 +4196,35 @@ body {
   min-height: 40px !important;
 }
 
+/* v149: Cross-Explorer Parity (Compact Breadcrumb Pill & Single-Row Filter Chips) */
+.cso-sl-hero-banner .breadcrumb,
+.cso-sl-pub-hero .breadcrumb,
+#breadcrumb.breadcrumb {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+  padding: 5px 14px !important;
+  min-height: 30px !important;
+  max-height: 34px !important;
+  border-radius: 999px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+}
+
+.study-type-pills {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.study-type-pill,
+.study-goal-btn {
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  padding: 6px 12px !important;
+  white-space: nowrap !important;
+}
+
+

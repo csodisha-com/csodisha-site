@@ -29,12 +29,12 @@ a:hover{text-decoration:underline}
 .cso-comm-hero-actions{display:flex;gap:8px;flex-wrap:wrap}
 .cso-comm-action-pill{border:1px solid var(--cso-hero-pill-border, var(--cso-border));background:var(--cso-hero-pill-bg, #FFFFFF);color:var(--cso-hero-pill-fg, var(--cso-text));border-radius:999px;padding:5px 11px;font-size:.78rem;font-weight:600;cursor:pointer;text-decoration:none}
 .cso-comm-action-pill:hover{background:var(--cso-hero-pill-active-bg, var(--cso-primary));border-color:var(--cso-hero-pill-active-bg, var(--cso-primary));color:var(--cso-hero-pill-active-fg, var(--cso-primary-fg));text-decoration:none}
-.cso-comm-crumb{font-size:.82rem;color:var(--cso-hero-text, #374151);margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap}
-.cso-comm-crumb a{color:var(--cso-hero-title, #1B4332)}
+.cso-comm-crumb{display:inline-flex;align-items:center;gap:6px;flex-wrap:nowrap;padding:5px 14px;min-height:30px;max-height:34px;border-radius:999px;font-size:13px;font-weight:600;line-height:1.2;color:var(--cso-hero-sub, #374151);margin-bottom:8px}
+.cso-comm-crumb a{color:var(--cso-hero-title, #111827)}
 .cso-comm-hero h1{margin:0 0 8px;font-size:clamp(26px,2.2vw,28px);font-weight:800;letter-spacing:-0.015em;line-height:1.25;color:var(--cso-hero-title, #111827)}
 .cso-comm-hero-sub{margin:0 0 14px;color:var(--cso-hero-sub, #374151);font-size:15px;line-height:1.55;font-weight:500}
-.cso-comm-quick-pills{display:flex;gap:8px;flex-wrap:wrap}
-.cso-comm-pill{border:1px solid var(--cso-hero-pill-border, var(--cso-border));background:var(--cso-hero-pill-bg, #FFFFFF);color:var(--cso-hero-pill-fg, var(--cso-text));border-radius:999px;padding:6px 12px;font-size:.82rem;font-weight:600;cursor:pointer}
+.cso-comm-quick-pills{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.cso-comm-pill{border:1px solid var(--cso-hero-pill-border, var(--cso-border));background:var(--cso-hero-pill-bg, #FFFFFF);color:var(--cso-hero-pill-fg, var(--cso-text));border-radius:999px;padding:6px 12px;font-size:13.5px;font-weight:600;white-space:nowrap;cursor:pointer}
 .cso-comm-pill:hover,.cso-comm-pill.is-active{background:var(--cso-hero-pill-active-bg, var(--cso-primary));border-color:var(--cso-hero-pill-active-bg, var(--cso-primary));color:var(--cso-hero-pill-active-fg, var(--cso-primary-fg))}
 
 .cso-comm-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}

@@ -36,11 +36,14 @@ a { color: var(--forest); }
 }
 .cso-about-shell.is-collapsed { grid-template-columns: 68px minmax(0, 1fr); }
 
+.about-sidebar,
 .cso-about-rail {
   position: sticky;
-  top: 0;
-  height: 100vh;
+  top: 106px;
+  align-self: flex-start;
+  max-height: calc(100vh - 106px);
   overflow-y: auto;
+  scrollbar-width: thin;
   background: #ffffff;
   border-right: 1px solid #e5e0d8;
   padding: 14px 12px;
@@ -179,11 +182,12 @@ nav.cso-about-nav {
 }
 .cso-about-drawer-backdrop.is-open { display: block; }
 
+.about-hero,
 .cso-about-hero {
   background: linear-gradient(135deg, #14532d 0%, #166534 55%, #15803d 100%);
   color: #ffffff;
   border-radius: 18px;
-  padding: 26px 26px 22px;
+  padding: 24px 28px;
   box-shadow: var(--shadow);
   margin-bottom: 20px;
 }
@@ -193,7 +197,7 @@ nav.cso-about-nav {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .cso-about-crumb {
   font-size: 0.78rem;
@@ -203,7 +207,7 @@ nav.cso-about-nav {
   color: #dcfce7;
 }
 .cso-about-crumb a { color: #ffffff; text-decoration: none; }
-.cso-about-hero-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cso-about-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .cso-about-action-pill {
   background: rgba(255, 255, 255, 0.14);
   color: #ffffff;

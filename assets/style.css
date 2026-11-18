@@ -8803,4 +8803,46 @@ nav .w,
   font-size: 14.5px !important;
 }
 
+/* ==========================================================================
+   v149: Prevent * Saved 0 Clipping in Main Nav & Footer Map Bottom Padding
+   ========================================================================== */
+#cso-main-navbar,
+.main-nav,
+.site-header__nav {
+  padding: 6px 16px !important;
+  gap: 4px !important;
+  overflow: visible !important;
+}
+
+#cso-main-navbar .w,
+.main-nav .w,
+.site-header__nav .w,
+#navw,
+.cso-nav-items,
+#cso-nav-items {
+  gap: 4px !important;
+}
+
+.main-nav > a,
+.site-header__nav > a,
+.cso-nav-items > a,
+.cso-nav-home,
+.main-nav .cso-nav-parent,
+.site-header__nav .cso-nav-parent,
+.cso-nav-items .cso-nav-parent {
+  padding: 0 11px !important;
+}
+
+.nav-saved,
+.cso-nav-saved-pill {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+  margin-left: auto !important;
+}
+
+.cso-footer-zone3 {
+  padding-bottom: 28px !important;
+}
+
+
 
