@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" role="img" aria-labelledby="nep-title nep-desc">
+  <title id="nep-title">NEP 2020 Foundational Stage and NIPUN Odisha FLN Pillars</title>
+  <desc id="nep-desc">Diagram showing the 5+3+3+4 NEP 2020 Foundational Stage (Ages 3-8: Balvatika 1-3 and Class 1-2) and the four NIPUN Odisha FLN Pillars: Oral Language, Reading Fluency, Writing, and Foundational Numeracy.</desc>
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#ECFDF5"/>
+    </linearGradient>
+    <linearGradient id="hdrGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#165B33"/>
+      <stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="460" rx="18" fill="url(#bgGrad)" stroke="#CBD5E1" stroke-width="2"/>
+  <rect x="24" y="20" width="912" height="62" rx="12" fill="url(#hdrGrad)"/>
+  <text x="480" y="47" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700">NEP 2020 Foundational Stage (5+3+3+4) &amp; NIPUN Odisha FLN Framework</text>
+  <text x="480" y="69" text-anchor="middle" fill="#D1FAE5" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600">Ages 3–8 Years · Anganwadi / Balvatika (3 yrs) + Class 1–2 (2 yrs) → Class 3 Lakshya</text>
+
+  <!-- Stage Pathway -->
+  <rect x="28" y="102" width="212" height="106" rx="12" fill="#FFFFFF" stroke="#165B33" stroke-width="1.5"/>
+  <text x="134" y="126" text-anchor="middle" fill="#165B33" font-family="system-ui, sans-serif" font-size="13" font-weight="700">BALVATIKA 1–3 (AGES 3–6)</text>
+  <text x="134" y="148" text-anchor="middle" fill="#1E293B" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Anganwadi / Pre-School</text>
+  <text x="134" y="168" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">Play-based Jaadui Pitara</text>
+  <text x="134" y="186" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">ଅଙ୍ଗନବାଡ଼ି ଓ ବାଲବାଟିକା</text>
+
+  <path d="M244 155 L264 155" stroke="#0F766E" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <rect x="268" y="102" width="212" height="106" rx="12" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.5"/>
+  <text x="374" y="126" text-anchor="middle" fill="#0F766E" font-family="system-ui, sans-serif" font-size="13" font-weight="700">VIDYA PRAVESH (3 MONTHS)</text>
+  <text x="374" y="148" text-anchor="middle" fill="#1E293B" font-family="system-ui, sans-serif" font-size="13" font-weight="600">School Readiness Bridge</text>
+  <text x="374" y="168" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">Class 1 Entry Module</text>
+  <text x="374" y="186" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">ବିଦ୍ୟା ପ୍ରବେଶ ମଡ୍ୟୁଲ୍</text>
+
+  <path d="M484 155 L504 155" stroke="#0F766E" stroke-width="2.5"/>
+
+  <rect x="508" y="102" width="206" height="106" rx="12" fill="#FFFFFF" stroke="#0369A1" stroke-width="1.5"/>
+  <text x="611" y="126" text-anchor="middle" fill="#0369A1" font-family="system-ui, sans-serif" font-size="13" font-weight="700">CLASS 1 &amp; 2 (AGES 6–8)</text>
+  <text x="611" y="148" text-anchor="middle" fill="#1E293B" font-family="system-ui, sans-serif" font-size="13" font-weight="600">OSEPA Foundational Core</text>
+  <text x="611" y="168" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">Odia, English, Ganita</text>
+  <text x="611" y="186" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">ମୌଳିକ ସାକ୍ଷରତା ଓ ସଂଖ୍ୟାଜ୍ଞାନ</text>
+
+  <path d="M718 155 L738 155" stroke="#0F766E" stroke-width="2.5"/>
+
+  <rect x="742" y="102" width="190" height="106" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5"/>
+  <text x="837" y="126" text-anchor="middle" fill="#B45309" font-family="system-ui, sans-serif" font-size="13" font-weight="700">NIPUN LAKSHYA (CLASS 3)</text>
+  <text x="837" y="148" text-anchor="middle" fill="#1E293B" font-family="system-ui, sans-serif" font-size="13" font-weight="600">60+ WPM Reading</text>
+  <text x="837" y="168" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">999 Numbers &amp; Operations</text>
+  <text x="837" y="186" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">ନିପୁଣ ଓଡ଼ିଶା ଲକ୍ଷ୍ୟ</text>
+
+  <!-- 4 FLN Pillars -->
+  <text x="480" y="242" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="15" font-weight="700">Four Core Pillars of NIPUN Odisha Foundational Literacy &amp; Numeracy (FLN)</text>
+
+  <rect x="28" y="260" width="214" height="132" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <rect x="28" y="260" width="214" height="8" rx="4" fill="#165B33"/>
+  <text x="135" y="292" text-anchor="middle" fill="#165B33" font-family="system-ui, sans-serif" font-size="14" font-weight="700">1. Oral Language (କଥନ)</text>
+  <text x="135" y="316" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Mother-tongue Odia / MLE</text>
+  <text x="135" y="336" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Storytelling &amp; conversation</text>
+  <text x="135" y="356" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Phonological awareness</text>
+
+  <rect x="258" y="260" width="214" height="132" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <rect x="258" y="260" width="214" height="8" rx="4" fill="#0F766E"/>
+  <text x="365" y="292" text-anchor="middle" fill="#0F766E" font-family="system-ui, sans-serif" font-size="14" font-weight="700">2. Reading Fluency (ପଠନ)</text>
+  <text x="365" y="316" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Odia Varnamala &amp; Matras</text>
+  <text x="365" y="336" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">45–60 words/min with meaning</text>
+  <text x="365" y="356" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Kalika &amp; Khelaghar readers</text>
+
+  <rect x="488" y="260" width="214" height="132" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <rect x="488" y="260" width="214" height="8" rx="4" fill="#0369A1"/>
+  <text x="595" y="292" text-anchor="middle" fill="#0369A1" font-family="system-ui, sans-serif" font-size="14" font-weight="700">3. Writing (ଲିଖନ)</text>
+  <text x="595" y="316" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Fine-motor &amp; letter formation</text>
+  <text x="595" y="336" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Simple sentences &amp; expression</text>
+  <text x="595" y="356" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Holistic Progress Card (HPC)</text>
+
+  <rect x="718" y="260" width="214" height="132" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <rect x="718" y="260" width="214" height="8" rx="4" fill="#B45309"/>
+  <text x="825" y="292" text-anchor="middle" fill="#B45309" font-family="system-ui, sans-serif" font-size="14" font-weight="700">4. Numeracy (ଗଣିତ)</text>
+  <text x="825" y="316" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Pre-number &amp; place value (999)</text>
+  <text x="825" y="336" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Addition, subtraction &amp; shapes</text>
+  <text x="825" y="356" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Daily life measurement</text>
+
+  <text x="480" y="430" text-anchor="middle" fill="#64748B" font-family="system-ui, sans-serif" font-size="12">Common Sense Odisha (csodisha.com) · Free Open-Access Study Diagram · OSEPA &amp; SCERT Odisha Aligned</text>
+</svg>

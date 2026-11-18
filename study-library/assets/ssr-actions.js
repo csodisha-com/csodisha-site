@@ -76,5 +76,15 @@
         }
       });
     }
+    // 3. Self-Test Mode toggle for Practice MCQs (100% CSP compliant)
+    var selfTestBtn = document.querySelector('.cso-sl-selftest-toggle');
+    var mcqList = document.querySelector('.cso-sl-mcq-list');
+    if (selfTestBtn && mcqList) {
+      selfTestBtn.addEventListener('click', function () {
+        var hidden = mcqList.classList.toggle('is-selftest');
+        selfTestBtn.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+        selfTestBtn.textContent = hidden ? 'Show Answers & Explanations' : 'Hide Answers (Self-Test Mode)';
+      });
+    }
   });
 })();

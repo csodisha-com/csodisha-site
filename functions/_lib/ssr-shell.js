@@ -121,6 +121,7 @@ function plainText(markup) {
 
 function sectionLabel(text) {
   const t = text.toLowerCase();
+  if (t.includes('related study guides')) return 'Related Guides';
   if (t.includes('categories')) return 'Categories';
   if (t.includes('summary')) return 'Summary';
   if (t.includes('document')) return 'Documents';

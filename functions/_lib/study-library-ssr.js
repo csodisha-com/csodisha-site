@@ -3,6 +3,7 @@ import {
   resolvePublicStudyItem,
 } from './study-library-studio.js';
 import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs, cleanTopicTitle } from './ssr-shell.js';
+import { EARLY_CHILDHOOD_SHOWCASE_COUNT, renderEarlyChildhoodShowcaseHtml } from './study-early-childhood-pack.js';
 
 const CANONICAL_ORIGIN = 'https://csodisha.com';
 
@@ -226,16 +227,12 @@ function renderDirectoryPage(resolved, url) {
     })),
   };
 
-  const breadcrumbHtml = [
-    '<a href="/study-library/">Study Library</a>',
-    ...breadcrumb.map((b, idx) => {
-      const isLast = idx === breadcrumb.length - 1;
-      if (isLast) {
-        return `<span class="cso-sl-pub-crumb-current" aria-current="page">${escHtml(b.name)}</span>`;
-      }
-      return `<a href="/study-library/${escHtml(b.slug_path)}/">${escHtml(b.name)}</a>`;
-    }),
-  ].join('<span class="cso-sl-pub-crumb-sep" aria-hidden="true">/</span>');
+  const isEarlyChildhood = domain_slug === 'early-childhood';
+  const showcaseHtml = isEarlyChildhood ? renderEarlyChildhoodShowcaseHtml(folder.slug, cleanTopicTitle(folder.name)) : '';
+  const kickerHtml = renderKicker([
+    { label: 'Study Library', url: '/study-library/' },
+    ...breadcrumb.map((b) => ({ label: b.name, url: `/study-library/${b.slug_path}/` }))
+  ]);
 
   const subDirsHtml = children.length > 0
     ? `<section class="cso-sl-pub-section" aria-labelledby="subdirs-heading">
@@ -336,7 +333,7 @@ function renderDirectoryPage(resolved, url) {
           }).join('\n')}
         </div>
       </section>`
-    : (children.length === 0 || activeType || activeLang)
+    : (!isEarlyChildhood && (children.length === 0 || activeType || activeLang))
       ? `<section class="cso-sl-pub-empty-card">
           ${(activeType || activeLang) ? filterBarHtml : ''}
           <h2>${(activeType || activeLang) ? 'No Matching Resources for Selected Filter' : 'No Published Resources Yet in This Topic'}</h2>
@@ -354,13 +351,19 @@ function renderDirectoryPage(resolved, url) {
   const siblingsHtml = siblingFolders.length > 0
     ? `<section class="cso-sl-pub-section" aria-labelledby="siblings-heading">
         <div class="cso-sl-pub-section-head">
-          <h2 id="siblings-heading">Related Sibling Directories</h2>
+          <h2 id="siblings-heading">Related Study Guides &amp; Textbooks</h2>
         </div>
         <div class="cso-sl-pub-sibling-chips">
           ${siblingFolders.slice(0, 12).map((sib) => `<a class="cso-sl-pub-sibling-chip" href="/study-library/${escHtml(sib.slug_path)}/">${escHtml(sib.name)}</a>`).join('')}
         </div>
       </section>`
     : '';
+
+  const statsResourceLabel = isEarlyChildhood
+    ? `<strong>${Math.max(Number(folder.total_item_count || 0), EARLY_CHILDHOOD_SHOWCASE_COUNT)}</strong> Curated Guides · Official Portals &amp; ODF/PDF Packs`
+    : (Number(folder.total_item_count || 0) > 0
+      ? `<strong>${folder.total_item_count}</strong> Total Published Resources`
+      : 'Curated Topic Guide');
 
   const html = `${buildHead({
     title: pageTitle,
@@ -371,11 +374,8 @@ function renderDirectoryPage(resolved, url) {
 <body class="cso-sl-pub-body">
   ${buildHeader()}
   <main class="cso-sl-pub-main">
-    <nav class="cso-sl-pub-breadcrumbs" aria-label="Breadcrumb">
-      ${breadcrumbHtml}
-    </nav>
-
     <section class="cso-sl-pub-hero">
+      ${kickerHtml}
       <div class="cso-sl-pub-hero-meta">
         <span class="cso-sl-pub-badge">${escHtml(cleanTopicTitle(domain_title))}</span>
         ${folder.featured_badge ? `<span class="cso-sl-pub-badge-featured">${escHtml(folder.featured_badge)}</span>` : ''}
@@ -387,12 +387,13 @@ function renderDirectoryPage(resolved, url) {
       ${folderIntroOr ? `<p class="cso-sl-pub-hero-desc cso-sl-pub-title-or">${escHtml(folderIntroOr)}</p>` : ''}
       <div class="cso-sl-pub-stats-row">
         <span class="cso-sl-pub-stat"><strong>${children.length}</strong> Categories</span>
-        <span class="cso-sl-pub-stat"><strong>${folder.total_item_count}</strong> Total Published Resources</span>
+        <span class="cso-sl-pub-stat">${statsResourceLabel}</span>
         ${parentFolder ? `<a class="cso-sl-pub-stat-link" href="/study-library/${escHtml(parentFolder.slug_path)}/">↑ Parent: ${escHtml(cleanTopicTitle(parentFolder.name))}</a>` : ''}
         <button type="button" class="cso-sl-pub-btn-secondary cso-sl-pub-offline-btn">Save for Offline</button>
       </div>
     </section>
 
+    ${showcaseHtml}
     ${subDirsHtml}
     ${resourcesHtml}
     ${siblingsHtml}
@@ -466,14 +467,12 @@ function renderItemPage(resolved) {
 <body class="cso-sl-pub-body">
   ${buildHeader()}
   <main class="cso-sl-pub-main">
-    <nav class="cso-sl-pub-breadcrumbs" aria-label="Breadcrumb">
-      <a href="/study-library/">Study Library</a>
-      ${item.folder_path ? `<span class="cso-sl-pub-crumb-sep" aria-hidden="true">/</span><a href="/study-library/${escHtml(item.folder_path)}/">${escHtml(domain_title)}</a>` : ''}
-      <span class="cso-sl-pub-crumb-sep" aria-hidden="true">/</span>
-      <span class="cso-sl-pub-crumb-current" aria-current="page">${escHtml(item.title)}</span>
-    </nav>
-
     <article class="cso-sl-pub-reader">
+      ${renderKicker([
+        { label: 'Study Library', url: '/study-library/' },
+        ...(item.folder_path ? [{ label: domain_title, url: `/study-library/${item.folder_path}/` }] : []),
+        { label: item.title, url: '' }
+      ])}
       <div class="cso-sl-pub-resource-meta">
         <span class="cso-sl-pub-badge">${escHtml((item.resource_type || 'resource').toUpperCase())}</span>
         ${item.board_or_exam ? `<span class="cso-sl-pub-badge-soft">${escHtml(item.board_or_exam)}</span>` : ''}
@@ -589,7 +588,27 @@ export async function handlePublicStudyLibraryRoute(request, env, url) {
   const type = url.searchParams.get('type') || '';
   const lang = url.searchParams.get('lang') || '';
   const q = url.searchParams.get('q') || '';
-  const resolvedDir = await resolvePublicStudyDirectory(env, segments, { type, lang, q });
+  let resolvedDir = await resolvePublicStudyDirectory(env, segments, { type, lang, q });
+  if (!resolvedDir && (segments[0] === 'early-childhood-primary-education' || segments[0] === 'early-childhood') && segments.length > 1) {
+    const rootDir = await resolvePublicStudyDirectory(env, [segments[0]], { type, lang, q });
+    if (rootDir) {
+      const lastSeg = segments[segments.length - 1];
+      const prettyName = lastSeg.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+      resolvedDir = {
+        ...rootDir,
+        folder: {
+          ...rootDir.folder,
+          name: prettyName,
+          slug: lastSeg,
+          slug_path: segments.join('/'),
+        },
+        breadcrumb: [
+          ...rootDir.breadcrumb,
+          { name: prettyName, slug: lastSeg, slug_path: segments.join('/') }
+        ]
+      };
+    }
+  }
   if (!resolvedDir) {
     return renderNotFoundPage(pathname);
   }

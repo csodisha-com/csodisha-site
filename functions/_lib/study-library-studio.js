@@ -5,6 +5,7 @@
 // - Module #4: Competitive Exams & Teacher Education (competitive-teacher)
 import { HttpError, json, readJson, validationError } from './http.js';
 import { ensureLiveOdishaDirectoryContentSeeded } from './odisha-directory-seed.js';
+import { EARLY_CHILDHOOD_SEED_ITEMS } from './study-early-childhood-pack.js';
 import { audit } from './rbac.js';
 import { cleanStr, slugify, SLUG_RE, likeEscape } from './validate.js';
 
@@ -228,6 +229,9 @@ const SEED_TREE = [
   { id: 'slf_ec_osepa', domain: 'early-childhood', parent: null, depth: 1, name: 'Class 1–5 Textbooks (OSEPA)', slug: 'class-1-5-osepa', sort: 2 },
   { id: 'slf_ec_c1_3', domain: 'early-childhood', parent: 'slf_ec_osepa', depth: 2, name: 'Class 1–3', slug: 'class-1-3', sort: 1 },
   { id: 'slf_ec_c4_5', domain: 'early-childhood', parent: 'slf_ec_osepa', depth: 2, name: 'Class 4–5', slug: 'class-4-5', sort: 2 },
+  { id: 'slf_ec_playgroup', domain: 'early-childhood', parent: null, depth: 1, name: 'Early Childhood, Playgroup & Kindergarten', slug: 'early-childhood-playgroup-kindergarten', sort: 3 },
+  { id: 'slf_ec_primary_1_5', domain: 'early-childhood', parent: null, depth: 1, name: 'Foundational Learning & Primary School — Classes 1–5', slug: 'foundational-learning-primary-classes-1-5', sort: 4 },
+  { id: 'slf_ec_teacher_notes', domain: 'early-childhood', parent: null, depth: 1, name: 'ECCE & Primary Teacher Notes (OTET / JT)', slug: 'ecce-primary-teacher-notes', sort: 5 },
 
   // Module #2: school-higher-sec
   { id: 'slf_sh_bse', domain: 'school-higher-sec', parent: null, depth: 1, name: 'Class 9–10 HSC (BSE Odisha)', slug: 'class-9-10-hsc-bse', sort: 1 },
@@ -574,7 +578,7 @@ export async function ensureStudyLibraryStudioSchema(db) {
     `SELECT domain_slug, COUNT(*) AS n FROM study_library_folders GROUP BY domain_slug`
   ).all();
   const seededDomains = new Set((domainCountsRes.results || []).filter(r => Number(r.n) > 0).map(r => r.domain_slug));
-  const missingSeeds = SEED_TREE.filter(s => !seededDomains.has(s.domain));
+  const missingSeeds = SEED_TREE.filter(s => !seededDomains.has(s.domain) || s.domain === 'early-childhood');
   if (missingSeeds.length > 0) {
     const nowIso = new Date().toISOString();
     const seedSql = `INSERT OR IGNORE INTO study_library_folders (
@@ -585,6 +589,23 @@ export async function ensureStudyLibraryStudioSchema(db) {
       missingSeeds.map(s => db.prepare(seedSql).bind(s.id, s.domain, s.parent, s.depth, s.name, s.slug, s.sort, nowIso, nowIso))
     );
   }
+  const nowEcIso = new Date().toISOString();
+  const ecItemSql = `INSERT OR IGNORE INTO study_library_items (
+    id, domain_slug, folder_id, folder_path, title, slug, resource_type,
+    board_or_exam, subject_tag, language_parity, summary, body_html,
+    pdf_url, pdf_size_bytes, cover_image_url, links_json, tags_json,
+    seo_title, seo_description, is_featured, status,
+    created_by, updated_by, created_at, updated_at
+  ) VALUES (?, 'early-childhood', ?, 'Early Childhood & Primary Education', ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, '[]', '[]', ?, ?, ?, 'published', 'system', 'system', ?, ?)`;
+  await runBatch(
+    db,
+    EARLY_CHILDHOOD_SEED_ITEMS.map((it) => db.prepare(ecItemSql).bind(
+      it.id, it.folder_id, it.title, it.slug, it.resource_type,
+      it.board_or_exam, it.subject_tag, it.language_parity, it.summary, it.summary,
+      it.pdf_url, it.cover_image_url, it.title, it.summary, it.is_featured,
+      nowEcIso, nowEcIso
+    ))
+  );
   await ensureLiveOdishaDirectoryContentSeeded(db);
   _ensuredDbs.add(db);
 }
