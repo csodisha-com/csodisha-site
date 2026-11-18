@@ -2905,3 +2905,52 @@ html[data-theme="lime"] .cso-nav-folder-btn:hover {
   border-color: #093824;
   color: #093824;
 }
+
+/* v158 Admin Studio mobile overhaul */
+.cso-user-admin-label,
+.cso-drawer-close { display: none; }
+.cso-kpi-card { padding-bottom: 18px; }
+.cso-kpi-card .cso-spark { margin-bottom: 4px; display: block; }
+@media (max-width: 900px) {
+  .cso-sidebar { top: 0; height: 100%; z-index: 60; padding-top: 52px; }
+  .cso-drawer-backdrop { z-index: 55; }
+  .cso-drawer-close {
+    display: inline-flex; align-items: center; justify-content: center;
+    position: absolute; top: 4px; right: 8px; z-index: 2;
+    min-width: 44px; min-height: 44px; font-size: 28px; line-height: 1;
+    border-radius: 10px; border: 1px solid var(--studio-border);
+    background: var(--studio-card); color: var(--studio-text); cursor: pointer;
+  }
+  #sidebarToggleBtn { display: none; }
+  .cso-workspace table,
+  .cso-main table { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .cso-table-wrap, .cso-mod-table-wrap, .cso-gov-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+}
+@media (max-width: 640px) {
+  .cso-topbar { gap: 6px; padding-inline: 8px; }
+  .cso-topbar-left, .cso-topbar-right { gap: 6px; min-width: 0; }
+  .cso-brand-title-row { display: block; }
+  .cso-brand-name { display: none; }
+  .cso-brand-text { display: block; }
+  .cso-brand-sub { display: none; }
+  .cso-theme-menu-wrap { display: none; }
+  .cso-user-pill { padding-left: 0; border-left: 0; }
+  .cso-user-avatar, .cso-user-meta { display: none; }
+  .cso-user-admin-label {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 44px; padding: 0 12px; border-radius: 10px;
+    border: 1px solid var(--studio-border); background: var(--studio-card);
+    color: var(--studio-text); font-size: 13px; font-weight: 700; white-space: nowrap;
+  }
+  .cso-form-grid { grid-template-columns: 1fr; }
+  .cso-form-grid input, .cso-form-grid select, .cso-form-grid textarea,
+  .cso-workspace input, .cso-workspace select, .cso-workspace textarea {
+    width: 100%; max-width: 100%; font-size: 16px; min-height: 44px;
+  }
+  .cso-form-grid button, .cso-workspace .cso-btn { min-height: 44px; }
+  .cso-kpi-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 400px) {
+  .cso-signout-btn { display: none; }
+  .cso-kpi-grid-4 { grid-template-columns: 1fr; }
+}

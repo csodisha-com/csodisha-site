@@ -211,7 +211,7 @@
         modBtn.appendChild(el('span', 'cso-nav-mod-tag' + (isLiveRoute ? ' is-live' : ''), isLiveRoute ? 'D1' : 'CMS'));
         modBtn.addEventListener('click', function () {
           selectModule(folder.id, mod.id);
-          if (window.innerWidth < 900) closeMobileDrawer();
+          if (window.innerWidth <= 900) closeMobileDrawer();
         });
         modList.appendChild(modBtn);
       });
@@ -282,7 +282,7 @@
       if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = folder.title;
       if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = mod.title;
       if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = mod.title;
-      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = mod.id;
+      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = folder.title || 'Studio';
     }
 
     renderNavigationTree();
@@ -321,7 +321,7 @@
     if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = meta[0];
     if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = meta[1];
     if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = meta[1];
-    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = meta[2];
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = meta[0];
 
     var pill = el('span', 'cso-live-pill', '● Live · D1 / R2');
     dom.moduleHeaderActions.appendChild(pill);
@@ -329,7 +329,7 @@
     var host = el('div', 'cms-embed');
     dom.workspaceRoot.appendChild(host);
     window.CSOCms.mount(host, targetRoute, meta[3]);
-    if (window.innerWidth < 900) closeMobileDrawer();
+    if (window.innerWidth <= 900) closeMobileDrawer();
   }
 
   function closeCreateDropdown() {
@@ -506,6 +506,8 @@
       });
     }
     if (dom.mobileDrawerBackdrop) dom.mobileDrawerBackdrop.addEventListener('click', closeMobileDrawer);
+    var drawerCloseBtn = document.getElementById('sidebarCloseBtn');
+    if (drawerCloseBtn) drawerCloseBtn.addEventListener('click', closeMobileDrawer);
     if (dom.btnModalClose) dom.btnModalClose.addEventListener('click', closeModal);
   }
 

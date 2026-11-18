@@ -2248,3 +2248,63 @@ body.cso-student-dashboard-page {
 .bp-bottom-nav-btn { font-size: 12px; }
 .bp-mobile-bottom-nav button,
 .bp-mobile-bottom-nav a { font-size: 12px; }
+
+/* v158 Mobile overhaul: Candidate Hub header flow, touch targets, stacked cards (360px-768px) */
+@media (max-width: 768px) {
+  .bp-topbar {
+    position: relative;
+    top: auto;
+    z-index: 1;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    gap: 10px;
+    overflow: visible;
+  }
+  .bp-topbar-left { flex: 1 1 100%; min-width: 0; }
+  .bp-topbar-actions {
+    position: relative;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    margin-left: 0;
+    gap: 8px;
+    overflow: visible;
+  }
+  .bp-topbar-actions .bp-search-trigger,
+  .bp-topbar-actions .cso-hub-theme-anchor { display: none; }
+  .bp-page-header h1 { font-size: 17px; line-height: 1.25; overflow-wrap: anywhere; }
+  .bp-mobile-menu-btn,
+  .bp-icon-action-btn,
+  .bp-topbar-user,
+  .bp-nav-item,
+  .bp-bottom-nav-btn,
+  .cso-pill-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .bp-content { padding: 16px 16px calc(78px + env(safe-area-inset-bottom)); overflow-x: hidden; }
+  .bp-panel, .cso-hero-bento > * { padding: 16px; }
+  .cso-hero-bento,
+  .bp-bento-grid,
+  .cso-goal-tiers { grid-template-columns: 1fr; }
+  .cso-readiness-ring { margin-inline: auto; max-width: 100%; }
+  .cso-metric-pills,
+  .cso-focus-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cso-metric-pill { flex: 1 1 calc(50% - 8px); min-width: 0; }
+  .cso-countdown-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .cso-countdown-grid > * { min-width: 0; overflow-wrap: anywhere; }
+  .cso-pill-btn { flex: 1 1 100%; justify-content: center; white-space: normal; }
+}
+@media (max-width: 430px) {
+  .cso-metric-pill { flex-basis: 100%; }
+  .bp-topbar-user .bp-user-meta { display: none; }
+}
+@media (max-width: 768px) {
+  html[data-theme="dark"] .bp-topbar,
+  html[data-theme="reading"] .bp-topbar,
+  html[data-theme="utkal-bharat"] .bp-topbar,
+  html[data-theme="system"] .bp-topbar {
+    background: var(--cso-surface);
+    color: var(--cso-ink);
+    border-bottom-color: var(--cso-border);
+  }
+}
