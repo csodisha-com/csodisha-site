@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 380" role="img" aria-labelledby="fln-title fln-desc">
+  <title id="fln-title">NIPUN Odisha FLN Lakshya Targets — Balvatika to Class 3</title>
+  <desc id="fln-desc">Progression chart showing Reading Fluency and Numeracy benchmarks from Balvatika through Class 3 under NIPUN Odisha.</desc>
+  <rect width="960" height="380" rx="18" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
+  <rect x="24" y="20" width="912" height="54" rx="12" fill="#0F766E"/>
+  <text x="480" y="53" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, sans-serif" font-size="18" font-weight="700">NIPUN Odisha FLN Lakshya Progression Chart (Balvatika → Class 3)</text>
+
+  <rect x="28" y="96" width="212" height="232" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="134" y="126" text-anchor="middle" fill="#165B33" font-family="system-ui, sans-serif" font-size="15" font-weight="700">Balvatika (Ages 3–6)</text>
+  <text x="134" y="156" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Literacy (ସାକ୍ଷରତା)</text>
+  <text x="134" y="178" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">Recognises 2+ letters &amp; sounds</text>
+  <text x="134" y="216" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Numeracy (ସଂଖ୍ୟାଜ୍ଞାନ)</text>
+  <text x="134" y="238" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">Counts objects up to 10</text>
+  <text x="134" y="260" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">Sorts by size &amp; colour</text>
+
+  <rect x="258" y="96" width="212" height="232" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="364" y="126" text-anchor="middle" fill="#0F766E" font-family="system-ui, sans-serif" font-size="15" font-weight="700">Class 1 (Ages 6–7)</text>
+  <text x="364" y="156" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Literacy (ସାକ୍ଷରତା)</text>
+  <text x="364" y="178" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">Reads 4–5 simple words/sentences</text>
+  <text x="364" y="216" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Numeracy (ସଂଖ୍ୟାଜ୍ଞାନ)</text>
+  <text x="364" y="238" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">Reads &amp; writes 1 to 99</text>
+  <text x="364" y="260" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">Simple 1-digit add/subtract</text>
+
+  <rect x="488" y="96" width="212" height="232" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="594" y="126" text-anchor="middle" fill="#0369A1" font-family="system-ui, sans-serif" font-size="15" font-weight="700">Class 2 (Ages 7–8)</text>
+  <text x="594" y="156" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Literacy (ସାକ୍ଷରତା)</text>
+  <text x="594" y="178" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">Reads 45–60 words/min</text>
+  <text x="594" y="216" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Numeracy (ସଂଖ୍ୟାଜ୍ଞାନ)</text>
+  <text x="594" y="238" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">Place value &amp; ops up to 99</text>
+  <text x="594" y="260" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="12">Identifies 2D/3D shapes</text>
+
+  <rect x="718" y="96" width="214" height="232" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5"/>
+  <text x="825" y="126" text-anchor="middle" fill="#B45309" font-family="system-ui, sans-serif" font-size="15" font-weight="700">Class 3 Lakshya (8–9)</text>
+  <text x="825" y="156" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Literacy (ସାକ୍ଷରତା)</text>
+  <text x="825" y="178" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Reads 60+ WPM with meaning</text>
+  <text x="825" y="216" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Numeracy (ସଂଖ୍ୟାଜ୍ଞାନ)</text>
+  <text x="825" y="238" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Numbers &amp; ops up to 999</text>
+  <text x="825" y="260" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="12">Simple multiplication facts</text>
+
+  <text x="480" y="358" text-anchor="middle" fill="#64748B" font-family="system-ui, sans-serif" font-size="12">Common Sense Odisha (csodisha.com) · OSEPA &amp; NIPUN Bharat Mission Benchmarks</text>
+</svg>

@@ -214,6 +214,16 @@ const REQUIRED_ITEM_COLS = [
   ['status', "TEXT DEFAULT 'draft'"],
   ['verified_at', "TEXT DEFAULT ''"],
   ['entity_tags_json', "TEXT DEFAULT '[]'"],
+  ['stage_slug', "TEXT DEFAULT ''"],
+  ['board_slug', "TEXT DEFAULT ''"],
+  ['class_slug', "TEXT DEFAULT ''"],
+  ['books_json', "TEXT DEFAULT '[]'"],
+  ['visuals_json', "TEXT DEFAULT '[]'"],
+  ['odf_url', "TEXT DEFAULT ''"],
+  ['ods_url', "TEXT DEFAULT ''"],
+  ['pdf_print_url', "TEXT DEFAULT ''"],
+  ['bilingual_notes_en', "TEXT DEFAULT ''"],
+  ['bilingual_notes_or', "TEXT DEFAULT ''"],
   ['created_by', 'TEXT'],
   ['updated_by', 'TEXT'],
   ['created_at', 'TEXT'],
@@ -232,6 +242,13 @@ const SEED_TREE = [
   { id: 'slf_ec_playgroup', domain: 'early-childhood', parent: null, depth: 1, name: 'Early Childhood, Playgroup & Kindergarten', slug: 'early-childhood-playgroup-kindergarten', sort: 3 },
   { id: 'slf_ec_primary_1_5', domain: 'early-childhood', parent: null, depth: 1, name: 'Foundational Learning & Primary School — Classes 1–5', slug: 'foundational-learning-primary-classes-1-5', sort: 4 },
   { id: 'slf_ec_teacher_notes', domain: 'early-childhood', parent: null, depth: 1, name: 'ECCE & Primary Teacher Notes (OTET / JT)', slug: 'ecce-primary-teacher-notes', sort: 5 },
+  { id: 'slf_ec_stage_ec', domain: 'early-childhood', parent: null, depth: 1, name: 'Early Childhood Education (Ages 3–6)', slug: 'early-childhood', sort: 6 },
+  { id: 'slf_ec_stage_ec_odisha', domain: 'early-childhood', parent: 'slf_ec_stage_ec', depth: 2, name: 'Odisha State Board (Nua Arunima / SCERT)', slug: 'odisha-board', sort: 1 },
+  { id: 'slf_ec_stage_ec_nursery', domain: 'early-childhood', parent: 'slf_ec_stage_ec_odisha', depth: 3, name: 'Nursery / Balvatika 1', slug: 'nursery', sort: 1 },
+  { id: 'slf_ec_stage_primary', domain: 'early-childhood', parent: null, depth: 1, name: 'Primary Education (Class 1–5)', slug: 'primary-education', sort: 7 },
+  { id: 'slf_ec_stage_pri_odisha', domain: 'early-childhood', parent: 'slf_ec_stage_primary', depth: 2, name: 'Odisha State Board (OSEPA)', slug: 'odisha-board', sort: 1 },
+  { id: 'slf_ec_stage_pri_c1', domain: 'early-childhood', parent: 'slf_ec_stage_pri_odisha', depth: 3, name: 'Class 1 (Ages 6–7)', slug: 'class-1', sort: 1 },
+  { id: 'slf_ec_stage_pedagogy', domain: 'early-childhood', parent: null, depth: 1, name: 'ECCE Pedagogy & Parent/Teacher Guides', slug: 'ecce-pedagogy', sort: 8 },
 
   // Module #2: school-higher-sec
   { id: 'slf_sh_bse', domain: 'school-higher-sec', parent: null, depth: 1, name: 'Class 9–10 HSC (BSE Odisha)', slug: 'class-9-10-hsc-bse', sort: 1 },
@@ -591,16 +608,16 @@ export async function ensureStudyLibraryStudioSchema(db) {
   }
   const nowEcIso = new Date().toISOString();
   const ecItemSql = `INSERT OR IGNORE INTO study_library_items (
-    id, domain_slug, folder_id, folder_path, title, slug, resource_type,
+    id, domain_slug, folder_id, folder_path, stage_slug, board_slug, class_slug, title, slug, resource_type,
     board_or_exam, subject_tag, language_parity, summary, body_html,
-    pdf_url, pdf_size_bytes, cover_image_url, links_json, tags_json,
+    pdf_url, pdf_size_bytes, cover_image_url, odf_url, ods_url, pdf_print_url, links_json, tags_json,
     seo_title, seo_description, is_featured, status,
     created_by, updated_by, created_at, updated_at
-  ) VALUES (?, 'early-childhood', ?, 'Early Childhood & Primary Education', ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, '[]', '[]', ?, ?, ?, 'published', 'system', 'system', ?, ?)`;
+  ) VALUES (?, 'early-childhood', ?, 'Early Childhood & Primary Education', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, '/assets/downloads/study/early-childhood-primary-education-complete-guide.odt', '/assets/downloads/study/nipun-odisha-fln-checklist.ods', '/assets/downloads/study/early-childhood-primary-print-pack.html', '[]', '[]', ?, ?, ?, 'published', 'system', 'system', ?, ?)`;
   await runBatch(
     db,
     EARLY_CHILDHOOD_SEED_ITEMS.map((it) => db.prepare(ecItemSql).bind(
-      it.id, it.folder_id, it.title, it.slug, it.resource_type,
+      it.id, it.folder_id, it.stage_slug || '', it.board_slug || '', it.class_slug || '', it.title, it.slug, it.resource_type,
       it.board_or_exam, it.subject_tag, it.language_parity, it.summary, it.summary,
       it.pdf_url, it.cover_image_url, it.title, it.summary, it.is_featured,
       nowEcIso, nowEcIso
@@ -1084,10 +1101,23 @@ function validateStudyItemInput(body = {}, existing = null) {
   const seo_title = cleanStr(pick('seo_title'), 120) || '';
   const seo_description = cleanStr(pick('seo_description'), 240) || '';
   const is_featured = Boolean(pick('is_featured')) ? 1 : 0;
+  const stage_slug = cleanStr(pick('stage_slug'), 80) || '';
+  const board_slug = cleanStr(pick('board_slug'), 80) || '';
+  const class_slug = cleanStr(pick('class_slug'), 80) || '';
+  const odf_url = validateSafeCtaUrl(pick('odf_url'));
+  const ods_url = validateSafeCtaUrl(pick('ods_url'));
+  const pdf_print_url = validateSafeCtaUrl(pick('pdf_print_url'));
+  const bilingual_notes_en = sanitizeEditorialHtml(pick('bilingual_notes_en') || '', 15000);
+  const bilingual_notes_or = sanitizeEditorialHtml(pick('bilingual_notes_or') || '', 15000);
+  const books_json = typeof pick('books_json') === 'string' ? pick('books_json').slice(0, 15000) : JSON.stringify(Array.isArray(body.books) ? body.books : []);
+  const visuals_json = typeof pick('visuals_json') === 'string' ? pick('visuals_json').slice(0, 15000) : JSON.stringify(Array.isArray(body.visuals) ? body.visuals : []);
 
   return {
     domain_slug,
     folder_id,
+    stage_slug,
+    board_slug,
+    class_slug,
     title,
     slug,
     resource_type,
@@ -1099,6 +1129,13 @@ function validateStudyItemInput(body = {}, existing = null) {
     pdf_url,
     pdf_size_bytes,
     cover_image_url,
+    odf_url,
+    ods_url,
+    pdf_print_url,
+    bilingual_notes_en,
+    bilingual_notes_or,
+    books_json,
+    visuals_json,
     links_json,
     tags_json: JSON.stringify(tagsArr),
     seo_title,
@@ -1122,16 +1159,18 @@ export async function createStudyItem(env, body = {}, actor) {
 
   await env.DB.prepare(
     `INSERT INTO study_library_items (
-       id, domain_slug, folder_id, folder_path, title, slug, resource_type,
+       id, domain_slug, folder_id, folder_path, stage_slug, board_slug, class_slug, title, slug, resource_type,
        board_or_exam, subject_tag, language_parity, summary, body_html,
-       pdf_url, pdf_size_bytes, cover_image_url, links_json, tags_json,
+       pdf_url, pdf_size_bytes, cover_image_url, odf_url, ods_url, pdf_print_url,
+       bilingual_notes_en, bilingual_notes_or, books_json, visuals_json, links_json, tags_json,
        seo_title, seo_description, is_featured, status,
        created_by, updated_by, created_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
-    id, data.domain_slug, data.folder_id, folder_path, data.title, data.slug, data.resource_type,
+    id, data.domain_slug, data.folder_id, folder_path, data.stage_slug, data.board_slug, data.class_slug, data.title, data.slug, data.resource_type,
     data.board_or_exam, data.subject_tag, data.language_parity, data.summary, data.body_html,
-    data.pdf_url, data.pdf_size_bytes, data.cover_image_url, data.links_json, data.tags_json,
+    data.pdf_url, data.pdf_size_bytes, data.cover_image_url, data.odf_url, data.ods_url, data.pdf_print_url,
+    data.bilingual_notes_en, data.bilingual_notes_or, data.books_json, data.visuals_json, data.links_json, data.tags_json,
     data.seo_title, data.seo_description, data.is_featured, data.status,
     actorEmail, actorEmail, nowIso, nowIso
   ).run();
@@ -1166,16 +1205,18 @@ export async function updateStudyItem(env, id, body = {}, actor) {
 
   await env.DB.prepare(
     `UPDATE study_library_items SET
-       domain_slug = ?, folder_id = ?, folder_path = ?, title = ?, slug = ?, resource_type = ?,
+       domain_slug = ?, folder_id = ?, folder_path = ?, stage_slug = ?, board_slug = ?, class_slug = ?, title = ?, slug = ?, resource_type = ?,
        board_or_exam = ?, subject_tag = ?, language_parity = ?, summary = ?, body_html = ?,
-       pdf_url = ?, pdf_size_bytes = ?, cover_image_url = ?, links_json = ?, tags_json = ?,
+       pdf_url = ?, pdf_size_bytes = ?, cover_image_url = ?, odf_url = ?, ods_url = ?, pdf_print_url = ?,
+       bilingual_notes_en = ?, bilingual_notes_or = ?, books_json = ?, visuals_json = ?, links_json = ?, tags_json = ?,
        seo_title = ?, seo_description = ?, is_featured = ?, status = ?,
        updated_by = ?, updated_at = ?
      WHERE id = ?`
   ).bind(
-    data.domain_slug, data.folder_id, folder_path, data.title, data.slug, data.resource_type,
+    data.domain_slug, data.folder_id, folder_path, data.stage_slug, data.board_slug, data.class_slug, data.title, data.slug, data.resource_type,
     data.board_or_exam, data.subject_tag, data.language_parity, data.summary, data.body_html,
-    data.pdf_url, data.pdf_size_bytes, data.cover_image_url, data.links_json, data.tags_json,
+    data.pdf_url, data.pdf_size_bytes, data.cover_image_url, data.odf_url, data.ods_url, data.pdf_print_url,
+    data.bilingual_notes_en, data.bilingual_notes_or, data.books_json, data.visuals_json, data.links_json, data.tags_json,
     data.seo_title, data.seo_description, data.is_featured, data.status,
     actorEmail, nowIso, id
   ).run();

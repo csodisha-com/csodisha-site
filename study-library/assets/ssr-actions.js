@@ -86,5 +86,24 @@
         selfTestBtn.textContent = hidden ? 'Show Answers & Explanations' : 'Hide Answers (Self-Test Mode)';
       });
     }
+    // 4. Subject / Domain filter pills on Class Study Hubs (100% CSP compliant)
+    var filterPills = document.querySelectorAll('.cso-ec-filter-pill');
+    var filterTargets = document.querySelectorAll('[data-ec-domain]');
+    if (filterPills.length && filterTargets.length) {
+      filterPills.forEach(function (pill) {
+        pill.addEventListener('click', function () {
+          var chosen = pill.getAttribute('data-ec-filter') || 'all';
+          filterPills.forEach(function (b) {
+            var active = b === pill;
+            b.classList.toggle('is-active', active);
+            b.setAttribute('aria-pressed', active ? 'true' : 'false');
+          });
+          filterTargets.forEach(function (card) {
+            var dom = card.getAttribute('data-ec-domain') || 'all';
+            card.hidden = chosen !== 'all' && dom !== 'all' && dom !== chosen;
+          });
+        });
+      });
+    }
   });
 })();

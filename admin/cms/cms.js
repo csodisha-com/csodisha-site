@@ -12769,6 +12769,47 @@
 
       var boardInp = el('input', { class: 'input', type: 'text', value: (editing && editing.board_or_exam) || cfg.defaultBoard, placeholder: 'Board / Exam (e.g. ' + cfg.defaultBoard + ')' });
       var subjInp = el('input', { class: 'input', type: 'text', value: (editing && editing.subject_tag) || '', placeholder: cfg.subjPlaceholder || 'Subject (e.g. Odisha Polity, Mathematics)' });
+
+      var STAGE_CLASSES = {
+        'early-childhood': [['playgroup', 'Playgroup'], ['nursery', 'Nursery / Balvatika 1'], ['lkg', 'LKG / Balvatika 2'], ['ukg', 'UKG / Balvatika 3']],
+        'primary-education': [['class-1', 'Class 1'], ['class-2', 'Class 2'], ['class-3', 'Class 3'], ['class-4', 'Class 4'], ['class-5', 'Class 5']],
+        'ecce-pedagogy': [['nipun-odisha-fln', 'NIPUN Odisha & FLN'], ['child-development-teacher-notes', 'OTET / JT / Anganwadi Notes'], ['home-activities-rbsk-health', 'Home Activities & RBSK Health']]
+      };
+      var stageSel = el('select', { class: 'select' }, [
+        el('option', { value: '', text: '— Select Stage —' }),
+        el('option', { value: 'early-childhood', text: '1. Early Childhood (Playgroup–UKG)' }),
+        el('option', { value: 'primary-education', text: '2. Primary Education (Class 1–5)' }),
+        el('option', { value: 'ecce-pedagogy', text: '3. ECCE Pedagogy & Guides' })
+      ]);
+      stageSel.value = (editing && editing.stage_slug) || '';
+      var boardSel = el('select', { class: 'select' }, [
+        el('option', { value: '', text: '— Select Board —' }),
+        el('option', { value: 'odisha-board', text: 'Odisha State Board (OSEPA / SCERT / WCD)' }),
+        el('option', { value: 'cbse', text: 'CBSE (NCERT / Jaadui Pitara)' }),
+        el('option', { value: 'icse', text: 'ICSE (CISCE)' }),
+        el('option', { value: 'montessori-anganwadi', text: 'Montessori & Anganwadi (ICDS)' })
+      ]);
+      boardSel.value = (editing && editing.board_slug) || '';
+      var classSel = el('select', { class: 'select' });
+      function syncClassOptions(selectedVal) {
+        clear(classSel);
+        classSel.appendChild(el('option', { value: '', text: '— Select Class / Topic —' }));
+        var opts = STAGE_CLASSES[stageSel.value] || [].concat(STAGE_CLASSES['early-childhood'], STAGE_CLASSES['primary-education']);
+        opts.forEach(function (pair) { classSel.appendChild(el('option', { value: pair[0], text: pair[1] })); });
+        if (selectedVal) classSel.value = selectedVal;
+      }
+      syncClassOptions((editing && editing.class_slug) || '');
+      stageSel.addEventListener('change', function () { syncClassOptions(''); });
+
+      var odfUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.odf_url) || '', placeholder: '/assets/downloads/study/...guide.odt' });
+      var odsUrlInp = el('input', { class: 'input', type: 'url', value: (editing && editing.ods_url) || '', placeholder: '/assets/downloads/study/...checklist.ods' });
+      var pdfPrintInp = el('input', { class: 'input', type: 'url', value: (editing && editing.pdf_print_url) || '', placeholder: '/assets/downloads/study/...print-pack.html' });
+      var booksTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Books & Reference Books JSON or titles (e.g. [{"title":"Nua Arunima","board":"Odisha Board"}])' });
+      booksTa.value = (editing && editing.books_json) || '[]';
+      var visualsTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Visual Diagrams / Charts JSON (e.g. ["/assets/img/study/nep-nipun-foundational-stage.svg"])' });
+      visualsTa.value = (editing && editing.visuals_json) || '[]';
+      var notesOrTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Bilingual Odia Notes (ଓଡ଼ିଆ ସାରାଂଶ)...' });
+      notesOrTa.value = (editing && editing.bilingual_notes_or) || '';
       var featCb = el('input', { type: 'checkbox' });
       featCb.checked = Boolean(editing && editing.is_featured);
 
@@ -13044,6 +13085,15 @@
             links: linksState.slice(),
             summary: summaryTa.value.trim(),
             body_html: bodyTa.value,
+            stage_slug: stageSel.value,
+            board_slug: boardSel.value,
+            class_slug: classSel.value,
+            odf_url: odfUrlInp.value.trim(),
+            ods_url: odsUrlInp.value.trim(),
+            pdf_print_url: pdfPrintInp.value.trim(),
+            books_json: booksTa.value.trim() || '[]',
+            visuals_json: visualsTa.value.trim() || '[]',
+            bilingual_notes_or: notesOrTa.value.trim(),
             seo_title: seoTitleInp.value.trim(),
             seo_description: seoDescInp.value.trim()
           };
@@ -13078,7 +13128,13 @@
           el('div', { class: 'field' }, [el('label', { text: 'Status' }), statusSelComp]),
           el('div', { class: 'field' }, [el('label', { text: 'Language Parity' }), langSel]),
           el('div', { class: 'field' }, [el('label', { text: 'Board / Exam' }), boardInp]),
-          el('div', { class: 'field' }, [el('label', { text: 'Subject Tag' }), subjInp])
+          el('div', { class: 'field' }, [el('label', { text: 'Subject Tag' }), subjInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Stage (Cascading)' }), stageSel]),
+          el('div', { class: 'field' }, [el('label', { text: 'Board (Cascading)' }), boardSel]),
+          el('div', { class: 'field' }, [el('label', { text: 'Class / Topic (Cascading)' }), classSel]),
+          el('div', { class: 'field' }, [el('label', { text: 'ODF (.odt) Download URL' }), odfUrlInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'ODS (.ods) Checklist URL' }), odsUrlInp]),
+          el('div', { class: 'field' }, [el('label', { text: 'Print / PDF Pack URL' }), pdfPrintInp])
         ]),
         el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Feature in Priority Study Slot')])]),
         el('div', { class: 'field' }, [el('label', { text: 'Interactive Tags' }), el('div', { class: 'cso-cnt-tag-box' }, [tagChipsWrap, tagQuickWrap])]),
@@ -13097,6 +13153,11 @@
         ]),
         el('div', { class: 'field' }, [el('label', { text: 'Summary' }), summaryTa]),
         el('div', { class: 'field' }, [el('label', { text: 'Study Notes / Body' }), bodyTa]),
+        el('div', { class: 'field' }, [el('label', { text: 'Bilingual Notes (ଓଡ଼ିଆ)' }), notesOrTa]),
+        el('div', { class: 'cso-ops-grid-2' }, [
+          el('div', { class: 'field' }, [el('label', { text: 'Books & Reference Books (JSON)' }), booksTa]),
+          el('div', { class: 'field' }, [el('label', { text: 'Visual Diagrams / Charts (JSON)' }), visualsTa])
+        ]),
         el('div', { class: 'cso-ops-grid-2' }, [
           el('div', { class: 'field' }, [el('label', { text: 'SEO Title' }), seoTitleInp]),
           el('div', { class: 'field' }, [el('label', { text: 'SEO Description' }), seoDescInp])
@@ -14047,6 +14108,15 @@
             featured: featCb.checked,
             summary: summaryTa.value.trim(),
             body_html: bodyTa.value,
+            stage_slug: stageSel.value,
+            board_slug: boardSel.value,
+            class_slug: classSel.value,
+            odf_url: odfUrlInp.value.trim(),
+            ods_url: odsUrlInp.value.trim(),
+            pdf_print_url: pdfPrintInp.value.trim(),
+            books_json: booksTa.value.trim() || '[]',
+            visuals_json: visualsTa.value.trim() || '[]',
+            bilingual_notes_or: notesOrTa.value.trim(),
             seo_title: seoTitleInp.value.trim(),
             seo_description: seoDescInp.value.trim()
           };

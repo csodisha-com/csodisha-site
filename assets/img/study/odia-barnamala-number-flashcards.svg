@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" role="img" aria-labelledby="fc-title fc-desc">
+  <title id="fc-title">Odia Barnamala and Bilingual Number Flashcards</title>
+  <desc id="fc-desc">Illustrated bilingual flashcards showing Odia vowels, consonants, and numbers with English pronunciation.</desc>
+  <rect width="960" height="360" rx="18" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
+  <rect x="24" y="20" width="912" height="52" rx="12" fill="#B45309"/>
+  <text x="480" y="52" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, sans-serif" font-size="18" font-weight="700">Odia Barnamala (ଓଡ଼ିଆ ବର୍ଣ୍ଣମାଳା) &amp; Bilingual Number Flashcards</text>
+
+  <rect x="28" y="92" width="212" height="216" rx="14" fill="#FFFFFF" stroke="#165B33" stroke-width="1.5"/>
+  <text x="134" y="122" text-anchor="middle" fill="#165B33" font-family="system-ui, sans-serif" font-size="13" font-weight="700">SWARA BARNA (ସ୍ୱରବର୍ଣ୍ଣ)</text>
+  <text x="134" y="182" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="44" font-weight="700">ଅ · ଆ</text>
+  <text x="134" y="224" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="14" font-weight="600">a (ଅରଖ) · aa (ଆମ୍ବ)</text>
+  <text x="134" y="252" text-anchor="middle" fill="#64748B" font-family="system-ui, sans-serif" font-size="12">ଇ (ଇଟା) · ଈ (ଈଶ୍ୱର)</text>
+
+  <rect x="258" y="92" width="212" height="216" rx="14" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.5"/>
+  <text x="364" y="122" text-anchor="middle" fill="#0F766E" font-family="system-ui, sans-serif" font-size="13" font-weight="700">BYANJANA BARNA (ବ୍ୟଞ୍ଜନ)</text>
+  <text x="364" y="182" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="44" font-weight="700">କ · ଖ</text>
+  <text x="364" y="224" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="14" font-weight="600">ka (କମଳ) · kha (ଖର)</text>
+  <text x="364" y="252" text-anchor="middle" fill="#64748B" font-family="system-ui, sans-serif" font-size="12">ଗ (ଗଛ) · ଘ (ଘର)</text>
+
+  <rect x="488" y="92" width="212" height="216" rx="14" fill="#FFFFFF" stroke="#0369A1" stroke-width="1.5"/>
+  <text x="594" y="122" text-anchor="middle" fill="#0369A1" font-family="system-ui, sans-serif" font-size="13" font-weight="700">ENGLISH PHONICS</text>
+  <text x="594" y="182" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="40" font-weight="700">A a · B b</text>
+  <text x="594" y="224" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="14" font-weight="600">Apple · Ball · Cat</text>
+  <text x="594" y="252" text-anchor="middle" fill="#64748B" font-family="system-ui, sans-serif" font-size="12">Sight words &amp; picture cards</text>
+
+  <rect x="718" y="92" width="214" height="216" rx="14" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5"/>
+  <text x="825" y="122" text-anchor="middle" fill="#B45309" font-family="system-ui, sans-serif" font-size="13" font-weight="700">NUMBERS (ସଂଖ୍ୟା ୧–୧୦)</text>
+  <text x="825" y="182" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-size="40" font-weight="700">୧ · ୨ · ୩</text>
+  <text x="825" y="224" text-anchor="middle" fill="#334155" font-family="system-ui, sans-serif" font-size="14" font-weight="600">1 (ଏକ) · 2 (ଦୁଇ) · 3 (ତିନି)</text>
+  <text x="825" y="252" text-anchor="middle" fill="#64748B" font-family="system-ui, sans-serif" font-size="12">୪ (4) · ୫ (5) · ୧୦ (10)</text>
+
+  <text x="480" y="338" text-anchor="middle" fill="#64748B" font-family="system-ui, sans-serif" font-size="12">Common Sense Odisha (csodisha.com) · Free Printable Classroom Flashcards</text>
+</svg>

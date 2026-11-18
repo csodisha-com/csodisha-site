@@ -3,7 +3,14 @@ import {
   resolvePublicStudyItem,
 } from './study-library-studio.js';
 import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs, cleanTopicTitle } from './ssr-shell.js';
-import { EARLY_CHILDHOOD_SHOWCASE_COUNT, renderEarlyChildhoodShowcaseHtml } from './study-early-childhood-pack.js';
+import {
+  EARLY_CHILDHOOD_SHOWCASE_COUNT,
+  resolveEarlyChildhoodRoute,
+  renderLevel1Html,
+  renderLevel2Html,
+  renderLevel3Html,
+  renderLevel4Html
+} from './study-early-childhood-pack.js';
 
 const CANONICAL_ORIGIN = 'https://csodisha.com';
 
@@ -228,7 +235,7 @@ function renderDirectoryPage(resolved, url) {
   };
 
   const isEarlyChildhood = domain_slug === 'early-childhood';
-  const showcaseHtml = isEarlyChildhood ? renderEarlyChildhoodShowcaseHtml(folder.slug, cleanTopicTitle(folder.name)) : '';
+  const showcaseHtml = '';
   const kickerHtml = renderKicker([
     { label: 'Study Library', url: '/study-library/' },
     ...breadcrumb.map((b) => ({ label: b.name, url: `/study-library/${b.slug_path}/` }))
@@ -585,30 +592,37 @@ export async function handlePublicStudyLibraryRoute(request, env, url) {
     return renderItemPage(resolvedItem);
   }
 
+  const ecRoute = resolveEarlyChildhoodRoute(segments);
+  if (ecRoute) {
+    const kickerHtml = renderKicker(ecRoute.crumbs);
+    const bodyHtml = ecRoute.level === 1
+      ? renderLevel1Html(kickerHtml)
+      : ecRoute.level === 2
+        ? renderLevel2Html(ecRoute, kickerHtml)
+        : ecRoute.level === 3
+          ? renderLevel3Html(ecRoute, kickerHtml)
+          : renderLevel4Html(ecRoute, kickerHtml);
+    const lastCrumb = ecRoute.crumbs[ecRoute.crumbs.length - 1];
+    const pageTitle = `${lastCrumb ? lastCrumb.label : 'Early Childhood & Primary Education'} — CSOdisha Study Library`;
+    const canonicalUrl = `${CANONICAL_ORIGIN}${lastCrumb ? lastCrumb.url : '/study-library/early-childhood-primary-education/'}`;
+    const pageDesc = '4-level structured Odisha & NCERT study hub for Early Childhood (Playgroup–UKG) & Primary Education (Class 1–5): textbooks, visual diagrams, bilingual notes & self-tests.';
+    const html = `${buildHead({ title: pageTitle, description: pageDesc, canonicalUrl })}
+<body class="cso-sl-pub-body">
+  ${buildHeader()}
+  <main class="cso-sl-pub-main">
+    ${bodyHtml}
+    ${renderSuggestBox({ domainSlug: 'early-childhood', folderId: ecRoute.classObj ? ecRoute.classObj.slug : 'early-childhood' })}
+  </main>
+  ${buildFooter()}
+</body>
+</html>`;
+    return htmlResponse(html, 200);
+  }
+
   const type = url.searchParams.get('type') || '';
   const lang = url.searchParams.get('lang') || '';
   const q = url.searchParams.get('q') || '';
-  let resolvedDir = await resolvePublicStudyDirectory(env, segments, { type, lang, q });
-  if (!resolvedDir && (segments[0] === 'early-childhood-primary-education' || segments[0] === 'early-childhood') && segments.length > 1) {
-    const rootDir = await resolvePublicStudyDirectory(env, [segments[0]], { type, lang, q });
-    if (rootDir) {
-      const lastSeg = segments[segments.length - 1];
-      const prettyName = lastSeg.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-      resolvedDir = {
-        ...rootDir,
-        folder: {
-          ...rootDir.folder,
-          name: prettyName,
-          slug: lastSeg,
-          slug_path: segments.join('/'),
-        },
-        breadcrumb: [
-          ...rootDir.breadcrumb,
-          { name: prettyName, slug: lastSeg, slug_path: segments.join('/') }
-        ]
-      };
-    }
-  }
+  const resolvedDir = await resolvePublicStudyDirectory(env, segments, { type, lang, q });
   if (!resolvedDir) {
     return renderNotFoundPage(pathname);
   }
