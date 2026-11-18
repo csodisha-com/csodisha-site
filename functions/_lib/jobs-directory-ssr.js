@@ -2,7 +2,7 @@ import {
   resolvePublicJobsDirectory,
   resolvePublicJobsItem
 } from './jobs-directory-studio.js';
-import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs } from './ssr-shell.js';
+import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs, cleanTopicTitle } from './ssr-shell.js';
 
 const CANONICAL_ORIGIN = 'https://csodisha.com';
 
@@ -133,9 +133,10 @@ function renderNotFoundPage(pathname) {
 
 function renderDirectoryPage(data) {
   const { domain, meta, canonicalPath, breadcrumbs, folder, children, items } = data;
-  const pageTitle = (folder && folder.seo_title) || (folder ? `${folder.title} — ${meta.title} | CSOdisha` : `${meta.title} | Common Sense Odisha`);
-  const pageDesc = (folder && (folder.seo_description || folder.description)) || meta.summary;
-  const heading = folder ? folder.title : meta.title;
+  const cleanMetaTitle = cleanTopicTitle(meta.title);
+  const heading = cleanTopicTitle(folder ? folder.title : meta.title);
+  const pageTitle = cleanTopicTitle((folder && folder.seo_title) || (folder ? `${heading} — ${cleanMetaTitle} | CSOdisha` : `${cleanMetaTitle} | Common Sense Odisha`));
+  const pageDesc = cleanTopicTitle((folder && (folder.seo_description || folder.description)) || meta.summary);
   const headingOr = folder && folder.title_or ? folder.title_or : '';
   const intro = (folder && (folder.intro_html || folder.description_en || folder.description)) || meta.summary;
   const introOr = folder && folder.description_or ? folder.description_or : '';
@@ -154,13 +155,13 @@ function renderDirectoryPage(data) {
 
   const childrenHtml = children.length
     ? `<section class="cso-jobs-panel">
-        <h2>Sub-Directories (${children.length})</h2>
+        <h2>Categories &amp; Focus Areas (${children.length})</h2>
         <div class="cso-jobs-domain-grid">
           ${children.map(ch => `
             <a class="cso-jobs-domain-card" href="${escHtml(ch.public_path)}">
-              <div class="cso-jobs-domain-top"><span>DEPTH ${ch.depth}</span><span>Open →</span></div>
-              <div class="cso-jobs-domain-title">${escHtml(ch.title)}</div>
-              <div class="cso-jobs-domain-desc">${escHtml(ch.description || '')}</div>
+              <div class="cso-jobs-domain-top"><span>Explore →</span></div>
+              <div class="cso-jobs-domain-title">${escHtml(cleanTopicTitle(ch.title))}</div>
+              <div class="cso-jobs-domain-desc">${escHtml(cleanTopicTitle(ch.description || ''))}</div>
             </a>`).join('')}
         </div>
       </section>`
@@ -186,7 +187,7 @@ function renderDirectoryPage(data) {
             </article>`).join('')}
         </div>
       </section>`
-    : `<section class="cso-jobs-panel"><p>No published opportunities in this sub-directory yet. Browse sibling sections or check back soon.</p></section>`;
+    : `<section class="cso-jobs-panel"><p>No published opportunities in this category yet. Browse sibling sections or check back soon.</p></section>`;
 
   const html = `${buildHead({ title: pageTitle, description: pageDesc, canonicalUrl, jsonLdList })}
 <body>

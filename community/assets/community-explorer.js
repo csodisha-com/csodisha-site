@@ -86,23 +86,30 @@
     };
 
     overview.domains.forEach(function (d) {
+      var clean = function (s) {
+        return String(s || '').replace(/^(?:module|track)\s*#?\s*\d+\s*[—–\-:]\s*/i, '').replace(/^directory\s*[—–\-:]\s*/i, '').replace(/^section\s*\d+\s*[·—–\-:]\s*/i, '').trim();
+      };
+      var title = clean(d.title);
       var href = d.publicPath || ('/community/' + encodeURIComponent(d.slug) + '/');
       var icon = icons[d.slug] || '•';
       if (rail) {
         rail.appendChild(el('a', { class: 'cso-comm-nav-link', href: href, 'data-domain': d.slug }, [
           el('span', { class: 'cso-comm-nav-num', text: icon }),
-          el('span', { class: 'cso-comm-rail-label', text: d.title }),
+          el('span', { class: 'cso-comm-rail-label', text: title }),
           el('span', { class: 'cso-comm-nav-count', text: String(d.folder_count || 0) })
         ]));
       }
       if (grid) {
+        var countParts = [];
+        if (d.folder_count > 0) countParts.push(d.folder_count + ' categories');
+        if (d.item_count > 0) countParts.push(d.item_count + ' live');
         grid.appendChild(el('a', { class: 'cso-comm-domain-card', href: href }, [
           el('div', { class: 'cso-comm-domain-top' }, [
             el('span', { text: icon + ' Community' }),
-            el('span', { text: (d.folder_count || 0) + ' dirs · ' + (d.item_count || 0) + ' live' })
-          ]),
-          el('div', { class: 'cso-comm-domain-title', text: d.title }),
-          el('div', { class: 'cso-comm-domain-desc', text: d.summary || '' })
+            countParts.length ? el('span', { text: countParts.join(' · ') }) : null
+          ].filter(Boolean)),
+          el('div', { class: 'cso-comm-domain-title', text: title }),
+          el('div', { class: 'cso-comm-domain-desc', text: clean(d.summary) })
         ]));
       }
     });

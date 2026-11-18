@@ -2,7 +2,7 @@ import {
   resolvePublicSchemesDirectory,
   resolvePublicSchemesItem
 } from './schemes-directory-studio.js';
-import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs } from './ssr-shell.js';
+import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs, cleanTopicTitle } from './ssr-shell.js';
 
 const CANONICAL_ORIGIN = 'https://csodisha.com';
 
@@ -115,29 +115,32 @@ function renderNotFoundPage(pathname) {
 
 function renderDirectoryPage(resolved) {
   const { domain, meta, canonicalPath, breadcrumbs, folder, children, items } = resolved;
-  const pageTitle = folder ? `${folder.name} — ${meta.title} | Common Sense Odisha` : `${meta.title} | Schemes & Benefits | Common Sense Odisha`;
-  const pageDesc = (folder && (folder.seo_description || folder.description)) || meta.description || `Verified ${meta.title} schemes and citizen guides on Common Sense Odisha.`;
+  const cleanMetaTitle = cleanTopicTitle(meta.title);
+  const cleanFolderName = folder ? cleanTopicTitle(folder.name) : '';
+  const pageTitle = folder ? `${cleanFolderName} — ${cleanMetaTitle} | Common Sense Odisha` : `${cleanMetaTitle} | Schemes & Benefits | Common Sense Odisha`;
+  const pageDesc = cleanTopicTitle((folder && (folder.seo_description || folder.description)) || meta.description || `Verified ${cleanMetaTitle} schemes and citizen guides on Common Sense Odisha.`);
 
   const crumbHtml = breadcrumbs
     .map((b, idx) => (idx === breadcrumbs.length - 1
-      ? `<span>${escHtml(b.label)}</span>`
-      : `<a href="${escHtml(b.url)}">${escHtml(b.label)}</a>`))
+      ? `<span>${escHtml(cleanTopicTitle(b.label))}</span>`
+      : `<a href="${escHtml(b.url)}">${escHtml(cleanTopicTitle(b.label))}</a>`))
     .join(' <span>›</span> ');
 
   const childCards = children.length
     ? `<section class="cso-schemes-panel">
-        <h2>Sub-Directories (${children.length})</h2>
+        <h2>Categories &amp; Focus Areas (${children.length})</h2>
         <div class="cso-schemes-domain-grid">
-          ${children.map((ch) => `
+          ${children.map((ch) => {
+            const count = Number(ch.item_count || 0);
+            const desc = cleanTopicTitle(ch.description || ch.seo_description || '');
+            return `
             <a class="cso-schemes-domain-card" href="${escHtml(`${canonicalPath}${encodeURIComponent(ch.slug)}/`)}">
-              <div class="cso-schemes-domain-top">
-                <span>DIRECTORY</span>
-                <span>${Number(ch.item_count || 0)} scheme${Number(ch.item_count || 0) === 1 ? '' : 's'}</span>
-              </div>
-              <div class="cso-schemes-domain-title">${escHtml(ch.name)}</div>
-              <div class="cso-schemes-domain-desc">${escHtml(ch.description || ch.seo_description || '')}</div>
+              ${count > 0 ? `<div class="cso-schemes-domain-top"><span>${count} scheme${count === 1 ? '' : 's'}</span></div>` : ''}
+              <div class="cso-schemes-domain-title">${escHtml(cleanTopicTitle(ch.name))}</div>
+              ${desc ? `<div class="cso-schemes-domain-desc">${escHtml(desc)}</div>` : ''}
             </a>
-          `).join('')}
+          `;
+          }).join('')}
         </div>
       </section>`
     : '';
@@ -163,7 +166,7 @@ function renderDirectoryPage(resolved) {
           `;
         }).join('')}
       </div>`
-    : '<p>No published schemes in this directory yet. Check sub-directories above or submit a scheme suggestion below.</p>';
+    : '<p>No published schemes in this category yet. Check categories above or submit a scheme suggestion below.</p>';
 
   const breadcrumbLd = {
     '@context': 'https://schema.org',
@@ -186,7 +189,7 @@ function renderDirectoryPage(resolved) {
   const bodyHtml = `
     <section class="cso-schemes-hero">
       ${renderKicker(breadcrumbs)}
-      <h1>${escHtml(folder ? folder.name : `Module #${meta.num} — ${meta.title}`)}</h1>
+      <h1>${escHtml(folder ? cleanFolderName : cleanMetaTitle)}</h1>
       <p class="cso-schemes-hero-sub">${escHtml(pageDesc)}</p>
       <div class="cso-schemes-item-actions">
         <a class="cso-schemes-action-pill" href="/schemes/">All 8 Domains</a>

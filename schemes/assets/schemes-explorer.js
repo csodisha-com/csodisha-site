@@ -86,7 +86,10 @@
     };
 
     overview.domains.forEach(function (d) {
-      var title = state.lang === 'or' && d.titleOr ? d.titleOr : d.title;
+      var clean = function (s) {
+        return String(s || '').replace(/^(?:module|track)\s*#?\s*\d+\s*[—–\-:]\s*/i, '').replace(/^directory\s*[—–\-:]\s*/i, '').replace(/^section\s*\d+\s*[·—–\-:]\s*/i, '').trim();
+      };
+      var title = clean(state.lang === 'or' && d.titleOr ? d.titleOr : d.title);
       var href = d.publicPath || ('/schemes/' + encodeURIComponent(d.slug) + '/');
       var icon = icons[d.slug] || '•';
       if (rail) {
@@ -97,13 +100,16 @@
         ]));
       }
       if (grid) {
+        var countParts = [];
+        if (d.folder_count > 0) countParts.push(d.folder_count + ' categories');
+        if (d.item_count > 0) countParts.push(d.item_count + ' entries');
         grid.appendChild(el('a', { class: 'cso-schemes-domain-card', href: href }, [
           el('div', { class: 'cso-schemes-domain-top' }, [
             el('span', { text: icon + ' Category' }),
-            el('span', { text: (d.folder_count || 0) + ' categories · ' + (d.item_count || 0) + ' entries' })
-          ]),
+            countParts.length ? el('span', { text: countParts.join(' · ') }) : null
+          ].filter(Boolean)),
           el('div', { class: 'cso-schemes-domain-title', text: title }),
-          el('div', { class: 'cso-schemes-domain-desc', text: d.summary || '' })
+          el('div', { class: 'cso-schemes-domain-desc', text: clean(d.summary) })
         ]));
       }
     });

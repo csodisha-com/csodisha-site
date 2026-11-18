@@ -2,7 +2,7 @@ import {
   resolvePublicCommunityDirectory,
   resolvePublicCommunityItem
 } from './community-directory-studio.js';
-import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs } from './ssr-shell.js';
+import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs, cleanTopicTitle } from './ssr-shell.js';
 
 const CANONICAL_ORIGIN = 'https://csodisha.com';
 
@@ -115,29 +115,32 @@ function renderNotFoundPage(pathname) {
 
 function renderDirectoryPage(resolved) {
   const { domain, meta, canonicalPath, breadcrumbs, folder, children, items } = resolved;
-  const pageTitle = folder ? `${folder.name_en} — ${meta.title} | Common Sense Odisha` : `${meta.title} | Community Directory | Common Sense Odisha`;
-  const pageDesc = (folder && (folder.seo_description || folder.description_en)) || meta.summary || `Verified ${meta.title} communities and chapters on Common Sense Odisha.`;
+  const cleanMetaTitle = cleanTopicTitle(meta.title);
+  const cleanFolderName = folder ? cleanTopicTitle(folder.name_en) : '';
+  const pageTitle = folder ? `${cleanFolderName} — ${cleanMetaTitle} | Common Sense Odisha` : `${cleanMetaTitle} | Community Directory | Common Sense Odisha`;
+  const pageDesc = cleanTopicTitle((folder && (folder.seo_description || folder.description_en)) || meta.summary || `Verified ${cleanMetaTitle} communities and chapters on Common Sense Odisha.`);
 
   const crumbHtml = breadcrumbs
     .map((b, idx) => (idx === breadcrumbs.length - 1
-      ? `<span>${escHtml(b.label)}</span>`
-      : `<a href="${escHtml(b.url)}">${escHtml(b.label)}</a>`))
+      ? `<span>${escHtml(cleanTopicTitle(b.label))}</span>`
+      : `<a href="${escHtml(b.url)}">${escHtml(cleanTopicTitle(b.label))}</a>`))
     .join(' <span>›</span> ');
 
   const childCards = children.length
     ? `<section class="cso-comm-panel">
-        <h2>Sub-Directories (${children.length})</h2>
+        <h2>Categories &amp; Focus Areas (${children.length})</h2>
         <div class="cso-comm-domain-grid">
-          ${children.map((ch) => `
+          ${children.map((ch) => {
+            const count = Number(ch.item_count || 0);
+            const desc = cleanTopicTitle(ch.description_en || ch.seo_description || '');
+            return `
             <a class="cso-comm-domain-card" href="${escHtml(`${canonicalPath}${encodeURIComponent(ch.slug)}/`)}">
-              <div class="cso-comm-domain-top">
-                <span>DIRECTORY</span>
-                <span>${Number(ch.item_count || 0)} communit${Number(ch.item_count || 0) === 1 ? 'y' : 'ies'}</span>
-              </div>
-              <div class="cso-comm-domain-title">${escHtml(ch.name_en)}</div>
-              <div class="cso-comm-domain-desc">${escHtml(ch.description_en || ch.seo_description || '')}</div>
+              ${count > 0 ? `<div class="cso-comm-domain-top"><span>${count} communit${count === 1 ? 'y' : 'ies'}</span></div>` : ''}
+              <div class="cso-comm-domain-title">${escHtml(cleanTopicTitle(ch.name_en))}</div>
+              ${desc ? `<div class="cso-comm-domain-desc">${escHtml(desc)}</div>` : ''}
             </a>
-          `).join('')}
+          `;
+          }).join('')}
         </div>
       </section>`
     : '';
@@ -163,7 +166,7 @@ function renderDirectoryPage(resolved) {
           `;
         }).join('')}
       </div>`
-    : '<p>No published communities in this directory yet. Check sub-directories above or suggest a verified Odisha chapter below.</p>';
+    : '<p>No published communities in this category yet. Check categories above or suggest a verified Odisha chapter below.</p>';
 
   const breadcrumbLd = {
     '@context': 'https://schema.org',
@@ -186,7 +189,7 @@ function renderDirectoryPage(resolved) {
   const bodyHtml = `
     <section class="cso-comm-hero">
       ${renderKicker(breadcrumbs)}
-      <h1>${escHtml(folder ? folder.name_en : `Module #${meta.num} — ${meta.title}`)}</h1>
+      <h1>${escHtml(folder ? cleanFolderName : cleanMetaTitle)}</h1>
       ${folder && folder.title_or ? `<p class="cso-comm-hero-sub">${escHtml(folder.title_or)}</p>` : ''}
       <p class="cso-comm-hero-sub">${escHtml(pageDesc)}</p>
       <div class="cso-comm-item-actions">

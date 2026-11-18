@@ -2,7 +2,7 @@ import {
   resolvePublicStudyDirectory,
   resolvePublicStudyItem,
 } from './study-library-studio.js';
-import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs } from './ssr-shell.js';
+import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs, cleanTopicTitle } from './ssr-shell.js';
 
 const CANONICAL_ORIGIN = 'https://csodisha.com';
 
@@ -240,26 +240,27 @@ function renderDirectoryPage(resolved, url) {
   const subDirsHtml = children.length > 0
     ? `<section class="cso-sl-pub-section" aria-labelledby="subdirs-heading">
         <div class="cso-sl-pub-section-head">
-          <h2 id="subdirs-heading">Sub-Directories (${children.length})</h2>
-          <span class="cso-sl-pub-muted">Select a sub-directory to browse deeper topics and materials</span>
+          <h2 id="subdirs-heading">Categories &amp; Focus Areas (${children.length})</h2>
+          <span class="cso-sl-pub-muted">Select a category to browse deeper topics and materials</span>
         </div>
         <div class="cso-sl-pub-grid">
           ${children.map((child) => {
             const childUrl = `/study-library/${escHtml(child.slug_path)}/`;
             const countParts = [];
             if (child.child_count > 0) {
-              countParts.push(`${child.child_count} ${child.child_count === 1 ? 'Sub-Directory' : 'Sub-Directories'}`);
+              countParts.push(`${child.child_count} ${child.child_count === 1 ? 'Category' : 'Categories'}`);
             }
             if (child.total_item_count > 0) {
               countParts.push(`${child.total_item_count} ${child.total_item_count === 1 ? 'Resource' : 'Resources'}`);
             }
             const countLabel = countParts.length > 0 ? countParts.join(' · ') : 'Open Topic';
+            const childDesc = cleanTopicTitle(child.description || '');
             return `<a class="cso-sl-pub-dir-card" href="${childUrl}">
               <div class="cso-sl-pub-dir-card-top">
-                <span class="cso-sl-pub-dir-title">${escHtml(child.name)}</span>
+                <span class="cso-sl-pub-dir-title">${escHtml(cleanTopicTitle(child.name))}</span>
                 ${child.title_or ? `<span class="cso-sl-pub-dir-or">${escHtml(child.title_or)}</span>` : ''}
               </div>
-              ${child.description ? `<p class="cso-sl-pub-dir-desc">${escHtml(child.description)}</p>` : ''}
+              ${childDesc ? `<p class="cso-sl-pub-dir-desc">${escHtml(childDesc)}</p>` : ''}
               <div class="cso-sl-pub-dir-meta">
                 <span class="cso-sl-pub-count-pill">${escHtml(countLabel)}</span>
                 <span class="cso-sl-pub-arrow" aria-hidden="true">→</span>
@@ -376,19 +377,18 @@ function renderDirectoryPage(resolved, url) {
 
     <section class="cso-sl-pub-hero">
       <div class="cso-sl-pub-hero-meta">
-        <span class="cso-sl-pub-badge">${escHtml(domain_title)}</span>
-        <span class="cso-sl-pub-badge-soft">Depth ${folder.depth}</span>
+        <span class="cso-sl-pub-badge">${escHtml(cleanTopicTitle(domain_title))}</span>
         ${folder.featured_badge ? `<span class="cso-sl-pub-badge-featured">${escHtml(folder.featured_badge)}</span>` : ''}
         ${verifiedDate ? `<span class="cso-sl-pub-badge-soft">Last Verified: ${escHtml(verifiedDate)}</span>` : ''}
       </div>
-      <h1>${escHtml(folder.name)}</h1>
+      <h1>${escHtml(cleanTopicTitle(folder.name))}</h1>
       ${folder.title_or ? `<p class="cso-sl-pub-title-or">${escHtml(folder.title_or)}</p>` : ''}
       ${folderIntroEn ? `<p class="cso-sl-pub-hero-desc">${escHtml(folderIntroEn)}</p>` : ''}
       ${folderIntroOr ? `<p class="cso-sl-pub-hero-desc cso-sl-pub-title-or">${escHtml(folderIntroOr)}</p>` : ''}
       <div class="cso-sl-pub-stats-row">
-        <span class="cso-sl-pub-stat"><strong>${children.length}</strong> Direct Sub-Directories</span>
+        <span class="cso-sl-pub-stat"><strong>${children.length}</strong> Categories</span>
         <span class="cso-sl-pub-stat"><strong>${folder.total_item_count}</strong> Total Published Resources</span>
-        ${parentFolder ? `<a class="cso-sl-pub-stat-link" href="/study-library/${escHtml(parentFolder.slug_path)}/">↑ Parent: ${escHtml(parentFolder.name)}</a>` : ''}
+        ${parentFolder ? `<a class="cso-sl-pub-stat-link" href="/study-library/${escHtml(parentFolder.slug_path)}/">↑ Parent: ${escHtml(cleanTopicTitle(parentFolder.name))}</a>` : ''}
         <button type="button" class="cso-sl-pub-btn-secondary cso-sl-pub-offline-btn">Save for Offline</button>
       </div>
     </section>

@@ -1,4 +1,4 @@
-/* v154: canonical homepage shell for every server-rendered (SSR) page. Zero inline <style>/<script>/style="". */
+/* v155: canonical homepage shell for every server-rendered (SSR) page. Zero inline <style>/<script>/style="". */
 
 export const CSO_SHELL_HEAD_LINKS = [
   '<link rel="stylesheet" href="/assets/style.css">',
@@ -76,11 +76,20 @@ export function escShell(value) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+/** Strip internal Module #XX / Track #XX / Directory / Section N prefixes for clean public titles. */
+export function cleanTopicTitle(value) {
+  return decodeHtmlEntities(String(value ?? ''))
+    .replace(/^(?:module|track)\s*#?\s*\d+\s*[—–\-:]\s*/i, '')
+    .replace(/^directory\s*[—–\-:]\s*/i, '')
+    .replace(/^section\s*\d+\s*[·—–\-:]\s*/i, '')
+    .trim();
+}
+
 /** Accepts both {label,url} and {title,path|name} crumb shapes; drops empty segments. */
 export function normalizeCrumbs(crumbs) {
   return (Array.isArray(crumbs) ? crumbs : [])
     .map((b) => ({
-      label: String((b && (b.label ?? b.title ?? b.name)) ?? '').trim(),
+      label: cleanTopicTitle((b && (b.label ?? b.title ?? b.name)) ?? ''),
       url: String((b && (b.url ?? b.path)) ?? '').trim()
     }))
     .filter((b) => b.label);
@@ -112,6 +121,7 @@ function plainText(markup) {
 
 function sectionLabel(text) {
   const t = text.toLowerCase();
+  if (t.includes('categories')) return 'Categories';
   if (t.includes('summary')) return 'Summary';
   if (t.includes('document')) return 'Documents';
   if (t.includes('eligib')) return 'Eligibility';
@@ -129,7 +139,7 @@ export function decorateMain(html, { backHref = '/', backLabel = '← Back to Ex
   const rest = mainEnd === -1 ? '' : html.slice(mainEnd);
 
   const h1 = /<h1\b[^>]*>([\s\S]*?)<\/h1>/.exec(body);
-  const title = h1 ? plainText(h1[1]) : '';
+  const title = h1 ? cleanTopicTitle(plainText(h1[1])) : '';
   const pills = [];
   let n = 0;
   body = body.replace(/<h2\b([^>]*)>([\s\S]*?)<\/h2>/g, (m, attrs, inner) => {
