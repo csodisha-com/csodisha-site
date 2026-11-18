@@ -8139,6 +8139,7 @@ select:focus-visible {
 :root[data-cso-theme] .cso-schemes-hero,
 :root[data-cso-theme] .cso-comm-hero,
 :root[data-cso-theme] .cso-jobs-hero,
+:root[data-cso-theme] .cso-about-hero,
 :root[data-cso-theme] .welcome.cso-sl-hero-banner,
 :root[data-cso-theme] .cso-sl-pub-hero,
 :root[data-cso-theme] .hero-banner {
@@ -8151,10 +8152,14 @@ select:focus-visible {
 :root[data-cso-theme] .cso-comm-hero h1,
 :root[data-cso-theme] .cso-jobs-hero h1,
 :root[data-cso-theme] .cso-jobs-hero__title,
+:root[data-cso-theme] .cso-about-hero h1,
 :root[data-cso-theme] .welcome.cso-sl-hero-banner h1,
 :root[data-cso-theme] .cso-sl-pub-hero h1,
 :root[data-cso-theme] .cso-schemes-crumb a,
-:root[data-cso-theme] .cso-comm-crumb a {
+:root[data-cso-theme] .cso-comm-crumb a,
+:root[data-cso-theme] .cso-jc-crumb a,
+:root[data-cso-theme] .cso-sl-crumb a,
+:root[data-cso-theme] .cso-about-crumb a {
   color: var(--cso-hero-title, #111827) !important;
 }
 
@@ -8162,8 +8167,12 @@ select:focus-visible {
 :root[data-cso-theme] .cso-comm-hero-sub,
 :root[data-cso-theme] .cso-jobs-hero-sub,
 :root[data-cso-theme] .cso-jobs-hero__sub,
+:root[data-cso-theme] .cso-about-hero-sub,
 :root[data-cso-theme] .cso-schemes-crumb,
-:root[data-cso-theme] .cso-comm-crumb {
+:root[data-cso-theme] .cso-comm-crumb,
+:root[data-cso-theme] .cso-jc-crumb,
+:root[data-cso-theme] .cso-sl-crumb,
+:root[data-cso-theme] .cso-about-crumb {
   color: var(--cso-hero-sub, #374151) !important;
 }
 :root[data-cso-theme] .cso-schemes-crumb,
@@ -8180,6 +8189,9 @@ select:focus-visible {
 :root[data-cso-theme] .cso-comm-pill,
 :root[data-cso-theme] .cso-jobs-action-pill,
 :root[data-cso-theme] .cso-jobs-pill,
+:root[data-cso-theme] .cso-about-action-pill,
+:root[data-cso-theme] .cso-about-pill,
+:root[data-cso-theme] .cso-sl-action-pill,
 :root[data-cso-theme] .cso-sl-hero-pill,
 :root[data-cso-theme] .welcome.cso-sl-hero-banner .study-hub-pill {
   background: var(--cso-hero-pill-bg) !important;

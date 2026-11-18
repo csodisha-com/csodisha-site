@@ -4227,4 +4227,75 @@ body {
   white-space: nowrap !important;
 }
 
+/* v150: Uniform Hero Card & Top Kicker Row */
+.welcome.cso-sl-hero-banner,
+.study-hero {
+  display: block !important;
+  border-radius: 20px !important;
+  padding: 28px 32px !important;
+  border-left: 1px solid var(--cso-border, #D6CFC2) !important;
+}
+
+.cso-sl-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.cso-sl-crumb {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cso-hero-sub, #374151);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cso-sl-crumb a {
+  color: var(--cso-hero-title, #111827);
+  text-decoration: none;
+}
+
+.cso-sl-crumb a:hover {
+  text-decoration: underline;
+}
+
+.cso-sl-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cso-sl-action-pill {
+  border: 1px solid var(--cso-hero-pill-border, var(--cso-border));
+  background: var(--cso-hero-pill-bg, #FFFFFF);
+  color: var(--cso-hero-pill-fg, var(--cso-text));
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.cso-sl-action-pill:hover {
+  background: var(--cso-hero-pill-active-bg, var(--cso-primary));
+  border-color: var(--cso-hero-pill-active-bg, var(--cso-primary));
+  color: var(--cso-hero-pill-active-fg, var(--cso-primary-fg));
+  text-decoration: none;
+}
+
+.cso-sl-hero-quickjump {
+  gap: 6px !important;
+  align-items: center !important;
+}
+
+
 

@@ -260,6 +260,7 @@
   }
 
   function renderBreadcrumb() {
+    if (!breadcrumb) return;
     breadcrumb.replaceChildren();
 
     function addCrumb(label, action, isCurrent = false) {
@@ -353,6 +354,7 @@
   }
 
   function renderSearchBreadcrumb() {
+    if (!breadcrumb) return;
     breadcrumb.replaceChildren();
 
     const c1 = el('li', 'breadcrumb-item');

@@ -24,12 +24,12 @@ a:hover{text-decoration:underline}
 .cso-schemes-mobile-bar{display:none;align-items:center;justify-content:space-between;margin-bottom:14px}
 .cso-schemes-drawer-backdrop{display:none}
 
-.cso-schemes-hero{background:var(--cso-hero-bg, linear-gradient(135deg,#F4EFE6,#E8DFCE));color:var(--cso-hero-text, #374151);border:1px solid var(--cso-border, #D6CFC2);border-radius:16px;padding:24px 26px;margin-bottom:20px}
+.cso-schemes-hero{background:var(--cso-hero-bg, linear-gradient(135deg,#F4EFE6,#E8DFCE));color:var(--cso-hero-text, #374151);border:1px solid var(--cso-border, #D6CFC2);border-radius:20px;padding:28px 32px;margin-bottom:20px}
 .cso-schemes-hero-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
 .cso-schemes-hero-actions{display:flex;gap:8px;flex-wrap:wrap}
 .cso-schemes-action-pill{border:1px solid var(--cso-hero-pill-border, var(--cso-border));background:var(--cso-hero-pill-bg, #FFFFFF);color:var(--cso-hero-pill-fg, var(--cso-text));border-radius:999px;padding:5px 11px;font-size:.78rem;font-weight:600;cursor:pointer;text-decoration:none}
 .cso-schemes-action-pill:hover{background:var(--cso-hero-pill-active-bg, var(--cso-primary));border-color:var(--cso-hero-pill-active-bg, var(--cso-primary));color:var(--cso-hero-pill-active-fg, var(--cso-primary-fg));text-decoration:none}
-.cso-schemes-crumb{font-size:.82rem;color:var(--cso-hero-text, #374151);margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap}
+.cso-schemes-crumb{font-size:.82rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--cso-hero-sub, #374151);margin:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .cso-schemes-crumb a{color:var(--cso-hero-title, #1B4332)}
 .cso-schemes-hero h1{margin:0 0 8px;font-size:clamp(26px,2.2vw,28px);font-weight:800;letter-spacing:-0.015em;line-height:1.25;color:var(--cso-hero-title, #111827)}
 .cso-schemes-hero-sub{margin:0 0 14px;color:var(--cso-hero-sub, #374151);font-size:15px;line-height:1.55;font-weight:500}

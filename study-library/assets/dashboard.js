@@ -1200,6 +1200,18 @@
       });
     });
 
+    const slLangToggle = $('sl-lang-toggle');
+    if (slLangToggle) {
+      slLangToggle.addEventListener('click', () => {
+        state.lang = state.lang === 'or' ? 'en' : 'or';
+        try { localStorage.setItem(LANG_PREF_KEY, state.lang); } catch {}
+        document.querySelectorAll('.study-lang-btn').forEach(b => b.classList.toggle('is-active', b.dataset.lang === state.lang));
+        renderMaterials();
+        renderOverview();
+        if (state.activeModalItem) openStudyModal(state.activeModalItem);
+      });
+    }
+
     if (studyQInput) {
       let t;
       studyQInput.addEventListener('input', () => {
