@@ -7363,7 +7363,8 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-surface-alt: #F4EFE6;
   --cso-card-bg: #FFFFFF;
   --cso-hero-bg: linear-gradient(135deg, #F4EFE6 0%, #E8DFCE 100%);
-  --cso-hero-title: #1B4332;
+  --cso-hero-title: #111827;
+  --cso-hero-sub: #374151;
   --cso-hero-text: #374151;
   --cso-hero-pill-bg: #FFFFFF;
   --cso-hero-pill-fg: #18221D;
@@ -7425,7 +7426,8 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-surface-alt: #182635;
   --cso-card-bg: #131E29;
   --cso-hero-bg: linear-gradient(135deg, #0B1218 0%, #131E29 55%, #162B28 100%);
-  --cso-hero-title: #FAF9F6;
+  --cso-hero-title: #F8FAFC;
+  --cso-hero-sub: #CBD5E1;
   --cso-hero-text: #D1FAE5;
   --cso-hero-pill-bg: #182635;
   --cso-hero-pill-fg: #F1F5F9;
@@ -7488,7 +7490,8 @@ html.cso-a11y-lite .cso-footer-odisha-map {
     --cso-surface-alt: #182635;
     --cso-card-bg: #131E29;
     --cso-hero-bg: linear-gradient(135deg, #0B1218 0%, #131E29 55%, #162B28 100%);
-  --cso-hero-title: #FAF9F6;
+  --cso-hero-title: #F8FAFC;
+  --cso-hero-sub: #CBD5E1;
   --cso-hero-text: #D1FAE5;
   --cso-hero-pill-bg: #182635;
   --cso-hero-pill-fg: #F1F5F9;
@@ -7539,6 +7542,7 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-card-bg: #FBF7EE;
   --cso-hero-bg: linear-gradient(135deg, #F5EFE2 0%, #EADEC8 100%);
   --cso-hero-title: #2C241B;
+  --cso-hero-sub: #374151;
   --cso-hero-text: #5E5040;
   --cso-hero-pill-bg: #FFFFFF;
   --cso-hero-pill-fg: #2C241B;
@@ -7606,6 +7610,7 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   --cso-card-bg: #FFFFFF;
   --cso-hero-bg: linear-gradient(135deg, #F7EFE2 0%, #EFE2CD 100%);
   --cso-hero-title: #1E3A8A;
+  --cso-hero-sub: #374151;
   --cso-hero-text: #374151;
   --cso-hero-pill-bg: #FFFFFF;
   --cso-hero-pill-fg: #1F2421;
@@ -8145,22 +8150,21 @@ select:focus-visible {
 :root[data-cso-theme] .cso-schemes-hero h1,
 :root[data-cso-theme] .cso-comm-hero h1,
 :root[data-cso-theme] .cso-jobs-hero h1,
+:root[data-cso-theme] .cso-jobs-hero__title,
 :root[data-cso-theme] .welcome.cso-sl-hero-banner h1,
 :root[data-cso-theme] .cso-sl-pub-hero h1,
 :root[data-cso-theme] .cso-schemes-crumb a,
-:root[data-cso-theme] .cso-comm-crumb a,
-:root[data-cso-theme] .cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-link {
-  color: #F8FAFC !important;
+:root[data-cso-theme] .cso-comm-crumb a {
+  color: var(--cso-hero-title, #111827) !important;
 }
 
 :root[data-cso-theme] .cso-schemes-hero-sub,
 :root[data-cso-theme] .cso-comm-hero-sub,
 :root[data-cso-theme] .cso-jobs-hero-sub,
+:root[data-cso-theme] .cso-jobs-hero__sub,
 :root[data-cso-theme] .cso-schemes-crumb,
-:root[data-cso-theme] .cso-comm-crumb,
-:root[data-cso-theme] .cso-jobs-hero .breadcrumb.cso-jc-crumb,
-:root[data-cso-theme] .cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-current {
-  color: #F8FAFC !important;
+:root[data-cso-theme] .cso-comm-crumb {
+  color: var(--cso-hero-sub, #374151) !important;
 }
 :root[data-cso-theme] .cso-schemes-crumb,
 :root[data-cso-theme] .cso-sl-hero-trail,
@@ -8762,4 +8766,41 @@ nav .w,
   padding-left: 12px !important;
   transform: translateX(2px) !important;
 }
+
+/* ==========================================================================
+   v148: Directory Explorer Hero Contrast, Breadcrumb Pill & Typography
+   ========================================================================== */
+.cso-jobs-hero h1,
+.cso-jobs-hero__title,
+.cso-schemes-hero h1,
+.cso-comm-hero h1,
+.welcome.cso-sl-hero-banner h1,
+.cso-sl-pub-hero h1 {
+  color: var(--cso-hero-title, #111827) !important;
+  font-size: clamp(26px, 2.2vw, 28px) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.015em !important;
+  line-height: 1.25 !important;
+}
+
+.cso-jobs-hero-sub,
+.cso-jobs-hero__sub,
+.cso-schemes-hero-sub,
+.cso-comm-hero-sub,
+.cso-sl-hero-tagline,
+.cso-sl-pub-hero-desc {
+  color: var(--cso-hero-sub, #374151) !important;
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+  font-weight: 500 !important;
+}
+
+.cso-dir-search {
+  min-height: 40px !important;
+}
+
+.cso-dir-search-input {
+  font-size: 14.5px !important;
+}
+
 

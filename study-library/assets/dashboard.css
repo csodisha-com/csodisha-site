@@ -4139,3 +4139,60 @@ body {
     box-shadow: none !important;
   }
 }
+
+/* ==========================================================================
+   v148: Study Library Hero Contrast & Directory Typography
+   ========================================================================== */
+.welcome.cso-sl-hero-banner h1,
+.cso-sl-pub-hero h1 {
+  color: var(--cso-hero-title, #111827) !important;
+  font-size: clamp(26px, 2.2vw, 28px) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.015em !important;
+  line-height: 1.25 !important;
+}
+
+.cso-sl-hero-tagline,
+.cso-sl-pub-hero-desc {
+  color: var(--cso-hero-sub, #374151) !important;
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+  font-weight: 500 !important;
+}
+
+.sidebar-heading {
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-weight: 800 !important;
+}
+
+.side-link,
+.app-shell #side-navigation .side-link {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  padding: 9px 12px !important;
+  min-height: 40px !important;
+  height: auto !important;
+}
+
+.side-link .side-count {
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  padding: 3px 8px !important;
+}
+
+.top-search,
+.app-shell .topbar .top-search {
+  min-height: 40px !important;
+}
+
+.top-search input,
+.app-shell .topbar .top-search input,
+.study-input,
+.study-select {
+  font-size: 14.5px !important;
+  min-height: 40px !important;
+}
+

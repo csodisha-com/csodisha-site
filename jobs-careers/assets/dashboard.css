@@ -3335,12 +3335,19 @@ body.is-live-modal-open {
 .breadcrumb {
   background: linear-gradient(135deg, #0F4C3A 0%, #14532D 100%) !important;
   color: #F8FAFC !important;
-  padding: 6px 14px !important;
+  padding: 5px 14px !important;
+  min-height: 30px !important;
+  max-height: 34px !important;
+  margin: 0 !important;
   border-radius: 999px !important;
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
   display: inline-flex !important;
   align-items: center !important;
+  flex-wrap: nowrap !important;
   gap: 6px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
   box-shadow: 0 2px 8px rgba(15, 76, 58, 0.16) !important;
 }
 .cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-item,
@@ -3355,9 +3362,111 @@ body.is-live-modal-open {
 .breadcrumb strong {
   color: #F8FAFC !important;
   opacity: 1 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
 }
 .cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-link:hover,
 .breadcrumb .breadcrumb-link:hover {
   color: #FDE68A !important;
   text-decoration: underline !important;
+}
+
+/* ==========================================================================
+   v148: Jobs & Careers Hero Contrast, Typography & Filter Row Alignment
+   ========================================================================== */
+.cso-jobs-hero h1,
+.cso-jobs-hero__title {
+  color: var(--cso-hero-title, #111827) !important;
+  font-size: clamp(26px, 2.2vw, 28px) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.015em !important;
+  line-height: 1.25 !important;
+}
+
+.cso-jobs-hero-sub,
+.cso-jobs-hero__sub {
+  color: var(--cso-hero-sub, #374151) !important;
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+  font-weight: 500 !important;
+}
+
+.sidebar-heading {
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-weight: 800 !important;
+}
+
+.side-link,
+.app-shell #side-navigation .side-link {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  padding: 9px 12px !important;
+  min-height: 40px !important;
+  height: auto !important;
+}
+
+.side-link .side-count {
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  padding: 3px 8px !important;
+}
+
+.top-search,
+.app-shell .topbar .top-search {
+  min-height: 40px !important;
+}
+
+.top-search input,
+.app-shell .topbar .top-search input {
+  font-size: 14.5px !important;
+}
+
+.live-filter-input,
+.live-filter-select {
+  font-size: 14.5px !important;
+  min-height: 40px !important;
+}
+
+.cso-jobs-quick-pills {
+  gap: 6px !important;
+  align-items: center !important;
+}
+
+.cso-jobs-pill {
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  padding: 6px 12px !important;
+}
+
+.live-filter-chips {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 6px !important;
+}
+
+.live-filter-chips__list {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+@media (min-width: 1100px) {
+  .live-filter-chips,
+  .live-filter-chips__list {
+    flex-wrap: nowrap !important;
+  }
+}
+
+.live-chip,
+.live-chip--goal {
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  padding: 6px 12px !important;
+  white-space: nowrap !important;
 }

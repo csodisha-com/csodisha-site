@@ -11,11 +11,11 @@ a:hover{text-decoration:underline}
 .cso-schemes-brand-link{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--cso-link, #14532d)}
 .cso-schemes-badge{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--cso-accent, #16a34a),var(--cso-link, #14532d));color:#fff;font-weight:800;font-size:.78rem;letter-spacing:.03em;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 .cso-schemes-rail-toggle{border:1px solid var(--cso-border);background:var(--cso-card-bg, var(--cso-surface));border-radius:8px;padding:6px 9px;cursor:pointer;font-size:.82rem;color:var(--cso-link, #14532d)}
-.cso-schemes-rail-section{font-size:.72rem;font-weight:700;letter-spacing:.08em;color:var(--cso-text-muted, #4b5563);text-transform:uppercase;padding:4px 8px}
+.cso-schemes-rail-section{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--cso-text-muted, #4b5563);text-transform:uppercase;padding:4px 8px}
 .cso-schemes-nav{display:grid;gap:4px;background:transparent;color:inherit;border-radius:0;position:static;box-shadow:none}
-.cso-schemes-nav-link{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:transparent;color:var(--cso-text, #1f2937);font-size:.86rem;font-weight:500;border:1px solid transparent}
+.cso-schemes-nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:transparent;color:var(--cso-text, #1f2937);font-size:14px;font-weight:600;line-height:1.35;border:1px solid transparent}
 .cso-schemes-nav-link .cso-schemes-rail-label{flex:1;min-width:0}
-.cso-schemes-nav-count{font-size:.74rem;font-weight:700;color:var(--cso-link, #14532d);background:var(--cso-nav-active-bg, #ecfdf5);border-radius:999px;padding:2px 7px;flex-shrink:0}
+.cso-schemes-nav-count{font-size:12.5px;font-weight:700;color:var(--cso-link, #14532d);background:var(--cso-nav-active-bg, #ecfdf5);border-radius:999px;padding:2px 8px;flex-shrink:0}
 .cso-schemes-nav-link:hover{background:var(--cso-surface-alt, #f3f6f4);color:var(--cso-link, #14532d);text-decoration:none}
 .cso-schemes-nav-link.is-active{background:var(--cso-nav-active-bg, #ecfdf5);color:var(--cso-link, #14532d);border:1px solid var(--cso-border, #bbf7d0);font-weight:700;text-decoration:none}
 .cso-schemes-nav-num{width:24px;height:24px;border-radius:6px;background:var(--cso-nav-active-bg, #ecfdf5);color:var(--cso-link, #14532d);font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -31,8 +31,8 @@ a:hover{text-decoration:underline}
 .cso-schemes-action-pill:hover{background:var(--cso-hero-pill-active-bg, var(--cso-primary));border-color:var(--cso-hero-pill-active-bg, var(--cso-primary));color:var(--cso-hero-pill-active-fg, var(--cso-primary-fg));text-decoration:none}
 .cso-schemes-crumb{font-size:.82rem;color:var(--cso-hero-text, #374151);margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap}
 .cso-schemes-crumb a{color:var(--cso-hero-title, #1B4332)}
-.cso-schemes-hero h1{margin:0 0 8px;font-size:1.65rem;line-height:1.25;color:var(--cso-hero-title, #1B4332)}
-.cso-schemes-hero-sub{margin:0 0 14px;color:var(--cso-hero-text, #374151);font-size:.96rem}
+.cso-schemes-hero h1{margin:0 0 8px;font-size:clamp(26px,2.2vw,28px);font-weight:800;letter-spacing:-0.015em;line-height:1.25;color:var(--cso-hero-title, #111827)}
+.cso-schemes-hero-sub{margin:0 0 14px;color:var(--cso-hero-sub, #374151);font-size:15px;line-height:1.55;font-weight:500}
 .cso-schemes-quick-pills{display:flex;gap:8px;flex-wrap:wrap}
 .cso-schemes-pill{border:1px solid var(--cso-hero-pill-border, var(--cso-border));background:var(--cso-hero-pill-bg, #FFFFFF);color:var(--cso-hero-pill-fg, var(--cso-text));border-radius:999px;padding:6px 12px;font-size:.82rem;font-weight:600;cursor:pointer}
 .cso-schemes-pill:hover,.cso-schemes-pill.is-active{background:var(--cso-hero-pill-active-bg, var(--cso-primary));border-color:var(--cso-hero-pill-active-bg, var(--cso-primary));color:var(--cso-hero-pill-active-fg, var(--cso-primary-fg))}
@@ -62,7 +62,7 @@ a:hover{text-decoration:underline}
 .cso-schemes-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--cso-border)}
 .cso-schemes-page-info{font-size:.86rem;font-weight:600;color:var(--cso-text-muted, #4b5563)}
 .cso-schemes-page-btns{display:flex;gap:8px;flex-wrap:wrap}
-.cso-schemes-input,.cso-schemes-select{width:100%;padding:9px 11px;border:1px solid var(--cso-border, #d1d5db);border-radius:9px;font-size:.9rem;background:var(--cso-card-bg, #fff);color:var(--cso-text)}
+.cso-schemes-input,.cso-schemes-select{width:100%;min-height:40px;padding:9px 11px;border:1px solid var(--cso-border, #d1d5db);border-radius:9px;font-size:14.5px;background:var(--cso-card-bg, #fff);color:var(--cso-text)}
 
 .cso-schemes-domain-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .cso-schemes-domain-card{display:grid;gap:6px;background:var(--cso-card-bg, var(--cso-surface));border:1px solid var(--cso-border);border-radius:14px;padding:14px;color:var(--cso-text);transition:border-color .15s,box-shadow .15s}
@@ -123,7 +123,7 @@ a:hover{text-decoration:underline}
 .cso-dir-search{position:relative;flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-radius:12px;border:1px solid var(--cso-border);background:var(--cso-bg);color:var(--cso-text)}
 .cso-dir-search:focus-within{border-color:var(--cso-primary);box-shadow:0 0 0 3px var(--cso-highlight-ring, rgba(27,67,50,.22))}
 .cso-dir-search-icon{color:var(--cso-muted);font-size:1.1rem}
-.cso-dir-search-input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--cso-text);font:inherit;font-size:.95rem}
+.cso-dir-search-input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--cso-text);font:inherit;font-size:14.5px}
 .cso-dir-search-input::placeholder{color:var(--cso-muted);opacity:1}
 .cso-dir-clear{flex-shrink:0;border:0;background:transparent;color:var(--cso-muted);font-size:1.25rem;line-height:1;cursor:pointer;padding:0 4px}
 .cso-dir-clear:hover{color:var(--cso-text)}
