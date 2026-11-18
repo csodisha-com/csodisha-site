@@ -1464,7 +1464,7 @@
           '<a href="' + escHtml(safeU(a.url)) + '">' + escHtml(a.url) + '</a></div>';
       }).join('') + '</section>' : '';
 
-      return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">' +
         '<title>' + escHtml(t) + '</title>' +
         '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css">' +
         '</head><body><main class="container">' +
@@ -2686,7 +2686,7 @@
         }
         return '<section class="card' + surf + sp + '" data-block-idx="' + idx + '">' + inner + '</section>';
       }).join('');
-      return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">' +
         '<title>' + escH(pageMeta.title || currentRoute) + '</title>' +
         '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css">' +
         '</head><body><main class="container">' + sections + '</main></body></html>';
@@ -3686,7 +3686,7 @@
         }
         return '<section class="card" data-home-target="sec-' + idx + '">' + inner + '</section>';
       }).join('');
-      return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">' +
         '<title>' + escH(seoTitleInp.value || 'Common Sense Odisha') + '</title>' +
         '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css">' +
         '</head><body>' + bannerHtml + '<main class="container">' + tickerHtml + heroHtml + secsHtml + '</main></body></html>';
@@ -4530,7 +4530,7 @@
       var secUrl = escapeHtmlAttr(cfg.secondary_cta_url || '#');
       var ogImg = escapeHtmlAttr(cfg.og_image || '');
       var isExpired = cfg.expires_at && !isNaN(Date.parse(cfg.expires_at)) && Date.parse(cfg.expires_at) < Date.now();
-      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">' +
         '<title>' + title + '</title>' +
         '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css">' +
         '</head><body>';
@@ -5392,7 +5392,7 @@
         DEPARTMENT: 'Odisha Staff Selection Commission',
         LAST_DATE: '30 Nov 2026'
       });
-      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">' +
         '<title>' + escapeHtmlAttr(m.hero_title || m.name) + '</title>' +
         '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css">' +
         '</head><body><header class="site-header"><div class="container header-inner"><a class="brand" href="/">Common Sense Odisha</a></div></header>' +
@@ -6018,7 +6018,7 @@
     }
 
     function buildSitewidePreviewHtml() {
-      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">' +
         '<title>Sitewide Preview — ' + escapeHtmlAttr(previewRoute) + '</title>' +
         '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css">' +
         '</head><body><header class="site-header"><div class="container header-inner"><a class="brand" href="/">Common Sense Odisha</a></div></header>';
@@ -6594,7 +6594,7 @@
     var ctaLbl = f02EscapeAttr(cfg.cta_label || '');
     var ctaUrl = f02EscapeAttr(cfg.cta_url || '#');
     var blocks = f02ParseBlocks(cfg.blocks_json);
-    var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+    var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">' +
       '<title>' + title + '</title><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css"></head>' +
       '<body><header class="site-header"><div class="container header-inner"><a class="brand" href="/">Common Sense Odisha</a></div></header>' +
       '<main class="container section"><section class="hero-card">' +

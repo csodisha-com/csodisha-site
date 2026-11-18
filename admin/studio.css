@@ -2954,3 +2954,29 @@ html[data-theme="lime"] .cso-nav-folder-btn:hover {
   .cso-signout-btn { display: none; }
   .cso-kpi-grid-4 { grid-template-columns: 1fr; }
 }
+
+/* v159 intrinsic & adaptive */
+.cso-sidebar { height: 100vh; height: 100dvh; padding-left: env(safe-area-inset-left); }
+@media (max-width: 900px) { .cso-sidebar { padding-top: max(52px, calc(env(safe-area-inset-top) + 44px)); padding-bottom: env(safe-area-inset-bottom); } }
+.cso-topbar { padding-top: env(safe-area-inset-top); padding-inline: max(8px, env(safe-area-inset-left)) max(8px, env(safe-area-inset-right)); }
+.cso-workspace { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+.cso-kpi-grid-4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); }
+.cso-edu-kpis { grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); }
+.cso-form-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+.cso-kpi-card, .cso-sl-book-card, .cso-dir-card { container-type: inline-size; min-inline-size: 0; }
+@supports (grid-template-rows: subgrid) {
+  .cso-kpi-grid-4 > .cso-kpi-card { display: grid; grid-row: span 3; grid-template-rows: subgrid; }
+}
+@container (max-width: 340px) {
+  .cso-kpi-card, .cso-sl-book-card, .cso-dir-card { flex-direction: column; align-items: stretch; }
+  .cso-kpi-head { flex-wrap: wrap; }
+}
+.cso-table-wrap, .cso-mod-table-wrap, .cso-gov-table-wrap, .cso-edu-filters, .cso-edu-tabs {
+  max-inline-size: 100%; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity;
+}
+@media (pointer: coarse) {
+  .cso-icon-btn, .cso-btn-create, .cso-create-item, .cso-edu-tab, .cso-breadcrumb-btn, .cso-workspace button, .cso-workspace select { min-block-size: 44px; min-inline-size: 44px; }
+}
+@media (max-width: 768px) { .cso-workspace input, .cso-workspace select, .cso-workspace textarea { font-size: max(16px, 1rem); } }
+@media (prefers-reduced-motion: reduce) { .cso-sidebar, .cso-live-dot, .cso-drawer-backdrop { transition: none !important; animation: none !important; } }
+@media (prefers-contrast: more) { .cso-kpi-card, .cso-icon-btn, .cso-btn-create { border: 2px solid currentColor; } .cso-icon-btn:focus-visible, button:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; } }

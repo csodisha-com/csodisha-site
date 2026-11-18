@@ -51,7 +51,7 @@ function buildHead({ title, description, canonicalUrl, jsonLdList = [] }) {
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#14532d">
   <title>${escHtml(title)}</title>
   <meta name="description" content="${escHtml(description)}">

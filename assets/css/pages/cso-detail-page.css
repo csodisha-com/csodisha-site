@@ -72,3 +72,18 @@
 .cso-ec-gallery .cso-sl-figure{margin:0}
 
 @media (max-width:900px){.cso-ssr-wrap,.cso-sl-pub-main{padding:14px 14px 32px}.cso-schemes-hero,.cso-jobs-hero,.cso-comm-hero,.cso-sl-pub-hero,.cso-live-hero{padding:22px 20px}.cso-dir-topbar--detail .cso-dir-context-pill{margin-left:0;max-width:100%}}
+
+/* v159 intrinsic grids & container queries */
+.cso-ssr-facts{grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr))}
+.cso-ec-stage-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.cso-ec-books-grid,.cso-ec-gallery{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.cso-ec-stage-grid>*,.cso-ec-books-grid>*,.cso-ec-gallery>*,.cso-ssr-facts>*{container-type:inline-size;min-inline-size:0}
+@supports (grid-template-rows: subgrid){
+  .cso-ec-books-grid>*{display:grid;grid-row:span 3;grid-template-rows:subgrid}
+}
+@container (max-width:340px){
+  .cso-ec-books-grid>*,.cso-ec-stage-grid>*{flex-direction:column;grid-template-columns:1fr}
+}
+.cso-detail-scroll,.cso-ssr-table-wrap{max-inline-size:100%;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+@media (prefers-contrast: more){.cso-ssr-facts>*,.cso-ec-books-grid>*{border:2px solid currentColor}:focus-visible{outline:3px solid currentColor;outline-offset:2px}}

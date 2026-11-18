@@ -8924,3 +8924,55 @@ html body .cso-u-c7cf8fe8{display:inline-block;margin-top:10px;font-size:13px}
 html body .cso-u-553a645f{margin-top:14px}
 html body .cso-u-7635303b{display:inline-block;padding:9px 16px;background:#0fa968;color:#ffffff;border-radius:8px;text-decoration:none;font-weight:600}
 html body .cso-u-1b9b41ec{grid-column:1/-1}
+
+/* v159 Intrinsic & Adaptive Design: fluid tokens, safe areas, overflow protection */
+:root {
+  --cso-fs-h1: clamp(1.375rem, 3.2vw + 0.75rem, 2.25rem);
+  --cso-fs-h2: clamp(1.125rem, 2vw + 0.65rem, 1.5rem);
+  --cso-fs-body: clamp(0.9375rem, 0.4vw + 0.85rem, 1.05rem);
+  --cso-pad-x: clamp(12px, 3.5vw, 28px);
+  --cso-gap: clamp(12px, 2.5vw, 24px);
+}
+html, body { overflow-x: clip; }
+body { min-block-size: 100vh; min-block-size: 100dvh; padding-inline: env(safe-area-inset-left) env(safe-area-inset-right); }
+body > * { min-inline-size: 0; }
+h1 { font-size: var(--cso-fs-h1); }
+h2 { font-size: var(--cso-fs-h2); }
+p, li { font-size: var(--cso-fs-body); }
+h1, h2, h3, h4, h5, h6, .pill, .badge, .tag, a { max-inline-size: 100%; overflow-wrap: anywhere; }
+.grid > *, [class*="grid"] > *, [class*="flex"] > *, .row > * { min-inline-size: 0; }
+img, svg, figure, table, pre { max-inline-size: 100%; block-size: auto; }
+pre { overflow-x: auto; overscroll-behavior-x: contain; }
+@media (max-width: 768px) { table { display: block; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; } }
+.filters, .filter-strip, .chips, .tabs, .main-nav .w {
+  max-inline-size: 100%; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity;
+}
+.top, .site-header__top { padding-top: env(safe-area-inset-top); }
+#top { right: max(16px, env(safe-area-inset-right)); }
+.ov { block-size: 100dvh; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+.card, .cso-dir-card, .cso-sl-book-card, .student-card { container-type: inline-size; }
+@container (max-width: 340px) {
+  .card, .cso-dir-card, .cso-sl-book-card, .student-card { flex-direction: column; align-items: stretch; }
+  .cso-dir-card > *, .cso-sl-book-card > *, .student-card > * { inline-size: 100%; }
+}
+@media (pointer: coarse) {
+  button, [role="button"], select, summary, input[type="button"], input[type="submit"], input[type="checkbox"], input[type="radio"], .btn, .pill {
+    min-block-size: 44px; min-inline-size: 44px;
+  }
+  a.btn, nav a { min-block-size: 44px; display: inline-flex; align-items: center; }
+}
+@media (max-width: 768px) {
+  input, select, textarea { font-size: max(16px, 1rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+@media (prefers-contrast: more) {
+  :root { --bd: currentColor; }
+  a { text-decoration: underline; }
+  button, input, select, textarea, .card { border: 2px solid currentColor; }
+  :focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
+}
+.cso-intrinsic-grid { display: grid; gap: var(--cso-gap); grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+.cso-intrinsic-grid--compact { grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); }
+.cso-intrinsic-grid > * { min-inline-size: 0; }

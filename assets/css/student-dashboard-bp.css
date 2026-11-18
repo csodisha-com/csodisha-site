@@ -2308,3 +2308,27 @@ body.cso-student-dashboard-page {
     border-bottom-color: var(--cso-border);
   }
 }
+
+/* v159 intrinsic & adaptive: dvh, safe areas, container queries, coarse pointer */
+.bp-sidebar { height: 100vh; height: 100dvh; padding-top: env(safe-area-inset-top); padding-left: env(safe-area-inset-left); }
+.bp-topbar { padding-top: max(12px, env(safe-area-inset-top)); padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); }
+.bp-mobile-bottom-nav { padding-bottom: max(6px, env(safe-area-inset-bottom)); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+.bp-bento-grid, .cso-countdown-grid, .cso-study-plan-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+.cso-metric-pills { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); }
+.bp-bento-grid > *, .cso-countdown-grid > *, .student-card, .bp-panel { container-type: inline-size; min-inline-size: 0; }
+@supports (grid-template-rows: subgrid) {
+  .cso-countdown-grid > * { display: grid; grid-row: span 2; grid-template-rows: subgrid; }
+}
+@container (max-width: 340px) {
+  .student-card, .bp-panel, .cso-countdown-grid > * { flex-direction: column; align-items: stretch; }
+  .student-card > *, .cso-countdown-grid > * > * { inline-size: 100%; }
+}
+.bp-table-wrap, .cso-filter-strip { max-inline-size: 100%; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
+@media (pointer: coarse) {
+  .bp-nav-item, .bp-icon-action-btn, .bp-search-trigger, .bp-mobile-menu-btn, .bp-bottom-nav-btn, .cso-pill-btn, .bp-user-pill, button, select {
+    min-block-size: 44px; min-inline-size: 44px;
+  }
+}
+@media (max-width: 768px) { .bp-content input, .bp-content select, .bp-content textarea, .bp-modal-box input, .bp-modal-box select { font-size: max(16px, 1rem); } }
+@media (prefers-reduced-motion: reduce) { .bp-sidebar, .bp-topbar, .cso-toast { transition: none !important; animation: none !important; } }
+@media (prefers-contrast: more) { .bp-panel, .student-card, .bp-nav-item.active { border: 2px solid currentColor; } .bp-nav-item:focus-visible, button:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; } }

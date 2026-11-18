@@ -325,7 +325,7 @@ export function renderDynamicPage(row, sitewide) {
   const focused = !!meta.focused_landing_mode;
   const footerHtml = focused ? '' : CSO_SHELL_FOOTER;
   const hero = row.hero_title ? `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.hero_title)}</h1>${row.hero_subtitle ? `<p>${esc(row.hero_subtitle)}</p>` : ''}${odiaSub}${row.cta_label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(row.cta_url))}">${esc(row.cta_label)}</a></p>` : ''}</div></section>` : `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.title)}</h1>${odiaSub}</div></section>`;
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>${esc(row.title)}</title><meta name="description" content="${esc(row.meta_description)}">${robotsMeta}${ogMeta}${jsonLd}
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 ${focused ? '' : CSO_SHELL_HEAD_LINKS}
