@@ -2,6 +2,7 @@ import {
   resolvePublicStudyDirectory,
   resolvePublicStudyItem,
 } from './study-library-studio.js';
+import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs } from './ssr-shell.js';
 
 const CANONICAL_ORIGIN = 'https://csodisha.com';
 
@@ -69,50 +70,23 @@ function buildHead({ title, description, canonicalUrl, jsonLdList = [] }) {
   <meta property="og:title" content="${escHtml(title)}">
   <meta property="og:description" content="${escHtml(description)}">
   <meta property="og:url" content="${escHtml(canonicalUrl)}">
+  ${CSO_SHELL_HEAD_LINKS}
   <link rel="stylesheet" href="/study-library/assets/dashboard.css">
   <script src="/study-library/assets/ssr-actions.js" defer></script>
   ${jsonLdScripts}
 </head>`;
 }
 
-function buildHeader(activeLabel = 'Study Library') {
-  return `<header class="cso-sl-pub-header">
-  <div class="cso-sl-pub-header-inner">
-    <a class="cso-sl-pub-brand" href="/">
-      <span class="cso-sl-pub-brand-mark">CSO</span>
-      <span class="cso-sl-pub-brand-text">Common Sense Odisha</span>
-    </a>
-    <nav class="cso-sl-pub-nav" aria-label="Primary">
-      <a href="/">Home</a>
-      <a href="/jobs-careers/">Jobs &amp; Careers</a>
-      <a href="/schemes-benefits/">Schemes</a>
-      <a href="/study-library/" aria-current="page">${escHtml(activeLabel)}</a>
-      <a href="/mock-tests/">Mock Tests</a>
-    </nav>
-  </div>
-</header>`;
+function buildHeader() {
+  return CSO_SHELL_HEADER;
 }
 
 function buildFooter() {
-  return `<footer class="cso-sl-pub-footer">
-  <div class="cso-sl-pub-footer-inner">
-    <div>
-      <strong>Common Sense Odisha</strong>
-      <p>Independent, open-access Odisha &amp; National Curriculum Study Library.</p>
-    </div>
-    <div class="cso-sl-pub-footer-links">
-      <a href="/jobs-careers/">Jobs &amp; Careers</a>
-      <a href="/schemes-benefits/">Schemes &amp; Benefits</a>
-      <a href="/study-library/">All 10 Study Tracks</a>
-      <a href="/privacy-policy/">Privacy Policy</a>
-      <a href="/terms-of-use/">Terms of Use</a>
-    </div>
-  </div>
-</footer>`;
+  return CSO_SHELL_FOOTER;
 }
 
 function htmlResponse(html, status = 200) {
-  return new Response(html, {
+  return new Response(decorateMain(html, { backHref: '/study-library/', backLabel: '← Back to Explorer' }), {
     status,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',

@@ -1,0 +1,148 @@
+/* v153: canonical homepage shell for every server-rendered (SSR) page. Zero inline <style>/<script>/style="". */
+
+export const CSO_SHELL_HEAD_LINKS = [
+  '<link rel="stylesheet" href="/assets/style.css">',
+  '<link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css">',
+  '<link rel="stylesheet" href="/assets/css/pages/cso-detail-page.css">',
+  '<script src="/assets/shared-header.js" defer></script>'
+].join('\n  ');
+
+export const CSO_SHELL_HEADER = `<header class="top site-header__top" id="header-top" role="banner">
+<a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
+  <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36">
+</a>
+<a class="adm cso-adm-icon-only" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a>
+<span id="ctl" class="cso-contents"></span>
+<span class="sp"></span>
+<div class="acct">
+  <span aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
+  <span id="auth" class="cso-contents"></span>
+</div>
+</header>
+<nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>`;
+
+export const CSO_SHELL_FOOTER = `<footer><div class="w cso-footer-grid">
+  <div class="cso-footer-zone1">
+    <div class="cso-footer-brand-header">
+      <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-footer-logo cso-brand-emblem" width="36" height="36">
+      <div class="cso-footer-title">Common Sense Odisha</div>
+    </div>
+    <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
+    <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
+    <p class="cso-footer-contact">Contact: <a class="cso-footer-contact-link" href="mailto:contact@csodisha.com">contact@csodisha.com</a></p>
+    <div class="cso-footer-social" role="navigation" aria-label="Official Social Channels">
+      <a class="cso-footer-social-link" href="https://www.instagram.com/csodisha.official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg><span>Instagram</span></a>
+      <a class="cso-footer-social-link" href="https://www.facebook.com/profile.php?id=61596187936770" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg><span>Facebook</span></a>
+      <a class="cso-footer-social-link" href="https://x.com/csodisha" target="_blank" rel="noopener noreferrer" aria-label="X" title="X"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span>X</span></a>
+      <a class="cso-footer-social-link" href="https://t.me/csodisha" target="_blank" rel="noopener noreferrer" aria-label="Telegram" title="Telegram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span>Telegram</span></a>
+      <a class="cso-footer-social-link" href="https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><span>WhatsApp</span></a>
+      <a class="cso-footer-social-link" href="https://www.youtube.com/@CSOdisha" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg><span>YouTube</span></a>
+    </div>
+  </div>
+  <div class="cso-footer-zone2">
+    <div class="cso-footer-col">
+      <h4>Explore</h4>
+      <a href="/jobs-careers/">Jobs &amp; Careers</a>
+      <a href="/schemes-benefits/">Schemes &amp; Benefits</a>
+      <a href="/study-library/">Study Library</a>
+      <a href="/community/">Community</a>
+      <a href="/about/">About CSO</a>
+    </div>
+    <div class="cso-footer-col">
+      <h4>Support &amp; Legal</h4>
+      <a href="/support/#faqs">Help &amp; FAQs</a>
+      <a href="/support/#report-error">Report an Error</a>
+      <a href="/support/#suggest-resource">Suggest Resource</a>
+      <a href="/privacy-policy/">Privacy Policy</a>
+      <a href="/terms-of-use/">Terms of Use</a>
+    </div>
+  </div>
+  <div class="cso-footer-zone3">
+    <img class="cso-footer-odisha-map" src="/assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy">
+    <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
+    <div class="cso-footer-lang-pills">
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>
+      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="or">ଓଡ଼ିଆ</button>
+      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="hi">हिन्दी</button>
+    </div>
+  </div>
+</div></footer>`;
+
+export function escShell(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/** Accepts both {label,url} and {title,path|name} crumb shapes; drops empty segments. */
+export function normalizeCrumbs(crumbs) {
+  return (Array.isArray(crumbs) ? crumbs : [])
+    .map((b) => ({
+      label: String((b && (b.label ?? b.title ?? b.name)) ?? '').trim(),
+      url: String((b && (b.url ?? b.path)) ?? '').trim()
+    }))
+    .filter((b) => b.label);
+}
+
+/** Clean kicker: CS ODISHA › SCHEMES & BENEFITS › STATE WELFARE (uppercased by CSS; current page omitted, it is the H1). */
+export function renderKicker(crumbs, rootLabel = 'CS Odisha') {
+  const trail = normalizeCrumbs(crumbs).slice(0, -1);
+  const parts = [`<a href="/">${escShell(rootLabel)}</a>`].concat(
+    trail.map((b) => (b.url ? `<a href="${escShell(b.url)}">${escShell(b.label)}</a>` : `<span>${escShell(b.label)}</span>`))
+  );
+  return `<nav class="cso-detail-kicker" aria-label="Breadcrumb">${parts.join('<span class="cso-detail-kicker-sep" aria-hidden="true">›</span>')}</nav>`;
+}
+
+function plainText(markup) {
+  return String(markup).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function sectionLabel(text) {
+  const t = text.toLowerCase();
+  if (t.includes('summary')) return 'Summary';
+  if (t.includes('document')) return 'Documents';
+  if (t.includes('eligib')) return 'Eligibility';
+  if (t.includes('overview') || t.includes('how to apply')) return 'Overview';
+  return text.length > 22 ? text.slice(0, 21) + '…' : text;
+}
+
+/** Inserts the sticky .cso-dir-topbar (Back to Explorer, section jump pills, active item pill) at the top of <main>. */
+export function decorateMain(html, { backHref = '/', backLabel = '← Back to Explorer' } = {}) {
+  const mainOpen = /<main\b[^>]*>/.exec(html);
+  if (!mainOpen || html.includes('class="cso-dir-topbar')) return html;
+  const start = mainOpen.index + mainOpen[0].length;
+  const mainEnd = html.indexOf('</main>', start);
+  let body = html.slice(start, mainEnd === -1 ? undefined : mainEnd);
+  const rest = mainEnd === -1 ? '' : html.slice(mainEnd);
+
+  const h1 = /<h1\b[^>]*>([\s\S]*?)<\/h1>/.exec(body);
+  const title = h1 ? plainText(h1[1]) : '';
+  const pills = [];
+  let n = 0;
+  body = body.replace(/<h2\b([^>]*)>([\s\S]*?)<\/h2>/g, (m, attrs, inner) => {
+    if (n >= 4) return m;
+    const label = sectionLabel(plainText(inner));
+    if (!label || pills.some((p) => p.label === label)) return m;
+    const existing = /\sid="([^"]+)"/.exec(attrs);
+    const id = existing ? existing[1] : `cso-sec-${n + 1}`;
+    n += 1;
+    pills.push({ id, label });
+    return existing ? m : `<h2${attrs} id="${id}">${inner}</h2>`;
+  });
+  body = body.replace(/<a\b([^>]*)>([^<]*Official[^<]*Portal[^<]*)<\/a>/, (m, attrs, text) => {
+    if (/\sid=/.test(attrs)) return m;
+    pills.push({ id: 'cso-sec-portal', label: 'Official Portal' });
+    return `<a${attrs} id="cso-sec-portal">${text}</a>`;
+  });
+
+  const jump = pills.length
+    ? `<nav class="cso-dir-jump" aria-label="Jump to section">${pills.map((p) => `<a class="cso-dir-jump-pill" href="#${escShell(p.id)}">${escShell(p.label)}</a>`).join('')}</nav>`
+    : '';
+  const bar = `<header class="cso-dir-topbar cso-dir-topbar--detail" id="cso-detail-topbar" role="navigation" aria-label="Page context">` +
+    `<a class="cso-dir-back" href="${escShell(backHref)}">${escShell(backLabel)}</a>${jump}` +
+    (title ? `<span class="cso-dir-context-pill" aria-current="page">${escShell(title)}</span>` : '') +
+    `</header>`;
+  return html.slice(0, start) + bar + body + rest;
+}

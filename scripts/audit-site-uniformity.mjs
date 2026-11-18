@@ -38,6 +38,31 @@ for (const s of scriptsSeen) {
   const p = join(root, s);
   if (existsSync(p) && /\.innerHTML\b/.test(readFileSync(p, 'utf8'))) errors.push(`${s}: uses .innerHTML`);
 }
+
+// v153: server-rendered HTML templates in functions/**/*.js (files that emit a full <!DOCTYPE html> document)
+const fnFiles = [];
+(function walkFn(d) {
+  if (!existsSync(d)) return;
+  for (const e of readdirSync(d, { withFileTypes: true })) {
+    const p = join(d, e.name);
+    if (e.isDirectory()) walkFn(p); else if (e.name.endsWith('.js')) fnFiles.push(p);
+  }
+})(join(root, 'functions'));
+for (const f of fnFiles) {
+  const rel = relative(root, f);
+  const src = readFileSync(f, 'utf8');
+  if (!/<!DOCTYPE html/i.test(src)) continue;
+  const code = src.split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n');
+  const bad = (m) => errors.push(`${rel}: ${m}`);
+  if (/Current Affairs\s*<\/a>/.test(code)) bad('legacy "Current Affairs" nav header in SSR template');
+  if (/<span[^>]*(badge|brand-mark)[^>]*>\s*CSO?\s*<\/span>/.test(code)) bad('legacy green square CSO badge in SSR template');
+  if (/<style[\s>]/i.test(code)) bad('inline <style> in SSR template');
+  if (/<script(?![^>]*(\bsrc=|ld\+json))[^>]*>/i.test(code.replace(/\/<script[^/]*\//g, ''))) bad('inline <script> in SSR template');
+  if (/\sstyle=\\?["']/i.test(code)) bad('inline style="" in SSR template');
+  if (/\.innerHTML\b/.test(code)) bad('.innerHTML in SSR template');
+  if (!/ssr-shell\.js/.test(code) && !/cso-main-navbar/.test(code)) bad('SSR template does not use canonical shell (functions/_lib/ssr-shell.js)');
+}
+console.log(`Audited ${fnFiles.length} functions/*.js files for SSR shell compliance.`);
 console.log(`Audited ${files.length} HTML files.`);
 if (errors.length) { console.error(errors.join('\n')); console.error(`FAIL: ${errors.length} issue(s)`); process.exit(1); }
 console.log('PASS: site uniformity OK');

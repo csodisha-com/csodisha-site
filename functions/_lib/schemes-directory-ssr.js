@@ -2,6 +2,7 @@ import {
   resolvePublicSchemesDirectory,
   resolvePublicSchemesItem
 } from './schemes-directory-studio.js';
+import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs } from './ssr-shell.js';
 
 const CANONICAL_ORIGIN = 'https://csodisha.com';
 
@@ -52,7 +53,7 @@ function safeExternalUrl(raw) {
   }
 }
 
-function renderShell({ title, description, canonicalPath, jsonLdList = [], bodyHtml }) {
+function renderShellRaw({ title, description, canonicalPath, jsonLdList = [], bodyHtml }) {
   const canonicalUrl = `${CANONICAL_ORIGIN}${canonicalPath}`;
   const ldTags = jsonLdList
     .map((obj) => `<script type="application/ld+json">${safeJsonLd(obj)}</script>`)
@@ -67,34 +68,23 @@ function renderShell({ title, description, canonicalPath, jsonLdList = [], bodyH
   <title>${escHtml(title)}</title>
   <meta name="description" content="${escHtml(description)}">
   <link rel="canonical" href="${escHtml(canonicalUrl)}">
+  ${CSO_SHELL_HEAD_LINKS}
   <link rel="stylesheet" href="/schemes/assets/schemes-explorer.css">
   <script src="/schemes/assets/ssr-actions.js" defer></script>
   ${ldTags}
 </head>
 <body>
-  <header class="cso-pub-header">
-    <div class="cso-pub-header-inner">
-      <a class="cso-pub-brand" href="/">
-        <span class="cso-schemes-badge" aria-hidden="true">CSO</span>
-        <span>Common Sense Odisha</span>
-      </a>
-      <nav class="cso-pub-nav" aria-label="Primary Navigation">
-        <a href="/">Home</a>
-        <a href="/schemes/">Schemes &amp; Benefits</a>
-        <a href="/jobs/">Jobs &amp; Careers</a>
-        <a href="/study-library/">Study Library</a>
-        <a href="/current-affairs/">Current Affairs</a>
-      </nav>
-    </div>
-  </header>
+  ${CSO_SHELL_HEADER}
   <main class="cso-ssr-wrap">
     ${bodyHtml}
   </main>
-  <footer class="cso-pub-footer">
-    Common Sense Odisha · Verified Schemes &amp; Citizen Benefits Directory · <a href="/schemes/">Browse All 8 Domains</a>
-  </footer>
+  ${CSO_SHELL_FOOTER}
 </body>
 </html>`;
+}
+
+function renderShell(args) {
+  return decorateMain(renderShellRaw(args), { backHref: '/schemes/', backLabel: '← Back to Explorer' });
 }
 
 function renderNotFoundPage(pathname) {
@@ -178,7 +168,7 @@ function renderDirectoryPage(resolved) {
   const breadcrumbLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: breadcrumbs.map((b, i) => ({
+    itemListElement: normalizeCrumbs(breadcrumbs).map((b, i) => ({
       '@type': 'ListItem',
       position: i + 1,
       name: b.label,
@@ -195,7 +185,7 @@ function renderDirectoryPage(resolved) {
 
   const bodyHtml = `
     <section class="cso-schemes-hero">
-      <div class="cso-schemes-crumb">${crumbHtml}</div>
+      ${renderKicker(breadcrumbs)}
       <h1>${escHtml(folder ? folder.name : `Module #${meta.num} — ${meta.title}`)}</h1>
       <p class="cso-schemes-hero-sub">${escHtml(pageDesc)}</p>
       <div class="cso-schemes-item-actions">
@@ -304,7 +294,7 @@ function renderItemReaderPage(resolved) {
   const breadcrumbLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: breadcrumbs.map((b, i) => ({
+    itemListElement: normalizeCrumbs(breadcrumbs).map((b, i) => ({
       '@type': 'ListItem',
       position: i + 1,
       name: b.label,
@@ -314,7 +304,7 @@ function renderItemReaderPage(resolved) {
 
   const bodyHtml = `
     <section class="cso-schemes-hero">
-      <div class="cso-schemes-crumb">${crumbHtml}</div>
+      ${renderKicker(breadcrumbs)}
       <h1>${escHtml(item.title)}</h1>
       ${item.title_or ? `<p class="cso-schemes-hero-sub">${escHtml(item.title_or)}</p>` : ''}
       <p class="cso-schemes-hero-sub">${escHtml(item.summary || '')}</p>

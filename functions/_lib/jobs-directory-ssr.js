@@ -2,6 +2,7 @@ import {
   resolvePublicJobsDirectory,
   resolvePublicJobsItem
 } from './jobs-directory-studio.js';
+import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs } from './ssr-shell.js';
 
 const CANONICAL_ORIGIN = 'https://csodisha.com';
 
@@ -59,6 +60,7 @@ function buildHead({ title, description, canonicalUrl, jsonLdList = [] }) {
   <meta property="og:title" content="${escHtml(title)}">
   <meta property="og:description" content="${escHtml(description)}">
   <meta property="og:url" content="${escHtml(canonicalUrl)}">
+  ${CSO_SHELL_HEAD_LINKS}
   <link rel="stylesheet" href="/jobs/assets/jobs-explorer.css">
   <script src="/jobs/assets/ssr-actions.js" defer></script>
   ${jsonLdScripts}
@@ -66,27 +68,11 @@ function buildHead({ title, description, canonicalUrl, jsonLdList = [] }) {
 }
 
 function buildHeader() {
-  return `<header class="cso-pub-header">
-  <div class="cso-pub-header-inner">
-    <a class="cso-pub-brand" href="/">
-      <span class="cso-jobs-badge" aria-hidden="true">CSO</span>
-      <span>Common Sense Odisha</span>
-    </a>
-    <nav class="cso-pub-nav" aria-label="Primary">
-      <a href="/">Home</a>
-      <a href="/jobs/" aria-current="page">Jobs &amp; Careers</a>
-      <a href="/study-library/">Study Library</a>
-      <a href="/schemes-benefits/">Schemes</a>
-      <a href="/mock-tests/">Mock Tests</a>
-    </nav>
-  </div>
-</header>`;
+  return CSO_SHELL_HEADER;
 }
 
 function buildFooter() {
-  return `<footer class="cso-pub-footer">
-  Common Sense Odisha · Verified Public Recruitment, Scholarship &amp; Career Directory · <a href="/jobs/">All 8 Jobs &amp; Careers Domains</a>
-</footer>`;
+  return CSO_SHELL_FOOTER;
 }
 
 function buildBreadcrumbHtml(breadcrumbs) {
@@ -114,7 +100,7 @@ function buildBreadcrumbJsonLd(breadcrumbs) {
 }
 
 function htmlResponse(html, status = 200) {
-  return new Response(html, {
+  return new Response(decorateMain(html, { backHref: '/jobs/', backLabel: '← Back to Explorer' }), {
     status,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
@@ -207,7 +193,7 @@ function renderDirectoryPage(data) {
   ${buildHeader()}
   <main class="cso-ssr-wrap">
     <section class="cso-jobs-hero">
-      <div class="cso-jobs-crumb">${buildBreadcrumbHtml(breadcrumbs)}</div>
+      ${renderKicker(breadcrumbs)}
       <h1>${escHtml(heading)}</h1>
       ${headingOr ? `<p class="cso-jobs-hero-sub">${escHtml(headingOr)}</p>` : ''}
       <p class="cso-jobs-hero-sub">${sanitizeRichBody(intro)}</p>
@@ -279,7 +265,7 @@ function renderItemReaderPage(data) {
   ${buildHeader()}
   <main class="cso-ssr-wrap">
     <section class="cso-jobs-hero">
-      <div class="cso-jobs-crumb">${buildBreadcrumbHtml(breadcrumbs)}</div>
+      ${renderKicker(breadcrumbs)}
       <h1>${escHtml(item.title)}</h1>
       ${item.title_or ? `<p class="cso-jobs-hero-sub">${escHtml(item.title_or)}</p>` : ''}
       <p class="cso-jobs-hero-sub">${escHtml(item.summary || '')}</p>

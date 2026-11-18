@@ -7,6 +7,7 @@
  * redirect into the candidate dashboard.
  */
 
+import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER } from '../../_lib/ssr-shell.js';
 import {
   constantTimeEqual,
   normalizeEmail,
@@ -159,8 +160,15 @@ export async function onRequestGet({ request, env, ctx }) {
 }
 
 function expiredLinkResponse() {
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Link Expired | Common Sense Odisha</title><meta name="viewport" content="width=device-width, initial-scale=1">
+  ${CSO_SHELL_HEAD_LINKS}
+</head><body>
+${CSO_SHELL_HEADER}
+<main class="cso-ssr-wrap"><div class="cso-link-expired-card"><h2>Link Expired or Invalid</h2><p>This magic verification link has expired or has already been used.</p><a class="cso-link-expired-btn" href="/signup.html">Request New Link</a></div></main>
+${CSO_SHELL_FOOTER}
+</body></html>`;
   return new Response(
-    '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Link Expired</title><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="font-family:system-ui,sans-serif;background:#090e18;color:#f1f5f9;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;"><div style="text-align:center;padding:2rem;max-width:400px;background:#0f172a;border-radius:12px;border:1px solid #1e293b;"><h2>Link Expired or Invalid</h2><p style="color:#94a3b8;font-size:0.9rem;">This magic verification link has expired or has already been used.</p><a href="/signup.html" style="display:inline-block;margin-top:1rem;padding:0.75rem 1.5rem;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Request New Link</a></div></body></html>',
+    html,
     { status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
   );
 }

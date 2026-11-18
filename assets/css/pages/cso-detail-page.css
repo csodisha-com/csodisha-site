@@ -1,0 +1,39 @@
+/* v153: unified server-rendered detail/directory pages (schemes, jobs, study, community, CMS pages).
+   External stylesheet only (CSP style-src 'self'); theme tokens only: --cso-bg/surface/text/muted/border/hero-*. */
+.cso-ssr-wrap,.cso-sl-pub-main{max-width:1180px;margin:0 auto;padding:20px 24px 40px;color:var(--cso-text);font-size:15px;line-height:1.55}
+.cso-ssr-wrap p,.cso-ssr-wrap li,.cso-sl-pub-main p,.cso-sl-pub-main li{font-size:14.5px}
+
+/* Sticky topbar on detail pages */
+.cso-dir-topbar--detail{position:sticky;top:0;z-index:30;display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 18px;padding:10px 14px;border:1px solid var(--cso-border);border-radius:14px;background:var(--cso-surface);color:var(--cso-text)}
+.cso-dir-jump{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 auto;min-width:0}
+.cso-dir-jump-pill{padding:6px 12px;border-radius:999px;border:1px solid var(--cso-border);background:var(--cso-bg);color:var(--cso-text);font-size:14px;font-weight:600;text-decoration:none;white-space:nowrap}
+.cso-dir-jump-pill:hover,.cso-dir-jump-pill:focus-visible{border-color:var(--cso-primary,var(--cso-text));text-decoration:none;outline:none}
+.cso-dir-topbar--detail .cso-dir-context-pill{margin-left:auto}
+.cso-ssr-wrap [id^="cso-sec-"],.cso-sl-pub-main [id^="cso-sec-"]{scroll-margin-top:84px}
+
+/* Kicker: CS ODISHA › SCHEMES & BENEFITS › STATE WELFARE */
+.cso-detail-kicker{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px;font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--cso-hero-sub)}
+.cso-detail-kicker a,.cso-detail-kicker span{color:inherit;text-decoration:none}
+.cso-detail-kicker a:hover{text-decoration:underline}
+
+/* Uniform v150 hero cards */
+.cso-schemes-hero,.cso-jobs-hero,.cso-comm-hero,.cso-sl-pub-hero,.cso-live-hero{border-radius:20px;padding:28px 32px;margin-bottom:20px;background:var(--cso-hero-bg);border:1px solid var(--cso-border);color:var(--cso-hero-sub)}
+.cso-schemes-hero h1,.cso-jobs-hero h1,.cso-comm-hero h1,.cso-sl-pub-hero h1,.cso-live-hero h1{color:var(--cso-hero-title);margin:0 0 8px}
+.cso-schemes-hero-sub,.cso-jobs-hero-sub,.cso-comm-hero-sub,.cso-sl-pub-hero-desc{color:var(--cso-hero-sub);font-size:15px;margin:6px 0}
+
+/* Panels, summary grids, checklists */
+.cso-schemes-panel,.cso-jobs-panel,.cso-comm-panel{background:var(--cso-surface);border:1px solid var(--cso-border);border-radius:16px;padding:20px 24px;margin-bottom:18px;color:var(--cso-text)}
+.cso-schemes-panel h2,.cso-jobs-panel h2,.cso-comm-panel h2{color:var(--cso-text);font-size:1.15rem;margin:0 0 12px}
+.cso-schemes-summary-box,.cso-jobs-summary-box,.cso-comm-summary-box{background:var(--cso-bg);border:1px solid var(--cso-border);border-radius:14px;padding:16px 18px;margin-top:14px}
+.cso-ssr-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.cso-ssr-fact{background:var(--cso-bg);border:1px solid var(--cso-border);border-radius:12px;padding:12px 14px}
+.cso-ssr-fact-k{font-size:12.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--cso-muted)}
+.cso-ssr-fact-v{font-size:14.5px;font-weight:600;color:var(--cso-text);margin-top:2px}
+.cso-schemes-checklist li,.cso-jobs-checklist li,.cso-comm-checklist li{color:var(--cso-text);margin:4px 0}
+
+/* Magic-link expired page (served by functions/api/auth/verify-link.js) */
+.cso-link-expired-card{margin:40px auto;text-align:center;padding:2rem;max-width:400px;background:var(--cso-surface);border:1px solid var(--cso-border);border-radius:16px}
+.cso-link-expired-card p{color:var(--cso-muted);font-size:14.5px}
+.cso-link-expired-btn{display:inline-block;margin-top:1rem;padding:.75rem 1.5rem;background:var(--cso-primary,#059669);color:#fff;border-radius:10px;font-weight:600;text-decoration:none}
+
+@media (max-width:900px){.cso-ssr-wrap,.cso-sl-pub-main{padding:14px 14px 32px}.cso-schemes-hero,.cso-jobs-hero,.cso-comm-hero,.cso-sl-pub-hero,.cso-live-hero{padding:22px 20px}.cso-dir-topbar--detail .cso-dir-context-pill{margin-left:0;max-width:100%}}
