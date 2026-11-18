@@ -8,9 +8,9 @@
   <meta name="description" content="Independent non-government civic portal for Odisha &amp; National exam preparation, verified govt jobs, welfare schemes, anti-scam URL verification, and DPDP Act 2023 privacy charter.">
   <link rel="canonical" href="https://csodisha.com/about/">
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="/assets/style.css?v=20261116c">
-  <link rel="stylesheet" href="/about/assets/about-explorer.css?v=20261115g">
-  <script src="/about/assets/about-explorer.js?v=20261115g" defer></script>
+  <link rel="stylesheet" href="/assets/style.css?v=20261118v145">
+  <link rel="stylesheet" href="/about/assets/about-explorer.css?v=20261118v145">
+  <script src="/about/assets/about-explorer.js?v=20261118v145" defer></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -44,7 +44,7 @@
     <aside class="cso-about-rail" aria-label="About CSO Sections">
       <div class="cso-about-brand">
         <a class="cso-about-brand-link" href="/">
-          <span class="cso-about-badge" aria-hidden="true">CSO</span>
+          <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" width="32" height="32" class="cso-brand-emblem">
           <span class="cso-about-rail-title">CS Odisha</span>
         </a>
         <button id="about-rail-toggle" type="button" class="cso-about-rail-toggle" aria-expanded="true" title="Collapse or Expand Sidebar">⇄</button>
@@ -74,10 +74,15 @@
     </aside>
 
     <main class="cso-about-main" id="main-content">
-      <div class="cso-about-mobile-bar">
-        <button id="about-mobile-open" type="button" class="cso-about-btn">☰ About Sections</button>
-        <a class="cso-about-btn" href="/">Home</a>
-      </div>
+      <header class="cso-dir-topbar" id="about-topbar" role="search">
+        <button type="button" class="cso-dir-menu-toggle" id="about-topbar-toggle" aria-controls="about-shell" aria-expanded="true" aria-label="Toggle directory sidebar" title="Collapse / Expand Sidebar"><span aria-hidden="true">☰</span></button>
+        <div class="cso-dir-search">
+          <span class="cso-dir-search-icon" aria-hidden="true">⌕</span>
+          <input id="about-topbar-search" class="cso-dir-search-input" type="search" autocomplete="off" placeholder="Search CSO citizen charter, verification rules, districts, helplines, FAQs..." aria-label="Search About CSO citizen charter, verification rules, districts, helplines, and FAQs">
+          <button id="about-topbar-clear" class="cso-dir-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button>
+        </div>
+        <a class="cso-dir-context-pill" id="about-context-pill" href="#overview" aria-live="polite" aria-label="About CSO active section">⌂ Overview</a>
+      </header>
 
       <section class="cso-about-hero" id="overview">
         <div class="cso-about-hero-top">
@@ -513,6 +518,6 @@
     </div>
   </div></footer>
   <script src="/assets/cso-auth-client.js?v=20261114f" defer></script>
-  <script src="/assets/shared-header.js?v=20261116c" defer></script>
+  <script src="/assets/shared-header.js?v=20261118v145" defer></script>
 </body>
 </html>

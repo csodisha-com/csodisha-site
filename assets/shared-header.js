@@ -739,6 +739,12 @@
       const b = n.querySelector('.cso-nav-arrow');
       if (b) b.setAttribute('aria-expanded', 'false');
     });
+    const navw = document.getElementById('navw');
+    if (navw && document.activeElement && navw.contains(document.activeElement)) {
+      if (!except || !except.contains(document.activeElement)) {
+        try { document.activeElement.blur(); } catch (e) {}
+      }
+    }
   }
 
   function renderNav() {
@@ -1063,6 +1069,11 @@
     }
   });
 
+  window.addEventListener('scroll', () => {
+    closeDropdowns();
+    closeAuthDropdown();
+  }, { passive: true });
+
   window.addEventListener('resize', () => {
     syncMobileControlsVisibility();
     if (window.innerWidth > 768) {
@@ -1115,7 +1126,7 @@
   }
 
   function syncBrandLogoMarks() {
-    const imgs = document.querySelectorAll('.cso-brand-logo, .cso-footer-logo, #cso-brand-logo');
+    const imgs = document.querySelectorAll('.cso-brand-logo, .cso-footer-logo, #cso-brand-logo, img.cso-brand-emblem');
     imgs.forEach(node => {
       if (node.tagName === 'IMG') {
         node.src = '/assets/img/cso-logo-96.webp';
@@ -1123,6 +1134,14 @@
         node.width = 36;
         node.height = 36;
         node.classList.add('cso-brand-emblem');
+        if (!node.dataset.emblemBound) {
+          node.dataset.emblemBound = '1';
+          node.addEventListener('error', () => {
+            if (node.dataset.fallbackApplied === '1') return;
+            node.dataset.fallbackApplied = '1';
+            node.src = '/assets/img/cso-logo-96.png';
+          });
+        }
       } else {
         const img = document.createElement('img');
         img.src = '/assets/img/cso-logo-96.webp';

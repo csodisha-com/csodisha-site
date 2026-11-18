@@ -469,6 +469,177 @@
     }
   }
 
+
+  function initEmblemFallback() {
+    document.querySelectorAll('img.cso-brand-emblem').forEach((img) => {
+      img.addEventListener('error', () => {
+        if (img.dataset.fallbackApplied === '1') return;
+        img.dataset.fallbackApplied = '1';
+        img.src = '/assets/img/cso-logo-96.png';
+      });
+      if (img.complete && img.naturalWidth === 0 && img.dataset.fallbackApplied !== '1') {
+        img.dataset.fallbackApplied = '1';
+        img.src = '/assets/img/cso-logo-96.png';
+      }
+    });
+  }
+
+  function initTopSearchAndContext() {
+    const shell = $('about-shell');
+    const rail = document.querySelector('.cso-about-rail');
+    const backdrop = $('about-backdrop');
+    const railToggle = $('about-rail-toggle');
+    const topToggle = $('about-topbar-toggle');
+    const topSearch = $('about-topbar-search');
+    const topClear = $('about-topbar-clear');
+    const ctxPill = $('about-context-pill');
+    const navLinks = Array.from(document.querySelectorAll('#about-rail-nav .cso-about-nav-link'));
+    let activeLabel = 'Overview';
+    let activeHref = '#overview';
+    let timer = null;
+
+    function setContext(label, href) {
+      if (!ctxPill) return;
+      ctxPill.textContent = '⌂ ' + (label || 'Overview');
+      if (href) ctxPill.setAttribute('href', href);
+    }
+
+    function setActiveNav(href) {
+      navLinks.forEach((n) => n.classList.toggle('is-active', n.getAttribute('href') === href));
+    }
+
+    function filterSections(q, jumpToFirst) {
+      const needle = String(q || '').trim().toLowerCase();
+      if (topClear) topClear.hidden = !needle;
+
+      const panels = Array.from(document.querySelectorAll(
+        '.cso-about-main > .cso-about-panel, .cso-about-main > .cso-about-notice'
+      ));
+      const cards = Array.from(document.querySelectorAll(
+        '.cso-about-step-card, .cso-about-charter-card, .cso-about-faq-item, .cso-about-helpline-card, .cso-about-district-chip'
+      ));
+
+      if (!needle) {
+        panels.forEach((elNode) => {
+          elNode.classList.remove('is-search-match', 'is-search-dim');
+        });
+        cards.forEach((c) => {
+          c.classList.remove('is-search-match', 'is-search-dim');
+        });
+        setContext(activeLabel, activeHref);
+        return;
+      }
+
+      let firstMatch = null;
+      let matchCount = 0;
+
+      panels.forEach((panel) => {
+        const hit = (panel.textContent || '').toLowerCase().includes(needle);
+        panel.classList.toggle('is-search-match', hit);
+        panel.classList.toggle('is-search-dim', !hit);
+        if (hit) {
+          matchCount += 1;
+          if (!firstMatch) firstMatch = panel;
+        }
+      });
+
+      cards.forEach((card) => {
+        const hit = (card.textContent || '').toLowerCase().includes(needle);
+        card.classList.toggle('is-search-match', hit);
+        card.classList.toggle('is-search-dim', !hit);
+        if (hit && !firstMatch) firstMatch = card;
+      });
+
+      setContext(`Search: ${q.trim()} (${matchCount})`, firstMatch && firstMatch.id ? '#' + firstMatch.id : '#overview');
+      if (jumpToFirst && firstMatch && firstMatch.scrollIntoView) {
+        firstMatch.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    if (topToggle && shell) {
+      topToggle.addEventListener('click', () => {
+        if (window.matchMedia && window.matchMedia('(max-width: 1024px)').matches) {
+          const open = !(rail && rail.classList.contains('is-open'));
+          if (rail) rail.classList.toggle('is-open', open);
+          if (backdrop) backdrop.classList.toggle('is-open', open);
+          topToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        } else {
+          const next = !shell.classList.contains('is-collapsed');
+          shell.classList.toggle('is-collapsed', next);
+          topToggle.setAttribute('aria-expanded', next ? 'false' : 'true');
+          if (railToggle) railToggle.setAttribute('aria-expanded', next ? 'false' : 'true');
+          try { localStorage.setItem('cso_about_rail_collapsed', next ? '1' : '0'); } catch { /* ignore */ }
+        }
+      });
+    }
+
+    if (topSearch) {
+      topSearch.addEventListener('input', () => {
+        clearTimeout(timer);
+        if (topClear) topClear.hidden = !topSearch.value;
+        timer = setTimeout(() => filterSections(topSearch.value, false), 180);
+      });
+      topSearch.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          clearTimeout(timer);
+          filterSections(topSearch.value, true);
+        } else if (e.key === 'Escape') {
+          topSearch.value = '';
+          clearTimeout(timer);
+          filterSections('', false);
+        }
+      });
+    }
+
+    if (topClear) {
+      topClear.addEventListener('click', () => {
+        if (topSearch) {
+          topSearch.value = '';
+          topSearch.focus();
+        }
+        filterSections('', false);
+      });
+    }
+
+    navLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        const lbl = link.querySelector('.cso-about-rail-label');
+        activeLabel = lbl ? lbl.textContent.trim() : 'Overview';
+        activeHref = link.getAttribute('href') || '#overview';
+        setContext(activeLabel, activeHref);
+      });
+    });
+
+    const sectionEntries = navLinks
+      .map((link) => {
+        const href = link.getAttribute('href') || '';
+        const target = href.startsWith('#') ? document.getElementById(href.slice(1)) : null;
+        const lbl = link.querySelector('.cso-about-rail-label');
+        return target ? { href, target, label: lbl ? lbl.textContent.trim() : 'Overview' } : null;
+      })
+      .filter(Boolean);
+
+    if (sectionEntries.length) {
+      const onScrollUpdate = () => {
+        if (topSearch && topSearch.value.trim()) return;
+        let current = sectionEntries[0];
+        const offset = 140;
+        for (let i = 0; i < sectionEntries.length; i += 1) {
+          const rect = sectionEntries[i].target.getBoundingClientRect();
+          if (rect.top <= offset) current = sectionEntries[i];
+        }
+        if (current && current.href !== activeHref) {
+          activeHref = current.href;
+          activeLabel = current.label;
+          setActiveNav(activeHref);
+          setContext(activeLabel, activeHref);
+        }
+      };
+      window.addEventListener('scroll', onScrollUpdate, { passive: true });
+    }
+  }
+
   function boot() {
     let savedLang = 'en';
     try {
@@ -476,6 +647,8 @@
     } catch { /* ignore */ }
 
     initSidebar();
+    initEmblemFallback();
+    initTopSearchAndContext();
     initUrlVerifier();
     initDistrictTabs();
     initHelplineActions();
