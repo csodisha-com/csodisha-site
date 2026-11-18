@@ -884,7 +884,8 @@
         const mobAuth = document.getElementById('cso-nav-mobile-auth');
         navItems.replaceChildren();
         visibleItems.forEach(it => {
-          const slugMatch = String(it.url || '').replace(/^\/+|\/+$/g, '').split('/')[0];
+          const rawSlug = String(it.url || '').replace(/^\/+|\/+$/g, '').split('/')[0];
+          const slugMatch = rawSlug === 'schemes' ? 'schemes-benefits' : (rawSlug === 'jobs' ? 'jobs-careers' : rawSlug);
           const isCurrent = (it.url === '/' && !activeSection && (pathname === '/' || pathname.endsWith('/index.html'))) || (slugMatch && slugMatch === activeSection);
           const hasSub = Boolean(slugMatch && MENUS[slugMatch]);
           if (!hasSub) {

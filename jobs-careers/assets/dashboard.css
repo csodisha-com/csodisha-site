@@ -1871,23 +1871,7 @@ body:has(#explorer:not([hidden])) .welcome {
   font-size: 0.9rem !important;
 }
 
-/* 2. Top Navbar & Dropdown Menus */
-.cso-nav-items > a,
-.cso-nav-parent > a,
-.cso-nav-home {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  min-height: 38px !important;
-  padding: 8px 14px !important;
-  box-sizing: border-box !important;
-  white-space: nowrap !important;
-  color: #fff !important;
-  font-size: 0.92rem !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  border-radius: 6px !important;
-}
+/* 2. Top Navbar & Dropdown Menus (active pill & link colors inherited from /assets/style.css) */
 
 .cso-nav-items .dd,
 .dd,
@@ -3409,3 +3393,40 @@ body.is-live-modal-open {
 }
 
 
+
+
+/* ==========================================================================
+   v146: Jobs & Careers Header Utility Bar, Main-Nav Pill & Breadcrumb Fix
+   ========================================================================== */
+.cso-jobs-hero .breadcrumb,
+.cso-jobs-hero .breadcrumb.cso-jc-crumb,
+.breadcrumb.cso-jc-crumb,
+.breadcrumb {
+  background: linear-gradient(135deg, #0F4C3A 0%, #14532D 100%) !important;
+  color: #F8FAFC !important;
+  padding: 6px 14px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: 0 2px 8px rgba(15, 76, 58, 0.16) !important;
+}
+.cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-item,
+.cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-item:not(:last-child)::after,
+.cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-link,
+.cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-current,
+.cso-jobs-hero .breadcrumb.cso-jc-crumb strong,
+.breadcrumb .breadcrumb-item,
+.breadcrumb .breadcrumb-item:not(:last-child)::after,
+.breadcrumb .breadcrumb-link,
+.breadcrumb .breadcrumb-current,
+.breadcrumb strong {
+  color: #F8FAFC !important;
+  opacity: 1 !important;
+}
+.cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-link:hover,
+.breadcrumb .breadcrumb-link:hover {
+  color: #FDE68A !important;
+  text-decoration: underline !important;
+}

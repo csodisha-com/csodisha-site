@@ -1837,23 +1837,7 @@ body:has(#explorer:not([hidden])) .welcome {
   font-size: 0.9rem !important;
 }
 
-/* 2. Top Navbar & Dropdown Menus */
-.cso-nav-items > a,
-.cso-nav-parent > a,
-.cso-nav-home {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  min-height: 38px !important;
-  padding: 8px 14px !important;
-  box-sizing: border-box !important;
-  white-space: nowrap !important;
-  color: #fff !important;
-  font-size: 0.92rem !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  border-radius: 6px !important;
-}
+/* 2. Top Navbar & Dropdown Menus (active pill & link colors inherited from /assets/style.css) */
 
 .cso-nav-items .dd,
 .dd,

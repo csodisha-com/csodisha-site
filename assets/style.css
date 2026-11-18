@@ -8150,7 +8150,7 @@ select:focus-visible {
 :root[data-cso-theme] .cso-schemes-crumb a,
 :root[data-cso-theme] .cso-comm-crumb a,
 :root[data-cso-theme] .cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-link {
-  color: var(--cso-hero-title) !important;
+  color: #F8FAFC !important;
 }
 
 :root[data-cso-theme] .cso-schemes-hero-sub,
@@ -8159,7 +8159,10 @@ select:focus-visible {
 :root[data-cso-theme] .cso-schemes-crumb,
 :root[data-cso-theme] .cso-comm-crumb,
 :root[data-cso-theme] .cso-jobs-hero .breadcrumb.cso-jc-crumb,
-:root[data-cso-theme] .cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-current,
+:root[data-cso-theme] .cso-jobs-hero .breadcrumb.cso-jc-crumb .breadcrumb-current {
+  color: #F8FAFC !important;
+}
+:root[data-cso-theme] .cso-schemes-crumb,
 :root[data-cso-theme] .cso-sl-hero-trail,
 :root[data-cso-theme] .cso-sl-hero-tagline,
 :root[data-cso-theme] .cso-sl-pub-hero-desc,
@@ -8280,3 +8283,141 @@ select:focus-visible {
 }
 
 
+
+
+/* ==========================================================================
+   v146: Utility Bar High-Contrast Ink, Right-Edge No-Clip & Main-Nav Unification
+   ========================================================================== */
+.top,
+.top-bar,
+.utility-bar,
+.header-utility,
+.cso-header-top,
+.site-header__top,
+#header-top {
+  padding-right: 16px !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  color: #F8FAFC !important;
+}
+
+.top .pill,
+.top-bar .pill,
+.utility-bar .pill,
+.utility-bar button,
+.utility-bar select,
+.header-utility .pill,
+.cso-header-top .pill,
+.site-header__top .pill,
+#header-top .pill,
+#cso-ctl-global-search,
+#cso-global-search-btn,
+.cso-ctl-search,
+.cso-ctl-lang,
+.cso-ctl-theme,
+.cso-ctl-a11y,
+.cso-ctl-saved {
+  color: #F8FAFC !important;
+  opacity: 1 !important;
+  width: auto !important;
+  overflow: visible !important;
+  flex-shrink: 0 !important;
+}
+
+.top .pill span,
+.site-header__top .pill span,
+#header-top .pill span,
+.cso-ctl-search-label,
+.cso-ctl-search-icon,
+.cso-lang-name,
+.cso-lang-icon {
+  color: #F8FAFC !important;
+  opacity: 1 !important;
+}
+
+.top .cso-ctl-search-kbd,
+.site-header__top .cso-ctl-search-kbd,
+#header-top .cso-ctl-search-kbd {
+  color: #F8FAFC !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+}
+
+.top .adm,
+.site-header__top .adm,
+#header-top .adm,
+.top .acct,
+.site-header__top .acct,
+#header-top .acct,
+.cso-auth-inline-cluster,
+.cso-auth-dash-pill,
+.cso-auth-logout-btn,
+.cso-logout-button {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* Unified Main Navigation Item Layout & Active Pill Contrast */
+.main-nav .ni,
+.site-header__nav .ni,
+.cso-nav-items .ni {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.main-nav .cso-nav-parent,
+.site-header__nav .cso-nav-parent,
+.cso-nav-items .cso-nav-parent {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 0 10px !important;
+  border-radius: 8px !important;
+}
+
+.main-nav .cso-nav-parent > a,
+.site-header__nav .cso-nav-parent > a,
+.cso-nav-items .cso-nav-parent > a {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 8px 0 !important;
+  min-height: 38px !important;
+}
+
+.main-nav .cso-nav-arrow,
+.site-header__nav .cso-nav-arrow,
+.cso-nav-items .cso-nav-arrow {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 2px !important;
+  min-height: 38px !important;
+  margin: 0 !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+}
+
+.main-nav a.active,
+.main-nav a.on,
+.main-nav a[aria-current="page"],
+.site-header__nav a.active,
+.site-header__nav a.on,
+.site-header__nav a[aria-current="page"],
+.cso-nav-items > a.on,
+.cso-nav-items .ni.cso-active > .cso-nav-parent {
+  background: var(--cso-surface) !important;
+  color: var(--cso-primary) !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16) !important;
+}
+
+.cso-nav-items .ni.cso-active > .cso-nav-parent > a,
+.cso-nav-items .ni.cso-active > .cso-nav-parent > a span,
+.cso-nav-items .ni.cso-active > .cso-nav-parent > .cso-nav-arrow {
+  background: transparent !important;
+  color: var(--cso-primary) !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
