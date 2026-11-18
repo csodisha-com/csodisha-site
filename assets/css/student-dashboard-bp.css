@@ -2108,3 +2108,143 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
   .bp-search-trigger { min-width: 0; flex: 0 0 auto; }
   .bp-search-trigger .bp-search-label { display: none; }
 }
+
+/* ==========================================================================
+   v143 Typography & Contrast Upgrade (hub-scoped, theme-aware)
+   ========================================================================== */
+body.cso-student-dashboard-page {
+  --cso-text: #111827;
+  --cso-ink: #111827;
+  --cso-muted: #374151;
+  --cso-text-muted: #374151;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+:root[data-cso-resolved-mode="dark"] body.cso-student-dashboard-page,
+:root[data-cso-theme="dark"] body.cso-student-dashboard-page {
+  --cso-text: #F8FAFC;
+  --cso-ink: #F8FAFC;
+  --cso-muted: #CBD5E1;
+  --cso-text-muted: #CBD5E1;
+}
+:root[data-cso-theme="reading"] body.cso-student-dashboard-page {
+  --cso-text: #241C14;
+  --cso-ink: #241C14;
+  --cso-muted: #4A3B2C;
+  --cso-text-muted: #4A3B2C;
+}
+
+/* Headings: 17-22px, 700 */
+.bp-page-header h1 { font-size: 22px; }
+.bp-panel-title,
+.bp-section-head h2,
+.bp-section-head h3,
+.bp-modal-head,
+.bp-exam-card h3,
+.cso-drill-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--cso-text);
+}
+.bp-section-head h2 { font-size: 20px; }
+.cso-drill-card h3 { font-size: 17px; line-height: 1.4; }
+.bp-brand-title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+
+/* Subtitles, descriptions, row titles, quiz options: 14-15px / 500 */
+.bp-topbar-sub,
+.bp-section-head p,
+.cso-muted-note,
+.cso-daily-target,
+.cso-metric-line,
+.cso-field,
+.cso-drill-explanation,
+.cso-exam-pick-row,
+.cso-pwa-guide-step,
+.cso-calc-result {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cso-muted);
+}
+.cso-list-item-title,
+.cso-topic-row,
+.cso-cd-title,
+.cso-stage-summary,
+.cso-scratchpad,
+.cso-drill-opt,
+.cso-opt-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cso-text);
+}
+.cso-list-item-title { font-weight: 600; }
+.cso-drill-opt { line-height: 1.45; }
+
+/* Metadata: 13.5px / 500 */
+.bp-brand-sub,
+.bp-user-district,
+.cso-profile-id,
+.cso-list-item-sub,
+.cso-cd-meta,
+.cso-cbt-kpi span,
+.cso-ring-inner span,
+.bp-user-name,
+.cso-toast,
+.cso-sw-update-toast,
+.cso-lock-badge,
+.cso-bar-lbl {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--cso-muted);
+}
+.bp-user-name { color: var(--cso-text); font-weight: 600; }
+.cso-ring-inner span { font-size: 13px; }
+.cso-cd-tile span { font-size: 13px; font-weight: 600; color: var(--cso-muted); }
+
+/* Pills, badges, buttons, sidebar links: 13.5-14px / 600 */
+.cso-pill-badge,
+.cso-paper-pill,
+.cso-paper-tag,
+.cso-metric-pill,
+.cso-readiness-tag,
+.cso-profile-badge,
+.cso-sync-pill,
+.cso-focus-pill,
+.cso-pill-btn,
+.bp-chip,
+.cso-tier-btn,
+.bp-panel-link,
+.cso-admin-notice-badge,
+.bp-kbd {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.bp-kbd { font-size: 12px; }
+.bp-nav-item,
+.bp-search-trigger,
+.bp-icon-action-btn,
+.cso-btn,
+.cso-btn-install-side,
+.cso-profile-signout {
+  font-size: 14px;
+  font-weight: 600;
+}
+.cso-btn-sm { font-size: 13.5px; font-weight: 600; }
+.bp-nav-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cso-muted);
+}
+.bp-nav-item { color: var(--cso-muted); }
+.bp-nav-item:hover { color: var(--cso-text); }
+.bp-search-trigger { color: var(--cso-muted); }
+.cso-metric-pill { color: var(--cso-muted); }
+.cso-mobile-label,
+.bp-bottom-nav-btn { font-size: 12px; }
+.bp-mobile-bottom-nav button,
+.bp-mobile-bottom-nav a { font-size: 12px; }
