@@ -6,7 +6,7 @@
   <meta name="description" content="About Common Sense Odisha - Dedicated digital gateway providing verified syllabi, state exam patterns, and scholarship navigation.">
   <title>About Us | Common Sense Odisha</title>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="/assets/style.css">
   <style>
     .about-main {
       max-width: 960px;
@@ -192,11 +192,11 @@
     <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36">
   </a>
   <a class="adm cso-adm-icon-only" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a>
-  <span id="ctl" style="display:contents"></span>
+  <span id="ctl" class="cso-u-bfa03e44"></span>
   <span class="sp"></span>
   <div class="acct">
-    <span style="font-size:26px" aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
-    <span id="auth" style="display:contents"></span>
+    <span aria-hidden="true" class="cso-desktop-auth-icon cso-u-59748835">👤</span>
+    <span id="auth" class="cso-u-bfa03e44"></span>
   </div>
 </header>
 <nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
@@ -215,7 +215,7 @@
   <div class="about-statements-grid">
     <div class="statement-card">
       <h2>
-        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#0fa968;"></span>
+        <span class="cso-u-8b816fa1"></span>
         Our Mission
       </h2>
       <p id="about-mission-text">To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence.</p>
@@ -223,7 +223,7 @@
 
     <div class="statement-card">
       <h2>
-        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#0284c7;"></span>
+        <span class="cso-u-d88a67da"></span>
         Our Vision
       </h2>
       <p id="about-vision-text">An Odisha where every candidate from Mayurbhanj to Koraput possesses equal access to authenticated academic tools.</p>
@@ -279,130 +279,9 @@
   </div>
 </div></footer>
 
-<script>
-(function() {
-  function escapeText(str) {
-    if (!str) return '';
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  function hydrateAboutMission() {
-    var raw = null;
-    try {
-      raw = localStorage.getItem('cso_about_config');
-    } catch (_) {}
-
-    var config = null;
-    if (raw) {
-      try {
-        config = JSON.parse(raw);
-      } catch (_) {}
-    }
-
-    if (!config || typeof config !== 'object') {
-      config = {
-        hero: {
-          headline: "Democratizing Academic & Career Intelligence for Odisha's Youth",
-          subheadline: "A dedicated digital gateway providing verified syllabi, state exam patterns, and scholarship navigation across all 30 districts.",
-          badge: "Official Mission Portal",
-          enabled: true
-        },
-        statements: {
-          mission: "To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence.",
-          vision: "An Odisha where every candidate from Mayurbhanj to Koraput possesses equal access to authenticated academic tools."
-        },
-        pillars: [
-          { title: "Gazette Accuracy", description: "Zero speculation. Every syllabus breakdown is verified against official state notification releases.", active: true },
-          { title: "Universal 30-District Access", description: "Digital access architected for seamless loading even in remote rural blocks with low-bandwidth connections.", active: true },
-          { title: "100% Free Public Resource", description: "Free access to structured study templates, previous papers, and transparent guidance.", active: true },
-          { title: "Aspirant-Centric Architecture", description: "Interface built specifically for seamless navigation on mobile devices and low-spec hardware.", active: true }
-        ],
-        milestones: [
-          { year: "2023", title: "Foundation & Prototype", description: "Inception of Common Sense Odisha to address rural information asymmetry." },
-          { year: "2024", title: "Syllabus Digitization", description: "Coverage of OSSC, OPSC, and Odisha B.Ed curricula." },
-          { year: "2025", title: "Statewide Expansion", description: "Reaching aspirants across all 30 districts of Odisha." },
-          { year: "2026", title: "Sovereign Admin Suite", description: "Deployment of 19-folder Cloudflare Pages super admin control architecture." }
-        ]
-      };
-    }
-
-    // Hero Hydration
-    var heroSection = document.getElementById('about-hero-section');
-    var heroHeadline = (config.hero && config.hero.headline) || config.headline || '';
-    var heroSub = (config.hero && config.hero.subheadline) || config.subheadline || '';
-    var heroBadge = (config.hero && config.hero.badge) || 'Official Mission Portal';
-    var heroEnabled = config.hero ? (config.hero.enabled !== false) : true;
-
-    if (heroSection) {
-      heroSection.style.display = heroEnabled ? 'block' : 'none';
-    }
-
-    var badgeEl = document.getElementById('about-badge');
-    if (badgeEl && heroBadge) badgeEl.textContent = heroBadge;
-
-    var headlineEl = document.getElementById('about-headline');
-    if (headlineEl && heroHeadline) headlineEl.textContent = heroHeadline;
-
-    var subEl = document.getElementById('about-subheadline');
-    if (subEl && heroSub) subEl.textContent = heroSub;
-
-    // Statements
-    var mission = (config.statements && config.statements.mission) || config.mission || '';
-    var vision = (config.statements && config.statements.vision) || config.vision || '';
-
-    var missionEl = document.getElementById('about-mission-text');
-    if (missionEl && mission) missionEl.textContent = mission;
-
-    var visionEl = document.getElementById('about-vision-text');
-    if (visionEl && vision) visionEl.textContent = vision;
-
-    // Pillars
-    var pillarsGrid = document.getElementById('about-pillars-grid');
-    var pillarsList = Array.isArray(config.pillars) ? config.pillars.filter(function(p) { return p.active !== false; }) : [];
-    if (pillarsGrid && pillarsList.length > 0) {
-      pillarsGrid.innerHTML = pillarsList.map(function(p) {
-        return '<div class="pillar-box">' +
-               '<div class="pillar-box-header">' +
-                 '<span class="pillar-icon-dot"></span>' +
-                 '<span class="pillar-title">' + escapeText(p.title) + '</span>' +
-               '</div>' +
-               '<p class="pillar-desc">' + escapeText(p.description) + '</p>' +
-               '</div>';
-      }).join('');
-    }
-
-    // Milestones
-    var milestonesListEl = document.getElementById('about-milestones-list');
-    var milestonesList = Array.isArray(config.milestones) ? config.milestones : [];
-    if (milestonesListEl && milestonesList.length > 0) {
-      milestonesListEl.innerHTML = milestonesList.map(function(m) {
-        return '<div class="milestone-item">' +
-               '<span class="milestone-year-badge">' + escapeText(m.year) + '</span>' +
-               '<div class="milestone-body">' +
-                 '<div class="milestone-title">' + escapeText(m.title) + '</div>' +
-                 '<p class="milestone-desc">' + escapeText(m.description) + '</p>' +
-               '</div>' +
-               '</div>';
-      }).join('');
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', hydrateAboutMission);
-  } else {
-    hydrateAboutMission();
-  }
-
-  window.addEventListener('storage', function(e) {
-    if (e.key === 'cso_about_config') {
-      hydrateAboutMission();
-    }
-  });
-})();
-</script>
-<script src="assets/cso-auth-client.js"></script>
-<script src="assets/shared-header.js"></script>
+<script src="/assets/js/cso-safe-dom.js" defer></script>
+<script src="/assets/js/pages/about.js" defer></script>
+<script src="/assets/cso-auth-client.js"></script>
+<script src="/assets/shared-header.js" defer></script>
 </body>
 </html>

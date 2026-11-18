@@ -6,20 +6,24 @@
 <meta name="description" content="Explore government schemes, benefits, scholarships and support through Common Sense Odisha.">
 <title>Scheme Opportunity Finder | Common Sense Odisha</title>
 <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
-<link rel="stylesheet" href="../assets/style.css">
-<script src="../assets/cso-auth-client.js" defer></script>
-<script src="../assets/shared-header.js" defer></script>
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/cso-auth-client.js" defer></script>
+<script src="/assets/shared-header.js" defer></script>
 </head>
 <body>
-<header class="top">
+<header class="top site-header__top" id="header-top" role="banner">
 <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
   <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36">
 </a>
 <a class="adm cso-adm-icon-only" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a>
-<span id="ctl" style="display:contents"></span>
+<span id="ctl" class="cso-contents"></span>
 <span class="sp"></span>
-<div class="acct"><span style="font-size:26px">👤</span><span id="auth" style="display:contents"></span></div>
+<div class="acct">
+  <span aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
+  <span id="auth" class="cso-contents"></span>
+</div>
 </header>
+<nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
 <nav><div class="w" id="navw"></div></nav>
 <main class="sof-wrap">
   <section class="sof-hero sof-theme3-hero">
@@ -157,89 +161,11 @@
   </div>
 </div></footer>
 
-<script>
-/* CSO-SOF-THEME3-20261030 */
-(function () {
-  "use strict";
-
-  function init() {
-    const input = document.getElementById("sof-search");
-    const form = document.getElementById("sof-theme3-form");
-
-    if (!input || !form) return;
-
-    function runSearch(value) {
-      if (typeof value === "string") {
-        input.value = value;
-      }
-
-      input.dispatchEvent(
-        new Event("input", { bubbles: true })
-      );
-
-      if (input.value.trim()) {
-        const feedback = document.getElementById(
-          "sof-search-feedback"
-        );
-
-        if (feedback && !feedback.hidden) {
-          feedback.scrollIntoView({
-            behavior: "smooth",
-            block: "nearest"
-          });
-        }
-      }
-    }
-
-    form.addEventListener("submit", function (event) {
-      event.preventDefault();
-      runSearch();
-    });
-
-    document.querySelectorAll("[data-sof-query]").forEach(
-      function (button) {
-        button.addEventListener("click", function () {
-          runSearch(button.dataset.sofQuery || "");
-        });
-      }
-    );
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
-</script>
+<script src="/assets/js/cso-safe-dom.js" defer></script>
+<script src="/assets/js/pages/scheme-opportunity-finder.js" defer></script>
 
 
-<script>
-/* CSO-SOF-FINAL-ENTER-SEARCH-20261030 */
-(function () {
-  "use strict";
+<script src="/assets/js/pages/scheme-opportunity-finder-2.js" defer></script>
 
-  function init() {
-    const form = document.getElementById("sof-theme3-form");
-    const input = document.getElementById("sof-search");
-
-    if (!form || !input) return;
-
-    form.addEventListener("submit", function (event) {
-      event.preventDefault();
-      input.dispatchEvent(
-        new Event("input", { bubbles: true })
-      );
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
-</script>
-
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56e1252db05cf28',t:'MTc5NDA3MjY4Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56e1252db05cf28',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

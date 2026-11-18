@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://assets.csodisha.org/img/cso-dashboard-og-preview.png">
 
   <title>I Want to Study — Common Sense Odisha</title>
-  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="/assets/style.css">
   <style>
     .cso-study-hub{max-width:1100px;margin:0 auto;padding:28px 18px 70px}
     .cso-study-hero{margin-bottom:26px}
@@ -70,15 +70,19 @@
 
 </head>
 <body>
-  <header class="top">
+  <header class="top site-header__top" id="header-top" role="banner">
 <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
   <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36">
 </a>
 <a class="adm cso-adm-icon-only" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a>
-<span id="ctl" style="display:contents"></span>
+<span id="ctl" class="cso-contents"></span>
 <span class="sp"></span>
-<div class="acct"><span style="font-size:26px">👤</span><span id="auth" style="display:contents"></span></div>
+<div class="acct">
+  <span aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
+  <span id="auth" class="cso-contents"></span>
+</div>
 </header>
+<nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
 <nav><div class="w" id="navw"></div></nav>
 
   <main class="cso-study-hub" id="main-content">
@@ -181,7 +185,7 @@
   </div>
 </div></footer>
 
-  <script src="../assets/cso-auth-client.js" defer></script>
-<script src="../assets/shared-header.js" defer></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56e125cea8cfe03',t:'MTc5NDA3MjY4OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56e125cea8cfe03',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+  <script src="/assets/cso-auth-client.js" defer></script>
+<script src="/assets/shared-header.js" defer></script>
+</body>
 </html>

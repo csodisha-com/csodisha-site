@@ -1155,7 +1155,148 @@
     });
   }
 
+  /* v151 Auto-Shell Hydration Fallback: builds the canonical homepage utility bar, fluent pill navbar and
+     3-zone footer for any page that carries <header data-cso-auto-shell> / <footer data-cso-auto-footer>
+     or that lacks #header-top / #cso-main-navbar. Safe DOM APIs only. */
+  function svgEl(tag, attrs) {
+    const n = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    Object.keys(attrs).forEach(k => n.setAttribute(k, attrs[k]));
+    return n;
+  }
+  function buildUtilityBar(header) {
+    header.id = 'header-top';
+    header.className = 'top site-header__top';
+    header.setAttribute('role', 'banner');
+    header.removeAttribute('data-cso-auto-shell');
+    header.setAttribute('data-cso-shell-hydrated', '1');
+    const brand = el('a', 'cso-brand-link');
+    brand.href = '/';
+    brand.setAttribute('aria-label', 'Common Sense Odisha Home');
+    const logo = document.createElement('img');
+    logo.src = '/assets/img/cso-logo-96.webp';
+    logo.alt = 'Common Sense Odisha Logo';
+    logo.className = 'cso-brand-logo cso-brand-emblem';
+    logo.width = 36; logo.height = 36;
+    brand.appendChild(logo);
+    const adm = el('a', 'adm cso-adm-icon-only');
+    adm.href = '/admin/';
+    adm.setAttribute('role', 'button');
+    adm.setAttribute('aria-label', 'Admin');
+    adm.title = 'Admin';
+    const ico = svgEl('svg', { 'class': 'adm-ico', viewBox: '0 0 24 24', width: '15', height: '15', 'aria-hidden': 'true', focusable: 'false' });
+    ico.appendChild(svgEl('path', { fill: 'currentColor', d: 'M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z' }));
+    adm.appendChild(ico);
+    const ctl = el('span', 'cso-contents'); ctl.id = 'ctl';
+    const sp = el('span', 'sp');
+    const acct = el('div', 'acct');
+    const icon = el('span', 'cso-desktop-auth-icon', '👤');
+    icon.setAttribute('aria-hidden', 'true');
+    const auth = el('span', 'cso-contents'); auth.id = 'auth';
+    acct.append(icon, auth);
+    header.replaceChildren(brand, adm, ctl, sp, acct);
+  }
+  function buildNavShell() {
+    const nav = el('nav', 'main-nav site-header__nav');
+    nav.id = 'cso-main-navbar';
+    nav.setAttribute('aria-label', 'Main Navigation');
+    const w = el('div', 'w'); w.id = 'navw';
+    nav.appendChild(w);
+    return nav;
+  }
+  function ensureAutoShell() {
+    const body = document.body;
+    if (!body) return;
+    let header = document.getElementById('header-top') || document.querySelector('header[data-cso-auto-shell]');
+    if (!header) {
+      const first = body.querySelector(':scope > header:not(.cso-dir-topbar)');
+      header = (first && !first.children.length) ? first : null;
+      if (!header) {
+        header = document.createElement('header');
+        const mount = document.getElementById('csoPublicAnnouncementMount');
+        if (mount && mount.parentNode === body) mount.after(header); else body.prepend(header);
+      }
+    }
+    if (header.id !== 'header-top' || header.hasAttribute('data-cso-auto-shell') || !header.querySelector('#ctl')) buildUtilityBar(header);
+    if (!document.getElementById('cso-main-navbar')) header.after(buildNavShell());
+  }
+  const FOOTER_COLS = [
+    ['Explore', [['Jobs & Careers', '/jobs-careers/'], ['Schemes & Benefits', '/schemes-benefits/'], ['Study Library', '/study-library/'], ['Community', '/community/'], ['About CSO', '/about/']]],
+    ['Support & Legal', [['Help & FAQs', '/support/#faqs'], ['Report an Error', '/support/#report-error'], ['Suggest Resource', '/support/#suggest-resource'], ['Privacy Policy', '/privacy-policy/'], ['Terms of Use', '/terms-of-use/']]]
+  ];
+  const FOOTER_SOCIAL = [
+    ['Instagram', 'https://www.instagram.com/csodisha.official/'],
+    ['Facebook', 'https://www.facebook.com/profile.php?id=61596187936770'],
+    ['X', 'https://x.com/csodisha'],
+    ['Telegram', 'https://t.me/csodisha'],
+    ['WhatsApp', 'https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w'],
+    ['YouTube', 'https://www.youtube.com/@CSOdisha']
+  ];
+  function buildFooter(footer) {
+    footer.removeAttribute('data-cso-auto-footer');
+    footer.setAttribute('data-cso-shell-hydrated', '1');
+    const grid = el('div', 'w cso-footer-grid');
+    const z1 = el('div', 'cso-footer-zone1');
+    const bh = el('div', 'cso-footer-brand-header');
+    const logo = document.createElement('img');
+    logo.src = '/assets/img/cso-logo-96.webp';
+    logo.alt = 'Common Sense Odisha Logo';
+    logo.className = 'cso-footer-logo cso-brand-emblem';
+    logo.width = 36; logo.height = 36;
+    bh.append(logo, el('div', 'cso-footer-title', 'Common Sense Odisha'));
+    const contact = el('p', 'cso-footer-contact', 'Contact: ');
+    const mail = el('a', 'cso-footer-contact-link', 'contact@csodisha.com');
+    mail.href = 'mailto:contact@csodisha.com';
+    contact.appendChild(mail);
+    const social = el('div', 'cso-footer-social');
+    social.setAttribute('role', 'navigation');
+    social.setAttribute('aria-label', 'Official Social Channels');
+    FOOTER_SOCIAL.forEach(([label, href]) => {
+      const a = el('a', 'cso-footer-social-link');
+      a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.setAttribute('aria-label', label); a.title = label;
+      a.appendChild(el('span', '', label));
+      social.appendChild(a);
+    });
+    z1.append(bh,
+      el('p', 'cso-footer-desc', 'Independent, open-access public resource platform.'),
+      el('p', 'cso-footer-copy', '© 2026 Common Sense Odisha. All rights reserved.'),
+      contact, social);
+    const z2 = el('div', 'cso-footer-zone2');
+    FOOTER_COLS.forEach(([title, links]) => {
+      const col = el('div', 'cso-footer-col');
+      col.appendChild(el('h4', '', title));
+      links.forEach(([label, href]) => { const a = el('a', '', label); a.href = href; col.appendChild(a); });
+      z2.appendChild(col);
+    });
+    const z3 = el('div', 'cso-footer-zone3');
+    const map = document.createElement('img');
+    map.className = 'cso-footer-odisha-map';
+    map.src = '/assets/odisha-footer-map.svg';
+    map.alt = 'Odisha vector outline';
+    map.loading = 'lazy';
+    const pills = el('div', 'cso-footer-lang-pills');
+    [['en', 'English'], ['or', 'ଓଡ଼ିଆ'], ['hi', 'हिन्दी']].forEach(([code, label], i) => {
+      if (i) { const sep = el('span', 'cso-footer-lang-sep', '·'); sep.setAttribute('aria-hidden', 'true'); pills.appendChild(sep); }
+      const b = el('button', 'cso-footer-lang-pill', label);
+      b.type = 'button'; b.setAttribute('data-cso-lang', code);
+      pills.appendChild(b);
+    });
+    z3.append(map, el('div', 'cso-footer-motto', 'Be Self-Reliant · Build a Better Tomorrow'), pills);
+    grid.append(z1, z2, z3);
+    footer.replaceChildren(grid);
+  }
+  function ensureAutoFooter() {
+    let footer = document.querySelector('footer[data-cso-auto-footer]');
+    if (!footer && !document.querySelector('.cso-footer-zone1') && document.body) {
+      footer = document.querySelector('body > footer') || document.createElement('footer');
+      if (!footer.parentNode) document.body.appendChild(footer);
+    }
+    if (footer) buildFooter(footer);
+  }
+
   function init() {
+    ensureAutoShell();
+    ensureAutoFooter();
     ensureGlobalEnhancements();
     applySettings();
     syncBrandLogoMarks();

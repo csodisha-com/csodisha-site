@@ -6,7 +6,7 @@
   <meta name="description" content="Privacy Policy for Common Sense Odisha (CSO) - Statutory compliance and candidate data protection.">
   <title>Privacy Policy | Common Sense Odisha</title>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="/assets/style.css">
   <style>
     .privacy-main {
       max-width: 960px;
@@ -185,11 +185,11 @@
     <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36">
   </a>
   <a class="adm cso-adm-icon-only" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a>
-  <span id="ctl" style="display:contents"></span>
+  <span id="ctl" class="cso-u-bfa03e44"></span>
   <span class="sp"></span>
   <div class="acct">
-    <span style="font-size:26px" aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
-    <span id="auth" style="display:contents"></span>
+    <span aria-hidden="true" class="cso-desktop-auth-icon cso-u-59748835">👤</span>
+    <span id="auth" class="cso-u-bfa03e44"></span>
   </div>
 </header>
 <nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
@@ -205,20 +205,20 @@
       <span class="privacy-version-badge" id="policy-version-badge">Version 2.4</span>
     </div>
     <h1>Privacy Policy &amp; Candidate Data Governance</h1>
-    <p style="margin: 0; color: var(--mut, #475569); line-height: 1.65; font-size: 1.05rem;">
+    <p class="cso-u-8f5b77a4">
       Common Sense Odisha adheres strictly to sovereign Indian data privacy mandates and transparent public educational service tenets across all 30 districts of Odisha.
     </p>
     <div class="privacy-meta-strip">
-      <div>Effective Date: <strong id="policy-effective-date" style="color: var(--tx, #0f172a);">November 1, 2026</strong></div>
-      <div>Jurisdiction: <strong id="policy-jurisdiction" style="color: var(--tx, #0f172a);">Odisha, India</strong></div>
-      <div>DPO Contact: <a id="policy-dpo-email" href="mailto:dpo@csodisha.com" style="color: #0fa968; text-decoration: none; font-weight: 600;">dpo@csodisha.com</a></div>
+      <div>Effective Date: <strong id="policy-effective-date" class="cso-u-9e7957ff">November 1, 2026</strong></div>
+      <div>Jurisdiction: <strong id="policy-jurisdiction" class="cso-u-9e7957ff">Odisha, India</strong></div>
+      <div>DPO Contact: <a id="policy-dpo-email" href="mailto:dpo@csodisha.com" class="cso-u-49849c29">dpo@csodisha.com</a></div>
     </div>
   </section>
 
   <!-- Compliance Overview Card -->
   <section class="compliance-card">
     <h2>
-      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #0fa968;"></span>
+      <span class="cso-u-8b816fa1"></span>
       Statutory Compliance Framework
     </h2>
     <div class="compliance-grid">
@@ -246,8 +246,8 @@
     <p id="policy-retention-summary">
       All candidate inquiries and associated contact metadata are permanently purged from active triage within 90 days of resolution. Operational audit logs for security diagnostics are retained for 180 days.
     </p>
-    <div style="font-size: 0.88rem; color: var(--mut, #64748b);">
-      To exercise your statutory right to data inspection or early purge, write directly to <a href="mailto:grievance@csodisha.com" style="color: #0fa968; text-decoration: none; font-weight: 600;">grievance@csodisha.com</a>.
+    <div class="cso-u-59f7c072">
+      To exercise your statutory right to data inspection or early purge, write directly to <a href="mailto:grievance@csodisha.com" class="cso-u-49849c29">grievance@csodisha.com</a>.
     </div>
   </section>
 </main>
@@ -294,116 +294,9 @@
   </div>
 </div></footer>
 
-<script>
-(function() {
-  function escapeText(str) {
-    if (!str) return '';
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  function hydratePrivacyPolicy() {
-    var raw = null;
-    try {
-      raw = localStorage.getItem('cso_privacy_config');
-    } catch (_) {}
-
-    var config = null;
-    if (raw) {
-      try {
-        config = JSON.parse(raw);
-      } catch (_) {}
-    }
-
-    if (!config || typeof config !== 'object') {
-      config = {
-        meta: { version: "2.4", updatedAt: new Date().toISOString() },
-        compliance: {
-          effectiveDate: "2026-11-01",
-          governingAct: "Digital Personal Data Protection Act (DPDP), 2023 & Information Technology Act, 2000",
-          dataProtectionOfficer: "dpo@csodisha.com",
-          jurisdiction: "Odisha, India"
-        },
-        clauses: [
-          { id: "PRIV-01", number: "1", title: "Scope & Academic Non-Commercial Nature", body: "Common Sense Odisha (csodisha.com) operates as a free, non-monetized educational intelligence platform for candidates across Odisha. We do not sell, rent, or trade candidate personal information.", active: true },
-          { id: "PRIV-02", number: "2", title: "Data We Collect", body: "We collect minimal candidate details submitted voluntarily via contact or grievance forms (name, email, district) solely to respond to academic and syllabus queries. We do not collect government ID numbers, financial instruments, or biometric data.", active: true },
-          { id: "PRIV-03", number: "3", title: "Local Storage & Session Tokens", body: "The portal uses client-side browser storage (localStorage and sessionStorage) strictly to preserve user interface preferences (theme, filters) and cryptographically signed session anchors for administrative authentication.", active: true },
-          { id: "PRIV-04", number: "4", title: "Edge Telemetry & Cloudflare Protection", body: "Network requests pass through Cloudflare Edge servers for bot mitigation, DDoS defense, and latency optimization. Minimal network telemetry (IP address, user-agent, round-trip time) is processed strictly for diagnostic security.", active: true },
-          { id: "PRIV-05", number: "5", title: "Candidate Rights & Grievance Desk", body: "Aspirants retain the statutory right to request inspection, correction, or permanent deletion of their inquiry records by contacting grievance@csodisha.com.", active: true }
-        ],
-        retention: {
-          inquiryDataDays: 90,
-          auditLogDays: 180,
-          policySummary: "All candidate inquiries are automatically purged from active triage within 90 days of resolution."
-        }
-      };
-    }
-
-    // Version Badge
-    var vBadge = document.getElementById('policy-version-badge');
-    if (vBadge && config.meta && config.meta.version) {
-      vBadge.textContent = "Version " + config.meta.version;
-    }
-
-    // Compliance Fields
-    var c = config.compliance || {};
-    var effDate = document.getElementById('policy-effective-date');
-    if (effDate && c.effectiveDate) effDate.textContent = c.effectiveDate;
-
-    var jurEl = document.getElementById('policy-jurisdiction');
-    if (jurEl && c.jurisdiction) jurEl.textContent = c.jurisdiction;
-
-    var dpoLink = document.getElementById('policy-dpo-email');
-    if (dpoLink && c.dataProtectionOfficer) {
-      dpoLink.textContent = c.dataProtectionOfficer;
-      dpoLink.setAttribute('href', 'mailto:' + c.dataProtectionOfficer);
-    }
-
-    var govAct = document.getElementById('policy-governing-act');
-    if (govAct && c.governingAct) govAct.textContent = c.governingAct;
-
-    var dpoText = document.getElementById('policy-dpo-text');
-    if (dpoText && c.dataProtectionOfficer) dpoText.textContent = c.dataProtectionOfficer;
-
-    // Retention Days & Summary
-    var ret = config.retention || {};
-    var inqDays = document.getElementById('policy-inquiry-days');
-    if (inqDays && ret.inquiryDataDays) inqDays.textContent = ret.inquiryDataDays + " Days Purge Window";
-
-    var retSum = document.getElementById('policy-retention-summary');
-    if (retSum && ret.policySummary) retSum.textContent = ret.policySummary;
-
-    // Clauses List
-    var clausesBox = document.getElementById('privacy-clauses-container');
-    var clausesList = Array.isArray(config.clauses) ? config.clauses.filter(function(cl) { return cl.active !== false; }) : [];
-    if (clausesBox && clausesList.length > 0) {
-      clausesBox.innerHTML = clausesList.map(function(cl) {
-        return '<article class="clause-box">' +
-               '<div class="clause-header">' +
-                 '<span class="clause-num-badge">§ ' + escapeText(cl.number || '1') + '</span>' +
-                 '<h3 class="clause-title">' + escapeText(cl.title || 'Clause') + '</h3>' +
-               '</div>' +
-               '<p class="clause-body">' + escapeText(cl.body || '') + '</p>' +
-               '</article>';
-      }).join('');
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', hydratePrivacyPolicy);
-  } else {
-    hydratePrivacyPolicy();
-  }
-
-  window.addEventListener('storage', function(e) {
-    if (e.key === 'cso_privacy_config') {
-      hydratePrivacyPolicy();
-    }
-  });
-})();
-</script>
-<script src="assets/cso-auth-client.js"></script>
-<script src="assets/shared-header.js"></script>
+<script src="/assets/js/cso-safe-dom.js" defer></script>
+<script src="/assets/js/pages/privacy.js" defer></script>
+<script src="/assets/cso-auth-client.js"></script>
+<script src="/assets/shared-header.js" defer></script>
 </body>
 </html>
