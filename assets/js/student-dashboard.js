@@ -7,7 +7,6 @@
 
   const SESSION_KEY = 'cso_candidate_session_v1';
   const PROFILE_KEY = 'cso_candidate_profile';
-  const THEME_KEY = 'cso_student_theme';
   const CHECKLIST_KEY = 'cso_candidate_checklist_v1';
   const PREFS_KEY = 'cso_candidate_prefs_v1';
   const MISTAKES_KEY = 'cso_candidate_mistakes_v1';
@@ -118,24 +117,87 @@
     return (parts[0].slice(0, 2) || 'OA').toUpperCase();
   }
 
-  /* ---------- Theme Switcher ---------- */
-  function applyTheme(theme) {
-    const valid = (theme === 'obsidian-mint' || theme === 'alabaster-cobalt') ? theme : 'alabaster-cobalt';
-    document.documentElement.dataset.csoStudentTheme = valid;
-    try { localStorage.setItem(THEME_KEY, valid); } catch {}
+  /* ---------- Theme Switcher (global CSOTheme 4-theme engine) ---------- */
+  const FALLBACK_THEMES = [
+    { key: 'system', label: 'System', fullLabel: 'System' },
+    { key: 'dark', label: 'Dark', fullLabel: 'Dark' },
+    { key: 'reading', label: 'Reading', fullLabel: 'Reading Mode' },
+    { key: 'utkal-bharat', label: 'Odisha & Bharat', fullLabel: 'Odisha & Bharat' }
+  ];
+
+  function hubThemes() {
+    return (window.CSOTheme && window.CSOTheme.THEMES) || FALLBACK_THEMES;
+  }
+
+  function currentHubTheme() {
+    return window.CSOTheme ? window.CSOTheme.getTheme() : 'system';
+  }
+
+  function syncHubThemeButton() {
+    const key = currentHubTheme();
+    const cur = hubThemes().find(t => t.key === key) || hubThemes()[0];
     const lbl = document.getElementById('cso-theme-label');
-    if (lbl) lbl.textContent = valid === 'obsidian-mint' ? 'Night' : 'Day';
+    if (lbl) lbl.textContent = cur.label;
+    const sw = document.getElementById('cso-theme-swatch');
+    if (sw) sw.className = 'cso-theme-swatch is-' + cur.key;
+    const btn = document.getElementById('cso-theme-toggle');
+    if (btn) btn.title = 'Theme: ' + cur.fullLabel;
+  }
+
+  function closeHubThemeMenu() {
+    document.querySelectorAll('.cso-hub-theme-menu').forEach(n => n.remove());
+    document.getElementById('cso-theme-toggle')?.setAttribute('aria-expanded', 'false');
+  }
+
+  function openHubThemeMenu(btn) {
+    closeHubThemeMenu();
+    const menu = el('div', 'pp cso-hub-theme-menu');
+    menu.setAttribute('role', 'menu');
+    const active = currentHubTheme();
+    hubThemes().forEach(t => {
+      const item = el('button', t.key === active ? 'is-active' : '', (t.key === active ? '✓ ' : '') + t.fullLabel);
+      item.type = 'button';
+      item.setAttribute('role', 'menuitemradio');
+      item.setAttribute('aria-checked', t.key === active ? 'true' : 'false');
+      item.addEventListener('click', ev => {
+        ev.stopPropagation();
+        if (window.CSOTheme) window.CSOTheme.setTheme(t.key, true);
+        syncHubThemeButton();
+        closeHubThemeMenu();
+      });
+      menu.appendChild(item);
+    });
+    (btn.closest('.cso-popup-anchor') || btn.parentElement).appendChild(menu);
+    btn.setAttribute('aria-expanded', 'true');
+  }
+
+  function initEmblemFallback() {
+    document.querySelectorAll('img.cso-brand-emblem').forEach(img => {
+      img.addEventListener('error', () => {
+        if (img.dataset.fallbackApplied === '1') return;
+        img.dataset.fallbackApplied = '1';
+        img.src = '/assets/img/cso-logo-96.png';
+      });
+      if (img.complete && img.naturalWidth === 0 && img.dataset.fallbackApplied !== '1') {
+        img.dataset.fallbackApplied = '1';
+        img.src = '/assets/img/cso-logo-96.png';
+      }
+    });
   }
 
   function initThemeSwitcher() {
-    applyTheme(document.documentElement.dataset.csoStudentTheme || 'alabaster-cobalt');
+    syncHubThemeButton();
     const btn = document.getElementById('cso-theme-toggle');
     if (btn) {
-      btn.addEventListener('click', () => {
-        const cur = document.documentElement.dataset.csoStudentTheme;
-        applyTheme(cur === 'obsidian-mint' ? 'alabaster-cobalt' : 'obsidian-mint');
+      btn.addEventListener('click', ev => {
+        ev.stopPropagation();
+        if (document.querySelector('.cso-hub-theme-menu')) closeHubThemeMenu();
+        else openHubThemeMenu(btn);
       });
     }
+    document.addEventListener('click', closeHubThemeMenu);
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeHubThemeMenu(); });
+    window.addEventListener('storage', ev => { if (ev.key === 'cso_portal_theme') syncHubThemeButton(); });
   }
 
   /* ---------- Tab & Sidebar Navigation ---------- */
@@ -250,7 +312,7 @@
     const district = u.district || 'Odisha';
     const av = initials(name);
 
-    ['bp-side-avatar', 'bp-top-avatar', 'cso-profile-avatar'].forEach(id => {
+    ['bp-top-avatar', 'cso-profile-avatar'].forEach(id => {
       const n = document.getElementById(id);
       if (n) n.textContent = av;
     });
@@ -596,11 +658,7 @@
 
     const score = Math.round((syllabusPct * 0.4) + (cbtPct * 0.4) + (consistencyPct * 0.2));
 
-    const ring = document.getElementById('cso-readiness-ring');
-    if (ring) {
-      for (let i = 0; i <= 100; i += 5) ring.classList.remove('cso-ring-' + i);
-      ring.classList.add(snapRingClass(score));
-    }
+    drawReadinessRing(score);
     const pctEl = document.getElementById('cso-readiness-pct');
     if (pctEl) pctEl.textContent = score + '%';
     const sylEl = document.getElementById('cso-metric-syllabus');
@@ -649,6 +707,40 @@
     return wrap;
   }
 
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const RING_RADIUS = 46;
+  const RING_CIRC = 2 * Math.PI * RING_RADIUS;
+
+  function drawReadinessRing(score) {
+    const host = document.getElementById('cso-readiness-ring');
+    if (!host) return;
+    let prog = host.querySelector('.cso-ring-progress');
+    if (!prog) {
+      const svg = document.createElementNS(SVG_NS, 'svg');
+      svg.setAttribute('class', 'cso-ring-svg');
+      svg.setAttribute('viewBox', '0 0 108 108');
+      svg.setAttribute('aria-hidden', 'true');
+      const track = document.createElementNS(SVG_NS, 'circle');
+      track.setAttribute('class', 'cso-ring-track');
+      prog = document.createElementNS(SVG_NS, 'circle');
+      prog.setAttribute('class', 'cso-ring-progress');
+      [track, prog].forEach(c => {
+        c.setAttribute('cx', '54');
+        c.setAttribute('cy', '54');
+        c.setAttribute('r', String(RING_RADIUS));
+        c.setAttribute('fill', 'none');
+        c.setAttribute('stroke-width', '9');
+      });
+      prog.setAttribute('stroke-linecap', 'round');
+      prog.setAttribute('stroke-dasharray', RING_CIRC.toFixed(2));
+      svg.append(track, prog);
+      host.insertBefore(svg, host.firstChild);
+    }
+    const pct = Math.max(0, Math.min(100, Number(score) || 0));
+    prog.setAttribute('stroke-dashoffset', (RING_CIRC * (1 - pct / 100)).toFixed(2));
+    host.setAttribute('aria-label', 'Readiness score ' + pct + ' percent');
+  }
+
   function renderTargetExamCards() {
     const grid = document.getElementById('cso-target-exam-cards');
     if (!grid) return;
@@ -685,6 +777,14 @@
     });
   }
 
+  function paperLabel(paper) {
+    const p = String(paper || 'Core').trim();
+    if (/^(core|general)$/i.test(p)) return 'Core';
+    if (/^(paper\s*)?(i|1)$/i.test(p)) return 'Paper I';
+    if (/^(paper\s*)?(ii|2)$/i.test(p)) return 'Paper II';
+    return p;
+  }
+
   function renderPriorityTopics() {
     const host = document.getElementById('overview-priority-topics');
     if (!host) return;
@@ -708,11 +808,22 @@
     pending.slice(0, 4).forEach(item => {
       const row = el('div', 'cso-list-item');
       const main = el('div', 'cso-list-item-main');
+      row.classList.add('cso-list-item--hover');
       main.appendChild(el('h4', 'cso-list-item-title', item.topic.topic));
-      main.appendChild(el('span', 'cso-list-item-sub', `${item.exam.short_code} · ${item.topic.paper || 'Core'} · Weight ${item.topic.weightage || 20}%`));
-      const go = el('button', 'cso-btn cso-btn-sm', 'Mark Done');
+      const tags = el('div', 'cso-tag-row');
+      tags.appendChild(el('span', 'cso-pill-badge', item.exam.short_code));
+      tags.appendChild(el('span', 'cso-paper-tag', paperLabel(item.topic.paper)));
+      tags.appendChild(el('span', 'cso-list-item-sub', `Weight ${item.topic.weightage || 20}%`));
+      main.appendChild(tags);
+      const go = el('button', 'cso-btn cso-btn-sm cso-mark-done-btn', 'Mark Done');
       go.type = 'button';
-      go.addEventListener('click', () => toggleTopic(item.exam.id, item.topic.paper || 'core', item.topic.id, true));
+      go.addEventListener('click', () => {
+        go.disabled = true;
+        go.textContent = '✓ Done';
+        go.classList.add('is-done');
+        row.classList.add('is-done');
+        setTimeout(() => toggleTopic(item.exam.id, item.topic.paper || 'core', item.topic.id, true), 450);
+      });
       row.appendChild(main);
       row.appendChild(go);
       host.appendChild(row);
@@ -1059,16 +1170,39 @@
   }
 
   /* ---------- Schemes, Resources/PYQs & Bookmarks ---------- */
+  const SCHEME_PREVIEW_LIMIT = 5;
+
+  function rankSchemes() {
+    const tagSet = new Set();
+    getActiveExams().forEach(ex => {
+      tagSet.add(String(ex.short_code || '').toLowerCase());
+      (ex.parent_tags || []).forEach(t => tagSet.add(String(t).toLowerCase()));
+    });
+    const scored = state.schemes.map((sc, i) => {
+      const hay = ((sc.category || '') + ' ' + (sc.title || '')).toLowerCase();
+      let score = 0;
+      tagSet.forEach(t => { if (t.length > 2 && hay.includes(t)) score += 2; });
+      if (/scholar|student|education|exam|coaching/.test(hay)) score += 1;
+      return { sc, score, i };
+    });
+    scored.sort((a, b) => (b.score - a.score) || (a.i - b.i));
+    return scored.map(x => x.sc);
+  }
+
   function renderSchemes() {
     const host = document.getElementById('candidate-schemes-list');
     if (!host) return;
     clear(host);
+    const exploreLink = document.getElementById('cso-schemes-explorer-link');
     if (!state.schemes.length) {
       host.appendChild(el('p', 'cso-muted-note', 'No active scholarship programs found.'));
+      if (exploreLink) exploreLink.hidden = true;
       return;
     }
-    state.schemes.forEach(sc => {
-      const row = el('div', 'cso-list-item');
+    const ranked = rankSchemes();
+    const top = ranked.slice(0, SCHEME_PREVIEW_LIMIT);
+    top.forEach(sc => {
+      const row = el('div', 'cso-list-item cso-list-item--hover');
       const main = el('div', 'cso-list-item-main');
       main.appendChild(el('h4', 'cso-list-item-title', sc.title));
       main.appendChild(el('span', 'cso-list-item-sub', `${sc.category} · Deadline: ${sc.deadline || 'Open'}`));
@@ -1078,6 +1212,11 @@
       row.appendChild(a);
       host.appendChild(row);
     });
+    const extra = ranked.length - top.length;
+    if (exploreLink) {
+      exploreLink.hidden = extra <= 0;
+      exploreLink.textContent = `Show More (${Math.max(extra, 0)} more) in Schemes Explorer →`;
+    }
   }
 
   function renderResourcesShelf() {
@@ -1464,12 +1603,13 @@
   /* ---------- Bootstrap & Data Hydration ---------- */
   async function bootstrap() {
     initThemeSwitcher();
+    initEmblemFallback();
     initNavigation();
     initMistakeNotebook();
     initManualScoreLogger();
     initWorkspaceTools();
 
-    ['cso-profile-signout-btn', 'bp-profile-logout-btn', 'bp-topbar-logout-btn', 'bp-sidebar-logout-btn'].forEach(id => {
+    ['cso-profile-signout-btn', 'bp-profile-logout-btn', 'bp-topbar-logout-btn'].forEach(id => {
       document.getElementById(id)?.addEventListener('click', performSignOut);
     });
     document.getElementById('cso-open-goal-modal-btn')?.addEventListener('click', openGoalModal);
@@ -1664,9 +1804,12 @@
     nextBtn.hidden = true;
 
     item.opts.forEach((opt, idx) => {
-      const btn = el('button', 'cso-drill-opt', `${String.fromCharCode(65 + idx)}. ${opt}`);
+      const btn = el('button', 'cso-drill-opt');
+      btn.appendChild(el('span', 'cso-opt-letter', String.fromCharCode(65 + idx)));
+      btn.appendChild(el('span', 'cso-opt-text', opt));
       btn.type = 'button';
       btn.addEventListener('click', () => {
+        btn.classList.add('is-selected');
         optWrap.querySelectorAll('button').forEach((b, bIdx) => {
           b.disabled = true;
           if (bIdx === item.ans) b.classList.add('is-correct');

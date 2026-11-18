@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-cso-student-theme="alabaster-cobalt">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,6 +18,7 @@
   <meta name="twitter:description" content="Track syllabus milestones, CBT analytics, and offline PYQs.">
 
   <link rel="stylesheet" href="/assets/style.css">
+  <script src="/assets/shared-header.js"></script>
   <link rel="stylesheet" href="/assets/css/student-dashboard-bp.css">
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
@@ -31,7 +32,7 @@
   <aside id="bp-sidebar" class="bp-sidebar" aria-label="Student Portal Navigation">
     <div class="bp-sidebar-header">
       <a href="/" class="bp-brand">
-        <div class="bp-brand-icon" aria-hidden="true">CS</div>
+        <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" width="36" height="36" class="cso-brand-emblem">
         <div class="bp-brand-copy">
           <span class="bp-brand-title">CS Odisha</span>
           <span class="bp-brand-sub">Candidate Hub</span>
@@ -134,21 +135,13 @@
     </div>
 
     <div class="bp-sidebar-footer">
-      <button type="button" id="bp-sidebar-install-btn" class="cso-pwa-install-trigger cso-btn-install-side" title="Install App to Home Screen">
-        <span>📲</span>
-        <span class="bp-nav-text">Install App</span>
-      </button>
       <div class="bp-user-pill" id="bp-sidebar-user-btn" role="button" tabindex="0">
-        <div class="bp-avatar" id="bp-side-avatar">OA</div>
+        <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" width="36" height="36" class="cso-brand-emblem" id="bp-side-avatar">
         <div class="bp-user-meta">
           <span class="bp-user-name" id="bp-side-name">Odisha Aspirant</span>
           <span class="bp-user-district" id="bp-side-district">Odisha</span>
         </div>
       </div>
-      <button type="button" id="bp-sidebar-logout-btn" class="cso-btn cso-btn-danger-outline cso-btn-logout-side" title="Sign Out">
-        <span aria-hidden="true">⎋</span>
-        <span class="bp-nav-text">Sign Out</span>
-      </button>
     </div>
   </aside>
 
@@ -177,11 +170,13 @@
           <span class="cso-btn-label">Install</span>
         </button>
 
-        <button type="button" class="bp-icon-action-btn cso-theme-toggle-btn" id="cso-theme-toggle" aria-label="Switch Dashboard Theme" title="Toggle Daylight / Night Theme">
-          <span aria-hidden="true">◐</span>
-          <span id="cso-theme-label" class="cso-btn-label">Day</span>
-          <span aria-hidden="true">▾</span>
-        </button>
+        <span class="cso-popup-anchor cso-hub-theme-anchor">
+          <button type="button" class="bp-icon-action-btn cso-theme-toggle-btn" id="cso-theme-toggle" aria-label="Select portal theme" aria-haspopup="true" title="Theme">
+            <span class="cso-theme-swatch is-system" id="cso-theme-swatch" aria-hidden="true"></span>
+            <span id="cso-theme-label" class="cso-btn-label">System</span>
+            <span aria-hidden="true">⌄</span>
+          </button>
+        </span>
 
         <button type="button" class="bp-icon-action-btn" id="bp-notif-btn" aria-label="Notifications" title="Exam Alerts">
           <span>🔔</span>
@@ -261,26 +256,20 @@
               <span class="cso-readiness-tag" id="cso-readiness-status">Synced</span>
             </div>
             <div class="cso-readiness-body">
-              <div class="cso-readiness-ring cso-ring-0" id="cso-readiness-ring" role="img" aria-label="Readiness score">
+              <div class="cso-readiness-ring" id="cso-readiness-ring" role="img" aria-label="Readiness score">
                 <div class="cso-ring-inner">
                   <strong id="cso-readiness-pct">0%</strong>
                   <span>Ready</span>
                 </div>
               </div>
               <div class="cso-readiness-breakdown">
-                <div class="cso-metric-line">
-                  <span>Syllabus (40%)</span>
-                  <strong id="cso-metric-syllabus">0%</strong>
-                </div>
-                <div class="cso-metric-line">
-                  <span>CBT Accuracy (40%)</span>
-                  <strong id="cso-metric-cbt">0%</strong>
-                </div>
-                <div class="cso-metric-line">
-                  <span>Consistency (20%)</span>
-                  <strong id="cso-metric-streak">0%</strong>
+                <div class="cso-metric-pills">
+                  <span class="cso-metric-pill">Syllabus <strong id="cso-metric-syllabus">0%</strong></span>
+                  <span class="cso-metric-pill">PYQ Mastery <strong id="cso-metric-cbt">0%</strong></span>
+                  <span class="cso-metric-pill">Consistency <strong id="cso-metric-streak">0%</strong></span>
                 </div>
                 <p class="cso-daily-target" id="cso-daily-target-text">Select a primary goal to compute your daily micro-target.</p>
+                <a href="#tab-my-learning" class="cso-btn cso-btn-primary cso-readiness-cta" data-tab="tab-my-learning">Continue Syllabus →</a>
               </div>
             </div>
           </section>
@@ -315,27 +304,18 @@
             </div>
             <div class="cso-stack-list" id="overview-priority-topics"></div>
           </section>
-
-          <section class="bp-panel">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>🔖</span><span>Saved Bookmarks</span></div>
-              <a href="#tab-bookmarks" class="bp-panel-link bp-nav-switch" data-tab="tab-bookmarks">Manage Pins →</a>
-            </div>
-            <div class="cso-stack-list" id="candidate-jobs-shelf">
-              <p class="cso-muted-note">Loading saved bookmarks...</p>
-            </div>
-          </section>
-
           <section class="bp-panel">
             <div class="bp-panel-header">
               <div class="bp-panel-title"><span>🎓</span><span>Scholarships &amp; Welfare</span></div>
-              <a href="/schemes-benefits/" class="bp-panel-link">All Schemes →</a>
+              <a href="/schemes-benefits/" class="bp-panel-link cso-view-all-schemes">View All Schemes →</a>
             </div>
             <div class="cso-stack-list" id="candidate-schemes-list">
               <p class="cso-muted-note">Loading D1 welfare programs...</p>
             </div>
+            <div class="cso-panel-foot">
+              <a href="/schemes-benefits/" class="cso-btn cso-btn-sm" id="cso-schemes-explorer-link" hidden>Open Schemes Explorer →</a>
+            </div>
           </section>
-
           <section class="bp-panel">
             <div class="bp-panel-header">
               <div class="bp-panel-title"><span>📚</span><span>Recommended PYQs &amp; Notes</span></div>
@@ -343,6 +323,15 @@
             </div>
             <div class="cso-stack-list" id="overview-pyq-shelf">
               <p class="cso-muted-note">Matching D1 resources to your goals...</p>
+            </div>
+          </section>
+          <section class="bp-panel">
+            <div class="bp-panel-header">
+              <div class="bp-panel-title"><span>🔖</span><span>Saved Bookmarks</span></div>
+              <a href="#tab-bookmarks" class="bp-panel-link bp-nav-switch" data-tab="tab-bookmarks">Manage Pins →</a>
+            </div>
+            <div class="cso-stack-list" id="candidate-jobs-shelf">
+              <p class="cso-muted-note">Loading saved bookmarks...</p>
             </div>
           </section>
         </div>
