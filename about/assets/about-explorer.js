@@ -165,7 +165,7 @@
       { val: formatNum(t.jobsItems || 0), lbl: pick('Jobs & Career Notices', 'ନିଯୁକ୍ତି ସୂଚନା') },
       { val: formatNum(t.schemesItems || 0), lbl: pick('Welfare Schemes', 'ସରକାରୀ ଯୋଜନା') },
       { val: formatNum(t.communityItems || 0), lbl: pick('Community Chapters', 'ସମୁଦାୟ ଶାଖା') },
-      { val: formatNum(t.totalFolders || 0), lbl: pick('Topic Collections', 'ବିଷୟ ସଂଗ୍ରହ') },
+      { val: formatNum(t.totalFolders || 0), lbl: pick('Curated Topic Guides', 'ବିଷୟ ଗାଇଡ୍') },
       { val: formatNum(t.resolvedFeedbackCount || 0), lbl: pick('Verified Corrections', 'ସମାଧାନ ହୋଇଥିବା ତ୍ରୁଟି') },
       { val: String(t.districtsCount || 30), lbl: pick('Odisha Districts Covered', 'ଓଡ଼ିଶାର ଜିଲ୍ଲା') }
     ];
@@ -186,7 +186,7 @@
         el('span', '', pick(d.label, d.labelOr)),
         el('span', '', `${formatNum(d.items)} ${pick('guides', 'ଟି')}`)
       );
-      const sub = el('div', 'cso-about-telemetry-sub', `${formatNum(d.folders)} ${pick('topic sections →', 'ବିଭାଗ →')}`);
+      const sub = el('div', 'cso-about-telemetry-sub', `${formatNum(d.folders)} ${pick('curated guides →', 'ଗାଇଡ୍ →')}`);
       card.append(top, sub);
       barMount.appendChild(card);
     }

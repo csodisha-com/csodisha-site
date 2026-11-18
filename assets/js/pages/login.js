@@ -25,15 +25,17 @@
         if (firstInput) setTimeout(() => firstInput.focus(), 30);
       }
 
-      function showError(id, msg) {
+      function showError(id, msg, field) {
         const box = document.getElementById(id);
         box.textContent = msg;
         box.style.display = 'block';
+        if (field) field.setAttribute('aria-invalid', 'true');
       }
-      function clearError(id) {
+      function clearError(id, fields) {
         const box = document.getElementById(id);
         box.textContent = '';
         box.style.display = 'none';
+        (fields || []).forEach(f => f?.removeAttribute('aria-invalid'));
       }
       function busy(btn, text) {
         btn.disabled = true;
@@ -77,18 +79,18 @@
 
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
-        clearError('auth-error-msg');
+        clearError('auth-error-msg', [emailInput, pwInput]);
 
         const email = emailInput.value.trim().toLowerCase();
         const password = pwInput.value;
 
         if (!email || !email.includes('@')) {
-          showError('auth-error-msg', 'Please enter a valid candidate email address.');
+          showError('auth-error-msg', 'Please enter a valid candidate email address.', emailInput);
           emailInput.focus();
           return;
         }
         if (!password) {
-          showError('auth-error-msg', 'Please enter your password.');
+          showError('auth-error-msg', 'Please enter your password.', pwInput);
           pwInput.focus();
           return;
         }

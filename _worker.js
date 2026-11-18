@@ -42,6 +42,7 @@ import { handlePublicJobsOverviewApi, handlePublicJobsItemsApi, handlePublicJobs
 import { handlePublicSchemesRoute } from './functions/_lib/schemes-directory-ssr.js';
 import { handlePublicSchemesOverviewApi, handlePublicSchemesItemsApi, handlePublicSchemesSuggestApi, handleSchemesDirectorySitemapXml } from './functions/_lib/schemes-directory-studio.js';
 import { handlePublicCommunityRoute } from './functions/_lib/community-directory-ssr.js';
+import { hydrateExplorerIndexHtml } from './functions/_lib/ssr-shell.js';
 import { handlePublicCommunityOverviewApi, handlePublicCommunityItemsApi, handlePublicCommunitySuggestApi, handleCommunityDirectorySitemapXml } from './functions/_lib/community-directory-studio.js';
 import { handlePublicCommunityPostsApi } from './functions/_lib/users-community-batch2.js';
 import { handlePublicCommunityQnaApi } from './functions/_lib/users-community-batch4.js';
@@ -339,6 +340,10 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.protocol === 'http:' && url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
+      url.protocol = 'https:';
+      return Response.redirect(url.toString(), 301);
+    }
     const pathname = url.pathname;
 
     // 0a. Never serve server source / schema / config files from the static asset bucket
@@ -999,6 +1004,9 @@ export default {
       const jobsRes = await handlePublicJobsRoute(request, env, url);
       if (jobsRes) return jobsRes;
     }
+    if (pathname === '/about.html' || (pathname === '/about/' && url.searchParams.has('section'))) {
+      return Response.redirect(new URL('/about/', url.origin).toString(), 301);
+    }
     if (pathname === '/schemes' || pathname === '/schemes-benefits' || pathname === '/schemes-benefits/') {
       return Response.redirect(new URL('/schemes/', url.origin).toString(), 301);
     }
@@ -1044,6 +1052,9 @@ export default {
             }
           }
         }
+      }
+      if (res.status === 200 && (request.method === 'GET' || request.method === 'HEAD') && (res.headers.get('Content-Type') || '').includes('text/html')) {
+        res = await hydrateExplorerIndexHtml(res, pathname, env);
       }
       if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|schemes|schemes-benefits|study-library|community|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname)) {
         const headers = new Headers(res.headers);

@@ -42,14 +42,16 @@
         this.setAttribute('aria-pressed', isPw ? 'true' : 'false');
       });
 
-      function showError(msg) {
+      function showError(msg, field) {
         errorBox.textContent = msg;
         errorBox.style.display = 'block';
+        if (field) field.setAttribute('aria-invalid', 'true');
       }
 
       function clearError() {
         errorBox.textContent = '';
         errorBox.style.display = 'none';
+        [nameInput, emailInput, districtInput, pwInput].forEach(el => el?.removeAttribute('aria-invalid'));
       }
 
       form.addEventListener('submit', async function(e) {
@@ -62,24 +64,24 @@
         const password = pwInput.value;
 
         if (!fullName) {
-          showError('Please enter your full name.');
+          showError('Please enter your full name.', nameInput);
           nameInput.focus();
           return;
         }
 
         if (!email || !email.includes('@')) {
-          showError('Please enter a valid candidate email address.');
+          showError('Please enter a valid candidate email address.', emailInput);
           emailInput.focus();
           return;
         }
 
         if (!password || password.length < 8 || password.length > 128) {
-          showError('Password must be between 8 and 128 characters.');
+          showError('Password must be between 8 and 128 characters.', pwInput);
           pwInput.focus();
           return;
         }
         if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
-          showError('Password must include an uppercase letter, a lowercase letter, a digit and a special character.');
+          showError('Password must include an uppercase letter, a lowercase letter, a digit and a special character.', pwInput);
           pwInput.focus();
           return;
         }

@@ -46,6 +46,7 @@
             class="form-input"
             placeholder="Subham Mohanty"
             autocomplete="name"
+            aria-describedby="auth-error-msg"
             required
           >
         </div>
@@ -61,6 +62,7 @@
             class="form-input"
             placeholder="subham@example.com"
             autocomplete="email"
+            aria-describedby="auth-error-msg"
             required
           >
         </div>
@@ -69,28 +71,37 @@
       <div class="form-group">
         <label for="signup-district" class="form-label">Home District *</label>
         <div class="input-wrapper">
-          <select id="signup-district" name="district" class="form-input cso-u-b202c6d4">
-            <option value="Balasore">Balasore</option>
-            <option value="Bhadrak">Bhadrak</option>
-            <option value="Cuttack">Cuttack</option>
-            <option value="Khordha (Bhubaneswar)">Khordha (Bhubaneswar)</option>
-            <option value="Ganjam">Ganjam</option>
-            <option value="Puri">Puri</option>
-            <option value="Sambalpur">Sambalpur</option>
-            <option value="Sundargarh">Sundargarh</option>
-            <option value="Mayurbhanj">Mayurbhanj</option>
+          <select id="signup-district" name="district" class="form-input cso-u-b202c6d4" aria-describedby="auth-error-msg">
             <option value="Angul">Angul</option>
+            <option value="Balangir">Balangir</option>
+            <option value="Balasore">Balasore</option>
+            <option value="Bargarh">Bargarh</option>
+            <option value="Bhadrak">Bhadrak</option>
+            <option value="Boudh">Boudh</option>
+            <option value="Cuttack">Cuttack</option>
+            <option value="Deogarh">Deogarh</option>
             <option value="Dhenkanal">Dhenkanal</option>
-            <option value="Kendrapara">Kendrapara</option>
+            <option value="Gajapati">Gajapati</option>
+            <option value="Ganjam">Ganjam</option>
             <option value="Jagatsinghpur">Jagatsinghpur</option>
             <option value="Jajpur">Jajpur</option>
-            <option value="Bargarh">Bargarh</option>
-            <option value="Balangir">Balangir</option>
-            <option value="Kalahandi">Kalahandi</option>
-            <option value="Koraput">Koraput</option>
-            <option value="Rayagada">Rayagada</option>
-            <option value="Keonjhar">Keonjhar</option>
             <option value="Jharsuguda">Jharsuguda</option>
+            <option value="Kalahandi">Kalahandi</option>
+            <option value="Kandhamal">Kandhamal</option>
+            <option value="Kendrapara">Kendrapara</option>
+            <option value="Keonjhar">Keonjhar</option>
+            <option value="Khordha (Bhubaneswar)">Khordha (Bhubaneswar)</option>
+            <option value="Koraput">Koraput</option>
+            <option value="Malkangiri">Malkangiri</option>
+            <option value="Mayurbhanj">Mayurbhanj</option>
+            <option value="Nabarangpur">Nabarangpur</option>
+            <option value="Nayagarh">Nayagarh</option>
+            <option value="Nuapada">Nuapada</option>
+            <option value="Puri">Puri</option>
+            <option value="Rayagada">Rayagada</option>
+            <option value="Sambalpur">Sambalpur</option>
+            <option value="Subarnapur">Subarnapur</option>
+            <option value="Sundargarh">Sundargarh</option>
           </select>
         </div>
       </div>
@@ -105,6 +116,7 @@
             class="form-input"
             placeholder="••••••••"
             autocomplete="new-password"
+            aria-describedby="signup-password-hint auth-error-msg"
             required
           >
           <button
@@ -115,11 +127,11 @@
             aria-pressed="false"
           >Show</button>
         </div>
-        <span class="form-hint">8–128 characters with at least one uppercase letter, one lowercase letter, one digit and one special character.</span>
+        <span class="form-hint" id="signup-password-hint">8–128 characters with at least one uppercase letter, one lowercase letter, one digit and one special character.</span>
       </div>
 
       <!-- Honeypot: hidden from humans, catnip for bots. Any value = silent reject. -->
-      <div class="cso-u-b766d9af" aria-hidden="true">
+      <div class="cso-u-b766d9af" aria-hidden="true" hidden>
         <label for="signup-website">Website</label>
         <input type="text" id="signup-website" name="website" tabindex="-1" autocomplete="off">
       </div>

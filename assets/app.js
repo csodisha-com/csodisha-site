@@ -272,26 +272,8 @@ function nav(){
  setActive(location.hash.slice(1));
 }
 function syncMobileNavAuth(){
- const navItems=document.getElementById('cso-nav-items');
- if(!navItems)return;
  const existing=document.getElementById('cso-nav-mobile-auth');
  if(existing)existing.remove();
- if(csoAuthUser)return;
- const wrap=document.createElement('div');
- wrap.className='cso-nav-mobile-auth';
- wrap.id='cso-nav-mobile-auth';
- const mobLi=document.createElement('a');
- mobLi.href='/login.html';
- mobLi.className='cso-nav-mobile-auth__btn login-btn';
- mobLi.textContent='Login';
- mobLi.addEventListener('click',e=>{e.preventDefault();login();});
- const mobSu=document.createElement('a');
- mobSu.href='/signup.html';
- mobSu.className='cso-nav-mobile-auth__btn signup-btn';
- mobSu.textContent='Sign Up';
- mobSu.addEventListener('click',e=>{e.preventDefault();signup();});
- wrap.append(mobLi,mobSu);
- navItems.appendChild(wrap);
 }
 function csoCloseNavDropdowns(except){
  $$('#navw .ni').forEach(n=>{

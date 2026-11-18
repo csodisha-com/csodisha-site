@@ -543,7 +543,7 @@ export async function resolveDeepLinkMeta(url, env) {
         pageTitle: `${grp.title} | Study Library | CS Odisha`,
         title: grp.title,
         description,
-        canonicalUrl: `${SITE_ORIGIN}/study-library/?group=${encodeURIComponent(grp.slug)}`,
+        canonicalUrl: `${SITE_ORIGIN}/study-library/${encodeURIComponent(grp.slug)}/`,
         ogImage: DEFAULT_OG_IMAGE
       };
     }
@@ -566,7 +566,7 @@ export async function resolveDeepLinkMeta(url, env) {
         pageTitle: `${grp.title} | About CS Odisha`,
         title: grp.title,
         description,
-        canonicalUrl: `${SITE_ORIGIN}/about/?group=${encodeURIComponent(grp.slug)}`,
+        canonicalUrl: `${SITE_ORIGIN}/about/`,
         ogImage: DEFAULT_OG_IMAGE
       };
     }
@@ -582,7 +582,7 @@ export async function resolveDeepLinkMeta(url, env) {
       if (!ca) return null;
 
       const description = plainTextExcerpt(ca.summary || ca.body_md || ca.title, 160);
-      const canonicalUrl = `${SITE_ORIGIN}/current-affairs/?slug=${encodeURIComponent(ca.slug)}`;
+      const canonicalUrl = `${SITE_ORIGIN}/current-affairs/${encodeURIComponent(ca.slug)}/`;
       const ogImage = resolveImageMediaUrl(ca.cover_media_key);
 
       return {
@@ -608,7 +608,7 @@ export async function resolveDeepLinkMeta(url, env) {
         `${test.title}${test.target_exam ? ' (' + test.target_exam + ')' : ''} — ${test.duration_minutes || 60} min, ${test.total_marks || 100} marks online CBT practice test on CS Odisha.`,
         160
       );
-      const canonicalUrl = `${SITE_ORIGIN}/mock-tests/?test=${encodeURIComponent(test.slug)}`;
+      const canonicalUrl = `${SITE_ORIGIN}/mock-tests/${encodeURIComponent(test.slug)}/`;
 
       return {
         pageTitle: `${test.title} | CS Odisha`,

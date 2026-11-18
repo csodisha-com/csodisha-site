@@ -93,7 +93,7 @@
     { key: 'utkal-bharat', label: 'Odisha & Bharat', fullLabel: 'Odisha & Bharat' }
   ];
   const PORTAL_THEME_KEYS = PORTAL_THEMES.map(t => t.key);
-  const LN = { en: 'English', or: 'ଓଡ଼ିଆ', hi: 'हिन्दी' };
+  const LN = { en: 'English', or: 'ଓଡ଼ିଆ' };
 
   function resolvePaletteToThemeKey(paletteName) {
     const raw = String(paletteName || '').toLowerCase();
@@ -659,12 +659,16 @@
       return;
     }
 
+    function createAuthPair(loginCls, signupCls) {
+      const loginA = el('a', loginCls, 'Login');
+      loginA.setAttribute('href', '/login.html');
+      const signupA = el('a', signupCls, 'Sign Up');
+      signupA.setAttribute('href', '/signup.html');
+      return [loginA, signupA];
+    }
+
     const desk = el('div', 'cso-desktop-auth-buttons cso-auth-logged-out');
-    const loginA = el('a', 'cso-auth-item-link cso-login-link login-btn', 'Login');
-    loginA.setAttribute('href', '/login.html');
-    const signupA = el('a', 'cso-signup-pill signup-btn', 'Sign Up');
-    signupA.setAttribute('href', '/signup.html');
-    desk.append(loginA, signupA);
+    desk.append(...createAuthPair('cso-auth-item-link cso-login-link login-btn', 'cso-signup-pill signup-btn'));
 
     const mobWrap = el('div', 'cso-mobile-auth-wrapper');
     const trigger = el('button', 'cso-auth-trigger');
@@ -684,11 +688,7 @@
     const menu = el('div', 'cso-auth-dropdown-menu');
     menu.id = 'cso-auth-menu';
     menu.hidden = true;
-    const mLogin = el('a', 'cso-auth-item', 'Login');
-    mLogin.setAttribute('href', '/login.html');
-    const mSignup = el('a', 'cso-auth-item', 'Sign Up');
-    mSignup.setAttribute('href', '/signup.html');
-    menu.append(mLogin, mSignup);
+    menu.append(...createAuthPair('cso-auth-item', 'cso-auth-item'));
     mobWrap.append(trigger, menu);
 
     authEl.append(desk, mobWrap);
@@ -846,17 +846,6 @@
       navItems.appendChild(ni);
     });
 
-    if (!getActiveUser()) {
-      const mobAuth = el('div', 'cso-nav-mobile-auth');
-      mobAuth.id = 'cso-nav-mobile-auth';
-      const mobLogin = el('a', 'cso-nav-mobile-auth__btn login-btn', 'Login');
-      mobLogin.setAttribute('href', '/login.html');
-      const mobSignup = el('a', 'cso-nav-mobile-auth__btn signup-btn', 'Sign Up');
-      mobSignup.setAttribute('href', '/signup.html');
-      mobAuth.append(mobLogin, mobSignup);
-      navItems.appendChild(mobAuth);
-    }
-
     navw.append(bar, navItems);
   }
 
@@ -931,20 +920,9 @@
       .catch(() => {});
   }
 
-  function syncMobileNavAuth(activeUser) {
-    const navItems = document.getElementById('cso-nav-items');
-    if (!navItems) return;
+  function syncMobileNavAuth() {
     const existing = document.getElementById('cso-nav-mobile-auth');
     if (existing) existing.remove();
-    if (activeUser) return;
-    const mobAuth = el('div', 'cso-nav-mobile-auth');
-    mobAuth.id = 'cso-nav-mobile-auth';
-    const mobLogin = el('a', 'cso-nav-mobile-auth__btn login-btn', 'Login');
-    mobLogin.setAttribute('href', '/login.html');
-    const mobSignup = el('a', 'cso-nav-mobile-auth__btn signup-btn', 'Sign Up');
-    mobSignup.setAttribute('href', '/signup.html');
-    mobAuth.append(mobLogin, mobSignup);
-    navItems.appendChild(mobAuth);
   }
 
   document.addEventListener('click', e => {
@@ -1178,7 +1156,7 @@
     logo.className = 'cso-brand-logo cso-brand-emblem';
     logo.width = 36; logo.height = 36;
     brand.appendChild(logo);
-    const adm = el('a', 'adm cso-adm-icon-only');
+    const adm = el('a', 'adm cso-adm-icon-only cso-adm-stealth');
     adm.href = '/admin/';
     adm.setAttribute('role', 'button');
     adm.setAttribute('aria-label', 'Admin');
@@ -1275,7 +1253,7 @@
     map.alt = 'Odisha vector outline';
     map.loading = 'lazy';
     const pills = el('div', 'cso-footer-lang-pills');
-    [['en', 'English'], ['or', 'ଓଡ଼ିଆ'], ['hi', 'हिन्दी']].forEach(([code, label], i) => {
+    [['en', 'English'], ['or', 'ଓଡ଼ିଆ']].forEach(([code, label], i) => {
       if (i) { const sep = el('span', 'cso-footer-lang-sep', '·'); sep.setAttribute('aria-hidden', 'true'); pills.appendChild(sep); }
       const b = el('button', 'cso-footer-lang-pill', label);
       b.type = 'button'; b.setAttribute('data-cso-lang', code);

@@ -1641,8 +1641,8 @@ export async function listPublicSchemesOverview(env) {
   const [fRes, iRes, sRes, tRes] = await Promise.all([
     env.DB.prepare('SELECT domain_slug, depth, COUNT(*) AS cnt FROM schemes_directory_folders WHERE is_active = 1 GROUP BY domain_slug, depth').all(),
     env.DB.prepare("SELECT domain_slug, COUNT(*) AS cnt, SUM(CASE WHEN official_portal_verified = 1 OR verified_at IS NOT NULL THEN 1 ELSE 0 END) AS verified_cnt FROM schemes_directory_items WHERE status = 'published' GROUP BY domain_slug").all(),
-    env.DB.prepare("SELECT sponsor_level, COUNT(*) AS cnt FROM schemes_directory_items WHERE status = 'published' GROUP BY sponsor_level").all(),
-    env.DB.prepare("SELECT scheme_type, COUNT(*) AS cnt FROM schemes_directory_items WHERE status = 'published' GROUP BY scheme_type").all()
+    env.DB.prepare("SELECT sponsor_level, COUNT(*) AS cnt FROM schemes_directory_items WHERE status = 'published' GROUP BY sponsor_level HAVING COUNT(*) >= 2").all(),
+    env.DB.prepare("SELECT scheme_type, COUNT(*) AS cnt FROM schemes_directory_items WHERE status = 'published' GROUP BY scheme_type HAVING COUNT(*) >= 2").all()
   ]);
 
   const fMap = new Map();

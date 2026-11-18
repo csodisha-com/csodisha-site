@@ -1494,8 +1494,8 @@ export async function listPublicCommunityOverview(env) {
   const [fRes, iRes, rRes, tRes] = await Promise.all([
     env.DB.prepare('SELECT domain_slug, depth, COUNT(*) AS cnt FROM community_directory_folders WHERE is_active = 1 GROUP BY domain_slug, depth').all(),
     env.DB.prepare("SELECT domain_slug, COUNT(*) AS cnt, SUM(CASE WHEN safety_verified = 1 OR verified_at IS NOT NULL THEN 1 ELSE 0 END) AS verified_cnt FROM community_directory_items WHERE status = 'published' GROUP BY domain_slug").all(),
-    env.DB.prepare("SELECT district_region, COUNT(*) AS cnt FROM community_directory_items WHERE status = 'published' GROUP BY district_region").all(),
-    env.DB.prepare("SELECT community_type, COUNT(*) AS cnt FROM community_directory_items WHERE status = 'published' GROUP BY community_type").all()
+    env.DB.prepare("SELECT district_region, COUNT(*) AS cnt FROM community_directory_items WHERE status = 'published' GROUP BY district_region HAVING COUNT(*) >= 2").all(),
+    env.DB.prepare("SELECT community_type, COUNT(*) AS cnt FROM community_directory_items WHERE status = 'published' GROUP BY community_type HAVING COUNT(*) >= 2").all()
   ]);
 
   const fMap = new Map();

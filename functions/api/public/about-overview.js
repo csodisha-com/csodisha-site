@@ -15,6 +15,39 @@ async function safeCount(db, sql) {
 
 export async function getAboutOverviewData(env) {
   const db = env?.DB;
+  let vals = Array(11).fill(0);
+  if (db && typeof db.batch === 'function') {
+    try {
+      const batchRes = await db.batch([
+        db.prepare('SELECT COUNT(*) AS n FROM study_library_folders WHERE is_active = 1'),
+        db.prepare("SELECT COUNT(*) AS n FROM study_library_items WHERE status = 'published'"),
+        db.prepare('SELECT COUNT(*) AS n FROM jobs_directory_folders WHERE is_active = 1'),
+        db.prepare("SELECT COUNT(*) AS n FROM jobs_directory_items WHERE status = 'published'"),
+        db.prepare('SELECT COUNT(*) AS n FROM schemes_directory_folders WHERE is_active = 1'),
+        db.prepare("SELECT COUNT(*) AS n FROM schemes_directory_items WHERE status = 'published'"),
+        db.prepare('SELECT COUNT(*) AS n FROM community_directory_folders WHERE is_active = 1'),
+        db.prepare("SELECT COUNT(*) AS n FROM community_directory_items WHERE status = 'published'"),
+        db.prepare(`SELECT COUNT(*) AS n FROM posts WHERE ${PUBLIC_VISIBLE_SQL}`),
+        db.prepare(`SELECT COUNT(*) AS n FROM posts WHERE type = 'job' AND ${PUBLIC_VISIBLE_SQL} AND (last_date IS NULL OR last_date >= date('now'))`),
+        db.prepare("SELECT COUNT(*) AS n FROM community_feedback WHERE status = 'resolved'")
+      ]);
+      vals = batchRes.map((r) => Number(r?.results?.[0]?.n || 0));
+    } catch {
+      vals = await Promise.all([
+        safeCount(db, 'SELECT COUNT(*) AS n FROM study_library_folders WHERE is_active = 1'),
+        safeCount(db, "SELECT COUNT(*) AS n FROM study_library_items WHERE status = 'published'"),
+        safeCount(db, 'SELECT COUNT(*) AS n FROM jobs_directory_folders WHERE is_active = 1'),
+        safeCount(db, "SELECT COUNT(*) AS n FROM jobs_directory_items WHERE status = 'published'"),
+        safeCount(db, 'SELECT COUNT(*) AS n FROM schemes_directory_folders WHERE is_active = 1'),
+        safeCount(db, "SELECT COUNT(*) AS n FROM schemes_directory_items WHERE status = 'published'"),
+        safeCount(db, 'SELECT COUNT(*) AS n FROM community_directory_folders WHERE is_active = 1'),
+        safeCount(db, "SELECT COUNT(*) AS n FROM community_directory_items WHERE status = 'published'"),
+        safeCount(db, `SELECT COUNT(*) AS n FROM posts WHERE ${PUBLIC_VISIBLE_SQL}`),
+        safeCount(db, `SELECT COUNT(*) AS n FROM posts WHERE type = 'job' AND ${PUBLIC_VISIBLE_SQL} AND (last_date IS NULL OR last_date >= date('now'))`),
+        safeCount(db, "SELECT COUNT(*) AS n FROM community_feedback WHERE status = 'resolved'")
+      ]);
+    }
+  }
   const [
     studyFolders,
     studyItems,
@@ -27,19 +60,7 @@ export async function getAboutOverviewData(env) {
     postsCount,
     activeJobsPosts,
     resolvedFeedbackCount
-  ] = await Promise.all([
-    safeCount(db, 'SELECT COUNT(*) AS n FROM study_library_folders WHERE is_active = 1'),
-    safeCount(db, "SELECT COUNT(*) AS n FROM study_library_items WHERE status = 'published'"),
-    safeCount(db, 'SELECT COUNT(*) AS n FROM jobs_directory_folders WHERE is_active = 1'),
-    safeCount(db, "SELECT COUNT(*) AS n FROM jobs_directory_items WHERE status = 'published'"),
-    safeCount(db, 'SELECT COUNT(*) AS n FROM schemes_directory_folders WHERE is_active = 1'),
-    safeCount(db, "SELECT COUNT(*) AS n FROM schemes_directory_items WHERE status = 'published'"),
-    safeCount(db, 'SELECT COUNT(*) AS n FROM community_directory_folders WHERE is_active = 1'),
-    safeCount(db, "SELECT COUNT(*) AS n FROM community_directory_items WHERE status = 'published'"),
-    safeCount(db, `SELECT COUNT(*) AS n FROM posts WHERE ${PUBLIC_VISIBLE_SQL}`),
-    safeCount(db, `SELECT COUNT(*) AS n FROM posts WHERE type = 'job' AND ${PUBLIC_VISIBLE_SQL} AND (last_date IS NULL OR last_date >= date('now'))`),
-    safeCount(db, "SELECT COUNT(*) AS n FROM community_feedback WHERE status = 'resolved'")
-  ]);
+  ] = vals;
 
   const totalFolders = studyFolders + jobsFolders + schemesFolders + communityFolders;
   const totalDirectoryItems = studyItems + jobsItems + schemesItems + communityItems;

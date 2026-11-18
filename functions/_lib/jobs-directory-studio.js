@@ -1770,7 +1770,7 @@ export async function listPublicJobsOverview(env) {
   const [fRes, iRes, tRes] = await Promise.all([
     env.DB.prepare('SELECT domain_slug, depth, COUNT(*) AS cnt FROM jobs_directory_folders WHERE is_published = 1 GROUP BY domain_slug, depth').all(),
     env.DB.prepare("SELECT domain_slug, COUNT(*) AS cnt, SUM(CASE WHEN verified_at IS NOT NULL THEN 1 ELSE 0 END) AS verified_cnt FROM jobs_directory_items WHERE status = 'published' GROUP BY domain_slug").all(),
-    env.DB.prepare("SELECT item_type, COUNT(*) AS cnt FROM jobs_directory_items WHERE status = 'published' GROUP BY item_type").all()
+    env.DB.prepare("SELECT item_type, COUNT(*) AS cnt FROM jobs_directory_items WHERE status = 'published' GROUP BY item_type HAVING COUNT(*) >= 2").all()
   ]);
   const fMap = new Map();
   let totalSections = 0;
