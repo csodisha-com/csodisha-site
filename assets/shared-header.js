@@ -1188,8 +1188,8 @@
     const icon = el('span', 'cso-desktop-auth-icon', '👤');
     icon.setAttribute('aria-hidden', 'true');
     const auth = el('span', 'cso-contents'); auth.id = 'auth';
-    acct.append(icon, auth);
-    header.replaceChildren(brand, adm, ctl, sp, acct);
+    acct.append(adm, icon, auth);
+    header.replaceChildren(brand, ctl, sp, acct);
   }
   function buildNavShell() {
     const nav = el('nav', 'main-nav site-header__nav');

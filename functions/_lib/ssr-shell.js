@@ -3,20 +3,20 @@
 import { hydrateJobsFeedResponse, renderSchemeCard } from './ssr-feeds.js';
 
 export const CSO_SHELL_HEAD_LINKS = [
-  '<link rel="stylesheet" href="/assets/style.css?v=20261121v166">',
+  '<link rel="stylesheet" href="/assets/style.css?v=20261121v171">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-detail-page.css">',
-  '<script src="/assets/shared-header.js?v=20261121v166" defer></script>'
+  '<script src="/assets/shared-header.js?v=20261121v171" defer></script>'
 ].join('\n  ');
 
 export const CSO_SHELL_HEADER = `<header class="top site-header__top" id="header-top" role="banner">
 <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
   <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36">
 </a>
-<a class="adm cso-adm-icon-only cso-adm-stealth" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a>
 <span id="ctl" class="cso-contents"></span>
 <span class="sp"></span>
 <div class="acct">
+  <a class="adm cso-adm-icon-only cso-adm-stealth" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a>
   <span aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
   <span id="auth" class="cso-contents"></span>
 </div>

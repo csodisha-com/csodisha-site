@@ -7074,12 +7074,13 @@ html.cso-a11y-lite .cso-footer-odisha-map {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    min-height: 28px;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    width: 44px !important;
+    height: 44px !important;
     padding: 0;
     gap: 0;
-    border-radius: 6px;
+    border-radius: 8px;
     background: rgba(220, 38, 38, 0.2);
     border: 1px solid rgba(248, 113, 113, 0.55);
     color: #f87171;
@@ -7317,9 +7318,10 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   }
 
   .top .adm.cso-adm-icon-only {
-    width: 24px !important;
-    height: 24px !important;
-    min-height: 24px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    width: 44px !important;
+    height: 44px !important;
   }
 
   .top .pill {
