@@ -8944,7 +8944,7 @@ h1, h2, h3, h4, h5, h6, .pill, .badge, .tag, a { max-inline-size: 100%; overflow
 img, svg, figure, table, pre { max-inline-size: 100%; block-size: auto; }
 pre { overflow-x: auto; overscroll-behavior-x: contain; }
 @media (max-width: 768px) { table { display: block; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; } }
-.filters, .filter-strip, .chips, .tabs, .main-nav .w {
+.filters, .filter-strip, .chips, .tabs {
   max-inline-size: 100%; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity;
 }
 .top, .site-header__top { padding-top: env(safe-area-inset-top); }
@@ -8976,3 +8976,65 @@ pre { overflow-x: auto; overscroll-behavior-x: contain; }
 .cso-intrinsic-grid { display: grid; gap: var(--cso-gap); grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
 .cso-intrinsic-grid--compact { grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); }
 .cso-intrinsic-grid > * { min-inline-size: 0; }
+
+/* ==========================================================================
+   v165: Main Navigation Dropdown Reliability (Zero Clipping, Stacking & Mobile Touch)
+   ========================================================================== */
+#cso-main-navbar,
+.main-nav,
+.site-header__nav {
+  position: relative;
+  z-index: 1000 !important;
+  overflow: visible !important;
+}
+
+#cso-main-navbar .w,
+.main-nav .w,
+.site-header__nav .w,
+#navw,
+.cso-nav-items,
+#cso-nav-items {
+  overflow: visible !important;
+}
+
+.cso-nav-items .ni,
+.main-nav .ni {
+  position: relative;
+}
+
+.cso-nav-items .ni.cso-open > .dd,
+.main-nav .ni.cso-open > .dd,
+.site-header__nav .ni.cso-open > .dd {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  z-index: 1200 !important;
+  transform: translateY(0) !important;
+}
+
+.cso-nav-items .dd a,
+.main-nav .dd a,
+.site-header__nav .dd a {
+  pointer-events: auto !important;
+}
+
+@media (max-width: 768px) {
+  .cso-nav-items .ni.cso-open > .dd,
+  .main-nav .ni.cso-open > .dd {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .cso-nav-items .ni:not(.cso-open) > .dd,
+  .main-nav .ni:not(.cso-open) > .dd {
+    display: none !important;
+  }
+  .cso-nav-items .dd a,
+  .main-nav .dd a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
