@@ -83,8 +83,8 @@ ok(!/\.style\.cssText|setAttribute\(\s*['"]style['"]/.test(js), 'inline style se
 ok(!/\bonclick\s*=/.test(js), 'onclick= in JS');
 
 // Cache bump
-ok(/CACHE_NAME = 'cso-candidate-cache-v160'/.test(read('sw.js')), 'sw.js not bumped');
-ok(/ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v160'/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel not bumped');
-ok(/cso-candidate-cache-v160/.test(read('scripts/test-ops-sentinel.mjs')), 'ops test not bumped');
+ok(/CACHE_NAME = 'cso-candidate-cache-v1(6\d|[7-9]\d)'/.test(read('sw.js')), 'sw.js not bumped');
+ok(/ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v1(6\d|[7-9]\d)'/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel not bumped');
+ok(/cso-candidate-cache-v1\d\d/.test(read('scripts/test-ops-sentinel.mjs')), 'ops test not bumped');
 
 console.log(`test-jobs-interactivity-v160: ${passed} assertions passed`);

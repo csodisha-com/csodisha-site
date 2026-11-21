@@ -1,0 +1,185 @@
+/* v161: Career Hub pages and landing Career Hubs grid (CSP-safe external stylesheet). */
+.cso-hub-main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.cso-hub-hero {
+  margin-bottom: 16px;
+}
+
+.cso-hub-hero h1 {
+  margin: 8px 0 6px;
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.cso-hub-crumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.cso-hub-crumb a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cso-hub-crumb a:hover {
+  text-decoration: underline;
+}
+
+.cso-hub-portals {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.cso-hub-portals__label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cso-hub-related,
+.cso-hub-others {
+  margin-top: 24px;
+}
+
+.cso-hub-related h2,
+.cso-hub-others h2 {
+  margin: 0 0 12px;
+  font-size: 1.2rem;
+}
+
+.cso-hub-related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 12px;
+}
+
+.cso-hub-related-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border, #dce6f5);
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-text, inherit);
+  text-decoration: none;
+}
+
+.cso-hub-related-card:hover,
+.cso-hub-related-card:focus-visible {
+  border-color: var(--cso-link, #135de4);
+}
+
+.cso-hub-related-card span {
+  font-size: 0.85rem;
+  color: var(--cso-text-muted, #475569);
+}
+
+.cso-hub-others__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Landing Career Hubs grid */
+.cso-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.cso-hub-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border, #dce6f5);
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-text, inherit);
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.cso-hub-card:hover,
+.cso-hub-card:focus-visible {
+  border-color: var(--cso-link, #135de4);
+  transform: translateY(-1px);
+}
+
+.cso-hub-card__icon {
+  font-size: 1.8rem;
+  flex: 0 0 auto;
+}
+
+.cso-hub-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.cso-hub-card__title {
+  font-weight: 800;
+  font-size: 1.02rem;
+}
+
+.cso-hub-card__boards {
+  font-size: 0.82rem;
+  color: var(--cso-text-muted, #475569);
+}
+
+.cso-hub-card__count {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cso-link, #135de4);
+}
+
+.cso-hub-card__arrow {
+  font-size: 1.4rem;
+  flex: 0 0 auto;
+}
+
+.hub-directory-more {
+  margin-top: 8px;
+}
+
+.hub-directory-more > summary {
+  cursor: pointer;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border, #dce6f5);
+  font-weight: 700;
+  list-style: none;
+}
+
+.hub-directory-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.hub-directory-more[open] > summary {
+  margin-bottom: 14px;
+}
+
+@media (max-width: 720px) {
+  .cso-hub-main {
+    padding: 12px 12px 32px;
+  }
+  .cso-hub-hero h1 {
+    font-size: 1.3rem;
+  }
+}

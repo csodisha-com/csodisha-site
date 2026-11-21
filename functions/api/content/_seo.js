@@ -10,6 +10,12 @@ const SEO_CACHE = 'public, max-age=300, s-maxage=900';
 const STATIC_SITEMAP_ROUTES = [
   { path: '/', changefreq: 'daily', priority: '1.0' },
   { path: '/jobs-careers/', changefreq: 'daily', priority: '0.9' },
+  { path: '/jobs-careers/odisha-state-jobs/', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/teaching-education/', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/central-ssc-railways-banking/', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/police-defence/', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/psu-technical-healthcare/', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/private-remote-internships/', changefreq: 'daily', priority: '0.8' },
   { path: '/current-affairs/', changefreq: 'daily', priority: '0.9' },
   { path: '/mock-tests/', changefreq: 'daily', priority: '0.8' },
   { path: '/resources/', changefreq: 'weekly', priority: '0.8' },
