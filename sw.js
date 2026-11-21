@@ -10,12 +10,19 @@
  *    messaging the dashboard clients (with a SW-side fallback drain)
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v177';
+const CACHE_NAME = 'cso-candidate-cache-v178';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 const PRECACHE_URLS = [
   '/',
   '/index.html',
+  '/offline.html',
+  '/assets/css/offline.css',
+  '/assets/js/offline.js',
+  '/tools/',
+  '/tools/index.html',
+  '/tools/assets/tools.css',
+  '/tools/assets/tools.js',
   '/about/',
   '/about/index.html',
   '/student-dashboard/',
@@ -210,7 +217,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Navigations: network-first, offline fallback to the dashboard shell.
+  // 2. Navigations: network-first, cached page fallback, then /offline.html.
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
       try {
@@ -220,8 +227,8 @@ self.addEventListener('fetch', (event) => {
         const cache = await caches.open(CACHE_NAME);
         const cachedPage = await cache.match(request);
         if (cachedPage) return cachedPage;
-        const shell = await cache.match('/student-dashboard/index.html');
-        return shell || Response.error();
+        const offlinePage = await cache.match('/offline.html');
+        return offlinePage || Response.error();
       }
     })());
     return;

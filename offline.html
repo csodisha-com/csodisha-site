@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#14532d">
+  <title>Offline Workspace | Common Sense Odisha</title>
+  <meta name="description" content="Offline-ready Common Sense Odisha workspace for viewing saved job/scheme bookmarks, revision flashcards, and browser-based student tools.">
+  <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="stylesheet" href="/assets/style.css?v=20261121v178">
+  <link rel="stylesheet" href="/assets/css/offline.css?v=20261121v178">
+  <script src="/assets/shared-header.js?v=20261121v171" defer></script>
+  <script src="/assets/js/offline.js?v=20261121v178" defer></script>
+</head>
+<body class="cso-offline-body">
+  <header class="top site-header__top" id="header-top" data-cso-auto-shell="1" role="banner"></header>
+  <main class="cso-offline-main">
+    <header class="cso-offline-hero">
+      <div class="cso-offline-brand">
+        <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" width="40" height="40" class="cso-brand-emblem">
+        <div>
+          <strong>Common Sense Odisha</strong>
+          <span>Offline-First Candidate Workspace</span>
+        </div>
+      </div>
+      <div class="cso-offline-status" role="status" aria-live="polite">
+        <span class="cso-offline-badge">📡 Offline Mode</span>
+        <h1>You are currently offline</h1>
+        <p>No internet connection detected. Your saved bookmarks, revision flashcards, and offline student tools remain available on this device.</p>
+      </div>
+      <div class="cso-offline-actions">
+        <button type="button" id="cso-offline-retry" class="cso-offline-btn cso-offline-btn--primary">🔄 Try Again</button>
+        <a href="/tools/" class="cso-offline-btn">🧰 Open Offline Student Toolkit</a>
+        <a href="/tools/#scam-checker" class="cso-offline-btn">🔍 Scam-Check Tool</a>
+      </div>
+    </header>
+
+    <div class="cso-offline-grid">
+      <section class="cso-offline-card" aria-labelledby="off-bookmarks-heading">
+        <h2 id="off-bookmarks-heading">🔖 Saved Bookmarks</h2>
+        <p class="cso-offline-sub">Your saved jobs, schemes, and study pins stored on this device.</p>
+        <div id="cso-offline-bookmarks" class="cso-offline-list"></div>
+      </section>
+
+      <section class="cso-offline-card" aria-labelledby="off-flashcards-heading">
+        <h2 id="off-flashcards-heading">🔁 Offline Revision Flashcards</h2>
+        <p class="cso-offline-sub">Practice your saved Revise Again mistake deck without internet.</p>
+        <div id="cso-offline-flashcards" class="cso-offline-list"></div>
+      </section>
+    </div>
+  </main>
+  <footer data-cso-auto-footer="1"></footer>
+</body>
+</html>
