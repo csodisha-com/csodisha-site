@@ -556,6 +556,16 @@
       attentionItems.unshift({ kind: 'Open incidents', label: s.open_incidents + ' active operational incident(s)', meta: 'Inspect Ops Health & Diagnostics', href: '#/operations', badge: 'expired' });
     }
 
+    /* v174: Content Health & Expiry Triage (expired deadlines + unverified / malformed links) */
+    var schemesForTriage = [];
+    try { var schRes = await api('GET', 'schemes?limit=100'); schemesForTriage = (schRes && schRes.items) || []; } catch (_) {}
+    window.CSOFastPublish.renderTriagePanel(main, window.CSOFastPublish.buildTriage({ jobs: jobsList, schemes: schemesForTriage }), {
+      onArchive: async function (it) {
+        await api('POST', 'jobs/' + it.id + '/status', { status: 'archived' });
+        toast('Archived expired job');
+      }
+    });
+
     main.appendChild(el('h2', { text: 'Needs attention' }));
     if (!attentionItems.length) {
       main.appendChild(el('div', { class: 'card' }, [el('p', { class: 'muted', text: 'All clear — no drafts, expiring deadlines, or empty mock tests require action.' })]));
@@ -1154,39 +1164,8 @@
     });
 
     if (key === 'jobs') {
-      var datesList = el('div', { class: 'cso-repeat-list' });
-      function renderDateRows() {
-        clear(datesList);
-        if (!dateRows.length) {
-          datesList.appendChild(el('div', { class: 'hint', text: 'No important dates added yet. Use "+ Add Date Row" to build structured timelines without raw Markdown.' }));
-        }
-        dateRows.forEach(function (row, idx) {
-          var lbl = el('input', { type: 'text', placeholder: 'e.g. Application Start / Exam Date', 'aria-label': 'Date label ' + (idx + 1) });
-          lbl.value = row.label;
-          lbl.addEventListener('input', function () { row.label = lbl.value; schedulePreviewRender(); });
-          var dt = el('input', { type: 'date', 'aria-label': 'Date value ' + (idx + 1) });
-          dt.value = row.date;
-          dt.addEventListener('input', function () { row.date = dt.value; schedulePreviewRender(); });
-          var upBtn = el('button', { type: 'button', class: 'btn sm', text: '↑', 'aria-label': 'Move date row up', disabled: idx === 0, onclick: function () {
-            var tmp = dateRows[idx - 1]; dateRows[idx - 1] = dateRows[idx]; dateRows[idx] = tmp; renderDateRows(); schedulePreviewRender();
-          } });
-          var dnBtn = el('button', { type: 'button', class: 'btn sm', text: '↓', 'aria-label': 'Move date row down', disabled: idx === dateRows.length - 1, onclick: function () {
-            var tmp = dateRows[idx + 1]; dateRows[idx + 1] = dateRows[idx]; dateRows[idx] = tmp; renderDateRows(); schedulePreviewRender();
-          } });
-          var rmBtn = el('button', { type: 'button', class: 'btn sm danger', text: '×', 'aria-label': 'Remove date row', onclick: function () {
-            dateRows.splice(idx, 1); renderDateRows(); schedulePreviewRender();
-          } });
-          datesList.appendChild(el('div', { class: 'cso-repeat-row' }, [lbl, dt, upBtn, dnBtn, rmBtn]));
-        });
-      }
-      renderDateRows();
-      left.appendChild(el('div', { class: 'cso-repeat-wrap' }, [
-        el('div', { class: 'cso-repeat-head' }, [
-          el('label', { text: 'Important Dates (Repeatable Rows)' }),
-          el('button', { type: 'button', class: 'btn sm', text: '+ Add Date Row', onclick: function () { dateRows.push({ label: '', date: '' }); renderDateRows(); } })
-        ]),
-        datesList
-      ]));
+      /* v174: visual "+ Add Date" row builder (Label + Date picker + Remove) with collapsible Advanced JSON */
+      left.appendChild(window.CSOFastPublish.createDatesBuilder(dateRows, function () { schedulePreviewRender(); }).node);
     }
 
     var sb = statusBlock(isNew ? null : item); left.appendChild(sb.node);
@@ -1259,7 +1238,17 @@
     renderLivePreview();
 
     var save = el('button', { type: 'submit', class: 'btn primary', text: 'Save' });
-    form.appendChild(el('div', { class: 'toolbar' }, [el('span', { class: 'hint', text: 'Changes update the live candidate preview in real time.' }), el('span', { class: 'spacer' }), toggleBtn]));
+    var drawerBtn = el('button', { type: 'button', class: 'btn sm', text: '👁 Live Preview' });
+    drawerBtn.addEventListener('click', function () {
+      window.CSOFastPublish.openPreviewDrawer(key === 'jobs' ? 'job' : 'study', function () {
+        var snap = {};
+        Object.keys(getters).forEach(function (k) { snap[k] = getters[k](); });
+        Object.assign(snap, sb.get());
+        snap.dates = dateRows;
+        return snap;
+      });
+    });
+    form.appendChild(el('div', { class: 'toolbar' }, [el('span', { class: 'hint', text: 'Changes update the live candidate preview in real time.' }), el('span', { class: 'spacer' }), drawerBtn, toggleBtn]));
     form.appendChild(splitWrap);
     form.appendChild(el('div', { class: 'actions' }, [save, el('a', { class: 'btn', href: '#/' + key, text: 'Cancel' })]));
     form.addEventListener('submit', async function (e) {
@@ -8961,7 +8950,16 @@
         inputs[k].addEventListener('input', function () { schemeSocialPanel.refresh(); });
       });
       form.appendChild(schemeSocialPanel.node);
+      var schemePreviewBtn = el('button', { type: 'button', class: 'btn', text: '👁 Live Preview' });
+      schemePreviewBtn.addEventListener('click', function () {
+        window.CSOFastPublish.openPreviewDrawer('scheme', function () {
+          var snap = {};
+          Object.keys(inputs).forEach(function (k) { snap[k] = inputs[k].value; });
+          return snap;
+        });
+      });
       form.appendChild(el('div', { class: 'actions' }, [
+        schemePreviewBtn,
         el('button', { type: 'submit', class: 'btn primary', text: 'Save Scheme' }),
         el('a', { class: 'btn', href: '#/schemes', text: 'Back to Schemes List' })
       ]));
@@ -12806,6 +12804,12 @@
       var pdfPrintInp = el('input', { class: 'input', type: 'url', value: (editing && editing.pdf_print_url) || '', placeholder: '/assets/downloads/study/...print-pack.html' });
       var booksTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Books & Reference Books JSON or titles (e.g. [{"title":"Nua Arunima","board":"Odisha Board"}])' });
       booksTa.value = (editing && editing.books_json) || '[]';
+      /* v174: visual "+ Add Resource" builder keeps booksTa (books_json) in sync; JSON stays available under Advanced JSON */
+      var resourceRows = window.CSOFastPublish.parseResources(booksTa.value);
+      var resourcesBuilder = window.CSOFastPublish.createResourcesBuilder(resourceRows, function () {
+        booksTa.value = window.CSOFastPublish.serializeResources(resourceRows);
+        refreshPreview();
+      });
       var visualsTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Visual Diagrams / Charts JSON (e.g. ["/assets/img/study/nep-nipun-foundational-stage.svg"])' });
       visualsTa.value = (editing && editing.visuals_json) || '[]';
       var notesOrTa = el('textarea', { class: 'textarea', rows: '2', placeholder: 'Bilingual Odia Notes (ଓଡ଼ିଆ ସାରାଂଶ)...' });
@@ -12952,6 +12956,10 @@
       summaryTa.value = (editing && editing.summary) || '';
       var bodyTa = el('textarea', { class: 'textarea', rows: '5', placeholder: 'Detailed study notes, unit breakdown, or instructions...' });
       bodyTa.value = (editing && editing.body_html) || '';
+      /* v174: "+ Add Question" builder — questions live in a "## Practice Questions & FAQs" block appended on save */
+      var questionRows = window.CSOFastPublish.parseQuestionsBlock(bodyTa.value);
+      bodyTa.value = window.CSOFastPublish.syncQuestionsBlock(bodyTa.value, []);
+      var questionsBuilder = window.CSOFastPublish.createQuestionsBuilder(questionRows, function () { refreshPreview(); });
       var seoTitleInp = el('input', { class: 'input', type: 'text', value: (editing && editing.seo_title) || '', placeholder: 'SEO Title (40-65 chars)' });
       var seoDescInp = el('textarea', { class: 'textarea', rows: '2', placeholder: 'SEO Meta Description (110-160 chars)' });
       seoDescInp.value = (editing && editing.seo_description) || '';
@@ -13084,7 +13092,7 @@
             cover_image_url: coverUrlInp.value.trim(),
             links: linksState.slice(),
             summary: summaryTa.value.trim(),
-            body_html: bodyTa.value,
+            body_html: window.CSOFastPublish.syncQuestionsBlock(bodyTa.value, questionRows),
             stage_slug: stageSel.value,
             board_slug: boardSel.value,
             class_slug: classSel.value,
@@ -13153,9 +13161,10 @@
         ]),
         el('div', { class: 'field' }, [el('label', { text: 'Summary' }), summaryTa]),
         el('div', { class: 'field' }, [el('label', { text: 'Study Notes / Body' }), bodyTa]),
+        questionsBuilder.node,
         el('div', { class: 'field' }, [el('label', { text: 'Bilingual Notes (ଓଡ଼ିଆ)' }), notesOrTa]),
+        resourcesBuilder.node,
         el('div', { class: 'cso-ops-grid-2' }, [
-          el('div', { class: 'field' }, [el('label', { text: 'Books & Reference Books (JSON)' }), booksTa]),
           el('div', { class: 'field' }, [el('label', { text: 'Visual Diagrams / Charts (JSON)' }), visualsTa])
         ]),
         el('div', { class: 'cso-ops-grid-2' }, [
@@ -13165,10 +13174,27 @@
         el('div', { class: 'cso-ops-actions' }, [saveBtn, cancelBtn])
       ]);
 
+      var drawerPreviewBtn = el('button', { type: 'button', class: 'cso-ops-btn cso-ops-btn--sm', text: '👁 Live Preview' });
+      drawerPreviewBtn.addEventListener('click', function () {
+        window.CSOFastPublish.openPreviewDrawer('study', function () {
+          return {
+            title: titleInp.value.trim(),
+            status: statusSelComp.value,
+            resource_type: typeSel.value,
+            board_or_exam: boardInp.value.trim(),
+            subject_tag: subjInp.value.trim(),
+            summary: summaryTa.value.trim(),
+            tags: tagsState.join(', '),
+            pdf_url: pdfUrlInp.value.trim(),
+            resources: resourceRows,
+            questions: questionRows
+          };
+        });
+      });
       var rightPane = el('div', { class: 'cso-cnt-preview-pane' }, [
         el('div', { class: 'cso-cnt-preview-head' }, [
           el('div', { class: 'cso-cnt-preview-tabs' }, chBtns),
-          el('div', { class: 'cso-ops-actions' }, [deskBtn, mobBtn])
+          el('div', { class: 'cso-ops-actions' }, [drawerPreviewBtn, deskBtn, mobBtn])
         ]),
         previewFrame
       ]);

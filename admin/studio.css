@@ -2980,3 +2980,153 @@ html[data-theme="lime"] .cso-nav-folder-btn:hover {
 @media (max-width: 768px) { .cso-workspace input, .cso-workspace select, .cso-workspace textarea { font-size: max(16px, 1rem); } }
 @media (prefers-reduced-motion: reduce) { .cso-sidebar, .cso-live-dot, .cso-drawer-backdrop { transition: none !important; animation: none !important; } }
 @media (prefers-contrast: more) { .cso-kpi-card, .cso-icon-btn, .cso-btn-create { border: 2px solid currentColor; } .cso-icon-btn:focus-visible, button:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; } }
+
+/* ==========================================================================
+   v174: Fast-Publishing Overhaul — repeatable rows, Live Preview drawer,
+   Content Health & Expiry Triage (theme tokens only, zero inline styles)
+   ========================================================================== */
+.cso-fp-wrap {
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid var(--studio-border-strong, #2c3b36);
+  border-radius: var(--studio-radius, 12px);
+  background: var(--studio-card, #0d1210);
+}
+.cso-fp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.cso-fp-list { display: grid; gap: 8px; }
+.cso-fp-empty { color: var(--studio-muted, #94a3b8); font-size: 0.85rem; }
+.cso-fp-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) auto;
+  gap: 8px;
+  align-items: start;
+}
+.cso-fp-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--studio-border-strong, #2c3b36);
+  background: var(--studio-surface, #090d0b);
+  color: var(--studio-text, #f8fafc);
+  font: inherit;
+}
+textarea.cso-fp-input { min-height: 64px; resize: vertical; }
+.cso-fp-remove, .cso-fp-add { min-height: 44px; }
+.cso-fp-advanced { margin-top: 10px; }
+.cso-fp-advanced-sum { cursor: pointer; color: var(--studio-blue, #38bdf8); font-size: 0.85rem; min-height: 44px; display: flex; align-items: center; }
+.cso-fp-json {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--studio-border-strong, #2c3b36);
+  background: var(--studio-surface, #090d0b);
+  color: var(--studio-text, #f8fafc);
+}
+.cso-fp-json-err { color: var(--studio-red, #ef4444); font-size: 0.8rem; margin-top: 4px; }
+
+.cso-fp-drawer-root { position: fixed; inset: 0; z-index: 2000; }
+.cso-fp-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); }
+.cso-fp-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  max-width: 100vw;
+  background: var(--studio-surface, #090d0b);
+  color: var(--studio-text, #f8fafc);
+  border-left: 1px solid var(--studio-border-strong, #2c3b36);
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.5);
+}
+.cso-fp-drawer.is-desktop { width: min(760px, 100vw); }
+.cso-fp-drawer.is-mobile { width: min(392px, 100vw); }
+.cso-fp-drawer-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--studio-border, #1f2926);
+  flex-wrap: wrap;
+}
+.cso-fp-width-toggle { display: flex; gap: 6px; margin-left: auto; }
+.cso-fp-width-toggle button[aria-pressed="true"] { background: var(--studio-accent, #10b981); color: #04130d; }
+.cso-fp-close { min-width: 44px; min-height: 44px; }
+.cso-fp-drawer-body { flex: 1; overflow: auto; padding: 14px; }
+.cso-fp-frame { max-width: 100%; }
+.cso-fp-pcard {
+  background: var(--studio-card, #0d1210);
+  border: 1px solid var(--studio-border-strong, #2c3b36);
+  border-radius: var(--studio-radius, 12px);
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+.cso-fp-pkicker { font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--studio-muted, #94a3b8); }
+.cso-fp-ptitle { margin: 0; font-size: 1.1rem; line-height: 1.3; }
+.cso-fp-psub { margin: 4px 0 0; font-size: 0.9rem; }
+.cso-fp-pbadges, .cso-fp-ptags, .cso-fp-pactions { display: flex; flex-wrap: wrap; gap: 6px; }
+.cso-fp-pbadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--studio-card-elev, #121916);
+  border: 1px solid var(--studio-border-strong, #2c3b36);
+  color: var(--studio-text, #f8fafc);
+}
+.cso-fp-pbadge.is-ok { color: var(--studio-accent, #10b981); border-color: var(--studio-accent, #10b981); }
+.cso-fp-pbadge.is-warn { color: var(--studio-amber, #f59e0b); border-color: var(--studio-amber, #f59e0b); }
+.cso-fp-pbadge.is-bad { color: var(--studio-red, #ef4444); border-color: var(--studio-red, #ef4444); }
+.cso-fp-psum { margin: 0; color: var(--studio-muted, #94a3b8); }
+.cso-fp-pfacts { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 0; font-size: 0.85rem; }
+.cso-fp-pfacts dt { color: var(--studio-muted, #94a3b8); }
+.cso-fp-pfacts dd { margin: 0; }
+.cso-fp-plist { margin: 0; padding-left: 18px; font-size: 0.85rem; }
+.cso-fp-ptag { font-size: 0.75rem; color: var(--studio-blue, #38bdf8); }
+.cso-fp-pbtn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--studio-border-strong, #2c3b36);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.cso-fp-pbtn.is-primary { background: var(--studio-accent, #10b981); color: #04130d; border-color: var(--studio-accent, #10b981); }
+.cso-fp-pq summary { cursor: pointer; font-weight: 600; min-height: 44px; display: flex; align-items: center; }
+.cso-fp-pexp { color: var(--studio-muted, #94a3b8); font-size: 0.85rem; }
+
+.cso-fp-triage { margin: 16px 0; }
+.cso-fp-triage-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.cso-fp-triage-head h3 { margin: 0; margin-right: auto; }
+.cso-fp-triage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.cso-fp-triage-col h4 { margin: 0 0 8px; font-size: 0.9rem; }
+.cso-fp-triage-row {
+  display: grid;
+  gap: 4px;
+  padding: 8px 0;
+  border-top: 1px solid var(--studio-border, #1f2926);
+}
+.cso-fp-triage-row[hidden] { display: none; }
+.cso-fp-triage-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.cso-fp-triage-actions .btn { min-height: 44px; display: inline-flex; align-items: center; }
+
+@media (max-width: 480px) {
+  .cso-fp-row { grid-template-columns: 1fr; }
+  .cso-fp-drawer.is-desktop { width: 100vw; }
+}
