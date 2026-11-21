@@ -1,5 +1,7 @@
 /* v155: canonical homepage shell for every server-rendered (SSR) page. Zero inline <style>/<script>/style="". */
 
+import { hydrateJobsFeedResponse, renderSchemeCard } from './ssr-feeds.js';
+
 export const CSO_SHELL_HEAD_LINKS = [
   '<link rel="stylesheet" href="/assets/style.css">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css">',
@@ -182,15 +184,22 @@ async function safeBatch(db, stmts) {
 }
 
 /** Hydrate /schemes/, /jobs-careers/, /community/, and /about/ initial HTML server-side via env.DB.batch(). */
-export async function hydrateExplorerIndexHtml(res, pathname, env) {
+export async function hydrateExplorerIndexHtml(res, pathname, env, url) {
   const db = env && env.DB;
-  if (!db || typeof HTMLRewriter === 'undefined') return res;
+  if (!db) return res;
+
+  /* v162: /jobs-careers/ landing + 6 Career Hub pages (pure string injection, no HTMLRewriter needed). */
+  if (pathname === '/jobs-careers/' || pathname === '/jobs-careers/index.html' || /^\/jobs-careers\/[a-z0-9-]+\/?(?:index\.html)?$/.test(pathname)) {
+    return hydrateJobsFeedResponse(res, pathname, url, env);
+  }
+
+  if (typeof HTMLRewriter === 'undefined') return res;
 
   if (pathname === '/schemes/' || pathname === '/schemes/index.html') {
     const results = await safeBatch(db, [
-      db.prepare("SELECT id, slug, title, sponsor_level, department_name, benefit_amount, beneficiary_group, summary, official_apply_url FROM schemes_directory_items WHERE status = 'published' ORDER BY is_featured DESC, updated_at DESC LIMIT 12"),
+      db.prepare("SELECT i.id, i.slug, i.title, i.sponsor_level, i.department_name, i.benefit_amount, i.beneficiary_group, i.summary, i.official_apply_url, i.application_mode FROM schemes_directory_items i JOIN schemes_directory_folders f ON f.id = i.folder_id WHERE i.status = 'published' AND f.is_active = 1 ORDER BY i.official_portal_verified DESC, i.updated_at DESC LIMIT 12"),
       db.prepare("SELECT domain_slug, COUNT(*) AS cnt FROM schemes_directory_items WHERE status = 'published' GROUP BY domain_slug HAVING COUNT(*) >= 2"),
-      db.prepare("SELECT COUNT(*) AS n FROM schemes_directory_items WHERE status = 'published'")
+      db.prepare("SELECT COUNT(*) AS n FROM schemes_directory_items i JOIN schemes_directory_folders f ON f.id = i.folder_id WHERE i.status = 'published' AND f.is_active = 1")
     ]);
     if (!results) return res;
     const items = (results[0] && results[0].results) || [];
@@ -200,10 +209,10 @@ export async function hydrateExplorerIndexHtml(res, pathname, env) {
       const label = cleanTopicTitle(String(d.domain_slug || '').replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()));
       return `<a class="cso-schemes-domain-card" href="/schemes/${escShell(d.domain_slug)}/"><div class="cso-schemes-domain-top"><span>Category</span><span>${Number(d.cnt)} entries</span></div><div class="cso-schemes-domain-title">${escShell(label)}</div></a>`;
     }).join('');
-    const itemsHtml = items.map((it) => `<article class="cso-schemes-item-card"><div class="cso-schemes-item-meta"><span class="cso-schemes-tag">${escShell(it.sponsor_level || 'Odisha State')}</span><span>${escShell(it.department_name || 'Govt of Odisha')}</span></div><h3 class="cso-schemes-item-title">${escShell(cleanTopicTitle(it.title))}</h3><div class="cso-schemes-item-meta">${escShell(it.summary || '')}</div><div class="cso-schemes-item-actions"><a class="cso-schemes-btn cso-schemes-btn-primary" href="/schemes/item/${escShell(encodeURIComponent(it.slug || it.id))}/">View Details</a></div></article>`).join('');
+    const itemsHtml = items.map((it) => renderSchemeCard(it, cleanTopicTitle(it.title))).join('');
     return new HTMLRewriter()
       .on('#schemes-domain-grid', { element(el) { if (domainHtml) el.setInnerContent(domainHtml, { html: true }); } })
-      .on('#schemes-items-grid', { element(el) { if (itemsHtml) el.setInnerContent(itemsHtml, { html: true }); } })
+      .on('#schemes-items-grid', { element(el) { if (itemsHtml) { el.setInnerContent(itemsHtml, { html: true }); el.setAttribute('data-ssr', '1'); } } })
       .on('#schemes-results-count', { element(el) { el.setInnerContent(`Showing ${items.length} of ${fmtNum(total)} verified schemes`, { html: false }); } })
       .transform(res);
   }
@@ -227,22 +236,6 @@ export async function hydrateExplorerIndexHtml(res, pathname, env) {
       .on('#community-domain-grid', { element(el) { if (domainHtml) el.setInnerContent(domainHtml, { html: true }); } })
       .on('#community-items-grid', { element(el) { if (itemsHtml) el.setInnerContent(itemsHtml, { html: true }); } })
       .on('#community-results-count', { element(el) { el.setInnerContent(`Showing ${items.length} of ${fmtNum(total)} verified communities`, { html: false }); } })
-      .transform(res);
-  }
-
-  if (pathname === '/jobs-careers/' || pathname === '/jobs-careers/index.html') {
-    const results = await safeBatch(db, [
-      db.prepare("SELECT id, slug, title, item_type, qualification_tag, deadline_date, summary FROM jobs_directory_items WHERE status = 'published' ORDER BY is_featured DESC, updated_at DESC LIMIT 12"),
-      db.prepare("SELECT COUNT(*) AS n FROM jobs_directory_items WHERE status = 'published'")
-    ]);
-    if (!results) return res;
-    const items = (results[0] && results[0].results) || [];
-    const total = Number((results[1] && results[1].results && results[1].results[0] && results[1].results[0].n) || items.length);
-    const jobsHtml = items.map((it) => `<article class="live-job-card"><div class="live-job-card__meta"><span class="live-job-badge">${escShell(it.item_type || 'Notification')}</span>${it.deadline_date ? `<span class="live-job-deadline">Last Date: ${escShell(it.deadline_date)}</span>` : ''}</div><h3 class="live-job-card__title"><a href="/jobs/item/${escShell(encodeURIComponent(it.slug || it.id))}/">${escShell(cleanTopicTitle(it.title))}</a></h3><p class="live-job-card__summary">${escShell(it.summary || '')}</p></article>`).join('');
-    return new HTMLRewriter()
-      .on('#live-jobs-count', { element(el) { el.setInnerContent(`${fmtNum(total)} Active`, { html: false }); } })
-      .on('#live-jobs-status', { element(el) { el.setAttribute('hidden', ''); el.setInnerContent(`${items.length} verified notifications`, { html: false }); } })
-      .on('#live-jobs-grid', { element(el) { if (jobsHtml) el.setInnerContent(jobsHtml, { html: true }); } })
       .transform(res);
   }
 

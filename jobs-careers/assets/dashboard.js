@@ -1498,26 +1498,65 @@
     }
   }
 
+  async function shareJobLink(title, lastDate, shareUrl) {
+    const safeTitle = title || 'Job Notification';
+    const text = `${safeTitle}${lastDate ? ' (Last Date: ' + lastDate + ')' : ''}`;
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: safeTitle, text, url: shareUrl });
+        return;
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+      }
+    }
+    const ok = await copyToClipboard(shareUrl);
+    showToast(ok ? 'Link Copied!' : `Copy this link: ${shareUrl}`);
+  }
+
   function makeShareButton(job) {
     const shareUrl = `${window.location.origin}/jobs-careers/?job=${encodeURIComponent(job.slug || '')}`;
     const title = job.title || 'Job Notification';
-    const text = `${title}${job.last_date ? ' (Last Date: ' + job.last_date + ')' : ''}`;
     const btn = el('button', 'live-btn live-btn--wa', '📲 Share');
     btn.type = 'button';
     btn.setAttribute('aria-label', `Share ${title}`);
-    btn.addEventListener('click', async () => {
-      if (typeof navigator.share === 'function') {
-        try {
-          await navigator.share({ title, text, url: shareUrl });
-          return;
-        } catch (err) {
-          if (err && err.name === 'AbortError') return;
-        }
-      }
-      const ok = await copyToClipboard(shareUrl);
-      showToast(ok ? 'Link Copied!' : `Copy this link: ${shareUrl}`);
-    });
+    btn.addEventListener('click', () => shareJobLink(title, job.last_date, shareUrl));
     return btn;
+  }
+
+  function hydrateSsrJobCards(gridEl) {
+    if (!gridEl) return false;
+    const cards = gridEl.querySelectorAll('[data-ssr-card]');
+    if (!cards.length) return false;
+    cards.forEach(card => {
+      if (card.dataset.hydrated === '1') return;
+      card.dataset.hydrated = '1';
+      const slug = card.getAttribute('data-job-slug') || '';
+      const detailLink = card.querySelector('[data-action="details"]');
+      if (detailLink && slug) {
+        detailLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          openJobDetail(slug);
+        });
+      }
+      const infoLink = card.querySelector('[data-action="info"]');
+      if (infoLink && slug) {
+        infoLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          openJobDetail(slug);
+        });
+      }
+      const shareBtn = card.querySelector('[data-action="share"]');
+      if (shareBtn && slug) {
+        const title = shareBtn.getAttribute('data-title') || card.querySelector('.live-job-card__title')?.textContent?.trim() || 'Job Notification';
+        const lastDate = shareBtn.getAttribute('data-last-date') || '';
+        const shareUrl = `${window.location.origin}/jobs-careers/?job=${encodeURIComponent(slug)}`;
+        shareBtn.addEventListener('click', () => shareJobLink(title, lastDate, shareUrl));
+      }
+    });
+    if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
+      window.CSOBookmarks.updateUI();
+    }
+    return true;
   }
 
   function jobToJsonLd(job) {
@@ -1765,15 +1804,18 @@
     }
   }
 
-  async function loadLiveJobs() {
+  async function loadLiveJobs(opts = {}) {
     if (!liveGridEl || !liveStatusEl) return;
+    const silent = Boolean(opts && opts.silent);
     const isClientComposite = (liveState.chip && liveState.chip !== 'all') || Boolean(liveState.goalMatch);
     const hasFilter = Boolean(liveState.q || liveState.state || liveState.category || isClientComposite);
     if (liveResetBtn) liveResetBtn.hidden = !hasFilter;
 
-    liveStatusEl.hidden = false;
-    liveStatusEl.replaceChildren(el('span', '', 'Loading live recruitment notifications…'));
-    liveGridEl.replaceChildren();
+    if (!silent) {
+      liveStatusEl.hidden = false;
+      liveStatusEl.replaceChildren(el('span', '', 'Loading live recruitment notifications…'));
+      liveGridEl.replaceChildren();
+    }
 
     const params = new URLSearchParams();
     params.set('page', isClientComposite ? '1' : String(liveState.page));
@@ -1811,6 +1853,7 @@
       }
 
       if (pagedItems.length === 0) {
+        liveGridEl.replaceChildren();
         liveStatusEl.hidden = false;
         const emptyMsg = el('p', '', hasFilter
           ? 'No published job notifications match your current filters.'
@@ -1827,9 +1870,26 @@
       }
 
       liveStatusEl.hidden = true;
+      pagedItems.forEach(job => { if (job.slug) jobCache.set(job.slug, job); });
+
+      if (silent && liveGridEl.dataset.ssr === '1') {
+        const ssrSlugs = Array.from(liveGridEl.querySelectorAll('[data-ssr-card]'))
+          .map(n => n.getAttribute('data-job-slug') || '')
+          .join(',');
+        const liveSlugs = pagedItems.map(j => j.slug || j.id || '').join(',');
+        if (ssrSlugs && ssrSlugs === liveSlugs) {
+          renderLivePagination(displayPage, displayLimit, total);
+          if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
+            window.CSOBookmarks.updateUI();
+          }
+          return;
+        }
+      }
+
       const frag = document.createDocumentFragment();
       pagedItems.forEach(job => frag.appendChild(renderJobCard(job)));
-      liveGridEl.appendChild(frag);
+      liveGridEl.replaceChildren(frag);
+      delete liveGridEl.dataset.ssr;
       renderLivePagination(displayPage, displayLimit, total);
       injectJobJsonLd({
         '@context': 'https://schema.org',
@@ -1845,13 +1905,16 @@
         window.CSOBookmarks.updateUI();
       }
     } catch (err) {
+      if (silent && liveGridEl.querySelector('[data-ssr-card]')) {
+        return;
+      }
       if (liveCountEl) liveCountEl.textContent = 'Unavailable';
       liveStatusEl.hidden = false;
       liveStatusEl.replaceChildren();
       const msg = el('p', '', 'Unable to load live job notifications right now.');
       const retry = el('button', 'live-btn', 'Retry');
       retry.type = 'button';
-      retry.addEventListener('click', loadLiveJobs);
+      retry.addEventListener('click', () => loadLiveJobs());
       liveStatusEl.append(msg, retry);
     }
   }
@@ -2029,7 +2092,12 @@
 
   loadCandidateGoalsAndTaxonomy();
   syncCategoryDropdown([]);
-  loadLiveJobs();
+  const hasSsrCards = liveGridEl && liveGridEl.dataset.ssr === '1' && hydrateSsrJobCards(liveGridEl);
+  if (hasSsrCards && !liveState.q) {
+    loadLiveJobs({ silent: true });
+  } else {
+    loadLiveJobs();
+  }
 
   try {
     const initialJobSlug = new URLSearchParams(window.location.search).get('job');

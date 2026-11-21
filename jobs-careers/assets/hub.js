@@ -76,25 +76,54 @@
     }
   }
 
+  async function triggerShare(title, lastDate, detailUrl) {
+    var safeTitle = title || 'Job Notification';
+    var text = safeTitle + (lastDate ? ' (Last Date: ' + lastDate + ')' : '');
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: safeTitle, text: text, url: detailUrl });
+        return;
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+      }
+    }
+    var ok = await copyText(detailUrl);
+    showToast(ok ? 'Link Copied!' : 'Copy this link: ' + detailUrl);
+  }
+
   function shareButton(job, detailUrl) {
     var title = job.title || 'Job Notification';
-    var text = title + (job.last_date ? ' (Last Date: ' + job.last_date + ')' : '');
     var btn = el('button', 'live-btn live-btn--wa', '📲 Share');
     btn.type = 'button';
     btn.setAttribute('aria-label', 'Share ' + title);
-    btn.addEventListener('click', async function () {
-      if (typeof navigator.share === 'function') {
-        try {
-          await navigator.share({ title: title, text: text, url: detailUrl });
-          return;
-        } catch (err) {
-          if (err && err.name === 'AbortError') return;
-        }
-      }
-      var ok = await copyText(detailUrl);
-      showToast(ok ? 'Link Copied!' : 'Copy this link: ' + detailUrl);
+    btn.addEventListener('click', function () {
+      triggerShare(title, job.last_date, detailUrl);
     });
     return btn;
+  }
+
+  function hydrateSsrHubCards(grid) {
+    if (!grid) return false;
+    var cards = grid.querySelectorAll('[data-ssr-card]');
+    if (!cards.length) return false;
+    cards.forEach(function (card) {
+      if (card.getAttribute('data-hydrated') === '1') return;
+      card.setAttribute('data-hydrated', '1');
+      var slug = card.getAttribute('data-job-slug') || '';
+      var shareBtn = card.querySelector('[data-action="share"]');
+      if (shareBtn && slug) {
+        var title = shareBtn.getAttribute('data-title') || (card.querySelector('.live-job-card__title') ? card.querySelector('.live-job-card__title').textContent.trim() : 'Job Notification');
+        var lastDate = shareBtn.getAttribute('data-last-date') || '';
+        var detailUrl = window.location.origin + '/jobs-careers/?job=' + encodeURIComponent(slug);
+        shareBtn.addEventListener('click', function () {
+          triggerShare(title, lastDate, detailUrl);
+        });
+      }
+    });
+    if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
+      window.CSOBookmarks.updateUI();
+    }
+    return true;
   }
 
   function saveButton(job) {
@@ -188,9 +217,13 @@
     var search = document.getElementById('hub-search');
     var chipWrap = document.getElementById('hub-chips');
     var resetBtn = document.getElementById('hub-reset');
+    var moreWrap = document.getElementById('hub-more');
     if (!grid || !status) return;
 
+    var hasSsr = grid.getAttribute('data-ssr') === '1' && hydrateSsrHubCards(grid);
     var hubJobs = [];
+    var dataReady = false;
+    var showAll = false;
     var state = { q: '', chip: -1 };
     var chips = chipWrap ? Array.prototype.slice.call(chipWrap.querySelectorAll('[data-hub-chip]')) : [];
     var chipRes = chips.map(function (c) { return compile(c.getAttribute('data-pattern')); });
@@ -226,8 +259,10 @@
       var items = filtered();
       var hasFilter = Boolean(state.q || state.chip > 0);
       if (resetBtn) resetBtn.hidden = !hasFilter;
+      if (moreWrap) moreWrap.hidden = true;
       if (countEl) countEl.textContent = items.length.toLocaleString('en-IN') + (items.length === 1 ? ' Active Notice' : ' Active Notices');
       grid.replaceChildren();
+      grid.removeAttribute('data-ssr');
       if (!items.length) {
         status.hidden = false;
         status.replaceChildren(el('p', '', hasFilter
@@ -248,25 +283,49 @@
       if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') window.CSOBookmarks.updateUI();
     }
 
+    var ssrMoreBtn = document.getElementById('hub-more-btn');
+    if (ssrMoreBtn) {
+      ssrMoreBtn.addEventListener('click', function () {
+        showAll = true;
+        if (dataReady) render();
+      });
+    }
+
     chips.forEach(function (btn, i) {
       btn.addEventListener('click', function () {
         state.chip = i === 0 ? -1 : i;
         syncChips();
-        render();
+        if (dataReady || !hasSsr) render();
       });
     });
     if (search) {
       search.addEventListener('input', function () {
         clearTimeout(timer);
-        timer = setTimeout(function () { state.q = search.value.trim(); render(); }, 150);
+        timer = setTimeout(function () {
+          state.q = search.value.trim();
+          if (dataReady || !hasSsr) render();
+        }, 150);
       });
     }
     if (resetBtn) resetBtn.addEventListener('click', reset);
 
     fetchAllJobs().then(function (all) {
       hubJobs = hubRe ? all.filter(function (job) { return hubRe.test(haystack(job)); }) : all;
+      dataReady = true;
+      var hasFilter = Boolean(state.q || state.chip > 0);
+      if (hasSsr && !hasFilter && !showAll) {
+        var ssrCards = Array.prototype.slice.call(grid.querySelectorAll('[data-ssr-card]'));
+        var ssrSlugs = ssrCards.map(function (n) { return n.getAttribute('data-job-slug') || ''; }).join(',');
+        var topSlugs = hubJobs.slice(0, ssrCards.length).map(function (j) { return j.slug || j.id || ''; }).join(',');
+        if (ssrSlugs && ssrSlugs === topSlugs) {
+          if (countEl) countEl.textContent = hubJobs.length.toLocaleString('en-IN') + (hubJobs.length === 1 ? ' Active Notice' : ' Active Notices');
+          if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') window.CSOBookmarks.updateUI();
+          return;
+        }
+      }
       render();
     }).catch(function () {
+      if (hasSsr && grid.querySelector('[data-ssr-card]')) return;
       if (countEl) countEl.textContent = 'Unavailable';
       status.hidden = false;
       status.replaceChildren(el('p', '', 'Unable to load live notices right now.'));

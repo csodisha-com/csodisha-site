@@ -192,7 +192,8 @@
     renderPagination();
   }
 
-  async function loadItems(append) {
+  async function loadItems(append, opts) {
+    var silent = Boolean(opts && opts.silent);
     var qs = new URLSearchParams();
     if (state.q) qs.set('q', state.q);
     if (state.sponsor) qs.set('sponsor_level', state.sponsor);
@@ -210,6 +211,20 @@
     state.total = Number(data.total || state.items.length);
     state.totalPages = Number(data.totalPages || 1);
     state.hasMore = Boolean(data.hasMore);
+    var host = document.getElementById('schemes-items-grid');
+    if (silent && host && host.getAttribute('data-ssr') === '1') {
+      var ssrSlugs = Array.prototype.slice.call(host.querySelectorAll('[data-scheme-slug]'))
+        .map(function (n) { return n.getAttribute('data-scheme-slug') || ''; })
+        .join(',');
+      var liveSlugs = state.items.map(function (it) { return String(it.slug || it.id || ''); }).join(',');
+      if (ssrSlugs && ssrSlugs === liveSlugs) {
+        var countEl = document.getElementById('schemes-results-count');
+        if (countEl) countEl.textContent = 'Showing ' + state.items.length + ' of ' + state.total + ' verified schemes';
+        renderPagination();
+        return;
+      }
+      host.removeAttribute('data-ssr');
+    }
     renderItems(state.items);
   }
 
@@ -421,7 +436,8 @@
       renderTelemetry(state.overview);
       renderDomains(state.overview);
     }
-    await loadItems(false);
+    var hasSsrSchemes = Boolean(document.querySelector('#schemes-items-grid[data-ssr="1"] [data-scheme-slug]'));
+    await loadItems(false, { silent: hasSsrSchemes });
   }
 
   document.addEventListener('DOMContentLoaded', init);

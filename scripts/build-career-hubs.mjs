@@ -5,7 +5,7 @@ import path from 'node:path';
 import { HUBS, ORIGIN } from './career-hubs-data.mjs';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-const V = '20261121v161';
+const V = '20261121v162';
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 const landingPath = path.join(root, 'jobs-careers/index.html');
@@ -114,6 +114,7 @@ ${headerShell}
     </div>
     <div id="hub-status" class="live-status-box" role="status" aria-live="polite">Loading live recruitment notices…</div>
     <div id="hub-grid" class="live-jobs-grid" aria-live="polite"></div>
+    <div id="hub-more" class="live-pagination" hidden></div>
   </section>
 
   <section class="cso-hub-related" aria-labelledby="hub-related-heading">
@@ -173,7 +174,7 @@ ${m.replace('<h2>Explore All Categories</h2>', '<h2>Explore All Categories</h2>'
 `);
   landing = landing.replace(ovOpen, () => `${ovOpen}\n          ${hubsBlock}\n`);
 }
-landing = landing.replace(/(dashboard\.(?:css|js))\?v=\d+v\d+/g, `$1?v=${V}`);
+landing = landing.replace(/((?:dashboard|hub)\.(?:css|js))\?v=\d+v\d+/g, `$1?v=${V}`);
 if (!landing.includes('/jobs-careers/assets/hub.css')) {
   landing = landing.replace(/(  <link rel="stylesheet" href="\.\/assets\/dashboard\.css[^\n]*\n)/, `$1  <link rel="stylesheet" href="/jobs-careers/assets/hub.css?v=${V}">\n`);
 }
