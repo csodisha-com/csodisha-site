@@ -792,6 +792,7 @@
 
   function renderStatistics(data) {
     const container = $('statistics-grid');
+    if (!container) return;
 
     const tc = treeCountsCache || (data && data.counts) || null;
     const mainCount = tc && tc.sections != null

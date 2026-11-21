@@ -649,7 +649,7 @@
   }
 
   function renderOverview() {
-    if (!dashboardGrid || !statsGrid) return;
+    if (!dashboardGrid) return;
     dashboardGrid.replaceChildren();
     state.groups.forEach((g, idx) => {
       const secs = g.sections || [];
@@ -671,21 +671,6 @@
       dashboardGrid.appendChild(card);
     });
 
-    // Clean single-value Directory at a Glance cards (zero stray 0 placeholder)
-    statsGrid.replaceChildren();
-    const metrics = [
-      { value: state.counts.groups || state.groups.length, label: 'Academic Track Groups' },
-      { value: state.counts.sections, label: 'Curriculum Sections' },
-      { value: state.counts.subcategories, label: 'Subject Categories' },
-      { value: state.counts.entries, label: 'Indexed Topics & Guides' },
-      { value: state.resources.length, label: 'Verified Live Resources' }
-    ];
-    metrics.forEach(m => {
-      const box = el('div', 'stat-card');
-      box.appendChild(el('strong', 'stat-value', String(m.value || 0)));
-      box.appendChild(el('span', 'stat-label', m.label));
-      statsGrid.appendChild(box);
-    });
 
     if (telemetryBars) {
       telemetryBars.replaceChildren();

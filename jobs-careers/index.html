@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#edf4ff">
   <title>Jobs &amp; Careers Explorer | Common Sense Odisha</title>
   <link rel="stylesheet" href="/assets/style.css?v=20261118v146">
-  <link rel="stylesheet" href="./assets/dashboard.css?v=20261118v146">
+  <link rel="stylesheet" href="./assets/dashboard.css?v=20261121v160">
   <script src="/assets/shared-header.js?v=20261118v146" defer></script>
   <script src="/assets/js/public-content.js?v=20261118v146" defer></script>
-  <script src="./assets/dashboard.js?v=20261118v146" defer></script>
+  <script src="./assets/dashboard.js?v=20261121v160" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css">
   <script src="/assets/js/pages/cso-subpage-filter.js" defer></script>
@@ -117,7 +117,7 @@
         </button>
         <button aria-controls="sidebar" aria-expanded="true" aria-label="Toggle directory sidebar" class="cso-sidebar-toggle cso-sidebar-toggle--top" id="cso-sidebar-toggle-top" title="Collapse / Expand Sidebar" type="button">☰</button>
 
-        <div class="top-search">
+        <div class="top-search" hidden>
           <span aria-hidden="true">⌕</span>
           <input id="directory-search" type="search"
                  placeholder="Search jobs, recruitments, eligibility, entrance exams..."
@@ -130,7 +130,7 @@
         <a class="home-link" href="./" aria-label="Jobs and Careers Overview">⌂ Overview</a>
       </header>
 
-      <main class="main-content" data-cso-subpage-topbar data-cso-explorer-url="/jobs-careers/">
+      <main class="main-content">
         <section class="cso-jobs-hero cso-jc-hero" aria-label="Jobs and Careers Hero">
           <div class="cso-jobs-hero-top">
             <div class="cso-jc-crumb"><a href="/">CS ODISHA</a> <span>›</span> <span>JOBS &amp; CAREERS</span></div>
@@ -144,15 +144,6 @@
           <h1 id="page-title">Jobs &amp; Careers Explorer</h1>
           <p id="page-description" hidden></p>
           <p id="jc-hero-sub" class="cso-jobs-hero-sub">ଓଡ଼ିଶା ସରକାରୀ ନିଯୁକ୍ତି (OPSC, OSSC, OSSSC, OPRB, OSEPA), କେନ୍ଦ୍ରୀୟ ଓ PSU ନିଯୁକ୍ତି, ବ୍ୟାଙ୍କିଂ ଏବଂ କ୍ୟାରିୟର ମାର୍ଗଦର୍ଶିକା — Verified eligibility, pay matrix, selection stages, and official portals across all 8 domains.</p>
-          <div class="cso-jobs-quick-pills" id="jc-quick-pills" role="group" aria-label="Quick Jump Categories">
-            <button type="button" class="cso-jobs-pill is-active" data-q="">All Jobs</button>
-            <button type="button" class="cso-jobs-pill" data-q="OPSC">OPSC</button>
-            <button type="button" class="cso-jobs-pill" data-q="OSSC">OSSC / OSSSC</button>
-            <button type="button" class="cso-jobs-pill" data-q="Teacher">Teaching &amp; Education</button>
-            <button type="button" class="cso-jobs-pill" data-q="Police">Police &amp; Defence</button>
-            <button type="button" class="cso-jobs-pill" data-q="SSC">Central &amp; Banking</button>
-            <button type="button" class="cso-jobs-pill" data-q="PSU">Odisha PSUs</button>
-          </div>
         </section>
 
         <section id="live-jobs-section" class="live-jobs-section" aria-labelledby="live-jobs-heading">
@@ -162,29 +153,34 @@
               <h2 id="live-jobs-heading">Live Recruitment &amp; Job Notifications</h2>
               <span id="live-jobs-count" class="live-count-badge" aria-live="polite">Loading…</span>
             </div>
-            <div class="live-jobs-filters" role="search" aria-label="Filter live job notifications">
-              <input id="live-jobs-search" class="live-filter-input" type="search" placeholder="Filter by post, organisation (OPSC, OSSC…)" aria-label="Filter live jobs by keyword">
-              <select id="live-jobs-state" class="live-filter-select" aria-label="Filter by state">
-                <option value="">All States</option>
-                <option value="Odisha">Odisha</option>
-                <option value="Central">Central / All India</option>
-              </select>
-              <select id="live-jobs-category" class="live-filter-select" aria-label="Filter by category">
-                <option value="">All Categories</option>
-              </select>
-              <button id="live-jobs-reset" class="live-filter-btn" type="button" hidden>Reset</button>
-            </div>
           </div>
 
-          <div class="live-filter-chips" role="group" aria-label="Filter jobs by recruitment track">
-            <div class="live-filter-chips__list" id="live-jobs-chips">
-              <button type="button" class="live-chip is-active" data-chip="all" aria-pressed="true">All Jobs</button>
-              <button type="button" class="live-chip" data-chip="psc" aria-pressed="false">OPSC / OSSC / OSSSC</button>
-              <button type="button" class="live-chip" data-chip="teaching" aria-pressed="false">Teaching &amp; Education</button>
-              <button type="button" class="live-chip" data-chip="central-banking" aria-pressed="false">Central &amp; Banking</button>
-              <button type="button" class="live-chip" data-chip="admit-result" aria-pressed="false">Admit Card &amp; Result</button>
-            </div>
-            <button type="button" id="live-jobs-goal-toggle" class="live-chip live-chip--goal" aria-pressed="false">★ Match My Dashboard Goals</button>
+          <div class="live-search-bar" role="search" aria-label="Search live job notifications">
+            <span class="live-search-icon" aria-hidden="true">⌕</span>
+            <input id="live-jobs-search" class="live-filter-input" type="search" autocomplete="off" placeholder="Search jobs, recruitments, eligibility, entrance exams..." aria-label="Search live jobs by keyword">
+          </div>
+
+          <div class="live-filter-strip" id="live-jobs-chips" role="group" aria-label="Filter jobs by recruitment track">
+            <button type="button" class="live-chip is-active" data-chip="all" aria-pressed="true">All Jobs</button>
+            <button type="button" class="live-chip" data-chip="opsc" aria-pressed="false">OPSC</button>
+            <button type="button" class="live-chip" data-chip="ossc" aria-pressed="false">OSSC / OSSSC</button>
+            <button type="button" class="live-chip" data-chip="teaching" aria-pressed="false">Teaching &amp; Education</button>
+            <button type="button" class="live-chip" data-chip="police" aria-pressed="false">Police &amp; Defence</button>
+            <button type="button" class="live-chip" data-chip="central-banking" aria-pressed="false">Central &amp; Banking</button>
+            <button type="button" class="live-chip" data-chip="admit-result" aria-pressed="false">Admit Card &amp; Result</button>
+          </div>
+
+          <div class="live-jobs-filters" aria-label="Filter live job notifications">
+            <select id="live-jobs-state" class="live-filter-select" aria-label="Filter by state">
+              <option value="">All States</option>
+              <option value="Odisha">Odisha</option>
+              <option value="Central">Central / All India</option>
+            </select>
+            <select id="live-jobs-category" class="live-filter-select" aria-label="Filter by category">
+              <option value="">All Categories</option>
+            </select>
+            <button type="button" id="live-jobs-goal-toggle" class="live-chip live-chip--goal" aria-pressed="false">★ Match my Candidate Hub goals</button>
+            <button id="live-jobs-reset" class="live-filter-btn" type="button" hidden>Reset All Filters</button>
           </div>
 
           <div id="live-jobs-auth-hint" class="live-auth-hint" role="status" hidden>
@@ -287,40 +283,6 @@
               <span class="card-arrow" aria-hidden="true">›</span>
             </button>
           </div>
-
-          <section class="statistics-section" aria-label="Directory statistics">
-            <h2 class="statistics-title">Directory at a Glance</h2>
-            <div class="statistics-grid" id="statistics-grid" role="region" aria-label="Directory statistics metrics">
-              <div class="stat-card">
-                <span class="stat-icon">🗂️</span>
-                <div class="stat-content">
-                  <strong class="stat-value">8</strong>
-                  <span class="stat-label">Navigation Groups</span>
-                </div>
-              </div>
-              <div class="stat-card">
-                <span class="stat-icon">📁</span>
-                <div class="stat-content">
-                  <strong class="stat-value">28</strong>
-                  <span class="stat-label">Main Sections</span>
-                </div>
-              </div>
-              <div class="stat-card">
-                <span class="stat-icon">📋</span>
-                <div class="stat-content">
-                  <strong class="stat-value">140</strong>
-                  <span class="stat-label">Subcategories</span>
-                </div>
-              </div>
-              <div class="stat-card">
-                <span class="stat-icon">📝</span>
-                <div class="stat-content">
-                  <strong class="stat-value">1,020</strong>
-                  <span class="stat-label">Detailed Entries</span>
-                </div>
-              </div>
-            </div>
-          </section>
 
           <section class="recent-section" id="recent-section"
                    aria-label="Recently viewed categories" hidden>

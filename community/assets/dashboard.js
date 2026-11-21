@@ -686,6 +686,7 @@
 
   function renderStatistics(data) {
     const container = $('statistics-grid');
+    if (!container) return;
 
     const mainCount = sections.reduce(
       (total, group) => total + (group.children || []).length,

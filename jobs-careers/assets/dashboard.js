@@ -439,7 +439,80 @@
     renderRecent();
   });
 
+  const topSearchWrap = document.querySelector('.topbar .top-search');
+  function setTopSearchVisible(visible) {
+    if (topSearchWrap) topSearchWrap.hidden = !visible;
+  }
+
+  function entryText(entry) {
+    if (typeof entry === 'string') return entry;
+    return entry && entry.text ? String(entry.text) : '';
+  }
+
+  function plural(n, one, many) {
+    return `${n.toLocaleString('en-IN')} ${n === 1 ? one : many}`;
+  }
+
+  function findLiveJobsFor(query) {
+    const input = $('live-jobs-search');
+    if (input) {
+      input.value = query;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    const liveSection = $('live-jobs-section');
+    if (liveSection && typeof liveSection.scrollIntoView === 'function') {
+      liveSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  function buildEntryRow(text) {
+    const row = el('div', 'explorer-entry');
+    const link = el('a', 'explorer-entry-link', text);
+    link.href = `/jobs-careers/?q=${encodeURIComponent(text)}`;
+    link.title = 'Find live notices related to this entry';
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      findLiveJobsFor(text);
+    });
+    row.appendChild(link);
+
+    const bmId = 'job-' + text.substring(0, 32).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const bmBtn = el('button', 'cso-bookmark-btn');
+    bmBtn.type = 'button';
+    bmBtn.dataset.bookmarkType = 'jobs';
+    bmBtn.dataset.bookmarkId = bmId;
+    bmBtn.dataset.bookmarkTitle = text;
+    bmBtn.dataset.bookmarkBadge = 'Jobs & Careers';
+    bmBtn.dataset.bookmarkUrl = window.location.href;
+    bmBtn.title = 'Save this entry';
+    const star = el('span', 'cso-bm-star', '☆');
+    star.setAttribute('aria-hidden', 'true');
+    bmBtn.append(star, ' ', el('span', 'cso-bm-text', 'Bookmark'));
+    row.appendChild(bmBtn);
+    return row;
+  }
+
+  function buildAccordion(child, index, symbols) {
+    const entries = (child.notes || []).map(entryText).filter(Boolean);
+    const details = el('details', 'explorer-item explorer-accordion');
+    const summary = el('summary', 'explorer-accordion-summary');
+    summary.append(el('span', 'card-icon', symbols[index % symbols.length]));
+    const content = el('div', 'card-content');
+    content.append(el('span', 'card-title', (child.number ? child.number + ' ' : '') + child.title));
+    content.append(el('span', 'card-meta', plural(entries.length, 'entry', 'entries')));
+    summary.append(content);
+    const arrow = el('span', 'card-arrow', '›');
+    arrow.setAttribute('aria-hidden', 'true');
+    summary.append(arrow);
+    details.append(summary);
+    const body = el('div', 'explorer-accordion-body');
+    entries.forEach(text => body.appendChild(buildEntryRow(text)));
+    details.append(body);
+    return details;
+  }
+
   function showOverview(pushHistory = true) {
+    setTopSearchVisible(false);
     currentSection = -1;
     path = [];
     searchResults.hidden = true;
@@ -483,6 +556,7 @@
   }
 
   function renderExplorer() {
+    setTopSearchVisible(true);
     const node = currentNode();
     const children = node.children || [];
     rememberCategory();
@@ -503,23 +577,32 @@
     setActiveSidebar();
     updateDocumentTitle(cleanTitle);
 
+    const visibleChildren = children
+      .map((child, index) => ({ child, index }))
+      .filter(({ child }) => (child.children || []).length || countNotes([child]) > 0);
+
     explorerDescription.textContent =
-      children.length
-        ? `${children.length} subcategories available`
+      visibleChildren.length
+        ? plural(visibleChildren.length, 'subcategory', 'subcategories') + ' available'
         : 'Individual directory entries and supporting information';
 
     explorerItems.replaceChildren();
 
-    children.forEach((child, index) => {
+    const symbols = [
+      '💼', '🧭', '📋', '📚',
+      '🎓', '🌍', '📈', '🏛️',
+      '📝', '🔎', '💡', '🏆',
+      '🗂️', '⚙️', '📌', '🎯'
+    ];
+
+    visibleChildren.forEach(({ child, index }) => {
+      const noteTotal = countNotes([child]);
+      if (!(child.children || []).length && noteTotal > 0 && noteTotal <= 3) {
+        explorerItems.append(buildAccordion(child, index, symbols));
+        return;
+      }
       const button = el('button', 'explorer-item dashboard-card');
       button.type = 'button';
-
-      const symbols = [
-        '💼', '🧭', '📋', '📚',
-        '🎓', '🌍', '📈', '🏛️',
-        '📝', '🔎', '💡', '🏆',
-        '🗂️', '⚙️', '📌', '🎯'
-      ];
 
       const icon = symbols[index % symbols.length];
       const title = (child.number ? child.number + ' ' : '') + child.title;
@@ -532,8 +615,8 @@
       content.append(el('span', 'card-title', title));
 
       const metaParts = [];
-      if (nested > 0) metaParts.push(`${nested.toLocaleString('en-IN')} categories`);
-      if (notes > 0) metaParts.push(`${notes.toLocaleString('en-IN')} entries`);
+      if (nested > 0) metaParts.push(plural(nested, 'category', 'categories'));
+      if (notes > 0) metaParts.push(plural(notes, 'entry', 'entries'));
       content.append(el('span', 'card-meta', metaParts.length ? metaParts.join(' · ') : 'Explore category'));
       button.append(content);
 
@@ -550,37 +633,18 @@
       explorerItems.append(button);
     });
 
-    for (const entry of node.notes || []) {
-      const item = el('div', 'explorer-item leaf');
-      item.append(el('span', 'card-icon', '📌'));
-      const content = el('div', 'card-content');
-      content.append(el('span', 'card-title', entry.text));
-      item.append(content);
-
-      // Bookmark action button (CSP-safe, no inline styles/innerHTML)
-      const bmId = 'job-' + (entry.id || entry.text.substring(0, 32).toLowerCase().replace(/[^a-z0-9]+/g, '-'));
-      const bmBtn = el('button', 'cso-bookmark-btn');
-      bmBtn.type = 'button';
-      bmBtn.dataset.bookmarkType = 'jobs';
-      bmBtn.dataset.bookmarkId = bmId;
-      bmBtn.dataset.bookmarkTitle = entry.text;
-      bmBtn.dataset.bookmarkBadge = 'Jobs & Careers';
-      bmBtn.dataset.bookmarkUrl = window.location.href;
-      bmBtn.title = 'Bookmark this job entry';
-      const star = el('span', 'cso-bm-star', '☆');
-      star.setAttribute('aria-hidden', 'true');
-      const bmText = el('span', 'cso-bm-text', 'Bookmark');
-      bmBtn.append(star, ' ', bmText);
-      item.append(bmBtn);
-
-      explorerItems.append(item);
+    const ownEntries = (node.notes || []).map(entryText).filter(Boolean);
+    if (ownEntries.length) {
+      const list = el('div', 'explorer-item explorer-entry-list');
+      ownEntries.forEach(text => list.appendChild(buildEntryRow(text)));
+      explorerItems.append(list);
     }
 
     if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
       window.CSOBookmarks.updateUI();
     }
 
-    if (!children.length && !(node.notes || []).length) {
+    if (!visibleChildren.length && !ownEntries.length) {
       explorerItems.append(
         el('p', '', 'This category is ready for future information.')
       );
@@ -648,6 +712,7 @@
       return;
     }
 
+    setTopSearchVisible(true);
     overview.hidden = true;
     explorer.hidden = true;
     searchResults.hidden = false;
@@ -709,59 +774,6 @@
     if (!results.length) {
       searchItems.append(el('p', '', 'No matching entries found.'));
     }
-  }
-
-  function renderStatistics(data) {
-    const container = $('statistics-grid');
-    if (!container) return;
-
-    const mainCount = sections.reduce(
-      (total, group) => total + (group.children || []).length,
-      0
-    );
-
-    const subCount = sections.reduce(
-      (total, group) => total + (group.children || []).reduce(
-        (sum, section) => sum + (section.children || []).length,
-        0
-      ),
-      0
-    );
-
-    const detailCount = sections.reduce(
-      (total, group) => total + (group.children || []).reduce(
-        (sectionTotal, section) =>
-          sectionTotal + (section.children || []).reduce(
-            (subTotal, sub) => subTotal + (sub.children || []).length,
-            0
-          ),
-        0
-      ),
-      0
-    );
-
-    const items = [
-      ['🗂️', 'Navigation Groups', sections.length],
-      ['📁', 'Main Sections', mainCount],
-      ['📋', 'Subcategories', subCount],
-      ['📝', 'Detailed Entries', detailCount]
-    ];
-
-    container.replaceChildren();
-
-    items.forEach(([icon, label, value]) => {
-      const card = el('div', 'stat-card');
-      const symbol = el('span', 'stat-icon', icon);
-      const content = el('div', 'stat-content');
-
-      content.append(
-        el('strong', 'stat-value', value.toLocaleString('en-IN'))
-      );
-
-      content.append(el('span', 'stat-label', label));
-      card.append(symbol, content);
-      container.append(card);
-    });
   }
 
   function buildDashboard() {
@@ -1080,7 +1092,6 @@
     if (liveSections) {
       sections = liveSections;
       buildDashboard();
-      renderStatistics({ sections: liveSections });
       syncFromUrl(false);
       if (loadStatus) {
         loadStatus.hidden = true;
@@ -1108,7 +1119,6 @@
 
         sections = data.sections;
         buildDashboard();
-        renderStatistics(data);
 
         syncFromUrl(false);
 
@@ -1152,27 +1162,8 @@
   const liveDetailSyllabusEl = $('live-job-syllabus-box');
   const liveDetailSummaryEl = $('live-job-detail-summary');
   const liveDetailBodyEl = $('live-job-detail-body');
-  const quickPillsWrap = $('jc-quick-pills');
   const langToggleBtn = $('jc-lang-toggle');
   const heroSubEl = $('jc-hero-sub');
-  if (quickPillsWrap) {
-    quickPillsWrap.addEventListener('click', (e) => {
-      const btn = e.target.closest('.cso-jobs-pill');
-      if (!btn) return;
-      quickPillsWrap.querySelectorAll('.cso-jobs-pill').forEach(p => p.classList.remove('is-active'));
-      btn.classList.add('is-active');
-      const q = btn.getAttribute('data-q') || '';
-      const searchInput = $('live-jobs-search');
-      if (searchInput) {
-        searchInput.value = q;
-        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-      const liveSection = $('live-jobs-section');
-      if (liveSection && typeof liveSection.scrollIntoView === 'function') {
-        liveSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    });
-  }
   if (langToggleBtn && heroSubEl) {
     let heroLang = 'bi';
     langToggleBtn.addEventListener('click', () => {
@@ -1254,6 +1245,11 @@
   function matchesChipFilter(job, chip) {
     if (!chip || chip === 'all') return true;
     const hay = jobSearchHaystack(job);
+    if (chip === 'opsc') return /\bopsc\b/.test(hay);
+    if (chip === 'ossc') return /\b(ossc|osssc)\b/.test(hay);
+    if (chip === 'police') {
+      return /\b(police|constable|sub[-\s]?inspector|defen[cs]e|army|navy|air\s*force|fire|jail|excise|agniveer|paramilitary|crpf|bsf|cisf|itbp)\b/.test(hay);
+    }
     if (chip === 'psc') {
       return /\b(opsc|ossc|osssc|oas|ocs|aso|peo|ri|ari|amin|sfs|forest)\b/.test(hay);
     }
@@ -1391,12 +1387,12 @@
       pdfUrl: job.notification_url || '',
       deadline: job.last_date || ''
     });
-    btn.dataset.bookmarkIdle = 'Save to Dashboard';
-    btn.dataset.bookmarkSaved = 'Saved to Dashboard';
+    btn.dataset.bookmarkIdle = '★ Save';
+    btn.dataset.bookmarkSaved = '★ Saved';
+    btn.classList.add('live-btn', 'live-btn--save');
+    btn.title = 'Save to your Candidate Hub dashboard';
     const txtEl = btn.querySelector('.cso-bm-text');
-    if (txtEl && txtEl.textContent === 'Bookmark') {
-      txtEl.textContent = 'Save to Dashboard';
-    }
+    if (txtEl) txtEl.textContent = '★ Save';
     return btn;
   }
 
@@ -1432,30 +1428,28 @@
     top.appendChild(meta);
     card.appendChild(top);
 
+    if (job.slug) jobCache.set(job.slug, job);
     const footer = el('div', 'live-job-card__footer');
     const detailBtn = el('button', 'live-btn live-btn--primary', 'View Details');
     detailBtn.type = 'button';
     detailBtn.addEventListener('click', () => openJobDetail(job.slug));
     footer.appendChild(detailBtn);
 
-    if (job.notification_url && pc && pc.safeMediaSrc(job.notification_url)) {
-      const pdfLink = el('a', 'live-btn live-btn--pdf', '📄 Official PDF');
-      pdfLink.href = job.notification_url;
-      pdfLink.target = '_blank';
-      pdfLink.rel = 'noopener noreferrer';
-      footer.appendChild(pdfLink);
-    }
-
-    if (job.apply_url && pc && pc.safeHref(job.apply_url)) {
+    const applyHref = job.apply_url || job.notification_url || '';
+    if (applyHref && pc && pc.safeHref(applyHref)) {
       const applyLink = el('a', 'live-btn', 'Apply Online ↗');
-      applyLink.href = job.apply_url;
+      applyLink.href = applyHref;
       applyLink.target = '_blank';
-      applyLink.rel = 'noopener noreferrer nofollow';
+      applyLink.rel = 'noopener noreferrer';
       footer.appendChild(applyLink);
+    } else {
+      const moreBtn = el('button', 'live-btn', 'Official Info');
+      moreBtn.type = 'button';
+      moreBtn.addEventListener('click', () => openJobDetail(job.slug));
+      footer.appendChild(moreBtn);
     }
 
-    const waBtn = makeWhatsAppShareLink(job);
-    if (waBtn) footer.appendChild(waBtn);
+    footer.appendChild(makeShareButton(job));
 
     const bmBtn = makeDashboardBookmarkBtn(job);
     if (bmBtn) footer.appendChild(bmBtn);
@@ -1464,16 +1458,66 @@
     return card;
   }
 
-  function makeWhatsAppShareLink(job) {
-    if (!job) return null;
+  const jobCache = new Map();
+  let toastTimer = null;
+
+  function showToast(message) {
+    let toast = document.getElementById('cso-live-toast');
+    if (!toast) {
+      toast = el('div', 'cso-live-toast');
+      toast.id = 'cso-live-toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('is-visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2400);
+  }
+
+  async function copyToClipboard(text) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (_) {}
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.className = 'cso-offscreen-copy';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function makeShareButton(job) {
     const shareUrl = `${window.location.origin}/jobs-careers/?job=${encodeURIComponent(job.slug || '')}`;
-    const msg = `${job.title || 'Job Notification'}${job.last_date ? ' (Last Date: ' + job.last_date + ')' : ''} - ${shareUrl}`;
-    const a = el('a', 'live-btn live-btn--wa', '📲 Share');
-    a.href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.setAttribute('aria-label', 'Share on WhatsApp');
-    return a;
+    const title = job.title || 'Job Notification';
+    const text = `${title}${job.last_date ? ' (Last Date: ' + job.last_date + ')' : ''}`;
+    const btn = el('button', 'live-btn live-btn--wa', '📲 Share');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', `Share ${title}`);
+    btn.addEventListener('click', async () => {
+      if (typeof navigator.share === 'function') {
+        try {
+          await navigator.share({ title, text, url: shareUrl });
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+        }
+      }
+      const ok = await copyToClipboard(shareUrl);
+      showToast(ok ? 'Link Copied!' : `Copy this link: ${shareUrl}`);
+    });
+    return btn;
   }
 
   function jobToJsonLd(job) {
@@ -1614,9 +1658,15 @@
 
     try {
       await loadCandidateGoalsAndTaxonomy();
-      const res = await fetch(`/api/content/jobs/${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
-      if (!res.ok) throw new Error(res.status === 404 ? 'Job notification not found or no longer active.' : `HTTP ${res.status}`);
-      const job = await res.json();
+      let job = null;
+      try {
+        const res = await fetch(`/api/content/jobs/${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
+        if (!res.ok) throw new Error(res.status === 404 ? 'Job notification not found or no longer active.' : `HTTP ${res.status}`);
+        job = await res.json();
+      } catch (fetchErr) {
+        job = jobCache.get(slug) || null;
+        if (!job) throw fetchErr;
+      }
 
       liveDetailBadgesEl.appendChild(buildJobBadges(job));
       liveDetailTitleEl.textContent = job.title || 'Job Notification';
@@ -1682,16 +1732,16 @@
         liveDetailActionsEl.appendChild(pdfLink);
       }
 
-      if (job.apply_url && pc && pc.safeHref(job.apply_url)) {
-        const applyLink = el('a', 'live-btn live-btn--primary', 'Apply Online ↗');
-        applyLink.href = job.apply_url;
+      const detailApplyHref = job.apply_url || job.notification_url || '';
+      if (detailApplyHref && pc && pc.safeHref(detailApplyHref)) {
+        const applyLink = el('a', 'live-btn live-btn--primary', job.apply_url ? 'Apply Online ↗' : 'Official Portal ↗');
+        applyLink.href = detailApplyHref;
         applyLink.target = '_blank';
-        applyLink.rel = 'noopener noreferrer nofollow';
+        applyLink.rel = 'noopener noreferrer';
         liveDetailActionsEl.appendChild(applyLink);
       }
 
-      const detailWaBtn = makeWhatsAppShareLink(job);
-      if (detailWaBtn) liveDetailActionsEl.appendChild(detailWaBtn);
+      liveDetailActionsEl.appendChild(makeShareButton(job));
 
       const detailBmBtn = makeDashboardBookmarkBtn(job);
       if (detailBmBtn) liveDetailActionsEl.appendChild(detailBmBtn);
@@ -1762,11 +1812,16 @@
 
       if (pagedItems.length === 0) {
         liveStatusEl.hidden = false;
-        liveStatusEl.replaceChildren(
-          el('p', '', hasFilter
-            ? 'No published job notifications match your current filters.'
-            : 'No live recruitment notifications are published right now. Explore the career categories below or check back soon.')
-        );
+        const emptyMsg = el('p', '', hasFilter
+          ? 'No published job notifications match your current filters.'
+          : 'No live recruitment notifications are published right now. Explore the career categories below or check back soon.');
+        liveStatusEl.replaceChildren(emptyMsg);
+        if (hasFilter) {
+          const emptyReset = el('button', 'live-btn live-btn--primary', 'Reset All Filters');
+          emptyReset.type = 'button';
+          emptyReset.addEventListener('click', resetAllFilters);
+          liveStatusEl.appendChild(emptyReset);
+        }
         if (livePaginationEl) livePaginationEl.hidden = true;
         return;
       }
@@ -1936,17 +1991,18 @@
       loadLiveJobs();
     });
   }
+  function resetAllFilters() {
+    liveState = { page: 1, limit: 12, q: '', state: '', category: '', chip: 'all', goalMatch: false };
+    if (liveSearchEl) liveSearchEl.value = '';
+    if (liveStateEl) liveStateEl.value = '';
+    if (liveCategoryEl) liveCategoryEl.value = '';
+    if (liveAuthHintEl) liveAuthHintEl.hidden = true;
+    updateChipButtonsUI();
+    closeJobDetail(true);
+    loadLiveJobs();
+  }
   if (liveResetBtn) {
-    liveResetBtn.addEventListener('click', () => {
-      liveState = { page: 1, limit: 12, q: '', state: '', category: '', chip: 'all', goalMatch: false };
-      if (liveSearchEl) liveSearchEl.value = '';
-      if (liveStateEl) liveStateEl.value = '';
-      if (liveCategoryEl) liveCategoryEl.value = '';
-      if (liveAuthHintEl) liveAuthHintEl.hidden = true;
-      updateChipButtonsUI();
-      closeJobDetail(true);
-      loadLiveJobs();
-    });
+    liveResetBtn.addEventListener('click', resetAllFilters);
   }
   if (liveDetailCloseBtn) {
     liveDetailCloseBtn.addEventListener('click', () => closeJobDetail(true));

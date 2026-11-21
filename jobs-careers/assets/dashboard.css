@@ -3505,3 +3505,205 @@ body.is-live-modal-open {
 .cso-jobs-hero .cso-jc-crumb a:hover {
   text-decoration: underline !important;
 }
+
+/* ==========================================================================
+   v160: Unified search, swipeable pill strip, compact filter bar,
+   2x2 job-card actions, share toast and inline accordions
+   ========================================================================== */
+.top-search[hidden],
+.live-jobs-filters [hidden],
+.live-job-card__footer [hidden] {
+  display: none !important;
+}
+
+.live-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 0 12px;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border, #d5e0f0);
+  background: var(--cso-surface, #f8fafc);
+}
+
+.live-search-bar .live-search-icon {
+  font-size: 22px;
+  color: var(--cso-link, #135de4);
+}
+
+.live-search-bar .live-filter-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0 !important;
+  background: transparent !important;
+  outline: none;
+  box-shadow: none;
+}
+
+.live-search-bar:focus-within {
+  border-color: var(--cso-link, #135de4);
+}
+
+.live-filter-strip {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding-bottom: 4px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.live-filter-strip .live-chip {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.live-chip[aria-pressed="true"] {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.live-jobs-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.live-jobs-filters .live-filter-select {
+  flex: 1 1 150px;
+  min-width: 0;
+}
+
+.live-btn--save .cso-bm-star {
+  display: none;
+}
+
+.live-btn--save.bookmarked {
+  border-color: #b45309;
+  color: #92400e;
+}
+
+.live-status-box .live-btn {
+  margin-top: 10px;
+}
+
+.live-job-card__footer {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: start;
+}
+
+.live-job-card__footer .live-btn {
+  justify-content: center;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .live-job-card__footer {
+    grid-template-columns: 1fr 1fr;
+  }
+  .live-jobs-filters .live-chip--goal {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
+.cso-live-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 10000;
+  max-width: calc(100vw - 32px);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0;
+  transform: translate(-50%, 12px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.cso-live-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.cso-offscreen-copy {
+  position: fixed;
+  top: 0;
+  left: -9999px;
+}
+
+.explorer-accordion {
+  display: block;
+  align-self: start;
+  cursor: default;
+}
+
+.explorer-accordion-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.explorer-accordion-summary::-webkit-details-marker {
+  display: none;
+}
+
+.explorer-accordion-summary .card-arrow {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+.explorer-accordion[open] .explorer-accordion-summary .card-arrow {
+  transform: rotate(90deg);
+}
+
+.explorer-accordion-body,
+.explorer-entry-list {
+  display: grid;
+  gap: 8px;
+}
+
+.explorer-accordion-body {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--cso-border, #e2e8f0);
+}
+
+.explorer-entry-list {
+  grid-column: 1 / -1;
+}
+
+.explorer-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.explorer-entry-link {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--cso-link, #135de4);
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.explorer-entry-link:hover {
+  text-decoration: underline;
+}
