@@ -77,6 +77,10 @@
   }
 
   async function triggerShare(info) {
+    if (window.CSOStudentUtils && typeof window.CSOStudentUtils.openShareSheet === 'function') {
+      window.CSOStudentUtils.openShareSheet(info);
+      return;
+    }
     if (window.CSOStudentUtils && typeof window.CSOStudentUtils.shareWhatsAppFormatted === 'function') {
       await window.CSOStudentUtils.shareWhatsAppFormatted(info);
       return;

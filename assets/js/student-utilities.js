@@ -166,6 +166,178 @@
     return { shared: ok, method: 'clipboard' };
   }
 
+  /* ---------- 2b. Multi-Option Share Sheet (v164) ---------- */
+  function buildShareLinks(info) {
+    var title = String((info && info.title) || 'Odisha Recruitment Notice').trim();
+    var url = String((info && info.url) || (typeof window !== 'undefined' && window.location ? window.location.href : '')).trim();
+    var summary = formatWhatsAppShare({
+      title: title,
+      organisation: info && info.organisation,
+      qualification: info && info.qualification,
+      lastDate: info && info.lastDate,
+      url: url
+    });
+    var telegramText = formatWhatsAppShare({
+      title: title,
+      organisation: info && info.organisation,
+      qualification: info && info.qualification,
+      lastDate: info && info.lastDate,
+      url: ''
+    });
+    return {
+      title: title,
+      url: url,
+      summary: summary,
+      whatsapp: 'https://wa.me/?text=' + encodeURIComponent(summary),
+      telegram: 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(telegramText),
+      x: 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url),
+      facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url)
+    };
+  }
+
+  var shareSheetReturnFocus = null;
+  var shareSheetEscBound = false;
+
+  function closeShareSheet() {
+    if (typeof document === 'undefined') return;
+    var backdrop = document.getElementById('cso-share-sheet-backdrop');
+    if (!backdrop || backdrop.hidden) return;
+    backdrop.hidden = true;
+    document.body.classList.remove('cso-share-open');
+    if (shareSheetReturnFocus && typeof shareSheetReturnFocus.focus === 'function') {
+      try { shareSheetReturnFocus.focus(); } catch (_) {}
+    }
+    shareSheetReturnFocus = null;
+  }
+
+  function makeShareAnchor(cls, icon, label, href) {
+    var a = el('a', 'cso-share-opt ' + cls);
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    var ic = el('span', 'cso-share-opt__icon', icon);
+    ic.setAttribute('aria-hidden', 'true');
+    a.append(ic, el('span', 'cso-share-opt__label', label));
+    a.addEventListener('click', function () {
+      setTimeout(closeShareSheet, 120);
+    });
+    return a;
+  }
+
+  function makeShareActionButton(cls, icon, label, actionName, handler) {
+    var btn = el('button', 'cso-share-opt ' + cls);
+    btn.type = 'button';
+    btn.setAttribute('data-share-action', actionName);
+    var ic = el('span', 'cso-share-opt__icon', icon);
+    ic.setAttribute('aria-hidden', 'true');
+    btn.append(ic, el('span', 'cso-share-opt__label', label));
+    btn.addEventListener('click', handler);
+    return btn;
+  }
+
+  function ensureShareSheet() {
+    var backdrop = document.getElementById('cso-share-sheet-backdrop');
+    if (backdrop) return backdrop;
+
+    backdrop = el('div', 'cso-share-backdrop');
+    backdrop.id = 'cso-share-sheet-backdrop';
+    backdrop.setAttribute('role', 'dialog');
+    backdrop.setAttribute('aria-modal', 'true');
+    backdrop.setAttribute('aria-labelledby', 'cso-share-sheet-title');
+    backdrop.hidden = true;
+
+    var sheet = el('div', 'cso-share-sheet');
+    var handle = el('div', 'cso-share-sheet__handle');
+    handle.setAttribute('aria-hidden', 'true');
+
+    var head = el('div', 'cso-share-sheet__head');
+    var titleEl = el('h3', 'cso-share-sheet__title', 'Share Recruitment');
+    titleEl.id = 'cso-share-sheet-title';
+    var closeBtn = el('button', 'cso-share-sheet__close', '✕');
+    closeBtn.type = 'button';
+    closeBtn.id = 'cso-share-sheet-close';
+    closeBtn.setAttribute('aria-label', 'Close share options');
+    closeBtn.addEventListener('click', closeShareSheet);
+    head.append(titleEl, closeBtn);
+
+    var urlPreview = el('p', 'cso-share-sheet__url', '');
+    urlPreview.id = 'cso-share-sheet-url';
+
+    var grid = el('div', 'cso-share-grid');
+    grid.id = 'cso-share-sheet-grid';
+
+    sheet.append(handle, head, urlPreview, grid);
+    backdrop.appendChild(sheet);
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) closeShareSheet();
+    });
+
+    if (!shareSheetEscBound) {
+      shareSheetEscBound = true;
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeShareSheet();
+      });
+    }
+
+    document.body.appendChild(backdrop);
+    return backdrop;
+  }
+
+  function openShareSheet(info) {
+    if (typeof document === 'undefined' || !document.body) return null;
+    var links = buildShareLinks(info);
+    var backdrop = ensureShareSheet();
+    var titleEl = document.getElementById('cso-share-sheet-title');
+    var urlEl = document.getElementById('cso-share-sheet-url');
+    var grid = document.getElementById('cso-share-sheet-grid');
+    var closeBtn = document.getElementById('cso-share-sheet-close');
+
+    shareSheetReturnFocus = document.activeElement || null;
+    if (titleEl) titleEl.textContent = links.title;
+    if (urlEl) urlEl.textContent = links.url;
+
+    if (grid) {
+      var nodes = [
+        makeShareAnchor('cso-share-opt--wa', '💬', 'WhatsApp', links.whatsapp),
+        makeShareAnchor('cso-share-opt--tg', '✈️', 'Telegram', links.telegram),
+        makeShareActionButton('cso-share-opt--copy', '🔗', 'Copy Link', 'copy-link', async function () {
+          var ok = await copyPlainText(links.url);
+          showToast(ok ? 'Link Copied!' : 'Copy link: ' + links.url);
+          closeShareSheet();
+        }),
+        makeShareActionButton('cso-share-opt--summary', '📋', 'Copy Summary', 'copy-summary', async function () {
+          var ok = await copyPlainText(links.summary);
+          showToast(ok ? 'Summary Copied!' : 'Copy link: ' + links.url);
+          closeShareSheet();
+        }),
+        makeShareAnchor('cso-share-opt--x', '𝕏', 'X (Twitter)', links.x),
+        makeShareAnchor('cso-share-opt--fb', '📘', 'Facebook', links.facebook)
+      ];
+
+      if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+        nodes.push(makeShareActionButton('cso-share-opt--native', '📤', 'More Apps', 'native', async function () {
+          try {
+            await navigator.share({ title: links.title, text: links.summary, url: links.url || undefined });
+            closeShareSheet();
+          } catch (err) {
+            if (err && err.name !== 'AbortError') {
+              var ok = await copyPlainText(links.summary);
+              showToast(ok ? 'Summary Copied!' : 'Unable to share');
+              closeShareSheet();
+            }
+          }
+        }));
+      }
+
+      grid.replaceChildren.apply(grid, nodes);
+    }
+
+    backdrop.hidden = false;
+    document.body.classList.add('cso-share-open');
+    if (closeBtn && typeof closeBtn.focus === 'function') closeBtn.focus();
+    return links;
+  }
+
   /* ---------- 3. RFC 5545 .ics Calendar Reminder Generator ---------- */
   function escapeIcsText(str) {
     return String(str || '')
@@ -515,6 +687,9 @@
     calculateOdishaAge: calculateOdishaAge,
     formatWhatsAppShare: formatWhatsAppShare,
     shareWhatsAppFormatted: shareWhatsAppFormatted,
+    buildShareLinks: buildShareLinks,
+    openShareSheet: openShareSheet,
+    closeShareSheet: closeShareSheet,
     buildJobIcs: buildJobIcs,
     downloadJobIcs: downloadJobIcs,
     evaluateCardEligibility: evaluateCardEligibility,
