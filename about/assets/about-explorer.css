@@ -1,20 +1,20 @@
 :root {
-  --bg: #faf8f5;
-  --card: #ffffff;
-  --ink: #1c1917;
-  --muted: #57534e;
-  --line: #e7e5e4;
-  --forest: #14532d;
-  --forest-2: #166534;
-  --accent: #15803d;
-  --accent-soft: #dcfce7;
+  --bg: var(--cso-bg, #faf8f5);
+  --card: var(--cso-surface, #ffffff);
+  --ink: var(--cso-text, #1c1917);
+  --muted: var(--cso-text-muted, #57534e);
+  --line: var(--cso-border, #e7e5e4);
+  --forest: var(--cso-primary, #14532d);
+  --forest-2: var(--cso-primary, #166534);
+  --accent: var(--cso-primary, #15803d);
+  --accent-soft: var(--cso-highlight-bg, #dcfce7);
   --warn-bg: #fef3c7;
   --warn-ink: #92400e;
   --warn-border: #fde68a;
   --danger-bg: #fef2f2;
   --danger-ink: #991b1b;
   --danger-border: #fecaca;
-  --shadow: 0 2px 10px rgba(20, 83, 45, 0.06);
+  --shadow: var(--cso-card-hover-shadow, 0 2px 10px rgba(20, 83, 45, 0.06));
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -44,8 +44,9 @@ a { color: var(--forest); }
   max-height: calc(100vh - 106px);
   overflow-y: auto;
   scrollbar-width: thin;
-  background: #ffffff;
-  border-right: 1px solid #e5e0d8;
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-text, #1f2937);
+  border-right: 1px solid var(--cso-border, #e5e0d8);
   padding: 14px 12px;
   display: flex;
   flex-direction: column;
@@ -55,7 +56,7 @@ a { color: var(--forest); }
 .cso-about-rail nav,
 nav.cso-about-nav {
   background: transparent;
-  color: #1f2937;
+  color: var(--cso-text, #1f2937);
   border-radius: 0;
   position: static;
   box-shadow: none;
@@ -93,9 +94,9 @@ nav.cso-about-nav {
 }
 .cso-about-rail-toggle,
 .cso-about-rail-close {
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--ink);
+  border: 1px solid var(--cso-border, var(--line));
+  background: var(--cso-surface-alt, var(--bg));
+  color: var(--cso-text, var(--ink));
   border-radius: 8px;
   padding: 5px 8px;
   cursor: pointer;
@@ -125,33 +126,33 @@ nav.cso-about-nav {
   padding: 8px 10px;
   border-radius: 10px;
   background: transparent;
-  color: #1f2937;
+  color: var(--cso-text, #1f2937);
   text-decoration: none;
   font-size: 0.86rem;
   font-weight: 600;
   border: 1px solid transparent;
 }
 .cso-about-nav-link:hover {
-  background: #f3f6f4;
-  color: #14532d;
-  border-color: #bbf7d0;
+  background: var(--cso-surface-alt, #f3f6f4);
+  color: var(--cso-primary, #14532d);
+  border-color: var(--cso-border, #bbf7d0);
 }
 .cso-about-nav-link.is-active {
-  background: #ecfdf5;
-  color: #14532d;
-  border: 1px solid #bbf7d0;
+  background: var(--cso-highlight-bg, #ecfdf5);
+  color: var(--cso-highlight-fg, #14532d);
+  border: 1px solid var(--cso-primary, #bbf7d0);
   font-weight: 700;
 }
 .cso-about-nav-link.is-active .cso-about-nav-num {
-  background: #dcfce7;
-  color: #14532d;
+  background: var(--cso-primary, #dcfce7);
+  color: var(--cso-primary-fg, #14532d);
 }
 .cso-about-nav-num {
   width: 24px;
   height: 24px;
   border-radius: 7px;
-  background: var(--bg);
-  color: var(--forest);
+  background: var(--cso-surface-alt, var(--bg));
+  color: var(--cso-primary, var(--forest));
   font-size: 0.73rem;
   font-weight: 800;
   display: inline-flex;
@@ -350,7 +351,7 @@ nav.cso-about-nav {
 }
 .cso-about-telemetry-card:hover {
   border-color: var(--accent);
-  background: #ffffff;
+  background: var(--cso-surface, #ffffff);
 }
 .cso-about-telemetry-top {
   display: flex;
@@ -429,16 +430,16 @@ nav.cso-about-nav {
 .cso-about-input {
   flex: 1 1 280px;
   padding: 10px 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--cso-search-border, var(--line));
   border-radius: 10px;
   font-size: 0.92rem;
-  background: #ffffff;
-  color: var(--ink);
+  background: var(--cso-search-bg, var(--cso-surface, #ffffff));
+  color: var(--cso-text, var(--ink));
 }
 .cso-about-btn {
-  border: 1px solid var(--line);
-  background: #ffffff;
-  color: var(--ink);
+  border: 1px solid var(--cso-border, var(--line));
+  background: var(--cso-surface-alt, var(--cso-surface, #ffffff));
+  color: var(--cso-text, var(--ink));
   border-radius: 10px;
   padding: 9px 14px;
   font-size: 0.86rem;
@@ -449,12 +450,19 @@ nav.cso-about-nav {
   align-items: center;
   gap: 6px;
 }
-.cso-about-btn--primary {
-  background: var(--forest);
-  color: #ffffff;
-  border-color: var(--forest);
+.cso-about-btn:hover {
+  border-color: var(--cso-primary, var(--forest));
+  color: var(--cso-primary, var(--forest));
 }
-.cso-about-btn--primary:hover { background: var(--forest-2); }
+.cso-about-btn--primary {
+  background: var(--cso-primary, var(--forest));
+  color: var(--cso-primary-fg, #ffffff);
+  border-color: var(--cso-primary, var(--forest));
+}
+.cso-about-btn--primary:hover {
+  background: var(--cso-primary, var(--forest-2));
+  color: var(--cso-primary-fg, #ffffff);
+}
 .cso-about-verifier-presets {
   display: flex;
   flex-wrap: wrap;
@@ -465,9 +473,9 @@ nav.cso-about-nav {
   color: var(--muted);
 }
 .cso-about-preset-btn {
-  background: #ffffff;
-  border: 1px solid var(--line);
-  color: var(--forest);
+  background: var(--cso-pill-bg, var(--cso-surface, #ffffff));
+  border: 1px solid var(--cso-pill-border, var(--line));
+  color: var(--cso-pill-text, var(--forest));
   border-radius: 999px;
   padding: 4px 10px;
   font-size: 0.78rem;
@@ -519,7 +527,7 @@ nav.cso-about-nav {
 }
 .cso-about-portal-card:hover {
   border-color: var(--accent);
-  background: #ffffff;
+  background: var(--cso-surface, #ffffff);
 }
 .cso-about-tag {
   display: inline-block;
@@ -558,9 +566,9 @@ nav.cso-about-nav {
   cursor: pointer;
 }
 .cso-about-zone-tab.is-active {
-  background: var(--forest);
-  color: #ffffff;
-  border-color: var(--forest);
+  background: var(--cso-primary, var(--forest));
+  color: var(--cso-primary-fg, #ffffff);
+  border-color: var(--cso-primary, var(--forest));
 }
 .cso-about-districts-grid {
   display: grid;
@@ -581,7 +589,7 @@ nav.cso-about-nav {
 }
 .cso-about-district-chip:hover {
   border-color: var(--accent);
-  background: #ffffff;
+  background: var(--cso-surface, #ffffff);
 }
 .cso-about-district-chip strong { color: var(--forest); }
 .cso-about-district-chip span { font-size: 0.75rem; color: var(--muted); }
@@ -637,7 +645,7 @@ nav.cso-about-nav {
 }
 .cso-about-changelog-item:hover {
   border-color: var(--accent);
-  background: #ffffff;
+  background: var(--cso-surface, #ffffff);
 }
 .cso-about-changelog-meta {
   display: flex;
@@ -690,8 +698,8 @@ nav.cso-about-nav {
   gap: 14px;
   padding: 16px;
   border-radius: 14px;
-  background: #ecfdf5;
-  border: 1px solid #bbf7d0;
+  background: var(--cso-highlight-bg, #ecfdf5);
+  border: 1px solid var(--cso-border, #bbf7d0);
 }
 .cso-about-editorial-cta h3 { margin: 0 0 4px; font-size: 1rem; color: var(--forest); }
 .cso-about-editorial-cta p { margin: 0; font-size: 0.86rem; color: var(--muted); }
@@ -948,4 +956,53 @@ nav.cso-about-nav {
 }
 @media print {
   .cso-dir-topbar { display: none !important; }
+}
+
+/* v168: Explicit Dark-Mode Sidebar & Surface Uniformity */
+:root[data-cso-theme="dark"],
+:root[data-theme="dark"] {
+  --warn-bg: #2a2110;
+  --warn-ink: #fde68a;
+  --warn-border: #78551a;
+  --danger-bg: #2f1417;
+  --danger-ink: #fecaca;
+  --danger-border: #7f1d1d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-cso-theme="system"],
+  :root:not([data-cso-theme]) {
+    --warn-bg: #2a2110;
+    --warn-ink: #fde68a;
+    --warn-border: #78551a;
+    --danger-bg: #2f1417;
+    --danger-ink: #fecaca;
+    --danger-border: #7f1d1d;
+  }
+}
+
+:root[data-cso-theme="dark"] .cso-about-rail,
+:root[data-theme="dark"] .cso-about-rail {
+  background: var(--cso-surface, #131E29);
+  color: var(--cso-text, #F1F5F9);
+  border-right-color: var(--cso-border, #1E2E3D);
+}
+
+:root[data-cso-theme="dark"] .cso-about-nav-link,
+:root[data-theme="dark"] .cso-about-nav-link {
+  color: var(--cso-text, #F1F5F9);
+}
+
+:root[data-cso-theme="dark"] .cso-about-nav-link.is-active,
+:root[data-theme="dark"] .cso-about-nav-link.is-active {
+  background: var(--cso-highlight-bg, rgba(52, 211, 153, 0.16));
+  color: var(--cso-highlight-fg, #34D399);
+  border-color: var(--cso-primary, #34D399);
+}
+
+:root[data-cso-theme="dark"] .cso-about-verifier-result.is-safe,
+:root[data-theme="dark"] .cso-about-verifier-result.is-safe {
+  background: rgba(52, 211, 153, 0.14);
+  border-color: rgba(52, 211, 153, 0.4);
+  color: #6ee7b7;
 }
