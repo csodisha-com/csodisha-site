@@ -10,6 +10,7 @@
   const OFFLINE_INDEX_KEY = 'cso_study_offline_v1';
 
   const GROUP_ICONS = ['🧒', '🏫', '🎓', '📝', '💻', '📖', '🌍', '🏛️', '🗂️', '🧭'];
+  const PAGE_SIZE = 12;
 
   const $ = id => document.getElementById(id);
   const el = (tag, className, text) => {
@@ -86,6 +87,7 @@
     filterExam: '',
     filterQ: '',
     goalMatchOnly: false,
+    visibleCount: PAGE_SIZE,
     candidateGoals: [],
     savedIds: loadSavedIds(),
     offlineIds: loadOfflineIds(),
@@ -527,6 +529,25 @@
     }).sort((a, b) => Number(isGoalMatchedResource(b)) - Number(isGoalMatchedResource(a)));
   }
 
+  function ensureLoadMoreControls() {
+    if (!studyMaterialsGrid || !studyMaterialsGrid.parentNode) return null;
+    let wrap = $('study-load-more-wrap');
+    if (!wrap) {
+      wrap = el('div', 'study-load-more-wrap');
+      wrap.id = 'study-load-more-wrap';
+      const btn = el('button', 'study-load-more-btn');
+      btn.type = 'button';
+      btn.id = 'study-load-more-btn';
+      btn.addEventListener('click', () => {
+        state.visibleCount += PAGE_SIZE;
+        renderMaterials();
+      });
+      wrap.appendChild(btn);
+      studyMaterialsGrid.insertAdjacentElement('afterend', wrap);
+    }
+    return wrap;
+  }
+
   function renderMaterials() {
     if (!studyMaterialsGrid) return;
     const filtered = filterResources(state.resources);
@@ -537,13 +558,24 @@
       studyResetBtn.hidden = !(state.filterType || state.filterExam || state.filterQ || state.goalMatchOnly);
     }
     studyMaterialsGrid.replaceChildren();
+    const loadMoreWrap = ensureLoadMoreControls();
     if (!filtered.length) {
       const empty = el('div', 'study-modal-box');
-      empty.appendChild(el('p', 'study-card-desc', 'No verified study materials match this filter combination. Reset filters to view all 14 curated syllabi, PYQs, and Odisha GK capsules.'));
+      empty.appendChild(el('p', 'study-card-desc', 'No verified study materials match this filter combination. Reset filters to view all curated syllabi, PYQs, and Odisha GK capsules.'));
       studyMaterialsGrid.appendChild(empty);
+      if (loadMoreWrap) loadMoreWrap.hidden = true;
       return;
     }
-    filtered.forEach(item => studyMaterialsGrid.appendChild(createMaterialCard(item)));
+    const visible = filtered.slice(0, state.visibleCount);
+    visible.forEach(item => studyMaterialsGrid.appendChild(createMaterialCard(item)));
+    if (loadMoreWrap) {
+      const hasMore = filtered.length > visible.length;
+      loadMoreWrap.hidden = !hasMore;
+      const btn = $('study-load-more-btn');
+      if (btn && hasMore) {
+        btn.textContent = `Load More Resources (Showing ${visible.length} of ${filtered.length})`;
+      }
+    }
   }
 
   // ---- Directory Tree Navigation, Breadcrumb & Explorer ----
@@ -1201,16 +1233,17 @@
       let t;
       studyQInput.addEventListener('input', () => {
         clearTimeout(t);
-        t = setTimeout(() => { state.filterQ = studyQInput.value; renderMaterials(); }, 180);
+        t = setTimeout(() => { state.filterQ = studyQInput.value; state.visibleCount = PAGE_SIZE; renderMaterials(); }, 180);
       });
     }
     if (studyExamSelect) {
-      studyExamSelect.addEventListener('change', () => { state.filterExam = studyExamSelect.value; renderMaterials(); });
+      studyExamSelect.addEventListener('change', () => { state.filterExam = studyExamSelect.value; state.visibleCount = PAGE_SIZE; renderMaterials(); });
     }
     if (studyTypePills) {
       studyTypePills.querySelectorAll('.study-type-pill').forEach(btn => {
         btn.addEventListener('click', () => {
           state.filterType = btn.dataset.type || '';
+          state.visibleCount = PAGE_SIZE;
           studyTypePills.querySelectorAll('.study-type-pill').forEach(p => {
             const active = p === btn;
             p.classList.toggle('is-active', active);
@@ -1227,6 +1260,7 @@
           showToast('Showing Odisha Govt Exam priority matches (OPSC, OSSC, OSSSC)');
         }
         state.goalMatchOnly = !state.goalMatchOnly;
+        state.visibleCount = PAGE_SIZE;
         studyGoalBtn.setAttribute('aria-pressed', String(state.goalMatchOnly));
         renderMaterials();
       });
@@ -1237,6 +1271,7 @@
         const exam = btn.dataset.examJump || '';
         state.filterQ = exam;
         state.filterExam = '';
+        state.visibleCount = PAGE_SIZE;
         if (studyQInput) studyQInput.value = exam;
         if (studyExamSelect) studyExamSelect.value = '';
         renderMaterials();
@@ -1251,6 +1286,7 @@
         state.filterExam = '';
         state.filterQ = '';
         state.goalMatchOnly = false;
+        state.visibleCount = PAGE_SIZE;
         if (studyQInput) studyQInput.value = '';
         if (studyExamSelect) studyExamSelect.value = '';
         if (studyGoalBtn) studyGoalBtn.setAttribute('aria-pressed', 'false');

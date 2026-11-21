@@ -79,7 +79,7 @@ function buildHead({ title, description, canonicalUrl, jsonLdList = [] }) {
   <meta property="og:description" content="${escHtml(description)}">
   <meta property="og:url" content="${escHtml(canonicalUrl)}">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/study-library/assets/dashboard.css">
+  <link rel="stylesheet" href="/study-library/assets/dashboard.css?v=20261121v167">
   <script src="/study-library/assets/ssr-actions.js" defer></script>
   ${jsonLdScripts}
 </head>`;
