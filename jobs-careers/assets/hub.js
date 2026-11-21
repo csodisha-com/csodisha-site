@@ -76,9 +76,14 @@
     }
   }
 
-  async function triggerShare(title, lastDate, detailUrl) {
-    var safeTitle = title || 'Job Notification';
-    var text = safeTitle + (lastDate ? ' (Last Date: ' + lastDate + ')' : '');
+  async function triggerShare(info) {
+    if (window.CSOStudentUtils && typeof window.CSOStudentUtils.shareWhatsAppFormatted === 'function') {
+      await window.CSOStudentUtils.shareWhatsAppFormatted(info);
+      return;
+    }
+    var safeTitle = (info && info.title) || 'Job Notification';
+    var detailUrl = (info && info.url) || window.location.href;
+    var text = safeTitle + (info && info.lastDate ? ' (Last Date: ' + info.lastDate + ')' : '');
     if (typeof navigator.share === 'function') {
       try {
         await navigator.share({ title: safeTitle, text: text, url: detailUrl });
@@ -88,7 +93,7 @@
       }
     }
     var ok = await copyText(detailUrl);
-    showToast(ok ? 'Link Copied!' : 'Copy this link: ' + detailUrl);
+    showToast(ok ? 'Copied for WhatsApp!' : 'Copy this link: ' + detailUrl);
   }
 
   function shareButton(job, detailUrl) {
@@ -97,7 +102,32 @@
     btn.type = 'button';
     btn.setAttribute('aria-label', 'Share ' + title);
     btn.addEventListener('click', function () {
-      triggerShare(title, job.last_date, detailUrl);
+      triggerShare({
+        title: title,
+        organisation: job.organisation || job.category || '',
+        qualification: job.qualification || '',
+        lastDate: job.last_date || '',
+        url: detailUrl
+      });
+    });
+    return btn;
+  }
+
+  function remindButton(job, detailUrl) {
+    if (!job || !job.last_date) return null;
+    var btn = el('button', 'live-btn live-btn--remind', '📅 Remind');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Add calendar reminder for ' + (job.title || 'Job Notification'));
+    btn.addEventListener('click', function () {
+      if (window.CSOStudentUtils && typeof window.CSOStudentUtils.downloadJobIcs === 'function') {
+        window.CSOStudentUtils.downloadJobIcs({
+          slug: job.slug || job.id || 'job',
+          title: job.title || 'Job Notification',
+          organisation: job.organisation || job.category || 'Common Sense Odisha',
+          lastDate: job.last_date,
+          url: detailUrl
+        });
+      }
     });
     return btn;
   }
@@ -113,10 +143,24 @@
       var shareBtn = card.querySelector('[data-action="share"]');
       if (shareBtn && slug) {
         var title = shareBtn.getAttribute('data-title') || (card.querySelector('.live-job-card__title') ? card.querySelector('.live-job-card__title').textContent.trim() : 'Job Notification');
+        var organisation = shareBtn.getAttribute('data-org') || '';
+        var qualification = shareBtn.getAttribute('data-qual') || '';
         var lastDate = shareBtn.getAttribute('data-last-date') || '';
         var detailUrl = window.location.origin + '/jobs-careers/?job=' + encodeURIComponent(slug);
         shareBtn.addEventListener('click', function () {
-          triggerShare(title, lastDate, detailUrl);
+          triggerShare({ title: title, organisation: organisation, qualification: qualification, lastDate: lastDate, url: detailUrl });
+        });
+      }
+      var remBtn = card.querySelector('[data-action="remind"]');
+      if (remBtn && slug) {
+        var rTitle = remBtn.getAttribute('data-title') || (card.querySelector('.live-job-card__title') ? card.querySelector('.live-job-card__title').textContent.trim() : 'Job Notification');
+        var rOrg = remBtn.getAttribute('data-org') || 'Common Sense Odisha';
+        var rDate = remBtn.getAttribute('data-last-date') || '';
+        var rUrl = window.location.origin + '/jobs-careers/?job=' + encodeURIComponent(slug);
+        remBtn.addEventListener('click', function () {
+          if (window.CSOStudentUtils && typeof window.CSOStudentUtils.downloadJobIcs === 'function') {
+            window.CSOStudentUtils.downloadJobIcs({ slug: slug, title: rTitle, organisation: rOrg, lastDate: rDate, url: rUrl });
+          }
         });
       }
     });
@@ -204,6 +248,8 @@
     footer.appendChild(shareButton(job, detailUrl));
     var save = saveButton(job);
     if (save) footer.appendChild(save);
+    var remind = remindButton(job, detailUrl);
+    if (remind) footer.appendChild(remind);
     card.appendChild(footer);
     return card;
   }

@@ -1454,6 +1454,9 @@
     const bmBtn = makeDashboardBookmarkBtn(job);
     if (bmBtn) footer.appendChild(bmBtn);
 
+    const remindBtn = makeRemindButton(job);
+    if (remindBtn) footer.appendChild(remindBtn);
+
     card.appendChild(footer);
     return card;
   }
@@ -1498,9 +1501,14 @@
     }
   }
 
-  async function shareJobLink(title, lastDate, shareUrl) {
-    const safeTitle = title || 'Job Notification';
-    const text = `${safeTitle}${lastDate ? ' (Last Date: ' + lastDate + ')' : ''}`;
+  async function shareJobLink(info) {
+    if (window.CSOStudentUtils && typeof window.CSOStudentUtils.shareWhatsAppFormatted === 'function') {
+      await window.CSOStudentUtils.shareWhatsAppFormatted(info);
+      return;
+    }
+    const safeTitle = (info && info.title) || 'Job Notification';
+    const shareUrl = (info && info.url) || window.location.href;
+    const text = `${safeTitle}${info && info.lastDate ? ' (Last Date: ' + info.lastDate + ')' : ''}`;
     if (typeof navigator.share === 'function') {
       try {
         await navigator.share({ title: safeTitle, text, url: shareUrl });
@@ -1510,7 +1518,7 @@
       }
     }
     const ok = await copyToClipboard(shareUrl);
-    showToast(ok ? 'Link Copied!' : `Copy this link: ${shareUrl}`);
+    showToast(ok ? 'Copied for WhatsApp!' : `Copy this link: ${shareUrl}`);
   }
 
   function makeShareButton(job) {
@@ -1519,7 +1527,33 @@
     const btn = el('button', 'live-btn live-btn--wa', '📲 Share');
     btn.type = 'button';
     btn.setAttribute('aria-label', `Share ${title}`);
-    btn.addEventListener('click', () => shareJobLink(title, job.last_date, shareUrl));
+    btn.addEventListener('click', () => shareJobLink({
+      title,
+      organisation: job.organisation || job.category || '',
+      qualification: job.qualification || '',
+      lastDate: job.last_date || '',
+      url: shareUrl
+    }));
+    return btn;
+  }
+
+  function makeRemindButton(job) {
+    if (!job || !job.last_date) return null;
+    const shareUrl = `${window.location.origin}/jobs-careers/?job=${encodeURIComponent(job.slug || '')}`;
+    const btn = el('button', 'live-btn live-btn--remind', '📅 Remind');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', `Add calendar reminder for ${job.title || 'Job Notification'}`);
+    btn.addEventListener('click', () => {
+      if (window.CSOStudentUtils && typeof window.CSOStudentUtils.downloadJobIcs === 'function') {
+        window.CSOStudentUtils.downloadJobIcs({
+          slug: job.slug || job.id || 'job',
+          title: job.title || 'Job Notification',
+          organisation: job.organisation || job.category || 'Common Sense Odisha',
+          lastDate: job.last_date,
+          url: shareUrl
+        });
+      }
+    });
     return btn;
   }
 
@@ -1548,9 +1582,23 @@
       const shareBtn = card.querySelector('[data-action="share"]');
       if (shareBtn && slug) {
         const title = shareBtn.getAttribute('data-title') || card.querySelector('.live-job-card__title')?.textContent?.trim() || 'Job Notification';
+        const organisation = shareBtn.getAttribute('data-org') || '';
+        const qualification = shareBtn.getAttribute('data-qual') || '';
         const lastDate = shareBtn.getAttribute('data-last-date') || '';
         const shareUrl = `${window.location.origin}/jobs-careers/?job=${encodeURIComponent(slug)}`;
-        shareBtn.addEventListener('click', () => shareJobLink(title, lastDate, shareUrl));
+        shareBtn.addEventListener('click', () => shareJobLink({ title, organisation, qualification, lastDate, url: shareUrl }));
+      }
+      const remindBtn = card.querySelector('[data-action="remind"]');
+      if (remindBtn && slug) {
+        const title = remindBtn.getAttribute('data-title') || card.querySelector('.live-job-card__title')?.textContent?.trim() || 'Job Notification';
+        const organisation = remindBtn.getAttribute('data-org') || 'Common Sense Odisha';
+        const lastDate = remindBtn.getAttribute('data-last-date') || '';
+        const shareUrl = `${window.location.origin}/jobs-careers/?job=${encodeURIComponent(slug)}`;
+        remindBtn.addEventListener('click', () => {
+          if (window.CSOStudentUtils && typeof window.CSOStudentUtils.downloadJobIcs === 'function') {
+            window.CSOStudentUtils.downloadJobIcs({ slug, title, organisation, lastDate, url: shareUrl });
+          }
+        });
       }
     });
     if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
@@ -1781,6 +1829,9 @@
       }
 
       liveDetailActionsEl.appendChild(makeShareButton(job));
+
+      const detailRemindBtn = makeRemindButton(job);
+      if (detailRemindBtn) liveDetailActionsEl.appendChild(detailRemindBtn);
 
       const detailBmBtn = makeDashboardBookmarkBtn(job);
       if (detailBmBtn) liveDetailActionsEl.appendChild(detailBmBtn);

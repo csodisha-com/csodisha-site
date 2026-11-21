@@ -41,6 +41,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://csodisha.com/tools/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://csodisha.com/jobs-careers/odisha-state-jobs/</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>

@@ -5,7 +5,7 @@ import path from 'node:path';
 import { HUBS, ORIGIN } from './career-hubs-data.mjs';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-const V = '20261121v162';
+const V = '20261121v163';
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 const landingPath = path.join(root, 'jobs-careers/index.html');
@@ -67,6 +67,7 @@ function hubPage(hub) {
   <meta name="twitter:title" content="${esc(title)}">
   <meta name="twitter:description" content="${esc(hub.description)}">
   <link rel="stylesheet" href="/assets/style.css?v=${V}">
+  <link rel="stylesheet" href="/assets/css/student-utilities.css?v=${V}">
   <link rel="stylesheet" href="/jobs-careers/assets/dashboard.css?v=${V}">
   <link rel="stylesheet" href="/jobs-careers/assets/hub.css?v=${V}">
   <script src="/assets/shared-header.js?v=${V}" defer></script>
@@ -74,6 +75,7 @@ function hubPage(hub) {
   <script src="/assets/cso-auth-client.js" defer></script>
   <script src="/assets/js/cso-idb.js" defer></script>
   <script src="/assets/js/bookmark-manager.js" defer></script>
+  <script src="/assets/js/student-utilities.js?v=${V}" defer></script>
   <script src="/jobs-careers/assets/hub.js?v=${V}" defer></script>
   ${faviconLine}
   <script type="application/ld+json">${ldJson}</script>
@@ -128,6 +130,7 @@ ${headerShell}
     <h2 id="hub-others-heading">Explore Other Career Hubs</h2>
     <div class="cso-hub-others__list">
       ${others}
+      <a class="cso-jobs-action-pill" href="/tools/">🧰 Student Toolkit</a>
       <a class="cso-jobs-action-pill" href="/jobs-careers/">All Jobs &amp; Careers</a>
     </div>
   </section>
@@ -174,7 +177,13 @@ ${m.replace('<h2>Explore All Categories</h2>', '<h2>Explore All Categories</h2>'
 `);
   landing = landing.replace(ovOpen, () => `${ovOpen}\n          ${hubsBlock}\n`);
 }
-landing = landing.replace(/((?:dashboard|hub)\.(?:css|js))\?v=\d+v\d+/g, `$1?v=${V}`);
+landing = landing.replace(/((?:dashboard|hub|student-utilities)\.(?:css|js))\?v=\d+v\d+/g, `$1?v=${V}`);
+if (!landing.includes('/assets/css/student-utilities.css')) {
+  landing = landing.replace(/(  <link rel="stylesheet" href="\.\/assets\/dashboard\.css[^\n]*\n)/, `$1  <link rel="stylesheet" href="/assets/css/student-utilities.css?v=${V}">\n`);
+}
+if (!landing.includes('/assets/js/student-utilities.js')) {
+  landing = landing.replace(/(  <script src="\.\/assets\/dashboard\.js[^\n]*<\/script>\n)/, `  <script src="/assets/js/student-utilities.js?v=${V}" defer></script>\n$1`);
+}
 if (!landing.includes('/jobs-careers/assets/hub.css')) {
   landing = landing.replace(/(  <link rel="stylesheet" href="\.\/assets\/dashboard\.css[^\n]*\n)/, `$1  <link rel="stylesheet" href="/jobs-careers/assets/hub.css?v=${V}">\n`);
 }

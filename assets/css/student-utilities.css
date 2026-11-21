@@ -1,0 +1,150 @@
+/* v163: "Am I Eligible?" Quick Profile Drawer, Live Eligibility Badges, and Calendar Reminder UI. */
+.cso-elig-drawer {
+  margin: 0 0 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border, #dce6f5);
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-text, #0f172a);
+}
+
+.cso-elig-drawer__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+}
+
+.cso-elig-drawer__summary::-webkit-details-marker {
+  display: none;
+}
+
+.cso-elig-drawer__title {
+  font-size: 0.95rem;
+}
+
+.cso-elig-drawer__status {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--cso-surface, #f1f5f9);
+  border: 1px solid var(--cso-border, #cbd5e1);
+  color: var(--cso-link, #1d4ed8);
+}
+
+.cso-elig-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  padding: 0 16px 14px;
+  border-top: 1px solid var(--cso-border, #e2e8f0);
+  padding-top: 12px;
+}
+
+.cso-elig-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.cso-elig-field input,
+.cso-elig-field select {
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 9px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface, #f8fafc);
+  color: var(--cso-text, #0f172a);
+  font-size: 0.88rem;
+}
+
+.cso-elig-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding-top: 4px;
+}
+
+.cso-elig-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0;
+}
+
+.cso-elig-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.cso-elig-badge--ok {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.cso-elig-badge--warn {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.cso-elig-badge--match {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.live-job-card__footer .live-btn--remind {
+  border-color: #0284c7;
+  color: #0369a1;
+}
+
+@media (max-width: 720px) {
+  .live-job-card__footer .live-btn--remind {
+    grid-column: 1 / -1;
+  }
+}
+
+.cso-live-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 10000;
+  max-width: calc(100vw - 32px);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0;
+  transform: translate(-50%, 12px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.cso-live-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.cso-offscreen-copy {
+  position: fixed;
+  top: 0;
+  left: -9999px;
+}

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#edf4ff">
+  <title>Odisha Student Toolkit — Exam Photo Resizer &amp; Age Calculator | Common Sense Odisha</title>
+  <meta name="description" content="100% browser-based Odisha Student Toolkit: resize OPSC, OSSC, OSSSC &amp; SSC exam photos and signatures offline, and calculate Odisha age relaxation cut-off limits instantly.">
+  <link rel="canonical" href="https://csodisha.com/tools/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Common Sense Odisha">
+  <meta property="og:title" content="Odisha Student Toolkit — Exam Photo Resizer &amp; Age Calculator | Common Sense Odisha">
+  <meta property="og:description" content="Resize OPSC, OSSC, OSSSC &amp; SSC photos/signatures privately in your browser (zero upload) and check Odisha government exam age relaxation limits.">
+  <meta property="og:url" content="https://csodisha.com/tools/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Odisha Student Toolkit — Common Sense Odisha">
+  <meta name="twitter:description" content="Zero-upload Odisha exam photo &amp; signature resizer + Odisha age relaxation cut-off calculator.">
+  <link rel="stylesheet" href="/assets/style.css?v=20261121v163">
+  <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v163">
+  <link rel="stylesheet" href="/tools/assets/tools.css?v=20261121v163">
+  <script src="/assets/shared-header.js?v=20261121v163" defer></script>
+  <script src="/assets/cso-auth-client.js" defer></script>
+  <script src="/assets/js/cso-idb.js" defer></script>
+  <script src="/assets/js/bookmark-manager.js" defer></script>
+  <script src="/assets/js/student-utilities.js?v=20261121v163" defer></script>
+  <script src="/tools/assets/tools.js?v=20261121v163" defer></script>
+  <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://csodisha.com/"},{"@type":"ListItem","position":2,"name":"Jobs \u0026 Careers","item":"https://csodisha.com/jobs-careers/"},{"@type":"ListItem","position":3,"name":"Student Toolkit","item":"https://csodisha.com/tools/"}]},{"@type":"WebApplication","name":"Odisha Student Toolkit","applicationCategory":"UtilitiesApplication","operatingSystem":"All","url":"https://csodisha.com/tools/","description":"Zero-upload Odisha exam photo and signature resizer plus Odisha government age relaxation and cut-off calculator."}]}</script>
+</head>
+<body>
+<div id="csoPublicAnnouncementMount"></div>
+
+<header class="top site-header__top" id="header-top" role="banner">
+<a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
+  <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36">
+</a>
+<a class="adm cso-adm-icon-only" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a>
+<span id="ctl" class="cso-contents"></span>
+<span class="sp"></span>
+<div class="acct"><span class="cso-acct-icon" aria-hidden="true">👤</span><span id="auth" class="cso-contents"></span></div>
+</header>
+<nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
+
+<main class="cso-tools-main">
+  <section class="cso-tools-hero" aria-label="Odisha Student Toolkit">
+    <nav class="cso-tools-crumb" aria-label="Breadcrumb">
+      <a href="/">Home</a> <span aria-hidden="true">›</span> <a href="/jobs-careers/">Jobs &amp; Careers</a> <span aria-hidden="true">›</span> <span aria-current="page">Student Toolkit</span>
+    </nav>
+    <h1>🧰 Odisha Student Toolkit</h1>
+    <p class="cso-tools-sub">100% browser-based utilities for OPSC, OSSC, OSSSC, SSC &amp; Banking aspirants. Your photos never leave your device — zero server upload.</p>
+    <div class="cso-tools-jump" role="navigation" aria-label="Toolkit tools">
+      <a class="cso-tools-pill" href="#photo-resizer">📸 Photo &amp; Signature Resizer</a>
+      <a class="cso-tools-pill" href="#age-calculator">🎂 Odisha Age Relaxation Calculator</a>
+      <a class="cso-tools-pill" href="/jobs-careers/">💼 Back to Live Jobs</a>
+    </div>
+  </section>
+
+  <!-- Tool 1: Exam Photo & Signature Resizer -->
+  <section id="photo-resizer" class="cso-tool-card" aria-labelledby="resizer-heading">
+    <div class="cso-tool-card__head">
+      <div>
+        <h2 id="resizer-heading">📸 Odisha Exam Photo &amp; Signature Resizer</h2>
+        <p class="cso-tool-desc">Select an official exam preset or custom dimensions, pick an image from your device, and download a portal-ready JPG in seconds.</p>
+      </div>
+      <span class="cso-tool-privacy-badge">🔒 100% Offline · Zero Upload</span>
+    </div>
+
+    <div class="cso-preset-strip" id="resizer-presets" role="group" aria-label="Official Exam Image Presets">
+      <button type="button" class="cso-preset-btn is-active" data-preset="opsc-photo" data-w="200" data-h="230" data-min-kb="20" data-max-kb="50" aria-pressed="true">OPSC Photo (200×230px, 20–50KB)</button>
+      <button type="button" class="cso-preset-btn" data-preset="opsc-sign" data-w="140" data-h="60" data-min-kb="10" data-max-kb="20" aria-pressed="false">OPSC Signature (140×60px, 10–20KB)</button>
+      <button type="button" class="cso-preset-btn" data-preset="ossc-photo" data-w="200" data-h="230" data-min-kb="20" data-max-kb="50" aria-pressed="false">OSSC / OSSSC Photo (200×230px, 20–50KB)</button>
+      <button type="button" class="cso-preset-btn" data-preset="ssc-photo" data-w="275" data-h="354" data-min-kb="20" data-max-kb="50" aria-pressed="false">SSC Photo (3.5×4.5cm / 275×354px, 20–50KB)</button>
+      <button type="button" class="cso-preset-btn" data-preset="ssc-sign" data-w="140" data-h="60" data-min-kb="10" data-max-kb="20" aria-pressed="false">SSC Signature (140×60px, 10–20KB)</button>
+      <button type="button" class="cso-preset-btn" data-preset="custom" data-w="200" data-h="230" data-min-kb="10" data-max-kb="50" aria-pressed="false">Custom Size</button>
+    </div>
+
+    <div class="cso-resizer-controls">
+      <label class="cso-tool-field">
+        <span>Width (px)</span>
+        <input id="resizer-width" type="number" min="40" max="2000" value="200">
+      </label>
+      <label class="cso-tool-field">
+        <span>Height (px)</span>
+        <input id="resizer-height" type="number" min="20" max="2000" value="230">
+      </label>
+      <label class="cso-tool-field">
+        <span>Min KB</span>
+        <input id="resizer-min-kb" type="number" min="5" max="500" value="20">
+      </label>
+      <label class="cso-tool-field">
+        <span>Max KB</span>
+        <input id="resizer-max-kb" type="number" min="5" max="1000" value="50">
+      </label>
+    </div>
+
+    <div class="cso-upload-row">
+      <label class="cso-upload-label" for="resizer-file">
+        <span class="cso-upload-icon" aria-hidden="true">📂</span>
+        <span id="resizer-file-label">Choose Photo or Signature (JPG, PNG, WebP)</span>
+        <input id="resizer-file" type="file" accept="image/*" class="cso-sr-input">
+      </label>
+      <button id="resizer-process-btn" type="button" class="cso-tool-btn cso-tool-btn--primary" disabled>Resize Image</button>
+      <button id="resizer-download-btn" type="button" class="cso-tool-btn cso-tool-btn--success" hidden>⬇ Download JPG</button>
+    </div>
+
+    <div id="resizer-status" class="cso-tool-status" role="status" aria-live="polite" hidden></div>
+
+    <div id="resizer-preview-grid" class="cso-preview-grid" hidden>
+      <div class="cso-preview-box">
+        <div class="cso-preview-box__head">
+          <strong>Original</strong>
+          <span id="resizer-orig-meta" class="cso-meta-chip"></span>
+        </div>
+        <img id="resizer-orig-img" class="cso-preview-img" alt="Original uploaded image preview">
+      </div>
+      <div class="cso-preview-box">
+        <div class="cso-preview-box__head">
+          <strong>Resized JPG</strong>
+          <span id="resizer-out-meta" class="cso-meta-chip cso-meta-chip--ok"></span>
+        </div>
+        <img id="resizer-out-img" class="cso-preview-img" alt="Resized exam-ready JPG preview">
+      </div>
+    </div>
+    <canvas id="resizer-canvas" hidden></canvas>
+  </section>
+
+  <!-- Tool 2: Odisha Age Relaxation & Cut-Off Calculator -->
+  <section id="age-calculator" class="cso-tool-card" aria-labelledby="age-heading">
+    <div class="cso-tool-card__head">
+      <div>
+        <h2 id="age-heading">🎂 Odisha Age Relaxation &amp; Cut-Off Calculator</h2>
+        <p class="cso-tool-desc">Verify exact age in Years, Months &amp; Days on the notification cut-off date with official Odisha State category relaxations.</p>
+      </div>
+    </div>
+
+    <form id="age-calc-form" class="cso-age-form">
+      <label class="cso-tool-field">
+        <span>Date of Birth</span>
+        <input id="age-dob" type="date" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Notification Cut-Off Date</span>
+        <input id="age-cutoff" type="date" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Post Max Age (UR)</span>
+        <input id="age-max" type="number" min="18" max="65" value="38" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Category</span>
+        <select id="age-category">
+          <option value="UR">UR (General · +0 yrs)</option>
+          <option value="SEBC">SEBC (+5 yrs)</option>
+          <option value="SC / ST">SC / ST (+5 yrs)</option>
+          <option value="Women">Women (+5 yrs)</option>
+          <option value="PwD">PwD (+10 yrs)</option>
+          <option value="Ex-Serviceman">Ex-Serviceman (+5 yrs)</option>
+        </select>
+      </label>
+      <div class="cso-age-actions">
+        <button id="age-calc-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Calculate Eligibility</button>
+        <button id="age-preset-32" type="button" class="cso-tool-btn" data-max-age="32">OPSC / OSSC (32 / 38)</button>
+        <button id="age-preset-38" type="button" class="cso-tool-btn" data-max-age="38">Odisha State (38 yrs)</button>
+        <button id="age-reset-btn" type="button" class="cso-tool-btn">Reset</button>
+      </div>
+    </form>
+
+    <div id="age-result" class="cso-age-result" role="status" aria-live="polite" hidden>
+      <div class="cso-age-result__top">
+        <span id="age-status-badge" class="cso-age-badge"></span>
+        <strong id="age-exact-readout" class="cso-age-exact"></strong>
+      </div>
+      <p id="age-limit-summary" class="cso-age-summary"></p>
+    </div>
+  </section>
+</main>
+
+<footer><div class="w cso-footer-grid">
+  <div class="cso-footer-zone1">
+    <div class="cso-footer-brand-header">
+      <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-footer-logo cso-brand-emblem" width="36" height="36">
+      <div class="cso-footer-title">Common Sense Odisha</div>
+    </div>
+    <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
+    <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
+    <p class="cso-footer-contact">Contact: <a class="cso-footer-contact-link" href="mailto:contact@csodisha.com">contact@csodisha.com</a></p>
+    <div class="cso-footer-social" role="navigation" aria-label="Official Social Channels">
+      <a class="cso-footer-social-link" href="https://www.instagram.com/csodisha.official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg><span>Instagram</span></a>
+      <a class="cso-footer-social-link" href="https://www.facebook.com/profile.php?id=61596187936770" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg><span>Facebook</span></a>
+      <a class="cso-footer-social-link" href="https://x.com/csodisha" target="_blank" rel="noopener noreferrer" aria-label="X" title="X"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span>X</span></a>
+      <a class="cso-footer-social-link" href="https://t.me/csodisha" target="_blank" rel="noopener noreferrer" aria-label="Telegram" title="Telegram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span>Telegram</span></a>
+      <a class="cso-footer-social-link" href="https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><span>WhatsApp</span></a>
+      <a class="cso-footer-social-link" href="https://www.youtube.com/@CSOdisha" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg><span>YouTube</span></a>
+    </div>
+  </div>
+  <div class="cso-footer-zone2">
+    <div class="cso-footer-col">
+      <h4>Explore</h4>
+      <a href="/jobs-careers/">Jobs &amp; Careers</a>
+      <a href="/tools/">Student Toolkit</a>
+      <a href="/current-affairs/">Current Affairs</a>
+      <a href="/mock-tests/">Mock Tests</a>
+      <a href="/resources/">Syllabus &amp; PYQs</a>
+      <a href="/schemes-benefits/">Schemes &amp; Benefits</a>
+      <a href="/study-library/">Study Library</a>
+      <a href="/community/">Community</a>
+    </div>
+    <div class="cso-footer-col">
+      <h4>Support &amp; Legal</h4>
+      <a href="/about/">About CSO</a>
+      <a href="/support/#faqs">Help &amp; FAQs</a>
+      <a href="/support/#report-error">Report an Error</a>
+      <a href="/support/#suggest-resource">Suggest Resource</a>
+      <a href="/privacy-policy/">Privacy Policy</a>
+      <a href="/terms-of-use/">Terms of Use</a>
+    </div>
+  </div>
+  <div class="cso-footer-zone3">
+    <img class="cso-footer-odisha-map" src="/assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy">
+    <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
+    <div class="cso-footer-lang-pills">
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>
+      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="or">ଓଡ଼ିଆ</button>
+      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="hi">हिन्दी</button>
+    </div>
+  </div>
+</div></footer>
+</body>
+</html>

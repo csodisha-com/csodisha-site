@@ -1056,7 +1056,7 @@ export default {
       if (res.status === 200 && (request.method === 'GET' || request.method === 'HEAD') && (res.headers.get('Content-Type') || '').includes('text/html')) {
         res = await hydrateExplorerIndexHtml(res, pathname, env, url);
       }
-      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|schemes|schemes-benefits|study-library|community|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname)) {
+      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|tools|schemes|schemes-benefits|study-library|community|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname)) {
         const headers = new Headers(res.headers);
         headers.set(
           'Content-Security-Policy',
