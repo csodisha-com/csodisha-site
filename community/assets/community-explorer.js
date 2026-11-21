@@ -99,10 +99,7 @@
       }
       if (grid) {
         grid.appendChild(el('a', { class: 'cso-comm-domain-card', href: href }, [
-          el('div', { class: 'cso-comm-domain-top' }, [
-            el('span', { text: icon + ' Community' })
-          ]),
-          el('div', { class: 'cso-comm-domain-title', text: title }),
+          el('div', { class: 'cso-comm-domain-title', text: icon + ' ' + title }),
           el('div', { class: 'cso-comm-domain-desc', text: clean(d.summary) })
         ]));
       }
