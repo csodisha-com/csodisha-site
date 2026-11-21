@@ -1,0 +1,513 @@
+/* Early Childhood Education (ECE) Course Hub — v179 */
+/* 100% CSP compliant: external stylesheet only, zero inline style="" */
+
+:root {
+  --ece-bg: var(--cso-bg, #f8fafc);
+  --ece-surface: var(--cso-surface, #ffffff);
+  --ece-surface-alt: var(--cso-surface-alt, #f1f5f9);
+  --ece-text: var(--cso-text, #0f172a);
+  --ece-muted: var(--cso-muted, #475569);
+  --ece-border: var(--cso-border, #cbd5e1);
+  --ece-accent: var(--cso-accent, #0f766e);
+  --ece-accent-strong: var(--cso-accent-strong, #115e59);
+  --ece-accent-soft: var(--cso-accent-soft, rgba(15, 118, 110, 0.1));
+  --ece-gold: var(--cso-gold, #b45309);
+  --ece-gold-soft: rgba(180, 83, 9, 0.12);
+  --ece-success: #15803d;
+  --ece-success-soft: rgba(21, 128, 61, 0.12);
+  --ece-danger: #b91c1c;
+  --ece-danger-soft: rgba(185, 28, 28, 0.1);
+  --ece-radius: 14px;
+  --ece-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+}
+
+html[data-theme="dark"],
+body.dark {
+  --ece-bg: var(--cso-bg, #0b1120);
+  --ece-surface: var(--cso-surface, #111827);
+  --ece-surface-alt: var(--cso-surface-alt, #1e293b);
+  --ece-text: var(--cso-text, #f1f5f9);
+  --ece-muted: var(--cso-muted, #94a3b8);
+  --ece-border: var(--cso-border, #334155);
+  --ece-accent: var(--cso-accent, #2dd4bf);
+  --ece-accent-strong: var(--cso-accent-strong, #14b8a6);
+  --ece-accent-soft: rgba(45, 212, 191, 0.14);
+  --ece-gold: #fbbf24;
+  --ece-gold-soft: rgba(251, 191, 36, 0.14);
+  --ece-success: #4ade80;
+  --ece-success-soft: rgba(74, 222, 128, 0.14);
+  --ece-danger: #f87171;
+  --ece-danger-soft: rgba(248, 113, 113, 0.14);
+  --ece-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="utkal-bharat"] {
+  --ece-accent: var(--cso-accent, #c2410c);
+  --ece-accent-strong: var(--cso-accent-strong, #9a3412);
+  --ece-accent-soft: rgba(194, 65, 12, 0.11);
+}
+
+.ece-course-main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 3rem;
+  color: var(--ece-text);
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.ece-course-main *,
+.ece-course-main *::before,
+.ece-course-main *::after {
+  box-sizing: border-box;
+}
+
+.ece-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.875rem;
+  color: var(--ece-muted);
+  margin-bottom: 1rem;
+}
+
+.ece-breadcrumb a {
+  color: var(--ece-accent);
+  text-decoration: none;
+  font-weight: 600;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ece-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.ece-hero {
+  background: var(--ece-surface);
+  border: 1px solid var(--ece-border);
+  border-radius: var(--ece-radius);
+  padding: 1.5rem;
+  box-shadow: var(--ece-shadow);
+  margin-bottom: 1.5rem;
+}
+
+.ece-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.ece-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--ece-accent-soft);
+  color: var(--ece-accent);
+}
+
+.ece-badge--gold {
+  background: var(--ece-gold-soft);
+  color: var(--ece-gold);
+}
+
+.ece-hero h1 {
+  margin: 0 0 0.45rem;
+  font-size: clamp(1.5rem, 3vw, 2.15rem);
+  line-height: 1.2;
+  color: var(--ece-text);
+}
+
+.ece-subtitle-or {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ece-accent);
+}
+
+.ece-hero-desc {
+  margin: 0 0 1.25rem;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--ece-muted);
+}
+
+.ece-progress-card {
+  background: var(--ece-surface-alt);
+  border: 1px solid var(--ece-border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.ece-progress-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.ece-progress-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--ece-text);
+}
+
+.ece-progress-count {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--ece-accent);
+}
+
+.ece-progress-track {
+  width: 100%;
+  height: 12px;
+  background: var(--ece-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.ece-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--ece-accent);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.ece-progress-fill--20 { width: 20%; }
+.ece-progress-fill--40 { width: 40%; }
+.ece-progress-fill--60 { width: 60%; }
+.ece-progress-fill--80 { width: 80%; }
+.ece-progress-fill--100 { width: 100%; background: var(--ece-success); }
+
+.ece-toc-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.ece-toc-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.45rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--ece-border);
+  background: var(--ece-surface);
+  color: var(--ece-text);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.ece-toc-link:hover {
+  border-color: var(--ece-accent);
+  color: var(--ece-accent);
+}
+
+.ece-modules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ece-module-card {
+  background: var(--ece-surface);
+  border: 1px solid var(--ece-border);
+  border-radius: var(--ece-radius);
+  padding: 1.35rem;
+  box-shadow: var(--ece-shadow);
+}
+
+.ece-module-card.is-completed {
+  border-color: var(--ece-success);
+}
+
+.ece-module-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.85rem;
+  border-bottom: 1px solid var(--ece-border);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ece-module-kicker {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ece-accent);
+  margin-bottom: 0.25rem;
+}
+
+.ece-module-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.ece-module-subtitle-or {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--ece-muted);
+  font-weight: 600;
+}
+
+.ece-complete-btn {
+  min-height: 44px;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--ece-accent);
+  background: var(--ece-surface);
+  color: var(--ece-accent);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ece-complete-btn:hover {
+  background: var(--ece-accent-soft);
+}
+
+.ece-complete-btn[aria-pressed="true"] {
+  background: var(--ece-success);
+  border-color: var(--ece-success);
+  color: #ffffff;
+}
+
+.ece-section-block {
+  margin-bottom: 1.25rem;
+}
+
+.ece-section-heading {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ece-text);
+}
+
+.ece-outcomes-list,
+.ece-notes-list,
+.ece-refs-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--ece-muted);
+  line-height: 1.6;
+}
+
+.ece-outcomes-list li,
+.ece-notes-list li,
+.ece-refs-list li {
+  margin-bottom: 0.4rem;
+}
+
+.ece-notes-list strong {
+  color: var(--ece-text);
+}
+
+.ece-refs-list a {
+  color: var(--ece-accent);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.ece-refs-list a:hover {
+  text-decoration: underline;
+}
+
+.ece-diagram-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.75rem;
+}
+
+.ece-diagram-node {
+  background: var(--ece-surface-alt);
+  border: 1px solid var(--ece-border);
+  border-left: 4px solid var(--ece-accent);
+  border-radius: 10px;
+  padding: 0.85rem;
+}
+
+.ece-diagram-stage {
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--ece-accent);
+  margin-bottom: 0.25rem;
+}
+
+.ece-diagram-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--ece-text);
+  margin-bottom: 0.25rem;
+}
+
+.ece-diagram-detail {
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--ece-muted);
+  margin: 0;
+}
+
+.ece-quiz-box {
+  background: var(--ece-surface-alt);
+  border: 1px solid var(--ece-border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.ece-quiz-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.ece-quiz-score {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--ece-accent);
+}
+
+.ece-question-card {
+  background: var(--ece-surface);
+  border: 1px solid var(--ece-border);
+  border-radius: 10px;
+  padding: 0.9rem;
+  margin-bottom: 0.85rem;
+}
+
+.ece-question-text {
+  margin: 0 0 0.65rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--ece-text);
+}
+
+.ece-options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.ece-option-btn {
+  min-height: 44px;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--ece-border);
+  background: var(--ece-surface);
+  color: var(--ece-text);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.ece-option-btn:hover:not(:disabled) {
+  border-color: var(--ece-accent);
+  background: var(--ece-accent-soft);
+}
+
+.ece-option-btn.is-correct {
+  border-color: var(--ece-success);
+  background: var(--ece-success-soft);
+  color: var(--ece-text);
+  font-weight: 700;
+}
+
+.ece-option-btn.is-wrong {
+  border-color: var(--ece-danger);
+  background: var(--ece-danger-soft);
+  color: var(--ece-text);
+}
+
+.ece-quiz-feedback {
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  background: var(--ece-surface-alt);
+  color: var(--ece-muted);
+}
+
+.ece-quiz-feedback--ok {
+  border-left: 4px solid var(--ece-success);
+}
+
+.ece-quiz-feedback--err {
+  border-left: 4px solid var(--ece-danger);
+}
+
+.ece-quiz-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ece-reset-quiz-btn {
+  min-height: 44px;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid var(--ece-border);
+  background: var(--ece-surface);
+  color: var(--ece-text);
+  font-weight: 600;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.ece-reset-quiz-btn:hover {
+  border-color: var(--ece-accent);
+}
+
+.ece-mistake-note {
+  font-size: 0.84rem;
+  color: var(--ece-muted);
+}
+
+.ece-mistake-note a {
+  color: var(--ece-accent);
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .ece-course-main {
+    padding: 0.85rem 0.75rem 2.25rem;
+  }
+
+  .ece-hero,
+  .ece-module-card {
+    padding: 1rem;
+  }
+
+  .ece-diagram-grid {
+    grid-template-columns: 1fr;
+  }
+}
