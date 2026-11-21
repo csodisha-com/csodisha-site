@@ -261,11 +261,192 @@
     }
   }
 
+  /* ---------- Tool 3: Official Link & WhatsApp Scam-Check ---------- */
+  var SHORTENER_HOSTS = new Set(['bit.ly', 'tinyurl.com', 't.co', 'cutt.ly', 'rb.gy', 'is.gd', 'shorturl.at', 'ow.ly', 'goo.gl']);
+  var LOOKALIKE_KEYWORDS = ['opsc', 'ossc', 'osssc', 'subhadra', 'kalia', 'pmkisan', 'odishagov', 'samsodisha'];
+  var SCAM_PHRASES = [
+    'forward to 10 groups',
+    'forward to 5 groups',
+    'pay registration fee via upi',
+    'pay fee via upi',
+    'urgent last chance',
+    'click below to claim',
+    '100% guaranteed job',
+    'free laptop yojana'
+  ];
+
+  function extractUrls(text) {
+    var raw = String(text || '');
+    var matches = raw.match(/(?:https?:\/\/[^\s<>"']+|(?:[a-z0-9-]+\.)+(?:gov\.in|nic\.in|ac\.in|odisha\.gov\.in|com|in|xyz|org|net|online|site|info|ly|co)(?:\/[^\s<>"']*)?)/gi) || [];
+    var seen = new Set();
+    var out = [];
+    matches.forEach(function (m) {
+      var clean = m.replace(/[),.;!?]+$/, '');
+      if (!seen.has(clean)) {
+        seen.add(clean);
+        out.push(clean);
+      }
+    });
+    return out;
+  }
+
+  function isOfficialGovHost(hostname) {
+    var h = String(hostname || '').toLowerCase().replace(/:\d+$/, '');
+    return (
+      h === 'gov.in' ||
+      h.endsWith('.gov.in') ||
+      h === 'nic.in' ||
+      h.endsWith('.nic.in') ||
+      h.endsWith('.odisha.gov.in') ||
+      h === 'ac.in' ||
+      h.endsWith('.ac.in')
+    );
+  }
+
+  function analyzeScamInput(rawText) {
+    var text = String(rawText || '').trim();
+    if (!text) {
+      return { verdict: 'empty', badge: 'Enter URL or Message', reasons: ['Paste a URL or WhatsApp forward message to inspect.'], urls: [] };
+    }
+    var urls = extractUrls(text);
+    var lower = text.toLowerCase();
+    var reasons = [];
+    var hasHighRisk = false;
+    var hasOfficial = false;
+
+    SCAM_PHRASES.forEach(function (phrase) {
+      if (lower.includes(phrase)) {
+        hasHighRisk = true;
+        reasons.push('Scam phrase detected: "' + phrase + '"');
+      }
+    });
+
+    urls.forEach(function (rawUrl) {
+      var normalized = /^https?:\/\//i.test(rawUrl) ? rawUrl : 'https://' + rawUrl;
+      var parsed;
+      try {
+        parsed = new URL(normalized);
+      } catch (_) {
+        hasHighRisk = true;
+        reasons.push('Malformed URL: ' + rawUrl);
+        return;
+      }
+      var host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+      if (/^http:\/\//i.test(rawUrl)) {
+        hasHighRisk = true;
+        reasons.push('Insecure http:// link (official portals use https://): ' + rawUrl);
+      }
+      if (SHORTENER_HOSTS.has(host)) {
+        hasHighRisk = true;
+        reasons.push('URL shortener hides true destination (' + host + ')');
+        return;
+      }
+      if (isOfficialGovHost(host) && parsed.protocol === 'https:') {
+        hasOfficial = true;
+        reasons.push('Verified official domain: ' + host);
+      } else if (isOfficialGovHost(host)) {
+        hasHighRisk = true;
+        reasons.push('Official domain served over insecure http://: ' + host);
+      } else {
+        var isLookalike = LOOKALIKE_KEYWORDS.some(function (kw) { return host.includes(kw); });
+        if (isLookalike || /\.(xyz|blogspot\.com|wordpress\.com|online|site)$/i.test(host)) {
+          hasHighRisk = true;
+          reasons.push('Lookalike or non-official domain (' + host + ') — not .gov.in / .nic.in');
+        } else {
+          hasHighRisk = true;
+          reasons.push('Unverified non-government domain: ' + host);
+        }
+      }
+    });
+
+    if (!urls.length && !hasHighRisk) {
+      return {
+        verdict: 'warn',
+        badge: '⚠ No URL Found',
+        reasons: ['No website link was detected in this text. Always verify official schemes on .gov.in or .nic.in portals.'],
+        urls: []
+      };
+    }
+
+    if (hasHighRisk) {
+      return {
+        verdict: 'suspicious',
+        badge: '⚠ Suspicious / Unverified',
+        reasons: reasons,
+        urls: urls
+      };
+    }
+
+    return {
+      verdict: 'official',
+      badge: '✓ Official Govt Domain',
+      reasons: reasons,
+      urls: urls
+    };
+  }
+
+  function initScamChecker() {
+    var inputEl = $('scam-input');
+    var checkBtn = $('scam-check-btn');
+    var clearBtn = $('scam-clear-btn');
+    var resultEl = $('scam-result');
+    if (!inputEl || !checkBtn || !resultEl) return;
+
+    function runCheck() {
+      var res = analyzeScamInput(inputEl.value);
+      while (resultEl.firstChild) resultEl.removeChild(resultEl.firstChild);
+      resultEl.hidden = false;
+
+      var badgeCls = res.verdict === 'official' ? 'cso-scam-badge is-safe' : 'cso-scam-badge is-warn';
+      var badge = document.createElement('span');
+      badge.className = badgeCls;
+      badge.textContent = res.badge;
+      resultEl.appendChild(badge);
+
+      var ul = document.createElement('ul');
+      ul.className = 'cso-scam-list';
+      res.reasons.forEach(function (r) {
+        var li = document.createElement('li');
+        li.textContent = r;
+        ul.appendChild(li);
+      });
+      resultEl.appendChild(ul);
+    }
+
+    checkBtn.addEventListener('click', runCheck);
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function () {
+        inputEl.value = '';
+        resultEl.hidden = true;
+        while (resultEl.firstChild) resultEl.removeChild(resultEl.firstChild);
+        inputEl.focus();
+      });
+    }
+  }
+
   function boot() {
     initResizer();
     initAgeCalculator();
+    initScamChecker();
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
+  if (typeof window !== 'undefined') {
+    window.CSOToolsScamCheck = {
+      extractUrls: extractUrls,
+      isOfficialGovHost: isOfficialGovHost,
+      analyzeScamInput: analyzeScamInput
+    };
+  }
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+      extractUrls: extractUrls,
+      isOfficialGovHost: isOfficialGovHost,
+      analyzeScamInput: analyzeScamInput
+    };
+  }
+
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+  }
 })();

@@ -9106,3 +9106,41 @@ pre { overflow-x: auto; overscroll-behavior-x: contain; }
     flex-shrink: 0 !important;
   }
 }
+
+/* v176: Voice Search Button (EN + Odia) */
+.cso-voice-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cso-text, #0f172a);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.cso-voice-btn:hover,
+.cso-voice-btn:focus-visible {
+  background: var(--cso-surface-alt, #f1f5f9);
+  border-color: var(--cso-primary, #14532d);
+}
+.cso-voice-btn.is-listening,
+.mic.is-listening {
+  background: var(--cso-highlight-bg, #dcfce7);
+  border-color: var(--cso-primary, #14532d);
+  color: var(--cso-primary, #14532d);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+@media (max-width: 768px) {
+  .cso-voice-btn,
+  .mic {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

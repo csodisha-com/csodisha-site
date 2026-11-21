@@ -3,10 +3,11 @@
 import { hydrateJobsFeedResponse, renderSchemeCard } from './ssr-feeds.js';
 
 export const CSO_SHELL_HEAD_LINKS = [
-  '<link rel="stylesheet" href="/assets/style.css?v=20261121v173">',
+  '<link rel="stylesheet" href="/assets/style.css?v=20261121v176">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-detail-page.css">',
-  '<script src="/assets/shared-header.js?v=20261121v171" defer></script>'
+  '<script src="/assets/shared-header.js?v=20261121v171" defer></script>',
+  '<script src="/assets/js/voice-search.js?v=20261121v176" defer></script>'
 ].join('\n  ');
 
 export const CSO_SHELL_HEADER = `<header class="top site-header__top" id="header-top" role="banner">
