@@ -511,7 +511,7 @@
   }
 
   function showOverview(pushHistory = true) {
-    setTopSearchVisible(false);
+    setTopSearchVisible(true);
     currentSection = -1;
     path = [];
     searchResults.hidden = true;
@@ -696,9 +696,18 @@
     closeMobileMenu();
   }
 
+  function syncTopSearchToLiveJobs(rawQuery) {
+    const liveInput = $('live-jobs-search');
+    if (liveInput && liveInput.value !== rawQuery) {
+      liveInput.value = rawQuery;
+      liveInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  }
+
   function renderSearch() {
     const query = search.value.trim().toLowerCase();
     clearSearch.hidden = search.value.length === 0;
+    syncTopSearchToLiveJobs(search.value);
 
     if (!query) {
       if (currentSection >= 0) renderExplorer();
@@ -886,6 +895,7 @@
   clearSearch.addEventListener('click', () => {
     search.value = '';
     clearSearch.hidden = true;
+    syncTopSearchToLiveJobs('');
     showOverview();
     search.focus();
   });

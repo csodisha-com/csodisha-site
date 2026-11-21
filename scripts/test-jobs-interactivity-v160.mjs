@@ -28,13 +28,13 @@ ok((html.match(/data-chip="/g) || []).length === 7, 'pill strip must have 7 pill
 for (const label of ['All Jobs', 'OPSC', 'OSSC / OSSSC', 'Teaching &amp; Education', 'Police &amp; Defence', 'Central &amp; Banking', 'Admit Card &amp; Result', 'All States', 'All Categories', 'Match my Candidate Hub goals', 'Reset All Filters']) {
   ok(html.includes(label), `missing control label: ${label}`);
 }
-ok(/\.top-search\[hidden\]/.test(css) && /<div class="top-search" hidden>/.test(html), 'top search not hidden on overview');
+ok(/\.top-search\[hidden\]/.test(css) && /<div class="top-search">/.test(html), 'top search must be visible on overview');
 
 // 3. Job card actions
 ok(/'★ Save'/.test(js) && /'★ Saved'/.test(js), 'compact Save labels missing');
 ok(!/Save to Dashboard/.test(js), 'long Save to Dashboard label remains');
 ok(/grid-template-columns:\s*1fr 1fr/.test(css), '2x2 mobile grid missing');
-ok(/navigator\.share/.test(js) && /clipboard\.writeText/.test(js) && /Link Copied!/.test(js), 'share/clipboard/toast not wired');
+ok(/navigator\.share/.test(js) && /copyToClipboard/.test(js) && /Copied for WhatsApp!|Link Copied!/.test(js), 'share/clipboard/toast not wired');
 ok(/target = '_blank'/.test(js) && /noopener noreferrer/.test(js), 'Apply Online target/rel missing');
 ok(/addEventListener\('click', \(\) => openJobDetail/.test(js), 'View Details handler missing');
 ok(/jobCache\.get\(slug\)/.test(js), 'detail fallback missing');

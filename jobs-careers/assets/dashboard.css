@@ -3426,6 +3426,18 @@ body.is-live-modal-open {
   font-size: 14.5px !important;
 }
 
+@media (max-width: 768px) {
+  .topbar .top-search {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .top-search input,
+  .app-shell .topbar .top-search input {
+    font-size: max(16px, 1rem) !important;
+  }
+}
+
 .live-filter-input,
 .live-filter-select {
   font-size: 14.5px !important;
