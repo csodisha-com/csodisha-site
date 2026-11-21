@@ -560,20 +560,14 @@
       const icon = child.icon_name || symbols[index % symbols.length];
       const childTitleText = localizedNodeTitle(child);
       const title = (child.number ? child.number + ' ' : '') + childTitleText;
-      const nested = (child.children || []).length ? countNodes(child.children || []) : 0;
-      const entries = (child.children || []).length ? countEntries(child.children || []) : 0;
 
       button.append(el('span', 'card-icon', icon));
 
       const content = el('div', 'card-content');
       content.append(el('span', 'card-title', title));
 
-      const metaParts = [];
-      if (nested > 0) metaParts.push(`${nested.toLocaleString('en-IN')} categories`);
-      if (entries > 0) metaParts.push(`${entries.toLocaleString('en-IN')} entries`);
       const childSub = localizedNodeSub(child);
-      if (!metaParts.length && childSub) metaParts.push(childSub);
-      content.append(el('span', 'card-meta', metaParts.length ? metaParts.join(' · ') : 'View scheme entry details'));
+      if (childSub) content.append(el('span', 'card-meta', childSub));
       button.append(content);
 
       const arrow = el('span', 'card-arrow', '›');
@@ -856,7 +850,6 @@
     overviewButton.dataset.sectionIndex = '-1';
     overviewButton.append(el('span', 'side-icon', '🏠'));
     overviewButton.append(el('span', 'side-title', 'Overview'));
-    overviewButton.append(el('span', 'side-count', String(sections.length)));
     const overviewArrow = el('span', 'side-arrow', '›');
     overviewArrow.setAttribute('aria-hidden', 'true');
     overviewButton.append(overviewArrow);
@@ -871,12 +864,6 @@
       navButton.dataset.sectionIndex = String(index);
       navButton.append(el('span', 'side-icon', sectionIcon));
       navButton.append(el('span', 'side-title', sectionLabel));
-      const directSections = (section.children || []).length;
-      const categories = countNodes(section.children || []);
-      const entries = countEntries(section.children || []);
-      if (categories > 0) {
-        navButton.append(el('span', 'side-count', String(entries || categories)));
-      }
       const sideArrow = el('span', 'side-arrow', '›');
       sideArrow.setAttribute('aria-hidden', 'true');
       navButton.append(sideArrow);
@@ -889,11 +876,8 @@
 
       const content = el('div', 'card-content');
       content.append(el('span', 'card-title', sectionLabel));
-      const metaParts = [];
-      if (directSections > 0) metaParts.push(`${directSections} sections`);
-      if (categories > 0) metaParts.push(`${categories.toLocaleString('en-IN')} categories`);
-      if (entries > 0) metaParts.push(`${entries.toLocaleString('en-IN')} entries`);
-      content.append(el('span', 'card-meta', metaParts.length ? metaParts.join(' · ') : 'Explore category'));
+      const sectionSub = localizedNodeSub(section);
+      if (sectionSub) content.append(el('span', 'card-meta', sectionSub));
       card.append(content);
 
       const arrow = el('span', 'card-arrow', '›');

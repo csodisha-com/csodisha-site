@@ -698,7 +698,6 @@
       } else if (g.title && state.lang === 'or') {
         card.appendChild(el('span', 'card-sub-or', g.title));
       }
-      card.appendChild(el('span', 'card-count', `${secs.length} Sections · ${subCount} Categories · ${entCount} Topics`));
       card.appendChild(el('span', 'card-arrow', '→'));
       dashboardGrid.appendChild(card);
     });
@@ -819,11 +818,9 @@
         explorerDesc.hidden = !group.subtitle;
       }
       (group.sections || []).forEach((sec, sIdx) => {
-        const subLen = (sec.children || []).length;
-        const entLen = (sec.children || []).reduce((acc, sub) => acc + ((sub.children || []).length), 0);
         explorerItems.appendChild(renderNodeCard(
           sec.title,
-          `${subLen} Subject Categories · ${entLen} Study Topics`,
+          sec.subtitle || '',
           sec.number ? `Sec ${sec.number}` : sec.badge_text,
           () => navigateToGroup(state.groupIdx, sIdx)
         ));

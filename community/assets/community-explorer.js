@@ -66,8 +66,7 @@
       clear(rail);
       rail.appendChild(el('a', { class: 'cso-comm-nav-link is-active', href: '/community/', 'data-domain': '' }, [
         el('span', { class: 'cso-comm-nav-num', text: 'All' }),
-        el('span', { class: 'cso-comm-rail-label', text: 'Overview' }),
-        el('span', { class: 'cso-comm-nav-count', text: String(overview.domains.length) })
+        el('span', { class: 'cso-comm-rail-label', text: 'Overview' })
       ]));
     }
     if (grid) clear(grid);
@@ -95,19 +94,14 @@
       if (rail) {
         rail.appendChild(el('a', { class: 'cso-comm-nav-link', href: href, 'data-domain': d.slug }, [
           el('span', { class: 'cso-comm-nav-num', text: icon }),
-          el('span', { class: 'cso-comm-rail-label', text: title }),
-          el('span', { class: 'cso-comm-nav-count', text: String(d.folder_count || 0) })
+          el('span', { class: 'cso-comm-rail-label', text: title })
         ]));
       }
       if (grid) {
-        var countParts = [];
-        if (d.folder_count > 0) countParts.push(d.folder_count + ' categories');
-        if (d.item_count > 0) countParts.push(d.item_count + ' live');
         grid.appendChild(el('a', { class: 'cso-comm-domain-card', href: href }, [
           el('div', { class: 'cso-comm-domain-top' }, [
-            el('span', { text: icon + ' Community' }),
-            countParts.length ? el('span', { text: countParts.join(' · ') }) : null
-          ].filter(Boolean)),
+            el('span', { text: icon + ' Community' })
+          ]),
           el('div', { class: 'cso-comm-domain-title', text: title }),
           el('div', { class: 'cso-comm-domain-desc', text: clean(d.summary) })
         ]));

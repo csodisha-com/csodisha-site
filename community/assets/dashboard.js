@@ -524,11 +524,6 @@
 
       const content = el('div', 'card-content');
       content.append(el('span', 'card-title', title));
-
-      const metaParts = [];
-      if (nested > 0) metaParts.push(`${nested.toLocaleString('en-IN')} categories`);
-      if (notes > 0) metaParts.push(`${notes.toLocaleString('en-IN')} entries`);
-      content.append(el('span', 'card-meta', metaParts.length ? metaParts.join(' · ') : 'Explore category'));
       button.append(content);
 
       const arrow = el('span', 'card-arrow', '›');
@@ -746,7 +741,6 @@
     overviewButton.dataset.sectionIndex = '-1';
     overviewButton.append(el('span', 'side-icon', '🏠'));
     overviewButton.append(el('span', 'side-title', 'Overview'));
-    overviewButton.append(el('span', 'side-count', String(sections.length)));
     const overviewArrow = el('span', 'side-arrow', '›');
     overviewArrow.setAttribute('aria-hidden', 'true');
     overviewButton.append(overviewArrow);
@@ -759,10 +753,6 @@
       navButton.dataset.sectionIndex = String(index);
       navButton.append(el('span', 'side-icon', icons[index % icons.length]));
       navButton.append(el('span', 'side-title', section.title));
-      const categories = countNodes(section.children || []);
-      if (categories > 0) {
-        navButton.append(el('span', 'side-count', String(categories)));
-      }
       const sideArrow = el('span', 'side-arrow', '›');
       sideArrow.setAttribute('aria-hidden', 'true');
       navButton.append(sideArrow);
@@ -775,11 +765,6 @@
 
       const content = el('div', 'card-content');
       content.append(el('span', 'card-title', section.title));
-      const entries = countNotes(section.children || []);
-      const metaParts = [];
-      if (categories > 0) metaParts.push(`${categories.toLocaleString('en-IN')} categories`);
-      if (entries > 0) metaParts.push(`${entries.toLocaleString('en-IN')} entries`);
-      content.append(el('span', 'card-meta', metaParts.length ? metaParts.join(' · ') : 'Explore category'));
       card.append(content);
 
       const arrow = el('span', 'card-arrow', '›');
