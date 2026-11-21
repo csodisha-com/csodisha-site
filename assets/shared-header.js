@@ -870,6 +870,15 @@
           return true;
         });
         if (!visibleItems.length) return;
+        const CANONICAL_NAV_ORDER = ['home', 'jobs-careers', 'schemes-benefits', 'study-library', 'community', 'about'];
+        const navOrderRank = it => {
+          const raw = String(it.url || '').replace(/^\/+|\/+$/g, '').split('/')[0].toLowerCase();
+          if (!raw || raw === 'index.html') return 0;
+          const norm = raw === 'schemes' ? 'schemes-benefits' : (raw === 'jobs' ? 'jobs-careers' : raw);
+          const idx = CANONICAL_NAV_ORDER.indexOf(norm);
+          return idx >= 0 ? idx : 100;
+        };
+        visibleItems.sort((a, b) => navOrderRank(a) - navOrderRank(b));
         const mobAuth = document.getElementById('cso-nav-mobile-auth');
         navItems.replaceChildren();
         visibleItems.forEach(it => {

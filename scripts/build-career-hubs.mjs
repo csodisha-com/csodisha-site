@@ -5,7 +5,7 @@ import path from 'node:path';
 import { HUBS, ORIGIN } from './career-hubs-data.mjs';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-const V = '20261121v165';
+const V = '20261121v166';
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 const landingPath = path.join(root, 'jobs-careers/index.html');

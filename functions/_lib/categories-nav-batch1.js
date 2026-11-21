@@ -66,13 +66,27 @@ const STARTER_TAGS = [
 
 const STARTER_HEADER_ITEMS = [
   { id: 'nmenu-home', menu_location: 'header', label_en: 'Home', label_or: 'ମୂଳପୃଷ୍ଠା', url: '/', icon_key: '🏠', badge_text_en: '', highlight_style: 'default', sort_order: 1, status: 'published' },
-  { id: 'nmenu-library', menu_location: 'header', label_en: 'Study Library', label_or: 'ଅଧ୍ୟୟନ ପାଠାଗାର', url: '/study-library/', icon_key: '📚', badge_text_en: '', highlight_style: 'default', sort_order: 2, status: 'published' },
-  { id: 'nmenu-jobs', menu_location: 'header', label_en: 'Jobs & Careers', label_or: 'ଚାକିରି', url: '/jobs-careers/', icon_key: '💼', badge_text_en: 'LIVE', highlight_style: 'pill', sort_order: 3, status: 'published' },
-  { id: 'nmenu-schemes', menu_location: 'header', label_en: 'Schemes & Benefits', label_or: 'ଯୋଜନା', url: '/schemes/', icon_key: '🏛️', badge_text_en: '', highlight_style: 'default', sort_order: 4, status: 'published' },
+  { id: 'nmenu-jobs', menu_location: 'header', label_en: 'Jobs & Careers', label_or: 'ଚାକିରି', url: '/jobs-careers/', icon_key: '💼', badge_text_en: 'LIVE', highlight_style: 'pill', sort_order: 2, status: 'published' },
+  { id: 'nmenu-schemes', menu_location: 'header', label_en: 'Schemes & Benefits', label_or: 'ଯୋଜନା', url: '/schemes/', icon_key: '🏛️', badge_text_en: '', highlight_style: 'default', sort_order: 3, status: 'published' },
+  { id: 'nmenu-library', menu_location: 'header', label_en: 'Study Library', label_or: 'ଅଧ୍ୟୟନ ପାଠାଗାର', url: '/study-library/', icon_key: '📚', badge_text_en: '', highlight_style: 'default', sort_order: 4, status: 'published' },
   { id: 'nmenu-community', menu_location: 'header', label_en: 'Community', label_or: 'ସମୁଦାୟ', url: '/community/', icon_key: '💬', badge_text_en: '', highlight_style: 'default', sort_order: 5, status: 'published' },
-  { id: 'nmenu-student', menu_location: 'header', label_en: 'Student Hub', label_or: 'ଛାତ୍ର ହବ୍', url: '/student/', icon_key: '🎓', badge_text_en: 'NEW', highlight_style: 'accent', sort_order: 6, status: 'published' },
-  { id: 'nmenu-about', menu_location: 'header', label_en: 'About', label_or: 'ଆମ ବିଷୟରେ', url: '/about/', icon_key: 'ℹ️', badge_text_en: '', highlight_style: 'default', sort_order: 7, status: 'published' }
+  { id: 'nmenu-about', menu_location: 'header', label_en: 'About', label_or: 'ଆମ ବିଷୟରେ', url: '/about/', icon_key: 'ℹ️', badge_text_en: '', highlight_style: 'default', sort_order: 6, status: 'published' },
+  { id: 'nmenu-student', menu_location: 'header', label_en: 'Student Hub', label_or: 'ଛାତ୍ର ହବ୍', url: '/student/', icon_key: '🎓', badge_text_en: 'NEW', highlight_style: 'accent', sort_order: 7, status: 'published' }
 ];
+
+export const CANONICAL_HEADER_ORDER = ['home', 'jobs-careers', 'schemes-benefits', 'study-library', 'community', 'about'];
+
+export function canonicalHeaderRank(item) {
+  const raw = String((item && item.url) || '').replace(/^\/+|\/+$/g, '').split('/')[0].toLowerCase();
+  if (!raw || raw === 'index.html') return 0;
+  const slug = raw === 'schemes' ? 'schemes-benefits' : (raw === 'jobs' ? 'jobs-careers' : raw);
+  const idx = CANONICAL_HEADER_ORDER.indexOf(slug);
+  return idx >= 0 ? idx : 100 + Number((item && item.sort_order) || 0);
+}
+
+export function sortCanonicalHeaderItems(items) {
+  return [...(items || [])].sort((a, b) => canonicalHeaderRank(a) - canonicalHeaderRank(b));
+}
 
 export async function ensureCategoriesNavBatch1Schema(db) {
   if (!db) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');
@@ -636,7 +650,7 @@ export async function handlePublicNavConfigApi(request, env) {
 
   return json({
     ok: true,
-    header: (hdrRes.results || []).map(formatMenuItem),
+    header: sortCanonicalHeaderItems((hdrRes.results || []).map(formatMenuItem)),
     categories: masters,
     featured_tags: (tagRes.results || []).map(formatTag)
   });
