@@ -2332,3 +2332,171 @@ body.cso-student-dashboard-page {
 @media (max-width: 768px) { .bp-content input, .bp-content select, .bp-content textarea, .bp-modal-box input, .bp-modal-box select { font-size: max(16px, 1rem); } }
 @media (prefers-reduced-motion: reduce) { .bp-sidebar, .bp-topbar, .cso-toast { transition: none !important; animation: none !important; } }
 @media (prefers-contrast: more) { .bp-panel, .student-card, .bp-nav-item.active { border: 2px solid currentColor; } .bp-nav-item:focus-visible, button:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; } }
+
+/* ==========================================================================
+   v177: Unified Candidate Hub (Light / Dark / Utkal Bharat Theme Uniformity)
+   ========================================================================== */
+.cso-uh-root {
+  display: grid;
+  gap: 16px;
+  margin: 16px 0;
+  max-width: 100%;
+  min-width: 0;
+}
+.cso-uh-card {
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-text, #0f172a);
+  border: 1px solid var(--cso-border, #e2e8f0);
+  border-radius: 16px;
+  padding: 16px 18px;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.cso-uh-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cso-uh-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: var(--cso-text, #0f172a);
+}
+.cso-uh-muted {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--cso-text-muted, #475569);
+}
+.cso-uh-pills,
+.cso-uh-actions,
+.cso-uh-empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.cso-uh-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--cso-surface-alt, #f1f5f9);
+  border: 1px solid var(--cso-border, #cbd5e1);
+  color: var(--cso-text, #0f172a);
+}
+.cso-uh-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.cso-uh-badge.is-ok {
+  background: var(--cso-badge-bg, #dcfce7);
+  color: var(--cso-badge-fg, #14532d);
+}
+.cso-uh-badge.is-info {
+  background: var(--cso-highlight-bg, #e0f2fe);
+  color: var(--cso-highlight-fg, #075985);
+}
+.cso-uh-badge.is-warn {
+  background: #fef3c7;
+  color: #92400e;
+}
+:root[data-cso-theme="dark"] .cso-uh-badge.is-warn {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fde68a;
+}
+.cso-uh-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+.cso-uh-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-bg, #faf9f6);
+  color: var(--cso-text, #0f172a);
+  font: inherit;
+}
+.cso-uh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+.cso-uh-item {
+  background: var(--cso-surface-alt, #faf9f6);
+  border: 1px solid var(--cso-border, #e2e8f0);
+  border-radius: 12px;
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.cso-uh-item-title {
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--cso-text, #0f172a);
+}
+.cso-uh-list {
+  display: grid;
+  gap: 8px;
+}
+.cso-uh-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #e2e8f0);
+  background: var(--cso-surface-alt, #faf9f6);
+}
+.cso-uh-row-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+.cso-uh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-text, #0f172a);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.cso-uh-btn:hover {
+  border-color: var(--cso-primary, #14532d);
+  color: var(--cso-primary, #14532d);
+}
+.cso-uh-btn--primary {
+  background: var(--cso-primary, #14532d);
+  border-color: var(--cso-primary, #14532d);
+  color: var(--cso-primary-fg, #ffffff);
+}
+.cso-uh-btn--primary:hover {
+  color: var(--cso-primary-fg, #ffffff);
+}
+.cso-uh-file-hidden {
+  display: none;
+}
