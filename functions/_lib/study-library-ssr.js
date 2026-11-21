@@ -564,6 +564,8 @@ export async function handlePublicStudyLibraryRoute(request, env, url) {
   if (
     pathname === '/study-library/' ||
     pathname === '/study-library/index.html' ||
+    pathname === '/study-library/early-childhood-education' ||
+    pathname.startsWith('/study-library/early-childhood-education/') ||
     pathname.startsWith('/study-library/assets/') ||
     pathname.startsWith('/study-library/generated/')
   ) {

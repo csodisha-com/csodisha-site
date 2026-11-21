@@ -83,6 +83,12 @@ assert.ok(seoJs.includes("'/study-library/early-childhood-education/'"), '_seo.j
 const studyHtml = fs.readFileSync(path.join(root, 'study-library/index.html'), 'utf8');
 assert.ok(studyHtml.includes('/study-library/early-childhood-education/'), 'study-library/index.html must link to ECE course hub');
 
+const studySsr = fs.readFileSync(path.join(root, 'functions/_lib/study-library-ssr.js'), 'utf8');
+assert.ok(
+  studySsr.includes("pathname.startsWith('/study-library/early-childhood-education/')"),
+  'study-library-ssr.js must pass /study-library/early-childhood-education/ through to static assets'
+);
+
 // 5. Verify 100% CSP compliance
 assert.equal(/<style\b/i.test(html), false, 'Zero inline <style> tags');
 assert.equal(/\sstyle="/i.test(html), false, 'Zero inline style="" attributes');
