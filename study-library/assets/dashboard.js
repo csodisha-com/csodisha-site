@@ -100,11 +100,24 @@
   };
 
   function getInitialLang() {
+    if (window.CSOStudyInteractive && typeof window.CSOStudyInteractive.getLangMode === 'function') {
+      const m = window.CSOStudyInteractive.getLangMode();
+      if (m === 'en' || m === 'or' || m === 'dual') return m;
+    }
     try {
+      const mode = localStorage.getItem('cso_study_lang_mode');
+      if (mode === 'en' || mode === 'or' || mode === 'dual') return mode;
       const pref = localStorage.getItem(LANG_PREF_KEY);
       if (pref === 'or' || pref === 'en') return pref;
     } catch {}
     return 'en';
+  }
+
+  function updateReviseAgainBadge() {
+    const btn = $('study-revise-again-btn');
+    if (!btn) return;
+    const count = window.CSOStudyInteractive ? window.CSOStudyInteractive.loadMistakeDeck().length : 0;
+    btn.textContent = `🔁 Revise Again (${count})`;
   }
 
   function showToast(msg) {
@@ -362,9 +375,11 @@
     state.activeModalItem = item;
     pushContinueItem({ id: item.id, kind: 'resource', title: item.title, icon: '📖' });
 
-    const useOdia = state.lang === 'or' && item.title_or;
-    modalTitle.textContent = useOdia ? item.title_or : item.title;
-    modalSub.textContent = useOdia ? item.title : (item.title_or || `${item.exam} · Verified Study Brief`);
+    const biling = window.CSOStudyInteractive
+      ? window.CSOStudyInteractive.resolveBilingualContent(item, state.lang)
+      : { primaryTitle: item.title, secondaryTitle: item.title_or || '', primaryDesc: item.description || '', secondaryDesc: item.description_or || '', fallbackNote: false };
+    modalTitle.textContent = biling.primaryTitle;
+    modalSub.textContent = biling.secondaryTitle || `${item.exam} · Verified Study Brief`;
 
     modalBadges.replaceChildren();
     modalBadges.append(
@@ -379,10 +394,33 @@
 
     const overviewBox = el('div', 'study-modal-box');
     overviewBox.appendChild(el('h3', '', 'Overview & Official Scope'));
-    const descText = state.lang === 'or' && item.description_or ? item.description_or : (item.description || '');
-    overviewBox.appendChild(el('p', 'study-card-desc', descText));
-    if (state.lang === 'en' && item.description_or) {
-      overviewBox.appendChild(el('p', 'study-card-alt', item.description_or));
+    if (biling.fallbackNote) {
+      overviewBox.appendChild(el('p', 'study-fallback-note', 'ଓଡ଼ିଆ ଅନୁବାଦ ଉପଲବ୍ଧ ନାହିଁ · Showing English'));
+    }
+    overviewBox.appendChild(el('p', 'study-card-desc', biling.primaryDesc));
+    if (biling.secondaryDesc) {
+      overviewBox.appendChild(el('p', 'study-card-alt', biling.secondaryDesc));
+    }
+    if (window.CSOStudyInteractive) {
+      const readerTools = el('div', 'study-revise-actions');
+      if (window.CSOStudyInteractive.canSpeak()) {
+        const listenBtn = el('button', 'study-btn', '🔊 Listen');
+        listenBtn.type = 'button';
+        listenBtn.addEventListener('click', () => {
+          window.CSOStudyInteractive.speakText(`${biling.primaryTitle}. ${biling.primaryDesc}`, 'en-IN');
+        });
+        readerTools.appendChild(listenBtn);
+      }
+      const flagBtn = el('button', 'study-btn study-btn--warn', '🔁 Need Revision');
+      flagBtn.type = 'button';
+      flagBtn.addEventListener('click', () => {
+        const ans = Array.isArray(item.key_takeaways) && item.key_takeaways.length ? item.key_takeaways[0] : biling.primaryDesc;
+        window.CSOStudyInteractive.addMistakeItem({ id: `study-${item.id}`, exam: item.exam || 'Study Library', q: biling.primaryTitle, a: ans });
+        updateReviseAgainBadge();
+        showToast('Added to Revise Again deck');
+      });
+      readerTools.appendChild(flagBtn);
+      overviewBox.appendChild(readerTools);
     }
     modalBody.appendChild(overviewBox);
 
@@ -447,14 +485,15 @@
     }
     card.appendChild(top);
 
-    const showOr = state.lang === 'or';
-    const primaryTitle = showOr && item.title_or ? item.title_or : item.title;
-    const secondaryTitle = showOr ? item.title : item.title_or;
-    card.appendChild(el('h3', 'study-card-title', primaryTitle));
-    if (secondaryTitle) card.appendChild(el('p', 'study-card-alt', secondaryTitle));
+    const biling = window.CSOStudyInteractive
+      ? window.CSOStudyInteractive.resolveBilingualContent(item, state.lang)
+      : { primaryTitle: item.title, secondaryTitle: item.title_or || '', primaryDesc: item.description || '', secondaryDesc: item.description_or || '', fallbackNote: false };
+    card.appendChild(el('h3', 'study-card-title', biling.primaryTitle));
+    if (biling.secondaryTitle) card.appendChild(el('p', 'study-card-alt', biling.secondaryTitle));
+    if (biling.fallbackNote) card.appendChild(el('span', 'study-fallback-note', 'ଓଡ଼ିଆ ଅନୁବାଦ ଉପଲବ୍ଧ ନାହିଁ · EN'));
 
-    const primaryDesc = showOr && item.description_or ? item.description_or : item.description;
-    if (primaryDesc) card.appendChild(el('p', 'study-card-desc', primaryDesc));
+    if (biling.primaryDesc) card.appendChild(el('p', 'study-card-desc', biling.primaryDesc));
+    if (biling.secondaryDesc) card.appendChild(el('p', 'study-card-alt', biling.secondaryDesc));
 
     const metaRow = el('div', 'study-card-meta');
     if (item.year) metaRow.appendChild(el('span', '', `📅 ${item.year} Cycle`));
@@ -1201,30 +1240,62 @@
   function wireEvents() {
     initSidebarControls();
 
-    // Language toggle buttons
-    document.querySelectorAll('.study-lang-btn').forEach(btn => {
-      btn.classList.toggle('is-active', btn.dataset.lang === state.lang);
-      btn.addEventListener('click', () => {
-        state.lang = btn.dataset.lang === 'or' ? 'or' : 'en';
-        try { localStorage.setItem(LANG_PREF_KEY, state.lang); } catch {}
-        document.querySelectorAll('.study-lang-btn').forEach(b => b.classList.toggle('is-active', b.dataset.lang === state.lang));
-        renderMaterials();
-        renderOverview();
-        if (state.activeModalItem) openStudyModal(state.activeModalItem);
+    function applyLangMode(nextMode) {
+      state.lang = window.CSOStudyInteractive
+        ? window.CSOStudyInteractive.setLangMode(nextMode)
+        : (nextMode === 'or' || nextMode === 'dual' ? nextMode : 'en');
+      try {
+        localStorage.setItem('cso_study_lang_mode', state.lang);
+        localStorage.setItem(LANG_PREF_KEY, state.lang === 'or' ? 'or' : 'en');
+      } catch {}
+      document.querySelectorAll('.study-lang-btn').forEach(b => {
+        const active = b.dataset.lang === state.lang;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-pressed', String(active));
       });
+      renderMaterials();
+      renderOverview();
+      if (state.activeModalItem) openStudyModal(state.activeModalItem);
+    }
+
+    // 3-way Language toggle buttons (EN | ଓଡ଼ିଆ | Dual)
+    document.querySelectorAll('.study-lang-btn').forEach(btn => {
+      const active = btn.dataset.lang === state.lang;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', String(active));
+      btn.addEventListener('click', () => applyLangMode(btn.dataset.lang || 'en'));
     });
 
     const slLangToggle = $('sl-lang-toggle');
     if (slLangToggle) {
       slLangToggle.addEventListener('click', () => {
-        state.lang = state.lang === 'or' ? 'en' : 'or';
-        try { localStorage.setItem(LANG_PREF_KEY, state.lang); } catch {}
-        document.querySelectorAll('.study-lang-btn').forEach(b => b.classList.toggle('is-active', b.dataset.lang === state.lang));
-        renderMaterials();
-        renderOverview();
-        if (state.activeModalItem) openStudyModal(state.activeModalItem);
+        const next = state.lang === 'en' ? 'or' : (state.lang === 'or' ? 'dual' : 'en');
+        applyLangMode(next);
       });
     }
+
+    const fcOpenBtn = $('study-flashcards-open');
+    if (fcOpenBtn && window.CSOStudyInteractive) {
+      fcOpenBtn.addEventListener('click', () => {
+        window.CSOStudyInteractive.openFlashcardsModal({
+          resources: state.resources,
+          langMode: state.lang,
+          onDeckChange: updateReviseAgainBadge,
+          onToast: showToast
+        });
+      });
+    }
+
+    const reviseBtn = $('study-revise-again-btn');
+    if (reviseBtn && window.CSOStudyInteractive) {
+      reviseBtn.addEventListener('click', () => {
+        window.CSOStudyInteractive.openReviseAgainModal({
+          onDeckChange: updateReviseAgainBadge,
+          onToast: showToast
+        });
+      });
+    }
+    updateReviseAgainBadge();
 
     if (studyQInput) {
       let t;

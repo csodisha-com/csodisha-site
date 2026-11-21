@@ -4356,3 +4356,109 @@ body {
 @media (max-width: 768px) { input, select, textarea { font-size: max(16px, 1rem); } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 @media (prefers-contrast: more) { .explorer-items > *, .dashboard-grid > * { border: 2px solid currentColor; } :focus-visible { outline: 3px solid currentColor; outline-offset: 2px; } }
+
+/* ==========================================================================
+   v175: Interactive Study Library, 3-Way Bilingual Toggle, Flip Flashcards,
+   Web Speech API & Revise Again Mistake Deck (Theme-Reactive, Zero Inline Styles)
+   ========================================================================== */
+.study-flashcards-btn,
+.study-revise-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #CBD5E1);
+  background: var(--cso-surface, #FFFFFF);
+  color: var(--cso-text, #0F172A);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.study-flashcards-btn:hover,
+.study-revise-btn:hover {
+  border-color: var(--cso-primary, #0F4C3A);
+  color: var(--cso-primary, #0F4C3A);
+  background: var(--cso-surface-alt, #F3FAF6);
+}
+.study-fallback-note {
+  display: inline-block;
+  margin: 0 0 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: var(--cso-badge-bg, #E6F4EF);
+  color: var(--cso-badge-fg, #0F4C3A);
+}
+.study-fc-card {
+  width: 100%;
+  min-height: 190px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border, #CBD5E1);
+  background: var(--cso-surface-alt, #FAF9F6);
+  color: var(--cso-text, #0F172A);
+  text-align: left;
+  display: grid;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.16s ease;
+}
+.study-fc-card:hover {
+  border-color: var(--cso-primary, #0F4C3A);
+  transform: translateY(-1px);
+}
+.study-fc-card.is-flipped {
+  background: var(--cso-highlight-bg, #E6F4EF);
+  border-color: var(--cso-primary, #0F4C3A);
+}
+.study-fc-text {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--cso-text, #0F172A);
+}
+.study-fc-sub {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--cso-primary, #0F4C3A);
+}
+.study-fc-hint {
+  font-size: 0.78rem;
+  color: var(--cso-text-muted, #64748B);
+}
+.study-fc-controls,
+.study-revise-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.study-btn--warn {
+  border-color: var(--cso-accent, #B45309);
+  color: var(--cso-accent, #B45309);
+}
+.study-revise-card {
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border, #CBD5E1);
+  background: var(--cso-surface-alt, #FAF9F6);
+  color: var(--cso-text, #0F172A);
+  display: grid;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .study-lang-btn,
+  .study-flashcards-btn,
+  .study-revise-btn,
+  .study-fc-controls .study-btn,
+  .study-revise-actions .study-btn {
+    min-height: 44px;
+    padding: 8px 12px;
+  }
+}

@@ -8,10 +8,11 @@
   <meta name="description" content="Verified Odisha &amp; National exam syllabi, solved PYQs, Odisha GK capsules, BSE/CHSE textbooks, UGC NET modules, and 1,681-node academic directory on Common Sense Odisha.">
   <!-- CSO-IN homepage header stylesheet v1 -->
   <link rel="stylesheet" href="/assets/style.css?v=20261121v173">
-  <link rel="stylesheet" href="./assets/dashboard.css?v=20261121v167">
+  <link rel="stylesheet" href="./assets/dashboard.css?v=20261121v175">
   <script src="/assets/js/cso-idb.js?v=20261114f" defer></script>
   <script src="/assets/js/public-content.js?v=20261114f" defer></script>
-  <script src="./assets/dashboard.js?v=20261121v169" defer></script>
+  <script src="./assets/study-interactive.js?v=20261121v175" defer></script>
+  <script src="./assets/dashboard.js?v=20261121v175" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <script type="application/ld+json">
   {
@@ -178,9 +179,12 @@
             </div>
             <div class="live-study-header-actions">
               <div class="study-lang-toggle" role="group" aria-label="Material display language">
-                <button type="button" class="study-lang-btn is-active" data-lang="en">EN</button>
-                <button type="button" class="study-lang-btn" data-lang="or">ଓଡ଼ିଆ</button>
+                <button type="button" class="study-lang-btn is-active" data-lang="en" aria-pressed="true">EN</button>
+                <button type="button" class="study-lang-btn" data-lang="or" aria-pressed="false">ଓଡ଼ିଆ</button>
+                <button type="button" class="study-lang-btn" data-lang="dual" aria-pressed="false">Dual</button>
               </div>
+              <button type="button" id="study-flashcards-open" class="study-flashcards-btn">🗂 Quick Flashcards</button>
+              <button type="button" id="study-revise-again-btn" class="study-revise-btn">🔁 Revise Again (0)</button>
               <button type="button" id="study-goal-match" class="study-goal-btn" aria-pressed="false">★ Match My Dashboard Goals</button>
               <button type="button" id="study-filter-reset" class="study-reset-btn" hidden>Reset</button>
             </div>
