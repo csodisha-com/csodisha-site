@@ -1234,6 +1234,176 @@
     host.appendChild(form);
   }
 
+  function computeReadinessTelemetry() {
+    // 1. Active Tracked Deadlines
+    const tracker = window.CSO_DEADLINE_TRACKER;
+    const rawDeadlines = tracker && typeof tracker.load === 'function'
+      ? tracker.load()
+      : readJsonStorage('cso_tracked_deadlines_v1', []);
+    const deadlinesList = Array.isArray(rawDeadlines) ? rawDeadlines : [];
+    let activeDeadlines = 0;
+    let nearestDays = null;
+    let nearestTitle = '';
+    deadlinesList.forEach(item => {
+      if (!item || typeof item !== 'object') return;
+      let days = null;
+      if (tracker && typeof tracker.calculateDaysRemaining === 'function') {
+        days = tracker.calculateDaysRemaining(item.lastDate);
+      } else if (item.lastDate) {
+        const m = String(item.lastDate).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (m) {
+          const now = new Date();
+          const targetUtc = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+          const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+          days = Math.round((targetUtc - todayUtc) / 86400000);
+        }
+      }
+      if (days === null || days >= 0) {
+        activeDeadlines += 1;
+        if (days !== null && (nearestDays === null || days < nearestDays)) {
+          nearestDays = days;
+          nearestTitle = String(item.title || '').trim();
+        }
+      }
+    });
+
+    // 2. Document & OTR Readiness (X / 8)
+    const docApi = window.CSO_DOCUMENT_READINESS;
+    let docsReady = 0;
+    let docsTotal = 8;
+    if (docApi && typeof docApi.load === 'function' && typeof docApi.getSummary === 'function') {
+      const docSum = docApi.getSummary(docApi.load());
+      docsReady = Number(docSum.ready || 0);
+      docsTotal = Number(docSum.total || 8);
+    } else {
+      const rawDoc = readJsonStorage('cso_doc_readiness_v1', {});
+      const checked = rawDoc && rawDoc.checked && typeof rawDoc.checked === 'object' ? rawDoc.checked : {};
+      docsReady = Object.keys(checked).filter(k => Boolean(checked[k])).length;
+    }
+
+    // 3. Syllabus Topics Completed (across OPSC/OSSC/OSSSC/OTET hubs)
+    const sylApi = window.CSO_SYLLABUS_VAULT_API;
+    let syllabusDone = 0;
+    let syllabusTotal = 0;
+    if (sylApi && Array.isArray(sylApi.VAULT) && typeof sylApi.loadProgress === 'function' && typeof sylApi.getExamStats === 'function') {
+      const progress = sylApi.loadProgress();
+      sylApi.VAULT.forEach(ex => {
+        const st = sylApi.getExamStats(ex.id, progress);
+        syllabusDone += Number(st.done || 0);
+        syllabusTotal += Number(st.total || 0);
+      });
+    } else {
+      const rawSyl = readJsonStorage('cso_syllabus_progress_v1', {});
+      if (rawSyl && typeof rawSyl === 'object') {
+        Object.keys(rawSyl).forEach(examId => {
+          const examMap = rawSyl[examId];
+          if (examMap && typeof examMap === 'object') {
+            Object.keys(examMap).forEach(topicId => {
+              if (examMap[topicId]) syllabusDone += 1;
+            });
+          }
+        });
+      }
+    }
+
+    // 4. CBT Mocks & Daily Quiz Streak
+    const syncedAttempts = Array.isArray(state.attempts) ? state.attempts.length : 0;
+    const localCbt = readJsonStorage('cso_cbt_history_v1', []);
+    const manualScores = readJsonStorage(SCORES_KEY, []);
+    const cbtAttempts = syncedAttempts
+      + (Array.isArray(localCbt) ? localCbt.length : 0)
+      + (Array.isArray(manualScores) ? manualScores.length : 0);
+
+    const caStreakObj = readJsonStorage('cso_ca_quiz_streak_v1', { streak: 0 });
+    const capsuleStreakObj = readJsonStorage('cso_capsule_streak_v1', { streak: 0 });
+    const cbtStreakObj = readJsonStorage('cso_cbt_streak_v1', { count: 0 });
+    const currentStreak = Math.max(
+      Number(caStreakObj && caStreakObj.streak ? caStreakObj.streak : 0),
+      Number(capsuleStreakObj && capsuleStreakObj.streak ? capsuleStreakObj.streak : 0),
+      Number(cbtStreakObj && cbtStreakObj.count ? cbtStreakObj.count : 0)
+    );
+
+    return {
+      activeDeadlines,
+      nearestDays,
+      nearestTitle,
+      docsReady,
+      docsTotal,
+      syllabusDone,
+      syllabusTotal,
+      cbtAttempts,
+      currentStreak
+    };
+  }
+
+  function renderReadinessSummaryCard() {
+    const host = document.getElementById('cso-readiness-summary-card');
+    if (!host) return;
+    clear(host);
+
+    const t = computeReadinessTelemetry();
+
+    const head = el('div', 'bp-panel-header cso-readiness-summary-head');
+    const titleWrap = el('div', 'bp-panel-title');
+    titleWrap.appendChild(el('span', '', '📊'));
+    titleWrap.appendChild(el('span', '', 'Candidate Exam Readiness Overview'));
+    head.appendChild(titleWrap);
+
+    const printBtn = el('button', 'cso-btn cso-btn-primary cso-readiness-print-btn', '🖨️ Print / Save Readiness Plan');
+    printBtn.type = 'button';
+    printBtn.id = 'cso-readiness-print-btn';
+    printBtn.addEventListener('click', () => window.print());
+    head.appendChild(printBtn);
+    host.appendChild(head);
+
+    const grid = el('div', 'cso-readiness-summary-grid');
+
+    function addStatCard(label, valueText, subText, isUrgent) {
+      const card = el('div', 'cso-readiness-stat' + (isUrgent ? ' cso-readiness-stat--urgent' : ''));
+      card.appendChild(el('span', 'cso-readiness-stat__label', label));
+      card.appendChild(el('strong', 'cso-readiness-stat__value', valueText));
+      card.appendChild(el('span', 'cso-readiness-stat__sub', subText));
+      grid.appendChild(card);
+    }
+
+    let deadlineSub = 'No upcoming deadlines tracked';
+    let deadlineUrgent = false;
+    if (t.activeDeadlines > 0) {
+      if (t.nearestDays === 0) {
+        deadlineSub = `Nearest closes Today${t.nearestTitle ? ' · ' + t.nearestTitle : ''}`;
+        deadlineUrgent = true;
+      } else if (t.nearestDays === 1) {
+        deadlineSub = `Nearest in 1 day${t.nearestTitle ? ' · ' + t.nearestTitle : ''}`;
+        deadlineUrgent = true;
+      } else if (t.nearestDays !== null) {
+        deadlineSub = `Nearest in ${t.nearestDays} days${t.nearestTitle ? ' · ' + t.nearestTitle : ''}`;
+        deadlineUrgent = t.nearestDays <= 7;
+      } else {
+        deadlineSub = `${t.activeDeadlines} notice(s) saved`;
+      }
+    }
+    addStatCard('Active Tracked Deadlines', String(t.activeDeadlines), deadlineSub, deadlineUrgent);
+
+    const docSub = t.docsReady >= t.docsTotal
+      ? 'All OTR & KYC documents verified'
+      : `${t.docsTotal - t.docsReady} document(s) pending verification`;
+    addStatCard('Document & OTR Readiness', `${t.docsReady} / ${t.docsTotal} verified`, docSub, false);
+
+    const sylValue = t.syllabusTotal > 0 ? `${t.syllabusDone} / ${t.syllabusTotal}` : String(t.syllabusDone);
+    const sylSub = t.syllabusTotal > 0
+      ? `${Math.round((t.syllabusDone / t.syllabusTotal) * 100)}% completed across OPSC/OSSC/OSSSC/OTET`
+      : 'Topics completed across exam hubs';
+    addStatCard('Syllabus Topics Completed', sylValue, sylSub, false);
+
+    const cbtValue = `${t.cbtAttempts} Mocks · ${t.currentStreak}d Streak`;
+    const cbtSub = t.currentStreak > 0
+      ? `Active ${t.currentStreak}-day study & quiz streak`
+      : 'Complete a mock test or daily quiz to build streak';
+    addStatCard('CBT Mocks & Daily Quiz Streak', cbtValue, cbtSub, false);
+
+    host.appendChild(grid);
+  }
+
   function renderTrackedDeadlinesPanel() {
     const host = document.getElementById('cso-deadlines-panel');
     const tracker = window.CSO_DEADLINE_TRACKER;
@@ -1309,6 +1479,7 @@
       removeBtn.addEventListener('click', () => {
         tracker.untrackItem(item.id);
         renderTrackedDeadlinesPanel();
+        renderReadinessSummaryCard();
       });
       actions.appendChild(removeBtn);
 
@@ -1366,6 +1537,7 @@
         badge.textContent = `${s.ready} / ${s.total} Ready`;
         prog.value = s.ready;
         pctText.textContent = `${s.pct}%`;
+        renderReadinessSummaryCard();
       });
       label.appendChild(cb);
 
@@ -1927,6 +2099,7 @@
   function renderAllPersonalizedViews() {
     renderProfileAndControls();
     renderFocusBar();
+    renderReadinessSummaryCard();
     renderReadinessHero();
     renderTargetExamCards();
     renderPriorityTopics();

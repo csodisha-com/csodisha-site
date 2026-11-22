@@ -1859,26 +1859,67 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
   background: rgba(220, 38, 38, 0.12);
 }
 
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
 @media print {
+  #header-top,
+  #cso-main-navbar,
+  .site-header__top,
+  .site-header__nav,
+  footer,
+  .cso-footer,
   .bp-sidebar,
   .bp-topbar,
   .bp-bottom-nav,
+  .bp-mobile-bottom-nav,
+  .cso-focus-bar,
+  #cso-profile-card,
+  #cso-unified-hub-root,
+  #cso-watchlist-panel,
+  #cso-current-affairs-panel,
   #cso-goal-alerts-panel,
-  #cso-print-plan-btn {
+  .cso-readiness-print-btn,
+  #cso-readiness-print-btn,
+  #cso-print-plan-btn,
+  .cso-btn,
+  .bp-panel-link {
     display: none !important;
   }
+  body.cso-student-dashboard-page {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+  .bp-app-layout,
+  .bp-main-wrapper,
+  .bp-content,
   .bp-shell {
     display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
   .bp-tab-view {
     display: none !important;
   }
+  #tab-overview,
   #tab-my-learning {
     display: block !important;
   }
+  #cso-readiness-summary-card,
+  #cso-deadlines-panel,
+  #cso-doc-readiness-panel,
+  #cso-syllabus-progress-panel,
   .cso-print-sheet {
-    border: 0 !important;
+    border: 1px solid #cbd5e1 !important;
     box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 12px !important;
+  }
+  .cso-readiness-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
@@ -2776,4 +2817,64 @@ body.cso-student-dashboard-page {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
+}
+
+/* v210: Unified Candidate Exam Readiness Summary Card */
+.cso-readiness-summary-head {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cso-readiness-print-btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.cso-readiness-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.cso-readiness-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border, #e2e8f0);
+  background: var(--cso-surface-alt, #f8fafc);
+}
+
+.cso-readiness-stat--urgent {
+  border-color: rgba(220, 38, 38, 0.4);
+  background: var(--cso-danger-soft, rgba(220, 38, 38, 0.08));
+}
+
+.cso-readiness-stat__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cso-muted, #475569);
+}
+
+.cso-readiness-stat__value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--cso-ink, #0f172a);
+  line-height: 1.25;
+}
+
+.cso-readiness-stat__sub {
+  font-size: 0.8rem;
+  color: var(--cso-muted, #64748b);
+  overflow-wrap: anywhere;
 }
