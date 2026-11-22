@@ -565,6 +565,7 @@
         toast('Archived expired job');
       }
     });
+    window.CSOFastPublish.renderBroadcastDigestPanel(main, jobsList);
 
     main.appendChild(el('h2', { text: 'Needs attention' }));
     if (!attentionItems.length) {

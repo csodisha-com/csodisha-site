@@ -556,6 +556,143 @@
     return { node: panel, setDrafts: function (items) { drafts = items || []; renderQueue(); } };
   }
 
+  /* ---------- v184: Daily WhatsApp & Telegram Digest Generator ---------- */
+  function formatBroadcastDigest(items, options) {
+    var opts = options || {};
+    var lang = opts.lang === 'or' ? 'or' : 'en';
+    var filter = opts.filter || 'active';
+    var nowMs = opts.nowMs === undefined ? Date.now() : opts.nowMs;
+    var now = new Date(nowMs);
+    var startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    var in7Days = startOfToday + 7 * 86400000;
+
+    var list = (items || []).filter(function (j) {
+      if (!j || !j.title) return false;
+      var st = String(j.status || 'published').toLowerCase();
+      if (st === 'archived') return false;
+      if (filter !== 'all' && st !== 'published' && st !== 'active') return false;
+      if (filter === 'closing-soon') {
+        if (!j.last_date) return false;
+        var t = Date.parse(j.last_date);
+        return !isNaN(t) && t >= startOfToday && t <= in7Days;
+      }
+      if (filter === 'active' && j.last_date) {
+        return !isExpired(j.last_date, nowMs);
+      }
+      return true;
+    }).slice(0, 12);
+
+    var header = lang === 'or'
+      ? '*📢 କମନ୍ ସେନ୍ସ ଓଡ଼ିଶା — ଦୈନିକ ନିଯୁକ୍ତି ସୂଚନା*'
+      : '*📢 Common Sense Odisha — Daily Job Alerts*';
+    var sub = lang === 'or'
+      ? (filter === 'closing-soon' ? '⏳ ଶେଷ ତାରିଖ ନିକଟତର (≤ ୭ ଦିନ)' : '✅ ସକ୍ରିୟ ସରକାରୀ ନିଯୁକ୍ତି ଏବଂ ପରୀକ୍ଷା')
+      : (filter === 'closing-soon' ? '⏳ Closing Soon (Within 7 Days)' : '✅ Verified Active Recruitment & Exam Alerts');
+
+    if (!list.length) {
+      var emptyMsg = lang === 'or'
+        ? 'ବର୍ତ୍ତମାନ କୌଣସି ମିଳୁଥିବା ସକ୍ରିୟ ବିଜ୍ଞପ୍ତି ନାହିଁ।'
+        : 'No matching active job alerts found for this filter.';
+      return header + '\n' + sub + '\n\n' + emptyMsg + '\n\n🔗 https://csodisha.com/jobs-careers/';
+    }
+
+    var lines = list.map(function (j) {
+      var org = String(j.organisation || j.organization || 'Odisha Govt').trim();
+      var dateText = j.last_date ? String(j.last_date) : (lang === 'or' ? 'ଶୀଘ୍ର ଘୋଷଣା' : 'TBA');
+      var slugOrId = encodeURIComponent(String(j.slug || j.id || ''));
+      var url = slugOrId ? 'https://csodisha.com/jobs-careers/?item=' + slugOrId : 'https://csodisha.com/jobs-careers/';
+      var label = lang === 'or' ? 'ଶେଷ ତାରିଖ' : 'Last Date';
+      return '• *' + String(j.title).trim() + '*\n  ' + org + ' | ' + label + ': ' + dateText + '\n  ' + url;
+    });
+
+    var footer = lang === 'or'
+      ? '🌐 ସମସ୍ତ ବିଜ୍ଞପ୍ତି: https://csodisha.com/jobs-careers/\n📲 Telegram: https://t.me/csodisha'
+      : '🌐 Browse all alerts: https://csodisha.com/jobs-careers/\n📲 Telegram: https://t.me/csodisha';
+
+    return header + '\n' + sub + '\n\n' + lines.join('\n\n') + '\n\n' + footer;
+  }
+
+  function renderBroadcastDigestPanel(container, jobsList) {
+    var lang = 'en';
+    var filter = 'active';
+    var panel = el('section', 'panel cso-fp-digest');
+    panel.setAttribute('aria-label', 'Daily WhatsApp and Telegram Digest');
+
+    var head = el('div', 'cso-fp-head');
+    head.appendChild(el('strong', 'cso-fp-title', '📲 Daily WhatsApp & Telegram Digest'));
+    panel.appendChild(head);
+
+    var controls = el('div', 'cso-fp-digest-controls');
+    var langGroup = el('div', 'cso-fp-digest-group');
+    var bEn = btn('English', 'btn sm primary', function () { lang = 'en'; syncToggle(); paint(); });
+    var bOr = btn('ଓଡ଼ିଆ', 'btn sm', function () { lang = 'or'; syncToggle(); paint(); });
+    langGroup.appendChild(bEn);
+    langGroup.appendChild(bOr);
+
+    var filterSel = el('select', 'cso-fp-input cso-fp-digest-select');
+    filterSel.setAttribute('aria-label', 'Digest filter');
+    [
+      ['active', 'Active Jobs'],
+      ['closing-soon', 'Closing Soon (≤ 7 Days)'],
+      ['all', 'All Active']
+    ].forEach(function (opt) {
+      var o = el('option', null, opt[1]);
+      o.value = opt[0];
+      filterSel.appendChild(o);
+    });
+    filterSel.addEventListener('change', function () { filter = filterSel.value; paint(); });
+
+    var genBtn = btn('Generate Digest', 'btn sm', function () { paint(); });
+    controls.appendChild(langGroup);
+    controls.appendChild(filterSel);
+    controls.appendChild(genBtn);
+    panel.appendChild(controls);
+
+    var outArea = el('textarea', 'cso-fp-json cso-fp-digest-out');
+    outArea.rows = 8;
+    outArea.readOnly = true;
+    outArea.setAttribute('aria-label', 'Generated WhatsApp and Telegram digest text');
+    panel.appendChild(outArea);
+
+    var actions = el('div', 'cso-fp-draft-actions');
+    var statusEl = el('span', 'hint cso-fp-digest-status');
+    var copyBtn = btn('📋 Copy Digest', 'btn sm primary', function () {
+      var text = outArea.value || '';
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(text).then(function () {
+          statusEl.textContent = '✓ Copied digest to clipboard!';
+        }).catch(function () {
+          statusEl.textContent = 'Select and copy the digest text above.';
+        });
+      } else {
+        outArea.select();
+        statusEl.textContent = 'Digest selected — press Ctrl+C to copy.';
+      }
+    });
+    var waLink = el('a', 'btn sm', '📲 Share on WhatsApp');
+    waLink.target = '_blank';
+    waLink.rel = 'noopener noreferrer';
+    actions.appendChild(copyBtn);
+    actions.appendChild(waLink);
+    actions.appendChild(statusEl);
+    panel.appendChild(actions);
+
+    function syncToggle() {
+      bEn.classList.toggle('primary', lang === 'en');
+      bOr.classList.toggle('primary', lang === 'or');
+    }
+    function paint() {
+      var text = formatBroadcastDigest(jobsList, { lang: lang, filter: filter });
+      outArea.value = text;
+      waLink.href = 'https://wa.me/?text=' + encodeURIComponent(text);
+    }
+
+    syncToggle();
+    paint();
+    container.appendChild(panel);
+    return panel;
+  }
+
   root.CSOFastPublish = {
     parseQuestionsBlock: parseQuestionsBlock,
     syncQuestionsBlock: syncQuestionsBlock,
@@ -568,6 +705,8 @@
     validateDraftItem: validateDraftItem,
     parseDraftQueueJson: parseDraftQueueJson,
     createGovDraftQueuePanel: createGovDraftQueuePanel,
+    formatBroadcastDigest: formatBroadcastDigest,
+    renderBroadcastDigestPanel: renderBroadcastDigestPanel,
     isExpired: isExpired,
     buildTriage: buildTriage,
     createRowBuilder: createRowBuilder,
