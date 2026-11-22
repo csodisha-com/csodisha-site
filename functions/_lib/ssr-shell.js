@@ -3,7 +3,7 @@
 import { hydrateJobsFeedResponse, renderSchemeCard } from './ssr-feeds.js';
 
 export const CSO_SHELL_HEAD_LINKS = [
-  '<link rel="stylesheet" href="/assets/style.css?v=20261121v176">',
+  '<link rel="stylesheet" href="/assets/style.css?v=20261122v181">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-detail-page.css">',
   '<script src="/assets/shared-header.js?v=20261121v171" defer></script>',
@@ -12,7 +12,7 @@ export const CSO_SHELL_HEAD_LINKS = [
 
 export const CSO_SHELL_HEADER = `<header class="top site-header__top" id="header-top" role="banner">
 <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
-  <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36">
+  <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36" fetchpriority="high" decoding="async">
 </a>
 <span id="ctl" class="cso-contents"></span>
 <span class="sp"></span>
@@ -27,7 +27,7 @@ export const CSO_SHELL_HEADER = `<header class="top site-header__top" id="header
 export const CSO_SHELL_FOOTER = `<footer><div class="w cso-footer-grid">
   <div class="cso-footer-zone1">
     <div class="cso-footer-brand-header">
-      <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-footer-logo cso-brand-emblem" width="36" height="36">
+      <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-footer-logo cso-brand-emblem" width="36" height="36" loading="lazy" decoding="async">
       <div class="cso-footer-title">Common Sense Odisha</div>
     </div>
     <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
@@ -61,7 +61,7 @@ export const CSO_SHELL_FOOTER = `<footer><div class="w cso-footer-grid">
     </div>
   </div>
   <div class="cso-footer-zone3">
-    <img class="cso-footer-odisha-map" src="/assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy">
+    <img class="cso-footer-odisha-map" src="/assets/odisha-footer-map.svg" alt="Odisha vector outline" width="81" height="64" loading="lazy" decoding="async">
     <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
     <div class="cso-footer-lang-pills">
       <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>

@@ -9144,3 +9144,16 @@ pre { overflow-x: auto; overscroll-behavior-x: contain; }
     min-height: 44px;
   }
 }
+
+/* v181: Core Web Vitals & Budget-Phone Speed Pass */
+footer,
+.cso-trending-topics-sec,
+.cso-tools-sec,
+.cso-action-hub-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+}
+
+.cso-footer-odisha-map {
+  aspect-ratio: 960 / 760;
+}
