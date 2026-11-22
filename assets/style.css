@@ -35,7 +35,7 @@ nav a.on{color:#ffb020;border-bottom:3px solid #ffb020;font-weight:700}
 .sr i{flex:1;text-align:left;font-style:normal}.sr b{background:var(--bl);color:#fff;border-radius:10px;padding:12px 16px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .chips span{background:var(--control-bg);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--cso-text)}
-.lu{padding:14px}.lu h3{margin:0 0 10px;color:var(--bl);display:flex;justify-content:space-between;font-size:18px}.lu h3 a{font-size:13px}
+.lu{padding:14px}.lu h2,.lu h3{margin:0 0 10px;color:var(--bl);display:flex;justify-content:space-between;font-size:18px}.lu h2 a,.lu h3 a{font-size:13px}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.tabs button{background:var(--control-bg);color:var(--tx);border-radius:6px;padding:5px 12px;font-size:12px;border:1px solid var(--bd)}.tabs button.a{background:var(--bl);color:#fff;border-color:var(--bl)}
 .it{display:grid;grid-template-columns:60px 1fr auto;gap:10px;padding:9px 0;border-top:1px solid var(--bd);align-items:center}
 .tg{font-size:10px;font-weight:700;text-align:center;padding:10px 2px;border-radius:4px;border-left:3px solid var(--or);background:#fff1e8}
@@ -289,6 +289,7 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible,input:focus-visibl
   border-color: var(--link-color);
 }
 
+.lu h2,
 .lu h3,
 .go,
 .crumb a,
@@ -9160,4 +9161,35 @@ footer,
 
 .cso-footer-odisha-map {
   aspect-ratio: 960 / 760;
+}
+
+/* v203: Homepage CLS 0.00 reservation for async-hydrated header, nav, and feed containers */
+.site-header__top {
+  min-height: 60px;
+}
+.site-header__top .acct {
+  min-height: 40px;
+}
+.site-header__nav {
+  min-height: 58px;
+}
+.lu {
+  min-height: 410px;
+}
+.lu .it {
+  min-height: 58px;
+}
+.tools-grid {
+  min-height: 150px;
+}
+.tool-card {
+  min-height: 70px;
+}
+img.cso-brand-emblem {
+  aspect-ratio: 1 / 1;
+}
+@media (max-width: 768px) {
+  .site-header__nav {
+    min-height: 50px;
+  }
 }

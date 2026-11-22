@@ -20,7 +20,7 @@ const STATIC_SITEMAP_ROUTES = [
   { path: '/current-affairs/', changefreq: 'daily', priority: '0.9' },
   { path: '/mock-tests/', changefreq: 'daily', priority: '0.8' },
   { path: '/resources/', changefreq: 'weekly', priority: '0.8' },
-  { path: '/schemes-benefits/', changefreq: 'weekly', priority: '0.7' },
+  { path: '/schemes/', changefreq: 'weekly', priority: '0.7' },
   { path: '/study-library/', changefreq: 'weekly', priority: '0.8' },
   { path: '/study-library/early-childhood-education/', changefreq: 'weekly', priority: '0.8' },
   { path: '/study-library/otet-osstet/', changefreq: 'weekly', priority: '0.8' },
@@ -160,7 +160,7 @@ export async function handleSitemapXml(request, env) {
       for (const row of (schemesRes.results || [])) {
         if (!row.slug) continue;
         urls.push({
-          loc: `${SITE_ORIGIN}/schemes-benefits/?scheme=${encodeURIComponent(row.slug)}`,
+          loc: `${SITE_ORIGIN}/schemes/?scheme=${encodeURIComponent(row.slug)}`,
           lastmod: toIsoLastMod(row.updated_at),
           changefreq: 'weekly',
           priority: '0.7'
@@ -180,7 +180,7 @@ export async function handleSitemapXml(request, env) {
       for (const row of (schemeGroupsRes.results || [])) {
         if (!row.slug) continue;
         urls.push({
-          loc: `${SITE_ORIGIN}/schemes-benefits/?group=${encodeURIComponent(row.slug)}`,
+          loc: `${SITE_ORIGIN}/schemes/?group=${encodeURIComponent(row.slug)}`,
           lastmod: toIsoLastMod(row.updated_at),
           changefreq: 'weekly',
           priority: '0.6'
@@ -471,7 +471,7 @@ export async function resolveDeepLinkMeta(url, env) {
       };
     }
 
-    if (/^\/schemes-benefits(\/|\/index\.html)?$/.test(pathname)) {
+    if (/^\/schemes(?:-benefits)?(\/|\/index\.html)?$/.test(pathname)) {
       const schemeSlug = (url.searchParams.get('scheme') || '').trim().slice(0, 120);
       if (schemeSlug) {
         const sch = await env.DB.prepare(
@@ -489,7 +489,7 @@ export async function resolveDeepLinkMeta(url, env) {
           pageTitle: `${sch.title} — CS Odisha`,
           title: sch.title,
           description,
-          canonicalUrl: `${SITE_ORIGIN}/schemes-benefits/?scheme=${encodeURIComponent(sch.slug)}`,
+          canonicalUrl: `${SITE_ORIGIN}/schemes/?scheme=${encodeURIComponent(sch.slug)}`,
           ogImage: DEFAULT_OG_IMAGE
         };
       }
@@ -511,7 +511,7 @@ export async function resolveDeepLinkMeta(url, env) {
         pageTitle: `${grp.title} | Schemes & Benefits | CS Odisha`,
         title: grp.title,
         description,
-        canonicalUrl: `${SITE_ORIGIN}/schemes-benefits/?group=${encodeURIComponent(grp.slug)}`,
+        canonicalUrl: `${SITE_ORIGIN}/schemes/?group=${encodeURIComponent(grp.slug)}`,
         ogImage: DEFAULT_OG_IMAGE
       };
     }
