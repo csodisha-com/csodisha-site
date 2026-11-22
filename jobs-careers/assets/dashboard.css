@@ -3833,3 +3833,65 @@ body.is-live-modal-open {
   border-color: #0f766e;
   color: #ffffff;
 }
+
+/* Exam Lifecycle Stage Filter Strip & Badges (v209) */
+.live-stage-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.live-stage-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border, #d5e0f0);
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-text, #1e293b);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.live-stage-pill:hover {
+  border-color: var(--cso-link, #1d4ed8);
+  background: #f1f5f9;
+}
+
+.live-stage-pill.is-active {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25);
+}
+
+.live-badge--stage-new {
+  background: rgba(16, 185, 129, 0.14);
+  color: #065f46;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.live-badge--stage-admit {
+  background: rgba(245, 158, 11, 0.14);
+  color: #92400e;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.live-badge--stage-key {
+  background: rgba(139, 92, 246, 0.14);
+  color: #5b21b6;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.live-badge--stage-result {
+  background: rgba(239, 68, 68, 0.14);
+  color: #991b1b;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}

@@ -25,18 +25,41 @@ function safeJsonArr(v) {
   }
 }
 
+export function detectJobStage(title, category, tags) {
+  const hay = `${title || ''} ${category || ''} ${Array.isArray(tags) ? tags.join(' ') : (typeof tags === 'string' ? tags : '')}`.toLowerCase();
+  if (hay.includes('admit card') || hay.includes('hall ticket')) return 'admit-card';
+  if (hay.includes('answer key')) return 'answer-key';
+  if (hay.includes('result') || hay.includes('merit list') || hay.includes('shortlist')) return 'result';
+  return 'new-recruitment';
+}
+
+export function formatJobStageLabel(stage) {
+  switch (stage) {
+    case 'admit-card': return 'Admit Card';
+    case 'answer-key': return 'Answer Key';
+    case 'result': return 'Final Result';
+    case 'new-recruitment':
+    default: return 'New Recruitment';
+  }
+}
+
 function postSummary(r) {
   const isExpired = r.type === 'job' && (r.status === 'expired' || Boolean(r.last_date && r.last_date < new Date().toISOString().slice(0, 10)));
+  const isJob = r.type === 'job';
+  const stage = isJob ? (r.stage || detectJobStage(r.title, r.category, safeJsonArr(r.tags))) : null;
+  const stageLabel = isJob ? formatJobStageLabel(stage) : null;
   return {
     id: r.id, slug: r.slug, title: r.title, title_or: r.title_or, summary: r.summary, summary_or: r.summary_or,
     category: r.category, tags: safeJsonArr(r.tags), cover_url: media(r.cover_media_key),
     goal_exam_ids: safeJsonArr(r.goal_exam_ids),
     status: r.status === 'scheduled' ? 'published' : r.status,
     published_at: r.published_at, event_date: r.event_date,
-    ...(r.type === 'job' ? {
+    ...(isJob ? {
       organisation: r.organisation, vacancies: r.vacancies, qualification: r.qualification, last_date: r.last_date,
       apply_url: r.apply_url, notification_url: media(r.notification_media_key), state: r.state,
       age_limit: r.age_limit || null, salary_pay: r.salary_pay || null, source_url: r.source_url || null,
+      stage: stage,
+      stage_label: stageLabel,
       expired: isExpired,
       badge: isExpired ? 'Application Closed' : 'Active'
     } : {})
@@ -54,6 +77,18 @@ async function listPosts(env, request, type, orderBy) {
   if (cat) { where.push('category = ?'); binds.push(cat); }
   const state = (url.searchParams.get('state') || '').slice(0, 60);
   if (state && type === 'job') { where.push('state = ?'); binds.push(state); }
+  const stage = (url.searchParams.get('stage') || '').trim().toLowerCase();
+  if (stage && stage !== 'all' && type === 'job') {
+    if (stage === 'admit-card' || stage === 'admit card') {
+      where.push(`(lower(title) LIKE '%admit card%' OR lower(title) LIKE '%hall ticket%')`);
+    } else if (stage === 'answer-key' || stage === 'answer key') {
+      where.push(`lower(title) LIKE '%answer key%'`);
+    } else if (stage === 'result' || stage === 'final result') {
+      where.push(`(lower(title) LIKE '%result%' OR lower(title) LIKE '%merit list%' OR lower(title) LIKE '%shortlist%')`);
+    } else if (stage === 'new-recruitment' || stage === 'new recruitment') {
+      where.push(`(NOT (lower(title) LIKE '%admit card%' OR lower(title) LIKE '%hall ticket%' OR lower(title) LIKE '%answer key%' OR lower(title) LIKE '%result%' OR lower(title) LIKE '%merit list%' OR lower(title) LIKE '%shortlist%'))`);
+    }
+  }
   const q = (url.searchParams.get('q') || '').trim().slice(0, 100);
   if (q) {
     where.push(`(title LIKE ? ESCAPE '\\' OR title_or LIKE ? ESCAPE '\\' OR organisation LIKE ? ESCAPE '\\')`);

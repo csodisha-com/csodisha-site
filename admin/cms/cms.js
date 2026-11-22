@@ -1092,6 +1092,10 @@
           setFieldVal('f-organisation', draft.agency);
           setFieldVal('f-apply_url', draft.official_url);
           setFieldVal('f-source_url', draft.official_url);
+          var detectedStage = draft.stage || (window.CSOFastPublish && window.CSOFastPublish.detectJobStage ? window.CSOFastPublish.detectJobStage(draft.title, draft.agency) : 'new-recruitment');
+          setFieldVal('f-stage', detectedStage);
+          var stageInput = document.querySelector('#csoJobStage') || document.querySelector('#f-stage');
+          if (stageInput) { stageInput.value = detectedStage; stageInput.dispatchEvent(new Event('change', { bubbles: true })); }
           if (draft.last_date) setFieldVal('f-last_date', draft.last_date);
           if (draft.summary) setFieldVal('f-summary', draft.summary);
           if (Array.isArray(draft.important_dates) && draft.important_dates.length) {

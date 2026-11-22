@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/admin/suite.css?v=20261113">
   <link rel="stylesheet" href="/admin/cms/cms-embed.css?v=20261114g">
-  <link rel="stylesheet" href="/admin/studio.css?v=20261122v208">
+  <link rel="stylesheet" href="/admin/studio.css?v=20261122v209">
   <link rel="stylesheet" href="/admin/cms/security.css?v=20261114i">
   <link rel="stylesheet" href="/admin/edu-resources-batch1.css?v=20261117n">
 </head>
@@ -443,6 +443,69 @@
             </div>
           </div>
         </section>
+
+        <!-- Job Alert Publisher & Stage Composer (v209) -->
+        <section id="cso-job-publisher-card" class="studio-card cso-card cso-job-composer" aria-labelledby="jobComposerTitle">
+          <div class="cso-ca-card-head">
+            <div class="cso-ca-title-group">
+              <span class="cso-live-dot" aria-hidden="true"></span>
+              <h2 id="jobComposerTitle" class="cso-ca-heading">Job Alert &amp; Lifecycle Stage Publisher (v209)</h2>
+              <span class="cso-pill-badge">D1 · Verified Gov</span>
+            </div>
+            <p class="cso-ca-subhead">Publish verified recruitment notices with automatic Odisha exam lifecycle stage classification.</p>
+          </div>
+
+          <form id="csoJobPublisherForm" class="cso-ca-form" novalidate>
+            <div class="form-grid cso-form-grid">
+              <div class="cso-form-group">
+                <label for="csoJobStage" class="cso-form-label">Notice Stage <span class="cso-req" aria-hidden="true">*</span></label>
+                <select id="csoJobStage" name="stage" class="cso-form-select" required>
+                  <option value="new-recruitment">New Recruitment</option>
+                  <option value="admit-card">Admit Card</option>
+                  <option value="answer-key">Answer Key</option>
+                  <option value="result">Final Result</option>
+                </select>
+              </div>
+
+              <div class="cso-form-group">
+                <label for="csoJobCategory" class="cso-form-label">Category <span class="cso-req" aria-hidden="true">*</span></label>
+                <select id="csoJobCategory" name="category" class="cso-form-select" required>
+                  <option value="OPSC">OPSC</option>
+                  <option value="OSSC">OSSC</option>
+                  <option value="OSSSC">OSSSC</option>
+                  <option value="Teaching">Teaching &amp; Education</option>
+                  <option value="Police &amp; Defence">Police &amp; Defence</option>
+                  <option value="Banking &amp; Central">Banking &amp; Central</option>
+                </select>
+              </div>
+
+              <div class="cso-form-group cso-span-full">
+                <label for="csoJobTitle" class="cso-form-label">Title (EN) <span class="cso-req" aria-hidden="true">*</span></label>
+                <input type="text" id="csoJobTitle" name="title" class="cso-form-input" placeholder="e.g., OPSC Civil Services Preliminary Admit Card 2026" required>
+              </div>
+
+              <div class="cso-form-group">
+                <label for="csoJobOrg" class="cso-form-label">Organisation <span class="cso-req" aria-hidden="true">*</span></label>
+                <input type="text" id="csoJobOrg" name="organisation" class="cso-form-input" placeholder="e.g., OPSC" required>
+              </div>
+
+              <div class="cso-form-group">
+                <label for="csoJobLastDate" class="cso-form-label">Last Date</label>
+                <input type="date" id="csoJobLastDate" name="last_date" class="cso-form-input">
+              </div>
+
+              <div class="cso-form-group cso-span-full">
+                <label for="csoJobApplyUrl" class="cso-form-label">Official URL <span class="cso-req" aria-hidden="true">*</span></label>
+                <input type="url" id="csoJobApplyUrl" name="apply_url" class="cso-form-input" placeholder="https://opsc.gov.in/..." required>
+              </div>
+            </div>
+
+            <div class="cso-ca-form-actions">
+              <button type="submit" id="csoBtnPublishJob" class="cso-btn cso-btn-primary">Publish Job Notice &rarr;</button>
+              <span id="csoJobStatusMessage" class="cso-ca-status" role="status" aria-live="polite"></span>
+            </div>
+          </form>
+        </section>
       </div>
     </main>
   </div>
@@ -464,11 +527,11 @@
   <!-- SCRIPTS (Strict CSP: self-hosted only, on-demand suite lazy loading) -->
   <script src="/admin/suite-boot.js?v=20261114i"></script>
   <script src="/admin/charts.js?v=20261114"></script>
-  <script src="/admin/fast-publish.js?v=20261122v208"></script>
-  <script src="/admin/cms/cms.js?v=20261122v201"></script>
+  <script src="/admin/fast-publish.js?v=20261122v209"></script>
+  <script src="/admin/cms/cms.js?v=20261122v209"></script>
   <script src="/admin/lazy-suite-loader.js?v=20261117ao"></script>
   <script src="/admin/modules-restored.js?v=20261117ao"></script>
   <script src="/admin/suite-live.js?v=20261117ao"></script>
-  <script src="/admin/admin.js?v=20261122v208"></script>
+  <script src="/admin/admin.js?v=20261122v209"></script>
 </body>
 </html>

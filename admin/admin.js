@@ -291,6 +291,7 @@
 
   function renderWorkspaceView(folderId, moduleId) {
     var caCard = document.getElementById('cso-ca-publisher-card');
+    var jobCard = document.getElementById('cso-job-publisher-card');
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);
 
@@ -300,6 +301,9 @@
         if (window.CSOFastPublish && window.CSOFastPublish.initCurrentAffairsPublisher) {
           window.CSOFastPublish.initCurrentAffairsPublisher(caCard);
         }
+      }
+      if (jobCard && (moduleId === 'module-05-008' || moduleId === 'module-01-006' || moduleId === 'module-01-001')) {
+        dom.workspaceRoot.appendChild(jobCard);
       }
       return;
     }
@@ -314,11 +318,15 @@
         window.CSOFastPublish.initCurrentAffairsPublisher(caCard);
       }
     }
+    if (jobCard) {
+      dom.workspaceRoot.appendChild(jobCard);
+    }
   }
 
   function openQuickCreateRoute(targetRoute) {
     if (!window.CSOCms) return;
     var caCard = document.getElementById('cso-ca-publisher-card');
+    var jobCard = document.getElementById('cso-job-publisher-card');
     closeCreateDropdown();
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);
@@ -348,6 +356,9 @@
       if (window.CSOFastPublish && window.CSOFastPublish.initCurrentAffairsPublisher) {
         window.CSOFastPublish.initCurrentAffairsPublisher(caCard);
       }
+    }
+    if (targetRoute === 'jobs/new' && jobCard) {
+      dom.workspaceRoot.appendChild(jobCard);
     }
     if (window.innerWidth <= 900) closeMobileDrawer();
   }

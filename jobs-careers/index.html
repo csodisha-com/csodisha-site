@@ -13,7 +13,7 @@
   <meta property="og:image" content="https://csodisha.com/assets/img/cso-logo.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
-  <link rel="stylesheet" href="./assets/dashboard.css?v=20261122v204">
+  <link rel="stylesheet" href="./assets/dashboard.css?v=20261122v209">
   <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v173">
   <link rel="stylesheet" href="/jobs-careers/assets/hub.css?v=20261121v173">
   <script src="/assets/shared-header.js?v=20261121v171" defer></script>
@@ -22,7 +22,7 @@
   <script src="/assets/js/odisha-districts.js?v=20261122v194" defer></script>
   <script src="/assets/js/candidate-prefs.js?v=20261122v197" defer></script>
   <script src="/assets/js/deadline-tracker.js?v=20261122v204" defer></script>
-  <script src="./assets/dashboard.js?v=20261122v204" defer></script>
+  <script src="./assets/dashboard.js?v=20261122v209" defer></script>
   <script src="/jobs-careers/assets/hub.js?v=20261121v173" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css">
@@ -159,6 +159,14 @@
               <h2 id="live-jobs-heading">Live Recruitment &amp; Job Notifications</h2>
               <span id="live-jobs-count" class="live-count-badge" aria-live="polite">Loading…</span>
             </div>
+          </div>
+
+          <div class="live-stage-strip" id="live-jobs-stages" role="group" aria-label="Filter notices by exam lifecycle stage">
+            <button type="button" class="live-stage-pill is-active" data-stage="all" aria-pressed="true">All Notices</button>
+            <button type="button" class="live-stage-pill" data-stage="new-recruitment" aria-pressed="false">New Recruitment</button>
+            <button type="button" class="live-stage-pill" data-stage="admit-card" aria-pressed="false">Admit Card</button>
+            <button type="button" class="live-stage-pill" data-stage="answer-key" aria-pressed="false">Answer Key</button>
+            <button type="button" class="live-stage-pill" data-stage="result" aria-pressed="false">Final Result</button>
           </div>
 
           <div class="live-filter-strip" id="live-jobs-chips" role="group" aria-label="Filter jobs by recruitment track">

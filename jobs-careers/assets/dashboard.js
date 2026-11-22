@@ -1175,6 +1175,7 @@
     });
   }
 
+  const liveStagesWrap = $('live-jobs-stages');
   const liveChipsWrap = $('live-jobs-chips');
   const liveGoalToggleBtn = $('live-jobs-goal-toggle');
   const liveAuthHintEl = $('live-jobs-auth-hint');
@@ -1182,7 +1183,7 @@
 
   const pc = window.CSOPublicContent;
   const knownCategories = new Set(['OPSC', 'OSSC', 'OSSSC', 'Teaching', 'Police & Defence', 'Banking & PSU', 'Railway']);
-  let liveState = { page: 1, limit: 12, q: '', state: '', category: '', district: '', includeStateWide: true, chip: 'all', goalMatch: false, matchedOnly: false };
+  let liveState = { page: 1, limit: 12, q: '', state: '', category: '', district: '', includeStateWide: true, chip: 'all', stage: 'all', goalMatch: false, matchedOnly: false };
   let liveSearchTimer = null;
   let liveTaxonomy = [];
   let liveCandidateUser = null;
@@ -1359,8 +1360,40 @@
     }
   }
 
+  function getJobStageInfo(job) {
+    if (!job) return { stage: 'new-recruitment', label: 'New Recruitment', cls: 'live-badge--stage-new' };
+    const raw = (job.stage || '').toLowerCase().trim();
+    if (raw === 'admit-card' || raw === 'admit_card' || raw === 'admit card') {
+      return { stage: 'admit-card', label: 'Admit Card', cls: 'live-badge--stage-admit' };
+    }
+    if (raw === 'answer-key' || raw === 'answer_key' || raw === 'answer key') {
+      return { stage: 'answer-key', label: 'Answer Key', cls: 'live-badge--stage-key' };
+    }
+    if (raw === 'result' || raw === 'final-result' || raw === 'final result') {
+      return { stage: 'result', label: 'Final Result', cls: 'live-badge--stage-result' };
+    }
+    if (raw === 'new-recruitment' || raw === 'new_recruitment' || raw === 'new recruitment') {
+      return { stage: 'new-recruitment', label: 'New Recruitment', cls: 'live-badge--stage-new' };
+    }
+    const hay = [job.title || '', job.title_or || '', job.category || '', job.tags || ''].join(' ').toLowerCase();
+    if (hay.includes('admit card') || hay.includes('hall ticket')) {
+      return { stage: 'admit-card', label: 'Admit Card', cls: 'live-badge--stage-admit' };
+    }
+    if (hay.includes('answer key')) {
+      return { stage: 'answer-key', label: 'Answer Key', cls: 'live-badge--stage-key' };
+    }
+    if (hay.includes('result') || hay.includes('merit list') || hay.includes('shortlist')) {
+      return { stage: 'result', label: 'Final Result', cls: 'live-badge--stage-result' };
+    }
+    return { stage: 'new-recruitment', label: 'New Recruitment', cls: 'live-badge--stage-new' };
+  }
+
   function buildJobBadges(job) {
     const frag = document.createDocumentFragment();
+    const st = getJobStageInfo(job);
+    if (st && st.label) {
+      frag.appendChild(el('span', `live-badge ${st.cls}`, st.label));
+    }
     if (job.organisation) {
       frag.appendChild(el('span', 'live-badge live-badge--org', job.organisation));
     }
@@ -1976,8 +2009,8 @@
   async function loadLiveJobs(opts = {}) {
     if (!liveGridEl || !liveStatusEl) return;
     const silent = Boolean(opts && opts.silent);
-    const isClientComposite = (liveState.chip && liveState.chip !== 'all') || Boolean(liveState.goalMatch) || Boolean(liveState.district) || Boolean(liveState.matchedOnly);
-    const hasFilter = Boolean(liveState.q || liveState.state || liveState.category || liveState.district || isClientComposite);
+    const isClientComposite = (liveState.chip && liveState.chip !== 'all') || (liveState.stage && liveState.stage !== 'all') || Boolean(liveState.goalMatch) || Boolean(liveState.district) || Boolean(liveState.matchedOnly);
+    const hasFilter = Boolean(liveState.q || liveState.state || liveState.category || liveState.district || (liveState.stage && liveState.stage !== 'all') || isClientComposite);
     if (liveResetBtn) liveResetBtn.hidden = !hasFilter;
 
     if (!silent) {
@@ -1992,6 +2025,7 @@
     if (liveState.q) params.set('q', liveState.q);
     if (liveState.state) params.set('state', liveState.state);
     if (liveState.category) params.set('category', liveState.category);
+    if (liveState.stage && liveState.stage !== 'all') params.set('stage', liveState.stage);
 
     try {
       if (liveState.goalMatch && !liveGoalsLoaded) {
@@ -2003,6 +2037,9 @@
       let items = Array.isArray(data.items) ? data.items : [];
       syncCategoryDropdown(items);
 
+      if (liveState.stage && liveState.stage !== 'all') {
+        items = items.filter(job => getJobStageInfo(job).stage === liveState.stage);
+      }
       if (liveState.chip && liveState.chip !== 'all') {
         items = items.filter(job => matchesChipFilter(job, liveState.chip));
       }
@@ -2108,6 +2145,16 @@
     }
   }
 
+  function updateStageButtonsUI() {
+    if (liveStagesWrap) {
+      liveStagesWrap.querySelectorAll('[data-stage]').forEach(btn => {
+        const active = btn.dataset.stage === liveState.stage;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-pressed', String(active));
+      });
+    }
+  }
+
   function updateChipButtonsUI() {
     if (liveChipsWrap) {
       liveChipsWrap.querySelectorAll('[data-chip]').forEach(btn => {
@@ -2120,6 +2167,17 @@
       liveGoalToggleBtn.classList.toggle('is-active', liveState.goalMatch);
       liveGoalToggleBtn.setAttribute('aria-pressed', String(liveState.goalMatch));
     }
+  }
+
+  if (liveStagesWrap) {
+    liveStagesWrap.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-stage]');
+      if (!btn) return;
+      liveState.stage = btn.dataset.stage || 'all';
+      liveState.page = 1;
+      updateStageButtonsUI();
+      loadLiveJobs();
+    });
   }
 
   if (liveChipsWrap) {
@@ -2250,7 +2308,7 @@
     });
   }
   function resetAllFilters() {
-    liveState = { page: 1, limit: 12, q: '', state: '', category: '', district: '', includeStateWide: true, chip: 'all', goalMatch: false, matchedOnly: false };
+    liveState = { page: 1, limit: 12, q: '', state: '', category: '', district: '', includeStateWide: true, chip: 'all', stage: 'all', goalMatch: false, matchedOnly: false };
     if (search) search.value = '';
     if (clearSearch) clearSearch.hidden = true;
     if (liveStateEl) liveStateEl.value = '';
@@ -2259,6 +2317,7 @@
     syncDistrictQueryParam('');
     renderDistrictBanner();
     if (liveAuthHintEl) liveAuthHintEl.hidden = true;
+    updateStageButtonsUI();
     updateChipButtonsUI();
     closeJobDetail(true);
     loadLiveJobs();

@@ -539,8 +539,15 @@
         row.appendChild(el('strong', 'cso-fp-draft-title', d.title));
         var act = el('div', 'cso-fp-draft-actions');
         act.appendChild(btn('Load into Editor', 'btn sm primary', function () {
+          var detectedStage = detectJobStage(d.title, d.category || d.text || '');
+          d.stage = detectedStage;
           if (typeof opts.onLoadDraft === 'function') opts.onLoadDraft(d);
           markDraftStatus(d, 'imported');
+          var stageSel = document.querySelector('#csoJobStage') || document.querySelector('#f-stage');
+          if (stageSel) {
+            stageSel.value = detectedStage;
+            stageSel.dispatchEvent(new Event('change', { bubbles: true }));
+          }
         }));
         act.appendChild(btn('Dismiss', 'btn sm danger', function () {
           drafts.splice(idx, 1);
@@ -746,6 +753,15 @@
     paint();
     container.appendChild(panel);
     return panel;
+  }
+
+  /* ---------- v209: Odisha Exam Lifecycle Stage Auto-Detector ---------- */
+  function detectJobStage(title, text) {
+    var hay = (String(title || '') + ' ' + String(text || '')).toLowerCase();
+    if (hay.indexOf('admit card') !== -1 || hay.indexOf('hall ticket') !== -1) return 'admit-card';
+    if (hay.indexOf('answer key') !== -1) return 'answer-key';
+    if (hay.indexOf('result') !== -1 || hay.indexOf('merit list') !== -1 || hay.indexOf('shortlist') !== -1) return 'result';
+    return 'new-recruitment';
   }
 
   /* ---------- v208: Daily Current Affairs & 5-MCQ Composer Panel ---------- */
@@ -993,7 +1009,8 @@
     openPreviewDrawer: openPreviewDrawer,
     closePreviewDrawer: closePreviewDrawer,
     renderTriagePanel: renderTriagePanel,
-    initCurrentAffairsPublisher: initCurrentAffairsPublisher
+    initCurrentAffairsPublisher: initCurrentAffairsPublisher,
+    detectJobStage: detectJobStage
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.CSOFastPublish;
 })(typeof window !== 'undefined' ? window : globalThis);
