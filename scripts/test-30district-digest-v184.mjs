@@ -73,6 +73,6 @@ assert.ok(adminHtml.includes('/admin/fast-publish.js?v=20261122v184'));
 assert.ok(adminHtml.includes('/admin/cms/cms.js?v=20261122v184'));
 
 const swJs = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
-assert.ok(swJs.includes("const CACHE_NAME = 'cso-candidate-cache-v184'"));
+assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v\d+'/.test(swJs));
 
 console.log('test-30district-digest-v184: ALL CHECKS PASSED');

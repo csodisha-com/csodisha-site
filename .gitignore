@@ -1,2 +1,4 @@
 .aider*
 .wrangler/
+scripts/crawl4ai/drafts-queue.json
+scripts/crawl4ai/seen_urls.json
