@@ -18,13 +18,13 @@
   <meta name="twitter:description" content="Zero-upload Odisha exam photo &amp; signature resizer + Odisha age relaxation cut-off calculator.">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
   <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v164">
-  <link rel="stylesheet" href="/tools/assets/tools.css?v=20261122v196">
+  <link rel="stylesheet" href="/tools/assets/tools.css?v=20261122v206">
   <script src="/assets/shared-header.js?v=20261121v171" defer></script>
   <script src="/assets/cso-auth-client.js" defer></script>
   <script src="/assets/js/cso-idb.js" defer></script>
   <script src="/assets/js/bookmark-manager.js" defer></script>
   <script src="/assets/js/student-utilities.js?v=20261121v164" defer></script>
-  <script src="/tools/assets/tools.js?v=20261122v196" defer></script>
+  <script src="/tools/assets/tools.js?v=20261122v206" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://csodisha.com/"},{"@type":"ListItem","position":2,"name":"Jobs \u0026 Careers","item":"https://csodisha.com/jobs-careers/"},{"@type":"ListItem","position":3,"name":"Student Toolkit","item":"https://csodisha.com/tools/"}]},{"@type":"WebApplication","name":"Odisha Student Toolkit","applicationCategory":"UtilitiesApplication","operatingSystem":"All","url":"https://csodisha.com/tools/","description":"Zero-upload Odisha exam photo and signature resizer plus Odisha government age relaxation and cut-off calculator."}]}</script>
 </head>
@@ -64,16 +64,14 @@
         <h2 id="resizer-heading">📸 Odisha Exam Photo &amp; Signature Resizer</h2>
         <p class="cso-tool-desc">Select an official exam preset or custom dimensions, pick an image from your device, and download a portal-ready JPG in seconds.</p>
       </div>
-      <span class="cso-tool-privacy-badge">🔒 100% Offline · Zero Upload</span>
+      <span class="cso-tool-privacy-badge">🔒 100% Offline in Your Browser — Photos Never Leave Your Device</span>
     </div>
 
     <div class="cso-preset-strip" id="resizer-presets" role="group" aria-label="Official Exam Image Presets">
-      <button type="button" class="cso-preset-btn is-active" data-preset="opsc-photo" data-w="200" data-h="230" data-min-kb="20" data-max-kb="50" aria-pressed="true">OPSC Photo (200×230px, 20–50KB)</button>
-      <button type="button" class="cso-preset-btn" data-preset="opsc-sign" data-w="140" data-h="60" data-min-kb="10" data-max-kb="20" aria-pressed="false">OPSC Signature (140×60px, 10–20KB)</button>
-      <button type="button" class="cso-preset-btn" data-preset="ossc-photo" data-w="200" data-h="230" data-min-kb="20" data-max-kb="50" aria-pressed="false">OSSC / OSSSC Photo (200×230px, 20–50KB)</button>
-      <button type="button" class="cso-preset-btn" data-preset="ssc-photo" data-w="275" data-h="354" data-min-kb="20" data-max-kb="50" aria-pressed="false">SSC Photo (3.5×4.5cm / 275×354px, 20–50KB)</button>
-      <button type="button" class="cso-preset-btn" data-preset="ssc-sign" data-w="140" data-h="60" data-min-kb="10" data-max-kb="20" aria-pressed="false">SSC Signature (140×60px, 10–20KB)</button>
-      <button type="button" class="cso-preset-btn" data-preset="custom" data-w="200" data-h="230" data-min-kb="10" data-max-kb="50" aria-pressed="false">Custom Size</button>
+      <button type="button" class="cso-preset-btn is-active" data-preset="opsc-photo" data-w="200" data-h="230" data-min-kb="20" data-max-kb="50" aria-pressed="true">OPSC / OSSC / OSSSC Passport Photo (200×230 px, 20–50 KB)</button>
+      <button type="button" class="cso-preset-btn" data-preset="opsc-sign" data-w="140" data-h="60" data-min-kb="10" data-max-kb="20" aria-pressed="false">OPSC / OSSC / OSSSC Signature (140×60 px, 10–20 KB)</button>
+      <button type="button" class="cso-preset-btn" data-preset="ssc-photo" data-w="275" data-h="354" data-min-kb="20" data-max-kb="50" aria-pressed="false">SSC Photo (275×354 px, 20–50 KB)</button>
+      <button type="button" class="cso-preset-btn" data-preset="custom" data-w="200" data-h="230" data-min-kb="10" data-max-kb="100" aria-pressed="false">Odisha Police / Custom JPG</button>
     </div>
 
     <div class="cso-resizer-controls">
@@ -99,10 +97,10 @@
       <label class="cso-upload-label" for="resizer-file">
         <span class="cso-upload-icon" aria-hidden="true">📂</span>
         <span id="resizer-file-label">Choose Photo or Signature (JPG, PNG, WebP)</span>
-        <input id="resizer-file" type="file" accept="image/*" class="cso-sr-input">
+        <input id="resizer-file" type="file" accept="image/jpeg,image/png,image/webp" class="cso-sr-input">
       </label>
       <button id="resizer-process-btn" type="button" class="cso-tool-btn cso-tool-btn--primary" disabled>Resize Image</button>
-      <button id="resizer-download-btn" type="button" class="cso-tool-btn cso-tool-btn--success" hidden>⬇ Download JPG</button>
+      <button id="resizer-download-btn" type="button" class="cso-tool-btn cso-tool-btn--success" hidden>⬇️ Download Exam-Ready JPG</button>
     </div>
 
     <div id="resizer-status" class="cso-tool-status" role="status" aria-live="polite" hidden></div>

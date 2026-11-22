@@ -111,7 +111,8 @@
   border: 1px solid #86efac;
   font-size: 0.78rem;
   font-weight: 800;
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 100%;
 }
 
 .cso-preset-strip {
@@ -126,6 +127,9 @@
 
 .cso-preset-btn {
   flex: 0 0 auto;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   padding: 8px 13px;
   border-radius: 999px;
   border: 1px solid var(--cso-border, #cbd5e1);
