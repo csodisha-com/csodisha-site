@@ -492,43 +492,93 @@
 
     var head = el('div', 'cso-fp-head');
     head.appendChild(el('strong', 'cso-fp-title', '📥 Incoming .gov.in Draft Queue'));
-    var fileLabel = el('label', 'btn sm primary cso-fp-file-btn');
+    var actionsWrap = el('div', 'cso-fp-draft-head-actions');
+    var syncBtn = btn('🔄 Sync Live D1 Queue', 'btn sm primary', function () {
+      loadLiveD1Queue();
+    });
+    actionsWrap.appendChild(syncBtn);
+
+    var fileLabel = el('label', 'btn sm cso-fp-file-btn');
     fileLabel.appendChild(el('span', null, 'Load drafts-queue.json'));
     var fileInp = el('input', 'cso-fp-file-input');
     fileInp.type = 'file';
     fileInp.accept = '.json,application/json';
     fileInp.setAttribute('aria-label', 'Load drafts-queue.json');
     fileLabel.appendChild(fileInp);
-    head.appendChild(fileLabel);
+    actionsWrap.appendChild(fileLabel);
+    head.appendChild(actionsWrap);
 
-    var statusLine = el('div', 'hint cso-fp-draft-status', 'Import scripts/crawl4ai/drafts-queue.json to review verified .gov.in notices.');
+    var statusLine = el('div', 'hint cso-fp-draft-status', 'Syncing live D1 .gov.in draft queue…');
     var listEl = el('div', 'cso-fp-draft-list');
+
+    async function markDraftStatus(d, nextStatus) {
+      if (!d || (!d.id && !d.official_url)) return;
+      try {
+        await fetch('/api/admin/crawl-drafts', {
+          method: 'DELETE',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-CSO-CSRF': '1' },
+          body: JSON.stringify({ id: d.id || 0, official_url: d.official_url || '', status: nextStatus })
+        });
+      } catch (_) {}
+    }
 
     function renderQueue() {
       clear(listEl);
       if (!drafts.length) {
-        listEl.appendChild(el('div', 'cso-fp-empty', 'No pending .gov.in drafts loaded.'));
+        listEl.appendChild(el('div', 'cso-fp-empty', 'No pending .gov.in drafts in D1 queue.'));
         return;
       }
       drafts.forEach(function (d, idx) {
         var row = el('div', 'cso-fp-draft-item');
         var meta = el('div', 'cso-fp-draft-meta');
-        meta.appendChild(el('span', 'cso-fp-pbadge', d.agency));
-        meta.appendChild(el('span', 'cso-fp-pbadge is-ok', '✓ ' + d.source_domain));
+        meta.appendChild(el('span', 'cso-fp-pbadge', d.agency || 'Odisha Govt'));
+        meta.appendChild(el('span', 'cso-fp-pbadge is-ok', '✓ ' + (d.source_domain || 'gov.in')));
         meta.appendChild(el('span', 'cso-fp-pbadge is-warn', d.last_date ? 'Last date: ' + d.last_date : 'Deadline: TBA'));
         row.appendChild(meta);
         row.appendChild(el('strong', 'cso-fp-draft-title', d.title));
         var act = el('div', 'cso-fp-draft-actions');
         act.appendChild(btn('Load into Editor', 'btn sm primary', function () {
           if (typeof opts.onLoadDraft === 'function') opts.onLoadDraft(d);
+          markDraftStatus(d, 'imported');
         }));
         act.appendChild(btn('Dismiss', 'btn sm danger', function () {
           drafts.splice(idx, 1);
           renderQueue();
+          markDraftStatus(d, 'dismissed');
         }));
         row.appendChild(act);
         listEl.appendChild(row);
       });
+    }
+
+    async function loadLiveD1Queue() {
+      syncBtn.disabled = true;
+      statusLine.textContent = 'Syncing live D1 .gov.in draft queue…';
+      try {
+        var res = await fetch('/api/admin/crawl-drafts', { credentials: 'same-origin' });
+        if (!res.ok) {
+          statusLine.textContent = 'Live D1 queue unavailable (HTTP ' + res.status + '). Use Load drafts-queue.json offline.';
+          return;
+        }
+        var data = await res.json();
+        var rawList = Array.isArray(data && data.drafts) ? data.drafts : [];
+        var valid = [];
+        rawList.forEach(function (item) {
+          var v = validateDraftItem(item);
+          if (v.valid) {
+            v.draft.id = item.id || 0;
+            valid.push(v.draft);
+          }
+        });
+        drafts = valid;
+        statusLine.textContent = 'Live D1 queue: ' + drafts.length + ' pending verified .gov.in draft(s).';
+        renderQueue();
+      } catch (err) {
+        statusLine.textContent = 'Live D1 queue sync error. Use Load drafts-queue.json offline.';
+      } finally {
+        syncBtn.disabled = false;
+      }
     }
 
     fileInp.addEventListener('change', function () {
@@ -553,7 +603,12 @@
     panel.appendChild(statusLine);
     panel.appendChild(listEl);
     renderQueue();
-    return { node: panel, setDrafts: function (items) { drafts = items || []; renderQueue(); } };
+    loadLiveD1Queue();
+    return {
+      node: panel,
+      refresh: loadLiveD1Queue,
+      setDrafts: function (items) { drafts = items || []; renderQueue(); }
+    };
   }
 
   /* ---------- v184: Daily WhatsApp & Telegram Digest Generator ---------- */

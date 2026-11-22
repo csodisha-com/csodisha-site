@@ -6,9 +6,13 @@ to .gov.in / .nic.in domains, deduplicates against seen_urls.json, and writes
 normalized drafts-queue.json for Admin Studio import.
 """
 
+import argparse
 import asyncio
 import json
+import os
 import re
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
@@ -125,7 +129,55 @@ async def crawl_with_retry(crawler: AsyncWebCrawler, url: str):
     return None
 
 
-async def run_watcher() -> None:
+def load_sync_token(explicit_token: str | None) -> str:
+    if explicit_token:
+        return explicit_token.strip()
+    env_tok = os.environ.get("CSO_CRAWL_SYNC_TOKEN", "").strip()
+    if env_tok:
+        return env_tok
+    env_file = Path.home() / ".config" / "csodisha" / "crawl-sync.env"
+    if env_file.exists():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            if k.strip() == "CSO_CRAWL_SYNC_TOKEN":
+                return v.strip().strip('"').strip("'")
+    return ""
+
+
+def sync_drafts_to_api(drafts: list[dict], api_url: str, token: str) -> None:
+    if not token:
+        print("Sync skipped: CSO_CRAWL_SYNC_TOKEN not set (pass --token or set ~/.config/csodisha/crawl-sync.env).")
+        return
+    payload = json.dumps({"drafts": drafts}).encode("utf-8")
+    req = urllib.request.Request(
+        api_url,
+        data=payload,
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}",
+            "X-Crawl-Sync-Token": token,
+            "User-Agent": "CSOdisha-Crawl4AI-Watcher/1.0",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            body = json.loads(resp.read().decode("utf-8") or "{}")
+            print(
+                f"Remote D1 sync complete: inserted={body.get('inserted', 0)}, "
+                f"updated={body.get('updated', 0)}, total_pending={body.get('total_pending', 0)}"
+            )
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:200]
+        print(f"Remote D1 sync failed (HTTP {exc.code}): {detail}")
+    except Exception as exc:
+        print(f"Remote D1 sync error: {exc}")
+
+
+async def run_watcher(sync: bool = False, api_url: str = "https://csodisha.com/api/admin/crawl-drafts", token: str | None = None) -> None:
     sources = load_json(SOURCES_FILE, [])
     valid_sources = [s for s in sources if is_verified_gov_url(s.get("url", ""))]
     seen_list = load_json(SEEN_FILE, [])
@@ -154,6 +206,14 @@ async def run_watcher() -> None:
     SEEN_FILE.write_text(json.dumps(sorted(seen_set), indent=2) + "\n", encoding="utf-8")
     print(f"Crawl4AI watcher complete: {len(new_drafts)} new .gov.in drafts added ({len(combined)} total in queue).")
 
+    if sync:
+        sync_drafts_to_api(combined, api_url, load_sync_token(token))
+
 
 if __name__ == "__main__":
-    asyncio.run(run_watcher())
+    parser = argparse.ArgumentParser(description="CS Odisha Crawl4AI .gov.in Notice Watcher")
+    parser.add_argument("--sync", action="store_true", help="Sync drafts-queue.json to D1 admin endpoint")
+    parser.add_argument("--api-url", default="https://csodisha.com/api/admin/crawl-drafts", help="Target /api/admin/crawl-drafts URL")
+    parser.add_argument("--token", default=None, help="Sync bearer token (defaults to CSO_CRAWL_SYNC_TOKEN)")
+    args = parser.parse_args()
+    asyncio.run(run_watcher(sync=args.sync, api_url=args.api_url, token=args.token))

@@ -77,6 +77,7 @@ import { handleAiGeneratePage } from './_ai.js';
 import { runLifecycleMaintenance, readLastCronRun } from './_cron.js';
 import { handleExamTaxonomy } from './_taxonomy.js';
 import { handleAdminCandidates } from './_candidates.js';
+import { handleCrawlDrafts } from './crawl-drafts.js';
 import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
@@ -95,6 +96,10 @@ export async function handleAdminApi(request, env) {
     const [resource, id, sub, extra] = parts;
     const method = request.method;
     const write = method !== 'GET' && method !== 'HEAD';
+
+    if (resource === 'crawl-drafts') {
+      return await handleCrawlDrafts(request, env);
+    }
 
     // Admin-only: user role management, URC Batch 1-5 (01-19) & candidate behavior governance.
     if (resource === 'users') {
