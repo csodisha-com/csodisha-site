@@ -279,7 +279,7 @@
     fbEmailEl = el('input');
     fbEmailEl.type = 'email';
     fbEmailEl.maxLength = 120;
-    fbEmailEl.placeholder = 'you@example.com';
+    fbEmailEl.placeholder = 'candidate@csodisha.com';
     lblEmail.appendChild(fbEmailEl);
 
     fbStatusEl = el('p', '', '');

@@ -415,7 +415,7 @@
       const codeIn = textInput('text', item ? item.webhook_code : '', 'WHK-OUT-003 (auto if blank)');
       if (isEdit) codeIn.disabled = true;
       const nameIn = textInput('text', item ? item.subscriber_name : '', 'Subscriber name');
-      const urlIn = textInput('url', item ? item.target_url : '', 'https://hooks.example.com/events');
+      const urlIn = textInput('url', item ? item.target_url : '', 'https://hooks.csodisha.com/events');
       const evIn = textInput('text', item ? (item.subscribed_events || []).join(', ') : 'exam.admit_card_live, job.deadline_closing', 'Comma-separated events');
       const secIn = textInput('password', '', isEdit ? 'Leave blank to keep existing secret' : 'Optional signing secret (auto-generated if blank)');
       const toutIn = textInput('number', item ? String(item.delivery_timeout_ms ?? 5000) : '5000');

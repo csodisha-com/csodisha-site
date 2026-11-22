@@ -180,8 +180,8 @@ async function seedBatch3(db) {
     ).run();
 
     const donors = [
-      ['fdon-ent-001', cId, 'Amiya Kumar Jena', 'amiya.jena@example.com', 'Bhubaneswar', 0, 1500000, 'upi', 'TXN-DON-2026-001', 'Proud to support our rural youth.', 'CSO-REC-2026-001', 'completed'],
-      ['fdon-ent-002', cId, 'Subrat Mohapatra', 'subrat.m@example.com', 'Cuttack', 0, 1100000, 'upi', 'TXN-DON-2026-002', 'May every OAS aspirant succeed.', 'CSO-REC-2026-002', 'completed'],
+      ['fdon-ent-001', cId, 'Amiya Kumar Jena', 'amiya.jena@csodisha.com', 'Bhubaneswar', 0, 1500000, 'upi', 'TXN-DON-2026-001', 'Proud to support our rural youth.', 'CSO-REC-2026-001', 'completed'],
+      ['fdon-ent-002', cId, 'Subrat Mohapatra', 'subrat.m@csodisha.com', 'Cuttack', 0, 1100000, 'upi', 'TXN-DON-2026-002', 'May every OAS aspirant succeed.', 'CSO-REC-2026-002', 'completed'],
       ['fdon-ent-003', cId, 'Anonymous Well-wisher', '', 'Rourkela', 1, 1000000, 'netbanking', 'TXN-DON-2026-003', 'Keep up the genuine work for Odisha.', 'CSO-REC-2026-003', 'completed']
     ];
     for (const d of donors) {
@@ -215,7 +215,7 @@ async function seedBatch3(db) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       'frfd-001', 'CSO-RFD-2026-0001', 'refund_request', 'ford-004', 'ftxn-004',
-      'Subhashree Nayak', 'subhashree.nayak@example.com', 47082,
+      'Subhashree Nayak', 'subhashree.nayak@csodisha.com', 47082,
       'accidental_purchase', 'Candidate mistakenly double purchased OSSC CGL Mock Test Series.',
       'rfnd_RZP_2026_001', 'Bank verification screenshot provided.', 'approved_processed', 1,
       'finance-admin@csodisha.com', new Date().toISOString()
@@ -226,7 +226,7 @@ async function seedBatch3(db) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       'frfd-002', 'CSO-RFD-2026-0002', 'upi_dispute', 'ford-005', 'ftxn-005',
-      'Rakesh Dash', 'rakesh.dash@example.com', 26145,
+      'Rakesh Dash', 'rakesh.dash@csodisha.com', 26145,
       'duplicate_payment', 'Candidate claims UPI debited twice on Axis Bank.',
       '', 'Pending bank reconciliation file.', 'open', 1,
       '', null
@@ -242,7 +242,7 @@ async function seedBatch3(db) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       'finv-001', 'CSO-INV-2026-0001', 'tax_invoice', 'ford-001', 'ftxn-001',
-      'Sasmita Mohanty', 'sasmita.mohanty@example.com', 'Odisha', '',
+      'Sasmita Mohanty', 'sasmita.mohanty@csodisha.com', 'Odisha', '',
       '21AAACC1234D1Z5', '999293', 44910, 4042, 4042, 0, 52994,
       JSON.stringify(items1), new Date().toISOString(), 'issued'
     ).run();
@@ -254,7 +254,7 @@ async function seedBatch3(db) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       'finv-002', 'CSO-INV-2026-0002', 'tax_invoice', 'ford-002', 'ftxn-002',
-      'Anirban Ghosh', 'anirban.g@example.com', 'West Bengal', '',
+      'Anirban Ghosh', 'anirban.g@csodisha.com', 'West Bengal', '',
       '21AAACC1234D1Z5', '999293', 29900, 0, 0, 5382, 35282,
       JSON.stringify(items2), new Date().toISOString(), 'issued'
     ).run();

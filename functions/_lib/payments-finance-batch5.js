@@ -167,12 +167,12 @@ async function seedBatch5(db) {
     await db.prepare(
       `INSERT OR IGNORE INTO fin_fraud_risk_events (id, alert_code, rule_triggered, severity, risk_score, order_number, txn_reference, customer_email, ip_hash_masked, amount_paise, action_taken, resolution_status, analyst_notes, resolved_by, resolved_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind('ffrd-001', 'RSK-2026-0001', 'high_value_anomaly', 'low', 22, 'CSO-ORD-2026-0003', 'TXN-RZP-20260003', 'lipsa.behera@example.com', 'ip_103.84.••.12', 117882, 'cleared_safe', 'false_positive_cleared', 'Verified annual Pro membership purchase from Bhubaneswar', 'finance-admin@csodisha.com', '2026-11-15T12:00:00Z').run();
+    ).bind('ffrd-001', 'RSK-2026-0001', 'high_value_anomaly', 'low', 22, 'CSO-ORD-2026-0003', 'TXN-RZP-20260003', 'lipsa.behera@csodisha.com', 'ip_103.84.••.12', 117882, 'cleared_safe', 'false_positive_cleared', 'Verified annual Pro membership purchase from Bhubaneswar', 'finance-admin@csodisha.com', '2026-11-15T12:00:00Z').run();
 
     await db.prepare(
       `INSERT OR IGNORE INTO fin_fraud_risk_events (id, alert_code, rule_triggered, severity, risk_score, order_number, txn_reference, customer_email, ip_hash_masked, amount_paise, action_taken, resolution_status, analyst_notes)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind('ffrd-002', 'RSK-2026-0002', 'multiple_failed_cards', 'high', 78, 'CSO-ORD-2026-0004', 'TXN-RZP-20260004', 'subhashree.nayak@example.com', 'ip_49.37.••.89', 47082, 'flagged_review', 'open', '3 consecutive failed card attempts in 10 minutes').run();
+    ).bind('ffrd-002', 'RSK-2026-0002', 'multiple_failed_cards', 'high', 78, 'CSO-ORD-2026-0004', 'TXN-RZP-20260004', 'subhashree.nayak@csodisha.com', 'ip_49.37.••.89', 47082, 'flagged_review', 'open', '3 consecutive failed card attempts in 10 minutes').run();
   }
 }
 

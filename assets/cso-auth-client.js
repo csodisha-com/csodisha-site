@@ -6,7 +6,7 @@
     login: "/api/auth/login",
     me: "/api/auth/me",
     logout: "/api/auth/logout",
-    verify: "/api/auth/verify-email",
+    verify: "/api/auth/verify-otp",
     verifyOtp: "/api/auth/verify-otp",
     resendOtp: "/api/auth/resend-otp",
     forgotPassword: "/api/auth/forgot-password",

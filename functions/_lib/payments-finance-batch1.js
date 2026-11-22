@@ -209,11 +209,11 @@ async function seedFinance(db) {
   if (!ocnt || Number(ocnt.n || 0) === 0) {
     const item = (type, id, title, qty, price, gst) => ({ item_type: type, item_id: id, title_en: title, qty, unit_price_paise: price, gst_rate_pct: gst });
     const orders = [
-      ['ford-001', 'CSO-ORD-2026-0001', 'Sasmita Mohanty', 'sasmita.mohanty@example.com', '9437012345', 'Odisha', 'mock_test_series', [item('mock_test_series', 'mts-opsc-oas', 'OPSC OAS Prelims Mock Test Series (30 Tests)', 1, 49900, 18)], 5000, 'ODISHA10', 'paid', 'access_granted'],
-      ['ford-002', 'CSO-ORD-2026-0002', 'Biswajit Panda', 'biswajit.panda@example.com', '9861098765', 'Odisha', 'study_pack', [item('study_pack', 'sp-odisha-gk', 'Odisha GK Complete Study Pack', 1, 29900, 5), item('ebook', 'eb-oas-ca', 'OAS Current Affairs 2026 e-Book', 1, 9900, 0)], 0, '', 'paid', 'unfulfilled'],
-      ['ford-003', 'CSO-ORD-2026-0003', 'Lipsa Behera', 'lipsa.behera@example.com', '9178055501', 'Odisha', 'membership', [item('membership', 'mem-pro-annual', 'CSOdisha Pro Annual Membership', 1, 99900, 18)], 0, '', 'paid', 'access_granted'],
-      ['ford-004', 'CSO-ORD-2026-0004', 'Subhashree Nayak', 'subhashree.nayak@example.com', '9556012399', 'Odisha', 'mock_test_series', [item('mock_test_series', 'mts-ossc-cgl', 'OSSC CGL Mock Test Series (20 Tests)', 1, 39900, 18)], 0, '', 'failed', 'unfulfilled'],
-      ['ford-005', 'CSO-ORD-2026-0005', 'Rakesh Dash', 'rakesh.dash@example.com', '9777044410', 'Odisha', 'study_pack', [item('study_pack', 'sp-osssc-cre', 'OSSSC RI/ARI/AMIN Study Pack', 1, 24900, 5)], 0, '', 'pending', 'unfulfilled']
+      ['ford-001', 'CSO-ORD-2026-0001', 'Sasmita Mohanty', 'sasmita.mohanty@csodisha.com', '9437012345', 'Odisha', 'mock_test_series', [item('mock_test_series', 'mts-opsc-oas', 'OPSC OAS Prelims Mock Test Series (30 Tests)', 1, 49900, 18)], 5000, 'ODISHA10', 'paid', 'access_granted'],
+      ['ford-002', 'CSO-ORD-2026-0002', 'Biswajit Panda', 'biswajit.panda@csodisha.com', '9861098765', 'Odisha', 'study_pack', [item('study_pack', 'sp-odisha-gk', 'Odisha GK Complete Study Pack', 1, 29900, 5), item('ebook', 'eb-oas-ca', 'OAS Current Affairs 2026 e-Book', 1, 9900, 0)], 0, '', 'paid', 'unfulfilled'],
+      ['ford-003', 'CSO-ORD-2026-0003', 'Lipsa Behera', 'lipsa.behera@csodisha.com', '9178055501', 'Odisha', 'membership', [item('membership', 'mem-pro-annual', 'CSOdisha Pro Annual Membership', 1, 99900, 18)], 0, '', 'paid', 'access_granted'],
+      ['ford-004', 'CSO-ORD-2026-0004', 'Subhashree Nayak', 'subhashree.nayak@csodisha.com', '9556012399', 'Odisha', 'mock_test_series', [item('mock_test_series', 'mts-ossc-cgl', 'OSSC CGL Mock Test Series (20 Tests)', 1, 39900, 18)], 0, '', 'failed', 'unfulfilled'],
+      ['ford-005', 'CSO-ORD-2026-0005', 'Rakesh Dash', 'rakesh.dash@csodisha.com', '9777044410', 'Odisha', 'study_pack', [item('study_pack', 'sp-osssc-cre', 'OSSSC RI/ARI/AMIN Study Pack', 1, 24900, 5)], 0, '', 'pending', 'unfulfilled']
     ];
     const totalsById = {};
     for (const o of orders) {
