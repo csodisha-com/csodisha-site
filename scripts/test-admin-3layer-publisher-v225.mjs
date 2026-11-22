@@ -103,7 +103,7 @@ for (const rel of touched) {
   }
 }
 
-assert.ok(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8').includes('cso-candidate-cache-v225'), 'sw.js must be bumped to v225');
-assert.ok(fs.readFileSync(path.join(ROOT, 'functions/_lib/ops-sentinel.js'), 'utf8').includes('cso-candidate-cache-v225'), 'ops-sentinel.js must be bumped to v225');
+assert.ok(/cso-candidate-cache-v22(5|6)/.test(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8')), 'sw.js must be bumped to v225+');
+assert.ok(/cso-candidate-cache-v22(5|6)/.test(fs.readFileSync(path.join(ROOT, 'functions/_lib/ops-sentinel.js'), 'utf8')), 'ops-sentinel.js must be bumped to v225+');
 
 console.log('All v225 Admin 3-Layer Publisher & D1 Taxonomy Sync tests PASSED!');

@@ -103,6 +103,104 @@
     'private-remote-internships': '/jobs-careers/career-development'
   };
 
+  var UPSC_CSE_SERVICES = [
+    ['1. Indian Administrative Service (IAS)', 'All-India Service', 'State / UT Cadres (DoPT)'],
+    ['2. Indian Foreign Service (IFS)', 'Central Group A', 'Ministry of External Affairs'],
+    ['3. Indian Police Service (IPS)', 'All-India Service', 'State / UT Cadres (MHA)'],
+    ['4. Indian Audit and Accounts Service (IA&AS)', 'Central Group A', 'CAG of India'],
+    ['5. Indian Civil Accounts Service (ICAS)', 'Central Group A', 'Dept of Expenditure, MoF'],
+    ['6. Indian Corporate Law Service (ICLS)', 'Central Group A', 'Ministry of Corporate Affairs'],
+    ['7. Indian Defence Accounts Service (IDAS)', 'Central Group A', 'Ministry of Defence'],
+    ['8. Indian Defence Estates Service (IDES)', 'Central Group A', 'Ministry of Defence'],
+    ['9. Indian Information Service (IIS)', 'Central Group A', 'Ministry of Information & Broadcasting'],
+    ['10. Indian Postal Service (IPoS)', 'Central Group A', 'Dept of Posts'],
+    ['11. Indian P&T Accounts and Finance Service (IP&TAFS)', 'Central Group A', 'Dept of Telecommunications'],
+    ['12. Indian Railway Protection Force Service (IRPFS)', 'Central Group A', 'Ministry of Railways'],
+    ['13. Indian Revenue Service (Customs & Indirect Taxes / IRS C&IT)', 'Central Group A', 'CBIC, Dept of Revenue'],
+    ['14. Indian Revenue Service (Income Tax / IRS IT)', 'Central Group A', 'CBDT, Dept of Revenue'],
+    ['15. Indian Trade Service (ITS)', 'Central Group A', 'DGFT, Ministry of Commerce'],
+    ['16. Indian Railway Management Service (IRMS)', 'Central Group A', 'Ministry of Railways'],
+    ['17. Armed Forces Headquarters Civil Service (AFHQCS)', 'Central Group B', 'Ministry of Defence'],
+    ['18. Delhi, Andaman & Nicobar Islands Civil Service (DANICS)', 'UT Group B', 'MHA / NCT Delhi & UTs'],
+    ['19. Delhi, Andaman & Nicobar Islands Police Service (DANIPS)', 'UT Group B', 'MHA / NCT Delhi & UTs'],
+    ['20. Pondicherry Civil Service (PONDICS)', 'UT Group B', 'Puducherry Administration'],
+    ['21. Pondicherry Police Service (PONDIPS)', 'UT Group B', 'Puducherry Police']
+  ];
+
+  var UPSC_CSE_ATTEMPTS = [
+    ['General / EWS', '21–32 Years (as on 1st August)', '6 Attempts', '₹100 (Gen/EWS Male) · ₹0 (Female)'],
+    ['OBC (Non-Creamy Layer)', '21–35 Years (+3 Yrs Relaxation)', '9 Attempts', '₹100 (OBC Male) · ₹0 (Female)'],
+    ['SC / ST', '21–37 Years (+5 Yrs Relaxation)', 'Unlimited (up to 37 Yrs)', '₹0 (100% Fee Exempted)'],
+    ['Defence / Ex-Servicemen', '21–35 / 37 Years (+3 to +5 Yrs)', 'As per Category + Defence Rule', '₹100 / ₹0 (SC/ST/Ex-SM norms)'],
+    ['PwBD (Benchmark Disability)', '21–42 / 47 Years (+10 Yrs)', '9 (Gen/EWS/OBC) · Unlimited (SC/ST)', '₹0 (100% Fee Exempted)'],
+    ['IPS / DANIPS / IRPFS Physical', '165 cm Male / 150 cm Female', 'Chest 84 cm + 5 cm exp. (Male)', 'ST / Gorkha relaxations per Gazette']
+  ];
+
+  var UPSC_CSE_STAGES = [
+    ['Stage 1: Prelims — GS Paper-I', '100 Objective MCQs · 2 Hours · Merit Ranking', '200 Marks (-0.66 / 1/3rd negative)'],
+    ['Stage 1: Prelims — CSAT Paper-II', '80 Objective MCQs · 2 Hours · Qualifying (33%)', '200 Marks (66 Marks to Qualify)'],
+    ['Stage 2: Mains — Paper-A (Indian Language)', '8th Schedule Language incl. Odia (Qualifying 25%)', '300 Marks (Qualifying)'],
+    ['Stage 2: Mains — Paper-B (English)', 'Conventional Comprehension & Precis (Qualifying 25%)', '300 Marks (Qualifying)'],
+    ['Stage 2: Mains — Essay + GS-I, GS-II, GS-III, GS-IV', '5 Merit Papers × 250 Marks (Conventional)', '1,250 Marks (Merit)'],
+    ['Stage 2: Mains — Optional Paper-I & Paper-II', '2 Merit Papers × 250 Marks (incl. Odia Literature)', '500 Marks (Merit · Mains Total 1,750)'],
+    ['Stage 3: Personality Test (Interview)', 'UPSC Board at Dholpur House, New Delhi', '275 Marks (Grand Total: 2,025 Marks)']
+  ];
+
+  var UPSC_CSE_PAY = [
+    { label: 'Level-10 (Entry)', pay: 56100 },
+    { label: 'Level-12 (JAG)', pay: 78800 },
+    { label: 'Level-14 (Super Time)', pay: 144200 },
+    { label: 'Level-17 (Apex Scale)', pay: 225000 },
+    { label: 'Level-18 (Cab. Secy)', pay: 250000 }
+  ];
+
+  var UPSC_CSE_REFS = [
+    { href: 'https://upsc.gov.in', title: '🏛️ UPSC Official Portal (upsc.gov.in)', desc: 'Gazette Notifications, Exam Calendar & Final Merit Lists' },
+    { href: 'https://upsconline.nic.in', title: '📝 UPSC Online & OTR Portal (upsconline.nic.in)', desc: 'One-Time Registration, Prelims/Mains DAF & e-Admit Cards' },
+    { href: 'https://upsc.gov.in/examinations/previous-question-papers', title: '📄 UPSC Official Previous Question Papers', desc: 'Authentic Prelims GS/CSAT & Mains Papers Archive' },
+    { href: 'https://dopt.gov.in', title: '⚖️ DoPT Service & Cadre Rules (dopt.gov.in)', desc: 'All-India Service Allocation, 7th CPC Pay & Cadre Policy' },
+    { href: '/tools/#age-calculator', title: '🎂 CSO Age Eligibility Calculator', desc: 'Check 1st August cut-off age & category relaxation' },
+    { href: '/mock-tests/', title: '🧪 CSO Prelims & Odia Mock Tests', desc: 'Timed GS, CSAT & Odisha GK practice tests' }
+  ];
+
+  function attachDetailedDossierSpec(item) {
+    if (!item) return item;
+    var s = String(item.slug || '');
+    if (
+      s === 'upsc-civil-services-examination' ||
+      s === 'ias-ips-indian-foreign-service-and-other-group-a-services' ||
+      s === 'central-secretariat-and-administrative-services' ||
+      s === 'central-government-administrative-and-executive-posts' ||
+      s === 'hub-upsc-central'
+    ) {
+      item.organisation = 'Union Public Service Commission (UPSC)';
+      item.qualification = "Bachelor's Degree in any discipline (Final-year candidates eligible for Prelims)";
+      item.age_limit = '21–32 yrs (Gen/EWS 6 attempts · OBC 35 / 9 · SC/ST 37 / Unlimited · PwBD 42–47)';
+      item.pay_level = '7th CPC Level-10 ₹56,100 – Apex Level-18 ₹2,50,000';
+      item.apply_url = 'https://upsconline.nic.in';
+      item.summary = 'UPSC Civil Services Examination (CSE) recruits into 21 All-India, Central Group A, and UT Group B Services (IAS, IFS, IPS, IRS, IA&AS, IRMS, DANICS, etc.) via Prelims (400 Marks), Mains (1,750 Merit + 600 Qualifying), and Personality Test at Dholpur House (275 Marks; Grand Total 2,025 Marks).';
+      item.summary_or = 'UPSC ସିଭିଲ୍ ସର୍ଭିସେସ୍ ପରୀକ୍ଷା (CSE) ମାଧ୍ୟମରେ IAS, IFS, IPS, IRS ସମେତ ୨୧ଟି ସର୍ବଭାରତୀୟ ଓ କେନ୍ଦ୍ରୀୟ ଗ୍ରୁପ୍ A/B ସେବାରେ ନିଯୁକ୍ତି। ପ୍ରିଲିମ୍ସ, ମେନ୍ସ (ଓଡ଼ିଆ ଭାଷା ଓ ଓଡ଼ିଆ ସାହିତ୍ୟ ଅପ୍ସନାଲ୍ ସହ ୧,୭୫୦ ମାର୍କ) ଏବଂ ଇଣ୍ଟରଭ୍ୟୁ (୨୭୫ ମାର୍କ — ମୋଟ ୨,୦୨୫ ମାର୍କ)।';
+      item.serviceAllocations = UPSC_CSE_SERVICES;
+      item.attemptMatrix = UPSC_CSE_ATTEMPTS;
+      item.examStages = UPSC_CSE_STAGES;
+      item.payProgression = UPSC_CSE_PAY;
+      item.referenceLinks = UPSC_CSE_REFS;
+      item.marksChart = [
+        { label: 'Prelims (GS+CSAT)', count: 400 },
+        { label: 'Mains Merit (7 Papers)', count: 1750 },
+        { label: 'Interview (Dholpur)', count: 275 },
+        { label: 'Grand Total Merit', count: 2025 }
+      ];
+    } else if (s === 'odisha-civil-services' || s === 'opsc-odisha-civil-services-ocs-2026') {
+      item.organisation = 'Odisha Public Service Commission (OPSC)';
+      item.qualification = "Bachelor's Degree + Odia Language Proficiency (ME / HSC Standard)";
+      item.age_limit = '21–38 yrs (SEBC/SC/ST/Women +5 Yrs · PwBD +10 Yrs)';
+      item.pay_level = 'ORSP 7th Pay Matrix Level-12 (₹56,100 – ₹1,77,500)';
+      item.apply_url = 'https://www.opsc.gov.in/';
+    }
+    return item;
+  }
+
   var DIRECTORY_ITEMS = [
     // ================= 1. OVERVIEW (7 entries) =================
     {
@@ -1263,7 +1361,32 @@
     var s = String(slug || '').trim();
     if (!s) return null;
     for (var i = 0; i < DIRECTORY_ITEMS.length; i++) {
-      if (DIRECTORY_ITEMS[i].slug === s) return DIRECTORY_ITEMS[i];
+      if (DIRECTORY_ITEMS[i].slug === s) return attachDetailedDossierSpec(DIRECTORY_ITEMS[i]);
+    }
+    if (
+      s === 'upsc-civil-services-examination' ||
+      s === 'ias-ips-indian-foreign-service-and-other-group-a-services' ||
+      s === 'central-secretariat-and-administrative-services' ||
+      s === 'central-government-administrative-and-executive-posts' ||
+      s === 'odisha-civil-services'
+    ) {
+      return attachDetailedDossierSpec({
+        slug: s,
+        section: 'jobs-recruitment',
+        l1Code: s === 'odisha-civil-services' ? '1.2' : '1.1',
+        l2Code: s === 'odisha-civil-services' ? '1.2.1' : '1.1.1',
+        title: s === 'odisha-civil-services'
+          ? 'OPSC Odisha Civil Services (OAS / OFS / OPS)'
+          : 'UPSC Civil Services Examination (CSE) — IAS, IFS, IPS & Group A/B Services',
+        title_or: s === 'odisha-civil-services'
+          ? 'OPSC ଓଡ଼ିଶା ସିଭିଲ୍ ସର୍ଭିସେସ୍ (OAS / OFS / OPS)'
+          : 'UPSC ସିଭିଲ୍ ସର୍ଭିସେସ୍ ପରୀକ୍ଷା (CSE) — IAS, IFS, IPS ଏବଂ ଗ୍ରୁପ୍ A/B ସେବା',
+        category: s === 'odisha-civil-services' ? 'Odisha State Jobs' : 'Central',
+        stage: 'new-recruitment',
+        stage_label: 'New Recruitment',
+        vacancies: s === 'odisha-civil-services' ? 399 : 1056,
+        last_date: '2027-02-15'
+      });
     }
     return null;
   }
@@ -1420,7 +1543,7 @@
           var txt1 = typeof l1Notes[n1] === 'string' ? l1Notes[n1] : (l1Notes[n1].text || '');
           if (slugifyBranch(txt1) === cleanTarget) {
             var m1 = enrichBranchMeta(txt1, l1.title, secSlug);
-            return {
+            return attachDetailedDossierSpec({
               slug: cleanTarget,
               section: secSlug,
               sectionTitle: sec.title,
@@ -1442,7 +1565,7 @@
               apply_url: inferPortalForBranch(txt1 + ' ' + l1.title, secSlug),
               summary: txt1 + ' under ' + l1.title + ' (' + sec.title + '). Verified eligibility, age limit, pay matrix, and official .gov.in portal dossier.',
               summary_or: sec.title + ' ଅନ୍ତର୍ଗତ ' + txt1 + ' ସମ୍ବନ୍ଧୀୟ ସମ୍ପୂର୍ଣ୍ଣ ଯୋଗ୍ୟତା, ବୟସ ସୀମା, ବେତନ ଓ ସରକାରୀ ପୋର୍ଟାଲ୍ ବିବରଣୀ।'
-            };
+            });
           }
         }
         var l2List = l1.children || [];
@@ -1451,7 +1574,7 @@
           var l2Code = String(l2.number || '').trim() || slugifyBranch(l2.title);
           if (slugifyBranch(l2.title) === cleanTarget) {
             var m2 = enrichBranchMeta(l2.title, l1.title, secSlug);
-            return {
+            return attachDetailedDossierSpec({
               slug: cleanTarget,
               section: secSlug,
               sectionTitle: sec.title,
@@ -1473,14 +1596,14 @@
               apply_url: inferPortalForBranch(l2.title + ' ' + l1.title, secSlug),
               summary: l2.title + ' (' + l2Code + ') under ' + l1.title + '. Verified eligibility, age limit, and official portal details.',
               summary_or: l1.title + ' ଅନ୍ତର୍ଗତ ' + l2.title + ' ସମ୍ବନ୍ଧୀୟ ସମ୍ପୂର୍ଣ୍ଣ ସୂଚନା ଓ ସରକାରୀ ପୋର୍ଟାଲ୍।'
-            };
+            });
           }
           var l2Notes = l2.notes || [];
           for (var n2 = 0; n2 < l2Notes.length; n2++) {
             var txt2 = typeof l2Notes[n2] === 'string' ? l2Notes[n2] : (l2Notes[n2].text || '');
             if (slugifyBranch(txt2) === cleanTarget) {
               var m3 = enrichBranchMeta(txt2, l2.title + ' ' + l1.title, secSlug);
-              return {
+              return attachDetailedDossierSpec({
                 slug: cleanTarget,
                 section: secSlug,
                 sectionTitle: sec.title,
@@ -1502,7 +1625,7 @@
                 apply_url: inferPortalForBranch(txt2 + ' ' + l2.title + ' ' + l1.title, secSlug),
                 summary: txt2 + ' under ' + l2Code + ' ' + l2.title + ' (' + l1Code + ' ' + l1.title + '). Verified eligibility, age limit, pay matrix, and official .gov.in portal.',
                 summary_or: l2.title + ' (' + l2Code + ') ଅନ୍ତର୍ଗତ ' + txt2 + ' ସମ୍ବନ୍ଧୀୟ ସମ୍ପୂର୍ଣ୍ଣ ଯୋଗ୍ୟତା, ବୟସ ସୀମା ଓ ସରକାରୀ ପୋର୍ଟାଲ୍ ବିବରଣୀ।'
-              };
+              });
             }
           }
         }

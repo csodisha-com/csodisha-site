@@ -4255,8 +4255,10 @@ a.dashboard-card {
 
 .cso-top-selector__select {
   width: 100%;
+  height: auto;
   min-height: 44px;
-  padding: 8px 10px;
+  padding: 10px 32px 10px 12px;
+  line-height: 1.4;
   border-radius: 10px;
   border: 1px solid var(--cso-border, #cbd5e1);
   background: var(--cso-surface-alt, #f8fafc);

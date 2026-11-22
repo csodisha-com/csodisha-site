@@ -268,6 +268,9 @@
   }
 
   function buildPayScaleData(job) {
+    if (Array.isArray(job.payProgression) && job.payProgression.length) {
+      return job.payProgression;
+    }
     var hay = [job.title, job.category, job.organisation].join(' ').toLowerCase();
     if (hay.includes('opsc') || hay.includes('oas') || hay.includes('lecturer')) {
       return [
@@ -441,10 +444,14 @@
     hero.appendChild(actions);
     rootEl.appendChild(hero);
 
-    // 2. Pure SVG Data Graphs (Category-wise Vacancy Breakdown + ORSP Pay Scale Comparison)
+    // 2. Pure SVG Data Graphs (Category-wise Vacancy or Marks Breakdown + 7th CPC/ORSP Pay Scale Comparison)
     var chartsGrid = el('div', 'cso-dossier-charts-grid');
-    chartsGrid.appendChild(renderSvgBarChart('Category-Wise Indicative Vacancy Breakdown', buildVacancyBreakdown(job.vacancies), 'cso-svg-bar-vac', ''));
-    chartsGrid.appendChild(renderSvgBarChart('ORSP 7th Pay Matrix Basic Pay Comparison', buildPayScaleData(job), 'cso-svg-bar-pay', '₹'));
+    if (Array.isArray(job.marksChart) && job.marksChart.length) {
+      chartsGrid.appendChild(renderSvgBarChart('UPSC CSE 3-Stage Marks Breakdown (2,025 Grand Total)', job.marksChart, 'cso-svg-bar-vac', ''));
+    } else {
+      chartsGrid.appendChild(renderSvgBarChart('Category-Wise Indicative Vacancy Breakdown', buildVacancyBreakdown(job.vacancies), 'cso-svg-bar-vac', ''));
+    }
+    chartsGrid.appendChild(renderSvgBarChart('7th CPC / ORSP Pay Matrix Basic Pay Progression', buildPayScaleData(job), 'cso-svg-bar-pay', '₹'));
     rootEl.appendChild(chartsGrid);
 
     // 3. 5-Step Selection Process Timeline
@@ -499,33 +506,75 @@
     infoCard.appendChild(tblWrap);
     rootEl.appendChild(infoCard);
 
-    // 5. Exam Pattern & Negative Marking Table
+    // 5. Exam Pattern & Negative Marking Table (Multi-Row 2,025 Marks Breakdown when present)
     var patCard = el('section', 'cso-dossier-card');
-    patCard.appendChild(el('h2', 'cso-dossier-section-title', 'Exam Pattern & Negative Marking Blueprint'));
+    patCard.appendChild(el('h2', 'cso-dossier-section-title', Array.isArray(job.examStages) ? '3-Stage Exam Pattern & Marks Breakdown (2,025 Grand Total)' : 'Exam Pattern & Negative Marking Blueprint'));
     var patTbl = el('table', 'cso-dossier-table');
     var patBody = document.createElement('tbody');
-    getExamPatternRows(job).forEach(function (pair) {
+    var patRows = Array.isArray(job.examStages) ? job.examStages : getExamPatternRows(job);
+    patRows.forEach(function (pair) {
       var tr = document.createElement('tr');
       tr.appendChild(el('th', '', pair[0]));
       tr.appendChild(el('td', '', pair[1]));
+      if (pair[2]) tr.appendChild(el('td', '', pair[2]));
       patBody.appendChild(tr);
     });
     patTbl.appendChild(patBody);
     patCard.appendChild(patTbl);
     rootEl.appendChild(patCard);
 
-    // 6. Official PDFs & CSO Prep Tools Cards
+    if (Array.isArray(job.attemptMatrix) && job.attemptMatrix.length) {
+      var attCard = el('section', 'cso-dossier-card');
+      attCard.appendChild(el('h2', 'cso-dossier-section-title', 'Statutory Eligibility, Age Relaxation (1st August) & Attempt Matrix'));
+      var attTbl = el('table', 'cso-dossier-table');
+      var attBody = document.createElement('tbody');
+      job.attemptMatrix.forEach(function (row) {
+        var tr = document.createElement('tr');
+        tr.appendChild(el('th', '', row[0]));
+        tr.appendChild(el('td', '', row[1]));
+        tr.appendChild(el('td', '', row[2]));
+        tr.appendChild(el('td', '', row[3]));
+        attBody.appendChild(tr);
+      });
+      attTbl.appendChild(attBody);
+      attCard.appendChild(attTbl);
+      rootEl.appendChild(attCard);
+    }
+
+    if (Array.isArray(job.serviceAllocations) && job.serviceAllocations.length) {
+      var srvCard = el('section', 'cso-dossier-card');
+      srvCard.appendChild(el('h2', 'cso-dossier-section-title', 'Service Allocation List (All ' + job.serviceAllocations.length + ' Services)'));
+      var srvTbl = el('table', 'cso-dossier-table');
+      var srvBody = document.createElement('tbody');
+      job.serviceAllocations.forEach(function (srv) {
+        var tr = document.createElement('tr');
+        tr.appendChild(el('th', '', srv[0]));
+        tr.appendChild(el('td', '', srv[1]));
+        tr.appendChild(el('td', '', srv[2]));
+        srvBody.appendChild(tr);
+      });
+      srvTbl.appendChild(srvBody);
+      srvCard.appendChild(srvTbl);
+      rootEl.appendChild(srvCard);
+    }
+
+    // 6. Official References & CSO Prep Tools Cards
     var toolsCard = el('section', 'cso-dossier-card');
-    toolsCard.appendChild(el('h2', 'cso-dossier-section-title', 'Official PDFs & CSO Candidate Prep Tools'));
+    toolsCard.appendChild(el('h2', 'cso-dossier-section-title', Array.isArray(job.referenceLinks) ? 'Verified Official Reference Portals & CSO Prep Tools' : 'Official PDFs & CSO Candidate Prep Tools'));
     var toolsGrid = el('div', 'cso-dossier-tools-grid');
-    [
+    var toolList = Array.isArray(job.referenceLinks) ? job.referenceLinks : [
       { href: '/tools/#photo-resizer', title: '📸 Photo & Signature Resizer', desc: 'Format 20–50 KB JPG for OPSC / OSSC / OSSSC OTR' },
       { href: '/tools/#orsp-salary-calculator', title: '💰 7th Pay Salary & Fee Calculator', desc: 'Compute ORSP Level 4–12 In-Hand Salary & ₹0 Fee Waiver' },
       { href: '/tools/#odisha-pet-checker', title: '🏃 Police & Forest PET Checker', desc: 'Verify Height, Weight, Chest (≥ 5 cm) & Run Targets' },
       { href: '/study-library/', title: '📚 Study Library & Odia Glossary', desc: 'Solved PYQs, 30-District GK & Administrative Glossary' }
-    ].forEach(function (t) {
+    ];
+    toolList.forEach(function (t) {
       var a = el('a', 'cso-dossier-tool-card');
       a.href = t.href;
+      if (/^https?:\/\//i.test(t.href)) {
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      }
       a.appendChild(el('strong', '', t.title));
       a.appendChild(el('span', '', t.desc));
       toolsGrid.appendChild(a);

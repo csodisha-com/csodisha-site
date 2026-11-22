@@ -72,9 +72,49 @@ const LIST_COLS = `id, type, slug, title, title_or, summary, summary_or, categor
   organisation, vacancies, qualification, last_date, apply_url, notification_media_key, state, age_limit, salary_pay, source_url,
   section_slug, l1_code, l2_code, l3_slug, district_tag, stage`;
 
+async function ensureVerifiedUpscSeedNotice(db) {
+  if (!db) return;
+  try {
+    const existing = await db.prepare(
+      `SELECT id, l1_code FROM posts WHERE type = 'job' AND slug = 'upsc-civil-services-examination' AND deleted_at IS NULL LIMIT 1`
+    ).first();
+    if (!existing) {
+      await db.prepare(
+        `INSERT INTO posts (
+           id, type, slug, title, title_or, summary, summary_or, category, tags,
+           organisation, vacancies, qualification, last_date, apply_url, state,
+           age_limit, salary_pay, source_url, section_slug, l1_code, l2_code, l3_slug,
+           district_tag, stage, status, published_at
+         ) VALUES (?, 'job', ?, ?, ?, ?, ?, 'Central', '["UPSC","IAS","IPS","IFS","CSE"]',
+           'Union Public Service Commission (UPSC)', 1056, ?, '2027-02-15', 'https://upsconline.nic.in', 'Central',
+           '21–32 yrs (OBC 35, SC/ST 37, PwBD 42)', 'Level-10 ₹56,100 – Apex ₹2,50,000', 'https://upsc.gov.in',
+           'jobs-recruitment', '1.1', '1.1.1', 'upsc-civil-services-examination',
+           'All India (Odisha Centres: Cuttack, Sambalpur, Berhampur)', 'new-recruitment', 'published', datetime('now'))`
+      ).bind(
+        'seed-upsc-cse-1-1-1',
+        'upsc-civil-services-examination',
+        'UPSC Civil Services Examination (CSE) — IAS, IFS, IPS & Group A/B Services',
+        'UPSC ସିଭିଲ୍ ସର୍ଭିସେସ୍ ପରୀକ୍ଷା (CSE) — IAS, IFS, IPS ଏବଂ ଗ୍ରୁପ୍ A/B ସେବା',
+        'UPSC Civil Services Examination recruiting into 21 All-India, Central Group A & UT Group B services (IAS, IFS, IPS, IRS, IA&AS) via Prelims, Mains (1,750 Marks) & Personality Test (275 Marks).',
+        'UPSC ସିଭିଲ୍ ସର୍ଭିସେସ୍ ପରୀକ୍ଷା (CSE) ମାଧ୍ୟମରେ IAS, IFS, IPS ସମେତ ୨୧ଟି ସେବାରେ ନିଯୁକ୍ତି।',
+        "Bachelor's Degree in any discipline"
+      ).run();
+    } else if (!existing.l1_code) {
+      await db.prepare(
+        `UPDATE posts SET section_slug = 'jobs-recruitment', l1_code = '1.1', l2_code = '1.1.1', l3_slug = 'upsc-civil-services-examination',
+         organisation = 'Union Public Service Commission (UPSC)', qualification = ?, age_limit = '21–32 yrs (OBC 35, SC/ST 37, PwBD 42)',
+         salary_pay = 'Level-10 ₹56,100 – Apex ₹2,50,000', apply_url = 'https://upsconline.nic.in',
+         district_tag = 'All India (Odisha Centres: Cuttack, Sambalpur, Berhampur)', stage = 'new-recruitment'
+         WHERE id = ?`
+      ).bind("Bachelor's Degree in any discipline", existing.id).run();
+    }
+  } catch (_) {}
+}
+
 async function listPosts(env, request, type, orderBy) {
   if (type === 'job' && env && env.DB) {
     await ensureJobTaxonomyColumns(env.DB);
+    await ensureVerifiedUpscSeedNotice(env.DB);
   }
   const url = new URL(request.url);
   const { page, limit, offset } = parsePaging(url);
