@@ -1044,9 +1044,9 @@ export default {
     if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
       let assetRequest = request;
       if (matchJobsCategoryPath(pathname)) {
-        assetRequest = new Request(new URL('/jobs-careers/index.html', url.origin).toString(), request);
+        assetRequest = new Request(new URL('/jobs-careers/', url.origin).toString(), request);
       } else if (matchJobsDetailPath(pathname)) {
-        assetRequest = new Request(new URL('/jobs-careers/detail/index.html', url.origin).toString(), request);
+        assetRequest = new Request(new URL('/jobs-careers/detail/', url.origin).toString(), request);
       }
       let res = await env.ASSETS.fetch(assetRequest);
       const isPageReq = (request.method === 'GET' || request.method === 'HEAD') && !pathname.startsWith('/api/') && !pathname.startsWith('/assets/') && (pathname.endsWith('/') || pathname.endsWith('.html') || !/\.[a-z0-9]+$/i.test(pathname));
