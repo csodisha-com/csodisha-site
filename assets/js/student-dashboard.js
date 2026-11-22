@@ -1120,6 +1120,120 @@
     });
   }
 
+  function initAlertWatchlist() {
+    const host = document.getElementById('cso-watchlist-panel');
+    const api = window.CSO_CANDIDATE_PREFS;
+    if (!host || !api) return;
+    clear(host);
+
+    const prefs = api.load();
+    const header = el('div', 'bp-panel-header');
+    const titleWrap = el('div', 'bp-panel-title');
+    titleWrap.appendChild(el('span', '', '🎯'));
+    titleWrap.appendChild(el('span', '', 'Personalized Job & Scheme Alert Watchlist'));
+    header.appendChild(titleWrap);
+    const linksWrap = el('div', 'cso-inline-actions');
+    const jobsLink = el('a', 'cso-btn cso-btn-sm', 'View My Matched Jobs →');
+    jobsLink.href = '/jobs-careers/?matched=1';
+    const schemesLink = el('a', 'cso-btn cso-btn-sm', 'View My Matched Schemes →');
+    schemesLink.href = '/schemes-benefits/?matched=1';
+    linksWrap.appendChild(jobsLink);
+    linksWrap.appendChild(schemesLink);
+    header.appendChild(linksWrap);
+    host.appendChild(header);
+
+    const form = el('div', 'cso-watchlist-body');
+
+    const qualLabel = el('label', 'cso-watchlist-field');
+    qualLabel.appendChild(el('span', 'cso-watchlist-lbl', 'Highest Qualification'));
+    const qualSel = document.createElement('select');
+    qualSel.className = 'cso-input';
+    qualSel.setAttribute('aria-label', 'Highest Qualification');
+    const emptyOpt = document.createElement('option');
+    emptyOpt.value = '';
+    emptyOpt.textContent = 'Any Qualification';
+    qualSel.appendChild(emptyOpt);
+    api.QUALIFICATIONS.forEach(q => {
+      const opt = document.createElement('option');
+      opt.value = q;
+      opt.textContent = q;
+      if (prefs.qualification === q) opt.selected = true;
+      qualSel.appendChild(opt);
+    });
+    qualLabel.appendChild(qualSel);
+    form.appendChild(qualLabel);
+
+    const boardsWrap = el('div', 'cso-watchlist-group');
+    boardsWrap.appendChild(el('span', 'cso-watchlist-lbl', 'Target Exam Boards'));
+    const boardChips = el('div', 'cso-watchlist-chips');
+    const selectedBoards = new Set(prefs.boards);
+    api.BOARDS.forEach(b => {
+      const btn = el('button', 'cso-watchlist-chip' + (selectedBoards.has(b) ? ' is-active' : ''), b);
+      btn.type = 'button';
+      btn.setAttribute('aria-pressed', String(selectedBoards.has(b)));
+      btn.addEventListener('click', () => {
+        if (selectedBoards.has(b)) selectedBoards.delete(b);
+        else selectedBoards.add(b);
+        const on = selectedBoards.has(b);
+        btn.classList.toggle('is-active', on);
+        btn.setAttribute('aria-pressed', String(on));
+      });
+      boardChips.appendChild(btn);
+    });
+    boardsWrap.appendChild(boardChips);
+    form.appendChild(boardsWrap);
+
+    const distWrap = el('div', 'cso-watchlist-group');
+    const distCountEl = el('span', 'cso-watchlist-lbl', `Target Districts (Pick up to 3 · ${prefs.districts.length}/3 selected)`);
+    distWrap.appendChild(distCountEl);
+    const distChips = el('div', 'cso-watchlist-chips cso-watchlist-chips--districts');
+    const selectedDistricts = new Set(prefs.districts);
+    const allDistricts = Array.isArray(window.CSO_ODISHA_DISTRICTS) ? window.CSO_ODISHA_DISTRICTS : [];
+    allDistricts.forEach(d => {
+      const btn = el('button', 'cso-watchlist-chip' + (selectedDistricts.has(d.slug) ? ' is-active' : ''), `${d.name_en} (${d.name_or})`);
+      btn.type = 'button';
+      btn.setAttribute('aria-pressed', String(selectedDistricts.has(d.slug)));
+      btn.addEventListener('click', () => {
+        if (selectedDistricts.has(d.slug)) {
+          selectedDistricts.delete(d.slug);
+        } else {
+          if (selectedDistricts.size >= 3) {
+            statusEl.textContent = 'You can select up to 3 target districts. Deselect one to add another.';
+            return;
+          }
+          selectedDistricts.add(d.slug);
+        }
+        const on = selectedDistricts.has(d.slug);
+        btn.classList.toggle('is-active', on);
+        btn.setAttribute('aria-pressed', String(on));
+        distCountEl.textContent = `Target Districts (Pick up to 3 · ${selectedDistricts.size}/3 selected)`;
+      });
+      distChips.appendChild(btn);
+    });
+    distWrap.appendChild(distChips);
+    form.appendChild(distWrap);
+
+    const footer = el('div', 'cso-watchlist-footer');
+    const saveBtn = el('button', 'cso-btn cso-btn-primary', 'Save Watchlist');
+    saveBtn.type = 'button';
+    const statusEl = el('span', 'cso-muted-note', prefs.updatedAt ? 'Watchlist active across Jobs & Schemes.' : 'Select your districts, qualification & boards, then save.');
+    statusEl.setAttribute('role', 'status');
+    statusEl.setAttribute('aria-live', 'polite');
+    saveBtn.addEventListener('click', () => {
+      api.save({
+        districts: Array.from(selectedDistricts),
+        qualification: qualSel.value,
+        boards: Array.from(selectedBoards)
+      });
+      statusEl.textContent = '✓ Watchlist saved! Matched badges are now active on Jobs & Schemes.';
+    });
+    footer.appendChild(saveBtn);
+    footer.appendChild(statusEl);
+    form.appendChild(footer);
+
+    host.appendChild(form);
+  }
+
   function initMistakeNotebook() {
     const form = document.getElementById('cso-mistake-form');
     const listHost = document.getElementById('cso-mistake-list');
@@ -1630,6 +1744,7 @@
     renderCountdownsAndCalendar();
     renderCbtAnalytics();
     renderLocalCbtStreaks();
+    initAlertWatchlist();
     renderSchemes();
     renderResourcesShelf();
     renderBookmarksShelves();

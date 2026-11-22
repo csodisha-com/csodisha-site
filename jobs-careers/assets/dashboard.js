@@ -1145,6 +1145,8 @@
   const liveCategoryEl = $('live-jobs-category');
   const liveDistrictEl = $('live-jobs-district');
   const liveDistrictBannerEl = $('live-jobs-district-banner');
+  const liveMatchedToggleBtn = $('live-jobs-matched-toggle');
+  const liveEditPrefsLink = $('live-jobs-edit-prefs');
   const liveResetBtn = $('live-jobs-reset');
   const liveStatusEl = $('live-jobs-status');
   const liveGridEl = $('live-jobs-grid');
@@ -1180,7 +1182,7 @@
 
   const pc = window.CSOPublicContent;
   const knownCategories = new Set(['OPSC', 'OSSC', 'OSSSC', 'Teaching', 'Police & Defence', 'Banking & PSU', 'Railway']);
-  let liveState = { page: 1, limit: 12, q: '', state: '', category: '', district: '', includeStateWide: true, chip: 'all', goalMatch: false };
+  let liveState = { page: 1, limit: 12, q: '', state: '', category: '', district: '', includeStateWide: true, chip: 'all', goalMatch: false, matchedOnly: false };
   let liveSearchTimer = null;
   let liveTaxonomy = [];
   let liveCandidateUser = null;
@@ -1401,6 +1403,15 @@
 
     const badges = el('div', 'live-job-card__badges');
     badges.appendChild(buildJobBadges(job));
+    if (window.CSO_CANDIDATE_PREFS && typeof window.CSO_MATCH_ITEM === 'function') {
+      const prefs = window.CSO_CANDIDATE_PREFS.load();
+      if (window.CSO_CANDIDATE_PREFS.hasAny(prefs)) {
+        const m = window.CSO_MATCH_ITEM(job, prefs);
+        if (m.matched) {
+          badges.appendChild(el('span', 'cso-matched-badge', `✨ Matched for You${m.reasons.length ? ' · ' + m.reasons.join(' • ') : ''}`));
+        }
+      }
+    }
     top.appendChild(badges);
 
     top.appendChild(el('h3', 'live-job-card__title', job.title || 'Untitled Notification'));
@@ -1930,7 +1941,7 @@
   async function loadLiveJobs(opts = {}) {
     if (!liveGridEl || !liveStatusEl) return;
     const silent = Boolean(opts && opts.silent);
-    const isClientComposite = (liveState.chip && liveState.chip !== 'all') || Boolean(liveState.goalMatch) || Boolean(liveState.district);
+    const isClientComposite = (liveState.chip && liveState.chip !== 'all') || Boolean(liveState.goalMatch) || Boolean(liveState.district) || Boolean(liveState.matchedOnly);
     const hasFilter = Boolean(liveState.q || liveState.state || liveState.category || liveState.district || isClientComposite);
     if (liveResetBtn) liveResetBtn.hidden = !hasFilter;
 
@@ -1965,6 +1976,23 @@
       }
       if (liveState.district) {
         items = items.filter(job => matchesDistrictFilter(job, liveState.district, liveState.includeStateWide));
+      }
+      if (window.CSO_CANDIDATE_PREFS && typeof window.CSO_MATCH_ITEM === 'function') {
+        const prefs = window.CSO_CANDIDATE_PREFS.load();
+        const hasPrefs = window.CSO_CANDIDATE_PREFS.hasAny(prefs);
+        if (liveMatchedToggleBtn) {
+          liveMatchedToggleBtn.hidden = !hasPrefs;
+          if (hasPrefs) {
+            const matchedCount = items.filter(job => window.CSO_MATCH_ITEM(job, prefs).matched).length;
+            liveMatchedToggleBtn.textContent = `✨ Matched for You (${matchedCount})`;
+            liveMatchedToggleBtn.classList.toggle('is-active', liveState.matchedOnly);
+            liveMatchedToggleBtn.setAttribute('aria-pressed', String(liveState.matchedOnly));
+          }
+        }
+        if (liveEditPrefsLink) liveEditPrefsLink.hidden = !hasPrefs;
+        if (liveState.matchedOnly && hasPrefs) {
+          items = items.filter(job => window.CSO_MATCH_ITEM(job, prefs).matched);
+        }
       }
 
       const total = isClientComposite ? items.length : (Number(data.total) || items.length);
@@ -2179,8 +2207,15 @@
       loadLiveJobs();
     });
   }
+  if (liveMatchedToggleBtn) {
+    liveMatchedToggleBtn.addEventListener('click', () => {
+      liveState.matchedOnly = !liveState.matchedOnly;
+      liveState.page = 1;
+      loadLiveJobs();
+    });
+  }
   function resetAllFilters() {
-    liveState = { page: 1, limit: 12, q: '', state: '', category: '', district: '', includeStateWide: true, chip: 'all', goalMatch: false };
+    liveState = { page: 1, limit: 12, q: '', state: '', category: '', district: '', includeStateWide: true, chip: 'all', goalMatch: false, matchedOnly: false };
     if (search) search.value = '';
     if (clearSearch) clearSearch.hidden = true;
     if (liveStateEl) liveStateEl.value = '';
@@ -2226,6 +2261,9 @@
     if (matchedDist) {
       liveState.district = matchedDist.slug;
       if (liveDistrictEl) liveDistrictEl.value = matchedDist.slug;
+    }
+    if (sp.get('matched') === '1' && window.CSO_CANDIDATE_PREFS && window.CSO_CANDIDATE_PREFS.hasAny(window.CSO_CANDIDATE_PREFS.load())) {
+      liveState.matchedOnly = true;
     }
   } catch (_) {}
   renderDistrictBanner();

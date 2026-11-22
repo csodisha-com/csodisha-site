@@ -585,13 +585,17 @@
           schemeFilterState.q = childTitleText;
           populateSchemeDistrictSelect();
   try {
-    const distParam = (new URLSearchParams(window.location.search).get('district') || '').trim().toLowerCase();
+    const sp = new URLSearchParams(window.location.search);
+    const distParam = (sp.get('district') || '').trim().toLowerCase();
     const matchedDist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
       ? window.CSO_FIND_ODISHA_DISTRICT(distParam)
       : null;
     if (matchedDist) {
       schemeFilterState.district = matchedDist.slug;
       if (schemeDistrictEl) schemeDistrictEl.value = matchedDist.slug;
+    }
+    if (sp.get('matched') === '1' && window.CSO_CANDIDATE_PREFS && window.CSO_CANDIDATE_PREFS.hasAny(window.CSO_CANDIDATE_PREFS.load())) {
+      schemeFilterState.matchedOnly = true;
     }
   } catch (_) {}
   renderSchemeDistrictBanner();
@@ -701,13 +705,17 @@
         schemeFilterState.q = nextQ;
         populateSchemeDistrictSelect();
   try {
-    const distParam = (new URLSearchParams(window.location.search).get('district') || '').trim().toLowerCase();
+    const sp = new URLSearchParams(window.location.search);
+    const distParam = (sp.get('district') || '').trim().toLowerCase();
     const matchedDist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
       ? window.CSO_FIND_ODISHA_DISTRICT(distParam)
       : null;
     if (matchedDist) {
       schemeFilterState.district = matchedDist.slug;
       if (schemeDistrictEl) schemeDistrictEl.value = matchedDist.slug;
+    }
+    if (sp.get('matched') === '1' && window.CSO_CANDIDATE_PREFS && window.CSO_CANDIDATE_PREFS.hasAny(window.CSO_CANDIDATE_PREFS.load())) {
+      schemeFilterState.matchedOnly = true;
     }
   } catch (_) {}
   renderSchemeDistrictBanner();
@@ -1231,6 +1239,8 @@
   const schemeBenEl = document.getElementById('scheme-beneficiary');
   const schemeDistrictEl = document.getElementById('scheme-district');
   const schemeDistrictBannerEl = document.getElementById('scheme-district-banner');
+  const schemeMatchedToggleBtn = document.getElementById('scheme-matched-toggle');
+  const schemeEditPrefsLink = document.getElementById('scheme-edit-prefs');
   const schemeAgeEl = document.getElementById('scheme-age');
   const schemeIncomeEl = document.getElementById('scheme-income');
   const quickChips = Array.from(document.querySelectorAll('.scheme-chip[data-group]'));
@@ -1263,7 +1273,7 @@
   const DOCS_CHECKED_KEY = 'cso_scheme_docs_checked_v1';
   const DOC_LOCKER_KEY = 'cso_doc_locker_v1';
 
-  let schemeFilterState = { q: '', gov: '', group: '', gender: '', beneficiary: '', district: '', includeStateWide: true, age: '', income: '', status_label: '' };
+  let schemeFilterState = { q: '', gov: '', group: '', gender: '', beneficiary: '', district: '', includeStateWide: true, matchedOnly: false, age: '', income: '', status_label: '' };
   let liveSchemesCache = [];
   let compareList = [];
 
@@ -1727,6 +1737,15 @@
       badges.appendChild(el('span', 'live-badge live-badge--verified', `✓ ${scheme.verified_date}`));
     }
     if (scheme.is_featured) badges.appendChild(el('span', 'live-badge live-badge--featured', '★ Flagship'));
+    if (window.CSO_CANDIDATE_PREFS && typeof window.CSO_MATCH_ITEM === 'function') {
+      const prefs = window.CSO_CANDIDATE_PREFS.load();
+      if (window.CSO_CANDIDATE_PREFS.hasAny(prefs)) {
+        const m = window.CSO_MATCH_ITEM(scheme, prefs);
+        if (m.matched) {
+          badges.appendChild(el('span', 'cso-matched-badge', `✨ Matched for You${m.reasons.length ? ' · ' + m.reasons.join(' • ') : ''}`));
+        }
+      }
+    }
     top.appendChild(badges);
 
     top.appendChild(el('h3', 'live-scheme-card__title', (isOdia && scheme.title_or) ? scheme.title_or : scheme.title));
@@ -1821,13 +1840,17 @@
       renderSchemeDistrictBanner();
       populateSchemeDistrictSelect();
   try {
-    const distParam = (new URLSearchParams(window.location.search).get('district') || '').trim().toLowerCase();
+    const sp = new URLSearchParams(window.location.search);
+    const distParam = (sp.get('district') || '').trim().toLowerCase();
     const matchedDist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
       ? window.CSO_FIND_ODISHA_DISTRICT(distParam)
       : null;
     if (matchedDist) {
       schemeFilterState.district = matchedDist.slug;
       if (schemeDistrictEl) schemeDistrictEl.value = matchedDist.slug;
+    }
+    if (sp.get('matched') === '1' && window.CSO_CANDIDATE_PREFS && window.CSO_CANDIDATE_PREFS.hasAny(window.CSO_CANDIDATE_PREFS.load())) {
+      schemeFilterState.matchedOnly = true;
     }
   } catch (_) {}
   renderSchemeDistrictBanner();
@@ -1882,6 +1905,23 @@
       let items = Array.isArray(data.items) ? data.items : [];
       if (schemeFilterState.district) {
         items = items.filter(s => matchesSchemeDistrict(s, schemeFilterState.district, schemeFilterState.includeStateWide));
+      }
+      if (window.CSO_CANDIDATE_PREFS && typeof window.CSO_MATCH_ITEM === 'function') {
+        const prefs = window.CSO_CANDIDATE_PREFS.load();
+        const hasPrefs = window.CSO_CANDIDATE_PREFS.hasAny(prefs);
+        if (schemeMatchedToggleBtn) {
+          schemeMatchedToggleBtn.hidden = !hasPrefs;
+          if (hasPrefs) {
+            const matchedCount = items.filter(s => window.CSO_MATCH_ITEM(s, prefs).matched).length;
+            schemeMatchedToggleBtn.textContent = `✨ Matched for You (${matchedCount})`;
+            schemeMatchedToggleBtn.classList.toggle('is-active', schemeFilterState.matchedOnly);
+            schemeMatchedToggleBtn.setAttribute('aria-pressed', String(schemeFilterState.matchedOnly));
+          }
+        }
+        if (schemeEditPrefsLink) schemeEditPrefsLink.hidden = !hasPrefs;
+        if (schemeFilterState.matchedOnly && hasPrefs) {
+          items = items.filter(s => window.CSO_MATCH_ITEM(s, prefs).matched);
+        }
       }
       liveSchemesCache = items;
 
@@ -1945,13 +1985,17 @@
       syncChipUI();
       populateSchemeDistrictSelect();
   try {
-    const distParam = (new URLSearchParams(window.location.search).get('district') || '').trim().toLowerCase();
+    const sp = new URLSearchParams(window.location.search);
+    const distParam = (sp.get('district') || '').trim().toLowerCase();
     const matchedDist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
       ? window.CSO_FIND_ODISHA_DISTRICT(distParam)
       : null;
     if (matchedDist) {
       schemeFilterState.district = matchedDist.slug;
       if (schemeDistrictEl) schemeDistrictEl.value = matchedDist.slug;
+    }
+    if (sp.get('matched') === '1' && window.CSO_CANDIDATE_PREFS && window.CSO_CANDIDATE_PREFS.hasAny(window.CSO_CANDIDATE_PREFS.load())) {
+      schemeFilterState.matchedOnly = true;
     }
   } catch (_) {}
   renderSchemeDistrictBanner();
@@ -1974,13 +2018,17 @@
         syncChipUI();
         populateSchemeDistrictSelect();
   try {
-    const distParam = (new URLSearchParams(window.location.search).get('district') || '').trim().toLowerCase();
+    const sp = new URLSearchParams(window.location.search);
+    const distParam = (sp.get('district') || '').trim().toLowerCase();
     const matchedDist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
       ? window.CSO_FIND_ODISHA_DISTRICT(distParam)
       : null;
     if (matchedDist) {
       schemeFilterState.district = matchedDist.slug;
       if (schemeDistrictEl) schemeDistrictEl.value = matchedDist.slug;
+    }
+    if (sp.get('matched') === '1' && window.CSO_CANDIDATE_PREFS && window.CSO_CANDIDATE_PREFS.hasAny(window.CSO_CANDIDATE_PREFS.load())) {
+      schemeFilterState.matchedOnly = true;
     }
   } catch (_) {}
   renderSchemeDistrictBanner();
@@ -1996,13 +2044,17 @@
       syncChipUI();
       populateSchemeDistrictSelect();
   try {
-    const distParam = (new URLSearchParams(window.location.search).get('district') || '').trim().toLowerCase();
+    const sp = new URLSearchParams(window.location.search);
+    const distParam = (sp.get('district') || '').trim().toLowerCase();
     const matchedDist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
       ? window.CSO_FIND_ODISHA_DISTRICT(distParam)
       : null;
     if (matchedDist) {
       schemeFilterState.district = matchedDist.slug;
       if (schemeDistrictEl) schemeDistrictEl.value = matchedDist.slug;
+    }
+    if (sp.get('matched') === '1' && window.CSO_CANDIDATE_PREFS && window.CSO_CANDIDATE_PREFS.hasAny(window.CSO_CANDIDATE_PREFS.load())) {
+      schemeFilterState.matchedOnly = true;
     }
   } catch (_) {}
   renderSchemeDistrictBanner();
@@ -2016,7 +2068,8 @@
       syncChipUI();
       populateSchemeDistrictSelect();
   try {
-    const distParam = (new URLSearchParams(window.location.search).get('district') || '').trim().toLowerCase();
+    const sp = new URLSearchParams(window.location.search);
+    const distParam = (sp.get('district') || '').trim().toLowerCase();
     const matchedDist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
       ? window.CSO_FIND_ODISHA_DISTRICT(distParam)
       : null;
@@ -2024,15 +2077,25 @@
       schemeFilterState.district = matchedDist.slug;
       if (schemeDistrictEl) schemeDistrictEl.value = matchedDist.slug;
     }
+    if (sp.get('matched') === '1' && window.CSO_CANDIDATE_PREFS && window.CSO_CANDIDATE_PREFS.hasAny(window.CSO_CANDIDATE_PREFS.load())) {
+      schemeFilterState.matchedOnly = true;
+    }
   } catch (_) {}
   renderSchemeDistrictBanner();
   loadLiveSchemes();
     });
   });
 
+  if (schemeMatchedToggleBtn) {
+    schemeMatchedToggleBtn.addEventListener('click', () => {
+      schemeFilterState.matchedOnly = !schemeFilterState.matchedOnly;
+      loadLiveSchemes();
+    });
+  }
+
   if (eligResetBtn) {
     eligResetBtn.addEventListener('click', () => {
-      schemeFilterState = { q: '', gov: '', group: '', gender: '', beneficiary: '', district: '', includeStateWide: true, age: '', income: '', status_label: '' };
+      schemeFilterState = { q: '', gov: '', group: '', gender: '', beneficiary: '', district: '', includeStateWide: true, matchedOnly: false, age: '', income: '', status_label: '' };
       if (search) search.value = '';
       if (clearSearch) clearSearch.hidden = true;
       if (schemeGovEl) schemeGovEl.value = '';
@@ -2047,13 +2110,17 @@
       syncChipUI();
       populateSchemeDistrictSelect();
   try {
-    const distParam = (new URLSearchParams(window.location.search).get('district') || '').trim().toLowerCase();
+    const sp = new URLSearchParams(window.location.search);
+    const distParam = (sp.get('district') || '').trim().toLowerCase();
     const matchedDist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
       ? window.CSO_FIND_ODISHA_DISTRICT(distParam)
       : null;
     if (matchedDist) {
       schemeFilterState.district = matchedDist.slug;
       if (schemeDistrictEl) schemeDistrictEl.value = matchedDist.slug;
+    }
+    if (sp.get('matched') === '1' && window.CSO_CANDIDATE_PREFS && window.CSO_CANDIDATE_PREFS.hasAny(window.CSO_CANDIDATE_PREFS.load())) {
+      schemeFilterState.matchedOnly = true;
     }
   } catch (_) {}
   renderSchemeDistrictBanner();
@@ -2087,13 +2154,17 @@
   window.addEventListener('cso:langchange', () => {
     populateSchemeDistrictSelect();
   try {
-    const distParam = (new URLSearchParams(window.location.search).get('district') || '').trim().toLowerCase();
+    const sp = new URLSearchParams(window.location.search);
+    const distParam = (sp.get('district') || '').trim().toLowerCase();
     const matchedDist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
       ? window.CSO_FIND_ODISHA_DISTRICT(distParam)
       : null;
     if (matchedDist) {
       schemeFilterState.district = matchedDist.slug;
       if (schemeDistrictEl) schemeDistrictEl.value = matchedDist.slug;
+    }
+    if (sp.get('matched') === '1' && window.CSO_CANDIDATE_PREFS && window.CSO_CANDIDATE_PREFS.hasAny(window.CSO_CANDIDATE_PREFS.load())) {
+      schemeFilterState.matchedOnly = true;
     }
   } catch (_) {}
   renderSchemeDistrictBanner();
@@ -2107,13 +2178,17 @@
 
   populateSchemeDistrictSelect();
   try {
-    const distParam = (new URLSearchParams(window.location.search).get('district') || '').trim().toLowerCase();
+    const sp = new URLSearchParams(window.location.search);
+    const distParam = (sp.get('district') || '').trim().toLowerCase();
     const matchedDist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
       ? window.CSO_FIND_ODISHA_DISTRICT(distParam)
       : null;
     if (matchedDist) {
       schemeFilterState.district = matchedDist.slug;
       if (schemeDistrictEl) schemeDistrictEl.value = matchedDist.slug;
+    }
+    if (sp.get('matched') === '1' && window.CSO_CANDIDATE_PREFS && window.CSO_CANDIDATE_PREFS.hasAny(window.CSO_CANDIDATE_PREFS.load())) {
+      schemeFilterState.matchedOnly = true;
     }
   } catch (_) {}
   renderSchemeDistrictBanner();

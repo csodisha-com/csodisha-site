@@ -3551,6 +3551,25 @@ body.is-scheme-modal-open {
     width: 100%;
   }
 }
+
+.cso-matched-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+.scheme-chip--matched,
+.scheme-chip--prefs-link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
   #live-schemes-status, #live-schemes-grid, #scheme-prep-guide,
   #overview, #explorer, #search-results, footer, #scheme-compare-bar,
   .live-scheme-detail__bar {

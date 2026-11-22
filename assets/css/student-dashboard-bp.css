@@ -2500,3 +2500,57 @@ body.cso-student-dashboard-page {
 .cso-uh-file-hidden {
   display: none;
 }
+
+.cso-watchlist-body {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+}
+.cso-watchlist-field,
+.cso-watchlist-group {
+  display: grid;
+  gap: 8px;
+}
+.cso-watchlist-lbl {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--cso-text, #0f172a);
+}
+.cso-watchlist-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cso-watchlist-chips--districts {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+.cso-watchlist-chip {
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-text, #0f172a);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cso-watchlist-chip.is-active {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+.cso-watchlist-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+.cso-watchlist-footer .cso-btn,
+#cso-watchlist-panel .cso-btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}

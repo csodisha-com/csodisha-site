@@ -7,10 +7,11 @@
   <title>Schemes &amp; Benefits Explorer | Common Sense Odisha</title>
   <!-- CSO-IN homepage header stylesheet v1 -->
   <link rel="stylesheet" href="/assets/style.css?v=20261121v173">
-  <link rel="stylesheet" href="./assets/dashboard.css?v=20261122v194">
+  <link rel="stylesheet" href="./assets/dashboard.css?v=20261122v197">
   <script src="/assets/js/public-content.js?v=20261114e" defer></script>
   <script src="/assets/js/odisha-districts.js?v=20261122v194" defer></script>
-  <script src="./assets/dashboard.js?v=20261122v194" defer></script>
+  <script src="/assets/js/candidate-prefs.js?v=20261122v197" defer></script>
+  <script src="./assets/dashboard.js?v=20261122v197" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 </head>
 <body>
@@ -151,6 +152,8 @@
             <button type="button" class="scheme-chip" data-group="students" aria-pressed="false">Scholarships &amp; Nua-O</button>
             <button type="button" class="scheme-chip" data-group="health" aria-pressed="false">Gopabandhu Jan Arogya</button>
             <button type="button" class="scheme-chip" data-group="seniors" aria-pressed="false">Madhu Babu Pension</button>
+            <button type="button" id="scheme-matched-toggle" class="scheme-chip scheme-chip--matched" aria-pressed="false" hidden>✨ Matched for You</button>
+            <a id="scheme-edit-prefs" class="scheme-chip scheme-chip--prefs-link" href="/student-dashboard/#cso-watchlist-panel" hidden>⚙ Edit Watchlist</a>
           </div>
 
           <div class="scheme-status-pills" role="group" aria-label="Filter by application status window">
