@@ -6,6 +6,7 @@ import { readBanner } from '../admin/_site.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
 import { PUBLIC_VISIBLE_SQL, parsePaging, likeEscape } from '../../_lib/validate.js';
 import { formatTaxonomyRow } from '../admin/_taxonomy.js';
+import { ensureJobTaxonomyColumns } from '../admin/_posts.js';
 import { enforceCandidateControls } from '../../_lib/candidate-controls.js';
 
 const CACHE = 'public, max-age=60, s-maxage=300, stale-while-revalidate=600';
@@ -57,7 +58,8 @@ function postSummary(r) {
     ...(isJob ? {
       organisation: r.organisation, vacancies: r.vacancies, qualification: r.qualification, last_date: r.last_date,
       apply_url: r.apply_url, notification_url: media(r.notification_media_key), state: r.state,
-      age_limit: r.age_limit || null, salary_pay: r.salary_pay || null, source_url: r.source_url || null,
+      age_limit: r.age_limit || null, salary_pay: r.salary_pay || null, pay_level: r.salary_pay || null, source_url: r.source_url || null,
+      section_slug: r.section_slug || null, l1_code: r.l1_code || null, l2_code: r.l2_code || null, l3_slug: r.l3_slug || null, district_tag: r.district_tag || null,
       stage: stage,
       stage_label: stageLabel,
       expired: isExpired,
@@ -67,9 +69,13 @@ function postSummary(r) {
 }
 
 const LIST_COLS = `id, type, slug, title, title_or, summary, summary_or, category, tags, goal_exam_ids, cover_media_key, status, published_at, event_date,
-  organisation, vacancies, qualification, last_date, apply_url, notification_media_key, state, age_limit, salary_pay, source_url`;
+  organisation, vacancies, qualification, last_date, apply_url, notification_media_key, state, age_limit, salary_pay, source_url,
+  section_slug, l1_code, l2_code, l3_slug, district_tag, stage`;
 
 async function listPosts(env, request, type, orderBy) {
+  if (type === 'job' && env && env.DB) {
+    await ensureJobTaxonomyColumns(env.DB);
+  }
   const url = new URL(request.url);
   const { page, limit, offset } = parsePaging(url);
   const where = [`type = ?`, PUBLIC_VISIBLE_SQL]; const binds = [type];

@@ -5,6 +5,27 @@ import { cleanStr, slugify, SLUG_RE, isIsoDate, resolveStatus, likeEscape, parse
 
 export const POST_TYPES = { 'current-affairs': 'current_affair', jobs: 'job' };
 const MEDIA_KEY_RE = /^[0-9a-f-]{36}\.(jpg|png|webp|pdf)$/;
+const JOB_TAXONOMY_COLS = [
+  ['section_slug', 'TEXT'],
+  ['l1_code', 'TEXT'],
+  ['l2_code', 'TEXT'],
+  ['l3_slug', 'TEXT'],
+  ['district_tag', 'TEXT'],
+  ['stage', 'TEXT']
+];
+
+export async function ensureJobTaxonomyColumns(db) {
+  if (!db) return;
+  try {
+    const pragmaRes = await db.prepare('PRAGMA table_info(posts)').all();
+    const existingCols = new Set((pragmaRes.results || []).map(c => c.name));
+    for (const [colName, colDef] of JOB_TAXONOMY_COLS) {
+      if (!existingCols.has(colName)) {
+        await db.prepare(`ALTER TABLE posts ADD COLUMN ${colName} ${colDef}`).run();
+      }
+    }
+  } catch (_) {}
+}
 
 function cleanTags(v, errors) {
   let arr = v;
@@ -65,7 +86,8 @@ async function normalizePost(env, type, body, existing) {
     Object.assign(f, {
       organisation: null, vacancies: null, qualification: null, last_date: null,
       apply_url: null, notification_media_key: null, state: null,
-      age_limit: null, salary_pay: null, source_url: null
+      age_limit: null, salary_pay: null, source_url: null,
+      section_slug: null, l1_code: null, l2_code: null, l3_slug: null, district_tag: null, stage: null
     });
   } else {
     f.event_date = null;
@@ -93,7 +115,13 @@ async function normalizePost(env, type, body, existing) {
     f.notification_media_key = pdf || null;
     f.state = lim('state', 60, 'State') || 'Odisha';
     f.age_limit = lim('age_limit', 120, 'Age Limit');
-    f.salary_pay = lim('salary_pay', 120, 'Salary / Pay Matrix');
+    f.salary_pay = cleanStr(body.salary_pay !== undefined ? body.salary_pay : (body.pay_level !== undefined ? body.pay_level : (existing ? existing.salary_pay : '')), 120) || '';
+    f.section_slug = cleanStr(v('section_slug'), 80) || 'jobs-recruitment';
+    f.l1_code = cleanStr(v('l1_code'), 40) || '';
+    f.l2_code = cleanStr(v('l2_code'), 40) || '';
+    f.l3_slug = cleanStr(v('l3_slug'), 120) || '';
+    f.district_tag = cleanStr(v('district_tag'), 80) || 'All Odisha';
+    f.stage = cleanStr(v('stage'), 40) || 'new-recruitment';
     const srcUrl = cleanStr(v('source_url'), 500);
     if (srcUrl) {
       let okSrc = false;
@@ -137,7 +165,8 @@ async function uniqueSlug(env, type, slug, auto, excludeId) {
 
 const COLS = ['title', 'title_or', 'summary', 'summary_or', 'body_md', 'body_md_or', 'category', 'tags', 'cover_media_key',
   'event_date', 'organisation', 'vacancies', 'qualification', 'last_date', 'apply_url', 'notification_media_key', 'state',
-  'age_limit', 'salary_pay', 'source_url', 'goal_exam_ids', 'status', 'published_at', 'slug'];
+  'age_limit', 'salary_pay', 'source_url', 'section_slug', 'l1_code', 'l2_code', 'l3_slug', 'district_tag', 'stage',
+  'goal_exam_ids', 'status', 'published_at', 'slug'];
 
 function present(row) {
   return {
@@ -149,6 +178,9 @@ function present(row) {
 
 export async function handlePosts(request, env, actor, typeKey, id, sub) {
   const type = POST_TYPES[typeKey];
+  if (type === 'job' && env && env.DB) {
+    await ensureJobTaxonomyColumns(env.DB);
+  }
   const method = request.method;
   const url = new URL(request.url);
 
@@ -171,7 +203,7 @@ export async function handlePosts(request, env, actor, typeKey, id, sub) {
       const w = where.join(' AND ');
       const total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM posts WHERE ${w}`).bind(...binds).first()).n;
       const { results } = await env.DB.prepare(
-        `SELECT id, type, slug, title, title_or, category, status, published_at, event_date, organisation, last_date, vacancies, updated_at
+        `SELECT id, type, slug, title, title_or, summary, summary_or, category, status, published_at, event_date, organisation, last_date, vacancies, apply_url, qualification, age_limit, salary_pay, section_slug, l1_code, l2_code, l3_slug, district_tag, stage, updated_at
          FROM posts WHERE ${w} ORDER BY updated_at DESC, id LIMIT ? OFFSET ?`
       ).bind(...binds, limit, offset).all();
       return json({ items: results, page, limit, total });

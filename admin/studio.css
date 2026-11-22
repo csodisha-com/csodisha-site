@@ -3518,3 +3518,79 @@ textarea.cso-fp-input { min-height: 64px; resize: vertical; }
   color: var(--studio-red, #ef4444);
   border-color: rgba(239, 68, 68, 0.3);
 }
+
+/* v225: Admin 3-Layer Cascading Selector & Jobs Publisher */
+.cso-admin-selector-bar {
+  padding: 14px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--studio-border);
+  background: var(--studio-surface);
+  display: grid;
+  gap: 12px;
+}
+
+.cso-admin-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.cso-admin-selector-grid .cso-form-select,
+.cso-admin-selector-actions .cso-pill-btn,
+.cso-admin-selector-actions .cso-btn {
+  min-height: 44px;
+}
+
+.cso-admin-selector-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.cso-admin-path-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: rgba(56, 189, 248, 0.14);
+  color: var(--studio-blue, #38bdf8);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.cso-admin-job-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--studio-border);
+  background: var(--studio-card-elev);
+}
+
+.cso-admin-job-info {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 260px;
+}
+
+.cso-admin-job-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-admin-job-actions .cso-pill-btn {
+  min-height: 44px;
+}
+
+.cso-admin-preview-box {
+  display: grid;
+  gap: 10px;
+}

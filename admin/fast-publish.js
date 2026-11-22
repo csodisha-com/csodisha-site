@@ -976,13 +976,368 @@
     return card;
   }
 
+  function initJobsDirectoryPublisher(cardOverride) {
+    var card = cardOverride || document.getElementById('cso-job-publisher-card');
+    if (!card || card.dataset.csoJobPubInit === '1') return card;
+    card.dataset.csoJobPubInit = '1';
+
+    var selSection = document.getElementById('cso-admin-select-section');
+    var selL1 = document.getElementById('cso-admin-select-l1');
+    var selL2 = document.getElementById('cso-admin-select-l2');
+    var selL3 = document.getElementById('cso-admin-select-l3');
+    var btnReset = document.getElementById('cso-admin-select-reset');
+    var btnAddNew = document.getElementById('cso-admin-btn-add-new');
+    var pathBadge = document.getElementById('cso-admin-path-badge');
+    var form = document.getElementById('csoJobPublisherForm');
+    var listEl = document.getElementById('csoAdminJobsList');
+    var btnRefresh = document.getElementById('csoBtnRefreshJobsList');
+    var btnPreview = document.getElementById('csoBtnPreviewJob');
+    var btnPublish = document.getElementById('csoBtnPublishJob');
+    var btnCancelEdit = document.getElementById('csoBtnCancelJobEdit');
+    var statusEl = document.getElementById('csoJobStatusMessage');
+
+    var inpEditId = document.getElementById('csoJobEditingId');
+    var inpSec = document.getElementById('csoJobSectionSlug');
+    var inpL1 = document.getElementById('csoJobL1Code');
+    var inpL2 = document.getElementById('csoJobL2Code');
+    var inpL3 = document.getElementById('csoJobL3Slug');
+    var inpStage = document.getElementById('csoJobStage');
+    var inpCat = document.getElementById('csoJobCategory');
+    var inpDist = document.getElementById('csoJobDistrict');
+    var inpTitle = document.getElementById('csoJobTitle');
+    var inpTitleOr = document.getElementById('csoJobTitleOr');
+    var inpOrg = document.getElementById('csoJobOrg');
+    var inpVac = document.getElementById('csoJobVacancies');
+    var inpLast = document.getElementById('csoJobLastDate');
+    var inpQual = document.getElementById('csoJobQualification');
+    var inpAge = document.getElementById('csoJobAgeLimit');
+    var inpPay = document.getElementById('csoJobPayLevel');
+    var inpUrl = document.getElementById('csoJobApplyUrl');
+    var inpSum = document.getElementById('csoJobSummary');
+    var inpSumOr = document.getElementById('csoJobSummaryOr');
+
+    var SEC_SLUGS = [
+      'jobs-recruitment', 'career-explorer', 'eligibility-explorer', 'courses-exams',
+      'scholarships-support', 'international-overseas', 'career-development', 'institutions-portals'
+    ];
+    var dirSections = [];
+    var liveJobs = [];
+
+    function slugifyBranch(t) {
+      return String(t || '').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 96);
+    }
+
+    function setJobStatus(msg, tone) {
+      if (!statusEl) return;
+      statusEl.textContent = msg || '';
+      statusEl.className = 'cso-ca-status' + (tone === 'error' ? ' is-error' : (tone === 'success' ? ' is-ok' : ''));
+    }
+
+    function getL1Nodes(secSlug) {
+      var idx = SEC_SLUGS.indexOf(secSlug);
+      var sec = dirSections[idx >= 0 ? idx : 0];
+      if (!sec) return [];
+      var ch = sec.children || [];
+      return (ch.length === 1 && Array.isArray(ch[0].children) && ch[0].children.length > 0) ? ch[0].children : ch;
+    }
+
+    function syncTaxonomyHidden() {
+      var sVal = selSection ? selSection.value : 'jobs-recruitment';
+      var l1Val = selL1 ? selL1.value : '';
+      var l2Val = selL2 ? selL2.value : '';
+      var l3Val = selL3 ? selL3.value : '';
+      if (inpSec) inpSec.value = sVal;
+      if (inpL1) inpL1.value = l1Val;
+      if (inpL2) inpL2.value = l2Val;
+      if (inpL3) inpL3.value = l3Val;
+      if (pathBadge) {
+        pathBadge.textContent = l2Val ? (l1Val + ' › ' + l2Val) : (l1Val ? (l1Val + ' › All') : 'All Categories');
+      }
+    }
+
+    function populateL3() {
+      if (!selL3) return;
+      clear(selL3);
+      var opt0 = el('option', '', 'All Branches');
+      opt0.value = '';
+      selL3.appendChild(opt0);
+
+      var l1Nodes = getL1Nodes(selSection ? selSection.value : 'jobs-recruitment');
+      var l1Node = l1Nodes.find(function (n) { return (n.number || slugifyBranch(n.title)) === (selL1 ? selL1.value : ''); });
+      var l2Node = l1Node && selL2 && selL2.value
+        ? (l1Node.children || []).find(function (n) { return (n.number || slugifyBranch(n.title)) === selL2.value; })
+        : null;
+      var src = l2Node || l1Node;
+      if (!src) return;
+
+      function walkNotes(node) {
+        (node.notes || []).forEach(function (n) {
+          var txt = typeof n === 'string' ? n : (n.text || '');
+          if (!txt) return;
+          var o = el('option', '', txt);
+          o.value = slugifyBranch(txt);
+          selL3.appendChild(o);
+        });
+        (node.children || []).forEach(walkNotes);
+      }
+      walkNotes(src);
+    }
+
+    function populateL2() {
+      if (!selL2) return;
+      clear(selL2);
+      var opt0 = el('option', '', 'All Subcategories');
+      opt0.value = '';
+      selL2.appendChild(opt0);
+      var l1Nodes = getL1Nodes(selSection ? selSection.value : 'jobs-recruitment');
+      var l1Node = l1Nodes.find(function (n) { return (n.number || slugifyBranch(n.title)) === (selL1 ? selL1.value : ''); });
+      var l2List = l1Node ? (l1Node.children || []) : [];
+      l2List.forEach(function (n2) {
+        var o = el('option', '', (n2.number ? n2.number + ' ' : '') + n2.title);
+        o.value = n2.number || slugifyBranch(n2.title);
+        selL2.appendChild(o);
+      });
+      selL2.disabled = !l2List.length;
+      populateL3();
+    }
+
+    function populateL1() {
+      if (!selL1) return;
+      clear(selL1);
+      var opt0 = el('option', '', 'All Categories');
+      opt0.value = '';
+      selL1.appendChild(opt0);
+      getL1Nodes(selSection ? selSection.value : 'jobs-recruitment').forEach(function (n1) {
+        var o = el('option', '', (n1.number ? n1.number + ' ' : '') + n1.title);
+        o.value = n1.number || slugifyBranch(n1.title);
+        selL1.appendChild(o);
+      });
+      populateL2();
+      syncTaxonomyHidden();
+    }
+
+    function loadJobIntoForm(item, isBranchTemplate) {
+      if (inpEditId) inpEditId.value = isBranchTemplate ? '' : (item.id || '');
+      if (inpTitle) inpTitle.value = item.title || '';
+      if (inpTitleOr) inpTitleOr.value = item.title_or || '';
+      if (inpOrg) inpOrg.value = item.organisation || 'OPSC';
+      if (inpCat && item.category) inpCat.value = item.category;
+      if (inpStage && item.stage) inpStage.value = item.stage;
+      if (inpDist && item.district_tag) inpDist.value = item.district_tag;
+      if (inpVac) inpVac.value = item.vacancies !== null && item.vacancies !== undefined ? String(item.vacancies) : '';
+      if (inpLast) inpLast.value = item.last_date || '';
+      if (inpQual) inpQual.value = item.qualification || '';
+      if (inpAge) inpAge.value = item.age_limit || '';
+      if (inpPay) inpPay.value = item.salary_pay || item.pay_level || '';
+      if (inpUrl) inpUrl.value = item.apply_url || 'https://www.opsc.gov.in/';
+      if (inpSum) inpSum.value = item.summary || '';
+      if (inpSumOr) inpSumOr.value = item.summary_or || '';
+      if (item.section_slug && selSection) {
+        selSection.value = item.section_slug;
+        populateL1();
+      }
+      if (item.l1_code && selL1) {
+        selL1.value = item.l1_code;
+        populateL2();
+      }
+      if (item.l2_code && selL2) {
+        selL2.value = item.l2_code;
+        populateL3();
+      }
+      if (item.l3_slug && selL3) selL3.value = item.l3_slug;
+      syncTaxonomyHidden();
+      if (btnPublish) btnPublish.textContent = isBranchTemplate ? 'Publish Live →' : 'Update & Publish Live →';
+      if (btnCancelEdit) btnCancelEdit.hidden = Boolean(isBranchTemplate);
+      setJobStatus(isBranchTemplate ? 'Branch template pre-filled. Complete details & Publish Live.' : 'Editing D1 notice (' + (item.slug || item.id) + ').', '');
+      if (inpTitle && inpTitle.focus) inpTitle.focus();
+    }
+
+    function renderFilteredJobsList() {
+      if (!listEl) return;
+      clear(listEl);
+      var secVal = selSection ? selSection.value : 'jobs-recruitment';
+      var l1Val = selL1 ? selL1.value : '';
+      var l2Val = selL2 ? selL2.value : '';
+      var l3Val = selL3 ? selL3.value : '';
+
+      var filteredD1 = liveJobs.filter(function (j) {
+        if (l3Val && j.l3_slug && j.l3_slug !== l3Val) return false;
+        if (l2Val && j.l2_code && j.l2_code !== l2Val) return false;
+        if (l1Val && j.l1_code && j.l1_code !== l1Val) return false;
+        return true;
+      });
+
+      filteredD1.slice(0, 15).forEach(function (j) {
+        var row = el('div', 'cso-admin-job-row');
+        var info = el('div', 'cso-admin-job-info');
+        var badge = j.l1_code ? (j.l1_code + (j.l2_code ? ' › ' + j.l2_code : '')) : (j.category || 'D1 Notice');
+        info.appendChild(el('span', 'cso-admin-path-badge', badge + ' · ' + (j.status || 'published')));
+        info.appendChild(el('strong', '', j.title || 'Untitled'));
+        info.appendChild(el('span', 'cso-ca-item-sub', (j.organisation || '') + (j.last_date ? ' · Last Date: ' + j.last_date : '')));
+        row.appendChild(info);
+
+        var act = el('div', 'cso-admin-job-actions');
+        act.appendChild(btn('Edit', 'cso-pill-btn', function () { loadJobIntoForm(j, false); }));
+        row.appendChild(act);
+        listEl.appendChild(row);
+      });
+
+      if (!filteredD1.length) {
+        listEl.appendChild(el('p', 'cso-ca-empty', 'No D1 notices match this taxonomy filter yet. Click "+ Add New Notice / Branch Entry" to publish one.'));
+      }
+    }
+
+    async function refreshLiveD1Jobs() {
+      try {
+        var res = await fetch('/api/admin/jobs?limit=50', { credentials: 'same-origin' });
+        if (res.ok) {
+          var d = await res.json();
+          liveJobs = Array.isArray(d.items) ? d.items : [];
+        }
+      } catch (_) {}
+      renderFilteredJobsList();
+    }
+
+    if (selSection) selSection.addEventListener('change', function () { populateL1(); renderFilteredJobsList(); });
+    if (selL1) selL1.addEventListener('change', function () { populateL2(); syncTaxonomyHidden(); renderFilteredJobsList(); });
+    if (selL2) selL2.addEventListener('change', function () { populateL3(); syncTaxonomyHidden(); renderFilteredJobsList(); });
+    if (selL3) selL3.addEventListener('change', function () { syncTaxonomyHidden(); renderFilteredJobsList(); });
+
+    if (btnReset) {
+      btnReset.addEventListener('click', function () {
+        if (selSection) selSection.value = 'jobs-recruitment';
+        populateL1();
+        renderFilteredJobsList();
+      });
+    }
+    if (btnAddNew) {
+      btnAddNew.addEventListener('click', function () {
+        var l3OptText = selL3 && selL3.selectedIndex > 0 ? selL3.options[selL3.selectedIndex].textContent : '';
+        loadJobIntoForm({
+          title: l3OptText || '',
+          section_slug: selSection ? selSection.value : 'jobs-recruitment',
+          l1_code: selL1 ? selL1.value : '',
+          l2_code: selL2 ? selL2.value : '',
+          l3_slug: selL3 ? selL3.value : ''
+        }, true);
+      });
+    }
+    if (btnCancelEdit) {
+      btnCancelEdit.addEventListener('click', function () {
+        if (inpEditId) inpEditId.value = '';
+        if (form) form.reset();
+        syncTaxonomyHidden();
+        if (btnPublish) btnPublish.textContent = 'Publish Live →';
+        btnCancelEdit.hidden = true;
+        setJobStatus('Cancelled edit.', '');
+      });
+    }
+    if (btnPreview) {
+      btnPreview.addEventListener('click', function () {
+        var modal = document.getElementById('globalModal');
+        var mTitle = document.getElementById('modalTitle');
+        var mBody = document.getElementById('modalBody');
+        var mFoot = document.getElementById('modalFooter');
+        if (!modal || !mBody) return;
+        if (mTitle) mTitle.textContent = 'Preview Card & Dossier';
+        clear(mBody);
+        var box = el('div', 'cso-admin-preview-box');
+        box.appendChild(el('span', 'cso-admin-path-badge', pathBadge ? pathBadge.textContent : '1.x'));
+        box.appendChild(el('strong', '', (inpTitle && inpTitle.value) || 'Untitled Recruitment Notice'));
+        if (inpTitleOr && inpTitleOr.value) box.appendChild(el('p', '', inpTitleOr.value));
+        box.appendChild(el('p', 'cso-ca-item-sub', 'Board: ' + ((inpOrg && inpOrg.value) || 'OPSC') + ' · Qualification: ' + ((inpQual && inpQual.value) || 'As per Advt.') + ' · Age: ' + ((inpAge && inpAge.value) || '18–38 Years') + ' · Pay: ' + ((inpPay && inpPay.value) || 'ORSP 7th Pay')));
+        if (inpSum && inpSum.value) box.appendChild(el('p', '', inpSum.value));
+        mBody.appendChild(box);
+        if (mFoot) {
+          clear(mFoot);
+          mFoot.appendChild(btn('Close Preview', 'cso-pill-btn', function () { modal.hidden = true; }));
+        }
+        modal.hidden = false;
+      });
+    }
+    if (btnRefresh) btnRefresh.addEventListener('click', refreshLiveD1Jobs);
+
+    if (form) {
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        syncTaxonomyHidden();
+        var title = inpTitle ? inpTitle.value.trim() : '';
+        var org = inpOrg ? inpOrg.value.trim() : '';
+        if (!title || !org) {
+          setJobStatus('Title (EN) and Board / Authority are required.', 'error');
+          return;
+        }
+        var editId = inpEditId ? inpEditId.value.trim() : '';
+        var payload = {
+          title: title,
+          title_or: inpTitleOr ? inpTitleOr.value.trim() : '',
+          organisation: org,
+          category: inpCat ? inpCat.value : 'OPSC',
+          stage: inpStage ? inpStage.value : 'new-recruitment',
+          district_tag: inpDist ? inpDist.value : 'All Odisha',
+          vacancies: inpVac && inpVac.value !== '' ? Number(inpVac.value) : null,
+          last_date: inpLast && inpLast.value ? inpLast.value : null,
+          qualification: inpQual ? inpQual.value.trim() : '',
+          age_limit: inpAge ? inpAge.value.trim() : '',
+          salary_pay: inpPay ? inpPay.value.trim() : '',
+          apply_url: inpUrl ? inpUrl.value.trim() : '',
+          summary: inpSum ? inpSum.value.trim() : '',
+          summary_or: inpSumOr ? inpSumOr.value.trim() : '',
+          section_slug: inpSec ? inpSec.value : 'jobs-recruitment',
+          l1_code: inpL1 ? inpL1.value : '',
+          l2_code: inpL2 ? inpL2.value : '',
+          l3_slug: inpL3 ? inpL3.value : '',
+          status: 'published'
+        };
+        if (btnPublish) btnPublish.disabled = true;
+        setJobStatus('Publishing to D1…', '');
+        try {
+          var endpoint = editId ? '/api/admin/jobs/' + encodeURIComponent(editId) : '/api/admin/jobs';
+          var res = await fetch(endpoint, {
+            method: editId ? 'PUT' : 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-CSO-CSRF': '1' },
+            body: JSON.stringify(payload)
+          });
+          var data = await res.json().catch(function () { return {}; });
+          if (!res.ok) {
+            setJobStatus('✕ ' + (data.error || 'Publish failed (HTTP ' + res.status + ')'), 'error');
+          } else {
+            setJobStatus('✓ Published Live to D1 (' + (data.slug || data.id || 'ok') + ')', 'success');
+            if (inpEditId) inpEditId.value = '';
+            if (btnPublish) btnPublish.textContent = 'Publish Live →';
+            if (btnCancelEdit) btnCancelEdit.hidden = true;
+            await refreshLiveD1Jobs();
+          }
+        } catch (err) {
+          setJobStatus('✕ Network error: ' + err.message, 'error');
+        } finally {
+          if (btnPublish) btnPublish.disabled = false;
+        }
+      });
+    }
+
+    fetch('/jobs-careers/generated/directory.json', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : { sections: [] }; })
+      .then(function (d) {
+        dirSections = Array.isArray(d.sections) ? d.sections : [];
+        populateL1();
+        renderFilteredJobsList();
+      })
+      .catch(function () {});
+    refreshLiveD1Jobs();
+    return card;
+  }
+
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', function () {
         initCurrentAffairsPublisher();
+        initJobsDirectoryPublisher();
       });
     } else {
       initCurrentAffairsPublisher();
+      initJobsDirectoryPublisher();
     }
   }
 
@@ -1010,6 +1365,7 @@
     closePreviewDrawer: closePreviewDrawer,
     renderTriagePanel: renderTriagePanel,
     initCurrentAffairsPublisher: initCurrentAffairsPublisher,
+    initJobsDirectoryPublisher: initJobsDirectoryPublisher,
     detectJobStage: detectJobStage
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.CSOFastPublish;

@@ -304,6 +304,9 @@
       }
       if (jobCard && (moduleId === 'module-05-008' || moduleId === 'module-01-006' || moduleId === 'module-01-001')) {
         dom.workspaceRoot.appendChild(jobCard);
+        if (window.CSOFastPublish && window.CSOFastPublish.initJobsDirectoryPublisher) {
+          window.CSOFastPublish.initJobsDirectoryPublisher(jobCard);
+        }
       }
       return;
     }
@@ -320,6 +323,9 @@
     }
     if (jobCard) {
       dom.workspaceRoot.appendChild(jobCard);
+      if (window.CSOFastPublish && window.CSOFastPublish.initJobsDirectoryPublisher) {
+        window.CSOFastPublish.initJobsDirectoryPublisher(jobCard);
+      }
     }
   }
 
@@ -359,6 +365,9 @@
     }
     if (targetRoute === 'jobs/new' && jobCard) {
       dom.workspaceRoot.appendChild(jobCard);
+      if (window.CSOFastPublish && window.CSOFastPublish.initJobsDirectoryPublisher) {
+        window.CSOFastPublish.initJobsDirectoryPublisher(jobCard);
+      }
     }
     if (window.innerWidth <= 900) closeMobileDrawer();
   }

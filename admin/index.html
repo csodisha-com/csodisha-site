@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/admin/suite.css?v=20261113">
   <link rel="stylesheet" href="/admin/cms/cms-embed.css?v=20261114g">
-  <link rel="stylesheet" href="/admin/studio.css?v=20261122v209">
+  <link rel="stylesheet" href="/admin/studio.css?v=20261122v225">
   <link rel="stylesheet" href="/admin/cms/security.css?v=20261114i">
   <link rel="stylesheet" href="/admin/edu-resources-batch1.css?v=20261117n">
 </head>
@@ -444,21 +444,69 @@
           </div>
         </section>
 
-        <!-- Job Alert Publisher & Stage Composer (v209) -->
+        <!-- Job Alert & 3-Layer Directory Publisher (v225) -->
         <section id="cso-job-publisher-card" class="studio-card cso-card cso-job-composer" aria-labelledby="jobComposerTitle">
           <div class="cso-ca-card-head">
             <div class="cso-ca-title-group">
               <span class="cso-live-dot" aria-hidden="true"></span>
-              <h2 id="jobComposerTitle" class="cso-ca-heading">Job Alert &amp; Lifecycle Stage Publisher (v209)</h2>
+              <h2 id="jobComposerTitle" class="cso-ca-heading">Jobs &amp; 3-Layer Directory Publisher (D1 Live)</h2>
               <span class="cso-pill-badge">D1 · Verified Gov</span>
+              <span id="cso-admin-path-badge" class="cso-admin-path-badge">1.x › All</span>
             </div>
-            <p class="cso-ca-subhead">Publish verified recruitment notices with automatic Odisha exam lifecycle stage classification.</p>
+            <p class="cso-ca-subhead">Filter, add, modify, preview, and publish bilingual recruitment notices &amp; directory branches synced with /jobs-careers/.</p>
+          </div>
+
+          <!-- 3-Layer Cascading Category Selector Bar -->
+          <div id="cso-admin-category-selector" class="cso-admin-selector-bar" role="region" aria-label="3-Layer Directory Taxonomy Selector">
+            <div class="cso-admin-selector-grid">
+              <div class="cso-form-group">
+                <label for="cso-admin-select-section" class="cso-form-label">Section / Directory</label>
+                <select id="cso-admin-select-section" class="cso-form-select">
+                  <option value="jobs-recruitment">💼 Jobs &amp; Recruitment</option>
+                  <option value="career-explorer">🧭 Career Explorer</option>
+                  <option value="eligibility-explorer">📋 Eligibility &amp; Qualification Explorer</option>
+                  <option value="courses-exams">📚 Courses, Entrance Exams &amp; Certifications</option>
+                  <option value="scholarships-support">🎓 Scholarships &amp; Financial Support</option>
+                  <option value="international-overseas">🌍 International &amp; Overseas Opportunities</option>
+                  <option value="career-development">📈 Career Development &amp; Employability</option>
+                  <option value="institutions-portals">🏛️ Institutions, Official Portals &amp; Verification</option>
+                </select>
+              </div>
+              <div class="cso-form-group">
+                <label for="cso-admin-select-l1" class="cso-form-label">1. Main Category</label>
+                <select id="cso-admin-select-l1" class="cso-form-select">
+                  <option value="">All Categories</option>
+                </select>
+              </div>
+              <div class="cso-form-group">
+                <label for="cso-admin-select-l2" class="cso-form-label">2. Subcategory</label>
+                <select id="cso-admin-select-l2" class="cso-form-select">
+                  <option value="">All Subcategories</option>
+                </select>
+              </div>
+              <div class="cso-form-group">
+                <label for="cso-admin-select-l3" class="cso-form-label">3. Branch / Track</label>
+                <select id="cso-admin-select-l3" class="cso-form-select">
+                  <option value="">All Branches</option>
+                </select>
+              </div>
+            </div>
+            <div class="cso-admin-selector-actions">
+              <button type="button" id="cso-admin-select-reset" class="cso-pill-btn">Reset Filter</button>
+              <button type="button" id="cso-admin-btn-add-new" class="cso-btn cso-btn-primary">+ Add New Notice / Branch Entry</button>
+            </div>
           </div>
 
           <form id="csoJobPublisherForm" class="cso-ca-form" novalidate>
+            <input type="hidden" id="csoJobEditingId" value="">
+            <input type="hidden" id="csoJobSectionSlug" name="section_slug" value="jobs-recruitment">
+            <input type="hidden" id="csoJobL1Code" name="l1_code" value="">
+            <input type="hidden" id="csoJobL2Code" name="l2_code" value="">
+            <input type="hidden" id="csoJobL3Slug" name="l3_slug" value="">
+
             <div class="form-grid cso-form-grid">
               <div class="cso-form-group">
-                <label for="csoJobStage" class="cso-form-label">Notice Stage <span class="cso-req" aria-hidden="true">*</span></label>
+                <label for="csoJobStage" class="cso-form-label">Lifecycle Stage <span class="cso-req" aria-hidden="true">*</span></label>
                 <select id="csoJobStage" name="stage" class="cso-form-select" required>
                   <option value="new-recruitment">New Recruitment</option>
                   <option value="admit-card">Admit Card</option>
@@ -468,25 +516,54 @@
               </div>
 
               <div class="cso-form-group">
-                <label for="csoJobCategory" class="cso-form-label">Category <span class="cso-req" aria-hidden="true">*</span></label>
+                <label for="csoJobCategory" class="cso-form-label">Board / Category <span class="cso-req" aria-hidden="true">*</span></label>
                 <select id="csoJobCategory" name="category" class="cso-form-select" required>
                   <option value="OPSC">OPSC</option>
                   <option value="OSSC">OSSC</option>
                   <option value="OSSSC">OSSSC</option>
+                  <option value="OPRB">OPRB / Odisha Police</option>
                   <option value="Teaching">Teaching &amp; Education</option>
                   <option value="Police &amp; Defence">Police &amp; Defence</option>
-                  <option value="Banking &amp; Central">Banking &amp; Central</option>
+                  <option value="Banking &amp; PSU">Banking &amp; PSU</option>
+                  <option value="Central">Central (UPSC / SSC / RRB)</option>
+                </select>
+              </div>
+
+              <div class="cso-form-group">
+                <label for="csoJobDistrict" class="cso-form-label">District</label>
+                <select id="csoJobDistrict" name="district_tag" class="cso-form-select">
+                  <option value="All Odisha">All Odisha (State-Wide)</option>
+                  <option value="Angul">Angul</option><option value="Balangir">Balangir</option><option value="Balasore">Balasore</option>
+                  <option value="Bargarh">Bargarh</option><option value="Bhadrak">Bhadrak</option><option value="Boudh">Boudh</option>
+                  <option value="Cuttack">Cuttack</option><option value="Deogarh">Deogarh</option><option value="Dhenkanal">Dhenkanal</option>
+                  <option value="Gajapati">Gajapati</option><option value="Ganjam">Ganjam</option><option value="Jagatsinghpur">Jagatsinghpur</option>
+                  <option value="Jajpur">Jajpur</option><option value="Jharsuguda">Jharsuguda</option><option value="Kalahandi">Kalahandi</option>
+                  <option value="Kandhamal">Kandhamal</option><option value="Kendrapara">Kendrapara</option><option value="Kendujhar">Kendujhar</option>
+                  <option value="Khordha">Khordha</option><option value="Koraput">Koraput</option><option value="Malkangiri">Malkangiri</option>
+                  <option value="Mayurbhanj">Mayurbhanj</option><option value="Nabarangpur">Nabarangpur</option><option value="Nayagarh">Nayagarh</option>
+                  <option value="Nuapada">Nuapada</option><option value="Puri">Puri</option><option value="Rayagada">Rayagada</option>
+                  <option value="Sambalpur">Sambalpur</option><option value="Subarnapur">Subarnapur</option><option value="Sundargarh">Sundargarh</option>
                 </select>
               </div>
 
               <div class="cso-form-group cso-span-full">
-                <label for="csoJobTitle" class="cso-form-label">Title (EN) <span class="cso-req" aria-hidden="true">*</span></label>
-                <input type="text" id="csoJobTitle" name="title" class="cso-form-input" placeholder="e.g., OPSC Civil Services Preliminary Admit Card 2026" required>
+                <label for="csoJobTitle" class="cso-form-label">Bilingual Title (EN) <span class="cso-req" aria-hidden="true">*</span></label>
+                <input type="text" id="csoJobTitle" name="title" class="cso-form-input" placeholder="e.g., OPSC Odisha Civil Services (OAS) Preliminary Exam 2026" required>
+              </div>
+
+              <div class="cso-form-group cso-span-full">
+                <label for="csoJobTitleOr" class="cso-form-label">Title (ଓଡ଼ିଆ)</label>
+                <input type="text" id="csoJobTitleOr" name="title_or" class="cso-form-input" placeholder="e.g., ଓଡ଼ିଶା ସିଭିଲ୍ ସର୍ଭିସେସ୍ (OAS) ପ୍ରିଲିମ୍ସ ପରୀକ୍ଷା ୨୦୨୬">
               </div>
 
               <div class="cso-form-group">
-                <label for="csoJobOrg" class="cso-form-label">Organisation <span class="cso-req" aria-hidden="true">*</span></label>
+                <label for="csoJobOrg" class="cso-form-label">Board / Authority <span class="cso-req" aria-hidden="true">*</span></label>
                 <input type="text" id="csoJobOrg" name="organisation" class="cso-form-input" placeholder="e.g., OPSC" required>
+              </div>
+
+              <div class="cso-form-group">
+                <label for="csoJobVacancies" class="cso-form-label">Vacancies</label>
+                <input type="number" id="csoJobVacancies" name="vacancies" class="cso-form-input" min="0" placeholder="e.g., 399">
               </div>
 
               <div class="cso-form-group">
@@ -494,17 +571,55 @@
                 <input type="date" id="csoJobLastDate" name="last_date" class="cso-form-input">
               </div>
 
+              <div class="cso-form-group">
+                <label for="csoJobQualification" class="cso-form-label">Qualification</label>
+                <input type="text" id="csoJobQualification" name="qualification" class="cso-form-input" placeholder="e.g., Bachelor Degree in Any Discipline">
+              </div>
+
+              <div class="cso-form-group">
+                <label for="csoJobAgeLimit" class="cso-form-label">Age Limit</label>
+                <input type="text" id="csoJobAgeLimit" name="age_limit" class="cso-form-input" placeholder="e.g., 21–38 Years (SEBC/SC/ST/Women +5 Yrs)">
+              </div>
+
+              <div class="cso-form-group">
+                <label for="csoJobPayLevel" class="cso-form-label">Pay Scale / Matrix</label>
+                <input type="text" id="csoJobPayLevel" name="salary_pay" class="cso-form-input" placeholder="e.g., ORSP Level-12 (₹56,100 Basic)">
+              </div>
+
               <div class="cso-form-group cso-span-full">
-                <label for="csoJobApplyUrl" class="cso-form-label">Official URL <span class="cso-req" aria-hidden="true">*</span></label>
-                <input type="url" id="csoJobApplyUrl" name="apply_url" class="cso-form-input" placeholder="https://opsc.gov.in/..." required>
+                <label for="csoJobApplyUrl" class="cso-form-label">Official .gov.in URL <span class="cso-req" aria-hidden="true">*</span></label>
+                <input type="url" id="csoJobApplyUrl" name="apply_url" class="cso-form-input" placeholder="https://www.opsc.gov.in/" required>
+              </div>
+
+              <div class="cso-form-group cso-span-full">
+                <label for="csoJobSummary" class="cso-form-label">Summary (EN)</label>
+                <textarea id="csoJobSummary" name="summary" class="cso-form-input" rows="2" placeholder="Concise English overview of eligibility, stages, and official portal..."></textarea>
+              </div>
+
+              <div class="cso-form-group cso-span-full">
+                <label for="csoJobSummaryOr" class="cso-form-label">Summary (ଓଡ଼ିଆ)</label>
+                <textarea id="csoJobSummaryOr" name="summary_or" class="cso-form-input" rows="2" placeholder="ଓଡ଼ିଆରେ ସଂକ୍ଷିପ୍ତ ବିବରଣୀ..."></textarea>
               </div>
             </div>
 
             <div class="cso-ca-form-actions">
-              <button type="submit" id="csoBtnPublishJob" class="cso-btn cso-btn-primary">Publish Job Notice &rarr;</button>
+              <button type="button" id="csoBtnPreviewJob" class="cso-pill-btn">👁 Preview Card &amp; Dossier</button>
+              <button type="submit" id="csoBtnPublishJob" class="cso-btn cso-btn-primary">Publish Live &rarr;</button>
+              <button type="button" id="csoBtnCancelJobEdit" class="cso-pill-btn" hidden>Cancel Edit</button>
               <span id="csoJobStatusMessage" class="cso-ca-status" role="status" aria-live="polite"></span>
             </div>
           </form>
+
+          <!-- Filtered D1 Notices & Directory Branches List -->
+          <div class="cso-ca-feed-wrap">
+            <div class="cso-ca-feed-head">
+              <h3 class="cso-ca-feed-title">Filtered D1 Notices &amp; Directory Branches</h3>
+              <button type="button" id="csoBtnRefreshJobsList" class="cso-pill-btn">↻ Refresh D1 List</button>
+            </div>
+            <div id="csoAdminJobsList" class="cso-ca-feed-list" aria-live="polite">
+              <p class="cso-ca-empty">Loading D1 notices &amp; directory branches&hellip;</p>
+            </div>
+          </div>
         </section>
       </div>
     </main>
@@ -527,11 +642,11 @@
   <!-- SCRIPTS (Strict CSP: self-hosted only, on-demand suite lazy loading) -->
   <script src="/admin/suite-boot.js?v=20261114i"></script>
   <script src="/admin/charts.js?v=20261114"></script>
-  <script src="/admin/fast-publish.js?v=20261122v209"></script>
+  <script src="/admin/fast-publish.js?v=20261122v225"></script>
   <script src="/admin/cms/cms.js?v=20261122v209"></script>
   <script src="/admin/lazy-suite-loader.js?v=20261117ao"></script>
   <script src="/admin/modules-restored.js?v=20261117ao"></script>
   <script src="/admin/suite-live.js?v=20261117ao"></script>
-  <script src="/admin/admin.js?v=20261122v209"></script>
+  <script src="/admin/admin.js?v=20261122v225"></script>
 </body>
 </html>

@@ -951,6 +951,8 @@
     if (codes.sectionSlug === 'jobs-recruitment') {
       matched = list.filter(job => {
         const br = classifyJobToBranch(job);
+        if (br.sectionSlug && br.sectionSlug !== codes.sectionSlug) return false;
+        if (selectedL3Slug && br.l3 && br.l3 === selectedL3Slug) return true;
         if (codes.l2 && br.l2 !== codes.l2) return false;
         if (codes.l1 && br.l1 !== codes.l1) return false;
         return true;
@@ -959,6 +961,11 @@
       const kw = [codes.l1, codes.l2, selectedL3Slug].filter(Boolean).join(' ').toLowerCase().replace(/[-.]+/g, ' ');
       const tokens = kw.split(/\s+/).filter(w => w.length > 2);
       matched = list.filter(job => {
+        if (job.section_slug === codes.sectionSlug) {
+          if (codes.l2 && job.l2_code && job.l2_code !== codes.l2) return false;
+          if (codes.l1 && job.l1_code && job.l1_code !== codes.l1) return false;
+          return true;
+        }
         const hay = [job.title, job.category, job.organisation, job.summary].join(' ').toLowerCase();
         return tokens.some(t => hay.includes(t));
       });
@@ -1885,6 +1892,18 @@
   }
 
   function classifyJobToBranch(job) {
+    if (job && job.l1_code) {
+      const secSlug = String(job.section_slug || 'jobs-recruitment').trim();
+      const l1 = String(job.l1_code).trim();
+      const l2 = String(job.l2_code || '').trim();
+      const l3 = String(job.l3_slug || '').trim();
+      const label = l2 ? `${l1} › ${l2}` : l1;
+      const qs = new URLSearchParams();
+      qs.set('l1', l1);
+      if (l2) qs.set('l2', l2);
+      if (l3) qs.set('l3', l3);
+      return { l1, l2, l3, sectionSlug: secSlug, label, href: `/jobs-careers/${encodeURIComponent(secSlug)}?${qs.toString()}` };
+    }
     const hay = [job.category, job.organisation, job.organization, job.title, job.state].join(' ').toLowerCase();
     if (hay.includes('upsc') || hay.includes('ias') || hay.includes('ips')) return { l1: '1.1', l2: '1.1.1', label: '1.1 › 1.1.1', href: '/jobs-careers/jobs-recruitment?l1=1.1&l2=1.1.1' };
     if (hay.includes('ssc') && !hay.includes('ossc') && !hay.includes('osssc')) return { l1: '1.1', l2: '1.1.2', label: '1.1 › 1.1.2', href: '/jobs-careers/jobs-recruitment?l1=1.1&l2=1.1.2' };

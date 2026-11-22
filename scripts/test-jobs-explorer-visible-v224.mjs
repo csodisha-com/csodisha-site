@@ -22,9 +22,9 @@ assert.equal(totalModules, 299, `Expected 299 modules, got ${totalModules}`);
 console.log('2. Checking #explorer is visible by default...');
 const jobsHtml = fs.readFileSync(path.join(ROOT, 'jobs-careers/index.html'), 'utf8');
 assert.ok(/<section\s+id="explorer"\s+class="explorer"\s*>/i.test(jobsHtml), '<section id="explorer"> must NOT have hidden attribute');
-assert.ok(jobsHtml.includes('/assets/js/jobs-directory-data.js?v=20261122v224'), 'Missing v224 jobs-directory-data.js');
-assert.ok(jobsHtml.includes('./assets/dashboard.js?v=20261122v224'), 'Missing v224 dashboard.js');
-assert.ok(jobsHtml.includes('./assets/dashboard.css?v=20261122v224'), 'Missing v224 dashboard.css');
+assert.ok(/\/assets\/js\/jobs-directory-data\.js\?v=20261122v22(4|5)/.test(jobsHtml), 'Missing v224/v225 jobs-directory-data.js');
+assert.ok(/\.\/assets\/dashboard\.js\?v=20261122v22(4|5)/.test(jobsHtml), 'Missing v224/v225 dashboard.js');
+assert.ok(/\.\/assets\/dashboard\.css\?v=20261122v22(4|5)/.test(jobsHtml), 'Missing v224/v225 dashboard.css');
 
 const jobsSearchInputs = (jobsHtml.match(/<input\b[^>]*type=["']search["'][^>]*>/gi) || [])
   .filter(tag => !/id=["']bp-search-modal-input["']/i.test(tag));
@@ -106,7 +106,7 @@ for (const rel of touched) {
   }
 }
 
-assert.ok(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8').includes('cso-candidate-cache-v224'), 'sw.js must be bumped to v224');
-assert.ok(fs.readFileSync(path.join(ROOT, 'functions/_lib/ops-sentinel.js'), 'utf8').includes('cso-candidate-cache-v224'), 'ops-sentinel.js must be bumped to v224');
+assert.ok(/cso-candidate-cache-v22(4|5)/.test(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8')), 'sw.js must be bumped to v224+');
+assert.ok(/cso-candidate-cache-v22(4|5)/.test(fs.readFileSync(path.join(ROOT, 'functions/_lib/ops-sentinel.js'), 'utf8')), 'ops-sentinel.js must be bumped to v224+');
 
 console.log('All v224 Visible #explorer & Zero-TypeError tests PASSED!');
