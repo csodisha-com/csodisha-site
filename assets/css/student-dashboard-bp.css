@@ -2554,3 +2554,113 @@ body.cso-student-dashboard-page {
   display: inline-flex;
   align-items: center;
 }
+
+.cso-deadlines-empty {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  margin-top: 12px;
+}
+
+.cso-deadlines-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.cso-deadline-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--cso-border, #e2e8f0);
+  border-radius: 12px;
+  background: var(--cso-surface, #ffffff);
+}
+
+.cso-deadline-info {
+  flex: 1 1 240px;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.cso-deadline-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.cso-deadline-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.cso-deadline-pill--today {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.cso-deadline-pill--soon {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.cso-deadline-pill--normal {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.cso-deadline-pill--closed {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.cso-deadline-meta {
+  font-size: 0.78rem;
+  color: var(--cso-muted, #64748b);
+  font-weight: 600;
+}
+
+.cso-deadline-title {
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--cso-text, #0f172a);
+  overflow-wrap: anywhere;
+}
+
+.cso-deadline-date {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--cso-muted, #475569);
+}
+
+.cso-deadline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-deadline-actions .cso-btn,
+#cso-deadlines-panel .cso-btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cso-btn-danger-outline {
+  border-color: #fecaca;
+  color: #b91c1c;
+}

@@ -1234,6 +1234,90 @@
     host.appendChild(form);
   }
 
+  function renderTrackedDeadlinesPanel() {
+    const host = document.getElementById('cso-deadlines-panel');
+    const tracker = window.CSO_DEADLINE_TRACKER;
+    if (!host || !tracker) return;
+    clear(host);
+
+    const items = tracker.load();
+    const header = el('div', 'bp-panel-header');
+    const titleWrap = el('div', 'bp-panel-title');
+    titleWrap.appendChild(el('span', '', '📌'));
+    titleWrap.appendChild(el('span', '', 'Tracked Deadlines & Exam Countdowns'));
+    header.appendChild(titleWrap);
+
+    const browseLink = el('a', 'cso-btn cso-btn-sm', 'Browse Live Odisha Jobs →');
+    browseLink.href = '/jobs-careers/';
+    header.appendChild(browseLink);
+    host.appendChild(header);
+
+    if (!items.length) {
+      const empty = el('div', 'cso-deadlines-empty');
+      empty.appendChild(el('p', 'cso-muted-note', 'No deadlines tracked yet. Click "📌 Track" on any live notification in Jobs & Careers to track its countdown and export .ics reminders here.'));
+      const cta = el('a', 'cso-btn cso-btn-primary', 'Browse Live Odisha Jobs →');
+      cta.href = '/jobs-careers/';
+      empty.appendChild(cta);
+      host.appendChild(empty);
+      return;
+    }
+
+    const list = el('div', 'cso-deadlines-list');
+    items.forEach(item => {
+      const row = el('article', 'cso-deadline-row');
+      const info = el('div', 'cso-deadline-info');
+
+      const topLine = el('div', 'cso-deadline-top');
+      const days = tracker.calculateDaysRemaining(item.lastDate);
+      const urgencyText = tracker.formatUrgencyLabel(days);
+      let urgencyMod = 'cso-deadline-pill--normal';
+      if (days !== null) {
+        if (days < 0) urgencyMod = 'cso-deadline-pill--closed';
+        else if (days === 0) urgencyMod = 'cso-deadline-pill--today';
+        else if (days <= 7) urgencyMod = 'cso-deadline-pill--soon';
+      }
+      topLine.appendChild(el('span', `cso-deadline-pill ${urgencyMod}`, urgencyText));
+      if (item.board) topLine.appendChild(el('span', 'cso-deadline-meta', item.board));
+      if (item.district) topLine.appendChild(el('span', 'cso-deadline-meta', item.district));
+      info.appendChild(topLine);
+
+      info.appendChild(el('h3', 'cso-deadline-title', item.title));
+      if (item.lastDate) {
+        info.appendChild(el('p', 'cso-deadline-date', `Last Date: ${item.lastDate}`));
+      }
+      row.appendChild(info);
+
+      const actions = el('div', 'cso-deadline-actions');
+      if (item.applyUrl && (/^https?:\/\//i.test(item.applyUrl) || /^\/(?!\/)/.test(item.applyUrl))) {
+        const applyA = el('a', 'cso-btn cso-btn-sm', 'Official Link ↗');
+        applyA.href = item.applyUrl;
+        applyA.target = '_blank';
+        applyA.rel = 'noopener noreferrer';
+        actions.appendChild(applyA);
+      }
+      if (item.lastDate && days !== null) {
+        const icsBtn = el('button', 'cso-btn cso-btn-sm', '📅 .ics');
+        icsBtn.type = 'button';
+        icsBtn.setAttribute('aria-label', `Download .ics calendar reminder for ${item.title}`);
+        icsBtn.addEventListener('click', () => {
+          tracker.downloadIcsReminder(item);
+        });
+        actions.appendChild(icsBtn);
+      }
+      const removeBtn = el('button', 'cso-btn cso-btn-sm cso-btn-danger-outline', 'Remove');
+      removeBtn.type = 'button';
+      removeBtn.addEventListener('click', () => {
+        tracker.untrackItem(item.id);
+        renderTrackedDeadlinesPanel();
+      });
+      actions.appendChild(removeBtn);
+
+      row.appendChild(actions);
+      list.appendChild(row);
+    });
+    host.appendChild(list);
+  }
+
   function renderSyllabusMasteryPanel() {
     const host = document.getElementById('cso-syllabus-progress-panel');
     const api = window.CSO_SYLLABUS_VAULT_API;
@@ -1773,6 +1857,7 @@
     renderCbtAnalytics();
     renderLocalCbtStreaks();
     initAlertWatchlist();
+    renderTrackedDeadlinesPanel();
     renderSyllabusMasteryPanel();
     renderSchemes();
     renderResourcesShelf();

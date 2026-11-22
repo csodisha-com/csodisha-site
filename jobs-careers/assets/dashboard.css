@@ -3814,3 +3814,22 @@ body.is-live-modal-open {
 .explorer-entry-link:hover {
   text-decoration: underline;
 }
+
+.live-job-card__footer {
+  flex-wrap: wrap;
+}
+
+.live-btn--track,
+.live-btn--ics {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.live-btn--track.is-tracked {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #ffffff;
+}

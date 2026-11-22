@@ -1467,6 +1467,41 @@
     const remindBtn = makeRemindButton(job);
     if (remindBtn) footer.appendChild(remindBtn);
 
+    const tracker = window.CSO_DEADLINE_TRACKER;
+    if (tracker && (job.last_date || job.title)) {
+      const deadlinePayload = {
+        id: job.slug || job.id || job.title,
+        title: job.title,
+        board: job.organisation || job.organization || job.department || job.category || '',
+        district: job.district || job.state || 'Odisha',
+        lastDate: job.last_date || '',
+        applyUrl: applyHref || ''
+      };
+      const trackedNow = tracker.isTracked(deadlinePayload.id);
+      const trackBtn = el('button', 'live-btn live-btn--track' + (trackedNow ? ' is-tracked' : ''), trackedNow ? '✓ Tracked' : '📌 Track');
+      trackBtn.type = 'button';
+      trackBtn.setAttribute('aria-pressed', String(trackedNow));
+      trackBtn.addEventListener('click', () => {
+        const res = tracker.toggleTrack(deadlinePayload);
+        trackBtn.classList.toggle('is-tracked', res.tracked);
+        trackBtn.setAttribute('aria-pressed', String(res.tracked));
+        trackBtn.textContent = res.tracked ? '✓ Tracked' : '📌 Track';
+        showToast(res.tracked ? '📌 Deadline added to Candidate Hub' : 'Removed from tracked deadlines');
+      });
+      footer.appendChild(trackBtn);
+
+      if (job.last_date && tracker.calculateDaysRemaining(job.last_date) !== null) {
+        const icsBtn = el('button', 'live-btn live-btn--ics', '📅 .ics');
+        icsBtn.type = 'button';
+        icsBtn.setAttribute('aria-label', `Download calendar reminder (.ics) for ${job.title}`);
+        icsBtn.addEventListener('click', () => {
+          const ok = tracker.downloadIcsReminder(deadlinePayload);
+          if (ok) showToast('📅 Calendar reminder (.ics) downloaded!');
+        });
+        footer.appendChild(icsBtn);
+      }
+    }
+
     card.appendChild(footer);
     return card;
   }
