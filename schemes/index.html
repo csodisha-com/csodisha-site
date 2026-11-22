@@ -16,9 +16,10 @@
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
   <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v164">
-  <link rel="stylesheet" href="/schemes/assets/schemes-explorer.css?v=20261118v144">
+  <link rel="stylesheet" href="/schemes/assets/schemes-explorer.css?v=20261122v212">
   <script src="/assets/js/student-utilities.js?v=20261121v164" defer></script>
-  <script src="/schemes/assets/schemes-explorer.js?v=20261122v192" defer></script>
+  <script src="/assets/js/scheme-tracker.js?v=20261122v212" defer></script>
+  <script src="/schemes/assets/schemes-explorer.js?v=20261122v212" defer></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -137,6 +138,24 @@
           <h2>Live Schemes &amp; Welfare Directory</h2>
           <span id="schemes-results-count" class="cso-schemes-tag">Loading...</span>
         </div>
+        <div class="cso-schemes-elig-bar" id="schemes-eligibility-bar" role="group" aria-label="Scheme Eligibility Filter">
+          <select id="schemes-elig-profile" class="cso-schemes-select" aria-label="Applicant Profile">
+            <option value="All">All Applicant Profiles</option>
+            <option value="Student / Scholarship">Student / Scholarship</option>
+            <option value="Women Empowerment">Women Empowerment</option>
+            <option value="Farmer / Agriculture">Farmer / Agriculture</option>
+            <option value="Youth Skill & Employment">Youth Skill &amp; Employment</option>
+            <option value="Health & Family Welfare">Health &amp; Family Welfare</option>
+          </select>
+          <select id="schemes-elig-category" class="cso-schemes-select" aria-label="Social Category">
+            <option value="All Categories">All Social Categories</option>
+            <option value="SC / ST">SC / ST</option>
+            <option value="SEBC / OBC">SEBC / OBC</option>
+            <option value="EWS / General">EWS / General</option>
+          </select>
+          <span id="schemes-elig-count" class="cso-schemes-tag" aria-live="polite">All Live Schemes</span>
+        </div>
+
         <div class="cso-schemes-filters">
           <select id="schemes-sponsor" class="cso-schemes-select" aria-label="Sponsor Level">
             <option value="">All Sponsor Levels</option>

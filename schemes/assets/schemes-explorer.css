@@ -133,3 +133,33 @@ a:hover{text-decoration:underline}
 .is-search-match{outline:2px solid var(--cso-primary);box-shadow:0 0 0 4px var(--cso-highlight-ring, rgba(27,67,50,.22))}
 .is-search-dim{opacity:.45}
 @media (max-width:900px){.cso-dir-topbar{margin:-20px -14px 14px;padding:8px 14px}.cso-dir-context-pill{max-width:130px}}
+
+/* v212: Scheme Eligibility Filter Bar & Save Scheme Toggle */
+.cso-schemes-elig-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, #f8fafc);
+}
+
+.cso-schemes-elig-bar .cso-schemes-select {
+  min-height: 44px;
+  flex: 1 1 200px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.cso-schemes-save-btn {
+  min-height: 44px;
+}
+
+.cso-schemes-save-btn.is-saved {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #ffffff;
+}

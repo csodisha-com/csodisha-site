@@ -9,6 +9,8 @@
     beneficiary: '',
     mode: '',
     domain: '',
+    applicantProfile: 'All',
+    socialCategory: 'All Categories',
     page: 1,
     limit: 12,
     total: 0,
@@ -145,20 +147,67 @@
     pagEl.appendChild(btns);
   }
 
+  function getFilteredSchemes(items) {
+    var tracker = window.CSO_SCHEME_TRACKER;
+    var list = Array.isArray(items) ? items : [];
+    var filtered = (tracker && typeof tracker.filterLiveSchemesByProfile === 'function')
+      ? tracker.filterLiveSchemesByProfile(list, {
+          applicantProfile: state.applicantProfile,
+          socialCategory: state.socialCategory
+        })
+      : list;
+    var eligCountEl = document.getElementById('schemes-elig-count');
+    if (eligCountEl) {
+      var isEligActive = (state.applicantProfile && state.applicantProfile !== 'All') || (state.socialCategory && state.socialCategory !== 'All Categories');
+      eligCountEl.textContent = isEligActive
+        ? (filtered.length + ' Matched')
+        : (filtered.length + ' Live Schemes');
+    }
+    return filtered;
+  }
+
+  function makeSaveSchemeBtn(it) {
+    var tracker = window.CSO_SCHEME_TRACKER;
+    var schemeId = String(it.slug || it.id || '');
+    var saved = Boolean(tracker && typeof tracker.isSaved === 'function' && tracker.isSaved(schemeId));
+    var btn = el('button', {
+      type: 'button',
+      class: 'cso-schemes-btn cso-schemes-save-btn' + (saved ? ' is-saved' : ''),
+      'aria-pressed': String(saved),
+      text: saved ? '✓ Saved' : '📌 Save Scheme'
+    });
+    btn.addEventListener('click', function () {
+      if (!tracker || typeof tracker.toggleSave !== 'function') return;
+      var res = tracker.toggleSave({
+        id: schemeId,
+        title: it.title || it.title_or || 'Odisha Govt Scheme',
+        department: it.department_name || it.department || it.sponsor_level || 'Govt of Odisha',
+        category: it.scheme_type || it.beneficiary_group || 'Welfare Scheme',
+        benefit: it.benefit_amount || '',
+        officialUrl: it.official_apply_url || ('/schemes/item/' + encodeURIComponent(schemeId) + '/')
+      });
+      btn.classList.toggle('is-saved', res.saved);
+      btn.setAttribute('aria-pressed', String(res.saved));
+      btn.textContent = res.saved ? '✓ Saved' : '📌 Save Scheme';
+    });
+    return btn;
+  }
+
   function renderItems(items) {
     var host = document.getElementById('schemes-items-grid');
     var countEl = document.getElementById('schemes-results-count');
     if (!host) return;
     clear(host);
-    if (countEl) countEl.textContent = 'Showing ' + items.length + ' of ' + state.total + ' verified schemes';
-    if (!items.length) {
+    var filtered = getFilteredSchemes(items);
+    if (countEl) countEl.textContent = 'Showing ' + filtered.length + ' of ' + state.total + ' verified schemes';
+    if (!filtered.length) {
       host.appendChild(el('div', { class: 'cso-schemes-item-card' }, [
         el('p', { text: 'No published schemes match your current filters. Try clearing filters or browsing one of the 8 directory domains above.' })
       ]));
       renderPagination();
       return;
     }
-    items.forEach(function (it) {
+    filtered.forEach(function (it) {
       var title = state.lang === 'or' && it.title_or ? it.title_or : it.title;
       var metaChildren = [
         el('span', { class: 'cso-schemes-tag', text: it.sponsor_level || 'Odisha State' }),
@@ -168,7 +217,8 @@
       if (it.application_mode) metaChildren.push(el('span', { text: it.application_mode }));
 
       var actions = [
-        el('a', { class: 'cso-schemes-btn cso-schemes-btn-primary', href: '/schemes/item/' + encodeURIComponent(it.slug || it.id) + '/' }, ['View Details'])
+        el('a', { class: 'cso-schemes-btn cso-schemes-btn-primary', href: '/schemes/item/' + encodeURIComponent(it.slug || it.id) + '/' }, ['View Details']),
+        makeSaveSchemeBtn(it)
       ];
       if (it.official_apply_url) {
         actions.push(el('a', { class: 'cso-schemes-btn', href: it.official_apply_url, target: '_blank', rel: 'noopener noreferrer' }, ['Apply Online ↗']));
@@ -277,6 +327,21 @@
       });
     });
 
+    var eligProfileEl = document.getElementById('schemes-elig-profile');
+    var eligCategoryEl = document.getElementById('schemes-elig-category');
+    if (eligProfileEl) {
+      eligProfileEl.addEventListener('change', function () {
+        state.applicantProfile = eligProfileEl.value || 'All';
+        renderItems(state.items);
+      });
+    }
+    if (eligCategoryEl) {
+      eligCategoryEl.addEventListener('change', function () {
+        state.socialCategory = eligCategoryEl.value || 'All Categories';
+        renderItems(state.items);
+      });
+    }
+
     var sponsorEl = document.getElementById('schemes-sponsor');
     var typeEl = document.getElementById('schemes-type');
     var benEl = document.getElementById('schemes-beneficiary');
@@ -289,9 +354,12 @@
     if (modeEl) modeEl.addEventListener('change', function () { state.mode = modeEl.value; state.page = 1; loadItems(false); });
     if (resetEl) {
       resetEl.addEventListener('click', function () {
-        state.q = ''; state.sponsor = ''; state.schemeType = ''; state.beneficiary = ''; state.mode = ''; state.domain = ''; state.page = 1;
+        state.q = ''; state.sponsor = ''; state.schemeType = ''; state.beneficiary = ''; state.mode = ''; state.domain = '';
+        state.applicantProfile = 'All'; state.socialCategory = 'All Categories'; state.page = 1;
         if (topSearch) topSearch.value = '';
         if (topClear) topClear.hidden = true;
+        if (eligProfileEl) eligProfileEl.value = 'All';
+        if (eligCategoryEl) eligCategoryEl.value = 'All Categories';
         if (sponsorEl) sponsorEl.value = '';
         if (typeEl) typeEl.value = '';
         if (benEl) benEl.value = '';

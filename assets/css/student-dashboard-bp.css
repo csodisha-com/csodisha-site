@@ -2878,3 +2878,34 @@ body.cso-student-dashboard-page {
   color: var(--cso-muted, #64748b);
   overflow-wrap: anywhere;
 }
+
+/* v212: Saved Odisha Govt Schemes Panel */
+.cso-saved-schemes-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.cso-saved-scheme-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border, #e2e8f0);
+  background: var(--cso-surface, #ffffff);
+}
+
+.cso-saved-scheme-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-saved-scheme-actions .cso-btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}

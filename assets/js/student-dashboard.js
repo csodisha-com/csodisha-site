@@ -1568,6 +1568,74 @@
     host.appendChild(list);
   }
 
+  function renderSavedSchemesPanel() {
+    const host = document.getElementById('cso-saved-schemes-panel');
+    const tracker = window.CSO_SCHEME_TRACKER;
+    if (!host || !tracker) return;
+    clear(host);
+
+    const items = tracker.load();
+    const header = el('div', 'bp-panel-header');
+    const titleWrap = el('div', 'bp-panel-title');
+    titleWrap.appendChild(el('span', '', '🏛️'));
+    titleWrap.appendChild(el('span', '', 'Saved Odisha Govt Schemes'));
+    header.appendChild(titleWrap);
+
+    const browseLink = el('a', 'cso-btn cso-btn-sm', 'Explore All Schemes →');
+    browseLink.href = '/schemes/';
+    header.appendChild(browseLink);
+    host.appendChild(header);
+
+    if (!items.length) {
+      const empty = el('div', 'cso-deadlines-empty');
+      empty.appendChild(el('p', 'cso-muted-note', 'No Odisha government schemes saved yet. Use the Eligibility Finder on Schemes & Benefits and click "📌 Save Scheme" to bookmark programs here.'));
+      const cta = el('a', 'cso-btn cso-btn-primary', 'Find Eligible Schemes →');
+      cta.href = '/schemes/';
+      empty.appendChild(cta);
+      host.appendChild(empty);
+      return;
+    }
+
+    const list = el('div', 'cso-saved-schemes-list');
+    items.forEach(item => {
+      const row = el('article', 'cso-saved-scheme-row');
+      const info = el('div', 'cso-deadline-info');
+
+      const topLine = el('div', 'cso-deadline-top');
+      if (item.category) topLine.appendChild(el('span', 'cso-pill-badge', item.category));
+      if (item.department) topLine.appendChild(el('span', 'cso-deadline-meta', item.department));
+      info.appendChild(topLine);
+
+      info.appendChild(el('h3', 'cso-deadline-title', item.title));
+      if (item.benefit) {
+        info.appendChild(el('p', 'cso-deadline-date', `Benefit: ${item.benefit}`));
+      }
+      row.appendChild(info);
+
+      const actions = el('div', 'cso-saved-scheme-actions');
+      if (item.officialUrl && (/^https?:\/\//i.test(item.officialUrl) || /^\/(?!\/)/.test(item.officialUrl))) {
+        const portalA = el('a', 'cso-btn cso-btn-sm', 'Official Portal ↗');
+        portalA.href = item.officialUrl;
+        if (/^https?:\/\//i.test(item.officialUrl)) {
+          portalA.target = '_blank';
+          portalA.rel = 'noopener noreferrer';
+        }
+        actions.appendChild(portalA);
+      }
+      const removeBtn = el('button', 'cso-btn cso-btn-sm cso-btn-danger-outline', 'Remove');
+      removeBtn.type = 'button';
+      removeBtn.addEventListener('click', () => {
+        tracker.removeScheme(item.id);
+        renderSavedSchemesPanel();
+      });
+      actions.appendChild(removeBtn);
+
+      row.appendChild(actions);
+      list.appendChild(row);
+    });
+    host.appendChild(list);
+  }
+
   function renderSyllabusMasteryPanel() {
     const host = document.getElementById('cso-syllabus-progress-panel');
     const api = window.CSO_SYLLABUS_VAULT_API;
@@ -2110,6 +2178,7 @@
     initAlertWatchlist();
     renderTrackedDeadlinesPanel();
     renderDocumentReadinessPanel();
+    renderSavedSchemesPanel();
     renderSyllabusMasteryPanel();
     renderSchemes();
     renderResourcesShelf();
