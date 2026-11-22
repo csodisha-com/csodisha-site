@@ -1,0 +1,186 @@
+/* v214: Bilingual Odia-English Administrative & Exam Glossary
+   Strict CSP compliance: zero inline styles needed. */
+.cso-odia-glossary {
+  margin-top: 22px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-text, #0f172a);
+}
+
+.cso-glossary-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cso-glossary-title-group h2 {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+}
+
+.cso-glossary-sub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--cso-muted, #475569);
+}
+
+.cso-glossary-count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: rgba(15, 76, 58, 0.12);
+  color: #0f4c3a;
+}
+
+.cso-glossary-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cso-glossary-select {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-bg, #f8fafc);
+  color: var(--cso-text, #0f172a);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  flex: 1 1 220px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.cso-glossary-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface-alt, #f8fafc);
+  color: var(--cso-text, #0f172a);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-glossary-pill.is-active {
+  background: #0f4c3a;
+  border-color: #0f4c3a;
+  color: #ffffff;
+}
+
+.cso-glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.cso-glossary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border, #e2e8f0);
+  background: var(--cso-surface-alt, #f8fafc);
+}
+
+.cso-glossary-card__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cso-glossary-cat-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(29, 78, 216, 0.1);
+  color: #1d4ed8;
+}
+
+.cso-glossary-save-btn,
+.cso-glossary-reveal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-text, #0f172a);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-glossary-save-btn.is-saved {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #ffffff;
+}
+
+.cso-glossary-en {
+  margin: 2px 0 0;
+  font-size: 1rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.cso-glossary-translit {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--cso-muted, #64748b);
+}
+
+.cso-glossary-odia {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f4c3a;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+:root[data-cso-theme="dark"] .cso-glossary-odia {
+  color: #6ee7b7;
+}
+
+.cso-glossary-usage {
+  margin: 0;
+  font-size: 0.83rem;
+  color: var(--cso-text, #334155);
+  overflow-wrap: anywhere;
+}
+
+.cso-glossary-usage--or {
+  color: var(--cso-muted, #475569);
+}
+
+.cso-glossary-empty {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: var(--cso-muted, #64748b);
+}
