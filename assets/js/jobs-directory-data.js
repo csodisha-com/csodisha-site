@@ -191,21 +191,19 @@
         { label: 'Interview (Dholpur)', count: 275 },
         { label: 'Grand Total Merit', count: 2025 }
       ];
-    } else if (s === 'odisha-civil-services' || s === 'opsc-odisha-civil-services-ocs-2026') {
-      item.organisation = 'Odisha Public Service Commission (OPSC)';
-      item.qualification = "Bachelor's Degree + Odia Language Proficiency (ME / HSC Standard)";
-      item.age_limit = '21–38 yrs (SEBC/SC/ST/Women +5 Yrs · PwBD +10 Yrs)';
-      item.pay_level = 'ORSP 7th Pay Matrix Level-12 (₹56,100 – ₹1,77,500)';
-      item.apply_url = 'https://www.opsc.gov.in/';
     } else {
+      var odMap = root.CSO_ODISHA_JOBS_1_2 || (typeof require === 'function' ? require('./odisha-jobs-1-2-data.js') : null);
+      var odKey = (s === 'opsc-odisha-civil-services-ocs-2026') ? 'odisha-civil-services' : s;
       var natMap = root.CSO_NATIONAL_JOBS_1_1 || (typeof require === 'function' ? require('./national-jobs-1-1-data.js') : null);
-      if (natMap && Object.prototype.hasOwnProperty.call(natMap, s)) {
-        var nat = natMap[s];
+      var specObj = (odMap && Object.prototype.hasOwnProperty.call(odMap, odKey))
+        ? odMap[odKey]
+        : ((natMap && Object.prototype.hasOwnProperty.call(natMap, s)) ? natMap[s] : null);
+      if (specObj) {
         var fields = ['organisation', 'qualification', 'age_limit', 'pay_level', 'vacancies', 'apply_url', 'summary', 'summary_or', 'examPatternTable', 'relaxationTable', 'physicalStandards', 'payProgression', 'marksChart', 'referenceLinks'];
         for (var k = 0; k < fields.length; k++) {
           var fk = fields[k];
-          if (nat[fk] !== undefined && nat[fk] !== null && nat[fk] !== '') {
-            item[fk] = nat[fk];
+          if (specObj[fk] !== undefined && specObj[fk] !== null && specObj[fk] !== '') {
+            item[fk] = specObj[fk];
           }
         }
       }
@@ -1398,6 +1396,24 @@
         stage_label: 'New Recruitment',
         vacancies: s === 'odisha-civil-services' ? 399 : 1056,
         last_date: '2027-02-15'
+      });
+    }
+    var odMap = root.CSO_ODISHA_JOBS_1_2 || (typeof require === 'function' ? require('./odisha-jobs-1-2-data.js') : null);
+    if (odMap && Object.prototype.hasOwnProperty.call(odMap, s)) {
+      var odSpec = odMap[s];
+      var prettyOd = s.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+      return attachDetailedDossierSpec({
+        slug: s,
+        section: 'jobs-recruitment',
+        l1Code: '1.2',
+        l2Code: odSpec.l2Code || '1.2',
+        title: odSpec.title || prettyOd,
+        title_or: odSpec.title_or || '',
+        category: 'Odisha State Jobs',
+        stage: 'new-recruitment',
+        stage_label: 'New Recruitment',
+        vacancies: odSpec.vacancies || 'Odisha State Gazette',
+        last_date: odSpec.last_date || '2027-03-31'
       });
     }
     var natMap = root.CSO_NATIONAL_JOBS_1_1 || (typeof require === 'function' ? require('./national-jobs-1-1-data.js') : null);
