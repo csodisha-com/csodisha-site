@@ -580,3 +580,24 @@
   border-color: rgba(52, 211, 153, 0.5);
   background: rgba(52, 211, 153, 0.14);
 }
+
+/* v217: Odisha PET Practice Run Log */
+.cso-pet-log-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.cso-pet-log-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #e2e8f0);
+  background: var(--cso-surface-alt, #f8fafc);
+  font-size: 0.9rem;
+  font-weight: 600;
+}

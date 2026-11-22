@@ -1056,6 +1056,278 @@
     render();
   }
 
+  var PET_LOG_KEY = 'cso_pet_practice_log_v1';
+
+  var ODISHA_PET_STANDARDS = {
+    'police-si': {
+      label: 'Odisha Police Sub-Inspector (SI)',
+      Male: {
+        'General / SEBC': { heightCm: 168, weightKg: 55, chestUnexpCm: 79, chestExpMinCm: 5 },
+        'SC / ST': { heightCm: 163, weightKg: 50, chestUnexpCm: 76, chestExpMinCm: 5 },
+        petEvents: ['1600m Run (8 mins)', 'Long Jump 3.66m (3 chances)']
+      },
+      Female: {
+        'General / SEBC': { heightCm: 155, weightKg: 47.5 },
+        'SC / ST': { heightCm: 150, weightKg: 45 },
+        petEvents: ['1600m Run (10 mins)', 'Long Jump 2.75m (3 chances)']
+      }
+    },
+    'police-constable': {
+      label: 'Odisha Police Constable / Sepoy',
+      Male: {
+        'General / SEBC': { heightCm: 168, weightKg: 55, chestUnexpCm: 79, chestExpMinCm: 5 },
+        'SC / ST': { heightCm: 163, weightKg: 50, chestUnexpCm: 76, chestExpMinCm: 5 },
+        petEvents: ['1600m Run (7 mins)', 'Long Jump 3.66m', 'High Jump 1.22m']
+      },
+      Female: {
+        'General / SEBC': { heightCm: 155, weightKg: 47.5 },
+        'SC / ST': { heightCm: 150, weightKg: 45 },
+        petEvents: ['1600m Run (9 mins)', 'Long Jump 2.75m', 'High Jump 0.90m']
+      }
+    },
+    'forest-guard': {
+      label: 'OSSSC Forest Guard / Forester',
+      Male: {
+        'General / SEBC': { heightCm: 168, weightKg: 50, chestUnexpCm: 81, chestExpMinCm: 5 },
+        'SC / ST': { heightCm: 158, weightKg: 45, chestUnexpCm: 76, chestExpMinCm: 5 },
+        petEvents: ['25 km Walking in 4 hrs', '1600m Run / Cycling 1600m']
+      },
+      Female: {
+        'General / SEBC': { heightCm: 153, weightKg: 45 },
+        'SC / ST': { heightCm: 148, weightKg: 40 },
+        petEvents: ['16 km Walking in 4 hrs', '1600m Run / Cycling 1600m']
+      }
+    },
+    'excise': {
+      label: 'Odisha Excise Sub-Inspector / Constable',
+      Male: {
+        'General / SEBC': { heightCm: 168, weightKg: 55, chestUnexpCm: 79, chestExpMinCm: 5 },
+        'SC / ST': { heightCm: 163, weightKg: 50, chestUnexpCm: 76, chestExpMinCm: 5 },
+        petEvents: ['1600m / 3200m Endurance Run', 'Long Jump 3.66m', 'High Jump 1.22m']
+      },
+      Female: {
+        'General / SEBC': { heightCm: 155, weightKg: 47.5 },
+        'SC / ST': { heightCm: 150, weightKg: 45 },
+        petEvents: ['1600m Run', 'Long Jump 2.77m']
+      }
+    }
+  };
+
+  function evaluateOdishaPetStandards(opts) {
+    var o = opts && typeof opts === 'object' ? opts : {};
+    var forceKey = ODISHA_PET_STANDARDS[o.force] ? o.force : 'police-si';
+    var forceSpec = ODISHA_PET_STANDARDS[forceKey];
+    var gender = o.gender === 'Female' ? 'Female' : 'Male';
+    var category = o.category === 'SC / ST' ? 'SC / ST' : 'General / SEBC';
+    var genderSpec = forceSpec[gender];
+    var req = genderSpec[category];
+
+    var heightCm = Number(o.heightCm) || 0;
+    var weightKg = Number(o.weightKg) || 0;
+    var chestUnexpCm = Number(o.chestUnexpCm) || 0;
+    var chestExpCm = Number(o.chestExpCm) || 0;
+    var chestExpansion = Number((chestExpCm - chestUnexpCm).toFixed(1));
+
+    var heightOk = heightCm >= req.heightCm;
+    var weightOk = weightKg >= req.weightKg;
+    var chestOk = true;
+    if (gender === 'Male') {
+      chestOk = chestUnexpCm >= req.chestUnexpCm && chestExpansion >= req.chestExpMinCm;
+    }
+
+    return {
+      eligible: heightOk && weightOk && chestOk,
+      force: forceKey,
+      forceLabel: forceSpec.label,
+      gender: gender,
+      category: category,
+      req: req,
+      checks: {
+        heightOk: heightOk,
+        weightOk: weightOk,
+        chestOk: chestOk,
+        chestExpansion: chestExpansion
+      },
+      petEvents: genderSpec.petEvents.slice()
+    };
+  }
+
+  function loadPetPracticeLog(storage) {
+    var s = storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+    if (!s) return [];
+    try {
+      var raw = s.getItem(PET_LOG_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function savePetPracticeLog(list, storage) {
+    var s = storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+    var clean = Array.isArray(list) ? list.slice(0, 25) : [];
+    if (s) {
+      try { s.setItem(PET_LOG_KEY, JSON.stringify(clean)); } catch (_) {}
+    }
+    return clean;
+  }
+
+  function addPetPracticeRun(entry, storage) {
+    var e = entry && typeof entry === 'object' ? entry : {};
+    var ev = String(e.event || '').trim();
+    var val = String(e.value || '').trim();
+    var dt = String(e.date || '').trim();
+    if (!ev || !val) return loadPetPracticeLog(storage);
+    var list = loadPetPracticeLog(storage);
+    list.unshift({ event: ev, value: val, date: dt });
+    return savePetPracticeLog(list, storage);
+  }
+
+  function removePetPracticeRun(index, storage) {
+    var list = loadPetPracticeLog(storage);
+    if (index >= 0 && index < list.length) {
+      list.splice(index, 1);
+      return savePetPracticeLog(list, storage);
+    }
+    return list;
+  }
+
+  function initOdishaPetChecker() {
+    var form = $('pet-checker-form');
+    var forceEl = $('pet-force');
+    var genderEl = $('pet-gender');
+    var catEl = $('pet-category');
+    var heightEl = $('pet-height');
+    var weightEl = $('pet-weight');
+    var chestUnexpWrap = $('pet-chest-unexp-wrap');
+    var chestExpWrap = $('pet-chest-exp-wrap');
+    var chestUnexpEl = $('pet-chest-unexp');
+    var chestExpEl = $('pet-chest-exp');
+    var resultEl = $('pet-result');
+
+    var logForm = $('pet-log-form');
+    var logEventEl = $('pet-log-event');
+    var logValueEl = $('pet-log-value');
+    var logDateEl = $('pet-log-date');
+    var logListEl = $('pet-log-list');
+    if (!form || !forceEl || !genderEl || !catEl || !resultEl) return;
+
+    function syncChestVisibility() {
+      var isFemale = genderEl.value === 'Female';
+      if (chestUnexpWrap) chestUnexpWrap.hidden = isFemale;
+      if (chestExpWrap) chestExpWrap.hidden = isFemale;
+    }
+
+    function renderResult() {
+      syncChestVisibility();
+      var evalRes = evaluateOdishaPetStandards({
+        force: forceEl.value,
+        gender: genderEl.value,
+        category: catEl.value,
+        heightCm: heightEl ? heightEl.value : 0,
+        weightKg: weightEl ? weightEl.value : 0,
+        chestUnexpCm: chestUnexpEl ? chestUnexpEl.value : 0,
+        chestExpCm: chestExpEl ? chestExpEl.value : 0
+      });
+
+      while (resultEl.firstChild) resultEl.removeChild(resultEl.firstChild);
+
+      var badge = document.createElement('span');
+      badge.className = evalRes.eligible ? 'cso-scam-badge is-safe' : 'cso-scam-badge is-warn';
+      badge.textContent = evalRes.eligible
+        ? '✓ Meets Physical Standards (' + evalRes.gender + ' · ' + evalRes.category + ')'
+        : '⚠ Below Standard Threshold — Review Metrics Below';
+      resultEl.appendChild(badge);
+
+      var grid = document.createElement('div');
+      grid.className = 'cso-cbt-calc-grid';
+
+      function addCard(label, val, ok) {
+        var box = document.createElement('div');
+        box.className = 'cso-cbt-calc-box' + (ok === true ? ' cso-orsp-net-box' : '');
+        var sp = document.createElement('span');
+        sp.textContent = label;
+        var st = document.createElement('strong');
+        st.textContent = val;
+        box.appendChild(sp);
+        box.appendChild(st);
+        grid.appendChild(box);
+      }
+
+      addCard('Height Requirement', (evalRes.checks.heightOk ? '✓ Pass' : '✗ Min ') + evalRes.req.heightCm + ' cm', evalRes.checks.heightOk);
+      addCard('Weight Requirement', (evalRes.checks.weightOk ? '✓ Pass' : '✗ Min ') + evalRes.req.weightKg + ' kg', evalRes.checks.weightOk);
+      if (evalRes.gender === 'Male') {
+        addCard(
+          'Chest & Expansion (≥ 5 cm)',
+          (evalRes.checks.chestOk ? '✓ Pass' : '✗ Min ') + evalRes.req.chestUnexpCm + ' cm (+' + evalRes.checks.chestExpansion + ' cm)',
+          evalRes.checks.chestOk
+        );
+      }
+      addCard('Qualifying PET Benchmarks', evalRes.petEvents.join(' · '));
+      resultEl.appendChild(grid);
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      renderResult();
+    });
+    [forceEl, genderEl, catEl, heightEl, weightEl, chestUnexpEl, chestExpEl].forEach(function (ctrl) {
+      if (!ctrl) return;
+      ctrl.addEventListener('change', renderResult);
+      ctrl.addEventListener('input', renderResult);
+    });
+    renderResult();
+
+    if (logDateEl && !logDateEl.value) {
+      logDateEl.value = new Date().toISOString().slice(0, 10);
+    }
+
+    function renderLog() {
+      if (!logListEl) return;
+      while (logListEl.firstChild) logListEl.removeChild(logListEl.firstChild);
+      var items = loadPetPracticeLog();
+      if (!items.length) {
+        var p = document.createElement('p');
+        p.className = 'cso-tool-desc';
+        p.textContent = 'No practice runs logged yet. Save your 1600m / 3200m run timings above.';
+        logListEl.appendChild(p);
+        return;
+      }
+      items.forEach(function (it, idx) {
+        var row = document.createElement('div');
+        row.className = 'cso-pet-log-row';
+        var copy = document.createElement('span');
+        copy.textContent = it.event + ' — ' + it.value + (it.date ? ' (' + it.date + ')' : '');
+        var delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'cso-tool-btn';
+        delBtn.textContent = 'Remove';
+        delBtn.addEventListener('click', function () {
+          removePetPracticeRun(idx);
+          renderLog();
+        });
+        row.appendChild(copy);
+        row.appendChild(delBtn);
+        logListEl.appendChild(row);
+      });
+    }
+
+    if (logForm) {
+      logForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        addPetPracticeRun({
+          event: logEventEl ? logEventEl.value : '1600m Run',
+          value: logValueEl ? logValueEl.value : '',
+          date: logDateEl ? logDateEl.value : ''
+        });
+        if (logValueEl) logValueEl.value = '';
+        renderLog();
+      });
+    }
+    renderLog();
+  }
+
   function boot() {
     initResizer();
     initAgeCalculator();
@@ -1063,6 +1335,7 @@
     initScamChecker();
     initExamCentrePlanner();
     initOrspSalaryCalculator();
+    initOdishaPetChecker();
   }
 
   if (typeof window !== 'undefined') {
@@ -1078,7 +1351,12 @@
       calculateExamDayLogistics: calculateExamDayLogistics,
       buildExamDayIcs: buildExamDayIcs,
       calculateOrspSalaryAndFee: calculateOrspSalaryAndFee,
-      ORSP_PAY_LEVELS: ORSP_PAY_LEVELS
+      ORSP_PAY_LEVELS: ORSP_PAY_LEVELS,
+      evaluateOdishaPetStandards: evaluateOdishaPetStandards,
+      ODISHA_PET_STANDARDS: ODISHA_PET_STANDARDS,
+      loadPetPracticeLog: loadPetPracticeLog,
+      addPetPracticeRun: addPetPracticeRun,
+      removePetPracticeRun: removePetPracticeRun
     };
   }
   if (typeof module !== 'undefined' && module.exports) {
@@ -1093,6 +1371,12 @@
       buildExamDayIcs: buildExamDayIcs,
       calculateOrspSalaryAndFee: calculateOrspSalaryAndFee,
       ORSP_PAY_LEVELS: ORSP_PAY_LEVELS,
+      evaluateOdishaPetStandards: evaluateOdishaPetStandards,
+      ODISHA_PET_STANDARDS: ODISHA_PET_STANDARDS,
+      PET_LOG_KEY: PET_LOG_KEY,
+      loadPetPracticeLog: loadPetPracticeLog,
+      addPetPracticeRun: addPetPracticeRun,
+      removePetPracticeRun: removePetPracticeRun,
       CARRY_BAG_KEY: CARRY_BAG_KEY,
       CARRY_BAG_ITEMS: CARRY_BAG_ITEMS
     };

@@ -18,7 +18,7 @@
   <meta name="twitter:description" content="Zero-upload Odisha exam photo &amp; signature resizer + Odisha age relaxation cut-off calculator.">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
   <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v164">
-  <link rel="stylesheet" href="/tools/assets/tools.css?v=20261122v216">
+  <link rel="stylesheet" href="/tools/assets/tools.css?v=20261122v217">
   <script src="/assets/shared-header.js?v=20261121v171" defer></script>
   <script src="/assets/cso-auth-client.js" defer></script>
   <script src="/assets/js/cso-idb.js" defer></script>
@@ -26,7 +26,7 @@
   <script src="/assets/js/student-utilities.js?v=20261121v164" defer></script>
   <script src="/assets/js/odisha-districts.js?v=20261122v211" defer></script>
   <script src="/assets/js/deadline-tracker.js?v=20261122v211" defer></script>
-  <script src="/tools/assets/tools.js?v=20261122v216" defer></script>
+  <script src="/tools/assets/tools.js?v=20261122v217" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://csodisha.com/"},{"@type":"ListItem","position":2,"name":"Jobs \u0026 Careers","item":"https://csodisha.com/jobs-careers/"},{"@type":"ListItem","position":3,"name":"Student Toolkit","item":"https://csodisha.com/tools/"}]},{"@type":"WebApplication","name":"Odisha Student Toolkit","applicationCategory":"UtilitiesApplication","operatingSystem":"All","url":"https://csodisha.com/tools/","description":"Zero-upload Odisha exam photo and signature resizer plus Odisha government age relaxation and cut-off calculator."}]}</script>
 </head>
@@ -57,6 +57,7 @@
       <a class="cso-tools-pill" href="#scam-checker">🔍 Official Link &amp; Scam-Check</a>
       <a class="cso-tools-pill" href="#exam-centre-planner">🎒 Exam-Day Centre Planner</a>
       <a class="cso-tools-pill" href="#orsp-salary-calculator">💰 7th Pay Salary &amp; Fee</a>
+      <a class="cso-tools-pill" href="#odisha-pet-checker">🏃 Police &amp; Forest PET Checker</a>
       <a class="cso-tools-pill" href="/jobs-careers/">💼 Back to Live Jobs</a>
     </div>
   </section>
@@ -384,6 +385,96 @@
     </form>
 
     <div id="orsp-salary-result" class="cso-cbt-calc-result" role="status" aria-live="polite"></div>
+  </section>
+
+  <!-- Tool 7: Odisha Uniformed Services PET & Physical Standards Checker (v217) -->
+  <section id="odisha-pet-checker" class="cso-tool-card" aria-labelledby="odisha-pet-heading">
+    <div class="cso-tool-card__head">
+      <div>
+        <h2 id="odisha-pet-heading">🏃 Odisha Uniformed Services PET &amp; Physical Standards Checker</h2>
+        <p class="cso-tool-desc">Verify official Height, Weight, Chest expansion (≥ 5 cm) &amp; Physical Efficiency Test (PET) run/jump benchmarks for Odisha Police, Forest Guard &amp; Excise posts, and log your practice runs.</p>
+      </div>
+      <span class="cso-tool-privacy-badge">🛡️ Official PET Standards</span>
+    </div>
+
+    <form id="pet-checker-form" class="cso-age-form">
+      <label class="cso-tool-field">
+        <span>Odisha Uniformed Force / Post</span>
+        <select id="pet-force">
+          <option value="police-si">Odisha Police Sub-Inspector (SI)</option>
+          <option value="police-constable">Odisha Police Constable / Sepoy</option>
+          <option value="forest-guard">OSSSC Forest Guard / Forester</option>
+          <option value="excise">Odisha Excise Sub-Inspector / Constable</option>
+        </select>
+      </label>
+      <label class="cso-tool-field">
+        <span>Gender</span>
+        <select id="pet-gender">
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </label>
+      <label class="cso-tool-field">
+        <span>Social Category</span>
+        <select id="pet-category">
+          <option value="General / SEBC">General / SEBC</option>
+          <option value="SC / ST">SC / ST</option>
+        </select>
+      </label>
+      <label class="cso-tool-field">
+        <span>Height (cm)</span>
+        <input id="pet-height" type="number" min="120" max="230" step="0.5" value="168" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Weight (kg)</span>
+        <input id="pet-weight" type="number" min="30" max="150" step="0.5" value="58" required>
+      </label>
+      <label class="cso-tool-field" id="pet-chest-unexp-wrap">
+        <span>Chest Unexpanded (cm)</span>
+        <input id="pet-chest-unexp" type="number" min="60" max="140" step="0.5" value="80">
+      </label>
+      <label class="cso-tool-field" id="pet-chest-exp-wrap">
+        <span>Chest Expanded (cm)</span>
+        <input id="pet-chest-exp" type="number" min="60" max="150" step="0.5" value="86">
+      </label>
+      <div class="cso-age-actions">
+        <button id="pet-check-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Check Physical &amp; PET Eligibility</button>
+      </div>
+    </form>
+
+    <div id="pet-result" class="cso-cbt-calc-result" role="status" aria-live="polite"></div>
+
+    <div class="cso-carrybag-box">
+      <div class="cso-carrybag-head">
+        <div>
+          <h3>Personal PET Practice Run Log</h3>
+          <p class="cso-tool-desc">Track your 1600m / 3200m run timings and jump distances offline on this device.</p>
+        </div>
+      </div>
+      <form id="pet-log-form" class="cso-age-form">
+        <label class="cso-tool-field">
+          <span>PET Event</span>
+          <select id="pet-log-event">
+            <option value="1600m Run">1600m Run</option>
+            <option value="3200m Run">3200m Run</option>
+            <option value="Long Jump">Long Jump</option>
+            <option value="High Jump">High Jump</option>
+          </select>
+        </label>
+        <label class="cso-tool-field">
+          <span>Timing / Distance</span>
+          <input id="pet-log-value" type="text" placeholder="e.g. 6m 45s or 3.85m" required>
+        </label>
+        <label class="cso-tool-field">
+          <span>Practice Date</span>
+          <input id="pet-log-date" type="date" required>
+        </label>
+        <div class="cso-age-actions">
+          <button id="pet-log-save-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Save Practice Run</button>
+        </div>
+      </form>
+      <div id="pet-log-list" class="cso-pet-log-list"></div>
+    </div>
   </section>
 </main>
 
