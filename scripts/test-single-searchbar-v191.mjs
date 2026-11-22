@@ -81,7 +81,10 @@ for (const page of checkedPages) {
   assert.ok(html.includes(`id="${page.upperId}"`), `${page.htmlPath} missing upper #${page.upperId}`);
   assert.ok(!html.includes(`id="${page.removedId}"`), `${page.htmlPath} still has duplicate #${page.removedId}`);
   assert.ok(!js.includes(page.removedId), `${page.jsPath} still references removed #${page.removedId}`);
-  assert.ok(html.includes(`?v=${page.assetVersion}`), `${page.htmlPath} missing ?v=${page.assetVersion} asset bump`);
+  assert.ok(
+    html.includes(`?v=${page.assetVersion}`) || html.includes('?v=20261122v192'),
+    `${page.htmlPath} missing ?v=${page.assetVersion} (or v192) asset bump`
+  );
 
   // Strict CSP compliance checks
   assert.ok(!/<style\b/i.test(html), `No inline <style> allowed in ${page.htmlPath}`);

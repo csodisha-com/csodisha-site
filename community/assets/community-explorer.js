@@ -313,12 +313,6 @@
         applyTopSearch(false);
       });
     }
-    if (mainSearch) {
-      mainSearch.addEventListener('input', function () {
-        if (topSearch) topSearch.value = mainSearch.value;
-        if (topClear) topClear.hidden = !mainSearch.value;
-      });
-    }
     if (topToggle && shell) {
       topToggle.addEventListener('click', function () {
         if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
@@ -357,7 +351,6 @@
         state.page = 1;
         if (topSearch) topSearch.value = '';
         if (topClear) topClear.hidden = true;
-        if (mainSearch) mainSearch.value = '';
         highlightMatches('');
         setContext(activeLabel || 'Overview');
         loadItems(false);
