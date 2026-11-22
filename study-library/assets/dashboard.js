@@ -38,7 +38,6 @@
   const continueClearBtn = $('study-continue-clear');
   const liveStudySection = $('live-study-section');
   const liveStudyCount = $('live-study-count');
-  const studyQInput = $('study-q');
   const studyExamSelect = $('study-exam-filter');
   const studyTypePills = $('study-type-pills');
   const studyGoalBtn = $('study-goal-match');
@@ -1297,13 +1296,6 @@
     }
     updateReviseAgainBadge();
 
-    if (studyQInput) {
-      let t;
-      studyQInput.addEventListener('input', () => {
-        clearTimeout(t);
-        t = setTimeout(() => { state.filterQ = studyQInput.value; state.visibleCount = PAGE_SIZE; renderMaterials(); }, 180);
-      });
-    }
     if (studyExamSelect) {
       studyExamSelect.addEventListener('change', () => { state.filterExam = studyExamSelect.value; state.visibleCount = PAGE_SIZE; renderMaterials(); });
     }
@@ -1340,7 +1332,8 @@
         state.filterQ = exam;
         state.filterExam = '';
         state.visibleCount = PAGE_SIZE;
-        if (studyQInput) studyQInput.value = exam;
+        if (dirSearch) dirSearch.value = exam;
+        if (clearSearchBtn) clearSearchBtn.hidden = !exam;
         if (studyExamSelect) studyExamSelect.value = '';
         renderMaterials();
         if (liveStudySection && typeof liveStudySection.scrollIntoView === 'function') {
@@ -1355,7 +1348,8 @@
         state.filterQ = '';
         state.goalMatchOnly = false;
         state.visibleCount = PAGE_SIZE;
-        if (studyQInput) studyQInput.value = '';
+        if (dirSearch) dirSearch.value = '';
+        if (clearSearchBtn) clearSearchBtn.hidden = true;
         if (studyExamSelect) studyExamSelect.value = '';
         if (studyGoalBtn) studyGoalBtn.setAttribute('aria-pressed', 'false');
         if (studyTypePills) {
@@ -1368,20 +1362,6 @@
         renderMaterials();
       });
     }
-
-    document.querySelectorAll('.cso-sl-hero-pill[data-exam-jump]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const exam = btn.dataset.examJump || '';
-        state.filterQ = exam;
-        state.filterExam = '';
-        if (studyQInput) studyQInput.value = exam;
-        if (studyExamSelect) studyExamSelect.value = '';
-        renderMaterials();
-        if (liveStudySection && typeof liveStudySection.scrollIntoView === 'function') {
-          liveStudySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
 
     if (dirSearch) {
       let st;

@@ -231,6 +231,12 @@
       });
     }
 
+    var topSearch = document.getElementById('community-topbar-search');
+    var topClear = document.getElementById('community-topbar-clear');
+    var topToggle = document.getElementById('community-topbar-toggle');
+    var ctxPill = document.getElementById('community-context-pill');
+    var topTimer = null;
+
     document.querySelectorAll('.cso-comm-pill').forEach(function (pill) {
       pill.addEventListener('click', function () {
         document.querySelectorAll('.cso-comm-pill').forEach(function (p) { p.classList.remove('is-active'); });
@@ -238,36 +244,25 @@
         state.q = pill.getAttribute('data-q') || '';
         state.domain = pill.getAttribute('data-domain') || '';
         state.page = 1;
-        var searchEl = document.getElementById('community-search');
-        if (searchEl) searchEl.value = state.q;
+        if (topSearch) topSearch.value = state.q;
+        if (topClear) topClear.hidden = !state.q;
         loadItems(false);
       });
     });
 
-    var searchEl = document.getElementById('community-search');
     var regionEl = document.getElementById('community-region');
     var memEl = document.getElementById('community-membership');
     var chanEl = document.getElementById('community-channel');
     var resetEl = document.getElementById('community-reset');
 
-    var timer = null;
-    if (searchEl) {
-      searchEl.addEventListener('input', function () {
-        clearTimeout(timer);
-        timer = setTimeout(function () {
-          state.q = searchEl.value.trim();
-          state.page = 1;
-          loadItems(false);
-        }, 220);
-      });
-    }
     if (regionEl) regionEl.addEventListener('change', function () { state.region = regionEl.value; state.page = 1; loadItems(false); });
     if (memEl) memEl.addEventListener('change', function () { state.membership = memEl.value; state.page = 1; loadItems(false); });
     if (chanEl) chanEl.addEventListener('change', function () { state.channel = chanEl.value; state.page = 1; loadItems(false); });
     if (resetEl) {
       resetEl.addEventListener('click', function () {
         state.q = ''; state.region = ''; state.membership = ''; state.channel = ''; state.domain = ''; state.page = 1;
-        if (searchEl) searchEl.value = '';
+        if (topSearch) topSearch.value = '';
+        if (topClear) topClear.hidden = true;
         if (regionEl) regionEl.value = '';
         if (memEl) memEl.value = '';
         if (chanEl) chanEl.value = '';
@@ -275,15 +270,6 @@
         loadItems(false);
       });
     }
-
-
-    /* v144 top directory search bar + section context pill */
-    var topSearch = document.getElementById('community-topbar-search');
-    var topClear = document.getElementById('community-topbar-clear');
-    var topToggle = document.getElementById('community-topbar-toggle');
-    var ctxPill = document.getElementById('community-context-pill');
-    var mainSearch = document.getElementById('community-search');
-    var topTimer = null;
 
     function setContext(label) {
       if (ctxPill) ctxPill.textContent = '⌂ ' + (label || 'Overview');
@@ -301,7 +287,6 @@
       if (topClear) topClear.hidden = !q;
       state.q = q;
       state.page = 1;
-      if (mainSearch) mainSearch.value = q;
       highlightMatches(q);
       setContext(q ? 'Search: ' + q : (activeLabel || 'Overview'));
       loadItems(false);

@@ -258,6 +258,12 @@
       });
     }
 
+    var topSearch = document.getElementById('schemes-topbar-search');
+    var topClear = document.getElementById('schemes-topbar-clear');
+    var topToggle = document.getElementById('schemes-topbar-toggle');
+    var ctxPill = document.getElementById('schemes-context-pill');
+    var topTimer = null;
+
     document.querySelectorAll('.cso-schemes-pill').forEach(function (pill) {
       pill.addEventListener('click', function () {
         document.querySelectorAll('.cso-schemes-pill').forEach(function (p) { p.classList.remove('is-active'); });
@@ -265,30 +271,18 @@
         state.q = pill.getAttribute('data-q') || '';
         state.domain = pill.getAttribute('data-domain') || '';
         state.page = 1;
-        var searchEl = document.getElementById('schemes-search');
-        if (searchEl) searchEl.value = state.q;
+        if (topSearch) topSearch.value = state.q;
+        if (topClear) topClear.hidden = !state.q;
         loadItems(false);
       });
     });
 
-    var searchEl = document.getElementById('schemes-search');
     var sponsorEl = document.getElementById('schemes-sponsor');
     var typeEl = document.getElementById('schemes-type');
     var benEl = document.getElementById('schemes-beneficiary');
     var modeEl = document.getElementById('schemes-mode');
     var resetEl = document.getElementById('schemes-reset');
 
-    var timer = null;
-    if (searchEl) {
-      searchEl.addEventListener('input', function () {
-        clearTimeout(timer);
-        timer = setTimeout(function () {
-          state.q = searchEl.value.trim();
-          state.page = 1;
-          loadItems(false);
-        }, 220);
-      });
-    }
     if (sponsorEl) sponsorEl.addEventListener('change', function () { state.sponsor = sponsorEl.value; state.page = 1; loadItems(false); });
     if (typeEl) typeEl.addEventListener('change', function () { state.schemeType = typeEl.value; state.page = 1; loadItems(false); });
     if (benEl) benEl.addEventListener('change', function () { state.beneficiary = benEl.value; state.page = 1; loadItems(false); });
@@ -296,7 +290,8 @@
     if (resetEl) {
       resetEl.addEventListener('click', function () {
         state.q = ''; state.sponsor = ''; state.schemeType = ''; state.beneficiary = ''; state.mode = ''; state.domain = ''; state.page = 1;
-        if (searchEl) searchEl.value = '';
+        if (topSearch) topSearch.value = '';
+        if (topClear) topClear.hidden = true;
         if (sponsorEl) sponsorEl.value = '';
         if (typeEl) typeEl.value = '';
         if (benEl) benEl.value = '';
@@ -305,15 +300,6 @@
         loadItems(false);
       });
     }
-
-
-    /* v144 top directory search bar + section context pill */
-    var topSearch = document.getElementById('schemes-topbar-search');
-    var topClear = document.getElementById('schemes-topbar-clear');
-    var topToggle = document.getElementById('schemes-topbar-toggle');
-    var ctxPill = document.getElementById('schemes-context-pill');
-    var mainSearch = document.getElementById('schemes-search');
-    var topTimer = null;
 
     function setContext(label) {
       if (ctxPill) ctxPill.textContent = '⌂ ' + (label || 'Overview');
@@ -331,7 +317,6 @@
       if (topClear) topClear.hidden = !q;
       state.q = q;
       state.page = 1;
-      if (mainSearch) mainSearch.value = q;
       highlightMatches(q);
       setContext(q ? 'Search: ' + q : (activeLabel || 'Overview'));
       loadItems(false);

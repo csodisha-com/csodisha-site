@@ -579,8 +579,9 @@
           path.push(index);
           updateUrlState(true);
           renderExplorer();
-        } else if (schemeQEl) {
-          schemeQEl.value = childTitleText;
+        } else {
+          if (search) search.value = childTitleText;
+          if (clearSearch) clearSearch.hidden = false;
           schemeFilterState.q = childTitleText;
           loadLiveSchemes();
           const secEl = document.getElementById('live-schemes-section');
@@ -682,6 +683,13 @@
   function renderSearch() {
     const query = search.value.trim().toLowerCase();
     clearSearch.hidden = search.value.length === 0;
+    if (typeof schemeFilterState === 'object' && typeof loadLiveSchemes === 'function') {
+      const nextQ = search.value.trim();
+      if (schemeFilterState.q !== nextQ) {
+        schemeFilterState.q = nextQ;
+        loadLiveSchemes();
+      }
+    }
 
     if (!query) {
       if (currentSection >= 0) renderExplorer();
@@ -1193,7 +1201,6 @@
   const liveSchemesCount = document.getElementById('live-schemes-count');
   const eligForm = document.getElementById('scheme-elig-form');
   const eligResetBtn = document.getElementById('scheme-elig-reset');
-  const schemeQEl = document.getElementById('scheme-q');
   const schemeGovEl = document.getElementById('scheme-gov');
   const schemeGroupEl = document.getElementById('scheme-group');
   const schemeGenderEl = document.getElementById('scheme-gender');
@@ -1820,7 +1827,7 @@
   if (eligForm) {
     eligForm.addEventListener('submit', e => {
       e.preventDefault();
-      schemeFilterState.q = schemeQEl ? schemeQEl.value.trim() : '';
+      schemeFilterState.q = search ? search.value.trim() : '';
       schemeFilterState.gov = schemeGovEl ? schemeGovEl.value : '';
       schemeFilterState.group = schemeGroupEl ? schemeGroupEl.value : schemeFilterState.group;
       schemeFilterState.gender = schemeGenderEl ? schemeGenderEl.value : '';
@@ -1865,7 +1872,8 @@
   if (eligResetBtn) {
     eligResetBtn.addEventListener('click', () => {
       schemeFilterState = { q: '', gov: '', group: '', gender: '', beneficiary: '', age: '', income: '', status_label: '' };
-      if (schemeQEl) schemeQEl.value = '';
+      if (search) search.value = '';
+      if (clearSearch) clearSearch.hidden = true;
       if (schemeGovEl) schemeGovEl.value = '';
       if (schemeGroupEl) schemeGroupEl.value = '';
       if (schemeGenderEl) schemeGenderEl.value = '';
