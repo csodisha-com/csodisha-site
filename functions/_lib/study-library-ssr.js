@@ -574,6 +574,8 @@ export async function handlePublicStudyLibraryRoute(request, env, url) {
     pathname.startsWith('/study-library/osssc-ri-ari-amin/') ||
     pathname === '/study-library/odisha-police-oprb' ||
     pathname.startsWith('/study-library/odisha-police-oprb/') ||
+    pathname === '/study-library/cbt-mock-test' ||
+    pathname.startsWith('/study-library/cbt-mock-test/') ||
     pathname.startsWith('/study-library/assets/') ||
     pathname.startsWith('/study-library/generated/')
   ) {

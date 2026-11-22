@@ -27,6 +27,7 @@ const STATIC_SITEMAP_ROUTES = [
   { path: '/study-library/opsc-oas/', changefreq: 'weekly', priority: '0.8' },
   { path: '/study-library/osssc-ri-ari-amin/', changefreq: 'weekly', priority: '0.8' },
   { path: '/study-library/odisha-police-oprb/', changefreq: 'weekly', priority: '0.8' },
+  { path: '/study-library/cbt-mock-test/', changefreq: 'weekly', priority: '0.8' },
   { path: '/community/', changefreq: 'monthly', priority: '0.6' },
   { path: '/about/', changefreq: 'monthly', priority: '0.6' },
   { path: '/support/', changefreq: 'monthly', priority: '0.5' },
