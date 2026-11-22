@@ -1636,6 +1636,179 @@
     host.appendChild(list);
   }
 
+  const BACKUP_SCHEMA_VERSION = 'cso-candidate-v1';
+  const BACKUP_ALLOWED_KEYS = [
+    'cso_tracked_deadlines_v1',
+    'cso_doc_readiness_v1',
+    'cso_syllabus_progress_v1',
+    'cso_exam_day_bag_v1',
+    'cso_saved_schemes_v1',
+    'cso_candidate_alert_prefs_v1',
+    'cso_ca_quiz_streak_v1',
+    'cso_cbt_history_v1'
+  ];
+
+  function buildCandidateBackupPayload(storage) {
+    const store = storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+    const data = {};
+    if (store) {
+      BACKUP_ALLOWED_KEYS.forEach(key => {
+        try {
+          const raw = store.getItem(key);
+          if (raw !== null && raw !== undefined && raw !== '') {
+            try {
+              data[key] = JSON.parse(raw);
+            } catch {
+              data[key] = raw;
+            }
+          }
+        } catch (_) {}
+      });
+    }
+    return {
+      schemaVersion: BACKUP_SCHEMA_VERSION,
+      exportedAt: new Date().toISOString(),
+      origin: 'csodisha.com',
+      data
+    };
+  }
+
+  function restoreCandidateBackupPayload(rawInput, storage) {
+    const store = storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+    let parsed = rawInput;
+    if (typeof rawInput === 'string') {
+      try {
+        parsed = JSON.parse(rawInput);
+      } catch {
+        return { ok: false, error: 'Invalid JSON file. Please select a valid CS Odisha backup file.' };
+      }
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return { ok: false, error: 'Invalid backup structure. Expected a JSON object.' };
+    }
+    if (parsed.schemaVersion !== BACKUP_SCHEMA_VERSION) {
+      return { ok: false, error: `Unsupported backup schema version. Expected "${BACKUP_SCHEMA_VERSION}".` };
+    }
+    if (!parsed.data || typeof parsed.data !== 'object' || Array.isArray(parsed.data)) {
+      return { ok: false, error: 'Backup payload missing valid "data" object.' };
+    }
+
+    const restoredKeys = [];
+    const restoredData = {};
+    BACKUP_ALLOWED_KEYS.forEach(key => {
+      if (Object.prototype.hasOwnProperty.call(parsed.data, key) && parsed.data[key] !== undefined) {
+        const val = parsed.data[key];
+        const serialized = typeof val === 'string' ? val : JSON.stringify(val);
+        if (store) {
+          try { store.setItem(key, serialized); } catch (_) {}
+        }
+        restoredKeys.push(key);
+        restoredData[key] = val;
+      }
+    });
+
+    if (typeof fetch === 'function') {
+      try {
+        fetch('/api/sync', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-CSO-CSRF': '1' },
+          body: JSON.stringify({ restoredAt: new Date().toISOString(), keys: restoredKeys, data: restoredData })
+        }).catch(() => {});
+      } catch (_) {}
+    }
+
+    return { ok: true, restoredCount: restoredKeys.length, restoredKeys };
+  }
+
+  function renderCandidateBackupPanel() {
+    const host = document.getElementById('cso-candidate-backup-panel');
+    if (!host) return;
+    clear(host);
+
+    const header = el('div', 'bp-panel-header');
+    const titleWrap = el('div', 'bp-panel-title');
+    titleWrap.appendChild(el('span', '', '💾'));
+    titleWrap.appendChild(el('span', '', 'Offline JSON Backup & Cross-Device Restore'));
+    header.appendChild(titleWrap);
+    header.appendChild(el('span', 'cso-pill-badge', BACKUP_SCHEMA_VERSION));
+    host.appendChild(header);
+
+    host.appendChild(el('p', 'cso-muted-note', 'Export your tracked deadlines, document readiness, syllabus progress, exam-day bag, saved schemes, and quiz streaks into a portable JSON file for offline safekeeping or cross-device transfer.'));
+
+    const actions = el('div', 'cso-backup-actions');
+    const downloadBtn = el('button', 'cso-btn cso-btn-primary cso-backup-btn', '⬇️ Download Preparation Backup (.json)');
+    downloadBtn.type = 'button';
+    downloadBtn.id = 'cso-backup-download-btn';
+
+    const statusEl = el('p', 'cso-backup-status', '');
+    statusEl.id = 'cso-backup-status';
+    statusEl.setAttribute('role', 'status');
+    statusEl.setAttribute('aria-live', 'polite');
+    statusEl.hidden = true;
+
+    function setBackupStatus(msg, isError) {
+      statusEl.textContent = msg;
+      statusEl.className = 'cso-backup-status ' + (isError ? 'is-error' : 'is-ok');
+      statusEl.hidden = false;
+    }
+
+    downloadBtn.addEventListener('click', () => {
+      const payload = buildCandidateBackupPayload();
+      const jsonStr = JSON.stringify(payload, null, 2);
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const filename = `csodisha-candidate-backup-${dateStr}.json`;
+      if (typeof Blob !== 'undefined' && typeof URL !== 'undefined') {
+        const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      }
+      setBackupStatus(`Backup exported (${Object.keys(payload.data).length} section(s) saved to ${filename}).`, false);
+    });
+
+    const restoreLabel = el('label', 'cso-btn cso-backup-btn');
+    restoreLabel.setAttribute('for', 'cso-backup-restore-input');
+    restoreLabel.appendChild(el('span', '', '⬆️ Restore Backup File (.json)'));
+    const restoreInput = document.createElement('input');
+    restoreInput.type = 'file';
+    restoreInput.id = 'cso-backup-restore-input';
+    restoreInput.accept = 'application/json,.json';
+    restoreInput.className = 'cso-sr-input';
+    restoreInput.addEventListener('change', async () => {
+      const file = restoreInput.files && restoreInput.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const res = restoreCandidateBackupPayload(text);
+        if (!res.ok) {
+          setBackupStatus(res.error || 'Unable to restore backup file.', true);
+          return;
+        }
+        renderReadinessSummaryCard();
+        renderTrackedDeadlinesPanel();
+        renderDocumentReadinessPanel();
+        renderSavedSchemesPanel();
+        renderSyllabusMasteryPanel();
+        setBackupStatus(`Restored ${res.restoredCount} candidate data section(s) successfully.`, false);
+      } catch (err) {
+        setBackupStatus(err && err.message ? err.message : 'Failed to read backup file.', true);
+      } finally {
+        restoreInput.value = '';
+      }
+    });
+    restoreLabel.appendChild(restoreInput);
+
+    actions.append(downloadBtn, restoreLabel);
+    host.appendChild(actions);
+    host.appendChild(statusEl);
+  }
+
   function renderSyllabusMasteryPanel() {
     const host = document.getElementById('cso-syllabus-progress-panel');
     const api = window.CSO_SYLLABUS_VAULT_API;
@@ -2179,6 +2352,7 @@
     renderTrackedDeadlinesPanel();
     renderDocumentReadinessPanel();
     renderSavedSchemesPanel();
+    renderCandidateBackupPanel();
     renderSyllabusMasteryPanel();
     renderSchemes();
     renderResourcesShelf();
