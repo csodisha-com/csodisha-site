@@ -1234,6 +1234,34 @@
     host.appendChild(form);
   }
 
+  function renderSyllabusMasteryPanel() {
+    const host = document.getElementById('cso-syllabus-progress-panel');
+    const api = window.CSO_SYLLABUS_VAULT_API;
+    if (!host || !api || !Array.isArray(api.VAULT)) return;
+    clear(host);
+
+    const header = el('div', 'bp-panel-header');
+    const titleWrap = el('div', 'bp-panel-title');
+    titleWrap.appendChild(el('span', '', '📘'));
+    titleWrap.appendChild(el('span', '', 'Exam Syllabus Mastery'));
+    header.appendChild(titleWrap);
+    const contLink = el('a', 'cso-btn cso-btn-sm cso-btn-primary', 'Continue Syllabus →');
+    contLink.href = '/study-library/#cso-syllabus-vault';
+    header.appendChild(contLink);
+    host.appendChild(header);
+
+    const progress = api.loadProgress();
+    const grid = el('div', 'cso-cbt-summary');
+    api.VAULT.forEach(ex => {
+      const st = api.getExamStats(ex.id, progress);
+      const box = el('div', 'cso-cbt-kpi');
+      box.appendChild(el('strong', '', `${st.pct}%`));
+      box.appendChild(el('span', '', `${ex.shortLabel} (${st.done}/${st.total})`));
+      grid.appendChild(box);
+    });
+    host.appendChild(grid);
+  }
+
   function initMistakeNotebook() {
     const form = document.getElementById('cso-mistake-form');
     const listHost = document.getElementById('cso-mistake-list');
@@ -1745,6 +1773,7 @@
     renderCbtAnalytics();
     renderLocalCbtStreaks();
     initAlertWatchlist();
+    renderSyllabusMasteryPanel();
     renderSchemes();
     renderResourcesShelf();
     renderBookmarksShelves();

@@ -82,8 +82,8 @@ for (const page of checkedPages) {
   assert.ok(!html.includes(`id="${page.removedId}"`), `${page.htmlPath} still has duplicate #${page.removedId}`);
   assert.ok(!js.includes(page.removedId), `${page.jsPath} still references removed #${page.removedId}`);
   assert.ok(
-    html.includes(`?v=${page.assetVersion}`) || html.includes('?v=20261122v192') || html.includes('?v=20261122v194') || html.includes('?v=20261122v197'),
-    `${page.htmlPath} missing ?v=${page.assetVersion} (or v192/v194/v197) asset bump`
+    html.includes(`?v=${page.assetVersion}`) || html.includes('?v=20261122v192') || html.includes('?v=20261122v194') || html.includes('?v=20261122v197') || html.includes('?v=20261122v198'),
+    `${page.htmlPath} missing ?v=${page.assetVersion} (or v192/v194/v197/v198) asset bump`
   );
 
   // Strict CSP compliance checks

@@ -1425,8 +1425,99 @@
     }
   }
 
+  function initSyllabusPyqVault() {
+    const host = document.getElementById('cso-syllabus-vault');
+    const api = window.CSO_SYLLABUS_VAULT_API;
+    if (!host || !api || !Array.isArray(api.VAULT)) return;
+
+    let activeExamId = api.VAULT[0].id;
+
+    function renderVault() {
+      while (host.firstChild) host.removeChild(host.firstChild);
+      const progress = api.loadProgress();
+      const exam = api.VAULT.find(e => e.id === activeExamId) || api.VAULT[0];
+      const stats = api.getExamStats(exam.id, progress);
+
+      const head = el('div', 'cso-vault-head');
+      const titleBox = el('div', 'cso-vault-title-box');
+      const h2 = el('h2', '', '📘 Odisha Exam Syllabus & PYQ Checklist Vault');
+      h2.id = 'cso-vault-heading';
+      const sub = el('p', 'cso-vault-sub', `${exam.title} · ${exam.title_or}`);
+      titleBox.append(h2, sub);
+
+      const progBox = el('div', 'cso-vault-progress-box');
+      const progLbl = el('span', 'cso-vault-progress-lbl', `Syllabus Completion: ${stats.pct}% (${stats.done}/${stats.total} topics)`);
+      const progBar = document.createElement('progress');
+      progBar.className = 'cso-vault-progress';
+      progBar.max = 100;
+      progBar.value = stats.pct;
+      progBar.setAttribute('aria-label', 'Syllabus completion percentage');
+      progBox.append(progLbl, progBar);
+
+      head.append(titleBox, progBox);
+      host.appendChild(head);
+
+      const tabs = el('div', 'cso-vault-tabs');
+      tabs.setAttribute('role', 'tablist');
+      tabs.setAttribute('aria-label', 'Select Odisha Exam Syllabus');
+      api.VAULT.forEach(ex => {
+        const isAct = ex.id === exam.id;
+        const btn = el('button', `cso-vault-tab${isAct ? ' is-active' : ''}`, ex.shortLabel);
+        btn.type = 'button';
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-selected', String(isAct));
+        btn.addEventListener('click', () => {
+          activeExamId = ex.id;
+          renderVault();
+        });
+        tabs.appendChild(btn);
+      });
+      host.appendChild(tabs);
+
+      const list = el('div', 'cso-vault-topics');
+      exam.topics.forEach(topic => {
+        const row = el('label', 'cso-vault-topic');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'cso-vault-checkbox';
+        cb.checked = Boolean(progress[topic.id]);
+        cb.addEventListener('change', () => {
+          api.toggleTopic(topic.id, cb.checked);
+          renderVault();
+        });
+
+        const body = el('div', 'cso-vault-topic-body');
+        const meta = el('div', 'cso-vault-topic-meta');
+        meta.appendChild(el('span', 'cso-vault-pill', topic.paper));
+        meta.appendChild(el('span', 'cso-vault-pill is-weight', topic.weightage));
+        body.appendChild(meta);
+        body.appendChild(el('strong', 'cso-vault-topic-en', topic.title));
+        body.appendChild(el('span', 'cso-vault-topic-or', topic.title_or));
+
+        row.append(cb, body);
+        list.appendChild(row);
+      });
+      host.appendChild(list);
+
+      const actions = el('div', 'cso-vault-actions');
+      const portalA = el('a', 'cso-vault-btn', `Official ${exam.boardName} Portal ↗`);
+      portalA.href = exam.officialUrl;
+      portalA.target = '_blank';
+      portalA.rel = 'noopener noreferrer';
+
+      const cbtA = el('a', 'cso-vault-btn cso-vault-btn--primary', 'Practice CBT Mock →');
+      cbtA.href = exam.cbtUrl;
+
+      actions.append(portalA, cbtA);
+      host.appendChild(actions);
+    }
+
+    renderVault();
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     wireEvents();
+    initSyllabusPyqVault();
     hydrateData().catch(() => {
       if (loadStatusEl) loadStatusEl.textContent = 'Offline mode active — cached study tools ready.';
     });
