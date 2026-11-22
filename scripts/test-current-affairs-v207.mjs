@@ -252,7 +252,7 @@ for (const rel of filesToCheck) {
 }
 
 assert.ok(read('assets/css/current-affairs.css').includes('min-height: 44px;'), 'CSS must enforce 44px touch targets');
-assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v207';"), 'sw.js must be v207');
-assert.ok(read('functions/_lib/ops-sentinel.js').includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v207';"), 'ops-sentinel must be v207');
+assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v(207|208)';/.test(read('sw.js')), 'sw.js must be v207 or v208');
+assert.ok(/ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v(207|208)';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel must be v207 or v208');
 
 console.log('PASS: test-current-affairs-v207.mjs');

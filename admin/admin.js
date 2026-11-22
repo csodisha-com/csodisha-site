@@ -290,10 +290,17 @@
   }
 
   function renderWorkspaceView(folderId, moduleId) {
+    var caCard = document.getElementById('cso-ca-publisher-card');
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);
 
     if (window.CSOLive && window.CSOLive.render(folderId, moduleId, dom.workspaceRoot, dom.moduleHeaderActions)) {
+      if (caCard && (moduleId === 'module-04-004' || moduleId === 'module-01-006' || moduleId === 'module-01-001')) {
+        dom.workspaceRoot.appendChild(caCard);
+        if (window.CSOFastPublish && window.CSOFastPublish.initCurrentAffairsPublisher) {
+          window.CSOFastPublish.initCurrentAffairsPublisher(caCard);
+        }
+      }
       return;
     }
 
@@ -301,10 +308,17 @@
     card.appendChild(el('h2', '', 'Module Ready'));
     card.appendChild(el('p', '', 'Select a live editorial section from the navigation tree or use + Create New.'));
     dom.workspaceRoot.appendChild(card);
+    if (caCard) {
+      dom.workspaceRoot.appendChild(caCard);
+      if (window.CSOFastPublish && window.CSOFastPublish.initCurrentAffairsPublisher) {
+        window.CSOFastPublish.initCurrentAffairsPublisher(caCard);
+      }
+    }
   }
 
   function openQuickCreateRoute(targetRoute) {
     if (!window.CSOCms) return;
+    var caCard = document.getElementById('cso-ca-publisher-card');
     closeCreateDropdown();
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);
@@ -329,6 +343,12 @@
     var host = el('div', 'cms-embed');
     dom.workspaceRoot.appendChild(host);
     window.CSOCms.mount(host, targetRoute, meta[3]);
+    if (targetRoute === 'current-affairs/new' && caCard) {
+      dom.workspaceRoot.appendChild(caCard);
+      if (window.CSOFastPublish && window.CSOFastPublish.initCurrentAffairsPublisher) {
+        window.CSOFastPublish.initCurrentAffairsPublisher(caCard);
+      }
+    }
     if (window.innerWidth <= 900) closeMobileDrawer();
   }
 

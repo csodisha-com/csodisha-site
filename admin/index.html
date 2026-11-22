@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/admin/suite.css?v=20261113">
   <link rel="stylesheet" href="/admin/cms/cms-embed.css?v=20261114g">
-  <link rel="stylesheet" href="/admin/studio.css?v=20261122v201">
+  <link rel="stylesheet" href="/admin/studio.css?v=20261122v208">
   <link rel="stylesheet" href="/admin/cms/security.css?v=20261114i">
   <link rel="stylesheet" href="/admin/edu-resources-batch1.css?v=20261117n">
 </head>
@@ -151,7 +151,299 @@
         <div id="moduleHeaderActions" class="cso-subheader-actions"></div>
       </div>
 
-      <div id="workspaceRoot" class="cso-workspace"></div>
+      <div id="workspaceRoot" class="cso-workspace">
+        <!-- Daily Current Affairs & 5-MCQ Composer (v208) -->
+        <section id="cso-ca-publisher-card" class="studio-card cso-card cso-ca-composer" aria-labelledby="caComposerTitle">
+          <div class="cso-ca-card-head">
+            <div class="cso-ca-title-group">
+              <span class="cso-live-dot" aria-hidden="true"></span>
+              <h2 id="caComposerTitle" class="cso-ca-heading">Daily Current Affairs &amp; 5-MCQ Composer (v208)</h2>
+              <span class="cso-pill-badge">D1 · Bilingual</span>
+            </div>
+            <p class="cso-ca-subhead">Author daily Odisha State &amp; National briefs with bilingual Odia support and structured 5-question exam quizzes.</p>
+          </div>
+
+          <form id="csoCaPublisherForm" class="cso-ca-form" novalidate>
+            <div class="form-grid cso-form-grid">
+              <div class="cso-form-group">
+                <label for="csoCaDate" class="cso-form-label">Date (YYYY-MM-DD) <span class="cso-req" aria-hidden="true">*</span></label>
+                <input type="date" id="csoCaDate" name="capsule_date" class="cso-form-input" required>
+              </div>
+              <div class="cso-form-group">
+                <label for="csoCaCategory" class="cso-form-label">Category <span class="cso-req" aria-hidden="true">*</span></label>
+                <select id="csoCaCategory" name="category" class="cso-form-select" required>
+                  <option value="Odisha State">Odisha State</option>
+                  <option value="National &amp; Economy">National &amp; Economy</option>
+                  <option value="Polity &amp; Schemes">Polity &amp; Schemes</option>
+                  <option value="Science &amp; Environment">Science &amp; Environment</option>
+                </select>
+              </div>
+
+              <div class="cso-form-group cso-span-full">
+                <label for="csoCaTitleEn" class="cso-form-label">Title (EN) <span class="cso-req" aria-hidden="true">*</span></label>
+                <input type="text" id="csoCaTitleEn" name="title_en" class="cso-form-input" placeholder="e.g., Odisha Cabinet Approves Rural Connectivity Mission" required>
+              </div>
+
+              <div class="cso-form-group cso-span-full">
+                <label for="csoCaTitleOr" class="cso-form-label">Title (ଓଡ଼ିଆ)</label>
+                <input type="text" id="csoCaTitleOr" name="title_or" class="cso-form-input" placeholder="e.g., ଓଡ଼ିଶା କ୍ୟାବିନେଟ୍ ଗ୍ରାମୀଣ ସଂଯୋଗୀକରଣ ମିଶନକୁ ଅନୁମୋଦନ କଲେ">
+              </div>
+
+              <div class="cso-form-group">
+                <label for="csoCaHighlightsEn" class="cso-form-label">Highlights (EN, newline-separated)</label>
+                <textarea id="csoCaHighlightsEn" name="highlights_en" rows="5" class="cso-form-textarea" placeholder="Key highlight line 1&#10;Key highlight line 2&#10;Key highlight line 3"></textarea>
+              </div>
+
+              <div class="cso-form-group">
+                <label for="csoCaHighlightsOr" class="cso-form-label">Highlights (ଓଡ଼ିଆ, newline-separated)</label>
+                <textarea id="csoCaHighlightsOr" name="highlights_or" rows="5" class="cso-form-textarea" placeholder="ମୁଖ୍ୟ ତଥ୍ୟ ଧାଡ଼ି ୧&#10;ମୁଖ୍ୟ ତଥ୍ୟ ଧାଡ଼ି ୨"></textarea>
+              </div>
+            </div>
+
+            <!-- Collapsible 5-MCQ Practice Quiz Drawer -->
+            <details class="cso-ca-mcq-drawer">
+              <summary class="cso-ca-mcq-summary">Add 5-Question Practice Quiz (Optional)</summary>
+              <div id="csoCaMcqContainer" class="cso-ca-mcq-list">
+                <!-- MCQ Row 1 -->
+                <fieldset class="cso-ca-mcq-row" data-mcq-index="0">
+                  <legend class="cso-ca-mcq-legend">MCQ 1</legend>
+                  <div class="form-grid cso-form-grid">
+                    <div class="cso-form-group cso-span-full">
+                      <label for="csoMcqQEn0" class="cso-form-label">Question 1 (EN)</label>
+                      <input type="text" id="csoMcqQEn0" class="cso-form-input cso-mcq-q-en" placeholder="Question in English">
+                    </div>
+                    <div class="cso-form-group cso-span-full">
+                      <label for="csoMcqQOr0" class="cso-form-label">Question 1 (ଓଡ଼ିଆ)</label>
+                      <input type="text" id="csoMcqQOr0" class="cso-form-input cso-mcq-q-or" placeholder="ପ୍ରଶ୍ନ ଓଡ଼ିଆରେ">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptA0" class="cso-form-label">Option A (EN)</label>
+                      <input type="text" id="csoMcqOptA0" class="cso-form-input cso-mcq-opt-a" placeholder="Option A">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptB0" class="cso-form-label">Option B (EN)</label>
+                      <input type="text" id="csoMcqOptB0" class="cso-form-input cso-mcq-opt-b" placeholder="Option B">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptC0" class="cso-form-label">Option C (EN)</label>
+                      <input type="text" id="csoMcqOptC0" class="cso-form-input cso-mcq-opt-c" placeholder="Option C">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptD0" class="cso-form-label">Option D (EN)</label>
+                      <input type="text" id="csoMcqOptD0" class="cso-form-input cso-mcq-opt-d" placeholder="Option D">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqAns0" class="cso-form-label">Correct Answer</label>
+                      <select id="csoMcqAns0" class="cso-form-select cso-mcq-ans">
+                        <option value="0">Option A (0)</option>
+                        <option value="1">Option B (1)</option>
+                        <option value="2">Option C (2)</option>
+                        <option value="3">Option D (3)</option>
+                      </select>
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqExp0" class="cso-form-label">Explanation (Optional)</label>
+                      <input type="text" id="csoMcqExp0" class="cso-form-input cso-mcq-exp" placeholder="Brief rationale">
+                    </div>
+                  </div>
+                </fieldset>
+
+                <!-- MCQ Row 2 -->
+                <fieldset class="cso-ca-mcq-row" data-mcq-index="1">
+                  <legend class="cso-ca-mcq-legend">MCQ 2</legend>
+                  <div class="form-grid cso-form-grid">
+                    <div class="cso-form-group cso-span-full">
+                      <label for="csoMcqQEn1" class="cso-form-label">Question 2 (EN)</label>
+                      <input type="text" id="csoMcqQEn1" class="cso-form-input cso-mcq-q-en" placeholder="Question in English">
+                    </div>
+                    <div class="cso-form-group cso-span-full">
+                      <label for="csoMcqQOr1" class="cso-form-label">Question 2 (ଓଡ଼ିଆ)</label>
+                      <input type="text" id="csoMcqQOr1" class="cso-form-input cso-mcq-q-or" placeholder="ପ୍ରଶ୍ନ ଓଡ଼ିଆରେ">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptA1" class="cso-form-label">Option A (EN)</label>
+                      <input type="text" id="csoMcqOptA1" class="cso-form-input cso-mcq-opt-a" placeholder="Option A">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptB1" class="cso-form-label">Option B (EN)</label>
+                      <input type="text" id="csoMcqOptB1" class="cso-form-input cso-mcq-opt-b" placeholder="Option B">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptC1" class="cso-form-label">Option C (EN)</label>
+                      <input type="text" id="csoMcqOptC1" class="cso-form-input cso-mcq-opt-c" placeholder="Option C">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptD1" class="cso-form-label">Option D (EN)</label>
+                      <input type="text" id="csoMcqOptD1" class="cso-form-input cso-mcq-opt-d" placeholder="Option D">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqAns1" class="cso-form-label">Correct Answer</label>
+                      <select id="csoMcqAns1" class="cso-form-select cso-mcq-ans">
+                        <option value="0">Option A (0)</option>
+                        <option value="1">Option B (1)</option>
+                        <option value="2">Option C (2)</option>
+                        <option value="3">Option D (3)</option>
+                      </select>
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqExp1" class="cso-form-label">Explanation (Optional)</label>
+                      <input type="text" id="csoMcqExp1" class="cso-form-input cso-mcq-exp" placeholder="Brief rationale">
+                    </div>
+                  </div>
+                </fieldset>
+
+                <!-- MCQ Row 3 -->
+                <fieldset class="cso-ca-mcq-row" data-mcq-index="2">
+                  <legend class="cso-ca-mcq-legend">MCQ 3</legend>
+                  <div class="form-grid cso-form-grid">
+                    <div class="cso-form-group cso-span-full">
+                      <label for="csoMcqQEn2" class="cso-form-label">Question 3 (EN)</label>
+                      <input type="text" id="csoMcqQEn2" class="cso-form-input cso-mcq-q-en" placeholder="Question in English">
+                    </div>
+                    <div class="cso-form-group cso-span-full">
+                      <label for="csoMcqQOr2" class="cso-form-label">Question 3 (ଓଡ଼ିଆ)</label>
+                      <input type="text" id="csoMcqQOr2" class="cso-form-input cso-mcq-q-or" placeholder="ପ୍ରଶ୍ନ ଓଡ଼ିଆରେ">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptA2" class="cso-form-label">Option A (EN)</label>
+                      <input type="text" id="csoMcqOptA2" class="cso-form-input cso-mcq-opt-a" placeholder="Option A">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptB2" class="cso-form-label">Option B (EN)</label>
+                      <input type="text" id="csoMcqOptB2" class="cso-form-input cso-mcq-opt-b" placeholder="Option B">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptC2" class="cso-form-label">Option C (EN)</label>
+                      <input type="text" id="csoMcqOptC2" class="cso-form-input cso-mcq-opt-c" placeholder="Option C">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptD2" class="cso-form-label">Option D (EN)</label>
+                      <input type="text" id="csoMcqOptD2" class="cso-form-input cso-mcq-opt-d" placeholder="Option D">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqAns2" class="cso-form-label">Correct Answer</label>
+                      <select id="csoMcqAns2" class="cso-form-select cso-mcq-ans">
+                        <option value="0">Option A (0)</option>
+                        <option value="1">Option B (1)</option>
+                        <option value="2">Option C (2)</option>
+                        <option value="3">Option D (3)</option>
+                      </select>
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqExp2" class="cso-form-label">Explanation (Optional)</label>
+                      <input type="text" id="csoMcqExp2" class="cso-form-input cso-mcq-exp" placeholder="Brief rationale">
+                    </div>
+                  </div>
+                </fieldset>
+
+                <!-- MCQ Row 4 -->
+                <fieldset class="cso-ca-mcq-row" data-mcq-index="3">
+                  <legend class="cso-ca-mcq-legend">MCQ 4</legend>
+                  <div class="form-grid cso-form-grid">
+                    <div class="cso-form-group cso-span-full">
+                      <label for="csoMcqQEn3" class="cso-form-label">Question 4 (EN)</label>
+                      <input type="text" id="csoMcqQEn3" class="cso-form-input cso-mcq-q-en" placeholder="Question in English">
+                    </div>
+                    <div class="cso-form-group cso-span-full">
+                      <label for="csoMcqQOr3" class="cso-form-label">Question 4 (ଓଡ଼ିଆ)</label>
+                      <input type="text" id="csoMcqQOr3" class="cso-form-input cso-mcq-q-or" placeholder="ପ୍ରଶ୍ନ ଓଡ଼ିଆରେ">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptA3" class="cso-form-label">Option A (EN)</label>
+                      <input type="text" id="csoMcqOptA3" class="cso-form-input cso-mcq-opt-a" placeholder="Option A">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptB3" class="cso-form-label">Option B (EN)</label>
+                      <input type="text" id="csoMcqOptB3" class="cso-form-input cso-mcq-opt-b" placeholder="Option B">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptC3" class="cso-form-label">Option C (EN)</label>
+                      <input type="text" id="csoMcqOptC3" class="cso-form-input cso-mcq-opt-c" placeholder="Option C">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptD3" class="cso-form-label">Option D (EN)</label>
+                      <input type="text" id="csoMcqOptD3" class="cso-form-input cso-mcq-opt-d" placeholder="Option D">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqAns3" class="cso-form-label">Correct Answer</label>
+                      <select id="csoMcqAns3" class="cso-form-select cso-mcq-ans">
+                        <option value="0">Option A (0)</option>
+                        <option value="1">Option B (1)</option>
+                        <option value="2">Option C (2)</option>
+                        <option value="3">Option D (3)</option>
+                      </select>
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqExp3" class="cso-form-label">Explanation (Optional)</label>
+                      <input type="text" id="csoMcqExp3" class="cso-form-input cso-mcq-exp" placeholder="Brief rationale">
+                    </div>
+                  </div>
+                </fieldset>
+
+                <!-- MCQ Row 5 -->
+                <fieldset class="cso-ca-mcq-row" data-mcq-index="4">
+                  <legend class="cso-ca-mcq-legend">MCQ 5</legend>
+                  <div class="form-grid cso-form-grid">
+                    <div class="cso-form-group cso-span-full">
+                      <label for="csoMcqQEn4" class="cso-form-label">Question 5 (EN)</label>
+                      <input type="text" id="csoMcqQEn4" class="cso-form-input cso-mcq-q-en" placeholder="Question in English">
+                    </div>
+                    <div class="cso-form-group cso-span-full">
+                      <label for="csoMcqQOr4" class="cso-form-label">Question 5 (ଓଡ଼ିଆ)</label>
+                      <input type="text" id="csoMcqQOr4" class="cso-form-input cso-mcq-q-or" placeholder="ପ୍ରଶ୍ନ ଓଡ଼ିଆରେ">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptA4" class="cso-form-label">Option A (EN)</label>
+                      <input type="text" id="csoMcqOptA4" class="cso-form-input cso-mcq-opt-a" placeholder="Option A">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptB4" class="cso-form-label">Option B (EN)</label>
+                      <input type="text" id="csoMcqOptB4" class="cso-form-input cso-mcq-opt-b" placeholder="Option B">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptC4" class="cso-form-label">Option C (EN)</label>
+                      <input type="text" id="csoMcqOptC4" class="cso-form-input cso-mcq-opt-c" placeholder="Option C">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqOptD4" class="cso-form-label">Option D (EN)</label>
+                      <input type="text" id="csoMcqOptD4" class="cso-form-input cso-mcq-opt-d" placeholder="Option D">
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqAns4" class="cso-form-label">Correct Answer</label>
+                      <select id="csoMcqAns4" class="cso-form-select cso-mcq-ans">
+                        <option value="0">Option A (0)</option>
+                        <option value="1">Option B (1)</option>
+                        <option value="2">Option C (2)</option>
+                        <option value="3">Option D (3)</option>
+                      </select>
+                    </div>
+                    <div class="cso-form-group">
+                      <label for="csoMcqExp4" class="cso-form-label">Explanation (Optional)</label>
+                      <input type="text" id="csoMcqExp4" class="cso-form-input cso-mcq-exp" placeholder="Brief rationale">
+                    </div>
+                  </div>
+                </fieldset>
+              </div>
+            </details>
+
+            <div class="cso-ca-form-actions">
+              <button type="submit" id="csoBtnPublishCa" class="cso-btn cso-btn-primary">Publish Daily Capsule &rarr;</button>
+              <span id="csoCaStatusMessage" class="cso-ca-status" role="status" aria-live="polite"></span>
+            </div>
+          </form>
+
+          <!-- Live List of Published D1 Capsules right below the form -->
+          <div class="cso-ca-feed-wrap">
+            <div class="cso-ca-feed-head">
+              <h3 class="cso-ca-feed-title">Published Daily Capsules (D1 Live)</h3>
+              <button type="button" id="csoBtnRefreshCaFeed" class="cso-pill-btn">↻ Refresh Capsules</button>
+            </div>
+            <div id="csoCaCapsulesList" class="cso-ca-feed-list" aria-live="polite">
+              <p class="cso-ca-empty">Loading published capsules from D1&hellip;</p>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
 
@@ -172,11 +464,11 @@
   <!-- SCRIPTS (Strict CSP: self-hosted only, on-demand suite lazy loading) -->
   <script src="/admin/suite-boot.js?v=20261114i"></script>
   <script src="/admin/charts.js?v=20261114"></script>
-  <script src="/admin/fast-publish.js?v=20261122v201"></script>
+  <script src="/admin/fast-publish.js?v=20261122v208"></script>
   <script src="/admin/cms/cms.js?v=20261122v201"></script>
   <script src="/admin/lazy-suite-loader.js?v=20261117ao"></script>
   <script src="/admin/modules-restored.js?v=20261117ao"></script>
   <script src="/admin/suite-live.js?v=20261117ao"></script>
-  <script src="/admin/admin.js?v=20261122v201"></script>
+  <script src="/admin/admin.js?v=20261122v208"></script>
 </body>
 </html>

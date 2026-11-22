@@ -748,6 +748,228 @@
     return panel;
   }
 
+  /* ---------- v208: Daily Current Affairs & 5-MCQ Composer Panel ---------- */
+  function initCurrentAffairsPublisher(cardNode) {
+    if (typeof document === 'undefined') return null;
+    var card = cardNode || document.getElementById('cso-ca-publisher-card');
+    if (!card || card.getAttribute('data-cso-ca-bound') === 'true') return card;
+    card.setAttribute('data-cso-ca-bound', 'true');
+
+    var dateInput = card.querySelector('#csoCaDate');
+    var catSelect = card.querySelector('#csoCaCategory');
+    var titleEnInput = card.querySelector('#csoCaTitleEn');
+    var titleOrInput = card.querySelector('#csoCaTitleOr');
+    var highlightsEnInput = card.querySelector('#csoCaHighlightsEn');
+    var highlightsOrInput = card.querySelector('#csoCaHighlightsOr');
+    var form = card.querySelector('#csoCaPublisherForm');
+    var submitBtn = card.querySelector('#csoBtnPublishCa');
+    var statusEl = card.querySelector('#csoCaStatusMessage');
+    var feedList = card.querySelector('#csoCaCapsulesList');
+    var refreshBtn = card.querySelector('#csoBtnRefreshCaFeed');
+    var mcqContainer = card.querySelector('#csoCaMcqContainer');
+
+    if (dateInput && !dateInput.value) {
+      var now = new Date();
+      var yyyy = now.getFullYear();
+      var mm = String(now.getMonth() + 1).padStart(2, '0');
+      var dd = String(now.getDate()).padStart(2, '0');
+      dateInput.value = yyyy + '-' + mm + '-' + dd;
+    }
+
+    function setStatus(msg, kind) {
+      if (!statusEl) return;
+      statusEl.textContent = msg;
+      statusEl.classList.remove('is-success', 'is-error', 'is-loading');
+      if (kind) statusEl.classList.add('is-' + kind);
+    }
+
+    function refreshFeed() {
+      if (!feedList) return;
+      clear(feedList);
+      var loadingP = el('p', 'cso-ca-empty', 'Loading live capsules from D1...');
+      feedList.appendChild(loadingP);
+
+      fetch('/api/admin/current-affairs', { credentials: 'same-origin' })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          clear(feedList);
+          var items = (data && data.items) || [];
+          if (!items.length) {
+            feedList.appendChild(el('p', 'cso-ca-empty', 'No daily capsules published yet in D1. Compose the first capsule above.'));
+            return;
+          }
+          items.forEach(function (item) {
+            var row = el('div', 'cso-ca-capsule-item');
+            var metaRow = el('div', 'cso-ca-item-meta');
+            var dateBadge = el('span', 'cso-ca-badge cso-ca-badge--date', item.capsule_date || 'Today');
+            var catBadge = el('span', 'cso-ca-badge cso-ca-badge--cat', item.category || 'Odisha State');
+            var statusBadge = el('span', 'cso-ca-badge cso-ca-badge--status', item.status || 'published');
+            metaRow.appendChild(dateBadge);
+            metaRow.appendChild(catBadge);
+            metaRow.appendChild(statusBadge);
+
+            var titleEl = el('h4', 'cso-ca-item-title', item.title_en || 'Untitled Capsule');
+            row.appendChild(metaRow);
+            row.appendChild(titleEl);
+
+            if (item.title_or) {
+              row.appendChild(el('p', 'cso-ca-item-sub', item.title_or));
+            }
+
+            var pillsRow = el('div', 'cso-ca-pills-row');
+            var hlCount = Array.isArray(item.highlights_en) ? item.highlights_en.length : 0;
+            if (hlCount > 0) {
+              pillsRow.appendChild(el('span', 'cso-ca-count-pill', hlCount + ' Highlight' + (hlCount > 1 ? 's' : '')));
+            }
+            var quizCount = Array.isArray(item.quiz) ? item.quiz.length : 0;
+            if (quizCount > 0) {
+              pillsRow.appendChild(el('span', 'cso-ca-count-pill', quizCount + ' Practice MCQ' + (quizCount > 1 ? 's' : '')));
+            }
+            if (item.id) {
+              pillsRow.appendChild(el('span', 'cso-ca-id-pill', item.id));
+            }
+            if (pillsRow.childNodes.length > 0) {
+              row.appendChild(pillsRow);
+            }
+
+            feedList.appendChild(row);
+          });
+        })
+        .catch(function (err) {
+          clear(feedList);
+          feedList.appendChild(el('p', 'cso-ca-empty is-error', 'Unable to load D1 capsules: ' + err.message));
+        });
+    }
+
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', function () {
+        refreshFeed();
+      });
+    }
+
+    if (form) {
+      form.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+
+        var titleEn = (titleEnInput && titleEnInput.value || '').trim();
+        if (!titleEn) {
+          setStatus('Title (EN) is required to publish capsule.', 'error');
+          if (titleEnInput) titleEnInput.focus();
+          return;
+        }
+
+        var capsuleDate = (dateInput && dateInput.value || '').trim();
+        var category = (catSelect && catSelect.value || 'Odisha State').trim();
+        var titleOr = (titleOrInput && titleOrInput.value || '').trim();
+        var highlightsEn = (highlightsEnInput && highlightsEnInput.value || '')
+          .split('\n')
+          .map(function (s) { return s.trim(); })
+          .filter(Boolean);
+        var highlightsOr = (highlightsOrInput && highlightsOrInput.value || '')
+          .split('\n')
+          .map(function (s) { return s.trim(); })
+          .filter(Boolean);
+
+        // Collect 5 structured MCQ rows
+        var quiz = [];
+        if (mcqContainer) {
+          var rows = mcqContainer.querySelectorAll('.cso-ca-mcq-row');
+          for (var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            var qEn = (r.querySelector('.cso-mcq-q-en') && r.querySelector('.cso-mcq-q-en').value || '').trim();
+            var qOr = (r.querySelector('.cso-mcq-q-or') && r.querySelector('.cso-mcq-q-or').value || '').trim();
+            if (qEn || qOr) {
+              var optA = (r.querySelector('.cso-mcq-opt-a') && r.querySelector('.cso-mcq-opt-a').value || '').trim();
+              var optB = (r.querySelector('.cso-mcq-opt-b') && r.querySelector('.cso-mcq-opt-b').value || '').trim();
+              var optC = (r.querySelector('.cso-mcq-opt-c') && r.querySelector('.cso-mcq-opt-c').value || '').trim();
+              var optD = (r.querySelector('.cso-mcq-opt-d') && r.querySelector('.cso-mcq-opt-d').value || '').trim();
+              var ansSel = r.querySelector('.cso-mcq-ans');
+              var ansIdx = ansSel ? parseInt(ansSel.value, 10) : 0;
+              var expVal = (r.querySelector('.cso-mcq-exp') && r.querySelector('.cso-mcq-exp').value || '').trim();
+              quiz.push({
+                question_en: qEn,
+                question_or: qOr,
+                options_en: [optA, optB, optC, optD],
+                answer_index: isNaN(ansIdx) ? 0 : Math.max(0, Math.min(3, ansIdx)),
+                explanation_en: expVal
+              });
+            }
+          }
+        }
+
+        var payload = {
+          capsule_date: capsuleDate,
+          category: category,
+          title_en: titleEn,
+          title_or: titleOr,
+          highlights_en: highlightsEn,
+          highlights_or: highlightsOr,
+          quiz: quiz,
+          status: 'published'
+        };
+
+        if (submitBtn) submitBtn.disabled = true;
+        setStatus('Publishing daily capsule to D1...', 'loading');
+
+        fetch('/api/admin/current-affairs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload)
+        })
+          .then(function (res) {
+            return res.json().then(function (data) {
+              return { ok: res.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            if (submitBtn) submitBtn.disabled = false;
+            if (result.ok && result.data && result.data.ok) {
+              var itemId = result.data.item && result.data.item.id ? result.data.item.id : 'saved';
+              setStatus('✓ Published Daily Capsule to D1 (' + itemId + ')', 'success');
+              if (titleEnInput) titleEnInput.value = '';
+              if (titleOrInput) titleOrInput.value = '';
+              if (highlightsEnInput) highlightsEnInput.value = '';
+              if (highlightsOrInput) highlightsOrInput.value = '';
+              if (mcqContainer) {
+                var inputs = mcqContainer.querySelectorAll('input');
+                for (var j = 0; j < inputs.length; j++) inputs[j].value = '';
+                var selects = mcqContainer.querySelectorAll('select');
+                for (var k = 0; k < selects.length; k++) selects[k].value = '0';
+              }
+              refreshFeed();
+              if (typeof window.showToast === 'function') {
+                window.showToast('Published Daily Capsule to D1!', 'success');
+              }
+            } else {
+              var errMsg = (result.data && result.data.error) || 'Failed to publish capsule';
+              setStatus('✕ ' + errMsg, 'error');
+            }
+          })
+          .catch(function (err) {
+            if (submitBtn) submitBtn.disabled = false;
+            setStatus('✕ Network or server error: ' + err.message, 'error');
+          });
+      });
+    }
+
+    refreshFeed();
+    return card;
+  }
+
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () {
+        initCurrentAffairsPublisher();
+      });
+    } else {
+      initCurrentAffairsPublisher();
+    }
+  }
+
   root.CSOFastPublish = {
     parseQuestionsBlock: parseQuestionsBlock,
     syncQuestionsBlock: syncQuestionsBlock,
@@ -770,7 +992,8 @@
     createQuestionsBuilder: createQuestionsBuilder,
     openPreviewDrawer: openPreviewDrawer,
     closePreviewDrawer: closePreviewDrawer,
-    renderTriagePanel: renderTriagePanel
+    renderTriagePanel: renderTriagePanel,
+    initCurrentAffairsPublisher: initCurrentAffairsPublisher
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.CSOFastPublish;
 })(typeof window !== 'undefined' ? window : globalThis);
