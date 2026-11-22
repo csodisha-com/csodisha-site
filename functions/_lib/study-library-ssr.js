@@ -14,6 +14,19 @@ import {
 
 const CANONICAL_ORIGIN = 'https://csodisha.com';
 
+export const LEGACY_STUDY_GROUP_REDIRECTS = {
+  'group-01': '/study-library/?group=early-childhood-primary-education',
+  'group-02': '/study-library/?group=school-higher-secondary-education',
+  'group-03': '/study-library/?group=undergraduate-postgraduate-research',
+  'group-04': '/study-library/?group=competitive-exams-teacher-education',
+  'group-05': '/study-library/?group=professional-vocational-digital-skills',
+  'group-06': '/study-library/?group=subjects-languages-study-materials',
+  'group-07': '/study-library/?group=international-inclusive-education',
+  'group-08': '/study-library/?group=life-skills-culture-lifelong-learning',
+  'group-09': '/study-library/?group=libraries-educators-learning-support',
+  'group-10': '/study-library/?group=odisha-study-hub-resource-organisation',
+};
+
 const STUDY_SSR_CSP = [
   "default-src 'self'",
   "script-src 'self'",
@@ -559,6 +572,12 @@ export async function handlePublicStudyLibraryRoute(request, env, url) {
   const pathname = url.pathname;
   if (!pathname.startsWith('/study-library/')) {
     return null;
+  }
+
+  const legacyKey = pathname.replace(/^\/study-library\/+/, '').replace(/\/+$/, '').toLowerCase();
+  const legacyTarget = LEGACY_STUDY_GROUP_REDIRECTS[legacyKey];
+  if (legacyTarget) {
+    return Response.redirect(new URL(legacyTarget, url.origin).toString(), 301);
   }
 
   if (
