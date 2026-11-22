@@ -1853,7 +1853,7 @@ document.addEventListener('click',e=>{
  const m=e.target.closest('[data-m]');if(m){go(m.dataset.m);return}
  const a=e.target.closest('a[href="#"]');if(!a||a.classList.contains('opt'))return;e.preventDefault();
  const s=a.dataset.route||slug(clean(a.textContent)),M={'view-all':'latest-updates','view-all-topics':'popular-topics','view-all-tools':'important-tools','learn-more':'trust-layer','join-now':'community','browse-library':'study-library','home':''};
- if(s==='get-started')return compass();if(a.classList.contains('adm'))return admin();
+ if(s==='get-started')return compass();
  if(s==='community'||s==='join-now'){location.href='community/';return}
  if(s==='about'){location.href='about/';return}
  if(s==='browse-library'){location.href='study-library/';return}

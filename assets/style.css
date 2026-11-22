@@ -7043,6 +7043,10 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+  position: relative !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
   width: 26px !important;
   height: 26px !important;
   min-height: 26px !important;
