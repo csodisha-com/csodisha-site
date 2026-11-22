@@ -425,7 +425,7 @@
     var qL1 = (searchParams.get('l1') || job.l1Code || '').trim();
     var qL2 = (searchParams.get('l2') || job.l2Code || '').trim();
 
-    var backHref = secMeta ? secMeta.href : (qSection ? '/jobs-careers/' + encodeURIComponent(qSection) : '/jobs-careers/');
+    var backHref = secMeta ? secMeta.href : (qSection ? '/jobs-careers/' + encodeURIComponent(qSection) : '/jobs-careers/jobs-recruitment');
     if (qL1) {
       var backQs = new URLSearchParams();
       backQs.set('l1', qL1);
@@ -434,7 +434,7 @@
     }
     var backLabel = qL1
       ? '← Previous level (' + (qL2 || qL1) + ')'
-      : (secMeta ? '← Back to ' + secMeta.title : '← Back to Jobs & Careers Overview');
+      : (secMeta ? '← Back to ' + secMeta.title : '← Back to Jobs & Recruitment');
     var backBtn = el('a', 'cso-dossier-btn', backLabel);
     backBtn.href = backHref;
     actions.appendChild(backBtn);
