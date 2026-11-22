@@ -18,13 +18,15 @@
   <meta name="twitter:description" content="Zero-upload Odisha exam photo &amp; signature resizer + Odisha age relaxation cut-off calculator.">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
   <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v164">
-  <link rel="stylesheet" href="/tools/assets/tools.css?v=20261122v206">
+  <link rel="stylesheet" href="/tools/assets/tools.css?v=20261122v211">
   <script src="/assets/shared-header.js?v=20261121v171" defer></script>
   <script src="/assets/cso-auth-client.js" defer></script>
   <script src="/assets/js/cso-idb.js" defer></script>
   <script src="/assets/js/bookmark-manager.js" defer></script>
   <script src="/assets/js/student-utilities.js?v=20261121v164" defer></script>
-  <script src="/tools/assets/tools.js?v=20261122v206" defer></script>
+  <script src="/assets/js/odisha-districts.js?v=20261122v211" defer></script>
+  <script src="/assets/js/deadline-tracker.js?v=20261122v211" defer></script>
+  <script src="/tools/assets/tools.js?v=20261122v211" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://csodisha.com/"},{"@type":"ListItem","position":2,"name":"Jobs \u0026 Careers","item":"https://csodisha.com/jobs-careers/"},{"@type":"ListItem","position":3,"name":"Student Toolkit","item":"https://csodisha.com/tools/"}]},{"@type":"WebApplication","name":"Odisha Student Toolkit","applicationCategory":"UtilitiesApplication","operatingSystem":"All","url":"https://csodisha.com/tools/","description":"Zero-upload Odisha exam photo and signature resizer plus Odisha government age relaxation and cut-off calculator."}]}</script>
 </head>
@@ -53,6 +55,7 @@
       <a class="cso-tools-pill" href="#age-calculator">🎂 Odisha Age Relaxation Calculator</a>
       <a class="cso-tools-pill" href="#cbt-calculator">🧮 CBT Score &amp; Negative-Marking Estimator</a>
       <a class="cso-tools-pill" href="#scam-checker">🔍 Official Link &amp; Scam-Check</a>
+      <a class="cso-tools-pill" href="#exam-centre-planner">🎒 Exam-Day Centre Planner</a>
       <a class="cso-tools-pill" href="/jobs-careers/">💼 Back to Live Jobs</a>
     </div>
   </section>
@@ -277,6 +280,58 @@
         <p class="cso-tool-desc">Verify all 8 mandatory Odisha recruitment certificates, financial-year SEBC/EWS renewals, Employment Exchange card, and OPSC/OSSC/OSSSC OTR readiness in your Candidate Hub.</p>
       </div>
       <a class="cso-tool-btn cso-tool-btn--primary" href="/student-dashboard/#cso-doc-readiness-panel">Open Checklist →</a>
+    </div>
+  </section>
+
+  <!-- Tool 5: Odisha Exam-Day Centre Logistics & Hall Ticket Carry-Bag Planner (v211) -->
+  <section id="exam-centre-planner" class="cso-tool-card" aria-labelledby="exam-centre-heading">
+    <div class="cso-tool-card__head">
+      <div>
+        <h2 id="exam-centre-heading">🎒 Odisha Exam-Day Centre Logistics &amp; Hall Ticket Carry-Bag Planner</h2>
+        <p class="cso-tool-desc">Compute your recommended exam-centre arrival time, inter-district travel window across all 30 Odisha districts, export a calendar alarm, and verify your bilingual exam-hall carry bag.</p>
+      </div>
+      <span class="cso-tool-privacy-badge">💾 Saved Offline on Device</span>
+    </div>
+
+    <form id="centre-planner-form" class="cso-age-form">
+      <label class="cso-tool-field">
+        <span>Exam Name / Board</span>
+        <input id="centre-exam-name" type="text" placeholder="e.g. OPSC OCS Prelims / OSSC CGLRE" value="OPSC / OSSC / OSSSC Exam" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Home District</span>
+        <select id="centre-home-district" aria-label="Home District"></select>
+      </label>
+      <label class="cso-tool-field">
+        <span>Exam Centre District</span>
+        <select id="centre-exam-district" aria-label="Exam Centre District"></select>
+      </label>
+      <label class="cso-tool-field">
+        <span>Exam Date</span>
+        <input id="centre-exam-date" type="date" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Gate Closing Time</span>
+        <input id="centre-gate-time" type="time" value="09:00" required>
+      </label>
+      <div class="cso-age-actions">
+        <button id="centre-compute-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Compute Exam-Day Schedule</button>
+        <button id="centre-ics-btn" type="button" class="cso-tool-btn">📅 Export Exam-Day .ics Alarm</button>
+      </div>
+    </form>
+
+    <div id="centre-schedule-result" class="cso-centre-schedule" role="status" aria-live="polite"></div>
+
+    <div class="cso-carrybag-box">
+      <div class="cso-carrybag-head">
+        <div>
+          <h3>Bilingual Exam-Hall Carry-Bag Checklist (ଅତ୍ୟାବଶ୍ୟକ ସାମଗ୍ରୀ ତାଲିକା)</h3>
+          <p class="cso-tool-desc">Verify every item before leaving for the examination centre.</p>
+        </div>
+        <span id="centre-bag-badge" class="cso-meta-chip">0 / 6 Ready</span>
+      </div>
+      <progress id="centre-bag-progress" class="cso-carrybag-progress" max="6" value="0" aria-label="Carry-bag checklist progress"></progress>
+      <div id="centre-bag-checklist" class="cso-carrybag-list"></div>
     </div>
   </section>
 </main>

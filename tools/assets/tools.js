@@ -662,11 +662,285 @@
     }
   }
 
+  var CARRY_BAG_KEY = 'cso_exam_day_bag_v1';
+  var CARRY_BAG_ITEMS = [
+    { id: 'admit_card', en: 'Printed Admit Card / Hall Ticket', or: 'ପ୍ରିଣ୍ଟ ହୋଇଥିବା ଆଡମିଟ୍ କାର୍ଡ / ହଲ୍ ଟିକେଟ୍' },
+    { id: 'photo_id', en: 'Original Govt Photo ID — Aadhaar / Voter ID / DL', or: 'ମୂଳ ସରକାରୀ ଫଟୋ ପରିଚୟପତ୍ର (ଆଧାର / ଭୋଟର୍ / DL)' },
+    { id: 'passport_photos', en: '2 Recent Passport Photos matching OTR', or: 'OTR ସହିତ ମେଳ ଖାଉଥିବା ୨ଟି ସାମ୍ପ୍ରତିକ ପାସପୋର୍ଟ ଫଟୋ' },
+    { id: 'ballpoint_pens', en: 'Blue / Black Ballpoint Pens (2x)', or: 'ନୀଳ / କଳା ବଲ୍-ପଏଣ୍ଟ କଲମ (୨ଟି)' },
+    { id: 'water_bottle', en: 'Transparent Water Bottle', or: 'ସ୍ୱଚ୍ଛ ପାଣି ବୋତଲ' },
+    { id: 'pwd_scribe', en: 'PwD / Scribe Certificate (if applicable)', or: 'PwD / ସ୍କ୍ରାଇବ୍ ପ୍ରମାଣପତ୍ର (ଯଦି ପ୍ରଯୁଜ୍ୟ)' }
+  ];
+
+  function formatMinutes12h(totalMins) {
+    var mins = ((totalMins % 1440) + 1440) % 1440;
+    var h24 = Math.floor(mins / 60);
+    var m = mins % 60;
+    var ampm = h24 >= 12 ? 'PM' : 'AM';
+    var h12 = h24 % 12;
+    if (h12 === 0) h12 = 12;
+    var hStr = h12 < 10 ? '0' + h12 : String(h12);
+    var mStr = m < 10 ? '0' + m : String(m);
+    return hStr + ':' + mStr + ' ' + ampm;
+  }
+
+  function calculateExamDayLogistics(opts) {
+    var o = opts && typeof opts === 'object' ? opts : {};
+    var examName = String(o.examName || 'Odisha Govt Exam').trim() || 'Odisha Govt Exam';
+    var homeDistrict = String(o.homeDistrict || '').trim();
+    var centreDistrict = String(o.centreDistrict || '').trim();
+    var examDate = String(o.examDate || '').trim();
+    var gateRaw = String(o.gateTime || '09:00').trim();
+    var m = gateRaw.match(/^(\d{1,2}):(\d{2})$/);
+    var gateH = m ? Math.min(23, Math.max(0, Number(m[1]))) : 9;
+    var gateM = m ? Math.min(59, Math.max(0, Number(m[2]))) : 0;
+    var gateTotal = gateH * 60 + gateM;
+    var arrivalTotal = gateTotal - 45;
+    var sameDayLeaveTotal = gateTotal - 90;
+
+    var arrivalTimeLabel = formatMinutes12h(arrivalTotal);
+    var gateClosingLabel = formatMinutes12h(gateTotal);
+    var sameDayLeaveLabel = formatMinutes12h(sameDayLeaveTotal);
+    var isInterDistrict = Boolean(homeDistrict && centreDistrict && homeDistrict !== centreDistrict);
+    var centreDisplay = o.centreDistrictLabel || centreDistrict || 'Exam Centre';
+
+    var departureWindow = isInterDistrict
+      ? 'Overnight Travel Advisory: Home district differs from exam centre (' + centreDisplay + '). Travel the previous afternoon/evening and stay near the centre to arrive by ' + arrivalTimeLabel + '.'
+      : 'Same-Day Morning Departure: Start around ' + sameDayLeaveLabel + ' (90 mins before gate closure) to reach the centre comfortably by ' + arrivalTimeLabel + '.';
+
+    return {
+      examName: examName,
+      homeDistrict: homeDistrict,
+      centreDistrict: centreDistrict,
+      examDate: examDate,
+      gateClosingTime: gateRaw,
+      gateClosingLabel: gateClosingLabel,
+      arrivalTimeLabel: arrivalTimeLabel,
+      isInterDistrict: isInterDistrict,
+      departureWindow: departureWindow
+    };
+  }
+
+  function buildExamDayIcs(opts) {
+    var log = calculateExamDayLogistics(opts);
+    if (!log.examDate) return '';
+    if (typeof window !== 'undefined' && window.CSO_DEADLINE_TRACKER && typeof window.CSO_DEADLINE_TRACKER.buildIcsContent === 'function') {
+      return window.CSO_DEADLINE_TRACKER.buildIcsContent({
+        id: 'exam-day-' + log.examDate,
+        title: log.examName + ' (Arrive ' + log.arrivalTimeLabel + ')',
+        board: log.examName,
+        district: opts.centreDistrictLabel || log.centreDistrict || 'Odisha',
+        lastDate: log.examDate,
+        applyUrl: 'https://csodisha.com/tools/#exam-centre-planner'
+      });
+    }
+    var dt = log.examDate.replace(/-/g, '');
+    return [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Common Sense Odisha//Exam Centre Planner//EN',
+      'BEGIN:VEVENT',
+      'UID:exam-day-' + dt + '@csodisha.com',
+      'DTSTART;VALUE=DATE:' + dt,
+      'SUMMARY:' + log.examName + ' — Arrive by ' + log.arrivalTimeLabel,
+      'DESCRIPTION:' + log.departureWindow,
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:Exam Day Tomorrow: ' + log.examName,
+      'TRIGGER:-PT24H',
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n') + '\r\n';
+  }
+
+  function initExamCentrePlanner() {
+    var form = $('centre-planner-form');
+    var examEl = $('centre-exam-name');
+    var homeEl = $('centre-home-district');
+    var centreEl = $('centre-exam-district');
+    var dateEl = $('centre-exam-date');
+    var gateEl = $('centre-gate-time');
+    var icsBtn = $('centre-ics-btn');
+    var resultEl = $('centre-schedule-result');
+    var bagListEl = $('centre-bag-checklist');
+    var bagProgEl = $('centre-bag-progress');
+    var bagBadgeEl = $('centre-bag-badge');
+    if (!form || !homeEl || !centreEl || !resultEl) return;
+
+    var districts = (typeof window !== 'undefined' && Array.isArray(window.CSO_ODISHA_DISTRICTS))
+      ? window.CSO_ODISHA_DISTRICTS
+      : [];
+
+    function populateDistrictSelect(sel, defaultSlug) {
+      while (sel.firstChild) sel.removeChild(sel.firstChild);
+      districts.forEach(function (d) {
+        var opt = document.createElement('option');
+        opt.value = d.slug;
+        opt.textContent = d.name_en + ' (' + d.name_or + ')';
+        if (d.slug === defaultSlug) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    populateDistrictSelect(homeEl, 'khordha');
+    populateDistrictSelect(centreEl, 'cuttack');
+
+    if (dateEl && !dateEl.value) {
+      var defDate = new Date(Date.now() + 7 * 86400000);
+      dateEl.value = defDate.toISOString().slice(0, 10);
+    }
+
+    function selectedLabel(sel) {
+      var opt = sel.options[sel.selectedIndex];
+      return opt ? opt.textContent : sel.value;
+    }
+
+    function renderSchedule() {
+      var log = calculateExamDayLogistics({
+        examName: examEl ? examEl.value : '',
+        homeDistrict: homeEl.value,
+        centreDistrict: centreEl.value,
+        centreDistrictLabel: selectedLabel(centreEl),
+        examDate: dateEl ? dateEl.value : '',
+        gateTime: gateEl ? gateEl.value : '09:00'
+      });
+
+      while (resultEl.firstChild) resultEl.removeChild(resultEl.firstChild);
+      var grid = document.createElement('div');
+      grid.className = 'cso-cbt-calc-grid';
+
+      function addCard(label, val) {
+        var box = document.createElement('div');
+        box.className = 'cso-cbt-calc-box';
+        var sp = document.createElement('span');
+        sp.textContent = label;
+        var st = document.createElement('strong');
+        st.textContent = val;
+        box.appendChild(sp);
+        box.appendChild(st);
+        grid.appendChild(box);
+      }
+
+      addCard('Centre Arrival Time (45m prior)', log.arrivalTimeLabel);
+      addCard('Gate Closing Time', log.gateClosingLabel);
+      addCard('Travel Type', log.isInterDistrict ? 'Inter-District Travel' : 'Same-District');
+      resultEl.appendChild(grid);
+
+      var advisory = document.createElement('p');
+      advisory.className = log.isInterDistrict ? 'cso-centre-advisory is-inter' : 'cso-centre-advisory';
+      advisory.textContent = log.departureWindow;
+      resultEl.appendChild(advisory);
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      renderSchedule();
+    });
+    [homeEl, centreEl, dateEl, gateEl].forEach(function (ctrl) {
+      if (ctrl) ctrl.addEventListener('change', renderSchedule);
+    });
+    renderSchedule();
+
+    if (icsBtn) {
+      icsBtn.addEventListener('click', function () {
+        var log = calculateExamDayLogistics({
+          examName: examEl ? examEl.value : '',
+          homeDistrict: homeEl.value,
+          centreDistrict: centreEl.value,
+          centreDistrictLabel: selectedLabel(centreEl),
+          examDate: dateEl ? dateEl.value : '',
+          gateTime: gateEl ? gateEl.value : '09:00'
+        });
+        if (!log.examDate) return;
+        if (window.CSO_DEADLINE_TRACKER && typeof window.CSO_DEADLINE_TRACKER.downloadIcsReminder === 'function') {
+          window.CSO_DEADLINE_TRACKER.downloadIcsReminder({
+            id: 'exam-day-' + log.examDate,
+            title: log.examName + ' — Arrive ' + log.arrivalTimeLabel,
+            board: log.examName,
+            district: selectedLabel(centreEl),
+            lastDate: log.examDate,
+            applyUrl: 'https://csodisha.com/tools/#exam-centre-planner'
+          });
+          return;
+        }
+        var ics = buildExamDayIcs({
+          examName: log.examName,
+          homeDistrict: log.homeDistrict,
+          centreDistrict: log.centreDistrict,
+          centreDistrictLabel: selectedLabel(centreEl),
+          examDate: log.examDate,
+          gateTime: log.gateClosingTime
+        });
+        if (!ics || typeof Blob === 'undefined') return;
+        var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'cso-exam-day-' + log.examDate + '.ics';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      });
+    }
+
+    if (bagListEl) {
+      var bagState = {};
+      try {
+        bagState = JSON.parse(localStorage.getItem(CARRY_BAG_KEY) || '{}') || {};
+      } catch (_) { bagState = {}; }
+
+      function updateBagProgress() {
+        var ready = CARRY_BAG_ITEMS.filter(function (it) { return Boolean(bagState[it.id]); }).length;
+        if (bagProgEl) {
+          bagProgEl.max = CARRY_BAG_ITEMS.length;
+          bagProgEl.value = ready;
+        }
+        if (bagBadgeEl) {
+          bagBadgeEl.textContent = ready + ' / ' + CARRY_BAG_ITEMS.length + ' Ready';
+        }
+      }
+
+      while (bagListEl.firstChild) bagListEl.removeChild(bagListEl.firstChild);
+      CARRY_BAG_ITEMS.forEach(function (it) {
+        var row = document.createElement('label');
+        row.className = 'cso-carrybag-row' + (bagState[it.id] ? ' is-packed' : '');
+
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = Boolean(bagState[it.id]);
+        cb.setAttribute('aria-label', it.en + ' (' + it.or + ')');
+        cb.addEventListener('change', function () {
+          bagState[it.id] = cb.checked;
+          row.classList.toggle('is-packed', cb.checked);
+          try { localStorage.setItem(CARRY_BAG_KEY, JSON.stringify(bagState)); } catch (_) {}
+          updateBagProgress();
+        });
+
+        var copy = document.createElement('div');
+        copy.className = 'cso-carrybag-copy';
+        var enEl = document.createElement('strong');
+        enEl.textContent = it.en;
+        var orEl = document.createElement('span');
+        orEl.textContent = it.or;
+        copy.appendChild(enEl);
+        copy.appendChild(orEl);
+
+        row.appendChild(cb);
+        row.appendChild(copy);
+        bagListEl.appendChild(row);
+      });
+      updateBagProgress();
+    }
+  }
+
   function boot() {
     initResizer();
     initAgeCalculator();
     initCbtCalculator();
     initScamChecker();
+    initExamCentrePlanner();
   }
 
   if (typeof window !== 'undefined') {
@@ -678,7 +952,9 @@
     window.CSOToolsCalculators = {
       parseFlexibleDate: parseFlexibleDate,
       calculateOdishaExamAge: calculateOdishaExamAge,
-      calculateCbtScore: calculateCbtScore
+      calculateCbtScore: calculateCbtScore,
+      calculateExamDayLogistics: calculateExamDayLogistics,
+      buildExamDayIcs: buildExamDayIcs
     };
   }
   if (typeof module !== 'undefined' && module.exports) {
@@ -688,7 +964,11 @@
       analyzeScamInput: analyzeScamInput,
       parseFlexibleDate: parseFlexibleDate,
       calculateOdishaExamAge: calculateOdishaExamAge,
-      calculateCbtScore: calculateCbtScore
+      calculateCbtScore: calculateCbtScore,
+      calculateExamDayLogistics: calculateExamDayLogistics,
+      buildExamDayIcs: buildExamDayIcs,
+      CARRY_BAG_KEY: CARRY_BAG_KEY,
+      CARRY_BAG_ITEMS: CARRY_BAG_ITEMS
     };
   }
 
