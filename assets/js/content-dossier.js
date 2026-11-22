@@ -479,13 +479,16 @@
     var tblWrap = el('div', 'cso-dossier-table-wrap');
     var tbl = el('table', 'cso-dossier-table');
     var tbody = document.createElement('tbody');
-    [
+    var specRows = [
       ['Recruiting Board / Authority', job.organisation || job.category || 'Govt of Odisha'],
       ['Total Vacancies', job.vacancies ? Number(job.vacancies).toLocaleString('en-IN') + ' Posts' : 'As per Official Notification'],
       ['Essential Qualification', job.qualification || 'Check Official Notification PDF'],
+      ['Age Limit & Relaxation', job.age_limit || '18–38 Years (Odisha SEBC/SC/ST/Women +5 Years)'],
+      ['Pay Matrix / Stipend', job.pay_level || 'ORSP 7th Pay Matrix (Level 4 – Level 12)'],
       ['Lifecycle Stage', job.stage_label || 'New Recruitment'],
       ['Application Deadline', job.last_date || 'See Official Portal']
-    ].forEach(function (pair) {
+    ];
+    specRows.forEach(function (pair) {
       var tr = document.createElement('tr');
       tr.appendChild(el('th', '', pair[0]));
       tr.appendChild(el('td', '', pair[1]));

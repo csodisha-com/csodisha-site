@@ -4226,3 +4226,58 @@ a.dashboard-card {
   background: rgba(29, 78, 216, 0.1);
   color: #1d4ed8;
 }
+
+/* v221: Top Cascading Selection Box Bar (#cso-top-category-selector) */
+.cso-top-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border, #d5e0f0);
+  background: var(--cso-surface, #ffffff);
+  align-items: end;
+}
+
+.cso-top-selector__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.cso-top-selector__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cso-text-muted, #475569);
+}
+
+.cso-top-selector__select {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface-alt, #f8fafc);
+  color: var(--cso-text, #0f172a);
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: normal;
+  text-overflow: clip;
+}
+
+.cso-top-selector__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.cso-top-selector__actions .live-btn,
+.cso-top-selector__actions .live-chip {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -144,13 +144,15 @@
   }
 
   function updateBookmarksPillUI() {
-    const bmPill = document.getElementById('live-jobs-bookmarks-toggle');
-    if (!bmPill) return;
     const count = loadBookmarkedTracks().length;
-    bmPill.textContent = `★ Saved Bookmarks (${count})`;
     const on = Boolean(typeof liveState !== 'undefined' && liveState.bookmarksOnly);
-    bmPill.classList.toggle('is-active', on);
-    bmPill.setAttribute('aria-pressed', String(on));
+    ['live-jobs-bookmarks-toggle', 'cso-selector-bookmarks-toggle'].forEach(id => {
+      const bmPill = document.getElementById(id);
+      if (!bmPill) return;
+      bmPill.textContent = `★ Saved Bookmarks (${count})`;
+      bmPill.classList.toggle('is-active', on);
+      bmPill.setAttribute('aria-pressed', String(on));
+    });
   }
 
   function toggleTrackBookmark(track) {
@@ -222,12 +224,15 @@
         else url.searchParams.delete('l1');
         if (codes.l2) url.searchParams.set('l2', codes.l2);
         else url.searchParams.delete('l2');
+        if (selectedL3Slug) url.searchParams.set('l3', selectedL3Slug);
+        else url.searchParams.delete('l3');
 
         const state = {
           sectionIndex: currentSection,
           slug,
           l1: codes.l1,
           l2: codes.l2,
+          l3: selectedL3Slug,
           path: [...path]
         };
 
@@ -240,7 +245,8 @@
         url.pathname = '/jobs-careers/';
         url.searchParams.delete('l1');
         url.searchParams.delete('l2');
-        const state = { sectionIndex: -1, slug: '', l1: '', l2: '', path: [] };
+        url.searchParams.delete('l3');
+        const state = { sectionIndex: -1, slug: '', l1: '', l2: '', l3: '', path: [] };
         if (replaceUrl || url.href === window.location.href) {
           window.history.replaceState(state, '', url.toString());
         } else if (pushHistory) {
@@ -257,6 +263,7 @@
   let sections = [];
   let path = [];
   let currentSection = -1;
+  let selectedL3Slug = '';
 
   function el(tag, className, text) {
     const node = document.createElement(tag);
@@ -617,6 +624,7 @@
     setTopSearchVisible(true);
     currentSection = -1;
     path = [];
+    selectedL3Slug = '';
     searchResults.hidden = true;
     explorer.hidden = true;
     overview.hidden = false;
@@ -639,6 +647,7 @@
     }
     currentSection = index;
     path = isSingleWrapperSection(index) ? [0] : [];
+    selectedL3Slug = '';
 
     search.value = '';
     clearSearch.hidden = true;
@@ -774,17 +783,191 @@
     return panel;
   }
 
+  function collectBranchesUnder(targetNode, baseL1, baseL2, sectionSlug, out = [], limit = 200) {
+    if (!targetNode || out.length >= limit) return out;
+    const dataApi = window.CSO_JOBS_DIRECTORY_DATA;
+    const cleanTitle = String(targetNode.title || '').replace(/\s+Directory$/i, '').trim();
+    const subtitleLabel = (targetNode.number ? targetNode.number + ' ' : '') + cleanTitle;
+    const notes = (targetNode.notes || []).map(entryText).filter(Boolean);
+    for (const text of notes) {
+      if (out.length >= limit) break;
+      const bSlug = dataApi && typeof dataApi.slugifyBranch === 'function'
+        ? dataApi.slugifyBranch(text)
+        : slugify(text);
+      const portalUrl = dataApi && typeof dataApi.inferPortalForBranch === 'function'
+        ? dataApi.inferPortalForBranch(text + ' ' + cleanTitle, sectionSlug)
+        : 'https://odisha.gov.in/';
+      out.push({
+        text,
+        slug: bSlug,
+        l1: baseL1,
+        l2: baseL2,
+        subtitle: subtitleLabel,
+        sectionSlug,
+        portalUrl
+      });
+    }
+    for (const child of targetNode.children || []) {
+      if (out.length >= limit) break;
+      const childCode = getNodeCode(child);
+      const nextL1 = baseL1 || childCode;
+      const nextL2 = baseL1 ? (baseL2 || childCode) : '';
+      collectBranchesUnder(child, nextL1, nextL2, sectionSlug, out, limit);
+    }
+    return out;
+  }
+
+  function renderTopCategorySelector() {
+    const host = document.getElementById('cso-top-category-selector');
+    if (!host || currentSection < 0 || currentSection >= sections.length) return;
+    host.replaceChildren();
+
+    const section = sections[currentSection];
+    const hasSingleWrapper = isSingleWrapperSection(currentSection);
+    const rootNode = hasSingleWrapper ? section.children[0] : section;
+    const l1Nodes = (rootNode.children || []).filter(c => (c.children || []).length || countNotes([c]) > 0);
+    const codes = getEffectiveLayerCodes();
+
+    // 1. Main Category (#cso-select-l1)
+    const f1 = el('div', 'cso-top-selector__field');
+    const lbl1 = el('label', 'cso-top-selector__label', '1. Main Category');
+    lbl1.setAttribute('for', 'cso-select-l1');
+    const sel1 = el('select', 'cso-top-selector__select');
+    sel1.id = 'cso-select-l1';
+    sel1.setAttribute('aria-label', 'Select Main Category');
+    const optAll1 = el('option', '', 'All Categories');
+    optAll1.value = '';
+    sel1.append(optAll1);
+    l1Nodes.forEach(n1 => {
+      const code = getNodeCode(n1);
+      const opt = el('option', '', (n1.number ? n1.number + ' ' : '') + n1.title);
+      opt.value = code;
+      if (codes.l1 === code) opt.selected = true;
+      sel1.append(opt);
+    });
+    sel1.addEventListener('change', () => {
+      const val = sel1.value;
+      path = hasSingleWrapper ? [0] : [];
+      if (val) {
+        const i1 = findChildIndexByCode(rootNode.children, val);
+        if (i1 !== -1) path.push(i1);
+      }
+      selectedL3Slug = '';
+      updateUrlState(true);
+      renderExplorer();
+      if (typeof loadLiveJobs === 'function') loadLiveJobs();
+    });
+    f1.append(lbl1, sel1);
+    host.append(f1);
+
+    // 2. Subcategory (#cso-select-l2)
+    const f2 = el('div', 'cso-top-selector__field');
+    const lbl2 = el('label', 'cso-top-selector__label', '2. Subcategory');
+    lbl2.setAttribute('for', 'cso-select-l2');
+    const sel2 = el('select', 'cso-top-selector__select');
+    sel2.id = 'cso-select-l2';
+    sel2.setAttribute('aria-label', 'Select Subcategory');
+    const optAll2 = el('option', '', 'All Subcategories');
+    optAll2.value = '';
+    sel2.append(optAll2);
+
+    const activeL1Idx = codes.l1 ? findChildIndexByCode(rootNode.children, codes.l1) : -1;
+    const activeL1Node = activeL1Idx !== -1 ? rootNode.children[activeL1Idx] : null;
+    const l2Nodes = activeL1Node ? (activeL1Node.children || []).filter(c => (c.children || []).length || countNotes([c]) > 0) : [];
+    l2Nodes.forEach(n2 => {
+      const code2 = getNodeCode(n2);
+      const opt = el('option', '', (n2.number ? n2.number + ' ' : '') + n2.title);
+      opt.value = code2;
+      if (codes.l2 === code2) opt.selected = true;
+      sel2.append(opt);
+    });
+    if (!l2Nodes.length) sel2.disabled = true;
+    sel2.addEventListener('change', () => {
+      if (activeL1Idx === -1) return;
+      path = hasSingleWrapper ? [0, activeL1Idx] : [activeL1Idx];
+      if (sel2.value) {
+        const i2 = findChildIndexByCode(activeL1Node.children, sel2.value);
+        if (i2 !== -1) path.push(i2);
+      }
+      selectedL3Slug = '';
+      updateUrlState(true);
+      renderExplorer();
+      if (typeof loadLiveJobs === 'function') loadLiveJobs();
+    });
+    f2.append(lbl2, sel2);
+    host.append(f2);
+
+    // 3. Branch / Track (#cso-select-l3)
+    const f3 = el('div', 'cso-top-selector__field');
+    const lbl3 = el('label', 'cso-top-selector__label', '3. Branch / Track');
+    lbl3.setAttribute('for', 'cso-select-l3');
+    const sel3 = el('select', 'cso-top-selector__select');
+    sel3.id = 'cso-select-l3';
+    sel3.setAttribute('aria-label', 'Select Branch or Track');
+    const optAll3 = el('option', '', 'All Branches in Subcategory');
+    optAll3.value = '';
+    sel3.append(optAll3);
+
+    const branchSourceNode = codes.l2 && activeL1Node
+      ? (activeL1Node.children[findChildIndexByCode(activeL1Node.children, codes.l2)] || activeL1Node)
+      : (activeL1Node || rootNode);
+    const l3Options = collectBranchesUnder(branchSourceNode, codes.l1, codes.l2, codes.sectionSlug, [], 150);
+    l3Options.forEach(br => {
+      const opt = el('option', '', br.text);
+      opt.value = br.slug;
+      if (selectedL3Slug === br.slug) opt.selected = true;
+      sel3.append(opt);
+    });
+    sel3.addEventListener('change', () => {
+      selectedL3Slug = sel3.value || '';
+      updateUrlState(true);
+      renderExplorer();
+      if (typeof loadLiveJobs === 'function') loadLiveJobs();
+    });
+    f3.append(lbl3, sel3);
+    host.append(f3);
+
+    // 4. Action Buttons (Reset + ★ Saved Bookmarks)
+    const actions = el('div', 'cso-top-selector__actions');
+    const resetBtn = el('button', 'live-btn', 'Reset');
+    resetBtn.id = 'cso-select-reset';
+    resetBtn.type = 'button';
+    resetBtn.addEventListener('click', () => {
+      path = hasSingleWrapper ? [0] : [];
+      selectedL3Slug = '';
+      if (typeof liveState !== 'undefined') liveState.bookmarksOnly = false;
+      updateBookmarksPillUI();
+      updateUrlState(true);
+      renderExplorer();
+      if (typeof loadLiveJobs === 'function') loadLiveJobs();
+    });
+
+    const bmCount = loadBookmarkedTracks().length;
+    const bmOn = Boolean(typeof liveState !== 'undefined' && liveState.bookmarksOnly);
+    const bmBtn = el('button', 'live-chip live-chip--bookmarks' + (bmOn ? ' is-active' : ''), `★ Saved Bookmarks (${bmCount})`);
+    bmBtn.id = 'cso-selector-bookmarks-toggle';
+    bmBtn.type = 'button';
+    bmBtn.setAttribute('aria-pressed', String(bmOn));
+    bmBtn.addEventListener('click', () => {
+      if (typeof liveState !== 'undefined') liveState.bookmarksOnly = !liveState.bookmarksOnly;
+      updateBookmarksPillUI();
+      renderExplorer();
+      if (typeof loadLiveJobs === 'function') loadLiveJobs();
+    });
+
+    actions.append(resetBtn, bmBtn);
+    host.append(actions);
+  }
+
   function renderExplorer() {
     setTopSearchVisible(true);
     const node = currentNode();
-    const children = node.children || [];
     rememberCategory();
 
     overview.hidden = true;
     searchResults.hidden = true;
     explorer.hidden = false;
 
-    // Display the current category title only once.
     const cleanTitle = node.title
       .replace(/\s+Directory$/i, '')
       .trim();
@@ -796,111 +979,60 @@
     setActiveSidebar();
     updateDocumentTitle(cleanTitle);
 
-    const visibleChildren = children
-      .map((child, index) => ({ child, index }))
-      .filter(({ child }) => (child.children || []).length || countNotes([child]) > 0);
-
-    explorerDescription.textContent =
-      visibleChildren.length
-        ? plural(visibleChildren.length, 'subcategory', 'subcategories') + ' available'
-        : 'Individual directory entries and supporting information';
+    const codes = getEffectiveLayerCodes();
+    explorer.dataset.sectionSlug = codes.sectionSlug || '';
+    renderTopCategorySelector();
 
     explorerItems.replaceChildren();
 
-    const hasSingleWrapperForPanel = isSingleWrapperSection(currentSection);
-    const isRootForPanel = path.length === 0 || (hasSingleWrapperForPanel && path.length === 1 && path[0] === 0);
-    if (isRootForPanel && currentSection >= 0 && currentSection < sections.length) {
-      const catPanel = renderCategoryPagePanel(getSectionSlug(sections[currentSection]));
-      if (catPanel) explorerItems.append(catPanel);
+    let branches = collectBranchesUnder(node, codes.l1, codes.l2, codes.sectionSlug, [], 60);
+    if (selectedL3Slug) {
+      branches = branches.filter(b => b.slug === selectedL3Slug);
+    }
+    if (typeof liveState !== 'undefined' && liveState.bookmarksOnly) {
+      const bmSlugs = new Set(loadBookmarkedTracks().map(t => t.slug));
+      branches = branches.filter(b => bmSlugs.has(b.slug));
     }
 
-    const symbols = [
-      '💼', '🧭', '📋', '📚',
-      '🎓', '🌍', '📈', '🏛️',
-      '📝', '🔎', '💡', '🏆',
-      '🗂️', '⚙️', '📌', '🎯'
-    ];
+    explorerDescription.textContent = branches.length
+      ? plural(branches.length, 'branch', 'branches') + ' available'
+      : 'No matching branches for the current filter.';
 
-    const codes = getEffectiveLayerCodes();
-    const dataApi = window.CSO_JOBS_DIRECTORY_DATA;
-
-    visibleChildren.forEach(({ child, index }) => {
-      const button = el('button', 'explorer-item dashboard-card');
-      button.type = 'button';
-
-      const icon = symbols[index % symbols.length];
-      const title = (child.number ? child.number + ' ' : '') + child.title;
-      const subCount = (child.children || []).length;
-      const noteCount = countNotes([child]);
-
-      button.append(el('span', 'card-icon', icon));
-
-      const content = el('div', 'card-content');
-      content.append(el('span', 'card-title', title));
-      const badgeLabel = subCount > 0
-        ? plural(subCount, 'subcategory', 'subcategories')
-        : plural(noteCount, 'branch', 'branches');
-      content.append(el('span', 'cso-node-count-badge', badgeLabel));
-      button.append(content);
-
-      const arrow = el('span', 'card-arrow', '›');
-      arrow.setAttribute('aria-hidden', 'true');
-      button.append(arrow);
-
-      button.addEventListener('click', () => {
-        path.push(index);
-        updateUrlState(true);
-        renderExplorer();
-        if (typeof loadLiveJobs === 'function') loadLiveJobs();
-      });
-
-      explorerItems.append(button);
-    });
-
-    const ownEntries = (node.notes || []).map(entryText).filter(Boolean);
-    if (ownEntries.length) {
+    if (branches.length) {
       const branchGrid = el('div', 'cso-branch-grid');
-      const subtitleLabel = (node.number ? node.number + ' ' : '') + cleanTitle;
-      ownEntries.forEach(text => {
-        const branchSlug = dataApi && typeof dataApi.slugifyBranch === 'function'
-          ? dataApi.slugifyBranch(text)
-          : slugify(text);
-        const portalUrl = dataApi && typeof dataApi.inferPortalForBranch === 'function'
-          ? dataApi.inferPortalForBranch(text + ' ' + cleanTitle, codes.sectionSlug)
-          : 'https://odisha.gov.in/';
-
+      branches.forEach(br => {
         const card = el('article', 'cso-branch-card');
-        card.append(el('span', 'cso-branch-card__sub', subtitleLabel));
-        card.append(el('h3', 'cso-branch-card__title', text));
+        card.append(el('span', 'cso-branch-card__sub', br.subtitle));
+        card.append(el('h3', 'cso-branch-card__title', br.text));
 
         const actions = el('div', 'cso-branch-card__actions');
 
         const qs = new URLSearchParams();
-        if (codes.sectionSlug) qs.set('section', codes.sectionSlug);
-        if (codes.l1) qs.set('l1', codes.l1);
-        if (codes.l2) qs.set('l2', codes.l2);
+        if (br.sectionSlug) qs.set('section', br.sectionSlug);
+        if (br.l1) qs.set('l1', br.l1);
+        if (br.l2) qs.set('l2', br.l2);
         const dossierLink = el('a', 'live-btn live-btn--primary', 'View Full Details & Graphs →');
-        dossierLink.href = `/jobs-careers/detail/${encodeURIComponent(branchSlug)}` + (qs.toString() ? `?${qs.toString()}` : '');
+        dossierLink.href = `/jobs-careers/detail/${encodeURIComponent(br.slug)}` + (qs.toString() ? `?${qs.toString()}` : '');
         actions.append(dossierLink);
 
         const portalA = el('a', 'live-btn', 'Official Portal ↗');
-        portalA.href = portalUrl;
+        portalA.href = br.portalUrl;
         portalA.target = '_blank';
         portalA.rel = 'noopener noreferrer';
         actions.append(portalA);
 
-        const bookmarked = isTrackBookmarked(branchSlug);
+        const bookmarked = isTrackBookmarked(br.slug);
         const bmBtn = el('button', 'live-btn cso-branch-bm', bookmarked ? '★ Bookmarked' : '☆ Bookmark');
         bmBtn.type = 'button';
         bmBtn.setAttribute('aria-pressed', String(bookmarked));
         bmBtn.addEventListener('click', () => {
           const nowSaved = toggleTrackBookmark({
-            slug: branchSlug,
-            title: text,
-            subtitle: subtitleLabel,
-            l1: codes.l1,
-            l2: codes.l2,
-            sectionSlug: codes.sectionSlug
+            slug: br.slug,
+            title: br.text,
+            subtitle: br.subtitle,
+            l1: br.l1,
+            l2: br.l2,
+            sectionSlug: br.sectionSlug
           });
           bmBtn.setAttribute('aria-pressed', String(nowSaved));
           bmBtn.textContent = nowSaved ? '★ Bookmarked' : '☆ Bookmark';
@@ -911,6 +1043,8 @@
         branchGrid.append(card);
       });
       explorerItems.append(branchGrid);
+    } else {
+      explorerItems.append(el('p', '', 'No branches match the current selection. Click Reset to view all branches.'));
     }
 
     if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
@@ -1286,7 +1420,9 @@
         const hasSingleWrapper = isSingleWrapperSection(idx);
         const reqL1 = (params.get('l1') || '').trim();
         const reqL2 = (params.get('l2') || '').trim();
+        const reqL3 = (params.get('l3') || '').trim();
         const requestedPath = params.get('path');
+        selectedL3Slug = reqL3;
 
         if (hasSingleWrapper) {
           path = [0];
