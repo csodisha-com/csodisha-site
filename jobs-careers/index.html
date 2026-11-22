@@ -13,13 +13,14 @@
   <meta property="og:image" content="https://csodisha.com/assets/img/cso-logo.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
-  <link rel="stylesheet" href="./assets/dashboard.css?v=20261122v191">
+  <link rel="stylesheet" href="./assets/dashboard.css?v=20261122v194">
   <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v173">
   <link rel="stylesheet" href="/jobs-careers/assets/hub.css?v=20261121v173">
   <script src="/assets/shared-header.js?v=20261121v171" defer></script>
   <script src="/assets/js/public-content.js?v=20261118v146" defer></script>
   <script src="/assets/js/student-utilities.js?v=20261121v173" defer></script>
-  <script src="./assets/dashboard.js?v=20261122v191" defer></script>
+  <script src="/assets/js/odisha-districts.js?v=20261122v194" defer></script>
+  <script src="./assets/dashboard.js?v=20261122v194" defer></script>
   <script src="/jobs-careers/assets/hub.js?v=20261121v173" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css">
@@ -177,9 +178,14 @@
             <select id="live-jobs-category" class="live-filter-select" aria-label="Filter by category">
               <option value="">All Categories</option>
             </select>
+            <select id="live-jobs-district" class="live-filter-select" aria-label="Filter by Odisha district">
+              <option value="">All Districts (30 + State-Wide)</option>
+            </select>
             <button type="button" id="live-jobs-goal-toggle" class="live-chip live-chip--goal" aria-pressed="false">★ Match my Candidate Hub goals</button>
             <button id="live-jobs-reset" class="live-filter-btn" type="button" hidden>Reset All Filters</button>
           </div>
+
+          <div id="live-jobs-district-banner" class="cso-district-banner" role="region" aria-label="Official District Collectorate Notice Board" hidden></div>
 
           <div id="live-jobs-auth-hint" class="live-auth-hint" role="status" hidden>
             <span id="live-jobs-auth-hint-text">Sign in to sync saved jobs and match your Candidate Dashboard goals.</span>

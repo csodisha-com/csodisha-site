@@ -7,9 +7,10 @@
   <title>Schemes &amp; Benefits Explorer | Common Sense Odisha</title>
   <!-- CSO-IN homepage header stylesheet v1 -->
   <link rel="stylesheet" href="/assets/style.css?v=20261121v173">
-  <link rel="stylesheet" href="./assets/dashboard.css?v=20261114e">
+  <link rel="stylesheet" href="./assets/dashboard.css?v=20261122v194">
   <script src="/assets/js/public-content.js?v=20261114e" defer></script>
-  <script src="./assets/dashboard.js?v=20261122v191" defer></script>
+  <script src="/assets/js/odisha-districts.js?v=20261122v194" defer></script>
+  <script src="./assets/dashboard.js?v=20261122v194" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 </head>
 <body>
@@ -133,10 +134,15 @@
               <option value="EWS">EWS / BPL</option>
               <option value="BPL">BPL</option>
             </select>
+            <select id="scheme-district" class="scheme-select" aria-label="Filter by Odisha district">
+              <option value="">All Districts (30 + State-Wide)</option>
+            </select>
             <input id="scheme-age" class="scheme-input scheme-input--sm" type="number" min="0" max="100" placeholder="Age (yrs)" aria-label="Your age in years">
             <input id="scheme-income" class="scheme-input scheme-input--sm" type="number" min="0" step="10000" placeholder="Annual Income ₹" aria-label="Annual family income in rupees">
             <button type="submit" class="scheme-btn scheme-btn--primary">Check Eligibility</button>
           </form>
+
+          <div id="scheme-district-banner" class="cso-district-banner" role="region" aria-label="Official District Collectorate Notice Board" hidden></div>
 
           <div class="scheme-quick-chips" role="group" aria-label="Quick scheme category chips">
             <button type="button" class="scheme-chip is-active" data-group="" aria-pressed="true">All Flagship Schemes</button>

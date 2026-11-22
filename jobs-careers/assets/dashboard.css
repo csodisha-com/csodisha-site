@@ -3654,6 +3654,79 @@ body.is-live-modal-open {
   transform: translate(-50%, 0);
 }
 
+.cso-district-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.cso-district-banner[hidden] {
+  display: none !important;
+}
+.cso-district-banner__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.cso-district-banner__title {
+  font-size: 0.95rem;
+  color: #1e3a8a;
+}
+.cso-district-banner__sub {
+  font-size: 0.82rem;
+  color: #334155;
+}
+.cso-district-banner__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.cso-district-banner__toggle,
+.cso-district-banner__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.cso-district-banner__toggle {
+  border: 1px solid #93c5fd;
+  background: #ffffff;
+  color: #1e3a8a;
+}
+.cso-district-banner__toggle.is-active {
+  background: #dbeafe;
+  border-color: #2563eb;
+}
+.cso-district-banner__link {
+  border: 1px solid #1d4ed8;
+  background: #1d4ed8;
+  color: #ffffff;
+}
+@media (max-width: 480px) {
+  .cso-district-banner__actions,
+  .cso-district-banner__toggle,
+  .cso-district-banner__link {
+    width: 100%;
+  }
+}
+
 .cso-offscreen-copy {
   position: fixed;
   top: 0;

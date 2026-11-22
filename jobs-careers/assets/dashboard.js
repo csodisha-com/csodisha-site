@@ -1143,6 +1143,8 @@
   const liveCountEl = $('live-jobs-count');
   const liveStateEl = $('live-jobs-state');
   const liveCategoryEl = $('live-jobs-category');
+  const liveDistrictEl = $('live-jobs-district');
+  const liveDistrictBannerEl = $('live-jobs-district-banner');
   const liveResetBtn = $('live-jobs-reset');
   const liveStatusEl = $('live-jobs-status');
   const liveGridEl = $('live-jobs-grid');
@@ -1178,7 +1180,7 @@
 
   const pc = window.CSOPublicContent;
   const knownCategories = new Set(['OPSC', 'OSSC', 'OSSSC', 'Teaching', 'Police & Defence', 'Banking & PSU', 'Railway']);
-  let liveState = { page: 1, limit: 12, q: '', state: '', category: '', chip: 'all', goalMatch: false };
+  let liveState = { page: 1, limit: 12, q: '', state: '', category: '', district: '', includeStateWide: true, chip: 'all', goalMatch: false };
   let liveSearchTimer = null;
   let liveTaxonomy = [];
   let liveCandidateUser = null;
@@ -1856,11 +1858,80 @@
     }
   }
 
+  function populateDistrictSelect() {
+    if (!liveDistrictEl || !Array.isArray(window.CSO_ODISHA_DISTRICTS)) return;
+    window.CSO_ODISHA_DISTRICTS.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.slug;
+      opt.textContent = `${d.name_en} (${d.name_or})`;
+      liveDistrictEl.appendChild(opt);
+    });
+  }
+
+  function syncDistrictQueryParam(slug) {
+    try {
+      const url = new URL(window.location.href);
+      if (slug) url.searchParams.set('district', slug);
+      else url.searchParams.delete('district');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    } catch (_) {}
+  }
+
+  function renderDistrictBanner() {
+    if (!liveDistrictBannerEl) return;
+    const dist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
+      ? window.CSO_FIND_ODISHA_DISTRICT(liveState.district)
+      : null;
+    if (!dist) {
+      liveDistrictBannerEl.hidden = true;
+      liveDistrictBannerEl.replaceChildren();
+      return;
+    }
+    liveDistrictBannerEl.hidden = false;
+    const info = el('div', 'cso-district-banner__info');
+    const title = el('strong', 'cso-district-banner__title', `${dist.name_en} (${dist.name_or}) · ${dist.division} Division`);
+    const sub = el('span', 'cso-district-banner__sub', 'Official District Collectorate Recruitment & Notice Portal (.gov.in / .nic.in)');
+    info.append(title, sub);
+
+    const actions = el('div', 'cso-district-banner__actions');
+    const swBtn = el('button', `cso-district-banner__toggle${liveState.includeStateWide ? ' is-active' : ''}`, liveState.includeStateWide ? '✓ Including State-Wide' : 'District-Only');
+    swBtn.type = 'button';
+    swBtn.setAttribute('aria-pressed', String(liveState.includeStateWide));
+    swBtn.addEventListener('click', () => {
+      liveState.includeStateWide = !liveState.includeStateWide;
+      liveState.page = 1;
+      renderDistrictBanner();
+      loadLiveJobs();
+    });
+
+    const portalLink = el('a', 'cso-district-banner__link', 'Official District Collectorate Notice Board ↗');
+    portalLink.href = dist.notice_url;
+    portalLink.target = '_blank';
+    portalLink.rel = 'noopener noreferrer';
+
+    actions.append(swBtn, portalLink);
+    liveDistrictBannerEl.replaceChildren(info, actions);
+  }
+
+  function matchesDistrictFilter(job, districtSlug, includeStateWide) {
+    const dist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
+      ? window.CSO_FIND_ODISHA_DISTRICT(districtSlug)
+      : null;
+    if (!dist) return true;
+    const hay = [job.title, job.organisation, job.organization, job.summary, job.state, job.district, job.location].join(' ').toLowerCase();
+    const hitsDistrict = hay.includes(dist.name_en.toLowerCase()) || hay.includes(dist.slug);
+    if (hitsDistrict) return true;
+    if (!includeStateWide) return false;
+    const list = Array.isArray(window.CSO_ODISHA_DISTRICTS) ? window.CSO_ODISHA_DISTRICTS : [];
+    const mentionsOtherDistrict = list.some(other => other.slug !== dist.slug && (hay.includes(other.name_en.toLowerCase()) || hay.includes(other.slug)));
+    return !mentionsOtherDistrict;
+  }
+
   async function loadLiveJobs(opts = {}) {
     if (!liveGridEl || !liveStatusEl) return;
     const silent = Boolean(opts && opts.silent);
-    const isClientComposite = (liveState.chip && liveState.chip !== 'all') || Boolean(liveState.goalMatch);
-    const hasFilter = Boolean(liveState.q || liveState.state || liveState.category || isClientComposite);
+    const isClientComposite = (liveState.chip && liveState.chip !== 'all') || Boolean(liveState.goalMatch) || Boolean(liveState.district);
+    const hasFilter = Boolean(liveState.q || liveState.state || liveState.category || liveState.district || isClientComposite);
     if (liveResetBtn) liveResetBtn.hidden = !hasFilter;
 
     if (!silent) {
@@ -1891,6 +1962,9 @@
       }
       if (liveState.goalMatch) {
         items = items.filter(matchesGoalFilter);
+      }
+      if (liveState.district) {
+        items = items.filter(job => matchesDistrictFilter(job, liveState.district, liveState.includeStateWide));
       }
 
       const total = isClientComposite ? items.length : (Number(data.total) || items.length);
@@ -2095,12 +2169,25 @@
       loadLiveJobs();
     });
   }
+  if (liveDistrictEl) {
+    liveDistrictEl.addEventListener('change', () => {
+      liveState.district = liveDistrictEl.value;
+      liveState.page = 1;
+      syncDistrictQueryParam(liveState.district);
+      renderDistrictBanner();
+      closeJobDetail(false);
+      loadLiveJobs();
+    });
+  }
   function resetAllFilters() {
-    liveState = { page: 1, limit: 12, q: '', state: '', category: '', chip: 'all', goalMatch: false };
+    liveState = { page: 1, limit: 12, q: '', state: '', category: '', district: '', includeStateWide: true, chip: 'all', goalMatch: false };
     if (search) search.value = '';
     if (clearSearch) clearSearch.hidden = true;
     if (liveStateEl) liveStateEl.value = '';
     if (liveCategoryEl) liveCategoryEl.value = '';
+    if (liveDistrictEl) liveDistrictEl.value = '';
+    syncDistrictQueryParam('');
+    renderDistrictBanner();
     if (liveAuthHintEl) liveAuthHintEl.hidden = true;
     updateChipButtonsUI();
     closeJobDetail(true);
@@ -2123,6 +2210,7 @@
     });
   }
 
+  populateDistrictSelect();
   try {
     const sp = new URLSearchParams(window.location.search);
     const qParam = sp.get('q');
@@ -2131,7 +2219,16 @@
       if (clearSearch) clearSearch.hidden = false;
       liveState.q = qParam.trim();
     }
+    const distParam = (sp.get('district') || '').trim().toLowerCase();
+    const matchedDist = typeof window.CSO_FIND_ODISHA_DISTRICT === 'function'
+      ? window.CSO_FIND_ODISHA_DISTRICT(distParam)
+      : null;
+    if (matchedDist) {
+      liveState.district = matchedDist.slug;
+      if (liveDistrictEl) liveDistrictEl.value = matchedDist.slug;
+    }
   } catch (_) {}
+  renderDistrictBanner();
 
   loadCandidateGoalsAndTaxonomy();
   syncCategoryDropdown([]);
