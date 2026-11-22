@@ -423,6 +423,139 @@
     return panel;
   }
 
+  /* ---------- v182: Crawl4AI .gov.in Draft Queue ---------- */
+  var GOV_DOMAIN_RE = /(^|\.)(gov\.in|nic\.in|odisha\.gov\.in)$/i;
+
+  function extractGovDomain(url) {
+    var u = String(url || '').trim();
+    if (!/^https:\/\/[^\s/]+\.[^\s/]+/i.test(u)) return '';
+    try {
+      var host = new URL(u).hostname.toLowerCase().replace(/\.$/, '');
+      return GOV_DOMAIN_RE.test(host) ? host : '';
+    } catch (_) {
+      var m = u.match(/^https:\/\/([^/\s?#]+)/i);
+      if (!m) return '';
+      var h = m[1].replace(/:\d+$/, '').toLowerCase();
+      return GOV_DOMAIN_RE.test(h) ? h : '';
+    }
+  }
+  function isVerifiedGovDomain(url) {
+    return Boolean(extractGovDomain(url));
+  }
+  function validateDraftItem(raw) {
+    if (!raw || typeof raw !== 'object') return { valid: false, reason: 'Invalid draft object' };
+    var title = String(raw.title || '').trim();
+    var officialUrl = String(raw.official_url || '').trim();
+    var domain = extractGovDomain(officialUrl);
+    if (!title) return { valid: false, reason: 'Missing title' };
+    if (!domain) return { valid: false, reason: 'Rejected non-.gov.in/.nic.in URL' };
+    var dates = Array.isArray(raw.important_dates)
+      ? raw.important_dates
+          .filter(function (d) { return d && (d.label || d.date); })
+          .map(function (d) { return { label: String(d.label || 'Date').trim(), date: String(d.date || '').trim() }; })
+      : [];
+    return {
+      valid: true,
+      draft: {
+        title: title.slice(0, 150),
+        agency: String(raw.agency || 'Odisha Govt').trim(),
+        official_url: officialUrl,
+        last_date: String(raw.last_date || '').trim(),
+        important_dates: dates,
+        summary: String(raw.summary || '').trim(),
+        source_domain: domain,
+        fetched_at: String(raw.fetched_at || '').trim()
+      }
+    };
+  }
+  function parseDraftQueueJson(jsonText) {
+    try {
+      var parsed = JSON.parse(String(jsonText || '[]'));
+      if (!Array.isArray(parsed)) return { validDrafts: [], rejectedCount: 0, error: 'Queue JSON must be an array' };
+      var validDrafts = [];
+      var rejectedCount = 0;
+      parsed.forEach(function (item) {
+        var res = validateDraftItem(item);
+        if (res.valid) validDrafts.push(res.draft);
+        else rejectedCount += 1;
+      });
+      return { validDrafts: validDrafts, rejectedCount: rejectedCount, error: null };
+    } catch (err) {
+      return { validDrafts: [], rejectedCount: 0, error: 'Invalid JSON: ' + err.message };
+    }
+  }
+  function createGovDraftQueuePanel(options) {
+    var opts = options || {};
+    var drafts = [];
+    var panel = el('section', 'card cso-fp-draft-queue');
+    panel.setAttribute('aria-label', 'Incoming .gov.in Draft Queue');
+
+    var head = el('div', 'cso-fp-head');
+    head.appendChild(el('strong', 'cso-fp-title', '📥 Incoming .gov.in Draft Queue'));
+    var fileLabel = el('label', 'btn sm primary cso-fp-file-btn');
+    fileLabel.appendChild(el('span', null, 'Load drafts-queue.json'));
+    var fileInp = el('input', 'cso-fp-file-input');
+    fileInp.type = 'file';
+    fileInp.accept = '.json,application/json';
+    fileInp.setAttribute('aria-label', 'Load drafts-queue.json');
+    fileLabel.appendChild(fileInp);
+    head.appendChild(fileLabel);
+
+    var statusLine = el('div', 'hint cso-fp-draft-status', 'Import scripts/crawl4ai/drafts-queue.json to review verified .gov.in notices.');
+    var listEl = el('div', 'cso-fp-draft-list');
+
+    function renderQueue() {
+      clear(listEl);
+      if (!drafts.length) {
+        listEl.appendChild(el('div', 'cso-fp-empty', 'No pending .gov.in drafts loaded.'));
+        return;
+      }
+      drafts.forEach(function (d, idx) {
+        var row = el('div', 'cso-fp-draft-item');
+        var meta = el('div', 'cso-fp-draft-meta');
+        meta.appendChild(el('span', 'cso-fp-pbadge', d.agency));
+        meta.appendChild(el('span', 'cso-fp-pbadge is-ok', '✓ ' + d.source_domain));
+        meta.appendChild(el('span', 'cso-fp-pbadge is-warn', d.last_date ? 'Last date: ' + d.last_date : 'Deadline: TBA'));
+        row.appendChild(meta);
+        row.appendChild(el('strong', 'cso-fp-draft-title', d.title));
+        var act = el('div', 'cso-fp-draft-actions');
+        act.appendChild(btn('Load into Editor', 'btn sm primary', function () {
+          if (typeof opts.onLoadDraft === 'function') opts.onLoadDraft(d);
+        }));
+        act.appendChild(btn('Dismiss', 'btn sm danger', function () {
+          drafts.splice(idx, 1);
+          renderQueue();
+        }));
+        row.appendChild(act);
+        listEl.appendChild(row);
+      });
+    }
+
+    fileInp.addEventListener('change', function () {
+      var file = fileInp.files && fileInp.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        var res = parseDraftQueueJson(reader.result);
+        if (res.error) {
+          statusLine.textContent = res.error;
+          return;
+        }
+        drafts = res.validDrafts;
+        statusLine.textContent = 'Loaded ' + drafts.length + ' verified .gov.in draft(s)' +
+          (res.rejectedCount ? ' (' + res.rejectedCount + ' non-.gov.in item(s) rejected).' : '.');
+        renderQueue();
+      };
+      reader.readAsText(file);
+    });
+
+    panel.appendChild(head);
+    panel.appendChild(statusLine);
+    panel.appendChild(listEl);
+    renderQueue();
+    return { node: panel, setDrafts: function (items) { drafts = items || []; renderQueue(); } };
+  }
+
   root.CSOFastPublish = {
     parseQuestionsBlock: parseQuestionsBlock,
     syncQuestionsBlock: syncQuestionsBlock,
@@ -430,6 +563,11 @@
     serializeResources: serializeResources,
     classifyLink: classifyLink,
     isOfficialDomain: isOfficialDomain,
+    isVerifiedGovDomain: isVerifiedGovDomain,
+    extractGovDomain: extractGovDomain,
+    validateDraftItem: validateDraftItem,
+    parseDraftQueueJson: parseDraftQueueJson,
+    createGovDraftQueuePanel: createGovDraftQueuePanel,
     isExpired: isExpired,
     buildTriage: buildTriage,
     createRowBuilder: createRowBuilder,

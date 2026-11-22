@@ -1,0 +1,51 @@
+[
+  {
+    "title": "OPSC Odisha Civil Services (OCS) Preliminary Examination 2026 — Official Advertisement",
+    "agency": "OPSC",
+    "official_url": "https://www.opsc.gov.in/Public/OPSC/Default.aspx",
+    "last_date": "2026-12-20",
+    "important_dates": [
+      {
+        "label": "Last Date to Apply",
+        "date": "2026-12-20"
+      },
+      {
+        "label": "Tentative Prelims Exam",
+        "date": "2027-02-14"
+      }
+    ],
+    "summary": "Official OPSC notice ingested from www.opsc.gov.in: Odisha Civil Services Examination recruitment advertisement and online application schedule.",
+    "source_domain": "www.opsc.gov.in",
+    "fetched_at": "2026-11-22T06:00:00+05:30"
+  },
+  {
+    "title": "OSSC Combined Graduate Level (CGLRE) Group-B & Group-C Recruitment Notice",
+    "agency": "OSSC",
+    "official_url": "https://www.ossc.gov.in/Public/OSSC/Default.aspx",
+    "last_date": "2026-12-15",
+    "important_dates": [
+      {
+        "label": "Last Date to Apply",
+        "date": "2026-12-15"
+      }
+    ],
+    "summary": "Official OSSC notice ingested from www.ossc.gov.in: Combined Graduate Level recruitment notification for Odisha state departments.",
+    "source_domain": "www.ossc.gov.in",
+    "fetched_at": "2026-11-22T06:00:00+05:30"
+  },
+  {
+    "title": "OSSSC Combined Recruitment Examination for RI, ARI, Amin & Forest Guard",
+    "agency": "OSSSC",
+    "official_url": "https://www.osssc.gov.in/Public/OSSSC/Default.aspx",
+    "last_date": "2026-12-28",
+    "important_dates": [
+      {
+        "label": "Last Date to Apply",
+        "date": "2026-12-28"
+      }
+    ],
+    "summary": "Official OSSSC notice ingested from www.osssc.gov.in: District-cadre Revenue Inspector, ARI, Amin, and Forest Guard recruitment notification.",
+    "source_domain": "www.osssc.gov.in",
+    "fetched_at": "2026-11-22T06:00:00+05:30"
+  }
+]

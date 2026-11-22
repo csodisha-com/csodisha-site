@@ -1039,6 +1039,7 @@
     } });
 
     var dateRows = key === 'jobs' ? parseImportantDates(item.body_md) : [];
+    var datesBuilder = null;
     var schedulePreviewRender = function () {};
 
     function setFieldVal(fid, v) {
@@ -1084,6 +1085,25 @@
         parserTa,
         parseStatus
       ]));
+      left.appendChild(window.CSOFastPublish.createGovDraftQueuePanel({
+        onLoadDraft: function (draft) {
+          setFieldVal('f-title', draft.title);
+          setFieldVal('f-organisation', draft.agency);
+          setFieldVal('f-apply_url', draft.official_url);
+          setFieldVal('f-source_url', draft.official_url);
+          if (draft.last_date) setFieldVal('f-last_date', draft.last_date);
+          if (draft.summary) setFieldVal('f-summary', draft.summary);
+          if (Array.isArray(draft.important_dates) && draft.important_dates.length) {
+            dateRows.length = 0;
+            draft.important_dates.forEach(function (row) {
+              dateRows.push({ label: String(row.label || 'Date'), date: String(row.date || '') });
+            });
+            if (datesBuilder && typeof datesBuilder.render === 'function') datesBuilder.render();
+          }
+          schedulePreviewRender();
+          toast('Loaded verified .gov.in draft into editor');
+        }
+      }).node);
     }
 
     var tagSugHost = el('div', { class: 'actions cso-tag-suggestions' });
@@ -1165,7 +1185,8 @@
 
     if (key === 'jobs') {
       /* v174: visual "+ Add Date" row builder (Label + Date picker + Remove) with collapsible Advanced JSON */
-      left.appendChild(window.CSOFastPublish.createDatesBuilder(dateRows, function () { schedulePreviewRender(); }).node);
+      datesBuilder = window.CSOFastPublish.createDatesBuilder(dateRows, function () { schedulePreviewRender(); });
+      left.appendChild(datesBuilder.node);
     }
 
     var sb = statusBlock(isNew ? null : item); left.appendChild(sb.node);

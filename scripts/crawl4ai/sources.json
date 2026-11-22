@@ -1,0 +1,26 @@
+[
+  {
+    "id": "opsc",
+    "agency": "OPSC",
+    "name": "Odisha Public Service Commission",
+    "url": "https://www.opsc.gov.in/Public/OPSC/Default.aspx",
+    "source_domain": "www.opsc.gov.in",
+    "category": "recruitment"
+  },
+  {
+    "id": "ossc",
+    "agency": "OSSC",
+    "name": "Odisha Staff Selection Commission",
+    "url": "https://www.ossc.gov.in/Public/OSSC/Default.aspx",
+    "source_domain": "www.ossc.gov.in",
+    "category": "recruitment"
+  },
+  {
+    "id": "osssc",
+    "agency": "OSSSC",
+    "name": "Odisha Sub-ordinate Staff Selection Commission",
+    "url": "https://www.osssc.gov.in/Public/OSSSC/Default.aspx",
+    "source_domain": "www.osssc.gov.in",
+    "category": "recruitment"
+  }
+]

@@ -3130,3 +3130,21 @@ textarea.cso-fp-input { min-height: 64px; resize: vertical; }
   .cso-fp-row { grid-template-columns: 1fr; }
   .cso-fp-drawer.is-desktop { width: 100vw; }
 }
+
+/* v182: Crawl4AI Incoming .gov.in Draft Queue */
+.cso-fp-draft-queue { display: grid; gap: 10px; margin-bottom: 14px; }
+.cso-fp-file-btn { position: relative; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; }
+.cso-fp-file-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.cso-fp-draft-list { display: grid; gap: 10px; }
+.cso-fp-draft-item {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--studio-card-elev, #121916);
+  border: 1px solid var(--studio-border-strong, #2c3b36);
+}
+.cso-fp-draft-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.cso-fp-draft-title { font-size: 0.92rem; line-height: 1.35; }
+.cso-fp-draft-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cso-fp-draft-actions .btn { min-height: 44px; display: inline-flex; align-items: center; }
