@@ -22,5 +22,101 @@
     "url": "https://www.osssc.gov.in/Public/OSSSC/Default.aspx",
     "source_domain": "www.osssc.gov.in",
     "category": "recruitment"
+  },
+  {
+    "id": "oprb",
+    "agency": "OPRB",
+    "name": "Odisha Police Recruitment Board",
+    "url": "https://odishapolice.gov.in/",
+    "source_domain": "odishapolice.gov.in",
+    "category": "police"
+  },
+  {
+    "id": "osepa",
+    "agency": "OSEPA",
+    "name": "Odisha School Education Programme Authority",
+    "url": "https://osepa.odisha.gov.in/",
+    "source_domain": "osepa.odisha.gov.in",
+    "category": "teaching"
+  },
+  {
+    "id": "dhe-odisha",
+    "agency": "DHE Odisha",
+    "name": "Department of Higher Education, Odisha",
+    "url": "https://dhe.odisha.gov.in/",
+    "source_domain": "dhe.odisha.gov.in",
+    "category": "education"
+  },
+  {
+    "id": "sme-odisha",
+    "agency": "SME Odisha",
+    "name": "School & Mass Education Department, Odisha",
+    "url": "https://sme.odisha.gov.in/",
+    "source_domain": "sme.odisha.gov.in",
+    "category": "teaching"
+  },
+  {
+    "id": "khordha",
+    "agency": "Khordha District",
+    "name": "Khordha District Recruitment Notices",
+    "url": "https://khordha.nic.in/notice_category/recruitment/",
+    "source_domain": "khordha.nic.in",
+    "category": "district"
+  },
+  {
+    "id": "cuttack",
+    "agency": "Cuttack District",
+    "name": "Cuttack District Recruitment Notices",
+    "url": "https://cuttack.nic.in/notice_category/recruitment/",
+    "source_domain": "cuttack.nic.in",
+    "category": "district"
+  },
+  {
+    "id": "ganjam",
+    "agency": "Ganjam District",
+    "name": "Ganjam District Recruitment Notices",
+    "url": "https://ganjam.nic.in/notice_category/recruitment/",
+    "source_domain": "ganjam.nic.in",
+    "category": "district"
+  },
+  {
+    "id": "puri",
+    "agency": "Puri District",
+    "name": "Puri District Recruitment Notices",
+    "url": "https://puri.nic.in/notice_category/recruitment/",
+    "source_domain": "puri.nic.in",
+    "category": "district"
+  },
+  {
+    "id": "sambalpur",
+    "agency": "Sambalpur District",
+    "name": "Sambalpur District Recruitment Notices",
+    "url": "https://sambalpur.nic.in/notice_category/recruitment/",
+    "source_domain": "sambalpur.nic.in",
+    "category": "district"
+  },
+  {
+    "id": "sundargarh",
+    "agency": "Sundargarh District",
+    "name": "Sundargarh District Recruitment Notices",
+    "url": "https://sundargarh.nic.in/notice_category/recruitment/",
+    "source_domain": "sundargarh.nic.in",
+    "category": "district"
+  },
+  {
+    "id": "balasore",
+    "agency": "Balasore District",
+    "name": "Balasore District Recruitment Notices",
+    "url": "https://balasore.nic.in/notice_category/recruitment/",
+    "source_domain": "balasore.nic.in",
+    "category": "district"
+  },
+  {
+    "id": "mayurbhanj",
+    "agency": "Mayurbhanj District",
+    "name": "Mayurbhanj District Recruitment Notices",
+    "url": "https://mayurbhanj.nic.in/notice_category/recruitment/",
+    "source_domain": "mayurbhanj.nic.in",
+    "category": "district"
   }
 ]

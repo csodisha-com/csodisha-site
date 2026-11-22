@@ -570,6 +570,10 @@ export async function handlePublicStudyLibraryRoute(request, env, url) {
     pathname.startsWith('/study-library/otet-osstet/') ||
     pathname === '/study-library/opsc-oas' ||
     pathname.startsWith('/study-library/opsc-oas/') ||
+    pathname === '/study-library/osssc-ri-ari-amin' ||
+    pathname.startsWith('/study-library/osssc-ri-ari-amin/') ||
+    pathname === '/study-library/odisha-police-oprb' ||
+    pathname.startsWith('/study-library/odisha-police-oprb/') ||
     pathname.startsWith('/study-library/assets/') ||
     pathname.startsWith('/study-library/generated/')
   ) {
