@@ -1,0 +1,224 @@
+/* v215: Odisha 30-District Static GK & Exam Fact-Sheet Explorer
+   Strict CSP compliance: zero inline styles needed. */
+.cso-district-gk {
+  margin-top: 22px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-text, #0f172a);
+}
+
+.cso-dgk-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cso-dgk-title-group h2 {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+}
+
+.cso-dgk-sub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--cso-muted, #475569);
+}
+
+.cso-dgk-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: rgba(29, 78, 216, 0.12);
+  color: #1d4ed8;
+}
+
+.cso-dgk-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cso-dgk-select {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-bg, #f8fafc);
+  color: var(--cso-text, #0f172a);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  flex: 1 1 200px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.cso-dgk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface-alt, #f8fafc);
+  color: var(--cso-text, #0f172a);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cso-dgk-btn--primary {
+  background: #0f4c3a;
+  border-color: #0f4c3a;
+  color: #ffffff;
+}
+
+.cso-dgk-drill {
+  margin-bottom: 18px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface-alt, #f8fafc);
+  display: grid;
+  gap: 12px;
+}
+
+.cso-dgk-drill__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cso-dgk-q {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border, #e2e8f0);
+  background: var(--cso-surface, #ffffff);
+  display: grid;
+  gap: 8px;
+}
+
+.cso-dgk-q__title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.cso-dgk-q__opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-dgk-opt {
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface-alt, #f8fafc);
+  color: var(--cso-text, #0f172a);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cso-dgk-opt.is-correct {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #14532d;
+}
+
+.cso-dgk-opt.is-wrong {
+  background: #fee2e2;
+  border-color: #dc2626;
+  color: #7f1d1d;
+}
+
+.cso-dgk-q__exp {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--cso-muted, #475569);
+}
+
+.cso-dgk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.cso-dgk-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border, #e2e8f0);
+  background: var(--cso-surface-alt, #f8fafc);
+}
+
+.cso-dgk-card__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cso-dgk-div-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(15, 76, 58, 0.12);
+  color: #0f4c3a;
+}
+
+.cso-dgk-hq {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cso-muted, #475569);
+}
+
+.cso-dgk-name {
+  margin: 2px 0 0;
+  font-size: 1rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.cso-dgk-rivers {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1d4ed8;
+}
+
+.cso-dgk-fact {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--cso-text, #334155);
+  overflow-wrap: anywhere;
+}
+
+.cso-dgk-job-link {
+  margin-top: auto;
+  align-self: flex-start;
+}
