@@ -622,6 +622,7 @@
 
   function showOverview(pushHistory = true) {
     setTopSearchVisible(true);
+    if (document.body) document.body.classList.remove('cso-section-view');
     currentSection = -1;
     path = [];
     selectedL3Slug = '';
@@ -959,8 +960,58 @@
     host.append(actions);
   }
 
+  let cachedLiveJobsForSections = null;
+
+  function renderMatchingLiveNotices(sourceItems) {
+    const host = document.getElementById('cso-matching-live-notices');
+    if (!host || currentSection < 0) return;
+    if (Array.isArray(sourceItems)) cachedLiveJobsForSections = sourceItems;
+
+    const codes = getEffectiveLayerCodes();
+    const list = Array.isArray(cachedLiveJobsForSections) ? cachedLiveJobsForSections : [];
+
+    let matched = [];
+    if (codes.sectionSlug === 'jobs-recruitment') {
+      matched = list.filter(job => {
+        const br = classifyJobToBranch(job);
+        if (codes.l2 && br.l2 !== codes.l2) return false;
+        if (codes.l1 && br.l1 !== codes.l1) return false;
+        return true;
+      });
+    } else if (codes.l1 || codes.l2 || selectedL3Slug) {
+      const kw = [codes.l1, codes.l2, selectedL3Slug].filter(Boolean).join(' ').toLowerCase().replace(/[-.]+/g, ' ');
+      const tokens = kw.split(/\s+/).filter(w => w.length > 2);
+      matched = list.filter(job => {
+        const hay = [job.title, job.category, job.organisation, job.summary].join(' ').toLowerCase();
+        return tokens.some(t => hay.includes(t));
+      });
+    }
+
+    if (typeof liveState !== 'undefined' && liveState.bookmarksOnly) {
+      const bmSlugs = new Set(loadBookmarkedTracks().map(t => t.slug));
+      matched = matched.filter(job => bmSlugs.has(job.slug || job.id));
+    }
+
+    host.replaceChildren();
+    const head = el('div', 'cso-matching-live-notices__head');
+    head.append(el('h3', '', 'Matching Live Recruitment Notices'));
+    head.append(el('span', 'live-count-badge', `${matched.length} Matching`));
+    host.append(head);
+
+    if (matched.length) {
+      const gridWrap = el('div', 'live-jobs-grid');
+      matched.slice(0, 6).forEach(job => {
+        if (typeof renderJobCard === 'function') gridWrap.append(renderJobCard(job));
+      });
+      host.append(gridWrap);
+    } else {
+      host.append(el('p', 'cso-matching-live-notices__empty', 'No live D1 recruitment notices currently match this specific category/branch selection.'));
+    }
+  }
+
   function renderExplorer() {
     setTopSearchVisible(true);
+    if (document.body) document.body.classList.add('cso-section-view');
     const node = currentNode();
     rememberCategory();
 
@@ -1051,11 +1102,7 @@
       window.CSOBookmarks.updateUI();
     }
 
-    if (!visibleChildren.length && !ownEntries.length) {
-      explorerItems.append(
-        el('p', '', 'This category is ready for future information.')
-      );
-    }
+    renderMatchingLiveNotices();
 
     const hasSingleWrapper = isSingleWrapperSection(currentSection);
     const isAtSectionRoot = path.length === 0 || (hasSingleWrapper && path.length === 1 && path[0] === 0);
@@ -2524,6 +2571,9 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       let items = Array.isArray(data.items) ? data.items : [];
+      if (!liveState.q && !liveState.state && !liveState.category && (!liveState.stage || liveState.stage === 'all')) {
+        renderMatchingLiveNotices(items);
+      }
       syncCategoryDropdown(items);
 
       if (liveState.stage && liveState.stage !== 'all') {

@@ -4281,3 +4281,42 @@ a.dashboard-card {
   align-items: center;
   justify-content: center;
 }
+
+/* v222: Start section views immediately with #cso-top-category-selector */
+body.cso-section-view .cso-jobs-hero,
+body.cso-section-view .hero-card,
+body.cso-section-view .directory-hero,
+body.cso-section-view #eligibility-quick-profile,
+body.cso-section-view .cso-elig-drawer,
+body.cso-section-view #live-jobs-section,
+body.cso-section-view #explorer .explorer-header {
+  display: none;
+}
+
+.cso-matching-live-notices {
+  margin-top: 22px;
+  display: grid;
+  gap: 12px;
+}
+
+.cso-matching-live-notices__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cso-matching-live-notices__head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.cso-matching-live-notices__empty {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed var(--cso-border, #cbd5e1);
+  color: var(--cso-text-muted, #475569);
+  font-size: 0.9rem;
+}

@@ -24,9 +24,9 @@ assert.equal(totalModules, 299, `Expected 299 modules, got ${totalModules}`);
 console.log('2. Checking #cso-top-category-selector, native <select> boxes & single search bar...');
 const jobsHtml = fs.readFileSync(path.join(ROOT, 'jobs-careers/index.html'), 'utf8');
 assert.ok(jobsHtml.includes('id="cso-top-category-selector"'), 'Missing #cso-top-category-selector');
-assert.ok(jobsHtml.includes('/assets/js/jobs-directory-data.js?v=20261122v221'), 'Missing v221 jobs-directory-data.js');
-assert.ok(jobsHtml.includes('./assets/dashboard.js?v=20261122v221'), 'Missing v221 dashboard.js');
-assert.ok(jobsHtml.includes('./assets/dashboard.css?v=20261122v221'), 'Missing v221 dashboard.css');
+assert.ok(/\/assets\/js\/jobs-directory-data\.js\?v=20261122v22(1|2)/.test(jobsHtml), 'Missing v221/v222 jobs-directory-data.js');
+assert.ok(/\.\/assets\/dashboard\.js\?v=20261122v22(1|2)/.test(jobsHtml), 'Missing v221/v222 dashboard.js');
+assert.ok(/\.\/assets\/dashboard\.css\?v=20261122v22(1|2)/.test(jobsHtml), 'Missing v221/v222 dashboard.css');
 
 const jobsSearchInputs = (jobsHtml.match(/<input\b[^>]*type=["']search["'][^>]*>/gi) || [])
   .filter(tag => !/id=["']bp-search-modal-input["']/i.test(tag));
@@ -128,7 +128,7 @@ for (const rel of touched) {
   }
 }
 
-assert.ok(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8').includes('cso-candidate-cache-v221'), 'sw.js must be bumped to v221');
-assert.ok(fs.readFileSync(path.join(ROOT, 'functions/_lib/ops-sentinel.js'), 'utf8').includes('cso-candidate-cache-v221'), 'ops-sentinel.js must be bumped to v221');
+assert.ok(/cso-candidate-cache-v22(1|2)/.test(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8')), 'sw.js must be bumped to v221+');
+assert.ok(/cso-candidate-cache-v22(1|2)/.test(fs.readFileSync(path.join(ROOT, 'functions/_lib/ops-sentinel.js'), 'utf8')), 'ops-sentinel.js must be bumped to v221+');
 
 console.log('All v221 Top Cascading Selector, Branch Dossier & CSP tests PASSED!');
