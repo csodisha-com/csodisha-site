@@ -46,32 +46,42 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://csodisha.com/jobs-careers/odisha-state-jobs/</loc>
+    <loc>https://csodisha.com/jobs-careers/jobs-recruitment</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://csodisha.com/jobs-careers/teaching-education/</loc>
+    <loc>https://csodisha.com/jobs-careers/career-explorer</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://csodisha.com/jobs-careers/central-ssc-railways-banking/</loc>
+    <loc>https://csodisha.com/jobs-careers/eligibility-explorer</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://csodisha.com/jobs-careers/police-defence/</loc>
+    <loc>https://csodisha.com/jobs-careers/courses-exams</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://csodisha.com/jobs-careers/psu-technical-healthcare/</loc>
+    <loc>https://csodisha.com/jobs-careers/scholarships-support</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://csodisha.com/jobs-careers/private-remote-internships/</loc>
+    <loc>https://csodisha.com/jobs-careers/international-overseas</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://csodisha.com/jobs-careers/career-development</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://csodisha.com/jobs-careers/institutions-portals</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>

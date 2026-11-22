@@ -35,9 +35,22 @@
       .replace(/^-+|-+$/g, '');
   }
 
+  const SECTION_SLUG_BY_INDEX = [
+    'jobs-recruitment',
+    'career-explorer',
+    'eligibility-explorer',
+    'courses-exams',
+    'scholarships-support',
+    'international-overseas',
+    'career-development',
+    'institutions-portals'
+  ];
+
   function getSectionSlug(section) {
     if (!section) return '';
     if (section.slug) return String(section.slug);
+    const idx = Array.isArray(sections) ? sections.indexOf(section) : -1;
+    if (idx >= 0 && idx < SECTION_SLUG_BY_INDEX.length) return SECTION_SLUG_BY_INDEX[idx];
     return slugify(section.title);
   }
 
@@ -111,9 +124,10 @@
   function updateUrlState(pushHistory = true, replaceUrl = false) {
     try {
       const url = new URL(window.location.href);
+      url.searchParams.delete('section');
       if (currentSection >= 0 && currentSection < sections.length) {
         const slug = getSectionSlug(sections[currentSection]);
-        url.searchParams.set('section', slug);
+        url.pathname = `/jobs-careers/${slug}`;
         const hasSingleWrapper = isSingleWrapperSection(currentSection);
         const isWrapperOnly = hasSingleWrapper && path.length === 1 && path[0] === 0;
 
@@ -135,7 +149,7 @@
           window.history.pushState(state, '', url.toString());
         }
       } else {
-        url.searchParams.delete('section');
+        url.pathname = '/jobs-careers/';
         url.searchParams.delete('path');
         const state = { sectionIndex: -1, slug: '', path: [] };
         if (replaceUrl || url.href === window.location.href) {
@@ -554,6 +568,123 @@
     return node;
   }
 
+  function renderCategoryPagePanel(sectionSlug) {
+    const dataApi = window.CSO_JOBS_DIRECTORY_DATA;
+    if (!dataApi || typeof dataApi.getItemsBySection !== 'function') return null;
+    const secInfo = typeof dataApi.getSectionBySlug === 'function' ? dataApi.getSectionBySlug(sectionSlug) : null;
+    const items = dataApi.getItemsBySection(sectionSlug);
+    if (!items.length) return null;
+
+    const panel = el('section', 'cso-cat-panel');
+    panel.setAttribute('aria-label', `${secInfo ? secInfo.title : sectionSlug} visual summary and pages`);
+
+    const head = el('div', 'cso-cat-panel__head');
+    head.appendChild(el('h3', '', `${secInfo ? secInfo.icon + ' ' + secInfo.title : sectionSlug} — Dedicated Dossier Pages`));
+    head.appendChild(el('span', 'live-count-badge', `${items.length} Verified Pages`));
+    panel.appendChild(head);
+
+    if (secInfo && secInfo.description) {
+      panel.appendChild(el('p', 'cso-cat-panel__sub', secInfo.description));
+    }
+
+    // Category-specific pure-SVG summary graph
+    const chartRows = items.slice(0, 6);
+    const maxVac = Math.max(1, ...chartRows.map(i => Number(i.vacancies) || 1));
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 640 ' + String(18 + chartRows.length * 26));
+    svg.setAttribute('class', 'cso-cat-svg');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', `${secInfo ? secInfo.title : sectionSlug} summary chart`);
+    chartRows.forEach((item, idx) => {
+      const y = 10 + idx * 26;
+      const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lbl.setAttribute('x', '4');
+      lbl.setAttribute('y', String(y + 14));
+      lbl.setAttribute('class', 'cso-ov-svg__label');
+      lbl.textContent = String(item.title || '').slice(0, 26) + (String(item.title || '').length > 26 ? '…' : '');
+      svg.appendChild(lbl);
+
+      const track = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      track.setAttribute('x', '210');
+      track.setAttribute('y', String(y + 2));
+      track.setAttribute('width', '330');
+      track.setAttribute('height', '15');
+      track.setAttribute('rx', '6');
+      track.setAttribute('class', 'cso-ov-svg__track');
+      svg.appendChild(track);
+
+      const valNum = Number(item.vacancies) || 1;
+      const barW = Math.max(12, Math.round((valNum / maxVac) * 330));
+      const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bar.setAttribute('x', '210');
+      bar.setAttribute('y', String(y + 2));
+      bar.setAttribute('width', String(barW));
+      bar.setAttribute('height', '15');
+      bar.setAttribute('rx', '6');
+      bar.setAttribute('class', 'cso-ov-svg__bar');
+      svg.appendChild(bar);
+
+      const valTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      valTxt.setAttribute('x', '550');
+      valTxt.setAttribute('y', String(y + 14));
+      valTxt.setAttribute('class', 'cso-ov-svg__val');
+      valTxt.textContent = valNum.toLocaleString('en-IN');
+      svg.appendChild(valTxt);
+    });
+    panel.appendChild(svg);
+
+    // Filter pills
+    const stages = ['All'];
+    items.forEach(it => {
+      const lbl = it.stage_label || it.category || '';
+      if (lbl && !stages.includes(lbl)) stages.push(lbl);
+    });
+
+    let activeFilter = 'All';
+    const filterBar = el('div', 'cso-cat-filters');
+    filterBar.setAttribute('role', 'group');
+    filterBar.setAttribute('aria-label', 'Filter category entries');
+
+    const cardsGrid = el('div', 'cso-cat-cards');
+
+    function renderCards() {
+      cardsGrid.replaceChildren();
+      const filtered = activeFilter === 'All'
+        ? items
+        : items.filter(it => (it.stage_label || it.category || '') === activeFilter);
+      filtered.forEach(it => {
+        const a = el('a', 'cso-cat-card');
+        a.href = `/jobs-careers/detail/${encodeURIComponent(it.slug)}`;
+        a.appendChild(el('span', 'live-badge live-badge--org', `${it.stage_label || 'Active'} · ${it.organisation || ''}`));
+        a.appendChild(el('strong', 'cso-cat-card__title', it.title));
+        if (it.title_or) a.appendChild(el('span', 'cso-cat-card__odia', it.title_or));
+        a.appendChild(el('span', 'cso-cat-card__meta', `${it.qualification || 'Check Details'} · Open Visual Dossier →`));
+        cardsGrid.appendChild(a);
+      });
+    }
+
+    stages.forEach(st => {
+      const pill = el('button', 'cso-cat-pill' + (st === 'All' ? ' is-active' : ''), st);
+      pill.type = 'button';
+      pill.setAttribute('aria-pressed', st === 'All' ? 'true' : 'false');
+      pill.addEventListener('click', () => {
+        activeFilter = st;
+        filterBar.querySelectorAll('.cso-cat-pill').forEach(b => {
+          const on = b.textContent === st;
+          b.classList.toggle('is-active', on);
+          b.setAttribute('aria-pressed', String(on));
+        });
+        renderCards();
+      });
+      filterBar.appendChild(pill);
+    });
+
+    panel.appendChild(filterBar);
+    renderCards();
+    panel.appendChild(cardsGrid);
+    return panel;
+  }
+
   function renderExplorer() {
     setTopSearchVisible(true);
     const node = currentNode();
@@ -586,6 +717,13 @@
         : 'Individual directory entries and supporting information';
 
     explorerItems.replaceChildren();
+
+    const hasSingleWrapperForPanel = isSingleWrapperSection(currentSection);
+    const isRootForPanel = path.length === 0 || (hasSingleWrapperForPanel && path.length === 1 && path[0] === 0);
+    if (isRootForPanel && currentSection >= 0 && currentSection < sections.length) {
+      const catPanel = renderCategoryPagePanel(getSectionSlug(sections[currentSection]));
+      if (catPanel) explorerItems.append(catPanel);
+    }
 
     const symbols = [
       '💼', '🧭', '📋', '📚',
@@ -788,36 +926,48 @@
     if (sectionsNav) {
       sectionsNav.replaceChildren();
 
-      const overviewButton = el('button', 'side-link');
-      overviewButton.type = 'button';
-      overviewButton.dataset.sectionIndex = '-1';
-      overviewButton.append(el('span', 'side-icon', '🏠'));
-      overviewButton.append(el('span', 'side-title', 'Overview'));
+      const overviewLink = el('a', 'side-link');
+      overviewLink.href = '/jobs-careers/';
+      overviewLink.dataset.sectionIndex = '-1';
+      overviewLink.dataset.sectionSlug = 'overview';
+      overviewLink.append(el('span', 'side-icon', '🏠'));
+      overviewLink.append(el('span', 'side-title', 'Overview'));
       const overviewArrow = el('span', 'side-arrow', '›');
       overviewArrow.setAttribute('aria-hidden', 'true');
-      overviewButton.append(overviewArrow);
-      overviewButton.addEventListener('click', () => showOverview(true));
-      sectionsNav.append(overviewButton);
+      overviewLink.append(overviewArrow);
+      overviewLink.addEventListener('click', (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+        e.preventDefault();
+        showOverview(true);
+      });
+      sectionsNav.append(overviewLink);
     }
 
     grid.replaceChildren();
 
     sections.forEach((section, index) => {
+      const secSlug = getSectionSlug(section);
+      const secHref = `/jobs-careers/${secSlug}`;
       if (sectionsNav) {
-        const navButton = el('button', 'side-link');
-        navButton.type = 'button';
-        navButton.dataset.sectionIndex = String(index);
-        navButton.append(el('span', 'side-icon', icons[index % icons.length]));
-        navButton.append(el('span', 'side-title', section.title));
+        const navLink = el('a', 'side-link');
+        navLink.href = secHref;
+        navLink.dataset.sectionIndex = String(index);
+        navLink.dataset.sectionSlug = secSlug;
+        navLink.append(el('span', 'side-icon', icons[index % icons.length]));
+        navLink.append(el('span', 'side-title', section.title));
         const sideArrow = el('span', 'side-arrow', '›');
         sideArrow.setAttribute('aria-hidden', 'true');
-        navButton.append(sideArrow);
-        navButton.addEventListener('click', () => openSection(index, true));
-        sectionsNav.append(navButton);
+        navLink.append(sideArrow);
+        navLink.addEventListener('click', (e) => {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+          e.preventDefault();
+          openSection(index, true);
+        });
+        sectionsNav.append(navLink);
       }
 
-      const card = el('button', 'dashboard-card');
-      card.type = 'button';
+      const card = el('a', 'dashboard-card');
+      card.href = secHref;
       card.dataset.sectionIndex = String(index);
       card.append(el('span', 'card-icon', icons[index % icons.length]));
 
@@ -829,7 +979,11 @@
       arrow.setAttribute('aria-hidden', 'true');
       card.append(arrow);
 
-      card.addEventListener('click', () => openSection(index, true));
+      card.addEventListener('click', (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+        e.preventDefault();
+        openSection(index, true);
+      });
       grid.append(card);
     });
   }
@@ -976,7 +1130,9 @@
     if (!sections || !sections.length) return;
 
     const params = new URLSearchParams(window.location.search);
-    const requestedSection = params.get('section');
+    const pathMatch = String(window.location.pathname || '').match(/^\/jobs-careers\/([a-z0-9-]+)\/?$/i);
+    const pathSection = pathMatch && pathMatch[1] !== 'detail' && pathMatch[1] !== 'index.html' ? pathMatch[1] : '';
+    const requestedSection = pathSection || params.get('section');
 
     if (requestedSection !== null && requestedSection !== '') {
       const idx = resolveSectionIndex(requestedSection);
@@ -1474,7 +1630,7 @@
     if (job.slug) jobCache.set(job.slug, job);
     const footer = el('div', 'live-job-card__footer');
     const detailLink = el('a', 'live-btn live-btn--primary', 'View Details');
-    detailLink.href = `/jobs-careers/detail/?slug=${encodeURIComponent(job.slug || job.id || '')}`;
+    detailLink.href = `/jobs-careers/detail/${encodeURIComponent(job.slug || job.id || '')}`;
     footer.appendChild(detailLink);
 
     const applyHref = job.apply_url || job.notification_url || '';
@@ -1648,7 +1804,7 @@
       const slug = card.getAttribute('data-job-slug') || '';
       const detailLink = card.querySelector('[data-action="details"]');
       if (detailLink && slug) {
-        detailLink.href = `/jobs-careers/detail/?slug=${encodeURIComponent(slug)}`;
+        detailLink.href = `/jobs-careers/detail/${encodeURIComponent(slug)}`;
       }
       const infoLink = card.querySelector('[data-action="info"]');
       if (infoLink && slug) {
@@ -2558,7 +2714,7 @@
         });
 
         const dossierA = el('a', 'live-btn live-btn--primary', 'Visual Dossier →');
-        dossierA.href = `/jobs-careers/detail/?slug=${encodeURIComponent(item.slug)}`;
+        dossierA.href = `/jobs-careers/detail/${encodeURIComponent(item.slug)}`;
 
         btns.append(filterBtn, dossierA);
         card.appendChild(btns);

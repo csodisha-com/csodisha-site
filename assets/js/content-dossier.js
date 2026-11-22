@@ -363,6 +363,15 @@
 
     var badges = el('div', 'cso-dossier-badges');
     badges.appendChild(el('span', 'cso-dossier-badge cso-dossier-badge--stage', job.stage_label || 'New Recruitment'));
+    var dataApi = root.CSO_JOBS_DIRECTORY_DATA;
+    var secMeta = dataApi && job.section && typeof dataApi.getSectionBySlug === 'function' ? dataApi.getSectionBySlug(job.section) : null;
+    if (secMeta) {
+      var catLink = el('a', 'cso-dossier-badge', (secMeta.icon || '') + ' ' + secMeta.title);
+      catLink.href = secMeta.href;
+      badges.appendChild(catLink);
+    } else if (job.category) {
+      badges.appendChild(el('span', 'cso-dossier-badge', job.category));
+    }
     if (job.organisation) badges.appendChild(el('span', 'cso-dossier-badge', job.organisation));
     if (job.last_date) {
       var tracker = root.CSO_DEADLINE_TRACKER;
@@ -411,8 +420,10 @@
       }
     }
 
-    var backBtn = el('a', 'cso-dossier-btn', '← Back to Jobs & Careers Overview');
-    backBtn.href = '/jobs-careers/';
+    var backHref = secMeta ? secMeta.href : '/jobs-careers/';
+    var backLabel = secMeta ? '← Back to ' + secMeta.title : '← Back to Jobs & Careers Overview';
+    var backBtn = el('a', 'cso-dossier-btn', backLabel);
+    backBtn.href = backHref;
     actions.appendChild(backBtn);
     hero.appendChild(actions);
     rootEl.appendChild(hero);
@@ -506,15 +517,20 @@
     toolsCard.appendChild(toolsGrid);
     rootEl.appendChild(toolsCard);
 
-    // 7. Related Live Opportunities
-    var related = (allJobs || []).filter(function (j) { return j.slug !== job.slug; }).slice(0, 4);
+    // 7. Related Live Opportunities & Same-Category Pages
+    var dataApiRel = root.CSO_JOBS_DIRECTORY_DATA;
+    var sameSection = dataApiRel && job.section && typeof dataApiRel.getItemsBySection === 'function'
+      ? dataApiRel.getItemsBySection(job.section).filter(function (j) { return j.slug !== job.slug; })
+      : [];
+    var pool = sameSection.length ? sameSection : (allJobs || []);
+    var related = pool.filter(function (j) { return j.slug !== job.slug; }).slice(0, 4);
     if (related.length) {
       var relCard = el('section', 'cso-dossier-card');
-      relCard.appendChild(el('h2', 'cso-dossier-section-title', 'Related Odisha & Central Recruitment Dossiers'));
+      relCard.appendChild(el('h2', 'cso-dossier-section-title', secMeta ? 'Related ' + secMeta.title + ' Pages' : 'Related Odisha & Central Recruitment Dossiers'));
       var relGrid = el('div', 'cso-dossier-tools-grid');
       related.forEach(function (r) {
         var a = el('a', 'cso-dossier-tool-card');
-        a.href = '/jobs-careers/detail/?slug=' + encodeURIComponent(r.slug || r.id);
+        a.href = '/jobs-careers/detail/' + encodeURIComponent(r.slug || r.id);
         a.appendChild(el('strong', '', r.title));
         a.appendChild(el('span', '', (r.stage_label || 'Active') + ' · ' + (r.organisation || r.category || 'Official')));
         relGrid.appendChild(a);
@@ -524,12 +540,21 @@
     }
   }
 
+  function resolveSlugFromLocation(loc) {
+    if (!loc) return '';
+    var pathMatch = String(loc.pathname || '').match(/^\/jobs-careers\/detail\/([^/]+)\/?$/);
+    if (pathMatch && pathMatch[1] && pathMatch[1] !== 'index.html') {
+      try { return decodeURIComponent(pathMatch[1]).trim(); } catch (_) { return pathMatch[1].trim(); }
+    }
+    var params = new URLSearchParams(loc.search || '');
+    return (params.get('slug') || params.get('id') || '').trim();
+  }
+
   async function init() {
     var rootEl = document.getElementById('cso-dossier-root');
     if (!rootEl) return;
 
-    var params = new URLSearchParams(root.location ? root.location.search : '');
-    var slug = (params.get('slug') || params.get('id') || '').trim();
+    var slug = resolveSlugFromLocation(root.location);
 
     var items = [];
     try {
@@ -540,18 +565,24 @@
       }
     } catch (_) {}
 
+    var dataApi = root.CSO_JOBS_DIRECTORY_DATA;
+    var dirItem = dataApi && typeof dataApi.getItemBySlug === 'function' ? dataApi.getItemBySlug(slug) : null;
     var matched = items.find(function (j) { return j.slug === slug || j.id === slug; })
+      || dirItem
       || HUB_SUBTRACK_DOSSIERS[slug]
       || items[0]
+      || (dataApi && dataApi.DIRECTORY_ITEMS && dataApi.DIRECTORY_ITEMS[0])
       || HUB_SUBTRACK_DOSSIERS['hub-otet-osstet-eligibility'];
 
-    renderDossier(rootEl, matched, items);
+    var combinedPool = items.concat(dataApi && Array.isArray(dataApi.DIRECTORY_ITEMS) ? dataApi.DIRECTORY_ITEMS : []);
+    renderDossier(rootEl, matched, combinedPool);
   }
 
   var api = {
     HUB_SUBTRACK_DOSSIERS: HUB_SUBTRACK_DOSSIERS,
     buildVacancyBreakdown: buildVacancyBreakdown,
     buildPayScaleData: buildPayScaleData,
+    resolveSlugFromLocation: resolveSlugFromLocation,
     renderDossier: renderDossier
   };
   root.CSO_CONTENT_DOSSIER = api;

@@ -39,6 +39,7 @@ import { getPublishedNavBatch2Config } from './functions/_lib/categories-nav-bat
 import { getPublishedNavBatch3Config } from './functions/_lib/categories-nav-batch3.js';
 import { handlePublicJobsRoute } from './functions/_lib/jobs-directory-ssr.js';
 import { handlePublicJobsOverviewApi, handlePublicJobsItemsApi, handlePublicJobsSuggestApi, handleJobsDirectorySitemapXml } from './functions/_lib/jobs-directory-studio.js';
+import { LEGACY_JOBS_REDIRECTS, matchJobsCategoryPath, matchJobsDetailPath } from './functions/_lib/jobs-directory-meta.js';
 import { handlePublicSchemesRoute } from './functions/_lib/schemes-directory-ssr.js';
 import { handlePublicSchemesOverviewApi, handlePublicSchemesItemsApi, handlePublicSchemesSuggestApi, handleSchemesDirectorySitemapXml } from './functions/_lib/schemes-directory-studio.js';
 import { handlePublicCommunityRoute } from './functions/_lib/community-directory-ssr.js';
@@ -1034,9 +1035,20 @@ export default {
       if (communityRes) return communityRes;
     }
 
+    const legacyJobsTarget = LEGACY_JOBS_REDIRECTS[pathname];
+    if (legacyJobsTarget) {
+      return Response.redirect(new URL(legacyJobsTarget, url.origin).toString(), 301);
+    }
+
     // Fall back to static asset binding
     if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
-      let res = await env.ASSETS.fetch(request);
+      let assetRequest = request;
+      if (matchJobsCategoryPath(pathname)) {
+        assetRequest = new Request(new URL('/jobs-careers/index.html', url.origin).toString(), request);
+      } else if (matchJobsDetailPath(pathname)) {
+        assetRequest = new Request(new URL('/jobs-careers/detail/index.html', url.origin).toString(), request);
+      }
+      let res = await env.ASSETS.fetch(assetRequest);
       const isPageReq = (request.method === 'GET' || request.method === 'HEAD') && !pathname.startsWith('/api/') && !pathname.startsWith('/assets/') && (pathname.endsWith('/') || pathname.endsWith('.html') || !/\.[a-z0-9]+$/i.test(pathname));
       if (isPageReq) {
         const redirectTarget = await getPageRedirect(env, pathname);

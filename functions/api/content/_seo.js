@@ -1,6 +1,7 @@
 // Dynamic SEO endpoints (/sitemap.xml, /feed.xml, /rss.xml) and server-side
 // HTMLRewriter OpenGraph / Twitter Card meta injection for deep-linked content.
 import { PUBLIC_VISIBLE_SQL } from '../../_lib/validate.js';
+import { matchJobsCategoryPath, matchJobsDetailPath, humanizeSlug } from '../../_lib/jobs-directory-meta.js';
 
 const SITE_ORIGIN = 'https://csodisha.com';
 const DEFAULT_OG_IMAGE = "https://assets.csodisha.org/img/cso-dashboard-og-preview.png";
@@ -11,12 +12,14 @@ const STATIC_SITEMAP_ROUTES = [
   { path: '/', changefreq: 'daily', priority: '1.0' },
   { path: '/jobs-careers/', changefreq: 'daily', priority: '0.9' },
   { path: '/tools/', changefreq: 'weekly', priority: '0.8' },
-  { path: '/jobs-careers/odisha-state-jobs/', changefreq: 'daily', priority: '0.8' },
-  { path: '/jobs-careers/teaching-education/', changefreq: 'daily', priority: '0.8' },
-  { path: '/jobs-careers/central-ssc-railways-banking/', changefreq: 'daily', priority: '0.8' },
-  { path: '/jobs-careers/police-defence/', changefreq: 'daily', priority: '0.8' },
-  { path: '/jobs-careers/psu-technical-healthcare/', changefreq: 'daily', priority: '0.8' },
-  { path: '/jobs-careers/private-remote-internships/', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/jobs-recruitment', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/career-explorer', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/eligibility-explorer', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/courses-exams', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/scholarships-support', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/international-overseas', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/career-development', changefreq: 'daily', priority: '0.8' },
+  { path: '/jobs-careers/institutions-portals', changefreq: 'daily', priority: '0.8' },
   { path: '/current-affairs/', changefreq: 'daily', priority: '0.9' },
   { path: '/mock-tests/', changefreq: 'daily', priority: '0.8' },
   { path: '/resources/', changefreq: 'weekly', priority: '0.8' },
@@ -413,8 +416,63 @@ function resolveImageMediaUrl(mediaKey) {
 }
 
 export async function resolveDeepLinkMeta(url, env) {
-  if (!env || !env.DB) return null;
   const pathname = url.pathname;
+
+  const jobsCat = matchJobsCategoryPath(pathname);
+  if (jobsCat) {
+    return {
+      pageTitle: `${jobsCat.title} | Jobs & Careers | Common Sense Odisha`,
+      title: `${jobsCat.title} — Jobs & Careers`,
+      description: jobsCat.description,
+      canonicalUrl: `${SITE_ORIGIN}/jobs-careers/${jobsCat.slug}`,
+      ogImage: DEFAULT_OG_IMAGE
+    };
+  }
+
+  const detailPathSlug = matchJobsDetailPath(pathname);
+  const detailQuerySlug = /^\/jobs-careers\/detail(\/|\/index\.html)?$/.test(pathname)
+    ? (url.searchParams.get('slug') || '').trim().slice(0, 120)
+    : '';
+  const detailSlug = detailPathSlug || detailQuerySlug;
+  if (detailSlug) {
+    if (env && env.DB) {
+      try {
+        const job = await env.DB.prepare(
+          `SELECT slug, title, summary, body_md, organisation, vacancies, qualification, last_date, cover_media_key, notification_media_key
+           FROM posts
+           WHERE type = 'job' AND (slug = ? OR id = ?) AND ${PUBLIC_VISIBLE_SQL}`
+        ).bind(detailSlug, detailSlug).first();
+        if (job) {
+          const fallbackSummary = [
+            job.organisation ? `${job.organisation}:` : '',
+            job.title,
+            job.vacancies ? `(${job.vacancies} Vacancies)` : '',
+            job.qualification ? `· Qualification: ${job.qualification}` : '',
+            job.last_date ? `· Last Date: ${job.last_date}` : ''
+          ].filter(Boolean).join(' ');
+          return {
+            pageTitle: `${job.title} — CS Odisha`,
+            title: job.title,
+            description: plainTextExcerpt(job.summary || job.body_md || fallbackSummary, 160),
+            canonicalUrl: `${SITE_ORIGIN}/jobs-careers/detail/${encodeURIComponent(job.slug || detailSlug)}`,
+            ogImage: resolveImageMediaUrl(job.cover_media_key || job.notification_media_key)
+          };
+        }
+      } catch (e) {
+        console.error('resolveDeepLinkMeta detail error:', e);
+      }
+    }
+    const readable = humanizeSlug(detailSlug);
+    return {
+      pageTitle: `${readable} | Recruitment & Career Dossier | Common Sense Odisha`,
+      title: readable,
+      description: `Bilingual (EN + ଓଡ଼ିଆ) dossier, eligibility table, ORSP pay matrix, 5-step process timeline, and official .gov.in links for ${readable}.`,
+      canonicalUrl: `${SITE_ORIGIN}/jobs-careers/detail/${encodeURIComponent(detailSlug)}`,
+      ogImage: DEFAULT_OG_IMAGE
+    };
+  }
+
+  if (!env || !env.DB) return null;
 
   try {
     if (/^\/jobs-careers(\/|\/index\.html)?$/.test(pathname)) {

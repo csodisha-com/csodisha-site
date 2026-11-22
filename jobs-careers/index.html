@@ -13,7 +13,7 @@
   <meta property="og:image" content="https://csodisha.com/assets/img/cso-logo.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
-  <link rel="stylesheet" href="./assets/dashboard.css?v=20261122v218">
+  <link rel="stylesheet" href="./assets/dashboard.css?v=20261122v219">
   <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v173">
   <link rel="stylesheet" href="/jobs-careers/assets/hub.css?v=20261121v173">
   <script src="/assets/shared-header.js?v=20261121v171" defer></script>
@@ -22,7 +22,8 @@
   <script src="/assets/js/odisha-districts.js?v=20261122v194" defer></script>
   <script src="/assets/js/candidate-prefs.js?v=20261122v197" defer></script>
   <script src="/assets/js/deadline-tracker.js?v=20261122v204" defer></script>
-  <script src="./assets/dashboard.js?v=20261122v218" defer></script>
+  <script src="/assets/js/jobs-directory-data.js?v=20261122v219" defer></script>
+  <script src="./assets/dashboard.js?v=20261122v219" defer></script>
   <script src="/jobs-careers/assets/hub.js?v=20261121v173" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css">
@@ -60,51 +61,51 @@
 
       <div class="sidebar-heading">DIRECTORY SECTIONS</div>
       <nav id="side-navigation" aria-label="Directory sections">
-        <button class="side-link active on" data-section-index="-1" type="button" aria-current="page">
+        <a class="side-link active on" href="/jobs-careers/" data-section-index="-1" data-section-slug="overview" aria-current="page">
           <span class="side-icon">🏠</span>
           <span class="side-title">Overview</span>
           <span class="side-arrow" aria-hidden="true">›</span>
-        </button>
-        <button class="side-link" data-section-index="0" type="button">
+        </a>
+        <a class="side-link" href="/jobs-careers/jobs-recruitment" data-section-index="0" data-section-slug="jobs-recruitment">
           <span class="side-icon">💼</span>
           <span class="side-title">Jobs &amp; Recruitment</span>
           <span class="side-arrow" aria-hidden="true">›</span>
-        </button>
-        <button class="side-link" data-section-index="1" type="button">
+        </a>
+        <a class="side-link" href="/jobs-careers/career-explorer" data-section-index="1" data-section-slug="career-explorer">
           <span class="side-icon">🧭</span>
           <span class="side-title">Career Explorer</span>
           <span class="side-arrow" aria-hidden="true">›</span>
-        </button>
-        <button class="side-link" data-section-index="2" type="button">
+        </a>
+        <a class="side-link" href="/jobs-careers/eligibility-explorer" data-section-index="2" data-section-slug="eligibility-explorer">
           <span class="side-icon">📋</span>
           <span class="side-title">Eligibility &amp; Qualification Explorer</span>
           <span class="side-arrow" aria-hidden="true">›</span>
-        </button>
-        <button class="side-link" data-section-index="3" type="button">
+        </a>
+        <a class="side-link" href="/jobs-careers/courses-exams" data-section-index="3" data-section-slug="courses-exams">
           <span class="side-icon">📚</span>
           <span class="side-title">Courses, Entrance Exams &amp; Certifications</span>
           <span class="side-arrow" aria-hidden="true">›</span>
-        </button>
-        <button class="side-link" data-section-index="4" type="button">
+        </a>
+        <a class="side-link" href="/jobs-careers/scholarships-support" data-section-index="4" data-section-slug="scholarships-support">
           <span class="side-icon">🎓</span>
           <span class="side-title">Scholarships &amp; Financial Support</span>
           <span class="side-arrow" aria-hidden="true">›</span>
-        </button>
-        <button class="side-link" data-section-index="5" type="button">
+        </a>
+        <a class="side-link" href="/jobs-careers/international-overseas" data-section-index="5" data-section-slug="international-overseas">
           <span class="side-icon">🌍</span>
           <span class="side-title">International &amp; Overseas Opportunities</span>
           <span class="side-arrow" aria-hidden="true">›</span>
-        </button>
-        <button class="side-link" data-section-index="6" type="button">
+        </a>
+        <a class="side-link" href="/jobs-careers/career-development" data-section-index="6" data-section-slug="career-development">
           <span class="side-icon">📈</span>
           <span class="side-title">Career Development &amp; Employability</span>
           <span class="side-arrow" aria-hidden="true">›</span>
-        </button>
-        <button class="side-link" data-section-index="7" type="button">
+        </a>
+        <a class="side-link" href="/jobs-careers/institutions-portals" data-section-index="7" data-section-slug="institutions-portals">
           <span class="side-icon">🏛️</span>
           <span class="side-title">Institutions, Official Portals &amp; Verification</span>
           <span class="side-arrow" aria-hidden="true">›</span>
-        </button>
+        </a>
       </nav>
 
       <div class="sidebar-footer">
@@ -236,7 +237,7 @@
           <!-- career-hubs:start -->
           <h2 id="career-hubs-heading">Career Hubs</h2>
           <div class="cso-hub-grid" id="career-hubs" aria-labelledby="career-hubs-heading">
-            <a class="cso-hub-card" href="/jobs-careers/odisha-state-jobs/" data-hub-key="odisha-state-jobs" data-hub-pattern="opsc|ossc|osssc|\boas\b|\bocs\b|\boprb\b|\bosepa\b|district|collector|odisha (public|staff|subordinate)|\bpeo\b|\bari\b|\bamin\b">
+            <a class="cso-hub-card" href="/jobs-careers/jobs-recruitment" data-hub-key="odisha-state-jobs" data-hub-pattern="opsc|ossc|osssc|\boas\b|\bocs\b|\boprb\b|\bosepa\b|district|collector|odisha (public|staff|subordinate)|\bpeo\b|\bari\b|\bamin\b">
               <span class="cso-hub-card__icon" aria-hidden="true">🏛️</span>
               <span class="cso-hub-card__body">
                 <span class="cso-hub-card__title">Odisha State Jobs</span>
@@ -245,7 +246,7 @@
               </span>
               <span class="cso-hub-card__arrow" aria-hidden="true">›</span>
             </a>
-            <a class="cso-hub-card" href="/jobs-careers/teaching-education/" data-hub-key="teaching-education" data-hub-pattern="teach|otet|osstet|\btet\b|\bjt\b|junior teacher|\bssb\b|dhse|guest faculty|oavs|adarsha|lecturer|\btgt\b|\bpgt\b|b\.?ed|school|\bcht\b|\bltr\b|education">
+            <a class="cso-hub-card" href="/jobs-careers/courses-exams" data-hub-key="teaching-education" data-hub-pattern="teach|otet|osstet|\btet\b|\bjt\b|junior teacher|\bssb\b|dhse|guest faculty|oavs|adarsha|lecturer|\btgt\b|\bpgt\b|b\.?ed|school|\bcht\b|\bltr\b|education">
               <span class="cso-hub-card__icon" aria-hidden="true">🎓</span>
               <span class="cso-hub-card__body">
                 <span class="cso-hub-card__title">Teaching &amp; Education</span>
@@ -254,7 +255,7 @@
               </span>
               <span class="cso-hub-card__arrow" aria-hidden="true">›</span>
             </a>
-            <a class="cso-hub-card" href="/jobs-careers/central-ssc-railways-banking/" data-hub-key="central-ssc-railways-banking" data-hub-pattern="upsc|\bssc\b|\bcgl\b|\bchsl\b|\bmts\b|rrb|railway|\bntpc\b|group d|ibps|\bsbi\b|\brbi\b|nabard|bank|clerk|central">
+            <a class="cso-hub-card" href="/jobs-careers/jobs-recruitment" data-hub-key="central-ssc-railways-banking" data-hub-pattern="upsc|\bssc\b|\bcgl\b|\bchsl\b|\bmts\b|rrb|railway|\bntpc\b|group d|ibps|\bsbi\b|\brbi\b|nabard|bank|clerk|central">
               <span class="cso-hub-card__icon" aria-hidden="true">🚆</span>
               <span class="cso-hub-card__body">
                 <span class="cso-hub-card__title">Central, SSC, Railways &amp; Banking</span>
@@ -263,7 +264,7 @@
               </span>
               <span class="cso-hub-card__arrow" aria-hidden="true">›</span>
             </a>
-            <a class="cso-hub-card" href="/jobs-careers/police-defence/" data-hub-key="police-defence" data-hub-pattern="police|constable|sub[- ]?inspector|\bsi\b|capf|crpf|\bbsf\b|cisf|itbp|assam rifles|paramilitary|agniveer|agnipath|army|navy|air force|defen[cs]e|\bfire\b|jail|excise|\bnda\b|\bcds\b">
+            <a class="cso-hub-card" href="/jobs-careers/jobs-recruitment" data-hub-key="police-defence" data-hub-pattern="police|constable|sub[- ]?inspector|\bsi\b|capf|crpf|\bbsf\b|cisf|itbp|assam rifles|paramilitary|agniveer|agnipath|army|navy|air force|defen[cs]e|\bfire\b|jail|excise|\bnda\b|\bcds\b">
               <span class="cso-hub-card__icon" aria-hidden="true">🛡️</span>
               <span class="cso-hub-card__body">
                 <span class="cso-hub-card__title">Police &amp; Defence</span>
@@ -272,7 +273,7 @@
               </span>
               <span class="cso-hub-card__arrow" aria-hidden="true">›</span>
             </a>
-            <a class="cso-hub-card" href="/jobs-careers/psu-technical-healthcare/" data-hub-key="psu-technical-healthcare" data-hub-pattern="\bpsu\b|ntpc|nalco|iocl?|bhel|\bsail\b|gail|ongc|coal|\bhal\b|drdo|isro|engineer|technical|diploma|\biti\b|\bgate\b|nurs|medical|doctor|health|\bnhm\b|aiims|pharmac|paramedical|\banm\b|\bgnm\b">
+            <a class="cso-hub-card" href="/jobs-careers/career-explorer" data-hub-key="psu-technical-healthcare" data-hub-pattern="\bpsu\b|ntpc|nalco|iocl?|bhel|\bsail\b|gail|ongc|coal|\bhal\b|drdo|isro|engineer|technical|diploma|\biti\b|\bgate\b|nurs|medical|doctor|health|\bnhm\b|aiims|pharmac|paramedical|\banm\b|\bgnm\b">
               <span class="cso-hub-card__icon" aria-hidden="true">⚙️</span>
               <span class="cso-hub-card__body">
                 <span class="cso-hub-card__title">PSU, Technical &amp; Healthcare</span>
@@ -281,7 +282,7 @@
               </span>
               <span class="cso-hub-card__arrow" aria-hidden="true">›</span>
             </a>
-            <a class="cso-hub-card" href="/jobs-careers/private-remote-internships/" data-hub-key="private-remote-internships" data-hub-pattern="private|apprentice|intern|remote|work from home|\bwfh\b|freelanc|startup|trainee|corporate|walk[- ]?in|campus|fresher|software|\bit\b">
+            <a class="cso-hub-card" href="/jobs-careers/career-development" data-hub-key="private-remote-internships" data-hub-pattern="private|apprentice|intern|remote|work from home|\bwfh\b|freelanc|startup|trainee|corporate|walk[- ]?in|campus|fresher|software|\bit\b">
               <span class="cso-hub-card__icon" aria-hidden="true">💼</span>
               <span class="cso-hub-card__body">
                 <span class="cso-hub-card__title">Private, Remote &amp; Internships</span>
@@ -298,62 +299,62 @@
             <summary>Browse the full directory by section</summary>
           <h2>Explore All Categories</h2>
           <div class="dashboard-grid" id="dashboard-grid">
-            <button class="dashboard-card" type="button" data-section-index="0">
+            <a class="dashboard-card" href="/jobs-careers/jobs-recruitment" data-section-index="0">
               <span class="card-icon">💼</span>
               <div class="card-content">
                 <span class="card-title">Jobs &amp; Recruitment</span>
               </div>
               <span class="card-arrow" aria-hidden="true">›</span>
-            </button>
-            <button class="dashboard-card" type="button" data-section-index="1">
+            </a>
+            <a class="dashboard-card" href="/jobs-careers/career-explorer" data-section-index="1">
               <span class="card-icon">🧭</span>
               <div class="card-content">
                 <span class="card-title">Career Explorer</span>
               </div>
               <span class="card-arrow" aria-hidden="true">›</span>
-            </button>
-            <button class="dashboard-card" type="button" data-section-index="2">
+            </a>
+            <a class="dashboard-card" href="/jobs-careers/eligibility-explorer" data-section-index="2">
               <span class="card-icon">📋</span>
               <div class="card-content">
                 <span class="card-title">Eligibility &amp; Qualification Explorer</span>
               </div>
               <span class="card-arrow" aria-hidden="true">›</span>
-            </button>
-            <button class="dashboard-card" type="button" data-section-index="3">
+            </a>
+            <a class="dashboard-card" href="/jobs-careers/courses-exams" data-section-index="3">
               <span class="card-icon">📚</span>
               <div class="card-content">
                 <span class="card-title">Courses, Entrance Exams &amp; Certifications</span>
               </div>
               <span class="card-arrow" aria-hidden="true">›</span>
-            </button>
-            <button class="dashboard-card" type="button" data-section-index="4">
+            </a>
+            <a class="dashboard-card" href="/jobs-careers/scholarships-support" data-section-index="4">
               <span class="card-icon">🎓</span>
               <div class="card-content">
                 <span class="card-title">Scholarships &amp; Financial Support</span>
               </div>
               <span class="card-arrow" aria-hidden="true">›</span>
-            </button>
-            <button class="dashboard-card" type="button" data-section-index="5">
+            </a>
+            <a class="dashboard-card" href="/jobs-careers/international-overseas" data-section-index="5">
               <span class="card-icon">🌍</span>
               <div class="card-content">
                 <span class="card-title">International &amp; Overseas Opportunities</span>
               </div>
               <span class="card-arrow" aria-hidden="true">›</span>
-            </button>
-            <button class="dashboard-card" type="button" data-section-index="6">
+            </a>
+            <a class="dashboard-card" href="/jobs-careers/career-development" data-section-index="6">
               <span class="card-icon">📈</span>
               <div class="card-content">
                 <span class="card-title">Career Development &amp; Employability</span>
               </div>
               <span class="card-arrow" aria-hidden="true">›</span>
-            </button>
-            <button class="dashboard-card" type="button" data-section-index="7">
+            </a>
+            <a class="dashboard-card" href="/jobs-careers/institutions-portals" data-section-index="7">
               <span class="card-icon">🏛️</span>
               <div class="card-content">
                 <span class="card-title">Institutions, Official Portals &amp; Verification</span>
               </div>
               <span class="card-arrow" aria-hidden="true">›</span>
-            </button>
+            </a>
           </div>
           </details>
 

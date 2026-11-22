@@ -82,6 +82,20 @@ function verifyRelativePath(sourceFile, rawUrl, type = 'link') {
   const cleanUrl = url.split('#')[0].split('?')[0];
   if (!cleanUrl) return true;
 
+  // Worker-routed /jobs-careers/<section-slug> and /jobs-careers/detail/<slug>
+  if (/^\/jobs-careers\/(jobs-recruitment|career-explorer|eligibility-explorer|courses-exams|scholarships-support|international-overseas|career-development|institutions-portals)\/?$/i.test(cleanUrl)) {
+    if (fs.existsSync(path.join(ROOT_DIR, 'jobs-careers', 'index.html'))) {
+      stats.internalLinksVerified++;
+      return true;
+    }
+  }
+  if (/^\/jobs-careers\/detail\/[^/]+\/?$/i.test(cleanUrl)) {
+    if (fs.existsSync(path.join(ROOT_DIR, 'jobs-careers', 'detail', 'index.html'))) {
+      stats.internalLinksVerified++;
+      return true;
+    }
+  }
+
   const sourceDir = path.dirname(sourceFile);
   let resolvedPath;
 

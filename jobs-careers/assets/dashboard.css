@@ -4016,3 +4016,118 @@ body.is-live-modal-open {
   align-items: center;
   justify-content: center;
 }
+
+/* v219: Categorized Section Pages & Real <a> Sidebar Links */
+#side-navigation a.side-link {
+  min-height: 44px;
+  text-decoration: none;
+}
+
+a.dashboard-card {
+  text-decoration: none;
+  color: inherit;
+}
+
+.cso-cat-panel {
+  grid-column: 1 / -1;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--cso-border, #d5e0f0);
+  background: var(--cso-surface, #ffffff);
+  display: grid;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.cso-cat-panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cso-cat-panel__head h3 {
+  margin: 0;
+  font-size: 1.08rem;
+}
+
+.cso-cat-panel__sub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--cso-text-muted, #475569);
+}
+
+.cso-cat-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.cso-cat-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-cat-pill {
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface-alt, #f8fafc);
+  color: var(--cso-text, #0f172a);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.cso-cat-pill.is-active {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.cso-cat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.cso-cat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border, #d5e0f0);
+  background: var(--cso-surface-alt, #f8fafc);
+  color: inherit;
+  text-decoration: none;
+  min-height: 44px;
+  transition: transform 0.14s ease, border-color 0.14s ease;
+}
+
+.cso-cat-card:hover {
+  transform: translateY(-2px);
+  border-color: #1d4ed8;
+}
+
+.cso-cat-card__title {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--cso-text, #0f172a);
+}
+
+.cso-cat-card__odia {
+  font-size: 0.84rem;
+  color: var(--cso-text-muted, #475569);
+}
+
+.cso-cat-card__meta {
+  font-size: 0.8rem;
+  color: #1d4ed8;
+  font-weight: 600;
+  margin-top: auto;
+  padding-top: 6px;
+}
