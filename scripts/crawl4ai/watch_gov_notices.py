@@ -80,6 +80,8 @@ def extract_notices_from_markdown(markdown: str, source: dict, fetched_at: str) 
         resolved = urljoin(base_url, raw_href)
         if not is_verified_gov_url(resolved):
             continue
+        if re.search(r"\.(?:jpe?g|png|gif|svg|webp)(?:[?#]|$)", resolved, re.I):
+            continue
 
         domain = urlparse(resolved).hostname.lower()
         last_date = extract_deadline(raw_title)
@@ -102,6 +104,27 @@ def extract_notices_from_markdown(markdown: str, source: dict, fetched_at: str) 
     return notices
 
 
+async def crawl_with_retry(crawler: AsyncWebCrawler, url: str):
+    """Crawl a URL with 1 retry after 2s on transient network errors."""
+    transient_re = re.compile(r"ERR_NETWORK_CHANGED|ERR_CONNECTION_RESET", re.IGNORECASE)
+    for attempt in range(2):
+        try:
+            result = await crawler.arun(url=url)
+            err_msg = str(getattr(result, "error_message", "") or "")
+            if result and getattr(result, "success", False):
+                return result
+            if attempt == 0 and transient_re.search(err_msg):
+                await asyncio.sleep(2)
+                continue
+            return result
+        except Exception as exc:
+            if attempt == 0 and transient_re.search(str(exc)):
+                await asyncio.sleep(2)
+                continue
+            return None
+    return None
+
+
 async def run_watcher() -> None:
     sources = load_json(SOURCES_FILE, [])
     valid_sources = [s for s in sources if is_verified_gov_url(s.get("url", ""))]
@@ -116,7 +139,7 @@ async def run_watcher() -> None:
 
     async with AsyncWebCrawler() as crawler:
         for src in valid_sources:
-            result = await crawler.arun(url=src["url"])
+            result = await crawl_with_retry(crawler, src["url"])
             if not result or not getattr(result, "success", False):
                 continue
             md = getattr(result, "markdown", "") or ""
