@@ -234,7 +234,9 @@ function auditJsFiles(jsFiles) {
       }
 
       // Check relative to ROOT_DIR, file directory, or parent page directory (if in assets/)
-      let resolved = path.resolve(ROOT_DIR, fetchUrl);
+      let resolved = fetchUrl.startsWith('/')
+        ? path.join(ROOT_DIR, fetchUrl.slice(1))
+        : path.resolve(ROOT_DIR, fetchUrl);
       if (!fs.existsSync(resolved)) {
         const fileDir = path.dirname(file);
         resolved = path.resolve(fileDir, fetchUrl);

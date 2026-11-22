@@ -73,9 +73,9 @@ assert.ok(jobsHtml.includes('href="/jobs-careers/"'), 'Sidebar must include Over
 for (const slug of expectedSlugs) {
   assert.ok(jobsHtml.includes(`href="/jobs-careers/${slug}"`), `Sidebar/grid must include <a href="/jobs-careers/${slug}">`);
 }
-assert.ok(jobsHtml.includes('/assets/js/jobs-directory-data.js?v=20261122v219'), 'Missing v219 jobs-directory-data.js');
-assert.ok(jobsHtml.includes('./assets/dashboard.js?v=20261122v219'), 'Missing v219 dashboard.js');
-assert.ok(jobsHtml.includes('./assets/dashboard.css?v=20261122v219'), 'Missing v219 dashboard.css');
+assert.ok(/\/assets\/js\/jobs-directory-data\.js\?v=20261122v2(19|20)/.test(jobsHtml), 'Missing v219/v220 jobs-directory-data.js');
+assert.ok(/\.\/assets\/dashboard\.js\?v=20261122v2(19|20)/.test(jobsHtml), 'Missing v219/v220 dashboard.js');
+assert.ok(/\.\/assets\/dashboard\.css\?v=20261122v2(19|20)/.test(jobsHtml), 'Missing v219/v220 dashboard.css');
 
 // Single search bar check
 const jobsSearchInputs = (jobsHtml.match(/<input\b[^>]*type=["']search["'][^>]*>/gi) || [])
@@ -185,7 +185,7 @@ for (const rel of touched) {
 
 // 6. Verify cache version bump to cso-candidate-cache-v219
 console.log('6. Checking cache version bump to cso-candidate-cache-v219...');
-assert.ok(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8').includes("cso-candidate-cache-v219"), 'sw.js must be bumped to v219');
-assert.ok(fs.readFileSync(path.join(ROOT, 'functions/_lib/ops-sentinel.js'), 'utf8').includes("cso-candidate-cache-v219"), 'ops-sentinel.js must be bumped to v219');
+assert.ok(/cso-candidate-cache-v2(19|20)/.test(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8')), 'sw.js must be bumped to v219+');
+assert.ok(/cso-candidate-cache-v2(19|20)/.test(fs.readFileSync(path.join(ROOT, 'functions/_lib/ops-sentinel.js'), 'utf8')), 'ops-sentinel.js must be bumped to v219+');
 
 console.log('All v219 Categorized Pages, Multi-Page Dossiers & 301 Redirect tests PASSED!');

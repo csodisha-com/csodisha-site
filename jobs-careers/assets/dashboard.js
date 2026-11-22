@@ -121,25 +121,113 @@
     }
   }
 
+  const BOOKMARK_TRACKS_KEY = 'cso_bookmarked_tracks_v1';
+
+  function loadBookmarkedTracks() {
+    try {
+      const raw = localStorage.getItem(BOOKMARK_TRACKS_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function saveBookmarkedTracks(list) {
+    try {
+      localStorage.setItem(BOOKMARK_TRACKS_KEY, JSON.stringify(list));
+    } catch (_) {}
+  }
+
+  function isTrackBookmarked(slug) {
+    return loadBookmarkedTracks().some(t => t.slug === slug);
+  }
+
+  function updateBookmarksPillUI() {
+    const bmPill = document.getElementById('live-jobs-bookmarks-toggle');
+    if (!bmPill) return;
+    const count = loadBookmarkedTracks().length;
+    bmPill.textContent = `★ Saved Bookmarks (${count})`;
+    const on = Boolean(typeof liveState !== 'undefined' && liveState.bookmarksOnly);
+    bmPill.classList.toggle('is-active', on);
+    bmPill.setAttribute('aria-pressed', String(on));
+  }
+
+  function toggleTrackBookmark(track) {
+    const list = loadBookmarkedTracks();
+    const idx = list.findIndex(t => t.slug === track.slug);
+    let saved = false;
+    if (idx >= 0) {
+      list.splice(idx, 1);
+      saved = false;
+    } else {
+      list.unshift({
+        slug: track.slug,
+        title: track.title,
+        subtitle: track.subtitle || '',
+        l1: track.l1 || '',
+        l2: track.l2 || '',
+        sectionSlug: track.sectionSlug || 'jobs-recruitment'
+      });
+      saved = true;
+    }
+    saveBookmarkedTracks(list);
+    updateBookmarksPillUI();
+    return saved;
+  }
+
+  function getNodeCode(node) {
+    if (!node) return '';
+    return String(node.number || '').trim() || slugify(node.title);
+  }
+
+  function findChildIndexByCode(children, code) {
+    if (!Array.isArray(children) || !code) return -1;
+    const norm = String(code).trim().toLowerCase();
+    let idx = children.findIndex(c => String(c.number || '').trim().toLowerCase() === norm);
+    if (idx !== -1) return idx;
+    const sNorm = slugify(code);
+    return children.findIndex(c => slugify(c.title) === sNorm);
+  }
+
+  function getEffectiveLayerCodes() {
+    if (currentSection < 0 || currentSection >= sections.length) return { l1: '', l2: '', sectionSlug: '' };
+    const section = sections[currentSection];
+    const hasSingleWrapper = isSingleWrapperSection(currentSection);
+    const eff = hasSingleWrapper ? path.slice(1) : path;
+    let node = hasSingleWrapper ? section.children[0] : section;
+    let l1 = '';
+    let l2 = '';
+    if (eff.length >= 1 && Array.isArray(node.children) && node.children[eff[0]]) {
+      node = node.children[eff[0]];
+      l1 = getNodeCode(node);
+    }
+    if (eff.length >= 2 && Array.isArray(node.children) && node.children[eff[1]]) {
+      node = node.children[eff[1]];
+      l2 = getNodeCode(node);
+    }
+    return { l1, l2, sectionSlug: getSectionSlug(section) };
+  }
+
   function updateUrlState(pushHistory = true, replaceUrl = false) {
     try {
       const url = new URL(window.location.href);
       url.searchParams.delete('section');
+      url.searchParams.delete('path');
       if (currentSection >= 0 && currentSection < sections.length) {
         const slug = getSectionSlug(sections[currentSection]);
         url.pathname = `/jobs-careers/${slug}`;
-        const hasSingleWrapper = isSingleWrapperSection(currentSection);
-        const isWrapperOnly = hasSingleWrapper && path.length === 1 && path[0] === 0;
-
-        if (path.length > 0 && !isWrapperOnly) {
-          url.searchParams.set('path', path.join('.'));
-        } else {
-          url.searchParams.delete('path');
-        }
+        const codes = getEffectiveLayerCodes();
+        if (codes.l1) url.searchParams.set('l1', codes.l1);
+        else url.searchParams.delete('l1');
+        if (codes.l2) url.searchParams.set('l2', codes.l2);
+        else url.searchParams.delete('l2');
 
         const state = {
           sectionIndex: currentSection,
           slug,
+          l1: codes.l1,
+          l2: codes.l2,
           path: [...path]
         };
 
@@ -150,8 +238,9 @@
         }
       } else {
         url.pathname = '/jobs-careers/';
-        url.searchParams.delete('path');
-        const state = { sectionIndex: -1, slug: '', path: [] };
+        url.searchParams.delete('l1');
+        url.searchParams.delete('l2');
+        const state = { sectionIndex: -1, slug: '', l1: '', l2: '', path: [] };
         if (replaceUrl || url.href === window.location.href) {
           window.history.replaceState(state, '', url.toString());
         } else if (pushHistory) {
@@ -732,24 +821,26 @@
       '🗂️', '⚙️', '📌', '🎯'
     ];
 
+    const codes = getEffectiveLayerCodes();
+    const dataApi = window.CSO_JOBS_DIRECTORY_DATA;
+
     visibleChildren.forEach(({ child, index }) => {
-      const noteTotal = countNotes([child]);
-      if (!(child.children || []).length && noteTotal > 0 && noteTotal <= 3) {
-        explorerItems.append(buildAccordion(child, index, symbols));
-        return;
-      }
       const button = el('button', 'explorer-item dashboard-card');
       button.type = 'button';
 
       const icon = symbols[index % symbols.length];
       const title = (child.number ? child.number + ' ' : '') + child.title;
-      const nested = countNodes(child.children || []);
-      const notes = countNotes([child]);
+      const subCount = (child.children || []).length;
+      const noteCount = countNotes([child]);
 
       button.append(el('span', 'card-icon', icon));
 
       const content = el('div', 'card-content');
       content.append(el('span', 'card-title', title));
+      const badgeLabel = subCount > 0
+        ? plural(subCount, 'subcategory', 'subcategories')
+        : plural(noteCount, 'branch', 'branches');
+      content.append(el('span', 'cso-node-count-badge', badgeLabel));
       button.append(content);
 
       const arrow = el('span', 'card-arrow', '›');
@@ -760,6 +851,7 @@
         path.push(index);
         updateUrlState(true);
         renderExplorer();
+        if (typeof loadLiveJobs === 'function') loadLiveJobs();
       });
 
       explorerItems.append(button);
@@ -767,9 +859,58 @@
 
     const ownEntries = (node.notes || []).map(entryText).filter(Boolean);
     if (ownEntries.length) {
-      const list = el('div', 'explorer-item explorer-entry-list');
-      ownEntries.forEach(text => list.appendChild(buildEntryRow(text)));
-      explorerItems.append(list);
+      const branchGrid = el('div', 'cso-branch-grid');
+      const subtitleLabel = (node.number ? node.number + ' ' : '') + cleanTitle;
+      ownEntries.forEach(text => {
+        const branchSlug = dataApi && typeof dataApi.slugifyBranch === 'function'
+          ? dataApi.slugifyBranch(text)
+          : slugify(text);
+        const portalUrl = dataApi && typeof dataApi.inferPortalForBranch === 'function'
+          ? dataApi.inferPortalForBranch(text + ' ' + cleanTitle, codes.sectionSlug)
+          : 'https://odisha.gov.in/';
+
+        const card = el('article', 'cso-branch-card');
+        card.append(el('span', 'cso-branch-card__sub', subtitleLabel));
+        card.append(el('h3', 'cso-branch-card__title', text));
+
+        const actions = el('div', 'cso-branch-card__actions');
+
+        const qs = new URLSearchParams();
+        if (codes.sectionSlug) qs.set('section', codes.sectionSlug);
+        if (codes.l1) qs.set('l1', codes.l1);
+        if (codes.l2) qs.set('l2', codes.l2);
+        const dossierLink = el('a', 'live-btn live-btn--primary', 'View Full Details & Graphs →');
+        dossierLink.href = `/jobs-careers/detail/${encodeURIComponent(branchSlug)}` + (qs.toString() ? `?${qs.toString()}` : '');
+        actions.append(dossierLink);
+
+        const portalA = el('a', 'live-btn', 'Official Portal ↗');
+        portalA.href = portalUrl;
+        portalA.target = '_blank';
+        portalA.rel = 'noopener noreferrer';
+        actions.append(portalA);
+
+        const bookmarked = isTrackBookmarked(branchSlug);
+        const bmBtn = el('button', 'live-btn cso-branch-bm', bookmarked ? '★ Bookmarked' : '☆ Bookmark');
+        bmBtn.type = 'button';
+        bmBtn.setAttribute('aria-pressed', String(bookmarked));
+        bmBtn.addEventListener('click', () => {
+          const nowSaved = toggleTrackBookmark({
+            slug: branchSlug,
+            title: text,
+            subtitle: subtitleLabel,
+            l1: codes.l1,
+            l2: codes.l2,
+            sectionSlug: codes.sectionSlug
+          });
+          bmBtn.setAttribute('aria-pressed', String(nowSaved));
+          bmBtn.textContent = nowSaved ? '★ Bookmarked' : '☆ Bookmark';
+        });
+        actions.append(bmBtn);
+
+        card.append(actions);
+        branchGrid.append(card);
+      });
+      explorerItems.append(branchGrid);
     }
 
     if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
@@ -996,8 +1137,10 @@
       path.pop();
       updateUrlState(true);
       renderExplorer();
+      if (typeof loadLiveJobs === 'function') loadLiveJobs();
     } else {
       showOverview(true);
+      if (typeof loadLiveJobs === 'function') loadLiveJobs();
     }
   });
 
@@ -1141,8 +1284,26 @@
         path = [];
 
         const hasSingleWrapper = isSingleWrapperSection(idx);
+        const reqL1 = (params.get('l1') || '').trim();
+        const reqL2 = (params.get('l2') || '').trim();
         const requestedPath = params.get('path');
-        if (requestedPath !== null) {
+
+        if (hasSingleWrapper) {
+          path = [0];
+        }
+
+        if (reqL1) {
+          const rootNode = hasSingleWrapper ? sections[currentSection].children[0] : sections[currentSection];
+          const i1 = findChildIndexByCode(rootNode.children, reqL1);
+          if (i1 !== -1) {
+            path.push(i1);
+            if (reqL2) {
+              const l1Node = rootNode.children[i1];
+              const i2 = findChildIndexByCode(l1Node.children, reqL2);
+              if (i2 !== -1) path.push(i2);
+            }
+          }
+        } else if (requestedPath !== null) {
           const parts = requestedPath.split('.');
           if (
             parts.length > 0 &&
@@ -1165,15 +1326,12 @@
           }
         }
 
-        if (path.length === 0 && hasSingleWrapper) {
-          path = [0];
-        }
-
         search.value = '';
         clearSearch.hidden = true;
         renderExplorer();
         updateUrlState(false, true);
         closeMobileMenu();
+        if (typeof loadLiveJobs === 'function') loadLiveJobs();
         return;
       }
     }
@@ -1339,7 +1497,7 @@
 
   const pc = window.CSOPublicContent;
   const knownCategories = new Set(['OPSC', 'OSSC', 'OSSSC', 'Teaching', 'Police & Defence', 'Banking & PSU', 'Railway']);
-  let liveState = { page: 1, limit: 12, q: '', state: '', category: '', district: '', includeStateWide: true, chip: 'all', stage: 'all', goalMatch: false, matchedOnly: false };
+  let liveState = { page: 1, limit: 12, q: '', state: '', category: '', district: '', includeStateWide: true, chip: 'all', stage: 'all', goalMatch: false, matchedOnly: false, bookmarksOnly: false };
   let liveSearchTimer = null;
   let liveTaxonomy = [];
   let liveCandidateUser = null;
@@ -1586,11 +1744,52 @@
     return btn;
   }
 
+  function classifyJobToBranch(job) {
+    const hay = [job.category, job.organisation, job.organization, job.title, job.state].join(' ').toLowerCase();
+    if (hay.includes('upsc') || hay.includes('ias') || hay.includes('ips')) return { l1: '1.1', l2: '1.1.1', label: '1.1 › 1.1.1', href: '/jobs-careers/jobs-recruitment?l1=1.1&l2=1.1.1' };
+    if (hay.includes('ssc') && !hay.includes('ossc') && !hay.includes('osssc')) return { l1: '1.1', l2: '1.1.2', label: '1.1 › 1.1.2', href: '/jobs-careers/jobs-recruitment?l1=1.1&l2=1.1.2' };
+    if (hay.includes('ibps') || hay.includes('sbi') || hay.includes('rbi') || hay.includes('nabard') || hay.includes('bank')) return { l1: '1.1', l2: '1.1.3', label: '1.1 › 1.1.3', href: '/jobs-careers/jobs-recruitment?l1=1.1&l2=1.1.3' };
+    if (hay.includes('rrb') || hay.includes('railway')) return { l1: '1.1', l2: '1.1.4', label: '1.1 › 1.1.4', href: '/jobs-careers/jobs-recruitment?l1=1.1&l2=1.1.4' };
+    if (hay.includes('agniveer') || hay.includes('capf') || hay.includes('army') || hay.includes('navy') || hay.includes('defence')) return { l1: '1.1', l2: '1.1.5', label: '1.1 › 1.1.5', href: '/jobs-careers/jobs-recruitment?l1=1.1&l2=1.1.5' };
+    if (hay.includes('opsc') || hay.includes('oas') || hay.includes('ocs')) return { l1: '1.2', l2: '1.2.1', label: '1.2 › 1.2.1', href: '/jobs-careers/jobs-recruitment?l1=1.2&l2=1.2.1' };
+    if (hay.includes('ossc') && !hay.includes('osssc')) return { l1: '1.2', l2: '1.2.2', label: '1.2 › 1.2.2', href: '/jobs-careers/jobs-recruitment?l1=1.2&l2=1.2.2' };
+    if (hay.includes('osssc') || hay.includes('ri ') || hay.includes('ari') || hay.includes('amin') || hay.includes('forest')) return { l1: '1.2', l2: '1.2.3', label: '1.2 › 1.2.3', href: '/jobs-careers/jobs-recruitment?l1=1.2&l2=1.2.3' };
+    if (hay.includes('oprb') || hay.includes('police') || hay.includes('constable') || hay.includes('excise')) return { l1: '1.2', l2: '1.2.4', label: '1.2 › 1.2.4', href: '/jobs-careers/jobs-recruitment?l1=1.2&l2=1.2.4' };
+    if (hay.includes('teach') || hay.includes('otet') || hay.includes('osstet') || hay.includes('oavs') || hay.includes('osepa') || hay.includes('ssb')) return { l1: '1.2', l2: '1.2.5', label: '1.2 › 1.2.5', href: '/jobs-careers/jobs-recruitment?l1=1.2&l2=1.2.5' };
+    if (hay.includes('psu') || hay.includes('nalco') || hay.includes('sail') || hay.includes('drdo') || hay.includes('isro')) return { l1: '1.5', l2: '1.5.1', label: '1.5 › 1.5.1', href: '/jobs-careers/jobs-recruitment?l1=1.5&l2=1.5.1' };
+    if (hay.includes('private') || hay.includes('intern') || hay.includes('apprentice') || hay.includes('it ')) return { l1: '1.4', l2: '1.4.1', label: '1.4 › 1.4.1', href: '/jobs-careers/jobs-recruitment?l1=1.4&l2=1.4.1' };
+    return { l1: '1.2', l2: '1.2.1', label: '1.2 › 1.2.1', href: '/jobs-careers/jobs-recruitment?l1=1.2&l2=1.2.1' };
+  }
+
   function renderJobCard(job) {
     const card = el('article', 'live-job-card');
     const top = el('div', 'live-job-card__top');
 
     const badges = el('div', 'live-job-card__badges');
+    const branch = classifyJobToBranch(job);
+    const branchBadge = el('a', 'live-badge live-badge--branch', branch.label);
+    branchBadge.href = branch.href;
+    branchBadge.title = `Open ${branch.label} in directory`;
+    branchBadge.addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+      e.preventDefault();
+      const idx = resolveSectionIndex('jobs-recruitment');
+      if (idx !== -1 && sections[idx]) {
+        currentSection = idx;
+        path = isSingleWrapperSection(idx) ? [0] : [];
+        const rootNode = isSingleWrapperSection(idx) ? sections[idx].children[0] : sections[idx];
+        const i1 = findChildIndexByCode(rootNode.children, branch.l1);
+        if (i1 !== -1) {
+          path.push(i1);
+          const i2 = findChildIndexByCode(rootNode.children[i1].children, branch.l2);
+          if (i2 !== -1) path.push(i2);
+        }
+        updateUrlState(true);
+        renderExplorer();
+        loadLiveJobs();
+      }
+    });
+    badges.appendChild(branchBadge);
     badges.appendChild(buildJobBadges(job));
     if (window.CSO_CANDIDATE_PREFS && typeof window.CSO_MATCH_ITEM === 'function') {
       const prefs = window.CSO_CANDIDATE_PREFS.load();
@@ -2161,7 +2360,9 @@
   async function loadLiveJobs(opts = {}) {
     if (!liveGridEl || !liveStatusEl) return;
     const silent = Boolean(opts && opts.silent);
-    const isClientComposite = (liveState.chip && liveState.chip !== 'all') || (liveState.stage && liveState.stage !== 'all') || Boolean(liveState.goalMatch) || Boolean(liveState.district) || Boolean(liveState.matchedOnly);
+    const activeCodes = getEffectiveLayerCodes();
+    const hasBranchFilter = Boolean(activeCodes.l1 && activeCodes.sectionSlug === 'jobs-recruitment');
+    const isClientComposite = (liveState.chip && liveState.chip !== 'all') || (liveState.stage && liveState.stage !== 'all') || Boolean(liveState.goalMatch) || Boolean(liveState.district) || Boolean(liveState.matchedOnly) || Boolean(liveState.bookmarksOnly) || hasBranchFilter;
     const hasFilter = Boolean(liveState.q || liveState.state || liveState.category || liveState.district || (liveState.stage && liveState.stage !== 'all') || isClientComposite);
     if (liveResetBtn) liveResetBtn.hidden = !hasFilter;
 
@@ -2200,6 +2401,17 @@
       }
       if (liveState.district) {
         items = items.filter(job => matchesDistrictFilter(job, liveState.district, liveState.includeStateWide));
+      }
+      if (hasBranchFilter) {
+        items = items.filter(job => {
+          const br = classifyJobToBranch(job);
+          if (activeCodes.l2) return br.l1 === activeCodes.l1 && br.l2 === activeCodes.l2;
+          return br.l1 === activeCodes.l1;
+        });
+      }
+      if (liveState.bookmarksOnly) {
+        const bmSlugs = new Set(loadBookmarkedTracks().map(t => t.slug));
+        items = items.filter(job => bmSlugs.has(job.slug || job.id));
       }
       if (window.CSO_CANDIDATE_PREFS && typeof window.CSO_MATCH_ITEM === 'function') {
         const prefs = window.CSO_CANDIDATE_PREFS.load();
@@ -2339,6 +2551,17 @@
       liveState.chip = btn.dataset.chip || 'all';
       liveState.page = 1;
       updateChipButtonsUI();
+      loadLiveJobs();
+    });
+  }
+
+  const liveBookmarksToggleBtn = document.getElementById('live-jobs-bookmarks-toggle');
+  if (liveBookmarksToggleBtn) {
+    updateBookmarksPillUI();
+    liveBookmarksToggleBtn.addEventListener('click', () => {
+      liveState.bookmarksOnly = !liveState.bookmarksOnly;
+      liveState.page = 1;
+      updateBookmarksPillUI();
       loadLiveJobs();
     });
   }

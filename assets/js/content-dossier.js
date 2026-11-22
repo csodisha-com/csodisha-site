@@ -420,8 +420,21 @@
       }
     }
 
-    var backHref = secMeta ? secMeta.href : '/jobs-careers/';
-    var backLabel = secMeta ? '← Back to ' + secMeta.title : '← Back to Jobs & Careers Overview';
+    var searchParams = root.location ? new URLSearchParams(root.location.search || '') : new URLSearchParams('');
+    var qSection = (searchParams.get('section') || job.section || '').trim();
+    var qL1 = (searchParams.get('l1') || job.l1Code || '').trim();
+    var qL2 = (searchParams.get('l2') || job.l2Code || '').trim();
+
+    var backHref = secMeta ? secMeta.href : (qSection ? '/jobs-careers/' + encodeURIComponent(qSection) : '/jobs-careers/');
+    if (qL1) {
+      var backQs = new URLSearchParams();
+      backQs.set('l1', qL1);
+      if (qL2) backQs.set('l2', qL2);
+      backHref += '?' + backQs.toString();
+    }
+    var backLabel = qL1
+      ? '← Previous level (' + (qL2 || qL1) + ')'
+      : (secMeta ? '← Back to ' + secMeta.title : '← Back to Jobs & Careers Overview');
     var backBtn = el('a', 'cso-dossier-btn', backLabel);
     backBtn.href = backHref;
     actions.appendChild(backBtn);
@@ -570,9 +583,23 @@
     var matched = items.find(function (j) { return j.slug === slug || j.id === slug; })
       || dirItem
       || HUB_SUBTRACK_DOSSIERS[slug]
-      || items[0]
-      || (dataApi && dataApi.DIRECTORY_ITEMS && dataApi.DIRECTORY_ITEMS[0])
-      || HUB_SUBTRACK_DOSSIERS['hub-otet-osstet-eligibility'];
+      || null;
+
+    if (!matched && slug && dataApi && typeof dataApi.resolveBranchFromDirectory === 'function') {
+      try {
+        var dirRes = await fetch('/jobs-careers/generated/directory.json', { credentials: 'same-origin' });
+        if (dirRes.ok) {
+          var dirJson = await dirRes.json();
+          matched = dataApi.resolveBranchFromDirectory(dirJson, slug);
+        }
+      } catch (_) {}
+    }
+
+    if (!matched) {
+      matched = items[0]
+        || (dataApi && dataApi.DIRECTORY_ITEMS && dataApi.DIRECTORY_ITEMS[0])
+        || HUB_SUBTRACK_DOSSIERS['hub-otet-osstet-eligibility'];
+    }
 
     var combinedPool = items.concat(dataApi && Array.isArray(dataApi.DIRECTORY_ITEMS) ? dataApi.DIRECTORY_ITEMS : []);
     renderDossier(rootEl, matched, combinedPool);

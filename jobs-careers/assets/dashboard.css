@@ -4131,3 +4131,98 @@ a.dashboard-card {
   margin-top: auto;
   padding-top: 6px;
 }
+
+/* v220: 3-Layer Drill-Down, Branch Cards, Bookmarks & Category Path Badges */
+#back-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.explorer-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.explorer-items .dashboard-card {
+  min-height: 44px;
+}
+
+.cso-branch-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 14px;
+}
+
+.cso-branch-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border, #d5e0f0);
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-text, #0f172a);
+}
+
+.cso-branch-card__sub {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.cso-branch-card__title {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.cso-branch-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.cso-branch-card__actions .live-btn,
+.cso-branch-bm {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cso-branch-bm[aria-pressed="true"],
+.live-chip--bookmarks.is-active {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+  font-weight: 700;
+}
+
+.live-badge--branch {
+  background: rgba(29, 78, 216, 0.12);
+  color: #1d4ed8;
+  text-decoration: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.live-badge--branch:hover {
+  text-decoration: underline;
+}
+
+.cso-node-count-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: rgba(29, 78, 216, 0.1);
+  color: #1d4ed8;
+}

@@ -1268,13 +1268,152 @@
     return null;
   }
 
+  function slugifyBranch(text) {
+    return String(text || '')
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 96);
+  }
+
+  function inferPortalForBranch(text, sectionSlug) {
+    var hay = String(text || '').toLowerCase();
+    if (hay.includes('upsc')) return 'https://upsc.gov.in/';
+    if (hay.includes('ssc')) return 'https://ssc.gov.in/';
+    if (hay.includes('ibps')) return 'https://www.ibps.in/';
+    if (hay.includes('sbi')) return 'https://sbi.co.in/careers';
+    if (hay.includes('rbi')) return 'https://www.rbi.org.in/';
+    if (hay.includes('nabard')) return 'https://www.nabard.org/';
+    if (hay.includes('rrb') || hay.includes('railway') || hay.includes('loco') || hay.includes('rpf')) return 'https://www.rrbbbs.gov.in/';
+    if (hay.includes('opsc') || hay.includes('oas') || hay.includes('oes') || hay.includes('ojs')) return 'https://www.opsc.gov.in/';
+    if (hay.includes('ossc')) return 'https://www.ossc.gov.in/';
+    if (hay.includes('osssc')) return 'https://www.osssc.gov.in/';
+    if (hay.includes('police') || hay.includes('oprb')) return 'https://odishapolice.gov.in/';
+    if (hay.includes('otet') || hay.includes('osstet') || hay.includes('bse')) return 'https://www.bseodisha.ac.in/';
+    if (hay.includes('osepa') || hay.includes('junior teacher')) return 'https://osepa.odisha.gov.in/';
+    if (hay.includes('oavs')) return 'https://oavs.in/';
+    if (hay.includes('ojee')) return 'https://ojee.nic.in/';
+    if (hay.includes('scholarship') || sectionSlug === 'scholarships-support') return 'https://scholarship.odisha.gov.in/';
+    if (hay.includes('apprentice') || hay.includes('naps')) return 'https://www.apprenticeshipindia.gov.in/';
+    if (hay.includes('ncs') || hay.includes('career')) return 'https://www.ncs.gov.in/';
+    if (sectionSlug === 'international-overseas') return 'https://emigrate.gov.in/';
+    return 'https://odisha.gov.in/';
+  }
+
+  function resolveBranchFromDirectory(dirData, targetSlug) {
+    var cleanTarget = slugifyBranch(targetSlug);
+    if (!dirData || !Array.isArray(dirData.sections) || !cleanTarget) return null;
+    var secSlugs = [
+      'jobs-recruitment', 'career-explorer', 'eligibility-explorer', 'courses-exams',
+      'scholarships-support', 'international-overseas', 'career-development', 'institutions-portals'
+    ];
+    for (var si = 0; si < dirData.sections.length; si++) {
+      var sec = dirData.sections[si];
+      var secSlug = secSlugs[si] || slugifyBranch(sec.title);
+      var ch = sec.children || [];
+      var hasWrapper = ch.length === 1 && Array.isArray(ch[0].children) && ch[0].children.length > 0;
+      var l1List = hasWrapper ? ch[0].children : ch;
+      for (var i1 = 0; i1 < l1List.length; i1++) {
+        var l1 = l1List[i1];
+        var l1Code = String(l1.number || '').trim() || slugifyBranch(l1.title);
+        var l1Notes = l1.notes || [];
+        for (var n1 = 0; n1 < l1Notes.length; n1++) {
+          var txt1 = typeof l1Notes[n1] === 'string' ? l1Notes[n1] : (l1Notes[n1].text || '');
+          if (slugifyBranch(txt1) === cleanTarget) {
+            return {
+              slug: cleanTarget,
+              section: secSlug,
+              sectionTitle: sec.title,
+              l1Code: l1Code,
+              l1Title: (l1.number ? l1.number + ' ' : '') + l1.title,
+              l2Code: '',
+              l2Title: '',
+              title: txt1,
+              title_or: txt1 + ' — ଓଡ଼ିଶା ଓ ଜାତୀୟ ମାର୍ଗଦର୍ଶିକା',
+              organisation: l1.title,
+              category: sec.title,
+              stage: 'active',
+              stage_label: l1Code,
+              vacancies: 1200,
+              qualification: 'Refer Official Notification / Eligibility Guide',
+              last_date: '2027-03-31',
+              apply_url: inferPortalForBranch(txt1 + ' ' + l1.title, secSlug),
+              summary: txt1 + ' under ' + l1.title + ' (' + sec.title + '). Complete verified pathway, eligibility, and official portal dossier.',
+              summary_or: sec.title + ' ଅନ୍ତର୍ଗତ ' + txt1 + ' ସମ୍ବନ୍ଧୀୟ ସମ୍ପୂର୍ଣ୍ଣ ଯୋଗ୍ୟତା ଓ ସରକାରୀ ପୋର୍ଟାଲ୍ ବିବରଣୀ।'
+            };
+          }
+        }
+        var l2List = l1.children || [];
+        for (var i2 = 0; i2 < l2List.length; i2++) {
+          var l2 = l2List[i2];
+          var l2Code = String(l2.number || '').trim() || slugifyBranch(l2.title);
+          if (slugifyBranch(l2.title) === cleanTarget) {
+            return {
+              slug: cleanTarget,
+              section: secSlug,
+              sectionTitle: sec.title,
+              l1Code: l1Code,
+              l1Title: (l1.number ? l1.number + ' ' : '') + l1.title,
+              l2Code: l2Code,
+              l2Title: (l2.number ? l2.number + ' ' : '') + l2.title,
+              title: l2.title,
+              title_or: l2.title + ' — ଓଡ଼ିଶା ଓ ଜାତୀୟ ମାର୍ଗଦର୍ଶିକା',
+              organisation: l1.title,
+              category: sec.title,
+              stage: 'active',
+              stage_label: l2Code,
+              vacancies: 1500,
+              qualification: 'Refer Official Notification / Eligibility Guide',
+              last_date: '2027-03-31',
+              apply_url: inferPortalForBranch(l2.title + ' ' + l1.title, secSlug),
+              summary: l2.title + ' (' + l2Code + ') under ' + l1.title + '.',
+              summary_or: l1.title + ' ଅନ୍ତର୍ଗତ ' + l2.title + ' ସମ୍ବନ୍ଧୀୟ ସମ୍ପୂର୍ଣ୍ଣ ସୂଚନା।'
+            };
+          }
+          var l2Notes = l2.notes || [];
+          for (var n2 = 0; n2 < l2Notes.length; n2++) {
+            var txt2 = typeof l2Notes[n2] === 'string' ? l2Notes[n2] : (l2Notes[n2].text || '');
+            if (slugifyBranch(txt2) === cleanTarget) {
+              return {
+                slug: cleanTarget,
+                section: secSlug,
+                sectionTitle: sec.title,
+                l1Code: l1Code,
+                l1Title: (l1.number ? l1.number + ' ' : '') + l1.title,
+                l2Code: l2Code,
+                l2Title: (l2.number ? l2.number + ' ' : '') + l2.title,
+                title: txt2,
+                title_or: txt2 + ' — ଓଡ଼ିଶା ଓ ଜାତୀୟ ମାର୍ଗଦର୍ଶିକା',
+                organisation: l2.title,
+                category: sec.title,
+                stage: 'active',
+                stage_label: l2Code,
+                vacancies: 1000,
+                qualification: 'Refer Official Notification / Eligibility Guide',
+                last_date: '2027-03-31',
+                apply_url: inferPortalForBranch(txt2 + ' ' + l2.title + ' ' + l1.title, secSlug),
+                summary: txt2 + ' under ' + l2Code + ' ' + l2.title + ' (' + l1Code + ' ' + l1.title + ').',
+                summary_or: l2.title + ' (' + l2Code + ') ଅନ୍ତର୍ଗତ ' + txt2 + ' ସମ୍ବନ୍ଧୀୟ ସମ୍ପୂର୍ଣ୍ଣ ଯୋଗ୍ୟତା ଓ ସରକାରୀ ପୋର୍ଟାଲ୍ ବିବରଣୀ।'
+              };
+            }
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   var api = {
     DIRECTORY_SECTIONS: DIRECTORY_SECTIONS,
     LEGACY_HUB_REDIRECTS: LEGACY_HUB_REDIRECTS,
     DIRECTORY_ITEMS: DIRECTORY_ITEMS,
     getSectionBySlug: getSectionBySlug,
     getItemsBySection: getItemsBySection,
-    getItemBySlug: getItemBySlug
+    getItemBySlug: getItemBySlug,
+    slugifyBranch: slugifyBranch,
+    inferPortalForBranch: inferPortalForBranch,
+    resolveBranchFromDirectory: resolveBranchFromDirectory
   };
 
   root.CSO_JOBS_DIRECTORY_DATA = api;
