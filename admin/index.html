@@ -4,158 +4,49 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="robots" content="noindex, nofollow">
-  <title>CS Odisha — Editorial Studio &amp; Command Suite (299 Modules)</title>
+  <title>CS Odisha — Editorial Studio</title>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png">
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/admin/suite.css?v=20261113">
   <link rel="stylesheet" href="/admin/cms/cms-embed.css?v=20261114g">
-  <link rel="stylesheet" href="/admin/studio.css?v=20261122v193">
+  <link rel="stylesheet" href="/admin/studio.css?v=20261122v199">
   <link rel="stylesheet" href="/admin/cms/security.css?v=20261114i">
   <link rel="stylesheet" href="/admin/edu-resources-batch1.css?v=20261117n">
 </head>
-<body class="cso-studio-body">
+<body class="cso-studio-body cso-compact-studio">
 
-  <!-- TOP EDITORIAL COMMAND BAR -->
-  <header class="cso-topbar">
+  <header class="cso-topbar cso-compact-topbar">
     <div class="cso-topbar-left">
-      <button id="btnToggleSidebar" type="button" class="cso-icon-btn cso-mobile-only" aria-label="Toggle Navigation Drawer" aria-expanded="false" aria-controls="sidebarConsole">
-        <svg class="cso-svg-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-      </button>
-
-      <div id="brandHomeBtn" class="cso-brand" role="button" tabindex="0" aria-label="Return to Dashboard Overview" title="Admin Dashboard Home — Overview (Alt+H)">
+      <div id="brandHomeBtn" class="cso-brand" role="button" tabindex="0" aria-label="CS Odisha Studio Home">
         <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-mark cso-brand-emblem" width="36" height="36">
         <div class="cso-brand-text">
           <div class="cso-brand-title-row">
-            <span class="cso-brand-name">Common Sense Odisha</span>
+            <span class="cso-brand-name">CS Odisha</span>
             <span class="cso-brand-badge">Studio</span>
           </div>
-          <p class="cso-brand-sub">Editorial &amp; Operations Suite (299 Modules)</p>
         </div>
       </div>
-
-      <button id="sidebarToggleBtn" type="button" class="cso-icon-btn" aria-label="Toggle Sidebar (Ctrl+\)" aria-expanded="true" aria-controls="sidebarConsole" title="Toggle Sidebar (Ctrl+\)">
-        <svg class="cso-svg-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16"/></svg>
-      </button>
     </div>
 
-    <div class="cso-topbar-center">
-      <div class="cso-telemetry-pill">
-        <span class="cso-live-dot" aria-hidden="true"></span>
-        <span>D1 &amp; R2 Live</span>
-      </div>
-      <a href="/" target="_blank" rel="noopener noreferrer" class="cso-pill-link" title="Open Public Website in New Tab">Live Site ↗</a>
-      <div class="cso-telemetry-pill cso-tabular">
-        <span>Session:</span>
-        <strong id="sessionTimer">00:00:00</strong>
-      </div>
-    </div>
+    <nav id="csoAdminTabs" class="cso-compact-tabs" role="tablist" aria-label="Studio Sections">
+      <button type="button" class="cso-compact-tab is-active" role="tab" aria-selected="true" data-admin-tab="jobs">Jobs &amp; .gov.in Queue</button>
+      <button type="button" class="cso-compact-tab" role="tab" aria-selected="false" data-admin-tab="schemes-study">Schemes &amp; Study</button>
+      <button type="button" class="cso-compact-tab" role="tab" aria-selected="false" data-admin-tab="system-ops">System &amp; Ops</button>
+    </nav>
 
     <div class="cso-topbar-right">
-      <!-- Persistent + Create New Quick-Action Menu -->
-      <div class="cso-create-menu-wrap" id="createNewWrap">
-        <button id="btnCreateNewMenu" type="button" class="cso-btn-create" aria-haspopup="true" aria-expanded="false" aria-controls="createNewDropdown">
-          <span aria-hidden="true">+</span>
-          <span>Create New</span>
-          <svg class="cso-svg-caret" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div id="createNewDropdown" class="cso-create-dropdown" role="menu" hidden>
-          <button type="button" class="cso-create-item" role="menuitem" data-create-target="jobs/new">
-            <strong>Job Alert</strong>
-            <span>Recruitment, vacancies &amp; deadlines</span>
-          </button>
-          <button type="button" class="cso-create-item" role="menuitem" data-create-target="current-affairs/new">
-            <strong>Current Affairs Post</strong>
-            <span>Daily Odisha &amp; national updates</span>
-          </button>
-          <button type="button" class="cso-create-item" role="menuitem" data-create-target="mock-tests/new">
-            <strong>Mock Test</strong>
-            <span>CBT exam, marking &amp; question bank</span>
-          </button>
-          <button type="button" class="cso-create-item" role="menuitem" data-create-target="syllabus">
-            <strong>Syllabus / PYQ Resource</strong>
-            <span>Upload official PDF to R2</span>
-          </button>
-          <button type="button" class="cso-create-item" role="menuitem" data-create-target="banner">
-            <strong>Homepage Broadcast</strong>
-            <span>Live announcement bar &amp; CTA</span>
-          </button>
-        </div>
-      </div>
-
-      <div id="themeMenuWrap" class="cso-theme-menu-wrap">
-        <button type="button" id="themeMenuBtn" class="cso-theme-icon-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Switch Studio Theme" title="Switch Studio Theme (Alt+T)">◐ ▾</button>
-        <div id="themeMenuPopover" class="cso-theme-popover" role="menu" hidden>
-          <button type="button" role="menuitemradio" aria-checked="true" class="cso-theme-option" data-theme-value="apex"><span class="cso-theme-swatch is-apex" aria-hidden="true"></span><span>Apex Carbon (Dark)</span></button>
-          <button type="button" role="menuitemradio" aria-checked="false" class="cso-theme-option" data-theme-value="volt"><span class="cso-theme-swatch is-volt" aria-hidden="true"></span><span>Volt Noir (Dark)</span></button>
-          <button type="button" role="menuitemradio" aria-checked="false" class="cso-theme-option" data-theme-value="cobalt"><span class="cso-theme-swatch is-cobalt" aria-hidden="true"></span><span>Cobalt Enterprise (Light)</span></button>
-          <button type="button" role="menuitemradio" aria-checked="false" class="cso-theme-option" data-theme-value="lime"><span class="cso-theme-swatch is-lime" aria-hidden="true"></span><span>Botanical Light (Light)</span></button>
-        </div>
-      </div>
-
-      <div class="cso-user-pill">
-        <span class="cso-user-admin-label" aria-hidden="true">Admin ▾</span>
-        <div class="cso-user-avatar" id="adminUserInitials" aria-hidden="true">ST</div>
-        <div class="cso-user-meta">
-          <p id="adminUserEmail" class="cso-user-email">Staff Session</p>
-          <span id="adminUserRole" class="cso-user-role">Verifying…</span>
-        </div>
-      </div>
-
-      <button id="btnSignOut" type="button" title="Sign Out Securely" class="cso-icon-btn cso-signout-btn" aria-label="Sign Out">
-        <svg class="cso-svg-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-      </button>
+      <a href="/" target="_blank" rel="noopener noreferrer" class="cso-pill-link">Live Site ↗</a>
+      <span id="adminUserEmail" class="cso-user-email">Staff</span>
+      <button id="btnSignOut" type="button" title="Sign Out" class="cso-icon-btn cso-signout-btn" aria-label="Sign Out">Sign Out</button>
     </div>
   </header>
 
-  <!-- MAIN WORKSPACE SHELL -->
-  <div class="cso-shell">
-    <div id="mobileDrawerBackdrop" class="cso-drawer-backdrop" hidden></div>
+  <main class="cso-main cso-compact-main">
+    <div id="moduleHeaderActions" class="cso-subheader-actions"></div>
+    <div id="workspaceRoot" class="cso-workspace cso-compact-workspace"></div>
+  </main>
 
-    <!-- SIDEBAR NAVIGATION -->
-    <aside id="sidebarConsole" class="cso-sidebar" aria-label="Studio Navigation">
-      <button id="sidebarCloseBtn" type="button" class="cso-drawer-close" aria-label="Close navigation">×</button>
-      <div class="cso-sidebar-search">
-        <label for="moduleSearchInput" class="cso-sr-only">Filter 299 modules</label>
-        <div class="cso-search-box">
-          <svg class="cso-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <input type="text" id="moduleSearchInput" placeholder="Filter 299 modules..." class="cso-search-input" autocomplete="off">
-          <span id="searchCountBadge" class="cso-search-badge" hidden>0</span>
-        </div>
-      </div>
-
-      <nav id="accordionNav" class="cso-nav-tree" aria-label="23 Folders Master Tree"></nav>
-
-      <div class="cso-sidebar-footer cso-tabular">
-        <span>Coverage: <strong class="cso-text-accent">299 / 299</strong></span>
-        <span class="cso-text-muted">Live D1 / R2</span>
-      </div>
-    </aside>
-
-    <!-- CONTENT CANVAS -->
-    <main class="cso-main">
-      <div class="cso-subheader">
-        <div class="cso-subheader-title">
-          <nav class="cso-breadcrumbs" aria-label="Breadcrumbs">
-            <button id="breadcrumbHomeBtn" type="button" class="cso-breadcrumb-btn">Studio</button>
-            <span aria-hidden="true">/</span>
-            <button id="breadcrumbFolder" type="button" class="cso-breadcrumb-btn">Dashboard &amp; Command Centre</button>
-            <span aria-hidden="true">/</span>
-            <span id="breadcrumbModule" class="cso-text-accent">Overview</span>
-          </nav>
-          <h1 id="activeModuleHeading" class="cso-page-title">
-            <span id="activeModuleTitleText">Overview</span>
-            <span id="activeModuleIdPill" class="cso-module-pill">Command Centre</span>
-          </h1>
-        </div>
-        <div id="moduleHeaderActions" class="cso-subheader-actions"></div>
-      </div>
-
-      <div id="workspaceRoot" class="cso-workspace"></div>
-    </main>
-  </div>
-
-  <!-- TOASTS & GLOBAL MODAL -->
   <div id="toastContainer" class="cso-toast-container" aria-live="polite"></div>
 
   <div id="globalModal" class="cso-global-modal" hidden>
@@ -169,14 +60,13 @@
     </div>
   </div>
 
-  <!-- SCRIPTS (Strict CSP: self-hosted only, on-demand suite lazy loading) -->
   <script src="/admin/suite-boot.js?v=20261114i"></script>
   <script src="/admin/charts.js?v=20261114"></script>
-  <script src="/admin/fast-publish.js?v=20261122v193"></script>
-  <script src="/admin/cms/cms.js?v=20261122v193"></script>
+  <script src="/admin/fast-publish.js?v=20261122v199"></script>
+  <script src="/admin/cms/cms.js?v=20261122v199"></script>
   <script src="/admin/lazy-suite-loader.js?v=20261117ao"></script>
   <script src="/admin/modules-restored.js?v=20261117ao"></script>
   <script src="/admin/suite-live.js?v=20261117ao"></script>
-  <script src="/admin/admin.js?v=20261122v193"></script>
+  <script src="/admin/admin.js?v=20261122v199"></script>
 </body>
 </html>

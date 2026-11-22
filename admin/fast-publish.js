@@ -530,15 +530,11 @@
         return;
       }
       drafts.forEach(function (d, idx) {
-        var row = el('div', 'cso-fp-draft-item');
-        var meta = el('div', 'cso-fp-draft-meta');
-        meta.appendChild(el('span', 'cso-fp-pbadge', d.agency || 'Odisha Govt'));
-        meta.appendChild(el('span', 'cso-fp-pbadge is-ok', '✓ ' + (d.source_domain || 'gov.in')));
-        meta.appendChild(el('span', 'cso-fp-pbadge is-warn', d.last_date ? 'Last date: ' + d.last_date : 'Deadline: TBA'));
-        row.appendChild(meta);
+        var row = el('div', 'cso-fp-draft-item cso-fp-draft-row');
+        row.appendChild(el('span', 'cso-fp-pbadge', d.agency || 'Odisha Govt'));
         row.appendChild(el('strong', 'cso-fp-draft-title', d.title));
         var act = el('div', 'cso-fp-draft-actions');
-        act.appendChild(btn('Load into Editor', 'btn sm primary', function () {
+        act.appendChild(btn('Load', 'btn sm primary', function () {
           if (typeof opts.onLoadDraft === 'function') opts.onLoadDraft(d);
           markDraftStatus(d, 'imported');
         }));
