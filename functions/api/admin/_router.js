@@ -78,6 +78,7 @@ import { runLifecycleMaintenance, readLastCronRun } from './_cron.js';
 import { handleExamTaxonomy } from './_taxonomy.js';
 import { handleAdminCandidates } from './_candidates.js';
 import { handleCrawlDrafts } from './crawl-drafts.js';
+import { handleAdminCurrentAffairs } from './current-affairs.js';
 import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
@@ -99,6 +100,12 @@ export async function handleAdminApi(request, env) {
 
     if (resource === 'crawl-drafts') {
       return await handleCrawlDrafts(request, env);
+    }
+
+    if (resource === 'current-affairs') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handleAdminCurrentAffairs(request, env, actor);
     }
 
     // Admin-only: user role management, URC Batch 1-5 (01-19) & candidate behavior governance.

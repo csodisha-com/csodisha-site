@@ -51,6 +51,7 @@ import { handlePublicTelemetryBeacon, handlePublicSearchSynonymsApi } from './fu
 import { handlePublicFeedbackSubmitApi } from './functions/_lib/analytics-telemetry-batch2.js';
 import { handlePublicTelemetryOutboundApi } from './functions/_lib/analytics-telemetry-batch3.js';
 import { handlePublicAboutOverviewApi } from './functions/api/public/about-overview.js';
+import { handlePublicCurrentAffairsApi } from './functions/api/public/current-affairs.js';
 import { handlePublicMarketingBannersApi } from './functions/_lib/marketing-advertising-batch1.js';
 import { handlePublicMarketingRefApi } from './functions/_lib/marketing-advertising-batch2.js';
 import { handlePublicMarketingLandingPagesApi } from './functions/_lib/marketing-advertising-batch3.js';
@@ -324,7 +325,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
   const basePaths = [
     '/sitemap.xml', '/sitemap-study-library.xml', '/sitemap-jobs.xml', '/sitemap-schemes.xml', '/sitemap-community.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
-    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/community/posts', '/api/community/qna', '/api/search/synonyms', '/api/public/about-overview', '/api/content/platform-stats', '/api/content/changelog',
+    '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/community/posts', '/api/community/qna', '/api/search/synonyms', '/api/public/about-overview', '/api/public/current-affairs', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources', '/api/marketing/banners', '/api/marketing/landing-pages', '/api/seo/meta', '/api/seo/robots.txt', '/api/seo/autocomplete',
     '/api/events/upcoming', '/api/config/public', '/api/events/calendar/odisha-all-exams.ics', '/api/events/calendar/opsc-ossc-osssc-deadlines.ics', '/api/events/calendar/admit-cards-results.ics', '/api/events/calendar/workshops-webinars.ics',
     '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
@@ -857,6 +858,17 @@ export default {
         recordPublicCachePut(edgeCache, request, aboutRes, ctx);
       }
       return aboutRes;
+    }
+    if (pathname === '/api/public/current-affairs' && (request.method === 'GET' || request.method === 'HEAD')) {
+      if (edgeCache && isAnonGet) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const caRes = await handlePublicCurrentAffairsApi(request, env);
+      if (isAnonGet && caRes.status === 200) {
+        recordPublicCachePut(edgeCache, request, caRes, ctx);
+      }
+      return caRes;
     }
     if (pathname === '/sitemap.xml' || pathname === '/feed.xml' || pathname === '/rss.xml' || pathname === '/robots.txt' || pathname === '/llms.txt') {
       if (edgeCache && isAnonGet) {
