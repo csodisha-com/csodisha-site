@@ -29,9 +29,9 @@ assert.ok(!jobsHtml.includes('id="live-jobs-section"'), 'Unfiltered #live-jobs-s
 
 assert.ok(jobsHtml.includes('id="cso-top-category-selector"'), 'Missing #cso-top-category-selector');
 assert.ok(jobsHtml.includes('id="cso-matching-live-notices"'), 'Missing #cso-matching-live-notices');
-assert.ok(jobsHtml.includes('/assets/js/jobs-directory-data.js?v=20261122v223'), 'Missing v223 jobs-directory-data.js');
-assert.ok(jobsHtml.includes('./assets/dashboard.js?v=20261122v223'), 'Missing v223 dashboard.js');
-assert.ok(jobsHtml.includes('./assets/dashboard.css?v=20261122v223'), 'Missing v223 dashboard.css');
+assert.ok(/\/assets\/js\/jobs-directory-data\.js\?v=20261122v22(3|4)/.test(jobsHtml), 'Missing v223/v224 jobs-directory-data.js');
+assert.ok(/\.\/assets\/dashboard\.js\?v=20261122v22(3|4)/.test(jobsHtml), 'Missing v223/v224 dashboard.js');
+assert.ok(/\.\/assets\/dashboard\.css\?v=20261122v22(3|4)/.test(jobsHtml), 'Missing v223/v224 dashboard.css');
 
 const sectionSlugs = [
   'jobs-recruitment',
@@ -89,7 +89,7 @@ for (const rel of touched) {
   }
 }
 
-assert.ok(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8').includes('cso-candidate-cache-v223'), 'sw.js must be bumped to v223');
-assert.ok(fs.readFileSync(path.join(ROOT, 'functions/_lib/ops-sentinel.js'), 'utf8').includes('cso-candidate-cache-v223'), 'ops-sentinel.js must be bumped to v223');
+assert.ok(/cso-candidate-cache-v22(3|4)/.test(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8')), 'sw.js must be bumped to v223+');
+assert.ok(/cso-candidate-cache-v22(3|4)/.test(fs.readFileSync(path.join(ROOT, 'functions/_lib/ops-sentinel.js'), 'utf8')), 'ops-sentinel.js must be bumped to v223+');
 
 console.log('All v223 No-Overview & Direct Jobs & Recruitment Default tests PASSED!');

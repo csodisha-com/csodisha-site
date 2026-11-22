@@ -4320,3 +4320,8 @@ body.cso-section-view #explorer .explorer-header {
   color: var(--cso-text-muted, #475569);
   font-size: 0.9rem;
 }
+
+/* v224: Ensure #explorer is visible immediately by default */
+#explorer:not([hidden]) {
+  display: block;
+}

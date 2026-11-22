@@ -999,9 +999,9 @@
       .replace(/\s+Directory$/i, '')
       .trim();
 
-    pageTitle.textContent = cleanTitle;
-    explorerTitle.textContent = '';
-    pageDescription.textContent = '';
+    if (pageTitle) pageTitle.textContent = cleanTitle;
+    if (explorerTitle) explorerTitle.textContent = '';
+    if (pageDescription) pageDescription.textContent = '';
     renderBreadcrumb();
     setActiveSidebar();
     updateDocumentTitle(cleanTitle);
@@ -1021,9 +1021,11 @@
       branches = branches.filter(b => bmSlugs.has(b.slug));
     }
 
-    explorerDescription.textContent = branches.length
-      ? plural(branches.length, 'branch', 'branches') + ' available'
-      : 'No matching branches for the current filter.';
+    if (explorerDescription) {
+      explorerDescription.textContent = branches.length
+        ? plural(branches.length, 'branch', 'branches') + ' available'
+        : 'No matching branches for the current filter.';
+    }
 
     if (branches.length) {
       const branchGrid = el('div', 'cso-branch-grid');
@@ -1083,9 +1085,11 @@
     const hasSingleWrapper = isSingleWrapperSection(currentSection);
     const isAtSectionRoot = path.length === 0 || (hasSingleWrapper && path.length === 1 && path[0] === 0);
 
-    backButton.textContent = !isAtSectionRoot
-      ? '← Previous level'
-      : '← All sections';
+    if (backButton) {
+      backButton.textContent = !isAtSectionRoot
+        ? '← Previous level'
+        : '← All sections';
+    }
 
     setActiveSidebar();
   }
@@ -1160,8 +1164,8 @@
     explorer.hidden = true;
     searchResults.hidden = false;
 
-    pageTitle.textContent = 'Search Jobs & Careers';
-    pageDescription.textContent = `Results for "${search.value.trim()}"`;
+    if (pageTitle) pageTitle.textContent = 'Search Jobs & Careers';
+    if (pageDescription) pageDescription.textContent = `Results for "${search.value.trim()}"`;
     renderSearchBreadcrumb();
     updateDocumentTitle(`Search: ${search.value.trim()}`);
 
