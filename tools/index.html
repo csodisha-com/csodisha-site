@@ -18,13 +18,13 @@
   <meta name="twitter:description" content="Zero-upload Odisha exam photo &amp; signature resizer + Odisha age relaxation cut-off calculator.">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
   <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v164">
-  <link rel="stylesheet" href="/tools/assets/tools.css?v=20261121v176">
+  <link rel="stylesheet" href="/tools/assets/tools.css?v=20261122v196">
   <script src="/assets/shared-header.js?v=20261121v171" defer></script>
   <script src="/assets/cso-auth-client.js" defer></script>
   <script src="/assets/js/cso-idb.js" defer></script>
   <script src="/assets/js/bookmark-manager.js" defer></script>
   <script src="/assets/js/student-utilities.js?v=20261121v164" defer></script>
-  <script src="/tools/assets/tools.js?v=20261121v176" defer></script>
+  <script src="/tools/assets/tools.js?v=20261122v196" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://csodisha.com/"},{"@type":"ListItem","position":2,"name":"Jobs \u0026 Careers","item":"https://csodisha.com/jobs-careers/"},{"@type":"ListItem","position":3,"name":"Student Toolkit","item":"https://csodisha.com/tools/"}]},{"@type":"WebApplication","name":"Odisha Student Toolkit","applicationCategory":"UtilitiesApplication","operatingSystem":"All","url":"https://csodisha.com/tools/","description":"Zero-upload Odisha exam photo and signature resizer plus Odisha government age relaxation and cut-off calculator."}]}</script>
 </head>
@@ -51,6 +51,7 @@
     <div class="cso-tools-jump" role="navigation" aria-label="Toolkit tools">
       <a class="cso-tools-pill" href="#photo-resizer">📸 Photo &amp; Signature Resizer</a>
       <a class="cso-tools-pill" href="#age-calculator">🎂 Odisha Age Relaxation Calculator</a>
+      <a class="cso-tools-pill" href="#cbt-calculator">🧮 CBT Score &amp; Negative-Marking Estimator</a>
       <a class="cso-tools-pill" href="#scam-checker">🔍 Official Link &amp; Scam-Check</a>
       <a class="cso-tools-pill" href="/jobs-careers/">💼 Back to Live Jobs</a>
     </div>
@@ -129,39 +130,60 @@
   <section id="age-calculator" class="cso-tool-card" aria-labelledby="age-heading">
     <div class="cso-tool-card__head">
       <div>
-        <h2 id="age-heading">🎂 Odisha Age Relaxation &amp; Cut-Off Calculator</h2>
-        <p class="cso-tool-desc">Verify exact age in Years, Months &amp; Days on the notification cut-off date with official Odisha State category relaxations.</p>
+        <h2 id="age-heading">🎂 Odisha Govt Exam Age &amp; Relaxation Calculator</h2>
+        <p class="cso-tool-desc">Verify exact age in Years, Months &amp; Days on the notification cut-off date with official Odisha State board presets and category relaxations.</p>
       </div>
     </div>
 
     <form id="age-calc-form" class="cso-age-form">
       <label class="cso-tool-field">
-        <span>Date of Birth</span>
-        <input id="age-dob" type="date" required>
+        <span>Exam Board Preset</span>
+        <select id="age-board-preset">
+          <option value="opsc">OPSC (21–38 yrs)</option>
+          <option value="ossc-21">OSSC / OSSSC (21–38 yrs)</option>
+          <option value="ossc-18">OSSC / OSSSC (18–38 yrs)</option>
+          <option value="police-si">Odisha Police SI (21–25 yrs)</option>
+          <option value="police-const">Odisha Police Constable (18–23 yrs)</option>
+          <option value="otet">OTET / Teacher Recruitment (21–38 yrs)</option>
+          <option value="custom">Custom Min / Max Age</option>
+        </select>
       </label>
       <label class="cso-tool-field">
-        <span>Notification Cut-Off Date</span>
-        <input id="age-cutoff" type="date" required>
+        <span>Date of Birth (DD/MM/YYYY)</span>
+        <input id="age-dob" type="text" inputmode="numeric" placeholder="DD/MM/YYYY" maxlength="10" required>
       </label>
       <label class="cso-tool-field">
-        <span>Post Max Age (UR)</span>
+        <span>Notification Cut-Off (DD/MM/YYYY)</span>
+        <input id="age-cutoff" type="text" inputmode="numeric" value="01/01/2026" placeholder="DD/MM/YYYY" maxlength="10" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Min Age (UR)</span>
+        <input id="age-min" type="number" min="16" max="45" value="21" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Max Age (UR)</span>
         <input id="age-max" type="number" min="18" max="65" value="38" required>
       </label>
       <label class="cso-tool-field">
-        <span>Category</span>
+        <span>Category / Special Relaxation</span>
         <select id="age-category">
-          <option value="UR">UR (General · +0 yrs)</option>
+          <option value="UR">UR / General (+0 yrs)</option>
           <option value="SEBC">SEBC (+5 yrs)</option>
           <option value="SC / ST">SC / ST (+5 yrs)</option>
-          <option value="Women">Women (+5 yrs)</option>
-          <option value="PwD">PwD (+10 yrs)</option>
-          <option value="Ex-Serviceman">Ex-Serviceman (+5 yrs)</option>
+          <option value="Women">Women — All Categories (+5 yrs, non-cumulative)</option>
+          <option value="PwD (General)">PwD — General (+10 yrs)</option>
+          <option value="PwD (SC/ST/SEBC)">PwD — SC/ST/SEBC (+15 yrs)</option>
+          <option value="Ex-Serviceman">Ex-Serviceman (Service + 3 yrs)</option>
         </select>
+      </label>
+      <label class="cso-tool-field" id="age-service-wrap" hidden>
+        <span>Defence Service Years</span>
+        <input id="age-service-years" type="number" min="0" max="40" value="5">
       </label>
       <div class="cso-age-actions">
         <button id="age-calc-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Calculate Eligibility</button>
-        <button id="age-preset-32" type="button" class="cso-tool-btn" data-max-age="32">OPSC / OSSC (32 / 38)</button>
-        <button id="age-preset-38" type="button" class="cso-tool-btn" data-max-age="38">Odisha State (38 yrs)</button>
+        <button id="age-cutoff-2026" type="button" class="cso-tool-btn">Cut-Off: 01/01/2026</button>
+        <button id="age-cutoff-2027" type="button" class="cso-tool-btn">Cut-Off: 01/01/2027</button>
         <button id="age-reset-btn" type="button" class="cso-tool-btn">Reset</button>
       </div>
     </form>
@@ -172,7 +194,57 @@
         <strong id="age-exact-readout" class="cso-age-exact"></strong>
       </div>
       <p id="age-limit-summary" class="cso-age-summary"></p>
+      <p id="age-attempts-summary" class="cso-age-summary"></p>
     </div>
+  </section>
+
+  <!-- Tool 2B: CBT Negative-Marking & Normalization Score Estimator -->
+  <section id="cbt-calculator" class="cso-tool-card" aria-labelledby="cbt-calc-heading">
+    <div class="cso-tool-card__head">
+      <div>
+        <h2 id="cbt-calc-heading">🧮 Odisha CBT Score &amp; Negative-Marking Estimator</h2>
+        <p class="cso-tool-desc">Estimate Net Score, Accuracy %, and Marks Lost to negative marking for OPSC, OSSSC, Odisha Police &amp; OTET CBTs.</p>
+      </div>
+    </div>
+
+    <form id="cbt-calc-form" class="cso-age-form">
+      <label class="cso-tool-field">
+        <span>Marking Scheme Preset</span>
+        <select id="cbt-calc-preset">
+          <option value="opsc">OPSC OAS (+2 / -0.66, 1/3 negative)</option>
+          <option value="osssc">OSSSC RI/ARI/Amin (+1 / -0.33, 1/3 negative)</option>
+          <option value="police">Odisha Police / SSC (+1 / -0.25, 1/4 negative)</option>
+          <option value="otet">OTET / OSSTET (+1 / 0, No negative)</option>
+          <option value="custom">Custom Marks per Right / Wrong</option>
+        </select>
+      </label>
+      <label class="cso-tool-field">
+        <span>Total Questions</span>
+        <input id="cbt-total-q" type="number" min="1" max="500" value="100" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Attempted</span>
+        <input id="cbt-attempted-q" type="number" min="0" max="500" value="80" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Correct Answers</span>
+        <input id="cbt-correct-q" type="number" min="0" max="500" value="65" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Marks per Right Answer</span>
+        <input id="cbt-pos-mark" type="number" min="0.25" max="10" step="0.01" value="2" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Negative Penalty per Wrong</span>
+        <input id="cbt-neg-mark" type="number" min="0" max="10" step="0.01" value="0.66" required>
+      </label>
+      <div class="cso-age-actions">
+        <button id="cbt-calc-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Estimate CBT Score</button>
+        <button id="cbt-calc-reset" type="button" class="cso-tool-btn">Reset</button>
+      </div>
+    </form>
+
+    <div id="cbt-calc-result" class="cso-cbt-calc-result" role="status" aria-live="polite" hidden></div>
   </section>
 
   <!-- Tool 3: Official Link & WhatsApp Scam-Check -->
