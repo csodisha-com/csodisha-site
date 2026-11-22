@@ -566,6 +566,10 @@ export async function handlePublicStudyLibraryRoute(request, env, url) {
     pathname === '/study-library/index.html' ||
     pathname === '/study-library/early-childhood-education' ||
     pathname.startsWith('/study-library/early-childhood-education/') ||
+    pathname === '/study-library/otet-osstet' ||
+    pathname.startsWith('/study-library/otet-osstet/') ||
+    pathname === '/study-library/opsc-oas' ||
+    pathname.startsWith('/study-library/opsc-oas/') ||
     pathname.startsWith('/study-library/assets/') ||
     pathname.startsWith('/study-library/generated/')
   ) {
