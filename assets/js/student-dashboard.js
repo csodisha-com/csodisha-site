@@ -1318,6 +1318,84 @@
     host.appendChild(list);
   }
 
+  function renderDocumentReadinessPanel() {
+    const host = document.getElementById('cso-doc-readiness-panel');
+    const api = window.CSO_DOCUMENT_READINESS;
+    if (!host || !api || !Array.isArray(api.ITEMS)) return;
+    clear(host);
+
+    const state = api.load();
+    const summary = api.getSummary(state);
+
+    const header = el('div', 'bp-panel-header');
+    const titleWrap = el('div', 'bp-panel-title');
+    titleWrap.appendChild(el('span', '', '📋'));
+    titleWrap.appendChild(el('span', '', 'Odisha Document & OTR Readiness Checklist'));
+    header.appendChild(titleWrap);
+
+    const badge = el('span', 'cso-doc-badge', `${summary.ready} / ${summary.total} Ready`);
+    badge.setAttribute('aria-live', 'polite');
+    header.appendChild(badge);
+    host.appendChild(header);
+
+    const progWrap = el('div', 'cso-doc-progress-wrap');
+    const prog = document.createElement('progress');
+    prog.className = 'cso-doc-progress';
+    prog.max = summary.total;
+    prog.value = summary.ready;
+    prog.setAttribute('aria-label', 'Document readiness progress');
+    progWrap.appendChild(prog);
+    const pctText = el('span', 'cso-doc-pct', `${summary.pct}%`);
+    progWrap.appendChild(pctText);
+    host.appendChild(progWrap);
+
+    const list = el('div', 'cso-doc-list');
+    api.ITEMS.forEach(item => {
+      const isReady = Boolean(state.checked[item.id]);
+      const row = el('div', 'cso-doc-row' + (isReady ? ' is-ready' : ''));
+
+      const label = el('label', 'cso-doc-check');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = isReady;
+      cb.setAttribute('aria-label', `${item.title_en} (${item.title_or})`);
+      cb.addEventListener('change', () => {
+        const next = api.toggle(item.id);
+        const s = api.getSummary(next);
+        row.classList.toggle('is-ready', Boolean(next.checked[item.id]));
+        badge.textContent = `${s.ready} / ${s.total} Ready`;
+        prog.value = s.ready;
+        pctText.textContent = `${s.pct}%`;
+      });
+      label.appendChild(cb);
+
+      const copy = el('div', 'cso-doc-copy');
+      copy.appendChild(el('strong', 'cso-doc-title-en', item.title_en));
+      copy.appendChild(el('span', 'cso-doc-title-or', item.title_or));
+      copy.appendChild(el('p', 'cso-doc-note', item.validityNote));
+      label.appendChild(copy);
+      row.appendChild(label);
+
+      if (Array.isArray(item.links) && item.links.length) {
+        const links = el('div', 'cso-doc-links');
+        item.links.forEach(lk => {
+          if (!lk || !lk.url) return;
+          const a = el('a', 'cso-btn cso-btn-sm', lk.label);
+          a.href = lk.url;
+          if (/^https?:\/\//i.test(lk.url)) {
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+          }
+          links.appendChild(a);
+        });
+        row.appendChild(links);
+      }
+
+      list.appendChild(row);
+    });
+    host.appendChild(list);
+  }
+
   function renderSyllabusMasteryPanel() {
     const host = document.getElementById('cso-syllabus-progress-panel');
     const api = window.CSO_SYLLABUS_VAULT_API;
@@ -1858,6 +1936,7 @@
     renderLocalCbtStreaks();
     initAlertWatchlist();
     renderTrackedDeadlinesPanel();
+    renderDocumentReadinessPanel();
     renderSyllabusMasteryPanel();
     renderSchemes();
     renderResourcesShelf();

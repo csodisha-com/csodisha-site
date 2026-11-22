@@ -2664,3 +2664,116 @@ body.cso-student-dashboard-page {
   border-color: #fecaca;
   color: #b91c1c;
 }
+
+.cso-doc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.cso-doc-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.cso-doc-progress {
+  flex: 1 1 auto;
+  height: 10px;
+  border-radius: 999px;
+  accent-color: #16a34a;
+}
+
+.cso-doc-pct {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--cso-text, #0f172a);
+  min-width: 40px;
+  text-align: right;
+}
+
+.cso-doc-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.cso-doc-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--cso-border, #e2e8f0);
+  border-radius: 12px;
+  background: var(--cso-surface, #ffffff);
+}
+
+.cso-doc-row.is-ready {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.cso-doc-check {
+  flex: 1 1 240px;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.cso-doc-check input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  margin-top: 2px;
+  accent-color: #16a34a;
+  cursor: pointer;
+}
+
+.cso-doc-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.cso-doc-title-en {
+  font-size: 0.94rem;
+  color: var(--cso-text, #0f172a);
+  overflow-wrap: anywhere;
+}
+
+.cso-doc-title-or {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--cso-muted, #475569);
+  overflow-wrap: anywhere;
+}
+
+.cso-doc-note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--cso-muted, #64748b);
+  overflow-wrap: anywhere;
+}
+
+.cso-doc-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-doc-links .cso-btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
