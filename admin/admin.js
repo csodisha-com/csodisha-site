@@ -6,13 +6,6 @@
   'use strict';
 
   var masterNavigationSchema = null;
-  var liveTelemetry = {
-    jobs: 0,
-    schemes: 0,
-    study: 0,
-    pendingDrafts: 0,
-    lastSyncedAt: ''
-  };
 
   var CSOState = {
     activeFolderId: 'folder-01',
@@ -250,65 +243,12 @@
     try { localStorage.setItem('cso_sidebar_collapsed', collapsed ? '1' : '0'); } catch (_e) {}
   }
 
-  async function hydrateTelemetry() {
-    try {
-      var [statsRes, draftsRes] = await Promise.all([
-        fetch('/api/admin/stats', { credentials: 'same-origin' }).catch(function () { return null; }),
-        fetch('/api/admin/crawl-drafts', { credentials: 'same-origin' }).catch(function () { return null; })
-      ]);
-      if (statsRes && statsRes.ok) {
-        var st = await statsRes.json();
-        liveTelemetry.jobs = Number((st && (st.jobs || st.posts)) || 0);
-        liveTelemetry.schemes = Number((st && st.schemes) || 0);
-        liveTelemetry.study = Number((st && (st.study_items || st.study)) || 0);
-      }
-      if (draftsRes && draftsRes.ok) {
-        var dr = await draftsRes.json();
-        liveTelemetry.pendingDrafts = Array.isArray(dr && dr.drafts) ? dr.drafts.length : 0;
-      }
-      liveTelemetry.lastSyncedAt = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-      renderModuleStandardHeader();
-    } catch (_) {}
-  }
-
-  function renderModuleStandardHeader() {
-    if (!dom.moduleHeaderActions || !masterNavigationSchema) return;
-    clearNode(dom.moduleHeaderActions);
-    var folder = (masterNavigationSchema.folders || []).find(function (f) { return f.id === CSOState.activeFolderId; });
-    var mod = folder && folder.modules ? folder.modules.find(function (m) { return m.id === CSOState.activeModuleId; }) : null;
-    if (!mod) return;
-
-    var syncState = liveTelemetry.pendingDrafts > 0
-      ? ('Drafts Pending (' + liveTelemetry.pendingDrafts + ')')
-      : 'Synced with D1';
-    dom.moduleHeaderActions.appendChild(el('span', 'cso-live-pill', '● ' + syncState));
-    if (liveTelemetry.lastSyncedAt) {
-      dom.moduleHeaderActions.appendChild(el('span', 'cso-live-pill', 'Last Synced: ' + liveTelemetry.lastSyncedAt));
-    }
-    var previewUrl = mod.previewUrl || '/';
-    var previewLink = el('a', 'cso-pill-link', 'Live Preview ↗');
-    previewLink.href = previewUrl;
-    previewLink.target = '_blank';
-    previewLink.rel = 'noopener noreferrer';
-    dom.moduleHeaderActions.appendChild(previewLink);
-
-    var syncBtn = el('button', 'cso-pill-link', '↻ Sync D1');
-    syncBtn.type = 'button';
-    syncBtn.addEventListener('click', function () {
-      hydrateTelemetry();
-      showToast('Synchronized module telemetry with D1', 'info');
-    });
-    dom.moduleHeaderActions.appendChild(syncBtn);
-  }
-
   function resolveModuleTarget(targetId) {
     var normalizedId = targetId === 'module-00-001' ? 'module-01-001' : targetId;
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return null;
     for (var i = 0; i < masterNavigationSchema.folders.length; i++) {
       var f = masterNavigationSchema.folders[i];
-      var m = (f.modules || []).find(function (x) {
-        return x.id === normalizedId || (Array.isArray(x.aliases) && x.aliases.indexOf(normalizedId) !== -1);
-      });
+      var m = (f.modules || []).find(function (x) { return x.id === normalizedId; });
       if (m) return { folderId: f.id, moduleId: m.id };
     }
     return null;
@@ -351,7 +291,7 @@
 
   function renderWorkspaceView(folderId, moduleId) {
     clearNode(dom.workspaceRoot);
-    renderModuleStandardHeader();
+    clearNode(dom.moduleHeaderActions);
 
     if (window.CSOLive && window.CSOLive.render(folderId, moduleId, dom.workspaceRoot, dom.moduleHeaderActions)) {
       return;
@@ -589,7 +529,7 @@
       var savedGroups = JSON.parse(localStorage.getItem('cso_open_sidebar_groups') || '[]');
       if (Array.isArray(savedGroups)) savedGroups.forEach(function (g) { CSOState.expandedFolders.add(g); });
     } catch (_e) {}
-    await Promise.all([loadMasterNavigation(), hydrateSessionIdentity(), hydrateTelemetry()]);
+    await Promise.all([loadMasterNavigation(), hydrateSessionIdentity()]);
     var hashId = (window.location.hash || '').replace(/^#/, '');
     var storedId = '';
     try { storedId = localStorage.getItem('cso_active_module_id') || ''; } catch (_e) {}

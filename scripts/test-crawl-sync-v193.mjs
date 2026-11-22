@@ -138,8 +138,8 @@ const installSh = fs.readFileSync(path.join(ROOT, 'scripts', 'crawl4ai', 'instal
 const gitignore = fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8');
 
 assert.ok(routerJs.includes("resource === 'crawl-drafts'"), '_router.js must route crawl-drafts');
-assert.ok(adminHtml.includes('/admin/fast-publish.js?v=20261122v193') || adminHtml.includes('/admin/fast-publish.js?v=20261122v199') || adminHtml.includes('/admin/fast-publish.js?v=20261122v200'), 'admin/index.html must bump fast-publish.js');
-assert.ok(adminHtml.includes('/admin/studio.css?v=20261122v193') || adminHtml.includes('/admin/studio.css?v=20261122v199') || adminHtml.includes('/admin/studio.css?v=20261122v200'), 'admin/index.html must bump studio.css');
+assert.ok(adminHtml.includes('/admin/fast-publish.js?v=20261122v193') || adminHtml.includes('/admin/fast-publish.js?v=20261122v201'), 'admin/index.html must bump fast-publish.js');
+assert.ok(adminHtml.includes('/admin/studio.css?v=20261122v193') || adminHtml.includes('/admin/studio.css?v=20261122v201'), 'admin/index.html must bump studio.css');
 assert.ok(fastPubJs.includes('/api/admin/crawl-drafts'), 'admin/fast-publish.js must fetch /api/admin/crawl-drafts');
 assert.ok(fastPubJs.includes('Sync Live D1 Queue'), 'admin/fast-publish.js must include Sync Live D1 Queue button');
 assert.ok(!/\.innerHTML\b/.test(fastPubJs), 'No .innerHTML allowed in admin/fast-publish.js');
