@@ -354,6 +354,8 @@
   });
 
   document.addEventListener('click', (e) => {
+    const admLink = e.target.closest('a.adm, a[href^="/admin"]');
+    if (admLink) return;
     const repLink = e.target.closest('a[href*="report-error"], [data-cso-feedback="error"]');
     if (repLink) {
       e.preventDefault();

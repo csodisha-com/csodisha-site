@@ -286,6 +286,8 @@ function csoCloseNavDropdowns(except){
 if(!window.__csoNavDropdownWired){
 window.__csoNavDropdownWired=true;
 document.addEventListener('click',e=>{
+ const admLink = e.target.closest('a.adm, a[href^="/admin"]');
+ if (admLink) return;
  const mobile=e.target.closest('#navw .cso-nav-mobile');
  if(mobile){
   e.preventDefault();
@@ -1849,6 +1851,8 @@ function lu(){
   panel.appendChild(windowEl);
 }
 document.addEventListener('click',e=>{
+ const admLink = e.target.closest('a.adm, a[href^="/admin"]');
+ if (admLink) return;
  const d=e.target.closest('[data-h]');if(d){e.preventDefault();if(d.dataset.h.endsWith('/')){location.href=d.dataset.h}else{go(d.dataset.h)}return}
  const m=e.target.closest('[data-m]');if(m){go(m.dataset.m);return}
  const a=e.target.closest('a[href="#"]');if(!a||a.classList.contains('opt'))return;e.preventDefault();
