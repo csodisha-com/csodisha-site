@@ -3,12 +3,13 @@
 
   var MISTAKE_DECK_KEY = 'cso_study_mistake_deck';
   var HISTORY_KEY = 'cso_cbt_history_v1';
+  var STREAK_KEY = 'cso_cbt_streak_v1';
 
   var EXAM_PRESETS = [
-    { id: 'opsc-oas', label: 'OPSC OAS', pos: 2, neg: 0.66 },
-    { id: 'osssc-ri', label: 'OSSSC RI/ARI/Amin', pos: 1, neg: 0.5 },
-    { id: 'otet-osstet', label: 'OTET / OSSTET', pos: 1, neg: 0 },
-    { id: 'oprb', label: 'Odisha Police OPRB', pos: 1, neg: 0.25 },
+    { id: 'opsc-oas', label: 'OPSC OAS Prelims (GS Paper-I)', pos: 2, neg: 0.66 },
+    { id: 'osssc-ri', label: 'OSSSC RI/ARI/Amin/SFS', pos: 1, neg: 0.5 },
+    { id: 'otet-osstet', label: 'OTET / OSSTET Paper-I', pos: 1, neg: 0 },
+    { id: 'oprb', label: 'Odisha Police SI / Constable', pos: 1, neg: 0.25 },
     { id: 'ece', label: 'Early Childhood Education', pos: 1, neg: 0 },
     { id: 'all-odisha', label: 'All-Odisha Mixed', pos: 1, neg: 0.25 }
   ];
@@ -73,24 +74,47 @@
     var wrong = 0;
     var unanswered = 0;
     var missedItems = [];
+    var sectionMap = {};
 
     for (var i = 0; i < qList.length; i++) {
       var q = qList[i];
+      var secName = String(q.section || q.exam || p.label || 'General');
+      if (!sectionMap[secName]) sectionMap[secName] = { total: 0, correct: 0, wrong: 0, unanswered: 0 };
+      sectionMap[secName].total += 1;
+
       var chosen = resp[i];
       if (chosen === undefined || chosen === null) {
         unanswered += 1;
+        sectionMap[secName].unanswered += 1;
       } else if (chosen === q.answerIndex) {
         correct += 1;
+        sectionMap[secName].correct += 1;
       } else {
         wrong += 1;
+        sectionMap[secName].wrong += 1;
         missedItems.push({
           id: q.id,
+          section: secName,
           exam: q.exam || p.label,
           q: q.question,
           a: (q.options && q.options[q.answerIndex] ? q.options[q.answerIndex] : '') + (q.explanation ? ' — ' + q.explanation : '')
         });
       }
     }
+
+    var sectionStats = [];
+    var weakTopic = '';
+    var lowestAcc = 101;
+    Object.keys(sectionMap).forEach(function (sec) {
+      var st = sectionMap[sec];
+      var att = st.correct + st.wrong;
+      var acc = att > 0 ? Math.round((st.correct / att) * 100) : 0;
+      sectionStats.push({ section: sec, total: st.total, correct: st.correct, wrong: st.wrong, accuracyPct: acc });
+      if (att > 0 && acc < lowestAcc) {
+        lowestAcc = acc;
+        weakTopic = sec;
+      }
+    });
 
     var netScore = Number((correct * p.pos - wrong * p.neg).toFixed(2));
     var maxScore = Number((qList.length * p.pos).toFixed(2));
@@ -105,6 +129,8 @@
       netScore: netScore,
       maxScore: maxScore,
       accuracyPct: accuracyPct,
+      weakTopic: weakTopic || (sectionStats[0] ? sectionStats[0].section : p.label),
+      sectionStats: sectionStats,
       missedItems: missedItems
     };
   }
@@ -147,17 +173,54 @@
     return Array.isArray(list) ? list : [];
   }
 
+  function updateStudyStreak(storage, dateIso) {
+    var s = storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+    var today = String(dateIso || new Date().toISOString().slice(0, 10));
+    if (!s) return { count: 1, lastDate: today };
+    var cur = safeReadJson(s, STREAK_KEY, { count: 0, lastDate: '' });
+    if (cur.lastDate === today) return cur;
+    var prevDate = new Date(today + 'T00:00:00Z');
+    prevDate.setUTCDate(prevDate.getUTCDate() - 1);
+    var yesterday = prevDate.toISOString().slice(0, 10);
+    var nextCount = cur.lastDate === yesterday ? (Number(cur.count) || 0) + 1 : 1;
+    var next = { count: nextCount, lastDate: today };
+    safeWriteJson(s, STREAK_KEY, next);
+    return next;
+  }
+
   function saveCbtHistory(entry, storage) {
     var s = storage || (typeof localStorage !== 'undefined' ? localStorage : null);
     if (!s || !entry) return [];
     var list = loadCbtHistory(s);
+    if (!entry.date) entry.date = new Date().toISOString().slice(0, 10);
     list.unshift(entry);
-    if (list.length > 15) list = list.slice(0, 15);
+    if (list.length > 20) list = list.slice(0, 20);
     safeWriteJson(s, HISTORY_KEY, list);
+    updateStudyStreak(s, entry.date);
     return list;
   }
 
   function collectQuestionsForTrack(trackId) {
+    var packs = Array.isArray(root.CSO_CBT_EXAM_PACKS) ? root.CSO_CBT_EXAM_PACKS : [];
+    var pool = [];
+    packs.forEach(function (pack) {
+      if (trackId !== 'all-odisha' && pack.id !== trackId) return;
+      (pack.questions || []).forEach(function (q) {
+        pool.push({
+          id: q.id,
+          section: q.section || pack.title,
+          exam: pack.title,
+          question: q.question,
+          question_or: q.question_or || q.question,
+          options: q.options,
+          options_or: q.options_or || q.options,
+          answerIndex: q.answerIndex,
+          explanation: q.explanation,
+          explanation_or: q.explanation_or || q.explanation
+        });
+      });
+    });
+
     var sources = [
       { id: 'opsc-oas', label: 'OPSC OAS', mods: root.CSOOpscCourse && root.CSOOpscCourse.MODULES },
       { id: 'osssc-ri', label: 'OSSSC RI/ARI/Amin', mods: root.CSOOssscCourse && root.CSOOssscCourse.MODULES },
@@ -166,18 +229,21 @@
       { id: 'ece', label: 'ECE', mods: root.CSOEceCourse && root.CSOEceCourse.ECE_MODULES }
     ];
 
-    var pool = [];
     sources.forEach(function (src) {
       if (trackId !== 'all-odisha' && src.id !== trackId) return;
       (src.mods || []).forEach(function (mod) {
         (mod.quiz || []).forEach(function (q) {
           pool.push({
             id: q.id,
+            section: mod.title || (src.label + ' Module ' + mod.number),
             exam: src.label + ' Module ' + mod.number,
             question: q.question,
+            question_or: q.question_or || q.question,
             options: q.options,
+            options_or: q.options_or || q.options,
             answerIndex: q.answerIndex,
-            explanation: q.explanation
+            explanation: q.explanation,
+            explanation_or: q.explanation_or || q.explanation
           });
         });
       });
@@ -274,6 +340,40 @@
       card.appendChild(startBtn);
       container.appendChild(card);
 
+      var packs = Array.isArray(root.CSO_CBT_EXAM_PACKS) ? root.CSO_CBT_EXAM_PACKS : [];
+      if (packs.length) {
+        var packCard = el('div', 'cbt-card');
+        packCard.appendChild(el('h2', null, 'Dedicated Odisha Exam Mock Packs (EN / ଓଡ଼ିଆ)'));
+        var packGrid = el('div', 'cbt-pack-grid');
+        packs.forEach(function (pk) {
+          var item = el('article', 'cbt-pack-item');
+          item.appendChild(el('span', 'cbt-badge cbt-badge--gold', pk.negLabel));
+          item.appendChild(el('h3', 'cbt-pack-title', pk.title));
+          item.appendChild(el('p', 'cbt-pack-sub', pk.subtitle));
+          var launchBtn = el('button', 'cbt-btn cbt-btn--primary', 'Start Pack (' + pk.questions.length + ' Qs) →');
+          launchBtn.type = 'button';
+          launchBtn.addEventListener('click', function () {
+            var preset = { id: pk.id, label: pk.title, pos: pk.pos, neg: pk.neg };
+            var pool = collectQuestionsForTrack(pk.id);
+            if (!pool.length) return;
+            session = {
+              preset: preset,
+              questions: pool.slice(0, 15),
+              responses: {},
+              marked: {},
+              currentIndex: 0,
+              lang: 'en',
+              secondsLeft: (pk.durationMin || 15) * 60
+            };
+            startExamLoop();
+          });
+          item.appendChild(launchBtn);
+          packGrid.appendChild(item);
+        });
+        packCard.appendChild(packGrid);
+        container.appendChild(packCard);
+      }
+
       var history = loadCbtHistory();
       var histCard = el('div', 'cbt-card');
       histCard.appendChild(el('h3', null, 'Recent Attempts'));
@@ -302,9 +402,30 @@
         netScore: result.netScore,
         maxScore: result.maxScore,
         accuracyPct: result.accuracyPct,
+        weakTopic: result.weakTopic || session.preset.label,
+        date: new Date().toISOString().slice(0, 10),
         total: result.total,
         completedAt: Date.now()
       });
+      if (typeof fetch === 'function') {
+        try {
+          fetch('/api/sync', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cbt_attempt: {
+                examId: session.preset.id,
+                examLabel: session.preset.label,
+                score: result.netScore,
+                maxScore: result.maxScore,
+                accuracyPct: result.accuracyPct,
+                weakTopic: result.weakTopic || ''
+              }
+            })
+          }).catch(function () {});
+        } catch (_) {}
+      }
       renderScorecard(result);
     }
 
@@ -330,21 +451,34 @@
       var idx = session.currentIndex;
       var q = session.questions[idx];
 
+      var lang = session.lang === 'or' ? 'or' : 'en';
+      var qText = lang === 'or' && q.question_or ? q.question_or : q.question;
+      var qOpts = lang === 'or' && Array.isArray(q.options_or) ? q.options_or : q.options;
+
       var top = el('div', 'cbt-card cbt-topbar');
       top.appendChild(el('strong', null, session.preset.label + ' (+' + session.preset.pos + ' / -' + session.preset.neg + ')'));
+      var topRight = el('div', 'cbt-topbar-right');
+      var langBtn = el('button', 'cbt-btn cbt-lang-toggle', lang === 'en' ? 'EN / ଓଡ଼ିଆ' : 'ଓଡ଼ିଆ / EN');
+      langBtn.type = 'button';
+      langBtn.addEventListener('click', function () {
+        session.lang = session.lang === 'or' ? 'en' : 'or';
+        renderExam();
+      });
       var timerEl = el('div', 'cbt-timer' + (session.secondsLeft < 120 ? ' is-warning' : ''), '⏱ ' + formatTimer(session.secondsLeft));
       timerEl.id = 'cbt-live-timer';
-      top.appendChild(timerEl);
+      topRight.appendChild(langBtn);
+      topRight.appendChild(timerEl);
+      top.appendChild(topRight);
       container.appendChild(top);
 
       var layout = el('div', 'cbt-exam-layout');
 
       var qCard = el('div', 'cbt-card');
-      qCard.appendChild(el('div', 'cbt-badge', 'Question ' + (idx + 1) + ' of ' + session.questions.length));
-      qCard.appendChild(el('h2', null, q.question));
+      qCard.appendChild(el('div', 'cbt-badge', 'Question ' + (idx + 1) + ' of ' + session.questions.length + (q.section ? ' · ' + q.section : '')));
+      qCard.appendChild(el('h2', null, qText));
 
       var optsWrap = el('div', 'cbt-options');
-      q.options.forEach(function (optText, optIdx) {
+      qOpts.forEach(function (optText, optIdx) {
         var isSel = session.responses[idx] === optIdx;
         var b = el('button', 'cbt-option-btn' + (isSel ? ' is-selected' : ''), String.fromCharCode(65 + optIdx) + '. ' + optText);
         b.type = 'button';
@@ -429,6 +563,20 @@
       });
       card.appendChild(stats);
 
+      if (Array.isArray(result.sectionStats) && result.sectionStats.length) {
+        var secWrap = el('div', 'cbt-section-breakdown');
+        secWrap.appendChild(el('h3', null, 'Section-Wise Accuracy Breakdown'));
+        var secGrid = el('div', 'cbt-section-grid');
+        result.sectionStats.forEach(function (st) {
+          var row = el('div', 'cbt-section-row');
+          row.appendChild(el('strong', null, st.section));
+          row.appendChild(el('span', null, st.correct + '/' + st.total + ' correct (' + st.accuracyPct + '%)'));
+          secGrid.appendChild(row);
+        });
+        secWrap.appendChild(secGrid);
+        card.appendChild(secWrap);
+      }
+
       if (result.missedItems.length) {
         card.appendChild(el('p', 'cbt-badge cbt-badge--gold', result.missedItems.length + ' missed question(s) synced to Revise Again (Mistake Deck)'));
       }
@@ -464,6 +612,7 @@
   var api = {
     MISTAKE_DECK_KEY: MISTAKE_DECK_KEY,
     HISTORY_KEY: HISTORY_KEY,
+    STREAK_KEY: STREAK_KEY,
     EXAM_PRESETS: EXAM_PRESETS,
     getPresetById: getPresetById,
     formatTimer: formatTimer,
@@ -471,7 +620,8 @@
     scoreAttempt: scoreAttempt,
     syncMissedToMistakeDeck: syncMissedToMistakeDeck,
     loadCbtHistory: loadCbtHistory,
-    saveCbtHistory: saveCbtHistory
+    saveCbtHistory: saveCbtHistory,
+    updateStudyStreak: updateStudyStreak
   };
 
   root.CSOCbtSimulator = api;

@@ -339,3 +339,58 @@ html[data-theme="utkal-bharat"] {
   border: 1px solid var(--cbt-border);
   font-size: 0.875rem;
 }
+
+.cbt-topbar-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cbt-pack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+.cbt-pack-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--cbt-border);
+  background: var(--cbt-surface-alt);
+}
+
+.cbt-pack-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.cbt-pack-sub {
+  margin: 0 0 auto;
+  font-size: 0.86rem;
+  color: var(--cbt-muted);
+}
+
+.cbt-section-breakdown {
+  margin: 1rem 0;
+}
+
+.cbt-section-grid {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.cbt-section-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
+  background: var(--cbt-surface-alt);
+  border: 1px solid var(--cbt-border);
+}

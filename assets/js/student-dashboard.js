@@ -1079,6 +1079,47 @@
     });
   }
 
+  function renderLocalCbtStreaks() {
+    const kpiHost = document.getElementById('cso-cbt-streak-kpis');
+    const listHost = document.getElementById('cso-cbt-local-attempts');
+    if (!kpiHost || !listHost) return;
+    clear(kpiHost);
+    clear(listHost);
+
+    const history = readJsonStorage('cso_cbt_history_v1', []);
+    const streak = readJsonStorage('cso_cbt_streak_v1', { count: 0, lastDate: '' });
+    const total = Array.isArray(history) ? history.length : 0;
+    const avgAcc = total ? Math.round(history.reduce((s, h) => s + Number(h.accuracyPct || 0), 0) / total) : 0;
+    const weakTopic = total && history[0] && history[0].weakTopic ? history[0].weakTopic : '—';
+
+    [
+      [`${Number(streak.count || 0)} Day(s)`, 'Daily Study Streak'],
+      [String(total), 'CBT Mocks Taken'],
+      [`${avgAcc}%`, 'Avg Mock Accuracy'],
+      [weakTopic, 'Focus Weak Topic']
+    ].forEach(pair => {
+      const box = el('div', 'cso-cbt-kpi');
+      box.appendChild(el('strong', '', pair[0]));
+      box.appendChild(el('span', '', pair[1]));
+      kpiHost.appendChild(box);
+    });
+
+    if (!total) {
+      listHost.appendChild(el('p', 'cso-muted-note', 'Complete a timed Odisha CBT mock test to track your daily streak and weak topics.'));
+      return;
+    }
+
+    history.slice(0, 6).forEach(h => {
+      const row = el('div', 'cso-list-item');
+      const main = el('div', 'cso-list-item-main');
+      main.appendChild(el('h4', 'cso-list-item-title', h.examLabel || 'Odisha CBT Mock'));
+      main.appendChild(el('span', 'cso-list-item-sub', `Accuracy ${h.accuracyPct || 0}% · ${h.date || ''}${h.weakTopic ? ' · Weak: ' + h.weakTopic : ''}`));
+      row.appendChild(main);
+      row.appendChild(el('span', 'cso-pill-badge', `${h.netScore}/${h.maxScore}`));
+      listHost.appendChild(row);
+    });
+  }
+
   function initMistakeNotebook() {
     const form = document.getElementById('cso-mistake-form');
     const listHost = document.getElementById('cso-mistake-list');
@@ -1588,6 +1629,7 @@
     renderChecklistTracker();
     renderCountdownsAndCalendar();
     renderCbtAnalytics();
+    renderLocalCbtStreaks();
     renderSchemes();
     renderResourcesShelf();
     renderBookmarksShelves();
