@@ -454,11 +454,11 @@
   }
 
   function findLiveJobsFor(query) {
-    const input = $('live-jobs-search');
-    if (input) {
-      input.value = query;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
+    if (search) {
+      search.value = query;
+      if (clearSearch) clearSearch.hidden = String(query || '').length === 0;
     }
+    syncTopSearchToLiveJobs(query);
     const liveSection = $('live-jobs-section');
     if (liveSection && typeof liveSection.scrollIntoView === 'function') {
       liveSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -697,11 +697,16 @@
   }
 
   function syncTopSearchToLiveJobs(rawQuery) {
-    const liveInput = $('live-jobs-search');
-    if (liveInput && liveInput.value !== rawQuery) {
-      liveInput.value = rawQuery;
-      liveInput.dispatchEvent(new Event('input', { bubbles: true }));
-    }
+    if (typeof loadLiveJobs !== 'function') return;
+    const nextQ = String(rawQuery || '').trim();
+    if (liveState.q === nextQ) return;
+    clearTimeout(liveSearchTimer);
+    liveSearchTimer = setTimeout(() => {
+      liveState.q = nextQ;
+      liveState.page = 1;
+      closeJobDetail(false);
+      loadLiveJobs();
+    }, 220);
   }
 
   function renderSearch() {
@@ -1136,7 +1141,6 @@
   // Live Recruitment & Job Notifications (/api/content/jobs)
   // =========================================================================
   const liveCountEl = $('live-jobs-count');
-  const liveSearchEl = $('live-jobs-search');
   const liveStateEl = $('live-jobs-state');
   const liveCategoryEl = $('live-jobs-category');
   const liveResetBtn = $('live-jobs-reset');
@@ -2075,17 +2079,6 @@
     }
   });
 
-  if (liveSearchEl) {
-    liveSearchEl.addEventListener('input', () => {
-      clearTimeout(liveSearchTimer);
-      liveSearchTimer = setTimeout(() => {
-        liveState.q = liveSearchEl.value.trim();
-        liveState.page = 1;
-        closeJobDetail(false);
-        loadLiveJobs();
-      }, 220);
-    });
-  }
   if (liveStateEl) {
     liveStateEl.addEventListener('change', () => {
       liveState.state = liveStateEl.value;
@@ -2104,7 +2097,8 @@
   }
   function resetAllFilters() {
     liveState = { page: 1, limit: 12, q: '', state: '', category: '', chip: 'all', goalMatch: false };
-    if (liveSearchEl) liveSearchEl.value = '';
+    if (search) search.value = '';
+    if (clearSearch) clearSearch.hidden = true;
     if (liveStateEl) liveStateEl.value = '';
     if (liveCategoryEl) liveCategoryEl.value = '';
     if (liveAuthHintEl) liveAuthHintEl.hidden = true;
@@ -2132,8 +2126,9 @@
   try {
     const sp = new URLSearchParams(window.location.search);
     const qParam = sp.get('q');
-    if (qParam && liveSearchEl) {
-      liveSearchEl.value = qParam;
+    if (qParam) {
+      if (search) search.value = qParam;
+      if (clearSearch) clearSearch.hidden = false;
       liveState.q = qParam.trim();
     }
   } catch (_) {}

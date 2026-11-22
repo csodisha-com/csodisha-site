@@ -3573,6 +3573,9 @@ body.is-live-modal-open {
 .live-filter-strip .live-chip {
   flex: 0 0 auto;
   scroll-snap-align: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 .live-chip[aria-pressed="true"] {
