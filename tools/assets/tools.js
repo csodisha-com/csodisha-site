@@ -935,12 +935,134 @@
     }
   }
 
+  var ORSP_PAY_LEVELS = {
+    '4': { level: 4, basicPay: 19900, label: 'Level 4 — OSSSC ARI / Amin / Livestock Inspector' },
+    '5': { level: 5, basicPay: 21700, label: 'Level 5 — Odisha Police Constable / Forest Guard' },
+    '7': { level: 7, basicPay: 25500, label: 'Level 7 — OSSSC RI / Junior Assistant' },
+    '9': { level: 9, basicPay: 35400, label: 'Level 9 — OSSC ASO / CGLRE / Police SI / ICDS Supervisor' },
+    '10': { level: 10, basicPay: 44900, label: 'Level 10 — OPSC Group-B / Lecturer / Assistant Engineer' },
+    '12': { level: 12, basicPay: 56100, label: 'Level 12 — OPSC OAS / OFS / OPS Group-A' }
+  };
+
+  function calculateOrspSalaryAndFee(opts) {
+    var o = opts && typeof opts === 'object' ? opts : {};
+    var lvlKey = String(o.level || '9');
+    var entry = ORSP_PAY_LEVELS[lvlKey] || ORSP_PAY_LEVELS['9'];
+    var basicPay = entry.basicPay;
+    var daPct = Math.max(0, Math.min(200, Number(o.daPct !== undefined ? o.daPct : 53) || 0));
+    var hraPct = Math.max(0, Math.min(50, Number(o.hraPct !== undefined ? o.hraPct : 8) || 0));
+
+    var daAmount = Math.round(basicPay * (daPct / 100));
+    var hraAmount = Math.round(basicPay * (hraPct / 100));
+    var grossSalary = basicPay + daAmount + hraAmount;
+    var npsDeduction = Math.round((basicPay + daAmount) * 0.10);
+    var professionalTax = 200;
+    var netInHand = grossSalary - npsDeduction - professionalTax;
+
+    var feeCat = String(o.feeCategory || 'odisha-waived');
+    var examFee = 0;
+    var examFeeLabel = '₹0 (Odisha State Exam Fee Waived)';
+    var isFeeWaived = true;
+    if (feeCat === 'central-gen') {
+      examFee = 100;
+      examFeeLabel = '₹100 (Central SSC / Banking Gen/OBC)';
+      isFeeWaived = false;
+    } else if (feeCat === 'central-exempt') {
+      examFee = 0;
+      examFeeLabel = '₹0 (Central SC/ST/PwD/Female Exempt)';
+      isFeeWaived = true;
+    }
+
+    return {
+      level: entry.level,
+      levelLabel: entry.label,
+      basicPay: basicPay,
+      daPct: daPct,
+      daAmount: daAmount,
+      hraPct: hraPct,
+      hraAmount: hraAmount,
+      grossSalary: grossSalary,
+      npsDeduction: npsDeduction,
+      professionalTax: professionalTax,
+      netInHand: netInHand,
+      examFee: examFee,
+      examFeeLabel: examFeeLabel,
+      isFeeWaived: isFeeWaived
+    };
+  }
+
+  function formatInr(n) {
+    return '₹' + Number(n || 0).toLocaleString('en-IN');
+  }
+
+  function initOrspSalaryCalculator() {
+    var form = $('orsp-salary-form');
+    var levelEl = $('orsp-pay-level');
+    var hraEl = $('orsp-hra-tier');
+    var daEl = $('orsp-da-pct');
+    var feeEl = $('orsp-fee-category');
+    var resultEl = $('orsp-salary-result');
+    if (!form || !levelEl || !hraEl || !daEl || !feeEl || !resultEl) return;
+
+    function render() {
+      var res = calculateOrspSalaryAndFee({
+        level: levelEl.value,
+        hraPct: hraEl.value,
+        daPct: daEl.value,
+        feeCategory: feeEl.value
+      });
+
+      while (resultEl.firstChild) resultEl.removeChild(resultEl.firstChild);
+
+      var badge = document.createElement('span');
+      badge.className = res.isFeeWaived ? 'cso-scam-badge is-safe' : 'cso-scam-badge is-warn';
+      badge.textContent = res.isFeeWaived ? '✓ Odisha State Exam Fee Waiver: ₹0' : 'ℹ Applicable Exam Fee: ₹100';
+      resultEl.appendChild(badge);
+
+      var grid = document.createElement('div');
+      grid.className = 'cso-cbt-calc-grid';
+
+      function addBox(label, val, highlightCls) {
+        var box = document.createElement('div');
+        box.className = 'cso-cbt-calc-box' + (highlightCls ? ' ' + highlightCls : '');
+        var sp = document.createElement('span');
+        sp.textContent = label;
+        var st = document.createElement('strong');
+        st.textContent = val;
+        box.appendChild(sp);
+        box.appendChild(st);
+        grid.appendChild(box);
+      }
+
+      addBox('Monthly Basic Pay (Level ' + res.level + ')', formatInr(res.basicPay));
+      addBox('Dearness Allowance (' + res.daPct + '% DA)', formatInr(res.daAmount));
+      addBox('House Rent Allowance (' + res.hraPct + '% HRA)', formatInr(res.hraAmount));
+      addBox('Monthly Gross Salary', formatInr(res.grossSalary));
+      addBox('NPS (10% Basic+DA) + Prof. Tax', formatInr(res.npsDeduction) + ' + ₹' + res.professionalTax);
+      addBox('Net Monthly In-Hand Salary', formatInr(res.netInHand), 'cso-orsp-net-box');
+      addBox('Applicable Exam Fee', res.examFeeLabel);
+
+      resultEl.appendChild(grid);
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      render();
+    });
+    [levelEl, hraEl, daEl, feeEl].forEach(function (ctrl) {
+      ctrl.addEventListener('change', render);
+      ctrl.addEventListener('input', render);
+    });
+    render();
+  }
+
   function boot() {
     initResizer();
     initAgeCalculator();
     initCbtCalculator();
     initScamChecker();
     initExamCentrePlanner();
+    initOrspSalaryCalculator();
   }
 
   if (typeof window !== 'undefined') {
@@ -954,7 +1076,9 @@
       calculateOdishaExamAge: calculateOdishaExamAge,
       calculateCbtScore: calculateCbtScore,
       calculateExamDayLogistics: calculateExamDayLogistics,
-      buildExamDayIcs: buildExamDayIcs
+      buildExamDayIcs: buildExamDayIcs,
+      calculateOrspSalaryAndFee: calculateOrspSalaryAndFee,
+      ORSP_PAY_LEVELS: ORSP_PAY_LEVELS
     };
   }
   if (typeof module !== 'undefined' && module.exports) {
@@ -967,6 +1091,8 @@
       calculateCbtScore: calculateCbtScore,
       calculateExamDayLogistics: calculateExamDayLogistics,
       buildExamDayIcs: buildExamDayIcs,
+      calculateOrspSalaryAndFee: calculateOrspSalaryAndFee,
+      ORSP_PAY_LEVELS: ORSP_PAY_LEVELS,
       CARRY_BAG_KEY: CARRY_BAG_KEY,
       CARRY_BAG_ITEMS: CARRY_BAG_ITEMS
     };

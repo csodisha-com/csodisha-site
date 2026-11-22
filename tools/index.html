@@ -18,7 +18,7 @@
   <meta name="twitter:description" content="Zero-upload Odisha exam photo &amp; signature resizer + Odisha age relaxation cut-off calculator.">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
   <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v164">
-  <link rel="stylesheet" href="/tools/assets/tools.css?v=20261122v211">
+  <link rel="stylesheet" href="/tools/assets/tools.css?v=20261122v216">
   <script src="/assets/shared-header.js?v=20261121v171" defer></script>
   <script src="/assets/cso-auth-client.js" defer></script>
   <script src="/assets/js/cso-idb.js" defer></script>
@@ -26,7 +26,7 @@
   <script src="/assets/js/student-utilities.js?v=20261121v164" defer></script>
   <script src="/assets/js/odisha-districts.js?v=20261122v211" defer></script>
   <script src="/assets/js/deadline-tracker.js?v=20261122v211" defer></script>
-  <script src="/tools/assets/tools.js?v=20261122v211" defer></script>
+  <script src="/tools/assets/tools.js?v=20261122v216" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://csodisha.com/"},{"@type":"ListItem","position":2,"name":"Jobs \u0026 Careers","item":"https://csodisha.com/jobs-careers/"},{"@type":"ListItem","position":3,"name":"Student Toolkit","item":"https://csodisha.com/tools/"}]},{"@type":"WebApplication","name":"Odisha Student Toolkit","applicationCategory":"UtilitiesApplication","operatingSystem":"All","url":"https://csodisha.com/tools/","description":"Zero-upload Odisha exam photo and signature resizer plus Odisha government age relaxation and cut-off calculator."}]}</script>
 </head>
@@ -56,6 +56,7 @@
       <a class="cso-tools-pill" href="#cbt-calculator">🧮 CBT Score &amp; Negative-Marking Estimator</a>
       <a class="cso-tools-pill" href="#scam-checker">🔍 Official Link &amp; Scam-Check</a>
       <a class="cso-tools-pill" href="#exam-centre-planner">🎒 Exam-Day Centre Planner</a>
+      <a class="cso-tools-pill" href="#orsp-salary-calculator">💰 7th Pay Salary &amp; Fee</a>
       <a class="cso-tools-pill" href="/jobs-careers/">💼 Back to Live Jobs</a>
     </div>
   </section>
@@ -333,6 +334,56 @@
       <progress id="centre-bag-progress" class="cso-carrybag-progress" max="6" value="0" aria-label="Carry-bag checklist progress"></progress>
       <div id="centre-bag-checklist" class="cso-carrybag-list"></div>
     </div>
+  </section>
+
+  <!-- Tool 6: Odisha 7th Pay Matrix (ORSP) In-Hand Salary & Exam Fee Calculator (v216) -->
+  <section id="orsp-salary-calculator" class="cso-tool-card" aria-labelledby="orsp-salary-heading">
+    <div class="cso-tool-card__head">
+      <div>
+        <h2 id="orsp-salary-heading">💰 Odisha 7th Pay Matrix (ORSP) In-Hand Salary &amp; Exam Fee Calculator</h2>
+        <p class="cso-tool-desc">Estimate monthly Basic Pay, DA, HRA, NPS, Professional Tax, Net In-Hand Salary for Odisha State Govt posts (ORSP Level 4–12), and applicable exam fees.</p>
+      </div>
+      <span class="cso-tool-privacy-badge">🏛️ ORSP 7th Pay Matrix</span>
+    </div>
+
+    <form id="orsp-salary-form" class="cso-age-form">
+      <label class="cso-tool-field">
+        <span>Odisha Exam / Post Preset</span>
+        <select id="orsp-pay-level">
+          <option value="12">Level 12 (₹56,100) — OPSC OAS / OFS / OPS Group-A</option>
+          <option value="10">Level 10 (₹44,900) — OPSC Group-B / Lecturer / Assistant Engineer</option>
+          <option value="9" selected>Level 9 (₹35,400) — OSSC ASO / CGLRE / Odisha Police SI / ICDS Supervisor</option>
+          <option value="7">Level 7 (₹25,500) — OSSSC Revenue Inspector (RI) / Junior Assistant</option>
+          <option value="5">Level 5 (₹21,700) — Odisha Police Constable / Forest Guard</option>
+          <option value="4">Level 4 (₹19,900) — OSSSC ARI / Amin / Livestock Inspector</option>
+        </select>
+      </label>
+      <label class="cso-tool-field">
+        <span>Posting City HRA Tier</span>
+        <select id="orsp-hra-tier">
+          <option value="16">16% (Bhubaneswar / Cuttack / Rourkela / Berhampur / Sambalpur)</option>
+          <option value="8" selected>8% (District &amp; Block Headquarters)</option>
+          <option value="0">0% (Govt Quarters Provided)</option>
+        </select>
+      </label>
+      <label class="cso-tool-field">
+        <span>Odisha Dearness Allowance (DA %)</span>
+        <input id="orsp-da-pct" type="number" min="0" max="200" step="1" value="53" required>
+      </label>
+      <label class="cso-tool-field">
+        <span>Recruitment Board &amp; Applicant Category</span>
+        <select id="orsp-fee-category">
+          <option value="odisha-waived">OPSC / OSSC / OSSSC — Odisha Resident Fee Waived ₹0</option>
+          <option value="central-gen">Central SSC / Banking — General/OBC ₹100</option>
+          <option value="central-exempt">Central SSC / Banking — SC/ST/PwD/Female ₹0</option>
+        </select>
+      </label>
+      <div class="cso-age-actions">
+        <button id="orsp-calc-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Calculate In-Hand Salary &amp; Fee</button>
+      </div>
+    </form>
+
+    <div id="orsp-salary-result" class="cso-cbt-calc-result" role="status" aria-live="polite"></div>
   </section>
 </main>
 
