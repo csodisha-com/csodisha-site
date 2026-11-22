@@ -197,6 +197,18 @@
       item.age_limit = '21–38 yrs (SEBC/SC/ST/Women +5 Yrs · PwBD +10 Yrs)';
       item.pay_level = 'ORSP 7th Pay Matrix Level-12 (₹56,100 – ₹1,77,500)';
       item.apply_url = 'https://www.opsc.gov.in/';
+    } else {
+      var natMap = root.CSO_NATIONAL_JOBS_1_1 || (typeof require === 'function' ? require('./national-jobs-1-1-data.js') : null);
+      if (natMap && Object.prototype.hasOwnProperty.call(natMap, s)) {
+        var nat = natMap[s];
+        var fields = ['organisation', 'qualification', 'age_limit', 'pay_level', 'vacancies', 'apply_url', 'summary', 'summary_or', 'examPatternTable', 'relaxationTable', 'physicalStandards', 'payProgression', 'marksChart', 'referenceLinks'];
+        for (var k = 0; k < fields.length; k++) {
+          var fk = fields[k];
+          if (nat[fk] !== undefined && nat[fk] !== null && nat[fk] !== '') {
+            item[fk] = nat[fk];
+          }
+        }
+      }
     }
     return item;
   }
@@ -1386,6 +1398,24 @@
         stage_label: 'New Recruitment',
         vacancies: s === 'odisha-civil-services' ? 399 : 1056,
         last_date: '2027-02-15'
+      });
+    }
+    var natMap = root.CSO_NATIONAL_JOBS_1_1 || (typeof require === 'function' ? require('./national-jobs-1-1-data.js') : null);
+    if (natMap && Object.prototype.hasOwnProperty.call(natMap, s)) {
+      var spec = natMap[s];
+      var prettyTitle = s.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+      return attachDetailedDossierSpec({
+        slug: s,
+        section: 'jobs-recruitment',
+        l1Code: '1.1',
+        l2Code: spec.l2Code || '1.1',
+        title: spec.title || prettyTitle,
+        title_or: spec.title_or || '',
+        category: 'Central',
+        stage: 'new-recruitment',
+        stage_label: 'New Recruitment',
+        vacancies: spec.vacancies || 'Central Gazette',
+        last_date: spec.last_date || '2027-03-31'
       });
     }
     return null;

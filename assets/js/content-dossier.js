@@ -506,12 +506,17 @@
     infoCard.appendChild(tblWrap);
     rootEl.appendChild(infoCard);
 
-    // 5. Exam Pattern & Negative Marking Table (Multi-Row 2,025 Marks Breakdown when present)
+    // 5. Exam Pattern & Negative Marking Table (Multi-Row 2,025 Marks Breakdown or Branch Exam Pattern Table)
     var patCard = el('section', 'cso-dossier-card');
-    patCard.appendChild(el('h2', 'cso-dossier-section-title', Array.isArray(job.examStages) ? '3-Stage Exam Pattern & Marks Breakdown (2,025 Grand Total)' : 'Exam Pattern & Negative Marking Blueprint'));
+    var patHeading = Array.isArray(job.examStages)
+      ? '3-Stage Exam Pattern & Marks Breakdown (2,025 Grand Total)'
+      : (Array.isArray(job.examPatternTable) ? 'Exam Pattern, Stages & Negative Marking Blueprint' : 'Exam Pattern & Negative Marking Blueprint');
+    patCard.appendChild(el('h2', 'cso-dossier-section-title', patHeading));
     var patTbl = el('table', 'cso-dossier-table');
     var patBody = document.createElement('tbody');
-    var patRows = Array.isArray(job.examStages) ? job.examStages : getExamPatternRows(job);
+    var patRows = Array.isArray(job.examStages)
+      ? job.examStages
+      : (Array.isArray(job.examPatternTable) ? job.examPatternTable : getExamPatternRows(job));
     patRows.forEach(function (pair) {
       var tr = document.createElement('tr');
       tr.appendChild(el('th', '', pair[0]));
@@ -523,22 +528,42 @@
     patCard.appendChild(patTbl);
     rootEl.appendChild(patCard);
 
-    if (Array.isArray(job.attemptMatrix) && job.attemptMatrix.length) {
+    var relaxRows = Array.isArray(job.attemptMatrix) && job.attemptMatrix.length
+      ? job.attemptMatrix
+      : (Array.isArray(job.relaxationTable) && job.relaxationTable.length ? job.relaxationTable : null);
+    if (relaxRows) {
       var attCard = el('section', 'cso-dossier-card');
-      attCard.appendChild(el('h2', 'cso-dossier-section-title', 'Statutory Eligibility, Age Relaxation (1st August) & Attempt Matrix'));
+      attCard.appendChild(el('h2', 'cso-dossier-section-title', Array.isArray(job.attemptMatrix) ? 'Statutory Eligibility, Age Relaxation (1st August) & Attempt Matrix' : 'Category Age Relaxation, Fee & Attempt Matrix'));
       var attTbl = el('table', 'cso-dossier-table');
       var attBody = document.createElement('tbody');
-      job.attemptMatrix.forEach(function (row) {
+      relaxRows.forEach(function (row) {
         var tr = document.createElement('tr');
         tr.appendChild(el('th', '', row[0]));
         tr.appendChild(el('td', '', row[1]));
         tr.appendChild(el('td', '', row[2]));
-        tr.appendChild(el('td', '', row[3]));
+        if (row[3]) tr.appendChild(el('td', '', row[3]));
         attBody.appendChild(tr);
       });
       attTbl.appendChild(attBody);
       attCard.appendChild(attTbl);
       rootEl.appendChild(attCard);
+    }
+
+    if (Array.isArray(job.physicalStandards) && job.physicalStandards.length) {
+      var phyCard = el('section', 'cso-dossier-card');
+      phyCard.appendChild(el('h2', 'cso-dossier-section-title', 'Physical & Medical Standards (PST / PET / Medical)'));
+      var phyTbl = el('table', 'cso-dossier-table');
+      var phyBody = document.createElement('tbody');
+      job.physicalStandards.forEach(function (row) {
+        var tr = document.createElement('tr');
+        tr.appendChild(el('th', '', row[0]));
+        tr.appendChild(el('td', '', row[1]));
+        if (row[2]) tr.appendChild(el('td', '', row[2]));
+        phyBody.appendChild(tr);
+      });
+      phyTbl.appendChild(phyBody);
+      phyCard.appendChild(phyTbl);
+      rootEl.appendChild(phyCard);
     }
 
     if (Array.isArray(job.serviceAllocations) && job.serviceAllocations.length) {
