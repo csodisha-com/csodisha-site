@@ -3895,3 +3895,124 @@ body.is-live-modal-open {
   color: #991b1b;
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
+
+/* v218: Overview Live Recruitment Snapshot & Career Hub Sub-Options */
+.cso-overview-visual-bar {
+  margin-bottom: 18px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border, #d5e0f0);
+  background: var(--cso-surface, #ffffff);
+  display: grid;
+  gap: 12px;
+}
+
+.cso-ov-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cso-ov-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.cso-ov-svg__label {
+  fill: var(--cso-text, #1e293b);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cso-ov-svg__track {
+  fill: var(--cso-surface-alt, #e2e8f0);
+}
+
+.cso-ov-svg__bar {
+  fill: #1d4ed8;
+}
+
+.cso-ov-svg__val {
+  fill: var(--cso-muted, #475569);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cso-ov-stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-hub-card.is-active {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.18);
+}
+
+.cso-hub-suboptions {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border, #d5e0f0);
+  background: var(--cso-surface, #ffffff);
+  display: grid;
+  gap: 12px;
+}
+
+.cso-hub-sub__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cso-hub-sub__head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.cso-hub-sub__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-hub-sub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+}
+
+.cso-hub-sub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border, #e2e8f0);
+  background: var(--cso-surface-alt, #f8fafc);
+}
+
+.cso-hub-sub-card__title {
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.cso-hub-sub-card__btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.cso-hub-sub-card__btns .live-btn,
+.cso-hub-sub__actions .live-btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

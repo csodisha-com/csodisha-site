@@ -1473,10 +1473,9 @@
 
     if (job.slug) jobCache.set(job.slug, job);
     const footer = el('div', 'live-job-card__footer');
-    const detailBtn = el('button', 'live-btn live-btn--primary', 'View Details');
-    detailBtn.type = 'button';
-    detailBtn.addEventListener('click', () => openJobDetail(job.slug));
-    footer.appendChild(detailBtn);
+    const detailLink = el('a', 'live-btn live-btn--primary', 'View Details');
+    detailLink.href = `/jobs-careers/detail/?slug=${encodeURIComponent(job.slug || job.id || '')}`;
+    footer.appendChild(detailLink);
 
     const applyHref = job.apply_url || job.notification_url || '';
     if (applyHref && pc && pc.safeHref(applyHref)) {
@@ -1649,10 +1648,7 @@
       const slug = card.getAttribute('data-job-slug') || '';
       const detailLink = card.querySelector('[data-action="details"]');
       if (detailLink && slug) {
-        detailLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          openJobDetail(slug);
-        });
+        detailLink.href = `/jobs-careers/detail/?slug=${encodeURIComponent(slug)}`;
       }
       const infoLink = card.querySelector('[data-action="info"]');
       if (infoLink && slug) {
@@ -2361,6 +2357,233 @@
     }
   } catch (_) {}
   renderDistrictBanner();
+
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const CAREER_HUB_SUBOPTIONS = {
+    'odisha-state-jobs': {
+      title: 'Odisha State Jobs — Key Tracks & Dossiers',
+      items: [
+        { label: 'OPSC OAS / Civil Services', board: 'OPSC', slug: 'opsc-odisha-civil-services-ocs-2026', chip: 'opsc' },
+        { label: 'OSSC CGLRE Graduate Posts', board: 'OSSC', slug: 'ossc-combined-graduate-level-cglre-2026', chip: 'ossc' },
+        { label: 'OSSC CGLRE Specialist Admit Card', board: 'OSSC', slug: 'ossc-cglre-specialist-2025-prelims-admit-card-5919', chip: 'ossc', stage: 'admit-card' },
+        { label: 'OSSC CTSRE-2025 Answer Key', board: 'OSSC', slug: 'ossc-ctsre-2025-prelims-tentative-answer-key-5925', chip: 'ossc', stage: 'answer-key' },
+        { label: 'OSSSC RI / ARI / Amin / ICDS Result', board: 'OSSSC', slug: 'osssc-ri-ari-amin-icds-sfs-written-exam-result-2026', chip: 'ossc', stage: 'result' }
+      ]
+    },
+    'teaching-education': {
+      title: 'Teaching & Education — Key Tracks & Dossiers',
+      items: [
+        { label: 'SSB / OAVS TGT & PGT Faculty', board: 'Teaching', slug: 'ssb-ltr-oavs-govt-high-school-teacher-2026', chip: 'teaching' },
+        { label: 'OTET & OSSTET Teacher Eligibility', board: 'BSE Odisha', slug: 'hub-otet-osstet-eligibility', chip: 'teaching' },
+        { label: 'Junior Teacher (Schematic) / OSEPA', board: 'OSEPA', slug: 'hub-osepa-junior-teacher', chip: 'teaching' },
+        { label: 'DHSE / OPSC College Lecturer', board: 'OPSC / DHSE', slug: 'hub-opsc-dhse-lecturer', chip: 'teaching' }
+      ]
+    },
+    'central-ssc-railways-banking': {
+      title: 'Central, SSC, Railways & Banking — Key Tracks',
+      items: [
+        { label: 'SSC Combined Graduate Level (CGL)', board: 'SSC', slug: 'ssc-combined-graduate-level-cgl-national-2026', chip: 'central-banking' },
+        { label: 'RRB NTPC & Railway Group-D', board: 'RRB', slug: 'hub-rrb-ntpc-railway', chip: 'central-banking' },
+        { label: 'IBPS PO / Clerk & SBI Banking', board: 'IBPS / SBI', slug: 'hub-ibps-sbi-banking', chip: 'central-banking' },
+        { label: 'UPSC Civil Services & CDS/NDA', board: 'UPSC', slug: 'hub-upsc-central', chip: 'central-banking' }
+      ]
+    },
+    'police-defence': {
+      title: 'Police & Defence — Key Tracks & Dossiers',
+      items: [
+        { label: 'OPRB Sub-Inspector (SI) & Constable', board: 'OPRB', slug: 'odisha-police-sub-inspector-constable-2026', chip: 'police' },
+        { label: 'OSSSC Forest Guard & Forester', board: 'OSSSC', slug: 'hub-osssc-forest-guard', chip: 'police' },
+        { label: 'Odisha Excise SI & Constable', board: 'OSSC / Excise', slug: 'hub-odisha-excise-si', chip: 'police' },
+        { label: 'CAPF / SSC GD & Agniveer', board: 'Central Defence', slug: 'hub-capf-agniveer', chip: 'police' }
+      ]
+    },
+    'psu-technical-healthcare': {
+      title: 'PSU, Technical & Healthcare — Key Tracks',
+      items: [
+        { label: 'OSSSC Medical Lab Technician (380 Posts)', board: 'OSSSC Health', slug: 'osssc-medical-laboratory-technician-recruitment-2026', chip: 'ossc' },
+        { label: 'OSSSC Nursing Officer / ANM / Pharmacist', board: 'OSSSC / NHM', slug: 'hub-osssc-nursing-nhm', chip: 'ossc' },
+        { label: 'Odisha PSUs (NALCO, SAIL, OHPC, OPTCL)', board: 'PSU / Engg', slug: 'hub-odisha-psu-engineering', chip: 'central-banking' },
+        { label: 'OSSC Junior Engineer (Civil / Mech)', board: 'OSSC Tech', slug: 'ossc-ctsre-2025-prelims-tentative-answer-key-5925', chip: 'ossc' }
+      ]
+    },
+    'private-remote-internships': {
+      title: 'Private, Remote & Internships — Key Tracks',
+      items: [
+        { label: 'Odisha IT / Bhubaneswar Tech Campus', board: 'IT / Tech', slug: 'hub-odisha-it-campus', chip: 'all' },
+        { label: 'NAPS / NATS Govt Apprenticeships', board: 'Apprenticeship', slug: 'hub-naps-nats-apprenticeship', chip: 'all' },
+        { label: 'Banking & Finance Associate Roles', board: 'Private BFSI', slug: 'hub-private-bfsi', chip: 'all' },
+        { label: 'Remote Content & EdTech Internships', board: 'Remote', slug: 'hub-remote-internships', chip: 'all' }
+      ]
+    }
+  };
+
+  function svgEl(tag, attrs) {
+    const node = document.createElementNS(SVG_NS, tag);
+    if (attrs) {
+      Object.keys(attrs).forEach(k => node.setAttribute(k, String(attrs[k])));
+    }
+    return node;
+  }
+
+  function renderOverviewVisualBar(items) {
+    const host = document.getElementById('cso-overview-visual-bar');
+    if (!host) return;
+    host.replaceChildren();
+
+    const list = Array.isArray(items) ? items : [];
+    const buckets = [
+      { key: 'OPSC', label: 'OPSC', vac: 0 },
+      { key: 'OSSC', label: 'OSSC', vac: 0 },
+      { key: 'OSSSC', label: 'OSSSC', vac: 0 },
+      { key: 'OPRB', label: 'OPRB', vac: 0 },
+      { key: 'Teaching', label: 'Teaching', vac: 0 },
+      { key: 'Central', label: 'Central', vac: 0 }
+    ];
+
+    list.forEach(j => {
+      const hay = [j.category, j.organisation, j.title, j.state].join(' ').toLowerCase();
+      const v = Number(j.vacancies) > 0 ? Number(j.vacancies) : 1;
+      if (hay.includes('opsc')) buckets[0].vac += v;
+      else if (hay.includes('ossc') && !hay.includes('osssc')) buckets[1].vac += v;
+      else if (hay.includes('osssc')) buckets[2].vac += v;
+      else if (hay.includes('oprb') || hay.includes('police')) buckets[3].vac += v;
+      else if (hay.includes('teach') || hay.includes('ssb') || hay.includes('oavs')) buckets[4].vac += v;
+      else buckets[5].vac += v;
+    });
+
+    const maxVac = Math.max(1, ...buckets.map(b => b.vac));
+    const head = el('div', 'cso-ov-head');
+    head.appendChild(el('strong', '', '📊 Live Recruitment Snapshot (D1 Vacancies by Board)'));
+    head.appendChild(el('span', 'live-count-badge', `${list.length} Live Notices`));
+    host.appendChild(head);
+
+    const svg = svgEl('svg', { viewBox: '0 0 640 164', class: 'cso-ov-svg', role: 'img', 'aria-label': 'Live vacancies across Odisha and Central boards' });
+    buckets.forEach((b, idx) => {
+      const y = 12 + idx * 25;
+      const lbl = svgEl('text', { x: 4, y: y + 14, class: 'cso-ov-svg__label' });
+      lbl.textContent = b.label;
+      svg.appendChild(lbl);
+
+      const track = svgEl('rect', { x: 90, y: y + 2, width: 430, height: 15, rx: 6, class: 'cso-ov-svg__track' });
+      svg.appendChild(track);
+
+      const barW = Math.max(b.vac > 0 ? 12 : 4, Math.round((b.vac / maxVac) * 430));
+      const bar = svgEl('rect', { x: 90, y: y + 2, width: barW, height: 15, rx: 6, class: 'cso-ov-svg__bar' });
+      svg.appendChild(bar);
+
+      const val = svgEl('text', { x: 530, y: y + 14, class: 'cso-ov-svg__val' });
+      val.textContent = b.vac.toLocaleString('en-IN');
+      svg.appendChild(val);
+    });
+    host.appendChild(svg);
+
+    const stageRow = el('div', 'cso-ov-stages');
+    [
+      { stage: 'new-recruitment', label: 'New Recruitment' },
+      { stage: 'admit-card', label: 'Admit Card' },
+      { stage: 'answer-key', label: 'Answer Key' },
+      { stage: 'result', label: 'Final Result' }
+    ].forEach(st => {
+      const btn = el('button', 'live-stage-pill', st.label);
+      btn.type = 'button';
+      btn.addEventListener('click', () => {
+        liveState.stage = st.stage;
+        liveState.page = 1;
+        updateStageButtonsUI();
+        loadLiveJobs();
+        const sec = document.getElementById('live-jobs-section');
+        if (sec && sec.scrollIntoView) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      stageRow.appendChild(btn);
+    });
+    host.appendChild(stageRow);
+  }
+
+  function initCareerHubSuboptions() {
+    const hubWrap = document.getElementById('career-hubs');
+    const subHost = document.getElementById('cso-hub-suboptions');
+    if (!hubWrap || !subHost) return;
+
+    function openHub(hubKey, hubHref) {
+      const spec = CAREER_HUB_SUBOPTIONS[hubKey];
+      if (!spec) return;
+      subHost.hidden = false;
+      subHost.replaceChildren();
+
+      hubWrap.querySelectorAll('.cso-hub-card').forEach(c => {
+        const active = c.getAttribute('data-hub-key') === hubKey;
+        c.classList.toggle('is-active', active);
+        c.setAttribute('aria-expanded', String(active));
+      });
+
+      const head = el('div', 'cso-hub-sub__head');
+      head.appendChild(el('h3', '', spec.title));
+      const headActions = el('div', 'cso-hub-sub__actions');
+      if (hubHref) {
+        const dirLink = el('a', 'live-btn live-btn--primary', 'Open Full Hub Directory →');
+        dirLink.href = hubHref;
+        headActions.appendChild(dirLink);
+      }
+      const closeBtn = el('button', 'live-btn', '✕ Close');
+      closeBtn.type = 'button';
+      closeBtn.addEventListener('click', () => {
+        subHost.hidden = true;
+        hubWrap.querySelectorAll('.cso-hub-card').forEach(c => {
+          c.classList.remove('is-active');
+          c.setAttribute('aria-expanded', 'false');
+        });
+      });
+      headActions.appendChild(closeBtn);
+      head.appendChild(headActions);
+      subHost.appendChild(head);
+
+      const grid = el('div', 'cso-hub-sub-grid');
+      spec.items.forEach(item => {
+        const card = el('div', 'cso-hub-sub-card');
+        card.appendChild(el('span', 'live-badge live-badge--org', item.board));
+        card.appendChild(el('strong', 'cso-hub-sub-card__title', item.label));
+        const btns = el('div', 'cso-hub-sub-card__btns');
+
+        const filterBtn = el('button', 'live-btn', 'Filter Notices');
+        filterBtn.type = 'button';
+        filterBtn.addEventListener('click', () => {
+          liveState.chip = item.chip || 'all';
+          liveState.stage = item.stage || 'all';
+          liveState.page = 1;
+          updateStageButtonsUI();
+          updateChipButtonsUI();
+          loadLiveJobs();
+          const sec = document.getElementById('live-jobs-section');
+          if (sec && sec.scrollIntoView) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        const dossierA = el('a', 'live-btn live-btn--primary', 'Visual Dossier →');
+        dossierA.href = `/jobs-careers/detail/?slug=${encodeURIComponent(item.slug)}`;
+
+        btns.append(filterBtn, dossierA);
+        card.appendChild(btns);
+        grid.appendChild(card);
+      });
+      subHost.appendChild(grid);
+    }
+
+    hubWrap.querySelectorAll('.cso-hub-card').forEach(card => {
+      card.setAttribute('aria-expanded', 'false');
+      card.addEventListener('click', (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+        const hubKey = card.getAttribute('data-hub-key');
+        if (!hubKey || !CAREER_HUB_SUBOPTIONS[hubKey]) return;
+        e.preventDefault();
+        openHub(hubKey, card.getAttribute('href'));
+      });
+    });
+  }
+
+  initCareerHubSuboptions();
+  fetch('/api/content/jobs?limit=50', { credentials: 'same-origin' })
+    .then(r => (r.ok ? r.json() : { items: [] }))
+    .then(d => renderOverviewVisualBar(Array.isArray(d.items) ? d.items : []))
+    .catch(() => renderOverviewVisualBar([]));
 
   loadCandidateGoalsAndTaxonomy();
   syncCategoryDropdown([]);

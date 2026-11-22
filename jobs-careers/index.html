@@ -13,7 +13,7 @@
   <meta property="og:image" content="https://csodisha.com/assets/img/cso-logo.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
-  <link rel="stylesheet" href="./assets/dashboard.css?v=20261122v209">
+  <link rel="stylesheet" href="./assets/dashboard.css?v=20261122v218">
   <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v173">
   <link rel="stylesheet" href="/jobs-careers/assets/hub.css?v=20261121v173">
   <script src="/assets/shared-header.js?v=20261121v171" defer></script>
@@ -22,7 +22,7 @@
   <script src="/assets/js/odisha-districts.js?v=20261122v194" defer></script>
   <script src="/assets/js/candidate-prefs.js?v=20261122v197" defer></script>
   <script src="/assets/js/deadline-tracker.js?v=20261122v204" defer></script>
-  <script src="./assets/dashboard.js?v=20261122v209" defer></script>
+  <script src="./assets/dashboard.js?v=20261122v218" defer></script>
   <script src="/jobs-careers/assets/hub.js?v=20261121v173" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css">
@@ -232,65 +232,67 @@
         </section>
 
         <section id="overview" aria-label="Directory overview">
+          <div id="cso-overview-visual-bar" class="cso-overview-visual-bar" aria-label="Overview Live Recruitment Snapshot"></div>
           <!-- career-hubs:start -->
           <h2 id="career-hubs-heading">Career Hubs</h2>
           <div class="cso-hub-grid" id="career-hubs" aria-labelledby="career-hubs-heading">
-            <a class="cso-hub-card" href="/jobs-careers/odisha-state-jobs/" data-hub-pattern="opsc|ossc|osssc|\boas\b|\bocs\b|\boprb\b|\bosepa\b|district|collector|odisha (public|staff|subordinate)|\bpeo\b|\bari\b|\bamin\b">
+            <a class="cso-hub-card" href="/jobs-careers/odisha-state-jobs/" data-hub-key="odisha-state-jobs" data-hub-pattern="opsc|ossc|osssc|\boas\b|\bocs\b|\boprb\b|\bosepa\b|district|collector|odisha (public|staff|subordinate)|\bpeo\b|\bari\b|\bamin\b">
               <span class="cso-hub-card__icon" aria-hidden="true">🏛️</span>
               <span class="cso-hub-card__body">
                 <span class="cso-hub-card__title">Odisha State Jobs</span>
                 <span class="cso-hub-card__boards">OPSC · OSSC · OSSSC · District Recruitments</span>
-                <span class="cso-hub-card__count" data-hub-count>Open hub</span>
+                <span class="cso-hub-card__count" data-hub-count>Explore sub-options</span>
               </span>
               <span class="cso-hub-card__arrow" aria-hidden="true">›</span>
             </a>
-            <a class="cso-hub-card" href="/jobs-careers/teaching-education/" data-hub-pattern="teach|otet|osstet|\btet\b|\bjt\b|junior teacher|\bssb\b|dhse|guest faculty|oavs|adarsha|lecturer|\btgt\b|\bpgt\b|b\.?ed|school|\bcht\b|\bltr\b|education">
+            <a class="cso-hub-card" href="/jobs-careers/teaching-education/" data-hub-key="teaching-education" data-hub-pattern="teach|otet|osstet|\btet\b|\bjt\b|junior teacher|\bssb\b|dhse|guest faculty|oavs|adarsha|lecturer|\btgt\b|\bpgt\b|b\.?ed|school|\bcht\b|\bltr\b|education">
               <span class="cso-hub-card__icon" aria-hidden="true">🎓</span>
               <span class="cso-hub-card__body">
                 <span class="cso-hub-card__title">Teaching &amp; Education</span>
                 <span class="cso-hub-card__boards">OTET · OSSTET · JT · SSB · DHSE Guest Faculty · OAVS</span>
-                <span class="cso-hub-card__count" data-hub-count>Open hub</span>
+                <span class="cso-hub-card__count" data-hub-count>Explore sub-options</span>
               </span>
               <span class="cso-hub-card__arrow" aria-hidden="true">›</span>
             </a>
-            <a class="cso-hub-card" href="/jobs-careers/central-ssc-railways-banking/" data-hub-pattern="upsc|\bssc\b|\bcgl\b|\bchsl\b|\bmts\b|rrb|railway|\bntpc\b|group d|ibps|\bsbi\b|\brbi\b|nabard|bank|clerk|central">
+            <a class="cso-hub-card" href="/jobs-careers/central-ssc-railways-banking/" data-hub-key="central-ssc-railways-banking" data-hub-pattern="upsc|\bssc\b|\bcgl\b|\bchsl\b|\bmts\b|rrb|railway|\bntpc\b|group d|ibps|\bsbi\b|\brbi\b|nabard|bank|clerk|central">
               <span class="cso-hub-card__icon" aria-hidden="true">🚆</span>
               <span class="cso-hub-card__body">
                 <span class="cso-hub-card__title">Central, SSC, Railways &amp; Banking</span>
                 <span class="cso-hub-card__boards">SSC · RRB · IBPS · SBI · UPSC</span>
-                <span class="cso-hub-card__count" data-hub-count>Open hub</span>
+                <span class="cso-hub-card__count" data-hub-count>Explore sub-options</span>
               </span>
               <span class="cso-hub-card__arrow" aria-hidden="true">›</span>
             </a>
-            <a class="cso-hub-card" href="/jobs-careers/police-defence/" data-hub-pattern="police|constable|sub[- ]?inspector|\bsi\b|capf|crpf|\bbsf\b|cisf|itbp|assam rifles|paramilitary|agniveer|agnipath|army|navy|air force|defen[cs]e|\bfire\b|jail|excise|\bnda\b|\bcds\b">
+            <a class="cso-hub-card" href="/jobs-careers/police-defence/" data-hub-key="police-defence" data-hub-pattern="police|constable|sub[- ]?inspector|\bsi\b|capf|crpf|\bbsf\b|cisf|itbp|assam rifles|paramilitary|agniveer|agnipath|army|navy|air force|defen[cs]e|\bfire\b|jail|excise|\bnda\b|\bcds\b">
               <span class="cso-hub-card__icon" aria-hidden="true">🛡️</span>
               <span class="cso-hub-card__body">
                 <span class="cso-hub-card__title">Police &amp; Defence</span>
                 <span class="cso-hub-card__boards">Odisha Police · CAPF · Agniveer · Defence</span>
-                <span class="cso-hub-card__count" data-hub-count>Open hub</span>
+                <span class="cso-hub-card__count" data-hub-count>Explore sub-options</span>
               </span>
               <span class="cso-hub-card__arrow" aria-hidden="true">›</span>
             </a>
-            <a class="cso-hub-card" href="/jobs-careers/psu-technical-healthcare/" data-hub-pattern="\bpsu\b|ntpc|nalco|iocl?|bhel|\bsail\b|gail|ongc|coal|\bhal\b|drdo|isro|engineer|technical|diploma|\biti\b|\bgate\b|nurs|medical|doctor|health|\bnhm\b|aiims|pharmac|paramedical|\banm\b|\bgnm\b">
+            <a class="cso-hub-card" href="/jobs-careers/psu-technical-healthcare/" data-hub-key="psu-technical-healthcare" data-hub-pattern="\bpsu\b|ntpc|nalco|iocl?|bhel|\bsail\b|gail|ongc|coal|\bhal\b|drdo|isro|engineer|technical|diploma|\biti\b|\bgate\b|nurs|medical|doctor|health|\bnhm\b|aiims|pharmac|paramedical|\banm\b|\bgnm\b">
               <span class="cso-hub-card__icon" aria-hidden="true">⚙️</span>
               <span class="cso-hub-card__body">
                 <span class="cso-hub-card__title">PSU, Technical &amp; Healthcare</span>
                 <span class="cso-hub-card__boards">PSUs · Engineering · Medical · Nursing</span>
-                <span class="cso-hub-card__count" data-hub-count>Open hub</span>
+                <span class="cso-hub-card__count" data-hub-count>Explore sub-options</span>
               </span>
               <span class="cso-hub-card__arrow" aria-hidden="true">›</span>
             </a>
-            <a class="cso-hub-card" href="/jobs-careers/private-remote-internships/" data-hub-pattern="private|apprentice|intern|remote|work from home|\bwfh\b|freelanc|startup|trainee|corporate|walk[- ]?in|campus|fresher|software|\bit\b">
+            <a class="cso-hub-card" href="/jobs-careers/private-remote-internships/" data-hub-key="private-remote-internships" data-hub-pattern="private|apprentice|intern|remote|work from home|\bwfh\b|freelanc|startup|trainee|corporate|walk[- ]?in|campus|fresher|software|\bit\b">
               <span class="cso-hub-card__icon" aria-hidden="true">💼</span>
               <span class="cso-hub-card__body">
                 <span class="cso-hub-card__title">Private, Remote &amp; Internships</span>
                 <span class="cso-hub-card__boards">Private Sector · Apprenticeships · Remote Work</span>
-                <span class="cso-hub-card__count" data-hub-count>Open hub</span>
+                <span class="cso-hub-card__count" data-hub-count>Explore sub-options</span>
               </span>
               <span class="cso-hub-card__arrow" aria-hidden="true">›</span>
             </a>
           </div>
           <!-- career-hubs:end -->
+          <div id="cso-hub-suboptions" class="cso-hub-suboptions" aria-live="polite" hidden></div>
 
           <details class="hub-directory-more">
             <summary>Browse the full directory by section</summary>
