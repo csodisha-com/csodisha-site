@@ -1,34 +1,60 @@
 /**
- * Common Sense Odisha — Compact 3-Tab Editorial Studio Controller (admin/admin.js, v199)
- * Strict CSP-compliant: zero HTML string injection, zero inline style props, zero inline handlers.
+ * Common Sense Odisha — Editorial Studio & Master Command Suite Controller (admin/admin.js)
+ * Strict CSP-compliant: zero HTML string injection, zero inline style props, zero inline handlers, zero mock data.
  */
 (function (window, document) {
   'use strict';
 
-  var PAGE_SIZE = 10;
   var masterNavigationSchema = null;
+  var liveTelemetry = {
+    jobs: 0,
+    schemes: 0,
+    study: 0,
+    pendingDrafts: 0,
+    lastSyncedAt: ''
+  };
 
   var CSOState = {
-    activeTab: 'jobs',
-    jobsMode: 'editor', // 'editor' | 'queue' | 'digest'
-    editingJobId: null,
-    schemePage: 1,
-    schemeFilter: '',
-    selectedModuleId: ''
+    activeFolderId: 'folder-01',
+    activeModuleId: 'module-01-001',
+    expandedFolders: new Set(['folder-01']),
+    searchQuery: '',
+    startTime: Date.now()
   };
 
   var dom = {
-    tabsNav: document.getElementById('csoAdminTabs'),
+    accordionNav: document.getElementById('accordionNav'),
+    moduleSearchInput: document.getElementById('moduleSearchInput'),
+    searchCountBadge: document.getElementById('searchCountBadge'),
     workspaceRoot: document.getElementById('workspaceRoot'),
+    breadcrumbFolder: document.getElementById('breadcrumbFolder'),
+    breadcrumbHomeBtn: document.getElementById('breadcrumbHomeBtn'),
+    breadcrumbModule: document.getElementById('breadcrumbModule'),
+    activeModuleHeading: document.getElementById('activeModuleHeading'),
+    activeModuleTitleText: document.getElementById('activeModuleTitleText'),
+    activeModuleIdPill: document.getElementById('activeModuleIdPill'),
     moduleHeaderActions: document.getElementById('moduleHeaderActions'),
+    sessionTimer: document.getElementById('sessionTimer'),
+    btnToggleSidebar: document.getElementById('btnToggleSidebar'),
+    sidebarToggleBtn: document.getElementById('sidebarToggleBtn'),
+    brandHomeBtn: document.getElementById('brandHomeBtn'),
+    shell: document.querySelector('.cso-shell'),
+    sidebarConsole: document.getElementById('sidebarConsole'),
+    mobileDrawerBackdrop: document.getElementById('mobileDrawerBackdrop'),
     toastContainer: document.getElementById('toastContainer'),
     globalModal: document.getElementById('globalModal'),
     modalTitle: document.getElementById('modalTitle'),
     modalBody: document.getElementById('modalBody'),
     modalFooter: document.getElementById('modalFooter'),
     btnModalClose: document.getElementById('btnModalClose'),
+    btnCreateNewMenu: document.getElementById('btnCreateNewMenu'),
+    createNewDropdown: document.getElementById('createNewDropdown'),
+    themeMenuWrap: document.getElementById('themeMenuWrap'),
+    themeMenuBtn: document.getElementById('themeMenuBtn'),
+    themeMenuPopover: document.getElementById('themeMenuPopover'),
     adminUserEmail: document.getElementById('adminUserEmail'),
-    brandHomeBtn: document.getElementById('brandHomeBtn')
+    adminUserRole: document.getElementById('adminUserRole'),
+    adminUserInitials: document.getElementById('adminUserInitials')
   };
 
   function clearNode(node) {
@@ -43,50 +69,68 @@
     return node;
   }
 
+  function initSessionTimer() {
+    if (!dom.sessionTimer) return;
+    setInterval(function () {
+      var diff = Math.floor((Date.now() - CSOState.startTime) / 1000);
+      var hrs = String(Math.floor(diff / 3600)).padStart(2, '0');
+      var mins = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+      var secs = String(diff % 60).padStart(2, '0');
+      dom.sessionTimer.textContent = hrs + ':' + mins + ':' + secs;
+    }, 1000);
+  }
+
   function showToast(message, type) {
     if (!dom.toastContainer) return;
     var kind = type || 'info';
     var toast = el('div', 'cso-toast cso-toast-' + kind);
-    toast.appendChild(el('span', 'cso-toast-dot'));
-    toast.appendChild(el('span', 'cso-toast-msg', message));
+    var dot = el('span', 'cso-toast-dot');
+    var txt = el('span', 'cso-toast-msg', message);
+    toast.appendChild(dot);
+    toast.appendChild(txt);
     dom.toastContainer.appendChild(toast);
-    setTimeout(function () { toast.classList.add('is-visible'); }, 10);
+
+    setTimeout(function () {
+      toast.classList.add('is-visible');
+    }, 10);
+
     setTimeout(function () {
       toast.classList.remove('is-visible');
       setTimeout(function () { toast.remove(); }, 280);
-    }, 3400);
+    }, 3600);
   }
 
   function closeModal() {
     if (dom.globalModal) dom.globalModal.hidden = true;
   }
 
-  async function apiJson(method, url, body) {
-    var opts = {
-      method: method,
-      credentials: 'same-origin',
-      headers: { 'X-CSO-CSRF': '1' }
-    };
-    if (body !== undefined) {
-      opts.headers['Content-Type'] = 'application/json';
-      opts.body = JSON.stringify(body);
-    }
-    var res = await fetch(url, opts);
-    var data = await res.json().catch(function () { return {}; });
-    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
-    return data;
+  function openMobileDrawer() {
+    if (dom.sidebarConsole) dom.sidebarConsole.classList.add('is-open');
+    if (dom.mobileDrawerBackdrop) dom.mobileDrawerBackdrop.hidden = false;
+    if (dom.btnToggleSidebar) dom.btnToggleSidebar.setAttribute('aria-expanded', 'true');
   }
 
-  async function hydrateSessionIdentity() {
-    try {
-      var res = await fetch('/api/admin/session', { credentials: 'same-origin' });
-      if (!res.ok) return;
-      var d = await res.json();
-      if (d && d.user && dom.adminUserEmail) {
-        try { localStorage.setItem('cso_admin_active', '1'); } catch (_) {}
-        dom.adminUserEmail.textContent = d.user.email || 'Staff';
-      }
-    } catch (_) {}
+  function closeMobileDrawer() {
+    if (dom.sidebarConsole) dom.sidebarConsole.classList.remove('is-open');
+    if (dom.mobileDrawerBackdrop) dom.mobileDrawerBackdrop.hidden = true;
+    if (dom.btnToggleSidebar) dom.btnToggleSidebar.setAttribute('aria-expanded', 'false');
+  }
+
+  function syncModuleCountLabels() {
+    if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
+    var total = masterNavigationSchema.folders.reduce(function (acc, f) {
+      return acc + (Array.isArray(f.modules) ? f.modules.length : 0);
+    }, 0);
+    if (!total) return;
+    document.title = 'CS Odisha — Editorial Studio & Command Suite (' + total + ' Modules)';
+    var brandSub = document.querySelector('.cso-brand-sub');
+    if (brandSub) brandSub.textContent = 'Editorial & Operations Suite (' + total + ' Modules)';
+    var searchLabel = document.querySelector('label[for="moduleSearchInput"]');
+    if (searchLabel) searchLabel.textContent = 'Filter ' + total + ' modules';
+    if (dom.moduleSearchInput) dom.moduleSearchInput.placeholder = 'Filter ' + total + ' modules...';
+    if (dom.accordionNav) dom.accordionNav.setAttribute('aria-label', masterNavigationSchema.folders.length + ' Folders Master Tree');
+    var coverageStrong = document.querySelector('.cso-sidebar-footer .cso-text-accent');
+    if (coverageStrong) coverageStrong.textContent = total + ' / ' + total;
   }
 
   async function loadMasterNavigation() {
@@ -95,373 +139,462 @@
       var res = await fetch('./data/master-navigation.json', { credentials: 'same-origin' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       masterNavigationSchema = await res.json();
+      syncModuleCountLabels();
       return masterNavigationSchema;
-    } catch (_) {
-      return { folders: [] };
+    } catch (err) {
+      showToast('Failed to load navigation schema: ' + err.message, 'crimson');
+      return null;
     }
   }
 
-  function syncTabsUI() {
-    if (!dom.tabsNav) return;
-    dom.tabsNav.querySelectorAll('[data-admin-tab]').forEach(function (btn) {
-      var on = btn.getAttribute('data-admin-tab') === CSOState.activeTab;
-      btn.classList.toggle('is-active', on);
-      btn.setAttribute('aria-selected', String(on));
-    });
+  async function hydrateSessionIdentity() {
+    try {
+      var res = await fetch('/api/admin/session', { credentials: 'same-origin' });
+      if (!res.ok) return;
+      var d = await res.json();
+      if (d && d.user) {
+        try { localStorage.setItem('cso_admin_active', '1'); } catch (_) {}
+        if (dom.adminUserEmail) dom.adminUserEmail.textContent = d.user.email || 'Staff Account';
+        if (dom.adminUserRole) dom.adminUserRole.textContent = String(d.user.role || 'staff').toUpperCase();
+        if (dom.adminUserInitials) {
+          var email = String(d.user.email || 'ST');
+          dom.adminUserInitials.textContent = email.slice(0, 2).toUpperCase();
+        }
+      }
+    } catch (_) {}
   }
 
-  function switchTab(tab) {
-    CSOState.activeTab = tab;
-    syncTabsUI();
-    renderActiveTab();
-  }
+  function renderNavigationTree() {
+    if (!dom.accordionNav || !masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
+    var prevNavScroll = dom.accordionNav.scrollTop;
+    var query = CSOState.searchQuery.toLowerCase().trim();
+    var matchCount = 0;
+    clearNode(dom.accordionNav);
 
-  /* ---------- Tab 1: Jobs & .gov.in Queue ---------- */
-  function renderJobsTab(root) {
-    var modeBar = el('div', 'cso-mode-bar');
-    modeBar.setAttribute('role', 'group');
-    modeBar.setAttribute('aria-label', 'Jobs workspace mode');
-
-    [
-      ['editor', 'New / Edit Job'],
-      ['queue', '.gov.in Queue'],
-      ['digest', 'Daily Digest']
-    ].forEach(function (pair) {
-      var isAct = CSOState.jobsMode === pair[0];
-      var b = el('button', 'cso-mode-btn' + (isAct ? ' is-active' : ''), pair[1]);
-      b.type = 'button';
-      b.setAttribute('aria-pressed', String(isAct));
-      b.addEventListener('click', function () {
-        CSOState.jobsMode = pair[0];
-        renderJobsTab(clearNode(root));
+    masterNavigationSchema.folders.forEach(function (folder) {
+      var folderMatches = folder.title.toLowerCase().includes(query);
+      var filteredModules = folder.modules.filter(function (m) {
+        return folderMatches || m.title.toLowerCase().includes(query) || m.id.toLowerCase().includes(query);
       });
-      modeBar.appendChild(b);
-    });
-    root.appendChild(modeBar);
 
-    var panelHost = el('div', 'cso-mode-panel');
-    root.appendChild(panelHost);
+      if (query && filteredModules.length === 0) return;
+      matchCount += filteredModules.length;
 
-    if (CSOState.jobsMode === 'editor') {
-      renderCompactJobEditor(panelHost, null);
-    } else if (CSOState.jobsMode === 'queue') {
-      if (window.CSOFastPublish && typeof window.CSOFastPublish.createGovDraftQueuePanel === 'function') {
-        var qPanel = window.CSOFastPublish.createGovDraftQueuePanel({
-          onLoadDraft: function (draft) {
-            CSOState.jobsMode = 'editor';
-            renderJobsTab(clearNode(root));
-            var host = root.querySelector('.cso-mode-panel');
-            if (host) renderCompactJobEditor(clearNode(host), draft);
-            showToast('Loaded verified .gov.in draft into Job Editor', 'info');
-          }
+      var isExpanded = query ? true : CSOState.expandedFolders.has(folder.id);
+      var isCurrentFolder = CSOState.activeFolderId === folder.id;
+
+      var folderWrap = el('div', 'cso-nav-folder' + (isCurrentFolder ? ' is-current' : ''));
+      var folderBtn = el('button', 'cso-nav-folder-btn' + (isCurrentFolder ? ' is-active' : ''));
+      folderBtn.type = 'button';
+      folderBtn.setAttribute('aria-expanded', String(isExpanded));
+
+      var left = el('span', 'cso-nav-folder-left');
+      left.appendChild(el('span', 'cso-nav-dot'));
+      left.appendChild(el('span', 'cso-nav-folder-title', folder.title));
+
+      var right = el('span', 'cso-nav-folder-right');
+      right.appendChild(el('span', 'cso-nav-count cso-tabular', String(filteredModules.length)));
+      right.appendChild(el('span', 'cso-nav-chevron' + (isExpanded ? ' is-open' : ''), '›'));
+
+      folderBtn.appendChild(left);
+      folderBtn.appendChild(right);
+      folderBtn.addEventListener('click', function () {
+        if (CSOState.expandedFolders.has(folder.id)) CSOState.expandedFolders.delete(folder.id);
+        else CSOState.expandedFolders.add(folder.id);
+        persistOpenGroups();
+        renderNavigationTree();
+      });
+
+      var modList = el('div', 'cso-nav-modules' + (isExpanded ? '' : ' is-collapsed'));
+      filteredModules.forEach(function (mod, idx) {
+        var isActiveMod = CSOState.activeModuleId === mod.id;
+        var isLiveRoute = !!(window.CSOLive && window.CSOLive.routes && window.CSOLive.routes[mod.id]);
+        var modBtn = el('button', 'cso-nav-mod-btn' + (isActiveMod ? ' is-active' : ''));
+        modBtn.type = 'button';
+        var numMatch = String(mod.id || '').match(/-(\d{2,3})$/);
+        var modNum = numMatch ? String(Number(numMatch[1])).padStart(2, '0') : String(idx + 1).padStart(2, '0');
+        modBtn.appendChild(el('span', 'cso-nav-mod-num', modNum));
+        modBtn.appendChild(el('span', 'cso-nav-mod-title', mod.title));
+        modBtn.appendChild(el('span', 'cso-nav-mod-tag' + (isLiveRoute ? ' is-live' : ''), isLiveRoute ? 'D1' : 'CMS'));
+        modBtn.addEventListener('click', function () {
+          selectModule(folder.id, mod.id);
+          if (window.innerWidth <= 900) closeMobileDrawer();
         });
-        panelHost.appendChild(qPanel.node);
+        modList.appendChild(modBtn);
+      });
+
+      folderWrap.appendChild(folderBtn);
+      folderWrap.appendChild(modList);
+      dom.accordionNav.appendChild(folderWrap);
+    });
+
+    if (dom.searchCountBadge) {
+      if (query) {
+        dom.searchCountBadge.hidden = false;
+        dom.searchCountBadge.textContent = String(matchCount);
       } else {
-        panelHost.appendChild(el('p', 'cso-muted-note', 'Draft queue module unavailable.'));
+        dom.searchCountBadge.hidden = true;
       }
-    } else if (CSOState.jobsMode === 'digest') {
-      if (window.CSOFastPublish && typeof window.CSOFastPublish.renderBroadcastDigestPanel === 'function') {
-        apiJson('GET', '/api/admin/posts?type=job&limit=30')
-          .then(function (data) {
-            window.CSOFastPublish.renderBroadcastDigestPanel(panelHost, (data && data.items) || []);
-          })
-          .catch(function () {
-            window.CSOFastPublish.renderBroadcastDigestPanel(panelHost, []);
-          });
+    }
+    dom.accordionNav.scrollTop = prevNavScroll;
+  }
+
+  function persistOpenGroups() {
+    try { localStorage.setItem('cso_open_sidebar_groups', JSON.stringify(Array.from(CSOState.expandedFolders))); } catch (_e) {}
+  }
+
+  function setSidebarCollapsed(collapsed) {
+    if (dom.shell) dom.shell.classList.toggle('cso-sidebar-collapsed', !!collapsed);
+    document.body.classList.toggle('cso-sidebar-collapsed', !!collapsed);
+    if (dom.sidebarToggleBtn) dom.sidebarToggleBtn.setAttribute('aria-expanded', String(!collapsed));
+    try { localStorage.setItem('cso_sidebar_collapsed', collapsed ? '1' : '0'); } catch (_e) {}
+  }
+
+  async function hydrateTelemetry() {
+    try {
+      var [statsRes, draftsRes] = await Promise.all([
+        fetch('/api/admin/stats', { credentials: 'same-origin' }).catch(function () { return null; }),
+        fetch('/api/admin/crawl-drafts', { credentials: 'same-origin' }).catch(function () { return null; })
+      ]);
+      if (statsRes && statsRes.ok) {
+        var st = await statsRes.json();
+        liveTelemetry.jobs = Number((st && (st.jobs || st.posts)) || 0);
+        liveTelemetry.schemes = Number((st && st.schemes) || 0);
+        liveTelemetry.study = Number((st && (st.study_items || st.study)) || 0);
       }
+      if (draftsRes && draftsRes.ok) {
+        var dr = await draftsRes.json();
+        liveTelemetry.pendingDrafts = Array.isArray(dr && dr.drafts) ? dr.drafts.length : 0;
+      }
+      liveTelemetry.lastSyncedAt = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      renderModuleStandardHeader();
+    } catch (_) {}
+  }
+
+  function renderModuleStandardHeader() {
+    if (!dom.moduleHeaderActions || !masterNavigationSchema) return;
+    clearNode(dom.moduleHeaderActions);
+    var folder = (masterNavigationSchema.folders || []).find(function (f) { return f.id === CSOState.activeFolderId; });
+    var mod = folder && folder.modules ? folder.modules.find(function (m) { return m.id === CSOState.activeModuleId; }) : null;
+    if (!mod) return;
+
+    var syncState = liveTelemetry.pendingDrafts > 0
+      ? ('Drafts Pending (' + liveTelemetry.pendingDrafts + ')')
+      : 'Synced with D1';
+    dom.moduleHeaderActions.appendChild(el('span', 'cso-live-pill', '● ' + syncState));
+    if (liveTelemetry.lastSyncedAt) {
+      dom.moduleHeaderActions.appendChild(el('span', 'cso-live-pill', 'Last Synced: ' + liveTelemetry.lastSyncedAt));
+    }
+    var previewUrl = mod.previewUrl || '/';
+    var previewLink = el('a', 'cso-pill-link', 'Live Preview ↗');
+    previewLink.href = previewUrl;
+    previewLink.target = '_blank';
+    previewLink.rel = 'noopener noreferrer';
+    dom.moduleHeaderActions.appendChild(previewLink);
+
+    var syncBtn = el('button', 'cso-pill-link', '↻ Sync D1');
+    syncBtn.type = 'button';
+    syncBtn.addEventListener('click', function () {
+      hydrateTelemetry();
+      showToast('Synchronized module telemetry with D1', 'info');
+    });
+    dom.moduleHeaderActions.appendChild(syncBtn);
+  }
+
+  function resolveModuleTarget(targetId) {
+    var normalizedId = targetId === 'module-00-001' ? 'module-01-001' : targetId;
+    if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return null;
+    for (var i = 0; i < masterNavigationSchema.folders.length; i++) {
+      var f = masterNavigationSchema.folders[i];
+      var m = (f.modules || []).find(function (x) {
+        return x.id === normalizedId || (Array.isArray(x.aliases) && x.aliases.indexOf(normalizedId) !== -1);
+      });
+      if (m) return { folderId: f.id, moduleId: m.id };
+    }
+    return null;
+  }
+
+  function goDashboardHome() {
+    var target = resolveModuleTarget('module-01-001') || { folderId: 'folder-01', moduleId: 'module-01-001' };
+    selectModule(target.folderId, target.moduleId);
+    if (dom.workspaceRoot && dom.workspaceRoot.scrollIntoView) {
+      dom.workspaceRoot.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
-  function renderCompactJobEditor(host, draft) {
-    var card = el('section', 'cso-compact-card');
-    card.appendChild(el('h2', 'cso-compact-h2', draft ? 'Publish Verified .gov.in Job' : 'New / Edit Job Alert'));
-
-    var form = el('form', 'cso-compact-form');
-    function makeField(label, id, type, value, placeholder) {
-      var wrap = el('label', 'cso-compact-field');
-      wrap.appendChild(el('span', 'cso-compact-lbl', label));
-      var inp = document.createElement('input');
-      inp.id = id;
-      inp.type = type || 'text';
-      inp.className = 'cso-compact-input';
-      if (value !== undefined && value !== null) inp.value = String(value);
-      if (placeholder) inp.placeholder = placeholder;
-      wrap.appendChild(inp);
-      return { wrap: wrap, inp: inp };
+  function selectModule(folderId, moduleId) {
+    if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
+    CSOState.activeFolderId = folderId;
+    CSOState.activeModuleId = moduleId;
+    CSOState.expandedFolders.add(folderId);
+    persistOpenGroups();
+    try { localStorage.setItem('cso_active_module_id', moduleId); } catch (_e) {}
+    if (window.location.hash !== '#' + moduleId && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#' + moduleId);
     }
 
-    var fTitle = makeField('Title *', 'cso-job-title', 'text', draft && draft.title, 'e.g. OPSC OAS Recruitment 2026');
-    fTitle.inp.required = true;
-    var fBoard = makeField('Board / Organization *', 'cso-job-org', 'text', draft && (draft.agency || draft.organisation), 'e.g. OPSC, OSSC, OSSSC');
-    fBoard.inp.required = true;
-    var fDistrict = makeField('District', 'cso-job-district', 'text', (draft && draft.district) || 'All Odisha', 'e.g. Khordha or All Odisha');
-    var fLastDate = makeField('Last Date', 'cso-job-lastdate', 'date', draft && draft.last_date);
-    var fUrl = makeField('Official URL *', 'cso-job-url', 'url', draft && (draft.official_url || draft.apply_url), 'https://www.opsc.gov.in/...');
-    fUrl.inp.required = true;
+    var folder = masterNavigationSchema.folders.find(function (f) { return f.id === folderId; });
+    var mod = folder && folder.modules ? folder.modules.find(function (m) { return m.id === moduleId; }) : null;
 
-    var coreGrid = el('div', 'cso-compact-grid');
-    coreGrid.appendChild(fTitle.wrap);
-    coreGrid.appendChild(fBoard.wrap);
-    coreGrid.appendChild(fDistrict.wrap);
-    coreGrid.appendChild(fLastDate.wrap);
-    coreGrid.appendChild(fUrl.wrap);
-    form.appendChild(coreGrid);
-
-    var adv = document.createElement('details');
-    adv.className = 'cso-advanced-toggle';
-    var sum = document.createElement('summary');
-    sum.textContent = 'More Options (Optional)';
-    adv.appendChild(sum);
-
-    var advGrid = el('div', 'cso-compact-grid cso-compact-grid--adv');
-    var fQual = makeField('Qualification', 'cso-job-qual', 'text', draft && draft.qualification, 'e.g. Graduate / +2');
-    var fVac = makeField('Total Vacancies', 'cso-job-vac', 'number', draft && draft.vacancies, 'e.g. 250');
-    var fPay = makeField('Salary / Pay Scale', 'cso-job-pay', 'text', draft && draft.salary_pay, 'e.g. Level-9');
-    var fSummary = makeField('Short Summary', 'cso-job-summary', 'text', draft && draft.summary, 'Brief eligibility & selection summary');
-    advGrid.appendChild(fQual.wrap);
-    advGrid.appendChild(fVac.wrap);
-    advGrid.appendChild(fPay.wrap);
-    advGrid.appendChild(fSummary.wrap);
-    adv.appendChild(advGrid);
-    form.appendChild(adv);
-
-    var actRow = el('div', 'cso-compact-actions');
-    var pubBtn = el('button', 'btn primary cso-compact-btn', 'Publish Job →');
-    pubBtn.type = 'submit';
-    var statusEl = el('span', 'hint');
-    actRow.appendChild(pubBtn);
-    actRow.appendChild(statusEl);
-    form.appendChild(actRow);
-
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      if (!fTitle.inp.value.trim() || !fUrl.inp.value.trim()) {
-        statusEl.textContent = 'Title and Official URL are required.';
-        return;
-      }
-      pubBtn.disabled = true;
-      statusEl.textContent = 'Publishing…';
-      try {
-        await apiJson('POST', '/api/admin/posts', {
-          type: 'job',
-          status: 'published',
-          title: fTitle.inp.value.trim(),
-          organisation: fBoard.inp.value.trim() || 'Odisha Govt',
-          state: fDistrict.inp.value.trim() || 'Odisha',
-          last_date: fLastDate.inp.value.trim(),
-          apply_url: fUrl.inp.value.trim(),
-          source_url: fUrl.inp.value.trim(),
-          qualification: fQual.inp.value.trim(),
-          vacancies: fVac.inp.value ? Number(fVac.inp.value) : null,
-          salary_pay: fPay.inp.value.trim(),
-          summary: fSummary.inp.value.trim()
-        });
-        statusEl.textContent = '✓ Published to live Jobs directory!';
-        showToast('Job alert published', 'info');
-      } catch (err) {
-        statusEl.textContent = 'Error: ' + err.message;
-      } finally {
-        pubBtn.disabled = false;
-      }
-    });
-
-    card.appendChild(form);
-    host.appendChild(card);
-  }
-
-  /* ---------- Tab 2: Schemes & Study (Paginated 10/page, No 299-Module Wall) ---------- */
-  async function renderSchemesStudyTab(root) {
-    var card = el('section', 'cso-compact-card');
-    card.appendChild(el('h2', 'cso-compact-h2', 'Schemes & Study Modules'));
-
-    var schema = await loadMasterNavigation();
-    var allModules = [];
-    (schema.folders || []).forEach(function (f) {
-      (f.modules || []).forEach(function (m) {
-        allModules.push({ folderId: f.id, folderTitle: f.title, id: m.id, title: m.title });
-      });
-    });
-
-    var controls = el('div', 'cso-compact-controls');
-    var filterInp = document.createElement('input');
-    filterInp.type = 'search';
-    filterInp.className = 'cso-compact-input';
-    filterInp.placeholder = 'Quick filter modules or sections…';
-    filterInp.value = CSOState.schemeFilter;
-    filterInp.setAttribute('aria-label', 'Quick filter modules');
-
-    var modSel = document.createElement('select');
-    modSel.className = 'cso-compact-input';
-    modSel.setAttribute('aria-label', 'Select module to open');
-
-    controls.appendChild(filterInp);
-    controls.appendChild(modSel);
-    card.appendChild(controls);
-
-    var tableHost = el('div', 'cso-compact-list');
-    var pagerHost = el('div', 'cso-compact-pager');
-    var editorHost = el('div', 'cso-compact-editor-host');
-    card.appendChild(tableHost);
-    card.appendChild(pagerHost);
-    card.appendChild(editorHost);
-    root.appendChild(card);
-
-    function openSingleModule(mod) {
-      if (!mod) return;
-      CSOState.selectedModuleId = mod.id;
-      clearNode(editorHost);
-      if (window.CSOLive && typeof window.CSOLive.render === 'function') {
-        window.CSOLive.render(mod.folderId, mod.id, editorHost, dom.moduleHeaderActions);
-      } else {
-        editorHost.appendChild(el('p', 'cso-muted-note', 'Selected: ' + mod.title));
-      }
+    if (folder && mod) {
+      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = folder.title;
+      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = mod.title;
+      if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = mod.title;
+      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = folder.title || 'Studio';
     }
 
-    function paintList() {
-      var q = CSOState.schemeFilter.toLowerCase().trim();
-      var filtered = allModules.filter(function (m) {
-        return !q || m.title.toLowerCase().includes(q) || m.folderTitle.toLowerCase().includes(q) || m.id.toLowerCase().includes(q);
-      });
+    renderNavigationTree();
+    renderWorkspaceView(folderId, moduleId);
+  }
 
-      clearNode(modSel);
-      var defOpt = document.createElement('option');
-      defOpt.value = '';
-      defOpt.textContent = 'Jump to Module (' + filtered.length + ' matching)…';
-      modSel.appendChild(defOpt);
-      filtered.slice(0, 50).forEach(function (m) {
-        var o = document.createElement('option');
-        o.value = m.id;
-        o.textContent = m.folderTitle + ' — ' + m.title;
-        if (m.id === CSOState.selectedModuleId) o.selected = true;
-        modSel.appendChild(o);
-      });
+  function renderWorkspaceView(folderId, moduleId) {
+    clearNode(dom.workspaceRoot);
+    renderModuleStandardHeader();
 
-      var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-      if (CSOState.schemePage > totalPages) CSOState.schemePage = totalPages;
-      var start = (CSOState.schemePage - 1) * PAGE_SIZE;
-      var pageItems = filtered.slice(start, start + PAGE_SIZE);
-
-      clearNode(tableHost);
-      pageItems.forEach(function (m) {
-        var row = el('div', 'cso-compact-row');
-        var meta = el('div', 'cso-compact-row-main');
-        meta.appendChild(el('strong', '', m.title));
-        meta.appendChild(el('span', 'hint', m.folderTitle));
-        var openBtn = el('button', 'btn sm primary', 'Edit');
-        openBtn.type = 'button';
-        openBtn.addEventListener('click', function () { openSingleModule(m); });
-        row.appendChild(meta);
-        row.appendChild(openBtn);
-        tableHost.appendChild(row);
-      });
-
-      clearNode(pagerHost);
-      var prevBtn = el('button', 'btn sm', '← Prev');
-      prevBtn.type = 'button';
-      prevBtn.disabled = CSOState.schemePage <= 1;
-      prevBtn.addEventListener('click', function () {
-        if (CSOState.schemePage > 1) { CSOState.schemePage -= 1; paintList(); }
-      });
-
-      var info = el('span', 'hint', 'Page ' + CSOState.schemePage + ' / ' + totalPages + ' (' + filtered.length + ' items)');
-
-      var nextBtn = el('button', 'btn sm', 'Next →');
-      nextBtn.type = 'button';
-      nextBtn.disabled = CSOState.schemePage >= totalPages;
-      nextBtn.addEventListener('click', function () {
-        if (CSOState.schemePage < totalPages) { CSOState.schemePage += 1; paintList(); }
-      });
-
-      pagerHost.appendChild(prevBtn);
-      pagerHost.appendChild(info);
-      pagerHost.appendChild(nextBtn);
+    if (window.CSOLive && window.CSOLive.render(folderId, moduleId, dom.workspaceRoot, dom.moduleHeaderActions)) {
+      return;
     }
 
-    filterInp.addEventListener('input', function () {
-      CSOState.schemeFilter = filterInp.value;
-      CSOState.schemePage = 1;
-      paintList();
-    });
-    modSel.addEventListener('change', function () {
-      var found = allModules.find(function (m) { return m.id === modSel.value; });
-      if (found) openSingleModule(found);
-    });
-
-    paintList();
+    var card = el('div', 'cso-empty-state');
+    card.appendChild(el('h2', '', 'Module Ready'));
+    card.appendChild(el('p', '', 'Select a live editorial section from the navigation tree or use + Create New.'));
+    dom.workspaceRoot.appendChild(card);
   }
 
-  /* ---------- Tab 3: System & Ops ---------- */
-  function renderSystemOpsTab(root) {
-    var card = el('section', 'cso-compact-card');
-    card.appendChild(el('h2', 'cso-compact-h2', 'System & Ops'));
-    card.appendChild(el('p', 'hint', 'Essential platform health, edge cache warmer, and read-only freeze controls.'));
-
-    var actions = el('div', 'cso-compact-actions');
-    var statusOut = el('div', 'cso-compact-ops-status');
-
-    var healthBtn = el('button', 'btn primary cso-compact-btn', 'Check System Health');
-    healthBtn.type = 'button';
-    healthBtn.addEventListener('click', async function () {
-      statusOut.textContent = 'Checking /api/admin/ops/health…';
-      try {
-        var d = await apiJson('GET', '/api/admin/ops/health');
-        statusOut.textContent = '✓ OK · SW Cache: ' + ((d.canary && d.canary.expected_sw_cache) || 'active') + ' · Freeze: ' + ((d.freeze && d.freeze.enabled) ? 'ON' : 'OFF');
-      } catch (err) {
-        statusOut.textContent = 'Health check failed: ' + err.message;
-      }
-    });
-
-    var warmBtn = el('button', 'btn cso-compact-btn', 'Warm Edge Cache');
-    warmBtn.type = 'button';
-    warmBtn.addEventListener('click', async function () {
-      statusOut.textContent = 'Warming core routes…';
-      try {
-        await apiJson('POST', '/api/admin/ops/cache-warmer', {});
-        statusOut.textContent = '✓ Edge cache warmed.';
-      } catch (err) {
-        statusOut.textContent = 'Cache warm failed: ' + err.message;
-      }
-    });
-
-    actions.appendChild(healthBtn);
-    actions.appendChild(warmBtn);
-    card.appendChild(actions);
-    card.appendChild(statusOut);
-    root.appendChild(card);
-  }
-
-  function renderActiveTab() {
-    if (!dom.workspaceRoot) return;
+  function openQuickCreateRoute(targetRoute) {
+    if (!window.CSOCms) return;
+    closeCreateDropdown();
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);
 
-    if (CSOState.activeTab === 'jobs') renderJobsTab(dom.workspaceRoot);
-    else if (CSOState.activeTab === 'schemes-study') renderSchemesStudyTab(dom.workspaceRoot);
-    else renderSystemOpsTab(dom.workspaceRoot);
+    var routeLabels = {
+      'jobs/new': ['Content & Recruitment', 'New Job Alert', 'module-05-008', [['current-affairs', 'Current Affairs'], ['jobs', 'Job Alerts']]],
+      'current-affairs/new': ['Content & Publishing', 'New Current Affairs Post', 'module-04-004', [['current-affairs', 'Current Affairs'], ['jobs', 'Job Alerts']]],
+      'mock-tests/new': ['Mock Tests & Question Bank', 'New Mock Test', 'module-05-014', [['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']]],
+      'syllabus': ['Educational Resources', 'Syllabus & PYQ Upload', 'module-05-010', [['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']]],
+      'banner': ['Site Broadcast', 'Homepage Broadcast Banner', 'module-04-005', null]
+    };
+
+    var meta = routeLabels[targetRoute] || ['Studio', 'Create Content', 'studio-new', null];
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = meta[0];
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = meta[1];
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = meta[1];
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = meta[0];
+
+    var pill = el('span', 'cso-live-pill', '● Live · D1 / R2');
+    dom.moduleHeaderActions.appendChild(pill);
+
+    var host = el('div', 'cms-embed');
+    dom.workspaceRoot.appendChild(host);
+    window.CSOCms.mount(host, targetRoute, meta[3]);
+    if (window.innerWidth <= 900) closeMobileDrawer();
   }
 
-  function wireGlobalEvents() {
-    if (dom.tabsNav) {
-      dom.tabsNav.addEventListener('click', function (e) {
-        var btn = e.target && e.target.closest ? e.target.closest('[data-admin-tab]') : null;
-        if (!btn) return;
-        switchTab(btn.getAttribute('data-admin-tab'));
+  function closeCreateDropdown() {
+    if (dom.createNewDropdown) dom.createNewDropdown.hidden = true;
+    if (dom.btnCreateNewMenu) dom.btnCreateNewMenu.setAttribute('aria-expanded', 'false');
+  }
+
+  var THEME_ORDER = ['apex', 'volt', 'cobalt', 'lime'];
+
+  function normalizeTheme(raw) {
+    if (raw === 'apex' || raw === 'volt' || raw === 'cobalt' || raw === 'lime') return raw;
+    if (raw === 'light') return 'cobalt';
+    return 'apex';
+  }
+
+  function readStoredTheme() {
+    try {
+      return normalizeTheme(localStorage.getItem('cso_studio_theme'));
+    } catch (_e) {
+      return 'apex';
+    }
+  }
+
+  function applyTheme(theme) {
+    var safe = normalizeTheme(theme);
+    document.documentElement.dataset.theme = safe;
+    if (dom.themeMenuPopover) {
+      dom.themeMenuPopover.querySelectorAll('.cso-theme-option').forEach(function (opt) {
+        opt.setAttribute('aria-checked', opt.getAttribute('data-theme-value') === safe ? 'true' : 'false');
       });
     }
-    if (dom.brandHomeBtn) {
-      dom.brandHomeBtn.addEventListener('click', function () { switchTab('jobs'); });
+    return safe;
+  }
+
+  function closeThemePopover() {
+    if (dom.themeMenuPopover) dom.themeMenuPopover.hidden = true;
+    if (dom.themeMenuBtn) dom.themeMenuBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  function setTheme(theme) {
+    var safe = applyTheme(theme);
+    try { localStorage.setItem('cso_studio_theme', safe); } catch (_e) {}
+    return safe;
+  }
+
+  function cycleTheme() {
+    var cur = normalizeTheme(document.documentElement.dataset.theme);
+    var idx = THEME_ORDER.indexOf(cur);
+    return setTheme(THEME_ORDER[(idx + 1) % THEME_ORDER.length]);
+  }
+
+  function wireTopbarEvents() {
+    if (dom.btnCreateNewMenu && dom.createNewDropdown) {
+      dom.btnCreateNewMenu.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var nextHidden = !dom.createNewDropdown.hidden;
+        dom.createNewDropdown.hidden = nextHidden;
+        dom.btnCreateNewMenu.setAttribute('aria-expanded', String(!nextHidden));
+      });
+
+      dom.createNewDropdown.querySelectorAll('[data-create-target]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          openQuickCreateRoute(btn.getAttribute('data-create-target'));
+        });
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!dom.createNewDropdown.hidden && !dom.createNewDropdown.contains(e.target) && e.target !== dom.btnCreateNewMenu) {
+          closeCreateDropdown();
+        }
+      });
     }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeCreateDropdown();
+        closeThemePopover();
+        closeModal();
+        closeMobileDrawer();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === '\\') {
+        e.preventDefault();
+        var nextCollapsed = !(dom.shell && dom.shell.classList.contains('cso-sidebar-collapsed'));
+        setSidebarCollapsed(nextCollapsed);
+      } else if (e.altKey && (e.key === 'h' || e.key === 'H')) {
+        e.preventDefault();
+        goDashboardHome();
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 't' || e.key === 'T')) {
+        var tag = e.target && e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
+        e.preventDefault();
+        cycleTheme();
+      }
+    });
+
+    if (dom.themeMenuBtn && dom.themeMenuPopover) {
+      dom.themeMenuBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var nextHidden = !dom.themeMenuPopover.hidden;
+        dom.themeMenuPopover.hidden = nextHidden;
+        dom.themeMenuBtn.setAttribute('aria-expanded', String(!nextHidden));
+      });
+
+      dom.themeMenuPopover.querySelectorAll('.cso-theme-option').forEach(function (opt) {
+        opt.addEventListener('click', function () {
+          setTheme(opt.getAttribute('data-theme-value'));
+          closeThemePopover();
+        });
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!dom.themeMenuPopover.hidden && dom.themeMenuWrap && !dom.themeMenuWrap.contains(e.target)) {
+          closeThemePopover();
+        }
+      });
+    }
+
+    if (dom.brandHomeBtn) {
+      dom.brandHomeBtn.addEventListener('click', goDashboardHome);
+      dom.brandHomeBtn.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          goDashboardHome();
+        }
+      });
+    }
+
+    if (dom.breadcrumbHomeBtn) {
+      dom.breadcrumbHomeBtn.addEventListener('click', goDashboardHome);
+    }
+
+    if (dom.breadcrumbFolder) {
+      dom.breadcrumbFolder.addEventListener('click', function () {
+        if (!CSOState.activeFolderId) return;
+        if (dom.shell && dom.shell.classList.contains('cso-sidebar-collapsed')) setSidebarCollapsed(false);
+        CSOState.expandedFolders.add(CSOState.activeFolderId);
+        persistOpenGroups();
+        renderNavigationTree();
+        var activeFolderEl = dom.accordionNav && dom.accordionNav.querySelector('.cso-nav-folder.is-current');
+        if (activeFolderEl && activeFolderEl.scrollIntoView) {
+          activeFolderEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+    }
+
+    if (dom.sidebarToggleBtn) {
+      dom.sidebarToggleBtn.addEventListener('click', function () {
+        var nextCollapsed = !(dom.shell && dom.shell.classList.contains('cso-sidebar-collapsed'));
+        setSidebarCollapsed(nextCollapsed);
+      });
+    }
+
+    function syncFromHash() {
+      var hashId = (window.location.hash || '').replace(/^#/, '');
+      if (!hashId) return;
+      var resolved = resolveModuleTarget(hashId);
+      if (resolved && resolved.moduleId !== CSOState.activeModuleId) {
+        selectModule(resolved.folderId, resolved.moduleId);
+      }
+    }
+    window.addEventListener('hashchange', syncFromHash);
+    window.addEventListener('popstate', syncFromHash);
+
+    if (dom.moduleSearchInput) {
+      dom.moduleSearchInput.addEventListener('input', function (e) {
+        CSOState.searchQuery = e.target.value;
+        renderNavigationTree();
+      });
+    }
+
+    if (dom.btnToggleSidebar) {
+      dom.btnToggleSidebar.addEventListener('click', function () {
+        if (dom.sidebarConsole && dom.sidebarConsole.classList.contains('is-open')) closeMobileDrawer();
+        else openMobileDrawer();
+      });
+    }
+    if (dom.mobileDrawerBackdrop) dom.mobileDrawerBackdrop.addEventListener('click', closeMobileDrawer);
+    var drawerCloseBtn = document.getElementById('sidebarCloseBtn');
+    if (drawerCloseBtn) drawerCloseBtn.addEventListener('click', closeMobileDrawer);
     if (dom.btnModalClose) dom.btnModalClose.addEventListener('click', closeModal);
   }
 
-  window.closeModal = closeModal;
   window.showToast = showToast;
-  window.selectModule = function (_folderId, _moduleId) { switchTab('schemes-study'); };
+  window.closeModal = closeModal;
+  window.selectModule = selectModule;
+  window.CSOStudio = {
+    openRoute: openQuickCreateRoute,
+    selectModule: selectModule,
+    getSchema: function () { return masterNavigationSchema; }
+  };
 
-  document.addEventListener('DOMContentLoaded', function () {
-    wireGlobalEvents();
-    hydrateSessionIdentity();
-    syncTabsUI();
-    renderActiveTab();
+  window.addEventListener('DOMContentLoaded', async function () {
+    initSessionTimer();
+    applyTheme(readStoredTheme());
+    wireTopbarEvents();
+    try {
+      if (localStorage.getItem('cso_sidebar_collapsed') === '1') setSidebarCollapsed(true);
+      var savedGroups = JSON.parse(localStorage.getItem('cso_open_sidebar_groups') || '[]');
+      if (Array.isArray(savedGroups)) savedGroups.forEach(function (g) { CSOState.expandedFolders.add(g); });
+    } catch (_e) {}
+    await Promise.all([loadMasterNavigation(), hydrateSessionIdentity(), hydrateTelemetry()]);
+    var hashId = (window.location.hash || '').replace(/^#/, '');
+    var storedId = '';
+    try { storedId = localStorage.getItem('cso_active_module_id') || ''; } catch (_e) {}
+    var target = resolveModuleTarget(hashId) || resolveModuleTarget(storedId) || resolveModuleTarget('module-00-001') || { folderId: 'folder-01', moduleId: 'module-01-001' };
+    renderNavigationTree();
+    selectModule(target.folderId, target.moduleId);
   });
 })(window, document);
