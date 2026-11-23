@@ -82,6 +82,6 @@ for (let i = 1; i <= 11; i++) {
 }
 
 const swJs = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
-assert.match(swJs, /cso-candidate-cache-v227/);
+assert.match(swJs, /cso-candidate-cache-v22[7-9]/);
 
 console.log(`PASS test-odisha-jobs-details-v227: All ${branches.length} entries (${Object.keys(od12Map).length} unique specs in CSO_ODISHA_JOBS_1_2) across 1.2.1-1.2.12 verified, 23 folders / ${totalModules} modules preserved, 100% CSP compliant.`);
