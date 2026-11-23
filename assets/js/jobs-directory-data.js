@@ -195,9 +195,12 @@
       var odMap = root.CSO_ODISHA_JOBS_1_2 || (typeof require === 'function' ? require('./odisha-jobs-1-2-data.js') : null);
       var odKey = (s === 'opsc-odisha-civil-services-ocs-2026') ? 'odisha-civil-services' : s;
       var natMap = root.CSO_NATIONAL_JOBS_1_1 || (typeof require === 'function' ? require('./national-jobs-1-1-data.js') : null);
+      var extMap = root.CSO_EXTENDED_JOBS_1_3_10 || (typeof require === 'function' ? require('./extended-jobs-1-3-to-1-10-data.js') : null);
       var specObj = (odMap && Object.prototype.hasOwnProperty.call(odMap, odKey))
         ? odMap[odKey]
-        : ((natMap && Object.prototype.hasOwnProperty.call(natMap, s)) ? natMap[s] : null);
+        : ((natMap && Object.prototype.hasOwnProperty.call(natMap, s))
+          ? natMap[s]
+          : ((extMap && Object.prototype.hasOwnProperty.call(extMap, s)) ? extMap[s] : null));
       if (specObj) {
         var fields = ['organisation', 'qualification', 'age_limit', 'pay_level', 'vacancies', 'apply_url', 'summary', 'summary_or', 'examPatternTable', 'relaxationTable', 'physicalStandards', 'payProgression', 'marksChart', 'referenceLinks'];
         for (var k = 0; k < fields.length; k++) {
@@ -1433,6 +1436,11 @@
         vacancies: spec.vacancies || 'Central Gazette',
         last_date: spec.last_date || '2027-03-31'
       });
+    }
+    var extMap = root.CSO_EXTENDED_JOBS_1_3_10 || (typeof require === 'function' ? require('./extended-jobs-1-3-to-1-10-data.js') : null);
+    if (extMap && Object.prototype.hasOwnProperty.call(extMap, s)) {
+      var extSpec = extMap[s];
+      return attachDetailedDossierSpec({ slug: s, section: 'jobs-recruitment', l1Code: extSpec.l1Code || '1.3', l2Code: extSpec.l2Code || '1.3.1', title: extSpec.title || s, title_or: extSpec.title_or || '', category: 'All Sectors', stage: 'new-recruitment', stage_label: 'New Recruitment', vacancies: extSpec.vacancies || 'Active Track', last_date: extSpec.last_date || '2027-04-30' });
     }
     return null;
   }

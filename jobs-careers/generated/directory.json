@@ -787,77 +787,176 @@
                   "title": "State Public Service Commissions",
                   "line": 190,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "BPSC, UPPSC, WBPSC & JPSC Combined Civil Services"
+                    },
+                    {
+                      "line": 501,
+                      "text": "CGPSC, APPSC, TSPSC & MPPSC State PCS Examinations"
+                    }
+                  ]
                 },
                 {
                   "number": "1.3.2",
                   "title": "State Staff Selection Boards",
                   "line": 191,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "BSSC, UPSSSC, WBSSC & JSSC Graduate/Inter Level Boards"
+                    },
+                    {
+                      "line": 501,
+                      "text": "RSMSSB, HSSC & MPESB State Selection Boards"
+                    }
+                  ]
                 },
                 {
                   "number": "1.3.3",
                   "title": "State Police and Prisons",
                   "line": 192,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Neighbouring State Police SI, Constable & Excise Guard"
+                    },
+                    {
+                      "line": 501,
+                      "text": "State Prison Warder, Fireman & Home Guard Recruitment"
+                    }
+                  ]
                 },
                 {
                   "number": "1.3.4",
                   "title": "State Teaching and Education Recruitment",
                   "line": 193,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "State TET, PGT/TGT School Teacher & Lecturer Recruitment"
+                    },
+                    {
+                      "line": 501,
+                      "text": "State University Assistant Professor & DIET Faculty"
+                    }
+                  ]
                 },
                 {
                   "number": "1.3.5",
                   "title": "State Health Departments",
                   "line": 194,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "State Medical Officer, Staff Nurse & NHM CHO Recruitment"
+                    },
+                    {
+                      "line": 501,
+                      "text": "State Pharmacist, Lab Technician & ANM Health Posts"
+                    }
+                  ]
                 },
                 {
                   "number": "1.3.6",
                   "title": "State Revenue and District Administration",
                   "line": 195,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "State Revenue Inspector, Patwari, Lekhpal & Amin Posts"
+                    },
+                    {
+                      "line": 501,
+                      "text": "District Collectorate Clerk, Data Entry & Panchayat Secretary"
+                    }
+                  ]
                 },
                 {
                   "number": "1.3.7",
                   "title": "State Judiciary and Courts",
                   "line": 196,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "State Civil Judge (Junior Division) Judicial Services"
+                    },
+                    {
+                      "line": 501,
+                      "text": "State High Court & District Court Clerk / Stenographer"
+                    }
+                  ]
                 },
                 {
                   "number": "1.3.8",
                   "title": "State Transport and Public Utilities",
                   "line": 197,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "State Road Transport Corporation Driver & Conductor"
+                    },
+                    {
+                      "line": 501,
+                      "text": "State Power Discom & Water Supply Technical Posts"
+                    }
+                  ]
                 },
                 {
                   "number": "1.3.9",
                   "title": "State Public-Sector Undertakings",
                   "line": 198,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "State Mining, Industrial & Mineral Corporation Posts"
+                    },
+                    {
+                      "line": 501,
+                      "text": "State Warehousing, Civil Supplies & Tourism Corporations"
+                    }
+                  ]
                 },
                 {
                   "number": "1.3.10",
                   "title": "State Municipalities and Local Bodies",
                   "line": 199,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Municipal Corporation Executive Officer & Tax Collector"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Urban Local Body Sanitary Inspector & Junior Engineer"
+                    }
+                  ]
                 },
                 {
                   "number": "1.3.11",
                   "title": "State Technical and Engineering Services",
                   "line": 200,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "State Public Works & Water Resources Assistant Engineer"
+                    },
+                    {
+                      "line": 501,
+                      "text": "State Rural Engineering & Agriculture Field Officer"
+                    }
+                  ]
                 },
                 {
                   "number": "1.3.12",
@@ -866,8 +965,12 @@
                   "children": [],
                   "notes": [
                     {
-                      "line": 202,
-                      "text": "Each category can later be divided by state, recruiting authority, qualification, examination, post, application deadline and official notification."
+                      "line": 500,
+                      "text": "State Rural Livelihood Mission (SRLM) & Watershed Projects"
+                    },
+                    {
+                      "line": 501,
+                      "text": "State Tribal Welfare & Social Security Project Posts"
                     }
                   ]
                 }
@@ -886,28 +989,12 @@
                   "children": [],
                   "notes": [
                     {
-                      "line": 205,
-                      "text": "Software development"
+                      "line": 500,
+                      "text": "Software Engineering, Full-Stack Web & Mobile Development"
                     },
                     {
-                      "line": 206,
-                      "text": "Web and mobile development"
-                    },
-                    {
-                      "line": 207,
-                      "text": "IT support and systems administration"
-                    },
-                    {
-                      "line": 208,
-                      "text": "Cybersecurity"
-                    },
-                    {
-                      "line": 209,
-                      "text": "Cloud computing and DevOps"
-                    },
-                    {
-                      "line": 210,
-                      "text": "AI, machine learning and data science"
+                      "line": 501,
+                      "text": "Cloud Computing, DevOps, Cybersecurity & AI/Data Science"
                     }
                   ]
                 },
@@ -918,28 +1005,12 @@
                   "children": [],
                   "notes": [
                     {
-                      "line": 212,
-                      "text": "Private bank jobs"
+                      "line": 500,
+                      "text": "Private Sector Banks (HDFC, ICICI, Axis, Kotak) Officer & PO"
                     },
                     {
-                      "line": 213,
-                      "text": "Financial analysis"
-                    },
-                    {
-                      "line": 214,
-                      "text": "Accounting and auditing"
-                    },
-                    {
-                      "line": 215,
-                      "text": "Insurance"
-                    },
-                    {
-                      "line": 216,
-                      "text": "Fintech"
-                    },
-                    {
-                      "line": 217,
-                      "text": "Investment and risk management"
+                      "line": 501,
+                      "text": "Financial Analysis, Chartered Accounting, Fintech & Insurance"
                     }
                   ]
                 },
@@ -950,28 +1021,12 @@
                   "children": [],
                   "notes": [
                     {
-                      "line": 219,
-                      "text": "Human resources"
+                      "line": 500,
+                      "text": "Human Resources, Talent Acquisition & Operations Management"
                     },
                     {
-                      "line": 220,
-                      "text": "Sales and marketing"
-                    },
-                    {
-                      "line": 221,
-                      "text": "Business development"
-                    },
-                    {
-                      "line": 222,
-                      "text": "Operations"
-                    },
-                    {
-                      "line": 223,
-                      "text": "Customer service"
-                    },
-                    {
-                      "line": 224,
-                      "text": "Procurement and supply chain"
+                      "line": 501,
+                      "text": "B2B/B2C Sales, Business Development & Supply Chain"
                     }
                   ]
                 },
@@ -982,28 +1037,12 @@
                   "children": [],
                   "notes": [
                     {
-                      "line": 226,
-                      "text": "Mechanical"
+                      "line": 500,
+                      "text": "Mechanical, Electrical & Industrial Plant Engineering"
                     },
                     {
-                      "line": 227,
-                      "text": "Civil"
-                    },
-                    {
-                      "line": 228,
-                      "text": "Electrical and electronics"
-                    },
-                    {
-                      "line": 229,
-                      "text": "Industrial and production"
-                    },
-                    {
-                      "line": 230,
-                      "text": "Quality assurance"
-                    },
-                    {
-                      "line": 231,
-                      "text": "Maintenance and plant operations"
+                      "line": 501,
+                      "text": "Quality Assurance (QA/QC), Production & Maintenance Jobs"
                     }
                   ]
                 },
@@ -1014,28 +1053,12 @@
                   "children": [],
                   "notes": [
                     {
-                      "line": 233,
-                      "text": "Private schools"
+                      "line": 500,
+                      "text": "CBSE/ICSE Private School Teachers & Academic Coordinators"
                     },
                     {
-                      "line": 234,
-                      "text": "Coaching institutions"
-                    },
-                    {
-                      "line": 235,
-                      "text": "Colleges and universities"
-                    },
-                    {
-                      "line": 236,
-                      "text": "EdTech companies"
-                    },
-                    {
-                      "line": 237,
-                      "text": "Online tutoring"
-                    },
-                    {
-                      "line": 238,
-                      "text": "Educational content development"
+                      "line": 501,
+                      "text": "EdTech Content Developers, Mentors & Coaching Faculty"
                     }
                   ]
                 },
@@ -1046,28 +1069,12 @@
                   "children": [],
                   "notes": [
                     {
-                      "line": 240,
-                      "text": "Hospitals and clinics"
+                      "line": 500,
+                      "text": "Corporate Hospital Nursing, Allied Health & Pharmacy"
                     },
                     {
-                      "line": 241,
-                      "text": "Nursing and allied health"
-                    },
-                    {
-                      "line": 242,
-                      "text": "Pharmaceutical companies"
-                    },
-                    {
-                      "line": 243,
-                      "text": "Medical coding and billing"
-                    },
-                    {
-                      "line": 244,
-                      "text": "Clinical research"
-                    },
-                    {
-                      "line": 245,
-                      "text": "Health administration"
+                      "line": 501,
+                      "text": "Medical Coding, Clinical Research & Pharma Marketing"
                     }
                   ]
                 },
@@ -1076,70 +1083,160 @@
                   "title": "Retail, E-commerce and Customer Support",
                   "line": 246,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Modern Retail Store Operations, Merchandising & E-Commerce"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Omnichannel Customer Experience & Escalation Support"
+                    }
+                  ]
                 },
                 {
                   "number": "1.4.8",
                   "title": "Media, Publishing and Digital Content",
                   "line": 247,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Odia/English Journalism, Copywriting & Digital Publishing"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Video Production, Social Media Strategy & Brand Content"
+                    }
+                  ]
                 },
                 {
                   "number": "1.4.9",
                   "title": "Hospitality, Tourism and Aviation",
                   "line": 248,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Hotel Management, Front Office & Culinary Careers"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Airport Ground Staff, Cabin Crew & Odisha Tourism Operators"
+                    }
+                  ]
                 },
                 {
                   "number": "1.4.10",
                   "title": "Construction, Real Estate and Infrastructure",
                   "line": 249,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Civil Site Engineering, AutoCAD & Quantity Surveying"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Real Estate Project Management & Smart City Infrastructure"
+                    }
+                  ]
                 },
                 {
                   "number": "1.4.11",
                   "title": "Logistics, Warehousing and Transportation",
                   "line": 250,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Warehouse Operations, Fleet Dispatch & Cold-Chain Logistics"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Port Cargo Handling, Customs & E-Commerce Fulfillment"
+                    }
+                  ]
                 },
                 {
                   "number": "1.4.12",
                   "title": "Agriculture, Food Processing and Agribusiness",
                   "line": 251,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Agri-Input Sales, Seed Technology & Food Processing QA"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Dairy, Fisheries & Cold-Storage Agribusiness Operations"
+                    }
+                  ]
                 },
                 {
                   "number": "1.4.13",
                   "title": "Legal, Consulting and Professional Services",
                   "line": 252,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Corporate Legal Associates, Compliance & CS Trainees"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Management Consulting, Tax Advisory & Audit Firms"
+                    }
+                  ]
                 },
                 {
                   "number": "1.4.14",
                   "title": "Entry-Level and Graduate Trainee Jobs",
                   "line": 253,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Graduate Engineer Trainee (GET) & Management Trainee Programs"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Campus Placement Drives & Off-Campus Fresher Hiring"
+                    }
+                  ]
                 },
                 {
                   "number": "1.4.15",
                   "title": "Experienced, Managerial and Executive Jobs",
                   "line": 254,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Team Lead, Project Manager & Regional Operations Head"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Senior Domain Specialist & Executive Leadership Roles"
+                    }
+                  ]
                 },
                 {
                   "number": "1.4.16",
                   "title": "Part-Time, Flexible and Work-from-Home Jobs",
                   "line": 255,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Verified Flexible Shift, Hybrid & Work-From-Home Roles"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Part-Time Retail, Tutoring & Operations Support"
+                    }
+                  ]
                 }
               ],
               "notes": []
@@ -1154,70 +1251,160 @@
                   "title": "Central Public-Sector Enterprises",
                   "line": 257,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Maharatna & Navratna CPSE Executive Trainee (GATE / CBT)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Central PSU Non-Executive Diploma & ITI Technician Posts"
+                    }
+                  ]
                 },
                 {
                   "number": "1.5.2",
                   "title": "Odisha State Public-Sector Enterprises",
                   "line": 258,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Odisha State PSU (OMC, OPTCL, OHPC, IDCO, OPGC) Recruitment"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Odisha State Warehousing, Civil Supplies & Forest Corp"
+                    }
+                  ]
                 },
                 {
                   "number": "1.5.3",
                   "title": "Power and Energy Companies",
                   "line": 259,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "NTPC (Talcher/Kaniha/Darlipali) & PGCIL Power Grid Posts"
+                    },
+                    {
+                      "line": 501,
+                      "text": "NHPC, NEEPCO & State Power Generation/Transmission Posts"
+                    }
+                  ]
                 },
                 {
                   "number": "1.5.4",
                   "title": "Mining, Metals and Heavy Industry",
                   "line": 260,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "NALCO (Angul/Damanjodi) & SAIL Rourkela Steel Plant (RSP)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Mahanadi Coalfields (MCL Sambalpur/Talcher) & NMDC"
+                    }
+                  ]
                 },
                 {
                   "number": "1.5.5",
                   "title": "Oil, Gas and Petroleum",
                   "line": 261,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "IOCL (Paradip Refinery), ONGC, BPCL, HPCL & GAIL Recruitment"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Petroleum Engineering, Boiler Operator & Trade Apprentices"
+                    }
+                  ]
                 },
                 {
                   "number": "1.5.6",
                   "title": "Telecommunications",
                   "line": 262,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "BSNL Management Trainee / JTO & BBNL BharatNet Projects"
+                    },
+                    {
+                      "line": 501,
+                      "text": "C-DOT & Telecom PSU Network Engineering Posts"
+                    }
+                  ]
                 },
                 {
                   "number": "1.5.7",
                   "title": "Transport, Ports and Logistics",
                   "line": 263,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Paradip Port Authority (PPA), CONCOR & AAI Airport Posts"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Shipping Corporation, Dredging Corp & Rail Vikas Nigam"
+                    }
+                  ]
                 },
                 {
                   "number": "1.5.8",
                   "title": "Public-Sector Banks and Insurance",
                   "line": 264,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "SBI, PNB, Bank of Baroda, UCO Bank & Canara Bank SO/PO"
+                    },
+                    {
+                      "line": 501,
+                      "text": "LIC AAO/ADO, NIACL, UIIC & GIC Public Insurance Posts"
+                    }
+                  ]
                 },
                 {
                   "number": "1.5.9",
                   "title": "Engineering, Infrastructure and Construction",
                   "line": 265,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "NBCC, RITES, IRCON, EIL & WAPCOS Infrastructure Engineers"
+                    },
+                    {
+                      "line": 501,
+                      "text": "NHAI Project Engineer & Bridge/Highway PSU Consultants"
+                    }
+                  ]
                 },
                 {
                   "number": "1.5.10",
                   "title": "Trainee, Apprentice and Graduate Engineer Recruitment",
                   "line": 266,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "PSU Graduate Engineer Trainee (GET) & Management Trainee (MT)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "PSU Diploma Engineer Trainee (DET) & Junior Overman/Sirdar"
+                    }
+                  ]
                 }
               ],
               "notes": []
@@ -1232,84 +1419,192 @@
                   "title": "National Apprenticeship Promotion Scheme opportunities",
                   "line": 268,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "NAPS National Apprenticeship Promotion Scheme (apprenticeshipindia.gov.in)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Private & MSME Stipend-Subsidized NAPS Apprenticeships in Odisha"
+                    }
+                  ]
                 },
                 {
                   "number": "1.6.2",
                   "title": "National Apprenticeship Training Scheme opportunities",
                   "line": 269,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "NATS National Apprenticeship Training Scheme (nats.education.gov.in)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "BOAT Eastern Region Graduate & Diploma Engineering Apprenticeships"
+                    }
+                  ]
                 },
                 {
                   "number": "1.6.3",
                   "title": "ITI apprenticeships",
                   "line": 270,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "NCVT / SCVT ITI Trade Apprenticeships (Electrician, Fitter, Welder)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Railway RRC & Defence Ordnance Factory ITI Act Apprentices"
+                    }
+                  ]
                 },
                 {
                   "number": "1.6.4",
                   "title": "Graduate apprenticeships",
                   "line": 271,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "B.E. / B.Tech / B.Sc / B.Com Graduate Apprenticeship Programs"
+                    },
+                    {
+                      "line": 501,
+                      "text": "PSU & Central Ministry One-Year Graduate Trainee Schemes"
+                    }
+                  ]
                 },
                 {
                   "number": "1.6.5",
                   "title": "Diploma apprenticeships",
                   "line": 272,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Polytechnic Diploma Engineering Apprenticeships (Civil/Mech/Elec)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "State Utility & Industrial Plant Diploma Trainee Programs"
+                    }
+                  ]
                 },
                 {
                   "number": "1.6.6",
                   "title": "Trade apprenticeships",
                   "line": 273,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Designated & Optional Trade Apprenticeships (10th / +2 Pass)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Manufacturing, Automotive & Electronics Shop-Floor Apprentices"
+                    }
+                  ]
                 },
                 {
                   "number": "1.6.7",
                   "title": "Technician and engineering trainees",
                   "line": 274,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Junior Engineer Trainee & Plant Maintenance Probationers"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Quality Lab & Instrumentation Technician Trainee Programs"
+                    }
+                  ]
                 },
                 {
                   "number": "1.6.8",
                   "title": "Management trainees",
                   "line": 275,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Corporate & PSU Finance, HR & Marketing Management Trainees"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Rural Management & Cooperative Bank Officer Trainees"
+                    }
+                  ]
                 },
                 {
                   "number": "1.6.9",
                   "title": "Paid and unpaid internships",
                   "line": 276,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "PM Internship Scheme & AICTE National Internship Portal"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Verified Stipend-Backed Corporate & Startup Internships"
+                    }
+                  ]
                 },
                 {
                   "number": "1.6.10",
                   "title": "School and college work experience",
                   "line": 277,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "NEP 2020 Undergraduate Credit Internships & Field Projects"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Vocational School & Polytechnic Industrial Exposure Visits"
+                    }
+                  ]
                 },
                 {
                   "number": "1.6.11",
                   "title": "Research internships",
                   "line": 278,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "IIT Bhubaneswar, NISER, IMMT & NIT Rourkela Research Internships"
+                    },
+                    {
+                      "line": 501,
+                      "text": "ICAR-NRRI Cuttack & ICMR-RMRC Bhubaneswar Summer Fellowships"
+                    }
+                  ]
                 },
                 {
                   "number": "1.6.12",
                   "title": "Government and private-sector training programmes",
                   "line": 279,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "OSDA World Skill Center Bhubaneswar & Skill India Training"
+                    },
+                    {
+                      "line": 501,
+                      "text": "DDU-GKY & PMKVY Placement-Linked Skill Training"
+                    }
+                  ]
                 }
               ],
               "notes": []
@@ -1324,84 +1619,192 @@
                   "title": "Contractual government posts",
                   "line": 281,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "State & Central Contractual Project Posts (1–3 Year Tenure)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Mission Shakti, Odisha Livelihoods Mission & DMFT Posts"
+                    }
+                  ]
                 },
                 {
                   "number": "1.7.2",
                   "title": "Fixed-term employment",
                   "line": 282,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Fixed-Term Employment (FTE) in PSUs, Banks & Corporations"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Statutory EPF/ESIC Protected Fixed-Term Contracts"
+                    }
+                  ]
                 },
                 {
                   "number": "1.7.3",
                   "title": "Temporary and seasonal jobs",
                   "line": 283,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Census, Election Duty, Procurement Mandi & Survey Staff"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Seasonal Tourism, Disaster Relief & Harvest Support Posts"
+                    }
+                  ]
                 },
                 {
                   "number": "1.7.4",
                   "title": "Daily-wage and project-based opportunities",
                   "line": 284,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "District Mineral Foundation (DMF) & CSR Project Staff"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Watershed, MGNREGA Technical Assistant & Gram Rozgar Sevak"
+                    }
+                  ]
                 },
                 {
                   "number": "1.7.5",
                   "title": "Outsourced employment",
                   "line": 285,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "OCAC / GeM Empanelled Agency Outsourced DEO & Support Staff"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Hospital Housekeeping, Security & Facility Management Posts"
+                    }
+                  ]
                 },
                 {
                   "number": "1.7.6",
                   "title": "Part-time employment",
                   "line": 286,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Part-Time Academic Guest Faculty & Evening Lab Instructors"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Part-Time Retail, Library & Community Resource Persons"
+                    }
+                  ]
                 },
                 {
                   "number": "1.7.7",
                   "title": "Freelance assignments",
                   "line": 287,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Empanelled Translators, Content Reviewers & Auditors"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Independent IT, Design & Legal Project Assignments"
+                    }
+                  ]
                 },
                 {
                   "number": "1.7.8",
                   "title": "Returning-to-work opportunities",
                   "line": 288,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Career Break Returnship Programs for Women Professionals"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Second-Career Corporate & EdTech Re-Entry Fellowships"
+                    }
+                  ]
                 },
                 {
                   "number": "1.7.9",
                   "title": "Jobs for persons with disabilities",
                   "line": 289,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "RPwD Act 4% Horizontal Reservation Govt & PSU Posts"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Special Recruitment Drives & Assistive-Tech Enabled Roles"
+                    }
+                  ]
                 },
                 {
                   "number": "1.7.10",
                   "title": "Veteran and ex-servicemen opportunities",
                   "line": 290,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Directorate of Sainik Welfare & Rajya Sainik Board Odisha"
+                    },
+                    {
+                      "line": 501,
+                      "text": "DGR Sponsored Security, Bank Guard & PSU Ex-Servicemen Quota"
+                    }
+                  ]
                 },
                 {
                   "number": "1.7.11",
                   "title": "Women-focused employment programmes",
                   "line": 291,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Odisha 33% Women Reservation Govt Posts & Anganwadi/ICDS"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Mission Shakti Block Coordinator & Women Entrepreneurship"
+                    }
+                  ]
                 },
                 {
                   "number": "1.7.12",
                   "title": "Entry-level opportunities for freshers",
                   "line": 292,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Zero-Experience Fresher Drives (10th, +2, ITI, Graduate)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "National Career Service (NCS) Verified Fresher Openings"
+                    }
+                  ]
                 }
               ],
               "notes": []
@@ -1416,84 +1819,192 @@
                   "title": "Remote employment in India",
                   "line": 294,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Pan-India Remote Software, QA & Customer Success Roles"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Work-From-Home Operations & Inside Sales in Indian Startups"
+                    }
+                  ]
                 },
                 {
                   "number": "1.8.2",
                   "title": "International remote employment",
                   "line": 295,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Global Remote Engineering & Product Roles (USD/EUR Contracts)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "International Time-Zone Flexible SaaS & Tech Support"
+                    }
+                  ]
                 },
                 {
                   "number": "1.8.3",
                   "title": "Freelance writing and editing",
                   "line": 296,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Technical Writing, SEO Content & Academic Copyediting"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Bilingual English–Odia Editorial & Script Writing"
+                    }
+                  ]
                 },
                 {
                   "number": "1.8.4",
                   "title": "Translation and localisation",
                   "line": 297,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Odia–English–Hindi Document Translation & Localization"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Bhashini / AI Dataset Annotation & Voice Transcription"
+                    }
+                  ]
                 },
                 {
                   "number": "1.8.5",
                   "title": "Online teaching and tutoring",
                   "line": 298,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Online JEE/NEET/Odisha Board Tutoring & Doubt Solving"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Spoken English, Coding & Competitive Exam Live Mentorship"
+                    }
+                  ]
                 },
                 {
                   "number": "1.8.6",
                   "title": "Programming and software services",
                   "line": 299,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Remote Full-Stack, WordPress, Shopify & API Integration"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Freelance Mobile App & Automation Script Development"
+                    }
+                  ]
                 },
                 {
                   "number": "1.8.7",
                   "title": "Graphic design and video editing",
                   "line": 300,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "UI/UX Design, Canva/Figma Brand Kits & Social Creatives"
+                    },
+                    {
+                      "line": 501,
+                      "text": "YouTube Video Editing, Motion Graphics & Thumbnail Design"
+                    }
+                  ]
                 },
                 {
                   "number": "1.8.8",
                   "title": "Digital marketing and social media",
                   "line": 301,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Performance Marketing, Meta/Google Ads & SEO Audits"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Social Media Community Management for Odisha Brands"
+                    }
+                  ]
                 },
                 {
                   "number": "1.8.9",
                   "title": "Virtual assistance and administrative support",
                   "line": 302,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Executive Virtual Assistance, Calendar & CRM Management"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Remote Bookkeeping, Invoicing & E-Commerce Store Admin"
+                    }
+                  ]
                 },
                 {
                   "number": "1.8.10",
                   "title": "Data analysis and research assistance",
                   "line": 303,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Excel/SQL Data Cleaning, Market Research & Survey Analysis"
+                    },
+                    {
+                      "line": 501,
+                      "text": "AI Prompt Evaluation & Structured Knowledge Indexing"
+                    }
+                  ]
                 },
                 {
                   "number": "1.8.11",
                   "title": "Online customer support",
                   "line": 304,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Omnichannel Chat, Email & Voice Customer Support (WFH)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "EdTech & Fintech Student/User Onboarding Support"
+                    }
+                  ]
                 },
                 {
                   "number": "1.8.12",
                   "title": "Creator economy and digital entrepreneurship",
                   "line": 305,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Odia Educational YouTube/Instagram Creator Monetization"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Digital Micro-SaaS, Templates & Online Course Publishing"
+                    }
+                  ]
                 }
               ],
               "notes": []
@@ -1508,112 +2019,256 @@
                   "title": "Overseas government and public-sector employment",
                   "line": 307,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "MEA Approved State Manpower Corporations (OSDA / NORKA / ODEPC)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Government-to-Government (G2G) Healthcare & Technical MoUs"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.2",
                   "title": "International private-sector employment",
                   "line": 308,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Verified GCC (UAE, Saudi, Qatar, Oman, Kuwait) Corporate Jobs"
+                    },
+                    {
+                      "line": 501,
+                      "text": "European & East Asian Licensed Employer Sponsorships"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.3",
                   "title": "Multinational company careers",
                   "line": 309,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Global MNC Internal Transfers & Rotational Graduate Tracks"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Fortune 500 GCC / Global Capability Center Roles"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.4",
                   "title": "International teaching and education jobs",
                   "line": 310,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "International CBSE/IB School Teachers in Middle East & SE Asia"
+                    },
+                    {
+                      "line": 501,
+                      "text": "TESOL/CELTA Certified ESL & STEM Educators Abroad"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.5",
                   "title": "Healthcare and nursing jobs abroad",
                   "line": 311,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "B.Sc Nursing & GNM Overseas Recruitment (UK NHS, Germany, Japan, GCC)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Allied Health, Pharmacy & Caregiver Visa Pathways"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.6",
                   "title": "Engineering and technical jobs abroad",
                   "line": 312,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Oil & Gas, Petrochemical & MEP Engineers in Gulf & Europe"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Civil Infrastructure, QA/QC & Safety (NEBOSH) Engineers Abroad"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.7",
                   "title": "IT and digital careers abroad",
                   "line": 313,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Software Developer, Cloud & Cybersecurity Visa-Sponsored Roles"
+                    },
+                    {
+                      "line": 501,
+                      "text": "EU Blue Card, UK Skilled Worker & Japan Engineer Visas"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.8",
                   "title": "Hospitality, tourism and aviation abroad",
                   "line": 314,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "International 5-Star Hotel, Cruise Line & Culinary Careers"
+                    },
+                    {
+                      "line": 501,
+                      "text": "International Airport Ground Operations & Cabin Crew"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.9",
                   "title": "Skilled trades and industrial employment abroad",
                   "line": 315,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "ITI Certified Welders, Electricians, HVAC & Heavy Drivers Abroad"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Japan TITP / SSW & Germany Ausbildung Skilled Trades"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.10",
                   "title": "International development and humanitarian work",
                   "line": 316,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Red Cross, MSF, Oxfam & International NGO Field Fellowships"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Global Public Health, Climate & Disaster Resilience Roles"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.11",
                   "title": "United Nations and other international organisations",
                   "line": 317,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "UN Volunteers (UNV), UNDP, UNICEF & WHO Young Professionals"
+                    },
+                    {
+                      "line": 501,
+                      "text": "World Bank & Asian Development Bank (ADB) Analyst Tracks"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.12",
                   "title": "Overseas internships and graduate programmes",
                   "line": 318,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Paid International Research & Graduate Traineeships"
+                    },
+                    {
+                      "line": 501,
+                      "text": "IAESTE & Global University Summer Lab Fellowships"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.13",
                   "title": "International remote work",
                   "line": 319,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Cross-Border Remote Contracting with Foreign Startups"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Export-Compliant Freelance Consulting (LUT / FEMA Rules)"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.14",
                   "title": "Seasonal and temporary overseas employment",
                   "line": 320,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Agri-Horticulture, Hospitality & Seasonal Work Visa Schemes"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Verified Short-Term International Technical Assignments"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.15",
                   "title": "Overseas recruitment agencies and verification",
                   "line": 321,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "MEA e-Migrate Registered Recruiting Agents (emigrate.gov.in)"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Pre-Departure Orientation Training (PDOT) & Fraud Verification"
+                    }
+                  ]
                 },
                 {
                   "number": "1.9.16",
                   "title": "Work permits, employment visas and labour protections",
                   "line": 322,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Employment Visa Attestation, Apostille & Pravasi Bharatiya Bima"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Indian Embassy Labour Wing Helplines & Wage Protection"
+                    }
+                  ]
                 }
               ],
               "notes": []
@@ -1628,77 +2283,176 @@
                   "title": "Upcoming Recruitment",
                   "line": 325,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Annual Exam Calendars & Advance Recruitment Forecasts"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Short Notices & Upcoming Vacancy Approvals"
+                    }
+                  ]
                 },
                 {
                   "number": "1.10.2",
                   "title": "Application Open",
                   "line": 326,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Active Online Application Portals Open Today"
+                    },
+                    {
+                      "line": 501,
+                      "text": "OTR Registration & Fee Payment Window Live"
+                    }
+                  ]
                 },
                 {
                   "number": "1.10.3",
                   "title": "Last Date Approaching",
                   "line": 327,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Closing Within 7 Days — Urgent Application Deadlines"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Final Fee Payment & Form Correction Window Alerts"
+                    }
+                  ]
                 },
                 {
                   "number": "1.10.4",
                   "title": "Application Closed",
                   "line": 328,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Application Window Closed — Awaiting Exam Date"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Closed Notices Archived for Reference & Syllabus Check"
+                    }
+                  ]
                 },
                 {
                   "number": "1.10.5",
                   "title": "Admit Card Released",
                   "line": 329,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Prelims / Mains / CBT Hall Ticket & Admit Card Links"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Exam City Intimation Slip & Shift Timing Notices"
+                    }
+                  ]
                 },
                 {
                   "number": "1.10.6",
                   "title": "Examination Scheduled",
                   "line": 330,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Confirmed Written / CBT / PST-PET Exam Date Notices"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Revised Exam Schedules & Centre Change Bulletins"
+                    }
+                  ]
                 },
                 {
                   "number": "1.10.7",
                   "title": "Answer Key Released",
                   "line": 331,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Provisional Answer Key & Objection Window Links"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Final Revised Answer Key & Question Paper PDFs"
+                    }
+                  ]
                 },
                 {
                   "number": "1.10.8",
                   "title": "Result Declared",
                   "line": 332,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Written / Prelims / Mains Merit List & Cut-Off Marks"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Scorecard Download & Roll-Number Shortlist PDFs"
+                    }
+                  ]
                 },
                 {
                   "number": "1.10.9",
                   "title": "Interview or Document Verification",
                   "line": 333,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Document Verification (DV), Viva-Voce & Skill Test Schedule"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Biometric Verification & Attestation Form Instructions"
+                    }
+                  ]
                 },
                 {
                   "number": "1.10.10",
                   "title": "Final Selection and Joining",
                   "line": 334,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Final Select List, Department Allotment & Joining Orders"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Appointment Letter & Medical Fitness Formalities"
+                    }
+                  ]
                 },
                 {
                   "number": "1.10.11",
                   "title": "Recruitment Cancelled or Postponed",
                   "line": 335,
                   "children": [],
-                  "notes": []
+                  "notes": [
+                    {
+                      "line": 500,
+                      "text": "Official Corrigendum, Exam Postponement & Cancellation Notices"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Vacancy Revision & Re-Opening Notifications"
+                    }
+                  ]
                 },
                 {
                   "number": "1.10.12",
@@ -1707,8 +2461,12 @@
                   "children": [],
                   "notes": [
                     {
-                      "line": 337,
-                      "text": "These are status categories, not separate career types. They should be reusable across national, Odisha, other-state, private and international recruitment."
+                      "line": 500,
+                      "text": "Previous Cycle Cut-Offs, Vacancy & Notification Archive"
+                    },
+                    {
+                      "line": 501,
+                      "text": "Historical Recruitment Reference Dossiers"
                     }
                   ]
                 }
