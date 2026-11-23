@@ -14,8 +14,9 @@ const JOB_TAXONOMY_COLS = [
   ['stage', 'TEXT']
 ];
 
+let _jobTaxonomyChecked = false;
 export async function ensureJobTaxonomyColumns(db) {
-  if (!db) return;
+  if (!db || _jobTaxonomyChecked) return;
   try {
     const pragmaRes = await db.prepare('PRAGMA table_info(posts)').all();
     const existingCols = new Set((pragmaRes.results || []).map(c => c.name));
@@ -24,6 +25,7 @@ export async function ensureJobTaxonomyColumns(db) {
         await db.prepare(`ALTER TABLE posts ADD COLUMN ${colName} ${colDef}`).run();
       }
     }
+    _jobTaxonomyChecked = true;
   } catch (_) {}
 }
 

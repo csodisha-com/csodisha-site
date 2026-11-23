@@ -19,9 +19,26 @@ export function routeCandidates(pathname) {
   return [...set];
 }
 export const SITEWIDE_ROUTE = '/__sitewide';
+const PAGE_CACHE_TTL_MS = 120 * 1000;
+let _sitewideMemo = { at: 0, val: null };
+const _redirectMemo = new Map();
+const _pageMemo = new Map();
+
+export function invalidateSitePagesCache() {
+  _sitewideMemo = { at: 0, val: null };
+  _redirectMemo.clear();
+  _pageMemo.clear();
+}
+
 export async function getSitewide(env) {
   if (!env || !env.DB) return null;
-  try { return await env.DB.prepare("SELECT reusable_sections_json FROM site_pages WHERE route = ? AND status = 'published'").bind(SITEWIDE_ROUTE).first(); } catch { return null; }
+  const now = Date.now();
+  if (_sitewideMemo.at && (now - _sitewideMemo.at) < PAGE_CACHE_TTL_MS) return _sitewideMemo.val;
+  try {
+    const row = await env.DB.prepare("SELECT reusable_sections_json FROM site_pages WHERE route = ? AND status = 'published'").bind(SITEWIDE_ROUTE).first();
+    _sitewideMemo = { at: now, val: row || null };
+    return _sitewideMemo.val;
+  } catch { return null; }
 }
 function matchesSitewideRoute(s, currentRoute) {
   const r = normalizeRoute(currentRoute || '/');
@@ -51,22 +68,36 @@ export function sitewideHtml(row, currentRoute) {
 }
 export async function getPageRedirect(env, pathname) {
   if (!env || !env.DB) return null;
+  const key = normalizeRoute(pathname);
+  const now = Date.now();
+  const cached = _redirectMemo.get(key);
+  if (cached && (now - cached.at) < PAGE_CACHE_TTL_MS) return cached.val;
   try {
     const c = routeCandidates(pathname);
     const row = await env.DB.prepare(
       `SELECT new_route FROM site_redirects WHERE old_route IN (${c.map(() => '?').join(',')}) LIMIT 1`
     ).bind(...c).first();
-    return row && row.new_route ? row.new_route : null;
+    const val = row && row.new_route ? row.new_route : null;
+    if (_redirectMemo.size > 500) _redirectMemo.clear();
+    _redirectMemo.set(key, { at: now, val });
+    return val;
   } catch { return null; }
 }
 export async function getPublishedPage(env, pathname) {
   if (!env || !env.DB || normalizeRoute(pathname) === SITEWIDE_ROUTE) return null;
+  const key = normalizeRoute(pathname);
+  const now = Date.now();
+  const cached = _pageMemo.get(key);
+  if (cached && (now - cached.at) < PAGE_CACHE_TTL_MS) return cached.val;
   try {
     const c = routeCandidates(pathname);
     const row = await env.DB.prepare(
       `SELECT * FROM site_pages WHERE route IN (${c.map(() => '?').join(',')}) AND status = 'published' LIMIT 1`
     ).bind(...c).first();
-    return row || null;
+    const val = row || null;
+    if (_pageMemo.size > 500) _pageMemo.clear();
+    _pageMemo.set(key, { at: now, val });
+    return val;
   } catch { return null; }
 }
 function parse(j) { try { const v = JSON.parse(j || '[]'); return Array.isArray(v) ? v : []; } catch { return []; } }

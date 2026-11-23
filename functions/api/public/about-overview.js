@@ -127,9 +127,29 @@ export async function getAboutOverviewData(env) {
   };
 }
 
+let _aboutMemo = null;
+let _aboutMemoAt = 0;
+const ABOUT_MEMO_TTL_MS = 5 * 60 * 1000;
+
 export async function handlePublicAboutOverviewApi(request, env) {
-  const data = await getAboutOverviewData(env);
-  return json(data, 200, { 'Cache-Control': CACHE_CONTROL });
+  const cache = (typeof caches !== 'undefined' && caches.default) ? caches.default : null;
+  const cacheKey = new Request(request.url, { method: 'GET' });
+  if (cache && request.method === 'GET') {
+    const hit = await cache.match(cacheKey);
+    if (hit) return hit;
+  }
+  const now = Date.now();
+  let data = (_aboutMemo && (now - _aboutMemoAt) < ABOUT_MEMO_TTL_MS) ? _aboutMemo : null;
+  if (!data) {
+    data = await getAboutOverviewData(env);
+    _aboutMemo = data;
+    _aboutMemoAt = now;
+  }
+  const res = json(data, 200, { 'Cache-Control': CACHE_CONTROL });
+  if (cache && request.method === 'GET') {
+    try { await cache.put(cacheKey, res.clone()); } catch (_) {}
+  }
+  return res;
 }
 
 export async function onRequestGet({ request, env }) {

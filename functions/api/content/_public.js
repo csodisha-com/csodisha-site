@@ -101,8 +101,17 @@ const ODISHA_1_2_SEEDS = [
   ['seed-psu-optcl-1-2-11', 'electricity-and-power-utilities', '1.2.11', 'Odisha State PSUs — OPTCL, OHPC, OMC & IDCO (MT / DET / Junior Engineer)', 'ଓଡ଼ିଶା ରାଜ୍ୟ PSU — OPTCL, OHPC, OMC ଓ IDCO ନିଯୁକ୍ତି', 'Odisha Power Transmission Corp (OPTCL), OHPC & Odisha Mining Corporation (OMC) recruitment for Management Trainee, DET & Junior Engineer.', 'OPTCL, OHPC, OMC ଓ IDCO ରେ ମ୍ୟାନେଜମେଣ୍ଟ ଟ୍ରେନି, DET ଓ ଜୁନିଅର ଇଞ୍ଜିନିୟର ନିଯୁକ୍ତି।', '["OPTCL","OMC","OHPC","IDCO","PSU"]', 'OPTCL / OMC / OHPC / IDCO (Govt of Odisha PSU)', 520, 'B.E./B.Tech / Diploma / ITI + Odia ME/HSC', '2027-05-10', 'https://www.optcl.co.in', '18/21–32/38 yrs (SEBC/SC/ST/Women +5)', 'Level-9 ₹35,400 – Executive ₹67,700', 'https://omcltd.in']
 ];
 
+let _verifiedSeedCheckedAt = 0;
+const SEED_CHECK_TTL_MS = 6 * 60 * 60 * 1000;
+
+export function resetPublicContentMemo() {
+  _verifiedSeedCheckedAt = 0;
+}
+
 async function ensureVerifiedUpscSeedNotice(db) {
   if (!db) return;
+  const now = Date.now();
+  if (_verifiedSeedCheckedAt && (now - _verifiedSeedCheckedAt) < SEED_CHECK_TTL_MS) return;
   try {
     const cnt11 = await db.prepare(
       `SELECT COUNT(*) AS cnt FROM posts WHERE type = 'job' AND l1_code = '1.1' AND deleted_at IS NULL`
@@ -167,6 +176,7 @@ async function ensureVerifiedUpscSeedNotice(db) {
         }
       }
     }
+    _verifiedSeedCheckedAt = Date.now();
   } catch (_) {}
 }
 
@@ -1263,7 +1273,29 @@ async function handleChangelog(env, url) {
   return json({ items: entries, total: entries.length }, 200, { 'Cache-Control': CACHE });
 }
 
+async function withEdgeCache(request, fn) {
+  if (request.method !== 'GET' || typeof caches === 'undefined' || !caches.default) {
+    return await fn();
+  }
+  const cache = caches.default;
+  const cacheKey = new Request(request.url, { method: 'GET' });
+  const hit = await cache.match(cacheKey);
+  if (hit) return hit;
+  const res = await fn();
+  if (res && res.status === 200) {
+    try { await cache.put(cacheKey, res.clone()); } catch (_) {}
+  }
+  return res;
+}
+
 export async function handleContent(request, env) {
+  if (request.method === 'GET') {
+    return withEdgeCache(request, () => handleContentUncached(request, env));
+  }
+  return handleContentUncached(request, env);
+}
+
+async function handleContentUncached(request, env) {
   if (!env.DB) return json({ error: 'Database unavailable', code: 'NO_DATABASE' }, 500);
   try {
     const url = new URL(request.url);

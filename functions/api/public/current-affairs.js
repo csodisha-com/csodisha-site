@@ -2,8 +2,9 @@ import { json } from '../../_lib/http.js';
 
 const CACHE_CONTROL = 'public, max-age=60, s-maxage=120, stale-while-revalidate=300';
 
+let _caSchemaChecked = false;
 export async function ensureCurrentAffairsSchema(db) {
-  if (!db) return;
+  if (!db || _caSchemaChecked) return;
   await db.prepare(
     `CREATE TABLE IF NOT EXISTS cso_current_affairs (
       id TEXT PRIMARY KEY,
@@ -20,6 +21,10 @@ export async function ensureCurrentAffairsSchema(db) {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )`
   ).run();
+  await db.prepare(
+    `CREATE INDEX IF NOT EXISTS idx_cso_ca_status_date ON cso_current_affairs(status, capsule_date DESC, created_at DESC)`
+  ).run();
+  _caSchemaChecked = true;
 }
 
 function safeParseJsonArray(raw) {
@@ -86,11 +91,21 @@ export async function getPublicCurrentAffairs(env, { date = '', limit = 10 } = {
 }
 
 export async function handlePublicCurrentAffairsApi(request, env) {
+  const cache = (typeof caches !== 'undefined' && caches.default) ? caches.default : null;
+  const cacheKey = new Request(request.url, { method: 'GET' });
+  if (cache && request.method === 'GET') {
+    const hit = await cache.match(cacheKey);
+    if (hit) return hit;
+  }
   const url = new URL(request.url);
   const date = url.searchParams.get('date') || '';
   const limit = url.searchParams.get('limit') || '10';
   const data = await getPublicCurrentAffairs(env, { date, limit });
-  return json(data, 200, { 'Cache-Control': CACHE_CONTROL });
+  const res = json(data, 200, { 'Cache-Control': CACHE_CONTROL });
+  if (cache && request.method === 'GET') {
+    try { await cache.put(cacheKey, res.clone()); } catch (_) {}
+  }
+  return res;
 }
 
 export async function onRequestGet({ request, env }) {
