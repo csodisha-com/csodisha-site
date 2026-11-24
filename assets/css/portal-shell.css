@@ -666,3 +666,42 @@ header nav.nav-bar ul > li,
     display: none;
   }
 }
+/* ==========================================================================
+   Tier 2 Primary Navigation Bar: Edge-to-Edge Even Distribution (v270)
+   ========================================================================== */
+.cso-nav-bar,
+.cso-tier2-nav,
+.cso-primary-nav,
+header nav.nav-bar {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.cso-nav-bar > .container,
+.cso-nav-bar > .cso-container,
+.cso-nav-inner,
+.cso-tier2-inner,
+.cso-nav-list,
+.nav-links,
+header nav.nav-bar ul {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-inline: clamp(16px, 2.5vw, 32px) !important;
+  margin: 0 !important;
+  gap: 8px !important;
+  box-sizing: border-box !important;
+}
+
+.cso-nav-list > *,
+.nav-links > *,
+header nav.nav-bar ul > li,
+.cso-nav-saved,
+.nav-saved-pill {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
