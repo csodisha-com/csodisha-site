@@ -16,6 +16,7 @@
     homepageCount: null,
     candidateCount: null,
     jobsCount: null,
+    careersCount: null,
     schemesCount: null,
     studyCount: null,
     communityCount: null,
@@ -27,6 +28,11 @@
   var OV_MODULE_ID = 'module-command-overview';
   function isOverviewId(id) {
     return id === OV_FOLDER_ID || id === OV_MODULE_ID || id === 'command-overview' || id === 'overview';
+  }
+  var CR_FOLDER_ID = 'folder-careers-studio';
+  var CR_MODULE_ID = 'module-careers-studio';
+  function isCareersStudioId(id) {
+    return id === CR_FOLDER_ID || id === CR_MODULE_ID || id === 'careers' || id === 'careers-studio';
   }
   var HS_FOLDER_ID = 'folder-homepage-studio';
   var HS_MODULE_ID = 'module-homepage-studio';
@@ -322,6 +328,32 @@
       folderWrap.appendChild(folderBtn);
       folderWrap.appendChild(modList);
       dom.accordionNav.appendChild(folderWrap);
+
+      if (folder.id === 'folder-jobs-careers') {
+        var crLabel = 'careers publishing house roadmaps tracks pathways';
+        if (!query || crLabel.indexOf(query) !== -1) {
+          matchCount += 1;
+          var crActive = CSOState.activeModuleId === CR_MODULE_ID;
+          var crWrap = el('div', 'cso-nav-folder cso-nav-careers-studio' + (crActive ? ' is-current' : ''));
+          var crBtn = el('button', 'cso-nav-folder-btn' + (crActive ? ' is-active' : ''));
+          crBtn.type = 'button';
+          crBtn.id = 'navTabCareers';
+          crBtn.title = 'Careers Publishing House — bilingual roadmaps & taxonomy (Alt+8)';
+          var crLeft = el('span', 'cso-nav-folder-left');
+          crLeft.appendChild(el('span', 'cso-nav-dot'));
+          crLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83E\uDDED Careers'));
+          var crRight = el('span', 'cso-nav-folder-right');
+          crRight.appendChild(el('span', 'cso-nav-count cso-tabular', CSOState.careersCount === null ? '\u2026' : String(CSOState.careersCount)));
+          crBtn.appendChild(crLeft);
+          crBtn.appendChild(crRight);
+          crBtn.addEventListener('click', function () {
+            selectModule(CR_FOLDER_ID, CR_MODULE_ID);
+            if (window.innerWidth <= 900) closeMobileDrawer();
+          });
+          crWrap.appendChild(crBtn);
+          dom.accordionNav.appendChild(crWrap);
+        }
+      }
     });
 
     var hsLabel = 'homepage studio homepage & features';
@@ -393,6 +425,7 @@
   }
 
   function resolveModuleTarget(targetId) {
+    if (isCareersStudioId(targetId)) return { folderId: CR_FOLDER_ID, moduleId: CR_MODULE_ID };
     if (isHomepageStudioId(targetId)) return { folderId: HS_FOLDER_ID, moduleId: HS_MODULE_ID };
     if (isCandidateHubId(targetId)) return { folderId: CH_FOLDER_ID, moduleId: CH_MODULE_ID };
     if (isOverviewId(targetId)) return { folderId: OV_FOLDER_ID, moduleId: OV_MODULE_ID };
@@ -487,7 +520,37 @@
     }
   }
 
+  function openCareersPublishingStudio(initialTab) {
+    CSOState.activeFolderId = CR_FOLDER_ID;
+    CSOState.activeModuleId = CR_MODULE_ID;
+    try { localStorage.setItem('cso_active_module_id', CR_MODULE_ID); } catch (_e) {}
+    if (window.location.hash !== '#careers-studio' && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#careers-studio');
+    }
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Careers';
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Careers Publishing House';
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Careers Publishing House';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live D1 Sync';
+    renderNavigationTree();
+    clearNode(dom.workspaceRoot);
+    clearNode(dom.moduleHeaderActions);
+    if (window.CSOCareersPublishingStudio) {
+      window.CSOCareersPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, initialTab || 'list');
+    } else {
+      var card = el('div', 'cso-empty-state');
+      card.appendChild(el('h2', '', 'Careers Publishing House unavailable'));
+      card.appendChild(el('p', '', 'The Careers Publishing Studio script failed to load. Reload the page.'));
+      dom.workspaceRoot.appendChild(card);
+    }
+  }
+
   function refreshHomepageCount() {
+    fetch('/api/admin/careers', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && d.stats) { CSOState.careersCount = d.stats.total; renderNavigationTree(); }
+      })
+      .catch(function () {});
     fetch('/api/admin/homepage-blocks', { credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
@@ -504,6 +567,7 @@
 
   function selectModule(folderId, moduleId) {
     if (isOverviewId(moduleId) || isOverviewId(folderId)) { openCommandOverview(); return; }
+    if (isCareersStudioId(moduleId) || isCareersStudioId(folderId)) { openCareersPublishingStudio(); return; }
     if (isHomepageStudioId(moduleId) || isHomepageStudioId(folderId)) { openHomepageStudio(); return; }
     if (isCandidateHubId(moduleId) || isCandidateHubId(folderId)) { openCandidateHubStudio(); return; }
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
@@ -717,6 +781,12 @@
   }
 
   function openQuickCreateRoute(targetRoute) {
+    if (targetRoute === 'careers/new' && window.CSOCareersPublishingStudio) {
+      closeCreateDropdown();
+      openCareersPublishingStudio('new');
+      if (window.innerWidth <= 900) closeMobileDrawer();
+      return;
+    }
     if (targetRoute === 'jobs/new' && window.CSOJobsPublishingStudio) {
       closeCreateDropdown();
       openJobsPublishingStudio('new');
@@ -1041,8 +1111,12 @@
     setAboutCount: function (n) {
       if (CSOState.aboutCount !== n) { CSOState.aboutCount = n; renderNavigationTree(); }
     },
+    setCareersCount: function (n) {
+      if (CSOState.careersCount !== n) { CSOState.careersCount = n; renderNavigationTree(); }
+    },
     openCandidateHubTab: function (tab) { openCandidateHubStudio(tab); },
     openJobsPublishingTab: function (tab) { openJobsPublishingStudio(tab); },
+    openCareersPublishingTab: function (tab) { openCareersPublishingStudio(tab); },
     openSchemesPublishingTab: function (tab) { openSchemesPublishingStudio(tab); },
     openStudyPublishingTab: function (tab) { openStudyPublishingStudio(tab); },
     openCommunityPublishingTab: function (tab) { openCommunityPublishingStudio(tab); },

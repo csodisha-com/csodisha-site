@@ -63,6 +63,10 @@ import {
   handlePublicJobsTelemetryApi
 } from './functions/_lib/jobs-publishing-house.js';
 import {
+  handlePublicCareersBootstrap,
+  handlePublicCareersList
+} from './functions/_lib/careers-portal.js';
+import {
   handlePublicSchemesBootstrapApi,
   handlePublicSchemesTreeApi,
   handlePublicSchemesListApi,
@@ -942,6 +946,15 @@ export default {
     if (pathname === '/api/public/jobs/telemetry' && request.method === 'POST') {
       return handlePublicJobsTelemetryApi(request, env);
     }
+    if (pathname === '/api/public/careers/bootstrap' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicCareersBootstrap(request, env));
+    }
+    if (pathname === '/api/public/careers/list' && (request.method === 'GET' || request.method === 'HEAD')) {
+      if (url.searchParams.has('preview_id')) {
+        return handlePublicCareersList(request, env);
+      }
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicCareersList(request, env));
+    }
     if (pathname === '/api/public/jobs-directory/overview' && (request.method === 'GET' || request.method === 'HEAD')) {
       return handlePublicJobsOverviewApi(request, env);
     }
@@ -1251,6 +1264,9 @@ export default {
       const jobsRes = await handlePublicJobsRoute(request, env, url);
       if (jobsRes) return jobsRes;
     }
+    if (pathname === '/careers') {
+      return Response.redirect(new URL('/careers/', url.origin).toString(), 301);
+    }
     if (pathname === '/about.html' || (pathname === '/about/' && url.searchParams.has('section'))) {
       return Response.redirect(new URL('/about/', url.origin).toString(), 301);
     }
@@ -1314,7 +1330,7 @@ export default {
       if (res.status === 200 && (request.method === 'GET' || request.method === 'HEAD') && (res.headers.get('Content-Type') || '').includes('text/html')) {
         res = await hydrateExplorerIndexHtml(res, pathname, env, url);
       }
-      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|tools|schemes|schemes-benefits|study-library|community|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname)) {
+      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|careers|tools|schemes|schemes-benefits|study-library|community|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname)) {
         const headers = new Headers(res.headers);
         headers.set(
           'Content-Security-Policy',

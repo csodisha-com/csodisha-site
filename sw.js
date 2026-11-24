@@ -8,7 +8,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v268';
+const CACHE_NAME = 'cso-candidate-cache-v269';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 // Slim Core App-Shell Precache (fast SW install on slow 3G/4G connections)
@@ -29,6 +29,8 @@ const PRECACHE_URLS = [
 const RUNTIME_SWR_ASSETS = [
   '/assets/css/jobs-portal.css',
   '/assets/js/jobs-portal.js',
+  '/assets/css/careers-portal.css',
+  '/assets/js/careers-portal.js',
   '/assets/css/schemes-portal.css',
   '/assets/js/schemes-portal.js',
   '/assets/css/study-portal.css',

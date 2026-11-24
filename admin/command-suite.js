@@ -806,6 +806,11 @@
       }
       return;
     }
+    if (e.altKey && !mod && e.code === 'Digit8') {
+      e.preventDefault();
+      goFolder('folder-careers-studio');
+      return;
+    }
     if (e.altKey && !mod && /^Digit[0-7]$/.test(e.code || '')) {
       var n = Number(e.code.slice(5));
       var tag = (e.target && e.target.tagName) || '';

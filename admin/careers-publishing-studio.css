@@ -1,0 +1,332 @@
+/* Common Sense Odisha — Admin Studio: Careers Publishing House (v269)
+ * Strict CSP-compliant, 4-theme compatible. */
+
+.cps-root {
+  display: grid;
+  gap: 18px;
+}
+
+.cps-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cps-kpi {
+  background: var(--cso-surface, #ffffff);
+  border: 1px solid var(--cso-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 4px;
+}
+
+.cps-kpi-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cso-muted, #64748b);
+}
+
+.cps-kpi-val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--cso-ink, #0f172a);
+}
+
+.cps-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cps-tab {
+  appearance: none;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-ink, #0f172a);
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cps-tab.is-active {
+  background: #0f4c5c;
+  color: #ffffff;
+  border-color: #0f4c5c;
+}
+
+.cps-card {
+  background: var(--cso-surface, #ffffff);
+  border: 1px solid var(--cso-border, #e2e8f0);
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.cps-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cps-card-title {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.cps-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cps-span-full {
+  grid-column: 1 / -1;
+}
+
+.cps-field {
+  display: grid;
+  gap: 6px;
+}
+
+.cps-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cps-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cso-ink, #0f172a);
+}
+
+.cps-inline-add-btn {
+  appearance: none;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid #0f4c5c;
+  background: rgba(15, 76, 92, 0.08);
+  color: #0f4c5c;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cps-inline-tax-box {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px dashed #0f4c5c;
+  background: rgba(15, 76, 92, 0.05);
+  display: grid;
+  grid-template-columns: 1fr 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.cps-input,
+.cps-select,
+.cps-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-bg, #f8fafc);
+  color: var(--cso-ink, #0f172a);
+  font-size: 0.88rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.cps-textarea {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.cps-snippets-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cps-chip-btn {
+  appearance: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-bg, #f8fafc);
+  color: var(--cso-ink, #0f172a);
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cps-links-editor {
+  display: grid;
+  gap: 8px;
+}
+
+.cps-link-row {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.cps-check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cps-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.cps-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-ink, #0f172a);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cps-btn-primary {
+  background: #0f4c5c;
+  color: #ffffff;
+  border-color: #0f4c5c;
+}
+
+.cps-btn-danger {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.cps-filter-bar {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.cps-table-wrap {
+  overflow-x: auto;
+}
+
+.cps-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.cps-table th,
+.cps-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--cso-border, #e2e8f0);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.cps-table th {
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cso-muted, #64748b);
+}
+
+.cps-title-cell {
+  display: grid;
+  gap: 2px;
+}
+
+.cps-title-sub {
+  font-size: 0.76rem;
+  color: var(--cso-muted, #64748b);
+}
+
+.cps-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.cps-status-pill.is-published {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.cps-status-pill.is-draft {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.cps-status-pill.is-archived {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.cps-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cps-btn-sm {
+  padding: 5px 10px;
+  font-size: 0.76rem;
+  border-radius: 8px;
+}
+
+.cps-status-msg {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cso-muted, #475569);
+}
+
+:root[data-cso-resolved-mode="dark"] .cps-inline-add-btn {
+  color: #7dd3fc;
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.14);
+}
+
+@media (max-width: 900px) {
+  .cps-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cps-form-grid,
+  .cps-filter-bar,
+  .cps-inline-tax-box {
+    grid-template-columns: 1fr;
+  }
+}

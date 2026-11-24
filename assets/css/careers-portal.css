@@ -1,0 +1,683 @@
+/* Common Sense Odisha — Public Careers Explorer Portal & Roadmap Drawer (v269)
+ * 4-Theme Compatible (System Light/Dark, Dark Night, Reading Mode, Odisha & Bharat). Strict CSP. */
+
+.crp-portal {
+  display: grid;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+/* ======================================================================
+   1. FLAGSHIP EDITORIAL HERO BANNER
+   ====================================================================== */
+.crp-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem;
+  background: var(--cso-hero-gradient, linear-gradient(135deg, #0b3948 0%, #115569 62%, #1b6d7c 100%));
+  color: var(--cso-hero-ink, #ffffff);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: var(--cso-card-shadow, 0 14px 36px rgba(11, 57, 72, 0.22));
+  display: grid;
+  gap: 18px;
+  transition: background 0.22s ease, box-shadow 0.22s ease;
+}
+
+.crp-hero-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.crp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  color: #e0f2fe;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.crp-eyebrow-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+}
+
+.crp-hero-copy {
+  display: grid;
+  gap: 8px;
+  max-width: 860px;
+}
+
+.crp-hero-title {
+  margin: 0;
+  font-size: clamp(1.55rem, 2.8vw, 2.2rem);
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  color: #ffffff;
+}
+
+.crp-hero-sub {
+  margin: 0;
+  font-size: clamp(0.92rem, 1.3vw, 1.02rem);
+  line-height: 1.55;
+  color: rgba(240, 249, 255, 0.92);
+}
+
+.crp-hero-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.crp-hero-kpi {
+  background: rgba(255, 255, 255, 0.11);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 13px 16px;
+  display: grid;
+  gap: 3px;
+  backdrop-filter: blur(6px);
+}
+
+.crp-hero-kpi-val {
+  font-size: 1.48rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: #ffffff;
+}
+
+.crp-hero-kpi-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: rgba(224, 242, 254, 0.9);
+  letter-spacing: 0.01em;
+}
+
+.crp-lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.26);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 3px;
+}
+
+.crp-lang-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #e2f5ff;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.crp-lang-btn.is-active {
+  background: #ffffff;
+  color: #0b3948;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+}
+
+/* Preview Mode Banner */
+.crp-preview-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #1e3a8a;
+  color: #ffffff;
+  border: 2px solid #60a5fa;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.crp-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f59e0b;
+  color: #111827;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* ======================================================================
+   2. 6 CAREER DOMAIN CARDS
+   ====================================================================== */
+.crp-domains-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.crp-domain-card {
+  appearance: none;
+  text-align: left;
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
+  border: 1.5px solid var(--cso-border-subtle, #d8e1e9);
+  border-radius: 14px;
+  padding: 15px 14px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  cursor: pointer;
+  box-shadow: var(--cso-card-shadow, 0 8px 24px rgba(11, 57, 72, 0.08));
+  transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.crp-domain-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--cso-brand-primary, #115569);
+}
+
+.crp-domain-card.is-active {
+  background: var(--cso-pill-active-bg, #115569);
+  color: var(--cso-pill-active-fg, #ffffff);
+  border-color: var(--cso-pill-active-bg, #115569);
+}
+
+.crp-domain-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.crp-domain-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.crp-domain-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--cso-card-subtle, #eef3f7);
+  color: var(--cso-ink-primary, #12202b);
+  font-size: 0.74rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.crp-domain-card.is-active .crp-domain-count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.crp-domain-title {
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.crp-domain-desc {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--cso-ink-secondary, #4c5e6e);
+}
+
+.crp-domain-card.is-active .crp-domain-desc {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* ======================================================================
+   3. CASCADING FILTER BAR
+   ====================================================================== */
+.crp-filter-panel {
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  border-radius: 16px;
+  padding: 16px 18px;
+  display: grid;
+  gap: 14px;
+  box-shadow: var(--cso-card-shadow, 0 8px 24px rgba(11, 57, 72, 0.08));
+}
+
+.crp-filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1.6fr;
+  gap: 12px;
+  align-items: end;
+}
+
+.crp-field {
+  display: grid;
+  gap: 6px;
+}
+
+.crp-field-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cso-ink-secondary, #4c5e6e);
+}
+
+.crp-select,
+.crp-input {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-subtle, #eef3f7);
+  color: var(--cso-ink-primary, #12202b);
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+.crp-select:focus,
+.crp-input:focus {
+  outline: 2px solid var(--cso-brand-primary, #115569);
+  outline-offset: 1px;
+  background: var(--cso-card-bg, #ffffff);
+}
+
+.crp-filter-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.crp-results-meta {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--cso-ink-secondary, #4c5e6e);
+}
+
+.crp-filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.crp-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-subtle, #eef3f7);
+  color: var(--cso-ink-primary, #12202b);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.crp-btn:hover {
+  border-color: var(--cso-brand-primary, #115569);
+}
+
+.crp-btn-primary {
+  background: var(--cso-cta-bg, #115569);
+  color: var(--cso-cta-fg, #ffffff);
+  border-color: var(--cso-cta-bg, #115569);
+}
+
+.crp-btn-primary:hover {
+  opacity: 0.94;
+  transform: translateY(-1px);
+}
+
+/* ======================================================================
+   4. CAREER ROADMAP CARDS GRID
+   ====================================================================== */
+.crp-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.crp-card {
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
+  border: 1.5px solid var(--cso-border-subtle, #d8e1e9);
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--cso-card-shadow, 0 8px 24px rgba(11, 57, 72, 0.08));
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.crp-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--cso-brand-primary, #115569);
+}
+
+.crp-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.crp-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  background: var(--cso-badge-verified-bg, #e0f2fe);
+  color: var(--cso-badge-verified-fg, #0b3948);
+}
+
+.crp-badge-subtle {
+  background: var(--cso-card-subtle, #eef3f7);
+  color: var(--cso-ink-secondary, #4c5e6e);
+}
+
+.crp-badge-featured {
+  background: rgba(196, 91, 32, 0.14);
+  color: var(--cso-brand-accent, #c45b20);
+}
+
+.crp-card-title {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 800;
+  line-height: 1.32;
+  color: var(--cso-ink-primary, #12202b);
+}
+
+.crp-card-summary {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--cso-ink-secondary, #4c5e6e);
+}
+
+.crp-card-meta {
+  display: grid;
+  gap: 6px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: var(--cso-card-subtle, #eef3f7);
+  font-size: 0.82rem;
+}
+
+.crp-meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.crp-meta-key {
+  font-weight: 700;
+  color: var(--cso-ink-secondary, #4c5e6e);
+}
+
+.crp-meta-val {
+  font-weight: 700;
+  color: var(--cso-ink-primary, #12202b);
+  text-align: right;
+}
+
+.crp-card-foot {
+  margin-top: auto;
+  padding-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ======================================================================
+   5. EMPTY STATE WITH CROSS-LINK TO /jobs/
+   ====================================================================== */
+.crp-empty {
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
+  border: 1.5px dashed var(--cso-border-subtle, #d8e1e9);
+  border-radius: 18px;
+  padding: clamp(26px, 4vw, 42px) 24px;
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.crp-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: var(--cso-card-subtle, #eef3f7);
+  color: var(--cso-brand-primary, #115569);
+  font-size: 1.6rem;
+}
+
+.crp-empty-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.crp-empty-sub {
+  margin: 0;
+  max-width: 560px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--cso-ink-secondary, #4c5e6e);
+}
+
+.crp-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* ======================================================================
+   6. INTERACTIVE CAREER ROADMAP DETAIL DRAWER / MODAL
+   ====================================================================== */
+.crp-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(8, 16, 24, 0.62);
+  display: flex;
+  justify-content: flex-end;
+  backdrop-filter: blur(3px);
+}
+
+.crp-drawer-backdrop[hidden] {
+  display: none;
+}
+
+.crp-drawer {
+  width: min(760px, 100vw);
+  height: 100vh;
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.crp-drawer-head {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-hero-gradient, linear-gradient(135deg, #0b3948 0%, #115569 100%));
+  color: #ffffff;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.crp-drawer-title {
+  margin: 6px 0 0;
+  font-size: 1.28rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #ffffff;
+}
+
+.crp-drawer-close {
+  appearance: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.crp-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px 28px;
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.crp-fact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.crp-fact-box {
+  background: var(--cso-card-subtle, #eef3f7);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 4px;
+}
+
+.crp-fact-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cso-ink-secondary, #4c5e6e);
+}
+
+.crp-fact-val {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--cso-ink-primary, #12202b);
+  line-height: 1.4;
+}
+
+.crp-prose {
+  display: grid;
+  gap: 10px;
+  line-height: 1.68;
+  font-size: 0.94rem;
+  color: var(--cso-ink-primary, #12202b);
+}
+
+.crp-prose h3 {
+  margin: 8px 0 0;
+  font-size: 1.04rem;
+  font-weight: 800;
+  color: var(--cso-brand-primary, #115569);
+}
+
+.crp-prose p {
+  margin: 0;
+}
+
+.crp-prose ul {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 5px;
+}
+
+.crp-links-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.crp-drawer-foot {
+  padding: 14px 22px;
+  border-top: 1px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-subtle, #eef3f7);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Responsive */
+@media (max-width: 1180px) {
+  .crp-domains-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .crp-hero-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .crp-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .crp-domains-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .crp-filter-grid {
+    grid-template-columns: 1fr;
+  }
+}

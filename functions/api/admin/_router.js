@@ -91,6 +91,10 @@ import {
   handleJobsStudyOptions
 } from '../../_lib/jobs-publishing-house.js';
 import {
+  handleAdminCareers,
+  handleAdminCareersTaxonomy
+} from '../../_lib/careers-portal.js';
+import {
   handleSchemesTaxonomyAdmin,
   handleSchemesArticlesAdmin,
   handleSchemesMediaUpload
@@ -442,6 +446,9 @@ async function dispatchAdminApi(request, env) {
         }
         if (!sub) return await handleJobsDirectoryAdmin(request, env, actor, id);
         break;
+      case 'careers':
+        if (id === 'taxonomy') return await handleAdminCareersTaxonomy(request, env, actor);
+        return await handleAdminCareers(request, env, actor, id);
       case 'about':
         if (id === 'taxonomy') return await handleAboutTaxonomyAdmin(request, env, actor, sub, extra);
         if (id === 'articles') return await handleAboutArticlesAdmin(request, env, actor, sub, extra);

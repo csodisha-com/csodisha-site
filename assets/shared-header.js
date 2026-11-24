@@ -22,15 +22,18 @@
   }
 
   const NAV = [
-    { key: 'jobs-careers', labelEn: 'Jobs & Careers', labelOr: 'ଚାକିରି ଓ କ୍ୟାରିୟର୍', fullEn: 'Jobs & Careers', fullOr: 'ଚାକିରି ଓ କ୍ୟାରିୟର୍', icon: '💼', url: '/jobs-careers/' },
+    { key: 'jobs', labelEn: 'Jobs', labelOr: 'ଚାକିରି', fullEn: 'Jobs', fullOr: 'ଚାକିରି', icon: '💼', url: '/jobs/' },
+    { key: 'careers', labelEn: 'Careers', labelOr: 'କ୍ୟାରିୟର୍', fullEn: 'Careers', fullOr: 'କ୍ୟାରିୟର୍', icon: '🧭', url: '/careers/' },
     { key: 'schemes-benefits', labelEn: 'Schemes & Benefits', labelOr: 'ଯୋଜନା ଓ ସୁବିଧା', fullEn: 'Schemes & Benefits', fullOr: 'ଯୋଜନା ଓ ସୁବିଧା', icon: '🏛', url: '/schemes-benefits/' },
     { key: 'study-library', labelEn: 'Study Library', labelOr: 'ଅଧ୍ୟୟନ ପାଠାଗାର', fullEn: 'Study Library', fullOr: 'ଅଧ୍ୟୟନ ପାଠାଗାର', icon: '📖', url: '/study-library/' },
     { key: 'community', labelEn: 'Community', labelOr: 'ସମୁଦାୟ', fullEn: 'Community', fullOr: 'ସମୁଦାୟ', icon: '👥', url: '/community/' },
     { key: 'about', labelEn: 'About', labelOr: 'ଆମ ବିଷୟରେ', fullEn: 'About', fullOr: 'ଆମ ବିଷୟରେ', icon: 'ⓘ', url: '/about/' }
   ];
 
-  // Clean-slate v231: Zero hardcoded mega-menu piles. Submenus populate live from /api/nav/config (D1 /admin/).
+  // Clean-slate v231 + v269 separated Jobs & Careers: Zero hardcoded mega-menu piles. Submenus sync live from /api/nav/config (D1 /admin/).
   const MENUS = {
+    'jobs': [],
+    'careers': [],
     'jobs-careers': [],
     'schemes-benefits': [],
     'study-library': [],
@@ -678,7 +681,8 @@
   function resolveActivePillar(pathStr) {
     const p = String(pathStr || '/').toLowerCase();
     if (p === '/' || p === '/index.html' || p === '') return '';
-    if (p.startsWith('/jobs-careers') || p.startsWith('/jobs') || p.startsWith('/career-guidance') || p.startsWith('/job-opportunity-finder')) return 'jobs-careers';
+    if (p.startsWith('/careers') || p.startsWith('/career-guidance')) return 'careers';
+    if (p.startsWith('/jobs-careers') || p.startsWith('/jobs') || p.startsWith('/job-opportunity-finder')) return 'jobs';
     if (p.startsWith('/schemes-benefits') || p.startsWith('/schemes') || p.startsWith('/scholarship-guidance') || p.startsWith('/scheme-opportunity-finder')) return 'schemes-benefits';
     if (p.startsWith('/study-library') || p.startsWith('/study') || p.startsWith('/resources') || p.startsWith('/current-affairs') || p.startsWith('/mock-tests') || p.startsWith('/education-explorer') || p.startsWith('/study-path-finder')) return 'study-library';
     if (p.startsWith('/community') || p.startsWith('/support')) return 'community';
@@ -728,7 +732,23 @@
     }
   }
 
-  function renderPillarNodes(navItems, items, megaByParent) {
+  function normalizeHeaderItems(rawItems) {
+    const hasCareers = (rawItems || []).some(it => String(it && it.url || '').replace(/^\/+|\/+$/g, '').toLowerCase() === 'careers');
+    const out = [];
+    (rawItems || []).forEach(it => {
+      const seg = String(it && it.url || '').replace(/^\/+|\/+$/g, '').split('/')[0].toLowerCase();
+      const lbl = String(it && (it.labelEn || it.label_en) || '').trim().toLowerCase();
+      if ((seg === 'jobs-careers' || lbl === 'jobs & careers') && !hasCareers) {
+        out.push({ key: 'jobs', labelEn: 'Jobs', labelOr: 'ଚାକିରି', icon: '💼', url: '/jobs/', sort_order: Number(it.sort_order || 1) });
+        out.push({ key: 'careers', labelEn: 'Careers', labelOr: 'କ୍ୟାରିୟର୍', icon: '🧭', url: '/careers/', sort_order: Number(it.sort_order || 1) + 0.5 });
+      } else {
+        out.push(it);
+      }
+    });
+    return out;
+  }
+
+  function renderPillarNodes(navItems, items) {
     navItems.replaceChildren();
 
     const isHome = !activeSection && (pathname === '/' || pathname.endsWith('/index.html') || pathname === '');
@@ -740,11 +760,11 @@
     homeA.append(homeIcon, ' ' + (S.lang === 'or' ? 'ମୂଳପୃଷ୍ଠା' : 'Home'));
     navItems.appendChild(homeA);
 
-    items.forEach(it => {
-      const pillarKey = it.key || String(it.url || '').replace(/^\/+|\/+$/g, '').split('/')[0].toLowerCase() || 'link';
+    normalizeHeaderItems(items).forEach(it => {
+      const rawKey = it.key || String(it.url || '').replace(/^\/+|\/+$/g, '').split('/')[0].toLowerCase() || 'link';
+      const pillarKey = rawKey === 'jobs-careers' ? 'jobs' : (rawKey === 'schemes' ? 'schemes-benefits' : rawKey);
       if (pillarKey === 'home' || it.url === '/') return;
       const isCurrent = pillarKey === activeSection;
-      const subItems = (megaByParent && it.id ? (megaByParent.get(it.id) || []) : (MENUS[pillarKey] || []));
       const ni = el('div', 'ni' + (isCurrent ? ' cso-active' : ''));
       ni.dataset.pillar = pillarKey;
       const parent = el('div', 'cso-nav-parent');
@@ -761,19 +781,8 @@
       a.append(document.createTextNode(navLabel(it) || pillarKey));
       if (it.badge_text_en) a.append(' ', el('span', 'cso-nav-badge', it.badge_text_en));
 
-      if (subItems.length) {
-        const arrow = el('button', 'cso-nav-arrow', '⌄');
-        arrow.type = 'button';
-        arrow.setAttribute('aria-label', 'Toggle ' + (it.labelEn || it.label_en || pillarKey) + ' menu');
-        arrow.setAttribute('aria-haspopup', 'true');
-        arrow.setAttribute('aria-expanded', 'false');
-        arrow.setAttribute('aria-controls', 'cso-nav-dd-' + pillarKey);
-        parent.append(a, arrow);
-        ni.append(parent, buildPillarDropdown(pillarKey, subItems));
-      } else {
-        parent.appendChild(a);
-        ni.appendChild(parent);
-      }
+      parent.appendChild(a);
+      ni.appendChild(parent);
       navItems.appendChild(ni);
     });
   }
@@ -1172,7 +1181,7 @@
     if (!document.getElementById('cso-main-navbar')) header.after(buildNavShell());
   }
   const FOOTER_COLS = [
-    ['Explore', [['Jobs & Careers', '/jobs-careers/'], ['Schemes & Benefits', '/schemes-benefits/'], ['Study Library', '/study-library/'], ['Community', '/community/'], ['About', '/about/']]],
+    ['Explore', [['Jobs', '/jobs/'], ['Careers', '/careers/'], ['Schemes & Benefits', '/schemes-benefits/'], ['Study Library', '/study-library/'], ['Community', '/community/'], ['About', '/about/']]],
     ['Support & Legal', [['Help & FAQs', '/support/#faqs'], ['Report an Error', '/support/#report-error'], ['Suggest Resource', '/support/#suggest-resource'], ['Privacy Policy', '/privacy-policy/'], ['Terms of Use', '/terms-of-use/']]]
   ];
   const FOOTER_SOCIAL = [

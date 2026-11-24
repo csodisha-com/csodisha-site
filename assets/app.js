@@ -3,14 +3,17 @@
 /* ================= EDIT YOUR CONTENT HERE ================= */
 const CFG={email:'contact@csodisha.com',social:{instagram:'https://www.instagram.com/csodisha.official/',facebook:'https://www.facebook.com/profile.php?id=61596187936770',x:'https://x.com/csodisha',telegram:'https://t.me/csodisha',whatsapp:'https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w',youtube:'https://www.youtube.com/@CSOdisha'}};
 const NAV=[
- ['jobs-careers','Jobs & Careers','💼','/jobs-careers/'],
+ ['jobs','Jobs','💼','/jobs/'],
+ ['careers','Careers','🧭','/careers/'],
  ['schemes-benefits','Schemes & Benefits','🏛','/schemes-benefits/'],
  ['study-library','Study Library','📖','/study-library/'],
  ['community','Community','👥','/community/'],
  ['about','About','ⓘ','/about/']
 ];
-// Clean-slate v231: Zero hardcoded mega-menu link piles. Submenus sync live from /api/nav/config (D1 /admin/).
+// Clean-slate v231 + v269 separated Jobs & Careers: Zero hardcoded mega-menu link piles. Submenus sync live from /api/nav/config (D1 /admin/).
 const MENUS={
+ 'jobs':[],
+ 'careers':[],
  'jobs-careers':[],
  'schemes-benefits':[],
  'study-library':[],
@@ -21,7 +24,7 @@ const MENUS={
 let UPDATES=[];
 // Page content: 'url-slug':{title:'',html:''}  (slug = lowercase title with dashes)
 const CONTENT={};
-const I18N={or:{'Home':'ମୂଳପୃଷ୍ଠା','Jobs':'ଚାକିରି','Jobs & Careers':'ଚାକିରି ଓ କ୍ୟାରିୟର','Study Library':'ପାଠାଗାର','Mock Tests':'ମକ୍ ଟେଷ୍ଟ','Schemes':'ଯୋଜନା','Schemes & Benefits':'ଯୋଜନା ଓ ସୁବିଧା','Tools':'ଉପକରଣ','Community':'ସମୁଦାୟ','About':'ଆମ ବିଷୟରେ'},hi:{'Home':'मुख्य पृष्ठ','Jobs':'नौकरियाँ','Jobs & Careers':'नौकरियाँ और करियर','Study Library':'अध्ययन पुस्तकालय','Mock Tests':'मॉक टेस्ट','Schemes':'योजनाएँ','Schemes & Benefits':'योजनाएँ और लाभ','Tools':'उपकरण','Community':'समुदाय','About':'हमारे बारे में'}}; // e.g. hi:{'Home':'होम'}
+const I18N={or:{'Home':'ମୂଳପୃଷ୍ଠା','Jobs':'ଚାକିରି','Careers':'କ୍ୟାରିୟର୍','Jobs & Careers':'ଚାକିରି ଓ କ୍ୟାରିୟର','Study Library':'ପାଠାଗାର','Mock Tests':'ମକ୍ ଟେଷ୍ଟ','Schemes':'ଯୋଜନା','Schemes & Benefits':'ଯୋଜନା ଓ ସୁବିଧା','Tools':'ଉପକରଣ','Community':'ସମୁଦାୟ','About':'ଆମ ବିଷୟରେ'},hi:{'Home':'मुख्य पृष्ठ','Jobs':'नौकरियाँ','Careers':'करियर','Jobs & Careers':'नौकरियाँ और करियर','Study Library':'अध्ययन पुस्तकालय','Mock Tests':'मॉक टेस्ट','Schemes':'योजनाएँ','Schemes & Benefits':'योजनाएँ और लाभ','Tools':'उपकरण','Community':'समुदाय','About':'हमारे बारे में'}}; // e.g. hi:{'Home':'होम'}
 /* ========================================================== */
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const ls={g:k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -224,58 +227,52 @@ function nav(){
  const homeLink=mk('a','cso-nav-home');homeLink.href='#';homeLink.setAttribute('data-h','');
  const hIc=mk('span','','🏠');hIc.setAttribute('aria-hidden','true');homeLink.append(hIc,' '+translateText('Home'));
  itemsWrap.appendChild(homeLink);
- const renderList=(list,megaMap)=>{
+ const normalizeHeaderList=(rawList)=>{
+  const hasCareers=rawList.some(it=>!Array.isArray(it)&&String(it&&it.url||'').replace(/^\/+|\/+$/g,'').toLowerCase()==='careers');
+  const out=[];
+  rawList.forEach(it=>{
+   if(Array.isArray(it)){out.push(it);return;}
+   const seg=String(it&&it.url||'').replace(/^\/+|\/+$/g,'').split('/')[0].toLowerCase();
+   const lbl=String(it&&it.label_en||'').trim().toLowerCase();
+   if((seg==='jobs-careers'||lbl==='jobs & careers')&&!hasCareers){
+    out.push({id:'nmenu-jobs',key:'jobs',label_en:'Jobs',label_or:'ଚାକିରି',url:'/jobs/',icon_key:'💼',sort_order:Number(it.sort_order||1)});
+    out.push({id:'nmenu-careers',key:'careers',label_en:'Careers',label_or:'କ୍ୟାରିୟର୍',url:'/careers/',icon_key:'🧭',sort_order:Number(it.sort_order||1)+0.5});
+   }else{
+    out.push(it);
+   }
+  });
+  return out;
+ };
+ const renderList=(list)=>{
   while(itemsWrap.children.length>1)itemsWrap.lastChild.remove();
-  list.forEach(entry=>{
+  normalizeHeaderList(list).forEach(entry=>{
    const isArr=Array.isArray(entry);
-   const s=isArr?entry[0]:(String(entry.url||'').replace(/^\/+|\/+$/g,'').split('/')[0]||'link');
+   const rawSeg=isArr?entry[0]:(entry.key||String(entry.url||'').replace(/^\/+|\/+$/g,'').split('/')[0].toLowerCase()||'link');
+   const s=rawSeg==='jobs-careers'?'jobs':rawSeg;
    const t=isArr?entry[1]:(S.lang==='or'?(entry.label_or||entry.label_en):entry.label_en);
    const icon=isArr?entry[2]:(entry.icon_key||'');
    const href=isArr?(entry[3]||('/'+s+'/')):(entry.url||'/');
    if(href==='/')return;
-   const subs=megaMap&&entry.id?(megaMap.get(entry.id)||[]):(MENUS[s]||[]);
    const ni=mk('div','ni');ni.dataset.pillar=s;
    const par=mk('div','cso-nav-parent');
-   const a=mk('a');a.href=href;
+   const a=mk('a');a.href=href;a.dataset.m=s;
    if(icon){const ic=mk('span','',icon);ic.setAttribute('aria-hidden','true');a.append(ic,' ');}
    a.append(document.createTextNode(translateText(t)));
-   if(subs.length){
-    const arr=mk('button','cso-nav-arrow','⌄');arr.type='button';
-    arr.setAttribute('aria-label','Toggle '+t+' menu');arr.setAttribute('aria-haspopup','true');
-    arr.setAttribute('aria-expanded','false');arr.setAttribute('aria-controls','cso-nav-dd-'+s);
-    par.append(a,arr);
-    const dd=mk('div','dd');dd.id='cso-nav-dd-'+s;
-    subs.forEach(sub=>{
-     const lbl=Array.isArray(sub)?sub[0]:(S.lang==='or'?(sub.label_or||sub.label_en):sub.label_en);
-     const url=Array.isArray(sub)?sub[1]:(sub.url||'/');
-     const subA=mk('a');subA.href=url;
-     const bul=mk('span','dd-bullet','›');bul.setAttribute('aria-hidden','true');
-     subA.append(bul,mk('span','',translateText(lbl)));
-     dd.appendChild(subA);
-    });
-    ni.append(par,dd);
-   }else{
-    par.appendChild(a);
-    ni.appendChild(par);
-   }
+   par.appendChild(a);
+   ni.appendChild(par);
    itemsWrap.appendChild(ni);
   });
  };
- renderList(NAV,null);
+ renderList(NAV);
  w.append(bar,itemsWrap);
  if(typeof fetch==='function'){
   fetch('/api/nav/config',{credentials:'same-origin',cache:'no-store'})
    .then(r=>r.ok?r.json():null)
    .then(data=>{
     if(!data||!Array.isArray(data.header)||!data.header.length)return;
-    const megaMap=new Map();
-    (data.mega_menu||[]).forEach(mm=>{
-     if(!mm||!mm.parent_item_id)return;
-     if(!megaMap.has(mm.parent_item_id))megaMap.set(mm.parent_item_id,[]);
-     megaMap.get(mm.parent_item_id).push(mm);
-    });
     const hdr=[...data.header].sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0));
-    renderList(hdr,megaMap);
+    renderList(hdr);
+    setActive(location.hash.slice(1));
    }).catch(()=>{});
  }
  syncMobileNavAuth();
@@ -411,28 +408,53 @@ window.addEventListener('resize', () => {
  }
 });
 }
-/* CSO navigation upgrade v1 */
+/* CSO navigation upgrade v269: separated Jobs (/jobs/) & Careers (/careers/) route detection */
+function resolveActiveRoutePillar(pathStr){
+  const p=String(pathStr||'/').toLowerCase();
+  if(p==='/'||p==='/index.html'||p==='')return '';
+  if(p.startsWith('/careers')||p.startsWith('/career-guidance'))return 'careers';
+  if(p.startsWith('/jobs-careers')||p.startsWith('/jobs')||p.startsWith('/job-opportunity-finder'))return 'jobs';
+  if(p.startsWith('/schemes-benefits')||p.startsWith('/schemes')||p.startsWith('/scholarship-guidance')||p.startsWith('/scheme-opportunity-finder'))return 'schemes-benefits';
+  if(p.startsWith('/study-library')||p.startsWith('/study')||p.startsWith('/resources')||p.startsWith('/current-affairs')||p.startsWith('/mock-tests')||p.startsWith('/education-explorer')||p.startsWith('/study-path-finder'))return 'study-library';
+  if(p.startsWith('/community')||p.startsWith('/support'))return 'community';
+  if(p.startsWith('/about')||p.startsWith('/trust-layer')||p.startsWith('/privacy-policy')||p.startsWith('/terms-of-use')||p.startsWith('/disclaimer')||p.startsWith('/copyright-policy'))return 'about';
+  return '';
+}
 function setActive(h){
   $$('#navw a').forEach(a=>{
     a.classList.remove('on');
     a.removeAttribute('aria-current');
   });
+  $$('#navw .ni').forEach(n=>n.classList.remove('cso-active'));
 
-  const p=!h
-    ?$('#navw .cso-nav-home')
-    :$$('#navw .ni')
-      .map(n=>$('[data-m]',n))
-      .filter(Boolean)
-      .find(a=>{
-        const menu=a.dataset.m;
-        return menu===h||
-          (Array.isArray(MENUS[menu])&&
-            MENUS[menu].some(x=>slug(x)===h));
-      });
+  const pathPillar=resolveActiveRoutePillar(window.location.pathname);
+  const effectiveKey=h||pathPillar;
+  const normalizedKey=effectiveKey==='jobs-careers'?'jobs':effectiveKey;
 
-  if(p){
-    p.classList.add('on');
-    p.setAttribute('aria-current', 'page');
+  if(!normalizedKey){
+    const home=$('#navw .cso-nav-home');
+    if(home){
+      home.classList.add('on');
+      home.setAttribute('aria-current','page');
+    }
+    return;
+  }
+
+  const targetNi=$$('#navw .ni').find(n=>{
+    const pil=n.dataset.pillar||'';
+    const a=$('[data-m]',n)||$('a',n);
+    const menu=(a&&a.dataset.m)||pil;
+    return pil===normalizedKey||menu===normalizedKey||
+      (Array.isArray(MENUS[menu])&&MENUS[menu].some(x=>slug(x)===normalizedKey));
+  });
+
+  if(targetNi){
+    targetNi.classList.add('cso-active');
+    const link=$('.cso-nav-parent > a',targetNi)||$('a',targetNi);
+    if(link){
+      link.classList.add('on');
+      link.setAttribute('aria-current','page');
+    }
   }
 }
 
