@@ -16,6 +16,11 @@
     homepageCount: null
   };
 
+  var OV_FOLDER_ID = 'folder-command-overview';
+  var OV_MODULE_ID = 'module-command-overview';
+  function isOverviewId(id) {
+    return id === OV_FOLDER_ID || id === OV_MODULE_ID || id === 'command-overview' || id === 'overview';
+  }
   var HS_FOLDER_ID = 'folder-homepage-studio';
   var HS_MODULE_ID = 'module-homepage-studio';
   function isHomepageStudioId(id) {
@@ -171,6 +176,29 @@
     var matchCount = 0;
     clearNode(dom.accordionNav);
 
+    var ovLabel = 'command overview telemetry dashboard';
+    if (!query || ovLabel.indexOf(query) !== -1) {
+      matchCount += 1;
+      var ovActive = CSOState.activeModuleId === OV_MODULE_ID;
+      var ovWrap = el('div', 'cso-nav-folder cso-nav-command-overview' + (ovActive ? ' is-current' : ''));
+      var ovBtn = el('button', 'cso-nav-folder-btn' + (ovActive ? ' is-active' : ''));
+      ovBtn.type = 'button';
+      ovBtn.title = 'Command Overview — live platform telemetry (Alt+0)';
+      var ovLeft = el('span', 'cso-nav-folder-left');
+      ovLeft.appendChild(el('span', 'cso-nav-dot'));
+      ovLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83D\uDCCA Command Overview'));
+      var ovRight = el('span', 'cso-nav-folder-right');
+      ovRight.appendChild(el('kbd', 'cs-kbd', 'Alt 0'));
+      ovBtn.appendChild(ovLeft);
+      ovBtn.appendChild(ovRight);
+      ovBtn.addEventListener('click', function () {
+        selectModule(OV_FOLDER_ID, OV_MODULE_ID);
+        if (window.innerWidth <= 900) closeMobileDrawer();
+      });
+      ovWrap.appendChild(ovBtn);
+      dom.accordionNav.appendChild(ovWrap);
+    }
+
     masterNavigationSchema.folders.forEach(function (folder) {
       var folderTitleOr = String(folder.title_or || '');
       var folderMatches = !query || folder.title.toLowerCase().includes(query) || folderTitleOr.toLowerCase().includes(query);
@@ -284,6 +312,7 @@
 
   function resolveModuleTarget(targetId) {
     if (isHomepageStudioId(targetId)) return { folderId: HS_FOLDER_ID, moduleId: HS_MODULE_ID };
+    if (isOverviewId(targetId)) return { folderId: OV_FOLDER_ID, moduleId: OV_MODULE_ID };
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders) || !masterNavigationSchema.folders.length) return null;
     for (var i = 0; i < masterNavigationSchema.folders.length; i++) {
       var f = masterNavigationSchema.folders[i];
@@ -295,13 +324,35 @@
   }
 
   function goDashboardHome() {
-    var first = (masterNavigationSchema && masterNavigationSchema.folders && masterNavigationSchema.folders[0]) || { id: 'folder-jobs-careers' };
-    var target = { folderId: first.id, moduleId: (first.modules && first.modules[0] && first.modules[0].id) || first.id };
-    selectModule(target.folderId, target.moduleId);
+    selectModule(OV_FOLDER_ID, OV_MODULE_ID);
     if (dom.workspaceRoot && dom.workspaceRoot.scrollIntoView) {
       dom.workspaceRoot.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function openCommandOverview() {
+    CSOState.activeFolderId = OV_FOLDER_ID;
+    CSOState.activeModuleId = OV_MODULE_ID;
+    try { localStorage.setItem('cso_active_module_id', OV_MODULE_ID); } catch (_e) {}
+    if (window.location.hash !== '#command-overview' && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#command-overview');
+    }
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Executive Command Suite';
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Command Overview';
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Command Overview';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live D1 / R2';
+    renderNavigationTree();
+    clearNode(dom.workspaceRoot);
+    clearNode(dom.moduleHeaderActions);
+    if (window.CSOCommandSuite) {
+      window.CSOCommandSuite.render(dom.workspaceRoot, dom.moduleHeaderActions);
+    } else {
+      var card = el('div', 'cso-empty-state');
+      card.appendChild(el('h2', '', 'Command Overview unavailable'));
+      card.appendChild(el('p', '', 'The Command Suite script failed to load. Reload the page.'));
+      dom.workspaceRoot.appendChild(card);
     }
   }
 
@@ -339,6 +390,7 @@
   }
 
   function selectModule(folderId, moduleId) {
+    if (isOverviewId(moduleId) || isOverviewId(folderId)) { openCommandOverview(); return; }
     if (isHomepageStudioId(moduleId) || isHomepageStudioId(folderId)) { openHomepageStudio(); return; }
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
     CSOState.activeFolderId = folderId;
@@ -707,6 +759,8 @@
   window.CSOStudio = {
     openRoute: openQuickCreateRoute,
     selectModule: selectModule,
+    getActiveFolderId: function () { return CSOState.activeFolderId; },
+    getActiveModuleId: function () { return CSOState.activeModuleId; },
     setHomepageCount: function (n) {
       if (CSOState.homepageCount !== n) { CSOState.homepageCount = n; renderNavigationTree(); }
     },
@@ -726,7 +780,7 @@
     var hashId = (window.location.hash || '').replace(/^#/, '');
     var storedId = '';
     try { storedId = localStorage.getItem('cso_active_module_id') || ''; } catch (_e) {}
-    var target = resolveModuleTarget(hashId) || resolveModuleTarget(storedId) || resolveModuleTarget('folder-jobs-careers') || { folderId: 'folder-jobs-careers', moduleId: 'folder-jobs-careers' };
+    var target = resolveModuleTarget(hashId) || resolveModuleTarget(storedId) || { folderId: OV_FOLDER_ID, moduleId: OV_MODULE_ID };
     renderNavigationTree();
     selectModule(target.folderId, target.moduleId);
     refreshHomepageCount();

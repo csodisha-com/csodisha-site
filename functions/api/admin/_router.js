@@ -81,6 +81,7 @@ import { handleCrawlDrafts } from './crawl-drafts.js';
 import { handleAdminCurrentAffairs } from './current-affairs.js';
 import { invalidateAllPublicCaches } from '../../_lib/edge-cache-invalidator.js';
 import { handleHomepageBlocksAdmin } from '../../_lib/homepage-studio.js';
+import { COMMAND_SUITE_RESOURCES, handleCommandSuiteAdmin } from '../../_lib/command-suite.js';
 import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
@@ -110,6 +111,12 @@ async function dispatchAdminApi(request, env) {
 
     if (resource === 'crawl-drafts') {
       return await handleCrawlDrafts(request, env);
+    }
+
+    if (COMMAND_SUITE_RESOURCES.includes(resource)) {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handleCommandSuiteAdmin(request, env, actor, resource);
     }
 
     if (resource === 'homepage-blocks') {

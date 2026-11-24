@@ -511,10 +511,20 @@
 
     renderForm();
     renderAll();
-    load().then(renderAll).catch(function (e) {
+    load().then(function () {
+      renderAll();
+      if (state.pendingEdit) {
+        var target = state.items.find(function (i) { return i.id === state.pendingEdit; });
+        state.pendingEdit = null;
+        if (target) startEdit(target);
+      }
+      if (state.pendingNew) { state.pendingNew = false; startEdit(null); }
+    }).catch(function (e) {
       clear(state.refs.list).appendChild(el('p', 'hs-error', 'Could not load homepage blocks: ' + e.message));
     });
   }
 
-  window.CSOHomepageStudio = { MODULE_ID: MODULE_ID, render: render, refreshCount: function () { return load(); } };
+  window.CSOHomepageStudio = { MODULE_ID: MODULE_ID, render: render,
+    openBlock: function (id) { state.pendingEdit = id; if (state.refs.list && document.body.contains(state.refs.list)) { var t = state.items.find(function (i) { return i.id === id; }); if (t) startEdit(t); } },
+    startNew: function () { state.pendingNew = true; if (state.refs.list && document.body.contains(state.refs.list) && state.items.length) { state.pendingNew = false; startEdit(null); } }, refreshCount: function () { return load(); } };
 })(window, document);
