@@ -281,26 +281,7 @@ export async function ensureEduResourcesBatch6Schema(db) {
 
   for (const sql of ddl) await db.prepare(sql).run();
 
-  const wCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_student_dashboard_widgets`).first();
-  if (!wCnt || Number(wCnt.n || 0) === 0) {
-    for (const w of STARTER_WIDGETS) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_student_dashboard_widgets (id, slug, widget_type, target_stage, title_en, title_or, body_en, body_or, cta_label_en, cta_label_or, cta_url, linked_module_code, linked_item_id, countdown_target_date, priority_order, pinned, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(w.id, w.slug, w.widget_type, w.target_stage, w.title_en, w.title_or, w.body_en, w.body_or, w.cta_label_en, w.cta_label_or, w.cta_url, w.linked_module_code, w.linked_item_id, w.countdown_target_date, w.priority_order, w.pinned, w.status).run();
-    }
-  }
-
-  const tCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_tools_registry`).first();
-  if (!tCnt || Number(tCnt.n || 0) === 0) {
-    for (const t of STARTER_TOOLS) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_tools_registry (id, slug, tool_type, title_en, title_or, summary_en, summary_or, instructions_en, instructions_or, config_json, tool_url, icon_key, sort_order, tags_json, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(t.id, t.slug, t.tool_type, t.title_en, t.title_or, t.summary_en, t.summary_or, t.instructions_en, t.instructions_or, t.config_json, t.tool_url, t.icon_key, t.sort_order, t.tags_json, t.status, t.featured).run();
-    }
-  }
-
+  // Clean-slate v232: starter auto-seeding disabled; widgets and tools are managed via Admin Studio (/admin/).
   _b6Ready.add(db);
 }
 

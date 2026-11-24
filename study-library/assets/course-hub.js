@@ -244,6 +244,14 @@
 
     while (container.firstChild) container.removeChild(container.firstChild);
 
+    if (!modules.length) {
+      var emptyCard = el('article', 'ece-module-card');
+      emptyCard.appendChild(el('h2', 'ece-module-title', 'No items published yet'));
+      emptyCard.appendChild(el('p', 'ece-module-subtitle-or', 'No items published yet — add categories or content in Admin Studio.'));
+      container.appendChild(emptyCard);
+      return;
+    }
+
     modules.forEach(function (mod) {
       var isDone = progress.completedModules.indexOf(mod.id) !== -1;
       var card = el('article', 'ece-module-card' + (isDone ? ' is-completed' : ''));

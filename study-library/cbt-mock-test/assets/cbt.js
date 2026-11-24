@@ -341,6 +341,16 @@
       container.appendChild(card);
 
       var packs = Array.isArray(root.CSO_CBT_EXAM_PACKS) ? root.CSO_CBT_EXAM_PACKS : [];
+      if (!packs.length) {
+        var emptyCard = el('div', 'cbt-card');
+        emptyCard.appendChild(el('h2', null, 'No items published yet'));
+        emptyCard.appendChild(el('p', 'cbt-pack-sub', 'No items published yet — add categories or content in Admin Studio.'));
+        var mockLink = el('a', 'cbt-btn cbt-btn--primary', 'Open Live Mock Tests →');
+        mockLink.href = '/mock-tests/';
+        emptyCard.appendChild(mockLink);
+        container.appendChild(emptyCard);
+        return;
+      }
       if (packs.length) {
         var packCard = el('div', 'cbt-card');
         packCard.appendChild(el('h2', null, 'Dedicated Odisha Exam Mock Packs (EN / ଓଡ଼ିଆ)'));

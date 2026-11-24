@@ -248,46 +248,7 @@ export async function ensureEduResourcesBatch2Schema(db) {
 
   for (const sql of ddl) await db.prepare(sql).run();
 
-  // Seed Classes (06)
-  const clsCount = await db.prepare(`SELECT COUNT(*) AS n FROM edu_classes_grades`).first();
-  if (!clsCount || Number(clsCount.n || 0) === 0) {
-    for (const c of STARTER_CLASSES) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_classes_grades (id, slug, code, name_en, name_or, stage_group, board_or_body, description_en, description_or, sort_order, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', ?)`
-      ).bind(c.id, c.slug, c.code, c.name_en, c.name_or, c.stage_group, c.board_or_body, c.description_en, c.description_or, c.sort_order, c.featured).run();
-    }
-  }
-
-  // Seed Subjects & Hierarchical Topics (05)
-  const subCount = await db.prepare(`SELECT COUNT(*) AS n FROM edu_subjects_topics`).first();
-  if (!subCount || Number(subCount.n || 0) === 0) {
-    for (const s of STARTER_SUBJECTS) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_subjects_topics (id, slug, class_grade_id, parent_topic_id, code, title_en, title_or, description_en, description_or, tags_json, sort_order, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', ?)`
-      ).bind(s.id, s.slug, s.class_grade_id, s.parent_topic_id, s.code, s.title_en, s.title_or, s.description_en, s.description_or, s.tags_json, s.sort_order, s.featured).run();
-    }
-  }
-
-  // Seed Examinations (07)
-  const exCount = await db.prepare(`SELECT COUNT(*) AS n FROM edu_examinations`).first();
-  if (!exCount || Number(exCount.n || 0) === 0) {
-    for (const e of STARTER_EXAMS) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_examinations (
-          id, slug, exam_code, conducting_body, exam_level, title_en, title_or, summary_en, summary_or,
-          eligibility_en, eligibility_or, age_limit_text, fee_structure_json, important_dates_json,
-          external_links_json, tags_json, status, featured
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(
-        e.id, e.slug, e.exam_code, e.conducting_body, e.exam_level, e.title_en, e.title_or, e.summary_en, e.summary_or,
-        e.eligibility_en, e.eligibility_or, e.age_limit_text, e.fee_structure_json, e.important_dates_json,
-        e.external_links_json, e.tags_json, e.status, e.featured
-      ).run();
-    }
-  }
-
+  // Clean-slate v232: starter auto-seeding disabled; classes, subjects, and exams are managed via Admin Studio (/admin/).
   _b2Ready.add(db);
 }
 

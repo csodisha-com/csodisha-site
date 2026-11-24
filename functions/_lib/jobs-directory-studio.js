@@ -646,100 +646,8 @@ export async function ensureJobsDirectoryStudioSchema(db) {
     db.prepare('CREATE INDEX IF NOT EXISTS idx_jd_sug_domain ON jobs_directory_suggestions(domain_slug, status)')
   ]);
 
-  // Idempotent seed for Modules #01-#04 whenever a domain has 0 folders
-  const now = nowIso();
-  const folderCounts = await db
-    .prepare('SELECT domain_slug, COUNT(*) AS cnt FROM jobs_directory_folders GROUP BY domain_slug')
-    .all();
-  const existingFoldersByDomain = new Map((folderCounts.results || []).map(r => [r.domain_slug, Number(r.cnt || 0)]));
-
-  const seedStmts = [];
-  for (const domainSlug of Object.keys(SEED_TREE_BY_DOMAIN)) {
-    if ((existingFoldersByDomain.get(domainSlug) || 0) > 0) continue;
-    const nodes = SEED_TREE_BY_DOMAIN[domainSlug];
-    const depthById = new Map();
-    for (const node of nodes) {
-      const depth = node.parent_id ? (depthById.get(node.parent_id) || 1) + 1 : 1;
-      depthById.set(node.id, depth);
-      seedStmts.push(
-        db.prepare(`INSERT OR IGNORE INTO jobs_directory_folders
-          (id, domain_slug, parent_id, title, slug, depth, sort_order, is_published, description, intro_html, seo_title, seo_description, hero_badge, updated_by, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, '', ?, ?, ?, 'seed', ?, ?)`)
-          .bind(
-            node.id,
-            domainSlug,
-            node.parent_id,
-            node.title,
-            node.slug,
-            depth,
-            node.sort_order,
-            node.description || '',
-            `${node.title} — CSOdisha Jobs & Careers`,
-            node.description || '',
-            node.hero_badge || '',
-            now,
-            now
-          )
-      );
-    }
-  }
-  if (seedStmts.length) await runBatched(db, seedStmts);
-
-  const itemCounts = await db
-    .prepare('SELECT domain_slug, COUNT(*) AS cnt FROM jobs_directory_items GROUP BY domain_slug')
-    .all();
-  const existingItemsByDomain = new Map((itemCounts.results || []).map(r => [r.domain_slug, Number(r.cnt || 0)]));
-
-  const itemStmts = [];
-  for (const domainSlug of Object.keys(SEED_ITEMS_BY_DOMAIN)) {
-    if ((existingItemsByDomain.get(domainSlug) || 0) > 0) continue;
-    for (const item of SEED_ITEMS_BY_DOMAIN[domainSlug]) {
-      itemStmts.push(
-        db.prepare(`INSERT OR IGNORE INTO jobs_directory_items
-          (id, domain_slug, folder_id, title, slug, item_type, recruiting_body, qualification_tag, vacancies, start_date, deadline_date, exam_date,
-           official_apply_url, cover_image_url, cover_image_alt, attachments_json, links_json, tags_json, language, status, featured,
-           summary, body_html, seo_title, seo_description, verified_by, verified_at, created_by, updated_by, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', '', '[]', '[]', ?, 'EN', 'published', ?, ?, ?, ?, ?, 'system@csodisha.com', ?, 'seed', 'seed', ?, ?)`)
-          .bind(
-            item.id,
-            domainSlug,
-            item.folder_id,
-            item.title,
-            item.slug,
-            item.item_type,
-            item.recruiting_body || '',
-            item.qualification_tag || '',
-            item.vacancies || '',
-            item.start_date || '',
-            item.deadline_date || '',
-            item.exam_date || '',
-            item.official_apply_url || '',
-            JSON.stringify(item.tags || []),
-            item.featured ? 1 : 0,
-            item.summary || '',
-            item.body_html || '',
-            `${item.title} | CSOdisha`,
-            item.summary || '',
-            now,
-            now,
-            now
-          )
-      );
-    }
-  }
-  if (itemStmts.length) await runBatched(db, itemStmts);
-
-  await bridgeLegacyJobsNodes(db, now);
-  await enrichJobsRecruitmentCategory01(db, now);
-  await enrichCareerExplorerCategory02(db, now);
-  await enrichEligibilityExplorerCategory03(db, now);
-  await enrichCoursesExamsCategory04(db, now);
-  await enrichScholarshipsCategory05(db, now);
-  await enrichInternationalCategory06(db, now);
-  await enrichCareerDevelopmentCategory07(db, now);
-  await enrichInstitutionsPortalsCategory08(db, now);
-  await ensureLiveOdishaDirectoryContentSeeded(db);
-
+  // Clean-slate v232: auto-seeding and legacy enrichment disabled; jobs_directory_folders
+  // and jobs_directory_items are controlled strictly from Admin Studio (/admin/) via Cloudflare D1.
   _schemaReady.add(db);
 }
 
@@ -1819,7 +1727,7 @@ export async function listPublicJobsOverview(env) {
       item_count: ic,
       verified_count: vc
     };
-  });
+  }).filter(d => d.folder_count > 0 || d.item_count > 0);
 
   const typeBreakdown = {
     recruitment: (typeMap.get('job-notification') || 0),

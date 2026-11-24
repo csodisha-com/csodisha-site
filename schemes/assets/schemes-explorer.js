@@ -50,7 +50,7 @@
     var totalEntriesDisplay = Math.max(Number(totals.totalEntries || 0), Number(totals.totalPublished || 0));
 
     [
-      { label: 'Navigation Groups', val: totals.totalDomains || domains.length || 8 },
+      { label: 'Navigation Groups', val: totals.totalDomains || domains.length || 0 },
       { label: 'Main Sections', val: totals.totalSections || 0 },
       { label: 'Subcategories', val: totals.totalSubcategories || 0 },
       { label: 'Detailed Entries', val: totalEntriesDisplay }
@@ -85,6 +85,13 @@
       'find-schemes-eligibility': '🧭',
       'citizen-services-verification': '✔'
     };
+
+    if (!overview.domains.length && grid) {
+      grid.appendChild(el('div', { class: 'cso-schemes-item-card' }, [
+        el('p', { text: 'No items published yet — add categories or content in Admin Studio.' })
+      ]));
+      return;
+    }
 
     overview.domains.forEach(function (d) {
       var clean = function (s) {
@@ -202,7 +209,7 @@
     if (countEl) countEl.textContent = 'Showing ' + filtered.length + ' of ' + state.total + ' verified schemes';
     if (!filtered.length) {
       host.appendChild(el('div', { class: 'cso-schemes-item-card' }, [
-        el('p', { text: 'No published schemes match your current filters. Try clearing filters or browsing one of the 8 directory domains above.' })
+        el('p', { text: 'No items published yet — add categories or content in Admin Studio.' })
       ]));
       renderPagination();
       return;

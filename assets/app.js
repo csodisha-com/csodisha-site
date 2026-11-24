@@ -1824,7 +1824,7 @@ function lu(){
     const emptyP=document.createElement('p');
     emptyP.className='em mut';
     emptyP.setAttribute('role','status');
-    emptyP.textContent='No updates in this category yet.';
+    emptyP.textContent='No items published yet — add categories or content in Admin Studio.';
     panel.appendChild(emptyP);
     return;
   }

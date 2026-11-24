@@ -46,7 +46,7 @@
     var domains = overview.domains || [];
 
     [
-      { label: 'Community Domains', val: totals.totalDomains || domains.length || 10 },
+      { label: 'Community Domains', val: totals.totalDomains || domains.length || 0 },
       { label: 'Directory Categories', val: totals.totalFolders || 0 },
       { label: 'Published Communities', val: totals.totalPublished || 0 },
       { label: 'Safety-Verified Circles', val: totals.totalVerified || 0 }
@@ -83,6 +83,13 @@
       'digital-international-forums': '🌍',
       'community-safety-governance': '🛡'
     };
+
+    if (!overview.domains.length && grid) {
+      grid.appendChild(el('div', { class: 'cso-comm-item-card' }, [
+        el('p', { text: 'No items published yet — add categories or content in Admin Studio.' })
+      ]));
+      return;
+    }
 
     overview.domains.forEach(function (d) {
       var clean = function (s) {
@@ -153,7 +160,7 @@
     if (countEl) countEl.textContent = 'Showing ' + items.length + ' of ' + state.total + ' verified communities';
     if (!items.length) {
       host.appendChild(el('div', { class: 'cso-comm-item-card' }, [
-        el('p', { text: 'No published communities match your current filters. Try clearing filters or browsing one of the 10 directory domains above.' })
+        el('p', { text: 'No items published yet — add categories or content in Admin Studio.' })
       ]));
       renderPagination();
       return;

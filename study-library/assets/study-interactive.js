@@ -6,56 +6,8 @@
   var LANG_MODE_KEY = 'cso_study_lang_mode';
   var MISTAKE_DECK_KEY = 'cso_study_mistake_deck';
 
-  var CURATED_FLASHCARDS = [
-    {
-      id: 'fc-opsc-1',
-      exam: 'OPSC OAS',
-      q: 'In which year was Odisha constituted as a separate linguistic province?',
-      a: '1 April 1936 (Utkal Divas), becoming the first state in British India formed on a linguistic basis.',
-      q_or: 'ଓଡ଼ିଶା କେବେ ଏକ ସ୍ୱତନ୍ତ୍ର ଭାଷାଭିତ୍ତିକ ପ୍ରଦେଶ ଭାବରେ ଗଠିତ ହୋଇଥିଲା?',
-      a_or: '୧ ଏପ୍ରିଲ୍ ୧୯୩୬ (ଉତ୍କଳ ଦିବସ), ଭାଷା ଆଧାରରେ ଗଠିତ ଭାରତର ପ୍ରଥମ ରାଜ୍ୟ।'
-    },
-    {
-      id: 'fc-opsc-2',
-      exam: 'Odisha GK',
-      q: 'Which river is known as the "Sorrow of Odisha" and where is Hirakud Dam built?',
-      a: 'Mahanadi River; Hirakud Dam is built near Sambalpur (longest earthen dam in the world).',
-      q_or: 'କେଉଁ ନଦୀକୁ "ଓଡ଼ିଶାର ଦୁଃଖ" କୁହାଯାଏ ଏବଂ ହୀରାକୁଦ ବନ୍ଧ କେଉଁଠାରେ ନିର୍ମିତ?',
-      a_or: 'ମହାନଦୀ; ସମ୍ବଲପୁର ନିକଟରେ ହୀରାକୁଦ ବନ୍ଧ ନିର୍ମିତ।'
-    },
-    {
-      id: 'fc-ossc-1',
-      exam: 'OSSC CGL',
-      q: 'What is the total number of districts and Lok Sabha seats in Odisha?',
-      a: '30 Districts, 21 Lok Sabha seats, 10 Rajya Sabha seats, and 147 Assembly constituencies.',
-      q_or: 'ଓଡ଼ିଶାରେ ମୋଟ କେତୋଟି ଜିଲ୍ଲା ଏବଂ ଲୋକସଭା ଆସନ ଅଛି?',
-      a_or: '୩୦ଟି ଜିଲ୍ଲା, ୨୧ଟି ଲୋକସଭା ଆସନ, ୧୦ଟି ରାଜ୍ୟସଭା ଆସନ ଏବଂ ୧୪୭ଟି ବିଧାନସଭା ଆସନ।'
-    },
-    {
-      id: 'fc-osssc-1',
-      exam: 'OSSSC RI/ARI',
-      q: 'Which Chilika Lake island is famous as a bird sanctuary under the Ramsar Convention?',
-      a: 'Nalabana Island Bird Sanctuary inside Chilika Lake (India’s first Ramsar Wetland site, 1981).',
-      q_or: 'ଚିଲିକା ହ୍ରଦର କେଉଁ ଦ୍ୱୀପ ରାମସାର ପକ୍ଷୀ ଅଭୟାରଣ୍ୟ ଭାବରେ ପ୍ରସିଦ୍ଧ?',
-      a_or: 'ନଳବଣ ଦ୍ୱୀପ ପକ୍ଷୀ ଅଭୟାରଣ୍ୟ (୧୯୮୧ ମସିହାରେ ଭାରତର ପ୍ରଥମ ରାମସାର ସ୍ଥଳ)।'
-    },
-    {
-      id: 'fc-polity-1',
-      exam: 'Indian Polity',
-      q: 'Which Constitutional Amendment introduced the 3-tier Panchayati Raj system (Part IX)?',
-      a: '73rd Constitutional Amendment Act, 1992 (effective 24 April 1993, adding the 11th Schedule).',
-      q_or: 'କେଉଁ ସମ୍ବିଧାନ ସଂଶୋଧନ ଦ୍ୱାରା ୩-ସ୍ତରୀୟ ପଞ୍ଚାୟତିରାଜ ବ୍ୟବସ୍ଥା ଲାଗୁ ହୋଇଥିଲା?',
-      a_or: '୭୩ତମ ସମ୍ବିଧାନ ସଂଶୋଧନ ଆଇନ, ୧୯୯୨ (ଏକାଦଶ ଅନୁସୂଚୀ)।'
-    },
-    {
-      id: 'fc-edu-1',
-      exam: 'OTET / OSSTET',
-      q: 'What is the 5+3+3+4 curricular structure under NEP 2020?',
-      a: 'Foundational (5 yrs: Balvatika + Class 1-2), Preparatory (3: Class 3-5), Middle (3: Class 6-8), Secondary (4: Class 9-12).',
-      q_or: 'NEP 2020 ଅଧୀନରେ 5+3+3+4 ଶିକ୍ଷା ଢାଞ୍ଚା କଣ?',
-      a_or: 'ଫାଉଣ୍ଡେସନାଲ (୫ ବର୍ଷ), ପ୍ରିପାରେଟୋରୀ (୩ ବର୍ଷ), ମିଡିଲ (୩ ବର୍ଷ), ସେକେଣ୍ଡାରୀ (୪ ବର୍ଷ)।'
-    }
-  ];
+  // Clean-slate v232: purged hardcoded flashcards; flashcards build strictly from live D1 resources authored in Admin Studio.
+  var CURATED_FLASHCARDS = [];
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);

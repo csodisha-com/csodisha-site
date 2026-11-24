@@ -845,61 +845,8 @@ export async function ensureCommunityDirectoryStudioSchema(db) {
     db.prepare('CREATE INDEX IF NOT EXISTS idx_cd_sug_domain ON community_directory_suggestions(domain_slug, status)')
   ]);
 
-  const now = nowIso();
-  const folderCounts = await db
-    .prepare('SELECT domain_slug, COUNT(*) AS cnt FROM community_directory_folders GROUP BY domain_slug')
-    .all();
-  const existingFoldersByDomain = new Map((folderCounts.results || []).map(r => [r.domain_slug, Number(r.cnt || 0)]));
-
-  const seedStmts = [];
-  for (const domainSlug of Object.keys(SEED_FOLDERS_BY_DOMAIN)) {
-    if ((existingFoldersByDomain.get(domainSlug) || 0) > 0) continue;
-    const nodes = SEED_FOLDERS_BY_DOMAIN[domainSlug];
-    const depthById = new Map();
-    nodes.forEach((n, idx) => {
-      const depth = n.parent ? ((depthById.get(n.parent) || 1) + 1) : 1;
-      depthById.set(n.id, depth);
-      seedStmts.push(
-        db.prepare(`INSERT OR IGNORE INTO community_directory_folders
-          (id, domain_slug, parent_id, depth, name_en, title_or, slug, description_en, seo_title, seo_description, featured_badge, sort_order, is_active, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`)
-          .bind(
-            n.id, domainSlug, n.parent, depth, n.name, n.title_or || '', n.slug,
-            n.desc || '', `${n.name} — CSOdisha Community`, n.desc || '', n.badge || '', (idx + 1) * 10, now, now
-          )
-      );
-    });
-  }
-  if (seedStmts.length) await runBatched(db, seedStmts, 45);
-
-  const itemCounts = await db
-    .prepare('SELECT domain_slug, COUNT(*) AS cnt FROM community_directory_items GROUP BY domain_slug')
-    .all();
-  const existingItemsByDomain = new Map((itemCounts.results || []).map(r => [r.domain_slug, Number(r.cnt || 0)]));
-
-  const itemStmts = [];
-  for (const domainSlug of Object.keys(SEED_ITEMS_BY_DOMAIN)) {
-    if ((existingItemsByDomain.get(domainSlug) || 0) > 0) continue;
-    for (const it of SEED_ITEMS_BY_DOMAIN[domainSlug]) {
-      itemStmts.push(
-        db.prepare(`INSERT OR IGNORE INTO community_directory_items
-          (id, domain_slug, folder_id, title, title_or, slug, community_type, district_region, membership_model, platform_channel,
-           join_or_portal_url, safety_verified, language_parity, summary, charter_guidelines, activities_highlights, tags_json,
-           status, verified_at, published_at, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'EN+OR', ?, ?, ?, ?, 'published', ?, ?, ?, ?)`)
-          .bind(
-            it.id, domainSlug, it.folder_id, it.title, it.title_or || '', it.slug,
-            it.community_type, it.district_region, it.membership_model, it.platform_channel,
-            it.join_or_portal_url, it.summary, it.charter_guidelines, it.activities_highlights,
-            JSON.stringify(it.tags || []), now, now, now, now
-          )
-      );
-    }
-  }
-  if (itemStmts.length) await runBatched(db, itemStmts, 45);
-
-  await bridgeLegacyCommunityTables(db, now);
-
+  // Clean-slate v232: auto-seeding disabled; community_directory_folders and community_directory_items
+  // are controlled strictly from Admin Studio (/admin/) via Cloudflare D1.
   _schemaReady.add(db);
 }
 
@@ -1538,7 +1485,7 @@ export async function listPublicCommunityOverview(env) {
       item_count: ic,
       verified_count: vc
     };
-  });
+  }).filter(d => d.folder_count > 0 || d.item_count > 0);
 
   const regionBreakdown = {};
   for (const r of (rRes.results || [])) {

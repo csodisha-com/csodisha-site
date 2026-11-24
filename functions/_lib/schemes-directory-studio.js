@@ -646,95 +646,8 @@ export async function ensureSchemesDirectoryStudioSchema(db) {
     db.prepare('CREATE INDEX IF NOT EXISTS idx_sd_sug_domain ON schemes_directory_suggestions(domain_slug, status)')
   ]);
 
-  const now = nowIso();
-  await bridgeLegacySchemesTables(db, now);
-
-  const folderCounts = await db
-    .prepare('SELECT domain_slug, COUNT(*) AS cnt FROM schemes_directory_folders GROUP BY domain_slug')
-    .all();
-  const existingFoldersByDomain = new Map((folderCounts.results || []).map(r => [r.domain_slug, Number(r.cnt || 0)]));
-
-  const seedStmts = [];
-  for (const domainSlug of Object.keys(SEED_FOLDERS_BY_DOMAIN)) {
-    if ((existingFoldersByDomain.get(domainSlug) || 0) > 0) continue;
-    const nodes = SEED_FOLDERS_BY_DOMAIN[domainSlug];
-    const depthById = new Map();
-    for (const node of nodes) {
-      const depth = node.parent_id ? (depthById.get(node.parent_id) || 1) + 1 : 1;
-      depthById.set(node.id, depth);
-      seedStmts.push(
-        db.prepare(`INSERT OR IGNORE INTO schemes_directory_folders
-          (id, domain_slug, parent_id, depth, name_en, title_or, slug, description_en, description_or, seo_title, seo_description, featured_badge, verified_at, sort_order, is_active, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?, ?, ?, 1, ?, ?)`)
-          .bind(
-            node.id,
-            domainSlug,
-            node.parent_id,
-            depth,
-            node.name_en,
-            node.title_or || '',
-            node.slug,
-            node.description_en || '',
-            `${node.name_en} — CSOdisha Schemes`,
-            node.description_en || '',
-            node.featured_badge || '',
-            now,
-            node.sort_order,
-            now,
-            now
-          )
-      );
-    }
-  }
-  if (seedStmts.length) await runBatched(db, seedStmts, 45);
-
-  const itemCounts = await db
-    .prepare('SELECT domain_slug, COUNT(*) AS cnt FROM schemes_directory_items GROUP BY domain_slug')
-    .all();
-  const existingItemsByDomain = new Map((itemCounts.results || []).map(r => [r.domain_slug, Number(r.cnt || 0)]));
-
-  const itemStmts = [];
-  for (const domainSlug of Object.keys(SEED_ITEMS_BY_DOMAIN)) {
-    if ((existingItemsByDomain.get(domainSlug) || 0) > 0) continue;
-    for (const item of SEED_ITEMS_BY_DOMAIN[domainSlug]) {
-      itemStmts.push(
-        db.prepare(`INSERT OR IGNORE INTO schemes_directory_items
-          (id, domain_slug, folder_id, title, title_or, slug, scheme_type, sponsor_level, department_name, beneficiary_group,
-           benefit_amount, income_limit, application_mode, application_deadline, official_apply_url, official_portal_verified,
-           language_parity, summary, eligibility_criteria, documents_required, body_html, pdf_url, pdf_size_bytes, cover_image_url,
-           links_json, tags_json, entity_tags_json, status, verified_at, published_at, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?, 1, 'EN+OR', ?, ?, ?, ?, '', 0, '', '[]', ?, '[]', 'published', ?, ?, ?, ?)`)
-          .bind(
-            item.id,
-            domainSlug,
-            item.folder_id,
-            item.title,
-            item.title_or || '',
-            item.slug,
-            item.scheme_type,
-            item.sponsor_level,
-            item.department_name || '',
-            item.beneficiary_group || 'All Citizens',
-            item.benefit_amount || '',
-            item.income_limit || '',
-            item.application_mode || 'Online Portal',
-            item.official_apply_url || '',
-            item.summary || '',
-            item.eligibility_criteria || '',
-            item.documents_required || '',
-            item.body_html || '',
-            JSON.stringify(item.tags || []),
-            now,
-            now,
-            now,
-            now
-          )
-      );
-    }
-  }
-  if (itemStmts.length) await runBatched(db, itemStmts, 45);
-  await ensureLiveOdishaDirectoryContentSeeded(db);
-
+  // Clean-slate v232: auto-seeding disabled; schemes_directory_folders and schemes_directory_items
+  // are controlled strictly from Admin Studio (/admin/) via Cloudflare D1.
   _schemaReady.add(db);
 }
 
@@ -1686,7 +1599,7 @@ export async function listPublicSchemesOverview(env) {
       item_count: ic,
       verified_count: vc
     };
-  });
+  }).filter(d => d.folder_count > 0 || d.item_count > 0);
 
   const typeBreakdown = {};
   for (const r of (tRes.results || [])) {

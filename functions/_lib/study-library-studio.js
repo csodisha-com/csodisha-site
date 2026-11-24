@@ -591,39 +591,8 @@ export async function ensureStudyLibraryStudioSchema(db) {
     }
   }
 
-  const domainCountsRes = await db.prepare(
-    `SELECT domain_slug, COUNT(*) AS n FROM study_library_folders GROUP BY domain_slug`
-  ).all();
-  const seededDomains = new Set((domainCountsRes.results || []).filter(r => Number(r.n) > 0).map(r => r.domain_slug));
-  const missingSeeds = SEED_TREE.filter(s => !seededDomains.has(s.domain) || s.domain === 'early-childhood');
-  if (missingSeeds.length > 0) {
-    const nowIso = new Date().toISOString();
-    const seedSql = `INSERT OR IGNORE INTO study_library_folders (
-      id, domain_slug, parent_id, depth, name, slug, description, sort_order, is_active, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, '', ?, 1, ?, ?)`;
-    await runBatch(
-      db,
-      missingSeeds.map(s => db.prepare(seedSql).bind(s.id, s.domain, s.parent, s.depth, s.name, s.slug, s.sort, nowIso, nowIso))
-    );
-  }
-  const nowEcIso = new Date().toISOString();
-  const ecItemSql = `INSERT OR IGNORE INTO study_library_items (
-    id, domain_slug, folder_id, folder_path, stage_slug, board_slug, class_slug, title, slug, resource_type,
-    board_or_exam, subject_tag, language_parity, summary, body_html,
-    pdf_url, pdf_size_bytes, cover_image_url, odf_url, ods_url, pdf_print_url, links_json, tags_json,
-    seo_title, seo_description, is_featured, status,
-    created_by, updated_by, created_at, updated_at
-  ) VALUES (?, 'early-childhood', ?, 'Early Childhood & Primary Education', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, '/assets/downloads/study/early-childhood-primary-education-complete-guide.odt', '/assets/downloads/study/nipun-odisha-fln-checklist.ods', '/assets/downloads/study/early-childhood-primary-print-pack.html', '[]', '[]', ?, ?, ?, 'published', 'system', 'system', ?, ?)`;
-  await runBatch(
-    db,
-    EARLY_CHILDHOOD_SEED_ITEMS.map((it) => db.prepare(ecItemSql).bind(
-      it.id, it.folder_id, it.stage_slug || '', it.board_slug || '', it.class_slug || '', it.title, it.slug, it.resource_type,
-      it.board_or_exam, it.subject_tag, it.language_parity, it.summary, it.summary,
-      it.pdf_url, it.cover_image_url, it.title, it.summary, it.is_featured,
-      nowEcIso, nowEcIso
-    ))
-  );
-  await ensureLiveOdishaDirectoryContentSeeded(db);
+  // Clean-slate v232: auto-seeding disabled; study_library_folders and study_library_items
+  // are controlled strictly from Admin Studio (/admin/) via Cloudflare D1.
   _ensuredDbs.add(db);
 }
 

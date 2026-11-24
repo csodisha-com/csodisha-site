@@ -326,46 +326,7 @@ export async function ensureEduResourcesBatch4Schema(db) {
 
   for (const sql of ddl) await db.prepare(sql).run();
 
-  const qCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_quizzes`).first();
-  if (!qCnt || Number(qCnt.n || 0) === 0) {
-    for (const q of STARTER_QUIZZES) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_quizzes (id, slug, class_grade_id, subject_name, topic_name, exam_tag, title_en, title_or, summary_en, summary_or, question_ids_json, duration_mins, passing_score_pct, marks_per_question, negative_marks, shuffle_questions, flashcard_mode_enabled, tags_json, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(q.id, q.slug, q.class_grade_id, q.subject_name, q.topic_name, q.exam_tag, q.title_en, q.title_or, q.summary_en, q.summary_or, q.question_ids_json, q.duration_mins, q.passing_score_pct, q.marks_per_question, q.negative_marks, q.shuffle_questions, q.flashcard_mode_enabled, q.tags_json, q.status, q.featured).run();
-    }
-  }
-
-  const mCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_mock_tests`).first();
-  if (!mCnt || Number(mCnt.n || 0) === 0) {
-    for (const m of STARTER_MOCK_TESTS) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_mock_tests (id, slug, examination_id, class_grade_id, conducting_body, test_series_name, title_en, title_or, summary_en, summary_or, sections_json, total_questions, total_marks, total_duration_mins, negative_marking_rule, access_tier, tags_json, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(m.id, m.slug, m.examination_id, m.class_grade_id, m.conducting_body, m.test_series_name, m.title_en, m.title_or, m.summary_en, m.summary_or, m.sections_json, m.total_questions, m.total_marks, m.total_duration_mins, m.negative_marking_rule, m.access_tier, m.tags_json, m.status, m.featured).run();
-    }
-  }
-
-  const akCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_answer_keys`).first();
-  if (!akCnt || Number(akCnt.n || 0) === 0) {
-    for (const a of STARTER_ANSWER_KEYS) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_answer_keys (id, slug, examination_id, pyq_paper_id, mock_test_id, key_type, conducting_body, exam_year, paper_set_code, title_en, title_or, summary_en, summary_or, answer_mapping_json, objection_window_end, challenge_url, external_links_json, tags_json, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(a.id, a.slug, a.examination_id, a.pyq_paper_id, a.mock_test_id, a.key_type, a.conducting_body, a.exam_year, a.paper_set_code, a.title_en, a.title_or, a.summary_en, a.summary_or, a.answer_mapping_json, a.objection_window_end, a.challenge_url, a.external_links_json, a.tags_json, a.status, a.featured).run();
-    }
-  }
-
-  const cCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_collections`).first();
-  if (!cCnt || Number(cCnt.n || 0) === 0) {
-    for (const c of STARTER_COLLECTIONS) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_collections (id, slug, collection_type, examination_id, class_grade_id, title_en, title_or, summary_en, summary_or, items_json, offline_pack_ready, tags_json, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(c.id, c.slug, c.collection_type, c.examination_id, c.class_grade_id, c.title_en, c.title_or, c.summary_en, c.summary_or, c.items_json, c.offline_pack_ready, c.tags_json, c.status, c.featured).run();
-    }
-  }
-
+  // Clean-slate v232: starter auto-seeding disabled; quizzes, mock tests, answer keys, and collections are managed via Admin Studio (/admin/).
   _b4Ready.add(db);
 }
 

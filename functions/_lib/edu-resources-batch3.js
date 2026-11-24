@@ -291,46 +291,7 @@ export async function ensureEduResourcesBatch3Schema(db) {
 
   for (const sql of ddl) await db.prepare(sql).run();
 
-  const admCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_admit_results`).first();
-  if (!admCnt || Number(admCnt.n || 0) === 0) {
-    for (const a of STARTER_ADMIT_RESULTS) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_admit_results (id, slug, notice_type, examination_id, conducting_body, title_en, title_or, summary_en, summary_or, release_date, exam_date, download_url, cutoff_table_json, external_links_json, tags_json, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(a.id, a.slug, a.notice_type, a.examination_id, a.conducting_body, a.title_en, a.title_or, a.summary_en, a.summary_or, a.release_date, a.exam_date, a.download_url, a.cutoff_table_json, a.external_links_json, a.tags_json, a.status, a.featured).run();
-    }
-  }
-
-  const sylCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_syllabi`).first();
-  if (!sylCnt || Number(sylCnt.n || 0) === 0) {
-    for (const s of STARTER_SYLLABI) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_syllabi (id, slug, examination_id, class_grade_id, conducting_body, title_en, title_or, summary_en, summary_or, exam_pattern_json, topics_checklist_json, external_links_json, tags_json, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(s.id, s.slug, s.examination_id, s.class_grade_id, s.conducting_body, s.title_en, s.title_or, s.summary_en, s.summary_or, s.exam_pattern_json, s.topics_checklist_json, s.external_links_json, s.tags_json, s.status, s.featured).run();
-    }
-  }
-
-  const pyqCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_pyq_papers`).first();
-  if (!pyqCnt || Number(pyqCnt.n || 0) === 0) {
-    for (const p of STARTER_PYQS) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_pyq_papers (id, slug, examination_id, class_grade_id, subject_name, exam_year, shift_or_paper, title_en, title_or, summary_en, summary_or, question_count, duration_mins, total_marks, difficulty_level, offline_ready, file_url, answer_key_url, tags_json, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(p.id, p.slug, p.examination_id, p.class_grade_id, p.subject_name, p.exam_year, p.shift_or_paper, p.title_en, p.title_or, p.summary_en, p.summary_or, p.question_count, p.duration_mins, p.total_marks, p.difficulty_level, p.offline_ready, p.file_url, p.answer_key_url, p.tags_json, p.status, p.featured).run();
-    }
-  }
-
-  const qbCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_question_bank`).first();
-  if (!qbCnt || Number(qbCnt.n || 0) === 0) {
-    for (const q of STARTER_QUESTIONS) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_question_bank (id, slug, pyq_paper_id, class_grade_id, subject_name, topic_name, exam_tag, exam_year, difficulty, question_en, question_or, options_json, correct_option, explanation_en, explanation_or, tags_json, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(q.id, q.slug, q.pyq_paper_id, q.class_grade_id, q.subject_name, q.topic_name, q.exam_tag, q.exam_year, q.difficulty, q.question_en, q.question_or, q.options_json, q.correct_option, q.explanation_en, q.explanation_or, q.tags_json, q.status, q.featured).run();
-    }
-  }
-
+  // Clean-slate v232: starter auto-seeding disabled; admit results, syllabi, PYQs, and question bank are managed via Admin Studio (/admin/).
   _b3Ready.add(db);
 }
 

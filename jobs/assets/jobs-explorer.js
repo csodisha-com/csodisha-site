@@ -112,10 +112,10 @@
     if (kpisEl) {
       clear(kpisEl);
       [
-        { label: 'Navigation Groups', val: totals.totalDomains || 8 },
+        { label: 'Navigation Groups', val: totals.totalDomains || 0 },
         { label: 'Main Sections', val: totals.totalSections || 0 },
         { label: 'Subcategories', val: totals.totalSubcategories || 0 },
-        { label: 'Detailed Entries', val: Number(totals.totalPublished || 0).toLocaleString('en-IN') + '+' }
+        { label: 'Detailed Entries', val: Number(totals.totalPublished || 0).toLocaleString('en-IN') }
       ].forEach(function (k) {
         kpisEl.appendChild(el('div', { class: 'cso-jobs-kpi' }, [
           el('div', { class: 'cso-jobs-kpi-label', text: k.label }),
@@ -154,17 +154,21 @@
 
     if (domainsEl) {
       clear(domainsEl);
-      domains.forEach(function (d) {
-        var icon = icons[d.slug] || '•';
-        domainsEl.appendChild(el('a', { class: 'cso-jobs-domain-card', href: d.publicPath }, [
-          el('div', { class: 'cso-jobs-domain-top' }, [
-            el('span', { text: icon + ' Category' }),
-            el('span', { text: d.folder_count + ' categories · ' + d.item_count + ' entries' })
-          ]),
-          el('div', { class: 'cso-jobs-domain-title', text: d.title }),
-          el('div', { class: 'cso-jobs-domain-desc', text: d.summary })
-        ]));
-      });
+      if (!domains.length) {
+        domainsEl.appendChild(el('p', { class: 'cso-jobs-domain-desc', text: 'No items published yet — add categories or content in Admin Studio.' }));
+      } else {
+        domains.forEach(function (d) {
+          var icon = icons[d.slug] || '•';
+          domainsEl.appendChild(el('a', { class: 'cso-jobs-domain-card', href: d.publicPath }, [
+            el('div', { class: 'cso-jobs-domain-top' }, [
+              el('span', { text: icon + ' Category' }),
+              el('span', { text: d.folder_count + ' categories · ' + d.item_count + ' entries' })
+            ]),
+            el('div', { class: 'cso-jobs-domain-title', text: d.title }),
+            el('div', { class: 'cso-jobs-domain-desc', text: d.summary })
+          ]));
+        });
+      }
     }
   }
 
@@ -173,7 +177,7 @@
     if (!itemsEl) return;
     clear(itemsEl);
     if (!state.lastItems.length) {
-      itemsEl.appendChild(el('p', { class: 'cso-jobs-domain-desc', text: 'No published opportunities or guides matched your current filters.' }));
+      itemsEl.appendChild(el('p', { class: 'cso-jobs-domain-desc', text: 'No items published yet — add categories or content in Admin Studio.' }));
       return;
     }
     state.lastItems.forEach(function (it) {

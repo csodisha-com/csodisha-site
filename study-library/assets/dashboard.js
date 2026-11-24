@@ -977,7 +977,7 @@
     updateUrlState(true);
   }
 
-  // ---- Simultaneous Live Search across Materials + 1,681 Nodes ----
+  // ---- Simultaneous Live Search across Materials + Directory Nodes ----
   function runUnifiedDirectorySearch(rawQuery) {
     const q = String(rawQuery || '').trim();
     if (clearSearchBtn) clearSearchBtn.hidden = !q;
@@ -1415,7 +1415,10 @@
   function initSyllabusPyqVault() {
     const host = document.getElementById('cso-syllabus-vault');
     const api = window.CSO_SYLLABUS_VAULT_API;
-    if (!host || !api || !Array.isArray(api.VAULT)) return;
+    if (!host || !api || !Array.isArray(api.VAULT) || !api.VAULT.length) {
+      if (host) host.hidden = true;
+      return;
+    }
 
     let activeExamId = api.VAULT[0].id;
 

@@ -253,19 +253,15 @@
         });
         return;
       }
-    } catch { /* static fallback rendered below */ }
+    } catch { /* clean empty state rendered below */ }
 
-    const fallback = [
-      { badge: 'Charter', title: 'Non-Government Independence', or: 'ଅଣ-ସରକାରୀ ସ୍ୱାଧୀନତା', desc: 'Independent civic education platform — never collects fees or applications.' },
-      { badge: 'Privacy', title: 'DPDP Act 2023 Compliance', or: 'DPDP ଆଇନ ୨୦୨୩ ସୁରକ୍ଷା', desc: 'Zero ad trackers, strict CSP, and local-first IndexedDB candidate tools.' },
-      { badge: 'Accuracy', title: '3-Step Gazette Verification', or: '୩-ସ୍ତରୀୟ ଗେଜେଟ୍ ଯାଞ୍ଚ', desc: 'Every job, scheme, and exam update is verified directly against .gov.in PDFs.' }
-    ];
     mount.textContent = '';
-    fallback.forEach((f) => {
-      const card = el('article', 'cso-about-dir-card');
-      card.append(el('span', 'cso-about-tag', f.badge), el('h3', '', pick(f.title, f.or)), el('p', '', f.desc));
-      mount.appendChild(card);
-    });
+    const emptyCard = el('article', 'cso-about-dir-card');
+    emptyCard.append(
+      el('h3', '', pick('No items published yet', 'ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ବିଷୟ ପ୍ରକାଶିତ ହୋଇନାହିଁ')),
+      el('p', '', 'No items published yet — add categories or content in Admin Studio.')
+    );
+    mount.appendChild(emptyCard);
   }
 
   function evaluatePortalUrl(rawInput) {
@@ -422,22 +418,10 @@
         });
         return;
       }
-    } catch { /* fallback below */ }
+    } catch { /* clean empty state rendered below */ }
 
-    const fallback = [
-      { badge: 'Platform Update', title: 'Unified Citizen Charter & Live Cross-Directory Metrics', summary: 'Added live verified counts across Study Library, Jobs, Schemes & Community plus Anti-Scam URL Checker.', url: '/about/', time: '2026-11-15' },
-      { badge: 'Community', title: 'Odisha District Chapters, SHGs, FPOs & Civic Networks', summary: 'Launched bilingual Odisha district chapters, student mentorship circles, NGOs & safety governance.', url: '/community/', time: '2026-11-15' },
-      { badge: 'Schemes & Benefits', title: 'Unified Odisha & Central Welfare Schemes Explorer', summary: 'Organised welfare scheme eligibility checklists, required documents, and official portals across Odisha.', url: '/schemes/', time: '2026-11-14' }
-    ];
     list.textContent = '';
-    fallback.forEach((entry) => {
-      const row = el('a', 'cso-about-changelog-item');
-      row.href = entry.url;
-      const meta = el('div', 'cso-about-changelog-meta');
-      meta.append(el('span', 'cso-about-tag', entry.badge), el('strong', '', entry.title), el('span', 'cso-about-muted', entry.summary));
-      row.append(meta, el('span', 'cso-about-changelog-time', entry.time));
-      list.appendChild(row);
-    });
+    list.appendChild(el('p', 'cso-about-muted', 'No items published yet — add categories or content in Admin Studio.'));
   }
 
   function initHelplineActions() {

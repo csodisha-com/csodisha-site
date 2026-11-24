@@ -9,10 +9,15 @@ export const SETTINGS_PUBLIC_PATHS = ['/api/config/public'];
 export const NAV_PUBLIC_PATHS = [
   '/api/nav/config',
   '/',
+  '/jobs/',
   '/jobs-careers/',
   '/schemes-benefits/',
   '/schemes/',
+  '/study/',
   '/study-library/',
+  '/resources/',
+  '/mock-tests/',
+  '/current-affairs/',
   '/community/',
   '/about/'
 ];
@@ -39,7 +44,14 @@ export const CONTENT_PUBLIC_PATHS = [
   '/api/public/schemes-directory/items',
   '/api/public/study-library/items',
   '/api/public/community-directory/overview',
-  '/api/public/community-directory/items'
+  '/api/public/community-directory/items',
+  '/api/edu/resources',
+  '/api/edu/scholarships',
+  '/api/edu/careers',
+  '/api/edu/mock-tests',
+  '/api/edu/syllabi',
+  '/api/edu/pyqs',
+  '/api/edu/tools'
 ];
 
 export const EVENTS_PUBLIC_PATHS = [

@@ -288,36 +288,7 @@ export async function ensureEduResourcesBatch5Schema(db) {
 
   for (const sql of ddl) await db.prepare(sql).run();
 
-  const arCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_access_rules`).first();
-  if (!arCnt || Number(arCnt.n || 0) === 0) {
-    for (const r of STARTER_RULES) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_access_rules (id, slug, rule_name_en, rule_name_or, target_scope, access_policy, daily_download_limit, watermark_footer_enabled, watermark_text_template, offline_cache_allowed, attribution_required, priority_order, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(r.id, r.slug, r.rule_name_en, r.rule_name_or, r.target_scope, r.access_policy, r.daily_download_limit, r.watermark_footer_enabled, r.watermark_text_template, r.offline_cache_allowed, r.attribution_required, r.priority_order, r.status).run();
-    }
-  }
-
-  const scCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_scholarships`).first();
-  if (!scCnt || Number(scCnt.n || 0) === 0) {
-    for (const s of STARTER_SCHOLARSHIPS) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_scholarships (id, slug, provider_type, department_or_agency, title_en, title_or, summary_en, summary_or, eligible_stages_json, category_eligibility, income_limit_inr, min_marks_pct, award_amount_text, application_start, application_deadline, apply_url, external_links_json, tags_json, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(s.id, s.slug, s.provider_type, s.department_or_agency, s.title_en, s.title_or, s.summary_en, s.summary_or, s.eligible_stages_json, s.category_eligibility, s.income_limit_inr, s.min_marks_pct, s.award_amount_text, s.application_start, s.application_deadline, s.apply_url, s.external_links_json, s.tags_json, s.status, s.featured).run();
-    }
-  }
-
-  const crCnt = await db.prepare(`SELECT COUNT(*) AS n FROM edu_career_paths`).first();
-  if (!crCnt || Number(crCnt.n || 0) === 0) {
-    for (const c of STARTER_CAREERS) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_career_paths (id, slug, entry_stage, career_domain, title_en, title_or, summary_en, summary_or, roadmap_steps_json, recommended_exams_json, avg_salary_range, odisha_opportunities_en, odisha_opportunities_or, external_links_json, tags_json, status, featured)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(c.id, c.slug, c.entry_stage, c.career_domain, c.title_en, c.title_or, c.summary_en, c.summary_or, c.roadmap_steps_json, c.recommended_exams_json, c.avg_salary_range, c.odisha_opportunities_en, c.odisha_opportunities_or, c.external_links_json, c.tags_json, c.status, c.featured).run();
-    }
-  }
-
+  // Clean-slate v232: starter auto-seeding disabled; access rules, scholarships, and career paths are managed via Admin Studio (/admin/).
   _b5Ready.add(db);
 }
 

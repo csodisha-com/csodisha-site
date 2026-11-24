@@ -400,36 +400,7 @@ export async function ensureEduResourcesBatch1Schema(db) {
       }
     }
 
-    // Also seed starter Odisha entries for each of the 4 resource types if missing
-    for (const s of STARTER_RESOURCES) {
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_resources (
-          id, slug, resource_type, stage_or_class, subject_name, topic_name, exam_tag,
-          title_en, title_or, author_or_board, publisher_or_source, publication_year, edition_or_isbn,
-          language_code, summary_en, summary_or, content_md_en, content_md_or,
-          file_url, file_size_bytes, page_count, external_links_json, tags_json,
-          access_tier, offline_ready, watermark_enabled, status, featured, created_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(
-        s.id, s.slug, s.resource_type, s.stage_or_class, s.subject_name, s.topic_name, s.exam_tag,
-        s.title_en, s.title_or, s.author_or_board, s.publisher_or_source, s.publication_year, s.edition_or_isbn,
-        s.language_code, s.summary_en, s.summary_or, s.content_md_en, s.content_md_or,
-        s.file_url || '', Number(s.file_size_bytes || 0), Number(s.page_count || 0),
-        s.external_links_json || '[]', s.tags_json || '[]',
-        s.access_tier || 'free', s.offline_ready ? 1 : 0, s.watermark_enabled ? 1 : 0,
-        s.status || 'published', s.featured ? 1 : 0, 'system'
-      ).run();
-
-      await db.prepare(
-        `INSERT OR IGNORE INTO edu_resource_revisions (id, resource_id, version_num, snapshot_json, change_note, created_by)
-         VALUES (?, ?, 1, ?, 'Initial starter seed', 'system')`
-      ).bind(`rev-${s.id}-1`, s.id, JSON.stringify(s)).run();
-    }
-
-    await db.prepare(
-      `INSERT OR IGNORE INTO edu_resource_links (id, source_module, source_id, target_module, target_id, relation_type)
-       VALUES ('link-seed-1', '01', 'edu-dl-bse-odia-textbook-10', '02', 'edu-sm-opsc-oas-prelims-pack', 'related')`
-    ).run();
+    // Clean-slate v232: auto-seeding disabled; edu_resources are managed strictly via Admin Studio (/admin/).
   }
 
   _schemaReady.add(db);
