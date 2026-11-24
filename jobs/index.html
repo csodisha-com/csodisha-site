@@ -51,52 +51,32 @@
       </div>
       <div class="cso-jobs-rail-section">DIRECTORY SECTIONS</div>
       <div id="jobs-rail-nav" class="cso-rail-nav cso-jobs-nav" role="navigation" aria-label="Domain Navigation"></div>
-      <div class="cso-jobs-rail-section">PORTAL LINKS</div>
-      <div class="cso-rail-nav cso-jobs-nav" role="navigation" aria-label="Site Navigation">
-        <a class="cso-jobs-nav-link" href="/"><span class="cso-jobs-nav-num">H</span><span class="cso-jobs-rail-label">Home</span></a>
-        <a class="cso-jobs-nav-link" href="/current-affairs/"><span class="cso-jobs-nav-num">CA</span><span class="cso-jobs-rail-label">Current Affairs</span></a>
-        <a class="cso-jobs-nav-link" href="/mock-tests/"><span class="cso-jobs-nav-num">MT</span><span class="cso-jobs-rail-label">Mock Tests</span></a>
-        <a class="cso-jobs-nav-link" href="/study-library/"><span class="cso-jobs-nav-num">SL</span><span class="cso-jobs-rail-label">Syllabus &amp; PYQs</span></a>
-      </div>
     </aside>
 
     <main class="cso-jobs-main" data-cso-subpage-topbar data-cso-explorer-url="/jobs/">
       <div class="cso-jobs-mobile-bar">
         <button id="jobs-mobile-open" type="button" class="cso-jobs-btn">☰ Directory Sections</button>
-        <a class="cso-jobs-btn" href="/">Home</a>
       </div>
 
       <section class="cso-jobs-hero">
         <div class="cso-jobs-hero-top">
           <div class="cso-jobs-crumb"><a href="/">CS ODISHA</a> <span>›</span> <span>JOBS &amp; CAREERS</span></div>
-          <div class="cso-jobs-hero-actions">
-            <a class="cso-jobs-action-pill" href="/schemes/">Schemes &amp; Benefits</a>
-            <a class="cso-jobs-action-pill" href="/study-library/">Study Library</a>
-            <a class="cso-jobs-action-pill" href="/community/">Community</a>
-            <button id="jobs-lang-toggle" type="button" class="cso-jobs-action-pill">EN / ଓଡ଼ିଆ</button>
-          </div>
         </div>
         <h1>Jobs &amp; Careers Explorer</h1>
-        <p id="jobs-hero-sub" class="cso-jobs-hero-sub">ଓଡ଼ିଶା ଓ କେନ୍ଦ୍ରୀୟ ସରକାରୀ ନିଯୁକ୍ତି ଏବଂ କ୍ୟାରିୟର ମାର୍ଗଦର୍ଶିକା — Live opportunities, eligibility, and official portals managed in Admin Studio.</p>
-        <div class="cso-jobs-quick-pills">
-          <button type="button" class="cso-jobs-pill is-active" data-q="" data-type="">All Jobs</button>
-        </div>
+        <p id="jobs-hero-sub" class="cso-jobs-hero-sub">Live job notifications, career guides, and opportunities managed in Admin Studio.</p>
       </section>
 
-      <section class="cso-jobs-panel">
+      <section class="cso-jobs-panel" id="jobs-categories-panel" hidden>
         <h2>Explore Career Categories</h2>
         <div id="jobs-domains-grid" class="cso-jobs-domain-grid"></div>
       </section>
 
-      <section class="cso-jobs-panel">
+      <section class="cso-jobs-panel" id="jobs-filters-panel" hidden>
         <div class="cso-jobs-section-head">
           <h2>Live Opportunity &amp; Guide Explorer</h2>
-          <div class="cso-jobs-quick-filters">
-            <button type="button" class="cso-jobs-qfilter is-active" data-q="">All Jobs</button>
-          </div>
         </div>
         <div class="cso-jobs-filters">
-          <input id="jobs-filter-q" class="cso-jobs-input" type="search" placeholder="Search job title, commission, qualification...">
+          <input id="jobs-filter-q" class="cso-jobs-input" type="search" placeholder="Search jobs...">
           <select id="jobs-filter-state" class="cso-jobs-select" aria-label="State or Location">
             <option value="">All Locations</option>
             <option value="Odisha">Odisha State</option>

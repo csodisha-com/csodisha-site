@@ -1542,9 +1542,15 @@
   function renderEmptyDirectoryState() {
     if (sectionsNav) {
       sectionsNav.replaceChildren();
-      const emptyNav = el('div', 'cso-empty-state', 'No items published yet — add categories or content in Admin Studio.');
-      sectionsNav.appendChild(emptyNav);
+      const ovLink = el('a', 'side-link active', 'Overview');
+      ovLink.href = './';
+      sectionsNav.appendChild(ovLink);
     }
+    const topSel = $('cso-top-category-selector');
+    const matchingEl = $('cso-matching-live-notices');
+    if (topSel) topSel.hidden = true;
+    if (matchingEl) matchingEl.hidden = true;
+    if (explorer) explorer.hidden = true;
     if (loadStatus) {
       loadStatus.hidden = false;
       loadStatus.textContent = 'No items published yet — add categories or content in Admin Studio.';
@@ -1588,6 +1594,11 @@
           renderEmptyDirectoryState();
           return;
         }
+        const topSel = $('cso-top-category-selector');
+        const matchingEl = $('cso-matching-live-notices');
+        if (topSel) topSel.hidden = false;
+        if (matchingEl) matchingEl.hidden = false;
+        if (explorer) explorer.hidden = false;
         buildDashboard();
         syncFromUrl(false);
         if (loadStatus) {

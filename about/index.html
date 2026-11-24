@@ -66,7 +66,7 @@
         <button type="button" class="cso-dir-menu-toggle" id="about-topbar-toggle" aria-controls="about-shell" aria-expanded="true" aria-label="Toggle directory sidebar" title="Collapse / Expand Sidebar"><span aria-hidden="true">☰</span></button>
         <div class="cso-dir-search">
           <span class="cso-dir-search-icon" aria-hidden="true">⌕</span>
-          <input id="about-topbar-search" class="cso-dir-search-input" type="search" autocomplete="off" placeholder="Search published About sections..." aria-label="Search published About sections">
+          <input id="about-topbar-search" class="cso-dir-search-input" type="search" autocomplete="off" placeholder="Search about..." aria-label="Search published About sections">
           <button id="about-topbar-clear" class="cso-dir-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button>
         </div>
         <a class="cso-dir-context-pill" id="about-context-pill" href="#overview" aria-live="polite" aria-label="About CSO active section">⌂ Overview</a>
@@ -75,9 +75,6 @@
       <section class="cso-about-hero" id="overview">
         <div class="cso-about-hero-top">
           <div class="cso-about-crumb"><a href="/">CS ODISHA</a> <span>›</span> <span>ABOUT</span></div>
-          <div class="cso-about-hero-actions">
-            <button id="about-lang-toggle" type="button" class="cso-about-action-pill">EN / ଓଡ଼ିଆ</button>
-          </div>
         </div>
         <h1 data-i18n-or="Common Sense Odisha (CSO) ବିଷୟରେ">About Common Sense Odisha</h1>
         <p class="cso-about-hero-sub" data-i18n-or="ଆମ ବିଷୟରେ ସମସ୍ତ ପ୍ରକାଶିତ ସୂଚନା ଏବଂ ବିଭାଗ ଏଠାରେ ଲାଇଭ୍ ଦେଖାଯିବ।">Live About sections, institutional pages, and public information authored in Admin Studio.</p>
@@ -87,7 +84,7 @@
         <div class="cso-about-section-head">
           <div>
             <h2 data-i18n-or="ପ୍ରକାଶିତ ବିଷୟବସ୍ତୁ">Published About Sections</h2>
-            <p id="about-load-status" class="cso-about-muted" role="status" aria-live="polite">Loading…</p>
+            <p id="about-load-status" class="cso-about-muted" role="status" aria-live="polite" hidden></p>
           </div>
         </div>
         <div id="about-directory-grid" class="cso-about-dir-grid"></div>

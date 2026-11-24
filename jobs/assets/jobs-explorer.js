@@ -137,32 +137,36 @@
 
     if (navEl) {
       clear(navEl);
-      navEl.appendChild(el('a', { class: 'cso-jobs-nav-link is-active', href: '/jobs/' }, [
+      var ovChildren = [
         el('span', { class: 'cso-jobs-nav-num', text: '◆' }),
-        el('span', { class: 'cso-jobs-rail-label', text: 'Overview' }),
-        el('span', { class: 'cso-jobs-nav-count', text: String(domains.length) })
-      ]));
+        el('span', { class: 'cso-jobs-rail-label', text: 'Overview' })
+      ];
+      if (domains.length) {
+        ovChildren.push(el('span', { class: 'cso-jobs-nav-count', text: String(domains.length) }));
+      }
+      navEl.appendChild(el('a', { class: 'cso-jobs-nav-link is-active', href: '/jobs/' }, ovChildren));
       domains.forEach(function (d) {
         var icon = icons[d.slug] || '•';
         navEl.appendChild(el('a', { class: 'cso-jobs-nav-link', href: d.publicPath }, [
           el('span', { class: 'cso-jobs-nav-num', text: icon }),
           el('span', { class: 'cso-jobs-rail-label', text: d.title }),
-          el('span', { class: 'cso-jobs-nav-count', text: String(d.folder_count) })
+          el('span', { class: 'cso-jobs-nav-count', text: String(d.folder_count || 0) })
         ]));
       });
     }
 
+    var catPanel = document.getElementById('jobs-categories-panel');
+    if (catPanel) catPanel.hidden = !domains.length;
+
     if (domainsEl) {
       clear(domainsEl);
-      if (!domains.length) {
-        domainsEl.appendChild(el('p', { class: 'cso-jobs-domain-desc', text: 'No items published yet — add categories or content in Admin Studio.' }));
-      } else {
+      if (domains.length) {
         domains.forEach(function (d) {
           var icon = icons[d.slug] || '•';
           domainsEl.appendChild(el('a', { class: 'cso-jobs-domain-card', href: d.publicPath }, [
             el('div', { class: 'cso-jobs-domain-top' }, [
               el('span', { text: icon + ' Category' }),
-              el('span', { text: d.folder_count + ' categories · ' + d.item_count + ' entries' })
+              el('span', { text: (d.folder_count || 0) + ' categories · ' + (d.item_count || 0) + ' entries' })
             ]),
             el('div', { class: 'cso-jobs-domain-title', text: d.title }),
             el('div', { class: 'cso-jobs-domain-desc', text: d.summary })
@@ -174,10 +178,15 @@
 
   function renderItems(items) {
     state.lastItems = items || [];
+    var filtersPanel = document.getElementById('jobs-filters-panel');
+    var hasFilter = Boolean(state.q || state.domain || state.state_location || state.item_type || state.qualification || state.active_only);
+    if (filtersPanel) filtersPanel.hidden = !state.lastItems.length && !hasFilter;
     if (!itemsEl) return;
     clear(itemsEl);
     if (!state.lastItems.length) {
-      itemsEl.appendChild(el('p', { class: 'cso-jobs-domain-desc', text: 'No items published yet — add categories or content in Admin Studio.' }));
+      itemsEl.appendChild(el('div', { class: 'cso-jobs-item-card' }, [
+        el('p', { class: 'cso-jobs-domain-desc', text: hasFilter ? 'No jobs match your current filters.' : 'No items published yet — add categories or content in Admin Studio.' })
+      ]));
       return;
     }
     state.lastItems.forEach(function (it) {
@@ -203,11 +212,34 @@
   }
 
   async function loadOverview() {
+    var data = { domains: [], totals: {} };
     try {
-      var res = await fetch('/api/public/jobs-directory/overview');
-      var data = await res.json();
-      if (res.ok && data.ok) renderOverview(data);
+      var results = await Promise.allSettled([
+        fetch('/api/public/jobs-directory/overview'),
+        fetch('/api/nav/config', { cache: 'no-store' })
+      ]);
+      if (results[0].status === 'fulfilled' && results[0].value.ok) {
+        var ov = await results[0].value.json();
+        if (ov && ov.ok) data = ov;
+      }
+      if ((!Array.isArray(data.domains) || !data.domains.length) && results[1].status === 'fulfilled' && results[1].value.ok) {
+        var navData = await results[1].value.json();
+        var navCats = Array.isArray(navData && navData.categories) ? navData.categories : [];
+        var pillar = navCats.find(function (c) { return c.slug === 'jobs-careers' || c.target_portal === 'jobs-careers'; });
+        var subs = pillar && Array.isArray(pillar.subcategories) ? pillar.subcategories : [];
+        data.domains = subs.map(function (s, idx) {
+          return {
+            slug: s.slug || ('cat-' + idx),
+            title: s.name_en || s.slug || 'Category',
+            summary: s.description_en || '',
+            folder_count: 0,
+            item_count: 0,
+            publicPath: s.landing_url || ('/jobs/' + encodeURIComponent(s.slug || ('cat-' + idx)) + '/')
+          };
+        });
+      }
     } catch (e) { /* non-fatal */ }
+    renderOverview(data);
   }
 
   async function loadItems() {

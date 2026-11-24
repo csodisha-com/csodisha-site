@@ -38,6 +38,8 @@
   const continueClearBtn = $('study-continue-clear');
   const liveStudySection = $('live-study-section');
   const liveStudyCount = $('live-study-count');
+  const studyHeaderActions = $('study-header-actions');
+  const studyFilterBar = $('study-filter-bar');
   const studyExamSelect = $('study-exam-filter');
   const studyTypePills = $('study-type-pills');
   const studyGoalBtn = $('study-goal-match');
@@ -589,17 +591,23 @@
   function renderMaterials() {
     if (!studyMaterialsGrid) return;
     const filtered = filterResources(state.resources);
+    const hasFilter = Boolean(state.filterType || state.filterExam || state.filterQ || state.goalMatchOnly);
+    const showControls = filtered.length > 0 || hasFilter;
     if (liveStudyCount) {
+      liveStudyCount.hidden = !showControls;
       liveStudyCount.textContent = `${filtered.length} Published Material${filtered.length === 1 ? '' : 's'}`;
     }
+    if (studyHeaderActions) studyHeaderActions.hidden = !showControls;
+    if (studyFilterBar) studyFilterBar.hidden = !showControls;
+    if (studyTypePills) studyTypePills.hidden = !showControls;
     if (studyResetBtn) {
-      studyResetBtn.hidden = !(state.filterType || state.filterExam || state.filterQ || state.goalMatchOnly);
+      studyResetBtn.hidden = !hasFilter;
     }
     studyMaterialsGrid.replaceChildren();
     const loadMoreWrap = ensureLoadMoreControls();
     if (!filtered.length) {
       const empty = el('div', 'study-modal-box');
-      empty.appendChild(el('p', 'study-card-desc', 'No items published yet — add categories or content in Admin Studio.'));
+      empty.appendChild(el('p', 'study-card-desc', hasFilter ? 'No study materials match your current filters.' : 'No items published yet — add categories or content in Admin Studio.'));
       studyMaterialsGrid.appendChild(empty);
       if (loadMoreWrap) loadMoreWrap.hidden = true;
       return;
@@ -620,10 +628,16 @@
   function renderSidebar() {
     if (!sideNav) return;
     sideNav.replaceChildren();
-    if (!state.groups.length) {
-      sideNav.appendChild(el('div', 'cso-empty-state', 'No categories yet — add categories or content in Admin Studio.'));
-      return;
-    }
+    const ovLink = el('a', `side-link${state.view === 'overview' ? ' active' : ''}`);
+    ovLink.href = './';
+    ovLink.append(el('span', 'side-icon', '◆'), el('span', 'side-link-text', 'Overview'));
+    ovLink.addEventListener('click', e => {
+      e.preventDefault();
+      showOverview(true);
+      document.body.classList.remove('menu-open');
+    });
+    sideNav.appendChild(ovLink);
+    if (!state.groups.length) return;
     state.groups.forEach((g, idx) => {
       const link = el('a', 'side-link');
       link.href = `/study-library/${encodeURIComponent(g.slug || g.id)}/`;
@@ -726,12 +740,11 @@
     if (!dashboardGrid) return;
     dashboardGrid.replaceChildren();
     if (!state.groups.length) {
-      const emptyBox = el('div', 'study-modal-box cso-empty-state');
-      emptyBox.appendChild(el('p', 'study-card-desc', 'No items published yet — add categories or content in Admin Studio.'));
-      dashboardGrid.appendChild(emptyBox);
+      if (overviewEl) overviewEl.hidden = true;
       if (telemetryBars) telemetryBars.replaceChildren();
       return;
     }
+    if (overviewEl) overviewEl.hidden = false;
     state.groups.forEach((g, idx) => {
       const secs = g.sections || [];
       const subCount = secs.reduce((sum, s) => sum + ((s.children || []).length), 0);
@@ -942,7 +955,7 @@
     state.sectionIdx = -1;
     state.subIdx = -1;
     if (pageTitle) pageTitle.textContent = 'Study Library Explorer';
-    if (overviewEl) overviewEl.hidden = false;
+    if (overviewEl) overviewEl.hidden = !state.groups.length;
     if (liveStudySection) liveStudySection.hidden = false;
     if (explorerEl) explorerEl.hidden = true;
     if (searchResultsEl) searchResultsEl.hidden = true;
@@ -1193,12 +1206,7 @@
 
     await loadCandidateGoals();
     if (loadStatusEl) {
-      if (!state.groups.length) {
-        loadStatusEl.hidden = false;
-        loadStatusEl.textContent = 'No items published yet — add categories or content in Admin Studio.';
-      } else {
-        loadStatusEl.hidden = true;
-      }
+      loadStatusEl.hidden = true;
     }
 
     renderMaterials();

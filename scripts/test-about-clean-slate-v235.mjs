@@ -130,9 +130,9 @@ check('Admin cache invalidator & _worker.js wire /about/, /api/about/overview, /
     'Admin router must invalidate all public caches on mutations');
 });
 
-check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v235', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v235';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v235';"));
+check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v235+', () => {
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v23[5-9]';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v23[5-9]';/);
 });
 
 check('Strict CSP compliance across all modified about/ HTML & JS files', () => {

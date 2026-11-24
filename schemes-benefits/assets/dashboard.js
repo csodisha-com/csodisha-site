@@ -1197,6 +1197,7 @@
             children: group.sections || [],
             notes: []
           }));
+          if (overview) overview.hidden = false;
           buildDashboard();
           renderStatistics(d1Data);
           syncFromUrl(false);
@@ -1223,6 +1224,7 @@
             children: [],
             notes: []
           }));
+          if (overview) overview.hidden = false;
           buildDashboard();
           renderStatistics({ navigation: sections });
           syncFromUrl(false);
@@ -1235,15 +1237,17 @@
     sections = [];
     buildDashboard();
     renderStatistics({ navigation: [] });
-    if (sectionsNav && !sectionsNav.childElementCount) {
-      const emptyNav = document.createElement('div');
-      emptyNav.className = 'cso-empty-state';
-      emptyNav.textContent = 'No items published yet — add categories or content in Admin Studio.';
-      sectionsNav.appendChild(emptyNav);
+    if (overview) overview.hidden = true;
+    if (sectionsNav) {
+      sectionsNav.replaceChildren();
+      const ovLink = document.createElement('a');
+      ovLink.className = 'side-link active';
+      ovLink.href = './';
+      ovLink.textContent = 'Overview';
+      sectionsNav.appendChild(ovLink);
     }
     if (loadStatus) {
-      loadStatus.hidden = false;
-      loadStatus.textContent = 'No items published yet — add categories or content in Admin Studio.';
+      loadStatus.hidden = true;
     }
   }
 
@@ -1947,13 +1951,25 @@
       }
       liveSchemesCache = items;
 
+      const quickChipsWrap = document.getElementById('scheme-quick-chips');
+      const statusPillsWrap = document.getElementById('scheme-status-pills');
+      const prepGuideEl = document.getElementById('scheme-prep-guide');
+      const showSchemeControls = items.length > 0 || hasFilter;
+
+      if (eligForm) eligForm.hidden = !showSchemeControls;
+      if (quickChipsWrap) quickChipsWrap.hidden = !showSchemeControls;
+      if (statusPillsWrap) statusPillsWrap.hidden = !showSchemeControls;
+      if (prepGuideEl) prepGuideEl.hidden = !showSchemeControls;
       if (liveSchemesCount) {
+        liveSchemesCount.hidden = !showSchemeControls;
         liveSchemesCount.textContent = `${items.length} ${items.length === 1 ? 'Eligible Scheme' : 'Eligible Schemes'}`;
       }
 
       if (items.length === 0) {
         liveSchemesStatus.hidden = false;
-        liveSchemesStatus.textContent = 'No items published yet — add categories or content in Admin Studio.';
+        liveSchemesStatus.textContent = hasFilter
+          ? 'No schemes match your current filters.'
+          : 'No items published yet — add categories or content in Admin Studio.';
         return;
       }
 

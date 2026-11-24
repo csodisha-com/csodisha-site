@@ -80,14 +80,8 @@
         <button type="button" class="sidebar-close" id="sidebar-close" aria-label="Close sections menu">✕</button>
       </div>
 
-      <div class="sidebar-heading">ACADEMIC TRACKS</div>
+      <div class="sidebar-heading">DIRECTORY SECTIONS</div>
       <nav id="side-navigation" aria-label="Directory sections"></nav>
-
-      <div class="sidebar-footer">
-        <a href="../support/#suggest-resource">+ Suggest Study Topic</a>
-        <a href="../mock-tests/">📝 Practice Mock Tests</a>
-        <a href="../index.html">← Back to CSO Home</a>
-      </div>
     </aside>
 
     <div class="workspace">
@@ -103,7 +97,7 @@
         <div class="top-search">
           <span aria-hidden="true">⌕</span>
           <input id="directory-search" type="search"
-                 placeholder="Search OPSC syllabus, OSSC PYQ, BSE Class 10, UGC NET, subjects…"
+                 placeholder="Search study materials..."
                  aria-label="Search Study Library materials and directory">
           <button id="clear-search" class="clear-search"
                   type="button" aria-label="Clear search"
@@ -117,22 +111,10 @@
         <section class="welcome cso-sl-hero-banner study-hero" aria-label="Study Library Hero">
           <div class="cso-sl-hero-top">
             <div class="cso-sl-crumb"><a href="/">CS ODISHA</a> <span>›</span> <span>STUDY LIBRARY</span></div>
-            <div class="cso-sl-hero-actions">
-              <a class="cso-sl-action-pill" href="/jobs/">Jobs &amp; Careers</a>
-              <a class="cso-sl-action-pill" href="/schemes/">Schemes &amp; Benefits</a>
-              <a class="cso-sl-action-pill" href="/community/">Community</a>
-              <button id="sl-lang-toggle" type="button" class="cso-sl-action-pill">EN / ଓଡ଼ିଆ</button>
-            </div>
           </div>
           <h1 id="page-title">Study Library Explorer</h1>
-          <p class="cso-sl-hero-tagline">ଓଡ଼ିଶା ଓ ଜାତୀୟ ପରୀକ୍ଷା ପାଇଁ ଷ୍ଟଡି ଲାଇବ୍ରେରୀ · Open-Access Syllabi, Solved PYQs &amp; Live Study Resources</p>
+          <p class="cso-sl-hero-tagline">Live syllabi, previous year papers, and study resources managed in Admin Studio.</p>
           <p id="page-description" hidden></p>
-          <div class="cso-sl-hero-quickjump" role="group" aria-label="Quick portal links">
-            <a class="study-hub-pill" href="../mock-tests/">📝 CBT Mock Tests</a>
-            <a class="study-hub-pill" href="../student-dashboard/#flashcards">🗂 Flashcards &amp; Notes</a>
-            <a class="study-hub-pill" href="../current-affairs/">📰 Current Affairs</a>
-            <a class="study-hub-pill" href="../jobs-careers/">💼 Exam Alerts</a>
-          </div>
         </section>
 
         <section id="study-continue-strip" class="study-continue-strip" aria-label="Continue where you left off" hidden>
@@ -148,9 +130,9 @@
             <div class="live-study-title-group">
               <span class="live-pulse-dot" aria-hidden="true"></span>
               <h2 id="live-study-heading">Published Study Resources</h2>
-              <span id="live-study-count" class="live-count-badge" aria-live="polite">Loading…</span>
+              <span id="live-study-count" class="live-count-badge" aria-live="polite" hidden></span>
             </div>
-            <div class="live-study-header-actions">
+            <div id="study-header-actions" class="live-study-header-actions" hidden>
               <div class="study-lang-toggle" role="group" aria-label="Material display language">
                 <button type="button" class="study-lang-btn is-active" data-lang="en" aria-pressed="true">EN</button>
                 <button type="button" class="study-lang-btn" data-lang="or" aria-pressed="false">ଓଡ଼ିଆ</button>
@@ -163,13 +145,13 @@
             </div>
           </div>
 
-          <div class="study-filter-bar">
+          <div id="study-filter-bar" class="study-filter-bar" hidden>
             <select id="study-exam-filter" class="study-select" aria-label="Filter by Exam Track">
               <option value="">All Exam &amp; Board Tracks</option>
             </select>
           </div>
 
-          <div id="study-type-pills" class="study-type-pills" role="tablist" aria-label="Material type">
+          <div id="study-type-pills" class="study-type-pills" role="tablist" aria-label="Material type" hidden>
             <button type="button" class="study-type-pill is-active" role="tab" aria-selected="true" data-type="">All Materials</button>
             <button type="button" class="study-type-pill" role="tab" aria-selected="false" data-type="syllabus">Syllabus</button>
             <button type="button" class="study-type-pill" role="tab" aria-selected="false" data-type="pyq">Previous Year Papers</button>
@@ -188,7 +170,7 @@
 
         <section id="odisha-district-gk" class="cso-district-gk" aria-labelledby="odisha-district-gk-heading"></section>
 
-        <section id="overview" aria-label="Directory overview">
+        <section id="overview" aria-label="Directory overview" hidden>
           <div class="overview-heading-row">
             <h2>Explore Study Library Categories</h2>
             <span id="directory-sync-badge" class="directory-sync-badge">Loading Directory…</span>
@@ -227,7 +209,7 @@
           </div>
         </section>
 
-        <p id="load-status" role="status">Loading directory…</p>
+        <p id="load-status" role="status" hidden>Loading directory…</p>
       </main>
     </div>
   </div>

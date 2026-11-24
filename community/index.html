@@ -51,13 +51,6 @@
       </div>
       <div class="cso-comm-rail-section">DIRECTORY SECTIONS</div>
       <div id="community-rail-nav" class="cso-rail-nav cso-comm-nav" role="navigation" aria-label="Domain Navigation"></div>
-      <div class="cso-comm-rail-section">PORTAL LINKS</div>
-      <div class="cso-rail-nav cso-comm-nav" role="navigation" aria-label="Site Navigation">
-        <a class="cso-comm-nav-link" href="/"><span class="cso-comm-nav-num">H</span><span class="cso-comm-rail-label">Home</span></a>
-        <a class="cso-comm-nav-link" href="/jobs/"><span class="cso-comm-nav-num">JB</span><span class="cso-comm-rail-label">Jobs &amp; Careers</span></a>
-        <a class="cso-comm-nav-link" href="/schemes/"><span class="cso-comm-nav-num">SC</span><span class="cso-comm-rail-label">Schemes &amp; Benefits</span></a>
-        <a class="cso-comm-nav-link" href="/study-library/"><span class="cso-comm-nav-num">SL</span><span class="cso-comm-rail-label">Study Library</span></a>
-      </div>
     </aside>
 
     <main class="cso-comm-main">
@@ -65,7 +58,7 @@
         <button type="button" class="cso-dir-menu-toggle" id="community-topbar-toggle" aria-controls="community-shell" aria-expanded="true" aria-label="Toggle directory sidebar" title="Collapse / Expand Sidebar"><span aria-hidden="true">☰</span></button>
         <div class="cso-dir-search">
           <span class="cso-dir-search-icon" aria-hidden="true">⌕</span>
-          <input id="community-topbar-search" class="cso-dir-search-input" type="search" autocomplete="off" placeholder="Search communities, districts, mentorship, SHGs, charters..." aria-label="Search Community directory">
+          <input id="community-topbar-search" class="cso-dir-search-input" type="search" autocomplete="off" placeholder="Search community..." aria-label="Search Community directory">
           <button id="community-topbar-clear" class="cso-dir-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button>
         </div>
         <a class="cso-dir-context-pill" id="community-context-pill" href="/community/" aria-live="polite" aria-label="Community Explorer active section">⌂ Overview</a>
@@ -73,32 +66,23 @@
 
       <section class="cso-comm-hero">
         <div class="cso-comm-hero-top">
-          <div class="cso-comm-crumb"><a href="/">CS ODISHA</a> <span>›</span> <span>COMMUNITY DIRECTORY</span></div>
-          <div class="cso-comm-hero-actions">
-            <a class="cso-comm-action-pill" href="/jobs/">Jobs &amp; Careers</a>
-            <a class="cso-comm-action-pill" href="/schemes/">Schemes &amp; Benefits</a>
-            <a class="cso-comm-action-pill" href="/study-library/">Study Library</a>
-            <button id="community-lang-toggle" type="button" class="cso-comm-action-pill">EN / ଓଡ଼ିଆ</button>
-          </div>
+          <div class="cso-comm-crumb"><a href="/">CS ODISHA</a> <span>›</span> <span>COMMUNITY</span></div>
         </div>
-        <h1>Community &amp; Civic Networks Explorer</h1>
-        <p class="cso-comm-hero-sub">ଓଡ଼ିଶାର ଜିଲ୍ଲା ସ୍ତରୀୟ ନାଗରିକ ମଞ୍ଚ, ଛାତ୍ର ମେଣ୍ଟରସିପ୍ ଏବଂ ସମୁଦାୟ ଡିରେକ୍ଟୋରୀ — Live civic chapters and peer circles managed in Admin Studio.</p>
-        <div class="cso-comm-quick-pills">
-          <button type="button" class="cso-comm-pill is-active" data-q="" data-domain="">All Communities</button>
-        </div>
+        <h1>Community Explorer</h1>
+        <p class="cso-comm-hero-sub">Live community discussions, chapters, and peer circles managed in Admin Studio.</p>
       </section>
 
-      <section class="cso-comm-panel">
+      <section class="cso-comm-panel" id="community-categories-panel" hidden>
         <h2>Explore Community Domains</h2>
         <div id="community-domain-grid" class="cso-comm-domain-grid"></div>
       </section>
 
-      <section class="cso-comm-panel">
+      <section class="cso-comm-panel" id="community-directory-panel">
         <div class="cso-comm-section-head">
-          <h2>Verified Communities, Chapters &amp; Peer Circles</h2>
-          <span id="community-results-count" class="cso-comm-tag">Loading...</span>
+          <h2>Published Communities &amp; Peer Circles</h2>
+          <span id="community-results-count" class="cso-comm-tag" hidden></span>
         </div>
-        <div class="cso-comm-filters">
+        <div class="cso-comm-filters" id="community-filters-bar" hidden>
           <select id="community-region" class="cso-comm-select" aria-label="District or Region">
             <option value="">All Regions</option>
             <option value="All Odisha">All Odisha (30 Districts)</option>

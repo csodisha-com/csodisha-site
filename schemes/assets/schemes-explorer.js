@@ -65,7 +65,8 @@
   function renderDomains(overview) {
     var rail = document.getElementById('schemes-rail-nav');
     var grid = document.getElementById('schemes-domain-grid');
-    if (!overview || !Array.isArray(overview.domains)) return;
+    var catPanel = document.getElementById('schemes-categories-panel');
+    var domains = (overview && Array.isArray(overview.domains)) ? overview.domains : [];
     if (rail) {
       clear(rail);
       rail.appendChild(el('a', { class: 'cso-schemes-nav-link is-active', href: '/schemes/', 'data-domain': '' }, [
@@ -74,6 +75,7 @@
       ]));
     }
     if (grid) clear(grid);
+    if (catPanel) catPanel.hidden = !domains.length;
 
     var icons = {
       'government-public-welfare': '🏛',
@@ -86,14 +88,9 @@
       'citizen-services-verification': '✔'
     };
 
-    if (!overview.domains.length && grid) {
-      grid.appendChild(el('div', { class: 'cso-schemes-item-card' }, [
-        el('p', { text: 'No items published yet — add categories or content in Admin Studio.' })
-      ]));
-      return;
-    }
+    if (!domains.length) return;
 
-    overview.domains.forEach(function (d) {
+    domains.forEach(function (d) {
       var clean = function (s) {
         return String(s || '').replace(/^(?:module|track)\s*#?\s*\d+\s*[—–\-:]\s*/i, '').replace(/^directory\s*[—–\-:]\s*/i, '').replace(/^section\s*\d+\s*[·—–\-:]\s*/i, '').trim();
       };
@@ -203,13 +200,28 @@
   function renderItems(items) {
     var host = document.getElementById('schemes-items-grid');
     var countEl = document.getElementById('schemes-results-count');
+    var eligBar = document.getElementById('schemes-eligibility-bar');
+    var filtersBar = document.getElementById('schemes-filters-bar');
+    var pagEl = document.getElementById('schemes-pagination');
     if (!host) return;
     clear(host);
     var filtered = getFilteredSchemes(items);
-    if (countEl) countEl.textContent = 'Showing ' + filtered.length + ' of ' + state.total + ' verified schemes';
+    var hasFilter = Boolean(
+      state.q || state.sponsor || state.schemeType || state.beneficiary || state.mode || state.domain ||
+      (state.applicantProfile && state.applicantProfile !== 'All') ||
+      (state.socialCategory && state.socialCategory !== 'All Categories')
+    );
+    var showControls = filtered.length > 0 || hasFilter;
+    if (eligBar) eligBar.hidden = !showControls;
+    if (filtersBar) filtersBar.hidden = !showControls;
+    if (countEl) {
+      countEl.hidden = !showControls;
+      countEl.textContent = 'Showing ' + filtered.length + ' of ' + state.total + ' verified schemes';
+    }
+    if (pagEl) pagEl.hidden = !showControls || !state.total;
     if (!filtered.length) {
       host.appendChild(el('div', { class: 'cso-schemes-item-card' }, [
-        el('p', { text: 'No items published yet — add categories or content in Admin Studio.' })
+        el('p', { text: hasFilter ? 'No schemes match your current filters.' : 'No items published yet — add categories or content in Admin Studio.' })
       ]));
       renderPagination();
       return;
@@ -474,12 +486,34 @@
       });
     });
 
-    var ovRes = await fetch('/api/public/schemes-directory/overview');
-    if (ovRes.ok) {
-      state.overview = await ovRes.json();
-      renderTelemetry(state.overview);
-      renderDomains(state.overview);
+    var ovResults = await Promise.allSettled([
+      fetch('/api/public/schemes-directory/overview'),
+      fetch('/api/nav/config', { cache: 'no-store' })
+    ]);
+    var ovData = { domains: [], totals: {} };
+    if (ovResults[0].status === 'fulfilled' && ovResults[0].value.ok) {
+      try { ovData = await ovResults[0].value.json(); } catch (_) {}
     }
+    if ((!Array.isArray(ovData.domains) || !ovData.domains.length) && ovResults[1].status === 'fulfilled' && ovResults[1].value.ok) {
+      try {
+        var navData = await ovResults[1].value.json();
+        var navCats = Array.isArray(navData && navData.categories) ? navData.categories : [];
+        var pillar = navCats.find(function (c) { return c.slug === 'schemes-benefits' || c.target_portal === 'schemes'; });
+        var subs = pillar && Array.isArray(pillar.subcategories) ? pillar.subcategories : [];
+        ovData.domains = subs.map(function (s, idx) {
+          return {
+            slug: s.slug || ('cat-' + idx),
+            title: s.name_en || s.slug || 'Category',
+            titleOr: s.name_or || '',
+            summary: s.description_en || '',
+            publicPath: s.landing_url || ('/schemes/' + encodeURIComponent(s.slug || ('cat-' + idx)) + '/')
+          };
+        });
+      } catch (_) {}
+    }
+    state.overview = ovData;
+    renderTelemetry(state.overview);
+    renderDomains(state.overview);
     var hasSsrSchemes = Boolean(document.querySelector('#schemes-items-grid[data-ssr="1"] [data-scheme-slug]'));
     await loadItems(false, { silent: hasSsrSchemes });
   }

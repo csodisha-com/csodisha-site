@@ -50,10 +50,6 @@
 
       <div class="sidebar-heading">DIRECTORY SECTIONS</div>
       <nav id="side-navigation" aria-label="Directory sections"></nav>
-
-      <div class="sidebar-footer">
-        <a href="../index.html">← Back to CSO Home</a>
-      </div>
     </aside>
 
     <div class="workspace">
@@ -69,7 +65,7 @@
         <div class="top-search">
           <span aria-hidden="true">⌕</span>
           <input id="directory-search" type="search"
-                 placeholder="Search schemes, benefits, eligibility, support..."
+                 placeholder="Search schemes..."
                  aria-label="Search Schemes and Benefits directory">
           <button id="clear-search" class="clear-search"
                   type="button" aria-label="Clear search"
@@ -89,24 +85,19 @@
             <h1 id="page-title">Schemes &amp; Benefits Explorer</h1>
             <p id="page-description" hidden></p>
           </div>
-          <div class="scheme-hub-shortcuts" aria-label="Related welfare portals">
-            <a class="scheme-hub-pill" href="../jobs-careers/">💼 Jobs &amp; Careers</a>
-            <a class="scheme-hub-pill" href="../resources/">📚 Scholarships &amp; Resources</a>
-            <a class="scheme-hub-pill" href="../student-dashboard/">🧭 Candidate Hub</a>
-          </div>
         </section>
 
         <section id="live-schemes-section" class="live-schemes-section" aria-labelledby="live-schemes-heading">
           <div class="live-schemes-header">
             <div class="live-schemes-title-group">
               <span class="live-pulse-dot" aria-hidden="true"></span>
-              <h2 id="live-schemes-heading">Check My Scheme Eligibility &amp; Live Govt Benefits</h2>
-              <span id="live-schemes-count" class="live-count-badge" aria-live="polite">Loading…</span>
+              <h2 id="live-schemes-heading">Live Government Schemes &amp; Benefits</h2>
+              <span id="live-schemes-count" class="live-count-badge" aria-live="polite" hidden></span>
             </div>
             <button id="scheme-elig-reset" class="scheme-filter-btn" type="button" hidden>Reset Filters</button>
           </div>
 
-          <form id="scheme-elig-form" class="scheme-elig-bar" aria-label="Check scheme eligibility">
+          <form id="scheme-elig-form" class="scheme-elig-bar" aria-label="Check scheme eligibility" hidden>
             <select id="scheme-gov" class="scheme-select" aria-label="Government level">
               <option value="">Odisha + Central (All)</option>
               <option value="Odisha">Odisha Govt Schemes</option>
@@ -145,7 +136,7 @@
 
           <div id="scheme-district-banner" class="cso-district-banner" role="region" aria-label="Official District Collectorate Notice Board" hidden></div>
 
-          <div class="scheme-quick-chips" role="group" aria-label="Quick scheme category chips">
+          <div id="scheme-quick-chips" class="scheme-quick-chips" role="group" aria-label="Quick scheme category chips" hidden>
             <button type="button" class="scheme-chip is-active" data-group="" aria-pressed="true">All Schemes</button>
             <button type="button" class="scheme-chip" data-group="women" aria-pressed="false">Women &amp; Girls</button>
             <button type="button" class="scheme-chip" data-group="farmers" aria-pressed="false">Farmers &amp; Agriculture</button>
@@ -156,7 +147,7 @@
             <a id="scheme-edit-prefs" class="scheme-chip scheme-chip--prefs-link" href="/student-dashboard/#cso-watchlist-panel" hidden>⚙ Edit Watchlist</a>
           </div>
 
-          <div class="scheme-status-pills" role="group" aria-label="Filter by application status window">
+          <div id="scheme-status-pills" class="scheme-status-pills" role="group" aria-label="Filter by application status window" hidden>
             <span class="scheme-status-pills__label">Window:</span>
             <button type="button" class="scheme-status-pill is-active" data-status-label="" aria-pressed="true">All Windows</button>
             <button type="button" class="scheme-status-pill" data-status-label="Open Year-Round" aria-pressed="false">🟢 Open Year-Round</button>
@@ -165,12 +156,12 @@
           </div>
 
           <div id="live-schemes-status" class="live-status-box" role="status" aria-live="polite">
-            Loading verified Odisha &amp; Central government schemes…
+            Loading schemes…
           </div>
 
           <div id="live-schemes-grid" class="live-schemes-grid" aria-live="polite"></div>
 
-          <details class="scheme-prep-guide" id="scheme-prep-guide">
+          <details class="scheme-prep-guide" id="scheme-prep-guide" hidden>
             <summary class="scheme-prep-guide__summary">
               <span>📋 Before You Apply: DBT Bank Seeding, e-District Certificates &amp; Anti-Scam Checklist</span>
               <span class="scheme-prep-guide__hint">Expand guide</span>
@@ -235,7 +226,7 @@
           </div>
         </section>
 
-        <section id="overview" aria-label="Directory overview">
+        <section id="overview" aria-label="Directory overview" hidden>
           <h2>Explore All Categories</h2>
           <div class="dashboard-grid" id="dashboard-grid"></div>
 

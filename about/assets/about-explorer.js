@@ -57,16 +57,11 @@
     if (!navEl) return;
     navEl.replaceChildren();
 
-    if (!liveSections.length) {
-      navEl.appendChild(el('div', 'cso-empty-state cso-about-muted', EMPTY_STATE_TEXT));
-      return;
-    }
-
     const allLink = el('a', `cso-about-nav-link${!activeSlug ? ' is-active' : ''}`);
     allLink.href = '#overview';
     allLink.append(
       el('span', 'cso-about-nav-num', '◆'),
-      el('span', 'cso-about-rail-label', pick('All Sections', 'ସମସ୍ତ ବିଭାଗ'))
+      el('span', 'cso-about-rail-label', pick('Overview', 'ସମୀକ୍ଷା'))
     );
     allLink.addEventListener('click', (e) => {
       e.preventDefault();
@@ -76,6 +71,8 @@
       closeMobileDrawer();
     });
     navEl.appendChild(allLink);
+
+    if (!liveSections.length) return;
 
     liveSections.forEach((sec, idx) => {
       const link = el('a', `cso-about-nav-link${activeSlug === sec.slug ? ' is-active' : ''}`);
@@ -112,17 +109,17 @@
     });
 
     if (!filtered.length) {
-      if (statusEl) statusEl.textContent = EMPTY_STATE_TEXT;
+      if (statusEl) statusEl.hidden = true;
       const emptyCard = el('article', 'cso-about-dir-card cso-empty-state');
       emptyCard.append(
-        el('h3', '', pick('No items published yet', 'ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ବିଷୟ ପ୍ରକାଶିତ ହୋଇନାହିଁ')),
-        el('p', '', EMPTY_STATE_TEXT)
+        el('p', '', needle ? 'No about sections match your current search.' : EMPTY_STATE_TEXT)
       );
       mount.appendChild(emptyCard);
       return;
     }
 
     if (statusEl) {
+      statusEl.hidden = false;
       statusEl.textContent = `${filtered.length} ${filtered.length === 1 ? 'published section' : 'published sections'}`;
     }
 
@@ -153,7 +150,7 @@
 
   async function loadLiveAboutData() {
     const statusEl = $('about-load-status');
-    if (statusEl) statusEl.textContent = 'Loading…';
+    if (statusEl) statusEl.hidden = true;
 
     const [dirRes, navRes, ovRes] = await Promise.allSettled([
       fetch('/api/content/about-directory', { headers: { Accept: 'application/json' }, cache: 'no-store' }),
