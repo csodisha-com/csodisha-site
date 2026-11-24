@@ -131,8 +131,8 @@ check('Admin cache invalidator & _worker.js wire /about/, /api/about/overview, /
 });
 
 check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v235+', () => {
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:3[5-9]|4\d)';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:3[5-9]|4\d)';/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:3[5-9]|[45]\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:3[5-9]|[45]\d)';/);
 });
 
 check('Strict CSP compliance across all modified about/ HTML & JS files', () => {

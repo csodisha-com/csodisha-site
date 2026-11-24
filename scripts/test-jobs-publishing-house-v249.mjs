@@ -436,9 +436,9 @@ await check('5. Strict CSP compliance across all v249 HTML, CSS & JS files + sw.
     assert.ok(!/\sstyle="/i.test(html), `${rel} has inline style`);
   }
   const sw = read('sw.js');
-  assert.ok(sw.includes("const CACHE_NAME = 'cso-candidate-cache-v249';"), 'sw.js must be bumped to v249');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:49|5\d)';/.test(sw), 'sw.js must be bumped to v249+');
   assert.ok(sw.includes("url.pathname.startsWith('/api/') && !isNetworkFirstApi(url)"), 'sw.js must keep /api/* NetworkOnly');
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v249';"));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:49|5\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\nSummary: ${passed} passed, ${failed} failed\n`);

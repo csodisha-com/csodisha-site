@@ -61,6 +61,12 @@ import {
   handlePublicJobsArticleApi,
   handlePublicJobsTelemetryApi
 } from './functions/_lib/jobs-publishing-house.js';
+import {
+  handlePublicSchemesTreeApi,
+  handlePublicSchemesListApi,
+  handlePublicSchemesArticleApi,
+  handlePublicSchemesTelemetryApi
+} from './functions/_lib/schemes-publishing-house.js';
 import { handlePublicMarketingBannersApi } from './functions/_lib/marketing-advertising-batch1.js';
 import { handlePublicMarketingRefApi } from './functions/_lib/marketing-advertising-batch2.js';
 import { handlePublicMarketingLandingPagesApi } from './functions/_lib/marketing-advertising-batch3.js';
@@ -346,6 +352,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources', '/api/marketing/banners', '/api/marketing/landing-pages', '/api/seo/meta', '/api/seo/robots.txt', '/api/seo/autocomplete',
     '/api/events/upcoming', '/api/config/public', '/api/events/calendar/odisha-all-exams.ics', '/api/events/calendar/opsc-ossc-osssc-deadlines.ics', '/api/events/calendar/admit-cards-results.ics', '/api/events/calendar/workshops-webinars.ics',
     '/api/public/jobs', '/api/public/jobs/tree', '/api/public/jobs/article', '/jobs/', '/jobs-careers/',
+    '/api/public/schemes', '/api/public/schemes/tree', '/api/public/schemes/article', '/schemes/', '/schemes-benefits/',
     '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
   const allUrls = new Set(basePaths.map(p => `${origin}${p}`));
@@ -889,6 +896,41 @@ export default {
         recordPublicCachePut(edgeCache, request, schemesMapRes, ctx);
       }
       return schemesMapRes;
+    }
+    if (pathname === '/api/public/schemes/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
+      const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
+      if (edgeCache && isAnonGet && !bypass) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const treeRes = await handlePublicSchemesTreeApi(request, env);
+      if (isAnonGet && !bypass && treeRes.status === 200) recordPublicCachePut(edgeCache, request, treeRes, ctx);
+      return treeRes;
+    }
+    if (pathname === '/api/public/schemes' && (request.method === 'GET' || request.method === 'HEAD')) {
+      const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
+      if (edgeCache && isAnonGet && !bypass) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const listRes = await handlePublicSchemesListApi(request, env);
+      if (isAnonGet && !bypass && listRes.status === 200) recordPublicCachePut(edgeCache, request, listRes, ctx);
+      return listRes;
+    }
+    if (pathname === '/api/public/schemes/article' && (request.method === 'GET' || request.method === 'HEAD')) {
+      const isPrev = url.searchParams.has('preview_token') || url.searchParams.has('refresh') || url.searchParams.has('_cb');
+      if (edgeCache && isAnonGet && !isPrev) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const artRes = await handlePublicSchemesArticleApi(request, env);
+      if (isAnonGet && !isPrev && artRes.status === 200 && !(artRes.headers.get('Cache-Control') || '').includes('no-store')) {
+        recordPublicCachePut(edgeCache, request, artRes, ctx);
+      }
+      return artRes;
+    }
+    if (pathname === '/api/public/schemes/telemetry' && request.method === 'POST') {
+      return handlePublicSchemesTelemetryApi(request, env);
     }
     if (pathname === '/api/public/schemes-directory/overview' && (request.method === 'GET' || request.method === 'HEAD')) {
       return handlePublicSchemesOverviewApi(request, env);

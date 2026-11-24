@@ -614,6 +614,9 @@
     items.push({ group: 'Jobs Publishing House', label: 'Jobs Publishing House › + Publish New Job Article', keywords: 'jobs new recruitment article opsc ossc osssc', run: function () { if (studio().openJobsPublishingTab) studio().openJobsPublishingTab('new'); else goFolder('folder-jobs-careers'); } });
     items.push({ group: 'Jobs Publishing House', label: 'Jobs Publishing House › 3-Layer Category Hierarchy', keywords: 'taxonomy main subcategory department tenure', run: function () { if (studio().openJobsPublishingTab) studio().openJobsPublishingTab('taxonomy'); else goFolder('folder-jobs-careers'); } });
     items.push({ group: 'Jobs Publishing House', label: 'Jobs Publishing House › Reusable Bilingual Snippets', keywords: 'snippets age relaxation odia rules', run: function () { if (studio().openJobsPublishingTab) studio().openJobsPublishingTab('snippets'); else goFolder('folder-jobs-careers'); } });
+    items.push({ group: 'Schemes Publishing House', label: 'Schemes Publishing House › + Publish New Scheme Article', keywords: 'schemes welfare subhadra scholarship cm-kisan dbt', run: function () { if (studio().openSchemesPublishingTab) studio().openSchemesPublishingTab('new'); else goFolder('folder-schemes-benefits'); } });
+    items.push({ group: 'Schemes Publishing House', label: 'Schemes Publishing House › 3-Layer Scheme Hierarchy', keywords: 'scheme taxonomy government domain benefit type', run: function () { if (studio().openSchemesPublishingTab) studio().openSchemesPublishingTab('taxonomy'); else goFolder('folder-schemes-benefits'); } });
+    items.push({ group: 'Schemes Publishing House', label: 'Schemes Publishing House › Reusable Bilingual Snippets', keywords: 'npci dbt income resident otr snippets', run: function () { if (studio().openSchemesPublishingTab) studio().openSchemesPublishingTab('snippets'); else goFolder('folder-schemes-benefits'); } });
     document.querySelectorAll('.cso-create-item[data-create-target]').forEach(function (b) {
       var t = b.getAttribute('data-create-target');
       var strong = b.querySelector('strong');
@@ -648,6 +651,12 @@
       out.push({ group: 'Job Articles', label: j.title_en + (j.is_published ? '' : ' · draft'), keywords: j.organisation_en || j.slug || '', run: function () {
         if (studio().openJobsPublishingTab) studio().openJobsPublishingTab('articles');
         else goFolder('folder-jobs-careers');
+      } });
+    });
+    (r.scheme_articles || []).forEach(function (sc) {
+      out.push({ group: 'Scheme Articles', label: sc.title_en + (sc.is_published ? '' : ' · draft'), keywords: sc.department_en || sc.slug || '', run: function () {
+        if (studio().openSchemesPublishingTab) studio().openSchemesPublishingTab('articles');
+        else goFolder('folder-schemes-benefits');
       } });
     });
     return out;

@@ -82,7 +82,7 @@ await check('Backend overview-stats, audit-feed, diagnostics, slug-check & bulk-
   assert.equal(ov.ok, true);
   assert.equal(ov.candidates, 42);
   assert.equal(ov.homepage.clicks, 120);
-  assert.match(ov.sw_cache_version, /^cso-candidate-cache-v24[3-9]$/);
+  assert.match(ov.sw_cache_version, /^cso-candidate-cache-v2(?:4[3-9]|5\d)$/);
 
   const afRes = await mod.handleAuditFeed(new Request('https://csodisha.com/api/admin/audit-feed?pillar=homepage&type=publish'), env);
   const af = await afRes.json();
@@ -95,7 +95,7 @@ await check('Backend overview-stats, audit-feed, diagnostics, slug-check & bulk-
   const diag = await diagRes.json();
   assert.equal(diag.ok, true);
   assert.equal(diag.r2.reachable, true);
-  assert.match(diag.service_worker.expected_cache_version, /^cso-candidate-cache-v24[3-9]$/);
+  assert.match(diag.service_worker.expected_cache_version, /^cso-candidate-cache-v2(?:4[3-9]|5\d)$/);
 
   const scRes = await mod.handleSlugCheck(new Request('https://csodisha.com/api/admin/slug-check?pillar=jobs&slug=opsc-oas-2026'), env);
   const sc = await scRes.json();
@@ -151,8 +151,8 @@ await check('Command Suite CSS uses semantic --studio-* / --cso-* tokens & tabul
 });
 
 await check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v243+', () => {
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v24[3-9]';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v24[3-9]';/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:4[3-9]|5\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:4[3-9]|5\d)';/);
 });
 
 console.log(`\nSummary: ${passed} passed, ${failed} failed.`);

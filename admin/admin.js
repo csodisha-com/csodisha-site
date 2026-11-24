@@ -16,6 +16,7 @@
     homepageCount: null,
     candidateCount: null,
     jobsCount: null,
+    schemesCount: null,
     liveBrandSummary: ''
   };
 
@@ -148,15 +149,21 @@
   function refreshBrandSummary() {
     Promise.all([
       fetch('/api/admin/overview-stats', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
-      fetch('/api/admin/jobs/taxonomy', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-    ]).then(function (pair) {
-      var ov = pair[0];
-      var tax = pair[1];
+      fetch('/api/admin/jobs/taxonomy', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      fetch('/api/admin/schemes/taxonomy', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+    ]).then(function (triple) {
+      var ov = triple[0];
+      var jTax = triple[1];
+      var sTax = triple[2];
       var pillarCount = (masterNavigationSchema && Array.isArray(masterNavigationSchema.folders)) ? masterNavigationSchema.folders.length : 5;
       var liveItems = ov && ov.totals ? Number(ov.totals.published || 0) : 0;
-      var activeCats = (ov && ov.categories ? Number(ov.categories.published || 0) : 0) + (tax && Array.isArray(tax.nodes) ? tax.nodes.length : 0);
+      var activeCats = (ov && ov.categories ? Number(ov.categories.published || 0) : 0)
+        + (jTax && Array.isArray(jTax.nodes) ? jTax.nodes.length : 0)
+        + (sTax && Array.isArray(sTax.nodes) ? sTax.nodes.length : 0);
       var jobsPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'jobs'; }) : null;
       if (jobsPillar) { CSOState.jobsCount = jobsPillar.total; }
+      var schemesPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'schemes'; }) : null;
+      if (schemesPillar) { CSOState.schemesCount = schemesPillar.total; }
       CSOState.liveBrandSummary = pillarCount + '-Pillar Live D1 Studio · ' + activeCats + ' Categories · ' + liveItems + ' Live';
       syncModuleCountLabels();
       renderNavigationTree();
@@ -249,7 +256,9 @@
       left.appendChild(el('span', 'cso-nav-folder-title', (folder.icon ? folder.icon + ' ' : '') + folder.title));
 
       var right = el('span', 'cso-nav-folder-right');
-      var badgeVal = folder.id === 'folder-jobs-careers' && CSOState.jobsCount !== null ? CSOState.jobsCount : filteredModules.length;
+      var badgeVal = folder.id === 'folder-jobs-careers' && CSOState.jobsCount !== null
+        ? CSOState.jobsCount
+        : (folder.id === 'folder-schemes-benefits' && CSOState.schemesCount !== null ? CSOState.schemesCount : filteredModules.length);
       right.appendChild(el('span', 'cso-nav-count cso-tabular', String(badgeVal)));
       right.appendChild(el('span', 'cso-nav-chevron' + (isExpanded ? ' is-open' : ''), '›'));
 
@@ -517,6 +526,25 @@
     }
   }
 
+  function openSchemesPublishingStudio(initialTab) {
+    CSOState.activeFolderId = 'folder-schemes-benefits';
+    CSOState.activeModuleId = 'folder-schemes-benefits';
+    try { localStorage.setItem('cso_active_module_id', 'folder-schemes-benefits'); } catch (_e) {}
+    if (window.location.hash !== '#folder-schemes-benefits' && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#folder-schemes-benefits');
+    }
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Schemes & Benefits';
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Schemes & Welfare Publishing House';
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Schemes & Welfare Publishing House';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '3-Layer D1 · R2';
+    renderNavigationTree();
+    clearNode(dom.workspaceRoot);
+    clearNode(dom.moduleHeaderActions);
+    if (window.CSOSchemesPublishingStudio) {
+      window.CSOSchemesPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, initialTab || 'articles');
+    }
+  }
+
   function renderWorkspaceView(folderId, moduleId) {
     if (folderId === 'folder-jobs-careers' && window.CSOJobsPublishingStudio) {
       if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Jobs & Careers';
@@ -526,6 +554,16 @@
       clearNode(dom.workspaceRoot);
       clearNode(dom.moduleHeaderActions);
       window.CSOJobsPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, 'articles');
+      return;
+    }
+    if (folderId === 'folder-schemes-benefits' && window.CSOSchemesPublishingStudio) {
+      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Schemes & Benefits';
+      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Schemes & Welfare Publishing House';
+      if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Schemes & Welfare Publishing House';
+      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '3-Layer D1 · R2';
+      clearNode(dom.workspaceRoot);
+      clearNode(dom.moduleHeaderActions);
+      window.CSOSchemesPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, 'articles');
       return;
     }
     var caCard = document.getElementById('cso-ca-publisher-card');
@@ -885,6 +923,7 @@
     },
     openCandidateHubTab: function (tab) { openCandidateHubStudio(tab); },
     openJobsPublishingTab: function (tab) { openJobsPublishingStudio(tab); },
+    openSchemesPublishingTab: function (tab) { openSchemesPublishingStudio(tab); },
     refreshBrandSummary: refreshBrandSummary,
     getSchema: function () { return masterNavigationSchema; }
   };

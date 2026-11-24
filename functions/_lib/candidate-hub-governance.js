@@ -647,10 +647,11 @@ export async function handleCandidateMatchesApi(request, env) {
     const relax = ODISHA_AGE_RELAXATION[cat] || 0;
     const effectiveMaxAge = 38 + relax; // Standard Odisha Group-B/C upper limit + category relaxation
 
-    const [jobs, jobArticles, schemes] = await Promise.all([
+    const [jobs, jobArticles, schemes, schemeArticles] = await Promise.all([
       safeAll(env.DB, "SELECT id, title, title_or, slug, recruiting_body, qualification_tag, vacancies, deadline_date, official_apply_url, summary, state_location, age_limit_relaxation FROM jobs_directory_items WHERE status = 'published' ORDER BY updated_at DESC LIMIT 40"),
       safeAll(env.DB, "SELECT id, slug, title_en, title_or, organisation_en, qualification_level, qualification_summary, total_vacancies, last_date, official_apply_url, summary_en, location_district, min_age, max_age FROM job_articles WHERE is_published = 1 ORDER BY updated_at DESC LIMIT 40"),
-      safeAll(env.DB, "SELECT id, title, title_or, slug, scheme_type, department_name, beneficiary_group, benefit_amount, application_deadline, official_apply_url, summary FROM schemes_directory_items WHERE status = 'published' ORDER BY updated_at DESC LIMIT 40")
+      safeAll(env.DB, "SELECT id, title, title_or, slug, scheme_type, department_name, beneficiary_group, benefit_amount, application_deadline, official_apply_url, summary FROM schemes_directory_items WHERE status = 'published' ORDER BY updated_at DESC LIMIT 40"),
+      safeAll(env.DB, "SELECT id, slug, title_en, title_or, department_en, target_beneficiaries, benefit_amount_summary, last_date, is_ongoing, official_apply_url, summary_en, min_age, max_age, max_annual_income, allowed_categories_json, occupation_tag FROM scheme_articles WHERE is_published = 1 ORDER BY updated_at DESC LIMIT 40")
     ]);
 
     const scoreItem = (hay, itemQual) => {
@@ -705,7 +706,7 @@ export async function handleCandidateMatchesApi(request, env) {
     });
     const matchedJobs = [...matchedFromArticles, ...matchedFromDir].sort((a, b) => b.match_score - a.match_score).slice(0, 15);
 
-    const matchedSchemes = schemes.map(sc => {
+    const matchedFromSchemeDir = schemes.map(sc => {
       const hay = `${sc.title} ${sc.scheme_type || ''} ${sc.beneficiary_group || ''} ${sc.summary || ''}`.toLowerCase();
       const s = scoreItem(hay, sc.beneficiary_group);
       return {
@@ -715,7 +716,30 @@ export async function handleCandidateMatchesApi(request, env) {
         url: sc.official_apply_url || (sc.slug ? `/schemes/${sc.slug}` : '/schemes-benefits/'),
         match_score: s.score, reasons: s.reasons
       };
-    }).sort((a, b) => b.match_score - a.match_score).slice(0, 15);
+    });
+    const matchedFromSchemeArts = (schemeArticles || []).map(sc => {
+      const hay = `${sc.title_en} ${sc.department_en || ''} ${sc.target_beneficiaries || ''} ${sc.occupation_tag || ''} ${sc.summary_en || ''}`.toLowerCase();
+      const s = scoreItem(hay, sc.target_beneficiaries || sc.occupation_tag);
+      let cats = [];
+      try { cats = JSON.parse(sc.allowed_categories_json || '[]'); } catch {}
+      if (Array.isArray(cats) && cats.length && cats.map(c => String(c).toUpperCase()).includes(cat)) {
+        s.score = Math.min(100, s.score + 10);
+        s.reasons.push(`Category ${cat} eligible`);
+      }
+      if (age > 0 && (sc.min_age || sc.max_age)) {
+        const okMin = !sc.min_age || age >= Number(sc.min_age);
+        const okMax = !sc.max_age || age <= Number(sc.max_age);
+        if (okMin && okMax) s.score = Math.min(100, s.score + 6);
+      }
+      return {
+        id: sc.id, kind: 'scheme', title: sc.title_en, title_or: sc.title_or || '',
+        department: sc.department_en || '', benefit: sc.benefit_amount_summary || '',
+        deadline: sc.is_ongoing ? 'Ongoing' : (sc.last_date || ''),
+        url: `/schemes/?slug=${encodeURIComponent(sc.slug)}`,
+        match_score: s.score, reasons: s.reasons
+      };
+    });
+    const matchedSchemes = [...matchedFromSchemeArts, ...matchedFromSchemeDir].sort((a, b) => b.match_score - a.match_score).slice(0, 15);
 
     return json({
       ok: true,

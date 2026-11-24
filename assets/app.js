@@ -1648,18 +1648,46 @@ function csoMapJobArticlesToUpdates(data){
   });
 }
 
-/* Load published updates from live D1 /api/public/jobs + /api/events/upcoming, falling back to static JSON when offline. */
+function csoMapSchemeArticlesToUpdates(data){
+  if(!data||!Array.isArray(data.items)||!data.items.length)return [];
+  const safeId=(raw,idx)=>'scheme-'+String(raw||idx).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  return data.items.slice(0,12).map((a,idx)=>{
+    const isOr=S.lang==='or';
+    const title=(isOr&&a.title_or)?a.title_or:(a.title_en||'Welfare Scheme');
+    const dept=(isOr&&a.department_or)?a.department_or:(a.department_en||a.gov_badge||'CS Odisha Schemes');
+    const ben=a.benefit_amount_summary?(' · '+a.benefit_amount_summary):'';
+    const dt=String(a.last_date||a.published_at||a.updated_at||'2026-11-24').slice(0,10);
+    const articleUrl='https://csodisha.com/schemes/?slug='+encodeURIComponent(a.slug||'');
+    return {
+      id:safeId(a.slug||a.id,idx),
+      cat:'Schemes',
+      tag:'SCHEME',
+      title:title,
+      src:dept+ben,
+      date:dt,
+      badges:[a.status_badge||'Active',a.application_mode||'DBT'],
+      body:String(a.summary_en||title).trim(),
+      url:articleUrl,
+      article_href:'/schemes/?slug='+encodeURIComponent(a.slug||''),
+      status:'published'
+    };
+  });
+}
+
+/* Load published updates from live D1 /api/public/jobs + /api/public/schemes + /api/events/upcoming, falling back to static JSON when offline. */
 function csoLoadPublishedUpdates(){
   return Promise.all([
     fetch('/api/public/jobs?limit=12',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
+    fetch('/api/public/schemes?limit=12',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
     fetch('/api/events/upcoming',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)
   ])
-    .then(([jobsData,ev])=>{
+    .then(([jobsData,schemesData,ev])=>{
       const jobUpdates=csoMapJobArticlesToUpdates(jobsData);
+      const schemeUpdates=csoMapSchemeArticlesToUpdates(schemesData);
       const evUpdates=csoMapEventsToUpdates(ev)||[];
       const merged=[];
       const seen=new Set();
-      [...jobUpdates,...evUpdates].forEach(item=>{
+      [...jobUpdates,...schemeUpdates,...evUpdates].forEach(item=>{
         if(!item||seen.has(item.id))return;
         seen.add(item.id);
         merged.push(item);

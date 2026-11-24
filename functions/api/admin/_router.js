@@ -91,6 +91,11 @@ import {
   handleJobsStudyOptions
 } from '../../_lib/jobs-publishing-house.js';
 import {
+  handleSchemesTaxonomyAdmin,
+  handleSchemesArticlesAdmin,
+  handleSchemesMediaUpload
+} from '../../_lib/schemes-publishing-house.js';
+import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
   handleFeedbackAdmin,
@@ -419,6 +424,15 @@ async function dispatchAdminApi(request, env) {
         if (!sub) return await handleAboutDirectoryAdmin(request, env, actor, id);
         break;
       case 'schemes':
+        if (id === 'taxonomy') return await handleSchemesTaxonomyAdmin(request, env, actor, sub, extra);
+        if (id === 'articles') return await handleSchemesArticlesAdmin(request, env, actor, sub, extra);
+        if (id === 'upload') {
+          await rateLimit(env, `admin-upload:${actor.userId}`, 40, 600);
+          return await handleSchemesMediaUpload(request, env, actor);
+        }
+        if (id && (sub === 'preview-token' || sub === 'revisions' || sub === 'rollback')) {
+          return await handleSchemesArticlesAdmin(request, env, actor, id, sub);
+        }
         if (!sub) return await handleSchemesAdmin(request, env, actor, id);
         break;
       case 'schemes-directory':
