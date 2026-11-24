@@ -552,7 +552,7 @@
     stSel.addEventListener('change', function () { r.status = stSel.value; loadRoster().then(renderBody); });
     filters.appendChild(stSel);
 
-    var tierSel = selectInput('roster_tier', [['', 'All Tiers'], ['standard', 'Standard'], ['verified', 'Verified'], ['mentor', 'Mentor'], ['vip', 'VIP']], r.tier, 'cso-form-select ch-select');
+    var tierSel = selectInput('roster_tier', [['', 'All Tiers'], ['standard', 'Standard'], ['verified', 'Verified'], ['mentor', 'Mentor'], ['pro_member', 'Pro Member ⭐'], ['permanent_member', 'Permanent Member 👑'], ['vip', 'VIP']], r.tier, 'cso-form-select ch-select');
     tierSel.addEventListener('change', function () { r.tier = tierSel.value; loadRoster().then(renderBody); });
     filters.appendChild(tierSel);
 
@@ -743,7 +743,7 @@
     var govSec = el('div', 'ch-drawer__section');
     govSec.appendChild(el('h4', '', 'Account Governance, Status & Access Tier'));
     var stSel = selectInput('gov_status', [['active', 'Active'], ['blocked', 'Blocked'], ['suspended', 'Suspended'], ['pending_review', 'Pending Review']], g.account_status);
-    var tierSel = selectInput('gov_tier', [['standard', 'Standard'], ['verified', 'Verified'], ['mentor', 'Mentor'], ['vip', 'VIP']], g.access_tier);
+    var tierSel = selectInput('gov_tier', [['standard', 'Standard'], ['verified', 'Verified'], ['mentor', 'Mentor'], ['pro_member', 'Pro Member ⭐'], ['permanent_member', 'Permanent Member 👑'], ['vip', 'VIP']], g.access_tier);
     var reasonIn = textInput('gov_reason', g.block_reason, 'Bilingual block/suspension reason (EN / ଓଡ଼ିଆ)');
     var notesIn = textInput('gov_notes', g.admin_notes, 'Internal admin notes');
     var gGrid = el('div', 'ch-form-grid');
@@ -1046,7 +1046,7 @@
       var slot = selectInput('layout_slot', [['sidebar', 'Sidebar Tab'], ['overview', 'Overview Widget'], ['both', 'Both']], ed.layout_slot);
       var span = selectInput('card_span', [['half', 'Half Width'], ['full', 'Full Width']], ed.card_span);
       var accent = selectInput('accent_variant', [['primary', 'Primary'], ['accent', 'Accent'], ['emerald', 'Emerald'], ['amber', 'Amber'], ['blue', 'Blue']], ed.accent_variant);
-      var tier = selectInput('required_access_tier', [['standard', 'Standard'], ['verified', 'Verified'], ['mentor', 'Mentor'], ['vip', 'VIP']], ed.required_access_tier);
+      var tier = selectInput('required_access_tier', [['standard', 'Standard'], ['verified', 'Verified'], ['mentor', 'Mentor'], ['pro_member', 'Pro Member ⭐'], ['permanent_member', 'Permanent Member 👑'], ['vip', 'VIP']], ed.required_access_tier);
       var order = textInput('sort_order', ed.sort_order || 90, '90', 'number');
       var targetUrl = textInput('target_url', cfg.target_url || '', '/study-library/ or https://...');
       var r2Key = textInput('r2_file_key', cfg.r2_file_key || '', 'R2 attachment key (optional)');

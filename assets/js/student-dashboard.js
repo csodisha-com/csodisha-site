@@ -206,7 +206,9 @@
     }
 
     const u = state.profile || {};
-    const name = u.fullName || 'Candidate';
+    const cp = state.communityProfile || null;
+    const tierTag = cp && cp.membership_tier === 'permanent_member' ? ' 👑 Permanent' : (cp && cp.membership_tier === 'pro_member' ? ' ⭐ Pro' : '');
+    const name = (u.fullName || 'Candidate') + tierTag;
     const dist = u.district || '';
     ['bp-side-name', 'bp-top-name'].forEach(id => { const n = document.getElementById(id); if (n) n.textContent = name; });
     ['bp-side-district', 'bp-top-district'].forEach(id => { const n = document.getElementById(id); if (n) n.textContent = dist; });
@@ -259,12 +261,18 @@
     const totalDocs = Math.max(1, state.docTemplates.length);
     const doneDocs = state.docTemplates.filter(d => Boolean(state.locker[d.doc_key])).length;
     const docsPct = state.docTemplates.length ? Math.round((doneDocs / totalDocs) * 100) : 0;
+    const cp = state.communityProfile || null;
     const stats = [
       ['Assigned Items', String(state.assignedItems.length)],
       ['Saved Deadlines', String(state.bookmarks.length)],
       ['Docs Ready', docsPct + '%'],
       ['Mock Tests', String(state.mockScores.length)]
     ];
+    if (cp) {
+      const tierTxt = cp.membership_tier === 'permanent_member' ? '👑 Permanent' : (cp.membership_tier === 'pro_member' ? '⭐ Pro' : 'Standard');
+      stats.push(['Community Tier', tierTxt + ' · ' + (cp.reputation_xp || 0) + ' XP']);
+      stats.push(['Circles / Unread DMs', (cp.joined_communities_count || 0) + ' / ' + (cp.unread_messages_count || 0)]);
+    }
     stats.forEach(s => {
       const box = el('div', 'cso-hub-stat');
       box.appendChild(el('span', 'cso-hub-stat__val', s[1]));
@@ -762,6 +770,7 @@
         state.notes = w.notes || '';
         state.mockScores = Array.isArray(w.mock_scores) ? w.mock_scores : [];
         state.bookmarks = Array.isArray(w.bookmarks) ? w.bookmarks : [];
+        state.communityProfile = w.community_profile || null;
       }
     }
     if (matchRes.status === 'fulfilled' && matchRes.value.ok) {

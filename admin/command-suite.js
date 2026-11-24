@@ -620,6 +620,10 @@
     items.push({ group: 'Study Library Studio', label: 'Study Library Studio › + Publish New Study Material', keywords: 'study notes syllabus pyq mcq flashcards opsc ossc', run: function () { if (studio().openStudyPublishingTab) studio().openStudyPublishingTab('new'); else goFolder('folder-study-library'); } });
     items.push({ group: 'Study Library Studio', label: 'Study Library Studio › 3-Layer Curriculum Hierarchy', keywords: 'exam track subject paper chapter taxonomy', run: function () { if (studio().openStudyPublishingTab) studio().openStudyPublishingTab('taxonomy'); else goFolder('folder-study-library'); } });
     items.push({ group: 'Study Library Studio', label: 'Study Library Studio › Reader Doubts & PYQ Corrections Queue', keywords: 'doubts pyq typo corrections feedback', run: function () { if (studio().openStudyPublishingTab) studio().openStudyPublishingTab('doubts'); else goFolder('folder-study-library'); } });
+    items.push({ group: 'Community Studio', label: 'Community Studio › + Publish Spotlight / Poll / Daily Quiz', keywords: 'community spotlight poll daily quiz challenge', run: function () { if (studio().openCommunityPublishingTab) studio().openCommunityPublishingTab('new'); else goFolder('folder-community'); } });
+    items.push({ group: 'Community Studio', label: 'Community Studio › 3-Layer Interest Circles', keywords: 'community circles districts groups posting policy', run: function () { if (studio().openCommunityPublishingTab) studio().openCommunityPublishingTab('taxonomy'); else goFolder('folder-community'); } });
+    items.push({ group: 'Community Studio', label: 'Community Studio › Pro & Permanent Contributor Rewards', keywords: 'pro member permanent contributor xp rewards', run: function () { if (studio().openCommunityPublishingTab) studio().openCommunityPublishingTab('rewards'); else goFolder('folder-community'); } });
+    items.push({ group: 'Community Studio', label: 'Community Studio › Peer Q&A, Answer Key & DM Safety Queue', keywords: 'moderation safety dm memory questions best answer', run: function () { if (studio().openCommunityPublishingTab) studio().openCommunityPublishingTab('safety'); else goFolder('folder-community'); } });
     document.querySelectorAll('.cso-create-item[data-create-target]').forEach(function (b) {
       var t = b.getAttribute('data-create-target');
       var strong = b.querySelector('strong');
@@ -666,6 +670,12 @@
       out.push({ group: 'Study Modules', label: st.title_en + (st.is_published ? '' : ' · draft'), keywords: (st.resource_type_badge || '') + ' ' + (st.exam_board_tag || '') + ' ' + (st.slug || ''), run: function () {
         if (studio().openStudyPublishingTab) studio().openStudyPublishingTab('articles');
         else goFolder('folder-study-library');
+      } });
+    });
+    (r.community_posts || []).forEach(function (cp) {
+      out.push({ group: 'Community Posts', label: cp.title_en + (cp.moderation_status === 'published' ? '' : ' · ' + cp.moderation_status), keywords: (cp.post_type || '') + ' ' + (cp.slug || ''), run: function () {
+        if (studio().openCommunityPublishingTab) studio().openCommunityPublishingTab('feed');
+        else goFolder('folder-community');
       } });
     });
     return out;

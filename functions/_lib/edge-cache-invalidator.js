@@ -20,6 +20,7 @@ export const NAV_PUBLIC_PATHS = [
   '/mock-tests/',
   '/current-affairs/',
   '/community/',
+  '/student-dashboard/',
   '/about/'
 ];
 
@@ -35,6 +36,9 @@ export const CONTENT_PUBLIC_PATHS = [
   '/api/public/study',
   '/api/public/study/tree',
   '/api/public/study/article',
+  '/api/public/community/tree',
+  '/api/public/community/posts',
+  '/api/public/community/post',
   '/api/content/jobs',
   '/api/content/current-affairs',
   '/api/content/jobs-directory',

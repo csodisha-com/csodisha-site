@@ -12,8 +12,8 @@ import { getCandidateControls, logCandidateAudit, normalizePermissions, ACCOUNT_
 import { getSessionFromRequest } from '../api/auth/_utils.js';
 
 export const GOV_STATUSES = ['active', 'blocked', 'suspended', 'pending_review'];
-export const ACCESS_TIERS = ['standard', 'verified', 'mentor', 'vip'];
-export const TIER_RANK = { standard: 0, verified: 1, mentor: 2, vip: 3 };
+export const ACCESS_TIERS = ['standard', 'verified', 'mentor', 'pro_member', 'permanent_member', 'vip'];
+export const TIER_RANK = { standard: 0, verified: 1, mentor: 2, pro_member: 3, permanent_member: 4, vip: 5 };
 export const MODULE_TYPES = ['core', 'custom_feature', 'custom_tool', 'custom_checklist', 'custom_resource_hub', 'custom_announcement'];
 export const LAYOUT_SLOTS = ['sidebar', 'overview', 'both'];
 export const CARD_SPANS = ['half', 'full'];
@@ -773,13 +773,16 @@ export async function handleCandidateWorkspaceApi(request, env) {
     const uid = session.userId;
 
     if (request.method === 'GET') {
-      const [lockerRow, notesRow, mocks, bookmarks, studyProgRows, studyTotalRow] = await Promise.all([
+      const [lockerRow, notesRow, mocks, bookmarks, studyProgRows, studyTotalRow, commPrefRow, commJoinedRow, commUnreadRow] = await Promise.all([
         safeFirst(env.DB, 'SELECT locker_data, updated_at FROM candidate_lockers WHERE candidate_id = ?', [uid]),
         safeFirst(env.DB, 'SELECT notes_content, updated_at FROM candidate_notes WHERE candidate_id = ?', [uid]),
         safeAll(env.DB, 'SELECT id, exam_name, score, total_marks, accuracy_rate, tested_at FROM candidate_mock_scores WHERE candidate_id = ? ORDER BY tested_at DESC LIMIT 50', [uid]),
         safeAll(env.DB, 'SELECT id, post_id, category, post_title, post_url, deadline_date, created_at FROM candidate_bookmarks WHERE candidate_id = ? ORDER BY created_at DESC LIMIT 100', [uid]),
         safeAll(env.DB, 'SELECT p.article_id, p.status, p.needs_revision, p.mcq_score, p.mcq_total, p.streak_days, p.last_studied_at, a.slug, a.title_en FROM candidate_study_progress p LEFT JOIN study_articles a ON a.id = p.article_id WHERE p.user_id = ? ORDER BY p.last_studied_at DESC LIMIT 50', [uid]),
-        safeFirst(env.DB, 'SELECT COUNT(*) AS n FROM study_articles WHERE is_published = 1')
+        safeFirst(env.DB, 'SELECT COUNT(*) AS n FROM study_articles WHERE is_published = 1'),
+        safeFirst(env.DB, 'SELECT membership_tier, reputation_xp, approved_contributions_count, allow_direct_messages, bio_headline, earned_badges_json FROM community_user_preferences WHERE user_id = ?', [uid]),
+        safeFirst(env.DB, 'SELECT COUNT(*) AS n FROM community_memberships WHERE user_id = ?', [uid]),
+        safeFirst(env.DB, 'SELECT COUNT(*) AS n FROM community_direct_messages WHERE recipient_user_id = ? AND is_read = 0', [uid])
       ]);
       const locker = lockerRow ? parseJson(lockerRow.locker_data, {}) : {};
       const sProg = studyProgRows || [];
@@ -806,6 +809,14 @@ export async function handleCandidateWorkspaceApi(request, env) {
             url: x.slug ? `/study-library/?slug=${encodeURIComponent(x.slug)}` : '/study-library/'
           })),
           recent: sProg.slice(0, 6)
+        },
+        community_profile: {
+          membership_tier: (commPrefRow && commPrefRow.membership_tier) || 'standard',
+          reputation_xp: Number((commPrefRow && commPrefRow.reputation_xp) || 0),
+          approved_contributions_count: Number((commPrefRow && commPrefRow.approved_contributions_count) || 0),
+          joined_communities_count: Number((commJoinedRow && commJoinedRow.n) || 0),
+          unread_messages_count: Number((commUnreadRow && commUnreadRow.n) || 0),
+          earned_badges: commPrefRow ? parseJson(commPrefRow.earned_badges_json, []) : []
         }
       });
     }
@@ -910,7 +921,7 @@ async function computeRosterKpis(db, filteredTotal = null) {
   const [totRow, blockedRow, tierRow, modRow, assignedRow] = await Promise.all([
     safeFirst(db, 'SELECT COUNT(*) AS n FROM users'),
     safeFirst(db, "SELECT COUNT(*) AS n FROM candidate_governance WHERE account_status IN ('blocked', 'suspended')"),
-    safeFirst(db, "SELECT COUNT(*) AS n FROM candidate_governance WHERE access_tier IN ('verified', 'mentor', 'vip')"),
+    safeFirst(db, "SELECT COUNT(*) AS n FROM candidate_governance WHERE access_tier IN ('verified', 'mentor', 'pro_member', 'permanent_member', 'vip')"),
     safeFirst(db, 'SELECT COUNT(*) AS n FROM candidate_hub_modules WHERE is_enabled = 1'),
     safeFirst(db, 'SELECT COUNT(*) AS n FROM candidate_assigned_items WHERE is_published = 1')
   ]);

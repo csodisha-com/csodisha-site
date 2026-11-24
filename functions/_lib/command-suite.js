@@ -101,6 +101,15 @@ export async function handleOverviewStats(request, env) {
         counts.draft = Math.max(0, counts.total - counts.published);
       }
     }
+    if (key === 'community') {
+      const cp = await safeFirst(db, "SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN moderation_status = 'published' THEN 1 ELSE 0 END), 0) AS published FROM community_posts");
+      if (cp) {
+        counts.available = true;
+        counts.total += Number(cp.total || 0);
+        counts.published += Number(cp.published || 0);
+        counts.draft = Math.max(0, counts.total - counts.published);
+      }
+    }
     pillars.push({ key, label: def.label, ...counts });
   }
   const hp = await safeFirst(db,
@@ -217,13 +226,14 @@ export async function handlePurgeCaches(request, env, actor) {
 
 // ---------- GET /api/admin/command-index (palette search corpus) ----------
 export async function handleCommandIndex(request, env) {
-  const [blocks, cats, menus, jobArts, schemeArts, studyArts] = await Promise.all([
+  const [blocks, cats, menus, jobArts, schemeArts, studyArts, commPosts] = await Promise.all([
     safeAll(env.DB, 'SELECT id, section_key, title_en, is_published FROM homepage_blocks ORDER BY section_key, sort_order LIMIT 200'),
     safeAll(env.DB, 'SELECT id, name_en, name_or, landing_url, status FROM nav_categories ORDER BY sort_order LIMIT 200'),
     safeAll(env.DB, "SELECT id, label_en, label_or, url, status FROM nav_menu_items WHERE menu_location = 'header' ORDER BY sort_order LIMIT 200"),
     safeAll(env.DB, 'SELECT id, slug, title_en, organisation_en, is_published FROM job_articles ORDER BY updated_at DESC LIMIT 100'),
     safeAll(env.DB, 'SELECT id, slug, title_en, department_en, is_published FROM scheme_articles ORDER BY updated_at DESC LIMIT 100'),
-    safeAll(env.DB, 'SELECT id, slug, title_en, resource_type_badge, exam_board_tag, is_published FROM study_articles ORDER BY updated_at DESC LIMIT 100')
+    safeAll(env.DB, 'SELECT id, slug, title_en, resource_type_badge, exam_board_tag, is_published FROM study_articles ORDER BY updated_at DESC LIMIT 100'),
+    safeAll(env.DB, 'SELECT id, slug, title_en, post_type, moderation_status FROM community_posts ORDER BY updated_at DESC LIMIT 100')
   ]);
   return json({
     ok: true,
@@ -232,7 +242,8 @@ export async function handleCommandIndex(request, env) {
     menu_items: menus || [],
     job_articles: jobArts || [],
     scheme_articles: schemeArts || [],
-    study_articles: studyArts || []
+    study_articles: studyArts || [],
+    community_posts: commPosts || []
   });
 }
 

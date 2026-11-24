@@ -103,6 +103,14 @@ import {
   handleStudyDoubtsAdmin
 } from '../../_lib/study-publishing-house.js';
 import {
+  handleCommunityTaxonomyAdmin,
+  handleCommunityPostsAdmin,
+  handleCommunityMediaUpload,
+  handleCommunityRewardRulesAdmin,
+  handleCommunityGrantMembershipAdmin,
+  handleCommunityModerationAdmin
+} from '../../_lib/community-platform.js';
+import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
   handleFeedbackAdmin,
@@ -447,6 +455,20 @@ async function dispatchAdminApi(request, env) {
           return await handleSchemesDirectoryStudio(request, env, actor, id, sub, extra);
         }
         if (!sub) return await handleSchemesDirectoryTreeAdmin(request, env, actor, id);
+        break;
+      case 'community':
+        if (id === 'taxonomy') return await handleCommunityTaxonomyAdmin(request, env, actor, sub, extra);
+        if (id === 'posts') return await handleCommunityPostsAdmin(request, env, actor, sub, extra);
+        if (id === 'upload') {
+          await rateLimit(env, `admin-upload:${actor.userId}`, 40, 600);
+          return await handleCommunityMediaUpload(request, env, actor);
+        }
+        if (id === 'reward-rules') return await handleCommunityRewardRulesAdmin(request, env, actor);
+        if (id === 'grant-membership' || id === 'contributors') return await handleCommunityGrantMembershipAdmin(request, env, actor);
+        if (id === 'moderation') return await handleCommunityModerationAdmin(request, env, actor, sub, extra);
+        if (id && (sub === 'preview-token' || sub === 'promote-study')) {
+          return await handleCommunityPostsAdmin(request, env, actor, id, sub);
+        }
         break;
       case 'community-directory':
         return await handleCommunityDirectoryStudio(request, env, actor, id, sub, extra);

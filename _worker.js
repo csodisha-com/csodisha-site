@@ -75,6 +75,16 @@ import {
   handlePublicStudyDoubtsApi,
   handleCandidateStudyProgressApi
 } from './functions/_lib/study-publishing-house.js';
+import {
+  handlePublicCommunityTreeApi,
+  handlePublicCommunityFeedApi,
+  handlePublicCommunityPostDetailApi,
+  handleMemberCommunityJoinApi,
+  handleMemberCommunityPostCreateApi,
+  handleMemberCommunityReplyApi,
+  handleMemberCommunityReactApi,
+  handleMemberCommunityMessagesApi
+} from './functions/_lib/community-platform.js';
 import { handlePublicMarketingBannersApi } from './functions/_lib/marketing-advertising-batch1.js';
 import { handlePublicMarketingRefApi } from './functions/_lib/marketing-advertising-batch2.js';
 import { handlePublicMarketingLandingPagesApi } from './functions/_lib/marketing-advertising-batch3.js';
@@ -362,6 +372,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/public/jobs', '/api/public/jobs/tree', '/api/public/jobs/article', '/jobs/', '/jobs-careers/',
     '/api/public/schemes', '/api/public/schemes/tree', '/api/public/schemes/article', '/schemes/', '/schemes-benefits/',
     '/api/public/study', '/api/public/study/tree', '/api/public/study/article', '/study-library/', '/study/',
+    '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/post', '/community/', '/student-dashboard/',
     '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
   const allUrls = new Set(basePaths.map(p => `${origin}${p}`));
@@ -571,16 +582,27 @@ export default {
       }
       return fdRes;
     }
+    if (pathname === '/api/community/posts' && request.method === 'POST') {
+      return handleMemberCommunityPostCreateApi(request, env);
+    }
     if (pathname === '/api/community/posts' && (request.method === 'GET' || request.method === 'HEAD')) {
-      if (edgeCache && isAnonGet) {
-        const hit = await edgeCache.match(request);
-        if (hit) return hit;
-      }
       const commPostsRes = await handlePublicCommunityPostsApi(request, env);
-      if (isAnonGet && commPostsRes.status === 200) {
-        recordPublicCachePut(edgeCache, request, commPostsRes, ctx);
-      }
-      return commPostsRes;
+      const h = new Headers(commPostsRes.headers);
+      h.set('Cache-Control', 'no-store, max-age=0');
+      return new Response(commPostsRes.body, { status: commPostsRes.status, headers: h });
+    }
+    if (pathname === '/api/community/join' && request.method === 'POST') {
+      return handleMemberCommunityJoinApi(request, env);
+    }
+    if (pathname.startsWith('/api/community/posts/') && pathname.endsWith('/reply') && request.method === 'POST') {
+      const pid = decodeURIComponent(pathname.slice('/api/community/posts/'.length, -'/reply'.length));
+      return handleMemberCommunityReplyApi(request, env, pid);
+    }
+    if (pathname === '/api/community/react' && request.method === 'POST') {
+      return handleMemberCommunityReactApi(request, env);
+    }
+    if (pathname === '/api/community/messages' && (request.method === 'GET' || request.method === 'POST')) {
+      return handleMemberCommunityMessagesApi(request, env);
     }
     if (pathname === '/api/community/qna' && (request.method === 'GET' || request.method === 'HEAD')) {
       if (edgeCache && isAnonGet) {
@@ -998,6 +1020,15 @@ export default {
         recordPublicCachePut(edgeCache, request, communityMapRes, ctx);
       }
       return communityMapRes;
+    }
+    if (pathname === '/api/public/community/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicCommunityTreeApi(request, env);
+    }
+    if (pathname === '/api/public/community/posts' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicCommunityFeedApi(request, env);
+    }
+    if (pathname === '/api/public/community/post' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicCommunityPostDetailApi(request, env);
     }
     if (pathname === '/api/public/community-directory/overview' && (request.method === 'GET' || request.method === 'HEAD')) {
       return handlePublicCommunityOverviewApi(request, env);

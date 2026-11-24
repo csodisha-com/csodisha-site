@@ -1699,22 +1699,49 @@ function csoMapStudyArticlesToUpdates(data){
   });
 }
 
-/* Load published updates from live D1 /api/public/jobs + /api/public/schemes + /api/public/study + /api/events/upcoming, falling back to static JSON when offline. */
+function csoMapCommunityPostsToUpdates(data){
+  if(!data||!Array.isArray(data.items)||!data.items.length)return [];
+  const safeId=(raw,idx)=>'comm-'+String(raw||idx).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  return data.items.slice(0,8).map((p,idx)=>{
+    const isOr=S.lang==='or';
+    const title=(isOr&&p.title_or)?p.title_or:(p.title_en||'Community Highlight');
+    const src=(p.author_display_name||'CS Odisha Community')+(p.district_tag?' · '+p.district_tag:'');
+    const dt=String(p.created_at||p.updated_at||'2026-11-24').slice(0,10);
+    const postUrl='https://csodisha.com/community/?slug='+encodeURIComponent(p.slug||'');
+    return {
+      id:safeId(p.slug||p.id,idx),
+      cat:'Odisha',
+      tag:'ODISHA',
+      title:title,
+      src:src,
+      date:dt,
+      badges:[String(p.post_type||'Community').replace(/_/g,' '),p.author_badge||'Community'],
+      body:String(p.body_en||title).slice(0,220).trim(),
+      url:postUrl,
+      article_href:'/community/?slug='+encodeURIComponent(p.slug||''),
+      status:'published'
+    };
+  });
+}
+
+/* Load published updates from live D1 /api/public/jobs + /api/public/schemes + /api/public/study + /api/public/community/posts + /api/events/upcoming, falling back to static JSON when offline. */
 function csoLoadPublishedUpdates(){
   return Promise.all([
     fetch('/api/public/jobs?limit=12',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
     fetch('/api/public/schemes?limit=12',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
     fetch('/api/public/study?limit=12',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
+    fetch('/api/public/community/posts?limit=8',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
     fetch('/api/events/upcoming',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)
   ])
-    .then(([jobsData,schemesData,studyData,ev])=>{
+    .then(([jobsData,schemesData,studyData,commData,ev])=>{
       const jobUpdates=csoMapJobArticlesToUpdates(jobsData);
       const schemeUpdates=csoMapSchemeArticlesToUpdates(schemesData);
       const studyUpdates=csoMapStudyArticlesToUpdates(studyData);
+      const commUpdates=csoMapCommunityPostsToUpdates(commData);
       const evUpdates=csoMapEventsToUpdates(ev)||[];
       const merged=[];
       const seen=new Set();
-      [...jobUpdates,...schemeUpdates,...studyUpdates,...evUpdates].forEach(item=>{
+      [...jobUpdates,...schemeUpdates,...studyUpdates,...commUpdates,...evUpdates].forEach(item=>{
         if(!item||seen.has(item.id))return;
         seen.add(item.id);
         merged.push(item);

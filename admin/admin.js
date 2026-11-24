@@ -18,6 +18,7 @@
     jobsCount: null,
     schemesCount: null,
     studyCount: null,
+    communityCount: null,
     liveBrandSummary: ''
   };
 
@@ -152,24 +153,29 @@
       fetch('/api/admin/overview-stats', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
       fetch('/api/admin/jobs/taxonomy', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
       fetch('/api/admin/schemes/taxonomy', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
-      fetch('/api/admin/study/taxonomy', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-    ]).then(function (quad) {
-      var ov = quad[0];
-      var jTax = quad[1];
-      var sTax = quad[2];
-      var stTax = quad[3];
+      fetch('/api/admin/study/taxonomy', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      fetch('/api/admin/community/taxonomy', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+    ]).then(function (arr) {
+      var ov = arr[0];
+      var jTax = arr[1];
+      var sTax = arr[2];
+      var stTax = arr[3];
+      var cTax = arr[4];
       var pillarCount = (masterNavigationSchema && Array.isArray(masterNavigationSchema.folders)) ? masterNavigationSchema.folders.length : 5;
       var liveItems = ov && ov.totals ? Number(ov.totals.published || 0) : 0;
       var activeCats = (ov && ov.categories ? Number(ov.categories.published || 0) : 0)
         + (jTax && Array.isArray(jTax.nodes) ? jTax.nodes.length : 0)
         + (sTax && Array.isArray(sTax.nodes) ? sTax.nodes.length : 0)
-        + (stTax && Array.isArray(stTax.nodes) ? stTax.nodes.length : 0);
+        + (stTax && Array.isArray(stTax.nodes) ? stTax.nodes.length : 0)
+        + (cTax && Array.isArray(cTax.nodes) ? cTax.nodes.length : 0);
       var jobsPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'jobs'; }) : null;
       if (jobsPillar) { CSOState.jobsCount = jobsPillar.total; }
       var schemesPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'schemes'; }) : null;
       if (schemesPillar) { CSOState.schemesCount = schemesPillar.total; }
       var studyPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'study'; }) : null;
       if (studyPillar) { CSOState.studyCount = studyPillar.total; }
+      var commPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'community'; }) : null;
+      if (commPillar) { CSOState.communityCount = commPillar.total; }
       CSOState.liveBrandSummary = pillarCount + '-Pillar Live D1 Studio · ' + activeCats + ' Categories · ' + liveItems + ' Live';
       syncModuleCountLabels();
       renderNavigationTree();
@@ -266,7 +272,9 @@
         ? CSOState.jobsCount
         : (folder.id === 'folder-schemes-benefits' && CSOState.schemesCount !== null
           ? CSOState.schemesCount
-          : (folder.id === 'folder-study-library' && CSOState.studyCount !== null ? CSOState.studyCount : filteredModules.length));
+          : (folder.id === 'folder-study-library' && CSOState.studyCount !== null
+            ? CSOState.studyCount
+            : (folder.id === 'folder-community' && CSOState.communityCount !== null ? CSOState.communityCount : filteredModules.length)));
       right.appendChild(el('span', 'cso-nav-count cso-tabular', String(badgeVal)));
       right.appendChild(el('span', 'cso-nav-chevron' + (isExpanded ? ' is-open' : ''), '›'));
 
@@ -572,6 +580,25 @@
     }
   }
 
+  function openCommunityPublishingStudio(initialTab) {
+    CSOState.activeFolderId = 'folder-community';
+    CSOState.activeModuleId = 'folder-community';
+    try { localStorage.setItem('cso_active_module_id', 'folder-community'); } catch (_e) {}
+    if (window.location.hash !== '#folder-community' && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#folder-community');
+    }
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Community';
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Community, Interest Circles & Pro Rewards';
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Community & Pro Rewards Studio';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live Instant Sync';
+    renderNavigationTree();
+    clearNode(dom.workspaceRoot);
+    clearNode(dom.moduleHeaderActions);
+    if (window.CSOCommunityPublishingStudio) {
+      window.CSOCommunityPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, initialTab || 'feed');
+    }
+  }
+
   function renderWorkspaceView(folderId, moduleId) {
     if (folderId === 'folder-jobs-careers' && window.CSOJobsPublishingStudio) {
       if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Jobs & Careers';
@@ -601,6 +628,16 @@
       clearNode(dom.workspaceRoot);
       clearNode(dom.moduleHeaderActions);
       window.CSOStudyPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, 'articles');
+      return;
+    }
+    if (folderId === 'folder-community' && window.CSOCommunityPublishingStudio) {
+      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Community';
+      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Community, Interest Circles & Pro Rewards';
+      if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Community & Pro Rewards Studio';
+      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live Instant Sync';
+      clearNode(dom.workspaceRoot);
+      clearNode(dom.moduleHeaderActions);
+      window.CSOCommunityPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, 'feed');
       return;
     }
     var caCard = document.getElementById('cso-ca-publisher-card');
@@ -961,10 +998,14 @@
     setStudyCount: function (n) {
       if (CSOState.studyCount !== n) { CSOState.studyCount = n; renderNavigationTree(); }
     },
+    setCommunityCount: function (n) {
+      if (CSOState.communityCount !== n) { CSOState.communityCount = n; renderNavigationTree(); }
+    },
     openCandidateHubTab: function (tab) { openCandidateHubStudio(tab); },
     openJobsPublishingTab: function (tab) { openJobsPublishingStudio(tab); },
     openSchemesPublishingTab: function (tab) { openSchemesPublishingStudio(tab); },
     openStudyPublishingTab: function (tab) { openStudyPublishingStudio(tab); },
+    openCommunityPublishingTab: function (tab) { openCommunityPublishingStudio(tab); },
     refreshBrandSummary: refreshBrandSummary,
     getSchema: function () { return masterNavigationSchema; }
   };
