@@ -18,3 +18,6 @@ async function run({ request, env }) {
 
 export const onRequestGet = run;
 export const onRequestPost = run;
+export const onRequestPut = run;
+export const onRequestPatch = run;
+export const onRequestDelete = run;

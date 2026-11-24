@@ -250,6 +250,38 @@
   color: rgba(255, 255, 255, 0.88);
 }
 
+/* L2 Sub-Track Quick Pills (v273) */
+.crp-subtracks-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.crp-subtrack-pill {
+  appearance: none;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.crp-subtrack-pill:hover {
+  border-color: var(--cso-brand-primary, #115569);
+}
+
+.crp-subtrack-pill.is-active {
+  background: var(--cso-pill-active-bg, #115569);
+  color: var(--cso-pill-active-fg, #ffffff);
+  border-color: var(--cso-pill-active-bg, #115569);
+}
+
 /* ======================================================================
    3. CASCADING FILTER BAR
    ====================================================================== */

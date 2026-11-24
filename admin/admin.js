@@ -10,6 +10,7 @@
   var CSOState = {
     activeFolderId: 'folder-jobs-careers',
     activeModuleId: 'folder-jobs-careers',
+    activeCareersSubTab: 'list',
     expandedFolders: new Set(['folder-jobs-careers']),
     searchQuery: '',
     startTime: Date.now(),
@@ -344,27 +345,66 @@
       }
 
       if (folder.id === 'folder-jobs-careers') {
+        var careersSubItems = [
+          { tab: 'list', num: '01', title: 'Published & Draft Guides', tag: 'D1', kw: 'published draft guides career roadmaps list' },
+          { tab: 'taxonomy', num: '02', title: '3-Layer Career Hierarchy', tag: 'L1-L3', kw: '3-layer career hierarchy taxonomy tracks subtracks roles' },
+          { tab: 'snippets', num: '03', title: 'Reusable Bilingual Snippets', tag: 'EN/OR', kw: 'reusable bilingual snippets eligibility salary odia' },
+          { tab: 'new', num: '04', title: '+ Publish New Career Guide', tag: 'NEW', kw: 'publish new career guide roadmap composer author' }
+        ];
         var crLabel = 'careers publishing house roadmaps tracks pathways କ୍ୟାରିୟର୍';
-        if (!query || crLabel.indexOf(query) !== -1) {
-          matchCount += 1;
-          var crActive = CSOState.activeModuleId === CR_MODULE_ID;
+        var crParentMatch = !query || crLabel.indexOf(query) !== -1;
+        var filteredCrSubs = careersSubItems.filter(function (s) {
+          return crParentMatch || s.title.toLowerCase().indexOf(query) !== -1 || s.kw.indexOf(query) !== -1;
+        });
+        if (!query || crParentMatch || filteredCrSubs.length > 0) {
+          matchCount += filteredCrSubs.length || 1;
+          var crActive = CSOState.activeFolderId === CR_FOLDER_ID || CSOState.activeModuleId === CR_MODULE_ID;
+          var crExpanded = query ? true : CSOState.expandedFolders.has(CR_FOLDER_ID);
           var crWrap = el('div', 'cso-nav-folder cso-nav-careers-studio' + (crActive ? ' is-current' : ''));
           var crBtn = el('button', 'cso-nav-folder-btn' + (crActive ? ' is-active' : ''));
           crBtn.type = 'button';
           crBtn.id = 'navTabCareers';
-          crBtn.title = 'Careers Publishing House — bilingual roadmaps & taxonomy (Alt+8)';
+          crBtn.setAttribute('aria-expanded', String(crExpanded));
+          crBtn.title = 'Careers Publishing House — bilingual roadmaps & 3-layer taxonomy (Alt+8)';
           var crLeft = el('span', 'cso-nav-folder-left');
           crLeft.appendChild(el('span', 'cso-nav-dot'));
           crLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83E\uDDED Careers'));
           var crRight = el('span', 'cso-nav-folder-right');
           crRight.appendChild(el('span', 'cso-nav-count cso-tabular', CSOState.careersCount === null ? '\u2026' : String(CSOState.careersCount)));
+          crRight.appendChild(el('span', 'cso-nav-chevron' + (crExpanded ? ' is-open' : ''), '▾'));
           crBtn.appendChild(crLeft);
           crBtn.appendChild(crRight);
           crBtn.addEventListener('click', function () {
-            selectModule(CR_FOLDER_ID, CR_MODULE_ID);
+            if (CSOState.expandedFolders.has(CR_FOLDER_ID)) CSOState.expandedFolders.delete(CR_FOLDER_ID);
+            else CSOState.expandedFolders.add(CR_FOLDER_ID);
+            persistOpenGroups();
+            if (!crActive) {
+              openCareersPublishingStudio('list');
+            } else {
+              renderNavigationTree();
+            }
             if (window.innerWidth <= 900) closeMobileDrawer();
           });
+
+          var crModList = el('div', 'cso-nav-modules' + (crExpanded ? '' : ' is-collapsed'));
+          crModList.id = 'careersSidebarSubnav';
+          filteredCrSubs.forEach(function (sub) {
+            var isSubActive = crActive && CSOState.activeCareersSubTab === sub.tab;
+            var subBtn = el('button', 'cso-nav-mod-btn' + (isSubActive ? ' is-active' : ''));
+            subBtn.type = 'button';
+            subBtn.setAttribute('data-careers-tab', sub.tab);
+            subBtn.appendChild(el('span', 'cso-nav-mod-num', sub.num));
+            subBtn.appendChild(el('span', 'cso-nav-mod-title', sub.title));
+            subBtn.appendChild(el('span', 'cso-nav-mod-tag is-live', sub.tag));
+            subBtn.addEventListener('click', function () {
+              openCareersPublishingStudio(sub.tab);
+              if (window.innerWidth <= 900) closeMobileDrawer();
+            });
+            crModList.appendChild(subBtn);
+          });
+
           crWrap.appendChild(crBtn);
+          crWrap.appendChild(crModList);
           dom.accordionNav.appendChild(crWrap);
         }
       }
@@ -535,8 +575,12 @@
   }
 
   function openCareersPublishingStudio(initialTab) {
+    var tabKey = initialTab || 'list';
     CSOState.activeFolderId = CR_FOLDER_ID;
     CSOState.activeModuleId = CR_MODULE_ID;
+    CSOState.activeCareersSubTab = tabKey;
+    CSOState.expandedFolders.add(CR_FOLDER_ID);
+    persistOpenGroups();
     try { localStorage.setItem('cso_active_module_id', CR_MODULE_ID); } catch (_e) {}
     if (window.location.hash !== '#careers-studio' && window.history && window.history.replaceState) {
       window.history.replaceState(null, '', '#careers-studio');
@@ -544,12 +588,12 @@
     if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Careers';
     if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Careers Publishing House';
     if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Careers Publishing House';
-    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live D1 Sync';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '3-Layer D1 · Live Sync';
     renderNavigationTree();
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);
     if (window.CSOCareersPublishingStudio) {
-      window.CSOCareersPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, initialTab || 'list');
+      window.CSOCareersPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, tabKey);
     } else {
       var card = el('div', 'cso-empty-state');
       card.appendChild(el('h2', '', 'Careers Publishing House unavailable'));
@@ -1128,6 +1172,9 @@
     },
     setCareersCount: function (n) {
       if (CSOState.careersCount !== n) { CSOState.careersCount = n; renderNavigationTree(); }
+    },
+    setCareersSubTab: function (tab) {
+      if (tab && CSOState.activeCareersSubTab !== tab) { CSOState.activeCareersSubTab = tab; renderNavigationTree(); }
     },
     openCandidateHubTab: function (tab) { openCandidateHubStudio(tab); },
     openJobsPublishingTab: function (tab) { openJobsPublishingStudio(tab); },

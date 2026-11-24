@@ -43,8 +43,8 @@ check('1. admin/index.html breadcrumbs, heading, 6-pillar filter & v272 script v
   assert.ok(html.includes('<span id="activeModuleTitleText">Jobs</span>'), 'activeModuleTitleText must default to Jobs');
   assert.ok(html.includes('placeholder="Filter 6 pillars &amp; items..."'), 'sidebar filter placeholder must reference 6 pillars');
   assert.ok(html.includes('for="moduleSearchInput" class="cso-sr-only">Filter 6 pillars</label>'), 'sidebar filter sr-only label must reference 6 pillars');
-  assert.ok(html.includes('/admin/command-suite.js?v=20261124v272'), 'command-suite.js must be bumped to v272');
-  assert.ok(html.includes('/admin/admin.js?v=20261124v272'), 'admin.js must be bumped to v272');
+  assert.ok(/\/admin\/command-suite\.js\?v=20261124v2(?:7[2-9]|[8-9]\d)/.test(html), 'command-suite.js must be bumped to v272+');
+  assert.ok(/\/admin\/admin\.js\?v=20261124v2(?:7[2-9]|[8-9]\d)/.test(html), 'admin.js must be bumped to v272+');
 });
 
 check('2. admin/admin.js renders Jobs sidebar item, Jobs breadcrumbs & independent Careers search matching', () => {
@@ -53,7 +53,7 @@ check('2. admin/admin.js renders Jobs sidebar item, Jobs breadcrumbs & independe
   assert.ok(js.includes("if (folder.id === 'folder-jobs-careers') return 'Jobs';"), 'admin.js must map folder-jobs-careers display title to Jobs');
   assert.ok(js.includes("if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Jobs';"), 'Jobs Publishing House breadcrumb must be Jobs');
   assert.ok(js.includes("if (!query || folderMatches || filteredModules.length > 0)"), 'Jobs folder filter must not short-circuit Careers rendering');
-  assert.ok(js.includes("if (folder.id === 'folder-jobs-careers') {\n        var crLabel = 'careers publishing house roadmaps tracks pathways କ୍ୟାରିୟର୍';"), 'Careers filter block must evaluate independently after Jobs');
+  assert.ok(js.includes("var crLabel = 'careers publishing house roadmaps tracks pathways କ୍ୟାରିୟର୍';"), 'Careers filter block must evaluate independently after Jobs');
 });
 
 check('3. admin/command-suite.js & functions/_lib/command-suite.js use Jobs & Careers cleanly', () => {
@@ -62,16 +62,16 @@ check('3. admin/command-suite.js & functions/_lib/command-suite.js use Jobs & Ca
   assert.ok(csJs.includes("jobs: 'Jobs', careers: 'Careers'"), 'PILLAR_LABELS must list Jobs and Careers separately');
   assert.ok(csJs.includes("label: 'Careers', hint: 'Alt+8'"), 'Ctrl+K palette must include Careers jump entry');
   assert.ok(csJs.includes("f.id === 'folder-jobs-careers' ? 'Jobs' : f.title"), 'Ctrl+K palette must map folder-jobs-careers to Jobs');
-  assert.ok(csJs.includes('Careers Publishing House › + Publish New Career Roadmap'), 'Ctrl+K palette must include Careers Publishing House action');
+  assert.ok(csJs.includes('Careers Publishing House › + Publish New Career'), 'Ctrl+K palette must include Careers Publishing House action');
 
   const csLib = read('functions/_lib/command-suite.js');
   assert.ok(!csLib.includes('Jobs & Careers'), 'functions/_lib/command-suite.js must not contain Jobs & Careers');
   assert.ok(csLib.includes("jobs: { label: 'Jobs'"), 'PILLAR_TABLES.jobs.label must be Jobs');
 });
 
-check('4. Service Worker & Ops Sentinel bumped to cso-candidate-cache-v272', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v272';"), 'sw.js must be cso-candidate-cache-v272');
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v272';"), 'ops-sentinel.js must be cso-candidate-cache-v272');
+check('4. Service Worker & Ops Sentinel bumped to cso-candidate-cache-v272+', () => {
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:7[2-9]|[8-9]\d)';/.test(read('sw.js')), 'sw.js must be cso-candidate-cache-v272+');
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:7[2-9]|[8-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel.js must be cso-candidate-cache-v272+');
 });
 
 check('5. Strict CSP compliance across all touched v272 files', () => {

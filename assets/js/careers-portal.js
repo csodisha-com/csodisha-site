@@ -67,7 +67,7 @@
       emptyTitle: 'No career roadmaps match this filter yet',
       emptySub: 'Career guides authored and published in Admin Studio appear here instantly. Meanwhile, explore active Odisha & Central government recruitments.',
       adminCta: 'Author in Admin Studio ↗',
-      previewNote: 'ADMIN DRAFT PREVIEW — Only visible to authenticated staff.',
+      previewNote: 'UNPUBLISHED DRAFT PREVIEW — Temporary review mode (not visible to public visitors).',
       exitPreview: 'Exit Preview',
       close: 'Close'
     },
@@ -98,7 +98,7 @@
       emptyTitle: 'ଏହି ଫିଲ୍ଟର୍ ପାଇଁ କୌଣସି କ୍ୟାରିୟର୍ ଗାଇଡ୍ ମିଳିଲା ନାହିଁ',
       emptySub: 'Admin Studio ରେ ପ୍ରକାଶିତ କ୍ୟାରିୟର୍ ମାର୍ଗଦର୍ଶିକା ଏଠାରେ ତୁରନ୍ତ ଦେଖାଯିବ। ବର୍ତ୍ତମାନ ତାଜା ଚାକିରି ବିଜ୍ଞପ୍ତି ଦେଖନ୍ତୁ।',
       adminCta: 'Admin Studio ରେ ଲେଖନ୍ତୁ ↗',
-      previewNote: 'ଆଡମିନ୍ ଡ୍ରାଫ୍ଟ ପ୍ରିଭ୍ୟୁ — କେବଳ ଅଧିକୃତ କର୍ମଚାରୀଙ୍କ ପାଇଁ ଦୃଶ୍ୟମାନ।',
+      previewNote: 'ଅପ୍ରକାଶିତ ଡ୍ରାଫ୍ଟ ପ୍ରିଭ୍ୟୁ — କେବଳ ସମୀକ୍ଷା ପାଇଁ (ସାଧାରଣ ପାଠକଙ୍କୁ ଦେଖାଯିବ ନାହିଁ)।',
       exitPreview: 'ପ୍ରିଭ୍ୟୁ ବନ୍ଦ କରନ୍ତୁ',
       close: 'ବନ୍ଦ କରନ୍ତୁ'
     }
@@ -114,15 +114,18 @@
       return 'en';
     })(),
     track: urlParams.get('track') || '',
+    subtrack: urlParams.get('subtrack') || '',
     region: urlParams.get('region') || '',
     stage: urlParams.get('stage') || '',
     q: urlParams.get('q') || '',
     slug: urlParams.get('slug') || '',
     previewId: urlParams.get('preview_id') || '',
+    previewToken: urlParams.get('preview_token') || '',
     previewMode: false,
+    previewExpiresAt: '',
     previewError: '',
-    stats: { total_published: 0, featured_count: 0, tracks_count: 6, regions_count: 3, track_counts: {} },
-    taxonomy: { tracks: [], regions: [], stages: [] },
+    stats: { total_published: 0, featured_count: 0, tracks_count: 6, regions_count: 3, track_counts: {}, subtrack_counts: {} },
+    taxonomy: { tracks: [], subtracks: [], role_streams: [], regions: [], stages: [] },
     items: [],
     loading: false,
     activeItem: null
@@ -189,8 +192,16 @@
       }
       if (/^#{1,3}\s+/.test(lines[0])) {
         container.appendChild(el('h3', '', lines[0].replace(/^#{1,3}\s+/, '')));
-        var rest = lines.slice(1).join(' ');
-        if (rest) container.appendChild(el('p', '', rest));
+        var restLines = lines.slice(1);
+        if (restLines.length && restLines.every(function (l) { return /^[-*•]\s+/.test(l); })) {
+          var ul2 = document.createElement('ul');
+          restLines.forEach(function (l) {
+            ul2.appendChild(el('li', '', l.replace(/^[-*•]\s+/, '')));
+          });
+          container.appendChild(ul2);
+        } else if (restLines.length) {
+          container.appendChild(el('p', '', restLines.join(' ')));
+        }
         return;
       }
       container.appendChild(el('p', '', lines.join(' ')));
@@ -251,10 +262,16 @@
 
     refs.headBadges.replaceChildren();
     refs.headBadges.appendChild(el('span', 'crp-badge', findTaxLabel(state.taxonomy.tracks, item.track_slug)));
+    if (item.subtrack_slug) {
+      refs.headBadges.appendChild(el('span', 'crp-badge', findTaxLabel(state.taxonomy.subtracks, item.subtrack_slug)));
+    }
+    if (item.role_stream_slug) {
+      refs.headBadges.appendChild(el('span', 'crp-badge', findTaxLabel(state.taxonomy.role_streams, item.role_stream_slug)));
+    }
     refs.headBadges.appendChild(el('span', 'crp-badge', findTaxLabel(state.taxonomy.regions, item.region_scope)));
     refs.headBadges.appendChild(el('span', 'crp-badge', findTaxLabel(state.taxonomy.stages, item.career_stage)));
     if (item.status && item.status !== 'published') {
-      refs.headBadges.appendChild(el('span', 'crp-preview-badge', item.status.toUpperCase()));
+      refs.headBadges.appendChild(el('span', 'crp-preview-badge', 'UNPUBLISHED ' + item.status.toUpperCase()));
     }
 
     refs.title.textContent = pick(item.title_en, item.title_or);
@@ -364,12 +381,49 @@
     if (!state.previewMode && !state.previewError) return null;
     var t = c();
     var bar = el('div', 'crp-preview-banner');
+    bar.setAttribute('role', 'status');
     var left = el('div');
-    var badge = el('span', 'crp-preview-badge', state.previewError ? 'PREVIEW RESTRICTED' : 'DRAFT PREVIEW');
-    left.append(badge, document.createTextNode(' ' + (state.previewError || t.previewNote)));
+    var badge = el('span', 'crp-preview-badge', state.previewError ? 'PREVIEW RESTRICTED' : 'UNPUBLISHED DRAFT PREVIEW');
+    var expText = '';
+    if (!state.previewError && state.previewExpiresAt) {
+      try {
+        expText = ' · Link expires ' + new Date(state.previewExpiresAt).toLocaleString();
+      } catch (_e) {}
+    }
+    left.append(badge, document.createTextNode(' ' + (state.previewError || (t.previewNote + expText))));
     var exitA = el('a', 'crp-btn', t.exitPreview);
     exitA.href = '/careers/';
     bar.append(left, exitA);
+    return bar;
+  }
+
+  function renderSubtrackPills() {
+    if (!state.track) return null;
+    var trackObj = (state.taxonomy.tracks || []).find(function (tr) { return tr.slug === state.track; });
+    if (!trackObj) return null;
+    var subs = (state.taxonomy.subtracks || []).filter(function (s) { return s.parent_id === trackObj.id; });
+    if (!subs.length) return null;
+
+    var bar = el('div', 'crp-subtracks-bar');
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', 'Sub-Tracks');
+    var allBtn = el('button', 'crp-subtrack-pill' + (!state.subtrack ? ' is-active' : ''), state.lang === 'or' ? 'ସମସ୍ତ ଉପ-ବିଭାଗ' : 'All Sub-Tracks');
+    allBtn.type = 'button';
+    allBtn.addEventListener('click', function () {
+      state.subtrack = '';
+      fetchFilteredList();
+    });
+    bar.appendChild(allBtn);
+
+    subs.forEach(function (sb) {
+      var b = el('button', 'crp-subtrack-pill' + (state.subtrack === sb.slug ? ' is-active' : ''), pick(sb.label_en, sb.label_or));
+      b.type = 'button';
+      b.addEventListener('click', function () {
+        state.subtrack = state.subtrack === sb.slug ? '' : sb.slug;
+        fetchFilteredList();
+      });
+      bar.appendChild(b);
+    });
     return bar;
   }
 
@@ -399,6 +453,7 @@
 
       btn.addEventListener('click', function () {
         state.track = state.track === tr.slug ? '' : tr.slug;
+        state.subtrack = '';
         fetchFilteredList();
       });
       grid.appendChild(btn);
@@ -426,6 +481,7 @@
     sTrack.value = state.track;
     sTrack.addEventListener('change', function () {
       state.track = sTrack.value;
+      state.subtrack = '';
       fetchFilteredList();
     });
     fTrack.append(lTrack, sTrack);
@@ -490,11 +546,12 @@
     meta.id = 'crp-results-meta';
 
     var actions = el('div', 'crp-filter-actions');
-    if (state.track || state.region || state.stage || state.q) {
+    if (state.track || state.subtrack || state.region || state.stage || state.q) {
       var resetBtn = el('button', 'crp-btn', t.resetBtn);
       resetBtn.type = 'button';
       resetBtn.addEventListener('click', function () {
         state.track = '';
+        state.subtrack = '';
         state.region = '';
         state.stage = '';
         state.q = '';
@@ -522,11 +579,12 @@
       var jobsBtn = el('a', 'crp-btn crp-btn-primary', t.jobsLink);
       jobsBtn.href = '/jobs/';
       actRow.appendChild(jobsBtn);
-      if (state.track || state.region || state.stage || state.q) {
+      if (state.track || state.subtrack || state.region || state.stage || state.q) {
         var clrBtn = el('button', 'crp-btn', t.resetBtn);
         clrBtn.type = 'button';
         clrBtn.addEventListener('click', function () {
           state.track = '';
+          state.subtrack = '';
           state.region = '';
           state.stage = '';
           state.q = '';
@@ -551,10 +609,16 @@
 
       var badges = el('div', 'crp-card-badges');
       badges.appendChild(el('span', 'crp-badge', findTaxLabel(state.taxonomy.tracks, item.track_slug)));
+      if (item.subtrack_slug) {
+        badges.appendChild(el('span', 'crp-badge crp-badge-subtle', findTaxLabel(state.taxonomy.subtracks, item.subtrack_slug)));
+      }
+      if (item.role_stream_slug) {
+        badges.appendChild(el('span', 'crp-badge crp-badge-subtle', findTaxLabel(state.taxonomy.role_streams, item.role_stream_slug)));
+      }
       badges.appendChild(el('span', 'crp-badge crp-badge-subtle', findTaxLabel(state.taxonomy.regions, item.region_scope)));
       badges.appendChild(el('span', 'crp-badge crp-badge-subtle', findTaxLabel(state.taxonomy.stages, item.career_stage)));
       if (item.featured) badges.appendChild(el('span', 'crp-badge crp-badge-featured', '★ Featured'));
-      if (item.status && item.status !== 'published') badges.appendChild(el('span', 'crp-preview-badge', item.status.toUpperCase()));
+      if (item.status && item.status !== 'published') badges.appendChild(el('span', 'crp-preview-badge', 'UNPUBLISHED ' + item.status.toUpperCase()));
 
       var title = el('h3', 'crp-card-title', pick(item.title_en, item.title_or));
       var summaryText = pick(item.summary_en, item.summary_or);
@@ -595,6 +659,8 @@
     var prevBanner = renderPreviewBanner();
     if (prevBanner) wrap.appendChild(prevBanner);
     wrap.appendChild(renderDomainCards());
+    var subBar = renderSubtrackPills();
+    if (subBar) wrap.appendChild(subBar);
     wrap.appendChild(renderFilterPanel());
     wrap.appendChild(renderCardsArea());
 
@@ -618,6 +684,7 @@
 
     var qs = new URLSearchParams();
     if (state.track) qs.set('track', state.track);
+    if (state.subtrack) qs.set('subtrack', state.subtrack);
     if (state.region) qs.set('region', state.region);
     if (state.stage) qs.set('stage', state.stage);
     if (state.q) qs.set('q', state.q);
@@ -650,17 +717,22 @@
       .catch(function () { return null; });
 
     var listReq = null;
-    if (state.previewId) {
-      listReq = fetch('/api/public/careers/list?preview_id=' + encodeURIComponent(state.previewId), { credentials: 'same-origin', cache: 'no-store' })
+    if (state.previewId || state.previewToken) {
+      var pqs = new URLSearchParams();
+      if (state.previewId) pqs.set('preview_id', state.previewId);
+      if (state.previewToken) pqs.set('preview_token', state.previewToken);
+      if (state.slug) pqs.set('slug', state.slug);
+      listReq = fetch('/api/public/careers/list?' + pqs.toString(), { credentials: 'same-origin', cache: 'no-store' })
         .then(function (r) {
           return r.json().catch(function () { return null; }).then(function (d) {
             return { status: r.status, ok: r.ok, data: d };
           });
         })
         .catch(function () { return { status: 500, ok: false, data: null }; });
-    } else if (state.track || state.region || state.stage || state.q || state.slug) {
+    } else if (state.track || state.subtrack || state.region || state.stage || state.q || state.slug) {
       var qs = new URLSearchParams();
       if (state.track) qs.set('track', state.track);
+      if (state.subtrack) qs.set('subtrack', state.subtrack);
       if (state.region) qs.set('region', state.region);
       if (state.stage) qs.set('stage', state.stage);
       if (state.q) qs.set('q', state.q);
@@ -682,15 +754,16 @@
         state.stats = bootData.stats;
       }
 
-      if (state.previewId && listRes) {
+      if ((state.previewId || state.previewToken) && listRes) {
         if (listRes.ok && listRes.data && listRes.data.preview_item) {
           state.previewMode = true;
+          state.previewExpiresAt = listRes.data.preview_expires_at || '';
           state.items = [listRes.data.preview_item];
           renderAll();
           openDrawer(listRes.data.preview_item);
           return;
         }
-        state.previewError = (listRes.data && listRes.data.error) || 'Please sign in to Admin Studio to preview unpublished career roadmaps.';
+        state.previewError = (listRes.data && listRes.data.error) || 'Temporary preview link is invalid or expired. Sign in to Admin Studio to generate a fresh link.';
         state.items = (bootData && Array.isArray(bootData.latest)) ? bootData.latest : [];
         renderAll();
         return;
