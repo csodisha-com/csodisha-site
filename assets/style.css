@@ -5693,24 +5693,31 @@ a[href*="register"]:hover {
    Main Navigation Menu (Odisha Emerald Brand Bar)
    ========================================================================== */
 
-nav,
+/* Secondary Pillar Navigation Strip (v263 — Theme-Aware Civic Surfaces) */
 .site-header__nav,
 .main-nav,
-#cso-main-navbar {
-  background: linear-gradient(90deg, #034827 0%, #056637 50%, #02391F 100%) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.25) !important;
+#cso-main-navbar,
+.cso-pillar-nav,
+.cso-subnav,
+.subnav {
+  background: #eef3f7 !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+  border-bottom: 1px solid #d5dfe7 !important;
   padding: 0 clamp(8px, 2vw, 24px) !important;
   border-radius: 0 0 16px 16px !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease !important;
 }
 
 /* Style the Navigation Links */
 .main-nav a,
 .site-header__nav a,
-nav a,
+#cso-main-navbar a,
+.cso-pillar-nav a,
+.cso-subnav a,
+.subnav a,
 .cso-nav-items > a,
 .cso-nav-parent > a {
-  color: #FFFFFF !important;
+  color: #1e2f3d !important;
   font-weight: 600 !important;
   font-size: clamp(0.82rem, 0.95vw, 0.9rem) !important;
   padding: 10px 14px !important;
@@ -5724,24 +5731,34 @@ nav a,
 
 .main-nav a:hover,
 .site-header__nav a:hover,
-nav a:hover,
+#cso-main-navbar a:hover,
+.cso-pillar-nav a:hover,
+.cso-subnav a:hover,
+.subnav a:hover,
 .cso-nav-items > a:hover,
 .cso-nav-parent:hover,
 .cso-nav-parent > a:hover,
 .cso-nav-items .ni.cso-open > .cso-nav-parent {
-  background: rgba(255, 255, 255, 0.14) !important;
-  color: #FFE5B4 !important; /* Soft warm gold hover */
+  background: rgba(15, 76, 92, 0.09) !important;
+  color: #0f4c5c !important;
 }
 
 .main-nav a.active,
 .site-header__nav a.active,
 .main-nav a.on,
 .site-header__nav a.on,
-nav a.on,
+.main-nav a[aria-current="page"],
+.site-header__nav a[aria-current="page"],
+#cso-main-navbar a.active,
+#cso-main-navbar a.on,
+#cso-main-navbar a[aria-current="page"],
+.cso-pillar-nav a.active,
+.cso-subnav a.active,
+.subnav a.active,
 .cso-nav-items a.on {
-  background: rgba(0, 0, 0, 0.22) !important;
-  color: #FFA834 !important;
-  box-shadow: inset 0 -2px 0 #FFA834 !important;
+  background: #0f4c5c !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
   border-bottom: none !important;
 }
 
@@ -7244,14 +7261,14 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   }
 }
 
-/* Single Saved button inside the second green navigation bar */
+/* Single Saved button inside the secondary pillar navigation strip (v263) */
 .cso-nav-saved-pill {
   display: inline-flex !important;
   align-items: center !important;
   gap: 5px !important;
-  background: rgba(255, 255, 255, 0.14) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+  color: #1e2f3d !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
   border-radius: 8px !important;
   padding: 5px 11px !important;
   font-size: 12.5px !important;
@@ -7261,12 +7278,12 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   flex-shrink: 0 !important;
 }
 .cso-nav-saved-pill:hover {
-  background: rgba(255, 255, 255, 0.24) !important;
-  border-color: rgba(255, 255, 255, 0.45) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(0, 0, 0, 0.22) !important;
 }
 .cso-nav-saved-pill .cso-saved-badge {
-  background: #ffffff !important;
-  color: #0f4c3a !important;
+  background: #0f4c5c !important;
+  color: #ffffff !important;
 }
 
 @media (min-width: 769px) {
@@ -7691,13 +7708,18 @@ body {
 }
 
 .main-nav a:hover,
+.site-header__nav a:hover {
+  background: rgba(15, 76, 92, 0.09) !important;
+  color: #0f4c5c !important;
+}
+
 .main-nav a.active,
 .main-nav a[aria-current="page"],
-.site-header__nav a:hover,
-.site-header__nav a.active {
-  background: var(--cso-highlight-bg) !important;
-  color: var(--cso-highlight-fg) !important;
-  box-shadow: inset 0 -2px 0 var(--cso-accent);
+.site-header__nav a.active,
+.site-header__nav a[aria-current="page"] {
+  background: #0f4c5c !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
 }
 
 .hero,

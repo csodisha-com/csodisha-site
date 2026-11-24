@@ -100,14 +100,14 @@ check('3. All 8 portal HTML pages link portal-shell.css?v=20261124v262 & *-porta
   ];
   for (const [file, cssName] of pages) {
     const html = read(file);
-    assert.ok(html.includes('/assets/css/portal-shell.css?v=20261124v262'), `${file} missing portal-shell.css?v=20261124v262`);
+    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v26[2-9]/.test(html), `${file} missing portal-shell.css?v=20261124v262+`);
     assert.ok(html.includes(`/assets/css/${cssName}?v=20261124v262`), `${file} missing ${cssName}?v=20261124v262`);
   }
 });
 
-check('4. sw.js & ops-sentinel.js bumped to cso-candidate-cache-v262', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v262';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v262';"));
+check('4. sw.js & ops-sentinel.js bumped to cso-candidate-cache-v262+', () => {
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v26[2-9]';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v26[2-9]';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 check('5. Strict CSP compliance across all 8 portal HTML files', () => {

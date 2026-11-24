@@ -110,6 +110,285 @@ body.cso-portal-page {
   transition: background-color 0.22s ease, color 0.22s ease;
 }
 
+/* ======================================================================
+   0b. SECONDARY PILLAR NAVIGATION STRIP (v263 — 4-THEME HARMONIZATION)
+   ====================================================================== */
+/* Theme 1: System (Light) */
+.site-header__nav,
+.main-nav,
+#cso-main-navbar,
+.cso-pillar-nav,
+.cso-subnav,
+.subnav {
+  background: #eef3f7 !important;
+  border-bottom: 1px solid #d5dfe7 !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+}
+
+.site-header__nav a,
+.main-nav a,
+#cso-main-navbar a,
+.cso-pillar-nav a,
+.cso-subnav a,
+.subnav a {
+  color: #1e2f3d !important;
+}
+
+.site-header__nav a:hover,
+.main-nav a:hover,
+#cso-main-navbar a:hover,
+.cso-pillar-nav a:hover,
+.cso-subnav a:hover,
+.subnav a:hover {
+  background: rgba(15, 76, 92, 0.09) !important;
+  color: #0f4c5c !important;
+}
+
+.site-header__nav a.active,
+.site-header__nav a.on,
+.site-header__nav a[aria-current="page"],
+.main-nav a.active,
+.main-nav a.on,
+.main-nav a[aria-current="page"],
+#cso-main-navbar a.active,
+#cso-main-navbar a.on,
+#cso-main-navbar a[aria-current="page"],
+.cso-pillar-nav a.active,
+.cso-subnav a.active,
+.subnav a.active {
+  background: #0f4c5c !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.cso-nav-saved-pill {
+  background: rgba(255, 255, 255, 0.75) !important;
+  color: #1e2f3d !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+.cso-nav-saved-pill .cso-saved-badge {
+  background: #0f4c5c !important;
+  color: #ffffff !important;
+}
+
+/* Theme 2: Dark Night */
+:root[data-cso-theme="dark"] .site-header__nav,
+:root[data-cso-theme="dark"] .main-nav,
+:root[data-cso-theme="dark"] #cso-main-navbar,
+:root[data-cso-theme="dark"] .cso-pillar-nav,
+:root[data-cso-theme="dark"] .cso-subnav,
+:root[data-cso-theme="dark"] .subnav,
+:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .site-header__nav,
+:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .main-nav,
+:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] #cso-main-navbar,
+:root[data-cso-resolved-mode="dark"] .site-header__nav,
+:root[data-cso-resolved-mode="dark"] .main-nav,
+:root[data-cso-resolved-mode="dark"] #cso-main-navbar,
+:root[data-theme="dark"] .site-header__nav,
+:root[data-theme="dark"] .main-nav,
+:root[data-theme="dark"] #cso-main-navbar,
+:root[data-theme="dark"] .cso-pillar-nav,
+:root[data-theme="dark"] .cso-subnav,
+:root[data-theme="dark"] .subnav {
+  background: #131e29 !important;
+  border-bottom: 1px solid #263647 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+}
+
+:root[data-cso-theme="dark"] #cso-main-navbar a,
+:root[data-cso-theme="dark"] .main-nav a,
+:root[data-cso-theme="dark"] .site-header__nav a,
+:root[data-cso-resolved-mode="dark"] #cso-main-navbar a,
+:root[data-cso-resolved-mode="dark"] .main-nav a,
+:root[data-cso-resolved-mode="dark"] .site-header__nav a,
+:root[data-theme="dark"] #cso-main-navbar a,
+:root[data-theme="dark"] .main-nav a,
+:root[data-theme="dark"] .site-header__nav a,
+:root[data-theme="dark"] .cso-pillar-nav a,
+:root[data-theme="dark"] .cso-subnav a,
+:root[data-theme="dark"] .subnav a {
+  color: #d6e0ea !important;
+}
+
+:root[data-cso-theme="dark"] #cso-main-navbar a:hover,
+:root[data-cso-theme="dark"] .main-nav a:hover,
+:root[data-cso-resolved-mode="dark"] #cso-main-navbar a:hover,
+:root[data-cso-resolved-mode="dark"] .main-nav a:hover,
+:root[data-theme="dark"] #cso-main-navbar a:hover,
+:root[data-theme="dark"] .main-nav a:hover {
+  background: rgba(26, 91, 114, 0.25) !important;
+  color: #ffffff !important;
+}
+
+:root[data-cso-theme="dark"] #cso-main-navbar a.active,
+:root[data-cso-theme="dark"] #cso-main-navbar a.on,
+:root[data-cso-theme="dark"] #cso-main-navbar a[aria-current="page"],
+:root[data-cso-theme="dark"] .main-nav a.active,
+:root[data-cso-theme="dark"] .main-nav a.on,
+:root[data-cso-theme="dark"] .main-nav a[aria-current="page"],
+:root[data-cso-resolved-mode="dark"] #cso-main-navbar a.active,
+:root[data-cso-resolved-mode="dark"] #cso-main-navbar a.on,
+:root[data-cso-resolved-mode="dark"] #cso-main-navbar a[aria-current="page"],
+:root[data-cso-resolved-mode="dark"] .main-nav a.active,
+:root[data-cso-resolved-mode="dark"] .main-nav a.on,
+:root[data-cso-resolved-mode="dark"] .main-nav a[aria-current="page"],
+:root[data-theme="dark"] #cso-main-navbar a.active,
+:root[data-theme="dark"] .main-nav a.active,
+:root[data-theme="dark"] .cso-pillar-nav a.active,
+:root[data-theme="dark"] .cso-subnav a.active,
+:root[data-theme="dark"] .subnav a.active {
+  background: #1a5b72 !important;
+  color: #ffffff !important;
+}
+
+:root[data-cso-theme="dark"] .cso-nav-saved-pill,
+:root[data-cso-resolved-mode="dark"] .cso-nav-saved-pill,
+:root[data-theme="dark"] .cso-nav-saved-pill {
+  background: #1a2734 !important;
+  color: #d6e0ea !important;
+  border: 1px solid #2e4154 !important;
+}
+
+:root[data-cso-theme="dark"] .cso-nav-saved-pill .cso-saved-badge,
+:root[data-cso-resolved-mode="dark"] .cso-nav-saved-pill .cso-saved-badge,
+:root[data-theme="dark"] .cso-nav-saved-pill .cso-saved-badge {
+  background: #1a5b72 !important;
+  color: #ffffff !important;
+}
+
+/* Theme 3: Reading Mode */
+:root[data-cso-theme="reading"] .site-header__nav,
+:root[data-cso-theme="reading"] .main-nav,
+:root[data-cso-theme="reading"] #cso-main-navbar,
+:root[data-cso-theme="reading"] .cso-pillar-nav,
+:root[data-cso-theme="reading"] .cso-subnav,
+:root[data-cso-theme="reading"] .subnav,
+:root[data-theme="reading"] .site-header__nav,
+:root[data-theme="reading"] .main-nav,
+:root[data-theme="reading"] #cso-main-navbar,
+:root[data-theme="reading"] .cso-pillar-nav,
+:root[data-theme="reading"] .cso-subnav,
+:root[data-theme="reading"] .subnav {
+  background: #efe6d5 !important;
+  border-bottom: 1px solid #d6c7ae !important;
+  box-shadow: 0 2px 8px rgba(61, 42, 24, 0.06) !important;
+}
+
+:root[data-cso-theme="reading"] #cso-main-navbar a,
+:root[data-cso-theme="reading"] .main-nav a,
+:root[data-cso-theme="reading"] .site-header__nav a,
+:root[data-theme="reading"] #cso-main-navbar a,
+:root[data-theme="reading"] .main-nav a,
+:root[data-theme="reading"] .site-header__nav a,
+:root[data-theme="reading"] .cso-pillar-nav a,
+:root[data-theme="reading"] .cso-subnav a,
+:root[data-theme="reading"] .subnav a {
+  color: #3b2a1a !important;
+}
+
+:root[data-cso-theme="reading"] #cso-main-navbar a:hover,
+:root[data-cso-theme="reading"] .main-nav a:hover,
+:root[data-theme="reading"] #cso-main-navbar a:hover,
+:root[data-theme="reading"] .main-nav a:hover {
+  background: rgba(89, 62, 37, 0.1) !important;
+  color: #3b2a1a !important;
+}
+
+:root[data-cso-theme="reading"] #cso-main-navbar a.active,
+:root[data-cso-theme="reading"] #cso-main-navbar a.on,
+:root[data-cso-theme="reading"] #cso-main-navbar a[aria-current="page"],
+:root[data-cso-theme="reading"] .main-nav a.active,
+:root[data-cso-theme="reading"] .main-nav a.on,
+:root[data-cso-theme="reading"] .main-nav a[aria-current="page"],
+:root[data-theme="reading"] #cso-main-navbar a.active,
+:root[data-theme="reading"] .main-nav a.active,
+:root[data-theme="reading"] .cso-pillar-nav a.active,
+:root[data-theme="reading"] .cso-subnav a.active,
+:root[data-theme="reading"] .subnav a.active {
+  background: #593e25 !important;
+  color: #fffbf4 !important;
+}
+
+:root[data-cso-theme="reading"] .cso-nav-saved-pill,
+:root[data-theme="reading"] .cso-nav-saved-pill {
+  background: rgba(255, 255, 255, 0.75) !important;
+  color: #3b2a1a !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+:root[data-cso-theme="reading"] .cso-nav-saved-pill .cso-saved-badge,
+:root[data-theme="reading"] .cso-nav-saved-pill .cso-saved-badge {
+  background: #593e25 !important;
+  color: #fffbf4 !important;
+}
+
+/* Theme 4: Odisha & Bharat */
+:root[data-cso-theme="utkal-bharat"] .site-header__nav,
+:root[data-cso-theme="utkal-bharat"] .main-nav,
+:root[data-cso-theme="utkal-bharat"] #cso-main-navbar,
+:root[data-cso-theme="utkal-bharat"] .cso-pillar-nav,
+:root[data-cso-theme="utkal-bharat"] .cso-subnav,
+:root[data-cso-theme="utkal-bharat"] .subnav,
+:root[data-theme="utkal-bharat"] .site-header__nav,
+:root[data-theme="utkal-bharat"] .main-nav,
+:root[data-theme="utkal-bharat"] #cso-main-navbar,
+:root[data-theme="utkal-bharat"] .cso-pillar-nav,
+:root[data-theme="utkal-bharat"] .cso-subnav,
+:root[data-theme="utkal-bharat"] .subnav {
+  background: #f4ece0 !important;
+  border-bottom: 2px solid #c99326 !important;
+  box-shadow: 0 2px 8px rgba(120, 35, 29, 0.07) !important;
+}
+
+:root[data-cso-theme="utkal-bharat"] #cso-main-navbar a,
+:root[data-cso-theme="utkal-bharat"] .main-nav a,
+:root[data-cso-theme="utkal-bharat"] .site-header__nav a,
+:root[data-theme="utkal-bharat"] #cso-main-navbar a,
+:root[data-theme="utkal-bharat"] .main-nav a,
+:root[data-theme="utkal-bharat"] .site-header__nav a,
+:root[data-theme="utkal-bharat"] .cso-pillar-nav a,
+:root[data-theme="utkal-bharat"] .cso-subnav a,
+:root[data-theme="utkal-bharat"] .subnav a {
+  color: #2a1b17 !important;
+}
+
+:root[data-cso-theme="utkal-bharat"] #cso-main-navbar a:hover,
+:root[data-cso-theme="utkal-bharat"] .main-nav a:hover,
+:root[data-theme="utkal-bharat"] #cso-main-navbar a:hover,
+:root[data-theme="utkal-bharat"] .main-nav a:hover {
+  background: rgba(120, 35, 29, 0.09) !important;
+  color: #78231d !important;
+}
+
+:root[data-cso-theme="utkal-bharat"] #cso-main-navbar a.active,
+:root[data-cso-theme="utkal-bharat"] #cso-main-navbar a.on,
+:root[data-cso-theme="utkal-bharat"] #cso-main-navbar a[aria-current="page"],
+:root[data-cso-theme="utkal-bharat"] .main-nav a.active,
+:root[data-cso-theme="utkal-bharat"] .main-nav a.on,
+:root[data-cso-theme="utkal-bharat"] .main-nav a[aria-current="page"],
+:root[data-theme="utkal-bharat"] #cso-main-navbar a.active,
+:root[data-theme="utkal-bharat"] .main-nav a.active,
+:root[data-theme="utkal-bharat"] .cso-pillar-nav a.active,
+:root[data-theme="utkal-bharat"] .cso-subnav a.active,
+:root[data-theme="utkal-bharat"] .subnav a.active {
+  background: #78231d !important;
+  color: #fffdf9 !important;
+}
+
+:root[data-cso-theme="utkal-bharat"] .cso-nav-saved-pill,
+:root[data-theme="utkal-bharat"] .cso-nav-saved-pill {
+  background: rgba(255, 255, 255, 0.75) !important;
+  color: #2a1b17 !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+:root[data-cso-theme="utkal-bharat"] .cso-nav-saved-pill .cso-saved-badge,
+:root[data-theme="utkal-bharat"] .cso-nav-saved-pill .cso-saved-badge {
+  background: #78231d !important;
+  color: #fffdf9 !important;
+}
+
 /* 1. Force all ancestor shell wrappers to full-width single column immediately on initial paint (zero CLS) */
 body.cso-portal-page .cso-jobs-shell,
 body.cso-portal-page .cso-schemes-shell,
