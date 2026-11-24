@@ -1253,6 +1253,88 @@ export async function handleStudyDoubtsAdmin(request, env, actor, doubtId) {
 // PUBLIC ENDPOINTS: /api/public/study/tree, /api/public/study, /api/public/study/article,
 //                   /api/public/study/telemetry, /api/public/study/doubts
 // ============================================================================
+const BOOTSTRAP_EDGE_CACHE = 'public, max-age=15, s-maxage=300, stale-while-revalidate=60';
+
+export async function handlePublicStudyBootstrapApi(request, env) {
+  if (!env || !env.DB) {
+    return json({ ok: false, tree: [], nodes: [], articles: [], items: [], total: 0, facets: { types: [], difficulties: [], priorities: [], mediums: [] }, kpis: {} }, 200, { 'Cache-Control': 'no-store' });
+  }
+  await ensureStudyPublishingSchema(env.DB);
+  await publishDueScheduledStudyArticles(env.DB);
+
+  const url = new URL(request.url);
+  const limit = Math.max(1, Math.min(100, Number(url.searchParams.get('limit')) || 50));
+  const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
+
+  const batchResults = await env.DB.batch([
+    env.DB.prepare('SELECT * FROM study_taxonomy_nodes WHERE is_published = 1 ORDER BY level ASC, sort_order ASC, title_en ASC'),
+    env.DB.prepare('SELECT * FROM study_articles WHERE is_published = 1 ORDER BY is_featured DESC, updated_at DESC')
+  ]).catch(() => [{ results: [] }, { results: [] }]);
+
+  const rawNodes = (batchResults[0] && batchResults[0].results) || [];
+  const rawArticles = (batchResults[1] && batchResults[1].results) || [];
+
+  const taxMap = new Map();
+  const counts = new Map();
+  const inc = (id) => { if (id) counts.set(id, (counts.get(id) || 0) + 1); };
+  rawArticles.forEach(a => { inc(a.category_l1_id); inc(a.category_l2_id); inc(a.category_l3_id); });
+
+  const nodes = rawNodes.map(r => {
+    const n = { ...formatTaxonomyNode(r), published_modules_count: counts.get(r.id) || 0 };
+    taxMap.set(n.id, n);
+    return n;
+  });
+
+  const all = rawArticles.map(r => formatStudyArticle(r, taxMap, false));
+  const typesSet = new Set();
+  const diffsSet = new Set();
+  const prioritiesSet = new Set();
+  const mediumsSet = new Set();
+  let pyqSylCount = 0;
+  let mcqTotal = 0;
+  all.forEach(a => {
+    if (a.resource_type_badge) typesSet.add(a.resource_type_badge);
+    if (a.difficulty_level) diffsSet.add(a.difficulty_level);
+    if (a.high_yield_priority) prioritiesSet.add(a.high_yield_priority);
+    if (a.language_medium) mediumsSet.add(a.language_medium);
+    const badge = String(a.resource_type_badge || '').toLowerCase();
+    if (badge.includes('pyq') || badge.includes('syllabus') || a.pyq_pdf_url) pyqSylCount++;
+    mcqTotal += Number(a.mcq_count || 0);
+  });
+
+  const prioRank = { 'Must-Study': 0, High: 1, Standard: 2 };
+  all.sort((a, b) => {
+    if (a.is_featured !== b.is_featured) return b.is_featured - a.is_featured;
+    const pa = prioRank[a.high_yield_priority] ?? 2;
+    const pb = prioRank[b.high_yield_priority] ?? 2;
+    if (pa !== pb) return pa - pb;
+    return String(b.published_at || b.updated_at).localeCompare(String(a.published_at || a.updated_at));
+  });
+
+  const items = all.slice(0, limit);
+  return json({
+    ok: true,
+    total_published_modules: all.length,
+    total: all.length,
+    nodes,
+    tree: buildTaxonomyTree(nodes),
+    articles: items,
+    items,
+    facets: {
+      types: [...typesSet].sort(),
+      difficulties: [...diffsSet],
+      priorities: [...prioritiesSet],
+      mediums: [...mediumsSet].sort()
+    },
+    kpis: {
+      study_modules: all.length,
+      pyq_syllabus_sets: pyqSylCount,
+      practice_mcqs: mcqTotal,
+      exam_tracks: nodes.filter(n => Number(n.level) === 1).length
+    }
+  }, 200, { 'Cache-Control': bypass ? 'no-store, max-age=0' : BOOTSTRAP_EDGE_CACHE });
+}
+
 export async function handlePublicStudyTreeApi(request, env) {
   if (!env || !env.DB) return json({ ok: false, tree: [], nodes: [] }, 200, { 'Cache-Control': 'no-store' });
   await ensureStudyPublishingSchema(env.DB);

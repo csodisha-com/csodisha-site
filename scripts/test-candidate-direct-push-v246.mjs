@@ -130,8 +130,8 @@ await check('Strict CSP & sw.js / ops-sentinel.js bumped to cso-candidate-cache-
     assert.equal(/\.style\.[a-zA-Z]|\.style\s*=|setAttribute\(\s*['"]style/.test(js), false, `${rel}: no .style.*`);
     assert.equal(/\son[a-z]+\s*=\s*["']/i.test(js), false, `${rel}: no inline handlers`);
   }
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:4[6-9]|5\d)';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:4[6-9]|5\d)';/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:4[6-9]|[5-9]\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:4[6-9]|[5-9]\d)';/);
 });
 
 console.log(`\nSummary: ${passed} passed, ${failed} failed.`);

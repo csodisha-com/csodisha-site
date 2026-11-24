@@ -1366,6 +1366,86 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
 // ============================================================================
 // PUBLIC ENDPOINTS: /api/public/jobs/tree, /api/public/jobs, /api/public/jobs/article, /api/public/jobs/telemetry
 // ============================================================================
+const BOOTSTRAP_EDGE_CACHE = 'public, max-age=15, s-maxage=300, stale-while-revalidate=60';
+
+export async function handlePublicJobsBootstrapApi(request, env) {
+  if (!env || !env.DB) {
+    return json({ ok: false, tree: [], nodes: [], articles: [], items: [], total: 0, facets: { districts: [], qualifications: [], stages: [] }, kpis: {} }, 200, { 'Cache-Control': 'no-store' });
+  }
+  await ensureJobsPublishingSchema(env.DB);
+  await publishDueScheduledJobs(env.DB);
+
+  const url = new URL(request.url);
+  const limit = Math.max(1, Math.min(100, Number(url.searchParams.get('limit')) || 50));
+  const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
+
+  const batchResults = await env.DB.batch([
+    env.DB.prepare('SELECT * FROM job_taxonomy_nodes WHERE is_published = 1 ORDER BY level ASC, sort_order ASC, title_en ASC'),
+    env.DB.prepare('SELECT * FROM job_articles WHERE is_published = 1 ORDER BY is_featured DESC, updated_at DESC')
+  ]).catch(() => [{ results: [] }, { results: [] }]);
+
+  const rawNodes = (batchResults[0] && batchResults[0].results) || [];
+  const rawArticles = (batchResults[1] && batchResults[1].results) || [];
+
+  const taxMap = new Map();
+  const counts = new Map();
+  const inc = (id) => { if (id) counts.set(id, (counts.get(id) || 0) + 1); };
+  rawArticles.forEach(a => { inc(a.category_l1_id); inc(a.category_l2_id); inc(a.category_l3_id); });
+
+  const nodes = rawNodes.map(r => {
+    const n = { ...formatTaxonomyNode(r), published_jobs_count: counts.get(r.id) || 0 };
+    taxMap.set(n.id, n);
+    return n;
+  });
+
+  const all = rawArticles.map(r => formatArticle(r, taxMap, false));
+  const districtsSet = new Set();
+  const qualsSet = new Set();
+  const stagesSet = new Set();
+  let activeCount = 0;
+  let totalVacancies = 0;
+  let closingSoon = 0;
+  all.forEach(a => {
+    if (a.location_district) districtsSet.add(a.location_district);
+    if (a.qualification_level) qualsSet.add(a.qualification_level);
+    if (a.lifecycle_stage) stagesSet.add(a.lifecycle_stage);
+    if (!a.is_expired) activeCount++;
+    totalVacancies += Number(a.total_vacancies || 0);
+    if (!a.is_expired && a.days_remaining !== null && a.days_remaining !== undefined && Number(a.days_remaining) >= 0 && Number(a.days_remaining) <= 7) {
+      closingSoon++;
+    }
+  });
+
+  all.sort((a, b) => {
+    if (a.is_expired !== b.is_expired) return a.is_expired ? 1 : -1;
+    if (a.is_featured !== b.is_featured) return b.is_featured - a.is_featured;
+    if (a.last_date && b.last_date && !a.is_expired && !b.is_expired) return a.last_date.localeCompare(b.last_date);
+    return String(b.published_at || b.updated_at).localeCompare(String(a.published_at || a.updated_at));
+  });
+
+  const items = all.slice(0, limit);
+  return json({
+    ok: true,
+    total_published_jobs: all.length,
+    total: all.length,
+    nodes,
+    tree: buildTaxonomyTree(nodes),
+    articles: items,
+    items,
+    facets: {
+      districts: [...districtsSet].sort(),
+      qualifications: [...qualsSet].sort(),
+      stages: [...stagesSet]
+    },
+    kpis: {
+      active_recruitments: activeCount,
+      total_vacancies: totalVacancies,
+      closing_this_week: closingSoon,
+      departments_count: nodes.filter(n => Number(n.level) === 2).length
+    }
+  }, 200, { 'Cache-Control': bypass ? 'no-store, max-age=0' : BOOTSTRAP_EDGE_CACHE });
+}
+
 export async function handlePublicJobsTreeApi(request, env) {
   if (!env || !env.DB) return json({ ok: false, tree: [], nodes: [] }, 200, { 'Cache-Control': 'no-store' });
   await ensureJobsPublishingSchema(env.DB);

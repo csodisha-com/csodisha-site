@@ -685,7 +685,7 @@
     searchInp.addEventListener('input', function () {
       S.filters.search = searchInp.value.trim();
       clearTimeout(searchTimer);
-      searchTimer = setTimeout(function () { reloadBrowser(); }, 280);
+      searchTimer = setTimeout(function () { reloadBrowser(); }, 180);
     });
     searchInp.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
@@ -763,6 +763,7 @@
           img.src = safeUrl(a.cover_image_url);
           img.alt = a.title_en;
           img.loading = 'lazy';
+          img.decoding = 'async';
           card.appendChild(img);
         }
         var body = el('div', 'sp-card-body');
@@ -1407,17 +1408,29 @@
   // ============================================================================
   // BOOT
   // ============================================================================
+  function mountOptimisticSkeleton() {
+    clear(S.root);
+    var skel = el('div', 'cso-portal-skeleton');
+    skel.setAttribute('aria-busy', 'true');
+    skel.appendChild(el('div', 'cso-skel-hero'));
+    skel.appendChild(el('div', 'cso-skel-bar'));
+    var g = el('div', 'cso-skel-grid');
+    g.append(el('div', 'cso-skel-card'), el('div', 'cso-skel-card'));
+    skel.appendChild(g);
+    S.root.appendChild(skel);
+  }
+
   async function boot() {
     S.root = document.getElementById('cso-study-portal-root');
     if (!S.root) return;
     document.body.classList.add('cso-portal-active', 'cso-portal-study-active');
     S.langMode = getLangPref();
 
-    await Promise.all([loadCandidateProgress(), detectAdminSession()]);
     var slug = qsParam('slug');
     var previewToken = qsParam('preview_token');
 
     if (slug) {
+      await Promise.all([loadCandidateProgress(), detectAdminSession()]);
       await renderReaderView(slug, previewToken);
       return;
     }
@@ -1427,7 +1440,30 @@
     S.filters.l3 = qsParam('l3');
     S.filters.type = qsParam('type');
     S.filters.search = qsParam('q') || qsParam('search');
-    await reloadBrowser();
+
+    mountOptimisticSkeleton();
+    var hasInitialFilter = Boolean(S.filters.l1 || S.filters.l2 || S.filters.l3 || S.filters.type || S.filters.search);
+    if (!hasInitialFilter) {
+      var bootUrl = '/api/public/study/bootstrap' + (qsParam('refresh') ? '?refresh=1' : '');
+      var triple = await Promise.all([
+        fetch(bootUrl, { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+        loadCandidateProgress(),
+        detectAdminSession()
+      ]);
+      var bd = triple[0];
+      if (bd && bd.ok) {
+        S.tree = bd.tree || [];
+        S.nodes = bd.nodes || [];
+        S.items = bd.items || bd.articles || [];
+        S.allItems = S.items.slice();
+        S.facets = bd.facets || S.facets;
+      }
+      renderBrowserView();
+      return;
+    }
+
+    await Promise.all([loadCandidateProgress(), detectAdminSession(), fetchPortalData()]);
+    renderBrowserView();
   }
 
   if (document.readyState === 'loading') {

@@ -137,10 +137,10 @@ check('Admin CSS maps studio/cms variables directly to --cso-* homepage tokens',
 
 check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v249', () => {
   const sw = read('sw.js');
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:4[89]|5\d)';/.test(sw), 'sw.js must be v248+');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:4[89]|[5-9]\d)';/.test(sw), 'sw.js must be v248+');
   assert.ok(sw.includes("'/assets/css/cso-themes.css'"), 'sw.js should precache /assets/css/cso-themes.css');
   assert.ok(
-    /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:4[89]|5\d)';/.test(read('functions/_lib/ops-sentinel.js')),
+    /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:4[89]|[5-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')),
     'ops-sentinel.js must be v248+'
   );
 });

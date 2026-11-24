@@ -183,8 +183,8 @@ await check('Strict CSP & 4-Theme CSS token compliance across all v244 files', (
 });
 
 await check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v244+', () => {
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:4[4-9]|5\d)';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:4[4-9]|5\d)';/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:4[4-9]|[5-9]\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:4[4-9]|[5-9]\d)';/);
 });
 
 console.log(`\nSummary: ${passed} passed, ${failed} failed.`);

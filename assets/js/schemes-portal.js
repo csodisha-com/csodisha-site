@@ -630,7 +630,7 @@
   function buildSchemeCard(sc, mount) {
     var card = el('article', 'sp-scheme-card');
     if (sc.cover_image_url && safeHref(sc.cover_image_url)) {
-      var th = el('img', 'sp-thumb'); th.src = safeHref(sc.cover_image_url); th.alt = sc.title_en; th.loading = 'lazy';
+      var th = el('img', 'sp-thumb'); th.src = safeHref(sc.cover_image_url); th.alt = sc.title_en; th.loading = 'lazy'; th.decoding = 'async';
       card.appendChild(th);
     }
     var body = el('div', 'sp-card-body');
@@ -911,7 +911,7 @@
     qI.placeholder = state.lang === 'or' ? 'ଯୋଜନା, ଛାତ୍ରବୃତ୍ତି କିମ୍ବା ବିଭାଗ ଖୋଜନ୍ତୁ...' : 'Search by scheme name, department or benefit...';
     qI.value = state.filters.search;
     var qt = null;
-    qI.addEventListener('input', function () { state.filters.search = qI.value.trim(); clearTimeout(qt); qt = setTimeout(function () { loadPortalSchemes(mount); }, 280); });
+    qI.addEventListener('input', function () { state.filters.search = qI.value.trim(); clearTimeout(qt); qt = setTimeout(function () { loadPortalSchemes(mount); }, 180); });
     qF.appendChild(qI); cGrid.appendChild(qF);
     filterCard.appendChild(cGrid);
 
@@ -1186,14 +1186,31 @@
       return;
     }
 
+    // Instant optimistic skeleton shell (<16ms mount) before single /bootstrap resolves
+    clear(mount);
+    var skel = el('div', 'cso-portal-skeleton');
+    skel.setAttribute('aria-busy', 'true');
+    skel.appendChild(el('div', 'cso-skel-hero'));
+    skel.appendChild(el('div', 'cso-skel-bar'));
+    var skelGrid = el('div', 'cso-skel-grid');
+    skelGrid.appendChild(el('div', 'cso-skel-card'));
+    skelGrid.appendChild(el('div', 'cso-skel-card'));
+    skel.appendChild(skelGrid);
+    mount.appendChild(skel);
+
     Promise.all([
-      fetch('/api/public/schemes/tree', { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
-      fetch('/api/public/schemes', { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      fetch('/api/public/schemes/bootstrap', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
       loadCandidateProfile(),
       detectAdminSession()
-    ]).then(function (quad) {
-      if (quad[0] && quad[0].ok) { state.tree = quad[0].tree || []; state.nodes = quad[0].nodes || []; }
-      if (quad[1] && quad[1].ok) { state.items = quad[1].items || []; state.allItems = state.items.slice(); if (quad[1].facets) state.facets = quad[1].facets; }
+    ]).then(function (triple) {
+      var boot = triple[0];
+      if (boot && boot.ok) {
+        state.tree = boot.tree || [];
+        state.nodes = boot.nodes || [];
+        state.items = boot.items || boot.articles || [];
+        state.allItems = state.items.slice();
+        if (boot.facets) state.facets = boot.facets;
+      }
       renderPortalListing(mount);
     });
   }

@@ -1142,6 +1142,125 @@ export async function handleCommunityModerationAdmin(request, env, actor, target
 // ============================================================================
 // PUBLIC ENDPOINTS (ALWAYS Cache-Control: no-store, max-age=0)
 // ============================================================================
+const BOOTSTRAP_EDGE_CACHE = 'public, max-age=15, s-maxage=300, stale-while-revalidate=60';
+
+export async function handlePublicCommunityBootstrapApi(request, env) {
+  if (!env || !env.DB) {
+    return json({ ok: false, tree: [], nodes: [], joined_node_ids: [], posts: [], items: [], total: 0, leaderboard: [], reward_rules: null, my_profile: null, kpis: {} }, 200, NO_STORE_HEADERS);
+  }
+  await ensureCommunityPlatformSchema(env.DB);
+  const actor = await getActor(request, env).catch(() => null);
+  const uid = actor ? actor.userId : '';
+  const url = new URL(request.url);
+  const limit = Math.max(1, Math.min(80, Number(url.searchParams.get('limit')) || 40));
+  const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb') || Boolean(uid);
+
+  const stmts = [
+    env.DB.prepare('SELECT * FROM community_taxonomy_nodes WHERE is_published = 1 ORDER BY level ASC, sort_order ASC, title_en ASC'),
+    env.DB.prepare("SELECT * FROM community_posts WHERE moderation_status = 'published' ORDER BY is_pinned DESC, created_at DESC LIMIT 200"),
+    env.DB.prepare("SELECT * FROM community_reward_rules WHERE id = 'default'"),
+    env.DB.prepare(
+      `SELECT p.user_id, p.reputation_xp, p.approved_contributions_count, p.membership_tier, p.bio_headline,
+              COALESCE(c.full_name, u.email, p.user_id) AS display_name, COALESCE(c.district, '') AS district
+       FROM community_user_preferences p
+       LEFT JOIN users u ON u.id = p.user_id
+       LEFT JOIN candidates c ON c.id = p.user_id OR c.email = u.email
+       ORDER BY p.reputation_xp DESC, p.approved_contributions_count DESC
+       LIMIT 10`
+    )
+  ];
+  if (uid) {
+    stmts.push(
+      env.DB.prepare('SELECT node_id FROM community_memberships WHERE user_id = ?').bind(uid),
+      env.DB.prepare('SELECT COUNT(*) AS n FROM community_direct_messages WHERE recipient_user_id = ? AND is_read = 0').bind(uid)
+    );
+  }
+
+  const batchResults = await env.DB.batch(stmts).catch(() => stmts.map(() => ({ results: [] })));
+  const rawNodes = (batchResults[0] && batchResults[0].results) || [];
+  const rawPosts = (batchResults[1] && batchResults[1].results) || [];
+  const rawRule = (batchResults[2] && batchResults[2].results && batchResults[2].results[0]) || null;
+  const leaderRows = (batchResults[3] && batchResults[3].results) || [];
+  const joinedRows = uid && batchResults[4] ? (batchResults[4].results || []) : [];
+  const unreadDmRow = uid && batchResults[5] && batchResults[5].results ? (batchResults[5].results[0] || { n: 0 }) : { n: 0 };
+
+  const rules = rawRule ? {
+    auto_grant_enabled: Boolean(rawRule.auto_grant_enabled),
+    pro_threshold_posts: Number(rawRule.pro_threshold_posts || 3),
+    permanent_threshold_posts: Number(rawRule.permanent_threshold_posts || 10),
+    xp_per_approved_post: Number(rawRule.xp_per_approved_post || 40),
+    xp_per_best_answer: Number(rawRule.xp_per_best_answer || 50),
+    pro_perks_summary_en: rawRule.pro_perks_summary_en || '',
+    pro_perks_summary_or: rawRule.pro_perks_summary_or || '',
+    permanent_perks_summary_en: rawRule.permanent_perks_summary_en || '',
+    permanent_perks_summary_or: rawRule.permanent_perks_summary_or || ''
+  } : await getRewardRules(env.DB);
+
+  const joinedSet = new Set(joinedRows.map(r => r.node_id));
+  const pCounts = new Map();
+  const inc = (id) => { if (id) pCounts.set(id, (pCounts.get(id) || 0) + 1); };
+  rawPosts.forEach(p => { inc(p.category_l1_id); inc(p.category_l2_id); inc(p.category_l3_id); });
+
+  const taxMap = new Map();
+  const nodes = rawNodes.map(r => {
+    const n = { ...formatTaxNode(r), posts_count: pCounts.get(r.id) || 0, is_joined: joinedSet.has(r.id) };
+    taxMap.set(n.id, n);
+    return n;
+  });
+
+  const allPosts = rawPosts.map(r => formatCommunityPost(r, taxMap, false));
+  const userPrefs = uid ? await getOrCreateUserPrefs(env.DB, uid).catch(() => null) : null;
+  const myProgress = userPrefs ? {
+    ...userPrefs,
+    badge_label: tierBadgeLabel(userPrefs.membership_tier) || 'Standard Member',
+    joined_count: joinedSet.size,
+    unread_messages: Number((unreadDmRow && unreadDmRow.n) || 0),
+    pro_threshold_posts: rules.pro_threshold_posts,
+    permanent_threshold_posts: rules.permanent_threshold_posts,
+    next_tier: userPrefs.membership_tier === 'permanent_member' ? null : (userPrefs.membership_tier === 'pro_member' ? 'permanent_member' : 'pro_member'),
+    next_threshold: userPrefs.membership_tier === 'pro_member' ? rules.permanent_threshold_posts : rules.pro_threshold_posts,
+    pro_perks_summary_en: rules.pro_perks_summary_en,
+    pro_perks_summary_or: rules.pro_perks_summary_or,
+    permanent_perks_summary_en: rules.permanent_perks_summary_en,
+    permanent_perks_summary_or: rules.permanent_perks_summary_or
+  } : null;
+
+  const leaderboard = leaderRows.map(l => ({
+    user_id: l.user_id,
+    display_name: l.display_name,
+    district: l.district,
+    reputation_xp: Number(l.reputation_xp || 0),
+    approved_contributions_count: Number(l.approved_contributions_count || 0),
+    membership_tier: l.membership_tier || 'standard',
+    badge_label: tierBadgeLabel(l.membership_tier)
+  }));
+
+  const proSet = new Set();
+  leaderboard.forEach(m => { if (m.membership_tier === 'pro_member' || m.membership_tier === 'permanent_member') proSet.add(m.user_id || m.display_name); });
+  allPosts.forEach(p => { if (p.author_membership_tier === 'pro_member' || p.author_membership_tier === 'permanent_member') proSet.add(p.author_user_id || p.author_display_name); });
+
+  const posts = allPosts.slice(0, limit);
+  return json({
+    ok: true,
+    total_communities: nodes.length,
+    joined_node_ids: [...joinedSet],
+    nodes,
+    tree: buildTaxonomyTree(nodes),
+    total: allPosts.length,
+    posts,
+    items: posts,
+    reward_rules: rules,
+    my_profile: myProgress,
+    leaderboard,
+    kpis: {
+      interest_circles: nodes.filter(n => Number(n.level) === 1 || Number(n.level) === 2).length,
+      active_discussions: allPosts.length,
+      pro_contributors: proSet.size,
+      solved_qnas: allPosts.filter(p => p.is_solved).length
+    }
+  }, 200, { 'Cache-Control': bypass ? 'no-store, max-age=0' : BOOTSTRAP_EDGE_CACHE });
+}
+
 export async function handlePublicCommunityTreeApi(request, env) {
   if (!env || !env.DB) return json({ ok: false, tree: [], nodes: [] }, 200, NO_STORE_HEADERS);
   await ensureCommunityPlatformSchema(env.DB);

@@ -427,7 +427,7 @@
     sSearch.addEventListener('input', function () {
       S.sourceSearch = sSearch.value.trim();
       clearTimeout(sTimer);
-      sTimer = setTimeout(function () { reloadOverview(); }, 260);
+      sTimer = setTimeout(function () { reloadOverview(); }, 180);
     });
     sSearch.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { clearTimeout(sTimer); S.sourceSearch = sSearch.value.trim(); reloadOverview(); }
@@ -634,7 +634,7 @@
 
     var hero = el('article', 'ap-panel');
     if (a.cover_image_url && safeHref(a.cover_image_url)) {
-      var img = el('img', 'ap-cover'); img.src = safeHref(a.cover_image_url); img.alt = a.cover_image_caption || a.title_en;
+      var img = el('img', 'ap-cover'); img.src = safeHref(a.cover_image_url); img.alt = a.cover_image_caption || a.title_en; img.loading = 'lazy'; img.decoding = 'async';
       hero.appendChild(img);
     }
     var metaRow = el('div', 'ap-chips');
@@ -715,15 +715,47 @@
     renderOverviewPortal();
   }
 
+  function mountOptimisticSkeleton() {
+    clear(S.root);
+    var skel = el('div', 'cso-portal-skeleton');
+    skel.setAttribute('aria-busy', 'true');
+    skel.appendChild(el('div', 'cso-skel-hero'));
+    skel.appendChild(el('div', 'cso-skel-bar'));
+    var g = el('div', 'cso-skel-grid');
+    g.append(el('div', 'cso-skel-card'), el('div', 'cso-skel-card'));
+    skel.appendChild(g);
+    S.root.appendChild(skel);
+  }
+
   async function boot() {
     S.root = document.getElementById('cso-about-portal-root');
     if (!S.root) return;
     document.body.classList.add('cso-portal-active', 'cso-portal-about-active');
     S.lang = getLangPref();
-    await detectAdminSession();
     var slug = qsParam('slug');
     var prev = qsParam('preview_token');
-    if (slug) { await renderArticleView(slug, prev); return; }
+    if (slug) {
+      await detectAdminSession();
+      await renderArticleView(slug, prev);
+      return;
+    }
+
+    mountOptimisticSkeleton();
+    var pair = await Promise.all([
+      fetch('/api/public/about/bootstrap', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      detectAdminSession()
+    ]);
+    var bootRes = pair[0];
+    if (bootRes && bootRes.ok) {
+      S.nodes = bootRes.nodes || [];
+      S.transparency = bootRes.transparency || S.transparency;
+      S.pages = bootRes.pages || bootRes.items || [];
+      S.allPages = S.pages.slice();
+      S.sources = bootRes.sources || [];
+      S.sectors = bootRes.sectors || [];
+      renderOverviewPortal();
+      return;
+    }
     await reloadOverview();
   }
 

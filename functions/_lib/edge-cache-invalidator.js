@@ -4,6 +4,9 @@ import { resetPublicContentMemo } from '../api/content/_public.js';
 import { invalidateSitePagesCache } from './site-pages.js';
 import { resetAboutOverviewMemo } from '../api/public/about-overview.js';
 
+export const PUBLIC_EDGE_CACHE_HEADER = 'public, max-age=15, s-maxage=300, stale-while-revalidate=60';
+export const EDGE_CACHE_KEY_VERSION = 'v260';
+
 export const SETTINGS_PUBLIC_PATHS = ['/api/config/public'];
 
 export const NAV_PUBLIC_PATHS = [
@@ -29,18 +32,23 @@ export const CONTENT_PUBLIC_PATHS = [
   '/api/homepage/blocks',
   '/api/public/jobs',
   '/api/public/jobs/tree',
+  '/api/public/jobs/bootstrap',
   '/api/public/jobs/article',
   '/api/public/schemes',
   '/api/public/schemes/tree',
+  '/api/public/schemes/bootstrap',
   '/api/public/schemes/article',
   '/api/public/study',
   '/api/public/study/tree',
+  '/api/public/study/bootstrap',
   '/api/public/study/article',
   '/api/public/community/tree',
   '/api/public/community/posts',
+  '/api/public/community/bootstrap',
   '/api/public/community/post',
   '/api/public/about/tree',
   '/api/public/about/pages',
+  '/api/public/about/bootstrap',
   '/api/public/about/article',
   '/api/public/about/sources',
   '/api/content/jobs',
@@ -108,12 +116,14 @@ export async function invalidateEdgePaths(request, paths = []) {
     if (!edgeCache || !request || !request.url || !Array.isArray(paths) || !paths.length) {
       return { ok: true, invalidated: 0 };
     }
-    const results = await Promise.allSettled(
-      paths.map(p => {
-        const fullUrl = new URL(p, request.url).toString();
-        return edgeCache.delete(new Request(fullUrl, { method: 'GET' }));
-      })
-    );
+    const deleteOps = [];
+    for (const p of paths) {
+      const fullUrl = new URL(p, request.url);
+      deleteOps.push(edgeCache.delete(new Request(fullUrl.toString(), { method: 'GET' })));
+      fullUrl.searchParams.set('_ecv', EDGE_CACHE_KEY_VERSION);
+      deleteOps.push(edgeCache.delete(new Request(fullUrl.toString(), { method: 'GET' })));
+    }
+    const results = await Promise.allSettled(deleteOps);
     const invalidated = results.filter(r => r.status === 'fulfilled' && r.value).length;
     return { ok: true, invalidated, attempted: paths.length };
   } catch {

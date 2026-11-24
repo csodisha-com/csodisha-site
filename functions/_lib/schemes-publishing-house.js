@@ -1163,6 +1163,78 @@ export async function handleSchemesArticlesAdmin(request, env, actor, articleId,
 // ============================================================================
 // PUBLIC ENDPOINTS: /api/public/schemes/tree, /api/public/schemes, /api/public/schemes/article, /api/public/schemes/telemetry
 // ============================================================================
+const BOOTSTRAP_EDGE_CACHE = 'public, max-age=15, s-maxage=300, stale-while-revalidate=60';
+
+export async function handlePublicSchemesBootstrapApi(request, env) {
+  if (!env || !env.DB) {
+    return json({ ok: false, tree: [], nodes: [], articles: [], items: [], total: 0, facets: { modes: [], occupations: [] }, kpis: {} }, 200, { 'Cache-Control': 'no-store' });
+  }
+  await ensureSchemesPublishingSchema(env.DB);
+  await publishDueScheduledSchemes(env.DB);
+
+  const url = new URL(request.url);
+  const limit = Math.max(1, Math.min(100, Number(url.searchParams.get('limit')) || 50));
+  const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
+
+  const batchResults = await env.DB.batch([
+    env.DB.prepare('SELECT * FROM scheme_taxonomy_nodes WHERE is_published = 1 ORDER BY level ASC, sort_order ASC, title_en ASC'),
+    env.DB.prepare('SELECT * FROM scheme_articles WHERE is_published = 1 ORDER BY is_featured DESC, updated_at DESC')
+  ]).catch(() => [{ results: [] }, { results: [] }]);
+
+  const rawNodes = (batchResults[0] && batchResults[0].results) || [];
+  const rawArticles = (batchResults[1] && batchResults[1].results) || [];
+
+  const taxMap = new Map();
+  const counts = new Map();
+  const inc = (id) => { if (id) counts.set(id, (counts.get(id) || 0) + 1); };
+  rawArticles.forEach(a => { inc(a.category_l1_id); inc(a.category_l2_id); inc(a.category_l3_id); });
+
+  const nodes = rawNodes.map(r => {
+    const n = { ...formatTaxonomyNode(r), published_schemes_count: counts.get(r.id) || 0 };
+    taxMap.set(n.id, n);
+    return n;
+  });
+
+  const all = rawArticles.map(r => formatSchemeArticle(r, taxMap, false));
+  const modesSet = new Set();
+  const occupationsSet = new Set();
+  let activeCount = 0;
+  let dbtScholCount = 0;
+  let ongoingCount = 0;
+  all.forEach(a => {
+    if (a.application_mode) modesSet.add(a.application_mode);
+    if (a.occupation_tag) occupationsSet.add(a.occupation_tag);
+    if (!a.is_expired) activeCount++;
+    if (a.is_ongoing) ongoingCount++;
+    const hay = `${a.title_en || ''} ${a.dbt_mode || ''} ${a.benefit_amount_summary || ''} ${(a.taxonomy && a.taxonomy.l3 && a.taxonomy.l3.title_en) || ''}`.toLowerCase();
+    if (a.npci_seeding_required || hay.includes('dbt') || hay.includes('scholarship')) dbtScholCount++;
+  });
+
+  all.sort((a, b) => {
+    if (a.is_expired !== b.is_expired) return a.is_expired ? 1 : -1;
+    if (a.is_featured !== b.is_featured) return b.is_featured - a.is_featured;
+    return String(b.published_at || b.updated_at).localeCompare(String(a.published_at || a.updated_at));
+  });
+
+  const items = all.slice(0, limit);
+  return json({
+    ok: true,
+    total_published_schemes: all.length,
+    total: all.length,
+    nodes,
+    tree: buildSchemeTaxonomyTree(nodes),
+    articles: items,
+    items,
+    facets: { modes: [...modesSet].sort(), occupations: [...occupationsSet].sort() },
+    kpis: {
+      active_schemes: activeCount,
+      dbt_scholarships: dbtScholCount,
+      ongoing_year_round: ongoingCount,
+      welfare_domains: nodes.filter(n => Number(n.level) === 2).length
+    }
+  }, 200, { 'Cache-Control': bypass ? 'no-store, max-age=0' : BOOTSTRAP_EDGE_CACHE });
+}
+
 export async function handlePublicSchemesTreeApi(request, env) {
   if (!env || !env.DB) return json({ ok: false, tree: [], nodes: [] }, 200, { 'Cache-Control': 'no-store' });
   await ensureSchemesPublishingSchema(env.DB);

@@ -169,8 +169,8 @@ check('All 7 explorer JS controllers dynamically toggle empty panels & filter ba
 });
 
 check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v237+', () => {
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:3[7-9]|[45]\d)';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:3[7-9]|[45]\d)';/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:3[7-9]|[4-9]\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:3[7-9]|[4-9]\d)';/);
 });
 
 check('Strict CSP compliance across all 7 explorer HTML & 7 explorer JS files', () => {

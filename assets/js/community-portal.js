@@ -505,7 +505,7 @@
     searchInp.addEventListener('input', function () {
       S.filters.search = searchInp.value.trim();
       clearTimeout(searchTimer);
-      searchTimer = setTimeout(function () { reloadBrowse(); }, 300);
+      searchTimer = setTimeout(function () { reloadBrowse(); }, 180);
     });
     searchInp.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { clearTimeout(searchTimer); S.filters.search = searchInp.value.trim(); reloadBrowse(); }
@@ -628,6 +628,7 @@
       img.src = safeHref(p.cover_image_url);
       img.alt = p.title_en;
       img.loading = 'lazy';
+      img.decoding = 'async';
       card.appendChild(img);
     }
 
@@ -1080,6 +1081,18 @@
     renderBrowseView();
   }
 
+  function mountOptimisticSkeleton() {
+    clear(S.root);
+    var skel = el('div', 'cso-portal-skeleton');
+    skel.setAttribute('aria-busy', 'true');
+    skel.appendChild(el('div', 'cso-skel-hero'));
+    skel.appendChild(el('div', 'cso-skel-bar'));
+    var g = el('div', 'cso-skel-grid');
+    g.append(el('div', 'cso-skel-card'), el('div', 'cso-skel-card'));
+    skel.appendChild(g);
+    S.root.appendChild(skel);
+  }
+
   async function boot() {
     S.root = document.getElementById('cso-community-portal-root');
     if (!S.root) return;
@@ -1096,6 +1109,26 @@
     S.filters.l3 = qsParam('l3');
     S.filters.type = qsParam('type');
     S.filters.search = qsParam('q') || qsParam('search');
+
+    mountOptimisticSkeleton();
+    var hasInitialFilter = Boolean(S.filters.l1 || S.filters.l2 || S.filters.l3 || S.filters.type || S.filters.search);
+    if (!hasInitialFilter) {
+      var bootRes = await fetch('/api/public/community/bootstrap', { credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+      if (bootRes && bootRes.ok) {
+        S.tree = bootRes.tree || [];
+        S.nodes = bootRes.nodes || [];
+        S.joinedIds = bootRes.joined_node_ids || [];
+        S.posts = bootRes.posts || bootRes.items || [];
+        S.allPosts = S.posts.slice();
+        S.leaderboard = bootRes.leaderboard || [];
+        S.rewardRules = bootRes.reward_rules || S.rewardRules;
+        S.myProfile = bootRes.my_profile || null;
+        if (S.myProfile) S.dmUnread = Number(S.myProfile.unread_messages || 0);
+        renderBrowseView();
+        return;
+      }
+    }
     await reloadBrowse();
   }
 

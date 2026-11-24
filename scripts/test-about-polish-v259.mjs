@@ -79,9 +79,9 @@ check('2. about-portal.js & about-portal.css implement Editorial Hero, 5-Tile Tr
 
 check('3. about/index.html links v259 assets & citizen-facing meta description', () => {
   const html = read('about/index.html');
-  assert.ok(html.includes('/assets/css/portal-shell.css?v=20261124v259'), 'must link portal-shell.css?v=20261124v259');
+  assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:5[9-9]|[6-9]\d)/.test(html), 'must link portal-shell.css?v=20261124v259');
   assert.ok(html.includes('/assets/css/about-portal.css?v=20261124v259'), 'must link about-portal.css?v=20261124v259');
-  assert.ok(html.includes('/assets/js/about-portal.js?v=20261124v259'), 'must link about-portal.js?v=20261124v259');
+  assert.ok(/\/assets\/js\/about-portal\.js\?v=20261124v2(?:5[9-9]|[6-9]\d)/.test(html), 'must link about-portal.js?v=20261124v259');
   assert.ok(!html.includes('managed dynamically from Admin Studio'), 'meta description should be citizen-facing');
 });
 
@@ -96,8 +96,8 @@ check('4. Strict CSP compliance across all v259 files + sw.js & ops-sentinel.js 
   assert.ok(!/\son(?:click|change|input|submit|load|error)=/i.test(html), 'about/index.html has inline event handler');
   assert.ok(!/\sstyle="/i.test(html), 'about/index.html has inline style attribute');
 
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v259';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v259';"));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:59|[6-9]\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:59|[6-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\n=== v259 Results: ${passed} passed, ${failed} failed ===\n`);

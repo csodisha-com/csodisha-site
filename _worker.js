@@ -56,18 +56,21 @@ import { handlePublicAboutOverviewApi } from './functions/api/public/about-overv
 import { handlePublicCurrentAffairsApi } from './functions/api/public/current-affairs.js';
 import { handlePublicHomepageBlocksApi, handlePublicHomepageBlockClick } from './functions/_lib/homepage-studio.js';
 import {
+  handlePublicJobsBootstrapApi,
   handlePublicJobsTreeApi,
   handlePublicJobsListApi,
   handlePublicJobsArticleApi,
   handlePublicJobsTelemetryApi
 } from './functions/_lib/jobs-publishing-house.js';
 import {
+  handlePublicSchemesBootstrapApi,
   handlePublicSchemesTreeApi,
   handlePublicSchemesListApi,
   handlePublicSchemesArticleApi,
   handlePublicSchemesTelemetryApi
 } from './functions/_lib/schemes-publishing-house.js';
 import {
+  handlePublicStudyBootstrapApi,
   handlePublicStudyTreeApi,
   handlePublicStudyListApi,
   handlePublicStudyArticleApi,
@@ -76,6 +79,7 @@ import {
   handleCandidateStudyProgressApi
 } from './functions/_lib/study-publishing-house.js';
 import {
+  handlePublicCommunityBootstrapApi,
   handlePublicCommunityTreeApi,
   handlePublicCommunityFeedApi,
   handlePublicCommunityPostDetailApi,
@@ -86,6 +90,7 @@ import {
   handleMemberCommunityMessagesApi
 } from './functions/_lib/community-platform.js';
 import {
+  handlePublicAboutBootstrapApi,
   handlePublicAboutTreeApi,
   handlePublicAboutPagesApi,
   handlePublicAboutArticleApi,
@@ -358,6 +363,14 @@ async function handleStrictD1Login(request, env) {
 
 // Track anonymous GET cache URLs (including query strings) for immediate invalidation on admin mutations
 const TRACKED_PUBLIC_CACHE_URLS = new Set();
+const PUBLIC_EDGE_CACHE_CONTROL = 'public, max-age=15, s-maxage=300, stale-while-revalidate=60';
+const EDGE_CACHE_KEY_VERSION = 'v260';
+
+function buildEdgeCacheKey(request) {
+  const u = new URL(request.url);
+  u.searchParams.set('_ecv', EDGE_CACHE_KEY_VERSION);
+  return new Request(u.toString(), { method: 'GET' });
+}
 
 function recordPublicCachePut(edgeCache, request, response, ctx) {
   if (!edgeCache || !response || response.status !== 200) return;
@@ -369,6 +382,26 @@ function recordPublicCachePut(edgeCache, request, response, ctx) {
   } catch {}
 }
 
+async function serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, handler) {
+  const u = new URL(request.url);
+  const bypass = u.searchParams.has('preview_token') || u.searchParams.has('refresh') || u.searchParams.has('_cb');
+  const cacheReq = buildEdgeCacheKey(request);
+  if (edgeCache && isAnonGet && !bypass) {
+    const hit = await edgeCache.match(cacheReq);
+    if (hit) return hit;
+  }
+  const res = await handler();
+  if (isAnonGet && !bypass && res && res.status === 200) {
+    const headers = new Headers(res.headers);
+    headers.set('Cache-Control', PUBLIC_EDGE_CACHE_CONTROL);
+    headers.set('Vary', 'Accept-Encoding');
+    const cacheable = new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+    recordPublicCachePut(edgeCache, cacheReq, cacheable, ctx);
+    return cacheable;
+  }
+  return res;
+}
+
 async function invalidatePublicEdgeCache(edgeCache, origin) {
   if (!edgeCache) return;
   const basePaths = [
@@ -377,14 +410,21 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/community/posts', '/api/community/qna', '/api/search/synonyms', '/api/public/about-overview', '/api/public/current-affairs', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources', '/api/marketing/banners', '/api/marketing/landing-pages', '/api/seo/meta', '/api/seo/robots.txt', '/api/seo/autocomplete',
     '/api/events/upcoming', '/api/config/public', '/api/events/calendar/odisha-all-exams.ics', '/api/events/calendar/opsc-ossc-osssc-deadlines.ics', '/api/events/calendar/admit-cards-results.ics', '/api/events/calendar/workshops-webinars.ics',
-    '/api/public/jobs', '/api/public/jobs/tree', '/api/public/jobs/article', '/jobs/', '/jobs-careers/',
-    '/api/public/schemes', '/api/public/schemes/tree', '/api/public/schemes/article', '/schemes/', '/schemes-benefits/',
-    '/api/public/study', '/api/public/study/tree', '/api/public/study/article', '/study-library/', '/study/',
-    '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/post', '/community/', '/student-dashboard/',
-    '/api/public/about/tree', '/api/public/about/pages', '/api/public/about/article', '/api/public/about/sources', '/about/',
+    '/api/public/jobs', '/api/public/jobs/tree', '/api/public/jobs/bootstrap', '/api/public/jobs/article', '/jobs/', '/jobs-careers/',
+    '/api/public/schemes', '/api/public/schemes/tree', '/api/public/schemes/bootstrap', '/api/public/schemes/article', '/schemes/', '/schemes-benefits/',
+    '/api/public/study', '/api/public/study/tree', '/api/public/study/bootstrap', '/api/public/study/article', '/study-library/', '/study/',
+    '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/bootstrap', '/api/public/community/post', '/community/', '/student-dashboard/',
+    '/api/public/about/tree', '/api/public/about/pages', '/api/public/about/bootstrap', '/api/public/about/article', '/api/public/about/sources', '/about/',
     '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
-  const allUrls = new Set(basePaths.map(p => `${origin}${p}`));
+  const allUrls = new Set();
+  for (const p of basePaths) {
+    const full = `${origin}${p}`;
+    allUrls.add(full);
+    const verUrl = new URL(full);
+    verUrl.searchParams.set('_ecv', EDGE_CACHE_KEY_VERSION);
+    allUrls.add(verUrl.toString());
+  }
   for (const cachedUrl of TRACKED_PUBLIC_CACHE_URLS) {
     allUrls.add(cachedUrl);
   }
@@ -445,7 +485,12 @@ export default {
 
     // 0d. CMS: public content API + R2 media delivery + authenticated user progress/bookmarks API + Dynamic SEO
     const edgeCache = typeof caches !== 'undefined' && caches.default ? caches.default : null;
-    const isAnonGet = (request.method === 'GET' || request.method === 'HEAD') && !(request.headers.get('Cookie') || '').includes('cso_session=');
+    const reqCookie = request.headers.get('Cookie') || '';
+    const isAnonGet = (request.method === 'GET' || request.method === 'HEAD')
+      && !request.headers.get('Authorization')
+      && !reqCookie.includes('cso_session=')
+      && !reqCookie.includes('cso_admin=')
+      && !reqCookie.includes('CF_Authorization=');
     if (pathname === '/sitemap-study-library.xml') {
       if (edgeCache && isAnonGet) {
         const hit = await edgeCache.match(request);
@@ -882,37 +927,17 @@ export default {
       }
       return jobsMapRes;
     }
+    if (pathname === '/api/public/jobs/bootstrap' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicJobsBootstrapApi(request, env));
+    }
     if (pathname === '/api/public/jobs/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
-      const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
-      if (edgeCache && isAnonGet && !bypass) {
-        const hit = await edgeCache.match(request);
-        if (hit) return hit;
-      }
-      const treeRes = await handlePublicJobsTreeApi(request, env);
-      if (isAnonGet && !bypass && treeRes.status === 200) recordPublicCachePut(edgeCache, request, treeRes, ctx);
-      return treeRes;
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicJobsTreeApi(request, env));
     }
     if (pathname === '/api/public/jobs' && (request.method === 'GET' || request.method === 'HEAD')) {
-      const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
-      if (edgeCache && isAnonGet && !bypass) {
-        const hit = await edgeCache.match(request);
-        if (hit) return hit;
-      }
-      const listRes = await handlePublicJobsListApi(request, env);
-      if (isAnonGet && !bypass && listRes.status === 200) recordPublicCachePut(edgeCache, request, listRes, ctx);
-      return listRes;
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicJobsListApi(request, env));
     }
     if (pathname === '/api/public/jobs/article' && (request.method === 'GET' || request.method === 'HEAD')) {
-      const isPrev = url.searchParams.has('preview_token') || url.searchParams.has('refresh') || url.searchParams.has('_cb');
-      if (edgeCache && isAnonGet && !isPrev) {
-        const hit = await edgeCache.match(request);
-        if (hit) return hit;
-      }
-      const artRes = await handlePublicJobsArticleApi(request, env);
-      if (isAnonGet && !isPrev && artRes.status === 200 && !(artRes.headers.get('Cache-Control') || '').includes('no-store')) {
-        recordPublicCachePut(edgeCache, request, artRes, ctx);
-      }
-      return artRes;
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicJobsArticleApi(request, env));
     }
     if (pathname === '/api/public/jobs/telemetry' && request.method === 'POST') {
       return handlePublicJobsTelemetryApi(request, env);
@@ -937,72 +962,32 @@ export default {
       }
       return schemesMapRes;
     }
+    if (pathname === '/api/public/schemes/bootstrap' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicSchemesBootstrapApi(request, env));
+    }
     if (pathname === '/api/public/schemes/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
-      const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
-      if (edgeCache && isAnonGet && !bypass) {
-        const hit = await edgeCache.match(request);
-        if (hit) return hit;
-      }
-      const treeRes = await handlePublicSchemesTreeApi(request, env);
-      if (isAnonGet && !bypass && treeRes.status === 200) recordPublicCachePut(edgeCache, request, treeRes, ctx);
-      return treeRes;
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicSchemesTreeApi(request, env));
     }
     if (pathname === '/api/public/schemes' && (request.method === 'GET' || request.method === 'HEAD')) {
-      const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
-      if (edgeCache && isAnonGet && !bypass) {
-        const hit = await edgeCache.match(request);
-        if (hit) return hit;
-      }
-      const listRes = await handlePublicSchemesListApi(request, env);
-      if (isAnonGet && !bypass && listRes.status === 200) recordPublicCachePut(edgeCache, request, listRes, ctx);
-      return listRes;
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicSchemesListApi(request, env));
     }
     if (pathname === '/api/public/schemes/article' && (request.method === 'GET' || request.method === 'HEAD')) {
-      const isPrev = url.searchParams.has('preview_token') || url.searchParams.has('refresh') || url.searchParams.has('_cb');
-      if (edgeCache && isAnonGet && !isPrev) {
-        const hit = await edgeCache.match(request);
-        if (hit) return hit;
-      }
-      const artRes = await handlePublicSchemesArticleApi(request, env);
-      if (isAnonGet && !isPrev && artRes.status === 200 && !(artRes.headers.get('Cache-Control') || '').includes('no-store')) {
-        recordPublicCachePut(edgeCache, request, artRes, ctx);
-      }
-      return artRes;
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicSchemesArticleApi(request, env));
     }
     if (pathname === '/api/public/schemes/telemetry' && request.method === 'POST') {
       return handlePublicSchemesTelemetryApi(request, env);
     }
+    if (pathname === '/api/public/study/bootstrap' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyBootstrapApi(request, env));
+    }
     if (pathname === '/api/public/study/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
-      const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
-      if (edgeCache && isAnonGet && !bypass) {
-        const hit = await edgeCache.match(request);
-        if (hit) return hit;
-      }
-      const treeRes = await handlePublicStudyTreeApi(request, env);
-      if (isAnonGet && !bypass && treeRes.status === 200) recordPublicCachePut(edgeCache, request, treeRes, ctx);
-      return treeRes;
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyTreeApi(request, env));
     }
     if (pathname === '/api/public/study' && (request.method === 'GET' || request.method === 'HEAD')) {
-      const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
-      if (edgeCache && isAnonGet && !bypass) {
-        const hit = await edgeCache.match(request);
-        if (hit) return hit;
-      }
-      const listRes = await handlePublicStudyListApi(request, env);
-      if (isAnonGet && !bypass && listRes.status === 200) recordPublicCachePut(edgeCache, request, listRes, ctx);
-      return listRes;
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyListApi(request, env));
     }
     if (pathname === '/api/public/study/article' && (request.method === 'GET' || request.method === 'HEAD')) {
-      const isPrev = url.searchParams.has('preview_token') || url.searchParams.has('refresh') || url.searchParams.has('_cb');
-      if (edgeCache && isAnonGet && !isPrev) {
-        const hit = await edgeCache.match(request);
-        if (hit) return hit;
-      }
-      const artRes = await handlePublicStudyArticleApi(request, env);
-      if (isAnonGet && !isPrev && artRes.status === 200 && !(artRes.headers.get('Cache-Control') || '').includes('no-store')) {
-        recordPublicCachePut(edgeCache, request, artRes, ctx);
-      }
-      return artRes;
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyArticleApi(request, env));
     }
     if (pathname === '/api/public/study/telemetry' && request.method === 'POST') {
       return handlePublicStudyTelemetryApi(request, env);
@@ -1030,14 +1015,17 @@ export default {
       }
       return communityMapRes;
     }
+    if (pathname === '/api/public/community/bootstrap' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicCommunityBootstrapApi(request, env));
+    }
     if (pathname === '/api/public/community/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
-      return handlePublicCommunityTreeApi(request, env);
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicCommunityTreeApi(request, env));
     }
     if (pathname === '/api/public/community/posts' && (request.method === 'GET' || request.method === 'HEAD')) {
-      return handlePublicCommunityFeedApi(request, env);
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicCommunityFeedApi(request, env));
     }
     if (pathname === '/api/public/community/post' && (request.method === 'GET' || request.method === 'HEAD')) {
-      return handlePublicCommunityPostDetailApi(request, env);
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicCommunityPostDetailApi(request, env));
     }
     if (pathname === '/api/public/community-directory/overview' && (request.method === 'GET' || request.method === 'HEAD')) {
       return handlePublicCommunityOverviewApi(request, env);
@@ -1048,17 +1036,20 @@ export default {
     if (pathname === '/api/public/community-directory/suggest' && request.method === 'POST') {
       return handlePublicCommunitySuggestApi(request, env);
     }
+    if (pathname === '/api/public/about/bootstrap' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicAboutBootstrapApi(request, env));
+    }
     if (pathname === '/api/public/about/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
-      return handlePublicAboutTreeApi(request, env);
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicAboutTreeApi(request, env));
     }
     if (pathname === '/api/public/about/pages' && (request.method === 'GET' || request.method === 'HEAD')) {
-      return handlePublicAboutPagesApi(request, env);
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicAboutPagesApi(request, env));
     }
     if (pathname === '/api/public/about/article' && (request.method === 'GET' || request.method === 'HEAD')) {
-      return handlePublicAboutArticleApi(request, env);
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicAboutArticleApi(request, env));
     }
     if (pathname === '/api/public/about/sources' && (request.method === 'GET' || request.method === 'HEAD')) {
-      return handlePublicAboutSourcesApi(request, env);
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicAboutSourcesApi(request, env));
     }
     if (pathname === '/api/public/about/inquiries' && request.method === 'POST') {
       return handlePublicAboutInquiriesApi(request, env);

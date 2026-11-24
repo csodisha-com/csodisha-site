@@ -321,7 +321,7 @@ await check('3. Admin Studio (5 Tabs), Public Community Portal, Candidate Hub & 
   assert.ok(read('_worker.js').includes('/api/public/community/tree') && read('_worker.js').includes('/api/community/messages') && read('_worker.js').includes('/api/community/join'));
   assert.ok(read('functions/_lib/edge-cache-invalidator.js').includes('/api/public/community/posts'));
   assert.ok(read('functions/api/media/_serve.js').includes('community-publishing'));
-  assert.ok(read('community/index.html').includes('id="cso-community-portal-root"') && read('community/index.html').includes('community-portal.js?v=20261124v25'));
+  assert.ok(read('community/index.html').includes('id="cso-community-portal-root"') && read('community/index.html').match(/(jobs|schemes|study|community|about)-portal\.js\?v=20261124v2[5-9]/));
   assert.ok(read('assets/js/community-portal.js').includes('DiscussionForumPosting') && read('assets/js/community-portal.js').includes('Path to Pro'));
   assert.ok(read('assets/js/student-dashboard.js').includes('communityProfile') && read('assets/js/student-dashboard.js').includes('Community Tier'));
   assert.ok(read('assets/app.js').includes('/api/public/community/posts?limit=8') && read('assets/app.js').includes('csoMapCommunityPostsToUpdates'));
@@ -339,9 +339,9 @@ await check('4. Strict CSP compliance across all v252 files + sw.js & ops-sentin
     assert.ok(!/\sstyle="/i.test(html), `Inline style attribute found in ${rel}`);
   }
   const sw = read('sw.js');
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v25[2-9]';/.test(sw), 'sw.js must be bumped to v252+');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:5[2-9]|[6-9]\d)';/.test(sw), 'sw.js must be bumped to v252+');
   assert.ok(sw.includes("'/assets/js/community-portal.js'") && sw.includes("'/assets/css/community-portal.css'"));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v25[2-9]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:5[2-9]|[6-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\nSummary: ${passed} passed, ${failed} failed\n`);

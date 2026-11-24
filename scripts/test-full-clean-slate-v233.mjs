@@ -143,8 +143,8 @@ check('Cache invalidator covers /api/nav/config, /api/content/*, /api/public/*, 
 });
 
 check('Service Worker & ops-sentinel bumped to cso-candidate-cache-v233+', () => {
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:3[3-9]|[45]\d)';/.test(read('sw.js')));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:3[3-9]|[45]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:3[3-9]|[4-9]\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:3[3-9]|[4-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 check('Strict CSP compliance across all v233 modified public JS files', () => {

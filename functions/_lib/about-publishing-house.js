@@ -964,6 +964,82 @@ export async function handleAboutInquiriesAdmin(request, env, actor, inquiryId) 
 // ============================================================================
 // PUBLIC ENDPOINTS (ALWAYS Cache-Control: no-store, max-age=0)
 // ============================================================================
+const BOOTSTRAP_EDGE_CACHE = 'public, max-age=15, s-maxage=300, stale-while-revalidate=60';
+
+export async function handlePublicAboutBootstrapApi(request, env) {
+  if (!env || !env.DB) {
+    return json({ ok: false, tree: [], nodes: [], pages: [], items: [], sources: [], sectors: OFFICIAL_SOURCE_SECTORS, transparency: {}, kpis: {} }, 200, NO_STORE);
+  }
+  await ensureAboutStudioSchema(env.DB);
+  await publishDueScheduledAboutArticles(env.DB);
+
+  const url = new URL(request.url);
+  const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
+
+  const coreBatch = await env.DB.batch([
+    env.DB.prepare('SELECT * FROM about_taxonomy_nodes WHERE is_published = 1 ORDER BY level ASC, sort_order ASC, title_en ASC'),
+    env.DB.prepare('SELECT * FROM about_articles WHERE is_published = 1 ORDER BY is_featured DESC, updated_at DESC'),
+    env.DB.prepare('SELECT * FROM about_official_sources WHERE is_published = 1 ORDER BY sort_order ASC, authority_name_en ASC')
+  ]).catch(() => [{ results: [] }, { results: [] }, { results: [] }]);
+
+  const rawNodes = (coreBatch[0] && coreBatch[0].results) || [];
+  const rawPages = (coreBatch[1] && coreBatch[1].results) || [];
+  const sources = (coreBatch[2] && coreBatch[2].results) || [];
+
+  const safeCount = async (sql) => {
+    try { const r = await env.DB.prepare(sql).first(); return Number((r && r.n) || 0); } catch { return 0; }
+  };
+  let jobsCount = 0; let schemesCount = 0; let studyCount = 0; let commMembersCount = 0;
+  try {
+    const kpiBatch = await env.DB.batch([
+      env.DB.prepare('SELECT COUNT(*) AS n FROM job_articles WHERE is_published = 1'),
+      env.DB.prepare('SELECT COUNT(*) AS n FROM scheme_articles WHERE is_published = 1'),
+      env.DB.prepare('SELECT COUNT(*) AS n FROM study_articles WHERE is_published = 1'),
+      env.DB.prepare('SELECT COUNT(*) AS n FROM users')
+    ]);
+    jobsCount = Number((kpiBatch[0] && kpiBatch[0].results && kpiBatch[0].results[0] && kpiBatch[0].results[0].n) || 0);
+    schemesCount = Number((kpiBatch[1] && kpiBatch[1].results && kpiBatch[1].results[0] && kpiBatch[1].results[0].n) || 0);
+    studyCount = Number((kpiBatch[2] && kpiBatch[2].results && kpiBatch[2].results[0] && kpiBatch[2].results[0].n) || 0);
+    commMembersCount = Number((kpiBatch[3] && kpiBatch[3].results && kpiBatch[3].results[0] && kpiBatch[3].results[0].n) || 0);
+  } catch {
+    [jobsCount, schemesCount, studyCount, commMembersCount] = await Promise.all([
+      safeCount('SELECT COUNT(*) AS n FROM job_articles WHERE is_published = 1'),
+      safeCount('SELECT COUNT(*) AS n FROM scheme_articles WHERE is_published = 1'),
+      safeCount('SELECT COUNT(*) AS n FROM study_articles WHERE is_published = 1'),
+      safeCount('SELECT COUNT(*) AS n FROM users')
+    ]);
+  }
+  const portalsCount = sources.filter(s => Boolean(s.is_verified)).length || sources.length;
+
+  const taxMap = new Map();
+  const nodes = rawNodes.map(r => {
+    const n = formatTaxNode(r);
+    taxMap.set(n.id, n);
+    return n;
+  });
+  const pages = rawPages.map(r => formatAboutArticle(r, taxMap, false));
+  const transparency = {
+    verified_jobs: jobsCount,
+    active_schemes: schemesCount,
+    study_modules: studyCount,
+    community_members: commMembersCount,
+    verified_portals: portalsCount
+  };
+
+  return json({
+    ok: true,
+    nodes,
+    tree: buildTaxonomyTree(nodes),
+    total: pages.length,
+    pages,
+    items: pages,
+    sources,
+    sectors: OFFICIAL_SOURCE_SECTORS,
+    transparency,
+    kpis: transparency
+  }, 200, { 'Cache-Control': bypass ? 'no-store, max-age=0' : BOOTSTRAP_EDGE_CACHE });
+}
+
 export async function handlePublicAboutTreeApi(request, env) {
   if (!env || !env.DB) return json({ ok: false, tree: [], nodes: [], transparency: {} }, 200, NO_STORE);
   await ensureAboutStudioSchema(env.DB);

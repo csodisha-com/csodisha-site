@@ -187,3 +187,57 @@ body.cso-portal-active select:focus-visible {
 :root[data-cso-theme="reading"] body.cso-portal-active .cso-about-hero {
   box-shadow: 0 6px 18px rgba(92, 69, 44, 0.14);
 }
+
+/* 7. Instant Optimistic Portal Skeleton Shell (v260 — <16ms mount, strict CSP) */
+@keyframes csoSkelPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+.cso-portal-skeleton {
+  display: grid;
+  gap: 18px;
+  width: 100%;
+  min-height: 420px;
+}
+
+.cso-skel-hero,
+.cso-skel-bar,
+.cso-skel-card {
+  border-radius: 16px;
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.16) 25%, rgba(148, 163, 184, 0.28) 50%, rgba(148, 163, 184, 0.16) 75%);
+  animation: csoSkelPulse 1.4s ease-in-out infinite;
+}
+
+.cso-skel-hero {
+  height: 196px;
+  border-radius: 20px;
+}
+
+.cso-skel-bar {
+  height: 82px;
+}
+
+.cso-skel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.cso-skel-card {
+  height: 164px;
+}
+
+@media (max-width: 720px) {
+  .cso-skel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-skel-hero,
+  .cso-skel-bar,
+  .cso-skel-card {
+    animation: none;
+  }
+}

@@ -112,9 +112,9 @@ check('3. Runtime check: stripMarkdownExcerpt removes raw Markdown & formatQuizP
 
 check('4. community/index.html links v258 assets', () => {
   const html = read('community/index.html');
-  assert.ok(html.includes('/assets/css/portal-shell.css?v=20261124v258'), 'must link portal-shell.css?v=20261124v258');
+  assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:5[8-9]|[6-9]\d)/.test(html), 'must link portal-shell.css?v=20261124v258');
   assert.ok(html.includes('/assets/css/community-portal.css?v=20261124v258'), 'must link community-portal.css?v=20261124v258');
-  assert.ok(html.includes('/assets/js/community-portal.js?v=20261124v258'), 'must link community-portal.js?v=20261124v258');
+  assert.ok(/\/assets\/js\/community-portal\.js\?v=20261124v2(?:5[8-9]|[6-9]\d)/.test(html), 'must link community-portal.js?v=20261124v258');
 });
 
 check('5. Strict CSP compliance across all v258 files + sw.js & ops-sentinel.js bumped to cso-candidate-cache-v258', () => {
@@ -128,8 +128,8 @@ check('5. Strict CSP compliance across all v258 files + sw.js & ops-sentinel.js 
   assert.ok(!/\son(?:click|change|input|submit|load|error)=/i.test(html), 'community/index.html has inline event handler');
   assert.ok(!/\sstyle="/i.test(html), 'community/index.html has inline style attribute');
 
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v25[89]';/.test(read('sw.js')));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v25[89]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:5[89]|[6-9]\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:5[89]|[6-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\n=== v258 Results: ${passed} passed, ${failed} failed ===\n`);

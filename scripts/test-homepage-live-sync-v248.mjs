@@ -121,9 +121,9 @@ await check('2. Edge cache invalidator includes / and /index.html and homepage-b
 
 await check('3. sw.js never caches /api/public/* cache-first and is bumped to cso-candidate-cache-v248+', () => {
   const sw = read('sw.js');
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:4[89]|5\d)';/.test(sw));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:4[89]|[5-9]\d)';/.test(sw));
   assert.ok(sw.includes("url.pathname.startsWith('/api/') && !isNetworkFirstApi(url)"));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:4[89]|5\d)';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:4[89]|[5-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 await check('4. _worker.js bypasses edge cache on refresh/_cb and purges / and /index.html', () => {

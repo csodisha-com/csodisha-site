@@ -118,7 +118,7 @@ check('4. All 7 pillar HTML pages link portal-shell.css and all 5 portal JS file
     'about/index.html'
   ];
   for (const rel of htmlFiles) {
-    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v25[4-9]/.test(read(rel)), `${rel} must link portal-shell.css?v=20261124v254+`);
+    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:5[4-9]|[6-9]\d)/.test(read(rel)), `${rel} must link portal-shell.css?v=20261124v254+`);
   }
 
   assert.ok(read('assets/js/jobs-portal.js').includes("document.body.classList.add('cso-portal-active', 'cso-portal-jobs-active')"));
@@ -161,9 +161,9 @@ check('5. Strict CSP compliance across all v254 files + sw.js & ops-sentinel.js 
   }
 
   const sw = read('sw.js');
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v25[4-9]';/.test(sw), 'sw.js must be bumped to v254+');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:5[4-9]|[6-9]\d)';/.test(sw), 'sw.js must be bumped to v254+');
   assert.ok(sw.includes("'/assets/css/portal-shell.css'"), 'sw.js must precache portal-shell.css');
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v25[4-9]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:5[4-9]|[6-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\n=== v254 Results: ${passed} passed, ${failed} failed ===\n`);

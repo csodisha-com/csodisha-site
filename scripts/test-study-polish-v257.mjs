@@ -111,9 +111,9 @@ check('2. study-portal.js & study-portal.css implement Editorial Hero, Progress 
 check('3. study-library/index.html & study/index.html link v257 assets', () => {
   for (const rel of ['study-library/index.html', 'study/index.html']) {
     const html = read(rel);
-    assert.ok(html.includes('/assets/css/portal-shell.css?v=20261124v257'), `${rel} must link portal-shell.css?v=20261124v257`);
+    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:5[7-9]|[6-9]\d)/.test(html), `${rel} must link portal-shell.css?v=20261124v257`);
     assert.ok(html.includes('/assets/css/study-portal.css?v=20261124v257'), `${rel} must link study-portal.css?v=20261124v257`);
-    assert.ok(html.includes('/assets/js/study-portal.js?v=20261124v257'), `${rel} must link study-portal.js?v=20261124v257`);
+    assert.ok(/\/assets\/js\/study-portal\.js\?v=20261124v2(?:5[7-9]|[6-9]\d)/.test(html), `${rel} must link study-portal.js?v=20261124v257`);
   }
 });
 
@@ -130,8 +130,8 @@ check('4. Strict CSP compliance across all v257 files + sw.js & ops-sentinel.js 
     assert.ok(!/\sstyle="/i.test(html), `${rel} has inline style attribute`);
   }
 
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v25[7-9]';/.test(read('sw.js')));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v25[7-9]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:5[7-9]|[6-9]\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:5[7-9]|[6-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\n=== v257 Results: ${passed} passed, ${failed} failed ===\n`);

@@ -1,74 +1,42 @@
 /**
- * Common Sense Odisha (CSO) — Service Worker v8
- * Offline-first strategy:
- *  - App-shell precache (dashboard, styles, JS modules, manifest, login)
+ * Common Sense Odisha (CSO) — Service Worker v9 (v260 Performance Optimization)
+ * Lean App-Shell Precache + Stale-While-Revalidate for visited portal assets:
+ *  - Slim core PRECACHE_URLS (10 core shell files only — zero Admin Studio bloat)
+ *  - Dynamic Stale-While-Revalidate (SWR) caching for visited portal CSS/JS assets
  *  - Network-first with cache fallback for candidate-state GET APIs
- *    (/api/candidate/bookmarks, /api/candidate/checklist, /api/sync,
- *    /api/auth/me) so saved syllabi and deadlines stay reviewable offline
- *  - Mutating requests are NEVER cached
- *  - Background `sync` event drains the IndexedDB mutation queue by
- *    messaging the dashboard clients (with a SW-side fallback drain)
+ *  - Mutating requests and /admin/* routes are NEVER cached
+ *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v259';
+const CACHE_NAME = 'cso-candidate-cache-v260';
 const EXPECTED_CACHES = [CACHE_NAME];
 
+// Slim Core App-Shell Precache (fast SW install on slow 3G/4G connections)
 const PRECACHE_URLS = [
   '/',
   '/index.html',
   '/offline.html',
-  '/assets/css/offline.css',
-  '/assets/js/offline.js',
-  '/tools/',
-  '/tools/index.html',
-  '/tools/assets/tools.css',
-  '/tools/assets/tools.js',
-  '/about/',
-  '/about/index.html',
-  '/student-dashboard/',
-  '/student-dashboard/index.html',
-  '/login.html',
-  '/reset-password.html',
-  '/jobs/',
-  '/jobs/index.html',
-  '/jobs-careers/',
-  '/jobs-careers/index.html',
-  '/schemes/',
-  '/schemes/index.html',
-  '/schemes-benefits/',
-  '/schemes-benefits/index.html',
-  '/study-library/',
-  '/study-library/index.html',
-  '/study-library/assets/dashboard.css',
-  '/study-library/assets/dashboard.js',
-  '/community/',
-  '/community/index.html',
   '/assets/style.css',
   '/assets/css/cso-themes.css',
-  '/assets/css/public-content.css',
   '/assets/css/portal-shell.css',
-  '/assets/css/jobs-portal.css',
-  '/assets/css/schemes-portal.css',
-  '/assets/css/study-portal.css',
-  '/assets/css/community-portal.css',
-  '/assets/css/about-portal.css',
-  '/assets/css/student-dashboard-bp.css',
-  '/assets/favicon.svg',
-  '/manifest.webmanifest',
+  '/assets/app.js',
   '/assets/shared-header.js',
-  '/assets/js/cso-global-enhancements.js',
-  '/assets/js/bookmark-manager.js',
-  '/assets/js/cso-countdown.js',
-  '/assets/js/cso-idb.js',
-  '/assets/js/candidate-sync.js',
-  '/assets/js/student-auth-guard.js',
-  '/assets/js/student-dashboard.js',
+  '/assets/favicon.svg',
+  '/manifest.webmanifest'
+];
+
+// Visited portal assets cached lazily on demand via Stale-While-Revalidate
+const RUNTIME_SWR_ASSETS = [
+  '/assets/css/jobs-portal.css',
   '/assets/js/jobs-portal.js',
+  '/assets/css/schemes-portal.css',
   '/assets/js/schemes-portal.js',
+  '/assets/css/study-portal.css',
   '/assets/js/study-portal.js',
+  '/assets/css/community-portal.css',
   '/assets/js/community-portal.js',
-  '/assets/js/about-portal.js',
-  '/assets/js/pwa-install.js'
+  '/assets/css/about-portal.css',
+  '/assets/js/about-portal.js'
 ];
 
 // Candidate-state GET APIs: network-first with cache fallback (offline reads).
@@ -115,10 +83,6 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// ---- IndexedDB queue drain fallback (runs in the SW global scope) ----
-// The dashboard's candidate-sync.js is the primary drainer (it refreshes UI
-// state); the SW performs its own silent drain as a safety net when no
-// dashboard client is open.
 async function swDrainSyncQueue() {
   if (typeof indexedDB === 'undefined') return;
   try {
@@ -155,26 +119,25 @@ async function swDrainSyncQueue() {
             : (typeof entry.body === 'string' ? entry.body : JSON.stringify(entry.body))
         });
         if (res.ok || (res.status >= 400 && res.status < 500)) {
-          await deleteEntry(entry.id); // success or permanent failure
+          await deleteEntry(entry.id);
         }
       } catch (err) {
-        break; // still offline — keep the queue intact
+        break;
       }
     }
     db.close();
   } catch (err) {
-    // No IDB in this SW scope — the client-side drain is authoritative.
+    // No IDB in this SW scope — client-side drain is authoritative.
   }
 }
 
 self.addEventListener('sync', (event) => {
   if (event.tag === 'cso-sync') {
     event.waitUntil((async () => {
-      // Ask every open dashboard client to drain (keeps UI state fresh).
       try {
         const clientList = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
         clientList.forEach((client) => client.postMessage({ type: 'CSO_FLUSH_SYNC_QUEUE' }));
-      } catch (err) { /* fall through to the SW-side drain */ }
+      } catch (err) {}
       await swDrainSyncQueue();
     })());
   }
@@ -189,23 +152,16 @@ self.addEventListener('message', (event) => {
 self.addEventListener('fetch', (event) => {
   const request = event.request;
 
-  if (request.method !== 'GET') {
-    return; // mutations pass straight through (never cached)
-  }
+  if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin) {
-    return;
-  }
+  if (url.origin !== self.location.origin) return;
 
   if (url.pathname === '/admin' || url.pathname.startsWith('/admin/') || url.pathname.startsWith('/api/admin')) {
     return;
   }
 
-  // Mutating endpoints must never be cached even on GET quirks.
-  if (isMutatingRequest(request)) {
-    return;
-  }
+  if (isMutatingRequest(request)) return;
 
   // Public & general /api/* endpoints must NEVER be served cache-first from SW Cache Storage.
   if (url.pathname.startsWith('/api/') && !isNetworkFirstApi(url)) {
@@ -239,6 +195,10 @@ self.addEventListener('fetch', (event) => {
     event.respondWith((async () => {
       try {
         const networkResponse = await fetch(request);
+        if (networkResponse && networkResponse.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(request, networkResponse.clone()).catch(() => {});
+        }
         return networkResponse;
       } catch (err) {
         const cache = await caches.open(CACHE_NAME);
@@ -251,21 +211,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Static assets & everything else: cache-first with network refresh.
+  // 3. Static assets & visited portal assets: Stale-While-Revalidate (instant paint + background refresh).
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
     const cached = await cache.match(request);
-    if (cached) {
-      return cached;
-    }
-    try {
-      const networkResponse = await fetch(request);
+    const isTrackedPortalAsset = RUNTIME_SWR_ASSETS.some(p => url.pathname === p);
+    const networkFetch = fetch(request).then((networkResponse) => {
       if (networkResponse && networkResponse.ok) {
-        cache.put(request, networkResponse.clone());
+        cache.put(request, networkResponse.clone()).catch(() => {});
       }
       return networkResponse;
-    } catch (err) {
-      return Response.error();
+    }).catch(() => null);
+
+    if (cached) {
+      if (typeof event.waitUntil === 'function') event.waitUntil(networkFetch);
+      return cached;
     }
+    const fresh = await networkFetch;
+    if (fresh) return fresh;
+    if (isTrackedPortalAsset) return Response.error();
+    return Response.error();
   })());
 });

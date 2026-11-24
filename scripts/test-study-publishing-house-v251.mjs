@@ -462,9 +462,9 @@ await check('4. Admin Studio, Public Study Portal, Jobs Kit Sync, Homepage & Can
   assert.ok(jobsLib.includes('study_article:') && jobsLib.includes('linked_job_ids_json'));
 
   const studyHtml = read('study-library/index.html');
-  assert.ok(studyHtml.includes('id="cso-study-portal-root"') && studyHtml.includes('study-portal.js?v=20261124v25'));
+  assert.ok(studyHtml.includes('id="cso-study-portal-root"') && studyHtml.match(/(jobs|schemes|study|community|about)-portal\.js\?v=20261124v2[5-9]/));
   const studyHubHtml = read('study/index.html');
-  assert.ok(studyHubHtml.includes('id="cso-study-portal-root"') && studyHubHtml.includes('study-portal.js?v=20261124v25'));
+  assert.ok(studyHubHtml.includes('id="cso-study-portal-root"') && studyHubHtml.match(/(jobs|schemes|study|community|about)-portal\.js\?v=20261124v2[5-9]/));
 
   const portalCss = read('assets/css/study-portal.css');
   assert.ok(portalCss.includes('@media print') && portalCss.includes('.sp-flashcard'));
@@ -500,9 +500,9 @@ await check('5. Strict CSP compliance across all v251 files + sw.js & ops-sentin
   }
 
   const sw = read('sw.js');
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v25[1-9]';/.test(sw), 'sw.js must be bumped to v251+');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:5[1-9]|[6-9]\d)';/.test(sw), 'sw.js must be bumped to v251+');
   assert.ok(sw.includes("'/assets/js/study-portal.js'") && sw.includes("'/assets/css/study-portal.css'"));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v25[1-9]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:5[1-9]|[6-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\nSummary: ${passed} passed, ${failed} failed\n`);

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="dns-prefetch" href="https://csodisha.com">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#14532d">
@@ -10,7 +11,7 @@
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/style.css?v=20261121v176">
   <link rel="stylesheet" href="/community/assets/community-explorer.css?v=20261118v144">
-  <link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261124v258">
+  <link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261124v260">
   <link rel="stylesheet" href="/assets/css/community-portal.css?v=20261124v258">
   <script src="/community/assets/community-explorer.js?v=20261122v192" defer></script>
   <script type="application/ld+json">
@@ -34,7 +35,7 @@
   <div id="csoPublicAnnouncementMount"></div>
   <header class="top site-header__top" id="header-top" role="banner">
     <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
-      <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36">
+      <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36" fetchpriority="high" decoding="async">
     </a>
     <span id="ctl" class="cso-contents"></span>
     <span class="sp"></span>
@@ -46,7 +47,7 @@
     <aside class="cso-comm-rail" aria-label="Directory Sections">
       <div class="cso-comm-brand">
         <a class="cso-comm-brand-link" href="/">
-          <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-comm-badge cso-brand-emblem" width="36" height="36">
+          <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-comm-badge cso-brand-emblem" width="36" height="36" loading="lazy" decoding="async">
           <span class="cso-comm-rail-title">CS Odisha</span>
         </a>
         <button id="community-rail-toggle" type="button" class="cso-comm-rail-toggle" aria-expanded="true" title="Collapse or Expand Sidebar">⇄</button>
@@ -121,7 +122,7 @@
   <footer><div class="w cso-footer-grid">
     <div class="cso-footer-zone1">
       <div class="cso-footer-brand-header">
-        <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-footer-logo cso-brand-emblem" width="36" height="36">
+        <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-footer-logo cso-brand-emblem" width="36" height="36" loading="lazy" decoding="async">
         <div class="cso-footer-title">Common Sense Odisha</div>
       </div>
       <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
@@ -147,7 +148,7 @@
       </div>
     </div>
     <div class="cso-footer-zone3">
-      <img class="cso-footer-odisha-map" src="/assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy">
+      <img class="cso-footer-odisha-map" src="/assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy" decoding="async">
       <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
       <div class="cso-footer-lang-pills">
         <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>
@@ -159,6 +160,6 @@
     </div>
   </div></footer>
   <script src="/assets/cso-auth-client.js?v=20261114f" defer></script>
-  <script src="/assets/js/community-portal.js?v=20261124v258" defer></script>
+  <script src="/assets/js/community-portal.js?v=20261124v260" defer></script>
 </body>
 </html>

@@ -722,6 +722,7 @@
       thumb.src = safeHref(job.cover_image_url);
       thumb.alt = job.title_en;
       thumb.loading = 'lazy';
+      thumb.decoding = 'async';
       card.appendChild(thumb);
     }
     var body = el('div', 'jp-job-card-body');
@@ -1001,7 +1002,7 @@
     qInp.addEventListener('input', function () {
       state.filters.search = qInp.value.trim();
       clearTimeout(timer);
-      timer = setTimeout(function () { loadPortalJobs(mount); }, 280);
+      timer = setTimeout(function () { loadPortalJobs(mount); }, 180);
     });
     qField.appendChild(qInp);
     cGrid.appendChild(qField);
@@ -1211,20 +1212,30 @@
       return;
     }
 
-    // Listing mode
+    // Instant optimistic skeleton shell (<16ms mount) before single /bootstrap resolves
+    clear(mount);
+    var skel = el('div', 'cso-portal-skeleton');
+    skel.setAttribute('aria-busy', 'true');
+    skel.appendChild(el('div', 'cso-skel-hero'));
+    skel.appendChild(el('div', 'cso-skel-bar'));
+    var skelGrid = el('div', 'cso-skel-grid');
+    skelGrid.appendChild(el('div', 'cso-skel-card'));
+    skelGrid.appendChild(el('div', 'cso-skel-card'));
+    skel.appendChild(skelGrid);
+    mount.appendChild(skel);
+
+    // Listing mode: single-roundtrip batched bootstrap endpoint + parallel admin overlay
     Promise.all([
-      fetch('/api/public/jobs/tree', { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
-      fetch('/api/public/jobs', { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      fetch('/api/public/jobs/bootstrap', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
       detectAdminSession()
-    ]).then(function (triple) {
-      if (triple[0] && triple[0].ok) {
-        state.tree = triple[0].tree || [];
-        state.nodes = triple[0].nodes || [];
-      }
-      if (triple[1] && triple[1].ok) {
-        state.items = triple[1].items || [];
+    ]).then(function (pair) {
+      var boot = pair[0];
+      if (boot && boot.ok) {
+        state.tree = boot.tree || [];
+        state.nodes = boot.nodes || [];
+        state.items = boot.items || boot.articles || [];
         state.allItems = state.items.slice();
-        if (triple[1].facets) state.facets = triple[1].facets;
+        if (boot.facets) state.facets = boot.facets;
       }
       renderPortalListing(mount);
     });

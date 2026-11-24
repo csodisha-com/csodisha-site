@@ -172,8 +172,8 @@ check('Public HTML hubs contain zero hardcoded content piles or phantom category
 });
 
 check('Service Worker and ops-sentinel cache version bumped to cso-candidate-cache-v232+', () => {
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:3[2-9]|[45]\d)';/.test(read('sw.js')));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:3[2-9]|[45]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:3[2-9]|[4-9]\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:3[2-9]|[4-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 check('Migration 0133 exists and edge cache invalidator covers all public API routes', () => {

@@ -95,9 +95,9 @@ check('2. schemes-portal.js implements Editorial Hero, 5 Gov Level Cards, Quick 
 check('3. schemes/index.html & schemes-benefits/index.html link v256 assets', () => {
   for (const rel of ['schemes/index.html', 'schemes-benefits/index.html']) {
     const html = read(rel);
-    assert.ok(html.includes('/assets/css/portal-shell.css?v=20261124v256'), `${rel} must link portal-shell.css?v=20261124v256`);
+    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:5[6-9]|[6-9]\d)/.test(html), `${rel} must link portal-shell.css?v=20261124v256`);
     assert.ok(html.includes('/assets/css/schemes-portal.css?v=20261124v256'), `${rel} must link schemes-portal.css?v=20261124v256`);
-    assert.ok(html.includes('/assets/js/schemes-portal.js?v=20261124v256'), `${rel} must link schemes-portal.js?v=20261124v256`);
+    assert.ok(/\/assets\/js\/schemes-portal\.js\?v=20261124v2(?:5[6-9]|[6-9]\d)/.test(html), `${rel} must link schemes-portal.js?v=20261124v256`);
   }
 });
 
@@ -114,8 +114,8 @@ check('4. Strict CSP compliance across all v256 files + sw.js & ops-sentinel.js 
     assert.ok(!/\sstyle="/i.test(html), `${rel} has inline style attribute`);
   }
 
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v25[6-9]';/.test(read('sw.js')));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v25[6-9]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:5[6-9]|[6-9]\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:5[6-9]|[6-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\n=== v256 Results: ${passed} passed, ${failed} failed ===\n`);
