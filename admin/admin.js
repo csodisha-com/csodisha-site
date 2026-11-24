@@ -10,6 +10,7 @@
   var CSOState = {
     activeFolderId: 'folder-jobs-careers',
     activeModuleId: 'folder-jobs-careers',
+    activeJobsSubTab: 'articles',
     activeCareersSubTab: 'list',
     expandedFolders: new Set(['folder-jobs-careers']),
     searchQuery: '',
@@ -309,6 +310,18 @@
         folderBtn.appendChild(left);
         folderBtn.appendChild(right);
         folderBtn.addEventListener('click', function () {
+          if (folder.id === 'folder-jobs-careers') {
+            if (CSOState.expandedFolders.has(folder.id)) CSOState.expandedFolders.delete(folder.id);
+            else CSOState.expandedFolders.add(folder.id);
+            persistOpenGroups();
+            if (!isCurrentFolder) {
+              openJobsPublishingStudio('articles');
+            } else {
+              renderNavigationTree();
+            }
+            if (window.innerWidth <= 900) closeMobileDrawer();
+            return;
+          }
           if (!folderModules.length) {
             selectModule(folder.id, folder.id);
             if (window.innerWidth <= 900) closeMobileDrawer();
@@ -321,6 +334,28 @@
         });
 
         var modList = el('div', 'cso-nav-modules' + (isExpanded ? '' : ' is-collapsed'));
+        if (folder.id === 'folder-jobs-careers') {
+          modList.id = 'jobsSidebarSubnav';
+          [
+            { tab: 'articles', num: '01', title: 'Published & Draft Jobs', tag: 'D1' },
+            { tab: 'taxonomy', num: '02', title: '5-Sector & 3-Layer Hierarchy', tag: 'L1-L3' },
+            { tab: 'snippets', num: '03', title: 'Reusable Bilingual Snippets', tag: 'EN/OR' },
+            { tab: 'new', num: '04', title: '+ Publish New Job Alert', tag: 'NEW' }
+          ].forEach(function (jSub) {
+            var isJActive = isCurrentFolder && CSOState.activeJobsSubTab === jSub.tab;
+            var jBtn = el('button', 'cso-nav-mod-btn' + (isJActive ? ' is-active' : ''));
+            jBtn.type = 'button';
+            jBtn.setAttribute('data-jobs-tab', jSub.tab);
+            jBtn.appendChild(el('span', 'cso-nav-mod-num', jSub.num));
+            jBtn.appendChild(el('span', 'cso-nav-mod-title', jSub.title));
+            jBtn.appendChild(el('span', 'cso-nav-mod-tag is-live', jSub.tag));
+            jBtn.addEventListener('click', function () {
+              openJobsPublishingStudio(jSub.tab);
+              if (window.innerWidth <= 900) closeMobileDrawer();
+            });
+            modList.appendChild(jBtn);
+          });
+        }
         filteredModules.forEach(function (mod, idx) {
           var isActiveMod = CSOState.activeModuleId === mod.id;
           var isLiveRoute = !!(window.CSOLive && window.CSOLive.routes && window.CSOLive.routes[mod.id]);
@@ -655,8 +690,12 @@
   }
 
   function openJobsPublishingStudio(initialTab) {
+    var tabKey = initialTab || 'articles';
     CSOState.activeFolderId = 'folder-jobs-careers';
     CSOState.activeModuleId = 'folder-jobs-careers';
+    CSOState.activeJobsSubTab = tabKey;
+    CSOState.expandedFolders.add('folder-jobs-careers');
+    persistOpenGroups();
     try { localStorage.setItem('cso_active_module_id', 'folder-jobs-careers'); } catch (_e) {}
     if (window.location.hash !== '#folder-jobs-careers' && window.history && window.history.replaceState) {
       window.history.replaceState(null, '', '#folder-jobs-careers');
@@ -664,12 +703,12 @@
     if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Jobs';
     if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Jobs Publishing House';
     if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Jobs Publishing House';
-    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '3-Layer D1 · R2';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '5-Sector · 3-Layer D1';
     renderNavigationTree();
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);
     if (window.CSOJobsPublishingStudio) {
-      window.CSOJobsPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, initialTab || 'articles');
+      window.CSOJobsPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, tabKey);
     }
   }
 
@@ -1172,6 +1211,9 @@
     },
     setCareersCount: function (n) {
       if (CSOState.careersCount !== n) { CSOState.careersCount = n; renderNavigationTree(); }
+    },
+    setJobsSubTab: function (tab) {
+      if (tab && CSOState.activeJobsSubTab !== tab) { CSOState.activeJobsSubTab = tab; renderNavigationTree(); }
     },
     setCareersSubTab: function (tab) {
       if (tab && CSOState.activeCareersSubTab !== tab) { CSOState.activeCareersSubTab = tab; renderNavigationTree(); }

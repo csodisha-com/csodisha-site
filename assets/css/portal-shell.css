@@ -693,3 +693,56 @@ body.cso-portal-active select:focus-visible {
     display: none;
   }
 }
+
+/* ==========================================================================
+   9. Jobs Mega-Dropdown Menu — 4-Theme Semantic Surface Overrides (v274)
+   ========================================================================== */
+#cso-main-navbar {
+  position: relative !important;
+  z-index: 950 !important;
+}
+
+#cso-main-navbar .cso-jobs-mega {
+  background: var(--cso-card-bg, #ffffff) !important;
+  color: var(--cso-ink-primary, #12202b) !important;
+  border-color: var(--cso-border-subtle, #d8e1e9) !important;
+  box-shadow: var(--cso-card-shadow, 0 20px 48px rgba(11, 57, 72, 0.22)) !important;
+}
+
+#cso-main-navbar .cso-jm-top-strip,
+#cso-main-navbar .cso-jm-bottom-strip {
+  background: var(--cso-nav-sub-bg, #eef3f7) !important;
+  border-color: var(--cso-border-subtle, #d8e1e9) !important;
+}
+
+#cso-main-navbar .cso-jm-col {
+  background: var(--cso-card-subtle, #eef3f7) !important;
+  border-color: var(--cso-border-subtle, #d8e1e9) !important;
+}
+
+#cso-main-navbar .cso-jm-col-head {
+  color: var(--cso-ink-primary, #12202b) !important;
+  border-bottom-color: var(--cso-border-subtle, #d8e1e9) !important;
+}
+
+#cso-main-navbar .cso-jm-link {
+  color: var(--cso-ink-secondary, #4c5e6e) !important;
+}
+
+#cso-main-navbar .cso-jm-link:hover {
+  background: var(--cso-card-bg, #ffffff) !important;
+  color: var(--cso-ink-primary, #12202b) !important;
+}
+
+#cso-main-navbar .cso-jm-pill,
+#cso-main-navbar .cso-jm-life-link {
+  background: var(--cso-card-bg, #ffffff) !important;
+  color: var(--cso-ink-primary, #12202b) !important;
+  border-color: var(--cso-border-subtle, #d8e1e9) !important;
+}
+
+#cso-main-navbar .cso-jm-life-link.is-primary {
+  background: var(--cso-nav-pill-bg, #0f4c5c) !important;
+  border-color: var(--cso-nav-pill-bg, #0f4c5c) !important;
+  color: var(--cso-nav-pill-fg, #ffffff) !important;
+}

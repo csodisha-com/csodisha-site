@@ -22,6 +22,59 @@ export const LIFECYCLE_STAGE_LABELS = {
   closed: 'Recruitment Completed'
 };
 
+export const JOBS_5_SECTOR_SLUGS = ['government', 'private', 'psu', 'ngo', 'foreign'];
+export const JOBS_REGION_SCOPES = ['odisha', 'central', 'all-india', 'foreign'];
+
+const SECTOR_SLUG_ALIASES = {
+  government: ['government', 'state-sector-odisha', 'central-sector', 'jtax_l1_government', 'jtax_l1_state_odisha', 'jtax_l1_central'],
+  private: ['private', 'private-corporate', 'jtax_l1_private'],
+  psu: ['psu', 'banking-psu', 'jtax_l1_psu', 'jtax_l1_banking_psu'],
+  ngo: ['ngo', 'ngos-non-profit', 'jtax_l1_ngo'],
+  foreign: ['foreign', 'foreign-jobs', 'jtax_l1_foreign']
+};
+
+export function resolveCanonicalSectorSlug(article) {
+  const l1Id = String(article.category_l1_id || '').toLowerCase();
+  const l1Slug = String((article.taxonomy && article.taxonomy.l1 && article.taxonomy.l1.slug) || '').toLowerCase();
+  const badge = String(article.sector_badge || '').toLowerCase();
+  for (const [canon, aliases] of Object.entries(SECTOR_SLUG_ALIASES)) {
+    if (aliases.includes(l1Id) || aliases.includes(l1Slug)) return canon;
+  }
+  if (badge.includes('foreign') || badge.includes('overseas')) return 'foreign';
+  if (badge.includes('ngo') || badge.includes('non-profit')) return 'ngo';
+  if (badge.includes('psu') || badge.includes('bank')) return 'psu';
+  if (badge.includes('private') || badge.includes('corporate')) return 'private';
+  return 'government';
+}
+
+export function deriveRegionScope(rawScope, locationDistrict = '', l1Slug = '', l2Slug = '') {
+  const explicit = String(rawScope || '').trim().toLowerCase();
+  if (JOBS_REGION_SCOPES.includes(explicit)) return explicit;
+  const l1 = String(l1Slug || '').toLowerCase();
+  const l2 = String(l2Slug || '').toLowerCase();
+  const dist = String(locationDistrict || '').toLowerCase();
+  if (l1 === 'foreign' || l2.includes('foreign') || l2.includes('overseas') || l2.includes('gulf') || l2.includes('global') || dist.includes('foreign') || dist.includes('overseas')) {
+    return 'foreign';
+  }
+  if (l2.includes('central') || l1 === 'central-sector' || dist.includes('central')) {
+    return 'central';
+  }
+  if (dist === 'all india' || dist === 'all over india' || l2.includes('all-india') || l2.includes('national')) {
+    return 'all-india';
+  }
+  return 'odisha';
+}
+
+export function normalizeStageQuery(rawStage) {
+  const s = String(rawStage || '').trim().toLowerCase();
+  if (s === 'apply-online' || s === 'apply_online') return 'notification';
+  if (s === 'admit-card' || s === 'admit_card') return 'admit_card';
+  if (s === 'answer-key' || s === 'answer_key') return 'answer_key';
+  if (s === 'exam-date' || s === 'exam_date') return 'exam_date';
+  if (s === 'closing-soon' || s === 'closing_soon') return 'closing-soon';
+  return s;
+}
+
 export const QUALIFICATION_LEVELS = [
   '10th Pass',
   '12th / +2 Pass',
@@ -393,6 +446,8 @@ function formatArticle(r, taxMap = null, includePrivate = false) {
     bookmarks_count: Number(r.bookmarks_count || 0),
     published_at: String(r.published_at || ''),
     updated_at: String(r.updated_at || ''),
+    region_scope: deriveRegionScope(r.region_scope, r.location_district, l1 && l1.slug, l2 && l2.slug),
+    sector_slug: resolveCanonicalSectorSlug({ category_l1_id: r.category_l1_id, sector_badge: r.sector_badge, taxonomy: { l1 } }),
     public_url: `/jobs/?slug=${encodeURIComponent(String(r.slug || ''))}`,
     ...expiry
   };
@@ -406,6 +461,8 @@ function formatArticle(r, taxMap = null, includePrivate = false) {
 async function invalidateJobsCaches(request, slug = '') {
   const extra = [
     '/api/public/jobs',
+    '/api/public/jobs/list',
+    '/api/public/jobs/bootstrap',
     '/api/public/jobs/tree',
     '/api/public/jobs/article',
     '/api/events/upcoming',
@@ -1092,6 +1149,7 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
     const l2 = str(url.searchParams.get('l2'), 80);
     const l3 = str(url.searchParams.get('l3'), 80);
     const stage = str(url.searchParams.get('stage'), 32);
+    const region = str(url.searchParams.get('region'), 32).toLowerCase();
     const status = str(url.searchParams.get('status'), 24).toLowerCase();
     const q = str(url.searchParams.get('q') || url.searchParams.get('search'), 120).toLowerCase();
 
@@ -1118,6 +1176,7 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
       if (l1 && a.category_l1_id !== l1) return false;
       if (l2 && a.category_l2_id !== l2) return false;
       if (l3 && a.category_l3_id !== l3) return false;
+      if (region && a.region_scope !== region) return false;
       if (stage && a.lifecycle_stage !== stage) return false;
       if (status && a.publication_status !== status) return false;
       if (q) {
@@ -1193,6 +1252,9 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
     ).run();
 
     const row = await db.prepare('SELECT * FROM job_articles WHERE id = ?').bind(id).first();
+    const createRegion = deriveRegionScope(body.region_scope, data.location_district);
+    await db.prepare('UPDATE job_articles SET region_scope = ? WHERE id = ?').bind(createRegion, id).run().catch(() => {});
+    if (row) row.region_scope = createRegion;
     await saveArticleRevision(db, id, row || data, body.change_summary || (data.is_published ? 'Initial publish' : 'Initial draft'), actor.email);
     const { map: taxMap } = await loadTaxonomyMap(db);
     await audit(env, request, actor, data.is_published ? 'jobs_article.publish' : 'jobs_article.create', 'job_articles', id, { slug: finalSlug, title_en: data.title_en });
@@ -1338,6 +1400,11 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
     ).run();
 
     const row = await db.prepare('SELECT * FROM job_articles WHERE id = ?').bind(articleId).first();
+    const regionVal = deriveRegionScope(body.region_scope, data.location_district);
+    if (body.region_scope !== undefined) {
+      await db.prepare('UPDATE job_articles SET region_scope = ? WHERE id = ?').bind(regionVal, articleId).run().catch(() => {});
+      if (row) row.region_scope = regionVal;
+    }
     await saveArticleRevision(db, articleId, row || data, body.change_summary || 'Editorial update', actor.email);
     const { map: taxMap } = await loadTaxonomyMap(db);
     await audit(env, request, actor, data.is_published ? 'jobs_article.publish' : 'jobs_article.update', 'job_articles', articleId, { slug: finalSlug });
@@ -1402,6 +1469,9 @@ export async function handlePublicJobsBootstrapApi(request, env) {
   const districtsSet = new Set();
   const qualsSet = new Set();
   const stagesSet = new Set();
+  const sectorCounts = { government: 0, private: 0, psu: 0, ngo: 0, foreign: 0 };
+  const regionCounts = { odisha: 0, central: 0, 'all-india': 0, foreign: 0 };
+  const stageCounts = { 'apply-online': 0, 'admit-card': 0, 'answer-key': 0, result: 0, 'closing-soon': 0 };
   let activeCount = 0;
   let totalVacancies = 0;
   let closingSoon = 0;
@@ -1409,10 +1479,17 @@ export async function handlePublicJobsBootstrapApi(request, env) {
     if (a.location_district) districtsSet.add(a.location_district);
     if (a.qualification_level) qualsSet.add(a.qualification_level);
     if (a.lifecycle_stage) stagesSet.add(a.lifecycle_stage);
+    if (a.sector_slug && a.sector_slug in sectorCounts) sectorCounts[a.sector_slug]++;
+    if (a.region_scope && a.region_scope in regionCounts) regionCounts[a.region_scope]++;
+    if (a.lifecycle_stage === 'notification') stageCounts['apply-online']++;
+    if (a.lifecycle_stage === 'admit_card') stageCounts['admit-card']++;
+    if (a.lifecycle_stage === 'answer_key') stageCounts['answer-key']++;
+    if (a.lifecycle_stage === 'result') stageCounts.result++;
     if (!a.is_expired) activeCount++;
     totalVacancies += Number(a.total_vacancies || 0);
     if (!a.is_expired && a.days_remaining !== null && a.days_remaining !== undefined && Number(a.days_remaining) >= 0 && Number(a.days_remaining) <= 7) {
       closingSoon++;
+      stageCounts['closing-soon']++;
     }
   });
 
@@ -1428,6 +1505,9 @@ export async function handlePublicJobsBootstrapApi(request, env) {
     ok: true,
     total_published_jobs: all.length,
     total: all.length,
+    sector_counts: sectorCounts,
+    region_counts: regionCounts,
+    stage_counts: stageCounts,
     nodes,
     tree: buildTaxonomyTree(nodes),
     articles: items,
@@ -1483,12 +1563,13 @@ export async function handlePublicJobsListApi(request, env) {
   await publishDueScheduledJobs(env.DB);
 
   const url = new URL(request.url);
-  const l1 = str(url.searchParams.get('l1'), 80);
-  const l2 = str(url.searchParams.get('l2'), 80);
-  const l3 = str(url.searchParams.get('l3'), 80);
+  const l1 = str(url.searchParams.get('l1') || url.searchParams.get('sector'), 80);
+  const l2 = str(url.searchParams.get('l2') || url.searchParams.get('sub'), 80);
+  const l3 = str(url.searchParams.get('l3') || url.searchParams.get('tenure'), 80);
+  const region = str(url.searchParams.get('region'), 40).toLowerCase();
   const district = str(url.searchParams.get('district'), 80).toLowerCase();
   const qualification = str(url.searchParams.get('qualification'), 80).toLowerCase();
-  const stage = str(url.searchParams.get('stage'), 40).toLowerCase();
+  const stage = normalizeStageQuery(url.searchParams.get('stage'));
   const search = str(url.searchParams.get('search') || url.searchParams.get('q'), 120).toLowerCase();
   const featured = url.searchParams.get('featured') === '1';
   const limit = Math.max(1, Math.min(100, Number(url.searchParams.get('limit')) || 50));
@@ -1510,13 +1591,34 @@ export async function handlePublicJobsListApi(request, env) {
     if (a.lifecycle_stage) stagesSet.add(a.lifecycle_stage);
   });
 
+  const l1Lower = l1.toLowerCase();
+  const l1Aliases = SECTOR_SLUG_ALIASES[l1Lower] || [l1Lower];
+
   const filtered = all.filter(a => {
-    if (l1 && a.category_l1_id !== l1 && (!a.taxonomy.l1 || a.taxonomy.l1.slug !== l1)) return false;
+    if (l1) {
+      const artL1Id = String(a.category_l1_id || '').toLowerCase();
+      const artL1Slug = String((a.taxonomy.l1 && a.taxonomy.l1.slug) || '').toLowerCase();
+      const matchL1 = artL1Id === l1Lower || artL1Slug === l1Lower || a.sector_slug === l1Lower || l1Aliases.includes(artL1Id) || l1Aliases.includes(artL1Slug);
+      if (!matchL1) return false;
+    }
     if (l2 && a.category_l2_id !== l2 && (!a.taxonomy.l2 || a.taxonomy.l2.slug !== l2)) return false;
     if (l3 && a.category_l3_id !== l3 && (!a.taxonomy.l3 || a.taxonomy.l3.slug !== l3)) return false;
+    if (region && region !== 'all') {
+      if (region === 'all-india') {
+        if (a.region_scope !== 'all-india' && a.region_scope !== 'central' && String(a.location_district || '').toLowerCase() !== 'all india') return false;
+      } else if (a.region_scope !== region) {
+        return false;
+      }
+    }
     if (district && a.location_district.toLowerCase() !== district && a.location_district.toLowerCase() !== 'all odisha') return false;
     if (qualification && !`${a.qualification_level} ${a.qualification_summary}`.toLowerCase().includes(qualification)) return false;
-    if (stage && a.lifecycle_stage.toLowerCase() !== stage) return false;
+    if (stage) {
+      if (stage === 'closing-soon') {
+        if (a.is_expired || a.days_remaining === null || a.days_remaining === undefined || Number(a.days_remaining) < 0 || Number(a.days_remaining) > 7) return false;
+      } else if (a.lifecycle_stage.toLowerCase() !== stage) {
+        return false;
+      }
+    }
     if (featured && !a.is_featured) return false;
     if (search) {
       const hay = `${a.title_en} ${a.title_or} ${a.summary_en} ${a.organisation_en} ${a.advt_number} ${a.qualification_level} ${a.location_district} ${a.sector_badge}`.toLowerCase();

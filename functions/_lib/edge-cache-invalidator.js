@@ -32,6 +32,7 @@ export const CONTENT_PUBLIC_PATHS = [
   '/api/public/homepage-blocks',
   '/api/homepage/blocks',
   '/api/public/jobs',
+  '/api/public/jobs/list',
   '/api/public/jobs/tree',
   '/api/public/jobs/bootstrap',
   '/api/public/jobs/article',

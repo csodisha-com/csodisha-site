@@ -96,14 +96,14 @@ check('5. Cache busting (?v=20261124v271+, cso-candidate-cache-v271+) & strict C
   ];
   for (const rel of corePages) {
     const html = read(rel);
-    assert.ok(html.includes('/assets/style.css?v=20261124v271'), `${rel} missing style.css?v=20261124v271`);
+    assert.ok(/\/assets\/style\.css\?v=20261124v2(?:7[1-9]|[8-9]\d)/.test(html), `${rel} missing style.css?v=20261124v271+`);
     if (rel === 'index.html') {
-      assert.ok(html.includes('/assets/app.js?v=20261124v271'), 'index.html missing app.js?v=20261124v271');
+      assert.ok(/\/assets\/app\.js\?v=20261124v2(?:7[1-9]|[8-9]\d)/.test(html), 'index.html missing app.js?v=20261124v271+');
     } else {
-      assert.ok(html.includes('/assets/shared-header.js?v=20261124v271'), `${rel} missing shared-header.js?v=20261124v271`);
+      assert.ok(/\/assets\/shared-header\.js\?v=20261124v2(?:7[1-9]|[8-9]\d)/.test(html), `${rel} missing shared-header.js?v=20261124v271+`);
     }
     if (rel !== 'index.html' && rel !== 'student-dashboard/index.html') {
-      assert.ok(html.includes('/assets/css/portal-shell.css?v=20261124v271'), `${rel} missing portal-shell.css?v=20261124v271`);
+      assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:7[1-9]|[8-9]\d)/.test(html), `${rel} missing portal-shell.css?v=20261124v271+`);
     }
     assert.ok(!/\sstyle\s*=/i.test(html), `${rel} contains inline style=`);
     assert.ok(!/\son[a-z]+\s*=/i.test(html), `${rel} contains inline on*= handler`);

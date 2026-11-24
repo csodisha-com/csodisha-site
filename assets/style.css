@@ -9330,3 +9330,262 @@ img.cso-brand-emblem {
     display: none;
   }
 }
+
+/* ==========================================================================
+   v274: Jobs Mega-Dropdown Menu (5-Sector + Geographic + Lifecycle)
+   4-Theme Semantic Tokens (--cso-nav-*, --cso-surface-*, --cso-card-*, --cso-border-*)
+   ========================================================================== */
+#cso-main-navbar,
+.main-nav,
+.site-header__nav {
+  position: relative;
+  z-index: 950;
+}
+
+.cso-ni-jobs .cso-nav-parent {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cso-jobs-mega-toggle {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.cso-jobs-chev {
+  display: inline-block;
+  transition: transform 0.18s ease;
+}
+
+.cso-ni-jobs.cso-open .cso-jobs-chev {
+  transform: rotate(180deg);
+}
+
+.cso-jobs-mega {
+  display: none;
+  background: var(--cso-surface, var(--cso-card-bg, #ffffff));
+  color: var(--cso-text, var(--cso-ink-primary, #12202b));
+  border: 1.5px solid var(--cso-border, var(--cso-border-subtle, #d5dfe7));
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgba(8, 22, 34, 0.22);
+  padding: 16px 18px;
+  box-sizing: border-box;
+  white-space: normal;
+  text-align: left;
+  z-index: 1100;
+}
+
+.cso-ni-jobs.cso-open > .cso-jobs-mega {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 1100px) {
+  #navw .cso-ni-jobs {
+    position: static !important;
+  }
+  .cso-jobs-mega {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(1160px, calc(100vw - 32px));
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1099px) {
+  .cso-jobs-mega {
+    position: fixed;
+    top: 104px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(940px, calc(100vw - 24px));
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .cso-jobs-mega {
+    position: static;
+    transform: none;
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px;
+    box-shadow: none;
+    border-radius: 12px;
+  }
+}
+
+.cso-jm-top-strip,
+.cso-jm-bottom-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--cso-nav-sub-bg, var(--cso-surface-alt, #eef3f7));
+  border: 1px solid var(--cso-border, var(--cso-border-subtle, #d5dfe7));
+}
+
+.cso-jm-strip-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cso-muted, var(--cso-ink-secondary, #4c5e6e));
+  flex-shrink: 0;
+}
+
+.cso-jm-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.cso-jm-pill,
+.cso-jm-life-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border, var(--cso-border-subtle, #cbd5e1));
+  background: var(--cso-surface, var(--cso-card-bg, #ffffff));
+  color: var(--cso-text, var(--cso-ink-primary, #12202b)) !important;
+  font-size: 0.79rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.cso-jm-pill:hover,
+.cso-jm-life-link:hover {
+  border-color: var(--cso-nav-pill-bg, #0f4c5c);
+  background: var(--cso-nav-sub-hover, rgba(15, 76, 92, 0.08));
+}
+
+.cso-jm-pill.is-urgent {
+  border-color: #d97706;
+  color: #b45309 !important;
+}
+
+:root[data-cso-resolved-mode="dark"] .cso-jm-pill.is-urgent,
+:root[data-cso-theme="dark"] .cso-jm-pill.is-urgent {
+  color: #fbbf24 !important;
+  border-color: rgba(251, 191, 36, 0.55);
+}
+
+.cso-jm-life-link.is-primary {
+  background: var(--cso-nav-pill-bg, #0f4c5c);
+  border-color: var(--cso-nav-pill-bg, #0f4c5c);
+  color: var(--cso-nav-pill-fg, #ffffff) !important;
+}
+
+.cso-jm-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 1099px) {
+  .cso-jm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .cso-jm-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cso-jm-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border, var(--cso-border-subtle, #d5dfe7));
+  background: var(--cso-surface-alt, var(--cso-card-subtle, #f6f9fc));
+}
+
+.cso-jm-col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--cso-border, var(--cso-border-subtle, #d5dfe7));
+  color: var(--cso-text, var(--cso-ink-primary, #12202b)) !important;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 0.88rem;
+}
+
+.cso-jm-col-head:hover {
+  color: var(--cso-nav-pill-bg, #0f4c5c) !important;
+}
+
+.cso-jm-col-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.cso-jm-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--cso-nav-pill-bg, #0f4c5c);
+  color: var(--cso-nav-pill-fg, #ffffff);
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.cso-jm-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.cso-jm-link {
+  display: block;
+  padding: 5px 8px;
+  border-radius: 8px;
+  color: var(--cso-muted, var(--cso-ink-secondary, #4c5e6e)) !important;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration: none;
+  white-space: normal;
+  transition: background-color 0.14s ease, color 0.14s ease;
+}
+
+.cso-jm-link:hover {
+  background: var(--cso-surface, var(--cso-card-bg, #ffffff));
+  color: var(--cso-text, var(--cso-ink-primary, #12202b)) !important;
+}

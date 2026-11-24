@@ -195,11 +195,26 @@
   font-size: 0.86rem;
 }
 
-/* Visual Sector Selector Cards (v255: 5-column horizontal desktop row) */
+/* Visual Sector Selector Cards (v255 + v274: 5-col base, 6-col on wide desktop for All + 5 Sectors) */
 .jp-sector-strip {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
+}
+
+@media (min-width: 1200px) {
+  .jp-sector-strip {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+.jp-active-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--cso-border-subtle, #d8e1e9);
 }
 
 .jp-sector-card {

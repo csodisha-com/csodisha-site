@@ -30,12 +30,19 @@
   var QUAL_PRESETS = ['10th', '+2', 'Graduate', 'B.Ed / Technical'];
   var STAGE_PRESETS = [
     ['notification', 'Apply Online'],
+    ['closing-soon', 'Closing Soon'],
     ['admit_card', 'Admit Card'],
     ['answer_key', 'Answer Key'],
     ['result', 'Result']
   ];
+  var REGION_PRESETS = [
+    ['odisha', 'Odisha'],
+    ['central', 'Central'],
+    ['all-india', 'All Over India'],
+    ['foreign', 'Foreign']
+  ];
   var ODISHA_DISTRICTS = [
-    'All Odisha', 'Angul', 'Balangir', 'Balasore', 'Bargarh', 'Bhadrak', 'Boudh',
+    'All Odisha', 'All India', 'Foreign / Overseas', 'Angul', 'Balangir', 'Balasore', 'Bargarh', 'Bhadrak', 'Boudh',
     'Cuttack', 'Deogarh', 'Dhenkanal', 'Gajapati', 'Ganjam', 'Jagatsinghpur',
     'Jajpur', 'Jharsuguda', 'Kalahandi', 'Kandhamal', 'Kendrapara', 'Kendujhar',
     'Khordha', 'Koraput', 'Malkangiri', 'Mayurbhanj', 'Nabarangpur', 'Nayagarh',
@@ -49,7 +56,7 @@
     allItems: [],
     items: [],
     facets: { districts: [], qualifications: [], stages: [] },
-    filters: { l1: '', l2: '', l3: '', district: '', qualification: '', stage: '', search: '' },
+    filters: { l1: '', l2: '', l3: '', region: '', district: '', qualification: '', stage: '', search: '' },
     candidate: null,
     isAdmin: false,
     articlePayload: null,
@@ -865,7 +872,7 @@
   function renderPortalListing(mount) {
     activatePortalShell();
     clear(mount);
-    var hasFilter = Boolean(state.filters.l1 || state.filters.l2 || state.filters.l3 || state.filters.district || state.filters.qualification || state.filters.stage || state.filters.search);
+    var hasFilter = Boolean(state.filters.l1 || state.filters.l2 || state.filters.l3 || state.filters.region || state.filters.district || state.filters.qualification || state.filters.stage || state.filters.search);
     var kpis = computeHeroKpis();
 
     var wrap = el('div', 'jp-portal');
@@ -1041,6 +1048,19 @@
     });
     quickBar.appendChild(stageGroup);
 
+    var regGroup = el('div', 'jp-quick-group');
+    regGroup.appendChild(el('span', 'jp-quick-group-label', 'Scope:'));
+    REGION_PRESETS.forEach(function (pair) {
+      var b = el('button', 'jp-filter-pill' + (state.filters.region === pair[0] ? ' is-active' : ''), pair[1]);
+      b.type = 'button';
+      b.addEventListener('click', function () {
+        state.filters.region = state.filters.region === pair[0] ? '' : pair[0];
+        loadPortalJobs(mount);
+      });
+      regGroup.appendChild(b);
+    });
+    quickBar.appendChild(regGroup);
+
     var distGroup = el('div', 'jp-quick-group');
     distGroup.appendChild(el('span', 'jp-quick-group-label', 'Odisha District:'));
     var distSel = el('select', 'jp-select jp-district-select');
@@ -1065,12 +1085,55 @@
       var rst = el('button', 'jp-btn jp-btn--xs', '✕ Reset Filters');
       rst.type = 'button';
       rst.addEventListener('click', function () {
-        state.filters = { l1: '', l2: '', l3: '', district: '', qualification: '', stage: '', search: '' };
+        state.filters = { l1: '', l2: '', l3: '', region: '', district: '', qualification: '', stage: '', search: '' };
         loadPortalJobs(mount);
       });
       quickBar.appendChild(rst);
     }
     filterSec.appendChild(quickBar);
+
+    // Active Filter Chips (shows deep-linked sector, sub-category, tenure, region, stage, district)
+    var activeChips = [];
+    if (state.filters.l1) {
+      var n1 = state.nodes.find(function (n) { return n.id === state.filters.l1 || n.slug === state.filters.l1; });
+      activeChips.push(['Sector: ' + (n1 ? pick(n1, 'title') : state.filters.l1), function () { state.filters.l1 = ''; state.filters.l2 = ''; state.filters.l3 = ''; loadPortalJobs(mount); }]);
+    }
+    if (state.filters.l2) {
+      var n2 = state.nodes.find(function (n) { return n.id === state.filters.l2 || n.slug === state.filters.l2; });
+      activeChips.push(['Category: ' + (n2 ? pick(n2, 'title') : state.filters.l2), function () { state.filters.l2 = ''; state.filters.l3 = ''; loadPortalJobs(mount); }]);
+    }
+    if (state.filters.l3) {
+      var n3 = state.nodes.find(function (n) { return n.id === state.filters.l3 || n.slug === state.filters.l3; });
+      activeChips.push(['Tenure: ' + (n3 ? pick(n3, 'title') : state.filters.l3), function () { state.filters.l3 = ''; loadPortalJobs(mount); }]);
+    }
+    if (state.filters.region) {
+      var rp = REGION_PRESETS.find(function (p) { return p[0] === state.filters.region; });
+      activeChips.push(['Scope: ' + (rp ? rp[1] : state.filters.region), function () { state.filters.region = ''; loadPortalJobs(mount); }]);
+    }
+    if (state.filters.stage) {
+      var sp = STAGE_PRESETS.find(function (p) { return p[0] === state.filters.stage; });
+      activeChips.push(['Stage: ' + (sp ? sp[1] : state.filters.stage), function () { state.filters.stage = ''; loadPortalJobs(mount); }]);
+    }
+    if (state.filters.district) {
+      activeChips.push(['District: ' + state.filters.district, function () { state.filters.district = ''; loadPortalJobs(mount); }]);
+    }
+    if (state.filters.qualification) {
+      activeChips.push(['Qualification: ' + state.filters.qualification, function () { state.filters.qualification = ''; loadPortalJobs(mount); }]);
+    }
+    if (state.filters.search) {
+      activeChips.push(['Search: "' + state.filters.search + '"', function () { state.filters.search = ''; loadPortalJobs(mount); }]);
+    }
+    if (activeChips.length) {
+      var chipBar = el('div', 'jp-active-chips');
+      chipBar.setAttribute('aria-label', 'Active Filters');
+      activeChips.forEach(function (pair) {
+        var ch = el('button', 'jp-filter-pill is-active', pair[0] + ' ✕');
+        ch.type = 'button';
+        ch.addEventListener('click', pair[1]);
+        chipBar.appendChild(ch);
+      });
+      filterSec.appendChild(chipBar);
+    }
     wrap.appendChild(filterSec);
 
     // 3. Recruitment Cards OR Single Illustrated Empty State + Seeded 3-Layer Departments Directory
@@ -1098,7 +1161,7 @@
         var resetBtn = el('button', 'jp-btn jp-btn--primary', state.lang === 'or' ? 'ସମସ୍ତ ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ' : 'Reset All Filters');
         resetBtn.type = 'button';
         resetBtn.addEventListener('click', function () {
-          state.filters = { l1: '', l2: '', l3: '', district: '', qualification: '', stage: '', search: '' };
+          state.filters = { l1: '', l2: '', l3: '', region: '', district: '', qualification: '', stage: '', search: '' };
           loadPortalJobs(mount);
         });
         emptyActions.appendChild(resetBtn);
@@ -1137,16 +1200,60 @@
     mount.appendChild(wrap);
   }
 
-  function loadPortalJobs(mount) {
+  function normalizeStageUrlParam(raw) {
+    var s = String(raw || '').trim().toLowerCase();
+    if (s === 'apply-online' || s === 'apply_online') return 'notification';
+    if (s === 'admit-card' || s === 'admit_card') return 'admit_card';
+    if (s === 'answer-key' || s === 'answer_key') return 'answer_key';
+    if (s === 'closing-soon' || s === 'closing_soon') return 'closing-soon';
+    return s;
+  }
+
+  function resolveNodeIdBySlugOrId(nodes, level, rawVal) {
+    var v = String(rawVal || '').trim().toLowerCase();
+    if (!v) return '';
+    var hit = (nodes || []).find(function (n) {
+      return Number(n.level) === level && (String(n.id || '').toLowerCase() === v || String(n.slug || '').toLowerCase() === v);
+    });
+    return hit ? hit.id : rawVal;
+  }
+
+  function syncJobsUrlParams() {
+    if (!window.history || !window.history.replaceState) return;
+    var qs = new URLSearchParams();
+    if (state.filters.l1) {
+      var n1 = state.nodes.find(function (n) { return n.id === state.filters.l1; });
+      qs.set('sector', n1 ? n1.slug : state.filters.l1);
+    }
+    if (state.filters.l2) {
+      var n2 = state.nodes.find(function (n) { return n.id === state.filters.l2; });
+      qs.set('sub', n2 ? n2.slug : state.filters.l2);
+    }
+    if (state.filters.l3) {
+      var n3 = state.nodes.find(function (n) { return n.id === state.filters.l3; });
+      qs.set('tenure', n3 ? n3.slug : state.filters.l3);
+    }
+    if (state.filters.region) qs.set('region', state.filters.region);
+    if (state.filters.stage) qs.set('stage', state.filters.stage);
+    if (state.filters.district) qs.set('district', state.filters.district);
+    if (state.filters.qualification) qs.set('qualification', state.filters.qualification);
+    if (state.filters.search) qs.set('q', state.filters.search);
+    var target = window.location.pathname + (qs.toString() ? '?' + qs.toString() : '');
+    try { window.history.replaceState(null, '', target); } catch (_) {}
+  }
+
+  function loadPortalJobs(mount, skipUrlSync) {
+    if (!skipUrlSync) syncJobsUrlParams();
     var qs = new URLSearchParams();
     if (state.filters.l1) qs.set('l1', state.filters.l1);
     if (state.filters.l2) qs.set('l2', state.filters.l2);
     if (state.filters.l3) qs.set('l3', state.filters.l3);
+    if (state.filters.region) qs.set('region', state.filters.region);
     if (state.filters.district) qs.set('district', state.filters.district);
     if (state.filters.qualification) qs.set('qualification', state.filters.qualification);
     if (state.filters.stage) qs.set('stage', state.filters.stage);
     if (state.filters.search) qs.set('search', state.filters.search);
-    fetch('/api/public/jobs?' + qs.toString(), { cache: 'no-store', credentials: 'same-origin' })
+    fetch('/api/public/jobs/list?' + qs.toString(), { cache: 'no-store', credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         if (d && d.ok) {
@@ -1226,7 +1333,17 @@
       mount.appendChild(skel);
     }
 
-    // Listing mode: single-roundtrip batched bootstrap endpoint + parallel admin overlay
+    // Listing mode: single-roundtrip batched bootstrap endpoint + deep-link URL filter hydration
+    var rawSector = (params.get('sector') || params.get('l1') || '').trim();
+    var rawSub = (params.get('sub') || params.get('l2') || '').trim();
+    var rawTenure = (params.get('tenure') || params.get('l3') || '').trim();
+    var rawRegion = (params.get('region') || '').trim().toLowerCase();
+    var rawStage = normalizeStageUrlParam(params.get('stage') || '');
+    var rawDistrict = (params.get('district') || '').trim();
+    var rawQual = (params.get('qualification') || '').trim();
+    var rawSearch = (params.get('q') || params.get('search') || '').trim();
+    var hasDeepLink = Boolean(rawSector || rawSub || rawTenure || rawRegion || rawStage || rawDistrict || rawQual || rawSearch);
+
     Promise.all([
       fetch('/api/public/jobs/bootstrap', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
       detectAdminSession()
@@ -1238,6 +1355,18 @@
         state.items = boot.items || boot.articles || [];
         state.allItems = state.items.slice();
         if (boot.facets) state.facets = boot.facets;
+      }
+      if (hasDeepLink) {
+        state.filters.l1 = resolveNodeIdBySlugOrId(state.nodes, 1, rawSector);
+        state.filters.l2 = resolveNodeIdBySlugOrId(state.nodes, 2, rawSub);
+        state.filters.l3 = resolveNodeIdBySlugOrId(state.nodes, 3, rawTenure);
+        state.filters.region = rawRegion;
+        state.filters.stage = rawStage;
+        state.filters.district = rawDistrict;
+        state.filters.qualification = rawQual;
+        state.filters.search = rawSearch;
+        loadPortalJobs(mount, true);
+        return;
       }
       renderPortalListing(mount);
     });

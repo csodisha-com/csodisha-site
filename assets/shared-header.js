@@ -723,6 +723,8 @@
       n.classList.remove('cso-open');
       const b = n.querySelector('.cso-nav-arrow');
       if (b) b.setAttribute('aria-expanded', 'false');
+      const trigA = n.querySelector('.cso-nav-parent > a[aria-haspopup="true"]');
+      if (trigA) trigA.setAttribute('aria-expanded', 'false');
     });
     const navw = document.getElementById('navw');
     if (navw && document.activeElement && navw.contains(document.activeElement)) {
@@ -765,13 +767,19 @@
       const pillarKey = rawKey === 'jobs-careers' ? 'jobs' : (rawKey === 'schemes' ? 'schemes-benefits' : rawKey);
       if (pillarKey === 'home' || it.url === '/') return;
       const isCurrent = pillarKey === activeSection;
-      const ni = el('div', 'ni' + (isCurrent ? ' cso-active' : ''));
+      const isJobs = pillarKey === 'jobs';
+      const ni = el('div', 'ni' + (isCurrent ? ' cso-active' : '') + (isJobs ? ' cso-ni-jobs' : ''));
       ni.dataset.pillar = pillarKey;
       const parent = el('div', 'cso-nav-parent');
       const a = el('a', isCurrent ? 'on' : '');
       a.href = resolveSafeHref(it.url || ('/' + pillarKey + '/'));
       if (it.open_new_tab) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
       if (isCurrent) a.setAttribute('aria-current', 'page');
+      if (isJobs) {
+        a.setAttribute('aria-haspopup', 'true');
+        a.setAttribute('aria-expanded', 'false');
+        a.setAttribute('aria-controls', 'cso-jobs-mega-panel');
+      }
       const iconText = it.icon || it.icon_key || '';
       if (iconText) {
         const ic = el('span', '', iconText);
@@ -782,8 +790,262 @@
       if (it.badge_text_en) a.append(' ', el('span', 'cso-nav-badge', it.badge_text_en));
 
       parent.appendChild(a);
-      ni.appendChild(parent);
+      if (isJobs) {
+        const chevBtn = el('button', 'cso-nav-arrow cso-jobs-mega-toggle');
+        chevBtn.type = 'button';
+        chevBtn.setAttribute('aria-label', 'Toggle Jobs sectors menu');
+        chevBtn.setAttribute('aria-haspopup', 'true');
+        chevBtn.setAttribute('aria-expanded', 'false');
+        chevBtn.setAttribute('aria-controls', 'cso-jobs-mega-panel');
+        const chevIcon = el('span', 'cso-jobs-chev', '▾');
+        chevIcon.setAttribute('aria-hidden', 'true');
+        chevBtn.appendChild(chevIcon);
+        parent.appendChild(chevBtn);
+        ni.appendChild(parent);
+        ni.appendChild(buildJobsMegaPanel());
+        wireJobsMegaInteractions(ni, a, chevBtn);
+      } else {
+        ni.appendChild(parent);
+      }
       navItems.appendChild(ni);
+    });
+  }
+
+  const JOBS_MEGA_CACHE_KEY = 'cso_jobs_mega_counts_v274';
+  let jobsMegaCounts = null;
+  let jobsMegaFetchStarted = false;
+
+  const JOBS_MEGA_SCOPES = [
+    { labelEn: 'All Scopes', labelOr: 'ସମସ୍ତ ପରିସର', href: '/jobs/', key: 'all' },
+    { labelEn: 'Odisha', labelOr: 'ଓଡ଼ିଶା', href: '/jobs/?region=odisha', key: 'odisha' },
+    { labelEn: 'Central', labelOr: 'କେନ୍ଦ୍ର ସରକାର', href: '/jobs/?region=central', key: 'central' },
+    { labelEn: 'All Over India', labelOr: 'ସମଗ୍ର ଭାରତ', href: '/jobs/?region=all-india', key: 'all-india' },
+    { labelEn: 'Closing Soon', labelOr: 'ଶୀଘ୍ର ଶେଷ', href: '/jobs/?stage=closing-soon', key: 'closing-soon', urgent: true }
+  ];
+
+  const JOBS_MEGA_SECTORS = [
+    {
+      slug: 'government', icon: '🏛️', titleEn: 'Government', titleOr: 'ସରକାରୀ ଚାକିରି', href: '/jobs/?sector=government',
+      links: [
+        { labelEn: 'Odisha State Govt', labelOr: 'ଓଡ଼ିଶା ରାଜ୍ୟ ସରକାରୀ', href: '/jobs/?sector=government&region=odisha&sub=odisha-state-govt' },
+        { labelEn: 'Central Govt', labelOr: 'କେନ୍ଦ୍ର ସରକାରୀ', href: '/jobs/?sector=government&region=central&sub=central-govt' },
+        { labelEn: 'All Over India', labelOr: 'ସମଗ୍ର ଭାରତ', href: '/jobs/?sector=government&region=all-india' }
+      ]
+    },
+    {
+      slug: 'private', icon: '💼', titleEn: 'Private', titleOr: 'ବେସରକାରୀ ଚାକିରି', href: '/jobs/?sector=private',
+      links: [
+        { labelEn: 'Odisha Private & IT', labelOr: 'ଓଡ଼ିଶା ବେସରକାରୀ ଓ ଆଇଟି', href: '/jobs/?sector=private&region=odisha&sub=odisha-private-it' },
+        { labelEn: 'All-India Corporate & Tech', labelOr: 'ସର୍ବଭାରତୀୟ କର୍ପୋରେଟ୍ ଓ ଟେକ୍', href: '/jobs/?sector=private&region=all-india&sub=all-india-corporate-tech' },
+        { labelEn: 'Freshers & Off-Campus', labelOr: 'ଫ୍ରେଶର୍ସ ଓ ଅଫ୍-କ୍ୟାମ୍ପସ୍', href: '/jobs/?sector=private&sub=freshers-off-campus' }
+      ]
+    },
+    {
+      slug: 'psu', icon: '🏭', titleEn: 'PSUs', titleOr: 'ରାଷ୍ଟ୍ରାୟତ୍ତ ଉଦ୍ୟୋଗ (PSU)', href: '/jobs/?sector=psu',
+      links: [
+        { labelEn: 'Odisha State PSUs', labelOr: 'ଓଡ଼ିଶା ରାଜ୍ୟ ପିଏସୟୁ', href: '/jobs/?sector=psu&region=odisha&sub=odisha-state-psus' },
+        { labelEn: 'Central Maharatna / Navratna', labelOr: 'କେନ୍ଦ୍ରୀୟ ମହାରତ୍ନ / ନବରତ୍ନ', href: '/jobs/?sector=psu&region=central&sub=central-maharatna-navratna' },
+        { labelEn: 'All Over India PSUs', labelOr: 'ସମଗ୍ର ଭାରତ ପିଏସୟୁ', href: '/jobs/?sector=psu&region=all-india&sub=all-india-psus' }
+      ]
+    },
+    {
+      slug: 'ngo', icon: '🤝', titleEn: 'NGOs / Non-Profit', titleOr: 'ଏନଜିଓ / ଅଣ-ଲାଭଜନକ', href: '/jobs/?sector=ngo',
+      links: [
+        { labelEn: 'Odisha Livelihoods & Social Impact', labelOr: 'ଓଡ଼ିଶା ଜୀବିକା ଓ ସାମାଜିକ ବିକାଶ', href: '/jobs/?sector=ngo&region=odisha&sub=odisha-livelihoods-social' },
+        { labelEn: 'National Development & CSR', labelOr: 'ଜାତୀୟ ବିକାଶ ଓ CSR', href: '/jobs/?sector=ngo&region=all-india&sub=national-development-csr' },
+        { labelEn: 'Fellowships & Field Roles', labelOr: 'ଫେଲୋସିପ୍ ଓ ଫିଲ୍ଡ ପଦବୀ', href: '/jobs/?sector=ngo&sub=fellowships-field-roles' }
+      ]
+    },
+    {
+      slug: 'foreign', icon: '✈️', titleEn: 'Foreign Jobs', titleOr: 'ବିଦେଶୀ ଚାକିରି', href: '/jobs/?sector=foreign',
+      links: [
+        { labelEn: 'MEA-Verified Overseas', labelOr: 'MEA-ଯାଞ୍ଚିତ ବିଦେଶୀ', href: '/jobs/?sector=foreign&sub=mea-verified-overseas' },
+        { labelEn: 'Gulf & Middle East Technical', labelOr: 'ଗଲ୍ଫ ଓ ମଧ୍ୟପ୍ରାଚ୍ୟ ଟେକ୍ନିକାଲ୍', href: '/jobs/?sector=foreign&sub=gulf-middle-east-tech' },
+        { labelEn: 'Global / Skilled Migration', labelOr: 'ବିଶ୍ୱସ୍ତରୀୟ ଦକ୍ଷ ନିଯୁକ୍ତି', href: '/jobs/?sector=foreign&sub=global-skilled-migration' }
+      ]
+    }
+  ];
+
+  const JOBS_MEGA_LIFECYCLE = [
+    { labelEn: 'Apply Online', labelOr: 'ଅନଲାଇନ୍ ଆବେଦନ', href: '/jobs/?stage=apply-online' },
+    { labelEn: 'Admit Cards', labelOr: 'ଆଡମିଟ୍ କାର୍ଡ', href: '/jobs/?stage=admit-card' },
+    { labelEn: 'Answer Keys', labelOr: 'ଉତ୍ତର ସଙ୍କେତ', href: '/jobs/?stage=answer-key' },
+    { labelEn: 'Results', labelOr: 'ଫଳାଫଳ', href: '/jobs/?stage=result' },
+    { labelEn: 'Explore All Jobs →', labelOr: 'ସମସ୍ତ ଚାକିରି ଦେଖନ୍ତୁ →', href: '/jobs/', primary: true }
+  ];
+
+  function readJobsMegaCache() {
+    if (jobsMegaCounts) return jobsMegaCounts;
+    try {
+      const raw = sessionStorage.getItem(JOBS_MEGA_CACHE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.ts && (Date.now() - parsed.ts < 120000) && parsed.sectors) {
+          jobsMegaCounts = parsed;
+          return parsed;
+        }
+      }
+    } catch (_e) {}
+    return null;
+  }
+
+  function applyJobsMegaCounts(data) {
+    if (!data || !data.sectors) return;
+    document.querySelectorAll('.cso-jm-count[data-jm-sector]').forEach(badge => {
+      const slug = badge.getAttribute('data-jm-sector');
+      const val = Number((data.sectors && data.sectors[slug]) || 0);
+      badge.textContent = String(val);
+    });
+  }
+
+  function hydrateJobsMegaCounts() {
+    const cached = readJobsMegaCache();
+    if (cached) {
+      applyJobsMegaCounts(cached);
+      return;
+    }
+    if (jobsMegaFetchStarted || typeof fetch !== 'function') return;
+    jobsMegaFetchStarted = true;
+    fetch('/api/public/jobs/bootstrap', { credentials: 'same-origin' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        const sectors = { government: 0, private: 0, psu: 0, ngo: 0, foreign: 0 };
+        if (d && d.sector_counts) {
+          Object.keys(sectors).forEach(k => { sectors[k] = Number(d.sector_counts[k] || 0); });
+        } else if (d && Array.isArray(d.nodes)) {
+          d.nodes.filter(n => Number(n.level) === 1).forEach(n => {
+            const sl = String(n.slug || '').toLowerCase();
+            if (sl in sectors) sectors[sl] = Number(n.published_jobs_count || 0);
+          });
+        }
+        jobsMegaCounts = { ts: Date.now(), sectors };
+        try { sessionStorage.setItem(JOBS_MEGA_CACHE_KEY, JSON.stringify(jobsMegaCounts)); } catch (_e) {}
+        applyJobsMegaCounts(jobsMegaCounts);
+      })
+      .catch(() => {});
+  }
+
+  function buildJobsMegaPanel() {
+    const isOr = S.lang === 'or';
+    const cached = readJobsMegaCache();
+    const panel = el('div', 'cso-jobs-mega');
+    panel.id = 'cso-jobs-mega-panel';
+    panel.setAttribute('role', 'region');
+    panel.setAttribute('aria-label', isOr ? 'ଚାକିରି କ୍ଷେତ୍ର ଓ ଅଞ୍ଚଳ ମେନୁ' : 'Jobs sectors and scopes menu');
+
+    // Top Geographic & Urgency Strip
+    const topStrip = el('div', 'cso-jm-top-strip');
+    const topLabel = el('span', 'cso-jm-strip-label', isOr ? 'ପରିସର:' : 'Geographic Scope:');
+    topStrip.appendChild(topLabel);
+    const scopePills = el('div', 'cso-jm-pills');
+    JOBS_MEGA_SCOPES.forEach(sc => {
+      const a = el('a', 'cso-jm-pill' + (sc.urgent ? ' is-urgent' : ''), isOr ? sc.labelOr : sc.labelEn);
+      a.href = sc.href;
+      scopePills.appendChild(a);
+    });
+    topStrip.appendChild(scopePills);
+
+    // 5 Sector Columns
+    const grid = el('div', 'cso-jm-grid');
+    JOBS_MEGA_SECTORS.forEach(sec => {
+      const col = el('div', 'cso-jm-col');
+      const headA = el('a', 'cso-jm-col-head');
+      headA.href = sec.href;
+      const headLeft = el('span', 'cso-jm-col-title');
+      const ic = el('span', 'cso-jm-col-icon', sec.icon);
+      ic.setAttribute('aria-hidden', 'true');
+      headLeft.append(ic, ' ', document.createTextNode(isOr ? sec.titleOr : sec.titleEn));
+      const cnt = el('span', 'cso-jm-count', String(Number((cached && cached.sectors && cached.sectors[sec.slug]) || 0)));
+      cnt.setAttribute('data-jm-sector', sec.slug);
+      headA.append(headLeft, cnt);
+
+      const ul = el('ul', 'cso-jm-links');
+      sec.links.forEach(lk => {
+        const li = el('li');
+        const a = el('a', 'cso-jm-link', isOr ? lk.labelOr : lk.labelEn);
+        a.href = lk.href;
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+
+      col.append(headA, ul);
+      grid.appendChild(col);
+    });
+
+    // Bottom Candidate Lifecycle Strip
+    const botStrip = el('div', 'cso-jm-bottom-strip');
+    const botLabel = el('span', 'cso-jm-strip-label', isOr ? 'ପରୀକ୍ଷା ପର୍ଯ୍ୟାୟ:' : 'Candidate Lifecycle:');
+    botStrip.appendChild(botLabel);
+    const lifePills = el('div', 'cso-jm-pills');
+    JOBS_MEGA_LIFECYCLE.forEach(lf => {
+      const a = el('a', 'cso-jm-life-link' + (lf.primary ? ' is-primary' : ''), isOr ? lf.labelOr : lf.labelEn);
+      a.href = lf.href;
+      lifePills.appendChild(a);
+    });
+    botStrip.appendChild(lifePills);
+
+    panel.append(topStrip, grid, botStrip);
+    return panel;
+  }
+
+  function wireJobsMegaInteractions(ni, triggerA, chevBtn) {
+    let hoverOpenTimer = null;
+    let hoverCloseTimer = null;
+
+    function setOpen(open) {
+      if (open) {
+        closeDropdowns(ni);
+        hydrateJobsMegaCounts();
+      }
+      ni.classList.toggle('cso-open', open);
+      triggerA.setAttribute('aria-expanded', String(open));
+      chevBtn.setAttribute('aria-expanded', String(open));
+    }
+
+    ni.addEventListener('mouseenter', () => {
+      if (window.innerWidth < 1100) return;
+      clearTimeout(hoverCloseTimer);
+      hoverOpenTimer = setTimeout(() => setOpen(true), 120);
+    });
+
+    ni.addEventListener('mouseleave', () => {
+      if (window.innerWidth < 1100) return;
+      clearTimeout(hoverOpenTimer);
+      hoverCloseTimer = setTimeout(() => setOpen(false), 140);
+    });
+
+    triggerA.addEventListener('keydown', ev => {
+      if (ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        setOpen(true);
+        const firstLink = ni.querySelector('.cso-jobs-mega a');
+        if (firstLink) firstLink.focus();
+      } else if (ev.key === 'Escape') {
+        setOpen(false);
+      }
+    });
+
+    chevBtn.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        const next = ev.key === 'ArrowDown' ? true : !ni.classList.contains('cso-open');
+        setOpen(next);
+        if (next) {
+          const firstLink = ni.querySelector('.cso-jobs-mega a');
+          if (firstLink) firstLink.focus();
+        }
+      } else if (ev.key === 'Escape') {
+        setOpen(false);
+        chevBtn.focus();
+      }
+    });
+
+    ni.addEventListener('keydown', ev => {
+      if (ev.key === 'Escape' && ni.classList.contains('cso-open')) {
+        ev.preventDefault();
+        setOpen(false);
+        triggerA.focus();
+      }
     });
   }
 
@@ -931,6 +1193,9 @@
         closeDropdowns(parent);
         parent.classList.toggle('cso-open', open);
         arrow.setAttribute('aria-expanded', String(open));
+        const trigA = parent.querySelector('.cso-nav-parent > a[aria-haspopup="true"]');
+        if (trigA) trigA.setAttribute('aria-expanded', String(open));
+        if (open && parent.classList.contains('cso-ni-jobs')) hydrateJobsMegaCounts();
       }
       return;
     }

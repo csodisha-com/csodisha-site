@@ -243,6 +243,138 @@ function nav(){
   });
   return out;
  };
+ const JOBS_MEGA_CACHE_KEY='cso_jobs_mega_counts_v274';
+ const JOBS_MEGA_SCOPES=[
+  ['All Scopes','ସମସ୍ତ ପରିସର','/jobs/',false],
+  ['Odisha','ଓଡ଼ିଶା','/jobs/?region=odisha',false],
+  ['Central','କେନ୍ଦ୍ର ସରକାର','/jobs/?region=central',false],
+  ['All Over India','ସମଗ୍ର ଭାରତ','/jobs/?region=all-india',false],
+  ['Closing Soon','ଶୀଘ୍ର ଶେଷ','/jobs/?stage=closing-soon',true]
+ ];
+ const JOBS_MEGA_SECTORS=[
+  ['government','🏛️','Government','ସରକାରୀ ଚାକିରି','/jobs/?sector=government',[
+   ['Odisha State Govt','ଓଡ଼ିଶା ରାଜ୍ୟ ସରକାରୀ','/jobs/?sector=government&region=odisha&sub=odisha-state-govt'],
+   ['Central Govt','କେନ୍ଦ୍ର ସରକାରୀ','/jobs/?sector=government&region=central&sub=central-govt'],
+   ['All Over India','ସମଗ୍ର ଭାରତ','/jobs/?sector=government&region=all-india']
+  ]],
+  ['private','💼','Private','ବେସରକାରୀ ଚାକିରି','/jobs/?sector=private',[
+   ['Odisha Private & IT','ଓଡ଼ିଶା ବେସରକାରୀ ଓ ଆଇଟି','/jobs/?sector=private&region=odisha&sub=odisha-private-it'],
+   ['All-India Corporate & Tech','ସର୍ବଭାରତୀୟ କର୍ପୋରେଟ୍ ଓ ଟେକ୍','/jobs/?sector=private&region=all-india&sub=all-india-corporate-tech'],
+   ['Freshers & Off-Campus','ଫ୍ରେଶର୍ସ ଓ ଅଫ୍-କ୍ୟାମ୍ପସ୍','/jobs/?sector=private&sub=freshers-off-campus']
+  ]],
+  ['psu','🏭','PSUs','ରାଷ୍ଟ୍ରାୟତ୍ତ ଉଦ୍ୟୋଗ (PSU)','/jobs/?sector=psu',[
+   ['Odisha State PSUs','ଓଡ଼ିଶା ରାଜ୍ୟ ପିଏସୟୁ','/jobs/?sector=psu&region=odisha&sub=odisha-state-psus'],
+   ['Central Maharatna / Navratna','କେନ୍ଦ୍ରୀୟ ମହାରତ୍ନ / ନବରତ୍ନ','/jobs/?sector=psu&region=central&sub=central-maharatna-navratna'],
+   ['All Over India PSUs','ସମଗ୍ର ଭାରତ ପିଏସୟୁ','/jobs/?sector=psu&region=all-india&sub=all-india-psus']
+  ]],
+  ['ngo','🤝','NGOs / Non-Profit','ଏନଜିଓ / ଅଣ-ଲାଭଜନକ','/jobs/?sector=ngo',[
+   ['Odisha Livelihoods & Social Impact','ଓଡ଼ିଶା ଜୀବିକା ଓ ସାମାଜିକ ବିକାଶ','/jobs/?sector=ngo&region=odisha&sub=odisha-livelihoods-social'],
+   ['National Development & CSR','ଜାତୀୟ ବିକାଶ ଓ CSR','/jobs/?sector=ngo&region=all-india&sub=national-development-csr'],
+   ['Fellowships & Field Roles','ଫେଲୋସିପ୍ ଓ ଫିଲ୍ଡ ପଦବୀ','/jobs/?sector=ngo&sub=fellowships-field-roles']
+  ]],
+  ['foreign','✈️','Foreign Jobs','ବିଦେଶୀ ଚାକିରି','/jobs/?sector=foreign',[
+   ['MEA-Verified Overseas','MEA-ଯାଞ୍ଚିତ ବିଦେଶୀ','/jobs/?sector=foreign&sub=mea-verified-overseas'],
+   ['Gulf & Middle East Technical','ଗଲ୍ଫ ଓ ମଧ୍ୟପ୍ରାଚ୍ୟ ଟେକ୍ନିକାଲ୍','/jobs/?sector=foreign&sub=gulf-middle-east-tech'],
+   ['Global / Skilled Migration','ବିଶ୍ୱସ୍ତରୀୟ ଦକ୍ଷ ନିଯୁକ୍ତି','/jobs/?sector=foreign&sub=global-skilled-migration']
+  ]]
+ ];
+ const JOBS_MEGA_LIFE=[
+  ['Apply Online','ଅନଲାଇନ୍ ଆବେଦନ','/jobs/?stage=apply-online',false],
+  ['Admit Cards','ଆଡମିଟ୍ କାର୍ଡ','/jobs/?stage=admit-card',false],
+  ['Answer Keys','ଉତ୍ତର ସଙ୍କେତ','/jobs/?stage=answer-key',false],
+  ['Results','ଫଳାଫଳ','/jobs/?stage=result',false],
+  ['Explore All Jobs →','ସମସ୍ତ ଚାକିରି ଦେଖନ୍ତୁ →','/jobs/',true]
+ ];
+ const readJobsCounts=()=>{
+  try{
+   const raw=sessionStorage.getItem(JOBS_MEGA_CACHE_KEY);
+   if(raw){const p=JSON.parse(raw);if(p&&p.ts&&(Date.now()-p.ts<120000)&&p.sectors)return p;}
+  }catch(_e){}
+  return null;
+ };
+ const applyJobsCounts=(data)=>{
+  if(!data||!data.sectors)return;
+  $$('.cso-jm-count[data-jm-sector]').forEach(b=>{
+   const sl=b.getAttribute('data-jm-sector');
+   b.textContent=String(Number((data.sectors&&data.sectors[sl])||0));
+  });
+ };
+ const hydrateJobsCounts=()=>{
+  const cached=readJobsCounts();
+  if(cached){applyJobsCounts(cached);return;}
+  if(window.__csoJobsMegaFetching||typeof fetch!=='function')return;
+  window.__csoJobsMegaFetching=true;
+  fetch('/api/public/jobs/bootstrap',{credentials:'same-origin'})
+   .then(r=>r.ok?r.json():null)
+   .then(d=>{
+    const sectors={government:0,private:0,psu:0,ngo:0,foreign:0};
+    if(d&&d.sector_counts){Object.keys(sectors).forEach(k=>{sectors[k]=Number(d.sector_counts[k]||0);});}
+    else if(d&&Array.isArray(d.nodes)){d.nodes.filter(n=>Number(n.level)===1).forEach(n=>{const sl=String(n.slug||'').toLowerCase();if(sl in sectors)sectors[sl]=Number(n.published_jobs_count||0);});}
+    const pack={ts:Date.now(),sectors};
+    try{sessionStorage.setItem(JOBS_MEGA_CACHE_KEY,JSON.stringify(pack));}catch(_e){}
+    applyJobsCounts(pack);
+   }).catch(()=>{});
+ };
+ const buildJobsMega=()=>{
+  const isOr=S.lang==='or';
+  const cached=readJobsCounts();
+  const panel=mk('div','cso-jobs-mega');panel.id='cso-jobs-mega-panel';
+  panel.setAttribute('role','region');panel.setAttribute('aria-label',isOr?'ଚାକିରି କ୍ଷେତ୍ର ଓ ଅଞ୍ଚଳ ମେନୁ':'Jobs sectors and scopes menu');
+  const top=mk('div','cso-jm-top-strip');
+  top.appendChild(mk('span','cso-jm-strip-label',isOr?'ପରିସର:':'Geographic Scope:'));
+  const sp=mk('div','cso-jm-pills');
+  JOBS_MEGA_SCOPES.forEach(([en,orL,href,urg])=>{
+   const a=mk('a','cso-jm-pill'+(urg?' is-urgent':''),isOr?orL:en);a.href=href;sp.appendChild(a);
+  });
+  top.appendChild(sp);
+  const grid=mk('div','cso-jm-grid');
+  JOBS_MEGA_SECTORS.forEach(([slug,icTxt,enT,orT,href,subs])=>{
+   const col=mk('div','cso-jm-col');
+   const hA=mk('a','cso-jm-col-head');hA.href=href;
+   const hL=mk('span','cso-jm-col-title');
+   const ic=mk('span','cso-jm-col-icon',icTxt);ic.setAttribute('aria-hidden','true');
+   hL.append(ic,' ',document.createTextNode(isOr?orT:enT));
+   const cnt=mk('span','cso-jm-count',String(Number((cached&&cached.sectors&&cached.sectors[slug])||0)));
+   cnt.setAttribute('data-jm-sector',slug);
+   hA.append(hL,cnt);
+   const ul=mk('ul','cso-jm-links');
+   subs.forEach(([sEn,sOr,sHref])=>{
+    const li=mk('li');const a=mk('a','cso-jm-link',isOr?sOr:sEn);a.href=sHref;li.appendChild(a);ul.appendChild(li);
+   });
+   col.append(hA,ul);grid.appendChild(col);
+  });
+  const bot=mk('div','cso-jm-bottom-strip');
+  bot.appendChild(mk('span','cso-jm-strip-label',isOr?'ପରୀକ୍ଷା ପର୍ଯ୍ୟାୟ:':'Candidate Lifecycle:'));
+  const lp=mk('div','cso-jm-pills');
+  JOBS_MEGA_LIFE.forEach(([en,orL,href,prim])=>{
+   const a=mk('a','cso-jm-life-link'+(prim?' is-primary':''),isOr?orL:en);a.href=href;lp.appendChild(a);
+  });
+  bot.appendChild(lp);
+  panel.append(top,grid,bot);
+  return panel;
+ };
+ const wireJobsMega=(ni,trigA,chevBtn)=>{
+  let openT=null,closeT=null;
+  const setOpen=(open)=>{
+   if(open){csoCloseNavDropdowns(ni);hydrateJobsCounts();}
+   ni.classList.toggle('cso-open',open);
+   trigA.setAttribute('aria-expanded',String(open));
+   chevBtn.setAttribute('aria-expanded',String(open));
+  };
+  ni.addEventListener('mouseenter',()=>{if(window.innerWidth<1100)return;clearTimeout(closeT);openT=setTimeout(()=>setOpen(true),120);});
+  ni.addEventListener('mouseleave',()=>{if(window.innerWidth<1100)return;clearTimeout(openT);closeT=setTimeout(()=>setOpen(false),140);});
+  trigA.addEventListener('keydown',ev=>{
+   if(ev.key==='ArrowDown'){ev.preventDefault();setOpen(true);const f=ni.querySelector('.cso-jobs-mega a');if(f)f.focus();}
+   else if(ev.key==='Escape'){setOpen(false);}
+  });
+  chevBtn.addEventListener('keydown',ev=>{
+   if(ev.key==='Enter'||ev.key===' '||ev.key==='ArrowDown'){
+    ev.preventDefault();const next=ev.key==='ArrowDown'?true:!ni.classList.contains('cso-open');setOpen(next);
+    if(next){const f=ni.querySelector('.cso-jobs-mega a');if(f)f.focus();}
+   }else if(ev.key==='Escape'){setOpen(false);chevBtn.focus();}
+  });
+  ni.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&ni.classList.contains('cso-open')){ev.preventDefault();setOpen(false);trigA.focus();}});
+ };
  const renderList=(list)=>{
   while(itemsWrap.children.length>1)itemsWrap.lastChild.remove();
   normalizeHeaderList(list).forEach(entry=>{
@@ -253,13 +385,26 @@ function nav(){
    const icon=isArr?entry[2]:(entry.icon_key||'');
    const href=isArr?(entry[3]||('/'+s+'/')):(entry.url||'/');
    if(href==='/')return;
-   const ni=mk('div','ni');ni.dataset.pillar=s;
+   const isJobs=s==='jobs';
+   const ni=mk('div','ni'+(isJobs?' cso-ni-jobs':''));ni.dataset.pillar=s;
    const par=mk('div','cso-nav-parent');
    const a=mk('a');a.href=href;a.dataset.m=s;
+   if(isJobs){a.setAttribute('aria-haspopup','true');a.setAttribute('aria-expanded','false');a.setAttribute('aria-controls','cso-jobs-mega-panel');}
    if(icon){const ic=mk('span','',icon);ic.setAttribute('aria-hidden','true');a.append(ic,' ');}
    a.append(document.createTextNode(translateText(t)));
    par.appendChild(a);
-   ni.appendChild(par);
+   if(isJobs){
+    const chevBtn=mk('button','cso-nav-arrow cso-jobs-mega-toggle');chevBtn.type='button';
+    chevBtn.setAttribute('aria-label','Toggle Jobs sectors menu');
+    chevBtn.setAttribute('aria-haspopup','true');chevBtn.setAttribute('aria-expanded','false');chevBtn.setAttribute('aria-controls','cso-jobs-mega-panel');
+    const cI=mk('span','cso-jobs-chev','▾');cI.setAttribute('aria-hidden','true');chevBtn.appendChild(cI);
+    par.appendChild(chevBtn);
+    ni.appendChild(par);
+    ni.appendChild(buildJobsMega());
+    wireJobsMega(ni,a,chevBtn);
+   }else{
+    ni.appendChild(par);
+   }
    itemsWrap.appendChild(ni);
   });
  };
@@ -288,6 +433,8 @@ function csoCloseNavDropdowns(except){
   n.classList.remove('cso-open');
   const b=n.querySelector('.cso-nav-arrow');
   if(b)b.setAttribute('aria-expanded','false');
+  const a=n.querySelector('.cso-nav-parent > a[aria-haspopup="true"]');
+  if(a)a.setAttribute('aria-expanded','false');
  });
 }
 if(!window.__csoNavDropdownWired){
@@ -314,6 +461,8 @@ document.addEventListener('click',e=>{
   csoCloseNavDropdowns(parent);
   parent.classList.toggle('cso-open',open);
   arrow.setAttribute('aria-expanded',String(open));
+  const trigA=parent.querySelector('.cso-nav-parent > a[aria-haspopup="true"]');
+  if(trigA)trigA.setAttribute('aria-expanded',String(open));
   return;
  }
  const a11yMobile=e.target.closest('#ba-mobile');

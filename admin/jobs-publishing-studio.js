@@ -13,11 +13,18 @@
   'use strict';
 
   var ODISHA_DISTRICTS = [
-    'All Odisha', 'All India', 'Angul', 'Balangir', 'Balasore', 'Bargarh', 'Bhadrak', 'Boudh',
+    'All Odisha', 'All India', 'Foreign / Overseas', 'Angul', 'Balangir', 'Balasore', 'Bargarh', 'Bhadrak', 'Boudh',
     'Cuttack', 'Deogarh', 'Dhenkanal', 'Gajapati', 'Ganjam', 'Jagatsinghpur', 'Jajpur',
     'Jharsuguda', 'Kalahandi', 'Kandhamal', 'Kendrapara', 'Kendujhar', 'Khordha', 'Koraput',
     'Malkangiri', 'Mayurbhanj', 'Nabarangpur', 'Nayagarh', 'Nuapada', 'Puri', 'Rayagada',
     'Sambalpur', 'Subarnapur', 'Sundargarh'
+  ];
+
+  var REGION_SCOPES = [
+    ['odisha', 'Odisha'],
+    ['central', 'Central'],
+    ['all-india', 'All Over India'],
+    ['foreign', 'Foreign / Overseas']
   ];
 
   var QUAL_LEVELS = [
@@ -48,7 +55,7 @@
     snippets: [],
     studyOptions: [],
     revisions: [],
-    filters: { l1: '', l2: '', l3: '', stage: '', status: '', q: '' },
+    filters: { l1: '', l2: '', l3: '', region: '', stage: '', status: '', q: '' },
     taxSel: { l1: '', l2: '' },
     draft: null,
     extractedDraft: null,
@@ -134,6 +141,7 @@
       salary_pay_scale: '',
       selection_mode: '',
       location_district: 'All Odisha',
+      region_scope: 'odisha',
       application_start_date: '',
       last_date: '',
       exam_date: '',
@@ -320,6 +328,7 @@
     if (state.filters.l1) qs.set('l1', state.filters.l1);
     if (state.filters.l2) qs.set('l2', state.filters.l2);
     if (state.filters.l3) qs.set('l3', state.filters.l3);
+    if (state.filters.region) qs.set('region', state.filters.region);
     if (state.filters.stage) qs.set('stage', state.filters.stage);
     if (state.filters.status) qs.set('status', state.filters.status);
     if (state.filters.q) qs.set('q', state.filters.q);
@@ -554,6 +563,10 @@
     fGrid.appendChild(makeSelect('3. Further Subcategory (L3)', l3Opts, state.filters.l3, function (v) {
       state.filters.l3 = v;
       loadArticles().then(renderCurrentView);
+    }));
+    fGrid.appendChild(makeSelect('Geographic Scope', [['', 'All Scopes']].concat(REGION_SCOPES), state.filters.region, function (v) {
+      state.filters.region = v;
+      loadArticles().then(renderMain);
     }));
     fGrid.appendChild(makeSelect('Lifecycle Stage', [['', 'All Stages']].concat(STAGES), state.filters.stage, function (v) {
       state.filters.stage = v;
@@ -1051,6 +1064,7 @@
     addInput('Max Age (Years)', 'max_age', { type: 'number', placeholder: '38' });
     addInput('Age Cut-off Date', 'age_cutoff_date', { type: 'date' });
     addInput('Age Limit Summary', 'age_limit_summary', { span: 2, placeholder: '21–38 Years (+5 yrs SEBC/SC/ST/Women, +10 yrs PwBD)' });
+    addSelect('Geographic Scope (Region)', 'region_scope', REGION_SCOPES);
     addSelect('Location / District', 'location_district', ODISHA_DISTRICTS.map(function (dist) { return [dist, dist]; }));
     addInput('Application Start Date', 'application_start_date', { type: 'date' });
     addInput('Last Date to Apply', 'last_date', { type: 'date' });

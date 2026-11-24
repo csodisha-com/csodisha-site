@@ -414,7 +414,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/community/posts', '/api/community/qna', '/api/search/synonyms', '/api/public/about-overview', '/api/public/current-affairs', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources', '/api/marketing/banners', '/api/marketing/landing-pages', '/api/seo/meta', '/api/seo/robots.txt', '/api/seo/autocomplete',
     '/api/events/upcoming', '/api/config/public', '/api/events/calendar/odisha-all-exams.ics', '/api/events/calendar/opsc-ossc-osssc-deadlines.ics', '/api/events/calendar/admit-cards-results.ics', '/api/events/calendar/workshops-webinars.ics',
-    '/api/public/jobs', '/api/public/jobs/tree', '/api/public/jobs/bootstrap', '/api/public/jobs/article',
+    '/api/public/jobs', '/api/public/jobs/list', '/api/public/jobs/tree', '/api/public/jobs/bootstrap', '/api/public/jobs/article',
     '/api/public/careers/bootstrap', '/api/public/careers/list', '/careers/', '/jobs/', '/jobs-careers/',
     '/api/public/schemes', '/api/public/schemes/tree', '/api/public/schemes/bootstrap', '/api/public/schemes/article', '/schemes/', '/schemes-benefits/',
     '/api/public/study', '/api/public/study/tree', '/api/public/study/bootstrap', '/api/public/study/article', '/study-library/', '/study/',
@@ -938,7 +938,7 @@ export default {
     if (pathname === '/api/public/jobs/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicJobsTreeApi(request, env));
     }
-    if (pathname === '/api/public/jobs' && (request.method === 'GET' || request.method === 'HEAD')) {
+    if ((pathname === '/api/public/jobs' || pathname === '/api/public/jobs/list') && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicJobsListApi(request, env));
     }
     if (pathname === '/api/public/jobs/article' && (request.method === 'GET' || request.method === 'HEAD')) {
