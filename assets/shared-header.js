@@ -721,6 +721,11 @@
     document.querySelectorAll('#navw .ni').forEach(n => {
       if (n === except) return;
       n.classList.remove('cso-open');
+      const cascade = n.querySelector('.cso-jobs-cascade');
+      if (cascade) cascade.classList.remove('is-stage2-open');
+      n.querySelectorAll('.cso-js1-item.is-active, .cso-js1-item.is-mob-open').forEach(it => {
+        it.classList.remove('is-active', 'is-mob-open');
+      });
       const b = n.querySelector('.cso-nav-arrow');
       if (b) b.setAttribute('aria-expanded', 'false');
       const trigA = n.querySelector('.cso-nav-parent > a[aria-haspopup="true"]');
@@ -768,7 +773,7 @@
       if (pillarKey === 'home' || it.url === '/') return;
       const isCurrent = pillarKey === activeSection;
       const isJobs = pillarKey === 'jobs';
-      const ni = el('div', 'ni' + (isCurrent ? ' cso-active' : '') + (isJobs ? ' cso-ni-jobs' : ''));
+      const ni = el('div', 'ni' + (isCurrent ? ' cso-active' : '') + (isJobs ? ' cso-ni-jobs cso-nav-jobs-wrap' : ''));
       ni.dataset.pillar = pillarKey;
       const parent = el('div', 'cso-nav-parent');
       const a = el('a', isCurrent ? 'on' : '');
@@ -778,7 +783,7 @@
       if (isJobs) {
         a.setAttribute('aria-haspopup', 'true');
         a.setAttribute('aria-expanded', 'false');
-        a.setAttribute('aria-controls', 'cso-jobs-mega-panel');
+        a.setAttribute('aria-controls', 'cso-jobs-stage1');
       }
       const iconText = it.icon || it.icon_key || '';
       if (iconText) {
@@ -791,19 +796,20 @@
 
       parent.appendChild(a);
       if (isJobs) {
-        const chevBtn = el('button', 'cso-nav-arrow cso-jobs-mega-toggle');
+        const chevBtn = el('button', 'cso-nav-arrow cso-jobs-flyout-toggle');
         chevBtn.type = 'button';
         chevBtn.setAttribute('aria-label', 'Toggle Jobs sectors menu');
         chevBtn.setAttribute('aria-haspopup', 'true');
         chevBtn.setAttribute('aria-expanded', 'false');
-        chevBtn.setAttribute('aria-controls', 'cso-jobs-mega-panel');
+        chevBtn.setAttribute('aria-controls', 'cso-jobs-stage1');
         const chevIcon = el('span', 'cso-jobs-chev', '▾');
         chevIcon.setAttribute('aria-hidden', 'true');
         chevBtn.appendChild(chevIcon);
         parent.appendChild(chevBtn);
         ni.appendChild(parent);
-        ni.appendChild(buildJobsMegaPanel());
-        wireJobsMegaInteractions(ni, a, chevBtn);
+        const cascade = buildJobsCascadingMenu();
+        ni.appendChild(cascade);
+        wireJobsCascadingInteractions(ni, a, chevBtn, cascade);
       } else {
         ni.appendChild(parent);
       }
@@ -811,77 +817,75 @@
     });
   }
 
-  const JOBS_MEGA_CACHE_KEY = 'cso_jobs_mega_counts_v274';
-  let jobsMegaCounts = null;
-  let jobsMegaFetchStarted = false;
+  const JOBS_FLYOUT_CACHE_KEY = 'cso_jobs_flyout_v275';
+  let jobsFlyoutData = null;
+  let jobsFlyoutFetchStarted = false;
 
-  const JOBS_MEGA_SCOPES = [
-    { labelEn: 'All Scopes', labelOr: 'ସମସ୍ତ ପରିସର', href: '/jobs/', key: 'all' },
+  const JOBS_STAGE1_SCOPES = [
+    { labelEn: 'All', labelOr: 'ସମସ୍ତ', href: '/jobs/', key: 'all' },
     { labelEn: 'Odisha', labelOr: 'ଓଡ଼ିଶା', href: '/jobs/?region=odisha', key: 'odisha' },
-    { labelEn: 'Central', labelOr: 'କେନ୍ଦ୍ର ସରକାର', href: '/jobs/?region=central', key: 'central' },
-    { labelEn: 'All Over India', labelOr: 'ସମଗ୍ର ଭାରତ', href: '/jobs/?region=all-india', key: 'all-india' },
-    { labelEn: 'Closing Soon', labelOr: 'ଶୀଘ୍ର ଶେଷ', href: '/jobs/?stage=closing-soon', key: 'closing-soon', urgent: true }
+    { labelEn: 'Central', labelOr: 'କେନ୍ଦ୍ର', href: '/jobs/?region=central', key: 'central' },
+    { labelEn: 'All India', labelOr: 'ସମଗ୍ର ଭାରତ', href: '/jobs/?region=all-india', key: 'all-india' }
   ];
 
-  const JOBS_MEGA_SECTORS = [
+  const JOBS_DEFAULT_SECTORS = [
     {
-      slug: 'government', icon: '🏛️', titleEn: 'Government', titleOr: 'ସରକାରୀ ଚାକିରି', href: '/jobs/?sector=government',
-      links: [
-        { labelEn: 'Odisha State Govt', labelOr: 'ଓଡ଼ିଶା ରାଜ୍ୟ ସରକାରୀ', href: '/jobs/?sector=government&region=odisha&sub=odisha-state-govt' },
-        { labelEn: 'Central Govt', labelOr: 'କେନ୍ଦ୍ର ସରକାରୀ', href: '/jobs/?sector=government&region=central&sub=central-govt' },
-        { labelEn: 'All Over India', labelOr: 'ସମଗ୍ର ଭାରତ', href: '/jobs/?sector=government&region=all-india' }
+      id: 'jtax_l1_government', slug: 'government', icon: '🏛️', title_en: 'Government', title_or: 'ସରକାରୀ ଚାକିରି', published_jobs_count: 0,
+      subcategories: [
+        { slug: 'odisha-state-govt', title_en: 'Odisha State Govt (OPSC / OSSC / OSSSC)', title_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ସରକାରୀ' },
+        { slug: 'central-govt', title_en: 'Central Govt (UPSC / SSC / Railways)', title_or: 'କେନ୍ଦ୍ର ସରକାରୀ' },
+        { slug: 'district-block-odisha', title_en: 'District & Block (30 Districts)', title_or: 'ଜିଲ୍ଲା ଓ ବ୍ଲକ୍ ସ୍ତରୀୟ' }
       ]
     },
     {
-      slug: 'private', icon: '💼', titleEn: 'Private', titleOr: 'ବେସରକାରୀ ଚାକିରି', href: '/jobs/?sector=private',
-      links: [
-        { labelEn: 'Odisha Private & IT', labelOr: 'ଓଡ଼ିଶା ବେସରକାରୀ ଓ ଆଇଟି', href: '/jobs/?sector=private&region=odisha&sub=odisha-private-it' },
-        { labelEn: 'All-India Corporate & Tech', labelOr: 'ସର୍ବଭାରତୀୟ କର୍ପୋରେଟ୍ ଓ ଟେକ୍', href: '/jobs/?sector=private&region=all-india&sub=all-india-corporate-tech' },
-        { labelEn: 'Freshers & Off-Campus', labelOr: 'ଫ୍ରେଶର୍ସ ଓ ଅଫ୍-କ୍ୟାମ୍ପସ୍', href: '/jobs/?sector=private&sub=freshers-off-campus' }
+      id: 'jtax_l1_private', slug: 'private', icon: '💼', title_en: 'Private', title_or: 'ବେସରକାରୀ ଚାକିରି', published_jobs_count: 0,
+      subcategories: [
+        { slug: 'odisha-private-it', title_en: 'Odisha Private & IT', title_or: 'ଓଡ଼ିଶା ବେସରକାରୀ ଓ ଆଇଟି' },
+        { slug: 'all-india-corporate-tech', title_en: 'All-India Corporate & Tech', title_or: 'ସର୍ବଭାରତୀୟ କର୍ପୋରେଟ୍ ଓ ଟେକ୍' },
+        { slug: 'freshers-off-campus', title_en: 'Freshers & Off-Campus', title_or: 'ଫ୍ରେଶର୍ସ ଓ ଅଫ୍-କ୍ୟାମ୍ପସ୍' }
       ]
     },
     {
-      slug: 'psu', icon: '🏭', titleEn: 'PSUs', titleOr: 'ରାଷ୍ଟ୍ରାୟତ୍ତ ଉଦ୍ୟୋଗ (PSU)', href: '/jobs/?sector=psu',
-      links: [
-        { labelEn: 'Odisha State PSUs', labelOr: 'ଓଡ଼ିଶା ରାଜ୍ୟ ପିଏସୟୁ', href: '/jobs/?sector=psu&region=odisha&sub=odisha-state-psus' },
-        { labelEn: 'Central Maharatna / Navratna', labelOr: 'କେନ୍ଦ୍ରୀୟ ମହାରତ୍ନ / ନବରତ୍ନ', href: '/jobs/?sector=psu&region=central&sub=central-maharatna-navratna' },
-        { labelEn: 'All Over India PSUs', labelOr: 'ସମଗ୍ର ଭାରତ ପିଏସୟୁ', href: '/jobs/?sector=psu&region=all-india&sub=all-india-psus' }
+      id: 'jtax_l1_psu', slug: 'psu', icon: '🏭', title_en: 'PSUs', title_or: 'ରାଷ୍ଟ୍ରାୟତ୍ତ ଉଦ୍ୟୋଗ (PSU)', published_jobs_count: 0,
+      subcategories: [
+        { slug: 'odisha-state-psus', title_en: 'Odisha State PSUs (OMC / OPTCL / GRIDCO)', title_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ପିଏସୟୁ' },
+        { slug: 'central-maharatna-navratna', title_en: 'Central Maharatna & Navratna PSUs', title_or: 'କେନ୍ଦ୍ରୀୟ ମହାରତ୍ନ / ନବରତ୍ନ' },
+        { slug: 'all-india-psus', title_en: 'All Over India PSUs', title_or: 'ସମଗ୍ର ଭାରତ ପିଏସୟୁ' }
       ]
     },
     {
-      slug: 'ngo', icon: '🤝', titleEn: 'NGOs / Non-Profit', titleOr: 'ଏନଜିଓ / ଅଣ-ଲାଭଜନକ', href: '/jobs/?sector=ngo',
-      links: [
-        { labelEn: 'Odisha Livelihoods & Social Impact', labelOr: 'ଓଡ଼ିଶା ଜୀବିକା ଓ ସାମାଜିକ ବିକାଶ', href: '/jobs/?sector=ngo&region=odisha&sub=odisha-livelihoods-social' },
-        { labelEn: 'National Development & CSR', labelOr: 'ଜାତୀୟ ବିକାଶ ଓ CSR', href: '/jobs/?sector=ngo&region=all-india&sub=national-development-csr' },
-        { labelEn: 'Fellowships & Field Roles', labelOr: 'ଫେଲୋସିପ୍ ଓ ଫିଲ୍ଡ ପଦବୀ', href: '/jobs/?sector=ngo&sub=fellowships-field-roles' }
+      id: 'jtax_l1_ngo', slug: 'ngo', icon: '🤝', title_en: 'NGOs / Non-Profit', title_or: 'ଏନଜିଓ / ଅଣ-ଲାଭଜନକ', published_jobs_count: 0,
+      subcategories: [
+        { slug: 'odisha-livelihoods-social', title_en: 'Odisha Livelihoods & Social Impact', title_or: 'ଓଡ଼ିଶା ଜୀବିକା ଓ ସାମାଜିକ ବିକାଶ' },
+        { slug: 'national-development-csr', title_en: 'National Development & CSR', title_or: 'ଜାତୀୟ ବିକାଶ ଓ CSR' },
+        { slug: 'fellowships-field-roles', title_en: 'Fellowships & Field Roles', title_or: 'ଫେଲୋସିପ୍ ଓ ଫିଲ୍ଡ ପଦବୀ' }
       ]
     },
     {
-      slug: 'foreign', icon: '✈️', titleEn: 'Foreign Jobs', titleOr: 'ବିଦେଶୀ ଚାକିରି', href: '/jobs/?sector=foreign',
-      links: [
-        { labelEn: 'MEA-Verified Overseas', labelOr: 'MEA-ଯାଞ୍ଚିତ ବିଦେଶୀ', href: '/jobs/?sector=foreign&sub=mea-verified-overseas' },
-        { labelEn: 'Gulf & Middle East Technical', labelOr: 'ଗଲ୍ଫ ଓ ମଧ୍ୟପ୍ରାଚ୍ୟ ଟେକ୍ନିକାଲ୍', href: '/jobs/?sector=foreign&sub=gulf-middle-east-tech' },
-        { labelEn: 'Global / Skilled Migration', labelOr: 'ବିଶ୍ୱସ୍ତରୀୟ ଦକ୍ଷ ନିଯୁକ୍ତି', href: '/jobs/?sector=foreign&sub=global-skilled-migration' }
+      id: 'jtax_l1_foreign', slug: 'foreign', icon: '✈️', title_en: 'Foreign Jobs', title_or: 'ବିଦେଶୀ ଚାକିରି', published_jobs_count: 0,
+      subcategories: [
+        { slug: 'mea-verified-overseas', title_en: 'MEA-Verified Overseas Opportunities', title_or: 'MEA-ଯାଞ୍ଚିତ ବିଦେଶୀ' },
+        { slug: 'gulf-middle-east-tech', title_en: 'Gulf & Middle East Technical', title_or: 'ଗଲ୍ଫ ଓ ମଧ୍ୟପ୍ରାଚ୍ୟ ଟେକ୍ନିକାଲ୍' },
+        { slug: 'global-skilled-migration', title_en: 'Global / Skilled Migration', title_or: 'ବିଶ୍ୱସ୍ତରୀୟ ଦକ୍ଷ ନିଯୁକ୍ତି' }
       ]
     }
   ];
 
-  const JOBS_MEGA_LIFECYCLE = [
-    { labelEn: 'Apply Online', labelOr: 'ଅନଲାଇନ୍ ଆବେଦନ', href: '/jobs/?stage=apply-online' },
-    { labelEn: 'Admit Cards', labelOr: 'ଆଡମିଟ୍ କାର୍ଡ', href: '/jobs/?stage=admit-card' },
-    { labelEn: 'Answer Keys', labelOr: 'ଉତ୍ତର ସଙ୍କେତ', href: '/jobs/?stage=answer-key' },
-    { labelEn: 'Results', labelOr: 'ଫଳାଫଳ', href: '/jobs/?stage=result' },
-    { labelEn: 'Explore All Jobs →', labelOr: 'ସମସ୍ତ ଚାକିରି ଦେଖନ୍ତୁ →', href: '/jobs/', primary: true }
+  const JOBS_QUICK_STAGES = [
+    { key: 'apply-online', labelEn: 'Apply Online', labelOr: 'ଅନଲାଇନ୍ ଆବେଦନ' },
+    { key: 'admit-card', labelEn: 'Admit Cards', labelOr: 'ଆଡମିଟ୍ କାର୍ଡ' },
+    { key: 'answer-key', labelEn: 'Answer Keys', labelOr: 'ଉତ୍ତର ସଙ୍କେତ' },
+    { key: 'result', labelEn: 'Results', labelOr: 'ଫଳାଫଳ' }
   ];
 
-  function readJobsMegaCache() {
-    if (jobsMegaCounts) return jobsMegaCounts;
+  function readJobsFlyoutCache() {
+    if (jobsFlyoutData) return jobsFlyoutData;
     try {
-      const raw = sessionStorage.getItem(JOBS_MEGA_CACHE_KEY);
+      const raw = sessionStorage.getItem(JOBS_FLYOUT_CACHE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed && parsed.ts && (Date.now() - parsed.ts < 120000) && parsed.sectors) {
-          jobsMegaCounts = parsed;
+        if (parsed && parsed.ts && (Date.now() - parsed.ts < 120000) && Array.isArray(parsed.sectors) && parsed.sectors.length) {
+          jobsFlyoutData = parsed;
           return parsed;
         }
       }
@@ -889,113 +893,322 @@
     return null;
   }
 
-  function applyJobsMegaCounts(data) {
-    if (!data || !data.sectors) return;
-    document.querySelectorAll('.cso-jm-count[data-jm-sector]').forEach(badge => {
-      const slug = badge.getAttribute('data-jm-sector');
-      const val = Number((data.sectors && data.sectors[slug]) || 0);
-      badge.textContent = String(val);
+  function getActiveJobsSectors() {
+    const cached = readJobsFlyoutCache();
+    if (cached && Array.isArray(cached.sectors) && cached.sectors.length) return cached.sectors;
+    return JOBS_DEFAULT_SECTORS;
+  }
+
+  function getSectorScopeLinks(sector, isOr) {
+    const slug = encodeURIComponent(sector.slug || 'government');
+    if (sector.slug === 'foreign') {
+      return [
+        { label: isOr ? 'ବିଦେଶୀ / ଓଭରସିଜ୍' : 'Foreign / Overseas', href: '/jobs/?sector=' + slug + '&region=foreign' },
+        { label: isOr ? 'ସମସ୍ତ ବିଦେଶୀ ଚାକିରି' : 'All Overseas Roles', href: '/jobs/?sector=' + slug }
+      ];
+    }
+    return [
+      { label: isOr ? 'ଓଡ଼ିଶା' : 'Odisha', href: '/jobs/?sector=' + slug + '&region=odisha' },
+      { label: isOr ? 'କେନ୍ଦ୍ର' : 'Central', href: '/jobs/?sector=' + slug + '&region=central' },
+      { label: isOr ? 'ସମଗ୍ର ଭାରତ' : 'All Over India', href: '/jobs/?sector=' + slug + '&region=all-india' }
+    ];
+  }
+
+  function renderStage2Contents(stage2El, sector, isOr) {
+    stage2El.replaceChildren();
+    if (!sector) return;
+    const secSlug = encodeURIComponent(sector.slug || 'government');
+    const titleTxt = isOr ? (sector.title_or || sector.title_en) : sector.title_en;
+
+    const head = el('div', 'cso-js2-head');
+    const headTitle = el('div', 'cso-js2-title');
+    const hIc = el('span', 'cso-js2-icon', sector.icon || '💼');
+    hIc.setAttribute('aria-hidden', 'true');
+    headTitle.append(hIc, ' ', el('span', '', titleTxt));
+    const headAll = el('a', 'cso-js2-all', (isOr ? 'ସମସ୍ତ' : 'All') + ' →');
+    headAll.href = '/jobs/?sector=' + secSlug;
+    head.append(headTitle, headAll);
+    stage2El.appendChild(head);
+
+    // Geographic Scopes
+    const scopeSec = el('div', 'cso-js2-section');
+    scopeSec.appendChild(el('div', 'cso-js2-label', isOr ? 'ଭୌଗୋଳିକ ପରିସର' : 'Geographic Scope'));
+    const scopeRow = el('div', 'cso-js2-pills');
+    getSectorScopeLinks(sector, isOr).forEach(sc => {
+      const a = el('a', 'cso-js2-pill', sc.label);
+      a.href = sc.href;
+      scopeRow.appendChild(a);
+    });
+    scopeSec.appendChild(scopeRow);
+    stage2El.appendChild(scopeSec);
+
+    // Admin-Synced L2 Subcategories / Boards
+    const subs = Array.isArray(sector.subcategories) ? sector.subcategories : [];
+    const subSec = el('div', 'cso-js2-section');
+    subSec.appendChild(el('div', 'cso-js2-label', isOr ? 'ଉପ-ବିଭାଗ ଓ ବୋର୍ଡ' : 'Subcategories & Boards'));
+    const subList = el('ul', 'cso-js2-sublist');
+    if (subs.length) {
+      subs.forEach(sub => {
+        const li = el('li');
+        const a = el('a', 'cso-js2-sublink');
+        a.href = '/jobs/?sector=' + secSlug + '&sub=' + encodeURIComponent(sub.slug || '');
+        a.appendChild(el('span', 'cso-js2-subtext', isOr ? (sub.title_or || sub.title_en) : sub.title_en));
+        if (Number(sub.published_jobs_count || 0) > 0) {
+          a.appendChild(el('span', 'cso-js2-subcount', String(Number(sub.published_jobs_count))));
+        }
+        li.appendChild(a);
+        subList.appendChild(li);
+      });
+    } else {
+      const li = el('li');
+      const a = el('a', 'cso-js2-sublink', isOr ? 'ସମସ୍ତ ବିଭାଗ ଦେଖନ୍ତୁ' : 'Browse all openings in ' + titleTxt);
+      a.href = '/jobs/?sector=' + secSlug;
+      li.appendChild(a);
+      subList.appendChild(li);
+    }
+    subSec.appendChild(subList);
+    stage2El.appendChild(subSec);
+
+    // Quick Stages pill row
+    const stSec = el('div', 'cso-js2-section cso-js2-section--stages');
+    stSec.appendChild(el('div', 'cso-js2-label', isOr ? 'ଶୀଘ୍ର ପର୍ଯ୍ୟାୟ' : 'Quick Stages'));
+    const stRow = el('div', 'cso-js2-pills');
+    JOBS_QUICK_STAGES.forEach(st => {
+      const a = el('a', 'cso-js2-stage-pill', isOr ? st.labelOr : st.labelEn);
+      a.href = '/jobs/?sector=' + secSlug + '&stage=' + encodeURIComponent(st.key);
+      stRow.appendChild(a);
+    });
+    stSec.appendChild(stRow);
+    stage2El.appendChild(stSec);
+  }
+
+  function buildMobileAccordionSub(sector, isOr) {
+    const box = el('div', 'cso-js1-mob-sub');
+    const secSlug = encodeURIComponent(sector.slug || 'government');
+
+    const scopeRow = el('div', 'cso-js1-mob-pills');
+    getSectorScopeLinks(sector, isOr).forEach(sc => {
+      const a = el('a', 'cso-js2-pill', sc.label);
+      a.href = sc.href;
+      scopeRow.appendChild(a);
+    });
+    box.appendChild(scopeRow);
+
+    const subs = Array.isArray(sector.subcategories) ? sector.subcategories : [];
+    if (subs.length) {
+      const ul = el('ul', 'cso-js2-sublist');
+      subs.forEach(sub => {
+        const li = el('li');
+        const a = el('a', 'cso-js2-sublink', isOr ? (sub.title_or || sub.title_en) : sub.title_en);
+        a.href = '/jobs/?sector=' + secSlug + '&sub=' + encodeURIComponent(sub.slug || '');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+    }
+
+    const stRow = el('div', 'cso-js1-mob-pills');
+    JOBS_QUICK_STAGES.forEach(st => {
+      const a = el('a', 'cso-js2-stage-pill', isOr ? st.labelOr : st.labelEn);
+      a.href = '/jobs/?sector=' + secSlug + '&stage=' + encodeURIComponent(st.key);
+      stRow.appendChild(a);
+    });
+    box.appendChild(stRow);
+    return box;
+  }
+
+  function populateStage1List(cascade, stage1List, stage2El) {
+    const isOr = S.lang === 'or';
+    const sectors = getActiveJobsSectors();
+    stage1List.replaceChildren();
+
+    function activateSector(sec, itemEl, openStage2) {
+      stage1List.querySelectorAll('.cso-js1-item.is-active').forEach(elItem => elItem.classList.remove('is-active'));
+      if (itemEl) itemEl.classList.add('is-active');
+      renderStage2Contents(stage2El, sec, isOr);
+      if (openStage2 && window.innerWidth >= 1100) {
+        cascade.classList.add('is-stage2-open');
+        const stage1Box = cascade.querySelector('.cso-jobs-stage1');
+        if (stage1Box) {
+          const rect = stage1Box.getBoundingClientRect();
+          const shouldFlip = rect.right + 292 > window.innerWidth;
+          stage2El.classList.toggle('is-flip-left', shouldFlip);
+        }
+      }
+    }
+
+    sectors.forEach(sec => {
+      const li = el('li', 'cso-js1-item');
+      li.dataset.jsSector = sec.slug || '';
+
+      const row = el('div', 'cso-js1-row');
+      const a = el('a', 'cso-js1-link');
+      a.href = '/jobs/?sector=' + encodeURIComponent(sec.slug || 'government');
+
+      const left = el('span', 'cso-js1-left');
+      const ic = el('span', 'cso-js1-icon', sec.icon || '💼');
+      ic.setAttribute('aria-hidden', 'true');
+      left.append(ic, el('span', 'cso-js1-title', isOr ? (sec.title_or || sec.title_en) : sec.title_en));
+
+      const right = el('span', 'cso-js1-right');
+      const cnt = el('span', 'cso-js1-count', String(Number(sec.published_jobs_count || 0)));
+      cnt.setAttribute('data-js-sector', sec.slug || '');
+      const arrow = el('span', 'cso-js1-arrow', '›');
+      arrow.setAttribute('aria-hidden', 'true');
+      right.append(cnt, arrow);
+
+      a.append(left, right);
+
+      const mobExp = el('button', 'cso-js1-mob-exp', '▾');
+      mobExp.type = 'button';
+      mobExp.setAttribute('aria-expanded', 'false');
+      mobExp.setAttribute('aria-label', 'Expand ' + (sec.title_en || 'sector') + ' subcategories');
+      mobExp.addEventListener('click', ev => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const isOpen = li.classList.toggle('is-mob-open');
+        mobExp.setAttribute('aria-expanded', String(isOpen));
+      });
+
+      row.append(a, mobExp);
+      li.append(row, buildMobileAccordionSub(sec, isOr));
+
+      li.addEventListener('mouseenter', () => {
+        if (window.innerWidth < 1100) return;
+        activateSector(sec, li, true);
+      });
+      a.addEventListener('focus', () => {
+        if (window.innerWidth < 1100) return;
+        activateSector(sec, li, true);
+      });
+      a.addEventListener('keydown', ev => {
+        if (ev.key === 'ArrowRight' && window.innerWidth >= 1100) {
+          ev.preventDefault();
+          activateSector(sec, li, true);
+          const firstS2 = stage2El.querySelector('a');
+          if (firstS2) firstS2.focus();
+        } else if (ev.key === 'ArrowDown') {
+          ev.preventDefault();
+          const nextLi = li.nextElementSibling;
+          if (nextLi) { const na = nextLi.querySelector('.cso-js1-link'); if (na) na.focus(); }
+        } else if (ev.key === 'ArrowUp') {
+          ev.preventDefault();
+          const prevLi = li.previousElementSibling;
+          if (prevLi) { const pa = prevLi.querySelector('.cso-js1-link'); if (pa) pa.focus(); }
+        }
+      });
+
+      stage1List.appendChild(li);
     });
   }
 
-  function hydrateJobsMegaCounts() {
-    const cached = readJobsMegaCache();
+  function hydrateJobsFlyoutFromD1(cascade, stage1List, stage2El) {
+    const cached = readJobsFlyoutCache();
     if (cached) {
-      applyJobsMegaCounts(cached);
+      populateStage1List(cascade, stage1List, stage2El);
       return;
     }
-    if (jobsMegaFetchStarted || typeof fetch !== 'function') return;
-    jobsMegaFetchStarted = true;
+    if (jobsFlyoutFetchStarted || typeof fetch !== 'function') return;
+    jobsFlyoutFetchStarted = true;
     fetch('/api/public/jobs/bootstrap', { credentials: 'same-origin' })
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
-        const sectors = { government: 0, private: 0, psu: 0, ngo: 0, foreign: 0 };
-        if (d && d.sector_counts) {
-          Object.keys(sectors).forEach(k => { sectors[k] = Number(d.sector_counts[k] || 0); });
-        } else if (d && Array.isArray(d.nodes)) {
-          d.nodes.filter(n => Number(n.level) === 1).forEach(n => {
-            const sl = String(n.slug || '').toLowerCase();
-            if (sl in sectors) sectors[sl] = Number(n.published_jobs_count || 0);
-          });
+        if (!d || !d.ok) return;
+        let sectors = [];
+        if (Array.isArray(d.nav_sectors) && d.nav_sectors.length) {
+          sectors = d.nav_sectors;
+        } else if (Array.isArray(d.tree) && d.tree.length) {
+          sectors = d.tree.map(l1 => ({
+            id: l1.id,
+            slug: l1.slug,
+            title_en: l1.title_en,
+            title_or: l1.title_or || l1.title_en,
+            icon: l1.icon || '💼',
+            published_jobs_count: Number((d.sector_counts && d.sector_counts[String(l1.slug || '').toLowerCase()]) || l1.published_jobs_count || 0),
+            subcategories: (l1.children || []).map(l2 => ({
+              id: l2.id, slug: l2.slug, title_en: l2.title_en, title_or: l2.title_or || l2.title_en,
+              published_jobs_count: Number(l2.published_jobs_count || 0)
+            }))
+          }));
+        } else {
+          sectors = JOBS_DEFAULT_SECTORS.map(sec => Object.assign({}, sec, {
+            published_jobs_count: Number((d.sector_counts && d.sector_counts[sec.slug]) || 0)
+          }));
         }
-        jobsMegaCounts = { ts: Date.now(), sectors };
-        try { sessionStorage.setItem(JOBS_MEGA_CACHE_KEY, JSON.stringify(jobsMegaCounts)); } catch (_e) {}
-        applyJobsMegaCounts(jobsMegaCounts);
+        jobsFlyoutData = { ts: Date.now(), sectors };
+        try { sessionStorage.setItem(JOBS_FLYOUT_CACHE_KEY, JSON.stringify(jobsFlyoutData)); } catch (_e) {}
+        document.querySelectorAll('.cso-jobs-cascade').forEach(cEl => {
+          const s1 = cEl.querySelector('.cso-js1-list');
+          const s2 = cEl.querySelector('.cso-jobs-stage2');
+          if (s1 && s2) populateStage1List(cEl, s1, s2);
+        });
       })
       .catch(() => {});
   }
 
-  function buildJobsMegaPanel() {
+  function buildJobsCascadingMenu() {
     const isOr = S.lang === 'or';
-    const cached = readJobsMegaCache();
-    const panel = el('div', 'cso-jobs-mega');
-    panel.id = 'cso-jobs-mega-panel';
-    panel.setAttribute('role', 'region');
-    panel.setAttribute('aria-label', isOr ? 'ଚାକିରି କ୍ଷେତ୍ର ଓ ଅଞ୍ଚଳ ମେନୁ' : 'Jobs sectors and scopes menu');
+    const cascade = el('div', 'cso-jobs-cascade');
+    cascade.id = 'cso-jobs-cascade';
 
-    // Top Geographic & Urgency Strip
-    const topStrip = el('div', 'cso-jm-top-strip');
-    const topLabel = el('span', 'cso-jm-strip-label', isOr ? 'ପରିସର:' : 'Geographic Scope:');
-    topStrip.appendChild(topLabel);
-    const scopePills = el('div', 'cso-jm-pills');
-    JOBS_MEGA_SCOPES.forEach(sc => {
-      const a = el('a', 'cso-jm-pill' + (sc.urgent ? ' is-urgent' : ''), isOr ? sc.labelOr : sc.labelEn);
+    // Stage 1 — Compact Vertical Primary Dropdown (268px)
+    const stage1 = el('div', 'cso-jobs-stage1');
+    stage1.id = 'cso-jobs-stage1';
+    stage1.setAttribute('role', 'region');
+    stage1.setAttribute('aria-label', isOr ? 'ଚାକିରି କ୍ଷେତ୍ର ମେନୁ' : 'Jobs sectors menu');
+
+    // Compact top geographic filter strip
+    const scopeStrip = el('div', 'cso-js1-scope-strip');
+    JOBS_STAGE1_SCOPES.forEach(sc => {
+      const a = el('a', 'cso-js1-scope-pill', isOr ? sc.labelOr : sc.labelEn);
       a.href = sc.href;
-      scopePills.appendChild(a);
+      scopeStrip.appendChild(a);
     });
-    topStrip.appendChild(scopePills);
+    stage1.appendChild(scopeStrip);
 
-    // 5 Sector Columns
-    const grid = el('div', 'cso-jm-grid');
-    JOBS_MEGA_SECTORS.forEach(sec => {
-      const col = el('div', 'cso-jm-col');
-      const headA = el('a', 'cso-jm-col-head');
-      headA.href = sec.href;
-      const headLeft = el('span', 'cso-jm-col-title');
-      const ic = el('span', 'cso-jm-col-icon', sec.icon);
-      ic.setAttribute('aria-hidden', 'true');
-      headLeft.append(ic, ' ', document.createTextNode(isOr ? sec.titleOr : sec.titleEn));
-      const cnt = el('span', 'cso-jm-count', String(Number((cached && cached.sectors && cached.sectors[sec.slug]) || 0)));
-      cnt.setAttribute('data-jm-sector', sec.slug);
-      headA.append(headLeft, cnt);
+    // Vertical list of 5 Core Sectors synced from Admin Jobs folder
+    const list = el('ul', 'cso-js1-list');
+    stage1.appendChild(list);
 
-      const ul = el('ul', 'cso-jm-links');
-      sec.links.forEach(lk => {
-        const li = el('li');
-        const a = el('a', 'cso-jm-link', isOr ? lk.labelOr : lk.labelEn);
-        a.href = lk.href;
-        li.appendChild(a);
-        ul.appendChild(li);
-      });
+    // Compact footer bar
+    const footer = el('div', 'cso-js1-footer');
+    const closingA = el('a', 'cso-js1-foot-urgent', isOr ? '⏳ ଶୀଘ୍ର ଶେଷ' : '⏳ Closing Soon');
+    closingA.href = '/jobs/?stage=closing-soon';
+    const allA = el('a', 'cso-js1-foot-all', isOr ? 'ସମସ୍ତ ଚାକିରି →' : 'View All Jobs →');
+    allA.href = '/jobs/';
+    footer.append(closingA, allA);
+    stage1.appendChild(footer);
 
-      col.append(headA, ul);
-      grid.appendChild(col);
+    // Stage 2 — Right-Side Slide Flyout Panel (280px)
+    const stage2 = el('div', 'cso-jobs-stage2');
+    stage2.id = 'cso-jobs-stage2';
+    stage2.setAttribute('role', 'region');
+    stage2.setAttribute('aria-label', isOr ? 'ଉପ-ବିଭାଗ ଓ ପର୍ଯ୍ୟାୟ' : 'Sector subcategories and stages');
+    stage2.addEventListener('keydown', ev => {
+      if (ev.key === 'ArrowLeft') {
+        ev.preventDefault();
+        const activeLink = list.querySelector('.cso-js1-item.is-active .cso-js1-link') || list.querySelector('.cso-js1-link');
+        if (activeLink) activeLink.focus();
+      }
     });
 
-    // Bottom Candidate Lifecycle Strip
-    const botStrip = el('div', 'cso-jm-bottom-strip');
-    const botLabel = el('span', 'cso-jm-strip-label', isOr ? 'ପରୀକ୍ଷା ପର୍ଯ୍ୟାୟ:' : 'Candidate Lifecycle:');
-    botStrip.appendChild(botLabel);
-    const lifePills = el('div', 'cso-jm-pills');
-    JOBS_MEGA_LIFECYCLE.forEach(lf => {
-      const a = el('a', 'cso-jm-life-link' + (lf.primary ? ' is-primary' : ''), isOr ? lf.labelOr : lf.labelEn);
-      a.href = lf.href;
-      lifePills.appendChild(a);
-    });
-    botStrip.appendChild(lifePills);
-
-    panel.append(topStrip, grid, botStrip);
-    return panel;
+    populateStage1List(cascade, list, stage2);
+    cascade.append(stage1, stage2);
+    return cascade;
   }
 
-  function wireJobsMegaInteractions(ni, triggerA, chevBtn) {
-    let hoverOpenTimer = null;
+  function wireJobsCascadingInteractions(ni, triggerA, chevBtn, cascade) {
     let hoverCloseTimer = null;
+    const stage1List = cascade.querySelector('.cso-js1-list');
+    const stage2El = cascade.querySelector('.cso-jobs-stage2');
 
     function setOpen(open) {
       if (open) {
         closeDropdowns(ni);
-        hydrateJobsMegaCounts();
+        hydrateJobsFlyoutFromD1(cascade, stage1List, stage2El);
+      } else {
+        cascade.classList.remove('is-stage2-open');
+        stage1List.querySelectorAll('.cso-js1-item.is-active').forEach(it => it.classList.remove('is-active'));
       }
       ni.classList.toggle('cso-open', open);
       triggerA.setAttribute('aria-expanded', String(open));
@@ -1005,20 +1218,20 @@
     ni.addEventListener('mouseenter', () => {
       if (window.innerWidth < 1100) return;
       clearTimeout(hoverCloseTimer);
-      hoverOpenTimer = setTimeout(() => setOpen(true), 120);
+      setOpen(true);
     });
 
     ni.addEventListener('mouseleave', () => {
       if (window.innerWidth < 1100) return;
-      clearTimeout(hoverOpenTimer);
-      hoverCloseTimer = setTimeout(() => setOpen(false), 140);
+      clearTimeout(hoverCloseTimer);
+      hoverCloseTimer = setTimeout(() => setOpen(false), 150);
     });
 
     triggerA.addEventListener('keydown', ev => {
       if (ev.key === 'ArrowDown') {
         ev.preventDefault();
         setOpen(true);
-        const firstLink = ni.querySelector('.cso-jobs-mega a');
+        const firstLink = cascade.querySelector('.cso-js1-link');
         if (firstLink) firstLink.focus();
       } else if (ev.key === 'Escape') {
         setOpen(false);
@@ -1031,7 +1244,7 @@
         const next = ev.key === 'ArrowDown' ? true : !ni.classList.contains('cso-open');
         setOpen(next);
         if (next) {
-          const firstLink = ni.querySelector('.cso-jobs-mega a');
+          const firstLink = cascade.querySelector('.cso-js1-link');
           if (firstLink) firstLink.focus();
         }
       } else if (ev.key === 'Escape') {
@@ -1195,7 +1408,15 @@
         arrow.setAttribute('aria-expanded', String(open));
         const trigA = parent.querySelector('.cso-nav-parent > a[aria-haspopup="true"]');
         if (trigA) trigA.setAttribute('aria-expanded', String(open));
-        if (open && parent.classList.contains('cso-ni-jobs')) hydrateJobsMegaCounts();
+        if (open && parent.classList.contains('cso-ni-jobs')) {
+          const cascade = parent.querySelector('.cso-jobs-cascade');
+          if (cascade) {
+            hydrateJobsFlyoutFromD1(cascade, cascade.querySelector('.cso-js1-list'), cascade.querySelector('.cso-jobs-stage2'));
+          }
+        } else if (!open && parent.classList.contains('cso-ni-jobs')) {
+          const cascade = parent.querySelector('.cso-jobs-cascade');
+          if (cascade) cascade.classList.remove('is-stage2-open');
+        }
       }
       return;
     }

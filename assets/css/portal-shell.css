@@ -695,54 +695,101 @@ body.cso-portal-active select:focus-visible {
 }
 
 /* ==========================================================================
-   9. Jobs Mega-Dropdown Menu — 4-Theme Semantic Surface Overrides (v274)
+   9. Two-Stage Cascading Jobs Menu — 100% Opaque Elevated Surfaces (v275)
    ========================================================================== */
+:root,
+:root[data-cso-theme="system"],
+:root[data-cso-resolved-mode="light"] {
+  --cso-surface-elevated: #ffffff;
+  --cso-nav-bg: #eef3f7;
+}
+
+:root[data-cso-theme="dark"],
+:root[data-cso-theme="system"][data-cso-resolved-mode="dark"],
+:root[data-cso-resolved-mode="dark"],
+:root[data-theme="dark"] {
+  --cso-surface-elevated: #131d27;
+  --cso-nav-bg: #131e29;
+}
+
+:root[data-cso-theme="reading"],
+:root[data-theme="reading"] {
+  --cso-surface-elevated: #fcf8ef;
+  --cso-nav-bg: #ede5d4;
+}
+
+:root[data-cso-theme="utkal-bharat"],
+:root[data-theme="utkal-bharat"] {
+  --cso-surface-elevated: #fffdf9;
+  --cso-nav-bg: #f4ece0;
+}
+
 #cso-main-navbar {
   position: relative !important;
   z-index: 950 !important;
 }
 
-#cso-main-navbar .cso-jobs-mega {
-  background: var(--cso-card-bg, #ffffff) !important;
+@media (min-width: 1100px) {
+  #cso-main-navbar,
+  #cso-main-navbar .w,
+  #navw {
+    overflow: visible !important;
+  }
+
+  #cso-main-navbar .cso-nav-jobs-wrap {
+    position: relative !important;
+  }
+}
+
+#cso-main-navbar .cso-jobs-stage1,
+#cso-main-navbar .cso-jobs-stage2 {
+  background: var(--cso-surface-elevated, var(--cso-nav-bg, #ffffff)) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   color: var(--cso-ink-primary, #12202b) !important;
-  border-color: var(--cso-border-subtle, #d8e1e9) !important;
-  box-shadow: var(--cso-card-shadow, 0 20px 48px rgba(11, 57, 72, 0.22)) !important;
+  border: 1px solid var(--cso-border-subtle, #d8e1e9) !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42) !important;
+  overflow: hidden !important;
 }
 
-#cso-main-navbar .cso-jm-top-strip,
-#cso-main-navbar .cso-jm-bottom-strip {
-  background: var(--cso-nav-sub-bg, #eef3f7) !important;
-  border-color: var(--cso-border-subtle, #d8e1e9) !important;
-}
-
-#cso-main-navbar .cso-jm-col {
-  background: var(--cso-card-subtle, #eef3f7) !important;
-  border-color: var(--cso-border-subtle, #d8e1e9) !important;
-}
-
-#cso-main-navbar .cso-jm-col-head {
-  color: var(--cso-ink-primary, #12202b) !important;
-  border-bottom-color: var(--cso-border-subtle, #d8e1e9) !important;
-}
-
-#cso-main-navbar .cso-jm-link {
-  color: var(--cso-ink-secondary, #4c5e6e) !important;
-}
-
-#cso-main-navbar .cso-jm-link:hover {
-  background: var(--cso-card-bg, #ffffff) !important;
-  color: var(--cso-ink-primary, #12202b) !important;
-}
-
-#cso-main-navbar .cso-jm-pill,
-#cso-main-navbar .cso-jm-life-link {
-  background: var(--cso-card-bg, #ffffff) !important;
-  color: var(--cso-ink-primary, #12202b) !important;
+#cso-main-navbar .cso-js1-scope-strip,
+#cso-main-navbar .cso-js1-footer,
+#cso-main-navbar .cso-js2-head,
+#cso-main-navbar .cso-js2-section--stages {
+  background: var(--cso-nav-sub-bg, var(--cso-nav-bg, #eef3f7)) !important;
   border-color: var(--cso-border-subtle, #d8e1e9) !important;
 }
 
-#cso-main-navbar .cso-jm-life-link.is-primary {
+#cso-main-navbar .cso-js1-list,
+#cso-main-navbar .cso-js2-section {
+  background: var(--cso-surface-elevated, var(--cso-nav-bg, #ffffff)) !important;
+  border-color: var(--cso-border-subtle, #d8e1e9) !important;
+}
+
+#cso-main-navbar .cso-js1-scope-pill,
+#cso-main-navbar .cso-js2-pill,
+#cso-main-navbar .cso-js2-stage-pill {
+  background: var(--cso-surface-elevated, #ffffff) !important;
+  color: var(--cso-ink-primary, #12202b) !important;
+  border-color: var(--cso-border-subtle, #d8e1e9) !important;
+}
+
+#cso-main-navbar .cso-js1-scope-pill:hover,
+#cso-main-navbar .cso-js2-pill:hover,
+#cso-main-navbar .cso-js2-stage-pill:hover,
+#cso-main-navbar .cso-js1-foot-all {
   background: var(--cso-nav-pill-bg, #0f4c5c) !important;
   border-color: var(--cso-nav-pill-bg, #0f4c5c) !important;
   color: var(--cso-nav-pill-fg, #ffffff) !important;
+}
+
+#cso-main-navbar .cso-js1-link,
+#cso-main-navbar .cso-js2-sublink {
+  color: var(--cso-ink-primary, #12202b) !important;
+}
+
+#cso-main-navbar .cso-js1-item.is-active .cso-js1-link,
+#cso-main-navbar .cso-js1-link:hover,
+#cso-main-navbar .cso-js2-sublink:hover {
+  background: var(--cso-nav-sub-bg, var(--cso-card-subtle, #eef3f7)) !important;
 }

@@ -323,6 +323,15 @@
   }
 
   // ---------- Data Loaders ----------
+  function syncSidebarAndFlyoutCache(bustSession) {
+    if (bustSession) {
+      try { sessionStorage.removeItem('cso_jobs_flyout_v275'); } catch (_e) {}
+    }
+    if (window.CSOStudio && typeof window.CSOStudio.setJobsSectorNodes === 'function' && Array.isArray(state.taxonomyNodes) && state.taxonomyNodes.length) {
+      window.CSOStudio.setJobsSectorNodes(state.taxonomyNodes);
+    }
+  }
+
   function loadArticles() {
     var qs = new URLSearchParams();
     if (state.filters.l1) qs.set('l1', state.filters.l1);
@@ -336,6 +345,7 @@
       state.kpis = d.kpis || null;
       state.articles = d.items || [];
       if (Array.isArray(d.taxonomy_nodes)) state.taxonomyNodes = d.taxonomy_nodes;
+      syncSidebarAndFlyoutCache(false);
       if (window.CSOStudio && window.CSOStudio.refreshBrandSummary) window.CSOStudio.refreshBrandSummary();
       return d;
     });
@@ -344,6 +354,7 @@
   function loadTaxonomy() {
     return api('/api/admin/jobs/taxonomy').then(function (d) {
       state.taxonomyNodes = d.nodes || [];
+      syncSidebarAndFlyoutCache(true);
       return d;
     });
   }
@@ -554,6 +565,7 @@
 
     fGrid.appendChild(makeSelect('1. Main Category (L1)', l1Opts, state.filters.l1, function (v) {
       state.filters.l1 = v; state.filters.l2 = ''; state.filters.l3 = '';
+      if (window.CSOStudio && window.CSOStudio.setJobsActiveSector) window.CSOStudio.setJobsActiveSector(v);
       loadArticles().then(renderCurrentView);
     }));
     fGrid.appendChild(makeSelect('2. Subcategory / Dept (L2)', l2Opts, state.filters.l2, function (v) {
@@ -566,7 +578,7 @@
     }));
     fGrid.appendChild(makeSelect('Geographic Scope', [['', 'All Scopes']].concat(REGION_SCOPES), state.filters.region, function (v) {
       state.filters.region = v;
-      loadArticles().then(renderMain);
+      loadArticles().then(renderCurrentView);
     }));
     fGrid.appendChild(makeSelect('Lifecycle Stage', [['', 'All Stages']].concat(STAGES), state.filters.stage, function (v) {
       state.filters.stage = v;
@@ -1392,8 +1404,8 @@
     var intro = el('div', 'jph-card');
     var iHead = el('div', 'jph-card-head');
     var ihL = el('div');
-    ihL.appendChild(el('h2', 'jph-card-title', '3-Layer Category Hierarchy Studio (Main → Sub → Further Subcategory)'));
-    ihL.appendChild(el('div', 'jph-muted', 'Changes immediately sync to D1, purge edge caches, and update /jobs/ cascading filters.'));
+    ihL.appendChild(el('h2', 'jph-card-title', '5-Sector & 3-Layer Category Hierarchy Studio (Main → Sub → Further Subcategory)'));
+    ihL.appendChild(el('div', 'jph-muted', 'Active L1 sectors & L2 subcategories here directly power the public Jobs ▾ Two-Stage Cascading Menu (Stage 1 & Stage 2) and immediately purge edge caches on every change.'));
     iHead.appendChild(ihL);
     iHead.appendChild(btn('↻ Refresh Tree', 'jph-btn', function () { loadTaxonomy().then(renderCurrentView); }));
     intro.appendChild(iHead);
@@ -1570,12 +1582,34 @@
     clear(state.root);
     var wrap = el('div', 'jph-wrap');
 
+    // Live-Sync Badge Banner (v275 — confirms Admin Jobs folder powers public Jobs ▾ two-stage dropdown)
+    var activeL1Count = nodesByLevel(1).filter(function (n) { return n.is_published !== 0; }).length;
+    var activeL2Count = nodesByLevel(2).filter(function (n) { return n.is_published !== 0; }).length;
+    var syncBanner = el('div', 'jph-live-sync-banner');
+    syncBanner.setAttribute('role', 'status');
+    var syncLeft = el('div', 'jph-live-sync-left');
+    var syncPill = el('span', 'jph-live-sync-pill');
+    syncPill.appendChild(el('span', 'jph-live-sync-dot'));
+    syncPill.appendChild(document.createTextNode(' Live Synced to Public Jobs ▾ Menu'));
+    syncLeft.appendChild(syncPill);
+    syncLeft.appendChild(el('span', 'jph-live-sync-copy', activeL1Count + ' active L1 sectors & ' + activeL2Count + ' active L2 subcategories in this folder power Stage 1 (vertical dropdown) and Stage 2 (right-side flyout) with instant edge cache purge.'));
+    syncBanner.appendChild(syncLeft);
+    var syncRight = el('div', 'jph-live-sync-actions');
+    syncRight.appendChild(btn('Manage Menu Sectors', 'jph-btn jph-btn--xs', function () {
+      state.tab = 'taxonomy';
+      state.mode = 'list';
+      if (window.CSOStudio && window.CSOStudio.setJobsSubTab) window.CSOStudio.setJobsSubTab('taxonomy');
+      loadTaxonomy().then(renderCurrentView);
+    }));
+    syncBanner.appendChild(syncRight);
+    wrap.appendChild(syncBanner);
+
     // Tabs Bar
     var tabs = el('div', 'jph-tabs');
     tabs.setAttribute('role', 'tablist');
     [
       ['articles', '📰 Published & Draft Jobs', state.kpis ? state.kpis.total_jobs : state.articles.length],
-      ['taxonomy', '🗂️ 3-Layer Category Hierarchy', state.taxonomyNodes.length],
+      ['taxonomy', '🗂️ 5-Sector & 3-Layer Hierarchy', state.taxonomyNodes.length],
       ['snippets', '🧩 Reusable Bilingual Snippets', state.snippets.length]
     ].forEach(function (t) {
       var b = el('button', 'jph-tab' + (state.tab === t[0] ? ' is-active' : ''));
@@ -1587,6 +1621,7 @@
       b.addEventListener('click', function () {
         state.tab = t[0];
         if (t[0] !== 'articles') state.mode = 'list';
+        if (window.CSOStudio && window.CSOStudio.setJobsSubTab) window.CSOStudio.setJobsSubTab(t[0]);
         renderCurrentView();
         if (t[0] === 'taxonomy') loadTaxonomy().then(renderCurrentView);
         if (t[0] === 'snippets') loadSnippets().then(renderCurrentView);
@@ -1608,9 +1643,14 @@
     state.root.appendChild(wrap);
   }
 
-  function render(root, headerActions, initialOpt) {
+  function render(root, headerActions, initialOpt, initialSectorId) {
     state.root = root;
     state.headerActions = headerActions;
+    if (initialSectorId !== undefined) {
+      state.filters.l1 = initialSectorId || '';
+      state.filters.l2 = '';
+      state.filters.l3 = '';
+    }
     if (initialOpt === 'new') {
       state.tab = 'articles';
       state.mode = 'composer';
@@ -1638,7 +1678,7 @@
 
     clear(root);
     root.appendChild(el('div', 'jph-card', 'Loading Jobs Publishing House from D1…'));
-    Promise.all([loadArticles(), loadSnippets(), loadStudyOptions()]).then(function () {
+    Promise.all([loadArticles(), loadTaxonomy(), loadSnippets(), loadStudyOptions()]).then(function () {
       renderCurrentView();
     }).catch(function (err) {
       clear(root);
@@ -1650,6 +1690,14 @@
     render: render,
     openComposer: function (art) { state.tab = 'articles'; openComposer(art || null); },
     openTab: function (tab) { state.tab = tab; state.mode = 'list'; renderCurrentView(); },
+    openSector: function (l1Id) {
+      state.tab = 'articles';
+      state.mode = 'list';
+      state.filters.l1 = l1Id || '';
+      state.filters.l2 = '';
+      state.filters.l3 = '';
+      loadArticles().then(renderCurrentView);
+    },
     buildBroadcastText: buildBroadcastText
   };
 })(window, document);

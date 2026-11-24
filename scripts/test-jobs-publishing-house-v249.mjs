@@ -405,7 +405,7 @@ await check('3. PDF-to-Article Auto-Draft Helper extracts Advt No, Vacancies, Da
 
 await check('4. Admin Studio, Public Jobs Portal, Homepage & Candidate Hub wiring verified', () => {
   const adminHtml = read('admin/index.html');
-  assert.ok(adminHtml.includes('jobs-publishing-studio.css?v=20261124v249'));
+  assert.match(adminHtml, /jobs-publishing-studio\.css\?v=20261124v2(?:49|[5-9]\d)/);
   assert.ok(/jobs-publishing-studio\.js\?v=20261124v2(?:49|[5-9]\d)/.test(adminHtml), 'admin/index.html missing jobs-publishing-studio.js v249+');
   assert.ok(!adminHtml.includes('0 Child Modules'), 'admin/index.html must not hardcode 0 Child Modules');
   assert.ok(!read('admin/admin.js').includes('Child Modules'), 'admin/admin.js must not display 0 Child Modules');

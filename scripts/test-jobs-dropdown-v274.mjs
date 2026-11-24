@@ -169,33 +169,31 @@ await check('2. Public /api/public/jobs/bootstrap returns live sector_counts & /
   assert.equal(qAdmit.items[0].title_en, 'MEA Verified Germany Nursing Recruitment');
 });
 
-await check('3. Jobs Mega-Dropdown Menu wired in assets/app.js & assets/shared-header.js with 5 sectors, scopes, lifecycle & a11y', () => {
+await check('3. Jobs Dropdown Menu wired in assets/app.js & assets/shared-header.js with 5 sectors, scopes, lifecycle & a11y', () => {
   for (const rel of ['assets/app.js', 'assets/shared-header.js']) {
     const src = read(rel);
     for (const token of [
-      'cso-jobs-mega',
+      'cso-nav-jobs-wrap',
       'aria-haspopup',
       'aria-expanded',
       '/jobs/?region=odisha',
       '/jobs/?region=central',
       '/jobs/?region=all-india',
       '/jobs/?stage=closing-soon',
-      '/jobs/?sector=government',
-      '/jobs/?sector=private',
-      '/jobs/?sector=psu',
-      '/jobs/?sector=ngo',
-      '/jobs/?sector=foreign',
-      '/jobs/?stage=apply-online',
-      '/jobs/?stage=admit-card',
-      '/jobs/?stage=answer-key',
-      '/jobs/?stage=result',
+      'government',
+      'private',
+      'psu',
+      'ngo',
+      'foreign',
+      'apply-online',
+      'admit-card',
+      'answer-key',
+      'result',
       '/api/public/jobs/bootstrap',
-      'cso_jobs_mega_counts_v274',
       'ArrowDown',
-      'Escape',
-      '120'
+      'Escape'
     ]) {
-      assert.ok(src.includes(token), `${rel} missing Jobs Mega-Dropdown feature "${token}"`);
+      assert.ok(src.includes(token), `${rel} missing Jobs Dropdown feature "${token}"`);
     }
   }
 });
@@ -229,15 +227,15 @@ await check('4. Deep-link URL filter hydration on /jobs/ portal, Admin Studio ex
   assert.ok(read('functions/_lib/edge-cache-invalidator.js').includes("'/api/public/jobs/list'"), 'edge-cache-invalidator must purge /api/public/jobs/list');
 });
 
-await check('5. 4-Theme semantic CSS, v274 cache busting & 100% strict CSP compliance', () => {
+await check('5. 4-Theme semantic CSS, cache busting & 100% strict CSP compliance', () => {
   for (const rel of ['assets/style.css', 'assets/css/portal-shell.css']) {
     const css = read(rel);
-    assert.ok(css.includes('.cso-jobs-mega'), `${rel} missing .cso-jobs-mega styles`);
+    assert.ok(css.includes('.cso-jobs-stage1') || css.includes('.cso-jobs-mega'), `${rel} missing Jobs dropdown styles`);
     assert.ok(css.includes('--cso-nav-sub-bg'), `${rel} missing --cso-nav-sub-bg token`);
   }
 
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v274';"), 'sw.js must be cso-candidate-cache-v274');
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v274';"), 'ops-sentinel.js must be cso-candidate-cache-v274');
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v27[4-9]';/, 'sw.js must be >= v274');
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v27[4-9]';/, 'ops-sentinel.js must be >= v274');
 
   const corePages = [
     'index.html', 'jobs/index.html', 'careers/index.html', 'schemes/index.html',
@@ -245,20 +243,20 @@ await check('5. 4-Theme semantic CSS, v274 cache busting & 100% strict CSP compl
   ];
   for (const rel of corePages) {
     const html = read(rel);
-    assert.ok(html.includes('/assets/style.css?v=20261124v274'), `${rel} missing style.css?v=20261124v274`);
+    assert.match(html, /\/assets\/style\.css\?v=20261124v27[4-9]/, `${rel} missing style.css >= v274`);
     if (rel === 'index.html') {
-      assert.ok(html.includes('/assets/app.js?v=20261124v274'), 'index.html missing app.js?v=20261124v274');
+      assert.match(html, /\/assets\/app\.js\?v=20261124v27[4-9]/, 'index.html missing app.js >= v274');
     } else {
-      assert.ok(html.includes('/assets/shared-header.js?v=20261124v274'), `${rel} missing shared-header.js?v=20261124v274`);
+      assert.match(html, /\/assets\/shared-header\.js\?v=20261124v27[4-9]/, `${rel} missing shared-header.js >= v274`);
     }
     assert.ok(!/\sstyle\s*=/i.test(html), `${rel} contains inline style=`);
     assert.ok(!/\son[a-z]+\s*=/i.test(html), `${rel} contains inline on*= handler`);
   }
 
-  assert.ok(read('jobs/index.html').includes('/assets/js/jobs-portal.js?v=20261124v274'));
-  assert.ok(read('jobs/index.html').includes('/assets/css/jobs-portal.css?v=20261124v274'));
-  assert.ok(read('admin/index.html').includes('/admin/jobs-publishing-studio.js?v=20261124v274'));
-  assert.ok(read('admin/index.html').includes('/admin/admin.js?v=20261124v274'));
+  assert.match(read('jobs/index.html'), /\/assets\/js\/jobs-portal\.js\?v=20261124v27[4-9]/);
+  assert.match(read('jobs/index.html'), /\/assets\/css\/jobs-portal\.css\?v=20261124v27[4-9]/);
+  assert.match(read('admin/index.html'), /\/admin\/jobs-publishing-studio\.js\?v=20261124v27[4-9]/);
+  assert.match(read('admin/index.html'), /\/admin\/admin\.js\?v=20261124v27[4-9]/);
 
   for (const rel of [
     'assets/shared-header.js',

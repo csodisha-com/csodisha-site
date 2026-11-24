@@ -1501,6 +1501,31 @@ export async function handlePublicJobsBootstrapApi(request, env) {
   });
 
   const items = all.slice(0, limit);
+  const tree = buildTaxonomyTree(nodes);
+  const navSectors = tree.map(l1 => {
+    const canonSlug = String(l1.slug || '').toLowerCase();
+    const liveCount = (canonSlug in sectorCounts)
+      ? Math.max(Number(l1.published_jobs_count || 0), Number(sectorCounts[canonSlug] || 0))
+      : Number(l1.published_jobs_count || 0);
+    return {
+      id: l1.id,
+      slug: l1.slug,
+      title_en: l1.title_en,
+      title_or: l1.title_or || l1.title_en,
+      icon: l1.icon || '💼',
+      sort_order: Number(l1.sort_order || 0),
+      published_jobs_count: liveCount,
+      subcategories: (l1.children || []).map(l2 => ({
+        id: l2.id,
+        slug: l2.slug,
+        title_en: l2.title_en,
+        title_or: l2.title_or || l2.title_en,
+        icon: l2.icon || '',
+        sort_order: Number(l2.sort_order || 0),
+        published_jobs_count: Number(l2.published_jobs_count || 0)
+      }))
+    };
+  });
   return json({
     ok: true,
     total_published_jobs: all.length,
@@ -1508,8 +1533,9 @@ export async function handlePublicJobsBootstrapApi(request, env) {
     sector_counts: sectorCounts,
     region_counts: regionCounts,
     stage_counts: stageCounts,
+    nav_sectors: navSectors,
     nodes,
-    tree: buildTaxonomyTree(nodes),
+    tree,
     articles: items,
     items,
     facets: {
