@@ -1,7 +1,46 @@
-// Shared Edge Cache Invalidation Helper (v130)
-// Safely deletes public edge-cached responses when Admin mutations occur.
+// Shared Edge & Isolate Cache Invalidation Helper (v231)
+// Immediately purges public edge-cached responses and isolate memos when Admin mutations occur.
+import { resetPublicContentMemo } from '../api/content/_public.js';
+import { invalidateSitePagesCache } from './site-pages.js';
+import { resetAboutOverviewMemo } from '../api/public/about-overview.js';
 
 export const SETTINGS_PUBLIC_PATHS = ['/api/config/public'];
+
+export const NAV_PUBLIC_PATHS = [
+  '/api/nav/config',
+  '/',
+  '/jobs-careers/',
+  '/schemes-benefits/',
+  '/schemes/',
+  '/study-library/',
+  '/community/',
+  '/about/'
+];
+
+export const CONTENT_PUBLIC_PATHS = [
+  '/api/content/jobs',
+  '/api/content/current-affairs',
+  '/api/content/jobs-directory',
+  '/api/content/schemes-directory',
+  '/api/content/schemes',
+  '/api/content/study-library-directory',
+  '/api/content/about-directory',
+  '/api/content/mock-tests',
+  '/api/content/resources',
+  '/api/content/banner',
+  '/api/content/exam-taxonomy',
+  '/api/content/platform-stats',
+  '/api/content/changelog',
+  '/api/public/about-overview',
+  '/api/public/current-affairs',
+  '/api/public/jobs-directory/overview',
+  '/api/public/jobs-directory/items',
+  '/api/public/schemes-directory/overview',
+  '/api/public/schemes-directory/items',
+  '/api/public/study-library/items',
+  '/api/public/community-directory/overview',
+  '/api/public/community-directory/items'
+];
 
 export const EVENTS_PUBLIC_PATHS = [
   '/api/events/upcoming',
@@ -37,4 +76,19 @@ export async function invalidateEdgePaths(request, paths = []) {
   } catch {
     return { ok: false, invalidated: 0 };
   }
+}
+
+export async function invalidateAllPublicCaches(request, extraPaths = []) {
+  try { resetPublicContentMemo(); } catch {}
+  try { invalidateSitePagesCache(); } catch {}
+  try { resetAboutOverviewMemo(); } catch {}
+  const allPaths = [
+    ...new Set([
+      ...NAV_PUBLIC_PATHS,
+      ...CONTENT_PUBLIC_PATHS,
+      ...SETTINGS_PUBLIC_PATHS,
+      ...(Array.isArray(extraPaths) ? extraPaths : [])
+    ])
+  ];
+  return invalidateEdgePaths(request, allPaths);
 }

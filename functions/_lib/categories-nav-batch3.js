@@ -5,6 +5,7 @@ import { audit } from './rbac.js';
 import { cleanStr, slugify, likeEscape } from './validate.js';
 import { NAV_STATUSES } from './categories-nav-batch1.js';
 import { ensureCategoriesNavBatch2Schema } from './categories-nav-batch2.js';
+import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
 
 export const LINK_GROUPS = ['quick_access_bar', 'related_hub_links', 'seo_anchor_rules', 'contextual_cta'];
 export const SOURCE_PORTALS = ['all', 'home', 'study-library', 'jobs-careers', 'schemes', 'community', 'student'];
@@ -42,20 +43,9 @@ async function saveNavRevision(db, moduleCode, entityId, snapshot, note, actorEm
   ).bind(crypto.randomUUID(), moduleCode, entityId, nextVer, JSON.stringify(snapshot), cleanStr(note || '', 200), cleanStr(actorEmail || 'system', 120)).run();
 }
 
-const STARTER_INTERNAL_LINKS = [
-  { id: 'il-study-pyq', slug: 'quick-opsc-pyqs', link_group: 'quick_access_bar', source_portal: 'all', anchor_text_en: 'OPSC / OSSC PYQ Archive', anchor_text_or: 'OPSC / OSSC ପ୍ରଶ୍ନପତ୍ର', target_url: '/resources/?kind=pyq', target_module_code: '03', priority_weight: 10, link_health_status: 'ok', status: 'published' },
-  { id: 'il-jobs-govt', slug: 'quick-odisha-govt-jobs', link_group: 'related_hub_links', source_portal: 'study-library', anchor_text_en: 'Latest Odisha Govt Jobs', anchor_text_or: 'ନୂତନ ଓଡ଼ିଶା ସରକାରୀ ଚାକିରି', target_url: '/jobs-careers/?track=odisha-govt', target_module_code: '02', priority_weight: 9, link_health_status: 'ok', status: 'published' },
-  { id: 'il-schemes-schol', slug: 'quick-odisha-scholarships', link_group: 'related_hub_links', source_portal: 'student', anchor_text_en: 'State Scholarship Portal Guide', anchor_text_or: 'ରାଜ୍ୟ ଛାତ୍ରବୃତ୍ତି ମାର୍ଗଦର୍ଶିକା', target_url: '/scholarship-guidance/', target_module_code: '05', priority_weight: 8, link_health_status: 'ok', status: 'published' },
-  { id: 'il-student-tools', slug: 'quick-age-cgpa-tools', link_group: 'contextual_cta', source_portal: 'jobs-careers', anchor_text_en: 'Age Eligibility & Photo Resizer Tools', anchor_text_or: 'ବୟସ ଓ ଫଟୋ ରିସାଇଜର୍ ଉପକରଣ', target_url: '/tools/', target_module_code: '06', priority_weight: 7, link_health_status: 'ok', status: 'published' }
-];
+const STARTER_INTERNAL_LINKS = [];
 
-const STARTER_SOCIAL_LINKS = [
-  { id: 'soc-instagram', slug: 'instagram-csodisha', platform_key: 'instagram', label_en: 'Instagram', label_or: 'ଇନଷ୍ଟାଗ୍ରାମ', handle_text: '@csodisha', profile_url: 'https://instagram.com/csodisha', placement: 'all', follower_badge_text: 'Official', sort_order: 1, status: 'published' },
-  { id: 'soc-telegram', slug: 'telegram-csodisha', platform_key: 'telegram', label_en: 'Telegram Channel', label_or: 'ଟେଲିଗ୍ରାମ', handle_text: 't.me/csodisha', profile_url: 'https://t.me/csodisha', placement: 'all', follower_badge_text: 'PDF Alerts', sort_order: 2, status: 'published' },
-  { id: 'soc-whatsapp', slug: 'whatsapp-csodisha', platform_key: 'whatsapp', label_en: 'WhatsApp Channel', label_or: 'ହ୍ୱାଟସଆପ୍', handle_text: 'CS Odisha Updates', profile_url: 'https://whatsapp.com/channel/csodisha', placement: 'all', follower_badge_text: 'Instant', sort_order: 3, status: 'published' },
-  { id: 'soc-youtube', slug: 'youtube-csodisha', platform_key: 'youtube', label_en: 'YouTube', label_or: 'ୟୁଟ୍ୟୁବ୍', handle_text: '@csodisha', profile_url: 'https://youtube.com/@csodisha', placement: 'footer_only', follower_badge_text: 'Classes', sort_order: 4, status: 'published' },
-  { id: 'soc-x', slug: 'x-csodisha', platform_key: 'x_twitter', label_en: 'X (Twitter)', label_or: 'ଏକ୍ସ (ଟୁଇଟର୍)', handle_text: '@csodisha', profile_url: 'https://x.com/csodisha', placement: 'footer_only', follower_badge_text: 'News', sort_order: 5, status: 'published' }
-];
+const STARTER_SOCIAL_LINKS = [];
 
 export async function ensureCategoriesNavBatch3Schema(db) {
   if (!db) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');
@@ -485,10 +475,14 @@ async function handleSocialLinks(request, env, actor, id) {
 
 export async function handleCategoriesNavBatch3Admin(request, env, actor, id, sub) {
   await ensureCategoriesNavBatch3Schema(env.DB);
-  if (id === 'internal-links') return handleInternalLinks(request, env, actor, sub);
-  if (id === 'ordering') return handleMenuOrdering(request, env, actor);
-  if (id === 'social-links') return handleSocialLinks(request, env, actor, sub);
-  return null;
+  let res = null;
+  if (id === 'internal-links') res = await handleInternalLinks(request, env, actor, sub);
+  else if (id === 'ordering') res = await handleMenuOrdering(request, env, actor);
+  else if (id === 'social-links') res = await handleSocialLinks(request, env, actor, sub);
+  if (res && request.method !== 'GET' && request.method !== 'HEAD' && res.status >= 200 && res.status < 400) {
+    await invalidateAllPublicCaches(request);
+  }
+  return res;
 }
 
 export async function getPublishedNavBatch3Config(env) {

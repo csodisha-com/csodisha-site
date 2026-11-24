@@ -1203,25 +1203,12 @@
       }
     } catch (_) {}
 
-    try {
-      const response = await fetch('./generated/directory.json');
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      const data = await response.json();
-      if (!Array.isArray(data.navigation) || data.navigation.length !== 8) {
-        throw new Error('Invalid Schemes & Benefits directory structure');
-      }
-      sections = data.navigation.map(group => ({
-        number: group.number,
-        title: group.title,
-        children: group.sections || [],
-        notes: []
-      }));
-      buildDashboard();
-      renderStatistics(data);
-      syncFromUrl(false);
-      if (loadStatus) loadStatus.hidden = true;
-    } catch (error) {
-      if (loadStatus) loadStatus.textContent = 'Unable to load directory: ' + error.message;
+    sections = [];
+    buildDashboard();
+    renderStatistics({ navigation: [] });
+    if (loadStatus) {
+      loadStatus.hidden = false;
+      loadStatus.textContent = 'No schemes or categories published in D1 yet. Add schemes in /admin/ to publish live.';
     }
   }
 

@@ -3,57 +3,20 @@
 /* ================= EDIT YOUR CONTENT HERE ================= */
 const CFG={email:'contact@csodisha.com',social:{instagram:'https://www.instagram.com/csodisha.official/',facebook:'https://www.facebook.com/profile.php?id=61596187936770',x:'https://x.com/csodisha',telegram:'https://t.me/csodisha',whatsapp:'https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w',youtube:'https://www.youtube.com/@CSOdisha'}};
 const NAV=[
- ['home','Home','🏠','/'],
- ['jobs-careers','Jobs','💼','/jobs-careers/'],
+ ['jobs-careers','Jobs & Careers','💼','/jobs-careers/'],
+ ['schemes-benefits','Schemes & Benefits','🏛','/schemes-benefits/'],
  ['study-library','Study Library','📖','/study-library/'],
- ['mock-tests','Mock Tests','📝','/mock-tests/'],
- ['schemes-benefits','Schemes','🏛','/schemes-benefits/'],
- ['tools','Tools','🧰','/tools/'],
- ['community','Community','👥','/community/']
+ ['community','Community','👥','/community/'],
+ ['about','About','ⓘ','/about/']
 ];
+// Clean-slate v231: Zero hardcoded mega-menu link piles. Submenus sync live from /api/nav/config (D1 /admin/).
 const MENUS={
- 'home':[
-  ['Homepage Overview','/'],
-  ['Live Recruitment Alerts','/jobs/'],
-  ["Today's Current Affairs",'/current-affairs/'],
-  ['Annual Exam Calendar','/study/examinations/']
- ],
- 'jobs-careers':[
-  ['Odisha State Govt: OPSC/OSSC/OSSSC/Police','/jobs-careers/?track=odisha-govt'],
-  ['Central Govt: UPSC/SSC/RRB/Banking','/jobs-careers/?track=central-govt'],
-  ['PSUs & Apprenticeships','/jobs-careers/?track=psu-apprenticeship'],
-  ['Notification Lifecycle Tracker','/jobs/']
- ],
- 'study-library':[
-  ['Syllabi & Exam Patterns','/resources/?kind=syllabus'],
-  ['Solved PYQs','/resources/?kind=pyq'],
-  ['Bilingual Study Notes','/study-library/'],
-  ['Daily Current Affairs & 5-MCQ Capsules','/current-affairs/']
- ],
- 'mock-tests':[
-  ['Odisha Govt Mock Tests','/mock-tests/?track=odisha'],
-  ['Central Govt CBT Tests','/study-library/cbt-mock-test/'],
-  ['Sectional & Speed Drills','/mock-tests/?mode=sectional'],
-  ['Scoreboard & Analytics','/student-dashboard/']
- ],
- 'schemes-benefits':[
-  ['Odisha State Welfare Schemes','/schemes-benefits/?scope=odisha'],
-  ['Central Govt Schemes','/schemes-benefits/?scope=central'],
-  ['Post-Matric & Merit Scholarships','/scholarship-guidance/'],
-  ['Eligibility Matcher','/scheme-opportunity-finder/']
- ],
- 'tools':[
-  ['Age Eligibility Calculator','/tools/#age-calculator'],
-  ['Photo & Signature Resizer','/tools/#photo-resizer'],
-  ['Document Readiness Checklist','/tools/#doc-readiness-card'],
-  ['Official .gov.in Portals Directory','/tools/#scam-checker']
- ],
- 'community':[
-  ['Student Discussion Forum','/community/'],
-  ['Help & FAQs','/support/#faqs'],
-  ['Report an Error / Suggest Resource','/support/#report-error'],
-  ['About & Legal Policies','/about/']
- ]};
+ 'jobs-careers':[],
+ 'schemes-benefits':[],
+ 'study-library':[],
+ 'community':[],
+ 'about':[]
+};
 // cat must match a tab: Jobs, Schemes, Education, Odisha, National. tag: JOB, SCHEME, EDUCATION, ODISHA, GUIDE
 let UPDATES=[];
 // Page content: 'url-slug':{title:'',html:''}  (slug = lowercase title with dashes)
@@ -258,29 +221,63 @@ function nav(){
  cluster.append(baMob,zoomMob);
  bar.append(mobBtn,cluster);
  const itemsWrap=mk('div','cso-nav-items');itemsWrap.id='cso-nav-items';
- NAV.forEach(([s,t,icon,href])=>{
-  const ni=mk('div','ni');ni.dataset.pillar=s;
-  const par=mk('div','cso-nav-parent');
-  const a=mk('a',s==='home'?'cso-nav-home':'');a.href=href||('/'+s+'/');
-  if(s==='home')a.setAttribute('data-h','');
-  const ic=mk('span','',icon);ic.setAttribute('aria-hidden','true');
-  a.append(ic,' '+translateText(t));
-  const arr=mk('button','cso-nav-arrow','⌄');arr.type='button';
-  arr.setAttribute('aria-label','Toggle '+t+' menu');arr.setAttribute('aria-haspopup','true');
-  arr.setAttribute('aria-expanded','false');arr.setAttribute('aria-controls','cso-nav-dd-'+s);
-  par.append(a,arr);
-  const dd=mk('div','dd');dd.id='cso-nav-dd-'+s;
-  (MENUS[s]||[]).forEach(entry=>{
-   const label=Array.isArray(entry)?entry[0]:entry;
-   const url=Array.isArray(entry)?entry[1]:('/'+s+'/');
-   const subA=mk('a');subA.href=url;
-   const bul=mk('span','dd-bullet','›');bul.setAttribute('aria-hidden','true');
-   subA.append(bul,mk('span','',translateText(label)));
-   dd.appendChild(subA);
+ const homeLink=mk('a','cso-nav-home');homeLink.href='#';homeLink.setAttribute('data-h','');
+ const hIc=mk('span','','🏠');hIc.setAttribute('aria-hidden','true');homeLink.append(hIc,' '+translateText('Home'));
+ itemsWrap.appendChild(homeLink);
+ const renderList=(list,megaMap)=>{
+  while(itemsWrap.children.length>1)itemsWrap.lastChild.remove();
+  list.forEach(entry=>{
+   const isArr=Array.isArray(entry);
+   const s=isArr?entry[0]:(String(entry.url||'').replace(/^\/+|\/+$/g,'').split('/')[0]||'link');
+   const t=isArr?entry[1]:(S.lang==='or'?(entry.label_or||entry.label_en):entry.label_en);
+   const icon=isArr?entry[2]:(entry.icon_key||'');
+   const href=isArr?(entry[3]||('/'+s+'/')):(entry.url||'/');
+   if(href==='/')return;
+   const subs=megaMap&&entry.id?(megaMap.get(entry.id)||[]):(MENUS[s]||[]);
+   const ni=mk('div','ni');ni.dataset.pillar=s;
+   const par=mk('div','cso-nav-parent');
+   const a=mk('a');a.href=href;
+   if(icon){const ic=mk('span','',icon);ic.setAttribute('aria-hidden','true');a.append(ic,' ');}
+   a.append(document.createTextNode(translateText(t)));
+   if(subs.length){
+    const arr=mk('button','cso-nav-arrow','⌄');arr.type='button';
+    arr.setAttribute('aria-label','Toggle '+t+' menu');arr.setAttribute('aria-haspopup','true');
+    arr.setAttribute('aria-expanded','false');arr.setAttribute('aria-controls','cso-nav-dd-'+s);
+    par.append(a,arr);
+    const dd=mk('div','dd');dd.id='cso-nav-dd-'+s;
+    subs.forEach(sub=>{
+     const lbl=Array.isArray(sub)?sub[0]:(S.lang==='or'?(sub.label_or||sub.label_en):sub.label_en);
+     const url=Array.isArray(sub)?sub[1]:(sub.url||'/');
+     const subA=mk('a');subA.href=url;
+     const bul=mk('span','dd-bullet','›');bul.setAttribute('aria-hidden','true');
+     subA.append(bul,mk('span','',translateText(lbl)));
+     dd.appendChild(subA);
+    });
+    ni.append(par,dd);
+   }else{
+    par.appendChild(a);
+    ni.appendChild(par);
+   }
+   itemsWrap.appendChild(ni);
   });
-  ni.append(par,dd);itemsWrap.appendChild(ni);
- });
+ };
+ renderList(NAV,null);
  w.append(bar,itemsWrap);
+ if(typeof fetch==='function'){
+  fetch('/api/nav/config',{credentials:'same-origin',cache:'no-store'})
+   .then(r=>r.ok?r.json():null)
+   .then(data=>{
+    if(!data||!Array.isArray(data.header)||!data.header.length)return;
+    const megaMap=new Map();
+    (data.mega_menu||[]).forEach(mm=>{
+     if(!mm||!mm.parent_item_id)return;
+     if(!megaMap.has(mm.parent_item_id))megaMap.set(mm.parent_item_id,[]);
+     megaMap.get(mm.parent_item_id).push(mm);
+    });
+    const hdr=[...data.header].sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0));
+    renderList(hdr,megaMap);
+   }).catch(()=>{});
+ }
  syncMobileNavAuth();
  setActive(location.hash.slice(1));
 }

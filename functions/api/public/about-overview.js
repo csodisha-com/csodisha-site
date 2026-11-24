@@ -131,6 +131,11 @@ let _aboutMemo = null;
 let _aboutMemoAt = 0;
 const ABOUT_MEMO_TTL_MS = 5 * 60 * 1000;
 
+export function resetAboutOverviewMemo() {
+  _aboutMemo = null;
+  _aboutMemoAt = 0;
+}
+
 export async function handlePublicAboutOverviewApi(request, env) {
   const cache = (typeof caches !== 'undefined' && caches.default) ? caches.default : null;
   const cacheKey = new Request(request.url, { method: 'GET' });

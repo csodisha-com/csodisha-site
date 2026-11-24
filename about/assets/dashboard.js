@@ -640,35 +640,32 @@
   async function loadAboutDirectory() {
     if (loadStatus) loadStatus.hidden = false;
     try {
-      const res = await fetch('/api/content/about-directory', { headers: { Accept: 'application/json' } });
+      const res = await fetch('/api/content/about-directory', { headers: { Accept: 'application/json' }, cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data.groups) && data.groups.length) {
-          groups = data.groups;
-          totalCounts = data.total_counts || data.counts || totalCounts;
-          if (loadStatus) loadStatus.hidden = true;
-          buildDashboard();
-          syncFromUrl(false);
-          return;
+        groups = Array.isArray(data.groups) ? data.groups : [];
+        totalCounts = data.total_counts || data.counts || { groups: groups.length, sections: 0, entries: 0 };
+        buildDashboard();
+        syncFromUrl(false);
+        if (loadStatus) {
+          if (!groups.length) {
+            loadStatus.hidden = false;
+            loadStatus.textContent = 'No About sections published in D1 yet. Author pages in /admin/ to publish live.';
+          } else {
+            loadStatus.hidden = true;
+          }
         }
+        return;
       }
     } catch {}
 
-    try {
-      const fb = await fetch('./generated/directory.json');
-      if (fb.ok) {
-        const raw = await fb.json();
-        groups = convertFallbackDirectoryJson(raw);
-        totalCounts = {
-          groups: groups.length,
-          sections: groups.reduce((a, g) => a + g.sections.length, 0),
-          entries: groups.reduce((a, g) => a + g.sections.reduce((b, s) => b + s.entries.length, 0), 0)
-        };
-      }
-    } catch {}
-    if (loadStatus) loadStatus.hidden = true;
+    groups = [];
+    totalCounts = { groups: 0, sections: 0, entries: 0 };
     buildDashboard();
-    syncFromUrl(false);
+    if (loadStatus) {
+      loadStatus.hidden = false;
+      loadStatus.textContent = 'No About sections published in D1 yet. Author pages in /admin/ to publish live.';
+    }
   }
 
   /* --------------------------------------------------------------------------

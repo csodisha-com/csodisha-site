@@ -1539,64 +1539,43 @@
     }
   }
 
-  const jsonUrls = [
-    '/api/content/jobs-directory',
-    './generated/directory.json',
-    '/jobs-careers/generated/directory.json'
-  ];
-
-  function tryFetch(urlIndex = 0) {
-    // 1. Prioritize SuperStore dynamic state engine
-    const liveSections = loadSuperStoreTree();
-    if (liveSections) {
-      sections = liveSections;
-      buildDashboard();
-      syncFromUrl(false);
-      if (loadStatus) {
-        loadStatus.hidden = true;
-      }
-      return;
+  function renderEmptyDirectoryState() {
+    if (sectionsNav) {
+      sectionsNav.replaceChildren();
+      const emptyNav = el('div', 'cso-empty-state', 'No categories yet. Add categories in Admin Studio.');
+      sectionsNav.appendChild(emptyNav);
     }
-
-    // 2. Fallback to static JSON
-    if (urlIndex >= jsonUrls.length) {
-      if (loadStatus) {
-        loadStatus.textContent = 'Unable to load directory data. Please check your connection.';
-      }
-      return;
+    if (loadStatus) {
+      loadStatus.hidden = false;
+      loadStatus.textContent = 'No job categories published in D1 yet. Create categories and notices in /admin/ to publish live.';
     }
+  }
 
-    fetch(jsonUrls[urlIndex])
+  function tryFetch() {
+    fetch('/api/content/jobs-directory', { credentials: 'same-origin', cache: 'no-store' })
       .then(response => {
         if (!response.ok) throw new Error('HTTP ' + response.status);
         return response.json();
       })
       .then(data => {
-        if (!Array.isArray(data.sections) || data.sections.length !== 8) {
-          throw new Error('Invalid directory structure');
+        sections = Array.isArray(data && data.sections) ? data.sections : [];
+        if (!sections.length) {
+          renderEmptyDirectoryState();
+          return;
         }
-
-        sections = data.sections;
         buildDashboard();
-
         syncFromUrl(false);
-
         if (loadStatus) {
           loadStatus.hidden = true;
         }
       })
-      .catch(error => {
-        if (urlIndex + 1 < jsonUrls.length) {
-          tryFetch(urlIndex + 1);
-        } else {
-          if (loadStatus) {
-            loadStatus.textContent = 'Unable to load directory: ' + error.message;
-          }
-        }
+      .catch(() => {
+        sections = [];
+        renderEmptyDirectoryState();
       });
   }
 
-  tryFetch(0);
+  tryFetch();
 
   // =========================================================================
   // Live Recruitment & Job Notifications (/api/content/jobs)

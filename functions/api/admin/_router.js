@@ -79,6 +79,7 @@ import { handleExamTaxonomy } from './_taxonomy.js';
 import { handleAdminCandidates } from './_candidates.js';
 import { handleCrawlDrafts } from './crawl-drafts.js';
 import { handleAdminCurrentAffairs } from './current-affairs.js';
+import { invalidateAllPublicCaches } from '../../_lib/edge-cache-invalidator.js';
 import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
@@ -90,6 +91,14 @@ import {
 } from './_ecosystem.js';
 
 export async function handleAdminApi(request, env) {
+  const res = await dispatchAdminApi(request, env);
+  if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 400) {
+    await invalidateAllPublicCaches(request);
+  }
+  return res;
+}
+
+async function dispatchAdminApi(request, env) {
   try {
     if (!env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');
     const url = new URL(request.url);

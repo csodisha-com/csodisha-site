@@ -1156,43 +1156,30 @@
     let dirLoadedFromD1 = false;
     if (dirResp.status === 'fulfilled' && dirResp.value.ok) {
       const dirData = await dirResp.value.json();
-      if (Array.isArray(dirData.groups) && dirData.groups.length) {
-        state.groups = dirData.groups;
-        state.counts = dirData.total_counts || dirData.counts || state.counts;
-        dirLoadedFromD1 = true;
-      }
-    }
-
-    if (!dirLoadedFromD1) {
-      try {
-        const fb = await fetch('./generated/directory.json');
-        if (fb.ok) {
-          const raw = await fb.json();
-          const nav = Array.isArray(raw.navigation) ? raw.navigation : [];
-          state.groups = nav.map((g, idx) => ({
-            id: g.id || `group-${idx + 1}`,
-            slug: g.id || `group-${idx + 1}`,
-            title: g.title,
-            title_or: '',
-            icon_name: GROUP_ICONS[idx % GROUP_ICONS.length],
-            sections: g.sections || []
-          }));
-          const secs = state.groups.flatMap(g => g.sections);
-          const subs = secs.flatMap(s => s.children || []);
-          const ents = subs.flatMap(sub => sub.children || []);
-          state.counts = { groups: state.groups.length, sections: secs.length, subcategories: subs.length, entries: ents.length };
-        }
-      } catch {}
+      state.groups = Array.isArray(dirData.groups) ? dirData.groups : [];
+      state.counts = dirData.total_counts || dirData.counts || { groups: state.groups.length, sections: 0, subcategories: 0, entries: 0, totalNodes: 0 };
+      dirLoadedFromD1 = true;
+    } else {
+      state.groups = [];
+      state.counts = { groups: 0, sections: 0, subcategories: 0, entries: 0, totalNodes: 0 };
     }
 
     if (syncBadge) {
+      const topicTotal = Number(state.counts.totalNodes || state.counts.entries || 0);
       syncBadge.textContent = dirLoadedFromD1
-        ? `● Live Verified Directory (${state.counts.totalNodes || 1681} Topics)`
-        : `Offline Fallback (${state.groups.length} Groups)`;
+        ? `● Live D1 Directory (${topicTotal} Topics)`
+        : '● Live D1 Directory (0 Topics)';
     }
 
     await loadCandidateGoals();
-    if (loadStatusEl) loadStatusEl.hidden = true;
+    if (loadStatusEl) {
+      if (!state.groups.length) {
+        loadStatusEl.hidden = false;
+        loadStatusEl.textContent = 'No study library categories published in D1 yet. Create study topics in /admin/ to publish live.';
+      } else {
+        loadStatusEl.hidden = true;
+      }
+    }
 
     renderMaterials();
     renderContinueStrip();

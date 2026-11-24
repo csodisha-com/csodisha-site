@@ -35,6 +35,7 @@ import { handlePublicFinanceCatalogApi } from './functions/_lib/payments-finance
 import { handlePublicEduScholarshipsApi, handlePublicEduCareersApi } from './functions/_lib/edu-resources-batch5.js';
 import { handlePublicEduStudentHubApi, handlePublicEduToolsApi } from './functions/_lib/edu-resources-batch6.js';
 import { handlePublicNavConfigApi } from './functions/_lib/categories-nav-batch1.js';
+import { invalidateAllPublicCaches } from './functions/_lib/edge-cache-invalidator.js';
 import { getPublishedNavBatch2Config } from './functions/_lib/categories-nav-batch2.js';
 import { getPublishedNavBatch3Config } from './functions/_lib/categories-nav-batch3.js';
 import { handlePublicJobsRoute } from './functions/_lib/jobs-directory-ssr.js';
@@ -382,7 +383,10 @@ export default {
       const adminRes = await handleAdminApi(request, env);
       if (request.method !== 'GET' && request.method !== 'HEAD' && adminRes.status >= 200 && adminRes.status < 400) {
         const edgeCache = typeof caches !== 'undefined' && caches.default ? caches.default : null;
-        await invalidatePublicEdgeCache(edgeCache, url.origin);
+        await Promise.all([
+          invalidateAllPublicCaches(request),
+          invalidatePublicEdgeCache(edgeCache, url.origin)
+        ]);
       }
       return adminRes;
     }
@@ -779,7 +783,7 @@ export default {
       const b3Data = await getPublishedNavBatch3Config(env);
       const navRes = new Response(JSON.stringify({ ...b1Data, ...b2Data, ...b3Data }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=120' }
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=0, must-revalidate' }
       });
       if (isAnonGet && navRes.status === 200) {
         recordPublicCachePut(edgeCache, request, navRes, ctx);

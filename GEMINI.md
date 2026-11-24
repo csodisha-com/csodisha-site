@@ -9,20 +9,20 @@
 - **Never** use `.innerHTML`, `.outerHTML`, or `insertAdjacentHTML` — construct DOM nodes safely with `document.createElement`, `textContent`, and `appendChild`/`replaceChildren`.
 - **Never** use `.style.*` in JavaScript or inline `style=""` / `onclick=""` (or other `on*=""`) attributes in HTML — use external CSS classes and `addEventListener` in self-hosted JS files instead.
 
-## 3. Navigation & Module Integrity (7-Pillar Architecture)
-- Preserve all **7 pillars (folders)** and **28 modules** defined in `admin/data/master-navigation.json` (and synchronized in D1 `nav_categories` / `nav_menu_items` via `migrations/0131_restructure_7_pillar_navigation.sql` and `functions/_lib/categories-nav-batch1.js` / `batch2.js`):
-  1. **Home & Live Updates** (Homepage Overview, Live Recruitment Alerts, Today's Current Affairs, Annual Exam Calendar)
-  2. **Jobs & Recruitment** (Odisha State Govt: OPSC/OSSC/OSSSC/Police, Central Govt: UPSC/SSC/RRB/Banking, PSUs & Apprenticeships, Notification Lifecycle Tracker)
-  3. **Study Library & Current Affairs** (Syllabi & Exam Patterns, Solved PYQs, Bilingual Study Notes, Daily Current Affairs & 5-MCQ Capsules)
-  4. **Mock Tests & Practice** (Odisha Govt Mock Tests, Central Govt CBT Tests, Sectional & Speed Drills, Scoreboard & Analytics)
-  5. **Schemes & Scholarships** (Odisha State Welfare Schemes, Central Govt Schemes, Post-Matric & Merit Scholarships, Eligibility Matcher)
-  6. **Student Tools & Verified Portals** (Age Eligibility Calculator, Photo & Signature Resizer, Document Readiness Checklist, Official .gov.in Portals Directory)
-  7. **Community & Support** (Student Discussion Forum, Help & FAQs, Report an Error / Suggest Resource, About & Legal Policies)
-- Keep `assets/shared-header.js`, `assets/app.js`, and the Admin Studio navigation tree (`admin/admin.js`, `admin/suite-live.js`, `admin/categories-nav-batch1.js`) bilingual-ready (English + Odia) and mapped to verified live routes with zero 404s.
+## 3. Clean-Slate 5-Pillar Navigation & Live D1 Sync (`v231`)
+- Preserve the **5 clean top-level navigation pillars** in `admin/data/master-navigation.json` (with empty child module/category lists ready to be authored afresh in `/admin/`) and synchronized in D1 via `migrations/0132_clean_slate_navigation_sync.sql` and `functions/_lib/categories-nav-batch1.js`:
+  1. **Jobs & Careers** (`/jobs-careers/`)
+  2. **Schemes & Benefits** (`/schemes-benefits/`)
+  3. **Study Library** (`/study-library/`)
+  4. **Community** (`/community/`)
+  5. **About** (`/about/`)
+- **Never** reintroduce bulky hardcoded static directory trees, mega-menu link piles, or auto-seeding loops (`ensureVerifiedUpscSeedNotice`, `ODISHA_1_2_SEEDS`, `NATIONAL_1_1_SEEDS`). All categories, submenus, and content items are controlled strictly from `/admin/` via Cloudflare D1.
+- Every Admin Panel mutation (`POST`, `PUT`, `PATCH`, `DELETE`) must immediately invalidate isolate and edge caches (`invalidateAllPublicCaches`, `resetPublicContentMemo`, `invalidateSitePagesCache`, `resetAboutOverviewMemo`) so public `/api/nav/config` and `/api/content/*` stay in real-time sync.
+- When a category or section has `0` items in D1, render a clean, CSP-safe empty state on public pages rather than falling back to hardcoded dummy/directory data.
 
 ## 4. Required Verification Before Finishing Any Change
 Always run the full verification suite before completing any task and ensure all checks pass:
 
 ```bash
-node scripts/test-navigation-restructure-v230.mjs && node scripts/test-extended-jobs-details-v229.mjs && node scripts/test-d1-read-optimization-v228.mjs && node scripts/test-odisha-jobs-details-v227.mjs && node scripts/audit-links.js
+node scripts/test-clean-slate-live-sync-v231.mjs && node scripts/test-navigation-restructure-v230.mjs && node scripts/test-extended-jobs-details-v229.mjs && node scripts/test-d1-read-optimization-v228.mjs && node scripts/test-odisha-jobs-details-v227.mjs && node scripts/audit-links.js
 ```

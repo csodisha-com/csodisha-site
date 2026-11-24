@@ -102,58 +102,21 @@
     ['community-directory/community-safety-governance', 'Community Directory, Safety & Governance']
   ];
 
+  // Clean-Slate 5-Pillar Live D1 Routing (v231)
   var ROUTES = {
-    // Pillar 1: Home & Live Updates
-    'module-01-001': ['dashboard', OPS],
-    'module-01-002': ['jobs', CONTENT],
-    'module-01-003': ['current-affairs', CONTENT],
-    'module-01-004': ['content/calendar', CONTENT_SUITE],
-
-    // Pillar 2: Jobs & Recruitment
-    'module-02-001': ['jobs-directory/jobs-recruitment', JOBS_SUITE],
-    'module-02-002': ['jobs-directory/career-explorer', JOBS_SUITE],
-    'module-02-003': ['jobs-directory/eligibility-explorer', JOBS_SUITE],
-    'module-02-004': ['jobs', CONTENT],
-
-    // Pillar 3: Study Library & Current Affairs
-    'module-03-001': ['syllabus', EDU],
-    'module-03-002': ['pyq', EDU],
-    'module-03-003': ['study-library/odisha-study-hub', STUDY_SUITE],
-    'module-03-004': ['content/current-affairs', CONTENT_SUITE],
-
-    // Pillar 4: Mock Tests & Practice
-    'module-04-001': ['mock-tests', EDU],
-    'module-04-002': ['mock-tests', EDU],
-    'module-04-003': ['mock-tests', EDU],
-    'module-04-004': ['dashboard', OPS],
-
-    // Pillar 5: Schemes & Scholarships
-    'module-05-001': ['schemes-directory/govt-public-welfare', SCHEMES_SUITE],
-    'module-05-002': ['schemes-directory/education-employment', SCHEMES_SUITE],
-    'module-05-003': ['schemes', CONTENT],
-    'module-05-004': ['schemes-directory/find-schemes-eligibility', SCHEMES_SUITE],
-
-    // Pillar 6: Student Tools & Verified Portals
-    'module-06-001': ['pages', SITE],
-    'module-06-002': ['media'],
-    'module-06-003': ['pages', SITE],
-    'module-06-004': ['about-directory', SITE],
-
-    // Pillar 7: Community & Support
-    'module-07-001': ['community-directory/local-odisha-communities', COMMUNITY_SUITE],
-    'module-07-002': ['feedback', OPS],
-    'module-07-003': ['feedback', OPS],
-    'module-07-004': ['pages/legal', SITE]
+    'folder-jobs-careers': ['jobs', CONTENT],
+    'folder-schemes-benefits': ['schemes', CONTENT],
+    'folder-study-library': ['study-library-directory', EDU],
+    'folder-community': ['feedback', OPS],
+    'folder-about': ['about-directory', SITE]
   };
 
   var FOLDER_FALLBACKS = {
-    'folder-01': ['dashboard', OPS],
-    'folder-02': ['jobs-directory/jobs-recruitment', JOBS_SUITE],
-    'folder-03': ['study-library/odisha-study-hub', STUDY_SUITE],
-    'folder-04': ['mock-tests', EDU],
-    'folder-05': ['schemes-directory/govt-public-welfare', SCHEMES_SUITE],
-    'folder-06': ['pages', SITE],
-    'folder-07': ['community-directory/local-odisha-communities', COMMUNITY_SUITE]
+    'folder-jobs-careers': ['jobs', CONTENT],
+    'folder-schemes-benefits': ['schemes', CONTENT],
+    'folder-study-library': ['study-library-directory', EDU],
+    'folder-community': ['feedback', OPS],
+    'folder-about': ['about-directory', SITE]
   };
 
   function resolveRoute(folderId, moduleId) {

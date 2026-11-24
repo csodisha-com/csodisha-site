@@ -210,10 +210,12 @@ export async function hydrateExplorerIndexHtml(res, pathname, env, url) {
       const label = cleanTopicTitle(String(d.domain_slug || '').replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()));
       return `<a class="cso-schemes-domain-card" href="/schemes/${escShell(d.domain_slug)}/"><div class="cso-schemes-domain-top"><span>Category</span><span>${Number(d.cnt)} entries</span></div><div class="cso-schemes-domain-title">${escShell(label)}</div></a>`;
     }).join('');
-    const itemsHtml = items.map((it) => renderSchemeCard(it, cleanTopicTitle(it.title))).join('');
+    const itemsHtml = items.length
+      ? items.map((it) => renderSchemeCard(it, cleanTopicTitle(it.title))).join('')
+      : '<div class="cso-empty-state"><p>No published schemes in D1 yet. Author schemes in Admin Studio to publish live.</p></div>';
     return new HTMLRewriter()
-      .on('#schemes-domain-grid', { element(el) { if (domainHtml) el.setInnerContent(domainHtml, { html: true }); } })
-      .on('#schemes-items-grid', { element(el) { if (itemsHtml) { el.setInnerContent(itemsHtml, { html: true }); el.setAttribute('data-ssr', '1'); } } })
+      .on('#schemes-domain-grid', { element(el) { if (domainHtml) el.setInnerContent(domainHtml, { html: true }); else el.setInnerContent('', { html: false }); } })
+      .on('#schemes-items-grid', { element(el) { el.setInnerContent(itemsHtml, { html: true }); el.setAttribute('data-ssr', '1'); } })
       .on('#schemes-results-count', { element(el) { el.setInnerContent(`Showing ${items.length} of ${fmtNum(total)} verified schemes`, { html: false }); } })
       .transform(res);
   }
@@ -232,10 +234,12 @@ export async function hydrateExplorerIndexHtml(res, pathname, env, url) {
       const label = cleanTopicTitle(String(d.domain_slug || '').replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()));
       return `<a class="cso-comm-domain-card" href="/community/${escShell(d.domain_slug)}/"><div class="cso-comm-domain-top"><span>Community</span><span>${Number(d.cnt)} live</span></div><div class="cso-comm-domain-title">${escShell(label)}</div></a>`;
     }).join('');
-    const itemsHtml = items.map((it) => `<article class="cso-comm-item-card"><div class="cso-comm-item-meta"><span class="cso-comm-tag">${escShell(it.district_region || 'All Odisha')}</span><span>${escShell(it.membership_model || 'Open & Free')}</span></div><h3 class="cso-comm-item-title">${escShell(cleanTopicTitle(it.title))}</h3><div class="cso-comm-item-meta">${escShell(it.summary || '')}</div><div class="cso-comm-item-actions"><a class="cso-comm-btn cso-comm-btn-primary" href="/community/item/${escShell(encodeURIComponent(it.slug || it.id))}/">View Charter &amp; Details</a></div></article>`).join('');
+    const itemsHtml = items.length
+      ? items.map((it) => `<article class="cso-comm-item-card"><div class="cso-comm-item-meta"><span class="cso-comm-tag">${escShell(it.district_region || 'All Odisha')}</span><span>${escShell(it.membership_model || 'Open & Free')}</span></div><h3 class="cso-comm-item-title">${escShell(cleanTopicTitle(it.title))}</h3><div class="cso-comm-item-meta">${escShell(it.summary || '')}</div><div class="cso-comm-item-actions"><a class="cso-comm-btn cso-comm-btn-primary" href="/community/item/${escShell(encodeURIComponent(it.slug || it.id))}/">View Charter &amp; Details</a></div></article>`).join('')
+      : '<div class="cso-empty-state"><p>No published community chapters in D1 yet. Author communities in Admin Studio to publish live.</p></div>';
     return new HTMLRewriter()
-      .on('#community-domain-grid', { element(el) { if (domainHtml) el.setInnerContent(domainHtml, { html: true }); } })
-      .on('#community-items-grid', { element(el) { if (itemsHtml) el.setInnerContent(itemsHtml, { html: true }); } })
+      .on('#community-domain-grid', { element(el) { if (domainHtml) el.setInnerContent(domainHtml, { html: true }); else el.setInnerContent('', { html: false }); } })
+      .on('#community-items-grid', { element(el) { el.setInnerContent(itemsHtml, { html: true }); } })
       .on('#community-results-count', { element(el) { el.setInnerContent(`Showing ${items.length} of ${fmtNum(total)} verified communities`, { html: false }); } })
       .transform(res);
   }

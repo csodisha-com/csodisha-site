@@ -993,40 +993,21 @@
         if (loadStatus) loadStatus.hidden = true;
         return;
       }
-      throw new Error('Empty live overview');
+      sections = [];
+      buildDashboard();
+      renderStatistics({ navigation: [] });
+      if (loadStatus) {
+        loadStatus.hidden = false;
+        loadStatus.textContent = 'No community groups published in D1 yet. Create communities in /admin/ to publish live.';
+      }
     })
     .catch(() => {
-      const liveSections = loadSuperStoreTree();
-      if (liveSections) {
-        sections = liveSections;
-        buildDashboard();
-        renderStatistics({ navigation: liveSections });
-        syncFromUrl(false);
-        if (loadStatus) loadStatus.hidden = true;
-        return;
+      sections = [];
+      buildDashboard();
+      renderStatistics({ navigation: [] });
+      if (loadStatus) {
+        loadStatus.hidden = false;
+        loadStatus.textContent = 'No community groups published in D1 yet. Create communities in /admin/ to publish live.';
       }
-      fetch('./generated/directory.json')
-        .then(response => {
-          if (!response.ok) throw new Error('HTTP ' + response.status);
-          return response.json();
-        })
-        .then(data => {
-          if (!Array.isArray(data.navigation) || data.navigation.length !== 10) {
-            throw new Error('Invalid Community directory structure');
-          }
-          sections = data.navigation.map(group => ({
-            number: group.number,
-            title: group.title,
-            children: group.sections || [],
-            notes: []
-          }));
-          buildDashboard();
-          renderStatistics(data);
-          syncFromUrl(false);
-          if (loadStatus) loadStatus.hidden = true;
-        })
-        .catch(error => {
-          if (loadStatus) loadStatus.textContent = 'Unable to load directory: ' + error.message;
-        });
     });
 })();

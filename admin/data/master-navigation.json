@@ -1,315 +1,52 @@
 {
   "project": "CS Odisha",
-  "framework": "CS Odisha 7-Pillar Navigation Architecture v2.0",
+  "framework": "CS Odisha Clean-Slate 5-Pillar Live Sync Architecture v231",
   "status": "active",
   "folders": [
     {
-      "id": "folder-01",
-      "slug": "home",
-      "title": "Home & Live Updates",
-      "title_or": "ମୂଳପୃଷ୍ଠା ଓ ତାଜା ଅପଡେଟ୍",
-      "short_title": "Home",
-      "short_title_or": "ମୂଳପୃଷ୍ଠା",
-      "icon": "🏠",
-      "route": "/",
-      "modules": [
-        {
-          "id": "module-01-001",
-          "slug": "homepage-overview",
-          "title": "Homepage Overview",
-          "title_or": "ମୂଳପୃଷ୍ଠା ବିବରଣୀ",
-          "route": "/",
-          "status": "active"
-        },
-        {
-          "id": "module-01-002",
-          "slug": "live-recruitment-alerts",
-          "title": "Live Recruitment Alerts",
-          "title_or": "ତାଜା ନିଯୁକ୍ତି ବିଜ୍ଞପ୍ତି",
-          "route": "/jobs/",
-          "status": "active"
-        },
-        {
-          "id": "module-01-003",
-          "slug": "todays-current-affairs",
-          "title": "Today's Current Affairs",
-          "title_or": "ଆଜିର ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ",
-          "route": "/current-affairs/",
-          "status": "active"
-        },
-        {
-          "id": "module-01-004",
-          "slug": "annual-exam-calendar",
-          "title": "Annual Exam Calendar",
-          "title_or": "ବାର୍ଷିକ ପରୀକ୍ଷା କ୍ୟାଲେଣ୍ଡର୍",
-          "route": "/study/examinations/",
-          "status": "active"
-        }
-      ]
-    },
-    {
-      "id": "folder-02",
+      "id": "folder-jobs-careers",
       "slug": "jobs-careers",
-      "title": "Jobs & Recruitment",
-      "title_or": "ଚାକିରି ଓ ନିଯୁକ୍ତି",
-      "short_title": "Jobs",
-      "short_title_or": "ଚାକିରି",
+      "title": "Jobs & Careers",
+      "title_or": "ଚାକିରି ଓ କ୍ୟାରିୟର୍",
       "icon": "💼",
       "route": "/jobs-careers/",
-      "modules": [
-        {
-          "id": "module-02-001",
-          "slug": "odisha-state-govt-jobs",
-          "title": "Odisha State Govt: OPSC/OSSC/OSSSC/Police",
-          "title_or": "ଓଡ଼ିଶା ରାଜ୍ୟ ସରକାରୀ: OPSC/OSSC/OSSSC/ପୋଲିସ୍",
-          "route": "/jobs-careers/?track=odisha-govt",
-          "status": "active"
-        },
-        {
-          "id": "module-02-002",
-          "slug": "central-govt-jobs",
-          "title": "Central Govt: UPSC/SSC/RRB/Banking",
-          "title_or": "କେନ୍ଦ୍ର ସରକାରୀ: UPSC/SSC/RRB/ବ୍ୟାଙ୍କିଂ",
-          "route": "/jobs-careers/?track=central-govt",
-          "status": "active"
-        },
-        {
-          "id": "module-02-003",
-          "slug": "psus-and-apprenticeships",
-          "title": "PSUs & Apprenticeships",
-          "title_or": "PSU ଓ ଆପ୍ରେଣ୍ଟିସଶିପ୍",
-          "route": "/jobs-careers/?track=psu-apprenticeship",
-          "status": "active"
-        },
-        {
-          "id": "module-02-004",
-          "slug": "notification-lifecycle-tracker",
-          "title": "Notification Lifecycle Tracker",
-          "title_or": "ବିଜ୍ଞପ୍ତି ସ୍ଥିତି ଟ୍ରାକର୍",
-          "route": "/jobs/",
-          "status": "active"
-        }
-      ]
+      "modules": []
     },
     {
-      "id": "folder-03",
-      "slug": "study-library",
-      "title": "Study Library & Current Affairs",
-      "title_or": "ଅଧ୍ୟୟନ ପାଠାଗାର ଓ ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ",
-      "short_title": "Study Library",
-      "short_title_or": "ପାଠାଗାର",
-      "icon": "📖",
-      "route": "/study-library/",
-      "modules": [
-        {
-          "id": "module-03-001",
-          "slug": "syllabi-and-exam-patterns",
-          "title": "Syllabi & Exam Patterns",
-          "title_or": "ସିଲାବସ୍ ଓ ପରୀକ୍ଷା ପଦ୍ଧତି",
-          "route": "/resources/?kind=syllabus",
-          "status": "active"
-        },
-        {
-          "id": "module-03-002",
-          "slug": "solved-pyqs",
-          "title": "Solved PYQs",
-          "title_or": "ସମାଧାନ ହୋଇଥିବା PYQ",
-          "route": "/resources/?kind=pyq",
-          "status": "active"
-        },
-        {
-          "id": "module-03-003",
-          "slug": "bilingual-study-notes",
-          "title": "Bilingual Study Notes",
-          "title_or": "ଦ୍ୱିଭାଷୀ ଅଧ୍ୟୟନ ନୋଟ୍ସ",
-          "route": "/study-library/",
-          "status": "active"
-        },
-        {
-          "id": "module-03-004",
-          "slug": "daily-current-affairs-5mcq",
-          "title": "Daily Current Affairs & 5-MCQ Capsules",
-          "title_or": "ଦୈନିକ ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ ଓ 5-MCQ",
-          "route": "/current-affairs/",
-          "status": "active"
-        }
-      ]
-    },
-    {
-      "id": "folder-04",
-      "slug": "mock-tests",
-      "title": "Mock Tests & Practice",
-      "title_or": "ମକ୍ ଟେଷ୍ଟ ଓ ଅଭ୍ୟାସ",
-      "short_title": "Mock Tests",
-      "short_title_or": "ମକ୍ ଟେଷ୍ଟ",
-      "icon": "📝",
-      "route": "/mock-tests/",
-      "modules": [
-        {
-          "id": "module-04-001",
-          "slug": "odisha-govt-mock-tests",
-          "title": "Odisha Govt Mock Tests",
-          "title_or": "ଓଡ଼ିଶା ସରକାରୀ ମକ୍ ଟେଷ୍ଟ",
-          "route": "/mock-tests/?track=odisha",
-          "status": "active"
-        },
-        {
-          "id": "module-04-002",
-          "slug": "central-govt-cbt-tests",
-          "title": "Central Govt CBT Tests",
-          "title_or": "କେନ୍ଦ୍ର ସରକାରୀ CBT ଟେଷ୍ଟ",
-          "route": "/study-library/cbt-mock-test/",
-          "status": "active"
-        },
-        {
-          "id": "module-04-003",
-          "slug": "sectional-and-speed-drills",
-          "title": "Sectional & Speed Drills",
-          "title_or": "ବିଭାଗୀୟ ଓ ସ୍ପିଡ୍ ଡ୍ରିଲ୍",
-          "route": "/mock-tests/?mode=sectional",
-          "status": "active"
-        },
-        {
-          "id": "module-04-004",
-          "slug": "scoreboard-and-analytics",
-          "title": "Scoreboard & Analytics",
-          "title_or": "ସ୍କୋରବୋର୍ଡ ଓ ବିଶ୍ଳେଷଣ",
-          "route": "/student-dashboard/",
-          "status": "active"
-        }
-      ]
-    },
-    {
-      "id": "folder-05",
+      "id": "folder-schemes-benefits",
       "slug": "schemes-benefits",
-      "title": "Schemes & Scholarships",
-      "title_or": "ଯୋଜନା ଓ ଛାତ୍ରବୃତ୍ତି",
-      "short_title": "Schemes",
-      "short_title_or": "ଯୋଜନା",
+      "title": "Schemes & Benefits",
+      "title_or": "ଯୋଜନା ଓ ସୁବିଧା",
       "icon": "🏛",
       "route": "/schemes-benefits/",
-      "modules": [
-        {
-          "id": "module-05-001",
-          "slug": "odisha-state-welfare-schemes",
-          "title": "Odisha State Welfare Schemes",
-          "title_or": "ଓଡ଼ିଶା ରାଜ୍ୟ କଲ୍ୟାଣ ଯୋଜନା",
-          "route": "/schemes-benefits/?scope=odisha",
-          "status": "active"
-        },
-        {
-          "id": "module-05-002",
-          "slug": "central-govt-schemes",
-          "title": "Central Govt Schemes",
-          "title_or": "କେନ୍ଦ୍ର ସରକାରୀ ଯୋଜନା",
-          "route": "/schemes-benefits/?scope=central",
-          "status": "active"
-        },
-        {
-          "id": "module-05-003",
-          "slug": "post-matric-merit-scholarships",
-          "title": "Post-Matric & Merit Scholarships",
-          "title_or": "ପୋଷ୍ଟ-ମ୍ୟାଟ୍ରିକ୍ ଓ ମେଧା ଛାତ୍ରବୃତ୍ତି",
-          "route": "/scholarship-guidance/",
-          "status": "active"
-        },
-        {
-          "id": "module-05-004",
-          "slug": "eligibility-matcher",
-          "title": "Eligibility Matcher",
-          "title_or": "ଯୋଗ୍ୟତା ଯାଞ୍ଚ",
-          "route": "/scheme-opportunity-finder/",
-          "status": "active"
-        }
-      ]
+      "modules": []
     },
     {
-      "id": "folder-06",
-      "slug": "tools",
-      "title": "Student Tools & Verified Portals",
-      "title_or": "ଛାତ୍ର ଉପକରଣ ଓ ସରକାରୀ ପୋର୍ଟାଲ୍",
-      "short_title": "Tools",
-      "short_title_or": "ଉପକରଣ",
-      "icon": "🧰",
-      "route": "/tools/",
-      "modules": [
-        {
-          "id": "module-06-001",
-          "slug": "age-eligibility-calculator",
-          "title": "Age Eligibility Calculator",
-          "title_or": "ବୟସ ଯୋଗ୍ୟତା କ୍ୟାଲକୁଲେଟର୍",
-          "route": "/tools/#age-calculator",
-          "status": "active"
-        },
-        {
-          "id": "module-06-002",
-          "slug": "photo-signature-resizer",
-          "title": "Photo & Signature Resizer",
-          "title_or": "ଫଟୋ ଓ ଦସ୍ତଖତ ରିସାଇଜର୍",
-          "route": "/tools/#photo-resizer",
-          "status": "active"
-        },
-        {
-          "id": "module-06-003",
-          "slug": "document-readiness-checklist",
-          "title": "Document Readiness Checklist",
-          "title_or": "ଡକ୍ୟୁମେଣ୍ଟ୍ ପ୍ରସ୍ତୁତି ତାଲିକା",
-          "route": "/tools/#doc-readiness-card",
-          "status": "active"
-        },
-        {
-          "id": "module-06-004",
-          "slug": "official-gov-portals-directory",
-          "title": "Official .gov.in Portals Directory",
-          "title_or": "ଅଫିସିଆଲ୍ .gov.in ପୋର୍ଟାଲ୍",
-          "route": "/tools/#scam-checker",
-          "status": "active"
-        }
-      ]
+      "id": "folder-study-library",
+      "slug": "study-library",
+      "title": "Study Library",
+      "title_or": "ଅଧ୍ୟୟନ ପାଠାଗାର",
+      "icon": "📖",
+      "route": "/study-library/",
+      "modules": []
     },
     {
-      "id": "folder-07",
+      "id": "folder-community",
       "slug": "community",
-      "title": "Community & Support",
-      "title_or": "ସମୁଦାୟ ଓ ସହାୟତା",
-      "short_title": "Community",
-      "short_title_or": "ସମୁଦାୟ",
+      "title": "Community",
+      "title_or": "ସମୁଦାୟ",
       "icon": "👥",
       "route": "/community/",
-      "modules": [
-        {
-          "id": "module-07-001",
-          "slug": "student-discussion-forum",
-          "title": "Student Discussion Forum",
-          "title_or": "ଛାତ୍ର ଆଲୋଚନା ମଞ୍ଚ",
-          "route": "/community/",
-          "status": "active"
-        },
-        {
-          "id": "module-07-002",
-          "slug": "help-and-faqs",
-          "title": "Help & FAQs",
-          "title_or": "ସହାୟତା ଓ ସାଧାରଣ ପ୍ରଶ୍ନ",
-          "route": "/support/#faqs",
-          "status": "active"
-        },
-        {
-          "id": "module-07-003",
-          "slug": "report-error-suggest-resource",
-          "title": "Report an Error / Suggest Resource",
-          "title_or": "ତ୍ରୁଟି ଜଣାନ୍ତୁ / ସମ୍ବଳ ପ୍ରସ୍ତାବ",
-          "route": "/support/#report-error",
-          "status": "active"
-        },
-        {
-          "id": "module-07-004",
-          "slug": "about-and-legal-policies",
-          "title": "About & Legal Policies",
-          "title_or": "ଆମ ବିଷୟରେ ଓ ଆଇନଗତ ନୀତି",
-          "route": "/about/",
-          "status": "active"
-        }
-      ]
+      "modules": []
+    },
+    {
+      "id": "folder-about",
+      "slug": "about",
+      "title": "About",
+      "title_or": "ଆମ ବିଷୟରେ",
+      "icon": "ⓘ",
+      "route": "/about/",
+      "modules": []
     }
   ]
 }

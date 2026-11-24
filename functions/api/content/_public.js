@@ -72,118 +72,20 @@ const LIST_COLS = `id, type, slug, title, title_or, summary, summary_or, categor
   organisation, vacancies, qualification, last_date, apply_url, notification_media_key, state, age_limit, salary_pay, source_url,
   section_slug, l1_code, l2_code, l3_slug, district_tag, stage`;
 
-const NATIONAL_1_1_SEEDS = [
-  ['seed-upsc-cse-1-1-1', 'upsc-civil-services-examination', '1.1.1', 'UPSC Civil Services Examination (CSE) — IAS, IFS, IPS & Group A/B Services', 'UPSC ସିଭିଲ୍ ସର୍ଭିସେସ୍ ପରୀକ୍ଷା (CSE) — IAS, IFS, IPS ଏବଂ ଗ୍ରୁପ୍ A/B ସେବା', 'UPSC Civil Services Examination recruiting into 21 All-India, Central Group A & UT Group B services (IAS, IFS, IPS, IRS, IA&AS) via Prelims, Mains (1,750 Marks) & Personality Test (275 Marks).', 'UPSC ସିଭିଲ୍ ସର୍ଭିସେସ୍ ପରୀକ୍ଷା (CSE) ମାଧ୍ୟମରେ IAS, IFS, IPS ସମେତ ୨୧ଟି ସେବାରେ ନିଯୁକ୍ତି।', '["UPSC","IAS","IPS","IFS","CSE"]', 'Union Public Service Commission (UPSC)', 1056, "Bachelor's Degree in any discipline", '2027-02-15', 'https://upsconline.nic.in', '21–32 yrs (OBC 35, SC/ST 37, PwBD 42)', 'Level-10 ₹56,100 – Apex ₹2,50,000', 'https://upsc.gov.in'],
-  ['seed-ssc-cgl-1-1-2', 'ssc-cgl', '1.1.2', 'SSC Combined Graduate Level (CGL) — Group B & C Central Ministries', 'SSC କମ୍ବାଇନ୍ଡ ଗ୍ରାଜୁଏଟ୍ ଲେଭେଲ୍ (CGL)', 'Staff Selection Commission CGL recruitment for ASO, Income Tax Inspector, GST Inspector, Auditor, and Junior Statistical Officer across Central Ministries & CBIC/CBDT.', 'କେନ୍ଦ୍ରୀୟ ମନ୍ତ୍ରଣାଳୟ, ଆୟକର ଓ GST ଇନ୍ସପେକ୍ଟର ପଦବୀ ପାଇଁ SSC CGL ନିଯୁକ୍ତି।', '["SSC","CGL","Central","Graduate"]', 'Staff Selection Commission (SSC)', 17727, "Bachelor's Degree in any discipline", '2027-03-20', 'https://ssc.gov.in', '18–30 / 32 yrs (OBC +3, SC/ST +5)', 'Level-4 ₹25,500 – Level-7 ₹44,900', 'https://ssc.gov.in'],
-  ['seed-ibps-po-1-1-3', 'ibps-po', '1.1.3', 'IBPS Probationary Officer (CRP PO/MT) — 11 Public Sector Banks', 'IBPS ପ୍ରୋବେସନାରୀ ଅଫିସର (PO/MT)', 'Institute of Banking Personnel Selection CRP PO/MT recruitment across 11 Public Sector Banks including SBI/PNB/BoB/UCO/Union Bank with Odisha exam centres.', '୧୧ଟି ରାଷ୍ଟ୍ରାୟତ୍ତ ବ୍ୟାଙ୍କରେ ପ୍ରୋବେସନାରୀ ଅଫିସର ନିଯୁକ୍ତି ପାଇଁ IBPS PO ପରୀକ୍ଷା।', '["IBPS","Banking","PO","PSU Bank"]', 'Institute of Banking Personnel Selection (IBPS)', 4455, "Bachelor's Degree in any discipline", '2027-04-10', 'https://www.ibps.in', '20–30 yrs (OBC +3, SC/ST +5)', 'Scale-I Basic ₹48,480 + DA/HRA', 'https://www.ibps.in'],
-  ['seed-rrb-ntpc-1-1-4', 'rrb-ntpc', '1.1.4', 'RRB NTPC (Graduate & Undergraduate) — East Coast Railway (Bhubaneswar)', 'RRB NTPC — ଇଷ୍ଟ କୋଷ୍ଟ ରେଲୱେ (ଭୁବନେଶ୍ୱର)', 'Railway Recruitment Boards Non-Technical Popular Categories (Station Master, Goods Train Manager, Chief Commercial cum Ticket Supervisor, Junior Clerk) including RRB Bhubaneswar.', 'ଭାରତୀୟ ରେଳବାଇ (RRB ଭୁବନେଶ୍ୱର ସମେତ) ରେ NTPC ପଦବୀ ନିଯୁକ୍ତି।', '["RRB","NTPC","Railways","ECoR"]', 'Railway Recruitment Boards (RRB / ECoR)', 11558, '12th Pass (UG) / Bachelor Degree (Grad)', '2027-03-31', 'https://www.rrbapply.gov.in', '18–33 / 36 yrs (OBC +3, SC/ST +5)', 'Level-2 ₹19,900 – Level-6 ₹35,400', 'https://rrbbbs.gov.in'],
-  ['seed-nda-cds-1-1-5', 'upsc-nda-and-na', '1.1.5', 'UPSC NDA & NA / CDS — Indian Army, Navy & Air Force Officer Entry', 'UPSC NDA / CDS — ପ୍ରତିରକ୍ଷା ଅଧିକାରୀ ନିଯୁକ୍ତି', 'Union Public Service Commission National Defence Academy (NDA) and Combined Defence Services (CDS) recruitment for Permanent & Short Service Commission Officers.', 'ଭାରତୀୟ ସେନା, ନୌସେନା ଓ ବାୟୁସେନାରେ ଅଧିକାରୀ ନିଯୁକ୍ତି ପାଇଁ UPSC NDA / CDS।', '["UPSC","NDA","CDS","Defence"]', 'Union Public Service Commission (UPSC / SSB)', 406, '10+2 (Physics & Maths for Air Force/Navy)', '2027-01-25', 'https://upsconline.nic.in', '16.5–19.5 yrs (NDA) / 19–25 yrs (CDS)', 'Level-10 ₹56,100 + MSP ₹15,500', 'https://joinindianarmy.nic.in'],
-  ['seed-capf-cpo-1-1-6', 'ssc-cpo', '1.1.6', 'SSC CPO (SI in Delhi Police & CAPF — BSF, CRPF, CISF, ITBP, SSB)', 'SSC CPO — ଦିଲ୍ଲୀ ପୋଲିସ ଓ CAPF ସବ୍-ଇନ୍ସପେକ୍ଟର', 'Staff Selection Commission Sub-Inspector recruitment in Delhi Police and Central Armed Police Forces (BSF, CISF, CRPF, ITBP, SSB) via Paper-I, PST/PET & Paper-II.', 'ଦିଲ୍ଲୀ ପୋଲିସ ଓ କେନ୍ଦ୍ରୀୟ ସଶସ୍ତ୍ର ପୋଲିସ ବଳ (CAPF) ରେ ସବ୍-ଇନ୍ସପେକ୍ଟର ନିଯୁକ୍ତି।', '["SSC","CPO","CAPF","Police"]', 'Staff Selection Commission (SSC)', 4187, "Bachelor's Degree + Driving Licence (Delhi Police)", '2027-03-28', 'https://ssc.gov.in', '20–25 yrs (OBC +3, SC/ST +5)', 'Level-6 ₹35,400 – ₹1,12,400', 'https://ssc.gov.in'],
-  ['seed-epfo-ssa-1-1-7', 'epfo-ssa-social-security-assistant', '1.1.7', 'EPFO Social Security Assistant (SSA) & Enforcement Officer / AO', 'EPFO ସୋସିଆଲ ସିକ୍ୟୁରିଟି ଆସିଷ୍ଟାଣ୍ଟ (SSA)', 'Employees Provident Fund Organisation recruitment for Social Security Assistant (Level-5) and UPSC EPFO EO/AO & APFC (Level-8/10) across Regional Offices including Bhubaneswar.', 'EPFO ରେ ସୋସିଆଲ ସିକ୍ୟୁରିଟି ଆସିଷ୍ଟାଣ୍ଟ ଓ ଏନଫୋର୍ସମେଣ୍ଟ ଅଫିସର ନିଯୁକ୍ତି।', '["EPFO","SSA","Ministry of Labour"]', 'Employees Provident Fund Organisation (EPFO)', 2674, "Bachelor's Degree + Computer Typing (35 wpm)", '2027-04-15', 'https://www.epfindia.gov.in', '18–27 yrs (SSA) / Up to 30–35 (EO/APFC)', 'Level-5 ₹29,200 – Level-10 ₹56,100', 'https://www.epfindia.gov.in'],
-  ['seed-isro-drdo-1-1-8', 'isro-scientist-engineer-sc', '1.1.8', 'ISRO Scientist/Engineer SC & DRDO CEPTAM Technical Recruitment', 'ISRO ବୈଜ୍ଞାନିକ/ଇଞ୍ଜିନିୟର SC ଓ DRDO CEPTAM', 'Indian Space Research Organisation (ICRB) Scientist/Engineer-SC and DRDO CEPTAM STA-B/Technician recruitment including ITR Chandipur & PXE Balasore.', 'ISRO ବୈଜ୍ଞାନିକ ଓ DRDO ଚାନ୍ଦିପୁର/ବାଲେଶ୍ୱର ଟେକ୍ନିକାଲ ନିଯୁକ୍ତି।', '["ISRO","DRDO","Scientist","Balasore"]', 'ISRO ICRB / DRDO CEPTAM', 303, 'B.E./B.Tech (65% / 6.84 CGPA) or Diploma/ITI', '2027-04-20', 'https://www.isro.gov.in', '18–28 / 30 yrs (OBC +3, SC/ST +5)', 'Level-10 ₹56,100 – ₹1,77,500', 'https://www.isro.gov.in'],
-  ['seed-kvs-nvs-1-1-9', 'kvs-pgt-tgt-prt', '1.1.9', 'KVS / NVS / EMRS National Teaching Recruitment (PGT, TGT, PRT)', 'KVS / NVS / EMRS ଜାତୀୟ ଶିକ୍ଷକ ନିଯୁକ୍ତି', 'Kendriya Vidyalaya Sangathan, Navodaya Vidyalaya Samiti & NESTS EMRS national recruitment for PGT, TGT, PRT & Principal posts across Odisha & India.', 'କେନ୍ଦ୍ରୀୟ ବିଦ୍ୟାଳୟ, ନବୋଦୟ ବିଦ୍ୟାଳୟ ଓ ଏକଲବ୍ୟ ବିଦ୍ୟାଳୟ ଶିକ୍ଷକ ନିଯୁକ୍ତି।', '["KVS","NVS","EMRS","Teaching","CTET"]', 'KVS / NVS / NESTS (Ministry of Education)', 13404, 'B.Ed / D.El.Ed + CTET Qualified', '2027-04-30', 'https://kvsangathan.nic.in', '30–40 yrs (Women +10 yrs in KVS, SC/ST +5)', 'Level-6 ₹35,400 – Level-8 ₹47,600', 'https://kvsangathan.nic.in'],
-  ['seed-aiims-norcet-1-1-10', 'aiims-norcet', '1.1.10', 'AIIMS NORCET Nursing Officer & CRE Group B/C (AIIMS Bhubaneswar)', 'AIIMS NORCET ନର୍ସିଂ ଅଫିସର (AIIMS ଭୁବନେଶ୍ୱର)', 'All India Institute of Medical Sciences Nursing Officer Recruitment Common Eligibility Test (NORCET) & CRE across AIIMS Bhubaneswar and 20+ AIIMS.', 'AIIMS ଭୁବନେଶ୍ୱର ସମେତ ଦେଶର ସମସ୍ତ AIIMS ରେ ନର୍ସିଂ ଅଫିସର ନିଯୁକ୍ତି।', '["AIIMS","NORCET","Nursing","Medical"]', 'All India Institute of Medical Sciences (AIIMS)', 3500, 'B.Sc Nursing / GNM + 2 Yrs Experience', '2027-03-18', 'https://www.aiimsexams.ac.in', '18–30 yrs (OBC +3, SC/ST +5)', 'Level-7 ₹44,900 – ₹1,42,400', 'https://www.aiimsexams.ac.in'],
-  ['seed-sci-jca-1-1-11', 'supreme-court-jca', '1.1.11', 'Supreme Court of India Junior Court Assistant (JCA) & Law Clerk', 'ଭାରତର ସର୍ବୋଚ୍ଚ ନ୍ୟାୟାଳୟ ଜୁନିଅର କୋର୍ଟ ଆସିଷ୍ଟାଣ୍ଟ', 'Supreme Court of India recruitment for Junior Court Assistant (Level-6), Law Clerk-cum-Research Associate, and Court Master posts.', 'ସୁପ୍ରିମକୋର୍ଟରେ ଜୁନିଅର କୋର୍ଟ ଆସିଷ୍ଟାଣ୍ଟ ଓ ଲ କ୍ଲର୍କ ନିଯୁକ୍ତି।', '["Supreme Court","JCA","Judiciary"]', 'Supreme Court of India', 241, "Bachelor's Degree + Typing 35 wpm", '2027-03-25', 'https://www.sci.gov.in', '18–30 yrs (OBC +3, SC/ST +5)', 'Level-6 ₹35,400 + Supreme Court Allowances', 'https://www.sci.gov.in'],
-  ['seed-india-post-gds-1-1-12', 'india-post-gds', '1.1.12', 'India Post Gramin Dak Sevak (GDS) & UPSC IES Engineering Services', 'ଭାରତୀୟ ଡାକ ଗ୍ରାମୀଣ ଡାକ ସେବକ (GDS — ଓଡ଼ିଶା ସର୍କଲ୍)', 'Department of Posts Gramin Dak Sevak (BPM/ABPM/Dak Sevak) merit-based recruitment across Odisha Postal Circle (no written exam) & UPSC Engineering Services.', 'ଓଡ଼ିଶା ଡାକ ସର୍କଲରେ ବିନା ପରୀକ୍ଷାରେ GDS ନିଯୁକ୍ତି ଏବଂ UPSC IES ଇଞ୍ଜିନିୟରିଂ ସେବା।', '["India Post","GDS","Odisha Circle","IES"]', 'Department of Posts (Odisha Circle) / UPSC', 21413, '10th Pass (Maths, English & Odia)', '2027-03-15', 'https://indiapostgdsonline.gov.in', '18–40 yrs (OBC +3, SC/ST +5)', 'TRCA ₹10,000 – ₹29,380 + DA', 'https://indiapostgdsonline.gov.in']
-];
-
-const ODISHA_1_2_SEEDS = [
-  ['seed-opsc-ocs-1-2-1', 'odisha-civil-services', '1.2.1', 'OPSC Odisha Civil Services (OCS) — OAS, OFS, OPS & Allied', 'OPSC ଓଡ଼ିଶା ସିଭିଲ୍ ସର୍ଭିସେସ୍ (OCS) — OAS, OFS, OPS', 'Odisha Public Service Commission (OPSC) Combined Competitive Recruitment Examination for Group-A & Group-B State Services (OAS, OFS, OPS, ORS).', 'OPSC ଦ୍ୱାରା ପରିଚାଳିତ ଓଡ଼ିଶା ସିଭିଲ୍ ସର୍ଭିସେସ୍ (OAS, OFS, OPS, ORS) ନିଯୁକ୍ତି।', '["OPSC","OCS","OAS","OFS","OPS"]', 'Odisha Public Service Commission (OPSC)', 399, "Bachelor's Degree + Odia ME/HSC", '2027-02-20', 'https://www.opsc.gov.in', '21–38 yrs (SEBC/SC/ST/Women +5, PwBD +10)', 'ORSP Level-12 ₹56,100 – ₹1,77,500', 'https://www.opsc.gov.in'],
-  ['seed-ossc-cglre-1-2-2', 'combined-graduate-level-recruitment-examination', '1.2.2', 'OSSC Combined Graduate Level (CGLRE) — Auditor, Inspector & GST Officer', 'OSSC କମ୍ବାଇନ୍ଡ ଗ୍ରାଜୁଏଟ୍ ଲେଭେଲ୍ (CGLRE)', 'Odisha Staff Selection Commission CGLRE recruitment for Auditor, Inspector of Supplies, Cooperative Inspector & Assistant CT & GST Officer.', 'OSSC CGLRE ମାଧ୍ୟମରେ ଅଡିଟର, ଯୋଗାଣ ନିରୀକ୍ଷକ ଓ CT & GST ଅଫିସର ନିଯୁକ୍ତି।', '["OSSC","CGLRE","Odisha","Graduate"]', 'Odisha Staff Selection Commission (OSSC)', 586, "Bachelor's Degree + Computer + Odia ME/HSC", '2027-03-15', 'https://www.ossc.gov.in', '21–38 yrs (SEBC/SC/ST/Women +5, PwBD +10)', 'ORSP Level-7 ₹25,500 – Level-9 ₹35,400', 'https://www.ossc.gov.in'],
-  ['seed-osssc-cre-1-2-3', 'ri-ari-and-related-notified-posts', '1.2.3', 'OSSSC Combined Recruitment (CRE) — RI, ICDS Supervisor, ARI, Amin & SFS', 'OSSSC କମ୍ବାଇନ୍ଡ ପରୀକ୍ଷା (CRE) — RI, ARI, ଅମିନ ଓ ICDS ସୁପରଭାଇଜର', 'Odisha Sub-ordinate Staff Selection Commission CRE across 30 Odisha districts for Revenue Inspector (RI), ICDS Supervisor, ARI, Amin & SFS.', 'ଓଡ଼ିଶାର ୩୦ଟି ଜିଲ୍ଲାରେ RI, ICDS ସୁପରଭାଇଜର, ARI, ଅମିନ ଓ SFS ନିଯୁକ୍ତି।', '["OSSSC","RI","ARI","Amin","ICDS"]', 'Odisha Sub-ordinate Staff Selection Commission (OSSSC)', 2895, "Bachelor's Degree (RI/ICDS) / +2 (ARI/Amin)", '2027-03-25', 'https://www.osssc.gov.in', '20/21–38 yrs (SEBC/SC/ST/Women +5)', 'ORSP Level-4 ₹19,900 – Level-9 ₹35,400', 'https://www.osssc.gov.in'],
-  ['seed-osepa-ltr-1-2-4', 'government-school-teachers', '1.2.4', 'OSEPA Government High School Teachers (LTR / RHT) & OAVS Recruitment', 'OSEPA ସରକାରୀ ବିଦ୍ୟାଳୟ ଶିକ୍ଷକ (LTR / RHT) ଓ OAVS ନିଯୁକ୍ତି', 'Odisha School Education Programme Authority recruitment for Leave Training Reserve (LTR) TGT Arts, Science (PCM/CBZ), Hindi, Sanskrit & PET teachers.', 'OSEPA ମାଧ୍ୟମରେ ସରକାରୀ ଉଚ୍ଚ ବିଦ୍ୟାଳୟରେ TGT କଳା, ବିଜ୍ଞାନ, ହିନ୍ଦୀ, ସଂସ୍କୃତ ଓ PET ଶିକ୍ଷକ ନିଯୁକ୍ତି।', '["OSEPA","LTR","OAVS","OSSTET","Teacher"]', 'Odisha School Education Programme Authority (OSEPA)', 6025, 'Graduation + B.Ed + OSSTET + Odia', '2027-04-05', 'https://osepa.odisha.gov.in', '21–38 yrs (SEBC/SC/ST/Women +5)', 'ORSP Level-9 ₹35,400 – ₹1,12,400', 'https://osepa.odisha.gov.in'],
-  ['seed-oprb-si-1-2-5', 'odisha-police', '1.2.5', 'Odisha Police Recruitment Board (OPRB) — Sub-Inspector, Fire & Constable', 'ଓଡ଼ିଶା ପୋଲିସ (OPRB) — ସବ୍-ଇନ୍ସପେକ୍ଟର, ଅଗ୍ନିଶମ ଓ କନେଷ୍ଟବଳ', 'OPRB Combined Police Service Examination (CPSE) for Sub-Inspector of Police, Station Officer (Fire Service) & Assistant Jailor across Odisha.', 'OPRB ମାଧ୍ୟମରେ ଓଡ଼ିଶା ପୋଲିସ ସବ୍-ଇନ୍ସପେକ୍ଟର, ଅଗ୍ନିଶମ ଷ୍ଟେସନ ଅଫିସର ଓ ଜେଲର ନିଯୁକ୍ତି।', '["OPRB","Odisha Police","SI","Constable"]', 'Odisha Police Recruitment Board (OPRB)', 933, "Bachelor's Degree + Odia ME/HSC + PST/PET", '2027-03-30', 'https://odishapolice.gov.in', '21–25/28 yrs (SEBC/SC/ST/Women +5)', 'ORSP Level-9 ₹35,400 – ₹1,12,400', 'https://oprb.odisha.gov.in'],
-  ['seed-health-nurse-1-2-6', 'staff-nurses', '1.2.6', 'Odisha Health Services — Nursing Officer (OSSSC) & NHM Staff Nurse / CHO', 'ଓଡ଼ିଶା ସ୍ୱାସ୍ଥ୍ୟ ସେବା — ନର୍ସିଂ ଅଫିସର (OSSSC) ଓ NHM ଷ୍ଟାଫ୍ ନର୍ସ', 'Recruitment for Nursing Officers, Pharmacists, Lab Technicians & CHO across SCB, MKCG, VIMSAR and all 30 District Headquarter Hospitals.', 'SCB, MKCG, VIMSAR ଓ ୩୦ ଜିଲ୍ଲା ଚିକିତ୍ସାଳୟରେ ନର୍ସିଂ ଅଫିସର, ଫାର୍ମାସିଷ୍ଟ ଓ CHO ନିଯୁକ୍ତି।', '["OSSSC","NHM","Nursing Officer","Health"]', 'Health & Family Welfare Dept / OSSSC / NHM Odisha', 7483, 'GNM / B.Sc Nursing + ONMRC Registration', '2027-04-12', 'https://www.osssc.gov.in', '21–38 yrs (SEBC/SC/ST/Women +5)', 'ORSP Level-7 ₹25,500 – Level-8 ₹29,200', 'https://health.odisha.gov.in'],
-  ['seed-district-rev-1-2-7', 'district-level-recruitment', '1.2.7', '30-District Collectorate, Revenue Offices & DEOC Odisha Recruitment', '୩୦ଟି ଜିଲ୍ଲାପାଳ କାର୍ଯ୍ୟାଳୟ, ରାଜସ୍ୱ ଅଫିସ୍ ଓ DEOC ନିଯୁକ୍ତି', 'District Collectorate, Tahasil & OSDMA District Emergency Operation Centre (DEOC) recruitment across all 30 Odisha districts.', 'ଓଡ଼ିଶାର ୩୦ଟି ଜିଲ୍ଲାପାଳ କାର୍ଯ୍ୟାଳୟ, ତହସିଲ ଓ OSDMA DEOC ପଦବୀ ନିଯୁକ୍ତି।', '["Collectorate","Revenue","DEOC","Odisha"]', '30 District Collectorates & Board of Revenue Odisha', 420, '+2 / Graduation + Computer + Odia ME/HSC', '2027-04-18', 'https://revenue.odisha.gov.in', '18/21–38 yrs (SEBC/SC/ST/Women +5)', 'ORSP Level-4 ₹19,900 – Level-9 ₹35,400', 'https://odisha.gov.in'],
-  ['seed-hc-ojs-1-2-8', 'high-court-recruitment', '1.2.8', 'High Court of Orissa (ASO / Translator) & OPSC Odisha Judicial Service (OJS)', 'ଓଡ଼ିଶା ହାଇକୋର୍ଟ (ASO / ଅନୁବାଦକ) ଓ OPSC OJS ସିଭିଲ୍ ଜଜ୍', 'High Court of Orissa, Cuttack recruitment for Assistant Section Officer (ASO), Junior Stenographer, Translator & OPSC Civil Judge (OJS).', 'କଟକସ୍ଥିତ ଓଡ଼ିଶା ହାଇକୋର୍ଟରେ ASO, ଅନୁବାଦକ ଏବଂ OPSC OJS ସିଭିଲ୍ ଜଜ୍ ନିଯୁକ୍ତି।', '["High Court","OJS","ASO","Judiciary"]', 'High Court of Orissa, Cuttack / OPSC', 147, "Bachelor's Degree + Computer / LL.B", '2027-03-22', 'https://www.orissahighcourt.nic.in', '21–32/35 yrs (SEBC/SC/ST/Women +5)', 'ORSP Level-9 ₹35,400 – ₹1,12,400', 'https://www.orissahighcourt.nic.in'],
-  ['seed-dept-forest-1-2-9', 'works-water-resources-and-public-health-engineering', '1.2.9', 'Odisha Works, Water Resources, Agriculture & Forest Dept Engineering/Field Posts', 'ପୂର୍ତ୍ତ, ଜଳସମ୍ପଦ, କୃଷି ଓ ଜଙ୍ଗଲ ବିଭାଗ ଯାନ୍ତ୍ରିକ ଓ କ୍ଷେତ୍ର ପଦବୀ', 'State Departmental recruitment for Assistant Executive Engineer (AEE), Junior Engineer (JE Civil/Mech/Elec), AAO & Forest Ranger.', 'ପୂର୍ତ୍ତ, ଜଳସମ୍ପଦ, କୃଷି ଓ ଜଙ୍ଗଲ ବିଭାଗରେ AEE, JE, AAO ଓ ରେଞ୍ଜ ଅଫିସର ନିଯୁକ୍ତି।', '["Works","DoWR","AEE","JE","Forest"]', 'Works / DoWR / Agriculture / Forest Dept Odisha', 1008, 'B.Tech / Diploma Engineering / B.Sc Agri', '2027-04-25', 'https://www.ossc.gov.in', '21–38 yrs (SEBC/SC/ST/Women +5)', 'ORSP Level-9 ₹35,400 – Level-12 ₹56,100', 'https://dowrodisha.gov.in'],
-  ['seed-pri-ulb-1-2-10', 'urban-local-bodies', '1.2.10', 'Odisha Panchayati Raj (PEO/GRS) & 115 Urban Local Bodies (ULB / BMC / CMC)', 'ପଞ୍ଚାୟତିରାଜ (PEO/GRS) ଓ ୧୧୫ ପୌରସଂସ୍ଥା (ULB / BMC / CMC) ନିଯୁକ୍ତି', 'Recruitment across 6,794 Gram Panchayats, 314 Blocks & 115 ULBs (BMC, CMC, BeMC, SMC, RMC) for PEO, Executive Officer & Sanitary Inspector.', '୬,୭୯୪ ଗ୍ରାମ ପଞ୍ଚାୟତ, ୩୧୪ ବ୍ଲକ୍ ଓ ୧୧୫ ପୌରସଂସ୍ଥାରେ PEO ଓ କାର୍ଯ୍ୟନିର୍ବାହୀ ଅଧିକାରୀ ନିଯୁକ୍ତି।', '["ULB","BMC","PEO","Panchayat","Odisha"]', 'PR&DW & Housing & Urban Dev Dept, Odisha', 2297, '+2 / Bachelor Degree + Computer + Odia', '2027-04-28', 'https://urban.odisha.gov.in', '21–38 yrs (SEBC/SC/ST/Women +5)', 'ORSP Level-5 ₹21,700 – Level-10 ₹44,900', 'https://panchayat.odisha.gov.in'],
-  ['seed-psu-optcl-1-2-11', 'electricity-and-power-utilities', '1.2.11', 'Odisha State PSUs — OPTCL, OHPC, OMC & IDCO (MT / DET / Junior Engineer)', 'ଓଡ଼ିଶା ରାଜ୍ୟ PSU — OPTCL, OHPC, OMC ଓ IDCO ନିଯୁକ୍ତି', 'Odisha Power Transmission Corp (OPTCL), OHPC & Odisha Mining Corporation (OMC) recruitment for Management Trainee, DET & Junior Engineer.', 'OPTCL, OHPC, OMC ଓ IDCO ରେ ମ୍ୟାନେଜମେଣ୍ଟ ଟ୍ରେନି, DET ଓ ଜୁନିଅର ଇଞ୍ଜିନିୟର ନିଯୁକ୍ତି।', '["OPTCL","OMC","OHPC","IDCO","PSU"]', 'OPTCL / OMC / OHPC / IDCO (Govt of Odisha PSU)', 520, 'B.E./B.Tech / Diploma / ITI + Odia ME/HSC', '2027-05-10', 'https://www.optcl.co.in', '18/21–32/38 yrs (SEBC/SC/ST/Women +5)', 'Level-9 ₹35,400 – Executive ₹67,700', 'https://omcltd.in']
-];
-
-let _verifiedSeedCheckedAt = 0;
+let _publicContentMemoVersion = 0;
 const SEED_CHECK_TTL_MS = 6 * 60 * 60 * 1000;
 
 export function resetPublicContentMemo() {
-  _verifiedSeedCheckedAt = 0;
+  _publicContentMemoVersion += 1;
 }
 
-async function ensureVerifiedUpscSeedNotice(db) {
-  if (!db) return;
-  const now = Date.now();
-  if (_verifiedSeedCheckedAt && (now - _verifiedSeedCheckedAt) < SEED_CHECK_TTL_MS) return;
-  try {
-    const cnt11 = await db.prepare(
-      `SELECT COUNT(*) AS cnt FROM posts WHERE type = 'job' AND l1_code = '1.1' AND deleted_at IS NULL`
-    ).first();
-    if (!cnt11 || Number(cnt11.cnt || 0) < NATIONAL_1_1_SEEDS.length) {
-      for (const s of NATIONAL_1_1_SEEDS) {
-        const [id, slug, l2Code, title, titleOr, summary, summaryOr, tags, org, vac, qual, lastDate, applyUrl, ageLimit, salaryPay, sourceUrl] = s;
-        const existing = await db.prepare(
-          `SELECT id, l1_code FROM posts WHERE type = 'job' AND slug = ? AND deleted_at IS NULL LIMIT 1`
-        ).bind(slug).first();
-        if (!existing) {
-          await db.prepare(
-            `INSERT INTO posts (
-               id, type, slug, title, title_or, summary, summary_or, category, tags,
-               organisation, vacancies, qualification, last_date, apply_url, state,
-               age_limit, salary_pay, source_url, section_slug, l1_code, l2_code, l3_slug,
-               district_tag, stage, status, published_at
-             ) VALUES (?, 'job', ?, ?, ?, ?, ?, 'Central', ?,
-               ?, ?, ?, ?, ?, 'Central',
-               ?, ?, ?, 'jobs-recruitment', '1.1', ?, ?,
-               'All India (Odisha Centres)', 'new-recruitment', 'published', datetime('now'))`
-          ).bind(id, slug, title, titleOr, summary, summaryOr, tags, org, vac, qual, lastDate, applyUrl, ageLimit, salaryPay, sourceUrl, l2Code, slug).run();
-        } else if (!existing.l1_code) {
-          await db.prepare(
-            `UPDATE posts SET section_slug = 'jobs-recruitment', l1_code = '1.1', l2_code = ?, l3_slug = ?,
-             organisation = ?, qualification = ?, age_limit = ?, salary_pay = ?, apply_url = ?,
-             district_tag = 'All India (Odisha Centres)', stage = 'new-recruitment'
-             WHERE id = ?`
-          ).bind(l2Code, slug, org, qual, ageLimit, salaryPay, applyUrl, existing.id).run();
-        }
-      }
-    }
-
-    const cnt12 = await db.prepare(
-      `SELECT COUNT(*) AS cnt FROM posts WHERE type = 'job' AND l1_code = '1.2' AND deleted_at IS NULL`
-    ).first();
-    if (!cnt12 || Number(cnt12.cnt || 0) < ODISHA_1_2_SEEDS.length) {
-      for (const s of ODISHA_1_2_SEEDS) {
-        const [id, slug, l2Code, title, titleOr, summary, summaryOr, tags, org, vac, qual, lastDate, applyUrl, ageLimit, salaryPay, sourceUrl] = s;
-        const existing = await db.prepare(
-          `SELECT id, l1_code FROM posts WHERE type = 'job' AND slug = ? AND deleted_at IS NULL LIMIT 1`
-        ).bind(slug).first();
-        if (!existing) {
-          await db.prepare(
-            `INSERT INTO posts (
-               id, type, slug, title, title_or, summary, summary_or, category, tags,
-               organisation, vacancies, qualification, last_date, apply_url, state,
-               age_limit, salary_pay, source_url, section_slug, l1_code, l2_code, l3_slug,
-               district_tag, stage, status, published_at
-             ) VALUES (?, 'job', ?, ?, ?, ?, ?, 'Odisha State Jobs', ?,
-               ?, ?, ?, ?, ?, 'Odisha',
-               ?, ?, ?, 'jobs-recruitment', '1.2', ?, ?,
-               'All 30 Districts (Odisha)', 'new-recruitment', 'published', datetime('now'))`
-          ).bind(id, slug, title, titleOr, summary, summaryOr, tags, org, vac, qual, lastDate, applyUrl, ageLimit, salaryPay, sourceUrl, l2Code, slug).run();
-        } else if (!existing.l1_code) {
-          await db.prepare(
-            `UPDATE posts SET section_slug = 'jobs-recruitment', l1_code = '1.2', l2_code = ?, l3_slug = ?,
-             organisation = ?, qualification = ?, age_limit = ?, salary_pay = ?, apply_url = ?,
-             district_tag = 'All 30 Districts (Odisha)', stage = 'new-recruitment'
-             WHERE id = ?`
-          ).bind(l2Code, slug, org, qual, ageLimit, salaryPay, applyUrl, existing.id).run();
-        }
-      }
-    }
-    _verifiedSeedCheckedAt = Date.now();
-  } catch (_) {}
+export function getPublicContentMemoVersion() {
+  return _publicContentMemoVersion;
 }
 
 async function listPosts(env, request, type, orderBy) {
   if (type === 'job' && env && env.DB) {
     await ensureJobTaxonomyColumns(env.DB);
-    await ensureVerifiedUpscSeedNotice(env.DB);
   }
   const url = new URL(request.url);
   const { page, limit, offset } = parsePaging(url);

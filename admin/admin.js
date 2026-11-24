@@ -8,9 +8,9 @@
   var masterNavigationSchema = null;
 
   var CSOState = {
-    activeFolderId: 'folder-01',
-    activeModuleId: 'module-01-001',
-    expandedFolders: new Set(['folder-01']),
+    activeFolderId: 'folder-jobs-careers',
+    activeModuleId: 'folder-jobs-careers',
+    expandedFolders: new Set(['folder-jobs-careers']),
     searchQuery: '',
     startTime: Date.now()
   };
@@ -111,20 +111,19 @@
 
   function syncModuleCountLabels() {
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
+    var pillarCount = masterNavigationSchema.folders.length;
     var total = masterNavigationSchema.folders.reduce(function (acc, f) {
       return acc + (Array.isArray(f.modules) ? f.modules.length : 0);
     }, 0);
-    if (!total) return;
-    var pillarCount = masterNavigationSchema.folders.length;
-    document.title = 'CS Odisha — Editorial Studio & Command Suite (' + pillarCount + ' Pillars · ' + total + ' Modules)';
+    document.title = 'CS Odisha — Editorial Studio & Command Suite (' + pillarCount + ' Pillars · Live D1 Sync)';
     var brandSub = document.querySelector('.cso-brand-sub');
-    if (brandSub) brandSub.textContent = pillarCount + '-Pillar Editorial Suite (' + total + ' Modules)';
+    if (brandSub) brandSub.textContent = pillarCount + '-Pillar Live D1 Studio (' + total + ' Child Modules)';
     var searchLabel = document.querySelector('label[for="moduleSearchInput"]');
-    if (searchLabel) searchLabel.textContent = 'Filter ' + total + ' modules';
-    if (dom.moduleSearchInput) dom.moduleSearchInput.placeholder = 'Filter ' + total + ' modules...';
-    if (dom.accordionNav) dom.accordionNav.setAttribute('aria-label', pillarCount + ' Pillars Master Tree');
+    if (searchLabel) searchLabel.textContent = 'Filter ' + pillarCount + ' pillars';
+    if (dom.moduleSearchInput) dom.moduleSearchInput.placeholder = 'Filter ' + pillarCount + ' pillars...';
+    if (dom.accordionNav) dom.accordionNav.setAttribute('aria-label', pillarCount + ' Pillars Live Tree');
     var coverageStrong = document.querySelector('.cso-sidebar-footer .cso-text-accent');
-    if (coverageStrong) coverageStrong.textContent = total + ' / ' + total;
+    if (coverageStrong) coverageStrong.textContent = pillarCount + ' / ' + pillarCount;
   }
 
   async function loadMasterNavigation() {
@@ -167,13 +166,14 @@
 
     masterNavigationSchema.folders.forEach(function (folder) {
       var folderTitleOr = String(folder.title_or || '');
-      var folderMatches = folder.title.toLowerCase().includes(query) || folderTitleOr.toLowerCase().includes(query);
-      var filteredModules = folder.modules.filter(function (m) {
+      var folderMatches = !query || folder.title.toLowerCase().includes(query) || folderTitleOr.toLowerCase().includes(query);
+      var folderModules = Array.isArray(folder.modules) ? folder.modules : [];
+      var filteredModules = folderModules.filter(function (m) {
         return folderMatches || m.title.toLowerCase().includes(query) || String(m.title_or || '').toLowerCase().includes(query) || m.id.toLowerCase().includes(query);
       });
 
-      if (query && filteredModules.length === 0) return;
-      matchCount += filteredModules.length;
+      if (query && !folderMatches && filteredModules.length === 0) return;
+      matchCount += filteredModules.length || (folderMatches ? 1 : 0);
 
       var isExpanded = query ? true : CSOState.expandedFolders.has(folder.id);
       var isCurrentFolder = CSOState.activeFolderId === folder.id;
@@ -195,6 +195,11 @@
       folderBtn.appendChild(left);
       folderBtn.appendChild(right);
       folderBtn.addEventListener('click', function () {
+        if (!folderModules.length) {
+          selectModule(folder.id, folder.id);
+          if (window.innerWidth <= 900) closeMobileDrawer();
+          return;
+        }
         if (CSOState.expandedFolders.has(folder.id)) CSOState.expandedFolders.delete(folder.id);
         else CSOState.expandedFolders.add(folder.id);
         persistOpenGroups();
@@ -248,18 +253,19 @@
   }
 
   function resolveModuleTarget(targetId) {
-    var normalizedId = targetId === 'module-00-001' ? 'module-01-001' : targetId;
-    if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return null;
+    if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders) || !masterNavigationSchema.folders.length) return null;
     for (var i = 0; i < masterNavigationSchema.folders.length; i++) {
       var f = masterNavigationSchema.folders[i];
-      var m = (f.modules || []).find(function (x) { return x.id === normalizedId; });
+      if (f.id === targetId || f.slug === targetId) return { folderId: f.id, moduleId: f.id };
+      var m = (f.modules || []).find(function (x) { return x.id === targetId; });
       if (m) return { folderId: f.id, moduleId: m.id };
     }
     return null;
   }
 
   function goDashboardHome() {
-    var target = resolveModuleTarget('module-01-001') || { folderId: 'folder-01', moduleId: 'module-01-001' };
+    var first = (masterNavigationSchema && masterNavigationSchema.folders && masterNavigationSchema.folders[0]) || { id: 'folder-jobs-careers' };
+    var target = { folderId: first.id, moduleId: (first.modules && first.modules[0] && first.modules[0].id) || first.id };
     selectModule(target.folderId, target.moduleId);
     if (dom.workspaceRoot && dom.workspaceRoot.scrollIntoView) {
       dom.workspaceRoot.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -282,11 +288,12 @@
     var folder = masterNavigationSchema.folders.find(function (f) { return f.id === folderId; });
     var mod = folder && folder.modules ? folder.modules.find(function (m) { return m.id === moduleId; }) : null;
 
-    if (folder && mod) {
+    if (folder) {
+      var activeLabel = (mod && mod.title) || folder.title;
       if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = folder.title;
-      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = mod.title;
-      if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = mod.title;
-      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = folder.title || 'Studio';
+      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = mod ? mod.title : 'Live D1 Workspace';
+      if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = activeLabel;
+      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = mod ? (folder.title || 'Studio') : 'Live D1 Sync';
     }
 
     renderNavigationTree();
@@ -300,13 +307,13 @@
     clearNode(dom.moduleHeaderActions);
 
     if (window.CSOLive && window.CSOLive.render(folderId, moduleId, dom.workspaceRoot, dom.moduleHeaderActions)) {
-      if (caCard && (moduleId === 'module-01-001' || moduleId === 'module-01-003' || moduleId === 'module-03-004')) {
+      if (caCard && (folderId === 'folder-study-library' || moduleId === 'module-01-001')) {
         dom.workspaceRoot.appendChild(caCard);
         if (window.CSOFastPublish && window.CSOFastPublish.initCurrentAffairsPublisher) {
           window.CSOFastPublish.initCurrentAffairsPublisher(caCard);
         }
       }
-      if (jobCard && (moduleId === 'module-01-001' || moduleId === 'module-01-002' || moduleId === 'module-02-001' || moduleId === 'module-02-004')) {
+      if (jobCard && (folderId === 'folder-jobs-careers' || moduleId === 'module-01-001')) {
         dom.workspaceRoot.appendChild(jobCard);
         if (window.CSOFastPublish && window.CSOFastPublish.initJobsDirectoryPublisher) {
           window.CSOFastPublish.initJobsDirectoryPublisher(jobCard);
@@ -339,9 +346,9 @@
       clearNode(dom.workspaceRoot);
       clearNode(dom.moduleHeaderActions);
       if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Navigation Architecture';
-      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = '7-Pillar Header & Categories';
+      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = '5-Pillar Header & Categories';
       if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Navigation Manager';
-      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '7 Pillars · D1';
+      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '5 Pillars · Live D1';
       if (window.CSORestoredModules && window.CSORestoredModules.render) {
         window.CSORestoredModules.render('nav-manager', 'module-nav-004', dom.workspaceRoot, dom.moduleHeaderActions);
       }
@@ -591,7 +598,7 @@
     var hashId = (window.location.hash || '').replace(/^#/, '');
     var storedId = '';
     try { storedId = localStorage.getItem('cso_active_module_id') || ''; } catch (_e) {}
-    var target = resolveModuleTarget(hashId) || resolveModuleTarget(storedId) || resolveModuleTarget('module-00-001') || { folderId: 'folder-01', moduleId: 'module-01-001' };
+    var target = resolveModuleTarget(hashId) || resolveModuleTarget(storedId) || resolveModuleTarget('folder-jobs-careers') || { folderId: 'folder-jobs-careers', moduleId: 'folder-jobs-careers' };
     renderNavigationTree();
     selectModule(target.folderId, target.moduleId);
   });
