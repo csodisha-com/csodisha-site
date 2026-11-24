@@ -5475,13 +5475,14 @@ mark.cso-search-highlight {
 
 .top,
 .top-bar,
+.top,
 .header-utility,
 .cso-header-top,
 .site-header__top,
 #header-top {
-  background: #081220 !important;
-  border-bottom: 1.5px solid rgba(255, 122, 0, 0.45) !important; /* Warm saffron divider */
-  color: var(--cso-text) !important;
+  background: var(--cso-nav-top-bg, #0b2234) !important;
+  border-bottom: var(--cso-nav-top-border, 1.5px solid rgba(255, 122, 0, 0.45)) !important;
+  color: var(--cso-nav-top-ink, #f8fafc) !important;
 }
 
 /* Utility pills (Admin Portal, Language, Accessibility, Font Size) */
@@ -5693,16 +5694,18 @@ a[href*="register"]:hover {
    Main Navigation Menu (Odisha Emerald Brand Bar)
    ========================================================================== */
 
-/* Secondary Pillar Navigation Strip (v263 — Theme-Aware Civic Surfaces) */
+/* Secondary Pillar Navigation Strip (v268 — Unified --cso-nav-* Tokens) */
 .site-header__nav,
 .main-nav,
 #cso-main-navbar,
 .cso-pillar-nav,
 .cso-subnav,
 .subnav {
-  background: #eef3f7 !important;
+  background: var(--cso-nav-sub-bg, #eef3f7) !important;
+  background-color: var(--cso-nav-sub-bg, #eef3f7) !important;
+  background-image: none !important;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
-  border-bottom: 1px solid #d5dfe7 !important;
+  border-bottom: var(--cso-nav-sub-border, 1px solid #d5dfe7) !important;
   padding: 0 clamp(8px, 2vw, 24px) !important;
   border-radius: 0 0 16px 16px !important;
   transition: background-color 0.2s ease, border-color 0.2s ease !important;
@@ -5717,7 +5720,7 @@ a[href*="register"]:hover {
 .subnav a,
 .cso-nav-items > a,
 .cso-nav-parent > a {
-  color: var(--cso-subnav-ink, #1e2f3d) !important;
+  color: var(--cso-nav-sub-ink, #162634) !important;
   opacity: 1 !important;
   font-weight: 600 !important;
   font-size: clamp(0.82rem, 0.95vw, 0.9rem) !important;
@@ -5740,8 +5743,8 @@ a[href*="register"]:hover {
 .cso-nav-parent:hover,
 .cso-nav-parent > a:hover,
 .cso-nav-items .ni.cso-open > .cso-nav-parent {
-  background: var(--cso-subnav-hover, rgba(15, 76, 92, 0.09)) !important;
-  color: var(--cso-subnav-ink, #0f4c5c) !important;
+  background: var(--cso-nav-sub-hover, rgba(15, 76, 92, 0.08)) !important;
+  color: var(--cso-nav-sub-ink, #162634) !important;
 }
 
 .main-nav a.active,
@@ -5757,8 +5760,8 @@ a[href*="register"]:hover {
 .cso-subnav a.active,
 .subnav a.active,
 .cso-nav-items a.on {
-  background: var(--cso-subnav-pill-bg, #0f4c5c) !important;
-  color: var(--cso-subnav-pill-fg, #ffffff) !important;
+  background: var(--cso-nav-pill-bg, #0f4c5c) !important;
+  color: var(--cso-nav-pill-fg, #ffffff) !important;
   box-shadow: none !important;
   border-bottom: none !important;
 }
@@ -7262,14 +7265,14 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   }
 }
 
-/* Single Saved button inside the secondary pillar navigation strip (v263) */
+/* Single Saved button inside the secondary pillar navigation strip (v268) */
 .cso-nav-saved-pill {
   display: inline-flex !important;
   align-items: center !important;
   gap: 5px !important;
-  background: rgba(255, 255, 255, 0.75) !important;
-  color: #1e2f3d !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  background: var(--cso-nav-saved-bg, rgba(255, 255, 255, 0.78)) !important;
+  color: var(--cso-nav-saved-fg, #162634) !important;
+  border: 1px solid var(--cso-nav-saved-border, rgba(0, 0, 0, 0.12)) !important;
   border-radius: 8px !important;
   padding: 5px 11px !important;
   font-size: 12.5px !important;
@@ -7279,12 +7282,11 @@ html.cso-a11y-lite .cso-footer-odisha-map {
   flex-shrink: 0 !important;
 }
 .cso-nav-saved-pill:hover {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border-color: rgba(0, 0, 0, 0.22) !important;
+  background: var(--cso-nav-sub-hover, rgba(15, 76, 92, 0.08)) !important;
 }
 .cso-nav-saved-pill .cso-saved-badge {
-  background: #0f4c5c !important;
-  color: #ffffff !important;
+  background: var(--cso-nav-pill-bg, #0f4c5c) !important;
+  color: var(--cso-nav-pill-fg, #ffffff) !important;
 }
 
 @media (min-width: 769px) {
@@ -7710,16 +7712,16 @@ body {
 
 .main-nav a:hover,
 .site-header__nav a:hover {
-  background: rgba(15, 76, 92, 0.09) !important;
-  color: #0f4c5c !important;
+  background: var(--cso-nav-sub-hover, rgba(15, 76, 92, 0.08)) !important;
+  color: var(--cso-nav-sub-ink, #162634) !important;
 }
 
 .main-nav a.active,
 .main-nav a[aria-current="page"],
 .site-header__nav a.active,
 .site-header__nav a[aria-current="page"] {
-  background: #0f4c5c !important;
-  color: #ffffff !important;
+  background: var(--cso-nav-pill-bg, #0f4c5c) !important;
+  color: var(--cso-nav-pill-fg, #ffffff) !important;
   box-shadow: none !important;
 }
 
@@ -8445,17 +8447,23 @@ select:focus-visible {
 }
 
 /* ==========================================================================
-   v264: Secondary Pillar Navigation Strip — Theme-Aware Surface & Single Pill
+   v268: Unified Tier 1 + Tier 2 Navigation (--cso-nav-* Tokens Across All 4 Themes)
    ========================================================================== */
 :root,
 :root[data-cso-theme="system"],
 :root[data-cso-resolved-mode="light"] {
-  --cso-subnav-bg: #eef3f7;
-  --cso-subnav-border: 1px solid #d5dfe7;
-  --cso-subnav-ink: #162634;
-  --cso-subnav-hover: rgba(15, 76, 92, 0.08);
-  --cso-subnav-pill-bg: #0f4c5c;
-  --cso-subnav-pill-fg: #ffffff;
+  --cso-nav-top-bg: #0b2234;
+  --cso-nav-top-border: 1.5px solid rgba(255, 122, 0, 0.45);
+  --cso-nav-top-ink: #f8fafc;
+  --cso-nav-sub-bg: #eef3f7;
+  --cso-nav-sub-border: 1px solid #d5dfe7;
+  --cso-nav-sub-ink: #162634;
+  --cso-nav-sub-hover: rgba(15, 76, 92, 0.08);
+  --cso-nav-pill-bg: #0f4c5c;
+  --cso-nav-pill-fg: #ffffff;
+  --cso-nav-saved-bg: rgba(255, 255, 255, 0.78);
+  --cso-nav-saved-fg: #162634;
+  --cso-nav-saved-border: rgba(0, 0, 0, 0.12);
 }
 
 :root[data-cso-theme="dark"],
@@ -8470,32 +8478,50 @@ body.theme-dark,
 body[data-theme="dark"],
 body[data-cso-theme="dark"],
 .dark-theme {
-  --cso-subnav-bg: #131e29;
-  --cso-subnav-border: 1px solid #283a4d;
-  --cso-subnav-ink: #e6eef6;
-  --cso-subnav-hover: rgba(255, 255, 255, 0.1);
-  --cso-subnav-pill-bg: #1b5c73;
-  --cso-subnav-pill-fg: #ffffff;
+  --cso-nav-top-bg: #081018;
+  --cso-nav-top-border: 1px solid #1e2d3d;
+  --cso-nav-top-ink: #e6eef6;
+  --cso-nav-sub-bg: #131e29;
+  --cso-nav-sub-border: 1px solid #283a4d;
+  --cso-nav-sub-ink: #e6eef6;
+  --cso-nav-sub-hover: rgba(255, 255, 255, 0.1);
+  --cso-nav-pill-bg: #1b5c73;
+  --cso-nav-pill-fg: #ffffff;
+  --cso-nav-saved-bg: #1b2938;
+  --cso-nav-saved-fg: #e6eef6;
+  --cso-nav-saved-border: #30455c;
 }
 
 :root[data-cso-theme="reading"],
 :root[data-theme="reading"] {
-  --cso-subnav-bg: #efe6d5;
-  --cso-subnav-border: 1px solid #d6c7ae;
-  --cso-subnav-ink: #322315;
-  --cso-subnav-hover: rgba(15, 76, 92, 0.08);
-  --cso-subnav-pill-bg: #593e25;
-  --cso-subnav-pill-fg: #fffbf4;
+  --cso-nav-top-bg: #2f2014;
+  --cso-nav-top-border: 1.5px solid rgba(179, 89, 36, 0.5);
+  --cso-nav-top-ink: #fcf8ef;
+  --cso-nav-sub-bg: #efe6d5;
+  --cso-nav-sub-border: 1px solid #d6c7ae;
+  --cso-nav-sub-ink: #322315;
+  --cso-nav-sub-hover: rgba(89, 62, 37, 0.1);
+  --cso-nav-pill-bg: #593e25;
+  --cso-nav-pill-fg: #fffbf4;
+  --cso-nav-saved-bg: rgba(255, 255, 255, 0.78);
+  --cso-nav-saved-fg: #322315;
+  --cso-nav-saved-border: rgba(0, 0, 0, 0.12);
 }
 
 :root[data-cso-theme="utkal-bharat"],
 :root[data-theme="utkal-bharat"] {
-  --cso-subnav-bg: #f4ece0;
-  --cso-subnav-border: 2px solid #c99326;
-  --cso-subnav-ink: #241714;
-  --cso-subnav-hover: rgba(15, 76, 92, 0.08);
-  --cso-subnav-pill-bg: #78231d;
-  --cso-subnav-pill-fg: #fffdf9;
+  --cso-nav-top-bg: #15352d;
+  --cso-nav-top-border: 1.5px solid rgba(201, 147, 38, 0.65);
+  --cso-nav-top-ink: #fffdf9;
+  --cso-nav-sub-bg: #f4ece0;
+  --cso-nav-sub-border: 2px solid #c99326;
+  --cso-nav-sub-ink: #241714;
+  --cso-nav-sub-hover: rgba(120, 35, 29, 0.08);
+  --cso-nav-pill-bg: #78231d;
+  --cso-nav-pill-fg: #fffdf9;
+  --cso-nav-saved-bg: rgba(255, 255, 255, 0.78);
+  --cso-nav-saved-fg: #241714;
+  --cso-nav-saved-border: rgba(0, 0, 0, 0.12);
 }
 
 /* 1. Strip Surface & Typography (zero green background, zero gradient) */
@@ -8504,15 +8530,19 @@ body[data-cso-theme="dark"],
 #cso-main-navbar,
 .cso-pillar-nav,
 .cso-subnav,
+.pillar-nav,
+#cso-subnav,
+.top-nav-strip,
+header nav,
 .subnav {
   min-height: 50px !important;
   padding: 6px 20px !important;
-  background: var(--cso-subnav-bg, #eef3f7) !important;
-  background-color: var(--cso-subnav-bg, #eef3f7) !important;
+  background: var(--cso-nav-sub-bg, #eef3f7) !important;
+  background-color: var(--cso-nav-sub-bg, #eef3f7) !important;
   background-image: none !important;
-  color: var(--cso-subnav-ink, #162634) !important;
+  color: var(--cso-nav-sub-ink, #162634) !important;
   border-top: none !important;
-  border-bottom: var(--cso-subnav-border, 1px solid #d5dfe7) !important;
+  border-bottom: var(--cso-nav-sub-border, 1px solid #d5dfe7) !important;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
   border-radius: 0 !important;
   position: relative !important;
@@ -8566,7 +8596,7 @@ body[data-cso-theme="dark"],
   letter-spacing: 0.005em !important;
   line-height: 1 !important;
   opacity: 1 !important;
-  color: var(--cso-subnav-ink, #162634) !important;
+  color: var(--cso-nav-sub-ink, #162634) !important;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -8647,8 +8677,8 @@ body[data-cso-theme="dark"],
 .site-header__nav .cso-nav-parent:hover,
 .cso-nav-items .cso-nav-parent:hover,
 .cso-nav-items .ni.cso-open > .cso-nav-parent {
-  background: var(--cso-subnav-hover, rgba(15, 76, 92, 0.08)) !important;
-  color: var(--cso-subnav-ink, #162634) !important;
+  background: var(--cso-nav-sub-hover, rgba(15, 76, 92, 0.08)) !important;
+  color: var(--cso-nav-sub-ink, #162634) !important;
   transform: none !important;
 }
 
@@ -8668,8 +8698,8 @@ body[data-cso-theme="dark"],
 .cso-nav-items > a.active,
 .cso-nav-items > a[aria-current="page"],
 .cso-nav-items .ni.cso-active > .cso-nav-parent {
-  background: var(--cso-subnav-pill-bg, #0f4c5c) !important;
-  color: var(--cso-subnav-pill-fg, #ffffff) !important;
+  background: var(--cso-nav-pill-bg, #0f4c5c) !important;
+  color: var(--cso-nav-pill-fg, #ffffff) !important;
   font-weight: 700 !important;
   border-radius: 999px !important;
   padding: 0.45rem 1rem !important;
@@ -8683,7 +8713,7 @@ body[data-cso-theme="dark"],
 .cso-nav-items .ni.cso-active > .cso-nav-parent > a span,
 .cso-nav-items .ni.cso-active > .cso-nav-parent > .cso-nav-arrow {
   background: transparent !important;
-  color: var(--cso-subnav-pill-fg, #ffffff) !important;
+  color: var(--cso-nav-pill-fg, #ffffff) !important;
   font-weight: 700 !important;
   box-shadow: none !important;
   padding: 0 !important;

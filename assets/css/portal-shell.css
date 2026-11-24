@@ -111,15 +111,23 @@ body.cso-portal-page {
 }
 
 /* ======================================================================
-   0b. SECONDARY PILLAR NAVIGATION STRIP (v264 — ZERO GREEN, SINGLE PILL)
+   0b. UNIFIED TIER 1 + TIER 2 NAVIGATION (--cso-nav-* TOKENS, v268)
    ====================================================================== */
 :root,
 :root[data-cso-theme="system"],
 :root[data-cso-resolved-mode="light"] {
-  --cso-subnav-bg: #eef3f7;
-  --cso-subnav-border: 1px solid #d5dfe7;
-  --cso-subnav-ink: #162634;
-  --cso-subnav-hover: rgba(15, 76, 92, 0.08);
+  --cso-nav-top-bg: #0b2234;
+  --cso-nav-top-border: 1.5px solid rgba(255, 122, 0, 0.45);
+  --cso-nav-top-ink: #f8fafc;
+  --cso-nav-sub-bg: #eef3f7;
+  --cso-nav-sub-border: 1px solid #d5dfe7;
+  --cso-nav-sub-ink: #162634;
+  --cso-nav-sub-hover: rgba(15, 76, 92, 0.08);
+  --cso-nav-pill-bg: #0f4c5c;
+  --cso-nav-pill-fg: #ffffff;
+  --cso-nav-saved-bg: rgba(255, 255, 255, 0.78);
+  --cso-nav-saved-fg: #162634;
+  --cso-nav-saved-border: rgba(0, 0, 0, 0.12);
 }
 
 :root[data-cso-theme="dark"],
@@ -134,26 +142,60 @@ body.theme-dark,
 body[data-theme="dark"],
 body[data-cso-theme="dark"],
 .dark-theme {
-  --cso-subnav-bg: #131e29;
-  --cso-subnav-border: 1px solid #283a4d;
-  --cso-subnav-ink: #e6eef6;
-  --cso-subnav-hover: rgba(255, 255, 255, 0.1);
+  --cso-nav-top-bg: #081018;
+  --cso-nav-top-border: 1px solid #1e2d3d;
+  --cso-nav-top-ink: #e6eef6;
+  --cso-nav-sub-bg: #131e29;
+  --cso-nav-sub-border: 1px solid #283a4d;
+  --cso-nav-sub-ink: #e6eef6;
+  --cso-nav-sub-hover: rgba(255, 255, 255, 0.1);
+  --cso-nav-pill-bg: #1b5c73;
+  --cso-nav-pill-fg: #ffffff;
+  --cso-nav-saved-bg: #1b2938;
+  --cso-nav-saved-fg: #e6eef6;
+  --cso-nav-saved-border: #30455c;
 }
 
 :root[data-cso-theme="reading"],
 :root[data-theme="reading"] {
-  --cso-subnav-bg: #efe6d5;
-  --cso-subnav-border: 1px solid #d6c7ae;
-  --cso-subnav-ink: #322315;
-  --cso-subnav-hover: rgba(15, 76, 92, 0.08);
+  --cso-nav-top-bg: #2f2014;
+  --cso-nav-top-border: 1.5px solid rgba(179, 89, 36, 0.5);
+  --cso-nav-top-ink: #fcf8ef;
+  --cso-nav-sub-bg: #efe6d5;
+  --cso-nav-sub-border: 1px solid #d6c7ae;
+  --cso-nav-sub-ink: #322315;
+  --cso-nav-sub-hover: rgba(89, 62, 37, 0.1);
+  --cso-nav-pill-bg: #593e25;
+  --cso-nav-pill-fg: #fffbf4;
+  --cso-nav-saved-bg: rgba(255, 255, 255, 0.78);
+  --cso-nav-saved-fg: #322315;
+  --cso-nav-saved-border: rgba(0, 0, 0, 0.12);
 }
 
 :root[data-cso-theme="utkal-bharat"],
 :root[data-theme="utkal-bharat"] {
-  --cso-subnav-bg: #f4ece0;
-  --cso-subnav-border: 2px solid #c99326;
-  --cso-subnav-ink: #241714;
-  --cso-subnav-hover: rgba(15, 76, 92, 0.08);
+  --cso-nav-top-bg: #15352d;
+  --cso-nav-top-border: 1.5px solid rgba(201, 147, 38, 0.65);
+  --cso-nav-top-ink: #fffdf9;
+  --cso-nav-sub-bg: #f4ece0;
+  --cso-nav-sub-border: 2px solid #c99326;
+  --cso-nav-sub-ink: #241714;
+  --cso-nav-sub-hover: rgba(120, 35, 29, 0.08);
+  --cso-nav-pill-bg: #78231d;
+  --cso-nav-pill-fg: #fffdf9;
+  --cso-nav-saved-bg: rgba(255, 255, 255, 0.78);
+  --cso-nav-saved-fg: #241714;
+  --cso-nav-saved-border: rgba(0, 0, 0, 0.12);
+}
+
+.top,
+.header-utility,
+.cso-header-top,
+.site-header__top,
+#header-top {
+  background: var(--cso-nav-top-bg, #0b2234) !important;
+  border-bottom: var(--cso-nav-top-border, 1.5px solid rgba(255, 122, 0, 0.45)) !important;
+  color: var(--cso-nav-top-ink, #f8fafc) !important;
 }
 
 .site-header__nav,
@@ -161,12 +203,16 @@ body[data-cso-theme="dark"],
 #cso-main-navbar,
 .cso-pillar-nav,
 .cso-subnav,
+.pillar-nav,
+#cso-subnav,
+.top-nav-strip,
+header nav,
 .subnav {
-  background: var(--cso-subnav-bg, #eef3f7) !important;
-  background-color: var(--cso-subnav-bg, #eef3f7) !important;
+  background: var(--cso-nav-sub-bg, #eef3f7) !important;
+  background-color: var(--cso-nav-sub-bg, #eef3f7) !important;
   background-image: none !important;
-  color: var(--cso-subnav-ink, #162634) !important;
-  border-bottom: var(--cso-subnav-border, 1px solid #d5dfe7) !important;
+  color: var(--cso-nav-sub-ink, #162634) !important;
+  border-bottom: var(--cso-nav-sub-border, 1px solid #d5dfe7) !important;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
 }
 
@@ -177,7 +223,7 @@ body[data-cso-theme="dark"],
 .cso-nav-home,
 .cso-nav-items .cso-nav-parent {
   opacity: 1 !important;
-  color: var(--cso-subnav-ink, #162634) !important;
+  color: var(--cso-nav-sub-ink, #162634) !important;
   background: transparent !important;
   box-shadow: none !important;
   border-radius: 999px !important;
@@ -202,8 +248,8 @@ body[data-cso-theme="dark"],
 .cso-nav-items > a:hover,
 .cso-nav-home:hover,
 .cso-nav-items .cso-nav-parent:hover {
-  background: var(--cso-subnav-hover, rgba(15, 76, 92, 0.08)) !important;
-  color: var(--cso-subnav-ink, #162634) !important;
+  background: var(--cso-nav-sub-hover, rgba(15, 76, 92, 0.08)) !important;
+  color: var(--cso-nav-sub-ink, #162634) !important;
 }
 
 #cso-main-navbar .cso-nav-items > a.active,
@@ -214,8 +260,8 @@ body[data-cso-theme="dark"],
 .cso-nav-items > a.on,
 .cso-nav-items > a[aria-current="page"],
 .cso-nav-items .ni.cso-active > .cso-nav-parent {
-  background: var(--cso-pill-active-bg, #0f4c5c) !important;
-  color: var(--cso-pill-active-fg, #ffffff) !important;
+  background: var(--cso-nav-pill-bg, #0f4c5c) !important;
+  color: var(--cso-nav-pill-fg, #ffffff) !important;
   border-radius: 999px !important;
   padding: 0.45rem 1rem !important;
   box-shadow: none !important;
@@ -228,44 +274,20 @@ body[data-cso-theme="dark"],
 .cso-nav-items .ni.cso-active > .cso-nav-parent > a span,
 .cso-nav-items .ni.cso-active > .cso-nav-parent > .cso-nav-arrow {
   background: transparent !important;
-  color: var(--cso-pill-active-fg, #ffffff) !important;
+  color: var(--cso-nav-pill-fg, #ffffff) !important;
   box-shadow: none !important;
   padding: 0 !important;
 }
 
 .cso-nav-saved-pill {
-  background: rgba(255, 255, 255, 0.78) !important;
-  color: var(--cso-subnav-ink, #162634) !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
-}
-
-:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items > a:hover,
-:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items .cso-nav-parent:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-}
-
-:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items > a[aria-current="page"],
-:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items > a.active,
-:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items .ni.cso-active > .cso-nav-parent {
-  background: #1b5c73 !important;
-  color: #ffffff !important;
-}
-
-:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) .cso-nav-saved-pill {
-  background: #1b2938 !important;
-  color: #e6eef6 !important;
-  border: 1px solid #30455c !important;
-}
-
-:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) .cso-nav-saved-pill .cso-saved-badge {
-  background: #1b5c73 !important;
-  color: #ffffff !important;
+  background: var(--cso-nav-saved-bg, rgba(255, 255, 255, 0.78)) !important;
+  color: var(--cso-nav-saved-fg, #162634) !important;
+  border: 1px solid var(--cso-nav-saved-border, rgba(0, 0, 0, 0.12)) !important;
 }
 
 .cso-nav-saved-pill .cso-saved-badge {
-  background: var(--cso-pill-active-bg, #0f4c5c) !important;
-  color: var(--cso-pill-active-fg, #ffffff) !important;
+  background: var(--cso-nav-pill-bg, #0f4c5c) !important;
+  color: var(--cso-nav-pill-fg, #ffffff) !important;
 }
 
 /* 1. Force all ancestor shell wrappers to full-width single column immediately on initial paint (zero CLS) */
