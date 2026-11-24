@@ -636,7 +636,6 @@ header nav.nav-bar ul {
   box-sizing: border-box !important;
 }
 
-/* Prevent margin-left: auto on the "★ Saved" badge from bunching the first 7 items together */
 .cso-nav-list > *,
 .nav-links > *,
 header nav.nav-bar ul > li,
@@ -648,7 +647,6 @@ header nav.nav-bar ul > li,
   white-space: nowrap !important;
 }
 
-/* Tablet / Narrow Viewport Safety (768px - 1099px) */
 @media (max-width: 1099px) {
   .cso-nav-inner,
   .cso-tier2-inner,
