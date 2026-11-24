@@ -565,6 +565,51 @@
 
     foot.append(meta, actions);
     panel.append(grid, foot);
+
+    // Dismissible active filter chips (v278)
+    var activeChips = [];
+    if (state.track) {
+      activeChips.push([
+        (state.lang === 'or' ? 'କ୍ଷେତ୍ର: ' : 'Track: ') + findTaxLabel(state.taxonomy.tracks, state.track),
+        function () { state.track = ''; state.subtrack = ''; fetchFilteredList(); }
+      ]);
+    }
+    if (state.subtrack) {
+      activeChips.push([
+        (state.lang === 'or' ? 'ଉପ-ମାର୍ଗ: ' : 'Sub-Track: ') + findTaxLabel(state.taxonomy.subtracks, state.subtrack),
+        function () { state.subtrack = ''; fetchFilteredList(); }
+      ]);
+    }
+    if (state.region) {
+      activeChips.push([
+        (state.lang === 'or' ? 'ଅଞ୍ଚଳ: ' : 'Region: ') + findTaxLabel(state.taxonomy.regions, state.region),
+        function () { state.region = ''; fetchFilteredList(); }
+      ]);
+    }
+    if (state.stage) {
+      activeChips.push([
+        (state.lang === 'or' ? 'ପର୍ଯ୍ୟାୟ: ' : 'Stage: ') + findTaxLabel(state.taxonomy.stages, state.stage),
+        function () { state.stage = ''; fetchFilteredList(); }
+      ]);
+    }
+    if (state.q) {
+      activeChips.push([
+        (state.lang === 'or' ? 'ଖୋଜ: "' : 'Search: "') + state.q + '"',
+        function () { state.q = ''; fetchFilteredList(); }
+      ]);
+    }
+    if (activeChips.length) {
+      var chipBar = el('div', 'crp-active-chips');
+      chipBar.setAttribute('aria-label', 'Active Filters');
+      activeChips.forEach(function (pair) {
+        var ch = el('button', 'crp-filter-chip is-active', pair[0] + ' ✕');
+        ch.type = 'button';
+        ch.addEventListener('click', pair[1]);
+        chipBar.appendChild(ch);
+      });
+      panel.appendChild(chipBar);
+    }
+
     return panel;
   }
 

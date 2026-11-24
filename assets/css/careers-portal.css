@@ -358,6 +358,37 @@
   gap: 8px;
 }
 
+.crp-active-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--cso-border-subtle, #d8e1e9);
+}
+
+.crp-filter-chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--cso-pill-active-bg, #115569);
+  background: var(--cso-pill-active-bg, #115569);
+  color: var(--cso-pill-active-fg, #ffffff);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.crp-filter-chip:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
 .crp-btn {
   appearance: none;
   display: inline-flex;

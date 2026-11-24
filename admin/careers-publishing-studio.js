@@ -161,7 +161,25 @@
     }
   }
 
-  function loadData() {
+  function syncCareersFlyoutAndSidebar(bustSession) {
+    if (bustSession) {
+      try { sessionStorage.removeItem('cso_careers_flyout_v278'); } catch (_e) {}
+    }
+    if (window.CSOStudio && typeof window.CSOStudio.setCareersTrackNodes === 'function') {
+      var countsMap = {};
+      (state.items || []).forEach(function (it) {
+        if (it && it.track_slug && it.status === 'published') {
+          countsMap[it.track_slug] = (countsMap[it.track_slug] || 0) + 1;
+        }
+      });
+      window.CSOStudio.setCareersTrackNodes(state.taxonomy.tracks || [], countsMap);
+    }
+    if (window.CSOStudio && typeof window.CSOStudio.setCareersActiveTrack === 'function') {
+      window.CSOStudio.setCareersActiveTrack(state.filters.track || '');
+    }
+  }
+
+  function loadData(bustSession) {
     var qs = new URLSearchParams();
     if (state.filters.q) qs.set('q', state.filters.q);
     if (state.filters.track) qs.set('track', state.filters.track);
@@ -179,6 +197,7 @@
       if (window.CSOStudio && typeof window.CSOStudio.setCareersCount === 'function') {
         window.CSOStudio.setCareersCount(state.stats.total || 0);
       }
+      syncCareersFlyoutAndSidebar(Boolean(bustSession));
       renderView();
     }).catch(function (err) {
       toast('Failed to load careers studio: ' + err.message, 'crimson');
@@ -619,7 +638,7 @@
             .then(function (res) {
               var st = res && res.item ? res.item.status : 'updated';
               toast('Career guide ' + st + ' & public /careers/ cache purged!', 'emerald');
-              loadData();
+              loadData(true);
             })
             .catch(function (err) { toast(err.message, 'crimson'); });
         });
@@ -630,7 +649,7 @@
           api('/api/admin/careers', 'POST', { action: 'duplicate', id: item.id })
             .then(function () {
               toast('Duplicated as a new draft copy.', 'emerald');
-              loadData();
+              loadData(true);
             })
             .catch(function (err) { toast(err.message, 'crimson'); });
         });
@@ -642,7 +661,7 @@
           api('/api/admin/careers', 'POST', { action: 'delete', id: item.id })
             .then(function () {
               toast('Career guide deleted & public cache purged.', 'emerald');
-              loadData();
+              loadData(true);
             })
             .catch(function (err) { toast(err.message, 'crimson'); });
         });
@@ -1232,7 +1251,7 @@
         }
         statusMsg.textContent = overrideStatus === 'published' ? 'Published live on /careers/!' : 'Draft saved to D1.';
         toast(overrideStatus === 'published' ? 'Career guide published live & public cache purged!' : 'Draft saved to D1!', 'emerald');
-        if (!opts.skipReload) loadData();
+        if (!opts.skipReload) loadData(true);
         return d && d.item ? d.item : null;
       }).catch(function (err) {
         statusMsg.textContent = err.message;
@@ -1370,7 +1389,7 @@
             if (state.inlineTaxKind === 'stage') state.editing.career_stage = d.node.slug;
           }
           state.inlineTaxKind = '';
-          loadData();
+          loadData(true);
         }).catch(function (err) { toast(err.message, 'crimson'); });
       });
       var taxCancel = el('button', 'cps-btn', 'Cancel');
@@ -1473,6 +1492,29 @@
     if (!state.root) return;
     renderHeaderActions();
     var wrap = el('div', 'cps-root');
+
+    // Live-Sync Badge Banner (v278 — confirms Admin Careers folder powers public Careers ▾ two-stage dropdown)
+    var activeL1Count = (state.taxonomy.tracks || []).filter(function (n) { return Number(n.active ?? 1) === 1; }).length;
+    var activeL2Count = (state.taxonomy.subtracks || []).filter(function (n) { return Number(n.active ?? 1) === 1; }).length;
+    var syncBanner = el('div', 'cps-live-sync-banner');
+    syncBanner.setAttribute('role', 'status');
+    var syncLeft = el('div', 'cps-live-sync-left');
+    var syncPill = el('span', 'cps-live-sync-pill');
+    syncPill.appendChild(el('span', 'cps-live-sync-dot'));
+    syncPill.appendChild(document.createTextNode(' Live Synced to Public Careers ▾ Menu'));
+    syncLeft.appendChild(syncPill);
+    syncLeft.appendChild(el('span', 'cps-live-sync-copy', activeL1Count + ' active L1 Career Tracks & ' + activeL2Count + ' active L2 Sub-Tracks in this folder power Stage 1 (vertical dropdown) and Stage 2 (right-side flyout) with instant edge cache purge.'));
+    syncBanner.appendChild(syncLeft);
+    var syncBtn = el('button', 'cps-btn cps-btn-sm', 'Manage Menu Tracks');
+    syncBtn.type = 'button';
+    syncBtn.addEventListener('click', function () {
+      state.tab = 'taxonomy';
+      syncSidebarSubTab('taxonomy');
+      renderView();
+    });
+    syncBanner.appendChild(syncBtn);
+    wrap.appendChild(syncBanner);
+
     wrap.appendChild(renderKpis());
     wrap.appendChild(renderTabs());
     if (state.tab === 'composer') {
@@ -1488,9 +1530,13 @@
   }
 
   window.CSOCareersPublishingStudio = {
-    render: function (rootEl, headerActionsEl, initialTab) {
+    render: function (rootEl, headerActionsEl, initialTab, initialTrackSlug) {
       state.root = rootEl;
       state.headerActions = headerActionsEl;
+      if (initialTrackSlug !== undefined) {
+        state.filters.track = initialTrackSlug || '';
+        state.filters.subtrack = '';
+      }
       if (initialTab === 'new' || initialTab === 'composer') {
         state.editing = emptyFormModel();
         state.linksDraft = [{ label: '', url: '' }];

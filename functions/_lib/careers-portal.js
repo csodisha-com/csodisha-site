@@ -421,6 +421,25 @@ export async function ensureCareersSchema(db) {
 // ============================================================================
 export async function handlePublicCareersBootstrap(request, env) {
   const fallbackTaxonomy = groupTaxonomy(DEFAULT_CAREER_TAXONOMY, false);
+  const buildNavTracks = (tax, tCounts = {}, sCounts = {}) => (tax.tracks || []).map(tr => ({
+    id: tr.id,
+    slug: tr.slug,
+    label_en: tr.label_en,
+    label_or: tr.label_or || tr.label_en,
+    icon: tr.icon || '🧭',
+    sort_order: Number(tr.sort_order || 0),
+    published_guides_count: Number(tCounts[tr.slug] || 0),
+    subtracks: (tax.subtracks || [])
+      .filter(sub => sub.parent_id === tr.id)
+      .map(sub => ({
+        id: sub.id,
+        slug: sub.slug,
+        label_en: sub.label_en,
+        label_or: sub.label_or || sub.label_en,
+        sort_order: Number(sub.sort_order || 0),
+        published_guides_count: Number(sCounts[sub.slug] || 0)
+      }))
+  }));
   const emptyPayload = (pending) => json({
     ok: true,
     migration_pending: Boolean(pending),
@@ -435,6 +454,7 @@ export async function handlePublicCareersBootstrap(request, env) {
       subtrack_counts: {},
       region_counts: {}
     },
+    nav_tracks: buildNavTracks(fallbackTaxonomy),
     taxonomy: fallbackTaxonomy,
     featured: [],
     latest: []
@@ -504,6 +524,7 @@ export async function handlePublicCareersBootstrap(request, env) {
         subtrack_counts: subtrackCounts,
         region_counts: regionCounts
       },
+      nav_tracks: buildNavTracks(taxonomy, trackCounts, subtrackCounts),
       taxonomy,
       featured: featuredRows.map(r => hydrateArticle(r, false)),
       latest: latestRows.map(r => hydrateArticle(r, false))

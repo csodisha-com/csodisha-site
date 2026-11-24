@@ -736,13 +736,16 @@ body.cso-portal-active select:focus-visible {
     overflow: visible !important;
   }
 
-  #cso-main-navbar .cso-nav-jobs-wrap {
+  #cso-main-navbar .cso-nav-jobs-wrap,
+  #cso-main-navbar .cso-nav-careers-wrap {
     position: relative !important;
   }
 }
 
 #cso-main-navbar .cso-jobs-stage1,
-#cso-main-navbar .cso-jobs-stage2 {
+#cso-main-navbar .cso-jobs-stage2,
+#cso-main-navbar .cso-careers-stage1,
+#cso-main-navbar .cso-careers-stage2 {
   background-color: var(--cso-surface-elevated, #ffffff) !important;
   opacity: 1 !important;
   backdrop-filter: none !important;

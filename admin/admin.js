@@ -14,6 +14,9 @@
     activeJobsSectorId: '',
     jobsSectorNodes: [],
     activeCareersSubTab: 'list',
+    activeCareersTrackSlug: '',
+    careersTrackNodes: [],
+    careersTrackCounts: {},
     expandedFolders: new Set(['folder-jobs-careers']),
     searchQuery: '',
     startTime: Date.now(),
@@ -34,6 +37,15 @@
     { id: 'jtax_l1_psu', slug: 'psu', icon: '🏭', title_en: 'PSUs', published_jobs: 0, total_jobs: 0 },
     { id: 'jtax_l1_ngo', slug: 'ngo', icon: '🤝', title_en: 'NGOs / Non-Profit', published_jobs: 0, total_jobs: 0 },
     { id: 'jtax_l1_foreign', slug: 'foreign', icon: '✈️', title_en: 'Foreign Jobs', published_jobs: 0, total_jobs: 0 }
+  ];
+
+  var DEFAULT_CAREERS_TRACKS = [
+    { id: 'ctax-track-civil-services', slug: 'civil-services', icon: '🏛️', label_en: 'Civil Services' },
+    { id: 'ctax-track-engineering-it', slug: 'engineering-it', icon: '💻', label_en: 'Engineering & IT' },
+    { id: 'ctax-track-banking-finance', slug: 'banking-finance', icon: '🏦', label_en: 'Banking & Finance' },
+    { id: 'ctax-track-healthcare', slug: 'healthcare', icon: '🩺', label_en: 'Healthcare' },
+    { id: 'ctax-track-agriculture', slug: 'agriculture', icon: '🌾', label_en: 'Agriculture' },
+    { id: 'ctax-track-pathways', slug: 'pathways', icon: '🧭', label_en: 'Post-10th/12th Pathways' }
   ];
 
   var OV_FOLDER_ID = 'folder-command-overview';
@@ -458,7 +470,7 @@
           var crModList = el('div', 'cso-nav-modules' + (crExpanded ? '' : ' is-collapsed'));
           crModList.id = 'careersSidebarSubnav';
           filteredCrSubs.forEach(function (sub) {
-            var isSubActive = crActive && CSOState.activeCareersSubTab === sub.tab;
+            var isSubActive = crActive && CSOState.activeCareersSubTab === sub.tab && !(sub.tab === 'list' && CSOState.activeCareersTrackSlug);
             var subBtn = el('button', 'cso-nav-mod-btn' + (isSubActive ? ' is-active' : ''));
             subBtn.type = 'button';
             subBtn.setAttribute('data-careers-tab', sub.tab);
@@ -466,10 +478,33 @@
             subBtn.appendChild(el('span', 'cso-nav-mod-title', sub.title));
             subBtn.appendChild(el('span', 'cso-nav-mod-tag is-live', sub.tag));
             subBtn.addEventListener('click', function () {
-              openCareersPublishingStudio(sub.tab);
+              openCareersPublishingStudio(sub.tab, '');
               if (window.innerWidth <= 900) closeMobileDrawer();
             });
             crModList.appendChild(subBtn);
+          });
+
+          var crTrackSep = el('div', 'cso-nav-jobs-sector-sep', 'Public Careers ▾ Menu Tracks');
+          crModList.appendChild(crTrackSep);
+
+          var l1Tracks = (CSOState.careersTrackNodes && CSOState.careersTrackNodes.length)
+            ? CSOState.careersTrackNodes
+            : DEFAULT_CAREERS_TRACKS;
+          l1Tracks.forEach(function (tr) {
+            var isTrActive = crActive && CSOState.activeCareersSubTab === 'list' && CSOState.activeCareersTrackSlug === tr.slug;
+            var tBtn = el('button', 'cso-nav-mod-btn cso-nav-mod-btn--sector' + (isTrActive ? ' is-active' : ''));
+            tBtn.type = 'button';
+            tBtn.setAttribute('data-careers-track', tr.slug);
+            tBtn.title = (tr.label_en || tr.slug) + ' — synced live to Public Careers ▾ dropdown';
+            tBtn.appendChild(el('span', 'cso-nav-mod-num', tr.icon || '🧭'));
+            tBtn.appendChild(el('span', 'cso-nav-mod-title', tr.label_en || tr.slug));
+            var trCnt = Number((CSOState.careersTrackCounts && CSOState.careersTrackCounts[tr.slug]) || 0);
+            tBtn.appendChild(el('span', 'cso-nav-mod-tag cso-tabular' + (Number(tr.active ?? 1) === 0 ? '' : ' is-live'), String(trCnt)));
+            tBtn.addEventListener('click', function () {
+              openCareersPublishingStudio('list', tr.slug);
+              if (window.innerWidth <= 900) closeMobileDrawer();
+            });
+            crModList.appendChild(tBtn);
           });
 
           crWrap.appendChild(crBtn);
@@ -643,11 +678,12 @@
     }
   }
 
-  function openCareersPublishingStudio(initialTab) {
+  function openCareersPublishingStudio(initialTab, initialTrackSlug) {
     var tabKey = initialTab || 'list';
     CSOState.activeFolderId = CR_FOLDER_ID;
     CSOState.activeModuleId = CR_MODULE_ID;
     CSOState.activeCareersSubTab = tabKey;
+    CSOState.activeCareersTrackSlug = tabKey === 'list' ? (initialTrackSlug || '') : '';
     CSOState.expandedFolders.add(CR_FOLDER_ID);
     persistOpenGroups();
     try { localStorage.setItem('cso_active_module_id', CR_MODULE_ID); } catch (_e) {}
@@ -657,12 +693,12 @@
     if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Careers';
     if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Careers Publishing House';
     if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Careers Publishing House';
-    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '3-Layer D1 · Live Sync';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live Synced · Public Careers ▾';
     renderNavigationTree();
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);
     if (window.CSOCareersPublishingStudio) {
-      window.CSOCareersPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, tabKey);
+      window.CSOCareersPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, tabKey, CSOState.activeCareersTrackSlug);
     } else {
       var card = el('div', 'cso-empty-state');
       card.appendChild(el('h2', '', 'Careers Publishing House unavailable'));
@@ -684,7 +720,18 @@
     fetch('/api/admin/careers', { credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
-        if (d && d.stats) { CSOState.careersCount = d.stats.total; renderNavigationTree(); }
+        if (d && d.stats) { CSOState.careersCount = d.stats.total; }
+        if (d && d.taxonomy && Array.isArray(d.taxonomy.tracks)) {
+          CSOState.careersTrackNodes = d.taxonomy.tracks;
+        }
+        if (d && Array.isArray(d.items)) {
+          var tMap = {};
+          d.items.forEach(function (it) {
+            if (it && it.track_slug && it.status === 'published') tMap[it.track_slug] = (tMap[it.track_slug] || 0) + 1;
+          });
+          CSOState.careersTrackCounts = tMap;
+        }
+        if (d) renderNavigationTree();
       })
       .catch(function () {});
     fetch('/api/admin/homepage-blocks', { credentials: 'same-origin' })
@@ -1272,6 +1319,16 @@
     setCareersSubTab: function (tab) {
       if (tab && CSOState.activeCareersSubTab !== tab) { CSOState.activeCareersSubTab = tab; renderNavigationTree(); }
     },
+    setCareersTrackNodes: function (tracks, countsMap) {
+      if (Array.isArray(tracks)) CSOState.careersTrackNodes = tracks;
+      if (countsMap && typeof countsMap === 'object') CSOState.careersTrackCounts = countsMap;
+      renderNavigationTree();
+    },
+    setCareersActiveTrack: function (slug) {
+      var next = slug || '';
+      if (CSOState.activeCareersTrackSlug !== next) { CSOState.activeCareersTrackSlug = next; renderNavigationTree(); }
+    },
+    openCareersTrack: function (slug) { openCareersPublishingStudio('list', slug || ''); },
     openCandidateHubTab: function (tab) { openCandidateHubStudio(tab); },
     openJobsPublishingTab: function (tab) { openJobsPublishingStudio(tab); },
     openCareersPublishingTab: function (tab) { openCareersPublishingStudio(tab); },

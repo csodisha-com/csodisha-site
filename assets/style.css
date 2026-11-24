@@ -9373,13 +9373,15 @@ img.cso-brand-emblem {
   z-index: 950;
 }
 
-.cso-nav-jobs-wrap .cso-nav-parent {
+.cso-nav-jobs-wrap .cso-nav-parent,
+.cso-nav-careers-wrap .cso-nav-parent {
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-.cso-jobs-flyout-toggle {
+.cso-jobs-flyout-toggle,
+.cso-careers-flyout-toggle {
   appearance: none;
   border: 0;
   background: transparent;
@@ -9399,23 +9401,28 @@ img.cso-brand-emblem {
   transition: transform 0.18s ease;
 }
 
-.cso-nav-jobs-wrap.cso-open .cso-jobs-chev {
+.cso-nav-jobs-wrap.cso-open .cso-jobs-chev,
+.cso-nav-careers-wrap.cso-open .cso-jobs-chev {
   transform: rotate(180deg);
 }
 
-.cso-jobs-cascade {
+.cso-jobs-cascade,
+.cso-careers-cascade {
   display: none;
   white-space: normal;
   text-align: left;
   z-index: 1200;
 }
 
-.cso-nav-jobs-wrap.cso-open > .cso-jobs-cascade {
+.cso-nav-jobs-wrap.cso-open > .cso-jobs-cascade,
+.cso-nav-careers-wrap.cso-open > .cso-careers-cascade {
   display: block;
 }
 
 .cso-jobs-stage1,
-.cso-jobs-stage2 {
+.cso-jobs-stage2,
+.cso-careers-stage1,
+.cso-careers-stage2 {
   background-color: var(--cso-surface-elevated, #ffffff);
   opacity: 1;
   backdrop-filter: none;
@@ -9434,6 +9441,12 @@ img.cso-brand-emblem {
   z-index: 1200;
 }
 
+.cso-careers-stage1 {
+  width: 256px;
+  position: relative;
+  z-index: 1200;
+}
+
 .cso-jobs-stage2 {
   display: none;
   position: absolute;
@@ -9443,7 +9456,17 @@ img.cso-brand-emblem {
   z-index: 1210;
 }
 
-.cso-jobs-stage2.is-flip-left {
+.cso-careers-stage2 {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: calc(100% + 6px);
+  width: 248px;
+  z-index: 1210;
+}
+
+.cso-jobs-stage2.is-flip-left,
+.cso-careers-stage2.is-flip-left {
   left: auto;
   right: calc(100% + 6px);
 }
@@ -9455,7 +9478,8 @@ img.cso-brand-emblem {
     overflow: visible !important;
   }
 
-  #navw .cso-nav-jobs-wrap {
+  #navw .cso-nav-jobs-wrap,
+  #navw .cso-nav-careers-wrap {
     position: relative !important;
   }
 
@@ -9467,8 +9491,17 @@ img.cso-brand-emblem {
     z-index: 1200;
   }
 
-  /* Invisible hover bridges so moving diagonally between Jobs, Stage 1 & Stage 2 never closes early */
-  .cso-jobs-cascade::before {
+  .cso-careers-cascade {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 256px;
+    z-index: 1200;
+  }
+
+  /* Invisible hover bridges so moving diagonally between trigger, Stage 1 & Stage 2 never closes early */
+  .cso-jobs-cascade::before,
+  .cso-careers-cascade::before {
     content: '';
     position: absolute;
     top: -10px;
@@ -9477,7 +9510,8 @@ img.cso-brand-emblem {
     height: 10px;
   }
 
-  .cso-jobs-cascade.is-stage2-open::after {
+  .cso-jobs-cascade.is-stage2-open::after,
+  .cso-careers-cascade.is-stage2-open::after {
     content: '';
     position: absolute;
     top: 0;
@@ -9486,7 +9520,8 @@ img.cso-brand-emblem {
     width: 10px;
   }
 
-  .cso-jobs-cascade.is-stage2-open > .cso-jobs-stage2 {
+  .cso-jobs-cascade.is-stage2-open > .cso-jobs-stage2,
+  .cso-careers-cascade.is-stage2-open > .cso-careers-stage2 {
     display: block;
   }
 
@@ -9497,7 +9532,8 @@ img.cso-brand-emblem {
 }
 
 @media (min-width: 769px) and (max-width: 1099px) {
-  .cso-jobs-cascade {
+  .cso-jobs-cascade,
+  .cso-careers-cascade {
     position: fixed;
     top: 104px;
     left: 16px;
@@ -9507,28 +9543,33 @@ img.cso-brand-emblem {
     z-index: 1200;
   }
 
-  .cso-jobs-stage1 {
+  .cso-jobs-stage1,
+  .cso-careers-stage1 {
     width: 100%;
   }
 
-  .cso-jobs-stage2 {
+  .cso-jobs-stage2,
+  .cso-careers-stage2 {
     display: none !important;
   }
 }
 
 @media (max-width: 768px) {
-  .cso-jobs-cascade {
+  .cso-jobs-cascade,
+  .cso-careers-cascade {
     position: static;
     width: 100%;
     margin-top: 8px;
   }
 
-  .cso-jobs-stage1 {
+  .cso-jobs-stage1,
+  .cso-careers-stage1 {
     width: 100%;
     box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
   }
 
-  .cso-jobs-stage2 {
+  .cso-jobs-stage2,
+  .cso-careers-stage2 {
     display: none !important;
   }
 }
