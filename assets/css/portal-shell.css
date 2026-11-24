@@ -142,6 +142,8 @@ body.cso-portal-community-active #community-directory-panel {
   display: none !important;
 }
 
+body.cso-portal-active .cso-about-hero,
+body.cso-portal-about-active .cso-about-hero,
 body.cso-portal-about-active #directory-explorer {
   display: none !important;
 }

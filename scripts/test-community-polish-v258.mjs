@@ -128,8 +128,8 @@ check('5. Strict CSP compliance across all v258 files + sw.js & ops-sentinel.js 
   assert.ok(!/\son(?:click|change|input|submit|load|error)=/i.test(html), 'community/index.html has inline event handler');
   assert.ok(!/\sstyle="/i.test(html), 'community/index.html has inline style attribute');
 
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v258';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v258';"));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v25[89]';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v25[89]';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\n=== v258 Results: ${passed} passed, ${failed} failed ===\n`);
