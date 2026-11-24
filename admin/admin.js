@@ -12,8 +12,15 @@
     activeModuleId: 'folder-jobs-careers',
     expandedFolders: new Set(['folder-jobs-careers']),
     searchQuery: '',
-    startTime: Date.now()
+    startTime: Date.now(),
+    homepageCount: null
   };
+
+  var HS_FOLDER_ID = 'folder-homepage-studio';
+  var HS_MODULE_ID = 'module-homepage-studio';
+  function isHomepageStudioId(id) {
+    return id === HS_FOLDER_ID || id === HS_MODULE_ID || id === 'homepage-studio';
+  }
 
   var dom = {
     accordionNav: document.getElementById('accordionNav'),
@@ -230,6 +237,29 @@
       dom.accordionNav.appendChild(folderWrap);
     });
 
+    var hsLabel = 'homepage studio homepage & features';
+    if (!query || hsLabel.indexOf(query) !== -1) {
+      matchCount += 1;
+      var hsActive = CSOState.activeModuleId === HS_MODULE_ID;
+      var hsWrap = el('div', 'cso-nav-folder cso-nav-homepage-studio' + (hsActive ? ' is-current' : ''));
+      var hsBtn = el('button', 'cso-nav-folder-btn' + (hsActive ? ' is-active' : ''));
+      hsBtn.type = 'button';
+      hsBtn.title = 'Homepage & Features — manage every homepage block live from D1';
+      var hsLeft = el('span', 'cso-nav-folder-left');
+      hsLeft.appendChild(el('span', 'cso-nav-dot'));
+      hsLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83C\uDFE0 Homepage Studio'));
+      var hsRight = el('span', 'cso-nav-folder-right');
+      hsRight.appendChild(el('span', 'cso-nav-count cso-tabular', CSOState.homepageCount === null ? '\u2026' : String(CSOState.homepageCount)));
+      hsBtn.appendChild(hsLeft);
+      hsBtn.appendChild(hsRight);
+      hsBtn.addEventListener('click', function () {
+        selectModule(HS_FOLDER_ID, HS_MODULE_ID);
+        if (window.innerWidth <= 900) closeMobileDrawer();
+      });
+      hsWrap.appendChild(hsBtn);
+      dom.accordionNav.appendChild(hsWrap);
+    }
+
     if (dom.searchCountBadge) {
       if (query) {
         dom.searchCountBadge.hidden = false;
@@ -253,6 +283,7 @@
   }
 
   function resolveModuleTarget(targetId) {
+    if (isHomepageStudioId(targetId)) return { folderId: HS_FOLDER_ID, moduleId: HS_MODULE_ID };
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders) || !masterNavigationSchema.folders.length) return null;
     for (var i = 0; i < masterNavigationSchema.folders.length; i++) {
       var f = masterNavigationSchema.folders[i];
@@ -274,7 +305,41 @@
     }
   }
 
+  function openHomepageStudio() {
+    CSOState.activeFolderId = HS_FOLDER_ID;
+    CSOState.activeModuleId = HS_MODULE_ID;
+    try { localStorage.setItem('cso_active_module_id', HS_MODULE_ID); } catch (_e) {}
+    if (window.location.hash !== '#homepage-studio' && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#homepage-studio');
+    }
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Homepage & Features';
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Homepage Studio';
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Homepage Studio';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live D1 Sync';
+    renderNavigationTree();
+    clearNode(dom.workspaceRoot);
+    clearNode(dom.moduleHeaderActions);
+    if (window.CSOHomepageStudio) {
+      window.CSOHomepageStudio.render(dom.workspaceRoot, dom.moduleHeaderActions);
+    } else {
+      var card = el('div', 'cso-empty-state');
+      card.appendChild(el('h2', '', 'Homepage Studio unavailable'));
+      card.appendChild(el('p', '', 'The Homepage Studio script failed to load. Reload the page.'));
+      dom.workspaceRoot.appendChild(card);
+    }
+  }
+
+  function refreshHomepageCount() {
+    fetch('/api/admin/homepage-blocks', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && d.stats) { CSOState.homepageCount = d.stats.published; renderNavigationTree(); }
+      })
+      .catch(function () {});
+  }
+
   function selectModule(folderId, moduleId) {
+    if (isHomepageStudioId(moduleId) || isHomepageStudioId(folderId)) { openHomepageStudio(); return; }
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
     CSOState.activeFolderId = folderId;
     CSOState.activeModuleId = moduleId;
@@ -642,6 +707,9 @@
   window.CSOStudio = {
     openRoute: openQuickCreateRoute,
     selectModule: selectModule,
+    setHomepageCount: function (n) {
+      if (CSOState.homepageCount !== n) { CSOState.homepageCount = n; renderNavigationTree(); }
+    },
     getSchema: function () { return masterNavigationSchema; }
   };
 
@@ -661,5 +729,6 @@
     var target = resolveModuleTarget(hashId) || resolveModuleTarget(storedId) || resolveModuleTarget('folder-jobs-careers') || { folderId: 'folder-jobs-careers', moduleId: 'folder-jobs-careers' };
     renderNavigationTree();
     selectModule(target.folderId, target.moduleId);
+    refreshHomepageCount();
   });
 })(window, document);

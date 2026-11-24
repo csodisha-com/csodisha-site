@@ -1979,7 +1979,7 @@ $$('.tp').forEach((c, index) => {
   TOPICS.push([title, destination, $('small', c).textContent]);
 });
 $$('.tl.card').forEach(c=>{const t=clean($('b',c).textContent);bind(c,t);if(c.closest('.sec').textContent.includes('Important Tools'))TOOLS.push([t,slug(t),$('small',c).textContent])});
-$$('.lu .tabs button').forEach(s=>{
+const bindLuTabs=()=>$$('.lu .tabs button').forEach(s=>{
   s.dataset.category=s.textContent.trim();
   s.onclick=()=>{
     $$('.lu .tabs button').forEach(x=>{
@@ -1992,6 +1992,8 @@ $$('.lu .tabs button').forEach(s=>{
     localize($('.lu'));
   };
 });
+bindLuTabs();
+window.csoHome=Object.assign(window.csoHome||{},{bindTabs:bindLuTabs,bindTool:bind,localize});
 lu();
 let selectedSuggestIndex = -1;
 let currentSuggestions = [];
@@ -2315,7 +2317,7 @@ function setupGlobalSearch() {
     smic.onclick = () => voice(getSearchInput(), form);
   }
 
-  $$('.chips .search-chip').forEach(c => {
+  const bindChip = c => {
     c.onclick = () => {
       const searchInp = getSearchInput();
       const val = ORIGINAL_TEXT.get(c.firstChild) || c.textContent;
@@ -2323,7 +2325,9 @@ function setupGlobalSearch() {
       closeSearchAutocomplete();
       runSearch(val);
     };
-  });
+  };
+  $$('.chips .search-chip').forEach(bindChip);
+  window.csoHome = Object.assign(window.csoHome || {}, { bindChip });
 }
 
 setupGlobalSearch();

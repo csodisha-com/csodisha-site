@@ -20,9 +20,14 @@
 - Every Admin Panel mutation (`POST`, `PUT`, `PATCH`, `DELETE`) must immediately invalidate isolate and edge caches (`invalidateAllPublicCaches`, `resetPublicContentMemo`, `invalidateSitePagesCache`, `resetAboutOverviewMemo`) so public `/api/nav/config` and `/api/content/*` stay in real-time sync.
 - When a category or section has `0` items in D1, render a clean, CSP-safe empty state on public pages and keep explorer left sidebars clean (no hardcoded `Overview` buttons, `DIRECTORY SECTIONS` labels, or `PORTAL LINKS`) until dynamic Admin-published categories exist from `/api/nav/config` or D1.
 
+## 3b. Homepage Studio (`v242`)
+- Homepage features (Popular Searches, Latest Updates tabs, Opportunity Compass, Trending Topics, Important Tools, Action Hub) live in the D1 `homepage_blocks` table (`migrations/0136_homepage_studio.sql`) and are managed from **Homepage Studio** in `/admin/` (`admin/homepage-studio.js`, `functions/_lib/homepage-studio.js`, `/api/admin/homepage-blocks`).
+- The public homepage hydrates from `GET /api/public/homepage-blocks` via `assets/js/homepage-blocks.js` (CSP-safe DOM APIs); the static markup in `index.html` is only the graceful fallback. Click telemetry: `POST /api/public/homepage-blocks/click`.
+- Service worker / ops sentinel cache version is `cso-candidate-cache-v242`.
+
 ## 4. Required Verification Before Finishing Any Change
 Always run the full verification suite before completing any task and ensure all checks pass:
 
 ```bash
-node scripts/test-admin-homepage-themes-v240.mjs && node scripts/test-zero-leftovers-v238.mjs && node scripts/test-minimal-explorers-v236.mjs && node scripts/test-about-clean-slate-v235.mjs && node scripts/test-explorer-clean-slate-v234.mjs && node scripts/test-full-clean-slate-v233.mjs && node scripts/test-deep-purge-v232.mjs && node scripts/test-clean-slate-live-sync-v231.mjs && node scripts/test-navigation-restructure-v230.mjs && node scripts/test-extended-jobs-details-v229.mjs && node scripts/test-d1-read-optimization-v228.mjs && node scripts/test-odisha-jobs-details-v227.mjs && node scripts/test-ops-sentinel.mjs && node scripts/audit-links.js
+node scripts/test-homepage-studio-v242.mjs && node scripts/test-admin-homepage-themes-v240.mjs && node scripts/test-zero-leftovers-v238.mjs && node scripts/test-minimal-explorers-v236.mjs && node scripts/test-about-clean-slate-v235.mjs && node scripts/test-explorer-clean-slate-v234.mjs && node scripts/test-full-clean-slate-v233.mjs && node scripts/test-deep-purge-v232.mjs && node scripts/test-clean-slate-live-sync-v231.mjs && node scripts/test-navigation-restructure-v230.mjs && node scripts/test-extended-jobs-details-v229.mjs && node scripts/test-d1-read-optimization-v228.mjs && node scripts/test-odisha-jobs-details-v227.mjs && node scripts/test-ops-sentinel.mjs && node scripts/audit-links.js
 ```

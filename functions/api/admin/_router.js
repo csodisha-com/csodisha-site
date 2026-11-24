@@ -80,6 +80,7 @@ import { handleAdminCandidates } from './_candidates.js';
 import { handleCrawlDrafts } from './crawl-drafts.js';
 import { handleAdminCurrentAffairs } from './current-affairs.js';
 import { invalidateAllPublicCaches } from '../../_lib/edge-cache-invalidator.js';
+import { handleHomepageBlocksAdmin } from '../../_lib/homepage-studio.js';
 import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
@@ -109,6 +110,14 @@ async function dispatchAdminApi(request, env) {
 
     if (resource === 'crawl-drafts') {
       return await handleCrawlDrafts(request, env);
+    }
+
+    if (resource === 'homepage-blocks') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      const hbRes = await handleHomepageBlocksAdmin(request, env, actor, id, sub);
+      if (write && hbRes && hbRes.status >= 200 && hbRes.status < 400) await invalidateAllPublicCaches(request);
+      return hbRes;
     }
 
     if (resource === 'current-affairs') {

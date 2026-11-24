@@ -23,6 +23,8 @@ export const NAV_PUBLIC_PATHS = [
 ];
 
 export const CONTENT_PUBLIC_PATHS = [
+  '/api/public/homepage-blocks',
+  '/api/homepage/blocks',
   '/api/content/jobs',
   '/api/content/current-affairs',
   '/api/content/jobs-directory',
