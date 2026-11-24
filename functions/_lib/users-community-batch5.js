@@ -130,63 +130,8 @@ export async function ensureUsersCommunityBatch5Schema(db) {
   ];
   for (const sql of ddl) await db.prepare(sql).run();
 
-  // Seed Module 17 shared knowledge
-  const shkCnt = await db.prepare(`SELECT COUNT(*) AS n FROM urc_shared_knowledge`).first();
-  if (Number(shkCnt?.n || 0) === 0) {
-    await db.prepare(
-      `INSERT INTO urc_shared_knowledge (id, submission_code, contributor_user_id, contributor_name, contributor_role_label, district_odisha, content_kind, subject_or_exam, title_en, title_or, body_en, body_or, upvotes_count, review_status)
-       VALUES ('urc-shk-001', 'SHK-2026-0001', 'urc-u-004', 'Ananya Senapati', 'OAS Aspirant', 'Balasore', 'odisha_gk_digest', 'OPSC OAS',
-               'Mahanadi & Baitarani River Basin Tributaries Mnemonic Sheet',
-               'ମହାନଦୀ ଏବଂ ବୈତରଣୀ ନଦୀ ଅବବାହିକା ସ୍ମରଣିକା ନୋଟ୍ସ',
-               'Concise district-by-district river tributaries and dam projects in Odisha (Hirakud, Rengali, Mandira, Balimela).',
-               'ଓଡ଼ିଶାର ଜିଲ୍ଲାୱାରୀ ନଦୀ ଉପନଦୀ ଏବଂ ବନ୍ଧ ପ୍ରକଳ୍ପ (ହୀରାକୁଦ, ରେଙ୍ଗାଲି, ମନ୍ଦିରା, ବାଲିମେଳା) ସାରାଂଶ।',
-               34, 'pending_review')`
-    ).run();
-    await db.prepare(
-      `INSERT INTO urc_shared_knowledge (id, submission_code, contributor_user_id, contributor_name, contributor_role_label, district_odisha, content_kind, subject_or_exam, title_en, title_or, body_en, body_or, upvotes_count, review_status, reviewed_by)
-       VALUES ('urc-shk-002', 'SHK-2026-0002', 'urc-u-003', 'Prof. Biswajit Panigrahi', 'Verified Educator', 'Cuttack', 'teaching_pedagogy', 'OSSTET / B.Ed',
-               'Constructivist Pedagogy & NCF 2005 Classroom Examples',
-               'ଗଠନମୂଳକ ଶିକ୍ଷାଦାନ ଏବଂ NCF ୨୦୦୫ ଶ୍ରେଣୀଗୃହ ଉଦାହରଣ',
-               'Practical B.Ed & OSSTET pedagogy notes aligned with Odisha SCERT syllabus.',
-               'ଓଡ଼ିଶା SCERT ପାଠ୍ୟକ୍ରମ ଅନୁଯାୟୀ B.Ed ଏବଂ OSSTET ଶିକ୍ଷାଦାନ ନୋଟ୍ସ।',
-               52, 'approved_community', 'moderator@csodisha.com')`
-    ).run();
-  }
-
-  // Seed Module 18 topic suggestions
-  const topCnt = await db.prepare(`SELECT COUNT(*) AS n FROM urc_topic_suggestions`).first();
-  if (Number(topCnt?.n || 0) === 0) {
-    await db.prepare(
-      `INSERT INTO urc_topic_suggestions (id, suggestion_code, suggested_by_name, suggested_by_email, district_odisha, target_portal, exam_or_class, topic_title_en, topic_title_or, rationale_text, votes_count, workflow_status, assigned_admin_note)
-       VALUES ('urc-top-001', 'TOP-2026-0001', 'Ananya Senapati', 'ananya.balasore@example.in', 'Balasore', 'mock-tests', 'OSSC CGL',
-               'OSSC CGL Data Interpretation & Ratio Shortcuts Pack',
-               'OSSC CGL ଡାଟା ଇଣ୍ଟରପ୍ରିଟେସନ୍ ଏବଂ ଅନୁପାତ ସର୍ଟକଟ୍ ପ୍ୟାକ୍',
-               'High weightage in OSSC CGL Prelims; timed 20-question practice sets needed.', 42, 'planned', 'Scheduled for next OSSC CGL sprint.')`
-    ).run();
-    await db.prepare(
-      `INSERT INTO urc_topic_suggestions (id, suggestion_code, suggested_by_name, suggested_by_email, district_odisha, target_portal, exam_or_class, topic_title_en, topic_title_or, rationale_text, votes_count, workflow_status)
-       VALUES ('urc-top-002', 'TOP-2026-0002', 'Smita Naik', 'smita.cuttack@example.in', 'Cuttack', 'study-library', 'UGC NET',
-               'UGC NET Paper-I ICT & Higher Education Digest (Bilingual)',
-               'UGC NET ପେପର-୧ ICT ଏବଂ ଉଚ୍ଚଶିକ୍ଷା ସାରାଂଶ',
-               'Bilingual Odia + English glossary for digital initiatives like SWAYAM and DIKSHA.', 19, 'new')`
-    ).run();
-  }
-
-  // Seed Module 19 error reports
-  const errCnt = await db.prepare(`SELECT COUNT(*) AS n FROM urc_error_reports`).first();
-  if (Number(errCnt?.n || 0) === 0) {
-    await db.prepare(
-      `INSERT INTO urc_error_reports (id, errata_code, reporter_name, reporter_email, target_area, page_or_item_url, item_title, error_type, description_text, suggested_correction, severity, fix_status)
-       VALUES ('urc-err-001', 'ERR-2026-0001', 'Ananya Senapati', 'ananya.balasore@example.in', 'mcq_answer_key', '/study-library/opsc-oas-2024-polity', 'OPSC OAS 2024 Polity PYQ Q14', 'wrong_answer_key',
-               'Option B is marked correct for Article 243G, whereas official OPSC key is Option C.', 'Update answer key to Option C (73rd Amendment).', 'high', 'open')`
-    ).run();
-    await db.prepare(
-      `INSERT INTO urc_error_reports (id, errata_code, reporter_name, reporter_email, target_area, page_or_item_url, item_title, error_type, description_text, suggested_correction, severity, fix_status, resolution_note, resolved_by, resolved_at)
-       VALUES ('urc-err-002', 'ERR-2026-0002', 'Debasis Pradhan', 'debasis.khordha@example.in', 'scheme_eligibility', '/schemes/kalia-odisha', 'Odisha KALIA Scheme Eligibility', 'outdated_date_fee',
-               'Last installment window showed 2025 cutoff date.', 'Updated to 2026 cycle.', 'medium', 'fixed_deployed', 'Updated scheme eligibility & pushed cache invalidation.', 'moderator@csodisha.com', datetime('now'))`
-    ).run();
-  }
-
+  // Clean-slate v233: starter shared knowledge, topic suggestions & error report seeding disabled;
+  // authored strictly via Admin Studio (/admin/) or live citizen submissions.
   _urc5Ready.add(db);
 }
 

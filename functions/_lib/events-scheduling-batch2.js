@@ -200,7 +200,7 @@ export async function ensureEventsSchedulingBatch2Schema(db) {
   ];
 
   for (const sql of ddl) await db.prepare(sql).run();
-  await seedEventsSchedulingBatch2(db);
+  // Clean-slate v233: starter admit/answer-key/result seeding disabled; authored strictly in Admin Studio (/admin/).
   _evt2Ready.add(db);
 }
 

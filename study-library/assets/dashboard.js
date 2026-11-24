@@ -620,6 +620,10 @@
   function renderSidebar() {
     if (!sideNav) return;
     sideNav.replaceChildren();
+    if (!state.groups.length) {
+      sideNav.appendChild(el('div', 'cso-empty-state', 'No categories yet — add categories or content in Admin Studio.'));
+      return;
+    }
     state.groups.forEach((g, idx) => {
       const link = el('a', 'side-link');
       link.href = `/study-library/${encodeURIComponent(g.slug || g.id)}/`;
@@ -721,6 +725,13 @@
   function renderOverview() {
     if (!dashboardGrid) return;
     dashboardGrid.replaceChildren();
+    if (!state.groups.length) {
+      const emptyBox = el('div', 'study-modal-box cso-empty-state');
+      emptyBox.appendChild(el('p', 'study-card-desc', 'No items published yet — add categories or content in Admin Studio.'));
+      dashboardGrid.appendChild(emptyBox);
+      if (telemetryBars) telemetryBars.replaceChildren();
+      return;
+    }
     state.groups.forEach((g, idx) => {
       const secs = g.sections || [];
       const subCount = secs.reduce((sum, s) => sum + ((s.children || []).length), 0);
@@ -745,7 +756,7 @@
       telemetryBars.replaceChildren();
       const totalTopics = Math.max(1, state.counts.entries || 1);
       const trackPanel = el('div', 'telemetry-panel');
-      trackPanel.appendChild(el('h3', 'telemetry-panel-title', 'Topic Coverage Across 10 Academic Track Groups'));
+      trackPanel.appendChild(el('h3', 'telemetry-panel-title', 'Topic Coverage Across Published Study Groups'));
       const trackList = el('div', 'telemetry-list');
       state.groups.forEach(g => {
         const topics = (g.sections || []).reduce(
@@ -1129,19 +1140,6 @@
       const tracks = Array.isArray(taxData.items) ? taxData.items : (Array.isArray(taxData) ? taxData : []);
       state.taxonomy = tracks;
       const seen = new Set();
-      const preset = [
-        ['opsc-oas', 'OPSC Civil Services (OAS)'],
-        ['ossc-cgl', 'OSSC CGL & Combined Tech'],
-        ['osssc-ri-amin', 'OSSSC RI / ARI / Amin / ICDS'],
-        ['ugc-net', 'UGC NET (English & Education)'],
-        ['odisha-bed-otet', 'Odisha B.Ed. / OTET / OSSTET'],
-        ['bse-odisha-10', 'BSE Odisha Class 10 (Matric)'],
-        ['chse-odisha-12', 'CHSE Odisha +2 (Class 12)']
-      ];
-      preset.forEach(([val, label]) => {
-        seen.add(val);
-        studyExamSelect.appendChild(el('option', '', label)).value = val;
-      });
       tracks.forEach(t => {
         const code = (t.short_code || t.track_slug || '').toLowerCase();
         if (code && !seen.has(code)) {

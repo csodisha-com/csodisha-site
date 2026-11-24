@@ -650,7 +650,7 @@
         if (loadStatus) {
           if (!groups.length) {
             loadStatus.hidden = false;
-            loadStatus.textContent = 'No About sections published in D1 yet. Author pages in /admin/ to publish live.';
+            loadStatus.textContent = 'No items published yet — add categories or content in Admin Studio.';
           } else {
             loadStatus.hidden = true;
           }
@@ -664,7 +664,7 @@
     buildDashboard();
     if (loadStatus) {
       loadStatus.hidden = false;
-      loadStatus.textContent = 'No About sections published in D1 yet. Author pages in /admin/ to publish live.';
+      loadStatus.textContent = 'No items published yet — add categories or content in Admin Studio.';
     }
   }
 

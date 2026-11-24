@@ -269,7 +269,7 @@ export async function ensureEventsSchedulingBatch1Schema(db) {
   ];
 
   for (const sql of ddl) await db.prepare(sql).run();
-  await seedEventsSchedulingBatch1(db);
+  // Clean-slate v233: starter event seeding disabled; events & deadlines are authored strictly in Admin Studio (/admin/).
   _evt1Ready.add(db);
 }
 

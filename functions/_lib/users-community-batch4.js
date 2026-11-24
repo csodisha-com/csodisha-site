@@ -190,64 +190,7 @@ export async function ensureUsersCommunityBatch4Schema(db) {
     ).run();
   }
 
-  // Seed Module 15 forum threads
-  const thCnt = await db.prepare(`SELECT COUNT(*) AS n FROM urc_forum_threads`).first();
-  if (Number(thCnt?.n || 0) === 0) {
-    const threads = [
-      [
-        'urc-th-001', 'opsc-oas-prelims-2026-booklist-odisha', 'opsc_oas_prep', 'urc-u-003',
-        'Prof. Biswajit Panigrahi', 'Verified Educator',
-        'OPSC OAS 2026 Prelims & Mains Standard Booklist (Odisha Focus)',
-        'OPSC OAS ୨୦୨୬ ପ୍ରିଲିମ୍ସ ଏବଂ ମେନ୍ସ ପାଇଁ ମାନକ ପୁସ୍ତକ ତାଲିକା',
-        'Complete subject-wise booklist covering Odisha History, Geography, Polity, and Economy.',
-        'ଓଡ଼ିଶା ଇତିହାସ, ଭୂଗୋଳ, ରାଜନୀତି ଏବଂ ଅର୍ଥନୀତି ପାଇଁ ସମ୍ପୂର୍ଣ୍ଣ ପୁସ୍ତକ ତାଲିକା।',
-        '["OPSC OAS", "Prelims", "Booklist"]', 312, 18, 1, 0, 'published'
-      ],
-      [
-        'urc-th-002', 'ugc-net-odia-english-paper1-research-aptitude', 'ugc_net_academia', 'urc-u-002',
-        'Subhashree Mohanty', 'Senior Moderator',
-        'UGC NET Paper 1 Research Aptitude & Higher Education PYQ Thread',
-        'UGC NET ପେପର ୧ ଗବେଷଣା ଯୋଗ୍ୟତା ଏବଂ ଉଚ୍ଚଶିକ୍ଷା PYQ ଆଲୋଚନା',
-        'Discuss 2021-2025 UGC NET Paper 1 trend shifts and NEP 2020 questions.',
-        '୨୦୨୧-୨୦୨୫ UGC NET ପେପର ୧ ପ୍ରଶ୍ନ ଧାରା ଏବଂ NEP ୨୦୨୦ ଆଲୋଚନା।',
-        '["UGC NET", "Paper 1", "NEP 2020"]', 185, 9, 0, 0, 'published'
-      ]
-    ];
-    for (const t of threads) {
-      await db.prepare(
-        `INSERT INTO urc_forum_threads (id, slug, category_key, author_user_id, author_name, author_badge, title_en, title_or, body_en, body_or, tags_json, views_count, replies_count, is_pinned, is_locked, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(...t).run();
-    }
-  }
-
-  // Seed Module 16 student questions
-  const qCnt = await db.prepare(`SELECT COUNT(*) AS n FROM urc_student_questions`).first();
-  if (Number(qCnt?.n || 0) === 0) {
-    const qnas = [
-      [
-        'urc-qna-001', 'QNA-2026-0001', 'Odisha History & Culture', 'urc-u-004', 'Ananya Senapati', 'Balasore',
-        'Who led the Paika Rebellion of 1817 in Khordha and what were its main causes?',
-        '୧୮୧୭ ଖୋର୍ଦ୍ଧା ପାଇକ ବିଦ୍ରୋହର ନେତୃତ୍ୱ କିଏ ନେଇଥିଲେ ଏବଂ ଏହାର ମୁଖ୍ୟ କାରଣ କଣ ଥିଲା?',
-        'Bakshi Jagabandhu Bidyadhar led the 1817 Paika Rebellion against British land revenue policies, salt monopoly, and currency changes.',
-        'ବକ୍ସି ଜଗବନ୍ଧୁ ବିଦ୍ୟାଧର ୧୮୧୭ ପାଇକ ବିଦ୍ରୋହର ନେତୃତ୍ୱ ନେଇଥିଲେ।',
-        'Prof. Biswajit Panigrahi', 'Verified Educator', 1, 24, 'featured_faq'
-      ],
-      [
-        'urc-qna-002', 'QNA-2026-0002', 'Teaching Aptitude & B.Ed', 'urc-u-006', 'Smita Naik', 'Cuttack',
-        'What is the recommended pupil-teacher ratio for upper primary schools under RTE Act 2009?',
-        'RTE ଆଇନ ୨୦୦୯ ଅନୁଯାୟୀ ଉଚ୍ଚ ପ୍ରାଥମିକ ବିଦ୍ୟାଳୟ ପାଇଁ ଛାତ୍ର-ଶିକ୍ଷକ ଅନୁପାତ କେତେ?',
-        '', '', '', '', 0, 4, 'unanswered'
-      ]
-    ];
-    for (const q of qnas) {
-      await db.prepare(
-        `INSERT INTO urc_student_questions (id, question_code, subject_or_exam, asker_user_id, asker_name, district_odisha, question_en, question_or, answer_en, answer_or, answered_by_name, answered_by_badge, is_verified_answer, upvotes_count, answer_status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(...q).run();
-    }
-  }
-
+  // Clean-slate v233: starter forum threads & student Q&A seeding disabled; authored strictly in Admin Studio (/admin/).
   _urc4Ready.add(db);
 }
 

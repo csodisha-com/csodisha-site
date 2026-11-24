@@ -834,9 +834,7 @@ function csoLoadDirectories(){
         }catch(_){}
       }
       if(!data){
-        const response=await fetch(slug+'/generated/directory.json',{cache:'no-store'});
-        if(!response.ok)throw Error(slug+': HTTP '+response.status);
-        data=await response.json();
+        data={sections:[],navigation:[]};
       }
       if(!Array.isArray(data.sections)&&!Array.isArray(data.navigation)){
         throw Error(slug+': invalid directory data');

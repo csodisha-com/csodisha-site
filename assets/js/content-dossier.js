@@ -435,26 +435,22 @@
     var matched = items.find(function (j) { return j.slug === slug || j.id === slug; })
       || dirItem
       || HUB_SUBTRACK_DOSSIERS[slug]
+      || items[0]
       || null;
 
-    if (!matched && slug && dataApi && typeof dataApi.resolveBranchFromDirectory === 'function') {
-      try {
-        var dirRes = await fetch('/jobs-careers/generated/directory.json', { credentials: 'same-origin' });
-        if (dirRes.ok) {
-          var dirJson = await dirRes.json();
-          matched = dataApi.resolveBranchFromDirectory(dirJson, slug);
-        }
-      } catch (_) {}
-    }
-
     if (!matched) {
-      matched = items[0]
-        || (dataApi && dataApi.DIRECTORY_ITEMS && dataApi.DIRECTORY_ITEMS[0])
-        || HUB_SUBTRACK_DOSSIERS['hub-otet-osstet-eligibility'];
+      clear(rootEl);
+      var emptyCard = el('article', 'cso-dossier-card cso-empty-state');
+      emptyCard.appendChild(el('h2', '', 'No items published yet'));
+      emptyCard.appendChild(el('p', '', 'No items published yet — add categories or content in Admin Studio.'));
+      var backLink = el('a', 'cso-dossier-btn', '← Back to Jobs & Careers');
+      backLink.href = '/jobs-careers/';
+      emptyCard.appendChild(backLink);
+      rootEl.appendChild(emptyCard);
+      return;
     }
 
-    var combinedPool = items.concat(dataApi && Array.isArray(dataApi.DIRECTORY_ITEMS) ? dataApi.DIRECTORY_ITEMS : []);
-    renderDossier(rootEl, matched, combinedPool);
+    renderDossier(rootEl, matched, items);
   }
 
   var api = {

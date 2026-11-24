@@ -24,5 +24,5 @@
 Always run the full verification suite before completing any task and ensure all checks pass:
 
 ```bash
-node scripts/test-deep-purge-v232.mjs && node scripts/test-clean-slate-live-sync-v231.mjs && node scripts/test-navigation-restructure-v230.mjs && node scripts/test-extended-jobs-details-v229.mjs && node scripts/test-d1-read-optimization-v228.mjs && node scripts/test-odisha-jobs-details-v227.mjs && node scripts/audit-links.js
+node scripts/test-full-clean-slate-v233.mjs && node scripts/test-deep-purge-v232.mjs && node scripts/test-clean-slate-live-sync-v231.mjs && node scripts/test-navigation-restructure-v230.mjs && node scripts/test-extended-jobs-details-v229.mjs && node scripts/test-d1-read-optimization-v228.mjs && node scripts/test-odisha-jobs-details-v227.mjs && node scripts/audit-links.js
 ```

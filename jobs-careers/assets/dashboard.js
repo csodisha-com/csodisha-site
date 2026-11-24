@@ -1542,12 +1542,12 @@
   function renderEmptyDirectoryState() {
     if (sectionsNav) {
       sectionsNav.replaceChildren();
-      const emptyNav = el('div', 'cso-empty-state', 'No categories yet. Add categories in Admin Studio.');
+      const emptyNav = el('div', 'cso-empty-state', 'No items published yet — add categories or content in Admin Studio.');
       sectionsNav.appendChild(emptyNav);
     }
     if (loadStatus) {
       loadStatus.hidden = false;
-      loadStatus.textContent = 'No job categories published in D1 yet. Create categories and notices in /admin/ to publish live.';
+      loadStatus.textContent = 'No items published yet — add categories or content in Admin Studio.';
     }
   }
 

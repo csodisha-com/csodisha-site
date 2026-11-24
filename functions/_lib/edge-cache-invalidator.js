@@ -45,13 +45,24 @@ export const CONTENT_PUBLIC_PATHS = [
   '/api/public/study-library/items',
   '/api/public/community-directory/overview',
   '/api/public/community-directory/items',
+  '/api/community/posts',
+  '/api/community/qna',
+  '/api/about/overview',
   '/api/edu/resources',
-  '/api/edu/scholarships',
-  '/api/edu/careers',
-  '/api/edu/mock-tests',
+  '/api/edu/taxonomy',
+  '/api/edu/examinations',
+  '/api/edu/admit-results',
   '/api/edu/syllabi',
   '/api/edu/pyqs',
-  '/api/edu/tools'
+  '/api/edu/quizzes',
+  '/api/edu/mock-tests',
+  '/api/edu/answer-keys',
+  '/api/edu/collections',
+  '/api/edu/scholarships',
+  '/api/edu/careers',
+  '/api/edu/student-hub',
+  '/api/edu/tools',
+  '/api/events/upcoming'
 ];
 
 export const EVENTS_PUBLIC_PATHS = [

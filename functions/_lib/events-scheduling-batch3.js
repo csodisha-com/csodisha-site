@@ -355,7 +355,7 @@ export async function ensureEventsSchedulingBatch3Schema(db) {
   ];
 
   for (const sql of ddl) await db.prepare(sql).run();
-  await seedEventsSchedulingBatch3(db);
+  // Clean-slate v233: starter meetups/webinars seeding disabled; authored strictly in Admin Studio (/admin/).
   _evt3Ready.add(db);
 }
 

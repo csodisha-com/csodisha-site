@@ -187,46 +187,7 @@ export async function ensureUsersCommunityBatch2Schema(db) {
     ).run();
   }
 
-  // Seed Module 08 community posts
-  const postCnt = await db.prepare(`SELECT COUNT(*) AS n FROM urc_community_posts`).first();
-  if (Number(postCnt?.n || 0) === 0) {
-    const posts = [
-      [
-        'urc-post-001', 'opsc-oas-2026-odisha-history-strategy', 'exam_strategy', 'urc-u-003',
-        'Prof. Biswajit Panigrahi', 'Verified Educator',
-        'OPSC OAS 2026: High-Yield Odisha History & Freedom Movement Strategy',
-        'OPSC OAS ୨୦୨୬: ଓଡ଼ିଶା ଇତିହାସ ଏବଂ ସ୍ୱାଧୀନତା ସଂଗ୍ରାମ ପ୍ରସ୍ତୁତି ରଣନୀତି',
-        'Focus on Paika Rebellion (1817), Utkal Sammilani (1903), and Odisha Province formation (1936) with PYQ answer structures.',
-        'ପାଇକ ବିଦ୍ରୋହ (୧୮୧୭), ଉତ୍କଳ ସମ୍ମିଳନୀ (୧୯୦୩) ଏବଂ ସ୍ୱତନ୍ତ୍ର ଓଡ଼ିଶା ପ୍ରଦେଶ ଗଠନ (୧୯୩୬) ଉପରେ ବିଶେଷ ଧ୍ୟାନ ଦିଅନ୍ତୁ।',
-        'OPSC OAS', 'Cuttack', 48, 12, 1, 1, 'published'
-      ],
-      [
-        'urc-post-002', 'balasore-ossc-cgl-study-group-notes', 'study_discussion', 'urc-u-004',
-        'Ananya Senapati', 'OAS Aspirant',
-        'OSSC CGL Prelims Quantitative & Odisha GK Weekly Peer Thread',
-        'OSSC CGL ପ୍ରିଲିମ୍ସ ଗଣିତ ଏବଂ ଓଡ଼ିଶା ସାଧାରଣ ଜ୍ଞାନ ସାପ୍ତାହିକ ଆଲୋଚନା',
-        'Sharing compiled district-wise river systems and Odisha budget highlights for OSSC CGL aspirants.',
-        'OSSC CGL ପରୀକ୍ଷାର୍ଥୀଙ୍କ ପାଇଁ ଜିଲ୍ଲାୱାରୀ ନଦୀ ପ୍ରଣାଳୀ ଏବଂ ଓଡ଼ିଶା ବଜେଟ୍ ସାରାଂଶ।',
-        'OSSC CGL', 'Balasore', 29, 7, 0, 1, 'published'
-      ],
-      [
-        'urc-post-003', 'otet-osstet-odia-pedagogy-draft', 'odisha_current_affairs', 'urc-u-006',
-        'Smita Naik', 'Teaching Aspirant',
-        'OTET & OSSTET Odia Pedagogy Revision Checklist',
-        'OTET ଏବଂ OSSTET ଓଡ଼ିଆ ଶିକ୍ଷାଦାନ ସଂଶୋଧନ ତାଲିକା',
-        'Draft checklist covering child-centric pedagogy and Odisha SCERT textbooks.',
-        'ଓଡ଼ିଶା SCERT ପାଠ୍ୟପୁସ୍ତକ ଆଧାରିତ ଶିଶୁ-କୈନ୍ଦ୍ରିକ ଶିକ୍ଷାଦାନ ତାଲିକା।',
-        'OTET', 'Cuttack', 5, 1, 0, 0, 'pending_moderation'
-      ]
-    ];
-    for (const p of posts) {
-      await db.prepare(
-        `INSERT INTO urc_community_posts (id, slug, post_type, author_user_id, author_name, author_badge, title_en, title_or, body_en, body_or, exam_tag, district_tag, upvotes_count, replies_count, is_pinned, featured, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(...p).run();
-    }
-  }
-
+  // Clean-slate v233: starter community post seeding disabled; posts are authored strictly in Admin Studio (/admin/).
   _urc2Ready.add(db);
 }
 

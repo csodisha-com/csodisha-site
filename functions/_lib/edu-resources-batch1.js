@@ -341,68 +341,8 @@ export async function ensureEduResourcesBatch1Schema(db) {
     await db.prepare(sql).run();
   }
 
-  const existingCountRow = await db.prepare(`SELECT COUNT(*) AS n FROM edu_resources`).first();
-  if (!existingCountRow || Number(existingCountRow.n || 0) === 0) {
-    // Surface existing study_library_items records if present
-    if (await tableExists(db, 'study_library_items')) {
-      try {
-        const { results: slItems } = await db.prepare(
-          `SELECT id, slug, domain, title, title_or, resource_type, summary, summary_or, body_html, body_html_or,
-                  exam_tag, class_level, subject, file_url, official_source_url, language, page_count, file_size_bytes,
-                  tags_json, status, is_featured, offline_ready, created_by
-           FROM study_library_items LIMIT 100`
-        ).all();
-        for (const item of slItems || []) {
-          const rt = item.resource_type === 'ebook' ? 'digital_library'
-            : item.resource_type === 'notes' ? 'notes_pdf'
-            : 'study_material';
-          const mappedLang = item.language === 'OR' ? 'or' : (item.language === 'EN' ? 'en' : 'bilingual');
-          const mappedStatus = EDU_STATUSES.includes(item.status) ? item.status : 'published';
-          const links = item.official_source_url ? [{ label: 'Official Source', url: item.official_source_url, type: 'official', link_status: 'ok' }] : [];
-          await db.prepare(
-            `INSERT OR IGNORE INTO edu_resources (
-              id, slug, resource_type, stage_or_class, subject_name, topic_name, exam_tag,
-              title_en, title_or, author_or_board, publisher_or_source, language_code,
-              summary_en, summary_or, content_md_en, content_md_or,
-              file_url, file_size_bytes, page_count, external_links_json, tags_json,
-              offline_ready, status, featured, created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-          ).bind(
-            `sl-${item.id}`,
-            slugify(`${item.slug || item.id}`).slice(0, 90),
-            rt,
-            cleanStr(item.class_level || item.domain || '', 80),
-            cleanStr(item.subject || '', 80),
-            cleanStr(item.domain || '', 80),
-            cleanStr(item.exam_tag || '', 80),
-            cleanStr(item.title || 'Study Resource', 200),
-            cleanStr(item.title_or || '', 200),
-            'CS Odisha Study Library',
-            'Common Sense Odisha',
-            mappedLang,
-            cleanStr(item.summary || '', 500),
-            cleanStr(item.summary_or || '', 500),
-            sanitizeMarkdown(item.body_html || item.summary || ''),
-            sanitizeMarkdown(item.body_html_or || item.summary_or || ''),
-            cleanStr(item.file_url || '', 500),
-            Number(item.file_size_bytes || 0),
-            Number(item.page_count || 0),
-            JSON.stringify(links),
-            item.tags_json || '[]',
-            item.offline_ready ? 1 : 0,
-            mappedStatus,
-            item.is_featured ? 1 : 0,
-            cleanStr(item.created_by || 'study-library-sync', 80)
-          ).run();
-        }
-      } catch (err) {
-        console.warn('study_library_items bridge skipped:', err && err.message);
-      }
-    }
-
-    // Clean-slate v232: auto-seeding disabled; edu_resources are managed strictly via Admin Studio (/admin/).
-  }
-
+  // Clean-slate v233: auto-seeding & legacy study_library_items bridging disabled;
+  // edu_resources are managed strictly via Admin Studio (/admin/).
   _schemaReady.add(db);
 }
 

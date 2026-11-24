@@ -998,7 +998,7 @@
       renderStatistics({ navigation: [] });
       if (loadStatus) {
         loadStatus.hidden = false;
-        loadStatus.textContent = 'No community groups published in D1 yet. Create communities in /admin/ to publish live.';
+        loadStatus.textContent = 'No items published yet — add categories or content in Admin Studio.';
       }
     })
     .catch(() => {
@@ -1007,7 +1007,7 @@
       renderStatistics({ navigation: [] });
       if (loadStatus) {
         loadStatus.hidden = false;
-        loadStatus.textContent = 'No community groups published in D1 yet. Create communities in /admin/ to publish live.';
+        loadStatus.textContent = 'No items published yet — add categories or content in Admin Studio.';
       }
     });
 })();

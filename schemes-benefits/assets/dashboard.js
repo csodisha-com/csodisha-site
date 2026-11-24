@@ -1206,9 +1206,15 @@
     sections = [];
     buildDashboard();
     renderStatistics({ navigation: [] });
+    if (sectionsNav && !sectionsNav.childElementCount) {
+      const emptyNav = document.createElement('div');
+      emptyNav.className = 'cso-empty-state';
+      emptyNav.textContent = 'No items published yet — add categories or content in Admin Studio.';
+      sectionsNav.appendChild(emptyNav);
+    }
     if (loadStatus) {
       loadStatus.hidden = false;
-      loadStatus.textContent = 'No schemes or categories published in D1 yet. Add schemes in /admin/ to publish live.';
+      loadStatus.textContent = 'No items published yet — add categories or content in Admin Studio.';
     }
   }
 
