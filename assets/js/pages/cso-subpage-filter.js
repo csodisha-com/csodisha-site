@@ -2,6 +2,7 @@
    Strict CSP: DOM APIs only, visibility via the hidden attribute. Runs on pages with <main data-cso-subpage-topbar>. */
 (function () {
   'use strict';
+  if (document.querySelector('#cso-jobs-portal-root, #cso-schemes-portal-root, #cso-study-portal-root, #cso-community-portal-root, #cso-about-portal-root')) return;
   var main = document.querySelector('main[data-cso-subpage-topbar]');
   if (!main || main.querySelector('.cso-dir-topbar')) return;
   var explorer = main.getAttribute('data-cso-explorer-url') || location.pathname;

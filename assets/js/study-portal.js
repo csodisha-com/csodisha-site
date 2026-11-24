@@ -1027,6 +1027,7 @@
   async function boot() {
     S.root = document.getElementById('cso-study-portal-root');
     if (!S.root) return;
+    document.body.classList.add('cso-portal-active', 'cso-portal-study-active');
 
     await loadCandidateProgress();
     var slug = qsParam('slug');

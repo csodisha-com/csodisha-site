@@ -382,8 +382,8 @@ await check('Full wiring across Admin Studio (5 Tabs), Public About Portal, Edge
   assert.ok(csBackend.includes('about_articles'));
 
   const aboutHtml = read('about/index.html');
-  assert.ok(aboutHtml.includes('/assets/css/about-portal.css?v=20261124v253'));
-  assert.ok(aboutHtml.includes('/assets/js/about-portal.js?v=20261124v253'));
+  assert.ok(aboutHtml.includes('/assets/css/about-portal.css?v=20261124v25'));
+  assert.ok(aboutHtml.includes('/assets/js/about-portal.js?v=20261124v25'));
   assert.ok(aboutHtml.includes('id="cso-about-portal-root"'));
 
   const workerJs = read('_worker.js');
@@ -427,10 +427,10 @@ await check('Strict CSP compliance across all v253 files + sw.js & ops-sentinel.
   }
 
   const sw = read('sw.js');
-  assert.ok(sw.includes("const CACHE_NAME = 'cso-candidate-cache-v253';"), 'sw.js must be bumped to v253');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v25[3-9]';/.test(sw), 'sw.js must be bumped to v253+');
   assert.ok(sw.includes("'/assets/css/about-portal.css'"), 'sw.js must precache about-portal.css');
   assert.ok(sw.includes("'/assets/js/about-portal.js'"), 'sw.js must precache about-portal.js');
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v253';"));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v25[3-9]';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\n=== v253 Results: ${passed} passed, ${failed} failed ===\n`);

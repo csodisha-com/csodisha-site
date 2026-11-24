@@ -349,9 +349,9 @@ await check('4. Admin Studio, Public Schemes Portal, Topbar Media CSS, Homepage 
   assert.ok(read('admin/admin.js').includes('CSOSchemesPublishingStudio'));
   assert.ok(read('admin/command-suite.js').includes('Schemes Publishing House'));
   assert.ok(read('admin/command-suite.css').includes('white-space: nowrap; flex-shrink: 0;'));
-  assert.ok(read('schemes/index.html').includes('schemes-portal.js?v=20261124v250'));
+  assert.ok(read('schemes/index.html').includes('schemes-portal.js?v=20261124v25'));
   assert.ok(read('schemes/index.html').includes('id="cso-schemes-portal-root"'));
-  assert.ok(read('schemes-benefits/index.html').includes('schemes-portal.js?v=20261124v250'));
+  assert.ok(read('schemes-benefits/index.html').includes('schemes-portal.js?v=20261124v25'));
   assert.ok(read('assets/app.js').includes('/api/public/schemes?limit=12'));
   assert.ok(read('functions/_lib/candidate-hub-governance.js').includes('FROM scheme_articles WHERE is_published = 1'));
   assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/schemes'));

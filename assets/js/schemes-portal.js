@@ -801,6 +801,7 @@
   function init() {
     var mount = document.getElementById(MOUNT_ID);
     if (!mount) return;
+    document.body.classList.add('cso-portal-active', 'cso-portal-schemes-active');
     state.lang = getLangPref();
 
     var params = new URLSearchParams(window.location.search || '');

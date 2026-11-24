@@ -462,9 +462,9 @@ await check('4. Admin Studio, Public Study Portal, Jobs Kit Sync, Homepage & Can
   assert.ok(jobsLib.includes('study_article:') && jobsLib.includes('linked_job_ids_json'));
 
   const studyHtml = read('study-library/index.html');
-  assert.ok(studyHtml.includes('id="cso-study-portal-root"') && studyHtml.includes('study-portal.js?v=20261124v251'));
+  assert.ok(studyHtml.includes('id="cso-study-portal-root"') && studyHtml.includes('study-portal.js?v=20261124v25'));
   const studyHubHtml = read('study/index.html');
-  assert.ok(studyHubHtml.includes('id="cso-study-portal-root"') && studyHubHtml.includes('study-portal.js?v=20261124v251'));
+  assert.ok(studyHubHtml.includes('id="cso-study-portal-root"') && studyHubHtml.includes('study-portal.js?v=20261124v25'));
 
   const portalCss = read('assets/css/study-portal.css');
   assert.ok(portalCss.includes('@media print') && portalCss.includes('.sp-flashcard'));

@@ -402,6 +402,7 @@
   async function boot() {
     S.root = document.getElementById('cso-about-portal-root');
     if (!S.root) return;
+    document.body.classList.add('cso-portal-active', 'cso-portal-about-active');
     var slug = qsParam('slug');
     var prev = qsParam('preview_token');
     if (slug) { await renderArticleView(slug, prev); return; }

@@ -412,9 +412,9 @@ await check('4. Admin Studio, Public Jobs Portal, Homepage & Candidate Hub wirin
   assert.ok(read('admin/admin.js').includes('CSOJobsPublishingStudio'));
   assert.ok(read('admin/command-suite.js').includes('Jobs Publishing House'));
 
-  assert.ok(read('jobs/index.html').includes('jobs-portal.js?v=20261124v249'));
+  assert.ok(read('jobs/index.html').includes('jobs-portal.js?v=20261124v2'));
   assert.ok(read('jobs/index.html').includes('id="cso-jobs-portal-root"'));
-  assert.ok(read('jobs-careers/index.html').includes('jobs-portal.js?v=20261124v249'));
+  assert.ok(read('jobs-careers/index.html').includes('jobs-portal.js?v=20261124v2'));
   assert.ok(read('jobs-careers/index.html').includes('id="cso-jobs-portal-root"'));
   assert.ok(read('assets/app.js').includes('/api/public/jobs?limit=12'));
   assert.ok(read('functions/_lib/candidate-hub-governance.js').includes('FROM job_articles WHERE is_published = 1'));

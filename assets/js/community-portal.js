@@ -766,6 +766,7 @@
   async function boot() {
     S.root = document.getElementById('cso-community-portal-root');
     if (!S.root) return;
+    document.body.classList.add('cso-portal-active', 'cso-portal-community-active');
     var slug = qsParam('slug');
     var previewToken = qsParam('preview_token');
     if (slug) {

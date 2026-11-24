@@ -1,0 +1,148 @@
+/* Common Sense Odisha — Shared Public Portal Shell & Clean Layout Polish (v254)
+ * Eliminates duplicate search bars, empty narrow sidebars, and duplicate legacy empty states
+ * across Jobs, Schemes, Study Library, Community & About portals with 4-theme support & strict CSP. */
+
+/* 1. Collapse empty sidebar rails & center main content cleanly across all 5 pillar portals */
+body.cso-portal-active .cso-jobs-shell,
+body.cso-portal-active .cso-schemes-shell,
+body.cso-portal-active .cso-comm-shell,
+body.cso-portal-active .cso-about-shell,
+body.cso-portal-active .app-shell {
+  display: block;
+  min-height: auto;
+}
+
+body.cso-portal-active .cso-jobs-rail,
+body.cso-portal-active .cso-schemes-rail,
+body.cso-portal-active .cso-comm-rail,
+body.cso-portal-active .cso-about-rail,
+body.cso-portal-active .app-shell > .sidebar,
+body.cso-portal-active .cso-jobs-drawer-backdrop,
+body.cso-portal-active .cso-schemes-drawer-backdrop,
+body.cso-portal-active .cso-comm-drawer-backdrop,
+body.cso-portal-active .cso-about-drawer-backdrop,
+body.cso-portal-active .sidebar-backdrop {
+  display: none !important;
+}
+
+/* 2. Suppress redundant secondary search bars & mobile rail toggles when modern portal mounts */
+body.cso-portal-active .cso-dir-topbar,
+body.cso-portal-active #cso-subpage-topbar,
+body.cso-portal-active .workspace > .topbar,
+body.cso-portal-active .cso-jobs-mobile-bar {
+  display: none !important;
+}
+
+/* 3. Centered, balanced editorial container width (max-width: 1240px) */
+body.cso-portal-active .cso-jobs-main,
+body.cso-portal-active .cso-schemes-main,
+body.cso-portal-active .cso-comm-main,
+body.cso-portal-active .cso-about-main,
+body.cso-portal-active .app-shell > .workspace,
+body.cso-portal-active .app-shell > .workspace > .main-content {
+  width: 100%;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(14px, 2.4vw, 28px);
+  padding-right: clamp(14px, 2.4vw, 28px);
+  box-sizing: border-box;
+}
+
+body.cso-portal-active .app-shell > .workspace {
+  padding-left: 0;
+  padding-right: 0;
+  max-width: none;
+}
+
+body.cso-portal-active .cso-jobs-main,
+body.cso-portal-active .cso-schemes-main,
+body.cso-portal-active .cso-comm-main,
+body.cso-portal-active .cso-about-main,
+body.cso-portal-active .app-shell > .workspace > .main-content {
+  padding-top: clamp(16px, 2.4vw, 28px);
+  padding-bottom: 56px;
+}
+
+/* 4. Suppress duplicate legacy fallback containers & generic empty states per mounted portal */
+body.cso-portal-jobs-active .cso-jobs-hero,
+body.cso-portal-jobs-active #jobs-categories-panel,
+body.cso-portal-jobs-active #jobs-filters-panel,
+body.cso-portal-jobs-active #jobs-items-grid,
+body.cso-portal-jobs-active #explorer,
+body.cso-portal-jobs-active #search-results,
+body.cso-portal-jobs-active #load-status {
+  display: none !important;
+}
+
+body.cso-portal-schemes-active #schemes-categories-panel,
+body.cso-portal-schemes-active #schemes-directory-panel,
+body.cso-portal-schemes-active #live-schemes-section,
+body.cso-portal-schemes-active #overview,
+body.cso-portal-schemes-active #explorer,
+body.cso-portal-schemes-active #search-results,
+body.cso-portal-schemes-active #load-status {
+  display: none !important;
+}
+
+body.cso-portal-study-active #live-study-section,
+body.cso-portal-study-active #study-continue-strip,
+body.cso-portal-study-active #cso-current-affairs-panel,
+body.cso-portal-study-active #cso-syllabus-vault,
+body.cso-portal-study-active #odia-glossary,
+body.cso-portal-study-active #odisha-district-gk,
+body.cso-portal-study-active #overview,
+body.cso-portal-study-active #explorer,
+body.cso-portal-study-active #search-results,
+body.cso-portal-study-active #load-status {
+  display: none !important;
+}
+
+body.cso-portal-community-active #community-categories-panel,
+body.cso-portal-community-active #community-directory-panel {
+  display: none !important;
+}
+
+body.cso-portal-about-active #directory-explorer {
+  display: none !important;
+}
+
+/* 5. Uniform polish for pillar hero banners & surface elevation across all 4 themes */
+body.cso-portal-active .cso-schemes-hero,
+body.cso-portal-active .cso-sl-hero-banner,
+body.cso-portal-active .cso-comm-hero,
+body.cso-portal-active .cso-about-hero {
+  border-radius: 18px;
+  padding: clamp(20px, 3vw, 30px) clamp(20px, 3vw, 32px);
+  margin-bottom: 20px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+}
+
+body.cso-portal-active .welcome {
+  margin-bottom: 18px;
+}
+
+/* Smooth focus visibility across all 4 themes */
+body.cso-portal-active button:focus-visible,
+body.cso-portal-active a:focus-visible,
+body.cso-portal-active input:focus-visible,
+body.cso-portal-active select:focus-visible {
+  outline: 2px solid var(--cso-primary, #15803d);
+  outline-offset: 2px;
+}
+
+/* 4-theme dark mode harmonization for legacy hero shells */
+:root[data-cso-resolved-mode="dark"] body.cso-portal-active .cso-schemes-hero,
+:root[data-cso-resolved-mode="dark"] body.cso-portal-active .cso-sl-hero-banner,
+:root[data-cso-resolved-mode="dark"] body.cso-portal-active .cso-comm-hero,
+:root[data-cso-resolved-mode="dark"] body.cso-portal-active .cso-about-hero {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-cso-theme="reading"] body.cso-portal-active .cso-schemes-hero,
+:root[data-cso-theme="reading"] body.cso-portal-active .cso-sl-hero-banner,
+:root[data-cso-theme="reading"] body.cso-portal-active .cso-comm-hero,
+:root[data-cso-theme="reading"] body.cso-portal-active .cso-about-hero {
+  box-shadow: 0 6px 18px rgba(92, 69, 44, 0.14);
+}
