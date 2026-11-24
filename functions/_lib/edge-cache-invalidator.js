@@ -9,6 +9,7 @@ export const SETTINGS_PUBLIC_PATHS = ['/api/config/public'];
 export const NAV_PUBLIC_PATHS = [
   '/api/nav/config',
   '/',
+  '/index.html',
   '/jobs/',
   '/jobs-careers/',
   '/schemes-benefits/',

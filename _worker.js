@@ -339,7 +339,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/community/posts', '/api/community/qna', '/api/search/synonyms', '/api/public/about-overview', '/api/public/current-affairs', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources', '/api/marketing/banners', '/api/marketing/landing-pages', '/api/seo/meta', '/api/seo/robots.txt', '/api/seo/autocomplete',
     '/api/events/upcoming', '/api/config/public', '/api/events/calendar/odisha-all-exams.ics', '/api/events/calendar/opsc-ossc-osssc-deadlines.ics', '/api/events/calendar/admit-cards-results.ics', '/api/events/calendar/workshops-webinars.ics',
-    '/api/public/homepage-blocks', '/api/homepage/blocks', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
+    '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
   const allUrls = new Set(basePaths.map(p => `${origin}${p}`));
   for (const cachedUrl of TRACKED_PUBLIC_CACHE_URLS) {
@@ -783,12 +783,13 @@ export default {
       return toolsRes;
     }
     if ((pathname === '/api/public/homepage-blocks' || pathname === '/api/homepage/blocks') && (request.method === 'GET' || request.method === 'HEAD')) {
-      if (edgeCache && isAnonGet) {
+      const bypassEdgeCache = url.searchParams.has('refresh') || url.searchParams.has('_cb');
+      if (edgeCache && isAnonGet && !bypassEdgeCache) {
         const hit = await edgeCache.match(request);
         if (hit) return hit;
       }
       const hbRes = await handlePublicHomepageBlocksApi(request, env);
-      if (isAnonGet && hbRes.status === 200 && hbRes.headers.get('Cache-Control') && hbRes.headers.get('Cache-Control').includes('s-maxage')) {
+      if (isAnonGet && !bypassEdgeCache && hbRes.status === 200 && hbRes.headers.get('Cache-Control') && hbRes.headers.get('Cache-Control').includes('s-maxage')) {
         recordPublicCachePut(edgeCache, request, hbRes, ctx);
       }
       return hbRes;

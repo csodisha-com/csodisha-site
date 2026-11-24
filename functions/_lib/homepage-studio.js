@@ -14,7 +14,7 @@ export const HOMEPAGE_SECTIONS = [
 
 const COLS = ['id', 'section_key', 'title_en', 'title_or', 'subtitle_en', 'subtitle_or', 'badge_en', 'icon', 'href',
   'cta_label_en', 'cta_label_or', 'accent_variant', 'sort_order', 'is_published', 'clicks_count', 'meta_json', 'updated_at'];
-const PUBLIC_CACHE = 'public, max-age=60, s-maxage=120, stale-while-revalidate=300';
+const PUBLIC_CACHE = 'public, max-age=0, s-maxage=60, must-revalidate';
 
 let _schemaReady = false;
 export async function ensureHomepageBlocksSchema(db) {
@@ -156,7 +156,9 @@ export function buildStats(items) {
 }
 
 async function invalidate(request) {
-  try { await invalidateAllPublicCaches(request, ['/api/public/homepage-blocks', '/api/homepage/blocks']); } catch { /* best effort */ }
+  try {
+    await invalidateAllPublicCaches(request, ['/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html']);
+  } catch { /* best effort */ }
 }
 
 // ---------- Admin: /api/admin/homepage-blocks[/...] ----------
@@ -271,7 +273,10 @@ export async function handleHomepageBlocksAdmin(request, env, actor, id, sub) {
     throw new HttpError(404, 'NOT_FOUND', 'Unknown homepage-blocks route');
   }
 
-  if (isWrite && res && res.status >= 200 && res.status < 400) await invalidate(request);
+  if (isWrite && res && res.status >= 200 && res.status < 400) {
+    await invalidate(request);
+    res.headers.set('X-CSO-Cache-Purged', '1');
+  }
   return res;
 }
 

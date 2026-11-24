@@ -254,7 +254,9 @@
   function init() {
     if (!document.querySelector('.cso-action-hub-grid, #cso-tools-grid, .cso-compass-grid')) return;
     wireClickTracking();
-    fetch('/api/public/homepage-blocks', { credentials: 'same-origin' })
+    var forceRefresh = /[?&](refresh|_cb)=/.test(window.location.search || '');
+    var url = '/api/public/homepage-blocks' + (forceRefresh ? '?refresh=1' : '');
+    fetch(url, { cache: 'no-store', credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         if (d && d.ok && d.source === 'd1' && d.sections) hydrate(d.sections);

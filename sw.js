@@ -10,7 +10,7 @@
  *    messaging the dashboard clients (with a SW-side fallback drain)
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v247';
+const CACHE_NAME = 'cso-candidate-cache-v248';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 const PRECACHE_URLS = [
@@ -193,6 +193,11 @@ self.addEventListener('fetch', (event) => {
 
   // Mutating endpoints must never be cached even on GET quirks.
   if (isMutatingRequest(request)) {
+    return;
+  }
+
+  // Public & general /api/* endpoints must NEVER be served cache-first from SW Cache Storage.
+  if (url.pathname.startsWith('/api/') && !isNetworkFirstApi(url)) {
     return;
   }
 

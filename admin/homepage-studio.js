@@ -69,7 +69,7 @@
 
   function mutate(promise, okMsg) {
     state.busy = true;
-    return promise.then(function (d) { toast(okMsg, 'ok'); return load().then(function () { renderAll(); return d; }); })
+    return promise.then(function (d) { toast(okMsg + ' (D1 saved & Edge Cache purged)', 'ok'); return load().then(function () { renderAll(); return d; }); })
       .catch(function (e) { toast(e.message || 'Request failed', 'crimson'); })
       .then(function (d) { state.busy = false; return d; });
   }
@@ -524,8 +524,8 @@
       var refresh = el('button', 'hs-btn', 'Refresh');
       refresh.type = 'button';
       refresh.addEventListener('click', function () { load().then(function () { renderAll(); toast('Homepage blocks refreshed', 'ok'); }).catch(function (e) { toast(e.message, 'crimson'); }); });
-      var open = el('a', 'hs-btn', 'View homepage');
-      open.href = '/'; open.target = '_blank'; open.rel = 'noopener noreferrer';
+      var open = el('a', 'hs-btn', 'View Live Homepage \u2197');
+      open.href = '/?refresh=1'; open.target = '_blank'; open.rel = 'noopener noreferrer';
       headerActions.appendChild(refresh); headerActions.appendChild(open); headerActions.appendChild(add);
     }
 
