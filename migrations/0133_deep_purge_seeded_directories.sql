@@ -21,4 +21,4 @@ DELETE FROM edu_career_paths WHERE id LIKE 'car-%';
 DELETE FROM edu_mock_tests WHERE id LIKE 'mt-%';
 DELETE FROM edu_quizzes WHERE id LIKE 'qz-%';
 DELETE FROM edu_syllabi WHERE id LIKE 'syl-%';
-DELETE FROM edu_pyqs WHERE id LIKE 'pyq-%';
+DELETE FROM edu_pyq_papers WHERE id LIKE 'pyq-%';
