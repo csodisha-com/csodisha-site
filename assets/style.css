@@ -7295,7 +7295,9 @@ html.cso-a11y-lite .cso-footer-odisha-map {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 8px !important;
   }
   #cso-nav-items {
     order: 1;
@@ -7305,7 +7307,7 @@ html.cso-a11y-lite .cso-footer-odisha-map {
     order: 2;
     display: inline-flex !important;
     align-items: center !important;
-    margin-left: auto !important;
+    margin-left: 0 !important;
     flex-shrink: 0 !important;
   }
 }
@@ -8549,32 +8551,36 @@ header nav,
   z-index: 90 !important;
 }
 
-/* Balanced Centered Layout Container */
+/* Edge-to-Edge Full-Width Tier 2 Layout Container (v271) */
 .main-nav .w,
 .site-header__nav .w,
 #cso-main-navbar .w,
 #navw {
-  max-width: 1280px !important;
-  margin: 0 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding-inline: clamp(16px, 2.5vw, 32px) !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  box-sizing: border-box !important;
 }
 
 @media (min-width: 769px) {
   .cso-nav-items,
   #cso-nav-items {
-    max-width: 1280px !important;
-    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
     display: flex !important;
     align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
     flex: 1 1 auto !important;
   }
   .cso-nav-bar-container {
-    margin-left: auto !important;
+    margin-left: 0 !important;
     flex-shrink: 0 !important;
   }
 }
@@ -8898,7 +8904,8 @@ header nav,
 .cso-nav-saved-pill {
   flex-shrink: 0 !important;
   white-space: nowrap !important;
-  margin-left: auto !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 .cso-footer-zone3 {
@@ -9233,5 +9240,93 @@ img.cso-brand-emblem {
 @media (max-width: 768px) {
   .site-header__nav {
     min-height: 50px;
+  }
+}
+
+/* ==========================================================================
+   v271: Tier 2 Primary Navigation — Edge-to-Edge Even Distribution
+   Targets exact DOM: #cso-main-navbar > #navw > (.cso-nav-bar-container + #cso-nav-items)
+   ========================================================================== */
+#cso-main-navbar,
+.main-nav,
+.site-header__nav {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 6px 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+@media (min-width: 769px) {
+  #cso-main-navbar .w,
+  .main-nav .w,
+  .site-header__nav .w,
+  #navw {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding-inline: clamp(16px, 2.5vw, 32px) !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Flatten wrapper containers on desktop/tablet so Home, Jobs, Careers, Schemes, Study, Community, About & Saved distribute with 100% equal gaps */
+  #navw > #cso-nav-items,
+  #navw > .cso-nav-items,
+  #navw > .cso-nav-bar-container {
+    display: contents !important;
+  }
+
+  #navw .cso-nav-mobile,
+  #navw .cso-mobile-acc-cluster {
+    display: none !important;
+  }
+
+  #navw .cso-nav-home {
+    order: 1 !important;
+  }
+
+  #navw .ni {
+    order: 2 !important;
+  }
+
+  #navw .cso-nav-saved-pill {
+    order: 99 !important;
+    display: inline-flex !important;
+  }
+
+  #navw .cso-nav-home,
+  #navw .ni,
+  #navw .cso-nav-parent,
+  #navw .cso-nav-parent > a,
+  #navw .cso-nav-saved-pill {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1099px) {
+  #cso-main-navbar .w,
+  .main-nav .w,
+  .site-header__nav .w,
+  #navw {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px !important;
+  }
+
+  #cso-main-navbar .w::-webkit-scrollbar,
+  .main-nav .w::-webkit-scrollbar,
+  .site-header__nav .w::-webkit-scrollbar,
+  #navw::-webkit-scrollbar {
+    display: none;
   }
 }

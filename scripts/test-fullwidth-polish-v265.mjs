@@ -78,12 +78,12 @@ check('4. All 8 portal HTML pages link v265 assets & sw.js / ops-sentinel.js bum
     ['about/index.html', 'about']
   ]) {
     const html = read(file);
-    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v26[5-9]/.test(html), `${file} missing portal-shell v265+`);
-    assert.ok(new RegExp(`/assets/css/${key}-portal\\.css\\?v=20261124v26[5-9]`).test(html), `${file} missing ${key}-portal.css v265+`);
-    assert.ok(new RegExp(`/assets/js/${key}-portal\\.js\\?v=20261124v26[5-9]`).test(html), `${file} missing ${key}-portal.js v265+`);
+    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:6[5-9]|[7-9]\d)/.test(html), `${file} missing portal-shell v265+`);
+    assert.ok(new RegExp(`/assets/css/${key}-portal\\.css\\?v=20261124v2(?:6[5-9]|[7-9]\\d)`).test(html), `${file} missing ${key}-portal.css v265+`);
+    assert.ok(new RegExp(`/assets/js/${key}-portal\\.js\\?v=20261124v2(?:6[5-9]|[7-9]\\d)`).test(html), `${file} missing ${key}-portal.js v265+`);
   }
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v26[5-9]';/.test(read('sw.js')));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v26[5-9]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:6[5-9]|[7-9]\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:6[5-9]|[7-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 check('5. Strict CSP compliance across schemes-portal.js', () => {

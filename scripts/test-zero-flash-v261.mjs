@@ -58,9 +58,9 @@ check('2. All 8 portal HTML pages pre-render Editorial Hero & Skeleton Frame and
     assert.ok(html.includes(`id="${p.rootId}"`), `${p.file} missing #${p.rootId}`);
     assert.ok(html.includes(`class="${p.heroClass}"`), `${p.file} missing pre-rendered .${p.heroClass}`);
     assert.ok(html.includes('class="cso-portal-skeleton"'), `${p.file} missing pre-rendered .cso-portal-skeleton`);
-    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v26[1-9]/.test(html), `${p.file} missing portal-shell.css?v=20261124v261+`);
-    assert.ok(new RegExp(`/assets/css/${p.css.replace('.', '\\.')}\\?v=20261124v26[1-9]`).test(html), `${p.file} missing ${p.css}?v=20261124v261+`);
-    assert.ok(new RegExp(`/assets/js/${p.js.replace('.', '\\.')}\\?v=20261124v26[1-9]`).test(html), `${p.file} missing ${p.js}?v=20261124v261+`);
+    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:6[1-9]|[7-9]\d)/.test(html), `${p.file} missing portal-shell.css?v=20261124v261+`);
+    assert.ok(new RegExp(`/assets/css/${p.css.replace('.', '\\.')}\\?v=20261124v2(?:6[1-9]|[7-9]\\d)`).test(html), `${p.file} missing ${p.css}?v=20261124v261+`);
+    assert.ok(new RegExp(`/assets/js/${p.js.replace('.', '\\.')}\\?v=20261124v2(?:6[1-9]|[7-9]\\d)`).test(html), `${p.file} missing ${p.js}?v=20261124v261+`);
   }
 });
 
@@ -98,12 +98,12 @@ check('4. All 5 portal JS files preserve pre-rendered .cso-portal-skeleton until
 
 check('5. sw.js uses Network-First with 1.5s timeout for HTML navigations + skipWaiting/clients.claim & v261 cache', () => {
   const sw = read('sw.js');
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v26[1-9]';/.test(sw), 'sw.js must be cso-candidate-cache-v261+');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:6[1-9]|[7-9]\d)';/.test(sw), 'sw.js must be cso-candidate-cache-v261+');
   assert.ok(sw.includes('self.skipWaiting()'), 'sw.js must call skipWaiting()');
   assert.ok(sw.includes('self.clients.claim()'), 'sw.js must call clients.claim()');
   assert.ok(sw.includes("acceptHeader.includes('text/html')"), 'sw.js must match text/html accept header');
   assert.ok(sw.includes('AbortController') && sw.includes('1500'), 'sw.js must enforce 1.5s network timeout for HTML navigations');
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v26[1-9]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:6[1-9]|[7-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 check('6. Strict CSP compliance across all 8 portal HTML files, portal-shell.css & 5 portal JS files', () => {

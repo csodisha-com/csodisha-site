@@ -267,8 +267,8 @@ await check('5. Public /careers/ portal, Admin Studio Careers tab, worker routin
   assert.ok(careersHtml.includes('<body class="cso-portal-page" data-cso-portal="careers">'), 'careers/index.html missing zero-flash portal body');
   assert.ok(careersHtml.includes('id="cso-careers-portal-root"'), 'careers/index.html missing portal root');
   assert.ok(careersHtml.includes('Odisha &amp; National Careers Explorer'), 'careers/index.html missing hero title');
-  assert.ok(careersHtml.includes('/assets/css/careers-portal.css?v=20261124v269'));
-  assert.ok(careersHtml.includes('/assets/js/careers-portal.js?v=20261124v269'));
+  assert.ok(/\/assets\/css\/careers-portal\.css\?v=20261124v2(?:69|[7-9]\d)/.test(careersHtml));
+  assert.ok(/\/assets\/js\/careers-portal\.js\?v=20261124v2(?:69|[7-9]\d)/.test(careersHtml));
 
   const careersJs = read('assets/js/careers-portal.js');
   assert.ok(careersJs.includes('/api/public/careers/bootstrap'));
@@ -277,9 +277,9 @@ await check('5. Public /careers/ portal, Admin Studio Careers tab, worker routin
   assert.ok(careersJs.includes('/jobs/'), 'careers-portal.js must cross-link to /jobs/');
 
   const adminHtml = read('admin/index.html');
-  assert.ok(adminHtml.includes('/admin/careers-publishing-studio.css?v=20261124v269'));
-  assert.ok(adminHtml.includes('/admin/careers-publishing-studio.js?v=20261124v269'));
-  assert.ok(adminHtml.includes('/admin/admin.js?v=20261124v269'));
+  assert.ok(/\/admin\/careers-publishing-studio\.css\?v=20261124v2(?:69|[7-9]\d)/.test(adminHtml));
+  assert.ok(/\/admin\/careers-publishing-studio\.js\?v=20261124v2(?:69|[7-9]\d)/.test(adminHtml));
+  assert.ok(/\/admin\/admin\.js\?v=20261124v2(?:69|[7-9]\d)/.test(adminHtml));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('CSOCareersPublishingStudio'), 'admin.js must wire CSOCareersPublishingStudio');
@@ -306,13 +306,13 @@ await check('5. Public /careers/ portal, Admin Studio Careers tab, worker routin
   }
 });
 
-await check('6. Cache busting (?v=20261124v269, cso-candidate-cache-v269) & 100% strict CSP compliance', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v269';"), 'sw.js must be cso-candidate-cache-v269');
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v269';"), 'ops-sentinel.js must be cso-candidate-cache-v269');
-  assert.ok(read('index.html').includes('/assets/style.css?v=20261124v269'));
-  assert.ok(read('index.html').includes('/assets/app.js?v=20261124v269'));
-  assert.ok(read('jobs/index.html').includes('/assets/css/portal-shell.css?v=20261124v269'));
-  assert.ok(read('jobs/index.html').includes('/assets/shared-header.js?v=20261124v269'));
+await check('6. Cache busting (?v=20261124v269+, cso-candidate-cache-v269+) & 100% strict CSP compliance', () => {
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:69|[7-9]\d)';/.test(read('sw.js')), 'sw.js must be cso-candidate-cache-v269+');
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:69|[7-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel.js must be cso-candidate-cache-v269+');
+  assert.ok(/\/assets\/style\.css\?v=20261124v2(?:69|[7-9]\d)/.test(read('index.html')));
+  assert.ok(/\/assets\/app\.js\?v=20261124v2(?:69|[7-9]\d)/.test(read('index.html')));
+  assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:69|[7-9]\d)/.test(read('jobs/index.html')));
+  assert.ok(/\/assets\/shared-header\.js\?v=20261124v2(?:69|[7-9]\d)/.test(read('jobs/index.html')));
 
   const cspJsFiles = [
     'assets/js/careers-portal.js',

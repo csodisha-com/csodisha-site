@@ -79,12 +79,12 @@ check('3. All 8 portal HTML pages link v266 CSS & sw.js / ops-sentinel.js bumped
     ['about/index.html', 'about']
   ]) {
     const html = read(file);
-    assert.ok(/\/assets\/style\.css\?v=20261124v26[6-9]/.test(html), `${file} missing style.css v266+`);
-    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v26[6-9]/.test(html), `${file} missing portal-shell v266+`);
-    assert.ok(new RegExp(`/assets/css/${key}-portal\\.css\\?v=20261124v26[6-9]`).test(html), `${file} missing ${key}-portal.css v266+`);
+    assert.ok(/\/assets\/style\.css\?v=20261124v2(?:6[6-9]|[7-9]\d)/.test(html), `${file} missing style.css v266+`);
+    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:6[6-9]|[7-9]\d)/.test(html), `${file} missing portal-shell v266+`);
+    assert.ok(new RegExp(`/assets/css/${key}-portal\\.css\\?v=20261124v2(?:6[6-9]|[7-9]\\d)`).test(html), `${file} missing ${key}-portal.css v266+`);
   }
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v26[6-9]';/.test(read('sw.js')));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v26[6-9]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:6[6-9]|[7-9]\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:6[6-9]|[7-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 check('4. Strict CSP compliance across all 8 portal HTML pages', () => {
