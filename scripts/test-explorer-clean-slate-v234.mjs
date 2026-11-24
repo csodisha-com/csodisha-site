@@ -130,8 +130,8 @@ check('All 5 section explorers sync live /api/nav/config & D1 APIs and show clea
 });
 
 check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v234+', () => {
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v23[4-9]';/.test(read('sw.js')));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v23[4-9]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:3[4-9]|4\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:3[4-9]|4\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 check('Strict CSP compliance across all v234 modified public JS & HTML files', () => {

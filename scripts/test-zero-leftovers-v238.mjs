@@ -86,22 +86,8 @@ check('Candidate Hub HTML & JS contain zero hardcoded widgets, checklists, 30-di
   assert.ok(caJs.includes('container.hidden = true;'), 'current-affairs.js must hide panel when 0 capsules exist');
 });
 
-check('Homepage (index.html) removes hardcoded Popular Searches, Opportunity Compass, Trending Topics, Important Tools, and Action Hub cards', () => {
+check('Homepage (index.html) keeps clean Admin Studio empty state for Latest Updates (v239 restored layout)', () => {
   const home = read('index.html');
-  const forbiddenHome = [
-    'Popular Searches:',
-    'CSO Opportunity Compass',
-    'Trending &amp; Popular Topics',
-    'Important Tools',
-    'Age &amp; Eligibility Date Calculator',
-    'Marks, Percentage &amp; CGPA Calculator',
-    'CSO Community Forum',
-    'Free Study Library',
-    'Instant Notice Alerts'
-  ];
-  for (const s of forbiddenHome) {
-    assert.ok(!home.includes(s), `index.html must not contain hardcoded block "${s}"`);
-  }
   assert.ok(home.includes('No items published yet — add categories or content in Admin Studio.'));
 });
 
@@ -186,9 +172,9 @@ check('Migration 0135 executes cleanly in SQLite, wipes all 10 tables, and prese
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM nav_menu_items').get().n, 5, '5 root pillars in nav_menu_items must be preserved');
 });
 
-check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v238', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v238';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v238';"));
+check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v238+', () => {
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:3[8-9]|4\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:3[8-9]|4\d)';/);
 });
 
 check('Strict CSP compliance across all v238 modified HTML & JS files', () => {

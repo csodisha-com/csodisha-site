@@ -5,20 +5,20 @@
  */
 
 :root {
-  --admin-bg: #081220;
-  --admin-surface: #0f1c30;
-  --admin-surface-card: #15253d;
-  --admin-surface-hover: #1b2f4d;
-  --admin-border: #1f3657;
-  --admin-border-focus: #3b82f6;
-  --admin-emerald: #034827;
-  --admin-emerald-bright: #0fa968;
-  --admin-emerald-glow: rgba(15, 169, 104, 0.25);
-  --admin-saffron: #f26a1b;
-  --admin-saffron-glow: rgba(242, 106, 27, 0.2);
-  --admin-text-primary: #f8fafc;
-  --admin-text-secondary: #94a3b8;
-  --admin-text-muted: #64748b;
+  --admin-bg: var(--cso-bg, #FAF9F6);
+  --admin-surface: var(--cso-surface, #FFFFFF);
+  --admin-surface-card: var(--cso-card-bg, #FFFFFF);
+  --admin-surface-hover: var(--cso-surface-alt, #F4EFE6);
+  --admin-border: var(--cso-border, #D6CFC2);
+  --admin-border-focus: var(--cso-primary, #1B4332);
+  --admin-emerald: var(--cso-primary, #1B4332);
+  --admin-emerald-bright: var(--cso-primary, #1B4332);
+  --admin-emerald-glow: var(--cso-highlight-ring, rgba(27, 67, 50, 0.22));
+  --admin-saffron: var(--cso-accent, #B45309);
+  --admin-saffron-glow: var(--cso-highlight-bg, #E6F2EC);
+  --admin-text-primary: var(--cso-text, #18221D);
+  --admin-text-secondary: var(--cso-muted, #4A5550);
+  --admin-text-muted: var(--cso-muted, #4A5550);
   --admin-danger: #ef4444;
   --admin-danger-bg: rgba(239, 68, 68, 0.15);
   --admin-danger-border: rgba(239, 68, 68, 0.4);

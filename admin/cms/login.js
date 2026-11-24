@@ -13,25 +13,53 @@
   var themeMenuWrap = document.getElementById('themeMenuWrap');
   var themeMenuBtn = document.getElementById('themeMenuBtn');
   var themeMenuPopover = document.getElementById('themeMenuPopover');
-  var THEME_ORDER = ['apex', 'volt', 'cobalt', 'lime'];
+  var PORTAL_THEMES = [
+    { key: 'system', label: 'System', fullLabel: 'System (Auto Light/Dark)' },
+    { key: 'dark', label: 'Dark', fullLabel: 'Dark Night' },
+    { key: 'reading', label: 'Reading', fullLabel: 'Reading Mode' },
+    { key: 'utkal-bharat', label: 'Odisha & Bharat', fullLabel: 'Odisha & Bharat' }
+  ];
+  var THEME_ORDER = PORTAL_THEMES.map(function (t) { return t.key; });
 
   function normalizeTheme(raw) {
-    if (raw === 'apex' || raw === 'volt' || raw === 'cobalt' || raw === 'lime') return raw;
-    if (raw === 'light') return 'cobalt';
-    return 'apex';
+    var val = String(raw || '').toLowerCase();
+    if (THEME_ORDER.indexOf(val) !== -1) return val;
+    return 'system';
+  }
+
+  function resolveEffectiveMode(themeKey) {
+    if (themeKey === 'dark') return 'dark';
+    if (themeKey === 'reading' || themeKey === 'utkal-bharat') return 'light';
+    try {
+      return (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    } catch (_e) {
+      return 'light';
+    }
   }
 
   function readStoredTheme() {
     try {
-      return normalizeTheme(localStorage.getItem('cso_studio_theme'));
+      return normalizeTheme(localStorage.getItem('cso_portal_theme'));
     } catch (_e) {
-      return 'apex';
+      return 'system';
     }
   }
 
   function applyTheme(theme) {
     var safe = normalizeTheme(theme);
-    document.documentElement.dataset.theme = safe;
+    document.documentElement.removeAttribute('data-theme');
+    document.documentElement.setAttribute('data-cso-theme', safe);
+    document.documentElement.setAttribute('data-cso-resolved-mode', resolveEffectiveMode(safe));
+    if (themeMenuBtn) {
+      var cur = PORTAL_THEMES.find(function (t) { return t.key === safe; }) || PORTAL_THEMES[0];
+      themeMenuBtn.textContent = '';
+      var sw = document.createElement('span');
+      sw.className = 'cso-theme-swatch is-' + cur.key;
+      sw.setAttribute('aria-hidden', 'true');
+      themeMenuBtn.appendChild(sw);
+      themeMenuBtn.appendChild(document.createTextNode(' ' + cur.label + ' ▾'));
+      themeMenuBtn.title = 'Theme: ' + cur.fullLabel + ' (Alt+T)';
+    }
     if (themeMenuPopover) {
       themeMenuPopover.querySelectorAll('.cso-theme-option').forEach(function (opt) {
         opt.setAttribute('aria-checked', opt.getAttribute('data-theme-value') === safe ? 'true' : 'false');
@@ -47,15 +75,21 @@
 
   function setTheme(theme) {
     var safe = applyTheme(theme);
-    try { localStorage.setItem('cso_studio_theme', safe); } catch (_e) {}
+    try { localStorage.setItem('cso_portal_theme', safe); } catch (_e) {}
     return safe;
   }
 
   function cycleTheme() {
-    var cur = normalizeTheme(document.documentElement.dataset.theme);
+    var cur = normalizeTheme(document.documentElement.getAttribute('data-cso-theme'));
     var idx = THEME_ORDER.indexOf(cur);
     return setTheme(THEME_ORDER[(idx + 1) % THEME_ORDER.length]);
   }
+
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'cso_portal_theme' && e.newValue && THEME_ORDER.indexOf(e.newValue) !== -1) {
+      applyTheme(e.newValue);
+    }
+  });
 
   applyTheme(readStoredTheme());
   if (themeMenuBtn && themeMenuPopover) {

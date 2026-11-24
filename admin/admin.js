@@ -402,25 +402,57 @@
     if (dom.btnCreateNewMenu) dom.btnCreateNewMenu.setAttribute('aria-expanded', 'false');
   }
 
-  var THEME_ORDER = ['apex', 'volt', 'cobalt', 'lime'];
+  var PORTAL_THEMES = [
+    { key: 'system', label: 'System', fullLabel: 'System (Auto Light/Dark)' },
+    { key: 'dark', label: 'Dark', fullLabel: 'Dark Night' },
+    { key: 'reading', label: 'Reading', fullLabel: 'Reading Mode' },
+    { key: 'utkal-bharat', label: 'Odisha & Bharat', fullLabel: 'Odisha & Bharat' }
+  ];
+  var THEME_ORDER = PORTAL_THEMES.map(function (t) { return t.key; });
 
   function normalizeTheme(raw) {
-    if (raw === 'apex' || raw === 'volt' || raw === 'cobalt' || raw === 'lime') return raw;
-    if (raw === 'light') return 'cobalt';
-    return 'apex';
+    var val = String(raw || '').toLowerCase();
+    if (THEME_ORDER.indexOf(val) !== -1) return val;
+    return 'system';
+  }
+
+  function resolveEffectiveMode(themeKey) {
+    if (themeKey === 'dark') return 'dark';
+    if (themeKey === 'reading' || themeKey === 'utkal-bharat') return 'light';
+    try {
+      return (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    } catch (_e) {
+      return 'light';
+    }
   }
 
   function readStoredTheme() {
     try {
-      return normalizeTheme(localStorage.getItem('cso_studio_theme'));
+      return normalizeTheme(localStorage.getItem('cso_portal_theme'));
     } catch (_e) {
-      return 'apex';
+      return 'system';
     }
+  }
+
+  function syncThemeButtonUi(safe) {
+    if (!dom.themeMenuBtn) return;
+    var cur = PORTAL_THEMES.find(function (t) { return t.key === safe; }) || PORTAL_THEMES[0];
+    dom.themeMenuBtn.textContent = '';
+    var sw = document.createElement('span');
+    sw.className = 'cso-theme-swatch is-' + cur.key;
+    sw.setAttribute('aria-hidden', 'true');
+    dom.themeMenuBtn.appendChild(sw);
+    dom.themeMenuBtn.appendChild(document.createTextNode(' ' + cur.label + ' ▾'));
+    dom.themeMenuBtn.title = 'Theme: ' + cur.fullLabel + ' (Alt+T)';
   }
 
   function applyTheme(theme) {
     var safe = normalizeTheme(theme);
-    document.documentElement.dataset.theme = safe;
+    var resolved = resolveEffectiveMode(safe);
+    document.documentElement.removeAttribute('data-theme');
+    document.documentElement.setAttribute('data-cso-theme', safe);
+    document.documentElement.setAttribute('data-cso-resolved-mode', resolved);
+    syncThemeButtonUi(safe);
     if (dom.themeMenuPopover) {
       dom.themeMenuPopover.querySelectorAll('.cso-theme-option').forEach(function (opt) {
         opt.setAttribute('aria-checked', opt.getAttribute('data-theme-value') === safe ? 'true' : 'false');
@@ -434,17 +466,45 @@
     if (dom.themeMenuBtn) dom.themeMenuBtn.setAttribute('aria-expanded', 'false');
   }
 
-  function setTheme(theme) {
+  function setTheme(theme, persist) {
     var safe = applyTheme(theme);
-    try { localStorage.setItem('cso_studio_theme', safe); } catch (_e) {}
+    if (persist !== false) {
+      try { localStorage.setItem('cso_portal_theme', safe); } catch (_e) {}
+    }
     return safe;
   }
 
   function cycleTheme() {
-    var cur = normalizeTheme(document.documentElement.dataset.theme);
+    var cur = normalizeTheme(document.documentElement.getAttribute('data-cso-theme'));
     var idx = THEME_ORDER.indexOf(cur);
-    return setTheme(THEME_ORDER[(idx + 1) % THEME_ORDER.length]);
+    return setTheme(THEME_ORDER[(idx + 1) % THEME_ORDER.length], true);
   }
+
+  window.CSOTheme = {
+    THEMES: PORTAL_THEMES,
+    getTheme: function () { return normalizeTheme(document.documentElement.getAttribute('data-cso-theme')); },
+    getResolvedMode: function () { return resolveEffectiveMode(normalizeTheme(document.documentElement.getAttribute('data-cso-theme'))); },
+    setTheme: function (key, persist) { return setTheme(key, persist); },
+    apply: function () { return applyTheme(readStoredTheme()); }
+  };
+
+  try {
+    if (typeof window.matchMedia === 'function') {
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
+      var onMqChange = function () {
+        if (normalizeTheme(document.documentElement.getAttribute('data-cso-theme')) === 'system') {
+          document.documentElement.setAttribute('data-cso-resolved-mode', resolveEffectiveMode('system'));
+        }
+      };
+      if (typeof mq.addEventListener === 'function') mq.addEventListener('change', onMqChange);
+    }
+  } catch (_e) {}
+
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'cso_portal_theme' && e.newValue && THEME_ORDER.indexOf(e.newValue) !== -1) {
+      applyTheme(e.newValue);
+    }
+  });
 
   function wireTopbarEvents() {
     if (dom.btnCreateNewMenu && dom.createNewDropdown) {
