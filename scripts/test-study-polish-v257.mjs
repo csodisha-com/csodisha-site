@@ -130,8 +130,8 @@ check('4. Strict CSP compliance across all v257 files + sw.js & ops-sentinel.js 
     assert.ok(!/\sstyle="/i.test(html), `${rel} has inline style attribute`);
   }
 
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v257';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v257';"));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v25[7-9]';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v25[7-9]';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\n=== v257 Results: ${passed} passed, ${failed} failed ===\n`);

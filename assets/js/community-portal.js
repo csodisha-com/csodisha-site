@@ -1,6 +1,6 @@
 /**
- * CS Odisha — Public Community Portal, Interest Circles, Peer Q&A, Polls,
- * Daily Quiz Challenges, Peer Direct Messaging & Pro Contributor Rewards (v252)
+ * CS Odisha — Public Community Portal, Editorial Hero, Interest Circles, Peer Q&A,
+ * Polls, Daily Quiz Challenges, Peer Direct Messaging & Pro Contributor Rewards (v258)
  * Strict CSP-compliant: zero unsafe HTML string sinks, zero .style.* mutations, zero inline handlers.
  * Always fetches live D1 data with cache: 'no-store' for 100% instant public reflection.
  */
@@ -19,9 +19,11 @@
 
   var S = {
     root: null,
+    lang: 'en',
     tree: [],
     nodes: [],
     joinedIds: [],
+    allPosts: [],
     posts: [],
     leaderboard: [],
     rewardRules: null,
@@ -45,8 +47,180 @@
     return node;
   }
 
+  function num(v) {
+    try { return Number(v || 0).toLocaleString('en-IN'); } catch (_e) { return String(v || 0); }
+  }
+
+  function pick(obj, field) {
+    if (!obj) return '';
+    if (S.lang === 'or' && obj[field + '_or']) return String(obj[field + '_or']);
+    return String(obj[field + '_en'] || '');
+  }
+
+  function getLangPref() {
+    try { return localStorage.getItem('cso_lang_pref') === 'or' ? 'or' : 'en'; } catch (_e) { return 'en'; }
+  }
+
+  function setLangPref(l) {
+    S.lang = l === 'or' ? 'or' : 'en';
+    try { localStorage.setItem('cso_lang_pref', S.lang); } catch (_e) {}
+  }
+
+  function safeHref(raw) {
+    var s = String(raw || '').trim();
+    if (!s) return '';
+    if (s.startsWith('/') && !s.startsWith('//')) return s;
+    if (/^https?:\/\//i.test(s)) return s;
+    return '';
+  }
+
   function qsParam(k) {
     try { return new URLSearchParams(window.location.search).get(k) || ''; } catch (_e) { return ''; }
+  }
+
+  // Normalize literal "\n" escapes stored in SQL seeds into actual newlines
+  function normalizeNewlines(raw) {
+    return String(raw || '').replace(/\\n/g, '\n');
+  }
+
+  // Strip raw Markdown syntax for crisp, readable feed card preview excerpts
+  function stripMarkdownExcerpt(raw, maxLen) {
+    var text = normalizeNewlines(raw)
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/^\s{0,3}#{1,6}\s+/gm, '')
+      .replace(/^\s*>\s?/gm, '')
+      .replace(/^\s*[-*•]\s+/gm, '• ')
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/__([^_]+)__/g, '$1')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/[*_`~#]+/g, '')
+      .replace(/\s*\n+\s*/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    if (!maxLen || text.length <= maxLen) return text;
+    return text.slice(0, maxLen).replace(/\s+\S*$/, '') + '…';
+  }
+
+  // CSP-safe rich prose renderer for full thread view (zero HTML string sinks)
+  function appendInlineFormatted(parent, text) {
+    var str = String(text || '');
+    var tokenRe = /(\*\*[^*]+\*\*|__[^_]+__|\[[^\]]+\]\([^)]+\)|`[^`]+`)/g;
+    var last = 0;
+    var m;
+    while ((m = tokenRe.exec(str)) !== null) {
+      if (m.index > last) parent.appendChild(document.createTextNode(str.slice(last, m.index)));
+      var tok = m[0];
+      if ((tok.startsWith('**') && tok.endsWith('**')) || (tok.startsWith('__') && tok.endsWith('__'))) {
+        parent.appendChild(el('strong', '', tok.slice(2, -2)));
+      } else if (tok.startsWith('`') && tok.endsWith('`')) {
+        parent.appendChild(el('code', '', tok.slice(1, -1)));
+      } else if (tok.startsWith('[')) {
+        var lm = tok.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+        if (lm) {
+          var href = safeHref(lm[2]);
+          if (href) {
+            var a = el('a', '', lm[1]);
+            a.href = href;
+            if (/^https?:\/\//i.test(href)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+            parent.appendChild(a);
+          } else {
+            parent.appendChild(document.createTextNode(lm[1]));
+          }
+        }
+      }
+      last = tokenRe.lastIndex;
+    }
+    if (last < str.length) parent.appendChild(document.createTextNode(str.slice(last)));
+  }
+
+  function renderRichProse(container, markdownText) {
+    var box = el('div', 'cp-prose');
+    var lines = normalizeNewlines(markdownText).split(/\r?\n/);
+    var ul = null;
+    function flushUl() { if (ul) { box.appendChild(ul); ul = null; } }
+    lines.forEach(function (rawLine) {
+      var line = rawLine.trim();
+      if (!line) { flushUl(); return; }
+      if (line.startsWith('### ')) {
+        flushUl();
+        box.appendChild(el('h4', '', line.slice(4).trim()));
+        return;
+      }
+      if (line.startsWith('## ') || line.startsWith('# ')) {
+        flushUl();
+        box.appendChild(el('h3', '', line.replace(/^#{1,3}\s+/, '').trim()));
+        return;
+      }
+      if (line.startsWith('> ')) {
+        flushUl();
+        var call = el('div', 'cp-callout');
+        appendInlineFormatted(call, line.slice(2).trim());
+        box.appendChild(call);
+        return;
+      }
+      if (/^[-*•]\s+/.test(line)) {
+        if (!ul) ul = el('ul');
+        var li = el('li');
+        appendInlineFormatted(li, line.replace(/^[-*•]\s+/, '').trim());
+        ul.appendChild(li);
+        return;
+      }
+      flushUl();
+      var p = el('p');
+      appendInlineFormatted(p, line);
+      box.appendChild(p);
+    });
+    flushUl();
+    container.appendChild(box);
+  }
+
+  // Clean & deduplicate Daily Quiz prompt so Q1–Q5 never repeats twice
+  function formatQuizPrompt(q, qi) {
+    var raw = (S.lang === 'or' && q.question_or) ? String(q.question_or) : String(q.question_en || q.question || '');
+    raw = raw.replace(/\s+/g, ' ').trim();
+    // Strip any pre-existing "Q1." / "Q1:" / "1." prefix so we prepend cleanly once
+    raw = raw.replace(/^(?:Q\s*\d+\s*[.):\-]\s*|\d+\s*[.):\-]\s*)+/i, '').trim();
+    // Deduplicate if identical half-strings were accidentally concatenated
+    var halfLen = Math.floor(raw.length / 2);
+    if (raw.length > 20 && raw.length % 2 === 1 && raw[halfLen] === ' ' && raw.slice(0, halfLen) === raw.slice(halfLen + 1)) {
+      raw = raw.slice(0, halfLen);
+    }
+    return 'Q' + (qi + 1) + '. ' + raw;
+  }
+
+  function buildLangToggle(onSwitch) {
+    var w = el('div', 'cp-lang-toggle');
+    [['en', 'English'], ['or', 'ଓଡ଼ିଆ']].forEach(function (p) {
+      var b = el('button', 'cp-lang-btn' + (S.lang === p[0] ? ' is-active' : ''), p[1]);
+      b.type = 'button';
+      b.addEventListener('click', function () { setLangPref(p[0]); onSwitch(); });
+      w.appendChild(b);
+    });
+    return w;
+  }
+
+  function computeCommunityHeroKpis() {
+    var circlesCount = S.nodes.filter(function (n) { return Number(n.level) === 1 || Number(n.level) === 2; }).length;
+    var srcPosts = S.allPosts.length ? S.allPosts : S.posts;
+    var solvedCount = srcPosts.filter(function (p) { return Boolean(p.is_solved); }).length;
+    var proSet = {};
+    (S.leaderboard || []).forEach(function (m) {
+      if (m && (m.membership_tier === 'pro_member' || m.membership_tier === 'permanent_member' || (m.badge_label && /pro|permanent|mentor/i.test(m.badge_label)))) {
+        proSet[m.user_id || m.display_name] = true;
+      }
+    });
+    srcPosts.forEach(function (p) {
+      if (p && (p.author_membership_tier === 'pro_member' || p.author_membership_tier === 'permanent_member')) {
+        proSet[p.author_user_id || p.author_display_name] = true;
+      }
+    });
+    return {
+      circlesCount: circlesCount,
+      discussionsCount: srcPosts.length,
+      proCount: Object.keys(proSet).length,
+      solvedCount: solvedCount
+    };
   }
 
   async function api(url, opts) {
@@ -78,7 +252,7 @@
         '@context': 'https://schema.org',
         '@type': 'DiscussionForumPosting',
         headline: post.title_en,
-        text: post.body_en || post.title_en,
+        text: stripMarkdownExcerpt(post.body_en || post.title_en, 500),
         author: { '@type': 'Person', name: post.author_display_name || 'CS Odisha Member' },
         datePublished: post.created_at,
         url: 'https://csodisha.com/community/?slug=' + encodeURIComponent(post.slug)
@@ -109,10 +283,55 @@
     S.nodes = res[0].nodes || [];
     S.joinedIds = res[0].joined_node_ids || [];
     S.posts = res[1].items || [];
+    var isUnfiltered = !S.filters.l1 && !S.filters.l2 && !S.filters.l3 && !S.filters.type && !S.filters.joined_only && !S.filters.unanswered_only && !S.filters.featured_collections && !S.filters.pro_contributors && !S.filters.search;
+    if (isUnfiltered) S.allPosts = S.posts.slice();
     S.leaderboard = res[1].leaderboard || [];
     S.rewardRules = res[1].reward_rules || S.rewardRules;
     S.myProfile = res[1].my_profile || null;
     if (S.myProfile) S.dmUnread = Number(S.myProfile.unread_messages || 0);
+  }
+
+  // ============================================================================
+  // FLAGSHIP EDITORIAL HERO BANNER (v258)
+  // ============================================================================
+  function renderEditorialHero(shell) {
+    var kpis = computeCommunityHeroKpis();
+    var hero = el('section', 'cp-hero');
+    hero.setAttribute('aria-label', 'Odisha Aspirant Community, Study Circles & Civic Helpdesk');
+
+    var top = el('div', 'cp-hero-top');
+    var eyebrow = el('span', 'cp-eyebrow');
+    eyebrow.appendChild(el('span', 'cp-eyebrow-dot'));
+    eyebrow.appendChild(el('span', '', S.lang === 'or'
+      ? 'ଓଡ଼ିଶା ପରୀକ୍ଷାର୍ଥୀ ଓ ନାଗରିକ ନେଟୱର୍କ · ପ୍ରଶ୍ନୋତ୍ତର, ଅଧ୍ୟୟନ ଚକ୍ର ଓ ପ୍ରୋ ପୁରସ୍କାର'
+      : 'ODISHA ASPIRANT & CIVIC NETWORK · PEER Q&A, STUDY CIRCLES & PRO REWARDS'));
+    top.appendChild(eyebrow);
+    top.appendChild(buildLangToggle(function () { renderBrowseView(); }));
+    hero.appendChild(top);
+
+    var copy = el('div', 'cp-hero-copy');
+    copy.appendChild(el('h1', 'cp-hero-title', S.lang === 'or'
+      ? 'ଓଡ଼ିଶା ପରୀକ୍ଷାର୍ଥୀ ସମୁଦାୟ, ଅଧ୍ୟୟନ ଚକ୍ର ଏବଂ ନାଗରିକ ସହାୟତା କେନ୍ଦ୍ର'
+      : 'Odisha Aspirant Community, Study Circles & Civic Helpdesk'));
+    copy.appendChild(el('p', 'cp-hero-sub', S.lang === 'or'
+      ? 'ଓଡ଼ିଶାର ସମସ୍ତ ୩୦ ଜିଲ୍ଲାର ପରୀକ୍ଷା ଓ ଜିଲ୍ଲା ଚକ୍ରରେ ଯୋଗ ଦିଅନ୍ତୁ, ହାତଲେଖା ନୋଟ୍ସ ଓ ସ୍ମୃତି ଆଧାରିତ PYQ ସେୟାର କରନ୍ତୁ, ସହପାଠୀଙ୍କ ସନ୍ଦେହ ସମାଧାନ କରନ୍ତୁ ଏବଂ ମାଗଣା ପ୍ରୋ ଓ ସ୍ଥାୟୀ ସଦସ୍ୟତା ଲାଭ କରନ୍ତୁ।'
+      : 'Join exam & district circles across all 30 Odisha districts, share handwritten notes & memory-based PYQs, solve peer doubts, connect with study buddies, and unlock free Pro & Permanent Membership.'));
+    hero.appendChild(copy);
+
+    var kpiRow = el('div', 'cp-hero-kpis');
+    [
+      [num(kpis.circlesCount), S.lang === 'or' ? 'ଆଗ୍ରହ ଚକ୍ର' : 'Interest Circles'],
+      [num(kpis.discussionsCount), S.lang === 'or' ? 'ସକ୍ରିୟ ଆଲୋଚନା' : 'Active Discussions'],
+      [num(kpis.proCount), S.lang === 'or' ? 'ପ୍ରୋ ଓ ସ୍ଥାୟୀ ସଦସ୍ୟ' : 'Pro & Permanent Contributors'],
+      [num(kpis.solvedCount), S.lang === 'or' ? 'ସମାଧାନ ପ୍ରଶ୍ନୋତ୍ତର' : 'Solved Q&As']
+    ].forEach(function (pair) {
+      var tile = el('div', 'cp-hero-kpi');
+      tile.appendChild(el('strong', 'cp-hero-kpi-val', pair[0]));
+      tile.appendChild(el('span', 'cp-hero-kpi-label', pair[1]));
+      kpiRow.appendChild(tile);
+    });
+    hero.appendChild(kpiRow);
+    shell.appendChild(hero);
   }
 
   // ============================================================================
@@ -150,12 +369,16 @@
           : 'Share ' + remain + ' more helpful notes, memory questions, or playbooks to unlock ' + (mp.next_tier === 'permanent_member' ? '👑 Permanent Founding Member' : '⭐ CS Odisha Pro Member') + ' (' + pct + '% complete). ' + (rules.pro_perks_summary_en || ''));
       box.appendChild(el('div', 'cp-muted', msg));
     } else {
-      head.appendChild(el('h2', 'cp-pro-title', '⭐ Share Helpful Notes & Earn Free CS Odisha Pro / Permanent Membership'));
-      var aSign = el('a', 'cp-btn cp-btn-gold cp-btn-sm', 'Sign In to Join & Earn Pro →');
+      head.appendChild(el('h2', 'cp-pro-title', S.lang === 'or'
+        ? '⭐ ଉପଯୋଗୀ ନୋଟ୍ସ ସେୟାର କରନ୍ତୁ ଏବଂ ମାଗଣା CS Odisha Pro / Permanent ସଦସ୍ୟତା ଲାଭ କରନ୍ତୁ'
+        : '⭐ Share Helpful Notes & Earn Free CS Odisha Pro / Permanent Membership'));
+      var aSign = el('a', 'cp-btn cp-btn-gold cp-btn-sm', S.lang === 'or' ? 'ସାଇନ୍ ଇନ୍ କରି ଯୋଗ ଦିଅନ୍ତୁ →' : 'Sign In to Join & Earn Pro →');
       aSign.href = '/login.html?next=/community/';
       head.appendChild(aSign);
       box.appendChild(head);
-      box.appendChild(el('div', 'cp-muted', 'Share ' + rules.pro_threshold_posts + ' approved notes/questions to unlock Pro Member ⭐ (' + rules.pro_perks_summary_en + ') and ' + rules.permanent_threshold_posts + ' for Permanent Founding Member 👑.'));
+      box.appendChild(el('div', 'cp-muted', S.lang === 'or'
+        ? ('Pro ସଦସ୍ୟ ⭐ ପାଇଁ ' + rules.pro_threshold_posts + ' ଟି ଏବଂ Permanent Founding Member 👑 ପାଇଁ ' + rules.permanent_threshold_posts + ' ଟି ଅନୁମୋଦିତ ଯୋଗଦାନ ସେୟାର କରନ୍ତୁ।')
+        : ('Share ' + rules.pro_threshold_posts + ' approved notes/questions to unlock Pro Member ⭐ (' + rules.pro_perks_summary_en + ') and ' + rules.permanent_threshold_posts + ' for Permanent Founding Member 👑.')));
     }
     shell.appendChild(box);
   }
@@ -164,22 +387,28 @@
   // BROWSE VIEW
   // ============================================================================
   function renderBrowseView() {
+    var activeEl = document.activeElement;
+    var restoreFocusId = (activeEl && activeEl.id === 'cp-search-input') ? activeEl.id : '';
+
     clear(S.root);
     var shell = el('div', 'cp-root');
+    renderEditorialHero(shell);
     renderProProgressBanner(shell);
 
-    // Top Action Bar
+    // Top Elevated Action Bar
     var bar = el('div', 'cp-toolbar');
     var left = el('div', 'cp-chips');
-    var btnCompose = el('button', 'cp-btn cp-btn-primary', '+ Share Content / Ask Question / Upload Notes');
+    var btnCompose = el('button', 'cp-btn cp-btn-primary', S.lang === 'or'
+      ? '+ ବିଷୟବସ୍ତୁ ସେୟାର / ପ୍ରଶ୍ନ ପଚାରନ୍ତୁ / ନୋଟ୍ସ ଅପଲୋଡ୍'
+      : '+ Share Content / Ask Question / Upload Notes');
     btnCompose.type = 'button';
     btnCompose.addEventListener('click', openMemberComposerModal);
 
-    var btnJoined = el('button', 'cp-btn' + (S.filters.joined_only ? ' cp-btn-primary' : ''), '🤝 My Joined Communities (' + S.joinedIds.length + ')');
+    var btnJoined = el('button', 'cp-btn' + (S.filters.joined_only ? ' cp-btn-primary' : ''), (S.lang === 'or' ? '🤝 ମୋର ଯୋଗଦାନ ସମୁଦାୟ (' : '🤝 My Joined Communities (') + S.joinedIds.length + ')');
     btnJoined.type = 'button';
     btnJoined.addEventListener('click', function () { S.filters.joined_only = !S.filters.joined_only; reloadBrowse(); });
 
-    var btnInbox = el('button', 'cp-btn cp-btn-violet', '✉️ Direct Messages & Buddy Inbox' + (S.dmUnread > 0 ? ' (' + S.dmUnread + ')' : ''));
+    var btnInbox = el('button', 'cp-btn cp-btn-violet', (S.lang === 'or' ? '✉️ ସିଧାସଳଖ ବାର୍ତ୍ତା ଓ ବଡି ଇନବକ୍ସ' : '✉️ Direct Messages & Buddy Inbox') + (S.dmUnread > 0 ? ' (' + S.dmUnread + ')' : ''));
     btnInbox.type = 'button';
     btnInbox.addEventListener('click', openDmInboxDrawer);
 
@@ -187,6 +416,7 @@
     bar.appendChild(left);
 
     var sortSel = el('select', 'cp-select');
+    sortSel.setAttribute('aria-label', 'Sort community discussions');
     [['latest', 'Sort: Latest'], ['top_voted', 'Sort: Top Voted'], ['most_discussed', 'Sort: Most Discussed'], ['bounty', 'Sort: Highest XP Bounty']].forEach(function (s) {
       sortSel.appendChild(new Option(s[1], s[0]));
     });
@@ -197,6 +427,7 @@
 
     // 3-Layer Cascading Filters + Quick Pills
     var fPanel = el('section', 'cp-panel');
+    fPanel.setAttribute('aria-label', 'Community Circle and Discussion Filters');
     var pills = el('div', 'cp-chips');
     [
       ['All Feed', function () { S.filters.type = ''; S.filters.unanswered_only = false; S.filters.featured_collections = false; S.filters.pro_contributors = false; }, !S.filters.type && !S.filters.unanswered_only && !S.filters.featured_collections && !S.filters.pro_contributors],
@@ -215,33 +446,73 @@
     fPanel.appendChild(pills);
 
     var g3 = el('div', 'cp-grid-3');
-    var selL1 = el('select', 'cp-select');
-    selL1.appendChild(new Option('All Community Circles (L1)', ''));
-    S.nodes.filter(function (n) { return Number(n.level) === 1; }).forEach(function (n) {
-      selL1.appendChild(new Option((n.icon ? n.icon + ' ' : '') + n.title_en, n.id));
-    });
-    selL1.value = S.filters.l1;
-    selL1.addEventListener('change', function () { S.filters.l1 = selL1.value; S.filters.l2 = ''; S.filters.l3 = ''; reloadBrowse(); });
+    function makeFilterField(id, lblText, defaultLabel, opts, val, onChange) {
+      var f = el('div', 'cp-field');
+      var lbl = el('label', 'cp-label', lblText);
+      lbl.setAttribute('for', id);
+      f.appendChild(lbl);
+      var sel = el('select', 'cp-select');
+      sel.id = id;
+      sel.appendChild(new Option(defaultLabel, ''));
+      opts.forEach(function (o) { sel.appendChild(new Option(o[1], o[0])); });
+      sel.value = val;
+      sel.addEventListener('change', function () { onChange(sel.value); });
+      f.appendChild(sel);
+      return f;
+    }
 
-    var selL2 = el('select', 'cp-select');
-    selL2.appendChild(new Option('All Interest Groups (L2)', ''));
-    if (S.filters.l1) S.nodes.filter(function (n) { return Number(n.level) === 2 && n.parent_id === S.filters.l1; }).forEach(function (n) { selL2.appendChild(new Option(n.title_en, n.id)); });
-    selL2.value = S.filters.l2;
-    selL2.addEventListener('change', function () { S.filters.l2 = selL2.value; S.filters.l3 = ''; reloadBrowse(); });
+    var l1Nodes = S.nodes.filter(function (n) { return Number(n.level) === 1; });
+    var l2Nodes = S.nodes.filter(function (n) { return Number(n.level) === 2 && (!S.filters.l1 || n.parent_id === S.filters.l1); });
+    var l3Nodes = S.nodes.filter(function (n) { return Number(n.level) === 3 && (!S.filters.l2 || n.parent_id === S.filters.l2); });
 
-    var selL3 = el('select', 'cp-select');
-    selL3.appendChild(new Option('All Sub-Topics (L3)', ''));
-    if (S.filters.l2) S.nodes.filter(function (n) { return Number(n.level) === 3 && n.parent_id === S.filters.l2; }).forEach(function (n) { selL3.appendChild(new Option(n.title_en, n.id)); });
-    selL3.value = S.filters.l3;
-    selL3.addEventListener('change', function () { S.filters.l3 = selL3.value; reloadBrowse(); });
+    g3.appendChild(makeFilterField(
+      'cp-sel-circle',
+      S.lang === 'or' ? '୧. କମ୍ୟୁନିଟି ସର୍କଲ୍' : '1. Community Circle',
+      S.lang === 'or' ? 'ସମସ୍ତ କମ୍ୟୁନିଟି ସର୍କଲ୍' : 'All Community Circles',
+      l1Nodes.map(function (n) { return [n.id, (n.icon ? n.icon + ' ' : '') + pick(n, 'title')]; }),
+      S.filters.l1,
+      function (v) { S.filters.l1 = v; S.filters.l2 = ''; S.filters.l3 = ''; reloadBrowse(); }
+    ));
 
+    g3.appendChild(makeFilterField(
+      'cp-sel-group',
+      S.lang === 'or' ? '୨. ଆଗ୍ରହ ଗୋଷ୍ଠୀ' : '2. Interest Group',
+      S.lang === 'or' ? 'ସମସ୍ତ ଆଗ୍ରହ ଗୋଷ୍ଠୀ' : 'All Interest Groups',
+      l2Nodes.map(function (n) { return [n.id, (n.icon ? n.icon + ' ' : '') + pick(n, 'title')]; }),
+      S.filters.l2,
+      function (v) { S.filters.l2 = v; S.filters.l3 = ''; reloadBrowse(); }
+    ));
+
+    g3.appendChild(makeFilterField(
+      'cp-sel-format',
+      S.lang === 'or' ? '୩. ଆଲୋଚନା ପ୍ରକାର' : '3. Discussion Format',
+      S.lang === 'or' ? 'ସମସ୍ତ ଆଲୋଚନା ପ୍ରକାର' : 'All Discussion Formats',
+      l3Nodes.map(function (n) { return [n.id, (n.icon ? n.icon + ' ' : '') + pick(n, 'title')]; }),
+      S.filters.l3,
+      function (v) { S.filters.l3 = v; reloadBrowse(); }
+    ));
+
+    var sField = el('div', 'cp-field');
+    var sLbl = el('label', 'cp-label', S.lang === 'or' ? '୪. ଆଲୋଚନା ଖୋଜନ୍ତୁ' : '4. Search Discussions');
+    sLbl.setAttribute('for', 'cp-search-input');
+    sField.appendChild(sLbl);
     var searchInp = el('input', 'cp-input');
+    searchInp.id = 'cp-search-input';
     searchInp.type = 'search';
-    searchInp.placeholder = 'Search discussions, notes, Odisha districts...';
+    searchInp.placeholder = S.lang === 'or' ? 'ଆଲୋଚନା, ନୋଟ୍ସ, ଓଡ଼ିଶା ଜିଲ୍ଲା ଖୋଜନ୍ତୁ...' : 'Search discussions, notes, Odisha districts...';
     searchInp.value = S.filters.search;
-    searchInp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { S.filters.search = searchInp.value.trim(); reloadBrowse(); } });
+    var searchTimer = null;
+    searchInp.addEventListener('input', function () {
+      S.filters.search = searchInp.value.trim();
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(function () { reloadBrowse(); }, 300);
+    });
+    searchInp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { clearTimeout(searchTimer); S.filters.search = searchInp.value.trim(); reloadBrowse(); }
+    });
+    sField.appendChild(searchInp);
+    g3.appendChild(sField);
 
-    g3.append(selL1, selL2, selL3, searchInp);
     fPanel.appendChild(g3);
     shell.appendChild(fPanel);
 
@@ -251,19 +522,36 @@
     var sideCol = el('aside', 'cp-side-col');
 
     if (!S.posts.length) {
-      mainCol.appendChild(el('div', 'cp-empty', 'No discussions match this filter yet. Click "+ Share Content / Ask Question" to start the conversation and earn Pro XP!'));
+      var emp = el('div', 'cp-empty');
+      emp.appendChild(el('strong', '', S.lang === 'or'
+        ? 'ଏହି ଫିଲ୍ଟର୍ ସହିତ କୌଣସି ଆଲୋଚନା ମିଳିଲା ନାହିଁ।'
+        : 'No discussions match this filter yet.'));
+      emp.appendChild(el('div', 'cp-muted', 'Click "+ Share Content / Ask Question / Upload Notes" to start the conversation and earn Pro XP!'));
+      var rBtn = el('button', 'cp-btn cp-btn-sm cp-btn-primary', 'Reset Filters');
+      rBtn.type = 'button';
+      rBtn.addEventListener('click', function () {
+        S.filters = { l1: '', l2: '', l3: '', type: '', sort: 'latest', joined_only: false, unanswered_only: false, featured_collections: false, pro_contributors: false, search: '' };
+        reloadBrowse();
+      });
+      emp.appendChild(rBtn);
+      mainCol.appendChild(emp);
     } else {
       S.posts.forEach(function (p) { mainCol.appendChild(renderPostCard(p, false)); });
     }
 
     // Sidebar 1: Communities of Interest Directory with One-Click Join
     var dirPanel = el('section', 'cp-panel');
-    dirPanel.appendChild(el('h3', 'cp-panel-title', '🎯 Communities of Interest (Join Circles)'));
+    var dirHead = el('div', 'cp-panel-head');
+    dirHead.appendChild(el('h3', 'cp-panel-title', S.lang === 'or'
+      ? '🎯 ଆଗ୍ରହ ସମୁଦାୟ (ଚକ୍ରରେ ଯୋଗ ଦିଅନ୍ତୁ)'
+      : '🎯 Communities of Interest (Join Circles)'));
+    dirPanel.appendChild(dirHead);
+
     var circleList = el('div', 'cp-poll-list');
     S.nodes.filter(function (n) { return Number(n.level) === 1 || Number(n.level) === 2; }).slice(0, 12).forEach(function (n) {
       var cc = el('div', 'cp-circle-card');
       var top = el('div', 'cp-circle-top');
-      var link = el('button', 'cp-btn cp-btn-sm', (n.icon ? n.icon + ' ' : '') + n.title_en);
+      var link = el('button', 'cp-circle-link', (n.icon ? n.icon + ' ' : '') + pick(n, 'title'));
       link.type = 'button';
       link.addEventListener('click', function () {
         if (Number(n.level) === 1) { S.filters.l1 = n.id; S.filters.l2 = ''; S.filters.l3 = ''; }
@@ -282,7 +570,9 @@
         }
       });
       top.append(link, btnJ);
-      cc.append(top, el('div', 'cp-muted', '👥 ' + n.members_count + ' members · 💬 ' + (n.posts_count || 0) + ' posts'));
+      cc.appendChild(top);
+      if (pick(n, 'subtitle')) cc.appendChild(el('div', 'cp-muted', pick(n, 'subtitle')));
+      cc.appendChild(el('div', 'cp-muted', '👥 ' + num(n.members_count) + ' members · 💬 ' + num(n.posts_count || 0) + ' posts'));
       circleList.appendChild(cc);
     });
     dirPanel.appendChild(circleList);
@@ -290,7 +580,12 @@
 
     // Sidebar 2: Top Contributors & Recognized Mentors Leaderboard
     var lbPanel = el('section', 'cp-panel');
-    lbPanel.appendChild(el('h3', 'cp-panel-title', '🏆 Top Contributors & Pro Mentors'));
+    var lbHead = el('div', 'cp-panel-head');
+    lbHead.appendChild(el('h3', 'cp-panel-title', S.lang === 'or'
+      ? '🏆 ଶ୍ରେଷ୍ଠ ଯୋଗଦାନକାରୀ ଓ ପ୍ରୋ ମେଣ୍ଟର'
+      : '🏆 Top Contributors & Pro Mentors'));
+    lbPanel.appendChild(lbHead);
+
     if (!S.leaderboard.length) {
       lbPanel.appendChild(el('div', 'cp-muted', 'Share helpful notes & answer doubts to claim #1 on the Odisha Community Leaderboard!'));
     } else {
@@ -299,7 +594,7 @@
         var leftM = el('div');
         leftM.appendChild(el('strong', '', '#' + (idx + 1) + ' ' + m.display_name));
         leftM.appendChild(el('div', 'cp-muted', (m.badge_label || 'Member') + (m.district ? ' · ' + m.district : '')));
-        row.append(leftM, el('span', 'cp-chip is-pro', m.reputation_xp + ' XP'));
+        row.append(leftM, el('span', 'cp-chip is-pro', num(m.reputation_xp) + ' XP'));
         lbPanel.appendChild(row);
       });
     }
@@ -308,13 +603,18 @@
     layout.append(mainCol, sideCol);
     shell.appendChild(layout);
     S.root.appendChild(shell);
+
+    if (restoreFocusId) {
+      var refocus = document.getElementById(restoreFocusId);
+      if (refocus && typeof refocus.focus === 'function') refocus.focus();
+    }
   }
 
   function renderPostCard(p, isDetailView) {
     var card = el('article', 'cp-post-card' + (p.is_pinned ? ' is-pinned' : ''));
 
     var chips = el('div', 'cp-chips');
-    chips.appendChild(el('span', 'cp-chip', p.post_type.replace(/_/g, ' ')));
+    chips.appendChild(el('span', 'cp-chip', String(p.post_type || 'discussion').replace(/_/g, ' ')));
     if (p.is_pinned) chips.appendChild(el('span', 'cp-chip is-perm', '📌 Pinned'));
     if (p.is_solved) chips.appendChild(el('span', 'cp-chip', '✅ Solved'));
     if (p.is_featured_collection) chips.appendChild(el('span', 'cp-chip is-pro', '🌟 Featured Collection'));
@@ -323,35 +623,41 @@
     else if (p.author_membership_tier === 'pro_member') chips.appendChild(el('span', 'cp-chip is-pro', '⭐ Pro Member'));
     card.appendChild(chips);
 
-    if (p.cover_image_url) {
+    if (p.cover_image_url && safeHref(p.cover_image_url)) {
       var img = el('img', 'cp-post-cover');
-      img.src = p.cover_image_url;
+      img.src = safeHref(p.cover_image_url);
       img.alt = p.title_en;
       img.loading = 'lazy';
       card.appendChild(img);
     }
 
+    var displayTitle = pick(p, 'title') || p.title_en;
     var h = el(isDetailView ? 'h1' : 'h3', 'cp-post-title');
     if (isDetailView) {
-      h.textContent = p.title_en;
+      h.textContent = displayTitle;
     } else {
-      var a = el('a', '', p.title_en);
+      var a = el('a', '', displayTitle);
       a.href = '/community/?slug=' + encodeURIComponent(p.slug);
       h.appendChild(a);
     }
     card.appendChild(h);
-    if (p.title_or) card.appendChild(el('div', 'cp-muted', p.title_or));
+    if (p.title_or && S.lang !== 'or') card.appendChild(el('div', 'cp-muted', p.title_or));
 
     var meta = 'By ' + p.author_display_name + (p.district_tag ? ' · ' + p.district_tag : '') + (p.exam_tag ? ' · ' + p.exam_tag : '');
     card.appendChild(el('div', 'cp-muted', meta));
 
-    if (p.body_en) {
-      card.appendChild(el('div', 'cp-post-body', isDetailView ? p.body_en : p.body_en.slice(0, 260) + (p.body_en.length > 260 ? '…' : '')));
+    var rawBody = pick(p, 'body') || p.body_en || '';
+    if (rawBody) {
+      if (isDetailView) {
+        renderRichProse(card, rawBody);
+      } else {
+        card.appendChild(el('div', 'cp-post-body', stripMarkdownExcerpt(rawBody, 260)));
+      }
     }
 
-    if (p.attachment_url) {
+    if (p.attachment_url && safeHref(p.attachment_url)) {
       var aPdf = el('a', 'cp-btn cp-btn-sm', '📎 ' + (p.attachment_label || 'Open Shared PDF / Notes'));
-      aPdf.href = p.attachment_url;
+      aPdf.href = safeHref(p.attachment_url);
       aPdf.target = '_blank';
       aPdf.rel = 'noopener noreferrer';
       card.appendChild(aPdf);
@@ -386,13 +692,13 @@
       card.appendChild(pollWrap);
     }
 
-    // 5-Question Daily Peer Quiz Challenge Widget
+    // 5-Question Daily Peer Quiz Challenge Widget (deduplicated single prompt per question)
     if (p.post_type === 'quiz_challenge' && Array.isArray(p.challenge_mcqs) && p.challenge_mcqs.length) {
-      card.appendChild(renderInlineChallengeQuiz(p));
+      card.appendChild(renderInlineChallengeQuiz(p, isDetailView));
     }
 
     // Card Footer Actions
-    var foot = el('div', 'cp-chips');
+    var foot = el('div', 'cp-post-foot');
     var bUp = el('button', 'cp-btn cp-btn-sm', '👍 Upvote (' + p.upvotes_count + ')');
     bUp.type = 'button';
     bUp.addEventListener('click', async function () {
@@ -425,13 +731,19 @@
     return card;
   }
 
-  function renderInlineChallengeQuiz(p) {
+  function renderInlineChallengeQuiz(p, isDetailView) {
     var qs = S.quizState[p.id] || { answers: {}, submitted: false, resultMsg: '' };
     S.quizState[p.id] = qs;
     var wrap = el('div', 'cp-quiz-list');
+
+    function rerenderQuizHost() {
+      if (isDetailView) loadThreadView(p.slug, qsParam('preview_token'));
+      else renderBrowseView();
+    }
+
     p.challenge_mcqs.forEach(function (q, qi) {
-      var qCard = el('div', 'cp-reply-card');
-      qCard.appendChild(el('strong', '', 'Q' + (qi + 1) + '. ' + q.question_en));
+      var qCard = el('div', 'cp-quiz-card');
+      qCard.appendChild(el('p', 'cp-quiz-prompt', formatQuizPrompt(q, qi)));
       var opts = el('div', 'cp-chips');
       (q.options || []).forEach(function (optText, oi) {
         if (!optText) return;
@@ -442,7 +754,7 @@
         b.addEventListener('click', function () {
           if (qs.submitted) return;
           qs.answers[qi] = oi;
-          renderBrowseView();
+          rerenderQuizHost();
         });
         opts.appendChild(b);
       });
@@ -465,7 +777,7 @@
           var r = await api('/api/community/react', { method: 'POST', body: { target_type: 'post', target_id: p.id, reaction_type: 'quiz_attempt', score: score, total: p.challenge_mcqs.length } });
           if (r.xp_awarded) qs.resultMsg += ' (+' + r.xp_awarded + ' Reputation XP earned!)';
         } catch (_e) {}
-        renderBrowseView();
+        rerenderQuizHost();
       });
       wrap.appendChild(bSub);
     } else if (qs.resultMsg) {
@@ -497,15 +809,19 @@
         shell.appendChild(pb);
       }
 
+      var topNav = el('div', 'cp-hero-top');
       var backA = el('a', 'cp-btn cp-btn-sm', '← Back to Community Feed');
       backA.href = '/community/';
-      shell.appendChild(backA);
+      topNav.appendChild(backA);
+      topNav.appendChild(buildLangToggle(function () { loadThreadView(slug, previewToken); }));
+      shell.appendChild(topNav);
+
       shell.appendChild(renderPostCard(p, true));
 
       if (data.best_answer) {
         var ba = el('section', 'cp-best-answer');
         ba.appendChild(el('strong', '', '✅ Recommended / Best Answer — by ' + data.best_answer.author_display_name));
-        ba.appendChild(el('div', 'cp-post-body', data.best_answer.body_text));
+        renderRichProse(ba, data.best_answer.body_text);
         shell.appendChild(ba);
       }
 
@@ -539,7 +855,8 @@
         rTop.appendChild(el('strong', '', r.author_display_name));
         if (r.author_badge) rTop.appendChild(el('span', 'cp-chip is-pro', r.author_badge));
         if (r.is_best_answer) rTop.appendChild(el('span', 'cp-chip', '✅ Best Answer'));
-        rc.append(rTop, el('div', 'cp-post-body', r.body_text));
+        rc.appendChild(rTop);
+        renderRichProse(rc, r.body_text);
 
         var rActs = el('div', 'cp-chips');
         var bUpR = el('button', 'cp-btn cp-btn-sm', '👍 Helpful (' + r.upvotes_count + ')'); bUpR.type = 'button';
@@ -567,7 +884,7 @@
     } catch (e) {
       clear(S.root);
       var nf = el('div', 'cp-empty');
-      nf.append(el('strong', '', e.message || 'Discussion not found'), el('p', '', ''));
+      nf.append(el('strong', '', e.message || 'Discussion not found'));
       var back = el('a', 'cp-btn cp-btn-primary', '← Back to Community'); back.href = '/community/';
       nf.appendChild(back);
       S.root.appendChild(nf);
@@ -597,14 +914,14 @@
     MEMBER_POST_TYPES.forEach(function (pt) { typeSel.appendChild(new Option(pt[1], pt[0])); });
 
     var l1Sel = el('select', 'cp-select');
-    l1Sel.appendChild(new Option('Select Community Circle (L1)...', ''));
-    S.nodes.filter(function (n) { return Number(n.level) === 1; }).forEach(function (n) { l1Sel.appendChild(new Option(n.title_en, n.id)); });
+    l1Sel.appendChild(new Option('Select Community Circle...', ''));
+    S.nodes.filter(function (n) { return Number(n.level) === 1; }).forEach(function (n) { l1Sel.appendChild(new Option(pick(n, 'title'), n.id)); });
 
     var l2Sel = el('select', 'cp-select');
-    l2Sel.appendChild(new Option('Select Interest Group (L2)...', ''));
+    l2Sel.appendChild(new Option('Select Interest Group...', ''));
     l1Sel.addEventListener('change', function () {
-      clear(l2Sel); l2Sel.appendChild(new Option('Select Interest Group (L2)...', ''));
-      S.nodes.filter(function (n) { return Number(n.level) === 2 && n.parent_id === l1Sel.value; }).forEach(function (n) { l2Sel.appendChild(new Option(n.title_en, n.id)); });
+      clear(l2Sel); l2Sel.appendChild(new Option('Select Interest Group...', ''));
+      S.nodes.filter(function (n) { return Number(n.level) === 2 && n.parent_id === l1Sel.value; }).forEach(function (n) { l2Sel.appendChild(new Option(pick(n, 'title'), n.id)); });
     });
 
     var titleInp = el('input', 'cp-input'); titleInp.placeholder = 'Clear title (e.g. OPSC OAS 2025 Odisha Geography Memory Questions)';
@@ -767,6 +1084,7 @@
     S.root = document.getElementById('cso-community-portal-root');
     if (!S.root) return;
     document.body.classList.add('cso-portal-active', 'cso-portal-community-active');
+    S.lang = getLangPref();
     var slug = qsParam('slug');
     var previewToken = qsParam('preview_token');
     if (slug) {
@@ -780,6 +1098,11 @@
     S.filters.search = qsParam('q') || qsParam('search');
     await reloadBrowse();
   }
+
+  window.CSOCommunityPortal = {
+    stripMarkdownExcerpt: stripMarkdownExcerpt,
+    formatQuizPrompt: formatQuizPrompt
+  };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

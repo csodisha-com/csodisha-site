@@ -135,6 +135,8 @@ body.cso-portal-study-active #load-status {
   display: none !important;
 }
 
+body.cso-portal-active .cso-comm-hero,
+body.cso-portal-community-active .cso-comm-hero,
 body.cso-portal-community-active #community-categories-panel,
 body.cso-portal-community-active #community-directory-panel {
   display: none !important;
