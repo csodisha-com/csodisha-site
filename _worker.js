@@ -853,7 +853,7 @@ export default {
     if (pathname === '/api/public/community-directory/suggest' && request.method === 'POST') {
       return handlePublicCommunitySuggestApi(request, env);
     }
-    if (pathname === '/api/public/about-overview' && (request.method === 'GET' || request.method === 'HEAD')) {
+    if ((pathname === '/api/public/about-overview' || pathname === '/api/about/overview') && (request.method === 'GET' || request.method === 'HEAD')) {
       if (edgeCache && isAnonGet) {
         const hit = await edgeCache.match(request);
         if (hit) return hit;

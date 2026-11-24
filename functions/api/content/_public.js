@@ -1093,7 +1093,7 @@ async function handlePlatformStats(env) {
     resourcesCount,
     mockTestsCount,
     resolvedFeedbackCount,
-    districtsCount: 30,
+    districtsCount: 0,
     updatedAt: new Date().toISOString()
   }, 200, { 'Cache-Control': CACHE });
 }

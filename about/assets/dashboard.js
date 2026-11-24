@@ -30,56 +30,10 @@
   const OVERVIEW_DESC_EN = 'Be Self-Reliant | Build a Better Tomorrow — Verified exam preparation, recruitment tracking, and public welfare guidance across Odisha.';
   const OVERVIEW_DESC_OR = 'ଆତ୍ମନିର୍ଭର ହୁଅନ୍ତୁ | ଉନ୍ନତ ଭବିଷ୍ୟତ ଗଢ଼ନ୍ତୁ — ଓଡ଼ିଶାର ଛାତ୍ରଛାତ୍ରୀ ଓ ନାଗରିକଙ୍କ ପାଇଁ ଯାଞ୍ଚ ହୋଇଥିବା ଶିକ୍ଷା, ନିଯୁକ୍ତି ଏବଂ ଯୋଜନା ତଥ୍ୟ।';
 
-  const ODISHA_DISTRICTS = [
-    { name: 'Angul', or: 'ଅନୁଗୁଳ', zone: 'central' },
-    { name: 'Balangir', or: 'ବଲାଙ୍ଗୀର', zone: 'western' },
-    { name: 'Balasore', or: 'ବାଲେଶ୍ୱର', zone: 'northern' },
-    { name: 'Bargarh', or: 'ବରଗଡ଼', zone: 'western' },
-    { name: 'Bhadrak', or: 'ଭଦ୍ରକ', zone: 'coastal' },
-    { name: 'Boudh', or: 'ବୌଦ୍ଧ', zone: 'central' },
-    { name: 'Cuttack', or: 'କଟକ', zone: 'coastal' },
-    { name: 'Deogarh', or: 'ଦେବଗଡ଼', zone: 'northern' },
-    { name: 'Dhenkanal', or: 'ଢେଙ୍କାନାଳ', zone: 'central' },
-    { name: 'Gajapati', or: 'ଗଜପତି', zone: 'southern' },
-    { name: 'Ganjam', or: 'ଗଞ୍ଜାମ', zone: 'coastal' },
-    { name: 'Jagatsinghpur', or: 'ଜଗତସିଂହପୁର', zone: 'coastal' },
-    { name: 'Jajpur', or: 'ଯାଜପୁର', zone: 'coastal' },
-    { name: 'Jharsuguda', or: 'ଝାରସୁଗୁଡ଼ା', zone: 'western' },
-    { name: 'Kalahandi', or: 'କଳାହାଣ୍ଡି', zone: 'southern' },
-    { name: 'Kandhamal', or: 'କନ୍ଧମାଳ', zone: 'southern' },
-    { name: 'Kendrapara', or: 'କେନ୍ଦ୍ରାପଡ଼ା', zone: 'coastal' },
-    { name: 'Kendujhar (Keonjhar)', or: 'କେନ୍ଦୁଝର', zone: 'northern' },
-    { name: 'Khordha', or: 'ଖୋର୍ଦ୍ଧା', zone: 'coastal' },
-    { name: 'Koraput', or: 'କୋରାପୁଟ', zone: 'southern' },
-    { name: 'Malkangiri', or: 'ମାଲକାନଗିରି', zone: 'southern' },
-    { name: 'Mayurbhanj', or: 'ମୟୂରଭଞ୍ଜ', zone: 'northern' },
-    { name: 'Nabarangpur', or: 'ନବରଙ୍ଗପୁର', zone: 'southern' },
-    { name: 'Nayagarh', or: 'ନୟାଗଡ଼', zone: 'central' },
-    { name: 'Nuapada', or: 'ନୂଆପଡ଼ା', zone: 'western' },
-    { name: 'Puri', or: 'ପୁରୀ', zone: 'coastal' },
-    { name: 'Rayagada', or: 'ରାୟଗଡ଼ା', zone: 'southern' },
-    { name: 'Sambalpur', or: 'ସମ୍ବଲପୁର', zone: 'western' },
-    { name: 'Subarnapur (Sonepur)', or: 'ସୁବର୍ଣ୍ଣପୁର', zone: 'western' },
-    { name: 'Sundargarh', or: 'ସୁନ୍ଦରଗଡ଼', zone: 'northern' }
-  ];
-
-  const TRUSTED_GOV_SUFFIXES = [
-    '.gov.in',
-    '.nic.in',
-    '.ac.in',
-    '.edu.in',
-    '.res.in'
-  ];
-
-  const TRUSTED_OFFICIAL_HOSTS = new Set([
-    'ibps.in',
-    'ibpsonline.ibps.in',
-    'rbi.org.in',
-    'opportunities.rbi.org.in',
-    'nabard.org',
-    'csodisha.com',
-    'www.csodisha.com'
-  ]);
+  // Clean-slate v235: purged hardcoded ODISHA_DISTRICTS and static host lists; all About content loads from live D1.
+  const ODISHA_DISTRICTS = [];
+  const TRUSTED_GOV_SUFFIXES = ['.gov.in', '.nic.in', '.ac.in', '.edu.in', '.res.in'];
+  const TRUSTED_OFFICIAL_HOSTS = new Set();
 
   let groups = [];
   let totalCounts = { groups: 0, sections: 0, entries: 0 };
@@ -706,7 +660,7 @@
       setNum('stat-tests-count', d.mockTestsCount);
       setNum('stat-dir-count', d.directoryNodesCount);
       setNum('stat-feedback-count', d.resolvedFeedbackCount);
-      setNum('stat-districts-count', d.districtsCount || 30);
+      setNum('stat-districts-count', d.districtsCount || 0);
     } catch {}
   }
 

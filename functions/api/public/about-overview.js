@@ -103,7 +103,7 @@ export async function getAboutOverviewData(env) {
       folders: communityFolders,
       items: communityItems
     }
-  ];
+  ].filter((d) => d.folders > 0 || d.items > 0);
 
   return {
     ok: true,
@@ -121,7 +121,7 @@ export async function getAboutOverviewData(env) {
       communityFolders,
       communityItems,
       resolvedFeedbackCount,
-      districtsCount: 30
+      districtsCount: 0
     },
     updatedAt: new Date().toISOString()
   };
