@@ -611,6 +611,9 @@
     items.push({ group: 'Candidate Hub', label: 'Candidate Hub › Add & Manage Features', keywords: 'feature builder custom widget', run: function () { if (studio().openCandidateHubTab) studio().openCandidateHubTab('features'); else goFolder('folder-candidate-hub'); } });
     items.push({ group: 'Candidate Hub', label: 'Candidate Hub › Provide Content & Targeted Push', keywords: 'assign pdf study pack district', run: function () { if (studio().openCandidateHubTab) studio().openCandidateHubTab('content'); else goFolder('folder-candidate-hub'); } });
     items.push({ group: 'Candidate Hub', label: 'Candidate Hub › Document Vault Templates', keywords: 'checklist odisha certificates', run: function () { if (studio().openCandidateHubTab) studio().openCandidateHubTab('docs'); else goFolder('folder-candidate-hub'); } });
+    items.push({ group: 'Jobs Publishing House', label: 'Jobs Publishing House › + Publish New Job Article', keywords: 'jobs new recruitment article opsc ossc osssc', run: function () { if (studio().openJobsPublishingTab) studio().openJobsPublishingTab('new'); else goFolder('folder-jobs-careers'); } });
+    items.push({ group: 'Jobs Publishing House', label: 'Jobs Publishing House › 3-Layer Category Hierarchy', keywords: 'taxonomy main subcategory department tenure', run: function () { if (studio().openJobsPublishingTab) studio().openJobsPublishingTab('taxonomy'); else goFolder('folder-jobs-careers'); } });
+    items.push({ group: 'Jobs Publishing House', label: 'Jobs Publishing House › Reusable Bilingual Snippets', keywords: 'snippets age relaxation odia rules', run: function () { if (studio().openJobsPublishingTab) studio().openJobsPublishingTab('snippets'); else goFolder('folder-jobs-careers'); } });
     document.querySelectorAll('.cso-create-item[data-create-target]').forEach(function (b) {
       var t = b.getAttribute('data-create-target');
       var strong = b.querySelector('strong');
@@ -641,6 +644,12 @@
     });
     (r.categories || []).forEach(function (c) { out.push({ group: 'Navigation', label: 'Category: ' + c.name_en, keywords: c.name_or || '', run: function () { studio().openRoute('nav-manager'); } }); });
     (r.menu_items || []).forEach(function (m) { out.push({ group: 'Navigation', label: 'Menu: ' + m.label_en, keywords: m.label_or || '', run: function () { studio().openRoute('nav-manager'); } }); });
+    (r.job_articles || []).forEach(function (j) {
+      out.push({ group: 'Job Articles', label: j.title_en + (j.is_published ? '' : ' · draft'), keywords: j.organisation_en || j.slug || '', run: function () {
+        if (studio().openJobsPublishingTab) studio().openJobsPublishingTab('articles');
+        else goFolder('folder-jobs-careers');
+      } });
+    });
     return out;
   }
 

@@ -1622,14 +1622,49 @@ function csoMapEventsToUpdates(ev){
   return out.length?out:null;
 }
 
-/* Load published updates from live D1 /api/events/upcoming, falling back to static JSON when offline. */
+function csoMapJobArticlesToUpdates(data){
+  if(!data||!Array.isArray(data.items)||!data.items.length)return [];
+  const safeId=(raw,idx)=>'job-'+String(raw||idx).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  return data.items.slice(0,12).map((a,idx)=>{
+    const isOr=S.lang==='or';
+    const title=(isOr&&a.title_or)?a.title_or:(a.title_en||'Job Notification');
+    const org=(isOr&&a.organisation_or)?a.organisation_or:(a.organisation_en||a.sector_badge||'CS Odisha Jobs');
+    const vac=a.total_vacancies?(' · '+a.total_vacancies+' Posts'):'';
+    const dt=String(a.last_date||a.published_at||a.updated_at||'2026-11-24').slice(0,10);
+    const articleUrl='https://csodisha.com/jobs/?slug='+encodeURIComponent(a.slug||'');
+    return {
+      id:safeId(a.slug||a.id,idx),
+      cat:'Jobs',
+      tag:'JOB',
+      title:title,
+      src:org+vac,
+      date:dt,
+      badges:[a.status_badge||'Active',a.qualification_level||'EN+OR'],
+      body:String(a.summary_en||title).trim(),
+      url:articleUrl,
+      article_href:'/jobs/?slug='+encodeURIComponent(a.slug||''),
+      status:'published'
+    };
+  });
+}
+
+/* Load published updates from live D1 /api/public/jobs + /api/events/upcoming, falling back to static JSON when offline. */
 function csoLoadPublishedUpdates(){
-  return fetch('/api/events/upcoming',{cache:'no-store'})
-    .then(r=>r.ok?r.json():null)
-    .then(ev=>csoMapEventsToUpdates(ev))
-    .catch(()=>null)
-    .then(liveRecords=>{
-      if(liveRecords)return liveRecords;
+  return Promise.all([
+    fetch('/api/public/jobs?limit=12',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
+    fetch('/api/events/upcoming',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)
+  ])
+    .then(([jobsData,ev])=>{
+      const jobUpdates=csoMapJobArticlesToUpdates(jobsData);
+      const evUpdates=csoMapEventsToUpdates(ev)||[];
+      const merged=[];
+      const seen=new Set();
+      [...jobUpdates,...evUpdates].forEach(item=>{
+        if(!item||seen.has(item.id))return;
+        seen.add(item.id);
+        merged.push(item);
+      });
+      if(merged.length)return merged;
       return fetch('data/latest-updates.json',{cache:'no-store'})
         .then(response=>{
           if(!response.ok)throw Error('Updates HTTP '+response.status);
@@ -1802,9 +1837,12 @@ function lu(){
   const L=csoPublishedUpdates().filter(u=>cat==='All'||u.cat===cat).slice(0,5);
   const html=L.map(u=>{
     const tagMod=u.tag==='SCHEME'?'tg--scheme':u.tag==='EDUCATION'?'tg--edu':u.tag==='GUIDE'?'tg--guide':'';
+    const linkHtml=u.article_href
+      ?'<a href="'+esc(u.article_href)+'"><strong>'+esc(u.title)+'</strong></a>'
+      :'<a href="#'+esc(u.id)+'" data-h="'+esc(u.id)+'"><strong>'+esc(u.title)+'</strong></a>';
     return '<div class="it cso-update-row">'+
       '<span class="tg '+tagMod+'">'+esc(u.tag)+'</span>'+
-      '<span class="cso-update-main"><a href="#'+esc(u.id)+'" data-h="'+esc(u.id)+'"><strong>'+esc(u.title)+'</strong></a>'+
+      '<span class="cso-update-main">'+linkHtml+
       '<small>'+esc(u.src)+'</small></span>'+
       '<span class="d">'+
       '<span class="cso-update-badges">'+csoUpdateBadges(u)+'</span></span>'+

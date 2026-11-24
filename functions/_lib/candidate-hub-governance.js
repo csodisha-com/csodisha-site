@@ -647,8 +647,9 @@ export async function handleCandidateMatchesApi(request, env) {
     const relax = ODISHA_AGE_RELAXATION[cat] || 0;
     const effectiveMaxAge = 38 + relax; // Standard Odisha Group-B/C upper limit + category relaxation
 
-    const [jobs, schemes] = await Promise.all([
+    const [jobs, jobArticles, schemes] = await Promise.all([
       safeAll(env.DB, "SELECT id, title, title_or, slug, recruiting_body, qualification_tag, vacancies, deadline_date, official_apply_url, summary, state_location, age_limit_relaxation FROM jobs_directory_items WHERE status = 'published' ORDER BY updated_at DESC LIMIT 40"),
+      safeAll(env.DB, "SELECT id, slug, title_en, title_or, organisation_en, qualification_level, qualification_summary, total_vacancies, last_date, official_apply_url, summary_en, location_district, min_age, max_age FROM job_articles WHERE is_published = 1 ORDER BY updated_at DESC LIMIT 40"),
       safeAll(env.DB, "SELECT id, title, title_or, slug, scheme_type, department_name, beneficiary_group, benefit_amount, application_deadline, official_apply_url, summary FROM schemes_directory_items WHERE status = 'published' ORDER BY updated_at DESC LIMIT 40")
     ]);
 
@@ -677,7 +678,7 @@ export async function handleCandidateMatchesApi(request, env) {
       return { score: Math.max(0, Math.min(100, score)), reasons };
     };
 
-    const matchedJobs = jobs.map(j => {
+    const matchedFromDir = jobs.map(j => {
       const hay = `${j.title} ${j.recruiting_body || ''} ${j.qualification_tag || ''} ${j.summary || ''} ${j.state_location || ''}`.toLowerCase();
       const s = scoreItem(hay, j.qualification_tag);
       return {
@@ -687,7 +688,22 @@ export async function handleCandidateMatchesApi(request, env) {
         url: j.official_apply_url || (j.slug ? `/jobs/${j.slug}` : '/jobs-careers/'),
         match_score: s.score, reasons: s.reasons
       };
-    }).sort((a, b) => b.match_score - a.match_score).slice(0, 15);
+    });
+    const matchedFromArticles = (jobArticles || []).map(a => {
+      const hay = `${a.title_en} ${a.organisation_en || ''} ${a.qualification_level || ''} ${a.qualification_summary || ''} ${a.summary_en || ''} ${a.location_district || ''}`.toLowerCase();
+      const s = scoreItem(hay, a.qualification_level || a.qualification_summary);
+      if (age > 0 && a.max_age && age <= (Number(a.max_age) + relax) && (!a.min_age || age >= Number(a.min_age))) {
+        s.score = Math.min(100, s.score + 8);
+      }
+      return {
+        id: a.id, kind: 'job', title: a.title_en, title_or: a.title_or || '',
+        body: a.organisation_en || '', qualification: a.qualification_level || a.qualification_summary || '',
+        vacancies: a.total_vacancies ? String(a.total_vacancies) : '', deadline: a.last_date || '',
+        url: `/jobs/?slug=${encodeURIComponent(a.slug)}`,
+        match_score: s.score, reasons: s.reasons
+      };
+    });
+    const matchedJobs = [...matchedFromArticles, ...matchedFromDir].sort((a, b) => b.match_score - a.match_score).slice(0, 15);
 
     const matchedSchemes = schemes.map(sc => {
       const hay = `${sc.title} ${sc.scheme_type || ''} ${sc.beneficiary_group || ''} ${sc.summary || ''}`.toLowerCase();

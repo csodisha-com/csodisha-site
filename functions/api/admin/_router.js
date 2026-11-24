@@ -84,6 +84,13 @@ import { handleHomepageBlocksAdmin } from '../../_lib/homepage-studio.js';
 import { COMMAND_SUITE_RESOURCES, handleCommandSuiteAdmin } from '../../_lib/command-suite.js';
 import { handleAdminCandidatesV244, handleAdminCandidateHubStudio } from '../../_lib/candidate-hub-governance.js';
 import {
+  handleJobsTaxonomyAdmin,
+  handleJobsSnippetsAdmin,
+  handleJobsArticlesAdmin,
+  handleJobsMediaUpload,
+  handleJobsStudyOptions
+} from '../../_lib/jobs-publishing-house.js';
+import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
   handleFeedbackAdmin,
@@ -352,7 +359,19 @@ async function dispatchAdminApi(request, env) {
         return json({ html: renderMarkdown(body.markdown || '') });
       }
       case 'current-affairs':
+        return await handlePosts(request, env, actor, resource, id, sub);
       case 'jobs':
+        if (id === 'taxonomy') return await handleJobsTaxonomyAdmin(request, env, actor, sub, extra);
+        if (id === 'snippets') return await handleJobsSnippetsAdmin(request, env, actor, sub);
+        if (id === 'articles') return await handleJobsArticlesAdmin(request, env, actor, sub, extra);
+        if (id === 'upload') {
+          await rateLimit(env, `admin-upload:${actor.userId}`, 40, 600);
+          return await handleJobsMediaUpload(request, env, actor);
+        }
+        if (id === 'study-options' && method === 'GET') return await handleJobsStudyOptions(env);
+        if (id && (sub === 'preview-token' || sub === 'revisions' || sub === 'rollback')) {
+          return await handleJobsArticlesAdmin(request, env, actor, id, sub);
+        }
         return await handlePosts(request, env, actor, resource, id, sub);
       case 'mock-tests':
         return await handleMockTests(request, env, actor, id, sub);

@@ -55,6 +55,12 @@ import { handlePublicTelemetryOutboundApi } from './functions/_lib/analytics-tel
 import { handlePublicAboutOverviewApi } from './functions/api/public/about-overview.js';
 import { handlePublicCurrentAffairsApi } from './functions/api/public/current-affairs.js';
 import { handlePublicHomepageBlocksApi, handlePublicHomepageBlockClick } from './functions/_lib/homepage-studio.js';
+import {
+  handlePublicJobsTreeApi,
+  handlePublicJobsListApi,
+  handlePublicJobsArticleApi,
+  handlePublicJobsTelemetryApi
+} from './functions/_lib/jobs-publishing-house.js';
 import { handlePublicMarketingBannersApi } from './functions/_lib/marketing-advertising-batch1.js';
 import { handlePublicMarketingRefApi } from './functions/_lib/marketing-advertising-batch2.js';
 import { handlePublicMarketingLandingPagesApi } from './functions/_lib/marketing-advertising-batch3.js';
@@ -339,6 +345,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/community/posts', '/api/community/qna', '/api/search/synonyms', '/api/public/about-overview', '/api/public/current-affairs', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources', '/api/marketing/banners', '/api/marketing/landing-pages', '/api/seo/meta', '/api/seo/robots.txt', '/api/seo/autocomplete',
     '/api/events/upcoming', '/api/config/public', '/api/events/calendar/odisha-all-exams.ics', '/api/events/calendar/opsc-ossc-osssc-deadlines.ics', '/api/events/calendar/admit-cards-results.ics', '/api/events/calendar/workshops-webinars.ics',
+    '/api/public/jobs', '/api/public/jobs/tree', '/api/public/jobs/article', '/jobs/', '/jobs-careers/',
     '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
   const allUrls = new Set(basePaths.map(p => `${origin}${p}`));
@@ -827,6 +834,41 @@ export default {
         recordPublicCachePut(edgeCache, request, jobsMapRes, ctx);
       }
       return jobsMapRes;
+    }
+    if (pathname === '/api/public/jobs/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
+      const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
+      if (edgeCache && isAnonGet && !bypass) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const treeRes = await handlePublicJobsTreeApi(request, env);
+      if (isAnonGet && !bypass && treeRes.status === 200) recordPublicCachePut(edgeCache, request, treeRes, ctx);
+      return treeRes;
+    }
+    if (pathname === '/api/public/jobs' && (request.method === 'GET' || request.method === 'HEAD')) {
+      const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
+      if (edgeCache && isAnonGet && !bypass) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const listRes = await handlePublicJobsListApi(request, env);
+      if (isAnonGet && !bypass && listRes.status === 200) recordPublicCachePut(edgeCache, request, listRes, ctx);
+      return listRes;
+    }
+    if (pathname === '/api/public/jobs/article' && (request.method === 'GET' || request.method === 'HEAD')) {
+      const isPrev = url.searchParams.has('preview_token') || url.searchParams.has('refresh') || url.searchParams.has('_cb');
+      if (edgeCache && isAnonGet && !isPrev) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const artRes = await handlePublicJobsArticleApi(request, env);
+      if (isAnonGet && !isPrev && artRes.status === 200 && !(artRes.headers.get('Cache-Control') || '').includes('no-store')) {
+        recordPublicCachePut(edgeCache, request, artRes, ctx);
+      }
+      return artRes;
+    }
+    if (pathname === '/api/public/jobs/telemetry' && request.method === 'POST') {
+      return handlePublicJobsTelemetryApi(request, env);
     }
     if (pathname === '/api/public/jobs-directory/overview' && (request.method === 'GET' || request.method === 'HEAD')) {
       return handlePublicJobsOverviewApi(request, env);

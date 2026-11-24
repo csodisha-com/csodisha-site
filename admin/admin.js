@@ -14,7 +14,9 @@
     searchQuery: '',
     startTime: Date.now(),
     homepageCount: null,
-    candidateCount: null
+    candidateCount: null,
+    jobsCount: null,
+    liveBrandSummary: ''
   };
 
   var OV_FOLDER_ID = 'folder-command-overview';
@@ -130,18 +132,35 @@
   function syncModuleCountLabels() {
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
     var pillarCount = masterNavigationSchema.folders.length;
-    var total = masterNavigationSchema.folders.reduce(function (acc, f) {
-      return acc + (Array.isArray(f.modules) ? f.modules.length : 0);
-    }, 0);
     document.title = 'CS Odisha — Editorial Studio & Command Suite (' + pillarCount + ' Pillars · Live D1 Sync)';
     var brandSub = document.querySelector('.cso-brand-sub');
-    if (brandSub) brandSub.textContent = pillarCount + '-Pillar Live D1 Studio (' + total + ' Child Modules)';
+    if (brandSub) {
+      brandSub.textContent = CSOState.liveBrandSummary || (pillarCount + '-Pillar Live D1 Studio');
+    }
     var searchLabel = document.querySelector('label[for="moduleSearchInput"]');
     if (searchLabel) searchLabel.textContent = 'Filter ' + pillarCount + ' pillars';
     if (dom.moduleSearchInput) dom.moduleSearchInput.placeholder = 'Filter ' + pillarCount + ' pillars...';
     if (dom.accordionNav) dom.accordionNav.setAttribute('aria-label', pillarCount + ' Pillars Live Tree');
     var coverageStrong = document.querySelector('.cso-sidebar-footer .cso-text-accent');
     if (coverageStrong) coverageStrong.textContent = pillarCount + ' / ' + pillarCount;
+  }
+
+  function refreshBrandSummary() {
+    Promise.all([
+      fetch('/api/admin/overview-stats', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      fetch('/api/admin/jobs/taxonomy', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+    ]).then(function (pair) {
+      var ov = pair[0];
+      var tax = pair[1];
+      var pillarCount = (masterNavigationSchema && Array.isArray(masterNavigationSchema.folders)) ? masterNavigationSchema.folders.length : 5;
+      var liveItems = ov && ov.totals ? Number(ov.totals.published || 0) : 0;
+      var activeCats = (ov && ov.categories ? Number(ov.categories.published || 0) : 0) + (tax && Array.isArray(tax.nodes) ? tax.nodes.length : 0);
+      var jobsPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'jobs'; }) : null;
+      if (jobsPillar) { CSOState.jobsCount = jobsPillar.total; }
+      CSOState.liveBrandSummary = pillarCount + '-Pillar Live D1 Studio · ' + activeCats + ' Categories · ' + liveItems + ' Live';
+      syncModuleCountLabels();
+      renderNavigationTree();
+    }).catch(function () {});
   }
 
   async function loadMasterNavigation() {
@@ -230,7 +249,8 @@
       left.appendChild(el('span', 'cso-nav-folder-title', (folder.icon ? folder.icon + ' ' : '') + folder.title));
 
       var right = el('span', 'cso-nav-folder-right');
-      right.appendChild(el('span', 'cso-nav-count cso-tabular', String(filteredModules.length)));
+      var badgeVal = folder.id === 'folder-jobs-careers' && CSOState.jobsCount !== null ? CSOState.jobsCount : filteredModules.length;
+      right.appendChild(el('span', 'cso-nav-count cso-tabular', String(badgeVal)));
       right.appendChild(el('span', 'cso-nav-chevron' + (isExpanded ? ' is-open' : ''), '›'));
 
       folderBtn.appendChild(left);
@@ -478,7 +498,36 @@
     renderWorkspaceView(folderId, moduleId);
   }
 
+  function openJobsPublishingStudio(initialTab) {
+    CSOState.activeFolderId = 'folder-jobs-careers';
+    CSOState.activeModuleId = 'folder-jobs-careers';
+    try { localStorage.setItem('cso_active_module_id', 'folder-jobs-careers'); } catch (_e) {}
+    if (window.location.hash !== '#folder-jobs-careers' && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#folder-jobs-careers');
+    }
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Jobs & Careers';
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Jobs Publishing House';
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Jobs Publishing House';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '3-Layer D1 · R2';
+    renderNavigationTree();
+    clearNode(dom.workspaceRoot);
+    clearNode(dom.moduleHeaderActions);
+    if (window.CSOJobsPublishingStudio) {
+      window.CSOJobsPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, initialTab || 'articles');
+    }
+  }
+
   function renderWorkspaceView(folderId, moduleId) {
+    if (folderId === 'folder-jobs-careers' && window.CSOJobsPublishingStudio) {
+      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Jobs & Careers';
+      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Jobs Publishing House';
+      if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Jobs Publishing House';
+      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '3-Layer D1 · R2';
+      clearNode(dom.workspaceRoot);
+      clearNode(dom.moduleHeaderActions);
+      window.CSOJobsPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, 'articles');
+      return;
+    }
     var caCard = document.getElementById('cso-ca-publisher-card');
     var jobCard = document.getElementById('cso-job-publisher-card');
     clearNode(dom.workspaceRoot);
@@ -519,6 +568,12 @@
   }
 
   function openQuickCreateRoute(targetRoute) {
+    if (targetRoute === 'jobs/new' && window.CSOJobsPublishingStudio) {
+      closeCreateDropdown();
+      openJobsPublishingStudio('new');
+      if (window.innerWidth <= 900) closeMobileDrawer();
+      return;
+    }
     if (targetRoute === 'nav-manager') {
       closeCreateDropdown();
       clearNode(dom.workspaceRoot);
@@ -829,6 +884,8 @@
       if (CSOState.candidateCount !== n) { CSOState.candidateCount = n; renderNavigationTree(); }
     },
     openCandidateHubTab: function (tab) { openCandidateHubStudio(tab); },
+    openJobsPublishingTab: function (tab) { openJobsPublishingStudio(tab); },
+    refreshBrandSummary: refreshBrandSummary,
     getSchema: function () { return masterNavigationSchema; }
   };
 
@@ -849,5 +906,6 @@
     renderNavigationTree();
     selectModule(target.folderId, target.moduleId);
     refreshHomepageCount();
+    refreshBrandSummary();
   });
 })(window, document);
