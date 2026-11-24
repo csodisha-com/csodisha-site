@@ -8443,98 +8443,74 @@ select:focus-visible {
   line-height: 1 !important;
 }
 
-.main-nav a.active,
-.main-nav a.on,
-.main-nav a[aria-current="page"],
-.site-header__nav a.active,
-.site-header__nav a.on,
-.site-header__nav a[aria-current="page"],
-.cso-nav-items > a.on,
-.cso-nav-items .ni.cso-active > .cso-nav-parent {
-  background: var(--cso-surface) !important;
-  color: var(--cso-primary) !important;
-  font-weight: 700 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16) !important;
-}
-
-.cso-nav-items .ni.cso-active > .cso-nav-parent > a,
-.cso-nav-items .ni.cso-active > .cso-nav-parent > a span,
-.cso-nav-items .ni.cso-active > .cso-nav-parent > .cso-nav-arrow {
-  background: transparent !important;
-  color: var(--cso-primary) !important;
-  font-weight: 700 !important;
-  box-shadow: none !important;
-}
-
 /* ==========================================================================
-   v147: Modern Fluent Main Navigation Bar Surface, Pill Items & Dropdowns
+   v264: Secondary Pillar Navigation Strip — Theme-Aware Surface & Single Pill
    ========================================================================== */
+:root,
+:root[data-cso-theme="system"],
+:root[data-cso-resolved-mode="light"] {
+  --cso-subnav-bg: #eef3f7;
+  --cso-subnav-border: 1px solid #d5dfe7;
+  --cso-subnav-ink: #162634;
+  --cso-subnav-hover: rgba(15, 76, 92, 0.08);
+  --cso-subnav-pill-bg: #0f4c5c;
+  --cso-subnav-pill-fg: #ffffff;
+}
 
-/* 1. Modern Fluent Bar Surface & Balanced Layout */
-nav,
+:root[data-cso-theme="dark"],
+:root[data-cso-theme="system"][data-cso-resolved-mode="dark"],
+:root[data-cso-resolved-mode="dark"],
+:root[data-theme="dark"] {
+  --cso-subnav-bg: #131e29;
+  --cso-subnav-border: 1px solid #263647;
+  --cso-subnav-ink: #e2eaf2;
+  --cso-subnav-hover: rgba(255, 255, 255, 0.08);
+  --cso-subnav-pill-bg: #1a5b72;
+  --cso-subnav-pill-fg: #ffffff;
+}
+
+:root[data-cso-theme="reading"],
+:root[data-theme="reading"] {
+  --cso-subnav-bg: #efe6d5;
+  --cso-subnav-border: 1px solid #d6c7ae;
+  --cso-subnav-ink: #322315;
+  --cso-subnav-hover: rgba(15, 76, 92, 0.08);
+  --cso-subnav-pill-bg: #593e25;
+  --cso-subnav-pill-fg: #fffbf4;
+}
+
+:root[data-cso-theme="utkal-bharat"],
+:root[data-theme="utkal-bharat"] {
+  --cso-subnav-bg: #f4ece0;
+  --cso-subnav-border: 2px solid #c99326;
+  --cso-subnav-ink: #241714;
+  --cso-subnav-hover: rgba(15, 76, 92, 0.08);
+  --cso-subnav-pill-bg: #78231d;
+  --cso-subnav-pill-fg: #fffdf9;
+}
+
+/* 1. Strip Surface & Typography (zero green background, zero gradient) */
 .site-header__nav,
 .main-nav,
-#cso-main-navbar {
+#cso-main-navbar,
+.cso-pillar-nav,
+.cso-subnav,
+.subnav {
   min-height: 50px !important;
   padding: 6px 20px !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 0 4px 16px -4px rgba(2, 6, 23, 0.25) !important;
-  background: linear-gradient(180deg, #165B33 0%, #114727 100%) !important;
-  color: #F8FAFC !important;
+  background: var(--cso-subnav-bg, #eef3f7) !important;
+  background-color: var(--cso-subnav-bg, #eef3f7) !important;
+  background-image: none !important;
+  color: var(--cso-subnav-ink, #162634) !important;
+  border-top: none !important;
+  border-bottom: var(--cso-subnav-border, 1px solid #d5dfe7) !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
   border-radius: 0 !important;
   position: relative !important;
   z-index: 90 !important;
 }
 
-/* System Light & Reading Mode */
-:root[data-cso-theme="system"] nav,
-:root[data-cso-theme="system"] .site-header__nav,
-:root[data-cso-theme="system"] .main-nav,
-:root[data-cso-theme="system"] #cso-main-navbar,
-:root[data-cso-resolved-mode="light"] nav,
-:root[data-cso-resolved-mode="light"] .site-header__nav,
-:root[data-cso-resolved-mode="light"] .main-nav,
-:root[data-cso-resolved-mode="light"] #cso-main-navbar,
-:root[data-cso-theme="reading"] nav,
-:root[data-cso-theme="reading"] .site-header__nav,
-:root[data-cso-theme="reading"] .main-nav,
-:root[data-cso-theme="reading"] #cso-main-navbar {
-  background: linear-gradient(180deg, #165B33 0%, #114727 100%) !important;
-  color: #F8FAFC !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
-}
-
-/* Dark Mode: Translucent Midnight Glass */
-:root[data-cso-theme="dark"] nav,
-:root[data-cso-theme="dark"] .site-header__nav,
-:root[data-cso-theme="dark"] .main-nav,
-:root[data-cso-theme="dark"] #cso-main-navbar,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] nav,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .site-header__nav,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .main-nav,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] #cso-main-navbar {
-  background: rgba(15, 23, 42, 0.92) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: #F8FAFC !important;
-}
-
-/* Odisha & Bharat (utkal-bharat): Warm Heritage Vermilion-Maroon & Temple-Gold Accent Border */
-:root[data-cso-theme="utkal-bharat"] nav,
-:root[data-cso-theme="utkal-bharat"] .site-header__nav,
-:root[data-cso-theme="utkal-bharat"] .main-nav,
-:root[data-cso-theme="utkal-bharat"] #cso-main-navbar {
-  background: linear-gradient(180deg, #7C2D12 0%, #5C1D0C 100%) !important;
-  border-top: 1px solid rgba(245, 158, 11, 0.25) !important;
-  border-bottom: 1px solid #F59E0B !important;
-  color: #F8FAFC !important;
-}
-
 /* Balanced Centered Layout Container */
-nav .w,
 .main-nav .w,
 .site-header__nav .w,
 #cso-main-navbar .w,
@@ -8564,7 +8540,7 @@ nav .w,
   }
 }
 
-/* 2. Fluent Pill Items, Active State & Smooth Micro-Interactions */
+/* 2. Inactive Items: Crisp Inherited Ink, Zero Outer Box */
 .main-nav > a,
 .site-header__nav > a,
 .cso-nav-items > a,
@@ -8574,13 +8550,14 @@ nav .w,
 .cso-nav-items .cso-nav-parent {
   height: 36px !important;
   min-height: 36px !important;
-  padding: 0 14px !important;
+  padding: 0.45rem 1rem !important;
   border-radius: 999px !important;
   font-size: 14px !important;
   font-weight: 600 !important;
   letter-spacing: 0.005em !important;
   line-height: 1 !important;
-  color: #F8FAFC !important;
+  opacity: 1 !important;
+  color: var(--cso-subnav-ink, #162634) !important;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -8588,20 +8565,21 @@ nav .w,
   align-items: center !important;
   gap: 7px !important;
   box-sizing: border-box !important;
-  transition: background-color 180ms cubic-bezier(0.22, 1, 0.36, 1), color 180ms ease, transform 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms ease !important;
+  transition: background-color 180ms cubic-bezier(0.22, 1, 0.36, 1), color 180ms ease !important;
 }
 
 .main-nav .cso-nav-parent > a,
 .site-header__nav .cso-nav-parent > a,
 .cso-nav-items .cso-nav-parent > a {
-  height: 36px !important;
-  min-height: 36px !important;
+  height: auto !important;
+  min-height: 0 !important;
   padding: 0 !important;
-  border-radius: 999px !important;
+  border-radius: 0 !important;
   font-size: 14px !important;
-  font-weight: 600 !important;
+  font-weight: inherit !important;
   letter-spacing: 0.005em !important;
   line-height: 1 !important;
+  opacity: 1 !important;
   color: inherit !important;
   background: transparent !important;
   border: none !important;
@@ -8635,6 +8613,7 @@ nav .w,
   color: inherit !important;
   background: transparent !important;
   border: none !important;
+  box-shadow: none !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -8650,7 +8629,7 @@ nav .w,
   transform: rotate(180deg) !important;
 }
 
-/* Hover State: Smooth Translucent Pill Glow */
+/* Hover State: Subtle Theme-Aware Tint */
 .main-nav > a:hover,
 .site-header__nav > a:hover,
 .cso-nav-items > a:hover,
@@ -8659,9 +8638,9 @@ nav .w,
 .site-header__nav .cso-nav-parent:hover,
 .cso-nav-items .cso-nav-parent:hover,
 .cso-nav-items .ni.cso-open > .cso-nav-parent {
-  background: rgba(255, 255, 255, 0.13) !important;
-  color: #FFFFFF !important;
-  transform: translateY(-1px) !important;
+  background: var(--cso-subnav-hover, rgba(15, 76, 92, 0.08)) !important;
+  color: var(--cso-subnav-ink, #162634) !important;
+  transform: none !important;
 }
 
 .cso-nav-parent > a:hover {
@@ -8671,80 +8650,27 @@ nav .w,
   box-shadow: none !important;
 }
 
-/* Active Tab Pill: Crisp Elevated Luminous Pill (Light & Reading Mode Default) */
-.main-nav > a.active,
-.main-nav > a.on,
-.main-nav > a[aria-current="page"],
-.site-header__nav > a.active,
-.site-header__nav > a.on,
-.site-header__nav > a[aria-current="page"],
+/* 3. Single Active Pill (zero white halo, zero double rounded box) */
 .cso-nav-items > a.on,
 .cso-nav-items > a.active,
 .cso-nav-items > a[aria-current="page"],
 .cso-nav-items .ni.cso-active > .cso-nav-parent {
-  background: #FAF9F6 !important;
-  color: #114727 !important;
+  background: var(--cso-subnav-pill-bg, #0f4c5c) !important;
+  color: var(--cso-subnav-pill-fg, #ffffff) !important;
   font-weight: 700 !important;
   border-radius: 999px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  padding: 0.45rem 1rem !important;
+  box-shadow: none !important;
 }
 
 .cso-nav-items .ni.cso-active > .cso-nav-parent > a,
 .cso-nav-items .ni.cso-active > .cso-nav-parent > a span,
 .cso-nav-items .ni.cso-active > .cso-nav-parent > .cso-nav-arrow {
   background: transparent !important;
-  color: #114727 !important;
+  color: var(--cso-subnav-pill-fg, #ffffff) !important;
   font-weight: 700 !important;
   box-shadow: none !important;
-}
-
-/* Active Tab Pill in Dark Mode (#F8FAFC with #0F172A ink) */
-:root[data-cso-theme="dark"] .main-nav > a.active,
-:root[data-cso-theme="dark"] .main-nav > a.on,
-:root[data-cso-theme="dark"] .main-nav > a[aria-current="page"],
-:root[data-cso-theme="dark"] .site-header__nav > a.active,
-:root[data-cso-theme="dark"] .site-header__nav > a.on,
-:root[data-cso-theme="dark"] .site-header__nav > a[aria-current="page"],
-:root[data-cso-theme="dark"] .cso-nav-items > a.on,
-:root[data-cso-theme="dark"] .cso-nav-items .ni.cso-active > .cso-nav-parent,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .main-nav > a.active,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .main-nav > a.on,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .main-nav > a[aria-current="page"],
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .site-header__nav > a.active,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .site-header__nav > a.on,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .site-header__nav > a[aria-current="page"],
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .cso-nav-items > a.on,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .cso-nav-items .ni.cso-active > .cso-nav-parent {
-  background: #F8FAFC !important;
-  color: #0F172A !important;
-}
-
-:root[data-cso-theme="dark"] .cso-nav-items .ni.cso-active > .cso-nav-parent > a,
-:root[data-cso-theme="dark"] .cso-nav-items .ni.cso-active > .cso-nav-parent > a span,
-:root[data-cso-theme="dark"] .cso-nav-items .ni.cso-active > .cso-nav-parent > .cso-nav-arrow,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .cso-nav-items .ni.cso-active > .cso-nav-parent > a,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .cso-nav-items .ni.cso-active > .cso-nav-parent > a span,
-:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .cso-nav-items .ni.cso-active > .cso-nav-parent > .cso-nav-arrow {
-  color: #0F172A !important;
-}
-
-/* Active Tab Pill in Odisha & Bharat (#FFFBEB with #7C2D12 ink) */
-:root[data-cso-theme="utkal-bharat"] .main-nav > a.active,
-:root[data-cso-theme="utkal-bharat"] .main-nav > a.on,
-:root[data-cso-theme="utkal-bharat"] .main-nav > a[aria-current="page"],
-:root[data-cso-theme="utkal-bharat"] .site-header__nav > a.active,
-:root[data-cso-theme="utkal-bharat"] .site-header__nav > a.on,
-:root[data-cso-theme="utkal-bharat"] .site-header__nav > a[aria-current="page"],
-:root[data-cso-theme="utkal-bharat"] .cso-nav-items > a.on,
-:root[data-cso-theme="utkal-bharat"] .cso-nav-items .ni.cso-active > .cso-nav-parent {
-  background: #FFFBEB !important;
-  color: #7C2D12 !important;
-}
-
-:root[data-cso-theme="utkal-bharat"] .cso-nav-items .ni.cso-active > .cso-nav-parent > a,
-:root[data-cso-theme="utkal-bharat"] .cso-nav-items .ni.cso-active > .cso-nav-parent > a span,
-:root[data-cso-theme="utkal-bharat"] .cso-nav-items .ni.cso-active > .cso-nav-parent > .cso-nav-arrow {
-  color: #7C2D12 !important;
+  padding: 0 !important;
 }
 
 /* Saved Bookmark Trigger inside Nav Bar: Pill Capsule Symmetry */
