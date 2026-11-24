@@ -220,7 +220,7 @@ button {
 .nav-badge {
   margin-left: auto;
   background: var(--admin-saffron);
-  color: #fff;
+  color: var(--cso-primary-fg);
   font-size: 0.72rem;
   font-weight: 700;
   padding: 2px 7px;
@@ -507,14 +507,15 @@ button {
 /* Standard Buttons */
 .btn-primary {
   background: var(--admin-emerald-bright);
-  color: #fff;
+  color: var(--cso-primary-fg);
   font-weight: 600;
   padding: 8px 18px;
   border-radius: 8px;
 }
 
 .btn-primary:hover {
-  background: #0d9359;
+  background: var(--admin-saffron);
+  color: var(--cso-primary-fg);
 }
 
 .btn-secondary {
@@ -545,7 +546,7 @@ button {
 
 .btn-saffron {
   background: var(--admin-saffron);
-  color: #fff;
+  color: var(--cso-primary-fg);
   font-weight: 600;
   padding: 8px 16px;
   border-radius: 8px;

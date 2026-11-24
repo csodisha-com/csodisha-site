@@ -135,14 +135,44 @@ check('Admin CSS maps studio/cms variables directly to --cso-* homepage tokens',
   assert.ok(read('admin/admin.css').includes('var(--cso-bg'), 'admin/admin.css must use --cso-bg');
 });
 
-check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v240', () => {
+check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v241', () => {
   const sw = read('sw.js');
-  assert.ok(sw.includes("const CACHE_NAME = 'cso-candidate-cache-v240';"), 'sw.js must be v240');
+  assert.ok(sw.includes("const CACHE_NAME = 'cso-candidate-cache-v241';"), 'sw.js must be v241');
   assert.ok(sw.includes("'/assets/css/cso-themes.css'"), 'sw.js should precache /assets/css/cso-themes.css');
   assert.ok(
-    read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v240';"),
-    'ops-sentinel.js must be v240'
+    read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v241';"),
+    'ops-sentinel.js must be v241'
   );
+});
+
+check('v241: No unguarded white/light-only text colors remain on non-button elements in admin/*.css', () => {
+  const adminCssFiles = [
+    'admin/studio.css',
+    'admin/admin.css',
+    'admin/cms/cms.css',
+    'admin/cms/cms-embed.css',
+    'admin/edu-resources-batch1.css'
+  ];
+  const allowedWhiteTextSelectors = /(\.cso-brand-mark|\.cso-btn-forest|\.cso-social-trigger:hover|\.cso-social-trigger:focus-visible|\.btn-danger|\.cso-mkt-banner-cta)/;
+  for (const rel of adminCssFiles) {
+    const css = read(rel);
+    assert.equal(css.includes('--cso-ink-muted'), false, `${rel} must not reference undefined --cso-ink-muted`);
+    const lines = css.split('\n');
+    let currentSelector = '';
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.includes('{') && !line.trim().startsWith('/*')) {
+        currentSelector = line.split('{')[0].trim();
+      }
+      if (/\bcolor\s*:\s*(#fff\b|#ffffff\b|#f8fafc\b|#f1f5f9\b|#e2e8f0\b|#cbd5e1\b|#94a3b8\b)/i.test(line)) {
+        const context = `${currentSelector} ${line}`;
+        assert.ok(
+          allowedWhiteTextSelectors.test(context),
+          `Unguarded light/white text color in ${rel}:${i + 1} (${currentSelector}): ${line.trim()}`
+        );
+      }
+    }
+  }
 });
 
 check('Strict CSP compliance on modified admin HTML & JS files', () => {
