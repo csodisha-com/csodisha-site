@@ -824,6 +824,12 @@
       const items = Array.isArray(data.items) ? data.items : [];
       const total = Number(data.total) || items.length;
 
+      const toolbarEl = $('mt-toolbar');
+      const metaBarEl = $('mt-meta-bar');
+      const showControls = items.length > 0 || hasFilter;
+      if (toolbarEl) toolbarEl.hidden = !showControls;
+      if (metaBarEl) metaBarEl.hidden = !showControls;
+
       if (countLabel) {
         countLabel.textContent = `${total.toLocaleString('en-IN')} published ${total === 1 ? 'mock test' : 'mock tests'}`;
       }
@@ -831,10 +837,9 @@
       if (items.length === 0) {
         statusEl.hidden = false;
         statusEl.replaceChildren(
-          el('h3', '', hasFilter ? 'No matching mock tests found' : 'No mock tests published yet'),
           el('p', '', hasFilter
-            ? 'Try clearing your search or selecting All Exams.'
-            : 'Published OPSC, OSSC, OSSSC, and teacher eligibility practice tests will appear here automatically.')
+            ? 'No matching mock tests found.'
+            : 'No items published yet — add categories or content in Admin Studio.')
         );
         if (paginationEl) paginationEl.hidden = true;
         return;

@@ -4,31 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#1D4ED8">
-  <title>CSO Candidate Hub — OPSC, OSSC, Teaching &amp; National Exam Workspace</title>
-  <meta name="description" content="Free, independent candidate preparation workspace for Odisha and national competitive exams. Track syllabus milestones, CBT analytics, deadlines, and official PYQs.">
-
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://csodisha.com/student-dashboard/">
-  <meta property="og:image" content="https://csodisha.com/assets/img/cso-logo.png">
-  <meta property="og:site_name" content="Common Sense Odisha">
-  <meta property="og:title" content="CSO Candidate Hub — Odisha &amp; National Exam Workspace">
-  <meta property="og:description" content="Independent candidate dashboard for Odisha competitive exam aspirants. Offline syllabus tracker, PYQ shelf, and CBT analytics.">
-  <meta property="og:locale" content="en_IN">
-
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="CSO Candidate Hub — Odisha Exam Workspace">
-  <meta name="twitter:description" content="Track syllabus milestones, CBT analytics, and offline PYQs.">
-
+  <title>Candidate Workspace | Common Sense Odisha</title>
+  <meta name="description" content="Candidate workspace on Common Sense Odisha.">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
   <script src="/assets/shared-header.js?v=20261121v171" defer></script>
   <link rel="stylesheet" href="/assets/css/student-dashboard-bp.css?v=20261122v213">
-  <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v177">
-  <link rel="stylesheet" href="/assets/css/current-affairs.css?v=20261122v207">
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <script src="/assets/js/student-auth-guard.js" defer></script>
 </head>
 <body class="cso-student-dashboard-page">
+<div id="csoPublicAnnouncementMount"></div>
 <header class="top site-header__top" id="header-top" role="banner">
 <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
   <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36" fetchpriority="high" decoding="async">
@@ -43,11 +29,8 @@
 </header>
 <nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
 
-
 <div class="bp-app-layout">
-
-  <!-- 1. Sticky Collapsible Sidebar Navigation -->
-  <aside id="bp-sidebar" class="bp-sidebar" aria-label="Student Portal Navigation">
+  <aside id="bp-sidebar" class="bp-sidebar" aria-label="Candidate Workspace Navigation">
     <div class="bp-sidebar-header">
       <a href="/" class="bp-brand">
         <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" width="36" height="36" class="cso-brand-emblem" decoding="async">
@@ -60,133 +43,32 @@
     </div>
 
     <div class="bp-nav-scroll">
-      <div class="bp-nav-section">
-        <div class="bp-nav-label">Workspace</div>
-        <ul class="bp-nav-list">
-          <li>
-            <a href="#tab-overview" class="bp-nav-item active" data-tab="tab-overview">
-              <span class="bp-nav-icon" aria-hidden="true">🏠</span>
-              <span class="bp-nav-text">Overview</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tab-my-learning" class="bp-nav-item" data-tab="tab-my-learning">
-              <span class="bp-nav-icon" aria-hidden="true">📚</span>
-              <span class="bp-nav-text">My Learning &amp; Syllabi</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tab-bookmarks" class="bp-nav-item" data-tab="tab-bookmarks">
-              <span class="bp-nav-icon" aria-hidden="true">🔖</span>
-              <span class="bp-nav-text">Private Library &amp; Pins</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tab-achievements" class="bp-nav-item" data-tab="tab-achievements">
-              <span class="bp-nav-icon" aria-hidden="true">🏆</span>
-              <span class="bp-nav-text">Readiness &amp; Streaks</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tab-profile-settings" class="bp-nav-item" id="sidebar-nav-profile" data-tab="tab-profile-settings">
-              <span class="bp-nav-icon" aria-hidden="true">⚙️</span>
-              <span class="bp-nav-text">Profile &amp; Settings</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <div class="bp-nav-section">
-        <div class="bp-nav-label">Study Tools</div>
-        <ul class="bp-nav-list">
-          <li>
-            <a href="#tool-search" class="bp-nav-item" id="tool-search-btn" data-action="search">
-              <span class="bp-nav-icon" aria-hidden="true">🔍</span>
-              <span class="bp-nav-text">Universal Search</span>
-              <span class="bp-kbd">⌘K</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tool-calendar" class="bp-nav-item" data-tab="tool-calendar">
-              <span class="bp-nav-icon" aria-hidden="true">📅</span>
-              <span class="bp-nav-text">Exam Calendar</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tool-locker" class="bp-nav-item" data-tab="tool-locker">
-              <span class="bp-nav-icon" aria-hidden="true">🗂️</span>
-              <span class="bp-nav-text">Document Locker</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tool-notes" class="bp-nav-item" data-tab="tool-notes">
-              <span class="bp-nav-icon" aria-hidden="true">📝</span>
-              <span class="bp-nav-text">Revision Notes</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tool-analytics" class="bp-nav-item" data-tab="tool-analytics">
-              <span class="bp-nav-icon" aria-hidden="true">📈</span>
-              <span class="bp-nav-text">CBT Analytics &amp; Log</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tool-study-timer" class="bp-nav-item" data-tab="tool-study-timer">
-              <span class="bp-nav-icon" aria-hidden="true">⏱️</span>
-              <span class="bp-nav-text">Focus Timer</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tool-exam-calculator" class="bp-nav-item" data-tab="tool-exam-calculator">
-              <span class="bp-nav-icon" aria-hidden="true">🧮</span>
-              <span class="bp-nav-text">Cutoff Calculator</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tool-daily-drill" class="bp-nav-item" data-tab="tool-daily-drill">
-              <span class="bp-nav-icon" aria-hidden="true">⚡</span>
-              <span class="bp-nav-text">Daily GK Drill</span>
-            </a>
-          </li>
-        </ul>
-      </div>
+      <nav id="bp-sidebar-nav" aria-label="Workspace Modules"></nav>
     </div>
 
     <div class="bp-sidebar-footer">
       <div class="bp-user-pill" id="bp-sidebar-user-btn" role="button" tabindex="0">
         <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" width="36" height="36" class="cso-brand-emblem" id="bp-side-avatar" decoding="async">
         <div class="bp-user-meta">
-          <span class="bp-user-name" id="bp-side-name">Odisha Aspirant</span>
-          <span class="bp-user-district" id="bp-side-district">Odisha</span>
+          <span class="bp-user-name" id="bp-side-name">Candidate</span>
+          <span class="bp-user-district" id="bp-side-district"></span>
         </div>
       </div>
     </div>
   </aside>
 
-  <!-- 2. Main Workspace -->
   <div class="bp-main-wrapper">
-
-    <!-- Sticky Glass Header (non-overlapping responsive bar) -->
     <header class="bp-topbar">
       <div class="bp-topbar-left">
         <button type="button" class="bp-mobile-menu-btn" id="bp-mobile-menu-trigger" aria-label="Open Navigation Menu">☰</button>
         <div class="bp-page-header">
-          <h1 id="bp-topbar-title">Candidate Overview</h1>
-          <p id="bp-topbar-subtitle" class="bp-topbar-sub">Synced exam readiness &amp; deadlines</p>
+          <h1 id="bp-topbar-title">Candidate Workspace</h1>
+          <p id="bp-topbar-subtitle" class="bp-topbar-sub">Live D1 synced workspace</p>
         </div>
       </div>
 
       <div class="bp-topbar-actions">
-        <button type="button" class="bp-search-trigger" id="bp-topbar-search-trigger" title="Search across exams &amp; syllabus (Ctrl+K)">
-          <span>🔍</span>
-          <span class="bp-search-label">Search exams, topics...</span>
-          <span class="bp-kbd">⌘K</span>
-        </button>
-
-        <button type="button" class="bp-icon-action-btn cso-pwa-install-trigger" id="topbar-pwa-install-btn" aria-label="Install App" title="Install CSO Workspace App">
-          <span>📲</span>
-          <span class="cso-btn-label">Install</span>
-        </button>
+        <span class="cso-sync-pill" id="cso-sync-pill" role="status" aria-live="polite" hidden></span>
 
         <span class="cso-popup-anchor cso-hub-theme-anchor">
           <button type="button" class="bp-icon-action-btn cso-theme-toggle-btn" id="cso-theme-toggle" aria-label="Select portal theme" aria-haspopup="true" title="Theme">
@@ -196,16 +78,11 @@
           </button>
         </span>
 
-        <button type="button" class="bp-icon-action-btn" id="bp-notif-btn" aria-label="Notifications" title="Exam Alerts">
-          <span>🔔</span>
-          <span class="bp-badge-dot" id="bp-notif-dot" hidden></span>
-        </button>
-
-        <button type="button" class="bp-user-pill bp-topbar-user" id="bp-topbar-user-btn" title="Profile &amp; Settings">
+        <button type="button" class="bp-user-pill bp-topbar-user" id="bp-topbar-user-btn" title="Edit Profile">
           <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" width="32" height="32" class="cso-brand-emblem" id="bp-top-avatar" decoding="async">
           <div class="bp-user-meta">
-            <span class="bp-user-name" id="bp-top-name">Odisha Aspirant</span>
-            <span class="bp-user-district" id="bp-top-district">Odisha</span>
+            <span class="bp-user-name" id="bp-top-name">Candidate</span>
+            <span class="bp-user-district" id="bp-top-district"></span>
           </div>
         </button>
 
@@ -217,648 +94,64 @@
     </header>
 
     <main class="bp-content">
-
-      <!-- Admin Targeted Notice Banner (hidden unless controls.admin_notice_text is set) -->
       <div id="cso-admin-notice-banner" class="cso-admin-notice" role="status" hidden>
         <span class="cso-admin-notice-badge" id="cso-admin-notice-level">NOTICE</span>
         <span class="cso-admin-notice-text" id="cso-admin-notice-text"></span>
       </div>
 
-      <!-- TAB 1: OVERVIEW -->
-      <div id="tab-overview" class="bp-tab-view active">
-
-        <!-- 4-Tier "My Focus" Pill Bar -->
-        <section class="cso-focus-bar" id="cso-focus-pill-bar" aria-label="Active Exam Focus">
-          <div class="cso-focus-pills" id="cso-focus-pills-list">
-            <span class="cso-focus-loading">Loading exam goals...</span>
-          </div>
-          <div class="cso-focus-actions">
-            <button type="button" class="cso-pill-btn" id="cso-all-feed-toggle" aria-pressed="false">All Odisha Feed</button>
-            <button type="button" class="cso-pill-btn cso-pill-primary" id="cso-open-goal-modal-btn">+ Edit Goals</button>
-            <span class="cso-lock-badge" id="cso-goal-locked-badge" hidden>🔒 Cohort Locked by Admin</span>
-          </div>
-        </section>
-
-        <!-- Candidate Profile Card (required IDs preserved for verify-dashboard-pwa.js) -->
-        <section class="cso-profile-card" id="cso-profile-card" aria-live="polite">
-          <div class="cso-profile-skeleton" id="cso-profile-skeleton">
-            <div class="cso-skel-avatar"></div>
-            <div class="cso-skel-lines">
-              <div class="cso-skel-line cso-skel-line--lg"></div>
-              <div class="cso-skel-line cso-skel-line--sm"></div>
-            </div>
-          </div>
-          <div class="cso-profile-details" id="cso-profile-details" hidden>
-            <div class="cso-profile-identity">
-              <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" width="32" height="32" class="cso-brand-emblem" id="cso-profile-avatar" decoding="async">
-              <div class="cso-profile-text">
-                <div class="cso-profile-name-row">
-                  <strong class="cso-profile-name" id="cso-profile-name">Odisha Aspirant</strong>
-                  <span class="cso-profile-badge" id="cso-profile-stream-badge">TARGETING GOALS</span>
-                </div>
-                <span class="cso-profile-id" id="cso-profile-id">Odisha</span>
-              </div>
-            </div>
-            <div class="cso-profile-actions">
-              <span class="cso-sync-pill" id="cso-sync-pill" role="status" aria-live="polite" hidden></span>
-            </div>
-          </div>
-        </section>
-
-        <!-- v210: Unified Candidate Exam Readiness Overview & Print-Ready Study Plan -->
-        <section class="bp-panel cso-panel-mt cso-readiness-summary-card" id="cso-readiness-summary-card" aria-label="Unified Candidate Exam Readiness Overview"></section>
-
-        <!-- v177: Unified Candidate Hub -->
-        <section id="cso-unified-hub-root" class="cso-uh-root" aria-label="Unified Candidate Hub"></section>
-
-        <!-- v197: Personalized Job & Scheme Alert Watchlist -->
-        <section class="bp-panel cso-panel-mt" id="cso-watchlist-panel" aria-label="Personalized Job and Scheme Alert Watchlist"></section>
-
-        <!-- v204: Tracked Deadlines & Exam Countdown Board -->
-        <section class="bp-panel cso-panel-mt" id="cso-deadlines-panel" aria-label="Tracked Exam and Job Deadlines"></section>
-
-        <!-- v205: Odisha Govt Exam Document & OTR Readiness Checklist -->
-        <section class="bp-panel cso-panel-mt" id="cso-doc-readiness-panel" aria-label="Odisha Document and OTR Readiness Checklist"></section>
-
-        <!-- v212: Saved Odisha Govt Schemes Tracker -->
-        <section class="bp-panel cso-panel-mt" id="cso-saved-schemes-panel" aria-label="Saved Odisha Government Schemes"></section>
-
-        <!-- v213: Offline JSON Backup & Cross-Device Restore -->
-        <section class="bp-panel cso-panel-mt" id="cso-candidate-backup-panel" aria-label="Offline JSON Backup and Cross-Device Restore"></section>
-
-        <!-- v198: Exam Syllabus Mastery -->
-        <section class="bp-panel cso-panel-mt" id="cso-syllabus-progress-panel" aria-label="Exam Syllabus Mastery"></section>
-
-        <!-- v207: Bilingual Daily Odisha Current Affairs & 5-Question Quiz Feed -->
-        <section class="bp-panel cso-panel-mt cso-ca-panel cso-ca-panel--compact" id="cso-current-affairs-panel" data-compact="true" aria-label="Daily Odisha Current Affairs"></section>
-
-        <!-- Split-Focus Hero Bento: Readiness Ring + Smart Daily Target + Countdowns -->
-        <div class="cso-hero-bento">
-          <section class="bp-panel cso-readiness-panel" id="cso-readiness-card">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>🎯</span><span>Exam Readiness Score</span></div>
-              <span class="cso-readiness-tag" id="cso-readiness-status">Synced</span>
-            </div>
-            <div class="cso-readiness-body">
-              <div class="cso-readiness-ring" id="cso-readiness-ring" role="img" aria-label="Readiness score">
-                <div class="cso-ring-inner">
-                  <strong id="cso-readiness-pct">0%</strong>
-                  <span>Ready</span>
-                </div>
-              </div>
-              <div class="cso-readiness-breakdown">
-                <div class="cso-metric-pills">
-                  <span class="cso-metric-pill">Syllabus <strong id="cso-metric-syllabus">0%</strong></span>
-                  <span class="cso-metric-pill">PYQ Mastery <strong id="cso-metric-cbt">0%</strong></span>
-                  <span class="cso-metric-pill">Consistency <strong id="cso-metric-streak">0%</strong></span>
-                </div>
-                <p class="cso-daily-target" id="cso-daily-target-text">Select a primary goal to compute your daily micro-target.</p>
-                <a href="#tab-my-learning" class="cso-btn cso-btn-primary cso-readiness-cta" data-tab="tab-my-learning">Continue Syllabus →</a>
-              </div>
-            </div>
-          </section>
-
-          <section class="bp-panel cso-countdown-section" aria-label="Exam application deadline countdowns">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>⏳</span><span>Live Exam &amp; Deadline Countdowns</span></div>
-              <button type="button" class="bp-panel-link bp-nav-switch" data-tab="tool-calendar">Full Calendar →</button>
-            </div>
-            <div class="cso-countdown-grid" id="cso-countdown-grid">
-              <p class="cso-muted-note">Computing active deadlines...</p>
-            </div>
-          </section>
-        </div>
-
-        <!-- Dynamic Target Exam Progress Cards -->
-        <section class="bp-section-head">
-          <div>
-            <h2>My Target Examinations</h2>
-            <p>Live syllabus coverage &amp; paper-wise readiness for your selected goals</p>
-          </div>
-          <a href="#tab-my-learning" class="bp-panel-link bp-nav-switch" data-tab="tab-my-learning">Open Checklists →</a>
-        </section>
-        <div class="bp-exam-grid" id="cso-target-exam-cards"></div>
-
-        <!-- Bento Content Row: Priority Topics, Bookmarks, Schemes, Resources -->
-        <div class="bp-bento-grid">
-          <section class="bp-panel">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>🔥</span><span>Priority Next Topics</span></div>
-              <a href="#tab-my-learning" class="bp-panel-link bp-nav-switch" data-tab="tab-my-learning">View Full Syllabus →</a>
-            </div>
-            <div class="cso-stack-list" id="overview-priority-topics"></div>
-          </section>
-          <section class="bp-panel">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>🎓</span><span>Scholarships &amp; Welfare</span></div>
-              <a href="/schemes-benefits/" class="bp-panel-link cso-view-all-schemes">View All Schemes →</a>
-            </div>
-            <div class="cso-stack-list" id="candidate-schemes-list">
-              <p class="cso-muted-note">Loading D1 welfare programs...</p>
-            </div>
-            <div class="cso-panel-foot">
-              <a href="/schemes-benefits/" class="cso-btn cso-btn-sm" id="cso-schemes-explorer-link" hidden>Open Schemes Explorer →</a>
-            </div>
-          </section>
-          <section class="bp-panel">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>📚</span><span>Recommended PYQs &amp; Notes</span></div>
-              <a href="/study-library/" class="bp-panel-link">Study Library →</a>
-            </div>
-            <div class="cso-stack-list" id="overview-pyq-shelf">
-              <p class="cso-muted-note">Matching D1 resources to your goals...</p>
-            </div>
-          </section>
-          <section class="bp-panel">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>🔖</span><span>Saved Bookmarks</span></div>
-              <a href="#tab-bookmarks" class="bp-panel-link bp-nav-switch" data-tab="tab-bookmarks">Manage Pins →</a>
-            </div>
-            <div class="cso-stack-list" id="candidate-jobs-shelf">
-              <p class="cso-muted-note">Loading saved bookmarks...</p>
-            </div>
-          </section>
-        </div>
-
-        <!-- Daily 5-Question Morning Odisha + Target Exam Capsule -->
-        <section class="bp-panel cso-panel-mt" id="cso-morning-capsule" aria-labelledby="cso-capsule-heading">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>☀️</span><span id="cso-capsule-heading">Daily 5-Question Morning Odisha + Target Exam Capsule</span></div>
-            <div class="cso-capsule-badges">
-              <span class="cso-pill-badge" id="cso-capsule-streak-badge">🔥 Streak: 0d</span>
-              <span class="cso-pill-badge" id="cso-capsule-progress-badge">0 / 5 Done</span>
-            </div>
-          </div>
-          <p class="cso-muted-note">Finish today&apos;s 5-question capsule to keep your Odisha streak alive and boost your Readiness Score.</p>
-          <div id="cso-capsule-body" class="cso-drill-card"></div>
-        </section>
-
-      </div>
-
-      <!-- TAB 2: MY LEARNING & SYLLABI -->
-      <div id="tab-my-learning" class="bp-tab-view">
-        <section class="bp-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>📖</span><span>Auto-Provisioned Syllabus &amp; Topic Checklist</span></div>
-            <span class="cso-pill-badge" id="tracker-completion-badge">0% Completed</span>
-          </div>
-          <p class="cso-muted-note">Select any of your target exams below. Topic blueprints are hydrated from D1 and synced offline-first.</p>
-          <div class="cso-stack-list" id="candidate-tracker-list"></div>
-        </section>
-
-        <div class="bp-bento-grid cso-panel-mt">
-          <section class="bp-panel cso-print-sheet" id="cso-study-plan-section">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>🗓️</span><span>Printable A4 30-Day Study Plan &amp; Exam-Day Checklist</span></div>
-              <div class="cso-inline-actions">
-                <a href="/tools/#exam-centre-planner" class="cso-btn cso-btn-sm">🎒 Exam-Day Centre &amp; Hall Ticket Planner →</a>
-                <a href="/tools/#orsp-salary-calculator" class="cso-btn cso-btn-sm">💰 Odisha 7th Pay Salary &amp; Fee Calculator →</a>
-                <a href="/tools/#odisha-pet-checker" class="cso-btn cso-btn-sm">🏃 Odisha Police &amp; Forest Guard PET Checker →</a>
-                <button type="button" id="cso-print-plan-btn" class="cso-btn cso-btn-primary">🖨️ Print A4 Plan</button>
-              </div>
-            </div>
-            <p class="cso-muted-note">Auto-generated from your active target exam milestones plus mandatory exam-hall document verification.</p>
-            <div id="cso-study-plan-grid" class="cso-study-plan-grid"></div>
-            <div id="cso-exam-day-checklist" class="cso-stack-list cso-panel-mt"></div>
-          </section>
-
-          <section class="bp-panel" id="cso-goal-alerts-panel">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>🔔</span><span>Goal Alerts Push &amp; Notification Sync</span></div>
-              <span class="cso-pill-badge" id="cso-push-status-badge">Checking…</span>
-            </div>
-            <p class="cso-muted-note">Subscribe to receive instant alerts whenever new OPSC, OSSC, OSSSC, or scholarship notices match your selected target exams.</p>
-            <div class="cso-inline-actions">
-              <button type="button" id="cso-push-toggle-btn" class="cso-btn cso-btn-primary">Enable Goal Alerts</button>
-              <span id="cso-push-endpoint-note" class="cso-muted-note"></span>
-            </div>
-          </section>
-        </div>
-      </div>
-
-      <!-- TAB 3: PRIVATE LIBRARY & BOOKMARKS -->
-      <div id="tab-bookmarks" class="bp-tab-view">
-        <div class="bp-bento-grid">
-          <section class="bp-panel">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>📚</span><span>Exam-Matched PYQs &amp; Resources</span></div>
-              <a href="/resources/" class="bp-panel-link">Browse All →</a>
-            </div>
-            <div class="cso-stack-list" id="candidate-pyq-shelf"></div>
-          </section>
-
-          <section class="bp-panel">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>💼</span><span>Bookmarked Alerts, Jobs &amp; Tests</span></div>
-              <span class="cso-muted-note">Synced via D1</span>
-            </div>
-            <div class="cso-stack-list" id="bookmarks-tab-jobs-shelf"></div>
-          </section>
-        </div>
-      </div>
-
-      <!-- TAB 4: READINESS & STREAKS -->
-      <div id="tab-achievements" class="bp-tab-view">
-        <section class="bp-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>🏆</span><span>Live Readiness Milestones &amp; Preparation Streaks</span></div>
-            <span class="cso-pill-badge" id="ach-readiness-badge">Readiness: 0/100</span>
-          </div>
-          <div class="cso-achievement-grid" id="cso-achievements-grid"></div>
-        </section>
-      </div>
-
-      <!-- TOOL: TARGET EXAM CALENDAR -->
-      <div id="tool-calendar" class="bp-tab-view">
-        <section class="bp-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>📅</span><span>Target Examination Calendar &amp; Deadlines</span></div>
-            <span class="cso-muted-note">Filtered by My Focus</span>
-          </div>
-          <div class="cso-stack-list" id="candidate-calendar-list"></div>
-        </section>
-      </div>
-
-      <!-- TOOL: DOCUMENT LOCKER -->
-      <div id="tool-locker" class="bp-tab-view">
-        <section class="bp-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>🗂️</span><span>Candidate KYC &amp; Verification Document Locker</span></div>
-            <span class="cso-muted-note">Synced via /api/sync</span>
-          </div>
-          <p class="cso-muted-note">Track your mandatory Odisha recruitment &amp; scholarship document readiness before application windows close.</p>
-          <div class="cso-locker-grid" id="candidate-locker-grid"></div>
-        </section>
-
-        <section class="bp-panel cso-panel-mt" id="cso-cert-guard-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>🛡️</span><span>Certificate Validity &amp; Expiry Guard</span></div>
-            <span class="cso-pill-badge" id="cso-cert-guard-summary">0 Tracked</span>
-          </div>
-          <p class="cso-muted-note">Never miss an OSSC/OSSSC verification deadline because of an expired SEBC/OBC, EWS, Income, or Residence certificate.</p>
-          <form id="cso-cert-guard-form" class="cso-inline-form">
-            <select id="cso-cert-type" class="cso-input" aria-label="Certificate type">
-              <option value="SEBC / OBC Non-Creamy Layer">SEBC / OBC Non-Creamy Layer (1 yr)</option>
-              <option value="EWS Certificate">EWS Asset &amp; Income Certificate (FY)</option>
-              <option value="Income Certificate">Income Certificate (6-12 mo)</option>
-              <option value="Odisha Resident / Domicile">Odisha Resident / Domicile Certificate</option>
-              <option value="Caste Certificate (SC/ST)">Caste Certificate (SC / ST)</option>
-              <option value="OTET / OSSTET / CTET Eligibility">OTET / OSSTET / CTET Score Card</option>
-              <option value="Employment Exchange Registration">Employment Exchange Regd.</option>
-            </select>
-            <input type="text" id="cso-cert-ref" class="cso-input" placeholder="Cert / Ref No. (optional)">
-            <input type="date" id="cso-cert-expiry" class="cso-input" aria-label="Valid up to date" required>
-            <button type="submit" class="cso-btn cso-btn-primary">Track Expiry</button>
-          </form>
-          <div class="cso-stack-list" id="cso-cert-guard-list"></div>
-        </section>
-      </div>
-
-      <!-- TOOL: REVISION SCRATCHPAD & NOTES -->
-      <div id="tool-notes" class="bp-tab-view">
-        <section class="bp-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>📝</span><span>Revision Scratchpad &amp; Daily Notes</span></div>
-            <span class="cso-save-indicator" id="scratchpad-save-indicator">Saved</span>
-          </div>
-          <textarea id="bp-candidate-scratchpad" class="cso-scratchpad" rows="10" placeholder="Jot down Odisha GK facts, Article numbers, B.Ed pedagogy formulas, or quick revision points..."></textarea>
-        </section>
-
-        <section class="bp-panel cso-panel-mt" id="cso-flashcards-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>🧠</span><span>Offline-First Spaced-Repetition Flashcards (IndexedDB)</span></div>
-            <span class="cso-pill-badge" id="cso-flashcards-due-badge">0 Due Today</span>
-          </div>
-          <p class="cso-muted-note">Stored offline via cso-idb.js with smart 1-day (Hard), 3-day (Good), and 7-day (Mastered) review scheduling.</p>
-          <form id="cso-flashcard-form" class="cso-inline-form">
-            <input type="text" id="cso-fc-front" class="cso-input" placeholder="Prompt / Concept (e.g. Article 243G)" required>
-            <input type="text" id="cso-fc-back" class="cso-input" placeholder="Answer / Key Point (e.g. Powers of Panchayats)" required>
-            <input type="text" id="cso-fc-exam" class="cso-input cso-input--sm" placeholder="Exam tag (OPSC/B.Ed)">
-            <button type="submit" class="cso-btn cso-btn-primary">Add Flashcard</button>
-          </form>
-          <div id="cso-flashcard-review-deck" class="cso-drill-card cso-panel-mt"></div>
-          <div id="cso-flashcard-list" class="cso-stack-list cso-panel-mt"></div>
-        </section>
-      </div>
-
-      <!-- TOOL: CBT ANALYTICS, SCORE LOGGER & MISTAKE NOTEBOOK -->
-      <div id="tool-analytics" class="bp-tab-view">
-        <div class="bp-bento-grid">
-          <section class="bp-panel">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>📊</span><span>Live D1 CBT Mock Test Trend</span></div>
-              <a href="/mock-tests/" class="bp-panel-link">Take CBT Test →</a>
-            </div>
-            <div class="cso-cbt-summary" id="cso-cbt-summary-stats"></div>
-            <div class="cso-bar-chart" id="cso-cbt-trend-chart" aria-label="CBT score trend"></div>
-            <div class="cso-stack-list" id="cso-cbt-attempts-list"></div>
-          </section>
-
-          <section class="bp-panel">
-            <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>📓</span><span>Spaced-Repetition Mistake Notebook</span></div>
-              <span class="cso-muted-note">Active Recall Log</span>
-            </div>
-            <form id="cso-mistake-form" class="cso-inline-form">
-              <input type="text" id="cso-mistake-topic" class="cso-input" placeholder="Topic / Question missed..." required>
-              <input type="text" id="cso-mistake-note" class="cso-input" placeholder="Correct concept / trap to avoid..." required>
-              <button type="submit" class="cso-btn cso-btn-primary">Log Mistake</button>
-            </form>
-            <div class="cso-stack-list" id="cso-mistake-list"></div>
-          </section>
-        </div>
-
-        <section class="bp-panel cso-panel-mt" id="cso-cbt-streak-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>🔥</span><span>CBT Mock Performance &amp; Daily Streak</span></div>
-            <div class="cso-inline-actions">
-              <a href="/study-library/cbt-mock-test/?mode=weak" class="cso-btn cso-btn-sm">Retake Weak Topics</a>
-              <a href="/study-library/cbt-mock-test/" class="cso-btn cso-btn-sm cso-btn-primary">Start Today's Mock →</a>
-            </div>
-          </div>
-          <div class="cso-cbt-summary" id="cso-cbt-streak-kpis"></div>
-          <div class="cso-stack-list" id="cso-cbt-local-attempts"></div>
-        </section>
-
-        <section class="bp-panel cso-panel-mt">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>📈</span><span>Manual Offline Mock Score Logger</span></div>
-            <span class="cso-muted-note">Synced via /api/sync</span>
-          </div>
-          <form id="form-log-mock-score" class="cso-inline-form">
-            <input type="text" id="score-exam-name" class="cso-input" placeholder="Test name (e.g. OPSC GS Paper 1)" required>
-            <input type="number" id="score-obtained" class="cso-input" placeholder="Score" step="0.25" required>
-            <input type="number" id="score-total" class="cso-input" placeholder="Max Marks" required>
-            <button type="submit" class="cso-btn cso-btn-primary">Save Score</button>
-          </form>
-          <div class="cso-stack-list" id="candidate-scores-list"></div>
-        </section>
-
-        <!-- Interactive 15-Q Weak-Area Re-Test Drill -->
-        <section class="bp-panel cso-panel-mt" id="cso-weak-drill-section">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>🎯</span><span>15-Q Weak-Area Re-Test Drill Runner</span></div>
-            <div class="cso-capsule-badges">
-              <span class="cso-pill-badge" id="cso-weak-drill-timer">⏱ 15:00</span>
-              <span class="cso-pill-badge" id="cso-weak-drill-score">0 / 15 Mastered</span>
-            </div>
-          </div>
-          <p class="cso-muted-note">Builds a targeted 15-question re-test from your Mistake Notebook, CBT wrong answers, and weak Odisha exam topics with live timer and explanations.</p>
-          <div id="cso-weak-drill-runner" class="cso-drill-card"></div>
-        </section>
-      </div>
-
-      <!-- TOOL: FOCUS TIMER & POMODORO -->
-      <div id="tool-study-timer" class="bp-tab-view">
-        <section class="bp-panel cso-timer-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>⏱️</span><span>Candidate Focus Timer &amp; Pomodoro Sprint</span></div>
-          </div>
-          <div class="cso-timer-display" id="pomodoro-display">25:00</div>
-          <div class="cso-timer-presets">
-            <button type="button" class="bp-chip active" data-mins="25">25m Focus</button>
-            <button type="button" class="bp-chip" data-mins="50">50m Deep Study</button>
-            <button type="button" class="bp-chip" data-mins="5">5m Break</button>
-          </div>
-          <div class="cso-timer-controls">
-            <button type="button" id="pomodoro-toggle-btn" class="cso-btn cso-btn-primary">▶ Start Sprint</button>
-            <button type="button" id="pomodoro-reset-btn" class="cso-btn">↺ Reset</button>
-          </div>
-          <p class="cso-muted-note" id="pomodoro-sessions-count">Completed study sprints today: 0</p>
-        </section>
-      </div>
-
-      <!-- TOOL: CUTOFF & NEGATIVE MARKS CALCULATOR -->
-      <div id="tool-exam-calculator" class="bp-tab-view">
-        <section class="bp-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>🧮</span><span>Competitive Exam Net Score &amp; Negative Marks Calculator</span></div>
-          </div>
-          <div class="cso-calc-grid">
-            <div class="cso-field">
-              <label for="calc-exam-preset">Marking Preset</label>
-              <select id="calc-exam-preset" class="cso-input">
-                <option value="1,0.25">Odisha B.Ed / OSSC / Police (+1 / -0.25)</option>
-                <option value="2,0.66">OPSC OAS / UPSC Prelims (+2 / -0.66)</option>
-                <option value="2,0">UGC NET / Odisha SET (+2 / 0)</option>
-                <option value="4,1">CUET PG / NCET (+4 / -1)</option>
-                <option value="1,0.33">OSSSC RI / RRB (+1 / -0.33)</option>
-              </select>
-            </div>
-            <div class="cso-field">
-              <label for="calc-correct-count">Correct Answers</label>
-              <input type="number" id="calc-correct-count" class="cso-input" value="65" min="0">
-            </div>
-            <div class="cso-field">
-              <label for="calc-wrong-count">Wrong Answers</label>
-              <input type="number" id="calc-wrong-count" class="cso-input" value="18" min="0">
-            </div>
-          </div>
-          <div class="cso-calc-result">
-            <span>Calculated Net Score:</span>
-            <strong id="calc-net-score">60.50</strong>
-          </div>
-        </section>
-
-        <section class="bp-panel cso-panel-mt" id="cso-age-elig-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>⚖️</span><span>Odisha Govt Exam Age, Category &amp; Attempt Eligibility Simulator</span></div>
-            <span class="cso-pill-badge">OPSC · OSSC · OSSSC · LTR/OAVS · Police</span>
-          </div>
-          <p class="cso-muted-note">Check exact upper-age ceiling, category/women/PwD relaxations, and OPSC attempt limits against the standard Jan 1 cutoff year.</p>
-          <form id="cso-age-elig-form" class="cso-calc-grid">
-            <div class="cso-field">
-              <label for="elig-dob">Date of Birth</label>
-              <input type="date" id="elig-dob" class="cso-input" value="2000-05-15" required>
-            </div>
-            <div class="cso-field">
-              <label for="elig-ref-year">Cutoff Year (Jan 1)</label>
-              <input type="number" id="elig-ref-year" class="cso-input" value="2026" min="2025" max="2030">
-            </div>
-            <div class="cso-field">
-              <label for="elig-category">Category</label>
-              <select id="elig-category" class="cso-input">
-                <option value="UR">UR / General</option>
-                <option value="SEBC">SEBC (+5 yrs)</option>
-                <option value="SC">SC (+5 yrs)</option>
-                <option value="ST">ST (+5 yrs)</option>
-              </select>
-            </div>
-            <div class="cso-field">
-              <label for="elig-gender">Gender</label>
-              <select id="elig-gender" class="cso-input">
-                <option value="male">Male / Other</option>
-                <option value="female">Women (+5 yrs civil)</option>
-              </select>
-            </div>
-            <div class="cso-field">
-              <label for="elig-pwd">PwD / Ex-SM</label>
-              <select id="elig-pwd" class="cso-input">
-                <option value="none">None</option>
-                <option value="pwd">PwD (+10 yrs)</option>
-                <option value="exsm">Ex-Serviceman (Service + 3 yrs)</option>
-              </select>
-            </div>
-            <div class="cso-field">
-              <label for="elig-attempts">OPSC OAS Attempts Used</label>
-              <input type="number" id="elig-attempts" class="cso-input" value="0" min="0" max="20">
-            </div>
-          </form>
-          <div id="cso-age-elig-results" class="cso-stack-list cso-panel-mt"></div>
-        </section>
-      </div>
-
-      <!-- TOOL: DAILY GK RAPID DRILL -->
-      <div id="tool-daily-drill" class="bp-tab-view">
-        <section class="bp-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>⚡</span><span>Daily Odisha GK &amp; Pedagogy Rapid Flash Drill</span></div>
-            <span class="cso-pill-badge" id="drill-score-badge">Score: 0 / 5</span>
-          </div>
-          <div class="cso-drill-card">
-            <h3 id="drill-question-text">Loading daily question...</h3>
-            <div class="cso-drill-options" id="drill-options-container"></div>
-            <div class="cso-drill-explanation" id="drill-explanation-box" hidden></div>
-            <div class="cso-drill-footer">
-              <button type="button" id="drill-next-btn" class="cso-btn cso-btn-primary" hidden>Next Question →</button>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <!-- TAB 5: PROFILE & SETTINGS -->
-      <div id="tab-profile-settings" class="bp-tab-view">
-        <section class="bp-panel">
-          <div class="bp-panel-header">
-            <div class="bp-panel-title"><span>⚙️</span><span>Aspirant Profile &amp; Account Settings</span></div>
-          </div>
-          <div class="cso-settings-grid">
-            <div class="cso-settings-card">
-              <h3>Candidate Identity</h3>
-              <p>Full Name: <strong id="tab-settings-name">Odisha Aspirant</strong></p>
-              <p>Home District: <strong id="tab-settings-district">Odisha</strong></p>
-              <p>Primary Goal: <strong id="tab-settings-primary">Not set</strong></p>
-              <p>Account Status: <strong id="tab-settings-status">Active</strong></p>
-              <div class="cso-settings-actions">
-                <button type="button" id="btn-open-profile-editor-tab" class="cso-btn cso-btn-primary">Edit Profile Details</button>
-                <button type="button" id="btn-open-goals-settings" class="cso-btn">Change 4-Tier Exam Goals</button>
-              </div>
-            </div>
-            <div class="cso-settings-card">
-              <h3>Offline Backup &amp; PWA</h3>
-              <p>Export a portable JSON backup of your synced checklists, bookmarks, notes, and mistake notebook.</p>
-              <div class="cso-settings-actions">
-                <button type="button" id="btn-export-json-backup" class="cso-btn">Export Workspace JSON</button>
-                <button type="button" id="btn-pwa-install-action" class="cso-btn cso-pwa-install-trigger">Install Desktop/Mobile App</button>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
+      <section id="cso-candidate-workspace" class="bp-panel" aria-live="polite">
+        <p id="cso-workspace-empty" class="cso-muted-note">Your workspace is clean — save items from published sections or add modules in Admin Studio.</p>
+        <div id="cso-workspace-items" class="cso-stack-list" hidden></div>
+      </section>
     </main>
-<footer><div class="w cso-footer-grid">
-  <div class="cso-footer-zone1">
-    <div class="cso-footer-brand-header">
-      <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-footer-logo cso-brand-emblem" width="36" height="36" loading="lazy" decoding="async">
-      <div class="cso-footer-title">Common Sense Odisha</div>
-    </div>
-    <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
-    <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
-    <p class="cso-footer-contact">Contact: <a class="cso-footer-contact-link" href="mailto:contact@csodisha.com">contact@csodisha.com</a></p>
-    <div class="cso-footer-social" role="navigation" aria-label="Official Social Channels">
-      <a class="cso-footer-social-link" href="https://www.instagram.com/csodisha.official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg><span>Instagram</span></a>
-      <a class="cso-footer-social-link" href="https://www.facebook.com/profile.php?id=61596187936770" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg><span>Facebook</span></a>
-      <a class="cso-footer-social-link" href="https://x.com/csodisha" target="_blank" rel="noopener noreferrer" aria-label="X" title="X"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span>X</span></a>
-      <a class="cso-footer-social-link" href="https://t.me/csodisha" target="_blank" rel="noopener noreferrer" aria-label="Telegram" title="Telegram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span>Telegram</span></a>
-      <a class="cso-footer-social-link" href="https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><span>WhatsApp</span></a>
-      <a class="cso-footer-social-link" href="https://www.youtube.com/@CSOdisha" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg><span>YouTube</span></a>
-    </div>
-  </div>
-  <div class="cso-footer-zone2">
-    <div class="cso-footer-col">
-      <h4>Explore</h4>
-      <a href="/jobs-careers/">Jobs &amp; Careers</a>
-      <a href="/schemes-benefits/">Schemes &amp; Benefits</a>
-      <a href="/study-library/">Study Library</a>
-      <a href="/community/">Community</a>
-      <a href="/about/">About CSO</a>
-    </div>
-    <div class="cso-footer-col">
-      <h4>Support &amp; Legal</h4>
-      <a href="/support/#faqs">Help &amp; FAQs</a>
-      <a href="/support/#report-error">Report an Error</a>
-      <a href="/support/#suggest-resource">Suggest Resource</a>
-      <a href="/privacy-policy/">Privacy Policy</a>
-      <a href="/terms-of-use/">Terms of Use</a>
-    </div>
-  </div>
-  <div class="cso-footer-zone3">
-    <img class="cso-footer-odisha-map" src="/assets/odisha-footer-map.svg" alt="Odisha vector outline" width="81" height="64" loading="lazy" decoding="async">
-    <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
-    <div class="cso-footer-lang-pills">
-      <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>
-      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
-      <button type="button" class="cso-footer-lang-pill" data-cso-lang="or">ଓଡ଼ିଆ</button>
-      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
-      <button type="button" class="cso-footer-lang-pill" data-cso-lang="hi">हिन्दी</button>
-    </div>
-  </div>
-</div></footer>
+
+    <footer><div class="w cso-footer-grid">
+      <div class="cso-footer-zone1">
+        <div class="cso-footer-brand-header">
+          <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-footer-logo cso-brand-emblem" width="36" height="36" loading="lazy" decoding="async">
+          <div class="cso-footer-title">Common Sense Odisha</div>
+        </div>
+        <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
+        <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
+        <p class="cso-footer-contact">Contact: <a class="cso-footer-contact-link" href="mailto:contact@csodisha.com">contact@csodisha.com</a></p>
+      </div>
+      <div class="cso-footer-zone2">
+        <div class="cso-footer-col">
+          <h4>Explore</h4>
+          <a href="/jobs-careers/">Jobs &amp; Careers</a>
+          <a href="/schemes-benefits/">Schemes &amp; Benefits</a>
+          <a href="/study-library/">Study Library</a>
+          <a href="/community/">Community</a>
+          <a href="/about/">About CSO</a>
+        </div>
+        <div class="cso-footer-col">
+          <h4>Support &amp; Legal</h4>
+          <a href="/support/#faqs">Help &amp; FAQs</a>
+          <a href="/support/#report-error">Report an Error</a>
+          <a href="/support/#suggest-resource">Suggest Resource</a>
+          <a href="/privacy-policy/">Privacy Policy</a>
+          <a href="/terms-of-use/">Terms of Use</a>
+        </div>
+      </div>
+      <div class="cso-footer-zone3">
+        <img class="cso-footer-odisha-map" src="/assets/odisha-footer-map.svg" alt="Odisha vector outline" width="81" height="64" loading="lazy" decoding="async">
+        <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
+        <div class="cso-footer-lang-pills">
+          <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>
+          <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+          <button type="button" class="cso-footer-lang-pill" data-cso-lang="or">ଓଡ଼ିଆ</button>
+          <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+          <button type="button" class="cso-footer-lang-pill" data-cso-lang="hi">हिन्दी</button>
+        </div>
+      </div>
+    </div></footer>
   </div>
 </div>
 
-<!-- Universal Search Overlay (Ctrl+K) -->
-<div id="bp-search-overlay" class="bp-modal-overlay" role="dialog" aria-modal="true" aria-label="Universal Search" hidden>
+<div id="cso-profile-modal" class="bp-modal-overlay" role="dialog" aria-modal="true" aria-label="Edit Profile" hidden>
   <div class="bp-modal-box">
     <div class="bp-modal-head">
-      <input type="search" id="bp-search-modal-input" class="cso-input" placeholder="Search exams, syllabus topics, or tools...">
-      <button type="button" id="bp-search-modal-close" class="cso-btn" aria-label="Close Search">✕</button>
-    </div>
-    <div id="bp-search-modal-results" class="cso-stack-list">
-      <p class="cso-muted-note">Type to search across 44 Odisha &amp; national exams and syllabus topics...</p>
-    </div>
-  </div>
-</div>
-
-<!-- 4-Tier Hierarchical Goal Selector Modal -->
-<div id="cso-goal-modal" class="bp-modal-overlay" role="dialog" aria-modal="true" aria-label="Select Target Exam Goals" hidden>
-  <div class="bp-modal-box cso-goal-modal-box">
-    <div class="bp-modal-head">
-      <div>
-        <h2>Configure 4-Tier Exam Goals</h2>
-        <p class="cso-muted-note">Choose Domain → Track → Exams (star your ★ Primary Goal) → Stream/Paper</p>
-      </div>
-      <button type="button" id="cso-goal-modal-close" class="cso-btn" aria-label="Close Goal Selector">✕</button>
-    </div>
-
-    <div class="cso-goal-search-row">
-      <input type="search" id="cso-goal-search-input" class="cso-input" placeholder="Instant filter e.g. B.Ed, UGC NET, GATE, OPSC, OSSSC...">
-    </div>
-
-    <div class="cso-goal-tiers">
-      <div class="cso-goal-tier-col" id="cso-tier1-domains"></div>
-      <div class="cso-goal-tier-col" id="cso-tier2-tracks"></div>
-      <div class="cso-goal-tier-col cso-goal-exams-col" id="cso-tier3-exams"></div>
-    </div>
-
-    <div class="cso-goal-streams-box" id="cso-tier4-streams" hidden></div>
-
-    <div class="cso-goal-modal-foot">
-      <span class="cso-muted-note" id="cso-goal-selection-summary">0 exams selected</span>
-      <div class="cso-settings-actions">
-        <button type="button" id="cso-goal-cancel-btn" class="cso-btn">Cancel</button>
-        <button type="button" id="cso-goal-save-btn" class="cso-btn cso-btn-primary">Save &amp; Personalize Hub</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Profile Editor Modal (CSP-safe static shell) -->
-<div id="cso-profile-modal" class="bp-modal-overlay" role="dialog" aria-modal="true" aria-label="Edit Aspirant Profile" hidden>
-  <div class="bp-modal-box">
-    <div class="bp-modal-head">
-      <h2>Edit Aspirant Profile</h2>
+      <h2>Edit Profile</h2>
       <button type="button" id="cso-profile-modal-close" class="cso-btn" aria-label="Close Profile Editor">✕</button>
     </div>
     <form id="cso-profile-editor-form" class="cso-stack-form">
@@ -871,60 +164,23 @@
         <input type="tel" id="edit-candidate-mobile" class="cso-input" maxlength="15">
       </div>
       <div class="cso-field">
-        <label for="edit-candidate-district">Home District in Odisha</label>
-        <select id="edit-candidate-district" class="cso-input"></select>
+        <label for="edit-candidate-district">Location / District</label>
+        <input type="text" id="edit-candidate-district" class="cso-input" maxlength="80">
       </div>
       <div class="cso-goal-modal-foot">
         <button type="button" id="cso-profile-cancel-btn" class="cso-btn">Cancel</button>
-        <button type="submit" id="cso-profile-save-btn" class="cso-btn cso-btn-primary">Save to D1 ✓</button>
+        <button type="submit" id="cso-profile-save-btn" class="cso-btn cso-btn-primary">Save</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Toast Container -->
 <div id="cso-toast-container" class="cso-toast-container" aria-live="polite"></div>
 
-<!-- Mobile Standalone Bottom Tab Bar -->
-<nav class="bp-mobile-bottom-nav" id="bp-mobile-bottom-nav" aria-label="Mobile Quick Navigation">
-  <button type="button" class="bp-bottom-nav-btn active" data-tab="tab-overview">
-    <span aria-hidden="true">🏠</span>
-    <span>Overview</span>
-  </button>
-  <button type="button" class="bp-bottom-nav-btn" data-tab="tab-my-learning">
-    <span aria-hidden="true">📚</span>
-    <span>Syllabi</span>
-  </button>
-  <button type="button" class="bp-bottom-nav-btn" data-tab="tool-daily-drill">
-    <span aria-hidden="true">⚡</span>
-    <span>Drills</span>
-  </button>
-  <button type="button" class="bp-bottom-nav-btn" data-tab="tool-calendar">
-    <span aria-hidden="true">📅</span>
-    <span>Calendar</span>
-  </button>
-  <button type="button" class="bp-bottom-nav-btn" data-tab="tab-profile-settings">
-    <span aria-hidden="true">⚙️</span>
-    <span>Profile</span>
-  </button>
-</nav>
-
-<script src="/assets/js/bookmark-manager.js" defer></script>
-<script src="/assets/js/cso-countdown.js" defer></script>
+<script src="/assets/cso-auth-client.js" defer></script>
 <script src="/assets/js/cso-idb.js" defer></script>
+<script src="/assets/js/bookmark-manager.js" defer></script>
 <script src="/assets/js/candidate-sync.js" defer></script>
-<script src="/assets/js/pwa-install.js" defer></script>
-<script src="/assets/js/odisha-districts.js?v=20261122v197" defer></script>
-<script src="/assets/js/candidate-prefs.js?v=20261122v197" defer></script>
-<script src="/assets/js/deadline-tracker.js?v=20261122v204" defer></script>
-<script src="/assets/js/document-readiness.js?v=20261122v205" defer></script>
-<script src="/assets/js/scheme-tracker.js?v=20261122v212" defer></script>
-<script src="/study-library/assets/syllabus-pyq-vault.js?v=20261122v198" defer></script>
-<script src="/assets/js/student-dashboard.js?v=20261122v213" defer></script>
-<script src="/assets/js/current-affairs.js?v=20261122v207" defer></script>
-<script src="/assets/js/student-utilities.js?v=20261121v177" defer></script>
-<script src="/assets/js/candidate-hub-unified.js?v=20261121v177" defer></script>
-<script src="/assets/js/cso-global-enhancements.js" defer></script>
-
+<script src="/assets/js/student-dashboard.js?v=20261124v238" defer></script>
 </body>
 </html>

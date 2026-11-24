@@ -28,66 +28,48 @@
 </div>
 </header>
 <nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
-<nav aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
 
 <main class="pc-shell" id="main-content">
   <nav aria-label="Breadcrumb">
     <ol class="pc-breadcrumb">
       <li><a href="../index.html">Home</a></li>
-      <li aria-current="page"><strong>Syllabus &amp; PYQ Resources</strong></li>
+      <li aria-current="page"><strong>Resources</strong></li>
     </ol>
   </nav>
 
   <section class="pc-hero" aria-labelledby="res-page-title">
     <div>
-      <p class="pc-hero__eyebrow">📚 CSO Study Repository · R2 Verified Documents</p>
-      <h1 id="res-page-title" class="pc-hero__title">Official Syllabi &amp; Previous Year Question Papers</h1>
-      <p class="pc-hero__desc">Direct, open-access PDF downloads of official exam syllabi and authentic Previous Year Question Papers (PYQs) for Odisha civil services, staff selection, and teacher eligibility exams.</p>
-    </div>
-    <div class="pc-hero__nav" aria-label="Quick portal navigation">
-      <a class="pc-nav-pill" href="../jobs-careers/">💼 Jobs &amp; Careers</a>
-      <a class="pc-nav-pill" href="../current-affairs/">📰 Current Affairs</a>
-      <a class="pc-nav-pill" href="../mock-tests/">📝 Mock Tests</a>
-      <a class="pc-nav-pill is-active" href="./" aria-current="page">📚 Syllabus &amp; PYQs</a>
+      <h1 id="res-page-title" class="pc-hero__title">Resources</h1>
+      <p class="pc-hero__desc">Live syllabi and study documents published in Admin Studio.</p>
     </div>
   </section>
 
   <section aria-label="Resource library">
-    <div class="pc-toolbar">
+    <div class="pc-toolbar" id="res-toolbar" hidden>
       <div class="pc-search-wrap" role="search">
         <span aria-hidden="true">🔍</span>
-        <input id="res-search" class="pc-search-input" type="search" placeholder="Search syllabus or question paper by title, exam, year…" aria-label="Search resources">
+        <input id="res-search" class="pc-search-input" type="search" placeholder="Search resources..." aria-label="Search resources">
         <button id="res-search-clear" class="pc-search-clear" type="button" aria-label="Clear search" hidden>×</button>
       </div>
 
       <div class="pc-filters" id="res-kinds" role="group" aria-label="Filter by resource type">
-        <button type="button" class="pc-chip is-active" data-kind="">All Resources</button>
-        <button type="button" class="pc-chip" data-kind="syllabus">📋 Official Syllabi</button>
-        <button type="button" class="pc-chip" data-kind="pyq">📄 Previous Year Papers (PYQ)</button>
+        <button type="button" class="pc-chip is-active" data-kind="">All</button>
       </div>
 
       <div class="pc-filters">
-        <select id="res-exam-select" class="pc-select" aria-label="Filter by examination">
-          <option value="">All Examinations</option>
-          <option value="OPSC">OPSC</option>
-          <option value="OSSC">OSSC</option>
-          <option value="OSSSC">OSSSC</option>
-          <option value="OTET">OTET</option>
-          <option value="OSSTET">OSSTET</option>
-          <option value="CTET">CTET</option>
-          <option value="OAVS">OAVS</option>
+        <select id="res-exam-select" class="pc-select" aria-label="Filter by category">
+          <option value="">All Categories</option>
         </select>
       </div>
     </div>
 
-    <div class="pc-meta-bar">
-      <span id="res-count-label" role="status" aria-live="polite">Loading resources…</span>
+    <div class="pc-meta-bar" id="res-meta-bar" hidden>
+      <span id="res-count-label" role="status" aria-live="polite"></span>
       <button id="res-reset-btn" type="button" class="pc-btn" hidden>Reset Filters</button>
     </div>
 
     <div id="res-status" class="pc-status-card" role="status" aria-live="polite">
-      <h3>Loading Syllabus &amp; PYQ Repository…</h3>
-      <p>Fetching verified documents from Common Sense Odisha.</p>
+      <p>No items published yet — add categories or content in Admin Studio.</p>
     </div>
 
     <div id="res-grid" class="pc-grid" aria-live="polite"></div>

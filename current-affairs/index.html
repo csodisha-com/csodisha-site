@@ -28,7 +28,6 @@
 </div>
 </header>
 <nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
-<nav aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
 
 <main class="pc-shell" id="main-content">
   <nav aria-label="Breadcrumb">
@@ -40,47 +39,33 @@
 
   <section class="pc-hero" aria-labelledby="ca-page-title">
     <div>
-      <p class="pc-hero__eyebrow">📰 CSO Exam Preparation · Live D1 Feed</p>
-      <h1 id="ca-page-title" class="pc-hero__title">Current Affairs &amp; Daily Updates</h1>
-      <p class="pc-hero__desc">Verified Odisha state news, national policy developments, economy, science &amp; environment digests curated for OPSC, OSSC, OSSSC, and teaching aspirants.</p>
-    </div>
-    <div class="pc-hero__nav" aria-label="Quick portal navigation">
-      <a class="pc-nav-pill" href="../jobs-careers/">💼 Jobs &amp; Careers</a>
-      <a class="pc-nav-pill is-active" href="./" aria-current="page">📰 Current Affairs</a>
-      <a class="pc-nav-pill" href="../mock-tests/">📝 Mock Tests</a>
-      <a class="pc-nav-pill" href="../resources/">📚 Syllabus &amp; PYQs</a>
+      <h1 id="ca-page-title" class="pc-hero__title">Current Affairs</h1>
+      <p class="pc-hero__desc">Live updates published in Admin Studio.</p>
     </div>
   </section>
 
   <section id="ca-list-view" aria-label="Current affairs articles">
-    <div class="pc-toolbar">
+    <div class="pc-toolbar" id="ca-toolbar" hidden>
       <div class="pc-search-wrap" role="search">
         <span aria-hidden="true">🔍</span>
-        <input id="ca-search" class="pc-search-input" type="search" placeholder="Search current affairs topics, schemes, events…" aria-label="Search current affairs">
+        <input id="ca-search" class="pc-search-input" type="search" placeholder="Search current affairs..." aria-label="Search current affairs">
         <button id="ca-search-clear" class="pc-search-clear" type="button" aria-label="Clear search" hidden>×</button>
       </div>
       <div class="pc-filters" id="ca-categories" role="group" aria-label="Filter by category">
         <button type="button" class="pc-chip is-active" data-category="">All</button>
-        <button type="button" class="pc-chip" data-category="State">Odisha</button>
-        <button type="button" class="pc-chip" data-category="National">National</button>
-        <button type="button" class="pc-chip" data-category="Economy">Economy</button>
-        <button type="button" class="pc-chip" data-category="Polity">Polity &amp; Governance</button>
-        <button type="button" class="pc-chip" data-category="Science">Science &amp; Tech</button>
-        <button type="button" class="pc-chip" data-category="Environment">Environment</button>
       </div>
       <div class="pc-filters">
         <button id="ca-lang-btn" type="button" class="pc-chip" aria-pressed="false" title="Toggle English / Odia content">🌐 English / ଓଡ଼ିଆ</button>
       </div>
     </div>
 
-    <div class="pc-meta-bar">
-      <span id="ca-count-label" role="status" aria-live="polite">Loading updates…</span>
+    <div class="pc-meta-bar" id="ca-meta-bar" hidden>
+      <span id="ca-count-label" role="status" aria-live="polite"></span>
       <button id="ca-reset-btn" type="button" class="pc-btn" hidden>Reset Filters</button>
     </div>
 
     <div id="ca-status" class="pc-status-card" role="status" aria-live="polite">
-      <h3>Loading Current Affairs…</h3>
-      <p>Fetching the latest published updates from Common Sense Odisha.</p>
+      <p>No items published yet — add categories or content in Admin Studio.</p>
     </div>
 
     <div id="ca-grid" class="pc-grid" aria-live="polite"></div>

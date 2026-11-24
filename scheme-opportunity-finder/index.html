@@ -1,117 +1,38 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="description" content="Explore government schemes, benefits, scholarships and support through Common Sense Odisha.">
-<title>Scheme Opportunity Finder | Common Sense Odisha</title>
-<link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/style.css?v=20261121v173">
-<script src="/assets/cso-auth-client.js" defer></script>
-<script src="/assets/shared-header.js?v=20261121v171" defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="description" content="Scheme opportunity finder on Common Sense Odisha.">
+  <title>Scheme Opportunity Finder | Common Sense Odisha</title>
+  <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/style.css?v=20261121v173">
+  <script src="/assets/cso-auth-client.js" defer></script>
+  <script src="/assets/shared-header.js?v=20261121v171" defer></script>
+  <script src="/assets/js/pages/cso-clean-page.js?v=20261124v238" defer></script>
 </head>
 <body>
+<div id="csoPublicAnnouncementMount"></div>
 <header class="top site-header__top" id="header-top" role="banner">
-<a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
-  <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36">
-</a>
-<span id="ctl" class="cso-contents"></span>
-<span class="sp"></span>
-<div class="acct">
-  <a class="adm cso-adm-icon-only" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a>
-  <span aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
-  <span id="auth" class="cso-contents"></span>
-</div>
+  <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
+    <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36">
+  </a>
+  <span id="ctl" class="cso-contents"></span>
+  <span class="sp"></span>
+  <div class="acct"><a class="adm cso-adm-icon-only" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a><span aria-hidden="true" class="cso-desktop-auth-icon">👤</span><span id="auth" class="cso-contents"></span></div>
 </header>
 <nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
-<nav><div class="w" id="navw"></div></nav>
+
 <main class="sof-wrap">
-  <section class="sof-hero sof-theme3-hero">
-    
-    <h1>🤲 I Want a Scheme</h1>
-    <p>Find government schemes, scholarships, benefits and support relevant to your needs.</p>
-    
+  <section class="sof-hero">
+    <h1>Scheme Opportunity Finder</h1>
+    <p>Live welfare schemes and benefits managed in Admin Studio.</p>
   </section>
-<section class="sof-panel sof-search-panel sof-theme3-search" aria-label="Search scheme opportunities">
-<!-- CSO-SOF-THEME3-20261030 -->
-<h2>Find schemes and benefits</h2>
-<p class="sof-theme3-description">
-  Search scholarships, pensions, farmer support, housing and more.
-</p>
-<form id="sof-theme3-form" role="search">
-<div class="sof-search-row">
-      <label for="sof-search">Search scheme topics</label>
-      <input id="sof-search" type="search" placeholder="Search scholarships, pensions, farmer support…" autocomplete="off">
-      <button id="sof-clear" type="button">Clear</button>
-    </div>
-
-</form>
-
-<div class="sof-theme3-suggestions"
-     aria-label="Popular scheme searches">
-  <span>Popular searches:</span>
-  <button type="button" data-sof-query="scholarship">Scholarships</button>
-  <button type="button" data-sof-query="farmer">Farmers</button>
-  <button type="button" data-sof-query="pension">Pensions</button>
-  <button type="button" data-sof-query="housing">Housing</button>
-</div>
-<p class="sof-theme3-hint">
-  Results are directory topics, not confirmed eligibility.
-  Check official sources before applying.
-</p>
-
-<div id="sof-search-feedback" hidden>
-  <p id="sof-search-status" role="status" aria-live="polite"></p>
-  <div id="sof-search-results" class="sof-results"></div>
-</div>
-</section>
-
-
-  <section class="sof-panel" aria-labelledby="sof-find-heading">
-    <h2 id="sof-find-heading">What kind of support do you need?</h2>
-    <p>Choose a category to explore matching topics in the CSO Schemes & Benefits Directory.</p>
-    <p class="sof-theme3-browse-label">Or browse scheme topics by category</p>
-<div class="sof-categories" id="sof-categories"></div>
-    
-    <div class="sof-controls">
-      <label for="sof-group">Directory area</label>
-      <select id="sof-group">
-        <option value="all">All areas</option>
-      </select>
-    </div>
-    <p id="sof-status" role="status" aria-live="polite">Loading scheme directory…</p>
-    <div id="sof-results" class="sof-results"></div>
-    <div class="sof-actions">
-      <button type="button" id="sof-more" hidden>Show more topics</button>
-      <a href="../schemes-benefits/">Explore the complete Schemes & Benefits Directory →</a>
-    </div>
-  </section>
-
-  <section class="sof-panel" aria-labelledby="sof-updates-heading">
-    <h2 id="sof-updates-heading">Latest published scheme updates</h2>
-    <p>Scheme-related announcements already published on CSO. Dates and availability must be checked against official notices.</p>
-    <div id="sof-updates" class="sof-results"></div>
-    <a href="../index.html">View CSO Latest Updates →</a>
-  </section>
-
-  <section class="sof-panel" aria-labelledby="sof-resources-heading">
-    <h2 id="sof-resources-heading">Explore related CSO resources</h2>
-    <div class="sof-resource-grid">
-      <a href="../schemes-benefits/">🎓 Scholarship Guidance <span>Education funding and scholarship resources</span></a>
-      <a href="../study/">📚 I Want to Study <span>Study paths and education resources</span></a>
-      <a href="../job-opportunity-finder/">💼 Job Opportunity Finder <span>Employment and career opportunities</span></a>
-      <a href="../career-guidance/">🧭 Career Guidance <span>Explore career directions</span></a>
-      <a href="../schemes-benefits/">🏛 Schemes & Benefits Explorer <span>Browse all directory categories</span></a>
-    </div>
-  </section>
-
-  <section class="sof-panel sof-trust" aria-labelledby="sof-trust-heading">
-    <h2 id="sof-trust-heading">Check before applying</h2>
-    <p>Directory topics are navigation aids, not proof that a named scheme is currently open. Eligibility, application deadlines, benefit amounts and documents depend on official scheme rules.</p>
-    <p>Use the issuing department's official website or notification to verify information. Never share OTPs, passwords or banking credentials with an unverified agent.</p>
-    <a href="../trust-layer/">Explore the CSO Trust Layer →</a>
+  <section id="cso-clean-page-content" data-page-slug="scheme-opportunity-finder" data-pillar-slug="schemes-benefits" aria-live="polite">
+    <div class="card cso-empty-state"><p>No items published yet — add categories or content in Admin Studio.</p></div>
   </section>
 </main>
+
 <footer><div class="w cso-footer-grid">
   <div class="cso-footer-zone1">
     <div class="cso-footer-brand-header">
@@ -121,14 +42,6 @@
     <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
     <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
     <p class="cso-footer-contact">Contact: <a class="cso-footer-contact-link" href="mailto:contact@csodisha.com">contact@csodisha.com</a></p>
-    <div class="cso-footer-social" role="navigation" aria-label="Official Social Channels">
-      <a class="cso-footer-social-link" href="https://www.instagram.com/csodisha.official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg><span>Instagram</span></a>
-      <a class="cso-footer-social-link" href="https://www.facebook.com/profile.php?id=61596187936770" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg><span>Facebook</span></a>
-      <a class="cso-footer-social-link" href="https://x.com/csodisha" target="_blank" rel="noopener noreferrer" aria-label="X" title="X"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span>X</span></a>
-      <a class="cso-footer-social-link" href="https://t.me/csodisha" target="_blank" rel="noopener noreferrer" aria-label="Telegram" title="Telegram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span>Telegram</span></a>
-      <a class="cso-footer-social-link" href="https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><span>WhatsApp</span></a>
-      <a class="cso-footer-social-link" href="https://www.youtube.com/@CSOdisha" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg><span>YouTube</span></a>
-    </div>
   </div>
   <div class="cso-footer-zone2">
     <div class="cso-footer-col">
@@ -151,21 +64,7 @@
   <div class="cso-footer-zone3">
     <img class="cso-footer-odisha-map" src="../assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy">
     <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
-    <div class="cso-footer-lang-pills">
-      <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>
-      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
-      <button type="button" class="cso-footer-lang-pill" data-cso-lang="or">ଓଡ଼ିଆ</button>
-      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
-      <button type="button" class="cso-footer-lang-pill" data-cso-lang="hi">हिन्दी</button>
-    </div>
   </div>
 </div></footer>
-
-<script src="/assets/js/cso-safe-dom.js" defer></script>
-<script src="/assets/js/pages/scheme-opportunity-finder.js" defer></script>
-
-
-<script src="/assets/js/pages/scheme-opportunity-finder-2.js" defer></script>
-
 </body>
 </html>

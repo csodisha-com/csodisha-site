@@ -156,11 +156,17 @@
     function render() {
       clear(container);
 
+      if (!list.length) {
+        container.hidden = true;
+        return;
+      }
+      container.hidden = false;
+
       var streakInfo = readStorage(STREAK_STORAGE_KEY, { streak: 0 });
       var head = el('div', 'cso-ca-head');
       var titleWrap = el('div', 'cso-ca-title-wrap');
-      titleWrap.appendChild(el('span', 'cso-ca-kicker', 'DAILY ODISHA & NATIONAL BRIEF · EN / ଓଡ଼ିଆ'));
-      var heading = el('h2', 'cso-ca-heading', lang === 'or' ? 'ଦୈନିକ ଓଡ଼ିଶା କରେଣ୍ଟ ଆଫେୟାର୍ସ ଓ ୫-ପ୍ରଶ୍ନ କୁଇଜ୍' : 'Daily Odisha Current Affairs & 5-Question Quiz');
+      titleWrap.appendChild(el('span', 'cso-ca-kicker', 'CURRENT AFFAIRS · EN / ଓଡ଼ିଆ'));
+      var heading = el('h2', 'cso-ca-heading', lang === 'or' ? 'କରେଣ୍ଟ ଆଫେୟାର୍ସ' : 'Current Affairs');
       heading.id = 'cso-ca-heading';
       titleWrap.appendChild(heading);
 
@@ -195,16 +201,6 @@
       head.appendChild(titleWrap);
       head.appendChild(controls);
       container.appendChild(head);
-
-      if (!list.length) {
-        var emptyBox = el('div', 'cso-ca-empty');
-        emptyBox.appendChild(el('p', 'cso-ca-empty-text', EMPTY_MSG));
-        var mockLink = el('a', 'cso-ca-btn cso-ca-btn--primary', 'Practice CBT Mock Test →');
-        mockLink.href = '/study-library/cbt-mock-test/';
-        emptyBox.appendChild(mockLink);
-        container.appendChild(emptyBox);
-        return;
-      }
 
       if (!compact && list.length > 1) {
         var dateTabs = el('div', 'cso-ca-date-tabs');

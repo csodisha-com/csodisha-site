@@ -353,6 +353,12 @@
       const items = Array.isArray(data.items) ? data.items : [];
       const total = Number(data.total) || items.length;
 
+      const toolbarEl = $('ca-toolbar');
+      const metaBarEl = $('ca-meta-bar');
+      const showControls = items.length > 0 || hasFilter;
+      if (toolbarEl) toolbarEl.hidden = !showControls;
+      if (metaBarEl) metaBarEl.hidden = !showControls;
+
       if (countLabel) {
         countLabel.textContent = `${total.toLocaleString('en-IN')} published ${total === 1 ? 'update' : 'updates'}`;
       }
@@ -360,10 +366,9 @@
       if (items.length === 0) {
         statusEl.hidden = false;
         statusEl.replaceChildren(
-          el('h3', '', hasFilter ? 'No matching current affairs found' : 'No current affairs published yet'),
           el('p', '', hasFilter
-            ? 'Try clearing your search keyword or switching category filters.'
-            : 'New daily current affairs digests and Odisha state updates will appear here automatically once published.')
+            ? 'No matching current affairs found.'
+            : 'No items published yet — add categories or content in Admin Studio.')
         );
         if (paginationEl) paginationEl.hidden = true;
         return;

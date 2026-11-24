@@ -4,477 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#edf4ff">
-  <title>Odisha Student Toolkit — Exam Photo Resizer &amp; Age Calculator | Common Sense Odisha</title>
-  <meta name="description" content="100% browser-based Odisha Student Toolkit: resize OPSC, OSSC, OSSSC &amp; SSC exam photos and signatures offline, and calculate Odisha age relaxation cut-off limits instantly.">
+  <title>Tools | Common Sense Odisha</title>
+  <meta name="description" content="Public utilities and tools managed in Admin Studio on Common Sense Odisha.">
   <link rel="canonical" href="https://csodisha.com/tools/">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Common Sense Odisha">
-  <meta property="og:title" content="Odisha Student Toolkit — Exam Photo Resizer &amp; Age Calculator | Common Sense Odisha">
-  <meta property="og:description" content="Resize OPSC, OSSC, OSSSC &amp; SSC photos/signatures privately in your browser (zero upload) and check Odisha government exam age relaxation limits.">
-  <meta property="og:url" content="https://csodisha.com/tools/">
-  <meta property="og:image" content="https://csodisha.com/assets/img/cso-logo.png">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Odisha Student Toolkit — Common Sense Odisha">
-  <meta name="twitter:description" content="Zero-upload Odisha exam photo &amp; signature resizer + Odisha age relaxation cut-off calculator.">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
-  <link rel="stylesheet" href="/assets/css/student-utilities.css?v=20261121v164">
   <link rel="stylesheet" href="/tools/assets/tools.css?v=20261122v217">
+  <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <script src="/assets/shared-header.js?v=20261121v171" defer></script>
   <script src="/assets/cso-auth-client.js" defer></script>
-  <script src="/assets/js/cso-idb.js" defer></script>
-  <script src="/assets/js/bookmark-manager.js" defer></script>
-  <script src="/assets/js/student-utilities.js?v=20261121v164" defer></script>
-  <script src="/assets/js/odisha-districts.js?v=20261122v211" defer></script>
-  <script src="/assets/js/deadline-tracker.js?v=20261122v211" defer></script>
-  <script src="/tools/assets/tools.js?v=20261122v217" defer></script>
-  <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://csodisha.com/"},{"@type":"ListItem","position":2,"name":"Jobs \u0026 Careers","item":"https://csodisha.com/jobs-careers/"},{"@type":"ListItem","position":3,"name":"Student Toolkit","item":"https://csodisha.com/tools/"}]},{"@type":"WebApplication","name":"Odisha Student Toolkit","applicationCategory":"UtilitiesApplication","operatingSystem":"All","url":"https://csodisha.com/tools/","description":"Zero-upload Odisha exam photo and signature resizer plus Odisha government age relaxation and cut-off calculator."}]}</script>
+  <script src="/assets/js/pages/cso-clean-page.js?v=20261124v238" defer></script>
 </head>
 <body>
 <div id="csoPublicAnnouncementMount"></div>
-
 <header class="top site-header__top" id="header-top" role="banner">
-<a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
-  <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36" fetchpriority="high" decoding="async">
-</a>
-<span id="ctl" class="cso-contents"></span>
-<span class="sp"></span>
-<div class="acct"><a class="adm cso-adm-icon-only" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a><span class="cso-acct-icon" aria-hidden="true">👤</span><span id="auth" class="cso-contents"></span></div>
+  <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
+    <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36" fetchpriority="high" decoding="async">
+  </a>
+  <span id="ctl" class="cso-contents"></span>
+  <span class="sp"></span>
+  <div class="acct"><a class="adm cso-adm-icon-only" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a><span class="cso-acct-icon" aria-hidden="true">👤</span><span id="auth" class="cso-contents"></span></div>
 </header>
 <nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
 
 <main class="cso-tools-main">
-  <section class="cso-tools-hero" aria-label="Odisha Student Toolkit">
+  <section class="cso-tools-hero" aria-label="Tools">
     <nav class="cso-tools-crumb" aria-label="Breadcrumb">
-      <a href="/">Home</a> <span aria-hidden="true">›</span> <a href="/jobs-careers/">Jobs &amp; Careers</a> <span aria-hidden="true">›</span> <span aria-current="page">Student Toolkit</span>
+      <a href="/">Home</a> <span aria-hidden="true">›</span> <span aria-current="page">Tools</span>
     </nav>
-    <h1>🧰 Odisha Student Toolkit</h1>
-    <p class="cso-tools-sub">100% browser-based utilities for OPSC, OSSC, OSSSC, SSC &amp; Banking aspirants. Your photos never leave your device — zero server upload.</p>
-    <div class="cso-tools-jump" role="navigation" aria-label="Toolkit tools">
-      <a class="cso-tools-pill" href="#photo-resizer">📸 Photo &amp; Signature Resizer</a>
-      <a class="cso-tools-pill" href="#age-calculator">🎂 Odisha Age Relaxation Calculator</a>
-      <a class="cso-tools-pill" href="#cbt-calculator">🧮 CBT Score &amp; Negative-Marking Estimator</a>
-      <a class="cso-tools-pill" href="#scam-checker">🔍 Official Link &amp; Scam-Check</a>
-      <a class="cso-tools-pill" href="#exam-centre-planner">🎒 Exam-Day Centre Planner</a>
-      <a class="cso-tools-pill" href="#orsp-salary-calculator">💰 7th Pay Salary &amp; Fee</a>
-      <a class="cso-tools-pill" href="#odisha-pet-checker">🏃 Police &amp; Forest PET Checker</a>
-      <a class="cso-tools-pill" href="/jobs-careers/">💼 Back to Live Jobs</a>
-    </div>
+    <h1>Tools</h1>
+    <p class="cso-tools-sub">Interactive utilities and calculators published in Admin Studio.</p>
   </section>
-
-  <!-- Tool 1: Exam Photo & Signature Resizer -->
-  <section id="photo-resizer" class="cso-tool-card" aria-labelledby="resizer-heading">
-    <div class="cso-tool-card__head">
-      <div>
-        <h2 id="resizer-heading">📸 Odisha Exam Photo &amp; Signature Resizer</h2>
-        <p class="cso-tool-desc">Select an official exam preset or custom dimensions, pick an image from your device, and download a portal-ready JPG in seconds.</p>
-      </div>
-      <span class="cso-tool-privacy-badge">🔒 100% Offline in Your Browser — Photos Never Leave Your Device</span>
-    </div>
-
-    <div class="cso-preset-strip" id="resizer-presets" role="group" aria-label="Official Exam Image Presets">
-      <button type="button" class="cso-preset-btn is-active" data-preset="opsc-photo" data-w="200" data-h="230" data-min-kb="20" data-max-kb="50" aria-pressed="true">OPSC / OSSC / OSSSC Passport Photo (200×230 px, 20–50 KB)</button>
-      <button type="button" class="cso-preset-btn" data-preset="opsc-sign" data-w="140" data-h="60" data-min-kb="10" data-max-kb="20" aria-pressed="false">OPSC / OSSC / OSSSC Signature (140×60 px, 10–20 KB)</button>
-      <button type="button" class="cso-preset-btn" data-preset="ssc-photo" data-w="275" data-h="354" data-min-kb="20" data-max-kb="50" aria-pressed="false">SSC Photo (275×354 px, 20–50 KB)</button>
-      <button type="button" class="cso-preset-btn" data-preset="custom" data-w="200" data-h="230" data-min-kb="10" data-max-kb="100" aria-pressed="false">Odisha Police / Custom JPG</button>
-    </div>
-
-    <div class="cso-resizer-controls">
-      <label class="cso-tool-field">
-        <span>Width (px)</span>
-        <input id="resizer-width" type="number" min="40" max="2000" value="200">
-      </label>
-      <label class="cso-tool-field">
-        <span>Height (px)</span>
-        <input id="resizer-height" type="number" min="20" max="2000" value="230">
-      </label>
-      <label class="cso-tool-field">
-        <span>Min KB</span>
-        <input id="resizer-min-kb" type="number" min="5" max="500" value="20">
-      </label>
-      <label class="cso-tool-field">
-        <span>Max KB</span>
-        <input id="resizer-max-kb" type="number" min="5" max="1000" value="50">
-      </label>
-    </div>
-
-    <div class="cso-upload-row">
-      <label class="cso-upload-label" for="resizer-file">
-        <span class="cso-upload-icon" aria-hidden="true">📂</span>
-        <span id="resizer-file-label">Choose Photo or Signature (JPG, PNG, WebP)</span>
-        <input id="resizer-file" type="file" accept="image/jpeg,image/png,image/webp" class="cso-sr-input">
-      </label>
-      <button id="resizer-process-btn" type="button" class="cso-tool-btn cso-tool-btn--primary" disabled>Resize Image</button>
-      <button id="resizer-download-btn" type="button" class="cso-tool-btn cso-tool-btn--success" hidden>⬇️ Download Exam-Ready JPG</button>
-    </div>
-
-    <div id="resizer-status" class="cso-tool-status" role="status" aria-live="polite" hidden></div>
-
-    <div id="resizer-preview-grid" class="cso-preview-grid" hidden>
-      <div class="cso-preview-box">
-        <div class="cso-preview-box__head">
-          <strong>Original</strong>
-          <span id="resizer-orig-meta" class="cso-meta-chip"></span>
-        </div>
-        <img id="resizer-orig-img" class="cso-preview-img" alt="Original uploaded image preview" width="240" height="240" loading="lazy" decoding="async">
-      </div>
-      <div class="cso-preview-box">
-        <div class="cso-preview-box__head">
-          <strong>Resized JPG</strong>
-          <span id="resizer-out-meta" class="cso-meta-chip cso-meta-chip--ok"></span>
-        </div>
-        <img id="resizer-out-img" class="cso-preview-img" alt="Resized exam-ready JPG preview" width="240" height="240" loading="lazy" decoding="async">
-      </div>
-    </div>
-    <canvas id="resizer-canvas" hidden></canvas>
-  </section>
-
-  <!-- Tool 2: Odisha Age Relaxation & Cut-Off Calculator -->
-  <section id="age-calculator" class="cso-tool-card" aria-labelledby="age-heading">
-    <div class="cso-tool-card__head">
-      <div>
-        <h2 id="age-heading">🎂 Odisha Govt Exam Age &amp; Relaxation Calculator</h2>
-        <p class="cso-tool-desc">Verify exact age in Years, Months &amp; Days on the notification cut-off date with official Odisha State board presets and category relaxations.</p>
-      </div>
-    </div>
-
-    <form id="age-calc-form" class="cso-age-form">
-      <label class="cso-tool-field">
-        <span>Exam Board Preset</span>
-        <select id="age-board-preset">
-          <option value="opsc">OPSC (21–38 yrs)</option>
-          <option value="ossc-21">OSSC / OSSSC (21–38 yrs)</option>
-          <option value="ossc-18">OSSC / OSSSC (18–38 yrs)</option>
-          <option value="police-si">Odisha Police SI (21–25 yrs)</option>
-          <option value="police-const">Odisha Police Constable (18–23 yrs)</option>
-          <option value="otet">OTET / Teacher Recruitment (21–38 yrs)</option>
-          <option value="custom">Custom Min / Max Age</option>
-        </select>
-      </label>
-      <label class="cso-tool-field">
-        <span>Date of Birth (DD/MM/YYYY)</span>
-        <input id="age-dob" type="text" inputmode="numeric" placeholder="DD/MM/YYYY" maxlength="10" required>
-      </label>
-      <label class="cso-tool-field">
-        <span>Notification Cut-Off (DD/MM/YYYY)</span>
-        <input id="age-cutoff" type="text" inputmode="numeric" value="01/01/2026" placeholder="DD/MM/YYYY" maxlength="10" required>
-      </label>
-      <label class="cso-tool-field">
-        <span>Min Age (UR)</span>
-        <input id="age-min" type="number" min="16" max="45" value="21" required>
-      </label>
-      <label class="cso-tool-field">
-        <span>Max Age (UR)</span>
-        <input id="age-max" type="number" min="18" max="65" value="38" required>
-      </label>
-      <label class="cso-tool-field">
-        <span>Category / Special Relaxation</span>
-        <select id="age-category">
-          <option value="UR">UR / General (+0 yrs)</option>
-          <option value="SEBC">SEBC (+5 yrs)</option>
-          <option value="SC / ST">SC / ST (+5 yrs)</option>
-          <option value="Women">Women — All Categories (+5 yrs, non-cumulative)</option>
-          <option value="PwD (General)">PwD — General (+10 yrs)</option>
-          <option value="PwD (SC/ST/SEBC)">PwD — SC/ST/SEBC (+15 yrs)</option>
-          <option value="Ex-Serviceman">Ex-Serviceman (Service + 3 yrs)</option>
-        </select>
-      </label>
-      <label class="cso-tool-field" id="age-service-wrap" hidden>
-        <span>Defence Service Years</span>
-        <input id="age-service-years" type="number" min="0" max="40" value="5">
-      </label>
-      <div class="cso-age-actions">
-        <button id="age-calc-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Calculate Eligibility</button>
-        <button id="age-cutoff-2026" type="button" class="cso-tool-btn">Cut-Off: 01/01/2026</button>
-        <button id="age-cutoff-2027" type="button" class="cso-tool-btn">Cut-Off: 01/01/2027</button>
-        <button id="age-reset-btn" type="button" class="cso-tool-btn">Reset</button>
-      </div>
-    </form>
-
-    <div id="age-result" class="cso-age-result" role="status" aria-live="polite" hidden>
-      <div class="cso-age-result__top">
-        <span id="age-status-badge" class="cso-age-badge"></span>
-        <strong id="age-exact-readout" class="cso-age-exact"></strong>
-      </div>
-      <p id="age-limit-summary" class="cso-age-summary"></p>
-      <p id="age-attempts-summary" class="cso-age-summary"></p>
-    </div>
-  </section>
-
-  <!-- Tool 2B: CBT Negative-Marking & Normalization Score Estimator -->
-  <section id="cbt-calculator" class="cso-tool-card" aria-labelledby="cbt-calc-heading">
-    <div class="cso-tool-card__head">
-      <div>
-        <h2 id="cbt-calc-heading">🧮 Odisha CBT Score &amp; Negative-Marking Estimator</h2>
-        <p class="cso-tool-desc">Estimate Net Score, Accuracy %, and Marks Lost to negative marking for OPSC, OSSSC, Odisha Police &amp; OTET CBTs.</p>
-      </div>
-    </div>
-
-    <form id="cbt-calc-form" class="cso-age-form">
-      <label class="cso-tool-field">
-        <span>Marking Scheme Preset</span>
-        <select id="cbt-calc-preset">
-          <option value="opsc">OPSC OAS (+2 / -0.66, 1/3 negative)</option>
-          <option value="osssc">OSSSC RI/ARI/Amin (+1 / -0.33, 1/3 negative)</option>
-          <option value="police">Odisha Police / SSC (+1 / -0.25, 1/4 negative)</option>
-          <option value="otet">OTET / OSSTET (+1 / 0, No negative)</option>
-          <option value="custom">Custom Marks per Right / Wrong</option>
-        </select>
-      </label>
-      <label class="cso-tool-field">
-        <span>Total Questions</span>
-        <input id="cbt-total-q" type="number" min="1" max="500" value="100" required>
-      </label>
-      <label class="cso-tool-field">
-        <span>Attempted</span>
-        <input id="cbt-attempted-q" type="number" min="0" max="500" value="80" required>
-      </label>
-      <label class="cso-tool-field">
-        <span>Correct Answers</span>
-        <input id="cbt-correct-q" type="number" min="0" max="500" value="65" required>
-      </label>
-      <label class="cso-tool-field">
-        <span>Marks per Right Answer</span>
-        <input id="cbt-pos-mark" type="number" min="0.25" max="10" step="0.01" value="2" required>
-      </label>
-      <label class="cso-tool-field">
-        <span>Negative Penalty per Wrong</span>
-        <input id="cbt-neg-mark" type="number" min="0" max="10" step="0.01" value="0.66" required>
-      </label>
-      <div class="cso-age-actions">
-        <button id="cbt-calc-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Estimate CBT Score</button>
-        <button id="cbt-calc-reset" type="button" class="cso-tool-btn">Reset</button>
-      </div>
-    </form>
-
-    <div id="cbt-calc-result" class="cso-cbt-calc-result" role="status" aria-live="polite" hidden></div>
-  </section>
-
-  <!-- Tool 3: Official Link & WhatsApp Scam-Check -->
-  <section id="scam-checker" class="cso-tool-card" aria-labelledby="scam-heading">
-    <div class="cso-tool-card__head">
-      <div>
-        <h2 id="scam-heading">🔍 Official Link &amp; WhatsApp Scam-Check</h2>
-        <p class="cso-tool-desc">Paste any URL or full WhatsApp forward message to verify whether it points to an authentic <code>.gov.in</code> / <code>.nic.in</code> portal or contains scam signals.</p>
-      </div>
-      <span class="cso-tool-privacy-badge">🛡 100% Client-Side Verification</span>
-    </div>
-
-    <div class="cso-scam-form">
-      <label class="cso-tool-field" for="scam-input">
-        <span>Paste URL or WhatsApp Forward Message</span>
-        <textarea id="scam-input" class="cso-scam-textarea" rows="4" placeholder="e.g. https://opsc.gov.in/ or paste a forwarded WhatsApp job/scheme message..."></textarea>
-      </label>
-      <div class="cso-scam-actions">
-        <button id="scam-check-btn" type="button" class="cso-tool-btn cso-tool-btn--primary">Verify Link / Message</button>
-        <button id="scam-clear-btn" type="button" class="cso-tool-btn">Verify Another / Clear</button>
-      </div>
-    </div>
-
-    <div id="scam-result" class="cso-scam-result" role="status" aria-live="polite" hidden></div>
-  </section>
-
-  <!-- Tool 4: Odisha Document & OTR Readiness Checklist -->
-  <section id="doc-readiness-card" class="cso-tool-card" aria-labelledby="doc-readiness-heading">
-    <div class="cso-tool-card__head">
-      <div>
-        <h2 id="doc-readiness-heading">📋 Odisha Document &amp; OTR Readiness Checklist</h2>
-        <p class="cso-tool-desc">Verify all 8 mandatory Odisha recruitment certificates, financial-year SEBC/EWS renewals, Employment Exchange card, and OPSC/OSSC/OSSSC OTR readiness in your Candidate Hub.</p>
-      </div>
-      <a class="cso-tool-btn cso-tool-btn--primary" href="/student-dashboard/#cso-doc-readiness-panel">Open Checklist →</a>
-    </div>
-  </section>
-
-  <!-- Tool 5: Odisha Exam-Day Centre Logistics & Hall Ticket Carry-Bag Planner (v211) -->
-  <section id="exam-centre-planner" class="cso-tool-card" aria-labelledby="exam-centre-heading">
-    <div class="cso-tool-card__head">
-      <div>
-        <h2 id="exam-centre-heading">🎒 Odisha Exam-Day Centre Logistics &amp; Hall Ticket Carry-Bag Planner</h2>
-        <p class="cso-tool-desc">Compute your recommended exam-centre arrival time, inter-district travel window across all 30 Odisha districts, export a calendar alarm, and verify your bilingual exam-hall carry bag.</p>
-      </div>
-      <span class="cso-tool-privacy-badge">💾 Saved Offline on Device</span>
-    </div>
-
-    <form id="centre-planner-form" class="cso-age-form">
-      <label class="cso-tool-field">
-        <span>Exam Name / Board</span>
-        <input id="centre-exam-name" type="text" placeholder="e.g. OPSC OCS Prelims / OSSC CGLRE" value="OPSC / OSSC / OSSSC Exam" required>
-      </label>
-      <label class="cso-tool-field">
-        <span>Home District</span>
-        <select id="centre-home-district" aria-label="Home District"></select>
-      </label>
-      <label class="cso-tool-field">
-        <span>Exam Centre District</span>
-        <select id="centre-exam-district" aria-label="Exam Centre District"></select>
-      </label>
-      <label class="cso-tool-field">
-        <span>Exam Date</span>
-        <input id="centre-exam-date" type="date" required>
-      </label>
-      <label class="cso-tool-field">
-        <span>Gate Closing Time</span>
-        <input id="centre-gate-time" type="time" value="09:00" required>
-      </label>
-      <div class="cso-age-actions">
-        <button id="centre-compute-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Compute Exam-Day Schedule</button>
-        <button id="centre-ics-btn" type="button" class="cso-tool-btn">📅 Export Exam-Day .ics Alarm</button>
-      </div>
-    </form>
-
-    <div id="centre-schedule-result" class="cso-centre-schedule" role="status" aria-live="polite"></div>
-
-    <div class="cso-carrybag-box">
-      <div class="cso-carrybag-head">
-        <div>
-          <h3>Bilingual Exam-Hall Carry-Bag Checklist (ଅତ୍ୟାବଶ୍ୟକ ସାମଗ୍ରୀ ତାଲିକା)</h3>
-          <p class="cso-tool-desc">Verify every item before leaving for the examination centre.</p>
-        </div>
-        <span id="centre-bag-badge" class="cso-meta-chip">0 / 6 Ready</span>
-      </div>
-      <progress id="centre-bag-progress" class="cso-carrybag-progress" max="6" value="0" aria-label="Carry-bag checklist progress"></progress>
-      <div id="centre-bag-checklist" class="cso-carrybag-list"></div>
-    </div>
-  </section>
-
-  <!-- Tool 6: Odisha 7th Pay Matrix (ORSP) In-Hand Salary & Exam Fee Calculator (v216) -->
-  <section id="orsp-salary-calculator" class="cso-tool-card" aria-labelledby="orsp-salary-heading">
-    <div class="cso-tool-card__head">
-      <div>
-        <h2 id="orsp-salary-heading">💰 Odisha 7th Pay Matrix (ORSP) In-Hand Salary &amp; Exam Fee Calculator</h2>
-        <p class="cso-tool-desc">Estimate monthly Basic Pay, DA, HRA, NPS, Professional Tax, Net In-Hand Salary for Odisha State Govt posts (ORSP Level 4–12), and applicable exam fees.</p>
-      </div>
-      <span class="cso-tool-privacy-badge">🏛️ ORSP 7th Pay Matrix</span>
-    </div>
-
-    <form id="orsp-salary-form" class="cso-age-form">
-      <label class="cso-tool-field">
-        <span>Odisha Exam / Post Preset</span>
-        <select id="orsp-pay-level">
-          <option value="12">Level 12 (₹56,100) — OPSC OAS / OFS / OPS Group-A</option>
-          <option value="10">Level 10 (₹44,900) — OPSC Group-B / Lecturer / Assistant Engineer</option>
-          <option value="9" selected>Level 9 (₹35,400) — OSSC ASO / CGLRE / Odisha Police SI / ICDS Supervisor</option>
-          <option value="7">Level 7 (₹25,500) — OSSSC Revenue Inspector (RI) / Junior Assistant</option>
-          <option value="5">Level 5 (₹21,700) — Odisha Police Constable / Forest Guard</option>
-          <option value="4">Level 4 (₹19,900) — OSSSC ARI / Amin / Livestock Inspector</option>
-        </select>
-      </label>
-      <label class="cso-tool-field">
-        <span>Posting City HRA Tier</span>
-        <select id="orsp-hra-tier">
-          <option value="16">16% (Bhubaneswar / Cuttack / Rourkela / Berhampur / Sambalpur)</option>
-          <option value="8" selected>8% (District &amp; Block Headquarters)</option>
-          <option value="0">0% (Govt Quarters Provided)</option>
-        </select>
-      </label>
-      <label class="cso-tool-field">
-        <span>Odisha Dearness Allowance (DA %)</span>
-        <input id="orsp-da-pct" type="number" min="0" max="200" step="1" value="53" required>
-      </label>
-      <label class="cso-tool-field">
-        <span>Recruitment Board &amp; Applicant Category</span>
-        <select id="orsp-fee-category">
-          <option value="odisha-waived">OPSC / OSSC / OSSSC — Odisha Resident Fee Waived ₹0</option>
-          <option value="central-gen">Central SSC / Banking — General/OBC ₹100</option>
-          <option value="central-exempt">Central SSC / Banking — SC/ST/PwD/Female ₹0</option>
-        </select>
-      </label>
-      <div class="cso-age-actions">
-        <button id="orsp-calc-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Calculate In-Hand Salary &amp; Fee</button>
-      </div>
-    </form>
-
-    <div id="orsp-salary-result" class="cso-cbt-calc-result" role="status" aria-live="polite"></div>
-  </section>
-
-  <!-- Tool 7: Odisha Uniformed Services PET & Physical Standards Checker (v217) -->
-  <section id="odisha-pet-checker" class="cso-tool-card" aria-labelledby="odisha-pet-heading">
-    <div class="cso-tool-card__head">
-      <div>
-        <h2 id="odisha-pet-heading">🏃 Odisha Uniformed Services PET &amp; Physical Standards Checker</h2>
-        <p class="cso-tool-desc">Verify official Height, Weight, Chest expansion (≥ 5 cm) &amp; Physical Efficiency Test (PET) run/jump benchmarks for Odisha Police, Forest Guard &amp; Excise posts, and log your practice runs.</p>
-      </div>
-      <span class="cso-tool-privacy-badge">🛡️ Official PET Standards</span>
-    </div>
-
-    <form id="pet-checker-form" class="cso-age-form">
-      <label class="cso-tool-field">
-        <span>Odisha Uniformed Force / Post</span>
-        <select id="pet-force">
-          <option value="police-si">Odisha Police Sub-Inspector (SI)</option>
-          <option value="police-constable">Odisha Police Constable / Sepoy</option>
-          <option value="forest-guard">OSSSC Forest Guard / Forester</option>
-          <option value="excise">Odisha Excise Sub-Inspector / Constable</option>
-        </select>
-      </label>
-      <label class="cso-tool-field">
-        <span>Gender</span>
-        <select id="pet-gender">
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-        </select>
-      </label>
-      <label class="cso-tool-field">
-        <span>Social Category</span>
-        <select id="pet-category">
-          <option value="General / SEBC">General / SEBC</option>
-          <option value="SC / ST">SC / ST</option>
-        </select>
-      </label>
-      <label class="cso-tool-field">
-        <span>Height (cm)</span>
-        <input id="pet-height" type="number" min="120" max="230" step="0.5" value="168" required>
-      </label>
-      <label class="cso-tool-field">
-        <span>Weight (kg)</span>
-        <input id="pet-weight" type="number" min="30" max="150" step="0.5" value="58" required>
-      </label>
-      <label class="cso-tool-field" id="pet-chest-unexp-wrap">
-        <span>Chest Unexpanded (cm)</span>
-        <input id="pet-chest-unexp" type="number" min="60" max="140" step="0.5" value="80">
-      </label>
-      <label class="cso-tool-field" id="pet-chest-exp-wrap">
-        <span>Chest Expanded (cm)</span>
-        <input id="pet-chest-exp" type="number" min="60" max="150" step="0.5" value="86">
-      </label>
-      <div class="cso-age-actions">
-        <button id="pet-check-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Check Physical &amp; PET Eligibility</button>
-      </div>
-    </form>
-
-    <div id="pet-result" class="cso-cbt-calc-result" role="status" aria-live="polite"></div>
-
-    <div class="cso-carrybag-box">
-      <div class="cso-carrybag-head">
-        <div>
-          <h3>Personal PET Practice Run Log</h3>
-          <p class="cso-tool-desc">Track your 1600m / 3200m run timings and jump distances offline on this device.</p>
-        </div>
-      </div>
-      <form id="pet-log-form" class="cso-age-form">
-        <label class="cso-tool-field">
-          <span>PET Event</span>
-          <select id="pet-log-event">
-            <option value="1600m Run">1600m Run</option>
-            <option value="3200m Run">3200m Run</option>
-            <option value="Long Jump">Long Jump</option>
-            <option value="High Jump">High Jump</option>
-          </select>
-        </label>
-        <label class="cso-tool-field">
-          <span>Timing / Distance</span>
-          <input id="pet-log-value" type="text" placeholder="e.g. 6m 45s or 3.85m" required>
-        </label>
-        <label class="cso-tool-field">
-          <span>Practice Date</span>
-          <input id="pet-log-date" type="date" required>
-        </label>
-        <div class="cso-age-actions">
-          <button id="pet-log-save-btn" type="submit" class="cso-tool-btn cso-tool-btn--primary">Save Practice Run</button>
-        </div>
-      </form>
-      <div id="pet-log-list" class="cso-pet-log-list"></div>
-    </div>
+  <section id="cso-clean-page-content" data-page-slug="tools" aria-live="polite">
+    <div class="card cso-empty-state"><p>No items published yet — add categories or content in Admin Studio.</p></div>
   </section>
 </main>
 
@@ -487,30 +48,18 @@
     <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
     <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
     <p class="cso-footer-contact">Contact: <a class="cso-footer-contact-link" href="mailto:contact@csodisha.com">contact@csodisha.com</a></p>
-    <div class="cso-footer-social" role="navigation" aria-label="Official Social Channels">
-      <a class="cso-footer-social-link" href="https://www.instagram.com/csodisha.official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg><span>Instagram</span></a>
-      <a class="cso-footer-social-link" href="https://www.facebook.com/profile.php?id=61596187936770" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg><span>Facebook</span></a>
-      <a class="cso-footer-social-link" href="https://x.com/csodisha" target="_blank" rel="noopener noreferrer" aria-label="X" title="X"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span>X</span></a>
-      <a class="cso-footer-social-link" href="https://t.me/csodisha" target="_blank" rel="noopener noreferrer" aria-label="Telegram" title="Telegram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span>Telegram</span></a>
-      <a class="cso-footer-social-link" href="https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><span>WhatsApp</span></a>
-      <a class="cso-footer-social-link" href="https://www.youtube.com/@CSOdisha" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg><span>YouTube</span></a>
-    </div>
   </div>
   <div class="cso-footer-zone2">
     <div class="cso-footer-col">
       <h4>Explore</h4>
       <a href="/jobs-careers/">Jobs &amp; Careers</a>
-      <a href="/tools/">Student Toolkit</a>
-      <a href="/current-affairs/">Current Affairs</a>
-      <a href="/mock-tests/">Mock Tests</a>
-      <a href="/resources/">Syllabus &amp; PYQs</a>
       <a href="/schemes-benefits/">Schemes &amp; Benefits</a>
       <a href="/study-library/">Study Library</a>
       <a href="/community/">Community</a>
+      <a href="/about/">About CSO</a>
     </div>
     <div class="cso-footer-col">
       <h4>Support &amp; Legal</h4>
-      <a href="/about/">About CSO</a>
       <a href="/support/#faqs">Help &amp; FAQs</a>
       <a href="/support/#report-error">Report an Error</a>
       <a href="/support/#suggest-resource">Suggest Resource</a>
@@ -521,13 +70,6 @@
   <div class="cso-footer-zone3">
     <img class="cso-footer-odisha-map" src="/assets/odisha-footer-map.svg" alt="Odisha vector outline" width="81" height="64" loading="lazy" decoding="async">
     <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
-    <div class="cso-footer-lang-pills">
-      <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>
-      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
-      <button type="button" class="cso-footer-lang-pill" data-cso-lang="or">ଓଡ଼ିଆ</button>
-      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
-      <button type="button" class="cso-footer-lang-pill" data-cso-lang="hi">हिन्दी</button>
-    </div>
   </div>
 </div></footer>
 </body>

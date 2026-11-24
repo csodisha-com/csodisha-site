@@ -181,6 +181,12 @@
 
       syncExamOptions(items);
 
+      const toolbarEl = $('res-toolbar');
+      const metaBarEl = $('res-meta-bar');
+      const showControls = items.length > 0 || hasFilter;
+      if (toolbarEl) toolbarEl.hidden = !showControls;
+      if (metaBarEl) metaBarEl.hidden = !showControls;
+
       if (countLabel) {
         countLabel.textContent = `${total.toLocaleString('en-IN')} published ${total === 1 ? 'document' : 'documents'}`;
       }
@@ -188,10 +194,9 @@
       if (items.length === 0) {
         statusEl.hidden = false;
         statusEl.replaceChildren(
-          el('h3', '', hasFilter ? 'No matching documents found' : 'No syllabus or PYQ documents published yet'),
           el('p', '', hasFilter
-            ? 'Try clearing your search or selecting All Resources / All Examinations.'
-            : 'Official exam syllabi and previous year papers uploaded in the Admin Suite will appear here automatically.')
+            ? 'No matching resources found.'
+            : 'No items published yet — add categories or content in Admin Studio.')
         );
         if (paginationEl) paginationEl.hidden = true;
         return;

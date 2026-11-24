@@ -168,7 +168,7 @@ check('All 7 explorer JS controllers dynamically toggle empty panels & filter ba
   assert.ok(aboutJs.includes('statusEl.hidden = false;'));
 });
 
-check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v237', () => {
+check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v237+', () => {
   assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v23[7-9]';/);
   assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v23[7-9]';/);
 });
