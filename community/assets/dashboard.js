@@ -972,10 +972,12 @@
     }
   }
 
-  // 1. Prioritize live D1 /api/public/community-directory/overview, falling back to localStorage / static JSON when offline
-  fetch('/api/public/community-directory/overview', { cache: 'no-store' })
-    .then(r => (r.ok ? r.json() : null))
-    .then(ov => {
+  // 1. Hydrate strictly from live D1 /api/public/community-directory/overview and /api/nav/config
+  Promise.all([
+    fetch('/api/public/community-directory/overview', { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).catch(() => null),
+    fetch('/api/nav/config', { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).catch(() => null)
+  ])
+    .then(([ov, navData]) => {
       if (ov && Array.isArray(ov.domains) && ov.domains.length) {
         sections = ov.domains.map((dom, idx) => ({
           number: String(dom.num || idx + 1).padStart(2, '0'),
@@ -985,6 +987,22 @@
             line: x.summary || x.description || '',
             slug: x.slug || ''
           })),
+          notes: []
+        }));
+        buildDashboard();
+        renderStatistics({ navigation: sections });
+        syncFromUrl(false);
+        if (loadStatus) loadStatus.hidden = true;
+        return;
+      }
+      const cats = Array.isArray(navData && navData.categories) ? navData.categories : [];
+      const pillar = cats.find(c => c.slug === 'community' || c.target_portal === 'community');
+      const subs = pillar && Array.isArray(pillar.subcategories) ? pillar.subcategories : [];
+      if (subs.length) {
+        sections = subs.map((s, idx) => ({
+          number: String(idx + 1).padStart(2, '0'),
+          title: s.name_en || s.slug || 'Community',
+          children: [],
           notes: []
         }));
         buildDashboard();

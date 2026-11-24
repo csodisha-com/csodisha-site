@@ -82,89 +82,13 @@ async function saveB3Revision(db, moduleCode, entityId, snapshot, note, actorEma
   return nextVer;
 }
 
-const STARTER_ADMIT_RESULTS = [
-  {
-    id: 'adm-opsc-oas-2026', slug: 'opsc-oas-2026-prelims-admit-card-and-cutoff',
-    notice_type: 'admit_card', examination_id: 'exam-opsc-oas-2026', conducting_body: 'OPSC',
-    title_en: 'OPSC OAS (OCS) Prelims Admit Card & Multi-Year Cut-Off Tracker',
-    title_or: 'OPSC OAS (OCS) ପ୍ରିଲିମ୍ସ ଆଡମିଟ୍ କାର୍ଡ ଏବଂ କଟ୍-ଅଫ୍ ସୂଚୀ',
-    summary_en: 'Download OPSC OAS Admission Certificate and review category-wise UR/SEBC/SC/ST/PwD/Women cut-off marks.',
-    summary_or: 'OPSC OAS ଆଡମିଟ୍ କାର୍ଡ ଡାଉନଲୋଡ୍ କରନ୍ତୁ ଏବଂ ବର୍ଗଭିତ୍ତିକ କଟ୍-ଅଫ୍ ମାର୍କ ଦେଖନ୍ତୁ।',
-    release_date: '2026-04-10', exam_date: '2026-04-26',
-    download_url: 'https://www.opsc.gov.in/',
-    cutoff_table_json: JSON.stringify([
-      { year: 2024, category: 'UR', prelims_cutoff: 92.5, mains_cutoff: 880, final_cutoff: 1035, total_marks: 2000 },
-      { year: 2024, category: 'SEBC', prelims_cutoff: 88.0, mains_cutoff: 852, final_cutoff: 1002, total_marks: 2000 },
-      { year: 2024, category: 'SC', prelims_cutoff: 76.5, mains_cutoff: 790, final_cutoff: 930, total_marks: 2000 },
-      { year: 2024, category: 'ST', prelims_cutoff: 68.0, mains_cutoff: 745, final_cutoff: 885, total_marks: 2000 },
-      { year: 2024, category: 'Women', prelims_cutoff: 86.0, mains_cutoff: 840, final_cutoff: 990, total_marks: 2000 }
-    ]),
-    external_links_json: JSON.stringify([{ label: 'OPSC Official Portal', url: 'https://www.opsc.gov.in/', type: 'official', link_status: 'ok' }]),
-    tags_json: JSON.stringify(['opsc', 'oas', 'admit-card', 'cutoff']),
-    status: 'published', featured: 1
-  }
-];
+const STARTER_ADMIT_RESULTS = [];
 
-const STARTER_SYLLABI = [
-  {
-    id: 'syl-ossc-cgl-2026', slug: 'ossc-cglre-2026-syllabus-and-exam-pattern',
-    examination_id: 'exam-ossc-cgl-2026', class_grade_id: 'cls-ossc-cgl', conducting_body: 'OSSC',
-    title_en: 'OSSC CGLRE 2026 Official Syllabus & Exam Pattern Blueprint',
-    title_or: 'OSSC CGLRE ୨୦୨୬ ସରକାରୀ ସିଲାବସ୍ ଏବଂ ପରୀକ୍ଷା ଢାଞ୍ଚା',
-    summary_en: 'Preliminary (150 MCQs) and Mains Written Examination pattern with topic-wise weightage checklist.',
-    summary_or: 'ପ୍ରିଲିମ୍ସ (୧୫୦ MCQ) ଓ ମେନ୍ସ ପରୀକ୍ଷା ଢାଞ୍ଚା ଏବଂ ବିଷୟଭିତ୍ତିକ ତାଲିକା।',
-    exam_pattern_json: JSON.stringify([
-      { stage: 'Prelims', paper_name: 'Arithmetic, DI, Reasoning, GK & Computer', subjects: 'Quant, DI, LR, Current Affairs, Computer', total_questions: 150, total_marks: 150, duration_mins: 150, negative_marking: 0.25 },
-      { stage: 'Mains', paper_name: 'Paper I (Language) & Paper II (General Studies)', subjects: 'Odia, English, GS', total_questions: 200, total_marks: 200, duration_mins: 180, negative_marking: 0.25 }
-    ]),
-    topics_checklist_json: JSON.stringify([
-      { topic_code: 'QUANT-01', title_en: 'Arithmetic & Data Interpretation', title_or: 'ଗଣିତ ଓ DI', subject_name: 'Quantitative Aptitude', weightage_pct: 30 },
-      { topic_code: 'ODIA-01', title_en: 'Odia Grammar & Literature', title_or: 'ଓଡ଼ିଆ ବ୍ୟାକରଣ', subject_name: 'Odia Literature', weightage_pct: 20 },
-      { topic_code: 'ODGK-01', title_en: 'Odisha General Studies', title_or: 'ଓଡ଼ିଶା ସାଧାରଣ ଜ୍ଞାନ', subject_name: 'Odisha General Studies', weightage_pct: 25 }
-    ]),
-    external_links_json: JSON.stringify([{ label: 'OSSC Official Syllabus', url: 'https://www.ossc.gov.in/', type: 'official', link_status: 'ok' }]),
-    tags_json: JSON.stringify(['ossc', 'cgl', 'syllabus', 'exam-pattern']),
-    status: 'published', featured: 1
-  }
-];
+const STARTER_SYLLABI = [];
 
-const STARTER_PYQS = [
-  {
-    id: 'pyq-opsc-oas-2024-gs1', slug: 'opsc-oas-2024-prelims-gs-paper-1-pyq',
-    examination_id: 'exam-opsc-oas-2026', class_grade_id: 'cls-opsc-oas', subject_name: 'Odisha General Studies',
-    exam_year: 2024, shift_or_paper: 'Prelims GS Paper I',
-    title_en: 'OPSC OAS 2024 Prelims GS Paper I Solved PYQ PDF',
-    title_or: 'OPSC OAS ୨୦୨୪ ପ୍ରିଲିମ୍ସ GS ପେପର ୧ ପ୍ରଶ୍ନପତ୍ର PDF',
-    summary_en: 'Complete 100-question Prelims GS Paper I with official OPSC answer key and Odisha GK explanations.',
-    summary_or: 'ସମ୍ପୂର୍ଣ୍ଣ ୧୦୦ଟି ପ୍ରଶ୍ନ ଏବଂ OPSC ସରକାରୀ ଉତ୍ତର ସଙ୍କେତ।',
-    question_count: 100, duration_mins: 120, total_marks: 200, difficulty_level: 'Moderate', offline_ready: 1,
-    file_url: '/resources/', answer_key_url: 'https://www.opsc.gov.in/',
-    tags_json: JSON.stringify(['opsc', 'oas', 'pyq', '2024']),
-    status: 'published', featured: 1
-  }
-];
+const STARTER_PYQS = [];
 
-const STARTER_QUESTIONS = [
-  {
-    id: 'qb-paika-1817-01', slug: 'paika-rebellion-1817-leader-mcq',
-    pyq_paper_id: 'pyq-opsc-oas-2024-gs1', class_grade_id: 'cls-opsc-oas',
-    subject_name: 'Odisha General Studies', topic_name: 'Odisha Freedom Struggle',
-    exam_tag: 'OPSC OAS', exam_year: 2024, difficulty: 'Easy',
-    question_en: 'Who led the historic Paika Rebellion of 1817 in Khordha, Odisha?',
-    question_or: '୧୮୧୭ ମସିହାରେ ଓଡ଼ିଶାର ଖୋର୍ଦ୍ଧାରେ ଐତିହାସିକ ପାଇକ ବିଦ୍ରୋହର ନେତୃତ୍ୱ କିଏ ନେଇଥିଲେ?',
-    options_json: JSON.stringify({
-      A_en: 'Buxi Jagabandhu Bidyadhara', A_or: 'ବକ୍ସି ଜଗବନ୍ଧୁ ବିଦ୍ୟାଧର',
-      B_en: 'Veer Surendra Sai', B_or: 'ବୀର ସୁରେନ୍ଦ୍ର ସାଏ',
-      C_en: 'Jayee Rajaguru', C_or: 'ଜୟୀ ରାଜଗୁରୁ',
-      D_en: 'Madhusudan Das', D_or: 'ମଧୁସୂଦନ ଦାସ'
-    }),
-    correct_option: 'A',
-    explanation_en: 'Buxi Jagabandhu Bidyadhara Mahapatra Bhramarabara Ray led the 1817 Paika Rebellion against British East India Company rule.',
-    explanation_or: 'ବକ୍ସି ଜଗବନ୍ଧୁ ୧୮୧୭ ମସିହାରେ ଇଂରେଜ ଶାସନ ବିରୁଦ୍ଧରେ ପାଇକ ବିଦ୍ରୋହର ନେତୃତ୍ୱ ନେଇଥିଲେ।',
-    tags_json: JSON.stringify(['opsc', 'paika-rebellion', 'odisha-gk']),
-    status: 'published', featured: 1
-  }
-];
+const STARTER_QUESTIONS = [];
 
 export async function ensureEduResourcesBatch3Schema(db) {
   if (!db) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');

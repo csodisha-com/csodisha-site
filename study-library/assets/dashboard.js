@@ -590,7 +590,7 @@
     if (!studyMaterialsGrid) return;
     const filtered = filterResources(state.resources);
     if (liveStudyCount) {
-      liveStudyCount.textContent = `${filtered.length} Verified Material${filtered.length === 1 ? '' : 's'}`;
+      liveStudyCount.textContent = `${filtered.length} Published Material${filtered.length === 1 ? '' : 's'}`;
     }
     if (studyResetBtn) {
       studyResetBtn.hidden = !(state.filterType || state.filterExam || state.filterQ || state.goalMatchOnly);
@@ -599,7 +599,7 @@
     const loadMoreWrap = ensureLoadMoreControls();
     if (!filtered.length) {
       const empty = el('div', 'study-modal-box');
-      empty.appendChild(el('p', 'study-card-desc', 'No verified study materials match this filter combination. Reset filters to view all curated syllabi, PYQs, and Odisha GK capsules.'));
+      empty.appendChild(el('p', 'study-card-desc', 'No items published yet — add categories or content in Admin Studio.'));
       studyMaterialsGrid.appendChild(empty);
       if (loadMoreWrap) loadMoreWrap.hidden = true;
       return;
@@ -1077,12 +1077,13 @@
   async function hydrateData() {
     if (loadStatusEl) loadStatusEl.hidden = false;
 
-    const [resResp, pubItemsResp, eduResp, taxResp, dirResp] = await Promise.allSettled([
-      fetch('/api/content/resources?limit=50'),
-      fetch('/api/public/study-library/items?limit=50'),
-      fetch('/api/edu/resources?limit=50'),
-      fetch('/api/content/exam-taxonomy'),
-      fetch('/api/content/study-library-directory')
+    const [resResp, pubItemsResp, eduResp, taxResp, dirResp, navResp] = await Promise.allSettled([
+      fetch('/api/content/resources?limit=50', { cache: 'no-store' }),
+      fetch('/api/public/study-library/items?limit=50', { cache: 'no-store' }),
+      fetch('/api/edu/resources?limit=50', { cache: 'no-store' }),
+      fetch('/api/content/exam-taxonomy', { cache: 'no-store' }),
+      fetch('/api/content/study-library-directory', { cache: 'no-store' }),
+      fetch('/api/nav/config', { cache: 'no-store' })
     ]);
 
     const mergedMap = new Map();
@@ -1162,6 +1163,27 @@
       state.counts = { groups: 0, sections: 0, subcategories: 0, entries: 0, totalNodes: 0 };
     }
 
+    if (!state.groups.length && navResp && navResp.status === 'fulfilled' && navResp.value.ok) {
+      try {
+        const navData = await navResp.value.json();
+        const cats = Array.isArray(navData && navData.categories) ? navData.categories : [];
+        const pillar = cats.find(c => c.slug === 'study-library' || c.target_portal === 'study-library');
+        const subs = pillar && Array.isArray(pillar.subcategories) ? pillar.subcategories : [];
+        if (subs.length) {
+          state.groups = subs.map((s, idx) => ({
+            id: s.id || ('nav-' + idx),
+            slug: s.slug || '',
+            title: s.name_en || s.slug || 'Category',
+            title_or: s.name_or || '',
+            icon_name: '📚',
+            sections: []
+          }));
+          state.counts = { groups: subs.length, sections: 0, subcategories: 0, entries: 0, totalNodes: subs.length };
+          dirLoadedFromD1 = true;
+        }
+      } catch {}
+    }
+
     if (syncBadge) {
       const topicTotal = Number(state.counts.totalNodes || state.counts.entries || 0);
       syncBadge.textContent = dirLoadedFromD1
@@ -1173,7 +1195,7 @@
     if (loadStatusEl) {
       if (!state.groups.length) {
         loadStatusEl.hidden = false;
-        loadStatusEl.textContent = 'No study library categories published in D1 yet. Create study topics in /admin/ to publish live.';
+        loadStatusEl.textContent = 'No items published yet — add categories or content in Admin Studio.';
       } else {
         loadStatusEl.hidden = true;
       }

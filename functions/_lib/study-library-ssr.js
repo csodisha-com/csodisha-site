@@ -3,14 +3,6 @@ import {
   resolvePublicStudyItem,
 } from './study-library-studio.js';
 import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, decorateMain, renderKicker, normalizeCrumbs, cleanTopicTitle } from './ssr-shell.js';
-import {
-  EARLY_CHILDHOOD_SHOWCASE_COUNT,
-  resolveEarlyChildhoodRoute,
-  renderLevel1Html,
-  renderLevel2Html,
-  renderLevel3Html,
-  renderLevel4Html
-} from './study-early-childhood-pack.js';
 
 const CANONICAL_ORIGIN = 'https://csodisha.com';
 
@@ -135,7 +127,7 @@ function renderNotFoundPage(pathLabel) {
       <h1>Study Resource or Directory Not Found</h1>
       <p>We could not find a published directory or study resource at <code>${escHtml(pathLabel)}</code>.</p>
       <div class="cso-sl-pub-actions">
-        <a class="cso-sl-pub-btn-primary" href="/study-library/">Explore All 10 Study Tracks</a>
+        <a class="cso-sl-pub-btn-primary" href="/study-library/">Explore Study Library</a>
         <a class="cso-sl-pub-btn-secondary" href="/">Back to CSOdisha Home</a>
       </div>
     </section>
@@ -353,17 +345,17 @@ function renderDirectoryPage(resolved, url) {
           }).join('\n')}
         </div>
       </section>`
-    : (!isEarlyChildhood && (children.length === 0 || activeType || activeLang))
+    : (children.length === 0 || activeType || activeLang)
       ? `<section class="cso-sl-pub-empty-card">
           ${(activeType || activeLang) ? filterBarHtml : ''}
-          <h2>${(activeType || activeLang) ? 'No Matching Resources for Selected Filter' : 'No Published Resources Yet in This Topic'}</h2>
+          <h2>${(activeType || activeLang) ? 'No Matching Resources for Selected Filter' : 'No items published yet'}</h2>
           <p>${(activeType || activeLang)
             ? 'Try clearing the active type or language filter to view all published resources in this directory.'
-            : 'Our editorial team is curating verified notes, PDFs, and reference links for this directory.'}</p>
+            : 'No items published yet — add categories or content in Admin Studio.'}</p>
           <div class="cso-sl-pub-actions">
             ${(activeType || activeLang) ? `<a class="cso-sl-pub-btn-primary" href="${escHtml(basePath)}">Clear Filters</a>` : ''}
             ${parentFolder ? `<a class="cso-sl-pub-btn-secondary" href="/study-library/${escHtml(parentFolder.slug_path)}/">↑ Up to ${escHtml(parentFolder.name)}</a>` : ''}
-            <a class="cso-sl-pub-btn-secondary" href="/study-library/">All 10 Study Tracks</a>
+            <a class="cso-sl-pub-btn-secondary" href="/study-library/">Study Library</a>
           </div>
         </section>`
       : '';
@@ -379,11 +371,9 @@ function renderDirectoryPage(resolved, url) {
       </section>`
     : '';
 
-  const statsResourceLabel = isEarlyChildhood
-    ? `<strong>${Math.max(Number(folder.total_item_count || 0), EARLY_CHILDHOOD_SHOWCASE_COUNT)}</strong> Curated Guides · Official Portals &amp; ODF/PDF Packs`
-    : (Number(folder.total_item_count || 0) > 0
-      ? `<strong>${folder.total_item_count}</strong> Total Published Resources`
-      : 'Curated Topic Guide');
+  const statsResourceLabel = Number(folder.total_item_count || 0) > 0
+    ? `<strong>${folder.total_item_count}</strong> Total Published Resources`
+    : '<strong>0</strong> Published Resources';
 
   const html = `${buildHead({
     title: pageTitle,
@@ -535,7 +525,7 @@ function renderItemPage(resolved) {
       <div class="cso-sl-pub-actions">
         <button type="button" class="cso-sl-pub-btn-primary cso-sl-pub-offline-btn" data-pdf-url="${escHtml(item.pdf_url || '')}">Save for Offline</button>
         ${item.folder_path ? `<a class="cso-sl-pub-btn-secondary" href="/study-library/${escHtml(item.folder_path)}/">← Back to Directory</a>` : ''}
-        <a class="cso-sl-pub-btn-secondary" href="/study-library/">All 10 Study Tracks</a>
+        <a class="cso-sl-pub-btn-secondary" href="/study-library/">Study Library</a>
       </div>
     </article>
 
@@ -621,33 +611,6 @@ export async function handlePublicStudyLibraryRoute(request, env, url) {
       return renderNotFoundPage(pathname);
     }
     return renderItemPage(resolvedItem);
-  }
-
-  const ecRoute = resolveEarlyChildhoodRoute(segments);
-  if (ecRoute) {
-    const kickerHtml = renderKicker(ecRoute.crumbs);
-    const bodyHtml = ecRoute.level === 1
-      ? renderLevel1Html(kickerHtml)
-      : ecRoute.level === 2
-        ? renderLevel2Html(ecRoute, kickerHtml)
-        : ecRoute.level === 3
-          ? renderLevel3Html(ecRoute, kickerHtml)
-          : renderLevel4Html(ecRoute, kickerHtml);
-    const lastCrumb = ecRoute.crumbs[ecRoute.crumbs.length - 1];
-    const pageTitle = `${lastCrumb ? lastCrumb.label : 'Early Childhood & Primary Education'} — CSOdisha Study Library`;
-    const canonicalUrl = `${CANONICAL_ORIGIN}${lastCrumb ? lastCrumb.url : '/study-library/early-childhood-primary-education/'}`;
-    const pageDesc = '4-level structured Odisha & NCERT study hub for Early Childhood (Playgroup–UKG) & Primary Education (Class 1–5): textbooks, visual diagrams, bilingual notes & self-tests.';
-    const html = `${buildHead({ title: pageTitle, description: pageDesc, canonicalUrl })}
-<body class="cso-sl-pub-body">
-  ${buildHeader()}
-  <main class="cso-sl-pub-main">
-    ${bodyHtml}
-    ${renderSuggestBox({ domainSlug: 'early-childhood', folderId: ecRoute.classObj ? ecRoute.classObj.slug : 'early-childhood' })}
-  </main>
-  ${buildFooter()}
-</body>
-</html>`;
-    return htmlResponse(html, 200);
   }
 
   const type = url.searchParams.get('type') || '';

@@ -81,111 +81,11 @@ async function saveB5Revision(db, moduleCode, entityId, snapshot, note, actorEma
   ).bind(revId, moduleCode, entityId, nextVer, JSON.stringify(snapshot), cleanStr(note || '', 200), cleanStr(actorEmail || 'system', 120)).run();
 }
 
-const STARTER_RULES = [
-  {
-    id: 'rule-open-public-edu',
-    slug: 'open-access-public-study-materials',
-    rule_name_en: 'Open Access & Attribution Policy (All Study Materials)',
-    rule_name_or: 'ସମସ୍ତ ଅଧ୍ୟୟନ ସାମଗ୍ରୀ ପାଇଁ ମୁକ୍ତ ପ୍ରବେଶ ନୀତି',
-    target_scope: 'all_resources',
-    access_policy: 'public_open',
-    daily_download_limit: 0,
-    watermark_footer_enabled: 1,
-    watermark_text_template: 'Downloaded from Common Sense Odisha (csodisha.com) — Free Public Education',
-    offline_cache_allowed: 1,
-    attribution_required: 1,
-    priority_order: 10,
-    status: 'published'
-  },
-  {
-    id: 'rule-pyq-rate-limit',
-    slug: 'pyq-pdf-daily-fair-use-limit',
-    rule_name_en: 'PYQ PDF Fair-Use Rate Limit (25/day Guest)',
-    rule_name_or: 'PYQ PDF ଦୈନିକ ସୀମା (ଅତିଥି ପାଇଁ ୨୫)',
-    target_scope: 'pyq_paper',
-    access_policy: 'rate_limited',
-    daily_download_limit: 25,
-    watermark_footer_enabled: 1,
-    watermark_text_template: 'Common Sense Odisha PYQ Archive — csodisha.com',
-    offline_cache_allowed: 1,
-    attribution_required: 1,
-    priority_order: 5,
-    status: 'published'
-  }
-];
+const STARTER_RULES = [];
 
-const STARTER_SCHOLARSHIPS = [
-  {
-    id: 'schol-odisha-gopabandhu-2026',
-    slug: 'gopabandhu-sikhya-sahayata-yojana-odisha-2026',
-    provider_type: 'Odisha State Govt',
-    department_or_agency: 'Higher Education Department, Govt. of Odisha',
-    title_en: 'Gopabandhu Sikhya Sahayata Yojana (State Scholarship Portal)',
-    title_or: 'ଗୋପବନ୍ଧୁ ଶିକ୍ଷା ସହାୟତା ଯୋଜନା (ଓଡ଼ିଶା ରାଜ୍ୟ ଛାତ୍ରବୃତ୍ତି)',
-    summary_en: 'Annual financial assistance of Rs 20,000 for eligible UG/PG students in Odisha.',
-    summary_or: 'ଓଡ଼ିଶାର ଯୋଗ୍ୟ UG/PG ଛାତ୍ରଛାତ୍ରୀଙ୍କ ପାଇଁ ବାର୍ଷିକ ₹୨୦,୦୦୦ ଆର୍ଥିକ ସହାୟତା।',
-    eligible_stages_json: JSON.stringify(['UG', 'PG', 'Professional']),
-    category_eligibility: 'All',
-    income_limit_inr: 250000,
-    min_marks_pct: 50,
-    award_amount_text: 'Rs 20,000 / year',
-    application_start: '2026-08-01',
-    application_deadline: '2026-12-31',
-    apply_url: 'https://scholarship.odisha.gov.in',
-    external_links_json: JSON.stringify([{ label: 'Odisha State Scholarship Portal', url: 'https://scholarship.odisha.gov.in', type: 'official' }]),
-    tags_json: JSON.stringify(['odisha-scholarship', 'ug-pg', 'gopabandhu']),
-    status: 'published',
-    featured: 1
-  },
-  {
-    id: 'schol-nsp-post-matric-2026',
-    slug: 'nsp-post-matric-scholarship-sc-st-obc-2026',
-    provider_type: 'Central Govt / NSP',
-    department_or_agency: 'National Scholarship Portal (NSP)',
-    title_en: 'NSP Post-Matric Scholarship for SC/ST/OBC Students',
-    title_or: 'NSP ପୋଷ୍ଟ-ମ୍ୟାଟ୍ରିକ୍ ଛାତ୍ରବୃତ୍ତି (SC/ST/OBC)',
-    summary_en: 'Central government post-matric tuition & maintenance allowance via OTR on NSP.',
-    summary_or: 'NSP OTR ମାଧ୍ୟମରେ କେନ୍ଦ୍ର ସରକାରଙ୍କ ପୋଷ୍ଟ-ମ୍ୟାଟ୍ରିକ୍ ଶିକ୍ଷା ସହାୟତା।',
-    eligible_stages_json: JSON.stringify(['+2', 'UG', 'PG', 'PhD / Research']),
-    category_eligibility: 'SC/ST',
-    income_limit_inr: 250000,
-    min_marks_pct: 45,
-    award_amount_text: 'Tuition Fee + Maintenance Allowance',
-    application_start: '2026-07-15',
-    application_deadline: '2026-11-30',
-    apply_url: 'https://scholarships.gov.in',
-    external_links_json: JSON.stringify([{ label: 'NSP Official Portal', url: 'https://scholarships.gov.in', type: 'official' }]),
-    tags_json: JSON.stringify(['nsp', 'post-matric', 'sc-st']),
-    status: 'published',
-    featured: 1
-  }
-];
+const STARTER_SCHOLARSHIPS = [];
 
-const STARTER_CAREERS = [
-  {
-    id: 'car-odisha-oas-civil-services',
-    slug: 'odisha-administrative-service-oas-career-roadmap',
-    entry_stage: 'After Graduation',
-    career_domain: 'Civil Services & Admin',
-    title_en: 'Odisha Administrative Service (OAS / OPSC Civil Services) Roadmap',
-    title_or: 'ଓଡ଼ିଶା ପ୍ରଶାସନିକ ସେବା (OAS / OPSC) କ୍ୟାରିୟର୍ ରୋଡମ୍ୟାପ୍',
-    summary_en: 'Step-by-step preparation & career progression guide for OAS, OFS, and OPS cadres in Odisha.',
-    summary_or: 'ଓଡ଼ିଶାରେ OAS, OFS ଏବଂ OPS କ୍ୟାଡର୍ ପାଇଁ ପର୍ଯ୍ୟାୟକ୍ରମେ ପ୍ରସ୍ତୁତି ଓ କ୍ୟାରିୟର୍ ମାର୍ଗଦର୍ଶିକା।',
-    roadmap_steps_json: JSON.stringify([
-      { step_no: 1, stage_label_en: 'Graduation (Any Stream)', stage_label_or: 'ସ୍ନାତକ (ଯେକୌଣସି ବିଭାଗ)', action_en: 'Complete Bachelor degree and build NCERT + Odisha GK foundation.', action_or: 'ସ୍ନାତକ ଡିଗ୍ରୀ ସମାପ୍ତ କରି NCERT ଏବଂ ଓଡ଼ିଶା GK ମୂଳଦୁଆ ଗଠନ କରନ୍ତୁ।', duration_text: '3 Years' },
-      { step_no: 2, stage_label_en: 'OPSC OCS Prelims & Mains', stage_label_or: 'OPSC OCS ପ୍ରିଲିମ୍ସ ଓ ମେନ୍ସ', action_en: 'Clear Prelims, GS + Optional Mains, and Personality Test.', action_or: 'ପ୍ରିଲିମ୍ସ, GS + ଅପ୍ସନାଲ୍ ମେନ୍ସ ଏବଂ ସାକ୍ଷାତକାର ଉତ୍ତୀର୍ଣ୍ଣ ହୁଅନ୍ତୁ।', duration_text: '12-18 Months' },
-      { step_no: 3, stage_label_en: 'Gopabandhu Academy Induction', stage_label_or: 'ଗୋପବନ୍ଧୁ ଏକାଡେମୀ ତାଲିମ', action_en: 'Join as BDO / Tahsildar / Deputy Collector in Odisha Govt.', action_or: 'ଓଡ଼ିଶା ସରକାରରେ BDO / ତହସିଲଦାର / ଡେପୁଟି କଲେକ୍ଟର ଭାବେ ଯୋଗ ଦିଅନ୍ତୁ।', duration_text: 'Career Track' }
-    ]),
-    recommended_exams_json: JSON.stringify(['OPSC OCS (OAS/OFS/OPS)', 'UPSC CSE', 'OSSC CGL']),
-    avg_salary_range: 'Rs 56,100 - Rs 1,77,500 (Level 12+)',
-    odisha_opportunities_en: 'Posting across 30 Odisha districts as Tahsildar, BDO, Sub-Collector, ADM, and Secretariat roles.',
-    odisha_opportunities_or: 'ଓଡ଼ିଶାର ୩୦ଟି ଜିଲ୍ଲାରେ ତହସିଲଦାର, BDO, ସବ୍-କଲେକ୍ଟର ଏବଂ ADM ପଦବୀ।',
-    external_links_json: JSON.stringify([{ label: 'OPSC Portal', url: 'https://www.opsc.gov.in', type: 'official' }]),
-    tags_json: JSON.stringify(['oas', 'opsc', 'civil-services', 'after-graduation']),
-    status: 'published',
-    featured: 1
-  }
-];
+const STARTER_CAREERS = [];
 
 export async function ensureEduResourcesBatch5Schema(db) {
   if (!db) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');

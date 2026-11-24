@@ -91,73 +91,11 @@ async function saveRevision(db, resourceId, snapshot, note, actorEmail) {
   return nextVer;
 }
 
-const STARTER_CLASSES = [
-  { id: 'cls-bse-6-10', slug: 'bse-odisha-class-6-to-10', code: 'BSE-6-10', name_en: 'Classes 6–10 (BSE Odisha)', name_or: 'ଷଷ୍ଠ ରୁ ଦଶମ ଶ୍ରେଣୀ (BSE ଓଡ଼ିଶା)', stage_group: 'school_1_10', board_or_body: 'BSE Odisha', description_en: 'High school curriculum, SCERT/OSEPA textbooks, Odia, English, Mathematics, Science & Social Studies.', description_or: 'ମାଧ୍ୟମିକ ଶିକ୍ଷା ପରିଷଦ (BSE) ଓଡ଼ିଶା ଦ୍ୱାରା ପ୍ରଣୀତ ଷଷ୍ଠ ରୁ ଦଶମ ଶ୍ରେଣୀ ପାଠ୍ୟକ୍ରମ।', sort_order: 1, featured: 1 },
-  { id: 'cls-chse-11-12', slug: 'chse-odisha-plus2-arts-science-commerce', code: 'CHSE-12', name_en: '+2 Arts / Science / Commerce (CHSE)', name_or: '+୨ କଳା / ବିଜ୍ଞାନ / ବାଣିଜ୍ୟ (CHSE ଓଡ଼ିଶା)', stage_group: 'higher_secondary_11_12', board_or_body: 'CHSE Odisha', description_en: 'Higher Secondary (+2) Arts, Science, and Commerce syllabi, reference books, and board exam papers.', description_or: 'CHSE ଓଡ଼ିଶା +୨ କଳା, ବିଜ୍ଞାନ ଓ ବାଣିଜ୍ୟ ପାଠ୍ୟକ୍ରମ ଏବଂ ପ୍ରଶ୍ନପତ୍ର।', sort_order: 2, featured: 1 },
-  { id: 'cls-ug-pg', slug: 'odisha-ug-pg-university-courses', code: 'UG-PG', name_en: 'UG & PG University Tracks', name_or: 'ସ୍ନାତକ (UG) ଓ ସ୍ନାତକୋତ୍ତର (PG)', stage_group: 'ug_pg', board_or_body: 'Odisha State Universities', description_en: 'CBCS / NEP 2020 Honours, Core papers, and PG entrance preparation across Odisha universities.', description_or: 'ଓଡ଼ିଶାର ବିଶ୍ୱବିଦ୍ୟାଳୟଗୁଡ଼ିକର UG (CBCS/NEP) ଓ PG ପାଠ୍ୟକ୍ରମ।', sort_order: 3, featured: 0 },
-  { id: 'cls-opsc-oas', slug: 'opsc-oas-civil-services', code: 'OPSC-OAS', name_en: 'OPSC OAS /OCS', name_or: 'OPSC OAS (ଓଡ଼ିଶା ପ୍ରଶାସନିକ ସେବା)', stage_group: 'competitive_odisha', board_or_body: 'OPSC', description_en: 'Odisha Civil Services Prelims, Mains GS I–IV, Optional subjects, and Odisha Special modules.', description_or: 'ଓଡ଼ିଶା ଲୋକ ସେବା ଆୟୋଗ (OPSC) OAS ପ୍ରିଲିମ୍ସ ଓ ମେନ୍ସ ପ୍ରସ୍ତୁତି।', sort_order: 4, featured: 1 },
-  { id: 'cls-ossc-cgl', slug: 'ossc-cglre-graduate-level', code: 'OSSC-CGL', name_en: 'OSSC CGLRE', name_or: 'OSSC CGLRE (ସ୍ନାତକ ସ୍ତରୀୟ)', stage_group: 'competitive_odisha', board_or_body: 'OSSC', description_en: 'Combined Graduate Level Recruitment Exam Arithmetic, DI, Reasoning, Odia, and Computer Skill modules.', description_or: 'OSSC CGLRE ଗଣିତ, DI, ରିଜନିଂ, ଓଡ଼ିଆ ଓ କମ୍ପ୍ୟୁଟର ଦକ୍ଷତା।', sort_order: 5, featured: 1 },
-  { id: 'cls-osssc-ri', slug: 'osssc-ri-ari-amin-icds', code: 'OSSSC-RI', name_en: 'OSSSC RI / ARI / Amin', name_or: 'OSSSC RI / ARI / ଅମିନ', stage_group: 'competitive_odisha', board_or_body: 'OSSSC', description_en: 'District cadre Revenue Inspector, ARI, Amin, SFS & Livestock Inspector recruitment preparation.', description_or: 'ଜିଲ୍ଲା ସ୍ତରୀୟ RI, ARI, ଅମିନ ଓ ICDS ସୁପରଭାଇଜର ପରୀକ୍ଷା ପ୍ରସ୍ତୁତି।', sort_order: 6, featured: 0 },
-  { id: 'cls-ugc-net', slug: 'nta-ugc-net-jrf', code: 'UGC-NET', name_en: 'UGC NET / JRF', name_or: 'UGC NET / JRF (ଜାତୀୟ ଯୋଗ୍ୟତା)', stage_group: 'competitive_national', board_or_body: 'NTA', description_en: 'Paper 1 Teaching & Research Aptitude plus Paper 2 Odia, English, History, Political Science & Education.', description_or: 'NTA UGC NET ପେପର-୧ ଏବଂ ପେପର-୨ ବିଷୟଭିତ୍ତିକ ଅଧ୍ୟୟନ।', sort_order: 7, featured: 0 },
-  { id: 'cls-otet-osstet', slug: 'bse-otet-osstet-teacher-eligibility', code: 'OTET-OSSTET', name_en: 'OTET / OSSTET', name_or: 'OTET / OSSTET (ଶିକ୍ଷକ ଯୋଗ୍ୟତା)', stage_group: 'teaching_eligibility', board_or_body: 'BSE Odisha', description_en: 'Child Development & Pedagogy, Odia, English, Mathematics, Science & Social Studies for Odisha teacher eligibility.', description_or: 'ଓଡ଼ିଶା ଶିକ୍ଷକ ଯୋଗ୍ୟତା ପରୀକ୍ଷା (OTET / OSSTET) ଶିଶୁ ବିକାଶ ଓ ଶିକ୍ଷାଦାନ।', sort_order: 8, featured: 1 }
-];
+const STARTER_CLASSES = [];
 
-const STARTER_SUBJECTS = [
-  { id: 'subj-odisha-gs', slug: 'odisha-general-studies', class_grade_id: 'cls-opsc-oas', parent_topic_id: null, code: 'OD-GS', title_en: 'Odisha General Studies', title_or: 'ଓଡ଼ିଶା ସାଧାରଣ ଜ୍ଞାନ', description_en: 'Complete Odisha History, Geography, Polity, Economy & Culture.', description_or: 'ଓଡ଼ିଶାର ଇତିହାସ, ଭୂଗୋଳ, ରାଜନୀତି, ଅର୍ଥନୀତି ଓ ସଂସ୍କୃତି।', tags_json: '["opsc","odisha-gk"]', sort_order: 1, featured: 1 },
-  { id: 'subj-odisha-gs-u1', slug: 'odisha-history-and-heritage', class_grade_id: 'cls-opsc-oas', parent_topic_id: 'subj-odisha-gs', code: 'OD-GS-U1', title_en: 'Unit 1: Odisha History & Freedom Struggle', title_or: 'ଏକକ ୧: ଓଡ଼ିଶା ଇତିହାସ ଓ ସ୍ୱାଧୀନତା ସଂଗ୍ରାମ', description_en: 'Kalinga War, Kharavela, Ganga/Gajapati era, Paika Rebellion & Utkal Sammilani.', description_or: 'କଳିଙ୍ଗ ଯୁଦ୍ଧ, ଖାରବେଳ, ଗଙ୍ଗ/ଗଜପତି ବଂଶ, ପାଇକ ବିଦ୍ରୋହ ଓ ଉତ୍କଳ ସମ୍ମିଳନୀ।', tags_json: '["history","kalinga","paika"]', sort_order: 1, featured: 0 },
-  { id: 'subj-odisha-gs-u1-t1', slug: 'paika-rebellion-1817-buxi-jagabandhu', class_grade_id: 'cls-opsc-oas', parent_topic_id: 'subj-odisha-gs-u1', code: 'OD-GS-U1-T1', title_en: 'Topic: Paika Rebellion (1817) & Buxi Jagabandhu', title_or: 'ବିଷୟ: ପାଇକ ବିଦ୍ରୋହ (୧୮୧୭) ଓ ବକ୍ସି ଜଗବନ୍ଧୁ', description_en: 'Causes, Khordha uprising, and historical significance.', description_or: 'ଖୋର୍ଦ୍ଧା ପାଇକ ବିଦ୍ରୋହର କାରଣ ଓ ଐତିହାସିକ ମହତ୍ତ୍ୱ।', tags_json: '["paika-rebellion","1817"]', sort_order: 1, featured: 0 },
-  { id: 'subj-quant-ossc', slug: 'quantitative-aptitude-and-di', class_grade_id: 'cls-ossc-cgl', parent_topic_id: null, code: 'QUANT', title_en: 'Quantitative Aptitude & Data Interpretation', title_or: 'ଗଣିତ ଏବଂ ଡାଟା ଇଣ୍ଟରପ୍ରିଟେସନ୍', description_en: 'Arithmetic, Percentages, Ratio, Profit & Loss, Charts & Tables.', description_or: 'ଶତକଡ଼ା, ଅନୁପାତ, ଲାଭ-କ୍ଷତି, ସମୟ-କାର୍ଯ୍ୟ ଓ DI।', tags_json: '["ossc","arithmetic","di"]', sort_order: 2, featured: 1 },
-  { id: 'subj-odia-bse', slug: 'odia-grammar-and-literature', class_grade_id: 'cls-bse-6-10', parent_topic_id: null, code: 'ODIA', title_en: 'Odia Grammar & Literature', title_or: 'ଓଡ଼ିଆ ବ୍ୟାକରଣ ଏବଂ ସାହିତ୍ୟ', description_en: 'Sandhi, Samasa, Krudanta, Taddhita, Alankara & Sahitya.', description_or: 'ସନ୍ଧି, ସମାସ, କୃଦନ୍ତ, ତଦ୍ଧିତ, ଅଳଙ୍କାର ଓ ସାହିତ୍ୟ।', tags_json: '["odia","bse","otet"]', sort_order: 3, featured: 1 },
-  { id: 'subj-cdp-otet', slug: 'child-development-and-pedagogy', class_grade_id: 'cls-otet-osstet', parent_topic_id: null, code: 'CDP', title_en: 'Child Development & Pedagogy', title_or: 'ଶିଶୁ ବିକାଶ ଏବଂ ଶିକ୍ଷାଦାନ', description_en: 'Learning theories, inclusive education, NCF & NEP 2020 pedagogy.', description_or: 'ଶିକ୍ଷଣ ତତ୍ତ୍ୱ, ଅନ୍ତର୍ନିବେଶୀ ଶିକ୍ଷା ଓ NEP ୨୦୨୦।', tags_json: '["otet","osstet","pedagogy"]', sort_order: 4, featured: 1 }
-];
+const STARTER_SUBJECTS = [];
 
-const STARTER_EXAMS = [
-  {
-    id: 'exam-opsc-oas-2026', slug: 'opsc-oas-ocs-2026', exam_code: 'OPSC-OCS-2026', conducting_body: 'OPSC', exam_level: 'State',
-    title_en: 'OPSC Odisha Civil Services (OAS / OFS / OPS) Examination',
-    title_or: 'OPSC ଓଡ଼ିଶା ସିଭିଲ୍ ସର୍ଭିସେସ୍ (OAS / OFS / OPS) ପରୀକ୍ଷା',
-    summary_en: 'Premier Odisha State Civil Services recruitment conducted by OPSC in Prelims, Mains (written), and Personality Test stages.',
-    summary_or: 'ଓଡ଼ିଶା ଲୋକ ସେବା ଆୟୋଗ (OPSC) ଦ୍ୱାରା ପରିଚାଳିତ ପ୍ରିଲିମ୍ସ, ମେନ୍ସ ଓ ସାକ୍ଷାତକାର ପରୀକ୍ଷା।',
-    eligibility_en: 'Bachelor’s Degree from a recognised university; Odia proficiency up to ME/Class 7 standard.',
-    eligibility_or: 'ସ୍ୱୀକୃତିପ୍ରାପ୍ତ ବିଶ୍ୱବିଦ୍ୟାଳୟରୁ ସ୍ନାତକ ଡିଗ୍ରୀ ଏବଂ ଓଡ଼ିଆ ଭାଷାରେ ଦକ୍ଷତା।',
-    age_limit_text: '21–38 years (relaxation for SC/ST/SEBC/Women/PwD as per Odisha Govt rules)',
-    fee_structure_json: JSON.stringify({ general: '₹500 (exempted as per Odisha Govt notification)', sc_st_pwd: 'Exempted' }),
-    important_dates_json: JSON.stringify({ notification_date: '2026-01-15', apply_start: '2026-01-20', apply_end: '2026-02-20', admit_card_date: '2026-04-10', exam_date: '2026-04-26', result_date: '2026-06-15' }),
-    external_links_json: JSON.stringify([{ label: 'OPSC Official Website', url: 'https://www.opsc.gov.in/', type: 'official', link_status: 'ok' }]),
-    tags_json: JSON.stringify(['opsc', 'oas', 'odisha-gk', 'civil-services']),
-    status: 'published', featured: 1
-  },
-  {
-    id: 'exam-ossc-cgl-2026', slug: 'ossc-cglre-2026', exam_code: 'OSSC-CGL-2026', conducting_body: 'OSSC', exam_level: 'State',
-    title_en: 'OSSC Combined Graduate Level Recruitment Examination (CGLRE)',
-    title_or: 'OSSC ମିଳିତ ସ୍ନାତକ ସ୍ତରୀୟ ନିଯୁକ୍ତି ପରୀକ୍ଷା (CGLRE)',
-    summary_en: 'Group-B and Group-C specialist & executive posts across Odisha Government departments.',
-    summary_or: 'ଓଡ଼ିଶା ସରକାରଙ୍କ ବିଭିନ୍ନ ବିଭାଗରେ ଗ୍ରୁପ୍-B ଓ ଗ୍ରୁପ୍-C ପଦବୀ ପାଇଁ ନିଯୁକ୍ତି ପରୀକ୍ଷା।',
-    eligibility_en: 'Graduate in any discipline + Basic Computer Knowledge + Odia up to HSC.',
-    eligibility_or: 'ସ୍ନାତକ ଡିଗ୍ରୀ, କମ୍ପ୍ୟୁଟର ଜ୍ଞାନ ଏବଂ ଦଶମ ସ୍ତରୀୟ ଓଡ଼ିଆ।',
-    age_limit_text: '21–38 years',
-    fee_structure_json: JSON.stringify({ all_categories: 'Zero Application Fee (Odisha Govt Policy)' }),
-    important_dates_json: JSON.stringify({ notification_date: '2026-02-01', apply_start: '2026-02-05', apply_end: '2026-03-05', admit_card_date: '2026-04-20', exam_date: '2026-05-03', result_date: '2026-06-30' }),
-    external_links_json: JSON.stringify([{ label: 'OSSC Official Website', url: 'https://www.ossc.gov.in/', type: 'official', link_status: 'ok' }]),
-    tags_json: JSON.stringify(['ossc', 'cgl', 'arithmetic', 'di']),
-    status: 'published', featured: 1
-  },
-  {
-    id: 'exam-bse-otet-2026', slug: 'bse-odisha-otet-2026', exam_code: 'BSE-OTET-2026', conducting_body: 'BSE Odisha', exam_level: 'State',
-    title_en: 'Odisha Teacher Eligibility Test (OTET) — Paper I & II',
-    title_or: 'ଓଡ଼ିଶା ଶିକ୍ଷକ ଯୋଗ୍ୟତା ପରୀକ୍ଷା (OTET) — ପେପର ୧ ଓ ୨',
-    summary_en: 'Mandatory eligibility test conducted by BSE Odisha for Class I–VIII teachers in Odisha.',
-    summary_or: 'BSE ଓଡ଼ିଶା ଦ୍ୱାରା ପରିଚାଳିତ ପ୍ରାଥମିକ ଓ ଉଚ୍ଚ ପ୍ରାଥମିକ ଶିକ୍ଷକ ଯୋଗ୍ୟତା ପରୀକ୍ଷା।',
-    eligibility_en: '+2 / Graduation with D.El.Ed. or B.Ed. as per NCTE norms.',
-    eligibility_or: '+୨ / ସ୍ନାତକ ସହିତ D.El.Ed. କିମ୍ବା B.Ed. ଯୋଗ୍ୟତା।',
-    age_limit_text: 'No upper age bar for TET qualification',
-    fee_structure_json: JSON.stringify({ general_sebc: '₹600', sc_st: '₹400' }),
-    important_dates_json: JSON.stringify({ notification_date: '2026-03-01', apply_start: '2026-03-05', apply_end: '2026-03-25', admit_card_date: '2026-04-25', exam_date: '2026-05-10', result_date: '2026-06-20' }),
-    external_links_json: JSON.stringify([{ label: 'BSE Odisha Portal', url: 'https://www.bseodisha.ac.in/', type: 'official', link_status: 'ok' }]),
-    tags_json: JSON.stringify(['otet', 'bse-odisha', 'pedagogy', 'odia']),
-    status: 'published', featured: 1
-  }
-];
+const STARTER_EXAMS = [];
 
 export async function ensureEduResourcesBatch2Schema(db) {
   if (!db) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');

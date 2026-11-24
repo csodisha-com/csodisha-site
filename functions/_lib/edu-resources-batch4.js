@@ -77,124 +77,13 @@ async function saveB4Revision(db, moduleCode, entityId, snapshot, note, actorEma
   ).bind(revId, moduleCode, entityId, nextVer, JSON.stringify(snapshot), cleanStr(note || '', 200), cleanStr(actorEmail || 'system', 120)).run();
 }
 
-const STARTER_QUIZZES = [
-  {
-    id: 'quiz-odisha-gk-ca-2026',
-    slug: 'odisha-general-studies-current-affairs-quiz-2026',
-    class_grade_id: 'cls-opsc-oas',
-    subject_name: 'Odisha General Studies',
-    topic_name: 'Odisha Freedom Struggle & Current Affairs',
-    exam_tag: 'OPSC OAS / OSSC CGL',
-    title_en: 'Odisha General Studies & Current Affairs Practice Quiz',
-    title_or: 'ଓଡ଼ିଶା ସାଧାରଣ ଜ୍ଞାନ ଏବଂ ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ ଅଭ୍ୟାସ କ୍ୱିଜ୍',
-    summary_en: 'Bilingual timed practice quiz covering Odisha history, Paika Rebellion, and state governance.',
-    summary_or: 'ଓଡ଼ିଶା ଇତିହାସ, ପାଇକ ବିଦ୍ରୋହ ଏବଂ ରାଜ୍ୟ ଶାସନ ଉପରେ ଦ୍ୱିଭାଷୀ ଅଭ୍ୟାସ କ୍ୱିଜ୍।',
-    question_ids_json: JSON.stringify(['qb-paika-1817-01']),
-    duration_mins: 15,
-    passing_score_pct: 40,
-    marks_per_question: 2,
-    negative_marks: 0.5,
-    shuffle_questions: 1,
-    flashcard_mode_enabled: 1,
-    tags_json: JSON.stringify(['odisha-gk', 'current-affairs', 'bilingual']),
-    status: 'published',
-    featured: 1
-  }
-];
+const STARTER_QUIZZES = [];
 
-const STARTER_MOCK_TESTS = [
-  {
-    id: 'mock-opsc-oas-prelims-gs1-2026',
-    slug: 'opsc-oas-prelims-gs-paper-1-mock-test-2026',
-    examination_id: 'exam-opsc-oas',
-    class_grade_id: 'cls-opsc-oas',
-    conducting_body: 'OPSC',
-    test_series_name: 'OPSC OAS 2026 Prelims Test Series',
-    title_en: 'OPSC OAS Prelims GS Paper-I Full-Length Mock Test',
-    title_or: 'OPSC OAS ପ୍ରିଲିମ୍ସ GS ପେପର୍-୧ ପୂର୍ଣ୍ଣାଙ୍ଗ ମକ୍ ଟେଷ୍ଟ',
-    summary_en: 'Full-length OPSC OAS Prelims GS Paper-I simulation with 0.25 negative marking.',
-    summary_or: '୦.୨୫ ନେଗେଟିଭ୍ ମାର୍କିଂ ସହିତ OPSC OAS ପ୍ରିଲିମ୍ସ GS ପେପର୍-୧ ମକ୍ ଟେଷ୍ଟ।',
-    sections_json: JSON.stringify([
-      {
-        section_name_en: 'Odisha History & General Studies',
-        section_name_or: 'ଓଡ଼ିଶା ଇତିହାସ ଏବଂ ସାଧାରଣ ଜ୍ଞାନ',
-        subject_name: 'Odisha General Studies',
-        question_ids_json: ['qb-paika-1817-01'],
-        marks_per_q: 2,
-        negative_marks: 0.5,
-        section_time_mins: 60
-      }
-    ]),
-    total_questions: 1,
-    total_marks: 2,
-    total_duration_mins: 120,
-    negative_marking_rule: '0.25 per wrong answer (1/4th mark)',
-    access_tier: 'free',
-    tags_json: JSON.stringify(['opsc', 'oas', 'mock-test', 'gs-paper-1']),
-    status: 'published',
-    featured: 1
-  }
-];
+const STARTER_MOCK_TESTS = [];
 
-const STARTER_ANSWER_KEYS = [
-  {
-    id: 'ak-ossc-cgl-2025-set-abcd',
-    slug: 'ossc-cgl-2025-official-answer-key-set-abcd',
-    examination_id: 'exam-ossc-cgl',
-    pyq_paper_id: 'pyq-opsc-oas-2024-gs1',
-    mock_test_id: '',
-    key_type: 'official_final',
-    conducting_body: 'OSSC',
-    exam_year: 2025,
-    paper_set_code: 'Set A / B / C / D',
-    title_en: 'OSSC CGL Official Answer Key & Set A–D Solutions',
-    title_or: 'OSSC CGL ସରକାରୀ ଉତ୍ତର ସଙ୍କେତ ଏବଂ ସେଟ୍ A–D ସମାଧାନ',
-    summary_en: 'Complete Set A, B, C, D official answer key mapping with bilingual explanations.',
-    summary_or: 'ସେଟ୍ A, B, C, D ସରକାରୀ ଉତ୍ତର ସଙ୍କେତ ଏବଂ ଦ୍ୱିଭାଷୀ ବ୍ୟାଖ୍ୟା।',
-    answer_mapping_json: JSON.stringify([
-      {
-        q_no: 1,
-        set_a: 'A',
-        set_b: 'C',
-        set_c: 'B',
-        set_d: 'D',
-        question_bank_id: 'qb-paika-1817-01',
-        explanation_en: 'Buxi Jagabandhu led the 1817 Paika Rebellion in Khordha.',
-        explanation_or: 'ବକ୍ସି ଜଗବନ୍ଧୁ ୧୮୧୭ ପାଇକ ବିଦ୍ରୋହର ନେତୃତ୍ୱ ନେଇଥିଲେ।'
-      }
-    ]),
-    objection_window_end: '2026-12-15',
-    challenge_url: 'https://www.ossc.gov.in',
-    external_links_json: JSON.stringify([{ label: 'OSSC Official Portal', url: 'https://www.ossc.gov.in', type: 'official' }]),
-    tags_json: JSON.stringify(['ossc', 'cgl', 'answer-key']),
-    status: 'published',
-    featured: 1
-  }
-];
+const STARTER_ANSWER_KEYS = [];
 
-const STARTER_COLLECTIONS = [
-  {
-    id: 'col-opsc-oas-starter-pack',
-    slug: 'opsc-oas-ugc-net-starter-pack-collection',
-    collection_type: 'exam_starter_pack',
-    examination_id: 'exam-opsc-oas',
-    class_grade_id: 'cls-opsc-oas',
-    title_en: 'OPSC OAS / UGC-NET Starter Pack Resource Collection',
-    title_or: 'OPSC OAS / UGC-NET ଷ୍ଟାର୍ଟର୍ ପ୍ୟାକ୍ ସମ୍ବଳ ସଂଗ୍ରହ',
-    summary_en: 'Curated step-by-step study pathway combining Syllabus, PYQs, Practice Quiz, and Full Mock Test.',
-    summary_or: 'ପାଠ୍ୟକ୍ରମ, PYQ, ଅଭ୍ୟାସ କ୍ୱିଜ୍ ଏବଂ ମକ୍ ଟେଷ୍ଟ ସହିତ ସଂଗଠିତ ଅଧ୍ୟୟନ ପଥ।',
-    items_json: JSON.stringify([
-      { module_code: '10', item_id: 'syl-opsc-oas-2025', title_en: 'OPSC OAS Prelims & Mains Syllabus', title_or: 'OPSC OAS ପାଠ୍ୟକ୍ରମ', step_order: 1, is_required: true },
-      { module_code: '11', item_id: 'pyq-opsc-oas-2024-gs1', title_en: 'OPSC OAS 2024 GS Paper I PYQ', title_or: 'OPSC OAS ୨୦୨୪ ପ୍ରଶ୍ନପତ୍ର', step_order: 2, is_required: true },
-      { module_code: '13', item_id: 'quiz-odisha-gk-ca-2026', title_en: 'Odisha General Studies Practice Quiz', title_or: 'ଓଡ଼ିଶା ସାଧାରଣ ଜ୍ଞାନ କ୍ୱିଜ୍', step_order: 3, is_required: true },
-      { module_code: '14', item_id: 'mock-opsc-oas-prelims-gs1-2026', title_en: 'OPSC OAS Prelims GS Paper-I Mock Test', title_or: 'OPSC OAS ମକ୍ ଟେଷ୍ଟ', step_order: 4, is_required: false }
-    ]),
-    offline_pack_ready: 1,
-    tags_json: JSON.stringify(['opsc', 'starter-pack', 'ugc-net']),
-    status: 'published',
-    featured: 1
-  }
-];
+const STARTER_COLLECTIONS = [];
 
 export async function ensureEduResourcesBatch4Schema(db) {
   if (!db) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');

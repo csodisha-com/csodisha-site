@@ -1176,8 +1176,11 @@
     }
 
     try {
-      const apiRes = await fetch('/api/content/schemes-directory', { credentials: 'same-origin' });
-      if (apiRes.ok) {
+      const [apiRes, navRes] = await Promise.all([
+        fetch('/api/content/schemes-directory', { credentials: 'same-origin', cache: 'no-store' }).catch(() => null),
+        fetch('/api/nav/config', { credentials: 'same-origin', cache: 'no-store' }).catch(() => null)
+      ]);
+      if (apiRes && apiRes.ok) {
         const d1Data = await apiRes.json();
         if (Array.isArray(d1Data.groups) && d1Data.groups.length > 0) {
           treeCountsCache = d1Data.total_counts || d1Data.counts || null;
@@ -1196,6 +1199,32 @@
           }));
           buildDashboard();
           renderStatistics(d1Data);
+          syncFromUrl(false);
+          if (loadStatus) loadStatus.hidden = true;
+          return;
+        }
+      }
+      if (navRes && navRes.ok) {
+        const navData = await navRes.json();
+        const cats = Array.isArray(navData && navData.categories) ? navData.categories : [];
+        const pillar = cats.find(c => c.slug === 'schemes-benefits' || c.target_portal === 'schemes');
+        const subs = pillar && Array.isArray(pillar.subcategories) ? pillar.subcategories : [];
+        if (subs.length > 0) {
+          sections = subs.map((s, idx) => ({
+            id: s.id || ('nav-' + idx),
+            slug: s.slug || '',
+            number: String(idx + 1),
+            title: s.name_en || s.slug || 'Category',
+            title_or: s.name_or || '',
+            subtitle: s.description_en || '',
+            subtitle_or: s.description_or || '',
+            icon_name: '🏛️',
+            official_url: s.landing_url || '',
+            children: [],
+            notes: []
+          }));
+          buildDashboard();
+          renderStatistics({ navigation: sections });
           syncFromUrl(false);
           if (loadStatus) loadStatus.hidden = true;
           return;
@@ -1924,7 +1953,7 @@
 
       if (items.length === 0) {
         liveSchemesStatus.hidden = false;
-        liveSchemesStatus.textContent = 'No schemes match those exact age, income, or window filters. Try broadening or resetting your filters.';
+        liveSchemesStatus.textContent = 'No items published yet — add categories or content in Admin Studio.';
         return;
       }
 

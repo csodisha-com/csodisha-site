@@ -1551,14 +1551,39 @@
     }
   }
 
+  async function fetchNavSubcategoriesForPillar(pillarSlug) {
+    try {
+      const res = await fetch('/api/nav/config', { credentials: 'same-origin', cache: 'no-store' });
+      if (!res.ok) return [];
+      const data = await res.json();
+      const cats = Array.isArray(data && data.categories) ? data.categories : [];
+      const pillar = cats.find(c => c.slug === pillarSlug || c.target_portal === pillarSlug);
+      const subs = pillar && Array.isArray(pillar.subcategories) ? pillar.subcategories : [];
+      return subs.map((s, idx) => ({
+        id: s.id || ('nav-' + idx),
+        number: String(idx + 1),
+        title: s.name_en || s.slug || 'Category',
+        title_or: s.name_or || '',
+        description: s.description_en || '',
+        url: s.landing_url || '',
+        children: [],
+        notes: []
+      }));
+    } catch {
+      return [];
+    }
+  }
+
   function tryFetch() {
-    fetch('/api/content/jobs-directory', { credentials: 'same-origin', cache: 'no-store' })
-      .then(response => {
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        return response.json();
-      })
-      .then(data => {
-        sections = Array.isArray(data && data.sections) ? data.sections : [];
+    Promise.all([
+      fetch('/api/content/jobs-directory', { credentials: 'same-origin', cache: 'no-store' })
+        .then(r => (r.ok ? r.json() : null))
+        .catch(() => null),
+      fetchNavSubcategoriesForPillar('jobs-careers')
+    ])
+      .then(([data, navSubs]) => {
+        const dirSections = Array.isArray(data && data.sections) ? data.sections : [];
+        sections = dirSections.length ? dirSections : navSubs;
         if (!sections.length) {
           renderEmptyDirectoryState();
           return;
@@ -2588,7 +2613,7 @@
         liveStatusEl.hidden = false;
         const emptyMsg = el('p', '', hasFilter
           ? 'No published job notifications match your current filters.'
-          : 'No live recruitment notifications are published right now. Explore the career categories below or check back soon.');
+          : 'No items published yet — add categories or content in Admin Studio.');
         liveStatusEl.replaceChildren(emptyMsg);
         if (hasFilter) {
           const emptyReset = el('button', 'live-btn live-btn--primary', 'Reset All Filters');

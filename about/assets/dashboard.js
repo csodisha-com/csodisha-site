@@ -640,23 +640,42 @@
   async function loadAboutDirectory() {
     if (loadStatus) loadStatus.hidden = false;
     try {
-      const res = await fetch('/api/content/about-directory', { headers: { Accept: 'application/json' }, cache: 'no-store' });
-      if (res.ok) {
+      const [res, navRes] = await Promise.all([
+        fetch('/api/content/about-directory', { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null),
+        fetch('/api/nav/config', { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null)
+      ]);
+      if (res && res.ok) {
         const data = await res.json();
         groups = Array.isArray(data.groups) ? data.groups : [];
         totalCounts = data.total_counts || data.counts || { groups: groups.length, sections: 0, entries: 0 };
-        buildDashboard();
-        syncFromUrl(false);
-        if (loadStatus) {
-          if (!groups.length) {
-            loadStatus.hidden = false;
-            loadStatus.textContent = 'No items published yet — add categories or content in Admin Studio.';
-          } else {
-            loadStatus.hidden = true;
-          }
-        }
-        return;
       }
+      if (!groups.length && navRes && navRes.ok) {
+        const navData = await navRes.json();
+        const cats = Array.isArray(navData && navData.categories) ? navData.categories : [];
+        const pillar = cats.find(c => c.slug === 'about' || c.target_portal === 'about');
+        const subs = pillar && Array.isArray(pillar.subcategories) ? pillar.subcategories : [];
+        if (subs.length) {
+          groups = subs.map((s, idx) => ({
+            id: s.id || ('nav-' + idx),
+            slug: s.slug || '',
+            title: s.name_en || s.slug || 'Section',
+            title_or: s.name_or || '',
+            sections: []
+          }));
+          totalCounts = { groups: groups.length, sections: 0, entries: 0 };
+        }
+      }
+      buildDashboard();
+      syncFromUrl(false);
+      if (loadStatus) {
+        if (!groups.length) {
+          loadStatus.hidden = false;
+          loadStatus.textContent = 'No items published yet — add categories or content in Admin Studio.';
+        } else {
+          loadStatus.hidden = true;
+        }
+      }
+      return;
     } catch {}
 
     groups = [];
