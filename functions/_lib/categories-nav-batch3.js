@@ -43,10 +43,10 @@ async function saveNavRevision(db, moduleCode, entityId, snapshot, note, actorEm
 }
 
 const STARTER_INTERNAL_LINKS = [
-  { id: 'il-study-pyq', slug: 'quick-opsc-pyqs', link_group: 'quick_access_bar', source_portal: 'all', anchor_text_en: 'OPSC / OSSC PYQ Archive', anchor_text_or: 'OPSC / OSSC ପ୍ରଶ୍ନପତ୍ର', target_url: '/study-library/?type=pyq', target_module_code: '11', priority_weight: 10, link_health_status: 'ok', status: 'published' },
-  { id: 'il-jobs-govt', slug: 'quick-odisha-govt-jobs', link_group: 'related_hub_links', source_portal: 'study-library', anchor_text_en: 'Latest Odisha Govt Jobs', anchor_text_or: 'ନୂତନ ଓଡ଼ିଶା ସରକାରୀ ଚାକିରି', target_url: '/jobs-careers/', target_module_code: '08', priority_weight: 9, link_health_status: 'ok', status: 'published' },
-  { id: 'il-schemes-schol', slug: 'quick-odisha-scholarships', link_group: 'related_hub_links', source_portal: 'student', anchor_text_en: 'State Scholarship Portal Guide', anchor_text_or: 'ରାଜ୍ୟ ଛାତ୍ରବୃତ୍ତି ମାର୍ଗଦର୍ଶିକା', target_url: '/schemes/', target_module_code: '19', priority_weight: 8, link_health_status: 'ok', status: 'published' },
-  { id: 'il-student-tools', slug: 'quick-age-cgpa-tools', link_group: 'contextual_cta', source_portal: 'jobs-careers', anchor_text_en: 'Check Age Eligibility & CGPA Tools', anchor_text_or: 'ବୟସ ଓ CGPA କ୍ୟାଲକୁଲେଟର୍', target_url: '/student/#tools', target_module_code: '22', priority_weight: 7, link_health_status: 'ok', status: 'published' }
+  { id: 'il-study-pyq', slug: 'quick-opsc-pyqs', link_group: 'quick_access_bar', source_portal: 'all', anchor_text_en: 'OPSC / OSSC PYQ Archive', anchor_text_or: 'OPSC / OSSC ପ୍ରଶ୍ନପତ୍ର', target_url: '/resources/?kind=pyq', target_module_code: '03', priority_weight: 10, link_health_status: 'ok', status: 'published' },
+  { id: 'il-jobs-govt', slug: 'quick-odisha-govt-jobs', link_group: 'related_hub_links', source_portal: 'study-library', anchor_text_en: 'Latest Odisha Govt Jobs', anchor_text_or: 'ନୂତନ ଓଡ଼ିଶା ସରକାରୀ ଚାକିରି', target_url: '/jobs-careers/?track=odisha-govt', target_module_code: '02', priority_weight: 9, link_health_status: 'ok', status: 'published' },
+  { id: 'il-schemes-schol', slug: 'quick-odisha-scholarships', link_group: 'related_hub_links', source_portal: 'student', anchor_text_en: 'State Scholarship Portal Guide', anchor_text_or: 'ରାଜ୍ୟ ଛାତ୍ରବୃତ୍ତି ମାର୍ଗଦର୍ଶିକା', target_url: '/scholarship-guidance/', target_module_code: '05', priority_weight: 8, link_health_status: 'ok', status: 'published' },
+  { id: 'il-student-tools', slug: 'quick-age-cgpa-tools', link_group: 'contextual_cta', source_portal: 'jobs-careers', anchor_text_en: 'Age Eligibility & Photo Resizer Tools', anchor_text_or: 'ବୟସ ଓ ଫଟୋ ରିସାଇଜର୍ ଉପକରଣ', target_url: '/tools/', target_module_code: '06', priority_weight: 7, link_health_status: 'ok', status: 'published' }
 ];
 
 const STARTER_SOCIAL_LINKS = [
@@ -189,7 +189,12 @@ export async function getFull11ModuleNavOverview(env) {
 }
 
 // ---------- Module 09: Internal Links ----------
-const KNOWN_PORTAL_PREFIXES = ['/', '/study-library', '/jobs-careers', '/jobs', '/schemes', '/community', '/student', '/about', '/login.html', '/signup.html'];
+const KNOWN_PORTAL_PREFIXES = [
+  '/', '/jobs-careers', '/jobs', '/current-affairs', '/study-library', '/study',
+  '/resources', '/mock-tests', '/student-dashboard', '/schemes-benefits', '/schemes',
+  '/scholarship-guidance', '/scheme-opportunity-finder', '/tools', '/community',
+  '/support', '/about', '/student', '/login.html', '/signup.html'
+];
 
 async function handleInternalLinks(request, env, actor, id) {
   const method = request.method;

@@ -2,65 +2,63 @@
 (()=>{
 /* ================= EDIT YOUR CONTENT HERE ================= */
 const CFG={email:'contact@csodisha.com',social:{instagram:'https://www.instagram.com/csodisha.official/',facebook:'https://www.facebook.com/profile.php?id=61596187936770',x:'https://x.com/csodisha',telegram:'https://t.me/csodisha',whatsapp:'https://whatsapp.com/channel/0029Vb9aQYZ1Hspy0nfzRe0w',youtube:'https://www.youtube.com/@CSOdisha'}};
-const NAV=[['jobs-careers','Jobs & Careers','💼'],['schemes-benefits','Schemes & Benefits','🏛'],['study-library','Study Library','📖'],['community','Community','👥'],['about','About','ⓘ']];
+const NAV=[
+ ['home','Home','🏠','/'],
+ ['jobs-careers','Jobs','💼','/jobs-careers/'],
+ ['study-library','Study Library','📖','/study-library/'],
+ ['mock-tests','Mock Tests','📝','/mock-tests/'],
+ ['schemes-benefits','Schemes','🏛','/schemes-benefits/'],
+ ['tools','Tools','🧰','/tools/'],
+ ['community','Community','👥','/community/']
+];
 const MENUS={
+ 'home':[
+  ['Homepage Overview','/'],
+  ['Live Recruitment Alerts','/jobs/'],
+  ["Today's Current Affairs",'/current-affairs/'],
+  ['Annual Exam Calendar','/study/examinations/']
+ ],
  'jobs-careers':[
-  'Jobs & Recruitment',
-  'Career Explorer',
-  'Eligibility & Qualification Explorer',
-  'Courses, Entrance Exams & Certifications',
-  'Scholarships & Financial Support',
-  'International & Overseas Opportunities',
-  'Career Development & Employability',
-  'Institutions, Official Portals & Verification'
+  ['Odisha State Govt: OPSC/OSSC/OSSSC/Police','/jobs-careers/?track=odisha-govt'],
+  ['Central Govt: UPSC/SSC/RRB/Banking','/jobs-careers/?track=central-govt'],
+  ['PSUs & Apprenticeships','/jobs-careers/?track=psu-apprenticeship'],
+  ['Notification Lifecycle Tracker','/jobs/']
+ ],
+ 'study-library':[
+  ['Syllabi & Exam Patterns','/resources/?kind=syllabus'],
+  ['Solved PYQs','/resources/?kind=pyq'],
+  ['Bilingual Study Notes','/study-library/'],
+  ['Daily Current Affairs & 5-MCQ Capsules','/current-affairs/']
+ ],
+ 'mock-tests':[
+  ['Odisha Govt Mock Tests','/mock-tests/?track=odisha'],
+  ['Central Govt CBT Tests','/study-library/cbt-mock-test/'],
+  ['Sectional & Speed Drills','/mock-tests/?mode=sectional'],
+  ['Scoreboard & Analytics','/student-dashboard/']
  ],
  'schemes-benefits':[
-   'Government & Public Welfare',
-   'Education, Employment & Talent',
-   'Agriculture, Business & Livelihoods',
-   'Health, Housing & Financial Protection',
-   'Communities & Special Beneficiaries',
-   'Private, Global & Innovation Support',
-   'Find Schemes & Check Eligibility',
-   'Citizen Services & Verification'
-  ],
- 'study-library':[
-    "Early Childhood & Primary Education",
-    "School & Higher Secondary Education",
-    "Undergraduate, Postgraduate & Research",
-    "Competitive Exams & Teacher Education",
-    "Professional, Vocational & Digital Skills",
-    "Subjects, Languages & Study Materials",
-    "International & Inclusive Education",
-    "Life Skills, Culture & Lifelong Learning",
-    "Libraries, Educators & Learning Support",
-    "Odisha Study Hub & Resource Organisation"
-  ],
+  ['Odisha State Welfare Schemes','/schemes-benefits/?scope=odisha'],
+  ['Central Govt Schemes','/schemes-benefits/?scope=central'],
+  ['Post-Matric & Merit Scholarships','/scholarship-guidance/'],
+  ['Eligibility Matcher','/scheme-opportunity-finder/']
+ ],
+ 'tools':[
+  ['Age Eligibility Calculator','/tools/#age-calculator'],
+  ['Photo & Signature Resizer','/tools/#photo-resizer'],
+  ['Document Readiness Checklist','/tools/#doc-readiness-card'],
+  ['Official .gov.in Portals Directory','/tools/#scam-checker']
+ ],
  'community':[
-    "Local & Odisha Communities",
-    "Students, Educators & Mentorship",
-    "Careers, Business & Professional Networks",
-    "Agriculture & Rural Livelihoods",
-    "Women, Families, Health & Inclusion",
-    "Youth, NGOs & Volunteering",
-    "Culture, Sports & Traditional Communities",
-    "Environment, Science & Technology",
-    "Digital, International & Community Forums",
-    "Community Directory, Safety & Governance"
-  ],
- 'about':[
-    "About CSO",
-    "Our Approach",
-    "Trust & Transparency",
-    "Team & Community",
-    "Policies & Standards",
-    "Contact & FAQs"
-  ]};
+  ['Student Discussion Forum','/community/'],
+  ['Help & FAQs','/support/#faqs'],
+  ['Report an Error / Suggest Resource','/support/#report-error'],
+  ['About & Legal Policies','/about/']
+ ]};
 // cat must match a tab: Jobs, Schemes, Education, Odisha, National. tag: JOB, SCHEME, EDUCATION, ODISHA, GUIDE
 let UPDATES=[];
 // Page content: 'url-slug':{title:'',html:''}  (slug = lowercase title with dashes)
 const CONTENT={};
-const I18N={or:{'Home':'ମୁଖ୍ୟ ପୃଷ୍ଠା','Jobs & Careers':'ଚାକିରି ଓ କ୍ୟାରିୟର','Schemes & Benefits':'ଯୋଜନା ଓ ସୁବିଧା','Study Library':'ଅଧ୍ୟୟନ ପୁସ୍ତକାଳୟ','Community':'ସମୁଦାୟ','About':'ଆମ ବିଷୟରେ'},hi:{'Home':'मुख्य पृष्ठ','Jobs & Careers':'नौकरियाँ और करियर','Schemes & Benefits':'योजनाएँ और लाभ','Study Library':'अध्ययन पुस्तकालय','Community':'समुदाय','About':'हमारे बारे में'}}; // e.g. hi:{'Home':'होम'}
+const I18N={or:{'Home':'ମୂଳପୃଷ୍ଠା','Jobs':'ଚାକିରି','Jobs & Careers':'ଚାକିରି ଓ କ୍ୟାରିୟର','Study Library':'ପାଠାଗାର','Mock Tests':'ମକ୍ ଟେଷ୍ଟ','Schemes':'ଯୋଜନା','Schemes & Benefits':'ଯୋଜନା ଓ ସୁବିଧା','Tools':'ଉପକରଣ','Community':'ସମୁଦାୟ','About':'ଆମ ବିଷୟରେ'},hi:{'Home':'मुख्य पृष्ठ','Jobs':'नौकरियाँ','Jobs & Careers':'नौकरियाँ और करियर','Study Library':'अध्ययन पुस्तकालय','Mock Tests':'मॉक टेस्ट','Schemes':'योजनाएँ','Schemes & Benefits':'योजनाएँ और लाभ','Tools':'उपकरण','Community':'समुदाय','About':'हमारे बारे में'}}; // e.g. hi:{'Home':'होम'}
 /* ========================================================== */
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const ls={g:k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -69,7 +67,7 @@ const RES=/^(settings|sidebar|customize|upgrade|downloads|comment-.*)$/;
 const slug=t=>{const s=t.toLowerCase().replace(/&/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');return RES.test(s)?s+'-page':s};
 const clean=t=>t.replace(/[→⌄⬆]/g,'').replace(/^[^A-Za-z0-9\u0B00-\u0B7F\u0900-\u097F]+/,'').replace(/\s+/g,' ').trim();
 const TITLES={};const reg=t=>{const s=slug(t);TITLES[s]=t;return s};
-NAV.forEach(([s,t])=>{TITLES[s]=t;MENUS[s].forEach(reg)});
+NAV.forEach(([s,t])=>{TITLES[s]=t;(MENUS[s]||[]).forEach(item=>reg(Array.isArray(item)?item[0]:item))});
 let S=Object.assign({lang:'en',theme:null,zoom:1,hc:0,ul:0,rm:0},ls.g('cso')||{});
 const T=s=>(S.lang==='or'?window.CSO_ODIA:S.lang==='hi'?window.CSO_HINDI:I18N[S.lang]||{})?.[s]||s;
 const ORIGINAL_TEXT=new WeakMap(), ORIGINAL_ATTR=new WeakMap();
@@ -244,30 +242,45 @@ function heroLang(){
 }
 function nav(){
  const w=$('#navw');
- setSafeHtml(w,'<div class="cso-nav-bar-container">'+
- '<button type="button" class="cso-nav-mobile" id="cso-menu-toggle" aria-expanded="false" aria-controls="cso-nav-items" aria-label="Navigation Menu"><span aria-hidden="true">☰</span> Menu</button>'+
- '<div class="cso-mobile-acc-cluster">'+
- '<button type="button" class="pill cso-ctl-a11y-mobile acc-btn" id="ba-mobile" aria-label="Accessibility options">♿ Options</button>'+
- '<span class="pill cso-ctl-zoom-mobile acc-btn">'+
- '<button type="button" class="fz" id="fm-mobile" aria-label="Smaller text">A–</button>'+
- '<button type="button" class="fz" id="fr-mobile" aria-label="Normal text">A</button>'+
- '<button type="button" class="fz" id="fp-mobile" aria-label="Larger text">A+</button>'+
- '</span>'+
- '</div>'+
- '</div>'+
- '<div id="cso-nav-items" class="cso-nav-items">'+
- '<a href="#" data-h="" class="cso-nav-home"><span aria-hidden="true">🏠</span> '+esc(translateText('Home'))+'</a>'+
- NAV.map(([s,t,i])=>
- '<div class="ni">'+
- '<div class="cso-nav-parent">'+
- '<a href="'+s+'/"><span aria-hidden="true">'+i+'</span> '+esc(translateText(t))+'</a>'+
- '<button type="button" class="cso-nav-arrow" aria-label="Toggle '+esc(t)+' menu" aria-haspopup="true" aria-expanded="false" aria-controls="cso-nav-dd-'+s+'">⌄</button>'+
- '</div>'+
- '<div class="dd" id="cso-nav-dd-'+s+'">'+MENUS[s].map((x,index)=>
-  '<a href="'+s+'/?section='+index+'"><span class="dd-bullet" aria-hidden="true">›</span><span>'+esc(translateText(x))+'</span></a>'
- ).join('')+'</div>'+
- '</div>'
- ).join('')+'</div>');
+ if(!w)return;
+ w.replaceChildren();
+ const mk=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n;};
+ const bar=mk('div','cso-nav-bar-container');
+ const mobBtn=mk('button','cso-nav-mobile');mobBtn.type='button';mobBtn.id='cso-menu-toggle';
+ mobBtn.setAttribute('aria-expanded','false');mobBtn.setAttribute('aria-controls','cso-nav-items');mobBtn.setAttribute('aria-label','Navigation Menu');
+ const ham=mk('span','','☰');ham.setAttribute('aria-hidden','true');mobBtn.append(ham,' Menu');
+ const cluster=mk('div','cso-mobile-acc-cluster');
+ const baMob=mk('button','pill cso-ctl-a11y-mobile acc-btn','♿ Options');baMob.type='button';baMob.id='ba-mobile';baMob.setAttribute('aria-label','Accessibility options');
+ const zoomMob=mk('span','pill cso-ctl-zoom-mobile acc-btn');
+ [['fm-mobile','Smaller text','A–'],['fr-mobile','Normal text','A'],['fp-mobile','Larger text','A+']].forEach(([id,lbl,txt])=>{
+  const b=mk('button','fz',txt);b.type='button';b.id=id;b.setAttribute('aria-label',lbl);zoomMob.appendChild(b);
+ });
+ cluster.append(baMob,zoomMob);
+ bar.append(mobBtn,cluster);
+ const itemsWrap=mk('div','cso-nav-items');itemsWrap.id='cso-nav-items';
+ NAV.forEach(([s,t,icon,href])=>{
+  const ni=mk('div','ni');ni.dataset.pillar=s;
+  const par=mk('div','cso-nav-parent');
+  const a=mk('a',s==='home'?'cso-nav-home':'');a.href=href||('/'+s+'/');
+  if(s==='home')a.setAttribute('data-h','');
+  const ic=mk('span','',icon);ic.setAttribute('aria-hidden','true');
+  a.append(ic,' '+translateText(t));
+  const arr=mk('button','cso-nav-arrow','⌄');arr.type='button';
+  arr.setAttribute('aria-label','Toggle '+t+' menu');arr.setAttribute('aria-haspopup','true');
+  arr.setAttribute('aria-expanded','false');arr.setAttribute('aria-controls','cso-nav-dd-'+s);
+  par.append(a,arr);
+  const dd=mk('div','dd');dd.id='cso-nav-dd-'+s;
+  (MENUS[s]||[]).forEach(entry=>{
+   const label=Array.isArray(entry)?entry[0]:entry;
+   const url=Array.isArray(entry)?entry[1]:('/'+s+'/');
+   const subA=mk('a');subA.href=url;
+   const bul=mk('span','dd-bullet','›');bul.setAttribute('aria-hidden','true');
+   subA.append(bul,mk('span','',translateText(label)));
+   dd.appendChild(subA);
+  });
+  ni.append(par,dd);itemsWrap.appendChild(ni);
+ });
+ w.append(bar,itemsWrap);
  syncMobileNavAuth();
  setActive(location.hash.slice(1));
 }

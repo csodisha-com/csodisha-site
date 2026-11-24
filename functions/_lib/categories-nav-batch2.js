@@ -47,23 +47,60 @@ async function saveNavRevision(db, moduleCode, entityId, snapshot, note, actorEm
 }
 
 const STARTER_MEGA = [
-  { id: 'mm-lib-notes', menu_location: 'mega_menu', parent_item_id: 'nmenu-library', column_group: 'Column 1: Quick Tracks', label_en: 'Chapter Notes & PDFs', label_or: 'ଅଧ୍ୟାୟ ନୋଟ୍ସ', url: '/study-library/?type=notes', icon_key: '📄', badge_text_en: 'FREE', sort_order: 1, status: 'published' },
-  { id: 'mm-lib-pyq', menu_location: 'mega_menu', parent_item_id: 'nmenu-library', column_group: 'Column 2: Exam Bodies', label_en: 'OPSC / OSSC PYQ Archive', label_or: 'PYQ ସଂଗ୍ରହ', url: '/study-library/?type=pyq', icon_key: '📝', badge_text_en: '2025', sort_order: 2, status: 'published' },
-  { id: 'mm-lib-tools', menu_location: 'mega_menu', parent_item_id: 'nmenu-library', column_group: 'Column 3: Study Tools', label_en: 'Age & CGPA Calculators', label_or: 'ବୟସ ଓ CGPA କ୍ୟାଲକୁଲେଟର୍', url: '/student/#tools', icon_key: '🧮', badge_text_en: '', sort_order: 3, status: 'published' },
-  { id: 'mm-jobs-opsc', menu_location: 'mega_menu', parent_item_id: 'nmenu-jobs', column_group: 'Column 2: Exam Bodies', label_en: 'OPSC Civil Services & ASO', label_or: 'OPSC ସିଭିଲ୍ ସର୍ଭିସ୍', url: '/jobs-careers/?body=opsc', icon_key: '🏛️', badge_text_en: 'LIVE', sort_order: 4, status: 'published' }
+  // Pillar 1: Home & Live Updates
+  { id: 'mm-p1-01', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-01', column_group: 'Column 1: Quick Tracks', label_en: 'Homepage Overview', label_or: 'ମୂଳପୃଷ୍ଠା ବିବରଣୀ', url: '/', icon_key: '🏠', badge_text_en: '', sort_order: 1, status: 'published' },
+  { id: 'mm-p1-02', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-01', column_group: 'Column 1: Quick Tracks', label_en: 'Live Recruitment Alerts', label_or: 'ତାଜା ନିଯୁକ୍ତି ବିଜ୍ଞପ୍ତି', url: '/jobs/', icon_key: '🔔', badge_text_en: 'LIVE', sort_order: 2, status: 'published' },
+  { id: 'mm-p1-03', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-01', column_group: 'Column 1: Quick Tracks', label_en: "Today's Current Affairs", label_or: 'ଆଜିର ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ', url: '/current-affairs/', icon_key: '📰', badge_text_en: '', sort_order: 3, status: 'published' },
+  { id: 'mm-p1-04', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-01', column_group: 'Column 1: Quick Tracks', label_en: 'Annual Exam Calendar', label_or: 'ବାର୍ଷିକ ପରୀକ୍ଷା କ୍ୟାଲେଣ୍ଡର୍', url: '/study/examinations/', icon_key: '📅', badge_text_en: '', sort_order: 4, status: 'published' },
+
+  // Pillar 2: Jobs & Recruitment
+  { id: 'mm-p2-01', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-02', column_group: 'Column 2: Exam Bodies', label_en: 'Odisha State Govt: OPSC/OSSC/OSSSC/Police', label_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ସରକାରୀ: OPSC/OSSC/OSSSC/ପୋଲିସ୍', url: '/jobs-careers/?track=odisha-govt', icon_key: '🏛️', badge_text_en: 'LIVE', sort_order: 1, status: 'published' },
+  { id: 'mm-p2-02', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-02', column_group: 'Column 2: Exam Bodies', label_en: 'Central Govt: UPSC/SSC/RRB/Banking', label_or: 'କେନ୍ଦ୍ର ସରକାରୀ: UPSC/SSC/RRB/ବ୍ୟାଙ୍କିଂ', url: '/jobs-careers/?track=central-govt', icon_key: '🇮🇳', badge_text_en: '', sort_order: 2, status: 'published' },
+  { id: 'mm-p2-03', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-02', column_group: 'Column 2: Exam Bodies', label_en: 'PSUs & Apprenticeships', label_or: 'PSU ଓ ଆପ୍ରେଣ୍ଟିସଶିପ୍', url: '/jobs-careers/?track=psu-apprenticeship', icon_key: '🏭', badge_text_en: '', sort_order: 3, status: 'published' },
+  { id: 'mm-p2-04', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-02', column_group: 'Column 2: Exam Bodies', label_en: 'Notification Lifecycle Tracker', label_or: 'ବିଜ୍ଞପ୍ତି ସ୍ଥିତି ଟ୍ରାକର୍', url: '/jobs/', icon_key: '📌', badge_text_en: '', sort_order: 4, status: 'published' },
+
+  // Pillar 3: Study Library & Current Affairs
+  { id: 'mm-p3-01', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-03', column_group: 'Column 1: Quick Tracks', label_en: 'Syllabi & Exam Patterns', label_or: 'ସିଲାବସ୍ ଓ ପରୀକ୍ଷା ପଦ୍ଧତି', url: '/resources/?kind=syllabus', icon_key: '📋', badge_text_en: 'PDF', sort_order: 1, status: 'published' },
+  { id: 'mm-p3-02', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-03', column_group: 'Column 2: Exam Bodies', label_en: 'Solved PYQs', label_or: 'ସମାଧାନ ହୋଇଥିବା PYQ', url: '/resources/?kind=pyq', icon_key: '📝', badge_text_en: 'FREE', sort_order: 2, status: 'published' },
+  { id: 'mm-p3-03', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-03', column_group: 'Column 1: Quick Tracks', label_en: 'Bilingual Study Notes', label_or: 'ଦ୍ୱିଭାଷୀ ଅଧ୍ୟୟନ ନୋଟ୍ସ', url: '/study-library/', icon_key: '📖', badge_text_en: '', sort_order: 3, status: 'published' },
+  { id: 'mm-p3-04', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-03', column_group: 'Featured Spotlight', label_en: 'Daily Current Affairs & 5-MCQ Capsules', label_or: 'ଦୈନିକ ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ ଓ 5-MCQ', url: '/current-affairs/', icon_key: '⚡', badge_text_en: 'DAILY', sort_order: 4, status: 'published' },
+
+  // Pillar 4: Mock Tests & Practice
+  { id: 'mm-p4-01', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-04', column_group: 'Column 2: Exam Bodies', label_en: 'Odisha Govt Mock Tests', label_or: 'ଓଡ଼ିଶା ସରକାରୀ ମକ୍ ଟେଷ୍ଟ', url: '/mock-tests/?track=odisha', icon_key: '📝', badge_text_en: '', sort_order: 1, status: 'published' },
+  { id: 'mm-p4-02', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-04', column_group: 'Column 2: Exam Bodies', label_en: 'Central Govt CBT Tests', label_or: 'କେନ୍ଦ୍ର ସରକାରୀ CBT ଟେଷ୍ଟ', url: '/study-library/cbt-mock-test/', icon_key: '💻', badge_text_en: 'CBT', sort_order: 2, status: 'published' },
+  { id: 'mm-p4-03', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-04', column_group: 'Column 3: Study Tools', label_en: 'Sectional & Speed Drills', label_or: 'ବିଭାଗୀୟ ଓ ସ୍ପିଡ୍ ଡ୍ରିଲ୍', url: '/mock-tests/?mode=sectional', icon_key: '⏱️', badge_text_en: '', sort_order: 3, status: 'published' },
+  { id: 'mm-p4-04', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-04', column_group: 'Column 3: Study Tools', label_en: 'Scoreboard & Analytics', label_or: 'ସ୍କୋରବୋର୍ଡ ଓ ବିଶ୍ଳେଷଣ', url: '/student-dashboard/', icon_key: '📊', badge_text_en: '', sort_order: 4, status: 'published' },
+
+  // Pillar 5: Schemes & Scholarships
+  { id: 'mm-p5-01', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-05', column_group: 'Column 1: Quick Tracks', label_en: 'Odisha State Welfare Schemes', label_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ କଲ୍ୟାଣ ଯୋଜନା', url: '/schemes-benefits/?scope=odisha', icon_key: '🏛️', badge_text_en: '', sort_order: 1, status: 'published' },
+  { id: 'mm-p5-02', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-05', column_group: 'Column 1: Quick Tracks', label_en: 'Central Govt Schemes', label_or: 'କେନ୍ଦ୍ର ସରକାରୀ ଯୋଜନା', url: '/schemes-benefits/?scope=central', icon_key: '🇮🇳', badge_text_en: '', sort_order: 2, status: 'published' },
+  { id: 'mm-p5-03', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-05', column_group: 'Featured Spotlight', label_en: 'Post-Matric & Merit Scholarships', label_or: 'ପୋଷ୍ଟ-ମ୍ୟାଟ୍ରିକ୍ ଓ ମେଧା ଛାତ୍ରବୃତ୍ତି', url: '/scholarship-guidance/', icon_key: '🎓', badge_text_en: 'OPEN', sort_order: 3, status: 'published' },
+  { id: 'mm-p5-04', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-05', column_group: 'Column 3: Study Tools', label_en: 'Eligibility Matcher', label_or: 'ଯୋଗ୍ୟତା ଯାଞ୍ଚ', url: '/scheme-opportunity-finder/', icon_key: '✅', badge_text_en: '', sort_order: 4, status: 'published' },
+
+  // Pillar 6: Student Tools & Verified Portals
+  { id: 'mm-p6-01', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-06', column_group: 'Column 3: Study Tools', label_en: 'Age Eligibility Calculator', label_or: 'ବୟସ ଯୋଗ୍ୟତା କ୍ୟାଲକୁଲେଟର୍', url: '/tools/#age-calculator', icon_key: '🎂', badge_text_en: '', sort_order: 1, status: 'published' },
+  { id: 'mm-p6-02', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-06', column_group: 'Column 3: Study Tools', label_en: 'Photo & Signature Resizer', label_or: 'ଫଟୋ ଓ ଦସ୍ତଖତ ରିସାଇଜର୍', url: '/tools/#photo-resizer', icon_key: '📸', badge_text_en: 'OFFLINE', sort_order: 2, status: 'published' },
+  { id: 'mm-p6-03', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-06', column_group: 'Column 3: Study Tools', label_en: 'Document Readiness Checklist', label_or: 'ଡକ୍ୟୁମେଣ୍ଟ୍ ପ୍ରସ୍ତୁତି ତାଲିକା', url: '/tools/#doc-readiness-card', icon_key: '📋', badge_text_en: '', sort_order: 3, status: 'published' },
+  { id: 'mm-p6-04', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-06', column_group: 'Column 3: Study Tools', label_en: 'Official .gov.in Portals Directory', label_or: 'ଅଫିସିଆଲ୍ .gov.in ପୋର୍ଟାଲ୍', url: '/tools/#scam-checker', icon_key: '🛡️', badge_text_en: '', sort_order: 4, status: 'published' },
+
+  // Pillar 7: Community & Support
+  { id: 'mm-p7-01', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-07', column_group: 'Column 1: Quick Tracks', label_en: 'Student Discussion Forum', label_or: 'ଛାତ୍ର ଆଲୋଚନା ମଞ୍ଚ', url: '/community/', icon_key: '💬', badge_text_en: '', sort_order: 1, status: 'published' },
+  { id: 'mm-p7-02', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-07', column_group: 'Column 1: Quick Tracks', label_en: 'Help & FAQs', label_or: 'ସହାୟତା ଓ ସାଧାରଣ ପ୍ରଶ୍ନ', url: '/support/#faqs', icon_key: '❓', badge_text_en: '', sort_order: 2, status: 'published' },
+  { id: 'mm-p7-03', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-07', column_group: 'Column 1: Quick Tracks', label_en: 'Report an Error / Suggest Resource', label_or: 'ତ୍ରୁଟି ଜଣାନ୍ତୁ / ସମ୍ବଳ ପ୍ରସ୍ତାବ', url: '/support/#report-error', icon_key: '🚩', badge_text_en: '', sort_order: 3, status: 'published' },
+  { id: 'mm-p7-04', menu_location: 'mega_menu', parent_item_id: 'nmenu-pillar-07', column_group: 'Column 1: Quick Tracks', label_en: 'About & Legal Policies', label_or: 'ଆମ ବିଷୟରେ ଓ ଆଇନଗତ ନୀତି', url: '/about/', icon_key: 'ⓘ', badge_text_en: '', sort_order: 4, status: 'published' }
 ];
 
 const STARTER_FOOTER = [
   { id: 'ft-portals-lib', menu_location: 'footer', column_group: 'Portals & Directories', label_en: 'Study Library', label_or: 'ଅଧ୍ୟୟନ ପାଠାଗାର', url: '/study-library/', sort_order: 1, status: 'published' },
   { id: 'ft-boards-opsc', menu_location: 'footer', column_group: 'Odisha Exam Boards', label_en: 'OPSC Official Portal', label_or: 'OPSC ପୋର୍ଟାଲ୍', url: 'https://www.opsc.gov.in', open_new_tab: 1, badge_text_en: 'nofollow', sort_order: 2, status: 'published' },
-  { id: 'ft-res-mocks', menu_location: 'footer', column_group: 'Student Resources', label_en: 'Free Mock Tests', label_or: 'ମାଗଣା ମକ୍ ଟେଷ୍ଟ', url: '/study-library/?tab=mocks', sort_order: 3, status: 'published' },
+  { id: 'ft-res-mocks', menu_location: 'footer', column_group: 'Student Resources', label_en: 'Free Mock Tests', label_or: 'ମାଗଣା ମକ୍ ଟେଷ୍ଟ', url: '/mock-tests/', sort_order: 3, status: 'published' },
   { id: 'ft-about-privacy', menu_location: 'footer', column_group: 'About & Legal', label_en: 'About & Editorial Policy', label_or: 'ଆମ ବିଷୟରେ', url: '/about/', sort_order: 4, status: 'published' }
 ];
 
 const STARTER_SIDEBARS = [
-  { id: 'sb-lib-1', menu_location: 'sidebar_library', column_group: 'Core Library', label_en: 'Odisha GK Notes', label_or: 'ଓଡ଼ିଶା GK ନୋଟ୍ସ', url: '/study-library/?cat=odisha-gk', icon_key: '📚', badge_text_en: '48', sort_order: 1, status: 'published' },
-  { id: 'sb-job-1', menu_location: 'sidebar_jobs', column_group: 'Active Drives', label_en: 'OSSC & OSSSC Openings', label_or: 'OSSC / OSSSC ନିଯୁକ୍ତି', url: '/jobs-careers/', icon_key: '💼', badge_text_en: '12', sort_order: 1, status: 'published' },
-  { id: 'sb-sch-1', menu_location: 'sidebar_schemes', column_group: 'Welfare & Aid', label_en: 'Student Scholarships', label_or: 'ଛାତ୍ରବୃତ୍ତି', url: '/schemes/?type=scholarship', icon_key: '🎓', badge_text_en: 'OPEN', sort_order: 1, status: 'published' },
+  { id: 'sb-lib-1', menu_location: 'sidebar_library', column_group: 'Core Library', label_en: 'Odisha GK Notes', label_or: 'ଓଡ଼ିଶା GK ନୋଟ୍ସ', url: '/study-library/', icon_key: '📚', badge_text_en: '48', sort_order: 1, status: 'published' },
+  { id: 'sb-job-1', menu_location: 'sidebar_jobs', column_group: 'Active Drives', label_en: 'OSSC & OSSSC Openings', label_or: 'OSSC / OSSSC ନିଯୁକ୍ତି', url: '/jobs-careers/?track=odisha-govt', icon_key: '💼', badge_text_en: '12', sort_order: 1, status: 'published' },
+  { id: 'sb-sch-1', menu_location: 'sidebar_schemes', column_group: 'Welfare & Aid', label_en: 'Student Scholarships', label_or: 'ଛାତ୍ରବୃତ୍ତି', url: '/scholarship-guidance/', icon_key: '🎓', badge_text_en: 'OPEN', sort_order: 1, status: 'published' },
   { id: 'sb-com-1', menu_location: 'sidebar_community', column_group: 'Discussions', label_en: 'OPSC Study Circle', label_or: 'OPSC ଆଲୋଚନା', url: '/community/', icon_key: '💬', badge_text_en: 'HOT', sort_order: 1, status: 'published' }
 ];
 

@@ -8472,12 +8472,14 @@
   }
 
   async function viewRegistry() {
-    setTitle('241-Module Registry');
     var schema = window.CSOStudio && window.CSOStudio.getSchema ? window.CSOStudio.getSchema() : null;
     if (!schema || !Array.isArray(schema.folders)) {
+      setTitle('Navigation Module Registry');
       main.appendChild(el('div', { class: 'alert', text: 'Navigation schema not loaded.' }));
       return;
     }
+    var totalMods = schema.folders.reduce(function (acc, f) { return acc + (Array.isArray(f.modules) ? f.modules.length : 0); }, 0);
+    setTitle(schema.folders.length + '-Pillar / ' + totalMods + '-Module Registry');
     var tb = el('tbody');
     schema.folders.forEach(function (f) {
       (f.modules || []).forEach(function (m) {

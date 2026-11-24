@@ -11865,8 +11865,29 @@
      MAIN DISPATCHER (WITH ON-DEMAND LAZY SUITE LOADING)
      ========================================================================= */
   function renderSync(folderId, moduleId, root, actions) {
-    // Folder 01 specialized tools
+    // 7-Pillar Navigation Architecture (v230):
+    // Pillar 1 Overview stays on Command Centre; Navigation Manager dispatches via module-nav-*.
+    // Other 7-pillar modules fall through to suite-live.js live D1/R2 studio views.
     if (moduleId === 'module-01-001') { renderOverviewCC(root, actions); return true; }
+
+    if ((moduleId === 'module-nav-001' || moduleId === 'module-nav-002' || moduleId === 'module-nav-003' || moduleId === 'module-nav-004') &&
+        window.CSOCatNavBatch1 && typeof window.CSOCatNavBatch1.render === 'function') {
+      return window.CSOCatNavBatch1.render(moduleId, root, actions);
+    }
+    if ((moduleId === 'module-nav-005' || moduleId === 'module-nav-006' || moduleId === 'module-nav-007' || moduleId === 'module-nav-008') &&
+        window.CSOCatNavBatch2 && typeof window.CSOCatNavBatch2.render === 'function') {
+      return window.CSOCatNavBatch2.render(moduleId, root, actions);
+    }
+    if ((moduleId === 'module-nav-009' || moduleId === 'module-nav-010' || moduleId === 'module-nav-011') &&
+        window.CSOCatNavBatch3 && typeof window.CSOCatNavBatch3.render === 'function') {
+      return window.CSOCatNavBatch3.render(moduleId, root, actions);
+    }
+
+    if (/^folder-0[1-7]$/.test(String(folderId || ''))) {
+      return false;
+    }
+
+    // Legacy deep-link compatibility
     if (moduleId === 'module-01-002') { renderEdgeStudio(root, actions); return true; }
     if (moduleId === 'module-01-003') { renderLaunchpad(root, actions); return true; }
     if (moduleId === 'module-01-004') { renderAuditTimeline(root, actions); return true; }

@@ -115,13 +115,14 @@
       return acc + (Array.isArray(f.modules) ? f.modules.length : 0);
     }, 0);
     if (!total) return;
-    document.title = 'CS Odisha — Editorial Studio & Command Suite (' + total + ' Modules)';
+    var pillarCount = masterNavigationSchema.folders.length;
+    document.title = 'CS Odisha — Editorial Studio & Command Suite (' + pillarCount + ' Pillars · ' + total + ' Modules)';
     var brandSub = document.querySelector('.cso-brand-sub');
-    if (brandSub) brandSub.textContent = 'Editorial & Operations Suite (' + total + ' Modules)';
+    if (brandSub) brandSub.textContent = pillarCount + '-Pillar Editorial Suite (' + total + ' Modules)';
     var searchLabel = document.querySelector('label[for="moduleSearchInput"]');
     if (searchLabel) searchLabel.textContent = 'Filter ' + total + ' modules';
     if (dom.moduleSearchInput) dom.moduleSearchInput.placeholder = 'Filter ' + total + ' modules...';
-    if (dom.accordionNav) dom.accordionNav.setAttribute('aria-label', masterNavigationSchema.folders.length + ' Folders Master Tree');
+    if (dom.accordionNav) dom.accordionNav.setAttribute('aria-label', pillarCount + ' Pillars Master Tree');
     var coverageStrong = document.querySelector('.cso-sidebar-footer .cso-text-accent');
     if (coverageStrong) coverageStrong.textContent = total + ' / ' + total;
   }
@@ -165,9 +166,10 @@
     clearNode(dom.accordionNav);
 
     masterNavigationSchema.folders.forEach(function (folder) {
-      var folderMatches = folder.title.toLowerCase().includes(query);
+      var folderTitleOr = String(folder.title_or || '');
+      var folderMatches = folder.title.toLowerCase().includes(query) || folderTitleOr.toLowerCase().includes(query);
       var filteredModules = folder.modules.filter(function (m) {
-        return folderMatches || m.title.toLowerCase().includes(query) || m.id.toLowerCase().includes(query);
+        return folderMatches || m.title.toLowerCase().includes(query) || String(m.title_or || '').toLowerCase().includes(query) || m.id.toLowerCase().includes(query);
       });
 
       if (query && filteredModules.length === 0) return;
@@ -180,10 +182,11 @@
       var folderBtn = el('button', 'cso-nav-folder-btn' + (isCurrentFolder ? ' is-active' : ''));
       folderBtn.type = 'button';
       folderBtn.setAttribute('aria-expanded', String(isExpanded));
+      if (folderTitleOr) folderBtn.title = folder.title + ' · ' + folderTitleOr;
 
       var left = el('span', 'cso-nav-folder-left');
       left.appendChild(el('span', 'cso-nav-dot'));
-      left.appendChild(el('span', 'cso-nav-folder-title', folder.title));
+      left.appendChild(el('span', 'cso-nav-folder-title', (folder.icon ? folder.icon + ' ' : '') + folder.title));
 
       var right = el('span', 'cso-nav-folder-right');
       right.appendChild(el('span', 'cso-nav-count cso-tabular', String(filteredModules.length)));
@@ -204,6 +207,7 @@
         var isLiveRoute = !!(window.CSOLive && window.CSOLive.routes && window.CSOLive.routes[mod.id]);
         var modBtn = el('button', 'cso-nav-mod-btn' + (isActiveMod ? ' is-active' : ''));
         modBtn.type = 'button';
+        if (mod.title_or) modBtn.title = mod.title + ' · ' + mod.title_or;
         var numMatch = String(mod.id || '').match(/-(\d{2,3})$/);
         var modNum = numMatch ? String(Number(numMatch[1])).padStart(2, '0') : String(idx + 1).padStart(2, '0');
         modBtn.appendChild(el('span', 'cso-nav-mod-num', modNum));
@@ -296,13 +300,13 @@
     clearNode(dom.moduleHeaderActions);
 
     if (window.CSOLive && window.CSOLive.render(folderId, moduleId, dom.workspaceRoot, dom.moduleHeaderActions)) {
-      if (caCard && (moduleId === 'module-04-004' || moduleId === 'module-01-006' || moduleId === 'module-01-001')) {
+      if (caCard && (moduleId === 'module-01-001' || moduleId === 'module-01-003' || moduleId === 'module-03-004')) {
         dom.workspaceRoot.appendChild(caCard);
         if (window.CSOFastPublish && window.CSOFastPublish.initCurrentAffairsPublisher) {
           window.CSOFastPublish.initCurrentAffairsPublisher(caCard);
         }
       }
-      if (jobCard && (moduleId === 'module-05-008' || moduleId === 'module-01-006' || moduleId === 'module-01-001')) {
+      if (jobCard && (moduleId === 'module-01-001' || moduleId === 'module-01-002' || moduleId === 'module-02-001' || moduleId === 'module-02-004')) {
         dom.workspaceRoot.appendChild(jobCard);
         if (window.CSOFastPublish && window.CSOFastPublish.initJobsDirectoryPublisher) {
           window.CSOFastPublish.initJobsDirectoryPublisher(jobCard);
@@ -330,6 +334,20 @@
   }
 
   function openQuickCreateRoute(targetRoute) {
+    if (targetRoute === 'nav-manager') {
+      closeCreateDropdown();
+      clearNode(dom.workspaceRoot);
+      clearNode(dom.moduleHeaderActions);
+      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Navigation Architecture';
+      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = '7-Pillar Header & Categories';
+      if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Navigation Manager';
+      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '7 Pillars · D1';
+      if (window.CSORestoredModules && window.CSORestoredModules.render) {
+        window.CSORestoredModules.render('nav-manager', 'module-nav-004', dom.workspaceRoot, dom.moduleHeaderActions);
+      }
+      if (window.innerWidth <= 900) closeMobileDrawer();
+      return;
+    }
     if (!window.CSOCms) return;
     var caCard = document.getElementById('cso-ca-publisher-card');
     var jobCard = document.getElementById('cso-job-publisher-card');
@@ -338,11 +356,11 @@
     clearNode(dom.moduleHeaderActions);
 
     var routeLabels = {
-      'jobs/new': ['Content & Recruitment', 'New Job Alert', 'module-05-008', [['current-affairs', 'Current Affairs'], ['jobs', 'Job Alerts']]],
-      'current-affairs/new': ['Content & Publishing', 'New Current Affairs Post', 'module-04-004', [['current-affairs', 'Current Affairs'], ['jobs', 'Job Alerts']]],
-      'mock-tests/new': ['Mock Tests & Question Bank', 'New Mock Test', 'module-05-014', [['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']]],
-      'syllabus': ['Educational Resources', 'Syllabus & PYQ Upload', 'module-05-010', [['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']]],
-      'banner': ['Site Broadcast', 'Homepage Broadcast Banner', 'module-04-005', null]
+      'jobs/new': ['Jobs & Recruitment', 'New Job Alert', 'module-02-001', [['current-affairs', 'Current Affairs'], ['jobs', 'Job Alerts']]],
+      'current-affairs/new': ['Study Library & Current Affairs', 'New Current Affairs Post', 'module-03-004', [['current-affairs', 'Current Affairs'], ['jobs', 'Job Alerts']]],
+      'mock-tests/new': ['Mock Tests & Practice', 'New Mock Test', 'module-04-001', [['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']]],
+      'syllabus': ['Study Library & Current Affairs', 'Syllabus & PYQ Upload', 'module-03-001', [['mock-tests', 'Mock Tests'], ['syllabus', 'Syllabus'], ['pyq', 'PYQs']]],
+      'banner': ['Home & Live Updates', 'Homepage Broadcast Banner', 'module-01-001', null]
     };
 
     var meta = routeLabels[targetRoute] || ['Studio', 'Create Content', 'studio-new', null];

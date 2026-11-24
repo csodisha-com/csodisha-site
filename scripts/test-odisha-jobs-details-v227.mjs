@@ -11,10 +11,10 @@ const masterNav = JSON.parse(fs.readFileSync(path.join(root, 'admin/data/master-
 const jobsDirApi = require(path.join(root, 'assets/js/jobs-directory-data.js'));
 const od12Map = require(path.join(root, 'assets/js/odisha-jobs-1-2-data.js'));
 
-// 1. Preserve 23 folders / 299 modules in admin/data/master-navigation.json
-assert.equal(masterNav.folders.length, 23, 'Expected 23 folders in master-navigation.json');
+// 1. Preserve 7 pillars (folders) / 28 modules in admin/data/master-navigation.json
+assert.equal(masterNav.folders.length, 7, 'Expected 7 pillars (folders) in master-navigation.json');
 const totalModules = masterNav.folders.reduce((sum, f) => sum + (Array.isArray(f.modules) ? f.modules.length : 0), 0);
-assert.equal(totalModules, 299, 'Expected 299 modules in master-navigation.json');
+assert.equal(totalModules, 28, 'Expected 28 modules in master-navigation.json');
 
 // 2. Collect all branches under 1.2 (1.2.1 through 1.2.12) from jobs-careers/generated/directory.json
 const jobsRec = dirJson.sections.find((s) => s.title === 'Jobs & Recruitment');
@@ -84,4 +84,4 @@ for (let i = 1; i <= 11; i++) {
 const swJs = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 assert.match(swJs, /cso-candidate-cache-v22[7-9]/);
 
-console.log(`PASS test-odisha-jobs-details-v227: All ${branches.length} entries (${Object.keys(od12Map).length} unique specs in CSO_ODISHA_JOBS_1_2) across 1.2.1-1.2.12 verified, 23 folders / ${totalModules} modules preserved, 100% CSP compliant.`);
+console.log(`PASS test-odisha-jobs-details-v227: All ${branches.length} entries (${Object.keys(od12Map).length} unique specs in CSO_ODISHA_JOBS_1_2) across 1.2.1-1.2.12 verified, 7 pillars / ${totalModules} modules preserved, 100% CSP compliant.`);

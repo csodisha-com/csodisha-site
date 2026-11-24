@@ -6,7 +6,11 @@
     'module-06-001': { num: '01', endpoint: '/api/admin/nav/categories', kind: 'master_categories', title: 'Master Categories' },
     'module-06-002': { num: '02', endpoint: '/api/admin/nav/categories', kind: 'subcategories', title: 'Subcategories' },
     'module-06-003': { num: '03', endpoint: '/api/admin/nav/tags', kind: 'tags', title: 'Tags & Taxonomies' },
-    'module-06-004': { num: '04', endpoint: '/api/admin/nav/header', kind: 'header_nav', title: 'Header Navigation' }
+    'module-06-004': { num: '04', endpoint: '/api/admin/nav/header', kind: 'header_nav', title: 'Header Navigation' },
+    'module-nav-001': { num: '01', endpoint: '/api/admin/nav/categories', kind: 'master_categories', title: 'Master Categories (7 Pillars)' },
+    'module-nav-002': { num: '02', endpoint: '/api/admin/nav/categories', kind: 'subcategories', title: 'Subcategories (28 Modules)' },
+    'module-nav-003': { num: '03', endpoint: '/api/admin/nav/tags', kind: 'tags', title: 'Tags & Taxonomies' },
+    'module-nav-004': { num: '04', endpoint: '/api/admin/nav/header', kind: 'header_nav', title: 'Header Navigation (7 Pillars)' }
   };
 
   function el(tag, cls, text) {
@@ -373,10 +377,11 @@
       try {
         const cfg = await api('/api/nav/config');
         const bar = el('div', 'cso-edu-preview-card');
-        bar.appendChild(el('div', 'cso-edu-label', `Published Header Links (${(cfg.header || []).length})`));
+        bar.appendChild(el('div', 'cso-edu-label', `Published 7-Pillar Header Links (${(cfg.header || []).length})`));
         const list = el('div', 'cso-edu-badges');
         (cfg.header || []).forEach(h => {
-          list.appendChild(el('span', 'cso-edu-badge cso-edu-badge--pub', `${h.icon_key ? h.icon_key + ' ' : ''}${h.label_en}${h.badge_text_en ? ' [' + h.badge_text_en + ']' : ''}`));
+          const bi = h.label_or ? `${h.label_en} / ${h.label_or}` : h.label_en;
+          list.appendChild(el('span', 'cso-edu-badge cso-edu-badge--pub', `${h.icon_key ? h.icon_key + ' ' : ''}${bi}${h.badge_text_en ? ' [' + h.badge_text_en + ']' : ''}`));
         });
         bar.appendChild(list);
         body.appendChild(bar);

@@ -97,13 +97,9 @@
   function resolveSuiteKey(moduleId, folderId) {
     const m = String(moduleId || '');
     const f = String(folderId || '');
-    if (m.startsWith('module-01-') || f === 'folder-01') return '01';
-    if (m.startsWith('module-02-') || f === 'folder-02') return '02';
-    if (m.startsWith('module-03-') || f === 'folder-03') return '03';
-    if (m.startsWith('module-04-') || f === 'folder-04') return '04';
-    if (m.startsWith('module-05-') || m.startsWith('edu-') || f === 'folder-05') return '05';
-    if (m.startsWith('module-06-') || m.startsWith('cat-') || f === 'folder-06') return '06';
-    if (m.startsWith('module-07-') || m.startsWith('files-') || f === 'folder-07') return '07';
+    if (m.startsWith('module-nav-') || m.startsWith('cat-') || f === 'nav-manager') return '06';
+    if (m.startsWith('edu-')) return '05';
+    if (m.startsWith('files-')) return '07';
     if (m.startsWith('module-08-') || m.startsWith('pay-') || f === 'folder-08') return '08';
     if (m.startsWith('module-09-') || m.startsWith('usr-') || f === 'folder-09') return '09';
     if (m.startsWith('module-ana-') || m.startsWith('anl-') || m.startsWith('module-10-') || f === 'folder-10') return '10';

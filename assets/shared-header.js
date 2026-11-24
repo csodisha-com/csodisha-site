@@ -22,65 +22,57 @@
   }
 
   const NAV = [
-    ['jobs-careers', 'Jobs & Careers', '💼'],
-    ['schemes-benefits', 'Schemes & Benefits', '🏛'],
-    ['study-library', 'Study Library', '📖'],
-    ['community', 'Community', '👥'],
-    ['about', 'About', 'ⓘ']
+    { key: 'home', labelEn: 'Home', labelOr: 'ମୂଳପୃଷ୍ଠା', fullEn: 'Home & Live Updates', fullOr: 'ମୂଳପୃଷ୍ଠା ଓ ତାଜା ଅପଡେଟ୍', icon: '🏠', url: '/' },
+    { key: 'jobs-careers', labelEn: 'Jobs', labelOr: 'ଚାକିରି', fullEn: 'Jobs & Recruitment', fullOr: 'ଚାକିରି ଓ ନିଯୁକ୍ତି', icon: '💼', url: '/jobs-careers/' },
+    { key: 'study-library', labelEn: 'Study Library', labelOr: 'ପାଠାଗାର', fullEn: 'Study Library & Current Affairs', fullOr: 'ଅଧ୍ୟୟନ ପାଠାଗାର ଓ ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ', icon: '📖', url: '/study-library/' },
+    { key: 'mock-tests', labelEn: 'Mock Tests', labelOr: 'ମକ୍ ଟେଷ୍ଟ', fullEn: 'Mock Tests & Practice', fullOr: 'ମକ୍ ଟେଷ୍ଟ ଓ ଅଭ୍ୟାସ', icon: '📝', url: '/mock-tests/' },
+    { key: 'schemes-benefits', labelEn: 'Schemes', labelOr: 'ଯୋଜନା', fullEn: 'Schemes & Scholarships', fullOr: 'ଯୋଜନା ଓ ଛାତ୍ରବୃତ୍ତି', icon: '🏛', url: '/schemes-benefits/' },
+    { key: 'tools', labelEn: 'Tools', labelOr: 'ଉପକରଣ', fullEn: 'Student Tools & Verified Portals', fullOr: 'ଛାତ୍ର ଉପକରଣ ଓ ସରକାରୀ ପୋର୍ଟାଲ୍', icon: '🧰', url: '/tools/' },
+    { key: 'community', labelEn: 'Community', labelOr: 'ସମୁଦାୟ', fullEn: 'Community & Support', fullOr: 'ସମୁଦାୟ ଓ ସହାୟତା', icon: '👥', url: '/community/' }
   ];
 
   const MENUS = {
-    'jobs-careers': [
-      'Jobs & Recruitment',
-      'Career Explorer',
-      'Eligibility & Qualification Explorer',
-      'Courses, Entrance Exams & Certifications',
-      'Scholarships & Financial Support',
-      'International & Overseas Opportunities',
-      'Career Development & Employability',
-      'Institutions, Official Portals & Verification'
+    'home': [
+      { labelEn: 'Homepage Overview', labelOr: 'ମୂଳପୃଷ୍ଠା ବିବରଣୀ', url: '/' },
+      { labelEn: 'Live Recruitment Alerts', labelOr: 'ତାଜା ନିଯୁକ୍ତି ବିଜ୍ଞପ୍ତି', url: '/jobs/' },
+      { labelEn: "Today's Current Affairs", labelOr: 'ଆଜିର ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ', url: '/current-affairs/' },
+      { labelEn: 'Annual Exam Calendar', labelOr: 'ବାର୍ଷିକ ପରୀକ୍ଷା କ୍ୟାଲେଣ୍ଡର୍', url: '/study/examinations/' }
     ],
-    'schemes-benefits': [
-      'Government & Public Welfare',
-      'Education, Employment & Talent',
-      'Agriculture, Business & Livelihoods',
-      'Health, Housing & Financial Protection',
-      'Communities & Special Beneficiaries',
-      'Private, Global & Innovation Support',
-      'Find Schemes & Check Eligibility',
-      'Citizen Services & Verification'
+    'jobs-careers': [
+      { labelEn: 'Odisha State Govt: OPSC/OSSC/OSSSC/Police', labelOr: 'ଓଡ଼ିଶା ରାଜ୍ୟ ସରକାରୀ: OPSC/OSSC/OSSSC/ପୋଲିସ୍', url: '/jobs-careers/?track=odisha-govt' },
+      { labelEn: 'Central Govt: UPSC/SSC/RRB/Banking', labelOr: 'କେନ୍ଦ୍ର ସରକାରୀ: UPSC/SSC/RRB/ବ୍ୟାଙ୍କିଂ', url: '/jobs-careers/?track=central-govt' },
+      { labelEn: 'PSUs & Apprenticeships', labelOr: 'PSU ଓ ଆପ୍ରେଣ୍ଟିସଶିପ୍', url: '/jobs-careers/?track=psu-apprenticeship' },
+      { labelEn: 'Notification Lifecycle Tracker', labelOr: 'ବିଜ୍ଞପ୍ତି ସ୍ଥିତି ଟ୍ରାକର୍', url: '/jobs/' }
     ],
     'study-library': [
-      'Early Childhood & Primary Education',
-      'School & Higher Secondary Education',
-      'Undergraduate, Postgraduate & Research',
-      'Competitive Exams & Teacher Education',
-      'Professional, Vocational & Digital Skills',
-      'Subjects, Languages & Study Materials',
-      'International & Inclusive Education',
-      'Life Skills, Culture & Lifelong Learning',
-      'Libraries, Educators & Learning Support',
-      'Odisha Study Hub & Resource Organisation'
+      { labelEn: 'Syllabi & Exam Patterns', labelOr: 'ସିଲାବସ୍ ଓ ପରୀକ୍ଷା ପଦ୍ଧତି', url: '/resources/?kind=syllabus' },
+      { labelEn: 'Solved PYQs', labelOr: 'ସମାଧାନ ହୋଇଥିବା PYQ', url: '/resources/?kind=pyq' },
+      { labelEn: 'Bilingual Study Notes', labelOr: 'ଦ୍ୱିଭାଷୀ ଅଧ୍ୟୟନ ନୋଟ୍ସ', url: '/study-library/' },
+      { labelEn: 'Daily Current Affairs & 5-MCQ Capsules', labelOr: 'ଦୈନିକ ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ ଓ 5-MCQ', url: '/current-affairs/' }
+    ],
+    'mock-tests': [
+      { labelEn: 'Odisha Govt Mock Tests', labelOr: 'ଓଡ଼ିଶା ସରକାରୀ ମକ୍ ଟେଷ୍ଟ', url: '/mock-tests/?track=odisha' },
+      { labelEn: 'Central Govt CBT Tests', labelOr: 'କେନ୍ଦ୍ର ସରକାରୀ CBT ଟେଷ୍ଟ', url: '/study-library/cbt-mock-test/' },
+      { labelEn: 'Sectional & Speed Drills', labelOr: 'ବିଭାଗୀୟ ଓ ସ୍ପିଡ୍ ଡ୍ରିଲ୍', url: '/mock-tests/?mode=sectional' },
+      { labelEn: 'Scoreboard & Analytics', labelOr: 'ସ୍କୋରବୋର୍ଡ ଓ ବିଶ୍ଳେଷଣ', url: '/student-dashboard/' }
+    ],
+    'schemes-benefits': [
+      { labelEn: 'Odisha State Welfare Schemes', labelOr: 'ଓଡ଼ିଶା ରାଜ୍ୟ କଲ୍ୟାଣ ଯୋଜନା', url: '/schemes-benefits/?scope=odisha' },
+      { labelEn: 'Central Govt Schemes', labelOr: 'କେନ୍ଦ୍ର ସରକାରୀ ଯୋଜନା', url: '/schemes-benefits/?scope=central' },
+      { labelEn: 'Post-Matric & Merit Scholarships', labelOr: 'ପୋଷ୍ଟ-ମ୍ୟାଟ୍ରିକ୍ ଓ ମେଧା ଛାତ୍ରବୃତ୍ତି', url: '/scholarship-guidance/' },
+      { labelEn: 'Eligibility Matcher', labelOr: 'ଯୋଗ୍ୟତା ଯାଞ୍ଚ', url: '/scheme-opportunity-finder/' }
+    ],
+    'tools': [
+      { labelEn: 'Age Eligibility Calculator', labelOr: 'ବୟସ ଯୋଗ୍ୟତା କ୍ୟାଲକୁଲେଟର୍', url: '/tools/#age-calculator' },
+      { labelEn: 'Photo & Signature Resizer', labelOr: 'ଫଟୋ ଓ ଦସ୍ତଖତ ରିସାଇଜର୍', url: '/tools/#photo-resizer' },
+      { labelEn: 'Document Readiness Checklist', labelOr: 'ଡକ୍ୟୁମେଣ୍ଟ୍ ପ୍ରସ୍ତୁତି ତାଲିକା', url: '/tools/#doc-readiness-card' },
+      { labelEn: 'Official .gov.in Portals Directory', labelOr: 'ଅଫିସିଆଲ୍ .gov.in ପୋର୍ଟାଲ୍', url: '/tools/#scam-checker' }
     ],
     'community': [
-      'Local & Odisha Communities',
-      'Students, Educators & Mentorship',
-      'Careers, Business & Professional Networks',
-      'Agriculture & Rural Livelihoods',
-      'Women, Families, Health & Inclusion',
-      'Youth, NGOs & Volunteering',
-      'Culture, Sports & Traditional Communities',
-      'Environment, Science & Technology',
-      'Digital, International & Community Forums',
-      'Community Directory, Safety & Governance'
-    ],
-    'about': [
-      'About CSO',
-      'Our Approach',
-      'Trust & Transparency',
-      'Team & Community',
-      'Policies & Standards',
-      'Contact & FAQs'
+      { labelEn: 'Student Discussion Forum', labelOr: 'ଛାତ୍ର ଆଲୋଚନା ମଞ୍ଚ', url: '/community/' },
+      { labelEn: 'Help & FAQs', labelOr: 'ସହାୟତା ଓ ସାଧାରଣ ପ୍ରଶ୍ନ', url: '/support/#faqs' },
+      { labelEn: 'Report an Error / Suggest Resource', labelOr: 'ତ୍ରୁଟି ଜଣାନ୍ତୁ / ସମ୍ବଳ ପ୍ରସ୍ତାବ', url: '/support/#report-error' },
+      { labelEn: 'About & Legal Policies', labelOr: 'ଆମ ବିଷୟରେ ଓ ଆଇନଗତ ନୀତି', url: '/about/' }
     ]
   };
 
@@ -452,6 +444,7 @@
           saveSettings();
           applySettings();
           renderControls();
+          renderNav();
         },
         S.lang === k
       ]));
@@ -720,16 +713,42 @@
   }
 
   const pathname = window.location.pathname;
-  let activeSection = '';
-  for (const [key] of NAV) {
-    if (pathname.includes('/' + key)) {
-      activeSection = key;
-      break;
-    }
+  function resolveActivePillar(pathStr) {
+    const p = String(pathStr || '/').toLowerCase();
+    if (p === '/' || p === '/index.html' || p === '') return 'home';
+    if (p.startsWith('/study-library/cbt-mock-test') || p.startsWith('/mock-tests') || p.startsWith('/student-dashboard')) return 'mock-tests';
+    if (p.startsWith('/jobs-careers') || p.startsWith('/jobs') || p.startsWith('/career-guidance') || p.startsWith('/job-opportunity-finder')) return 'jobs-careers';
+    if (p.startsWith('/study-library') || p.startsWith('/study') || p.startsWith('/resources') || p.startsWith('/current-affairs') || p.startsWith('/education-explorer') || p.startsWith('/study-path-finder')) return 'study-library';
+    if (p.startsWith('/schemes-benefits') || p.startsWith('/schemes') || p.startsWith('/scholarship-guidance') || p.startsWith('/scheme-opportunity-finder')) return 'schemes-benefits';
+    if (p.startsWith('/tools') || p.startsWith('/opportunity-compass')) return 'tools';
+    if (p.startsWith('/community') || p.startsWith('/support') || p.startsWith('/about') || p.startsWith('/trust-layer') || p.startsWith('/privacy-policy') || p.startsWith('/terms-of-use') || p.startsWith('/disclaimer') || p.startsWith('/copyright-policy')) return 'community';
+    return 'home';
   }
-  if (!activeSection) {
-    if (pathname.startsWith('/jobs')) activeSection = 'jobs-careers';
-    else if (pathname.startsWith('/schemes')) activeSection = 'schemes-benefits';
+  const activeSection = resolveActivePillar(pathname);
+
+  function navLabel(item) {
+    return S.lang === 'or' ? (item.labelOr || item.label_or || item.labelEn || item.label_en || '') : (item.labelEn || item.label_en || '');
+  }
+
+  function resolveSafeHref(url) {
+    const raw = String(url || '/').trim();
+    if (/^(javascript|data|vbscript)\s*:/i.test(raw)) return '/';
+    return raw || '/';
+  }
+
+  function buildPillarDropdown(pillarKey, subItems) {
+    const dd = el('div', 'dd');
+    dd.id = 'cso-nav-dd-' + pillarKey;
+    (subItems || []).forEach(sub => {
+      const subA = el('a');
+      subA.href = resolveSafeHref(sub.url);
+      if (sub.open_new_tab) { subA.target = '_blank'; subA.rel = 'noopener noreferrer'; }
+      const bullet = el('span', 'dd-bullet', '›');
+      bullet.setAttribute('aria-hidden', 'true');
+      subA.append(bullet, el('span', '', navLabel(sub)));
+      dd.appendChild(subA);
+    });
+    return dd;
   }
 
   function closeDropdowns(except) {
@@ -804,44 +823,28 @@
     const navItems = el('div', 'cso-nav-items');
     navItems.id = 'cso-nav-items';
 
-    const isHome = !activeSection && (pathname === '/' || pathname.endsWith('/index.html') || pathname === '');
-    const homeA = el('a', 'cso-nav-home' + (isHome ? ' on' : ''));
-    homeA.href = root;
-    const homeIcon = el('span', '', '🏠');
-    homeIcon.setAttribute('aria-hidden', 'true');
-    homeA.append(homeIcon, ' Home');
-    navItems.appendChild(homeA);
-
-    NAV.forEach(([s, t, icon]) => {
-      const ni = el('div', 'ni' + (s === activeSection ? ' cso-active' : ''));
+    NAV.forEach(pillar => {
+      const isCurrent = pillar.key === activeSection;
+      const ni = el('div', 'ni' + (isCurrent ? ' cso-active' : ''));
+      ni.dataset.pillar = pillar.key;
       const parent = el('div', 'cso-nav-parent');
-      const a = el('a', s === activeSection ? 'on' : '');
-      a.href = root + s + '/';
-      if (s === activeSection) a.setAttribute('aria-current', 'page');
-      const ic = el('span', '', icon);
+      const a = el('a', (pillar.key === 'home' ? 'cso-nav-home ' : '') + (isCurrent ? 'on' : ''));
+      a.href = pillar.url;
+      a.title = S.lang === 'or' ? pillar.fullOr : pillar.fullEn;
+      if (isCurrent) a.setAttribute('aria-current', 'page');
+      const ic = el('span', '', pillar.icon);
       ic.setAttribute('aria-hidden', 'true');
-      a.append(ic, ' ' + t);
+      a.append(ic, ' ' + navLabel(pillar));
 
       const arrow = el('button', 'cso-nav-arrow', '⌄');
       arrow.type = 'button';
-      arrow.setAttribute('aria-label', 'Toggle ' + t + ' menu');
+      arrow.setAttribute('aria-label', 'Toggle ' + pillar.fullEn + ' menu');
       arrow.setAttribute('aria-haspopup', 'true');
       arrow.setAttribute('aria-expanded', 'false');
-      arrow.setAttribute('aria-controls', 'cso-nav-dd-' + s);
+      arrow.setAttribute('aria-controls', 'cso-nav-dd-' + pillar.key);
 
       parent.append(a, arrow);
-
-      const dd = el('div', 'dd');
-      dd.id = 'cso-nav-dd-' + s;
-      MENUS[s].forEach((x, index) => {
-        const subA = el('a');
-        subA.href = root + s + '/?section=' + index;
-        const bullet = el('span', 'dd-bullet', '›');
-        bullet.setAttribute('aria-hidden', 'true');
-        subA.append(bullet, el('span', '', x));
-        dd.appendChild(subA);
-      });
-
+      const dd = buildPillarDropdown(pillar.key, MENUS[pillar.key] || []);
       ni.append(parent, dd);
       navItems.appendChild(ni);
     });
@@ -858,71 +861,77 @@
         const navItems = document.getElementById('cso-nav-items');
         if (!navItems) return;
         const user = getActiveUser();
+        const CANONICAL_NAV_ORDER = ['home', 'jobs-careers', 'study-library', 'mock-tests', 'schemes-benefits', 'tools', 'community'];
+        const normalizePillarKey = urlStr => {
+          const raw = String(urlStr || '').replace(/^\/+|\/+$/g, '').split('/')[0].toLowerCase();
+          if (!raw || raw === 'index.html') return 'home';
+          if (raw === 'jobs') return 'jobs-careers';
+          if (raw === 'schemes') return 'schemes-benefits';
+          if (raw === 'current-affairs' || raw === 'resources' || raw === 'study') return 'study-library';
+          if (raw === 'support' || raw === 'about') return 'community';
+          return raw;
+        };
         const visibleItems = data.header.filter(it => {
           const urlStr = String(it.url || '').toLowerCase();
           const labelStr = String(it.label_en || '').toLowerCase();
           const idStr = String(it.id || '').toLowerCase();
-          if (urlStr.includes('student-hub') || /student\s*hub/.test(labelStr) || idStr.includes('student-hub')) {
+          if (urlStr.includes('student-hub') || /student\s*hub/.test(labelStr) || idStr.includes('student-hub') || urlStr === '/student/') {
             return false;
           }
           if (it.visibility_rule === 'logged_in') return Boolean(user);
           if (it.visibility_rule === 'logged_out') return !user;
           return true;
         });
-        if (!visibleItems.length) return;
-        const CANONICAL_NAV_ORDER = ['home', 'jobs-careers', 'schemes-benefits', 'study-library', 'community', 'about'];
-        const navOrderRank = it => {
-          const raw = String(it.url || '').replace(/^\/+|\/+$/g, '').split('/')[0].toLowerCase();
-          if (!raw || raw === 'index.html') return 0;
-          const norm = raw === 'schemes' ? 'schemes-benefits' : (raw === 'jobs' ? 'jobs-careers' : raw);
-          const idx = CANONICAL_NAV_ORDER.indexOf(norm);
-          return idx >= 0 ? idx : 100;
-        };
-        visibleItems.sort((a, b) => navOrderRank(a) - navOrderRank(b));
+        const matchedKeys = new Set(visibleItems.map(it => normalizePillarKey(it.url)));
+        if (visibleItems.length < 7 || !CANONICAL_NAV_ORDER.every(k => matchedKeys.has(k))) {
+          return;
+        }
+        visibleItems.sort((a, b) => {
+          const ra = CANONICAL_NAV_ORDER.indexOf(normalizePillarKey(a.url));
+          const rb = CANONICAL_NAV_ORDER.indexOf(normalizePillarKey(b.url));
+          return (ra >= 0 ? ra : 100) - (rb >= 0 ? rb : 100);
+        });
+
+        const megaByParent = new Map();
+        const megaList = Array.isArray(data.mega_menu) ? data.mega_menu : [];
+        megaList.forEach(mm => {
+          if (!mm || !mm.parent_item_id) return;
+          if (!megaByParent.has(mm.parent_item_id)) megaByParent.set(mm.parent_item_id, []);
+          megaByParent.get(mm.parent_item_id).push(mm);
+        });
+
         const mobAuth = document.getElementById('cso-nav-mobile-auth');
         navItems.replaceChildren();
         visibleItems.forEach(it => {
-          const rawSlug = String(it.url || '').replace(/^\/+|\/+$/g, '').split('/')[0];
-          const slugMatch = rawSlug === 'schemes' ? 'schemes-benefits' : (rawSlug === 'jobs' ? 'jobs-careers' : rawSlug);
-          const isCurrent = (it.url === '/' && !activeSection && (pathname === '/' || pathname.endsWith('/index.html'))) || (slugMatch && slugMatch === activeSection);
-          const hasSub = Boolean(slugMatch && MENUS[slugMatch]);
-          if (!hasSub) {
-            const a = el('a', (it.url === '/' ? 'cso-nav-home' : '') + (isCurrent ? ' on' : ''));
-            a.href = it.url || '/';
-            if (it.open_new_tab) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
-            if (it.icon_key) { const ic = el('span', '', it.icon_key); ic.setAttribute('aria-hidden', 'true'); a.append(ic, ' '); }
-            a.append(document.createTextNode(it.label_en || 'Link'));
-            if (it.badge_text_en) a.append(' ', el('span', 'cso-nav-badge', it.badge_text_en));
-            navItems.appendChild(a);
-          } else {
-            const ni = el('div', 'ni' + (isCurrent ? ' cso-active' : ''));
-            const parent = el('div', 'cso-nav-parent');
-            const a = el('a', isCurrent ? 'on' : '');
-            a.href = it.url || ('/' + slugMatch + '/');
-            if (isCurrent) a.setAttribute('aria-current', 'page');
-            if (it.icon_key) { const ic = el('span', '', it.icon_key); ic.setAttribute('aria-hidden', 'true'); a.append(ic, ' '); }
-            a.append(document.createTextNode(it.label_en || slugMatch));
-            if (it.badge_text_en) a.append(' ', el('span', 'cso-nav-badge', it.badge_text_en));
+          const pillarKey = normalizePillarKey(it.url);
+          const isCurrent = pillarKey === activeSection;
+          const apiSubs = (megaByParent.get(it.id) || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+          const subItems = apiSubs.length ? apiSubs : (MENUS[pillarKey] || []);
+          const ni = el('div', 'ni' + (isCurrent ? ' cso-active' : ''));
+          ni.dataset.pillar = pillarKey;
+          const parent = el('div', 'cso-nav-parent');
+          const a = el('a', (pillarKey === 'home' ? 'cso-nav-home ' : '') + (isCurrent ? 'on' : ''));
+          a.href = resolveSafeHref(it.url || '/');
+          if (it.open_new_tab) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+          if (isCurrent) a.setAttribute('aria-current', 'page');
+          if (it.icon_key) { const ic = el('span', '', it.icon_key); ic.setAttribute('aria-hidden', 'true'); a.append(ic, ' '); }
+          a.append(document.createTextNode(navLabel(it) || pillarKey));
+          if (it.badge_text_en) a.append(' ', el('span', 'cso-nav-badge', it.badge_text_en));
+
+          if (subItems.length) {
             const arrow = el('button', 'cso-nav-arrow', '⌄');
             arrow.type = 'button';
-            arrow.setAttribute('aria-label', 'Toggle ' + (it.label_en || slugMatch) + ' menu');
+            arrow.setAttribute('aria-label', 'Toggle ' + (it.label_en || pillarKey) + ' menu');
             arrow.setAttribute('aria-haspopup', 'true');
             arrow.setAttribute('aria-expanded', 'false');
-            arrow.setAttribute('aria-controls', 'cso-nav-dd-' + slugMatch);
+            arrow.setAttribute('aria-controls', 'cso-nav-dd-' + pillarKey);
             parent.append(a, arrow);
-            const dd = el('div', 'dd');
-            dd.id = 'cso-nav-dd-' + slugMatch;
-            MENUS[slugMatch].forEach((x, index) => {
-              const subA = el('a');
-              subA.href = root + slugMatch + '/?section=' + index;
-              const bullet = el('span', 'dd-bullet', '›');
-              bullet.setAttribute('aria-hidden', 'true');
-              subA.append(bullet, el('span', '', x));
-              dd.appendChild(subA);
-            });
-            ni.append(parent, dd);
-            navItems.appendChild(ni);
+            ni.append(parent, buildPillarDropdown(pillarKey, subItems));
+          } else {
+            parent.appendChild(a);
+            ni.appendChild(parent);
           }
+          navItems.appendChild(ni);
         });
         if (mobAuth && !user) navItems.appendChild(mobAuth);
       })
@@ -1007,6 +1016,7 @@
         saveSettings();
         applySettings();
         renderControls();
+        renderNav();
       }
       return;
     }
@@ -1216,8 +1226,8 @@
     if (!document.getElementById('cso-main-navbar')) header.after(buildNavShell());
   }
   const FOOTER_COLS = [
-    ['Explore', [['Jobs & Careers', '/jobs-careers/'], ['Schemes & Benefits', '/schemes-benefits/'], ['Study Library', '/study-library/'], ['Community', '/community/'], ['About CSO', '/about/']]],
-    ['Support & Legal', [['Help & FAQs', '/support/#faqs'], ['Report an Error', '/support/#report-error'], ['Suggest Resource', '/support/#suggest-resource'], ['Privacy Policy', '/privacy-policy/'], ['Terms of Use', '/terms-of-use/']]]
+    ['Explore', [['Jobs & Recruitment', '/jobs-careers/'], ['Study Library', '/study-library/'], ['Mock Tests', '/mock-tests/'], ['Schemes & Scholarships', '/schemes-benefits/'], ['Student Tools', '/tools/'], ['Community', '/community/']]],
+    ['Support & Legal', [['Help & FAQs', '/support/#faqs'], ['Report an Error', '/support/#report-error'], ['Suggest Resource', '/support/#suggest-resource'], ['About CSO', '/about/'], ['Privacy Policy', '/privacy-policy/'], ['Terms of Use', '/terms-of-use/']]]
   ];
   const FOOTER_SOCIAL = [
     ['Instagram', 'https://www.instagram.com/csodisha.official/'],

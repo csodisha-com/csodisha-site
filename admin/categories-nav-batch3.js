@@ -5,7 +5,10 @@
   const MODULE_META = {
     'module-06-009': { num: '09', endpoint: '/api/admin/nav/internal-links', kind: 'internal_links', title: 'Internal Links' },
     'module-06-010': { num: '10', endpoint: '/api/admin/nav/ordering', kind: 'ordering', title: 'Menu Ordering' },
-    'module-06-011': { num: '11', endpoint: '/api/admin/nav/social-links', kind: 'social_links', title: 'Social Links' }
+    'module-06-011': { num: '11', endpoint: '/api/admin/nav/social-links', kind: 'social_links', title: 'Social Links' },
+    'module-nav-009': { num: '09', endpoint: '/api/admin/nav/internal-links', kind: 'internal_links', title: 'Internal Links' },
+    'module-nav-010': { num: '10', endpoint: '/api/admin/nav/ordering', kind: 'ordering', title: 'Menu Ordering' },
+    'module-nav-011': { num: '11', endpoint: '/api/admin/nav/social-links', kind: 'social_links', title: 'Social Links' }
   };
 
   function el(tag, cls, text) {

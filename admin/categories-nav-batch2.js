@@ -6,7 +6,11 @@
     'module-06-005': { num: '05', endpoint: '/api/admin/nav/mega-menu', kind: 'mega_menu', title: 'Mega Menu' },
     'module-06-006': { num: '06', endpoint: '/api/admin/nav/footer', kind: 'footer', title: 'Footer Navigation' },
     'module-06-007': { num: '07', endpoint: '/api/admin/nav/sidebars', kind: 'sidebars', title: 'Sidebar Menus' },
-    'module-06-008': { num: '08', endpoint: '/api/admin/nav/breadcrumbs', kind: 'breadcrumbs', title: 'Breadcrumbs' }
+    'module-06-008': { num: '08', endpoint: '/api/admin/nav/breadcrumbs', kind: 'breadcrumbs', title: 'Breadcrumbs' },
+    'module-nav-005': { num: '05', endpoint: '/api/admin/nav/mega-menu', kind: 'mega_menu', title: 'Mega Menu (28 Modules)' },
+    'module-nav-006': { num: '06', endpoint: '/api/admin/nav/footer', kind: 'footer', title: 'Footer Navigation' },
+    'module-nav-007': { num: '07', endpoint: '/api/admin/nav/sidebars', kind: 'sidebars', title: 'Sidebar Menus' },
+    'module-nav-008': { num: '08', endpoint: '/api/admin/nav/breadcrumbs', kind: 'breadcrumbs', title: 'Breadcrumbs' }
   };
 
   function el(tag, cls, text) {
