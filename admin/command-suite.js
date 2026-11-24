@@ -12,7 +12,7 @@
   var OV_MODULE = 'module-command-overview';
   var HS_FOLDER = 'folder-homepage-studio';
   var HS_MODULE = 'module-homepage-studio';
-  var PILLAR_LABELS = { jobs: 'Jobs & Careers', schemes: 'Schemes & Benefits', study: 'Study Library', community: 'Community', about: 'About', current_affairs: 'Current Affairs' };
+  var PILLAR_LABELS = { jobs: 'Jobs', careers: 'Careers', schemes: 'Schemes & Benefits', study: 'Study Library', community: 'Community', about: 'About', current_affairs: 'Current Affairs' };
   var FOLDER_PILLAR = { 'folder-jobs-careers': 'jobs', 'folder-schemes-benefits': 'schemes', 'folder-study-library': 'study', 'folder-community': 'community', 'folder-about': 'about' };
 
   // ---------- helpers ----------
@@ -406,7 +406,7 @@
     var cols2 = el('div', 'cs-cols');
     var feed = section('Recent Activity & Audit Trail', 'Admin mutations, newest first');
     var filters = el('div', 'cs-filters');
-    filters.appendChild(filterSelect('Pillar', [['', 'All pillars'], ['jobs', 'Jobs & Careers'], ['schemes', 'Schemes & Benefits'], ['study', 'Study Library'], ['community', 'Community'], ['about', 'About'], ['homepage', 'Homepage Studio'], ['navigation', 'Navigation'], ['media', 'Media'], ['system', 'System']], ov.feed.pillar, function (v) { ov.feed.pillar = v; loadFeed(false); }));
+    filters.appendChild(filterSelect('Pillar', [['', 'All pillars'], ['jobs', 'Jobs'], ['careers', 'Careers'], ['schemes', 'Schemes & Benefits'], ['study', 'Study Library'], ['community', 'Community'], ['about', 'About'], ['homepage', 'Homepage Studio'], ['navigation', 'Navigation'], ['media', 'Media'], ['system', 'System']], ov.feed.pillar, function (v) { ov.feed.pillar = v; loadFeed(false); }));
     filters.appendChild(filterSelect('Action', [['', 'All actions'], ['create', 'Created'], ['update', 'Edited'], ['publish', 'Published'], ['unpublish', 'Unpublished'], ['delete', 'Deleted']], ov.feed.type, function (v) { ov.feed.type = v; loadFeed(false); }));
     feed.appendChild(filters);
     ov.refs.feed = el('div', 'cs-feed');
@@ -600,10 +600,15 @@
     var schema = studio().getSchema ? studio().getSchema() : null;
     var folders = (schema && schema.folders) || [];
     folders.forEach(function (f, i) {
-      items.push({ group: 'Pillars', label: f.title, hint: 'Alt+' + (i + 1), keywords: f.title_or || '', run: function () { goFolder(f.id); } });
+      var fTitle = f.id === 'folder-jobs-careers' ? 'Jobs' : f.title;
+      var fTitleOr = f.id === 'folder-jobs-careers' ? 'ଚାକିରି' : (f.title_or || '');
+      items.push({ group: 'Pillars', label: fTitle, hint: 'Alt+' + (i + 1), keywords: fTitleOr, run: function () { goFolder(f.id); } });
       (f.modules || []).forEach(function (m) {
-        items.push({ group: 'Pillars', label: f.title + ' › ' + m.title, keywords: m.title_or || '', run: function () { studio().selectModule(f.id, m.id); } });
+        items.push({ group: 'Pillars', label: fTitle + ' › ' + m.title, keywords: m.title_or || '', run: function () { studio().selectModule(f.id, m.id); } });
       });
+      if (f.id === 'folder-jobs-careers') {
+        items.push({ group: 'Pillars', label: 'Careers', hint: 'Alt+8', keywords: 'careers roadmaps tracks pathways କ୍ୟାରିୟର୍', run: function () { goFolder('folder-careers-studio'); } });
+      }
     });
     items.push({ group: 'Pillars', label: 'Homepage Studio', hint: 'Alt+6', keywords: 'homepage features blocks', run: function () { goFolder(HS_FOLDER); } });
     items.push({ group: 'Pillars', label: 'Candidate Hub (Roster & Governance)', hint: 'Alt+7', keywords: 'candidates students roster block unblock dashboard ui', run: function () { goFolder('folder-candidate-hub'); } });
@@ -614,6 +619,7 @@
     items.push({ group: 'Jobs Publishing House', label: 'Jobs Publishing House › + Publish New Job Article', keywords: 'jobs new recruitment article opsc ossc osssc', run: function () { if (studio().openJobsPublishingTab) studio().openJobsPublishingTab('new'); else goFolder('folder-jobs-careers'); } });
     items.push({ group: 'Jobs Publishing House', label: 'Jobs Publishing House › 3-Layer Category Hierarchy', keywords: 'taxonomy main subcategory department tenure', run: function () { if (studio().openJobsPublishingTab) studio().openJobsPublishingTab('taxonomy'); else goFolder('folder-jobs-careers'); } });
     items.push({ group: 'Jobs Publishing House', label: 'Jobs Publishing House › Reusable Bilingual Snippets', keywords: 'snippets age relaxation odia rules', run: function () { if (studio().openJobsPublishingTab) studio().openJobsPublishingTab('snippets'); else goFolder('folder-jobs-careers'); } });
+    items.push({ group: 'Careers Publishing House', label: 'Careers Publishing House › + Publish New Career Roadmap', keywords: 'careers new roadmap track pathway odisha national', run: function () { if (studio().openCareersPublishingTab) studio().openCareersPublishingTab('new'); else goFolder('folder-careers-studio'); } });
     items.push({ group: 'Schemes Publishing House', label: 'Schemes Publishing House › + Publish New Scheme Article', keywords: 'schemes welfare subhadra scholarship cm-kisan dbt', run: function () { if (studio().openSchemesPublishingTab) studio().openSchemesPublishingTab('new'); else goFolder('folder-schemes-benefits'); } });
     items.push({ group: 'Schemes Publishing House', label: 'Schemes Publishing House › 3-Layer Scheme Hierarchy', keywords: 'scheme taxonomy government domain benefit type', run: function () { if (studio().openSchemesPublishingTab) studio().openSchemesPublishingTab('taxonomy'); else goFolder('folder-schemes-benefits'); } });
     items.push({ group: 'Schemes Publishing House', label: 'Schemes Publishing House › Reusable Bilingual Snippets', keywords: 'npci dbt income resident otr snippets', run: function () { if (studio().openSchemesPublishingTab) studio().openSchemesPublishingTab('snippets'); else goFolder('folder-schemes-benefits'); } });

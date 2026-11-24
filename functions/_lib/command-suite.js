@@ -9,7 +9,7 @@ import { normalizeOdishaDistrict, formatTargetExamLabel } from './candidate-hub-
 
 // Pillar -> content table registry (id/title/status/updated_at are common to all).
 export const PILLAR_TABLES = {
-  jobs: { label: 'Jobs & Careers', table: 'jobs_directory_items', title: 'title', slug: 'slug' },
+  jobs: { label: 'Jobs', table: 'jobs_directory_items', title: 'title', slug: 'slug' },
   schemes: { label: 'Schemes & Benefits', table: 'schemes_directory_items', title: 'title', slug: 'slug' },
   study: { label: 'Study Library', table: 'study_library_items', title: 'title', slug: 'slug' },
   community: { label: 'Community', table: 'community_directory_items', title: 'title', slug: 'slug' },
@@ -20,6 +20,7 @@ export const PILLAR_TABLES = {
 const AUDIT_PILLAR_PATTERNS = {
   homepage: ['%homepage%'],
   jobs: ['%job%'],
+  careers: ['%career%'],
   schemes: ['%scheme%'],
   study: ['%study%', '%current_affair%', '%current-affair%', '%mock%', '%syllabus%', '%edu%'],
   community: ['%communit%', '%forum%'],

@@ -139,9 +139,21 @@
     if (dom.btnToggleSidebar) dom.btnToggleSidebar.setAttribute('aria-expanded', 'false');
   }
 
+  function getFolderDisplayTitle(folder) {
+    if (!folder) return '';
+    if (folder.id === 'folder-jobs-careers') return 'Jobs';
+    return String(folder.title || '');
+  }
+
+  function getFolderDisplayTitleOr(folder) {
+    if (!folder) return '';
+    if (folder.id === 'folder-jobs-careers') return 'ଚାକିରି';
+    return String(folder.title_or || '');
+  }
+
   function syncModuleCountLabels() {
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
-    var pillarCount = masterNavigationSchema.folders.length;
+    var pillarCount = masterNavigationSchema.folders.length + 1;
     document.title = 'CS Odisha — Editorial Studio & Command Suite (' + pillarCount + ' Pillars · Live D1 Sync)';
     var brandSub = document.querySelector('.cso-brand-sub');
     if (brandSub) {
@@ -170,7 +182,7 @@
       var stTax = arr[3];
       var cTax = arr[4];
       var aTax = arr[5];
-      var pillarCount = (masterNavigationSchema && Array.isArray(masterNavigationSchema.folders)) ? masterNavigationSchema.folders.length : 5;
+      var pillarCount = ((masterNavigationSchema && Array.isArray(masterNavigationSchema.folders)) ? masterNavigationSchema.folders.length : 5) + 1;
       var liveItems = ov && ov.totals ? Number(ov.totals.published || 0) : 0;
       var activeCats = (ov && ov.categories ? Number(ov.categories.published || 0) : 0)
         + (jTax && Array.isArray(jTax.nodes) ? jTax.nodes.length : 0)
@@ -256,81 +268,83 @@
     }
 
     masterNavigationSchema.folders.forEach(function (folder) {
-      var folderTitleOr = String(folder.title_or || '');
-      var folderMatches = !query || folder.title.toLowerCase().includes(query) || folderTitleOr.toLowerCase().includes(query);
+      var folderTitle = getFolderDisplayTitle(folder);
+      var folderTitleOr = getFolderDisplayTitleOr(folder);
+      var folderMatches = !query || folderTitle.toLowerCase().includes(query) || folderTitleOr.toLowerCase().includes(query);
       var folderModules = Array.isArray(folder.modules) ? folder.modules : [];
       var filteredModules = folderModules.filter(function (m) {
         return folderMatches || m.title.toLowerCase().includes(query) || String(m.title_or || '').toLowerCase().includes(query) || m.id.toLowerCase().includes(query);
       });
 
-      if (query && !folderMatches && filteredModules.length === 0) return;
-      matchCount += filteredModules.length || (folderMatches ? 1 : 0);
+      if (!query || folderMatches || filteredModules.length > 0) {
+        matchCount += filteredModules.length || (folderMatches ? 1 : 0);
 
-      var isExpanded = query ? true : CSOState.expandedFolders.has(folder.id);
-      var isCurrentFolder = CSOState.activeFolderId === folder.id;
+        var isExpanded = query ? true : CSOState.expandedFolders.has(folder.id);
+        var isCurrentFolder = CSOState.activeFolderId === folder.id;
 
-      var folderWrap = el('div', 'cso-nav-folder' + (isCurrentFolder ? ' is-current' : ''));
-      var folderBtn = el('button', 'cso-nav-folder-btn' + (isCurrentFolder ? ' is-active' : ''));
-      folderBtn.type = 'button';
-      folderBtn.setAttribute('aria-expanded', String(isExpanded));
-      if (folderTitleOr) folderBtn.title = folder.title + ' · ' + folderTitleOr;
+        var folderWrap = el('div', 'cso-nav-folder' + (isCurrentFolder ? ' is-current' : ''));
+        var folderBtn = el('button', 'cso-nav-folder-btn' + (isCurrentFolder ? ' is-active' : ''));
+        folderBtn.type = 'button';
+        folderBtn.setAttribute('aria-expanded', String(isExpanded));
+        if (folderTitleOr) folderBtn.title = folderTitle + ' · ' + folderTitleOr;
 
-      var left = el('span', 'cso-nav-folder-left');
-      left.appendChild(el('span', 'cso-nav-dot'));
-      left.appendChild(el('span', 'cso-nav-folder-title', (folder.icon ? folder.icon + ' ' : '') + folder.title));
+        var left = el('span', 'cso-nav-folder-left');
+        left.appendChild(el('span', 'cso-nav-dot'));
+        left.appendChild(el('span', 'cso-nav-folder-title', (folder.icon ? folder.icon + ' ' : '') + folderTitle));
 
-      var right = el('span', 'cso-nav-folder-right');
-      var badgeVal = folder.id === 'folder-jobs-careers' && CSOState.jobsCount !== null
-        ? CSOState.jobsCount
-        : (folder.id === 'folder-schemes-benefits' && CSOState.schemesCount !== null
-          ? CSOState.schemesCount
-          : (folder.id === 'folder-study-library' && CSOState.studyCount !== null
-            ? CSOState.studyCount
-            : (folder.id === 'folder-community' && CSOState.communityCount !== null
-              ? CSOState.communityCount
-              : (folder.id === 'folder-about' && CSOState.aboutCount !== null ? CSOState.aboutCount : filteredModules.length))));
-      right.appendChild(el('span', 'cso-nav-count cso-tabular', String(badgeVal)));
-      right.appendChild(el('span', 'cso-nav-chevron' + (isExpanded ? ' is-open' : ''), '›'));
+        var right = el('span', 'cso-nav-folder-right');
+        var badgeVal = folder.id === 'folder-jobs-careers' && CSOState.jobsCount !== null
+          ? CSOState.jobsCount
+          : (folder.id === 'folder-schemes-benefits' && CSOState.schemesCount !== null
+            ? CSOState.schemesCount
+            : (folder.id === 'folder-study-library' && CSOState.studyCount !== null
+              ? CSOState.studyCount
+              : (folder.id === 'folder-community' && CSOState.communityCount !== null
+                ? CSOState.communityCount
+                : (folder.id === 'folder-about' && CSOState.aboutCount !== null ? CSOState.aboutCount : filteredModules.length))));
+        right.appendChild(el('span', 'cso-nav-count cso-tabular', String(badgeVal)));
+        right.appendChild(el('span', 'cso-nav-chevron' + (isExpanded ? ' is-open' : ''), '›'));
 
-      folderBtn.appendChild(left);
-      folderBtn.appendChild(right);
-      folderBtn.addEventListener('click', function () {
-        if (!folderModules.length) {
-          selectModule(folder.id, folder.id);
-          if (window.innerWidth <= 900) closeMobileDrawer();
-          return;
-        }
-        if (CSOState.expandedFolders.has(folder.id)) CSOState.expandedFolders.delete(folder.id);
-        else CSOState.expandedFolders.add(folder.id);
-        persistOpenGroups();
-        renderNavigationTree();
-      });
-
-      var modList = el('div', 'cso-nav-modules' + (isExpanded ? '' : ' is-collapsed'));
-      filteredModules.forEach(function (mod, idx) {
-        var isActiveMod = CSOState.activeModuleId === mod.id;
-        var isLiveRoute = !!(window.CSOLive && window.CSOLive.routes && window.CSOLive.routes[mod.id]);
-        var modBtn = el('button', 'cso-nav-mod-btn' + (isActiveMod ? ' is-active' : ''));
-        modBtn.type = 'button';
-        if (mod.title_or) modBtn.title = mod.title + ' · ' + mod.title_or;
-        var numMatch = String(mod.id || '').match(/-(\d{2,3})$/);
-        var modNum = numMatch ? String(Number(numMatch[1])).padStart(2, '0') : String(idx + 1).padStart(2, '0');
-        modBtn.appendChild(el('span', 'cso-nav-mod-num', modNum));
-        modBtn.appendChild(el('span', 'cso-nav-mod-title', mod.title));
-        modBtn.appendChild(el('span', 'cso-nav-mod-tag' + (isLiveRoute ? ' is-live' : ''), isLiveRoute ? 'D1' : 'CMS'));
-        modBtn.addEventListener('click', function () {
-          selectModule(folder.id, mod.id);
-          if (window.innerWidth <= 900) closeMobileDrawer();
+        folderBtn.appendChild(left);
+        folderBtn.appendChild(right);
+        folderBtn.addEventListener('click', function () {
+          if (!folderModules.length) {
+            selectModule(folder.id, folder.id);
+            if (window.innerWidth <= 900) closeMobileDrawer();
+            return;
+          }
+          if (CSOState.expandedFolders.has(folder.id)) CSOState.expandedFolders.delete(folder.id);
+          else CSOState.expandedFolders.add(folder.id);
+          persistOpenGroups();
+          renderNavigationTree();
         });
-        modList.appendChild(modBtn);
-      });
 
-      folderWrap.appendChild(folderBtn);
-      folderWrap.appendChild(modList);
-      dom.accordionNav.appendChild(folderWrap);
+        var modList = el('div', 'cso-nav-modules' + (isExpanded ? '' : ' is-collapsed'));
+        filteredModules.forEach(function (mod, idx) {
+          var isActiveMod = CSOState.activeModuleId === mod.id;
+          var isLiveRoute = !!(window.CSOLive && window.CSOLive.routes && window.CSOLive.routes[mod.id]);
+          var modBtn = el('button', 'cso-nav-mod-btn' + (isActiveMod ? ' is-active' : ''));
+          modBtn.type = 'button';
+          if (mod.title_or) modBtn.title = mod.title + ' · ' + mod.title_or;
+          var numMatch = String(mod.id || '').match(/-(\d{2,3})$/);
+          var modNum = numMatch ? String(Number(numMatch[1])).padStart(2, '0') : String(idx + 1).padStart(2, '0');
+          modBtn.appendChild(el('span', 'cso-nav-mod-num', modNum));
+          modBtn.appendChild(el('span', 'cso-nav-mod-title', mod.title));
+          modBtn.appendChild(el('span', 'cso-nav-mod-tag' + (isLiveRoute ? ' is-live' : ''), isLiveRoute ? 'D1' : 'CMS'));
+          modBtn.addEventListener('click', function () {
+            selectModule(folder.id, mod.id);
+            if (window.innerWidth <= 900) closeMobileDrawer();
+          });
+          modList.appendChild(modBtn);
+        });
+
+        folderWrap.appendChild(folderBtn);
+        folderWrap.appendChild(modList);
+        dom.accordionNav.appendChild(folderWrap);
+      }
 
       if (folder.id === 'folder-jobs-careers') {
-        var crLabel = 'careers publishing house roadmaps tracks pathways';
+        var crLabel = 'careers publishing house roadmaps tracks pathways କ୍ୟାରିୟର୍';
         if (!query || crLabel.indexOf(query) !== -1) {
           matchCount += 1;
           var crActive = CSOState.activeModuleId === CR_MODULE_ID;
@@ -584,11 +598,12 @@
     var mod = folder && folder.modules ? folder.modules.find(function (m) { return m.id === moduleId; }) : null;
 
     if (folder) {
-      var activeLabel = (mod && mod.title) || folder.title;
-      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = folder.title;
+      var folderDisplayTitle = getFolderDisplayTitle(folder);
+      var activeLabel = (mod && mod.title) || folderDisplayTitle;
+      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = folderDisplayTitle;
       if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = mod ? mod.title : 'Live D1 Workspace';
       if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = activeLabel;
-      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = mod ? (folder.title || 'Studio') : 'Live D1 Sync';
+      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = mod ? (folderDisplayTitle || 'Studio') : 'Live D1 Sync';
     }
 
     renderNavigationTree();
@@ -602,7 +617,7 @@
     if (window.location.hash !== '#folder-jobs-careers' && window.history && window.history.replaceState) {
       window.history.replaceState(null, '', '#folder-jobs-careers');
     }
-    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Jobs & Careers';
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Jobs';
     if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Jobs Publishing House';
     if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Jobs Publishing House';
     if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '3-Layer D1 · R2';
@@ -692,7 +707,7 @@
 
   function renderWorkspaceView(folderId, moduleId) {
     if (folderId === 'folder-jobs-careers' && window.CSOJobsPublishingStudio) {
-      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Jobs & Careers';
+      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Jobs';
       if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Jobs Publishing House';
       if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Jobs Publishing House';
       if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '3-Layer D1 · R2';

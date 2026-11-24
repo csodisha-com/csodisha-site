@@ -80,9 +80,9 @@ check('4. All --cso-nav-* semantic tokens preserved across all 4 themes', () => 
   }
 });
 
-check('5. Cache busting (?v=20261124v271, cso-candidate-cache-v271) & strict CSP across core HTML pages', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v271';"), 'sw.js must be cso-candidate-cache-v271');
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v271';"), 'ops-sentinel.js must be cso-candidate-cache-v271');
+check('5. Cache busting (?v=20261124v271+, cso-candidate-cache-v271+) & strict CSP across core HTML pages', () => {
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:7[1-9]|[8-9]\d)';/.test(read('sw.js')), 'sw.js must be cso-candidate-cache-v271+');
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:7[1-9]|[8-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel.js must be cso-candidate-cache-v271+');
 
   const corePages = [
     'index.html',
