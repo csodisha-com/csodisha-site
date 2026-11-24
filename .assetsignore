@@ -12,3 +12,8 @@ scripts
 _worker.js
 .wrangler
 wrangler.json
+
+AUDIT_REPORT.md
+package-lock.json
+templates
+v1.0.0-gold-snapshot.json
