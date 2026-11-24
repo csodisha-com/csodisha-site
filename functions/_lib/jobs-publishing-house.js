@@ -917,11 +917,19 @@ export async function handleJobsStudyOptions(env) {
   const safeAll = async (sql) => {
     try { const r = await db.prepare(sql).all(); return r.results || []; } catch { return []; }
   };
-  const [studyRows, mockRows, resRows] = await Promise.all([
+  const [studyArticleRows, studyRows, mockRows, resRows] = await Promise.all([
+    safeAll("SELECT id, title_en, slug, resource_type_badge, exam_board_tag FROM study_articles WHERE is_published = 1 ORDER BY updated_at DESC LIMIT 80"),
     safeAll("SELECT id, title, slug, item_type, exam_tag FROM study_library_items WHERE status = 'published' ORDER BY updated_at DESC LIMIT 60"),
     safeAll("SELECT id, title, slug, target_exam FROM mock_tests WHERE deleted_at IS NULL AND status = 'published' ORDER BY published_at DESC LIMIT 40"),
     safeAll("SELECT id, title, kind, exam, media_key FROM resources WHERE deleted_at IS NULL AND status = 'published' ORDER BY year DESC LIMIT 40")
   ]);
+  studyArticleRows.forEach(r => items.push({
+    id: `study_article:${r.id}`,
+    kind: r.resource_type_badge || 'Study Notes',
+    title: r.title_en,
+    tag: r.exam_board_tag || 'Study Library',
+    url: `/study-library/?slug=${encodeURIComponent(r.slug)}`
+  }));
   studyRows.forEach(r => items.push({
     id: `study:${r.id}`,
     kind: r.item_type || 'Study Material',
@@ -1459,25 +1467,56 @@ export async function handlePublicJobsListApi(request, env) {
   }, 200, { 'Cache-Control': PUBLIC_CACHE });
 }
 
-async function resolveLinkedStudyItems(db, linkedIds) {
-  if (!Array.isArray(linkedIds) || !linkedIds.length) return [];
+async function resolveLinkedStudyItems(db, linkedIds, jobId = '') {
   const out = [];
-  for (const raw of linkedIds.slice(0, 12)) {
-    const s = String(raw || '').trim();
-    if (!s) continue;
-    const [prefix, id] = s.includes(':') ? s.split(':', 2) : ['study', s];
+  const seen = new Set();
+  if (Array.isArray(linkedIds) && linkedIds.length) {
+    for (const raw of linkedIds.slice(0, 12)) {
+      const s = String(raw || '').trim();
+      if (!s || seen.has(s)) continue;
+      seen.add(s);
+      const [prefix, id] = s.includes(':') ? s.split(':', 2) : ['study', s];
+      try {
+        if (prefix === 'study_article') {
+          const r = await db.prepare('SELECT id, title_en, slug, resource_type_badge, exam_board_tag, summary_en FROM study_articles WHERE id = ? AND is_published = 1').bind(id).first();
+          if (r) out.push({ id: s, kind: r.resource_type_badge || 'Study Notes', title: r.title_en, tag: r.exam_board_tag || 'Study Library', summary: r.summary_en || '', url: `/study-library/?slug=${encodeURIComponent(r.slug)}` });
+        } else if (prefix === 'study') {
+          const r = await db.prepare('SELECT id, title, slug, item_type, exam_tag, summary FROM study_library_items WHERE id = ?').bind(id).first();
+          if (r) out.push({ id: s, kind: r.item_type || 'Study Material', title: r.title, tag: r.exam_tag || 'Study Library', summary: r.summary || '', url: `/study-library/item/${encodeURIComponent(r.slug || r.id)}/` });
+        } else if (prefix === 'mock') {
+          const r = await db.prepare('SELECT id, title, slug, target_exam, duration_minutes, total_marks FROM mock_tests WHERE id = ?').bind(id).first();
+          if (r) out.push({ id: s, kind: 'Mock Test', title: r.title, tag: r.target_exam || 'CBT Mock', summary: `${r.duration_minutes || 60} mins · ${r.total_marks || 100} marks`, url: `/mock-tests/?test=${encodeURIComponent(r.slug || r.id)}` });
+        } else if (prefix === 'resource') {
+          const r = await db.prepare('SELECT id, title, kind, exam, year, media_key FROM resources WHERE id = ?').bind(id).first();
+          if (r) out.push({ id: s, kind: r.kind === 'pyq' ? 'PYQ Paper' : 'Syllabus PDF', title: r.title, tag: r.exam || String(r.year || 'PDF'), summary: '', url: r.media_key ? `/api/media/${r.media_key}` : '/resources/' });
+        }
+      } catch { /* ignore missing linked table */ }
+    }
+  }
+  // v251: Reverse-sync published study_articles whose linked_job_ids_json references this jobId
+  if (jobId) {
     try {
-      if (prefix === 'study') {
-        const r = await db.prepare('SELECT id, title, slug, item_type, exam_tag, summary FROM study_library_items WHERE id = ?').bind(id).first();
-        if (r) out.push({ id: s, kind: r.item_type || 'Study Material', title: r.title, tag: r.exam_tag || 'Study Library', summary: r.summary || '', url: `/study-library/item/${encodeURIComponent(r.slug || r.id)}/` });
-      } else if (prefix === 'mock') {
-        const r = await db.prepare('SELECT id, title, slug, target_exam, duration_minutes, total_marks FROM mock_tests WHERE id = ?').bind(id).first();
-        if (r) out.push({ id: s, kind: 'Mock Test', title: r.title, tag: r.target_exam || 'CBT Mock', summary: `${r.duration_minutes || 60} mins · ${r.total_marks || 100} marks`, url: `/mock-tests/?test=${encodeURIComponent(r.slug || r.id)}` });
-      } else if (prefix === 'resource') {
-        const r = await db.prepare('SELECT id, title, kind, exam, year, media_key FROM resources WHERE id = ?').bind(id).first();
-        if (r) out.push({ id: s, kind: r.kind === 'pyq' ? 'PYQ Paper' : 'Syllabus PDF', title: r.title, tag: r.exam || String(r.year || 'PDF'), summary: '', url: r.media_key ? `/api/media/${r.media_key}` : '/resources/' });
-      }
-    } catch { /* ignore missing linked table */ }
+      const { results: reverseRows } = await db.prepare(
+        "SELECT id, title_en, slug, resource_type_badge, exam_board_tag, summary_en, linked_job_ids_json FROM study_articles WHERE is_published = 1 AND linked_job_ids_json LIKE ? ORDER BY updated_at DESC LIMIT 12"
+      ).bind(`%${jobId}%`).all();
+      (reverseRows || []).forEach(r => {
+        const key = `study_article:${r.id}`;
+        if (seen.has(key)) return;
+        let ids = [];
+        try { ids = JSON.parse(r.linked_job_ids_json || '[]'); } catch {}
+        if (Array.isArray(ids) && ids.includes(jobId)) {
+          seen.add(key);
+          out.push({
+            id: key,
+            kind: r.resource_type_badge || 'Study Notes',
+            title: r.title_en,
+            tag: r.exam_board_tag || 'Study Library',
+            summary: r.summary_en || '',
+            url: `/study-library/?slug=${encodeURIComponent(r.slug)}`
+          });
+        }
+      });
+    } catch { /* ignore if study_articles not migrated yet */ }
   }
   return out;
 }
@@ -1539,7 +1578,7 @@ export async function handlePublicJobsArticleApi(request, env) {
     .map(r => formatArticle(r, taxMap, false))
     .sort((a, b) => Number(a.is_expired) - Number(b.is_expired))
     .slice(0, 3);
-  const linkedStudyItems = await resolveLinkedStudyItems(env.DB, article.linked_study_ids);
+  const linkedStudyItems = await resolveLinkedStudyItems(env.DB, article.linked_study_ids, row.id);
 
   const cacheHeader = isPreview || previewToken ? 'no-store' : PUBLIC_CACHE;
   return json({

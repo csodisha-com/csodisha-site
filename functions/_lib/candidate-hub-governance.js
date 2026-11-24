@@ -444,7 +444,7 @@ export function canCandidateAccessModule(mod, accessTier, grantedModules = {}) {
 // =========================================================================
 // 2. CANDIDATE-FACING APIs (/api/candidate/*)
 // =========================================================================
-async function requireCandidateSession(request, env) {
+export async function requireCandidateSession(request, env) {
   const session = await getSessionFromRequest(request, env);
   if (!session) throw new HttpError(401, 'UNAUTHENTICATED', 'Unauthorized: Missing or invalid candidate session');
   const headerVer = request.headers.get('X-CSO-Session-Version');
@@ -647,11 +647,12 @@ export async function handleCandidateMatchesApi(request, env) {
     const relax = ODISHA_AGE_RELAXATION[cat] || 0;
     const effectiveMaxAge = 38 + relax; // Standard Odisha Group-B/C upper limit + category relaxation
 
-    const [jobs, jobArticles, schemes, schemeArticles] = await Promise.all([
+    const [jobs, jobArticles, schemes, schemeArticles, studyArticles] = await Promise.all([
       safeAll(env.DB, "SELECT id, title, title_or, slug, recruiting_body, qualification_tag, vacancies, deadline_date, official_apply_url, summary, state_location, age_limit_relaxation FROM jobs_directory_items WHERE status = 'published' ORDER BY updated_at DESC LIMIT 40"),
       safeAll(env.DB, "SELECT id, slug, title_en, title_or, organisation_en, qualification_level, qualification_summary, total_vacancies, last_date, official_apply_url, summary_en, location_district, min_age, max_age FROM job_articles WHERE is_published = 1 ORDER BY updated_at DESC LIMIT 40"),
       safeAll(env.DB, "SELECT id, title, title_or, slug, scheme_type, department_name, beneficiary_group, benefit_amount, application_deadline, official_apply_url, summary FROM schemes_directory_items WHERE status = 'published' ORDER BY updated_at DESC LIMIT 40"),
-      safeAll(env.DB, "SELECT id, slug, title_en, title_or, department_en, target_beneficiaries, benefit_amount_summary, last_date, is_ongoing, official_apply_url, summary_en, min_age, max_age, max_annual_income, allowed_categories_json, occupation_tag FROM scheme_articles WHERE is_published = 1 ORDER BY updated_at DESC LIMIT 40")
+      safeAll(env.DB, "SELECT id, slug, title_en, title_or, department_en, target_beneficiaries, benefit_amount_summary, last_date, is_ongoing, official_apply_url, summary_en, min_age, max_age, max_annual_income, allowed_categories_json, occupation_tag FROM scheme_articles WHERE is_published = 1 ORDER BY updated_at DESC LIMIT 40"),
+      safeAll(env.DB, "SELECT id, slug, title_en, title_or, resource_type_badge, difficulty_level, high_yield_priority, exam_board_tag, estimated_read_mins FROM study_articles WHERE is_published = 1 ORDER BY is_featured DESC, updated_at DESC LIMIT 20")
     ]);
 
     const scoreItem = (hay, itemQual) => {
@@ -741,11 +742,24 @@ export async function handleCandidateMatchesApi(request, env) {
     });
     const matchedSchemes = [...matchedFromSchemeArts, ...matchedFromSchemeDir].sort((a, b) => b.match_score - a.match_score).slice(0, 15);
 
+    const matchedStudy = (studyArticles || []).map(st => ({
+      id: st.id,
+      kind: 'study',
+      title: st.title_en,
+      title_or: st.title_or || '',
+      resource_type: st.resource_type_badge || 'Study Notes',
+      priority: st.high_yield_priority || 'High',
+      board: st.exam_board_tag || 'Study Library',
+      read_mins: Number(st.estimated_read_mins || 10),
+      url: `/study-library/?slug=${encodeURIComponent(st.slug)}`
+    })).slice(0, 12);
+
     return json({
       ok: true,
       criteria: { qualification: qual, category: cat, age: age || null, district: dist, relaxation_years: relax, effective_max_age: effectiveMaxAge },
       jobs: matchedJobs,
-      schemes: matchedSchemes
+      schemes: matchedSchemes,
+      study_materials: matchedStudy
     });
   } catch (e) {
     return restrictedResponse(e);
@@ -759,13 +773,19 @@ export async function handleCandidateWorkspaceApi(request, env) {
     const uid = session.userId;
 
     if (request.method === 'GET') {
-      const [lockerRow, notesRow, mocks, bookmarks] = await Promise.all([
+      const [lockerRow, notesRow, mocks, bookmarks, studyProgRows, studyTotalRow] = await Promise.all([
         safeFirst(env.DB, 'SELECT locker_data, updated_at FROM candidate_lockers WHERE candidate_id = ?', [uid]),
         safeFirst(env.DB, 'SELECT notes_content, updated_at FROM candidate_notes WHERE candidate_id = ?', [uid]),
         safeAll(env.DB, 'SELECT id, exam_name, score, total_marks, accuracy_rate, tested_at FROM candidate_mock_scores WHERE candidate_id = ? ORDER BY tested_at DESC LIMIT 50', [uid]),
-        safeAll(env.DB, 'SELECT id, post_id, category, post_title, post_url, deadline_date, created_at FROM candidate_bookmarks WHERE candidate_id = ? ORDER BY created_at DESC LIMIT 100', [uid])
+        safeAll(env.DB, 'SELECT id, post_id, category, post_title, post_url, deadline_date, created_at FROM candidate_bookmarks WHERE candidate_id = ? ORDER BY created_at DESC LIMIT 100', [uid]),
+        safeAll(env.DB, 'SELECT p.article_id, p.status, p.needs_revision, p.mcq_score, p.mcq_total, p.streak_days, p.last_studied_at, a.slug, a.title_en FROM candidate_study_progress p LEFT JOIN study_articles a ON a.id = p.article_id WHERE p.user_id = ? ORDER BY p.last_studied_at DESC LIMIT 50', [uid]),
+        safeFirst(env.DB, 'SELECT COUNT(*) AS n FROM study_articles WHERE is_published = 1')
       ]);
       const locker = lockerRow ? parseJson(lockerRow.locker_data, {}) : {};
+      const sProg = studyProgRows || [];
+      const sCompleted = sProg.filter(x => x.status === 'completed').length;
+      const sTotal = Number((studyTotalRow && studyTotalRow.n) || 0);
+      const sStreak = sProg.reduce((m, x) => Math.max(m, Number(x.streak_days || 0)), 0);
       return json({
         ok: true,
         locker,
@@ -774,7 +794,19 @@ export async function handleCandidateWorkspaceApi(request, env) {
         bookmarks: bookmarks.map(b => ({
           id: b.id, postId: b.post_id, category: b.category,
           postTitle: b.post_title, postUrl: b.post_url || '', deadlineDate: b.deadline_date || null, createdAt: b.created_at
-        }))
+        })),
+        study_progress: {
+          total_published: sTotal,
+          completed_count: sCompleted,
+          completion_pct: sTotal > 0 ? Math.min(100, Math.round((sCompleted / sTotal) * 100)) : 0,
+          streak_days: sStreak,
+          revision_queue: sProg.filter(x => x.needs_revision).map(x => ({
+            article_id: x.article_id,
+            title_en: x.title_en || '',
+            url: x.slug ? `/study-library/?slug=${encodeURIComponent(x.slug)}` : '/study-library/'
+          })),
+          recent: sProg.slice(0, 6)
+        }
       });
     }
 

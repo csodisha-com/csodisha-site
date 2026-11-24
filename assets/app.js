@@ -1674,20 +1674,47 @@ function csoMapSchemeArticlesToUpdates(data){
   });
 }
 
-/* Load published updates from live D1 /api/public/jobs + /api/public/schemes + /api/events/upcoming, falling back to static JSON when offline. */
+function csoMapStudyArticlesToUpdates(data){
+  if(!data||!Array.isArray(data.items)||!data.items.length)return [];
+  const safeId=(raw,idx)=>'study-'+String(raw||idx).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  return data.items.slice(0,12).map((a,idx)=>{
+    const isOr=S.lang==='or';
+    const title=(isOr&&a.title_or)?a.title_or:(a.title_en||'Study Resource');
+    const srcParts=[a.exam_board_tag||a.resource_type_badge||'Study Library',a.estimated_read_mins?(a.estimated_read_mins+' min read'):''].filter(Boolean);
+    const dt=String(a.published_at||a.updated_at||'2026-11-24').slice(0,10);
+    const articleUrl='https://csodisha.com/study-library/?slug='+encodeURIComponent(a.slug||'');
+    return {
+      id:safeId(a.slug||a.id,idx),
+      cat:'Education',
+      tag:'EDUCATION',
+      title:title,
+      src:srcParts.join(' · '),
+      date:dt,
+      badges:[a.resource_type_badge||'Study Notes',a.high_yield_priority||'High'],
+      body:String(a.summary_en||title).trim(),
+      url:articleUrl,
+      article_href:'/study-library/?slug='+encodeURIComponent(a.slug||''),
+      status:'published'
+    };
+  });
+}
+
+/* Load published updates from live D1 /api/public/jobs + /api/public/schemes + /api/public/study + /api/events/upcoming, falling back to static JSON when offline. */
 function csoLoadPublishedUpdates(){
   return Promise.all([
     fetch('/api/public/jobs?limit=12',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
     fetch('/api/public/schemes?limit=12',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
+    fetch('/api/public/study?limit=12',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
     fetch('/api/events/upcoming',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)
   ])
-    .then(([jobsData,schemesData,ev])=>{
+    .then(([jobsData,schemesData,studyData,ev])=>{
       const jobUpdates=csoMapJobArticlesToUpdates(jobsData);
       const schemeUpdates=csoMapSchemeArticlesToUpdates(schemesData);
+      const studyUpdates=csoMapStudyArticlesToUpdates(studyData);
       const evUpdates=csoMapEventsToUpdates(ev)||[];
       const merged=[];
       const seen=new Set();
-      [...jobUpdates,...schemeUpdates,...evUpdates].forEach(item=>{
+      [...jobUpdates,...schemeUpdates,...studyUpdates,...evUpdates].forEach(item=>{
         if(!item||seen.has(item.id))return;
         seen.add(item.id);
         merged.push(item);

@@ -67,6 +67,14 @@ import {
   handlePublicSchemesArticleApi,
   handlePublicSchemesTelemetryApi
 } from './functions/_lib/schemes-publishing-house.js';
+import {
+  handlePublicStudyTreeApi,
+  handlePublicStudyListApi,
+  handlePublicStudyArticleApi,
+  handlePublicStudyTelemetryApi,
+  handlePublicStudyDoubtsApi,
+  handleCandidateStudyProgressApi
+} from './functions/_lib/study-publishing-house.js';
 import { handlePublicMarketingBannersApi } from './functions/_lib/marketing-advertising-batch1.js';
 import { handlePublicMarketingRefApi } from './functions/_lib/marketing-advertising-batch2.js';
 import { handlePublicMarketingLandingPagesApi } from './functions/_lib/marketing-advertising-batch3.js';
@@ -353,6 +361,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/events/upcoming', '/api/config/public', '/api/events/calendar/odisha-all-exams.ics', '/api/events/calendar/opsc-ossc-osssc-deadlines.ics', '/api/events/calendar/admit-cards-results.ics', '/api/events/calendar/workshops-webinars.ics',
     '/api/public/jobs', '/api/public/jobs/tree', '/api/public/jobs/article', '/jobs/', '/jobs-careers/',
     '/api/public/schemes', '/api/public/schemes/tree', '/api/public/schemes/article', '/schemes/', '/schemes-benefits/',
+    '/api/public/study', '/api/public/study/tree', '/api/public/study/article', '/study-library/', '/study/',
     '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
   const allUrls = new Set(basePaths.map(p => `${origin}${p}`));
@@ -932,6 +941,44 @@ export default {
     if (pathname === '/api/public/schemes/telemetry' && request.method === 'POST') {
       return handlePublicSchemesTelemetryApi(request, env);
     }
+    if (pathname === '/api/public/study/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
+      const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
+      if (edgeCache && isAnonGet && !bypass) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const treeRes = await handlePublicStudyTreeApi(request, env);
+      if (isAnonGet && !bypass && treeRes.status === 200) recordPublicCachePut(edgeCache, request, treeRes, ctx);
+      return treeRes;
+    }
+    if (pathname === '/api/public/study' && (request.method === 'GET' || request.method === 'HEAD')) {
+      const bypass = url.searchParams.has('refresh') || url.searchParams.has('_cb');
+      if (edgeCache && isAnonGet && !bypass) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const listRes = await handlePublicStudyListApi(request, env);
+      if (isAnonGet && !bypass && listRes.status === 200) recordPublicCachePut(edgeCache, request, listRes, ctx);
+      return listRes;
+    }
+    if (pathname === '/api/public/study/article' && (request.method === 'GET' || request.method === 'HEAD')) {
+      const isPrev = url.searchParams.has('preview_token') || url.searchParams.has('refresh') || url.searchParams.has('_cb');
+      if (edgeCache && isAnonGet && !isPrev) {
+        const hit = await edgeCache.match(request);
+        if (hit) return hit;
+      }
+      const artRes = await handlePublicStudyArticleApi(request, env);
+      if (isAnonGet && !isPrev && artRes.status === 200 && !(artRes.headers.get('Cache-Control') || '').includes('no-store')) {
+        recordPublicCachePut(edgeCache, request, artRes, ctx);
+      }
+      return artRes;
+    }
+    if (pathname === '/api/public/study/telemetry' && request.method === 'POST') {
+      return handlePublicStudyTelemetryApi(request, env);
+    }
+    if (pathname === '/api/public/study/doubts' && request.method === 'POST') {
+      return handlePublicStudyDoubtsApi(request, env);
+    }
     if (pathname === '/api/public/schemes-directory/overview' && (request.method === 'GET' || request.method === 'HEAD')) {
       return handlePublicSchemesOverviewApi(request, env);
     }
@@ -1139,6 +1186,9 @@ export default {
     }
     if (pathname === '/api/candidate/assigned-items/ack' && request.method === 'POST') {
       return handleCandidateAssignedAckApi(request, env);
+    }
+    if (pathname === '/api/candidate/study-progress' && (request.method === 'GET' || request.method === 'POST')) {
+      return handleCandidateStudyProgressApi(request, env);
     }
     if (pathname === '/candidate' || pathname === '/candidate/') {
       return Response.redirect(new URL('/student-dashboard/', url.origin).toString(), 301);

@@ -92,6 +92,15 @@ export async function handleOverviewStats(request, env) {
         counts.draft = Math.max(0, counts.total - counts.published);
       }
     }
+    if (key === 'study') {
+      const sta = await safeFirst(db, 'SELECT COUNT(*) AS total, COALESCE(SUM(is_published), 0) AS published FROM study_articles');
+      if (sta) {
+        counts.available = true;
+        counts.total += Number(sta.total || 0);
+        counts.published += Number(sta.published || 0);
+        counts.draft = Math.max(0, counts.total - counts.published);
+      }
+    }
     pillars.push({ key, label: def.label, ...counts });
   }
   const hp = await safeFirst(db,
@@ -208,12 +217,13 @@ export async function handlePurgeCaches(request, env, actor) {
 
 // ---------- GET /api/admin/command-index (palette search corpus) ----------
 export async function handleCommandIndex(request, env) {
-  const [blocks, cats, menus, jobArts, schemeArts] = await Promise.all([
+  const [blocks, cats, menus, jobArts, schemeArts, studyArts] = await Promise.all([
     safeAll(env.DB, 'SELECT id, section_key, title_en, is_published FROM homepage_blocks ORDER BY section_key, sort_order LIMIT 200'),
     safeAll(env.DB, 'SELECT id, name_en, name_or, landing_url, status FROM nav_categories ORDER BY sort_order LIMIT 200'),
     safeAll(env.DB, "SELECT id, label_en, label_or, url, status FROM nav_menu_items WHERE menu_location = 'header' ORDER BY sort_order LIMIT 200"),
     safeAll(env.DB, 'SELECT id, slug, title_en, organisation_en, is_published FROM job_articles ORDER BY updated_at DESC LIMIT 100'),
-    safeAll(env.DB, 'SELECT id, slug, title_en, department_en, is_published FROM scheme_articles ORDER BY updated_at DESC LIMIT 100')
+    safeAll(env.DB, 'SELECT id, slug, title_en, department_en, is_published FROM scheme_articles ORDER BY updated_at DESC LIMIT 100'),
+    safeAll(env.DB, 'SELECT id, slug, title_en, resource_type_badge, exam_board_tag, is_published FROM study_articles ORDER BY updated_at DESC LIMIT 100')
   ]);
   return json({
     ok: true,
@@ -221,7 +231,8 @@ export async function handleCommandIndex(request, env) {
     categories: cats || [],
     menu_items: menus || [],
     job_articles: jobArts || [],
-    scheme_articles: schemeArts || []
+    scheme_articles: schemeArts || [],
+    study_articles: studyArts || []
   });
 }
 

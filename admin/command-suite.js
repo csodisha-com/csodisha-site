@@ -617,6 +617,9 @@
     items.push({ group: 'Schemes Publishing House', label: 'Schemes Publishing House › + Publish New Scheme Article', keywords: 'schemes welfare subhadra scholarship cm-kisan dbt', run: function () { if (studio().openSchemesPublishingTab) studio().openSchemesPublishingTab('new'); else goFolder('folder-schemes-benefits'); } });
     items.push({ group: 'Schemes Publishing House', label: 'Schemes Publishing House › 3-Layer Scheme Hierarchy', keywords: 'scheme taxonomy government domain benefit type', run: function () { if (studio().openSchemesPublishingTab) studio().openSchemesPublishingTab('taxonomy'); else goFolder('folder-schemes-benefits'); } });
     items.push({ group: 'Schemes Publishing House', label: 'Schemes Publishing House › Reusable Bilingual Snippets', keywords: 'npci dbt income resident otr snippets', run: function () { if (studio().openSchemesPublishingTab) studio().openSchemesPublishingTab('snippets'); else goFolder('folder-schemes-benefits'); } });
+    items.push({ group: 'Study Library Studio', label: 'Study Library Studio › + Publish New Study Material', keywords: 'study notes syllabus pyq mcq flashcards opsc ossc', run: function () { if (studio().openStudyPublishingTab) studio().openStudyPublishingTab('new'); else goFolder('folder-study-library'); } });
+    items.push({ group: 'Study Library Studio', label: 'Study Library Studio › 3-Layer Curriculum Hierarchy', keywords: 'exam track subject paper chapter taxonomy', run: function () { if (studio().openStudyPublishingTab) studio().openStudyPublishingTab('taxonomy'); else goFolder('folder-study-library'); } });
+    items.push({ group: 'Study Library Studio', label: 'Study Library Studio › Reader Doubts & PYQ Corrections Queue', keywords: 'doubts pyq typo corrections feedback', run: function () { if (studio().openStudyPublishingTab) studio().openStudyPublishingTab('doubts'); else goFolder('folder-study-library'); } });
     document.querySelectorAll('.cso-create-item[data-create-target]').forEach(function (b) {
       var t = b.getAttribute('data-create-target');
       var strong = b.querySelector('strong');
@@ -657,6 +660,12 @@
       out.push({ group: 'Scheme Articles', label: sc.title_en + (sc.is_published ? '' : ' · draft'), keywords: sc.department_en || sc.slug || '', run: function () {
         if (studio().openSchemesPublishingTab) studio().openSchemesPublishingTab('articles');
         else goFolder('folder-schemes-benefits');
+      } });
+    });
+    (r.study_articles || []).forEach(function (st) {
+      out.push({ group: 'Study Modules', label: st.title_en + (st.is_published ? '' : ' · draft'), keywords: (st.resource_type_badge || '') + ' ' + (st.exam_board_tag || '') + ' ' + (st.slug || ''), run: function () {
+        if (studio().openStudyPublishingTab) studio().openStudyPublishingTab('articles');
+        else goFolder('folder-study-library');
       } });
     });
     return out;

@@ -96,6 +96,13 @@ import {
   handleSchemesMediaUpload
 } from '../../_lib/schemes-publishing-house.js';
 import {
+  handleStudyTaxonomyAdmin,
+  handleStudyArticlesAdmin,
+  handleStudyMediaUpload,
+  handleStudyJobOptions,
+  handleStudyDoubtsAdmin
+} from '../../_lib/study-publishing-house.js';
+import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
   handleFeedbackAdmin,
@@ -443,6 +450,19 @@ async function dispatchAdminApi(request, env) {
         break;
       case 'community-directory':
         return await handleCommunityDirectoryStudio(request, env, actor, id, sub, extra);
+      case 'study':
+        if (id === 'taxonomy') return await handleStudyTaxonomyAdmin(request, env, actor, sub, extra);
+        if (id === 'articles') return await handleStudyArticlesAdmin(request, env, actor, sub, extra);
+        if (id === 'upload') {
+          await rateLimit(env, `admin-upload:${actor.userId}`, 40, 600);
+          return await handleStudyMediaUpload(request, env, actor);
+        }
+        if (id === 'job-options' && method === 'GET') return await handleStudyJobOptions(env);
+        if (id === 'doubts') return await handleStudyDoubtsAdmin(request, env, actor, sub);
+        if (id && (sub === 'preview-token' || sub === 'revisions' || sub === 'rollback')) {
+          return await handleStudyArticlesAdmin(request, env, actor, id, sub);
+        }
+        break;
       case 'study-library':
         return await handleStudyLibraryStudio(request, env, actor, id, sub, extra);
       case 'edu': {
