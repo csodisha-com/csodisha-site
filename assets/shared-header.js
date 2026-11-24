@@ -817,7 +817,7 @@
     });
   }
 
-  const JOBS_FLYOUT_CACHE_KEY = 'cso_jobs_flyout_v276';
+  const JOBS_FLYOUT_CACHE_KEY = 'cso_jobs_flyout_v277';
   let jobsFlyoutData = null;
   let jobsFlyoutFetchStarted = false;
 
@@ -889,6 +889,12 @@
     function activateSector(sec, itemEl, openStage2) {
       stage1List.querySelectorAll('.cso-js1-item.is-active').forEach(elItem => elItem.classList.remove('is-active'));
       if (itemEl) itemEl.classList.add('is-active');
+      const isDirectOnly = String((sec && sec.slug) || '').toLowerCase() === 'foreign';
+      if (isDirectOnly) {
+        cascade.classList.remove('is-stage2-open');
+        stage2El.replaceChildren();
+        return;
+      }
       renderStage2Contents(stage2El, sec, isOr);
       if (openStage2 && window.innerWidth >= 1100) {
         cascade.classList.add('is-stage2-open');
@@ -901,7 +907,9 @@
     }
 
     sectors.forEach(sec => {
-      const li = el('li', 'cso-js1-item');
+      const slugLower = String(sec.slug || '').toLowerCase();
+      const hasStage2 = slugLower !== 'foreign';
+      const li = el('li', 'cso-js1-item' + (hasStage2 ? '' : ' is-direct-only'));
       li.dataset.jsSector = sec.slug || '';
 
       const row = el('div', 'cso-js1-row');
@@ -912,36 +920,42 @@
       const ic = el('span', 'cso-js1-icon', sec.icon || '💼');
       ic.setAttribute('aria-hidden', 'true');
       left.append(ic, el('span', 'cso-js1-title', isOr ? (sec.title_or || sec.title_en) : sec.title_en));
+      a.appendChild(left);
 
-      const arrow = el('span', 'cso-js1-arrow', '›');
-      arrow.setAttribute('aria-hidden', 'true');
+      if (hasStage2) {
+        const arrow = el('span', 'cso-js1-arrow', '›');
+        arrow.setAttribute('aria-hidden', 'true');
+        a.appendChild(arrow);
+      }
 
-      a.append(left, arrow);
-
-      const mobExp = el('button', 'cso-js1-mob-exp', '▾');
-      mobExp.type = 'button';
-      mobExp.setAttribute('aria-expanded', 'false');
-      mobExp.setAttribute('aria-label', 'Expand ' + (sec.title_en || 'sector') + ' regions');
-      mobExp.addEventListener('click', ev => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        const isOpen = li.classList.toggle('is-mob-open');
-        mobExp.setAttribute('aria-expanded', String(isOpen));
-      });
-
-      row.append(a, mobExp);
-      li.append(row, buildMobileAccordionSub(sec, isOr));
+      row.appendChild(a);
+      if (hasStage2) {
+        const mobExp = el('button', 'cso-js1-mob-exp', '▾');
+        mobExp.type = 'button';
+        mobExp.setAttribute('aria-expanded', 'false');
+        mobExp.setAttribute('aria-label', 'Expand ' + (sec.title_en || 'sector') + ' regions');
+        mobExp.addEventListener('click', ev => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          const isOpen = li.classList.toggle('is-mob-open');
+          mobExp.setAttribute('aria-expanded', String(isOpen));
+        });
+        row.appendChild(mobExp);
+        li.append(row, buildMobileAccordionSub(sec, isOr));
+      } else {
+        li.appendChild(row);
+      }
 
       li.addEventListener('mouseenter', () => {
         if (window.innerWidth < 1100) return;
-        activateSector(sec, li, true);
+        activateSector(sec, li, hasStage2);
       });
       a.addEventListener('focus', () => {
         if (window.innerWidth < 1100) return;
-        activateSector(sec, li, true);
+        activateSector(sec, li, hasStage2);
       });
       a.addEventListener('keydown', ev => {
-        if (ev.key === 'ArrowRight' && window.innerWidth >= 1100) {
+        if (ev.key === 'ArrowRight' && hasStage2 && window.innerWidth >= 1100) {
           ev.preventDefault();
           activateSector(sec, li, true);
           const firstS2 = stage2El.querySelector('a');

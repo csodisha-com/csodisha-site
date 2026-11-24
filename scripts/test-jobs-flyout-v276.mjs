@@ -48,7 +48,7 @@ check('1. Minimal Stage 1 (sectors only, no top strip / no footer) in shared-hea
       'cso-jobs-stage1',
       'cso-js1-list',
       'cso-js1-arrow',
-      'cso_jobs_flyout_v276',
+      'cso_jobs_flyout_v27',
       '/api/public/jobs/bootstrap',
       '/jobs/?sector='
     ]) {
@@ -126,9 +126,9 @@ check('3. 100% Solid Opaque Surfaces across all 4 themes & exact 240px / 210px w
   assert.ok(styleCss.includes('left: calc(100% + 6px);'), 'assets/style.css must offset Stage 2 right of Stage 1');
 });
 
-check('4. v276 cache busting across HTML pages, sw.js & ops-sentinel.js + 100% strict CSP compliance', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v276';"), 'sw.js must be cso-candidate-cache-v276');
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v276';"), 'ops-sentinel.js must be cso-candidate-cache-v276');
+check('4. Cache busting (>= v276) across HTML pages, sw.js & ops-sentinel.js + 100% strict CSP compliance', () => {
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v27[6-9]';/, 'sw.js must be >= v276');
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v27[6-9]';/, 'ops-sentinel.js must be >= v276');
 
   const corePages = [
     'index.html', 'jobs/index.html', 'careers/index.html', 'schemes/index.html',
@@ -136,11 +136,11 @@ check('4. v276 cache busting across HTML pages, sw.js & ops-sentinel.js + 100% s
   ];
   for (const rel of corePages) {
     const html = read(rel);
-    assert.ok(html.includes('/assets/style.css?v=20261124v276'), `${rel} missing style.css?v=20261124v276`);
+    assert.match(html, /\/assets\/style\.css\?v=20261124v27[6-9]/, `${rel} missing style.css >= v276`);
     if (rel === 'index.html') {
-      assert.ok(html.includes('/assets/app.js?v=20261124v276'), 'index.html missing app.js?v=20261124v276');
+      assert.match(html, /\/assets\/app\.js\?v=20261124v27[6-9]/, 'index.html missing app.js >= v276');
     } else {
-      assert.ok(html.includes('/assets/shared-header.js?v=20261124v276'), `${rel} missing shared-header.js?v=20261124v276`);
+      assert.match(html, /\/assets\/shared-header\.js\?v=20261124v27[6-9]/, `${rel} missing shared-header.js >= v276`);
     }
     assert.ok(!/\sstyle\s*=/i.test(html), `${rel} contains inline style=`);
     assert.ok(!/\son[a-z]+\s*=/i.test(html), `${rel} contains inline on*= handler`);

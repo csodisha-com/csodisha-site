@@ -326,6 +326,7 @@
   function syncSidebarAndFlyoutCache(bustSession) {
     if (bustSession) {
       try {
+        sessionStorage.removeItem('cso_jobs_flyout_v277');
         sessionStorage.removeItem('cso_jobs_flyout_v276');
         sessionStorage.removeItem('cso_jobs_flyout_v275');
       } catch (_e) {}

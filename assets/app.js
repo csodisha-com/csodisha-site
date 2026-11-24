@@ -243,7 +243,7 @@ function nav(){
   });
   return out;
  };
- const JOBS_FLYOUT_CACHE_KEY='cso_jobs_flyout_v276';
+ const JOBS_FLYOUT_CACHE_KEY='cso_jobs_flyout_v277';
  const JOBS_DEFAULT_SECTORS=[
   {id:'jtax_l1_government',slug:'government',icon:'🏛️',title_en:'Government',title_or:'ସରକାରୀ ଚାକିରି'},
   {id:'jtax_l1_private',slug:'private',icon:'💼',title_en:'Private',title_or:'ବେସରକାରୀ ଚାକିରି'},
@@ -295,6 +295,12 @@ function nav(){
   const activate=(sec,li,openS2)=>{
    s1List.querySelectorAll('.cso-js1-item.is-active').forEach(x=>x.classList.remove('is-active'));
    if(li)li.classList.add('is-active');
+   const isDirectOnly=String((sec&&sec.slug)||'').toLowerCase()==='foreign';
+   if(isDirectOnly){
+    cascade.classList.remove('is-stage2-open');
+    stage2.replaceChildren();
+    return;
+   }
    renderStage2(stage2,sec,isOr);
    if(openS2&&window.innerWidth>=1100){
     cascade.classList.add('is-stage2-open');
@@ -303,22 +309,33 @@ function nav(){
    }
   };
   sectors.forEach(sec=>{
-   const li=mk('li','cso-js1-item');li.dataset.jsSector=sec.slug||'';
+   const slugLower=String(sec.slug||'').toLowerCase();
+   const hasStage2=slugLower!=='foreign';
+   const li=mk('li','cso-js1-item'+(hasStage2?'':' is-direct-only'));li.dataset.jsSector=sec.slug||'';
    const row=mk('div','cso-js1-row');
    const a=mk('a','cso-js1-link');a.href='/jobs/?sector='+encodeURIComponent(sec.slug||'government');
    const lf=mk('span','cso-js1-left');
    const ic=mk('span','cso-js1-icon',sec.icon||'💼');ic.setAttribute('aria-hidden','true');
    lf.append(ic,mk('span','cso-js1-title',isOr?(sec.title_or||sec.title_en):sec.title_en));
-   const arr=mk('span','cso-js1-arrow','›');arr.setAttribute('aria-hidden','true');
-   a.append(lf,arr);
-   const mExp=mk('button','cso-js1-mob-exp','▾');mExp.type='button';
-   mExp.setAttribute('aria-expanded','false');mExp.setAttribute('aria-label','Expand '+(sec.title_en||'sector')+' regions');
-   mExp.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();const op=li.classList.toggle('is-mob-open');mExp.setAttribute('aria-expanded',String(op));});
-   row.append(a,mExp);li.append(row,buildMobSub(sec,isOr));
-   li.addEventListener('mouseenter',()=>{if(window.innerWidth>=1100)activate(sec,li,true);});
-   a.addEventListener('focus',()=>{if(window.innerWidth>=1100)activate(sec,li,true);});
+   a.appendChild(lf);
+   if(hasStage2){
+    const arr=mk('span','cso-js1-arrow','›');arr.setAttribute('aria-hidden','true');
+    a.appendChild(arr);
+   }
+   row.appendChild(a);
+   if(hasStage2){
+    const mExp=mk('button','cso-js1-mob-exp','▾');mExp.type='button';
+    mExp.setAttribute('aria-expanded','false');mExp.setAttribute('aria-label','Expand '+(sec.title_en||'sector')+' regions');
+    mExp.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();const op=li.classList.toggle('is-mob-open');mExp.setAttribute('aria-expanded',String(op));});
+    row.appendChild(mExp);
+    li.append(row,buildMobSub(sec,isOr));
+   }else{
+    li.appendChild(row);
+   }
+   li.addEventListener('mouseenter',()=>{if(window.innerWidth>=1100)activate(sec,li,hasStage2);});
+   a.addEventListener('focus',()=>{if(window.innerWidth>=1100)activate(sec,li,hasStage2);});
    a.addEventListener('keydown',ev=>{
-    if(ev.key==='ArrowRight'&&window.innerWidth>=1100){ev.preventDefault();activate(sec,li,true);const f=stage2.querySelector('a');if(f)f.focus();}
+    if(ev.key==='ArrowRight'&&hasStage2&&window.innerWidth>=1100){ev.preventDefault();activate(sec,li,true);const f=stage2.querySelector('a');if(f)f.focus();}
     else if(ev.key==='ArrowDown'){ev.preventDefault();const n=li.nextElementSibling;if(n){const na=n.querySelector('.cso-js1-link');if(na)na.focus();}}
     else if(ev.key==='ArrowUp'){ev.preventDefault();const p=li.previousElementSibling;if(p){const pa=p.querySelector('.cso-js1-link');if(pa)pa.focus();}}
    });
