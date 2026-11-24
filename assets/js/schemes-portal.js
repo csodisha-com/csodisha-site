@@ -899,16 +899,15 @@
     var l2Nodes = state.nodes.filter(function (n) { return Number(n.level) === 2 && (!state.filters.l1 || n.parent_id === state.filters.l1); });
     var l3Nodes = state.nodes.filter(function (n) { return Number(n.level) === 3 && (!state.filters.l2 || n.parent_id === state.filters.l2); });
 
-    cGrid.appendChild(makeSel('1. Gov Level', [['', 'All Gov Levels']].concat(l1Nodes.map(function (n) { return [n.id, pick(n, 'title') + ' (' + (n.published_schemes_count || 0) + ')']; })), state.filters.l1, function (v) { state.filters.l1 = v; state.filters.l2 = ''; state.filters.l3 = ''; loadPortalSchemes(mount); }));
-    cGrid.appendChild(makeSel('2. Welfare Domain', [['', 'All Domains']].concat(l2Nodes.map(function (n) { return [n.id, pick(n, 'title') + ' (' + (n.published_schemes_count || 0) + ')']; })), state.filters.l2, function (v) { state.filters.l2 = v; state.filters.l3 = ''; loadPortalSchemes(mount); }));
-    cGrid.appendChild(makeSel('3. Benefit Type', [['', 'All Benefit Types']].concat(l3Nodes.map(function (n) { return [n.id, pick(n, 'title') + ' (' + (n.published_schemes_count || 0) + ')']; })), state.filters.l3, function (v) { state.filters.l3 = v; loadPortalSchemes(mount); }));
+    cGrid.appendChild(makeSel('1. Welfare Domain', [['', 'All Domains']].concat(l2Nodes.map(function (n) { return [n.id, pick(n, 'title') + ' (' + (n.published_schemes_count || 0) + ')']; })), state.filters.l2, function (v) { state.filters.l2 = v; state.filters.l3 = ''; loadPortalSchemes(mount); }));
+    cGrid.appendChild(makeSel('2. Benefit Type', [['', 'All Benefit Types']].concat(l3Nodes.map(function (n) { return [n.id, pick(n, 'title') + ' (' + (n.published_schemes_count || 0) + ')']; })), state.filters.l3, function (v) { state.filters.l3 = v; loadPortalSchemes(mount); }));
 
     var qF = el('div', 'sp-field');
-    var qLbl = el('label', 'sp-label', '4. Search Schemes');
+    var qLbl = el('label', 'sp-label', '3. Search Schemes');
     qLbl.setAttribute('for', 'sp-portal-search');
     qF.appendChild(qLbl);
     var qI = el('input', 'sp-input'); qI.id = 'sp-portal-search'; qI.type = 'search';
-    qI.placeholder = state.lang === 'or' ? 'ଯୋଜନା, ଛାତ୍ରବୃତ୍ତି କିମ୍ବା ବିଭାଗ ଖୋଜନ୍ତୁ...' : 'Search by scheme name, department or benefit...';
+    qI.placeholder = state.lang === 'or' ? 'ଯୋଜନା, ଛାତ୍ରବୃତ୍ତି କିମ୍ବା ବିଭାଗ ଖୋଜନ୍ତୁ...' : 'Search by scheme name, department, or benefit...';
     qI.value = state.filters.search;
     var qt = null;
     qI.addEventListener('input', function () { state.filters.search = qI.value.trim(); clearTimeout(qt); qt = setTimeout(function () { loadPortalSchemes(mount); }, 180); });

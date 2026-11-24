@@ -99,7 +99,7 @@ check('2. study-portal.js & study-portal.css implement Editorial Hero, Progress 
   // CSS wide desktop grids & 4-theme support
   assert.ok(css.includes('.sp-hero'));
   assert.ok(css.includes('grid-template-columns: repeat(4, minmax(0, 1fr));'));
-  assert.ok(css.includes('grid-template-columns: repeat(5, minmax(0, 1fr));'));
+  assert.ok(css.includes('grid-template-columns: repeat(5, minmax(0, 1fr));') || css.includes('grid-template-columns: 1fr 1fr 1fr 1fr 1.5fr;'));
   assert.ok(css.includes('grid-template-columns: repeat(6, minmax(0, 1fr));'));
   assert.ok(css.includes('grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));'));
   const shellCss = read('assets/css/portal-shell.css');

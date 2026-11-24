@@ -15,7 +15,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 16px;
-  padding: clamp(22px, 3.2vw, 34px) clamp(20px, 3.2vw, 34px);
+  padding: 1.5rem 1.75rem;
   background: var(--cso-hero-gradient, linear-gradient(135deg, #0b3948 0%, #115569 62%, #1b6d7c 100%));
   color: var(--cso-hero-ink, #ffffff);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -204,8 +204,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 9px;
-  padding: 12px 13px;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
   border-radius: 13px;
   border: 1.5px solid var(--cso-border-subtle, #d8e1e9);
   background: var(--cso-card-subtle, #eef3f7);
@@ -265,10 +265,10 @@
   color: #ffffff;
 }
 
-/* 4-Column Cascading Filter Bar + Quick-Filter Pill Bar */
+/* 3-Column Cascading Filter Bar + Quick-Filter Pill Bar (v265) */
 .sp-cascade-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 1fr 1fr 1.6fr;
   gap: 12px;
   align-items: end;
 }

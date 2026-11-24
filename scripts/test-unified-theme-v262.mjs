@@ -101,7 +101,7 @@ check('3. All 8 portal HTML pages link portal-shell.css?v=20261124v262 & *-porta
   for (const [file, cssName] of pages) {
     const html = read(file);
     assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v26[2-9]/.test(html), `${file} missing portal-shell.css?v=20261124v262+`);
-    assert.ok(html.includes(`/assets/css/${cssName}?v=20261124v262`), `${file} missing ${cssName}?v=20261124v262`);
+    assert.ok(new RegExp(`/assets/css/${cssName.replace('.', '\\.')}\\?v=20261124v26[2-9]`).test(html), `${file} missing ${cssName}?v=20261124v262+`);
   }
 });
 

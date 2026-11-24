@@ -41,8 +41,8 @@ check('1. portal-shell.css unconditionally overrides .app-shell 290px grid with 
   assert.ok(css.includes('display: block !important;'), 'must force display: block !important on shell & workspace');
   assert.ok(css.includes('grid-template-columns: minmax(0, 1fr) !important;'), 'must override 290px grid column');
   assert.ok(css.includes('width: 100% !important;'), 'must force width: 100% !important');
-  assert.ok(css.includes('max-width: 1280px !important;'), 'must center <main> at max-width: 1280px !important');
-  assert.ok(css.includes('padding: 1.25rem 1.5rem 3rem !important;'), 'must apply balanced padding');
+  assert.ok(css.includes('max-width: 1280px !important;') || css.includes('max-width: min(1600px, calc(100vw - 2.5rem)) !important;'), 'must set full-width/centered <main> max-width in portal-shell.css');
+  assert.ok(css.includes('padding: 1.25rem 1.5rem 3rem !important;') || css.includes('padding: 1.1rem 1.25rem 3rem !important;'), 'must apply balanced padding');
   assert.ok(css.includes('.app-shell > aside'), 'must hide empty <aside> elements');
   assert.ok(css.includes('#cso-jobs-portal-root'), 'must force portal root to 100% width');
   // Unconditional selector (not only body.cso-portal-active)

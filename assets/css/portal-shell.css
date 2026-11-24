@@ -322,10 +322,10 @@ body.cso-portal-active .cso-study-hub,
 body.cso-portal-active .app-shell > .workspace > .main-content {
   display: block !important;
   width: 100% !important;
-  max-width: 1280px !important;
+  max-width: min(1600px, calc(100vw - 2.5rem)) !important;
   min-width: 0 !important;
   margin: 0 auto !important;
-  padding: 1.25rem 1.5rem 3rem !important;
+  padding: 1.1rem 1.25rem 3rem !important;
   box-sizing: border-box !important;
 }
 

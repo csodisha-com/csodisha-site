@@ -60,7 +60,7 @@ check('2. All 8 portal HTML pages pre-render Editorial Hero & Skeleton Frame and
     assert.ok(html.includes('class="cso-portal-skeleton"'), `${p.file} missing pre-rendered .cso-portal-skeleton`);
     assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v26[1-9]/.test(html), `${p.file} missing portal-shell.css?v=20261124v261+`);
     assert.ok(new RegExp(`/assets/css/${p.css.replace('.', '\\.')}\\?v=20261124v26[1-9]`).test(html), `${p.file} missing ${p.css}?v=20261124v261+`);
-    assert.ok(html.includes(`/assets/js/${p.js}?v=20261124v261`), `${p.file} missing ${p.js}?v=20261124v261`);
+    assert.ok(new RegExp(`/assets/js/${p.js.replace('.', '\\.')}\\?v=20261124v26[1-9]`).test(html), `${p.file} missing ${p.js}?v=20261124v261+`);
   }
 });
 
