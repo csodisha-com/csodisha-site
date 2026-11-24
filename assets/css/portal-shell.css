@@ -695,7 +695,7 @@ body.cso-portal-active select:focus-visible {
 }
 
 /* ==========================================================================
-   9. Two-Stage Cascading Jobs Menu — 100% Opaque Elevated Surfaces (v275)
+   9. Minimal Two-Stage Cascading Jobs Menu — 100% Solid Opaque Surfaces (v276)
    ========================================================================== */
 :root,
 :root[data-cso-theme="system"],
@@ -708,13 +708,13 @@ body.cso-portal-active select:focus-visible {
 :root[data-cso-theme="system"][data-cso-resolved-mode="dark"],
 :root[data-cso-resolved-mode="dark"],
 :root[data-theme="dark"] {
-  --cso-surface-elevated: #131d27;
+  --cso-surface-elevated: #161b26;
   --cso-nav-bg: #131e29;
 }
 
 :root[data-cso-theme="reading"],
 :root[data-theme="reading"] {
-  --cso-surface-elevated: #fcf8ef;
+  --cso-surface-elevated: #faf6ee;
   --cso-nav-bg: #ede5d4;
 }
 
@@ -743,53 +743,28 @@ body.cso-portal-active select:focus-visible {
 
 #cso-main-navbar .cso-jobs-stage1,
 #cso-main-navbar .cso-jobs-stage2 {
-  background: var(--cso-surface-elevated, var(--cso-nav-bg, #ffffff)) !important;
+  background-color: var(--cso-surface-elevated, #ffffff) !important;
+  opacity: 1 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   color: var(--cso-ink-primary, #12202b) !important;
   border: 1px solid var(--cso-border-subtle, #d8e1e9) !important;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35) !important;
   overflow: hidden !important;
 }
 
-#cso-main-navbar .cso-js1-scope-strip,
-#cso-main-navbar .cso-js1-footer,
-#cso-main-navbar .cso-js2-head,
-#cso-main-navbar .cso-js2-section--stages {
-  background: var(--cso-nav-sub-bg, var(--cso-nav-bg, #eef3f7)) !important;
-  border-color: var(--cso-border-subtle, #d8e1e9) !important;
-}
-
 #cso-main-navbar .cso-js1-list,
-#cso-main-navbar .cso-js2-section {
-  background: var(--cso-surface-elevated, var(--cso-nav-bg, #ffffff)) !important;
-  border-color: var(--cso-border-subtle, #d8e1e9) !important;
-}
-
-#cso-main-navbar .cso-js1-scope-pill,
-#cso-main-navbar .cso-js2-pill,
-#cso-main-navbar .cso-js2-stage-pill {
-  background: var(--cso-surface-elevated, #ffffff) !important;
-  color: var(--cso-ink-primary, #12202b) !important;
-  border-color: var(--cso-border-subtle, #d8e1e9) !important;
-}
-
-#cso-main-navbar .cso-js1-scope-pill:hover,
-#cso-main-navbar .cso-js2-pill:hover,
-#cso-main-navbar .cso-js2-stage-pill:hover,
-#cso-main-navbar .cso-js1-foot-all {
-  background: var(--cso-nav-pill-bg, #0f4c5c) !important;
-  border-color: var(--cso-nav-pill-bg, #0f4c5c) !important;
-  color: var(--cso-nav-pill-fg, #ffffff) !important;
+#cso-main-navbar .cso-js2-list {
+  background-color: var(--cso-surface-elevated, #ffffff) !important;
 }
 
 #cso-main-navbar .cso-js1-link,
-#cso-main-navbar .cso-js2-sublink {
+#cso-main-navbar .cso-js2-link {
   color: var(--cso-ink-primary, #12202b) !important;
 }
 
 #cso-main-navbar .cso-js1-item.is-active .cso-js1-link,
 #cso-main-navbar .cso-js1-link:hover,
-#cso-main-navbar .cso-js2-sublink:hover {
-  background: var(--cso-nav-sub-bg, var(--cso-card-subtle, #eef3f7)) !important;
+#cso-main-navbar .cso-js2-link:hover {
+  background-color: var(--cso-nav-sub-bg, var(--cso-card-subtle, #eef3f7)) !important;
 }

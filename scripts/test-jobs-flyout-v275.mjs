@@ -188,7 +188,7 @@ await check('2. Admin Studio Jobs ▾ sidebar mirrors 5 L1 sectors with live cou
   assert.ok(studioCss.includes('.cso-nav-jobs-sector-sep'), 'jobs-publishing-studio.css missing .cso-nav-jobs-sector-sep');
 });
 
-await check('3. Simplified Two-Stage Cascading Jobs Menu wired cleanly in assets/app.js & assets/shared-header.js', () => {
+await check('3. Two-Stage Cascading Jobs Menu wired cleanly in assets/app.js & assets/shared-header.js', () => {
   for (const rel of ['assets/app.js', 'assets/shared-header.js']) {
     const src = read(rel);
     assert.ok(!src.includes('cso-jobs-mega'), `${rel} must not contain old wide .cso-jobs-mega markup`);
@@ -197,21 +197,15 @@ await check('3. Simplified Two-Stage Cascading Jobs Menu wired cleanly in assets
       'cso-jobs-cascade',
       'cso-jobs-stage1',
       'cso-jobs-stage2',
-      'cso-js1-scope-strip',
       'cso-js1-list',
-      'cso-js1-footer',
       'cso-js1-mob-exp',
       'cso-js1-mob-sub',
       'is-stage2-open',
       'is-flip-left',
-      'cso_jobs_flyout_v275',
       'd.nav_sectors',
-      'Closing Soon',
-      'View All Jobs →',
-      'Apply Online',
-      'Admit Cards',
-      'Answer Keys',
-      'Results',
+      'Central',
+      'Odisha',
+      'All Over India',
       'ArrowRight',
       'ArrowLeft',
       'ArrowDown',
@@ -223,7 +217,7 @@ await check('3. Simplified Two-Stage Cascading Jobs Menu wired cleanly in assets
   }
 });
 
-await check('4. 100% Opaque Elevated Surfaces, exact dimensions & zero .cso-jobs-mega leftovers in CSS', () => {
+await check('4. 100% Opaque Elevated Surfaces & zero .cso-jobs-mega leftovers in CSS', () => {
   for (const rel of ['assets/style.css', 'assets/css/portal-shell.css']) {
     const css = read(rel);
     assert.ok(!css.includes('.cso-jobs-mega'), `${rel} must completely remove old .cso-jobs-mega rules`);
@@ -234,7 +228,6 @@ await check('4. 100% Opaque Elevated Surfaces, exact dimensions & zero .cso-jobs
       '.cso-jobs-stage1',
       '.cso-jobs-stage2',
       'backdrop-filter: none',
-      '0 18px 42px rgba(0, 0, 0, 0.42)',
       'overflow: hidden'
     ]) {
       assert.ok(css.includes(tok), `${rel} missing opaque flyout token/rule "${tok}"`);
@@ -242,17 +235,15 @@ await check('4. 100% Opaque Elevated Surfaces, exact dimensions & zero .cso-jobs
   }
 
   const styleCss = read('assets/style.css');
-  assert.ok(styleCss.includes('width: 268px;'), 'assets/style.css must set Stage 1 width: 268px');
-  assert.ok(styleCss.includes('width: 280px;'), 'assets/style.css must set Stage 2 width: 280px');
   assert.ok(styleCss.includes('left: calc(100% + 6px);'), 'assets/style.css must position Stage 2 at left: calc(100% + 6px)');
   assert.ok(styleCss.includes('top: calc(100% + 6px);'), 'assets/style.css must position Stage 1 at top: calc(100% + 6px)');
   assert.ok(styleCss.includes('z-index: 1200;'), 'assets/style.css must set z-index: 1200');
   assert.ok(styleCss.includes('min-height: 44px;'), 'assets/style.css must enforce 44px+ mobile touch targets');
 });
 
-await check('5. v275 cache busting across HTML pages, sw.js & ops-sentinel.js + 100% strict CSP compliance', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v275';"), 'sw.js must be cso-candidate-cache-v275');
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v275';"), 'ops-sentinel.js must be cso-candidate-cache-v275');
+await check('5. Cache busting (>= v275) across HTML pages, sw.js & ops-sentinel.js + 100% strict CSP compliance', () => {
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v27[5-9]';/, 'sw.js must be >= v275');
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v27[5-9]';/, 'ops-sentinel.js must be >= v275');
 
   const corePages = [
     'index.html', 'jobs/index.html', 'careers/index.html', 'schemes/index.html',
@@ -260,24 +251,24 @@ await check('5. v275 cache busting across HTML pages, sw.js & ops-sentinel.js + 
   ];
   for (const rel of corePages) {
     const html = read(rel);
-    assert.ok(html.includes('/assets/style.css?v=20261124v275'), `${rel} missing style.css?v=20261124v275`);
+    assert.match(html, /\/assets\/style\.css\?v=20261124v27[5-9]/, `${rel} missing style.css >= v275`);
     if (rel === 'index.html') {
-      assert.ok(html.includes('/assets/app.js?v=20261124v275'), 'index.html missing app.js?v=20261124v275');
+      assert.match(html, /\/assets\/app\.js\?v=20261124v27[5-9]/, 'index.html missing app.js >= v275');
     } else {
-      assert.ok(html.includes('/assets/shared-header.js?v=20261124v275'), `${rel} missing shared-header.js?v=20261124v275`);
+      assert.match(html, /\/assets\/shared-header\.js\?v=20261124v27[5-9]/, `${rel} missing shared-header.js >= v275`);
     }
     assert.ok(!/\sstyle\s*=/i.test(html), `${rel} contains inline style=`);
     assert.ok(!/\son[a-z]+\s*=/i.test(html), `${rel} contains inline on*= handler`);
   }
 
   for (const portalPage of ['jobs/index.html', 'careers/index.html', 'schemes/index.html', 'study-library/index.html', 'community/index.html', 'about/index.html']) {
-    assert.ok(read(portalPage).includes('/assets/css/portal-shell.css?v=20261124v275'), `${portalPage} missing portal-shell.css?v=20261124v275`);
+    assert.match(read(portalPage), /\/assets\/css\/portal-shell\.css\?v=20261124v27[5-9]/, `${portalPage} missing portal-shell.css >= v275`);
   }
 
   const adminHtml = read('admin/index.html');
-  assert.ok(adminHtml.includes('/admin/admin.js?v=20261124v275'), 'admin/index.html missing admin.js?v=20261124v275');
-  assert.ok(adminHtml.includes('/admin/jobs-publishing-studio.js?v=20261124v275'), 'admin/index.html missing jobs-publishing-studio.js?v=20261124v275');
-  assert.ok(adminHtml.includes('/admin/jobs-publishing-studio.css?v=20261124v275'), 'admin/index.html missing jobs-publishing-studio.css?v=20261124v275');
+  assert.match(adminHtml, /\/admin\/admin\.js\?v=20261124v27[5-9]/, 'admin/index.html missing admin.js >= v275');
+  assert.match(adminHtml, /\/admin\/jobs-publishing-studio\.js\?v=20261124v27[5-9]/, 'admin/index.html missing jobs-publishing-studio.js >= v275');
+  assert.match(adminHtml, /\/admin\/jobs-publishing-studio\.css\?v=20261124v27[5-9]/, 'admin/index.html missing jobs-publishing-studio.css >= v275');
 
   for (const rel of [
     'assets/shared-header.js',

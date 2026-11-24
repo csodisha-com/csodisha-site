@@ -325,7 +325,10 @@
   // ---------- Data Loaders ----------
   function syncSidebarAndFlyoutCache(bustSession) {
     if (bustSession) {
-      try { sessionStorage.removeItem('cso_jobs_flyout_v275'); } catch (_e) {}
+      try {
+        sessionStorage.removeItem('cso_jobs_flyout_v276');
+        sessionStorage.removeItem('cso_jobs_flyout_v275');
+      } catch (_e) {}
     }
     if (window.CSOStudio && typeof window.CSOStudio.setJobsSectorNodes === 'function' && Array.isArray(state.taxonomyNodes) && state.taxonomyNodes.length) {
       window.CSOStudio.setJobsSectorNodes(state.taxonomyNodes);

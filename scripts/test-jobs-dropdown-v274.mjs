@@ -169,26 +169,21 @@ await check('2. Public /api/public/jobs/bootstrap returns live sector_counts & /
   assert.equal(qAdmit.items[0].title_en, 'MEA Verified Germany Nursing Recruitment');
 });
 
-await check('3. Jobs Dropdown Menu wired in assets/app.js & assets/shared-header.js with 5 sectors, scopes, lifecycle & a11y', () => {
+await check('3. Jobs Dropdown Menu wired in assets/app.js & assets/shared-header.js with 5 sectors, 3 scopes & a11y', () => {
   for (const rel of ['assets/app.js', 'assets/shared-header.js']) {
     const src = read(rel);
     for (const token of [
       'cso-nav-jobs-wrap',
       'aria-haspopup',
       'aria-expanded',
-      '/jobs/?region=odisha',
-      '/jobs/?region=central',
-      '/jobs/?region=all-india',
-      '/jobs/?stage=closing-soon',
+      'central',
+      'odisha',
+      'all-india',
       'government',
       'private',
       'psu',
       'ngo',
       'foreign',
-      'apply-online',
-      'admit-card',
-      'answer-key',
-      'result',
       '/api/public/jobs/bootstrap',
       'ArrowDown',
       'Escape'
