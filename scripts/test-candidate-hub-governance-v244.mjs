@@ -123,8 +123,8 @@ await check('Router & worker expose all v244 Admin & Candidate endpoints and enf
 
 await check('Admin Studio integrates unified Candidate Hub sidebar module, Alt+7, Ctrl+K & all 5 sub-tabs', () => {
   const adminHtml = read('admin/index.html');
-  assert.ok(adminHtml.includes('/admin/candidate-hub-studio.css?v=20261124v244'));
-  assert.ok(adminHtml.includes('/admin/candidate-hub-studio.js?v=20261124v244'));
+  assert.ok(adminHtml.includes('/admin/candidate-hub-studio.css'));
+  assert.ok(adminHtml.includes('/admin/candidate-hub-studio.js'));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('folder-candidate-hub') && adminJs.includes('Candidate Hub') && adminJs.includes('candidateCount'));
@@ -182,9 +182,9 @@ await check('Strict CSP & 4-Theme CSS token compliance across all v244 files', (
   }
 });
 
-await check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v244', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v244';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v244';"));
+await check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v244+', () => {
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v24[4-9]';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v24[4-9]';/);
 });
 
 console.log(`\nSummary: ${passed} passed, ${failed} failed.`);

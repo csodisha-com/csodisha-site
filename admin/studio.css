@@ -110,11 +110,15 @@
   min-width: 0;
 }
 
+.cso-topbar-left {
+  flex: 0 0 auto;
+}
+
 .cso-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 0;
+  flex-shrink: 0;
 }
 
 .cso-brand[role="button"] {
@@ -146,6 +150,8 @@
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -297,8 +303,6 @@
   font-size: 14px;
   color: var(--studio-text);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .cso-brand-badge {
@@ -332,6 +336,8 @@
   border: 1px solid var(--studio-border);
   font-size: 12px;
   color: var(--studio-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .cso-live-dot {

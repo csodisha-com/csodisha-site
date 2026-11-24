@@ -144,6 +144,69 @@ function safeHref(raw) {
   return u.toString().slice(0, 600);
 }
 
+const DISTRICT_ALIASES = {
+  'balasore (baleswar)': 'Balasore',
+  baleswar: 'Balasore',
+  balasore: 'Balasore',
+  khurda: 'Khordha',
+  khordha: 'Khordha',
+  sonepur: 'Subarnapur',
+  subarnapur: 'Subarnapur',
+  nowrangpur: 'Nabarangpur',
+  nabarangpur: 'Nabarangpur',
+  jajapur: 'Jajpur',
+  jajpur: 'Jajpur',
+  keonjhar: 'Kendujhar',
+  kendujhar: 'Kendujhar',
+  bolangir: 'Balangir',
+  balangir: 'Balangir'
+};
+
+const DISTRICT_REVERSE_ALIASES = {
+  Balasore: ['Balasore', 'Balasore (Baleswar)', 'Baleswar'],
+  Khordha: ['Khordha', 'Khurda'],
+  Subarnapur: ['Subarnapur', 'Sonepur'],
+  Nabarangpur: ['Nabarangpur', 'Nowrangpur'],
+  Jajpur: ['Jajpur', 'Jajapur'],
+  Kendujhar: ['Kendujhar', 'Keonjhar'],
+  Balangir: ['Balangir', 'Bolangir']
+};
+
+export function normalizeOdishaDistrict(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  const mapped = DISTRICT_ALIASES[s.toLowerCase()];
+  return mapped || s;
+}
+
+const EXAM_SLUG_LABELS = {
+  'ugc-net': 'UGC NET',
+  'odisha-bed': 'Odisha B.Ed',
+  'b-ed': 'B.Ed',
+  opsc: 'OPSC',
+  ossc: 'OSSC',
+  osssc: 'OSSSC',
+  oavs: 'OAVS',
+  otet: 'OTET',
+  osstet: 'OSSTET',
+  ctet: 'CTET',
+  upsc: 'UPSC',
+  ssc: 'SSC',
+  'bse-odisha': 'BSE Odisha',
+  chse: 'CHSE',
+  banking: 'Banking',
+  railways: 'Railways'
+};
+
+export function formatTargetExamLabel(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  const lower = s.toLowerCase();
+  if (EXAM_SLUG_LABELS[lower]) return EXAM_SLUG_LABELS[lower];
+  if (!s.includes('-') && !s.includes('_')) return s;
+  return s.split(/[-_]+/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
 function makeKey(raw, prefix = 'custom') {
   const slug = String(raw || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 48);
   return slug || `${prefix}_${Date.now().toString(36)}`;
@@ -662,19 +725,20 @@ async function ensureCandidateUserRow(db, id) {
   return user;
 }
 
-async function computeRosterKpis(db) {
+async function computeRosterKpis(db, filteredTotal = null) {
   const [totRow, blockedRow, tierRow, modRow, assignedRow] = await Promise.all([
-    safeFirst(db, "SELECT COUNT(*) AS n FROM users WHERE role = 'candidate'"),
+    safeFirst(db, 'SELECT COUNT(*) AS n FROM users'),
     safeFirst(db, "SELECT COUNT(*) AS n FROM candidate_governance WHERE account_status IN ('blocked', 'suspended')"),
     safeFirst(db, "SELECT COUNT(*) AS n FROM candidate_governance WHERE access_tier IN ('verified', 'mentor', 'vip')"),
     safeFirst(db, 'SELECT COUNT(*) AS n FROM candidate_hub_modules WHERE is_enabled = 1'),
     safeFirst(db, 'SELECT COUNT(*) AS n FROM candidate_assigned_items WHERE is_published = 1')
   ]);
-  const total = Number((totRow && totRow.n) || 0);
+  const allUsersTotal = Number((totRow && totRow.n) || 0);
+  const total = filteredTotal !== null ? Number(filteredTotal) : allUsersTotal;
   const blocked = Number((blockedRow && blockedRow.n) || 0);
   return {
     total_candidates: total,
-    active_candidates: Math.max(0, total - blocked),
+    active_candidates: Math.max(0, allUsersTotal - blocked),
     blocked_suspended: blocked,
     verified_mentor: Number((tierRow && tierRow.n) || 0),
     active_features: Number((modRow && modRow.n) || 0),
@@ -695,11 +759,15 @@ export async function handleAdminCandidatesV244(request, env, actor, id) {
     if (!ids.length) throw validationError({ ids: 'Select at least one candidate.' });
 
     if (action === 'block' || action === 'unblock') {
+      const targetIds = action === 'block' && actor && actor.userId ? ids.filter(uid => uid !== actor.userId) : ids;
+      if (action === 'block' && !targetIds.length) {
+        throw new HttpError(400, 'SELF_LOCKOUT_PREVENTED', 'You cannot block your own active admin account.');
+      }
       const status = action === 'block' ? 'blocked' : 'active';
       const legacyStatus = action === 'block' ? 'banned' : 'active';
       const reason = action === 'block' ? cleanStr(body.block_reason || 'Blocked by administrator', 500) : '';
       const stmts = [];
-      for (const uid of ids) {
+      for (const uid of targetIds) {
         stmts.push(env.DB.prepare(
           `INSERT INTO candidate_governance (user_id, account_status, block_reason, session_version, updated_by, updated_at)
            VALUES (?, ?, ?, 1, ?, datetime('now'))
@@ -791,8 +859,15 @@ export async function handleAdminCandidatesV244(request, env, actor, id) {
       else { where.push('cg.access_tier = ?'); binds.push(tier); }
     }
     if (district) {
-      where.push("c.district LIKE ? ESCAPE '\\'");
-      binds.push(likeEscape(district));
+      const canonicalDist = normalizeOdishaDistrict(district);
+      const variants = DISTRICT_REVERSE_ALIASES[canonicalDist];
+      if (variants && variants.length) {
+        where.push(`(${variants.map(() => "c.district LIKE ? ESCAPE '\\'").join(' OR ')})`);
+        variants.forEach(v => binds.push(likeEscape(v)));
+      } else {
+        where.push("c.district LIKE ? ESCAPE '\\'");
+        binds.push(likeEscape(canonicalDist));
+      }
     }
     if (exam) {
       where.push("(cp.primary_exam LIKE ? ESCAPE '\\' OR cp.selected_exams_json LIKE ? ESCAPE '\\' OR c.target_streams LIKE ? ESCAPE '\\')");
@@ -809,10 +884,9 @@ export async function handleAdminCandidatesV244(request, env, actor, id) {
       LEFT JOIN candidate_exam_preferences cp ON cp.user_id = u.id
     `;
 
-    const [totalRow, docTotalRow, kpis, rowsRes] = await Promise.all([
+    const [totalRow, docTotalRow, rowsRes] = await Promise.all([
       safeFirst(env.DB, `SELECT COUNT(DISTINCT u.id) AS n ${fromSql} ${w}`, binds),
       safeFirst(env.DB, 'SELECT COUNT(*) AS n FROM candidate_doc_templates WHERE is_published = 1'),
-      computeRosterKpis(env.DB),
       env.DB.prepare(
         `SELECT u.id, u.email, u.role, u.created_at,
                 MAX(c.full_name) AS full_name, MAX(c.phone) AS phone, MAX(c.district) AS district,
@@ -837,6 +911,9 @@ export async function handleAdminCandidatesV244(request, env, actor, id) {
       ).bind(...binds, limit, offset).all()
     ]);
 
+    const total = Number((totalRow && totalRow.n) || 0);
+    const kpis = await computeRosterKpis(env.DB, total);
+    const actorId = actor && actor.userId ? String(actor.userId) : '';
     const totalDocs = Math.max(1, Number((docTotalRow && docTotalRow.n) || 0));
     const items = (rowsRes.results || []).map(r => {
       const extra = parseJson(r.selected_streams_json, {});
@@ -846,17 +923,19 @@ export async function handleAdminCandidatesV244(request, env, actor, id) {
       let accStatus = r.gov_status || (r.legacy_status === 'banned' ? 'blocked' : r.legacy_status) || 'active';
       const selectedExams = parseJson(r.selected_exams_json, []);
       const streams = parseJson(r.target_streams, []);
+      const rawExam = r.primary_exam || (Array.isArray(selectedExams) && selectedExams[0]) || (Array.isArray(streams) && streams[0]) || '';
       return {
         id: r.id,
         email: r.email,
         role: r.role,
+        is_self: Boolean(actorId && r.id === actorId),
         full_name: r.full_name || 'Candidate Aspirant',
         phone: r.phone || '',
-        district: r.district || '',
+        district: normalizeOdishaDistrict(r.district || ''),
         qualification: String(extra.qualification || ''),
         category: String(extra.category || ''),
-        target_exam: r.primary_exam || (Array.isArray(selectedExams) && selectedExams[0]) || (Array.isArray(streams) && streams[0]) || '',
-        selected_exams: Array.isArray(selectedExams) ? selectedExams : [],
+        target_exam: formatTargetExamLabel(rawExam),
+        selected_exams: Array.isArray(selectedExams) ? selectedExams.map(formatTargetExamLabel) : [],
         access_tier: ACCESS_TIERS.includes(r.access_tier) ? r.access_tier : 'standard',
         account_status: accStatus,
         block_reason: r.block_reason || '',
@@ -874,7 +953,7 @@ export async function handleAdminCandidatesV244(request, env, actor, id) {
       };
     });
 
-    return json({ ok: true, items, kpis, page, limit, total: Number((totalRow && totalRow.n) || 0) });
+    return json({ ok: true, items, kpis, page, limit, total, current_actor_id: actorId });
   }
 
   // GET /api/admin/candidates/:id — 360° Candidate Inspection
@@ -900,9 +979,10 @@ export async function handleAdminCandidatesV244(request, env, actor, id) {
         id: user.id,
         email: user.email,
         role: user.role,
+        is_self: Boolean(actor && actor.userId && user.id === actor.userId),
         full_name: user.full_name || 'Candidate Aspirant',
         phone: user.phone || '',
-        district: user.district || '',
+        district: normalizeOdishaDistrict(user.district || ''),
         qualification: String(extra.qualification || ''),
         category: String(extra.category || ''),
         last_login_at: user.last_login_at || null,
@@ -935,6 +1015,9 @@ export async function handleAdminCandidatesV244(request, env, actor, id) {
     const action = cleanStr(body.action, 50) || 'update_governance';
 
     if (action === 'force_logout') {
+      if (actor && actor.userId && id === actor.userId) {
+        throw new HttpError(400, 'SELF_LOCKOUT_PREVENTED', 'You cannot force-logout your own active admin account.');
+      }
       await env.DB.batch([
         env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(id),
         env.DB.prepare(
@@ -967,6 +1050,9 @@ export async function handleAdminCandidatesV244(request, env, actor, id) {
         : action === 'unblock'
           ? 'active'
           : (body.account_status !== undefined ? cleanStr(body.account_status, 30) : current.account_status);
+      if (actor && actor.userId && id === actor.userId && (nextStatus === 'blocked' || nextStatus === 'suspended')) {
+        throw new HttpError(400, 'SELF_LOCKOUT_PREVENTED', 'You cannot block or suspend your own active admin account.');
+      }
       if (!GOV_STATUSES.includes(nextStatus)) {
         throw validationError({ account_status: 'account_status must be active, blocked, suspended, or pending_review' });
       }

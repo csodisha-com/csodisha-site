@@ -17,6 +17,47 @@
     'Kandhamal', 'Kendrapara', 'Kendujhar', 'Khordha', 'Koraput', 'Malkangiri', 'Mayurbhanj',
     'Nabarangpur', 'Nayagarh', 'Nuapada', 'Puri', 'Rayagada', 'Sambalpur', 'Subarnapur', 'Sundargarh'
   ];
+  var DISTRICT_ALIASES = {
+    'balasore (baleswar)': 'Balasore',
+    baleswar: 'Balasore',
+    khurda: 'Khordha',
+    sonepur: 'Subarnapur',
+    nowrangpur: 'Nabarangpur',
+    jajapur: 'Jajpur',
+    keonjhar: 'Kendujhar',
+    bolangir: 'Balangir'
+  };
+  var EXAM_SLUG_MAP = {
+    'ugc-net': 'UGC NET',
+    'odisha-bed': 'Odisha B.Ed',
+    'b-ed': 'B.Ed',
+    opsc: 'OPSC',
+    ossc: 'OSSC',
+    osssc: 'OSSSC',
+    oavs: 'OAVS',
+    otet: 'OTET',
+    osstet: 'OSSTET',
+    ctet: 'CTET',
+    upsc: 'UPSC',
+    ssc: 'SSC',
+    'bse-odisha': 'BSE Odisha',
+    chse: 'CHSE',
+    banking: 'Banking',
+    railways: 'Railways'
+  };
+  function normalizeDistrict(raw) {
+    var s = String(raw || '').trim();
+    if (!s) return '';
+    return DISTRICT_ALIASES[s.toLowerCase()] || s;
+  }
+  function formatExamLabel(raw) {
+    var s = String(raw || '').trim();
+    if (!s) return '';
+    var lower = s.toLowerCase();
+    if (EXAM_SLUG_MAP[lower]) return EXAM_SLUG_MAP[lower];
+    if (s.indexOf('-') === -1 && s.indexOf('_') === -1) return s;
+    return s.split(/[-_]+/).filter(Boolean).map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
+  }
   var EXAM_BOARDS = ['OPSC', 'OSSC', 'OSSSC', 'OAVS', 'BSE Odisha', 'CHSE', 'UPSC', 'SSC', 'Banking', 'Railways', 'OTET', 'OSSTET', 'UGC NET'];
   var THEMES = [
     { id: 'system', label: 'System' },
@@ -169,7 +210,8 @@
       r.items = d.items || [];
       r.kpis = d.kpis || null;
       r.total = Number(d.total || 0);
-      if (r.kpis) notifyCount(r.kpis.total_candidates);
+      r.currentActorId = d.current_actor_id || '';
+      if (r.kpis) notifyCount(r.total);
     });
   }
 
@@ -221,7 +263,7 @@
     var k = r.kpis || { total_candidates: 0, active_candidates: 0, blocked_suspended: 0, verified_mentor: 0, active_features: 0, assigned_items: 0 };
     var kpis = el('div', 'ch-kpis');
     [
-      ['Total Candidates', num(k.total_candidates), ''],
+      ['Total Candidates', num(r.total), ''],
       ['Active Accounts', num(k.active_candidates), 'is-ok'],
       ['Blocked / Suspended', num(k.blocked_suspended), k.blocked_suspended ? 'is-danger' : ''],
       ['Verified / Mentor Tier', num(k.verified_mentor), 'is-ok'],
@@ -296,23 +338,41 @@
         var pBox = el('div', 'ch-person');
         pBox.appendChild(el('span', 'ch-avatar', initials(c.full_name, c.email)));
         var pm = el('div', 'ch-person__meta');
+        var nameRow = el('div', 'ch-person__row');
         var nm = el('button', 'ch-person__name', c.full_name); nm.type = 'button';
         nm.addEventListener('click', function () { openAuthorityDrawer(c.id); });
-        pm.appendChild(nm); pm.appendChild(el('span', 'ch-muted', c.email));
+        nameRow.appendChild(nm);
+        if (c.role === 'admin' || c.role === 'editor') {
+          var admBadge = el('span', 'ch-badge ch-badge--admin', 'ADMIN');
+          admBadge.title = 'Staff / Administrator account (' + c.role + ')';
+          nameRow.appendChild(admBadge);
+        }
+        pm.appendChild(nameRow);
+        pm.appendChild(el('span', 'ch-muted', c.email));
         pBox.appendChild(pm); tdP.appendChild(pBox); tr.appendChild(tdP);
 
-        tr.appendChild(el('td', '', (c.district || '—') + (c.qualification ? ' · ' + c.qualification : '')));
-        tr.appendChild(el('td', '', c.target_exam || '—'));
+        var tdDist = el('td');
+        tdDist.appendChild(el('div', 'ch-dist-main', normalizeDistrict(c.district) || '—'));
+        var qualCat = [c.qualification, c.category].filter(Boolean).join(' · ');
+        tdDist.appendChild(el('div', 'ch-muted', qualCat || '—'));
+        tr.appendChild(tdDist);
+
+        tr.appendChild(el('td', '', formatExamLabel(c.target_exam) || '—'));
 
         var tdT = el('td'); tdT.appendChild(el('span', 'ch-badge ch-badge--' + c.access_tier, c.access_tier)); tr.appendChild(tdT);
         var tdS = el('td'); tdS.appendChild(el('span', 'ch-badge ch-badge--' + c.account_status, c.account_status.replace(/_/g, ' '))); tr.appendChild(tdS);
 
         var tdA = el('td');
         var act = el('div', 'ch-activity');
-        act.appendChild(el('span', '', '🔖 ' + c.bookmarks_count));
-        act.appendChild(el('span', '', '🗂 ' + c.docs_pct + '%'));
-        act.appendChild(el('span', '', '📈 ' + c.attempts_count));
-        act.appendChild(el('span', '', '📬 ' + c.assigned_count));
+        var pSaved = el('span', 'ch-activity-pill', '🔖 Saved: ' + c.bookmarks_count);
+        pSaved.title = 'Saved Bookmarks & Deadlines: ' + c.bookmarks_count;
+        var pDocs = el('span', 'ch-activity-pill', '🗂 Docs: ' + c.docs_pct + '%');
+        pDocs.title = 'Document Readiness Vault: ' + c.docs_pct + '%';
+        var pMocks = el('span', 'ch-activity-pill', '📈 Mocks: ' + c.attempts_count);
+        pMocks.title = 'Mock Test Attempts: ' + c.attempts_count;
+        var pAssigned = el('span', 'ch-activity-pill', '📬 Assigned: ' + c.assigned_count);
+        pAssigned.title = 'Assigned Content Items: ' + c.assigned_count;
+        act.appendChild(pSaved); act.appendChild(pDocs); act.appendChild(pMocks); act.appendChild(pAssigned);
         tdA.appendChild(act); tr.appendChild(tdA);
 
         tr.appendChild(el('td', 'ch-muted ch-num', when(c.last_login_at || c.created_at)));
@@ -320,8 +380,9 @@
         var tdAct = el('td');
         var rowActs = el('div', 'ch-row-actions');
         rowActs.appendChild(btn('Manage', 'ch-btn ch-btn--xs is-primary', function () { openAuthorityDrawer(c.id); }));
+        var isSelf = Boolean(c.is_self || (r.currentActorId && c.id === r.currentActorId));
         var isBlocked = c.account_status === 'blocked' || c.account_status === 'suspended';
-        rowActs.appendChild(btn(isBlocked ? 'Unblock' : 'Block', 'ch-btn ch-btn--xs' + (isBlocked ? '' : ' is-danger'), function () {
+        var blkBtn = btn(isBlocked ? 'Unblock' : 'Block', 'ch-btn ch-btn--xs' + (isBlocked ? '' : ' is-danger'), function () {
           if (isBlocked) {
             api('/api/admin/candidates/' + encodeURIComponent(c.id), 'POST', { action: 'unblock' })
               .then(function () { toast('Candidate unblocked', 'ok'); loadRoster().then(renderBody); })
@@ -333,18 +394,28 @@
               .then(function () { toast('Candidate blocked & sessions revoked', 'ok'); loadRoster().then(renderBody); })
               .catch(function (e) { toast(e.message, 'crimson'); });
           }
-        }));
+        });
+        if (isSelf) {
+          blkBtn.disabled = true;
+          blkBtn.title = 'Self-lockout protection: cannot block your own active admin account';
+        }
+        rowActs.appendChild(blkBtn);
         rowActs.appendChild(btn('Send Content', 'ch-btn ch-btn--xs', function () {
           state.editingAssigned = { target_scope: 'user', target_user_id: c.id, item_type: 'study_pdf', priority: 'high', is_published: 1 };
           state.tab = 'content';
           renderShell();
         }));
-        rowActs.appendChild(btn('Force Logout', 'ch-btn ch-btn--xs', function () {
+        var loBtn = btn('Force Logout', 'ch-btn ch-btn--xs', function () {
           if (!window.confirm('Force logout ' + c.email + ' from all devices?')) return;
           api('/api/admin/candidates/' + encodeURIComponent(c.id), 'POST', { action: 'force_logout' })
             .then(function () { toast('Active sessions revoked (session_version incremented)', 'ok'); loadRoster().then(renderBody); })
             .catch(function (e) { toast(e.message, 'crimson'); });
-        }));
+        });
+        if (isSelf) {
+          loBtn.disabled = true;
+          loBtn.title = 'Self-lockout protection: cannot force-logout your own active admin session';
+        }
+        rowActs.appendChild(loBtn);
         tdAct.appendChild(rowActs); tr.appendChild(tdAct);
         tbody.appendChild(tr);
       });
@@ -364,6 +435,7 @@
     ].forEach(function (a) {
       var b = btn(a[0], 'ch-btn ' + a[2], function () { runBulkCandidateAction(a[1]); });
       b.disabled = !n;
+      b.setAttribute('aria-disabled', String(!n));
       bulk.appendChild(b);
     });
     card.appendChild(bulk);
@@ -449,11 +521,16 @@
         loadRoster().then(renderBody);
       }).catch(function (e) { toast(e.message, 'crimson'); });
     }));
-    gActs.appendChild(btn('Force Logout (Revoke Sessions)', 'ch-btn is-danger', function () {
+    var drLogout = btn('Force Logout (Revoke Sessions)', 'ch-btn is-danger', function () {
       api('/api/admin/candidates/' + encodeURIComponent(c.id), 'POST', { action: 'force_logout' })
         .then(function () { toast('Sessions revoked (SV incremented)', 'ok'); openAuthorityDrawer(c.id); })
         .catch(function (e) { toast(e.message, 'crimson'); });
-    }));
+    });
+    if (c.is_self || (state.roster.currentActorId && c.id === state.roster.currentActorId)) {
+      drLogout.disabled = true;
+      drLogout.title = 'Self-lockout protection: cannot force-logout your own active admin session';
+    }
+    gActs.appendChild(drLogout);
     govSec.appendChild(gActs);
     dr.appendChild(govSec);
 

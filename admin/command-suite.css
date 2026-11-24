@@ -11,12 +11,13 @@
 /* Topbar Command Palette & Media Triggers */
 .cs-topbar-search {
   display: inline-flex; align-items: center; gap: 10px;
-  min-width: 210px; justify-content: space-between;
+  min-width: 195px; justify-content: space-between;
   background: var(--studio-card-elev, var(--cso-surface-alt));
   color: var(--studio-muted, var(--cso-muted));
   border: 1px solid var(--studio-border, var(--cso-border));
   border-radius: 9px; padding: 6px 10px;
   font: inherit; font-size: 0.82rem; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0;
   transition: border-color 0.15s, background-color 0.15s;
 }
 .cs-topbar-search:hover, .cs-topbar-search:focus-visible {
@@ -31,6 +32,7 @@
   border: 1px solid var(--studio-border, var(--cso-border));
   border-radius: 9px; padding: 6px 11px;
   font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0;
   transition: border-color 0.15s;
 }
 .cs-topbar-media:hover, .cs-topbar-media:focus-visible {
