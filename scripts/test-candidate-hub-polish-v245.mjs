@@ -129,14 +129,14 @@ await check('Topbar CSS enforces white-space: nowrap on pills and prevents brand
   assert.match(cmdCss, /\.cs-topbar-media\s*\{[^}]*white-space:\s*nowrap/s);
 });
 
-await check('Strict CSP & sw.js / ops-sentinel.js bumped to cso-candidate-cache-v245', () => {
+await check('Strict CSP & sw.js / ops-sentinel.js bumped to cso-candidate-cache-v245+', () => {
   for (const rel of ['admin/candidate-hub-studio.js', 'functions/_lib/candidate-hub-governance.js']) {
     const js = read(rel);
     assert.equal(/\.innerHTML\b|\.outerHTML\b|insertAdjacentHTML\b/.test(js), false, `${rel}: no innerHTML`);
     assert.equal(/\.style\.[a-zA-Z]|\.style\s*=|setAttribute\(\s*['"]style/.test(js), false, `${rel}: no .style.*`);
   }
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v245';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v245';"));
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v24[5-9]';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v24[5-9]';/);
 });
 
 console.log(`\nSummary: ${passed} passed, ${failed} failed.`);

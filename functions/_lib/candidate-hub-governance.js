@@ -19,11 +19,11 @@ export const LAYOUT_SLOTS = ['sidebar', 'overview', 'both'];
 export const CARD_SPANS = ['half', 'full'];
 export const LAYOUT_MODES = ['sidebar_workspace', 'top_tabs_cards'];
 export const ALLOWED_THEMES = ['system', 'dark', 'reading', 'utkal-bharat'];
-export const TARGET_SCOPES = ['all', 'user', 'district', 'exam_board'];
-export const ASSIGNED_ITEM_TYPES = ['study_pdf', 'mock_test', 'official_notice', 'fee_waiver', 'action_alert', 'guidance'];
+export const TARGET_SCOPES = ['all', 'user', 'individual', 'selected_users', 'district', 'exam_board'];
+export const ASSIGNED_ITEM_TYPES = ['study_pack', 'study_pdf', 'mock_test', 'official_notice', 'admit_card_alert', 'personal_guidance', 'fee_waiver', 'action_alert', 'guidance'];
 export const PRIORITIES = ['low', 'normal', 'high', 'urgent'];
 
-const HUB_CACHE_PATHS = ['/api/candidate/hub-config'];
+const HUB_CACHE_PATHS = ['/api/candidate/hub-config', '/api/candidate/assigned-items'];
 
 let _schemaReady = false;
 
@@ -111,6 +111,15 @@ export async function ensureCandidateHubSchema(db) {
       is_published INTEGER NOT NULL DEFAULT 1,
       created_by TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS candidate_assigned_acks (
+      item_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      seen_at TEXT NOT NULL DEFAULT '',
+      downloaded_at TEXT NOT NULL DEFAULT '',
+      completed INTEGER NOT NULL DEFAULT 0,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (item_id, user_id)
     )`)
   ]);
   _schemaReady = true;
@@ -303,23 +312,39 @@ function formatDocTemplate(r) {
   };
 }
 
+function inferFileExt(url, key) {
+  const s = String(key || url || '').split('?')[0].split('#')[0];
+  const m = s.match(/\.([a-z0-9]{1,8})$/i);
+  return m ? m[1].toUpperCase() : '';
+}
+
 function formatAssignedItem(r) {
+  const url = String(r.resource_url || '');
+  const r2Key = String(r.r2_file_key || '');
   return {
     id: String(r.id),
     target_scope: TARGET_SCOPES.includes(r.target_scope) ? r.target_scope : 'all',
     target_user_id: String(r.target_user_id || ''),
-    target_district: String(r.target_district || ''),
+    target_district: normalizeOdishaDistrict(r.target_district || ''),
     target_exam_board: String(r.target_exam_board || ''),
     item_type: ASSIGNED_ITEM_TYPES.includes(r.item_type) ? r.item_type : 'study_pdf',
     title_en: String(r.title_en || ''),
     title_or: String(r.title_or || ''),
     summary_en: String(r.summary_en || ''),
     summary_or: String(r.summary_or || ''),
-    resource_url: String(r.resource_url || ''),
-    r2_file_key: String(r.r2_file_key || ''),
+    resource_url: url,
+    r2_file_key: r2Key,
+    file_ext: inferFileExt(url, r2Key),
+    file_size_bytes: Number(r.file_size_bytes || 0),
     priority: PRIORITIES.includes(r.priority) ? r.priority : 'normal',
     expires_at: String(r.expires_at || ''),
     is_published: r.is_published ? 1 : 0,
+    seen_count: Number(r.seen_count || 0),
+    download_count: Number(r.download_count || 0),
+    completed_count: Number(r.completed_count || 0),
+    seen: Boolean(r.user_seen_at),
+    downloaded: Boolean(r.user_downloaded_at),
+    completed: Boolean(r.user_completed),
     created_by: String(r.created_by || ''),
     created_at: String(r.created_at || '')
   };
@@ -467,6 +492,33 @@ async function loadCandidateProfile(db, userId, email) {
   };
 }
 
+function filterAssignedItemsForCandidate(assignedRows, ackRows, profile, userId) {
+  const nowIso = new Date().toISOString().slice(0, 10);
+  const candDist = normalizeOdishaDistrict(profile.district).trim().toLowerCase();
+  const candBoards = new Set([profile.primaryExam, ...profile.selectedExams, ...profile.targetStreams].map(s => String(s || '').trim().toLowerCase()).filter(Boolean));
+  const ackMap = new Map((ackRows || []).map(a => [a.item_id, a]));
+
+  return assignedRows.map(r => {
+    const ack = ackMap.get(r.id);
+    return formatAssignedItem({
+      ...r,
+      user_seen_at: ack ? ack.seen_at : '',
+      user_downloaded_at: ack ? ack.downloaded_at : '',
+      user_completed: ack ? ack.completed : 0
+    });
+  }).filter(item => {
+    if (item.expires_at && item.expires_at < nowIso) return false;
+    if (item.target_scope === 'all') return true;
+    if (item.target_scope === 'user' || item.target_scope === 'individual') return item.target_user_id === userId;
+    if (item.target_scope === 'district') return Boolean(candDist && item.target_district.trim().toLowerCase() === candDist);
+    if (item.target_scope === 'exam_board') {
+      const b = item.target_exam_board.trim().toLowerCase();
+      return Boolean(b && [...candBoards].some(cb => cb === b || cb.includes(b) || b.includes(cb)));
+    }
+    return false;
+  });
+}
+
 export async function handleCandidateHubConfigApi(request, env) {
   try {
     if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');
@@ -474,30 +526,20 @@ export async function handleCandidateHubConfigApi(request, env) {
     const { session, gov } = await requireCandidateSession(request, env);
     const profile = await loadCandidateProfile(env.DB, session.userId, session.email);
 
-    const [uiRow, modRows, docRows, assignedRows, controls] = await Promise.all([
+    const [uiRow, modRows, docRows, assignedRows, ackRows, controls] = await Promise.all([
       safeFirst(env.DB, "SELECT * FROM candidate_hub_ui_config WHERE id = 'default'"),
       safeAll(env.DB, 'SELECT * FROM candidate_hub_modules WHERE is_enabled = 1 ORDER BY sort_order ASC, id ASC'),
       safeAll(env.DB, 'SELECT * FROM candidate_doc_templates WHERE is_published = 1 ORDER BY sort_order ASC, id ASC'),
-      safeAll(env.DB, 'SELECT * FROM candidate_assigned_items WHERE is_published = 1 ORDER BY created_at DESC LIMIT 200'),
+      safeAll(env.DB, `SELECT cai.*, COALESCE(mf.file_size_bytes, 0) AS file_size_bytes
+                       FROM candidate_assigned_items cai
+                       LEFT JOIN media_files mf ON (mf.r2_key = cai.r2_file_key OR mf.id = cai.r2_file_key) AND cai.r2_file_key != ''
+                       WHERE cai.is_published = 1 ORDER BY cai.created_at DESC LIMIT 200`),
+      safeAll(env.DB, 'SELECT item_id, seen_at, downloaded_at, completed FROM candidate_assigned_acks WHERE user_id = ?', [session.userId]),
       getCandidateControls(env, session.userId).catch(() => null)
     ]);
 
     const modules = modRows.map(formatModule).filter(m => canCandidateAccessModule(m, gov.access_tier, gov.granted_modules));
-    const nowIso = new Date().toISOString().slice(0, 10);
-    const candDist = profile.district.trim().toLowerCase();
-    const candBoards = new Set([profile.primaryExam, ...profile.selectedExams, ...profile.targetStreams].map(s => String(s || '').trim().toLowerCase()).filter(Boolean));
-
-    const assignedItems = assignedRows.map(formatAssignedItem).filter(item => {
-      if (item.expires_at && item.expires_at < nowIso) return false;
-      if (item.target_scope === 'all') return true;
-      if (item.target_scope === 'user') return item.target_user_id === session.userId;
-      if (item.target_scope === 'district') return Boolean(candDist && item.target_district.trim().toLowerCase() === candDist);
-      if (item.target_scope === 'exam_board') {
-        const b = item.target_exam_board.trim().toLowerCase();
-        return Boolean(b && [...candBoards].some(cb => cb === b || cb.includes(b) || b.includes(cb)));
-      }
-      return false;
-    });
+    const assignedItems = filterAssignedItemsForCandidate(assignedRows, ackRows, profile, session.userId);
 
     return json({
       ok: true,
@@ -517,6 +559,73 @@ export async function handleCandidateHubConfigApi(request, env) {
         permissions: controls.permissions
       } : {}
     });
+  } catch (e) {
+    return restrictedResponse(e);
+  }
+}
+
+export async function handleCandidateAssignedItemsApi(request, env) {
+  try {
+    if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');
+    await ensureCandidateHubSchema(env.DB);
+    const { session } = await requireCandidateSession(request, env);
+    const profile = await loadCandidateProfile(env.DB, session.userId, session.email);
+    const [assignedRows, ackRows] = await Promise.all([
+      safeAll(env.DB, `SELECT cai.*, COALESCE(mf.file_size_bytes, 0) AS file_size_bytes
+                       FROM candidate_assigned_items cai
+                       LEFT JOIN media_files mf ON (mf.r2_key = cai.r2_file_key OR mf.id = cai.r2_file_key) AND cai.r2_file_key != ''
+                       WHERE cai.is_published = 1 ORDER BY cai.created_at DESC LIMIT 200`),
+      safeAll(env.DB, 'SELECT item_id, seen_at, downloaded_at, completed FROM candidate_assigned_acks WHERE user_id = ?', [session.userId])
+    ]);
+    return json({ ok: true, items: filterAssignedItemsForCandidate(assignedRows, ackRows, profile, session.userId) });
+  } catch (e) {
+    return restrictedResponse(e);
+  }
+}
+
+export async function handleCandidateAssignedAckApi(request, env) {
+  try {
+    if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');
+    await ensureCandidateHubSchema(env.DB);
+    const { session } = await requireCandidateSession(request, env);
+    const body = await readJson(request, 5000);
+    const itemId = cleanStr(body.item_id, 120);
+    const action = cleanStr(body.action || 'seen', 30);
+    if (!itemId) throw validationError({ item_id: 'item_id is required.' });
+    if (!['seen', 'download', 'complete', 'uncomplete'].includes(action)) {
+      throw validationError({ action: 'action must be seen, download, complete, or uncomplete.' });
+    }
+    const now = new Date().toISOString().replace('T', ' ').split('.')[0];
+    if (action === 'seen') {
+      await env.DB.prepare(
+        `INSERT INTO candidate_assigned_acks (item_id, user_id, seen_at, updated_at)
+         VALUES (?, ?, ?, datetime('now'))
+         ON CONFLICT(item_id, user_id) DO UPDATE SET
+           seen_at = CASE WHEN candidate_assigned_acks.seen_at = '' THEN excluded.seen_at ELSE candidate_assigned_acks.seen_at END,
+           updated_at = datetime('now')`
+      ).bind(itemId, session.userId, now).run();
+    } else if (action === 'download') {
+      await env.DB.prepare(
+        `INSERT INTO candidate_assigned_acks (item_id, user_id, seen_at, downloaded_at, updated_at)
+         VALUES (?, ?, ?, ?, datetime('now'))
+         ON CONFLICT(item_id, user_id) DO UPDATE SET
+           seen_at = CASE WHEN candidate_assigned_acks.seen_at = '' THEN excluded.seen_at ELSE candidate_assigned_acks.seen_at END,
+           downloaded_at = excluded.downloaded_at,
+           updated_at = datetime('now')`
+      ).bind(itemId, session.userId, now, now).run();
+    } else {
+      const done = action === 'complete' ? 1 : 0;
+      await env.DB.prepare(
+        `INSERT INTO candidate_assigned_acks (item_id, user_id, seen_at, completed, updated_at)
+         VALUES (?, ?, ?, ?, datetime('now'))
+         ON CONFLICT(item_id, user_id) DO UPDATE SET
+           seen_at = CASE WHEN candidate_assigned_acks.seen_at = '' THEN excluded.seen_at ELSE candidate_assigned_acks.seen_at END,
+           completed = excluded.completed,
+           updated_at = datetime('now')`
+      ).bind(itemId, session.userId, now, done).run();
+    }
+    const row = await safeFirst(env.DB, 'SELECT * FROM candidate_assigned_acks WHERE item_id = ? AND user_id = ?', [itemId, session.userId]);
+    return json({ ok: true, item_id: itemId, action, ack: row || null });
   } catch (e) {
     return restrictedResponse(e);
   }
@@ -1325,10 +1434,166 @@ export async function handleAdminCandidateHubStudio(request, env, actor, section
     }
   }
 
+  // --- One-Step Direct File Upload & Instant Push (POST /api/admin/candidate-hub/upload-and-push) ---
+  if (section === 'upload-and-push' && method === 'POST') {
+    const ALLOWED_EXTS = {
+      pdf: { mime: 'application/pdf', cat: 'pdf' },
+      png: { mime: 'image/png', cat: 'image' },
+      jpg: { mime: 'image/jpeg', cat: 'image' },
+      jpeg: { mime: 'image/jpeg', cat: 'image' },
+      webp: { mime: 'image/webp', cat: 'image' },
+      doc: { mime: 'application/msword', cat: 'document' },
+      docx: { mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', cat: 'document' },
+      txt: { mime: 'text/plain; charset=utf-8', cat: 'document' },
+      mp3: { mime: 'audio/mpeg', cat: 'audio' },
+      zip: { mime: 'application/zip', cat: 'archive' }
+    };
+    const MAX_BYTES = 25 * 1024 * 1024;
+    const ctype = (request.headers.get('Content-Type') || '').toLowerCase();
+
+    let fields = {};
+    let fileObj = null;
+    if (ctype.includes('multipart/form-data')) {
+      const fd = await request.formData();
+      const rawFile = fd.get('file') || fd.getAll('files')[0] || null;
+      if (rawFile && typeof rawFile === 'object' && typeof rawFile.arrayBuffer === 'function' && rawFile.size > 0) {
+        fileObj = rawFile;
+      }
+      for (const k of ['target_scope', 'target_user_id', 'target_user_ids', 'target_district', 'target_exam_board',
+        'item_type', 'title_en', 'title_or', 'summary_en', 'summary_or', 'resource_url', 'r2_file_key',
+        'priority', 'expires_at', 'is_published']) {
+        const v = fd.get(k);
+        if (v !== null && v !== undefined) fields[k] = String(v);
+      }
+    } else {
+      fields = await readJson(request, 50_000);
+    }
+
+    let uploadedUrl = safeHref(fields.resource_url || '');
+    let r2Key = cleanStr(fields.r2_file_key, 260);
+    let fileName = '';
+    let fileSizeBytes = 0;
+    let mimeType = '';
+
+    if (fileObj) {
+      const buf = await fileObj.arrayBuffer();
+      if (!buf.byteLength || buf.byteLength > MAX_BYTES) {
+        throw new HttpError(400, 'INVALID_FILE_SIZE', 'File is empty or exceeds the 25 MB limit.');
+      }
+      fileName = cleanStr(fileObj.name || 'resource.pdf', 200);
+      const extMatch = fileName.toLowerCase().match(/\.([a-z0-9]+)$/);
+      const ext = extMatch ? extMatch[1] : '';
+      const meta = ALLOWED_EXTS[ext];
+      if (!meta) {
+        throw new HttpError(400, 'UNSUPPORTED_FILE', 'Allowed file types: PDF, PNG, JPG, WEBP, DOC, DOCX, TXT, MP3, ZIP.');
+      }
+      const baseSlug = fileName.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'file';
+      r2Key = `candidate-assigned/${Date.now()}-${baseSlug}.${ext}`;
+      if (env.MEDIA && typeof env.MEDIA.put === 'function') {
+        await env.MEDIA.put(r2Key, buf, { httpMetadata: { contentType: meta.mime } });
+      }
+      uploadedUrl = `/api/media/${r2Key}`;
+      fileSizeBytes = buf.byteLength;
+      mimeType = meta.mime;
+
+      const mediaId = `mfile-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const mediaSlug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
+      const titleFromFile = cleanStr(fileName.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' '), 160) || 'Uploaded Resource';
+      await db.prepare(
+        `INSERT OR IGNORE INTO media_files (id, slug, file_category, storage_provider, r2_key, public_url, original_filename, title_en, mime_type, file_size_bytes, offline_ready, access_tier, status, uploaded_by)
+         VALUES (?, ?, ?, 'r2_primary', ?, ?, ?, ?, ?, ?, ?, 'public', 'published', ?)`
+      ).bind(mediaId, mediaSlug, meta.cat, r2Key, uploadedUrl, fileName, titleFromFile, mimeType, fileSizeBytes, ext === 'pdf' ? 1 : 0, cleanStr(actor.email || 'staff', 120)).run().catch(() => {});
+
+      await db.prepare(
+        `INSERT OR IGNORE INTO media_assets (id, object_key, kind, mime_type, size_bytes, original_name, uploaded_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      ).bind(mediaId, r2Key, meta.cat === 'image' ? 'image' : 'pdf', mimeType, fileSizeBytes, fileName, cleanStr(actor.email || 'staff', 120)).run().catch(() => {});
+    }
+
+    const rawTitleEn = cleanStr(fields.title_en, 180);
+    const derivedTitle = fileName ? cleanStr(fileName.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' '), 180) : '';
+    const titleEn = rawTitleEn || derivedTitle;
+    if (!titleEn) throw validationError({ title_en: 'Title (EN) or a file is required.' });
+
+    const rawScope = cleanStr(fields.target_scope || 'all', 40);
+    const scope = TARGET_SCOPES.includes(rawScope) ? rawScope : 'all';
+    const itemType = ASSIGNED_ITEM_TYPES.includes(fields.item_type) ? fields.item_type : 'study_pack';
+    const priority = PRIORITIES.includes(fields.priority) ? fields.priority : 'normal';
+    const titleOr = cleanStr(fields.title_or, 180);
+    const summaryEn = cleanStr(fields.summary_en, 400);
+    const summaryOr = cleanStr(fields.summary_or, 400);
+    const expiresAt = cleanStr(fields.expires_at, 30);
+    const isPublished = fields.is_published === '0' || fields.is_published === 0 || fields.is_published === false ? 0 : 1;
+    const dist = normalizeOdishaDistrict(cleanStr(fields.target_district, 80));
+    const board = cleanStr(fields.target_exam_board, 80);
+
+    let targetUserIds = [];
+    if (scope === 'selected_users') {
+      if (Array.isArray(fields.target_user_ids)) targetUserIds = fields.target_user_ids.map(String).filter(Boolean);
+      else if (typeof fields.target_user_ids === 'string' && fields.target_user_ids.trim()) {
+        try {
+          const parsed = JSON.parse(fields.target_user_ids);
+          if (Array.isArray(parsed)) targetUserIds = parsed.map(String).filter(Boolean);
+        } catch {
+          targetUserIds = fields.target_user_ids.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+      if (!targetUserIds.length) throw validationError({ target_user_ids: 'Select at least one candidate for bulk push.' });
+    }
+
+    const createdIds = [];
+    if (scope === 'selected_users') {
+      const stmts = targetUserIds.slice(0, 200).map((uid, idx) => {
+        const nid = `cai_${Date.now().toString(36)}_${idx}_${Math.random().toString(36).slice(2, 5)}`;
+        createdIds.push(nid);
+        return db.prepare(
+          `INSERT INTO candidate_assigned_items (id, target_scope, target_user_id, target_district, target_exam_board, item_type, title_en, title_or, summary_en, summary_or, resource_url, r2_file_key, priority, expires_at, is_published, created_by)
+           VALUES (?, 'user', ?, '', '', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(nid, uid, itemType, titleEn, titleOr, summaryEn, summaryOr, uploadedUrl, r2Key, priority, expiresAt, isPublished, actor.email);
+      });
+      await db.batch(stmts);
+    } else {
+      const storeScope = scope === 'individual' ? 'user' : scope;
+      const uid = storeScope === 'user' ? cleanStr(fields.target_user_id, 120) : '';
+      if (storeScope === 'user' && !uid) throw validationError({ target_user_id: 'Candidate User ID is required for individual push.' });
+      const nid = `cai_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+      createdIds.push(nid);
+      await db.prepare(
+        `INSERT INTO candidate_assigned_items (id, target_scope, target_user_id, target_district, target_exam_board, item_type, title_en, title_or, summary_en, summary_or, resource_url, r2_file_key, priority, expires_at, is_published, created_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(nid, storeScope, uid, storeScope === 'district' ? dist : '', storeScope === 'exam_board' ? board : '',
+        itemType, titleEn, titleOr, summaryEn, summaryOr, uploadedUrl, r2Key, priority, expiresAt, isPublished, actor.email).run();
+    }
+
+    await audit(env, request, actor, 'candidate_hub.upload_and_push', 'candidate_assigned_items', createdIds[0], {
+      scope, count: createdIds.length, item_type: itemType, r2_file_key: r2Key, file_size_bytes: fileSizeBytes
+    });
+    await invalidateHub(request);
+    return json({
+      ok: true,
+      url: uploadedUrl,
+      r2_file_key: r2Key,
+      file_name: fileName,
+      file_size_bytes: fileSizeBytes,
+      mime_type: mimeType,
+      pushed_count: createdIds.length,
+      item_ids: createdIds
+    }, 201);
+  }
+
   // --- Assigned Content & Targeted Push ---
   if (section === 'assigned-items') {
     if (!id && method === 'GET') {
-      const rows = await safeAll(db, 'SELECT * FROM candidate_assigned_items ORDER BY created_at DESC LIMIT 200');
+      const rows = await safeAll(db,
+        `SELECT cai.*,
+                COALESCE(mf.file_size_bytes, 0) AS file_size_bytes,
+                COALESCE((SELECT COUNT(*) FROM candidate_assigned_acks a WHERE a.item_id = cai.id AND a.seen_at != ''), 0) AS seen_count,
+                COALESCE((SELECT COUNT(*) FROM candidate_assigned_acks a WHERE a.item_id = cai.id AND a.downloaded_at != ''), 0) AS download_count,
+                COALESCE((SELECT COUNT(*) FROM candidate_assigned_acks a WHERE a.item_id = cai.id AND a.completed = 1), 0) AS completed_count
+         FROM candidate_assigned_items cai
+         LEFT JOIN media_files mf ON (mf.r2_key = cai.r2_file_key OR mf.id = cai.r2_file_key) AND cai.r2_file_key != ''
+         ORDER BY cai.created_at DESC LIMIT 200`
+      );
       return json({ ok: true, items: rows.map(formatAssignedItem) });
     }
     if (!id && method === 'POST') {

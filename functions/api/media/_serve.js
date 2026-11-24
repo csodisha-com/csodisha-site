@@ -1,12 +1,16 @@
 // GET /api/media/<key> — public, immutable-cached R2 delivery.
 import { json } from '../../_lib/http.js';
 
-const KEY_RE = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf)|edu-resources\/(?:digital_library|study_material|notes_pdf|book_reference)\/\d{4}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf)|vault\/(?:pdf|image|video|audio|document|archive)\/\d{4}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf|svg|mp3|mp4|zip))$/;
+const KEY_RE = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf)|edu-resources\/(?:digital_library|study_material|notes_pdf|book_reference)\/\d{4}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf)|vault\/(?:pdf|image|video|audio|document|archive)\/\d{4}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf|svg|mp3|mp4|zip)|candidate-assigned\/\d{10,16}-[a-z0-9_-]{1,80}\.(pdf|png|jpg|jpeg|webp|doc|docx|txt|mp3|zip))$/;
 const SAFE_TYPES = {
   jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
   png: 'image/png',
   webp: 'image/webp',
   pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  txt: 'text/plain; charset=utf-8',
   svg: 'image/svg+xml',
   mp3: 'audio/mpeg',
   mp4: 'video/mp4',

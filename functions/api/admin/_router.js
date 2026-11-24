@@ -293,7 +293,8 @@ async function dispatchAdminApi(request, env) {
     }
 
     if (resource === 'candidate-hub') {
-      const actor = await requireRole(request, env, ['admin']);
+      const roles = id === 'upload-and-push' ? STAFF_ROLES : ['admin'];
+      const actor = await requireRole(request, env, roles);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
       return await handleAdminCandidateHubStudio(request, env, actor, id, sub, extra);
     }

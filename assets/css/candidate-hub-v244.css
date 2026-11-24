@@ -129,6 +129,15 @@
   background: var(--cso-danger-soft); color: var(--cso-text); font-weight: 600;
 }
 
+.cso-hub-item.is-completed { opacity: 0.72; }
+.cso-hub-item__actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.cso-hub-highlight {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 14px; border-radius: 12px; margin-bottom: 14px;
+  background: var(--cso-amber-soft); border: 1px solid var(--cso-amber);
+}
+.cso-hub-highlight__title { font-size: 0.85rem; font-weight: 800; color: var(--cso-text); text-transform: uppercase; letter-spacing: 0.03em; }
+
 @media (max-width: 900px) {
   .cso-hub-grid--2, .cso-hub-grid--3 { grid-template-columns: minmax(0, 1fr); }
 }

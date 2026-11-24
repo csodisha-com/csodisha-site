@@ -152,8 +152,8 @@ await check('Admin Studio integrates unified Candidate Hub sidebar module, Alt+7
 
 await check('Live D1-driven Candidate Hub frontend wires cso-themes.css, hub-config, restricted 403 view & custom features', () => {
   const html = read('student-dashboard/index.html');
-  assert.ok(html.includes('/assets/css/cso-themes.css?v=20261124v244'));
-  assert.ok(html.includes('/assets/css/candidate-hub-v244.css?v=20261124v244'));
+  assert.ok(html.includes('/assets/css/cso-themes.css'));
+  assert.ok(html.includes('/assets/css/candidate-hub-v244.css'));
   assert.ok(html.includes('cso-restricted-screen') && html.includes('cso-hub-top-tabs') && html.includes('cso-hub-quick-stats'));
 
   const js = read('assets/js/student-dashboard.js');

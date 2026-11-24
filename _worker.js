@@ -71,7 +71,9 @@ import {
   handleCandidateHubConfigApi,
   handleCandidateMatchesApi,
   handleCandidateWorkspaceApi,
-  handleCandidateProfileApi
+  handleCandidateProfileApi,
+  handleCandidateAssignedItemsApi,
+  handleCandidateAssignedAckApi
 } from './functions/_lib/candidate-hub-governance.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
 
@@ -1046,6 +1048,12 @@ export default {
     }
     if (pathname === '/api/candidate/profile' || pathname === '/api/auth/profile') {
       return handleCandidateProfileApi(request, env);
+    }
+    if (pathname === '/api/candidate/assigned-items' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handleCandidateAssignedItemsApi(request, env);
+    }
+    if (pathname === '/api/candidate/assigned-items/ack' && request.method === 'POST') {
+      return handleCandidateAssignedAckApi(request, env);
     }
     if (pathname === '/candidate' || pathname === '/candidate/') {
       return Response.redirect(new URL('/student-dashboard/', url.origin).toString(), 301);

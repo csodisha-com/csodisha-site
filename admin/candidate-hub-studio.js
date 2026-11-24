@@ -58,7 +58,7 @@
     if (s.indexOf('-') === -1 && s.indexOf('_') === -1) return s;
     return s.split(/[-_]+/).filter(Boolean).map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
   }
-  var EXAM_BOARDS = ['OPSC', 'OSSC', 'OSSSC', 'OAVS', 'BSE Odisha', 'CHSE', 'UPSC', 'SSC', 'Banking', 'Railways', 'OTET', 'OSSTET', 'UGC NET'];
+  var EXAM_BOARDS = ['OPSC', 'OSSC', 'OSSSC', 'SSB Odisha', 'OAVS', 'OPRB', 'UGC NET', 'CTET/OTET/OSSTET', 'SSC/Banking/RRB', 'BSE Odisha', 'CHSE', 'UPSC'];
   var THEMES = [
     { id: 'system', label: 'System' },
     { id: 'dark', label: 'Dark Night' },
@@ -73,12 +73,12 @@
     ['custom_feature', 'Embedded Action Panel']
   ];
   var ITEM_TYPES = [
-    ['study_pdf', 'Study PDF'],
+    ['study_pack', 'Study Pack / PDF'],
     ['mock_test', 'Mock Test'],
     ['official_notice', 'Official Notice'],
-    ['fee_waiver', 'Fee Waiver'],
-    ['action_alert', 'Personal Action Alert'],
-    ['guidance', 'Career / Exam Guidance']
+    ['admit_card_alert', 'Admit Card Alert'],
+    ['personal_guidance', 'Personal Guidance'],
+    ['fee_waiver', 'Fee Waiver']
   ];
 
   var state = {
@@ -195,6 +195,204 @@
     return wrap;
   }
 
+  function formatBytes(n) {
+    n = Number(n || 0);
+    if (!n) return '0 B';
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1048576).toFixed(2) + ' MB';
+  }
+
+  function uploadAndPushWithProgress(formData, onProgress) {
+    return new Promise(function (resolve, reject) {
+      if (typeof window.XMLHttpRequest === 'function') {
+        var xhr = new window.XMLHttpRequest();
+        xhr.open('POST', '/api/admin/candidate-hub/upload-and-push', true);
+        xhr.withCredentials = true;
+        xhr.setRequestHeader('X-CSO-CSRF', '1');
+        if (xhr.upload && typeof onProgress === 'function') {
+          xhr.upload.onprogress = function (ev) {
+            if (ev.lengthComputable && ev.total > 0) {
+              onProgress(Math.round((ev.loaded / ev.total) * 100));
+            }
+          };
+        }
+        xhr.onload = function () {
+          var data = {};
+          try { data = JSON.parse(xhr.responseText || '{}'); } catch (_) {}
+          if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+          else reject(new Error((data && data.error) || ('HTTP ' + xhr.status)));
+        };
+        xhr.onerror = function () { reject(new Error('Network error during upload')); };
+        xhr.send(formData);
+      } else {
+        fetch('/api/admin/candidate-hub/upload-and-push', {
+          method: 'POST', credentials: 'same-origin', headers: { 'X-CSO-CSRF': '1' }, body: formData
+        }).then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (d) {
+            if (!r.ok) throw new Error((d && d.error) || ('HTTP ' + r.status));
+            resolve(d);
+          });
+        }).catch(reject);
+      }
+    });
+  }
+
+  /**
+   * Reusable One-Step Direct File Upload & Instant Push Widget (v246).
+   * Used in Tab 4 (Provide Content & Push), 360° Candidate Authority Drawer, and Bulk Assign Modal.
+   */
+  function buildDirectUploadPushWidget(opts) {
+    opts = opts || {};
+    var box = el('div', '');
+    var selectedFile = null;
+    var form = el('form'); form.noValidate = true;
+
+    // Drag-and-drop zone
+    var drop = el('label', 'ch-dropzone');
+    var fileIn = el('input', 'ch-dropzone__input');
+    fileIn.type = 'file';
+    fileIn.accept = '.pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.txt,.mp3,.zip';
+    var dropTitle = el('span', 'ch-dropzone__title', 'Drop PDF, Image, Doc, Audio or ZIP here — or click to browse');
+    var dropMeta = el('div', 'ch-dropzone__meta');
+    dropMeta.appendChild(el('span', 'ch-muted', 'Uploads directly to R2 (cso-media) & pushes to Candidate Dashboard in 1 click (max 25 MB)'));
+    drop.appendChild(fileIn); drop.appendChild(dropTitle); drop.appendChild(dropMeta);
+
+    var prog = el('progress', 'ch-progress');
+    prog.max = 100; prog.value = 0; prog.hidden = true;
+    var progText = el('div', 'ch-muted ch-num'); progText.hidden = true;
+
+    var grid = el('div', 'ch-form-grid');
+    var scopeSel = null; var userIn = null; var distSel = null; var boardSel = null;
+    if (!opts.fixedScope) {
+      scopeSel = selectInput('target_scope', [
+        ['all', 'All Candidates'],
+        ['individual', 'Specific Candidate (User ID)'],
+        ['selected_users', 'Selected Candidates (' + (opts.selectedIds ? opts.selectedIds.length : 0) + ')'],
+        ['district', 'Odisha District (30 Districts)'],
+        ['exam_board', 'Exam Board']
+      ], opts.target_scope || 'all');
+      userIn = textInput('target_user_id', opts.target_user_id || '', 'Candidate User ID');
+      distSel = selectInput('target_district', [['', 'Select Odisha District']].concat(ODISHA_30_DISTRICTS.map(function (d) { return [d, d]; })), opts.target_district || '');
+      boardSel = selectInput('target_exam_board', [['', 'Select Exam Board']].concat(EXAM_BOARDS.map(function (b) { return [b, b]; })), opts.target_exam_board || '');
+    }
+
+    var typeSel = selectInput('item_type', ITEM_TYPES, opts.item_type || 'study_pack');
+    var priSel = selectInput('priority', [['normal', 'Normal'], ['high', 'High'], ['urgent', 'Urgent']], opts.priority || 'high');
+    var tEn = textInput('title_en', opts.title_en || '', 'Title (EN) — auto-filled from filename if blank');
+    var tOr = textInput('title_or', opts.title_or || '', 'Title (ଓଡ଼ିଆ)');
+    var sEn = textInput('summary_en', opts.summary_en || '', 'Summary / Instructions (EN)');
+    var sOr = textInput('summary_or', opts.summary_or || '', 'Summary / Instructions (ଓଡ଼ିଆ)');
+    var rUrl = textInput('resource_url', opts.resource_url || '', '/api/media/... or https://... (if not uploading a file)');
+    var r2In = textInput('r2_file_key', opts.r2_file_key || '', 'R2 key (auto-filled on upload)');
+    var expIn = textInput('expires_at', opts.expires_at || '', 'YYYY-MM-DD', 'date');
+    var pubSw = switchInput('is_published', 'Publish immediately to Candidate Dashboard', opts.is_published !== 0);
+
+    function applyFile(file) {
+      if (!file) return;
+      selectedFile = file;
+      clear(dropMeta);
+      var ext = (file.name.split('.').pop() || 'FILE').toUpperCase();
+      dropTitle.textContent = 'Ready to upload: ' + file.name;
+      dropMeta.appendChild(el('span', 'ch-badge ch-badge--active', ext));
+      dropMeta.appendChild(el('span', 'ch-badge', formatBytes(file.size)));
+      if (!tEn.value.trim()) {
+        tEn.value = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
+      }
+    }
+
+    fileIn.addEventListener('change', function () { if (fileIn.files && fileIn.files[0]) applyFile(fileIn.files[0]); });
+    drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('is-dragover'); });
+    drop.addEventListener('dragleave', function () { drop.classList.remove('is-dragover'); });
+    drop.addEventListener('drop', function (e) {
+      e.preventDefault(); drop.classList.remove('is-dragover');
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) applyFile(e.dataTransfer.files[0]);
+    });
+
+    if (!opts.fixedScope) {
+      grid.appendChild(fieldGroup('Target Audience', scopeSel));
+      grid.appendChild(fieldGroup('Content Type', typeSel));
+      grid.appendChild(fieldGroup('Candidate User ID', userIn));
+      grid.appendChild(fieldGroup('Odisha District', distSel));
+      grid.appendChild(fieldGroup('Exam Board', boardSel));
+      grid.appendChild(fieldGroup('Priority', priSel));
+    } else {
+      grid.appendChild(fieldGroup('Content Type', typeSel));
+      grid.appendChild(fieldGroup('Priority', priSel));
+    }
+    grid.appendChild(fieldGroup('Title (EN)', tEn, true));
+    grid.appendChild(fieldGroup('Title (ଓଡ଼ିଆ)', tOr, true));
+    grid.appendChild(fieldGroup('Summary (EN)', sEn, true));
+    grid.appendChild(fieldGroup('Summary (ଓଡ଼ିଆ)', sOr, true));
+    grid.appendChild(fieldGroup('Existing / External URL (optional)', rUrl, true));
+    grid.appendChild(fieldGroup('R2 Key', r2In));
+    grid.appendChild(fieldGroup('Expires On (optional)', expIn));
+
+    form.appendChild(drop);
+    form.appendChild(prog);
+    form.appendChild(progText);
+    form.appendChild(grid);
+    form.appendChild(buildR2Picker(function (f) { rUrl.value = f.url; r2In.value = f.id; }));
+    form.appendChild(pubSw.wrap);
+
+    var acts = el('div', 'ch-form-actions');
+    var submitBtn = el('button', 'ch-btn is-primary', 'Upload to R2 & Push Live');
+    submitBtn.type = 'submit';
+    acts.appendChild(submitBtn);
+    form.appendChild(acts);
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!selectedFile && !tEn.value.trim()) {
+        toast('Select a file or enter a Title (EN)', 'crimson');
+        return;
+      }
+      var fd = new window.FormData();
+      if (selectedFile) fd.append('file', selectedFile);
+      var effScope = opts.fixedScope || (scopeSel ? scopeSel.value : 'all');
+      fd.append('target_scope', effScope);
+      if (opts.fixedScope === 'individual' || opts.fixedScope === 'user') fd.append('target_user_id', opts.target_user_id || '');
+      else if (userIn) fd.append('target_user_id', userIn.value.trim());
+      if (effScope === 'selected_users') fd.append('target_user_ids', JSON.stringify(opts.selectedIds || []));
+      if (distSel) fd.append('target_district', distSel.value);
+      if (boardSel) fd.append('target_exam_board', boardSel.value);
+      fd.append('item_type', typeSel.value);
+      fd.append('priority', priSel.value);
+      fd.append('title_en', tEn.value.trim());
+      fd.append('title_or', tOr.value.trim());
+      fd.append('summary_en', sEn.value.trim());
+      fd.append('summary_or', sOr.value.trim());
+      fd.append('resource_url', rUrl.value.trim());
+      fd.append('r2_file_key', r2In.value.trim());
+      fd.append('expires_at', expIn.value);
+      fd.append('is_published', pubSw.input.checked ? '1' : '0');
+
+      submitBtn.disabled = true;
+      prog.hidden = !selectedFile;
+      progText.hidden = false;
+      progText.textContent = selectedFile ? 'Uploading to R2 & publishing… 0%' : 'Publishing to Candidate Dashboard…';
+      uploadAndPushWithProgress(fd, function (pct) {
+        prog.value = pct;
+        progText.textContent = 'Uploading to R2… ' + pct + '%';
+      }).then(function (res) {
+        submitBtn.disabled = false;
+        prog.value = 100;
+        progText.textContent = 'Pushed live (' + (res.pushed_count || 1) + ' target)';
+        toast('Uploaded & pushed to Candidate Dashboard', 'ok');
+        selectedFile = null;
+        if (typeof opts.onDone === 'function') opts.onDone(res);
+      }).catch(function (err) {
+        submitBtn.disabled = false;
+        prog.hidden = true;
+        progText.textContent = 'Error: ' + err.message;
+        toast(err.message, 'crimson');
+      });
+    });
+
+    box.appendChild(form);
+    return box;
+  }
+
   // =========================================================================
   // TAB 1: CANDIDATES ROSTER & GOVERNANCE + 360° AUTHORITY DRAWER
   // =========================================================================
@@ -249,13 +447,34 @@
         .then(function () { toast('Updated tier for ' + ids.length + ' candidate(s)', 'ok'); state.roster.selected.clear(); loadRoster().then(renderBody); })
         .catch(function (e) { toast(e.message, 'crimson'); });
     } else if (action === 'assign_content') {
-      var title = window.prompt('Content Title (EN) to push to selected candidates:');
-      if (!title) return;
-      var url = window.prompt('Resource URL or R2 PDF path (optional):', '') || '';
-      api('/api/admin/candidates/bulk', 'POST', { action: 'assign_content', ids: ids, title_en: title, resource_url: url, item_type: 'study_pdf', priority: 'high' })
-        .then(function () { toast('Assigned content to ' + ids.length + ' candidate(s)', 'ok'); state.roster.selected.clear(); loadRoster().then(renderBody); })
-        .catch(function (e) { toast(e.message, 'crimson'); });
+      openBulkAssignModal(ids);
     }
+  }
+
+  function openBulkAssignModal(ids) {
+    var bd = el('div', 'ch-modal-backdrop');
+    var modal = el('div', 'ch-modal');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Bulk Direct Upload & Push');
+    var mh = el('div', 'ch-drawer__head');
+    mh.appendChild(el('h3', 'ch-card__title', 'Direct Upload & Push to ' + ids.length + ' Selected Candidate(s)'));
+    var closeFn = function () { bd.remove(); };
+    mh.appendChild(btn('×', 'ch-btn', closeFn));
+    modal.appendChild(mh);
+    modal.appendChild(buildDirectUploadPushWidget({
+      fixedScope: 'selected_users',
+      selectedIds: ids,
+      priority: 'high',
+      onDone: function () {
+        closeFn();
+        state.roster.selected.clear();
+        loadRoster().then(renderBody);
+      }
+    }));
+    bd.addEventListener('click', function (e) { if (e.target === bd) closeFn(); });
+    bd.appendChild(modal);
+    document.body.appendChild(bd);
   }
 
   function renderRosterTab(container) {
@@ -534,28 +753,14 @@
     govSec.appendChild(gActs);
     dr.appendChild(govSec);
 
-    // Direct Content Push for this Candidate
+    // Direct File Upload & Instant Push for this Candidate (v246)
     var pushSec = el('div', 'ch-drawer__section');
-    pushSec.appendChild(el('h4', '', 'Push Content Directly to ' + c.full_name));
-    var pTitle = textInput('push_title', '', 'Title (EN) e.g. Personal OPSC Strategy PDF');
-    var pType = selectInput('push_type', ITEM_TYPES, 'study_pdf');
-    var pUrl = textInput('push_url', '', '/api/media/... or https://...');
-    var pR2 = textInput('push_r2', '', 'R2 key (optional)');
-    var pGrid = el('div', 'ch-form-grid');
-    pGrid.appendChild(fieldGroup('Title (EN)', pTitle, true));
-    pGrid.appendChild(fieldGroup('Content Type', pType));
-    pGrid.appendChild(fieldGroup('Resource URL', pUrl));
-    pushSec.appendChild(pGrid);
-    pushSec.appendChild(buildR2Picker(function (f) { pUrl.value = f.url; pR2.value = f.id; }));
-    pushSec.appendChild(btn('Send Now', 'ch-btn is-primary', function () {
-      if (!pTitle.value.trim()) { toast('Enter a title first', 'crimson'); return; }
-      api('/api/admin/candidate-hub/assigned-items', 'POST', {
-        target_scope: 'user', target_user_id: c.id, item_type: pType.value,
-        title_en: pTitle.value.trim(), resource_url: pUrl.value.trim(), r2_file_key: pR2.value.trim(), priority: 'high', is_published: 1
-      }).then(function () {
-        toast('Content pushed to candidate', 'ok');
-        openAuthorityDrawer(c.id);
-      }).catch(function (e) { toast(e.message, 'crimson'); });
+    pushSec.appendChild(el('h4', '', 'Direct Upload & Push to ' + c.full_name));
+    pushSec.appendChild(buildDirectUploadPushWidget({
+      fixedScope: 'individual',
+      target_user_id: c.id,
+      priority: 'high',
+      onDone: function () { openAuthorityDrawer(c.id); }
     }));
     dr.appendChild(pushSec);
 
@@ -896,21 +1101,30 @@
     } else {
       var tbl = el('table', 'ch-table');
       var thead = el('thead'); var htr = el('tr');
-      ['Title & Type', 'Target Scope', 'Priority', 'Status', 'Actions'].forEach(function (h) { htr.appendChild(el('th', '', h)); });
+      ['Title & Type', 'Target Scope', 'Priority', 'Engagement', 'Status', 'Actions'].forEach(function (h) { htr.appendChild(el('th', '', h)); });
       thead.appendChild(htr); tbl.appendChild(thead);
       var tbody = el('tbody');
       state.assigned.forEach(function (it) {
         var tr = el('tr');
         var td1 = el('td');
         td1.appendChild(el('strong', '', it.title_en));
-        td1.appendChild(el('div', 'ch-muted', it.item_type.replace(/_/g, ' ') + (it.expires_at ? ' · exp ' + it.expires_at : '')));
+        var fileTag = it.file_ext ? ' · ' + it.file_ext + (it.file_size_bytes ? ' (' + formatBytes(it.file_size_bytes) + ')' : '') : '';
+        td1.appendChild(el('div', 'ch-muted', it.item_type.replace(/_/g, ' ') + fileTag + (it.expires_at ? ' · exp ' + it.expires_at : '')));
         tr.appendChild(td1);
         var targetDesc = it.target_scope === 'all' ? 'All Candidates'
-          : it.target_scope === 'user' ? 'User: ' + it.target_user_id
+          : (it.target_scope === 'user' || it.target_scope === 'individual') ? 'User: ' + it.target_user_id
             : it.target_scope === 'district' ? 'District: ' + it.target_district
               : 'Exam Board: ' + it.target_exam_board;
         tr.appendChild(el('td', 'ch-muted', targetDesc));
         var tdP = el('td'); tdP.appendChild(el('span', 'ch-badge ch-badge--' + it.priority, it.priority)); tr.appendChild(tdP);
+        var tdEng = el('td');
+        var engBox = el('div', 'ch-telemetry-badges');
+        var sBadge = el('span', 'ch-telemetry-pill', '👁 ' + (it.seen_count || 0) + ' seen');
+        sBadge.title = 'Candidates who viewed this item';
+        var dBadge = el('span', 'ch-telemetry-pill', '⬇ ' + (it.download_count || 0) + ' dl');
+        dBadge.title = 'Candidates who opened or downloaded this file';
+        engBox.appendChild(sBadge); engBox.appendChild(dBadge);
+        tdEng.appendChild(engBox); tr.appendChild(tdEng);
         var tdS = el('td');
         var sw = switchInput('as_' + it.id, it.is_published ? 'Live' : 'Draft', it.is_published);
         sw.input.addEventListener('change', function () {
@@ -936,70 +1150,77 @@
     listCard.appendChild(wrap);
 
     var edCard = el('section', 'ch-card');
-    var ed = state.editingAssigned || { target_scope: 'all', item_type: 'study_pdf', priority: 'normal', is_published: 1 };
-    edCard.appendChild(el('h2', 'ch-card__title', ed.id ? 'Edit Assigned Content' : 'Provide Content & Targeted Push'));
-    var form = el('form'); form.noValidate = true;
-    var grid = el('div', 'ch-form-grid');
-    var scopeSel = selectInput('target_scope', [['all', 'All Candidates'], ['user', 'Specific Candidate (User ID)'], ['district', 'Odisha District (30 Districts)'], ['exam_board', 'Exam Board']], ed.target_scope);
-    var userIn = textInput('target_user_id', ed.target_user_id || '', 'Candidate User ID');
-    var distSel = selectInput('target_district', [['', 'Select Odisha District']].concat(ODISHA_30_DISTRICTS.map(function (d) { return [d, d]; })), ed.target_district || '');
-    var boardSel = selectInput('target_exam_board', [['', 'Select Exam Board']].concat(EXAM_BOARDS.map(function (b) { return [b, b]; })), ed.target_exam_board || '');
-    var typeSel = selectInput('item_type', ITEM_TYPES, ed.item_type);
-    var priSel = selectInput('priority', [['low', 'Low'], ['normal', 'Normal'], ['high', 'High'], ['urgent', 'Urgent']], ed.priority);
-    var tEn = textInput('title_en', ed.title_en || '', 'Title (EN) e.g. OPSC OAS Prelims Master PDF');
-    var tOr = textInput('title_or', ed.title_or || '', 'Title (ଓଡ଼ିଆ)');
-    var sEn = textInput('summary_en', ed.summary_en || '', 'Short instructions / summary (EN)');
-    var sOr = textInput('summary_or', ed.summary_or || '', 'Short instructions / summary (ଓଡ଼ିଆ)');
-    var rUrl = textInput('resource_url', ed.resource_url || '', '/api/media/... or https://...');
-    var r2In = textInput('r2_file_key', ed.r2_file_key || '', 'R2 key (optional)');
-    var expIn = textInput('expires_at', ed.expires_at || '', 'YYYY-MM-DD', 'date');
-    var pubSw = switchInput('is_published', 'Publish immediately to candidate dashboards', ed.is_published !== 0);
+    var ed = state.editingAssigned;
+    if (ed && ed.id) {
+      edCard.appendChild(el('h2', 'ch-card__title', 'Edit Assigned Content'));
+      var form = el('form'); form.noValidate = true;
+      var grid = el('div', 'ch-form-grid');
+      var scopeSel = selectInput('target_scope', [['all', 'All Candidates'], ['user', 'Specific Candidate (User ID)'], ['district', 'Odisha District (30 Districts)'], ['exam_board', 'Exam Board']], ed.target_scope);
+      var userIn = textInput('target_user_id', ed.target_user_id || '', 'Candidate User ID');
+      var distSel = selectInput('target_district', [['', 'Select Odisha District']].concat(ODISHA_30_DISTRICTS.map(function (d) { return [d, d]; })), ed.target_district || '');
+      var boardSel = selectInput('target_exam_board', [['', 'Select Exam Board']].concat(EXAM_BOARDS.map(function (b) { return [b, b]; })), ed.target_exam_board || '');
+      var typeSel = selectInput('item_type', ITEM_TYPES, ed.item_type);
+      var priSel = selectInput('priority', [['low', 'Low'], ['normal', 'Normal'], ['high', 'High'], ['urgent', 'Urgent']], ed.priority);
+      var tEn = textInput('title_en', ed.title_en || '', 'Title (EN)');
+      var tOr = textInput('title_or', ed.title_or || '', 'Title (ଓଡ଼ିଆ)');
+      var sEn = textInput('summary_en', ed.summary_en || '', 'Short instructions / summary (EN)');
+      var sOr = textInput('summary_or', ed.summary_or || '', 'Short instructions / summary (ଓଡ଼ିଆ)');
+      var rUrl = textInput('resource_url', ed.resource_url || '', '/api/media/... or https://...');
+      var r2In = textInput('r2_file_key', ed.r2_file_key || '', 'R2 key (optional)');
+      var expIn = textInput('expires_at', ed.expires_at || '', 'YYYY-MM-DD', 'date');
+      var pubSw = switchInput('is_published', 'Publish immediately to candidate dashboards', ed.is_published !== 0);
 
-    grid.appendChild(fieldGroup('Target Audience', scopeSel));
-    grid.appendChild(fieldGroup('Content Type', typeSel));
-    grid.appendChild(fieldGroup('Specific Candidate ID', userIn));
-    grid.appendChild(fieldGroup('Target Odisha District', distSel));
-    grid.appendChild(fieldGroup('Target Exam Board', boardSel));
-    grid.appendChild(fieldGroup('Priority', priSel));
-    grid.appendChild(fieldGroup('Title (EN) *', tEn, true));
-    grid.appendChild(fieldGroup('Title (ଓଡ଼ିଆ)', tOr, true));
-    grid.appendChild(fieldGroup('Summary (EN)', sEn, true));
-    grid.appendChild(fieldGroup('Summary (ଓଡ଼ିଆ)', sOr, true));
-    grid.appendChild(fieldGroup('Resource URL / PDF Link', rUrl, true));
-    grid.appendChild(fieldGroup('R2 File Key', r2In));
-    grid.appendChild(fieldGroup('Expires On (optional)', expIn));
-    form.appendChild(grid);
-    form.appendChild(buildR2Picker(function (f) { rUrl.value = f.url; r2In.value = f.id; }));
-    form.appendChild(pubSw.wrap);
+      grid.appendChild(fieldGroup('Target Audience', scopeSel));
+      grid.appendChild(fieldGroup('Content Type', typeSel));
+      grid.appendChild(fieldGroup('Specific Candidate ID', userIn));
+      grid.appendChild(fieldGroup('Target Odisha District', distSel));
+      grid.appendChild(fieldGroup('Target Exam Board', boardSel));
+      grid.appendChild(fieldGroup('Priority', priSel));
+      grid.appendChild(fieldGroup('Title (EN) *', tEn, true));
+      grid.appendChild(fieldGroup('Title (ଓଡ଼ିଆ)', tOr, true));
+      grid.appendChild(fieldGroup('Summary (EN)', sEn, true));
+      grid.appendChild(fieldGroup('Summary (ଓଡ଼ିଆ)', sOr, true));
+      grid.appendChild(fieldGroup('Resource URL / PDF Link', rUrl, true));
+      grid.appendChild(fieldGroup('R2 File Key', r2In));
+      grid.appendChild(fieldGroup('Expires On (optional)', expIn));
+      form.appendChild(grid);
+      form.appendChild(buildR2Picker(function (f) { rUrl.value = f.url; r2In.value = f.id; }));
+      form.appendChild(pubSw.wrap);
 
-    var acts = el('div', 'ch-form-actions');
-    var sv = el('button', 'ch-btn is-primary', ed.id ? 'Save Content' : 'Push Content Live'); sv.type = 'submit';
-    acts.appendChild(sv);
-    if (ed.id) acts.appendChild(btn('New Push', 'ch-btn', function () { state.editingAssigned = null; renderBody(); }));
-    form.appendChild(acts);
+      var acts = el('div', 'ch-form-actions');
+      var sv = el('button', 'ch-btn is-primary', 'Save Content'); sv.type = 'submit';
+      acts.appendChild(sv);
+      acts.appendChild(btn('New Direct Upload', 'ch-btn', function () { state.editingAssigned = null; renderBody(); }));
+      form.appendChild(acts);
 
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (!tEn.value.trim()) { toast('Title (EN) is required', 'crimson'); return; }
-      var payload = {
-        target_scope: scopeSel.value, target_user_id: userIn.value.trim(),
-        target_district: distSel.value, target_exam_board: boardSel.value,
-        item_type: typeSel.value, priority: priSel.value,
-        title_en: tEn.value.trim(), title_or: tOr.value.trim(),
-        summary_en: sEn.value.trim(), summary_or: sOr.value.trim(),
-        resource_url: rUrl.value.trim(), r2_file_key: r2In.value.trim(),
-        expires_at: expIn.value, is_published: pubSw.input.checked ? 1 : 0
-      };
-      var req = ed.id
-        ? api('/api/admin/candidate-hub/assigned-items/' + encodeURIComponent(ed.id), 'PUT', payload)
-        : api('/api/admin/candidate-hub/assigned-items', 'POST', payload);
-      req.then(function () {
-        toast('Content saved & pushed', 'ok');
-        state.editingAssigned = null;
-        loadAssigned().then(renderBody);
-      }).catch(function (err) { toast(err.message, 'crimson'); });
-    });
-    edCard.appendChild(form);
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!tEn.value.trim()) { toast('Title (EN) is required', 'crimson'); return; }
+        var payload = {
+          target_scope: scopeSel.value, target_user_id: userIn.value.trim(),
+          target_district: distSel.value, target_exam_board: boardSel.value,
+          item_type: typeSel.value, priority: priSel.value,
+          title_en: tEn.value.trim(), title_or: tOr.value.trim(),
+          summary_en: sEn.value.trim(), summary_or: sOr.value.trim(),
+          resource_url: rUrl.value.trim(), r2_file_key: r2In.value.trim(),
+          expires_at: expIn.value, is_published: pubSw.input.checked ? 1 : 0
+        };
+        api('/api/admin/candidate-hub/assigned-items/' + encodeURIComponent(ed.id), 'PUT', payload)
+          .then(function () { toast('Content saved & pushed', 'ok'); state.editingAssigned = null; loadAssigned().then(renderBody); })
+          .catch(function (err) { toast(err.message, 'crimson'); });
+      });
+      edCard.appendChild(form);
+    } else {
+      edCard.appendChild(el('h2', 'ch-card__title', 'Direct Upload & Push to Candidate Dashboard'));
+      edCard.appendChild(buildDirectUploadPushWidget({
+        target_scope: (ed && ed.target_scope) || 'all',
+        target_user_id: (ed && ed.target_user_id) || '',
+        item_type: (ed && ed.item_type) || 'study_pack',
+        priority: (ed && ed.priority) || 'high',
+        selectedIds: Array.from(state.roster.selected),
+        onDone: function () { state.editingAssigned = null; loadAssigned().then(renderBody); }
+      }));
+    }
 
     split.appendChild(listCard); split.appendChild(edCard);
     container.appendChild(split);

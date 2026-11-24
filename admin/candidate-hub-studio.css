@@ -213,6 +213,55 @@
 }
 .ch-r2-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.78rem; }
 
+/* Direct File Upload Dropzone & Progress (v246) */
+.ch-dropzone {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  padding: 16px 14px; border-radius: 10px; text-align: center;
+  background: var(--studio-card-elev, var(--cso-surface-alt));
+  border: 2px dashed var(--studio-border, var(--cso-border));
+  cursor: pointer; transition: border-color 0.15s, background-color 0.15s;
+}
+.ch-dropzone:hover, .ch-dropzone.is-dragover {
+  border-color: var(--studio-accent, var(--cso-primary));
+  background: var(--studio-ok-bg, var(--cso-highlight-bg));
+}
+.ch-dropzone__input {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
+}
+.ch-dropzone__title { font-size: 0.86rem; font-weight: 700; color: var(--studio-text, var(--cso-text)); }
+.ch-dropzone__meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
+.ch-progress {
+  width: 100%; height: 8px; border-radius: 999px; overflow: hidden;
+  accent-color: var(--studio-accent, var(--cso-primary));
+}
+.ch-progress[hidden] { display: none; }
+.ch-telemetry-badges { display: flex; flex-wrap: wrap; gap: 4px; font-size: 0.72rem; font-variant-numeric: tabular-nums; }
+.ch-telemetry-pill {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 7px; border-radius: 999px;
+  background: var(--studio-card-elev, var(--cso-surface-alt));
+  border: 1px solid var(--studio-border, var(--cso-border));
+  color: var(--studio-text, var(--cso-text));
+  white-space: nowrap;
+}
+
+/* Bulk Assign Modal */
+.ch-modal-backdrop {
+  position: fixed; inset: 0; z-index: 1140; background: rgba(11, 18, 24, 0.54);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.ch-modal-backdrop[hidden] { display: none; }
+.ch-modal {
+  width: min(620px, 96vw); max-height: 90vh; overflow-y: auto;
+  background: var(--studio-card, var(--cso-surface));
+  color: var(--studio-text, var(--cso-text));
+  border: 1px solid var(--studio-border, var(--cso-border));
+  border-radius: 14px; padding: 18px;
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.28);
+  display: flex; flex-direction: column; gap: 12px;
+}
+
 @media (max-width: 1080px) {
   .ch-split, .ch-pv-grid { grid-template-columns: minmax(0, 1fr); }
 }

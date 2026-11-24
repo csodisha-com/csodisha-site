@@ -302,6 +302,26 @@
     }
   }
 
+  const seenSent = new Set();
+
+  function formatBytes(n) {
+    n = Number(n || 0);
+    if (!n) return '';
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1048576).toFixed(2) + ' MB';
+  }
+
+  function sendAssignedAck(itemId, action) {
+    if (!itemId) return;
+    fetch('/api/candidate/assigned-items/ack', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item_id: itemId, action: action })
+    }).catch(() => {});
+  }
+
   // --- Core Module Renderers ---
   function buildAssignedCard(mod, forceFull) {
     const card = makeCard(mod, forceFull);
@@ -310,21 +330,40 @@
       list.appendChild(el('p', 'cso-muted-note', 'No items assigned to your profile or district yet.'));
     } else {
       state.assignedItems.forEach(it => {
-        const row = el('div', 'cso-hub-item');
+        if (!seenSent.has(it.id)) {
+          seenSent.add(it.id);
+          sendAssignedAck(it.id, 'seen');
+        }
+        const row = el('div', 'cso-hub-item' + (it.completed ? ' is-completed' : ''));
         const main = el('div', 'cso-hub-item__main');
         main.appendChild(el('div', 'cso-hub-item__title', pick(it, 'title')));
         const sum = pick(it, 'summary');
-        const metaTxt = [it.item_type.replace(/_/g, ' '), it.expires_at ? 'Valid till ' + it.expires_at : '', sum].filter(Boolean).join(' · ');
+        const sizeLbl = formatBytes(it.file_size_bytes);
+        const fileInfo = [it.file_ext, sizeLbl].filter(Boolean).join(' · ');
+        const metaTxt = [it.item_type.replace(/_/g, ' '), fileInfo, it.expires_at ? 'Valid till ' + it.expires_at : '', sum].filter(Boolean).join(' · ');
         if (metaTxt) main.appendChild(el('div', 'cso-hub-item__meta', metaTxt));
         row.appendChild(main);
-        row.appendChild(el('span', 'cso-hub-pill cso-hub-pill--' + it.priority, it.priority));
+
+        const acts = el('div', 'cso-hub-item__actions');
+        if (it.file_ext) acts.appendChild(el('span', 'cso-hub-pill', it.file_ext));
+        acts.appendChild(el('span', 'cso-hub-pill cso-hub-pill--' + it.priority, it.priority));
         const href = safeUrl(it.resource_url);
         if (href) {
-          const a = el('a', 'cso-btn cso-btn-sm cso-btn-primary', 'Open ↗');
+          const a = el('a', 'cso-btn cso-btn-sm cso-btn-primary', 'Open / Download ↗');
           a.href = href;
           if (/^https?:\/\//i.test(href)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
-          row.appendChild(a);
+          a.addEventListener('click', () => { it.downloaded = true; sendAssignedAck(it.id, 'download'); });
+          acts.appendChild(a);
         }
+        const compBtn = el('button', 'cso-btn cso-btn-sm', it.completed ? '✓ Completed' : 'Mark Completed');
+        compBtn.type = 'button';
+        compBtn.addEventListener('click', () => {
+          it.completed = !it.completed;
+          sendAssignedAck(it.id, it.completed ? 'complete' : 'uncomplete');
+          renderWorkspace();
+        });
+        acts.appendChild(compBtn);
+        row.appendChild(acts);
         list.appendChild(row);
       });
     }
@@ -601,6 +640,32 @@
     itemsEl.hidden = false;
 
     if (state.activeModuleKey === 'overview') {
+      const priorityItems = state.assignedItems.filter(it => it.priority === 'urgent' || it.priority === 'high');
+      if (priorityItems.length) {
+        const hl = el('div', 'cso-hub-highlight cso-hub-card--full');
+        hl.appendChild(el('div', 'cso-hub-highlight__title', 'Priority Assigned Files & Alerts (' + priorityItems.length + ')'));
+        priorityItems.slice(0, 3).forEach(it => {
+          const row = el('div', 'cso-hub-item');
+          const main = el('div', 'cso-hub-item__main');
+          main.appendChild(el('div', 'cso-hub-item__title', pick(it, 'title')));
+          const sz = formatBytes(it.file_size_bytes);
+          main.appendChild(el('div', 'cso-hub-item__meta', [it.file_ext, sz, pick(it, 'summary')].filter(Boolean).join(' · ')));
+          row.appendChild(main);
+          const acts = el('div', 'cso-hub-item__actions');
+          acts.appendChild(el('span', 'cso-hub-pill cso-hub-pill--' + it.priority, it.priority));
+          const href = safeUrl(it.resource_url);
+          if (href) {
+            const a = el('a', 'cso-btn cso-btn-sm cso-btn-primary', 'Open / Download ↗');
+            a.href = href;
+            if (/^https?:\/\//i.test(href)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+            a.addEventListener('click', () => { sendAssignedAck(it.id, 'download'); });
+            acts.appendChild(a);
+          }
+          row.appendChild(acts);
+          hl.appendChild(row);
+        });
+        itemsEl.appendChild(hl);
+      }
       const overviewMods = state.modules.filter(m => m.module_key !== 'overview' && (m.layout_slot === 'overview' || m.layout_slot === 'both'));
       if (!overviewMods.length) {
         emptyEl.hidden = false;
