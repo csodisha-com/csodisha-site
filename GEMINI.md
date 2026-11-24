@@ -18,11 +18,11 @@
   5. **About** (`/about/`)
 - **Never** reintroduce bulky hardcoded static directory trees, mega-menu link piles, or auto-seeding loops (`ensureVerifiedUpscSeedNotice`, `ODISHA_1_2_SEEDS`, `NATIONAL_1_1_SEEDS`). All categories, submenus, and content items are controlled strictly from `/admin/` via Cloudflare D1.
 - Every Admin Panel mutation (`POST`, `PUT`, `PATCH`, `DELETE`) must immediately invalidate isolate and edge caches (`invalidateAllPublicCaches`, `resetPublicContentMemo`, `invalidateSitePagesCache`, `resetAboutOverviewMemo`) so public `/api/nav/config` and `/api/content/*` stay in real-time sync.
-- When a category or section has `0` items in D1, render a clean, CSP-safe empty state on public pages rather than falling back to hardcoded dummy/directory data.
+- When a category or section has `0` items in D1, render a clean, CSP-safe empty state on public pages and keep explorer left sidebars clean (no hardcoded `Overview` buttons, `DIRECTORY SECTIONS` labels, or `PORTAL LINKS`) until dynamic Admin-published categories exist from `/api/nav/config` or D1.
 
 ## 4. Required Verification Before Finishing Any Change
 Always run the full verification suite before completing any task and ensure all checks pass:
 
 ```bash
-node scripts/test-minimal-explorers-v236.mjs && node scripts/test-about-clean-slate-v235.mjs && node scripts/test-explorer-clean-slate-v234.mjs && node scripts/test-full-clean-slate-v233.mjs && node scripts/test-deep-purge-v232.mjs && node scripts/test-clean-slate-live-sync-v231.mjs && node scripts/test-navigation-restructure-v230.mjs && node scripts/test-extended-jobs-details-v229.mjs && node scripts/test-d1-read-optimization-v228.mjs && node scripts/test-odisha-jobs-details-v227.mjs && node scripts/audit-links.js
+node scripts/test-minimal-explorers-v236.mjs && node scripts/test-about-clean-slate-v235.mjs && node scripts/test-explorer-clean-slate-v234.mjs && node scripts/test-full-clean-slate-v233.mjs && node scripts/test-deep-purge-v232.mjs && node scripts/test-clean-slate-live-sync-v231.mjs && node scripts/test-navigation-restructure-v230.mjs && node scripts/test-extended-jobs-details-v229.mjs && node scripts/test-d1-read-optimization-v228.mjs && node scripts/test-odisha-jobs-details-v227.mjs && node scripts/test-ops-sentinel.mjs && node scripts/audit-links.js
 ```

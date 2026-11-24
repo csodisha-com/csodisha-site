@@ -137,14 +137,6 @@
 
     if (navEl) {
       clear(navEl);
-      var ovChildren = [
-        el('span', { class: 'cso-jobs-nav-num', text: '◆' }),
-        el('span', { class: 'cso-jobs-rail-label', text: 'Overview' })
-      ];
-      if (domains.length) {
-        ovChildren.push(el('span', { class: 'cso-jobs-nav-count', text: String(domains.length) }));
-      }
-      navEl.appendChild(el('a', { class: 'cso-jobs-nav-link is-active', href: '/jobs/' }, ovChildren));
       domains.forEach(function (d) {
         var icon = icons[d.slug] || '•';
         navEl.appendChild(el('a', { class: 'cso-jobs-nav-link', href: d.publicPath }, [

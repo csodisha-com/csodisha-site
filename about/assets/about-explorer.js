@@ -57,21 +57,6 @@
     if (!navEl) return;
     navEl.replaceChildren();
 
-    const allLink = el('a', `cso-about-nav-link${!activeSlug ? ' is-active' : ''}`);
-    allLink.href = '#overview';
-    allLink.append(
-      el('span', 'cso-about-nav-num', '◆'),
-      el('span', 'cso-about-rail-label', pick('Overview', 'ସମୀକ୍ଷା'))
-    );
-    allLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      activeSlug = '';
-      setContext('Overview');
-      renderAll();
-      closeMobileDrawer();
-    });
-    navEl.appendChild(allLink);
-
     if (!liveSections.length) return;
 
     liveSections.forEach((sec, idx) => {

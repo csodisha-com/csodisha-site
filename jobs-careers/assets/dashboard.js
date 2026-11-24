@@ -1542,9 +1542,6 @@
   function renderEmptyDirectoryState() {
     if (sectionsNav) {
       sectionsNav.replaceChildren();
-      const ovLink = el('a', 'side-link active', 'Overview');
-      ovLink.href = './';
-      sectionsNav.appendChild(ovLink);
     }
     const topSel = $('cso-top-category-selector');
     const matchingEl = $('cso-matching-live-notices');

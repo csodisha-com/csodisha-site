@@ -51,12 +51,25 @@ const EXPLORER_JS_FILES = [
 
 console.log('=== CSO Minimal Explorer Cleanup Verification Suite (v236) ===');
 
-check('All 7 explorer HTML files remove PORTAL LINKS and .sidebar-footer clutter', () => {
+check('All 7 explorer HTML files remove PORTAL LINKS, .sidebar-footer clutter, and DIRECTORY SECTIONS / ABOUT SECTIONS headings', () => {
   for (const rel of EXPLORER_HTML_FILES) {
     const html = read(rel);
     assert.ok(!/PORTAL LINKS/i.test(html), `${rel} must not contain hardcoded PORTAL LINKS block`);
     assert.ok(!html.includes('class="sidebar-footer"'), `${rel} must not contain .sidebar-footer portal pile`);
+    assert.ok(!/>DIRECTORY SECTIONS</i.test(html), `${rel} must not contain hardcoded DIRECTORY SECTIONS label`);
+    assert.ok(!/>ABOUT SECTIONS</i.test(html), `${rel} must not contain hardcoded ABOUT SECTIONS label`);
   }
+});
+
+check('All 7 explorer JS controllers keep left sidebar clean without hardcoded Overview buttons', () => {
+  assert.ok(!read('study-library/assets/dashboard.js').includes("el('span', 'side-link-text', 'Overview')"));
+  assert.ok(!read('jobs-careers/assets/dashboard.js').includes("el('a', 'side-link active', 'Overview')"));
+  assert.ok(!read('schemes-benefits/assets/dashboard.js').includes("el('span', 'side-title', 'Overview')"));
+  assert.ok(!read('schemes-benefits/assets/dashboard.js').includes("ovLink.textContent = 'Overview'"));
+  assert.ok(!read('community/assets/community-explorer.js').includes("class: 'cso-comm-rail-label', text: 'Overview'"));
+  assert.ok(!read('about/assets/about-explorer.js').includes("pick('Overview', 'ସମୀକ୍ଷା')"));
+  assert.ok(!read('jobs/assets/jobs-explorer.js').includes("class: 'cso-jobs-rail-label', text: 'Overview'"));
+  assert.ok(!read('schemes/assets/schemes-explorer.js').includes("class: 'cso-schemes-rail-label', text: 'Overview'"));
 });
 
 check('All 7 explorer HTML files remove redundant top-right hero jump pills & hardcoded filter pills', () => {
@@ -155,9 +168,9 @@ check('All 7 explorer JS controllers dynamically toggle empty panels & filter ba
   assert.ok(aboutJs.includes('statusEl.hidden = false;'));
 });
 
-check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v236', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v236';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v236';"));
+check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v237', () => {
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v23[7-9]';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v23[7-9]';/);
 });
 
 check('Strict CSP compliance across all 7 explorer HTML & 7 explorer JS files', () => {

@@ -63,13 +63,7 @@
     var grid = document.getElementById('community-domain-grid');
     var catPanel = document.getElementById('community-categories-panel');
     var domains = (overview && Array.isArray(overview.domains)) ? overview.domains : [];
-    if (rail) {
-      clear(rail);
-      rail.appendChild(el('a', { class: 'cso-comm-nav-link is-active', href: '/community/', 'data-domain': '' }, [
-        el('span', { class: 'cso-comm-nav-num', text: 'All' }),
-        el('span', { class: 'cso-comm-rail-label', text: 'Overview' })
-      ]));
-    }
+    if (rail) clear(rail);
     if (grid) clear(grid);
     if (catPanel) catPanel.hidden = !domains.length;
 

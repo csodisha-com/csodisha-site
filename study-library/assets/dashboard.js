@@ -628,15 +628,6 @@
   function renderSidebar() {
     if (!sideNav) return;
     sideNav.replaceChildren();
-    const ovLink = el('a', `side-link${state.view === 'overview' ? ' active' : ''}`);
-    ovLink.href = './';
-    ovLink.append(el('span', 'side-icon', '◆'), el('span', 'side-link-text', 'Overview'));
-    ovLink.addEventListener('click', e => {
-      e.preventDefault();
-      showOverview(true);
-      document.body.classList.remove('menu-open');
-    });
-    sideNav.appendChild(ovLink);
     if (!state.groups.length) return;
     state.groups.forEach((g, idx) => {
       const link = el('a', 'side-link');

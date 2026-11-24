@@ -885,17 +885,6 @@
     sectionsNav.replaceChildren();
     grid.replaceChildren();
 
-    const overviewButton = el('button', 'side-link');
-    overviewButton.type = 'button';
-    overviewButton.dataset.sectionIndex = '-1';
-    overviewButton.append(el('span', 'side-icon', '🏠'));
-    overviewButton.append(el('span', 'side-title', 'Overview'));
-    const overviewArrow = el('span', 'side-arrow', '›');
-    overviewArrow.setAttribute('aria-hidden', 'true');
-    overviewButton.append(overviewArrow);
-    overviewButton.addEventListener('click', () => showOverview(true));
-    sectionsNav.append(overviewButton);
-
     sections.forEach((section, index) => {
       const sectionIcon = section.icon_name || icons[index % icons.length];
       const sectionLabel = localizedNodeTitle(section);
@@ -1240,11 +1229,6 @@
     if (overview) overview.hidden = true;
     if (sectionsNav) {
       sectionsNav.replaceChildren();
-      const ovLink = document.createElement('a');
-      ovLink.className = 'side-link active';
-      ovLink.href = './';
-      ovLink.textContent = 'Overview';
-      sectionsNav.appendChild(ovLink);
     }
     if (loadStatus) {
       loadStatus.hidden = true;

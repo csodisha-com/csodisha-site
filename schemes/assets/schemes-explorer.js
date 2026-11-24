@@ -67,13 +67,7 @@
     var grid = document.getElementById('schemes-domain-grid');
     var catPanel = document.getElementById('schemes-categories-panel');
     var domains = (overview && Array.isArray(overview.domains)) ? overview.domains : [];
-    if (rail) {
-      clear(rail);
-      rail.appendChild(el('a', { class: 'cso-schemes-nav-link is-active', href: '/schemes/', 'data-domain': '' }, [
-        el('span', { class: 'cso-schemes-nav-num', text: 'All' }),
-        el('span', { class: 'cso-schemes-rail-label', text: 'Overview' })
-      ]));
-    }
+    if (rail) clear(rail);
     if (grid) clear(grid);
     if (catPanel) catPanel.hidden = !domains.length;
 
