@@ -1,21 +1,32 @@
 /**
- * CS Odisha — Public Study Library Portal, Curriculum Browser & EdTech Reader (v251)
+ * CS Odisha — Public Study Library Portal, Editorial Hero, Elevated Exam Track Cards,
+ * 5-Column Curriculum Filter Bar & EdTech Reader (v257)
  * Strict CSP-compliant: zero unsafe HTML string sinks, zero .style.* mutations, zero inline handlers.
  * Hydrates /study-library/ and /study/ live from Cloudflare D1 (/api/public/study/*).
  */
 (function (window, document) {
   'use strict';
 
+  var FEATURED_TRACKS = [
+    { key: 'opsc', match: ['opsc', 'oas'], icon: '🏛️', label_en: 'OPSC OAS', label_or: 'OPSC OAS' },
+    { key: 'ossc', match: ['ossc', 'osssc'], icon: '📋', label_en: 'OSSC & OSSSC', label_or: 'OSSC ଓ OSSSC' },
+    { key: 'tet', match: ['teaching', 'tet', 'oavs'], icon: '🎓', label_en: 'Teaching & TET', label_or: 'ଶିକ୍ଷକ ଓ TET' },
+    { key: 'odisha', match: ['odisha-gk', 'odisha_gk', 'odia'], icon: '🗺️', label_en: 'Odisha GK & Odia', label_or: 'ଓଡ଼ିଶା GK ଓ ଓଡ଼ିଆ' },
+    { key: 'central', match: ['central', 'upsc', 'ssc', 'ugc'], icon: '🇮🇳', label_en: 'Central Exams', label_or: 'କେନ୍ଦ୍ରୀୟ ପରୀକ୍ଷା' }
+  ];
+
   var S = {
     root: null,
     tree: [],
     nodes: [],
+    allItems: [],
     items: [],
     facets: { types: [], difficulties: [], priorities: [], mediums: [] },
     filters: { l1: '', l2: '', l3: '', type: '', difficulty: '', priority: '', medium: '', search: '' },
     progressSummary: null,
     progressMap: {},
     progressItems: [],
+    isAdmin: false,
     langMode: 'en', // 'en' | 'or' | 'dual'
     flipMode: false,
     flipIdx: 0,
@@ -38,6 +49,25 @@
   function clear(node) {
     while (node && node.firstChild) node.removeChild(node.firstChild);
     return node;
+  }
+
+  function num(v) {
+    try { return Number(v || 0).toLocaleString('en-IN'); } catch (_e) { return String(v || 0); }
+  }
+
+  function pick(obj, field) {
+    if (!obj) return '';
+    if (S.langMode === 'or' && obj[field + '_or']) return String(obj[field + '_or']);
+    return String(obj[field + '_en'] || '');
+  }
+
+  function getLangPref() {
+    try { return localStorage.getItem('cso_lang_pref') === 'or' ? 'or' : 'en'; } catch (_e) { return 'en'; }
+  }
+
+  function setLangPref(lang) {
+    S.langMode = lang === 'or' ? 'or' : 'en';
+    try { localStorage.setItem('cso_lang_pref', S.langMode); } catch (_e) {}
   }
 
   function safeUrl(u) {
@@ -90,6 +120,22 @@
       sc.textContent = JSON.stringify(ld);
       document.head.appendChild(sc);
     } catch (_e) {}
+  }
+
+  async function detectAdminSession() {
+    var hint = false;
+    try { hint = localStorage.getItem('cso_admin_active') === '1'; } catch (_e) {}
+    if (!hint) return false;
+    try {
+      var res = await fetch('/api/admin/session', { credentials: 'same-origin', cache: 'no-store' });
+      if (!res.ok) return false;
+      var data = await res.json();
+      S.isAdmin = Boolean(data && data.user);
+      return S.isAdmin;
+    } catch (_e) {
+      S.isAdmin = false;
+      return false;
+    }
   }
 
   async function loadCandidateProgress() {
@@ -236,8 +282,57 @@
     container.appendChild(box);
   }
 
+  function buildEmptyStudySvg() {
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 48 48');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('class', 'sp-empty-svg');
+    var specs = [
+      ['path', { d: 'M6 12c6 0 12 2 18 6 6-4 12-6 18-6v24c-6 0-12 2-18 6-6-4-12-6-18-6V12Z', stroke: 'currentColor', 'stroke-width': '2.4', 'stroke-linejoin': 'round' }],
+      ['path', { d: 'M24 18v24', stroke: 'currentColor', 'stroke-width': '2.4', 'stroke-linecap': 'round' }],
+      ['path', { d: 'M12 20h6M12 26h5M30 20h6M31 26h5', stroke: 'currentColor', 'stroke-width': '2.2', 'stroke-linecap': 'round' }]
+    ];
+    specs.forEach(function (sp) {
+      var node = document.createElementNS(ns, sp[0]);
+      Object.keys(sp[1]).forEach(function (k) { node.setAttribute(k, sp[1][k]); });
+      svg.appendChild(node);
+    });
+    return svg;
+  }
+
+  function buildLangToggle(onSwitch) {
+    var w = el('div', 'sp-lang-toggle');
+    [['en', 'English'], ['or', 'ଓଡ଼ିଆ']].forEach(function (p) {
+      var b = el('button', 'sp-lang-btn' + (S.langMode === p[0] ? ' is-active' : ''), p[1]);
+      b.type = 'button';
+      b.addEventListener('click', function () { setLangPref(p[0]); onSwitch(); });
+      w.appendChild(b);
+    });
+    return w;
+  }
+
+  function computeStudyHeroKpis() {
+    var src = S.allItems.length ? S.allItems : S.items;
+    var pyqSylCount = 0;
+    var mcqTotal = 0;
+    src.forEach(function (m) {
+      var badge = String(m.resource_type_badge || '').toLowerCase();
+      if (badge.indexOf('pyq') !== -1 || badge.indexOf('syllabus') !== -1 || m.pyq_pdf_url) pyqSylCount++;
+      mcqTotal += Number(m.mcq_count || 0);
+    });
+    var trackCount = S.nodes.filter(function (n) { return Number(n.level) === 1; }).length;
+    return {
+      moduleCount: src.length,
+      pyqSylCount: pyqSylCount,
+      mcqTotal: mcqTotal,
+      trackCount: trackCount
+    };
+  }
+
   // ============================================================================
-  // BROWSE MODE: 3-LAYER CURRICULUM BROWSER + PROGRESS STRIP + CARDS
+  // BROWSE MODE: EDITORIAL HERO + PROGRESS STRIP + EXAM TRACK CARDS + 5-COL BAR
   // ============================================================================
   async function fetchPortalData() {
     var q = new URLSearchParams();
@@ -259,6 +354,7 @@
     S.tree = res[0].tree || [];
     S.nodes = res[0].nodes || [];
     S.items = res[1].items || [];
+    if (!qs || (qs === '?refresh=1')) S.allItems = S.items.slice();
     S.facets = res[1].facets || S.facets;
   }
 
@@ -269,11 +365,19 @@
     card.setAttribute('aria-label', 'Candidate Syllabus Progress');
 
     var top = el('div', 'sp-progress-top');
-    top.appendChild(el('strong', '', '🎯 Your Syllabus Completion & Study Streak'));
+    var head = el('div', 'sp-progress-head');
+    head.appendChild(el('h2', 'sp-progress-title', S.langMode === 'or'
+      ? '🎯 ଆପଣଙ୍କ ସିଲାବସ୍ ସମାପ୍ତି ଓ ଅଧ୍ୟୟନ ଧାରା'
+      : '🎯 Your Syllabus Completion & Study Streak'));
+    head.appendChild(el('span', 'sp-progress-sub', S.langMode === 'or'
+      ? 'ଆପଣଙ୍କ ପ୍ରାର୍ଥୀ ହବ୍ ସହିତ ସ୍ୱୟଂଚାଳିତ ଭାବେ ସିଙ୍କ୍ ହୋଇଛି।'
+      : 'Synced live with your Candidate Hub study tracker & revision queue.'));
+    top.appendChild(head);
+
     var stats = el('div', 'sp-progress-stats');
-    stats.appendChild(el('span', 'sp-stat-chip is-emerald', '✅ ' + sum.completed_count + '/' + sum.total_published + ' Completed (' + sum.completion_pct + '%)'));
-    stats.appendChild(el('span', 'sp-stat-chip is-amber', '🔥 ' + (sum.streak_days || 0) + ' Day Streak'));
-    stats.appendChild(el('span', 'sp-stat-chip', '🔁 ' + (sum.revision_count || 0) + ' Flagged for Revision'));
+    stats.appendChild(el('span', 'sp-stat-chip is-emerald', '✅ ' + num(sum.completed_count) + '/' + num(sum.total_published) + ' Completed (' + num(sum.completion_pct) + '%)'));
+    stats.appendChild(el('span', 'sp-stat-chip is-amber', '🔥 ' + num(sum.streak_days || 0) + ' Day Streak'));
+    stats.appendChild(el('span', 'sp-stat-chip', '🔁 ' + num(sum.revision_count || 0) + ' Flagged for Revision'));
     top.appendChild(stats);
     card.appendChild(top);
 
@@ -282,29 +386,204 @@
     prog.value = Number(sum.completion_pct || 0);
     card.appendChild(prog);
 
+    var foot = el('div', 'sp-progress-foot');
+    var crow = el('div', 'sp-continue-row');
     if (S.progressItems.length) {
-      var crow = el('div', 'sp-continue-row');
-      crow.appendChild(el('span', '', '⏱ Continue: '));
-      S.progressItems.slice(0, 4).forEach(function (it) {
+      crow.appendChild(el('span', 'sp-muted', '⏱ Recent Chapters:'));
+      S.progressItems.slice(0, 3).forEach(function (it) {
         if (!it.slug) return;
         var a = el('a', 'sp-continue-pill', (it.status === 'completed' ? '✅ ' : '📖 ') + (it.title_en || it.slug));
         a.href = '/study-library/?slug=' + encodeURIComponent(it.slug);
         crow.appendChild(a);
       });
-      card.appendChild(crow);
+    } else {
+      crow.appendChild(el('span', 'sp-muted', 'Open any chapter below to start building your daily study streak.'));
     }
+    foot.appendChild(crow);
+
+    var latestItem = S.progressItems.find(function (it) { return it && it.slug; });
+    var resumeA = el('a', 'sp-btn sp-btn-sm sp-btn-primary', S.langMode === 'or'
+      ? 'ଶେଷ ଅଧ୍ୟାୟ ଜାରି ରଖନ୍ତୁ / ରିଭିଜନ୍ କ୍ୟୁ ଦେଖନ୍ତୁ →'
+      : 'Resume Last Chapter / View Revision Queue →');
+    resumeA.href = latestItem ? ('/study-library/?slug=' + encodeURIComponent(latestItem.slug)) : '/student-dashboard/';
+    foot.appendChild(resumeA);
+
+    card.appendChild(foot);
     shell.appendChild(card);
   }
 
+  function renderExamTrackCards(box, l1Nodes) {
+    var strip = el('div', 'sp-track-strip');
+    strip.setAttribute('role', 'group');
+    strip.setAttribute('aria-label', 'Filter by Exam Track');
+
+    var allBtn = el('button', 'sp-track-card' + (!S.filters.l1 ? ' is-active' : ''));
+    allBtn.type = 'button';
+    var allL = el('span', 'sp-track-left');
+    allL.appendChild(el('span', 'sp-track-icon', '📚'));
+    allL.appendChild(el('span', 'sp-track-name', S.langMode === 'or' ? 'ସମସ୍ତ ପରୀକ୍ଷା ଟ୍ରାକ୍' : 'All Exam Tracks'));
+    allBtn.appendChild(allL);
+    allBtn.appendChild(el('span', 'sp-track-count', num(S.allItems.length || S.items.length)));
+    allBtn.addEventListener('click', function () {
+      S.filters.l1 = ''; S.filters.l2 = ''; S.filters.l3 = '';
+      reloadBrowser();
+    });
+    strip.appendChild(allBtn);
+
+    // Match featured 5 elevated tracks from seeded L1 nodes (plus graceful fallback)
+    FEATURED_TRACKS.forEach(function (ft) {
+      var matchedNode = l1Nodes.find(function (n) {
+        var hay = ((n.slug || '') + ' ' + (n.title_en || '')).toLowerCase();
+        return ft.match.some(function (tok) { return hay.indexOf(tok) !== -1; });
+      });
+      var count = matchedNode ? Number(matchedNode.published_modules_count || 0) : 0;
+      var isAct = Boolean(matchedNode && S.filters.l1 === matchedNode.id);
+
+      var b = el('button', 'sp-track-card' + (isAct ? ' is-active' : ''));
+      b.type = 'button';
+      var lf = el('span', 'sp-track-left');
+      lf.appendChild(el('span', 'sp-track-icon', (matchedNode && matchedNode.icon) || ft.icon));
+      lf.appendChild(el('span', 'sp-track-name', S.langMode === 'or' ? ft.label_or : ft.label_en));
+      b.appendChild(lf);
+      b.appendChild(el('span', 'sp-track-count', num(count)));
+      b.addEventListener('click', function () {
+        if (matchedNode) {
+          S.filters.l1 = matchedNode.id;
+          S.filters.l2 = '';
+          S.filters.l3 = '';
+          reloadBrowser();
+        }
+      });
+      strip.appendChild(b);
+    });
+
+    box.appendChild(strip);
+  }
+
+  function renderCurriculumTracksDirectory(shell) {
+    var l1Map = {};
+    var l3CountsByL2 = {};
+    S.nodes.forEach(function (n) {
+      if (Number(n.level) === 1) l1Map[n.id] = n;
+      if (Number(n.level) === 3 && n.parent_id) {
+        l3CountsByL2[n.parent_id] = (l3CountsByL2[n.parent_id] || 0) + 1;
+      }
+    });
+
+    var l2Nodes = S.nodes.filter(function (n) {
+      return Number(n.level) === 2 && (!S.filters.l1 || n.parent_id === S.filters.l1);
+    });
+    var displayNodes = l2Nodes.length ? l2Nodes : S.nodes.filter(function (n) { return Number(n.level) === 1; });
+    if (!displayNodes.length) return;
+
+    var sec = el('section', 'sp-tracks-section');
+    sec.setAttribute('aria-label', 'Browse 3-Layer Exam Tracks & Subjects');
+    var head = el('div', 'sp-tracks-head');
+    var hl = el('div');
+    hl.appendChild(el('h2', 'sp-h2', S.langMode === 'or'
+      ? '୩-ସ୍ତରୀୟ ପରୀକ୍ଷା ଟ୍ରାକ୍ ଏବଂ ବିଷୟଗୁଡ଼ିକ ବ୍ରାଉଜ୍ କରନ୍ତୁ'
+      : 'Browse 3-Layer Exam Tracks & Subjects'));
+    hl.appendChild(el('div', 'sp-muted', S.langMode === 'or'
+      ? 'OPSC OAS, OSSC/OSSSC, OTET/OSSTET, ଓଡ଼ିଶା GK, ଓଡ଼ିଆ ବ୍ୟାକରଣ, UGC NET, UPSC/SSC ଏବଂ BSE/CHSE ପାଠ୍ୟକ୍ରମ ଅନୁସନ୍ଧାନ କରନ୍ତୁ।'
+      : 'Explore Odisha & Central curriculum tracks (OPSC OAS, OSSC & OSSSC Combined, OTET / OSSTET / OAVS, Odisha GK, Odia Grammar, UGC NET, UPSC / SSC / Banking, BSE Odisha / CHSE).'));
+    head.appendChild(hl);
+    head.appendChild(el('span', 'sp-badge', num(S.nodes.length) + ' Curriculum Nodes'));
+    sec.appendChild(head);
+
+    var grid = el('div', 'sp-tracks-grid');
+    displayNodes.forEach(function (d) {
+      var isL2 = Number(d.level) === 2;
+      var parent = isL2 ? l1Map[d.parent_id] : null;
+      var card = el('button', 'sp-curriculum-card' + ((isL2 ? S.filters.l2 === d.id : S.filters.l1 === d.id) ? ' is-active' : ''));
+      card.type = 'button';
+
+      var top = el('div', 'sp-curriculum-top');
+      top.appendChild(el('span', 'sp-badge', (d.icon ? d.icon + ' ' : '') + (parent ? pick(parent, 'title') : 'Exam Track')));
+      var rightTag = Number(d.published_modules_count || 0) > 0
+        ? (num(d.published_modules_count) + ' Live')
+        : (l3CountsByL2[d.id] ? (num(l3CountsByL2[d.id]) + ' Formats') : 'Ready');
+      top.appendChild(el('span', 'sp-badge is-done', rightTag));
+      card.appendChild(top);
+
+      card.appendChild(el('div', 'sp-curriculum-title', pick(d, 'title')));
+      if (pick(d, 'subtitle')) card.appendChild(el('div', 'sp-curriculum-sub', pick(d, 'subtitle')));
+
+      card.addEventListener('click', function () {
+        if (isL2) {
+          S.filters.l1 = d.parent_id || '';
+          S.filters.l2 = d.id;
+          S.filters.l3 = '';
+        } else {
+          S.filters.l1 = d.id;
+          S.filters.l2 = '';
+          S.filters.l3 = '';
+        }
+        reloadBrowser();
+      });
+      grid.appendChild(card);
+    });
+    sec.appendChild(grid);
+    shell.appendChild(sec);
+  }
+
   function renderBrowserView() {
+    var activeEl = document.activeElement;
+    var restoreFocusId = (activeEl && activeEl.id === 'sp-study-search') ? activeEl.id : '';
+
     clear(S.root);
+    var hasFilter = Boolean(S.filters.l1 || S.filters.l2 || S.filters.l3 || S.filters.type || S.filters.difficulty || S.filters.priority || S.filters.medium || S.filters.search);
+    var kpis = computeStudyHeroKpis();
     var shell = el('div', 'sp-root');
+
+    // 1. Flagship Editorial Hero Banner (v257)
+    var hero = el('section', 'sp-hero');
+    hero.setAttribute('aria-label', 'Odisha & Central Exam Study Library & PYQ Hub');
+
+    var heroTop = el('div', 'sp-hero-top');
+    var eyebrow = el('span', 'sp-eyebrow');
+    eyebrow.appendChild(el('span', 'sp-eyebrow-dot'));
+    eyebrow.appendChild(el('span', '', S.langMode === 'or'
+      ? 'ଓଡ଼ିଶା ଏବଂ କେନ୍ଦ୍ର ପରୀକ୍ଷା ପ୍ରସ୍ତୁତି · ସିଲାବସ୍, ନୋଟ୍ସ, PYQ ଓ ମକ୍ ଟେଷ୍ଟ'
+      : 'ODISHA & CENTRAL EXAM PREPARATION · SYLLABI, NOTES, PYQS & MOCKS'));
+    heroTop.appendChild(eyebrow);
+    heroTop.appendChild(buildLangToggle(function () { renderBrowserView(); }));
+    hero.appendChild(heroTop);
+
+    var copy = el('div', 'sp-hero-copy');
+    copy.appendChild(el('h1', 'sp-hero-title', S.langMode === 'or'
+      ? 'ଓଡ଼ିଶା ଏବଂ କେନ୍ଦ୍ର ପରୀକ୍ଷା ଅଧ୍ୟୟନ ପାଠାଗାର ଓ PYQ ହବ୍'
+      : 'Odisha & Central Exam Study Library & PYQ Hub'));
+    copy.appendChild(el('p', 'sp-hero-sub', S.langMode === 'or'
+      ? 'OPSC, OSSC, OSSSC, OTET/OSSTET, ଓଡ଼ିଶା GK, UPSC ଏବଂ SSC ପାଇଁ ଦ୍ୱିଭାଷୀ ଅଧ୍ୟୟନ ନୋଟ୍ସ, ସରକାରୀ ସିଲାବସ୍, ସମାଧାନ ହୋଇଥିବା ବିଗତ ବର୍ଷର ପ୍ରଶ୍ନପତ୍ର (PYQs), ଇଣ୍ଟରାକ୍ଟିଭ୍ ଫ୍ଲିପ୍-କାର୍ଡ ଏବଂ ଟାଇମ୍ଡ୍ ମିନି-ମକ୍।'
+      : 'Structured bilingual study notes, official exam syllabi, solved previous year papers (PYQs), interactive flashcards, and timed mini-mocks across OPSC, OSSC, OSSSC, OTET/OSSTET, Odisha GK, UPSC & SSC.'));
+    hero.appendChild(copy);
+
+    var kpiRow = el('div', 'sp-hero-kpis');
+    [
+      [num(kpis.moduleCount), S.langMode === 'or' ? 'ଅଧ୍ୟୟନ ମଡ୍ୟୁଲ୍' : 'Study Modules'],
+      [num(kpis.pyqSylCount), S.langMode === 'or' ? 'PYQ ଓ ସିଲାବସ୍ ସେଟ୍' : 'PYQ & Syllabus Sets'],
+      [num(kpis.mcqTotal), S.langMode === 'or' ? 'ଅଭ୍ୟାସ MCQ' : 'Practice MCQs'],
+      [num(kpis.trackCount), S.langMode === 'or' ? 'ପରୀକ୍ଷା ଟ୍ରାକ୍' : 'Exam Tracks']
+    ].forEach(function (pair) {
+      var tile = el('div', 'sp-hero-kpi');
+      tile.appendChild(el('strong', 'sp-hero-kpi-val', pair[0]));
+      tile.appendChild(el('span', 'sp-hero-kpi-label', pair[1]));
+      kpiRow.appendChild(tile);
+    });
+    hero.appendChild(kpiRow);
+    shell.appendChild(hero);
+
+    // 2. Polished Candidate Syllabus Progress & Streak Strip
     renderProgressStrip(shell);
 
+    // 3. Elevated Exam Track Cards + Quick Resource Pills + 5-Column Curriculum Filter Bar
     var box = el('section', 'sp-browser-box');
-    box.setAttribute('aria-label', '3-Layer Curriculum Browser');
+    box.setAttribute('aria-label', 'Study Library Curriculum Filters');
 
-    // Quick filter pills
+    var l1Nodes = S.nodes.filter(function (n) { return Number(n.level) === 1; });
+    renderExamTrackCards(box, l1Nodes);
+
+    // Quick resource-type pills
     var pills = el('div', 'sp-pill-strip');
     [
       ['All Materials', '', ''],
@@ -325,106 +604,210 @@
       });
       pills.appendChild(btn);
     });
+
+    if (hasFilter) {
+      var rstBtn = el('button', 'sp-btn sp-btn-sm', '✕ Reset Filters');
+      rstBtn.type = 'button';
+      rstBtn.addEventListener('click', function () {
+        S.filters = { l1: '', l2: '', l3: '', type: '', difficulty: '', priority: '', medium: '', search: '' };
+        reloadBrowser();
+      });
+      pills.appendChild(rstBtn);
+    }
     box.appendChild(pills);
 
-    // 3-Layer cascading selectors + difficulty + search
+    // 5-Column Curriculum Filter Bar
     var row = el('div', 'sp-cascading-row');
-    var l1Nodes = S.nodes.filter(function (n) { return Number(n.level) === 1; });
-    var selL1 = el('select', 'sp-select');
-    selL1.setAttribute('aria-label', 'Exam Track (Level 1)');
-    selL1.appendChild(new Option('All Exam Tracks (L1)', ''));
-    l1Nodes.forEach(function (n) { selL1.appendChild(new Option((n.icon ? n.icon + ' ' : '') + n.title_en + (n.published_modules_count ? ' (' + n.published_modules_count + ')' : ''), n.id)); });
-    selL1.value = S.filters.l1;
-    selL1.addEventListener('change', function () { S.filters.l1 = selL1.value; S.filters.l2 = ''; S.filters.l3 = ''; reloadBrowser(); });
+    function makeSelectField(id, labelText, defaultLabel, opts, val, onChange) {
+      var f = el('div', 'sp-field');
+      var lbl = el('label', 'sp-label', labelText);
+      lbl.setAttribute('for', id);
+      f.appendChild(lbl);
+      var sel = el('select', 'sp-select');
+      sel.id = id;
+      sel.appendChild(new Option(defaultLabel, ''));
+      opts.forEach(function (o) { sel.appendChild(new Option(o[1], o[0])); });
+      sel.value = val;
+      sel.addEventListener('change', function () { onChange(sel.value); });
+      f.appendChild(sel);
+      return f;
+    }
 
-    var l2Nodes = S.filters.l1 ? S.nodes.filter(function (n) { return Number(n.level) === 2 && n.parent_id === S.filters.l1; }) : [];
-    var selL2 = el('select', 'sp-select');
-    selL2.setAttribute('aria-label', 'Subject / Paper (Level 2)');
-    selL2.appendChild(new Option('All Subjects / Papers (L2)', ''));
-    l2Nodes.forEach(function (n) { selL2.appendChild(new Option((n.icon ? n.icon + ' ' : '') + n.title_en, n.id)); });
-    selL2.value = S.filters.l2;
-    selL2.addEventListener('change', function () { S.filters.l2 = selL2.value; S.filters.l3 = ''; reloadBrowser(); });
+    var l2Nodes = S.nodes.filter(function (n) { return Number(n.level) === 2 && (!S.filters.l1 || n.parent_id === S.filters.l1); });
+    var l3Nodes = S.nodes.filter(function (n) { return Number(n.level) === 3 && (!S.filters.l2 || n.parent_id === S.filters.l2); });
 
-    var l3Nodes = S.filters.l2 ? S.nodes.filter(function (n) { return Number(n.level) === 3 && n.parent_id === S.filters.l2; }) : [];
-    var selL3 = el('select', 'sp-select');
-    selL3.setAttribute('aria-label', 'Chapter / Format (Level 3)');
-    selL3.appendChild(new Option('All Chapters / Formats (L3)', ''));
-    l3Nodes.forEach(function (n) { selL3.appendChild(new Option((n.icon ? n.icon + ' ' : '') + n.title_en, n.id)); });
-    selL3.value = S.filters.l3;
-    selL3.addEventListener('change', function () { S.filters.l3 = selL3.value; reloadBrowser(); });
+    row.appendChild(makeSelectField(
+      'sp-sel-track',
+      '1. Exam Track',
+      S.langMode === 'or' ? 'ସମସ୍ତ ପରୀକ୍ଷା ଟ୍ରାକ୍' : 'All Exam Tracks',
+      l1Nodes.map(function (n) { return [n.id, (n.icon ? n.icon + ' ' : '') + pick(n, 'title') + (n.published_modules_count ? ' (' + n.published_modules_count + ')' : '')]; }),
+      S.filters.l1,
+      function (v) { S.filters.l1 = v; S.filters.l2 = ''; S.filters.l3 = ''; reloadBrowser(); }
+    ));
 
-    var selDiff = el('select', 'sp-select');
-    selDiff.setAttribute('aria-label', 'Difficulty');
-    selDiff.appendChild(new Option('All Difficulty Levels', ''));
-    ['Foundation', 'Moderate', 'Advanced'].forEach(function (d) { selDiff.appendChild(new Option(d, d)); });
-    selDiff.value = S.filters.difficulty;
-    selDiff.addEventListener('change', function () { S.filters.difficulty = selDiff.value; reloadBrowser(); });
+    row.appendChild(makeSelectField(
+      'sp-sel-subject',
+      '2. Subject / Paper',
+      S.langMode === 'or' ? 'ସମସ୍ତ ବିଷୟ / ପେପର୍' : 'All Subjects / Papers',
+      l2Nodes.map(function (n) { return [n.id, (n.icon ? n.icon + ' ' : '') + pick(n, 'title')]; }),
+      S.filters.l2,
+      function (v) { S.filters.l2 = v; S.filters.l3 = ''; reloadBrowser(); }
+    ));
 
+    row.appendChild(makeSelectField(
+      'sp-sel-chapter',
+      '3. Chapter / Format',
+      S.langMode === 'or' ? 'ସମସ୍ତ ଅଧ୍ୟାୟ / ଫର୍ମାଟ୍' : 'All Chapters / Formats',
+      l3Nodes.map(function (n) { return [n.id, (n.icon ? n.icon + ' ' : '') + pick(n, 'title')]; }),
+      S.filters.l3,
+      function (v) { S.filters.l3 = v; reloadBrowser(); }
+    ));
+
+    row.appendChild(makeSelectField(
+      'sp-sel-difficulty',
+      '4. Difficulty Level',
+      S.langMode === 'or' ? 'ସମସ୍ତ ସ୍ତର' : 'All Difficulty Levels',
+      [['Foundation', 'Foundation'], ['Moderate', 'Moderate'], ['Advanced', 'Advanced']],
+      S.filters.difficulty,
+      function (v) { S.filters.difficulty = v; reloadBrowser(); }
+    ));
+
+    var qField = el('div', 'sp-field');
+    var qLbl = el('label', 'sp-label', '5. Search Topic or Paper Code');
+    qLbl.setAttribute('for', 'sp-study-search');
+    qField.appendChild(qLbl);
     var searchInp = el('input', 'sp-input');
+    searchInp.id = 'sp-study-search';
     searchInp.type = 'search';
-    searchInp.placeholder = 'Search topic, OPSC/OSSC paper, PYQ year...';
+    searchInp.placeholder = S.langMode === 'or' ? 'ବିଷୟ, OPSC/OSSC ପେପର୍ କିମ୍ବା PYQ ବର୍ଷ...' : 'Search topic, OPSC/OSSC paper, PYQ year...';
     searchInp.value = S.filters.search;
-    searchInp.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { S.filters.search = searchInp.value.trim(); reloadBrowser(); }
+    var searchTimer = null;
+    searchInp.addEventListener('input', function () {
+      S.filters.search = searchInp.value.trim();
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(function () { reloadBrowser(); }, 280);
     });
+    searchInp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        clearTimeout(searchTimer);
+        S.filters.search = searchInp.value.trim();
+        reloadBrowser();
+      }
+    });
+    qField.appendChild(searchInp);
+    row.appendChild(qField);
 
-    row.append(selL1, selL2, selL3, selDiff, searchInp);
     box.appendChild(row);
     shell.appendChild(box);
 
+    // 4. Study Module Cards OR Designed Illustrated Empty State + 3-Layer Exam Tracks & Subjects Grid
     if (!S.items.length) {
-      var emp = el('div', 'sp-empty');
-      emp.appendChild(el('strong', '', 'No published study modules match your current selection yet.'));
-      emp.appendChild(el('p', '', 'Publish syllabi, study notes, PYQs, flashcards & practice MCQs from Admin Studio → Study Library (Alt+3) to see them live here instantly.'));
-      shell.appendChild(emp);
-      S.root.appendChild(shell);
-      return;
+      var emptyCard = el('section', 'sp-empty-card');
+      emptyCard.setAttribute('aria-label', 'Study Library Status');
+      var art = el('div', 'sp-empty-art');
+      art.appendChild(buildEmptyStudySvg());
+      emptyCard.appendChild(art);
+
+      emptyCard.appendChild(el('h2', 'sp-empty-title', hasFilter
+        ? (S.langMode === 'or' ? 'ଆପଣଙ୍କ ଫିଲ୍ଟର୍ ସହିତ କୌଣସି ଅଧ୍ୟୟନ ମଡ୍ୟୁଲ୍ ମିଳିଲା ନାହିଁ' : 'No Study Modules Match Your Selected Filters')
+        : (S.langMode === 'or' ? 'ନୂତନ ଦ୍ୱିଭାଷୀ ଅଧ୍ୟୟନ ନୋଟ୍ସ, ସିଲାବସ୍ ଏବଂ PYQ ଶୀଘ୍ର ପ୍ରକାଶିତ ହେବ' : 'Fresh Bilingual Study Notes, Syllabi & PYQs Coming Soon')));
+
+      emptyCard.appendChild(el('p', 'sp-empty-desc', hasFilter
+        ? (S.langMode === 'or'
+          ? 'ଅନ୍ୟ ପରୀକ୍ଷା ଟ୍ରାକ୍, ବିଷୟ କିମ୍ବା ଫର୍ମାଟ୍ ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା ସମସ୍ତ ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ।'
+          : 'Try broadening your Exam Track, Subject, Format, or Difficulty filters — or browse our 3-layer Odisha & Central curriculum tracks below.')
+        : (S.langMode === 'or'
+          ? 'ଏହି ପାଠାଗାରରେ ପ୍ରକାଶିତ ପ୍ରତ୍ୟେକ ନୋଟ୍ସ, ସିଲାବସ୍ ଏବଂ PYQ ଓଡ଼ିଶା ଓ କେନ୍ଦ୍ର ପରୀକ୍ଷାର ସରକାରୀ ପାଠ୍ୟକ୍ରମ ଅନୁସାରେ ପ୍ରସ୍ତୁତ। ତଳେ ଥିବା ପରୀକ୍ଷା ଟ୍ରାକ୍ ଓ ବିଷୟଗୁଡ଼ିକୁ ବ୍ରାଉଜ୍ କରନ୍ତୁ।'
+          : 'Every syllabus blueprint, chapter note, solved PYQ set, and MCQ pack published here is structured for Odisha & Central exam aspirants with bilingual EN + ଓଡ଼ିଆ support. Explore the curriculum tracks below.')));
+
+      var empActs = el('div', 'sp-pill-strip');
+      if (hasFilter) {
+        var rAll = el('button', 'sp-btn sp-btn-primary', S.langMode === 'or' ? 'ସମସ୍ତ ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ' : 'Reset All Filters');
+        rAll.type = 'button';
+        rAll.addEventListener('click', function () {
+          S.filters = { l1: '', l2: '', l3: '', type: '', difficulty: '', priority: '', medium: '', search: '' };
+          reloadBrowser();
+        });
+        empActs.appendChild(rAll);
+      }
+      var jobsA = el('a', 'sp-btn', S.langMode === 'or' ? '💼 ସରକାରୀ ଚାକିରି ଦେଖନ୍ତୁ →' : '💼 Explore Government Jobs →');
+      jobsA.href = '/jobs/';
+      empActs.appendChild(jobsA);
+
+      if (S.isAdmin) {
+        var admA = el('a', 'sp-btn sp-btn-primary', '+ Publish First Study Module in Admin Studio ↗');
+        admA.href = '/admin/#folder-study-library';
+        empActs.appendChild(admA);
+      }
+      emptyCard.appendChild(empActs);
+      shell.appendChild(emptyCard);
+
+      renderCurriculumTracksDirectory(shell);
+    } else {
+      var resBar = el('div', 'sp-results-bar');
+      resBar.appendChild(el('h2', 'sp-h2', S.langMode === 'or'
+        ? (num(S.items.length) + ' ଟି ଦ୍ୱିଭାଷୀ ଅଧ୍ୟୟନ ମଡ୍ୟୁଲ୍ ଓ PYQ ସେଟ୍')
+        : (num(S.items.length) + ' Verified Study Module' + (S.items.length === 1 ? '' : 's') + ' & PYQ Resource' + (S.items.length === 1 ? '' : 's'))));
+      if (S.isAdmin) {
+        var pubMore = el('a', 'sp-btn sp-btn-sm', '+ Publish New Study Module in Admin Studio ↗');
+        pubMore.href = '/admin/#folder-study-library';
+        resBar.appendChild(pubMore);
+      }
+      shell.appendChild(resBar);
+
+      var grid = el('div', 'sp-cards-grid');
+      S.items.forEach(function (a) {
+        var card = el('article', 'sp-card');
+        if (a.cover_image_url && safeUrl(a.cover_image_url)) {
+          var img = el('img', 'sp-card-cover');
+          img.src = safeUrl(a.cover_image_url);
+          img.alt = a.title_en;
+          img.loading = 'lazy';
+          card.appendChild(img);
+        }
+        var body = el('div', 'sp-card-body');
+        var badges = el('div', 'sp-card-badges');
+        badges.appendChild(el('span', 'sp-badge', a.resource_type_badge || 'Study Notes'));
+        var pCls = a.high_yield_priority === 'Must-Study' ? 'is-must' : (a.high_yield_priority === 'High' ? 'is-high' : '');
+        badges.appendChild(el('span', 'sp-badge ' + pCls, a.high_yield_priority || 'High'));
+        if (a.pyq_year) badges.appendChild(el('span', 'sp-badge', 'PYQ ' + a.pyq_year));
+        var prog = S.progressMap[a.id];
+        if (prog && prog.status === 'completed') badges.appendChild(el('span', 'sp-badge is-done', '✅ Completed'));
+        if (prog && prog.needs_revision) badges.appendChild(el('span', 'sp-badge is-rev', '🔁 Revise'));
+        body.appendChild(badges);
+
+        var h3 = el('h3', 'sp-card-title');
+        var link = el('a', '', pick(a, 'title') || a.title_en);
+        link.href = '/study-library/?slug=' + encodeURIComponent(a.slug);
+        h3.appendChild(link);
+        body.appendChild(h3);
+
+        if (a.title_or && S.langMode !== 'or') body.appendChild(el('div', 'sp-card-or', a.title_or));
+        var sumTxt = pick(a, 'summary');
+        if (sumTxt) body.appendChild(el('p', 'sp-card-summary', sumTxt.slice(0, 155)));
+
+        var foot = el('div', 'sp-card-foot');
+        var metaStr = '⏱ ' + (a.estimated_read_mins || 10) + 'm · ' + (a.difficulty_level || 'Moderate');
+        if (a.mcq_count) metaStr += ' · ' + a.mcq_count + ' MCQs';
+        if (a.flashcard_count) metaStr += ' · ' + a.flashcard_count + ' Cards';
+        foot.appendChild(el('span', '', metaStr));
+        var openBtn = el('a', 'sp-btn sp-btn-primary sp-btn-sm', S.langMode === 'or' ? 'ମଡ୍ୟୁଲ୍ ପଢ଼ନ୍ତୁ →' : 'Read Module →');
+        openBtn.href = '/study-library/?slug=' + encodeURIComponent(a.slug);
+        foot.appendChild(openBtn);
+        body.appendChild(foot);
+
+        card.appendChild(body);
+        grid.appendChild(card);
+      });
+      shell.appendChild(grid);
     }
 
-    var grid = el('div', 'sp-cards-grid');
-    S.items.forEach(function (a) {
-      var card = el('article', 'sp-card');
-      if (a.cover_image_url) {
-        var img = el('img', 'sp-card-cover');
-        img.src = a.cover_image_url;
-        img.alt = a.title_en;
-        img.loading = 'lazy';
-        card.appendChild(img);
-      }
-      var body = el('div', 'sp-card-body');
-      var badges = el('div', 'sp-card-badges');
-      badges.appendChild(el('span', 'sp-badge', a.resource_type_badge || 'Study Notes'));
-      var pCls = a.high_yield_priority === 'Must-Study' ? 'is-must' : (a.high_yield_priority === 'High' ? 'is-high' : '');
-      badges.appendChild(el('span', 'sp-badge ' + pCls, a.high_yield_priority || 'High'));
-      var prog = S.progressMap[a.id];
-      if (prog && prog.status === 'completed') badges.appendChild(el('span', 'sp-badge is-done', '✅ Completed'));
-      if (prog && prog.needs_revision) badges.appendChild(el('span', 'sp-badge is-rev', '🔁 Revise'));
-      body.appendChild(badges);
-
-      var h3 = el('h3', 'sp-card-title');
-      var link = el('a', '', a.title_en);
-      link.href = '/study-library/?slug=' + encodeURIComponent(a.slug);
-      h3.appendChild(link);
-      body.appendChild(h3);
-
-      if (a.title_or) body.appendChild(el('div', 'sp-card-or', a.title_or));
-      if (a.summary_en) body.appendChild(el('p', 'sp-card-summary', a.summary_en.slice(0, 150)));
-
-      var foot = el('div', 'sp-card-foot');
-      var metaStr = '⏱ ' + (a.estimated_read_mins || 10) + 'm · ' + (a.difficulty_level || 'Moderate');
-      if (a.mcq_count) metaStr += ' · ' + a.mcq_count + ' MCQs';
-      if (a.flashcard_count) metaStr += ' · ' + a.flashcard_count + ' Cards';
-      foot.appendChild(el('span', '', metaStr));
-      var openBtn = el('a', 'sp-btn sp-btn-primary sp-btn-sm', 'Read Module →');
-      openBtn.href = '/study-library/?slug=' + encodeURIComponent(a.slug);
-      foot.appendChild(openBtn);
-      body.appendChild(foot);
-
-      card.appendChild(body);
-      grid.appendChild(card);
-    });
-    shell.appendChild(grid);
     S.root.appendChild(shell);
+
+    if (restoreFocusId) {
+      var refocusEl = document.getElementById(restoreFocusId);
+      if (refocusEl && typeof refocusEl.focus === 'function') refocusEl.focus();
+    }
   }
 
   async function reloadBrowser() {
@@ -458,9 +841,9 @@
     var data = await res.json().catch(function () { return {}; });
     if (!res.ok || !data.article) {
       clear(S.root);
-      var nf = el('div', 'sp-empty');
-      nf.appendChild(el('h2', '', 'Study Module Not Found'));
-      nf.appendChild(el('p', '', data.error || 'This study resource may be unpublished or its draft preview link has expired.'));
+      var nf = el('div', 'sp-empty-card');
+      nf.appendChild(el('h2', 'sp-empty-title', 'Study Module Not Found'));
+      nf.appendChild(el('p', 'sp-empty-desc', data.error || 'This study resource may be unpublished or its draft preview link has expired.'));
       var back = el('a', 'sp-btn sp-btn-primary', '← Back to Study Library');
       back.href = '/study-library/';
       nf.appendChild(back);
@@ -501,9 +884,9 @@
 
     // Hero Card
     var hero = el('section', 'sp-reader-hero');
-    if (a.cover_image_url) {
+    if (a.cover_image_url && safeUrl(a.cover_image_url)) {
       var banner = el('img', 'sp-hero-banner');
-      banner.src = a.cover_image_url;
+      banner.src = safeUrl(a.cover_image_url);
       banner.alt = a.cover_image_caption || a.title_en;
       hero.appendChild(banner);
       if (a.cover_image_caption) hero.appendChild(el('div', 'sp-hero-caption', a.cover_image_caption));
@@ -931,7 +1314,7 @@
       ['Previous Year Paper (PYQ) PDF', a.pyq_pdf_url],
       ['Official Answer Key / Solution PDF', a.answer_key_pdf_url]
     ].forEach(function (p) {
-      if (!p[1]) return;
+      if (!p[1] || !safeUrl(p[1])) return;
       var c = el('div', 'sp-pdf-card');
       c.appendChild(el('strong', '', p[0]));
       var acts = el('div', 'sp-action-group');
@@ -939,7 +1322,7 @@
       bView.type = 'button';
       bView.addEventListener('click', function () { S.activePdfUrl = p[1]; drawReaderDom(data); });
       var aDl = el('a', 'sp-btn sp-btn-sm', '⬇ Download PDF');
-      aDl.href = p[1];
+      aDl.href = safeUrl(p[1]);
       aDl.target = '_blank';
       aDl.rel = 'noopener noreferrer';
       aDl.addEventListener('click', function () { fireTelemetry('pdf_download', a); });
@@ -949,7 +1332,7 @@
     });
     sec.appendChild(cards);
 
-    if (S.activePdfUrl) {
+    if (S.activePdfUrl && safeUrl(S.activePdfUrl)) {
       if (Array.isArray(a.pdf_index_bookmarks) && a.pdf_index_bookmarks.length) {
         var bmRow = el('div', 'sp-pill-strip');
         bmRow.appendChild(el('span', 'sp-tile-label', 'Quick-Jump Pages:'));
@@ -957,7 +1340,7 @@
           var b = el('button', 'sp-pill-btn', 'Page ' + bm.page + ': ' + bm.label);
           b.type = 'button';
           b.addEventListener('click', function () {
-            var base = S.activePdfUrl.split('#')[0];
+            var base = safeUrl(S.activePdfUrl).split('#')[0];
             var frame = document.getElementById('sp-inline-pdf-frame');
             if (frame) frame.src = base + '#page=' + bm.page;
           });
@@ -968,7 +1351,7 @@
       var frame = el('iframe', 'sp-pdf-frame');
       frame.id = 'sp-inline-pdf-frame';
       frame.title = a.title_en + ' PDF Viewer';
-      frame.src = S.activePdfUrl;
+      frame.src = safeUrl(S.activePdfUrl);
       sec.appendChild(frame);
     }
 
@@ -1028,8 +1411,9 @@
     S.root = document.getElementById('cso-study-portal-root');
     if (!S.root) return;
     document.body.classList.add('cso-portal-active', 'cso-portal-study-active');
+    S.langMode = getLangPref();
 
-    await loadCandidateProgress();
+    await Promise.all([loadCandidateProgress(), detectAdminSession()]);
     var slug = qsParam('slug');
     var previewToken = qsParam('preview_token');
 

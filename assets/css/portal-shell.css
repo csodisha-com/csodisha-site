@@ -62,11 +62,13 @@ body.cso-portal-active .app-shell > .workspace {
 .cso-schemes-main,
 .cso-comm-main,
 .cso-about-main,
+.cso-study-hub,
 .app-shell > .workspace > .main-content,
 body.cso-portal-active .cso-jobs-main,
 body.cso-portal-active .cso-schemes-main,
 body.cso-portal-active .cso-comm-main,
 body.cso-portal-active .cso-about-main,
+body.cso-portal-active .cso-study-hub,
 body.cso-portal-active .app-shell > .workspace > .main-content {
   display: block !important;
   width: 100% !important;
@@ -114,6 +116,12 @@ body.cso-portal-schemes-active #load-status {
   display: none !important;
 }
 
+body.cso-portal-active .cso-study-hero,
+body.cso-portal-active .cso-sl-hero-banner,
+body.cso-portal-study-active .cso-study-hero,
+body.cso-portal-study-active .cso-sl-hero-banner,
+body.cso-portal-study-active .welcome,
+body.cso-portal-study-active #cso-clean-page-content,
 body.cso-portal-study-active #live-study-section,
 body.cso-portal-study-active #study-continue-strip,
 body.cso-portal-study-active #cso-current-affairs-panel,
