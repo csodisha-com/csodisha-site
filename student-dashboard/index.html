@@ -6,9 +6,11 @@
   <meta name="theme-color" content="#1D4ED8">
   <title>Candidate Workspace | Common Sense Odisha</title>
   <meta name="description" content="Candidate workspace on Common Sense Odisha.">
+  <link rel="stylesheet" href="/assets/css/cso-themes.css?v=20261124v244">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
   <script src="/assets/shared-header.js?v=20261121v171" defer></script>
   <link rel="stylesheet" href="/assets/css/student-dashboard-bp.css?v=20261122v213">
+  <link rel="stylesheet" href="/assets/css/candidate-hub-v244.css?v=20261124v244">
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <script src="/assets/js/student-auth-guard.js" defer></script>
@@ -29,7 +31,7 @@
 </header>
 <nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
 
-<div class="bp-app-layout">
+<div id="bp-app-layout" class="bp-app-layout">
   <aside id="bp-sidebar" class="bp-sidebar" aria-label="Candidate Workspace Navigation">
     <div class="bp-sidebar-header">
       <a href="/" class="bp-brand">
@@ -70,7 +72,7 @@
       <div class="bp-topbar-actions">
         <span class="cso-sync-pill" id="cso-sync-pill" role="status" aria-live="polite" hidden></span>
 
-        <span class="cso-popup-anchor cso-hub-theme-anchor">
+        <span class="cso-popup-anchor cso-hub-theme-anchor" id="cso-theme-anchor">
           <button type="button" class="bp-icon-action-btn cso-theme-toggle-btn" id="cso-theme-toggle" aria-label="Select portal theme" aria-haspopup="true" title="Theme">
             <span class="cso-theme-swatch is-system" id="cso-theme-swatch" aria-hidden="true"></span>
             <span id="cso-theme-label" class="cso-btn-label">System</span>
@@ -94,14 +96,19 @@
     </header>
 
     <main class="bp-content">
-      <div id="cso-admin-notice-banner" class="cso-admin-notice" role="status" hidden>
-        <span class="cso-admin-notice-badge" id="cso-admin-notice-level">NOTICE</span>
-        <span class="cso-admin-notice-text" id="cso-admin-notice-text"></span>
+      <div id="cso-restricted-screen" hidden></div>
+
+      <div id="cso-admin-notice-banner" class="cso-hub-banner" role="status" hidden>
+        <span class="cso-hub-banner__tag" id="cso-admin-notice-level">NOTICE</span>
+        <span id="cso-admin-notice-text"></span>
       </div>
+
+      <nav id="cso-hub-top-tabs" class="cso-hub-top-tabs" aria-label="Workspace Tabs" hidden></nav>
+      <div id="cso-hub-quick-stats" class="cso-hub-stats" hidden></div>
 
       <section id="cso-candidate-workspace" class="bp-panel" aria-live="polite">
         <p id="cso-workspace-empty" class="cso-muted-note">Your workspace is clean — save items from published sections or add modules in Admin Studio.</p>
-        <div id="cso-workspace-items" class="cso-stack-list" hidden></div>
+        <div id="cso-workspace-items" class="cso-hub-grid" hidden></div>
       </section>
     </main>
 
@@ -181,6 +188,7 @@
 <script src="/assets/js/cso-idb.js" defer></script>
 <script src="/assets/js/bookmark-manager.js" defer></script>
 <script src="/assets/js/candidate-sync.js" defer></script>
-<script src="/assets/js/student-dashboard.js?v=20261124v238" defer></script>
+<script src="/assets/js/candidate-hub-unified.js?v=20261124v244" defer></script>
+<script src="/assets/js/student-dashboard.js?v=20261124v244" defer></script>
 </body>
 </html>

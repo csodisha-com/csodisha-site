@@ -2,6 +2,8 @@
 /contact /contact.html 200
 /dashboard /student-dashboard/ 301
 /dashboard/ /student-dashboard/ 301
+/candidate /student-dashboard/ 301
+/candidate/ /student-dashboard/ 301
 /portal /student-dashboard/ 301
 /portal/ /student-dashboard/ 301
 /scholarship-guidance/* /schemes-benefits/ 301

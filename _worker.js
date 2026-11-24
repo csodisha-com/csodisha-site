@@ -67,6 +67,12 @@ import { handlePublicInboundWebhookApi } from './functions/_lib/integrations-web
 import { handlePublicSiteConfigBatch4Api } from './functions/_lib/settings-configuration-batch4.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
+import {
+  handleCandidateHubConfigApi,
+  handleCandidateMatchesApi,
+  handleCandidateWorkspaceApi,
+  handleCandidateProfileApi
+} from './functions/_lib/candidate-hub-governance.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
 
 // Convert hex string to Uint8Array
@@ -1026,6 +1032,23 @@ export default {
       if (request.method === 'OPTIONS') return handleChecklistOptions();
       if (request.method === 'GET') return handleChecklistGet({ request, env, ctx });
       if (request.method === 'POST') return handleChecklistPost({ request, env, ctx });
+    }
+
+    // 9b. v244 Candidate Hub Governance & Live Workspace APIs
+    if (pathname === '/api/candidate/hub-config' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handleCandidateHubConfigApi(request, env);
+    }
+    if (pathname === '/api/candidate/matches' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handleCandidateMatchesApi(request, env);
+    }
+    if (pathname === '/api/candidate/workspace') {
+      return handleCandidateWorkspaceApi(request, env);
+    }
+    if (pathname === '/api/candidate/profile' || pathname === '/api/auth/profile') {
+      return handleCandidateProfileApi(request, env);
+    }
+    if (pathname === '/candidate' || pathname === '/candidate/') {
+      return Response.redirect(new URL('/student-dashboard/', url.origin).toString(), 301);
     }
 
     if (pathname.startsWith('/study-library/')) {

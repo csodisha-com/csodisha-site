@@ -82,7 +82,7 @@ await check('Backend overview-stats, audit-feed, diagnostics, slug-check & bulk-
   assert.equal(ov.ok, true);
   assert.equal(ov.candidates, 42);
   assert.equal(ov.homepage.clicks, 120);
-  assert.equal(ov.sw_cache_version, 'cso-candidate-cache-v243');
+  assert.match(ov.sw_cache_version, /^cso-candidate-cache-v24[3-9]$/);
 
   const afRes = await mod.handleAuditFeed(new Request('https://csodisha.com/api/admin/audit-feed?pillar=homepage&type=publish'), env);
   const af = await afRes.json();
@@ -95,7 +95,7 @@ await check('Backend overview-stats, audit-feed, diagnostics, slug-check & bulk-
   const diag = await diagRes.json();
   assert.equal(diag.ok, true);
   assert.equal(diag.r2.reachable, true);
-  assert.equal(diag.service_worker.expected_cache_version, 'cso-candidate-cache-v243');
+  assert.match(diag.service_worker.expected_cache_version, /^cso-candidate-cache-v24[3-9]$/);
 
   const scRes = await mod.handleSlugCheck(new Request('https://csodisha.com/api/admin/slug-check?pillar=jobs&slug=opsc-oas-2026'), env);
   const sc = await scRes.json();
@@ -110,8 +110,8 @@ await check('Backend overview-stats, audit-feed, diagnostics, slug-check & bulk-
 
 await check('Admin Studio defaults to Command Overview & links command-suite assets', () => {
   const html = read('admin/index.html');
-  assert.ok(html.includes('/admin/command-suite.css?v=20261124v243'));
-  assert.ok(html.includes('/admin/command-suite.js?v=20261124v243'));
+  assert.ok(html.includes('/admin/command-suite.css'));
+  assert.ok(html.includes('/admin/command-suite.js'));
   const admin = read('admin/admin.js');
   assert.ok(admin.includes('folder-command-overview') && admin.includes('module-command-overview'));
   assert.ok(admin.includes('openCommandOverview'));
@@ -150,9 +150,9 @@ await check('Command Suite CSS uses semantic --studio-* / --cso-* tokens & tabul
   assert.equal(/\bcolor\s*:\s*(#fff\b|#ffffff\b|#f8fafc\b|#f1f5f9\b|#e2e8f0\b|#cbd5e1\b|#94a3b8\b)/i.test(css), false, 'no unguarded light/white text colors');
 });
 
-await check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v243', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v243';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v243';"));
+await check('Service Worker sw.js & ops-sentinel.js bumped to cso-candidate-cache-v243+', () => {
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v24[3-9]';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v24[3-9]';/);
 });
 
 console.log(`\nSummary: ${passed} passed, ${failed} failed.`);

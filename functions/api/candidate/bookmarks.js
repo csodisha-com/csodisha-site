@@ -13,6 +13,7 @@
 import { CORS_HEADERS, jsonResponse, getSessionFromRequest } from '../auth/_utils.js';
 import { HttpError, errorResponse } from '../../_lib/http.js';
 import { enforceCandidateControls } from '../../_lib/candidate-controls.js';
+import { enforceCandidateAccess } from '../../_lib/candidate-hub-governance.js';
 
 const ALLOWED_CATEGORIES = ['OPSC', 'OSSC', 'OSSSC', 'TEACHING', 'OTHER'];
 
@@ -88,6 +89,7 @@ export async function onRequestGet({ request, env }) {
     if (!env || !env.DB) {
       return jsonResponse({ success: false, error: 'Database service unavailable' }, 500);
     }
+    await enforceCandidateAccess(env, session);
     await enforceCandidateControls(env, session.userId, { isWrite: true, permission: 'canBookmark' });
     await enforceCandidateControls(env, session.userId, { isWrite: false });
 
@@ -112,6 +114,7 @@ export async function onRequestPost({ request, env }) {
     if (!env || !env.DB) {
       return jsonResponse({ success: false, error: 'Database service unavailable' }, 500);
     }
+    await enforceCandidateAccess(env, session);
     await enforceCandidateControls(env, session.userId, { isWrite: true, permission: 'canBookmark' });
 
     let body = {};

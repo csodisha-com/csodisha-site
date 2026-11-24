@@ -13,7 +13,8 @@
     expandedFolders: new Set(['folder-jobs-careers']),
     searchQuery: '',
     startTime: Date.now(),
-    homepageCount: null
+    homepageCount: null,
+    candidateCount: null
   };
 
   var OV_FOLDER_ID = 'folder-command-overview';
@@ -25,6 +26,11 @@
   var HS_MODULE_ID = 'module-homepage-studio';
   function isHomepageStudioId(id) {
     return id === HS_FOLDER_ID || id === HS_MODULE_ID || id === 'homepage-studio';
+  }
+  var CH_FOLDER_ID = 'folder-candidate-hub';
+  var CH_MODULE_ID = 'module-candidate-hub';
+  function isCandidateHubId(id) {
+    return id === CH_FOLDER_ID || id === CH_MODULE_ID || id === 'candidate-hub' || id === 'candidates';
   }
 
   var dom = {
@@ -288,6 +294,29 @@
       dom.accordionNav.appendChild(hsWrap);
     }
 
+    var chLabel = 'candidate hub roster governance ui features documents';
+    if (!query || chLabel.indexOf(query) !== -1) {
+      matchCount += 1;
+      var chActive = CSOState.activeModuleId === CH_MODULE_ID;
+      var chWrap = el('div', 'cso-nav-folder cso-nav-candidate-hub' + (chActive ? ' is-current' : ''));
+      var chBtn = el('button', 'cso-nav-folder-btn' + (chActive ? ' is-active' : ''));
+      chBtn.type = 'button';
+      chBtn.title = 'Candidate Hub — Roster, Governance, Dashboard UI & Features (Alt+7)';
+      var chLeft = el('span', 'cso-nav-folder-left');
+      chLeft.appendChild(el('span', 'cso-nav-dot'));
+      chLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83C\uDF93 Candidate Hub'));
+      var chRight = el('span', 'cso-nav-folder-right');
+      chRight.appendChild(el('span', 'cso-nav-count cso-tabular', CSOState.candidateCount === null ? '\u2026' : String(CSOState.candidateCount)));
+      chBtn.appendChild(chLeft);
+      chBtn.appendChild(chRight);
+      chBtn.addEventListener('click', function () {
+        selectModule(CH_FOLDER_ID, CH_MODULE_ID);
+        if (window.innerWidth <= 900) closeMobileDrawer();
+      });
+      chWrap.appendChild(chBtn);
+      dom.accordionNav.appendChild(chWrap);
+    }
+
     if (dom.searchCountBadge) {
       if (query) {
         dom.searchCountBadge.hidden = false;
@@ -312,6 +341,7 @@
 
   function resolveModuleTarget(targetId) {
     if (isHomepageStudioId(targetId)) return { folderId: HS_FOLDER_ID, moduleId: HS_MODULE_ID };
+    if (isCandidateHubId(targetId)) return { folderId: CH_FOLDER_ID, moduleId: CH_MODULE_ID };
     if (isOverviewId(targetId)) return { folderId: OV_FOLDER_ID, moduleId: OV_MODULE_ID };
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders) || !masterNavigationSchema.folders.length) return null;
     for (var i = 0; i < masterNavigationSchema.folders.length; i++) {
@@ -380,6 +410,30 @@
     }
   }
 
+  function openCandidateHubStudio(initialTab) {
+    CSOState.activeFolderId = CH_FOLDER_ID;
+    CSOState.activeModuleId = CH_MODULE_ID;
+    try { localStorage.setItem('cso_active_module_id', CH_MODULE_ID); } catch (_e) {}
+    if (window.location.hash !== '#candidate-hub' && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#candidate-hub');
+    }
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Candidate Hub';
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Roster, Governance & UI Studio';
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Candidate Hub';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live D1 / R2';
+    renderNavigationTree();
+    clearNode(dom.workspaceRoot);
+    clearNode(dom.moduleHeaderActions);
+    if (window.CSOCandidateHubStudio) {
+      window.CSOCandidateHubStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, initialTab || 'roster');
+    } else {
+      var card = el('div', 'cso-empty-state');
+      card.appendChild(el('h2', '', 'Candidate Hub Studio unavailable'));
+      card.appendChild(el('p', '', 'The Candidate Hub script failed to load. Reload the page.'));
+      dom.workspaceRoot.appendChild(card);
+    }
+  }
+
   function refreshHomepageCount() {
     fetch('/api/admin/homepage-blocks', { credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -387,11 +441,18 @@
         if (d && d.stats) { CSOState.homepageCount = d.stats.published; renderNavigationTree(); }
       })
       .catch(function () {});
+    fetch('/api/admin/candidates?limit=1', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && d.kpis) { CSOState.candidateCount = d.kpis.total_candidates; renderNavigationTree(); }
+      })
+      .catch(function () {});
   }
 
   function selectModule(folderId, moduleId) {
     if (isOverviewId(moduleId) || isOverviewId(folderId)) { openCommandOverview(); return; }
     if (isHomepageStudioId(moduleId) || isHomepageStudioId(folderId)) { openHomepageStudio(); return; }
+    if (isCandidateHubId(moduleId) || isCandidateHubId(folderId)) { openCandidateHubStudio(); return; }
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
     CSOState.activeFolderId = folderId;
     CSOState.activeModuleId = moduleId;
@@ -764,6 +825,10 @@
     setHomepageCount: function (n) {
       if (CSOState.homepageCount !== n) { CSOState.homepageCount = n; renderNavigationTree(); }
     },
+    setCandidateCount: function (n) {
+      if (CSOState.candidateCount !== n) { CSOState.candidateCount = n; renderNavigationTree(); }
+    },
+    openCandidateHubTab: function (tab) { openCandidateHubStudio(tab); },
     getSchema: function () { return masterNavigationSchema; }
   };
 

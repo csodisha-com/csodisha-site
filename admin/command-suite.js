@@ -462,6 +462,11 @@
       });
     });
     items.push({ group: 'Pillars', label: 'Homepage Studio', hint: 'Alt+6', keywords: 'homepage features blocks', run: function () { goFolder(HS_FOLDER); } });
+    items.push({ group: 'Pillars', label: 'Candidate Hub (Roster & Governance)', hint: 'Alt+7', keywords: 'candidates students roster block unblock dashboard ui', run: function () { goFolder('folder-candidate-hub'); } });
+    items.push({ group: 'Candidate Hub', label: 'Candidate Hub › Dashboard UI Manager & Preview', keywords: 'theme layout banner grid', run: function () { if (studio().openCandidateHubTab) studio().openCandidateHubTab('ui'); else goFolder('folder-candidate-hub'); } });
+    items.push({ group: 'Candidate Hub', label: 'Candidate Hub › Add & Manage Features', keywords: 'feature builder custom widget', run: function () { if (studio().openCandidateHubTab) studio().openCandidateHubTab('features'); else goFolder('folder-candidate-hub'); } });
+    items.push({ group: 'Candidate Hub', label: 'Candidate Hub › Provide Content & Targeted Push', keywords: 'assign pdf study pack district', run: function () { if (studio().openCandidateHubTab) studio().openCandidateHubTab('content'); else goFolder('folder-candidate-hub'); } });
+    items.push({ group: 'Candidate Hub', label: 'Candidate Hub › Document Vault Templates', keywords: 'checklist odisha certificates', run: function () { if (studio().openCandidateHubTab) studio().openCandidateHubTab('docs'); else goFolder('folder-candidate-hub'); } });
     document.querySelectorAll('.cso-create-item[data-create-target]').forEach(function (b) {
       var t = b.getAttribute('data-create-target');
       var strong = b.querySelector('strong');
@@ -610,13 +615,14 @@
       }
       return;
     }
-    if (e.altKey && !mod && /^Digit[0-6]$/.test(e.code || '')) {
+    if (e.altKey && !mod && /^Digit[0-7]$/.test(e.code || '')) {
       var n = Number(e.code.slice(5));
       var tag = (e.target && e.target.tagName) || '';
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') { /* still allow Alt shortcuts */ }
       e.preventDefault();
       if (n === 0) { goFolder(OV_FOLDER); return; }
       if (n === 6) { goFolder(HS_FOLDER); return; }
+      if (n === 7) { goFolder('folder-candidate-hub'); return; }
       var schema = studio().getSchema ? studio().getSchema() : null;
       var f = schema && schema.folders && schema.folders[n - 1];
       if (f) goFolder(f.id);

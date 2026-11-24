@@ -82,6 +82,7 @@ import { handleAdminCurrentAffairs } from './current-affairs.js';
 import { invalidateAllPublicCaches } from '../../_lib/edge-cache-invalidator.js';
 import { handleHomepageBlocksAdmin } from '../../_lib/homepage-studio.js';
 import { COMMAND_SUITE_RESOURCES, handleCommandSuiteAdmin } from '../../_lib/command-suite.js';
+import { handleAdminCandidatesV244, handleAdminCandidateHubStudio } from '../../_lib/candidate-hub-governance.js';
 import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
@@ -288,7 +289,13 @@ async function dispatchAdminApi(request, env) {
     if (resource === 'candidates') {
       const actor = await requireRole(request, env, ['admin']);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
-      return await handleAdminCandidates(request, env, actor, id);
+      return await handleAdminCandidatesV244(request, env, actor, id);
+    }
+
+    if (resource === 'candidate-hub') {
+      const actor = await requireRole(request, env, ['admin']);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handleAdminCandidateHubStudio(request, env, actor, id, sub, extra);
     }
 
     // Admin-only: manual lifecycle & D1 maintenance trigger.

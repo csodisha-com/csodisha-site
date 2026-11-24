@@ -11,6 +11,7 @@
 import { getSessionFromRequest } from './auth/_utils.js';
 import { HttpError, errorResponse } from '../_lib/http.js';
 import { enforceCandidateControls } from '../_lib/candidate-controls.js';
+import { enforceCandidateAccess } from '../_lib/candidate-hub-governance.js';
 import {
   flattenChecklistPayload,
   upsertStatement,
@@ -49,6 +50,7 @@ export async function onRequestGet({ request, env }) {
     }
     const candidateId = session.userId;
     if (env && env.DB) {
+      await enforceCandidateAccess(env, session);
       await enforceCandidateControls(env, candidateId, { isWrite: false });
     }
 
@@ -132,6 +134,7 @@ export async function onRequestPost({ request, env }) {
     const { locker, notes, mockScores } = payload;
     const candidateId = session.userId;
     if (env && env.DB) {
+      await enforceCandidateAccess(env, session);
       await enforceCandidateControls(env, candidateId, { isWrite: false });
     }
 

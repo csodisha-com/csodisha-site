@@ -12,6 +12,7 @@ import {
   getSessionFromRequest
 } from './_utils.js';
 import { getCandidateControls } from '../../_lib/candidate-controls.js';
+import { getCandidateGovernance } from '../../_lib/candidate-hub-governance.js';
 
 export async function onRequestOptions() {
   return new Response(null, {
@@ -46,15 +47,27 @@ export async function onRequestGet({ request, env }) {
 
     // users.role is authoritative (sessions.role may be stale)
     const roleRow = await env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(session.userId).first().catch(() => null);
-    const controls = await getCandidateControls(env, session.userId);
-    if (controls.account_status === 'banned' || controls.account_status === 'suspended') {
+    const [controls, governance] = await Promise.all([
+      getCandidateControls(env, session.userId),
+      getCandidateGovernance(env, session.userId, session.email)
+    ]);
+    if (
+      governance.account_status === 'blocked' ||
+      governance.account_status === 'suspended' ||
+      controls.account_status === 'banned' ||
+      controls.account_status === 'suspended'
+    ) {
+      const statusVal = governance.account_status !== 'active' ? governance.account_status : controls.account_status;
+      const reasonVal = governance.block_reason || controls.restriction_reason || `Account is ${statusVal}.`;
       return jsonResponse({
         success: false,
         authenticated: false,
+        restricted: true,
         code: 'ACCOUNT_RESTRICTED',
-        error: controls.restriction_reason || `Account is ${controls.account_status}.`,
-        account_status: controls.account_status,
-        restriction_reason: controls.restriction_reason,
+        error: reasonVal,
+        account_status: statusVal,
+        block_reason: reasonVal,
+        restriction_reason: reasonVal,
         suspended_until: controls.suspended_until
       }, 403);
     }
