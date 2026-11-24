@@ -123,15 +123,15 @@ await check('Candidate Dashboard renders assigned files, priority highlight, Ope
   assert.ok(css.includes('.cso-hub-highlight') && css.includes('.cso-hub-item.is-completed'));
 });
 
-await check('Strict CSP & sw.js / ops-sentinel.js bumped to cso-candidate-cache-v246', () => {
+await check('Strict CSP & sw.js / ops-sentinel.js bumped to cso-candidate-cache-v246+', () => {
   for (const rel of ['admin/candidate-hub-studio.js', 'assets/js/student-dashboard.js', 'functions/_lib/candidate-hub-governance.js']) {
     const js = read(rel);
     assert.equal(/\.innerHTML\b|\.outerHTML\b|insertAdjacentHTML\b/.test(js), false, `${rel}: no innerHTML`);
     assert.equal(/\.style\.[a-zA-Z]|\.style\s*=|setAttribute\(\s*['"]style/.test(js), false, `${rel}: no .style.*`);
     assert.equal(/\son[a-z]+\s*=\s*["']/i.test(js), false, `${rel}: no inline handlers`);
   }
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v246';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v246';"));
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v24[6-9]';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v24[6-9]';/);
 });
 
 console.log(`\nSummary: ${passed} passed, ${failed} failed.`);

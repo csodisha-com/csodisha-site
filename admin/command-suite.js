@@ -81,9 +81,28 @@
     return c;
   }
 
-  function renderKpis(d) {
+  function renderKpis(d, va) {
     var box = clear(ov.refs.kpis);
     var posture = d.health && d.health.posture ? d.health.posture : 'UNKNOWN';
+    var postureTone = posture === 'HEALTHY' ? 'emerald' : (posture === 'UNKNOWN' ? 'amber' : 'rose');
+    var trend = (va && va.trend_14d) || [];
+    var regSeries = trend.map(function (x) { return x.registrations; });
+    var actSeries = trend.map(function (x) { return x.admin_actions; });
+    var pushSeries = trend.map(function (x) { return x.content_pushes; });
+    var ackSeries = trend.map(function (x) { return x.candidate_acks; });
+    var sum = function (arr) { return arr.reduce(function (a, b) { return a + Number(b || 0); }, 0); };
+
+    if (window.CSOVisualAnalytics) {
+      var VA = window.CSOVisualAnalytics;
+      box.appendChild(VA.kpiSparklineTile({ label: 'Published Content', value: num(d.totals.published), sub: '5 pillars + Homepage Studio', tone: 'emerald', series: actSeries, deltaText: '14d: ' + num(sum(actSeries)) + ' actions' }));
+      box.appendChild(VA.kpiSparklineTile({ label: 'Pending Drafts', value: num(d.totals.draft), sub: 'Awaiting review or publish', tone: 'amber', deltaText: d.totals.draft ? 'Review queue' : 'All clear' }));
+      box.appendChild(VA.kpiSparklineTile({ label: 'Registered Candidates', value: num(d.candidates), sub: num(d.staff) + ' staff accounts', tone: 'cobalt', series: regSeries, deltaText: '+14d: ' + num(sum(regSeries)) }));
+      box.appendChild(VA.kpiSparklineTile({ label: 'Categories & Menus', value: num(d.categories.published) + ' / ' + num(d.menus.published), sub: num(d.categories.total) + ' cats · ' + num(d.menus.total) + ' menus', tone: 'violet', series: pushSeries, deltaText: '14d pushes: ' + num(sum(pushSeries)) }));
+      box.appendChild(VA.kpiSparklineTile({ label: 'Homepage Feature Clicks', value: num(d.homepage.clicks), sub: num(d.homepage.published) + ' of ' + num(d.homepage.total) + ' blocks live', tone: 'violet', series: ackSeries, deltaText: '14d acks: ' + num(sum(ackSeries)) }));
+      box.appendChild(VA.kpiSparklineTile({ label: 'Ops Sentinel & Edge', value: posture, sub: d.sw_cache_version + (d.health && d.health.freeze_enabled ? ' · FREEZE' : ''), tone: postureTone, deltaText: d.health && d.health.total_latency_ms ? d.health.total_latency_ms + ' ms' : 'Live' }));
+      return;
+    }
+
     var tone = posture === 'HEALTHY' ? 'ok' : (posture === 'UNKNOWN' ? '' : 'warn');
     box.appendChild(kpiCard('Published (5 pillars + Homepage)', num(d.totals.published), 'Live on the public site', 'ok'));
     box.appendChild(kpiCard('Draft / unpublished', num(d.totals.draft), 'Awaiting review or publish', d.totals.draft ? 'warn' : ''));
@@ -122,9 +141,89 @@
     });
   }
 
+  function renderVisualCharts(ovData, va) {
+    if (!window.CSOVisualAnalytics || !va) return;
+    var VA = window.CSOVisualAnalytics;
+    if (ov.refs.trend) {
+      clear(ov.refs.trend).appendChild(VA.trendAreaChart({
+        series: va.trend_14d || [],
+        metrics: [
+          { key: 'registrations', label: 'Candidate Registrations', tone: 'cobalt' },
+          { key: 'admin_actions', label: 'Admin Publishing Actions', tone: 'emerald' },
+          { key: 'content_pushes', label: 'Targeted Pushes', tone: 'violet' },
+          { key: 'candidate_acks', label: 'Candidate Views / Downloads', tone: 'amber' }
+        ]
+      }));
+    }
+    if (ov.refs.contentDonut) {
+      var pub = ovData && ovData.totals ? ovData.totals.published : 0;
+      var dr = ovData && ovData.totals ? ovData.totals.draft : 0;
+      clear(ov.refs.contentDonut).appendChild(VA.donutChart({
+        centerValue: num(pub + dr),
+        centerLabel: 'Total Items',
+        segments: [
+          { label: 'Published Live', value: pub, tone: 'emerald' },
+          { label: 'Draft / Review', value: dr, tone: 'amber' }
+        ]
+      }));
+    }
+    if (ov.refs.r2Donut) {
+      var r2 = va.r2_storage || { total_mb: 0, breakdown: [] };
+      var tones = { pdf: 'rose', image: 'cobalt', other: 'violet' };
+      clear(ov.refs.r2Donut).appendChild(VA.donutChart({
+        centerValue: r2.total_mb + ' MB',
+        centerLabel: num(r2.total_files) + ' R2 files',
+        segments: (r2.breakdown || []).map(function (b) {
+          return { label: b.label, value: b.count, displayValue: num(b.count) + ' · ' + bytes(b.bytes), tone: tones[b.key] || 'cobalt' };
+        })
+      }));
+    }
+    if (ov.refs.distBars) {
+      clear(ov.refs.distBars).appendChild(VA.horizontalBarChart({
+        rows: (va.demographics && va.demographics.districts) || [],
+        tone: 'cobalt',
+        emptyText: 'No candidate district data recorded yet.'
+      }));
+    }
+    if (ov.refs.examBars) {
+      clear(ov.refs.examBars).appendChild(VA.horizontalBarChart({
+        rows: (va.demographics && va.demographics.exam_boards) || [],
+        tone: 'violet',
+        emptyText: 'No target exam preferences set yet.'
+      }));
+    }
+    if (ov.refs.topHpTable) {
+      clear(ov.refs.topHpTable).appendChild(VA.dataTable({
+        defaultSort: 'clicks_count',
+        emptyText: 'No Homepage Studio blocks found.',
+        columns: [
+          { key: 'title_en', label: 'Block Title' },
+          { key: 'section_key', label: 'Section', render: function (r) { return el('span', 'cs-muted', String(r.section_key || '').replace(/_/g, ' ')); } },
+          { key: 'is_published', label: 'Status', render: function (r) { return el('span', 'cs-tag cs-tag--' + (r.is_published ? 'publish' : 'update'), r.is_published ? 'Live' : 'Draft'); } },
+          { key: 'clicks_count', label: 'Clicks', numeric: true }
+        ],
+        rows: va.top_homepage_blocks || []
+      }));
+    }
+    if (ov.refs.mutTable) {
+      clear(ov.refs.mutTable).appendChild(VA.dataTable({
+        defaultSort: 'id',
+        emptyText: 'No recent mutations in audit_log.',
+        columns: [
+          { key: 'actor', label: 'Staff' },
+          { key: 'action', label: 'Action', render: function (r) { return el('span', '', String(r.action || '').replace(/[._]/g, ' ')); } },
+          { key: 'type', label: 'Type', render: function (r) { return el('span', 'cs-tag cs-tag--' + r.type, r.type); } },
+          { key: 'created_at', label: 'When', numeric: true, render: function (r) { return el('span', 'cs-muted cs-num', when(r.created_at)); } }
+        ],
+        rows: va.recent_mutations || []
+      }));
+    }
+  }
+
   function loadOverview() {
-    return api('overview-stats').then(function (d) {
-      renderKpis(d); renderPipeline(d); renderHealth(d);
+    return Promise.all([api('overview-stats'), api('visual-analytics').catch(function () { return null; })]).then(function (pair) {
+      var d = pair[0]; var va = pair[1];
+      renderKpis(d, va); renderPipeline(d); renderHealth(d); renderVisualCharts(d, va);
       if (ov.refs.stamp) ov.refs.stamp.textContent = 'Updated ' + when(d.generated_at);
     }).catch(function (e) { toast('Overview failed: ' + e.message, 'crimson'); });
   }
@@ -240,14 +339,59 @@
 
     var launch = section('Quick-Action Launchpad', 'Create content in one click');
     var lg = el('div', 'cs-launch-grid');
-    lg.appendChild(launchCard('Job Notice', 'Recruitment, vacancies & deadlines', function () { studio().openRoute('jobs/new'); }));
-    lg.appendChild(launchCard('Government Scheme', 'Welfare & scholarship schemes', function () { goFolder('folder-schemes-benefits'); }));
-    lg.appendChild(launchCard('Study Material / PYQ', 'Notes, syllabus & previous papers', function () { goFolder('folder-study-library'); }));
-    lg.appendChild(launchCard('Current Affairs Capsule', 'Daily brief + 5 MCQs', function () { studio().openRoute('current-affairs/new'); }));
-    lg.appendChild(launchCard('Homepage Block', 'Chip, card, tool or hub item', newHomepageBlock));
-    lg.appendChild(launchCard('Navigation Category', 'Header menu & categories', function () { studio().openRoute('nav-manager'); }));
+    if (window.CSOVisualAnalytics) {
+      var VA = window.CSOVisualAnalytics;
+      lg.appendChild(VA.quickActionTile({ title: 'Job Notice', desc: 'Recruitment, vacancies & deadlines', icon: '💼', tone: 'emerald', onClick: function () { studio().openRoute('jobs/new'); } }));
+      lg.appendChild(VA.quickActionTile({ title: 'Government Scheme', desc: 'Welfare & scholarship schemes', icon: '🏛', tone: 'cobalt', onClick: function () { goFolder('folder-schemes-benefits'); } }));
+      lg.appendChild(VA.quickActionTile({ title: 'Study Material / PYQ', desc: 'Notes, syllabus & previous papers', icon: '📚', tone: 'violet', onClick: function () { goFolder('folder-study-library'); } }));
+      lg.appendChild(VA.quickActionTile({ title: 'Current Affairs Capsule', desc: 'Daily brief + 5 MCQs', icon: '📰', tone: 'amber', onClick: function () { studio().openRoute('current-affairs/new'); } }));
+      lg.appendChild(VA.quickActionTile({ title: 'Homepage Block', desc: 'Chip, card, tool or hub item', icon: '🏠', tone: 'rose', onClick: newHomepageBlock }));
+      lg.appendChild(VA.quickActionTile({ title: 'Candidate Push / Hub', desc: 'Roster, UI & direct R2 file push', icon: '🎓', tone: 'cobalt', onClick: function () { goFolder('folder-candidate-hub'); } }));
+    } else {
+      lg.appendChild(launchCard('Job Notice', 'Recruitment, vacancies & deadlines', function () { studio().openRoute('jobs/new'); }));
+      lg.appendChild(launchCard('Government Scheme', 'Welfare & scholarship schemes', function () { goFolder('folder-schemes-benefits'); }));
+      lg.appendChild(launchCard('Study Material / PYQ', 'Notes, syllabus & previous papers', function () { goFolder('folder-study-library'); }));
+      lg.appendChild(launchCard('Current Affairs Capsule', 'Daily brief + 5 MCQs', function () { studio().openRoute('current-affairs/new'); }));
+      lg.appendChild(launchCard('Homepage Block', 'Chip, card, tool or hub item', newHomepageBlock));
+      lg.appendChild(launchCard('Navigation Category', 'Header menu & categories', function () { studio().openRoute('nav-manager'); }));
+    }
     launch.appendChild(lg);
     wrap.appendChild(launch);
+
+    var trendSec = section('14-Day Activity & Publishing Trend', 'Live D1 time-series (click legend items to toggle)');
+    ov.refs.trend = el('div', '');
+    trendSec.appendChild(ov.refs.trend);
+    wrap.appendChild(trendSec);
+
+    var donutCols = el('div', 'cs-cols');
+    var cDonut = section('Content Inventory Ratio', 'Published vs Draft across all pillars');
+    ov.refs.contentDonut = el('div', '');
+    cDonut.appendChild(ov.refs.contentDonut);
+    var r2Donut = section('R2 Media Storage Breakdown', 'cso-media bucket by asset category');
+    ov.refs.r2Donut = el('div', '');
+    r2Donut.appendChild(ov.refs.r2Donut);
+    donutCols.appendChild(cDonut); donutCols.appendChild(r2Donut);
+    wrap.appendChild(donutCols);
+
+    var demoCols = el('div', 'cs-cols');
+    var distSec = section('Odisha District Concentration', 'Registered aspirants by district');
+    ov.refs.distBars = el('div', '');
+    distSec.appendChild(ov.refs.distBars);
+    var examSec = section('Target Exam Tracks', 'Active candidate exam preferences');
+    ov.refs.examBars = el('div', '');
+    examSec.appendChild(ov.refs.examBars);
+    demoCols.appendChild(distSec); demoCols.appendChild(examSec);
+    wrap.appendChild(demoCols);
+
+    var tableCols = el('div', 'cs-cols');
+    var hpTblSec = section('Top Performing Homepage Blocks', 'Sortable by clicks');
+    ov.refs.topHpTable = el('div', '');
+    hpTblSec.appendChild(ov.refs.topHpTable);
+    var mutTblSec = section('Recent Admin Mutations', 'Live audit_log summary');
+    ov.refs.mutTable = el('div', '');
+    mutTblSec.appendChild(ov.refs.mutTable);
+    tableCols.appendChild(hpTblSec); tableCols.appendChild(mutTblSec);
+    wrap.appendChild(tableCols);
 
     var cols = el('div', 'cs-cols');
     var pipe = section('Content Pipeline', 'Published vs draft per pillar');

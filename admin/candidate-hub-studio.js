@@ -496,6 +496,45 @@
     });
     container.appendChild(kpis);
 
+    if (window.CSOVisualAnalytics) {
+      var VA = window.CSOVisualAnalytics;
+      var det = el('details', 'va-collapse');
+      det.open = true;
+      var sum = el('summary', '');
+      sum.appendChild(el('span', '', '📊 Visual Insights & Demographics (Odisha Districts, Exam Tracks, Docs & Engagement)'));
+      sum.appendChild(el('span', 'va-muted', 'Click to collapse'));
+      det.appendChild(sum);
+      var vGrid = el('div', 'va-collapse__grid');
+      vGrid.appendChild(el('span', 'va-muted', 'Loading live D1 demographics…'));
+      det.appendChild(vGrid);
+      container.appendChild(det);
+
+      api('/api/admin/visual-analytics').then(function (va) {
+        clear(vGrid);
+        var d = va.demographics || {};
+        var p1 = el('div', 'va-mini-panel'); p1.appendChild(el('h4', '', 'Top Odisha Districts'));
+        p1.appendChild(VA.horizontalBarChart({ rows: (d.districts || []).slice(0, 6), tone: 'cobalt', emptyText: 'No district profiles yet.' }));
+        var p2 = el('div', 'va-mini-panel'); p2.appendChild(el('h4', '', 'Target Exam Breakdown'));
+        p2.appendChild(VA.horizontalBarChart({ rows: (d.exam_boards || []).slice(0, 6), tone: 'violet', emptyText: 'No exam preferences yet.' }));
+        var p3 = el('div', 'va-mini-panel'); p3.appendChild(el('h4', '', 'Document Readiness'));
+        p3.appendChild(VA.horizontalBarChart({ rows: d.doc_readiness || [], tone: 'emerald', emptyText: 'No locker data yet.' }));
+        var eng = d.assigned_engagement || {};
+        var p4 = el('div', 'va-mini-panel'); p4.appendChild(el('h4', '', 'Assigned Content Conversion'));
+        p4.appendChild(VA.horizontalBarChart({
+          rows: [
+            { label: 'Published Pushes', count: eng.published_items || 0 },
+            { label: 'Seen by Candidates', count: eng.seen || 0 },
+            { label: 'Opened / Downloaded', count: eng.downloaded || 0 },
+            { label: 'Marked Completed', count: eng.completed || 0 }
+          ],
+          tone: 'amber'
+        }));
+        vGrid.appendChild(p1); vGrid.appendChild(p2); vGrid.appendChild(p3); vGrid.appendChild(p4);
+      }).catch(function () {
+        clear(vGrid).appendChild(el('span', 'va-muted', 'Demographics chart unavailable.'));
+      });
+    }
+
     var card = el('section', 'ch-card');
     var head = el('div', 'ch-card__head');
     head.appendChild(el('h2', 'ch-card__title', 'Master Candidate Roster & Governance'));

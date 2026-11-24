@@ -5,6 +5,7 @@ import { HttpError, json, readJson, validationError } from './http.js';
 import { audit } from './rbac.js';
 import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
 import { ACTIVE_SW_CACHE_VERSION, runSentinelProbe, manageEdgeCache } from './ops-sentinel.js';
+import { normalizeOdishaDistrict, formatTargetExamLabel } from './candidate-hub-governance.js';
 
 // Pillar -> content table registry (id/title/status/updated_at are common to all).
 export const PILLAR_TABLES = {
@@ -279,8 +280,175 @@ export async function handleBulkContent(request, env, actor) {
   throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
 }
 
+// ---------- GET /api/admin/visual-analytics ----------
+function buildLast14Days() {
+  const days = [];
+  const now = new Date();
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i));
+    const iso = d.toISOString().slice(0, 10);
+    days.push({ date: iso, label: iso.slice(5) });
+  }
+  return days;
+}
+
+export async function handleVisualAnalytics(request, env) {
+  const db = env.DB;
+  const days = buildLast14Days();
+  const since = days[0].date;
+
+  const [
+    regRows, auditRows, pushRows, ackRows,
+    hpSections, topHpBlocks, mediaRows,
+    candDistRows, examPrefRows, govStatusRows, govTierRows,
+    lockerRows, docCountRow, ackTotalsRow, assignedCountRow,
+    recentAuditRows
+  ] = await Promise.all([
+    safeAll(db, "SELECT substr(created_at, 1, 10) AS d, COUNT(*) AS n FROM users WHERE substr(created_at, 1, 10) >= ? GROUP BY d", [since]),
+    safeAll(db, "SELECT substr(created_at, 1, 10) AS d, COUNT(*) AS n FROM audit_log WHERE substr(created_at, 1, 10) >= ? GROUP BY d", [since]),
+    safeAll(db, "SELECT substr(created_at, 1, 10) AS d, COUNT(*) AS n FROM candidate_assigned_items WHERE substr(created_at, 1, 10) >= ? GROUP BY d", [since]),
+    safeAll(db, "SELECT substr(updated_at, 1, 10) AS d, COUNT(*) AS n FROM candidate_assigned_acks WHERE substr(updated_at, 1, 10) >= ? GROUP BY d", [since]),
+    safeAll(db, "SELECT section_key, COUNT(*) AS total, COALESCE(SUM(is_published), 0) AS published, COALESCE(SUM(clicks_count), 0) AS clicks FROM homepage_blocks GROUP BY section_key"),
+    safeAll(db, "SELECT id, section_key, title_en, is_published, clicks_count, updated_at FROM homepage_blocks ORDER BY clicks_count DESC, sort_order ASC LIMIT 10"),
+    safeAll(db, "SELECT file_category, COUNT(*) AS n, COALESCE(SUM(file_size_bytes), 0) AS bytes FROM media_files GROUP BY file_category"),
+    safeAll(db, "SELECT district, COUNT(*) AS n FROM candidates WHERE district IS NOT NULL AND district != '' GROUP BY district"),
+    safeAll(db, "SELECT primary_exam, selected_exams_json FROM candidate_exam_preferences"),
+    safeAll(db, "SELECT COALESCE(cg.account_status, 'active') AS status, COUNT(*) AS n FROM users u LEFT JOIN candidate_governance cg ON cg.user_id = u.id GROUP BY status"),
+    safeAll(db, "SELECT COALESCE(cg.access_tier, 'standard') AS tier, COUNT(*) AS n FROM users u LEFT JOIN candidate_governance cg ON cg.user_id = u.id GROUP BY tier"),
+    safeAll(db, "SELECT locker_data FROM candidate_lockers LIMIT 500"),
+    safeFirst(db, "SELECT COUNT(*) AS n FROM candidate_doc_templates WHERE is_published = 1"),
+    safeFirst(db, "SELECT COALESCE(SUM(CASE WHEN seen_at != '' THEN 1 ELSE 0 END), 0) AS seen, COALESCE(SUM(CASE WHEN downloaded_at != '' THEN 1 ELSE 0 END), 0) AS downloaded, COALESCE(SUM(completed), 0) AS completed FROM candidate_assigned_acks"),
+    safeFirst(db, "SELECT COUNT(*) AS n FROM candidate_assigned_items WHERE is_published = 1"),
+    safeAll(db, "SELECT a.id, a.action, a.target_type, a.target_id, a.created_at, u.email AS actor_email FROM audit_log a LEFT JOIN users u ON u.id = a.actor_user_id ORDER BY a.id DESC LIMIT 12")
+  ]);
+
+  const toMap = (rows) => {
+    const m = new Map();
+    (rows || []).forEach((r) => { if (r && r.d) m.set(String(r.d), Number(r.n || 0)); });
+    return m;
+  };
+  const regMap = toMap(regRows);
+  const audMap = toMap(auditRows);
+  const pushMap = toMap(pushRows);
+  const ackMap = toMap(ackRows);
+
+  const trend_14d = days.map((d) => ({
+    date: d.date,
+    label: d.label,
+    registrations: regMap.get(d.date) || 0,
+    admin_actions: audMap.get(d.date) || 0,
+    content_pushes: pushMap.get(d.date) || 0,
+    candidate_acks: ackMap.get(d.date) || 0
+  }));
+
+  // Pillar inventory
+  const pillar_inventory = [];
+  for (const [key, def] of Object.entries(PILLAR_TABLES)) {
+    const c = await pillarCounts(db, def);
+    pillar_inventory.push({ key, label: def.label, published: c.published, draft: c.draft, total: c.total });
+  }
+  const hpTot = (hpSections || []).reduce((a, r) => ({ total: a.total + Number(r.total || 0), published: a.published + Number(r.published || 0) }), { total: 0, published: 0 });
+  pillar_inventory.push({ key: 'homepage', label: 'Homepage Studio', published: hpTot.published, draft: hpTot.total - hpTot.published, total: hpTot.total });
+
+  // Districts normalized
+  const distAcc = new Map();
+  (candDistRows || []).forEach((r) => {
+    const name = normalizeOdishaDistrict(r.district);
+    if (!name) return;
+    distAcc.set(name, (distAcc.get(name) || 0) + Number(r.n || 0));
+  });
+  const districts = Array.from(distAcc.entries()).map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count).slice(0, 12);
+
+  // Exam tracks normalized
+  const examAcc = new Map();
+  (examPrefRows || []).forEach((r) => {
+    const seen = new Set();
+    if (r.primary_exam) seen.add(formatTargetExamLabel(r.primary_exam));
+    try {
+      const arr = JSON.parse(r.selected_exams_json || '[]');
+      if (Array.isArray(arr)) arr.forEach((x) => { if (x) seen.add(formatTargetExamLabel(x)); });
+    } catch {}
+    seen.forEach((lbl) => { if (lbl) examAcc.set(lbl, (examAcc.get(lbl) || 0) + 1); });
+  });
+  const exam_boards = Array.from(examAcc.entries()).map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count).slice(0, 10);
+
+  // Document readiness distribution
+  const totalDocs = Math.max(1, Number((docCountRow && docCountRow.n) || 0));
+  const docBuckets = { '0-25%': 0, '26-50%': 0, '51-75%': 0, '76-100%': 0 };
+  (lockerRows || []).forEach((r) => {
+    let obj = {};
+    try { obj = JSON.parse(r.locker_data || '{}'); } catch {}
+    const ready = Object.values(obj).filter((v) => v === true || v === 'ready' || v === 'verified').length;
+    const pct = Math.min(100, Math.round((ready / totalDocs) * 100));
+    if (pct <= 25) docBuckets['0-25%']++;
+    else if (pct <= 50) docBuckets['26-50%']++;
+    else if (pct <= 75) docBuckets['51-75%']++;
+    else docBuckets['76-100%']++;
+  });
+  const doc_readiness = Object.entries(docBuckets).map(([label, count]) => ({ label, count }));
+
+  // R2 Storage breakdown
+  const r2Cats = { pdf: { count: 0, bytes: 0 }, image: { count: 0, bytes: 0 }, other: { count: 0, bytes: 0 } };
+  (mediaRows || []).forEach((r) => {
+    const c = r.file_category === 'pdf' ? 'pdf' : (r.file_category === 'image' ? 'image' : 'other');
+    r2Cats[c].count += Number(r.n || 0);
+    r2Cats[c].bytes += Number(r.bytes || 0);
+  });
+  const totalBytes = r2Cats.pdf.bytes + r2Cats.image.bytes + r2Cats.other.bytes;
+  const totalFiles = r2Cats.pdf.count + r2Cats.image.count + r2Cats.other.count;
+
+  return json({
+    ok: true,
+    generated_at: new Date().toISOString(),
+    trend_14d,
+    pillar_inventory,
+    demographics: {
+      districts,
+      exam_boards,
+      account_statuses: (govStatusRows || []).map((r) => ({ label: String(r.status || 'active'), count: Number(r.n || 0) })),
+      access_tiers: (govTierRows || []).map((r) => ({ label: String(r.tier || 'standard'), count: Number(r.n || 0) })),
+      doc_readiness,
+      assigned_engagement: {
+        published_items: Number((assignedCountRow && assignedCountRow.n) || 0),
+        seen: Number((ackTotalsRow && ackTotalsRow.seen) || 0),
+        downloaded: Number((ackTotalsRow && ackTotalsRow.downloaded) || 0),
+        completed: Number((ackTotalsRow && ackTotalsRow.completed) || 0)
+      }
+    },
+    homepage_sections: (hpSections || []).map((r) => ({
+      section_key: String(r.section_key),
+      total: Number(r.total || 0),
+      published: Number(r.published || 0),
+      clicks: Number(r.clicks || 0)
+    })),
+    top_homepage_blocks: (topHpBlocks || []).map((r) => ({
+      id: r.id, section_key: r.section_key, title_en: r.title_en,
+      is_published: Boolean(r.is_published), clicks_count: Number(r.clicks_count || 0), updated_at: r.updated_at
+    })),
+    r2_storage: {
+      total_files: totalFiles,
+      total_bytes: totalBytes,
+      total_mb: Number((totalBytes / 1048576).toFixed(2)),
+      breakdown: [
+        { label: 'PDFs', key: 'pdf', count: r2Cats.pdf.count, bytes: r2Cats.pdf.bytes },
+        { label: 'Images', key: 'image', count: r2Cats.image.count, bytes: r2Cats.image.bytes },
+        { label: 'Docs & Other', key: 'other', count: r2Cats.other.count, bytes: r2Cats.other.bytes }
+      ]
+    },
+    recent_mutations: (recentAuditRows || []).map((r) => ({
+      id: r.id,
+      actor: r.actor_email || 'system',
+      action: r.action,
+      pillar: classifyPillar(r.action, r.target_type),
+      type: classifyActionType(r.action),
+      target_id: r.target_id || '',
+      created_at: r.created_at
+    }))
+  });
+}
+
 // Router entry: resource names handled here.
-export const COMMAND_SUITE_RESOURCES = ['overview-stats', 'audit-feed', 'system-diagnostics', 'purge-caches', 'command-index', 'media-library', 'slug-check', 'bulk-content'];
+export const COMMAND_SUITE_RESOURCES = ['overview-stats', 'visual-analytics', 'audit-feed', 'system-diagnostics', 'purge-caches', 'command-index', 'media-library', 'slug-check', 'bulk-content'];
 
 export async function handleCommandSuiteAdmin(request, env, actor, resource) {
   const method = request.method;
@@ -288,6 +456,7 @@ export async function handleCommandSuiteAdmin(request, env, actor, resource) {
   let res;
   switch (resource) {
     case 'overview-stats': if (!isRead) break; return handleOverviewStats(request, env);
+    case 'visual-analytics': if (!isRead) break; return handleVisualAnalytics(request, env);
     case 'audit-feed': if (!isRead) break; return handleAuditFeed(request, env);
     case 'system-diagnostics': if (!isRead) break; return handleDiagnostics(request, env);
     case 'command-index': if (!isRead) break; return handleCommandIndex(request, env);

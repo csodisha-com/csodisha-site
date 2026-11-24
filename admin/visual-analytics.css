@@ -1,0 +1,177 @@
+/* CS Odisha Admin Studio — Pure-CSP SVG Visual Analytics & Feature Tile Engine (v247)
+ * Harmonious semantic accent tokens across all 4 themes (system, dark, reading, utkal-bharat). */
+
+:root {
+  --va-emerald: #059669;
+  --va-emerald-soft: rgba(5, 150, 105, 0.12);
+  --va-cobalt: #2563EB;
+  --va-cobalt-soft: rgba(37, 99, 235, 0.12);
+  --va-amber: #D97706;
+  --va-amber-soft: rgba(217, 119, 6, 0.13);
+  --va-violet: #7C3AED;
+  --va-violet-soft: rgba(124, 58, 237, 0.12);
+  --va-rose: #DC2626;
+  --va-rose-soft: rgba(220, 38, 38, 0.12);
+}
+
+:root[data-cso-theme="dark"],
+:root[data-cso-resolved-mode="dark"] {
+  --va-emerald: #34D399;
+  --va-emerald-soft: rgba(52, 211, 153, 0.16);
+  --va-cobalt: #60A5FA;
+  --va-cobalt-soft: rgba(96, 165, 250, 0.16);
+  --va-amber: #FBBF24;
+  --va-amber-soft: rgba(251, 191, 36, 0.16);
+  --va-violet: #A78BFA;
+  --va-violet-soft: rgba(167, 139, 250, 0.16);
+  --va-rose: #F87171;
+  --va-rose-soft: rgba(248, 113, 113, 0.16);
+}
+
+.va-num { font-variant-numeric: tabular-nums; }
+.va-muted { color: var(--studio-muted, var(--cso-muted)); font-size: 0.8rem; }
+
+/* Semantic Tone Accent Variables */
+.va-tone-emerald { --va-tone: var(--va-emerald); --va-tone-soft: var(--va-emerald-soft); }
+.va-tone-cobalt  { --va-tone: var(--va-cobalt);  --va-tone-soft: var(--va-cobalt-soft); }
+.va-tone-amber   { --va-tone: var(--va-amber);   --va-tone-soft: var(--va-amber-soft); }
+.va-tone-violet  { --va-tone: var(--va-violet);  --va-tone-soft: var(--va-violet-soft); }
+.va-tone-rose    { --va-tone: var(--va-rose);    --va-tone-soft: var(--va-rose-soft); }
+
+/* KPI Sparkline Tiles */
+.va-kpi {
+  background: var(--studio-card, var(--cso-surface));
+  border: 1px solid var(--studio-border, var(--cso-border));
+  border-top: 3px solid var(--va-tone, var(--studio-accent));
+  border-radius: 12px; padding: 13px 15px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.va-kpi__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.va-kpi__label { font-size: 0.76rem; font-weight: 700; color: var(--studio-muted, var(--cso-muted)); }
+.va-kpi__delta {
+  font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 999px;
+  background: var(--va-tone-soft, var(--studio-card-elev));
+  color: var(--va-tone, var(--studio-text));
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.va-kpi__body { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.va-kpi__value {
+  font-size: 1.6rem; font-weight: 800; line-height: 1.1;
+  font-variant-numeric: tabular-nums; color: var(--studio-text, var(--cso-text));
+}
+.va-kpi__sub { font-size: 0.74rem; color: var(--studio-muted, var(--cso-muted)); font-variant-numeric: tabular-nums; }
+.va-spark-svg { width: 92px; height: 32px; flex: none; overflow: visible; }
+.va-spark-line { fill: none; stroke: var(--va-tone, var(--studio-accent)); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.va-spark-area { fill: var(--va-tone-soft, var(--studio-ok-bg)); stroke: none; }
+
+/* Color-Coded Quick-Action Tiles */
+.va-tile {
+  text-align: left; display: flex; align-items: flex-start; gap: 11px;
+  background: var(--studio-card, var(--cso-surface));
+  color: var(--studio-text, var(--cso-text));
+  border: 1px solid var(--studio-border, var(--cso-border));
+  border-left: 3px solid var(--va-tone, var(--studio-accent));
+  border-radius: 10px; padding: 12px 13px;
+  font: inherit; cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s, background-color 0.15s;
+}
+.va-tile:hover, .va-tile:focus-visible {
+  border-color: var(--va-tone, var(--studio-accent));
+  background: var(--va-tone-soft, var(--studio-card-elev));
+  transform: translateY(-1px); outline: none;
+}
+.va-tile__icon {
+  width: 34px; height: 34px; border-radius: 9px; flex: none;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 1.05rem;
+  background: var(--va-tone-soft, var(--studio-card-elev));
+  color: var(--va-tone, var(--studio-accent));
+}
+.va-tile__copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.va-tile__copy strong { font-size: 0.88rem; color: var(--studio-text, var(--cso-text)); }
+.va-tile__copy span { font-size: 0.76rem; color: var(--studio-muted, var(--cso-muted)); }
+
+/* Tinted Card Header Strip */
+.va-card-tinted {
+  padding: 8px 12px; margin: -16px -16px 4px;
+  border-bottom: 1px solid var(--studio-border, var(--cso-border));
+  border-radius: 12px 12px 0 0;
+  background: var(--va-tone-soft, var(--studio-card-elev));
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+
+/* 14-Day Trend Area/Line SVG Chart */
+.va-trend-wrap { display: flex; flex-direction: column; gap: 10px; }
+.va-legend { display: flex; flex-wrap: wrap; gap: 8px; }
+.va-legend-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px;
+  background: var(--studio-card-elev, var(--cso-surface-alt));
+  color: var(--studio-text, var(--cso-text));
+  border: 1px solid var(--studio-border, var(--cso-border));
+  font: inherit; font-size: 0.76rem; font-weight: 600; cursor: pointer;
+}
+.va-legend-btn.is-off { opacity: 0.45; }
+.va-legend-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--va-tone, var(--studio-accent)); }
+.va-trend-svg { width: 100%; height: 210px; display: block; overflow: visible; }
+.va-grid-line { stroke: var(--studio-border, var(--cso-border)); stroke-dasharray: 3 3; stroke-width: 1; }
+.va-axis-text { fill: var(--studio-muted, var(--cso-muted)); font-size: 10px; font-variant-numeric: tabular-nums; }
+.va-series-line { fill: none; stroke: var(--va-tone); stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; }
+.va-series-area { fill: var(--va-tone-soft); stroke: none; opacity: 0.55; }
+.va-series-pt { fill: var(--studio-card, var(--cso-surface)); stroke: var(--va-tone); stroke-width: 2; cursor: pointer; }
+.va-series-pt:hover, .va-series-pt:focus { r: 5; outline: none; }
+
+/* Donut Gauge */
+.va-donut-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
+.va-donut-svg { width: 148px; height: 148px; flex: none; }
+.va-donut-track { fill: none; stroke: var(--studio-card-elev, var(--cso-surface-alt)); stroke-width: 16; }
+.va-donut-seg { fill: none; stroke: var(--va-tone); stroke-width: 16; stroke-linecap: butt; transition: opacity 0.15s; }
+.va-donut-seg:hover { opacity: 0.82; }
+.va-donut-val { fill: var(--studio-text, var(--cso-text)); font-size: 20px; font-weight: 800; text-anchor: middle; font-variant-numeric: tabular-nums; }
+.va-donut-lbl { fill: var(--studio-muted, var(--cso-muted)); font-size: 10px; font-weight: 600; text-anchor: middle; }
+.va-donut-legend { flex: 1 1 170px; display: flex; flex-direction: column; gap: 7px; }
+.va-donut-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.82rem; color: var(--studio-text, var(--cso-text)); }
+.va-donut-key { display: inline-flex; align-items: center; gap: 7px; }
+
+/* Horizontal Ranked Bar Charts */
+.va-bars { display: flex; flex-direction: column; gap: 8px; }
+.va-bar-row { display: grid; grid-template-columns: 120px minmax(0, 1fr) 62px; gap: 10px; align-items: center; font-size: 0.8rem; }
+.va-bar-label { color: var(--studio-text, var(--cso-text)); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.va-bar-val { text-align: right; color: var(--studio-muted, var(--cso-muted)); font-variant-numeric: tabular-nums; font-weight: 600; }
+.va-bar-svg { width: 100%; height: 10px; display: block; }
+.va-bar-bg { fill: var(--studio-card-elev, var(--cso-surface-alt)); rx: 5; ry: 5; }
+.va-bar-fill { fill: var(--va-tone, var(--studio-accent)); rx: 5; ry: 5; }
+
+/* Collapsible Visual Insights Strip */
+.va-collapse {
+  background: var(--studio-card, var(--cso-surface));
+  border: 1px solid var(--studio-border, var(--cso-border));
+  border-radius: 12px; padding: 12px 16px;
+}
+.va-collapse summary {
+  cursor: pointer; font-weight: 700; font-size: 0.94rem;
+  color: var(--studio-text, var(--cso-text)); list-style: none;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.va-collapse__grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px; margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--studio-border, var(--cso-border));
+}
+.va-mini-panel {
+  background: var(--studio-card-elev, var(--cso-surface-alt));
+  border: 1px solid var(--studio-border, var(--cso-border));
+  border-radius: 10px; padding: 11px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.va-mini-panel h4 { margin: 0; font-size: 0.84rem; font-weight: 700; color: var(--studio-text, var(--cso-text)); }
+
+/* Sortable Analytical Table */
+.va-table-wrap { overflow-x: auto; }
+.va-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; color: var(--studio-text, var(--cso-text)); }
+.va-table th, .va-table td { text-align: left; padding: 8px 9px; border-bottom: 1px solid var(--studio-border, var(--cso-border)); }
+.va-sort-btn {
+  background: none; border: 0; padding: 0; font: inherit; font-size: 0.74rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--studio-muted, var(--cso-muted)); cursor: pointer;
+}
+.va-sort-btn:hover { color: var(--studio-text, var(--cso-text)); }

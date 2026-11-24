@@ -110,6 +110,24 @@
     });
     br.appendChild(list);
     box.appendChild(br);
+
+    if (state.refs.sectionChart && window.CSOVisualAnalytics) {
+      var chartBox = clear(state.refs.sectionChart);
+      var card = el('section', 'cso-card studio-card hs-card');
+      card.appendChild(el('h3', 'hs-form__title', 'Section Clicks & Block Distribution'));
+      card.appendChild(window.CSOVisualAnalytics.horizontalBarChart({
+        tone: 'violet',
+        rows: SECTION_META.map(function (m) {
+          var x = (s.sections && s.sections[m.key]) || { total: 0, published: 0, clicks: 0 };
+          return {
+            label: m.label,
+            count: x.clicks,
+            displayValue: x.clicks + ' clicks (' + x.published + '/' + x.total + ')'
+          };
+        })
+      }));
+      chartBox.appendChild(card);
+    }
   }
 
   function renderTabs() {
@@ -440,6 +458,8 @@
 
     state.refs.kpis = el('div', 'hs-kpis');
     wrap.appendChild(state.refs.kpis);
+    state.refs.sectionChart = el('div', '');
+    wrap.appendChild(state.refs.sectionChart);
     state.refs.tabs = el('div', 'hs-tabs');
     state.refs.tabs.setAttribute('role', 'tablist');
     wrap.appendChild(state.refs.tabs);
