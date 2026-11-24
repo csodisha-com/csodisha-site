@@ -113,7 +113,7 @@ check('3. Runtime check: stripMarkdownExcerpt removes raw Markdown & formatQuizP
 check('4. community/index.html links v258 assets', () => {
   const html = read('community/index.html');
   assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:5[8-9]|[6-9]\d)/.test(html), 'must link portal-shell.css?v=20261124v258');
-  assert.ok(html.includes('/assets/css/community-portal.css?v=20261124v258'), 'must link community-portal.css?v=20261124v258');
+  assert.ok(/\/assets\/css\/community-portal\.css\?v=20261124v2(?:5[8-9]|[6-9]\d)/.test(html), 'must link community-portal.css?v=20261124v258+');
   assert.ok(/\/assets\/js\/community-portal\.js\?v=20261124v2(?:5[8-9]|[6-9]\d)/.test(html), 'must link community-portal.js?v=20261124v258');
 });
 

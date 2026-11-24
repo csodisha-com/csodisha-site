@@ -17,10 +17,10 @@
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/style.css?v=20261122v181">
   <link rel="stylesheet" href="/about/assets/about-explorer.css?v=20261121v168">
-  <link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261124v260">
-  <link rel="stylesheet" href="/assets/css/about-portal.css?v=20261124v259">
+  <link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261124v261">
+  <link rel="stylesheet" href="/assets/css/about-portal.css?v=20261124v261">
   <script src="/about/assets/about-explorer.js?v=20261124v235" defer></script>
-  <script src="/assets/js/about-portal.js?v=20261124v260" defer></script>
+  <script src="/assets/js/about-portal.js?v=20261124v261" defer></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -37,7 +37,7 @@
   </script>
   <script src="/assets/js/voice-search.js?v=20261121v176" defer></script>
 </head>
-<body>
+<body class="cso-portal-page" data-cso-portal="about">
   <div id="csoPublicAnnouncementMount"></div>
   <header class="top site-header__top" id="header-top" role="banner">
     <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
@@ -83,7 +83,30 @@
         <p class="cso-about-hero-sub" data-i18n-or="ଆମ ବିଷୟରେ ସମସ୍ତ ପ୍ରକାଶିତ ସୂଚନା ଏବଂ ବିଭାଗ ଏଠାରେ ଲାଇଭ୍ ଦେଖାଯିବ।">Live About sections, institutional pages, and public information authored in Admin Studio.</p>
       </section>
 
-      <section id="cso-about-portal-root" aria-label="About Institutional Portal"></section>
+      <section id="cso-about-portal-root" aria-label="About Institutional Portal">
+        <div class="ap-root">
+          <section class="ap-hero" aria-label="About Common Sense Odisha — Public Charter &amp; Transparency Hub">
+            <div class="ap-hero-top">
+              <span class="ap-eyebrow"><span class="ap-eyebrow-dot"></span><span>INDEPENDENT PUBLIC KNOWLEDGE CHARTER · VERIFIED .GOV.IN &amp; EDITORIAL TRANSPARENCY</span></span>
+            </div>
+            <div class="ap-hero-copy">
+              <h1 class="ap-hero-title">About Common Sense Odisha — Public Charter &amp; Transparency Hub</h1>
+              <p class="ap-hero-sub">An independent, open-access civic and educational platform empowering Odisha students, job seekers, farmers, women, and citizens with verified recruitment notifications, welfare schemes, study resources, and peer communities.</p>
+            </div>
+            <div class="ap-hero-kpis" aria-label="Live Platform Transparency Counters">
+              <div class="ap-hero-kpi"><strong class="ap-hero-kpi-val">–</strong><span class="ap-hero-kpi-label">Verified Jobs Live</span></div>
+              <div class="ap-hero-kpi"><strong class="ap-hero-kpi-val">–</strong><span class="ap-hero-kpi-label">Active Welfare Schemes</span></div>
+              <div class="ap-hero-kpi"><strong class="ap-hero-kpi-val">–</strong><span class="ap-hero-kpi-label">Study Modules &amp; PYQs</span></div>
+              <div class="ap-hero-kpi"><strong class="ap-hero-kpi-val">–</strong><span class="ap-hero-kpi-label">Registered Members</span></div>
+              <div class="ap-hero-kpi"><strong class="ap-hero-kpi-val">–</strong><span class="ap-hero-kpi-label">Verified .gov.in Portals</span></div>
+            </div>
+          </section>
+          <div class="cso-portal-skeleton" aria-busy="true" aria-label="Loading institutional charter and official portals">
+            <div class="cso-skel-bar"></div>
+            <div class="cso-skel-grid"><div class="cso-skel-card"></div><div class="cso-skel-card"></div></div>
+          </div>
+        </div>
+      </section>
 
       <section class="cso-about-panel" id="directory-explorer" aria-label="About Directory">
         <div class="cso-about-section-head">

@@ -382,7 +382,7 @@ await check('Full wiring across Admin Studio (5 Tabs), Public About Portal, Edge
   assert.ok(csBackend.includes('about_articles'));
 
   const aboutHtml = read('about/index.html');
-  assert.ok(aboutHtml.includes('/assets/css/about-portal.css?v=20261124v25'));
+  assert.ok(/\/assets\/css\/about-portal\.css\?v=20261124v2[5-9]/.test(aboutHtml));
   assert.ok(aboutHtml.match(/\/assets\/js\/(jobs|schemes|study|community|about)-portal\.js\?v=20261124v2[5-9]/));
   assert.ok(aboutHtml.includes('id="cso-about-portal-root"'));
 

@@ -1,8 +1,13 @@
-/* Common Sense Odisha — Shared Public Portal Shell & Full-Width Layout Fix (v255)
+/* Common Sense Odisha — Shared Public Portal Shell & Zero-Flash Layout Fix (v261)
  * Unconditionally eliminates dead sidebars, parent grid/flex column squeezing, duplicate search bars,
- * and duplicate legacy empty states across Jobs, Schemes, Study Library, Community & About portals. */
+ * legacy static heroes, and duplicate legacy empty states from millisecond zero (first byte). */
 
 /* 1. Force all ancestor shell wrappers to full-width single column immediately on initial paint (zero CLS) */
+body.cso-portal-page .cso-jobs-shell,
+body.cso-portal-page .cso-schemes-shell,
+body.cso-portal-page .cso-comm-shell,
+body.cso-portal-page .cso-about-shell,
+body.cso-portal-page .app-shell,
 .cso-jobs-shell,
 .cso-schemes-shell,
 .cso-comm-shell,
@@ -24,6 +29,14 @@ body.cso-portal-active .app-shell {
 }
 
 /* 2. Hide all empty sidebar rails & mobile drawer backdrops unconditionally on portal pages */
+body.cso-portal-page .cso-jobs-rail,
+body.cso-portal-page .cso-schemes-rail,
+body.cso-portal-page .cso-comm-rail,
+body.cso-portal-page .cso-about-rail,
+body.cso-portal-page .app-shell > .sidebar,
+body.cso-portal-page .app-shell > aside,
+body.cso-portal-page aside,
+body.cso-portal-page .sidebar,
 .cso-jobs-rail,
 .cso-schemes-rail,
 .cso-comm-rail,
@@ -39,6 +52,10 @@ body.cso-portal-active .app-shell {
 }
 
 /* 3. Suppress redundant secondary search bars & mobile rail toggles */
+body.cso-portal-page .cso-dir-topbar,
+body.cso-portal-page #cso-subpage-topbar,
+body.cso-portal-page .workspace > .topbar,
+body.cso-portal-page .cso-jobs-mobile-bar,
 .cso-dir-topbar,
 #cso-subpage-topbar,
 .workspace > .topbar,
@@ -47,6 +64,7 @@ body.cso-portal-active .app-shell {
 }
 
 /* 4. Expand workspace wrapper to 100% and center main portal container cleanly at max-width: 1280px */
+body.cso-portal-page .app-shell > .workspace,
 .app-shell > .workspace,
 body.cso-portal-active .app-shell > .workspace {
   display: block !important;
@@ -58,6 +76,12 @@ body.cso-portal-active .app-shell > .workspace {
   box-sizing: border-box !important;
 }
 
+body.cso-portal-page .cso-jobs-main,
+body.cso-portal-page .cso-schemes-main,
+body.cso-portal-page .cso-comm-main,
+body.cso-portal-page .cso-about-main,
+body.cso-portal-page .cso-study-hub,
+body.cso-portal-page .app-shell > .workspace > .main-content,
 .cso-jobs-main,
 .cso-schemes-main,
 .cso-comm-main,
@@ -91,7 +115,35 @@ body.cso-portal-active .app-shell > .workspace > .main-content {
   box-sizing: border-box !important;
 }
 
-/* 5. Suppress duplicate legacy fallback containers & generic empty states per mounted portal */
+/* 5. Suppress legacy static heroes & fallback containers from millisecond zero via body.cso-portal-page */
+body.cso-portal-page .cso-jobs-hero,
+body.cso-portal-page .cso-schemes-hero,
+body.cso-portal-page .cso-study-hero,
+body.cso-portal-page .cso-sl-hero-banner,
+body.cso-portal-page .cso-comm-hero,
+body.cso-portal-page .cso-about-hero,
+body.cso-portal-page .welcome,
+body.cso-portal-page nav[aria-label="Breadcrumb"],
+body.cso-portal-page #cso-clean-page-content,
+body.cso-portal-page #explorer,
+body.cso-portal-page #search-results,
+body.cso-portal-page #load-status,
+body.cso-portal-page #jobs-categories-panel,
+body.cso-portal-page #jobs-filters-panel,
+body.cso-portal-page #jobs-items-grid,
+body.cso-portal-page #schemes-categories-panel,
+body.cso-portal-page #schemes-directory-panel,
+body.cso-portal-page #live-schemes-section,
+body.cso-portal-page #overview,
+body.cso-portal-page #live-study-section,
+body.cso-portal-page #study-continue-strip,
+body.cso-portal-page #cso-current-affairs-panel,
+body.cso-portal-page #cso-syllabus-vault,
+body.cso-portal-page #odia-glossary,
+body.cso-portal-page #odisha-district-gk,
+body.cso-portal-page #community-categories-panel,
+body.cso-portal-page #community-directory-panel,
+body.cso-portal-page #directory-explorer,
 body.cso-portal-jobs-active .cso-jobs-hero,
 body.cso-portal-jobs-active #jobs-categories-panel,
 body.cso-portal-jobs-active #jobs-filters-panel,

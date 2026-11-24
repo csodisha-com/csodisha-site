@@ -1409,6 +1409,7 @@
   // BOOT
   // ============================================================================
   function mountOptimisticSkeleton() {
+    if (S.root && S.root.querySelector('.cso-portal-skeleton')) return;
     clear(S.root);
     var skel = el('div', 'cso-portal-skeleton');
     skel.setAttribute('aria-busy', 'true');

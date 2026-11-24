@@ -232,8 +232,8 @@ await check('6. Strict CSP compliance across all v260 files + sw.js & ops-sentin
     assert.ok(!/insertAdjacentHTML/.test(src), `${rel} violates CSP (insertAdjacentHTML)`);
     assert.ok(!/\.style\.[a-zA-Z]+\s*=/.test(src), `${rel} violates CSP (.style.*)`);
   }
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v260';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v260';"));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2[6-9]\d';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2[6-9]\d';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\n=== v260 Results: ${passed} passed, ${failed} failed ===\n`);

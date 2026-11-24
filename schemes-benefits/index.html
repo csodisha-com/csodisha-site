@@ -9,16 +9,16 @@
   <!-- CSO-IN homepage header stylesheet v1 -->
   <link rel="stylesheet" href="/assets/style.css?v=20261121v173">
   <link rel="stylesheet" href="./assets/dashboard.css?v=20261122v197">
-  <link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261124v260">
-  <link rel="stylesheet" href="/assets/css/schemes-portal.css?v=20261124v256">
+  <link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261124v261">
+  <link rel="stylesheet" href="/assets/css/schemes-portal.css?v=20261124v261">
   <script src="/assets/js/public-content.js?v=20261114e" defer></script>
   <script src="/assets/js/odisha-districts.js?v=20261122v194" defer></script>
   <script src="/assets/js/candidate-prefs.js?v=20261122v197" defer></script>
   <script src="./assets/dashboard.js?v=20261122v197" defer></script>
-  <script src="/assets/js/schemes-portal.js?v=20261124v260" defer></script>
+  <script src="/assets/js/schemes-portal.js?v=20261124v261" defer></script>
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 </head>
-<body>
+<body class="cso-portal-page" data-cso-portal="schemes">
 
 <!-- CSO-IN original homepage header v2 -->
 <!-- CSO-IN homepage header and navigation template -->
@@ -90,7 +90,29 @@
           </div>
         </section>
 
-        <section id="cso-schemes-portal-root" class="cso-schemes-portal-root" aria-label="Live Schemes Publishing Portal"></section>
+        <section id="cso-schemes-portal-root" class="cso-schemes-portal-root" aria-label="Live Schemes Publishing Portal">
+          <div class="sp-root">
+            <section class="sp-hero" aria-label="Odisha &amp; Central Government Schemes &amp; Scholarships">
+              <div class="sp-hero-top">
+                <span class="sp-eyebrow"><span class="sp-eyebrow-dot"></span><span>ODISHA &amp; CENTRAL WELFARE PORTAL · VERIFIED .GOV.IN &amp; DBT SCHEMES</span></span>
+              </div>
+              <div class="sp-hero-copy">
+                <h1 class="sp-hero-title">Odisha &amp; Central Government Schemes &amp; Scholarships</h1>
+                <p class="sp-hero-sub">Verified welfare schemes, financial assistance, DBT scholarships, citizen eligibility auto-matcher, and step-by-step application guides across Odisha &amp; Government of India.</p>
+              </div>
+              <div class="sp-hero-kpis">
+                <div class="sp-hero-kpi"><strong class="sp-hero-kpi-val">–</strong><span class="sp-hero-kpi-label">Active Schemes</span></div>
+                <div class="sp-hero-kpi"><strong class="sp-hero-kpi-val">–</strong><span class="sp-hero-kpi-label">DBT &amp; Scholarships</span></div>
+                <div class="sp-hero-kpi"><strong class="sp-hero-kpi-val">–</strong><span class="sp-hero-kpi-label">Ongoing Year-Round</span></div>
+                <div class="sp-hero-kpi"><strong class="sp-hero-kpi-val">–</strong><span class="sp-hero-kpi-label">Welfare Domains</span></div>
+              </div>
+            </section>
+            <div class="cso-portal-skeleton" aria-busy="true" aria-label="Loading live welfare schemes">
+              <div class="cso-skel-bar"></div>
+              <div class="cso-skel-grid"><div class="cso-skel-card"></div><div class="cso-skel-card"></div></div>
+            </div>
+          </div>
+        </section>
 
         <section id="live-schemes-section" class="live-schemes-section" aria-labelledby="live-schemes-heading">
           <div class="live-schemes-header">

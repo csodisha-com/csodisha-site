@@ -96,7 +96,7 @@ check('3. schemes/index.html & schemes-benefits/index.html link v256 assets', ()
   for (const rel of ['schemes/index.html', 'schemes-benefits/index.html']) {
     const html = read(rel);
     assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:5[6-9]|[6-9]\d)/.test(html), `${rel} must link portal-shell.css?v=20261124v256`);
-    assert.ok(html.includes('/assets/css/schemes-portal.css?v=20261124v256'), `${rel} must link schemes-portal.css?v=20261124v256`);
+    assert.ok(/\/assets\/css\/schemes-portal\.css\?v=20261124v2(?:5[6-9]|[6-9]\d)/.test(html), `${rel} must link schemes-portal.css?v=20261124v256+`);
     assert.ok(/\/assets\/js\/schemes-portal\.js\?v=20261124v2(?:5[6-9]|[6-9]\d)/.test(html), `${rel} must link schemes-portal.js?v=20261124v256`);
   }
 });

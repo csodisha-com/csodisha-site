@@ -8,7 +8,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v260';
+const CACHE_NAME = 'cso-candidate-cache-v261';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 // Slim Core App-Shell Precache (fast SW install on slow 3G/4G connections)
@@ -190,18 +190,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Navigations: network-first, cached page fallback, then /offline.html.
-  if (request.mode === 'navigate') {
+  // 2. HTML Navigations: Network-First with short 1.5s timeout fallback to cache, then /offline.html.
+  const acceptHeader = (request.headers && request.headers.get('accept')) || '';
+  if (request.mode === 'navigate' || acceptHeader.includes('text/html')) {
     event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timer = controller ? setTimeout(() => controller.abort(), 1500) : null;
       try {
-        const networkResponse = await fetch(request);
+        const networkResponse = await fetch(request, controller ? { signal: controller.signal } : undefined);
+        if (timer) clearTimeout(timer);
         if (networkResponse && networkResponse.ok) {
-          const cache = await caches.open(CACHE_NAME);
           cache.put(request, networkResponse.clone()).catch(() => {});
         }
         return networkResponse;
       } catch (err) {
-        const cache = await caches.open(CACHE_NAME);
+        if (timer) clearTimeout(timer);
         const cachedPage = await cache.match(request);
         if (cachedPage) return cachedPage;
         const offlinePage = await cache.match('/offline.html');

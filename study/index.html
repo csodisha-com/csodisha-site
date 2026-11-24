@@ -9,11 +9,11 @@
   <title>Study | Common Sense Odisha</title>
   <link rel="stylesheet" href="/assets/style.css?v=20261121v173">
   <link rel="stylesheet" href="/assets/css/pages/study.css">
-  <link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261124v260">
-  <link rel="stylesheet" href="/assets/css/study-portal.css?v=20261124v257">
+  <link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261124v261">
+  <link rel="stylesheet" href="/assets/css/study-portal.css?v=20261124v261">
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 </head>
-<body>
+<body class="cso-portal-page" data-cso-portal="study">
 <div id="csoPublicAnnouncementMount"></div>
 <header class="top site-header__top" id="header-top" role="banner">
   <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
@@ -30,7 +30,29 @@
     <h1>Study Hub</h1>
     <p>Live study pathways and materials managed in Admin Studio.</p>
   </header>
-  <section id="cso-study-portal-root" aria-label="Study Library Publishing Portal"></section>
+  <section id="cso-study-portal-root" aria-label="Study Library Publishing Portal">
+    <div class="sp-root">
+      <section class="sp-hero" aria-label="Odisha &amp; Central Exam Study Library &amp; PYQ Hub">
+        <div class="sp-hero-top">
+          <span class="sp-eyebrow"><span class="sp-eyebrow-dot"></span><span>ODISHA &amp; CENTRAL EXAM PREPARATION · SYLLABI, NOTES, PYQS &amp; MOCKS</span></span>
+        </div>
+        <div class="sp-hero-copy">
+          <h1 class="sp-hero-title">Odisha &amp; Central Exam Study Library &amp; PYQ Hub</h1>
+          <p class="sp-hero-sub">Structured bilingual study notes, official exam syllabi, solved previous year papers (PYQs), interactive flashcards, and timed mini-mocks across OPSC, OSSC, OSSSC, OTET/OSSTET, Odisha GK, UPSC &amp; SSC.</p>
+        </div>
+        <div class="sp-hero-kpis">
+          <div class="sp-hero-kpi"><strong class="sp-hero-kpi-val">–</strong><span class="sp-hero-kpi-label">Study Modules</span></div>
+          <div class="sp-hero-kpi"><strong class="sp-hero-kpi-val">–</strong><span class="sp-hero-kpi-label">PYQ &amp; Syllabus Sets</span></div>
+          <div class="sp-hero-kpi"><strong class="sp-hero-kpi-val">–</strong><span class="sp-hero-kpi-label">Practice MCQs</span></div>
+          <div class="sp-hero-kpi"><strong class="sp-hero-kpi-val">–</strong><span class="sp-hero-kpi-label">Exam Tracks</span></div>
+        </div>
+      </section>
+      <div class="cso-portal-skeleton" aria-busy="true" aria-label="Loading study library modules">
+        <div class="cso-skel-bar"></div>
+        <div class="cso-skel-grid"><div class="cso-skel-card"></div><div class="cso-skel-card"></div></div>
+      </div>
+    </div>
+  </section>
   <section id="cso-clean-page-content" data-page-slug="study" data-pillar-slug="study-library" aria-live="polite">
     <div class="card cso-empty-state"><p>No items published yet — add categories or content in Admin Studio.</p></div>
   </section>
@@ -72,6 +94,6 @@
 <script src="/assets/cso-auth-client.js" defer></script>
 <script src="/assets/shared-header.js?v=20261121v171" defer></script>
 <script src="/assets/js/pages/cso-clean-page.js?v=20261124v238" defer></script>
-<script src="/assets/js/study-portal.js?v=20261124v260" defer></script>
+<script src="/assets/js/study-portal.js?v=20261124v261" defer></script>
 </body>
 </html>

@@ -1212,17 +1212,19 @@
       return;
     }
 
-    // Instant optimistic skeleton shell (<16ms mount) before single /bootstrap resolves
-    clear(mount);
-    var skel = el('div', 'cso-portal-skeleton');
-    skel.setAttribute('aria-busy', 'true');
-    skel.appendChild(el('div', 'cso-skel-hero'));
-    skel.appendChild(el('div', 'cso-skel-bar'));
-    var skelGrid = el('div', 'cso-skel-grid');
-    skelGrid.appendChild(el('div', 'cso-skel-card'));
-    skelGrid.appendChild(el('div', 'cso-skel-card'));
-    skel.appendChild(skelGrid);
-    mount.appendChild(skel);
+    // Instant optimistic skeleton shell (<16ms mount) — preserve pre-rendered HTML hero+skeleton if present (CLS = 0)
+    if (!mount.querySelector('.cso-portal-skeleton')) {
+      clear(mount);
+      var skel = el('div', 'cso-portal-skeleton');
+      skel.setAttribute('aria-busy', 'true');
+      skel.appendChild(el('div', 'cso-skel-hero'));
+      skel.appendChild(el('div', 'cso-skel-bar'));
+      var skelGrid = el('div', 'cso-skel-grid');
+      skelGrid.appendChild(el('div', 'cso-skel-card'));
+      skelGrid.appendChild(el('div', 'cso-skel-card'));
+      skel.appendChild(skelGrid);
+      mount.appendChild(skel);
+    }
 
     // Listing mode: single-roundtrip batched bootstrap endpoint + parallel admin overlay
     Promise.all([

@@ -80,7 +80,7 @@ check('2. about-portal.js & about-portal.css implement Editorial Hero, 5-Tile Tr
 check('3. about/index.html links v259 assets & citizen-facing meta description', () => {
   const html = read('about/index.html');
   assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v2(?:5[9-9]|[6-9]\d)/.test(html), 'must link portal-shell.css?v=20261124v259');
-  assert.ok(html.includes('/assets/css/about-portal.css?v=20261124v259'), 'must link about-portal.css?v=20261124v259');
+  assert.ok(/\/assets\/css\/about-portal\.css\?v=20261124v2(?:5[9-9]|[6-9]\d)/.test(html), 'must link about-portal.css?v=20261124v259+');
   assert.ok(/\/assets\/js\/about-portal\.js\?v=20261124v2(?:5[9-9]|[6-9]\d)/.test(html), 'must link about-portal.js?v=20261124v259');
   assert.ok(!html.includes('managed dynamically from Admin Studio'), 'meta description should be citizen-facing');
 });
