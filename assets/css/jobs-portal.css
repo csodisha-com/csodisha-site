@@ -207,10 +207,10 @@
   font-size: 0.86rem;
 }
 
-/* Visual Sector Selector Cards (v254) */
+/* Visual Sector Selector Cards (v255: 5-column horizontal desktop row) */
 .jp-sector-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -639,7 +639,7 @@
 
 .jp-dept-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 12px;
 }
 
@@ -978,6 +978,7 @@
 
 @media (max-width: 980px) {
   .jp-hero-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .jp-sector-strip { grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); }
   .jp-cascade-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .jp-tiles-grid,
   .jp-kit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

@@ -41,10 +41,10 @@ console.log('\n=== v254 Jobs Explorer Polish & Shared Public Portal Shell Verifi
 
 check('1. Shared portal-shell.css collapses dead sidebars, centers content (max-width: 1240px), and suppresses duplicate bars & legacy empty states', () => {
   const css = read('assets/css/portal-shell.css');
-  assert.ok(css.includes('max-width: 1240px;'), 'portal-shell.css must center main content at max-width: 1240px');
-  assert.ok(css.includes('body.cso-portal-active .cso-jobs-rail'), 'must hide dead jobs rail');
-  assert.ok(css.includes('body.cso-portal-active .cso-dir-topbar'), 'must hide redundant dir topbar');
-  assert.ok(css.includes('body.cso-portal-active #cso-subpage-topbar'), 'must hide subpage topbar');
+  assert.ok(/max-width:\s*12(?:40|80)px/.test(css), 'portal-shell.css must center main content at max-width: 1240px/1280px');
+  assert.ok(css.includes('.cso-jobs-rail'), 'must hide dead jobs rail');
+  assert.ok(css.includes('.cso-dir-topbar'), 'must hide redundant dir topbar');
+  assert.ok(css.includes('#cso-subpage-topbar'), 'must hide subpage topbar');
   assert.ok(css.includes('body.cso-portal-jobs-active .cso-jobs-hero'), 'must suppress legacy jobs hero when editorial hero mounts');
   assert.ok(css.includes('body.cso-portal-jobs-active #jobs-items-grid'), 'must suppress legacy jobs empty state');
   assert.ok(css.includes('body.cso-portal-schemes-active #schemes-directory-panel'), 'must suppress legacy schemes empty state');
@@ -118,7 +118,7 @@ check('4. All 7 pillar HTML pages link portal-shell.css and all 5 portal JS file
     'about/index.html'
   ];
   for (const rel of htmlFiles) {
-    assert.ok(read(rel).includes('/assets/css/portal-shell.css?v=20261124v254'), `${rel} must link portal-shell.css?v=20261124v254`);
+    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v25[4-9]/.test(read(rel)), `${rel} must link portal-shell.css?v=20261124v254+`);
   }
 
   assert.ok(read('assets/js/jobs-portal.js').includes("document.body.classList.add('cso-portal-active', 'cso-portal-jobs-active')"));
@@ -161,9 +161,9 @@ check('5. Strict CSP compliance across all v254 files + sw.js & ops-sentinel.js 
   }
 
   const sw = read('sw.js');
-  assert.ok(sw.includes("const CACHE_NAME = 'cso-candidate-cache-v254';"), 'sw.js must be bumped to v254');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v25[4-9]';/.test(sw), 'sw.js must be bumped to v254+');
   assert.ok(sw.includes("'/assets/css/portal-shell.css'"), 'sw.js must precache portal-shell.css');
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v254';"));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v25[4-9]';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\n=== v254 Results: ${passed} passed, ${failed} failed ===\n`);
