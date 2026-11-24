@@ -100,6 +100,10 @@ body.cso-portal-jobs-active #load-status {
   display: none !important;
 }
 
+body.cso-portal-active .cso-schemes-hero,
+body.cso-portal-schemes-active .cso-schemes-hero,
+body.cso-portal-schemes-active .welcome,
+body.cso-portal-schemes-active nav[aria-label="Breadcrumb"],
 body.cso-portal-schemes-active #schemes-categories-panel,
 body.cso-portal-schemes-active #schemes-directory-panel,
 body.cso-portal-schemes-active #live-schemes-section,

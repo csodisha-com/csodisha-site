@@ -67,13 +67,13 @@ check('3. All 7 pillar HTML pages link portal-shell.css?v=20261124v255', () => {
     'about/index.html'
   ];
   for (const rel of htmlFiles) {
-    assert.ok(read(rel).includes('/assets/css/portal-shell.css?v=20261124v255'), `${rel} must link portal-shell.css?v=20261124v255`);
+    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v25[5-9]/.test(read(rel)), `${rel} must link portal-shell.css?v=20261124v255+`);
   }
 });
 
-check('4. sw.js & ops-sentinel.js bumped to cso-candidate-cache-v255', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v255';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v255';"));
+check('4. sw.js & ops-sentinel.js bumped to cso-candidate-cache-v255+', () => {
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v25[5-9]';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v25[5-9]';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\n=== v255 Results: ${passed} passed, ${failed} failed ===\n`);
