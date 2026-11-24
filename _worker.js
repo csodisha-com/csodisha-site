@@ -85,6 +85,14 @@ import {
   handleMemberCommunityReactApi,
   handleMemberCommunityMessagesApi
 } from './functions/_lib/community-platform.js';
+import {
+  handlePublicAboutTreeApi,
+  handlePublicAboutPagesApi,
+  handlePublicAboutArticleApi,
+  handlePublicAboutSourcesApi,
+  handlePublicAboutInquiriesApi,
+  handlePublicAboutTelemetryApi
+} from './functions/_lib/about-publishing-house.js';
 import { handlePublicMarketingBannersApi } from './functions/_lib/marketing-advertising-batch1.js';
 import { handlePublicMarketingRefApi } from './functions/_lib/marketing-advertising-batch2.js';
 import { handlePublicMarketingLandingPagesApi } from './functions/_lib/marketing-advertising-batch3.js';
@@ -373,6 +381,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/public/schemes', '/api/public/schemes/tree', '/api/public/schemes/article', '/schemes/', '/schemes-benefits/',
     '/api/public/study', '/api/public/study/tree', '/api/public/study/article', '/study-library/', '/study/',
     '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/post', '/community/', '/student-dashboard/',
+    '/api/public/about/tree', '/api/public/about/pages', '/api/public/about/article', '/api/public/about/sources', '/about/',
     '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
   const allUrls = new Set(basePaths.map(p => `${origin}${p}`));
@@ -1038,6 +1047,24 @@ export default {
     }
     if (pathname === '/api/public/community-directory/suggest' && request.method === 'POST') {
       return handlePublicCommunitySuggestApi(request, env);
+    }
+    if (pathname === '/api/public/about/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicAboutTreeApi(request, env);
+    }
+    if (pathname === '/api/public/about/pages' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicAboutPagesApi(request, env);
+    }
+    if (pathname === '/api/public/about/article' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicAboutArticleApi(request, env);
+    }
+    if (pathname === '/api/public/about/sources' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicAboutSourcesApi(request, env);
+    }
+    if (pathname === '/api/public/about/inquiries' && request.method === 'POST') {
+      return handlePublicAboutInquiriesApi(request, env);
+    }
+    if (pathname === '/api/public/about/telemetry' && request.method === 'POST') {
+      return handlePublicAboutTelemetryApi(request, env);
     }
     if ((pathname === '/api/public/about-overview' || pathname === '/api/about/overview') && (request.method === 'GET' || request.method === 'HEAD')) {
       if (edgeCache && isAnonGet) {

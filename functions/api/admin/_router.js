@@ -111,6 +111,13 @@ import {
   handleCommunityModerationAdmin
 } from '../../_lib/community-platform.js';
 import {
+  handleAboutTaxonomyAdmin,
+  handleAboutArticlesAdmin,
+  handleAboutSourcesAdmin,
+  handleAboutInquiriesAdmin,
+  handleAboutMediaUpload
+} from '../../_lib/about-publishing-house.js';
+import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
   handleFeedbackAdmin,
@@ -434,6 +441,19 @@ async function dispatchAdminApi(request, env) {
           return await handleJobsDirectoryStudio(request, env, actor, id, sub, extra);
         }
         if (!sub) return await handleJobsDirectoryAdmin(request, env, actor, id);
+        break;
+      case 'about':
+        if (id === 'taxonomy') return await handleAboutTaxonomyAdmin(request, env, actor, sub, extra);
+        if (id === 'articles') return await handleAboutArticlesAdmin(request, env, actor, sub, extra);
+        if (id === 'sources') return await handleAboutSourcesAdmin(request, env, actor, sub);
+        if (id === 'inquiries') return await handleAboutInquiriesAdmin(request, env, actor, sub);
+        if (id === 'upload') {
+          await rateLimit(env, `admin-upload:${actor.userId}`, 40, 600);
+          return await handleAboutMediaUpload(request, env, actor);
+        }
+        if (id && (sub === 'preview-token' || sub === 'revisions' || sub === 'rollback')) {
+          return await handleAboutArticlesAdmin(request, env, actor, id, sub);
+        }
         break;
       case 'about-directory':
         if (!sub) return await handleAboutDirectoryAdmin(request, env, actor, id);

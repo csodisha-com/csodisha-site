@@ -624,6 +624,10 @@
     items.push({ group: 'Community Studio', label: 'Community Studio › 3-Layer Interest Circles', keywords: 'community circles districts groups posting policy', run: function () { if (studio().openCommunityPublishingTab) studio().openCommunityPublishingTab('taxonomy'); else goFolder('folder-community'); } });
     items.push({ group: 'Community Studio', label: 'Community Studio › Pro & Permanent Contributor Rewards', keywords: 'pro member permanent contributor xp rewards', run: function () { if (studio().openCommunityPublishingTab) studio().openCommunityPublishingTab('rewards'); else goFolder('folder-community'); } });
     items.push({ group: 'Community Studio', label: 'Community Studio › Peer Q&A, Answer Key & DM Safety Queue', keywords: 'moderation safety dm memory questions best answer', run: function () { if (studio().openCommunityPublishingTab) studio().openCommunityPublishingTab('safety'); else goFolder('folder-community'); } });
+    items.push({ group: 'About Studio', label: 'About Studio › + Publish New Institutional Page / Profile', keywords: 'about mission leadership editorial policy governance impact', run: function () { if (studio().openAboutPublishingTab) studio().openAboutPublishingTab('new'); else goFolder('folder-about'); } });
+    items.push({ group: 'About Studio', label: 'About Studio › 3-Layer Institutional Hierarchy', keywords: 'about taxonomy section sub-section page type', run: function () { if (studio().openAboutPublishingTab) studio().openAboutPublishingTab('taxonomy'); else goFolder('folder-about'); } });
+    items.push({ group: 'About Studio', label: 'About Studio › Verified .gov.in Portals Registry', keywords: 'gov.in official portals opsc ossc osssc subhadra whitelist', run: function () { if (studio().openAboutPublishingTab) studio().openAboutPublishingTab('sources'); else goFolder('folder-about'); } });
+    items.push({ group: 'About Studio', label: 'About Studio › Public Inquiries & Partnership Desk', keywords: 'inquiries contact partnership correction feedback inbox', run: function () { if (studio().openAboutPublishingTab) studio().openAboutPublishingTab('inquiries'); else goFolder('folder-about'); } });
     document.querySelectorAll('.cso-create-item[data-create-target]').forEach(function (b) {
       var t = b.getAttribute('data-create-target');
       var strong = b.querySelector('strong');
@@ -676,6 +680,12 @@
       out.push({ group: 'Community Posts', label: cp.title_en + (cp.moderation_status === 'published' ? '' : ' · ' + cp.moderation_status), keywords: (cp.post_type || '') + ' ' + (cp.slug || ''), run: function () {
         if (studio().openCommunityPublishingTab) studio().openCommunityPublishingTab('feed');
         else goFolder('folder-community');
+      } });
+    });
+    (r.about_articles || []).forEach(function (ab) {
+      out.push({ group: 'About Pages', label: ab.title_en + (ab.is_published ? '' : ' · draft'), keywords: (ab.page_type || '') + ' ' + (ab.slug || ''), run: function () {
+        if (studio().openAboutPublishingTab) studio().openAboutPublishingTab('pages');
+        else goFolder('folder-about');
       } });
     });
     return out;

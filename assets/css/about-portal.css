@@ -1,0 +1,279 @@
+/* ==========================================================================
+   CS Odisha — Public About & Institutional Transparency Portal (v253)
+   100% CSP-compliant · 4-Theme Token Aware
+   ========================================================================== */
+
+.ap-root {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 10px 0 36px;
+}
+
+.ap-preview-banner {
+  position: sticky;
+  top: 60px;
+  z-index: 40;
+  background: #7c2d12;
+  color: #fff7ed;
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  padding: 11px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+/* Live Platform Transparency & Impact Strip */
+.ap-transparency-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.ap-metric-card {
+  background: var(--cso-surface, #ffffff);
+  border: 1px solid var(--cso-border, #e2e8f0);
+  border-top: 4px solid #0f766e;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ap-metric-card.is-emerald { border-top-color: #059669; }
+.ap-metric-card.is-cobalt { border-top-color: #2563eb; }
+.ap-metric-card.is-violet { border-top-color: #7c3aed; }
+.ap-metric-card.is-amber { border-top-color: #d97706; }
+
+.ap-metric-val {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--cso-ink, #0f172a);
+  font-variant-numeric: tabular-nums;
+}
+
+.ap-metric-lbl {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cso-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Panels & Navigation */
+.ap-panel {
+  background: var(--cso-surface, #ffffff);
+  border: 1px solid var(--cso-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ap-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--cso-border, #e2e8f0);
+  padding-bottom: 10px;
+}
+
+.ap-panel-title {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--cso-ink, #0f172a);
+}
+
+.ap-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ap-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border-radius: 9px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-ink, #0f172a);
+  font-weight: 700;
+  font-size: 0.84rem;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ap-btn:hover { border-color: #0f766e; }
+.ap-btn-primary { background: #0f766e; border-color: #0f766e; color: #ffffff; }
+.ap-btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+
+.ap-input,
+.ap-select,
+.ap-textarea {
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  background: var(--cso-surface, #ffffff);
+  color: var(--cso-ink, #0f172a);
+  font-size: 0.88rem;
+  font-family: inherit;
+}
+
+.ap-textarea {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+}
+
+.ap-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.ap-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
+}
+
+.ap-card {
+  border: 1px solid var(--cso-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 15px;
+  background: var(--cso-surface-2, #f8fafc);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ap-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: rgba(15, 118, 110, 0.14);
+  color: #115e59;
+}
+
+.ap-badge.is-gov { background: rgba(5, 150, 105, 0.16); color: #065f46; }
+
+.ap-muted {
+  font-size: 0.84rem;
+  color: var(--cso-muted, #64748b);
+  line-height: 1.5;
+}
+
+.ap-card-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: var(--cso-ink, #0f172a);
+}
+
+.ap-card-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ap-card-title a:hover { color: #0f766e; }
+
+.ap-cover {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.ap-prose p {
+  margin: 0 0 10px;
+  line-height: 1.65;
+  color: var(--cso-ink, #1e293b);
+}
+
+.ap-prose h3 {
+  margin: 14px 0 6px;
+  color: var(--cso-ink, #0f172a);
+}
+
+.ap-prose ul {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  line-height: 1.6;
+}
+
+.ap-table-wrap {
+  overflow-x: auto;
+}
+
+.ap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.ap-table th,
+.ap-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--cso-border, #e2e8f0);
+  text-align: left;
+  vertical-align: top;
+}
+
+.ap-table th {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  color: var(--cso-muted, #64748b);
+  background: var(--cso-surface-2, #f8fafc);
+}
+
+.ap-pdf-frame {
+  width: 100%;
+  height: 500px;
+  border: 1px solid var(--cso-border, #cbd5e1);
+  border-radius: 12px;
+}
+
+.ap-empty {
+  padding: 26px 16px;
+  text-align: center;
+  color: var(--cso-muted, #64748b);
+  border: 1px dashed var(--cso-border, #cbd5e1);
+  border-radius: 12px;
+}
+
+html[data-theme="dark"] .ap-metric-card,
+html[data-theme="dark"] .ap-panel,
+html[data-theme="dark"] .ap-input,
+html[data-theme="dark"] .ap-select,
+html[data-theme="dark"] .ap-textarea,
+html[data-theme="dark"] .ap-btn:not(.ap-btn-primary) {
+  background: var(--cso-surface, #111827);
+  border-color: var(--cso-border, #334155);
+  color: var(--cso-ink, #f8fafc);
+}
+
+html[data-theme="dark"] .ap-card,
+html[data-theme="dark"] .ap-table th {
+  background: var(--cso-surface-2, #1e293b);
+  color: var(--cso-ink, #f8fafc);
+}
