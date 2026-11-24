@@ -947,6 +947,9 @@
         b.appendChild(el('span', 'jp-sector-count', num(n.published_jobs_count || 0)));
         b.addEventListener('click', function () {
           state.filters.l1 = n.id; state.filters.l2 = ''; state.filters.l3 = '';
+          if (String(n.slug || '').toLowerCase() === 'foreign' && ['odisha', 'central', 'all-india'].indexOf(state.filters.region) !== -1) {
+            state.filters.region = '';
+          }
           loadPortalJobs(mount);
         });
         sectorStrip.appendChild(b);
@@ -1048,18 +1051,25 @@
     });
     quickBar.appendChild(stageGroup);
 
-    var regGroup = el('div', 'jp-quick-group');
-    regGroup.appendChild(el('span', 'jp-quick-group-label', 'Scope:'));
-    REGION_PRESETS.forEach(function (pair) {
-      var b = el('button', 'jp-filter-pill' + (state.filters.region === pair[0] ? ' is-active' : ''), pair[1]);
-      b.type = 'button';
-      b.addEventListener('click', function () {
-        state.filters.region = state.filters.region === pair[0] ? '' : pair[0];
-        loadPortalJobs(mount);
+    var l1NodeActive = findNodeById(state.nodes, state.filters.l1);
+    var isForeignSectorActive = Boolean(l1NodeActive && String(l1NodeActive.slug || '').toLowerCase() === 'foreign');
+    if (isForeignSectorActive && ['odisha', 'central', 'all-india'].indexOf(state.filters.region) !== -1) {
+      state.filters.region = '';
+    }
+    if (!isForeignSectorActive) {
+      var regGroup = el('div', 'jp-quick-group');
+      regGroup.appendChild(el('span', 'jp-quick-group-label', 'Scope:'));
+      REGION_PRESETS.forEach(function (pair) {
+        var b = el('button', 'jp-filter-pill' + (state.filters.region === pair[0] ? ' is-active' : ''), pair[1]);
+        b.type = 'button';
+        b.addEventListener('click', function () {
+          state.filters.region = state.filters.region === pair[0] ? '' : pair[0];
+          loadPortalJobs(mount);
+        });
+        regGroup.appendChild(b);
       });
-      regGroup.appendChild(b);
-    });
-    quickBar.appendChild(regGroup);
+      quickBar.appendChild(regGroup);
+    }
 
     var distGroup = el('div', 'jp-quick-group');
     distGroup.appendChild(el('span', 'jp-quick-group-label', 'Odisha District:'));
@@ -1360,7 +1370,14 @@
         state.filters.l1 = resolveNodeIdBySlugOrId(state.nodes, 1, rawSector);
         state.filters.l2 = resolveNodeIdBySlugOrId(state.nodes, 2, rawSub);
         state.filters.l3 = resolveNodeIdBySlugOrId(state.nodes, 3, rawTenure);
-        state.filters.region = rawRegion;
+        var resolvedL1 = findNodeById(state.nodes, state.filters.l1);
+        var isForeignDeepLink = Boolean(
+          (resolvedL1 && String(resolvedL1.slug || '').toLowerCase() === 'foreign') ||
+          rawSector.toLowerCase() === 'foreign'
+        );
+        state.filters.region = (isForeignDeepLink && ['odisha', 'central', 'all-india'].indexOf(rawRegion) !== -1)
+          ? ''
+          : rawRegion;
         state.filters.stage = rawStage;
         state.filters.district = rawDistrict;
         state.filters.qualification = rawQual;

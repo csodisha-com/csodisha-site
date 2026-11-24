@@ -246,6 +246,13 @@
     return (state.taxonomyNodes || []).find(function (n) { return n.id === id; }) || null;
   }
 
+  function isForeignSectorId(l1Id) {
+    if (!l1Id) return false;
+    if (String(l1Id).toLowerCase() === 'jtax_l1_foreign') return true;
+    var n = findNode(l1Id);
+    return Boolean(n && String(n.slug || '').toLowerCase() === 'foreign');
+  }
+
   // ---------- Quick-Create Taxonomy Node Modal (Inline "+ Add Option" in Composer & Tab 2) ----------
   function openTaxonomyNodeModal(opts) {
     opts = opts || {};
@@ -854,6 +861,13 @@
       d.category_l3_id = '';
       var n = findNode(sL1.value);
       if (n) d.sector_badge = n.title_en;
+      if (isForeignSectorId(sL1.value)) {
+        d.region_scope = 'foreign';
+        d.location_district = 'Foreign / Overseas';
+      } else if (d.region_scope === 'foreign') {
+        d.region_scope = 'odisha';
+        if (d.location_district === 'Foreign / Overseas') d.location_district = 'All Odisha';
+      }
       renderCurrentView();
     });
     wL1.appendChild(l1Head); wL1.appendChild(sL1);
@@ -1080,7 +1094,21 @@
     addInput('Max Age (Years)', 'max_age', { type: 'number', placeholder: '38' });
     addInput('Age Cut-off Date', 'age_cutoff_date', { type: 'date' });
     addInput('Age Limit Summary', 'age_limit_summary', { span: 2, placeholder: '21–38 Years (+5 yrs SEBC/SC/ST/Women, +10 yrs PwBD)' });
-    addSelect('Geographic Scope (Region)', 'region_scope', REGION_SCOPES);
+    var isForeignComp = isForeignSectorId(d.category_l1_id);
+    if (isForeignComp) {
+      d.region_scope = 'foreign';
+    } else if (d.region_scope === 'foreign') {
+      d.region_scope = 'odisha';
+    }
+    var composerScopes = isForeignComp
+      ? [['foreign', 'Foreign / Overseas (Locked for Foreign Jobs)']]
+      : REGION_SCOPES.filter(function (pair) { return pair[0] !== 'foreign'; });
+    addSelect('Geographic Scope (Region)', 'region_scope', composerScopes);
+    if (isForeignComp) {
+      var allSelects = cg.querySelectorAll('select.jph-select');
+      var lastSel = allSelects[allSelects.length - 1];
+      if (lastSel) lastSel.disabled = true;
+    }
     addSelect('Location / District', 'location_district', ODISHA_DISTRICTS.map(function (dist) { return [dist, dist]; }));
     addInput('Application Start Date', 'application_start_date', { type: 'date' });
     addInput('Last Date to Apply', 'last_date', { type: 'date' });

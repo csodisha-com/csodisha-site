@@ -377,7 +377,8 @@
             var sBtn = el('button', 'cso-nav-mod-btn cso-nav-mod-btn--sector' + (isSecActive ? ' is-active' : ''));
             sBtn.type = 'button';
             sBtn.setAttribute('data-jobs-sector', sec.slug || sec.id);
-            sBtn.title = sec.title_en + ' — synced live to Public Jobs ▾ dropdown';
+            var isForeignSec = String(sec.slug || '').toLowerCase() === 'foreign';
+            sBtn.title = sec.title_en + (isForeignSec ? ' (Overseas / Foreign · region_scope = foreign)' : '') + ' — synced live to Public Jobs ▾ dropdown';
             sBtn.appendChild(el('span', 'cso-nav-mod-num', sec.icon || '💼'));
             sBtn.appendChild(el('span', 'cso-nav-mod-title', sec.title_en));
             var secCount = Number(sec.published_jobs !== undefined ? sec.published_jobs : (sec.total_jobs || 0));

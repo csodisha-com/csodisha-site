@@ -48,12 +48,13 @@ export function resolveCanonicalSectorSlug(article) {
 }
 
 export function deriveRegionScope(rawScope, locationDistrict = '', l1Slug = '', l2Slug = '') {
-  const explicit = String(rawScope || '').trim().toLowerCase();
-  if (JOBS_REGION_SCOPES.includes(explicit)) return explicit;
   const l1 = String(l1Slug || '').toLowerCase();
   const l2 = String(l2Slug || '').toLowerCase();
   const dist = String(locationDistrict || '').toLowerCase();
-  if (l1 === 'foreign' || l2.includes('foreign') || l2.includes('overseas') || l2.includes('gulf') || l2.includes('global') || dist.includes('foreign') || dist.includes('overseas')) {
+  if (l1 === 'foreign' || l1 === 'jtax_l1_foreign') return 'foreign';
+  const explicit = String(rawScope || '').trim().toLowerCase();
+  if (JOBS_REGION_SCOPES.includes(explicit)) return explicit;
+  if (l2.includes('foreign') || l2.includes('overseas') || l2.includes('gulf') || l2.includes('global') || dist.includes('foreign') || dist.includes('overseas')) {
     return 'foreign';
   }
   if (l2.includes('central') || l1 === 'central-sector' || dist.includes('central')) {
@@ -1252,11 +1253,12 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
     ).run();
 
     const row = await db.prepare('SELECT * FROM job_articles WHERE id = ?').bind(id).first();
-    const createRegion = deriveRegionScope(body.region_scope, data.location_district);
+    const { map: taxMap } = await loadTaxonomyMap(db);
+    const l1Node = data.category_l1_id ? taxMap.get(data.category_l1_id) : null;
+    const createRegion = deriveRegionScope(body.region_scope, data.location_district, (l1Node && l1Node.slug) || data.category_l1_id);
     await db.prepare('UPDATE job_articles SET region_scope = ? WHERE id = ?').bind(createRegion, id).run().catch(() => {});
     if (row) row.region_scope = createRegion;
     await saveArticleRevision(db, id, row || data, body.change_summary || (data.is_published ? 'Initial publish' : 'Initial draft'), actor.email);
-    const { map: taxMap } = await loadTaxonomyMap(db);
     await audit(env, request, actor, data.is_published ? 'jobs_article.publish' : 'jobs_article.create', 'job_articles', id, { slug: finalSlug, title_en: data.title_en });
     await invalidateJobsCaches(request, finalSlug);
     const res = json({ ok: true, item: formatArticle(row, taxMap, true) }, 201);
@@ -1400,13 +1402,14 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
     ).run();
 
     const row = await db.prepare('SELECT * FROM job_articles WHERE id = ?').bind(articleId).first();
-    const regionVal = deriveRegionScope(body.region_scope, data.location_district);
-    if (body.region_scope !== undefined) {
+    const { map: taxMap } = await loadTaxonomyMap(db);
+    const l1Node = data.category_l1_id ? taxMap.get(data.category_l1_id) : null;
+    const regionVal = deriveRegionScope(body.region_scope, data.location_district, (l1Node && l1Node.slug) || data.category_l1_id);
+    if (body.region_scope !== undefined || regionVal === 'foreign') {
       await db.prepare('UPDATE job_articles SET region_scope = ? WHERE id = ?').bind(regionVal, articleId).run().catch(() => {});
       if (row) row.region_scope = regionVal;
     }
     await saveArticleRevision(db, articleId, row || data, body.change_summary || 'Editorial update', actor.email);
-    const { map: taxMap } = await loadTaxonomyMap(db);
     await audit(env, request, actor, data.is_published ? 'jobs_article.publish' : 'jobs_article.update', 'job_articles', articleId, { slug: finalSlug });
     await invalidateJobsCaches(request, finalSlug);
     const res = json({ ok: true, item: formatArticle(row, taxMap, true) });
@@ -1619,6 +1622,8 @@ export async function handlePublicJobsListApi(request, env) {
 
   const l1Lower = l1.toLowerCase();
   const l1Aliases = SECTOR_SLUG_ALIASES[l1Lower] || [l1Lower];
+  const isForeignSectorQuery = l1Lower === 'foreign' || l1Lower === 'jtax_l1_foreign' || l1Aliases.includes('jtax_l1_foreign');
+  const effectiveRegion = (isForeignSectorQuery && ['odisha', 'central', 'all-india'].includes(region)) ? '' : region;
 
   const filtered = all.filter(a => {
     if (l1) {
@@ -1629,10 +1634,10 @@ export async function handlePublicJobsListApi(request, env) {
     }
     if (l2 && a.category_l2_id !== l2 && (!a.taxonomy.l2 || a.taxonomy.l2.slug !== l2)) return false;
     if (l3 && a.category_l3_id !== l3 && (!a.taxonomy.l3 || a.taxonomy.l3.slug !== l3)) return false;
-    if (region && region !== 'all') {
-      if (region === 'all-india') {
+    if (effectiveRegion && effectiveRegion !== 'all') {
+      if (effectiveRegion === 'all-india') {
         if (a.region_scope !== 'all-india' && a.region_scope !== 'central' && String(a.location_district || '').toLowerCase() !== 'all india') return false;
-      } else if (a.region_scope !== region) {
+      } else if (a.region_scope !== effectiveRegion) {
         return false;
       }
     }
