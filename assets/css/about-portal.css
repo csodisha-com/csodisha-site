@@ -19,28 +19,15 @@
 .ap-hero {
   position: relative;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: 16px;
   padding: clamp(22px, 3.2vw, 34px) clamp(20px, 3.2vw, 34px);
-  background: linear-gradient(135deg, #0f3d3e 0%, #115e59 48%, #14532d 100%);
-  color: #ffffff;
+  background: var(--cso-hero-gradient, linear-gradient(135deg, #0b3948 0%, #115569 62%, #1b6d7c 100%));
+  color: var(--cso-hero-ink, #ffffff);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 14px 36px rgba(15, 61, 62, 0.24);
+  box-shadow: var(--cso-card-shadow, 0 14px 36px rgba(11, 57, 72, 0.22));
   display: grid;
   gap: 18px;
-}
-
-:root[data-cso-theme="utkal-bharat"] .ap-hero {
-  background: linear-gradient(135deg, #0b2f4e 0%, #0f5132 52%, #b45309 100%);
-}
-
-:root[data-cso-resolved-mode="dark"] .ap-hero {
-  background: linear-gradient(135deg, #092729 0%, #0e3d3a 52%, #113c2b 100%);
-  border-color: rgba(153, 246, 228, 0.22);
-  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.44);
-}
-
-:root[data-cso-theme="reading"] .ap-hero {
-  background: linear-gradient(135deg, #254848 0%, #2f5b55 54%, #365c47 100%);
+  transition: background 0.22s ease, box-shadow 0.22s ease;
 }
 
 .ap-hero-top {
@@ -216,9 +203,9 @@
   gap: 6px;
   padding: 7px 13px;
   border-radius: 999px;
-  border: 1px solid var(--cso-border, #cbd5e1);
-  background: var(--cso-bg, #f8fafc);
-  color: var(--cso-text, #0f172a);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-subtle, #eef3f7);
+  color: var(--cso-ink-primary, #12202b);
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
@@ -226,15 +213,15 @@
 }
 
 .ap-pill:hover {
-  border-color: #0f766e;
+  border-color: var(--cso-brand-primary, #115569);
   transform: translateY(-1px);
 }
 
 .ap-pill.is-active {
-  background: #0f766e;
-  border-color: #0f766e;
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.22);
+  background: var(--cso-pill-active-bg, #115569);
+  border-color: var(--cso-pill-active-bg, #115569);
+  color: var(--cso-pill-active-fg, #ffffff);
+  box-shadow: var(--cso-card-shadow, 0 4px 12px rgba(11, 57, 72, 0.22));
 }
 
 .ap-pill-count {
@@ -263,10 +250,11 @@
   justify-content: center;
   gap: 6px;
   padding: 9px 15px;
+  min-height: 38px;
   border-radius: 10px;
-  border: 1px solid var(--cso-border, #cbd5e1);
-  background: var(--cso-surface, #ffffff);
-  color: var(--cso-text, #0f172a);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
   font-weight: 700;
   font-size: 0.84rem;
   cursor: pointer;
@@ -276,19 +264,20 @@
 }
 
 .ap-btn:hover {
-  border-color: #0f766e;
+  border-color: var(--cso-brand-primary, #115569);
   transform: translateY(-1px);
   text-decoration: none;
 }
 
 .ap-btn-primary {
-  background: #0f766e;
-  border-color: #0f766e;
-  color: #ffffff;
+  background: var(--cso-cta-bg, #115569);
+  border-color: var(--cso-cta-bg, #115569);
+  color: var(--cso-cta-fg, #ffffff);
 }
 
 .ap-btn-sm {
   padding: 6px 12px;
+  min-height: 30px;
   font-size: 0.79rem;
 }
 
@@ -386,10 +375,11 @@
 }
 
 .ap-card {
-  border: 1px solid var(--cso-border, #e2e8f0);
-  border-radius: 15px;
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  border-radius: 16px;
   padding: 18px;
-  background: var(--cso-bg, #f8fafc);
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -398,10 +388,10 @@
 }
 
 .ap-card:hover {
-  border-color: #0f766e;
-  background: var(--cso-surface, #ffffff);
+  border-color: var(--cso-brand-primary, #115569);
+  background: var(--cso-card-bg, #ffffff);
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--cso-card-shadow, 0 10px 24px rgba(11, 57, 72, 0.08));
 }
 
 .ap-card-main {
@@ -428,14 +418,14 @@
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 800;
-  background: rgba(15, 118, 110, 0.14);
-  color: #115e59;
+  background: var(--cso-card-subtle, #eef3f7);
+  color: var(--cso-brand-primary, #115569);
 }
 
 .ap-badge.is-gov {
-  background: rgba(5, 150, 105, 0.16);
-  border: 1px solid rgba(5, 150, 105, 0.36);
-  color: #065f46;
+  background: var(--cso-badge-verified-bg, #e0f2fe);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  color: var(--cso-badge-verified-fg, #0b3948);
 }
 
 .ap-badge.is-meta {
@@ -484,25 +474,26 @@
 
 /* Illustrated Empty State Card (v259) */
 .ap-empty-card {
-  border: 1px solid var(--cso-border, #e2e8f0);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
   border-radius: 16px;
   padding: clamp(22px, 3.5vw, 34px) 20px;
-  background: var(--cso-bg, #f8fafc);
+  background: var(--cso-card-bg, #ffffff);
   display: grid;
   justify-items: center;
   text-align: center;
   gap: 12px;
+  box-shadow: var(--cso-card-shadow, 0 8px 24px rgba(11, 57, 72, 0.08));
 }
 
 .ap-empty-art {
   width: 72px;
   height: 72px;
   border-radius: 18px;
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.14), rgba(5, 150, 105, 0.14));
-  border: 1px solid rgba(15, 118, 110, 0.24);
+  background: var(--cso-badge-verified-bg, #e0f2fe);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
   display: grid;
   place-items: center;
-  color: #0f766e;
+  color: var(--cso-badge-verified-fg, #0b3948);
 }
 
 .ap-empty-svg {

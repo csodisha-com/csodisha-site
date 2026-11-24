@@ -87,9 +87,10 @@ check('2. schemes-portal.js implements Editorial Hero, 5 Gov Level Cards, Quick 
   assert.ok(css.includes('grid-template-columns: repeat(4, minmax(0, 1fr));'));
   assert.ok(css.includes('grid-template-columns: repeat(5, minmax(0, 1fr));'));
   assert.ok(css.includes('grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));'));
-  assert.ok(css.includes('[data-cso-theme="utkal-bharat"]'));
-  assert.ok(css.includes('[data-cso-resolved-mode="dark"]'));
-  assert.ok(css.includes('[data-cso-theme="reading"]'));
+  const shellCss = read('assets/css/portal-shell.css');
+  assert.ok(css.includes('[data-cso-theme="utkal-bharat"]') || (css.includes('var(--cso-hero-gradient') && shellCss.includes('[data-cso-theme="utkal-bharat"]')));
+  assert.ok(css.includes('[data-cso-resolved-mode="dark"]') || (css.includes('var(--cso-hero-gradient') && shellCss.includes('[data-cso-resolved-mode="dark"]')));
+  assert.ok(css.includes('[data-cso-theme="reading"]') || (css.includes('var(--cso-hero-gradient') && shellCss.includes('[data-cso-theme="reading"]')));
 });
 
 check('3. schemes/index.html & schemes-benefits/index.html link v256 assets', () => {

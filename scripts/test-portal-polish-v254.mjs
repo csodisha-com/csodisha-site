@@ -102,9 +102,10 @@ check('3. Jobs Portal implements Flagship Editorial Hero, Visual Sector Cards, 4
   assert.ok(css.includes('.jp-sector-strip'));
   assert.ok(css.includes('.jp-empty-card'));
   assert.ok(css.includes('.jp-dept-grid'));
-  assert.ok(css.includes('[data-cso-theme="utkal-bharat"]'));
-  assert.ok(css.includes('[data-cso-resolved-mode="dark"]'));
-  assert.ok(css.includes('[data-cso-theme="reading"]'));
+  const shellCss = read('assets/css/portal-shell.css');
+  assert.ok(css.includes('[data-cso-theme="utkal-bharat"]') || (css.includes('var(--cso-hero-gradient') && shellCss.includes('[data-cso-theme="utkal-bharat"]')));
+  assert.ok(css.includes('[data-cso-resolved-mode="dark"]') || (css.includes('var(--cso-hero-gradient') && shellCss.includes('[data-cso-resolved-mode="dark"]')));
+  assert.ok(css.includes('[data-cso-theme="reading"]') || (css.includes('var(--cso-hero-gradient') && shellCss.includes('[data-cso-theme="reading"]')));
 });
 
 check('4. All 7 pillar HTML pages link portal-shell.css and all 5 portal JS files activate cso-portal-active', () => {

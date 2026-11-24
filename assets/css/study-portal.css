@@ -18,28 +18,15 @@
 .sp-hero {
   position: relative;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: 16px;
   padding: clamp(22px, 3.2vw, 34px) clamp(20px, 3.2vw, 34px);
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 48%, #0f5132 100%);
-  color: #ffffff;
+  background: var(--cso-hero-gradient, linear-gradient(135deg, #0b3948 0%, #115569 62%, #1b6d7c 100%));
+  color: var(--cso-hero-ink, #ffffff);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 14px 36px rgba(30, 27, 75, 0.24);
+  box-shadow: var(--cso-card-shadow, 0 14px 36px rgba(11, 57, 72, 0.22));
   display: grid;
   gap: 18px;
-}
-
-:root[data-cso-theme="utkal-bharat"] .sp-hero {
-  background: linear-gradient(135deg, #0b2f4e 0%, #243b6b 50%, #b45309 100%);
-}
-
-:root[data-cso-resolved-mode="dark"] .sp-hero {
-  background: linear-gradient(135deg, #131135 0%, #1e1b54 55%, #0d3b2d 100%);
-  border-color: rgba(165, 180, 252, 0.22);
-  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.44);
-}
-
-:root[data-cso-theme="reading"] .sp-hero {
-  background: linear-gradient(135deg, #2b3452 0%, #384668 58%, #345c4b 100%);
+  transition: background 0.22s ease, box-shadow 0.22s ease;
 }
 
 .sp-hero-top {
@@ -303,9 +290,9 @@
   gap: 8px;
   padding: 12px 13px;
   border-radius: 13px;
-  border: 1.5px solid var(--cso-border, #d1d5db);
-  background: var(--cso-bg, #f8fafc);
-  color: var(--cso-text, #0f172a);
+  border: 1.5px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-subtle, #eef3f7);
+  color: var(--cso-ink-primary, #12202b);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -313,17 +300,17 @@
 }
 
 .sp-track-card:hover {
-  border-color: #4338ca;
-  background: var(--cso-surface, #ffffff);
+  border-color: var(--cso-brand-primary, #115569);
+  background: var(--cso-card-bg, #ffffff);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(67, 56, 202, 0.12);
+  box-shadow: var(--cso-card-shadow, 0 6px 16px rgba(11, 57, 72, 0.12));
 }
 
 .sp-track-card.is-active {
-  background: #312e81;
-  border-color: #312e81;
-  color: #ffffff;
-  box-shadow: 0 8px 20px rgba(49, 46, 129, 0.24);
+  background: var(--cso-pill-active-bg, #115569);
+  border-color: var(--cso-pill-active-bg, #115569);
+  color: var(--cso-pill-active-fg, #ffffff);
+  box-shadow: var(--cso-card-shadow, 0 8px 20px rgba(11, 57, 72, 0.24));
 }
 
 .sp-track-left {
@@ -374,9 +361,9 @@
   gap: 5px;
   padding: 6px 13px;
   border-radius: 999px;
-  border: 1px solid var(--cso-border, #cbd5e1);
-  background: var(--cso-surface, #ffffff);
-  color: var(--cso-text, #0f172a);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
@@ -385,9 +372,9 @@
 
 .sp-pill-btn:hover,
 .sp-pill-btn.is-active {
-  background: #4338ca;
-  border-color: #4338ca;
-  color: #ffffff;
+  background: var(--cso-pill-active-bg, #115569);
+  border-color: var(--cso-pill-active-bg, #115569);
+  color: var(--cso-pill-active-fg, #ffffff);
 }
 
 .sp-cascading-row {
@@ -572,10 +559,11 @@
   justify-content: center;
   gap: 6px;
   padding: 9px 15px;
+  min-height: 38px;
   border-radius: 10px;
-  border: 1px solid var(--cso-border, #cbd5e1);
-  background: var(--cso-surface, #ffffff);
-  color: var(--cso-text, #0f172a);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
   font-weight: 700;
   font-size: 0.84rem;
   cursor: pointer;
@@ -584,31 +572,32 @@
 }
 
 .sp-btn:hover {
-  border-color: #4338ca;
+  border-color: var(--cso-brand-primary, #115569);
   text-decoration: none;
   transform: translateY(-1px);
 }
 
 .sp-btn-primary {
-  background: #4338ca;
-  border-color: #4338ca;
-  color: #ffffff;
+  background: var(--cso-cta-bg, #115569);
+  border-color: var(--cso-cta-bg, #115569);
+  color: var(--cso-cta-fg, #ffffff);
 }
 
 .sp-btn-emerald {
-  background: #047857;
-  border-color: #047857;
+  background: var(--cso-brand-accent, #c45b20);
+  border-color: var(--cso-brand-accent, #c45b20);
   color: #ffffff;
 }
 
 .sp-btn-violet {
-  background: #6d28d9;
-  border-color: #6d28d9;
+  background: var(--cso-brand-deep, #0b3948);
+  border-color: var(--cso-brand-deep, #0b3948);
   color: #ffffff;
 }
 
 .sp-btn-sm {
   padding: 6px 12px;
+  min-height: 30px;
   font-size: 0.78rem;
 }
 
@@ -616,26 +605,26 @@
    DESIGNED ILLUSTRATED EMPTY STATE & 3-LAYER CURRICULUM TRACKS GRID (v257)
    ========================================================================== */
 .sp-empty-card {
-  background: var(--cso-surface, #ffffff);
-  border: 1px solid var(--cso-border, #e2e8f0);
-  border-radius: 18px;
+  background: var(--cso-card-bg, #ffffff);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  border-radius: 16px;
   padding: clamp(24px, 4vw, 40px) clamp(18px, 3vw, 32px);
   display: grid;
   justify-items: center;
   text-align: center;
   gap: 14px;
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+  box-shadow: var(--cso-card-shadow, 0 6px 20px rgba(11, 57, 72, 0.06));
 }
 
 .sp-empty-art {
   width: 86px;
   height: 86px;
   border-radius: 22px;
-  background: linear-gradient(135deg, rgba(67, 56, 202, 0.14), rgba(5, 150, 105, 0.14));
-  border: 1px solid rgba(67, 56, 202, 0.24);
+  background: var(--cso-badge-verified-bg, #e0f2fe);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
   display: grid;
   place-items: center;
-  color: #3730a3;
+  color: var(--cso-badge-verified-fg, #0b3948);
 }
 
 .sp-empty-svg {
@@ -647,7 +636,7 @@
   margin: 0;
   font-size: 1.22rem;
   font-weight: 800;
-  color: var(--cso-text, #0f172a);
+  color: var(--cso-ink-primary, #12202b);
 }
 
 .sp-empty-desc {

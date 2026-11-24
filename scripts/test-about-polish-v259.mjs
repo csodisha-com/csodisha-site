@@ -72,9 +72,10 @@ check('2. about-portal.js & about-portal.css implement Editorial Hero, 5-Tile Tr
   assert.ok(css.includes('grid-template-columns: repeat(5, minmax(0, 1fr));'));
   assert.ok(css.includes('grid-template-columns: repeat(3, minmax(0, 1fr));'));
   assert.ok(css.includes('justify-content: space-between;'));
-  assert.ok(css.includes('[data-cso-theme="utkal-bharat"]'));
-  assert.ok(css.includes('[data-cso-resolved-mode="dark"]'));
-  assert.ok(css.includes('[data-cso-theme="reading"]'));
+  const shellCss = read('assets/css/portal-shell.css');
+  assert.ok(css.includes('[data-cso-theme="utkal-bharat"]') || (css.includes('var(--cso-hero-gradient') && shellCss.includes('[data-cso-theme="utkal-bharat"]')));
+  assert.ok(css.includes('[data-cso-resolved-mode="dark"]') || (css.includes('var(--cso-hero-gradient') && shellCss.includes('[data-cso-resolved-mode="dark"]')));
+  assert.ok(css.includes('[data-cso-theme="reading"]') || (css.includes('var(--cso-hero-gradient') && shellCss.includes('[data-cso-theme="reading"]')));
 });
 
 check('3. about/index.html links v259 assets & citizen-facing meta description', () => {

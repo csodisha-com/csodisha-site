@@ -1,6 +1,114 @@
-/* Common Sense Odisha — Shared Public Portal Shell & Zero-Flash Layout Fix (v261)
+/* Common Sense Odisha — Shared Public Portal Shell, Master Semantic Color Tokens & Zero-Flash Layout (v262)
  * Unconditionally eliminates dead sidebars, parent grid/flex column squeezing, duplicate search bars,
- * legacy static heroes, and duplicate legacy empty states from millisecond zero (first byte). */
+ * legacy static heroes, and unifies all 5 portals across 4 themes (System, Dark Night, Reading, Odisha & Bharat). */
+
+/* ======================================================================
+   0. MASTER SEMANTIC COLOR & THEME TOKENS (v262 — WCAG AA+ >= 4.5:1)
+   ====================================================================== */
+/* Theme 1: System (Clean Civic Slate & Teal) */
+:root,
+:root[data-cso-theme="system"],
+:root[data-cso-resolved-mode="light"] {
+  --cso-brand-deep: #0b3948;
+  --cso-brand-primary: #115569;
+  --cso-brand-accent: #c45b20;
+  --cso-brand-gold: #b8821c;
+  --cso-canvas-bg: #f5f7fa;
+  --cso-card-bg: #ffffff;
+  --cso-card-subtle: #eef3f7;
+  --cso-ink-primary: #12202b;
+  --cso-ink-secondary: #4c5e6e;
+  --cso-border-subtle: #d8e1e9;
+  --cso-hero-gradient: linear-gradient(135deg, #0b3948 0%, #115569 62%, #1b6d7c 100%);
+  --cso-hero-ink: #ffffff;
+  --cso-pill-active-bg: #115569;
+  --cso-pill-active-fg: #ffffff;
+  --cso-cta-bg: #115569;
+  --cso-cta-fg: #ffffff;
+  --cso-badge-verified-bg: #e0f2fe;
+  --cso-badge-verified-fg: #0b3948;
+  --cso-card-shadow: 0 8px 24px rgba(11, 57, 72, 0.08);
+}
+
+/* Theme 2: Dark Night (Deep Midnight Slate & Soft Cyan/Amber) */
+:root[data-cso-theme="dark"],
+:root[data-cso-theme="system"][data-cso-resolved-mode="dark"],
+:root[data-cso-resolved-mode="dark"],
+:root[data-theme="dark"] {
+  --cso-brand-deep: #0c1924;
+  --cso-brand-primary: #174c61;
+  --cso-brand-accent: #e07a3f;
+  --cso-brand-gold: #e6b34b;
+  --cso-canvas-bg: #0b1117;
+  --cso-card-bg: #131d27;
+  --cso-card-subtle: #1a2734;
+  --cso-ink-primary: #ebf1f7;
+  --cso-ink-secondary: #9fb0c0;
+  --cso-border-subtle: #283848;
+  --cso-hero-gradient: linear-gradient(135deg, #0b1822 0%, #143f52 62%, #1d576e 100%);
+  --cso-hero-ink: #f8fafc;
+  --cso-pill-active-bg: #1f6b85;
+  --cso-pill-active-fg: #ffffff;
+  --cso-cta-bg: #1f6b85;
+  --cso-cta-fg: #ffffff;
+  --cso-badge-verified-bg: rgba(23, 76, 97, 0.45);
+  --cso-badge-verified-fg: #93c5fd;
+  --cso-card-shadow: 0 12px 32px rgba(0, 0, 0, 0.36);
+}
+
+/* Theme 3: Reading Mode (Warm Archival Paper & Espresso) */
+:root[data-cso-theme="reading"],
+:root[data-theme="reading"] {
+  --cso-brand-deep: #3d2a18;
+  --cso-brand-primary: #593e25;
+  --cso-brand-accent: #b35924;
+  --cso-brand-gold: #a67621;
+  --cso-canvas-bg: #f5efe2;
+  --cso-card-bg: #fcf8ef;
+  --cso-card-subtle: #efe6d5;
+  --cso-ink-primary: #2b2117;
+  --cso-ink-secondary: #635343;
+  --cso-border-subtle: #d9ccb6;
+  --cso-hero-gradient: linear-gradient(135deg, #3a2716 0%, #593e25 62%, #755130 100%);
+  --cso-hero-ink: #fcf8ef;
+  --cso-pill-active-bg: #593e25;
+  --cso-pill-active-fg: #fcf8ef;
+  --cso-cta-bg: #593e25;
+  --cso-cta-fg: #fcf8ef;
+  --cso-badge-verified-bg: #efe6d5;
+  --cso-badge-verified-fg: #3d2a18;
+  --cso-card-shadow: 0 8px 22px rgba(61, 42, 24, 0.1);
+}
+
+/* Theme 4: Odisha & Bharat (Kalinga Maroon, Bharat Emerald & Konark Gold) */
+:root[data-cso-theme="utkal-bharat"],
+:root[data-theme="utkal-bharat"] {
+  --cso-brand-deep: #154238;
+  --cso-brand-primary: #78231d;
+  --cso-brand-accent: #c86419;
+  --cso-brand-gold: #c99326;
+  --cso-canvas-bg: #f8f4ec;
+  --cso-card-bg: #fffdf9;
+  --cso-card-subtle: #f2ebe0;
+  --cso-ink-primary: #221714;
+  --cso-ink-secondary: #615049;
+  --cso-border-subtle: #dfd2be;
+  --cso-hero-gradient: linear-gradient(135deg, #154238 0%, #5c2622 56%, #78231d 100%);
+  --cso-hero-ink: #fffdf9;
+  --cso-pill-active-bg: #78231d;
+  --cso-pill-active-fg: #fffdf9;
+  --cso-cta-bg: #78231d;
+  --cso-cta-fg: #fffdf9;
+  --cso-badge-verified-bg: #f2ebe0;
+  --cso-badge-verified-fg: #154238;
+  --cso-card-shadow: 0 8px 24px rgba(120, 35, 29, 0.1);
+}
+
+body.cso-portal-page {
+  background: var(--cso-canvas-bg);
+  color: var(--cso-ink-primary);
+  transition: background-color 0.22s ease, color 0.22s ease;
+}
 
 /* 1. Force all ancestor shell wrappers to full-width single column immediately on initial paint (zero CLS) */
 body.cso-portal-page .cso-jobs-shell,

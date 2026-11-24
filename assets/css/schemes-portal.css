@@ -14,28 +14,15 @@
 .sp-hero {
   position: relative;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: 16px;
   padding: clamp(22px, 3.2vw, 34px) clamp(20px, 3.2vw, 34px);
-  background: linear-gradient(135deg, #0d4a3a 0%, #14532d 50%, #0f6b4a 100%);
-  color: #ffffff;
+  background: var(--cso-hero-gradient, linear-gradient(135deg, #0b3948 0%, #115569 62%, #1b6d7c 100%));
+  color: var(--cso-hero-ink, #ffffff);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 14px 36px rgba(13, 74, 58, 0.22);
+  box-shadow: var(--cso-card-shadow, 0 14px 36px rgba(11, 57, 72, 0.22));
   display: grid;
   gap: 18px;
-}
-
-:root[data-cso-theme="utkal-bharat"] .sp-hero {
-  background: linear-gradient(135deg, #0b2f4e 0%, #0f5132 54%, #b45309 100%);
-}
-
-:root[data-cso-resolved-mode="dark"] .sp-hero {
-  background: linear-gradient(135deg, #0a2a22 0%, #113c2b 58%, #155340 100%);
-  border-color: rgba(134, 239, 172, 0.2);
-  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.42);
-}
-
-:root[data-cso-theme="reading"] .sp-hero {
-  background: linear-gradient(135deg, #25483c 0%, #325b49 60%, #436d57 100%);
+  transition: background 0.22s ease, box-shadow 0.22s ease;
 }
 
 .sp-hero-top {
@@ -175,14 +162,15 @@
 
 /* Cards & Panels */
 .sp-card {
-  background: var(--cso-surface, #ffffff);
-  color: var(--cso-text, #111827);
-  border: 1px solid var(--cso-border, #e5e7eb);
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
   border-radius: 16px;
   padding: clamp(16px, 2.2vw, 22px);
   display: grid;
   gap: 16px;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  box-shadow: var(--cso-card-shadow, 0 8px 24px rgba(11, 57, 72, 0.08));
+  transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease;
 }
 
 .sp-card-head {
@@ -197,11 +185,11 @@
   margin: 0;
   font-size: 1.15rem;
   font-weight: 800;
-  color: var(--cso-text, #0f172a);
+  color: var(--cso-ink-primary, #12202b);
 }
 
 .sp-muted {
-  color: var(--cso-muted, #4b5563);
+  color: var(--cso-ink-secondary, #4c5e6e);
   font-size: 0.86rem;
 }
 
@@ -219,9 +207,9 @@
   gap: 9px;
   padding: 12px 13px;
   border-radius: 13px;
-  border: 1.5px solid var(--cso-border, #d1d5db);
-  background: var(--cso-bg, #f8fafc);
-  color: var(--cso-text, #0f172a);
+  border: 1.5px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-subtle, #eef3f7);
+  color: var(--cso-ink-primary, #12202b);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -229,17 +217,17 @@
 }
 
 .sp-gov-card:hover {
-  border-color: var(--cso-primary, #15803d);
-  background: var(--cso-surface, #ffffff);
+  border-color: var(--cso-brand-primary, #115569);
+  background: var(--cso-card-bg, #ffffff);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(20, 83, 45, 0.1);
+  box-shadow: var(--cso-card-shadow, 0 6px 16px rgba(11, 57, 72, 0.1));
 }
 
 .sp-gov-card.is-active {
-  background: var(--cso-primary, #14532d);
-  border-color: var(--cso-primary, #14532d);
-  color: #ffffff;
-  box-shadow: 0 8px 20px rgba(20, 83, 45, 0.22);
+  background: var(--cso-pill-active-bg, #115569);
+  border-color: var(--cso-pill-active-bg, #115569);
+  color: var(--cso-pill-active-fg, #ffffff);
+  box-shadow: var(--cso-card-shadow, 0 8px 20px rgba(11, 57, 72, 0.22));
 }
 
 .sp-gov-left {
@@ -375,9 +363,9 @@
   gap: 5px;
   padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid var(--cso-border, #cbd5e1);
-  background: var(--cso-surface, #ffffff);
-  color: var(--cso-text, #1f2937);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
   font-size: 0.79rem;
   font-weight: 600;
   cursor: pointer;
@@ -386,9 +374,9 @@
 
 .sp-filter-pill:hover,
 .sp-filter-pill.is-active {
-  background: var(--cso-primary, #14532d);
-  border-color: var(--cso-primary, #14532d);
-  color: #ffffff;
+  background: var(--cso-pill-active-bg, #115569);
+  border-color: var(--cso-pill-active-bg, #115569);
+  color: var(--cso-pill-active-fg, #ffffff);
 }
 
 .sp-pill-count {
@@ -548,10 +536,11 @@
   justify-content: center;
   gap: 6px;
   padding: 9px 15px;
+  min-height: 38px;
   border-radius: 10px;
-  border: 1px solid var(--cso-border, #cbd5e1);
-  background: var(--cso-surface, #ffffff);
-  color: var(--cso-text, #0f172a);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
   font-size: 0.84rem;
   font-weight: 700;
   cursor: pointer;
@@ -560,40 +549,40 @@
 }
 
 .sp-btn:hover {
-  border-color: var(--cso-primary, #14532d);
+  border-color: var(--cso-brand-primary, #115569);
   text-decoration: none;
   transform: translateY(-1px);
 }
 
-.sp-btn--primary { background: var(--cso-primary, #14532d); border-color: var(--cso-primary, #14532d); color: #ffffff; }
-.sp-btn--apply { background: #15803d; border-color: #15803d; color: #ffffff; }
-.sp-btn--cobalt { background: #1d4ed8; border-color: #1d4ed8; color: #ffffff; }
-.sp-btn--xs { padding: 6px 12px; font-size: 0.78rem; }
+.sp-btn--primary { background: var(--cso-cta-bg, #115569); border-color: var(--cso-cta-bg, #115569); color: var(--cso-cta-fg, #ffffff); }
+.sp-btn--apply { background: var(--cso-brand-accent, #c45b20); border-color: var(--cso-brand-accent, #c45b20); color: #ffffff; }
+.sp-btn--cobalt { background: var(--cso-brand-deep, #0b3948); border-color: var(--cso-brand-deep, #0b3948); color: #ffffff; }
+.sp-btn--xs { padding: 6px 12px; min-height: 30px; font-size: 0.78rem; }
 
 /* ======================================================================
    DESIGNED ILLUSTRATED EMPTY STATE & 3-LAYER WELFARE DOMAINS GRID (v256)
    ====================================================================== */
 .sp-empty-card {
-  background: var(--cso-surface, #ffffff);
-  border: 1px solid var(--cso-border, #e2e8f0);
-  border-radius: 18px;
+  background: var(--cso-card-bg, #ffffff);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  border-radius: 16px;
   padding: clamp(24px, 4vw, 40px) clamp(18px, 3vw, 32px);
   display: grid;
   justify-items: center;
   text-align: center;
   gap: 14px;
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+  box-shadow: var(--cso-card-shadow, 0 6px 20px rgba(11, 57, 72, 0.06));
 }
 
 .sp-empty-art {
   width: 86px;
   height: 86px;
   border-radius: 22px;
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.14), rgba(22, 163, 74, 0.16));
-  border: 1px solid rgba(22, 163, 74, 0.24);
+  background: var(--cso-badge-verified-bg, #e0f2fe);
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
   display: grid;
   place-items: center;
-  color: var(--cso-primary, #14532d);
+  color: var(--cso-badge-verified-fg, #0b3948);
 }
 
 .sp-empty-svg {
@@ -605,7 +594,7 @@
   margin: 0;
   font-size: 1.22rem;
   font-weight: 800;
-  color: var(--cso-text, #0f172a);
+  color: var(--cso-ink-primary, #12202b);
 }
 
 .sp-empty-desc {
@@ -613,7 +602,7 @@
   max-width: 580px;
   font-size: 0.92rem;
   line-height: 1.55;
-  color: var(--cso-muted, #475569);
+  color: var(--cso-ink-secondary, #4c5e6e);
 }
 
 .sp-domain-section {
