@@ -5717,7 +5717,8 @@ a[href*="register"]:hover {
 .subnav a,
 .cso-nav-items > a,
 .cso-nav-parent > a {
-  color: #1e2f3d !important;
+  color: var(--cso-subnav-ink, #1e2f3d) !important;
+  opacity: 1 !important;
   font-weight: 600 !important;
   font-size: clamp(0.82rem, 0.95vw, 0.9rem) !important;
   padding: 10px 14px !important;
@@ -5739,8 +5740,8 @@ a[href*="register"]:hover {
 .cso-nav-parent:hover,
 .cso-nav-parent > a:hover,
 .cso-nav-items .ni.cso-open > .cso-nav-parent {
-  background: rgba(15, 76, 92, 0.09) !important;
-  color: #0f4c5c !important;
+  background: var(--cso-subnav-hover, rgba(15, 76, 92, 0.09)) !important;
+  color: var(--cso-subnav-ink, #0f4c5c) !important;
 }
 
 .main-nav a.active,
@@ -5756,8 +5757,8 @@ a[href*="register"]:hover {
 .cso-subnav a.active,
 .subnav a.active,
 .cso-nav-items a.on {
-  background: #0f4c5c !important;
-  color: #ffffff !important;
+  background: var(--cso-subnav-pill-bg, #0f4c5c) !important;
+  color: var(--cso-subnav-pill-fg, #ffffff) !important;
   box-shadow: none !important;
   border-bottom: none !important;
 }
@@ -8460,12 +8461,20 @@ select:focus-visible {
 :root[data-cso-theme="dark"],
 :root[data-cso-theme="system"][data-cso-resolved-mode="dark"],
 :root[data-cso-resolved-mode="dark"],
-:root[data-theme="dark"] {
+:root[data-theme="dark"],
+html[data-theme="dark"],
+html[data-cso-theme="dark"],
+html.dark,
+body.dark,
+body.theme-dark,
+body[data-theme="dark"],
+body[data-cso-theme="dark"],
+.dark-theme {
   --cso-subnav-bg: #131e29;
-  --cso-subnav-border: 1px solid #263647;
-  --cso-subnav-ink: #e2eaf2;
-  --cso-subnav-hover: rgba(255, 255, 255, 0.08);
-  --cso-subnav-pill-bg: #1a5b72;
+  --cso-subnav-border: 1px solid #283a4d;
+  --cso-subnav-ink: #e6eef6;
+  --cso-subnav-hover: rgba(255, 255, 255, 0.1);
+  --cso-subnav-pill-bg: #1b5c73;
   --cso-subnav-pill-fg: #ffffff;
 }
 
@@ -8651,6 +8660,10 @@ select:focus-visible {
 }
 
 /* 3. Single Active Pill (zero white halo, zero double rounded box) */
+#cso-main-navbar .cso-nav-items > a.on,
+#cso-main-navbar .cso-nav-items > a.active,
+#cso-main-navbar .cso-nav-items > a[aria-current="page"],
+#cso-main-navbar .cso-nav-items .ni.cso-active > .cso-nav-parent,
 .cso-nav-items > a.on,
 .cso-nav-items > a.active,
 .cso-nav-items > a[aria-current="page"],
@@ -8663,6 +8676,9 @@ select:focus-visible {
   box-shadow: none !important;
 }
 
+#cso-main-navbar .cso-nav-items .ni.cso-active > .cso-nav-parent > a,
+#cso-main-navbar .cso-nav-items .ni.cso-active > .cso-nav-parent > a span,
+#cso-main-navbar .cso-nav-items .ni.cso-active > .cso-nav-parent > .cso-nav-arrow,
 .cso-nav-items .ni.cso-active > .cso-nav-parent > a,
 .cso-nav-items .ni.cso-active > .cso-nav-parent > a span,
 .cso-nav-items .ni.cso-active > .cso-nav-parent > .cso-nav-arrow {
@@ -8671,6 +8687,54 @@ select:focus-visible {
   font-weight: 700 !important;
   box-shadow: none !important;
   padding: 0 !important;
+}
+
+/* Explicit Dark Night high-specificity guarantees for secondary nav links, active pill & saved pill (v267) */
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar,
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) .main-nav,
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) .site-header__nav {
+  background: #131e29 !important;
+  background-color: #131e29 !important;
+  border-bottom: 1px solid #283a4d !important;
+}
+
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar a,
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar span,
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar button,
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .nav-label {
+  color: #e6eef6 !important;
+  opacity: 1 !important;
+}
+
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items > a:hover,
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items .cso-nav-parent:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items > a[aria-current="page"],
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items > a.active,
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items .ni.cso-active > .cso-nav-parent {
+  background: #1b5c73 !important;
+  color: #ffffff !important;
+}
+
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items .ni.cso-active > .cso-nav-parent a,
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items .ni.cso-active > .cso-nav-parent span,
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-items .ni.cso-active > .cso-nav-parent button {
+  background: transparent !important;
+  color: #ffffff !important;
+}
+
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-saved-pill {
+  background: #1b2938 !important;
+  color: #e6eef6 !important;
+  border: 1px solid #30455c !important;
+}
+
+:is(html[data-theme="dark"], html[data-cso-theme="dark"], html[data-cso-resolved-mode="dark"], html.dark, body.dark, body.theme-dark, body[data-theme="dark"], body[data-cso-theme="dark"], .dark-theme) #cso-main-navbar .cso-nav-saved-pill .cso-saved-badge {
+  background: #1b5c73 !important;
+  color: #ffffff !important;
 }
 
 /* Saved Bookmark Trigger inside Nav Bar: Pill Capsule Symmetry */
