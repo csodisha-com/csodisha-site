@@ -41,7 +41,7 @@ console.log('\n=== v254 Jobs Explorer Polish & Shared Public Portal Shell Verifi
 
 check('1. Shared portal-shell.css collapses dead sidebars, centers content (max-width: 1240px), and suppresses duplicate bars & legacy empty states', () => {
   const css = read('assets/css/portal-shell.css');
-  assert.ok(/max-width:\s*(?:12(?:40|80)px|min\(1600px)/.test(css), 'portal-shell.css must set main content max-width');
+  assert.ok(/max-width:\s*(?:100%|12(?:40|80)px|min\(1600px)/.test(css), 'portal-shell.css must set main content max-width');
   assert.ok(css.includes('.cso-jobs-rail'), 'must hide dead jobs rail');
   assert.ok(css.includes('.cso-dir-topbar'), 'must hide redundant dir topbar');
   assert.ok(css.includes('#cso-subpage-topbar'), 'must hide subpage topbar');

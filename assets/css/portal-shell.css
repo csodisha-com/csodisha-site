@@ -289,7 +289,7 @@ body.cso-portal-page .cso-jobs-mobile-bar,
   display: none !important;
 }
 
-/* 4. Expand workspace wrapper to 100% and center main portal container cleanly at max-width: 1280px */
+/* 4. Expand workspace wrapper & all outer/inner portal containers to 100% edge-to-edge (v266) */
 body.cso-portal-page .app-shell > .workspace,
 .app-shell > .workspace,
 body.cso-portal-active .app-shell > .workspace {
@@ -319,13 +319,23 @@ body.cso-portal-active .cso-schemes-main,
 body.cso-portal-active .cso-comm-main,
 body.cso-portal-active .cso-about-main,
 body.cso-portal-active .cso-study-hub,
-body.cso-portal-active .app-shell > .workspace > .main-content {
+body.cso-portal-active .app-shell > .workspace > .main-content,
+body.cso-portal-page .container,
+body.cso-portal-page .jp-wrap,
+body.cso-portal-page .sp-wrap,
+body.cso-portal-page .cp-wrap,
+body.cso-portal-page .ap-wrap,
+body.cso-portal-page .jp-shell,
+body.cso-portal-page .sp-shell,
+body.cso-portal-page .cp-shell,
+body.cso-portal-page .ap-shell {
   display: block !important;
   width: 100% !important;
-  max-width: min(1600px, calc(100vw - 2.5rem)) !important;
+  max-width: 100% !important;
   min-width: 0 !important;
-  margin: 0 auto !important;
-  padding: 1.1rem 1.25rem 3rem !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: 1rem 1rem 3rem !important;
   box-sizing: border-box !important;
 }
 
@@ -333,11 +343,16 @@ body.cso-portal-active .app-shell > .workspace > .main-content {
 #cso-schemes-portal-root,
 #cso-study-portal-root,
 #cso-community-portal-root,
-#cso-about-portal-root {
-  display: block !important;
+#cso-about-portal-root,
+.jp-root,
+.sp-root,
+.cp-root,
+.ap-root {
   width: 100% !important;
   max-width: 100% !important;
   min-width: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
   box-sizing: border-box !important;
 }
 

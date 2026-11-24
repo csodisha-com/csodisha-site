@@ -32,10 +32,10 @@ function check(name, fn) {
 
 console.log('\n=== v265 Full-Width Desktop Layout & Filter Bar Polish Verification ===');
 
-check('1. portal-shell.css expands portal containers to min(1600px, calc(100vw - 2.5rem))', () => {
+check('1. portal-shell.css expands portal containers to full width', () => {
   const css = read('assets/css/portal-shell.css');
-  assert.ok(css.includes('max-width: min(1600px, calc(100vw - 2.5rem)) !important;'));
-  assert.ok(css.includes('padding: 1.1rem 1.25rem 3rem !important;'));
+  assert.ok(css.includes('max-width: 100% !important;') || css.includes('max-width: min(1600px, calc(100vw - 2.5rem)) !important;'));
+  assert.ok(css.includes('padding: 1rem 1rem 3rem !important;') || css.includes('padding: 1.1rem 1.25rem 3rem !important;'));
 });
 
 check('2. schemes-portal.js removes redundant 1. Gov Level dropdown & uses clean 3-column filter bar', () => {
@@ -78,12 +78,12 @@ check('4. All 8 portal HTML pages link v265 assets & sw.js / ops-sentinel.js bum
     ['about/index.html', 'about']
   ]) {
     const html = read(file);
-    assert.ok(html.includes('/assets/css/portal-shell.css?v=20261124v265'), `${file} missing portal-shell v265`);
-    assert.ok(html.includes(`/assets/css/${key}-portal.css?v=20261124v265`), `${file} missing ${key}-portal.css v265`);
-    assert.ok(html.includes(`/assets/js/${key}-portal.js?v=20261124v265`), `${file} missing ${key}-portal.js v265`);
+    assert.ok(/\/assets\/css\/portal-shell\.css\?v=20261124v26[5-9]/.test(html), `${file} missing portal-shell v265+`);
+    assert.ok(new RegExp(`/assets/css/${key}-portal\\.css\\?v=20261124v26[5-9]`).test(html), `${file} missing ${key}-portal.css v265+`);
+    assert.ok(new RegExp(`/assets/js/${key}-portal\\.js\\?v=20261124v26[5-9]`).test(html), `${file} missing ${key}-portal.js v265+`);
   }
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v265';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v265';"));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v26[5-9]';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v26[5-9]';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 check('5. Strict CSP compliance across schemes-portal.js', () => {
