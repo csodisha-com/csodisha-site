@@ -203,8 +203,8 @@ await check('3. Deep-link ?sector=foreign&dept=opsc hides Scope select & preserv
 });
 
 await check('4. sw.js & ops-sentinel.js bumped to cso-candidate-cache-v281+ + strict CSP', () => {
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v28[1-9]';/.test(read('sw.js')));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v28[1-9]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:8[1-9]|9\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:8[1-9]|9\d)';/.test(read('functions/_lib/ops-sentinel.js')));
   const codeOnly = read('assets/js/jobs-portal.js').replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
   for (const bad of ['.innerHTML', '.outerHTML', 'insertAdjacentHTML', '.style.']) {
     assert.ok(!codeOnly.includes(bad), `jobs-portal.js violates strict CSP (${bad})`);

@@ -9,7 +9,7 @@ import { handleContent } from '../api/content/_public.js';
 export const FREEZE_SETTING_KEY = 'ops_read_only_freeze';
 export const CACHE_WARMER_URLS_KEY = 'ops_cache_warmer_urls';
 export const LAST_CACHE_WARM_KEY = 'ops_last_cache_warm';
-export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v289';
+export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v290';
 
 export const DEFAULT_CACHE_WARMER_ROUTES = [
   '/',

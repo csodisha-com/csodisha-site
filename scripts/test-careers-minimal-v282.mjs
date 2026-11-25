@@ -224,8 +224,8 @@ await check('3. Deep-link ?track=civil-services&subtrack=opsc-oas renders Reset 
 });
 
 await check('4. sw.js & ops-sentinel.js bumped to cso-candidate-cache-v282+ + strict CSP', () => {
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v28[2-9]';/.test(read('sw.js')));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v28[2-9]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:8[2-9]|9\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:8[2-9]|9\d)';/.test(read('functions/_lib/ops-sentinel.js')));
   const codeOnly = read('assets/js/careers-portal.js').replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
   for (const bad of ['.innerHTML', '.outerHTML', 'insertAdjacentHTML', '.style.']) {
     assert.ok(!codeOnly.includes(bad), `careers-portal.js violates strict CSP (${bad})`);

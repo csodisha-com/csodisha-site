@@ -147,8 +147,8 @@ await check('4. Minimal /schemes/ Explorer renders compact hero, L1 pill strip, 
   const html = read('schemes/index.html');
   assert.ok(html.includes('sch-hero--compact'), 'schemes/index.html missing sch-hero--compact');
   assert.ok(!html.includes('sp-hero-kpis'), 'schemes/index.html must not contain 4-box .sp-hero-kpis');
-  assert.match(html, /\/assets\/css\/schemes-portal\.css\?v=20261125v28[3-9]/);
-  assert.match(html, /\/assets\/js\/schemes-portal\.js\?v=20261125v28[3-9]/);
+  assert.match(html, /\/assets\/css\/schemes-portal\.css\?v=20261125v2(?:8[3-9]|9\d)/);
+  assert.match(html, /\/assets\/js\/schemes-portal\.js\?v=20261125v2(?:8[3-9]|9\d)/);
 
   const css = read('assets/css/schemes-portal.css');
   for (const tok of ['.sch-hero--compact', '.sch-cat-strip', '.sch-filter-row', 'flex-direction: column']) {
@@ -230,8 +230,8 @@ await check('4. Minimal /schemes/ Explorer renders compact hero, L1 pill strip, 
 });
 
 await check('5. sw.js & ops-sentinel.js bumped to cso-candidate-cache-v283+ + strict CSP compliance', () => {
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v28[3-9]';/.test(read('sw.js')));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v28[3-9]';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:8[3-9]|9\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:8[3-9]|9\d)';/.test(read('functions/_lib/ops-sentinel.js')));
   for (const rel of [
     'assets/shared-header.js',
     'assets/app.js',

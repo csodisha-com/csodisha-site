@@ -12,6 +12,7 @@
     root: null,
     nodes: [],
     transparency: { verified_jobs: 0, active_schemes: 0, study_modules: 0, community_members: 0, verified_portals: 0 },
+    institutional: null,
     allPages: [],
     pages: [],
     sources: [],
@@ -255,251 +256,180 @@
   }
 
   function renderEditorialHero(shell) {
-    var t = S.transparency || {};
-    var hero = el('section', 'ap-hero');
-    hero.setAttribute('aria-label', 'About Common Sense Odisha — Public Charter & Transparency Hub');
+    var inst = S.institutional || {};
+    var isOr = S.lang === 'or';
+    var hero = el('section', 'ap-hero abt-hero--compact');
+    hero.setAttribute('aria-label', 'About Common Sense Odisha');
 
-    var top = el('div', 'ap-hero-top');
-    var eyebrow = el('span', 'ap-eyebrow');
-    eyebrow.appendChild(el('span', 'ap-eyebrow-dot'));
-    eyebrow.appendChild(el('span', '', S.lang === 'or'
-      ? 'ସ୍ୱାଧୀନ ସାର୍ବଜନୀନ ଜ୍ଞାନ ଚାର୍ଟର · ଯାଞ୍ଚିତ .GOV.IN ଏବଂ ସମ୍ପାଦକୀୟ ସ୍ୱଚ୍ଛତା'
-      : 'INDEPENDENT PUBLIC KNOWLEDGE CHARTER · VERIFIED .GOV.IN & EDITORIAL TRANSPARENCY'));
-    top.appendChild(eyebrow);
-    top.appendChild(buildLangToggle(function () { renderOverviewPortal(); }));
-    hero.appendChild(top);
-
+    var bar = el('div', 'abt-hero-bar');
     var copy = el('div', 'ap-hero-copy');
-    copy.appendChild(el('h1', 'ap-hero-title', S.lang === 'or'
-      ? 'କମନ୍ ସେନ୍ସ ଓଡ଼ିଶା — ସାର୍ବଜନୀନ ଚାର୍ଟର ଏବଂ ସ୍ୱଚ୍ଛତା କେନ୍ଦ୍ର'
-      : 'About Common Sense Odisha — Public Charter & Transparency Hub'));
-    copy.appendChild(el('p', 'ap-hero-sub', S.lang === 'or'
-      ? 'ଓଡ଼ିଶାର ଛାତ୍ରଛାତ୍ରୀ, ଚାକିରି ଆଶାୟୀ, କୃଷକ, ମହିଳା ଏବଂ ନାଗରିକମାନଙ୍କୁ ଯାଞ୍ଚିତ ନିଯୁକ୍ତି ବିଜ୍ଞପ୍ତି, ସରକାରୀ ଯୋଜନା, ଅଧ୍ୟୟନ ସାମଗ୍ରୀ ଏବଂ ସହପାଠୀ ସମୁଦାୟ ଯୋଗାଇ ଦେଉଥିବା ଏକ ସ୍ୱାଧୀନ, ଖୋଲା-ପ୍ରବେଶ ପ୍ଲାଟଫର୍ମ।'
-      : 'An independent, open-access civic and educational platform empowering Odisha students, job seekers, farmers, women, and citizens with verified recruitment notifications, welfare schemes, study resources, and peer communities.'));
-    hero.appendChild(copy);
-
-    // 5-Tile Live Platform Transparency KPI Strip embedded in Hero
-    var kpiRow = el('div', 'ap-hero-kpis');
-    kpiRow.setAttribute('aria-label', 'Live Platform Transparency Counters');
-    [
-      [num(t.verified_jobs || 0), S.lang === 'or' ? 'ଯାଞ୍ଚିତ ସକ୍ରିୟ ଚାକିରି' : 'Verified Jobs Live'],
-      [num(t.active_schemes || 0), S.lang === 'or' ? 'ସକ୍ରିୟ କଲ୍ୟାଣ ଯୋଜନା' : 'Active Welfare Schemes'],
-      [num(t.study_modules || 0), S.lang === 'or' ? 'ଅଧ୍ୟୟନ ମଡ୍ୟୁଲ୍ ଓ PYQ' : 'Study Modules & PYQs'],
-      [num(t.community_members || 0), S.lang === 'or' ? 'ପଞ୍ଜୀକୃତ ସଦସ୍ୟ' : 'Registered Members'],
-      [num(t.verified_portals || S.sources.length), S.lang === 'or' ? 'ଯାଞ୍ଚିତ .gov.in ପୋର୍ଟାଲ୍' : 'Verified .gov.in Portals']
-    ].forEach(function (pair) {
-      var tile = el('div', 'ap-hero-kpi');
-      tile.appendChild(el('strong', 'ap-hero-kpi-val', pair[0]));
-      tile.appendChild(el('span', 'ap-hero-kpi-label', pair[1]));
-      kpiRow.appendChild(tile);
-    });
-    hero.appendChild(kpiRow);
+    copy.appendChild(el('span', 'abt-motto', isOr
+      ? (inst.motto_or || 'ଆତ୍ମନିର୍ଭରଶୀଳ ହୁଅନ୍ତୁ | ଏକ ଉନ୍ନତ ଭବିଷ୍ୟତ ଗଢ଼ନ୍ତୁ')
+      : (inst.motto_en || 'Be Self-Reliant | Build a Better Tomorrow')));
+    copy.appendChild(el('h1', 'ap-hero-title', isOr
+      ? (inst.title_or || 'କମନ୍ ସେନ୍ସ ଓଡ଼ିଶା ବିଷୟରେ')
+      : (inst.title_en || 'About Common Sense Odisha')));
+    copy.appendChild(el('p', 'ap-hero-sub', isOr
+      ? (inst.subtitle_or || 'ଓଡ଼ିଶାର ଛାତ୍ରଛାତ୍ରୀ, ଚାକିରି ଆଶାୟୀ ଏବଂ ନାଗରିକମାନଙ୍କ ପାଇଁ ସ୍ୱାଧୀନ, ଖୋଲା-ପ୍ରବେଶ ଏବଂ ଯାଞ୍ଚିତ ସାର୍ବଜନୀନ ଜ୍ଞାନ ପ୍ଲାଟଫର୍ମ।')
+      : (inst.subtitle_en || 'Independent, open-access civic and educational platform empowering Odisha citizens with verified public information.')));
+    bar.appendChild(copy);
+    bar.appendChild(buildLangToggle(function () { renderOverviewPortal(); }));
+    hero.appendChild(bar);
     shell.appendChild(hero);
   }
 
   function renderOverviewPortal() {
-    var activeEl = document.activeElement;
-    var restoreFocusId = (activeEl && activeEl.id === 'ap-source-search') ? activeEl.id : '';
-
     clear(S.root);
     injectInstitutionalJsonLd(null);
+    var isOr = S.lang === 'or';
+    var inst = S.institutional || {};
     var shell = el('div', 'ap-root');
 
-    // 1. Flagship Editorial Hero Banner & Embedded 5-Tile Live Platform Transparency KPI Strip
+    // 1. Compact Institutional Hero Header (v290 — no bloated KPI grid)
     renderEditorialHero(shell);
 
-    // 2. 3-Layer Institutional Charter, Policies & Mentor Profiles
-    var navPanel = el('section', 'ap-panel');
-    navPanel.setAttribute('aria-label', 'Institutional Charter, Policies & Mentor Profiles');
-    var nHead = el('div', 'ap-panel-head');
-    nHead.appendChild(el('h2', 'ap-panel-title', S.lang === 'or'
-      ? '🏛 ସାଂସ୍ଥାନିକ ଚାର୍ଟର, ନୀତି ଏବଂ ମେଣ୍ଟର ପ୍ରୋଫାଇଲ୍'
-      : '🏛 Institutional Charter, Policies & Mentor Profiles'));
-    if (S.isAdmin) {
-      var admAdd = el('a', 'ap-btn ap-btn-sm', '+ Author Page in Admin Studio ↗');
-      admAdd.href = '/admin/#folder-about';
-      nHead.appendChild(admAdd);
-    }
-    navPanel.appendChild(nHead);
+    // 2. Five Structured Institutional Sections (Solid Cards Across All 4 Themes)
+    var grid = el('div', 'abt-sections-grid');
 
-    var l1Pills = el('div', 'ap-chips');
-    var bAll = el('button', 'ap-pill' + (!S.activeL1 ? ' is-active' : ''));
-    bAll.type = 'button';
-    bAll.appendChild(el('span', '', S.lang === 'or' ? 'ସମସ୍ତ ସ୍ତମ୍ଭ' : 'All Pillars'));
-    bAll.appendChild(el('span', 'ap-pill-count', num(countPagesForPillar(''))));
-    bAll.addEventListener('click', function () { S.activeL1 = ''; reloadOverview(); });
-    l1Pills.appendChild(bAll);
+    // Card 1: Mission & Vision
+    var cMission = el('section', 'abt-card');
+    cMission.setAttribute('aria-label', 'Mission and Vision');
+    cMission.appendChild(el('span', 'abt-card-kicker', isOr ? '୦୧ · ଲକ୍ଷ୍ୟ ଓ ଦୃଷ୍ଟିଭଙ୍ଗୀ' : '01 · MISSION & VISION'));
+    cMission.appendChild(el('h2', 'abt-card-title', isOr ? 'ଆମର ଲକ୍ଷ୍ୟ ଓ ଦୃଷ୍ଟିଭଙ୍ଗୀ' : 'Mission & Vision'));
+    cMission.appendChild(el('p', 'abt-card-body', isOr
+      ? (inst.mission_or || 'କମନ୍ ସେନ୍ସ ଓଡ଼ିଶା (CSO) ହେଉଛି ଏକ ସ୍ୱାଧୀନ, ସମ୍ପୂର୍ଣ୍ଣ ମାଗଣା ସାର୍ବଜନୀନ ଜ୍ଞାନ ପ୍ଲାଟଫର୍ମ, ଯାହା ଓଡ଼ିଶାର ଯୁବକ, ଛାତ୍ରଛାତ୍ରୀ, କୃଷକ ଏବଂ ନାଗରିକମାନଙ୍କୁ ସଠିକ୍ ଓ ଯାଞ୍ଚିତ ସୂଚନା ଯୋଗାଇ ଦିଏ।')
+      : (inst.mission_en || 'Common Sense Odisha (CSO) is an independent, open-access, zero-paywall platform built for Odisha’s youth, job seekers, students, farmers, and citizens — making verified public opportunities clear, timely, and accessible to everyone.')));
+    grid.appendChild(cMission);
 
-    S.nodes.filter(function (n) { return Number(n.level) === 1; }).forEach(function (n) {
-      var lbl = (n.icon ? n.icon + ' ' : '') + pick(n, 'title');
-      var cnt = countPagesForPillar(n.id);
-      var b = el('button', 'ap-pill' + (S.activeL1 === n.id ? ' is-active' : ''));
-      b.type = 'button';
-      b.appendChild(el('span', '', lbl));
-      b.appendChild(el('span', 'ap-pill-count', num(cnt)));
-      b.addEventListener('click', function () { S.activeL1 = n.id; reloadOverview(); });
-      l1Pills.appendChild(b);
+    // Card 2: What We Cover (5 Core Portals)
+    var cPortals = el('section', 'abt-card');
+    cPortals.setAttribute('aria-label', 'What We Cover — 5 Core Portals');
+    cPortals.appendChild(el('span', 'abt-card-kicker', isOr ? '୦୨ · ଆମର ୫ଟି ମୁଖ୍ୟ ପୋର୍ଟାଲ୍' : '02 · WHAT WE COVER'));
+    cPortals.appendChild(el('h2', 'abt-card-title', isOr ? '୫ଟି ମୁଖ୍ୟ ସାର୍ବଜନୀନ ପୋର୍ଟାଲ୍' : 'What We Cover (5 Core Portals)'));
+    var pList = el('ul', 'abt-portal-list');
+    [
+      ['/jobs/', '💼', isOr ? 'ଚାକିରି (Jobs)' : 'Jobs', isOr ? 'ଓଡ଼ିଶା ଓ କେନ୍ଦ୍ର ସରକାରୀ ନିଯୁକ୍ତି, PSU, ବ୍ୟାଙ୍କିଂ ଓ ପ୍ରାଇଭେଟ୍ ଚାକିରି ବିଜ୍ଞପ୍ତି' : 'Verified Odisha & Central Govt, PSU, Private & NGO recruitment alerts'],
+      ['/careers/', '🧭', isOr ? 'କ୍ୟାରିୟର (Careers)' : 'Careers', isOr ? 'ପରୀକ୍ଷା ରୋଡମ୍ୟାପ୍, ଦଶମ/+୨ ପରବର୍ତ୍ତୀ ପଥ ଏବଂ ଦକ୍ଷତା ମାର୍ଗଦର୍ଶନ' : 'Structured exam roadmaps, post-10th/12th pathways & career tracks'],
+      ['/schemes/', '🏛️', isOr ? 'ଯୋଜନା ଓ ସୁବିଧା (Schemes & Benefits)' : 'Schemes & Benefits', isOr ? 'ଓଡ଼ିଶା ରାଜ୍ୟ ଓ କେନ୍ଦ୍ର କଲ୍ୟାଣ ଯୋଜନା, ବୃତ୍ତି ଏବଂ ଯୋଗ୍ୟତା ଯାଞ୍ଚ' : 'Odisha State & Central welfare schemes, scholarships & DBT eligibility'],
+      ['/study-library/', '📖', isOr ? 'ଅଧ୍ୟୟନ ପାଠାଗାର (Study Library)' : 'Study Library', isOr ? 'ଦ୍ୱିଭାଷୀ ନୋଟ୍ସ, ବିଗତ ବର୍ଷର ପ୍ରଶ୍ନପତ୍ର (PYQ) ଏବଂ ସରକାରୀ ସିଲାବସ୍' : 'Bilingual study notes, solved previous year papers (PYQs) & official syllabi'],
+      ['/community/', '👥', isOr ? 'ସମୁଦାୟ (Community)' : 'Community', isOr ? 'ପରୀକ୍ଷା ସନ୍ଦେହ ସମାଧାନ, ଯୋଜନା ସହାୟତା, ଅଧ୍ୟୟନ ଦଳ ଓ ମେଣ୍ଟରଶିପ୍' : 'Exam & career Q&A, Odisha scheme help, peer study groups & mentorship']
+    ].forEach(function (item) {
+      var li = el('li', 'abt-portal-item');
+      var a = el('a', 'abt-portal-link');
+      a.href = item[0];
+      a.appendChild(el('span', 'abt-portal-icon', item[1]));
+      var tx = el('span', 'abt-portal-text');
+      tx.appendChild(el('strong', '', item[2]));
+      tx.appendChild(el('span', 'abt-portal-desc', item[3]));
+      a.appendChild(tx);
+      a.appendChild(el('span', 'abt-portal-arrow', '→'));
+      li.appendChild(a);
+      pList.appendChild(li);
     });
-    navPanel.appendChild(l1Pills);
+    cPortals.appendChild(pList);
+    grid.appendChild(cPortals);
 
-    if (!S.pages.length) {
-      var empCard = el('div', 'ap-empty-card');
-      var art = el('div', 'ap-empty-art');
-      art.appendChild(buildEmptyDocSvg());
-      empCard.appendChild(art);
-      empCard.appendChild(el('h3', 'ap-card-title', S.lang === 'or'
-        ? 'ଏହି ସ୍ତମ୍ଭରେ ସାଂସ୍ଥାନିକ ଦସ୍ତାବିଜ୍ ଶୀଘ୍ର ପ୍ରକାଶିତ ହେବ'
-        : 'Institutional Documents in This Pillar Coming Soon'));
-      empCard.appendChild(el('p', 'ap-muted', S.lang === 'or'
-        ? 'ଅନ୍ୟ ସମସ୍ତ ସାଂସ୍ଥାନିକ ଚାର୍ଟର, ସମ୍ପାଦକୀୟ ମାନଦଣ୍ଡ ଏବଂ ଯାଞ୍ଚିତ ସରକାରୀ ପୋର୍ଟାଲ୍ ଦେଖିବାକୁ ସମସ୍ତ ସ୍ତମ୍ଭ ଚୟନ କରନ୍ତୁ।'
-        : 'All published public charters, fact-checking standards, and mentor disclosures are available across our institutional pillars.'));
-      var eActs = el('div', 'ap-chips');
-      if (S.activeL1) {
-        var rAll = el('button', 'ap-btn ap-btn-sm ap-btn-primary', S.lang === 'or' ? 'ସମସ୍ତ ସ୍ତମ୍ଭ ଦେଖନ୍ତୁ' : 'Show All Pillars');
-        rAll.type = 'button';
-        rAll.addEventListener('click', function () { S.activeL1 = ''; reloadOverview(); });
-        eActs.appendChild(rAll);
-      }
+    // Card 3: Editorial & Source Verification Policy
+    var cEdit = el('section', 'abt-card');
+    cEdit.setAttribute('aria-label', 'Editorial and Source Verification Policy');
+    cEdit.appendChild(el('span', 'abt-card-kicker', isOr ? '୦୩ · ସମ୍ପାଦକୀୟ ସ୍ୱଚ୍ଛତା' : '03 · VERIFICATION POLICY'));
+    cEdit.appendChild(el('h2', 'abt-card-title', isOr ? 'ସମ୍ପାଦକୀୟ ଓ ସୂଚନା ଯାଞ୍ଚ ନୀତି' : 'Editorial & Source Verification Policy'));
+    cEdit.appendChild(el('p', 'abt-card-body', isOr
+      ? (inst.editorial_or || 'ପ୍ରତ୍ୟେକ ନିଯୁକ୍ତି ବିଜ୍ଞପ୍ତି, ସରକାରୀ ଯୋଜନା ଏବଂ ସିଲାବସ୍ ସୂଚନା ପ୍ରାଥମିକ .gov.in ଏବଂ .odisha.gov.in ସରକାରୀ ପୋର୍ଟାଲ୍ ସହିତ ଯାଞ୍ଚ କରାଯାଇ ସ୍ପଷ୍ଟ ତାରିଖ ଓ ଲିଙ୍କ୍ ସହିତ ପ୍ରକାଶିତ ହୁଏ।')
+      : (inst.editorial_en || 'Every job notification, welfare scheme guide, and syllabus update is verified against primary .gov.in and .odisha.gov.in notifications, published with clear effective dates, direct official links, and strictly non-partisan public-service reporting.')));
+    var eUl = el('ul', 'abt-bullet-list');
+    [
+      isOr ? 'ପ୍ରାଥମିକ .gov.in ଓ .odisha.gov.in ସୂତ୍ରରୁ ସିଧାସଳଖ ଯାଞ୍ଚ' : 'Primary-source verification against .gov.in & .odisha.gov.in portals',
+      isOr ? 'ସ୍ପଷ୍ଟ ପ୍ରକାଶନ ତାରିଖ, ଶେଷ ତାରିଖ ଏବଂ ସଂଶୋଧନ ଟିପ୍ପଣୀ' : 'Clear publication dates, application deadlines, and correction logs',
+      isOr ? 'ସମ୍ପୂର୍ଣ୍ଣ ନିରପେକ୍ଷ, ବିଜ୍ଞାପନ-ମୁକ୍ତ ସାର୍ବଜନୀନ ସୂଚନା ପ୍ରକାଶନ' : 'Non-partisan, independent public-service reporting with zero paywalls'
+    ].forEach(function (pt) { eUl.appendChild(el('li', '', pt)); });
+    cEdit.appendChild(eUl);
+    grid.appendChild(cEdit);
+
+    // Card 4: Bilingual & Accessibility Design
+    var cA11y = el('section', 'abt-card');
+    cA11y.setAttribute('aria-label', 'Bilingual and Accessibility Design');
+    cA11y.appendChild(el('span', 'abt-card-kicker', isOr ? '୦୪ · ଭାଷା ଓ ସୁଗମତା' : '04 · ACCESSIBILITY'));
+    cA11y.appendChild(el('h2', 'abt-card-title', isOr ? 'ଦ୍ୱିଭାଷୀ ଓ ସୁଗମ ଡିଜାଇନ୍' : 'Bilingual & Accessibility Design'));
+    cA11y.appendChild(el('p', 'abt-card-body', isOr
+      ? 'ଓଡ଼ିଶାର ପ୍ରତ୍ୟେକ ଜିଲ୍ଲା ଓ ଗ୍ରାମାଞ୍ଚଳର ପାଠକଙ୍କ ପାଇଁ ଇଂରାଜୀ ଓ ଓଡ଼ିଆ ଭାଷା, ୪ଟି ଅନୁକୂଳ ଥିମ୍ ଏବଂ କମ୍ ଡାଟାରେ ଦ୍ରୁତ ଖୋଲୁଥିବା ମୋବାଇଲ୍-ପ୍ରଥମ ଡିଜାଇନ୍।'
+      : 'Designed for learners across every Odisha district with native English & ଓଡ଼ିଆ support, 4 adaptive reading themes (System, Dark Night, Reading Mode, Odisha & Bharat), keyboard navigation, and mobile-first low-bandwidth performance.'));
+    var aUl = el('ul', 'abt-bullet-list');
+    [
+      isOr ? 'ଇଂରାଜୀ ଏବଂ ଓଡ଼ିଆ (EN + ଓଡ଼ିଆ) ଦ୍ୱିଭାଷୀ ପଠନ ସୁବିଧା' : 'Native English + ଓଡ଼ିଆ bilingual reading experience across portals',
+      isOr ? '୪ଟି ଅନୁକୂଳ ଥିମ୍ (System, Dark Night, Reading Mode, Odisha & Bharat)' : '4 high-contrast themes (System, Dark Night, Reading Mode, Odisha & Bharat)',
+      isOr ? 'ସ୍ୱଳ୍ପ ଇଣ୍ଟରନେଟ୍ ବେଗରେ ମଧ୍ୟ ଦ୍ରୁତ ଲୋଡିଂ ଓ ମୋବାଇଲ୍-ଅନୁକୂଳ ଲେଆଉଟ୍' : 'Lightweight zero-bloat pages engineered for fast loading on rural mobile networks'
+    ].forEach(function (pt) { aUl.appendChild(el('li', '', pt)); });
+    cA11y.appendChild(aUl);
+    grid.appendChild(cA11y);
+
+    // Card 5: Citizen Desk, Legal & Contact (full width)
+    var cDesk = el('section', 'abt-card abt-card--wide');
+    cDesk.setAttribute('aria-label', 'Citizen Desk, Legal and Contact');
+    cDesk.appendChild(el('span', 'abt-card-kicker', isOr ? '୦୫ · ନାଗରିକ ସହାୟତା ଓ ଯୋଗାଯୋଗ' : '05 · CITIZEN DESK & LEGAL'));
+    cDesk.appendChild(el('h2', 'abt-card-title', isOr ? 'ନାଗରିକ ସହାୟତା, ଆଇନଗତ ନୀତି ଓ ଯୋଗାଯୋଗ' : 'Citizen Desk, Legal & Contact'));
+    var deskLinks = el('div', 'abt-desk-links');
+    [
+      ['/support/#contact', isOr ? '📩 ଯୋଗାଯୋଗ (Contact)' : '📩 Contact Us'],
+      ['/support/#suggest-resource', isOr ? '💡 ସୂଚନା ପ୍ରସ୍ତାବ ଦିଅନ୍ତୁ (Suggest Resource)' : '💡 Suggest Resource'],
+      ['/support/#report-error', isOr ? '🛠️ ତ୍ରୁଟି ଜଣାନ୍ତୁ (Report an Error)' : '🛠️ Report an Error'],
+      ['/support/#faqs', isOr ? '❓ ସାଧାରଣ ପ୍ରଶ୍ନ (Help & FAQs)' : '❓ Help & FAQs'],
+      ['/privacy-policy/', isOr ? '🔒 ଗୋପନୀୟତା ନୀତି (Privacy Policy)' : '🔒 Privacy Policy'],
+      ['/terms-of-use/', isOr ? '⚖️ ବ୍ୟବହାର ସର୍ତ୍ତାବଳୀ (Terms of Use)' : '⚖️ Terms of Use']
+    ].forEach(function (lnk) {
+      var a = el('a', 'abt-desk-btn', lnk[1]);
+      a.href = lnk[0];
+      deskLinks.appendChild(a);
+    });
+    cDesk.appendChild(deskLinks);
+
+    var emailStr = inst.contact_email || 'contact@csodisha.com';
+    var emailRow = el('div', 'abt-contact-row');
+    emailRow.appendChild(el('span', 'abt-contact-label', isOr ? 'ସରକାରୀ ଯୋଗାଯୋଗ ଇମେଲ୍: ' : 'Official Contact Email: '));
+    var mailA = el('a', 'abt-contact-email', emailStr);
+    mailA.href = 'mailto:' + emailStr;
+    emailRow.appendChild(mailA);
+    cDesk.appendChild(emailRow);
+    grid.appendChild(cDesk);
+
+    shell.appendChild(grid);
+
+    // Optional Admin-published Institutional Charter Documents (if authored in D1)
+    if (S.pages.length) {
+      var docSec = el('section', 'ap-panel');
+      docSec.setAttribute('aria-label', 'Published Institutional Documents');
+      var dHead = el('div', 'ap-panel-head');
+      dHead.appendChild(el('h2', 'ap-panel-title', isOr ? '📄 ପ୍ରକାଶିତ ସାଂସ୍ଥାନିକ ଦସ୍ତାବିଜ୍' : '📄 Published Institutional Documents'));
       if (S.isAdmin) {
-        var aPub = el('a', 'ap-btn ap-btn-sm ap-btn-primary', '+ Author Page in Admin Studio ↗');
-        aPub.href = '/admin/#folder-about';
-        eActs.appendChild(aPub);
+        var admA = el('a', 'ap-btn ap-btn-sm', '+ Manage in Admin Studio ↗');
+        admA.href = '/admin/#folder-about';
+        dHead.appendChild(admA);
       }
-      empCard.appendChild(eActs);
-      navPanel.appendChild(empCard);
-    } else {
-      var grid = el('div', 'ap-cards-grid');
+      docSec.appendChild(dHead);
+      var dGrid = el('div', 'ap-cards-grid');
       S.pages.forEach(function (a) {
         var card = el('article', 'ap-card');
         var body = el('div', 'ap-card-main');
-
-        var badges = el('div', 'ap-chips');
-        badges.appendChild(el('span', 'ap-badge', a.doc_type_badge || 'Institutional Charter'));
-        if (a.effective_date) {
-          badges.appendChild(el('span', 'ap-badge is-meta', '📅 Effective ' + a.effective_date));
-        } else {
-          badges.appendChild(el('span', 'ap-badge is-meta', '⏱ ~' + estimateReadMins(a) + ' min read'));
-        }
-        body.appendChild(badges);
-
         var h3 = el('h3', 'ap-card-title');
         var lnk = el('a', '', pick(a, 'title') || a.title_en);
         lnk.href = '/about/?slug=' + encodeURIComponent(a.slug);
         h3.appendChild(lnk);
         body.appendChild(h3);
-
-        if (a.person_role_en) {
-          body.appendChild(el('div', 'ap-muted', '👤 ' + pick(a, 'person_role') + (a.person_district ? ' · ' + a.person_district : '')));
-        }
         var sum = pick(a, 'summary');
-        if (sum) body.appendChild(el('p', 'ap-muted', sum.slice(0, 195)));
+        if (sum) body.appendChild(el('p', 'ap-muted', sum.slice(0, 180)));
         card.appendChild(body);
-
         var foot = el('div', 'ap-card-foot');
-        foot.appendChild(el('span', 'ap-muted', '⏱ ' + estimateReadMins(a) + ' min read'));
-        var aRead = el('a', 'ap-btn ap-btn-sm ap-btn-primary', S.lang === 'or' ? 'ସମ୍ପୂର୍ଣ୍ଣ ଦସ୍ତାବିଜ୍ ପଢ଼ନ୍ତୁ →' : 'Read Full Document →');
+        var aRead = el('a', 'ap-btn ap-btn-sm ap-btn-primary', isOr ? 'ପଢ଼ନ୍ତୁ →' : 'Read Document →');
         aRead.href = '/about/?slug=' + encodeURIComponent(a.slug);
         foot.appendChild(aRead);
         card.appendChild(foot);
-
-        grid.appendChild(card);
+        dGrid.appendChild(card);
       });
-      navPanel.appendChild(grid);
+      docSec.appendChild(dGrid);
+      shell.appendChild(docSec);
     }
-    shell.appendChild(navPanel);
-
-    // 3. Verified Official Government Portals Registry (Anti-Fraud Directory — 3-Column Aligned)
-    var srcPanel = el('section', 'ap-panel');
-    srcPanel.setAttribute('aria-label', 'Verified Official Government Portals Registry');
-    var sHead = el('div', 'ap-panel-head');
-    sHead.appendChild(el('h2', 'ap-panel-title', S.lang === 'or'
-      ? '🛡️ ଯାଞ୍ଚିତ ସରକାରୀ ପୋର୍ଟାଲ୍ ରେଜିଷ୍ଟ୍ରି (ଠକେଇ-ବିରୋଧୀ ତାଲିକା)'
-      : '🛡️ Verified Official Government Portals Registry (Anti-Fraud Directory)'));
-
-    var sBox = el('div', 'ap-search-box');
-    var sSearch = el('input', 'ap-input');
-    sSearch.id = 'ap-source-search';
-    sSearch.type = 'search';
-    sSearch.setAttribute('aria-label', 'Filter verified official government portals');
-    sSearch.placeholder = S.lang === 'or' ? 'ପୋର୍ଟାଲ୍ ଖୋଜନ୍ତୁ (ଯଥା: OPSC, Subhadra, Scholarship)...' : 'Verify portal (e.g. OPSC, Subhadra, Scholarship)...';
-    sSearch.value = S.sourceSearch;
-    var sTimer = null;
-    sSearch.addEventListener('input', function () {
-      S.sourceSearch = sSearch.value.trim();
-      clearTimeout(sTimer);
-      sTimer = setTimeout(function () { reloadOverview(); }, 180);
-    });
-    sSearch.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { clearTimeout(sTimer); S.sourceSearch = sSearch.value.trim(); reloadOverview(); }
-    });
-    sBox.appendChild(sSearch);
-    if (S.sourceSearch || S.sourceSector) {
-      var bClr = el('button', 'ap-btn ap-btn-sm', 'Reset');
-      bClr.type = 'button';
-      bClr.addEventListener('click', function () { S.sourceSearch = ''; S.sourceSector = ''; reloadOverview(); });
-      sBox.appendChild(bClr);
-    }
-    sHead.appendChild(sBox);
-    srcPanel.appendChild(sHead);
-
-    var secPills = el('div', 'ap-chips');
-    var bSAll = el('button', 'ap-pill' + (!S.sourceSector ? ' is-active' : ''), S.lang === 'or' ? 'ସମସ୍ତ କ୍ଷେତ୍ର' : 'All Sectors');
-    bSAll.type = 'button';
-    bSAll.addEventListener('click', function () { S.sourceSector = ''; reloadOverview(); });
-    secPills.appendChild(bSAll);
-    (S.sectors || []).forEach(function (sec) {
-      var b = el('button', 'ap-pill' + (S.sourceSector === sec ? ' is-active' : ''), sec);
-      b.type = 'button';
-      b.addEventListener('click', function () { S.sourceSector = sec; reloadOverview(); });
-      secPills.appendChild(b);
-    });
-    srcPanel.appendChild(secPills);
-
-    if (!S.sources.length) {
-      srcPanel.appendChild(el('div', 'ap-empty', S.lang === 'or' ? 'ଆପଣଙ୍କ ସନ୍ଧାନ ସହିତ କୌଣସି ଯାଞ୍ଚିତ ପୋର୍ଟାଲ୍ ମିଳିଲା ନାହିଁ।' : 'No verified government portals match your current search or sector filter.'));
-    } else {
-      var sGrid = el('div', 'ap-sources-grid');
-      S.sources.forEach(function (src) {
-        var c = el('article', 'ap-card');
-        var main = el('div', 'ap-card-main');
-        var top = el('div', 'ap-chips');
-        top.append(
-          el('span', 'ap-badge is-gov', '✓ Verified ' + (src.domain_badge || '.gov.in')),
-          el('span', 'ap-badge', src.sector || 'Official')
-        );
-        main.appendChild(top);
-        main.appendChild(el('h3', 'ap-card-title', pick(src, 'authority_name') || src.authority_name_en));
-        main.appendChild(el('p', 'ap-muted', pick(src, 'purpose') || src.purpose_en));
-        if (src.helpline_info) {
-          main.appendChild(el('div', 'ap-helpline', '☎ Helpline: ' + src.helpline_info));
-        }
-        c.appendChild(main);
-
-        var foot = el('div', 'ap-card-foot');
-        var href = safeHref(src.official_url);
-        var aExt = el('a', 'ap-btn ap-btn-sm ap-btn-primary', S.lang === 'or' ? 'ସରକାରୀ ପୋର୍ଟାଲ୍ ଖୋଲନ୍ତୁ ↗' : 'Visit Official Portal ↗');
-        if (href) {
-          aExt.href = href;
-          aExt.target = '_blank';
-          aExt.rel = 'noopener noreferrer';
-        }
-        foot.appendChild(aExt);
-        c.appendChild(foot);
-        sGrid.appendChild(c);
-      });
-      srcPanel.appendChild(sGrid);
-    }
-    shell.appendChild(srcPanel);
-
-    // 4. Interactive Contact, Partnership & Editorial Correction Desk
-    shell.appendChild(renderInquiryDesk());
 
     S.root.appendChild(shell);
-
-    if (restoreFocusId) {
-      var refocus = document.getElementById(restoreFocusId);
-      if (refocus && typeof refocus.focus === 'function') refocus.focus();
-    }
   }
 
   function renderInquiryDesk() {
@@ -750,6 +680,7 @@
     if (bootRes && bootRes.ok) {
       S.nodes = bootRes.nodes || [];
       S.transparency = bootRes.transparency || S.transparency;
+      S.institutional = bootRes.institutional || null;
       S.pages = bootRes.pages || bootRes.items || [];
       S.allPages = S.pages.slice();
       S.sources = bootRes.sources || [];

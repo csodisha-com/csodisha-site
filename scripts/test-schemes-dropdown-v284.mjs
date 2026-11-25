@@ -134,12 +134,12 @@ await check('3. /schemes/?scope=odisha & /schemes/?scope=central activate Govern
 });
 
 await check('4. ?v=20261125v284+ cache busting, cso-candidate-cache-v284+ & strict CSP compliance', () => {
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v28[4-9]';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v28[4-9]';/);
-  assert.match(read('index.html'), /\/assets\/style\.css\?v=20261125v28[4-9]/);
-  assert.match(read('index.html'), /\/assets\/app\.js\?v=20261125v28[4-9]/);
-  assert.match(read('schemes/index.html'), /\/assets\/shared-header\.js\?v=20261125v28[4-9]/);
-  assert.match(read('schemes/index.html'), /\/assets\/js\/schemes-portal\.js\?v=20261125v28[4-9]/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:8[4-9]|9\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:8[4-9]|9\d)';/);
+  assert.match(read('index.html'), /\/assets\/style\.css\?v=20261125v2(?:8[4-9]|9\d)/);
+  assert.match(read('index.html'), /\/assets\/app\.js\?v=20261125v2(?:8[4-9]|9\d)/);
+  assert.match(read('schemes/index.html'), /\/assets\/shared-header\.js\?v=20261125v2(?:8[4-9]|9\d)/);
+  assert.match(read('schemes/index.html'), /\/assets\/js\/schemes-portal\.js\?v=20261125v2(?:8[4-9]|9\d)/);
 
   for (const rel of ['assets/shared-header.js', 'assets/app.js', 'assets/js/schemes-portal.js']) {
     const codeOnly = read(rel).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');

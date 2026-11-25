@@ -254,8 +254,8 @@ await check('5. Solid opaque 4-theme surfaces, v278 cache busting & strict CSP c
     assert.ok(!/\son[a-z]+\s*=/i.test(html), `${rel} contains inline on*= handler`);
   }
 
-  assert.match(read('careers/index.html'), /\/assets\/js\/careers-portal\.js\?v=2026112[45]v2(?:7[89]|8\d)/);
-  assert.match(read('admin/index.html'), /\/admin\/admin\.js\?v=2026112[45]v2(?:7[89]|8\d)/);
+  assert.match(read('careers/index.html'), /\/assets\/js\/careers-portal\.js\?v=2026112[45]v2(?:7[89]|[89]\d)/);
+  assert.match(read('admin/index.html'), /\/admin\/admin\.js\?v=2026112[45]v2(?:7[89]|[89]\d)/);
   assert.ok(read('admin/index.html').includes('/admin/careers-publishing-studio.js?v=20261124v278'));
 
   for (const rel of [

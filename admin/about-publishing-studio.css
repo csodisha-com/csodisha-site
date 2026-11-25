@@ -9,6 +9,27 @@
   gap: 16px;
 }
 
+.abps-live-sync-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+  color: var(--cso-ink, #0f172a);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.abps-live-sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+}
+
 .abps-tabs {
   display: flex;
   flex-wrap: wrap;

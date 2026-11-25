@@ -135,6 +135,12 @@
   }
 
   function renderTabs(shell) {
+    var syncBanner = el('div', 'abps-live-sync-banner');
+    syncBanner.setAttribute('role', 'status');
+    syncBanner.appendChild(el('span', 'abps-live-sync-dot'));
+    syncBanner.appendChild(el('span', '', 'Live Synced to Public /about/ Page — Every institutional page, charter, or official source update immediately purges edge caches.'));
+    shell.appendChild(syncBanner);
+
     var tabs = el('div', 'abps-tabs');
     tabs.setAttribute('role', 'tablist');
     [

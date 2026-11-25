@@ -221,6 +221,7 @@ async function invalidateAboutCaches(request, slug = '') {
     '/',
     '/index.html',
     '/api/public/about/tree',
+    '/api/public/about/bootstrap',
     '/api/public/about/pages',
     '/api/public/about/article',
     '/api/public/about/sources',
@@ -967,8 +968,17 @@ export async function handleAboutInquiriesAdmin(request, env, actor, inquiryId) 
 const BOOTSTRAP_EDGE_CACHE = 'public, max-age=15, s-maxage=300, stale-while-revalidate=60';
 
 export async function handlePublicAboutBootstrapApi(request, env) {
+  const defaultInstitutional = {
+    title_en: 'About Common Sense Odisha',
+    title_or: 'କମନ୍ ସେନ୍ସ ଓଡ଼ିଶା ବିଷୟରେ',
+    motto_en: 'Be Self-Reliant | Build a Better Tomorrow',
+    motto_or: 'ଆତ୍ମନିର୍ଭରଶୀଳ ହୁଅନ୍ତୁ | ଏକ ଉନ୍ନତ ଭବିଷ୍ୟତ ଗଢ଼ନ୍ତୁ',
+    subtitle_en: 'Independent, open-access civic and educational platform empowering Odisha citizens with verified public information.',
+    subtitle_or: 'ଓଡ଼ିଶାର ଛାତ୍ରଛାତ୍ରୀ, ଚାକିରି ଆଶାୟୀ ଏବଂ ନାଗରିକମାନଙ୍କ ପାଇଁ ସ୍ୱାଧୀନ, ଖୋଲା-ପ୍ରବେଶ ଏବଂ ଯାଞ୍ଚିତ ସାର୍ବଜନୀନ ଜ୍ଞାନ ପ୍ଲାଟଫର୍ମ।',
+    contact_email: 'contact@csodisha.com'
+  };
   if (!env || !env.DB) {
-    return json({ ok: false, tree: [], nodes: [], pages: [], items: [], sources: [], sectors: OFFICIAL_SOURCE_SECTORS, transparency: {}, kpis: {} }, 200, NO_STORE);
+    return json({ ok: false, tree: [], nodes: [], pages: [], items: [], sources: [], sectors: OFFICIAL_SOURCE_SECTORS, transparency: {}, institutional: defaultInstitutional, kpis: {} }, 200, NO_STORE);
   }
   await ensureAboutStudioSchema(env.DB);
   await publishDueScheduledAboutArticles(env.DB);
@@ -1026,6 +1036,16 @@ export async function handlePublicAboutBootstrapApi(request, env) {
     verified_portals: portalsCount
   };
 
+  const charterPage = pages.find(p => /charter|mission/i.test(`${p.slug} ${p.doc_type_badge}`));
+  const editorialPage = pages.find(p => /editorial|verification|policy/i.test(`${p.slug} ${p.doc_type_badge}`));
+  const institutional = {
+    ...defaultInstitutional,
+    mission_en: (charterPage && charterPage.summary_en) || 'Common Sense Odisha (CSO) is an independent, zero-paywall public knowledge platform built to help Odisha students, job seekers, farmers, women, and citizens discover verified opportunities without misinformation or clutter.',
+    mission_or: (charterPage && charterPage.summary_or) || 'କମନ୍ ସେନ୍ସ ଓଡ଼ିଶା (CSO) ହେଉଛି ଏକ ସ୍ୱାଧୀନ, ସମ୍ପୂର୍ଣ୍ଣ ମାଗଣା ସାର୍ବଜନୀନ ଜ୍ଞାନ ପ୍ଲାଟଫର୍ମ, ଯାହା ଓଡ଼ିଶାର ଯୁବକ, ଛାତ୍ରଛାତ୍ରୀ, କୃଷକ ଏବଂ ନାଗରିକମାନଙ୍କୁ ସଠିକ୍ ଓ ଯାଞ୍ଚିତ ସୂଚନା ଯୋଗାଇ ଦିଏ।',
+    editorial_en: (editorialPage && editorialPage.summary_en) || 'Every recruitment alert, welfare scheme guide, and syllabus update is cross-checked against primary .gov.in and .odisha.gov.in notifications with clear publication dates, official portal links, and strictly non-partisan public-service reporting.',
+    editorial_or: (editorialPage && editorialPage.summary_or) || 'ପ୍ରତ୍ୟେକ ନିଯୁକ୍ତି ବିଜ୍ଞପ୍ତି, ସରକାରୀ ଯୋଜନା ଏବଂ ସିଲାବସ୍ ସୂଚନା ପ୍ରାଥମିକ .gov.in ଏବଂ .odisha.gov.in ସରକାରୀ ପୋର୍ଟାଲ୍ ସହିତ ଯାଞ୍ଚ କରାଯାଇ ସ୍ପଷ୍ଟ ତାରିଖ ଓ ଲିଙ୍କ୍ ସହିତ ପ୍ରକାଶିତ ହୁଏ।'
+  };
+
   return json({
     ok: true,
     nodes,
@@ -1033,6 +1053,7 @@ export async function handlePublicAboutBootstrapApi(request, env) {
     total: pages.length,
     pages,
     items: pages,
+    institutional,
     sources,
     sectors: OFFICIAL_SOURCE_SECTORS,
     transparency,
