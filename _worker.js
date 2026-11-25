@@ -123,6 +123,8 @@ import { handlePublicSiteConfigBatch4Api } from './functions/_lib/settings-confi
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { handleCandidateAiAssistant } from './functions/api/candidate/ai-assistant.js';
+import { handlePublicSemanticSearch } from './functions/api/search/semantic.js';
+import { reindexPublishedContent } from './functions/_lib/semantic-search.js';
 import {
   handleCandidateHubConfigApi,
   handleCandidateMatchesApi,
@@ -587,6 +589,9 @@ export default {
           invalidateAllPublicCaches(request),
           invalidatePublicEdgeCache(edgeCache, url.origin)
         ]);
+        if (/^\/api\/admin\/(jobs|schemes|study|careers)(?:\/|$)/.test(pathname) && ctx && typeof ctx.waitUntil === 'function') {
+          ctx.waitUntil(reindexPublishedContent(env, { limit: 4, actorId: 'auto_publish_hook' }).catch(() => {}));
+        }
       }
       return adminRes;
     }
@@ -1430,6 +1435,14 @@ export default {
         return handleCandidateAiAssistant({ request, env });
       }
       return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, POST' } });
+    }
+
+    // 9c. /api/search/semantic (v320 Free-Tier "Ask CSOdisha" Semantic Search)
+    if (pathname === '/api/search/semantic') {
+      if (request.method === 'GET') {
+        return handlePublicSemanticSearch({ request, env, ctx });
+      }
+      return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET' } });
     }
 
     // 9b. v244 Candidate Hub Governance & Live Workspace APIs

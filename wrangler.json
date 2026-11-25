@@ -28,6 +28,12 @@
   "ai": {
     "binding": "AI"
   },
+  "vectorize": [
+    {
+      "binding": "VECTORIZE",
+      "index_name": "csodisha-semantic-index"
+    }
+  ],
   "triggers": {
     "crons": [
       "0 * * * *"

@@ -138,6 +138,7 @@ import { handleAdminMockTestsV312 } from './mock-tests.js';
 import { handleAdminCandidateOpsApi } from './candidate-ops.js';
 import { handleAdminBillingAdsApi } from './billing-ads.js';
 import { handleAdminAiCoauthorApi } from './ai-coauthor.js';
+import { handleAdminSemanticReindexApi } from './semantic-reindex.js';
 import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
@@ -245,6 +246,12 @@ async function dispatchAdminApi(request, env, ctx = null) {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-ai:${actor.userId}`, 30, 600);
       return await handleAdminAiCoauthorApi(request, env, actor, ctx);
+    }
+
+    if (resource === 'semantic-reindex') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-ai:${actor.userId}`, 20, 600);
+      return await handleAdminSemanticReindexApi(request, env, actor);
     }
 
     if (COMMAND_SUITE_RESOURCES.includes(resource)) {

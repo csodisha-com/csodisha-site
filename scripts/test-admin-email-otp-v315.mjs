@@ -270,8 +270,8 @@ await test('4. Strict CSP, 4-theme tokens, migration 0148 & v315 cache sync', as
   const loginJs = read('admin/cms/login.js');
   assert.ok(!/\.innerHTML|\.outerHTML|insertAdjacentHTML|\.style\./.test(loginJs), 'admin/cms/login.js must remain CSP-safe');
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v319');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v319';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v320');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v320';"));
 });
 
 console.log(`\n=== Admin Email OTP v315 Results: ${passed} passed, 0 failed ===\n`);

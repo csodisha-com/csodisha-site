@@ -52,6 +52,7 @@
     totpRecoveryCodes: null,
     emailOtpStatus: null,
     aiUsage: null,
+    semanticStatus: null,
     lastError: '',
     sitemapNote: ''
   };
@@ -129,7 +130,8 @@
       api('sessions', 'GET'),
       totpApi('', 'GET').catch(function () { return null; }),
       api('email-otp-status', 'GET').catch(function () { return null; }),
-      rawApi('/api/admin/ai-coauthor', 'GET').catch(function () { return null; })
+      rawApi('/api/admin/ai-coauthor', 'GET').catch(function () { return null; }),
+      rawApi('/api/admin/semantic-reindex', 'GET').catch(function () { return null; })
     ]).then(function (res) {
       S.auditItems = res[0].items || [];
       S.auditTotal = Number(res[0].total || 0);
@@ -137,6 +139,7 @@
       S.totpStatus = res[2];
       S.emailOtpStatus = res[3];
       S.aiUsage = (res[4] && res[4].usage) || null;
+      S.semanticStatus = res[5] || null;
       render();
     }).catch(function (err) {
       S.lastError = err.message;
@@ -460,6 +463,37 @@
     prog.setAttribute('aria-label', 'Daily Free AI Neuron Usage');
     card.appendChild(prog);
     shell.appendChild(card);
+
+    // 0d. Semantic Search Index Status (v320)
+    var semCard = el('section', 'so-card');
+    semCard.id = 'soSemanticIndexCard';
+    var sem = S.semanticStatus || { indexed_count: 0, vectorize_bound: false, index_name: 'csodisha-semantic-index' };
+    var semHead = el('div', 'so-card-head');
+    var semLeft = el('div');
+    semLeft.appendChild(el('h2', 'so-title', 'Semantic Search Index Status ("Ask CSOdisha" v320)'));
+    semLeft.appendChild(el('p', 'so-sub', 'Indexed Items: ' + (sem.indexed_count || 0) + ' · Vectorize Binding: ' + (sem.vectorize_bound ? 'Bound (' + sem.index_name + ')' : 'Keyword Fallback Active')));
+    semHead.appendChild(semLeft);
+    semHead.appendChild(el('span', 'so-badge ' + (sem.vectorize_bound ? 'so-badge--on' : 'so-badge--warn'), sem.vectorize_bound ? 'VECTORIZE BOUND' : 'FALLBACK MODE'));
+    semCard.appendChild(semHead);
+
+    var semActs = el('div', 'so-actions');
+    var syncBtn = el('button', 'so-btn so-btn--primary', 'Sync / Re-Index Published Content');
+    syncBtn.type = 'button';
+    syncBtn.addEventListener('click', function () {
+      syncBtn.disabled = true;
+      syncBtn.textContent = 'Syncing…';
+      rawApi('/api/admin/semantic-reindex', 'POST', { limit: 20 }).then(function (d) {
+        toast('Semantic index sync: ' + (d.indexed || 0) + ' indexed, ' + (d.skipped || 0) + ' skipped.', 'ok');
+        loadSecurityData();
+      }).catch(function (err) {
+        toast(err.message || 'Re-index failed', 'crimson');
+        syncBtn.disabled = false;
+        syncBtn.textContent = 'Sync / Re-Index Published Content';
+      });
+    });
+    semActs.appendChild(syncBtn);
+    semCard.appendChild(semActs);
+    shell.appendChild(semCard);
   }
 
   function renderSecurityTab(shell) {
