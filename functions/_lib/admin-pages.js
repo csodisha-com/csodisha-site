@@ -19,6 +19,8 @@ function secured(res, csp, extra = {}) {
   h.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
   h.set('Content-Security-Policy', csp);
   h.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  h.set('Pragma', 'no-cache');
+  h.set('Expires', '0');
   h.set('X-Frame-Options', 'DENY');
   h.set('Referrer-Policy', 'same-origin');
   h.set('X-Content-Type-Options', 'nosniff');
@@ -62,8 +64,8 @@ export async function handleAdminPage(request, env) {
     );
   }
   const res = await env.ASSETS.fetch(request);
-  // Large static assets (the suite is ~12 MB of JS): allow conditional revalidation, never shared caching.
-  // `no-cache` forces a round trip through this gate on every load, so role changes apply immediately.
-  const isStatic = /\.(js|css|json)$/.test(path);
-  return secured(res, csp, isStatic ? { 'Cache-Control': 'private, no-cache, max-age=0, must-revalidate' } : {});
+  return secured(res, csp, {
+    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+    'Pragma': 'no-cache'
+  });
 }

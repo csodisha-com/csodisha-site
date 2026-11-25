@@ -509,9 +509,17 @@ export default {
       return new Response('Not Found', { status: 404 });
     }
 
-    // 0b. CMS: server-enforced admin pages (role from D1; noindex + CSP headers)
+    // 0b. CMS: server-enforced admin pages (role from D1; noindex + CSP + strict no-store headers)
     if (pathname === '/admin' || pathname.startsWith('/admin/')) {
-      return handleAdminPage(request, env);
+      const adminPageRes = await handleAdminPage(request, env);
+      const adminHeaders = new Headers(adminPageRes.headers);
+      adminHeaders.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      adminHeaders.set('Pragma', 'no-cache');
+      return new Response(adminPageRes.body, {
+        status: adminPageRes.status,
+        statusText: adminPageRes.statusText,
+        headers: adminHeaders
+      });
     }
 
     // 0b-freeze. Emergency Read-Only Freeze guard (Module #12): blocks mutating requests

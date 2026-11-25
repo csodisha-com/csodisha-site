@@ -126,8 +126,11 @@
   });
 
   var params = new URLSearchParams(location.search);
-  var next = params.get('next') || '/admin/';
-  if (!/^\/admin(\/|$)/.test(next) || next.indexOf('//') !== -1) next = '/admin/';
+  var rawNext = params.get('next') || params.get('redirect') || params.get('returnTo') || '/admin/';
+  var next = String(rawNext || '/admin/').split('#')[0] || '/admin/';
+  if (!/^\/admin(\/|$)/.test(next) || next.indexOf('//') !== -1 || /^\/admin\/(?:index\.html|legacy(?:\.html)?|portal(?:\.html)?|login(?:\.html)?)$/i.test(next)) {
+    next = '/admin/';
+  }
 
   function show(t, kind) {
     msg.textContent = t;
@@ -279,11 +282,14 @@
       }
       try {
         localStorage.removeItem('cso_active_module_id');
+        localStorage.removeItem('cso_open_sidebar_groups');
+        localStorage.removeItem('cso_admin_redirect');
         localStorage.setItem('cso_admin_active', '1');
         sessionStorage.removeItem('cso_post_login_hash');
+        sessionStorage.removeItem('returnTo');
+        sessionStorage.removeItem('cso_admin_redirect');
       } catch (_e) {}
-      var baseNext = (next || '/admin/').split('#')[0] || '/admin/';
-      location.replace(baseNext + '#command-overview');
+      location.replace((next || '/admin/') + '#command-overview');
     } catch (err) {
       show(err.message || 'Sign-in failed.', 'error');
       go.disabled = false; go.textContent = 'Sign in';

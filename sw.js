@@ -11,7 +11,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v312';
+const CACHE_NAME = 'cso-candidate-cache-v313';
 const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
 const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
 
@@ -96,20 +96,23 @@ self.addEventListener('activate', (event) => {
       );
     }).then(async () => {
       try {
-        const activeCache = await caches.open(CACHE_NAME);
-        const cachedReqs = await activeCache.keys();
-        await Promise.all(
-          cachedReqs
-            .filter((req) => {
-              try {
-                const p = new URL(req.url).pathname;
-                return isAuthNoStorePath(p) || p.startsWith('/api/auth/');
-              } catch (_) {
-                return false;
-              }
-            })
-            .map((req) => activeCache.delete(req))
-        );
+        const remainingKeys = await caches.keys();
+        await Promise.all(remainingKeys.map(async (cacheKey) => {
+          const cache = await caches.open(cacheKey);
+          const cachedReqs = await cache.keys();
+          await Promise.all(
+            cachedReqs
+              .filter((req) => {
+                try {
+                  const p = new URL(req.url).pathname;
+                  return p.startsWith('/admin') || isAuthNoStorePath(p) || p.startsWith('/api/auth/');
+                } catch (_) {
+                  return false;
+                }
+              })
+              .map((req) => cache.delete(req))
+          );
+        }));
       } catch (_) {}
     }).then(() => self.clients.claim())
   );
@@ -202,12 +205,10 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Auth endpoints & /admin/* routes must NEVER touch SW Cache Storage.
+  // Strict Network-Only bypass: /admin* and non-offline /api* routes must NEVER touch SW Cache Storage.
   if (
-    url.pathname === '/admin' ||
-    url.pathname.startsWith('/admin/') ||
-    url.pathname.startsWith('/api/admin') ||
-    url.pathname.startsWith('/api/auth/')
+    url.pathname.startsWith('/admin') ||
+    (url.pathname.startsWith('/api') && !isNetworkFirstApi(url))
   ) {
     return;
   }
