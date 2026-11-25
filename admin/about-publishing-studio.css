@@ -173,8 +173,8 @@
 .abps-btn:hover { border-color: var(--cso-accent); }
 .abps-btn-primary { background: var(--cso-accent); border-color: var(--cso-accent); color: var(--cso-accent-ink); }
 .abps-btn-emerald { background: var(--cso-accent); border-color: var(--cso-accent); color: var(--cso-accent-ink); }
-.abps-btn-amber { background: var(--cso-warn-fg); border-color: var(--cso-warn-border); color: var(--cso-accent-ink); }
-.abps-btn-danger { background: var(--cso-err-fg); border-color: var(--cso-err-border); color: var(--cso-accent-ink); }
+.abps-btn-amber { background: var(--cso-warn-bg); border-color: var(--cso-warn-border); color: var(--cso-warn-fg); }
+.abps-btn-danger { background: var(--cso-err-bg); border-color: var(--cso-err-border); color: var(--cso-err-fg); }
 .abps-btn-sm { padding: 5px 8px; font-size: 0.75rem; }
 
 .abps-section {

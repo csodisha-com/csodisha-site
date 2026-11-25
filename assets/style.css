@@ -5266,7 +5266,7 @@ mark.cso-search-highlight {
 
 .cso-hub-card__btn--blue { background: var(--cso-accent); color: var(--cso-accent-ink); }
 .cso-hub-card__btn--green { background: var(--cso-accent); color: var(--cso-accent-ink); }
-.cso-hub-card__btn--amber { background: var(--cso-warn-fg); color: var(--cso-accent-ink); }/* ==========================================================================
+.cso-hub-card__btn--amber { background: var(--cso-warn-bg); border: 1px solid var(--cso-warn-border); color: var(--cso-warn-fg); }/* ==========================================================================
    CSO Opportunity Compass Modern Compact Card Row
    ========================================================================== */
 
@@ -6257,8 +6257,9 @@ a[href*="register"]:hover {
   flex-wrap: wrap;
 }
 .cso-broadcast-banner__tag {
-  background: var(--cso-err-fg);
-  color: var(--cso-accent-ink);
+  background: var(--cso-err-bg);
+  color: var(--cso-err-fg);
+  border: 1px solid var(--cso-err-border);
   font-size: 0.72rem;
   font-weight: 800;
   padding: 2px 8px;
@@ -6643,17 +6644,19 @@ html, body {
 .cso-live-banner--info .cso-live-banner__tag,
 .cso-live-banner--info .cso-live-banner__cta {
   background: var(--cso-accent);
-  color: var(--cso-link);
+  color: var(--cso-accent-ink);
 }
 .cso-live-banner--notice .cso-live-banner__tag,
 .cso-live-banner--notice .cso-live-banner__cta {
-  background: var(--cso-warn-fg);
-  color: var(--cso-err-fg);
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
+  border: 1px solid var(--cso-warn-border);
 }
 .cso-live-banner--urgent .cso-live-banner__tag,
 .cso-live-banner--urgent .cso-live-banner__cta {
-  background: var(--cso-err-fg);
+  background: var(--cso-err-bg);
   color: var(--cso-err-fg);
+  border: 1px solid var(--cso-err-border);
 }
 .cso-live-banner__headline {
   color: var(--cso-accent-ink);

@@ -18,10 +18,13 @@
       }
       wirePwToggle(document.getElementById('btn-toggle-newpw'), document.getElementById('new-password'));
 
-      function showError(msg) {
+      function showError(msg, field) {
         const box = document.getElementById('reset-error');
-        box.textContent = msg;
-        box.style.display = 'block';
+        if (box) {
+          box.textContent = msg;
+          box.classList.add('is-visible');
+        }
+        if (field) field.setAttribute('aria-invalid', 'true');
       }
 
       // Validate the magic-link token before revealing the password fields.
@@ -49,25 +52,37 @@
           }
         } catch (err) {
           document.getElementById('page-subtitle').textContent = 'Could not validate the link';
-          document.getElementById('validating-status').textContent = 'Unable to reach the server. Please check your connection and reload.';
-          document.getElementById('validating-status').style.display = 'block';
+          const statusEl = document.getElementById('validating-status');
+          if (statusEl) {
+            statusEl.textContent = 'Unable to reach the server. Please check your connection and reload.';
+            statusEl.classList.add('is-visible');
+          }
         }
       })();
 
       document.getElementById('reset-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         const box = document.getElementById('reset-error');
-        box.style.display = 'none';
+        const pwInput = document.getElementById('new-password');
+        const confirmInput = document.getElementById('confirm-password');
+        if (box) {
+          box.textContent = '';
+          box.classList.remove('is-visible');
+        }
+        pwInput?.removeAttribute('aria-invalid');
+        confirmInput?.removeAttribute('aria-invalid');
 
-        const pw = document.getElementById('new-password').value;
-        const confirm = document.getElementById('confirm-password').value;
+        const pw = pwInput.value;
+        const confirm = confirmInput.value;
 
         if (pw.length < 8) {
-          showError('Password must be at least 8 characters long.');
+          showError('Password must be at least 8 characters long.', pwInput);
+          pwInput.focus();
           return;
         }
         if (pw !== confirm) {
-          showError('Passwords do not match.');
+          showError('Passwords do not match.', confirmInput);
+          confirmInput.focus();
           return;
         }
 

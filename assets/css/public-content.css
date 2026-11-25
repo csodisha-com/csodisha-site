@@ -751,9 +751,9 @@ body.pc-page {
 }
 
 .cbt-pal-btn.is-flagged {
-  background: var(--cso-warn-fg);
+  background: var(--cso-warn-bg);
   border-color: var(--cso-warn-border);
-  color: var(--cso-accent-ink);
+  color: var(--cso-warn-fg);
 }
 
 .cbt-summary-grid {

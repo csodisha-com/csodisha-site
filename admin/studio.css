@@ -223,9 +223,12 @@
   z-index: 60;
   padding: 6px;
   border-radius: 12px;
-  border: 1px solid var(--studio-border-strong);
-  background: var(--studio-card);
-  color: var(--studio-text);
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+  opacity: 1;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;

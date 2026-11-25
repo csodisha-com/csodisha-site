@@ -400,8 +400,7 @@
         const textarea = document.createElement("textarea");
         textarea.value = text;
         textarea.setAttribute("readonly", "");
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
+        textarea.className = "cso-sr-only";
 
         document.body.appendChild(textarea);
         textarea.select();
@@ -441,41 +440,17 @@
       }
 
       const plan = buildJobPlanText();
-
-      const escaped = plan
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-
-      const documentHTML = [
-        "<!DOCTYPE html>",
-        '<html lang="en"><head>',
-        '<meta charset="utf-8">',
-        "<title>CSO-IN Job Exploration Plan</title>",
-        "<style>",
-        "@page{size:A4;margin:17mm}",
-        "body{font-family:Arial,sans-serif;color:#172033;",
-        "max-width:760px;margin:0 auto;padding:20px;line-height:1.65}",
-        "h1{font-size:23px;color:#1749a2;margin-bottom:18px}",
-        "pre{white-space:pre-wrap;overflow-wrap:anywhere;",
-        "font:inherit;font-size:12px;line-height:1.65}",
-        "@media print{body{padding:0}}",
-        "</style></head><body>",
-        "<h1>Common Sense Odisha — Job Exploration Plan</h1>",
-        "<pre>", escaped, "</pre>",
-        "</body></html>"
-      ].join("");
-
-      printWindow.document.open();
-      printWindow.document.write(documentHTML);
-      printWindow.document.close();
-
+      const doc = printWindow.document;
+      doc.title = "CSO-IN Job Exploration Plan";
+      const heading = doc.createElement("h1");
+      heading.textContent = "Common Sense Odisha — Job Exploration Plan";
+      const pre = doc.createElement("pre");
+      pre.textContent = plan;
+      if (doc.body) {
+        doc.body.replaceChildren(heading, pre);
+      }
       printWindow.focus();
-
-      printWindow.addEventListener("load", function () {
-        printWindow.print();
-      }, { once: true });
+      printWindow.print();
     }
   );
 

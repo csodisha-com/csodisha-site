@@ -43,18 +43,23 @@
       });
 
       function showError(msg, field) {
-        errorBox.textContent = msg;
-        errorBox.style.display = 'block';
+        if (errorBox) {
+          errorBox.textContent = msg;
+          errorBox.classList.add('is-visible');
+        }
         if (field) field.setAttribute('aria-invalid', 'true');
       }
 
       function clearError() {
-        errorBox.textContent = '';
-        errorBox.style.display = 'none';
+        if (errorBox) {
+          errorBox.textContent = '';
+          errorBox.classList.remove('is-visible');
+        }
         [nameInput, emailInput, districtInput, pwInput].forEach(el => el?.removeAttribute('aria-invalid'));
       }
 
       form.addEventListener('submit', async function(e) {
+        if (form.dataset.step === 'otp') return;
         e.preventDefault();
         clearError();
 
@@ -151,68 +156,84 @@
       });
 
       function renderOtpStep(email) {
-        csoSetHtml(form, `
-          <div class="cso-u-14266126">
-            <div class="cso-u-4edad9f2">📩</div>
-            <h3 class="cso-u-8d11cf64">Candidate Verification</h3>
-            <p class="cso-u-95647bfc">
-              We sent a 6-digit OTP &amp; instant magic link to<br>
-              <strong class="cso-u-9f5198ad">${email}</strong>
-            </p>
-          </div>
+        form.dataset.step = 'otp';
+        function mkNode(tag, cls, txt) {
+          const n = document.createElement(tag);
+          if (cls) n.className = cls;
+          if (txt !== undefined && txt !== null) n.textContent = String(txt);
+          return n;
+        }
 
-          <div class="cso-u-f7683c10">
-            <label class="cso-u-9cbba5c9">Enter 6-Digit Code</label>
-            <div id="cso-otp-boxes" class="cso-u-6fbcc42c">
-              <input type="text" class="cso-otp-digit form-input cso-u-617a4dfb" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" data-index="0" autofocus required>
-              <input type="text" class="cso-otp-digit form-input cso-u-617a4dfb" maxlength="1" pattern="[0-9]" inputmode="numeric" data-index="1" required>
-              <input type="text" class="cso-otp-digit form-input cso-u-617a4dfb" maxlength="1" pattern="[0-9]" inputmode="numeric" data-index="2" required>
-              <input type="text" class="cso-otp-digit form-input cso-u-617a4dfb" maxlength="1" pattern="[0-9]" inputmode="numeric" data-index="3" required>
-              <input type="text" class="cso-otp-digit form-input cso-u-617a4dfb" maxlength="1" pattern="[0-9]" inputmode="numeric" data-index="4" required>
-              <input type="text" class="cso-otp-digit form-input cso-u-617a4dfb" maxlength="1" pattern="[0-9]" inputmode="numeric" data-index="5" required>
-            </div>
-            <div class="cso-u-9000f913">
-              Paste your 6-digit code or check your inbox for the magic link.
-            </div>
-          </div>
+        const headerBox = mkNode('div', 'cso-u-14266126');
+        headerBox.appendChild(mkNode('div', 'cso-u-4edad9f2', '📩'));
+        headerBox.appendChild(mkNode('h3', 'cso-u-8d11cf64', 'Candidate Verification'));
+        const infoP = mkNode('p', 'cso-u-95647bfc');
+        infoP.appendChild(document.createTextNode('We sent a 6-digit OTP & instant magic link to'));
+        infoP.appendChild(document.createElement('br'));
+        infoP.appendChild(mkNode('strong', 'cso-u-9f5198ad', email));
+        headerBox.appendChild(infoP);
 
-          <button type="submit" class="btn-submit cso-u-3d8b57b3" id="btn-submit-otp">
-            Verify Code &amp; Complete Registration
-          </button>
+        const otpWrap = mkNode('div', 'cso-u-f7683c10');
+        const otpLabel = mkNode('label', 'cso-u-9cbba5c9', 'Enter 6-Digit Code');
+        otpLabel.setAttribute('for', 'cso-otp-digit-0');
+        otpWrap.appendChild(otpLabel);
 
-          <div class="cso-u-13076d95">
-            <button type="button" id="btn-resend-otp" class="btn-toggle-pw cso-u-911aba9b" disabled>
-              Resend Code (<span id="resend-countdown">60</span>s)
-            </button>
-            <div class="cso-u-b8316849">
-              <a href="/signup.html" class="cso-u-2764475e">Start over with a different email</a>
-            </div>
-          </div>
-        `);
+        const boxesRow = mkNode('div', 'cso-u-6fbcc42c');
+        boxesRow.id = 'cso-otp-boxes';
+        const digits = [];
+        for (let idx = 0; idx < 6; idx++) {
+          const inp = mkNode('input', 'cso-otp-digit form-input cso-u-617a4dfb');
+          inp.type = 'text';
+          inp.id = 'cso-otp-digit-' + idx;
+          inp.maxLength = 1;
+          inp.pattern = '[0-9]';
+          inp.inputMode = 'numeric';
+          inp.setAttribute('aria-label', 'Verification code digit ' + (idx + 1));
+          inp.setAttribute('aria-describedby', 'auth-error-msg');
+          if (idx === 0) inp.autocomplete = 'one-time-code';
+          inp.dataset.index = String(idx);
+          inp.required = true;
+          boxesRow.appendChild(inp);
+          digits.push(inp);
+        }
+        otpWrap.appendChild(boxesRow);
+        otpWrap.appendChild(mkNode('div', 'cso-u-9000f913', 'Paste your 6-digit code or check your inbox for the magic link.'));
 
-        const digits = Array.from(document.querySelectorAll('.cso-otp-digit'));
-        const submitOtpBtn = document.getElementById('btn-submit-otp');
-        const resendBtn = document.getElementById('btn-resend-otp');
-        const countdownSpan = document.getElementById('resend-countdown');
+        const submitOtpBtn = mkNode('button', 'btn-submit cso-u-3d8b57b3', 'Verify Code & Complete Registration');
+        submitOtpBtn.type = 'submit';
+        submitOtpBtn.id = 'btn-submit-otp';
+
+        const footRow = mkNode('div', 'cso-u-13076d95');
+        const resendBtn = mkNode('button', 'btn-toggle-pw cso-u-911aba9b');
+        resendBtn.type = 'button';
+        resendBtn.id = 'btn-resend-otp';
+        resendBtn.disabled = true;
+        const countdownSpan = mkNode('span', '', '60');
+        countdownSpan.id = 'resend-countdown';
+        resendBtn.append('Resend Code (', countdownSpan, 's)');
+        footRow.appendChild(resendBtn);
+        const startOver = mkNode('div', 'cso-u-b8316849');
+        const startLink = mkNode('a', 'cso-u-2764475e', 'Start over with a different email');
+        startLink.href = '/signup.html';
+        startOver.appendChild(startLink);
+        footRow.appendChild(startOver);
+
+        form.replaceChildren(errorBox, headerBox, otpWrap, submitOtpBtn, footRow);
 
         digits[0]?.focus();
 
-        // 60-second countdown ticker
         let timeLeft = 60;
-        const ticker = setInterval(() => {
+        let activeTicker = setInterval(() => {
           timeLeft--;
           if (countdownSpan) countdownSpan.textContent = String(timeLeft);
           if (timeLeft <= 0) {
-            clearInterval(ticker);
-            if (resendBtn) {
-              resendBtn.disabled = false;
-              resendBtn.textContent = 'Resend Code';
-            }
+            clearInterval(activeTicker);
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Resend Code';
           }
         }, 1000);
 
-        // Resend handler
-        resendBtn.onclick = async function() {
+        resendBtn.addEventListener('click', async function() {
           resendBtn.disabled = true;
           resendBtn.textContent = 'Resending...';
           clearError();
@@ -226,13 +247,15 @@
             const rData = await rRes.json().catch(() => ({}));
             if (rRes.ok && rData.success) {
               timeLeft = 60;
-              csoSetHtml(resendBtn, `Resend Code (<span id="resend-countdown">60</span>s)`);
-              const newCountSpan = document.getElementById('resend-countdown');
-              const newTicker = setInterval(() => {
+              clearInterval(activeTicker);
+              const newCountSpan = mkNode('span', '', '60');
+              newCountSpan.id = 'resend-countdown';
+              resendBtn.replaceChildren('Resend Code (', newCountSpan, 's)');
+              activeTicker = setInterval(() => {
                 timeLeft--;
-                if (newCountSpan) newCountSpan.textContent = String(timeLeft);
+                newCountSpan.textContent = String(timeLeft);
                 if (timeLeft <= 0) {
-                  clearInterval(newTicker);
+                  clearInterval(activeTicker);
                   resendBtn.disabled = false;
                   resendBtn.textContent = 'Resend Code';
                 }
@@ -247,7 +270,7 @@
             resendBtn.disabled = false;
             resendBtn.textContent = 'Resend Code';
           }
-        };
+        });
 
         function getEnteredOtp() {
           return digits.map(d => d.value.trim()).join('');
@@ -360,10 +383,10 @@
           }
         }
 
-        form.onsubmit = function(ev) {
+        form.addEventListener('submit', function(ev) {
           ev.preventDefault();
           triggerOtpSubmit();
-        };
+        });
       }
 
       // Auth modal handoff: arriving at signup.html?email=... means a dual-channel

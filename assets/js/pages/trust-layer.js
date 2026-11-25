@@ -13,8 +13,10 @@
   function render() {
     const done = checks.filter(item => item.checked).length;
     status.textContent = done + " of " + checks.length + " checks completed";
+    const pct = Math.round((done / Math.max(1, checks.length)) * 100);
     meter.setAttribute("aria-valuenow", String(done));
-    fill.style.width = (done / checks.length * 100) + "%";
+    fill.dataset.progressPct = String(pct);
+    fill.setAttribute("aria-valuenow", String(pct));
   }
 
   box.addEventListener("change", render);

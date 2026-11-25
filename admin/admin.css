@@ -541,7 +541,9 @@ button {
 }
 
 .btn-danger:hover {
-  background: var(--cso-err-fg);
+  background: var(--cso-err-bg);
+  color: var(--cso-err-fg);
+  border-color: var(--cso-err-border);
 }
 
 .btn-saffron {
@@ -553,7 +555,9 @@ button {
 }
 
 .btn-saffron:hover {
-  background: var(--cso-err-fg);
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
+  border-color: var(--cso-warn-border);
 }
 
 .btn-sm {
@@ -755,7 +759,7 @@ button {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
+  backdrop-filter: none;
   z-index: 10000;
   display: none;
   align-items: center;

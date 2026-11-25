@@ -47,7 +47,7 @@
 
   function applyTheme(theme) {
     var safe = normalizeTheme(theme);
-    document.documentElement.removeAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', safe === 'utkal-bharat' ? 'odisha' : safe);
     document.documentElement.setAttribute('data-cso-theme', safe);
     document.documentElement.setAttribute('data-cso-resolved-mode', resolveEffectiveMode(safe));
     if (themeMenuBtn) {
@@ -223,8 +223,17 @@
     e.preventDefault();
     if (go.disabled) return;
     show('');
+    if (f.email) f.email.removeAttribute('aria-invalid');
+    if (f.password) f.password.removeAttribute('aria-invalid');
+    if (twofa) twofa.removeAttribute('aria-invalid');
+    var hp = document.getElementById('admin-website');
+    if (hp && hp.value) return;
     var email = f.email.value.trim().toLowerCase(), password = f.password.value;
-    if (!email || !password) return show('Enter your email and password.', 'error');
+    if (!email || !password) {
+      if (!email && f.email) f.email.setAttribute('aria-invalid', 'true');
+      if (!password && f.password) f.password.setAttribute('aria-invalid', 'true');
+      return show('Enter your email and password.', 'error');
+    }
     go.disabled = true; go.textContent = 'Signing in…';
     try {
       var r = await fetch('/api/auth/login', {

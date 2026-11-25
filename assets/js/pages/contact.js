@@ -75,7 +75,8 @@
       if (toastName) toastName.textContent = name;
       if (toastId) toastId.textContent = id;
       if (toast) {
-        toast.style.display = 'flex';
+        toast.hidden = false;
+        toast.classList.add('is-visible');
         toast.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
 
@@ -132,7 +133,7 @@
       }
 
       const sec = document.getElementById('contact-directory-section');
-      if (sec) sec.style.display = 'block';
+      if (sec) sec.hidden = false;
 
       const emailEl = document.getElementById('dir-primary-email');
       if (emailEl) emailEl.textContent = endpoints.primaryEmail || 'contact@csodisha.com';

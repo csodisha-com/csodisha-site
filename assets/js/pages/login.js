@@ -20,21 +20,26 @@
         const meta = TITLES[name] || TITLES['signin'];
         document.getElementById('auth-screen-title').textContent = meta[0];
         document.getElementById('auth-screen-subtitle').textContent = meta[1];
-        document.getElementById('auth-footer').style.display = name === 'signin' ? 'block' : 'none';
+        const footer = document.getElementById('auth-footer');
+        if (footer) footer.classList.toggle('is-hidden', name !== 'signin');
         const firstInput = document.querySelector('#screen-' + name + ' input');
         if (firstInput) setTimeout(() => firstInput.focus(), 30);
       }
 
       function showError(id, msg, field) {
         const box = document.getElementById(id);
-        box.textContent = msg;
-        box.style.display = 'block';
+        if (box) {
+          box.textContent = msg;
+          box.classList.add('is-visible');
+        }
         if (field) field.setAttribute('aria-invalid', 'true');
       }
       function clearError(id, fields) {
         const box = document.getElementById(id);
-        box.textContent = '';
-        box.style.display = 'none';
+        if (box) {
+          box.textContent = '';
+          box.classList.remove('is-visible');
+        }
         (fields || []).forEach(f => f?.removeAttribute('aria-invalid'));
       }
       function busy(btn, text) {
@@ -53,8 +58,10 @@
         if (sessionStorage.getItem('cso_password_reset_flash') === '1') {
           sessionStorage.removeItem('cso_password_reset_flash');
           const banner = document.getElementById('flash-banner');
-          banner.style.display = 'block';
-          setTimeout(() => { banner.style.display = 'none'; }, 7000);
+          if (banner) {
+            banner.classList.add('is-visible');
+            setTimeout(() => { banner.classList.remove('is-visible'); }, 7000);
+          }
         }
       } catch (e) {}
 
@@ -80,6 +87,8 @@
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
         clearError('auth-error-msg', [emailInput, pwInput]);
+        const hp = document.getElementById('login-website');
+        if (hp && hp.value) return;
 
         const email = emailInput.value.trim().toLowerCase();
         const password = pwInput.value;
@@ -172,11 +181,13 @@
 
       emailForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        clearError('recovery-email-error');
+        const recInput = document.getElementById('recovery-email');
+        clearError('recovery-email-error', [recInput]);
 
-        const email = document.getElementById('recovery-email').value.trim().toLowerCase();
+        const email = recInput.value.trim().toLowerCase();
         if (!email || !email.includes('@')) {
-          showError('recovery-email-error', 'Please enter a valid email address.');
+          showError('recovery-email-error', 'Please enter a valid email address.', recInput);
+          recInput.focus();
           return;
         }
 
@@ -252,11 +263,13 @@
 
       otpForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        clearError('recovery-otp-error');
+        const otpInput = document.getElementById('recovery-otp');
+        clearError('recovery-otp-error', [otpInput]);
 
-        const otp = document.getElementById('recovery-otp').value.trim();
+        const otp = otpInput.value.trim();
         if (!/^\d{6}$/.test(otp)) {
-          showError('recovery-otp-error', 'Please enter the 6-digit code from your email.');
+          showError('recovery-otp-error', 'Please enter the 6-digit code from your email.', otpInput);
+          otpInput.focus();
           return;
         }
 
@@ -300,17 +313,21 @@
 
       newpwForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        clearError('recovery-newpw-error');
+        const newPwInput = document.getElementById('new-password');
+        const confirmInput = document.getElementById('confirm-password');
+        clearError('recovery-newpw-error', [newPwInput, confirmInput]);
 
-        const pw = document.getElementById('new-password').value;
-        const confirm = document.getElementById('confirm-password').value;
+        const pw = newPwInput.value;
+        const confirm = confirmInput.value;
 
         if (pw.length < 8) {
-          showError('recovery-newpw-error', 'Password must be at least 8 characters long.');
+          showError('recovery-newpw-error', 'Password must be at least 8 characters long.', newPwInput);
+          newPwInput.focus();
           return;
         }
         if (pw !== confirm) {
-          showError('recovery-newpw-error', 'Passwords do not match.');
+          showError('recovery-newpw-error', 'Passwords do not match.', confirmInput);
+          confirmInput.focus();
           return;
         }
         if (!resetGrant) {

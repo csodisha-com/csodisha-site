@@ -55,7 +55,7 @@
     var heroEnabled = config.hero ? (config.hero.enabled !== false) : true;
 
     if (heroSection) {
-      heroSection.style.display = heroEnabled ? 'block' : 'none';
+      heroSection.hidden = !heroEnabled;
     }
 
     var badgeEl = document.getElementById('about-badge');

@@ -4,10 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Authorized staff and editorial sign-in portal for Common Sense Odisha Admin Studio.">
   <title>Staff sign-in — CS Odisha Admin</title>
   <link rel="canonical" href="https://csodisha.com/admin/login.html">
-  <link rel="stylesheet" href="/assets/css/cso-themes.css?v=20261125v303">
-  <link rel="stylesheet" href="/admin/cms/cms.css?v=20261124v241">
+  <link rel="stylesheet" href="/assets/css/cso-themes.css?v=20261125v304">
+  <link rel="stylesheet" href="/admin/cms/cms.css?v=20261125v304">
   <link rel="stylesheet" href="/admin/cms/security.css?v=20261114h">
 </head>
 <body class="login-body">
@@ -32,20 +33,24 @@
     <div id="msg" class="alert" role="alert" hidden></div>
     <form id="f" novalidate>
       <label for="email">Email</label>
-      <input id="email" name="email" type="email" autocomplete="username" required>
+      <input id="email" name="email" type="email" autocomplete="username" aria-describedby="msg" required>
       <label for="pw">Password</label>
       <div class="cso-pw-wrap">
-        <input id="pw" name="password" type="password" autocomplete="current-password" required>
+        <input id="pw" name="password" type="password" autocomplete="current-password" aria-describedby="msg" required>
         <button id="togglePw" type="button" class="cso-pw-toggle" aria-label="Show password">Show</button>
       </div>
       <p id="capsHint" class="cso-caps-hint" hidden>Caps Lock is on</p>
       <div class="cso-2fa-block" id="twofaBlock">
         <label for="twofa">2FA / Backup Code <span class="muted">(if enabled)</span></label>
-        <input id="twofa" name="twofa_code" type="text" inputmode="text" autocomplete="one-time-code" maxlength="12" spellcheck="false" autocapitalize="characters" placeholder="123456 or XXXX-XXXX">
+        <input id="twofa" name="twofa_code" type="text" inputmode="text" autocomplete="one-time-code" maxlength="12" spellcheck="false" autocapitalize="characters" placeholder="123456 or XXXX-XXXX" aria-describedby="msg otpStatus">
         <div class="cso-otp-row">
           <button id="sendOtp" type="button" class="btn cso-otp-btn">Send OTP (Telegram / Email)</button>
           <span id="otpStatus" class="cso-otp-status" role="status" aria-live="polite"></span>
         </div>
+      </div>
+      <div aria-hidden="true" hidden>
+        <label for="admin-website">Website</label>
+        <input id="admin-website" name="website" type="text" tabindex="-1" autocomplete="off">
       </div>
       <label class="cso-remember-row" for="rememberMe">
         <input id="rememberMe" name="remember_me" type="checkbox">
@@ -57,6 +62,6 @@
       <a href="/" class="cso-login-home-link" title="Return to Common Sense Odisha Public Portal">← Back to Common Sense Odisha Home</a>
     </div>
   </main>
-  <script src="/admin/cms/login.js" defer></script>
+  <script src="/admin/cms/login.js?v=20261125v304" defer></script>
 </body>
 </html>

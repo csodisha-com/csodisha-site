@@ -213,15 +213,15 @@
 }
 
 .stps-btn-amber {
-  background: var(--cso-warn-fg);
+  background: var(--cso-warn-bg);
   border-color: var(--cso-warn-border);
-  color: var(--cso-accent-ink);
+  color: var(--cso-warn-fg);
 }
 
 .stps-btn-danger {
-  background: var(--cso-err-fg);
+  background: var(--cso-err-bg);
   border-color: var(--cso-err-border);
-  color: var(--cso-accent-ink);
+  color: var(--cso-err-fg);
 }
 
 .stps-btn-sm {

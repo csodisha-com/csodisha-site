@@ -1410,7 +1410,7 @@ export default {
         if (live || (sitewide && res.status === 200 && (res.headers.get('Content-Type') || '').includes('text/html'))) {
           const csp = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'";
           if (res.status === 404 && live) {
-            return new Response(request.method === 'HEAD' ? null : renderDynamicPage(live, sitewide), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': csp, 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Cache-Control': 'no-cache' } });
+            return new Response(request.method === 'HEAD' ? null : renderDynamicPage(live, sitewide), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': csp, 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'Permissions-Policy': 'camera=(), microphone=(self), geolocation=()', 'Cache-Control': 'no-cache' } });
           }
           if (res.status === 200 && (res.headers.get('Content-Type') || '').includes('text/html')) {
             res = applyPageOverrides(res, live, sitewide);
@@ -1432,14 +1432,18 @@ export default {
             nfHeaders.set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'");
             nfHeaders.set('X-Content-Type-Options', 'nosniff');
             nfHeaders.set('X-Frame-Options', 'SAMEORIGIN');
+            nfHeaders.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+            nfHeaders.set('Permissions-Policy', 'camera=(), microphone=(self), geolocation=()');
             return new Response(request.method === 'HEAD' ? null : notFoundAsset.body, { status: 404, headers: nfHeaders });
           }
         }
       }
-      if (res.status === 200 && (request.method === 'GET' || request.method === 'HEAD') && (res.headers.get('Content-Type') || '').includes('text/html')) {
+      const isHtmlResponse = (res.headers.get('Content-Type') || '').includes('text/html');
+      if (res.status === 200 && (request.method === 'GET' || request.method === 'HEAD') && isHtmlResponse) {
         res = await hydrateExplorerIndexHtml(res, pathname, env, url);
       }
-      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|careers|tools|schemes|schemes-benefits|study-library|community|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname)) {
+      const isPrimaryPortal = pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|careers|tools|schemes|schemes-benefits|study-library|community|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname);
+      if (isHtmlResponse || isPrimaryPortal) {
         const headers = new Headers(res.headers);
         headers.set(
           'Content-Security-Policy',
@@ -1448,8 +1452,9 @@ export default {
         headers.set('X-Content-Type-Options', 'nosniff');
         headers.set('X-Frame-Options', 'SAMEORIGIN');
         headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        headers.set('Permissions-Policy', 'camera=(), microphone=(self), geolocation=()');
         const securedRes = new Response(res.body, { status: res.status, statusText: res.statusText, headers });
-        if ((request.method === 'GET' || request.method === 'HEAD') && res.status === 200) {
+        if (isPrimaryPortal && (request.method === 'GET' || request.method === 'HEAD') && res.status === 200) {
           const meta = await resolveDeepLinkMeta(url, env);
           if (meta) {
             return rewriteHtmlWithMeta(securedRes, meta);

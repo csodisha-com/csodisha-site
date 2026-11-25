@@ -74,10 +74,10 @@
     var emergText = document.getElementById('disclaimer-emergency-text');
     if (emergContainer) {
       if (emerg.enabled !== false) {
-        emergContainer.style.display = 'block';
+        emergContainer.hidden = false;
         if (emergText && emerg.text) emergText.textContent = emerg.text;
       } else {
-        emergContainer.style.display = 'none';
+        emergContainer.hidden = true;
       }
     }
 

@@ -428,11 +428,11 @@ check('8. v303 Candidate Hub sidebar nav container, items & mobile drawer bind t
     assert.ok(contrastRatio(t.accentInk, t.accent) >= 4.5, `${name} Candidate Hub active nav pill contrast < 4.5:1`);
   }
 
-  // Verify student-dashboard/index.html loads v303 assets
+  // Verify student-dashboard/index.html loads v303+ assets
   const hubHtml = read('student-dashboard/index.html');
-  assert.match(hubHtml, /student-dashboard-bp\.css\?v=20261125v303/);
-  assert.match(hubHtml, /candidate-hub-v244\.css\?v=20261125v303/);
-  assert.match(hubHtml, /student-dashboard\.js\?v=20261125v303/);
+  assert.match(hubHtml, /student-dashboard-bp\.css\?v=20261125v3(?:0[3-9]|[1-9]\d)/);
+  assert.match(hubHtml, /candidate-hub-v244\.css\?v=20261125v3(?:0[3-9]|[1-9]\d)/);
+  assert.match(hubHtml, /student-dashboard\.js\?v=20261125v3(?:0[3-9]|[1-9]\d)/);
 });
 
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);
