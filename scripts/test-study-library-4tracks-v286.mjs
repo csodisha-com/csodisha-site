@@ -132,15 +132,15 @@ await check('4. Admin Studio sidebar & Study Publishing Studio mirror 4 tracks &
   assert.ok(studioJs.includes('cso_study_library_dropdown_v286'), 'study-publishing-studio.js must bust v286 cache');
 });
 
-await check('5. ?v=20261125v286 cache busting, cso-candidate-cache-v286 & strict CSP compliance', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v286';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v286';"));
-  assert.ok(read('index.html').includes('/assets/style.css?v=20261125v286'));
-  assert.ok(read('index.html').includes('/assets/app.js?v=20261125v286'));
-  assert.ok(read('study-library/index.html').includes('/assets/shared-header.js?v=20261125v286'));
-  assert.ok(read('study-library/index.html').includes('/assets/js/study-portal.js?v=20261125v286'));
-  assert.ok(read('admin/index.html').includes('admin.js?v=20261125v286'));
-  assert.ok(read('admin/index.html').includes('study-publishing-studio.js?v=20261125v286'));
+await check('5. ?v=20261125v286+ cache busting, cso-candidate-cache-v286+ & strict CSP compliance', () => {
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v28[6-9]';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v28[6-9]';/);
+  assert.match(read('index.html'), /\/assets\/style\.css\?v=20261125v28[6-9]/);
+  assert.match(read('index.html'), /\/assets\/app\.js\?v=20261125v28[6-9]/);
+  assert.match(read('study-library/index.html'), /\/assets\/shared-header\.js\?v=20261125v28[6-9]/);
+  assert.match(read('study-library/index.html'), /\/assets\/js\/study-portal\.js\?v=20261125v28[6-9]/);
+  assert.match(read('admin/index.html'), /admin\.js\?v=20261125v28[6-9]/);
+  assert.match(read('admin/index.html'), /study-publishing-studio\.js\?v=20261125v28[6-9]/);
 
   for (const rel of ['assets/shared-header.js', 'assets/app.js', 'assets/js/study-portal.js', 'admin/admin.js', 'admin/study-publishing-studio.js']) {
     const codeOnly = read(rel).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');

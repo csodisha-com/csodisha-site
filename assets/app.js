@@ -710,6 +710,91 @@ function nav(){
   });
   ni.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&ni.classList.contains('cso-open')){ev.preventDefault();setOpen(false);trigA.focus();}});
  };
+ const COMMUNITY_DROPDOWN_CACHE_KEY='cso_community_dropdown_v287';
+ const COMMUNITY_CANONICAL_SLUGS=new Set(['exam-career-qa','schemes-citizen-help','study-groups-notes','success-stories-mentorship']);
+ const COMMUNITY_DEFAULT_CHANNELS=[
+  {id:'comm_l1_exam_career_qa',slug:'exam-career-qa',icon:'❓',title_en:'Exam & Career Q&A',title_or:'ପରୀକ୍ଷା ଓ କ୍ୟାରିୟର ପ୍ରଶ୍ନୋତ୍ତର'},
+  {id:'comm_l1_schemes_citizen_help',slug:'schemes-citizen-help',icon:'🏛️',title_en:'Odisha Schemes & Citizen Help',title_or:'ଓଡ଼ିଶା ଯୋଜନା ଓ ନାଗରିକ ସହାୟତା'},
+  {id:'comm_l1_study_groups_notes',slug:'study-groups-notes',icon:'📚',title_en:'Study Groups & Peer Notes',title_or:'ଅଧ୍ୟୟନ ଦଳ ଓ ସହପାଠୀ ନୋଟ୍ସ'},
+  {id:'comm_l1_success_stories',slug:'success-stories-mentorship',icon:'🏆',title_en:'Success Stories & Mentorship',title_or:'ସଫଳତା କାହାଣୀ ଓ ମାର୍ଗଦର୍ଶନ'}
+ ];
+ let commChannelsData=null,commChannelsFetched=false;
+ const getCommunityChannels=()=>{
+  if(Array.isArray(commChannelsData)&&commChannelsData.length)return commChannelsData;
+  try{const raw=sessionStorage.getItem(COMMUNITY_DROPDOWN_CACHE_KEY);if(raw){const p=JSON.parse(raw);if(p&&Array.isArray(p.channels)&&p.channels.length&&(Date.now()-Number(p.ts||0)<300000)){commChannelsData=p.channels;return commChannelsData;}}}catch(_e){}
+  return COMMUNITY_DEFAULT_CHANNELS;
+ };
+ const renderCommunityS1=(s1List)=>{
+  if(!s1List)return;
+  s1List.replaceChildren();
+  const isOr=S.lang==='or';
+  const list=getCommunityChannels().map(c=>({slug:c.slug,icon:c.icon||'💬',title_en:c.title_en||c.slug,title_or:c.title_or||c.title_en||c.slug,href:'/community/?channel='+encodeURIComponent(c.slug||'')}));
+  list.push({slug:'all',icon:'🌐',title_en:'All Community Discussions',title_or:'ସମସ୍ତ ସମୁଦାୟ ଆଲୋଚନା',href:'/community/'});
+  list.forEach(item=>{
+   const li=mk('li','cso-js1-item');li.dataset.channel=item.slug;
+   const row=mk('div','cso-js1-row');
+   const a=mk('a','cso-js1-link');a.href=item.href;
+   const lf=mk('span','cso-js1-left');
+   const ic=mk('span','cso-js1-icon',item.icon);ic.setAttribute('aria-hidden','true');
+   lf.append(ic,mk('span','cso-js1-title',isOr?item.title_or:item.title_en));
+   a.appendChild(lf);
+   row.appendChild(a);
+   li.appendChild(row);
+   a.addEventListener('keydown',ev=>{
+    if(ev.key==='ArrowDown'){ev.preventDefault();const n=li.nextElementSibling;if(n){const na=n.querySelector('.cso-js1-link');if(na)na.focus();}}
+    else if(ev.key==='ArrowUp'){ev.preventDefault();const p=li.previousElementSibling;if(p){const pa=p.querySelector('.cso-js1-link');if(pa)pa.focus();}}
+   });
+   s1List.appendChild(li);
+  });
+ };
+ const hydrateCommunityDropdown=(cEl)=>{
+  if(cEl)renderCommunityS1(cEl.querySelector('.cso-js1-list'));
+  if(commChannelsFetched||typeof fetch!=='function')return;
+  commChannelsFetched=true;
+  fetch('/api/public/community/bootstrap',{credentials:'same-origin'})
+   .then(r=>r.ok?r.json():null)
+   .then(d=>{
+    if(d&&Array.isArray(d.nav_channels)&&d.nav_channels.length){
+     const canon=d.nav_channels.filter(c=>c&&COMMUNITY_CANONICAL_SLUGS.has(String(c.slug||'').toLowerCase()));
+     const src=canon.length?canon:COMMUNITY_DEFAULT_CHANNELS;
+     commChannelsData=src.map(c=>({id:c.id,slug:c.slug,icon:c.icon||'💬',title_en:c.title_en,title_or:c.title_or||c.title_en}));
+     try{sessionStorage.setItem(COMMUNITY_DROPDOWN_CACHE_KEY,JSON.stringify({ts:Date.now(),channels:commChannelsData}));}catch(_e){}
+     document.querySelectorAll('#cso-community-stage1 .cso-js1-list').forEach(el=>renderCommunityS1(el));
+    }
+   }).catch(()=>{});
+ };
+ window.__csoHydrateCommunityDropdown=hydrateCommunityDropdown;
+ const buildCommunityDropdown=()=>{
+  const cascade=mk('div','cso-community-cascade');cascade.id='cso-community-cascade';
+  const stage1=mk('div','cso-community-stage1');stage1.id='cso-community-stage1';
+  stage1.setAttribute('role','region');stage1.setAttribute('aria-label','Community Channels');
+  const list=mk('ul','cso-js1-list');stage1.appendChild(list);
+  cascade.appendChild(stage1);
+  renderCommunityS1(list);
+  return cascade;
+ };
+ const wireCommunityDropdown=(ni,trigA,chevBtn,cascade)=>{
+  let closeT=null;
+  const setOpen=(open)=>{
+   if(open){closeNavDropdowns(ni);hydrateCommunityDropdown(cascade);}
+   ni.classList.toggle('cso-open',open);
+   trigA.setAttribute('aria-expanded',String(open));
+   chevBtn.setAttribute('aria-expanded',String(open));
+  };
+  ni.addEventListener('mouseenter',()=>{if(window.innerWidth<1100)return;clearTimeout(closeT);setOpen(true);});
+  ni.addEventListener('mouseleave',()=>{if(window.innerWidth<1100)return;clearTimeout(closeT);closeT=setTimeout(()=>setOpen(false),150);});
+  trigA.addEventListener('keydown',ev=>{
+   if(ev.key==='ArrowDown'){ev.preventDefault();setOpen(true);const f=cascade.querySelector('.cso-js1-link');if(f)f.focus();}
+   else if(ev.key==='Escape'){setOpen(false);}
+  });
+  chevBtn.addEventListener('keydown',ev=>{
+   if(ev.key==='Enter'||ev.key===' '||ev.key==='ArrowDown'){
+    ev.preventDefault();const next=ev.key==='ArrowDown'?true:!ni.classList.contains('cso-open');setOpen(next);
+    if(next){const f=cascade.querySelector('.cso-js1-link');if(f)f.focus();}
+   }else if(ev.key==='Escape'){setOpen(false);chevBtn.focus();}
+  });
+  ni.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&ni.classList.contains('cso-open')){ev.preventDefault();setOpen(false);trigA.focus();}});
+ };
  const renderList=(list)=>{
   while(itemsWrap.children.length>1)itemsWrap.lastChild.remove();
   normalizeHeaderList(list).forEach(entry=>{
@@ -724,13 +809,15 @@ function nav(){
    const isCareers=s==='careers';
    const isSchemes=s==='schemes'||s==='schemes-benefits';
    const isStudy=s==='study-library'||s==='study';
-   const ni=mk('div','ni'+(isJobs?' cso-ni-jobs cso-nav-jobs-wrap':'')+(isCareers?' cso-ni-careers cso-nav-careers-wrap':'')+(isSchemes?' cso-ni-schemes cso-nav-schemes-wrap':'')+(isStudy?' cso-ni-study cso-nav-study-wrap':''));ni.dataset.pillar=s;
+   const isCommunity=s==='community';
+   const ni=mk('div','ni'+(isJobs?' cso-ni-jobs cso-nav-jobs-wrap':'')+(isCareers?' cso-ni-careers cso-nav-careers-wrap':'')+(isSchemes?' cso-ni-schemes cso-nav-schemes-wrap':'')+(isStudy?' cso-ni-study cso-nav-study-wrap':'')+(isCommunity?' cso-ni-community cso-nav-community-wrap':''));ni.dataset.pillar=s;
    const par=mk('div','cso-nav-parent');
    const a=mk('a');a.href=href;a.dataset.m=s;
    if(isJobs){a.setAttribute('aria-haspopup','true');a.setAttribute('aria-expanded','false');a.setAttribute('aria-controls','cso-jobs-stage1');}
    else if(isCareers){a.setAttribute('aria-haspopup','true');a.setAttribute('aria-expanded','false');a.setAttribute('aria-controls','cso-careers-stage1');}
    else if(isSchemes){a.setAttribute('aria-haspopup','true');a.setAttribute('aria-expanded','false');a.setAttribute('aria-controls','cso-schemes-stage1');}
    else if(isStudy){a.setAttribute('aria-haspopup','true');a.setAttribute('aria-expanded','false');a.setAttribute('aria-controls','cso-study-stage1');}
+   else if(isCommunity){a.setAttribute('aria-haspopup','true');a.setAttribute('aria-expanded','false');a.setAttribute('aria-controls','cso-community-stage1');}
    if(icon){const ic=mk('span','',icon);ic.setAttribute('aria-hidden','true');a.append(ic,' ');}
    a.append(document.createTextNode(translateText(t)));
    par.appendChild(a);
@@ -774,6 +861,16 @@ function nav(){
     const cascade=buildStudyDropdown();
     ni.appendChild(cascade);
     wireStudyDropdown(ni,a,chevBtn,cascade);
+   }else if(isCommunity){
+    const chevBtn=mk('button','cso-nav-arrow cso-community-flyout-toggle');chevBtn.type='button';
+    chevBtn.setAttribute('aria-label','Toggle Community channels menu');
+    chevBtn.setAttribute('aria-haspopup','true');chevBtn.setAttribute('aria-expanded','false');chevBtn.setAttribute('aria-controls','cso-community-stage1');
+    const cI=mk('span','cso-jobs-chev','▾');cI.setAttribute('aria-hidden','true');chevBtn.appendChild(cI);
+    par.appendChild(chevBtn);
+    ni.appendChild(par);
+    const cascade=buildCommunityDropdown();
+    ni.appendChild(cascade);
+    wireCommunityDropdown(ni,a,chevBtn,cascade);
    }else{
     ni.appendChild(par);
    }
@@ -853,6 +950,9 @@ document.addEventListener('click',e=>{
   }else if(parent.classList.contains('cso-ni-study')){
    const cascade=parent.querySelector('.cso-study-cascade');
    if(open&&typeof window.__csoHydrateStudyDropdown==='function')window.__csoHydrateStudyDropdown(cascade);
+  }else if(parent.classList.contains('cso-ni-community')){
+   const cascade=parent.querySelector('.cso-community-cascade');
+   if(open&&typeof window.__csoHydrateCommunityDropdown==='function')window.__csoHydrateCommunityDropdown(cascade);
   }
   return;
  }

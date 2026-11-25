@@ -23,6 +23,10 @@
     activeStudySubTab: 'articles',
     activeStudyTrackId: '',
     studyTrackNodes: [],
+    activeCommunitySubTab: 'feed',
+    activeCommunityChannelId: '',
+    communityChannelNodes: [],
+    communityModerationCount: 0,
     expandedFolders: new Set(['folder-jobs-careers']),
     searchQuery: '',
     startTime: Date.now(),
@@ -59,6 +63,13 @@
     { id: 'stl_l1_odisha_state', slug: 'odisha-state-exams', icon: '🏛️', title_en: 'Odisha State Exams', published_modules: 0, total_modules: 0 },
     { id: 'stl_l1_teaching_educator', slug: 'teaching-educator-exams', icon: '🎓', title_en: 'Teaching & Educator Exams', published_modules: 0, total_modules: 0 },
     { id: 'stl_l1_school_board', slug: 'school-board-notes', icon: '📘', title_en: 'School & Board Exams', published_modules: 0, total_modules: 0 }
+  ];
+
+  var DEFAULT_COMMUNITY_CHANNELS = [
+    { id: 'comm_l1_exam_career_qa', slug: 'exam-career-qa', icon: '❓', title_en: 'Exam & Career Q&A', published_posts: 0, total_posts: 0 },
+    { id: 'comm_l1_schemes_citizen_help', slug: 'schemes-citizen-help', icon: '🏛️', title_en: 'Odisha Schemes & Citizen Help', published_posts: 0, total_posts: 0 },
+    { id: 'comm_l1_study_groups_notes', slug: 'study-groups-notes', icon: '📚', title_en: 'Study Groups & Peer Notes', published_posts: 0, total_posts: 0 },
+    { id: 'comm_l1_success_stories', slug: 'success-stories-mentorship', icon: '🏆', title_en: 'Success Stories & Mentorship', published_posts: 0, total_posts: 0 }
   ];
 
   var DEFAULT_CAREERS_TRACKS = [
@@ -390,6 +401,18 @@
             if (window.innerWidth <= 900) closeMobileDrawer();
             return;
           }
+          if (folder.id === 'folder-community') {
+            if (CSOState.expandedFolders.has(folder.id)) CSOState.expandedFolders.delete(folder.id);
+            else CSOState.expandedFolders.add(folder.id);
+            persistOpenGroups();
+            if (!isCurrentFolder) {
+              openCommunityPublishingStudio('feed', '');
+            } else {
+              renderNavigationTree();
+            }
+            if (window.innerWidth <= 900) closeMobileDrawer();
+            return;
+          }
           if (!folderModules.length) {
             selectModule(folder.id, folder.id);
             if (window.innerWidth <= 900) closeMobileDrawer();
@@ -535,6 +558,51 @@
               if (window.innerWidth <= 900) closeMobileDrawer();
             });
             modList.appendChild(tBtn);
+          });
+        } else if (folder.id === 'folder-community') {
+          modList.id = 'communitySidebarSubnav';
+          [
+            { tab: 'feed', num: '01', title: 'Community Feed & Spotlights', tag: 'D1' },
+            { tab: 'safety', num: '02', title: 'Moderation Queue', tag: String(CSOState.communityModerationCount || 0) },
+            { tab: 'taxonomy', num: '03', title: '4-Channel Hierarchy', tag: 'L1-L3' },
+            { tab: 'rewards', num: '04', title: 'Pro & Permanent Rewards', tag: 'XP' },
+            { tab: 'new', num: '05', title: '+ Publish Spotlight / AMA', tag: 'NEW' }
+          ].forEach(function (cSub) {
+            var isCActive = isCurrentFolder && CSOState.activeCommunitySubTab === cSub.tab && !(cSub.tab === 'feed' && CSOState.activeCommunityChannelId);
+            var cBtn = el('button', 'cso-nav-mod-btn' + (isCActive ? ' is-active' : ''));
+            cBtn.type = 'button';
+            cBtn.setAttribute('data-community-tab', cSub.tab);
+            cBtn.appendChild(el('span', 'cso-nav-mod-num', cSub.num));
+            cBtn.appendChild(el('span', 'cso-nav-mod-title', cSub.title));
+            cBtn.appendChild(el('span', 'cso-nav-mod-tag is-live', cSub.tag));
+            cBtn.addEventListener('click', function () {
+              openCommunityPublishingStudio(cSub.tab, '');
+              if (window.innerWidth <= 900) closeMobileDrawer();
+            });
+            modList.appendChild(cBtn);
+          });
+
+          var commSep = el('div', 'cso-nav-jobs-sector-sep', 'Public Community ▾ Channels');
+          modList.appendChild(commSep);
+
+          var l1Channels = (CSOState.communityChannelNodes && CSOState.communityChannelNodes.length)
+            ? CSOState.communityChannelNodes
+            : DEFAULT_COMMUNITY_CHANNELS;
+          l1Channels.forEach(function (ch) {
+            var isChActive = isCurrentFolder && CSOState.activeCommunitySubTab === 'feed' && CSOState.activeCommunityChannelId === ch.id;
+            var chBtn = el('button', 'cso-nav-mod-btn cso-nav-mod-btn--sector' + (isChActive ? ' is-active' : ''));
+            chBtn.type = 'button';
+            chBtn.setAttribute('data-community-channel', ch.slug || ch.id);
+            chBtn.title = (ch.title_en || ch.slug) + ' — synced live to Public Community ▾ dropdown';
+            chBtn.appendChild(el('span', 'cso-nav-mod-num', ch.icon || '💬'));
+            chBtn.appendChild(el('span', 'cso-nav-mod-title', ch.title_en || ch.slug));
+            var chCnt = Number(ch.published_posts !== undefined ? ch.published_posts : (ch.posts_count !== undefined ? ch.posts_count : (ch.total_posts || 0)));
+            chBtn.appendChild(el('span', 'cso-nav-mod-tag cso-tabular' + (ch.is_published === 0 ? '' : ' is-live'), String(chCnt)));
+            chBtn.addEventListener('click', function () {
+              openCommunityPublishingStudio('feed', ch.id);
+              if (window.innerWidth <= 900) closeMobileDrawer();
+            });
+            modList.appendChild(chBtn);
           });
         }
         filteredModules.forEach(function (mod, idx) {
@@ -870,6 +938,15 @@
         }
       })
       .catch(function () {});
+    fetch('/api/admin/community/taxonomy', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && Array.isArray(d.nodes)) {
+          CSOState.communityChannelNodes = d.nodes.filter(function (n) { return Number(n.level) === 1 && Number(n.is_published) === 1; });
+          renderNavigationTree();
+        }
+      })
+      .catch(function () {});
     fetch('/api/admin/careers', { credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
@@ -1004,22 +1081,27 @@
     }
   }
 
-  function openCommunityPublishingStudio(initialTab) {
+  function openCommunityPublishingStudio(initialTab, initialChannelId) {
+    var tabKey = initialTab || 'feed';
     CSOState.activeFolderId = 'folder-community';
     CSOState.activeModuleId = 'folder-community';
+    CSOState.activeCommunitySubTab = tabKey;
+    CSOState.activeCommunityChannelId = (tabKey === 'feed' && initialChannelId) ? String(initialChannelId) : '';
+    CSOState.expandedFolders.add('folder-community');
+    persistOpenGroups();
     try { localStorage.setItem('cso_active_module_id', 'folder-community'); } catch (_e) {}
     if (window.location.hash !== '#folder-community' && window.history && window.history.replaceState) {
       window.history.replaceState(null, '', '#folder-community');
     }
     if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Community';
-    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Community, Interest Circles & Pro Rewards';
-    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Community & Pro Rewards Studio';
-    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live Instant Sync';
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Community Moderation & Publishing Studio';
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Community Moderation & Publishing Studio';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '4-Channel Live Sync';
     renderNavigationTree();
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);
     if (window.CSOCommunityPublishingStudio) {
-      window.CSOCommunityPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, initialTab || 'feed');
+      window.CSOCommunityPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, tabKey, CSOState.activeCommunityChannelId);
     }
   }
 
@@ -1518,6 +1600,23 @@
       if (CSOState.activeStudyTrackId !== next) { CSOState.activeStudyTrackId = next; renderNavigationTree(); }
     },
     openStudyTrack: function (l1Id) { openStudyPublishingStudio('articles', l1Id || ''); },
+    setCommunitySubTab: function (tab) {
+      if (tab && CSOState.activeCommunitySubTab !== tab) { CSOState.activeCommunitySubTab = tab; renderNavigationTree(); }
+    },
+    setCommunityChannelNodes: function (nodes) {
+      if (!Array.isArray(nodes)) return;
+      CSOState.communityChannelNodes = nodes.filter(function (n) { return Number(n.level) === 1 && Number(n.is_published) === 1; });
+      renderNavigationTree();
+    },
+    setCommunityActiveChannel: function (l1Id) {
+      var next = l1Id || '';
+      if (CSOState.activeCommunityChannelId !== next) { CSOState.activeCommunityChannelId = next; renderNavigationTree(); }
+    },
+    setCommunityModerationCount: function (n) {
+      var next = Number(n || 0);
+      if (CSOState.communityModerationCount !== next) { CSOState.communityModerationCount = next; renderNavigationTree(); }
+    },
+    openCommunityChannel: function (l1Id) { openCommunityPublishingStudio('feed', l1Id || ''); },
     openCandidateHubTab: function (tab) { openCandidateHubStudio(tab); },
     openJobsPublishingTab: function (tab) { openJobsPublishingStudio(tab); },
     openCareersPublishingTab: function (tab) { openCareersPublishingStudio(tab); },

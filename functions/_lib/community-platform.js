@@ -276,7 +276,9 @@ async function invalidateCommunityCaches(request, slug = '') {
     '/student-dashboard/',
     '/student-dashboard/index.html',
     '/api/public/community/tree',
+    '/api/public/community/bootstrap',
     '/api/public/community/posts',
+    '/api/public/community/list',
     '/api/public/community/post',
     '/api/community/posts',
     '/api/community/qna',
@@ -1146,7 +1148,7 @@ const BOOTSTRAP_EDGE_CACHE = 'public, max-age=15, s-maxage=300, stale-while-reva
 
 export async function handlePublicCommunityBootstrapApi(request, env) {
   if (!env || !env.DB) {
-    return json({ ok: false, tree: [], nodes: [], joined_node_ids: [], posts: [], items: [], total: 0, leaderboard: [], reward_rules: null, my_profile: null, kpis: {} }, 200, NO_STORE_HEADERS);
+    return json({ ok: false, tree: [], nodes: [], nav_channels: [], joined_node_ids: [], posts: [], items: [], total: 0, leaderboard: [], reward_rules: null, my_profile: null, kpis: {} }, 200, NO_STORE_HEADERS);
   }
   await ensureCommunityPlatformSchema(env.DB);
   const actor = await getActor(request, env).catch(() => null);
@@ -1240,11 +1242,29 @@ export async function handlePublicCommunityBootstrapApi(request, env) {
   allPosts.forEach(p => { if (p.author_membership_tier === 'pro_member' || p.author_membership_tier === 'permanent_member') proSet.add(p.author_user_id || p.author_display_name); });
 
   const posts = allPosts.slice(0, limit);
+  const navChannels = nodes
+    .filter(n => Number(n.level) === 1)
+    .sort((a, b) => (a.sort_order - b.sort_order) || a.title_en.localeCompare(b.title_en))
+    .map(n => ({
+      id: n.id,
+      slug: n.slug,
+      title_en: n.title_en,
+      title_or: n.title_or,
+      subtitle_en: n.subtitle_en,
+      subtitle_or: n.subtitle_or,
+      icon: n.icon,
+      accent_variant: n.accent_variant,
+      sort_order: n.sort_order,
+      threads_count: n.posts_count || 0,
+      posts_count: n.posts_count || 0
+    }));
+
   return json({
     ok: true,
     total_communities: nodes.length,
     joined_node_ids: [...joinedSet],
     nodes,
+    nav_channels: navChannels,
     tree: buildTaxonomyTree(nodes),
     total: allPosts.length,
     posts,
@@ -1299,13 +1319,14 @@ export async function handlePublicCommunityFeedApi(request, env) {
   const uid = actor ? actor.userId : '';
   const url = new URL(request.url);
 
-  const l1 = str(url.searchParams.get('l1'), 80);
+  const l1 = str(url.searchParams.get('l1') || url.searchParams.get('channel'), 80);
   const l2 = str(url.searchParams.get('l2'), 80);
   const l3 = str(url.searchParams.get('l3'), 80);
   const type = str(url.searchParams.get('type'), 40).toLowerCase();
+  const scope = str(url.searchParams.get('scope') || 'all', 32).toLowerCase();
   const district = str(url.searchParams.get('district'), 80).toLowerCase();
   const joinedOnly = url.searchParams.get('joined_only') === '1';
-  const unansweredOnly = url.searchParams.get('unanswered_only') === '1';
+  const unansweredOnly = url.searchParams.get('unanswered_only') === '1' || str(url.searchParams.get('sort'), 24).toLowerCase() === 'unanswered';
   const featuredCollections = url.searchParams.get('featured_collections') === '1';
   const proContributors = url.searchParams.get('pro_contributors') === '1';
   const sort = str(url.searchParams.get('sort') || 'latest', 24).toLowerCase();
@@ -1340,7 +1361,16 @@ export async function handlePublicCommunityFeedApi(request, env) {
     if (type && p.post_type !== type) return false;
     if (district && p.district_tag.toLowerCase() !== district) return false;
     if (joinedOnly && joinedSet.size > 0 && !joinedSet.has(p.category_l1_id) && !joinedSet.has(p.category_l2_id) && !joinedSet.has(p.category_l3_id)) return false;
-    if (unansweredOnly && (p.post_type !== 'question' || p.is_solved || p.replies_count > 0)) return false;
+    if (unansweredOnly && (p.is_solved || p.replies_count > 0)) return false;
+    if (scope === 'verified' && !p.is_solved) return false;
+    if (scope === 'odisha') {
+      const hay = `${p.district_tag} ${p.exam_tag} ${p.title_en} ${p.body_en} ${p.taxonomy && p.taxonomy.l1 ? p.taxonomy.l1.slug : ''}`.toLowerCase();
+      if (!p.district_tag && !/(odisha|opsc|ossc|osssc|otet|osstet|oavs|subhadra|kalia|cm-kisan|schemes-citizen-help)/.test(hay)) return false;
+    }
+    if (scope === 'central') {
+      const hay = `${p.exam_tag} ${p.title_en} ${p.body_en}`.toLowerCase();
+      if (!/(upsc|ssc|ibps|sbi|rbi|rrb|ctet|kvs|nvs|emrs|central|pm-kisan|pmay|national)/.test(hay)) return false;
+    }
     if (featuredCollections && !p.is_featured_collection) return false;
     if (proContributors && p.author_membership_tier !== 'pro_member' && p.author_membership_tier !== 'permanent_member') return false;
     if (search) {
@@ -1352,7 +1382,7 @@ export async function handlePublicCommunityFeedApi(request, env) {
 
   filtered.sort((a, b) => {
     if (a.is_pinned !== b.is_pinned) return b.is_pinned - a.is_pinned;
-    if (sort === 'top_voted') return b.upvotes_count - a.upvotes_count;
+    if (sort === 'top_voted' || sort === 'helpful') return b.upvotes_count - a.upvotes_count;
     if (sort === 'most_discussed') return b.replies_count - a.replies_count;
     if (sort === 'bounty') return b.bounty_xp - a.bounty_xp;
     return String(b.created_at).localeCompare(String(a.created_at));

@@ -31,6 +31,11 @@
     ['pro_only', 'Pro & Permanent Members Only'],
     ['admin_only', 'Admin Spotlight Only']
   ];
+  var PUBLIC_COMMUNITY_DROPDOWN_CACHE_KEY = 'cso_community_dropdown_v287';
+
+  function bustPublicCommunityDropdownCache() {
+    try { window.sessionStorage.removeItem(PUBLIC_COMMUNITY_DROPDOWN_CACHE_KEY); } catch (_e) {}
+  }
 
   var S = {
     root: null,
@@ -87,6 +92,9 @@
     var res = await fetch(url, o);
     var data = await res.json().catch(function () { return {}; });
     if (!res.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
+    if (method !== 'GET' && method !== 'HEAD') {
+      bustPublicCommunityDropdownCache();
+    }
     return data;
   }
 
@@ -134,6 +142,13 @@
     if (window.CSOStudio && window.CSOStudio.setCommunityCount) {
       window.CSOStudio.setCommunityCount(S.kpis.total_posts || S.posts.length);
     }
+    if (window.CSOStudio && window.CSOStudio.setCommunityChannelNodes) {
+      window.CSOStudio.setCommunityChannelNodes(S.taxonomyNodes);
+    }
+    if (window.CSOStudio && window.CSOStudio.setCommunityModerationCount) {
+      var modTotal = Number(S.kpis.pending_moderation || 0) + (S.moderation.flagged_messages || []).length;
+      window.CSOStudio.setCommunityModerationCount(modTotal);
+    }
   }
 
   async function refreshAndRender() {
@@ -166,6 +181,12 @@
   }
 
   function renderTabs(shell) {
+    var syncBanner = el('div', 'cmps-live-sync-banner');
+    syncBanner.setAttribute('role', 'status');
+    syncBanner.appendChild(el('span', 'cmps-live-sync-dot'));
+    syncBanner.appendChild(el('span', '', 'Live Synced to Public Community ▾ Menu — Every channel, pin, verified answer, or moderation update purges edge caches immediately.'));
+    shell.appendChild(syncBanner);
+
     var tabs = el('div', 'cmps-tabs');
     tabs.setAttribute('role', 'tablist');
     var defs = [
@@ -213,8 +234,8 @@
 
     var fbar = el('div', 'cmps-filter-bar');
     var selL1 = el('select', 'cmps-select');
-    selL1.appendChild(new Option('All Circles (L1)', ''));
-    nodesByLevel(1).forEach(function (n) { selL1.appendChild(new Option(n.title_en, n.id)); });
+    selL1.appendChild(new Option('All Channels (L1)', ''));
+    nodesByLevel(1).filter(function (n) { return Number(n.is_published) !== 0; }).forEach(function (n) { selL1.appendChild(new Option(n.title_en, n.id)); });
     selL1.value = S.filters.l1;
     selL1.addEventListener('change', function () { S.filters.l1 = selL1.value; S.filters.l2 = ''; S.filters.l3 = ''; refreshAndRender(); });
 
@@ -900,9 +921,17 @@
   }
 
   window.CSOCommunityPublishingStudio = {
-    render: function (workspaceRoot, headerActions, initialTab) {
+    render: function (workspaceRoot, headerActions, initialTab, initialChannelId) {
       S.root = workspaceRoot;
       S.headerActions = headerActions;
+      if (typeof initialChannelId === 'string') {
+        S.filters.l1 = initialChannelId;
+        S.filters.l2 = '';
+        S.filters.l3 = '';
+        if (window.CSOStudio && window.CSOStudio.setCommunityActiveChannel) {
+          window.CSOStudio.setCommunityActiveChannel(initialChannelId);
+        }
+      }
       if (initialTab === 'new') {
         S.activeTab = 'feed';
         loadAllData().then(function () { openComposer(null); }).catch(function () { openComposer(null); });

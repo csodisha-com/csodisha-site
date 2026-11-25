@@ -418,7 +418,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/public/careers/bootstrap', '/api/public/careers/list', '/careers/', '/jobs/', '/jobs-careers/',
     '/api/public/schemes', '/api/public/schemes/list', '/api/public/schemes/tree', '/api/public/schemes/bootstrap', '/api/public/schemes/article', '/schemes/', '/schemes-benefits/',
     '/api/public/study', '/api/public/study/tree', '/api/public/study/bootstrap', '/api/public/study/article', '/api/public/study-library/bootstrap', '/api/public/study-library/list', '/study-library/', '/study/',
-    '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/bootstrap', '/api/public/community/post', '/community/', '/student-dashboard/',
+    '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/list', '/api/public/community/bootstrap', '/api/public/community/post', '/community/', '/student-dashboard/',
     '/api/public/about/tree', '/api/public/about/pages', '/api/public/about/bootstrap', '/api/public/about/article', '/api/public/about/sources', '/about/',
     '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
@@ -1035,7 +1035,7 @@ export default {
     if (pathname === '/api/public/community/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicCommunityTreeApi(request, env));
     }
-    if (pathname === '/api/public/community/posts' && (request.method === 'GET' || request.method === 'HEAD')) {
+    if ((pathname === '/api/public/community/posts' || pathname === '/api/public/community/list') && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicCommunityFeedApi(request, env));
     }
     if (pathname === '/api/public/community/post' && (request.method === 'GET' || request.method === 'HEAD')) {

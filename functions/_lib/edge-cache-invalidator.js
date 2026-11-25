@@ -51,6 +51,7 @@ export const CONTENT_PUBLIC_PATHS = [
   '/api/public/study-library/list',
   '/api/public/community/tree',
   '/api/public/community/posts',
+  '/api/public/community/list',
   '/api/public/community/bootstrap',
   '/api/public/community/post',
   '/api/public/about/tree',
