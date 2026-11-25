@@ -554,7 +554,7 @@
       const isAdmin = activeUser.role === 'admin' || activeUser.role === 'superadmin';
       const dashHref = isAdmin ? '/admin/' : '/student-dashboard/';
       const deskRow = el('div', 'cso-desktop-auth-buttons cso-auth-row');
-      const dashLink = el('a', 'btn-dashboard');
+      const dashLink = el('a', isAdmin ? 'btn-dashboard cso-btn-admin-studio' : 'btn-dashboard cso-btn-candidate-hub');
       dashLink.href = dashHref;
       const iconSpan = el('span', '', '👤');
       iconSpan.setAttribute('aria-hidden', 'true');
@@ -576,13 +576,13 @@
         window.location.reload();
       };
 
-      const logoutBtn = el('button', 'btn-header-logout', 'Logout');
+      const logoutBtn = el('button', 'btn-header-logout cso-logout-button', 'Logout');
       logoutBtn.type = 'button';
       logoutBtn.id = 'cso-header-logout-btn';
       logoutBtn.addEventListener('click', doLogout);
 
       if (isAdmin) {
-        const hubLink = el('a', 'btn-dashboard', 'Candidate Hub');
+        const hubLink = el('a', 'btn-dashboard cso-btn-candidate-hub', 'Candidate Hub');
         hubLink.href = '/student-dashboard/';
         deskRow.append(dashLink, hubLink, logoutBtn);
       } else {
@@ -609,9 +609,9 @@
       menu.id = 'cso-auth-menu';
       menu.hidden = true;
 
-      const mDash = el('a', 'cso-auth-item cso-auth-item--dash', isAdmin ? '🛡️ Admin Studio' : '👤 My Dashboard');
+      const mDash = el('a', isAdmin ? 'cso-auth-item cso-auth-item--dash cso-auth-item--admin' : 'cso-auth-item cso-auth-item--dash cso-auth-item--hub', isAdmin ? '🛡️ Admin Studio' : '👤 My Dashboard');
       mDash.href = dashHref;
-      const mProfile = el('a', 'cso-auth-item', '★ Profile / Saved');
+      const mProfile = el('a', 'cso-auth-item cso-auth-item--saved', '★ Profile / Saved');
       mProfile.href = '/student-dashboard/#saved';
       const mLogout = el('a', 'cso-auth-item cso-auth-item--logout', 'Logout');
       mLogout.href = '#';
@@ -620,7 +620,13 @@
         e.preventDefault();
         doLogout();
       });
-      menu.append(mDash, mProfile, mLogout);
+      if (isAdmin) {
+        const mHub = el('a', 'cso-auth-item cso-auth-item--hub', '👤 Candidate Hub');
+        mHub.href = '/student-dashboard/';
+        menu.append(mDash, mHub, mProfile, mLogout);
+      } else {
+        menu.append(mDash, mProfile, mLogout);
+      }
       mobWrap.append(trigger, menu);
 
       authEl.append(deskRow, mobWrap);
@@ -656,7 +662,7 @@
     const menu = el('div', 'cso-auth-dropdown-menu');
     menu.id = 'cso-auth-menu';
     menu.hidden = true;
-    menu.append(...createAuthPair('cso-auth-item', 'cso-auth-item'));
+    menu.append(...createAuthPair('cso-auth-item cso-auth-item--login', 'cso-auth-item cso-auth-item--signup'));
     mobWrap.append(trigger, menu);
 
     authEl.append(desk, mobWrap);

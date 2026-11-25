@@ -563,13 +563,13 @@ body[data-cso-theme="odisha"] {
 
 /* v298: Dark Night Mode-Only Top Utility Bar Label & <kbd> Legibility */
 :root[data-theme="dark"] #header-top .pill,
-:root[data-theme="dark"] #header-top button,
+:root[data-theme="dark"] #header-top button:not(.signup-btn):not(.cso-signup-pill):not(.cso-btn-candidate-hub):not(.cso-btn-admin-studio):not(.btn-header-logout):not(.cso-logout-button):not(.login-btn):not(.cso-login-button):not(.cso-auth-trigger),
 :root[data-theme="dark"] #header-top .pill span,
 :root[data-cso-theme="dark"] #header-top .pill,
-:root[data-cso-theme="dark"] #header-top button,
+:root[data-cso-theme="dark"] #header-top button:not(.signup-btn):not(.cso-signup-pill):not(.cso-btn-candidate-hub):not(.cso-btn-admin-studio):not(.btn-header-logout):not(.cso-logout-button):not(.login-btn):not(.cso-login-button):not(.cso-auth-trigger),
 :root[data-cso-theme="dark"] #header-top .pill span,
 :root[data-cso-resolved-mode="dark"] #header-top .pill,
-:root[data-cso-resolved-mode="dark"] #header-top button,
+:root[data-cso-resolved-mode="dark"] #header-top button:not(.signup-btn):not(.cso-signup-pill):not(.cso-btn-candidate-hub):not(.cso-btn-admin-studio):not(.btn-header-logout):not(.cso-logout-button):not(.login-btn):not(.cso-login-button):not(.cso-auth-trigger),
 :root[data-cso-resolved-mode="dark"] #header-top .pill span {
   color: #f1f5f9 !important;
   opacity: 1 !important;
@@ -585,10 +585,10 @@ body[data-cso-theme="odisha"] {
 
 @media (prefers-color-scheme: dark) {
   :root[data-theme="system"] #header-top .pill,
-  :root[data-theme="system"] #header-top button,
+  :root[data-theme="system"] #header-top button:not(.signup-btn):not(.cso-signup-pill):not(.cso-btn-candidate-hub):not(.cso-btn-admin-studio):not(.btn-header-logout):not(.cso-logout-button):not(.login-btn):not(.cso-login-button):not(.cso-auth-trigger),
   :root[data-theme="system"] #header-top .pill span,
   :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top .pill,
-  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top button,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top button:not(.signup-btn):not(.cso-signup-pill):not(.cso-btn-candidate-hub):not(.cso-btn-admin-studio):not(.btn-header-logout):not(.cso-logout-button):not(.login-btn):not(.cso-login-button):not(.cso-auth-trigger),
   :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top .pill span {
     color: #f1f5f9 !important;
     opacity: 1 !important;
@@ -600,4 +600,89 @@ body[data-cso-theme="odisha"] {
     color: #cbd5e1 !important;
     opacity: 1 !important;
   }
+}
+
+/* v299: Institutional Top-Bar Auth & Admin Button Hierarchy */
+#header-top .cso-signup-pill,
+#header-top .signup-btn,
+#header-top .cso-btn-candidate-hub,
+#header-top a.btn-dashboard[href="/student-dashboard/"] {
+  background: var(--cso-accent) !important;
+  border: 1px solid var(--cso-accent) !important;
+  color: var(--cso-accent-ink) !important;
+  opacity: 1 !important;
+}
+
+#header-top .cso-login-link,
+#header-top .login-btn,
+#header-top .cso-login-button {
+  background: transparent !important;
+  border: 1px solid #64748b !important;
+  color: #f1f5f9 !important;
+  opacity: 1 !important;
+}
+
+#header-top .cso-login-link:hover,
+#header-top .cso-login-link:focus-visible,
+#header-top .login-btn:hover,
+#header-top .login-btn:focus-visible,
+#header-top .cso-login-button:hover,
+#header-top .cso-login-button:focus-visible {
+  background: #1e293b !important;
+  border-color: #94a3b8 !important;
+  color: #ffffff !important;
+}
+
+#header-top .cso-btn-admin-studio,
+#header-top a.btn-dashboard[href="/admin/"] {
+  background: #991b1b !important;
+  border: 1px solid #dc2626 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+#header-top .cso-btn-admin-studio:hover,
+#header-top .cso-btn-admin-studio:focus-visible,
+#header-top a.btn-dashboard[href="/admin/"]:hover,
+#header-top a.btn-dashboard[href="/admin/"]:focus-visible {
+  background: #b91c1c !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+#header-top .adm,
+#header-top .adm.cso-adm-icon-only {
+  background: #450a0a !important;
+  border: 1px solid #dc2626 !important;
+  color: #fca5a5 !important;
+  opacity: 1 !important;
+}
+
+#header-top .adm:hover,
+#header-top .adm:focus-visible,
+#header-top .adm.cso-adm-icon-only:hover,
+#header-top .adm.cso-adm-icon-only:focus-visible {
+  background: #7f1d1d !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+#header-top .btn-header-logout,
+#header-top #cso-header-logout-btn,
+#header-top .cso-logout-button {
+  background: transparent !important;
+  border: 1px solid #475569 !important;
+  color: #e2e8f0 !important;
+  opacity: 1 !important;
+}
+
+#header-top .btn-header-logout:hover,
+#header-top .btn-header-logout:focus-visible,
+#header-top #cso-header-logout-btn:hover,
+#header-top #cso-header-logout-btn:focus-visible,
+#header-top .cso-logout-button:hover,
+#header-top .cso-logout-button:focus-visible {
+  border-color: #f97316 !important;
+  color: #fdba74 !important;
+  background: rgba(249, 115, 22, 0.12) !important;
 }

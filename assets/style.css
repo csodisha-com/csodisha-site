@@ -5613,9 +5613,9 @@ a[href*="login"] {
 .btn-login svg,
 .header-login-btn svg,
 .top .acct .cso-login-button svg {
-  color: var(--cso-err-fg) !important;
-  fill: #FF5722 !important;
-  stroke: #FF5722 !important;
+  color: currentColor !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
 }
 
 .login-btn:hover,
@@ -5627,11 +5627,10 @@ a[href*="login"] {
 .cso-header-top .acct .cso-login-button:hover,
 .cso-auth-item-link.cso-login-link:hover,
 .top .acct a.cso-auth-item-link:hover,
-a[href*="login"].cso-auth-item-link:hover,
-a[href*="login"]:hover {
-  background: var(--cso-err-fg) !important;/* Darker Deep Orange */ 
-  border-color: var(--cso-err-border) !important;
-  color: var(--cso-accent-ink) !important;
+a[href*="login"].cso-auth-item-link:hover {
+  background: #1e293b !important;
+  border-color: #94a3b8 !important;
+  color: #ffffff !important;
   transform: translateY(-1px);
 }
 
@@ -5639,9 +5638,9 @@ a[href*="login"]:hover {
 .btn-login:hover svg,
 .header-login-btn:hover svg,
 .top .acct .cso-login-button:hover svg {
-  color: var(--cso-accent-ink) !important;
-  fill: #FFFFFF !important;
-  stroke: #FFFFFF !important;
+  color: currentColor !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
 }/* Sign Up CTA pill - Vibrant Royal Blue (#2563EB) */
 
 
@@ -10233,11 +10232,11 @@ footer h4,
 :root[data-theme="dark"] .top .pill,
 :root[data-theme="dark"] .top-bar .pill,
 :root[data-theme="dark"] .utility-bar .pill,
-:root[data-theme="dark"] .utility-bar button,
+:root[data-theme="dark"] .utility-bar button:not(.signup-btn):not(.cso-signup-pill):not(.cso-btn-candidate-hub):not(.cso-btn-admin-studio):not(.btn-header-logout):not(.cso-logout-button):not(.login-btn):not(.cso-login-button):not(.cso-auth-trigger),
 :root[data-theme="dark"] .utility-bar select,
 :root[data-theme="dark"] .site-header__top .pill,
 :root[data-theme="dark"] #header-top .pill,
-:root[data-theme="dark"] #header-top button,
+:root[data-theme="dark"] #header-top button:not(.signup-btn):not(.cso-signup-pill):not(.cso-btn-candidate-hub):not(.cso-btn-admin-studio):not(.btn-header-logout):not(.cso-logout-button):not(.login-btn):not(.cso-login-button):not(.cso-auth-trigger),
 :root[data-theme="dark"] #cso-ctl-global-search,
 :root[data-theme="dark"] #cso-global-search-btn,
 :root[data-theme="dark"] .cso-ctl-search,
@@ -10258,7 +10257,7 @@ footer h4,
 :root[data-cso-theme="dark"] .top .pill,
 :root[data-cso-theme="dark"] .site-header__top .pill,
 :root[data-cso-theme="dark"] #header-top .pill,
-:root[data-cso-theme="dark"] #header-top button,
+:root[data-cso-theme="dark"] #header-top button:not(.signup-btn):not(.cso-signup-pill):not(.cso-btn-candidate-hub):not(.cso-btn-admin-studio):not(.btn-header-logout):not(.cso-logout-button):not(.login-btn):not(.cso-login-button):not(.cso-auth-trigger),
 :root[data-cso-theme="dark"] .top .pill span,
 :root[data-cso-theme="dark"] #header-top .pill span,
 :root[data-cso-theme="dark"] .cso-ctl-search-label,
@@ -10268,7 +10267,7 @@ footer h4,
 :root[data-cso-resolved-mode="dark"] .top .pill,
 :root[data-cso-resolved-mode="dark"] .site-header__top .pill,
 :root[data-cso-resolved-mode="dark"] #header-top .pill,
-:root[data-cso-resolved-mode="dark"] #header-top button,
+:root[data-cso-resolved-mode="dark"] #header-top button:not(.signup-btn):not(.cso-signup-pill):not(.cso-btn-candidate-hub):not(.cso-btn-admin-studio):not(.btn-header-logout):not(.cso-logout-button):not(.login-btn):not(.cso-login-button):not(.cso-auth-trigger),
 :root[data-cso-resolved-mode="dark"] .top .pill span,
 :root[data-cso-resolved-mode="dark"] #header-top .pill span,
 :root[data-cso-resolved-mode="dark"] .cso-ctl-search-label,
@@ -10300,7 +10299,7 @@ footer h4,
   :root[data-theme="system"] .top .pill,
   :root[data-theme="system"] .site-header__top .pill,
   :root[data-theme="system"] #header-top .pill,
-  :root[data-theme="system"] #header-top button,
+  :root[data-theme="system"] #header-top button:not(.signup-btn):not(.cso-signup-pill):not(.cso-btn-candidate-hub):not(.cso-btn-admin-studio):not(.btn-header-logout):not(.cso-logout-button):not(.login-btn):not(.cso-login-button):not(.cso-auth-trigger),
   :root[data-theme="system"] .top .pill span,
   :root[data-theme="system"] #header-top .pill span,
   :root[data-theme="system"] .cso-ctl-search-label,
@@ -10309,7 +10308,7 @@ footer h4,
   :root[data-theme="system"] .cso-lang-icon,
   :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .top .pill,
   :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top .pill,
-  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top button,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top button:not(.signup-btn):not(.cso-signup-pill):not(.cso-btn-candidate-hub):not(.cso-btn-admin-studio):not(.btn-header-logout):not(.cso-logout-button):not(.login-btn):not(.cso-login-button):not(.cso-auth-trigger),
   :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .cso-ctl-search-label,
   :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .cso-lang-name {
     color: #f1f5f9 !important;
@@ -10325,4 +10324,318 @@ footer h4,
     color: #cbd5e1 !important;
     opacity: 1 !important;
   }
+}
+
+/* ==========================================================================
+   v299: Institutional Top-Bar Auth & Admin Button Hierarchy (All 4 Themes)
+   Desktop (>= 1100px) & Mobile (< 1100px) — >= 4.5:1 WCAG AA Contrast
+   ========================================================================== */
+
+/* 1. Sign Up (Logged-Out Primary) & Candidate Hub / My Dashboard (Logged-In Primary) */
+.top .cso-signup-pill,
+.top .signup-btn,
+.top .btn-signup,
+.top .header-signup-btn,
+.site-header__top .cso-signup-pill,
+.site-header__top .signup-btn,
+#header-top .cso-signup-pill,
+#header-top .signup-btn,
+#header-top .acct .btn.p:not(.cso-btn-admin-studio),
+.top .cso-btn-candidate-hub,
+.site-header__top .cso-btn-candidate-hub,
+#header-top .cso-btn-candidate-hub,
+#header-top a.btn-dashboard[href="/student-dashboard/"],
+#header-top a.cso-dashboard-button[href="/student-dashboard/"] {
+  background: var(--cso-accent) !important;
+  border: 1px solid var(--cso-accent) !important;
+  color: var(--cso-accent-ink) !important;
+  opacity: 1 !important;
+  font-weight: 700 !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+  transition: filter 0.16s ease, transform 0.16s ease !important;
+}
+
+#header-top .cso-signup-pill span,
+#header-top .signup-btn span,
+#header-top .cso-btn-candidate-hub span,
+#header-top a.btn-dashboard[href="/student-dashboard/"] span {
+  color: var(--cso-accent-ink) !important;
+  opacity: 1 !important;
+}
+
+.top .cso-signup-pill:hover,
+.top .signup-btn:hover,
+#header-top .cso-signup-pill:hover,
+#header-top .cso-signup-pill:focus-visible,
+#header-top .signup-btn:hover,
+#header-top .signup-btn:focus-visible,
+#header-top .cso-btn-candidate-hub:hover,
+#header-top .cso-btn-candidate-hub:focus-visible,
+#header-top a.btn-dashboard[href="/student-dashboard/"]:hover,
+#header-top a.btn-dashboard[href="/student-dashboard/"]:focus-visible {
+  background: var(--cso-accent) !important;
+  border-color: var(--cso-accent) !important;
+  color: var(--cso-accent-ink) !important;
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: none !important;
+}
+
+/* 2. Login (Logged-Out Secondary — Crisp Outlined Ghost) */
+.top .cso-login-link,
+.top .login-btn,
+.top .cso-login-button,
+.site-header__top .cso-login-link,
+.site-header__top .login-btn,
+.site-header__top .cso-login-button,
+#header-top .cso-login-link,
+#header-top .login-btn,
+#header-top .cso-login-button,
+#header-top .acct .cso-auth-item-link {
+  background: transparent !important;
+  border: 1px solid #64748b !important;
+  color: #f1f5f9 !important;
+  opacity: 1 !important;
+  font-weight: 600 !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease !important;
+}
+
+.top .cso-login-link:hover,
+.top .login-btn:hover,
+.top .cso-login-button:hover,
+#header-top .cso-login-link:hover,
+#header-top .cso-login-link:focus-visible,
+#header-top .login-btn:hover,
+#header-top .login-btn:focus-visible,
+#header-top .cso-login-button:hover,
+#header-top .cso-login-button:focus-visible {
+  background: #1e293b !important;
+  border-color: #94a3b8 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+/* 3. Admin Studio (Staff Action — Institutional Crimson) */
+.top .cso-btn-admin-studio,
+.site-header__top .cso-btn-admin-studio,
+#header-top .cso-btn-admin-studio,
+.top a.btn-dashboard[href="/admin/"],
+#header-top a.btn-dashboard[href="/admin/"],
+#header-top a.cso-dashboard-button[href="/admin/"],
+.cso-btn-admin-studio {
+  background: #991b1b !important;
+  border: 1px solid #dc2626 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  font-weight: 700 !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+  transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease !important;
+}
+
+.cso-btn-admin-studio span,
+#header-top a.btn-dashboard[href="/admin/"] span,
+.cso-btn-admin-studio svg {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+.top .cso-btn-admin-studio:hover,
+.top .cso-btn-admin-studio:focus-visible,
+#header-top .cso-btn-admin-studio:hover,
+#header-top .cso-btn-admin-studio:focus-visible,
+#header-top a.btn-dashboard[href="/admin/"]:hover,
+#header-top a.btn-dashboard[href="/admin/"]:focus-visible,
+#header-top a.cso-dashboard-button[href="/admin/"]:hover,
+.cso-btn-admin-studio:hover,
+.cso-btn-admin-studio:focus-visible {
+  background: #b91c1c !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+  filter: none !important;
+  transform: translateY(-1px);
+}
+
+/* 4. Admin Shield Icon (Staff Companion — Paired Crimson Tint) */
+.top .adm,
+.top-bar .adm,
+.header-utility .adm,
+.cso-header-top .adm,
+.site-header__top .adm,
+#header-top .adm,
+.top .adm.cso-adm-icon-only,
+.site-header__top .adm.cso-adm-icon-only,
+#header-top .adm.cso-adm-icon-only,
+.top .adm.cso-adm-stealth.is-admin-visible {
+  background: #450a0a !important;
+  border: 1px solid #dc2626 !important;
+  color: #fca5a5 !important;
+  opacity: 1 !important;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease !important;
+}
+
+.top .adm .adm-ico,
+#header-top .adm .adm-ico {
+  color: inherit !important;
+}
+
+.top .adm:hover,
+.top .adm:focus-visible,
+.site-header__top .adm:hover,
+.site-header__top .adm:focus-visible,
+#header-top .adm:hover,
+#header-top .adm:focus-visible,
+.top .adm.cso-adm-icon-only:hover,
+.top .adm.cso-adm-icon-only:focus-visible,
+#header-top .adm.cso-adm-icon-only:hover,
+#header-top .adm.cso-adm-icon-only:focus-visible,
+.top .adm.cso-adm-stealth.is-admin-visible:hover,
+.top .adm.cso-adm-stealth.is-admin-visible:focus-visible {
+  background: #7f1d1d !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+/* 5. Logout (Exit Action — High-Contrast Ghost Across All 4 Themes) */
+.top .btn-header-logout,
+.site-header__top .btn-header-logout,
+#header-top .btn-header-logout,
+#header-top #cso-header-logout-btn,
+.top .cso-logout-button,
+.site-header__top .cso-logout-button,
+#header-top .cso-logout-button,
+.cso-auth-logout-btn {
+  background: transparent !important;
+  border: 1px solid #475569 !important;
+  color: #e2e8f0 !important;
+  opacity: 1 !important;
+  font-weight: 600 !important;
+  border-radius: 7px !important;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease !important;
+}
+
+.top .btn-header-logout:hover,
+.top .btn-header-logout:focus-visible,
+#header-top .btn-header-logout:hover,
+#header-top .btn-header-logout:focus-visible,
+#header-top #cso-header-logout-btn:hover,
+#header-top #cso-header-logout-btn:focus-visible,
+.top .cso-logout-button:hover,
+.top .cso-logout-button:focus-visible,
+#header-top .cso-logout-button:hover,
+#header-top .cso-logout-button:focus-visible,
+.cso-auth-logout-btn:hover,
+.cso-auth-logout-btn:focus-visible {
+  border-color: #f97316 !important;
+  color: #fdba74 !important;
+  background: rgba(249, 115, 22, 0.12) !important;
+  filter: none !important;
+  transform: translateY(-1px);
+}
+
+/* 6. Mobile Auth Trigger & Dropdown Menu (< 1100px — Solid 4-Theme Hierarchy) */
+.top .cso-auth-trigger,
+.site-header__top .cso-auth-trigger,
+#header-top .cso-auth-trigger {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid #64748b !important;
+  color: #f1f5f9 !important;
+  opacity: 1 !important;
+}
+
+.top .cso-auth-trigger:hover,
+.top .cso-auth-trigger:focus-visible,
+#header-top .cso-auth-trigger:hover,
+#header-top .cso-auth-trigger:focus-visible {
+  background: #1e293b !important;
+  border-color: #94a3b8 !important;
+  color: #ffffff !important;
+}
+
+.cso-auth-dropdown-menu {
+  background: var(--cso-surface-elevated) !important;
+  border: 1px solid var(--cso-border) !important;
+  color: var(--cso-ink) !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+}
+
+.cso-auth-dropdown-menu .cso-auth-item--hub,
+.cso-auth-dropdown-menu .cso-auth-item--signup {
+  background: var(--cso-accent) !important;
+  border: 1px solid var(--cso-accent) !important;
+  color: var(--cso-accent-ink) !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+}
+
+.cso-auth-dropdown-menu .cso-auth-item--hub:hover,
+.cso-auth-dropdown-menu .cso-auth-item--hub:focus-visible,
+.cso-auth-dropdown-menu .cso-auth-item--signup:hover,
+.cso-auth-dropdown-menu .cso-auth-item--signup:focus-visible {
+  background: var(--cso-accent) !important;
+  border-color: var(--cso-accent) !important;
+  color: var(--cso-accent-ink) !important;
+  filter: brightness(1.08);
+}
+
+.cso-auth-dropdown-menu .cso-auth-item--admin {
+  background: #991b1b !important;
+  border: 1px solid #dc2626 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+}
+
+.cso-auth-dropdown-menu .cso-auth-item--admin:hover,
+.cso-auth-dropdown-menu .cso-auth-item--admin:focus-visible {
+  background: #b91c1c !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.cso-auth-dropdown-menu .cso-auth-item--login {
+  background: transparent !important;
+  border: 1px solid var(--cso-border) !important;
+  color: var(--cso-ink) !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+.cso-auth-dropdown-menu .cso-auth-item--login:hover,
+.cso-auth-dropdown-menu .cso-auth-item--login:focus-visible {
+  background: var(--cso-bg) !important;
+  border-color: var(--cso-accent) !important;
+  color: var(--cso-ink) !important;
+}
+
+.cso-auth-dropdown-menu .cso-auth-item--saved {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--cso-ink) !important;
+  opacity: 1 !important;
+}
+
+.cso-auth-dropdown-menu .cso-auth-item--saved:hover,
+.cso-auth-dropdown-menu .cso-auth-item--saved:focus-visible {
+  background: var(--cso-bg) !important;
+  color: var(--cso-link) !important;
+}
+
+.cso-auth-dropdown-menu .cso-auth-item--logout {
+  background: transparent !important;
+  border: 1px solid var(--cso-border) !important;
+  color: var(--cso-err-fg) !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+.cso-auth-dropdown-menu .cso-auth-item--logout:hover,
+.cso-auth-dropdown-menu .cso-auth-item--logout:focus-visible {
+  background: var(--cso-err-bg) !important;
+  border-color: var(--cso-err-fg) !important;
+  color: var(--cso-err-fg) !important;
 }

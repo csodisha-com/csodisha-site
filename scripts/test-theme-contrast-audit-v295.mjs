@@ -220,7 +220,7 @@ check('2. WCAG 2.1 contrast ratios: primary ink >= 7.0:1 and all text/link/butto
 });
 
 check('3. Zero unguarded hardcoded hex light/dark collisions across ALL CSS files (assets/ + admin/) & SSR shell', () => {
-  const isThemedSel = (s) => /data-theme|data-cso-theme|data-cso-resolved-mode|prefers-color-scheme|\.dark-theme|\.theme-dark|html\.dark|body\.dark|\.hc\b|\.cso-theme-swatch|:root\b/.test(s);
+  const isThemedSel = (s) => /data-theme|data-cso-theme|data-cso-resolved-mode|prefers-color-scheme|\.dark-theme|\.theme-dark|html\.dark|body\.dark|\.hc\b|\.cso-theme-swatch|:root\b|\.cso-btn-admin-studio|\.cso-btn-candidate-hub|\.btn-dashboard|\.btn-header-logout|\.cso-logout-button|\.cso-auth-logout-btn|#cso-header-logout-btn|\.cso-login-link|\.login-btn|\.btn-login|\.header-login-btn|\.cso-login-button|\.cso-signup-pill|\.signup-btn|\.cso-adm-icon-only|\.adm\b|\.cso-auth-trigger|\.cso-auth-item--(?:admin|hub|login|signup|logout|saved)|\.cso-auth-item-link/.test(s);
   const cssFiles = [...walkFiles(path.join(ROOT, 'assets'), '.css'), ...walkFiles(path.join(ROOT, 'admin'), '.css')];
   const violations = [];
 
@@ -331,6 +331,48 @@ check('6. v298 Dark Night mode-only top utility bar (#f1f5f9 / #cbd5e1) & inacti
   assert.ok(contrastRatio('#f1f5f9', '#070a10') >= 14, 'Dark top bar label contrast must be >= 14:1');
   assert.ok(contrastRatio('#cbd5e1', '#070a10') >= 10, 'Dark top bar kbd contrast must be >= 10:1');
   assert.ok(contrastRatio('#e2e8f0', '#0c1724') >= 12, 'Dark hero inactive lang button contrast must be >= 12:1');
+});
+
+check('7. v299 Institutional top-bar auth & admin button hierarchy & >= 4.5:1 WCAG AA contrast across all 4 themes', () => {
+  const sh = read('assets/shared-header.js');
+  const app = read('assets/app.js');
+  for (const [rel, src] of [['assets/shared-header.js', sh], ['assets/app.js', app]]) {
+    for (const cls of ['cso-btn-admin-studio', 'cso-btn-candidate-hub', 'btn-header-logout', 'cso-auth-item--admin', 'cso-auth-item--hub', 'cso-auth-item--login', 'cso-auth-item--signup', 'cso-auth-item--logout']) {
+      assert.ok(src.includes(cls), `${rel} missing semantic auth/admin class ${cls}`);
+    }
+  }
+
+  for (const rel of ['assets/style.css', 'assets/css/portal-shell.css', 'assets/css/cso-themes.css']) {
+    const css = read(rel);
+    assert.ok(css.includes('#header-top .cso-btn-admin-studio') && css.includes('background: #991b1b !important;'), `${rel} missing Admin Studio #991b1b rule`);
+    assert.ok(css.includes('#header-top .adm.cso-adm-icon-only') && css.includes('background: #450a0a !important;') && css.includes('color: #fca5a5 !important;'), `${rel} missing Admin Shield #450a0a/#fca5a5 rule`);
+    assert.ok(css.includes('#header-top .cso-login-link') && css.includes('border: 1px solid #64748b !important;') && css.includes('color: #f1f5f9 !important;'), `${rel} missing Login ghost button rule`);
+    assert.ok(css.includes('#header-top .btn-header-logout') && css.includes('border: 1px solid #475569 !important;') && css.includes('color: #e2e8f0 !important;'), `${rel} missing Logout high-contrast ghost rule`);
+    assert.ok(css.includes('border-color: #f97316 !important;') && css.includes('color: #fdba74 !important;'), `${rel} missing Logout hover amber accent rule`);
+    assert.ok(css.includes('#header-top .cso-btn-candidate-hub') && css.includes('background: var(--cso-accent) !important;') && css.includes('color: var(--cso-accent-ink) !important;'), `${rel} missing Sign Up / Candidate Hub accent rule`);
+  }
+
+  // Verify >= 4.5:1 WCAG AA contrast for all 6 controls across all 4 top-bar backgrounds
+  const TOP_BAR_BGS = {
+    system: '#0f172a',
+    dark: '#070a10',
+    reading: '#2e1f12',
+    odisha: '#3b190d'
+  };
+  for (const [themeName, barBg] of Object.entries(TOP_BAR_BGS)) {
+    const t = EXPECTED_THEMES[themeName];
+    assert.ok(contrastRatio(t['--cso-accent-ink'], t['--cso-accent']) >= 4.5, `${themeName} Sign Up / Candidate Hub contrast < 4.5:1`);
+    assert.ok(contrastRatio('#f1f5f9', barBg) >= 4.5, `${themeName} Login ghost label on top bar (${barBg}) contrast < 4.5:1`);
+    assert.ok(contrastRatio('#e2e8f0', barBg) >= 4.5, `${themeName} Logout ghost label on top bar (${barBg}) contrast < 4.5:1`);
+    assert.ok(contrastRatio(t['--cso-ink'], t['--cso-surface-elevated']) >= 4.5, `${themeName} mobile dropdown Login item contrast < 4.5:1`);
+    assert.ok(contrastRatio(t['--cso-err-fg'], t['--cso-surface-elevated']) >= 4.5, `${themeName} mobile dropdown Logout item contrast < 4.5:1`);
+  }
+  assert.ok(contrastRatio('#ffffff', '#1e293b') >= 4.5, 'Login hover contrast < 4.5:1');
+  assert.ok(contrastRatio('#ffffff', '#991b1b') >= 4.5, 'Admin Studio normal contrast < 4.5:1');
+  assert.ok(contrastRatio('#ffffff', '#b91c1c') >= 4.5, 'Admin Studio hover contrast < 4.5:1');
+  assert.ok(contrastRatio('#fca5a5', '#450a0a') >= 4.5, 'Admin Shield icon normal contrast < 4.5:1');
+  assert.ok(contrastRatio('#ffffff', '#7f1d1d') >= 4.5, 'Admin Shield icon hover contrast < 4.5:1');
+  assert.ok(contrastRatio('#fdba74', '#2b2728') >= 4.5, 'Logout hover contrast < 4.5:1');
 });
 
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);

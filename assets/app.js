@@ -1126,7 +1126,8 @@ function authUI() {
   if (csoAuthUser) {
     const logoutButton = document.createElement('button');
     logoutButton.type = 'button';
-    logoutButton.className = 'btn cso-logout-button';
+    logoutButton.className = 'btn btn-header-logout cso-logout-button';
+    logoutButton.id = 'cso-header-logout-btn';
     logoutButton.textContent = 'Logout';
 
     logoutButton.onclick = async () => {
@@ -1152,7 +1153,9 @@ function authUI() {
     const isAdminUser = csoAuthUser.role === 'admin' || csoAuthUser.role === 'superadmin';
     const targetDashUrl = isAdminUser ? '/admin/' : '/student-dashboard/';
     const dashboardLink = document.createElement('a');
-    dashboardLink.className = 'btn p cso-dashboard-button';
+    dashboardLink.className = isAdminUser
+      ? 'btn p cso-dashboard-button btn-dashboard cso-btn-admin-studio'
+      : 'btn p cso-dashboard-button btn-dashboard cso-btn-candidate-hub';
     dashboardLink.href = targetDashUrl;
     dashboardLink.textContent = isAdminUser ? 'Admin Studio' : 'My Dashboard';
     dashboardLink.setAttribute(
@@ -1170,7 +1173,7 @@ function authUI() {
 
     if (isAdminUser) {
       const candidateLink = document.createElement('a');
-      candidateLink.className = 'btn cso-dashboard-button';
+      candidateLink.className = 'btn p cso-dashboard-button btn-dashboard cso-btn-candidate-hub';
       candidateLink.href = '/student-dashboard/';
       candidateLink.textContent = 'Candidate Hub';
       candidateLink.addEventListener('click', (e) => {
@@ -1212,7 +1215,9 @@ function authUI() {
     menu.hidden = true;
 
     const mDash = document.createElement('a');
-    mDash.className = 'cso-auth-item cso-auth-item--dash';
+    mDash.className = isAdminUser
+      ? 'cso-auth-item cso-auth-item--dash cso-auth-item--admin'
+      : 'cso-auth-item cso-auth-item--dash cso-auth-item--hub';
     mDash.href = targetDashUrl;
     mDash.textContent = isAdminUser ? '🛡️ Admin Studio' : '👤 My Dashboard';
     mDash.addEventListener('click', (e) => {
@@ -1222,7 +1227,7 @@ function authUI() {
     });
 
     const mProfile = document.createElement('a');
-    mProfile.className = 'cso-auth-item';
+    mProfile.className = 'cso-auth-item cso-auth-item--saved';
     mProfile.href = '/student-dashboard/#saved';
     mProfile.textContent = '★ Profile / Saved';
     mProfile.addEventListener('click', (e) => {
@@ -1241,7 +1246,20 @@ function authUI() {
       logoutButton.click();
     });
 
-    menu.append(mDash, mProfile, mLogout);
+    if (isAdminUser) {
+      const mHub = document.createElement('a');
+      mHub.className = 'cso-auth-item cso-auth-item--hub';
+      mHub.href = '/student-dashboard/';
+      mHub.textContent = '👤 Candidate Hub';
+      mHub.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeAuthDropdown();
+        window.location.assign('/student-dashboard/');
+      });
+      menu.append(mDash, mHub, mProfile, mLogout);
+    } else {
+      menu.append(mDash, mProfile, mLogout);
+    }
     mobWrap.append(trigger, menu);
     root.append(deskRow, mobWrap);
     return;
@@ -1250,7 +1268,7 @@ function authUI() {
   setSafeHtml(root,
     '<div class="cso-desktop-auth-buttons cso-auth-logged-out">' +
       '<button class="btn cso-login-button login-btn" id="li" type="button">Login</button>' +
-      '<button class="btn p signup-btn" id="su" type="button">Sign Up</button>' +
+      '<button class="btn p signup-btn cso-signup-pill" id="su" type="button">Sign Up</button>' +
     '</div>' +
     '<div class="cso-mobile-auth-wrapper">' +
       '<button type="button" class="cso-auth-trigger" id="cso-auth-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account options">' +
@@ -1259,8 +1277,8 @@ function authUI() {
         '<span class="auth-arrow" aria-hidden="true">▾</span>' +
       '</button>' +
       '<div class="cso-auth-dropdown-menu" id="cso-auth-menu" hidden>' +
-        '<a href="/login.html" class="cso-auth-item" id="cso-m-li">Login</a>' +
-        '<a href="/signup.html" class="cso-auth-item" id="cso-m-su">Sign Up</a>' +
+        '<a href="/login.html" class="cso-auth-item cso-auth-item--login" id="cso-m-li">Login</a>' +
+        '<a href="/signup.html" class="cso-auth-item cso-auth-item--signup" id="cso-m-su">Sign Up</a>' +
       '</div>' +
     '</div>');
 
