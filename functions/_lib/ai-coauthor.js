@@ -12,7 +12,8 @@ export const VALID_AI_MODES = new Set(['job', 'scheme', 'mcq', 'career']);
 
 const WORKERS_AI_PRIMARY_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
 const WORKERS_AI_FALLBACK_MODEL = '@cf/ibm-granite/granite-4.0-h-micro';
-const GEMINI_FREE_MODEL = 'gemini-2.5-flash';
+const GEMINI_FREE_MODEL = 'gemini-3.5-flash-lite';
+const GEMINI_FALLBACK_MODEL = 'gemini-3.8-flash';
 
 let _schemaReadyDb = null;
 
@@ -232,33 +233,38 @@ async function logAiGeneration(env, { actorId, targetModule, provider, model, es
 }
 
 async function callGeminiFreeTier(apiKey, prompt) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_FREE_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`;
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.3,
-        responseMimeType: 'application/json'
-      }
-    })
-  });
-  if (!res.ok) {
+  let lastErr = null;
+  for (const model of [GEMINI_FREE_MODEL, GEMINI_FALLBACK_MODEL]) {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.3,
+          responseMimeType: 'application/json'
+        }
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const text = data &&
+        data.candidates &&
+        data.candidates[0] &&
+        data.candidates[0].content &&
+        data.candidates[0].content.parts &&
+        data.candidates[0].content.parts[0] &&
+        data.candidates[0].content.parts[0].text;
+      if (!text) throw new Error('Gemini API returned empty content.');
+      return { text, model, provider: 'gemini_free' };
+    }
     const err = new Error(`Gemini API returned HTTP ${res.status}`);
     err.status = res.status;
-    throw err;
+    lastErr = err;
+    if (res.status !== 404 && res.status !== 429) throw err;
   }
-  const data = await res.json();
-  const text = data &&
-    data.candidates &&
-    data.candidates[0] &&
-    data.candidates[0].content &&
-    data.candidates[0].content.parts &&
-    data.candidates[0].content.parts[0] &&
-    data.candidates[0].content.parts[0].text;
-  if (!text) throw new Error('Gemini API returned empty content.');
-  return { text, model: GEMINI_FREE_MODEL, provider: 'gemini_free' };
+  throw lastErr || new Error('Gemini API failed');
 }
 
 async function callWorkersAi(aiBinding, prompt) {

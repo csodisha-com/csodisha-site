@@ -272,7 +272,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
   await ensureSemanticSchema(env);
   const cleanQ = String(q || '').trim();
   const normalizedQ = cleanQ.toLowerCase().replace(/\s+/g, ' ');
-  const cacheKey = await sha256Hex(`v324|${type}|${normalizedQ}`);
+  const cacheKey = await sha256Hex(`v325|${type}|${normalizedQ}`);
   const dbg = debugOut || {};
   dbg.provider_attempted = dbg.provider_attempted || [];
   dbg.gemini_status = (env && env.GEMINI_API_KEY && String(env.GEMINI_API_KEY).trim()) ? 'configured' : 'unconfigured';
@@ -348,35 +348,43 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
   if (geminiKey) {
     dbg.provider_attempted.push('google_gemini');
     try {
-      const gemRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': geminiKey
-        },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.25,
-            maxOutputTokens: 900,
-            responseMimeType: 'application/json'
-          }
-        })
-      });
-      dbg.gemini_status = `http_${gemRes.status}`;
-      if (!gemRes.ok) throw new Error(`Gemini HTTP ${gemRes.status}`);
-      const gemData = await gemRes.json();
-      const gemText = gemData &&
-        gemData.candidates &&
-        gemData.candidates[0] &&
-        gemData.candidates[0].content &&
-        gemData.candidates[0].content.parts &&
-        gemData.candidates[0].content.parts[0] &&
-        gemData.candidates[0].content.parts[0].text;
-      if (!gemText) throw new Error('Gemini returned empty text');
-      rawResp = gemText;
-      providerUsed = 'google_gemini';
-      modelUsed = 'gemini-2.5-flash';
+      for (const gemModel of ['gemini-3.5-flash-lite', 'gemini-3.8-flash']) {
+        const gemRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gemModel}:generateContent`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': geminiKey
+          },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.25,
+              maxOutputTokens: 900,
+              responseMimeType: 'application/json'
+            }
+          })
+        });
+        dbg.gemini_status = `http_${gemRes.status}`;
+        if (gemRes.ok) {
+          const gemData = await gemRes.json();
+          const gemText = gemData &&
+            gemData.candidates &&
+            gemData.candidates[0] &&
+            gemData.candidates[0].content &&
+            gemData.candidates[0].content.parts &&
+            gemData.candidates[0].content.parts[0] &&
+            gemData.candidates[0].content.parts[0].text;
+          if (!gemText) throw new Error('Gemini returned empty text');
+          rawResp = gemText;
+          providerUsed = 'google_gemini';
+          modelUsed = gemModel;
+          break;
+        }
+        if (gemRes.status !== 404 && gemRes.status !== 429) {
+          throw new Error(`Gemini HTTP ${gemRes.status}`);
+        }
+      }
+      if (rawResp === null) throw new Error(`Gemini ${dbg.gemini_status}`);
     } catch (gemErr) {
       dbg.error = (gemErr && gemErr.message) || 'Gemini request failed';
       rawResp = null;
