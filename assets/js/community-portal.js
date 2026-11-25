@@ -465,43 +465,21 @@
 
     clear(S.root);
     var hasFilter = Boolean(S.filters.l1 || (S.filters.sort && S.filters.sort !== 'latest') || (S.filters.scope && S.filters.scope !== 'all') || S.filters.search);
-    var shell = el('div', 'cp-root');
+    var shell = el('div', 'cp-root com-shell');
     renderEditorialHero(shell);
-
-    // Streamlined Single-Card Filter Bar: Channel Pill Strip + Single Compact Filter Row
-    var fPanel = el('section', 'cp-panel com-filter-card');
-    fPanel.setAttribute('aria-label', 'Community Channel and Discussion Filters');
 
     var l1All = S.nodes.filter(function (n) { return Number(n.level) === 1; });
     var l1Canon = l1All.filter(function (n) { return CANONICAL_CHANNEL_SLUGS.indexOf(String(n.slug || '').toLowerCase()) !== -1; });
     var l1Channels = l1Canon.length ? l1Canon : l1All;
 
-    var strip = el('div', 'com-channel-strip');
-    strip.setAttribute('role', 'tablist');
-    strip.setAttribute('aria-label', 'Filter by Community Channel');
+    // Two-Column Main Workspace (1fr 310px on desktop >= 960px, single-column stack on mobile)
+    var workspace = el('div', 'com-workspace-grid');
 
-    var allBtn = el('button', 'com-channel-pill' + (!S.filters.l1 ? ' is-active' : ''));
-    allBtn.type = 'button';
-    allBtn.setAttribute('role', 'tab');
-    allBtn.setAttribute('aria-selected', String(!S.filters.l1));
-    allBtn.appendChild(el('span', 'com-channel-pill-label', S.lang === 'or' ? 'ସମସ୍ତ ଆଲୋଚନା' : 'All Discussions'));
-    allBtn.appendChild(el('span', 'com-channel-pill-count', num(S.allPosts.length || S.posts.length)));
-    allBtn.addEventListener('click', function () { S.filters.l1 = ''; reloadBrowse(); });
-    strip.appendChild(allBtn);
+    // LEFT COLUMN: Streamlined Toolbar + Clean Discussion Feed
+    var feedCol = el('div', 'com-feed-col');
 
-    l1Channels.forEach(function (ch) {
-      var isAct = S.filters.l1 === ch.id || S.filters.l1 === ch.slug;
-      var btn = el('button', 'com-channel-pill' + (isAct ? ' is-active' : ''));
-      btn.type = 'button';
-      btn.setAttribute('role', 'tab');
-      btn.setAttribute('aria-selected', String(isAct));
-      btn.setAttribute('data-channel', ch.slug || ch.id);
-      btn.appendChild(el('span', 'com-channel-pill-label', (ch.icon ? ch.icon + ' ' : '') + pick(ch, 'title')));
-      btn.appendChild(el('span', 'com-channel-pill-count', num(ch.posts_count || ch.threads_count || 0)));
-      btn.addEventListener('click', function () { S.filters.l1 = ch.id; reloadBrowse(); });
-      strip.appendChild(btn);
-    });
-    fPanel.appendChild(strip);
+    var toolbarCard = el('section', 'cp-panel com-toolbar-card');
+    toolbarCard.setAttribute('aria-label', 'Search and Filter Discussions');
 
     var fRow = el('div', 'com-filter-row');
 
@@ -524,7 +502,7 @@
     });
     fRow.appendChild(searchInp);
 
-    var sortSel = el('select', 'cp-select');
+    var sortSel = el('select', 'cp-select com-toolbar-select');
     sortSel.id = 'cp-sel-sort';
     sortSel.setAttribute('aria-label', 'Sort community discussions');
     [
@@ -536,7 +514,7 @@
     sortSel.addEventListener('change', function () { S.filters.sort = sortSel.value; reloadBrowse(); });
     fRow.appendChild(sortSel);
 
-    var scopeSel = el('select', 'cp-select');
+    var scopeSel = el('select', 'cp-select com-toolbar-select');
     scopeSel.id = 'cp-sel-scope';
     scopeSel.setAttribute('aria-label', 'Filter by Scope or Status');
     [
@@ -559,11 +537,10 @@
       fRow.appendChild(rstBtn);
     }
 
-    fPanel.appendChild(fRow);
-    renderActiveFilterChips(fPanel);
-    shell.appendChild(fPanel);
+    toolbarCard.appendChild(fRow);
+    renderActiveFilterChips(toolbarCard);
+    feedCol.appendChild(toolbarCard);
 
-    // Discussions Feed OR Clean Centered Empty State (Zero Overlap)
     if (!S.posts.length) {
       var emp = el('section', 'cp-empty');
       emp.setAttribute('aria-label', 'Community Discussions Status');
@@ -592,13 +569,83 @@
         empActs.appendChild(rBtn);
       }
       emp.appendChild(empActs);
-      shell.appendChild(emp);
+      feedCol.appendChild(emp);
     } else {
-      var feedCol = el('div', 'cp-main-col');
-      S.posts.forEach(function (p) { feedCol.appendChild(renderPostCard(p, false)); });
-      shell.appendChild(feedCol);
+      var feedList = el('div', 'com-feed-list');
+      S.posts.forEach(function (p) { feedList.appendChild(renderPostCard(p, false)); });
+      feedCol.appendChild(feedList);
     }
 
+    // RIGHT COLUMN: Sticky Sidebar (Channels Directory + Community Desk & Guidelines)
+    var sidebar = el('aside', 'com-sidebar');
+    sidebar.setAttribute('aria-label', 'Community Channels and Guidelines');
+
+    // Card 1: Channels Directory
+    var chCard = el('section', 'com-sidebar-card com-channels-card');
+    chCard.appendChild(el('h2', 'com-sidebar-title', S.lang === 'or' ? 'ସମୁଦାୟ ଚ୍ୟାନେଲ୍' : 'Channels Directory'));
+
+    var chList = el('div', 'com-channel-list com-channel-strip');
+    chList.setAttribute('role', 'tablist');
+    chList.setAttribute('aria-label', 'Filter by Community Channel');
+
+    var allBtn = el('button', 'com-channel-item com-channel-pill' + (!S.filters.l1 ? ' is-active' : ''));
+    allBtn.type = 'button';
+    allBtn.setAttribute('role', 'tab');
+    allBtn.setAttribute('aria-selected', String(!S.filters.l1));
+    var allLeft = el('span', 'com-channel-item-left');
+    allLeft.appendChild(el('span', 'com-channel-ico', '💬'));
+    allLeft.appendChild(el('span', 'com-channel-pill-label', S.lang === 'or' ? 'ସମସ୍ତ ଆଲୋଚନା' : 'All Discussions'));
+    allBtn.appendChild(allLeft);
+    allBtn.appendChild(el('span', 'com-channel-pill-count', num(S.allPosts.length || S.posts.length)));
+    allBtn.addEventListener('click', function () { S.filters.l1 = ''; reloadBrowse(); });
+    chList.appendChild(allBtn);
+
+    l1Channels.forEach(function (ch) {
+      var isAct = S.filters.l1 === ch.id || S.filters.l1 === ch.slug;
+      var btn = el('button', 'com-channel-item com-channel-pill' + (isAct ? ' is-active' : ''));
+      btn.type = 'button';
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute('aria-selected', String(isAct));
+      btn.setAttribute('data-channel', ch.slug || ch.id);
+      var left = el('span', 'com-channel-item-left');
+      left.appendChild(el('span', 'com-channel-ico', ch.icon || '📌'));
+      left.appendChild(el('span', 'com-channel-pill-label', pick(ch, 'title')));
+      btn.appendChild(left);
+      btn.appendChild(el('span', 'com-channel-pill-count', num(ch.threads_count || ch.posts_count || 0)));
+      btn.addEventListener('click', function () { S.filters.l1 = ch.id; reloadBrowse(); });
+      chList.appendChild(btn);
+    });
+    chCard.appendChild(chList);
+    sidebar.appendChild(chCard);
+
+    // Card 2: Community Desk & Guidelines
+    var guideCard = el('section', 'com-sidebar-card com-guidelines-card');
+    guideCard.appendChild(el('h2', 'com-sidebar-title', S.lang === 'or' ? 'ସମୁଦାୟ ମାର୍ଗଦର୍ଶିକା' : 'Community Desk & Guidelines'));
+    var gList = el('ul', 'com-guidelines-list');
+    var guidePoints = S.lang === 'or'
+      ? [
+          'ସତ୍ୟାପିତ .gov.in / .odisha.gov.in ସରକାରୀ ସୂତ୍ର ସେୟାର କରନ୍ତୁ',
+          'ଆପଣଙ୍କ ପରୀକ୍ଷା କିମ୍ବା ସରକାରୀ ଯୋଜନା ସ୍ପଷ୍ଟ ଭାବେ ଟ୍ୟାଗ୍ କରନ୍ତୁ',
+          'ଆଲୋଚନାକୁ ସହାୟକ, ସଠିକ୍ ଏବଂ ସମ୍ମାନଜନକ ରଖନ୍ତୁ'
+        ]
+      : [
+          'Share verified .gov.in / .odisha.gov.in sources',
+          'Tag your exam or welfare scheme clearly',
+          'Keep discussions helpful and respectful'
+        ];
+    guidePoints.forEach(function (pt) {
+      gList.appendChild(el('li', 'com-guideline-item', pt));
+    });
+    guideCard.appendChild(gList);
+
+    var sideStartBtn = el('button', 'cp-btn cp-btn-primary com-full-btn', S.lang === 'or' ? '+ ଆଲୋଚନା ଆରମ୍ଭ କରନ୍ତୁ' : '+ Start a Discussion');
+    sideStartBtn.type = 'button';
+    sideStartBtn.addEventListener('click', openMemberComposerModal);
+    guideCard.appendChild(sideStartBtn);
+    sidebar.appendChild(guideCard);
+
+    workspace.append(feedCol, sidebar);
+    shell.appendChild(workspace);
     S.root.appendChild(shell);
 
     if (restoreFocusId) {
@@ -639,22 +686,36 @@
     return S.lang === 'or' ? 'ସମୁଦାୟ ଆଲୋଚନା' : 'Community Discussion';
   }
 
-  function renderPostCard(p, isDetailView) {
-    var card = el('article', 'cp-post-card' + (p.is_pinned ? ' is-pinned' : ''));
-    var threadHref = '/community/?slug=' + encodeURIComponent(p.slug);
+  function getAuthorMonogram(name) {
+    var parts = String(name || 'CS').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return 'CS';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
 
-    // Top Meta Row: at most 2 clean badges (Channel Pill + Status Badge when applicable)
+  function renderPostCard(p, isDetailView) {
+    var card = el('article', 'cp-post-card com-thread-card' + (p.is_pinned ? ' is-pinned' : ''));
+    var threadHref = '/community/?slug=' + encodeURIComponent(p.slug);
+    var relTime = formatRelativeTime(p.created_at);
+
+    // 1. HEADER ROW: Channel badge + single status badge (Pinned or Verified Answer) + right-aligned relative timestamp
     var topRow = el('div', 'com-card-top');
+    var badgeGroup = el('div', 'com-card-badges');
     var chanLabel = resolvePostChannelLabel(p);
     if (chanLabel) {
-      topRow.appendChild(el('span', 'com-channel-badge', chanLabel));
+      badgeGroup.appendChild(el('span', 'com-channel-badge', chanLabel));
     }
     if (p.is_solved) {
-      topRow.appendChild(el('span', 'com-status-badge is-verified', S.lang === 'or' ? '✓ ସତ୍ୟାପିତ ଉତ୍ତର' : '✓ Verified Answer'));
+      badgeGroup.appendChild(el('span', 'com-status-badge is-verified', S.lang === 'or' ? '✓ ସତ୍ୟାପିତ ଉତ୍ତର' : '✓ Verified Answer'));
     } else if (p.is_pinned) {
-      topRow.appendChild(el('span', 'com-status-badge is-pinned', S.lang === 'or' ? '📌 ପିନ୍ ହୋଇଛି' : '📌 Pinned'));
+      badgeGroup.appendChild(el('span', 'com-status-badge is-pinned', S.lang === 'or' ? '📌 ପିନ୍ ହୋଇଛି' : '📌 Pinned'));
     }
+    topRow.appendChild(badgeGroup);
+    topRow.appendChild(el('span', 'com-card-time', relTime));
     card.appendChild(topRow);
+
+    // 2. BODY BLOCK: Title + 2-line excerpt + optional compact Poll/Quiz bar
+    var bodyBlock = el('div', 'com-card-body');
 
     if (p.cover_image_url && safeHref(p.cover_image_url)) {
       var img = el('img', 'cp-post-cover');
@@ -662,10 +723,9 @@
       img.alt = p.title_en;
       img.loading = 'lazy';
       img.decoding = 'async';
-      card.appendChild(img);
+      bodyBlock.appendChild(img);
     }
 
-    // Clean Title & Language Switching (single active language, never stacked)
     var displayTitle = (S.lang === 'or' && p.title_or) ? String(p.title_or) : String(p.title_en || p.title_or || '');
     var h = el(isDetailView ? 'h1' : 'h3', 'cp-post-title');
     if (isDetailView) {
@@ -675,23 +735,14 @@
       a.href = threadHref;
       h.appendChild(a);
     }
-    card.appendChild(h);
+    bodyBlock.appendChild(h);
 
-    if (isDetailView) {
-      var detailMeta = 'By ' + (p.author_display_name || 'CS Odisha Member') +
-        ' · ' + formatRelativeTime(p.created_at) +
-        (p.district_tag ? ' · ' + p.district_tag : '') +
-        (p.exam_tag ? ' · ' + p.exam_tag : '');
-      card.appendChild(el('div', 'cp-muted', detailMeta));
-    }
-
-    // Concise 2-line CSS-clamped excerpt in feed; full CSP-safe prose in detail view
     var rawBody = pick(p, 'body') || p.body_en || '';
     if (rawBody) {
       if (isDetailView) {
-        renderRichProse(card, rawBody);
+        renderRichProse(bodyBlock, rawBody);
       } else {
-        card.appendChild(el('p', 'cp-post-body com-excerpt-clamp', stripMarkdownExcerpt(rawBody, 0)));
+        bodyBlock.appendChild(el('p', 'cp-post-body com-excerpt-clamp', stripMarkdownExcerpt(rawBody, 0)));
       }
     }
 
@@ -700,10 +751,10 @@
       aPdf.href = safeHref(p.attachment_url);
       aPdf.target = '_blank';
       aPdf.rel = 'noopener noreferrer';
-      card.appendChild(aPdf);
+      bodyBlock.appendChild(aPdf);
     }
 
-    // Interactive Poll: collapsed 1-line preview bar in feed, expands on click (or full in detail view)
+    // Interactive Poll: compact 1-line tinted pill bar in feed, expands on click
     if (p.post_type === 'poll' && Array.isArray(p.poll_options) && p.poll_options.length) {
       var votes = p.poll_votes || {};
       var totalVotes = Object.values(votes).reduce(function (s, v) { return s + Number(v || 0); }, 0);
@@ -714,14 +765,14 @@
           ? ('📊 ସକ୍ରିୟ ପୋଲ୍ · ' + p.poll_options.length + ' ବିକଳ୍ପ · ' + num(totalVotes) + ' ଭୋଟ୍')
           : ('📊 Active Poll · ' + p.poll_options.length + ' Options · ' + num(totalVotes) + ' Votes');
         pollPrev.appendChild(el('span', 'com-widget-pill', pollSummary));
-        var bExpandPoll = el('button', 'com-widget-cta', S.lang === 'or' ? 'ଅଂଶଗ୍ରହଣ କରନ୍ତୁ →' : 'Participate / Open Thread →');
+        var bExpandPoll = el('button', 'com-widget-cta', S.lang === 'or' ? 'ଅଂଶଗ୍ରହଣ କରନ୍ତୁ →' : 'Participate →');
         bExpandPoll.type = 'button';
         bExpandPoll.addEventListener('click', function () {
           S.expandedWidgets[p.id] = true;
           renderBrowseView();
         });
         pollPrev.appendChild(bExpandPoll);
-        card.appendChild(pollPrev);
+        bodyBlock.appendChild(pollPrev);
       } else {
         var pollWrap = el('div', 'cp-poll-list');
         if (!isDetailView) {
@@ -729,7 +780,7 @@
           pollCtrl.appendChild(el('span', 'com-widget-pill', S.lang === 'or'
             ? ('📊 ସକ୍ରିୟ ପୋଲ୍ · ' + num(totalVotes) + ' ଭୋଟ୍')
             : ('📊 Active Poll · ' + num(totalVotes) + ' Votes')));
-          var bHidePoll = el('button', 'com-ghost-pill', S.lang === 'or' ? 'ସଂକୁଚିତ କରନ୍ତୁ' : 'Collapse Poll');
+          var bHidePoll = el('button', 'com-ghost-pill', S.lang === 'or' ? 'ସଂକୁଚିତ କରନ୍ତୁ' : 'Collapse');
           bHidePoll.type = 'button';
           bHidePoll.addEventListener('click', function () {
             S.expandedWidgets[p.id] = false;
@@ -759,11 +810,11 @@
           });
           pollWrap.appendChild(bOpt);
         });
-        card.appendChild(pollWrap);
+        bodyBlock.appendChild(pollWrap);
       }
     }
 
-    // Interactive Quiz Challenge: collapsed 1-line preview bar in feed, expands on click (or full in detail view)
+    // Interactive Quiz Challenge: compact 1-line tinted pill bar in feed, expands on click
     if (p.post_type === 'quiz_challenge' && Array.isArray(p.challenge_mcqs) && p.challenge_mcqs.length) {
       var qCount = p.challenge_mcqs.length;
       var qMins = Math.max(2, Math.ceil(qCount * 0.6));
@@ -775,37 +826,41 @@
           ? ('⚡ ' + qCount + '-ପ୍ରଶ୍ନ ' + qTopic + ' କୁଇଜ୍ · ' + qMins + ' ମିନିଟ୍')
           : ('⚡ ' + qCount + '-Question ' + qTopic + ' Sprint · ' + qMins + ' Mins');
         quizPrev.appendChild(el('span', 'com-widget-pill', quizSummary));
-        var bExpandQuiz = el('button', 'com-widget-cta', S.lang === 'or' ? 'ଅଂଶଗ୍ରହଣ କରନ୍ତୁ →' : 'Participate / Open Thread →');
+        var bExpandQuiz = el('button', 'com-widget-cta', S.lang === 'or' ? 'ଅଂଶଗ୍ରହଣ କରନ୍ତୁ →' : 'Participate →');
         bExpandQuiz.type = 'button';
         bExpandQuiz.addEventListener('click', function () {
           S.expandedWidgets[p.id] = true;
           renderBrowseView();
         });
         quizPrev.appendChild(bExpandQuiz);
-        card.appendChild(quizPrev);
+        bodyBlock.appendChild(quizPrev);
       } else {
         if (!isDetailView) {
           var quizCtrl = el('div', 'com-widget-expanded-head');
           quizCtrl.appendChild(el('span', 'com-widget-pill', '⚡ ' + qCount + '-Question ' + qTopic + ' Sprint'));
-          var bHideQuiz = el('button', 'com-ghost-pill', S.lang === 'or' ? 'ସଂକୁଚିତ କରନ୍ତୁ' : 'Collapse Quiz');
+          var bHideQuiz = el('button', 'com-ghost-pill', S.lang === 'or' ? 'ସଂକୁଚିତ କରନ୍ତୁ' : 'Collapse');
           bHideQuiz.type = 'button';
           bHideQuiz.addEventListener('click', function () {
             S.expandedWidgets[p.id] = false;
             renderBrowseView();
           });
           quizCtrl.appendChild(bHideQuiz);
-          card.appendChild(quizCtrl);
+          bodyBlock.appendChild(quizCtrl);
         }
-        card.appendChild(renderInlineChallengeQuiz(p, isDetailView));
+        bodyBlock.appendChild(renderInlineChallengeQuiz(p, isDetailView));
       }
     }
 
-    // Unified Minimal Action Footer: By <Author> · <Relative Time> on left, matching ghost pills on right
+    card.appendChild(bodyBlock);
+
+    // 3. SINGLE CLEAN FOOTER ROW: Author monogram avatar + name on left, matching ghost pills on right
     var foot = el('div', 'cp-post-foot com-card-foot');
-    var metaLeft = el('span', 'com-card-meta-left',
-      (S.lang === 'or' ? 'ଲେଖକ: ' : 'By ') + (p.author_display_name || 'CS Odisha Member') + ' · ' + formatRelativeTime(p.created_at)
-    );
-    foot.appendChild(metaLeft);
+    var authorName = p.author_display_name || 'CS Odisha Member';
+    var authorWrap = el('div', 'com-card-author');
+    var avatar = el('span', 'com-author-avatar', getAuthorMonogram(authorName));
+    avatar.setAttribute('aria-hidden', 'true');
+    authorWrap.append(avatar, el('span', 'com-author-name', authorName));
+    foot.appendChild(authorWrap);
 
     var actsRight = el('div', 'com-card-actions-right');
     var bUp = el('button', 'com-ghost-pill', '▲ ' + (S.lang === 'or' ? 'ଅପଭୋଟ୍' : 'Upvote') + ' (' + num(p.upvotes_count) + ')');

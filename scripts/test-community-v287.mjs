@@ -335,20 +335,28 @@ await check('4b. v292 Thread Cards: max 2 top badges, single-lang title, 2-line 
   vm.runInNewContext(read('assets/js/community-portal.js'), sandbox);
   await new Promise(r => setTimeout(r, 40));
 
-  const cards = mount.querySelectorAll('.cp-post-card');
-  assert.equal(cards.length, 2, 'Should render 2 thread cards');
+  const cards = mount.querySelectorAll('.com-thread-card');
+  assert.equal(cards.length, 2, 'Should render 2 .com-thread-card items');
+  assert.ok(mount.querySelector('.com-shell'), 'Must render centered .com-shell');
+  assert.ok(mount.querySelector('.com-workspace-grid'), 'Must render two-column .com-workspace-grid');
+  assert.ok(mount.querySelector('.com-sidebar'), 'Must render sticky .com-sidebar');
+  assert.ok(mount.querySelector('.com-channels-card'), 'Must render Channels Directory sidebar card');
+  assert.ok(mount.querySelector('.com-guidelines-card'), 'Must render Community Desk & Guidelines sidebar card');
   for (const c of cards) {
-    const top = c.querySelector('.com-card-top');
-    assert.ok(top && top.children.length <= 2, 'Top meta row must show at most 2 badges');
+    const badges = c.querySelector('.com-card-badges');
+    assert.ok(badges && badges.children.length <= 2, 'Top badge group must show at most 2 badges');
+    assert.ok(c.querySelector('.com-card-time'), 'Header row must show relative timestamp');
+    assert.ok(c.querySelector('.com-card-body'), 'Card must have single .com-card-body block');
     assert.ok(c.querySelector('.com-excerpt-clamp'), 'Card must use .com-excerpt-clamp');
-    assert.ok(c.querySelector('.com-card-foot'), 'Card must render unified minimal footer');
+    assert.equal(c.querySelectorAll('.com-card-foot').length, 1, 'Card must render exactly ONE footer row');
+    assert.ok(c.querySelector('.com-author-avatar') && c.querySelector('.com-author-name'), 'Footer must render author monogram avatar & name');
     assert.equal(c.querySelectorAll('.com-ghost-pill').length, 2, 'Footer must render 2 matching ghost pills (Upvote + Replies)');
   }
   assert.equal(mount.querySelectorAll('.com-widget-preview').length, 2, 'Poll and Quiz must be collapsed to 1-line previews by default');
   assert.equal(mount.querySelector('.cp-poll-list'), null, 'Poll form must NOT render inline before click');
   assert.equal(mount.querySelector('.cp-quiz-list'), null, 'Quiz form must NOT render inline before click');
 
-  // Click "Participate / Open Thread →" on poll card to expand inline
+  // Click "Participate →" on poll card to expand inline
   mount.querySelectorAll('.com-widget-cta')[0].click();
   assert.ok(mount.querySelector('.cp-poll-list'), 'Clicking Participate button must expand interactive poll inline');
 });
@@ -361,22 +369,22 @@ await check('5. Admin Studio sidebar sync, cache busting (?v=20261125v287 / cso-
   assert.ok(studioJs.includes('Live Synced to Public Community'), 'community-publishing-studio.js missing live sync banner');
   assert.ok(studioJs.includes('cso_community_dropdown_v287'), 'community-publishing-studio.js missing v287 cache bust');
 
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v29[2-9]';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v29[2-9]';/);
-  assert.match(read('community/index.html'), /\/assets\/js\/community-portal\.js\?v=20261125v29[2-9]/);
-  assert.match(read('community/index.html'), /\/assets\/css\/community-portal\.css\?v=20261125v29[2-9]/);
-  assert.match(read('community/index.html'), /\/assets\/shared-header\.js\?v=20261125v29[2-9]/);
-  assert.match(read('index.html'), /assets\/app\.js\?v=20261125v29[2-9]/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v294';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v294';/);
+  assert.match(read('community/index.html'), /\/assets\/js\/community-portal\.js\?v=20261125v294/);
+  assert.match(read('community/index.html'), /\/assets\/css\/community-portal\.css\?v=20261125v294/);
+  assert.match(read('community/index.html'), /\/assets\/shared-header\.js\?v=20261125v29[3-9]/);
+  assert.match(read('index.html'), /assets\/app\.js\?v=20261125v29[3-9]/);
   assert.match(read('admin/index.html'), /admin\.js\?v=20261125v2(?:8[7-9]|9\d)/);
   assert.match(read('admin/index.html'), /community-publishing-studio\.js\?v=20261125v2(?:8[7-9]|9\d)/);
 
-  // v292: Clean scannable cards, collapsed poll/quiz previews & footer brand fix
+  // v292/v294: Centered two-column forum layout, clean scannable cards & footer brand fix
   const portalJs = read('assets/js/community-portal.js');
   const portalCss = read('assets/css/community-portal.css');
-  assert.ok(portalJs.includes('com-card-top') && portalJs.includes('com-channel-badge') && portalJs.includes('com-widget-preview'), 'community-portal.js missing v292 compact card / collapsible preview classes');
-  assert.ok(portalJs.includes('Participate / Open Thread'), 'community-portal.js missing Participate / Open Thread button');
+  assert.ok(portalJs.includes('com-workspace-grid') && portalJs.includes('com-sidebar') && portalJs.includes('com-thread-card'), 'community-portal.js missing v294 two-column layout classes');
+  assert.ok(portalJs.includes('Participate →') && portalJs.includes('com-author-avatar'), 'community-portal.js missing Participate CTA or author avatar');
   assert.ok(portalJs.includes('com-ghost-pill') && portalJs.includes('com-card-foot'), 'community-portal.js missing unified minimal action footer');
-  assert.ok(portalCss.includes('-webkit-line-clamp: 2') && portalCss.includes('.com-widget-preview') && portalCss.includes('.com-ghost-pill'), 'community-portal.css missing v292 clamp & ghost pill styles');
+  assert.ok(portalCss.includes('max-width: 1180px') && portalCss.includes('minmax(0, 1fr) 310px') && portalCss.includes('-webkit-line-clamp: 2'), 'community-portal.css missing v294 1180px centered two-column grid & clamp styles');
   assert.ok(read('assets/shared-header.js').includes('dedupeFooterBrand'), 'shared-header.js missing footer brand deduplication');
   assert.ok(read('assets/app.js').includes('csoDedupeFooterBrand'), 'app.js missing footer brand deduplication');
   assert.ok(!read('community/index.html').includes('alt="Common Sense Odisha Logo" class="cso-footer-logo'), 'community/index.html footer logo must use decorative alt=""');

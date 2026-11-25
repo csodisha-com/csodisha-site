@@ -233,8 +233,8 @@ await check('5. Solid opaque 4-theme surfaces (Dark Night #161b26 / #263042), si
   assert.ok(shellCss.includes('#cso-main-navbar .cso-careers-stage1'), 'portal-shell.css missing .cso-careers-stage1');
   assert.ok(!shellCss.includes('.cso-careers-stage2'), 'portal-shell.css must NOT include .cso-careers-stage2');
 
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v293';/.test(read('sw.js')), 'sw.js must be cso-candidate-cache-v293');
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v293';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel.js must be cso-candidate-cache-v293');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v29[3-9]';/.test(read('sw.js')), 'sw.js must be cso-candidate-cache-v293+');
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v29[3-9]';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel.js must be cso-candidate-cache-v293+');
 
   const corePages = [
     'index.html', 'jobs/index.html', 'careers/index.html', 'schemes/index.html',
