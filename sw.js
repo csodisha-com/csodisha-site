@@ -1,15 +1,21 @@
 /**
- * Common Sense Odisha (CSO) — Service Worker v9 (v260 Performance Optimization)
+ * Common Sense Odisha (CSO) — Service Worker v10 (v305 Zero-Flash Auth & Dashboard)
  * Lean App-Shell Precache + Stale-While-Revalidate for visited portal assets:
- *  - Slim core PRECACHE_URLS (10 core shell files only — zero Admin Studio bloat)
- *  - Dynamic Stale-While-Revalidate (SWR) caching for visited portal CSS/JS assets
- *  - Network-first with cache fallback for candidate-state GET APIs
+ *  - Slim core PRECACHE_URLS (10 core shell files only — zero Admin Studio or Auth HTML bloat)
+ *  - Dynamic Stale-While-Revalidate (SWR) caching for visited public portal CSS/JS assets
+ *  - Strict Network-Only (cache: 'no-store', zero Cache Storage reads/writes) for authenticated
+ *    & auth HTML routes (/login, /signup, /reset-password, /student-dashboard, /candidate-hub,
+ *    /saved, /admin) and /api/auth/* endpoints to prevent stale-page login flashes
+ *  - Network-first with cache fallback for offline-capable candidate-state GET APIs
  *  - Mutating requests and /admin/* routes are NEVER cached
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v304';
+const CACHE_NAME = 'cso-candidate-cache-v305';
 const EXPECTED_CACHES = [CACHE_NAME];
+
+// Authenticated, auth & account routes that must NEVER be served from or written to SW HTML cache.
+const AUTH_NO_STORE_ROUTE_RE = /^\/(?:login(?:\.html)?|signup(?:\.html)?|reset-password(?:\.html)?|student-dashboard|candidate-hub|candidate|dashboard|portal|saved|admin)(?:\/|$)/i;
 
 // Slim Core App-Shell Precache (fast SW install on slow 3G/4G connections)
 const PRECACHE_URLS = [
@@ -42,14 +48,19 @@ const RUNTIME_SWR_ASSETS = [
 ];
 
 // Candidate-state GET APIs: network-first with cache fallback (offline reads).
+// /api/auth/* is intentionally excluded and strictly network-only to avoid stale session flashes.
 const NETWORK_FIRST_API_ROUTES = [
   '/api/candidate/bookmarks',
   '/api/candidate/checklist',
-  '/api/sync',
-  '/api/auth/me'
+  '/api/sync'
 ];
 
+function isAuthNoStorePath(pathname) {
+  return AUTH_NO_STORE_ROUTE_RE.test(String(pathname || ''));
+}
+
 function isNetworkFirstApi(url) {
+  if (url.pathname.startsWith('/api/auth/')) return false;
   if (url.pathname.startsWith('/api/content/') || url.pathname.startsWith('/api/user/')) return true;
   return NETWORK_FIRST_API_ROUTES.some(route => url.pathname === route || url.pathname === route + '/');
 }
@@ -81,6 +92,23 @@ self.addEventListener('activate', (event) => {
         keys.filter((key) => !EXPECTED_CACHES.includes(key))
           .map((key) => caches.delete(key))
       );
+    }).then(async () => {
+      try {
+        const activeCache = await caches.open(CACHE_NAME);
+        const cachedReqs = await activeCache.keys();
+        await Promise.all(
+          cachedReqs
+            .filter((req) => {
+              try {
+                const p = new URL(req.url).pathname;
+                return isAuthNoStorePath(p) || p.startsWith('/api/auth/');
+              } catch (_) {
+                return false;
+              }
+            })
+            .map((req) => activeCache.delete(req))
+        );
+      } catch (_) {}
     }).then(() => self.clients.claim())
   );
 });
@@ -159,7 +187,13 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (url.pathname === '/admin' || url.pathname.startsWith('/admin/') || url.pathname.startsWith('/api/admin')) {
+  // Auth endpoints & /admin/* routes must NEVER touch SW Cache Storage.
+  if (
+    url.pathname === '/admin' ||
+    url.pathname.startsWith('/admin/') ||
+    url.pathname.startsWith('/api/admin') ||
+    url.pathname.startsWith('/api/auth/')
+  ) {
     return;
   }
 
@@ -192,17 +226,37 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. HTML Navigations: Network-First with short 1.5s timeout fallback to cache, then /offline.html.
+  // 2. HTML Navigations:
+  //    - Auth & Candidate Dashboard routes: Strict Network-First with cache: 'no-store'
+  //      and ZERO SW HTML caching (prevents stale pre-login or old-layout flashes).
+  //    - Public HTML routes: Network-First (cache: 'no-cache') with 1.5s timeout fallback.
   const acceptHeader = (request.headers && request.headers.get('accept')) || '';
   if (request.mode === 'navigate' || acceptHeader.includes('text/html')) {
+    if (isAuthNoStorePath(url.pathname)) {
+      event.respondWith((async () => {
+        try {
+          return await fetch(request, { cache: 'no-store', credentials: 'same-origin' });
+        } catch (err) {
+          const cache = await caches.open(CACHE_NAME);
+          const offlinePage = await cache.match('/offline.html');
+          return offlinePage || Response.error();
+        }
+      })());
+      return;
+    }
+
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
       const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       const timer = controller ? setTimeout(() => controller.abort(), 1500) : null;
       try {
-        const networkResponse = await fetch(request, controller ? { signal: controller.signal } : undefined);
+        const fetchOpts = controller
+          ? { cache: 'no-cache', signal: controller.signal }
+          : { cache: 'no-cache' };
+        const networkResponse = await fetch(request, fetchOpts);
         if (timer) clearTimeout(timer);
-        if (networkResponse && networkResponse.ok) {
+        const cc = (networkResponse && networkResponse.headers && networkResponse.headers.get('cache-control')) || '';
+        if (networkResponse && networkResponse.ok && !/\b(no-store|private)\b/i.test(cc)) {
           cache.put(request, networkResponse.clone()).catch(() => {});
         }
         return networkResponse;
@@ -214,6 +268,11 @@ self.addEventListener('fetch', (event) => {
         return offlinePage || Response.error();
       }
     })());
+    return;
+  }
+
+  // Never serve stale copies of auth/dashboard paths from SWR static cache.
+  if (isAuthNoStorePath(url.pathname)) {
     return;
   }
 

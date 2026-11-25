@@ -1439,6 +1439,7 @@ export default {
         }
       }
       const isHtmlResponse = (res.headers.get('Content-Type') || '').includes('text/html');
+      const isAuthOrDashboardPath = /^\/(?:login(?:\.html)?|signup(?:\.html)?|reset-password(?:\.html)?|student-dashboard|candidate-hub|candidate|dashboard|portal|saved|admin)(?:\/|$)/i.test(pathname);
       if (res.status === 200 && (request.method === 'GET' || request.method === 'HEAD') && isHtmlResponse) {
         res = await hydrateExplorerIndexHtml(res, pathname, env, url);
       }
@@ -1453,6 +1454,12 @@ export default {
         headers.set('X-Frame-Options', 'SAMEORIGIN');
         headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
         headers.set('Permissions-Policy', 'camera=(), microphone=(self), geolocation=()');
+        if (isAuthOrDashboardPath) {
+          headers.set('Cache-Control', 'no-store, no-cache, private, must-revalidate');
+          headers.set('Pragma', 'no-cache');
+          headers.set('Expires', '0');
+          headers.set('Vary', 'Cookie');
+        }
         const securedRes = new Response(res.body, { status: res.status, statusText: res.statusText, headers });
         if (isPrimaryPortal && (request.method === 'GET' || request.method === 'HEAD') && res.status === 200) {
           const meta = await resolveDeepLinkMeta(url, env);

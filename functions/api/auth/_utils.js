@@ -7,7 +7,9 @@ export const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Content-Type': 'application/json; charset=utf-8'
+  'Content-Type': 'application/json; charset=utf-8',
+  'Cache-Control': 'no-store, private, max-age=0',
+  'Pragma': 'no-cache'
 };
 
 export function jsonResponse(data, status = 200, extraHeaders = {}) {

@@ -101,6 +101,8 @@
         try {
           const res = await fetch('/api/auth/register', {
             method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-store',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               fullName,
@@ -135,7 +137,7 @@
             if (data.token) {
               localStorage.setItem('cso_auth_token', data.token);
             }
-            window.location.href = '/student-dashboard/';
+            window.location.replace('/student-dashboard/');
           } else {
             localStorage.removeItem('cso_auth_token');
             localStorage.removeItem('cso_candidate_profile');
@@ -330,6 +332,8 @@
           try {
             const vRes = await fetch('/api/auth/verify-otp', {
               method: 'POST',
+              credentials: 'same-origin',
+              cache: 'no-store',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email, code }),
               signal: otpController.signal
@@ -362,14 +366,23 @@
                 localStorage.setItem('cso_auth_token', vData.sessionToken || vData.token);
               }
 
-              // Redirect immediately to the verified dashboard
+              // Redirect immediately in a single canonical hop to the verified dashboard
               const urlParams = new URLSearchParams(window.location.search);
-              const redirectParam = urlParams.get('redirect');
-              const targetUrl = (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//'))
-                ? redirectParam
-                : (vData.redirect || '/student-dashboard/?verified=1');
+              const rawRedirect = urlParams.get('redirect') || urlParams.get('next') || vData.redirect || '/student-dashboard/?verified=1';
+              let targetUrl = '/student-dashboard/?verified=1';
+              if (typeof rawRedirect === 'string' && rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')) {
+                try {
+                  const parsed = new URL(rawRedirect, window.location.origin);
+                  const p = parsed.pathname.toLowerCase();
+                  if (/^\/(?:student-dashboard|candidate-hub|candidate|dashboard|portal)\/?$/.test(p)) {
+                    targetUrl = '/student-dashboard/' + parsed.search + parsed.hash;
+                  } else if (!/^\/(?:login|signup|reset-password)/.test(p)) {
+                    targetUrl = parsed.pathname + parsed.search + parsed.hash;
+                  }
+                } catch (e) {}
+              }
 
-              window.location.href = targetUrl;
+              window.location.replace(targetUrl);
             } else {
               showError(vData.error || 'Invalid or expired verification code.');
               submitOtpBtn.disabled = false;

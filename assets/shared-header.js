@@ -595,13 +595,30 @@
 
       const doLogout = async () => {
         try {
-          await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+          await fetch('/api/auth/logout', { method: 'POST', credentials: 'include', cache: 'no-store' });
         } catch (e) {}
         try {
           localStorage.removeItem('cso_candidate_session_v1');
+          localStorage.removeItem('cso_candidate_profile');
           localStorage.removeItem('cso_auth_token');
         } catch (e) {}
-        window.location.reload();
+        if (typeof caches !== 'undefined') {
+          try {
+            const purge = (async () => {
+              const keys = await caches.keys();
+              await Promise.all(keys.map(async k => {
+                const c = await caches.open(k);
+                await Promise.all(['/student-dashboard/', '/student-dashboard/index.html', '/candidate-hub/', '/login.html', '/api/auth/me'].map(p => c.delete(p, { ignoreSearch: true }).catch(() => false)));
+              }));
+            })();
+            await Promise.race([purge, new Promise(r => setTimeout(r, 80))]);
+          } catch (e) {}
+        }
+        if (/^\/(?:student-dashboard|candidate-hub|saved)(?:\/|$)/i.test(window.location.pathname || '')) {
+          window.location.replace('/login.html');
+        } else {
+          window.location.reload();
+        }
       };
 
       const logoutBtn = el('button', 'btn-header-logout cso-logout-button', 'Logout');

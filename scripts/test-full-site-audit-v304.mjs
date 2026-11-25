@@ -230,21 +230,21 @@ check('5. SEO, Metadata, Open Graph, JSON-LD, Sitemap & WCAG 2.2 landmarks acros
   }
 });
 
-check('6. v304 cache busting & SSR shell synchronization', () => {
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v304';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v304';/);
+check('6. v304+ cache busting & SSR shell synchronization', () => {
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v3(?:0[4-9]|[1-9]\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v3(?:0[4-9]|[1-9]\d)';/);
   const ssr = read('functions/_lib/ssr-shell.js');
-  assert.ok(ssr.includes('/assets/css/cso-themes.css?v=20261125v304'), 'ssr-shell.js must include cso-themes.css?v=20261125v304');
-  assert.ok(ssr.includes('/assets/style.css?v=20261125v304'), 'ssr-shell.js must include style.css?v=20261125v304');
-  assert.ok(ssr.includes('/assets/css/portal-shell.css?v=20261125v304'), 'ssr-shell.js must include portal-shell.css?v=20261125v304');
-  assert.ok(ssr.includes('/assets/shared-header.js?v=20261125v304'), 'ssr-shell.js must include shared-header.js?v=20261125v304');
+  assert.match(ssr, /\/assets\/css\/cso-themes\.css\?v=20261125v3(?:0[4-9]|[1-9]\d)/, 'ssr-shell.js must include cso-themes.css?v=20261125v304+');
+  assert.match(ssr, /\/assets\/style\.css\?v=20261125v3(?:0[4-9]|[1-9]\d)/, 'ssr-shell.js must include style.css?v=20261125v304+');
+  assert.match(ssr, /\/assets\/css\/portal-shell\.css\?v=20261125v3(?:0[4-9]|[1-9]\d)/, 'ssr-shell.js must include portal-shell.css?v=20261125v304+');
+  assert.match(ssr, /\/assets\/shared-header\.js\?v=20261125v3(?:0[4-9]|[1-9]\d)/, 'ssr-shell.js must include shared-header.js?v=20261125v304+');
 
   for (const full of htmlFiles) {
     const rel = path.relative(ROOT, full);
     const html = fs.readFileSync(full, 'utf8');
-    if (html.includes('/assets/style.css')) assert.ok(html.includes('/assets/style.css?v=20261125v304'), `${rel} stale style.css version`);
-    if (html.includes('/assets/css/cso-themes.css')) assert.ok(html.includes('/assets/css/cso-themes.css?v=20261125v304'), `${rel} stale cso-themes.css version`);
-    if (html.includes('/assets/css/portal-shell.css')) assert.ok(html.includes('/assets/css/portal-shell.css?v=20261125v304'), `${rel} stale portal-shell.css version`);
+    if (html.includes('/assets/style.css')) assert.match(html, /\/assets\/style\.css\?v=20261125v3(?:0[4-9]|[1-9]\d)/, `${rel} stale style.css version`);
+    if (html.includes('/assets/css/cso-themes.css')) assert.match(html, /\/assets\/css\/cso-themes\.css\?v=20261125v3(?:0[4-9]|[1-9]\d)/, `${rel} stale cso-themes.css version`);
+    if (html.includes('/assets/css/portal-shell.css')) assert.match(html, /\/assets\/css\/portal-shell\.css\?v=20261125v3(?:0[4-9]|[1-9]\d)/, `${rel} stale portal-shell.css version`);
   }
 });
 

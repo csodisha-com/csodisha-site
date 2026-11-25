@@ -65,6 +65,42 @@
         }
       } catch (e) {}
 
+      function normalizeCanonicalRedirect(raw) {
+        const fallback = '/student-dashboard/';
+        if (!raw || typeof raw !== 'string') return fallback;
+        const trimmed = raw.trim();
+        if (!trimmed.startsWith('/') || trimmed.startsWith('//')) return fallback;
+        try {
+          const parsed = new URL(trimmed, window.location.origin);
+          if (parsed.origin !== window.location.origin) return fallback;
+          const p = parsed.pathname.toLowerCase();
+          if (/^\/(?:login(?:\.html)?|signup(?:\.html)?|reset-password(?:\.html)?)(?:\/|$)/.test(p)) {
+            return fallback;
+          }
+          if (/^\/(?:student-dashboard|candidate-hub|candidate|dashboard|portal)\/?$/.test(p)) {
+            return '/student-dashboard/' + parsed.search + parsed.hash;
+          }
+          return parsed.pathname + parsed.search + parsed.hash;
+        } catch (e) {
+          return fallback;
+        }
+      }
+
+      async function purgeAuthDashboardCaches() {
+        if (typeof caches === 'undefined') return;
+        const targets = ['/student-dashboard/', '/student-dashboard/index.html', '/candidate-hub/', '/login.html', '/api/auth/me'];
+        try {
+          const work = (async () => {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(async key => {
+              const cache = await caches.open(key);
+              await Promise.all(targets.map(path => cache.delete(path, { ignoreSearch: true }).catch(() => false)));
+            }));
+          })();
+          await Promise.race([work, new Promise(r => setTimeout(r, 80))]);
+        } catch (e) {}
+      }
+
       // ---------------- Sign-in screen ----------------
       const form = document.getElementById('candidate-login-form');
       const emailInput = document.getElementById('login-email');
@@ -112,6 +148,8 @@
         try {
           const res = await fetch('/api/auth/login', {
             method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-store',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
             signal: controller.signal
@@ -131,14 +169,14 @@
               localStorage.setItem('cso_auth_token', data.token);
             }
 
-            // Respect relative ?redirect= param
+            // Single-hop canonical redirect: normalize any alias (/candidate-hub/, /dashboard/)
+            // directly to /student-dashboard/ and evict any stale SW cache entries first.
             const urlParams = new URLSearchParams(window.location.search);
-            const redirectParam = urlParams.get('redirect');
-            const targetUrl = (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//'))
-              ? redirectParam
-              : '/student-dashboard/';
+            const redirectParam = urlParams.get('redirect') || urlParams.get('next');
+            const targetUrl = normalizeCanonicalRedirect(redirectParam);
 
-            window.location.href = targetUrl;
+            await purgeAuthDashboardCaches();
+            window.location.replace(targetUrl);
             return;
           }
 
@@ -359,7 +397,7 @@
             localStorage.removeItem('cso_candidate_session_v1');
             localStorage.removeItem('cso_candidate_profile');
           } catch (err) {}
-          window.location.href = '/login.html';
+          window.location.replace('/login.html');
         } catch (err) {
           showError('recovery-newpw-error', 'Unable to reach the server. Please try again.');
           unbusy(resetBtn);

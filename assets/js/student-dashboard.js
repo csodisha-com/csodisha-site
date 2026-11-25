@@ -136,11 +136,36 @@
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeMenu(); });
   }
 
+  async function purgeAuthDashboardCaches() {
+    if (typeof caches === 'undefined') return;
+    const targets = ['/student-dashboard/', '/student-dashboard/index.html', '/candidate-hub/', '/login.html', '/api/auth/me'];
+    try {
+      const work = (async () => {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(async key => {
+          const cache = await caches.open(key);
+          await Promise.all(targets.map(path => cache.delete(path, { ignoreSearch: true }).catch(() => false)));
+        }));
+      })();
+      await Promise.race([work, new Promise(r => setTimeout(r, 80))]);
+    } catch {}
+  }
+
+  function finishHydration() {
+    const skel = document.getElementById('cso-workspace-skeleton');
+    if (skel) skel.hidden = true;
+    const navSkel = document.getElementById('bp-sidebar-skeleton');
+    if (navSkel) navSkel.remove();
+    const layout = document.getElementById('bp-app-layout');
+    if (layout) layout.classList.remove('is-hydrating');
+  }
+
   async function performSignOut() {
-    try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
+    try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include', cache: 'no-store' }); } catch {}
     [SESSION_KEY, PROFILE_KEY, 'cso_auth_token'].forEach(k => {
       try { localStorage.removeItem(k); } catch {}
     });
+    await purgeAuthDashboardCaches();
     window.location.replace('/login.html');
   }
 
@@ -743,7 +768,15 @@
       if (savedLang === 'or') state.lang = 'or';
     } catch {}
 
-    const hubRes = await fetch('/api/candidate/hub-config', { credentials: 'include', cache: 'no-store' }).catch(() => null);
+    // v305: Fetch hub-config, workspace, and matches in parallel (single roundtrip)
+    // to eliminate multi-stage pre-hydration flashes.
+    const [hubSettled, wsRes, matchRes] = await Promise.allSettled([
+      fetch('/api/candidate/hub-config', { credentials: 'include', cache: 'no-store' }),
+      fetch('/api/candidate/workspace', { credentials: 'include', cache: 'no-store' }),
+      fetch('/api/candidate/matches', { credentials: 'include', cache: 'no-store' })
+    ]);
+
+    const hubRes = hubSettled.status === 'fulfilled' ? hubSettled.value : null;
     if (hubRes && hubRes.status === 401) {
       performSignOut();
       return;
@@ -751,6 +784,7 @@
     if (hubRes && hubRes.status === 403) {
       const errData = await hubRes.json().catch(() => ({}));
       state.restricted = errData;
+      finishHydration();
       renderRestrictedScreen(errData);
       return;
     }
@@ -770,10 +804,6 @@
       }
     }
 
-    const [wsRes, matchRes] = await Promise.allSettled([
-      fetch('/api/candidate/workspace', { credentials: 'include', cache: 'no-store' }),
-      fetch('/api/candidate/matches', { credentials: 'include', cache: 'no-store' })
-    ]);
     if (wsRes.status === 'fulfilled' && wsRes.value.ok) {
       const w = await wsRes.value.json().catch(() => null);
       if (w && w.ok) {
@@ -792,6 +822,7 @@
     renderNavigation();
     renderQuickStats();
     renderWorkspace();
+    finishHydration();
   }
 
   function wireControls() {

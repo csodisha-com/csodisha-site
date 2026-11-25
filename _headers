@@ -63,6 +63,44 @@
 
 /student-dashboard/*
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'
+  Cache-Control: no-store, no-cache, private, must-revalidate
+  Pragma: no-cache
+  Vary: Cookie
+
+/candidate-hub/*
+  Cache-Control: no-store, no-cache, private, must-revalidate
+  Pragma: no-cache
+  Vary: Cookie
+
+/saved/*
+  Cache-Control: no-store, no-cache, private, must-revalidate
+  Pragma: no-cache
+  Vary: Cookie
+
+/login.html
+  Cache-Control: no-store, no-cache, private, must-revalidate
+  Pragma: no-cache
+  Vary: Cookie
+
+/login/*
+  Cache-Control: no-store, no-cache, private, must-revalidate
+  Pragma: no-cache
+  Vary: Cookie
+
+/signup.html
+  Cache-Control: no-store, no-cache, private, must-revalidate
+  Pragma: no-cache
+  Vary: Cookie
+
+/signup/*
+  Cache-Control: no-store, no-cache, private, must-revalidate
+  Pragma: no-cache
+  Vary: Cookie
+
+/reset-password.html
+  Cache-Control: no-store, no-cache, private, must-revalidate
+  Pragma: no-cache
+  Vary: Cookie
 
 /about/*
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'

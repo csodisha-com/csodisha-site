@@ -14,12 +14,12 @@
   <meta name="description" content="Candidate workspace on Common Sense Odisha.">
   <link rel="stylesheet" href="/assets/css/cso-themes.css?v=20261125v304">
   <link rel="stylesheet" href="/assets/style.css?v=20261125v304">
-  <script src="/assets/shared-header.js?v=20261125v300" defer></script>
-  <link rel="stylesheet" href="/assets/css/student-dashboard-bp.css?v=20261125v304">
-  <link rel="stylesheet" href="/assets/css/candidate-hub-v244.css?v=20261125v304">
+  <script src="/assets/shared-header.js?v=20261125v305" defer></script>
+  <link rel="stylesheet" href="/assets/css/student-dashboard-bp.css?v=20261125v305">
+  <link rel="stylesheet" href="/assets/css/candidate-hub-v244.css?v=20261125v305">
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
-  <script src="/assets/js/student-auth-guard.js" defer></script>
+  <script src="/assets/js/student-auth-guard.js?v=20261125v305" defer></script>
 </head>
 <body class="cso-student-dashboard-page">
 <a class="cso-skip-link" href="#main-content">Skip to main content</a>
@@ -38,7 +38,7 @@
 </header>
 <nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
 
-<div id="bp-app-layout" class="bp-app-layout">
+<div id="bp-app-layout" class="bp-app-layout is-hydrating">
   <aside id="bp-sidebar" class="bp-sidebar" aria-label="Candidate Workspace Navigation">
     <div class="bp-sidebar-header">
       <a href="/" class="bp-brand">
@@ -52,7 +52,15 @@
     </div>
 
     <div class="bp-nav-scroll">
-      <nav id="bp-sidebar-nav" aria-label="Workspace Modules"></nav>
+      <nav id="bp-sidebar-nav" aria-label="Workspace Modules">
+        <div id="bp-sidebar-skeleton" class="bp-nav-skeleton" aria-hidden="true">
+          <span class="bp-nav-skeleton-row is-active"></span>
+          <span class="bp-nav-skeleton-row"></span>
+          <span class="bp-nav-skeleton-row"></span>
+          <span class="bp-nav-skeleton-row"></span>
+          <span class="bp-nav-skeleton-row"></span>
+        </div>
+      </nav>
     </div>
 
     <div class="bp-sidebar-footer">
@@ -114,7 +122,19 @@
       <div id="cso-hub-quick-stats" class="cso-hub-stats" hidden></div>
 
       <section id="cso-candidate-workspace" class="bp-panel" aria-live="polite">
-        <p id="cso-workspace-empty" class="cso-muted-note">Your workspace is clean — save items from published sections or add modules in Admin Studio.</p>
+        <div id="cso-workspace-skeleton" class="cso-hub-skeleton-grid" role="status" aria-label="Loading Candidate Workspace">
+          <div class="cso-hub-skeleton-card" aria-hidden="true">
+            <span class="cso-hub-skeleton-bar is-title"></span>
+            <span class="cso-hub-skeleton-bar is-line"></span>
+            <span class="cso-hub-skeleton-bar is-short"></span>
+          </div>
+          <div class="cso-hub-skeleton-card" aria-hidden="true">
+            <span class="cso-hub-skeleton-bar is-title"></span>
+            <span class="cso-hub-skeleton-bar is-line"></span>
+            <span class="cso-hub-skeleton-bar is-short"></span>
+          </div>
+        </div>
+        <p id="cso-workspace-empty" class="cso-muted-note" hidden>Your workspace is clean — save items from published sections or add modules in Admin Studio.</p>
         <div id="cso-workspace-items" class="cso-hub-grid" hidden></div>
       </section>
     </main>
@@ -199,6 +219,6 @@
 <script src="/assets/js/bookmark-manager.js" defer></script>
 <script src="/assets/js/candidate-sync.js" defer></script>
 <script src="/assets/js/candidate-hub-unified.js?v=20261124v244" defer></script>
-<script src="/assets/js/student-dashboard.js?v=20261125v303" defer></script>
+<script src="/assets/js/student-dashboard.js?v=20261125v305" defer></script>
 </body>
 </html>
