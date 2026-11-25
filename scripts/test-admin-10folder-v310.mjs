@@ -148,6 +148,10 @@ await check('2. Exact 10-Folder Admin Sidebar order & asset wiring', async () =>
   assert.ok(html.includes('10 / 10'), 'admin/index.html sidebar footer must show 10 / 10 folders');
 
   const adminJs = read('admin/admin.js');
+  assert.ok(adminJs.includes("activeFolderId: 'folder-command-overview'"), 'admin/admin.js must default activeFolderId to folder-command-overview');
+  assert.ok(adminJs.includes("activeModuleId: 'module-command-overview'"), 'admin/admin.js must default activeModuleId to module-command-overview');
+  assert.ok(adminJs.includes('expandedFolders: new Set()'), 'admin/admin.js must start with sidebar accordions collapsed');
+  assert.ok(html.includes('id="cso-overview-boot-card"'), 'admin/index.html must paint Command Overview on initial load');
   for (const marker of [
     'Command Overview',
     "folder.id === 'folder-about') return;",

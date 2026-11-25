@@ -8,8 +8,8 @@
   var masterNavigationSchema = null;
 
   var CSOState = {
-    activeFolderId: 'folder-jobs-careers',
-    activeModuleId: 'folder-jobs-careers',
+    activeFolderId: 'folder-command-overview',
+    activeModuleId: 'module-command-overview',
     activeJobsSubTab: 'articles',
     activeJobsSectorId: '',
     jobsSectorNodes: [],
@@ -27,7 +27,7 @@
     activeCommunityChannelId: '',
     communityChannelNodes: [],
     communityModerationCount: 0,
-    expandedFolders: new Set(['folder-jobs-careers']),
+    expandedFolders: new Set(),
     searchQuery: '',
     startTime: Date.now(),
     homepageCount: null,
@@ -1393,12 +1393,14 @@
 
     if (window.CSOLive && window.CSOLive.render(folderId, moduleId, dom.workspaceRoot, dom.moduleHeaderActions)) {
       if (caCard && (folderId === 'folder-study-library' || moduleId === 'module-01-001')) {
+        caCard.hidden = false;
         dom.workspaceRoot.appendChild(caCard);
         if (window.CSOFastPublish && window.CSOFastPublish.initCurrentAffairsPublisher) {
           window.CSOFastPublish.initCurrentAffairsPublisher(caCard);
         }
       }
       if (jobCard && (folderId === 'folder-jobs-careers' || moduleId === 'module-01-001')) {
+        jobCard.hidden = false;
         dom.workspaceRoot.appendChild(jobCard);
         if (window.CSOFastPublish && window.CSOFastPublish.initJobsDirectoryPublisher) {
           window.CSOFastPublish.initJobsDirectoryPublisher(jobCard);
@@ -1412,12 +1414,14 @@
     card.appendChild(el('p', '', 'Select a live editorial section from the navigation tree or use + Create New.'));
     dom.workspaceRoot.appendChild(card);
     if (caCard) {
+      caCard.hidden = false;
       dom.workspaceRoot.appendChild(caCard);
       if (window.CSOFastPublish && window.CSOFastPublish.initCurrentAffairsPublisher) {
         window.CSOFastPublish.initCurrentAffairsPublisher(caCard);
       }
     }
     if (jobCard) {
+      jobCard.hidden = false;
       dom.workspaceRoot.appendChild(jobCard);
       if (window.CSOFastPublish && window.CSOFastPublish.initJobsDirectoryPublisher) {
         window.CSOFastPublish.initJobsDirectoryPublisher(jobCard);
@@ -1486,12 +1490,14 @@
     dom.workspaceRoot.appendChild(host);
     window.CSOCms.mount(host, targetRoute, meta[3]);
     if (targetRoute === 'current-affairs/new' && caCard) {
+      caCard.hidden = false;
       dom.workspaceRoot.appendChild(caCard);
       if (window.CSOFastPublish && window.CSOFastPublish.initCurrentAffairsPublisher) {
         window.CSOFastPublish.initCurrentAffairsPublisher(caCard);
       }
     }
     if (targetRoute === 'jobs/new' && jobCard) {
+      jobCard.hidden = false;
       dom.workspaceRoot.appendChild(jobCard);
       if (window.CSOFastPublish && window.CSOFastPublish.initJobsDirectoryPublisher) {
         window.CSOFastPublish.initJobsDirectoryPublisher(jobCard);
@@ -1865,14 +1871,16 @@
     wireTopbarEvents();
     try {
       if (localStorage.getItem('cso_sidebar_collapsed') === '1') setSidebarCollapsed(true);
-      var savedGroups = JSON.parse(localStorage.getItem('cso_open_sidebar_groups') || '[]');
-      if (Array.isArray(savedGroups)) savedGroups.forEach(function (g) { CSOState.expandedFolders.add(g); });
     } catch (_e) {}
     await Promise.all([loadMasterNavigation(), hydrateSessionIdentity()]);
     var hashId = (window.location.hash || '').replace(/^#/, '');
-    var storedId = '';
-    try { storedId = localStorage.getItem('cso_active_module_id') || ''; } catch (_e) {}
-    var target = resolveModuleTarget(hashId) || resolveModuleTarget(storedId) || { folderId: OV_FOLDER_ID, moduleId: OV_MODULE_ID };
+    var folderParam = '';
+    try { folderParam = new URLSearchParams(window.location.search).get('folder') || ''; } catch (_e) {}
+    var explicitTarget = resolveModuleTarget(hashId) || resolveModuleTarget(folderParam);
+    var target = explicitTarget || { folderId: OV_FOLDER_ID, moduleId: OV_MODULE_ID };
+    if (explicitTarget && explicitTarget.folderId && !isOverviewId(explicitTarget.folderId)) {
+      CSOState.expandedFolders.add(explicitTarget.folderId);
+    }
     renderNavigationTree();
     selectModule(target.folderId, target.moduleId);
     refreshHomepageCount();

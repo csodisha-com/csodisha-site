@@ -283,7 +283,7 @@
         sessionStorage.removeItem('cso_post_login_hash');
       } catch (_e) {}
       var baseNext = (next || '/admin/').split('#')[0] || '/admin/';
-      location.replace(baseNext + '#module-01-001');
+      location.replace(baseNext + '#command-overview');
     } catch (err) {
       show(err.message || 'Sign-in failed.', 'error');
       go.disabled = false; go.textContent = 'Sign in';

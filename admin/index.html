@@ -166,21 +166,31 @@
           <nav class="cso-breadcrumbs" aria-label="Breadcrumbs">
             <button id="breadcrumbHomeBtn" type="button" class="cso-breadcrumb-btn">Studio</button>
             <span aria-hidden="true">/</span>
-            <button id="breadcrumbFolder" type="button" class="cso-breadcrumb-btn">Jobs</button>
+            <button id="breadcrumbFolder" type="button" class="cso-breadcrumb-btn">Executive Command Suite</button>
             <span aria-hidden="true">/</span>
-            <span id="breadcrumbModule" class="cso-text-accent">Live D1 Workspace</span>
+            <span id="breadcrumbModule" class="cso-text-accent">Command Overview</span>
           </nav>
           <h1 id="activeModuleHeading" class="cso-page-title">
-            <span id="activeModuleTitleText">Jobs</span>
-            <span id="activeModuleIdPill" class="cso-module-pill">Live D1 Sync</span>
+            <span id="activeModuleTitleText">Command Overview</span>
+            <span id="activeModuleIdPill" class="cso-module-pill">Live D1 / R2</span>
           </h1>
         </div>
         <div id="moduleHeaderActions" class="cso-subheader-actions"></div>
       </div>
 
       <div id="workspaceRoot" class="cso-workspace">
+        <section id="cso-overview-boot-card" class="studio-card cso-card" aria-label="Command Overview">
+          <div class="cso-ca-card-head">
+            <div class="cso-ca-title-group">
+              <span class="cso-live-dot" aria-hidden="true"></span>
+              <h2 class="cso-ca-heading">Command Overview</h2>
+              <span class="cso-pill-badge">Alt+0 · Live D1 / R2</span>
+            </div>
+            <p class="cso-ca-subhead">Loading live D1 &amp; R2 telemetry across all 10 Studio folders&hellip;</p>
+          </div>
+        </section>
         <!-- Daily Current Affairs & 5-MCQ Composer (v208) -->
-        <section id="cso-ca-publisher-card" class="studio-card cso-card cso-ca-composer" aria-labelledby="caComposerTitle">
+        <section id="cso-ca-publisher-card" class="studio-card cso-card cso-ca-composer" aria-labelledby="caComposerTitle" hidden>
           <div class="cso-ca-card-head">
             <div class="cso-ca-title-group">
               <span class="cso-live-dot" aria-hidden="true"></span>
@@ -472,7 +482,7 @@
         </section>
 
         <!-- Job Alert & 3-Layer Directory Publisher (v225) -->
-        <section id="cso-job-publisher-card" class="studio-card cso-card cso-job-composer" aria-labelledby="jobComposerTitle">
+        <section id="cso-job-publisher-card" class="studio-card cso-card cso-job-composer" aria-labelledby="jobComposerTitle" hidden>
           <div class="cso-ca-card-head">
             <div class="cso-ca-title-group">
               <span class="cso-live-dot" aria-hidden="true"></span>

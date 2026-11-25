@@ -1671,6 +1671,9 @@
   // ======================================================================
   function renderCurrentView() {
     if (!state.root) return;
+    if (window.CSOStudio && window.CSOStudio.getActiveFolderId && window.CSOStudio.getActiveFolderId() !== 'folder-jobs-careers') {
+      return;
+    }
     clear(state.root);
     var wrap = el('div', 'jph-wrap');
 
