@@ -235,15 +235,20 @@ async function callGeminiFreeTier(apiKey, prompt) {
   let lastErr = null;
   for (const model of GEMINI_MODELS) {
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const generationConfig = {
+      temperature: 0.3,
+      maxOutputTokens: 2048,
+      responseMimeType: 'application/json'
+    };
+    if (model.startsWith('gemini-3') || model.startsWith('gemini-4')) {
+      generationConfig.thinkingConfig = { thinkingLevel: 'low' };
+    }
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.3,
-          responseMimeType: 'application/json'
-        }
+        generationConfig
       })
     });
     if (res.ok) {

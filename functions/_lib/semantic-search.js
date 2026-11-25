@@ -272,7 +272,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
   await ensureSemanticSchema(env);
   const cleanQ = String(q || '').trim();
   const normalizedQ = cleanQ.toLowerCase().replace(/\s+/g, ' ');
-  const cacheKey = await sha256Hex(`v327|${type}|${normalizedQ}`);
+  const cacheKey = await sha256Hex(`v328|${type}|${normalizedQ}`);
   const dbg = debugOut || {};
   dbg.provider_attempted = dbg.provider_attempted || [];
   dbg.gemini_status = (env && env.GEMINI_API_KEY && String(env.GEMINI_API_KEY).trim()) ? 'configured' : 'unconfigured';
@@ -349,6 +349,22 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
     dbg.provider_attempted.push('google_gemini');
     try {
       for (const gemModel of ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemma-4-31b-it']) {
+        const generationConfig = {
+          temperature: 0.25,
+          maxOutputTokens: 2048,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              answer_en: { type: 'STRING' },
+              answer_or: { type: 'STRING' }
+            },
+            required: ['answer_en', 'answer_or']
+          }
+        };
+        if (gemModel.startsWith('gemini-3') || gemModel.startsWith('gemini-4')) {
+          generationConfig.thinkingConfig = { thinkingLevel: 'low' };
+        }
         const gemRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gemModel}:generateContent`, {
           method: 'POST',
           headers: {
@@ -357,11 +373,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
           },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.25,
-              maxOutputTokens: 900,
-              responseMimeType: 'application/json'
-            }
+            generationConfig
           })
         });
         dbg.gemini_status = `http_${gemRes.status}`;
@@ -452,8 +464,8 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
     const unescapeJsonStr = (s) => {
       try { return JSON.parse('"' + s + '"'); } catch (_e) { return s.replace(/\\n/g, ' ').replace(/\\"/g, '"'); }
     };
-    const mEn = rawText.match(/"answer_en"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-    const mOr = rawText.match(/"answer_or"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+    const mEn = rawText.match(/"answer_en"\s*:\s*"((?:[^"\\]|\\.)*)(?:"|$)/);
+    const mOr = rawText.match(/"answer_or"\s*:\s*"((?:[^"\\]|\\.)*)(?:"|$)/);
     if (mEn && mEn[1]) {
       parsed = {
         answer_en: unescapeJsonStr(mEn[1]).trim(),
@@ -466,6 +478,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
         .replace(/^```(?:json)?\s*/i, '')
         .replace(/\s*```$/i, '')
         .replace(/^\{+|\}+$/g, '')
+        .replace(/^\s*"answer_en"\s*:\s*"?/i, '')
         .trim();
       if (cleanedFallback) {
         parsed = {
