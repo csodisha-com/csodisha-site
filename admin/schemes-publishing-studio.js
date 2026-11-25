@@ -603,6 +603,25 @@
     bar.appendChild(bR);
     container.appendChild(bar);
 
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.renderDrawer) {
+      container.appendChild(window.CSOAiCoAuthor.renderDrawer({
+        mode: 'scheme',
+        hint: 'Paste Odisha or Central welfare scheme guidelines. Auto-fills bilingual EN + ଓଡ଼ିଆ title, slug, summary & eligibility table.',
+        onApply: function (data) {
+          if (data.title_en) d.title_en = data.title_en;
+          if (data.title_or) d.title_or = data.title_or;
+          if (data.slug) d.slug = data.slug;
+          if (data.summary_en) d.summary_en = data.summary_en;
+          if (data.summary_or) d.summary_or = data.summary_or;
+          if (data.eligibility_table_html) {
+            d.article_body_en = (d.article_body_en ? d.article_body_en + '\n\n' : '') + data.eligibility_table_html;
+          }
+          state.draft = d;
+          renderCurrentView();
+        }
+      }));
+    }
+
     if (state.activePreviewUrl) {
       var pv = el('div', 'sph-preview-box');
       pv.appendChild(el('span', '', 'Live Draft Preview Active (Expires: ' + state.activePreviewExp.slice(0, 19).replace('T', ' ') + ' UTC)'));

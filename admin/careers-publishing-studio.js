@@ -1044,6 +1044,25 @@
     var model = state.editing || emptyFormModel();
     var card = el('section', 'cps-card');
 
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.renderDrawer) {
+      card.appendChild(window.CSOAiCoAuthor.renderDrawer({
+        mode: 'career',
+        hint: 'Enter a career role or exam pathway (e.g. "OPSC OAS Officer Roadmap"). Auto-fills bilingual EN + ଓଡ଼ିଆ title, slug, summary & eligibility table.',
+        onApply: function (data) {
+          if (data.title_en) model.title_en = data.title_en;
+          if (data.title_or) model.title_or = data.title_or;
+          if (data.slug) model.slug = data.slug;
+          if (data.summary_en) model.summary_en = data.summary_en;
+          if (data.summary_or) model.summary_or = data.summary_or;
+          if (data.eligibility_table_html) {
+            model.roadmap_body_en = (model.roadmap_body_en ? model.roadmap_body_en + '\n\n' : '') + data.eligibility_table_html;
+          }
+          state.editing = model;
+          render();
+        }
+      }));
+    }
+
     var form = document.createElement('form');
     form.id = 'csoCareersComposerForm';
     form.noValidate = true;

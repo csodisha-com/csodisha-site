@@ -51,6 +51,7 @@
     totpSetup: null,
     totpRecoveryCodes: null,
     emailOtpStatus: null,
+    aiUsage: null,
     lastError: '',
     sitemapNote: ''
   };
@@ -127,13 +128,15 @@
       api('audit-logs' + q, 'GET'),
       api('sessions', 'GET'),
       totpApi('', 'GET').catch(function () { return null; }),
-      api('email-otp-status', 'GET').catch(function () { return null; })
-    ]).then(function (quad) {
-      S.auditItems = quad[0].items || [];
-      S.auditTotal = Number(quad[0].total || 0);
-      S.sessions = quad[1].items || [];
-      S.totpStatus = quad[2];
-      S.emailOtpStatus = quad[3];
+      api('email-otp-status', 'GET').catch(function () { return null; }),
+      rawApi('/api/admin/ai-coauthor', 'GET').catch(function () { return null; })
+    ]).then(function (res) {
+      S.auditItems = res[0].items || [];
+      S.auditTotal = Number(res[0].total || 0);
+      S.sessions = res[1].items || [];
+      S.totpStatus = res[2];
+      S.emailOtpStatus = res[3];
+      S.aiUsage = (res[4] && res[4].usage) || null;
       render();
     }).catch(function (err) {
       S.lastError = err.message;
@@ -438,11 +441,34 @@
     shell.appendChild(card);
   }
 
+  function renderAiQuotaCard(shell) {
+    var card = el('section', 'so-card');
+    card.id = 'soAiQuotaCard';
+    var u = S.aiUsage || { neurons_used: 0, daily_limit: 10000, total_calls: 0, remaining_neurons: 10000 };
+    var head = el('div', 'so-card-head');
+    var left = el('div');
+    left.appendChild(el('h2', 'so-title', 'Daily Free AI Quota Meter (v318)'));
+    left.appendChild(el('p', 'so-sub', '~' + u.neurons_used + ' / ' + u.daily_limit + ' Free Neurons Used Today (' + u.total_calls + ' calls · $0 Free-Tier Guarantee)'));
+    head.appendChild(left);
+    head.appendChild(el('span', 'so-badge ' + (u.neurons_used >= 9500 ? 'so-badge--warn' : 'so-badge--on'), '$0 FREE TIER'));
+    card.appendChild(head);
+
+    var prog = document.createElement('progress');
+    prog.className = 'cso-ai-quota-progress';
+    prog.max = Number(u.daily_limit || 10000);
+    prog.value = Math.min(Number(u.daily_limit || 10000), Number(u.neurons_used || 0));
+    prog.setAttribute('aria-label', 'Daily Free AI Neuron Usage');
+    card.appendChild(prog);
+    shell.appendChild(card);
+  }
+
   function renderSecurityTab(shell) {
     // 0. Per-Admin TOTP 2FA & Recovery Codes (v312)
     renderTotpCard(shell);
     // 0b. Admin Login Email OTP Verification (v315)
     renderEmailOtpCard(shell);
+    // 0c. Daily Free AI Quota Meter (v318)
+    renderAiQuotaCard(shell);
 
     // 1. Active Admin Sessions Card
     var sessCard = el('section', 'so-card');

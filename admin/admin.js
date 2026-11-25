@@ -1797,6 +1797,96 @@
   window.showToast = showToast;
   window.closeModal = closeModal;
   window.selectModule = selectModule;
+  window.CSOAiCoAuthor = {
+    renderDrawer: function (opts) {
+      var o = opts || {};
+      var details = document.createElement('details');
+      details.className = 'cso-ai-drawer';
+
+      var summary = document.createElement('summary');
+      summary.className = 'cso-ai-drawer-summary';
+      var titleSpan = document.createElement('span');
+      titleSpan.textContent = '\u2728 AI Co-Author (Free Tier)';
+      var badgeSpan = document.createElement('span');
+      badgeSpan.className = 'cso-ai-badge';
+      badgeSpan.textContent = '$0 Free Quota';
+      summary.appendChild(titleSpan);
+      summary.appendChild(badgeSpan);
+      details.appendChild(summary);
+
+      var body = document.createElement('div');
+      body.className = 'cso-ai-drawer-body';
+
+      var hint = document.createElement('p');
+      hint.className = 'cso-ai-hint';
+      hint.textContent = o.hint || 'Paste raw official notice text or enter a topic. Generates bilingual English + ଓଡ଼ିଆ fields using free-tier AI.';
+      body.appendChild(hint);
+
+      var textarea = document.createElement('textarea');
+      textarea.className = 'cso-ai-textarea';
+      textarea.rows = 4;
+      textarea.placeholder = o.placeholder || 'Paste notification text, eligibility criteria, or exam topic...';
+      body.appendChild(textarea);
+
+      var actions = document.createElement('div');
+      actions.className = 'cso-ai-actions';
+
+      var genBtn = document.createElement('button');
+      genBtn.type = 'button';
+      genBtn.className = 'cso-btn-primary cso-ai-gen-btn';
+      genBtn.textContent = '\u2728 Generate Bilingual Draft (Free)';
+      actions.appendChild(genBtn);
+
+      var statusEl = document.createElement('span');
+      statusEl.className = 'cso-ai-status';
+      statusEl.setAttribute('role', 'status');
+      statusEl.setAttribute('aria-live', 'polite');
+      actions.appendChild(statusEl);
+      body.appendChild(actions);
+
+      genBtn.addEventListener('click', function () {
+        var raw = textarea.value.trim();
+        if (raw.length < 8) {
+          statusEl.textContent = 'Enter at least 8 characters of source text or topic.';
+          textarea.focus();
+          return;
+        }
+        genBtn.disabled = true;
+        genBtn.textContent = 'Generating…';
+        statusEl.textContent = 'Contacting free-tier AI…';
+        fetch('/api/admin/ai-coauthor', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: o.mode || 'job', input: raw })
+        })
+          .then(function (r) {
+            return r.json().catch(function () { return {}; }).then(function (d) {
+              if (!r.ok || !d.ok) throw new Error(d.error || 'AI generation failed.');
+              return d;
+            });
+          })
+          .then(function (res) {
+            if (typeof o.onApply === 'function') o.onApply(res.data || {}, res);
+            var u = res.usage || {};
+            statusEl.textContent = 'Applied via ' + (res.provider === 'gemini_free' ? 'Gemini 2.5 Flash (Free)' : 'Workers AI') +
+              (u.neurons_used !== undefined ? (' · ' + u.neurons_used + ' / ' + (u.daily_limit || 10000) + ' neurons today') : '');
+            showToast('AI Co-Author draft applied!', 'ok');
+          })
+          .catch(function (err) {
+            statusEl.textContent = err.message || 'Generation failed.';
+            showToast(err.message || 'AI generation failed.', 'crimson');
+          })
+          .finally(function () {
+            genBtn.disabled = false;
+            genBtn.textContent = '\u2728 Generate Bilingual Draft (Free)';
+          });
+      });
+
+      details.appendChild(body);
+      return details;
+    }
+  };
   window.CSOStudio = {
     openRoute: openQuickCreateRoute,
     selectModule: selectModule,

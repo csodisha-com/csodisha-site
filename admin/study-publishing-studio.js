@@ -1616,6 +1616,39 @@
     fHead.appendChild(liveLink);
     formCard.appendChild(fHead);
 
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.renderDrawer) {
+      formCard.appendChild(window.CSOAiCoAuthor.renderDrawer({
+        mode: 'mcq',
+        hint: 'Enter an exam topic (e.g. "Odisha Geography & Rivers for OPSC OAS") to generate bilingual EN + ଓଡ଼ିଆ title, slug, and 5 MCQs.',
+        onApply: function (data) {
+          if (data.title_en) inTitleEn.value = data.title_en;
+          if (data.title_or) inTitleOr.value = data.title_or;
+          if (data.slug) inSlug.value = data.slug;
+          if (Array.isArray(data.questions) && data.questions.length) {
+            var csvRows = ['question_en,question_or,option_a,option_b,option_c,option_d,correct_index,explanation_en,explanation_or'];
+            data.questions.forEach(function (q) {
+              var opts = Array.isArray(q.options_en) ? q.options_en : ['', '', '', ''];
+              var cols = [
+                q.question_en || '',
+                q.question_or || '',
+                opts[0] || '',
+                opts[1] || '',
+                opts[2] || '',
+                opts[3] || '',
+                String(q.correct_index || 0),
+                q.explanation_en || '',
+                q.explanation_or || ''
+              ].map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; });
+              csvRows.push(cols.join(','));
+            });
+            S.cbtCsvDraft = csvRows.join('\n');
+            var csvEl = document.querySelector('#cbtCsvInput, textarea[data-cbt-csv]');
+            if (csvEl) csvEl.value = S.cbtCsvDraft;
+          }
+        }
+      }));
+    }
+
     var tForm = el('form', 'stps-grid-2');
     tForm.noValidate = true;
 
