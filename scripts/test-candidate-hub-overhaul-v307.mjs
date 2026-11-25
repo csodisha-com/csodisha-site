@@ -91,17 +91,18 @@ check('4. Mobile Responsiveness (< 1100px / < 960px), 16px Inputs, 44px Targets 
   assert.ok(js.includes('setMobileDrawerOpen') && js.includes("e.key === 'Escape'"), 'Mobile drawer must support Escape-to-close & scroll lock');
 });
 
-check('5. Strict CSP compliance & v307+ / v308 cache busting + style.css .cso-hub-card override guard', () => {
+check('5. Strict CSP compliance & v307+ / v309 cache busting + style.css .cso-hub-card override guard', () => {
   const html = read('student-dashboard/index.html');
   for (const tok of [
-    '/assets/css/student-dashboard-bp.css?v=20261125v308',
-    '/assets/css/candidate-hub-v244.css?v=20261125v308',
+    '/assets/css/student-dashboard-bp.css?v=20261125v309',
+    '/assets/css/candidate-hub-v244.css?v=20261125v309',
     '/assets/js/student-dashboard.js?v=20261125v308'
   ]) {
     assert.ok(html.includes(tok), `student-dashboard/index.html missing ${tok}`);
   }
   const hubCss = read('assets/css/candidate-hub-v244.css');
   assert.ok(hubCss.includes('#cso-candidate-workspace .cso-hub-card') && hubCss.includes('align-items: stretch;'), 'candidate-hub-v244.css must override assets/style.css .cso-hub-card align-items');
+  assert.ok(hubCss.includes('#cso-candidate-workspace .cso-hub-row--pair > .cso-hub-card--full'), 'candidate-hub-v244.css must prevent .cso-hub-card--full from spanning both columns inside .cso-hub-row--pair');
   assert.ok(hubCss.includes('.cso-hub-list.cso-vault-grid'), 'candidate-hub-v244.css must ensure .cso-vault-grid beats .cso-hub-list flex');
   assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v3(?:0[789]|[1-9]\d)';/);
   assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v3(?:0[789]|[1-9]\d)';/);
