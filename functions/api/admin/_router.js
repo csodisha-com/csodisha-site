@@ -137,6 +137,13 @@ export async function handleAdminApi(request, env) {
   const res = await dispatchAdminApi(request, env);
   if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 400) {
     await invalidateAllPublicCaches(request);
+    try {
+      res.headers.set('X-CSO-Cache-Purged', '1');
+    } catch (_) {
+      const headers = new Headers(res.headers);
+      headers.set('X-CSO-Cache-Purged', '1');
+      return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+    }
   }
   return res;
 }

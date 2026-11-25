@@ -91,8 +91,14 @@
       return node;
     }
     if (section === 'latest_updates_tabs') {
+      var canonicalCat = String(item.title_en || title || '').trim();
+      var tabKey = canonicalCat.toLowerCase();
       node = make('button', '', title);
       node.type = 'button';
+      node.setAttribute('role', 'tab');
+      node.setAttribute('data-tab', tabKey);
+      node.setAttribute('data-category', canonicalCat);
+      node.setAttribute('aria-selected', 'false');
       node.setAttribute('aria-pressed', 'false');
       node.setAttribute('data-hb-id', item.id || '');
       return node;
@@ -206,9 +212,19 @@
     var tabs = document.querySelector('.lu .tabs');
     if (tabs && has('latest_updates_tabs')) {
       var tabNodes = build('latest_updates_tabs');
-      if (tabNodes.length) { tabNodes[0].className = 'a'; tabNodes[0].setAttribute('aria-pressed', 'true'); }
+      var hasAll = tabNodes.some(function (n) { return n.getAttribute('data-tab') === 'all'; });
+      if (!hasAll) {
+        tabNodes.unshift(createNode('latest_updates_tabs', { id: 'hb_latest_updates_tabs_01', title_en: 'All', title_or: 'ସମସ୍ତ' }, lang));
+      }
+      if (tabNodes.length) {
+        tabNodes[0].className = 'a';
+        tabNodes[0].setAttribute('aria-selected', 'true');
+        tabNodes[0].setAttribute('aria-pressed', 'true');
+      }
+      tabs.setAttribute('role', 'tablist');
       replaceKids(tabs, tabNodes);
       if (home.bindTabs) home.bindTabs();
+      if (home.setCategory) home.setCategory(tabNodes[0] ? (tabNodes[0].getAttribute('data-category') || 'All') : 'All');
       any = true;
     }
 

@@ -61,6 +61,7 @@
 .hs-pv__label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--pv-muted); margin-bottom: 8px; }
 .hs-pv__stage { display: flex; flex-wrap: wrap; gap: 6px; }
 .hs-pv .search-chip, .hs-pv .hs-pv__stage--latest_updates_tabs button { background: var(--pv-soft); color: var(--pv-primary); border: 1px solid var(--pv-border); border-radius: 999px; padding: 4px 12px; font: inherit; font-size: 0.8rem; }
+.hs-pv .hs-pv__stage--latest_updates_tabs button.is-active, .hs-pv .hs-pv__stage--latest_updates_tabs button[aria-selected="true"] { background: var(--pv-primary); color: var(--pv-primary-fg); border-color: var(--pv-primary); font-weight: 700; }
 .hs-pv .cso-compass-card, .hs-pv .cso-topic-card, .hs-pv .tool-card, .hs-pv .cso-hub-card { display: flex; gap: 10px; align-items: flex-start; width: 100%; background: var(--pv-card); color: var(--pv-text); border: 1px solid var(--pv-border); border-radius: 10px; padding: 10px; text-decoration: none; }
 .hs-pv .cso-compass-card__icon, .hs-pv .cso-topic-card__badge, .hs-pv .cso-hub-card__icon, .hs-pv .tool-card .ic { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; background: var(--pv-soft); color: var(--pv-primary); }
 .hs-pv h3 { margin: 0; font-size: 0.9rem; color: var(--pv-text); }

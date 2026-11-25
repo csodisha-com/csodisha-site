@@ -2596,7 +2596,8 @@ function csoUpdateBadges(u){
 
 function lu(){
   $$('.lu .it,.lu .em').forEach(x=>x.remove());
-  const L=csoPublishedUpdates().filter(u=>cat==='All'||u.cat===cat).slice(0,5);
+  const activeCat=String(cat||'All').trim().toLowerCase();
+  const L=csoPublishedUpdates().filter(u=>activeCat==='all'||!activeCat||String(u.cat||'').trim().toLowerCase()===activeCat).slice(0,5);
   const html=L.map(u=>{
     const tagMod=u.tag==='SCHEME'?'tg--scheme':u.tag==='EDUCATION'?'tg--edu':u.tag==='GUIDE'?'tg--guide':'';
     const linkHtml=u.article_href
@@ -2784,20 +2785,25 @@ $$('.tp').forEach((c, index) => {
 });
 $$('.tl.card').forEach(c=>{const t=clean($('b',c).textContent);bind(c,t);if(c.closest('.sec').textContent.includes('Important Tools'))TOOLS.push([t,slug(t),$('small',c).textContent])});
 const bindLuTabs=()=>$$('.lu .tabs button').forEach(s=>{
-  s.dataset.category=s.textContent.trim();
+  const canonical=(s.dataset.category||s.textContent||'').trim()||'All';
+  s.dataset.category=canonical;
+  if(!s.dataset.tab)s.dataset.tab=canonical.toLowerCase();
+  if(!s.getAttribute('role'))s.setAttribute('role','tab');
+  if(!s.hasAttribute('aria-selected'))s.setAttribute('aria-selected',String(s.classList.contains('a')));
   s.onclick=()=>{
     $$('.lu .tabs button').forEach(x=>{
       const active=x===s;
       x.classList.toggle('a',active);
       x.setAttribute('aria-pressed',String(active));
+      x.setAttribute('aria-selected',String(active));
     });
-    cat=s.dataset.category;
+    cat=s.dataset.category||'All';
     lu();
     localize($('.lu'));
   };
 });
 bindLuTabs();
-window.csoHome=Object.assign(window.csoHome||{},{bindTabs:bindLuTabs,bindTool:bind,localize});
+window.csoHome=Object.assign(window.csoHome||{},{bindTabs:bindLuTabs,bindTool:bind,localize,setCategory:(nextCat)=>{cat=nextCat||'All';lu();}});
 lu();
 let selectedSuggestIndex = -1;
 let currentSuggestions = [];

@@ -416,7 +416,40 @@
       tile.setAttribute('data-pv-theme', t.id);
       tile.appendChild(el('div', 'hs-pv__label', t.label));
       var stage = el('div', 'hs-pv__stage hs-pv__stage--' + d.section_key);
-      if (window.CSOHomeBlocks && d.title_en) {
+      if (d.section_key === 'latest_updates_tabs') {
+        var baseTabs = [
+          { id: 'hb_latest_updates_tabs_01', title_en: 'All', title_or: 'ସମସ୍ତ' },
+          { id: 'hb_latest_updates_tabs_02', title_en: 'Jobs', title_or: 'ଚାକିରି' },
+          { id: 'hb_latest_updates_tabs_03', title_en: 'Schemes', title_or: 'ଯୋଜନା' },
+          { id: 'hb_latest_updates_tabs_04', title_en: 'Education', title_or: 'ଶିକ୍ଷା' },
+          { id: 'hb_latest_updates_tabs_05', title_en: 'Odisha', title_or: 'ଓଡ଼ିଶା' },
+          { id: 'hb_latest_updates_tabs_06', title_en: 'National', title_or: 'ଜାତୀୟ' }
+        ];
+        var previewTabs = baseTabs.map(function (bt) {
+          var liveMatch = state.items.find(function (x) {
+            return x.section_key === 'latest_updates_tabs' && String(x.title_en || '').trim().toLowerCase() === bt.title_en.toLowerCase();
+          });
+          return liveMatch ? Object.assign({}, bt, liveMatch) : bt;
+        });
+        if (d.title_en) {
+          var dKey = String(d.title_en || '').trim().toLowerCase();
+          var idx = previewTabs.findIndex(function (x) { return String(x.title_en || '').trim().toLowerCase() === dKey || (d.id && x.id === d.id); });
+          if (idx >= 0) previewTabs[idx] = Object.assign({}, previewTabs[idx], d);
+          else previewTabs.push(d);
+        }
+        previewTabs.forEach(function (tabItem, idx) {
+          var btn = window.CSOHomeBlocks
+            ? window.CSOHomeBlocks.createNode('latest_updates_tabs', tabItem, state.previewLang)
+            : el('button', '', (state.previewLang === 'or' && tabItem.title_or) ? tabItem.title_or : tabItem.title_en);
+          btn.type = 'button';
+          if (idx === 0) {
+            btn.classList.add('is-active');
+            btn.setAttribute('aria-selected', 'true');
+            btn.setAttribute('aria-pressed', 'true');
+          }
+          stage.appendChild(btn);
+        });
+      } else if (window.CSOHomeBlocks && d.title_en) {
         var node = window.CSOHomeBlocks.createNode(d.section_key, d, state.previewLang);
         if (node.tagName === 'A') node.removeAttribute('href');
         stage.appendChild(node);

@@ -126,8 +126,8 @@ await check('Homepage Studio CSS uses semantic --studio-* / --cso-* variables an
 });
 
 await check('sw.js and ops-sentinel bumped to cso-candidate-cache-v242+', () => {
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:4[2-9]|[5-9]\d)';/.test(read('sw.js')));
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:4[2-9]|[5-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-(?:v2(?:4[2-9]|[5-9]\d)|v3\d\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-(?:v2(?:4[2-9]|[5-9]\d)|v3\d\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
 console.log(`\nSummary: ${passed} passed, ${failed} failed.`);

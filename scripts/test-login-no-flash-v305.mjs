@@ -45,7 +45,7 @@ console.log('\n=== v305 Zero-Flash Candidate Login & Dashboard Hydration Verific
 
 await check('1. sw.js enforces Network-Only (no-store) on auth/dashboard routes & /api/auth/*, plus skipWaiting + clients.claim', () => {
   const sw = read('sw.js');
-  assert.match(sw, /const CACHE_NAME = 'cso-candidate-cache-v305';/);
+  assert.match(sw, /const CACHE_NAME = 'cso-candidate-cache-v3(?:0[5-9]|[1-9]\d)';/);
   assert.ok(sw.includes('AUTH_NO_STORE_ROUTE_RE'), 'sw.js missing AUTH_NO_STORE_ROUTE_RE');
   assert.ok(sw.includes("cache: 'no-store'"), 'sw.js missing cache: no-store on auth navigations');
   assert.ok(sw.includes("url.pathname.startsWith('/api/auth/')"), 'sw.js must bypass /api/auth/*');
@@ -204,10 +204,10 @@ await check('5. login.js, signup.js & shared-header.js perform single-hop canoni
   assert.ok(headerJs.includes("window.location.replace('/login.html')"), 'shared-header.js logout on dashboard must replace to /login.html');
 });
 
-await check('6. Strict CSP compliance & v305 cache busting across affected HTML pages, ssr-shell.js, sw.js & ops-sentinel.js', () => {
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v305';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v305';/);
-  assert.ok(read('functions/_lib/ssr-shell.js').includes('/assets/shared-header.js?v=20261125v305'), 'ssr-shell.js missing shared-header.js?v=20261125v305');
+await check('6. Strict CSP compliance & v305+ cache busting across affected HTML pages, ssr-shell.js, sw.js & ops-sentinel.js', () => {
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v3(?:0[5-9]|[1-9]\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v3(?:0[5-9]|[1-9]\d)';/);
+  assert.match(read('functions/_lib/ssr-shell.js'), /\/assets\/shared-header\.js\?v=20261125v3(?:0[5-9]|[1-9]\d)/, 'ssr-shell.js missing shared-header.js?v=20261125v305+');
   assert.ok(read('login.html').includes('/assets/js/pages/login.js?v=20261125v305'), 'login.html missing login.js?v=20261125v305');
   assert.ok(read('signup.html').includes('/assets/js/pages/signup.js?v=20261125v305'), 'signup.html missing signup.js?v=20261125v305');
 

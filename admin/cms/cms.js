@@ -10429,9 +10429,13 @@
     var canStatus = Boolean(me && (me.role === 'admin' || me.role === 'editor' || me.role === 'reviewer'));
     var wrap = el('div', { class: 'cso-ops-studio' });
     var kpis = el('div', { class: 'cso-ops-kpis' });
+    var filterBar = el('div', { class: 'tabs cso-lu-admin-tabs', role: 'tablist', 'aria-label': 'Filter notices by homepage tab' });
     var previewBox = el('div', { class: 'cso-ops-card' });
     var composerBox = el('div');
     var tableBox = el('div');
+    var NOTICE_TABS = ['All', 'Jobs', 'Schemes', 'Education', 'Odisha', 'National'];
+    var activeNoticeTab = 'All';
+    var cachedAnnouncementsRes = null;
 
     var addBtn = el('button', { class: 'cso-ops-btn cso-ops-btn--primary', type: 'button', text: '+ Post Official Notice / Announcement' });
     if (!canWrite) addBtn.disabled = true;
@@ -10445,6 +10449,7 @@
       el('div', {}, [addBtn])
     ]));
     wrap.appendChild(kpis);
+    wrap.appendChild(filterBar);
     wrap.appendChild(previewBox);
     wrap.appendChild(composerBox);
     wrap.appendChild(el('div', { class: 'cso-ops-card' }, [
@@ -10463,6 +10468,10 @@
         el('option', { value: 'deadline', text: 'deadline — Exam / Application Deadline' })
       ]);
       prioSel.value = (editing && editing.notice_priority) || 'normal';
+      var catSel = el('select', { class: 'select' }, NOTICE_TABS.map(function (t) {
+        return el('option', { value: t, text: t === 'All' ? 'All (General / All Tabs)' : t });
+      }));
+      catSel.value = NOTICE_TABS.indexOf((editing && editing.category) || 'All') !== -1 ? ((editing && editing.category) || 'All') : 'All';
       var stageSel = el('select', { class: 'select' }, [
         el('option', { value: 'draft', text: 'draft' }),
         el('option', { value: 'published', text: 'published' }),
@@ -10490,6 +10499,7 @@
           var payload = {
             title: titleInp.value.trim(),
             post_type: 'announcement',
+            category: catSel.value || 'All',
             workflow_stage: stageSel.value,
             notice_priority: prioSel.value,
             notice_expires_at: expInp.value.trim() || null,
@@ -10519,6 +10529,7 @@
       card.appendChild(el('h3', { text: isEdit ? 'Edit Official Notice' : 'Post Official Notice / Announcement' }));
       card.appendChild(el('div', { class: 'cso-ops-grid-2' }, [
         el('div', { class: 'field' }, [el('label', { text: 'Notice Headline *' }), titleInp]),
+        el('div', { class: 'field' }, [el('label', { text: 'Homepage Tab / Category' }), catSel]),
         el('div', { class: 'field' }, [el('label', { text: 'Priority' }), prioSel]),
         el('div', { class: 'field' }, [el('label', { text: 'Workflow Stage' }), stageSel]),
         el('div', { class: 'field' }, [el('label', { text: 'Expires At (ISO)' }), expInp]),
@@ -10534,91 +10545,124 @@
 
     addBtn.addEventListener('click', function () { openForm(null); });
 
+    function matchesNoticeTab(it) {
+      if (activeNoticeTab === 'All') return true;
+      var itemCat = String((it && it.category) || '').trim().toLowerCase();
+      return itemCat === activeNoticeTab.toLowerCase();
+    }
+
+    function renderNoticeViews(res) {
+      clear(kpis);
+      clear(filterBar);
+      clear(previewBox);
+      clear(tableBox);
+      var allItems = Array.isArray(res.items) ? res.items : [];
+      var k = res.kpis || {};
+      [
+        ['Total Notices', String(k.total_count || 0)],
+        ['Active Live Notices', String(k.active_live_count || 0)],
+        ['Urgent / Deadline', String(k.urgent_count || 0)],
+        ['Expiring Soon (7d)', String(k.expiring_soon_count || 0)]
+      ].forEach(function (pair) {
+        kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
+          el('span', { class: 'muted sm', text: pair[0] }),
+          el('strong', { text: pair[1] })
+        ]));
+      });
+
+      NOTICE_TABS.forEach(function (tabName) {
+        var count = tabName === 'All'
+          ? allItems.length
+          : allItems.filter(function (x) { return String(x.category || '').trim().toLowerCase() === tabName.toLowerCase(); }).length;
+        var isSel = activeNoticeTab === tabName;
+        var btn = el('button', {
+          class: 'btn sm' + (isSel ? ' primary' : ''),
+          type: 'button',
+          role: 'tab',
+          'data-tab': tabName.toLowerCase(),
+          'aria-selected': String(isSel),
+          text: tabName + ' (' + count + ')'
+        });
+        btn.addEventListener('click', function () {
+          activeNoticeTab = tabName;
+          renderNoticeViews(res);
+        });
+        filterBar.appendChild(btn);
+      });
+
+      previewBox.appendChild(el('h3', { text: 'Live Public Notice Banner Preview (' + activeNoticeTab + ')' }));
+      var ticker = (Array.isArray(res.ticker_preview) ? res.ticker_preview : []).filter(matchesNoticeTab);
+      if (!ticker.length) {
+        previewBox.appendChild(el('div', { class: 'muted sm', text: 'No active published notices currently live in ' + activeNoticeTab + '.' }));
+      } else {
+        ticker.slice(0, 3).forEach(function (t) {
+          previewBox.appendChild(el('div', { class: 'cso-sec-sim-result ' + (t.notice_priority === 'urgent' ? 'is-deny' : 'is-allow') }, [
+            el('div', { class: 'cso-ops-subhead' }, [
+              el('strong', { text: t.title }),
+              el('span', { class: 'badge ' + (t.notice_priority === 'urgent' ? 'bad' : 'ok'), text: t.notice_priority.toUpperCase() })
+            ]),
+            el('span', { class: 'muted sm', text: (t.category ? '[' + t.category + '] ' : '') + (t.summary || '') + (t.notice_cta_url ? ' · CTA: ' + t.notice_cta_url : '') })
+          ]));
+        });
+      }
+
+      var items = allItems.filter(matchesNoticeTab);
+      if (!items.length) {
+        tableBox.appendChild(el('div', { class: 'muted sm', text: 'No announcements in ' + activeNoticeTab + ' yet.' }));
+        return;
+      }
+      var tbody = el('tbody');
+      items.forEach(function (it) {
+        var prioCls = it.notice_priority === 'urgent' ? 'bad' : (it.notice_priority === 'deadline' ? 'warn' : 'ok');
+        var actTd = el('td', { class: 'cso-ops-actions' });
+        if (canWrite) {
+          var eb = el('button', { class: 'btn sm', type: 'button', text: 'Edit' });
+          eb.addEventListener('click', function () { openForm(it); });
+          actTd.appendChild(eb);
+        }
+        if (canStatus) {
+          var nextSt = it.status === 'published' ? 'archived' : 'published';
+          var sb = el('button', { class: 'btn sm', type: 'button', text: it.status === 'published' ? 'Expire / Archive' : 'Publish' });
+          sb.addEventListener('click', async function () {
+            sb.disabled = true;
+            try {
+              await api('PATCH', 'content/posts/' + encodeURIComponent(it.id) + '/status', { workflow_stage: nextSt });
+              toast('Notice updated to ' + nextSt);
+              await load();
+            } catch (err) {
+              toast(err.message || 'Status update failed', true);
+              sb.disabled = false;
+            }
+          });
+          actTd.appendChild(sb);
+        }
+        tbody.appendChild(el('tr', {}, [
+          el('td', {}, [el('strong', { text: it.title }), el('div', { class: 'muted sm', text: (it.category ? it.category + ' · ' : '') + (it.notice_cta_url || 'No CTA') })]),
+          el('td', {}, [el('span', { class: 'badge ' + prioCls, text: it.notice_priority })]),
+          el('td', {}, [el('span', { class: 'badge ' + (it.status === 'published' && !it.is_expired ? 'ok' : 'warn'), text: it.is_expired ? 'expired' : it.status })]),
+          el('td', { text: it.notice_expires_at ? String(it.notice_expires_at).slice(0, 10) : 'No expiry' }),
+          actTd
+        ]));
+      });
+      tableBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
+        el('table', { class: 'table' }, [
+          el('thead', {}, [el('tr', {}, [
+            el('th', { text: 'Headline' }),
+            el('th', { text: 'Priority' }),
+            el('th', { text: 'Status' }),
+            el('th', { text: 'Expiry' }),
+            el('th', { text: 'Actions' })
+          ])]),
+          tbody
+        ])
+      ]));
+    }
+
     async function load() {
       try {
         var res = await api('GET', 'content/announcements');
-        clear(kpis);
-        clear(previewBox);
-        clear(tableBox);
-        var k = res.kpis || {};
-        [
-          ['Total Notices', String(k.total_count || 0)],
-          ['Active Live Notices', String(k.active_live_count || 0)],
-          ['Urgent / Deadline', String(k.urgent_count || 0)],
-          ['Expiring Soon (7d)', String(k.expiring_soon_count || 0)]
-        ].forEach(function (pair) {
-          kpis.appendChild(el('div', { class: 'cso-ops-kpi' }, [
-            el('span', { class: 'muted sm', text: pair[0] }),
-            el('strong', { text: pair[1] })
-          ]));
-        });
-
-        previewBox.appendChild(el('h3', { text: 'Live Public Notice Banner Preview' }));
-        var ticker = Array.isArray(res.ticker_preview) ? res.ticker_preview : [];
-        if (!ticker.length) {
-          previewBox.appendChild(el('div', { class: 'muted sm', text: 'No active published notices currently live.' }));
-        } else {
-          ticker.slice(0, 3).forEach(function (t) {
-            previewBox.appendChild(el('div', { class: 'cso-sec-sim-result ' + (t.notice_priority === 'urgent' ? 'is-deny' : 'is-allow') }, [
-              el('div', { class: 'cso-ops-subhead' }, [
-                el('strong', { text: t.title }),
-                el('span', { class: 'badge ' + (t.notice_priority === 'urgent' ? 'bad' : 'ok'), text: t.notice_priority.toUpperCase() })
-              ]),
-              el('span', { class: 'muted sm', text: (t.summary || '') + (t.notice_cta_url ? ' · CTA: ' + t.notice_cta_url : '') })
-            ]));
-          });
-        }
-
-        var items = Array.isArray(res.items) ? res.items : [];
-        if (!items.length) {
-          tableBox.appendChild(el('div', { class: 'muted sm', text: 'No announcements created yet.' }));
-          return;
-        }
-        var tbody = el('tbody');
-        items.forEach(function (it) {
-          var prioCls = it.notice_priority === 'urgent' ? 'bad' : (it.notice_priority === 'deadline' ? 'warn' : 'ok');
-          var actTd = el('td', { class: 'cso-ops-actions' });
-          if (canWrite) {
-            var eb = el('button', { class: 'btn sm', type: 'button', text: 'Edit' });
-            eb.addEventListener('click', function () { openForm(it); });
-            actTd.appendChild(eb);
-          }
-          if (canStatus) {
-            var nextSt = it.status === 'published' ? 'archived' : 'published';
-            var sb = el('button', { class: 'btn sm', type: 'button', text: it.status === 'published' ? 'Expire / Archive' : 'Publish' });
-            sb.addEventListener('click', async function () {
-              sb.disabled = true;
-              try {
-                await api('PATCH', 'content/posts/' + encodeURIComponent(it.id) + '/status', { workflow_stage: nextSt });
-                toast('Notice updated to ' + nextSt);
-                await load();
-              } catch (err) {
-                toast(err.message || 'Status update failed', true);
-                sb.disabled = false;
-              }
-            });
-            actTd.appendChild(sb);
-          }
-          tbody.appendChild(el('tr', {}, [
-            el('td', {}, [el('strong', { text: it.title }), el('div', { class: 'muted sm', text: it.notice_cta_url || 'No CTA' })]),
-            el('td', {}, [el('span', { class: 'badge ' + prioCls, text: it.notice_priority })]),
-            el('td', {}, [el('span', { class: 'badge ' + (it.status === 'published' && !it.is_expired ? 'ok' : 'warn'), text: it.is_expired ? 'expired' : it.status })]),
-            el('td', { text: it.notice_expires_at ? String(it.notice_expires_at).slice(0, 10) : 'No expiry' }),
-            actTd
-          ]));
-        });
-        tableBox.appendChild(el('div', { class: 'cso-ops-table-wrap' }, [
-          el('table', { class: 'table' }, [
-            el('thead', {}, [el('tr', {}, [
-              el('th', { text: 'Headline' }),
-              el('th', { text: 'Priority' }),
-              el('th', { text: 'Status' }),
-              el('th', { text: 'Expiry' }),
-              el('th', { text: 'Actions' })
-            ])]),
-            tbody
-          ])
-        ]));
+        cachedAnnouncementsRes = res;
+        renderNoticeViews(res);
       } catch (e) {
         toast(e.message || 'Failed to load announcements', true);
       }

@@ -11,7 +11,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v305';
+const CACHE_NAME = 'cso-candidate-cache-v306';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 // Authenticated, auth & account routes that must NEVER be served from or written to SW HTML cache.
