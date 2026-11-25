@@ -744,6 +744,8 @@ html[data-theme="dark"] .cp-chip.is-bounty {
 
 
 .com-hero--compact {
+  width: 100%;
+  box-sizing: border-box;
   padding: 1.2rem 1.5rem;
 }
 
@@ -1123,27 +1125,29 @@ html[data-theme="dark"] .com-widget-cta:hover {
     align-items: flex-start;
   }
 }/* ==========================================================================
-   CENTERED TWO-COLUMN EDITORIAL FORUM LAYOUT (v294)
-   Max-width 1180px Shell + 1fr 310px Workspace + Polished Thread Cards
+   FULL-WIDTH TWO-COLUMN EDITORIAL FORUM LAYOUT (v297 — Matches /study-library/)
+   100% Width Shell + minmax(0, 1fr) 340px Workspace + Visible Sticky Sidebar
    4-Theme Token Aware (System, Dark Night, Reading Mode, Odisha & Bharat)
    ========================================================================== */
 
 
 body[data-cso-portal="community"] #cso-community-portal-root > .cp-root,
 .cp-root.com-shell {
+  display: grid;
   width: 100% !important;
-  max-width: 1180px !important;
-  margin: 0 auto !important;
-  padding: 20px 20px 48px !important;
+  max-width: 100% !important;
+  margin: 0 0 28px !important;
+  padding: 0 !important;
   box-sizing: border-box !important;
   gap: 20px;
 }
 
 .com-workspace-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 310px;
-  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 24px;
   align-items: start;
+  width: 100%;
 }
 
 .com-feed-col {
@@ -1151,6 +1155,7 @@ body[data-cso-portal="community"] #cso-community-portal-root > .cp-root,
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+  width: 100%;
 }
 
 .com-toolbar-card {
@@ -1280,13 +1285,16 @@ body[data-cso-portal="community"] #cso-community-portal-root > .cp-root,
 }/* Sticky Right Sidebar */
 
 
+.com-workspace-grid > .com-sidebar,
+aside.com-sidebar,
 .com-sidebar {
   position: sticky;
   top: 84px;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   gap: 16px;
   min-width: 0;
+  width: 100%;
 }
 
 .com-sidebar-card {
@@ -1384,7 +1392,7 @@ body[data-cso-portal="community"] #cso-community-portal-root > .cp-root,
 @media (max-width: 959px) {
   body[data-cso-portal="community"] #cso-community-portal-root > .cp-root,
   .cp-root.com-shell {
-    padding: 14px 14px 36px !important;
+    padding: 0 !important;
   }
 
   .com-workspace-grid {
@@ -1392,6 +1400,8 @@ body[data-cso-portal="community"] #cso-community-portal-root > .cp-root,
     gap: 16px;
   }
 
+  .com-workspace-grid > .com-sidebar,
+  aside.com-sidebar,
   .com-sidebar {
     position: static;
   }

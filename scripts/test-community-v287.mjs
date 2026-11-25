@@ -337,9 +337,12 @@ await check('4b. v292 Thread Cards: max 2 top badges, single-lang title, 2-line 
 
   const cards = mount.querySelectorAll('.com-thread-card');
   assert.equal(cards.length, 2, 'Should render 2 .com-thread-card items');
-  assert.ok(mount.querySelector('.com-shell'), 'Must render centered .com-shell');
-  assert.ok(mount.querySelector('.com-workspace-grid'), 'Must render two-column .com-workspace-grid');
-  assert.ok(mount.querySelector('.com-sidebar'), 'Must render sticky .com-sidebar');
+  assert.ok(mount.querySelector('.com-shell'), 'Must render .com-shell');
+  const workspace = mount.querySelector('.com-workspace-grid');
+  assert.ok(workspace, 'Must render two-column .com-workspace-grid');
+  assert.equal(workspace.children.length, 2, '.com-workspace-grid must have exactly 2 direct children (.com-feed-col & .com-sidebar)');
+  assert.ok(String(workspace.children[0].className).includes('com-feed-col'), 'First direct child of .com-workspace-grid must be .com-feed-col');
+  assert.ok(String(workspace.children[1].className).includes('com-sidebar'), 'Second direct child of .com-workspace-grid must be .com-sidebar');
   assert.ok(mount.querySelector('.com-channels-card'), 'Must render Channels Directory sidebar card');
   assert.ok(mount.querySelector('.com-guidelines-card'), 'Must render Community Desk & Guidelines sidebar card');
   for (const c of cards) {
@@ -369,22 +372,25 @@ await check('5. Admin Studio sidebar sync, cache busting (?v=20261125v287 / cso-
   assert.ok(studioJs.includes('Live Synced to Public Community'), 'community-publishing-studio.js missing live sync banner');
   assert.ok(studioJs.includes('cso_community_dropdown_v287'), 'community-publishing-studio.js missing v287 cache bust');
 
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v29[4-9]';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v29[4-9]';/);
-  assert.match(read('community/index.html'), /\/assets\/js\/community-portal\.js\?v=20261125v29[4-9]/);
-  assert.match(read('community/index.html'), /\/assets\/css\/community-portal\.css\?v=20261125v29[4-9]/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v29[7-9]';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v29[7-9]';/);
+  assert.match(read('community/index.html'), /\/assets\/js\/community-portal\.js\?v=20261125v29[7-9]/);
+  assert.match(read('community/index.html'), /\/assets\/css\/community-portal\.css\?v=20261125v29[7-9]/);
+  assert.match(read('community/index.html'), /\/assets\/css\/portal-shell\.css\?v=20261125v29[7-9]/);
   assert.match(read('community/index.html'), /\/assets\/shared-header\.js\?v=20261125v29[3-9]/);
   assert.match(read('index.html'), /assets\/app\.js\?v=20261125v29[3-9]/);
   assert.match(read('admin/index.html'), /admin\.js\?v=20261125v2(?:8[7-9]|9\d)/);
   assert.match(read('admin/index.html'), /community-publishing-studio\.js\?v=20261125v2(?:8[7-9]|9\d)/);
 
-  // v292/v294: Centered two-column forum layout, clean scannable cards & footer brand fix
+  // v292/v297: Full-width /study-library/ shell parity, visible right sidebar (zero portal-shell aside hide leak), clean scannable cards & footer brand fix
   const portalJs = read('assets/js/community-portal.js');
   const portalCss = read('assets/css/community-portal.css');
-  assert.ok(portalJs.includes('com-workspace-grid') && portalJs.includes('com-sidebar') && portalJs.includes('com-thread-card'), 'community-portal.js missing v294 two-column layout classes');
+  const shellCss = read('assets/css/portal-shell.css');
+  assert.ok(!shellCss.includes('body.cso-portal-page aside,'), 'portal-shell.css must NOT blanket-hide all <aside> elements on portal pages');
+  assert.ok(portalJs.includes('com-workspace-grid') && portalJs.includes('com-sidebar') && portalJs.includes('com-thread-card'), 'community-portal.js missing two-column layout classes');
   assert.ok(portalJs.includes('Participate →') && portalJs.includes('com-author-avatar'), 'community-portal.js missing Participate CTA or author avatar');
   assert.ok(portalJs.includes('com-ghost-pill') && portalJs.includes('com-card-foot'), 'community-portal.js missing unified minimal action footer');
-  assert.ok(portalCss.includes('max-width: 1180px') && portalCss.includes('minmax(0, 1fr) 310px') && portalCss.includes('-webkit-line-clamp: 2'), 'community-portal.css missing v294 1180px centered two-column grid & clamp styles');
+  assert.ok(portalCss.includes('max-width: 100% !important;') && portalCss.includes('grid-template-columns: minmax(0, 1fr) 340px;') && portalCss.includes('gap: 24px;') && portalCss.includes('display: flex !important;') && portalCss.includes('-webkit-line-clamp: 2'), 'community-portal.css missing v297 full-width 1fr 340px grid, visible sidebar & clamp styles');
   assert.ok(read('assets/shared-header.js').includes('dedupeFooterBrand'), 'shared-header.js missing footer brand deduplication');
   assert.ok(read('assets/app.js').includes('csoDedupeFooterBrand'), 'app.js missing footer brand deduplication');
   assert.ok(!read('community/index.html').includes('alt="Common Sense Odisha Logo" class="cso-footer-logo'), 'community/index.html footer logo must use decorative alt=""');

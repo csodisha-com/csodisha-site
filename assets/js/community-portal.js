@@ -472,7 +472,8 @@
     var l1Canon = l1All.filter(function (n) { return CANONICAL_CHANNEL_SLUGS.indexOf(String(n.slug || '').toLowerCase()) !== -1; });
     var l1Channels = l1Canon.length ? l1Canon : l1All;
 
-    // Two-Column Main Workspace (1fr 310px on desktop >= 960px, single-column stack on mobile)
+    // Two-Column Main Workspace (minmax(0, 1fr) 340px on desktop >= 960px, single-column stack on mobile)
+    // Direct children: .com-feed-col (left) + .com-sidebar (right)
     var workspace = el('div', 'com-workspace-grid');
 
     // LEFT COLUMN: Streamlined Toolbar + Clean Discussion Feed
