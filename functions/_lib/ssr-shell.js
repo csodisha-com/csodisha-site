@@ -27,7 +27,7 @@ export const CSO_SHELL_HEADER = `<header class="top site-header__top" id="header
 export const CSO_SHELL_FOOTER = `<footer><div class="w cso-footer-grid">
   <div class="cso-footer-zone1">
     <div class="cso-footer-brand-header">
-      <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-footer-logo cso-brand-emblem" width="36" height="36" loading="lazy" decoding="async">
+      <img src="/assets/img/cso-logo-96.webp" alt="" aria-hidden="true" class="cso-footer-logo cso-brand-emblem" width="36" height="36" loading="lazy" decoding="async">
       <div class="cso-footer-title">Common Sense Odisha</div>
     </div>
     <p class="cso-footer-desc">Independent, open-access public resource platform.</p>

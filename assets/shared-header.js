@@ -2375,9 +2375,15 @@
   function syncBrandLogoMarks() {
     const imgs = document.querySelectorAll('.cso-brand-logo, .cso-footer-logo, #cso-brand-logo, img.cso-brand-emblem');
     imgs.forEach(node => {
+      const isFooterLogo = node.classList.contains('cso-footer-logo') || Boolean(node.closest('.cso-footer-brand-header'));
       if (node.tagName === 'IMG') {
         node.src = '/assets/img/cso-logo-96.webp';
-        node.alt = 'Common Sense Odisha Logo';
+        if (isFooterLogo) {
+          node.alt = '';
+          node.setAttribute('aria-hidden', 'true');
+        } else {
+          node.alt = 'Common Sense Odisha Logo';
+        }
         node.width = 36;
         node.height = 36;
         node.classList.add('cso-brand-emblem');
@@ -2392,12 +2398,27 @@
       } else {
         const img = document.createElement('img');
         img.src = '/assets/img/cso-logo-96.webp';
-        img.alt = 'Common Sense Odisha Logo';
+        img.alt = isFooterLogo ? '' : 'Common Sense Odisha Logo';
+        if (isFooterLogo) img.setAttribute('aria-hidden', 'true');
         img.width = 36;
         img.height = 36;
         img.className = 'cso-brand-emblem';
         node.replaceChildren(img);
       }
+    });
+    dedupeFooterBrand();
+  }
+
+  function dedupeFooterBrand() {
+    document.querySelectorAll('.cso-footer-zone1').forEach(z1 => {
+      const headers = z1.querySelectorAll('.cso-footer-brand-header');
+      headers.forEach((h, idx) => {
+        if (idx > 0) h.remove();
+      });
+      const titles = z1.querySelectorAll('.cso-footer-title');
+      titles.forEach((t, idx) => {
+        if (idx > 0) t.remove();
+      });
     });
   }
 
@@ -2485,7 +2506,8 @@
     const bh = el('div', 'cso-footer-brand-header');
     const logo = document.createElement('img');
     logo.src = '/assets/img/cso-logo-96.webp';
-    logo.alt = 'Common Sense Odisha Logo';
+    logo.alt = '';
+    logo.setAttribute('aria-hidden', 'true');
     logo.className = 'cso-footer-logo cso-brand-emblem';
     logo.width = 36; logo.height = 36;
     bh.append(logo, el('div', 'cso-footer-title', 'Common Sense Odisha'));

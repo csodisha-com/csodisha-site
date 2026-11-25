@@ -527,6 +527,7 @@ function formatCommunityPost(row, taxMap = new Map(), includeAdminFields = false
     category_l1_id: row.category_l1_id || '',
     category_l2_id: row.category_l2_id || '',
     category_l3_id: row.category_l3_id || '',
+    channel_slug: l1 ? l1.slug : '',
     taxonomy: {
       l1: l1 ? { id: l1.id, slug: l1.slug, title_en: l1.title_en, title_or: l1.title_or, icon: l1.icon } : null,
       l2: l2 ? { id: l2.id, slug: l2.slug, title_en: l2.title_en, title_or: l2.title_or, icon: l2.icon } : null,
@@ -1205,7 +1206,8 @@ export async function handlePublicCommunityBootstrapApi(request, env) {
 
   const taxMap = new Map();
   const nodes = rawNodes.map(r => {
-    const n = { ...formatTaxNode(r), posts_count: pCounts.get(r.id) || 0, is_joined: joinedSet.has(r.id) };
+    const cnt = pCounts.get(r.id) || 0;
+    const n = { ...formatTaxNode(r), posts_count: cnt, threads_count: cnt, is_joined: joinedSet.has(r.id) };
     taxMap.set(n.id, n);
     return n;
   });
@@ -1333,7 +1335,7 @@ export async function handlePublicCommunityFeedApi(request, env) {
   const search = str(url.searchParams.get('search') || url.searchParams.get('q'), 120).toLowerCase();
   const limit = Math.max(1, Math.min(80, Number(url.searchParams.get('limit')) || 40));
 
-  const [{ map: taxMap }, { results: rows }, rules, joinedRows, leaderRows, userPrefs, unreadDmRow] = await Promise.all([
+  const [{ list: taxList, map: taxMap }, { results: rows }, rules, joinedRows, leaderRows, userPrefs, unreadDmRow] = await Promise.all([
     loadTaxonomyMap(env.DB),
     env.DB.prepare("SELECT * FROM community_posts WHERE moderation_status = 'published' ORDER BY is_pinned DESC, created_at DESC LIMIT 200").all().catch(() => ({ results: [] })),
     getRewardRules(env.DB),
@@ -1353,6 +1355,27 @@ export async function handlePublicCommunityFeedApi(request, env) {
 
   const joinedSet = new Set(joinedRows.map(r => r.node_id));
   const all = (rows || []).map(r => formatCommunityPost(r, taxMap, false));
+  const chanCounts = new Map();
+  all.forEach(p => { if (p.category_l1_id) chanCounts.set(p.category_l1_id, (chanCounts.get(p.category_l1_id) || 0) + 1); });
+  const navChannels = (taxList || [])
+    .filter(n => Number(n.level) === 1 && n.is_published)
+    .sort((a, b) => (a.sort_order - b.sort_order) || a.title_en.localeCompare(b.title_en))
+    .map(n => {
+      const cnt = chanCounts.get(n.id) || 0;
+      return {
+        id: n.id,
+        slug: n.slug,
+        title_en: n.title_en,
+        title_or: n.title_or,
+        subtitle_en: n.subtitle_en,
+        subtitle_or: n.subtitle_or,
+        icon: n.icon,
+        accent_variant: n.accent_variant,
+        sort_order: n.sort_order,
+        threads_count: cnt,
+        posts_count: cnt
+      };
+    });
 
   const filtered = all.filter(p => {
     if (l1 && p.category_l1_id !== l1 && (!p.taxonomy.l1 || p.taxonomy.l1.slug !== l1)) return false;
@@ -1369,7 +1392,7 @@ export async function handlePublicCommunityFeedApi(request, env) {
     }
     if (scope === 'central') {
       const hay = `${p.exam_tag} ${p.title_en} ${p.body_en}`.toLowerCase();
-      if (!/(upsc|ssc|ibps|sbi|rbi|rrb|ctet|kvs|nvs|emrs|central|pm-kisan|pmay|national)/.test(hay)) return false;
+      if (!/\b(upsc|ssc|ibps|sbi|rbi|rrb|ctet|kvs|nvs|emrs|central|pm-kisan|pmay|national)\b/.test(hay)) return false;
     }
     if (featuredCollections && !p.is_featured_collection) return false;
     if (proContributors && p.author_membership_tier !== 'pro_member' && p.author_membership_tier !== 'permanent_member') return false;
@@ -1407,6 +1430,7 @@ export async function handlePublicCommunityFeedApi(request, env) {
     ok: true,
     total: filtered.length,
     items: filtered.slice(0, limit),
+    nav_channels: navChannels,
     reward_rules: rules,
     my_profile: myProgress,
     leaderboard: leaderRows.map(l => ({

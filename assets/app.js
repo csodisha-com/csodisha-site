@@ -3283,3 +3283,18 @@ document.addEventListener('click', function(event) {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
   window.addEventListener('storage',function(e){if(e.key==='cso_admin_active')apply()});
 })();
+
+/* v292: Ensure footer brand logo is decorative and brand title renders cleanly once */
+(function csoDedupeFooterBrand(){
+  function clean(){
+    document.querySelectorAll('.cso-footer-zone1').forEach(function(z1){
+      z1.querySelectorAll('.cso-footer-brand-header').forEach(function(h,idx){if(idx>0)h.remove()});
+      z1.querySelectorAll('.cso-footer-title').forEach(function(t,idx){if(idx>0)t.remove()});
+      z1.querySelectorAll('.cso-footer-logo').forEach(function(img){
+        img.alt='';
+        img.setAttribute('aria-hidden','true');
+      });
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',clean);else clean();
+})();

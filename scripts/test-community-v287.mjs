@@ -46,6 +46,7 @@ function createMockD1() {
   `);
   sqlite.exec(read('migrations/0141_community_platform.sql'));
   sqlite.exec(read('migrations/0022_community_4channel_taxonomy.sql'));
+  sqlite.exec(read('migrations/0023_community_clean_threads.sql'));
 
   function makeStmt(sql, params = []) {
     return {
@@ -90,8 +91,18 @@ await check('1. Migration 0022 seeds 4 canonical active L1 channels & /api/publi
   );
   // Idempotency check
   db.sqlite.exec(read('migrations/0022_community_4channel_taxonomy.sql'));
+  db.sqlite.exec(read('migrations/0023_community_clean_threads.sql'));
   const data2 = await (await handlePublicCommunityBootstrapApi(new Request('https://csodisha.com/api/public/community/bootstrap'), env)).json();
   assert.equal(data2.nav_channels.length, 4);
+  // v292: Every active channel has accurate live threads_count > 0 and no outdated Free Pro promotional wording
+  for (const ch of data2.nav_channels) {
+    assert.ok(ch.threads_count > 0, `Channel ${ch.slug} should have threads_count > 0, got ${ch.threads_count}`);
+  }
+  for (const post of data2.posts) {
+    assert.ok(!/Free Pro \/ Permanent Membership/i.test(post.title_en), `Starter post ${post.id} still has outdated promotional title`);
+    assert.ok(post.channel_slug && ['exam-career-qa', 'schemes-citizen-help', 'study-groups-notes', 'success-stories-mentorship'].includes(post.channel_slug),
+      `Starter post ${post.id} must map to an active channel_slug, got ${post.channel_slug}`);
+  }
 });
 
 await check('2. /api/public/community/list filters by ?channel=, ?sort=, ?scope=, and ?q=', async () => {
@@ -115,11 +126,12 @@ await check('2. /api/public/community/list filters by ?channel=, ?sort=, ?scope=
   assert.equal(verifiedRes.items[0].slug, 'opsc-oas-booklist');
 
   const unansRes = await (await handlePublicCommunityFeedApi(
-    new Request('https://csodisha.com/api/public/community/list?channel=exam-career-qa&scope=central&sort=unanswered'),
+    new Request('https://csodisha.com/api/public/community/list?channel=exam-career-qa&scope=central&sort=unanswered&q=csat'),
     env
   )).json();
   assert.equal(unansRes.total, 1);
   assert.equal(unansRes.items[0].slug, 'upsc-csat-help');
+  assert.equal(unansRes.nav_channels.length, 4);
 });
 
 await check('3. Single-stage vertical Community ▾ dropdown (5 items, NO Stage 2, width 276px, opaque 4-theme surfaces)', () => {
@@ -237,6 +249,110 @@ await check('4. Minimal /community/ Explorer renders compact hero, channel pills
   assert.ok(mount.querySelector('.cp-empty'), 'Must render centered flex empty state');
 });
 
+await check('4b. v292 Thread Cards: max 2 top badges, single-lang title, 2-line clamp, collapsed poll/quiz previews & minimal footer', async () => {
+  function makeNode(tag) {
+    return {
+      tagName: String(tag || 'div').toUpperCase(),
+      className: '', id: '', textContent: '', value: '', href: '', type: '', placeholder: '',
+      children: [], attrs: {}, listeners: {},
+      classList: { _s: new Set(), add(...cs) { cs.forEach(c => this._s.add(c)); }, remove(...cs) { cs.forEach(c => this._s.delete(c)); }, contains(c) { return this._s.has(c); } },
+      setAttribute(k, v) { this.attrs[k] = String(v); },
+      getAttribute(k) { return this.attrs[k] || null; },
+      appendChild(c) { this.children.push(c); return c; },
+      append(...cs) { cs.forEach(c => this.children.push(c)); },
+      removeChild(c) { const i = this.children.indexOf(c); if (i >= 0) this.children.splice(i, 1); },
+      get firstChild() { return this.children[0] || null; },
+      addEventListener(ev, fn) { (this.listeners[ev] = this.listeners[ev] || []).push(fn); },
+      click() { (this.listeners.click || []).forEach(fn => fn()); },
+      querySelector(sel) {
+        const cls = sel.startsWith('.') ? sel.slice(1) : null;
+        const stack = [...this.children];
+        while (stack.length) {
+          const n = stack.shift();
+          if (!n || typeof n !== 'object') continue;
+          if (cls && String(n.className || '').split(/\s+/).includes(cls)) return n;
+          if (Array.isArray(n.children)) stack.push(...n.children);
+        }
+        return null;
+      },
+      querySelectorAll(sel) {
+        const cls = sel.startsWith('.') ? sel.slice(1) : null;
+        const out = [];
+        const stack = [...this.children];
+        while (stack.length) {
+          const n = stack.shift();
+          if (!n || typeof n !== 'object') continue;
+          if (cls && String(n.className || '').split(/\s+/).includes(cls)) out.push(n);
+          if (Array.isArray(n.children)) stack.push(...n.children);
+        }
+        return out;
+      }
+    };
+  }
+  const mount = makeNode('section');
+  mount.id = 'cso-community-portal-root';
+  const mockNodes = [
+    { id: 'comm_l1_exam_career_qa', level: 1, slug: 'exam-career-qa', title_en: 'Exam & Career Q&A', title_or: 'ପରୀକ୍ଷା ଓ କ୍ୟାରିୟର ପ୍ରଶ୍ନୋତ୍ତର', icon: '❓', posts_count: 2, threads_count: 2 },
+    { id: 'comm_l1_study_groups_notes', level: 1, slug: 'study-groups-notes', title_en: 'Study Groups & Peer Notes', title_or: 'ଅଧ୍ୟୟନ ଦଳ ଓ ସହପାଠୀ ନୋଟ୍ସ', icon: '📚', posts_count: 1, threads_count: 1 }
+  ];
+  const mockPosts = [
+    {
+      id: 'p_poll', slug: 'poll-pack', post_type: 'poll', category_l1_id: 'comm_l1_study_groups_notes',
+      taxonomy: { l1: mockNodes[1] }, author_display_name: 'CS Odisha Editorial Desk', author_membership_tier: 'permanent_member',
+      title_en: 'Community Poll: Next Odisha Revision Pack', title_or: 'କମ୍ୟୁନିଟି ପୋଲ୍',
+      body_en: 'Vote for the next bilingual A4 revision sheet.',
+      poll_options: ['Opt 1', 'Opt 2', 'Opt 3', 'Opt 4'], poll_votes: { '0': 14, '1': 19, '2': 16, '3': 9 },
+      upvotes_count: 18, replies_count: 2, is_pinned: true, is_solved: false, is_featured_collection: true, created_at: new Date().toISOString()
+    },
+    {
+      id: 'p_quiz', slug: 'quiz-sprint', post_type: 'quiz_challenge', category_l1_id: 'comm_l1_exam_career_qa',
+      taxonomy: { l1: mockNodes[0] }, author_display_name: 'CS Odisha Editorial Desk', exam_tag: 'Odisha GK',
+      title_en: 'Daily 5-Question Odisha GK Sprint', title_or: 'ଦୈନିକ ୫-ପ୍ରଶ୍ନ କୁଇଜ୍',
+      body_en: 'Test your Odisha GK accuracy in 3 minutes.',
+      challenge_mcqs: [
+        { id: 'q1', question_en: 'Highest peak?', options: ['A', 'Deomali', 'C', 'D'], correct_index: 1 },
+        { id: 'q2', question_en: 'Paika Rebellion year?', options: ['1803', '1817', '1857', '1866'], correct_index: 1 }
+      ],
+      upvotes_count: 21, replies_count: 1, is_pinned: false, is_solved: true, created_at: new Date().toISOString()
+    }
+  ];
+  const sandbox = {
+    window: null,
+    document: {
+      readyState: 'complete', body: makeNode('body'), head: makeNode('head'), activeElement: null, cookie: '',
+      getElementById(id) { return id === 'cso-community-portal-root' ? mount : null; },
+      createElement(tag) { return makeNode(tag); },
+      createTextNode(t) { return { nodeType: 3, textContent: String(t) }; },
+      addEventListener() {}
+    },
+    Option: function Option(text, value) { const o = makeNode('option'); o.textContent = text; o.value = value; return o; },
+    URLSearchParams, localStorage: { getItem() { return 'en'; }, setItem() {} },
+    sessionStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
+    fetch: async () => ({ ok: true, status: 200, async json() { return { ok: true, nodes: mockNodes, tree: [], posts: mockPosts, items: mockPosts }; } }),
+    setTimeout, clearTimeout, console
+  };
+  sandbox.window = { location: { pathname: '/community/', search: '' }, history: { replaceState() {} }, localStorage: sandbox.localStorage, sessionStorage: sandbox.sessionStorage };
+  vm.runInNewContext(read('assets/js/community-portal.js'), sandbox);
+  await new Promise(r => setTimeout(r, 40));
+
+  const cards = mount.querySelectorAll('.cp-post-card');
+  assert.equal(cards.length, 2, 'Should render 2 thread cards');
+  for (const c of cards) {
+    const top = c.querySelector('.com-card-top');
+    assert.ok(top && top.children.length <= 2, 'Top meta row must show at most 2 badges');
+    assert.ok(c.querySelector('.com-excerpt-clamp'), 'Card must use .com-excerpt-clamp');
+    assert.ok(c.querySelector('.com-card-foot'), 'Card must render unified minimal footer');
+    assert.equal(c.querySelectorAll('.com-ghost-pill').length, 2, 'Footer must render 2 matching ghost pills (Upvote + Replies)');
+  }
+  assert.equal(mount.querySelectorAll('.com-widget-preview').length, 2, 'Poll and Quiz must be collapsed to 1-line previews by default');
+  assert.equal(mount.querySelector('.cp-poll-list'), null, 'Poll form must NOT render inline before click');
+  assert.equal(mount.querySelector('.cp-quiz-list'), null, 'Quiz form must NOT render inline before click');
+
+  // Click "Participate / Open Thread →" on poll card to expand inline
+  mount.querySelectorAll('.com-widget-cta')[0].click();
+  assert.ok(mount.querySelector('.cp-poll-list'), 'Clicking Participate button must expand interactive poll inline');
+});
+
 await check('5. Admin Studio sidebar sync, cache busting (?v=20261125v287 / cso-candidate-cache-v287) & strict CSP', () => {
   const adminJs = read('admin/admin.js');
   const studioJs = read('admin/community-publishing-studio.js');
@@ -245,12 +361,25 @@ await check('5. Admin Studio sidebar sync, cache busting (?v=20261125v287 / cso-
   assert.ok(studioJs.includes('Live Synced to Public Community'), 'community-publishing-studio.js missing live sync banner');
   assert.ok(studioJs.includes('cso_community_dropdown_v287'), 'community-publishing-studio.js missing v287 cache bust');
 
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:8[7-9]|9\d)';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:8[7-9]|9\d)';/);
-  assert.match(read('community/index.html'), /\/assets\/js\/community-portal\.js\?v=20261125v2(?:8[7-9]|9\d)/);
-  assert.match(read('community/index.html'), /\/assets\/css\/community-portal\.css\?v=20261125v2(?:8[7-9]|9\d)/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v292';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v292';/);
+  assert.match(read('community/index.html'), /\/assets\/js\/community-portal\.js\?v=20261125v292/);
+  assert.match(read('community/index.html'), /\/assets\/css\/community-portal\.css\?v=20261125v292/);
+  assert.match(read('community/index.html'), /\/assets\/shared-header\.js\?v=20261125v292/);
+  assert.match(read('index.html'), /assets\/app\.js\?v=20261125v292/);
   assert.match(read('admin/index.html'), /admin\.js\?v=20261125v2(?:8[7-9]|9\d)/);
   assert.match(read('admin/index.html'), /community-publishing-studio\.js\?v=20261125v2(?:8[7-9]|9\d)/);
+
+  // v292: Clean scannable cards, collapsed poll/quiz previews & footer brand fix
+  const portalJs = read('assets/js/community-portal.js');
+  const portalCss = read('assets/css/community-portal.css');
+  assert.ok(portalJs.includes('com-card-top') && portalJs.includes('com-channel-badge') && portalJs.includes('com-widget-preview'), 'community-portal.js missing v292 compact card / collapsible preview classes');
+  assert.ok(portalJs.includes('Participate / Open Thread'), 'community-portal.js missing Participate / Open Thread button');
+  assert.ok(portalJs.includes('com-ghost-pill') && portalJs.includes('com-card-foot'), 'community-portal.js missing unified minimal action footer');
+  assert.ok(portalCss.includes('-webkit-line-clamp: 2') && portalCss.includes('.com-widget-preview') && portalCss.includes('.com-ghost-pill'), 'community-portal.css missing v292 clamp & ghost pill styles');
+  assert.ok(read('assets/shared-header.js').includes('dedupeFooterBrand'), 'shared-header.js missing footer brand deduplication');
+  assert.ok(read('assets/app.js').includes('csoDedupeFooterBrand'), 'app.js missing footer brand deduplication');
+  assert.ok(!read('community/index.html').includes('alt="Common Sense Odisha Logo" class="cso-footer-logo'), 'community/index.html footer logo must use decorative alt=""');
 
   for (const rel of [
     'assets/shared-header.js',
