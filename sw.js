@@ -8,7 +8,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v284';
+const CACHE_NAME = 'cso-candidate-cache-v285';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 // Slim Core App-Shell Precache (fast SW install on slow 3G/4G connections)

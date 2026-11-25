@@ -11,12 +11,25 @@
 (function (window, document) {
   'use strict';
 
-  var RESOURCE_TYPES = ['Study Notes', 'Syllabus', 'PYQ Paper', 'Practice Set', 'Revision Sheet', 'Reference Digest', 'Current Affairs'];
+  var RESOURCE_TYPES = [
+    'Study Notes',
+    'Previous Year Paper (PYQ)',
+    'Official Syllabus',
+    'Current Affairs Digest',
+    'Practice Set / E-Book',
+    'Revision Sheet',
+    'Reference Digest'
+  ];
   var DIFFICULTY_LEVELS = ['Foundation', 'Moderate', 'Advanced'];
   var HIGH_YIELD_PRIORITIES = ['Must-Study', 'High', 'Standard'];
   var NEGATIVE_RULES = ['None', '-0.25 (OSSC/OSSSC)', '-0.33 (OPSC/UPSC)', '-0.50'];
-  var MEDIUMS = ['Bilingual (EN + OR)', 'English', 'Odia (ଓଡ଼ିଆ)', 'Hindi / English'];
+  var MEDIUMS = ['Bilingual', 'English', 'Odia', 'Bilingual (EN + OR)', 'Odia (ଓଡ଼ିଆ)'];
   var ACCENTS = ['indigo', 'emerald', 'cobalt', 'violet', 'amber', 'rose', 'teal'];
+  var PUBLIC_STUDY_DROPDOWN_CACHE_KEY = 'cso_study_library_dropdown_v285';
+
+  function bustPublicStudyDropdownCache() {
+    try { window.sessionStorage.removeItem(PUBLIC_STUDY_DROPDOWN_CACHE_KEY); } catch (_e) {}
+  }
 
   var S = {
     root: null,
@@ -76,6 +89,9 @@
     var res = await fetch(url, o);
     var data = await res.json().catch(function () { return {}; });
     if (!res.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
+    if (method !== 'GET' && method !== 'HEAD') {
+      bustPublicStudyDropdownCache();
+    }
     return data;
   }
 
@@ -150,6 +166,9 @@
     if (window.CSOStudio && window.CSOStudio.setStudyCount) {
       window.CSOStudio.setStudyCount(S.kpis.total_modules || S.articles.length);
     }
+    if (window.CSOStudio && window.CSOStudio.setStudyTrackNodes) {
+      window.CSOStudio.setStudyTrackNodes(S.taxonomyNodes);
+    }
   }
 
   async function refreshAndRender() {
@@ -190,6 +209,12 @@
   }
 
   function renderTabs(container) {
+    var syncBanner = el('div', 'stps-live-sync-banner');
+    syncBanner.setAttribute('role', 'status');
+    syncBanner.appendChild(el('span', 'stps-live-sync-dot'));
+    syncBanner.appendChild(el('span', '', 'Live Synced to Public Study Library ▾ Menu — Every track or resource publish immediately purges edge caches & updates the public dropdown.'));
+    container.appendChild(syncBanner);
+
     var tabs = el('div', 'stps-tabs');
     tabs.setAttribute('role', 'tablist');
     var defs = [
@@ -1496,9 +1521,17 @@
   }
 
   window.CSOStudyPublishingStudio = {
-    render: function (workspaceRoot, headerActions, initialTab) {
+    render: function (workspaceRoot, headerActions, initialTab, initialTrackId) {
       S.root = workspaceRoot;
       S.headerActions = headerActions;
+      if (typeof initialTrackId === 'string') {
+        S.filters.l1 = initialTrackId;
+        S.filters.l2 = '';
+        S.filters.l3 = '';
+        if (window.CSOStudio && window.CSOStudio.setStudyActiveTrack) {
+          window.CSOStudio.setStudyActiveTrack(initialTrackId);
+        }
+      }
       if (initialTab === 'new') {
         S.activeTab = 'articles';
         loadAllData().then(function () { openComposer(null); }).catch(function () { openComposer(null); });

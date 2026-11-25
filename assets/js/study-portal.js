@@ -7,12 +7,18 @@
 (function (window, document) {
   'use strict';
 
-  var FEATURED_TRACKS = [
-    { key: 'opsc', match: ['opsc', 'oas'], icon: '🏛️', label_en: 'OPSC OAS', label_or: 'OPSC OAS' },
-    { key: 'ossc', match: ['ossc', 'osssc'], icon: '📋', label_en: 'OSSC & OSSSC', label_or: 'OSSC ଓ OSSSC' },
-    { key: 'tet', match: ['teaching', 'tet', 'oavs'], icon: '🎓', label_en: 'Teaching & TET', label_or: 'ଶିକ୍ଷକ ଓ TET' },
-    { key: 'odisha', match: ['odisha-gk', 'odisha_gk', 'odia'], icon: '🗺️', label_en: 'Odisha GK & Odia', label_or: 'ଓଡ଼ିଶା GK ଓ ଓଡ଼ିଆ' },
-    { key: 'central', match: ['central', 'upsc', 'ssc', 'ugc'], icon: '🇮🇳', label_en: 'Central Exams', label_or: 'କେନ୍ଦ୍ରୀୟ ପରୀକ୍ଷା' }
+  var RESOURCE_TYPE_OPTIONS = [
+    ['Study Notes', 'Study Notes'],
+    ['Previous Year Paper (PYQ)', 'Previous Year Paper (PYQ)'],
+    ['Official Syllabus', 'Official Syllabus'],
+    ['Current Affairs Digest', 'Current Affairs Digest'],
+    ['Practice Set / E-Book', 'Practice Set / E-Book']
+  ];
+
+  var MEDIUM_OPTIONS = [
+    ['English', 'English'],
+    ['Odia', 'Odia'],
+    ['Bilingual', 'Bilingual']
   ];
 
   var S = {
@@ -331,31 +337,76 @@
     };
   }
 
+  function resolveNodeByIdOrSlug(val, level) {
+    if (!val) return null;
+    var v = String(val).trim().toLowerCase();
+    return S.nodes.find(function (n) {
+      if (level && Number(n.level) !== level) return false;
+      return String(n.id || '').toLowerCase() === v || String(n.slug || '').toLowerCase() === v;
+    }) || null;
+  }
+
+  function syncUrlFromFilters() {
+    try {
+      if (!window.history || !window.history.replaceState) return;
+      var q = new URLSearchParams();
+      if (S.filters.l1) {
+        var n1 = resolveNodeByIdOrSlug(S.filters.l1, 1);
+        q.set('track', n1 ? n1.slug : S.filters.l1);
+      }
+      if (S.filters.l2) {
+        var n2 = resolveNodeByIdOrSlug(S.filters.l2, 2);
+        q.set('sub', n2 ? n2.slug : S.filters.l2);
+      }
+      if (S.filters.type) q.set('type', S.filters.type);
+      if (S.filters.medium) q.set('medium', S.filters.medium);
+      if (S.filters.search) q.set('q', S.filters.search);
+      var qs = q.toString();
+      var nextUrl = window.location.pathname + (qs ? ('?' + qs) : '');
+      window.history.replaceState(null, '', nextUrl);
+    } catch (_e) {}
+  }
+
   // ============================================================================
-  // BROWSE MODE: EDITORIAL HERO + PROGRESS STRIP + EXAM TRACK CARDS + 5-COL BAR
+  // BROWSE MODE: MINIMAL COMPACT HERO + SINGLE-CARD FILTER BAR (v285)
   // ============================================================================
   async function fetchPortalData() {
     var q = new URLSearchParams();
-    if (S.filters.l1) q.set('l1', S.filters.l1);
-    if (S.filters.l2) q.set('l2', S.filters.l2);
+    if (S.filters.l1) q.set('track', S.filters.l1);
+    if (S.filters.l2) q.set('sub', S.filters.l2);
     if (S.filters.l3) q.set('l3', S.filters.l3);
     if (S.filters.type) q.set('type', S.filters.type);
-    if (S.filters.difficulty) q.set('difficulty', S.filters.difficulty);
-    if (S.filters.priority) q.set('priority', S.filters.priority);
     if (S.filters.medium) q.set('medium', S.filters.medium);
-    if (S.filters.search) q.set('search', S.filters.search);
+    if (S.filters.search) q.set('q', S.filters.search);
     if (qsParam('refresh')) q.set('refresh', '1');
     var qs = q.toString() ? ('?' + q.toString()) : '';
 
     var res = await Promise.all([
-      fetch('/api/public/study/tree' + (qsParam('refresh') ? '?refresh=1' : ''), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
-      fetch('/api/public/study' + qs, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
+      S.nodes.length
+        ? Promise.resolve(null)
+        : fetch('/api/public/study-library/bootstrap' + (qsParam('refresh') ? '?refresh=1' : ''), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+      fetch('/api/public/study-library/list' + qs, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
     ]);
-    S.tree = res[0].tree || [];
-    S.nodes = res[0].nodes || [];
+    if (res[0] && res[0].ok) {
+      S.tree = res[0].tree || [];
+      S.nodes = res[0].nodes || [];
+      if (!S.allItems.length) S.allItems = res[0].items || res[0].articles || [];
+    }
     S.items = res[1].items || [];
     if (!qs || (qs === '?refresh=1')) S.allItems = S.items.slice();
     S.facets = res[1].facets || S.facets;
+
+    if (S.filters.l1) {
+      var m1 = resolveNodeByIdOrSlug(S.filters.l1, 1);
+      if (m1) S.filters.l1 = m1.id;
+    }
+    if (S.filters.l2) {
+      var m2 = resolveNodeByIdOrSlug(S.filters.l2, 2);
+      if (m2) {
+        S.filters.l2 = m2.id;
+        if (!S.filters.l1 && m2.parent_id) S.filters.l1 = m2.parent_id;
+      }
+    }
   }
 
   function renderProgressStrip(shell) {
@@ -412,118 +463,82 @@
     shell.appendChild(card);
   }
 
-  function renderExamTrackCards(box, l1Nodes) {
-    var strip = el('div', 'sp-track-strip');
-    strip.setAttribute('role', 'group');
-    strip.setAttribute('aria-label', 'Filter by Exam Track');
+  function renderTrackPillStrip(box, l1Nodes) {
+    var strip = el('div', 'stl-track-strip');
+    strip.setAttribute('role', 'tablist');
+    strip.setAttribute('aria-label', 'Filter by Study Track');
 
-    var allBtn = el('button', 'sp-track-card' + (!S.filters.l1 ? ' is-active' : ''));
+    var allBtn = el('button', 'stl-track-pill' + (!S.filters.l1 ? ' is-active' : ''));
     allBtn.type = 'button';
-    var allL = el('span', 'sp-track-left');
-    allL.appendChild(el('span', 'sp-track-icon', '📚'));
-    allL.appendChild(el('span', 'sp-track-name', S.langMode === 'or' ? 'ସମସ୍ତ ପରୀକ୍ଷା ଟ୍ରାକ୍' : 'All Exam Tracks'));
-    allBtn.appendChild(allL);
-    allBtn.appendChild(el('span', 'sp-track-count', num(S.allItems.length || S.items.length)));
+    allBtn.setAttribute('role', 'tab');
+    allBtn.setAttribute('aria-selected', String(!S.filters.l1));
+    allBtn.appendChild(el('span', 'stl-track-pill-label', S.langMode === 'or' ? 'ସମସ୍ତ ଟ୍ରାକ୍' : 'All Tracks'));
+    allBtn.appendChild(el('span', 'stl-track-pill-count', num(S.allItems.length || S.items.length)));
     allBtn.addEventListener('click', function () {
-      S.filters.l1 = ''; S.filters.l2 = ''; S.filters.l3 = '';
+      S.filters.l1 = '';
+      S.filters.l2 = '';
+      S.filters.l3 = '';
       reloadBrowser();
     });
     strip.appendChild(allBtn);
 
-    // Match featured 5 elevated tracks from seeded L1 nodes (plus graceful fallback)
-    FEATURED_TRACKS.forEach(function (ft) {
-      var matchedNode = l1Nodes.find(function (n) {
-        var hay = ((n.slug || '') + ' ' + (n.title_en || '')).toLowerCase();
-        return ft.match.some(function (tok) { return hay.indexOf(tok) !== -1; });
+    l1Nodes.forEach(function (node) {
+      var isAct = S.filters.l1 === node.id || S.filters.l1 === node.slug;
+      var btn = el('button', 'stl-track-pill' + (isAct ? ' is-active' : ''));
+      btn.type = 'button';
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute('aria-selected', String(isAct));
+      btn.setAttribute('data-track', node.slug || node.id);
+      var lbl = (node.icon ? node.icon + ' ' : '') + pick(node, 'title');
+      btn.appendChild(el('span', 'stl-track-pill-label', lbl));
+      btn.appendChild(el('span', 'stl-track-pill-count', num(node.published_modules_count || 0)));
+      btn.addEventListener('click', function () {
+        S.filters.l1 = node.id;
+        S.filters.l2 = '';
+        S.filters.l3 = '';
+        reloadBrowser();
       });
-      var count = matchedNode ? Number(matchedNode.published_modules_count || 0) : 0;
-      var isAct = Boolean(matchedNode && S.filters.l1 === matchedNode.id);
-
-      var b = el('button', 'sp-track-card' + (isAct ? ' is-active' : ''));
-      b.type = 'button';
-      var lf = el('span', 'sp-track-left');
-      lf.appendChild(el('span', 'sp-track-icon', (matchedNode && matchedNode.icon) || ft.icon));
-      lf.appendChild(el('span', 'sp-track-name', S.langMode === 'or' ? ft.label_or : ft.label_en));
-      b.appendChild(lf);
-      b.appendChild(el('span', 'sp-track-count', num(count)));
-      b.addEventListener('click', function () {
-        if (matchedNode) {
-          S.filters.l1 = matchedNode.id;
-          S.filters.l2 = '';
-          S.filters.l3 = '';
-          reloadBrowser();
-        }
-      });
-      strip.appendChild(b);
+      strip.appendChild(btn);
     });
 
     box.appendChild(strip);
   }
 
-  function renderCurriculumTracksDirectory(shell) {
-    var l1Map = {};
-    var l3CountsByL2 = {};
-    S.nodes.forEach(function (n) {
-      if (Number(n.level) === 1) l1Map[n.id] = n;
-      if (Number(n.level) === 3 && n.parent_id) {
-        l3CountsByL2[n.parent_id] = (l3CountsByL2[n.parent_id] || 0) + 1;
-      }
-    });
+  function renderActiveFilterChips(box) {
+    var chips = [];
+    if (S.filters.l1) {
+      var n1 = resolveNodeByIdOrSlug(S.filters.l1, 1);
+      chips.push({ label: (S.langMode === 'or' ? 'ଟ୍ରାକ୍: ' : 'Track: ') + (n1 ? pick(n1, 'title') : S.filters.l1), clear: function () { S.filters.l1 = ''; S.filters.l2 = ''; S.filters.l3 = ''; } });
+    }
+    if (S.filters.l2) {
+      var n2 = resolveNodeByIdOrSlug(S.filters.l2, 2);
+      chips.push({ label: (S.langMode === 'or' ? 'ଉପ-ବିଭାଗ: ' : 'Sub-Collection: ') + (n2 ? pick(n2, 'title') : S.filters.l2), clear: function () { S.filters.l2 = ''; S.filters.l3 = ''; } });
+    }
+    if (S.filters.type) {
+      chips.push({ label: (S.langMode === 'or' ? 'ପ୍ରକାର: ' : 'Type: ') + S.filters.type, clear: function () { S.filters.type = ''; } });
+    }
+    if (S.filters.medium) {
+      chips.push({ label: (S.langMode === 'or' ? 'ମାଧ୍ୟମ: ' : 'Medium: ') + S.filters.medium, clear: function () { S.filters.medium = ''; } });
+    }
+    if (S.filters.search) {
+      chips.push({ label: '"' + S.filters.search + '"', clear: function () { S.filters.search = ''; } });
+    }
+    if (!chips.length) return;
 
-    var l2Nodes = S.nodes.filter(function (n) {
-      return Number(n.level) === 2 && (!S.filters.l1 || n.parent_id === S.filters.l1);
-    });
-    var displayNodes = l2Nodes.length ? l2Nodes : S.nodes.filter(function (n) { return Number(n.level) === 1; });
-    if (!displayNodes.length) return;
-
-    var sec = el('section', 'sp-tracks-section');
-    sec.setAttribute('aria-label', 'Browse 3-Layer Exam Tracks & Subjects');
-    var head = el('div', 'sp-tracks-head');
-    var hl = el('div');
-    hl.appendChild(el('h2', 'sp-h2', S.langMode === 'or'
-      ? '୩-ସ୍ତରୀୟ ପରୀକ୍ଷା ଟ୍ରାକ୍ ଏବଂ ବିଷୟଗୁଡ଼ିକ ବ୍ରାଉଜ୍ କରନ୍ତୁ'
-      : 'Browse 3-Layer Exam Tracks & Subjects'));
-    hl.appendChild(el('div', 'sp-muted', S.langMode === 'or'
-      ? 'OPSC OAS, OSSC/OSSSC, OTET/OSSTET, ଓଡ଼ିଶା GK, ଓଡ଼ିଆ ବ୍ୟାକରଣ, UGC NET, UPSC/SSC ଏବଂ BSE/CHSE ପାଠ୍ୟକ୍ରମ ଅନୁସନ୍ଧାନ କରନ୍ତୁ।'
-      : 'Explore Odisha & Central curriculum tracks (OPSC OAS, OSSC & OSSSC Combined, OTET / OSSTET / OAVS, Odisha GK, Odia Grammar, UGC NET, UPSC / SSC / Banking, BSE Odisha / CHSE).'));
-    head.appendChild(hl);
-    head.appendChild(el('span', 'sp-badge', num(S.nodes.length) + ' Curriculum Nodes'));
-    sec.appendChild(head);
-
-    var grid = el('div', 'sp-tracks-grid');
-    displayNodes.forEach(function (d) {
-      var isL2 = Number(d.level) === 2;
-      var parent = isL2 ? l1Map[d.parent_id] : null;
-      var card = el('button', 'sp-curriculum-card' + ((isL2 ? S.filters.l2 === d.id : S.filters.l1 === d.id) ? ' is-active' : ''));
-      card.type = 'button';
-
-      var top = el('div', 'sp-curriculum-top');
-      top.appendChild(el('span', 'sp-badge', (d.icon ? d.icon + ' ' : '') + (parent ? pick(parent, 'title') : 'Exam Track')));
-      var rightTag = Number(d.published_modules_count || 0) > 0
-        ? (num(d.published_modules_count) + ' Live')
-        : (l3CountsByL2[d.id] ? (num(l3CountsByL2[d.id]) + ' Formats') : 'Ready');
-      top.appendChild(el('span', 'sp-badge is-done', rightTag));
-      card.appendChild(top);
-
-      card.appendChild(el('div', 'sp-curriculum-title', pick(d, 'title')));
-      if (pick(d, 'subtitle')) card.appendChild(el('div', 'sp-curriculum-sub', pick(d, 'subtitle')));
-
-      card.addEventListener('click', function () {
-        if (isL2) {
-          S.filters.l1 = d.parent_id || '';
-          S.filters.l2 = d.id;
-          S.filters.l3 = '';
-        } else {
-          S.filters.l1 = d.id;
-          S.filters.l2 = '';
-          S.filters.l3 = '';
-        }
+    var bar = el('div', 'stl-active-chips');
+    bar.setAttribute('aria-label', 'Active filters');
+    chips.forEach(function (c) {
+      var chip = el('button', 'stl-filter-chip');
+      chip.type = 'button';
+      chip.appendChild(el('span', '', c.label));
+      chip.appendChild(el('span', 'stl-chip-x', '×'));
+      chip.addEventListener('click', function () {
+        c.clear();
         reloadBrowser();
       });
-      grid.appendChild(card);
+      bar.appendChild(chip);
     });
-    sec.appendChild(grid);
-    shell.appendChild(sec);
+    box.appendChild(bar);
   }
 
   function renderBrowserView() {
@@ -531,155 +546,45 @@
     var restoreFocusId = (activeEl && activeEl.id === 'sp-study-search') ? activeEl.id : '';
 
     clear(S.root);
-    var hasFilter = Boolean(S.filters.l1 || S.filters.l2 || S.filters.l3 || S.filters.type || S.filters.difficulty || S.filters.priority || S.filters.medium || S.filters.search);
-    var kpis = computeStudyHeroKpis();
+    var hasFilter = Boolean(S.filters.l1 || S.filters.l2 || S.filters.l3 || S.filters.type || S.filters.medium || S.filters.search);
     var shell = el('div', 'sp-root');
 
-    // 1. Flagship Editorial Hero Banner (v257)
-    var hero = el('section', 'sp-hero');
-    hero.setAttribute('aria-label', 'Odisha & Central Exam Study Library & PYQ Hub');
+    // 1. Minimal Compact Hero Header (v285 — no 4-box KPI grid)
+    var hero = el('section', 'sp-hero stl-hero--compact');
+    hero.setAttribute('aria-label', 'Odisha & National Study Library');
 
-    var heroTop = el('div', 'sp-hero-top');
-    var eyebrow = el('span', 'sp-eyebrow');
-    eyebrow.appendChild(el('span', 'sp-eyebrow-dot'));
-    eyebrow.appendChild(el('span', '', S.langMode === 'or'
-      ? 'ଓଡ଼ିଶା ଏବଂ କେନ୍ଦ୍ର ପରୀକ୍ଷା ପ୍ରସ୍ତୁତି · ସିଲାବସ୍, ନୋଟ୍ସ, PYQ ଓ ମକ୍ ଟେଷ୍ଟ'
-      : 'ODISHA & CENTRAL EXAM PREPARATION · SYLLABI, NOTES, PYQS & MOCKS'));
-    heroTop.appendChild(eyebrow);
-    heroTop.appendChild(buildLangToggle(function () { renderBrowserView(); }));
-    hero.appendChild(heroTop);
-
+    var heroTop = el('div', 'stl-hero-bar');
     var copy = el('div', 'sp-hero-copy');
     copy.appendChild(el('h1', 'sp-hero-title', S.langMode === 'or'
-      ? 'ଓଡ଼ିଶା ଏବଂ କେନ୍ଦ୍ର ପରୀକ୍ଷା ଅଧ୍ୟୟନ ପାଠାଗାର ଓ PYQ ହବ୍'
-      : 'Odisha & Central Exam Study Library & PYQ Hub'));
+      ? 'ଓଡ଼ିଶା ଏବଂ ଜାତୀୟ ଅଧ୍ୟୟନ ପାଠାଗାର'
+      : 'Odisha & National Study Library'));
     copy.appendChild(el('p', 'sp-hero-sub', S.langMode === 'or'
-      ? 'OPSC, OSSC, OSSSC, OTET/OSSTET, ଓଡ଼ିଶା GK, UPSC ଏବଂ SSC ପାଇଁ ଦ୍ୱିଭାଷୀ ଅଧ୍ୟୟନ ନୋଟ୍ସ, ସରକାରୀ ସିଲାବସ୍, ସମାଧାନ ହୋଇଥିବା ବିଗତ ବର୍ଷର ପ୍ରଶ୍ନପତ୍ର (PYQs), ଇଣ୍ଟରାକ୍ଟିଭ୍ ଫ୍ଲିପ୍-କାର୍ଡ ଏବଂ ଟାଇମ୍ଡ୍ ମିନି-ମକ୍।'
-      : 'Structured bilingual study notes, official exam syllabi, solved previous year papers (PYQs), interactive flashcards, and timed mini-mocks across OPSC, OSSC, OSSSC, OTET/OSSTET, Odisha GK, UPSC & SSC.'));
-    hero.appendChild(copy);
-
-    var kpiRow = el('div', 'sp-hero-kpis');
-    [
-      [num(kpis.moduleCount), S.langMode === 'or' ? 'ଅଧ୍ୟୟନ ମଡ୍ୟୁଲ୍' : 'Study Modules'],
-      [num(kpis.pyqSylCount), S.langMode === 'or' ? 'PYQ ଓ ସିଲାବସ୍ ସେଟ୍' : 'PYQ & Syllabus Sets'],
-      [num(kpis.mcqTotal), S.langMode === 'or' ? 'ଅଭ୍ୟାସ MCQ' : 'Practice MCQs'],
-      [num(kpis.trackCount), S.langMode === 'or' ? 'ପରୀକ୍ଷା ଟ୍ରାକ୍' : 'Exam Tracks']
-    ].forEach(function (pair) {
-      var tile = el('div', 'sp-hero-kpi');
-      tile.appendChild(el('strong', 'sp-hero-kpi-val', pair[0]));
-      tile.appendChild(el('span', 'sp-hero-kpi-label', pair[1]));
-      kpiRow.appendChild(tile);
-    });
-    hero.appendChild(kpiRow);
+      ? 'ଓଡ଼ିଶା ଓ କେନ୍ଦ୍ର ପରୀକ୍ଷା ପାଇଁ ଦ୍ୱିଭାଷୀ ଅଧ୍ୟୟନ ନୋଟ୍ସ, ବିଗତ ବର୍ଷର ପ୍ରଶ୍ନପତ୍ର (PYQs), ସରକାରୀ ସିଲାବସ୍ ଏବଂ ଅଭ୍ୟାସ ସେଟ୍।'
+      : 'Verified bilingual study notes, previous year papers (PYQs), official syllabi & practice sets for Odisha and Central exams.'));
+    heroTop.appendChild(copy);
+    heroTop.appendChild(buildLangToggle(function () { renderBrowserView(); }));
+    hero.appendChild(heroTop);
     shell.appendChild(hero);
 
-    // 2. Polished Candidate Syllabus Progress & Streak Strip
+    // 2. Candidate Syllabus Progress & Streak Strip (shown only when signed-in progress exists)
     renderProgressStrip(shell);
 
-    // 3. Elevated Exam Track Cards + Quick Resource Pills + 5-Column Curriculum Filter Bar
-    var box = el('section', 'sp-browser-box');
-    box.setAttribute('aria-label', 'Study Library Curriculum Filters');
+    // 3. Streamlined Single-Card Filter Bar (L1 Track Pills + Single Filter Row)
+    var box = el('section', 'sp-browser-box stl-filter-card');
+    box.setAttribute('aria-label', 'Study Library Filters');
 
     var l1Nodes = S.nodes.filter(function (n) { return Number(n.level) === 1; });
-    renderExamTrackCards(box, l1Nodes);
+    renderTrackPillStrip(box, l1Nodes);
 
-    // Quick resource-type pills
-    var pills = el('div', 'sp-pill-strip');
-    [
-      ['All Materials', '', ''],
-      ['Syllabus', 'Syllabus', ''],
-      ['Study Notes', 'Study Notes', ''],
-      ['PYQs', 'PYQ Paper', ''],
-      ['Practice Sets', 'Practice Set', ''],
-      ['Revision Sheets', 'Revision Sheet', ''],
-      ['🔥 Must-Study High-Yield', '', 'Must-Study']
-    ].forEach(function (p) {
-      var active = p[2] ? (S.filters.priority === p[2]) : (!S.filters.priority && S.filters.type === p[1]);
-      var btn = el('button', 'sp-pill-btn' + (active ? ' is-active' : ''), p[0]);
-      btn.type = 'button';
-      btn.addEventListener('click', function () {
-        S.filters.type = p[1];
-        S.filters.priority = p[2];
-        reloadBrowser();
-      });
-      pills.appendChild(btn);
-    });
+    var row = el('div', 'stl-filter-row');
 
-    if (hasFilter) {
-      var rstBtn = el('button', 'sp-btn sp-btn-sm', '✕ Reset Filters');
-      rstBtn.type = 'button';
-      rstBtn.addEventListener('click', function () {
-        S.filters = { l1: '', l2: '', l3: '', type: '', difficulty: '', priority: '', medium: '', search: '' };
-        reloadBrowser();
-      });
-      pills.appendChild(rstBtn);
-    }
-    box.appendChild(pills);
-
-    // 5-Column Curriculum Filter Bar
-    var row = el('div', 'sp-cascading-row');
-    function makeSelectField(id, labelText, defaultLabel, opts, val, onChange) {
-      var f = el('div', 'sp-field');
-      var lbl = el('label', 'sp-label', labelText);
-      lbl.setAttribute('for', id);
-      f.appendChild(lbl);
-      var sel = el('select', 'sp-select');
-      sel.id = id;
-      sel.appendChild(new Option(defaultLabel, ''));
-      opts.forEach(function (o) { sel.appendChild(new Option(o[1], o[0])); });
-      sel.value = val;
-      sel.addEventListener('change', function () { onChange(sel.value); });
-      f.appendChild(sel);
-      return f;
-    }
-
-    var l2Nodes = S.nodes.filter(function (n) { return Number(n.level) === 2 && (!S.filters.l1 || n.parent_id === S.filters.l1); });
-    var l3Nodes = S.nodes.filter(function (n) { return Number(n.level) === 3 && (!S.filters.l2 || n.parent_id === S.filters.l2); });
-
-    row.appendChild(makeSelectField(
-      'sp-sel-track',
-      '1. Exam Track',
-      S.langMode === 'or' ? 'ସମସ୍ତ ପରୀକ୍ଷା ଟ୍ରାକ୍' : 'All Exam Tracks',
-      l1Nodes.map(function (n) { return [n.id, (n.icon ? n.icon + ' ' : '') + pick(n, 'title') + (n.published_modules_count ? ' (' + n.published_modules_count + ')' : '')]; }),
-      S.filters.l1,
-      function (v) { S.filters.l1 = v; S.filters.l2 = ''; S.filters.l3 = ''; reloadBrowser(); }
-    ));
-
-    row.appendChild(makeSelectField(
-      'sp-sel-subject',
-      '2. Subject / Paper',
-      S.langMode === 'or' ? 'ସମସ୍ତ ବିଷୟ / ପେପର୍' : 'All Subjects / Papers',
-      l2Nodes.map(function (n) { return [n.id, (n.icon ? n.icon + ' ' : '') + pick(n, 'title')]; }),
-      S.filters.l2,
-      function (v) { S.filters.l2 = v; S.filters.l3 = ''; reloadBrowser(); }
-    ));
-
-    row.appendChild(makeSelectField(
-      'sp-sel-chapter',
-      '3. Chapter / Format',
-      S.langMode === 'or' ? 'ସମସ୍ତ ଅଧ୍ୟାୟ / ଫର୍ମାଟ୍' : 'All Chapters / Formats',
-      l3Nodes.map(function (n) { return [n.id, (n.icon ? n.icon + ' ' : '') + pick(n, 'title')]; }),
-      S.filters.l3,
-      function (v) { S.filters.l3 = v; reloadBrowser(); }
-    ));
-
-    row.appendChild(makeSelectField(
-      'sp-sel-difficulty',
-      '4. Difficulty Level',
-      S.langMode === 'or' ? 'ସମସ୍ତ ସ୍ତର' : 'All Difficulty Levels',
-      [['Foundation', 'Foundation'], ['Moderate', 'Moderate'], ['Advanced', 'Advanced']],
-      S.filters.difficulty,
-      function (v) { S.filters.difficulty = v; reloadBrowser(); }
-    ));
-
-    var qField = el('div', 'sp-field');
-    var qLbl = el('label', 'sp-label', '5. Search Topic or Paper Code');
-    qLbl.setAttribute('for', 'sp-study-search');
-    qField.appendChild(qLbl);
-    var searchInp = el('input', 'sp-input');
+    var searchInp = el('input', 'sp-input stl-search-input');
     searchInp.id = 'sp-study-search';
     searchInp.type = 'search';
-    searchInp.placeholder = S.langMode === 'or' ? 'ବିଷୟ, OPSC/OSSC ପେପର୍ କିମ୍ବା PYQ ବର୍ଷ...' : 'Search topic, OPSC/OSSC paper, PYQ year...';
+    searchInp.setAttribute('aria-label', 'Search notes, PYQs, syllabus, or exam');
+    searchInp.placeholder = S.langMode === 'or'
+      ? 'ନୋଟ୍ସ, PYQ, ସିଲାବସ୍ କିମ୍ବା ପରୀକ୍ଷା ଖୋଜନ୍ତୁ...'
+      : 'Search notes, PYQs, syllabus, or exam...';
     searchInp.value = S.filters.search;
     var searchTimer = null;
     searchInp.addEventListener('input', function () {
@@ -694,13 +599,65 @@
         reloadBrowser();
       }
     });
-    qField.appendChild(searchInp);
-    row.appendChild(qField);
+    row.appendChild(searchInp);
+
+    var l2Nodes = S.nodes.filter(function (n) {
+      return Number(n.level) === 2 && (!S.filters.l1 || n.parent_id === S.filters.l1);
+    });
+    var subSel = el('select', 'sp-select');
+    subSel.id = 'sp-sel-sub';
+    subSel.setAttribute('aria-label', 'Filter by Sub-Collection');
+    subSel.appendChild(new Option(S.langMode === 'or' ? 'ସମସ୍ତ ଉପ-ବିଭାଗ' : 'All Sub-Collections', ''));
+    l2Nodes.forEach(function (n) {
+      subSel.appendChild(new Option((n.icon ? n.icon + ' ' : '') + pick(n, 'title'), n.id));
+    });
+    subSel.value = S.filters.l2;
+    subSel.addEventListener('change', function () {
+      S.filters.l2 = subSel.value;
+      S.filters.l3 = '';
+      reloadBrowser();
+    });
+    row.appendChild(subSel);
+
+    var typeSel = el('select', 'sp-select');
+    typeSel.id = 'sp-sel-type';
+    typeSel.setAttribute('aria-label', 'Filter by Resource Type');
+    typeSel.appendChild(new Option(S.langMode === 'or' ? 'ସମସ୍ତ ପ୍ରକାର' : 'All Types', ''));
+    RESOURCE_TYPE_OPTIONS.forEach(function (o) { typeSel.appendChild(new Option(o[1], o[0])); });
+    typeSel.value = S.filters.type;
+    typeSel.addEventListener('change', function () {
+      S.filters.type = typeSel.value;
+      reloadBrowser();
+    });
+    row.appendChild(typeSel);
+
+    var medSel = el('select', 'sp-select');
+    medSel.id = 'sp-sel-medium';
+    medSel.setAttribute('aria-label', 'Filter by Medium');
+    medSel.appendChild(new Option(S.langMode === 'or' ? 'ସମସ୍ତ ମାଧ୍ୟମ' : 'All Mediums', ''));
+    MEDIUM_OPTIONS.forEach(function (o) { medSel.appendChild(new Option(o[1], o[0])); });
+    medSel.value = S.filters.medium;
+    medSel.addEventListener('change', function () {
+      S.filters.medium = medSel.value;
+      reloadBrowser();
+    });
+    row.appendChild(medSel);
+
+    if (hasFilter) {
+      var rstBtn = el('button', 'sp-btn sp-btn-sm stl-reset-btn', S.langMode === 'or' ? 'ରିସେଟ୍' : 'Reset');
+      rstBtn.type = 'button';
+      rstBtn.addEventListener('click', function () {
+        S.filters = { l1: '', l2: '', l3: '', type: '', difficulty: '', priority: '', medium: '', search: '' };
+        reloadBrowser();
+      });
+      row.appendChild(rstBtn);
+    }
 
     box.appendChild(row);
+    renderActiveFilterChips(box);
     shell.appendChild(box);
 
-    // 4. Study Module Cards OR Designed Illustrated Empty State + 3-Layer Exam Tracks & Subjects Grid
+    // 4. Study Resource Cards OR Clean Centered Empty State (Zero Overlap)
     if (!S.items.length) {
       var emptyCard = el('section', 'sp-empty-card');
       emptyCard.setAttribute('aria-label', 'Study Library Status');
@@ -709,18 +666,18 @@
       emptyCard.appendChild(art);
 
       emptyCard.appendChild(el('h2', 'sp-empty-title', hasFilter
-        ? (S.langMode === 'or' ? 'ଆପଣଙ୍କ ଫିଲ୍ଟର୍ ସହିତ କୌଣସି ଅଧ୍ୟୟନ ମଡ୍ୟୁଲ୍ ମିଳିଲା ନାହିଁ' : 'No Study Modules Match Your Selected Filters')
-        : (S.langMode === 'or' ? 'ନୂତନ ଦ୍ୱିଭାଷୀ ଅଧ୍ୟୟନ ନୋଟ୍ସ, ସିଲାବସ୍ ଏବଂ PYQ ଶୀଘ୍ର ପ୍ରକାଶିତ ହେବ' : 'Fresh Bilingual Study Notes, Syllabi & PYQs Coming Soon')));
+        ? (S.langMode === 'or' ? 'ଆପଣଙ୍କ ଫିଲ୍ଟର୍ ସହିତ କୌଣସି ଅଧ୍ୟୟନ ସାମଗ୍ରୀ ମିଳିଲା ନାହିଁ' : 'No Study Resources Match Your Filters')
+        : (S.langMode === 'or' ? 'ନୂତନ ଅଧ୍ୟୟନ ନୋଟ୍ସ, ସିଲାବସ୍ ଏବଂ PYQ ଶୀଘ୍ର ପ୍ରକାଶିତ ହେବ' : 'Study Notes, Syllabi & PYQs Coming Soon')));
 
       emptyCard.appendChild(el('p', 'sp-empty-desc', hasFilter
         ? (S.langMode === 'or'
-          ? 'ଅନ୍ୟ ପରୀକ୍ଷା ଟ୍ରାକ୍, ବିଷୟ କିମ୍ବା ଫର୍ମାଟ୍ ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା ସମସ୍ତ ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ।'
-          : 'Try broadening your Exam Track, Subject, Format, or Difficulty filters — or browse our 3-layer Odisha & Central curriculum tracks below.')
+          ? 'ଅନ୍ୟ ଟ୍ରାକ୍, ଉପ-ବିଭାଗ, ପ୍ରକାର କିମ୍ବା ମାଧ୍ୟମ ବାଛନ୍ତୁ କିମ୍ବା ସମସ୍ତ ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ।'
+          : 'Try broadening your track, sub-collection, resource type, or medium filter — or reset to browse all study resources.')
         : (S.langMode === 'or'
-          ? 'ଏହି ପାଠାଗାରରେ ପ୍ରକାଶିତ ପ୍ରତ୍ୟେକ ନୋଟ୍ସ, ସିଲାବସ୍ ଏବଂ PYQ ଓଡ଼ିଶା ଓ କେନ୍ଦ୍ର ପରୀକ୍ଷାର ସରକାରୀ ପାଠ୍ୟକ୍ରମ ଅନୁସାରେ ପ୍ରସ୍ତୁତ। ତଳେ ଥିବା ପରୀକ୍ଷା ଟ୍ରାକ୍ ଓ ବିଷୟଗୁଡ଼ିକୁ ବ୍ରାଉଜ୍ କରନ୍ତୁ।'
-          : 'Every syllabus blueprint, chapter note, solved PYQ set, and MCQ pack published here is structured for Odisha & Central exam aspirants with bilingual EN + ଓଡ଼ିଆ support. Explore the curriculum tracks below.')));
+          ? 'ଓଡ଼ିଶା ଓ କେନ୍ଦ୍ର ପରୀକ୍ଷା ପାଇଁ ଦ୍ୱିଭାଷୀ ଅଧ୍ୟୟନ ନୋଟ୍ସ, PYQ ଏବଂ ଅଭ୍ୟାସ ସେଟ୍ ଏଠାରେ ପ୍ରକାଶିତ ହେବ।'
+          : 'Verified bilingual notes, official syllabi, previous year papers, and practice sets will appear here as soon as they are published.')));
 
-      var empActs = el('div', 'sp-pill-strip');
+      var empActs = el('div', 'sp-empty-actions');
       if (hasFilter) {
         var rAll = el('button', 'sp-btn sp-btn-primary', S.langMode === 'or' ? 'ସମସ୍ତ ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ' : 'Reset All Filters');
         rAll.type = 'button';
@@ -730,19 +687,13 @@
         });
         empActs.appendChild(rAll);
       }
-      var jobsA = el('a', 'sp-btn', S.langMode === 'or' ? '💼 ସରକାରୀ ଚାକିରି ଦେଖନ୍ତୁ →' : '💼 Explore Government Jobs →');
-      jobsA.href = '/jobs/';
-      empActs.appendChild(jobsA);
-
       if (S.isAdmin) {
-        var admA = el('a', 'sp-btn sp-btn-primary', '+ Publish First Study Module in Admin Studio ↗');
+        var admA = el('a', 'sp-btn sp-btn-primary', '+ Publish Study Resource in Admin Studio ↗');
         admA.href = '/admin/#folder-study-library';
         empActs.appendChild(admA);
       }
-      emptyCard.appendChild(empActs);
+      if (empActs.children.length) emptyCard.appendChild(empActs);
       shell.appendChild(emptyCard);
-
-      renderCurriculumTracksDirectory(shell);
     } else {
       var resBar = el('div', 'sp-results-bar');
       resBar.appendChild(el('h2', 'sp-h2', S.langMode === 'or'
@@ -812,6 +763,7 @@
   }
 
   async function reloadBrowser() {
+    syncUrlFromFilters();
     await fetchPortalData();
     renderBrowserView();
   }
@@ -1436,16 +1388,17 @@
       return;
     }
 
-    S.filters.l1 = qsParam('l1');
-    S.filters.l2 = qsParam('l2');
+    S.filters.l1 = qsParam('track') || qsParam('l1');
+    S.filters.l2 = qsParam('sub') || qsParam('l2');
     S.filters.l3 = qsParam('l3');
     S.filters.type = qsParam('type');
+    S.filters.medium = qsParam('medium');
     S.filters.search = qsParam('q') || qsParam('search');
 
     mountOptimisticSkeleton();
-    var hasInitialFilter = Boolean(S.filters.l1 || S.filters.l2 || S.filters.l3 || S.filters.type || S.filters.search);
+    var hasInitialFilter = Boolean(S.filters.l1 || S.filters.l2 || S.filters.l3 || S.filters.type || S.filters.medium || S.filters.search);
     if (!hasInitialFilter) {
-      var bootUrl = '/api/public/study/bootstrap' + (qsParam('refresh') ? '?refresh=1' : '');
+      var bootUrl = '/api/public/study-library/bootstrap' + (qsParam('refresh') ? '?refresh=1' : '');
       var triple = await Promise.all([
         fetch(bootUrl, { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
         loadCandidateProgress(),

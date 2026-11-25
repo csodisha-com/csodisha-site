@@ -20,6 +20,9 @@
     activeSchemesSubTab: 'articles',
     activeSchemesCategoryId: '',
     schemesCategoryNodes: [],
+    activeStudySubTab: 'articles',
+    activeStudyTrackId: '',
+    studyTrackNodes: [],
     expandedFolders: new Set(['folder-jobs-careers']),
     searchQuery: '',
     startTime: Date.now(),
@@ -49,6 +52,15 @@
     { id: 'stax_l1_education_scholarships', slug: 'education-scholarships', icon: '🎓', title_en: 'Education & Scholarships', published_schemes: 0, total_schemes: 0 },
     { id: 'stax_l1_women_child_social', slug: 'women-child-social', icon: '👩', title_en: 'Women, Child & Social Security', published_schemes: 0, total_schemes: 0 },
     { id: 'stax_l1_health_msme_livelihoods', slug: 'health-msme-livelihoods', icon: '🏥', title_en: 'Health, MSME & Livelihoods', published_schemes: 0, total_schemes: 0 }
+  ];
+
+  var DEFAULT_STUDY_TRACKS = [
+    { id: 'stl_l1_odisha_state', slug: 'odisha-state-exams', icon: '🏛️', title_en: 'Odisha State Exams', published_modules: 0, total_modules: 0 },
+    { id: 'stl_l1_central_exams', slug: 'central-competitive-exams', icon: '🇮🇳', title_en: 'Central Competitive Exams', published_modules: 0, total_modules: 0 },
+    { id: 'stl_l1_teaching_educator', slug: 'teaching-educator-exams', icon: '🎓', title_en: 'Teaching & Educator Exams', published_modules: 0, total_modules: 0 },
+    { id: 'stl_l1_school_board', slug: 'school-board-notes', icon: '📘', title_en: 'School & Board Notes (CHSE / BSE)', published_modules: 0, total_modules: 0 },
+    { id: 'stl_l1_skill_coding', slug: 'skill-coding-digital', icon: '💻', title_en: 'Skill, Coding & Digital Literacy', published_modules: 0, total_modules: 0 },
+    { id: 'stl_l1_pyq_mocks', slug: 'previous-papers-mock-tests', icon: '📜', title_en: 'Previous Papers & Mock Tests', published_modules: 0, total_modules: 0 }
   ];
 
   var DEFAULT_CAREERS_TRACKS = [
@@ -368,6 +380,18 @@
             if (window.innerWidth <= 900) closeMobileDrawer();
             return;
           }
+          if (folder.id === 'folder-study-library') {
+            if (CSOState.expandedFolders.has(folder.id)) CSOState.expandedFolders.delete(folder.id);
+            else CSOState.expandedFolders.add(folder.id);
+            persistOpenGroups();
+            if (!isCurrentFolder) {
+              openStudyPublishingStudio('articles', '');
+            } else {
+              renderNavigationTree();
+            }
+            if (window.innerWidth <= 900) closeMobileDrawer();
+            return;
+          }
           if (!folderModules.length) {
             selectModule(folder.id, folder.id);
             if (window.innerWidth <= 900) closeMobileDrawer();
@@ -468,6 +492,51 @@
               if (window.innerWidth <= 900) closeMobileDrawer();
             });
             modList.appendChild(cBtn);
+          });
+        } else if (folder.id === 'folder-study-library') {
+          modList.id = 'studyLibrarySidebarSubnav';
+          [
+            { tab: 'articles', num: '01', title: 'Published & Draft Resources', tag: 'D1' },
+            { tab: 'taxonomy', num: '02', title: '6-Track & 3-Layer Hierarchy', tag: 'L1-L3' },
+            { tab: 'snippets', num: '03', title: 'Reusable Bilingual Snippets', tag: 'EN/OR' },
+            { tab: 'doubts', num: '04', title: 'Reader Doubts & PYQ Queue', tag: 'Q&A' },
+            { tab: 'new', num: '05', title: '+ Publish Study Resource', tag: 'NEW' }
+          ].forEach(function (stSub) {
+            var isStActive = isCurrentFolder && CSOState.activeStudySubTab === stSub.tab && !(stSub.tab === 'articles' && CSOState.activeStudyTrackId);
+            var stBtn = el('button', 'cso-nav-mod-btn' + (isStActive ? ' is-active' : ''));
+            stBtn.type = 'button';
+            stBtn.setAttribute('data-study-tab', stSub.tab);
+            stBtn.appendChild(el('span', 'cso-nav-mod-num', stSub.num));
+            stBtn.appendChild(el('span', 'cso-nav-mod-title', stSub.title));
+            stBtn.appendChild(el('span', 'cso-nav-mod-tag is-live', stSub.tag));
+            stBtn.addEventListener('click', function () {
+              openStudyPublishingStudio(stSub.tab, '');
+              if (window.innerWidth <= 900) closeMobileDrawer();
+            });
+            modList.appendChild(stBtn);
+          });
+
+          var stTrackSep = el('div', 'cso-nav-jobs-sector-sep', 'Public Study Library ▾ Tracks');
+          modList.appendChild(stTrackSep);
+
+          var l1Tracks = (CSOState.studyTrackNodes && CSOState.studyTrackNodes.length)
+            ? CSOState.studyTrackNodes
+            : DEFAULT_STUDY_TRACKS;
+          l1Tracks.forEach(function (trk) {
+            var isTrkActive = isCurrentFolder && CSOState.activeStudySubTab === 'articles' && CSOState.activeStudyTrackId === trk.id;
+            var tBtn = el('button', 'cso-nav-mod-btn cso-nav-mod-btn--sector' + (isTrkActive ? ' is-active' : ''));
+            tBtn.type = 'button';
+            tBtn.setAttribute('data-study-track', trk.slug || trk.id);
+            tBtn.title = (trk.title_en || trk.slug) + ' — synced live to Public Study Library ▾ dropdown';
+            tBtn.appendChild(el('span', 'cso-nav-mod-num', trk.icon || '📚'));
+            tBtn.appendChild(el('span', 'cso-nav-mod-title', trk.title_en || trk.slug));
+            var trkCnt = Number(trk.published_modules !== undefined ? trk.published_modules : (trk.total_modules || 0));
+            tBtn.appendChild(el('span', 'cso-nav-mod-tag cso-tabular' + (trk.is_published === 0 ? '' : ' is-live'), String(trkCnt)));
+            tBtn.addEventListener('click', function () {
+              openStudyPublishingStudio('articles', trk.id);
+              if (window.innerWidth <= 900) closeMobileDrawer();
+            });
+            modList.appendChild(tBtn);
           });
         }
         filteredModules.forEach(function (mod, idx) {
@@ -794,6 +863,15 @@
         }
       })
       .catch(function () {});
+    fetch('/api/admin/study/taxonomy', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && Array.isArray(d.nodes)) {
+          CSOState.studyTrackNodes = d.nodes.filter(function (n) { return Number(n.level) === 1 && Number(n.is_published) === 1; });
+          renderNavigationTree();
+        }
+      })
+      .catch(function () {});
     fetch('/api/admin/careers', { credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
@@ -904,9 +982,14 @@
     }
   }
 
-  function openStudyPublishingStudio(initialTab) {
+  function openStudyPublishingStudio(initialTab, initialTrackId) {
+    var tabKey = initialTab || 'articles';
     CSOState.activeFolderId = 'folder-study-library';
     CSOState.activeModuleId = 'folder-study-library';
+    CSOState.activeStudySubTab = tabKey;
+    CSOState.activeStudyTrackId = (tabKey === 'articles' && initialTrackId) ? String(initialTrackId) : '';
+    CSOState.expandedFolders.add('folder-study-library');
+    persistOpenGroups();
     try { localStorage.setItem('cso_active_module_id', 'folder-study-library'); } catch (_e) {}
     if (window.location.hash !== '#folder-study-library' && window.history && window.history.replaceState) {
       window.history.replaceState(null, '', '#folder-study-library');
@@ -914,12 +997,12 @@
     if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Study Library';
     if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Study Library Publishing House';
     if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Study Library & Curriculum Studio';
-    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '3-Layer D1 · R2';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '6-Track D1 · R2';
     renderNavigationTree();
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);
     if (window.CSOStudyPublishingStudio) {
-      window.CSOStudyPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, initialTab || 'articles');
+      window.CSOStudyPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, tabKey, CSOState.activeStudyTrackId);
     }
   }
 
@@ -1424,6 +1507,19 @@
       if (CSOState.activeSchemesCategoryId !== next) { CSOState.activeSchemesCategoryId = next; renderNavigationTree(); }
     },
     openSchemesCategory: function (l1Id) { openSchemesPublishingStudio('articles', l1Id || ''); },
+    setStudySubTab: function (tab) {
+      if (tab && CSOState.activeStudySubTab !== tab) { CSOState.activeStudySubTab = tab; renderNavigationTree(); }
+    },
+    setStudyTrackNodes: function (nodes) {
+      if (!Array.isArray(nodes)) return;
+      CSOState.studyTrackNodes = nodes.filter(function (n) { return Number(n.level) === 1 && Number(n.is_published) === 1; });
+      renderNavigationTree();
+    },
+    setStudyActiveTrack: function (l1Id) {
+      var next = l1Id || '';
+      if (CSOState.activeStudyTrackId !== next) { CSOState.activeStudyTrackId = next; renderNavigationTree(); }
+    },
+    openStudyTrack: function (l1Id) { openStudyPublishingStudio('articles', l1Id || ''); },
     openCandidateHubTab: function (tab) { openCandidateHubStudio(tab); },
     openJobsPublishingTab: function (tab) { openJobsPublishingStudio(tab); },
     openCareersPublishingTab: function (tab) { openCareersPublishingStudio(tab); },

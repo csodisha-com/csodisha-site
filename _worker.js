@@ -417,7 +417,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/public/jobs', '/api/public/jobs/list', '/api/public/jobs/tree', '/api/public/jobs/bootstrap', '/api/public/jobs/article',
     '/api/public/careers/bootstrap', '/api/public/careers/list', '/careers/', '/jobs/', '/jobs-careers/',
     '/api/public/schemes', '/api/public/schemes/list', '/api/public/schemes/tree', '/api/public/schemes/bootstrap', '/api/public/schemes/article', '/schemes/', '/schemes-benefits/',
-    '/api/public/study', '/api/public/study/tree', '/api/public/study/bootstrap', '/api/public/study/article', '/study-library/', '/study/',
+    '/api/public/study', '/api/public/study/tree', '/api/public/study/bootstrap', '/api/public/study/article', '/api/public/study-library/bootstrap', '/api/public/study-library/list', '/study-library/', '/study/',
     '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/bootstrap', '/api/public/community/post', '/community/', '/student-dashboard/',
     '/api/public/about/tree', '/api/public/about/pages', '/api/public/about/bootstrap', '/api/public/about/article', '/api/public/about/sources', '/about/',
     '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
@@ -991,13 +991,13 @@ export default {
     if (pathname === '/api/public/schemes/telemetry' && request.method === 'POST') {
       return handlePublicSchemesTelemetryApi(request, env);
     }
-    if (pathname === '/api/public/study/bootstrap' && (request.method === 'GET' || request.method === 'HEAD')) {
+    if ((pathname === '/api/public/study/bootstrap' || pathname === '/api/public/study-library/bootstrap') && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyBootstrapApi(request, env));
     }
     if (pathname === '/api/public/study/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyTreeApi(request, env));
     }
-    if (pathname === '/api/public/study' && (request.method === 'GET' || request.method === 'HEAD')) {
+    if ((pathname === '/api/public/study' || pathname === '/api/public/study-library/list') && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyListApi(request, env));
     }
     if (pathname === '/api/public/study/article' && (request.method === 'GET' || request.method === 'HEAD')) {

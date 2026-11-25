@@ -517,6 +517,7 @@ async function dispatchAdminApi(request, env) {
         }
         break;
       case 'study-library':
+        if (id === 'taxonomy') return await handleStudyTaxonomyAdmin(request, env, actor, sub, extra);
         return await handleStudyLibraryStudio(request, env, actor, id, sub, extra);
       case 'edu': {
         if (id === 'resources' && sub === 'upload' && method === 'POST') {

@@ -47,6 +47,8 @@ export const CONTENT_PUBLIC_PATHS = [
   '/api/public/study/tree',
   '/api/public/study/bootstrap',
   '/api/public/study/article',
+  '/api/public/study-library/bootstrap',
+  '/api/public/study-library/list',
   '/api/public/community/tree',
   '/api/public/community/posts',
   '/api/public/community/bootstrap',

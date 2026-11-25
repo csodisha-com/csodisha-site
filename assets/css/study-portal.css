@@ -609,11 +609,154 @@
   border: 1px solid var(--cso-border-subtle, #d8e1e9);
   border-radius: 16px;
   padding: clamp(24px, 4vw, 40px) clamp(18px, 3vw, 32px);
-  display: grid;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  gap: 14px;
+  gap: 10px;
   box-shadow: var(--cso-card-shadow, 0 6px 20px rgba(11, 57, 72, 0.06));
+}
+
+.sp-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* ==========================================================================
+   MINIMAL STUDY LIBRARY EXPLORER (v285)
+   ========================================================================== */
+.stl-hero--compact {
+  padding: 1.2rem 1.5rem;
+}
+
+.stl-hero-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stl-filter-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.stl-track-strip {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.stl-track-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-card-bg, #ffffff);
+  color: var(--cso-ink-primary, #12202b);
+  font-size: 0.83rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.stl-track-pill:hover {
+  border-color: var(--cso-brand-primary, #115569);
+}
+
+.stl-track-pill.is-active {
+  background: var(--cso-pill-active-bg, #115569);
+  border-color: var(--cso-pill-active-bg, #115569);
+  color: var(--cso-pill-active-fg, #ffffff);
+}
+
+.stl-track-pill-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: var(--cso-card-subtle, #f1f5f9);
+  color: var(--cso-ink-secondary, #475569);
+}
+
+.stl-track-pill.is-active .stl-track-pill-count {
+  background: rgba(255, 255, 255, 0.22);
+  color: var(--cso-pill-active-fg, #ffffff);
+}
+
+.stl-filter-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.8fr) repeat(3, minmax(150px, 1fr)) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.stl-reset-btn {
+  white-space: nowrap;
+  min-height: 40px;
+}
+
+.stl-active-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.stl-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border-subtle, #d8e1e9);
+  background: var(--cso-badge-verified-bg, #e0f2fe);
+  color: var(--cso-badge-verified-fg, #0b3948);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stl-chip-x {
+  font-weight: 900;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+@media (max-width: 960px) {
+  .stl-filter-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .stl-search-input {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .stl-filter-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .sp-empty-art {

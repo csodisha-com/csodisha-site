@@ -9429,7 +9429,8 @@ body[data-theme="odisha"] {
 
 .cso-nav-jobs-wrap .cso-nav-parent,
 .cso-nav-careers-wrap .cso-nav-parent,
-.cso-nav-schemes-wrap .cso-nav-parent {
+.cso-nav-schemes-wrap .cso-nav-parent,
+.cso-nav-study-wrap .cso-nav-parent {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -9437,7 +9438,8 @@ body[data-theme="odisha"] {
 
 .cso-jobs-flyout-toggle,
 .cso-careers-flyout-toggle,
-.cso-schemes-flyout-toggle {
+.cso-schemes-flyout-toggle,
+.cso-study-flyout-toggle {
   appearance: none;
   border: 0;
   background: transparent;
@@ -9459,13 +9461,15 @@ body[data-theme="odisha"] {
 
 .cso-nav-jobs-wrap.cso-open .cso-jobs-chev,
 .cso-nav-careers-wrap.cso-open .cso-jobs-chev,
-.cso-nav-schemes-wrap.cso-open .cso-jobs-chev {
+.cso-nav-schemes-wrap.cso-open .cso-jobs-chev,
+.cso-nav-study-wrap.cso-open .cso-jobs-chev {
   transform: rotate(180deg);
 }
 
 .cso-jobs-cascade,
 .cso-careers-cascade,
-.cso-schemes-cascade {
+.cso-schemes-cascade,
+.cso-study-cascade {
   display: none;
   white-space: normal;
   text-align: left;
@@ -9474,7 +9478,8 @@ body[data-theme="odisha"] {
 
 .cso-nav-jobs-wrap.cso-open > .cso-jobs-cascade,
 .cso-nav-careers-wrap.cso-open > .cso-careers-cascade,
-.cso-nav-schemes-wrap.cso-open > .cso-schemes-cascade {
+.cso-nav-schemes-wrap.cso-open > .cso-schemes-cascade,
+.cso-nav-study-wrap.cso-open > .cso-study-cascade {
   display: block;
 }
 
@@ -9484,12 +9489,14 @@ body[data-theme="odisha"] {
 #cso-main-navbar .cso-careers-stage2,
 #cso-main-navbar .cso-schemes-stage1,
 #cso-main-navbar .cso-schemes-stage2,
+#cso-main-navbar .cso-study-stage1,
 .cso-jobs-stage1,
 .cso-jobs-stage2,
 .cso-careers-stage1,
 .cso-careers-stage2,
 .cso-schemes-stage1,
-.cso-schemes-stage2 {
+.cso-schemes-stage2,
+.cso-study-stage1 {
   background-color: var(--cso-surface-elevated, #ffffff);
   opacity: 1;
   backdrop-filter: none;
@@ -9516,6 +9523,12 @@ body[data-theme="odisha"] {
 
 .cso-schemes-stage1 {
   width: 248px;
+  position: relative;
+  z-index: 1200;
+}
+
+.cso-study-stage1 {
+  width: 276px;
   position: relative;
   z-index: 1200;
 }
@@ -9563,7 +9576,8 @@ body[data-theme="odisha"] {
 
   #navw .cso-nav-jobs-wrap,
   #navw .cso-nav-careers-wrap,
-  #navw .cso-nav-schemes-wrap {
+  #navw .cso-nav-schemes-wrap,
+  #navw .cso-nav-study-wrap {
     position: relative !important;
   }
 
@@ -9591,10 +9605,19 @@ body[data-theme="odisha"] {
     z-index: 1200;
   }
 
+  .cso-study-cascade {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 276px;
+    z-index: 1200;
+  }
+
   /* Invisible hover bridges so moving diagonally between trigger, Stage 1 & Stage 2 never closes early */
   .cso-jobs-cascade::before,
   .cso-careers-cascade::before,
-  .cso-schemes-cascade::before {
+  .cso-schemes-cascade::before,
+  .cso-study-cascade::before {
     content: '';
     position: absolute;
     top: -10px;
@@ -9629,7 +9652,8 @@ body[data-theme="odisha"] {
 @media (min-width: 769px) and (max-width: 1099px) {
   .cso-jobs-cascade,
   .cso-careers-cascade,
-  .cso-schemes-cascade {
+  .cso-schemes-cascade,
+  .cso-study-cascade {
     position: fixed;
     top: 104px;
     left: 16px;
@@ -9641,7 +9665,8 @@ body[data-theme="odisha"] {
 
   .cso-jobs-stage1,
   .cso-careers-stage1,
-  .cso-schemes-stage1 {
+  .cso-schemes-stage1,
+  .cso-study-stage1 {
     width: 100%;
   }
 
@@ -9655,7 +9680,8 @@ body[data-theme="odisha"] {
 @media (max-width: 768px) {
   .cso-jobs-cascade,
   .cso-careers-cascade,
-  .cso-schemes-cascade {
+  .cso-schemes-cascade,
+  .cso-study-cascade {
     position: static;
     width: 100%;
     margin-top: 8px;
@@ -9663,7 +9689,8 @@ body[data-theme="odisha"] {
 
   .cso-jobs-stage1,
   .cso-careers-stage1,
-  .cso-schemes-stage1 {
+  .cso-schemes-stage1,
+  .cso-study-stage1 {
     width: 100%;
     box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
   }
@@ -9705,6 +9732,7 @@ body[data-theme="odisha"] {
 #cso-main-navbar .cso-careers-stage2 .cso-js2-link,
 #cso-main-navbar .cso-schemes-stage1 .cso-js1-link,
 #cso-main-navbar .cso-schemes-stage2 .cso-js2-link,
+#cso-main-navbar .cso-study-stage1 .cso-js1-link,
 .cso-js1-link,
 .cso-js2-link {
   flex: 1 1 auto;
@@ -9713,7 +9741,7 @@ body[data-theme="odisha"] {
   justify-content: space-between;
   gap: 8px;
   padding: 9px 11px;
-  min-height: 40px;
+  min-height: 44px;
   border-radius: 8px;
   color: var(--cso-surface-elevated-ink, #0f172a) !important;
   text-decoration: none;
@@ -9732,6 +9760,8 @@ body[data-theme="odisha"] {
 #cso-main-navbar .cso-schemes-stage1 .cso-js1-left,
 #cso-main-navbar .cso-schemes-stage1 .cso-js1-title,
 #cso-main-navbar .cso-schemes-stage1 .cso-js1-arrow,
+#cso-main-navbar .cso-study-stage1 .cso-js1-left,
+#cso-main-navbar .cso-study-stage1 .cso-js1-title,
 .cso-js1-left,
 .cso-js1-title,
 .cso-js1-arrow {
@@ -9753,6 +9783,9 @@ body[data-theme="odisha"] {
 #cso-main-navbar .cso-schemes-stage1 .cso-js1-link:focus-visible,
 #cso-main-navbar .cso-schemes-stage2 .cso-js2-link:hover,
 #cso-main-navbar .cso-schemes-stage2 .cso-js2-link:focus-visible,
+#cso-main-navbar .cso-study-stage1 .cso-js1-item.is-active .cso-js1-link,
+#cso-main-navbar .cso-study-stage1 .cso-js1-link:hover,
+#cso-main-navbar .cso-study-stage1 .cso-js1-link:focus-visible,
 .cso-js1-item.is-active .cso-js1-link,
 .cso-js1-link:hover,
 .cso-js1-link:focus-visible,

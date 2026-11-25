@@ -775,7 +775,8 @@
       const isJobs = pillarKey === 'jobs';
       const isCareers = pillarKey === 'careers';
       const isSchemes = pillarKey === 'schemes-benefits' || pillarKey === 'schemes';
-      const ni = el('div', 'ni' + (isCurrent ? ' cso-active' : '') + (isJobs ? ' cso-ni-jobs cso-nav-jobs-wrap' : '') + (isCareers ? ' cso-ni-careers cso-nav-careers-wrap' : '') + (isSchemes ? ' cso-ni-schemes cso-nav-schemes-wrap' : ''));
+      const isStudy = pillarKey === 'study-library' || pillarKey === 'study';
+      const ni = el('div', 'ni' + (isCurrent ? ' cso-active' : '') + (isJobs ? ' cso-ni-jobs cso-nav-jobs-wrap' : '') + (isCareers ? ' cso-ni-careers cso-nav-careers-wrap' : '') + (isSchemes ? ' cso-ni-schemes cso-nav-schemes-wrap' : '') + (isStudy ? ' cso-ni-study cso-nav-study-wrap' : ''));
       ni.dataset.pillar = pillarKey;
       const parent = el('div', 'cso-nav-parent');
       const a = el('a', isCurrent ? 'on' : '');
@@ -794,6 +795,10 @@
         a.setAttribute('aria-haspopup', 'true');
         a.setAttribute('aria-expanded', 'false');
         a.setAttribute('aria-controls', 'cso-schemes-stage1');
+      } else if (isStudy) {
+        a.setAttribute('aria-haspopup', 'true');
+        a.setAttribute('aria-expanded', 'false');
+        a.setAttribute('aria-controls', 'cso-study-stage1');
       }
       const iconText = it.icon || it.icon_key || '';
       if (iconText) {
@@ -850,6 +855,21 @@
         const cascade = buildSchemesCascadingMenu();
         ni.appendChild(cascade);
         wireSchemesCascadingInteractions(ni, a, chevBtn, cascade);
+      } else if (isStudy) {
+        const chevBtn = el('button', 'cso-nav-arrow cso-study-flyout-toggle');
+        chevBtn.type = 'button';
+        chevBtn.setAttribute('aria-label', 'Toggle Study Library tracks menu');
+        chevBtn.setAttribute('aria-haspopup', 'true');
+        chevBtn.setAttribute('aria-expanded', 'false');
+        chevBtn.setAttribute('aria-controls', 'cso-study-stage1');
+        const chevIcon = el('span', 'cso-jobs-chev', '▾');
+        chevIcon.setAttribute('aria-hidden', 'true');
+        chevBtn.appendChild(chevIcon);
+        parent.appendChild(chevBtn);
+        ni.appendChild(parent);
+        const cascade = buildStudyDropdownMenu();
+        ni.appendChild(cascade);
+        wireStudyDropdownInteractions(ni, a, chevBtn, cascade);
       } else {
         ni.appendChild(parent);
       }
@@ -1588,6 +1608,186 @@
     });
   }
 
+  // v285: Single-Stage Vertical Study Library ▾ Dropdown (NO Stage 2 slideout, NO › chevrons)
+  const STUDY_DROPDOWN_CACHE_KEY = 'cso_study_library_dropdown_v285';
+  const STUDY_DEFAULT_TRACKS = [
+    { id: 'stl_l1_odisha_state', slug: 'odisha-state-exams', icon: '🏛️', title_en: 'Odisha State Exams', title_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ପରୀକ୍ଷା' },
+    { id: 'stl_l1_central_exams', slug: 'central-competitive-exams', icon: '🇮🇳', title_en: 'Central Competitive Exams', title_or: 'କେନ୍ଦ୍ରୀୟ ପ୍ରତିଯୋଗିତାମୂଳକ ପରୀକ୍ଷା' },
+    { id: 'stl_l1_teaching_educator', slug: 'teaching-educator-exams', icon: '🎓', title_en: 'Teaching & Educator Exams', title_or: 'ଶିକ୍ଷକ ଓ ଶିକ୍ଷାଦାନ ପରୀକ୍ଷା' },
+    { id: 'stl_l1_school_board', slug: 'school-board-notes', icon: '📘', title_en: 'School & Board Notes (CHSE / BSE)', title_or: 'ବିଦ୍ୟାଳୟ ଓ ବୋର୍ଡ ନୋଟ୍ସ (CHSE / BSE)' },
+    { id: 'stl_l1_skill_coding', slug: 'skill-coding-digital', icon: '💻', title_en: 'Skill, Coding & Digital Literacy', title_or: 'କୌଶଳ, କୋଡିଂ ଓ ଡିଜିଟାଲ୍ ଜ୍ଞାନ' },
+    { id: 'stl_l1_pyq_mocks', slug: 'previous-papers-mock-tests', icon: '📜', title_en: 'Previous Papers & Mock Tests', title_or: 'ବିଗତ ବର୍ଷର ପ୍ରଶ୍ନପତ୍ର ଓ ମକ୍ ଟେଷ୍ଟ' }
+  ];
+  let studyDropdownTracks = null;
+  let studyDropdownFetchStarted = false;
+
+  function getStudyDropdownTracks() {
+    if (Array.isArray(studyDropdownTracks) && studyDropdownTracks.length) return studyDropdownTracks;
+    try {
+      const raw = window.sessionStorage.getItem(STUDY_DROPDOWN_CACHE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.tracks) && parsed.tracks.length && (Date.now() - Number(parsed.ts || 0) < 300000)) {
+          studyDropdownTracks = parsed.tracks;
+          return studyDropdownTracks;
+        }
+      }
+    } catch (_e) {}
+    return STUDY_DEFAULT_TRACKS;
+  }
+
+  function renderStudyStage1(stage1List) {
+    if (!stage1List) return;
+    stage1List.replaceChildren();
+    const isOr = S.lang === 'or';
+    const tracks = getStudyDropdownTracks();
+    const items = tracks.map(t => ({
+      slug: t.slug,
+      icon: t.icon || '📚',
+      title_en: t.title_en || t.slug,
+      title_or: t.title_or || t.title_en || t.slug,
+      href: '/study-library/?track=' + encodeURIComponent(t.slug || '')
+    }));
+    items.push({
+      slug: 'all',
+      icon: '📖',
+      title_en: 'All Study Resources',
+      title_or: 'ସମସ୍ତ ଅଧ୍ୟୟନ ସାମଗ୍ରୀ',
+      href: '/study-library/'
+    });
+
+    items.forEach(item => {
+      const li = el('li', 'cso-js1-item');
+      li.dataset.track = item.slug;
+      const row = el('div', 'cso-js1-row');
+      const a = el('a', 'cso-js1-link');
+      a.href = item.href;
+      const left = el('span', 'cso-js1-left');
+      const ic = el('span', 'cso-js1-icon', item.icon);
+      ic.setAttribute('aria-hidden', 'true');
+      left.append(ic, el('span', 'cso-js1-title', isOr ? item.title_or : item.title_en));
+      a.appendChild(left);
+      row.appendChild(a);
+      li.appendChild(row);
+
+      a.addEventListener('keydown', ev => {
+        if (ev.key === 'ArrowDown') {
+          ev.preventDefault();
+          const nextLi = li.nextElementSibling;
+          if (nextLi) { const na = nextLi.querySelector('.cso-js1-link'); if (na) na.focus(); }
+        } else if (ev.key === 'ArrowUp') {
+          ev.preventDefault();
+          const prevLi = li.previousElementSibling;
+          if (prevLi) { const pa = prevLi.querySelector('.cso-js1-link'); if (pa) pa.focus(); }
+        }
+      });
+
+      stage1List.appendChild(li);
+    });
+  }
+
+  function hydrateStudyDropdownFromD1(stage1List) {
+    renderStudyStage1(stage1List);
+    if (studyDropdownFetchStarted || typeof fetch !== 'function') return;
+    studyDropdownFetchStarted = true;
+    fetch('/api/public/study-library/bootstrap', { credentials: 'same-origin' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (data && Array.isArray(data.nav_tracks) && data.nav_tracks.length) {
+          studyDropdownTracks = data.nav_tracks.map(t => ({
+            id: t.id,
+            slug: t.slug,
+            icon: t.icon || '📚',
+            title_en: t.title_en,
+            title_or: t.title_or || t.title_en
+          }));
+          try {
+            window.sessionStorage.setItem(STUDY_DROPDOWN_CACHE_KEY, JSON.stringify({ ts: Date.now(), tracks: studyDropdownTracks }));
+          } catch (_e) {}
+          document.querySelectorAll('#cso-study-stage1 .cso-js1-list').forEach(listEl => renderStudyStage1(listEl));
+        }
+      })
+      .catch(() => {});
+  }
+
+  function buildStudyDropdownMenu() {
+    const cascade = el('div', 'cso-study-cascade');
+    cascade.id = 'cso-study-cascade';
+
+    const stage1 = el('div', 'cso-study-stage1');
+    stage1.id = 'cso-study-stage1';
+    stage1.setAttribute('role', 'region');
+    stage1.setAttribute('aria-label', 'Study Library Tracks');
+
+    const list = el('ul', 'cso-js1-list');
+    stage1.appendChild(list);
+
+    cascade.appendChild(stage1);
+    renderStudyStage1(list);
+    return cascade;
+  }
+
+  function wireStudyDropdownInteractions(ni, triggerA, chevBtn, cascade) {
+    let closeTimer = null;
+    const stage1List = cascade.querySelector('.cso-js1-list');
+
+    function setOpen(open) {
+      if (open) {
+        closeDropdowns(ni);
+        hydrateStudyDropdownFromD1(stage1List);
+      }
+      ni.classList.toggle('cso-open', open);
+      triggerA.setAttribute('aria-expanded', String(open));
+      chevBtn.setAttribute('aria-expanded', String(open));
+    }
+
+    ni.addEventListener('mouseenter', () => {
+      if (window.innerWidth < 1100) return;
+      clearTimeout(closeTimer);
+      setOpen(true);
+    });
+
+    ni.addEventListener('mouseleave', () => {
+      if (window.innerWidth < 1100) return;
+      clearTimeout(closeTimer);
+      closeTimer = setTimeout(() => setOpen(false), 150);
+    });
+
+    triggerA.addEventListener('keydown', ev => {
+      if (ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        setOpen(true);
+        const firstLink = cascade.querySelector('.cso-js1-link');
+        if (firstLink) firstLink.focus();
+      } else if (ev.key === 'Escape') {
+        setOpen(false);
+      }
+    });
+
+    chevBtn.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        const next = ev.key === 'ArrowDown' ? true : !ni.classList.contains('cso-open');
+        setOpen(next);
+        if (next) {
+          const firstLink = cascade.querySelector('.cso-js1-link');
+          if (firstLink) firstLink.focus();
+        }
+      } else if (ev.key === 'Escape') {
+        setOpen(false);
+        chevBtn.focus();
+      }
+    });
+
+    ni.addEventListener('keydown', ev => {
+      if (ev.key === 'Escape' && ni.classList.contains('cso-open')) {
+        ev.preventDefault();
+        setOpen(false);
+        triggerA.focus();
+      }
+    });
+  }
+
   function renderNav() {
     const navw = document.getElementById('navw');
     if (!navw) return;
@@ -1749,8 +1949,13 @@
           if (cascade) {
             hydrateSchemesFlyoutFromD1(cascade, cascade.querySelector('.cso-js1-list'), cascade.querySelector('.cso-schemes-stage2'));
           }
-        } else if (!open && (parent.classList.contains('cso-ni-jobs') || parent.classList.contains('cso-ni-careers') || parent.classList.contains('cso-ni-schemes'))) {
-          const cascade = parent.querySelector('.cso-jobs-cascade, .cso-careers-cascade, .cso-schemes-cascade');
+        } else if (open && parent.classList.contains('cso-ni-study')) {
+          const cascade = parent.querySelector('.cso-study-cascade');
+          if (cascade) {
+            hydrateStudyDropdownFromD1(cascade.querySelector('.cso-js1-list'));
+          }
+        } else if (!open && (parent.classList.contains('cso-ni-jobs') || parent.classList.contains('cso-ni-careers') || parent.classList.contains('cso-ni-schemes') || parent.classList.contains('cso-ni-study'))) {
+          const cascade = parent.querySelector('.cso-jobs-cascade, .cso-careers-cascade, .cso-schemes-cascade, .cso-study-cascade');
           if (cascade) cascade.classList.remove('is-stage2-open');
         }
       }

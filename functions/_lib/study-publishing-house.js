@@ -23,6 +23,10 @@ const ALLOWED_UPLOAD_MIME = {
 
 const RESOURCE_TYPES = [
   'Study Notes',
+  'Previous Year Paper (PYQ)',
+  'Official Syllabus',
+  'Current Affairs Digest',
+  'Practice Set / E-Book',
   'Syllabus',
   'PYQ Paper',
   'Practice Set',
@@ -242,7 +246,10 @@ async function invalidateStudyCaches(request, slug = '') {
   const extra = [
     '/api/public/study',
     '/api/public/study/tree',
+    '/api/public/study/bootstrap',
     '/api/public/study/article',
+    '/api/public/study-library/bootstrap',
+    '/api/public/study-library/list',
     '/api/public/jobs',
     '/api/public/jobs/article',
     '/study-library/',
@@ -1257,7 +1264,7 @@ const BOOTSTRAP_EDGE_CACHE = 'public, max-age=15, s-maxage=300, stale-while-reva
 
 export async function handlePublicStudyBootstrapApi(request, env) {
   if (!env || !env.DB) {
-    return json({ ok: false, tree: [], nodes: [], articles: [], items: [], total: 0, facets: { types: [], difficulties: [], priorities: [], mediums: [] }, kpis: {} }, 200, { 'Cache-Control': 'no-store' });
+    return json({ ok: false, tree: [], nodes: [], nav_tracks: [], articles: [], items: [], total: 0, facets: { types: [], difficulties: [], priorities: [], mediums: [] }, kpis: {} }, 200, { 'Cache-Control': 'no-store' });
   }
   await ensureStudyPublishingSchema(env.DB);
   await publishDueScheduledStudyArticles(env.DB);
@@ -1312,11 +1319,47 @@ export async function handlePublicStudyBootstrapApi(request, env) {
   });
 
   const items = all.slice(0, limit);
+  const l2ByParent = new Map();
+  nodes.forEach(n => {
+    if (Number(n.level) === 2 && n.parent_id) {
+      if (!l2ByParent.has(n.parent_id)) l2ByParent.set(n.parent_id, []);
+      l2ByParent.get(n.parent_id).push({
+        id: n.id,
+        slug: n.slug,
+        title_en: n.title_en,
+        title_or: n.title_or,
+        subtitle_en: n.subtitle_en,
+        subtitle_or: n.subtitle_or,
+        icon: n.icon,
+        sort_order: n.sort_order,
+        published_resources_count: n.published_modules_count || 0
+      });
+    }
+  });
+  const navTracks = nodes
+    .filter(n => Number(n.level) === 1)
+    .sort((a, b) => (a.sort_order - b.sort_order) || a.title_en.localeCompare(b.title_en))
+    .map(n => ({
+      id: n.id,
+      slug: n.slug,
+      title_en: n.title_en,
+      title_or: n.title_or,
+      subtitle_en: n.subtitle_en,
+      subtitle_or: n.subtitle_or,
+      icon: n.icon,
+      accent_variant: n.accent_variant,
+      sort_order: n.sort_order,
+      published_resources_count: n.published_modules_count || 0,
+      published_modules_count: n.published_modules_count || 0,
+      subcollections: (l2ByParent.get(n.id) || []).sort((a, b) => (a.sort_order - b.sort_order) || a.title_en.localeCompare(b.title_en))
+    }));
+
   return json({
     ok: true,
     total_published_modules: all.length,
     total: all.length,
     nodes,
+    nav_tracks: navTracks,
     tree: buildTaxonomyTree(nodes),
     articles: items,
     items,
@@ -1372,8 +1415,8 @@ export async function handlePublicStudyListApi(request, env) {
   await publishDueScheduledStudyArticles(env.DB);
 
   const url = new URL(request.url);
-  const l1 = str(url.searchParams.get('l1'), 80);
-  const l2 = str(url.searchParams.get('l2'), 80);
+  const l1 = str(url.searchParams.get('l1') || url.searchParams.get('track'), 80);
+  const l2 = str(url.searchParams.get('l2') || url.searchParams.get('sub'), 80);
   const l3 = str(url.searchParams.get('l3'), 80);
   const type = str(url.searchParams.get('type'), 48).toLowerCase();
   const difficulty = str(url.searchParams.get('difficulty'), 32).toLowerCase();
