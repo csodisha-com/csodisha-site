@@ -13,6 +13,17 @@
   var otpRow = document.getElementById('otpRow');
   var sendOtp = document.getElementById('sendOtp');
   var otpStatus = document.getElementById('otpStatus');
+  var passwordStep = document.getElementById('passwordStep');
+  var emailOtpStep = document.getElementById('emailOtpStep');
+  var emailOtpMasked = document.getElementById('emailOtpMasked');
+  var emailOtpInput = document.getElementById('emailOtpInput');
+  var emailOtpTimer = document.getElementById('emailOtpTimer');
+  var emailOtpResendBtn = document.getElementById('emailOtpResendBtn');
+  var emailOtpBackBtn = document.getElementById('emailOtpBackBtn');
+  var pendingEmailOtp = null;
+  var pendingTotpToken = null;
+  var emailOtpTimerInterval = null;
+  var emailOtpResendInterval = null;
   var themeMenuWrap = document.getElementById('themeMenuWrap');
   var themeMenuBtn = document.getElementById('themeMenuBtn');
   var themeMenuPopover = document.getElementById('themeMenuPopover');
@@ -225,6 +236,126 @@
     });
   }
 
+  function clearEmailOtpTimers() {
+    if (emailOtpTimerInterval) { clearInterval(emailOtpTimerInterval); emailOtpTimerInterval = null; }
+    if (emailOtpResendInterval) { clearInterval(emailOtpResendInterval); emailOtpResendInterval = null; }
+  }
+
+  function startEmailOtpTimers(expiresInSec, resendAfterSec) {
+    clearEmailOtpTimers();
+    var expRemaining = Number(expiresInSec) || 300;
+    function renderExpiry() {
+      if (!emailOtpTimer) return;
+      if (expRemaining <= 0) {
+        emailOtpTimer.textContent = 'Code expired';
+        emailOtpTimer.classList.add('is-bad');
+        clearInterval(emailOtpTimerInterval);
+        emailOtpTimerInterval = null;
+        return;
+      }
+      emailOtpTimer.classList.remove('is-bad');
+      var m = String(Math.floor(expRemaining / 60)).padStart(2, '0');
+      var s = String(expRemaining % 60).padStart(2, '0');
+      emailOtpTimer.textContent = 'Expires in ' + m + ':' + s;
+    }
+    renderExpiry();
+    emailOtpTimerInterval = setInterval(function () {
+      expRemaining -= 1;
+      renderExpiry();
+    }, 1000);
+
+    if (emailOtpResendBtn) {
+      var resendRem = Number(resendAfterSec) || 60;
+      emailOtpResendBtn.disabled = resendRem > 0;
+      emailOtpResendBtn.textContent = resendRem > 0 ? ('Resend (' + resendRem + 's)') : 'Resend Code';
+      if (resendRem > 0) {
+        emailOtpResendInterval = setInterval(function () {
+          resendRem -= 1;
+          if (resendRem <= 0) {
+            clearInterval(emailOtpResendInterval);
+            emailOtpResendInterval = null;
+            emailOtpResendBtn.disabled = false;
+            emailOtpResendBtn.textContent = 'Resend Code';
+          } else {
+            emailOtpResendBtn.textContent = 'Resend (' + resendRem + 's)';
+          }
+        }, 1000);
+      }
+    }
+  }
+
+  function enterEmailOtpStep(data) {
+    pendingEmailOtp = { challenge_id: data.challenge_id, masked_email: data.masked_email || 'your email' };
+    pendingTotpToken = null;
+    if (passwordStep) passwordStep.hidden = true;
+    if (twofaBlock) twofaBlock.hidden = true;
+    if (emailOtpStep) emailOtpStep.hidden = false;
+    if (emailOtpMasked) emailOtpMasked.textContent = pendingEmailOtp.masked_email;
+    if (emailOtpInput) {
+      emailOtpInput.value = '';
+      emailOtpInput.required = true;
+      emailOtpInput.focus();
+    }
+    go.disabled = false;
+    go.textContent = 'Verify Email Code';
+    startEmailOtpTimers(data.expires_in || 300, data.resend_after || 60);
+  }
+
+  function resetToPasswordStep() {
+    clearEmailOtpTimers();
+    pendingEmailOtp = null;
+    pendingTotpToken = null;
+    if (emailOtpStep) emailOtpStep.hidden = true;
+    if (emailOtpInput) {
+      emailOtpInput.value = '';
+      emailOtpInput.required = false;
+    }
+    if (passwordStep) passwordStep.hidden = false;
+    if (twofaBlock) twofaBlock.hidden = false;
+    go.disabled = false;
+    go.textContent = 'Sign in';
+    show('');
+  }
+
+  if (emailOtpBackBtn) {
+    emailOtpBackBtn.addEventListener('click', resetToPasswordStep);
+  }
+
+  if (emailOtpResendBtn) {
+    emailOtpResendBtn.addEventListener('click', async function () {
+      if (!pendingEmailOtp || !pendingEmailOtp.challenge_id || emailOtpResendBtn.disabled) return;
+      show('');
+      emailOtpResendBtn.disabled = true;
+      emailOtpResendBtn.textContent = 'Sending…';
+      try {
+        var r = await fetch('/api/auth/admin-email-otp/resend', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ challenge_id: pendingEmailOtp.challenge_id })
+        });
+        var d = await r.json().catch(function () { return {}; });
+        if (!r.ok) {
+          show(d.error || 'Could not resend verification code.', 'error');
+          if (r.status === 429 && d.retry_after) startEmailOtpTimers(300, Number(d.retry_after));
+          else {
+            emailOtpResendBtn.disabled = false;
+            emailOtpResendBtn.textContent = 'Resend Code';
+          }
+          return;
+        }
+        pendingEmailOtp.challenge_id = d.challenge_id;
+        show('A new 6-digit verification code was sent to ' + (d.masked_email || pendingEmailOtp.masked_email) + '.', 'info');
+        startEmailOtpTimers(d.expires_in || 300, d.resend_after || 60);
+        if (emailOtpInput) emailOtpInput.focus();
+      } catch (_e) {
+        show('Network error. Please try again.', 'error');
+        emailOtpResendBtn.disabled = false;
+        emailOtpResendBtn.textContent = 'Resend Code';
+      }
+    });
+  }
+
   f.addEventListener('submit', async function (e) {
     e.preventDefault();
     if (go.disabled) return;
@@ -232,8 +363,86 @@
     if (f.email) f.email.removeAttribute('aria-invalid');
     if (f.password) f.password.removeAttribute('aria-invalid');
     if (twofa) twofa.removeAttribute('aria-invalid');
+    if (emailOtpInput) emailOtpInput.removeAttribute('aria-invalid');
     var hp = document.getElementById('admin-website');
     if (hp && hp.value) return;
+
+    if (pendingEmailOtp && pendingEmailOtp.challenge_id) {
+      var otpVal = emailOtpInput ? emailOtpInput.value.trim() : '';
+      var totpVal = twofa ? twofa.value.trim() : '';
+      if (!pendingTotpToken && !/^\d{6}$/.test(otpVal)) {
+        if (emailOtpInput) emailOtpInput.setAttribute('aria-invalid', 'true');
+        return show('Enter the 6-digit code sent to your email.', 'error');
+      }
+      if (pendingTotpToken && !totpVal) {
+        if (twofa) twofa.setAttribute('aria-invalid', 'true');
+        return show('Enter your 6-digit Authenticator code or backup recovery code.', 'error');
+      }
+      go.disabled = true;
+      go.textContent = 'Verifying…';
+      try {
+        var vr = await fetch('/api/auth/admin-email-otp/verify', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            challenge_id: pendingEmailOtp.challenge_id,
+            otp: otpVal,
+            totp_token: pendingTotpToken || undefined,
+            totp_code: totpVal || undefined
+          })
+        });
+        var vd = await vr.json().catch(function () { return {}; });
+        if (!vr.ok) {
+          if (vd.locked) resetToPasswordStep();
+          go.disabled = false;
+          go.textContent = pendingTotpToken ? 'Verify 2FA & Sign in' : 'Verify Email Code';
+          return show(vd.error || 'Verification failed.', 'error');
+        }
+        if (vd.requires_totp && vd.totp_token) {
+          clearEmailOtpTimers();
+          pendingTotpToken = vd.totp_token;
+          if (emailOtpStep) emailOtpStep.hidden = true;
+          if (twofaBlock) {
+            twofaBlock.hidden = false;
+            twofaBlock.classList.add('is-required');
+          }
+          if (twofaChallengeNote) {
+            twofaChallengeNote.textContent = 'Email verified. Enter the 6-digit code from your Authenticator app or one of your backup recovery codes.';
+            twofaChallengeNote.hidden = false;
+          }
+          if (twofa) {
+            twofa.required = true;
+            twofa.focus();
+          }
+          go.disabled = false;
+          go.textContent = 'Verify 2FA & Sign in';
+          return;
+        }
+        clearEmailOtpTimers();
+        var vs = await fetch('/api/admin/session', { credentials: 'same-origin' });
+        if (!vs.ok) {
+          await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+          throw new Error('This account does not have staff access.');
+        }
+        try {
+          localStorage.removeItem('cso_active_module_id');
+          localStorage.removeItem('cso_open_sidebar_groups');
+          localStorage.removeItem('cso_admin_redirect');
+          localStorage.setItem('cso_admin_active', '1');
+          sessionStorage.removeItem('cso_post_login_hash');
+          sessionStorage.removeItem('returnTo');
+          sessionStorage.removeItem('cso_admin_redirect');
+        } catch (_e) {}
+        location.replace((next || '/admin/') + '#command-overview');
+        return;
+      } catch (err) {
+        go.disabled = false;
+        go.textContent = pendingTotpToken ? 'Verify 2FA & Sign in' : 'Verify Email Code';
+        return show(err.message || 'Verification failed.', 'error');
+      }
+    }
+
     var email = f.email.value.trim().toLowerCase(), password = f.password.value;
     if (!email || !password) {
       if (!email && f.email) f.email.setAttribute('aria-invalid', 'true');
@@ -253,6 +462,10 @@
         })
       });
       var d = await r.json().catch(function () { return {}; });
+      if (r.ok && d.requires_email_otp && d.challenge_id) {
+        enterEmailOtpStep(d);
+        return;
+      }
       if (!r.ok) {
         if (d.requires_2fa) {
           if (twofaBlock) twofaBlock.classList.add('is-required');

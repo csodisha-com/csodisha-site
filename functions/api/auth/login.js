@@ -14,6 +14,7 @@ import {
 } from './_utils.js';
 import { hasAccountTotpEnabled, verifyAccountTotpOrRecovery } from '../admin/totp.js';
 import { isTwoFactorConfigured, canSendOtp, verifyTwoFactor } from '../../_lib/admin-2fa.js';
+import { isAdminEmailOtpEnabled, createAndSendAdminEmailOtp } from '../../_lib/admin-email-otp.js';
 import { recordAdminAuditLog } from '../admin/system-ops.js';
 
 export async function onRequestOptions() {
@@ -153,10 +154,23 @@ export async function onRequestPost({ request, env }) {
       }, 401);
     }
 
-    // Staff 2FA gate (v312): enforce per-account TOTP / recovery codes whenever enabled = 1,
-    // or env-level 2FA when configured. Log both successful and failed challenges to admin_audit_logs.
+    // Staff Email OTP + 2FA gate (v315):
     const userRole = userRecord.role || 'candidate';
     if (userRole === 'admin' || userRole === 'editor') {
+      if (await isAdminEmailOtpEnabled(env)) {
+        const challenge = await createAndSendAdminEmailOtp(env, userRecord, request);
+        await recordAdminAuditLog(env, request, { userId: userRecord.id, email: userRecord.email, role: userRole }, 'admin.email_otp.sent', 'admin_email_otps', { challenge_id: challenge.challenge_id });
+        return jsonResponse({
+          ok: true,
+          success: true,
+          requires_email_otp: true,
+          challenge_id: challenge.challenge_id,
+          masked_email: challenge.masked_email,
+          expires_in: challenge.expires_in,
+          resend_after: challenge.resend_after
+        }, 200);
+      }
+
       const accountTotp = await hasAccountTotpEnabled(env, userRecord.id);
       const envTwoFa = isTwoFactorConfigured(env);
       if (accountTotp || envTwoFa) {

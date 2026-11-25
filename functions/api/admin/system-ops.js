@@ -3,6 +3,13 @@
 import { HttpError, json, readJson, validationError, clientIp } from '../../_lib/http.js';
 import { invalidateAllPublicCaches, registerCacheInvalidator } from '../../_lib/edge-cache-invalidator.js';
 import { setReadOnlyFreezeState, ACTIVE_SW_CACHE_VERSION } from '../../_lib/ops-sentinel.js';
+import {
+  hasEmailProviderSecret,
+  getEmailProviderName,
+  isAdminEmailOtpFlagEnabled,
+  isAdminEmailOtpEnabled,
+  createAndSendAdminEmailOtp
+} from '../../_lib/admin-email-otp.js';
 import { handleSitemapXml } from '../content/_seo.js';
 import { escShell } from '../../_lib/ssr-shell.js';
 
@@ -30,6 +37,12 @@ export const CANONICAL_FEATURE_FLAGS = [
     label: 'Emergency Read-Only Mode',
     description: 'Block all public write/mutating requests at the edge while preserving browsing and admin recovery.',
     defaultEnabled: false
+  },
+  {
+    key: 'admin_email_otp_enabled',
+    label: 'Admin Login Email OTP',
+    description: 'Require 6-digit Email OTP verification on staff/admin login when RESEND_API_KEY or BREVO_API_KEY is configured.',
+    defaultEnabled: true
   }
 ];
 
@@ -508,6 +521,11 @@ export async function handleAdminSystemOpsApi(request, env, actor, id, sub, ctx)
     const def = CANONICAL_FEATURE_FLAGS.find(f => f.key === key);
     const body = await readJson(request, 8000);
     const enabled = Boolean(body.enabled);
+    if (key === 'admin_email_otp_enabled' && enabled && !hasEmailProviderSecret(env)) {
+      throw validationError({
+        enabled: 'Cannot enable Admin Email OTP until RESEND_API_KEY or BREVO_API_KEY is configured.'
+      });
+    }
     const nowIso = new Date().toISOString();
     const updatedBy = (actor && actor.email) || 'admin';
 
@@ -716,6 +734,44 @@ export async function handleAdminSystemOpsApi(request, env, actor, id, sub, ctx)
         'Content-Disposition': `attachment; filename="cso-d1-backup-${stamp}.json"`,
         'Cache-Control': 'no-store'
       }
+    });
+  }
+
+  // 13. GET /api/admin/system-ops/email-otp-status (v315)
+  if (id === 'email-otp-status' && !sub && method === 'GET') {
+    const providerConfigured = hasEmailProviderSecret(env);
+    const flagEnabled = await isAdminEmailOtpFlagEnabled(env);
+    const active = await isAdminEmailOtpEnabled(env);
+    return json({
+      ok: true,
+      provider_configured: providerConfigured,
+      provider: getEmailProviderName(env),
+      flag_enabled: flagEnabled,
+      active
+    });
+  }
+
+  // 14. POST /api/admin/system-ops/test-email-otp (v315)
+  if (id === 'test-email-otp' && !sub && method === 'POST') {
+    if (!hasEmailProviderSecret(env)) {
+      throw validationError({
+        email: 'Email OTP: Provider Key Required (configure RESEND_API_KEY or BREVO_API_KEY).'
+      });
+    }
+    const targetEmail = (actor && actor.email) || '';
+    const targetId = (actor && actor.userId) || 'admin';
+    if (!targetEmail) {
+      throw validationError({ email: 'Current admin session has no email address.' });
+    }
+    const issued = await createAndSendAdminEmailOtp(env, { id: targetId, email: targetEmail }, request);
+    recordAdminAuditLog(env, request, actor, 'admin.email_otp.test_sent', 'admin_email_otps', {
+      challenge_id: issued.challenge_id,
+      masked_email: issued.masked_email
+    }, ctx);
+    return json({
+      ok: true,
+      masked_email: issued.masked_email,
+      expires_in: issued.expires_in
     });
   }
 

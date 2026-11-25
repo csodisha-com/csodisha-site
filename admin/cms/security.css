@@ -8,6 +8,12 @@
 .cso-otp-btn[disabled]{opacity:.6;cursor:not-allowed}
 .cso-otp-status{font-size:12px;color:var(--mut)}
 .cso-otp-status.is-bad{color:var(--red)}
+.cso-email-otp-step{margin:6px 0 12px;padding:14px;border:1.5px solid var(--cso-accent);border-radius:10px;background:var(--cso-info-bg)}
+.cso-email-otp-title{margin:0 0 4px;font-size:15px;font-weight:700;color:var(--cso-text)}
+.cso-email-otp-desc{margin:0 0 10px;font-size:13px;line-height:1.45;color:var(--cso-info-fg)}
+.cso-email-otp-input{letter-spacing:.28em;text-align:center;font-weight:700;font-size:18px}
+.cso-email-otp-meta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:10px}
+.cso-email-otp-actions{display:flex;align-items:center;gap:8px}
 .cso-sec-codes{margin:12px 0;padding:14px 16px;border:1px dashed var(--line);border-radius:10px;background:var(--card);color:var(--txt);font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.08em;white-space:pre;user-select:all}
 .cms-embed .cso-sec-codes,.cso-sec-panel .cso-sec-codes{background:var(--card)}/* Folder 17: Platform Snapshot Engine, R2 Cold Vault & SHA-256 Verifier */
 

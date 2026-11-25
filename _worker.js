@@ -14,6 +14,8 @@ import { onRequestPost as handleVerifyResetOtpPost, onRequestOptions as handleVe
 import { onRequestPost as handleResetPasswordPost, onRequestOptions as handleResetPasswordOptions } from './functions/api/auth/reset-password.js';
 import { onRequestPost as handleVerifyResetTokenPost, onRequestOptions as handleVerifyResetTokenOptions } from './functions/api/auth/verify-reset-token.js';
 import { handleGoogleAuthStart, handleGoogleAuthCallback } from './functions/api/auth/google.js';
+import { handleAdminEmailOtpVerify, handleAdminEmailOtpResend } from './functions/api/auth/admin-email-otp.js';
+import { isAdminEmailOtpEnabled, createAndSendAdminEmailOtp } from './functions/_lib/admin-email-otp.js';
 import { checkRateLimit, createSession, buildSessionCookie } from './functions/api/auth/_utils.js';
 import { handleAdminApi } from './functions/api/admin/_router.js';
 import { isTwoFactorConfigured, canSendOtp, issueOtp, deliverOtp, verifyTwoFactor, OTP_RESEND_SECONDS } from './functions/_lib/admin-2fa.js';
@@ -312,9 +314,25 @@ async function handleStrictD1Login(request, env, ctx = null) {
       });
     }
 
-    // Multi-factor gate (staff only). Enforced whenever per-account TOTP (v312) is enabled
-    // OR env-level 2FA secrets are configured. Logs both pass & fail challenges to admin_audit_logs.
+    // Staff Email OTP + Multi-factor gate (v315):
     if (user.role === 'admin' || user.role === 'editor') {
+      if (await isAdminEmailOtpEnabled(env)) {
+        const challenge = await createAndSendAdminEmailOtp(env, user, request);
+        recordAdminAuditLog(env, request, { userId: user.id, email: user.email, role: user.role }, 'admin.email_otp.sent', 'admin_email_otps', { challenge_id: challenge.challenge_id }, ctx);
+        return new Response(JSON.stringify({
+          ok: true,
+          success: true,
+          requires_email_otp: true,
+          challenge_id: challenge.challenge_id,
+          masked_email: challenge.masked_email,
+          expires_in: challenge.expires_in,
+          resend_after: challenge.resend_after
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+        });
+      }
+
       const accountTotpEnabled = await hasAccountTotpEnabled(env, user.id);
       const envTwoFaConfigured = isTwoFactorConfigured(env);
       if (accountTotpEnabled || envTwoFaConfigured) {
@@ -565,7 +583,7 @@ export default {
       const isMutating = request.method !== 'GET' && request.method !== 'HEAD' && request.method !== 'OPTIONS';
 
       if (flags.emergency_read_only_mode && isMutating) {
-        const allowAuth = pathname === '/api/auth/login' || pathname === '/api/auth/logout' || (pathname === '/api/auth' && ['login', 'logout'].includes(url.searchParams.get('action') || ''));
+        const allowAuth = pathname === '/api/auth/login' || pathname === '/api/auth/logout' || pathname === '/api/auth/admin-email-otp/verify' || pathname === '/api/auth/admin-email-otp/resend' || (pathname === '/api/auth' && ['login', 'logout'].includes(url.searchParams.get('action') || ''));
         if (!allowAuth) {
           return new Response(JSON.stringify({ ok: false, code: 'READ_ONLY_FREEZE', error: 'Site is currently in emergency read-only mode. Browsing continues normally.' }), {
             status: 503,
@@ -1353,6 +1371,16 @@ export default {
     if (pathname === '/api/auth/google/callback') {
       if (request.method === 'GET') return handleGoogleAuthCallback({ request, env });
       return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET' } });
+    }
+
+    // 6b. /api/auth/admin-email-otp/verify & /resend — Staff Email OTP Verification (v315)
+    if (pathname === '/api/auth/admin-email-otp/verify') {
+      if (request.method === 'POST') return handleAdminEmailOtpVerify({ request, env, ctx });
+      return new Response('Method not allowed', { status: 405, headers: { Allow: 'POST' } });
+    }
+    if (pathname === '/api/auth/admin-email-otp/resend') {
+      if (request.method === 'POST') return handleAdminEmailOtpResend({ request, env, ctx });
+      return new Response('Method not allowed', { status: 405, headers: { Allow: 'POST' } });
     }
 
     // 7. /api/sync

@@ -50,6 +50,7 @@
     totpStatus: null,
     totpSetup: null,
     totpRecoveryCodes: null,
+    emailOtpStatus: null,
     lastError: '',
     sitemapNote: ''
   };
@@ -125,12 +126,14 @@
     return Promise.all([
       api('audit-logs' + q, 'GET'),
       api('sessions', 'GET'),
-      totpApi('', 'GET').catch(function () { return null; })
-    ]).then(function (triple) {
-      S.auditItems = triple[0].items || [];
-      S.auditTotal = Number(triple[0].total || 0);
-      S.sessions = triple[1].items || [];
-      S.totpStatus = triple[2];
+      totpApi('', 'GET').catch(function () { return null; }),
+      api('email-otp-status', 'GET').catch(function () { return null; })
+    ]).then(function (quad) {
+      S.auditItems = quad[0].items || [];
+      S.auditTotal = Number(quad[0].total || 0);
+      S.sessions = quad[1].items || [];
+      S.totpStatus = quad[2];
+      S.emailOtpStatus = quad[3];
       render();
     }).catch(function (err) {
       S.lastError = err.message;
@@ -375,9 +378,71 @@
     shell.appendChild(card);
   }
 
+  function renderEmailOtpCard(shell) {
+    var card = el('section', 'so-card');
+    card.id = 'soEmailOtpCard';
+    var st = S.emailOtpStatus || { provider_configured: false, provider: null, flag_enabled: true, active: false };
+
+    var head = el('div', 'so-card-head');
+    var left = el('div');
+    left.appendChild(el('h2', 'so-title', 'Admin Login Email OTP Verification (v315)'));
+    left.appendChild(el('p', 'so-sub', st.provider_configured
+      ? ('Requires a 6-digit single-use email code (' + String(st.provider || 'provider').toUpperCase() + ') after password verification on /admin/login.html.')
+      : 'Email OTP: Provider Key Required — bind RESEND_API_KEY or BREVO_API_KEY in Cloudflare secrets to enforce Email OTP without locking out staff.'));
+    head.appendChild(left);
+
+    var badgeClass = st.active ? 'so-badge--on' : (st.provider_configured ? 'so-badge--off' : 'so-badge--warn');
+    var badgeText = st.active ? 'ACTIVE' : (st.provider_configured ? 'DISABLED' : 'PROVIDER KEY REQUIRED');
+    head.appendChild(el('span', 'so-badge ' + badgeClass, badgeText));
+    card.appendChild(head);
+
+    var acts = el('div', 'so-actions');
+    var toggleBtn = el(
+      'button',
+      'so-btn ' + (st.flag_enabled ? 'so-btn--ghost' : 'so-btn--primary'),
+      st.flag_enabled ? 'Disable Email OTP' : 'Enable Email OTP'
+    );
+    toggleBtn.type = 'button';
+    if (!st.provider_configured && !st.flag_enabled) {
+      toggleBtn.disabled = true;
+      toggleBtn.title = 'Configure RESEND_API_KEY or BREVO_API_KEY before enabling.';
+    }
+    toggleBtn.addEventListener('click', function () {
+      var nextVal = !st.flag_enabled;
+      api('flags/admin_email_otp_enabled', 'PUT', { enabled: nextVal }).then(function () {
+        toast('Admin Login Email OTP ' + (nextVal ? 'enabled' : 'disabled') + '.', 'ok');
+        loadSecurityData();
+      }).catch(function (err) { toast(err.message, 'crimson'); });
+    });
+    acts.appendChild(toggleBtn);
+
+    var testBtn = el('button', 'so-btn so-btn--primary', 'Send Test OTP to My Email');
+    testBtn.type = 'button';
+    if (!st.provider_configured) {
+      testBtn.disabled = true;
+      testBtn.title = 'Email OTP: Provider Key Required';
+    }
+    testBtn.addEventListener('click', function () {
+      testBtn.disabled = true;
+      api('test-email-otp', 'POST', {}).then(function (d) {
+        toast('Test 6-digit OTP sent to ' + (d.masked_email || 'your email') + '.', 'ok');
+        testBtn.disabled = false;
+      }).catch(function (err) {
+        toast(err.message, 'crimson');
+        testBtn.disabled = false;
+      });
+    });
+    acts.appendChild(testBtn);
+
+    card.appendChild(acts);
+    shell.appendChild(card);
+  }
+
   function renderSecurityTab(shell) {
     // 0. Per-Admin TOTP 2FA & Recovery Codes (v312)
     renderTotpCard(shell);
+    // 0b. Admin Login Email OTP Verification (v315)
+    renderEmailOtpCard(shell);
 
     // 1. Active Admin Sessions Card
     var sessCard = el('section', 'so-card');
