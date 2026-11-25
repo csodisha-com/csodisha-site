@@ -720,8 +720,8 @@
   function closeDropdowns(except) {
     document.querySelectorAll('#navw .ni').forEach(n => {
       if (n === except) return;
-      n.classList.remove('cso-open');
-      const cascade = n.querySelector('.cso-jobs-cascade, .cso-careers-cascade');
+      n.classList.remove('cso-open', 'is-open');
+      const cascade = n.querySelector('.cso-jobs-cascade, .cso-careers-cascade, .cso-schemes-cascade, .cso-study-cascade, .cso-community-cascade');
       if (cascade) cascade.classList.remove('is-stage2-open');
       n.querySelectorAll('.cso-js1-item.is-active, .cso-js1-item.is-mob-open').forEach(it => {
         it.classList.remove('is-active', 'is-mob-open');
@@ -1778,6 +1778,7 @@
 
   function wireStudyDropdownInteractions(ni, triggerA, chevBtn, cascade) {
     let closeTimer = null;
+    const stage1 = cascade.querySelector('.cso-study-stage1');
     const stage1List = cascade.querySelector('.cso-js1-list');
 
     function setOpen(open) {
@@ -1786,21 +1787,29 @@
         hydrateStudyDropdownFromD1(stage1List);
       }
       ni.classList.toggle('cso-open', open);
+      ni.classList.toggle('is-open', open);
       triggerA.setAttribute('aria-expanded', String(open));
       chevBtn.setAttribute('aria-expanded', String(open));
     }
 
-    ni.addEventListener('mouseenter', () => {
+    function onEnter() {
       if (window.innerWidth < 1100) return;
       clearTimeout(closeTimer);
       setOpen(true);
-    });
+    }
 
-    ni.addEventListener('mouseleave', () => {
+    function onLeave() {
       if (window.innerWidth < 1100) return;
       clearTimeout(closeTimer);
       closeTimer = setTimeout(() => setOpen(false), 150);
-    });
+    }
+
+    ni.addEventListener('mouseenter', onEnter);
+    ni.addEventListener('mouseleave', onLeave);
+    if (stage1) {
+      stage1.addEventListener('mouseenter', () => { if (window.innerWidth >= 1100) clearTimeout(closeTimer); });
+      stage1.addEventListener('mouseleave', onLeave);
+    }
 
     triggerA.addEventListener('keydown', ev => {
       if (ev.key === 'ArrowDown') {
@@ -1964,6 +1973,7 @@
 
   function wireCommunityDropdownInteractions(ni, triggerA, chevBtn, cascade) {
     let closeTimer = null;
+    const stage1 = cascade.querySelector('.cso-community-stage1');
     const stage1List = cascade.querySelector('.cso-js1-list');
 
     function setOpen(open) {
@@ -1972,21 +1982,29 @@
         hydrateCommunityDropdownFromD1(stage1List);
       }
       ni.classList.toggle('cso-open', open);
+      ni.classList.toggle('is-open', open);
       triggerA.setAttribute('aria-expanded', String(open));
       chevBtn.setAttribute('aria-expanded', String(open));
     }
 
-    ni.addEventListener('mouseenter', () => {
+    function onEnter() {
       if (window.innerWidth < 1100) return;
       clearTimeout(closeTimer);
       setOpen(true);
-    });
+    }
 
-    ni.addEventListener('mouseleave', () => {
+    function onLeave() {
       if (window.innerWidth < 1100) return;
       clearTimeout(closeTimer);
       closeTimer = setTimeout(() => setOpen(false), 150);
-    });
+    }
+
+    ni.addEventListener('mouseenter', onEnter);
+    ni.addEventListener('mouseleave', onLeave);
+    if (stage1) {
+      stage1.addEventListener('mouseenter', () => { if (window.innerWidth >= 1100) clearTimeout(closeTimer); });
+      stage1.addEventListener('mouseleave', onLeave);
+    }
 
     triggerA.addEventListener('keydown', ev => {
       if (ev.key === 'ArrowDown') {

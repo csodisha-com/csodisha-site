@@ -9484,8 +9484,13 @@ body[data-theme="odisha"] {
 .cso-nav-careers-wrap.cso-open > .cso-careers-cascade,
 .cso-nav-schemes-wrap.cso-open > .cso-schemes-cascade,
 .cso-nav-study-wrap.cso-open > .cso-study-cascade,
-.cso-nav-community-wrap.cso-open > .cso-community-cascade {
+.cso-nav-study-wrap.is-open > .cso-study-cascade,
+.cso-nav-community-wrap.cso-open > .cso-community-cascade,
+.cso-nav-community-wrap.is-open > .cso-community-cascade {
   display: block;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 #cso-main-navbar .cso-jobs-stage1,
@@ -9621,7 +9626,7 @@ body[data-theme="odisha"] {
 
   .cso-study-cascade {
     position: absolute;
-    top: calc(100% + 6px);
+    top: calc(100% + 4px);
     left: 0;
     width: 276px;
     z-index: 1200;
@@ -9629,10 +9634,62 @@ body[data-theme="odisha"] {
 
   .cso-community-cascade {
     position: absolute;
-    top: calc(100% + 6px);
+    top: calc(100% + 4px);
     left: 0;
     width: 276px;
     z-index: 1200;
+  }
+
+  /* v289: Pure-CSS desktop hover & focus-within auto-open for Study Library ▾ and Community ▾ */
+  .cso-nav-study-wrap:hover > .cso-study-cascade,
+  .cso-nav-study-wrap:focus-within > .cso-study-cascade,
+  .cso-nav-study-wrap.cso-open > .cso-study-cascade,
+  .cso-nav-study-wrap.is-open > .cso-study-cascade,
+  .cso-nav-community-wrap:hover > .cso-community-cascade,
+  .cso-nav-community-wrap:focus-within > .cso-community-cascade,
+  .cso-nav-community-wrap.cso-open > .cso-community-cascade,
+  .cso-nav-community-wrap.is-open > .cso-community-cascade {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .cso-nav-study-wrap:hover > .cso-study-cascade > .cso-study-stage1,
+  .cso-nav-study-wrap:focus-within > .cso-study-cascade > .cso-study-stage1,
+  .cso-nav-study-wrap.is-open > .cso-study-cascade > .cso-study-stage1,
+  .cso-nav-study-wrap:hover > .cso-study-stage1,
+  .cso-nav-study-wrap:focus-within > .cso-study-stage1,
+  .cso-nav-study-wrap.is-open > .cso-study-stage1,
+  .cso-nav-community-wrap:hover > .cso-community-cascade > .cso-community-stage1,
+  .cso-nav-community-wrap:focus-within > .cso-community-cascade > .cso-community-stage1,
+  .cso-nav-community-wrap.is-open > .cso-community-cascade > .cso-community-stage1,
+  .cso-nav-community-wrap:hover > .cso-community-stage1,
+  .cso-nav-community-wrap:focus-within > .cso-community-stage1,
+  .cso-nav-community-wrap.is-open > .cso-community-stage1 {
+    display: flex;
+    flex-direction: column;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .cso-nav-study-wrap:hover .cso-jobs-chev,
+  .cso-nav-study-wrap.is-open .cso-jobs-chev,
+  .cso-nav-community-wrap:hover .cso-jobs-chev,
+  .cso-nav-community-wrap.is-open .cso-jobs-chev {
+    transform: rotate(180deg);
+  }
+
+  /* Invisible hover bridge below Study Library ▾ & Community ▾ trigger so downward cursor movement never loses hover */
+  .cso-nav-study-wrap::after,
+  .cso-nav-community-wrap::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 12px;
   }
 
   /* Invisible hover bridges so moving diagonally between trigger, Stage 1 & Stage 2 never closes early */

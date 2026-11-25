@@ -797,6 +797,49 @@ body[data-theme="odisha"] {
   #cso-main-navbar .cso-nav-community-wrap {
     position: relative !important;
   }
+
+  #cso-main-navbar .cso-nav-study-wrap:hover > .cso-study-cascade,
+  #cso-main-navbar .cso-nav-study-wrap:focus-within > .cso-study-cascade,
+  #cso-main-navbar .cso-nav-study-wrap.cso-open > .cso-study-cascade,
+  #cso-main-navbar .cso-nav-study-wrap.is-open > .cso-study-cascade,
+  #cso-main-navbar .cso-nav-community-wrap:hover > .cso-community-cascade,
+  #cso-main-navbar .cso-nav-community-wrap:focus-within > .cso-community-cascade,
+  #cso-main-navbar .cso-nav-community-wrap.cso-open > .cso-community-cascade,
+  #cso-main-navbar .cso-nav-community-wrap.is-open > .cso-community-cascade {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  #cso-main-navbar .cso-nav-study-wrap:hover > .cso-study-cascade > .cso-study-stage1,
+  #cso-main-navbar .cso-nav-study-wrap:focus-within > .cso-study-cascade > .cso-study-stage1,
+  #cso-main-navbar .cso-nav-study-wrap.is-open > .cso-study-cascade > .cso-study-stage1,
+  #cso-main-navbar .cso-nav-study-wrap:hover > .cso-study-stage1,
+  #cso-main-navbar .cso-nav-study-wrap:focus-within > .cso-study-stage1,
+  #cso-main-navbar .cso-nav-study-wrap.is-open > .cso-study-stage1,
+  #cso-main-navbar .cso-nav-community-wrap:hover > .cso-community-cascade > .cso-community-stage1,
+  #cso-main-navbar .cso-nav-community-wrap:focus-within > .cso-community-cascade > .cso-community-stage1,
+  #cso-main-navbar .cso-nav-community-wrap.is-open > .cso-community-cascade > .cso-community-stage1,
+  #cso-main-navbar .cso-nav-community-wrap:hover > .cso-community-stage1,
+  #cso-main-navbar .cso-nav-community-wrap:focus-within > .cso-community-stage1,
+  #cso-main-navbar .cso-nav-community-wrap.is-open > .cso-community-stage1 {
+    display: flex !important;
+    flex-direction: column !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  #cso-main-navbar .cso-nav-study-wrap::after,
+  #cso-main-navbar .cso-nav-community-wrap::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 12px;
+  }
 }
 
 #cso-main-navbar .cso-jobs-stage1,

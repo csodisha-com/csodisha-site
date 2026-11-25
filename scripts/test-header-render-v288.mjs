@@ -172,13 +172,13 @@ await check('2. assets/app.js executes with ZERO errors and mounts full utility 
   assert.equal(ids.navw.querySelector('#cso-community-stage1').querySelectorAll('.cso-js1-item').length, 5, 'Community dropdown must have 5 items');
 });
 
-await check('3. ?v=20261125v288 cache busting, cso-candidate-cache-v288 & strict CSP compliance', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v288';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v288';"));
-  assert.ok(read('index.html').includes('/assets/app.js?v=20261125v288'));
-  assert.ok(read('index.html').includes('/assets/style.css?v=20261125v288'));
-  assert.ok(read('community/index.html').includes('/assets/shared-header.js?v=20261125v288'));
-  assert.ok(read('jobs/index.html').includes('/assets/css/portal-shell.css?v=20261125v288'));
+await check('3. ?v=20261125v288+ cache busting, cso-candidate-cache-v288+ & strict CSP compliance', () => {
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v28[8-9]';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v28[8-9]';/);
+  assert.match(read('index.html'), /\/assets\/app\.js\?v=20261125v28[8-9]/);
+  assert.match(read('index.html'), /\/assets\/style\.css\?v=20261125v28[8-9]/);
+  assert.match(read('community/index.html'), /\/assets\/shared-header\.js\?v=20261125v28[8-9]/);
+  assert.match(read('jobs/index.html'), /\/assets\/css\/portal-shell\.css\?v=20261125v28[8-9]/);
 
   for (const rel of ['assets/shared-header.js', 'assets/app.js']) {
     const codeOnly = read(rel).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
