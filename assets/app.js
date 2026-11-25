@@ -565,143 +565,47 @@ function nav(){
   });
   ni.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&ni.classList.contains('cso-open')){ev.preventDefault();setOpen(false);trigA.focus();}});
  };
- const SCHEMES_FLY_KEY='cso_schemes_flyout_v283';
- let schemesFlyData=null,schemesFlyFetching=false;
- const SCHEMES_DEF_CATS=[
-  {slug:'odisha-state-welfare',icon:'🏛️',title_en:'Odisha State Welfare',title_or:'ଓଡ଼ିଶା ରାଜ୍ୟ କଲ୍ୟାଣ',subcategories:[
-   {slug:'food-security-ration',title_en:'Food Security & Ration',title_or:'ଖାଦ୍ୟ ସୁରକ୍ଷା ଓ ରାସନ୍'},
-   {slug:'financial-assistance-pensions',title_en:'Financial Assistance & Pensions',title_or:'ଆର୍ଥିକ ସହାୟତା ଓ ଭତ୍ତା'},
-   {slug:'housing-rural-infrastructure',title_en:'Housing & Rural Infrastructure',title_or:'ଆବାସ ଓ ଗ୍ରାମ୍ୟ ଭିତ୍ତିଭୂମି'}
-  ]},
-  {slug:'central-welfare',icon:'🇮🇳',title_en:'Central Welfare Schemes',title_or:'କେନ୍ଦ୍ର ସରକାରୀ କଲ୍ୟାଣ ଯୋଜନା',subcategories:[
-   {slug:'direct-benefit-transfer-dbt',title_en:'Direct Benefit Transfer (DBT)',title_or:'ପ୍ରତ୍ୟକ୍ଷ ଅର୍ଥ ହସ୍ତାନ୍ତର (DBT)'},
-   {slug:'national-housing-sanitation',title_en:'National Housing & Sanitation',title_or:'ଜାତୀୟ ଆବାସ ଓ ସ୍ୱଚ୍ଛତା'},
-   {slug:'citizen-identity-social-cover',title_en:'Citizen Identity & Social Cover',title_or:'ନାଗରିକ ପରିଚୟ ଓ ସାମାଜିକ ସୁରକ୍ଷା'}
-  ]},
-  {slug:'agriculture-farmers',icon:'🌾',title_en:'Agriculture & Farmers',title_or:'କୃଷି ଓ କୃଷକ କଲ୍ୟାଣ',subcategories:[
-   {slug:'income-support-crop-insurance',title_en:'Income Support & Crop Insurance',title_or:'ଆୟ ସହାୟତା ଓ ଫସଲ ବୀମା'},
-   {slug:'irrigation-seeds-machinery',title_en:'Irrigation, Seeds & Machinery',title_or:'ଜଳସେଚନ, ବିହନ ଓ କୃଷି ଯନ୍ତ୍ରପାତି'},
-   {slug:'fisheries-animal-husbandry',title_en:'Fisheries & Animal Husbandry',title_or:'ମତ୍ସ୍ୟ ଓ ପଶୁପାଳନ'}
-  ]},
-  {slug:'education-scholarships',icon:'🎓',title_en:'Education & Scholarships',title_or:'ଶିକ୍ଷା ଓ ଛାତ୍ରବୃତ୍ତି',subcategories:[
-   {slug:'pre-matric-post-matric',title_en:'Pre-Matric & Post-Matric',title_or:'ପ୍ରି-ମାଟ୍ରିକ୍ ଓ ପୋଷ୍ଟ-ମାଟ୍ରିକ୍'},
-   {slug:'higher-education-merit-aid',title_en:'Higher Education & Merit Aid',title_or:'ଉଚ୍ଚଶିକ୍ଷା ଓ ମେଧା ବୃତ୍ତି'},
-   {slug:'skill-training-laptops',title_en:'Skill Training & Laptops',title_or:'ଦକ୍ଷତା ତାଲିମ ଓ ଲାପଟପ୍'}
-  ]},
-  {slug:'women-child-social',icon:'👩',title_en:'Women, Child & Social Security',title_or:'ମହିଳା, ଶିଶୁ ଓ ସାମାଜିକ ସୁରକ୍ଷା',subcategories:[
-   {slug:'women-empowerment-shgs',title_en:'Women Empowerment & SHGs',title_or:'ମହିଳା ସଶକ୍ତିକରଣ ଓ SHG'},
-   {slug:'girl-child-maternal-care',title_en:'Girl Child & Maternal Care',title_or:'କନ୍ୟା ସନ୍ତାନ ଓ ମାତୃ ଯତ୍ନ'},
-   {slug:'divyangjan-senior-citizens',title_en:'Divyangjan & Senior Citizens',title_or:'ଦିବ୍ୟାଙ୍ଗ ଓ ବରିଷ୍ଠ ନାଗରିକ'}
-  ]},
-  {slug:'health-msme-livelihoods',icon:'🏥',title_en:'Health, MSME & Livelihoods',title_or:'ସ୍ୱାସ୍ଥ୍ୟ, MSME ଓ ଜୀବିକା',subcategories:[
-   {slug:'cashless-health-insurance',title_en:'Cashless Health Insurance',title_or:'ନଗଦହୀନ ସ୍ୱାସ୍ଥ୍ୟ ବୀମା'},
-   {slug:'youth-self-employment-loans',title_en:'Youth Self-Employment & Loans',title_or:'ଯୁବ ଆତ୍ମନିଯୁକ୍ତି ଓ ଋଣ'},
-   {slug:'labour-construction-workers',title_en:'Labour & Construction Workers',title_or:'ଶ୍ରମିକ ଓ ନିର୍ମାଣ ଶ୍ରମିକ'}
-  ]}
+ const SCHEMES_DD_ITEMS=[
+  {slug:'odisha',icon:'🏛️',title_en:'Odisha State Schemes',title_or:'ଓଡ଼ିଶା ରାଜ୍ୟ ଯୋଜନା',href:'/schemes/?scope=odisha'},
+  {slug:'central',icon:'🇮🇳',title_en:'Central Government Schemes',title_or:'କେନ୍ଦ୍ର ସରକାରୀ ଯୋଜନା',href:'/schemes/?scope=central'},
+  {slug:'all',icon:'📋',title_en:'All Schemes & Benefits',title_or:'ସମସ୍ତ ଯୋଜନା ଓ ସୁବିଧା',href:'/schemes/'}
  ];
- const readSchemesFly=()=>{
-  if(schemesFlyData)return schemesFlyData;
-  try{const r=sessionStorage.getItem(SCHEMES_FLY_KEY);if(r){const p=JSON.parse(r);if(p&&p.ts&&Date.now()-p.ts<60000&&Array.isArray(p.categories)&&p.categories.length){schemesFlyData=p;return p;}}}catch(_){}
-  return null;
- };
- const buildSchemesS2List=(cat,isOr)=>{
-  const ul=mk('ul','cso-js2-list');
-  (Array.isArray(cat.subcategories)?cat.subcategories:[]).forEach(sub=>{
-   const li=mk('li','cso-js2-item');
-   const a=mk('a','cso-js2-link',isOr?(sub.title_or||sub.title_en):sub.title_en);
-   a.href='/schemes/?category='+encodeURIComponent(cat.slug||'')+'&sub='+encodeURIComponent(sub.slug||'');
-   li.appendChild(a);ul.appendChild(li);
-  });
-  return ul;
- };
- const renderSchemesS1=(cascade,s1List,stage2,data)=>{
-  if(!s1List||!stage2)return;
+ const renderSchemesS1=(s1List)=>{
+  if(!s1List)return;
   const isOr=S.lang==='or';
-  const cats=(data&&Array.isArray(data.categories)&&data.categories.length)?data.categories:SCHEMES_DEF_CATS;
   s1List.replaceChildren();
-  const actCat=(cat,openS2)=>{
-   s1List.querySelectorAll('.cso-js1-item.is-active').forEach(x=>x.classList.remove('is-active'));
-   const hit=s1List.querySelector('[data-sch-cat="'+String(cat.slug||'').replace(/"/g,'')+'"]');
-   if(hit)hit.classList.add('is-active');
-   const subs=Array.isArray(cat.subcategories)?cat.subcategories:[];
-   if(!subs.length){cascade.classList.remove('is-stage2-open');stage2.replaceChildren();return;}
-   stage2.replaceChildren(buildSchemesS2List(cat,isOr));
-   if(openS2&&window.innerWidth>=1100){
-    cascade.classList.add('is-stage2-open');
-    const s1Box=cascade.querySelector('.cso-schemes-stage1');
-    if(s1Box){const rc=s1Box.getBoundingClientRect();stage2.classList.toggle('is-flip-left',rc.right+272>window.innerWidth);}
-   }
-  };
-  cats.forEach(cat=>{
-   const subs=Array.isArray(cat.subcategories)?cat.subcategories:[];
-   const hasStage2=subs.length>0;
-   const li=mk('li','cso-js1-item'+(hasStage2?'':' is-direct-only'));li.dataset.schCat=cat.slug||'';
+  SCHEMES_DD_ITEMS.forEach(item=>{
+   const li=mk('li','cso-js1-item is-direct-only');li.dataset.schScope=item.slug;
    const row=mk('div','cso-js1-row');
-   const a=mk('a','cso-js1-link');a.href='/schemes/?category='+encodeURIComponent(cat.slug||'');
+   const a=mk('a','cso-js1-link');a.href=item.href;
    const lf=mk('span','cso-js1-left');
-   const ic=mk('span','cso-js1-icon',cat.icon||'🏛️');ic.setAttribute('aria-hidden','true');
-   lf.append(ic,mk('span','cso-js1-title',isOr?(cat.title_or||cat.title_en):cat.title_en));
+   const ic=mk('span','cso-js1-icon',item.icon);ic.setAttribute('aria-hidden','true');
+   lf.append(ic,mk('span','cso-js1-title',isOr?item.title_or:item.title_en));
    a.appendChild(lf);
-   if(hasStage2){const arr=mk('span','cso-js1-arrow','›');arr.setAttribute('aria-hidden','true');a.appendChild(arr);}
    row.appendChild(a);
-   if(hasStage2){
-    const mExp=mk('button','cso-js1-mob-exp','▾');mExp.type='button';
-    mExp.setAttribute('aria-expanded','false');mExp.setAttribute('aria-label','Expand '+(cat.title_en||'category')+' sub-categories');
-    mExp.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();const o=li.classList.toggle('is-mob-open');mExp.setAttribute('aria-expanded',String(o));});
-    row.appendChild(mExp);
-    const mSub=mk('div','cso-js1-mob-sub');mSub.appendChild(buildSchemesS2List(cat,isOr));
-    li.append(row,mSub);
-   }else{li.appendChild(row);}
-   li.addEventListener('mouseenter',()=>{if(window.innerWidth<1100)return;actCat(cat,hasStage2);});
-   a.addEventListener('focus',()=>{if(window.innerWidth<1100)return;actCat(cat,hasStage2);});
+   li.appendChild(row);
    a.addEventListener('keydown',ev=>{
-    if(ev.key==='ArrowRight'&&window.innerWidth>=1100&&hasStage2){ev.preventDefault();actCat(cat,true);const fs=stage2.querySelector('.cso-js2-link');if(fs)fs.focus();}
-    else if(ev.key==='ArrowDown'){ev.preventDefault();const n=li.nextElementSibling;if(n){const na=n.querySelector('.cso-js1-link');if(na)na.focus();}}
+    if(ev.key==='ArrowDown'){ev.preventDefault();const n=li.nextElementSibling;if(n){const na=n.querySelector('.cso-js1-link');if(na)na.focus();}}
     else if(ev.key==='ArrowUp'){ev.preventDefault();const p=li.previousElementSibling;if(p){const pa=p.querySelector('.cso-js1-link');if(pa)pa.focus();}}
    });
    s1List.appendChild(li);
   });
  };
- const hydrateSchemesFly=(cascade,s1List,stage2)=>{
-  const c=readSchemesFly();
-  if(c){renderSchemesS1(cascade,s1List,stage2,c);return;}
-  if(schemesFlyFetching||typeof fetch!=='function')return;
-  schemesFlyFetching=true;
-  fetch('/api/public/schemes/bootstrap',{credentials:'same-origin'})
-   .then(r=>r.ok?r.json():null)
-   .then(d=>{
-    schemesFlyFetching=false;
-    if(!d||!d.ok)return;
-    const cats=(Array.isArray(d.nav_categories)&&d.nav_categories.length)?d.nav_categories:SCHEMES_DEF_CATS;
-    const p={ts:Date.now(),categories:cats};schemesFlyData=p;
-    try{sessionStorage.setItem(SCHEMES_FLY_KEY,JSON.stringify(p));}catch(_){}
-    $$('.cso-schemes-cascade').forEach(cEl=>{
-     const l=cEl.querySelector('.cso-js1-list'),s2=cEl.querySelector('.cso-schemes-stage2');
-     if(l&&s2)renderSchemesS1(cEl,l,s2,p);
-    });
-   }).catch(()=>{schemesFlyFetching=false;});
- };
- window.__csoHydrateSchemesFlyout=(cEl)=>{if(cEl)hydrateSchemesFly(cEl,cEl.querySelector('.cso-js1-list'),cEl.querySelector('.cso-schemes-stage2'));};
+ window.__csoHydrateSchemesFlyout=(cEl)=>{if(cEl)renderSchemesS1(cEl.querySelector('.cso-js1-list'));};
  const buildSchemesCascading=()=>{
   const cascade=mk('div','cso-schemes-cascade');cascade.id='cso-schemes-cascade';
   const stage1=mk('div','cso-schemes-stage1');stage1.id='cso-schemes-stage1';
-  stage1.setAttribute('role','region');stage1.setAttribute('aria-label','Scheme Categories');
+  stage1.setAttribute('role','region');stage1.setAttribute('aria-label','Schemes & Benefits');
   const list=mk('ul','cso-js1-list');stage1.appendChild(list);
-  const stage2=mk('div','cso-schemes-stage2');stage2.id='cso-schemes-stage2';
-  stage2.setAttribute('role','region');stage2.setAttribute('aria-label','Scheme Sub-Categories');
-  stage2.addEventListener('keydown',ev=>{
-   if(ev.key==='ArrowLeft'){ev.preventDefault();const al=list.querySelector('.cso-js1-item.is-active .cso-js1-link')||list.querySelector('.cso-js1-link');if(al)al.focus();}
-  });
-  cascade.append(stage1,stage2);
-  renderSchemesS1(cascade,list,stage2,readSchemesFly());
+  cascade.appendChild(stage1);
+  renderSchemesS1(list);
   return cascade;
  };
  const wireSchemesCascading=(ni,trigA,chevBtn,cascade)=>{
   let closeT=null;
-  const s1List=cascade.querySelector('.cso-js1-list'),stage2=cascade.querySelector('.cso-schemes-stage2');
+  const s1List=cascade.querySelector('.cso-js1-list');
   const setOpen=(open)=>{
-   if(open){closeNavDropdowns(ni);hydrateSchemesFly(cascade,s1List,stage2);}
-   else{cascade.classList.remove('is-stage2-open');s1List.querySelectorAll('.cso-js1-item.is-active').forEach(x=>x.classList.remove('is-active'));}
+   if(open){closeNavDropdowns(ni);renderSchemesS1(s1List);}
    ni.classList.toggle('cso-open',open);
    trigA.setAttribute('aria-expanded',String(open));
    chevBtn.setAttribute('aria-expanded',String(open));

@@ -129,28 +129,26 @@ await check('2. Admin Studio #schemesSidebarSubnav & Live-Sync Banner wired in a
   }
 });
 
-await check('3. Two-Stage Cascading Schemes Menu in shared-header.js, app.js, style.css & portal-shell.css', () => {
+await check('3. Schemes Menu in shared-header.js, app.js, style.css & portal-shell.css', () => {
   for (const rel of ['assets/shared-header.js', 'assets/app.js']) {
     const src = read(rel);
-    for (const tok of ['cso-nav-schemes-wrap', 'cso-schemes-stage1', 'cso-schemes-stage2', 'cso_schemes_flyout_v283', '/api/public/schemes/bootstrap']) {
+    for (const tok of ['cso-nav-schemes-wrap', 'cso-schemes-stage1', '/schemes/?scope=odisha', '/schemes/?scope=central']) {
       assert.ok(src.includes(tok), `${rel} missing "${tok}"`);
     }
   }
   const styleCss = read('assets/style.css');
   assert.ok(styleCss.includes('.cso-schemes-stage1'), 'style.css missing .cso-schemes-stage1');
-  assert.ok(styleCss.includes('width: 268px;'), 'style.css missing Stage 1 width: 268px');
-  assert.ok(styleCss.includes('width: 260px;'), 'style.css missing Stage 2 width: 260px');
+  assert.ok(styleCss.includes('width: 248px;'), 'style.css missing Stage 1 width: 248px');
   const shellCss = read('assets/css/portal-shell.css');
   assert.ok(shellCss.includes('#cso-main-navbar .cso-schemes-stage1'), 'portal-shell.css missing .cso-schemes-stage1');
-  assert.ok(shellCss.includes('#cso-main-navbar .cso-schemes-stage2'), 'portal-shell.css missing .cso-schemes-stage2');
 });
 
 await check('4. Minimal /schemes/ Explorer renders compact hero, L1 pill strip, 1-row filter & flex empty state', async () => {
   const html = read('schemes/index.html');
   assert.ok(html.includes('sch-hero--compact'), 'schemes/index.html missing sch-hero--compact');
   assert.ok(!html.includes('sp-hero-kpis'), 'schemes/index.html must not contain 4-box .sp-hero-kpis');
-  assert.ok(html.includes('/assets/css/schemes-portal.css?v=20261125v283'));
-  assert.ok(html.includes('/assets/js/schemes-portal.js?v=20261125v283'));
+  assert.match(html, /\/assets\/css\/schemes-portal\.css\?v=20261125v28[3-9]/);
+  assert.match(html, /\/assets\/js\/schemes-portal\.js\?v=20261125v28[3-9]/);
 
   const css = read('assets/css/schemes-portal.css');
   for (const tok of ['.sch-hero--compact', '.sch-cat-strip', '.sch-filter-row', 'flex-direction: column']) {
@@ -231,9 +229,9 @@ await check('4. Minimal /schemes/ Explorer renders compact hero, L1 pill strip, 
   assert.ok(portal.querySelector('.sp-empty-card'), 'Expected centered flex empty state');
 });
 
-await check('5. sw.js & ops-sentinel.js bumped to cso-candidate-cache-v283 + strict CSP compliance', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v283';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v283';"));
+await check('5. sw.js & ops-sentinel.js bumped to cso-candidate-cache-v283+ + strict CSP compliance', () => {
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v28[3-9]';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v28[3-9]';/.test(read('functions/_lib/ops-sentinel.js')));
   for (const rel of [
     'assets/shared-header.js',
     'assets/app.js',
