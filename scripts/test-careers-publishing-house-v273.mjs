@@ -370,7 +370,7 @@ await check('5. Public /careers/ portal supports preview_token, UNPUBLISHED DRAF
   const portalJs = read('assets/js/careers-portal.js');
   assert.ok(portalJs.includes("previewToken: urlParams.get('preview_token')"), 'careers-portal.js must parse preview_token');
   assert.ok(portalJs.includes('UNPUBLISHED DRAFT PREVIEW'), 'careers-portal.js must display UNPUBLISHED DRAFT PREVIEW banner');
-  assert.ok(portalJs.includes('renderSubtrackPills'), 'careers-portal.js must render L2 subtrack pills');
+  assert.ok(portalJs.includes('crp-filter-subtrack'), 'careers-portal.js must render L2 subtrack filter');
 
   const workerJs = read('_worker.js');
   assert.ok(workerJs.includes("url.searchParams.has('preview_id') || url.searchParams.has('preview_token')"), '_worker.js must bypass edge cache for preview_token');
@@ -393,8 +393,8 @@ await check('6. Cache busting (?v=20261124v273+, cso-candidate-cache-v273+) & 10
   }
 
   const careersHtml = read('careers/index.html');
-  assert.ok(/\/assets\/css\/careers-portal\.css\?v=20261124v2(?:7[3-9]|[8-9]\d)/.test(careersHtml));
-  assert.ok(/\/assets\/js\/careers-portal\.js\?v=20261124v2(?:7[3-9]|[8-9]\d)/.test(careersHtml));
+  assert.ok(/\/assets\/css\/careers-portal\.css\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/.test(careersHtml));
+  assert.ok(/\/assets\/js\/careers-portal\.js\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/.test(careersHtml));
 
   for (const rel of [
     'admin/careers-publishing-studio.js',

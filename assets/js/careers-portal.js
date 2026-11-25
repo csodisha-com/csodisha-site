@@ -41,22 +41,15 @@
 
   var COPY = {
     en: {
-      eyebrow: 'ODISHA & NATIONAL CAREER ROADMAPS · ELIGIBILITY, PAY BANDS & EXAM PATHWAYS',
-      title: 'Odisha & National Careers Explorer',
-      sub: 'Step-by-step career roadmaps across Civil Services, Engineering & IT, Banking & Finance, Healthcare, Agriculture, and Post-10th/12th/Graduate pathways.',
-      kpiGuides: 'Career Roadmaps',
-      kpiDomains: 'Core Career Domains',
-      kpiFeatured: 'Featured Guides',
-      kpiScopes: 'Regional Scopes',
-      allTracks: 'All Career Tracks',
-      allRegions: 'All Regions / Scopes',
+      title: 'Odisha & National Career Roadmaps',
+      sub: 'Structured career roadmaps across Civil Services, Engineering & IT, Banking, Healthcare & Agriculture.',
+      allTracks: 'All Tracks',
+      allSubtracks: 'All Sub-Tracks',
+      allRegions: 'All Scopes',
       allStages: 'All Career Stages',
-      lblTrack: '1. Career Track',
-      lblRegion: '2. Region / Scope',
-      lblStage: '3. Career Stage',
-      lblSearch: '4. Search Role, Exam or Skill',
-      searchPlaceholder: 'Search OAS, GATE, IBPS, Nursing, After 12th...',
-      resetBtn: 'Reset Filters',
+      searchPlaceholder: 'Search role, exam, or skill...',
+      resetBtn: '✕ Reset',
+      resetFiltersBtn: 'Reset Filters',
       jobsLink: 'Browse Live Job Notifications →',
       openRoadmap: 'View Full Roadmap →',
       eligibility: 'Eligibility',
@@ -65,29 +58,22 @@
       roadmapHeading: 'Structured Career Roadmap',
       linksHeading: 'Verified Official Portals & Resources',
       emptyTitle: 'No career roadmaps match this filter yet',
-      emptySub: 'Career guides authored and published in Admin Studio appear here instantly. Meanwhile, explore active Odisha & Central government recruitments.',
+      emptySub: 'Try adjusting your track, scope, or stage — or author new guides in Admin Studio.',
       adminCta: 'Author in Admin Studio ↗',
       previewNote: 'UNPUBLISHED DRAFT PREVIEW — Temporary review mode (not visible to public visitors).',
       exitPreview: 'Exit Preview',
       close: 'Close'
     },
     or: {
-      eyebrow: 'ଓଡ଼ିଶା ଓ ଜାତୀୟ କ୍ୟାରିୟର୍ ମାର୍ଗଦର୍ଶିକା · ଯୋଗ୍ୟତା, ଦରମା ଓ ପରୀକ୍ଷା ସୂଚନା',
-      title: 'ଓଡ଼ିଶା ଓ ଜାତୀୟ କ୍ୟାରିୟର୍ ଏକ୍ସପ୍ଲୋରର୍',
-      sub: 'ସିଭିଲ୍ ସର୍ଭିସେସ୍, ଇଞ୍ଜିନିୟରିଂ ଓ ଆଇଟି, ବ୍ୟାଙ୍କିଂ, ସ୍ୱାସ୍ଥ୍ୟସେବା, କୃଷି ଏବଂ ଦଶମ/ଦ୍ୱାଦଶ/ସ୍ନାତକ ପରବର୍ତ୍ତୀ କ୍ୟାରିୟର୍ ମାର୍ଗଦର୍ଶନ।',
-      kpiGuides: 'କ୍ୟାରିୟର୍ ମାର୍ଗଦର୍ଶିକା',
-      kpiDomains: 'ମୁଖ୍ୟ କ୍ଷେତ୍ର',
-      kpiFeatured: 'ବିଶେଷ ଗାଇଡ୍',
-      kpiScopes: 'ଆଞ୍ଚଳିକ ପରିସର',
-      allTracks: 'ସମସ୍ତ କ୍ୟାରିୟର୍ କ୍ଷେତ୍ର',
-      allRegions: 'ସମସ୍ତ ଅଞ୍ଚଳ',
+      title: 'ଓଡ଼ିଶା ଓ ଜାତୀୟ କ୍ୟାରିୟର୍ ରୋଡମ୍ୟାପ୍',
+      sub: 'ସିଭିଲ୍ ସର୍ଭିସେସ୍, ଇଞ୍ଜିନିୟରିଂ ଓ ଆଇଟି, ବ୍ୟାଙ୍କିଂ, ସ୍ୱାସ୍ଥ୍ୟସେବା ଓ କୃଷି କ୍ୟାରିୟର୍ ମାର୍ଗଦର୍ଶନ।',
+      allTracks: 'ସମସ୍ତ କ୍ଷେତ୍ର',
+      allSubtracks: 'ସମସ୍ତ ଉପ-ବିଭାଗ',
+      allRegions: 'ସମସ୍ତ ସ୍କୋପ୍',
       allStages: 'ସମସ୍ତ ପର୍ଯ୍ୟାୟ',
-      lblTrack: '୧. କ୍ୟାରିୟର୍ କ୍ଷେତ୍ର',
-      lblRegion: '୨. ଅଞ୍ଚଳ / ପରିସର',
-      lblStage: '୩. ଶିକ୍ଷାଗତ ପର୍ଯ୍ୟାୟ',
-      lblSearch: '୪. ପଦବୀ ବା ପରୀକ୍ଷା ଖୋଜନ୍ତୁ',
-      searchPlaceholder: 'OAS, GATE, IBPS, ନର୍ସିଂ ଖୋଜନ୍ତୁ...',
-      resetBtn: 'ଫିଲ୍ଟର୍ ରିସେଟ୍',
+      searchPlaceholder: 'ପଦବୀ, ପରୀକ୍ଷା କିମ୍ବା ଦକ୍ଷତା ଖୋଜନ୍ତୁ...',
+      resetBtn: '✕ ରିସେଟ୍',
+      resetFiltersBtn: 'ଫିଲ୍ଟର୍ ରିସେଟ୍',
       jobsLink: 'ତାଜା ଚାକିରି ବିଜ୍ଞପ୍ତି ଦେଖନ୍ତୁ →',
       openRoadmap: 'ସମ୍ପୂର୍ଣ୍ଣ ରୋଡମ୍ୟାପ୍ ଦେଖନ୍ତୁ →',
       eligibility: 'ଯୋଗ୍ୟତା',
@@ -96,7 +82,7 @@
       roadmapHeading: 'ସମ୍ପୂର୍ଣ୍ଣ କ୍ୟାରିୟର୍ ରୋଡମ୍ୟାପ୍',
       linksHeading: 'ସରକାରୀ ୱେବସାଇଟ୍ ଓ ସମ୍ବଳ',
       emptyTitle: 'ଏହି ଫିଲ୍ଟର୍ ପାଇଁ କୌଣସି କ୍ୟାରିୟର୍ ଗାଇଡ୍ ମିଳିଲା ନାହିଁ',
-      emptySub: 'Admin Studio ରେ ପ୍ରକାଶିତ କ୍ୟାରିୟର୍ ମାର୍ଗଦର୍ଶିକା ଏଠାରେ ତୁରନ୍ତ ଦେଖାଯିବ। ବର୍ତ୍ତମାନ ତାଜା ଚାକିରି ବିଜ୍ଞପ୍ତି ଦେଖନ୍ତୁ।',
+      emptySub: 'ଅନ୍ୟ କ୍ଷେତ୍ର କିମ୍ବା ପର୍ଯ୍ୟାୟ ଚେଷ୍ଟା କରନ୍ତୁ — କିମ୍ବା Admin Studio ରେ ନୂତନ ଗାଇଡ୍ ଲେଖନ୍ତୁ।',
       adminCta: 'Admin Studio ରେ ଲେଖନ୍ତୁ ↗',
       previewNote: 'ଅପ୍ରକାଶିତ ଡ୍ରାଫ୍ଟ ପ୍ରିଭ୍ୟୁ — କେବଳ ସମୀକ୍ଷା ପାଇଁ (ସାଧାରଣ ପାଠକଙ୍କୁ ଦେଖାଯିବ ନାହିଁ)।',
       exitPreview: 'ପ୍ରିଭ୍ୟୁ ବନ୍ଦ କରନ୍ତୁ',
@@ -334,12 +320,12 @@
 
   function renderHero() {
     var t = c();
-    var hero = el('section', 'crp-hero');
+    var hero = el('section', 'crp-hero crp-hero--compact');
     hero.setAttribute('aria-label', t.title);
 
     var top = el('div', 'crp-hero-top');
-    var eyebrow = el('span', 'crp-eyebrow');
-    eyebrow.append(el('span', 'crp-eyebrow-dot'), el('span', '', t.eyebrow));
+    var copy = el('div', 'crp-hero-copy');
+    copy.append(el('h1', 'crp-hero-title', t.title), el('p', 'crp-hero-sub', t.sub));
 
     var langToggle = el('div', 'crp-lang-toggle');
     langToggle.setAttribute('role', 'group');
@@ -356,24 +342,8 @@
       });
       langToggle.appendChild(b);
     });
-    top.append(eyebrow, langToggle);
-
-    var copy = el('div', 'crp-hero-copy');
-    copy.append(el('h1', 'crp-hero-title', t.title), el('p', 'crp-hero-sub', t.sub));
-
-    var kpis = el('div', 'crp-hero-kpis');
-    [
-      [String(state.stats.total_published || 0), t.kpiGuides],
-      [String((state.taxonomy.tracks || []).length || 6), t.kpiDomains],
-      [String(state.stats.featured_count || 0), t.kpiFeatured],
-      [String((state.taxonomy.regions || []).length || 3), t.kpiScopes]
-    ].forEach(function (pair) {
-      var tile = el('div', 'crp-hero-kpi');
-      tile.append(el('strong', 'crp-hero-kpi-val', pair[0]), el('span', 'crp-hero-kpi-label', pair[1]));
-      kpis.appendChild(tile);
-    });
-
-    hero.append(top, copy, kpis);
+    top.append(copy, langToggle);
+    hero.appendChild(top);
     return hero;
   }
 
@@ -397,101 +367,91 @@
     return bar;
   }
 
-  function renderSubtrackPills() {
-    if (!state.track) return null;
-    var trackObj = (state.taxonomy.tracks || []).find(function (tr) { return tr.slug === state.track; });
-    if (!trackObj) return null;
-    var subs = (state.taxonomy.subtracks || []).filter(function (s) { return s.parent_id === trackObj.id; });
-    if (!subs.length) return null;
-
-    var bar = el('div', 'crp-subtracks-bar');
-    bar.setAttribute('role', 'group');
-    bar.setAttribute('aria-label', 'Sub-Tracks');
-    var allBtn = el('button', 'crp-subtrack-pill' + (!state.subtrack ? ' is-active' : ''), state.lang === 'or' ? 'ସମସ୍ତ ଉପ-ବିଭାଗ' : 'All Sub-Tracks');
-    allBtn.type = 'button';
-    allBtn.addEventListener('click', function () {
-      state.subtrack = '';
-      fetchFilteredList();
-    });
-    bar.appendChild(allBtn);
-
-    subs.forEach(function (sb) {
-      var b = el('button', 'crp-subtrack-pill' + (state.subtrack === sb.slug ? ' is-active' : ''), pick(sb.label_en, sb.label_or));
-      b.type = 'button';
-      b.addEventListener('click', function () {
-        state.subtrack = state.subtrack === sb.slug ? '' : sb.slug;
-        fetchFilteredList();
-      });
-      bar.appendChild(b);
-    });
-    return bar;
-  }
-
-  function renderDomainCards() {
-    var grid = el('section', 'crp-domains-grid');
-    grid.setAttribute('aria-label', 'Career Domains');
-    var tracks = state.taxonomy.tracks || [];
-    var counts = (state.stats && state.stats.track_counts) || {};
-
-    tracks.forEach(function (tr) {
-      var meta = DOMAIN_META[tr.slug] || { icon: '🧭', descEn: 'Structured career roadmap & exams', descOr: 'କ୍ୟାରିୟର୍ ମାର୍ଗଦର୍ଶିକା ଓ ପରୀକ୍ଷା' };
-      var isActive = state.track === tr.slug;
-      var btn = el('button', 'crp-domain-card' + (isActive ? ' is-active' : ''));
-      btn.type = 'button';
-      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-      btn.dataset.track = tr.slug;
-
-      var head = el('div', 'crp-domain-head');
-      var icon = el('span', 'crp-domain-icon', meta.icon);
-      icon.setAttribute('aria-hidden', 'true');
-      var cnt = el('span', 'crp-domain-count', String(counts[tr.slug] || 0));
-      head.append(icon, cnt);
-
-      var title = el('h2', 'crp-domain-title', pick(tr.label_en, tr.label_or));
-      var desc = el('p', 'crp-domain-desc', state.lang === 'or' ? meta.descOr : meta.descEn);
-      btn.append(head, title, desc);
-
-      btn.addEventListener('click', function () {
-        state.track = state.track === tr.slug ? '' : tr.slug;
-        state.subtrack = '';
-        fetchFilteredList();
-      });
-      grid.appendChild(btn);
-    });
-    return grid;
-  }
-
   function renderFilterPanel() {
     var t = c();
     var panel = el('section', 'crp-filter-panel');
     panel.setAttribute('aria-label', 'Filter Career Roadmaps');
 
-    var grid = el('div', 'crp-filter-grid');
+    // 1. Compact Horizontal Career Track Pill Strip (synced from D1 L1 tracks)
+    var tracks = state.taxonomy.tracks || [];
+    var counts = (state.stats && state.stats.track_counts) || {};
+    var trackStrip = el('div', 'crp-track-strip');
+    trackStrip.setAttribute('role', 'group');
+    trackStrip.setAttribute('aria-label', 'Career Tracks');
 
-    // 1. Track
-    var fTrack = el('div', 'crp-field');
-    var lTrack = el('label', 'crp-field-label', t.lblTrack);
-    lTrack.setAttribute('for', 'crp-filter-track');
-    var sTrack = el('select', 'crp-select');
-    sTrack.id = 'crp-filter-track';
-    sTrack.appendChild(new Option(t.allTracks, ''));
-    (state.taxonomy.tracks || []).forEach(function (n) {
-      sTrack.appendChild(new Option(pick(n.label_en, n.label_or), n.slug));
-    });
-    sTrack.value = state.track;
-    sTrack.addEventListener('change', function () {
-      state.track = sTrack.value;
+    var allBtn = el('button', 'crp-track-pill' + (!state.track ? ' is-active' : ''));
+    allBtn.type = 'button';
+    allBtn.setAttribute('aria-pressed', !state.track ? 'true' : 'false');
+    allBtn.append(
+      el('span', 'crp-track-pill-label', '🏛️ ' + t.allTracks),
+      el('span', 'crp-track-pill-count', String(state.stats.total_published || state.items.length || 0))
+    );
+    allBtn.addEventListener('click', function () {
+      state.track = '';
       state.subtrack = '';
       fetchFilteredList();
     });
-    fTrack.append(lTrack, sTrack);
+    trackStrip.appendChild(allBtn);
 
-    // 2. Region
-    var fRegion = el('div', 'crp-field');
-    var lRegion = el('label', 'crp-field-label', t.lblRegion);
-    lRegion.setAttribute('for', 'crp-filter-region');
+    tracks.forEach(function (tr) {
+      var meta = DOMAIN_META[tr.slug] || { icon: '🧭' };
+      var isActive = state.track === tr.slug;
+      var btn = el('button', 'crp-track-pill' + (isActive ? ' is-active' : ''));
+      btn.type = 'button';
+      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      btn.dataset.track = tr.slug;
+      btn.append(
+        el('span', 'crp-track-pill-label', (tr.icon || meta.icon || '🧭') + ' ' + pick(tr.label_en, tr.label_or)),
+        el('span', 'crp-track-pill-count', String(counts[tr.slug] || 0))
+      );
+      btn.addEventListener('click', function () {
+        state.track = state.track === tr.slug ? '' : tr.slug;
+        state.subtrack = '';
+        fetchFilteredList();
+      });
+      trackStrip.appendChild(btn);
+    });
+    panel.appendChild(trackStrip);
+
+    // 2. Single Clean Filter Row (Search, Sub-Track, Region/Scope, Career Stage, Conditional Reset)
+    var hasFilter = Boolean(state.track || state.subtrack || state.region || state.stage || state.q);
+    var row = el('div', 'crp-filter-row' + (hasFilter ? ' has-reset' : ''));
+
+    // Search
+    var inp = el('input', 'crp-input');
+    inp.id = 'crp-filter-search';
+    inp.type = 'search';
+    inp.setAttribute('aria-label', 'Search career roadmaps');
+    inp.placeholder = t.searchPlaceholder;
+    inp.value = state.q;
+    inp.addEventListener('input', function () {
+      state.q = inp.value.trim();
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(fetchFilteredList, 180);
+    });
+
+    // Sub-Track select (filtered by selected L1 track, or all L2 sub-tracks)
+    var sSub = el('select', 'crp-select');
+    sSub.id = 'crp-filter-subtrack';
+    sSub.setAttribute('aria-label', 'Sub-Track');
+    sSub.appendChild(new Option(t.allSubtracks, ''));
+    var trackObj = state.track ? tracks.find(function (tr) { return tr.slug === state.track; }) : null;
+    var subOptions = (state.taxonomy.subtracks || []).filter(function (sb) {
+      return !trackObj || sb.parent_id === trackObj.id;
+    });
+    subOptions.forEach(function (sb) {
+      sSub.appendChild(new Option(pick(sb.label_en, sb.label_or), sb.slug));
+    });
+    sSub.value = state.subtrack;
+    sSub.addEventListener('change', function () {
+      state.subtrack = sSub.value;
+      fetchFilteredList();
+    });
+
+    // Region / Scope select
     var sRegion = el('select', 'crp-select');
     sRegion.id = 'crp-filter-region';
+    sRegion.setAttribute('aria-label', 'Region or Scope');
     sRegion.appendChild(new Option(t.allRegions, ''));
     (state.taxonomy.regions || []).forEach(function (n) {
       sRegion.appendChild(new Option(pick(n.label_en, n.label_or), n.slug));
@@ -501,14 +461,11 @@
       state.region = sRegion.value;
       fetchFilteredList();
     });
-    fRegion.append(lRegion, sRegion);
 
-    // 3. Career Stage
-    var fStage = el('div', 'crp-field');
-    var lStage = el('label', 'crp-field-label', t.lblStage);
-    lStage.setAttribute('for', 'crp-filter-stage');
+    // Career Stage select
     var sStage = el('select', 'crp-select');
     sStage.id = 'crp-filter-stage';
+    sStage.setAttribute('aria-label', 'Career Stage');
     sStage.appendChild(new Option(t.allStages, ''));
     (state.taxonomy.stages || []).forEach(function (n) {
       sStage.appendChild(new Option(pick(n.label_en, n.label_or), n.slug));
@@ -518,36 +475,11 @@
       state.stage = sStage.value;
       fetchFilteredList();
     });
-    fStage.append(lStage, sStage);
 
-    // 4. Search
-    var fSearch = el('div', 'crp-field');
-    var lSearch = el('label', 'crp-field-label', t.lblSearch);
-    lSearch.setAttribute('for', 'crp-filter-search');
-    var inp = el('input', 'crp-input');
-    inp.id = 'crp-filter-search';
-    inp.type = 'search';
-    inp.placeholder = t.searchPlaceholder;
-    inp.value = state.q;
-    inp.addEventListener('input', function () {
-      state.q = inp.value.trim();
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(fetchFilteredList, 180);
-    });
-    fSearch.append(lSearch, inp);
+    row.append(inp, sSub, sRegion, sStage);
 
-    grid.append(fTrack, fRegion, fStage, fSearch);
-
-    var foot = el('div', 'crp-filter-foot');
-    var countText = state.loading
-      ? 'Updating roadmaps…'
-      : ('Showing ' + state.items.length + ' career roadmap' + (state.items.length === 1 ? '' : 's'));
-    var meta = el('span', 'crp-results-meta', countText);
-    meta.id = 'crp-results-meta';
-
-    var actions = el('div', 'crp-filter-actions');
-    if (state.track || state.subtrack || state.region || state.stage || state.q) {
-      var resetBtn = el('button', 'crp-btn', t.resetBtn);
+    if (hasFilter) {
+      var resetBtn = el('button', 'crp-btn crp-reset-btn', t.resetBtn);
       resetBtn.type = 'button';
       resetBtn.addEventListener('click', function () {
         state.track = '';
@@ -557,14 +489,9 @@
         state.q = '';
         fetchFilteredList();
       });
-      actions.appendChild(resetBtn);
+      row.appendChild(resetBtn);
     }
-    var jobsA = el('a', 'crp-btn', t.jobsLink);
-    jobsA.href = '/jobs/';
-    actions.appendChild(jobsA);
-
-    foot.append(meta, actions);
-    panel.append(grid, foot);
+    panel.appendChild(row);
 
     // Dismissible active filter chips (v278)
     var activeChips = [];
@@ -615,17 +542,18 @@
 
   function renderCardsArea() {
     var t = c();
+    var hasFilter = Boolean(state.track || state.subtrack || state.region || state.stage || state.q);
     if (!state.items.length) {
       var empty = el('section', 'crp-empty');
-      empty.appendChild(el('div', 'crp-empty-icon', '🧭'));
+      empty.setAttribute('aria-label', 'Career Roadmaps Status');
+      var icon = el('div', 'crp-empty-icon', '🧭');
+      icon.setAttribute('aria-hidden', 'true');
+      empty.appendChild(icon);
       empty.appendChild(el('h2', 'crp-empty-title', t.emptyTitle));
       empty.appendChild(el('p', 'crp-empty-sub', t.emptySub));
       var actRow = el('div', 'crp-empty-actions');
-      var jobsBtn = el('a', 'crp-btn crp-btn-primary', t.jobsLink);
-      jobsBtn.href = '/jobs/';
-      actRow.appendChild(jobsBtn);
-      if (state.track || state.subtrack || state.region || state.stage || state.q) {
-        var clrBtn = el('button', 'crp-btn', t.resetBtn);
+      if (hasFilter) {
+        var clrBtn = el('button', 'crp-btn crp-btn-primary', t.resetFiltersBtn);
         clrBtn.type = 'button';
         clrBtn.addEventListener('click', function () {
           state.track = '';
@@ -642,6 +570,9 @@
         admBtn.href = '/admin/#module-careers-studio';
         actRow.appendChild(admBtn);
       }
+      var jobsBtn = el('a', 'crp-btn', t.jobsLink);
+      jobsBtn.href = '/jobs/';
+      actRow.appendChild(jobsBtn);
       empty.appendChild(actRow);
       return empty;
     }
@@ -703,9 +634,6 @@
     wrap.appendChild(renderHero());
     var prevBanner = renderPreviewBanner();
     if (prevBanner) wrap.appendChild(prevBanner);
-    wrap.appendChild(renderDomainCards());
-    var subBar = renderSubtrackPills();
-    if (subBar) wrap.appendChild(subBar);
     wrap.appendChild(renderFilterPanel());
     wrap.appendChild(renderCardsArea());
 
@@ -824,6 +752,8 @@
       if (state.slug && state.items.length === 1) {
         openDrawer(state.items[0]);
       }
+    }).catch(function () {
+      try { renderAll(); } catch (_e) {}
     });
   }
 
