@@ -15,8 +15,8 @@
   <link rel="stylesheet" href="/assets/css/cso-themes.css?v=20261125v304">
   <link rel="stylesheet" href="/assets/style.css?v=20261125v306">
   <script src="/assets/shared-header.js?v=20261125v305" defer></script>
-  <link rel="stylesheet" href="/assets/css/student-dashboard-bp.css?v=20261125v305">
-  <link rel="stylesheet" href="/assets/css/candidate-hub-v244.css?v=20261125v305">
+  <link rel="stylesheet" href="/assets/css/student-dashboard-bp.css?v=20261125v307">
+  <link rel="stylesheet" href="/assets/css/candidate-hub-v244.css?v=20261125v307">
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <script src="/assets/js/student-auth-guard.js?v=20261125v305" defer></script>
@@ -49,6 +49,7 @@
         </div>
       </a>
       <button type="button" class="bp-sidebar-toggle" id="bp-sidebar-toggle-btn" aria-label="Collapse Sidebar" title="Collapse Sidebar">☰</button>
+      <button type="button" class="bp-sidebar-close" id="bp-sidebar-close-btn" aria-label="Close Workspace Menu" title="Close Workspace Menu">×</button>
     </div>
 
     <div class="bp-nav-scroll">
@@ -62,22 +63,16 @@
         </div>
       </nav>
     </div>
-
-    <div class="bp-sidebar-footer">
-      <div class="bp-user-pill" id="bp-sidebar-user-btn" role="button" tabindex="0">
-        <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" width="36" height="36" class="cso-brand-emblem" id="bp-side-avatar" decoding="async" loading="lazy">
-        <div class="bp-user-meta">
-          <span class="bp-user-name" id="bp-side-name">Candidate</span>
-          <span class="bp-user-district" id="bp-side-district"></span>
-        </div>
-      </div>
-    </div>
   </aside>
+  <div id="bp-sidebar-backdrop" class="bp-sidebar-backdrop" hidden></div>
 
   <div class="bp-main-wrapper">
     <header class="bp-topbar">
       <div class="bp-topbar-left">
-        <button type="button" class="bp-mobile-menu-btn" id="bp-mobile-menu-trigger" aria-label="Open Navigation Menu">☰</button>
+        <button type="button" class="bp-mobile-menu-btn" id="bp-mobile-menu-trigger" aria-label="Open Workspace Menu" aria-expanded="false" aria-controls="bp-sidebar">
+          <span aria-hidden="true">☰</span>
+          <span class="bp-mobile-menu-label">Workspace Menu</span>
+        </button>
         <div class="bp-page-header">
           <h1 id="bp-topbar-title">Candidate Workspace</h1>
           <p id="bp-topbar-subtitle" class="bp-topbar-sub">Live D1 synced workspace</p>
@@ -87,25 +82,12 @@
       <div class="bp-topbar-actions">
         <span class="cso-sync-pill" id="cso-sync-pill" role="status" aria-live="polite" hidden></span>
 
-        <span class="cso-popup-anchor cso-hub-theme-anchor" id="cso-theme-anchor">
-          <button type="button" class="bp-icon-action-btn cso-theme-toggle-btn" id="cso-theme-toggle" aria-label="Select portal theme" aria-haspopup="true" title="Theme">
-            <span class="cso-theme-swatch is-system" id="cso-theme-swatch" aria-hidden="true"></span>
-            <span id="cso-theme-label" class="cso-btn-label">System</span>
-            <span aria-hidden="true">⌄</span>
-          </button>
-        </span>
-
         <button type="button" class="bp-user-pill bp-topbar-user" id="bp-topbar-user-btn" title="Edit Profile">
           <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" width="32" height="32" class="cso-brand-emblem" id="bp-top-avatar" decoding="async" loading="lazy">
           <div class="bp-user-meta">
             <span class="bp-user-name" id="bp-top-name">Candidate</span>
             <span class="bp-user-district" id="bp-top-district"></span>
           </div>
-        </button>
-
-        <button type="button" class="bp-icon-action-btn cso-logout-icon-btn" id="bp-topbar-logout-btn" aria-label="Sign Out" title="Sign Out">
-          <span aria-hidden="true">⎋</span>
-          <span class="cso-btn-label">Sign Out</span>
         </button>
       </div>
     </header>
@@ -219,6 +201,6 @@
 <script src="/assets/js/bookmark-manager.js" defer></script>
 <script src="/assets/js/candidate-sync.js" defer></script>
 <script src="/assets/js/candidate-hub-unified.js?v=20261124v244" defer></script>
-<script src="/assets/js/student-dashboard.js?v=20261125v305" defer></script>
+<script src="/assets/js/student-dashboard.js?v=20261125v307" defer></script>
 </body>
 </html>

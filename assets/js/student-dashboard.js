@@ -240,6 +240,17 @@
     ['bp-side-district', 'bp-top-district'].forEach(id => { const n = document.getElementById(id); if (n) n.textContent = dist; });
   }
 
+  function setMobileDrawerOpen(open) {
+    const sb = document.getElementById('bp-sidebar');
+    const backdrop = document.getElementById('bp-sidebar-backdrop');
+    const trigger = document.getElementById('bp-mobile-menu-trigger');
+    const isOpen = Boolean(open);
+    if (sb) sb.classList.toggle('mobile-open', isOpen);
+    if (backdrop) backdrop.hidden = !isOpen;
+    if (trigger) trigger.setAttribute('aria-expanded', String(isOpen));
+    document.body.classList.toggle('cso-modal-open', isOpen);
+  }
+
   function renderNavigation() {
     const ui = state.ui || {};
     const navMods = state.modules.filter(m => m.layout_slot === 'sidebar' || m.layout_slot === 'both' || m.module_key === 'overview');
@@ -255,7 +266,7 @@
         b.appendChild(el('span', 'bp-nav-text', pick(m, 'title')));
         b.addEventListener('click', () => {
           state.activeModuleKey = m.module_key;
-          document.getElementById('bp-sidebar')?.classList.remove('mobile-open');
+          setMobileDrawerOpen(false);
           renderNavigation();
           renderWorkspace();
         });
@@ -276,11 +287,11 @@
           b.type = 'button';
           b.appendChild(el('span', '', (m.icon || '') + ' ' + pick(m, 'title')));
           b.addEventListener('click', () => {
-          state.activeModuleKey = m.module_key;
-          document.getElementById('bp-sidebar')?.classList.remove('mobile-open');
-          renderNavigation();
-          renderWorkspace();
-        });
+            state.activeModuleKey = m.module_key;
+            setMobileDrawerOpen(false);
+            renderNavigation();
+            renderWorkspace();
+          });
           topTabs.appendChild(b);
         });
       }
@@ -298,23 +309,47 @@
     const doneDocs = state.docTemplates.filter(d => Boolean(state.locker[d.doc_key])).length;
     const docsPct = state.docTemplates.length ? Math.round((doneDocs / totalDocs) * 100) : 0;
     const cp = state.communityProfile || null;
+    const tierTxt = cp
+      ? (cp.membership_tier === 'permanent_member' ? '👑 Permanent' : (cp.membership_tier === 'pro_member' ? '⭐ Pro' : 'Standard'))
+      : 'Standard';
+    const xpVal = cp ? (cp.reputation_xp || 0) : 0;
+    const circlesVal = cp ? (cp.joined_communities_count || 0) : 0;
+    const dmsVal = cp ? (cp.unread_messages_count || 0) : 0;
     const stats = [
-      ['Assigned Items', String(state.assignedItems.length)],
-      ['Saved Deadlines', String(state.bookmarks.length)],
-      ['Docs Ready', docsPct + '%'],
-      ['Mock Tests', String(state.mockScores.length)]
+      ['📌', 'Assigned Items', String(state.assignedItems.length)],
+      ['⏰', 'Saved Deadlines', String(state.bookmarks.length)],
+      ['📄', 'Docs Ready', docsPct + '%'],
+      ['📝', 'Mock Tests', String(state.mockScores.length)],
+      ['🏆', 'Community Tier', tierTxt + ' · ' + xpVal + ' XP'],
+      ['💬', 'Circles / Unread DMs', circlesVal + ' / ' + dmsVal]
     ];
-    if (cp) {
-      const tierTxt = cp.membership_tier === 'permanent_member' ? '👑 Permanent' : (cp.membership_tier === 'pro_member' ? '⭐ Pro' : 'Standard');
-      stats.push(['Community Tier', tierTxt + ' · ' + (cp.reputation_xp || 0) + ' XP']);
-      stats.push(['Circles / Unread DMs', (cp.joined_communities_count || 0) + ' / ' + (cp.unread_messages_count || 0)]);
-    }
     stats.forEach(s => {
       const box = el('div', 'cso-hub-stat');
-      box.appendChild(el('span', 'cso-hub-stat__val', s[1]));
-      box.appendChild(el('span', 'cso-hub-stat__lbl', s[0]));
+      const head = el('div', 'cso-hub-stat__head');
+      const ic = el('span', 'cso-hub-stat__icon', s[0]);
+      ic.setAttribute('aria-hidden', 'true');
+      head.appendChild(ic);
+      head.appendChild(el('span', 'cso-hub-stat__lbl', s[1]));
+      box.appendChild(head);
+      box.appendChild(el('span', 'cso-hub-stat__val', s[2]));
       host.appendChild(box);
     });
+  }
+
+  function makeEmptyBox(icon, text, ctaLabel, ctaHref) {
+    const box = el('div', 'cso-hub-empty-box');
+    const ic = el('span', 'cso-hub-empty-box__icon', icon);
+    ic.setAttribute('aria-hidden', 'true');
+    const copy = el('div', 'cso-hub-empty-box__copy');
+    copy.appendChild(el('p', 'cso-hub-empty-box__text', text));
+    if (ctaLabel && ctaHref) {
+      const a = el('a', 'cso-btn cso-btn-sm cso-hub-empty-box__cta', ctaLabel);
+      a.href = ctaHref;
+      copy.appendChild(a);
+    }
+    box.appendChild(ic);
+    box.appendChild(copy);
+    return box;
   }
 
   function makeCard(mod, forceFull) {
@@ -371,7 +406,7 @@
     const card = makeCard(mod, forceFull);
     const list = el('div', 'cso-hub-list');
     if (!state.assignedItems.length) {
-      list.appendChild(el('p', 'cso-muted-note', 'No items assigned to your profile or district yet.'));
+      list.appendChild(makeEmptyBox('📚', 'No study kits or notices assigned to your profile yet.', 'Explore Study Library →', '/study-library/'));
     } else {
       state.assignedItems.forEach(it => {
         if (!seenSent.has(it.id)) {
@@ -418,7 +453,7 @@
   function buildMatcherCard(mod, forceFull) {
     const card = makeCard(mod, forceFull);
     const p = state.profile || {};
-    const form = el('form', 'cso-hub-inline-form');
+    const form = el('form', 'cso-hub-inline-form cso-hub-inline-form--matcher');
     const qWrap = el('div', 'cso-hub-field');
     qWrap.appendChild(el('label', '', 'Qualification'));
     const qIn = el('input'); qIn.type = 'text'; qIn.value = p.qualification || ''; qIn.placeholder = 'e.g. Graduate, 12th, B.Ed';
@@ -437,8 +472,7 @@
     const aIn = el('input'); aIn.type = 'number'; aIn.min = '16'; aIn.max = '65'; aIn.value = p.age ? String(p.age) : ''; aIn.placeholder = '24';
     aWrap.appendChild(aIn);
 
-    const btnWrap = el('div', 'cso-hub-field');
-    btnWrap.appendChild(el('label', '', 'Run Live D1 Match'));
+    const btnWrap = el('div', 'cso-hub-field cso-hub-field--action');
     const runBtn = el('button', 'cso-btn cso-btn-primary', 'Check Eligibility'); runBtn.type = 'submit';
     btnWrap.appendChild(runBtn);
 
@@ -454,7 +488,7 @@
       out.appendChild(el('p', 'cso-muted-note', 'Effective Odisha upper age limit: ' + (cr.effective_max_age || 38) + ' yrs (+' + (cr.relaxation_years || 0) + ' yrs relaxation).'));
       const combined = [].concat(m.jobs || [], m.schemes || []);
       if (!combined.length) {
-        out.appendChild(el('p', 'cso-muted-note', 'No published Jobs or Schemes found in D1 yet.'));
+        out.appendChild(makeEmptyBox('🎯', 'No matching Jobs or Schemes found for this profile yet.', 'Browse Jobs & Schemes →', '/jobs/'));
         return;
       }
       combined.slice(0, forceFull ? 12 : 4).forEach(item => {
@@ -487,7 +521,7 @@
     const card = makeCard(mod, forceFull);
     const list = el('div', 'cso-hub-list');
     if (!state.bookmarks.length) {
-      list.appendChild(el('p', 'cso-muted-note', 'No saved items yet — bookmark any job, scheme or study notice to track its deadline here.'));
+      list.appendChild(makeEmptyBox('⏰', 'Bookmark jobs, schemes, or study notices to track upcoming deadlines here.', 'Browse Jobs & Schemes →', '/jobs/'));
     } else {
       const hub = window.CSOCandidateHub;
       state.bookmarks.forEach(bm => {
@@ -520,16 +554,36 @@
   }
 
   function buildDocVaultCard(mod, forceFull) {
-    const card = makeCard(mod, forceFull);
-    const list = el('div', 'cso-hub-list');
-    if (!state.docTemplates.length) {
-      list.appendChild(el('p', 'cso-muted-note', 'No document checklist templates published in Admin Studio yet.'));
+    const card = makeCard(mod, true);
+    const total = state.docTemplates.length;
+    const countDone = () => state.docTemplates.filter(d => Boolean(state.locker[d.doc_key])).length;
+    const head = card.querySelector('.cso-hub-card__head');
+    const progWrap = el('div', 'cso-vault-progress');
+    const progLabel = el('span', 'cso-vault-progress__label cso-tabular');
+    const progMeter = document.createElement('progress');
+    progMeter.className = 'cso-vault-meter';
+    progMeter.max = 100;
+    function syncVaultProgress() {
+      const done = countDone();
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      progLabel.textContent = done + ' / ' + total + ' Ready · ' + pct + '%';
+      progMeter.value = pct;
+    }
+    syncVaultProgress();
+    progWrap.appendChild(progLabel);
+    progWrap.appendChild(progMeter);
+    if (head) head.appendChild(progWrap);
+
+    const list = el('div', 'cso-hub-list cso-vault-grid');
+    if (!total) {
+      list.appendChild(makeEmptyBox('📄', 'No document checklist templates published in Admin Studio yet.', 'Browse Schemes & Docs →', '/schemes/'));
     } else {
       state.docTemplates.forEach(doc => {
         const lbl = el('label', 'cso-hub-check');
         const cb = el('input'); cb.type = 'checkbox'; cb.checked = Boolean(state.locker[doc.doc_key]);
         cb.addEventListener('change', () => {
           state.locker[doc.doc_key] = cb.checked;
+          syncVaultProgress();
           saveWorkspacePatch({ locker: state.locker }, 'Document vault synced');
         });
         const body = el('div', 'cso-hub-check__body');
@@ -548,7 +602,7 @@
     const card = makeCard(mod, forceFull);
     const list = el('div', 'cso-hub-list');
     if (!state.mockScores.length) {
-      list.appendChild(el('p', 'cso-muted-note', 'No mock test attempts recorded yet.'));
+      list.appendChild(makeEmptyBox('📝', 'Attempt a CBT mock test to track accuracy, speed, and subject trends.', 'Start a Mock Test →', '/mock-tests/'));
     } else {
       const avg = Math.round(state.mockScores.reduce((acc, m) => acc + Number(m.accuracy_rate || 0), 0) / state.mockScores.length);
       list.appendChild(el('p', 'cso-muted-note', 'Attempts: ' + state.mockScores.length + ' · Average Accuracy: ' + avg + '%'));
@@ -567,18 +621,19 @@
   }
 
   function buildNotesCard(mod, forceFull) {
-    const card = makeCard(mod, forceFull);
+    const card = makeCard(mod, true);
     const ta = el('textarea', 'cso-hub-textarea');
     ta.placeholder = 'Write your revision notes, exam roll numbers, or study targets here (synced to D1)…';
     ta.value = state.notes || '';
+    const head = card.querySelector('.cso-hub-card__head');
     const saveBtn = el('button', 'cso-btn cso-btn-primary', 'Save Notes to Cloud');
     saveBtn.type = 'button';
     saveBtn.addEventListener('click', () => {
       state.notes = ta.value;
       saveWorkspacePatch({ notes: state.notes }, 'Study notes saved');
     });
+    if (head) head.appendChild(saveBtn);
     card.appendChild(ta);
-    card.appendChild(saveBtn);
     return card;
   }
 
@@ -717,7 +772,30 @@
         itemsEl.hidden = true;
         return;
       }
-      overviewMods.forEach(m => itemsEl.appendChild(renderModuleNode(m, false)));
+      const byKey = new Map(overviewMods.map(m => [m.module_key, m]));
+      const placed = new Set();
+      const row1 = ['assigned_content', 'saved_deadlines'].map(k => byKey.get(k)).filter(Boolean);
+      if (row1.length === 2) {
+        const pair = el('div', 'cso-hub-row cso-hub-row--pair cso-hub-card--full');
+        row1.forEach(m => { placed.add(m.module_key); pair.appendChild(renderModuleNode(m, false)); });
+        itemsEl.appendChild(pair);
+      }
+      const row2 = ['eligibility_matcher', 'mock_analytics'].map(k => byKey.get(k)).filter(Boolean);
+      if (row2.length === 2) {
+        const split = el('div', 'cso-hub-row cso-hub-row--split cso-hub-card--full');
+        row2.forEach(m => { placed.add(m.module_key); split.appendChild(renderModuleNode(m, false)); });
+        itemsEl.appendChild(split);
+      }
+      ['document_vault', 'study_notes'].forEach(k => {
+        const m = byKey.get(k);
+        if (m) {
+          placed.add(m.module_key);
+          itemsEl.appendChild(renderModuleNode(m, true));
+        }
+      });
+      overviewMods.forEach(m => {
+        if (!placed.has(m.module_key)) itemsEl.appendChild(renderModuleNode(m, false));
+      });
     } else {
       const active = state.modules.find(m => m.module_key === state.activeModuleKey) || state.modules[0];
       if (active) itemsEl.appendChild(renderModuleNode(active, true));
@@ -828,7 +906,17 @@
   function wireControls() {
     const sb = document.getElementById('bp-sidebar');
     document.getElementById('bp-sidebar-toggle-btn')?.addEventListener('click', () => sb?.classList.toggle('is-collapsed'));
-    document.getElementById('bp-mobile-menu-trigger')?.addEventListener('click', () => sb?.classList.toggle('mobile-open'));
+    document.getElementById('bp-mobile-menu-trigger')?.addEventListener('click', () => {
+      const next = !sb?.classList.contains('mobile-open');
+      setMobileDrawerOpen(next);
+    });
+    document.getElementById('bp-sidebar-close-btn')?.addEventListener('click', () => setMobileDrawerOpen(false));
+    document.getElementById('bp-sidebar-backdrop')?.addEventListener('click', () => setMobileDrawerOpen(false));
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && sb?.classList.contains('mobile-open')) {
+        setMobileDrawerOpen(false);
+      }
+    });
     document.getElementById('bp-topbar-logout-btn')?.addEventListener('click', performSignOut);
     document.getElementById('bp-topbar-user-btn')?.addEventListener('click', openProfileModal);
     document.getElementById('bp-sidebar-user-btn')?.addEventListener('click', openProfileModal);

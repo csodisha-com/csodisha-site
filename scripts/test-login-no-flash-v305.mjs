@@ -212,14 +212,14 @@ await check('6. Strict CSP compliance & v305+ cache busting across affected HTML
   assert.ok(read('signup.html').includes('/assets/js/pages/signup.js?v=20261125v305'), 'signup.html missing signup.js?v=20261125v305');
 
   const dashHtml = read('student-dashboard/index.html');
-  for (const tok of [
-    '/assets/shared-header.js?v=20261125v305',
-    '/assets/css/student-dashboard-bp.css?v=20261125v305',
-    '/assets/css/candidate-hub-v244.css?v=20261125v305',
-    '/assets/js/student-auth-guard.js?v=20261125v305',
-    '/assets/js/student-dashboard.js?v=20261125v305'
+  for (const re of [
+    /\/assets\/shared-header\.js\?v=20261125v3(?:0[5-9]|[1-9]\d)/,
+    /\/assets\/css\/student-dashboard-bp\.css\?v=20261125v3(?:0[5-9]|[1-9]\d)/,
+    /\/assets\/css\/candidate-hub-v244\.css\?v=20261125v3(?:0[5-9]|[1-9]\d)/,
+    /\/assets\/js\/student-auth-guard\.js\?v=20261125v3(?:0[5-9]|[1-9]\d)/,
+    /\/assets\/js\/student-dashboard\.js\?v=20261125v3(?:0[5-9]|[1-9]\d)/
   ]) {
-    assert.ok(dashHtml.includes(tok), `student-dashboard/index.html missing ${tok}`);
+    assert.match(dashHtml, re, `student-dashboard/index.html missing v305+ asset matching ${re}`);
   }
 
   for (const jsRel of ['assets/js/pages/login.js', 'assets/js/pages/signup.js', 'assets/js/student-auth-guard.js', 'assets/js/student-dashboard.js', 'assets/shared-header.js']) {

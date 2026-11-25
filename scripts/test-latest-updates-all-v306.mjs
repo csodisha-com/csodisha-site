@@ -81,9 +81,9 @@ check('4. Admin Homepage Studio, Announcements Studio & _router.js cache purge s
   assert.ok(router.includes("X-CSO-Cache-Purged"), '_router.js must set X-CSO-Cache-Purged on admin mutations');
 });
 
-check('5. Strict CSP compliance & v306 cache busting', () => {
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v306';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v306';/);
+check('5. Strict CSP compliance & v306+ cache busting', () => {
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v3(?:0[6-9]|[1-9]\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v3(?:0[6-9]|[1-9]\d)';/);
   assert.ok(read('index.html').includes('/assets/style.css?v=20261125v306'), 'index.html missing style.css?v=20261125v306');
   assert.ok(read('index.html').includes('/assets/app.js?v=20261125v306'), 'index.html missing app.js?v=20261125v306');
   assert.ok(read('index.html').includes('/assets/js/homepage-blocks.js?v=20261125v306'), 'index.html missing homepage-blocks.js?v=20261125v306');
