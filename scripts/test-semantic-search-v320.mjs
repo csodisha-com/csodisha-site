@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   EMBEDDING_MODEL,
+  ANSWER_PRIMARY_MODEL,
   SEMANTIC_NEURON_CAP,
   upsertSemanticVector,
   runSemanticSearch
@@ -15,6 +16,7 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 function createMockDb({ seedNeurons = 0 } = {}) {
   const indexItems = [];
+  const answerCache = [];
   const aiLogs = seedNeurons > 0
     ? [{ id: 'seed_n', actor_id: 'adm_1', target_module: 'job', provider: 'cloudflare_workers_ai', model: EMBEDDING_MODEL, estimated_neurons: seedNeurons, status: 'ok', created_at: new Date().toISOString() }]
     : [];
@@ -27,6 +29,22 @@ function createMockDb({ seedNeurons = 0 } = {}) {
 
   const execSql = (sql, params = []) => {
     const s = sql.replace(/\s+/g, ' ').trim();
+    if (/^SELECT answer_en, answer_or, source_mode, created_at FROM semantic_answer_cache WHERE cache_key = \?/i.test(s)) {
+      return { first: answerCache.find((c) => c.cache_key === params[0]) || null };
+    }
+    if (/^UPDATE semantic_answer_cache SET hits = hits \+ 1 WHERE cache_key = \?/i.test(s)) {
+      const row = answerCache.find((c) => c.cache_key === params[0]);
+      if (row) row.hits += 1;
+      return { run: { success: true } };
+    }
+    if (/^INSERT OR REPLACE INTO semantic_answer_cache/i.test(s)) {
+      const [cache_key, query_text, filter_type, answer_en, answer_or, source_mode, created_at] = params;
+      const idx = answerCache.findIndex((c) => c.cache_key === cache_key);
+      const row = { cache_key, query_text, filter_type, answer_en, answer_or, source_mode, hits: 1, created_at };
+      if (idx >= 0) answerCache[idx] = row;
+      else answerCache.push(row);
+      return { run: { success: true } };
+    }
     if (/^SELECT content_hash FROM semantic_index_items WHERE vector_id = \?/i.test(s)) {
       return { first: indexItems.find((i) => i.vector_id === params[0]) || null };
     }
@@ -70,6 +88,7 @@ function createMockDb({ seedNeurons = 0 } = {}) {
 
   return {
     indexItems,
+    answerCache,
     aiLogs,
     jobs,
     schemes,
@@ -190,14 +209,55 @@ await test('4. Wrangler Vectorize binding, migration 0151, CSP compliance & v320
   const mig = read('migrations/0151_semantic_search_v320.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS semantic_index_items'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v320');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v320';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v321');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v321';"));
+  assert.ok(read('migrations/0152_ask_ai_answer_cache_v321.sql').includes('CREATE TABLE IF NOT EXISTS semantic_answer_cache'));
 
   const js = read('assets/js/semantic-search.js');
   assert.ok(!/\.innerHTML|\.outerHTML|insertAdjacentHTML|\.style\./.test(js));
   for (const page of ['index.html', 'jobs/index.html', 'schemes/index.html', 'study-library/index.html', 'careers/index.html']) {
     assert.ok(read(page).includes('semantic-search.js'), `${page} must load semantic-search.js`);
   }
+});
+
+await test('5. v321 Hybrid RAG grounded answer, general-query fallback & 7-day D1 cache hit (0 neurons)', async () => {
+  const db = createMockDb();
+  let llmCalls = 0;
+  const mockAi = {
+    async run(model) {
+      llmCalls += 1;
+      assert.equal(model, ANSWER_PRIMARY_MODEL);
+      return {
+        response: JSON.stringify({
+          answer_en: 'Odisha Police SI recruitment requires a bachelor degree. Verify official dates on the linked page.',
+          answer_or: 'ଓଡ଼ିଶା ପୋଲିସ SI ନିଯୁକ୍ତି ପାଇଁ ସ୍ନାତକ ଯୋଗ୍ୟତା ଆବଶ୍ୟକ।'
+        })
+      };
+    }
+  };
+  const env = { DB: db, AI: mockAi };
+
+  // 5a. Grounded RAG answer when matching article exists
+  const rGrounded = await runSemanticSearch(env, { q: 'Odisha Police', type: 'job', clientIp: '198.51.100.1' });
+  assert.equal(rGrounded.ok, true);
+  assert.equal(rGrounded.results.length, 1);
+  assert.ok(rGrounded.ai_answer);
+  assert.equal(rGrounded.ai_answer.grounded, true);
+  assert.equal(rGrounded.ai_answer.cached, false);
+  assert.equal(llmCalls, 1);
+
+  // 5b. Repeat query served from semantic_answer_cache at 0 neurons
+  const rCached = await runSemanticSearch(env, { q: 'Odisha Police', type: 'job', clientIp: '198.51.100.1' });
+  assert.ok(rCached.ai_answer);
+  assert.equal(rCached.ai_answer.cached, true);
+  assert.equal(llmCalls, 1);
+
+  // 5c. General Odisha guidance when no published article matches (results === [])
+  const rGeneral = await runSemanticSearch(env, { q: 'How to prepare for OPSC OAS prelims', type: 'all', clientIp: '198.51.100.2' });
+  assert.equal(rGeneral.results.length, 0);
+  assert.ok(rGeneral.ai_answer);
+  assert.equal(rGeneral.ai_answer.grounded, false);
+  assert.equal(llmCalls, 2);
 });
 
 console.log(`\n=== Smart Semantic Search v320 Results: ${passed} passed, 0 failed ===\n`);

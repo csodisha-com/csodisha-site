@@ -89,12 +89,45 @@
           resultsBox.hidden = false;
           resultsBox.replaceChildren();
           var meta = el('div', 'cso-ask-meta');
-          meta.appendChild(el('span', '', (data.results || []).length + ' result(s) for "' + q + '"'));
+          meta.appendChild(el('span', '', (data.results || []).length + ' matching article(s) for "' + q + '"'));
           meta.appendChild(el('span', 'cso-ask-mode-badge', data.mode === 'semantic' ? 'Semantic AI Match' : 'Instant Keyword Match'));
           resultsBox.appendChild(meta);
 
+          if (data.ai_answer && data.ai_answer.answer_en) {
+            var ansCard = el('div', 'cso-ask-answer-card');
+            var ansHead = el('div', 'cso-ask-answer-head');
+            ansHead.appendChild(el('strong', 'cso-ask-answer-title', '✨ CSOdisha AI Answer'));
+            var badges = el('div', 'cso-ask-answer-badges');
+            badges.appendChild(el(
+              'span',
+              'cso-ask-mode-badge',
+              data.ai_answer.grounded ? 'Grounded in CSOdisha Articles' : 'General Odisha Guidance — Verify Official Notification'
+            ));
+            if (data.ai_answer.cached) {
+              badges.appendChild(el('span', 'cso-ask-type-badge', 'Instant Cache'));
+            }
+            ansHead.appendChild(badges);
+            ansCard.appendChild(ansHead);
+            ansCard.appendChild(el('p', 'cso-ask-answer-en', data.ai_answer.answer_en));
+            if (data.ai_answer.answer_or) {
+              ansCard.appendChild(el('p', 'cso-ask-answer-or', data.ai_answer.answer_or));
+            }
+            resultsBox.appendChild(ansCard);
+          }
+
           if (!data.results || !data.results.length) {
-            resultsBox.appendChild(el('p', 'cso-ask-item-summary', 'No matching published notices or guides found yet. Try broader keywords.'));
+            var chips = el('div', 'cso-ask-portal-chips');
+            [
+              ['/jobs/', 'Browse Jobs →'],
+              ['/schemes/', 'Browse Schemes →'],
+              ['/study-library/', 'Study Library →'],
+              ['/mock-tests/', 'CBT Mock Tests →']
+            ].forEach(function (pair) {
+              var link = el('a', 'cso-ask-type-badge cso-ask-portal-link', pair[1]);
+              link.href = pair[0];
+              chips.appendChild(link);
+            });
+            resultsBox.appendChild(chips);
             return;
           }
 

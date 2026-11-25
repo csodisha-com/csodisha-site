@@ -121,3 +121,46 @@
   line-height: 1.45;
   color: var(--cso-muted);
 }
+.cso-ask-answer-card {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-highlight-bg, var(--cso-surface-alt));
+  color: var(--cso-text);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cso-ask-answer-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.cso-ask-answer-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cso-text);
+}
+.cso-ask-answer-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cso-ask-answer-en,
+.cso-ask-answer-or {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--cso-text);
+}
+.cso-ask-portal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cso-ask-portal-link {
+  text-decoration: none;
+  padding: 6px 10px;
+}

@@ -7,10 +7,13 @@
  *   or daily usage in `ai_generation_logs` reaches 9,000 / 10,000 free neurons.
  */
 
-import { bufToHex } from '../api/auth/_utils.js';
-import { getDailyAiUsage, ensureAiCoauthorSchema } from './ai-coauthor.js';
+import { bufToHex, checkRateLimit } from '../api/auth/_utils.js';
+import { getDailyAiUsage, ensureAiCoauthorSchema, extractJsonObject } from './ai-coauthor.js';
 
 export const EMBEDDING_MODEL = '@cf/qwen/qwen3-embedding-0.6b';
+export const ANSWER_PRIMARY_MODEL = '@cf/ibm-granite/granite-4.0-h-micro';
+export const ANSWER_FALLBACK_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
+export const ANSWER_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const SEMANTIC_NEURON_CAP = 9000;
 export const VALID_SEARCH_TYPES = new Set(['all', 'job', 'scheme', 'study', 'career']);
 
@@ -36,6 +39,22 @@ export async function ensureSemanticSchema(env) {
     env.DB.prepare(
       `CREATE INDEX IF NOT EXISTS idx_semantic_index_entity
        ON semantic_index_items(entity_type, entity_id)`
+    ),
+    env.DB.prepare(
+      `CREATE TABLE IF NOT EXISTS semantic_answer_cache (
+        cache_key TEXT PRIMARY KEY,
+        query_text TEXT NOT NULL,
+        filter_type TEXT NOT NULL,
+        answer_en TEXT NOT NULL,
+        answer_or TEXT,
+        source_mode TEXT NOT NULL,
+        hits INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL
+      )`
+    ),
+    env.DB.prepare(
+      `CREATE INDEX IF NOT EXISTS idx_semantic_answer_cache_created
+       ON semantic_answer_cache(created_at)`
     )
   ]);
   _schemaReadyDb = env.DB;
@@ -75,7 +94,7 @@ export function buildIndexRecord(type, row) {
   };
 }
 
-async function logSemanticNeurons(env, { actorId, targetModule, neurons }) {
+async function logSemanticNeurons(env, { actorId, targetModule, neurons, model = EMBEDDING_MODEL }) {
   if (!env || !env.DB) return;
   try {
     await env.DB.prepare(
@@ -85,7 +104,7 @@ async function logSemanticNeurons(env, { actorId, targetModule, neurons }) {
       crypto.randomUUID(),
       String(actorId || 'system'),
       String(targetModule),
-      EMBEDDING_MODEL,
+      String(model),
       Math.max(1, Math.round(Number(neurons) || 10)),
       new Date().toISOString()
     ).run();
@@ -248,7 +267,124 @@ async function hydrateMatchFromD1(env, match) {
   }
 }
 
-export async function runSemanticSearch(env, { q, type = 'all', limit = 8 }) {
+export async function generateAskCsoAnswer(env, { q, type = 'all', results = [], clientIp = 'anon' }) {
+  await ensureSemanticSchema(env);
+  const cleanQ = String(q || '').trim();
+  const normalizedQ = cleanQ.toLowerCase().replace(/\s+/g, ' ');
+  const cacheKey = await sha256Hex(`v321|${type}|${normalizedQ}`);
+
+  // 1. Check 7-day D1 cache (0 Neurons)
+  if (env && env.DB) {
+    try {
+      const cached = await env.DB.prepare(
+        'SELECT answer_en, answer_or, source_mode, created_at FROM semantic_answer_cache WHERE cache_key = ? LIMIT 1'
+      ).bind(cacheKey).first();
+      if (cached && cached.answer_en) {
+        const ageMs = Date.now() - new Date(cached.created_at).getTime();
+        if (!Number.isFinite(ageMs) || ageMs < ANSWER_CACHE_TTL_MS) {
+          await env.DB.prepare(
+            'UPDATE semantic_answer_cache SET hits = hits + 1 WHERE cache_key = ?'
+          ).bind(cacheKey).run().catch(() => {});
+          return {
+            answer_en: cached.answer_en,
+            answer_or: cached.answer_or || '',
+            grounded: cached.source_mode === 'grounded',
+            cached: true
+          };
+        }
+      }
+    } catch (_e) {}
+  }
+
+  // 2. Protect Admin Studio priority (9,000 / 10,000 free neurons cap)
+  const usage = await getDailyAiUsage(env);
+  if (usage.neurons_used >= SEMANTIC_NEURON_CAP) {
+    return null;
+  }
+
+  // 3. Lightweight IP hourly rate limit (max 10 fresh uncached AI answers/IP/hour)
+  const ipRate = checkRateLimit(`ask_ai_ip_${clientIp}`, 10, 60 * 60 * 1000);
+  if (!ipRate.allowed) {
+    return null;
+  }
+
+  if (!env || !env.AI || typeof env.AI.run !== 'function') {
+    return null;
+  }
+
+  const grounded = Array.isArray(results) && results.length > 0;
+  const prompt = grounded
+    ? [
+        'You are Ask CSOdisha, a helpful bilingual Odisha & National public resource assistant.',
+        'Answer the user question grounded strictly in these matched CSOdisha articles. Remind the user to verify official dates on the linked page.',
+        'Return ONLY a valid JSON object: { "answer_en": "2-3 concise sentences in English", "answer_or": "2-3 concise sentences in Odia (ଓଡ଼ିଆ)" }.',
+        `Matched Articles: ${JSON.stringify(results.slice(0, 6).map((r) => ({ type: r.type, title_en: r.title_en, title_or: r.title_or, summary: r.summary, url: r.url })))}`,
+        `User Question: ${cleanQ}`
+      ].join('\n')
+    : [
+        'You are Ask CSOdisha, an Odisha competitive exam (OPSC, OSSC, OSSSC, OTET), government welfare scheme, and career advisor.',
+        'No published CSOdisha article matched yet. Provide helpful general Odisha guidance in 2-3 crisp sentences in English and 2-3 sentences in Odia (ଓଡ଼ିଆ), and suggest checking /jobs/, /schemes/, /study-library/, or /mock-tests/ and verifying official notifications.',
+        'Return ONLY a valid JSON object: { "answer_en": "...", "answer_or": "..." }.',
+        `User Question: ${cleanQ}`
+      ].join('\n');
+
+  const messages = [
+    { role: 'system', content: 'You output strictly valid JSON with answer_en and answer_or.' },
+    { role: 'user', content: prompt }
+  ];
+
+  let modelUsed = ANSWER_PRIMARY_MODEL;
+  let resp;
+  try {
+    resp = await env.AI.run(ANSWER_PRIMARY_MODEL, { messages, max_tokens: 450, temperature: 0.25 });
+  } catch (_err) {
+    modelUsed = ANSWER_FALLBACK_MODEL;
+    resp = await env.AI.run(ANSWER_FALLBACK_MODEL, { messages, max_tokens: 450, temperature: 0.25 });
+  }
+
+  const rawText = typeof resp === 'string'
+    ? resp
+    : String((resp && (resp.response || (resp.result && resp.result.response))) || '');
+  if (!rawText) return null;
+
+  const parsed = extractJsonObject(rawText);
+  const answerEn = String((parsed && parsed.answer_en) || '').trim().slice(0, 1000);
+  const answerOr = String((parsed && parsed.answer_or) || '').trim().slice(0, 1200);
+  if (!answerEn) return null;
+
+  const neurons = Math.max(30, Math.min(200, Math.ceil((prompt.length + rawText.length) / 20)));
+  await logSemanticNeurons(env, {
+    actorId: clientIp,
+    targetModule: 'ask_csodisha',
+    neurons,
+    model: modelUsed
+  });
+
+  if (env && env.DB) {
+    await env.DB.prepare(
+      `INSERT OR REPLACE INTO semantic_answer_cache
+       (cache_key, query_text, filter_type, answer_en, answer_or, source_mode, hits, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, 1, ?)`
+    ).bind(
+      cacheKey,
+      cleanQ.slice(0, 200),
+      String(type || 'all'),
+      answerEn,
+      answerOr,
+      grounded ? 'grounded' : 'general',
+      new Date().toISOString()
+    ).run().catch(() => {});
+  }
+
+  return {
+    answer_en: answerEn,
+    answer_or: answerOr,
+    grounded,
+    cached: false
+  };
+}
+
+export async function runSemanticSearch(env, { q, type = 'all', limit = 6, clientIp = 'anon', includeAnswer = true }) {
   await ensureSemanticSchema(env);
   const cleanQ = String(q || '').trim();
   const cleanType = VALID_SEARCH_TYPES.has(String(type || '').toLowerCase()) ? String(type).toLowerCase() : 'all';
@@ -261,6 +397,8 @@ export async function runSemanticSearch(env, { q, type = 'all', limit = 8 }) {
 
   const hasVectorize = Boolean(env && env.VECTORIZE && typeof env.VECTORIZE.query === 'function' && env && env.AI && typeof env.AI.run === 'function');
   const usage = await getDailyAiUsage(env);
+  let mode = 'keyword_fallback';
+  let results = [];
 
   if (hasVectorize && usage.neurons_used < SEMANTIC_NEURON_CAP) {
     try {
@@ -274,19 +412,32 @@ export async function runSemanticSearch(env, { q, type = 'all', limit = 8 }) {
       const filtered = cleanType === 'all' ? hydrated : hydrated.filter((r) => r.type === cleanType);
 
       if (filtered.length >= 3) {
-        return { ok: true, mode: 'semantic', results: filtered.slice(0, limit) };
+        mode = 'semantic';
+        results = filtered.slice(0, limit);
+      } else {
+        const kw = await runKeywordFallbackSearch(env, { q: cleanQ, type: cleanType, limit });
+        const seen = new Set(filtered.map((r) => `${r.type}:${r.id}`));
+        const merged = filtered.concat(kw.filter((r) => !seen.has(`${r.type}:${r.id}`)));
+        mode = filtered.length ? 'semantic' : 'keyword_fallback';
+        results = merged.slice(0, limit);
       }
-      const kw = await runKeywordFallbackSearch(env, { q: cleanQ, type: cleanType, limit });
-      const seen = new Set(filtered.map((r) => `${r.type}:${r.id}`));
-      const merged = filtered.concat(kw.filter((r) => !seen.has(`${r.type}:${r.id}`)));
-      return { ok: true, mode: filtered.length ? 'semantic' : 'keyword_fallback', results: merged.slice(0, limit) };
     } catch (_err) {
-      // Seamless fallback on Vectorize/AI error
+      results = await runKeywordFallbackSearch(env, { q: cleanQ, type: cleanType, limit });
+    }
+  } else {
+    results = await runKeywordFallbackSearch(env, { q: cleanQ, type: cleanType, limit });
+  }
+
+  let aiAnswer = null;
+  if (includeAnswer) {
+    try {
+      aiAnswer = await generateAskCsoAnswer(env, { q: cleanQ, type: cleanType, results, clientIp });
+    } catch (_e) {
+      aiAnswer = null;
     }
   }
 
-  const kwResults = await runKeywordFallbackSearch(env, { q: cleanQ, type: cleanType, limit });
-  return { ok: true, mode: 'keyword_fallback', results: kwResults };
+  return { ok: true, mode, ai_answer: aiAnswer, results };
 }
 
 export async function getSemanticIndexStatus(env) {

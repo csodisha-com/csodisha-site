@@ -33,7 +33,7 @@ export async function handlePublicSemanticSearch({ request, env, ctx = null }) {
   }
 
   try {
-    const data = await runSemanticSearch(env, { q, type, limit: 8 });
+    const data = await runSemanticSearch(env, { q, type, limit: 6, clientIp: ip });
     const res = new Response(JSON.stringify(data), {
       status: 200,
       headers: {
