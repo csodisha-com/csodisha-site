@@ -774,7 +774,8 @@
       const isCurrent = pillarKey === activeSection;
       const isJobs = pillarKey === 'jobs';
       const isCareers = pillarKey === 'careers';
-      const ni = el('div', 'ni' + (isCurrent ? ' cso-active' : '') + (isJobs ? ' cso-ni-jobs cso-nav-jobs-wrap' : '') + (isCareers ? ' cso-ni-careers cso-nav-careers-wrap' : ''));
+      const isSchemes = pillarKey === 'schemes-benefits' || pillarKey === 'schemes';
+      const ni = el('div', 'ni' + (isCurrent ? ' cso-active' : '') + (isJobs ? ' cso-ni-jobs cso-nav-jobs-wrap' : '') + (isCareers ? ' cso-ni-careers cso-nav-careers-wrap' : '') + (isSchemes ? ' cso-ni-schemes cso-nav-schemes-wrap' : ''));
       ni.dataset.pillar = pillarKey;
       const parent = el('div', 'cso-nav-parent');
       const a = el('a', isCurrent ? 'on' : '');
@@ -789,6 +790,10 @@
         a.setAttribute('aria-haspopup', 'true');
         a.setAttribute('aria-expanded', 'false');
         a.setAttribute('aria-controls', 'cso-careers-stage1');
+      } else if (isSchemes) {
+        a.setAttribute('aria-haspopup', 'true');
+        a.setAttribute('aria-expanded', 'false');
+        a.setAttribute('aria-controls', 'cso-schemes-stage1');
       }
       const iconText = it.icon || it.icon_key || '';
       if (iconText) {
@@ -830,6 +835,21 @@
         const cascade = buildCareersCascadingMenu();
         ni.appendChild(cascade);
         wireCareersCascadingInteractions(ni, a, chevBtn, cascade);
+      } else if (isSchemes) {
+        const chevBtn = el('button', 'cso-nav-arrow cso-schemes-flyout-toggle');
+        chevBtn.type = 'button';
+        chevBtn.setAttribute('aria-label', 'Toggle Schemes categories menu');
+        chevBtn.setAttribute('aria-haspopup', 'true');
+        chevBtn.setAttribute('aria-expanded', 'false');
+        chevBtn.setAttribute('aria-controls', 'cso-schemes-stage1');
+        const chevIcon = el('span', 'cso-jobs-chev', '▾');
+        chevIcon.setAttribute('aria-hidden', 'true');
+        chevBtn.appendChild(chevIcon);
+        parent.appendChild(chevBtn);
+        ni.appendChild(parent);
+        const cascade = buildSchemesCascadingMenu();
+        ni.appendChild(cascade);
+        wireSchemesCascadingInteractions(ni, a, chevBtn, cascade);
       } else {
         ni.appendChild(parent);
       }
@@ -1127,7 +1147,6 @@
     });
   }
 
-  // ---------- Two-Stage Cascading Careers Menu (v278) ----------
   const CAREERS_FLYOUT_CACHE_KEY = 'cso_careers_flyout_v278';
   let careersFlyoutData = null;
   let careersFlyoutFetchStarted = false;
@@ -1442,6 +1461,312 @@
     });
   }
 
+  // ---- Two-Stage Cascading Schemes & Benefits Menu (v283) ----
+  const SCHEMES_FLYOUT_CACHE_KEY = 'cso_schemes_flyout_v283';
+  let schemesFlyoutData = null;
+  let schemesFlyoutFetchStarted = false;
+
+  const SCHEMES_DEFAULT_CATEGORIES = [
+    {
+      slug: 'odisha-state-welfare', icon: '🏛️', title_en: 'Odisha State Welfare', title_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ କଲ୍ୟାଣ',
+      subcategories: [
+        { slug: 'food-security-ration', title_en: 'Food Security & Ration', title_or: 'ଖାଦ୍ୟ ସୁରକ୍ଷା ଓ ରାସନ୍' },
+        { slug: 'financial-assistance-pensions', title_en: 'Financial Assistance & Pensions', title_or: 'ଆର୍ଥିକ ସହାୟତା ଓ ଭତ୍ତା' },
+        { slug: 'housing-rural-infrastructure', title_en: 'Housing & Rural Infrastructure', title_or: 'ଆବାସ ଓ ଗ୍ରାମ୍ୟ ଭିତ୍ତିଭୂମି' }
+      ]
+    },
+    {
+      slug: 'central-welfare', icon: '🇮🇳', title_en: 'Central Welfare Schemes', title_or: 'କେନ୍ଦ୍ର ସରକାରୀ କଲ୍ୟାଣ ଯୋଜନା',
+      subcategories: [
+        { slug: 'direct-benefit-transfer-dbt', title_en: 'Direct Benefit Transfer (DBT)', title_or: 'ପ୍ରତ୍ୟକ୍ଷ ଅର୍ଥ ହସ୍ତାନ୍ତର (DBT)' },
+        { slug: 'national-housing-sanitation', title_en: 'National Housing & Sanitation', title_or: 'ଜାତୀୟ ଆବାସ ଓ ସ୍ୱଚ୍ଛତା' },
+        { slug: 'citizen-identity-social-cover', title_en: 'Citizen Identity & Social Cover', title_or: 'ନାଗରିକ ପରିଚୟ ଓ ସାମାଜିକ ସୁରକ୍ଷା' }
+      ]
+    },
+    {
+      slug: 'agriculture-farmers', icon: '🌾', title_en: 'Agriculture & Farmers', title_or: 'କୃଷି ଓ କୃଷକ କଲ୍ୟାଣ',
+      subcategories: [
+        { slug: 'income-support-crop-insurance', title_en: 'Income Support & Crop Insurance', title_or: 'ଆୟ ସହାୟତା ଓ ଫସଲ ବୀମା' },
+        { slug: 'irrigation-seeds-machinery', title_en: 'Irrigation, Seeds & Machinery', title_or: 'ଜଳସେଚନ, ବିହନ ଓ କୃଷି ଯନ୍ତ୍ରପାତି' },
+        { slug: 'fisheries-animal-husbandry', title_en: 'Fisheries & Animal Husbandry', title_or: 'ମତ୍ସ୍ୟ ଓ ପଶୁପାଳନ' }
+      ]
+    },
+    {
+      slug: 'education-scholarships', icon: '🎓', title_en: 'Education & Scholarships', title_or: 'ଶିକ୍ଷା ଓ ଛାତ୍ରବୃତ୍ତି',
+      subcategories: [
+        { slug: 'pre-matric-post-matric', title_en: 'Pre-Matric & Post-Matric', title_or: 'ପ୍ରି-ମାଟ୍ରିକ୍ ଓ ପୋଷ୍ଟ-ମାଟ୍ରିକ୍' },
+        { slug: 'higher-education-merit-aid', title_en: 'Higher Education & Merit Aid', title_or: 'ଉଚ୍ଚଶିକ୍ଷା ଓ ମେଧା ବୃତ୍ତି' },
+        { slug: 'skill-training-laptops', title_en: 'Skill Training & Laptops', title_or: 'ଦକ୍ଷତା ତାଲିମ ଓ ଲାପଟପ୍' }
+      ]
+    },
+    {
+      slug: 'women-child-social', icon: '👩', title_en: 'Women, Child & Social Security', title_or: 'ମହିଳା, ଶିଶୁ ଓ ସାମାଜିକ ସୁରକ୍ଷା',
+      subcategories: [
+        { slug: 'women-empowerment-shgs', title_en: 'Women Empowerment & SHGs', title_or: 'ମହିଳା ସଶକ୍ତିକରଣ ଓ SHG' },
+        { slug: 'girl-child-maternal-care', title_en: 'Girl Child & Maternal Care', title_or: 'କନ୍ୟା ସନ୍ତାନ ଓ ମାତୃ ଯତ୍ନ' },
+        { slug: 'divyangjan-senior-citizens', title_en: 'Divyangjan & Senior Citizens', title_or: 'ଦିବ୍ୟାଙ୍ଗ ଓ ବରିଷ୍ଠ ନାଗରିକ' }
+      ]
+    },
+    {
+      slug: 'health-msme-livelihoods', icon: '🏥', title_en: 'Health, MSME & Livelihoods', title_or: 'ସ୍ୱାସ୍ଥ୍ୟ, MSME ଓ ଜୀବିକା',
+      subcategories: [
+        { slug: 'cashless-health-insurance', title_en: 'Cashless Health Insurance', title_or: 'ନଗଦହୀନ ସ୍ୱାସ୍ଥ୍ୟ ବୀମା' },
+        { slug: 'youth-self-employment-loans', title_en: 'Youth Self-Employment & Loans', title_or: 'ଯୁବ ଆତ୍ମନିଯୁକ୍ତି ଓ ଋଣ' },
+        { slug: 'labour-construction-workers', title_en: 'Labour & Construction Workers', title_or: 'ଶ୍ରମିକ ଓ ନିର୍ମାଣ ଶ୍ରମିକ' }
+      ]
+    }
+  ];
+
+  function readCachedSchemesFlyout() {
+    if (schemesFlyoutData) return schemesFlyoutData;
+    try {
+      const raw = sessionStorage.getItem(SCHEMES_FLYOUT_CACHE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.ts && Date.now() - parsed.ts < 60000 && Array.isArray(parsed.categories) && parsed.categories.length) {
+          schemesFlyoutData = parsed;
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function buildSchemesStage2List(cat, isOr) {
+    const ul = el('ul', 'cso-js2-list');
+    const subs = Array.isArray(cat.subcategories) ? cat.subcategories : [];
+    subs.forEach(sub => {
+      const li = el('li', 'cso-js2-item');
+      const a = el('a', 'cso-js2-link', isOr ? (sub.title_or || sub.title_en) : sub.title_en);
+      a.href = '/schemes/?category=' + encodeURIComponent(cat.slug || '') + '&sub=' + encodeURIComponent(sub.slug || '');
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    return ul;
+  }
+
+  function renderSchemesStage1(cascade, stage1List, stage2El, data) {
+    if (!stage1List || !stage2El) return;
+    const isOr = S.lang === 'or';
+    const categories = (data && Array.isArray(data.categories) && data.categories.length)
+      ? data.categories
+      : SCHEMES_DEFAULT_CATEGORIES;
+    stage1List.replaceChildren();
+
+    function activateCategory(cat, openStage2) {
+      stage1List.querySelectorAll('.cso-js1-item.is-active').forEach(elItem => elItem.classList.remove('is-active'));
+      const itemEl = stage1List.querySelector('[data-sch-cat="' + String(cat.slug || '').replace(/"/g, '') + '"]');
+      if (itemEl) itemEl.classList.add('is-active');
+      const subs = Array.isArray(cat.subcategories) ? cat.subcategories : [];
+      if (!subs.length) {
+        cascade.classList.remove('is-stage2-open');
+        stage2El.replaceChildren();
+        return;
+      }
+      stage2El.replaceChildren(buildSchemesStage2List(cat, isOr));
+      if (openStage2 && window.innerWidth >= 1100) {
+        cascade.classList.add('is-stage2-open');
+        const stage1Box = cascade.querySelector('.cso-schemes-stage1');
+        if (stage1Box) {
+          const rect = stage1Box.getBoundingClientRect();
+          stage2El.classList.toggle('is-flip-left', rect.right + 272 > window.innerWidth);
+        }
+      }
+    }
+
+    categories.forEach(cat => {
+      const subs = Array.isArray(cat.subcategories) ? cat.subcategories : [];
+      const hasStage2 = subs.length > 0;
+      const li = el('li', 'cso-js1-item' + (hasStage2 ? '' : ' is-direct-only'));
+      li.dataset.schCat = cat.slug || '';
+
+      const row = el('div', 'cso-js1-row');
+      const a = el('a', 'cso-js1-link');
+      a.href = '/schemes/?category=' + encodeURIComponent(cat.slug || '');
+
+      const left = el('span', 'cso-js1-left');
+      const ic = el('span', 'cso-js1-icon', cat.icon || '🏛️');
+      ic.setAttribute('aria-hidden', 'true');
+      left.append(ic, el('span', 'cso-js1-title', isOr ? (cat.title_or || cat.title_en) : cat.title_en));
+      a.appendChild(left);
+
+      if (hasStage2) {
+        const arrow = el('span', 'cso-js1-arrow', '›');
+        arrow.setAttribute('aria-hidden', 'true');
+        a.appendChild(arrow);
+      }
+
+      row.appendChild(a);
+      if (hasStage2) {
+        const mobExp = el('button', 'cso-js1-mob-exp', '▾');
+        mobExp.type = 'button';
+        mobExp.setAttribute('aria-expanded', 'false');
+        mobExp.setAttribute('aria-label', 'Expand ' + (cat.title_en || 'category') + ' sub-categories');
+        mobExp.addEventListener('click', ev => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          const isOpen = li.classList.toggle('is-mob-open');
+          mobExp.setAttribute('aria-expanded', String(isOpen));
+        });
+        row.appendChild(mobExp);
+        const mobBox = el('div', 'cso-js1-mob-sub');
+        mobBox.appendChild(buildSchemesStage2List(cat, isOr));
+        li.append(row, mobBox);
+      } else {
+        li.appendChild(row);
+      }
+
+      li.addEventListener('mouseenter', () => {
+        if (window.innerWidth < 1100) return;
+        activateCategory(cat, hasStage2);
+      });
+      a.addEventListener('focus', () => {
+        if (window.innerWidth < 1100) return;
+        activateCategory(cat, hasStage2);
+      });
+      a.addEventListener('keydown', ev => {
+        if (ev.key === 'ArrowRight' && window.innerWidth >= 1100 && hasStage2) {
+          ev.preventDefault();
+          activateCategory(cat, true);
+          const firstS2 = stage2El.querySelector('.cso-js2-link');
+          if (firstS2) firstS2.focus();
+        } else if (ev.key === 'ArrowDown') {
+          ev.preventDefault();
+          const nextLi = li.nextElementSibling;
+          if (nextLi) { const na = nextLi.querySelector('.cso-js1-link'); if (na) na.focus(); }
+        } else if (ev.key === 'ArrowUp') {
+          ev.preventDefault();
+          const prevLi = li.previousElementSibling;
+          if (prevLi) { const pa = prevLi.querySelector('.cso-js1-link'); if (pa) pa.focus(); }
+        }
+      });
+
+      stage1List.appendChild(li);
+    });
+  }
+
+  function hydrateSchemesFlyoutFromD1(cascade, stage1List, stage2El) {
+    const cached = readCachedSchemesFlyout();
+    if (cached) {
+      renderSchemesStage1(cascade, stage1List, stage2El, cached);
+      return;
+    }
+    if (schemesFlyoutFetchStarted) return;
+    schemesFlyoutFetchStarted = true;
+    fetch('/api/public/schemes/bootstrap', { credentials: 'same-origin' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        schemesFlyoutFetchStarted = false;
+        if (!d || !d.ok) return;
+        const cats = Array.isArray(d.nav_categories) && d.nav_categories.length
+          ? d.nav_categories
+          : SCHEMES_DEFAULT_CATEGORIES;
+        const payload = { ts: Date.now(), categories: cats };
+        schemesFlyoutData = payload;
+        try { sessionStorage.setItem(SCHEMES_FLYOUT_CACHE_KEY, JSON.stringify(payload)); } catch (e) {}
+        document.querySelectorAll('.cso-schemes-cascade').forEach(cEl => {
+          const s1 = cEl.querySelector('.cso-js1-list');
+          const s2 = cEl.querySelector('.cso-schemes-stage2');
+          if (s1 && s2) renderSchemesStage1(cEl, s1, s2, payload);
+        });
+      })
+      .catch(() => { schemesFlyoutFetchStarted = false; });
+  }
+
+  function buildSchemesCascadingMenu() {
+    const cascade = el('div', 'cso-schemes-cascade');
+    cascade.id = 'cso-schemes-cascade';
+
+    const stage1 = el('div', 'cso-schemes-stage1');
+    stage1.id = 'cso-schemes-stage1';
+    stage1.setAttribute('role', 'region');
+    stage1.setAttribute('aria-label', 'Scheme Categories');
+
+    const list = el('ul', 'cso-js1-list');
+    stage1.appendChild(list);
+
+    const stage2 = el('div', 'cso-schemes-stage2');
+    stage2.id = 'cso-schemes-stage2';
+    stage2.setAttribute('role', 'region');
+    stage2.setAttribute('aria-label', 'Scheme Sub-Categories');
+    stage2.addEventListener('keydown', ev => {
+      if (ev.key === 'ArrowLeft') {
+        ev.preventDefault();
+        const activeLink = list.querySelector('.cso-js1-item.is-active .cso-js1-link') || list.querySelector('.cso-js1-link');
+        if (activeLink) activeLink.focus();
+      }
+    });
+
+    cascade.append(stage1, stage2);
+    renderSchemesStage1(cascade, list, stage2, readCachedSchemesFlyout());
+    return cascade;
+  }
+
+  function wireSchemesCascadingInteractions(ni, triggerA, chevBtn, cascade) {
+    let closeTimer = null;
+    const stage1List = cascade.querySelector('.cso-js1-list');
+    const stage2El = cascade.querySelector('.cso-schemes-stage2');
+
+    function setOpen(open) {
+      if (open) {
+        closeDropdowns(ni);
+        hydrateSchemesFlyoutFromD1(cascade, stage1List, stage2El);
+      } else {
+        cascade.classList.remove('is-stage2-open');
+        stage1List.querySelectorAll('.cso-js1-item.is-active').forEach(it => it.classList.remove('is-active'));
+      }
+      ni.classList.toggle('cso-open', open);
+      triggerA.setAttribute('aria-expanded', String(open));
+      chevBtn.setAttribute('aria-expanded', String(open));
+    }
+
+    ni.addEventListener('mouseenter', () => {
+      if (window.innerWidth < 1100) return;
+      clearTimeout(closeTimer);
+      setOpen(true);
+    });
+
+    ni.addEventListener('mouseleave', () => {
+      if (window.innerWidth < 1100) return;
+      clearTimeout(closeTimer);
+      closeTimer = setTimeout(() => setOpen(false), 150);
+    });
+
+    triggerA.addEventListener('keydown', ev => {
+      if (ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        setOpen(true);
+        const firstLink = cascade.querySelector('.cso-js1-link');
+        if (firstLink) firstLink.focus();
+      } else if (ev.key === 'Escape') {
+        setOpen(false);
+      }
+    });
+
+    chevBtn.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        const next = ev.key === 'ArrowDown' ? true : !ni.classList.contains('cso-open');
+        setOpen(next);
+        if (next) {
+          const firstLink = cascade.querySelector('.cso-js1-link');
+          if (firstLink) firstLink.focus();
+        }
+      } else if (ev.key === 'Escape') {
+        setOpen(false);
+        chevBtn.focus();
+      }
+    });
+
+    ni.addEventListener('keydown', ev => {
+      if (ev.key === 'Escape' && ni.classList.contains('cso-open')) {
+        ev.preventDefault();
+        setOpen(false);
+        triggerA.focus();
+      }
+    });
+  }
+
   function renderNav() {
     const navw = document.getElementById('navw');
     if (!navw) return;
@@ -1598,8 +1923,13 @@
           if (cascade) {
             hydrateCareersFlyoutFromD1(cascade, cascade.querySelector('.cso-js1-list'), cascade.querySelector('.cso-careers-stage2'));
           }
-        } else if (!open && (parent.classList.contains('cso-ni-jobs') || parent.classList.contains('cso-ni-careers'))) {
-          const cascade = parent.querySelector('.cso-jobs-cascade, .cso-careers-cascade');
+        } else if (open && parent.classList.contains('cso-ni-schemes')) {
+          const cascade = parent.querySelector('.cso-schemes-cascade');
+          if (cascade) {
+            hydrateSchemesFlyoutFromD1(cascade, cascade.querySelector('.cso-js1-list'), cascade.querySelector('.cso-schemes-stage2'));
+          }
+        } else if (!open && (parent.classList.contains('cso-ni-jobs') || parent.classList.contains('cso-ni-careers') || parent.classList.contains('cso-ni-schemes'))) {
+          const cascade = parent.querySelector('.cso-jobs-cascade, .cso-careers-cascade, .cso-schemes-cascade');
           if (cascade) cascade.classList.remove('is-stage2-open');
         }
       }

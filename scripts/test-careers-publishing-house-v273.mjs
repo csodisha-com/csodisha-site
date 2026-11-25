@@ -387,7 +387,7 @@ await check('6. Cache busting (?v=20261124v273+, cso-candidate-cache-v273+) & 10
     /\/admin\/careers-publishing-studio\.css\?v=20261124v2(?:7[3-9]|[8-9]\d)/,
     /\/admin\/careers-publishing-studio\.js\?v=20261124v2(?:7[3-9]|[8-9]\d)/,
     /\/admin\/command-suite\.js\?v=20261124v2(?:7[3-9]|[8-9]\d)/,
-    /\/admin\/admin\.js\?v=20261124v2(?:7[3-9]|[8-9]\d)/
+    /\/admin\/admin\.js\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/
   ]) {
     assert.ok(pat.test(adminHtml), `admin/index.html missing ${pat}`);
   }

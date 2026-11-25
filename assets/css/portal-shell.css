@@ -791,7 +791,8 @@ body[data-theme="odisha"] {
   }
 
   #cso-main-navbar .cso-nav-jobs-wrap,
-  #cso-main-navbar .cso-nav-careers-wrap {
+  #cso-main-navbar .cso-nav-careers-wrap,
+  #cso-main-navbar .cso-nav-schemes-wrap {
     position: relative !important;
   }
 }
@@ -799,7 +800,9 @@ body[data-theme="odisha"] {
 #cso-main-navbar .cso-jobs-stage1,
 #cso-main-navbar .cso-jobs-stage2,
 #cso-main-navbar .cso-careers-stage1,
-#cso-main-navbar .cso-careers-stage2 {
+#cso-main-navbar .cso-careers-stage2,
+#cso-main-navbar .cso-schemes-stage1,
+#cso-main-navbar .cso-schemes-stage2 {
   background-color: var(--cso-surface-elevated, #ffffff) !important;
   opacity: 1 !important;
   backdrop-filter: none !important;
@@ -820,6 +823,8 @@ body[data-theme="odisha"] {
 #cso-main-navbar .cso-jobs-stage2 .cso-js2-link,
 #cso-main-navbar .cso-careers-stage1 .cso-js1-link,
 #cso-main-navbar .cso-careers-stage2 .cso-js2-link,
+#cso-main-navbar .cso-schemes-stage1 .cso-js1-link,
+#cso-main-navbar .cso-schemes-stage2 .cso-js2-link,
 #cso-main-navbar .cso-js1-link,
 #cso-main-navbar .cso-js2-link {
   color: var(--cso-surface-elevated-ink, #0f172a) !important;
@@ -830,7 +835,10 @@ body[data-theme="odisha"] {
 #cso-main-navbar .cso-jobs-stage1 .cso-js1-arrow,
 #cso-main-navbar .cso-careers-stage1 .cso-js1-left,
 #cso-main-navbar .cso-careers-stage1 .cso-js1-title,
-#cso-main-navbar .cso-careers-stage1 .cso-js1-arrow {
+#cso-main-navbar .cso-careers-stage1 .cso-js1-arrow,
+#cso-main-navbar .cso-schemes-stage1 .cso-js1-left,
+#cso-main-navbar .cso-schemes-stage1 .cso-js1-title,
+#cso-main-navbar .cso-schemes-stage1 .cso-js1-arrow {
   color: inherit !important;
 }
 
@@ -843,7 +851,12 @@ body[data-theme="odisha"] {
 #cso-main-navbar .cso-careers-stage1 .cso-js1-link:hover,
 #cso-main-navbar .cso-careers-stage1 .cso-js1-link:focus-visible,
 #cso-main-navbar .cso-careers-stage2 .cso-js2-link:hover,
-#cso-main-navbar .cso-careers-stage2 .cso-js2-link:focus-visible {
+#cso-main-navbar .cso-careers-stage2 .cso-js2-link:focus-visible,
+#cso-main-navbar .cso-schemes-stage1 .cso-js1-item.is-active .cso-js1-link,
+#cso-main-navbar .cso-schemes-stage1 .cso-js1-link:hover,
+#cso-main-navbar .cso-schemes-stage1 .cso-js1-link:focus-visible,
+#cso-main-navbar .cso-schemes-stage2 .cso-js2-link:hover,
+#cso-main-navbar .cso-schemes-stage2 .cso-js2-link:focus-visible {
   background-color: var(--cso-surface-elevated-hover, rgba(15, 23, 42, 0.06)) !important;
   color: var(--cso-surface-elevated-hover-ink, var(--cso-surface-elevated-ink, #0f172a)) !important;
 }

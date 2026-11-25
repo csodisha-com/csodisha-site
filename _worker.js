@@ -416,7 +416,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/events/upcoming', '/api/config/public', '/api/events/calendar/odisha-all-exams.ics', '/api/events/calendar/opsc-ossc-osssc-deadlines.ics', '/api/events/calendar/admit-cards-results.ics', '/api/events/calendar/workshops-webinars.ics',
     '/api/public/jobs', '/api/public/jobs/list', '/api/public/jobs/tree', '/api/public/jobs/bootstrap', '/api/public/jobs/article',
     '/api/public/careers/bootstrap', '/api/public/careers/list', '/careers/', '/jobs/', '/jobs-careers/',
-    '/api/public/schemes', '/api/public/schemes/tree', '/api/public/schemes/bootstrap', '/api/public/schemes/article', '/schemes/', '/schemes-benefits/',
+    '/api/public/schemes', '/api/public/schemes/list', '/api/public/schemes/tree', '/api/public/schemes/bootstrap', '/api/public/schemes/article', '/schemes/', '/schemes-benefits/',
     '/api/public/study', '/api/public/study/tree', '/api/public/study/bootstrap', '/api/public/study/article', '/study-library/', '/study/',
     '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/bootstrap', '/api/public/community/post', '/community/', '/student-dashboard/',
     '/api/public/about/tree', '/api/public/about/pages', '/api/public/about/bootstrap', '/api/public/about/article', '/api/public/about/sources', '/about/',
@@ -982,7 +982,7 @@ export default {
     if (pathname === '/api/public/schemes/tree' && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicSchemesTreeApi(request, env));
     }
-    if (pathname === '/api/public/schemes' && (request.method === 'GET' || request.method === 'HEAD')) {
+    if ((pathname === '/api/public/schemes' || pathname === '/api/public/schemes/list') && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicSchemesListApi(request, env));
     }
     if (pathname === '/api/public/schemes/article' && (request.method === 'GET' || request.method === 'HEAD')) {

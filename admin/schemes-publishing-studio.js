@@ -23,8 +23,18 @@
   var RENEWAL_OPTS = ['Fresh', 'Renewal', 'Fresh & Renewal', 'One-Time'];
   var GENDER_OPTS = ['All', 'Female Only', 'Male Only', 'Transgender / All'];
   var APP_MODES = ['Online Portal', 'Mo Seba Kendra / CSC', 'Block / District Office', 'Hybrid (Online + MSK/Offline)'];
-  var OCCUPATIONS = ['', 'Student', 'Farmer', 'Women / Homemaker', 'Construction / Unorganised Worker', 'Unemployed Youth / Entrepreneur', 'Senior Citizen / Widow / PwD', 'General / Any'];
+  var GOV_SCOPE_OPTS = ['Odisha State', 'Central Government', 'Joint (Centre + State)'];
+  var BENEFICIARY_GROUPS = ['All Citizens', 'Women & Girls', 'Farmers', 'Students', 'Senior Citizens & Divyangjan', 'Workers & Entrepreneurs'];
+  var OCCUPATIONS = ['', 'All Citizens', 'Women & Girls', 'Farmers', 'Students', 'Senior Citizens & Divyangjan', 'Workers & Entrepreneurs', 'Student', 'Farmer', 'Women / Homemaker', 'Construction / Unorganised Worker', 'Unemployed Youth / Entrepreneur', 'Senior Citizen / Widow / PwD', 'General / Any'];
+  var SCHEMES_FLYOUT_CACHE_KEY = 'cso_schemes_flyout_v283';
   var ACCENTS = ['emerald', 'cobalt', 'violet', 'amber', 'rose', 'teal'];
+
+  function clearSchemesFlyoutCache() {
+    try { sessionStorage.removeItem(SCHEMES_FLYOUT_CACHE_KEY); } catch (_) {}
+    if (window.CSOAdmin && typeof window.CSOAdmin.setSchemesCategoryNodes === 'function') {
+      window.CSOAdmin.setSchemesCategoryNodes(state.taxonomyNodes || []);
+    }
+  }
 
   var state = {
     tab: 'articles',
@@ -484,8 +494,9 @@
         acts.appendChild(btn('Delete', 'sph-btn sph-btn--xs sph-btn--danger', function () {
           if (!window.confirm('Delete "' + a.title_en + '" permanently?')) return;
           api('/api/admin/schemes/articles/' + encodeURIComponent(a.id), 'DELETE').then(function () {
+            clearSchemesFlyoutCache();
             toast('Scheme deleted & caches purged', 'ok');
-            loadArticles().then(renderCurrentView);
+            loadArticles().then(function () { clearSchemesFlyoutCache(); renderCurrentView(); });
           }).catch(function (e) { toast(e.message, 'crimson'); });
         }));
         td5.appendChild(acts); tr.appendChild(td5);
@@ -535,6 +546,7 @@
       : api('/api/admin/schemes/articles', 'POST', payload);
     req.then(function (res) {
       if (res && res.item) state.draft = Object.assign(emptyDraft(), res.item, { change_summary: '' });
+      clearSchemesFlyoutCache();
       toast(publishFlag ? 'Scheme published live & Edge Cache purged!' : 'Scheme draft saved to D1!', 'ok');
       if (openPreview && state.draft.id) {
         return api('/api/admin/schemes/' + encodeURIComponent(state.draft.id) + '/preview-token', 'POST', {}).then(function (p) {
@@ -757,14 +769,16 @@
     addInp('Scheme Title (EN) *', 'title_en', { span: 2, placeholder: 'e.g., Subhadra Yojana Odisha 2026' });
     addInp('URL Slug', 'slug', { id: 'sphSlugInput', placeholder: 'subhadra-yojana-odisha-2026' });
     addInp('Scheme Title (ଓଡ଼ିଆ)', 'title_or', { span: 2, placeholder: 'ସୁଭଦ୍ରା ଯୋଜନା ଓଡ଼ିଶା ୨୦୨୬' });
-    addSel('Scheme Window Status', 'scheme_status', SCHEME_STATUS_OPTS);
-    addInp('Nodal Department (EN)', 'department_en', { placeholder: 'Women & Child Development Dept, Odisha' });
-    addInp('Nodal Department (ଓଡ଼ିଆ)', 'department_or', { placeholder: 'ମହିଳା ଓ ଶିଶୁ ବିକାଶ ବିଭାଗ' });
+    addSel('Application Status', 'scheme_status', SCHEME_STATUS_OPTS);
+    addSel('Government Scope', 'gov_badge', [['', '-- Select Government Scope --']].concat(GOV_SCOPE_OPTS.map(function (g) { return [g, g]; })));
+    addInp('Implementing Department / Ministry (EN)', 'department_en', { placeholder: 'Women & Child Development Dept, Odisha' });
+    addInp('Implementing Department / Ministry (ଓଡ଼ିଆ)', 'department_or', { placeholder: 'ମହିଳା ଓ ଶିଶୁ ବିକାଶ ବିଭାଗ' });
     addInp('Scheme Code / ID', 'scheme_code', { placeholder: 'e.g., ODISHA-WCD-SUBHADRA' });
-    addInp('Benefit Amount Highlight', 'benefit_amount_summary', { placeholder: 'e.g., ₹10,000 / Year (₹50,000 over 5 yrs)' });
+    addInp('Benefit Amount / Type', 'benefit_amount_summary', { placeholder: 'e.g., ₹10,000 / Year (₹50,000 over 5 yrs)' });
     addInp('Benefit Frequency', 'benefit_frequency', { placeholder: 'Bi-Annual / Annual / Monthly / One-Time' });
     addInp('DBT Mode', 'dbt_mode', { placeholder: 'NPCI Aadhaar-Seeded Direct Bank Transfer' });
-    addInp('Target Beneficiaries', 'target_beneficiaries', { placeholder: 'Women aged 21–60 (NFSA/SFSS / Income <= ₹2.5L)' });
+    addSel('Beneficiary Group', 'occupation_tag', [['', '-- Select Beneficiary Group --']].concat(BENEFICIARY_GROUPS.map(function (bg) { return [bg, bg]; })));
+    addInp('Target Beneficiaries Summary', 'target_beneficiaries', { placeholder: 'Women aged 21–60 (NFSA/SFSS / Income <= ₹2.5L)' });
     addSel('Application Mode / Channel', 'application_mode', APP_MODES);
     addSel('Renewal Type', 'renewal_type', RENEWAL_OPTS);
     addInp('Min Age (Years)', 'min_age', { type: 'number', placeholder: '21' });
@@ -772,7 +786,6 @@
     addSel('Gender Eligibility', 'gender_eligibility', GENDER_OPTS);
     addInp('Max Annual Family Income (₹)', 'max_annual_income', { type: 'number', placeholder: '250000' });
     addInp('Min Qualifying Marks (%)', 'min_qualifying_marks', { type: 'number', placeholder: '60' });
-    addSel('Occupation / Citizen Profile', 'occupation_tag', OCCUPATIONS);
     addInp('Prerequisite OTR / Registration Label', 'prerequisite_otr_label', { placeholder: 'e.g., Odisha State Scholarship OTR Mandatory' });
     addInp('Stackable / Dual-Benefit Policy', 'stackable_policy', { span: 2, placeholder: 'e.g., Cannot be combined with another state pension >= ₹1,500/month' });
     addInp('Application Start Date', 'application_start_date', { type: 'date' });
@@ -1134,6 +1147,14 @@
     if (!state.root) return;
     clear(state.root);
     var wrap = el('div', 'sph-wrap');
+
+    var syncBanner = el('div', 'sph-live-sync-banner');
+    var syncBadge = el('span', 'sph-live-sync-badge', '● Live Synced to Public Schemes ▾ Menu');
+    var syncNote = el('span', 'sph-live-sync-note', 'Every L1 category, L2 sub-category & published scheme immediately purges Cloudflare Edge Cache and updates the public Schemes & Benefits ▾ cascading menu.');
+    syncBanner.appendChild(syncBadge);
+    syncBanner.appendChild(syncNote);
+    wrap.appendChild(syncBanner);
+
     var tabs = el('div', 'sph-tabs'); tabs.setAttribute('role', 'tablist');
     [
       ['articles', '🏛️ Published & Draft Schemes', state.kpis ? state.kpis.total_schemes : state.articles.length],
@@ -1163,8 +1184,13 @@
     state.root.appendChild(wrap);
   }
 
-  function render(root, headerActions, initialOpt) {
+  function render(root, headerActions, initialOpt, initialCategoryId) {
     state.root = root; state.headerActions = headerActions;
+    if (initialCategoryId !== undefined) {
+      state.filters.l1 = initialCategoryId || '';
+      state.filters.l2 = '';
+      state.filters.l3 = '';
+    }
     if (initialOpt === 'new') { state.tab = 'articles'; state.mode = 'composer'; state.draft = emptyDraft(); }
     else if (initialOpt === 'taxonomy' || initialOpt === 'snippets' || initialOpt === 'articles') { state.tab = initialOpt; state.mode = 'list'; }
     else { state.tab = 'articles'; state.mode = 'list'; }
@@ -1179,7 +1205,10 @@
 
     clear(root);
     root.appendChild(el('div', 'sph-card', 'Loading Schemes & Welfare Publishing House from D1…'));
-    Promise.all([loadArticles(), loadSnippets()]).then(renderCurrentView).catch(function (err) {
+    Promise.all([loadArticles(), loadSnippets()]).then(function () {
+      clearSchemesFlyoutCache();
+      renderCurrentView();
+    }).catch(function (err) {
       clear(root); root.appendChild(el('div', 'sph-card', 'Failed to load Schemes Publishing House: ' + err.message));
     });
   }

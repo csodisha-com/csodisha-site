@@ -122,13 +122,9 @@ await check('1. jobs/index.html & jobs-careers/index.html contain #cso-jobs-port
   for (const rel of ['jobs/index.html', 'jobs-careers/index.html']) {
     const html = read(rel);
     assert.ok(html.includes('id="cso-jobs-portal-root"'), `${rel} missing #cso-jobs-portal-root`);
-    for (const asset of [
-      '/assets/style.css?v=20261125v280',
-      '/assets/css/portal-shell.css?v=20261125v280',
-      '/assets/shared-header.js?v=20261125v280'
-    ]) {
-      assert.ok(html.includes(asset), `${rel} missing ${asset}`);
-    }
+    assert.match(html, /\/assets\/style\.css\?v=20261125v28[0-9]/, `${rel} missing style.css?v=20261125v280+`);
+    assert.match(html, /\/assets\/css\/portal-shell\.css\?v=20261125v28[0-9]/, `${rel} missing portal-shell.css?v=20261125v280+`);
+    assert.match(html, /\/assets\/shared-header\.js\?v=20261125v28[0-9]/, `${rel} missing shared-header.js?v=20261125v280+`);
     assert.match(html, /\/assets\/css\/jobs-portal\.css\?v=20261125v28[0-9]/, `${rel} missing jobs-portal.css?v=20261125v280+`);
     assert.match(html, /\/assets\/js\/jobs-portal\.js\?v=20261125v28[0-9]/, `${rel} missing jobs-portal.js?v=20261125v280+`);
   }

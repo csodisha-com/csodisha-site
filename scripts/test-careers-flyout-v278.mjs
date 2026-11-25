@@ -255,7 +255,7 @@ await check('5. Solid opaque 4-theme surfaces, v278 cache busting & strict CSP c
   }
 
   assert.match(read('careers/index.html'), /\/assets\/js\/careers-portal\.js\?v=2026112[45]v2(?:7[89]|8\d)/);
-  assert.ok(read('admin/index.html').includes('/admin/admin.js?v=20261124v278'));
+  assert.match(read('admin/index.html'), /\/admin\/admin\.js\?v=2026112[45]v2(?:7[89]|8\d)/);
   assert.ok(read('admin/index.html').includes('/admin/careers-publishing-studio.js?v=20261124v278'));
 
   for (const rel of [

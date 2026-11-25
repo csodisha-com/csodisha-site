@@ -392,7 +392,9 @@ function formatSchemeArticle(r, taxMap = null, includePrivate = false) {
 async function invalidateSchemesCaches(request, slug = '') {
   const extra = [
     '/api/public/schemes',
+    '/api/public/schemes/list',
     '/api/public/schemes/tree',
+    '/api/public/schemes/bootstrap',
     '/api/public/schemes/article',
     '/api/events/upcoming',
     '/schemes/',
@@ -1217,11 +1219,38 @@ export async function handlePublicSchemesBootstrapApi(request, env) {
   });
 
   const items = all.slice(0, limit);
+  const l1Active = nodes
+    .filter(n => Number(n.level) === 1 && Number(n.is_published) === 1)
+    .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0) || String(a.title_en || '').localeCompare(String(b.title_en || '')));
+  const nav_categories = l1Active.map(cat => ({
+    id: cat.id,
+    slug: cat.slug,
+    title_en: cat.title_en,
+    title_or: cat.title_or || '',
+    icon: cat.icon || '🏛️',
+    sort_order: Number(cat.sort_order || 0),
+    published_schemes_count: Number(cat.published_schemes_count || 0),
+    subcategories: nodes
+      .filter(s => Number(s.level) === 2 && Number(s.is_published) === 1 && s.parent_id === cat.id)
+      .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0) || String(a.title_en || '').localeCompare(String(b.title_en || '')))
+      .map(s => ({
+        id: s.id,
+        parent_id: s.parent_id,
+        slug: s.slug,
+        title_en: s.title_en,
+        title_or: s.title_or || '',
+        icon: s.icon || '',
+        sort_order: Number(s.sort_order || 0),
+        published_schemes_count: Number(s.published_schemes_count || 0)
+      }))
+  }));
+
   return json({
     ok: true,
     total_published_schemes: all.length,
     total: all.length,
     nodes,
+    nav_categories,
     tree: buildSchemeTaxonomyTree(nodes),
     articles: items,
     items,
@@ -1268,9 +1297,10 @@ export async function handlePublicSchemesListApi(request, env) {
   await publishDueScheduledSchemes(env.DB);
 
   const url = new URL(request.url);
-  const l1 = str(url.searchParams.get('l1'), 80);
-  const l2 = str(url.searchParams.get('l2'), 80);
+  const l1 = str(url.searchParams.get('l1') || url.searchParams.get('category'), 80);
+  const l2 = str(url.searchParams.get('l2') || url.searchParams.get('sub'), 80);
   const l3 = str(url.searchParams.get('l3'), 80);
+  const scope = str(url.searchParams.get('scope'), 40).toLowerCase();
   const beneficiary = str(url.searchParams.get('beneficiary'), 80).toLowerCase();
   const mode = str(url.searchParams.get('mode'), 80).toLowerCase();
   const renewal = str(url.searchParams.get('renewal'), 40).toLowerCase();
@@ -1295,7 +1325,13 @@ export async function handlePublicSchemesListApi(request, env) {
     if (l1 && a.category_l1_id !== l1 && (!a.taxonomy.l1 || a.taxonomy.l1.slug !== l1)) return false;
     if (l2 && a.category_l2_id !== l2 && (!a.taxonomy.l2 || a.taxonomy.l2.slug !== l2)) return false;
     if (l3 && a.category_l3_id !== l3 && (!a.taxonomy.l3 || a.taxonomy.l3.slug !== l3)) return false;
-    if (beneficiary && !`${a.target_beneficiaries} ${a.occupation_tag} ${a.allowed_categories.join(' ')}`.toLowerCase().includes(beneficiary)) return false;
+    if (scope) {
+      const scopeHay = `${a.gov_badge || ''} ${(a.taxonomy && a.taxonomy.l1 && a.taxonomy.l1.slug) || ''} ${(a.taxonomy && a.taxonomy.l1 && a.taxonomy.l1.title_en) || ''}`.toLowerCase();
+      if (scope === 'odisha' && !scopeHay.includes('odisha') && !a.odisha_domicile_required) return false;
+      if (scope === 'central' && !scopeHay.includes('central') && !scopeHay.includes('goi') && !scopeHay.includes('india')) return false;
+      if (scope === 'joint' && !scopeHay.includes('joint') && !scopeHay.includes('centrally')) return false;
+    }
+    if (beneficiary && !`${a.target_beneficiaries} ${a.occupation_tag} ${a.gender_eligibility} ${a.allowed_categories.join(' ')}`.toLowerCase().includes(beneficiary)) return false;
     if (mode && !a.application_mode.toLowerCase().includes(mode)) return false;
     if (renewal && !a.renewal_type.toLowerCase().includes(renewal)) return false;
     if (status) {

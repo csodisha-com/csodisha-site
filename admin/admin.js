@@ -17,6 +17,9 @@
     activeCareersTrackSlug: '',
     careersTrackNodes: [],
     careersTrackCounts: {},
+    activeSchemesSubTab: 'articles',
+    activeSchemesCategoryId: '',
+    schemesCategoryNodes: [],
     expandedFolders: new Set(['folder-jobs-careers']),
     searchQuery: '',
     startTime: Date.now(),
@@ -37,6 +40,15 @@
     { id: 'jtax_l1_psu', slug: 'psu', icon: '🏭', title_en: 'PSUs', published_jobs: 0, total_jobs: 0 },
     { id: 'jtax_l1_ngo', slug: 'ngo', icon: '🤝', title_en: 'NGOs / Non-Profit', published_jobs: 0, total_jobs: 0 },
     { id: 'jtax_l1_foreign', slug: 'foreign', icon: '✈️', title_en: 'Foreign Jobs', published_jobs: 0, total_jobs: 0 }
+  ];
+
+  var DEFAULT_SCHEMES_CATEGORIES = [
+    { id: 'stax_l1_odisha_welfare', slug: 'odisha-state-welfare', icon: '🏛️', title_en: 'Odisha State Welfare', published_schemes: 0, total_schemes: 0 },
+    { id: 'stax_l1_central_welfare', slug: 'central-welfare', icon: '🇮🇳', title_en: 'Central Welfare Schemes', published_schemes: 0, total_schemes: 0 },
+    { id: 'stax_l1_agriculture_farmers', slug: 'agriculture-farmers', icon: '🌾', title_en: 'Agriculture & Farmers', published_schemes: 0, total_schemes: 0 },
+    { id: 'stax_l1_education_scholarships', slug: 'education-scholarships', icon: '🎓', title_en: 'Education & Scholarships', published_schemes: 0, total_schemes: 0 },
+    { id: 'stax_l1_women_child_social', slug: 'women-child-social', icon: '👩', title_en: 'Women, Child & Social Security', published_schemes: 0, total_schemes: 0 },
+    { id: 'stax_l1_health_msme_livelihoods', slug: 'health-msme-livelihoods', icon: '🏥', title_en: 'Health, MSME & Livelihoods', published_schemes: 0, total_schemes: 0 }
   ];
 
   var DEFAULT_CAREERS_TRACKS = [
@@ -344,6 +356,18 @@
             if (window.innerWidth <= 900) closeMobileDrawer();
             return;
           }
+          if (folder.id === 'folder-schemes-benefits') {
+            if (CSOState.expandedFolders.has(folder.id)) CSOState.expandedFolders.delete(folder.id);
+            else CSOState.expandedFolders.add(folder.id);
+            persistOpenGroups();
+            if (!isCurrentFolder) {
+              openSchemesPublishingStudio('articles', '');
+            } else {
+              renderNavigationTree();
+            }
+            if (window.innerWidth <= 900) closeMobileDrawer();
+            return;
+          }
           if (!folderModules.length) {
             selectModule(folder.id, folder.id);
             if (window.innerWidth <= 900) closeMobileDrawer();
@@ -400,6 +424,50 @@
               if (window.innerWidth <= 900) closeMobileDrawer();
             });
             modList.appendChild(sBtn);
+          });
+        } else if (folder.id === 'folder-schemes-benefits') {
+          modList.id = 'schemesSidebarSubnav';
+          [
+            { tab: 'articles', num: '01', title: 'Published & Draft Schemes', tag: 'D1' },
+            { tab: 'taxonomy', num: '02', title: '6-Category & 3-Layer Hierarchy', tag: 'L1-L3' },
+            { tab: 'snippets', num: '03', title: 'Reusable Bilingual Snippets', tag: 'EN/OR' },
+            { tab: 'new', num: '04', title: '+ Publish New Scheme Guide', tag: 'NEW' }
+          ].forEach(function (sSub) {
+            var isSActive = isCurrentFolder && CSOState.activeSchemesSubTab === sSub.tab && !(sSub.tab === 'articles' && CSOState.activeSchemesCategoryId);
+            var sBtn = el('button', 'cso-nav-mod-btn' + (isSActive ? ' is-active' : ''));
+            sBtn.type = 'button';
+            sBtn.setAttribute('data-schemes-tab', sSub.tab);
+            sBtn.appendChild(el('span', 'cso-nav-mod-num', sSub.num));
+            sBtn.appendChild(el('span', 'cso-nav-mod-title', sSub.title));
+            sBtn.appendChild(el('span', 'cso-nav-mod-tag is-live', sSub.tag));
+            sBtn.addEventListener('click', function () {
+              openSchemesPublishingStudio(sSub.tab, '');
+              if (window.innerWidth <= 900) closeMobileDrawer();
+            });
+            modList.appendChild(sBtn);
+          });
+
+          var schCatSep = el('div', 'cso-nav-jobs-sector-sep', 'Public Schemes ▾ Menu Categories');
+          modList.appendChild(schCatSep);
+
+          var l1Cats = (CSOState.schemesCategoryNodes && CSOState.schemesCategoryNodes.length)
+            ? CSOState.schemesCategoryNodes
+            : DEFAULT_SCHEMES_CATEGORIES;
+          l1Cats.forEach(function (cat) {
+            var isCatActive = isCurrentFolder && CSOState.activeSchemesSubTab === 'articles' && CSOState.activeSchemesCategoryId === cat.id;
+            var cBtn = el('button', 'cso-nav-mod-btn cso-nav-mod-btn--sector' + (isCatActive ? ' is-active' : ''));
+            cBtn.type = 'button';
+            cBtn.setAttribute('data-schemes-category', cat.slug || cat.id);
+            cBtn.title = (cat.title_en || cat.slug) + ' — synced live to Public Schemes ▾ dropdown';
+            cBtn.appendChild(el('span', 'cso-nav-mod-num', cat.icon || '🏛️'));
+            cBtn.appendChild(el('span', 'cso-nav-mod-title', cat.title_en || cat.slug));
+            var catCnt = Number(cat.published_schemes !== undefined ? cat.published_schemes : (cat.total_schemes || 0));
+            cBtn.appendChild(el('span', 'cso-nav-mod-tag cso-tabular' + (cat.is_published === 0 ? '' : ' is-live'), String(catCnt)));
+            cBtn.addEventListener('click', function () {
+              openSchemesPublishingStudio('articles', cat.id);
+              if (window.innerWidth <= 900) closeMobileDrawer();
+            });
+            modList.appendChild(cBtn);
           });
         }
         filteredModules.forEach(function (mod, idx) {
@@ -717,6 +785,15 @@
         }
       })
       .catch(function () {});
+    fetch('/api/admin/schemes/taxonomy', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && Array.isArray(d.nodes)) {
+          CSOState.schemesCategoryNodes = d.nodes.filter(function (n) { return Number(n.level) === 1 && Number(n.is_published) === 1; });
+          renderNavigationTree();
+        }
+      })
+      .catch(function () {});
     fetch('/api/admin/careers', { credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
@@ -803,9 +880,14 @@
     }
   }
 
-  function openSchemesPublishingStudio(initialTab) {
+  function openSchemesPublishingStudio(initialTab, categoryId) {
+    var tabKey = initialTab || 'articles';
     CSOState.activeFolderId = 'folder-schemes-benefits';
     CSOState.activeModuleId = 'folder-schemes-benefits';
+    CSOState.activeSchemesSubTab = tabKey;
+    if (categoryId !== undefined) CSOState.activeSchemesCategoryId = categoryId || '';
+    CSOState.expandedFolders.add('folder-schemes-benefits');
+    persistOpenGroups();
     try { localStorage.setItem('cso_active_module_id', 'folder-schemes-benefits'); } catch (_e) {}
     if (window.location.hash !== '#folder-schemes-benefits' && window.history && window.history.replaceState) {
       window.history.replaceState(null, '', '#folder-schemes-benefits');
@@ -818,7 +900,7 @@
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);
     if (window.CSOSchemesPublishingStudio) {
-      window.CSOSchemesPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, initialTab || 'articles');
+      window.CSOSchemesPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, tabKey, CSOState.activeSchemesCategoryId);
     }
   }
 
@@ -1329,6 +1411,19 @@
       if (CSOState.activeCareersTrackSlug !== next) { CSOState.activeCareersTrackSlug = next; renderNavigationTree(); }
     },
     openCareersTrack: function (slug) { openCareersPublishingStudio('list', slug || ''); },
+    setSchemesSubTab: function (tab) {
+      if (tab && CSOState.activeSchemesSubTab !== tab) { CSOState.activeSchemesSubTab = tab; renderNavigationTree(); }
+    },
+    setSchemesCategoryNodes: function (nodes) {
+      if (!Array.isArray(nodes)) return;
+      CSOState.schemesCategoryNodes = nodes.filter(function (n) { return Number(n.level) === 1 && Number(n.is_published) === 1; });
+      renderNavigationTree();
+    },
+    setSchemesActiveCategory: function (l1Id) {
+      var next = l1Id || '';
+      if (CSOState.activeSchemesCategoryId !== next) { CSOState.activeSchemesCategoryId = next; renderNavigationTree(); }
+    },
+    openSchemesCategory: function (l1Id) { openSchemesPublishingStudio('articles', l1Id || ''); },
     openCandidateHubTab: function (tab) { openCandidateHubStudio(tab); },
     openJobsPublishingTab: function (tab) { openJobsPublishingStudio(tab); },
     openCareersPublishingTab: function (tab) { openCareersPublishingStudio(tab); },

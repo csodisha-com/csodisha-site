@@ -30,6 +30,20 @@
     ['renewal', 'Fresh & Renewal']
   ];
 
+  var SCOPE_PRESETS = [
+    ['', 'All Scopes'],
+    ['odisha', 'Odisha State'],
+    ['central', 'Central Government']
+  ];
+  var BENEFICIARY_PRESETS = [
+    ['', 'All Citizens'],
+    ['women', 'Women & Girls'],
+    ['farmer', 'Farmers'],
+    ['student', 'Students'],
+    ['senior', 'Senior Citizens & Divyangjan'],
+    ['worker', 'Workers & Entrepreneurs']
+  ];
+
   var state = {
     lang: 'en',
     tree: [],
@@ -37,7 +51,7 @@
     allItems: [],
     items: [],
     facets: { modes: [], occupations: [] },
-    filters: { l1: '', l2: '', l3: '', benefit: '', mode: '', renewal: '', status: '', search: '' },
+    filters: { l1: '', l2: '', l3: '', scope: '', beneficiary: '', benefit: '', mode: '', renewal: '', status: '', search: '' },
     elig: {
       who: 'Self',
       age: '',
@@ -805,238 +819,185 @@
 
   function renderPortalListing(mount) {
     var activeEl = document.activeElement;
-    var restoreFocusId = (activeEl && activeEl.id && (activeEl.id === 'sp-elig-age' || activeEl.id === 'sp-elig-income' || activeEl.id === 'sp-elig-marks' || activeEl.id === 'sp-portal-search')) ? activeEl.id : '';
-    clear(mount);
-    var hasFilter = Boolean(state.filters.l1 || state.filters.l2 || state.filters.l3 || state.filters.benefit || state.filters.mode || state.filters.renewal || state.filters.status || state.filters.search);
-    var kpis = computeSchemeHeroKpis();
+    var restoreFocusId = (activeEl && activeEl.id && activeEl.id === 'sp-portal-search') ? activeEl.id : '';
+    var hasFilter = Boolean(state.filters.l1 || state.filters.l2 || state.filters.l3 || state.filters.scope || state.filters.beneficiary || state.filters.benefit || state.filters.mode || state.filters.renewal || state.filters.status || state.filters.search);
 
     var wrap = el('div', 'sp-portal');
 
-    // 1. Flagship Editorial Hero Banner (v256)
-    var hero = el('section', 'sp-hero');
-    hero.setAttribute('aria-label', 'Odisha & Central Government Schemes & Scholarships');
+    // 1. Compact Hero Header (v283 — no 4-box KPI strip)
+    var hero = el('section', 'sp-hero sch-hero--compact');
+    hero.setAttribute('aria-label', 'Odisha & Central Government Schemes & Benefits');
     var heroTop = el('div', 'sp-hero-top');
-    var eyebrow = el('span', 'sp-eyebrow');
-    eyebrow.appendChild(el('span', 'sp-eyebrow-dot'));
-    eyebrow.appendChild(el('span', '', state.lang === 'or'
-      ? 'ଓଡ଼ିଶା ଏବଂ କେନ୍ଦ୍ର କଲ୍ୟାଣ ପୋର୍ଟାଲ୍ · ଯାଞ୍ଚିତ .GOV.IN ଓ DBT ଯୋଜନା'
-      : 'ODISHA & CENTRAL WELFARE PORTAL · VERIFIED .GOV.IN & DBT SCHEMES'));
-    heroTop.appendChild(eyebrow);
-    heroTop.appendChild(buildLangToggle(function () { renderPortalListing(mount); }));
-    hero.appendChild(heroTop);
-
     var copy = el('div', 'sp-hero-copy');
     copy.appendChild(el('h1', 'sp-hero-title', state.lang === 'or'
-      ? 'ଓଡ଼ିଶା ଏବଂ କେନ୍ଦ୍ର ସରକାରୀ ଯୋଜନା ଓ ଛାତ୍ରବୃତ୍ତି'
-      : 'Odisha & Central Government Schemes & Scholarships'));
+      ? 'ଓଡ଼ିଶା ଏବଂ କେନ୍ଦ୍ର ସରକାରୀ ଯୋଜନା ଓ ସୁବିଧା'
+      : 'Odisha & Central Government Schemes & Benefits'));
     copy.appendChild(el('p', 'sp-hero-sub', state.lang === 'or'
-      ? 'ଓଡ଼ିଶା ଏବଂ ଭାରତ ସରକାରଙ୍କ ଯାଞ୍ଚିତ କଲ୍ୟାଣକାରୀ ଯୋଜନା, ଆର୍ଥିକ ସହାୟତା, DBT ଛାତ୍ରବୃତ୍ତି, ନାଗରିକ ଯୋଗ୍ୟତା ଯାଞ୍ଚ ଏବଂ ପର୍ଯ୍ୟାୟକ୍ରମେ ଆବେଦନ ମାର୍ଗଦର୍ଶିକା।'
-      : 'Verified welfare schemes, financial assistance, DBT scholarships, citizen eligibility auto-matcher, and step-by-step application guides across Odisha & Government of India.'));
-    hero.appendChild(copy);
-
-    var kpiRow = el('div', 'sp-hero-kpis');
-    [
-      [num(kpis.activeCount), state.lang === 'or' ? 'ସକ୍ରିୟ ଯୋଜନା' : 'Active Schemes'],
-      [num(kpis.dbtScholCount), state.lang === 'or' ? 'DBT ଓ ଛାତ୍ରବୃତ୍ତି' : 'DBT & Scholarships'],
-      [num(kpis.ongoingCount), state.lang === 'or' ? 'ସାରା ବର୍ଷ ଖୋଲା' : 'Ongoing Year-Round'],
-      [num(kpis.domainCount), state.lang === 'or' ? 'କଲ୍ୟାଣ ବିଭାଗ' : 'Welfare Domains']
-    ].forEach(function (pair) {
-      var tile = el('div', 'sp-hero-kpi');
-      tile.appendChild(el('strong', 'sp-hero-kpi-val', pair[0]));
-      tile.appendChild(el('span', 'sp-hero-kpi-label', pair[1]));
-      kpiRow.appendChild(tile);
-    });
-    hero.appendChild(kpiRow);
+      ? 'ଓଡ଼ିଶା ଏବଂ ଭାରତ ସରକାରଙ୍କ ଯାଞ୍ଚିତ କଲ୍ୟାଣକାରୀ ଯୋଜନା, ଛାତ୍ରବୃତ୍ତି, DBT ଭତ୍ତା ଓ ନାଗରିକ ମାର୍ଗଦର୍ଶିକା।'
+      : 'Verified Odisha State & Central welfare schemes, scholarships, DBT pensions, and citizen guides.'));
+    heroTop.appendChild(copy);
+    heroTop.appendChild(buildLangToggle(function () { renderPortalListing(mount); }));
+    hero.appendChild(heroTop);
     wrap.appendChild(hero);
 
-    // 2. 5 Elevated Government Level Cards + 4-Column Cascading Filter Bar + Quick-Filter Pill Bar
+    // 2. Streamlined Single-Card Filter Bar: Horizontal L1 Category Pill Strip + Compact 1-Row Controls
     var filterCard = el('section', 'sp-card');
-    filterCard.setAttribute('aria-label', 'Schemes Government Level & Welfare Filters');
+    filterCard.setAttribute('aria-label', 'Schemes Filter Explorer');
 
     var l1Nodes = state.nodes.filter(function (n) { return Number(n.level) === 1; });
     if (l1Nodes.length) {
-      var govStrip = el('div', 'sp-gov-strip');
-      govStrip.setAttribute('role', 'group');
-      govStrip.setAttribute('aria-label', 'Filter by Government Level');
+      var catStrip = el('div', 'sch-cat-strip');
+      catStrip.setAttribute('role', 'group');
+      catStrip.setAttribute('aria-label', 'Filter by Scheme Category');
 
-      var allBtn = el('button', 'sp-gov-card' + (!state.filters.l1 ? ' is-active' : ''));
+      var allBtn = el('button', 'sch-cat-pill' + (!state.filters.l1 ? ' is-active' : ''));
       allBtn.type = 'button';
-      var allL = el('span', 'sp-gov-left');
-      allL.appendChild(el('span', 'sp-gov-icon', '🏛️'));
-      allL.appendChild(el('span', 'sp-gov-name', state.lang === 'or' ? 'ସମସ୍ତ ସରକାରୀ ସ୍ତର' : 'All Government Levels'));
-      allBtn.appendChild(allL);
-      allBtn.appendChild(el('span', 'sp-gov-count', num(state.allItems.length || state.items.length)));
-      allBtn.addEventListener('click', function () { state.filters.l1 = ''; state.filters.l2 = ''; state.filters.l3 = ''; loadPortalSchemes(mount); });
-      govStrip.appendChild(allBtn);
+      allBtn.setAttribute('aria-pressed', !state.filters.l1 ? 'true' : 'false');
+      allBtn.appendChild(el('span', 'sch-cat-label', '🏛️ ' + (state.lang === 'or' ? 'ସମସ୍ତ ବର୍ଗ' : 'All Categories')));
+      allBtn.appendChild(el('span', 'sch-cat-count', num(state.allItems.length || state.items.length)));
+      allBtn.addEventListener('click', function () {
+        state.filters.l1 = ''; state.filters.l2 = ''; state.filters.l3 = '';
+        loadPortalSchemes(mount);
+      });
+      catStrip.appendChild(allBtn);
 
       l1Nodes.forEach(function (n) {
-        var b = el('button', 'sp-gov-card' + (state.filters.l1 === n.id ? ' is-active' : ''));
+        var isAct = state.filters.l1 === n.id || state.filters.l1 === n.slug;
+        var b = el('button', 'sch-cat-pill' + (isAct ? ' is-active' : ''));
         b.type = 'button';
-        var lf = el('span', 'sp-gov-left');
-        lf.appendChild(el('span', 'sp-gov-icon', n.icon || '🇮🇳'));
-        lf.appendChild(el('span', 'sp-gov-name', pick(n, 'title')));
-        b.appendChild(lf);
-        b.appendChild(el('span', 'sp-gov-count', num(n.published_schemes_count || 0)));
-        b.addEventListener('click', function () { state.filters.l1 = n.id; state.filters.l2 = ''; state.filters.l3 = ''; loadPortalSchemes(mount); });
-        govStrip.appendChild(b);
+        b.setAttribute('aria-pressed', isAct ? 'true' : 'false');
+        b.appendChild(el('span', 'sch-cat-label', (n.icon || '🏛️') + ' ' + pick(n, 'title')));
+        b.appendChild(el('span', 'sch-cat-count', num(n.published_schemes_count || 0)));
+        b.addEventListener('click', function () {
+          state.filters.l1 = isAct ? '' : n.id;
+          state.filters.l2 = ''; state.filters.l3 = '';
+          loadPortalSchemes(mount);
+        });
+        catStrip.appendChild(b);
       });
-      filterCard.appendChild(govStrip);
+      filterCard.appendChild(catStrip);
     }
 
-    var cGrid = el('div', 'sp-cascade-grid');
-    function makeSel(label, opts, val, onChange) {
-      var f = el('div', 'sp-field');
-      var selId = 'sp-sel-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      var lbl = el('label', 'sp-label', label);
-      lbl.setAttribute('for', selId);
-      f.appendChild(lbl);
-      var s = el('select', 'sp-select');
-      s.id = selId;
-      opts.forEach(function (o) { var op = el('option', '', o[1]); op.value = o[0]; if (o[0] === val) op.selected = true; s.appendChild(op); });
-      s.addEventListener('change', function () { onChange(s.value); });
-      f.appendChild(s); return f;
-    }
-    var l2Nodes = state.nodes.filter(function (n) { return Number(n.level) === 2 && (!state.filters.l1 || n.parent_id === state.filters.l1); });
-    var l3Nodes = state.nodes.filter(function (n) { return Number(n.level) === 3 && (!state.filters.l2 || n.parent_id === state.filters.l2); });
+    var filterRow = el('div', 'sch-filter-row' + (hasFilter ? ' has-reset' : ''));
 
-    cGrid.appendChild(makeSel('1. Welfare Domain', [['', 'All Domains']].concat(l2Nodes.map(function (n) { return [n.id, pick(n, 'title') + ' (' + (n.published_schemes_count || 0) + ')']; })), state.filters.l2, function (v) { state.filters.l2 = v; state.filters.l3 = ''; loadPortalSchemes(mount); }));
-    cGrid.appendChild(makeSel('2. Benefit Type', [['', 'All Benefit Types']].concat(l3Nodes.map(function (n) { return [n.id, pick(n, 'title') + ' (' + (n.published_schemes_count || 0) + ')']; })), state.filters.l3, function (v) { state.filters.l3 = v; loadPortalSchemes(mount); }));
-
-    var qF = el('div', 'sp-field');
-    var qLbl = el('label', 'sp-label', '3. Search Schemes');
-    qLbl.setAttribute('for', 'sp-portal-search');
-    qF.appendChild(qLbl);
-    var qI = el('input', 'sp-input'); qI.id = 'sp-portal-search'; qI.type = 'search';
-    qI.placeholder = state.lang === 'or' ? 'ଯୋଜନା, ଛାତ୍ରବୃତ୍ତି କିମ୍ବା ବିଭାଗ ଖୋଜନ୍ତୁ...' : 'Search by scheme name, department, or benefit...';
+    // 1. Search Input
+    var qI = el('input', 'sp-input');
+    qI.id = 'sp-portal-search';
+    qI.type = 'search';
+    qI.setAttribute('aria-label', 'Search schemes');
+    qI.placeholder = state.lang === 'or' ? 'ଯୋଜନା, ବିଭାଗ କିମ୍ବା କୀୱାର୍ଡ ଖୋଜନ୍ତୁ...' : 'Search scheme, department, or keyword...';
     qI.value = state.filters.search;
     var qt = null;
-    qI.addEventListener('input', function () { state.filters.search = qI.value.trim(); clearTimeout(qt); qt = setTimeout(function () { loadPortalSchemes(mount); }, 180); });
-    qF.appendChild(qI); cGrid.appendChild(qF);
-    filterCard.appendChild(cGrid);
-
-    // Quick-Filter Pill Bar (Benefit Type, Application Mode & Status)
-    var qBar = el('div', 'sp-quickbar');
-
-    var benGrp = el('div', 'sp-quick-group');
-    benGrp.appendChild(el('span', 'sp-quick-group-label', 'Benefit Type:'));
-    BENEFIT_PRESETS.forEach(function (bn) {
-      var b = el('button', 'sp-filter-pill' + (state.filters.benefit === bn ? ' is-active' : ''), bn);
-      b.type = 'button';
-      b.addEventListener('click', function () {
-        state.filters.benefit = state.filters.benefit === bn ? '' : bn;
-        renderPortalListing(mount);
-      });
-      benGrp.appendChild(b);
+    qI.addEventListener('input', function () {
+      state.filters.search = qI.value.trim();
+      clearTimeout(qt);
+      qt = setTimeout(function () { loadPortalSchemes(mount); }, 180);
     });
-    qBar.appendChild(benGrp);
+    filterRow.appendChild(qI);
 
-    var modeGrp = el('div', 'sp-quick-group');
-    modeGrp.appendChild(el('span', 'sp-quick-group-label', 'Application Mode:'));
-    MODE_PRESETS.forEach(function (md) {
-      var b = el('button', 'sp-filter-pill' + (state.filters.mode === md ? ' is-active' : ''), md);
-      b.type = 'button';
-      b.addEventListener('click', function () {
-        state.filters.mode = state.filters.mode === md ? '' : md;
-        loadPortalSchemes(mount);
-      });
-      modeGrp.appendChild(b);
+    // 2. Sub-Category <select>
+    var activeL1Node = state.nodes.find(function (n) { return Number(n.level) === 1 && (n.id === state.filters.l1 || n.slug === state.filters.l1); });
+    var l2Nodes = state.nodes.filter(function (n) {
+      return Number(n.level) === 2 && (!activeL1Node || n.parent_id === activeL1Node.id);
     });
-    qBar.appendChild(modeGrp);
-
-    var stGrp = el('div', 'sp-quick-group');
-    stGrp.appendChild(el('span', 'sp-quick-group-label', 'Status:'));
-    STATUS_PRESETS.forEach(function (pair) {
-      var isAct = pair[0] === 'renewal' ? state.filters.renewal === 'Fresh & Renewal' : state.filters.status === pair[0];
-      var b = el('button', 'sp-filter-pill' + (isAct ? ' is-active' : ''), pair[1]);
-      b.type = 'button';
-      b.addEventListener('click', function () {
-        if (pair[0] === 'renewal') {
-          state.filters.renewal = state.filters.renewal === 'Fresh & Renewal' ? '' : 'Fresh & Renewal';
-        } else {
-          state.filters.status = state.filters.status === pair[0] ? '' : pair[0];
-        }
-        loadPortalSchemes(mount);
-      });
-      stGrp.appendChild(b);
+    var subSel = el('select', 'sp-select');
+    subSel.id = 'sp-sel-sub';
+    subSel.setAttribute('aria-label', 'Sub-Category');
+    var subOpt0 = el('option', '', state.lang === 'or' ? 'ସମସ୍ତ ଉପ-ବର୍ଗ' : 'All Sub-Categories');
+    subOpt0.value = '';
+    subSel.appendChild(subOpt0);
+    l2Nodes.forEach(function (n) {
+      var op = el('option', '', pick(n, 'title'));
+      op.value = n.id;
+      if (state.filters.l2 === n.id || state.filters.l2 === n.slug) op.selected = true;
+      subSel.appendChild(op);
     });
-    qBar.appendChild(stGrp);
+    subSel.addEventListener('change', function () {
+      state.filters.l2 = subSel.value;
+      state.filters.l3 = '';
+      loadPortalSchemes(mount);
+    });
+    filterRow.appendChild(subSel);
 
+    // 3. Government Scope <select>
+    var scopeSel = el('select', 'sp-select');
+    scopeSel.id = 'sp-sel-scope';
+    scopeSel.setAttribute('aria-label', 'Government Scope');
+    SCOPE_PRESETS.forEach(function (pair) {
+      var op = el('option', '', pair[1]);
+      op.value = pair[0];
+      if (state.filters.scope === pair[0]) op.selected = true;
+      scopeSel.appendChild(op);
+    });
+    scopeSel.addEventListener('change', function () {
+      state.filters.scope = scopeSel.value;
+      loadPortalSchemes(mount);
+    });
+    filterRow.appendChild(scopeSel);
+
+    // 4. Beneficiary Group <select>
+    var benSel = el('select', 'sp-select');
+    benSel.id = 'sp-sel-beneficiary';
+    benSel.setAttribute('aria-label', 'Beneficiary Group');
+    BENEFICIARY_PRESETS.forEach(function (pair) {
+      var op = el('option', '', pair[1]);
+      op.value = pair[0];
+      if (state.filters.beneficiary === pair[0]) op.selected = true;
+      benSel.appendChild(op);
+    });
+    benSel.addEventListener('change', function () {
+      state.filters.beneficiary = benSel.value;
+      loadPortalSchemes(mount);
+    });
+    filterRow.appendChild(benSel);
+
+    // 5. Conditional Reset button
     if (hasFilter) {
-      var rstF = el('button', 'sp-btn sp-btn--xs', '✕ Reset Filters');
+      var rstF = el('button', 'sp-btn sp-btn--xs sch-reset-btn', state.lang === 'or' ? '✕ ରିସେଟ୍' : '✕ Reset');
       rstF.type = 'button';
       rstF.addEventListener('click', function () {
-        state.filters = { l1: '', l2: '', l3: '', benefit: '', mode: '', renewal: '', status: '', search: '' };
+        state.filters = { l1: '', l2: '', l3: '', scope: '', beneficiary: '', benefit: '', mode: '', renewal: '', status: '', search: '' };
         loadPortalSchemes(mount);
       });
-      qBar.appendChild(rstF);
+      filterRow.appendChild(rstF);
     }
-    filterCard.appendChild(qBar);
+    filterCard.appendChild(filterRow);
+
+    // Dismissible Active Filter Chips
+    var activeChips = [];
+    if (state.filters.l1) {
+      var n1 = state.nodes.find(function (n) { return n.id === state.filters.l1 || n.slug === state.filters.l1; });
+      activeChips.push(['Category: ' + (n1 ? pick(n1, 'title') : state.filters.l1), function () { state.filters.l1 = ''; state.filters.l2 = ''; loadPortalSchemes(mount); }]);
+    }
+    if (state.filters.l2) {
+      var n2 = state.nodes.find(function (n) { return n.id === state.filters.l2 || n.slug === state.filters.l2; });
+      activeChips.push(['Sub-Category: ' + (n2 ? pick(n2, 'title') : state.filters.l2), function () { state.filters.l2 = ''; loadPortalSchemes(mount); }]);
+    }
+    if (state.filters.scope) {
+      var spHit = SCOPE_PRESETS.find(function (p) { return p[0] === state.filters.scope; });
+      activeChips.push(['Scope: ' + (spHit ? spHit[1] : state.filters.scope), function () { state.filters.scope = ''; loadPortalSchemes(mount); }]);
+    }
+    if (state.filters.beneficiary) {
+      var bpHit = BENEFICIARY_PRESETS.find(function (p) { return p[0] === state.filters.beneficiary; });
+      activeChips.push(['Group: ' + (bpHit ? bpHit[1] : state.filters.beneficiary), function () { state.filters.beneficiary = ''; loadPortalSchemes(mount); }]);
+    }
+    if (state.filters.search) {
+      activeChips.push(['Search: "' + state.filters.search + '"', function () { state.filters.search = ''; loadPortalSchemes(mount); }]);
+    }
+    if (activeChips.length) {
+      var chipBar = el('div', 'sch-active-chips');
+      chipBar.setAttribute('aria-label', 'Active Filters');
+      activeChips.forEach(function (pair) {
+        var ch = el('button', 'sch-filter-chip is-active', pair[0] + ' ✕');
+        ch.type = 'button';
+        ch.addEventListener('click', pair[1]);
+        chipBar.appendChild(ch);
+      });
+      filterCard.appendChild(chipBar);
+    }
     wrap.appendChild(filterCard);
 
-    // 3. Polished Guided "Check Eligibility (Self or Family Member)" Bar
-    var eligCard = el('section', 'sp-card sp-elig-card');
-    eligCard.setAttribute('aria-label', 'Citizen Scheme Eligibility Checker');
-    var eHead = el('div', 'sp-card-head');
-    var eTitleBox = el('div');
-    eTitleBox.appendChild(el('h2', 'sp-h2', state.lang === 'or' ? '🎯 ଯୋଗ୍ୟତା ଯାଞ୍ଚ କରନ୍ତୁ (ନିଜେ କିମ୍ବା ପରିବାର ସଦସ୍ୟ)' : '🎯 Check Eligibility (Self or Family Member)'));
-    eTitleBox.appendChild(el('div', 'sp-muted', state.lang === 'or' ? 'ପ୍ରତ୍ୟେକ ଯୋଜନା କାର୍ଡରେ ତୁରନ୍ତ ଯୋଗ୍ୟତା ବ୍ୟାଜ୍ ଦେଖନ୍ତୁ।' : 'Enter details below to see instant explainable eligibility badges on every scheme card.'));
-    eHead.appendChild(eTitleBox);
-
-    var eActs = el('div', 'sp-elig-actions');
-    if (state.candidate) {
-      var fillBtn = el('button', 'sp-btn sp-btn--xs sp-btn--cobalt', '✨ Auto-Fill from Candidate Hub');
-      fillBtn.type = 'button';
-      fillBtn.addEventListener('click', function () {
-        state.elig.who = 'Self';
-        if (state.candidate.age) state.elig.age = String(state.candidate.age);
-        if (state.candidate.category) state.elig.category = String(state.candidate.category).toUpperCase();
-        if (state.candidate.gender) state.elig.gender = String(state.candidate.gender);
-        renderPortalListing(mount);
-      });
-      eActs.appendChild(fillBtn);
-    } else {
-      var fillLink = el('a', 'sp-btn sp-btn--xs', '✨ Auto-Fill from Candidate Hub');
-      fillLink.href = '/login.html?next=/schemes/';
-      eActs.appendChild(fillLink);
-    }
-    var resetEligBtn = el('button', 'sp-btn sp-btn--xs', 'Reset Eligibility');
-    resetEligBtn.type = 'button';
-    resetEligBtn.addEventListener('click', function () {
-      state.elig = { who: 'Self', age: '', gender: '', category: '', income: '', marks: '', occupation: '' };
-      renderPortalListing(mount);
-    });
-    eActs.appendChild(resetEligBtn);
-    eHead.appendChild(eActs);
-    eligCard.appendChild(eHead);
-
-    var eg = el('div', 'sp-elig-grid');
-    eg.appendChild(makeSel('Checking For', [['Self', 'Self'], ['Family Member', 'Family Member'], ['Parent / Senior', 'Parent / Senior'], ['Spouse / Woman', 'Spouse / Woman'], ['Student / Child', 'Student / Child']], state.elig.who, function (v) { state.elig.who = v; }));
-    var ageF = el('div', 'sp-field');
-    var ageLbl = el('label', 'sp-label', 'Age (Yrs)'); ageLbl.setAttribute('for', 'sp-elig-age'); ageF.appendChild(ageLbl);
-    var ageI = el('input', 'sp-input'); ageI.id = 'sp-elig-age'; ageI.type = 'number'; ageI.placeholder = '24'; ageI.value = state.elig.age;
-    ageI.addEventListener('input', function () { state.elig.age = ageI.value; renderPortalListing(mount); });
-    ageF.appendChild(ageI); eg.appendChild(ageF);
-
-    eg.appendChild(makeSel('Gender', [['', 'Any'], ['Female', 'Female'], ['Male', 'Male']], state.elig.gender, function (v) { state.elig.gender = v; renderPortalListing(mount); }));
-    eg.appendChild(makeSel('Category', [['', 'Any'], ['UR', 'UR'], ['SEBC', 'SEBC'], ['SC', 'SC'], ['ST', 'ST'], ['EWS', 'EWS'], ['PwBD', 'PwBD']], state.elig.category, function (v) { state.elig.category = v; renderPortalListing(mount); }));
-
-    var incF = el('div', 'sp-field');
-    var incLbl = el('label', 'sp-label', 'Annual Income ₹'); incLbl.setAttribute('for', 'sp-elig-income'); incF.appendChild(incLbl);
-    var incI = el('input', 'sp-input'); incI.id = 'sp-elig-income'; incI.type = 'number'; incI.placeholder = '200000'; incI.value = state.elig.income;
-    incI.addEventListener('input', function () { state.elig.income = incI.value; renderPortalListing(mount); });
-    incF.appendChild(incI); eg.appendChild(incF);
-
-    var mkF = el('div', 'sp-field');
-    var mkLbl = el('label', 'sp-label', 'Marks %'); mkLbl.setAttribute('for', 'sp-elig-marks'); mkF.appendChild(mkLbl);
-    var mkI = el('input', 'sp-input'); mkI.id = 'sp-elig-marks'; mkI.type = 'number'; mkI.placeholder = '65'; mkI.value = state.elig.marks;
-    mkI.addEventListener('input', function () { state.elig.marks = mkI.value; renderPortalListing(mount); });
-    mkF.appendChild(mkI); eg.appendChild(mkF);
-
-    eg.appendChild(makeSel('Occupation', [['', 'Any'], ['Student', 'Student'], ['Farmer', 'Farmer'], ['Women', 'Women'], ['Worker', 'Construction Worker'], ['Senior', 'Senior / Widow']], state.elig.occupation, function (v) { state.elig.occupation = v; renderPortalListing(mount); }));
-    eligCard.appendChild(eg);
-    wrap.appendChild(eligCard);
-
-    // 4. Filtered Scheme Cards OR Designed Illustrated Empty State + 3-Layer Welfare Domains Grid
+    // 3. Clean Scheme Cards OR Centered Flex Empty State (Zero Overlap)
     var visibleSchemes = state.items.filter(function (s) { return matchesQuickBenefit(s, state.filters.benefit); });
 
     if (!visibleSchemes.length) {
@@ -1047,45 +1008,41 @@
       emptyCard.appendChild(art);
 
       emptyCard.appendChild(el('h2', 'sp-empty-title', hasFilter
-        ? (state.lang === 'or' ? 'ଆପଣଙ୍କ ଫିଲ୍ଟର୍ ସହିତ କୌଣସି ଯୋଜନା ମିଳିଲା ନାହିଁ' : 'No Welfare Schemes Match Your Selected Filters')
-        : (state.lang === 'or' ? 'ଯାଞ୍ଚିତ କଲ୍ୟାଣକାରୀ ଯୋଜନା ଓ ଛାତ୍ରବୃତ୍ତି ଶୀଘ୍ର ପ୍ରକାଶିତ ହେବ' : 'Fresh Verified Welfare Schemes & Scholarships Coming Soon')));
+        ? (state.lang === 'or' ? 'ଆପଣଙ୍କ ଫିଲ୍ଟର୍ ସହିତ କୌଣସି ଯୋଜନା ମିଳିଲା ନାହିଁ' : 'No matching welfare schemes right now')
+        : (state.lang === 'or' ? 'ନୂତନ ଯାଞ୍ଚିତ ଯୋଜନା ଶୀଘ୍ର ପ୍ରକାଶିତ ହେବ' : 'No matching welfare schemes right now')));
 
       emptyCard.appendChild(el('p', 'sp-empty-desc', hasFilter
         ? (state.lang === 'or'
-          ? 'ଅନ୍ୟ ସରକାରୀ ସ୍ତର, କଲ୍ୟାଣ ବିଭାଗ କିମ୍ବା ସହାୟତା ବର୍ଗ ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା ସମସ୍ତ ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ।'
-          : 'Try broadening your Government Level, Welfare Domain, Benefit Type, or Status filters — or browse our 3-layer Odisha & Central welfare domains below.')
+          ? 'ଅନ୍ୟ ବର୍ଗ, ସ୍କୋପ୍ କିମ୍ବା ହିତାଧିକାରୀ ବର୍ଗ ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ।'
+          : 'Try broadening your category, scope, or beneficiary filter — or reset filters to browse all schemes.')
         : (state.lang === 'or'
-          ? 'ଏହି ପୋର୍ଟାଲରେ ପ୍ରକାଶିତ ପ୍ରତ୍ୟେକ ଯୋଜନା ସରକାରୀ .gov.in ବିଜ୍ଞପ୍ତି ଏବଂ DBT ନିୟମ ସହିତ ଯାଞ୍ଚ କରାଯାଏ। ତଳେ ଥିବା କଲ୍ୟାଣ ବିଭାଗଗୁଡ଼ିକୁ ବ୍ରାଉଜ୍ କରନ୍ତୁ।'
-          : 'Every scheme published here is verified against official Odisha & Government of India .gov.in guidelines with DBT steps, document checklists, and eligibility rules. Explore the welfare domains below.')));
+          ? 'ନୂତନ ଯାଞ୍ଚିତ ଓଡ଼ିଶା ଓ କେନ୍ଦ୍ର ସରକାରୀ ଯୋଜନା ପ୍ରକାଶିତ ହେବା ମାତ୍ରେ ଏଠାରେ ଦେଖାଯିବ।'
+          : 'Verified Odisha State & Central Government welfare schemes will appear here as soon as they are published.')));
 
       var emptyActions = el('div', 'sp-pills-row');
       if (hasFilter) {
-        var resetBtn = el('button', 'sp-btn sp-btn--primary', state.lang === 'or' ? 'ସମସ୍ତ ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ' : 'Reset All Filters');
+        var resetBtn = el('button', 'sp-btn sp-btn--primary', state.lang === 'or' ? 'ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ' : 'Reset Filters');
         resetBtn.type = 'button';
         resetBtn.addEventListener('click', function () {
-          state.filters = { l1: '', l2: '', l3: '', benefit: '', mode: '', renewal: '', status: '', search: '' };
+          state.filters = { l1: '', l2: '', l3: '', scope: '', beneficiary: '', benefit: '', mode: '', renewal: '', status: '', search: '' };
           loadPortalSchemes(mount);
         });
         emptyActions.appendChild(resetBtn);
       }
-      var jobsLink = el('a', 'sp-btn', state.lang === 'or' ? '💼 ସରକାରୀ ଚାକିରି ଦେଖନ୍ତୁ →' : '💼 Explore Government Jobs →');
-      jobsLink.href = '/jobs/';
-      emptyActions.appendChild(jobsLink);
-
       if (state.isAdmin) {
-        var adminBtn = el('a', 'sp-btn sp-btn--primary', '+ Publish First Scheme in Admin Studio ↗');
+        var adminBtn = el('a', 'sp-btn sp-btn--primary', '+ Publish Scheme in Admin Studio ↗');
         adminBtn.href = '/admin/#folder-schemes-benefits';
         emptyActions.appendChild(adminBtn);
       }
-      emptyCard.appendChild(emptyActions);
+      if (emptyActions.children.length) {
+        emptyCard.appendChild(emptyActions);
+      }
       wrap.appendChild(emptyCard);
-
-      renderWelfareDomainsDirectory(wrap, mount);
     } else {
       var resBar = el('div', 'sp-results-bar');
       resBar.appendChild(el('h2', 'sp-h2', state.lang === 'or'
         ? (num(visibleSchemes.length) + ' ଟି ଯାଞ୍ଚିତ ସରକାରୀ ଯୋଜନା ଓ ଛାତ୍ରବୃତ୍ତି')
-        : (num(visibleSchemes.length) + ' Verified Welfare Scheme' + (visibleSchemes.length === 1 ? '' : 's') + ' & Scholarship' + (visibleSchemes.length === 1 ? '' : 's'))));
+        : (num(visibleSchemes.length) + ' Verified Welfare Scheme' + (visibleSchemes.length === 1 ? '' : 's'))));
       if (state.isAdmin) {
         var pubMore = el('a', 'sp-btn sp-btn--xs', '+ Publish New Scheme in Admin Studio ↗');
         pubMore.href = '/admin/#folder-schemes-benefits';
@@ -1098,8 +1055,9 @@
       wrap.appendChild(grid);
     }
 
-    // 5. Side-by-Side 3-Scheme Comparison Tray
+    // 4. Side-by-Side 3-Scheme Comparison Tray (when items selected)
     renderComparisonTray(wrap, mount);
+    clear(mount);
     mount.appendChild(wrap);
 
     if (restoreFocusId) {
@@ -1110,25 +1068,57 @@
     }
   }
 
-  function loadPortalSchemes(mount) {
+  function resolveSchemeNodeId(nodes, level, rawVal) {
+    var v = String(rawVal || '').trim().toLowerCase();
+    if (!v) return '';
+    var hit = (nodes || []).find(function (n) {
+      return Number(n.level) === level && (String(n.id || '').toLowerCase() === v || String(n.slug || '').toLowerCase() === v);
+    });
+    return hit ? hit.id : rawVal;
+  }
+
+  function syncSchemesUrlParams() {
+    if (!window.history || !window.history.replaceState) return;
+    var qs = new URLSearchParams();
+    if (state.filters.l1) {
+      var n1 = state.nodes.find(function (n) { return n.id === state.filters.l1; });
+      qs.set('category', n1 ? n1.slug : state.filters.l1);
+    }
+    if (state.filters.l2) {
+      var n2 = state.nodes.find(function (n) { return n.id === state.filters.l2; });
+      qs.set('sub', n2 ? n2.slug : state.filters.l2);
+    }
+    if (state.filters.scope) qs.set('scope', state.filters.scope);
+    if (state.filters.beneficiary) qs.set('beneficiary', state.filters.beneficiary);
+    if (state.filters.search) qs.set('q', state.filters.search);
+    var target = window.location.pathname + (qs.toString() ? '?' + qs.toString() : '');
+    try { window.history.replaceState(null, '', target); } catch (_) {}
+  }
+
+  function loadPortalSchemes(mount, skipUrlSync) {
+    if (!skipUrlSync) syncSchemesUrlParams();
     var qs = new URLSearchParams();
     if (state.filters.l1) qs.set('l1', state.filters.l1);
     if (state.filters.l2) qs.set('l2', state.filters.l2);
     if (state.filters.l3) qs.set('l3', state.filters.l3);
+    if (state.filters.scope) qs.set('scope', state.filters.scope);
+    if (state.filters.beneficiary) qs.set('beneficiary', state.filters.beneficiary);
     if (state.filters.mode) qs.set('mode', state.filters.mode);
     if (state.filters.renewal) qs.set('renewal', state.filters.renewal);
     if (state.filters.status) qs.set('status', state.filters.status);
     if (state.filters.search) qs.set('search', state.filters.search);
-    fetch('/api/public/schemes?' + qs.toString(), { cache: 'no-store', credentials: 'same-origin' })
+    fetch('/api/public/schemes/list?' + qs.toString(), { cache: 'no-store', credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         if (d && d.ok) {
           state.items = d.items || [];
           if (!qs.toString()) state.allItems = state.items.slice();
           if (d.facets) state.facets = d.facets;
-          renderPortalListing(mount);
         }
-      }).catch(function () {});
+        renderPortalListing(mount);
+      }).catch(function () {
+        renderPortalListing(mount);
+      });
   }
 
   function detectAdminSession() {
@@ -1199,6 +1189,13 @@
       mount.appendChild(skel);
     }
 
+    var rawCategory = (params.get('category') || params.get('l1') || '').trim();
+    var rawSub = (params.get('sub') || params.get('l2') || '').trim();
+    var rawScope = (params.get('scope') || '').trim().toLowerCase();
+    var rawBeneficiary = (params.get('beneficiary') || '').trim().toLowerCase();
+    var rawSearch = (params.get('q') || params.get('search') || '').trim();
+    var hasDeepLink = Boolean(rawCategory || rawSub || rawScope || rawBeneficiary || rawSearch);
+
     Promise.all([
       fetch('/api/public/schemes/bootstrap', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
       loadCandidateProfile(),
@@ -1212,7 +1209,18 @@
         state.allItems = state.items.slice();
         if (boot.facets) state.facets = boot.facets;
       }
+      if (hasDeepLink) {
+        state.filters.l1 = resolveSchemeNodeId(state.nodes, 1, rawCategory);
+        state.filters.l2 = resolveSchemeNodeId(state.nodes, 2, rawSub);
+        state.filters.scope = rawScope;
+        state.filters.beneficiary = rawBeneficiary;
+        state.filters.search = rawSearch;
+        loadPortalSchemes(mount, true);
+        return;
+      }
       renderPortalListing(mount);
+    }).catch(function () {
+      try { renderPortalListing(mount); } catch (_) {}
     });
   }
 
