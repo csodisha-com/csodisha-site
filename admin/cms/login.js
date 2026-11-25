@@ -226,6 +226,12 @@
           else sendOtp.disabled = false;
           return;
         }
+        if (d.requires_email_otp && d.challenge_id) {
+          setOtpStatus('');
+          sendOtp.disabled = false;
+          enterEmailOtpStep(d);
+          return;
+        }
         setOtpStatus('Code sent via ' + (d.channels || []).join(' + ') + '. Valid for 10 minutes.');
         startOtpCountdown(Number(d.cooldown) || 60);
         if (twofa) twofa.focus();

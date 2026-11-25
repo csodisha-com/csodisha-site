@@ -128,9 +128,13 @@ export async function sendAdminOtpEmail(env, { toEmail, otp, ipAddress, timestam
     '</div>'
   ].join('');
 
+  const resolvedFrom =
+    (env.EMAIL_FROM && String(env.EMAIL_FROM).trim()) ||
+    (env.ADMIN_OTP_FROM_EMAIL && String(env.ADMIN_OTP_FROM_EMAIL).trim()) ||
+    (env.RESEND_FROM && String(env.RESEND_FROM).trim()) ||
+    'Common Sense Odisha Security <onboarding@resend.dev>';
+
   if (resendKey) {
-    const fromAddr = (env.ADMIN_OTP_FROM_EMAIL && String(env.ADMIN_OTP_FROM_EMAIL).trim()) ||
-      'Common Sense Odisha Security <onboarding@resend.dev>';
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -138,7 +142,7 @@ export async function sendAdminOtpEmail(env, { toEmail, otp, ipAddress, timestam
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: fromAddr,
+        from: resolvedFrom,
         to: [toEmail],
         subject,
         html: htmlBody,
@@ -152,9 +156,8 @@ export async function sendAdminOtpEmail(env, { toEmail, otp, ipAddress, timestam
     return { provider: 'resend' };
   }
 
-  const fromRaw = (env.ADMIN_OTP_FROM_EMAIL && String(env.ADMIN_OTP_FROM_EMAIL).trim()) || 'security@csodisha.com';
-  const emailMatch = fromRaw.match(/<([^>]+)>/);
-  const senderEmail = emailMatch ? emailMatch[1].trim() : fromRaw;
+  const emailMatch = resolvedFrom.match(/<([^>]+)>/);
+  const senderEmail = emailMatch ? emailMatch[1].trim() : resolvedFrom;
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: {

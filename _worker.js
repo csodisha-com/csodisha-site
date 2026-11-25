@@ -15,7 +15,12 @@ import { onRequestPost as handleResetPasswordPost, onRequestOptions as handleRes
 import { onRequestPost as handleVerifyResetTokenPost, onRequestOptions as handleVerifyResetTokenOptions } from './functions/api/auth/verify-reset-token.js';
 import { handleGoogleAuthStart, handleGoogleAuthCallback } from './functions/api/auth/google.js';
 import { handleAdminEmailOtpVerify, handleAdminEmailOtpResend } from './functions/api/auth/admin-email-otp.js';
-import { isAdminEmailOtpEnabled, createAndSendAdminEmailOtp } from './functions/_lib/admin-email-otp.js';
+import {
+  hasEmailProviderSecret,
+  getEmailProviderName,
+  isAdminEmailOtpEnabled,
+  createAndSendAdminEmailOtp
+} from './functions/_lib/admin-email-otp.js';
 import { checkRateLimit, createSession, buildSessionCookie } from './functions/api/auth/_utils.js';
 import { handleAdminApi } from './functions/api/admin/_router.js';
 import { isTwoFactorConfigured, canSendOtp, issueOtp, deliverOtp, verifyTwoFactor, OTP_RESEND_SECONDS } from './functions/_lib/admin-2fa.js';
@@ -183,6 +188,20 @@ async function handleAdminSendOtp(request, env) {
       return J({ error: 'Invalid email or password' }, 401);
     }
     if (user.lockout_until && user.lockout_until > now) return J({ error: 'Account temporarily locked. Please try again later.' }, 429);
+    if (hasEmailProviderSecret(env)) {
+      const challenge = await createAndSendAdminEmailOtp(env, user, request);
+      recordAdminAuditLog(env, request, { userId: user.id, email: user.email, role: user.role }, 'admin.email_otp.sent', 'admin_email_otps', { challenge_id: challenge.challenge_id, via: 'send-otp' });
+      return J({
+        ok: true,
+        requires_email_otp: true,
+        challenge_id: challenge.challenge_id,
+        masked_email: challenge.masked_email,
+        expires_in: challenge.expires_in,
+        resend_after: challenge.resend_after,
+        channels: [getEmailProviderName(env) === 'brevo' ? 'Brevo Email' : 'Resend Email'],
+        cooldown: challenge.resend_after
+      });
+    }
     if (!canSendOtp(env)) return J({ error: 'No OTP delivery channel (Telegram/Email) is configured.' }, 400);
     const issued = await issueOtp(env, user.id, now);
     if (!issued.ok) return J({ error: 'Please wait ' + issued.retryAfter + 's before requesting another code.', retry_after: issued.retryAfter }, 429, { 'Retry-After': String(issued.retryAfter) });

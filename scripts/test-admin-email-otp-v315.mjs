@@ -135,19 +135,22 @@ await test('2. OTP generation, SHA-256 hashing, 5-attempt lockout, expiry & rese
   const db = createMockDb();
   const origFetch = globalThis.fetch;
   let lastSentOtp = '';
+  let lastFrom = '';
   globalThis.fetch = async (url, init) => {
     const payload = JSON.parse(init.body);
+    lastFrom = payload.from || '';
     const match = String(payload.text || '').match(/\b(\d{6})\b/);
     if (match) lastSentOtp = match[1];
     return new Response(JSON.stringify({ id: 'email_123' }), { status: 200 });
   };
 
   try {
-    const env = { DB: db, RESEND_API_KEY: 're_test_123' };
+    const env = { DB: db, RESEND_API_KEY: 're_test_123', EMAIL_FROM: 'CS Odisha Security <security@csodisha.com>' };
     const req = new Request('https://csodisha.com/api/auth/login', {
       headers: { 'cf-connecting-ip': '203.0.113.10' }
     });
     const issued = await createAndSendAdminEmailOtp(env, { id: 'adm_1', email: 'admin@csodisha.com' }, req);
+    assert.equal(lastFrom, 'CS Odisha Security <security@csodisha.com>');
     assert.ok(issued.challenge_id);
     assert.equal(issued.masked_email, 'ad***@csodisha.com');
     assert.equal(issued.expires_in, 300);
