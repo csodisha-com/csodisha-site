@@ -205,21 +205,37 @@
 
   function showPopup(target, items) {
     document.querySelectorAll('.pp').forEach(x => x.remove());
+    const triggerBtn = target && target.closest ? (target.closest('button') || target) : target;
     const anchor = target.closest('.cso-popup-anchor') || target.parentElement || document.body;
     const m = el('div', 'pp');
+    m.setAttribute('role', 'menu');
+    const closePopup = () => {
+      m.remove();
+      if (triggerBtn && triggerBtn.setAttribute) triggerBtn.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('keydown', onPopEsc);
+    };
+    const onPopEsc = ev => {
+      if (ev && ev.key === 'Escape') {
+        closePopup();
+        if (triggerBtn && typeof triggerBtn.focus === 'function') triggerBtn.focus();
+      }
+    };
     items.forEach(([label, fn, active]) => {
       const b = el('button', '', (active ? '✓ ' : '') + label);
       b.type = 'button';
+      b.setAttribute('role', 'menuitem');
       b.addEventListener('click', ev => {
         ev.stopPropagation();
         fn();
-        m.remove();
+        closePopup();
       });
       m.appendChild(b);
     });
     anchor.appendChild(m);
+    if (triggerBtn && triggerBtn.setAttribute) triggerBtn.setAttribute('aria-expanded', 'true');
+    document.addEventListener('keydown', onPopEsc);
     setTimeout(() => {
-      window.addEventListener('click', () => m.remove(), { once: true });
+      window.addEventListener('click', closePopup, { once: true });
     }, 0);
   }
 
@@ -263,9 +279,11 @@
     const closeBtn = el('button', 'cso-saved-drawer__close', '×');
     closeBtn.type = 'button';
     closeBtn.setAttribute('aria-label', 'Close saved bookmarks');
-    closeBtn.addEventListener('click', () => {
+    const closeSavedDrawer = () => {
       backdrop.hidden = true;
-    });
+      document.body.classList.remove('cso-modal-open');
+    };
+    closeBtn.addEventListener('click', closeSavedDrawer);
     head.append(title, closeBtn);
 
     const tabs = el('div', 'cso-saved-drawer__tabs');
@@ -298,7 +316,16 @@
     backdrop.appendChild(drawer);
 
     backdrop.addEventListener('click', e => {
-      if (e.target === backdrop) backdrop.hidden = true;
+      if (e.target === backdrop) {
+        backdrop.hidden = true;
+        document.body.classList.remove('cso-modal-open');
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !backdrop.hidden) {
+        backdrop.hidden = true;
+        document.body.classList.remove('cso-modal-open');
+      }
     });
 
     document.body.appendChild(backdrop);
@@ -380,6 +407,7 @@
     const backdrop = ensureSavedDrawer();
     renderSavedDrawerContents();
     backdrop.hidden = false;
+    document.body.classList.add('cso-modal-open');
   }
 
   function renderControls() {
@@ -595,6 +623,7 @@
       trigger.id = 'cso-auth-trigger';
       trigger.setAttribute('aria-haspopup', 'true');
       trigger.setAttribute('aria-expanded', 'false');
+      trigger.setAttribute('aria-controls', 'cso-auth-menu');
       trigger.setAttribute('aria-label', 'Account options');
 
       const mIcon = el('span', 'auth-icon', '👤');
@@ -650,6 +679,7 @@
     trigger.id = 'cso-auth-trigger';
     trigger.setAttribute('aria-haspopup', 'true');
     trigger.setAttribute('aria-expanded', 'false');
+    trigger.setAttribute('aria-controls', 'cso-auth-menu');
     trigger.setAttribute('aria-label', 'Account options');
 
     const mIcon = el('span', 'auth-icon', '👤');

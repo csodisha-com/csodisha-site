@@ -364,13 +364,13 @@
 
 .ap-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 16px;
 }
 
 .ap-sources-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -1047,5 +1047,98 @@ html[data-theme="odisha"] .abt-portal-arrow {
   :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .ap-lang-btn:not(.is-active) {
     color: #e2e8f0;
     opacity: 1;
+  }
+}
+
+/* v300: Mobile Compatibility (320px Reflow, 44px Targets, 16px Inputs, 100dvh Modal) */
+.ap-root,
+.abt-hero--compact,
+.abt-summary-grid,
+.abt-portals-strip,
+.abt-desk-card {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.ap-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.abt-modal {
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+  border: 1px solid var(--cso-border);
+  opacity: 1;
+  backdrop-filter: none;
+  max-height: calc(100dvh - 24px);
+  max-width: calc(100vw - 16px);
+  overflow-y: auto;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.abt-modal-close {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ap-root a:focus-visible,
+.ap-root button:focus-visible,
+.ap-root input:focus-visible,
+.ap-root select:focus-visible,
+.ap-root textarea:focus-visible {
+  outline: 3px solid var(--cso-accent);
+  outline-offset: 2px;
+  scroll-margin-top: calc(112px + env(safe-area-inset-top, 0px));
+}
+
+@media (max-width: 1099px) {
+  .ap-lang-btn,
+  .ap-btn,
+  .abt-portal-card,
+  .abt-desk-pill,
+  .abt-charter-btn {
+    min-height: 44px;
+  }
+
+  .abt-desk-links,
+  .abt-modal-foot {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ap-root input:not([type="checkbox"]):not([type="radio"]),
+  .ap-root select,
+  .ap-root textarea {
+    font-size: max(16px, 1rem);
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .abt-hero--compact {
+    padding: 1rem;
+  }
+
+  .abt-hero-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-root *,
+  .ap-root *::before,
+  .ap-root *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

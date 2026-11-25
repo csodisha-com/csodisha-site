@@ -267,9 +267,9 @@ check('3. Zero unguarded hardcoded hex light/dark collisions across ALL CSS file
   assert.equal(violations.length, 0, `Found ${violations.length} unguarded hex color leaks:\n  ${violations.slice(0, 10).join('\n  ')}`);
 
   const ssr = read('functions/_lib/ssr-shell.js');
-  assert.match(ssr, /\/assets\/style\.css\?v=20261125v29[5-9]/, 'ssr-shell.js must link versioned style.css');
-  assert.match(ssr, /\/assets\/css\/portal-shell\.css\?v=20261125v29[5-9]/, 'ssr-shell.js must link versioned portal-shell.css');
-  assert.match(ssr, /\/assets\/shared-header\.js\?v=20261125v29[5-9]/, 'ssr-shell.js must link versioned shared-header.js');
+  assert.match(ssr, /\/assets\/style\.css\?v=20261125v(?:29[5-9]|3\d\d)/, 'ssr-shell.js must link versioned style.css');
+  assert.match(ssr, /\/assets\/css\/portal-shell\.css\?v=20261125v(?:29[5-9]|3\d\d)/, 'ssr-shell.js must link versioned portal-shell.css');
+  assert.match(ssr, /\/assets\/shared-header\.js\?v=20261125v(?:29[5-9]|3\d\d)/, 'ssr-shell.js must link versioned shared-header.js');
 });
 
 check('4. Elevated overlays enforce opacity: 1 & backdrop-filter: none; JS syncs data-theme + data-cso-theme', () => {
@@ -284,8 +284,8 @@ check('4. Elevated overlays enforce opacity: 1 & backdrop-filter: none; JS syncs
 });
 
 check('5. Strict CSP compliance & cache busting across all active HTML pages, sw.js & ops-sentinel.js', () => {
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v29[5-9]';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v29[5-9]';/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v(?:29[5-9]|3\d\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v(?:29[5-9]|3\d\d)';/);
 
   for (const rel of ['assets/shared-header.js', 'assets/app.js', 'admin/admin.js', 'assets/js/community-portal.js', 'assets/js/careers-portal.js']) {
     const codeOnly = read(rel).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
@@ -304,7 +304,7 @@ check('5. Strict CSP compliance & cache busting across all active HTML pages, sw
     let m;
     while ((m = coreAssetRe.exec(html)) !== null) {
       checked++;
-      assert.match(m[1], /^20261125v29[5-9]$/, `${rel} has stale query version ?v=${m[1]} (expected 20261125v295+)`);
+      assert.match(m[1], /^20261125v(?:29[5-9]|3\d\d)$/, `${rel} has stale query version ?v=${m[1]} (expected 20261125v295+)`);
     }
   }
   assert.ok(checked >= 60, `Expected >=60 versioned core/portal/admin assets across HTML pages, got ${checked}`);

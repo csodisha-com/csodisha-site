@@ -210,6 +210,7 @@
     const bd = ensureSearchModal();
     activeSearchFilter = '';
     bd.hidden = false;
+    document.body.classList.add('cso-modal-open');
     if (searchInput) {
       if (typeof initialQuery === 'string' && initialQuery) searchInput.value = initialQuery;
       searchInput.focus();
@@ -219,6 +220,7 @@
 
   function closeSearchModal() {
     if (searchBackdrop) searchBackdrop.hidden = true;
+    if (!fbBackdrop || fbBackdrop.hidden) document.body.classList.remove('cso-modal-open');
   }
 
   // ---- Community Feedback Modal ("Report an Error" / "Suggest Resource") ----
@@ -246,7 +248,10 @@
     const closeBtn = el('button', 'cso-modal-close', '×');
     closeBtn.type = 'button';
     closeBtn.setAttribute('aria-label', 'Close feedback form');
-    closeBtn.addEventListener('click', () => { fbBackdrop.hidden = true; });
+    closeBtn.addEventListener('click', () => {
+      fbBackdrop.hidden = true;
+      if (!searchBackdrop || searchBackdrop.hidden) document.body.classList.remove('cso-modal-open');
+    });
     head.append(title, closeBtn);
 
     const form = el('form', 'cso-feedback-form');
@@ -326,7 +331,10 @@
     panel.append(head, form);
     fbBackdrop.appendChild(panel);
     fbBackdrop.addEventListener('click', (e) => {
-      if (e.target === fbBackdrop) fbBackdrop.hidden = true;
+      if (e.target === fbBackdrop) {
+        fbBackdrop.hidden = true;
+        if (!searchBackdrop || searchBackdrop.hidden) document.body.classList.remove('cso-modal-open');
+      }
     });
     document.body.appendChild(fbBackdrop);
     return fbBackdrop;
@@ -337,6 +345,7 @@
     if (fbKindEl && defaultKind) fbKindEl.value = defaultKind;
     if (fbStatusEl) fbStatusEl.textContent = '';
     bd.hidden = false;
+    document.body.classList.add('cso-modal-open');
     if (fbSubjectEl) fbSubjectEl.focus();
   }
 
@@ -349,7 +358,10 @@
     }
     if (e.key === 'Escape') {
       if (searchBackdrop && !searchBackdrop.hidden) closeSearchModal();
-      if (fbBackdrop && !fbBackdrop.hidden) fbBackdrop.hidden = true;
+      if (fbBackdrop && !fbBackdrop.hidden) {
+        fbBackdrop.hidden = true;
+        if (!searchBackdrop || searchBackdrop.hidden) document.body.classList.remove('cso-modal-open');
+      }
     }
   });
 

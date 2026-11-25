@@ -438,7 +438,7 @@
 
 .jp-jobs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -672,7 +672,7 @@
 
 .jp-dept-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
   gap: 12px;
 }
 
@@ -1049,5 +1049,74 @@
   :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .jp-hero .jp-lang-btn:not(.is-active) {
     color: #e2e8f0;
     opacity: 1;
+  }
+}
+
+/* v300: Mobile Compatibility (320px Reflow, 44px Targets, 16px Inputs, WCAG 2.2) */
+.jp-root,
+.jp-card,
+.jp-hero,
+.jp-filter-row {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.jp-table-wrap {
+  -webkit-overflow-scrolling: touch;
+}
+
+.jp-root a:focus-visible,
+.jp-root button:focus-visible,
+.jp-root input:focus-visible,
+.jp-root select:focus-visible {
+  outline: 3px solid var(--cso-accent);
+  outline-offset: 2px;
+  scroll-margin-top: calc(112px + env(safe-area-inset-top, 0px));
+}
+
+@media (max-width: 1099px) {
+  .jp-sector-pill,
+  .jp-lang-btn,
+  .jp-btn,
+  .jp-reset-btn,
+  .jp-chip-x {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .jp-sector-strip,
+  .jp-card-actions {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .jp-root input:not([type="checkbox"]):not([type="radio"]),
+  .jp-root select,
+  .jp-root textarea {
+    font-size: max(16px, 1rem);
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .jp-hero {
+    padding: 1rem;
+  }
+
+  .jp-hero-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jp-root *,
+  .jp-root *::before,
+  .jp-root *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

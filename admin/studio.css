@@ -3178,3 +3178,91 @@ textarea.cso-fp-input { min-height: 64px; resize: vertical; }
   display: grid;
   gap: 10px;
 }
+
+/* v300: Admin Studio Mobile Reflow (320px-1099px), 44px Targets, 16px Inputs & WCAG 2.2 */
+html,
+body.cso-studio-body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.cso-skip-link {
+  position: fixed;
+  top: -120px;
+  left: 12px;
+  z-index: 99999;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  border: 2px solid var(--cso-border);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cso-skip-link:focus,
+.cso-skip-link:focus-visible {
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  outline: 3px solid var(--cso-accent);
+  outline-offset: 2px;
+}
+
+.cso-table-wrap,
+.table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cso-studio-body [id],
+.cso-studio-body main,
+.cso-studio-body section,
+.cso-studio-body h1,
+.cso-studio-body h2 {
+  scroll-margin-top: calc(96px + env(safe-area-inset-top, 0px));
+}
+
+.cso-studio-body a:focus-visible,
+.cso-studio-body button:focus-visible,
+.cso-studio-body input:focus-visible,
+.cso-studio-body select:focus-visible,
+.cso-studio-body textarea:focus-visible {
+  outline: 3px solid var(--cso-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .cso-sitewide-split,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .cso-studio-body input:not([type="checkbox"]):not([type="radio"]),
+  .cso-studio-body select,
+  .cso-studio-body textarea {
+    font-size: max(16px, 1rem);
+    min-height: 44px;
+  }
+
+  .cso-studio-body .btn,
+  .cso-studio-body .cso-icon-btn,
+  .cso-studio-body .cso-pill-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-studio-body *,
+  .cso-studio-body *::before,
+  .cso-studio-body *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

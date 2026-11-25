@@ -233,8 +233,8 @@ await check('5. Solid opaque 4-theme surfaces (Dark Night #161b26 / #263042), si
   assert.ok(shellCss.includes('#cso-main-navbar .cso-careers-stage1'), 'portal-shell.css missing .cso-careers-stage1');
   assert.ok(!shellCss.includes('.cso-careers-stage2'), 'portal-shell.css must NOT include .cso-careers-stage2');
 
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v29[3-9]';/.test(read('sw.js')), 'sw.js must be cso-candidate-cache-v293+');
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v29[3-9]';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel.js must be cso-candidate-cache-v293+');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v(?:29[3-9]|3\d\d)';/.test(read('sw.js')), 'sw.js must be cso-candidate-cache-v293+');
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v(?:29[3-9]|3\d\d)';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel.js must be cso-candidate-cache-v293+');
 
   const corePages = [
     'index.html', 'jobs/index.html', 'careers/index.html', 'schemes/index.html',
@@ -242,19 +242,19 @@ await check('5. Solid opaque 4-theme surfaces (Dark Night #161b26 / #263042), si
   ];
   for (const rel of corePages) {
     const html = read(rel);
-    assert.ok(/\/assets\/style\.css\?v=2026112[45]v2(?:7[89]|[89]\d)/.test(html), `${rel} missing style.css?v=20261124v278+`);
+    assert.ok(/\/assets\/style\.css\?v=2026112[45]v(?:2(?:7[89]|[89]\d)|3\d\d)/.test(html), `${rel} missing style.css?v=20261124v278+`);
     if (rel === 'index.html') {
-      assert.ok(/\/assets\/app\.js\?v=2026112[45]v2(?:7[89]|[89]\d)/.test(html), 'index.html missing app.js?v=20261124v278+');
+      assert.ok(/\/assets\/app\.js\?v=2026112[45]v(?:2(?:7[89]|[89]\d)|3\d\d)/.test(html), 'index.html missing app.js?v=20261124v278+');
     } else {
-      assert.ok(/\/assets\/shared-header\.js\?v=2026112[45]v2(?:7[89]|[89]\d)/.test(html), `${rel} missing shared-header.js?v=20261124v278+`);
+      assert.ok(/\/assets\/shared-header\.js\?v=2026112[45]v(?:2(?:7[89]|[89]\d)|3\d\d)/.test(html), `${rel} missing shared-header.js?v=20261124v278+`);
     }
     assert.ok(!/\sstyle\s*=/i.test(html), `${rel} contains inline style=`);
     assert.ok(!/\son[a-z]+\s*=/i.test(html), `${rel} contains inline on*= handler`);
   }
 
-  assert.match(read('careers/index.html'), /\/assets\/js\/careers-portal\.js\?v=2026112[45]v2(?:7[89]|[89]\d)/);
-  assert.match(read('admin/index.html'), /\/admin\/admin\.js\?v=2026112[45]v2(?:7[89]|[89]\d)/);
-  assert.match(read('admin/index.html'), /\/admin\/careers-publishing-studio\.js\?v=2026112[45]v2(?:7[89]|[89]\d)/);
+  assert.match(read('careers/index.html'), /\/assets\/js\/careers-portal\.js\?v=2026112[45]v(?:2(?:7[89]|[89]\d)|3\d\d)/);
+  assert.match(read('admin/index.html'), /\/admin\/admin\.js\?v=2026112[45]v(?:2(?:7[89]|[89]\d)|3\d\d)/);
+  assert.match(read('admin/index.html'), /\/admin\/careers-publishing-studio\.js\?v=2026112[45]v(?:2(?:7[89]|[89]\d)|3\d\d)/);
 
   for (const rel of [
     'assets/shared-header.js',

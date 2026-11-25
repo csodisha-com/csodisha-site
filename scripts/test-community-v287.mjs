@@ -372,15 +372,15 @@ await check('5. Admin Studio sidebar sync, cache busting (?v=20261125v287 / cso-
   assert.ok(studioJs.includes('Live Synced to Public Community'), 'community-publishing-studio.js missing live sync banner');
   assert.ok(studioJs.includes('cso_community_dropdown_v287'), 'community-publishing-studio.js missing v287 cache bust');
 
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v29[7-9]';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v29[7-9]';/);
-  assert.match(read('community/index.html'), /\/assets\/js\/community-portal\.js\?v=20261125v29[7-9]/);
-  assert.match(read('community/index.html'), /\/assets\/css\/community-portal\.css\?v=20261125v29[7-9]/);
-  assert.match(read('community/index.html'), /\/assets\/css\/portal-shell\.css\?v=20261125v29[7-9]/);
-  assert.match(read('community/index.html'), /\/assets\/shared-header\.js\?v=20261125v29[3-9]/);
-  assert.match(read('index.html'), /assets\/app\.js\?v=20261125v29[3-9]/);
-  assert.match(read('admin/index.html'), /admin\.js\?v=20261125v2(?:8[7-9]|9\d)/);
-  assert.match(read('admin/index.html'), /community-publishing-studio\.js\?v=20261125v2(?:8[7-9]|9\d)/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v(?:29[7-9]|3\d\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v(?:29[7-9]|3\d\d)';/);
+  assert.match(read('community/index.html'), /\/assets\/js\/community-portal\.js\?v=20261125v(?:29[7-9]|3\d\d)/);
+  assert.match(read('community/index.html'), /\/assets\/css\/community-portal\.css\?v=20261125v(?:29[7-9]|3\d\d)/);
+  assert.match(read('community/index.html'), /\/assets\/css\/portal-shell\.css\?v=20261125v(?:29[7-9]|3\d\d)/);
+  assert.match(read('community/index.html'), /\/assets\/shared-header\.js\?v=20261125v(?:29[3-9]|3\d\d)/);
+  assert.match(read('index.html'), /assets\/app\.js\?v=20261125v(?:29[3-9]|3\d\d)/);
+  assert.match(read('admin/index.html'), /admin\.js\?v=20261125v(?:2(?:8[7-9]|9\d)|3\d\d)/);
+  assert.match(read('admin/index.html'), /community-publishing-studio\.js\?v=20261125v(?:2(?:8[7-9]|9\d)|3\d\d)/);
 
   // v292/v297: Full-width /study-library/ shell parity, visible right sidebar (zero portal-shell aside hide leak), clean scannable cards & footer brand fix
   const portalJs = read('assets/js/community-portal.js');

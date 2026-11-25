@@ -1066,34 +1066,55 @@
     var card = el('div', 'cp-modal-card');
     card.setAttribute('role', 'dialog');
     card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-labelledby', 'cp-composer-modal-title');
+
+    function closeComposer() {
+      backdrop.remove();
+      document.body.classList.remove('cso-modal-open');
+      document.removeEventListener('keydown', onEscComposer);
+    }
+    function onEscComposer(ev) {
+      if (ev && ev.key === 'Escape') closeComposer();
+    }
+    backdrop.addEventListener('click', function (ev) {
+      if (ev.target === backdrop) closeComposer();
+    });
+    document.addEventListener('keydown', onEscComposer);
 
     var head = el('div', 'cp-pro-head');
-    head.appendChild(el('h2', 'cp-pro-title', '✍️ Share Notes, Ask a Question, or Post Exam Intel'));
-    var bClose = el('button', 'cp-btn cp-btn-sm', '✕'); bClose.type = 'button';
-    bClose.addEventListener('click', function () { backdrop.remove(); });
+    var heading = el('h2', 'cp-pro-title', '✍️ Share Notes, Ask a Question, or Post Exam Intel');
+    heading.id = 'cp-composer-modal-title';
+    head.appendChild(heading);
+    var bClose = el('button', 'cp-btn cp-btn-sm cp-modal-close', '✕'); bClose.type = 'button';
+    bClose.setAttribute('aria-label', 'Close discussion composer');
+    bClose.addEventListener('click', closeComposer);
     head.appendChild(bClose);
     card.appendChild(head);
 
     var typeSel = el('select', 'cp-select');
+    typeSel.setAttribute('aria-label', 'Discussion type');
     MEMBER_POST_TYPES.forEach(function (pt) { typeSel.appendChild(new Option(pt[1], pt[0])); });
 
     var l1Sel = el('select', 'cp-select');
+    l1Sel.setAttribute('aria-label', 'Community circle');
     l1Sel.appendChild(new Option('Select Community Circle...', ''));
     S.nodes.filter(function (n) { return Number(n.level) === 1; }).forEach(function (n) { l1Sel.appendChild(new Option(pick(n, 'title'), n.id)); });
 
     var l2Sel = el('select', 'cp-select');
+    l2Sel.setAttribute('aria-label', 'Interest group');
     l2Sel.appendChild(new Option('Select Interest Group...', ''));
     l1Sel.addEventListener('change', function () {
       clear(l2Sel); l2Sel.appendChild(new Option('Select Interest Group...', ''));
       S.nodes.filter(function (n) { return Number(n.level) === 2 && n.parent_id === l1Sel.value; }).forEach(function (n) { l2Sel.appendChild(new Option(pick(n, 'title'), n.id)); });
     });
 
-    var titleInp = el('input', 'cp-input'); titleInp.placeholder = 'Clear title (e.g. OPSC OAS 2025 Odisha Geography Memory Questions)';
-    var bodyTa = el('textarea', 'cp-textarea'); bodyTa.rows = 6; bodyTa.placeholder = 'Share your notes, question, answer-key proof, or exam center tip...';
-    var distInp = el('input', 'cp-input'); distInp.placeholder = 'District tag (e.g. Khordha, Cuttack, All Odisha)';
+    var titleInp = el('input', 'cp-input'); titleInp.placeholder = 'Clear title (e.g. OPSC OAS 2025 Odisha Geography Memory Questions)'; titleInp.setAttribute('aria-label', 'Discussion title');
+    var bodyTa = el('textarea', 'cp-textarea'); bodyTa.rows = 6; bodyTa.placeholder = 'Share your notes, question, answer-key proof, or exam center tip...'; bodyTa.setAttribute('aria-label', 'Discussion details');
+    var distInp = el('input', 'cp-input'); distInp.placeholder = 'District tag (e.g. Khordha, Cuttack, All Odisha)'; distInp.setAttribute('aria-label', 'District tag');
     var bountySel = el('select', 'cp-select');
+    bountySel.setAttribute('aria-label', 'Priority doubt XP bounty');
     [['0', 'No XP Bounty'], ['25', 'Attach +25 XP Priority Doubt Bounty']].forEach(function (b) { bountySel.appendChild(new Option(b[1], b[0])); });
-    var fileInp = el('input', 'cp-input'); fileInp.type = 'file'; fileInp.accept = 'application/pdf,image/jpeg,image/png,image/webp';
+    var fileInp = el('input', 'cp-input'); fileInp.type = 'file'; fileInp.accept = 'application/pdf,image/jpeg,image/png,image/webp'; fileInp.setAttribute('aria-label', 'Attach PDF notes or screenshot');
     var statusMsg = el('div', 'cp-muted', '');
 
     var bSubmit = el('button', 'cp-btn cp-btn-primary', '🚀 Publish & Earn Reputation XP');
@@ -1110,7 +1131,7 @@
         fd.append('bounty_xp', bountySel.value);
         if (fileInp.files && fileInp.files[0]) fd.append('attachment', fileInp.files[0]);
         var res = await api('/api/community/posts', { method: 'POST', body: fd });
-        backdrop.remove();
+        closeComposer();
         if (res.moderation_status === 'pending_review') {
           window.alert('Submitted for moderator approval! Once approved, you earn XP toward Pro Membership.');
         }
@@ -1123,7 +1144,9 @@
 
     card.append(typeSel, l1Sel, l2Sel, titleInp, bodyTa, distInp, bountySel, el('label', 'cp-muted', 'Attach PDF Notes or Screenshot (Max 10 MB)'), fileInp, bSubmit, statusMsg);
     backdrop.appendChild(card);
+    document.body.classList.add('cso-modal-open');
     document.body.appendChild(backdrop);
+    titleInp.focus();
   }
 
   // ============================================================================
@@ -1135,11 +1158,30 @@
     var backdrop = el('div', 'cp-modal-backdrop');
     backdrop.id = 'cp-dm-drawer';
     var drawer = el('div', 'cp-drawer-card');
+    drawer.setAttribute('role', 'dialog');
+    drawer.setAttribute('aria-modal', 'true');
+    drawer.setAttribute('aria-labelledby', 'cp-dm-drawer-title');
+
+    function closeDm() {
+      backdrop.remove();
+      document.body.classList.remove('cso-modal-open');
+      document.removeEventListener('keydown', onEscDm);
+    }
+    function onEscDm(ev) {
+      if (ev && ev.key === 'Escape') closeDm();
+    }
+    backdrop.addEventListener('click', function (ev) {
+      if (ev.target === backdrop) closeDm();
+    });
+    document.addEventListener('keydown', onEscDm);
 
     var head = el('div', 'cp-pro-head');
-    head.appendChild(el('h2', 'cp-pro-title', '✉️ Peer Direct Messages & Buddy Requests'));
-    var bClose = el('button', 'cp-btn cp-btn-sm', '✕'); bClose.type = 'button';
-    bClose.addEventListener('click', function () { backdrop.remove(); });
+    var dmTitle = el('h2', 'cp-pro-title', '✉️ Peer Direct Messages & Buddy Requests');
+    dmTitle.id = 'cp-dm-drawer-title';
+    head.appendChild(dmTitle);
+    var bClose = el('button', 'cp-btn cp-btn-sm cp-modal-close', '✕'); bClose.type = 'button';
+    bClose.setAttribute('aria-label', 'Close direct messages');
+    bClose.addEventListener('click', closeDm);
     head.appendChild(bClose);
     drawer.appendChild(head);
 
@@ -1147,6 +1189,7 @@
     body.appendChild(el('div', 'cp-muted', 'Loading inbox...'));
     drawer.appendChild(body);
     backdrop.appendChild(drawer);
+    document.body.classList.add('cso-modal-open');
     document.body.appendChild(backdrop);
 
     try {

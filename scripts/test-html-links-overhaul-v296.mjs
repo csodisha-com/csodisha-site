@@ -305,8 +305,8 @@ check('4. Static sitemap.xml & dynamic _seo.js sitemap emit ONLY active 200-OK c
 
 check('5. sw.js precache & runtime SWR lists contain only existing valid files; v296 cache version synced', () => {
   const sw = read('sw.js');
-  assert.match(sw, /const CACHE_NAME = 'cso-candidate-cache-v29[6-9]';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v29[6-9]';/);
+  assert.match(sw, /const CACHE_NAME = 'cso-candidate-cache-v(?:29[6-9]|3\d\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v(?:29[6-9]|3\d\d)';/);
 
   const precacheBlock = (sw.match(/const PRECACHE_URLS = \[([\s\S]*?)\];/) || [])[1] || '';
   const swrBlock = (sw.match(/const RUNTIME_SWR_ASSETS = \[([\s\S]*?)\];/) || [])[1] || '';

@@ -1431,3 +1431,102 @@ aside.com-sidebar,
     opacity: 1;
   }
 }
+
+/* v300: Mobile Compatibility (320px Reflow, 44px Targets, 16px Inputs, 100dvh Modals) */
+.cp-root,
+.com-shell,
+.com-workspace-grid,
+.com-feed-col,
+.com-thread-card,
+.com-toolbar-card,
+.com-sidebar-card {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.cp-modal-card,
+.cp-drawer-card {
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+  border: 1px solid var(--cso-border);
+  opacity: 1;
+  backdrop-filter: none;
+  max-height: calc(100dvh - 24px);
+  max-width: calc(100vw - 16px);
+  overflow-y: auto;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.cp-modal-close {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cp-root a:focus-visible,
+.cp-root button:focus-visible,
+.cp-root input:focus-visible,
+.cp-root select:focus-visible,
+.cp-root textarea:focus-visible {
+  outline: 3px solid var(--cso-accent);
+  outline-offset: 2px;
+  scroll-margin-top: calc(112px + env(safe-area-inset-top, 0px));
+}
+
+@media (max-width: 1099px) {
+  .com-ghost-pill,
+  .com-channel-item,
+  .cp-lang-btn,
+  .cp-btn,
+  .com-start-btn,
+  .com-widget-cta {
+    min-height: 44px;
+  }
+
+  .com-card-actions,
+  .com-hero-actions,
+  .com-toolbar-row {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cp-root input:not([type="checkbox"]):not([type="radio"]),
+  .cp-root select,
+  .cp-root textarea,
+  .cp-modal-card input:not([type="checkbox"]):not([type="radio"]),
+  .cp-modal-card select,
+  .cp-modal-card textarea {
+    font-size: max(16px, 1rem);
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .com-hero--compact {
+    padding: 1rem;
+  }
+
+  .com-hero-bar,
+  .com-card-foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .com-toolbar-card .com-toolbar-select {
+    flex: 1 1 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cp-root *,
+  .cp-root *::before,
+  .cp-root *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -216,12 +216,12 @@ for (const [idx, rel, pathname] of [[2, 'assets/shared-header.js', '/community/'
 }
 
 await check('4. ?v=20261125v289+ cache busting, cso-candidate-cache-v289+ & strict CSP compliance', () => {
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v2(?:89|9\d)';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:89|9\d)';/);
-  assert.match(read('index.html'), /\/assets\/app\.js\?v=20261125v2(?:89|9\d)/);
-  assert.match(read('index.html'), /\/assets\/style\.css\?v=20261125v2(?:89|9\d)/);
-  assert.match(read('community/index.html'), /\/assets\/shared-header\.js\?v=20261125v2(?:89|9\d)/);
-  assert.match(read('study-library/index.html'), /\/assets\/css\/portal-shell\.css\?v=20261125v2(?:89|9\d)/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v(?:2(?:89|9\d)|3\d\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v(?:2(?:89|9\d)|3\d\d)';/);
+  assert.match(read('index.html'), /\/assets\/app\.js\?v=20261125v(?:2(?:89|9\d)|3\d\d)/);
+  assert.match(read('index.html'), /\/assets\/style\.css\?v=20261125v(?:2(?:89|9\d)|3\d\d)/);
+  assert.match(read('community/index.html'), /\/assets\/shared-header\.js\?v=20261125v(?:2(?:89|9\d)|3\d\d)/);
+  assert.match(read('study-library/index.html'), /\/assets\/css\/portal-shell\.css\?v=20261125v(?:2(?:89|9\d)|3\d\d)/);
 
   for (const rel of ['assets/shared-header.js', 'assets/app.js']) {
     const codeOnly = read(rel).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');

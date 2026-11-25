@@ -378,23 +378,23 @@ await check('5. Public /careers/ portal supports preview_token, UNPUBLISHED DRAF
 });
 
 await check('6. Cache busting (?v=20261124v273+, cso-candidate-cache-v273+) & 100% strict CSP compliance', () => {
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:7[3-9]|[8-9]\d)';/.test(read('sw.js')), 'sw.js must be cso-candidate-cache-v273+');
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:7[3-9]|[8-9]\d)';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel.js must be cso-candidate-cache-v273+');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v(?:2(?:7[3-9]|[8-9]\d)|3\d\d)';/.test(read('sw.js')), 'sw.js must be cso-candidate-cache-v273+');
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v(?:2(?:7[3-9]|[8-9]\d)|3\d\d)';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel.js must be cso-candidate-cache-v273+');
 
   const adminHtml = read('admin/index.html');
   for (const pat of [
-    /\/admin\/studio\.css\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/,
-    /\/admin\/careers-publishing-studio\.css\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/,
-    /\/admin\/careers-publishing-studio\.js\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/,
-    /\/admin\/command-suite\.js\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/,
-    /\/admin\/admin\.js\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/
+    /\/admin\/studio\.css\?v=2026112[45]v(?:2(?:7[3-9]|[8-9]\d)|3\d\d)/,
+    /\/admin\/careers-publishing-studio\.css\?v=2026112[45]v(?:2(?:7[3-9]|[8-9]\d)|3\d\d)/,
+    /\/admin\/careers-publishing-studio\.js\?v=2026112[45]v(?:2(?:7[3-9]|[8-9]\d)|3\d\d)/,
+    /\/admin\/command-suite\.js\?v=2026112[45]v(?:2(?:7[3-9]|[8-9]\d)|3\d\d)/,
+    /\/admin\/admin\.js\?v=2026112[45]v(?:2(?:7[3-9]|[8-9]\d)|3\d\d)/
   ]) {
     assert.ok(pat.test(adminHtml), `admin/index.html missing ${pat}`);
   }
 
   const careersHtml = read('careers/index.html');
-  assert.ok(/\/assets\/css\/careers-portal\.css\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/.test(careersHtml));
-  assert.ok(/\/assets\/js\/careers-portal\.js\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/.test(careersHtml));
+  assert.ok(/\/assets\/css\/careers-portal\.css\?v=2026112[45]v(?:2(?:7[3-9]|[8-9]\d)|3\d\d)/.test(careersHtml));
+  assert.ok(/\/assets\/js\/careers-portal\.js\?v=2026112[45]v(?:2(?:7[3-9]|[8-9]\d)|3\d\d)/.test(careersHtml));
 
   for (const rel of [
     'admin/careers-publishing-studio.js',

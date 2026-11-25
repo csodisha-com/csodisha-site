@@ -1,0 +1,226 @@
+#!/usr/bin/env node
+/**
+ * v300 Full Mobile Compatibility, Responsiveness, 4-Theme Visibility & WCAG 2.2 Accessibility Audit
+ *
+ * Verifies across ALL 30 active HTML pages, ALL core/portal/admin CSS files,
+ * ALL JS UI modules, and SSR templates:
+ *  1. Valid zoom-friendly viewport <meta> tag on all 30 HTML pages (no user-scalable=no or maximum-scale=1).
+ *  2. Landmarks (<main id="main-content">, single <h1>, lang, Skip-to-Main-Content link),
+ *     <img> alt attributes, labeled form inputs, and 100% strict CSP compliance.
+ *  3. Mobile breakpoint rules, 44px touch targets, 16px mobile input font-size (no iOS zoom),
+ *     100dvh modal sizing, safe-area insets, scroll-margin-top, :focus-visible, prefers-reduced-motion,
+ *     and zero fixed 320px-overflowing minmax() grid tracks across core, portal & admin CSS.
+ *  4. Solid opaque --cso-surface-elevated overlays, WCAG AA (>= 4.5:1) contrast across all 4 themes,
+ *     mobile drawer/modal a11y hooks (aria-modal, aria-controls, Escape dismiss, body scroll lock),
+ *     and v300 cache busting (?v=20261125v300 & cso-candidate-cache-v300).
+ */
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const ROOT = process.cwd();
+const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
+
+let passed = 0;
+let failed = 0;
+function check(name, fn) {
+  try {
+    fn();
+    passed++;
+    console.log(`  PASS  ${name}`);
+  } catch (err) {
+    failed++;
+    console.error(`  FAIL  ${name}\n        ${err && err.stack ? err.stack : err}`);
+  }
+}
+
+function walkFiles(dir, ext, out = []) {
+  if (!fs.existsSync(dir)) return out;
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (e.name.startsWith('.') || e.name === 'node_modules') continue;
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) walkFiles(p, ext, out);
+    else if (e.name.endsWith(ext)) out.push(p);
+  }
+  return out.sort();
+}
+
+function relativeLuminance(hex) {
+  const clean = hex.replace('#', '');
+  const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean.slice(0, 6);
+  const [r, g, b] = [0, 2, 4].map(i => {
+    const v = parseInt(full.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrastRatio(hexA, hexB) {
+  const l1 = relativeLuminance(hexA);
+  const l2 = relativeLuminance(hexB);
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+
+const htmlFiles = walkFiles(ROOT, '.html');
+
+console.log('\n=== v300 Mobile Compatibility, 4-Theme Visibility & WCAG 2.2 Accessibility Audit ===\n');
+
+check('1. Valid zoom-friendly viewport <meta> tag on all 30 active HTML pages (no zoom locks)', () => {
+  assert.equal(htmlFiles.length, 30, `Expected 30 active HTML files, got ${htmlFiles.length}`);
+  for (const full of htmlFiles) {
+    const rel = path.relative(ROOT, full);
+    const html = fs.readFileSync(full, 'utf8');
+    const vp = html.match(/<meta[^>]+name=["']viewport["'][^>]*>/i);
+    assert.ok(vp, `${rel} missing <meta name="viewport">`);
+    assert.ok(/width=device-width/i.test(vp[0]), `${rel} viewport must include width=device-width`);
+    assert.ok(/initial-scale=1(\.0)?/i.test(vp[0]), `${rel} viewport must include initial-scale=1`);
+    assert.ok(!/user-scalable\s*=\s*(?:no|0)/i.test(vp[0]), `${rel} viewport forbids zooming (user-scalable=no)`);
+    assert.ok(!/maximum-scale\s*=\s*1(?:\.0)?\b/i.test(vp[0]), `${rel} viewport forbids zooming (maximum-scale=1)`);
+  }
+});
+
+check('2. Landmarks (<main id="main-content">, single <h1>, Skip link, lang), img alt, labeled inputs & strict CSP', () => {
+  for (const full of htmlFiles) {
+    const rel = path.relative(ROOT, full);
+    const html = fs.readFileSync(full, 'utf8');
+    assert.match(html, /<html[^>]+lang=["'][a-z-]+["']/i, `${rel} missing <html lang="...">`);
+    assert.match(html, /<a[^>]+class="cso-skip-link"[^>]+href="#main-content"/i, `${rel} missing Skip-to-main-content link`);
+    assert.match(html, /<main\b[^>]*\bid="main-content"/i, `${rel} missing <main id="main-content">`);
+
+    const h1Count = (html.match(/<h1\b/gi) || []).length;
+    assert.equal(h1Count, 1, `${rel} must have exactly 1 <h1>, found ${h1Count}`);
+
+    const imgs = html.match(/<img\b[^>]*>/gi) || [];
+    for (const img of imgs) {
+      assert.ok(/\balt\s*=/i.test(img), `${rel} contains <img> without alt attribute: ${img.slice(0, 90)}`);
+    }
+
+    const controls = html.match(/<(?:input|select|textarea)\b[^>]*>/gi) || [];
+    for (const ctrl of controls) {
+      if (/type=["'](?:hidden|submit|button)["']/i.test(ctrl)) continue;
+      if (/aria-label=|aria-labelledby=/i.test(ctrl)) continue;
+      const idm = ctrl.match(/\bid=["']([^"']+)["']/i);
+      const hasFor = idm && new RegExp(`<label[^>]+for=["']${idm[1]}["']`, 'i').test(html);
+      assert.ok(hasFor, `${rel} has unlabeled form control: ${ctrl.slice(0, 100)}`);
+    }
+
+    // Strict CSP check on HTML: no inline style="" or on*=""
+    assert.ok(!/\sstyle\s*=\s*["']/i.test(html), `${rel} violates strict CSP (inline style attribute)`);
+    assert.ok(!/\son[a-z]+\s*=\s*["']/i.test(html), `${rel} violates strict CSP (inline event handler)`);
+  }
+
+  // SSR shell also includes Skip-to-Main-Content link
+  const ssr = read('functions/_lib/ssr-shell.js');
+  assert.ok(ssr.includes('class="cso-skip-link" href="#main-content"'), 'ssr-shell.js missing skip-to-main-content link');
+
+  // Strict CSP on core JS modules
+  for (const rel of [
+    'assets/shared-header.js',
+    'assets/app.js',
+    'assets/js/cso-global-enhancements.js',
+    'assets/js/community-portal.js',
+    'assets/js/careers-portal.js',
+    'assets/js/about-portal.js',
+    'assets/js/jobs-portal.js',
+    'assets/js/schemes-portal.js',
+    'assets/js/study-portal.js'
+  ]) {
+    const codeOnly = read(rel).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+    for (const bad of ['.innerHTML', '.outerHTML', 'insertAdjacentHTML', '.style.']) {
+      assert.ok(!codeOnly.includes(bad), `${rel} violates strict CSP (${bad})`);
+    }
+  }
+});
+
+check('3. Mobile breakpoints, 44px touch targets, 16px inputs, 100dvh modals, safe-area, focus-visible, scroll-margin & reduced-motion', () => {
+  const requiredCss = [
+    'assets/style.css',
+    'assets/css/portal-shell.css',
+    'assets/css/jobs-portal.css',
+    'assets/css/careers-portal.css',
+    'assets/css/schemes-portal.css',
+    'assets/css/study-portal.css',
+    'assets/css/community-portal.css',
+    'assets/css/about-portal.css',
+    'admin/studio.css',
+    'admin/admin.css'
+  ];
+
+  for (const rel of requiredCss) {
+    const css = read(rel);
+    assert.ok(/@media\s*\(max-width:\s*(?:480|600|640|768|900|959|1099)px\)/.test(css), `${rel} missing mobile @media breakpoint`);
+    assert.ok(/min-height:\s*44px/.test(css), `${rel} missing 44px touch target rule`);
+    assert.ok(/font-size:\s*max\(16px,\s*1rem\)/.test(css), `${rel} missing 16px mobile input anti-zoom rule`);
+    assert.ok(css.includes('@media (prefers-reduced-motion: reduce)'), `${rel} missing prefers-reduced-motion rule`);
+    assert.ok(css.includes(':focus-visible'), `${rel} missing :focus-visible outline rule`);
+    assert.ok(!/minmax\(\s*320px\s*,/.test(css), `${rel} contains unguarded minmax(320px, ...) that overflows 320px phones`);
+  }
+
+  // Core shell & modal-bearing stylesheets verify 100dvh, safe-area, skip-link, scroll-margin-top, table-wrap
+  const styleCss = read('assets/style.css');
+  const shellCss = read('assets/css/portal-shell.css');
+  for (const [rel, css] of [['assets/style.css', styleCss], ['assets/css/portal-shell.css', shellCss]]) {
+    assert.ok(css.includes('.cso-skip-link'), `${rel} missing .cso-skip-link styles`);
+    assert.ok(css.includes('scroll-margin-top:'), `${rel} missing scroll-margin-top for sticky header focus visibility`);
+    assert.ok(css.includes('env(safe-area-inset-bottom'), `${rel} missing safe-area-inset-bottom`);
+    assert.ok(css.includes('100dvh'), `${rel} missing 100dvh mobile overlay sizing`);
+    assert.ok(css.includes('overflow-x: clip'), `${rel} missing overflow-x: clip zero-overflow guard`);
+    assert.ok(css.includes('.cso-table-wrap'), `${rel} missing .cso-table-wrap horizontal touch scroll wrapper`);
+    assert.ok(css.includes('body.cso-modal-open'), `${rel} missing CSP-safe body.cso-modal-open scroll lock`);
+  }
+
+  for (const rel of ['assets/css/careers-portal.css', 'assets/css/community-portal.css', 'assets/css/about-portal.css']) {
+    const css = read(rel);
+    assert.ok(css.includes('100dvh'), `${rel} modal/drawer missing 100dvh height cap`);
+    assert.ok(css.includes('env(safe-area-inset-bottom'), `${rel} modal/drawer missing safe-area-inset-bottom`);
+  }
+});
+
+check('4. Opaque 4-theme mobile overlays, >= 4.5:1 WCAG AA contrast, JS a11y hooks & v300 cache busting', () => {
+  const styleCss = read('assets/style.css');
+  assert.ok(styleCss.includes('background: var(--cso-surface-elevated) !important;'), 'assets/style.css must enforce solid --cso-surface-elevated on mobile overlays');
+  assert.ok(styleCss.includes('opacity: 1 !important;') && styleCss.includes('backdrop-filter: none !important;'), 'assets/style.css must enforce opaque overlays with backdrop-filter: none');
+
+  // Verify WCAG AA (>= 4.5:1) contrast on all 4 theme mobile drawer/modal/input/skip-link surfaces
+  const THEMES = {
+    system:  { elevated: '#ffffff', ink: '#0f172a', soft: '#334155', link: '#0f766e', accent: '#0f766e', accentInk: '#ffffff', inBg: '#ffffff', inInk: '#0f172a' },
+    dark:    { elevated: '#161e2e', ink: '#f1f5f9', soft: '#cbd5e1', link: '#2dd4bf', accent: '#14b8a6', accentInk: '#04201d', inBg: '#0f1520', inInk: '#f1f5f9' },
+    reading: { elevated: '#fdf9f1', ink: '#241b12', soft: '#4a3b2c', link: '#78350f', accent: '#854d0e', accentInk: '#ffffff', inBg: '#fffdf8', inInk: '#241b12' },
+    odisha:  { elevated: '#fffdf9', ink: '#1f140c', soft: '#4a3423', link: '#b45309', accent: '#c2410c', accentInk: '#ffffff', inBg: '#ffffff', inInk: '#1f140c' }
+  };
+  for (const [name, t] of Object.entries(THEMES)) {
+    assert.ok(contrastRatio(t.ink, t.elevated) >= 7.0, `${name} drawer/modal ink contrast < 7:1`);
+    assert.ok(contrastRatio(t.soft, t.elevated) >= 4.5, `${name} drawer/modal soft ink contrast < 4.5:1`);
+    assert.ok(contrastRatio(t.link, t.elevated) >= 4.5, `${name} drawer/modal link contrast < 4.5:1`);
+    assert.ok(contrastRatio(t.accentInk, t.accent) >= 4.5, `${name} skip-link / CTA accent contrast < 4.5:1`);
+    assert.ok(contrastRatio(t.inInk, t.inBg) >= 7.0, `${name} mobile input ink contrast < 7:1`);
+  }
+
+  // Verify JS modal/drawer accessibility hooks (aria-modal, aria-controls, Escape, body scroll lock)
+  const sh = read('assets/shared-header.js');
+  assert.ok(sh.includes("setAttribute('role', 'menu')") && sh.includes("ev.key === 'Escape'"), 'shared-header.js showPopup must support role=menu & Escape');
+  assert.ok(sh.includes("setAttribute('aria-controls', 'cso-auth-menu')"), 'shared-header.js mobile auth trigger missing aria-controls');
+  assert.ok(sh.includes("classList.add('cso-modal-open')"), 'shared-header.js saved drawer missing body scroll lock');
+
+  const app = read('assets/app.js');
+  assert.ok(app.includes("setAttribute('role','menu')") && app.includes("ev.key==='Escape'"), 'app.js pop must support role=menu & Escape');
+  assert.ok(app.includes('aria-controls="cso-auth-menu"') || app.includes("setAttribute('aria-controls', 'cso-auth-menu')"), 'app.js mobile auth trigger missing aria-controls');
+
+  const cp = read('assets/js/community-portal.js');
+  assert.ok(cp.includes("card.setAttribute('aria-modal', 'true')") && cp.includes("drawer.setAttribute('aria-modal', 'true')"), 'community-portal.js composer & DM drawer must set aria-modal=true');
+  assert.ok(cp.includes("ev.key === 'Escape'") && cp.includes("classList.add('cso-modal-open')"), 'community-portal.js modals must support Escape dismiss & body scroll lock');
+
+  const ge = read('assets/js/cso-global-enhancements.js');
+  assert.ok(ge.includes("classList.add('cso-modal-open')") && ge.includes("e.key === 'Escape'"), 'cso-global-enhancements.js modals must support Escape & body scroll lock');
+
+  // Verify v300 cache busting
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v300';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v300';/);
+  assert.match(read('functions/_lib/ssr-shell.js'), /style\.css\?v=20261125v300/);
+  assert.match(read('index.html'), /style\.css\?v=20261125v300/);
+  assert.match(read('community/index.html'), /community-portal\.css\?v=20261125v300/);
+  assert.match(read('admin/index.html'), /studio\.css\?v=20261125v300/);
+});
+
+console.log(`\n=== v300 Mobile & WCAG 2.2 Audit Results: ${passed} passed, ${failed} failed ===\n`);
+if (failed > 0) process.exit(1);

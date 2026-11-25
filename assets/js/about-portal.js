@@ -330,6 +330,7 @@
 
     function closeModal() {
       backdrop.remove();
+      document.body.classList.remove('cso-modal-open');
       document.removeEventListener('keydown', onEsc);
     }
     function onEsc(e) {
@@ -341,6 +342,7 @@
       if (e.target === backdrop) closeModal();
     });
     document.addEventListener('keydown', onEsc);
+    document.body.classList.add('cso-modal-open');
     document.body.appendChild(backdrop);
   }
 

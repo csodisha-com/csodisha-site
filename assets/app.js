@@ -105,7 +105,7 @@ function appendSafeHtml(target, htmlStr) {
 }
 const toast=m=>{const t=document.createElement('div');t.className='ts';t.textContent=m;document.body.append(t);localize(t);setTimeout(()=>t.remove(),2600)};
 const modal=h=>{const o=document.createElement('div');o.className='ov';setSafeHtml(o,'<div class="md" role="dialog" aria-modal="true"><button class="x" data-x aria-label="Close">✕</button>'+h+'</div>');const k=e=>{if(e.key==='Escape')o.close()};o.close=()=>{o.remove();document.removeEventListener('keydown',k)};document.addEventListener('keydown',k);o.onclick=e=>{if(e.target===o||e.target.closest('[data-x]'))o.close()};document.body.append(o);localize(o);const f=$('input,select',o);if(f)f.focus();return o};
-const pop=(a,items)=>{$$('.pp').forEach(x=>x.remove());const m=document.createElement('div');m.className='pp';const anchor=a.closest('.cso-popup-anchor')||a.parentElement||document.body;items.forEach(([l,f,on])=>{const b=document.createElement('button');b.textContent=(on?'✓ ':'')+l;b.onclick=()=>{f();m.remove()};m.append(b)});anchor.append(m);localize(m);setTimeout(()=>addEventListener('click',()=>m.remove(),{once:true}),0)};
+const pop=(a,items)=>{$$('.pp').forEach(x=>x.remove());const trig=a&&a.closest?(a.closest('button')||a):a;const m=document.createElement('div');m.className='pp';m.setAttribute('role','menu');const anchor=a.closest('.cso-popup-anchor')||a.parentElement||document.body;const closePop=()=>{m.remove();if(trig&&trig.setAttribute)trig.setAttribute('aria-expanded','false');document.removeEventListener('keydown',onPopEsc);};const onPopEsc=ev=>{if(ev&&ev.key==='Escape'){closePop();if(trig&&typeof trig.focus==='function')trig.focus();}};items.forEach(([l,f,on])=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','menuitem');b.textContent=(on?'✓ ':'')+l;b.onclick=()=>{f();closePop()};m.append(b)});anchor.append(m);if(trig&&trig.setAttribute)trig.setAttribute('aria-expanded','true');document.addEventListener('keydown',onPopEsc);localize(m);setTimeout(()=>addEventListener('click',closePop,{once:true}),0)};
 const go=s=>{location.hash=s};
 let lastQ='';
 const getSearchInput=()=>$('#cso-ask-input')||$('#sf input')||$('#sq');
@@ -1194,6 +1194,7 @@ function authUI() {
     trigger.id = 'cso-auth-trigger';
     trigger.setAttribute('aria-haspopup', 'true');
     trigger.setAttribute('aria-expanded', 'false');
+    trigger.setAttribute('aria-controls', 'cso-auth-menu');
     trigger.setAttribute('aria-label', 'Account options');
 
     const mIcon = document.createElement('span');
@@ -1271,7 +1272,7 @@ function authUI() {
       '<button class="btn p signup-btn cso-signup-pill" id="su" type="button">Sign Up</button>' +
     '</div>' +
     '<div class="cso-mobile-auth-wrapper">' +
-      '<button type="button" class="cso-auth-trigger" id="cso-auth-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account options">' +
+      '<button type="button" class="cso-auth-trigger" id="cso-auth-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="cso-auth-menu" aria-label="Account options">' +
         '<span class="auth-icon" aria-hidden="true">👤</span>' +
         '<span class="auth-label">Account</span>' +
         '<span class="auth-arrow" aria-hidden="true">▾</span>' +

@@ -238,12 +238,14 @@
   function closeDrawer() {
     state.activeItem = null;
     if (drawerRefs) drawerRefs.backdrop.hidden = true;
+    document.body.classList.remove('cso-modal-open');
   }
 
   function openDrawer(item) {
     if (!item) return;
     state.activeItem = item;
     var refs = ensureDrawer();
+    document.body.classList.add('cso-modal-open');
     var t = c();
 
     refs.headBadges.replaceChildren();

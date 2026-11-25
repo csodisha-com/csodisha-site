@@ -872,3 +872,45 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* v300: Admin Mobile Compatibility, 44px Touch Targets, 16px Inputs & WCAG 2.2 */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.cso-table-wrap,
+.table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: max(16px, 1rem);
+    min-height: 44px;
+  }
+
+  button,
+  .btn {
+    min-height: 44px;
+  }
+
+  .rbac-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

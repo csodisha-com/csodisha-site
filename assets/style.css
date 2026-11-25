@@ -10639,3 +10639,253 @@ footer h4,
   border-color: var(--cso-err-fg) !important;
   color: var(--cso-err-fg) !important;
 }
+
+/* ==========================================================================
+   v300: Mobile Compatibility (320px-1099px), Zero-Overflow Reflow,
+         Solid Opaque 4-Theme Overlays & WCAG 2.2 Accessibility Overhaul
+   ========================================================================== */
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+body.cso-modal-open {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
+img,
+video,
+iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+.cso-table-wrap,
+.table-wrap,
+.table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Skip-to-Main-Content Link (WCAG 2.2 SC 2.4.1) */
+.cso-skip-link {
+  position: fixed;
+  top: -120px;
+  left: 12px;
+  z-index: 99999;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  border: 2px solid var(--cso-border);
+  font-weight: 700;
+  font-size: 0.92rem;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: top 0.14s ease;
+}
+
+.cso-skip-link:focus,
+.cso-skip-link:focus-visible {
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  outline: 3px solid var(--cso-accent);
+  outline-offset: 2px;
+}
+
+/* Visible Focus Outlines & Sticky-Header Scroll Margin (WCAG 2.2 SC 2.4.11) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--cso-accent);
+  outline-offset: 2px;
+}
+
+[id],
+main,
+section,
+h1,
+h2,
+h3,
+a,
+button,
+input,
+select,
+textarea {
+  scroll-margin-top: calc(112px + env(safe-area-inset-top, 0px));
+}
+
+/* Safe-Area Insets for Notched Phones */
+.top,
+.site-header__top,
+#header-top {
+  padding-top: max(6px, env(safe-area-inset-top, 0px));
+}
+
+footer {
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
+/* 100% Solid Opaque Mobile Overlays, Popovers, Drawers & 100dvh Modals */
+.pp,
+.cso-theme-popover,
+.cso-modal-panel,
+.cso-saved-drawer {
+  background: var(--cso-surface-elevated) !important;
+  color: var(--cso-ink) !important;
+  border: 1px solid var(--cso-border) !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+}
+
+.pp button,
+.cso-theme-popover button {
+  color: var(--cso-ink) !important;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pp button:hover,
+.pp button:focus-visible,
+.cso-theme-popover button:hover,
+.cso-theme-popover button:focus-visible {
+  background: var(--cso-bg) !important;
+  color: var(--cso-link) !important;
+}
+
+.cso-modal-panel,
+.cso-saved-drawer {
+  max-height: calc(100dvh - 24px) !important;
+  max-width: calc(100vw - 16px) !important;
+  overflow-y: auto !important;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+  box-sizing: border-box;
+}
+
+.cso-modal-close,
+.cso-saved-drawer__close {
+  min-width: 44px !important;
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px;
+}
+
+/* Tablet & Phone (< 1100px): 44px Touch Targets, Opaque Drawers & Zero Clipping */
+@media (max-width: 1099px) {
+  .cso-nav-mobile,
+  .cso-nav-items.cso-mobile-open > a,
+  .cso-nav-items.cso-mobile-open .cso-nav-parent > a,
+  .cso-nav-items.cso-mobile-open .cso-nav-arrow,
+  .cso-nav-items.cso-mobile-open .cso-js1-link,
+  .cso-nav-items.cso-mobile-open .cso-js2-link,
+  .cso-nav-items.cso-mobile-open .cso-nav-saved-pill,
+  .cso-auth-dropdown-menu .cso-auth-item,
+  .cso-gsearch-chip,
+  .cso-saved-tab {
+    min-height: 44px !important;
+    min-width: 44px;
+    box-sizing: border-box;
+  }
+
+  .cso-nav-items.cso-mobile-open {
+    background: var(--cso-surface-elevated) !important;
+    color: var(--cso-ink) !important;
+    border-top: 1px solid var(--cso-border) !important;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+    max-height: calc(100dvh - 110px);
+    overflow-y: auto;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .pp,
+  .cso-auth-dropdown-menu {
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 80px);
+    overflow-y: auto;
+  }
+
+  .cso-desktop-auth-buttons,
+  .cso-auth-row,
+  .cso-mobile-acc-cluster,
+  .cso-gsearch-counts {
+    gap: 8px !important;
+  }
+}
+
+/* Phone (< 768px): 16px Inputs (No iOS Auto-Zoom) & 320px Zero-Overflow Reflow */
+@media (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: max(16px, 1rem) !important;
+    min-height: 44px;
+    background-color: var(--cso-input-bg);
+    color: var(--cso-input-ink);
+  }
+
+  .w,
+  main,
+  .cso-footer-grid,
+  .g1,
+  .g3,
+  .row,
+  .c2,
+  .c4,
+  .lst {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 480px) {
+  .cso-footer-grid,
+  .c2,
+  .c4,
+  .lst {
+    grid-template-columns: 1fr !important;
+  }
+
+  .top,
+  .site-header__top,
+  #header-top {
+    padding-left: max(8px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(8px, env(safe-area-inset-right, 0px)) !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .top .cso-brand-logo,
+  #header-top .cso-brand-logo {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
