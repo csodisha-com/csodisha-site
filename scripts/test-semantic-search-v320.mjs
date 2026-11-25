@@ -209,8 +209,8 @@ await test('4. Wrangler Vectorize binding, migration 0151, CSP compliance & v320
   const mig = read('migrations/0151_semantic_search_v320.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS semantic_index_items'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v326');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v326';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v327');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v327';"));
   assert.ok(read('migrations/0152_ask_ai_answer_cache_v321.sql').includes('CREATE TABLE IF NOT EXISTS semantic_answer_cache'));
 
   const js = read('assets/js/semantic-search.js');
@@ -304,6 +304,20 @@ await test('5. v321 Hybrid RAG grounded answer, general-query fallback & 7-day D
   }, { q: 'OPSC OAS age limit', type: 'all', clientIp: '198.51.100.6' });
   assert.equal(rOpenAi.ai_answer.answer_en, 'Unwrapped OpenAI envelope answer.');
   assert.equal(rOpenAi.ai_answer.answer_or, 'ଓପନ୍ଏଆଇ ଏନଭେଲପ୍ ଉତ୍ତର।');
+
+  // 5f. v327: Regex salvage for truncated JSON without leaking raw "answer_en": keys
+  const rSalvage = await runSemanticSearch({
+    DB: createMockDb(),
+    AI: {
+      async run() {
+        return {
+          response: '{"answer_en":"OPSC OAS age limit is 21 to 38 years.","answer_or":"ଓଡ଼ିଶା ଲୋକସେବା ଆୟୋଗ'
+        };
+      }
+    }
+  }, { q: 'OPSC OAS truncated test', type: 'all', clientIp: '198.51.100.7' });
+  assert.equal(rSalvage.ai_answer.answer_en, 'OPSC OAS age limit is 21 to 38 years.');
+  assert.ok(!rSalvage.ai_answer.answer_en.includes('"answer_en"'));
 
   const origFetch = globalThis.fetch;
   globalThis.fetch = async (url, init) => {

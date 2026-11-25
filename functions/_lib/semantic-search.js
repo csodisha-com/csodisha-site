@@ -11,8 +11,8 @@ import { bufToHex, checkRateLimit } from '../api/auth/_utils.js';
 import { getDailyAiUsage, ensureAiCoauthorSchema, extractJsonObject } from './ai-coauthor.js';
 
 export const EMBEDDING_MODEL = '@cf/qwen/qwen3-embedding-0.6b';
-export const ANSWER_PRIMARY_MODEL = '@cf/ibm-granite/granite-4.0-h-micro';
-export const ANSWER_FALLBACK_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
+export const ANSWER_PRIMARY_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
+export const ANSWER_FALLBACK_MODEL = '@cf/ibm-granite/granite-4.0-h-micro';
 export const ANSWER_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const SEMANTIC_NEURON_CAP = 9000;
 export const VALID_SEARCH_TYPES = new Set(['all', 'job', 'scheme', 'study', 'career']);
@@ -272,7 +272,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
   await ensureSemanticSchema(env);
   const cleanQ = String(q || '').trim();
   const normalizedQ = cleanQ.toLowerCase().replace(/\s+/g, ' ');
-  const cacheKey = await sha256Hex(`v326|${type}|${normalizedQ}`);
+  const cacheKey = await sha256Hex(`v327|${type}|${normalizedQ}`);
   const dbg = debugOut || {};
   dbg.provider_attempted = dbg.provider_attempted || [];
   dbg.gemini_status = (env && env.GEMINI_API_KEY && String(env.GEMINI_API_KEY).trim()) ? 'configured' : 'unconfigured';
@@ -348,7 +348,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
   if (geminiKey) {
     dbg.provider_attempted.push('google_gemini');
     try {
-      for (const gemModel of ['gemini-3.5-flash-lite', 'gemini-4-hydrogen', 'gemini-3.8-flash']) {
+      for (const gemModel of ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemma-4-31b-it']) {
         const gemRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gemModel}:generateContent`, {
           method: 'POST',
           headers: {
@@ -380,7 +380,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
           modelUsed = gemModel;
           break;
         }
-        if (gemRes.status !== 404 && gemRes.status !== 429) {
+        if (gemRes.status !== 404 && gemRes.status !== 429 && gemRes.status !== 503) {
           throw new Error(`Gemini HTTP ${gemRes.status}`);
         }
       }
@@ -403,11 +403,11 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
       { role: 'user', content: prompt }
     ];
     try {
-      rawResp = await env.AI.run(ANSWER_PRIMARY_MODEL, { messages, max_tokens: 900, temperature: 0.25 });
+      rawResp = await env.AI.run(ANSWER_PRIMARY_MODEL, { messages, max_tokens: 700, temperature: 0.25, repetition_penalty: 1.15 });
     } catch (primaryErr) {
       modelUsed = ANSWER_FALLBACK_MODEL;
       try {
-        rawResp = await env.AI.run(ANSWER_FALLBACK_MODEL, { messages, max_tokens: 900, temperature: 0.25 });
+        rawResp = await env.AI.run(ANSWER_FALLBACK_MODEL, { messages, max_tokens: 700, temperature: 0.25, repetition_penalty: 1.15 });
       } catch (fbErr) {
         dbg.error = (fbErr && fbErr.message) || (primaryErr && primaryErr.message) || 'Workers AI failed';
         return null;
@@ -449,16 +449,30 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
   }
 
   if (!parsed || typeof parsed !== 'object' || !parsed.answer_en) {
-    const cleanedFallback = rawText
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```$/i, '')
-      .replace(/^\{+|\}+$/g, '')
-      .trim();
-    if (cleanedFallback) {
+    const unescapeJsonStr = (s) => {
+      try { return JSON.parse('"' + s + '"'); } catch (_e) { return s.replace(/\\n/g, ' ').replace(/\\"/g, '"'); }
+    };
+    const mEn = rawText.match(/"answer_en"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+    const mOr = rawText.match(/"answer_or"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+    if (mEn && mEn[1]) {
       parsed = {
-        answer_en: cleanedFallback,
-        answer_or: 'ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ପାଇଁ ଦୟାକରି ଲିଙ୍କ୍ ହୋଇଥିବା ପୃଷ୍ଠା ଏବଂ ସରକାରୀ ବିଜ୍ଞପ୍ତି ଯାଞ୍ଚ କରନ୍ତୁ।'
+        answer_en: unescapeJsonStr(mEn[1]).trim(),
+        answer_or: (mOr && mOr[1])
+          ? unescapeJsonStr(mOr[1]).trim()
+          : 'ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ପାଇଁ ଦୟାକରି ଲିଙ୍କ୍ ହୋଇଥିବା ପୃଷ୍ଠା ଏବଂ ସରକାରୀ ବିଜ୍ଞପ୍ତି ଯାଞ୍ଚ କରନ୍ତୁ।'
       };
+    } else {
+      const cleanedFallback = rawText
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .replace(/^\{+|\}+$/g, '')
+        .trim();
+      if (cleanedFallback) {
+        parsed = {
+          answer_en: cleanedFallback,
+          answer_or: 'ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ପାଇଁ ଦୟାକରି ଲିଙ୍କ୍ ହୋଇଥିବା ପୃଷ୍ଠା ଏବଂ ସରକାରୀ ବିଜ୍ଞପ୍ତି ଯାଞ୍ଚ କରନ୍ତୁ।'
+        };
+      }
     }
   }
 
