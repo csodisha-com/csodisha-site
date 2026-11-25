@@ -765,3 +765,88 @@ body[data-cso-theme="odisha"] {
   background: transparent !important;
   border: none !important;
 }
+
+/* v302: Expanded Mobile Nav Drawer & Nested Sub-Menus (< 1100px) 4-Theme Surface Contrast */
+@media (max-width: 1099px) {
+  #cso-main-navbar #cso-nav-items.cso-mobile-open,
+  #cso-main-navbar .cso-nav-items.cso-mobile-open,
+  #navw #cso-nav-items.cso-mobile-open,
+  .cso-nav-items.cso-mobile-open,
+  .cso-nav-drawer,
+  .cso-mobile-drawer {
+    background: var(--cso-surface-elevated) !important;
+    background-color: var(--cso-surface-elevated) !important;
+    color: var(--cso-ink) !important;
+    border: 1px solid var(--cso-border) !important;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  #cso-main-navbar .cso-jobs-stage1,
+  #cso-main-navbar .cso-jobs-stage2,
+  #cso-main-navbar .cso-careers-stage1,
+  #cso-main-navbar .cso-schemes-stage1,
+  #cso-main-navbar .cso-schemes-stage2,
+  #cso-main-navbar .cso-study-stage1,
+  #cso-main-navbar .cso-community-stage1,
+  #cso-main-navbar .cso-js1-mob-sub,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .dd {
+    background: var(--cso-surface-elevated) !important;
+    background-color: var(--cso-surface-elevated) !important;
+    color: var(--cso-ink) !important;
+    border: 1px solid var(--cso-border) !important;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a:not(.on):not(.active):not([aria-current="page"]),
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a:not(.on):not(.active):not([aria-current="page"]) span,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent > a,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent span,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent button,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent .cso-nav-arrow,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent .cso-jobs-chev,
+  #cso-main-navbar .cso-jobs-stage1 .cso-js1-link,
+  #cso-main-navbar .cso-careers-stage1 .cso-js1-link,
+  #cso-main-navbar .cso-schemes-stage1 .cso-js1-link,
+  #cso-main-navbar .cso-study-stage1 .cso-js1-link,
+  #cso-main-navbar .cso-community-stage1 .cso-js1-link {
+    color: var(--cso-ink) !important;
+    opacity: 1 !important;
+  }
+
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a:not(.on):not(.active):not([aria-current="page"]):hover,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a:not(.on):not(.active):not([aria-current="page"]):focus-visible,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent:hover,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent:focus-within,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-open:not(.cso-active) > .cso-nav-parent {
+    background: var(--cso-surface-alt) !important;
+    color: var(--cso-ink) !important;
+    opacity: 1 !important;
+  }
+
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a.on,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a.active,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a[aria-current="page"],
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-active > .cso-nav-parent {
+    background: var(--cso-accent) !important;
+    color: var(--cso-accent-ink) !important;
+    opacity: 1 !important;
+  }
+
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a.on span,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a.active span,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a[aria-current="page"] span,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-active > .cso-nav-parent > a,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-active > .cso-nav-parent span,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-active > .cso-nav-parent button,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-active > .cso-nav-parent .cso-nav-arrow,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-active > .cso-nav-parent .cso-jobs-chev {
+    background: transparent !important;
+    color: var(--cso-accent-ink) !important;
+    opacity: 1 !important;
+  }
+}

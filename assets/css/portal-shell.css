@@ -15,6 +15,7 @@
   --cso-bg: #f8fafc;
   --cso-surface: #ffffff;
   --cso-surface-elevated: #ffffff;
+  --cso-surface-alt: #f1f5f9;
   --cso-surface-subtle: #f1f5f9;
   --cso-ink: #0f172a;
   --cso-ink-soft: #334155;
@@ -75,6 +76,7 @@
     --cso-bg: #0b0f17;
     --cso-surface: #121824;
     --cso-surface-elevated: #161e2e;
+    --cso-surface-alt: #1a2335;
     --cso-surface-subtle: #1a2335;
     --cso-ink: #f1f5f9;
     --cso-ink-soft: #cbd5e1;
@@ -123,6 +125,7 @@
   --cso-bg: #0b0f17;
   --cso-surface: #121824;
   --cso-surface-elevated: #161e2e;
+  --cso-surface-alt: #1a2335;
   --cso-surface-subtle: #1a2335;
   --cso-ink: #f1f5f9;
   --cso-ink-soft: #cbd5e1;
@@ -167,6 +170,7 @@
   --cso-bg: #f4ede1;
   --cso-surface: #faf5eb;
   --cso-surface-elevated: #fdf9f1;
+  --cso-surface-alt: #ede3d2;
   --cso-surface-subtle: #ede3d2;
   --cso-ink: #241b12;
   --cso-ink-soft: #4a3b2c;
@@ -213,6 +217,7 @@
   --cso-bg: #fdf7f0;
   --cso-surface: #ffffff;
   --cso-surface-elevated: #fffdf9;
+  --cso-surface-alt: #f7ece0;
   --cso-surface-subtle: #f7ece0;
   --cso-ink: #1f140c;
   --cso-ink-soft: #4a3423;
@@ -1377,8 +1382,10 @@ body.cso-portal-page iframe {
   body.cso-portal-page .cso-nav-items.cso-mobile-open {
     background: var(--cso-surface-elevated) !important;
     color: var(--cso-ink) !important;
+    border: 1px solid var(--cso-border) !important;
     opacity: 1 !important;
     backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     max-height: calc(100dvh - 110px);
     overflow-y: auto;
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
@@ -1467,4 +1474,134 @@ body.cso-portal-page iframe {
   background: var(--cso-surface-alt, var(--cso-bg)) !important;
   color: var(--cso-ink) !important;
   border-radius: 5px;
+}
+
+/* ==========================================================================
+   14. Expanded Mobile Nav Drawer & Nested Sub-Menus 4-Theme Surface Fix (v302)
+   ========================================================================== */
+
+@media (max-width: 1099px) {
+  #cso-main-navbar #cso-nav-items.cso-mobile-open,
+  #cso-main-navbar .cso-nav-items.cso-mobile-open,
+  #navw #cso-nav-items.cso-mobile-open,
+  .cso-nav-items.cso-mobile-open,
+  .cso-nav-drawer,
+  .cso-mobile-drawer {
+    background: var(--cso-surface-elevated) !important;
+    background-color: var(--cso-surface-elevated) !important;
+    color: var(--cso-ink) !important;
+    border: 1px solid var(--cso-border) !important;
+    border-radius: 12px !important;
+    margin-top: 6px !important;
+    padding: 8px 10px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-sizing: border-box !important;
+  }
+
+  #cso-main-navbar .cso-jobs-stage1,
+  #cso-main-navbar .cso-jobs-stage2,
+  #cso-main-navbar .cso-careers-stage1,
+  #cso-main-navbar .cso-schemes-stage1,
+  #cso-main-navbar .cso-schemes-stage2,
+  #cso-main-navbar .cso-study-stage1,
+  #cso-main-navbar .cso-community-stage1,
+  #cso-main-navbar .cso-js1-mob-sub,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .dd,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .cso-site-dropdown {
+    background: var(--cso-surface-elevated) !important;
+    background-color: var(--cso-surface-elevated) !important;
+    color: var(--cso-ink) !important;
+    border: 1px solid var(--cso-border) !important;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  #cso-main-navbar .cso-js1-list,
+  #cso-main-navbar .cso-js2-list {
+    background: var(--cso-surface-elevated) !important;
+    background-color: var(--cso-surface-elevated) !important;
+    color: var(--cso-ink) !important;
+    opacity: 1 !important;
+  }
+
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a:not(.on):not(.active):not([aria-current="page"]),
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a:not(.on):not(.active):not([aria-current="page"]) span,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent > a,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent span,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent button,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent .cso-nav-arrow,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent .cso-jobs-chev,
+  #cso-main-navbar .cso-jobs-stage1 .cso-js1-link,
+  #cso-main-navbar .cso-jobs-stage1 .cso-js1-link span,
+  #cso-main-navbar .cso-jobs-stage2 .cso-js2-link,
+  #cso-main-navbar .cso-jobs-stage2 .cso-js2-link span,
+  #cso-main-navbar .cso-careers-stage1 .cso-js1-link,
+  #cso-main-navbar .cso-careers-stage1 .cso-js1-link span,
+  #cso-main-navbar .cso-schemes-stage1 .cso-js1-link,
+  #cso-main-navbar .cso-schemes-stage1 .cso-js1-link span,
+  #cso-main-navbar .cso-schemes-stage2 .cso-js2-link,
+  #cso-main-navbar .cso-schemes-stage2 .cso-js2-link span,
+  #cso-main-navbar .cso-study-stage1 .cso-js1-link,
+  #cso-main-navbar .cso-study-stage1 .cso-js1-link span,
+  #cso-main-navbar .cso-community-stage1 .cso-js1-link,
+  #cso-main-navbar .cso-community-stage1 .cso-js1-link span,
+  #cso-main-navbar .cso-js1-mob-exp,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .dd a,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .dd a span {
+    color: var(--cso-ink) !important;
+    opacity: 1 !important;
+  }
+
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a:not(.on):not(.active):not([aria-current="page"]):hover,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a:not(.on):not(.active):not([aria-current="page"]):focus-visible,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent:hover,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni:not(.cso-active) > .cso-nav-parent:focus-within,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-open:not(.cso-active) > .cso-nav-parent,
+  #cso-main-navbar .cso-jobs-stage1 .cso-js1-link:hover,
+  #cso-main-navbar .cso-jobs-stage1 .cso-js1-link:focus-visible,
+  #cso-main-navbar .cso-jobs-stage1 .cso-js1-item.is-active .cso-js1-link,
+  #cso-main-navbar .cso-careers-stage1 .cso-js1-link:hover,
+  #cso-main-navbar .cso-careers-stage1 .cso-js1-link:focus-visible,
+  #cso-main-navbar .cso-schemes-stage1 .cso-js1-link:hover,
+  #cso-main-navbar .cso-schemes-stage1 .cso-js1-link:focus-visible,
+  #cso-main-navbar .cso-study-stage1 .cso-js1-link:hover,
+  #cso-main-navbar .cso-study-stage1 .cso-js1-link:focus-visible,
+  #cso-main-navbar .cso-community-stage1 .cso-js1-link:hover,
+  #cso-main-navbar .cso-community-stage1 .cso-js1-link:focus-visible,
+  #cso-main-navbar .cso-js2-link:hover,
+  #cso-main-navbar .cso-js2-link:focus-visible,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .dd a:hover,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .dd a:focus-visible {
+    background: var(--cso-surface-alt) !important;
+    background-color: var(--cso-surface-alt) !important;
+    color: var(--cso-ink) !important;
+    opacity: 1 !important;
+  }
+
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a.on,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a.active,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a[aria-current="page"],
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-active > .cso-nav-parent {
+    background: var(--cso-accent) !important;
+    background-color: var(--cso-accent) !important;
+    color: var(--cso-accent-ink) !important;
+    opacity: 1 !important;
+  }
+
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a.on span,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a.active span,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open > a[aria-current="page"] span,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-active > .cso-nav-parent > a,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-active > .cso-nav-parent span,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-active > .cso-nav-parent button,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-active > .cso-nav-parent .cso-nav-arrow,
+  #cso-main-navbar #cso-nav-items.cso-mobile-open .ni.cso-active > .cso-nav-parent .cso-jobs-chev {
+    background: transparent !important;
+    color: var(--cso-accent-ink) !important;
+    opacity: 1 !important;
+  }
 }

@@ -258,5 +258,67 @@ check('5. v301 Mobile bar buttons (☰ Menu, ♿ Options, A– A A+) use var(--c
   }
 });
 
+check('6. v302 Expanded mobile nav drawer (< 1100px) & nested sub-menus bind to --cso-surface-elevated/--cso-ink with zero hardcoded white bg', () => {
+  for (const rel of ['assets/style.css', 'assets/css/portal-shell.css', 'assets/css/cso-themes.css']) {
+    const css = read(rel);
+    const cleaned = css.replace(/\/\*[\s\S]*?\*\//g, '');
+
+    // Regression guard: #cso-main-navbar / .main-nav must NEVER redefine --cso-surface-elevated locally
+    // (doing so shadows :root[data-theme="dark"] and turns the expanded mobile drawer pure #ffffff!)
+    const tokenDefRe = /([^{}@;]+)\{([^}]*--cso-surface-elevated\s*:[^}]*)\}/g;
+    let m;
+    while ((m = tokenDefRe.exec(cleaned)) !== null) {
+      const badSels = m[1].split(',').map(s => s.trim()).filter(s => /#cso-main-navbar|\.main-nav\b/.test(s));
+      assert.equal(badSels.length, 0, `${rel} must NOT define --cso-surface-elevated on ${badSels.join(', ')} (shadows Dark Night token!)`);
+    }
+
+    // Verify v302 < 1100px mobile drawer + nested dropdown rules exist and bind to semantic tokens
+    assert.ok(
+      css.includes('#cso-main-navbar #cso-nav-items.cso-mobile-open') &&
+      css.includes('#cso-main-navbar .cso-jobs-stage1') &&
+      css.includes('#cso-main-navbar .cso-careers-stage1') &&
+      css.includes('#cso-main-navbar .cso-schemes-stage1') &&
+      css.includes('#cso-main-navbar .cso-study-stage1') &&
+      css.includes('#cso-main-navbar .cso-community-stage1'),
+      `${rel} missing v302 < 1100px expanded drawer or nested sub-menu selectors`
+    );
+    assert.ok(
+      css.includes('background: var(--cso-surface-elevated) !important;') &&
+      css.includes('color: var(--cso-ink) !important;') &&
+      css.includes('border: 1px solid var(--cso-border) !important;') &&
+      css.includes('opacity: 1 !important;') &&
+      css.includes('backdrop-filter: none !important;') &&
+      css.includes('background: var(--cso-surface-alt) !important;') &&
+      css.includes('background: var(--cso-accent) !important;') &&
+      css.includes('color: var(--cso-accent-ink) !important;'),
+      `${rel} missing v302 semantic drawer/hover/active-pill token bindings`
+    );
+
+    // Ensure ZERO hardcoded #fff/#ffffff background inside any .cso-mobile-open or mobile drawer rule block
+    const drawerRuleRe = /([^{}@;]*cso-mobile-open[^{}@;]*)\{([^}]*)\}/gi;
+    let dm;
+    while ((dm = drawerRuleRe.exec(cleaned)) !== null) {
+      const body = dm[2];
+      assert.ok(
+        !/background(?:-color)?\s*:\s*#(?:fff|ffffff)\b/i.test(body),
+        `${rel} has hardcoded white background in mobile drawer rule (${dm[1].trim().slice(0, 80)})`
+      );
+    }
+  }
+
+  // Verify >= 12:1 contrast of --cso-ink on --cso-surface-elevated & --cso-surface-alt and >= 4.5:1 on active pill across all 4 themes
+  const DRAWER_THEMES = {
+    system:  { elevated: '#ffffff', alt: '#f1f5f9', ink: '#0f172a', accent: '#0f766e', accentInk: '#ffffff' },
+    dark:    { elevated: '#161e2e', alt: '#1a2335', ink: '#f1f5f9', accent: '#14b8a6', accentInk: '#04201d' },
+    reading: { elevated: '#fdf9f1', alt: '#ede3d2', ink: '#241b12', accent: '#854d0e', accentInk: '#ffffff' },
+    odisha:  { elevated: '#fffdf9', alt: '#f7ece0', ink: '#1f140c', accent: '#c2410c', accentInk: '#ffffff' }
+  };
+  for (const [name, t] of Object.entries(DRAWER_THEMES)) {
+    assert.ok(contrastRatio(t.ink, t.elevated) >= 12.0, `${name} mobile drawer ink on --cso-surface-elevated < 12:1`);
+    assert.ok(contrastRatio(t.ink, t.alt) >= 12.0, `${name} mobile drawer hover ink on --cso-surface-alt < 12:1`);
+    assert.ok(contrastRatio(t.accentInk, t.accent) >= 4.5, `${name} mobile drawer active pill contrast < 4.5:1`);
+  }
+});
+
 console.log(`\n=== v300 Mobile & WCAG 2.2 Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);
