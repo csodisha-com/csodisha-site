@@ -151,7 +151,8 @@ await check('1. assets/shared-header.js executes with ZERO errors and mounts ful
   assert.ok(ids.navw.querySelector('#cso-jobs-stage1'), 'Missing Jobs Stage 1');
   assert.ok(ids.navw.querySelector('#cso-jobs-stage2'), 'Missing Jobs Stage 2');
   assert.ok(ids.navw.querySelector('#cso-careers-stage1'), 'Missing Careers Stage 1');
-  assert.ok(ids.navw.querySelector('#cso-careers-stage2'), 'Missing Careers Stage 2');
+  assert.equal(ids.navw.querySelector('#cso-careers-stage2'), null, 'Careers must be single-stage (no Stage 2 slideout)');
+  assert.equal(ids.navw.querySelector('#cso-careers-stage1').querySelectorAll('.cso-js1-item').length, 7, 'Careers dropdown must have 7 items (6 tracks + All Career Roadmaps)');
   assert.equal(ids.navw.querySelector('#cso-schemes-stage1').querySelectorAll('.cso-js1-item').length, 3, 'Schemes dropdown must have 3 items');
   assert.equal(ids.navw.querySelector('#cso-study-stage1').querySelectorAll('.cso-js1-item').length, 5, 'Study Library dropdown must have 5 items');
   assert.equal(ids.navw.querySelector('#cso-community-stage1').querySelectorAll('.cso-js1-item').length, 5, 'Community dropdown must have 5 items');

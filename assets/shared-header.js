@@ -1217,48 +1217,12 @@
   let careersFlyoutFetchStarted = false;
 
   const CAREERS_DEFAULT_TRACKS = [
-    {
-      id: 'ctax-track-civil-services', slug: 'civil-services', icon: '🏛️', label_en: 'Civil Services', label_or: 'ସିଭିଲ୍ ସର୍ଭିସେସ୍',
-      subtracks: [
-        { slug: 'odisha-state-pcs', label_en: 'Odisha State Civil Services (OPSC)', label_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ପ୍ରଶାସନିକ ସେବା (OPSC)' },
-        { slug: 'union-civil-services', label_en: 'Union Civil Services (UPSC)', label_or: 'କେନ୍ଦ୍ର ଲୋକସେବା (UPSC)' }
-      ]
-    },
-    {
-      id: 'ctax-track-engineering-it', slug: 'engineering-it', icon: '💻', label_en: 'Engineering & IT', label_or: 'ଇଞ୍ଜିନିୟରିଂ ଓ ଆଇଟି',
-      subtracks: [
-        { slug: 'psu-gate-engineering', label_en: 'GATE, PSU & State Engineering', label_or: 'GATE, PSU ଓ ରାଜ୍ୟ ଇଞ୍ଜିନିୟରିଂ' },
-        { slug: 'software-ai-cloud', label_en: 'Software, AI & Cloud IT', label_or: 'ସଫ୍ଟୱେର୍, AI ଓ କ୍ଲାଉଡ୍ ଆଇଟି' }
-      ]
-    },
-    {
-      id: 'ctax-track-banking-finance', slug: 'banking-finance', icon: '🏦', label_en: 'Banking & Finance', label_or: 'ବ୍ୟାଙ୍କିଂ ଓ ଅର୍ଥନୀତି',
-      subtracks: [
-        { slug: 'public-sector-banks', label_en: 'Public Sector & Regulatory Banks', label_or: 'ସରକାରୀ ବ୍ୟାଙ୍କ ଓ ନିୟାମକ ସଂସ୍ଥା' },
-        { slug: 'insurance-finance', label_en: 'Insurance, Accounting & Finance', label_or: 'ବୀମା, ଆକାଉଣ୍ଟିଂ ଓ ଅର୍ଥନୀତି' }
-      ]
-    },
-    {
-      id: 'ctax-track-healthcare', slug: 'healthcare', icon: '🩺', label_en: 'Healthcare', label_or: 'ସ୍ୱାସ୍ଥ୍ୟ ସେବା',
-      subtracks: [
-        { slug: 'medical-doctors', label_en: 'Medical, Dental & AYUSH Cadre', label_or: 'ଡାକ୍ତରୀ, ଦନ୍ତ ଓ ଆୟୁଷ ସେବା' },
-        { slug: 'nursing-allied', label_en: 'Nursing, Pharmacy & Allied Health', label_or: 'ନର୍ସିଂ, ଫାର୍ମାସୀ ଓ ସ୍ୱାସ୍ଥ୍ୟ ସହାୟକ' }
-      ]
-    },
-    {
-      id: 'ctax-track-agriculture', slug: 'agriculture', icon: '🌾', label_en: 'Agriculture', label_or: 'କୃଷି ଓ ଆନୁଷଙ୍ଗିକ',
-      subtracks: [
-        { slug: 'agri-officers', label_en: 'Agricultural & Allied State Officers', label_or: 'କୃଷି ଓ ଆନୁଷଙ୍ଗିକ ଅଧିକାରୀ' },
-        { slug: 'agri-research-ouat', label_en: 'OUAT, ICAR & Agri-Tech Research', label_or: 'OUAT, ICAR ଓ କୃଷି ଗବେଷଣା' }
-      ]
-    },
-    {
-      id: 'ctax-track-pathways', slug: 'pathways', icon: '🧭', label_en: 'Post-10th/12th Pathways', label_or: 'ଦଶମ/ଦ୍ୱାଦଶ ପରବର୍ତ୍ତୀ ମାର୍ଗ',
-      subtracks: [
-        { slug: 'school-college-tracks', label_en: 'After 10th / 12th & Degree Streams', label_or: 'ଦଶମ / ଦ୍ୱାଦଶ ଓ ସ୍ନାତକ ମାର୍ଗ' },
-        { slug: 'skill-apprenticeship', label_en: 'Skill India, ITI & Apprenticeships', label_or: 'ଦକ୍ଷତା ବିକାଶ, ITI ଓ ଆପ୍ରେଣ୍ଟିସ୍' }
-      ]
-    }
+    { id: 'ctax-track-civil-services', slug: 'civil-services', icon: '🏛️', label_en: 'Civil Services', label_or: 'ସିଭିଲ୍ ସର୍ଭିସେସ୍' },
+    { id: 'ctax-track-engineering-it', slug: 'engineering-it', icon: '💻', label_en: 'Engineering / IT', label_or: 'ଇଞ୍ଜିନିୟରିଂ / ଆଇଟି' },
+    { id: 'ctax-track-banking-finance', slug: 'banking-finance', icon: '🏦', label_en: 'Banking & Finance', label_or: 'ବ୍ୟାଙ୍କିଂ ଓ ଅର୍ଥନୀତି' },
+    { id: 'ctax-track-healthcare', slug: 'healthcare', icon: '🩺', label_en: 'Healthcare', label_or: 'ସ୍ୱାସ୍ଥ୍ୟ ସେବା' },
+    { id: 'ctax-track-agriculture', slug: 'agriculture', icon: '🌾', label_en: 'Agriculture', label_or: 'କୃଷି ଓ ଆନୁଷଙ୍ଗିକ' },
+    { id: 'ctax-track-pathways', slug: 'pathways', icon: '🧭', label_en: 'Career Stage & Pathways', label_or: 'କ୍ୟାରିୟର୍ ପର୍ଯ୍ୟାୟ ଓ ମାର୍ଗ' }
   ];
 
   function readCareersFlyoutCache() {
@@ -1282,102 +1246,44 @@
     return CAREERS_DEFAULT_TRACKS;
   }
 
-  function buildCareersStage2List(track, isOr) {
-    const trSlug = encodeURIComponent((track && track.slug) || 'civil-services');
-    const ul = el('ul', 'cso-js2-list');
-    const subs = Array.isArray(track && track.subtracks) ? track.subtracks : [];
-    subs.forEach(sub => {
-      const li = el('li', 'cso-js2-item');
-      const a = el('a', 'cso-js2-link', isOr ? (sub.label_or || sub.label_en) : sub.label_en);
-      a.href = '/careers/?track=' + trSlug + '&subtrack=' + encodeURIComponent(sub.slug || '');
-      li.appendChild(a);
-      ul.appendChild(li);
-    });
-    return ul;
-  }
-
-  function populateCareersStage1List(cascade, stage1List, stage2El) {
+  function populateCareersStage1List(stage1List) {
+    if (!stage1List) return;
     const isOr = S.lang === 'or';
     const tracks = getActiveCareersTracks();
     stage1List.replaceChildren();
 
-    function activateTrack(tr, itemEl, openStage2) {
-      stage1List.querySelectorAll('.cso-js1-item.is-active').forEach(elItem => elItem.classList.remove('is-active'));
-      if (itemEl) itemEl.classList.add('is-active');
-      const subs = Array.isArray(tr && tr.subtracks) ? tr.subtracks : [];
-      if (!subs.length) {
-        cascade.classList.remove('is-stage2-open');
-        stage2El.replaceChildren();
-        return;
-      }
-      stage2El.replaceChildren(buildCareersStage2List(tr, isOr));
-      if (openStage2 && window.innerWidth >= 1100) {
-        cascade.classList.add('is-stage2-open');
-        const stage1Box = cascade.querySelector('.cso-careers-stage1');
-        if (stage1Box) {
-          const rect = stage1Box.getBoundingClientRect();
-          stage2El.classList.toggle('is-flip-left', rect.right + 260 > window.innerWidth);
-        }
-      }
-    }
+    const items = tracks.map(tr => ({
+      slug: tr.slug || 'civil-services',
+      icon: tr.icon || '🧭',
+      title: isOr ? (tr.label_or || tr.label_en) : tr.label_en,
+      href: '/careers/?track=' + encodeURIComponent(tr.slug || 'civil-services')
+    }));
+    items.push({
+      slug: 'all',
+      icon: '📋',
+      title: isOr ? 'ସମସ୍ତ କ୍ୟାରିୟର୍ ରୋଡମ୍ୟାପ୍' : 'All Career Roadmaps',
+      href: '/careers/'
+    });
 
-    tracks.forEach(tr => {
-      const subs = Array.isArray(tr.subtracks) ? tr.subtracks : [];
-      const hasStage2 = subs.length > 0;
-      const li = el('li', 'cso-js1-item' + (hasStage2 ? '' : ' is-direct-only'));
-      li.dataset.crTrack = tr.slug || '';
+    items.forEach(item => {
+      const li = el('li', 'cso-js1-item is-direct-only');
+      li.dataset.crTrack = item.slug;
 
       const row = el('div', 'cso-js1-row');
       const a = el('a', 'cso-js1-link');
-      a.href = '/careers/?track=' + encodeURIComponent(tr.slug || 'civil-services');
+      a.href = item.href;
 
       const left = el('span', 'cso-js1-left');
-      const ic = el('span', 'cso-js1-icon', tr.icon || '🧭');
+      const ic = el('span', 'cso-js1-icon', item.icon);
       ic.setAttribute('aria-hidden', 'true');
-      left.append(ic, el('span', 'cso-js1-title', isOr ? (tr.label_or || tr.label_en) : tr.label_en));
+      left.append(ic, el('span', 'cso-js1-title', item.title));
       a.appendChild(left);
 
-      if (hasStage2) {
-        const arrow = el('span', 'cso-js1-arrow', '›');
-        arrow.setAttribute('aria-hidden', 'true');
-        a.appendChild(arrow);
-      }
-
       row.appendChild(a);
-      if (hasStage2) {
-        const mobExp = el('button', 'cso-js1-mob-exp', '▾');
-        mobExp.type = 'button';
-        mobExp.setAttribute('aria-expanded', 'false');
-        mobExp.setAttribute('aria-label', 'Expand ' + (tr.label_en || 'track') + ' sub-tracks');
-        mobExp.addEventListener('click', ev => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          const isOpen = li.classList.toggle('is-mob-open');
-          mobExp.setAttribute('aria-expanded', String(isOpen));
-        });
-        row.appendChild(mobExp);
-        const mobBox = el('div', 'cso-js1-mob-sub');
-        mobBox.appendChild(buildCareersStage2List(tr, isOr));
-        li.append(row, mobBox);
-      } else {
-        li.appendChild(row);
-      }
+      li.appendChild(row);
 
-      li.addEventListener('mouseenter', () => {
-        if (window.innerWidth < 1100) return;
-        activateTrack(tr, li, hasStage2);
-      });
-      a.addEventListener('focus', () => {
-        if (window.innerWidth < 1100) return;
-        activateTrack(tr, li, hasStage2);
-      });
       a.addEventListener('keydown', ev => {
-        if (ev.key === 'ArrowRight' && hasStage2 && window.innerWidth >= 1100) {
-          ev.preventDefault();
-          activateTrack(tr, li, true);
-          const firstS2 = stage2El.querySelector('a');
-          if (firstS2) firstS2.focus();
-        } else if (ev.key === 'ArrowDown') {
+        if (ev.key === 'ArrowDown') {
           ev.preventDefault();
           const nextLi = li.nextElementSibling;
           if (nextLi) { const na = nextLi.querySelector('.cso-js1-link'); if (na) na.focus(); }
@@ -1392,10 +1298,10 @@
     });
   }
 
-  function hydrateCareersFlyoutFromD1(cascade, stage1List, stage2El) {
+  function hydrateCareersFlyoutFromD1(stage1List) {
     const cached = readCareersFlyoutCache();
     if (cached) {
-      populateCareersStage1List(cascade, stage1List, stage2El);
+      populateCareersStage1List(stage1List);
       return;
     }
     if (careersFlyoutFetchStarted || typeof fetch !== 'function') return;
@@ -1408,24 +1314,20 @@
         if (Array.isArray(d.nav_tracks) && d.nav_tracks.length) {
           tracks = d.nav_tracks;
         } else if (d.taxonomy && Array.isArray(d.taxonomy.tracks) && d.taxonomy.tracks.length) {
-          const allSubs = Array.isArray(d.taxonomy.subtracks) ? d.taxonomy.subtracks : [];
           tracks = d.taxonomy.tracks.map(tr => ({
             id: tr.id,
             slug: tr.slug,
             label_en: tr.label_en,
             label_or: tr.label_or || tr.label_en,
-            icon: tr.icon || '🧭',
-            subtracks: allSubs.filter(s => s.parent_id === tr.id)
+            icon: tr.icon || '🧭'
           }));
         } else {
           tracks = CAREERS_DEFAULT_TRACKS;
         }
         careersFlyoutData = { ts: Date.now(), tracks };
         try { sessionStorage.setItem(CAREERS_FLYOUT_CACHE_KEY, JSON.stringify(careersFlyoutData)); } catch (_e) {}
-        document.querySelectorAll('.cso-careers-cascade').forEach(cEl => {
-          const s1 = cEl.querySelector('.cso-js1-list');
-          const s2 = cEl.querySelector('.cso-careers-stage2');
-          if (s1 && s2) populateCareersStage1List(cEl, s1, s2);
+        document.querySelectorAll('.cso-careers-cascade .cso-js1-list').forEach(s1 => {
+          populateCareersStage1List(s1);
         });
       })
       .catch(() => {});
@@ -1444,37 +1346,25 @@
     const list = el('ul', 'cso-js1-list');
     stage1.appendChild(list);
 
-    const stage2 = el('div', 'cso-careers-stage2');
-    stage2.id = 'cso-careers-stage2';
-    stage2.setAttribute('role', 'region');
-    stage2.setAttribute('aria-label', isOr ? 'ଉପ-ମାର୍ଗ' : 'Career sub-tracks');
-    stage2.addEventListener('keydown', ev => {
-      if (ev.key === 'ArrowLeft') {
-        ev.preventDefault();
-        const activeLink = list.querySelector('.cso-js1-item.is-active .cso-js1-link') || list.querySelector('.cso-js1-link');
-        if (activeLink) activeLink.focus();
-      }
-    });
-
-    populateCareersStage1List(cascade, list, stage2);
-    cascade.append(stage1, stage2);
+    populateCareersStage1List(list);
+    cascade.appendChild(stage1);
     return cascade;
   }
 
   function wireCareersCascadingInteractions(ni, triggerA, chevBtn, cascade) {
     let hoverCloseTimer = null;
     const stage1List = cascade.querySelector('.cso-js1-list');
-    const stage2El = cascade.querySelector('.cso-careers-stage2');
+    const stage1Box = cascade.querySelector('.cso-careers-stage1');
 
     function setOpen(open) {
       if (open) {
         closeDropdowns(ni);
-        hydrateCareersFlyoutFromD1(cascade, stage1List, stage2El);
+        hydrateCareersFlyoutFromD1(stage1List);
       } else {
-        cascade.classList.remove('is-stage2-open');
         stage1List.querySelectorAll('.cso-js1-item.is-active').forEach(it => it.classList.remove('is-active'));
       }
       ni.classList.toggle('cso-open', open);
+      ni.classList.toggle('is-open', open);
       triggerA.setAttribute('aria-expanded', String(open));
       chevBtn.setAttribute('aria-expanded', String(open));
     }
@@ -1490,6 +1380,13 @@
       clearTimeout(hoverCloseTimer);
       hoverCloseTimer = setTimeout(() => setOpen(false), 150);
     });
+
+    if (stage1Box) {
+      stage1Box.addEventListener('mouseenter', () => {
+        if (window.innerWidth < 1100) return;
+        clearTimeout(hoverCloseTimer);
+      });
+    }
 
     triggerA.addEventListener('keydown', ev => {
       if (ev.key === 'ArrowDown') {
@@ -2195,7 +2092,7 @@
         } else if (open && parent.classList.contains('cso-ni-careers')) {
           const cascade = parent.querySelector('.cso-careers-cascade');
           if (cascade) {
-            hydrateCareersFlyoutFromD1(cascade, cascade.querySelector('.cso-js1-list'), cascade.querySelector('.cso-careers-stage2'));
+            hydrateCareersFlyoutFromD1(cascade.querySelector('.cso-js1-list'));
           }
         } else if (open && parent.classList.contains('cso-ni-schemes')) {
           const cascade = parent.querySelector('.cso-schemes-cascade');

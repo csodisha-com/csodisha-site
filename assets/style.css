@@ -9359,7 +9359,7 @@ img.cso-brand-emblem {
   :root[data-theme="system"] {
     --cso-surface-elevated: #161b26;
     --cso-surface-elevated-ink: #f1f5f9;
-    --cso-surface-elevated-border: #2d3748;
+    --cso-surface-elevated-border: #263042;
     --cso-surface-elevated-hover: rgba(56, 189, 248, 0.14);
     --cso-surface-elevated-hover-ink: #f8fafc;
     --cso-nav-bg: #131e29;
@@ -9385,7 +9385,7 @@ body.theme-dark,
 .dark-theme {
   --cso-surface-elevated: #161b26;
   --cso-surface-elevated-ink: #f1f5f9;
-  --cso-surface-elevated-border: #2d3748;
+  --cso-surface-elevated-border: #263042;
   --cso-surface-elevated-hover: rgba(56, 189, 248, 0.14);
   --cso-surface-elevated-hover-ink: #f8fafc;
   --cso-nav-bg: #131e29;
@@ -9398,10 +9398,10 @@ html[data-theme="reading"],
 body[data-cso-theme="reading"],
 body[data-theme="reading"] {
   --cso-surface-elevated: #faf6ee;
-  --cso-surface-elevated-ink: #292524;
+  --cso-surface-elevated-ink: #2c241b;
   --cso-surface-elevated-border: #d6cfc2;
   --cso-surface-elevated-hover: rgba(15, 23, 42, 0.06);
-  --cso-surface-elevated-hover-ink: #292524;
+  --cso-surface-elevated-hover-ink: #2c241b;
   --cso-nav-bg: #ede5d4;
 }
 
@@ -9415,10 +9415,10 @@ body[data-cso-theme="utkal-bharat"],
 body[data-theme="utkal-bharat"],
 body[data-theme="odisha"] {
   --cso-surface-elevated: #fffdf9;
-  --cso-surface-elevated-ink: #1e1b18;
+  --cso-surface-elevated-ink: #1c140d;
   --cso-surface-elevated-border: #e7d8c5;
   --cso-surface-elevated-hover: rgba(15, 23, 42, 0.06);
-  --cso-surface-elevated-hover-ink: #1e1b18;
+  --cso-surface-elevated-hover-ink: #1c140d;
   --cso-nav-bg: #f4ece0;
 }
 
@@ -9482,6 +9482,7 @@ body[data-theme="odisha"] {
 
 .cso-nav-jobs-wrap.cso-open > .cso-jobs-cascade,
 .cso-nav-careers-wrap.cso-open > .cso-careers-cascade,
+.cso-nav-careers-wrap.is-open > .cso-careers-cascade,
 .cso-nav-schemes-wrap.cso-open > .cso-schemes-cascade,
 .cso-nav-study-wrap.cso-open > .cso-study-cascade,
 .cso-nav-study-wrap.is-open > .cso-study-cascade,
@@ -9496,7 +9497,6 @@ body[data-theme="odisha"] {
 #cso-main-navbar .cso-jobs-stage1,
 #cso-main-navbar .cso-jobs-stage2,
 #cso-main-navbar .cso-careers-stage1,
-#cso-main-navbar .cso-careers-stage2,
 #cso-main-navbar .cso-schemes-stage1,
 #cso-main-navbar .cso-schemes-stage2,
 #cso-main-navbar .cso-study-stage1,
@@ -9504,7 +9504,6 @@ body[data-theme="odisha"] {
 .cso-jobs-stage1,
 .cso-jobs-stage2,
 .cso-careers-stage1,
-.cso-careers-stage2,
 .cso-schemes-stage1,
 .cso-schemes-stage2,
 .cso-study-stage1,
@@ -9528,7 +9527,7 @@ body[data-theme="odisha"] {
 }
 
 .cso-careers-stage1 {
-  width: 256px;
+  width: 268px;
   position: relative;
   z-index: 1200;
 }
@@ -9560,15 +9559,6 @@ body[data-theme="odisha"] {
   z-index: 1210;
 }
 
-.cso-careers-stage2 {
-  display: none;
-  position: absolute;
-  top: 0;
-  left: calc(100% + 6px);
-  width: 248px;
-  z-index: 1210;
-}
-
 .cso-schemes-stage2 {
   display: none;
   position: absolute;
@@ -9579,7 +9569,6 @@ body[data-theme="odisha"] {
 }
 
 .cso-jobs-stage2.is-flip-left,
-.cso-careers-stage2.is-flip-left,
 .cso-schemes-stage2.is-flip-left {
   left: auto;
   right: calc(100% + 6px);
@@ -9610,9 +9599,9 @@ body[data-theme="odisha"] {
 
   .cso-careers-cascade {
     position: absolute;
-    top: calc(100% + 6px);
+    top: calc(100% + 4px);
     left: 0;
-    width: 256px;
+    width: 268px;
     z-index: 1200;
   }
 
@@ -9640,7 +9629,11 @@ body[data-theme="odisha"] {
     z-index: 1200;
   }
 
-  /* v289: Pure-CSS desktop hover & focus-within auto-open for Study Library ▾ and Community ▾ */
+  /* v289/v293: Pure-CSS desktop hover & focus-within auto-open for Careers ▾, Study Library ▾ and Community ▾ */
+  .cso-nav-careers-wrap:hover > .cso-careers-cascade,
+  .cso-nav-careers-wrap:focus-within > .cso-careers-cascade,
+  .cso-nav-careers-wrap.cso-open > .cso-careers-cascade,
+  .cso-nav-careers-wrap.is-open > .cso-careers-cascade,
   .cso-nav-study-wrap:hover > .cso-study-cascade,
   .cso-nav-study-wrap:focus-within > .cso-study-cascade,
   .cso-nav-study-wrap.cso-open > .cso-study-cascade,
@@ -9655,6 +9648,12 @@ body[data-theme="odisha"] {
     pointer-events: auto;
   }
 
+  .cso-nav-careers-wrap:hover > .cso-careers-cascade > .cso-careers-stage1,
+  .cso-nav-careers-wrap:focus-within > .cso-careers-cascade > .cso-careers-stage1,
+  .cso-nav-careers-wrap.is-open > .cso-careers-cascade > .cso-careers-stage1,
+  .cso-nav-careers-wrap:hover > .cso-careers-stage1,
+  .cso-nav-careers-wrap:focus-within > .cso-careers-stage1,
+  .cso-nav-careers-wrap.is-open > .cso-careers-stage1,
   .cso-nav-study-wrap:hover > .cso-study-cascade > .cso-study-stage1,
   .cso-nav-study-wrap:focus-within > .cso-study-cascade > .cso-study-stage1,
   .cso-nav-study-wrap.is-open > .cso-study-cascade > .cso-study-stage1,
@@ -9674,6 +9673,8 @@ body[data-theme="odisha"] {
     pointer-events: auto;
   }
 
+  .cso-nav-careers-wrap:hover .cso-jobs-chev,
+  .cso-nav-careers-wrap.is-open .cso-jobs-chev,
   .cso-nav-study-wrap:hover .cso-jobs-chev,
   .cso-nav-study-wrap.is-open .cso-jobs-chev,
   .cso-nav-community-wrap:hover .cso-jobs-chev,
@@ -9681,7 +9682,8 @@ body[data-theme="odisha"] {
     transform: rotate(180deg);
   }
 
-  /* Invisible hover bridge below Study Library ▾ & Community ▾ trigger so downward cursor movement never loses hover */
+  /* Invisible hover bridge below Careers ▾, Study Library ▾ & Community ▾ trigger so downward cursor movement never loses hover */
+  .cso-nav-careers-wrap::after,
   .cso-nav-study-wrap::after,
   .cso-nav-community-wrap::after {
     content: '';
@@ -9692,7 +9694,7 @@ body[data-theme="odisha"] {
     height: 12px;
   }
 
-  /* Invisible hover bridges so moving diagonally between trigger, Stage 1 & Stage 2 never closes early */
+  /* Invisible hover bridges so moving diagonally between trigger & dropdown never closes early */
   .cso-jobs-cascade::before,
   .cso-careers-cascade::before,
   .cso-schemes-cascade::before,
@@ -9707,7 +9709,6 @@ body[data-theme="odisha"] {
   }
 
   .cso-jobs-cascade.is-stage2-open::after,
-  .cso-careers-cascade.is-stage2-open::after,
   .cso-schemes-cascade.is-stage2-open::after {
     content: '';
     position: absolute;
@@ -9718,7 +9719,6 @@ body[data-theme="odisha"] {
   }
 
   .cso-jobs-cascade.is-stage2-open > .cso-jobs-stage2,
-  .cso-careers-cascade.is-stage2-open > .cso-careers-stage2,
   .cso-schemes-cascade.is-stage2-open > .cso-schemes-stage2 {
     display: block;
   }
@@ -9753,7 +9753,6 @@ body[data-theme="odisha"] {
   }
 
   .cso-jobs-stage2,
-  .cso-careers-stage2,
   .cso-schemes-stage2 {
     display: none !important;
   }
@@ -9780,7 +9779,6 @@ body[data-theme="odisha"] {
   }
 
   .cso-jobs-stage2,
-  .cso-careers-stage2,
   .cso-schemes-stage2 {
     display: none !important;
   }
@@ -9813,7 +9811,6 @@ body[data-theme="odisha"] {
 #cso-main-navbar .cso-jobs-stage1 .cso-js1-link,
 #cso-main-navbar .cso-jobs-stage2 .cso-js2-link,
 #cso-main-navbar .cso-careers-stage1 .cso-js1-link,
-#cso-main-navbar .cso-careers-stage2 .cso-js2-link,
 #cso-main-navbar .cso-schemes-stage1 .cso-js1-link,
 #cso-main-navbar .cso-schemes-stage2 .cso-js2-link,
 #cso-main-navbar .cso-study-stage1 .cso-js1-link,
@@ -9841,7 +9838,6 @@ body[data-theme="odisha"] {
 #cso-main-navbar .cso-jobs-stage1 .cso-js1-arrow,
 #cso-main-navbar .cso-careers-stage1 .cso-js1-left,
 #cso-main-navbar .cso-careers-stage1 .cso-js1-title,
-#cso-main-navbar .cso-careers-stage1 .cso-js1-arrow,
 #cso-main-navbar .cso-schemes-stage1 .cso-js1-left,
 #cso-main-navbar .cso-schemes-stage1 .cso-js1-title,
 #cso-main-navbar .cso-schemes-stage1 .cso-js1-arrow,
@@ -9863,8 +9859,6 @@ body[data-theme="odisha"] {
 #cso-main-navbar .cso-careers-stage1 .cso-js1-item.is-active .cso-js1-link,
 #cso-main-navbar .cso-careers-stage1 .cso-js1-link:hover,
 #cso-main-navbar .cso-careers-stage1 .cso-js1-link:focus-visible,
-#cso-main-navbar .cso-careers-stage2 .cso-js2-link:hover,
-#cso-main-navbar .cso-careers-stage2 .cso-js2-link:focus-visible,
 #cso-main-navbar .cso-schemes-stage1 .cso-js1-item.is-active .cso-js1-link,
 #cso-main-navbar .cso-schemes-stage1 .cso-js1-link:hover,
 #cso-main-navbar .cso-schemes-stage1 .cso-js1-link:focus-visible,

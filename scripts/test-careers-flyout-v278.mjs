@@ -183,23 +183,20 @@ await check('2. Admin Studio Careers ▾ sidebar subnav & Live-Sync Badge wired 
   assert.ok(studioCss.includes('.cps-live-sync-banner'), 'careers-publishing-studio.css missing .cps-live-sync-banner');
 });
 
-await check('3. Two-Stage Cascading Careers Menu in shared-header.js & app.js (Stage 1 -> Stage 2 + mobile + keyboard)', () => {
+await check('3. Single-Stage Vertical Careers ▾ Dropdown in shared-header.js & app.js (NO Stage 2 slideout, 150ms hover-intent, All Career Roadmaps)', () => {
   for (const rel of ['assets/shared-header.js', 'assets/app.js']) {
     const src = read(rel);
     for (const tok of [
       'cso-nav-careers-wrap',
       'cso-careers-cascade',
       'cso-careers-stage1',
-      'cso-careers-stage2',
       'cso_careers_flyout_v278',
-      'is-flip-left',
-      'is-stage2-open',
-      'cso-js1-mob-exp',
-      'cso-js1-mob-sub',
+      'All Career Roadmaps',
       '/api/public/careers/bootstrap'
     ]) {
       assert.ok(src.includes(tok), `${rel} missing "${tok}"`);
     }
+    assert.ok(!src.includes('cso-careers-stage2'), `${rel} must NOT include .cso-careers-stage2 slideout`);
     assert.ok(src.includes('150'), `${rel} missing 150ms hover-intent grace timer`);
   }
 });
@@ -219,24 +216,25 @@ await check('4. Deep-link filter hydration & dismissible active filter chips on 
   assert.ok(cpCss.includes('.crp-filter-chip'), 'assets/css/careers-portal.css missing .crp-filter-chip');
 });
 
-await check('5. Solid opaque 4-theme surfaces, v278 cache busting & strict CSP compliance', () => {
+await check('5. Solid opaque 4-theme surfaces (Dark Night #161b26 / #263042), single-stage 268px width, v293 cache busting & strict CSP', () => {
   const styleCss = read('assets/style.css');
   for (const tok of [
     '.cso-careers-stage1',
-    '.cso-careers-stage2',
-    'width: 256px;',
-    'width: 248px;',
+    'width: 268px;',
     'backdrop-filter: none;',
-    'var(--cso-surface-elevated'
+    'var(--cso-surface-elevated',
+    '--cso-surface-elevated: #161b26;',
+    '--cso-surface-elevated-border: #263042;'
   ]) {
     assert.ok(styleCss.includes(tok), `assets/style.css missing "${tok}"`);
   }
+  assert.ok(!styleCss.includes('.cso-careers-stage2'), 'assets/style.css must NOT include .cso-careers-stage2');
   const shellCss = read('assets/css/portal-shell.css');
   assert.ok(shellCss.includes('#cso-main-navbar .cso-careers-stage1'), 'portal-shell.css missing .cso-careers-stage1');
-  assert.ok(shellCss.includes('#cso-main-navbar .cso-careers-stage2'), 'portal-shell.css missing .cso-careers-stage2');
+  assert.ok(!shellCss.includes('.cso-careers-stage2'), 'portal-shell.css must NOT include .cso-careers-stage2');
 
-  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:7[89]|[89]\d)';/.test(read('sw.js')), 'sw.js must be cso-candidate-cache-v278+');
-  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:7[89]|[89]\d)';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel.js must be cso-candidate-cache-v278+');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v293';/.test(read('sw.js')), 'sw.js must be cso-candidate-cache-v293');
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v293';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel.js must be cso-candidate-cache-v293');
 
   const corePages = [
     'index.html', 'jobs/index.html', 'careers/index.html', 'schemes/index.html',

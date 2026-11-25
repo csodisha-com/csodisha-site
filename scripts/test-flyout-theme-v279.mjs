@@ -50,19 +50,20 @@ check('1. style.css & portal-shell.css define all 4-theme surface/ink/border/hov
       '--cso-surface-elevated-border: #cbd5e1;',
       '--cso-surface-elevated: #161b26;',
       '--cso-surface-elevated-ink: #f1f5f9;',
-      '--cso-surface-elevated-border: #2d3748;',
+      '--cso-surface-elevated-border: #263042;',
       '--cso-surface-elevated-hover: rgba(56, 189, 248, 0.14);',
       '--cso-surface-elevated: #faf6ee;',
-      '--cso-surface-elevated-ink: #292524;',
+      '--cso-surface-elevated-ink: #2c241b;',
       '--cso-surface-elevated-border: #d6cfc2;',
       '--cso-surface-elevated: #fffdf9;',
-      '--cso-surface-elevated-ink: #1e1b18;',
+      '--cso-surface-elevated-ink: #1c140d;',
       '--cso-surface-elevated-border: #e7d8c5;',
       '--cso-surface-elevated-hover: rgba(15, 23, 42, 0.06);',
       'color: inherit !important;'
     ]) {
       assert.ok(css.includes(tok), `${rel} missing "${tok}"`);
     }
+    assert.ok(!css.includes('.cso-careers-stage2'), `${rel} must NOT include .cso-careers-stage2`);
   }
 });
 
