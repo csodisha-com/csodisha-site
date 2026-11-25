@@ -12,6 +12,7 @@ export async function handlePublicSemanticSearch({ request, env, ctx = null }) {
   const url = new URL(request.url);
   const q = url.searchParams.get('q') || '';
   const type = url.searchParams.get('type') || 'all';
+  const debug = url.searchParams.get('debug') === '1';
 
   const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'anon';
   const rate = checkRateLimit(`sem_search_${ip}`, 30, 60 * 1000);
@@ -25,7 +26,7 @@ export async function handlePublicSemanticSearch({ request, env, ctx = null }) {
     });
   }
 
-  const edgeCache = typeof caches !== 'undefined' && caches.default ? caches.default : null;
+  const edgeCache = !debug && typeof caches !== 'undefined' && caches.default ? caches.default : null;
   const cacheKey = new Request(url.toString(), { method: 'GET' });
   if (edgeCache) {
     const cached = await edgeCache.match(cacheKey).catch(() => null);
@@ -33,15 +34,15 @@ export async function handlePublicSemanticSearch({ request, env, ctx = null }) {
   }
 
   try {
-    const data = await runSemanticSearch(env, { q, type, limit: 6, clientIp: ip });
+    const data = await runSemanticSearch(env, { q, type, limit: 6, clientIp: ip, debug });
     const res = new Response(JSON.stringify(data), {
       status: 200,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        'Cache-Control': 'public, max-age=300'
+        'Cache-Control': debug ? 'no-store' : 'public, max-age=300'
       }
     });
-    if (edgeCache && ctx && typeof ctx.waitUntil === 'function') {
+    if (edgeCache && !debug && ctx && typeof ctx.waitUntil === 'function') {
       ctx.waitUntil(edgeCache.put(cacheKey, res.clone()).catch(() => {}));
     }
     return res;

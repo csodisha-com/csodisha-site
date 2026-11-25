@@ -209,8 +209,8 @@ await test('4. Wrangler Vectorize binding, migration 0151, CSP compliance & v320
   const mig = read('migrations/0151_semantic_search_v320.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS semantic_index_items'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v322');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v322';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v323');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v323';"));
   assert.ok(read('migrations/0152_ask_ai_answer_cache_v321.sql').includes('CREATE TABLE IF NOT EXISTS semantic_answer_cache'));
 
   const js = read('assets/js/semantic-search.js');
@@ -297,10 +297,11 @@ await test('5. v321 Hybrid RAG grounded answer, general-query fallback & 7-day D
     const rGem = await runSemanticSearch({
       DB: dbGem,
       GEMINI_API_KEY: 'gm_key_v322'
-    }, { q: 'What is Subhadra Yojana eligibility', type: 'all', clientIp: '198.51.100.5' });
+    }, { q: 'What is Subhadra Yojana eligibility', type: 'all', clientIp: '198.51.100.5', debug: true });
     assert.equal(rGem.ai_answer.answer_en, 'Gemini primary answer.');
     assert.equal(dbGem.aiLogs[0].provider, 'google_gemini');
     assert.equal(dbGem.aiLogs[0].estimated_neurons, 0);
+    assert.ok(rGem.debug_info && rGem.debug_info.gemini_status === 'http_200');
   } finally {
     globalThis.fetch = origFetch;
   }

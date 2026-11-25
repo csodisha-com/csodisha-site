@@ -268,11 +268,16 @@ async function hydrateMatchFromD1(env, match) {
   }
 }
 
-export async function generateAskCsoAnswer(env, { q, type = 'all', results = [], clientIp = 'anon' }) {
+export async function generateAskCsoAnswer(env, { q, type = 'all', results = [], clientIp = 'anon', debugOut = null }) {
   await ensureSemanticSchema(env);
   const cleanQ = String(q || '').trim();
   const normalizedQ = cleanQ.toLowerCase().replace(/\s+/g, ' ');
   const cacheKey = await sha256Hex(`v321|${type}|${normalizedQ}`);
+  const dbg = debugOut || {};
+  dbg.provider_attempted = dbg.provider_attempted || [];
+  dbg.gemini_status = (env && env.GEMINI_API_KEY && String(env.GEMINI_API_KEY).trim()) ? 'configured' : 'unconfigured';
+  dbg.workers_ai_used = false;
+  dbg.error = null;
 
   // 1. Check 7-day D1 cache (0 Neurons)
   if (env && env.DB) {
@@ -286,6 +291,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
           await env.DB.prepare(
             'UPDATE semantic_answer_cache SET hits = hits + 1 WHERE cache_key = ?'
           ).bind(cacheKey).run().catch(() => {});
+          dbg.gemini_status = 'cache_hit';
           return {
             answer_en: cached.answer_en,
             answer_or: cached.answer_or || '',
@@ -303,16 +309,19 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
   // 2. Protect Admin Studio priority (9,000 / 10,000 free neurons cap for Workers AI)
   const usage = await getDailyAiUsage(env);
   if (!geminiKey && usage.neurons_used >= SEMANTIC_NEURON_CAP) {
+    dbg.error = 'Daily neuron cap reached';
     return null;
   }
 
   // 3. Lightweight IP hourly rate limit (max 10 fresh uncached AI answers/IP/hour)
   const ipRate = checkRateLimit(`ask_ai_ip_${clientIp}`, 10, 60 * 60 * 1000);
   if (!ipRate.allowed) {
+    dbg.error = 'IP hourly rate limit reached';
     return null;
   }
 
   if (!geminiKey && !hasWorkersAi) {
+    dbg.error = 'Neither GEMINI_API_KEY nor env.AI is configured';
     return null;
   }
 
@@ -337,6 +346,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
   let rawResp = null;
 
   if (geminiKey) {
+    dbg.provider_attempted.push('google_gemini');
     try {
       const gemRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
         method: 'POST',
@@ -352,6 +362,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
           }
         })
       });
+      dbg.gemini_status = `http_${gemRes.status}`;
       if (!gemRes.ok) throw new Error(`Gemini HTTP ${gemRes.status}`);
       const gemData = await gemRes.json();
       const gemText = gemData &&
@@ -365,22 +376,33 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
       rawResp = gemText;
       providerUsed = 'google_gemini';
       modelUsed = 'gemini-2.5-flash';
-    } catch (_gemErr) {
+    } catch (gemErr) {
+      dbg.error = (gemErr && gemErr.message) || 'Gemini request failed';
       rawResp = null;
     }
   }
 
   if (rawResp === null) {
-    if (!hasWorkersAi || usage.neurons_used >= SEMANTIC_NEURON_CAP) return null;
+    if (!hasWorkersAi || usage.neurons_used >= SEMANTIC_NEURON_CAP) {
+      if (!dbg.error) dbg.error = 'Workers AI unavailable or daily neuron cap reached';
+      return null;
+    }
+    dbg.provider_attempted.push('cloudflare_workers_ai');
+    dbg.workers_ai_used = true;
     const messages = [
       { role: 'system', content: 'You output strictly valid JSON with answer_en and answer_or.' },
       { role: 'user', content: prompt }
     ];
     try {
       rawResp = await env.AI.run(ANSWER_PRIMARY_MODEL, { messages, max_tokens: 450, temperature: 0.25 });
-    } catch (_err) {
+    } catch (primaryErr) {
       modelUsed = ANSWER_FALLBACK_MODEL;
-      rawResp = await env.AI.run(ANSWER_FALLBACK_MODEL, { messages, max_tokens: 450, temperature: 0.25 });
+      try {
+        rawResp = await env.AI.run(ANSWER_FALLBACK_MODEL, { messages, max_tokens: 450, temperature: 0.25 });
+      } catch (fbErr) {
+        dbg.error = (fbErr && fbErr.message) || (primaryErr && primaryErr.message) || 'Workers AI failed';
+        return null;
+      }
     }
   }
 
@@ -401,17 +423,31 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
       try {
         parsed = extractJsonObject(rawText);
       } catch (_parseErr) {
-        parsed = {
-          answer_en: rawText.replace(/^```[\s\S]*?\n|```$/g, '').trim(),
-          answer_or: 'ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ପାଇଁ ଦୟାକରି ଲିଙ୍କ୍ ହୋଇଥିବା ପୃଷ୍ଠା ଏବଂ ସରକାରୀ ବିଜ୍ଞପ୍ତି ଯାଞ୍ଚ କରନ୍ତୁ।'
-        };
+        parsed = null;
       }
+    }
+  }
+
+  if (!parsed || typeof parsed !== 'object' || !parsed.answer_en) {
+    const cleanedFallback = rawText
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .replace(/^\{+|\}+$/g, '')
+      .trim();
+    if (cleanedFallback) {
+      parsed = {
+        answer_en: cleanedFallback,
+        answer_or: 'ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ପାଇଁ ଦୟାକରି ଲିଙ୍କ୍ ହୋଇଥିବା ପୃଷ୍ଠା ଏବଂ ସରକାରୀ ବିଜ୍ଞପ୍ତି ଯାଞ୍ଚ କରନ୍ତୁ।'
+      };
     }
   }
 
   const answerEn = String((parsed && parsed.answer_en) || '').trim().slice(0, 1000);
   const answerOr = String((parsed && parsed.answer_or) || 'ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ପାଇଁ ଦୟାକରି ଲିଙ୍କ୍ ହୋଇଥିବା ପୃଷ୍ଠା ଏବଂ ସରକାରୀ ବିଜ୍ଞପ୍ତି ଯାଞ୍ଚ କରନ୍ତୁ।').trim().slice(0, 1200);
-  if (!answerEn) return null;
+  if (!answerEn) {
+    dbg.error = dbg.error || 'Empty answer_en after parsing';
+    return null;
+  }
 
   const neurons = providerUsed === 'google_gemini'
     ? 0
@@ -448,7 +484,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
   };
 }
 
-export async function runSemanticSearch(env, { q, type = 'all', limit = 6, clientIp = 'anon', includeAnswer = true }) {
+export async function runSemanticSearch(env, { q, type = 'all', limit = 6, clientIp = 'anon', includeAnswer = true, debug = false }) {
   await ensureSemanticSchema(env);
   const cleanQ = String(q || '').trim();
   const cleanType = VALID_SEARCH_TYPES.has(String(type || '').toLowerCase()) ? String(type).toLowerCase() : 'all';
@@ -493,15 +529,19 @@ export async function runSemanticSearch(env, { q, type = 'all', limit = 6, clien
   }
 
   let aiAnswer = null;
+  const debugOut = debug ? {} : null;
   if (includeAnswer) {
     try {
-      aiAnswer = await generateAskCsoAnswer(env, { q: cleanQ, type: cleanType, results, clientIp });
-    } catch (_e) {
+      aiAnswer = await generateAskCsoAnswer(env, { q: cleanQ, type: cleanType, results, clientIp, debugOut });
+    } catch (e) {
       aiAnswer = null;
+      if (debugOut) debugOut.error = (e && e.message) || 'generateAskCsoAnswer threw';
     }
   }
 
-  return { ok: true, mode, ai_answer: aiAnswer, results };
+  const out = { ok: true, mode, ai_answer: aiAnswer, results };
+  if (debug) out.debug_info = debugOut;
+  return out;
 }
 
 export async function getSemanticIndexStatus(env) {
