@@ -10,7 +10,7 @@
     .cso-study-choice h2{font-size:1.2rem;margin:0}
     .cso-study-choice p{line-height:1.6;margin:0;flex:1}
     .cso-study-choice .cso-study-icon{font-size:2rem;line-height:1}
-    .cso-study-choice .cso-study-action{font-weight:750;color:#2563eb}
+    .cso-study-choice .cso-study-action{font-weight:750;color:var(--cso-link)}
     .cso-study-note{margin-top:26px;padding:18px;border:1px solid var(--border,#8885);border-radius:12px;line-height:1.7}
     @media(max-width:650px){.cso-study-grid{grid-template-columns:1fr}.cso-study-hub{padding:18px 14px 48px}.cso-study-choice{min-height:0}}
 
@@ -20,7 +20,7 @@
   font-weight: 700;
 }
 .cso-study-return a {
-  color: #2563eb;
+  color: var(--cso-link);
   text-decoration: none;
 }
 .cso-study-return a:hover {

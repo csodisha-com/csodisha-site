@@ -10,7 +10,7 @@
       color: var(--cso-muted, #64748b);
     }
     .disclaimer-breadcrumbs a {
-      color: #0fa968;
+      color: var(--cso-link);
       text-decoration: none;
     }
     .disclaimer-breadcrumbs a:hover {
@@ -39,7 +39,7 @@
       padding: 4px 10px;
       border-radius: 9999px;
       background: rgba(245, 158, 11, 0.1);
-      color: #f59e0b;
+      color: var(--cso-warn-fg);
       border: 1px solid rgba(245, 158, 11, 0.2);
     }
     .disclaimer-version-badge {
@@ -49,7 +49,7 @@
       padding: 4px 8px;
       border-radius: 6px;
       background: rgba(2, 132, 199, 0.1);
-      color: #0284c7;
+      color: var(--cso-link);
       border: 1px solid rgba(2, 132, 199, 0.2);
     }
     .disclaimer-hero h1 {
@@ -84,7 +84,7 @@
     .emergency-banner h3 {
       font-size: 0.95rem;
       font-weight: 700;
-      color: #dc2626;
+      color: var(--cso-err-fg);
       margin: 0 0 6px;
       display: flex;
       align-items: center;
@@ -110,7 +110,7 @@
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .notice-card:hover {
-      border-color: #f59e0b;
+      border-color: var(--cso-warn-border);
       box-shadow: 0 4px 16px rgba(245, 158, 11, 0.06);
     }
     .notice-header {
@@ -127,7 +127,7 @@
       padding: 3px 8px;
       border-radius: 4px;
       background: rgba(245, 158, 11, 0.1);
-      color: #d97706;
+      color: var(--cso-warn-fg);
       border: 1px solid rgba(245, 158, 11, 0.2);
     }
     .notice-title {

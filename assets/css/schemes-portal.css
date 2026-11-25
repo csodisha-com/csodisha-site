@@ -6,11 +6,11 @@
   display: grid;
   gap: 20px;
   margin-bottom: 28px;
-}
-
-/* ======================================================================
+}/* ======================================================================
    FLAGSHIP EDITORIAL HERO BANNER (v256)
    ====================================================================== */
+
+
 .sp-hero {
   position: relative;
   overflow: hidden;
@@ -41,7 +41,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.26);
-  color: #dcfce7;
+  color: var(--cso-hero-sub-ink);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -52,7 +52,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #4ade80;
+  background: var(--cso-accent);
   box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
 }
 
@@ -68,7 +68,7 @@
   font-weight: 800;
   line-height: 1.18;
   letter-spacing: -0.015em;
-  color: #ffffff;
+  color: var(--cso-hero-ink);
 }
 
 .sp-hero-sub {
@@ -99,7 +99,7 @@
   font-weight: 800;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
-  color: #ffffff;
+  color: var(--cso-hero-ink);
 }
 
 .sp-hero-kpi-label {
@@ -117,18 +117,18 @@
 
 .sp-hero .sp-lang-btn {
   background: transparent;
-  color: #e2fbe8;
+  color: var(--cso-hero-sub-ink);
   border-radius: 999px;
   padding: 6px 13px;
 }
 
 .sp-hero .sp-lang-btn.is-active {
-  background: #ffffff;
-  color: #14532d;
+  background: var(--cso-surface);
+  color: var(--cso-link);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
-}
+}/* Floating Admin Draft Preview Banner */
 
-/* Floating Admin Draft Preview Banner */
+
 .sp-preview-banner {
   position: sticky;
   top: 8px;
@@ -140,9 +140,9 @@
   gap: 10px;
   padding: 12px 16px;
   border-radius: 12px;
-  background: #1e3a8a;
-  color: #ffffff;
-  border: 2px solid #60a5fa;
+  background: var(--cso-accent);
+  color: var(--cso-hero-ink);
+  border: 2px solid var(--cso-accent);
   box-shadow: 0 8px 24px rgba(30, 58, 138, 0.28);
   font-size: 0.88rem;
   font-weight: 700;
@@ -153,14 +153,14 @@
   align-items: center;
   padding: 3px 10px;
   border-radius: 999px;
-  background: #f59e0b;
-  color: #111827;
+  background: var(--cso-warn-fg);
+  color: var(--cso-ink);
   font-size: 0.74rem;
   font-weight: 800;
   text-transform: uppercase;
-}
+}/* Cards & Panels */
 
-/* Cards & Panels */
+
 .sp-card {
   background: var(--cso-card-bg, #ffffff);
   color: var(--cso-ink-primary, #12202b);
@@ -191,9 +191,9 @@
 .sp-muted {
   color: var(--cso-ink-secondary, #4c5e6e);
   font-size: 0.86rem;
-}
+}/* 5 Elevated Government Level Cards (v256) */
 
-/* 5 Elevated Government Level Cards (v256) */
+
 .sp-gov-strip {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -262,10 +262,10 @@
 
 .sp-gov-card.is-active .sp-gov-count {
   background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-}
+  color: var(--cso-accent-ink);
+}/* 3-Column Cascading Filter Bar + Quick-Filter Pill Bar (v265) */
 
-/* 3-Column Cascading Filter Bar + Quick-Filter Pill Bar (v265) */
+
 .sp-cascade-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1.6fr;
@@ -296,9 +296,9 @@
   letter-spacing: 0.05em;
   color: var(--cso-muted, #64748b);
   margin-right: 2px;
-}
+}/* Polished Guided Eligibility Checker Card (v256) */
 
-/* Polished Guided Eligibility Checker Card (v256) */
+
 .sp-elig-card {
   border-left: 4px solid var(--cso-primary, #15803d);
 }
@@ -388,9 +388,9 @@
 
 .sp-filter-pill.is-active .sp-pill-count {
   background: rgba(255, 255, 255, 0.24);
-}
+}/* High-Contrast 2-Column Scheme Cards (v256) */
 
-/* High-Contrast 2-Column Scheme Cards (v256) */
+
 .sp-results-bar {
   display: flex;
   flex-wrap: wrap;
@@ -498,9 +498,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-}
+}/* Badges */
 
-/* Badges */
+
 .sp-badge {
   display: inline-flex;
   align-items: center;
@@ -514,11 +514,11 @@
   color: var(--cso-text, #1e293b);
 }
 
-.sp-badge--ok { background: rgba(22, 163, 74, 0.14); border-color: rgba(22, 163, 74, 0.4); color: #15803d; }
-.sp-badge--warn { background: rgba(217, 119, 6, 0.15); border-color: rgba(217, 119, 6, 0.45); color: #b45309; }
-.sp-badge--closed { background: rgba(220, 38, 38, 0.14); border-color: rgba(220, 38, 38, 0.4); color: #b91c1c; }
-.sp-badge--gov { background: rgba(13, 148, 136, 0.14); border-color: rgba(13, 148, 136, 0.4); color: #0f766e; }
-.sp-badge--dbt { background: rgba(37, 99, 235, 0.14); border-color: rgba(37, 99, 235, 0.4); color: #1d4ed8; }
+.sp-badge--ok { background: rgba(22, 163, 74, 0.14); border-color: rgba(22, 163, 74, 0.4); color: var(--cso-link); }
+.sp-badge--warn { background: rgba(217, 119, 6, 0.15); border-color: rgba(217, 119, 6, 0.45); color: var(--cso-warn-fg); }
+.sp-badge--closed { background: rgba(220, 38, 38, 0.14); border-color: rgba(220, 38, 38, 0.4); color: var(--cso-err-fg); }
+.sp-badge--gov { background: rgba(13, 148, 136, 0.14); border-color: rgba(13, 148, 136, 0.4); color: var(--cso-link); }
+.sp-badge--dbt { background: rgba(37, 99, 235, 0.14); border-color: rgba(37, 99, 235, 0.4); color: var(--cso-info-fg); }
 
 :root[data-cso-resolved-mode="dark"] .sp-badge--ok { color: #86efac; }
 :root[data-cso-resolved-mode="dark"] .sp-badge--warn { color: #fcd34d; }
@@ -527,9 +527,9 @@
 :root[data-cso-resolved-mode="dark"] .sp-badge--dbt { color: #93c5fd; }
 :root[data-cso-resolved-mode="dark"] .sp-scheme-org { color: #86efac; }
 :root[data-cso-resolved-mode="dark"] .sp-gov-count { background: rgba(255, 255, 255, 0.14); }
-:root[data-cso-resolved-mode="dark"] .sp-empty-art { color: #86efac; border-color: rgba(134, 239, 172, 0.3); }
+:root[data-cso-resolved-mode="dark"] .sp-empty-art { color: #86efac; border-color: rgba(134, 239, 172, 0.3); }/* Buttons */
 
-/* Buttons */
+
 .sp-btn {
   display: inline-flex;
   align-items: center;
@@ -555,13 +555,13 @@
 }
 
 .sp-btn--primary { background: var(--cso-cta-bg, #115569); border-color: var(--cso-cta-bg, #115569); color: var(--cso-cta-fg, #ffffff); }
-.sp-btn--apply { background: var(--cso-brand-accent, #c45b20); border-color: var(--cso-brand-accent, #c45b20); color: #ffffff; }
-.sp-btn--cobalt { background: var(--cso-brand-deep, #0b3948); border-color: var(--cso-brand-deep, #0b3948); color: #ffffff; }
-.sp-btn--xs { padding: 6px 12px; min-height: 30px; font-size: 0.78rem; }
-
-/* ======================================================================
+.sp-btn--apply { background: var(--cso-brand-accent, #c45b20); border-color: var(--cso-brand-accent, #c45b20); color: var(--cso-accent-ink); }
+.sp-btn--cobalt { background: var(--cso-brand-deep, #0b3948); border-color: var(--cso-brand-deep, #0b3948); color: var(--cso-accent-ink); }
+.sp-btn--xs { padding: 6px 12px; min-height: 30px; font-size: 0.78rem; }/* ======================================================================
    DESIGNED ILLUSTRATED EMPTY STATE & 3-LAYER WELFARE DOMAINS GRID (v256)
    ====================================================================== */
+
+
 .sp-empty-card {
   background: var(--cso-card-bg, #ffffff);
   border: 1.5px dashed var(--cso-border-subtle, #d8e1e9);
@@ -586,9 +586,9 @@
   justify-content: center;
   flex-shrink: 0;
   color: var(--cso-badge-verified-fg, #0b3948);
-}
+}/* Compact Hero, Horizontal Category Strip & 1-Row Filter Bar (v283) */
 
-/* Compact Hero, Horizontal Category Strip & 1-Row Filter Bar (v283) */
+
 .sch-hero--compact {
   padding: 1.25rem 1.5rem;
   gap: 10px;
@@ -650,7 +650,7 @@
 
 .sch-cat-pill.is-active .sch-cat-count {
   background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
 }
 
 .sch-filter-row {
@@ -787,9 +787,9 @@
   font-size: 0.8rem;
   color: var(--cso-muted, #475569);
   line-height: 1.4;
-}
+}/* 3-Scheme Comparison Tray */
 
-/* 3-Scheme Comparison Tray */
+
 .sp-compare-tray {
   position: sticky;
   bottom: 10px;
@@ -801,18 +801,18 @@
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
   display: grid;
   gap: 12px;
-}
+}/* Full Scheme Article */
 
-/* Full Scheme Article */
+
 .sp-article { display: grid; gap: 18px; }
 .sp-article-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .sp-breadcrumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.84rem; color: var(--cso-muted, #475569); }
 .sp-amendment {
-  border: 1px solid rgba(217, 119, 6, 0.55); border-left: 5px solid #d97706;
+  border: 1px solid rgba(217, 119, 6, 0.55); border-left: 5px solid var(--cso-warn-border);
   background: rgba(217, 119, 6, 0.1); border-radius: 12px; padding: 13px 16px; display: grid; gap: 4px;
 }
 .sp-otr-banner {
-  border: 1px solid rgba(37, 99, 235, 0.45); border-left: 5px solid #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.45); border-left: 5px solid var(--cso-accent);
   background: rgba(37, 99, 235, 0.08); border-radius: 12px; padding: 12px 15px;
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
 }
@@ -824,14 +824,14 @@
 .sp-tiles-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .sp-tile {
   border-radius: 12px; padding: 14px 15px; border: 1px solid var(--cso-border, #e2e8f0);
-  border-left: 4px solid #16a34a; background: var(--cso-surface, #ffffff); display: grid; gap: 4px;
+  border-left: 4px solid var(--cso-accent); background: var(--cso-surface, #ffffff); display: grid; gap: 4px;
 }
-.sp-tile--emerald { border-left-color: #16a34a; }
-.sp-tile--cobalt { border-left-color: #2563eb; }
-.sp-tile--rose { border-left-color: #dc2626; }
-.sp-tile--violet { border-left-color: #7c3aed; }
-.sp-tile--amber { border-left-color: #d97706; }
-.sp-tile--teal { border-left-color: #0d9488; }
+.sp-tile--emerald { border-left-color: var(--cso-accent); }
+.sp-tile--cobalt { border-left-color: var(--cso-accent); }
+.sp-tile--rose { border-left-color: var(--cso-err-border); }
+.sp-tile--violet { border-left-color: var(--cso-accent); }
+.sp-tile--amber { border-left-color: var(--cso-warn-border); }
+.sp-tile--teal { border-left-color: var(--cso-accent); }
 .sp-tile-label { font-size: 0.73rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--cso-muted, #64748b); }
 .sp-tile-val { font-size: 1.02rem; font-weight: 800; color: var(--cso-text, #0f172a); }
 
@@ -867,13 +867,13 @@
 .sp-faq-item summary { font-weight: 700; cursor: pointer; color: var(--cso-text, #0f172a); }
 .sp-faq-ans { margin-top: 8px; color: var(--cso-muted, #374151); font-size: 0.9rem; }
 
-.sp-pdf-frame { width: 100%; height: 520px; border: 1px solid var(--cso-border, #cbd5e1); border-radius: 10px; background: #f1f5f9; }
+.sp-pdf-frame { width: 100%; height: 520px; border: 1px solid var(--cso-border, #cbd5e1); border-radius: 10px; background: var(--cso-surface-subtle); }
 .sp-pdf-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
 .sp-pdf-card { border: 1px solid var(--cso-border, #e2e8f0); border-radius: 10px; padding: 12px; background: var(--cso-bg, #f8fafc); display: grid; gap: 8px; }
 
 .sp-lang-toggle { display: inline-flex; border: 1px solid var(--cso-border, #cbd5e1); border-radius: 999px; overflow: hidden; }
 .sp-lang-btn { padding: 5px 12px; border: none; background: var(--cso-surface, #ffffff); color: var(--cso-text, #1e293b); font-size: 0.78rem; font-weight: 700; cursor: pointer; }
-.sp-lang-btn.is-active { background: var(--cso-primary, #14532d); color: #ffffff; }
+.sp-lang-btn.is-active { background: var(--cso-primary, #14532d); color: var(--cso-accent-ink); }
 
 @media (max-width: 1024px) {
   .sp-hero-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }

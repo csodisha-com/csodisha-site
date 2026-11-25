@@ -1,139 +1,306 @@
 /* Common Sense Odisha — Shared Public Portal Shell, Master Semantic Color Tokens & Zero-Flash Layout (v262)
  * Unconditionally eliminates dead sidebars, parent grid/flex column squeezing, duplicate search bars,
- * legacy static heroes, and unifies all 5 portals across 4 themes (System, Dark Night, Reading, Odisha & Bharat). */
+ * legacy static heroes, and unifies all 5 portals across 4 themes (System, Dark Night, Reading, Odisha & Bharat). *//* ======================================================================
+   0. MASTER SEMANTIC COLOR & THEME TOKENS (v295 — WCAG 2.1 AA+ >= 4.7:1)
+   Exact 4-Theme Contract: System | Dark Night | Reading Mode | Odisha & Bharat
+   ====================================================================== *//* Theme 1: System (Light) */
 
-/* ======================================================================
-   0. MASTER SEMANTIC COLOR & THEME TOKENS (v262 — WCAG AA+ >= 4.5:1)
-   ====================================================================== */
-/* Theme 1: System (Clean Civic Slate & Teal) */
+
+
 :root,
+:root[data-theme="system"],
 :root[data-cso-theme="system"],
 :root[data-cso-resolved-mode="light"] {
-  --cso-brand-deep: #0b3948;
-  --cso-brand-primary: #115569;
-  --cso-brand-accent: #c45b20;
-  --cso-brand-gold: #b8821c;
-  --cso-canvas-bg: #f5f7fa;
-  --cso-card-bg: #ffffff;
-  --cso-card-subtle: #eef3f7;
-  --cso-ink-primary: #12202b;
-  --cso-ink-secondary: #4c5e6e;
-  --cso-border-subtle: #d8e1e9;
-  --cso-hero-gradient: linear-gradient(135deg, #0b3948 0%, #115569 62%, #1b6d7c 100%);
+  color-scheme: light;
+  --cso-bg: #f8fafc;
+  --cso-surface: #ffffff;
+  --cso-surface-elevated: #ffffff;
+  --cso-surface-subtle: #f1f5f9;
+  --cso-ink: #0f172a;
+  --cso-ink-soft: #334155;
+  --cso-ink-muted: #475569;
+  --cso-accent: #0f766e;
+  --cso-accent-ink: #ffffff;
+  --cso-link: #0f766e;
+  --cso-border: #cbd5e1;
+  --cso-input-bg: #ffffff;
+  --cso-input-ink: #0f172a;
+  --cso-ok-bg: #dcfce7;
+  --cso-ok-fg: #14532d;
+  --cso-ok-border: #86efac;
+  --cso-warn-bg: #fef3c7;
+  --cso-warn-fg: #78350f;
+  --cso-warn-border: #fcd34d;
+  --cso-err-bg: #fee2e2;
+  --cso-err-fg: #991b1b;
+  --cso-err-border: #fca5a5;
+  --cso-info-bg: #e0f2fe;
+  --cso-info-fg: #0c4a6e;
+  --cso-info-border: #7dd3fc;
+  --cso-brand-deep: #0b3b3c;
+  --cso-brand-primary: var(--cso-accent);
+  --cso-brand-accent: var(--cso-accent);
+  --cso-brand-gold: #b45309;
+  --cso-canvas-bg: var(--cso-bg);
+  --cso-card-bg: var(--cso-surface);
+  --cso-card-subtle: var(--cso-surface-subtle);
+  --cso-ink-primary: var(--cso-ink);
+  --cso-ink-secondary: var(--cso-ink-muted);
+  --cso-text: var(--cso-ink);
+  --cso-muted: var(--cso-ink-muted);
+  --cso-border-subtle: var(--cso-border);
+  --cso-hero-gradient: linear-gradient(135deg, #0b3b3c 0%, #0f766e 100%);
   --cso-hero-ink: #ffffff;
-  --cso-pill-active-bg: #115569;
-  --cso-pill-active-fg: #ffffff;
-  --cso-cta-bg: #115569;
-  --cso-cta-fg: #ffffff;
-  --cso-badge-verified-bg: #e0f2fe;
-  --cso-badge-verified-fg: #0b3948;
-  --cso-card-shadow: 0 8px 24px rgba(11, 57, 72, 0.08);
-}
+  --cso-hero-sub-ink: #e2f5f2;
+  --cso-pill-active-bg: var(--cso-accent);
+  --cso-pill-active-fg: var(--cso-accent-ink);
+  --cso-cta-bg: var(--cso-accent);
+  --cso-cta-fg: var(--cso-accent-ink);
+  --cso-badge-verified-bg: #ccfbf1;
+  --cso-badge-verified-fg: #115e59;
+  --cso-card-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+  --cso-footer-bg: #0f172a;
+  --cso-footer-ink: #e2e8f0;
+  --cso-footer-muted: #94a3b8;
+  --cso-footer-title-ink: #ffffff;
+  --cso-footer-border: rgba(255, 255, 255, 0.14);
+}/* Theme 2: Dark Night (OS Dark Auto when System) */
 
-/* Theme 2: Dark Night (Deep Midnight Slate & Soft Cyan/Amber) */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="reading"]):not([data-theme="odisha"]):not([data-theme="utkal-bharat"]):not([data-cso-theme="light"]):not([data-cso-theme="reading"]):not([data-cso-theme="utkal-bharat"]):not([data-cso-theme="odisha"]),
+  :root[data-theme="system"],
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) {
+    color-scheme: dark;
+    --cso-bg: #0b0f17;
+    --cso-surface: #121824;
+    --cso-surface-elevated: #161e2e;
+    --cso-surface-subtle: #1a2335;
+    --cso-ink: #f1f5f9;
+    --cso-ink-soft: #cbd5e1;
+    --cso-ink-muted: #94a3b8;
+    --cso-accent: #14b8a6;
+    --cso-accent-ink: #04201d;
+    --cso-link: #2dd4bf;
+    --cso-border: #263245;
+    --cso-input-bg: #0f1520;
+    --cso-input-ink: #f1f5f9;
+    --cso-ok-bg: #0f2922;
+    --cso-ok-fg: #6ee7b7;
+    --cso-ok-border: #1e5b48;
+    --cso-warn-bg: #2c2110;
+    --cso-warn-fg: #fcd34d;
+    --cso-warn-border: #6b4e16;
+    --cso-err-bg: #31151b;
+    --cso-err-fg: #fca5a5;
+    --cso-err-border: #7f1d1d;
+    --cso-info-bg: #112538;
+    --cso-info-fg: #7dd3fc;
+    --cso-info-border: #1e4b70;
+    --cso-brand-deep: #0c1724;
+    --cso-brand-gold: #fbbf24;
+    --cso-hero-gradient: linear-gradient(135deg, #0c1724 0%, #10353e 100%);
+    --cso-hero-ink: #f1f5f9;
+    --cso-hero-sub-ink: #cbd5e1;
+    --cso-badge-verified-bg: #102a2e;
+    --cso-badge-verified-fg: #5eead4;
+    --cso-card-shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
+    --cso-footer-bg: #070a10;
+    --cso-footer-ink: #cbd5e1;
+    --cso-footer-muted: #94a3b8;
+    --cso-footer-title-ink: #f1f5f9;
+    --cso-footer-border: #1e293b;
+  }
+}/* Theme 2: Dark Night (Explicit) */
+
+
 :root[data-cso-theme="dark"],
 :root[data-cso-theme="system"][data-cso-resolved-mode="dark"],
 :root[data-cso-resolved-mode="dark"],
-:root[data-theme="dark"] {
-  --cso-brand-deep: #0c1924;
-  --cso-brand-primary: #174c61;
-  --cso-brand-accent: #e07a3f;
-  --cso-brand-gold: #e6b34b;
-  --cso-canvas-bg: #0b1117;
-  --cso-card-bg: #131d27;
-  --cso-card-subtle: #1a2734;
-  --cso-ink-primary: #ebf1f7;
-  --cso-ink-secondary: #9fb0c0;
-  --cso-border-subtle: #283848;
-  --cso-hero-gradient: linear-gradient(135deg, #0b1822 0%, #143f52 62%, #1d576e 100%);
-  --cso-hero-ink: #f8fafc;
-  --cso-pill-active-bg: #1f6b85;
-  --cso-pill-active-fg: #ffffff;
-  --cso-cta-bg: #1f6b85;
-  --cso-cta-fg: #ffffff;
-  --cso-badge-verified-bg: rgba(23, 76, 97, 0.45);
-  --cso-badge-verified-fg: #93c5fd;
-  --cso-card-shadow: 0 12px 32px rgba(0, 0, 0, 0.36);
-}
+:root[data-theme="dark"],
+:root[data-theme="dark-night"] {
+  color-scheme: dark;
+  --cso-bg: #0b0f17;
+  --cso-surface: #121824;
+  --cso-surface-elevated: #161e2e;
+  --cso-surface-subtle: #1a2335;
+  --cso-ink: #f1f5f9;
+  --cso-ink-soft: #cbd5e1;
+  --cso-ink-muted: #94a3b8;
+  --cso-accent: #14b8a6;
+  --cso-accent-ink: #04201d;
+  --cso-link: #2dd4bf;
+  --cso-border: #263245;
+  --cso-input-bg: #0f1520;
+  --cso-input-ink: #f1f5f9;
+  --cso-ok-bg: #0f2922;
+  --cso-ok-fg: #6ee7b7;
+  --cso-ok-border: #1e5b48;
+  --cso-warn-bg: #2c2110;
+  --cso-warn-fg: #fcd34d;
+  --cso-warn-border: #6b4e16;
+  --cso-err-bg: #31151b;
+  --cso-err-fg: #fca5a5;
+  --cso-err-border: #7f1d1d;
+  --cso-info-bg: #112538;
+  --cso-info-fg: #7dd3fc;
+  --cso-info-border: #1e4b70;
+  --cso-brand-deep: #0c1724;
+  --cso-brand-gold: #fbbf24;
+  --cso-hero-gradient: linear-gradient(135deg, #0c1724 0%, #10353e 100%);
+  --cso-hero-ink: #f1f5f9;
+  --cso-hero-sub-ink: #cbd5e1;
+  --cso-badge-verified-bg: #102a2e;
+  --cso-badge-verified-fg: #5eead4;
+  --cso-card-shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
+  --cso-footer-bg: #070a10;
+  --cso-footer-ink: #cbd5e1;
+  --cso-footer-muted: #94a3b8;
+  --cso-footer-title-ink: #f1f5f9;
+  --cso-footer-border: #1e293b;
+}/* Theme 3: Reading Mode (Warm Archival Sepia) */
 
-/* Theme 3: Reading Mode (Warm Archival Paper & Espresso) */
+
 :root[data-cso-theme="reading"],
 :root[data-theme="reading"] {
-  --cso-brand-deep: #3d2a18;
-  --cso-brand-primary: #593e25;
-  --cso-brand-accent: #b35924;
-  --cso-brand-gold: #a67621;
-  --cso-canvas-bg: #f5efe2;
-  --cso-card-bg: #fcf8ef;
-  --cso-card-subtle: #efe6d5;
-  --cso-ink-primary: #2b2117;
-  --cso-ink-secondary: #635343;
-  --cso-border-subtle: #d9ccb6;
-  --cso-hero-gradient: linear-gradient(135deg, #3a2716 0%, #593e25 62%, #755130 100%);
-  --cso-hero-ink: #fcf8ef;
-  --cso-pill-active-bg: #593e25;
-  --cso-pill-active-fg: #fcf8ef;
-  --cso-cta-bg: #593e25;
-  --cso-cta-fg: #fcf8ef;
-  --cso-badge-verified-bg: #efe6d5;
-  --cso-badge-verified-fg: #3d2a18;
-  --cso-card-shadow: 0 8px 22px rgba(61, 42, 24, 0.1);
-}
+  color-scheme: light;
+  --cso-bg: #f4ede1;
+  --cso-surface: #faf5eb;
+  --cso-surface-elevated: #fdf9f1;
+  --cso-surface-subtle: #ede3d2;
+  --cso-ink: #241b12;
+  --cso-ink-soft: #4a3b2c;
+  --cso-ink-muted: #63503d;
+  --cso-accent: #854d0e;
+  --cso-accent-ink: #ffffff;
+  --cso-link: #78350f;
+  --cso-border: #d6c8b2;
+  --cso-input-bg: #fffdf8;
+  --cso-input-ink: #241b12;
+  --cso-ok-bg: #e7eedd;
+  --cso-ok-fg: #2b4a1e;
+  --cso-ok-border: #b6c9a2;
+  --cso-warn-bg: #f5e6c8;
+  --cso-warn-fg: #6b3b09;
+  --cso-warn-border: #d8b57c;
+  --cso-err-bg: #f6dfdb;
+  --cso-err-fg: #8c2318;
+  --cso-err-border: #dfa39b;
+  --cso-info-bg: #ebe3d5;
+  --cso-info-fg: #4a3520;
+  --cso-info-border: #cab99e;
+  --cso-brand-deep: #3b2614;
+  --cso-brand-gold: #854d0e;
+  --cso-hero-gradient: linear-gradient(135deg, #3b2614 0%, #6b421c 100%);
+  --cso-hero-ink: #fdf9f1;
+  --cso-hero-sub-ink: #f3e8d8;
+  --cso-badge-verified-bg: #ede3d2;
+  --cso-badge-verified-fg: #5c3409;
+  --cso-card-shadow: 0 8px 22px rgba(36, 27, 18, 0.09);
+  --cso-footer-bg: #2a1d12;
+  --cso-footer-ink: #f0e6d8;
+  --cso-footer-muted: #cbbba6;
+  --cso-footer-title-ink: #fdf9f1;
+  --cso-footer-border: rgba(253, 249, 241, 0.16);
+}/* Theme 4: Odisha & Bharat (Terracotta & Saffron) */
 
-/* Theme 4: Odisha & Bharat (Kalinga Maroon, Bharat Emerald & Konark Gold) */
+
 :root[data-cso-theme="utkal-bharat"],
-:root[data-theme="utkal-bharat"] {
-  --cso-brand-deep: #154238;
-  --cso-brand-primary: #78231d;
-  --cso-brand-accent: #c86419;
-  --cso-brand-gold: #c99326;
-  --cso-canvas-bg: #f8f4ec;
-  --cso-card-bg: #fffdf9;
-  --cso-card-subtle: #f2ebe0;
-  --cso-ink-primary: #221714;
-  --cso-ink-secondary: #615049;
-  --cso-border-subtle: #dfd2be;
-  --cso-hero-gradient: linear-gradient(135deg, #154238 0%, #5c2622 56%, #78231d 100%);
+:root[data-cso-theme="odisha"],
+:root[data-theme="utkal-bharat"],
+:root[data-theme="odisha"] {
+  color-scheme: light;
+  --cso-bg: #fdf7f0;
+  --cso-surface: #ffffff;
+  --cso-surface-elevated: #fffdf9;
+  --cso-surface-subtle: #f7ece0;
+  --cso-ink: #1f140c;
+  --cso-ink-soft: #4a3423;
+  --cso-ink-muted: #694c35;
+  --cso-accent: #c2410c;
+  --cso-accent-ink: #ffffff;
+  --cso-link: #b45309;
+  --cso-border: #e4d1bc;
+  --cso-input-bg: #ffffff;
+  --cso-input-ink: #1f140c;
+  --cso-ok-bg: #dcfce7;
+  --cso-ok-fg: #14532d;
+  --cso-ok-border: #86efac;
+  --cso-warn-bg: #ffedd5;
+  --cso-warn-fg: #9a3412;
+  --cso-warn-border: #fdba74;
+  --cso-err-bg: #fee2e2;
+  --cso-err-fg: #991b1b;
+  --cso-err-border: #fca5a5;
+  --cso-info-bg: #fef3c7;
+  --cso-info-fg: #78350f;
+  --cso-info-border: #fcd34d;
+  --cso-brand-deep: #7c2d12;
+  --cso-brand-gold: #b45309;
+  --cso-hero-gradient: linear-gradient(135deg, #7c2d12 0%, #c2410c 100%);
   --cso-hero-ink: #fffdf9;
-  --cso-pill-active-bg: #78231d;
-  --cso-pill-active-fg: #fffdf9;
-  --cso-cta-bg: #78231d;
-  --cso-cta-fg: #fffdf9;
-  --cso-badge-verified-bg: #f2ebe0;
-  --cso-badge-verified-fg: #154238;
-  --cso-card-shadow: 0 8px 24px rgba(120, 35, 29, 0.1);
+  --cso-hero-sub-ink: #ffedd5;
+  --cso-badge-verified-bg: #ffedd5;
+  --cso-badge-verified-fg: #9a3412;
+  --cso-card-shadow: 0 8px 24px rgba(124, 45, 18, 0.09);
+  --cso-footer-bg: #2c150c;
+  --cso-footer-ink: #f7e6d6;
+  --cso-footer-muted: #d6b99f;
+  --cso-footer-title-ink: #fffdf9;
+  --cso-footer-border: rgba(255, 253, 249, 0.16);
 }
 
 body.cso-portal-page {
-  background: var(--cso-canvas-bg);
-  color: var(--cso-ink-primary);
+  background: var(--cso-bg);
+  color: var(--cso-ink);
   transition: background-color 0.22s ease, color 0.22s ease;
-}
-
-/* ======================================================================
-   0b. UNIFIED TIER 1 + TIER 2 NAVIGATION (--cso-nav-* TOKENS, v268)
+}/* ======================================================================
+   0b. UNIFIED TIER 1 + TIER 2 NAVIGATION (--cso-nav-* TOKENS, v295)
    ====================================================================== */
+
+
 :root,
+:root[data-theme="system"],
 :root[data-cso-theme="system"],
 :root[data-cso-resolved-mode="light"] {
-  --cso-nav-top-bg: #0b2234;
-  --cso-nav-top-border: 1.5px solid rgba(255, 122, 0, 0.45);
+  --cso-nav-top-bg: #0f172a;
+  --cso-nav-top-border: 1.5px solid rgba(20, 184, 166, 0.45);
   --cso-nav-top-ink: #f8fafc;
-  --cso-nav-sub-bg: #eef3f7;
-  --cso-nav-sub-border: 1px solid #d5dfe7;
-  --cso-nav-sub-ink: #162634;
-  --cso-nav-sub-hover: rgba(15, 76, 92, 0.08);
-  --cso-nav-pill-bg: #0f4c5c;
+  --cso-nav-sub-bg: #f1f5f9;
+  --cso-nav-sub-border: 1px solid #cbd5e1;
+  --cso-nav-sub-ink: #0f172a;
+  --cso-nav-sub-hover: rgba(15, 118, 110, 0.08);
+  --cso-nav-pill-bg: #0f766e;
   --cso-nav-pill-fg: #ffffff;
-  --cso-nav-saved-bg: rgba(255, 255, 255, 0.78);
-  --cso-nav-saved-fg: #162634;
-  --cso-nav-saved-border: rgba(0, 0, 0, 0.12);
+  --cso-nav-saved-bg: #ffffff;
+  --cso-nav-saved-fg: #0f172a;
+  --cso-nav-saved-border: #cbd5e1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="reading"]):not([data-theme="odisha"]):not([data-theme="utkal-bharat"]):not([data-cso-theme="light"]):not([data-cso-theme="reading"]):not([data-cso-theme="utkal-bharat"]):not([data-cso-theme="odisha"]),
+  :root[data-theme="system"],
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) {
+    --cso-nav-top-bg: #070a10;
+    --cso-nav-top-border: 1px solid #1e293b;
+    --cso-nav-top-ink: #f1f5f9;
+    --cso-nav-sub-bg: #121824;
+    --cso-nav-sub-border: 1px solid #263245;
+    --cso-nav-sub-ink: #f1f5f9;
+    --cso-nav-sub-hover: rgba(45, 212, 191, 0.12);
+    --cso-nav-pill-bg: #14b8a6;
+    --cso-nav-pill-fg: #04201d;
+    --cso-nav-saved-bg: #161e2e;
+    --cso-nav-saved-fg: #f1f5f9;
+    --cso-nav-saved-border: #263245;
+  }
 }
 
 :root[data-cso-theme="dark"],
 :root[data-cso-theme="system"][data-cso-resolved-mode="dark"],
 :root[data-cso-resolved-mode="dark"],
 :root[data-theme="dark"],
+:root[data-theme="dark-night"],
 html[data-theme="dark"],
 html[data-cso-theme="dark"],
 html.dark,
@@ -142,50 +309,52 @@ body.theme-dark,
 body[data-theme="dark"],
 body[data-cso-theme="dark"],
 .dark-theme {
-  --cso-nav-top-bg: #081018;
-  --cso-nav-top-border: 1px solid #1e2d3d;
-  --cso-nav-top-ink: #e6eef6;
-  --cso-nav-sub-bg: #131e29;
-  --cso-nav-sub-border: 1px solid #283a4d;
-  --cso-nav-sub-ink: #e6eef6;
-  --cso-nav-sub-hover: rgba(255, 255, 255, 0.1);
-  --cso-nav-pill-bg: #1b5c73;
-  --cso-nav-pill-fg: #ffffff;
-  --cso-nav-saved-bg: #1b2938;
-  --cso-nav-saved-fg: #e6eef6;
-  --cso-nav-saved-border: #30455c;
+  --cso-nav-top-bg: #070a10;
+  --cso-nav-top-border: 1px solid #1e293b;
+  --cso-nav-top-ink: #f1f5f9;
+  --cso-nav-sub-bg: #121824;
+  --cso-nav-sub-border: 1px solid #263245;
+  --cso-nav-sub-ink: #f1f5f9;
+  --cso-nav-sub-hover: rgba(45, 212, 191, 0.12);
+  --cso-nav-pill-bg: #14b8a6;
+  --cso-nav-pill-fg: #04201d;
+  --cso-nav-saved-bg: #161e2e;
+  --cso-nav-saved-fg: #f1f5f9;
+  --cso-nav-saved-border: #263245;
 }
 
 :root[data-cso-theme="reading"],
 :root[data-theme="reading"] {
-  --cso-nav-top-bg: #2f2014;
-  --cso-nav-top-border: 1.5px solid rgba(179, 89, 36, 0.5);
-  --cso-nav-top-ink: #fcf8ef;
-  --cso-nav-sub-bg: #efe6d5;
-  --cso-nav-sub-border: 1px solid #d6c7ae;
-  --cso-nav-sub-ink: #322315;
-  --cso-nav-sub-hover: rgba(89, 62, 37, 0.1);
-  --cso-nav-pill-bg: #593e25;
-  --cso-nav-pill-fg: #fffbf4;
-  --cso-nav-saved-bg: rgba(255, 255, 255, 0.78);
-  --cso-nav-saved-fg: #322315;
-  --cso-nav-saved-border: rgba(0, 0, 0, 0.12);
+  --cso-nav-top-bg: #2e1f12;
+  --cso-nav-top-border: 1.5px solid rgba(180, 120, 50, 0.5);
+  --cso-nav-top-ink: #fdf9f1;
+  --cso-nav-sub-bg: #ede3d2;
+  --cso-nav-sub-border: 1px solid #d6c8b2;
+  --cso-nav-sub-ink: #241b12;
+  --cso-nav-sub-hover: rgba(133, 77, 14, 0.10);
+  --cso-nav-pill-bg: #854d0e;
+  --cso-nav-pill-fg: #ffffff;
+  --cso-nav-saved-bg: #fdf9f1;
+  --cso-nav-saved-fg: #241b12;
+  --cso-nav-saved-border: #d6c8b2;
 }
 
 :root[data-cso-theme="utkal-bharat"],
-:root[data-theme="utkal-bharat"] {
-  --cso-nav-top-bg: #15352d;
-  --cso-nav-top-border: 1.5px solid rgba(201, 147, 38, 0.65);
+:root[data-cso-theme="odisha"],
+:root[data-theme="utkal-bharat"],
+:root[data-theme="odisha"] {
+  --cso-nav-top-bg: #3b190d;
+  --cso-nav-top-border: 1.5px solid rgba(217, 119, 6, 0.65);
   --cso-nav-top-ink: #fffdf9;
-  --cso-nav-sub-bg: #f4ece0;
-  --cso-nav-sub-border: 2px solid #c99326;
-  --cso-nav-sub-ink: #241714;
-  --cso-nav-sub-hover: rgba(120, 35, 29, 0.08);
-  --cso-nav-pill-bg: #78231d;
-  --cso-nav-pill-fg: #fffdf9;
-  --cso-nav-saved-bg: rgba(255, 255, 255, 0.78);
-  --cso-nav-saved-fg: #241714;
-  --cso-nav-saved-border: rgba(0, 0, 0, 0.12);
+  --cso-nav-sub-bg: #f7ece0;
+  --cso-nav-sub-border: 1.5px solid #e4d1bc;
+  --cso-nav-sub-ink: #1f140c;
+  --cso-nav-sub-hover: rgba(194, 65, 12, 0.09);
+  --cso-nav-pill-bg: #c2410c;
+  --cso-nav-pill-fg: #ffffff;
+  --cso-nav-saved-bg: #fffdf9;
+  --cso-nav-saved-fg: #1f140c;
+  --cso-nav-saved-border: #e4d1bc;
 }
 
 .top,
@@ -288,9 +457,9 @@ header nav,
 .cso-nav-saved-pill .cso-saved-badge {
   background: var(--cso-nav-pill-bg, #0f4c5c) !important;
   color: var(--cso-nav-pill-fg, #ffffff) !important;
-}
+}/* 1. Force all ancestor shell wrappers to full-width single column immediately on initial paint (zero CLS) */
 
-/* 1. Force all ancestor shell wrappers to full-width single column immediately on initial paint (zero CLS) */
+
 body.cso-portal-page .cso-jobs-shell,
 body.cso-portal-page .cso-careers-shell,
 body.cso-portal-page .cso-schemes-shell,
@@ -317,9 +486,9 @@ body.cso-portal-active .app-shell {
   padding-inline: 0 !important;
   margin-inline: 0 !important;
   box-sizing: border-box !important;
-}
+}/* 2. Hide all empty sidebar rails & mobile drawer backdrops unconditionally on portal pages */
 
-/* 2. Hide all empty sidebar rails & mobile drawer backdrops unconditionally on portal pages */
+
 body.cso-portal-page .cso-jobs-rail,
 body.cso-portal-page .cso-schemes-rail,
 body.cso-portal-page .cso-comm-rail,
@@ -340,9 +509,9 @@ body.cso-portal-page .sidebar,
 .cso-about-drawer-backdrop,
 .sidebar-backdrop {
   display: none !important;
-}
+}/* 3. Suppress redundant secondary search bars & mobile rail toggles */
 
-/* 3. Suppress redundant secondary search bars & mobile rail toggles */
+
 body.cso-portal-page .cso-dir-topbar,
 body.cso-portal-page #cso-subpage-topbar,
 body.cso-portal-page .workspace > .topbar,
@@ -352,9 +521,9 @@ body.cso-portal-page .cso-jobs-mobile-bar,
 .workspace > .topbar,
 .cso-jobs-mobile-bar {
   display: none !important;
-}
+}/* 4. Expand workspace wrapper & all outer/inner portal containers to 100% edge-to-edge (v266) */
 
-/* 4. Expand workspace wrapper & all outer/inner portal containers to 100% edge-to-edge (v266) */
+
 body.cso-portal-page .app-shell > .workspace,
 .app-shell > .workspace,
 body.cso-portal-active .app-shell > .workspace {
@@ -426,9 +595,9 @@ body.cso-portal-page .ap-shell {
   margin-left: 0 !important;
   margin-right: 0 !important;
   box-sizing: border-box !important;
-}
+}/* 5. Suppress legacy static heroes & fallback containers from millisecond zero via body.cso-portal-page */
 
-/* 5. Suppress legacy static heroes & fallback containers from millisecond zero via body.cso-portal-page */
+
 body.cso-portal-page .cso-jobs-hero,
 body.cso-portal-page .cso-schemes-hero,
 body.cso-portal-page .cso-study-hero,
@@ -511,9 +680,9 @@ body.cso-portal-active .cso-about-hero,
 body.cso-portal-about-active .cso-about-hero,
 body.cso-portal-about-active #directory-explorer {
   display: none !important;
-}
+}/* 6. Uniform polish for pillar hero banners & surface elevation across all 4 themes */
 
-/* 6. Uniform polish for pillar hero banners & surface elevation across all 4 themes */
+
 body.cso-portal-active .cso-schemes-hero,
 body.cso-portal-active .cso-sl-hero-banner,
 body.cso-portal-active .cso-comm-hero,
@@ -526,18 +695,18 @@ body.cso-portal-active .cso-about-hero {
 
 body.cso-portal-active .welcome {
   margin-bottom: 18px;
-}
+}/* Smooth focus visibility across all 4 themes */
 
-/* Smooth focus visibility across all 4 themes */
+
 body.cso-portal-active button:focus-visible,
 body.cso-portal-active a:focus-visible,
 body.cso-portal-active input:focus-visible,
 body.cso-portal-active select:focus-visible {
   outline: 2px solid var(--cso-primary, #15803d);
   outline-offset: 2px;
-}
+}/* 4-theme dark mode harmonization for legacy hero shells */
 
-/* 4-theme dark mode harmonization for legacy hero shells */
+
 :root[data-cso-resolved-mode="dark"] body.cso-portal-active .cso-schemes-hero,
 :root[data-cso-resolved-mode="dark"] body.cso-portal-active .cso-sl-hero-banner,
 :root[data-cso-resolved-mode="dark"] body.cso-portal-active .cso-comm-hero,
@@ -551,9 +720,9 @@ body.cso-portal-active select:focus-visible {
 :root[data-cso-theme="reading"] body.cso-portal-active .cso-comm-hero,
 :root[data-cso-theme="reading"] body.cso-portal-active .cso-about-hero {
   box-shadow: 0 6px 18px rgba(92, 69, 44, 0.14);
-}
+}/* 7. Instant Optimistic Portal Skeleton Shell (v260 — <16ms mount, strict CSP) */
 
-/* 7. Instant Optimistic Portal Skeleton Shell (v260 — <16ms mount, strict CSP) */
+
 @keyframes csoSkelPulse {
   0%, 100% { opacity: 0.55; }
   50% { opacity: 1; }
@@ -570,7 +739,7 @@ body.cso-portal-active select:focus-visible {
 .cso-skel-bar,
 .cso-skel-card {
   border-radius: 16px;
-  background: linear-gradient(90deg, rgba(148, 163, 184, 0.16) 25%, rgba(148, 163, 184, 0.28) 50%, rgba(148, 163, 184, 0.16) 75%);
+  background: var(--cso-hero-gradient);
   animation: csoSkelPulse 1.4s ease-in-out infinite;
 }
 
@@ -605,12 +774,12 @@ body.cso-portal-active select:focus-visible {
   .cso-skel-card {
     animation: none;
   }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    8. Tier 2 Primary Navigation — Edge-to-Edge Even Distribution (v271)
    Targets exact DOM: #cso-main-navbar > #navw > (.cso-nav-bar-container + #cso-nav-items)
    ========================================================================== */
+
+
 #cso-main-navbar,
 .main-nav,
 .site-header__nav {
@@ -692,11 +861,11 @@ body.cso-portal-active select:focus-visible {
   #navw::-webkit-scrollbar {
     display: none;
   }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    9. Minimal Two-Stage Cascading Jobs & Careers Menus — 100% Solid Opaque Surfaces (v279)
    ========================================================================== */
+
+
 :root,
 :root[data-cso-theme="system"],
 :root[data-theme="system"],
@@ -713,12 +882,12 @@ body.cso-portal-active select:focus-visible {
   :root:not([data-cso-theme="light"]):not([data-cso-theme="reading"]):not([data-cso-theme="utkal-bharat"]):not([data-theme="light"]):not([data-theme="reading"]):not([data-theme="utkal-bharat"]):not([data-theme="odisha"]),
   :root[data-cso-theme="system"],
   :root[data-theme="system"] {
-    --cso-surface-elevated: #161b26;
+    --cso-surface-elevated: #161e2e;
     --cso-surface-elevated-ink: #f1f5f9;
-    --cso-surface-elevated-border: #263042;
+    --cso-surface-elevated-border: #263245;
     --cso-surface-elevated-hover: rgba(56, 189, 248, 0.14);
     --cso-surface-elevated-hover-ink: #f8fafc;
-    --cso-nav-bg: #131e29;
+    --cso-nav-bg: #121824;
   }
 }
 
@@ -739,12 +908,12 @@ body[data-theme="dark-night"],
 body.dark,
 body.theme-dark,
 .dark-theme {
-  --cso-surface-elevated: #161b26;
+  --cso-surface-elevated: #161e2e;
   --cso-surface-elevated-ink: #f1f5f9;
-  --cso-surface-elevated-border: #263042;
+  --cso-surface-elevated-border: #263245;
   --cso-surface-elevated-hover: rgba(56, 189, 248, 0.14);
   --cso-surface-elevated-hover-ink: #f8fafc;
-  --cso-nav-bg: #131e29;
+  --cso-nav-bg: #121824;
 }
 
 :root[data-cso-theme="reading"],
@@ -753,29 +922,32 @@ html[data-cso-theme="reading"],
 html[data-theme="reading"],
 body[data-cso-theme="reading"],
 body[data-theme="reading"] {
-  --cso-surface-elevated: #faf6ee;
-  --cso-surface-elevated-ink: #2c241b;
-  --cso-surface-elevated-border: #d6cfc2;
+  --cso-surface-elevated: #fdf9f1;
+  --cso-surface-elevated-ink: #241b12;
+  --cso-surface-elevated-border: #d6c8b2;
   --cso-surface-elevated-hover: rgba(15, 23, 42, 0.06);
-  --cso-surface-elevated-hover-ink: #2c241b;
-  --cso-nav-bg: #ede5d4;
+  --cso-surface-elevated-hover-ink: #241b12;
+  --cso-nav-bg: #ede3d2;
 }
 
 :root[data-cso-theme="utkal-bharat"],
+:root[data-cso-theme="odisha"],
 :root[data-theme="utkal-bharat"],
 :root[data-theme="odisha"],
 html[data-cso-theme="utkal-bharat"],
+html[data-cso-theme="odisha"],
 html[data-theme="utkal-bharat"],
 html[data-theme="odisha"],
 body[data-cso-theme="utkal-bharat"],
+body[data-cso-theme="odisha"],
 body[data-theme="utkal-bharat"],
 body[data-theme="odisha"] {
   --cso-surface-elevated: #fffdf9;
-  --cso-surface-elevated-ink: #1c140d;
-  --cso-surface-elevated-border: #e7d8c5;
+  --cso-surface-elevated-ink: #1f140c;
+  --cso-surface-elevated-border: #e4d1bc;
   --cso-surface-elevated-hover: rgba(15, 23, 42, 0.06);
-  --cso-surface-elevated-hover-ink: #1c140d;
-  --cso-nav-bg: #f4ece0;
+  --cso-surface-elevated-hover-ink: #1f140c;
+  --cso-nav-bg: #f7ece0;
 }
 
 #cso-main-navbar {

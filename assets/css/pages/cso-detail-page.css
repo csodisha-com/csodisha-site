@@ -1,9 +1,9 @@
 /* v154: unified server-rendered detail/directory pages (schemes, jobs, study, community, CMS pages).
    External stylesheet only (CSP style-src 'self'); theme tokens only: --cso-bg/surface/text/muted/border/hero-*. */
 .cso-ssr-wrap,.cso-sl-pub-main{max-width:1180px;margin:0 auto;padding:20px 24px 40px;color:var(--cso-text);font-size:15px;line-height:1.55}
-.cso-ssr-wrap p,.cso-ssr-wrap li,.cso-sl-pub-main p,.cso-sl-pub-main li{font-size:14.5px}
+.cso-ssr-wrap p,.cso-ssr-wrap li,.cso-sl-pub-main p,.cso-sl-pub-main li{font-size:14.5px}/* Sticky topbar on detail pages */
 
-/* Sticky topbar on detail pages */
+
 .cso-dir-topbar--detail{position:sticky;top:0;z-index:30;display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 18px;padding:10px 14px;border:1px solid var(--cso-border);border-radius:14px;background:var(--cso-surface);color:var(--cso-text)}
 .cso-dir-jump{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 auto;min-width:0;background:transparent !important;border:0 !important;box-shadow:none !important;padding:0 !important;min-height:0 !important}
 .cso-dir-topbar--detail .cso-dir-jump-pill{background:var(--cso-surface,#FFFFFF) !important;color:var(--cso-text,#111827) !important;border:1px solid var(--cso-border,#D1D5DB) !important;font-size:13.5px;font-weight:600;padding:6px 14px;border-radius:999px;text-decoration:none;white-space:nowrap}
@@ -11,19 +11,19 @@
 :root[data-cso-theme="dark"] .cso-dir-topbar--detail .cso-dir-jump-pill,:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .cso-dir-topbar--detail .cso-dir-jump-pill{background:#1E293B !important;color:#F8FAFC !important;border-color:#334155 !important}
 :root[data-cso-theme="dark"] .cso-dir-topbar--detail .cso-dir-jump-pill:hover,:root[data-cso-theme="dark"] .cso-dir-topbar--detail .cso-dir-jump-pill:focus-visible,:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .cso-dir-topbar--detail .cso-dir-jump-pill:hover,:root[data-cso-theme="system"][data-cso-resolved-mode="dark"] .cso-dir-topbar--detail .cso-dir-jump-pill:focus-visible{background:#334155 !important;border-color:#34D399 !important}
 .cso-dir-topbar--detail .cso-dir-context-pill{margin-left:auto;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cso-ssr-wrap [id^="cso-sec-"],.cso-sl-pub-main [id^="cso-sec-"]{scroll-margin-top:84px}
+.cso-ssr-wrap [id^="cso-sec-"],.cso-sl-pub-main [id^="cso-sec-"]{scroll-margin-top:84px}/* Kicker: CS ODISHA › SCHEMES & BENEFITS › STATE WELFARE */
 
-/* Kicker: CS ODISHA › SCHEMES & BENEFITS › STATE WELFARE */
+
 .cso-detail-kicker{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px !important;padding:0 !important;min-height:0 !important;background:transparent !important;border:0 !important;box-shadow:none !important;border-radius:0 !important;position:static !important;z-index:auto !important;color:var(--cso-muted,#4B5563) !important;font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
 .cso-detail-kicker a,.cso-detail-kicker span{color:inherit !important;text-decoration:none;padding:0 !important}
-.cso-detail-kicker a:hover{text-decoration:underline}
+.cso-detail-kicker a:hover{text-decoration:underline}/* Uniform v150 hero cards */
 
-/* Uniform v150 hero cards */
+
 .cso-schemes-hero,.cso-jobs-hero,.cso-comm-hero,.cso-sl-pub-hero,.cso-live-hero{border-radius:20px;padding:28px 32px;margin-bottom:20px;background:var(--cso-hero-bg);border:1px solid var(--cso-border);color:var(--cso-hero-sub)}
 .cso-schemes-hero h1,.cso-jobs-hero h1,.cso-comm-hero h1,.cso-sl-pub-hero h1,.cso-live-hero h1{color:var(--cso-hero-title);margin:0 0 8px}
-.cso-schemes-hero-sub,.cso-jobs-hero-sub,.cso-comm-hero-sub,.cso-sl-pub-hero-desc{color:var(--cso-hero-sub);font-size:15px;margin:6px 0}
+.cso-schemes-hero-sub,.cso-jobs-hero-sub,.cso-comm-hero-sub,.cso-sl-pub-hero-desc{color:var(--cso-hero-sub);font-size:15px;margin:6px 0}/* Panels, summary grids, checklists */
 
-/* Panels, summary grids, checklists */
+
 .cso-schemes-panel,.cso-jobs-panel,.cso-comm-panel{background:var(--cso-surface);border:1px solid var(--cso-border);border-radius:16px;padding:20px 24px;margin-bottom:18px;color:var(--cso-text)}
 .cso-schemes-panel h2,.cso-jobs-panel h2,.cso-comm-panel h2{color:var(--cso-text);font-size:1.15rem;margin:0 0 12px}
 .cso-schemes-summary-box,.cso-jobs-summary-box,.cso-comm-summary-box{background:var(--cso-bg);border:1px solid var(--cso-border);border-radius:14px;padding:16px 18px;margin-top:14px}
@@ -31,14 +31,14 @@
 .cso-ssr-fact{background:var(--cso-bg);border:1px solid var(--cso-border);border-radius:12px;padding:12px 14px}
 .cso-ssr-fact-k{font-size:12.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--cso-muted)}
 .cso-ssr-fact-v{font-size:14.5px;font-weight:600;color:var(--cso-text);margin-top:2px}
-.cso-schemes-checklist li,.cso-jobs-checklist li,.cso-comm-checklist li{color:var(--cso-text);margin:4px 0}
+.cso-schemes-checklist li,.cso-jobs-checklist li,.cso-comm-checklist li{color:var(--cso-text);margin:4px 0}/* Magic-link expired page (served by functions/api/auth/verify-link.js) */
 
-/* Magic-link expired page (served by functions/api/auth/verify-link.js) */
+
 .cso-link-expired-card{margin:40px auto;text-align:center;padding:2rem;max-width:400px;background:var(--cso-surface);border:1px solid var(--cso-border);border-radius:16px}
 .cso-link-expired-card p{color:var(--cso-muted);font-size:14.5px}
-.cso-link-expired-btn{display:inline-block;margin-top:1rem;padding:.75rem 1.5rem;background:var(--cso-primary,#059669);color:#fff;border-radius:10px;font-weight:600;text-decoration:none}
+.cso-link-expired-btn{display:inline-block;margin-top:1rem;padding:.75rem 1.5rem;background:var(--cso-primary,#059669);color:var(--cso-accent-ink);border-radius:10px;font-weight:600;text-decoration:none}/* v156: Study Library showcase diagram, ODF/PDF pack bar & 8-Q Self-Test capsule */
 
-/* v156: Study Library showcase diagram, ODF/PDF pack bar & 8-Q Self-Test capsule */
+
 .cso-sl-figure{margin:14px 0 18px;padding:14px;background:var(--cso-surface);border:1px solid var(--cso-border);border-radius:16px}
 .cso-sl-figure img{display:block;width:100%;height:auto;border-radius:10px}
 .cso-sl-figure figcaption{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:13.5px;color:var(--cso-muted)}
@@ -48,9 +48,9 @@
 .cso-sl-mcq-q{font-weight:700;font-size:14.5px;color:var(--cso-text);margin-bottom:8px}
 .cso-sl-mcq-opts{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:4px}
 .cso-sl-mcq-ans{padding:8px 12px;border-radius:8px;background:var(--cso-surface);border:1px solid var(--cso-border);font-size:14px;color:var(--cso-text)}
-.cso-sl-mcq-list.is-selftest .cso-sl-mcq-ans{display:none}
+.cso-sl-mcq-list.is-selftest .cso-sl-mcq-ans{display:none}/* v157: 4-level Stage -> Board -> Class -> Rich Class Content hierarchy */
 
-/* v157: 4-level Stage -> Board -> Class -> Rich Class Content hierarchy */
+
 .cso-ec-jump-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .cso-ec-jump-pill{display:inline-flex;align-items:center;padding:6px 13px;border-radius:999px;border:1px solid var(--cso-border);background:var(--cso-surface);color:var(--cso-text);font-size:13.5px;font-weight:600;text-decoration:none}
 .cso-ec-jump-pill:hover{border-color:var(--cso-primary,#165B33);background:var(--cso-surface-alt,#F3F4F6);text-decoration:none}
@@ -65,15 +65,15 @@
 .cso-ec-table th{background:var(--cso-bg);font-weight:700}
 .cso-ec-filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
 .cso-ec-filter-pill{padding:7px 14px;border-radius:999px;border:1px solid var(--cso-border);background:var(--cso-surface);color:var(--cso-text);font-size:13.5px;font-weight:600;cursor:pointer}
-.cso-ec-filter-pill.is-active{background:var(--cso-primary,#165B33);color:#FFFFFF;border-color:var(--cso-primary,#165B33)}
+.cso-ec-filter-pill.is-active{background:var(--cso-primary,#165B33);color:var(--cso-accent-ink);border-color:var(--cso-primary,#165B33)}
 .cso-ec-books-grid,.cso-ec-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px;margin-top:12px}
 .cso-ec-book-card{display:flex;flex-direction:column;gap:8px;padding:16px 18px;border-radius:14px;background:var(--cso-bg);border:1px solid var(--cso-border);color:var(--cso-text)}
 .cso-ec-book-card[hidden]{display:none}
 .cso-ec-gallery .cso-sl-figure{margin:0}
 
-@media (max-width:900px){.cso-ssr-wrap,.cso-sl-pub-main{padding:14px 14px 32px}.cso-schemes-hero,.cso-jobs-hero,.cso-comm-hero,.cso-sl-pub-hero,.cso-live-hero{padding:22px 20px}.cso-dir-topbar--detail .cso-dir-context-pill{margin-left:0;max-width:100%}}
+@media (max-width:900px){.cso-ssr-wrap,.cso-sl-pub-main{padding:14px 14px 32px}.cso-schemes-hero,.cso-jobs-hero,.cso-comm-hero,.cso-sl-pub-hero,.cso-live-hero{padding:22px 20px}.cso-dir-topbar--detail .cso-dir-context-pill{margin-left:0;max-width:100%}}/* v159 intrinsic grids & container queries */
 
-/* v159 intrinsic grids & container queries */
+
 .cso-ssr-facts{grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr))}
 .cso-ec-stage-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
 .cso-ec-books-grid,.cso-ec-gallery{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}

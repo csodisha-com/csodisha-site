@@ -29,7 +29,7 @@
       color: var(--cso-muted, #64748b);
     }
     .contact-breadcrumbs a {
-      color: #0fa968;
+      color: var(--cso-link);
       text-decoration: none;
     }
     .contact-breadcrumbs a:hover {
@@ -72,16 +72,16 @@
     }
     .cso-form-input:focus, .cso-form-select:focus, .cso-form-textarea:focus {
       outline: none;
-      border-color: #0fa968;
+      border-color: var(--cso-accent);
       box-shadow: 0 0 0 3px rgba(15, 169, 104, 0.15);
-      background: #ffffff;
+      background: var(--cso-surface);
     }
     .cso-btn-submit {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: #0fa968;
-      color: #ffffff;
+      background: var(--cso-accent);
+      color: var(--cso-accent-ink);
       border: none;
       border-radius: 8px;
       padding: 12px 28px;
@@ -92,28 +92,28 @@
       box-shadow: 0 4px 12px rgba(15, 169, 104, 0.25);
     }
     .cso-btn-submit:hover {
-      background: #0d9259;
+      background: var(--cso-accent);
       box-shadow: 0 6px 16px rgba(15, 169, 104, 0.35);
     }
     .cso-btn-submit:active {
       transform: translateY(1px);
     }
     .contact-confirmation-toast {
-      background: #ecfdf5;
-      border: 1.5px solid #0fa968;
+      background: var(--cso-ok-bg);
+      border: 1.5px solid var(--cso-accent);
       border-radius: 12px;
       padding: 20px 24px;
       margin-bottom: 24px;
       display: flex;
       gap: 16px;
       align-items: flex-start;
-      color: #064e3b;
+      color: var(--cso-link);
       box-shadow: 0 4px 14px rgba(15, 169, 104, 0.12);
       animation: fadeIn 0.3s ease;
     }
     .toast-icon {
-      background: #0fa968;
-      color: #ffffff;
+      background: var(--cso-accent);
+      color: var(--cso-accent-ink);
       width: 32px;
       height: 32px;
       border-radius: 50%;
@@ -128,13 +128,13 @@
       margin: 0 0 4px;
       font-size: 1.1rem;
       font-weight: 700;
-      color: #064e3b;
+      color: var(--cso-link);
     }
     .toast-desc {
       margin: 0;
       line-height: 1.5;
       font-size: 0.92rem;
-      color: #047857;
+      color: var(--cso-link);
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-8px); }

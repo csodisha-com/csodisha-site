@@ -1,8 +1,8 @@
 /* Common Sense Odisha — Candidate Hub Split-Focus Bento & Dual-Theme Stylesheet
    100% Strict CSP-compliant: zero inline styles needed in HTML/JS. */
 
-:root {
-  /* Hub-local aliases bound to the global 4-theme engine (assets/style.css) */
+:root {/* Hub-local aliases bound to the global 4-theme engine (assets/style.css) */
+  
   --cso-ink: var(--cso-text);
   --cso-primary-soft: var(--cso-highlight-bg, rgba(27, 67, 50, 0.1));
   --cso-ring-track: var(--cso-border);
@@ -36,9 +36,9 @@ body.cso-student-dashboard-page {
   color: var(--cso-ink);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;
-}
+}/* App Shell */
 
-/* App Shell */
+
 .bp-app-layout {
   display: flex;
   min-height: 100vh;
@@ -261,9 +261,9 @@ body.cso-student-dashboard-page {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
+}/* Main Wrapper & Topbar (zero overlap) */
 
-/* Main Wrapper & Topbar (zero overlap) */
+
 .bp-main-wrapper {
   flex: 1;
   min-width: 0;
@@ -427,9 +427,9 @@ body.cso-student-dashboard-page {
 
 .bp-tab-view.active {
   display: block;
-}
+}/* Admin Notice Banner */
 
-/* Admin Notice Banner */
+
 .cso-admin-notice {
   display: flex;
   align-items: center;
@@ -460,9 +460,9 @@ body.cso-student-dashboard-page {
   background: var(--cso-ink);
   color: var(--cso-surface);
   text-transform: uppercase;
-}
+}/* 4-Tier My Focus Pill Bar */
 
-/* 4-Tier My Focus Pill Bar */
+
 .cso-focus-bar {
   display: flex;
   align-items: center;
@@ -525,7 +525,7 @@ body.cso-student-dashboard-page {
 .cso-pill-btn.cso-pill-primary {
   background: var(--cso-primary);
   border-color: var(--cso-primary);
-  color: #FFFFFF;
+  color: var(--cso-accent-ink);
 }
 
 .cso-lock-badge {
@@ -535,9 +535,9 @@ body.cso-student-dashboard-page {
   border-radius: 999px;
   background: var(--cso-amber-soft);
   color: var(--cso-amber);
-}
+}/* Profile Card & Sync Pill (required classes) */
 
-/* Profile Card & Sync Pill (required classes) */
+
 .cso-profile-card {
   background: var(--cso-surface);
   border: 1px solid var(--cso-border);
@@ -595,7 +595,7 @@ body.cso-student-dashboard-page {
   height: 44px;
   border-radius: 50%;
   background: var(--cso-primary);
-  color: #FFFFFF;
+  color: var(--cso-accent-ink);
   display: grid;
   place-items: center;
   font-weight: 800;
@@ -653,9 +653,9 @@ body.cso-student-dashboard-page {
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-}
+}/* Bento Panels & Hero Readiness Ring */
 
-/* Bento Panels & Hero Readiness Ring */
+
 .cso-hero-bento {
   display: grid;
   grid-template-columns: 380px 1fr;
@@ -790,9 +790,9 @@ body.cso-student-dashboard-page {
   border-radius: 999px;
   background: var(--cso-primary-soft);
   color: var(--cso-primary);
-}
+}/* Countdown Grid & Urgency Classes (required by verify-dashboard-pwa.js) */
 
-/* Countdown Grid & Urgency Classes (required by verify-dashboard-pwa.js) */
+
 .cso-countdown-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -892,9 +892,9 @@ body.cso-student-dashboard-page {
 .cso-cd-meta {
   font-size: 11px;
   color: var(--cso-muted);
-}
+}/* Exam Progress & Bento Grids */
 
-/* Exam Progress & Bento Grids */
+
 .bp-section-head {
   display: flex;
   align-items: center;
@@ -1030,9 +1030,9 @@ body.cso-student-dashboard-page {
   font-size: 12px;
   color: var(--cso-muted);
   margin: 0 0 10px;
-}
+}/* Pure-CSS CBT Trend Bar Chart */
 
-/* Pure-CSS CBT Trend Bar Chart */
+
 .cso-cbt-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1103,9 +1103,9 @@ body.cso-student-dashboard-page {
 .cso-bar-lbl {
   font-size: 10px;
   color: var(--cso-muted);
-}
+}/* Forms, Buttons, Chips, Checklists */
 
-/* Forms, Buttons, Chips, Checklists */
+
 .cso-btn {
   padding: 8px 14px;
   border-radius: 9px;
@@ -1124,7 +1124,7 @@ body.cso-student-dashboard-page {
 .cso-btn-primary {
   background: var(--cso-primary);
   border-color: var(--cso-primary);
-  color: #FFFFFF;
+  color: var(--cso-accent-ink);
 }
 
 .cso-btn-sm {
@@ -1187,7 +1187,7 @@ body.cso-student-dashboard-page {
 .bp-chip.active {
   background: var(--cso-primary);
   border-color: var(--cso-primary);
-  color: #FFFFFF;
+  color: var(--cso-accent-ink);
 }
 
 .cso-chip-row {
@@ -1238,9 +1238,9 @@ body.cso-student-dashboard-page {
 .cso-topic-row.is-done span {
   text-decoration: line-through;
   color: var(--cso-muted);
-}
+}/* Achievements, Locker, Timer, Calc, Drill, Settings */
 
-/* Achievements, Locker, Timer, Calc, Drill, Settings */
+
 .cso-achievement-grid,
 .cso-locker-grid,
 .cso-settings-grid,
@@ -1332,9 +1332,9 @@ body.cso-student-dashboard-page {
   background: var(--cso-primary-soft);
   font-size: 12px;
   margin-bottom: 10px;
-}
+}/* Modals (Search, 4-Tier Goal Selector, Profile Editor) */
 
-/* Modals (Search, 4-Tier Goal Selector, Profile Editor) */
+
 .bp-modal-overlay {
   position: fixed;
   inset: 0;
@@ -1467,9 +1467,9 @@ body.cso-student-dashboard-page {
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--cso-border);
-}
+}/* CSP-Safe PWA Install Banner & Toast Container */
 
-/* CSP-Safe PWA Install Banner & Toast Container */
+
 .cso-pwa-banner {
   position: fixed;
   bottom: 1.25rem;
@@ -1509,7 +1509,7 @@ body.cso-student-dashboard-page {
   flex-shrink: 0;
   border-radius: 8px;
   object-fit: contain;
-  background: #FFFFFF;
+  background: var(--cso-surface);
   padding: 2px;
 }
 
@@ -1545,9 +1545,9 @@ body.cso-student-dashboard-page {
 
 .cso-pwa-btn-later {
   background: transparent;
-  border: 1px solid #CBD5E1;
+  border: 1px solid var(--cso-border);
   border-radius: 8px;
-  color: #334155;
+  color: var(--cso-ink-soft);
   font-size: 0.8rem;
   font-weight: 600;
   padding: 0.4rem 0.7rem;
@@ -1569,10 +1569,10 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-later:hover {
 }
 
 .cso-pwa-btn-install {
-  background: #1D4ED8;
-  border: 1px solid #1D4ED8;
+  background: var(--cso-accent);
+  border: 1px solid var(--cso-accent);
   border-radius: 8px;
-  color: #FFFFFF;
+  color: var(--cso-accent-ink);
   font-size: 0.8rem;
   font-weight: 600;
   padding: 0.4rem 0.85rem;
@@ -1618,7 +1618,7 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
 
 .cso-toast.is-error {
   background: var(--cso-danger);
-  color: #FFFFFF;
+  color: var(--cso-accent-ink);
 }
 
 @media (max-width: 1024px) {
@@ -1651,9 +1651,9 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
   .bp-content {
     padding: 14px;
   }
-}
+}/* PWA Installed Badge, Guide Modal, SW Update Toast & Mobile Bottom Tab Bar */
 
-/* PWA Installed Badge, Guide Modal, SW Update Toast & Mobile Bottom Tab Bar */
+
 .cso-pwa-install-trigger.is-installed {
   opacity: 0.78;
   cursor: default;
@@ -1696,7 +1696,7 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
   padding: 10px 14px;
   border-radius: 12px;
   background: var(--cso-primary);
-  color: #FFFFFF;
+  color: var(--cso-accent-ink);
   font-size: 12px;
   font-weight: 700;
   border: none;
@@ -1751,9 +1751,9 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
   .cso-toast-container {
     bottom: calc(76px + env(safe-area-inset-bottom));
   }
-}
+}/* Sign Out / Danger Outline Controls */
 
-/* Sign Out / Danger Outline Controls */
+
 .cso-btn-danger-outline {
   border: 1px solid rgba(220, 38, 38, 0.45);
   color: var(--cso-danger);
@@ -1774,9 +1774,9 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
 .cso-logout-icon-btn:hover {
   border-color: var(--cso-danger);
   color: var(--cso-danger);
-}
+}/* Phase 3 Active Learning Suite, Flashcards, Eligibility, Study Plan & Print Rules */
 
-/* Phase 3 Active Learning Suite, Flashcards, Eligibility, Study Plan & Print Rules */
+
 .cso-capsule-badges,
 .cso-inline-actions {
   display: flex;
@@ -1835,27 +1835,27 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
 }
 
 .cso-status-ok {
-  color: #15803d;
+  color: var(--cso-link);
   background: rgba(22, 163, 74, 0.12);
 }
 
 .cso-status-warn {
-  color: #b45309;
+  color: var(--cso-warn-fg);
   background: rgba(217, 119, 6, 0.14);
 }
 
 .cso-status-bad {
-  color: #b91c1c;
+  color: var(--cso-err-fg);
   background: rgba(220, 38, 38, 0.12);
 }
 
 .cso-drill-opt.is-correct {
-  border-color: #16a34a;
+  border-color: var(--cso-accent);
   background: rgba(22, 163, 74, 0.12);
 }
 
 .cso-drill-opt.is-wrong {
-  border-color: #dc2626;
+  border-color: var(--cso-err-border);
   background: rgba(220, 38, 38, 0.12);
 }
 
@@ -1921,13 +1921,13 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
   .cso-readiness-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
-}
-
-
-
-/* ==========================================================================
+}/* ==========================================================================
    v140 Candidate Hub overhaul (theme-bound, CSP-safe)
    ========================================================================== */
+
+
+
+
 .bp-nav-scroll::-webkit-scrollbar { width: 4px; }
 .bp-nav-scroll::-webkit-scrollbar-track { background: transparent; }
 .bp-nav-scroll::-webkit-scrollbar-thumb { background: var(--cso-border); border-radius: 4px; }
@@ -1948,9 +1948,9 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
   height: 32px;
 }
 
-.bp-sidebar.is-collapsed .bp-nav-item.active { border-radius: 10px; }
+.bp-sidebar.is-collapsed .bp-nav-item.active { border-radius: 10px; }/* Theme switcher */
 
-/* Theme switcher */
+
 .cso-hub-theme-anchor { position: relative; display: inline-flex; }
 .cso-theme-toggle-btn { display: inline-flex; align-items: center; gap: 6px; }
 .cso-hub-theme-menu {
@@ -1982,9 +1982,9 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
 .cso-theme-swatch.is-system { background: linear-gradient(90deg, #FAF9F6 50%, #0B1218 50%); }
 .cso-theme-swatch.is-dark { background: #0B1218; }
 .cso-theme-swatch.is-reading { background: #F4EFE6; }
-.cso-theme-swatch.is-utkal-bharat { background: linear-gradient(135deg, #B45309, #1B4332); }
+.cso-theme-swatch.is-utkal-bharat { background: linear-gradient(135deg, #B45309, #1B4332); }/* Readiness SVG ring */
 
-/* Readiness SVG ring */
+
 .cso-readiness-ring {
   position: relative;
   width: 108px;
@@ -2030,9 +2030,9 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
   color: var(--cso-primary-fg);
   border-color: var(--cso-primary);
 }
-.cso-readiness-cta:hover { filter: brightness(1.08); }
+.cso-readiness-cta:hover { filter: brightness(1.08); }/* Cards, tags, hover elevation */
 
-/* Cards, tags, hover elevation */
+
 .bp-exam-card,
 .cso-list-item--hover {
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
@@ -2061,16 +2061,16 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
   color: var(--cso-emerald);
   border-color: var(--cso-emerald);
 }
-.cso-list-item.is-done { opacity: 0.7; border-color: var(--cso-emerald); }
+.cso-list-item.is-done { opacity: 0.7; border-color: var(--cso-emerald); }/* Balanced bento: equal-height rows */
 
-/* Balanced bento: equal-height rows */
+
 .bp-bento-grid { align-items: stretch; }
 .bp-bento-grid > .bp-panel { display: flex; flex-direction: column; }
 .cso-panel-foot { margin-top: auto; padding-top: 12px; display: flex; justify-content: flex-end; }
 .cso-panel-foot .cso-btn[hidden] { display: none; }
-.cso-view-all-schemes { font-weight: 700; }
+.cso-view-all-schemes { font-weight: 700; }/* Quiz capsule */
 
-/* Quiz capsule */
+
 .cso-drill-opt {
   display: flex;
   align-items: center;
@@ -2101,10 +2101,10 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
   border: 1px solid var(--cso-border);
 }
 .cso-drill-opt.is-correct .cso-opt-letter { background: var(--cso-emerald); color: var(--cso-primary-fg); border-color: var(--cso-emerald); }
-.cso-drill-opt.is-wrong .cso-opt-letter { background: var(--cso-danger); color: var(--cso-primary-fg); border-color: var(--cso-danger); }
+.cso-drill-opt.is-wrong .cso-opt-letter { background: var(--cso-danger); color: var(--cso-primary-fg); border-color: var(--cso-danger); }/* v142: top bar never clips Sign Out (1280-1440px) */
 
 
-/* v142: top bar never clips Sign Out (1280-1440px) */
+
 .bp-topbar {
   flex-wrap: nowrap;
   gap: 8px;
@@ -2148,11 +2148,11 @@ html[data-cso-resolved-mode="dark"] .cso-pwa-btn-install {
   .bp-topbar-user .bp-user-meta { display: none; }
   .bp-search-trigger { min-width: 0; flex: 0 0 auto; }
   .bp-search-trigger .bp-search-label { display: none; }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    v143 Typography & Contrast Upgrade (hub-scoped, theme-aware)
    ========================================================================== */
+
+
 body.cso-student-dashboard-page {
   --cso-text: #111827;
   --cso-ink: #111827;
@@ -2176,9 +2176,9 @@ body.cso-student-dashboard-page {
   --cso-ink: #241C14;
   --cso-muted: #4A3B2C;
   --cso-text-muted: #4A3B2C;
-}
+}/* Headings: 17-22px, 700 */
 
-/* Headings: 17-22px, 700 */
+
 .bp-page-header h1 { font-size: 22px; }
 .bp-panel-title,
 .bp-section-head h2,
@@ -2193,9 +2193,9 @@ body.cso-student-dashboard-page {
 }
 .bp-section-head h2 { font-size: 20px; }
 .cso-drill-card h3 { font-size: 17px; line-height: 1.4; }
-.bp-brand-title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.bp-brand-title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }/* Subtitles, descriptions, row titles, quiz options: 14-15px / 500 */
 
-/* Subtitles, descriptions, row titles, quiz options: 14-15px / 500 */
+
 .bp-topbar-sub,
 .bp-section-head p,
 .cso-muted-note,
@@ -2222,9 +2222,9 @@ body.cso-student-dashboard-page {
   color: var(--cso-text);
 }
 .cso-list-item-title { font-weight: 600; }
-.cso-drill-opt { line-height: 1.45; }
+.cso-drill-opt { line-height: 1.45; }/* Metadata: 13.5px / 500 */
 
-/* Metadata: 13.5px / 500 */
+
 .bp-brand-sub,
 .bp-user-district,
 .cso-profile-id,
@@ -2243,9 +2243,9 @@ body.cso-student-dashboard-page {
 }
 .bp-user-name { color: var(--cso-text); font-weight: 600; }
 .cso-ring-inner span { font-size: 13px; }
-.cso-cd-tile span { font-size: 13px; font-weight: 600; color: var(--cso-muted); }
+.cso-cd-tile span { font-size: 13px; font-weight: 600; color: var(--cso-muted); }/* Pills, badges, buttons, sidebar links: 13.5-14px / 600 */
 
-/* Pills, badges, buttons, sidebar links: 13.5-14px / 600 */
+
 .cso-pill-badge,
 .cso-paper-pill,
 .cso-paper-tag,
@@ -2288,9 +2288,9 @@ body.cso-student-dashboard-page {
 .cso-mobile-label,
 .bp-bottom-nav-btn { font-size: 12px; }
 .bp-mobile-bottom-nav button,
-.bp-mobile-bottom-nav a { font-size: 12px; }
+.bp-mobile-bottom-nav a { font-size: 12px; }/* v158 Mobile overhaul: Candidate Hub header flow, touch targets, stacked cards (360px-768px) */
 
-/* v158 Mobile overhaul: Candidate Hub header flow, touch targets, stacked cards (360px-768px) */
+
 @media (max-width: 768px) {
   .bp-topbar {
     position: relative;
@@ -2348,9 +2348,9 @@ body.cso-student-dashboard-page {
     color: var(--cso-ink);
     border-bottom-color: var(--cso-border);
   }
-}
+}/* v159 intrinsic & adaptive: dvh, safe areas, container queries, coarse pointer */
 
-/* v159 intrinsic & adaptive: dvh, safe areas, container queries, coarse pointer */
+
 .bp-sidebar { height: 100vh; height: 100dvh; padding-top: env(safe-area-inset-top); padding-left: env(safe-area-inset-left); }
 .bp-topbar { padding-top: max(12px, env(safe-area-inset-top)); padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); }
 .bp-mobile-bottom-nav { padding-bottom: max(6px, env(safe-area-inset-bottom)); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
@@ -2372,11 +2372,11 @@ body.cso-student-dashboard-page {
 }
 @media (max-width: 768px) { .bp-content input, .bp-content select, .bp-content textarea, .bp-modal-box input, .bp-modal-box select { font-size: max(16px, 1rem); } }
 @media (prefers-reduced-motion: reduce) { .bp-sidebar, .bp-topbar, .cso-toast { transition: none !important; animation: none !important; } }
-@media (prefers-contrast: more) { .bp-panel, .student-card, .bp-nav-item.active { border: 2px solid currentColor; } .bp-nav-item:focus-visible, button:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; } }
-
-/* ==========================================================================
+@media (prefers-contrast: more) { .bp-panel, .student-card, .bp-nav-item.active { border: 2px solid currentColor; } .bp-nav-item:focus-visible, button:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; } }/* ==========================================================================
    v177: Unified Candidate Hub (Light / Dark / Utkal Bharat Theme Uniformity)
    ========================================================================== */
+
+
 .cso-uh-root {
   display: grid;
   gap: 16px;
@@ -2446,8 +2446,8 @@ body.cso-student-dashboard-page {
   color: var(--cso-highlight-fg, #075985);
 }
 .cso-uh-badge.is-warn {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
 }
 :root[data-cso-theme="dark"] .cso-uh-badge.is-warn {
   background: rgba(245, 158, 11, 0.2);
@@ -2579,9 +2579,9 @@ body.cso-student-dashboard-page {
   cursor: pointer;
 }
 .cso-watchlist-chip.is-active {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 .cso-watchlist-footer {
   display: flex;
@@ -2645,27 +2645,27 @@ body.cso-student-dashboard-page {
 }
 
 .cso-deadline-pill--today {
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
+  background: var(--cso-err-bg);
+  color: var(--cso-err-fg);
+  border: 1px solid var(--cso-err-border);
 }
 
 .cso-deadline-pill--soon {
-  background: #fffbeb;
-  color: #b45309;
-  border: 1px solid #fde68a;
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
+  border: 1px solid var(--cso-warn-border);
 }
 
 .cso-deadline-pill--normal {
-  background: #ecfdf5;
-  color: #047857;
-  border: 1px solid #a7f3d0;
+  background: var(--cso-ok-bg);
+  color: var(--cso-link);
+  border: 1px solid var(--cso-ok-border);
 }
 
 .cso-deadline-pill--closed {
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #cbd5e1;
+  background: var(--cso-surface-subtle);
+  color: var(--cso-ink-muted);
+  border: 1px solid var(--cso-border);
 }
 
 .cso-deadline-meta {
@@ -2702,8 +2702,8 @@ body.cso-student-dashboard-page {
 }
 
 .cso-btn-danger-outline {
-  border-color: #fecaca;
-  color: #b91c1c;
+  border-color: var(--cso-err-border);
+  color: var(--cso-err-fg);
 }
 
 .cso-doc-badge {
@@ -2713,9 +2713,9 @@ body.cso-student-dashboard-page {
   border-radius: 999px;
   font-size: 0.82rem;
   font-weight: 700;
-  background: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
+  background: var(--cso-info-bg);
+  color: var(--cso-info-fg);
+  border: 1px solid var(--cso-info-border);
 }
 
 .cso-doc-progress-wrap {
@@ -2759,8 +2759,8 @@ body.cso-student-dashboard-page {
 }
 
 .cso-doc-row.is-ready {
-  border-color: #86efac;
-  background: #f0fdf4;
+  border-color: var(--cso-ok-border);
+  background: var(--cso-ok-bg);
 }
 
 .cso-doc-check {
@@ -2817,9 +2817,9 @@ body.cso-student-dashboard-page {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
-}
+}/* v210: Unified Candidate Exam Readiness Summary Card */
 
-/* v210: Unified Candidate Exam Readiness Summary Card */
+
 .cso-readiness-summary-head {
   flex-wrap: wrap;
   gap: 10px;
@@ -2877,9 +2877,9 @@ body.cso-student-dashboard-page {
   font-size: 0.8rem;
   color: var(--cso-muted, #64748b);
   overflow-wrap: anywhere;
-}
+}/* v212: Saved Odisha Govt Schemes Panel */
 
-/* v212: Saved Odisha Govt Schemes Panel */
+
 .cso-saved-schemes-list {
   display: grid;
   gap: 10px;
@@ -2908,9 +2908,9 @@ body.cso-student-dashboard-page {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
-}
+}/* v213: Candidate Hub Offline JSON Backup & Restore */
 
-/* v213: Candidate Hub Offline JSON Backup & Restore */
+
 .cso-backup-actions {
   display: flex;
   flex-wrap: wrap;

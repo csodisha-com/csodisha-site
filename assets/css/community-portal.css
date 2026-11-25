@@ -10,11 +10,11 @@
   width: 100%;
   max-width: 100%;
   margin: 0 0 28px;
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    FLAGSHIP EDITORIAL HERO BANNER (v258)
    ========================================================================== */
+
+
 .cp-hero {
   position: relative;
   overflow: hidden;
@@ -45,7 +45,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.26);
-  color: #d1fae5;
+  color: var(--cso-hero-ink);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -56,7 +56,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #4ade80;
+  background: var(--cso-accent);
   box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.28);
 }
 
@@ -72,7 +72,7 @@
   font-weight: 800;
   line-height: 1.18;
   letter-spacing: -0.015em;
-  color: #ffffff;
+  color: var(--cso-hero-ink);
 }
 
 .cp-hero-sub {
@@ -103,7 +103,7 @@
   font-weight: 800;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
-  color: #ffffff;
+  color: var(--cso-hero-ink);
 }
 
 .cp-hero-kpi-label {
@@ -127,26 +127,26 @@
   border: none;
   border-radius: 999px;
   background: transparent;
-  color: #d1fae5;
+  color: var(--cso-accent-ink);
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
 }
 
 .cp-lang-btn.is-active {
-  background: #ffffff;
-  color: #14532d;
+  background: var(--cso-surface);
+  color: var(--cso-link);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
-}
+}/* Preview Banner */
 
-/* Preview Banner */
+
 .cp-preview-banner {
   position: sticky;
   top: 60px;
   z-index: 40;
-  background: #7c2d12;
-  color: #fff7ed;
-  border: 2px solid #f59e0b;
+  background: var(--cso-warn-fg);
+  color: var(--cso-hero-ink);
+  border: 2px solid var(--cso-warn-border);
   border-radius: 12px;
   padding: 11px 16px;
   display: flex;
@@ -156,13 +156,13 @@
   gap: 10px;
   font-weight: 700;
   box-shadow: 0 8px 24px rgba(124, 45, 18, 0.26);
-}
+}/* Path to Pro / Permanent Membership Progress Meter */
 
-/* Path to Pro / Permanent Membership Progress Meter */
+
 .cp-pro-banner {
-  background: linear-gradient(135deg, rgba(4, 120, 87, 0.09), rgba(217, 119, 6, 0.09));
+  background: var(--cso-surface-subtle);
   border: 1px solid var(--cso-border, #cbd5e1);
-  border-left: 5px solid #d97706;
+  border-left: 5px solid var(--cso-warn-border);
   border-radius: 16px;
   padding: clamp(16px, 2.2vw, 20px);
   display: grid;
@@ -207,15 +207,15 @@
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 800;
-  background: rgba(5, 150, 105, 0.12);
-  color: #065f46;
+  background: var(--cso-highlight-bg);
+  color: var(--cso-link);
 }
 
-.cp-chip.is-pro { background: #fef3c7; color: #92400e; }
-.cp-chip.is-perm { background: #ede9fe; color: #5b21b6; }
-.cp-chip.is-bounty { background: #fee2e2; color: #991b1b; }
+.cp-chip.is-pro { background: var(--cso-warn-bg); color: var(--cso-warn-fg); }
+.cp-chip.is-perm { background: var(--cso-info-bg); color: var(--cso-info-fg); }
+.cp-chip.is-bounty { background: var(--cso-err-bg); color: var(--cso-err-fg); }/* Elevated Action Bar & Filter Controls */
 
-/* Elevated Action Bar & Filter Controls */
+
 .cp-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -271,9 +271,9 @@
   font-size: 1rem;
   font-weight: 800;
   color: var(--cso-text, #0f172a);
-}
+}/* Buttons & Inputs */
 
-/* Buttons & Inputs */
+
 .cp-btn {
   display: inline-flex;
   align-items: center;
@@ -309,13 +309,13 @@
 .cp-btn-gold {
   background: var(--cso-brand-gold, #b8821c);
   border-color: var(--cso-brand-gold, #b8821c);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
 }
 
 .cp-btn-violet {
   background: var(--cso-brand-accent, #c45b20);
   border-color: var(--cso-brand-accent, #c45b20);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
   box-shadow: var(--cso-card-shadow, 0 4px 12px rgba(196, 91, 32, 0.2));
 }
 
@@ -356,7 +356,7 @@
 .cp-select:focus,
 .cp-textarea:focus {
   outline: none;
-  border-color: #047857;
+  border-color: var(--cso-accent);
   box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.16);
 }
 
@@ -377,9 +377,9 @@
   align-items: end;
   padding-top: 10px;
   border-top: 1px solid var(--cso-border, #e5e7eb);
-}
+}/* Right-Rail Communities Directory & Leaderboard Cards */
 
-/* Right-Rail Communities Directory & Leaderboard Cards */
+
 .cp-circle-card {
   border: 1px solid var(--cso-border, #e2e8f0);
   border-radius: 12px;
@@ -392,7 +392,7 @@
 }
 
 .cp-circle-card:hover {
-  border-color: #059669;
+  border-color: var(--cso-accent);
   background: var(--cso-surface, #ffffff);
   transform: translateY(-1px);
   box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
@@ -419,7 +419,7 @@
 }
 
 .cp-circle-link:hover {
-  color: #047857;
+  color: var(--cso-link);
   text-decoration: underline;
 }
 
@@ -433,9 +433,9 @@
   background: var(--cso-bg, #f8fafc);
   border: 1px solid var(--cso-border, #e2e8f0);
   font-size: 0.85rem;
-}
+}/* Feed Cards */
 
-/* Feed Cards */
+
 .cp-post-card {
   background: var(--cso-surface, #ffffff);
   border: 1px solid var(--cso-border, #e2e8f0);
@@ -449,12 +449,12 @@
 }
 
 .cp-post-card:hover {
-  border-color: #059669;
+  border-color: var(--cso-accent);
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
 }
 
 .cp-post-card.is-pinned {
-  border-left: 4px solid #7c3aed;
+  border-left: 4px solid var(--cso-accent);
 }
 
 .cp-post-cover {
@@ -478,7 +478,7 @@
 }
 
 .cp-post-title a:hover {
-  color: #047857;
+  color: var(--cso-link);
   text-decoration: underline;
 }
 
@@ -492,9 +492,9 @@
   font-size: 0.92rem;
   line-height: 1.62;
   color: var(--cso-text, #1e293b);
-}
+}/* Rich CSP-Safe Thread Reader Prose */
 
-/* Rich CSP-Safe Thread Reader Prose */
+
 .cp-prose {
   display: grid;
   gap: 10px;
@@ -523,8 +523,8 @@
 .cp-callout {
   padding: 11px 14px;
   border-radius: 10px;
-  border-left: 4px solid #047857;
-  background: rgba(4, 120, 87, 0.08);
+  border-left: 4px solid var(--cso-accent);
+  background: var(--cso-highlight-bg);
   font-size: 0.9rem;
 }
 
@@ -536,9 +536,9 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-}
+}/* Poll & Quiz Widgets */
 
-/* Poll & Quiz Widgets */
+
 .cp-poll-list,
 .cp-quiz-list {
   display: flex;
@@ -562,7 +562,7 @@
 }
 
 .cp-poll-opt:hover {
-  border-color: #047857;
+  border-color: var(--cso-accent);
   background: var(--cso-surface, #ffffff);
 }
 
@@ -587,12 +587,12 @@
   font-weight: 800;
   color: var(--cso-text, #0f172a);
   line-height: 1.45;
-}
+}/* Replies & Best Answer */
 
-/* Replies & Best Answer */
+
 .cp-best-answer {
-  border: 2px solid #059669;
-  background: rgba(5, 150, 105, 0.08);
+  border: 2px solid var(--cso-accent);
+  background: var(--cso-highlight-bg);
   border-radius: 14px;
   padding: 15px 16px;
   display: flex;
@@ -608,9 +608,9 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
-}
+}/* Modal & Slide-Over DM Inbox */
 
-/* Modal & Slide-Over DM Inbox */
+
 .cp-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -678,11 +678,11 @@
   display: grid;
   justify-items: center;
   gap: 10px;
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    4-THEME HARMONIZATION (Dark Night, Reading Mode, Odisha & Bharat)
    ========================================================================== */
+
+
 :root[data-cso-resolved-mode="dark"] .cp-chip,
 html[data-theme="dark"] .cp-chip {
   background: rgba(52, 211, 153, 0.16);
@@ -710,11 +710,11 @@ html[data-theme="dark"] .cp-chip.is-bounty {
 :root[data-cso-resolved-mode="dark"] .cp-circle-link:hover,
 :root[data-cso-resolved-mode="dark"] .cp-post-title a:hover {
   color: #6ee7b7;
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    RESPONSIVE BREAKPOINTS
    ========================================================================== */
+
+
 @media (max-width: 1024px) {
   .cp-hero-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -738,11 +738,11 @@ html[data-theme="dark"] .cp-chip.is-bounty {
   .cp-toolbar .cp-select {
     width: 100%;
   }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    MINIMAL COMMUNITY PORTAL EXPLORER (v287)
    ========================================================================== */
+
+
 .com-hero--compact {
   padding: 1.2rem 1.5rem;
 }
@@ -911,12 +911,12 @@ html[data-theme="dark"] .cp-chip.is-bounty {
   .com-filter-row {
     grid-template-columns: 1fr;
   }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    CLEAN, SCANNABLE THREAD CARDS & COLLAPSIBLE POLL/QUIZ PREVIEWS (v292)
    4-Theme Token Aware (System, Dark Night, Reading Mode, Odisha & Bharat)
    ========================================================================== */
+
+
 .cp-post-card {
   background: var(--cso-card-bg, #ffffff);
   border: 1px solid var(--cso-border-subtle, #d8e1e9);
@@ -1087,9 +1087,9 @@ html[data-theme="dark"] .cp-chip.is-bounty {
   background: var(--cso-card-subtle, #f1f5f9);
   color: var(--cso-brand-primary, #115569);
   text-decoration: none;
-}
+}/* Dark Night & System Dark Theme Contrast Polish */
 
-/* Dark Night & System Dark Theme Contrast Polish */
+
 :root[data-cso-resolved-mode="dark"] .com-status-badge.is-pinned,
 html[data-theme="dark"] .com-status-badge.is-pinned {
   background: rgba(251, 191, 36, 0.18);
@@ -1122,13 +1122,13 @@ html[data-theme="dark"] .com-widget-cta:hover {
     flex-direction: column;
     align-items: flex-start;
   }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    CENTERED TWO-COLUMN EDITORIAL FORUM LAYOUT (v294)
    Max-width 1180px Shell + 1fr 310px Workspace + Polished Thread Cards
    4-Theme Token Aware (System, Dark Night, Reading Mode, Odisha & Bharat)
    ========================================================================== */
+
+
 body[data-cso-portal="community"] #cso-community-portal-root > .cp-root,
 .cp-root.com-shell {
   width: 100% !important;
@@ -1185,9 +1185,9 @@ body[data-cso-portal="community"] #cso-community-portal-root > .cp-root,
   flex-direction: column;
   gap: 14px;
   min-width: 0;
-}
+}/* Polished Single-Card Anatomy (Zero Duplicate/Clipped Rows) */
 
-/* Polished Single-Card Anatomy (Zero Duplicate/Clipped Rows) */
+
 .com-thread-card {
   overflow: hidden;
   padding: 18px 20px;
@@ -1277,9 +1277,9 @@ body[data-cso-portal="community"] #cso-community-portal-root > .cp-root,
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
+}/* Sticky Right Sidebar */
 
-/* Sticky Right Sidebar */
+
 .com-sidebar {
   position: sticky;
   top: 84px;

@@ -24,15 +24,15 @@
   display: inline-block;
   padding: 12px 18px;
   border-radius: 10px;
-  background: #1749a2;
-  color: #fff;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
   font-weight: 700;
   text-decoration: none;
 }
 .cso-job-page__links a:last-child {
   background: transparent;
   color: inherit;
-  border: 1px solid #64748b;
+  border: 1px solid var(--cso-border);
 }
 .cso-job-page__links a:focus-visible {
   outline: 3px solid #60a5fa;
@@ -83,10 +83,10 @@
   width: 100%;
   min-height: 45px;
   padding: 10px;
-  border: 1px solid #8296b5;
+  border: 1px solid var(--cso-border);
   border-radius: 9px;
-  background: #fff;
-  color: #182536;
+  background: var(--cso-surface);
+  color: var(--cso-link);
   font: inherit;
 }
 #cso-job-finder .jof-actions {
@@ -98,12 +98,12 @@
 #cso-job-finder button {
   padding: 12px 18px;
   border-radius: 9px;
-  border: 1px solid #2563eb;
+  border: 1px solid var(--cso-accent);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
 }
-#jof-explore { background: #2563eb; color: #fff; }
+#jof-explore { background: var(--cso-accent); color: var(--cso-accent-ink); }
 #jof-reset { background: transparent; color: inherit; }
 #cso-job-finder button:focus-visible,
 #cso-job-finder select:focus-visible,
@@ -133,7 +133,7 @@
   display: block;
   margin-bottom: 10px;
   font-weight: 800;
-  color: #60a5fa;
+  color: var(--cso-link);
   letter-spacing: .05em;
   text-transform: uppercase;
 }
@@ -143,12 +143,12 @@
 #cso-job-finder .jof-disclaimer {
   margin-top: 20px;
   padding: 12px;
-  border-left: 3px solid #e9a23b;
+  border-left: 3px solid var(--cso-warn-border);
   background: rgba(233,162,59,.09);
   line-height: 1.6;
 }
 #cso-job-finder .jof-resources { margin-top: 22px; }
-#cso-job-finder .jof-resources a { color: #60a5fa; }
+#cso-job-finder .jof-resources a { color: var(--cso-link); }
 @media (max-width: 850px) {
   #cso-job-finder .jof-grid,
   #cso-job-finder .jof-cards { grid-template-columns: 1fr; }
@@ -156,9 +156,9 @@
 @media (max-width: 550px) {
   #cso-job-finder { padding: 16px; }
   #cso-job-finder .jof-heading { gap: 10px; }
-}
+}/* CSO Job Plan actions v2 */
 
-/* CSO Job Plan actions v2 */
+
 #cso-job-finder .jof-plan-actions {
   display: flex;
   flex-wrap: wrap;
@@ -167,8 +167,8 @@
   margin: 14px 0 20px;
 }
 #cso-job-finder #jof-print {
-  background: #2563eb;
-  color: #fff;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 #cso-job-finder #jof-copy {
   background: transparent;

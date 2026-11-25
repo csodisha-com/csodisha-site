@@ -49,7 +49,7 @@ a{text-decoration:none;color:inherit}
   flex-shrink:0;
   border-radius:10px;
   background:linear-gradient(145deg,#146B50,#0F4C3A);
-  color:#FFFFFF;
+  color:var(--cso-accent-ink);
   font-size:16px;
   font-weight:800;
   box-shadow:0 4px 10px rgba(15, 76, 58, 0.22);
@@ -81,10 +81,10 @@ a{text-decoration:none;color:inherit}
   font-size:13.5px;
   transition:background .18s, color .18s, transform .18s;
 }
-.side-link:hover{background:#EAF4F0;color:#0F4C3A;transform:translateX(2px)}
+.side-link:hover{background:var(--cso-surface-subtle);color:var(--cso-link);transform:translateX(2px)}
 .side-link.active{
-  color:#FFFFFF;
-  background:#0F4C3A;
+  color:var(--cso-accent-ink);
+  background:var(--cso-accent);
   box-shadow:0 5px 12px rgba(15, 76, 58, 0.24);
 }
 .side-icon{
@@ -119,7 +119,7 @@ a{text-decoration:none;color:inherit}
   border:0;
   border-radius:16px;
   background:rgba(255,255,255,.9);
-  color:#1264df;
+  color:var(--cso-link);
   min-height:48px;
   padding:0 18px;
   box-shadow:0 5px 16px rgba(40,88,158,.06);
@@ -184,7 +184,7 @@ a{text-decoration:none;color:inherit}
   box-shadow:0 8px 18px rgba(85,114,185,.14);
 }
 .summary-panel strong{font-size:43px}
-.summary-panel span{font-size:13px;max-width:110px;color:#324c85}
+.summary-panel span{font-size:13px;max-width:110px;color:var(--cso-link)}
 h2{font-size:21px;margin:0 0 20px}
 
 .dashboard-grid{
@@ -204,7 +204,7 @@ h2{font-size:21px;margin:0 0 20px}
   border:1px solid rgba(255,255,255,.85);
   border-radius:19px;
   box-shadow:0 9px 18px rgba(57,95,161,.11);
-  color:#10214b;
+  color:var(--cso-link);
   transition:transform .2s,box-shadow .2s;
 }
 .dashboard-card:hover{
@@ -259,7 +259,7 @@ h2{font-size:21px;margin:0 0 20px}
   margin-top:12px;
   padding:24px;
   background:white;
-  border:1px solid #e0e9f7;
+  border:1px solid var(--cso-border);
   border-radius:20px;
 }
 .explorer-header{display:flex;align-items:center;gap:15px;margin-bottom:10px}
@@ -268,11 +268,11 @@ h2{font-size:21px;margin:0 0 20px}
   padding:10px 15px;
   border:0;
   border-radius:10px;
-  background:#e9f2ff;
-  color:#1755a7;
+  background:var(--cso-surface-subtle);
+  color:var(--cso-link);
   font-weight:700;
 }
-#explorer-description{color:#5d7090}
+#explorer-description{color:var(--cso-link)}
 .explorer-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .explorer-item{
   display:flex;
@@ -320,9 +320,9 @@ h2{font-size:21px;margin:0 0 20px}
   .home-link{padding:0 12px}
   .top-search{padding:0 10px}
   .explorer{padding:15px}
-}
+}/* Clickable semantic directory breadcrumbs */
 
-/* Clickable semantic directory breadcrumbs */
+
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -388,9 +388,9 @@ h2{font-size:21px;margin:0 0 20px}
   color: var(--cso-link, var(--bl));
   background: var(--cso-surface, var(--bg));
   text-decoration: underline;
-}
+}/* Directory statistics — Streamlined 4-column counter row */
 
-/* Directory statistics — Streamlined 4-column counter row */
+
 .statistics-section {
   margin-top: 24px;
   margin-bottom: 22px;
@@ -521,9 +521,9 @@ h2{font-size:21px;margin:0 0 20px}
     height: 56px !important;
     padding: 6px 12px !important;
   }
-}
+}/* Improved directory card layout for category and entry counts */
 
-/* Improved directory card layout for category and entry counts */
+
 .dashboard-card {
   min-height: 225px;
   gap: 7px;
@@ -552,9 +552,9 @@ h2{font-size:21px;margin:0 0 20px}
   .dashboard-card {
     min-height: 205px;
   }
-}
+}/* Clear Search button */
 
-/* Clear Search button */
+
 .clear-search {
   display: grid;
   place-items: center;
@@ -564,24 +564,24 @@ h2{font-size:21px;margin:0 0 20px}
   padding: 0;
   border: 0;
   border-radius: 10px;
-  background: #e8f0ff;
-  color: #3267ad;
+  background: var(--cso-surface-subtle);
+  color: var(--cso-link);
   font-size: 24px;
   line-height: 1;
   transition: background .2s, color .2s;
 }
 
 .clear-search:hover {
-  background: #d3e5ff;
-  color: #004cbb;
+  background: var(--cso-info-bg);
+  color: var(--cso-link);
 }
 
 .clear-search:focus-visible {
   outline: 2px solid #1764d8;
   outline-offset: 2px;
-}
+}/* Recently Viewed Categories */
 
-/* Recently Viewed Categories */
+
 .recent-section {
   margin-top: 34px;
 }
@@ -600,17 +600,17 @@ h2{font-size:21px;margin:0 0 20px}
 }
 
 #clear-recent {
-  border: 1px solid #d2e3fb;
+  border: 1px solid var(--cso-border);
   border-radius: 10px;
-  background: #edf5ff;
-  color: #175bb7;
+  background: var(--cso-surface-subtle);
+  color: var(--cso-link);
   padding: 9px 14px;
   font-size: 13px;
   font-weight: 700;
 }
 
 #clear-recent:hover {
-  background: #dcecff;
+  background: var(--cso-surface-subtle);
 }
 
 #clear-recent:focus-visible {
@@ -707,19 +707,19 @@ body {
 }
 
 .side-link:hover {
-  background: #eaf4ed;
-  color: #0b4a43;
+  background: var(--cso-surface-subtle);
+  color: var(--cso-link);
 }
 
 .side-link.active {
   background: linear-gradient(90deg, #0b2f4e, #0b4a43 60%, #0f6b4a);
-  color: #fff;
+  color: var(--cso-accent-ink);
   box-shadow: none;
 }
 
 .side-icon {
-  background: #eaf4ed;
-  color: #0b4a43;
+  background: var(--cso-surface-subtle);
+  color: var(--cso-link);
 }
 
 :root[data-cso-theme="dark"] .side-link:hover,
@@ -745,10 +745,10 @@ button:focus-visible,
 input:focus-visible {
   outline: 2px solid var(--bl);
   outline-offset: 2px;
-}
+}/* CSO-IN unified content components v2 */
 
 
-/* CSO-IN unified content components v2 */
+
 
 .main-content,
 .explorer,
@@ -826,7 +826,7 @@ input:focus-visible {
 #back-button:hover,
 #clear-recent:hover,
 .clear-search:hover {
-  background: #e6efff;
+  background: var(--cso-info-bg);
   color: var(--bl);
   border-color: var(--bl);
 }
@@ -895,11 +895,11 @@ input:focus-visible {
 }
 
 .dashboard-card .card-title {
-  color: #14233b;
+  color: var(--cso-link);
 }
 
 .dashboard-card .card-count {
-  color: #14233b;
+  color: var(--cso-link);
   background: rgba(255,255,255,.65);
 }
 
@@ -908,10 +908,7 @@ button:focus-visible,
 input:focus-visible {
   outline: 2px solid var(--bl);
   outline-offset: 2px;
-}
-
-
-/* CSO-IN synchronized appearance v3 */
+}/* CSO-IN synchronized appearance v3 *//* Ensure all dashboard surfaces follow the selected theme. */
 
 
 
@@ -921,7 +918,10 @@ input:focus-visible {
 
 
 
-/* Ensure all dashboard surfaces follow the selected theme. */
+
+
+
+
 .sidebar,
 .main-content,
 .explorer,
@@ -977,15 +977,15 @@ body,
   background:var(--bg);
   color:var(--bl);
   border-color:var(--bd);
-}
+}/* Preserve readability of the eight colorful category cards. */
 
-/* Preserve readability of the eight colorful category cards. */
+
 .dashboard-card .card-title,
 .dashboard-card .card-count {
-  color:#14233b;
-}
+  color:var(--cso-link);
+}/* Respect the homepage's dark appearance in auxiliary elements. */
 
-/* Respect the homepage's dark appearance in auxiliary elements. */
+
 :root[data-cso-theme="dark"] .summary-panel,
 :root[data-cso-theme="dark"] .dashboard-card {
   border-color:var(--bd);
@@ -998,10 +998,10 @@ body,
   :root[data-cso-theme="system"] .dashboard-card {
     border-color:var(--bd);
   }
-}
+}/* CSO-IN collapsible sidebar v1 */
 
 
-/* CSO-IN collapsible sidebar v1 */
+
 @media (min-width: 761px) {
   body.sidebar-collapsed .app-shell {
     grid-template-columns: 88px minmax(0, 1fr);
@@ -1038,12 +1038,12 @@ body,
   body.sidebar-collapsed .side-icon {
     flex-shrink: 0;
   }
-}
+}/* CSO-IN navigation and dark-mode contrast v4 *//* Prominent return-to-home button */
 
 
-/* CSO-IN navigation and dark-mode contrast v4 */
 
-/* Prominent return-to-home button */
+
+
 .sidebar-footer {
   padding: 18px 4px 8px;
 }
@@ -1057,7 +1057,7 @@ body,
   padding: 11px 12px;
   border-radius: 9px;
   background: linear-gradient(90deg,#0b2f4e,#0f6b4a);
-  color: #ffffff;
+  color: var(--cso-footer-title-ink);
   font-size: 13px;
   font-weight: 700;
   text-align: center;
@@ -1065,29 +1065,29 @@ body,
 }
 
 .sidebar-footer a:hover {
-  background: #0f6b4a;
-  color: #ffffff;
-}
+  background: var(--cso-footer-bg);
+  color: var(--cso-footer-title-ink);
+}/* Prominent explorer back button */
 
-/* Prominent explorer back button */
+
 #back-button {
   min-height: 42px;
   padding: 10px 17px;
-  border: 1px solid #1d4ed8;
+  border: 1px solid var(--cso-accent);
   border-radius: 9px;
-  background: #1d4ed8;
-  color: #ffffff;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(29,78,216,.18);
 }
 
 #back-button:hover {
-  background: #173fae;
-  border-color: #173fae;
-  color: #ffffff;
-}
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}/* Stronger dark-mode text contrast */
 
-/* Stronger dark-mode text contrast */
+
 :root[data-cso-theme="dark"] #page-description,
 :root[data-cso-theme="dark"] #explorer-description,
 :root[data-cso-theme="dark"] .breadcrumb,
@@ -1145,17 +1145,17 @@ body,
   :root[data-cso-theme="system"] #back-button {
     color: #ffffff;
   }
-}
+}/* Maintain readable buttons in all themes */
 
-/* Maintain readable buttons in all themes */
+
 .sidebar-footer a:focus-visible,
 #back-button:focus-visible {
   outline: 3px solid #ffb020;
   outline-offset: 3px;
-}
+}/* CSO-IN shared site header styles v1 */
 
 
-/* CSO-IN shared site header styles v1 */
+
 
 .cso-site-header {
   position: relative;
@@ -1212,7 +1212,7 @@ body,
 }
 
 #cso-shared-theme:hover {
-  border-color: #0f6b4a;
+  border-color: var(--cso-ok-border);
 }
 
 .cso-site-nav {
@@ -1221,7 +1221,7 @@ body,
   flex-wrap: wrap;
   gap: 2px;
   padding: 0 clamp(12px, 3vw, 40px);
-  background: #0b4a43;
+  background: var(--cso-accent);
 }
 
 .cso-site-nav > a,
@@ -1230,7 +1230,7 @@ body,
   align-items: center;
   min-height: 48px;
   padding: 10px 15px;
-  color: #ffffff;
+  color: var(--cso-accent-ink);
   text-decoration: none;
   font-size: 13px;
   font-weight: 650;
@@ -1240,8 +1240,8 @@ body,
 .cso-site-nav > a:hover,
 .cso-site-nav-group > a:hover,
 .cso-site-nav-group > a[aria-current="page"] {
-  background: #176e61;
-  color: #ffffff;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 
 .cso-site-nav-group {
@@ -1281,17 +1281,17 @@ body,
 
 .cso-site-dropdown a:hover,
 .cso-site-dropdown a:focus-visible {
-  background: #e8f4ef;
-  color: #0b4a43;
+  background: var(--cso-surface-subtle);
+  color: var(--cso-link);
 }
 
 .cso-site-header a:focus-visible,
 #cso-shared-theme:focus-visible {
   outline: 3px solid #ffb020;
   outline-offset: 2px;
-}
+}/* Dark theme */
 
-/* Dark theme */
+
 :root[data-cso-theme="dark"] .cso-site-header {
   background: #17202f;
   color: #e8eef7;
@@ -1352,9 +1352,9 @@ body,
     color: #e8eef7;
     border-color: #43536b;
   }
-}
+}/* Mobile and tablet layout */
 
-/* Mobile and tablet layout */
+
 @media (max-width: 768px) {
   .cso-site-top {
     min-height: 72px;
@@ -1388,10 +1388,10 @@ body,
     left: 8px;
     width: min(360px, calc(100vw - 16px));
   }
-}
+}/* CSO-IN Jobs & Careers dashboard home brand v1 */
 
 
-/* CSO-IN Jobs & Careers dashboard home brand v1 */
+
 .sidebar .brand {
   cursor: pointer;
   border-radius: 16px;
@@ -1412,20 +1412,20 @@ body,
 
 .sidebar .brand:active {
   transform: translateY(0);
-}
+}/* CSO-IN colorful explorer cards v1 *//* Match the Overview dashboard's responsive card grid. */
 
 
-/* CSO-IN colorful explorer cards v1 */
 
-/* Match the Overview dashboard's responsive card grid. */
+
+
 #explorer-items,
 .explorer-items {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
-}
+}/* Reuse Overview card dimensions and structure. */
 
-/* Reuse Overview card dimensions and structure. */
+
 .explorer-items > .explorer-item.dashboard-card {
   display: flex;
   flex-direction: column;
@@ -1439,7 +1439,7 @@ body,
   gap: 7px;
   border-radius: 10px;
   border: 1px solid rgba(20,35,59,.12);
-  color: #14233b;
+  color: var(--cso-link);
   text-align: left;
   box-shadow: none;
   transition: transform .2s ease, box-shadow .2s ease;
@@ -1458,7 +1458,7 @@ body,
 
 .explorer-items > .explorer-item.dashboard-card .card-title {
   display: block;
-  color: #14233b;
+  color: var(--cso-link);
   font-size: 15px;
   font-weight: 800;
   line-height: 1.4;
@@ -1467,7 +1467,7 @@ body,
 }
 
 .explorer-items > .explorer-item.dashboard-card .card-count {
-  color: #14233b;
+  color: var(--cso-link);
   background: rgba(255,255,255,.65);
   font-size: 11px;
   font-weight: 600;
@@ -1476,10 +1476,10 @@ body,
 }
 
 .explorer-items > .explorer-item.dashboard-card .card-arrow {
-  color: #14233b;
-}
+  color: var(--cso-link);
+}/* Pastel card backgrounds and matching icon gradients. */
 
-/* Pastel card backgrounds and matching icon gradients. */
+
 .explorer-items > .dashboard-card:nth-child(8n+1) {
   background: linear-gradient(135deg,#dbeafe,#eff6ff);
   --accent: linear-gradient(135deg,#1d4ed8,#0b3a6b);
@@ -1529,16 +1529,16 @@ body,
   .explorer-items > .explorer-item.dashboard-card {
     min-height: 190px;
   }
-}
+}/* CSO-IN streamlined directory headings v1 *//* Remove the duplicated title beside the back button. */
 
-/* CSO-IN streamlined directory headings v1 */
 
-/* Remove the duplicated title beside the back button. */
+
+
 #explorer-title {
   display: none;
-}
+}/* Put the back button and category count on one tidy row. */
 
-/* Put the back button and category count on one tidy row. */
+
 .explorer-header {
   display: flex;
   align-items: center;
@@ -1551,40 +1551,40 @@ body,
   font-weight: 600;
   color: var(--tx);
   opacity: .75;
-}
+}/* Hide the overview-only summary panel on category pages. */
 
-/* Hide the overview-only summary panel on category pages. */
+
 body:has(#explorer:not([hidden])) .summary-panel {
   display: none;
-}
+}/* Keep the overview summary panel visible on Overview. */
 
-/* Keep the overview summary panel visible on Overview. */
+
 body:has(#overview:not([hidden])) .summary-panel {
   display: flex;
-}
+}/* Ensure hidden panels stay hidden despite global CSS. */
 
-/* Ensure hidden panels stay hidden despite global CSS. */
+
 #overview[hidden],
 #explorer[hidden],
 #search-results[hidden] {
   display: none !important;
-}
+}/* CSO-IN compact category headings v1 *//* Category pages only: smaller, cleaner main heading. */
 
-/* CSO-IN compact category headings v1 */
 
-/* Category pages only: smaller, cleaner main heading. */
+
+
 body:has(#explorer:not([hidden])) #page-title {
   font-size: clamp(24px, 2.3vw, 32px);
   line-height: 1.25;
   margin-bottom: 0;
-}
+}/* Remove the unused description and its spacing. */
 
-/* Remove the unused description and its spacing. */
+
 body:has(#explorer:not([hidden])) #page-description {
   display: none;
-}
+}/* Keep the category heading area compact. */
 
-/* Keep the category heading area compact. */
+
 body:has(#explorer:not([hidden])) .welcome {
   padding-bottom: 4px;
 }
@@ -1593,10 +1593,10 @@ body:has(#explorer:not([hidden])) .welcome {
   body:has(#explorer:not([hidden])) #page-title {
     font-size: 24px;
   }
-}
+}/* CSO Schemes & Benefits — compact headings across all levels */
 
 
-/* CSO Schemes & Benefits — compact headings across all levels */
+
 #page-title {
   font-size: clamp(22px, 2.2vw, 30px);
   line-height: 1.25;
@@ -1628,11 +1628,9 @@ body:has(#explorer:not([hidden])) .welcome {
   #explorer-title {
     font-size: 20px;
   }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    CSO Navigation Architecture, Topbar, Sidebar & Compact Grids Refactor
-   ========================================================================== */
+   ========================================================================== *//* 1. Universal Category Explorer Grids (Compact Layout) */
 
 
 
@@ -1644,7 +1642,9 @@ body:has(#explorer:not([hidden])) .welcome {
 
 
 
-/* 1. Universal Category Explorer Grids (Compact Layout) */
+
+
+
 #dashboard-grid,
 .dashboard-grid,
 #explorer-items,
@@ -1670,9 +1670,9 @@ body:has(#explorer:not([hidden])) .welcome {
     grid-template-columns: 1fr !important;
     gap: 10px !important;
   }
-}
+}/* Compact horizontal row cards */
 
-/* Compact horizontal row cards */
+
 .dashboard-card,
 .explorer-items > .explorer-item.dashboard-card,
 .explorer-item,
@@ -1717,9 +1717,9 @@ body:has(#explorer:not([hidden])) .welcome {
 .recent-card:focus-visible {
   outline: 2px solid var(--cso-link) !important;
   outline-offset: 2px !important;
-}
+}/* Far left inline icon box */
 
-/* Far left inline icon box */
+
 .dashboard-card .card-icon,
 .explorer-items > .explorer-item.dashboard-card .card-icon,
 .explorer-item .card-icon,
@@ -1740,9 +1740,9 @@ body:has(#explorer:not([hidden])) .welcome {
   box-sizing: border-box !important;
   margin: 0 !important;
   box-shadow: none !important;
-}
+}/* Center stack: Title in 0.95rem semi-bold and single subtle meta line */
 
-/* Center stack: Title in 0.95rem semi-bold and single subtle meta line */
+
 .dashboard-card .card-content,
 .explorer-items > .explorer-item.dashboard-card .card-content,
 .explorer-item .card-content,
@@ -1791,9 +1791,9 @@ body:has(#explorer:not([hidden])) .welcome {
   border-radius: 0 !important;
   border: none !important;
   max-width: 100% !important;
-}
+}/* Far right subtle chevron (›) */
 
-/* Far right subtle chevron (›) */
+
 .dashboard-card .card-arrow,
 .explorer-items > .explorer-item.dashboard-card .card-arrow,
 .explorer-item .card-arrow,
@@ -1820,9 +1820,9 @@ body:has(#explorer:not([hidden])) .welcome {
 .recent-card:hover .card-arrow {
   color: var(--cso-link) !important;
   transform: translateX(2px) !important;
-}
+}/* Leaf items */
 
-/* Leaf items */
+
 .explorer-item.leaf {
   cursor: default !important;
   height: auto !important;
@@ -1835,11 +1835,11 @@ body:has(#explorer:not([hidden])) .welcome {
   white-space: normal !important;
   font-weight: 500 !important;
   font-size: 0.9rem !important;
-}
+}/* 2. Top Navbar & Dropdown Menus (active pill & link colors inherited from /assets/style.css) *//* 3. Left Sidebar Directory Navigation */
 
-/* 2. Top Navbar & Dropdown Menus (active pill & link colors inherited from /assets/style.css) */
 
-/* 3. Left Sidebar Directory Navigation */
+
+
 .app-shell #side-navigation,
 #side-navigation {
   display: flex !important;
@@ -1965,7 +1965,7 @@ body:has(#explorer:not([hidden])) .welcome {
 .app-shell #side-navigation .side-link[aria-current="page"] .side-icon {
   background: rgba(255, 255, 255, 0.22) !important;
   border-color: rgba(255, 255, 255, 0.3) !important;
-  color: #ffffff !important;
+  color: var(--cso-accent-ink) !important;
 }
 
 .side-link.active .side-count,
@@ -1976,7 +1976,7 @@ body:has(#explorer:not([hidden])) .welcome {
 .app-shell #side-navigation .side-link[aria-current="page"] .side-count {
   background: rgba(255, 255, 255, 0.25) !important;
   border-color: rgba(255, 255, 255, 0.35) !important;
-  color: #ffffff !important;
+  color: var(--cso-accent-ink) !important;
 }
 
 .side-link.active .side-arrow,
@@ -1985,11 +1985,11 @@ body:has(#explorer:not([hidden])) .welcome {
 .app-shell #side-navigation .side-link.active .side-arrow,
 .app-shell #side-navigation .side-link.on .side-arrow,
 .app-shell #side-navigation .side-link[aria-current="page"] .side-arrow {
-  color: #ffffff !important;
+  color: var(--cso-accent-ink) !important;
   opacity: 0.9 !important;
-}
+}/* 4. Global App-Shell & Workspace Parity */
 
-/* 4. Global App-Shell & Workspace Parity */
+
 .app-shell {
   display: grid;
   grid-template-columns: 290px minmax(0, 1fr);
@@ -2097,9 +2097,9 @@ body:has(#explorer:not([hidden])) .welcome {
   color: var(--cso-text);
   border: 1px solid var(--cso-border);
   border-radius: 16px;
-}
+}/* Headings */
 
-/* Headings */
+
 #page-title {
   font-size: clamp(22px, 2.2vw, 28px);
   line-height: 1.25;
@@ -2138,14 +2138,14 @@ body:has(#explorer:not([hidden])) .welcome {
     flex-basis: 100%;
     order: 2;
   }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    Mobile Sidebar Drawer & Overlay Parity (screens <= 768px)
    WCAG 2.5.5 / 2.5.8 Touch Target Compliance
-   ========================================================================== */
+   ========================================================================== *//* Universal Backdrop for Mobile Directory Drawer */
 
-/* Universal Backdrop for Mobile Directory Drawer */
+
+
+
 .sidebar-backdrop {
   position: fixed;
   inset: 0;
@@ -2169,9 +2169,9 @@ body.menu-open .sidebar-backdrop {
 
 body.menu-open {
   overflow: hidden !important;
-}
+}/* Clear Trigger Button ("Directory Menu" / "Sections") */
 
-/* Clear Trigger Button ("Directory Menu" / "Sections") */
+
 .menu-toggle,
 .cso-nav-mobile,
 #cso-menu-toggle,
@@ -2305,9 +2305,9 @@ body.menu-open {
     color: var(--cso-link) !important;
     outline: 2px solid var(--cso-link) !important;
     outline-offset: 1px !important;
-  }
+  }/* Minimum 44px touch targets on mobile */
 
-  /* Minimum 44px touch targets on mobile */
+  
   .app-shell #side-navigation .side-link,
   .sidebar #side-navigation .side-link,
   .side-link {
@@ -2408,11 +2408,11 @@ body.menu-open {
   .sidebar-backdrop {
     display: none !important;
   }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    Study Library Ecosystem v2 — Warm Alabaster #FAF9F6 + Deep Forest #0F4C3A
    ========================================================================== */
+
+
 .cso-contents { display: contents; }
 .cso-acct-icon { font-size: 26px; }
 
@@ -2432,9 +2432,9 @@ body.menu-open {
   transition: background-color 0.16s, border-color 0.16s, color 0.16s;
 }
 .cso-sidebar-toggle:hover {
-  background: #EAF4F0;
-  border-color: #0F4C3A;
-  color: #0F4C3A;
+  background: var(--cso-surface-subtle);
+  border-color: var(--cso-accent);
+  color: var(--cso-link);
 }
 
 @media (max-width: 768px) {
@@ -2468,9 +2468,9 @@ body.menu-open {
     justify-content: center;
     padding: 10px 0;
   }
-}
+}/* Accessible Breadcrumb Bar (#FFFFFF / #86EFAC on deep #0F4C3A) */
 
-/* Accessible Breadcrumb Bar (#FFFFFF / #86EFAC on deep #0F4C3A) */
+
 .breadcrumb {
   display: flex;
   flex-wrap: wrap;
@@ -2480,8 +2480,8 @@ body.menu-open {
   margin: 0 0 18px;
   padding: 9px 14px;
   border-radius: 12px;
-  background: #0F4C3A;
-  color: #FFFFFF;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
   font-size: 13px;
 }
 .breadcrumb-item {
@@ -2491,23 +2491,23 @@ body.menu-open {
 }
 .breadcrumb-item + .breadcrumb-item::before {
   content: "›";
-  color: #86EFAC;
+  color: var(--cso-link);
   font-weight: 800;
 }
 .breadcrumb-link {
   border: 0;
   background: transparent;
   padding: 2px 4px;
-  color: #FFFFFF;
+  color: var(--cso-accent-ink);
   font-weight: 600;
   border-radius: 6px;
 }
 .breadcrumb-link:hover {
   background: rgba(255, 255, 255, 0.14);
-  color: #86EFAC;
+  color: var(--cso-link);
 }
 .breadcrumb-current {
-  color: #86EFAC !important;
+  color: var(--cso-link) !important;
   font-weight: 800;
 }
 
@@ -2535,18 +2535,18 @@ body.menu-open {
   border-radius: 999px;
   border: 1px solid var(--cso-border, #E2E8F0);
   background: var(--cso-bg, #FAF9F6);
-  color: #0F4C3A;
+  color: var(--cso-link);
   font-size: 12.5px;
   font-weight: 700;
   transition: background-color 0.16s, border-color 0.16s;
 }
 .study-hub-pill:hover {
-  background: #0F4C3A;
-  border-color: #0F4C3A;
-  color: #FFFFFF;
-}
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}/* Continue Where You Left Off */
 
-/* Continue Where You Left Off */
+
 .study-continue-strip {
   margin-bottom: 18px;
   padding: 12px 16px;
@@ -2593,9 +2593,9 @@ body.menu-open {
   background: var(--cso-primary, #0F4C3A);
   border-color: var(--cso-primary, #0F4C3A);
   color: var(--cso-primary-fg, #FFFFFF);
-}
+}/* Live Study Materials Panel */
 
-/* Live Study Materials Panel */
+
 .live-study-section {
   margin-bottom: 28px;
   padding: 18px;
@@ -2626,7 +2626,7 @@ body.menu-open {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #10B981;
+  background: var(--cso-accent);
   box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
 }
 .live-count-badge {
@@ -2752,7 +2752,7 @@ body.menu-open {
   overflow-wrap: break-word;
 }
 .study-material-card.is-goal-match {
-  border-color: #0F4C3A;
+  border-color: var(--cso-accent);
   box-shadow: 0 6px 18px rgba(15, 76, 58, 0.12);
 }
 
@@ -2771,9 +2771,9 @@ body.menu-open {
   font-weight: 800;
 }
 .study-badge--type { background: var(--cso-badge-bg, #E6F4EF); color: var(--cso-badge-fg, #0F4C3A); }
-.study-badge--exam { background: #EEF2FF; color: #3730A3; }
-.study-badge--verified { background: #ECFDF5; color: #065F46; }
-.study-badge--goal { background: #FEF3C7; color: #92400E; }
+.study-badge--exam { background: var(--cso-info-bg); color: var(--cso-info-fg); }
+.study-badge--verified { background: var(--cso-ok-bg); color: var(--cso-link); }
+.study-badge--goal { background: var(--cso-warn-bg); color: var(--cso-warn-fg); }
 
 :root[data-cso-theme="dark"] .study-badge--exam { background: rgba(99, 102, 241, 0.22); color: #C7D2FE; }
 :root[data-cso-theme="dark"] .study-badge--verified { background: rgba(16, 185, 129, 0.2); color: #6EE7B7; }
@@ -2877,9 +2877,9 @@ body.menu-open {
   background: var(--cso-primary, #0F4C3A);
   color: var(--cso-primary-fg, #FFFFFF);
   transform: translateY(-1px);
-}
+}/* Directory Overview Grid (10 Groups — Zero Overflow) */
 
-/* Directory Overview Grid (10 Groups — Zero Overflow) */
+
 .overview-heading-row {
   display: flex;
   flex-wrap: wrap;
@@ -2937,9 +2937,9 @@ body.menu-open {
   background: var(--cso-surface-alt, #F1F5F9);
   color: var(--cso-text-muted, #334155);
   font-weight: 700;
-}
+}/* Modal Study Reader */
 
-/* Modal Study Reader */
+
 .study-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -2969,8 +2969,8 @@ body.menu-open {
   justify-content: space-between;
   gap: 12px;
   padding: 18px 22px;
-  background: #0F4C3A;
-  color: #FFFFFF;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 .study-modal-badges {
   display: flex;
@@ -2982,12 +2982,12 @@ body.menu-open {
   margin: 0;
   font-size: 20px;
   line-height: 1.3;
-  color: #FFFFFF;
+  color: var(--cso-accent-ink);
 }
 .study-modal-subtitle {
   margin: 4px 0 0;
   font-size: 13px;
-  color: #D1FAE5;
+  color: var(--cso-accent-ink);
 }
 .study-modal-close {
   width: 36px;
@@ -2996,7 +2996,7 @@ body.menu-open {
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.12);
-  color: #FFFFFF;
+  color: var(--cso-accent-ink);
   font-size: 16px;
   font-weight: 700;
 }
@@ -3009,13 +3009,13 @@ body.menu-open {
 .study-modal-box {
   padding: 14px 16px;
   border-radius: 14px;
-  border: 1px solid #E2E8F0;
-  background: #FAF9F6;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-subtle);
 }
 .study-modal-box h3 {
   margin: 0 0 10px;
   font-size: 14.5px;
-  color: #0F4C3A;
+  color: var(--cso-link);
 }
 .study-unit-list {
   display: grid;
@@ -3024,18 +3024,18 @@ body.menu-open {
 .study-unit-item {
   padding: 10px 12px;
   border-radius: 10px;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
 }
 .study-unit-item strong {
   display: block;
   font-size: 13.5px;
-  color: #0F172A;
+  color: var(--cso-ink);
   margin-bottom: 3px;
 }
 .study-unit-item span {
   font-size: 12.5px;
-  color: #475569;
+  color: var(--cso-ink-muted);
   line-height: 1.45;
 }
 .study-takeaways-list {
@@ -3044,7 +3044,7 @@ body.menu-open {
   display: grid;
   gap: 6px;
   font-size: 13px;
-  color: #1E293B;
+  color: var(--cso-ink);
 }
 .study-modal-foot {
   display: flex;
@@ -3052,8 +3052,8 @@ body.menu-open {
   align-items: center;
   gap: 8px;
   padding: 14px 22px;
-  border-top: 1px solid #E2E8F0;
-  background: #F8FAFC;
+  border-top: 1px solid var(--cso-border);
+  background: var(--cso-surface-subtle);
 }
 
 .study-toast {
@@ -3063,17 +3063,17 @@ body.menu-open {
   z-index: 1200;
   padding: 10px 16px;
   border-radius: 12px;
-  background: #0F4C3A;
-  color: #FFFFFF;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
   font-size: 13px;
   font-weight: 700;
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.25);
 }
 
 .search-materials-section { margin-bottom: 18px; }
-.search-section-label { margin: 0 0 10px; font-size: 14px; font-weight: 800; color: #0F4C3A; }
+.search-section-label { margin: 0 0 10px; font-size: 14px; font-weight: 800; color: var(--cso-link); }/* A4 Print Study Sheet Layout */
 
-/* A4 Print Study Sheet Layout */
+
 @media print {
   body > *:not(#study-reader-modal) {
     display: none !important;
@@ -3098,12 +3098,12 @@ body.menu-open {
   .study-modal-foot {
     display: none !important;
   }
-}
-
-/* ============================================================
+}/* ============================================================
    SSR Clean-URL Study Library Directory & Reader Pages
    Warm Alabaster (#faf8f5) & Deep Forest Green (#14532d)
    ============================================================ */
+
+
 .dashboard-card .card-count,
 .explorer-item .card-count {
   white-space: normal !important;
@@ -3114,8 +3114,8 @@ body.menu-open {
 
 .cso-sl-pub-body {
   margin: 0;
-  background: #faf8f5;
-  color: #1e293b;
+  background: var(--cso-surface);
+  color: var(--cso-ink);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   line-height: 1.6;
   min-height: 100vh;
@@ -3124,8 +3124,8 @@ body.menu-open {
 }
 
 .cso-sl-pub-header {
-  background: #14532d;
-  color: #ffffff;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
 
@@ -3152,7 +3152,7 @@ body.menu-open {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: #ffffff;
+  color: var(--cso-accent-ink);
   text-decoration: none;
   font-weight: 700;
   font-size: 1.05rem;
@@ -3164,8 +3164,8 @@ body.menu-open {
   justify-content: center;
   padding: 4px 8px;
   border-radius: 8px;
-  background: #ffffff;
-  color: #14532d;
+  background: var(--cso-surface);
+  color: var(--cso-link);
   font-weight: 800;
   font-size: 0.85rem;
 }
@@ -3178,7 +3178,7 @@ body.menu-open {
 }
 
 .cso-sl-pub-nav a {
-  color: #dcfce7;
+  color: var(--cso-accent-ink);
   text-decoration: none;
   font-weight: 600;
   font-size: 0.92rem;
@@ -3186,7 +3186,7 @@ body.menu-open {
 
 .cso-sl-pub-nav a:hover,
 .cso-sl-pub-nav a[aria-current="page"] {
-  color: #ffffff;
+  color: var(--cso-accent-ink);
   text-decoration: underline;
   text-underline-offset: 4px;
 }
@@ -3204,12 +3204,12 @@ body.menu-open {
   flex-wrap: wrap;
   gap: 8px;
   font-size: 0.88rem;
-  color: #475569;
+  color: var(--cso-ink-muted);
   margin-bottom: 18px;
 }
 
 .cso-sl-pub-breadcrumbs a {
-  color: #14532d;
+  color: var(--cso-link);
   text-decoration: none;
   font-weight: 600;
 }
@@ -3219,18 +3219,18 @@ body.menu-open {
 }
 
 .cso-sl-pub-crumb-sep {
-  color: #94a3b8;
+  color: var(--cso-ink-muted);
 }
 
 .cso-sl-pub-crumb-current {
-  color: #0f172a;
+  color: var(--cso-ink);
   font-weight: 700;
 }
 
 .cso-sl-pub-hero {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-left: 5px solid #14532d;
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
+  border-left: 5px solid var(--cso-accent);
   border-radius: 14px;
   padding: 24px;
   margin-bottom: 28px;
@@ -3250,8 +3250,8 @@ body.menu-open {
   display: inline-block;
   padding: 3px 10px;
   border-radius: 999px;
-  background: #14532d;
-  color: #ffffff;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -3261,9 +3261,9 @@ body.menu-open {
   display: inline-block;
   padding: 3px 10px;
   border-radius: 999px;
-  background: #ecfdf5;
-  color: #14532d;
-  border: 1px solid #bbf7d0;
+  background: var(--cso-ok-bg);
+  color: var(--cso-link);
+  border: 1px solid var(--cso-ok-border);
   font-size: 0.76rem;
   font-weight: 600;
 }
@@ -3272,9 +3272,9 @@ body.menu-open {
   display: inline-block;
   padding: 3px 10px;
   border-radius: 999px;
-  background: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fde68a;
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
+  border: 1px solid var(--cso-warn-border);
   font-size: 0.76rem;
   font-weight: 700;
 }
@@ -3284,19 +3284,19 @@ body.menu-open {
   margin: 0 0 8px;
   font-size: clamp(1.5rem, 2.8vw, 2.05rem);
   line-height: 1.25;
-  color: #0f172a;
+  color: var(--cso-ink);
 }
 
 .cso-sl-pub-title-or {
   margin: 0 0 8px;
   font-size: 1.05rem;
   font-weight: 600;
-  color: #14532d;
+  color: var(--cso-link);
 }
 
 .cso-sl-pub-hero-desc {
   margin: 0 0 14px;
-  color: #475569;
+  color: var(--cso-ink-muted);
   max-width: 72ch;
 }
 
@@ -3306,11 +3306,11 @@ body.menu-open {
   flex-wrap: wrap;
   gap: 16px;
   font-size: 0.9rem;
-  color: #334155;
+  color: var(--cso-ink-soft);
 }
 
 .cso-sl-pub-stat-link {
-  color: #14532d;
+  color: var(--cso-link);
   font-weight: 700;
   text-decoration: none;
 }
@@ -3335,11 +3335,11 @@ body.menu-open {
 .cso-sl-pub-section-head h2 {
   margin: 0;
   font-size: 1.25rem;
-  color: #0f172a;
+  color: var(--cso-ink);
 }
 
 .cso-sl-pub-muted {
-  color: #64748b;
+  color: var(--cso-ink-muted);
   font-size: 0.88rem;
 }
 
@@ -3364,7 +3364,7 @@ body.menu-open {
 }
 
 .cso-sl-pub-dir-card:hover {
-  border-color: #14532d;
+  border-color: var(--cso-accent);
   box-shadow: 0 8px 20px rgba(20, 83, 45, 0.08);
   transform: translateY(-2px);
 }
@@ -3378,19 +3378,19 @@ body.menu-open {
 .cso-sl-pub-dir-title {
   font-weight: 700;
   font-size: 1.02rem;
-  color: #0f172a;
+  color: var(--cso-ink);
 }
 
 .cso-sl-pub-dir-or {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #14532d;
+  color: var(--cso-link);
 }
 
 .cso-sl-pub-dir-desc {
   margin: 0;
   font-size: 0.86rem;
-  color: #475569;
+  color: var(--cso-ink-muted);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -3409,14 +3409,14 @@ body.menu-open {
 .cso-sl-pub-count-pill {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #14532d;
-  background: #ecfdf5;
+  color: var(--cso-link);
+  background: var(--cso-ok-bg);
   padding: 3px 9px;
   border-radius: 999px;
 }
 
 .cso-sl-pub-arrow {
-  color: #14532d;
+  color: var(--cso-link);
   font-weight: 700;
 }
 
@@ -3476,19 +3476,19 @@ body.menu-open {
 }
 
 .cso-sl-pub-resource-title a {
-  color: #0f172a;
+  color: var(--cso-ink);
   text-decoration: none;
 }
 
 .cso-sl-pub-resource-title a:hover {
-  color: #14532d;
+  color: var(--cso-link);
   text-decoration: underline;
 }
 
 .cso-sl-pub-resource-summary,
 .cso-sl-pub-reader-summary {
   margin: 0 0 14px;
-  color: #475569;
+  color: var(--cso-ink-muted);
 }
 
 .cso-sl-pub-resource-actions,
@@ -3504,15 +3504,15 @@ body.menu-open {
   align-items: center;
   padding: 9px 16px;
   border-radius: 8px;
-  background: #14532d;
-  color: #ffffff;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
   font-weight: 700;
   font-size: 0.9rem;
   text-decoration: none;
 }
 
 .cso-sl-pub-btn-primary:hover {
-  background: #166534;
+  background: var(--cso-accent);
 }
 
 .cso-sl-pub-btn-secondary {
@@ -3520,17 +3520,17 @@ body.menu-open {
   align-items: center;
   padding: 9px 16px;
   border-radius: 8px;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
+  background: var(--cso-surface-subtle);
+  border: 1px solid var(--cso-border);
+  color: var(--cso-ink);
   font-weight: 600;
   font-size: 0.9rem;
   text-decoration: none;
 }
 
 .cso-sl-pub-btn-secondary:hover {
-  border-color: #14532d;
-  color: #14532d;
+  border-color: var(--cso-accent);
+  color: var(--cso-link);
 }
 
 .cso-sl-pub-sibling-chips,
@@ -3554,8 +3554,8 @@ body.menu-open {
 }
 
 .cso-sl-pub-sibling-chip:hover {
-  border-color: #14532d;
-  color: #14532d;
+  border-color: var(--cso-accent);
+  color: var(--cso-link);
 }
 
 .cso-sl-pub-cover {
@@ -3576,22 +3576,22 @@ body.menu-open {
   gap: 12px;
   padding: 16px;
   margin: 16px 0;
-  background: #ecfdf5;
-  border: 1px solid #bbf7d0;
+  background: var(--cso-ok-bg);
+  border: 1px solid var(--cso-ok-border);
   border-radius: 12px;
 }
 
 .cso-sl-pub-reader-body {
   margin: 18px 0;
-  color: #1e293b;
+  color: var(--cso-ink);
   font-size: 1rem;
 }
 
 .cso-sl-pub-links-box {
   margin: 18px 0;
   padding: 16px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--cso-surface-subtle);
+  border: 1px solid var(--cso-border);
   border-radius: 12px;
 }
 
@@ -3606,13 +3606,13 @@ body.menu-open {
 }
 
 .cso-sl-pub-links-box a {
-  color: #14532d;
+  color: var(--cso-link);
   font-weight: 600;
 }
 
 .cso-sl-pub-footer {
-  background: #0f172a;
-  color: #cbd5e1;
+  background: var(--cso-footer-bg);
+  color: var(--cso-footer-ink);
   padding: 20px 0;
   margin-top: auto;
 }
@@ -3632,17 +3632,17 @@ body.menu-open {
 }
 
 .cso-sl-pub-footer-links a {
-  color: #e2e8f0;
+  color: var(--cso-footer-title-ink);
   text-decoration: none;
 }
 
 .cso-sl-pub-footer-links a:hover {
   text-decoration: underline;
-}
-
-/* ============================================================
+}/* ============================================================
    v52: Home-Aligned Warm Alabaster & Deep Forest Green Identity
    ============================================================ */
+
+
 
 
 body {
@@ -3661,9 +3661,9 @@ body {
   color: var(--cso-text, #0f172a);
   border: 1px solid var(--cso-border, rgba(20, 83, 45, 0.14)) !important;
   box-shadow: var(--cso-card-hover-shadow, 0 4px 20px rgba(20, 83, 45, 0.06)) !important;
-}
+}/* Theme-Reactive Explorer Hero Banner (Explorer + SSR Pages) */
 
-/* Theme-Reactive Explorer Hero Banner (Explorer + SSR Pages) */
+
 .welcome.cso-sl-hero-banner,
 .cso-sl-pub-hero {
   background: var(--cso-hero-bg, linear-gradient(135deg, #F4EFE6 0%, #E8DFCE 100%)) !important;
@@ -3756,9 +3756,9 @@ body {
   background: var(--cso-hero-pill-active-bg, var(--cso-primary));
   border-color: var(--cso-hero-pill-active-bg, var(--cso-primary));
   color: var(--cso-hero-pill-active-fg, var(--cso-primary-fg));
-}
+}/* Full Desktop Left Sidebar (>= 1024px) & Drawer (< 1024px) */
 
-/* Full Desktop Left Sidebar (>= 1024px) & Drawer (< 1024px) */
+
 .breadcrumb:empty,
 .breadcrumb[hidden] {
   display: none !important;
@@ -3852,8 +3852,8 @@ body {
     padding: 8px 14px;
     border-radius: 10px;
     border: 1px solid rgba(20, 83, 45, 0.25);
-    background: #14532d;
-    color: #ffffff;
+    background: var(--cso-accent);
+    color: var(--cso-accent-ink);
     font-weight: 700;
     font-size: 13px;
   }
@@ -3909,9 +3909,9 @@ body {
   background: var(--cso-primary, #14532d);
   border-color: var(--cso-primary, #14532d);
   color: var(--cso-primary-fg, #ffffff);
-}
+}/* Elevated Curriculum Group & Study Resource Cards + 3->2->1 Responsive Grid */
 
-/* Elevated Curriculum Group & Study Resource Cards + 3->2->1 Responsive Grid */
+
 .study-materials-grid,
 .cso-sl-pub-grid {
   display: grid !important;
@@ -3962,9 +3962,9 @@ body {
 .cso-sl-pub-btn-primary:hover {
   background: var(--cso-primary, #166534) !important;
   color: var(--cso-primary-fg, #ffffff) !important;
-}
+}/* Graphical Directory at a Glance Telemetry Strip */
 
-/* Graphical Directory at a Glance Telemetry Strip */
+
 .directory-telemetry-bars {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4024,14 +4024,14 @@ body {
   border: none;
   appearance: none;
   -webkit-appearance: none;
-  background: #dcfce7;
+  background: var(--cso-ok-bg);
   accent-color: #14532d;
   overflow: hidden;
   display: block;
 }
 
 .telemetry-progress::-webkit-progress-bar {
-  background: #dcfce7;
+  background: var(--cso-ok-bg);
   border-radius: 999px;
 }
 
@@ -4051,11 +4051,11 @@ body {
 
 .telemetry-progress--accent::-moz-progress-bar {
   background: linear-gradient(90deg, #166534, #059669);
-}
-
-/* ============================================================
+}/* ============================================================
    v54: Clean Rounded-Square CSO Emerald Badge in Sidebar Header
    ============================================================ */
+
+
 .sidebar-brand {
   display: flex !important;
   align-items: center !important;
@@ -4071,7 +4071,7 @@ body {
   flex: 0 0 36px;
   border-radius: 10px;
   background: linear-gradient(135deg, #16a34a, #14532d);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
   font-weight: 800;
   font-size: 0.78rem;
   letter-spacing: 0.03em;
@@ -4094,15 +4094,15 @@ body {
   .sidebar[data-sidebar="collapsed"] .brand-name {
     display: none !important;
   }
-}
-
-/* ============================================================
+}/* ============================================================
    v55: Citizen Suggest Form, Offline Button & SSR Print Sheet
    ============================================================ */
+
+
 .cso-sl-pub-offline-btn.is-saved {
-  background: #065f46 !important;
-  color: #ffffff !important;
-  border-color: #065f46 !important;
+  background: var(--cso-accent) !important;
+  color: var(--cso-accent-ink) !important;
+  border-color: var(--cso-accent) !important;
 }
 
 .cso-sl-pub-suggest-box {
@@ -4145,7 +4145,7 @@ body {
   gap: 5px;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--cso-ink);
 }
 
 .cso-sl-pub-suggest-form input,
@@ -4155,11 +4155,11 @@ body {
   box-sizing: border-box;
   padding: 9px 11px;
   border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--cso-border);
   font: inherit;
   font-weight: 500;
-  background: #faf8f5;
-  color: #0f172a;
+  background: var(--cso-surface);
+  color: var(--cso-ink);
 }
 
 @media print {
@@ -4179,11 +4179,11 @@ body {
     color: #000000 !important;
     box-shadow: none !important;
   }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    v148: Study Library Hero Contrast & Directory Typography
    ========================================================================== */
+
+
 .welcome.cso-sl-hero-banner h1,
 .cso-sl-pub-hero h1 {
   color: var(--cso-hero-title, #111827) !important;
@@ -4235,9 +4235,9 @@ body {
 .study-select {
   font-size: 14.5px !important;
   min-height: 40px !important;
-}
+}/* v149: Cross-Explorer Parity (Compact Breadcrumb Pill & Single-Row Filter Chips) */
 
-/* v149: Cross-Explorer Parity (Compact Breadcrumb Pill & Single-Row Filter Chips) */
+
 .cso-sl-hero-banner .breadcrumb,
 .cso-sl-pub-hero .breadcrumb,
 #breadcrumb.breadcrumb {
@@ -4266,9 +4266,9 @@ body {
   font-weight: 600 !important;
   padding: 6px 12px !important;
   white-space: nowrap !important;
-}
+}/* v150: Uniform Hero Card & Top Kicker Row */
 
-/* v150: Uniform Hero Card & Top Kicker Row */
+
 .welcome.cso-sl-hero-banner,
 .study-hero {
   display: block !important;
@@ -4336,12 +4336,12 @@ body {
 .cso-sl-hero-quickjump {
   gap: 6px !important;
   align-items: center !important;
-}
+}/* v159 intrinsic & adaptive */
 
 
 
 
-/* v159 intrinsic & adaptive */
+
 .app-shell { min-block-size: 100vh; min-block-size: 100dvh; padding-inline: env(safe-area-inset-left) env(safe-area-inset-right); }
 .dashboard-grid, .explorer-items { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)) !important; gap: var(--cso-gap, 16px); }
 .dashboard-grid > *, .explorer-items > *, .cso-sl-book-card { container-type: inline-size; min-inline-size: 0; }
@@ -4355,12 +4355,12 @@ body {
 @media (pointer: coarse) { button, select, .explorer-items a, nav a { min-block-size: 44px; min-inline-size: 44px; } }
 @media (max-width: 768px) { input, select, textarea { font-size: max(16px, 1rem); } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
-@media (prefers-contrast: more) { .explorer-items > *, .dashboard-grid > * { border: 2px solid currentColor; } :focus-visible { outline: 3px solid currentColor; outline-offset: 2px; } }
-
-/* ==========================================================================
+@media (prefers-contrast: more) { .explorer-items > *, .dashboard-grid > * { border: 2px solid currentColor; } :focus-visible { outline: 3px solid currentColor; outline-offset: 2px; } }/* ==========================================================================
    v175: Interactive Study Library, 3-Way Bilingual Toggle, Flip Flashcards,
    Web Speech API & Revise Again Mistake Deck (Theme-Reactive, Zero Inline Styles)
    ========================================================================== */
+
+
 .study-flashcards-btn,
 .study-revise-btn {
   display: inline-flex;
@@ -4520,7 +4520,7 @@ body {
   padding: 0.65rem 1.15rem;
   border-radius: 10px;
   background: var(--cso-accent, #0F766E);
-  color: #FFFFFF;
+  color: var(--cso-accent-ink);
   font-weight: 700;
   font-size: 0.92rem;
   text-decoration: none;
@@ -4589,7 +4589,7 @@ body {
 .cso-vault-tab.is-active {
   background: var(--cso-accent, #0F766E);
   border-color: var(--cso-accent, #0F766E);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
 }
 .cso-vault-topics {
   display: grid;
@@ -4629,12 +4629,12 @@ body {
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 999px;
-  background: #e0f2fe;
-  color: #075985;
+  background: var(--cso-info-bg);
+  color: var(--cso-info-fg);
 }
 .cso-vault-pill.is-weight {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
 }
 .cso-vault-topic-en {
   font-size: 0.94rem;
@@ -4665,6 +4665,6 @@ body {
 .cso-vault-btn--primary {
   background: var(--cso-accent, #0F766E);
   border-color: var(--cso-accent, #0F766E);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
 }
 

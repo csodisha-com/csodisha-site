@@ -92,26 +92,26 @@
 }
 
 .cso-elig-badge--ok {
-  background: #dcfce7;
-  color: #166534;
-  border: 1px solid #86efac;
+  background: var(--cso-ok-bg);
+  color: var(--cso-link);
+  border: 1px solid var(--cso-ok-border);
 }
 
 .cso-elig-badge--warn {
-  background: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fcd34d;
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
+  border: 1px solid var(--cso-warn-border);
 }
 
 .cso-elig-badge--match {
-  background: #dbeafe;
-  color: #1e40af;
-  border: 1px solid #93c5fd;
+  background: var(--cso-info-bg);
+  color: var(--cso-link);
+  border: 1px solid var(--cso-info-border);
 }
 
 .live-job-card__footer .live-btn--remind {
-  border-color: #0284c7;
-  color: #0369a1;
+  border-color: var(--cso-accent);
+  color: var(--cso-link);
 }
 
 @media (max-width: 720px) {
@@ -128,8 +128,8 @@
   max-width: calc(100vw - 32px);
   padding: 10px 18px;
   border-radius: 999px;
-  background: #0f172a;
-  color: #ffffff;
+  background: var(--cso-surface-elevated);
+  color: var(--cso-accent-ink);
   font-size: 14px;
   font-weight: 700;
   opacity: 0;
@@ -147,9 +147,9 @@
   position: fixed;
   top: 0;
   left: -9999px;
-}
+}/* v164: Multi-Option Share Bottom Sheet / Modal (4-theme compatible, >=44px touch targets) */
 
-/* v164: Multi-Option Share Bottom Sheet / Modal (4-theme compatible, >=44px touch targets) */
+
 body.cso-share-open {
   overflow: hidden;
 }
@@ -276,19 +276,19 @@ body.cso-share-open {
 }
 
 .cso-share-opt--wa {
-  border-color: #16a34a;
+  border-color: var(--cso-accent);
 }
 
 .cso-share-opt--tg {
-  border-color: #0284c7;
+  border-color: var(--cso-accent);
 }
 
 .cso-share-opt--native {
   grid-column: 1 / -1;
   justify-content: center;
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 
 @media (max-width: 640px) {

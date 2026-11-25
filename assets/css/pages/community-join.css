@@ -1,5 +1,5 @@
-/* v152: extracted from inline <style> (CSP style-src 'self'); theme tokens: --cso-bg/surface/text/muted/border/hero-* */
-/* CSO registration form — isolated styles */
+/* v152: extracted from inline <style> (CSP style-src 'self'); theme tokens: --cso-bg/surface/text/muted/border/hero-* *//* CSO registration form — isolated styles */
+
 .cso-join-main {
   max-width: 850px;
   margin: 35px auto;
@@ -90,7 +90,7 @@
   font: inherit;
 }
 .cso-join-main .actions button {
-  background: #176a4b;
+  background: var(--cso-accent);
   color: white;
   border: 0;
   font-weight: 700;

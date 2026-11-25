@@ -10,7 +10,7 @@
       color: var(--cso-muted, #64748b);
     }
     .access-breadcrumbs a {
-      color: #0fa968;
+      color: var(--cso-link);
       text-decoration: none;
     }
     .access-breadcrumbs a:hover {
@@ -39,7 +39,7 @@
       padding: 4px 10px;
       border-radius: 9999px;
       background: rgba(14, 165, 233, 0.1);
-      color: #0284c7;
+      color: var(--cso-link);
       border: 1px solid rgba(14, 165, 233, 0.2);
     }
     .access-version-badge {
@@ -49,7 +49,7 @@
       padding: 4px 8px;
       border-radius: 6px;
       background: rgba(15, 169, 104, 0.1);
-      color: #0fa968;
+      color: var(--cso-link);
       border: 1px solid rgba(15, 169, 104, 0.2);
     }
     .access-hero h1 {
@@ -87,8 +87,8 @@
       width: 44px;
       height: 44px;
       border-radius: 10px;
-      background: #0284c7;
-      color: #ffffff;
+      background: var(--cso-accent);
+      color: var(--cso-accent-ink);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -98,12 +98,12 @@
     .officer-title-block h2 {
       margin: 0;
       font-size: 1.15rem;
-      color: #0369a1;
+      color: var(--cso-link);
     }
     .officer-title-block p {
       margin: 2px 0 0;
       font-size: 0.82rem;
-      color: #075985;
+      color: var(--cso-info-fg);
     }
     .officer-grid {
       display: grid;
@@ -121,15 +121,15 @@
       font-size: 0.75rem;
       text-transform: uppercase;
       font-weight: 700;
-      color: #0369a1;
+      color: var(--cso-link);
       margin-bottom: 4px;
     }
     .officer-grid-val {
-      color: #1e293b;
+      color: var(--cso-ink);
       word-break: break-word;
     }
     .officer-grid-val a {
-      color: #0284c7;
+      color: var(--cso-link);
       text-decoration: none;
       font-weight: 600;
     }
@@ -162,9 +162,9 @@
       font-size: 0.75rem;
       padding: 2px 6px;
       border-radius: 4px;
-      background: #f1f5f9;
-      color: #475569;
-      border: 1px solid #e2e8f0;
+      background: var(--cso-surface-subtle);
+      color: var(--cso-ink-muted);
+      border: 1px solid var(--cso-border);
     }
     .feature-status {
       font-size: 0.75rem;
@@ -175,18 +175,18 @@
     }
     .feature-status.supported {
       background: rgba(15, 169, 104, 0.1);
-      color: #0fa968;
+      color: var(--cso-link);
       border: 1px solid rgba(15, 169, 104, 0.2);
     }
     .feature-status.partial {
       background: rgba(245, 158, 11, 0.1);
-      color: #d97706;
+      color: var(--cso-warn-fg);
       border: 1px solid rgba(245, 158, 11, 0.2);
     }
     .feature-status.planned {
-      background: #f1f5f9;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
+      background: var(--cso-surface-subtle);
+      color: var(--cso-ink-muted);
+      border: 1px solid var(--cso-border);
     }
     .feature-title {
       font-size: 1.1rem;
@@ -202,17 +202,17 @@
     }
 
     .commitment-card {
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
+      background: var(--cso-ok-bg);
+      border: 1px solid var(--cso-ok-border);
       border-radius: 14px;
       padding: 22px 24px;
       margin-top: 32px;
-      color: #166534;
+      color: var(--cso-link);
     }
     .commitment-card h3 {
       margin: 0 0 8px;
       font-size: 1.05rem;
-      color: #14532d;
+      color: var(--cso-link);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -221,7 +221,7 @@
       margin: 0;
       font-size: 0.92rem;
       line-height: 1.6;
-      color: #166534;
+      color: var(--cso-link);
     }
 
     @media (max-width: 640px) {

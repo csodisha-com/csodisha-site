@@ -9,7 +9,7 @@ a:hover{text-decoration:underline}
 .cso-comm-shell.is-collapsed .cso-comm-rail-label,.cso-comm-shell.is-collapsed .cso-comm-rail-title,.cso-comm-shell.is-collapsed .cso-comm-rail-section,.cso-comm-shell.is-collapsed .cso-comm-nav-count{display:none}
 .cso-comm-brand{display:flex;align-items:center;gap:10px;justify-content:space-between}
 .cso-comm-brand-link{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--cso-link, #14532d)}
-.cso-comm-badge{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--cso-accent, #16a34a),var(--cso-link, #14532d));color:#fff;font-weight:800;font-size:.78rem;letter-spacing:.03em;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.cso-comm-badge{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--cso-accent, #16a34a),var(--cso-link, #14532d));color:var(--cso-accent-ink);font-weight:800;font-size:.78rem;letter-spacing:.03em;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 .cso-comm-rail-toggle{border:1px solid var(--cso-border);background:var(--cso-card-bg, var(--cso-surface));border-radius:8px;padding:6px 9px;cursor:pointer;font-size:.82rem;color:var(--cso-link, #14532d)}
 .cso-comm-rail-section{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--cso-text-muted, #4b5563);text-transform:uppercase;padding:4px 8px}
 .cso-comm-nav{display:grid;gap:4px;background:transparent;color:inherit;border-radius:0;position:static;box-shadow:none}
@@ -79,9 +79,9 @@ a:hover{text-decoration:underline}
 
 .cso-comm-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--cso-border)}
 .cso-comm-page-info{font-size:.86rem;font-weight:600;color:var(--cso-text-muted, #4b5563)}
-.cso-comm-page-btns{display:flex;gap:8px;flex-wrap:wrap}
+.cso-comm-page-btns{display:flex;gap:8px;flex-wrap:wrap}/* SSR Header, Directory & Profile Reader */
 
-/* SSR Header, Directory & Profile Reader */
+
 .cso-pub-header{background:var(--cso-surface, #fff);border-bottom:1px solid var(--cso-border);padding:12px 20px}
 .cso-pub-header-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .cso-pub-brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--cso-link, #14532d)}
@@ -115,10 +115,10 @@ a:hover{text-decoration:underline}
   .cso-pub-header,.cso-pub-footer,.cso-comm-item-actions,.cso-ssr-suggest-box,.cso-comm-rail{display:none!important}
   body{background:#fff}
   .cso-comm-panel{border:none;padding:0}
-}
+}/* v144 Top sticky directory search bar (theme-bound) */
 
 
-/* v144 Top sticky directory search bar (theme-bound) */
+
 .cso-dir-topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;margin:-20px -24px 18px;padding:10px 24px;background:var(--cso-surface);border-bottom:1px solid var(--cso-border);color:var(--cso-text)}
 .cso-dir-menu-toggle{flex-shrink:0;width:40px;height:40px;border-radius:10px;border:1px solid var(--cso-border);background:var(--cso-surface-alt, var(--cso-surface));color:var(--cso-text);font-size:1.05rem;cursor:pointer}
 .cso-dir-menu-toggle:hover,.cso-dir-menu-toggle:focus-visible{border-color:var(--cso-primary);outline:none;box-shadow:0 0 0 3px var(--cso-highlight-ring, rgba(27,67,50,.22))}

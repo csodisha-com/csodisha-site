@@ -1298,6 +1298,7 @@
 
   function normalizeTheme(raw) {
     var val = String(raw || '').toLowerCase();
+    if (val === 'odisha') return 'utkal-bharat';
     if (THEME_ORDER.indexOf(val) !== -1) return val;
     return 'system';
   }
@@ -1335,7 +1336,8 @@
   function applyTheme(theme) {
     var safe = normalizeTheme(theme);
     var resolved = resolveEffectiveMode(safe);
-    document.documentElement.removeAttribute('data-theme');
+    var dataTheme = safe === 'utkal-bharat' ? 'odisha' : safe;
+    document.documentElement.setAttribute('data-theme', dataTheme);
     document.documentElement.setAttribute('data-cso-theme', safe);
     document.documentElement.setAttribute('data-cso-resolved-mode', resolved);
     syncThemeButtonUi(safe);

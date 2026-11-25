@@ -38,7 +38,7 @@
   font-size: 0.82rem;
   font-weight: 700;
   background: rgba(15, 76, 58, 0.12);
-  color: #0f4c3a;
+  color: var(--cso-link);
 }
 
 .cso-glossary-controls {
@@ -81,9 +81,9 @@
 }
 
 .cso-glossary-pill.is-active {
-  background: #0f4c3a;
-  border-color: #0f4c3a;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 
 .cso-glossary-grid {
@@ -116,7 +116,7 @@
   padding: 3px 8px;
   border-radius: 6px;
   background: rgba(29, 78, 216, 0.1);
-  color: #1d4ed8;
+  color: var(--cso-info-fg);
 }
 
 .cso-glossary-save-btn,
@@ -138,9 +138,9 @@
 }
 
 .cso-glossary-save-btn.is-saved {
-  background: #0f766e;
-  border-color: #0f766e;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 
 .cso-glossary-en {
@@ -159,7 +159,7 @@
 .cso-glossary-odia {
   font-size: 1rem;
   font-weight: 700;
-  color: #0f4c3a;
+  color: var(--cso-link);
   margin-top: 2px;
   overflow-wrap: anywhere;
 }

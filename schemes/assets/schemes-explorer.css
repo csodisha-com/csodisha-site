@@ -9,7 +9,7 @@ a:hover{text-decoration:underline}
 .cso-schemes-shell.is-collapsed .cso-schemes-rail-label,.cso-schemes-shell.is-collapsed .cso-schemes-rail-title,.cso-schemes-shell.is-collapsed .cso-schemes-rail-section,.cso-schemes-shell.is-collapsed .cso-schemes-nav-count{display:none}
 .cso-schemes-brand{display:flex;align-items:center;gap:10px;justify-content:space-between}
 .cso-schemes-brand-link{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--cso-link, #14532d)}
-.cso-schemes-badge{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--cso-accent, #16a34a),var(--cso-link, #14532d));color:#fff;font-weight:800;font-size:.78rem;letter-spacing:.03em;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.cso-schemes-badge{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--cso-accent, #16a34a),var(--cso-link, #14532d));color:var(--cso-accent-ink);font-weight:800;font-size:.78rem;letter-spacing:.03em;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 .cso-schemes-rail-toggle{border:1px solid var(--cso-border);background:var(--cso-card-bg, var(--cso-surface));border-radius:8px;padding:6px 9px;cursor:pointer;font-size:.82rem;color:var(--cso-link, #14532d)}
 .cso-schemes-rail-section{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--cso-text-muted, #4b5563);text-transform:uppercase;padding:4px 8px}
 .cso-schemes-nav{display:grid;gap:4px;background:transparent;color:inherit;border-radius:0;position:static;box-shadow:none}
@@ -79,9 +79,9 @@ a:hover{text-decoration:underline}
 .cso-schemes-item-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .cso-schemes-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:9px;font-size:.84rem;font-weight:600;border:1px solid var(--cso-border);background:var(--cso-card-bg, #fff);color:var(--cso-link, #14532d);cursor:pointer}
 .cso-schemes-btn-primary{background:var(--cso-accent, #14532d);color:var(--cso-primary-fg, #fff);border-color:var(--cso-accent, #14532d)}
-.cso-schemes-btn-primary:hover{opacity:.92;text-decoration:none}
+.cso-schemes-btn-primary:hover{opacity:.92;text-decoration:none}/* SSR Header, Directory & Scheme Reader */
 
-/* SSR Header, Directory & Scheme Reader */
+
 .cso-pub-header{background:var(--cso-surface, #fff);border-bottom:1px solid var(--cso-border);padding:12px 20px}
 .cso-pub-header-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .cso-pub-brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--cso-link, #14532d)}
@@ -113,10 +113,10 @@ a:hover{text-decoration:underline}
   .cso-pub-header,.cso-pub-footer,.cso-schemes-item-actions,.cso-ssr-suggest-box,.cso-schemes-rail{display:none!important}
   body{background:#fff}
   .cso-schemes-panel{border:none;padding:0}
-}
+}/* v144 Top sticky directory search bar (theme-bound) */
 
 
-/* v144 Top sticky directory search bar (theme-bound) */
+
 .cso-dir-topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;margin:-20px -24px 18px;padding:10px 24px;background:var(--cso-surface);border-bottom:1px solid var(--cso-border);color:var(--cso-text)}
 .cso-dir-menu-toggle{flex-shrink:0;width:40px;height:40px;border-radius:10px;border:1px solid var(--cso-border);background:var(--cso-surface-alt, var(--cso-surface));color:var(--cso-text);font-size:1.05rem;cursor:pointer}
 .cso-dir-menu-toggle:hover,.cso-dir-menu-toggle:focus-visible{border-color:var(--cso-primary);outline:none;box-shadow:0 0 0 3px var(--cso-highlight-ring, rgba(27,67,50,.22))}
@@ -132,9 +132,9 @@ a:hover{text-decoration:underline}
 .cso-dir-context-pill:hover{text-decoration:none;border-color:var(--cso-primary)}
 .is-search-match{outline:2px solid var(--cso-primary);box-shadow:0 0 0 4px var(--cso-highlight-ring, rgba(27,67,50,.22))}
 .is-search-dim{opacity:.45}
-@media (max-width:900px){.cso-dir-topbar{margin:-20px -14px 14px;padding:8px 14px}.cso-dir-context-pill{max-width:130px}}
+@media (max-width:900px){.cso-dir-topbar{margin:-20px -14px 14px;padding:8px 14px}.cso-dir-context-pill{max-width:130px}}/* v212: Scheme Eligibility Filter Bar & Save Scheme Toggle */
 
-/* v212: Scheme Eligibility Filter Bar & Save Scheme Toggle */
+
 .cso-schemes-elig-bar {
   display: flex;
   flex-wrap: wrap;
@@ -159,7 +159,7 @@ a:hover{text-decoration:underline}
 }
 
 .cso-schemes-save-btn.is-saved {
-  background: #0f766e;
-  border-color: #0f766e;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }

@@ -10,7 +10,7 @@
       color: var(--cso-muted, #64748b);
     }
     .about-breadcrumbs a {
-      color: #0fa968;
+      color: var(--cso-link);
       text-decoration: none;
     }
     .about-breadcrumbs a:hover {
@@ -33,7 +33,7 @@
       padding: 4px 10px;
       border-radius: 9999px;
       background: rgba(15, 169, 104, 0.1);
-      color: #0fa968;
+      color: var(--cso-link);
       border: 1px solid rgba(15, 169, 104, 0.2);
       margin-bottom: 14px;
     }
@@ -113,7 +113,7 @@
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background: #0fa968;
+      background: var(--cso-accent);
     }
     .pillar-title {
       font-weight: 700;
@@ -149,7 +149,7 @@
       padding: 3px 8px;
       border-radius: 6px;
       background: rgba(15, 169, 104, 0.12);
-      color: #0fa968;
+      color: var(--cso-link);
       border: 1px solid rgba(15, 169, 104, 0.25);
       flex-shrink: 0;
     }

@@ -26,7 +26,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
+  background: var(--cso-accent);
   flex-shrink: 0;
 }
 
@@ -54,9 +54,9 @@
 }
 
 .cmps-tab-btn.is-active {
-  background: #047857;
-  border-color: #047857;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 
 .cmps-tab-badge {
@@ -70,17 +70,17 @@
   font-size: 0.72rem;
   font-weight: 800;
   background: rgba(5, 150, 105, 0.14);
-  color: #065f46;
+  color: var(--cso-link);
 }
 
 .cmps-tab-btn.is-active .cmps-tab-badge {
   background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
 }
 
 .cmps-tab-badge.is-alert {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--cso-err-bg);
+  color: var(--cso-err-fg);
 }
 
 .cmps-kpi-grid {
@@ -92,7 +92,7 @@
 .cmps-kpi {
   background: var(--cso-surface, #ffffff);
   border: 1px solid var(--cso-border, #e2e8f0);
-  border-left: 4px solid #059669;
+  border-left: 4px solid var(--cso-accent);
   border-radius: 12px;
   padding: 12px 14px;
   display: flex;
@@ -100,10 +100,10 @@
   gap: 4px;
 }
 
-.cmps-kpi.is-cobalt { border-left-color: #2563eb; }
-.cmps-kpi.is-gold { border-left-color: #d97706; }
-.cmps-kpi.is-violet { border-left-color: #7c3aed; }
-.cmps-kpi.is-rose { border-left-color: #e11d48; }
+.cmps-kpi.is-cobalt { border-left-color: var(--cso-accent); }
+.cmps-kpi.is-gold { border-left-color: var(--cso-warn-border); }
+.cmps-kpi.is-violet { border-left-color: var(--cso-accent); }
+.cmps-kpi.is-rose { border-left-color: var(--cso-err-border); }
 
 .cmps-kpi-label {
   font-size: 0.72rem;
@@ -171,12 +171,12 @@
   white-space: nowrap;
 }
 
-.cmps-btn:hover { border-color: #059669; }
-.cmps-btn-primary { background: #047857; border-color: #047857; color: #ffffff; }
-.cmps-btn-gold { background: #b45309; border-color: #b45309; color: #ffffff; }
-.cmps-btn-violet { background: #6d28d9; border-color: #6d28d9; color: #ffffff; }
-.cmps-btn-cobalt { background: #1d4ed8; border-color: #1d4ed8; color: #ffffff; }
-.cmps-btn-danger { background: #dc2626; border-color: #dc2626; color: #ffffff; }
+.cmps-btn:hover { border-color: var(--cso-accent); }
+.cmps-btn-primary { background: var(--cso-accent); border-color: var(--cso-accent); color: var(--cso-accent-ink); }
+.cmps-btn-gold { background: var(--cso-warn-fg); border-color: var(--cso-warn-border); color: var(--cso-accent-ink); }
+.cmps-btn-violet { background: var(--cso-accent); border-color: var(--cso-accent); color: var(--cso-accent-ink); }
+.cmps-btn-cobalt { background: var(--cso-accent); border-color: var(--cso-accent); color: var(--cso-accent-ink); }
+.cmps-btn-danger { background: var(--cso-err-fg); border-color: var(--cso-err-border); color: var(--cso-accent-ink); }
 .cmps-btn-sm { padding: 5px 8px; font-size: 0.75rem; }
 
 .cmps-section {
@@ -246,7 +246,7 @@
 .cmps-post-card {
   background: var(--cso-surface, #ffffff);
   border: 1px solid var(--cso-border, #e2e8f0);
-  border-left: 4px solid #059669;
+  border-left: 4px solid var(--cso-accent);
   border-radius: 12px;
   padding: 14px;
   display: flex;
@@ -254,9 +254,9 @@
   gap: 8px;
 }
 
-.cmps-post-card.is-pending { border-left-color: #d97706; }
-.cmps-post-card.is-hidden { border-left-color: #dc2626; }
-.cmps-post-card.is-pinned { border-left-color: #7c3aed; }
+.cmps-post-card.is-pending { border-left-color: var(--cso-warn-border); }
+.cmps-post-card.is-hidden { border-left-color: var(--cso-err-border); }
+.cmps-post-card.is-pinned { border-left-color: var(--cso-accent); }
 
 .cmps-pill {
   display: inline-flex;
@@ -267,13 +267,13 @@
   font-size: 0.72rem;
   font-weight: 700;
   background: rgba(5, 150, 105, 0.12);
-  color: #065f46;
+  color: var(--cso-link);
 }
 
-.cmps-pill.is-pro { background: #fef3c7; color: #92400e; }
-.cmps-pill.is-perm { background: #ede9fe; color: #5b21b6; }
-.cmps-pill.is-pending { background: #ffedd5; color: #9a3412; }
-.cmps-pill.is-hidden { background: #fee2e2; color: #991b1b; }
+.cmps-pill.is-pro { background: var(--cso-warn-bg); color: var(--cso-warn-fg); }
+.cmps-pill.is-perm { background: var(--cso-info-bg); color: var(--cso-info-fg); }
+.cmps-pill.is-pending { background: var(--cso-warn-bg); color: var(--cso-warn-fg); }
+.cmps-pill.is-hidden { background: var(--cso-err-bg); color: var(--cso-err-fg); }
 
 .cmps-row-sub {
   font-size: 0.79rem;
@@ -317,7 +317,7 @@
 }
 
 .cmps-tax-item.is-selected {
-  border-color: #047857;
+  border-color: var(--cso-accent);
   background: rgba(5, 150, 105, 0.08);
 }
 

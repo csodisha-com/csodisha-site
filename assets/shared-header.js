@@ -93,10 +93,18 @@
 
   let activePortalTheme = getStoredPortalTheme() || 'system';
 
+  function mapToDataThemeAttr(themeKey) {
+    if (themeKey === 'utkal-bharat' || themeKey === 'odisha') return 'odisha';
+    if (themeKey === 'dark' || themeKey === 'reading') return themeKey;
+    return 'system';
+  }
+
   function setPortalTheme(themeKey, persist = true) {
-    const key = PORTAL_THEME_KEYS.includes(themeKey) ? themeKey : 'system';
+    const raw = themeKey === 'odisha' ? 'utkal-bharat' : themeKey;
+    const key = PORTAL_THEME_KEYS.includes(raw) ? raw : 'system';
     activePortalTheme = key;
     document.documentElement.setAttribute('data-cso-theme', key);
+    document.documentElement.setAttribute('data-theme', mapToDataThemeAttr(key));
     document.documentElement.setAttribute('data-cso-resolved-mode', resolveEffectiveMode(key));
     if (persist) {
       try { localStorage.setItem('cso_portal_theme', key); } catch (e) {}
@@ -176,7 +184,9 @@
 
   function applySettings() {
     const d = document.documentElement;
-    d.dataset.theme = THEMES.includes(S.theme) ? S.theme : 'system';
+    d.setAttribute('data-theme', mapToDataThemeAttr(activePortalTheme));
+    d.setAttribute('data-cso-theme', activePortalTheme);
+    d.setAttribute('data-cso-resolved-mode', resolveEffectiveMode(activePortalTheme));
     d.lang = S.lang || 'en';
     d.dataset.lang = S.lang || 'en';
     if (document.body) {

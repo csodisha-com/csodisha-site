@@ -77,7 +77,7 @@
 
 .cso-ca-lang-btn.is-active {
   background: var(--cso-accent, #0f4c3a);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
 }
 
 .cso-ca-date-tabs {
@@ -101,8 +101,8 @@
 
 .cso-ca-date-btn.is-active {
   border-color: var(--cso-accent, #0f4c3a);
-  background: #eaf4f0;
-  color: #0f4c3a;
+  background: var(--cso-surface-subtle);
+  color: var(--cso-link);
   font-weight: 700;
 }
 
@@ -191,15 +191,15 @@
 }
 
 .cso-ca-quiz-opt.is-correct {
-  background: #dcfce7;
-  border-color: #16a34a;
-  color: #14532d;
+  background: var(--cso-ok-bg);
+  border-color: var(--cso-accent);
+  color: var(--cso-link);
 }
 
 .cso-ca-quiz-opt.is-wrong {
-  background: #fee2e2;
-  border-color: #dc2626;
-  color: #7f1d1d;
+  background: var(--cso-err-bg);
+  border-color: var(--cso-err-border);
+  color: var(--cso-err-fg);
 }
 
 .cso-ca-quiz-feedback {
@@ -237,7 +237,7 @@
 .cso-ca-btn--primary {
   background: var(--cso-accent, #0f4c3a);
   border-color: var(--cso-accent, #0f4c3a);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
 }
 
 .cso-ca-empty {

@@ -83,7 +83,7 @@ nav.cso-about-nav {
   height: 36px;
   border-radius: 10px;
   background: linear-gradient(135deg, #16a34a, #14532d);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
   font-weight: 800;
   font-size: 0.78rem;
   letter-spacing: 0.03em;
@@ -484,7 +484,7 @@ nav.cso-about-nav {
 }
 .cso-about-preset-btn:hover {
   background: var(--accent-soft);
-  border-color: #86efac;
+  border-color: var(--cso-ok-border);
 }
 .cso-about-verifier-result {
   margin-top: 12px;
@@ -494,9 +494,9 @@ nav.cso-about-nav {
   border: 1px solid var(--line);
 }
 .cso-about-verifier-result.is-safe {
-  background: #ecfdf5;
-  border-color: #86efac;
-  color: #14532d;
+  background: var(--cso-ok-bg);
+  border-color: var(--cso-ok-border);
+  color: var(--cso-link);
 }
 .cso-about-verifier-result.is-warn {
   background: var(--warn-bg);
@@ -837,10 +837,10 @@ nav.cso-about-nav {
   .cso-about-main { max-width: 100%; padding: 0; }
   .cso-about-panel,
   .cso-about-hero { box-shadow: none; break-inside: avoid; }
-}
+}/* v145 Top sticky directory search bar & circular emblem (theme-bound) */
 
 
-/* v145 Top sticky directory search bar & circular emblem (theme-bound) */
+
 .cso-about-brand .cso-brand-emblem {
   width: 32px;
   height: 32px;
@@ -956,9 +956,9 @@ nav.cso-about-nav {
 }
 @media print {
   .cso-dir-topbar { display: none !important; }
-}
+}/* v168: Explicit Dark-Mode Sidebar & Surface Uniformity */
 
-/* v168: Explicit Dark-Mode Sidebar & Surface Uniformity */
+
 :root[data-cso-theme="dark"],
 :root[data-theme="dark"] {
   --warn-bg: #2a2110;

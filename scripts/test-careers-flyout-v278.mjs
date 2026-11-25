@@ -223,8 +223,8 @@ await check('5. Solid opaque 4-theme surfaces (Dark Night #161b26 / #263042), si
     'width: 268px;',
     'backdrop-filter: none;',
     'var(--cso-surface-elevated',
-    '--cso-surface-elevated: #161b26;',
-    '--cso-surface-elevated-border: #263042;'
+    '--cso-surface-elevated: #161e2e;',
+    '--cso-surface-elevated-border: #263245;'
   ]) {
     assert.ok(styleCss.includes(tok), `assets/style.css missing "${tok}"`);
   }
@@ -254,7 +254,7 @@ await check('5. Solid opaque 4-theme surfaces (Dark Night #161b26 / #263042), si
 
   assert.match(read('careers/index.html'), /\/assets\/js\/careers-portal\.js\?v=2026112[45]v2(?:7[89]|[89]\d)/);
   assert.match(read('admin/index.html'), /\/admin\/admin\.js\?v=2026112[45]v2(?:7[89]|[89]\d)/);
-  assert.ok(read('admin/index.html').includes('/admin/careers-publishing-studio.js?v=20261124v278'));
+  assert.match(read('admin/index.html'), /\/admin\/careers-publishing-studio\.js\?v=2026112[45]v2(?:7[89]|[89]\d)/);
 
   for (const rel of [
     'assets/shared-header.js',

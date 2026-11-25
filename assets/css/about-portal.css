@@ -11,11 +11,11 @@
   width: 100%;
   max-width: 100%;
   margin: 0 0 28px;
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    FLAGSHIP EDITORIAL HERO BANNER + 5-TILE TRANSPARENCY KPI STRIP (v259)
    ========================================================================== */
+
+
 .ap-hero {
   position: relative;
   overflow: hidden;
@@ -46,7 +46,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.26);
-  color: #ccfbf1;
+  color: var(--cso-hero-sub-ink);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -57,7 +57,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #4ade80;
+  background: var(--cso-accent);
   box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.28);
 }
 
@@ -73,7 +73,7 @@
   font-weight: 800;
   line-height: 1.18;
   letter-spacing: -0.015em;
-  color: #ffffff;
+  color: var(--cso-hero-ink);
 }
 
 .ap-hero-sub {
@@ -81,9 +81,9 @@
   font-size: clamp(0.92rem, 1.3vw, 1.02rem);
   line-height: 1.55;
   color: rgba(240, 253, 250, 0.92);
-}
+}/* 5-Tile Live Platform Transparency KPI Strip embedded in Hero */
 
-/* 5-Tile Live Platform Transparency KPI Strip embedded in Hero */
+
 .ap-hero-kpis {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -105,7 +105,7 @@
   font-weight: 800;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
-  color: #ffffff;
+  color: var(--cso-hero-ink);
 }
 
 .ap-hero-kpi-label {
@@ -129,26 +129,26 @@
   border: none;
   border-radius: 999px;
   background: transparent;
-  color: #ccfbf1;
+  color: var(--cso-accent-ink);
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
 }
 
 .ap-lang-btn.is-active {
-  background: #ffffff;
-  color: #0f3d3e;
+  background: var(--cso-surface);
+  color: var(--cso-link);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
-}
+}/* Preview Banner */
 
-/* Preview Banner */
+
 .ap-preview-banner {
   position: sticky;
   top: 60px;
   z-index: 40;
-  background: #7c2d12;
-  color: #fff7ed;
-  border: 2px solid #f59e0b;
+  background: var(--cso-warn-fg);
+  color: var(--cso-hero-ink);
+  border: 2px solid var(--cso-warn-border);
   border-radius: 12px;
   padding: 11px 16px;
   display: flex;
@@ -158,9 +158,9 @@
   gap: 10px;
   font-weight: 700;
   box-shadow: 0 8px 24px rgba(124, 45, 18, 0.26);
-}
+}/* Panels & Navigation */
 
-/* Panels & Navigation */
+
 .ap-panel {
   background: var(--cso-surface, #ffffff);
   color: var(--cso-text, #0f172a);
@@ -194,9 +194,9 @@
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-}
+}/* Pillar Filter Pills with Live Counts */
 
-/* Pillar Filter Pills with Live Counts */
+
 .ap-pill {
   display: inline-flex;
   align-items: center;
@@ -240,10 +240,10 @@
 
 .ap-pill.is-active .ap-pill-count {
   background: rgba(255, 255, 255, 0.24);
-  color: #ffffff;
-}
+  color: var(--cso-accent-ink);
+}/* Buttons */
 
-/* Buttons */
+
 .ap-btn {
   display: inline-flex;
   align-items: center;
@@ -279,9 +279,9 @@
   padding: 6px 12px;
   min-height: 30px;
   font-size: 0.79rem;
-}
+}/* Inputs & Inquiry Form */
 
-/* Inputs & Inquiry Form */
+
 .ap-field {
   display: grid;
   gap: 5px;
@@ -313,7 +313,7 @@
 .ap-select:focus,
 .ap-textarea:focus {
   outline: none;
-  border-color: #0f766e;
+  border-color: var(--cso-accent);
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.16);
 }
 
@@ -350,18 +350,18 @@
 }
 
 .ap-status-msg.is-ok {
-  background: rgba(5, 150, 105, 0.12);
+  background: var(--cso-highlight-bg);
   border: 1px solid rgba(5, 150, 105, 0.36);
-  color: #065f46;
+  color: var(--cso-link);
 }
 
 .ap-status-msg.is-err {
   background: rgba(220, 38, 38, 0.1);
   border: 1px solid rgba(220, 38, 38, 0.34);
-  color: #b91c1c;
-}
+  color: var(--cso-err-fg);
+}/* Institutional Charter Cards (2-Column) & Verified .gov.in Registry (3-Column Aligned) */
 
-/* Institutional Charter Cards (2-Column) & Verified .gov.in Registry (3-Column Aligned) */
+
 .ap-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -468,11 +468,11 @@
 }
 
 .ap-card-title a:hover {
-  color: #0f766e;
+  color: var(--cso-link);
   text-decoration: underline;
-}
+}/* Illustrated Empty State Card (v259) */
 
-/* Illustrated Empty State Card (v259) */
+
 .ap-empty-card {
   border: 1px solid var(--cso-border-subtle, #d8e1e9);
   border-radius: 16px;
@@ -499,9 +499,9 @@
 .ap-empty-svg {
   width: 40px;
   height: 40px;
-}
+}/* Article Reader Elements */
 
-/* Article Reader Elements */
+
 .ap-cover {
   width: 100%;
   max-height: 300px;
@@ -564,11 +564,11 @@
   color: var(--cso-muted, #64748b);
   border: 1px dashed var(--cso-border, #cbd5e1);
   border-radius: 12px;
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    4-THEME HARMONIZATION (Dark Night, Reading Mode, Odisha & Bharat)
    ========================================================================== */
+
+
 :root[data-cso-resolved-mode="dark"] .ap-badge,
 html[data-theme="dark"] .ap-badge {
   background: rgba(45, 212, 191, 0.16);
@@ -591,11 +591,11 @@ html[data-theme="dark"] .ap-badge.is-meta {
 :root[data-cso-resolved-mode="dark"] .ap-empty-art { color: #5eead4; border-color: rgba(94, 234, 212, 0.3); }
 :root[data-cso-resolved-mode="dark"] .ap-status-msg.is-ok { color: #86efac; }
 :root[data-cso-resolved-mode="dark"] .ap-status-msg.is-err { color: #fca5a5; }
-:root[data-cso-resolved-mode="dark"] .ap-card-title a:hover { color: #5eead4; }
-
-/* ==========================================================================
+:root[data-cso-resolved-mode="dark"] .ap-card-title a:hover { color: #5eead4; }/* ==========================================================================
    RESPONSIVE BREAKPOINTS
    ========================================================================== */
+
+
 @media (max-width: 1120px) {
   .ap-hero-kpis {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -624,11 +624,11 @@ html[data-theme="dark"] .ap-badge.is-meta {
   .ap-hero-kpis {
     grid-template-columns: 1fr;
   }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    CLEAN 3-SECTION ABOUT PAGE LAYOUT (v291 — 4-Theme WCAG AA+ High Contrast)
    ========================================================================== */
+
+
 .abt-hero--compact {
   padding: 1.25rem 1.5rem;
 }
@@ -651,9 +651,9 @@ html[data-theme="dark"] .ap-badge.is-meta {
   background: rgba(255, 255, 255, 0.16);
   color: var(--cso-hero-ink, #ffffff);
   margin-bottom: 6px;
-}
+}/* Section 1: Two Equal-Height Summary Cards */
 
-/* Section 1: Two Equal-Height Summary Cards */
+
 .abt-summary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -704,9 +704,9 @@ html[data-theme="dark"] .ap-badge.is-meta {
   font-size: 0.89rem;
   line-height: 1.5;
   color: var(--cso-ink-primary, #12202b);
-}
+}/* Section 2: Compact Horizontal 5-Card Portal Strip */
 
-/* Section 2: Compact Horizontal 5-Card Portal Strip */
+
 .abt-portals-section {
   background: var(--cso-card-bg, #ffffff);
   border: 1px solid var(--cso-border-subtle, #d8e1e9);
@@ -778,9 +778,9 @@ html[data-theme="dark"] .ap-badge.is-meta {
   font-weight: 800;
   font-size: 0.95rem;
   color: var(--cso-brand-primary, #115569);
-}
+}/* Section 3: Citizen Desk, Legal & Official Charters */
 
-/* Section 3: Citizen Desk, Legal & Official Charters */
+
 .abt-desk-card {
   width: 100%;
 }
@@ -872,9 +872,9 @@ html[data-theme="dark"] .ap-badge.is-meta {
   color: var(--cso-brand-primary, #115569);
   text-decoration: underline;
   text-underline-offset: 3px;
-}
+}/* Official Charter Modal (CSP-safe) */
 
-/* Official Charter Modal (CSP-safe) */
+
 .abt-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -942,11 +942,11 @@ html[data-theme="dark"] .ap-badge.is-meta {
   gap: 10px;
   padding-top: 10px;
   border-top: 1px solid var(--cso-border-subtle, #d8e1e9);
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    WCAG AA+ HIGH-CONTRAST OVERRIDES FOR DARK NIGHT, READING & ODISHA THEMES
    ========================================================================== */
+
+
 html[data-theme="dark"] .abt-card-kicker,
 :root[data-cso-resolved-mode="dark"] .abt-card-kicker,
 html[data-theme="dark"] .abt-portal-arrow,

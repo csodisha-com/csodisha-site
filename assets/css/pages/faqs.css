@@ -10,7 +10,7 @@
       color: var(--cso-muted, #64748b);
     }
     .faqs-breadcrumbs a {
-      color: #0fa968;
+      color: var(--cso-link);
       text-decoration: none;
     }
     .faqs-breadcrumbs a:hover {
@@ -39,7 +39,7 @@
       padding: 4px 10px;
       border-radius: 9999px;
       background: rgba(14, 165, 233, 0.1);
-      color: #0284c7;
+      color: var(--cso-link);
       border: 1px solid rgba(14, 165, 233, 0.2);
     }
     .faqs-version-badge {
@@ -49,7 +49,7 @@
       padding: 4px 8px;
       border-radius: 6px;
       background: rgba(15, 169, 104, 0.1);
-      color: #0fa968;
+      color: var(--cso-link);
       border: 1px solid rgba(15, 169, 104, 0.2);
     }
     .faqs-hero h1 {
@@ -87,9 +87,9 @@
       transition: all 0.15s ease;
     }
     .filter-btn.active, .filter-btn:hover {
-      background: #0fa968;
-      color: #ffffff;
-      border-color: #0fa968;
+      background: var(--cso-accent);
+      color: var(--cso-accent-ink);
+      border-color: var(--cso-accent);
     }
 
     .faq-card {
@@ -102,7 +102,7 @@
       transition: border-color 0.15s ease;
     }
     .faq-card:hover {
-      border-color: #0fa968;
+      border-color: var(--cso-accent);
     }
     .faq-card summary {
       padding: 20px 24px;
@@ -123,7 +123,7 @@
     .faq-card summary::after {
       content: '+';
       font-size: 1.3rem;
-      color: #0fa968;
+      color: var(--cso-link);
       font-weight: bold;
       transition: transform 0.2s ease;
     }
@@ -135,7 +135,7 @@
       color: var(--cso-muted, #475569);
       font-size: 0.95rem;
       line-height: 1.65;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--cso-border);
       padding-top: 14px;
     }
     .faq-cat-badge {
@@ -144,8 +144,8 @@
       text-transform: uppercase;
       padding: 2px 8px;
       border-radius: 4px;
-      background: #f1f5f9;
-      color: #64748b;
+      background: var(--cso-surface-subtle);
+      color: var(--cso-ink-muted);
       margin-right: 8px;
     }
 

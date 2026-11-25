@@ -114,8 +114,11 @@ const THEMES=['light','dark','system','reading','sepia'];
 const THEME_ICONS={light:'☀️',dark:'🌙',system:'💻',reading:'📖',sepia:'☕'};
 const dark=()=>{const t=document.documentElement.dataset.theme;return t==='dark'||((!t||t==='system')&&matchMedia('(prefers-color-scheme:dark)').matches)};
 const ZOOM_CLS=['cso-zoom-85','cso-zoom-90','cso-zoom-95','cso-zoom-100','cso-zoom-105','cso-zoom-110','cso-zoom-115','cso-zoom-120','cso-zoom-125','cso-zoom-130'];
+function csoDataThemeAttr(k){if(k==='utkal-bharat'||k==='odisha')return 'odisha';if(k==='dark'||k==='reading')return k;return 'system';}
 function apply(){
- const d=document.documentElement;d.dataset.theme=THEMES.includes(S.theme)?S.theme:'system';d.lang=S.lang;d.dataset.lang=S.lang||'en';
+ const d=document.documentElement;
+ const curT=(window.CSOTheme&&typeof window.CSOTheme.getTheme==='function')?window.CSOTheme.getTheme():(THEMES.includes(S.theme)?S.theme:'system');
+ d.dataset.theme=csoDataThemeAttr(curT);d.lang=S.lang;d.dataset.lang=S.lang||'en';
  if(document.body){ZOOM_CLS.forEach(c=>document.body.classList.remove(c));const p=Math.round((S.zoom||1)*20)*5;document.body.classList.add('cso-zoom-'+Math.max(85,Math.min(130,p)));document.body.classList.toggle('hc',!!S.hc);document.body.classList.toggle('ul',!!S.ul);document.body.classList.toggle('rm',!!S.rm);}
  try{if(window.CSOGlobal&&typeof window.CSOGlobal.syncA11yFromApp==='function')window.CSOGlobal.syncA11yFromApp();}catch(_){}
 }
@@ -157,9 +160,11 @@ function csoSyncThemeUi(key){
 if(!window.CSOTheme){
   let _curTheme=csoGetStoredTheme()||'system';
   const setTheme=(key,persist=true)=>{
-    const k=CSO_PORTAL_THEME_KEYS.includes(key)?key:'system';
+    const raw=key==='odisha'?'utkal-bharat':key;
+    const k=CSO_PORTAL_THEME_KEYS.includes(raw)?raw:'system';
     _curTheme=k;
     document.documentElement.setAttribute('data-cso-theme',k);
+    document.documentElement.setAttribute('data-theme',csoDataThemeAttr(k));
     document.documentElement.setAttribute('data-cso-resolved-mode',csoResolveMode(k));
     if(persist){try{localStorage.setItem('cso_portal_theme',k);}catch(_){}}
     csoSyncThemeUi(k);

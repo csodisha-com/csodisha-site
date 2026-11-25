@@ -272,7 +272,7 @@ body.pc-page {
 .pc-chip.is-active {
   background: var(--pc-accent);
   border-color: var(--pc-accent);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
 }
 
 .pc-select {
@@ -461,27 +461,27 @@ body.pc-page {
 }
 
 .pc-btn--primary {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 
 .pc-btn--primary:hover:not(:disabled) {
-  background: #1e40af;
-  border-color: #1e40af;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 
 .pc-btn--green {
-  background: #0f6b4a;
-  border-color: #0f6b4a;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-ok-border);
+  color: var(--cso-accent-ink);
 }
 
 .pc-btn--green:hover:not(:disabled) {
-  background: #0b4a43;
-  border-color: #0b4a43;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-ok-border);
+  color: var(--cso-accent-ink);
 }
 
 .pc-pagination {
@@ -490,9 +490,9 @@ body.pc-page {
   justify-content: center;
   gap: 10px;
   margin-top: 22px;
-}
+}/* Article / Detail View */
 
-/* Article / Detail View */
+
 .pc-article {
   padding: 28px;
   border-radius: 20px;
@@ -582,9 +582,9 @@ body.pc-page {
 .pc-prose a {
   color: var(--pc-accent);
   text-decoration: underline;
-}
+}/* Mock Test CBT Workspace */
 
-/* Mock Test CBT Workspace */
+
 .cbt-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
@@ -687,7 +687,7 @@ body.pc-page {
 }
 
 .cbt-option.is-selected {
-  border-color: #1d4ed8;
+  border-color: var(--cso-accent);
   background: rgba(29, 78, 216, 0.1);
 }
 
@@ -706,9 +706,9 @@ body.pc-page {
 }
 
 .cbt-option.is-selected .cbt-option__key {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 
 .cbt-controls {
@@ -745,15 +745,15 @@ body.pc-page {
 }
 
 .cbt-pal-btn.is-answered {
-  background: #0f6b4a;
-  border-color: #0f6b4a;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-ok-border);
+  color: var(--cso-accent-ink);
 }
 
 .cbt-pal-btn.is-flagged {
-  background: #d97706;
-  border-color: #d97706;
-  color: #ffffff;
+  background: var(--cso-warn-fg);
+  border-color: var(--cso-warn-border);
+  color: var(--cso-accent-ink);
 }
 
 .cbt-summary-grid {
@@ -787,9 +787,9 @@ body.pc-page {
   .cbt-workspace {
     grid-template-columns: 1fr;
   }
-}
+}/* Server-Verified CBT Scorecard, Answer Key Review, Leaderboard & Attempt History */
 
-/* Server-Verified CBT Scorecard, Answer Key Review, Leaderboard & Attempt History */
+
 .cbt-banner {
   padding: 14px 18px;
   border-radius: 12px;
@@ -872,15 +872,15 @@ body.pc-page {
 }
 
 .cbt-review-card--correct {
-  border-left: 4px solid #10b981;
+  border-left: 4px solid var(--cso-accent);
 }
 
 .cbt-review-card--wrong {
-  border-left: 4px solid #ef4444;
+  border-left: 4px solid var(--cso-err-border);
 }
 
 .cbt-review-card--unanswered {
-  border-left: 4px solid #f59e0b;
+  border-left: 4px solid var(--cso-warn-border);
 }
 
 .cbt-review-head {

@@ -87,17 +87,17 @@
   font-size: 0.78rem;
   font-weight: 700;
   background: rgba(29, 78, 216, 0.12);
-  color: #1d4ed8;
+  color: var(--cso-info-fg);
 }
 
 .cso-dossier-badge--stage {
   background: rgba(16, 185, 129, 0.14);
-  color: #065f46;
+  color: var(--cso-link);
 }
 
 .cso-dossier-badge--urgent {
   background: rgba(239, 68, 68, 0.14);
-  color: #991b1b;
+  color: var(--cso-err-fg);
 }
 
 .cso-dossier-title {
@@ -141,15 +141,15 @@
 }
 
 .cso-dossier-btn--primary {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 
 .cso-dossier-btn.is-tracked {
-  background: #0f766e;
-  border-color: #0f766e;
-  color: #ffffff;
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
 }
 
 .cso-dossier-charts-grid {
@@ -209,14 +209,14 @@
 }
 
 .cso-timeline-step.is-active {
-  border-color: #1d4ed8;
+  border-color: var(--cso-accent);
   background: rgba(29, 78, 216, 0.08);
 }
 
 .cso-timeline-step__num {
   font-size: 0.76rem;
   font-weight: 800;
-  color: #1d4ed8;
+  color: var(--cso-info-fg);
   text-transform: uppercase;
 }
 
@@ -263,7 +263,7 @@
 }
 
 .cso-dossier-tool-card:hover {
-  border-color: #1d4ed8;
+  border-color: var(--cso-accent);
 }
 
 .cso-dossier-prose {

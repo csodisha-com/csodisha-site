@@ -168,12 +168,12 @@ await check('3. About stays a single direct nav link (no dropdown) & Admin Studi
 });
 
 await check('4. ?v=20261125v291 cache busting, cso-candidate-cache-v291 & strict CSP compliance', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v291';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v291';"));
-  assert.ok(read('about/index.html').includes('/assets/js/about-portal.js?v=20261125v291'));
-  assert.ok(read('about/index.html').includes('/assets/css/about-portal.css?v=20261125v291'));
-  assert.ok(read('admin/index.html').includes('admin.js?v=20261125v290'));
-  assert.ok(read('admin/index.html').includes('about-publishing-studio.js?v=20261125v290'));
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v29[1-9]';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v29[1-9]';/);
+  assert.match(read('about/index.html'), /\/assets\/js\/about-portal\.js\?v=20261125v29[1-9]/);
+  assert.match(read('about/index.html'), /\/assets\/css\/about-portal\.css\?v=20261125v29[1-9]/);
+  assert.match(read('admin/index.html'), /admin\.js\?v=20261125v29[0-9]/);
+  assert.match(read('admin/index.html'), /about-publishing-studio\.js\?v=20261125v29[0-9]/);
 
   for (const rel of ['assets/js/about-portal.js', 'admin/about-publishing-studio.js']) {
     const codeOnly = read(rel).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');

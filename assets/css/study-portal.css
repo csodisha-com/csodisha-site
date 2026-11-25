@@ -10,11 +10,11 @@
   width: 100%;
   max-width: 100%;
   margin: 0 0 28px;
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    FLAGSHIP EDITORIAL HERO BANNER (v257)
    ========================================================================== */
+
+
 .sp-hero {
   position: relative;
   overflow: hidden;
@@ -45,7 +45,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.26);
-  color: #e0e7ff;
+  color: var(--cso-hero-sub-ink);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -56,7 +56,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #4ade80;
+  background: var(--cso-accent);
   box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.28);
 }
 
@@ -72,7 +72,7 @@
   font-weight: 800;
   line-height: 1.18;
   letter-spacing: -0.015em;
-  color: #ffffff;
+  color: var(--cso-hero-ink);
 }
 
 .sp-hero-sub {
@@ -103,7 +103,7 @@
   font-weight: 800;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
-  color: #ffffff;
+  color: var(--cso-hero-ink);
 }
 
 .sp-hero-kpi-label {
@@ -127,26 +127,26 @@
   border: none;
   border-radius: 999px;
   background: transparent;
-  color: #e0e7ff;
+  color: var(--cso-accent-ink);
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
 }
 
 .sp-lang-btn.is-active {
-  background: #ffffff;
-  color: #312e81;
+  background: var(--cso-surface);
+  color: var(--cso-link);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
-}
+}/* Preview Banner */
 
-/* Preview Banner */
+
 .sp-preview-banner {
   position: sticky;
   top: 60px;
   z-index: 40;
-  background: #7c2d12;
-  color: #fff7ed;
-  border: 2px solid #f59e0b;
+  background: var(--cso-warn-fg);
+  color: var(--cso-hero-ink);
+  border: 2px solid var(--cso-warn-border);
   border-radius: 12px;
   padding: 11px 16px;
   display: flex;
@@ -156,16 +156,16 @@
   gap: 10px;
   font-weight: 700;
   box-shadow: 0 8px 24px rgba(124, 45, 18, 0.28);
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    CANDIDATE SYLLABUS PROGRESS & STUDY STREAK STRIP (v257)
    ========================================================================== */
+
+
 .sp-progress-card {
   background: var(--cso-surface, #ffffff);
   color: var(--cso-text, #0f172a);
   border: 1px solid var(--cso-border, #e2e8f0);
-  border-left: 4px solid #4338ca;
+  border-left: 4px solid var(--cso-accent);
   border-radius: 16px;
   padding: clamp(16px, 2.2vw, 20px);
   display: grid;
@@ -214,11 +214,11 @@
   padding: 5px 11px;
   border-radius: 999px;
   background: rgba(67, 56, 202, 0.12);
-  color: #3730a3;
+  color: var(--cso-info-fg);
 }
 
-.sp-stat-chip.is-emerald { background: rgba(5, 150, 105, 0.14); color: #065f46; }
-.sp-stat-chip.is-amber { background: rgba(217, 119, 6, 0.15); color: #92400e; }
+.sp-stat-chip.is-emerald { background: var(--cso-highlight-bg); color: var(--cso-link); }
+.sp-stat-chip.is-amber { background: rgba(217, 119, 6, 0.15); color: var(--cso-warn-fg); }
 
 .sp-progress-bar {
   width: 100%;
@@ -258,14 +258,14 @@
 }
 
 .sp-continue-pill:hover {
-  border-color: #4338ca;
+  border-color: var(--cso-accent);
   transform: translateY(-1px);
   text-decoration: none;
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    ELEVATED EXAM TRACK CARDS & 5-COLUMN CURRICULUM FILTER BAR (v257)
    ========================================================================== */
+
+
 .sp-browser-box {
   background: var(--cso-surface, #ffffff);
   color: var(--cso-text, #0f172a);
@@ -345,7 +345,7 @@
 
 .sp-track-card.is-active .sp-track-count {
   background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
 }
 
 .sp-pill-strip {
@@ -417,18 +417,18 @@
 .sp-input:focus,
 .sp-textarea:focus {
   outline: none;
-  border-color: #4338ca;
+  border-color: var(--cso-accent);
   box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.16);
 }
 
 .sp-textarea {
   min-height: 80px;
   resize: vertical;
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    HIGH-CONTRAST 2-COLUMN STUDY MODULE CARDS (v257)
    ========================================================================== */
+
+
 .sp-results-bar {
   display: flex;
   flex-wrap: wrap;
@@ -467,7 +467,7 @@
 
 .sp-card:hover {
   transform: translateY(-2px);
-  border-color: #4338ca;
+  border-color: var(--cso-accent);
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.09);
 }
 
@@ -501,13 +501,13 @@
   font-size: 0.72rem;
   font-weight: 800;
   background: rgba(67, 56, 202, 0.12);
-  color: #3730a3;
+  color: var(--cso-info-fg);
 }
 
-.sp-badge.is-must { background: rgba(225, 29, 72, 0.14); color: #9f1239; }
-.sp-badge.is-high { background: rgba(217, 119, 6, 0.14); color: #92400e; }
-.sp-badge.is-done { background: rgba(5, 150, 105, 0.14); color: #065f46; }
-.sp-badge.is-rev { background: rgba(124, 58, 237, 0.14); color: #5b21b6; }
+.sp-badge.is-must { background: rgba(225, 29, 72, 0.14); color: var(--cso-err-fg); }
+.sp-badge.is-high { background: rgba(217, 119, 6, 0.14); color: var(--cso-warn-fg); }
+.sp-badge.is-done { background: var(--cso-highlight-bg); color: var(--cso-link); }
+.sp-badge.is-rev { background: rgba(124, 58, 237, 0.14); color: var(--cso-info-fg); }
 
 .sp-card-title {
   margin: 0;
@@ -523,7 +523,7 @@
 }
 
 .sp-card-title a:hover {
-  color: #4338ca;
+  color: var(--cso-link);
   text-decoration: underline;
 }
 
@@ -550,9 +550,9 @@
   gap: 8px;
   font-size: 0.78rem;
   color: var(--cso-muted, #64748b);
-}
+}/* Buttons */
 
-/* Buttons */
+
 .sp-btn {
   display: inline-flex;
   align-items: center;
@@ -586,24 +586,24 @@
 .sp-btn-emerald {
   background: var(--cso-brand-accent, #c45b20);
   border-color: var(--cso-brand-accent, #c45b20);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
 }
 
 .sp-btn-violet {
   background: var(--cso-brand-deep, #0b3948);
   border-color: var(--cso-brand-deep, #0b3948);
-  color: #ffffff;
+  color: var(--cso-accent-ink);
 }
 
 .sp-btn-sm {
   padding: 6px 12px;
   min-height: 30px;
   font-size: 0.78rem;
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    DESIGNED ILLUSTRATED EMPTY STATE & 3-LAYER CURRICULUM TRACKS GRID (v257)
    ========================================================================== */
+
+
 .sp-empty-card {
   background: var(--cso-card-bg, #ffffff);
   border: 1px solid var(--cso-border-subtle, #d8e1e9);
@@ -625,11 +625,11 @@
   justify-content: center;
   gap: 10px;
   margin-top: 6px;
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    MINIMAL STUDY LIBRARY EXPLORER (v285)
    ========================================================================== */
+
+
 .stl-hero--compact {
   padding: 1.2rem 1.5rem;
 }
@@ -828,14 +828,14 @@
 }
 
 .sp-curriculum-card:hover {
-  border-color: #4338ca;
+  border-color: var(--cso-accent);
   background: var(--cso-surface, #ffffff);
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(67, 56, 202, 0.1);
 }
 
 .sp-curriculum-card.is-active {
-  border-color: #4338ca;
+  border-color: var(--cso-accent);
   box-shadow: 0 0 0 2px rgba(67, 56, 202, 0.22);
 }
 
@@ -856,11 +856,11 @@
   font-size: 0.8rem;
   color: var(--cso-muted, #475569);
   line-height: 1.4;
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    FULL VISUAL STUDY READER VIEW
    ========================================================================== */
+
+
 .sp-reader {
   display: flex;
   flex-direction: column;
@@ -906,7 +906,7 @@
 }
 
 .sp-breadcrumb a {
-  color: #4338ca;
+  color: var(--cso-link);
   font-weight: 700;
   text-decoration: none;
 }
@@ -914,8 +914,8 @@
 .sp-edition-banner {
   padding: 10px 14px;
   border-radius: 10px;
-  background: rgba(5, 150, 105, 0.1);
-  border-left: 4px solid #059669;
+  background: var(--cso-highlight-bg);
+  border-left: 4px solid var(--cso-accent);
   font-size: 0.86rem;
   font-weight: 700;
   color: var(--cso-text, #064e3b);
@@ -933,9 +933,9 @@
   font-size: 1.08rem;
   color: var(--cso-muted, #475569);
   font-weight: 700;
-}
+}/* 6 Color-Coded At-a-Glance Curriculum Tiles */
 
-/* 6 Color-Coded At-a-Glance Curriculum Tiles */
+
 .sp-tiles-6 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -946,19 +946,19 @@
   padding: 12px 14px;
   border-radius: 12px;
   border: 1px solid var(--cso-border, #e2e8f0);
-  border-top: 4px solid #4338ca;
+  border-top: 4px solid var(--cso-accent);
   background: var(--cso-bg, #f8fafc);
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.sp-tile.t-emerald { border-top-color: #059669; }
-.sp-tile.t-cobalt { border-top-color: #2563eb; }
-.sp-tile.t-amber { border-top-color: #d97706; }
-.sp-tile.t-rose { border-top-color: #e11d48; }
-.sp-tile.t-violet { border-top-color: #7c3aed; }
-.sp-tile.t-teal { border-top-color: #0d9488; }
+.sp-tile.t-emerald { border-top-color: var(--cso-accent); }
+.sp-tile.t-cobalt { border-top-color: var(--cso-accent); }
+.sp-tile.t-amber { border-top-color: var(--cso-warn-border); }
+.sp-tile.t-rose { border-top-color: var(--cso-err-border); }
+.sp-tile.t-violet { border-top-color: var(--cso-accent); }
+.sp-tile.t-teal { border-top-color: var(--cso-accent); }
 
 .sp-tile-label {
   font-size: 0.72rem;
@@ -972,9 +972,9 @@
   font-size: 0.92rem;
   font-weight: 800;
   color: var(--cso-text, #0f172a);
-}
+}/* Language & Candidate Action Bars */
 
-/* Language & Candidate Action Bars */
+
 .sp-action-bar {
   display: flex;
   flex-wrap: wrap;
@@ -992,9 +992,9 @@
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-}
+}/* Sections */
 
-/* Sections */
+
 .sp-section {
   background: var(--cso-surface, #ffffff);
   border: 1px solid var(--cso-border, #e2e8f0);
@@ -1020,9 +1020,9 @@
   font-size: 1.06rem;
   font-weight: 800;
   color: var(--cso-text, #0f172a);
-}
+}/* Tables */
 
-/* Tables */
+
 .sp-table-wrap {
   overflow-x: auto;
 }
@@ -1047,9 +1047,9 @@
   letter-spacing: 0.04em;
   color: var(--cso-muted, #64748b);
   background: var(--cso-bg, #f8fafc);
-}
+}/* Interactive Flip-Card Revision Mode */
 
-/* Interactive Flip-Card Revision Mode */
+
 .sp-flashcard-stage {
   display: flex;
   flex-direction: column;
@@ -1063,7 +1063,7 @@
   min-height: 170px;
   padding: 24px 22px;
   border-radius: 16px;
-  border: 2px solid #4338ca;
+  border: 2px solid var(--cso-accent);
   background: linear-gradient(135deg, rgba(67, 56, 202, 0.08), rgba(5, 150, 105, 0.06));
   cursor: pointer;
   display: flex;
@@ -1075,7 +1075,7 @@
 }
 
 .sp-flashcard.is-flipped {
-  border-color: #059669;
+  border-color: var(--cso-accent);
   background: linear-gradient(135deg, rgba(5, 150, 105, 0.12), rgba(67, 56, 202, 0.05));
 }
 
@@ -1084,11 +1084,11 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #4338ca;
+  color: var(--cso-link);
 }
 
 .sp-flashcard.is-flipped .sp-flashcard-side {
-  color: #047857;
+  color: var(--cso-link);
 }
 
 .sp-flashcard-text {
@@ -1096,9 +1096,9 @@
   font-weight: 800;
   color: var(--cso-text, #0f172a);
   line-height: 1.45;
-}
+}/* Bilingual Lesson Content */
 
-/* Bilingual Lesson Content */
+
 .sp-body-dual {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1127,7 +1127,7 @@
   padding: 12px 14px;
   margin: 10px 0;
   border-radius: 10px;
-  border-left: 4px solid #4338ca;
+  border-left: 4px solid var(--cso-accent);
   background: rgba(67, 56, 202, 0.08);
   font-size: 0.9rem;
   line-height: 1.55;
@@ -1138,17 +1138,17 @@
   border-radius: 10px;
   margin: 10px 0;
   border: 1px solid var(--cso-border, #cbd5e1);
-}
+}/* Interactive Self-Check Quiz */
 
-/* Interactive Self-Check Quiz */
+
 .sp-quiz-timer {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
   border-radius: 999px;
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -1182,26 +1182,26 @@
 }
 
 .sp-quiz-opt.is-selected {
-  border-color: #4338ca;
+  border-color: var(--cso-accent);
   background: rgba(67, 56, 202, 0.12);
 }
 
 .sp-quiz-opt.is-correct {
-  border-color: #059669;
-  background: rgba(5, 150, 105, 0.16);
-  color: #064e3b;
+  border-color: var(--cso-accent);
+  background: var(--cso-highlight-bg);
+  color: var(--cso-link);
 }
 
 .sp-quiz-opt.is-wrong {
-  border-color: #dc2626;
+  border-color: var(--cso-err-border);
   background: rgba(220, 38, 38, 0.14);
-  color: #991b1b;
+  color: var(--cso-err-fg);
 }
 
 .sp-quiz-exp {
   padding: 9px 12px;
   border-radius: 8px;
-  background: rgba(5, 150, 105, 0.09);
+  background: var(--cso-highlight-bg);
   font-size: 0.84rem;
   line-height: 1.5;
 }
@@ -1209,17 +1209,17 @@
 .sp-scorecard {
   padding: 14px 16px;
   border-radius: 12px;
-  border: 2px solid #059669;
-  background: rgba(5, 150, 105, 0.08);
+  border: 2px solid var(--cso-accent);
+  background: var(--cso-highlight-bg);
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
   font-weight: 700;
-}
+}/* Inline PDF Viewer & Download Cards */
 
-/* Inline PDF Viewer & Download Cards */
+
 .sp-pdf-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1241,10 +1241,10 @@
   height: 540px;
   border: 1px solid var(--cso-border, #cbd5e1);
   border-radius: 12px;
-  background: #f8fafc;
-}
+  background: var(--cso-surface-subtle);
+}/* Prev / Next & Linked Jobs */
 
-/* Prev / Next & Linked Jobs */
+
 .sp-seq-nav {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -1264,7 +1264,7 @@
 }
 
 .sp-seq-link:hover {
-  border-color: #4338ca;
+  border-color: var(--cso-accent);
 }
 
 .sp-empty {
@@ -1273,11 +1273,11 @@
   color: var(--cso-muted, #64748b);
   border: 1px dashed var(--cso-border, #cbd5e1);
   border-radius: 14px;
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    4-THEME HARMONIZATION (Dark Night, Reading Mode, Odisha & Bharat)
    ========================================================================== */
+
+
 :root[data-cso-resolved-mode="dark"] .sp-stat-chip,
 html[data-theme="dark"] .sp-stat-chip {
   background: rgba(129, 140, 248, 0.2);
@@ -1307,11 +1307,11 @@ html[data-theme="dark"] .sp-stat-chip.is-amber {
 :root[data-cso-resolved-mode="dark"] .sp-flashcard-side { color: #a5b4fc; }
 :root[data-cso-resolved-mode="dark"] .sp-flashcard.is-flipped .sp-flashcard-side { color: #6ee7b7; }
 :root[data-cso-resolved-mode="dark"] .sp-quiz-opt.is-correct { color: #86efac; }
-:root[data-cso-resolved-mode="dark"] .sp-quiz-opt.is-wrong { color: #fca5a5; }
-
-/* ==========================================================================
+:root[data-cso-resolved-mode="dark"] .sp-quiz-opt.is-wrong { color: #fca5a5; }/* ==========================================================================
    RESPONSIVE BREAKPOINTS (1280px Desktop -> Tablet -> Mobile)
    ========================================================================== */
+
+
 @media (max-width: 1120px) {
   .sp-track-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1358,11 +1358,11 @@ html[data-theme="dark"] .sp-stat-chip.is-amber {
   .sp-pdf-frame {
     height: 380px;
   }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    CLEAN A4 REVISION SHEET PRINT STYLES (@media print)
    ========================================================================== */
+
+
 @media print {
   header,
   nav,

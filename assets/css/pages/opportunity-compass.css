@@ -6,16 +6,16 @@
 .compass-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:24px}
 .compass-field{display:flex;flex-direction:column;gap:7px}
 .compass-field label{font-weight:700}
-.compass-field select{width:100%;padding:12px;border:1px solid #a8b8c4;border-radius:9px;background:#fff;color:#172b3a;font:inherit}
+.compass-field select{width:100%;padding:12px;border:1px solid var(--cso-border);border-radius:9px;background:var(--cso-surface);color:var(--cso-link);font:inherit}
 .compass-actions{grid-column:1/-1}
-.compass-submit{background:#0f7a4f;color:white;border:0;border-radius:9px;padding:12px 22px;font:inherit;font-weight:700;cursor:pointer}
+.compass-submit{background:var(--cso-accent);color:white;border:0;border-radius:9px;padding:12px 22px;font:inherit;font-weight:700;cursor:pointer}
 .compass-results{margin-top:24px}
 .compass-result{display:block;margin-top:12px;padding:16px;border:1px solid var(--cso-border,#dce5eb);border-radius:12px;background:var(--cso-surface,#fff);color:var(--cso-text,#172b3a);text-decoration:none}
 .compass-result strong{display:block;margin-bottom:5px}
 .compass-note{font-size:13px;color:var(--cso-muted,#526579)}
-@media(max-width:600px){.compass-form{grid-template-columns:1fr}.compass-panel{padding:16px}.compass-panel h1{font-size:23px}}
+@media(max-width:600px){.compass-form{grid-template-columns:1fr}.compass-panel{padding:16px}.compass-panel h1{font-size:23px}}/* CSO-IN Compass results layout v1 */
 
-/* CSO-IN Compass results layout v1 */
+
 .compass-pathway-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -24,15 +24,15 @@
 }
 .compass-pathway-card {
   padding: 17px;
-  border: 1px solid #dce8df;
+  border: 1px solid var(--cso-border);
   border-radius: 14px;
-  background: #f8fcf9;
+  background: var(--cso-surface);
   box-shadow: 0 3px 12px rgba(0,0,0,.035);
 }
 .compass-pathway-number {
   display: inline-block;
   margin-bottom: 9px;
-  color: #167347;
+  color: var(--cso-link);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: .08em;
@@ -44,8 +44,8 @@
 .compass-note {
   margin-top: 16px;
   padding: 12px 14px;
-  border-left: 3px solid #b98726;
-  background: #fffaf0;
+  border-left: 3px solid var(--cso-warn-border);
+  background: var(--cso-surface);
   border-radius: 5px;
   font-size: 13px;
   line-height: 1.6;
@@ -54,10 +54,10 @@
   .compass-pathway-grid {
     grid-template-columns: 1fr;
   }
-}
+}/* CSO-IN Compass next steps styling v1 */
 
 
-/* CSO-IN Compass next steps styling v1 */
+
 .compass-next-steps {
   margin: 12px 0 20px;
   padding-left: 25px;
@@ -66,10 +66,10 @@
 .compass-next-steps li {
   margin-bottom: 8px;
   padding-left: 4px;
-}
+}/* CSO-IN Compass dark card contrast fix v2 */
 
 
-/* CSO-IN Compass dark card contrast fix v2 */
+
 html[data-theme="dark"] .compass-pathway-card {
   background: #243247 !important;
   border: 1px solid #475569 !important;

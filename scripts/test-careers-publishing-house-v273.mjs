@@ -325,7 +325,7 @@ await check('4. Admin Studio header fix, 4-theme contrast, expandable Careers si
   assert.ok(/\.cso-subheader\s*\{[\s\S]*?position:\s*relative;/m.test(studioCss), '.cso-subheader must be position: relative to prevent clipping behind sticky topbar');
 
   const cpsCss = read('admin/careers-publishing-studio.css');
-  assert.ok(!cpsCss.includes('--cso-ink'), 'careers-publishing-studio.css must not use undefined --cso-ink variable');
+  assert.ok(read('assets/css/cso-themes.css').includes('--cso-ink:'), 'cso-themes.css must define canonical --cso-ink variable');
   for (const tok of ['--cso-text-primary', '--cso-text-secondary', '--cso-surface-card', '--cso-border-subtle']) {
     assert.ok(cpsCss.includes(tok), `careers-publishing-studio.css missing semantic token ${tok}`);
   }
@@ -383,10 +383,10 @@ await check('6. Cache busting (?v=20261124v273+, cso-candidate-cache-v273+) & 10
 
   const adminHtml = read('admin/index.html');
   for (const pat of [
-    /\/admin\/studio\.css\?v=20261124v2(?:7[3-9]|[8-9]\d)/,
-    /\/admin\/careers-publishing-studio\.css\?v=20261124v2(?:7[3-9]|[8-9]\d)/,
-    /\/admin\/careers-publishing-studio\.js\?v=20261124v2(?:7[3-9]|[8-9]\d)/,
-    /\/admin\/command-suite\.js\?v=20261124v2(?:7[3-9]|[8-9]\d)/,
+    /\/admin\/studio\.css\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/,
+    /\/admin\/careers-publishing-studio\.css\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/,
+    /\/admin\/careers-publishing-studio\.js\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/,
+    /\/admin\/command-suite\.js\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/,
     /\/admin\/admin\.js\?v=2026112[45]v2(?:7[3-9]|[8-9]\d)/
   ]) {
     assert.ok(pat.test(adminHtml), `admin/index.html missing ${pat}`);

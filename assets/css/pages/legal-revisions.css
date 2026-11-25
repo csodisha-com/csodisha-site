@@ -10,7 +10,7 @@
       color: var(--cso-muted, #64748b);
     }
     .revisions-breadcrumbs a {
-      color: #0fa968;
+      color: var(--cso-link);
       text-decoration: none;
     }
     .revisions-breadcrumbs a:hover {
@@ -39,7 +39,7 @@
       padding: 4px 10px;
       border-radius: 9999px;
       background: rgba(225, 29, 72, 0.1);
-      color: #e11d48;
+      color: var(--cso-err-fg);
       border: 1px solid rgba(225, 29, 72, 0.2);
     }
     .revisions-version-badge {
@@ -49,7 +49,7 @@
       padding: 4px 8px;
       border-radius: 6px;
       background: rgba(15, 169, 104, 0.1);
-      color: #0fa968;
+      color: var(--cso-link);
       border: 1px solid rgba(15, 169, 104, 0.2);
     }
     .revisions-hero h1 {
@@ -81,7 +81,7 @@
       bottom: 12px;
       left: 10px;
       width: 2px;
-      background: #e2e8f0;
+      background: var(--cso-surface-subtle);
     }
 
     .timeline-item {
@@ -101,8 +101,8 @@
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: #e11d48;
-      border: 2px solid #ffffff;
+      background: var(--cso-err-fg);
+      border: 2px solid var(--cso-border);
       box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.3);
     }
 
@@ -132,7 +132,7 @@
       padding: 2px 8px;
       border-radius: 4px;
       background: rgba(14, 165, 233, 0.1);
-      color: #0284c7;
+      color: var(--cso-link);
       border: 1px solid rgba(14, 165, 233, 0.2);
     }
     .timeline-date {
@@ -154,11 +154,11 @@
       gap: 12px;
       font-size: 0.8rem;
       padding-top: 10px;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--cso-border);
       color: var(--cso-muted, #64748b);
     }
     .timeline-route-link {
-      color: #0fa968;
+      color: var(--cso-link);
       text-decoration: none;
       font-weight: 600;
     }
