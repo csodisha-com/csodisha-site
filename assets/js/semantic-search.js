@@ -55,15 +55,50 @@
     var btn = el('button', 'cso-ask-btn', 'Ask CSOdisha');
     btn.type = 'submit';
 
+    var clearBtn = el('button', 'cso-ask-clear-btn', '✕ Clear');
+    clearBtn.type = 'button';
+    clearBtn.hidden = true;
+    clearBtn.setAttribute('aria-label', 'Clear search and close results');
+
     var resultsBox = el('div', 'cso-ask-results');
     resultsBox.hidden = true;
     resultsBox.setAttribute('aria-live', 'polite');
 
-    form.append(lbl, input, sel, btn);
+    form.append(lbl, input, sel, btn, clearBtn);
     bar.append(form, resultsBox);
 
     if (main.firstChild) main.insertBefore(bar, main.firstChild);
     else main.appendChild(bar);
+
+    var activeController = null;
+
+    function syncClearVisibility() {
+      clearBtn.hidden = !input.value.trim() && resultsBox.hidden;
+    }
+
+    function resetSearch() {
+      if (activeController) {
+        activeController.abort();
+        activeController = null;
+      }
+      input.value = '';
+      sel.value = 'all';
+      resultsBox.replaceChildren();
+      resultsBox.hidden = true;
+      btn.disabled = false;
+      btn.textContent = 'Ask CSOdisha';
+      syncClearVisibility();
+      input.focus();
+    }
+
+    clearBtn.addEventListener('click', resetSearch);
+    input.addEventListener('input', syncClearVisibility);
+    bar.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        resetSearch();
+      }
+    });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -71,13 +106,19 @@
       if (q.length < 2) {
         resultsBox.hidden = false;
         resultsBox.replaceChildren(el('p', 'cso-ask-item-summary', 'Enter at least 2 characters in English or ଓଡ଼ିଆ.'));
+        syncClearVisibility();
         input.focus();
         return;
       }
+      if (activeController) activeController.abort();
+      var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      activeController = controller;
       btn.disabled = true;
       btn.textContent = 'Searching…';
+      syncClearVisibility();
       fetch('/api/search/semantic?q=' + encodeURIComponent(q) + '&type=' + encodeURIComponent(sel.value), {
-        credentials: 'same-origin'
+        credentials: 'same-origin',
+        signal: controller ? controller.signal : undefined
       })
         .then(function (r) {
           return r.json().catch(function () { return {}; }).then(function (d) {
@@ -90,7 +131,14 @@
           resultsBox.replaceChildren();
           var meta = el('div', 'cso-ask-meta');
           meta.appendChild(el('span', '', (data.results || []).length + ' matching article(s) for "' + q + '"'));
-          meta.appendChild(el('span', 'cso-ask-mode-badge', data.mode === 'semantic' ? 'Semantic AI Match' : 'Instant Keyword Match'));
+          var metaRight = el('div', 'cso-ask-meta-right');
+          metaRight.appendChild(el('span', 'cso-ask-mode-badge', data.mode === 'semantic' ? 'Semantic AI Match' : 'Instant Keyword Match'));
+          var panelResetBtn = el('button', 'cso-ask-clear-btn cso-ask-panel-reset-btn', '✕ Close / Reset');
+          panelResetBtn.type = 'button';
+          panelResetBtn.setAttribute('aria-label', 'Close and reset Ask CSOdisha results');
+          panelResetBtn.addEventListener('click', resetSearch);
+          metaRight.appendChild(panelResetBtn);
+          meta.appendChild(metaRight);
           resultsBox.appendChild(meta);
 
           if (data.ai_answer && data.ai_answer.answer_en) {
@@ -144,12 +192,15 @@
           });
         })
         .catch(function (err) {
+          if (err && err.name === 'AbortError') return;
           resultsBox.hidden = false;
           resultsBox.replaceChildren(el('p', 'cso-ask-item-summary', err.message || 'Search failed.'));
         })
         .finally(function () {
+          if (activeController === controller) activeController = null;
           btn.disabled = false;
           btn.textContent = 'Ask CSOdisha';
+          syncClearVisibility();
         });
     });
   }
