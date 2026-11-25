@@ -272,7 +272,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
   await ensureSemanticSchema(env);
   const cleanQ = String(q || '').trim();
   const normalizedQ = cleanQ.toLowerCase().replace(/\s+/g, ' ');
-  const cacheKey = await sha256Hex(`v321|${type}|${normalizedQ}`);
+  const cacheKey = await sha256Hex(`v324|${type}|${normalizedQ}`);
   const dbg = debugOut || {};
   dbg.provider_attempted = dbg.provider_attempted || [];
   dbg.gemini_status = (env && env.GEMINI_API_KEY && String(env.GEMINI_API_KEY).trim()) ? 'configured' : 'unconfigured';
@@ -358,6 +358,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.25,
+            maxOutputTokens: 900,
             responseMimeType: 'application/json'
           }
         })
@@ -394,11 +395,11 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
       { role: 'user', content: prompt }
     ];
     try {
-      rawResp = await env.AI.run(ANSWER_PRIMARY_MODEL, { messages, max_tokens: 450, temperature: 0.25 });
+      rawResp = await env.AI.run(ANSWER_PRIMARY_MODEL, { messages, max_tokens: 900, temperature: 0.25 });
     } catch (primaryErr) {
       modelUsed = ANSWER_FALLBACK_MODEL;
       try {
-        rawResp = await env.AI.run(ANSWER_FALLBACK_MODEL, { messages, max_tokens: 450, temperature: 0.25 });
+        rawResp = await env.AI.run(ANSWER_FALLBACK_MODEL, { messages, max_tokens: 900, temperature: 0.25 });
       } catch (fbErr) {
         dbg.error = (fbErr && fbErr.message) || (primaryErr && primaryErr.message) || 'Workers AI failed';
         return null;
@@ -408,11 +409,22 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
 
   let parsed = null;
   let rawText = '';
-  const inner = (rawResp && typeof rawResp === 'object' && rawResp.response !== undefined)
-    ? rawResp.response
-    : (rawResp && typeof rawResp === 'object' && rawResp.result && rawResp.result.response !== undefined)
-      ? rawResp.result.response
-      : rawResp;
+  const openAiContent = (rawResp &&
+    typeof rawResp === 'object' &&
+    Array.isArray(rawResp.choices) &&
+    rawResp.choices[0] &&
+    rawResp.choices[0].message &&
+    rawResp.choices[0].message.content !== undefined)
+    ? rawResp.choices[0].message.content
+    : undefined;
+
+  const inner = openAiContent !== undefined && openAiContent !== null
+    ? openAiContent
+    : (rawResp && typeof rawResp === 'object' && rawResp.response !== undefined)
+      ? rawResp.response
+      : (rawResp && typeof rawResp === 'object' && rawResp.result && rawResp.result.response !== undefined)
+        ? rawResp.result.response
+        : rawResp;
 
   if (inner && typeof inner === 'object') {
     parsed = inner;

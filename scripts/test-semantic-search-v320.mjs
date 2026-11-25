@@ -209,8 +209,8 @@ await test('4. Wrangler Vectorize binding, migration 0151, CSP compliance & v320
   const mig = read('migrations/0151_semantic_search_v320.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS semantic_index_items'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v323');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v323';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v324');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v324';"));
   assert.ok(read('migrations/0152_ask_ai_answer_cache_v321.sql').includes('CREATE TABLE IF NOT EXISTS semantic_answer_cache'));
 
   const js = read('assets/js/semantic-search.js');
@@ -281,6 +281,29 @@ await test('5. v321 Hybrid RAG grounded answer, general-query fallback & 7-day D
   }, { q: 'OSSSC PEO exam pattern', type: 'all', clientIp: '198.51.100.4' });
   assert.equal(rPlain.ai_answer.answer_en, 'Plain text fallback answer without JSON braces.');
   assert.ok(rPlain.ai_answer.answer_or.length > 0);
+
+  // 5e. v324: OpenAI-compatible choices[0].message.content envelope unwrapping
+  const rOpenAi = await runSemanticSearch({
+    DB: createMockDb(),
+    AI: {
+      async run() {
+        return {
+          id: 'chatcmpl_123',
+          choices: [{
+            message: {
+              role: 'assistant',
+              content: JSON.stringify({
+                answer_en: 'Unwrapped OpenAI envelope answer.',
+                answer_or: 'ଓପନ୍ଏଆଇ ଏନଭେଲପ୍ ଉତ୍ତର।'
+              })
+            }
+          }]
+        };
+      }
+    }
+  }, { q: 'OPSC OAS age limit', type: 'all', clientIp: '198.51.100.6' });
+  assert.equal(rOpenAi.ai_answer.answer_en, 'Unwrapped OpenAI envelope answer.');
+  assert.equal(rOpenAi.ai_answer.answer_or, 'ଓପନ୍ଏଆଇ ଏନଭେଲପ୍ ଉତ୍ତର।');
 
   const origFetch = globalThis.fetch;
   globalThis.fetch = async (url, init) => {
