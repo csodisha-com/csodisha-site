@@ -3,7 +3,6 @@
 
 :root {/* Hub-local aliases bound to the global 4-theme engine (assets/style.css) */
   
-  --cso-ink: var(--cso-text);
   --cso-primary-soft: var(--cso-highlight-bg, rgba(27, 67, 50, 0.1));
   --cso-ring-track: var(--cso-border);
   --cso-emerald: #059669;
@@ -164,21 +163,33 @@ body.cso-student-dashboard-page {
   padding: 0.45rem 0.75rem;
   border-radius: 10px;
   text-decoration: none;
-  color: var(--cso-muted);
+  background: transparent;
+  color: var(--cso-ink);
+  opacity: 1;
   font-size: 13px;
   font-weight: 600;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.bp-nav-item:hover {
+.bp-nav-item:hover,
+.bp-nav-item:focus-visible {
   background: var(--cso-surface-alt);
   color: var(--cso-ink);
+  opacity: 1;
 }
 
 .bp-nav-item.active {
-  background: var(--cso-highlight-bg, var(--cso-primary-soft));
-  color: var(--cso-highlight-fg, var(--cso-primary));
-  border-radius: 999px;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  font-weight: 600;
+  border-radius: 10px;
+  opacity: 1;
+}
+
+.bp-nav-item.active span,
+.bp-nav-item.active svg {
+  color: var(--cso-accent-ink);
+  opacity: 1;
 }
 
 .bp-kbd {
@@ -2165,17 +2176,37 @@ body.cso-student-dashboard-page {
   text-rendering: optimizeLegibility;
 }
 :root[data-cso-resolved-mode="dark"] body.cso-student-dashboard-page,
-:root[data-cso-theme="dark"] body.cso-student-dashboard-page {
+:root[data-cso-theme="dark"] body.cso-student-dashboard-page,
+:root[data-theme="dark"] body.cso-student-dashboard-page,
+:root[data-theme="dark-night"] body.cso-student-dashboard-page {
   --cso-text: #F8FAFC;
   --cso-ink: #F8FAFC;
   --cso-muted: #CBD5E1;
   --cso-text-muted: #CBD5E1;
 }
-:root[data-cso-theme="reading"] body.cso-student-dashboard-page {
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] body.cso-student-dashboard-page,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) body.cso-student-dashboard-page {
+    --cso-text: #F8FAFC;
+    --cso-ink: #F8FAFC;
+    --cso-muted: #CBD5E1;
+    --cso-text-muted: #CBD5E1;
+  }
+}
+:root[data-cso-theme="reading"] body.cso-student-dashboard-page,
+:root[data-theme="reading"] body.cso-student-dashboard-page {
   --cso-text: #241C14;
   --cso-ink: #241C14;
   --cso-muted: #4A3B2C;
   --cso-text-muted: #4A3B2C;
+}
+:root[data-cso-theme="utkal-bharat"] body.cso-student-dashboard-page,
+:root[data-cso-theme="odisha"] body.cso-student-dashboard-page,
+:root[data-theme="odisha"] body.cso-student-dashboard-page {
+  --cso-text: #1f140c;
+  --cso-ink: #1f140c;
+  --cso-muted: #4a3423;
+  --cso-text-muted: #4a3423;
 }/* Headings: 17-22px, 700 */
 
 
@@ -2281,8 +2312,8 @@ body.cso-student-dashboard-page {
   text-transform: uppercase;
   color: var(--cso-muted);
 }
-.bp-nav-item { color: var(--cso-muted); }
-.bp-nav-item:hover { color: var(--cso-text); }
+.bp-nav-item { color: var(--cso-ink); opacity: 1; }
+.bp-nav-item:hover { color: var(--cso-ink); }
 .bp-search-trigger { color: var(--cso-muted); }
 .cso-metric-pill { color: var(--cso-muted); }
 .cso-mobile-label,
@@ -2958,4 +2989,90 @@ body.cso-student-dashboard-page {
   background: var(--cso-danger-soft, rgba(220, 38, 38, 0.12));
   color: var(--cso-danger, #dc2626);
   border: 1px solid rgba(220, 38, 38, 0.35);
+}
+
+/* ==========================================================================
+   v303: Candidate Hub Sidebar Nav Container, 4-Theme Item Contrast & Mobile Drawer
+   ========================================================================== */
+
+#bp-sidebar-nav,
+.bp-sidebar #bp-sidebar-nav,
+.bp-sidebar nav {
+  background: var(--cso-surface) !important;
+  background-color: var(--cso-surface) !important;
+  background-image: none !important;
+  color: var(--cso-ink) !important;
+  border: 1px solid var(--cso-border) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  padding: 6px !important;
+  box-sizing: border-box;
+}
+
+#bp-sidebar-nav .bp-nav-btn,
+#bp-sidebar-nav .bp-nav-item {
+  background: transparent !important;
+  color: var(--cso-ink) !important;
+  opacity: 1 !important;
+}
+
+#bp-sidebar-nav .bp-nav-btn span,
+#bp-sidebar-nav .bp-nav-btn svg,
+#bp-sidebar-nav .bp-nav-item span,
+#bp-sidebar-nav .bp-nav-item svg {
+  color: inherit !important;
+  opacity: 1 !important;
+}
+
+#bp-sidebar-nav .bp-nav-btn:not(.is-active):hover,
+#bp-sidebar-nav .bp-nav-btn:not(.is-active):focus-visible,
+#bp-sidebar-nav .bp-nav-item:not(.active):hover,
+#bp-sidebar-nav .bp-nav-item:not(.active):focus-visible {
+  background: var(--cso-surface-alt) !important;
+  color: var(--cso-ink) !important;
+  opacity: 1 !important;
+}
+
+#bp-sidebar-nav .bp-nav-btn.is-active,
+#bp-sidebar-nav .bp-nav-item.active {
+  background: var(--cso-accent) !important;
+  color: var(--cso-accent-ink) !important;
+  border-color: var(--cso-accent) !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+#bp-sidebar-nav .bp-nav-btn.is-active span,
+#bp-sidebar-nav .bp-nav-btn.is-active svg,
+#bp-sidebar-nav .bp-nav-item.active span,
+#bp-sidebar-nav .bp-nav-item.active svg {
+  color: var(--cso-accent-ink) !important;
+  opacity: 1 !important;
+}
+
+@media (max-width: 1099px) {
+  .bp-sidebar,
+  .bp-sidebar.mobile-open {
+    background: var(--cso-surface-elevated) !important;
+    color: var(--cso-ink) !important;
+    border-right: 1px solid var(--cso-border) !important;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .bp-sidebar.mobile-open {
+    z-index: 900 !important;
+  }
+
+  .bp-sidebar #bp-sidebar-nav,
+  .bp-sidebar.mobile-open #bp-sidebar-nav {
+    background: var(--cso-surface-elevated) !important;
+    background-image: none !important;
+    color: var(--cso-ink) !important;
+    border: 1px solid var(--cso-border) !important;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }

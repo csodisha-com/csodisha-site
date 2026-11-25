@@ -74,6 +74,7 @@
     const key = valid.includes(themeKey) ? themeKey : 'system';
     const root = document.documentElement;
     root.setAttribute('data-cso-theme', key);
+    root.setAttribute('data-theme', key === 'utkal-bharat' ? 'odisha' : key);
     if (key === 'dark') {
       root.setAttribute('data-cso-resolved-mode', 'dark');
     } else if (key === 'system') {
@@ -227,7 +228,12 @@
         b.type = 'button';
         b.appendChild(el('span', '', m.icon || '📌'));
         b.appendChild(el('span', 'bp-nav-text', pick(m, 'title')));
-        b.addEventListener('click', () => { state.activeModuleKey = m.module_key; renderNavigation(); renderWorkspace(); });
+        b.addEventListener('click', () => {
+          state.activeModuleKey = m.module_key;
+          document.getElementById('bp-sidebar')?.classList.remove('mobile-open');
+          renderNavigation();
+          renderWorkspace();
+        });
         li.appendChild(b);
         list.appendChild(li);
       });
@@ -244,7 +250,12 @@
           const b = el('button', 'cso-hub-tab-btn' + (state.activeModuleKey === m.module_key ? ' is-active' : ''));
           b.type = 'button';
           b.appendChild(el('span', '', (m.icon || '') + ' ' + pick(m, 'title')));
-          b.addEventListener('click', () => { state.activeModuleKey = m.module_key; renderNavigation(); renderWorkspace(); });
+          b.addEventListener('click', () => {
+          state.activeModuleKey = m.module_key;
+          document.getElementById('bp-sidebar')?.classList.remove('mobile-open');
+          renderNavigation();
+          renderWorkspace();
+        });
           topTabs.appendChild(b);
         });
       }

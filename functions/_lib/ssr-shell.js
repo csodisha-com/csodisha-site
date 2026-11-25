@@ -3,7 +3,7 @@
 import { hydrateJobsFeedResponse, renderSchemeCard } from './ssr-feeds.js';
 
 export const CSO_SHELL_HEAD_LINKS = [
-  '<link rel="stylesheet" href="/assets/style.css?v=20261125v302">',
+  '<link rel="stylesheet" href="/assets/style.css?v=20261125v303">',
   '<link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261125v302">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css?v=20261125v300">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-detail-page.css?v=20261125v300">',

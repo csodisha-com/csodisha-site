@@ -375,5 +375,65 @@ check('7. v299 Institutional top-bar auth & admin button hierarchy & >= 4.5:1 WC
   assert.ok(contrastRatio('#fdba74', '#2b2728') >= 4.5, 'Logout hover contrast < 4.5:1');
 });
 
+check('8. v303 Candidate Hub sidebar nav container, items & mobile drawer bind to semantic 4-theme tokens (>= 12:1 AAA ink, zero dark-teal nav leak)', () => {
+  const styleCss = read('assets/style.css');
+  // Bare `nav { background: linear-gradient(...) }` must never leak a dark teal fill onto #bp-sidebar-nav
+  assert.ok(
+    !/^nav\s*\{[^}]*linear-gradient/m.test(styleCss.replace(/\/\*[\s\S]*?\*\//g, '')),
+    'assets/style.css must NOT apply bare nav { background: linear-gradient(...) } (leaks dark teal onto #bp-sidebar-nav)'
+  );
+
+  for (const rel of [
+    'assets/css/candidate-hub-v244.css',
+    'assets/css/student-dashboard-bp.css',
+    'assets/style.css',
+    'assets/css/cso-themes.css'
+  ]) {
+    const css = read(rel);
+    assert.ok(
+      css.includes('#bp-sidebar-nav') &&
+      /background:\s*var\(--cso-surface\)/.test(css) &&
+      /border:\s*1px solid var\(--cso-border\)/.test(css) &&
+      /background:\s*transparent/.test(css) &&
+      /color:\s*var\(--cso-ink\)/.test(css) &&
+      /background:\s*var\(--cso-surface-alt\)/.test(css) &&
+      /background:\s*var\(--cso-accent\)/.test(css) &&
+      /color:\s*var\(--cso-accent-ink\)/.test(css) &&
+      /font-weight:\s*600/.test(css),
+      `${rel} missing v303 Candidate Hub sidebar semantic container/item/hover/active bindings`
+    );
+    assert.ok(
+      css.includes('.bp-sidebar.mobile-open') &&
+      /background:\s*var\(--cso-surface-elevated\)/.test(css) &&
+      /opacity:\s*1/.test(css) &&
+      /backdrop-filter:\s*none/.test(css),
+      `${rel} missing v303 Candidate Hub < 1100px mobile drawer elevated opaque surface rules`
+    );
+  }
+
+  // Verify no circular `--cso-ink: var(--cso-text);` in student-dashboard-bp.css
+  assert.ok(!read('assets/css/student-dashboard-bp.css').includes('--cso-ink: var(--cso-text);'), 'student-dashboard-bp.css must not declare circular --cso-ink: var(--cso-text)');
+
+  // Verify >= 12:1 AAA contrast on --cso-surface / --cso-surface-elevated / --cso-surface-alt and >= 4.5:1 active pill across all 4 themes
+  const HUB_THEMES = {
+    system:  { surface: '#ffffff', elevated: '#ffffff', alt: '#f1f5f9', ink: '#0f172a', accent: '#0f766e', accentInk: '#ffffff' },
+    dark:    { surface: '#121824', elevated: '#161e2e', alt: '#1a2335', ink: '#f1f5f9', accent: '#14b8a6', accentInk: '#04201d' },
+    reading: { surface: '#faf5eb', elevated: '#fdf9f1', alt: '#ede3d2', ink: '#241b12', accent: '#854d0e', accentInk: '#ffffff' },
+    odisha:  { surface: '#ffffff', elevated: '#fffdf9', alt: '#f7ece0', ink: '#1f140c', accent: '#c2410c', accentInk: '#ffffff' }
+  };
+  for (const [name, t] of Object.entries(HUB_THEMES)) {
+    assert.ok(contrastRatio(t.ink, t.surface) >= 12.0, `${name} Candidate Hub sidebar ink on --cso-surface < 12:1`);
+    assert.ok(contrastRatio(t.ink, t.elevated) >= 12.0, `${name} Candidate Hub mobile drawer ink on --cso-surface-elevated < 12:1`);
+    assert.ok(contrastRatio(t.ink, t.alt) >= 12.0, `${name} Candidate Hub sidebar hover ink on --cso-surface-alt < 12:1`);
+    assert.ok(contrastRatio(t.accentInk, t.accent) >= 4.5, `${name} Candidate Hub active nav pill contrast < 4.5:1`);
+  }
+
+  // Verify student-dashboard/index.html loads v303 assets
+  const hubHtml = read('student-dashboard/index.html');
+  assert.match(hubHtml, /student-dashboard-bp\.css\?v=20261125v303/);
+  assert.match(hubHtml, /candidate-hub-v244\.css\?v=20261125v303/);
+  assert.match(hubHtml, /student-dashboard\.js\?v=20261125v303/);
+});
+
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);
