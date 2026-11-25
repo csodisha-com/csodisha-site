@@ -1,55 +1,23 @@
 /**
- * Admin Login Email OTP Endpoints (v315)
+ * Admin Login Email OTP Endpoints (v317)
  *   POST /api/auth/admin-email-otp/verify
  *   POST /api/auth/admin-email-otp/resend
+ *
+ * Once the 6-digit Email OTP is verified, TOTP 2FA is skipped and the
+ * admin session is issued immediately.
  */
 
 import {
   jsonResponse,
   createSession,
-  buildSessionCookie,
-  createSessionToken,
-  constantTimeEqual
+  SESSION_COOKIE_NAME,
+  SESSION_TTL_SECONDS
 } from './_utils.js';
 import { verifyAdminEmailOtp, resendAdminEmailOtp } from '../../_lib/admin-email-otp.js';
-import { hasAccountTotpEnabled, verifyAccountTotpOrRecovery } from '../admin/totp.js';
 import { registerAdminSession, recordAdminAuditLog } from '../admin/system-ops.js';
 
-function decodeJwtPayload(token) {
-  try {
-    const parts = String(token || '').split('.');
-    if (parts.length !== 3) return null;
-    const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const pad = b64.length % 4 === 0 ? '' : '='.repeat(4 - (b64.length % 4));
-    return JSON.parse(atob(b64 + pad));
-  } catch (_e) {
-    return null;
-  }
-}
-
-async function verifyTotpBridgeToken(token, secret) {
-  const parts = String(token || '').split('.');
-  if (parts.length !== 3) return null;
-  const dataToSign = `${parts[0]}.${parts[1]}`;
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    'raw',
-    enc.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(dataToSign));
-  const expectedSig = btoa(String.fromCharCode(...new Uint8Array(sig)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-  if (!constantTimeEqual(parts[2], expectedSig)) return null;
-  const payload = decodeJwtPayload(token);
-  if (!payload || !payload.admin_id || !payload.exp || payload.exp < Math.floor(Date.now() / 1000)) {
-    return null;
-  }
-  return payload;
+function buildStrictAdminSessionCookie(token) {
+  return `${SESSION_COOKIE_NAME}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSION_TTL_SECONDS}`;
 }
 
 export async function handleAdminEmailOtpVerify({ request, env, ctx = null }) {
@@ -57,106 +25,42 @@ export async function handleAdminEmailOtpVerify({ request, env, ctx = null }) {
     const body = await request.json().catch(() => ({}));
     const challengeId = String(body.challenge_id || '').trim();
     const otp = String(body.otp || '').trim();
-    const totpToken = String(body.totp_token || '').trim();
-    const submittedTotp = String(body.totp_code || body.twofa_code || '').trim().slice(0, 24);
-    const bridgeSecret = (env && (env.SESSION_SECRET || env.AUTH_SECRET)) || 'cso_email_otp_totp_bridge_2026';
 
-    let adminId = null;
-    let adminEmail = '';
-
-    if (totpToken) {
-      const bridgePayload = await verifyTotpBridgeToken(totpToken, bridgeSecret);
-      if (!bridgePayload) {
-        return jsonResponse({ ok: false, success: false, error: '2FA session expired. Please sign in again.' }, 401);
-      }
-      adminId = bridgePayload.admin_id;
-      adminEmail = bridgePayload.email || '';
-    } else {
-      const res = await verifyAdminEmailOtp(env, challengeId, otp);
-      if (!res.ok) {
-        await recordAdminAuditLog(
-          env,
-          request,
-          { userId: 'unknown', email: '', role: 'admin' },
-          'admin.email_otp.failed',
-          'admin_email_otps',
-          { challenge_id: challengeId, locked: Boolean(res.locked) },
-          ctx
-        ).catch(() => {});
-        return jsonResponse({
-          ok: false,
-          success: false,
-          error: res.error,
-          locked: Boolean(res.locked)
-        }, 401);
-      }
-      adminId = res.admin_id;
-      adminEmail = res.email;
+    const res = await verifyAdminEmailOtp(env, challengeId, otp);
+    if (!res.ok) {
       await recordAdminAuditLog(
         env,
         request,
-        { userId: adminId, email: adminEmail, role: 'admin' },
-        'admin.email_otp.verified',
+        { userId: 'unknown', email: '', role: 'admin' },
+        'admin.email_otp.failed',
         'admin_email_otps',
-        { challenge_id: challengeId },
+        { challenge_id: challengeId, locked: Boolean(res.locked) },
         ctx
       ).catch(() => {});
+      return jsonResponse({
+        ok: false,
+        success: false,
+        error: res.error,
+        locked: Boolean(res.locked)
+      }, 401);
     }
 
     const user = await env.DB.prepare(
       'SELECT id, email, role FROM users WHERE id = ? LIMIT 1'
-    ).bind(adminId).first();
+    ).bind(res.admin_id).first();
     if (!user || (user.role !== 'admin' && user.role !== 'editor')) {
       return jsonResponse({ ok: false, success: false, error: 'Staff account not found.' }, 403);
     }
 
-    const totpEnabled = await hasAccountTotpEnabled(env, user.id);
-    if (totpEnabled) {
-      const nextBridge = totpToken || await createSessionToken({
-        admin_id: user.id,
-        email: user.email,
-        challenge_id: challengeId,
-        exp: Math.floor(Date.now() / 1000) + 300
-      }, bridgeSecret);
-
-      if (!submittedTotp) {
-        return jsonResponse({
-          ok: true,
-          success: false,
-          requires_totp: true,
-          totp_token: nextBridge
-        }, 200);
-      }
-
-      const totpRes = await verifyAccountTotpOrRecovery(env, user.id, submittedTotp);
-      if (!totpRes.ok) {
-        await recordAdminAuditLog(
-          env,
-          request,
-          { userId: user.id, email: user.email, role: user.role },
-          'admin.2fa.failed',
-          'admin_totp_credentials',
-          { email: user.email },
-          ctx
-        ).catch(() => {});
-        return jsonResponse({
-          ok: false,
-          success: false,
-          requires_totp: true,
-          totp_token: nextBridge,
-          error: 'Invalid or expired Authenticator / recovery code.'
-        }, 401);
-      }
-      await recordAdminAuditLog(
-        env,
-        request,
-        { userId: user.id, email: user.email, role: user.role },
-        'admin.2fa.verified',
-        'admin_totp_credentials',
-        { email: user.email, method: totpRes.method },
-        ctx
-      ).catch(() => {});
-    }
+    await recordAdminAuditLog(
+      env,
+      request,
+      { userId: user.id, email: user.email, role: user.role },
+      'admin.email_otp.verified',
+      'admin_email_otps',
+      { challenge_id: challengeId, totp_skipped: true },
+      ctx
+    ).catch(() => {});
 
     await env.DB.prepare(
       'UPDATE users SET failed_attempts = 0, lockout_until = 0 WHERE id = ?'
@@ -167,7 +71,7 @@ export async function handleAdminEmailOtpVerify({ request, env, ctx = null }) {
       email: user.email,
       role: user.role
     });
-    const sessionCookie = buildSessionCookie(sessionToken);
+    const sessionCookie = buildStrictAdminSessionCookie(sessionToken);
 
     registerAdminSession(env, request, {
       token: sessionToken,
@@ -182,7 +86,7 @@ export async function handleAdminEmailOtpVerify({ request, env, ctx = null }) {
       { userId: user.id, email: user.email, role: user.role },
       'admin.login',
       'admin_sessions',
-      { role: user.role, email_otp: true },
+      { role: user.role, email_otp: true, totp_skipped: true },
       ctx
     );
 

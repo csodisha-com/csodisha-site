@@ -385,9 +385,9 @@
 
     var head = el('div', 'so-card-head');
     var left = el('div');
-    left.appendChild(el('h2', 'so-title', 'Admin Login Email OTP Verification (v315)'));
+    left.appendChild(el('h2', 'so-title', 'Admin Login Email OTP Verification (v317)'));
     left.appendChild(el('p', 'so-sub', st.provider_configured
-      ? ('Requires a 6-digit single-use email code (' + String(st.provider || 'provider').toUpperCase() + ') after password verification on /admin/login.html.')
+      ? ('Requires a 6-digit single-use email code (' + String(st.provider || 'provider').toUpperCase() + ') after password verification on /admin/login.html. Verifying the Email OTP completes 2FA directly (skipping the TOTP prompt).')
       : 'Email OTP: Provider Key Required — bind RESEND_API_KEY or BREVO_API_KEY in Cloudflare secrets to enforce Email OTP without locking out staff.'));
     head.appendChild(left);
 

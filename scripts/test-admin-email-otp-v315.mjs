@@ -38,7 +38,7 @@ function createMockDb(seedUsers = [], seedFlags = []) {
       return { first: users.find((u) => u.id === params[0]) || null };
     }
     if (/^SELECT enabled FROM admin_totp_credentials/i.test(s)) {
-      return { first: null };
+      return { first: { enabled: 1 } };
     }
     if (/^UPDATE admin_email_otps SET consumed = 1 WHERE admin_id = \? AND consumed = 0/i.test(s)) {
       otps.forEach((o) => {
@@ -80,7 +80,7 @@ function createMockDb(seedUsers = [], seedFlags = []) {
       return { run: { success: true } };
     }
     if (/^INSERT INTO admin_audit_logs/i.test(s)) {
-      auditLogs.push({ action: params[4] || 'audit' });
+      auditLogs.push({ action: params[4] || 'audit', detail: params.map((p) => String(p || '')).join(' ') });
       return { run: { success: true } };
     }
     return { first: null, run: { success: true } };
@@ -234,9 +234,13 @@ await test('3. Login gate & /verify endpoint issue HttpOnly cso_session only aft
     assert.equal(verifyRes.status, 200);
     const verifyBody = await verifyRes.json();
     assert.equal(verifyBody.ok, true);
+    assert.equal(verifyBody.requires_totp, undefined);
     assert.equal(verifyBody.redirect, '/admin/#command-overview');
-    assert.ok((verifyRes.headers.get('Set-Cookie') || '').includes('cso_session='));
+    const cookieHdr = verifyRes.headers.get('Set-Cookie') || '';
+    assert.ok(cookieHdr.includes('cso_session='));
+    assert.ok(cookieHdr.includes('SameSite=Strict'));
     assert.equal(db.sessions.length, 1);
+    assert.ok(db.auditLogs.some((l) => String(l.detail || '').includes('"totp_skipped":true')));
 
     // Resend endpoint returns 400 on consumed challenge
     const resendUsed = await handleAdminEmailOtpResend({

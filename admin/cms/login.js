@@ -375,14 +375,9 @@
 
     if (pendingEmailOtp && pendingEmailOtp.challenge_id) {
       var otpVal = emailOtpInput ? emailOtpInput.value.trim() : '';
-      var totpVal = twofa ? twofa.value.trim() : '';
-      if (!pendingTotpToken && !/^\d{6}$/.test(otpVal)) {
+      if (!/^\d{6}$/.test(otpVal)) {
         if (emailOtpInput) emailOtpInput.setAttribute('aria-invalid', 'true');
         return show('Enter the 6-digit code sent to your email.', 'error');
-      }
-      if (pendingTotpToken && !totpVal) {
-        if (twofa) twofa.setAttribute('aria-invalid', 'true');
-        return show('Enter your 6-digit Authenticator code or backup recovery code.', 'error');
       }
       go.disabled = true;
       go.textContent = 'Verifying…';
@@ -393,37 +388,15 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             challenge_id: pendingEmailOtp.challenge_id,
-            otp: otpVal,
-            totp_token: pendingTotpToken || undefined,
-            totp_code: totpVal || undefined
+            otp: otpVal
           })
         });
         var vd = await vr.json().catch(function () { return {}; });
-        if (!vr.ok) {
+        if (!vr.ok || !vd.ok) {
           if (vd.locked) resetToPasswordStep();
           go.disabled = false;
-          go.textContent = pendingTotpToken ? 'Verify 2FA & Sign in' : 'Verify Email Code';
+          go.textContent = 'Verify Email Code';
           return show(vd.error || 'Verification failed.', 'error');
-        }
-        if (vd.requires_totp && vd.totp_token) {
-          clearEmailOtpTimers();
-          pendingTotpToken = vd.totp_token;
-          if (emailOtpStep) emailOtpStep.hidden = true;
-          if (twofaBlock) {
-            twofaBlock.hidden = false;
-            twofaBlock.classList.add('is-required');
-          }
-          if (twofaChallengeNote) {
-            twofaChallengeNote.textContent = 'Email verified. Enter the 6-digit code from your Authenticator app or one of your backup recovery codes.';
-            twofaChallengeNote.hidden = false;
-          }
-          if (twofa) {
-            twofa.required = true;
-            twofa.focus();
-          }
-          go.disabled = false;
-          go.textContent = 'Verify 2FA & Sign in';
-          return;
         }
         clearEmailOtpTimers();
         var vs = await fetch('/api/admin/session', { credentials: 'same-origin' });
@@ -440,11 +413,11 @@
           sessionStorage.removeItem('returnTo');
           sessionStorage.removeItem('cso_admin_redirect');
         } catch (_e) {}
-        location.replace((next || '/admin/') + '#command-overview');
+        location.replace(vd.redirect || ((next || '/admin/') + '#command-overview'));
         return;
       } catch (err) {
         go.disabled = false;
-        go.textContent = pendingTotpToken ? 'Verify 2FA & Sign in' : 'Verify Email Code';
+        go.textContent = 'Verify Email Code';
         return show(err.message || 'Verification failed.', 'error');
       }
     }
