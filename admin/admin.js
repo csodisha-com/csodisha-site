@@ -55,12 +55,10 @@
   ];
 
   var DEFAULT_STUDY_TRACKS = [
-    { id: 'stl_l1_odisha_state', slug: 'odisha-state-exams', icon: '🏛️', title_en: 'Odisha State Exams', published_modules: 0, total_modules: 0 },
     { id: 'stl_l1_central_exams', slug: 'central-competitive-exams', icon: '🇮🇳', title_en: 'Central Competitive Exams', published_modules: 0, total_modules: 0 },
+    { id: 'stl_l1_odisha_state', slug: 'odisha-state-exams', icon: '🏛️', title_en: 'Odisha State Exams', published_modules: 0, total_modules: 0 },
     { id: 'stl_l1_teaching_educator', slug: 'teaching-educator-exams', icon: '🎓', title_en: 'Teaching & Educator Exams', published_modules: 0, total_modules: 0 },
-    { id: 'stl_l1_school_board', slug: 'school-board-notes', icon: '📘', title_en: 'School & Board Notes (CHSE / BSE)', published_modules: 0, total_modules: 0 },
-    { id: 'stl_l1_skill_coding', slug: 'skill-coding-digital', icon: '💻', title_en: 'Skill, Coding & Digital Literacy', published_modules: 0, total_modules: 0 },
-    { id: 'stl_l1_pyq_mocks', slug: 'previous-papers-mock-tests', icon: '📜', title_en: 'Previous Papers & Mock Tests', published_modules: 0, total_modules: 0 }
+    { id: 'stl_l1_school_board', slug: 'school-board-notes', icon: '📘', title_en: 'School & Board Exams', published_modules: 0, total_modules: 0 }
   ];
 
   var DEFAULT_CAREERS_TRACKS = [
@@ -497,7 +495,7 @@
           modList.id = 'studyLibrarySidebarSubnav';
           [
             { tab: 'articles', num: '01', title: 'Published & Draft Resources', tag: 'D1' },
-            { tab: 'taxonomy', num: '02', title: '6-Track & 3-Layer Hierarchy', tag: 'L1-L3' },
+            { tab: 'taxonomy', num: '02', title: '4-Track & 3-Layer Hierarchy', tag: 'L1-L3' },
             { tab: 'snippets', num: '03', title: 'Reusable Bilingual Snippets', tag: 'EN/OR' },
             { tab: 'doubts', num: '04', title: 'Reader Doubts & PYQ Queue', tag: 'Q&A' },
             { tab: 'new', num: '05', title: '+ Publish Study Resource', tag: 'NEW' }
@@ -997,7 +995,7 @@
     if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Study Library';
     if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Study Library Publishing House';
     if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Study Library & Curriculum Studio';
-    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '6-Track D1 · R2';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = '4-Track D1 · R2';
     renderNavigationTree();
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);

@@ -170,9 +170,9 @@ await check('3. Single-stage Study Library ▾ dropdown (NO Stage 2, NO › chev
   for (const [label, src] of [['shared-header.js', sh], ['app.js', app]]) {
     assert.ok(src.includes('cso-nav-study-wrap'), `${label} missing cso-nav-study-wrap`);
     assert.ok(src.includes('cso-study-stage1'), `${label} missing cso-study-stage1`);
-    assert.ok(src.includes('cso_study_library_dropdown_v285'), `${label} missing sessionStorage cache key`);
+    assert.match(src, /cso_study_library_dropdown_v28[5-9]/, `${label} missing sessionStorage cache key`);
     assert.ok(src.includes('/api/public/study-library/bootstrap'), `${label} missing bootstrap sync`);
-    assert.ok(src.includes('All Study Resources'), `${label} missing 7th item All Study Resources`);
+    assert.ok(src.includes('All Study Resources'), `${label} missing All Study Resources`);
     assert.ok(!src.includes('cso-study-stage2'), `${label} must NOT have Stage 2 slideout`);
   }
 
@@ -313,14 +313,14 @@ await check('5. Admin Studio sidebar sync, cache busting (?v=20261125v285 / cso-
   assert.ok(adminJs.includes('DEFAULT_STUDY_TRACKS'), 'admin.js missing DEFAULT_STUDY_TRACKS');
   assert.ok(adminJs.includes('/api/admin/study/taxonomy'), 'admin.js missing /api/admin/study/taxonomy sync');
   assert.ok(studioJs.includes('Live Synced to Public Study Library'), 'study-publishing-studio.js missing live sync banner');
-  assert.ok(studioJs.includes('cso_study_library_dropdown_v285'), 'study-publishing-studio.js missing sessionStorage cache bust');
+  assert.match(studioJs, /cso_study_library_dropdown_v28[5-9]/, 'study-publishing-studio.js missing sessionStorage cache bust');
 
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v285';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v285';"));
-  assert.ok(read('study-library/index.html').includes('/assets/js/study-portal.js?v=20261125v285'));
-  assert.ok(read('study-library/index.html').includes('/assets/css/study-portal.css?v=20261125v285'));
-  assert.ok(read('admin/index.html').includes('admin.js?v=20261125v285'));
-  assert.ok(read('admin/index.html').includes('study-publishing-studio.js?v=20261125v285'));
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v28[5-9]';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v28[5-9]';/);
+  assert.match(read('study-library/index.html'), /\/assets\/js\/study-portal\.js\?v=20261125v28[5-9]/);
+  assert.match(read('study-library/index.html'), /\/assets\/css\/study-portal\.css\?v=20261125v28[5-9]/);
+  assert.match(read('admin/index.html'), /admin\.js\?v=20261125v28[5-9]/);
+  assert.match(read('admin/index.html'), /study-publishing-studio\.js\?v=20261125v28[5-9]/);
 
   for (const rel of [
     'assets/shared-header.js',

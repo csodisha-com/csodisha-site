@@ -624,14 +624,13 @@ function nav(){
   });
   ni.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&ni.classList.contains('cso-open')){ev.preventDefault();setOpen(false);trigA.focus();}});
  };
- const STUDY_DROPDOWN_CACHE_KEY='cso_study_library_dropdown_v285';
+ const STUDY_DROPDOWN_CACHE_KEY='cso_study_library_dropdown_v286';
+ const STUDY_RETIRED_SLUGS=new Set(['skill-coding-digital','previous-papers-mock-tests']);
  const STUDY_DEFAULT_TRACKS=[
-  {id:'stl_l1_odisha_state',slug:'odisha-state-exams',icon:'🏛️',title_en:'Odisha State Exams',title_or:'ଓଡ଼ିଶା ରାଜ୍ୟ ପରୀକ୍ଷା'},
   {id:'stl_l1_central_exams',slug:'central-competitive-exams',icon:'🇮🇳',title_en:'Central Competitive Exams',title_or:'କେନ୍ଦ୍ରୀୟ ପ୍ରତିଯୋଗିତାମୂଳକ ପରୀକ୍ଷା'},
+  {id:'stl_l1_odisha_state',slug:'odisha-state-exams',icon:'🏛️',title_en:'Odisha State Exams',title_or:'ଓଡ଼ିଶା ରାଜ୍ୟ ପରୀକ୍ଷା'},
   {id:'stl_l1_teaching_educator',slug:'teaching-educator-exams',icon:'🎓',title_en:'Teaching & Educator Exams',title_or:'ଶିକ୍ଷକ ଓ ଶିକ୍ଷାଦାନ ପରୀକ୍ଷା'},
-  {id:'stl_l1_school_board',slug:'school-board-notes',icon:'📘',title_en:'School & Board Notes (CHSE / BSE)',title_or:'ବିଦ୍ୟାଳୟ ଓ ବୋର୍ଡ ନୋଟ୍ସ (CHSE / BSE)'},
-  {id:'stl_l1_skill_coding',slug:'skill-coding-digital',icon:'💻',title_en:'Skill, Coding & Digital Literacy',title_or:'କୌଶଳ, କୋଡିଂ ଓ ଡିଜିଟାଲ୍ ଜ୍ଞାନ'},
-  {id:'stl_l1_pyq_mocks',slug:'previous-papers-mock-tests',icon:'📜',title_en:'Previous Papers & Mock Tests',title_or:'ବିଗତ ବର୍ଷର ପ୍ରଶ୍ନପତ୍ର ଓ ମକ୍ ଟେଷ୍ଟ'}
+  {id:'stl_l1_school_board',slug:'school-board-notes',icon:'📘',title_en:'School & Board Exams',title_or:'ବିଦ୍ୟାଳୟ ଓ ବୋର୍ଡ ପରୀକ୍ଷା'}
  ];
  let studyTracksData=null,studyTracksFetched=false;
  const getStudyTracks=()=>{
@@ -670,9 +669,12 @@ function nav(){
    .then(r=>r.ok?r.json():null)
    .then(d=>{
     if(d&&Array.isArray(d.nav_tracks)&&d.nav_tracks.length){
-     studyTracksData=d.nav_tracks.map(t=>({id:t.id,slug:t.slug,icon:t.icon||'📚',title_en:t.title_en,title_or:t.title_or||t.title_en}));
-     try{sessionStorage.setItem(STUDY_DROPDOWN_CACHE_KEY,JSON.stringify({ts:Date.now(),tracks:studyTracksData}));}catch(_e){}
-     document.querySelectorAll('#cso-study-stage1 .cso-js1-list').forEach(el=>renderStudyS1(el));
+     const filtered=d.nav_tracks.filter(t=>t&&!STUDY_RETIRED_SLUGS.has(String(t.slug||'').toLowerCase())).map(t=>({id:t.id,slug:t.slug,icon:t.icon||'📚',title_en:t.slug==='school-board-notes'?'School & Board Exams':t.title_en,title_or:t.slug==='school-board-notes'?'ବିଦ୍ୟାଳୟ ଓ ବୋର୍ଡ ପରୀକ୍ଷା':(t.title_or||t.title_en)}));
+     if(filtered.length){
+      studyTracksData=filtered;
+      try{sessionStorage.setItem(STUDY_DROPDOWN_CACHE_KEY,JSON.stringify({ts:Date.now(),tracks:studyTracksData}));}catch(_e){}
+      document.querySelectorAll('#cso-study-stage1 .cso-js1-list').forEach(el=>renderStudyS1(el));
+     }
     }
    }).catch(()=>{});
  };

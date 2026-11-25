@@ -573,7 +573,9 @@
     var box = el('section', 'sp-browser-box stl-filter-card');
     box.setAttribute('aria-label', 'Study Library Filters');
 
-    var l1Nodes = S.nodes.filter(function (n) { return Number(n.level) === 1; });
+    var l1Nodes = S.nodes.filter(function (n) {
+      return Number(n.level) === 1 && n.slug !== 'skill-coding-digital' && n.slug !== 'previous-papers-mock-tests';
+    });
     renderTrackPillStrip(box, l1Nodes);
 
     var row = el('div', 'stl-filter-row');

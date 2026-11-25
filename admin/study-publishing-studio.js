@@ -25,10 +25,13 @@
   var NEGATIVE_RULES = ['None', '-0.25 (OSSC/OSSSC)', '-0.33 (OPSC/UPSC)', '-0.50'];
   var MEDIUMS = ['Bilingual', 'English', 'Odia', 'Bilingual (EN + OR)', 'Odia (ଓଡ଼ିଆ)'];
   var ACCENTS = ['indigo', 'emerald', 'cobalt', 'violet', 'amber', 'rose', 'teal'];
-  var PUBLIC_STUDY_DROPDOWN_CACHE_KEY = 'cso_study_library_dropdown_v285';
+  var PUBLIC_STUDY_DROPDOWN_CACHE_KEY = 'cso_study_library_dropdown_v286';
 
   function bustPublicStudyDropdownCache() {
-    try { window.sessionStorage.removeItem(PUBLIC_STUDY_DROPDOWN_CACHE_KEY); } catch (_e) {}
+    try {
+      window.sessionStorage.removeItem(PUBLIC_STUDY_DROPDOWN_CACHE_KEY);
+      window.sessionStorage.removeItem('cso_study_library_dropdown_v285');
+    } catch (_e) {}
   }
 
   var S = {
@@ -265,7 +268,7 @@
     var selL1 = el('select', 'stps-select');
     selL1.setAttribute('aria-label', 'Filter by Exam Track (Level 1)');
     selL1.appendChild(new Option('All Exam Tracks (L1)', ''));
-    nodesByLevel(1).forEach(function (n) { selL1.appendChild(new Option(n.title_en, n.id)); });
+    nodesByLevel(1).filter(function (n) { return Number(n.is_published) !== 0; }).forEach(function (n) { selL1.appendChild(new Option(n.title_en, n.id)); });
     selL1.value = S.filters.l1;
     selL1.addEventListener('change', function () {
       S.filters.l1 = selL1.value;
