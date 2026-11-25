@@ -584,6 +584,50 @@
         card.appendChild(expOr);
       }
 
+      const aiWrap = el('div', 'cbt-ai-explain-wrap');
+      const aiBtn = el('button', 'pc-btn pc-btn--sm cbt-ai-explain-btn', '✨ Explain Answer');
+      aiBtn.type = 'button';
+      const aiOut = el('div', 'cbt-ai-explain-out');
+      aiBtn.addEventListener('click', async () => {
+        aiBtn.disabled = true;
+        const orig = aiBtn.textContent;
+        aiBtn.textContent = 'Explaining…';
+        try {
+          const optLetters = { A: 0, B: 1, C: 2, D: 3 };
+          const selIdx = item.selectedOption && optLetters[item.selectedOption] !== undefined ? optLetters[item.selectedOption] : -1;
+          const res = await fetch('/api/candidate/ai-assistant', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              mode: 'mcq_explain',
+              question_id: q.id || item.questionId,
+              selected_index: selIdx
+            })
+          });
+          const d = await res.json().catch(() => ({}));
+          if (!res.ok || !d.ok) throw new Error(d.error || 'Sign in as a Candidate to use Free AI Explain Answer.');
+          aiOut.replaceChildren();
+          const box = el('div', 'cbt-ai-explain-box');
+          const meta = el('div', 'cbt-ai-explain-meta');
+          const u = d.usage || { remaining: 6, daily_limit: 6 };
+          meta.appendChild(el('span', 'pc-badge pc-badge--green', u.remaining + '/' + u.daily_limit + ' Free AI Checks Left Today'));
+          if (d.cached) meta.appendChild(el('span', 'pc-badge', 'Cached Instant Answer (0 Quota Used)'));
+          box.appendChild(meta);
+          if (d.data && d.data.concept_en) box.appendChild(el('p', 'cbt-ai-explain-p', d.data.concept_en));
+          if (d.data && d.data.concept_or) box.appendChild(el('p', 'cbt-ai-explain-p', d.data.concept_or));
+          if (d.data && d.data.shortcut_tip_en) box.appendChild(el('p', 'cbt-ai-explain-tip', 'Tip: ' + d.data.shortcut_tip_en));
+          aiOut.appendChild(box);
+        } catch (err) {
+          aiOut.replaceChildren(el('p', 'cbt-ai-explain-err', err.message || 'Unable to explain answer right now.'));
+        } finally {
+          aiBtn.disabled = false;
+          aiBtn.textContent = orig;
+        }
+      });
+      aiWrap.append(aiBtn, aiOut);
+      card.appendChild(aiWrap);
+
       cbtBreakdownEl.appendChild(card);
     });
   }

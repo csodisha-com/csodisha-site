@@ -508,3 +508,48 @@ body.cso-student-dashboard-page,
   overflow-x: clip;
   min-width: 0;
 }
+
+.cso-ai-result-slot {
+  width: 100%;
+}
+.cso-ai-result-card {
+  margin: 8px 0 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-text);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cso-ai-result-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.cso-ai-status-badge,
+.cso-ai-quota-pill,
+.cso-ai-cache-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--cso-badge-bg, var(--cso-highlight-bg));
+  color: var(--cso-badge-fg, var(--cso-highlight-fg));
+  border: 1px solid var(--cso-border);
+}
+.cso-ai-summary,
+.cso-ai-summary-or {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--cso-text);
+}
+.cso-ai-checklist {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--cso-text);
+}

@@ -122,6 +122,7 @@ import { handlePublicInboundWebhookApi } from './functions/_lib/integrations-web
 import { handlePublicSiteConfigBatch4Api } from './functions/_lib/settings-configuration-batch4.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
+import { handleCandidateAiAssistant } from './functions/api/candidate/ai-assistant.js';
 import {
   handleCandidateHubConfigApi,
   handleCandidateMatchesApi,
@@ -1421,6 +1422,14 @@ export default {
       if (request.method === 'OPTIONS') return handleChecklistOptions();
       if (request.method === 'GET') return handleChecklistGet({ request, env, ctx });
       if (request.method === 'POST') return handleChecklistPost({ request, env, ctx });
+    }
+
+    // 9a. /api/candidate/ai-assistant (v319 Free-Tier Candidate Study & Eligibility AI)
+    if (pathname === '/api/candidate/ai-assistant') {
+      if (request.method === 'GET' || request.method === 'POST') {
+        return handleCandidateAiAssistant({ request, env });
+      }
+      return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, POST' } });
     }
 
     // 9b. v244 Candidate Hub Governance & Live Workspace APIs

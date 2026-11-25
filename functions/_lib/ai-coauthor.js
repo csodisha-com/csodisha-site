@@ -2,7 +2,7 @@
  * 100% Free-Tier Admin Studio AI Co-Author Service (v318)
  * - Uses Google Gemini 2.5 Flash Free-Tier API ONLY if env.GEMINI_API_KEY is bound.
  * - Automatically falls back to Cloudflare Workers AI (@cf/meta/llama-3.1-8b-instruct-fp8-fast
- *   or @cf/meta/llama-3.2-3b-instruct) when GEMINI_API_KEY is absent or rate-limited (429/5xx).
+ *   or @cf/ibm-granite/granite-4.0-h-micro) when GEMINI_API_KEY is absent or rate-limited (429/5xx).
  * - Tracks daily neuron usage in D1 `ai_generation_logs` against Cloudflare's 10,000 Neurons/day free allowance.
  */
 
@@ -11,7 +11,7 @@ export const DAILY_FREE_NEURON_BUDGET = 9500;
 export const VALID_AI_MODES = new Set(['job', 'scheme', 'mcq', 'career']);
 
 const WORKERS_AI_PRIMARY_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
-const WORKERS_AI_FALLBACK_MODEL = '@cf/meta/llama-3.2-3b-instruct';
+const WORKERS_AI_FALLBACK_MODEL = '@cf/ibm-granite/granite-4.0-h-micro';
 const GEMINI_FREE_MODEL = 'gemini-2.5-flash';
 
 let _schemaReadyDb = null;

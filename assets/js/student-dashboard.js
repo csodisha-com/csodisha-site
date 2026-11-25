@@ -27,7 +27,8 @@
     notes: '',
     mockScores: [],
     matches: null,
-    restricted: null
+    restricted: null,
+    aiUsage: { queries_used: 0, daily_limit: 6, remaining: 6 }
   };
 
   function el(tag, cls, text) {
@@ -493,6 +494,53 @@
         out.appendChild(makeEmptyBox('🎯', 'No matching Jobs or Schemes found for this profile yet.', 'Browse Jobs & Schemes →', '/jobs/'));
         return;
       }
+      const aiOut = el('div', 'cso-ai-result-slot');
+      async function runEligibilityCheck(btn, refType, refId, profileOverride) {
+        btn.disabled = true;
+        const origLabel = btn.textContent;
+        btn.textContent = 'Checking…';
+        try {
+          const res = await fetch('/api/candidate/ai-assistant', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              mode: 'eligibility_check',
+              ref_type: refType,
+              ref_id: refId,
+              profile_override: profileOverride || {}
+            })
+          });
+          const d = await res.json().catch(() => ({}));
+          if (!res.ok || !d.ok) throw new Error(d.error || 'AI check unavailable.');
+          if (d.usage) state.aiUsage = d.usage;
+          aiOut.replaceChildren();
+          const box = el('div', 'cso-ai-result-card');
+          const top = el('div', 'cso-ai-result-head');
+          top.appendChild(el('strong', 'cso-ai-status-badge', (d.data && d.data.eligible_status) || 'Checked'));
+          const u = d.usage || state.aiUsage || { remaining: 6, daily_limit: 6 };
+          top.appendChild(el('span', 'cso-ai-quota-pill', u.remaining + '/' + u.daily_limit + ' Free AI Checks Left Today'));
+          if (d.cached) top.appendChild(el('span', 'cso-ai-cache-badge', 'Cached Instant Answer (0 Quota Used)'));
+          box.appendChild(top);
+          if (d.data && d.data.summary_en) box.appendChild(el('p', 'cso-ai-summary', d.data.summary_en));
+          if (d.data && d.data.summary_or) box.appendChild(el('p', 'cso-ai-summary-or', d.data.summary_or));
+          if (d.data && Array.isArray(d.data.checklist) && d.data.checklist.length) {
+            const ul = el('ul', 'cso-ai-checklist');
+            d.data.checklist.forEach(c => ul.appendChild(el('li', '', c)));
+            box.appendChild(ul);
+          }
+          if (d.data && Array.isArray(d.data.missing_profile_fields) && d.data.missing_profile_fields.length) {
+            box.appendChild(el('p', 'cso-muted-note', 'Missing profile info: ' + d.data.missing_profile_fields.join(', ')));
+          }
+          aiOut.appendChild(box);
+        } catch (err) {
+          showToast(err.message || 'Eligibility check failed', true);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = origLabel;
+        }
+      }
+
       combined.slice(0, forceFull ? 12 : 4).forEach(item => {
         const row = el('div', 'cso-hub-item');
         const main = el('div', 'cso-hub-item__main');
@@ -501,10 +549,21 @@
         main.appendChild(el('div', 'cso-hub-item__meta', meta));
         row.appendChild(main);
         row.appendChild(el('span', 'cso-hub-pill', item.match_score + '% match'));
+        const aiBtn = el('button', 'cso-btn cso-btn-sm cso-ai-check-btn', '✨ Check My Eligibility (Free AI)');
+        aiBtn.type = 'button';
+        aiBtn.addEventListener('click', () => {
+          runEligibilityCheck(aiBtn, item.kind === 'scheme' ? 'scheme' : 'job', item.slug || item.id, {
+            qualification: qIn.value.trim(),
+            category: cSel.value,
+            age: aIn.value.trim()
+          });
+        });
+        row.appendChild(aiBtn);
         const href = safeUrl(item.url);
         if (href) { const a = el('a', 'cso-btn cso-btn-sm', 'View →'); a.href = href; row.appendChild(a); }
         out.appendChild(row);
       });
+      out.appendChild(aiOut);
     }
     form.addEventListener('submit', async e => {
       e.preventDefault();
@@ -535,6 +594,44 @@
         main.appendChild(el('div', 'cso-hub-item__meta', (bm.category || '') + (bm.deadlineDate ? ' · Deadline: ' + bm.deadlineDate : '')));
         row.appendChild(main);
         row.appendChild(el('span', 'cso-hub-pill' + (days !== null && days <= 3 ? ' cso-hub-pill--urgent' : ''), badgeTxt));
+        const bmAiOut = el('div', 'cso-ai-result-slot');
+        const bmAiBtn = el('button', 'cso-btn cso-btn-sm cso-ai-check-btn', '✨ Check My Eligibility (Free AI)');
+        bmAiBtn.type = 'button';
+        bmAiBtn.addEventListener('click', async () => {
+          bmAiBtn.disabled = true;
+          const orig = bmAiBtn.textContent;
+          bmAiBtn.textContent = 'Checking…';
+          try {
+            const refType = /scheme/i.test(String(bm.category || bm.postUrl || bm.url || '')) ? 'scheme' : 'job';
+            const refId = bm.slug || bm.postId || bm.article_id || bm.id;
+            const res = await fetch('/api/candidate/ai-assistant', {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ mode: 'eligibility_check', ref_type: refType, ref_id: refId })
+            });
+            const d = await res.json().catch(() => ({}));
+            if (!res.ok || !d.ok) throw new Error(d.error || 'AI check unavailable.');
+            if (d.usage) state.aiUsage = d.usage;
+            bmAiOut.replaceChildren();
+            const box = el('div', 'cso-ai-result-card');
+            const top = el('div', 'cso-ai-result-head');
+            top.appendChild(el('strong', 'cso-ai-status-badge', (d.data && d.data.eligible_status) || 'Checked'));
+            const u = d.usage || state.aiUsage || { remaining: 6, daily_limit: 6 };
+            top.appendChild(el('span', 'cso-ai-quota-pill', u.remaining + '/' + u.daily_limit + ' Free AI Checks Left Today'));
+            if (d.cached) top.appendChild(el('span', 'cso-ai-cache-badge', 'Cached Instant Answer (0 Quota Used)'));
+            box.appendChild(top);
+            if (d.data && d.data.summary_en) box.appendChild(el('p', 'cso-ai-summary', d.data.summary_en));
+            if (d.data && d.data.summary_or) box.appendChild(el('p', 'cso-ai-summary-or', d.data.summary_or));
+            bmAiOut.appendChild(box);
+          } catch (err) {
+            showToast(err.message || 'Eligibility check failed', true);
+          } finally {
+            bmAiBtn.disabled = false;
+            bmAiBtn.textContent = orig;
+          }
+        });
+        row.appendChild(bmAiBtn);
         const href = safeUrl(bm.postUrl || bm.url);
         if (href) { const a = el('a', 'cso-btn cso-btn-sm', 'Open →'); a.href = href; row.appendChild(a); }
         const rm = el('button', 'cso-btn cso-btn-sm', 'Remove'); rm.type = 'button';
@@ -549,6 +646,7 @@
         });
         row.appendChild(rm);
         list.appendChild(row);
+        list.appendChild(bmAiOut);
       });
     }
     card.appendChild(list);
@@ -850,10 +948,11 @@
 
     // v305: Fetch hub-config, workspace, and matches in parallel (single roundtrip)
     // to eliminate multi-stage pre-hydration flashes.
-    const [hubSettled, wsRes, matchRes] = await Promise.allSettled([
+    const [hubSettled, wsRes, matchRes, aiRes] = await Promise.allSettled([
       fetch('/api/candidate/hub-config', { credentials: 'include', cache: 'no-store' }),
       fetch('/api/candidate/workspace', { credentials: 'include', cache: 'no-store' }),
-      fetch('/api/candidate/matches', { credentials: 'include', cache: 'no-store' })
+      fetch('/api/candidate/matches', { credentials: 'include', cache: 'no-store' }),
+      fetch('/api/candidate/ai-assistant', { credentials: 'include', cache: 'no-store' })
     ]);
 
     const hubRes = hubSettled.status === 'fulfilled' ? hubSettled.value : null;
@@ -896,6 +995,10 @@
     }
     if (matchRes.status === 'fulfilled' && matchRes.value.ok) {
       state.matches = await matchRes.value.json().catch(() => null);
+    }
+    if (aiRes.status === 'fulfilled' && aiRes.value.ok) {
+      const a = await aiRes.value.json().catch(() => null);
+      if (a && a.usage) state.aiUsage = a.usage;
     }
 
     applyUiShell();
