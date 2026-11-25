@@ -162,3 +162,49 @@ footer {
 .auth-footer a:hover {
   text-decoration: underline;
 }
+.btn-google-oauth {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-text);
+  border: 1px solid var(--cso-border);
+  border-radius: 0.55rem;
+  font-size: 0.925rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+}
+.btn-google-oauth:hover,
+.btn-google-oauth:focus-visible {
+  background: var(--cso-highlight-bg, var(--cso-surface-alt));
+  border-color: var(--cso-accent);
+  color: var(--cso-text);
+}
+.google-oauth-icon {
+  flex-shrink: 0;
+  display: block;
+}
+.auth-oauth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.15rem 0;
+  color: var(--cso-muted, var(--cso-text-muted));
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: lowercase;
+}
+.auth-oauth-divider::before,
+.auth-oauth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--cso-border);
+}

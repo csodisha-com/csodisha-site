@@ -58,6 +58,18 @@
         [nameInput, emailInput, districtInput, pwInput].forEach(el => el?.removeAttribute('aria-invalid'));
       }
 
+      try {
+        const errCode = new URLSearchParams(window.location.search).get('error');
+        const oauthErrors = {
+          google_not_configured: 'Google sign-up is not configured on this environment yet. Please register with your email below.',
+          google_auth_failed: 'Google sign-up could not be completed. Please try again or register with your email.',
+          google_admin_blocked: 'Staff and admin accounts must sign in through the dedicated Admin portal.'
+        };
+        if (errCode && oauthErrors[errCode]) {
+          showError(oauthErrors[errCode]);
+        }
+      } catch (e) {}
+
       form.addEventListener('submit', async function(e) {
         if (form.dataset.step === 'otp') return;
         e.preventDefault();

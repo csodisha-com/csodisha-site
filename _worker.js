@@ -13,6 +13,7 @@ import { onRequestPost as handleForgotPasswordPost, onRequestOptions as handleFo
 import { onRequestPost as handleVerifyResetOtpPost, onRequestOptions as handleVerifyResetOtpOptions } from './functions/api/auth/verify-reset-otp.js';
 import { onRequestPost as handleResetPasswordPost, onRequestOptions as handleResetPasswordOptions } from './functions/api/auth/reset-password.js';
 import { onRequestPost as handleVerifyResetTokenPost, onRequestOptions as handleVerifyResetTokenOptions } from './functions/api/auth/verify-reset-token.js';
+import { handleGoogleAuthStart, handleGoogleAuthCallback } from './functions/api/auth/google.js';
 import { checkRateLimit, createSession, buildSessionCookie } from './functions/api/auth/_utils.js';
 import { handleAdminApi } from './functions/api/admin/_router.js';
 import { isTwoFactorConfigured, canSendOtp, issueOtp, deliverOtp, verifyTwoFactor, OTP_RESEND_SECONDS } from './functions/_lib/admin-2fa.js';
@@ -1342,6 +1343,16 @@ export default {
         });
       }
       if (request.method === 'POST') return handleStrictD1Login(request, env, ctx);
+    }
+
+    // 6a. /api/auth/google & /api/auth/google/callback — Candidate-only Google OAuth 2.0
+    if (pathname === '/api/auth/google') {
+      if (request.method === 'GET') return handleGoogleAuthStart({ request, env });
+      return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET' } });
+    }
+    if (pathname === '/api/auth/google/callback') {
+      if (request.method === 'GET') return handleGoogleAuthCallback({ request, env });
+      return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET' } });
     }
 
     // 7. /api/sync

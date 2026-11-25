@@ -52,6 +52,18 @@
         if (btn.dataset.label) btn.textContent = btn.dataset.label;
       }
 
+      try {
+        const errCode = new URLSearchParams(window.location.search).get('error');
+        const oauthErrors = {
+          google_not_configured: 'Google sign-in is not configured on this environment yet. Please sign in with your email and password.',
+          google_auth_failed: 'Google sign-in could not be completed. Please try again or use your email and password.',
+          google_admin_blocked: 'Staff and admin accounts must sign in through the dedicated Admin portal.'
+        };
+        if (errCode && oauthErrors[errCode]) {
+          showError('auth-error-msg', oauthErrors[errCode]);
+        }
+      } catch (e) {}
+
       // Flash banner after a successful reset (set by the reset flow itself
       // or by /reset-password.html before redirecting here).
       try {

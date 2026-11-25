@@ -105,6 +105,13 @@ function verifyRelativePath(sourceFile, rawUrl, type = 'link') {
     candidates.push(resolvedPath + '.html');
   }
 
+  // If path is a Worker/Pages Function endpoint (/api/...), check functions/api/...
+  if (cleanUrl.startsWith('/api/')) {
+    const fnBase = path.join(ROOT_DIR, 'functions', cleanUrl.slice(1));
+    candidates.push(fnBase + '.js');
+    candidates.push(path.join(fnBase, 'index.js'));
+  }
+
   const matchedCandidate = candidates.find(candidate => {
     try {
       return fs.existsSync(candidate) && fs.statSync(candidate).isFile();
