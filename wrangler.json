@@ -1,42 +1,43 @@
 {
-  "name": "csodisha-site",
-  "compatibility_date": "2026-11-10",
-  "main": "_worker.js",
-  "assets": {
-    "directory": ".",
-    "binding": "ASSETS",
-    "run_worker_first": true
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "cso-database",
-      "database_id": "aa11da6a-754f-4ece-a18d-5080cd333aed",
-      "migrations_dir": "migrations"
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "MEDIA",
-      "bucket_name": "cso-media"
-    },
-    {
-      "binding": "CSO_FILES",
-      "bucket_name": "cso-files"
-    }
-  ],
-  "ai": {
-    "binding": "AI"
-  },
-  "vectorize": [
-    {
-      "binding": "VECTORIZE",
-      "index_name": "csodisha-semantic-index"
-    }
-  ],
-  "triggers": {
-    "crons": [
-      "0 * * * *"
-    ]
-  }
+	"name": "csodisha-site",
+	"compatibility_date": "2026-11-10",
+	"main": "_worker.js",
+	"assets": {
+		"directory": ".",
+		"binding": "ASSETS",
+		"run_worker_first": true
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "cso-database",
+			"database_id": "aa11da6a-754f-4ece-a18d-5080cd333aed",
+			"migrations_dir": "migrations"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "cso-media"
+		},
+		{
+			"binding": "CSO_FILES",
+			"bucket_name": "cso-files"
+		}
+	],
+	"ai": {
+		"binding": "AI"
+	},
+	"vectorize": [
+		{
+			"binding": "VECTORIZE",
+			"index_name": "csodisha-semantic-index",
+			"remote": true
+		}
+	],
+	"triggers": {
+		"crons": [
+			"0 * * * *"
+		]
+	}
 }
