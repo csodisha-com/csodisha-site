@@ -157,33 +157,78 @@
   overflow-wrap: anywhere;
 }
 
-/* Dynamic Module Grid & Balanced Overview Rows */
-.cso-hub-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+/* Dynamic Module Grid & Balanced Overview Rows (v308: scoped against assets/style.css .cso-hub-card) */
+.cso-hub-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: stretch; width: 100%; box-sizing: border-box; }
 .cso-hub-grid--1 { grid-template-columns: minmax(0, 1fr); }
 .cso-hub-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .cso-hub-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.cso-hub-row { display: grid; gap: 16px; align-items: stretch; min-width: 0; }
+.cso-hub-row { display: grid; gap: 18px; align-items: stretch; width: 100%; min-width: 0; box-sizing: border-box; }
 .cso-hub-row--pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .cso-hub-row--split { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); }
-.cso-hub-card {
-  background: var(--cso-surface); border: 1px solid var(--cso-border);
-  border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0;
+#cso-candidate-workspace .cso-hub-card,
+.cso-hub-grid .cso-hub-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  padding: 20px 22px;
+  border-radius: 12px;
+  background: var(--cso-surface) !important;
+  border: 1px solid var(--cso-border) !important;
+  box-shadow: var(--cso-shadow, none);
+  box-sizing: border-box;
+  overflow: hidden;
+  transform: none;
 }
-.cso-hub-card--full { grid-column: 1 / -1; }
-.cso-hub-card--accent { border-top: 3px solid var(--cso-accent); }
-.cso-hub-card--emerald { border-top: 3px solid var(--cso-emerald); }
-.cso-hub-card--amber { border-top: 3px solid var(--cso-amber); }
-.cso-hub-card--primary { border-top: 3px solid var(--cso-primary); }
-.cso-hub-card__head { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
-.cso-hub-card__title { margin: 0; font-size: 1.02rem; font-weight: 700; color: var(--cso-ink); display: flex; align-items: center; gap: 8px; }
-.cso-hub-card__sub { margin: 2px 0 0; font-size: 0.82rem; color: var(--cso-ink-muted, var(--cso-muted)); }
+#cso-candidate-workspace .cso-hub-card:hover,
+.cso-hub-grid .cso-hub-card:hover {
+  transform: none;
+  background: var(--cso-surface) !important;
+  border-color: var(--cso-border) !important;
+  box-shadow: var(--cso-shadow, none) !important;
+}
+#cso-candidate-workspace .cso-hub-card--full { grid-column: 1 / -1; }
+#cso-candidate-workspace .cso-hub-card--accent { border-top: 3px solid var(--cso-accent) !important; }
+#cso-candidate-workspace .cso-hub-card--emerald { border-top: 3px solid var(--cso-emerald) !important; }
+#cso-candidate-workspace .cso-hub-card--amber { border-top: 3px solid var(--cso-amber) !important; }
+#cso-candidate-workspace .cso-hub-card--primary { border-top: 3px solid var(--cso-primary) !important; }
+#cso-candidate-workspace .cso-hub-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+#cso-candidate-workspace .cso-hub-card__title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--cso-ink) !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#cso-candidate-workspace .cso-hub-card__sub {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--cso-ink-muted, var(--cso-muted));
+}
 
-/* Actionable Empty States */
+/* Actionable Empty States (100% full card width, zero shrink-wrap) */
 .cso-hub-empty-box {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
   border-radius: 10px;
   background: var(--cso-surface-alt);
   border: 1px solid var(--cso-border);
@@ -204,7 +249,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 10px;
+  width: 100%;
   min-width: 0;
 }
 .cso-hub-empty-box__text {
@@ -212,6 +258,7 @@
   font-size: 0.86rem;
   color: var(--cso-ink-muted, var(--cso-muted));
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 .cso-hub-empty-box__cta {
   display: inline-flex;
@@ -225,6 +272,8 @@
   font-size: 0.82rem;
   font-weight: 700;
   text-decoration: none;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .cso-hub-empty-box__cta:hover,
 .cso-hub-empty-box__cta:focus-visible {
@@ -238,7 +287,7 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 5px;
-  min-width: 170px;
+  min-width: 160px;
 }
 .cso-vault-progress__label {
   font-size: 0.78rem;
@@ -246,7 +295,10 @@
   color: var(--cso-ink);
 }
 .cso-vault-meter {
-  width: 170px;
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 160px;
   height: 8px;
   border-radius: 999px;
   overflow: hidden;
@@ -266,14 +318,17 @@
   background: var(--cso-accent);
   border-radius: 999px;
 }
+
+/* Lists, Badges, Checklists, Forms */
+.cso-hub-list { display: flex; flex-direction: column; gap: 10px; width: 100%; min-width: 0; box-sizing: border-box; }
+.cso-hub-list.cso-vault-grid,
 .cso-vault-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
-
-/* Lists, Badges, Checklists, Forms */
-.cso-hub-list { display: flex; flex-direction: column; gap: 10px; }
 .cso-hub-item {
   display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;
   padding: 10px 12px; border-radius: 9px;
@@ -291,11 +346,12 @@
 .cso-hub-pill--high { background: var(--cso-amber-soft); color: var(--cso-amber); }
 
 .cso-hub-check {
-  display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: 8px;
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px;
+  width: 100%; box-sizing: border-box; min-width: 0;
   background: var(--cso-surface-alt); border: 1px solid var(--cso-border); cursor: pointer;
 }
 .cso-hub-check input { width: 17px; height: 17px; margin-top: 2px; accent-color: var(--cso-primary); flex: none; }
-.cso-hub-check__body { display: flex; flex-direction: column; gap: 2px; }
+.cso-hub-check__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .cso-hub-check__title { font-size: 0.88rem; font-weight: 600; color: var(--cso-text); }
 .cso-hub-check__note { font-size: 0.76rem; color: var(--cso-muted); }
 
@@ -305,12 +361,13 @@
   border: 1px solid var(--cso-border); font: inherit; font-size: 0.88rem; resize: vertical;
   box-sizing: border-box;
 }
-.cso-hub-inline-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.cso-hub-inline-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; width: 100%; min-width: 0; box-sizing: border-box; }
 .cso-hub-inline-form--matcher { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .cso-hub-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .cso-hub-field--action { grid-column: 1 / -1; align-items: flex-start; }
 .cso-hub-field label { font-size: 0.78rem; font-weight: 600; color: var(--cso-ink-muted, var(--cso-muted)); }
 .cso-hub-field input, .cso-hub-field select {
+  width: 100%; max-width: 100%; min-width: 0;
   padding: 9px 11px; border-radius: 8px; font: inherit; font-size: 0.88rem; min-height: 44px; box-sizing: border-box;
   background: var(--cso-surface-alt); color: var(--cso-ink); border: 1px solid var(--cso-border);
 }
@@ -405,12 +462,13 @@
   .cso-hub-row--split,
   .cso-hub-inline-form,
   .cso-hub-inline-form--matcher,
+  .cso-hub-list.cso-vault-grid,
   .cso-vault-grid,
   .cso-hub-skeleton-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
   }
-  .cso-hub-card { padding: 16px; }
+  #cso-candidate-workspace .cso-hub-card { padding: 16px; }
   .cso-vault-progress { align-items: flex-start; width: 100%; }
   .cso-vault-meter { width: 100%; }
   .cso-hub-field input,
@@ -430,6 +488,7 @@
   .cso-hub-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .cso-hub-stat { padding: 10px 12px; }
   .cso-hub-stat__val { font-size: 1.15rem; }
+  #cso-candidate-workspace .cso-hub-card__head .cso-btn { width: 100%; justify-content: center; }
 }
 body.cso-student-dashboard-page,
 .bp-app-layout,
