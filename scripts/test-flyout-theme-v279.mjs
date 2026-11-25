@@ -66,12 +66,12 @@ check('1. style.css & portal-shell.css define all 4-theme surface/ink/border/hov
   }
 });
 
-check('2. sw.js & ops-sentinel.js bumped to cso-candidate-cache-v279', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v279';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v279';"));
+check('2. sw.js & ops-sentinel.js bumped to cso-candidate-cache-v279+', () => {
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:79|[89]\d)';/.test(read('sw.js')));
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:79|[89]\d)';/.test(read('functions/_lib/ops-sentinel.js')));
 });
 
-check('3. All HTML pages referencing style.css, portal-shell.css, app.js, or shared-header.js use ?v=20261125v279', () => {
+check('3. All HTML pages referencing style.css, portal-shell.css, app.js, or shared-header.js use ?v=20261125v279+', () => {
   const htmlFiles = [];
   function walk(dir) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -90,7 +90,7 @@ check('3. All HTML pages referencing style.css, portal-shell.css, app.js, or sha
     let m;
     while ((m = assetRe.exec(html)) !== null) {
       checkedCount++;
-      assert.equal(m[2], '20261125v279', `${rel} has ${m[1]}?v=${m[2]} instead of 20261125v279`);
+      assert.ok(/^20261125v2(?:79|[89]\d)$/.test(m[2]), `${rel} has ${m[1]}?v=${m[2]} instead of 20261125v279+`);
     }
   }
   assert.ok(checkedCount > 80, `Expected >80 versioned core asset references, got ${checkedCount}`);

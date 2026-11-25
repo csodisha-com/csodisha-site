@@ -76,6 +76,15 @@
     return node;
   }
 
+  function findNodeById(nodes, id) {
+    if (!id || !Array.isArray(nodes)) return null;
+    var target = String(id);
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i] && String(nodes[i].id) === target) return nodes[i];
+    }
+    return null;
+  }
+
   function safeHref(raw) {
     var s = String(raw || '').trim();
     if (!s) return '';
@@ -871,7 +880,6 @@
 
   function renderPortalListing(mount) {
     activatePortalShell();
-    clear(mount);
     var hasFilter = Boolean(state.filters.l1 || state.filters.l2 || state.filters.l3 || state.filters.region || state.filters.district || state.filters.qualification || state.filters.stage || state.filters.search);
     var kpis = computeHeroKpis();
 
@@ -1207,6 +1215,7 @@
       wrap.appendChild(grid);
     }
 
+    clear(mount);
     mount.appendChild(wrap);
   }
 
@@ -1270,10 +1279,12 @@
           state.items = d.items || [];
           if (!qs.toString()) state.allItems = state.items.slice();
           if (d.facets) state.facets = d.facets;
-          renderPortalListing(mount);
         }
+        renderPortalListing(mount);
       })
-      .catch(function () {});
+      .catch(function () {
+        renderPortalListing(mount);
+      });
   }
 
   function loadCandidateProfile() {
@@ -1386,6 +1397,8 @@
         return;
       }
       renderPortalListing(mount);
+    }).catch(function () {
+      try { renderPortalListing(mount); } catch (_) {}
     });
   }
 
