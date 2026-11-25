@@ -1164,10 +1164,10 @@ nav {
 
 
 .cso-nav-mobile {
-  background: rgba(255, 255, 255, .12);
-  border: 1px solid rgba(255, 255, 255, .35);
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
   border-radius: 9px;
-  color: var(--cso-accent-ink);
+  color: var(--cso-ink);
   padding: 8px 14px;
   font-size: 14px;
   font-weight: 700;
@@ -1177,12 +1177,14 @@ nav {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: background-color .18s ease;
+  transition: background-color .18s ease, border-color .18s ease;
   box-sizing: border-box;
 }
 
 .cso-nav-mobile:hover {
-  background: rgba(255, 255, 255, .22);
+  background: var(--cso-surface-alt);
+  border-color: var(--cso-accent);
+  color: var(--cso-ink);
 }
 
 @media (max-width: 768px) {
@@ -4008,36 +4010,37 @@ mark.cso-search-highlight {
 
   .cso-mobile-acc-cluster button,
   .cso-mobile-acc-cluster .acc-btn {
-    background: rgba(255, 255, 255, 0.12) !important;
-    color: var(--cso-accent-ink) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
-    border-radius: 6px !important;
-    padding: 4px 8px !important;
+    background: var(--cso-surface) !important;
+    color: var(--cso-ink) !important;
+    border: 1px solid var(--cso-border) !important;
+    border-radius: 8px !important;
+    padding: 4px 10px !important;
     font-size: 0.85rem !important;
-    min-height: 38px !important;
-    height: 38px !important;
+    min-height: 44px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     box-sizing: border-box !important;
     font-weight: 600 !important;
+    opacity: 1 !important;
   }
 
   .cso-mobile-acc-cluster .cso-ctl-zoom-mobile {
-    gap: 0 !important;
+    gap: 2px !important;
     padding: 2px 4px !important;
   }
 
   .cso-mobile-acc-cluster .cso-ctl-zoom-mobile button.fz {
     background: transparent !important;
     border: none !important;
-    color: var(--cso-accent-ink) !important;
+    color: var(--cso-ink) !important;
     font-size: 0.85rem !important;
     font-weight: 700 !important;
-    padding: 4px 6px !important;
-    min-height: auto !important;
+    padding: 4px 7px !important;
+    min-height: 36px !important;
     height: auto !important;
     cursor: pointer !important;
+    opacity: 1 !important;
   }
 }
 
@@ -10888,4 +10891,66 @@ footer {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ==========================================================================
+   v301: Mobile Bar Buttons (☰ Menu, ♿ Options, A– A A+, ★ Saved)
+         Semantic 4-Theme Contrast Fix (Zero White-on-White in Light/Reading/Odisha)
+   ========================================================================== */
+
+#cso-main-navbar .cso-nav-mobile,
+#cso-main-navbar #cso-menu-toggle,
+#navw .cso-nav-mobile,
+.cso-nav-bar-container .cso-nav-mobile,
+.cso-nav-bar-container .cso-ctl-a11y-mobile,
+.cso-nav-bar-container .cso-ctl-zoom-mobile,
+.cso-nav-bar-container .cso-mobile-acc-cluster > button,
+.cso-nav-bar-container .cso-mobile-acc-cluster > .acc-btn,
+#cso-main-navbar .cso-nav-bar-container .cso-nav-saved-pill {
+  background: var(--cso-surface) !important;
+  color: var(--cso-ink) !important;
+  border: 1px solid var(--cso-border) !important;
+  opacity: 1 !important;
+}
+
+#cso-main-navbar .cso-nav-mobile:hover,
+#cso-main-navbar .cso-nav-mobile:focus-visible,
+#cso-main-navbar .cso-nav-mobile[aria-expanded="true"],
+#cso-main-navbar #cso-menu-toggle:hover,
+#cso-main-navbar #cso-menu-toggle:focus-visible,
+.cso-nav-bar-container .cso-ctl-a11y-mobile:hover,
+.cso-nav-bar-container .cso-ctl-a11y-mobile:focus-visible,
+.cso-nav-bar-container .cso-mobile-acc-cluster > button:hover,
+.cso-nav-bar-container .cso-mobile-acc-cluster > button:focus-visible,
+#cso-main-navbar .cso-nav-bar-container .cso-nav-saved-pill:hover,
+#cso-main-navbar .cso-nav-bar-container .cso-nav-saved-pill:focus-visible {
+  background: var(--cso-surface-alt) !important;
+  border-color: var(--cso-accent) !important;
+  color: var(--cso-ink) !important;
+  opacity: 1 !important;
+}
+
+#cso-main-navbar .cso-nav-mobile span,
+#cso-main-navbar .cso-nav-mobile svg,
+.cso-nav-bar-container .cso-mobile-acc-cluster span:not(.cso-saved-badge),
+.cso-nav-bar-container .cso-mobile-acc-cluster svg,
+.cso-nav-bar-container .cso-ctl-zoom-mobile button.fz,
+#cso-main-navbar .cso-ctl-zoom-mobile .fz {
+  color: var(--cso-ink) !important;
+  opacity: 1 !important;
+}
+
+.cso-nav-bar-container .cso-ctl-zoom-mobile button.fz,
+#cso-main-navbar .cso-ctl-zoom-mobile .fz {
+  background: transparent !important;
+  border: none !important;
+}
+
+.cso-nav-bar-container .cso-ctl-zoom-mobile button.fz:hover,
+.cso-nav-bar-container .cso-ctl-zoom-mobile button.fz:focus-visible,
+#cso-main-navbar .cso-ctl-zoom-mobile .fz:hover,
+#cso-main-navbar .cso-ctl-zoom-mobile .fz:focus-visible {
+  background: var(--cso-surface-alt) !important;
+  color: var(--cso-ink) !important;
+  border-radius: 5px;
 }

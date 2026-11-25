@@ -727,3 +727,41 @@ body[data-cso-theme="odisha"] {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* v301: Mobile Bar Buttons (☰ Menu, ♿ Options, A– A A+) Semantic 4-Theme Contrast */
+#cso-main-navbar .cso-nav-mobile,
+#cso-main-navbar #cso-menu-toggle,
+.cso-nav-bar-container .cso-ctl-a11y-mobile,
+.cso-nav-bar-container .cso-ctl-zoom-mobile,
+.cso-nav-bar-container .cso-mobile-acc-cluster > button,
+.cso-nav-bar-container .cso-mobile-acc-cluster > .acc-btn {
+  background: var(--cso-surface) !important;
+  color: var(--cso-ink) !important;
+  border: 1px solid var(--cso-border) !important;
+  opacity: 1 !important;
+}
+
+#cso-main-navbar .cso-nav-mobile:hover,
+#cso-main-navbar .cso-nav-mobile:focus-visible,
+.cso-nav-bar-container .cso-ctl-a11y-mobile:hover,
+.cso-nav-bar-container .cso-ctl-a11y-mobile:focus-visible,
+.cso-nav-bar-container .cso-mobile-acc-cluster > button:hover,
+.cso-nav-bar-container .cso-mobile-acc-cluster > button:focus-visible {
+  background: var(--cso-surface-alt) !important;
+  border-color: var(--cso-accent) !important;
+  color: var(--cso-ink) !important;
+}
+
+#cso-main-navbar .cso-nav-mobile span,
+#cso-main-navbar .cso-nav-mobile svg,
+.cso-nav-bar-container .cso-mobile-acc-cluster span:not(.cso-saved-badge),
+.cso-nav-bar-container .cso-mobile-acc-cluster svg,
+.cso-nav-bar-container .cso-ctl-zoom-mobile button.fz {
+  color: var(--cso-ink) !important;
+  opacity: 1 !important;
+}
+
+.cso-nav-bar-container .cso-ctl-zoom-mobile button.fz {
+  background: transparent !important;
+  border: none !important;
+}

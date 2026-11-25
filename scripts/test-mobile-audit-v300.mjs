@@ -213,13 +213,49 @@ check('4. Opaque 4-theme mobile overlays, >= 4.5:1 WCAG AA contrast, JS a11y hoo
   const ge = read('assets/js/cso-global-enhancements.js');
   assert.ok(ge.includes("classList.add('cso-modal-open')") && ge.includes("e.key === 'Escape'"), 'cso-global-enhancements.js modals must support Escape & body scroll lock');
 
-  // Verify v300 cache busting
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v300';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v300';/);
-  assert.match(read('functions/_lib/ssr-shell.js'), /style\.css\?v=20261125v300/);
-  assert.match(read('index.html'), /style\.css\?v=20261125v300/);
-  assert.match(read('community/index.html'), /community-portal\.css\?v=20261125v300/);
-  assert.match(read('admin/index.html'), /studio\.css\?v=20261125v300/);
+  // Verify v300+ cache busting
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v3\d\d';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v3\d\d';/);
+  assert.match(read('functions/_lib/ssr-shell.js'), /style\.css\?v=20261125v3\d\d/);
+  assert.match(read('index.html'), /style\.css\?v=20261125v3\d\d/);
+  assert.match(read('community/index.html'), /community-portal\.css\?v=20261125v3\d\d/);
+  assert.match(read('admin/index.html'), /studio\.css\?v=20261125v3\d\d/);
+});
+
+check('5. v301 Mobile bar buttons (☰ Menu, ♿ Options, A– A A+) use var(--cso-ink)/var(--cso-border) with >= 7:1 contrast across all 4 themes', () => {
+  for (const rel of ['assets/style.css', 'assets/css/portal-shell.css', 'assets/css/cso-themes.css']) {
+    const css = read(rel);
+    assert.ok(
+      css.includes('#cso-main-navbar .cso-nav-mobile') &&
+      css.includes('.cso-nav-bar-container .cso-ctl-a11y-mobile') &&
+      css.includes('.cso-nav-bar-container .cso-ctl-zoom-mobile') &&
+      css.includes('background: var(--cso-surface) !important;') &&
+      css.includes('color: var(--cso-ink) !important;') &&
+      css.includes('border: 1px solid var(--cso-border) !important;'),
+      `${rel} missing v301 semantic token rules for mobile bar buttons`
+    );
+    assert.ok(
+      css.includes('.cso-nav-bar-container .cso-ctl-zoom-mobile button.fz'),
+      `${rel} missing v301 semantic ink rule for mobile A– A A+ zoom buttons`
+    );
+  }
+
+  // Ensure legacy white-on-white var(--cso-accent-ink) is completely gone from mobile bar buttons in style.css
+  const styleCss = read('assets/style.css');
+  const legacyBlock = styleCss.slice(styleCss.indexOf('.cso-mobile-acc-cluster button,'), styleCss.indexOf('@media (min-width: 769px)'));
+  assert.ok(!legacyBlock.includes('var(--cso-accent-ink)'), 'assets/style.css .cso-mobile-acc-cluster must NOT use var(--cso-accent-ink) (causes white-on-white in Light/Reading/Odisha)');
+
+  // Verify >= 7:1 AAA contrast of --cso-ink on --cso-surface and --cso-surface-alt across all 4 themes
+  const BAR_THEMES = {
+    system:  { surface: '#ffffff', surfaceAlt: '#f1f5f9', ink: '#0f172a' },
+    dark:    { surface: '#121824', surfaceAlt: '#1a2335', ink: '#f1f5f9' },
+    reading: { surface: '#faf5eb', surfaceAlt: '#ede3d2', ink: '#241b12' },
+    odisha:  { surface: '#ffffff', surfaceAlt: '#f7ece0', ink: '#1f140c' }
+  };
+  for (const [name, t] of Object.entries(BAR_THEMES)) {
+    assert.ok(contrastRatio(t.ink, t.surface) >= 7.0, `${name} mobile bar button contrast on --cso-surface < 7:1`);
+    assert.ok(contrastRatio(t.ink, t.surfaceAlt) >= 7.0, `${name} mobile bar button hover contrast on --cso-surface-alt < 7:1`);
+  }
 });
 
 console.log(`\n=== v300 Mobile & WCAG 2.2 Audit Results: ${passed} passed, ${failed} failed ===\n`);

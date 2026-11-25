@@ -1412,3 +1412,59 @@ body.cso-portal-page iframe {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ==========================================================================
+   13. Mobile Bar Buttons (☰ Menu, ♿ Options, A– A A+, ★ Saved) Contrast (v301)
+   ========================================================================== */
+
+#cso-main-navbar .cso-nav-mobile,
+#cso-main-navbar #cso-menu-toggle,
+#navw .cso-nav-mobile,
+.cso-nav-bar-container .cso-ctl-a11y-mobile,
+.cso-nav-bar-container .cso-ctl-zoom-mobile,
+.cso-nav-bar-container .cso-mobile-acc-cluster > button,
+.cso-nav-bar-container .cso-mobile-acc-cluster > .acc-btn,
+#cso-main-navbar .cso-nav-bar-container .cso-nav-saved-pill {
+  background: var(--cso-surface) !important;
+  color: var(--cso-ink) !important;
+  border: 1px solid var(--cso-border) !important;
+  opacity: 1 !important;
+}
+
+#cso-main-navbar .cso-nav-mobile:hover,
+#cso-main-navbar .cso-nav-mobile:focus-visible,
+#cso-main-navbar .cso-nav-mobile[aria-expanded="true"],
+.cso-nav-bar-container .cso-ctl-a11y-mobile:hover,
+.cso-nav-bar-container .cso-ctl-a11y-mobile:focus-visible,
+.cso-nav-bar-container .cso-mobile-acc-cluster > button:hover,
+.cso-nav-bar-container .cso-mobile-acc-cluster > button:focus-visible,
+#cso-main-navbar .cso-nav-bar-container .cso-nav-saved-pill:hover,
+#cso-main-navbar .cso-nav-bar-container .cso-nav-saved-pill:focus-visible {
+  background: var(--cso-surface-alt, var(--cso-bg)) !important;
+  border-color: var(--cso-accent) !important;
+  color: var(--cso-ink) !important;
+  opacity: 1 !important;
+}
+
+#cso-main-navbar .cso-nav-mobile span,
+#cso-main-navbar .cso-nav-mobile svg,
+.cso-nav-bar-container .cso-mobile-acc-cluster span:not(.cso-saved-badge),
+.cso-nav-bar-container .cso-mobile-acc-cluster svg,
+.cso-nav-bar-container .cso-ctl-zoom-mobile button.fz,
+#cso-main-navbar .cso-ctl-zoom-mobile .fz {
+  color: var(--cso-ink) !important;
+  opacity: 1 !important;
+}
+
+.cso-nav-bar-container .cso-ctl-zoom-mobile button.fz,
+#cso-main-navbar .cso-ctl-zoom-mobile .fz {
+  background: transparent !important;
+  border: none !important;
+}
+
+.cso-nav-bar-container .cso-ctl-zoom-mobile button.fz:hover,
+.cso-nav-bar-container .cso-ctl-zoom-mobile button.fz:focus-visible {
+  background: var(--cso-surface-alt, var(--cso-bg)) !important;
+  color: var(--cso-ink) !important;
+  border-radius: 5px;
+}
