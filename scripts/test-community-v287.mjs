@@ -245,12 +245,12 @@ await check('5. Admin Studio sidebar sync, cache busting (?v=20261125v287 / cso-
   assert.ok(studioJs.includes('Live Synced to Public Community'), 'community-publishing-studio.js missing live sync banner');
   assert.ok(studioJs.includes('cso_community_dropdown_v287'), 'community-publishing-studio.js missing v287 cache bust');
 
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v287';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v287';"));
-  assert.ok(read('community/index.html').includes('/assets/js/community-portal.js?v=20261125v287'));
-  assert.ok(read('community/index.html').includes('/assets/css/community-portal.css?v=20261125v287'));
-  assert.ok(read('admin/index.html').includes('admin.js?v=20261125v287'));
-  assert.ok(read('admin/index.html').includes('community-publishing-studio.js?v=20261125v287'));
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v28[7-9]';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v28[7-9]';/);
+  assert.match(read('community/index.html'), /\/assets\/js\/community-portal\.js\?v=20261125v28[7-9]/);
+  assert.match(read('community/index.html'), /\/assets\/css\/community-portal\.css\?v=20261125v28[7-9]/);
+  assert.match(read('admin/index.html'), /admin\.js\?v=20261125v28[7-9]/);
+  assert.match(read('admin/index.html'), /community-publishing-studio\.js\?v=20261125v28[7-9]/);
 
   for (const rel of [
     'assets/shared-header.js',

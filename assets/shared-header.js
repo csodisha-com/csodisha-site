@@ -816,80 +816,105 @@
 
       parent.appendChild(a);
       if (isJobs) {
-        const chevBtn = el('button', 'cso-nav-arrow cso-jobs-flyout-toggle');
-        chevBtn.type = 'button';
-        chevBtn.setAttribute('aria-label', 'Toggle Jobs sectors menu');
-        chevBtn.setAttribute('aria-haspopup', 'true');
-        chevBtn.setAttribute('aria-expanded', 'false');
-        chevBtn.setAttribute('aria-controls', 'cso-jobs-stage1');
-        const chevIcon = el('span', 'cso-jobs-chev', '▾');
-        chevIcon.setAttribute('aria-hidden', 'true');
-        chevBtn.appendChild(chevIcon);
-        parent.appendChild(chevBtn);
-        ni.appendChild(parent);
-        const cascade = buildJobsCascadingMenu();
-        ni.appendChild(cascade);
-        wireJobsCascadingInteractions(ni, a, chevBtn, cascade);
+        try {
+          const chevBtn = el('button', 'cso-nav-arrow cso-jobs-flyout-toggle');
+          chevBtn.type = 'button';
+          chevBtn.setAttribute('aria-label', 'Toggle Jobs sectors menu');
+          chevBtn.setAttribute('aria-haspopup', 'true');
+          chevBtn.setAttribute('aria-expanded', 'false');
+          chevBtn.setAttribute('aria-controls', 'cso-jobs-stage1');
+          const chevIcon = el('span', 'cso-jobs-chev', '▾');
+          chevIcon.setAttribute('aria-hidden', 'true');
+          chevBtn.appendChild(chevIcon);
+          parent.appendChild(chevBtn);
+          ni.appendChild(parent);
+          const cascade = buildJobsCascadingMenu();
+          ni.appendChild(cascade);
+          wireJobsCascadingInteractions(ni, a, chevBtn, cascade);
+        } catch (err) {
+          console.error('[CSO SharedHeader] Jobs menu failed:', err);
+          if (!parent.parentNode) ni.appendChild(parent);
+        }
       } else if (isCareers) {
-        const chevBtn = el('button', 'cso-nav-arrow cso-careers-flyout-toggle');
-        chevBtn.type = 'button';
-        chevBtn.setAttribute('aria-label', 'Toggle Careers tracks menu');
-        chevBtn.setAttribute('aria-haspopup', 'true');
-        chevBtn.setAttribute('aria-expanded', 'false');
-        chevBtn.setAttribute('aria-controls', 'cso-careers-stage1');
-        const chevIcon = el('span', 'cso-jobs-chev', '▾');
-        chevIcon.setAttribute('aria-hidden', 'true');
-        chevBtn.appendChild(chevIcon);
-        parent.appendChild(chevBtn);
-        ni.appendChild(parent);
-        const cascade = buildCareersCascadingMenu();
-        ni.appendChild(cascade);
-        wireCareersCascadingInteractions(ni, a, chevBtn, cascade);
+        try {
+          const chevBtn = el('button', 'cso-nav-arrow cso-careers-flyout-toggle');
+          chevBtn.type = 'button';
+          chevBtn.setAttribute('aria-label', 'Toggle Careers tracks menu');
+          chevBtn.setAttribute('aria-haspopup', 'true');
+          chevBtn.setAttribute('aria-expanded', 'false');
+          chevBtn.setAttribute('aria-controls', 'cso-careers-stage1');
+          const chevIcon = el('span', 'cso-jobs-chev', '▾');
+          chevIcon.setAttribute('aria-hidden', 'true');
+          chevBtn.appendChild(chevIcon);
+          parent.appendChild(chevBtn);
+          ni.appendChild(parent);
+          const cascade = buildCareersCascadingMenu();
+          ni.appendChild(cascade);
+          wireCareersCascadingInteractions(ni, a, chevBtn, cascade);
+        } catch (err) {
+          console.error('[CSO SharedHeader] Careers menu failed:', err);
+          if (!parent.parentNode) ni.appendChild(parent);
+        }
       } else if (isSchemes) {
-        const chevBtn = el('button', 'cso-nav-arrow cso-schemes-flyout-toggle');
-        chevBtn.type = 'button';
-        chevBtn.setAttribute('aria-label', 'Toggle Schemes categories menu');
-        chevBtn.setAttribute('aria-haspopup', 'true');
-        chevBtn.setAttribute('aria-expanded', 'false');
-        chevBtn.setAttribute('aria-controls', 'cso-schemes-stage1');
-        const chevIcon = el('span', 'cso-jobs-chev', '▾');
-        chevIcon.setAttribute('aria-hidden', 'true');
-        chevBtn.appendChild(chevIcon);
-        parent.appendChild(chevBtn);
-        ni.appendChild(parent);
-        const cascade = buildSchemesCascadingMenu();
-        ni.appendChild(cascade);
-        wireSchemesCascadingInteractions(ni, a, chevBtn, cascade);
+        try {
+          const chevBtn = el('button', 'cso-nav-arrow cso-schemes-flyout-toggle');
+          chevBtn.type = 'button';
+          chevBtn.setAttribute('aria-label', 'Toggle Schemes categories menu');
+          chevBtn.setAttribute('aria-haspopup', 'true');
+          chevBtn.setAttribute('aria-expanded', 'false');
+          chevBtn.setAttribute('aria-controls', 'cso-schemes-stage1');
+          const chevIcon = el('span', 'cso-jobs-chev', '▾');
+          chevIcon.setAttribute('aria-hidden', 'true');
+          chevBtn.appendChild(chevIcon);
+          parent.appendChild(chevBtn);
+          ni.appendChild(parent);
+          const cascade = buildSchemesCascadingMenu();
+          ni.appendChild(cascade);
+          wireSchemesCascadingInteractions(ni, a, chevBtn, cascade);
+        } catch (err) {
+          console.error('[CSO SharedHeader] Schemes menu failed:', err);
+          if (!parent.parentNode) ni.appendChild(parent);
+        }
       } else if (isStudy) {
-        const chevBtn = el('button', 'cso-nav-arrow cso-study-flyout-toggle');
-        chevBtn.type = 'button';
-        chevBtn.setAttribute('aria-label', 'Toggle Study Library tracks menu');
-        chevBtn.setAttribute('aria-haspopup', 'true');
-        chevBtn.setAttribute('aria-expanded', 'false');
-        chevBtn.setAttribute('aria-controls', 'cso-study-stage1');
-        const chevIcon = el('span', 'cso-jobs-chev', '▾');
-        chevIcon.setAttribute('aria-hidden', 'true');
-        chevBtn.appendChild(chevIcon);
-        parent.appendChild(chevBtn);
-        ni.appendChild(parent);
-        const cascade = buildStudyDropdownMenu();
-        ni.appendChild(cascade);
-        wireStudyDropdownInteractions(ni, a, chevBtn, cascade);
+        try {
+          const chevBtn = el('button', 'cso-nav-arrow cso-study-flyout-toggle');
+          chevBtn.type = 'button';
+          chevBtn.setAttribute('aria-label', 'Toggle Study Library tracks menu');
+          chevBtn.setAttribute('aria-haspopup', 'true');
+          chevBtn.setAttribute('aria-expanded', 'false');
+          chevBtn.setAttribute('aria-controls', 'cso-study-stage1');
+          const chevIcon = el('span', 'cso-jobs-chev', '▾');
+          chevIcon.setAttribute('aria-hidden', 'true');
+          chevBtn.appendChild(chevIcon);
+          parent.appendChild(chevBtn);
+          ni.appendChild(parent);
+          const cascade = buildStudyDropdownMenu();
+          ni.appendChild(cascade);
+          wireStudyDropdownInteractions(ni, a, chevBtn, cascade);
+        } catch (err) {
+          console.error('[CSO SharedHeader] Study Library menu failed:', err);
+          if (!parent.parentNode) ni.appendChild(parent);
+        }
       } else if (isCommunity) {
-        const chevBtn = el('button', 'cso-nav-arrow cso-community-flyout-toggle');
-        chevBtn.type = 'button';
-        chevBtn.setAttribute('aria-label', 'Toggle Community channels menu');
-        chevBtn.setAttribute('aria-haspopup', 'true');
-        chevBtn.setAttribute('aria-expanded', 'false');
-        chevBtn.setAttribute('aria-controls', 'cso-community-stage1');
-        const chevIcon = el('span', 'cso-jobs-chev', '▾');
-        chevIcon.setAttribute('aria-hidden', 'true');
-        chevBtn.appendChild(chevIcon);
-        parent.appendChild(chevBtn);
-        ni.appendChild(parent);
-        const cascade = buildCommunityDropdownMenu();
-        ni.appendChild(cascade);
-        wireCommunityDropdownInteractions(ni, a, chevBtn, cascade);
+        try {
+          const chevBtn = el('button', 'cso-nav-arrow cso-community-flyout-toggle');
+          chevBtn.type = 'button';
+          chevBtn.setAttribute('aria-label', 'Toggle Community channels menu');
+          chevBtn.setAttribute('aria-haspopup', 'true');
+          chevBtn.setAttribute('aria-expanded', 'false');
+          chevBtn.setAttribute('aria-controls', 'cso-community-stage1');
+          const chevIcon = el('span', 'cso-jobs-chev', '▾');
+          chevIcon.setAttribute('aria-hidden', 'true');
+          chevBtn.appendChild(chevIcon);
+          parent.appendChild(chevBtn);
+          ni.appendChild(parent);
+          const cascade = buildCommunityDropdownMenu();
+          ni.appendChild(cascade);
+          wireCommunityDropdownInteractions(ni, a, chevBtn, cascade);
+        } catch (err) {
+          console.error('[CSO SharedHeader] Community menu failed:', err);
+          if (!parent.parentNode) ni.appendChild(parent);
+        }
       } else {
         ni.appendChild(parent);
       }
@@ -2498,18 +2523,22 @@
   }
 
   function init() {
-    ensureAutoShell();
-    ensureAutoFooter();
-    ensureGlobalEnhancements();
-    applySettings();
-    syncBrandLogoMarks();
-    renderControls();
-    renderAuth();
-    renderNav();
-    hydrateHeaderNavFromApi();
-    ensureAdminLink();
-    updateSavedCountBadge();
-    syncAuthSession();
+    [
+      ['ensureAutoShell', ensureAutoShell],
+      ['ensureAutoFooter', ensureAutoFooter],
+      ['ensureGlobalEnhancements', ensureGlobalEnhancements],
+      ['applySettings', applySettings],
+      ['syncBrandLogoMarks', syncBrandLogoMarks],
+      ['renderControls', renderControls],
+      ['renderAuth', renderAuth],
+      ['renderNav', renderNav],
+      ['hydrateHeaderNavFromApi', hydrateHeaderNavFromApi],
+      ['ensureAdminLink', ensureAdminLink],
+      ['updateSavedCountBadge', updateSavedCountBadge],
+      ['syncAuthSession', syncAuthSession]
+    ].forEach(([name, fn]) => {
+      try { fn(); } catch (err) { console.error('[CSO SharedHeader] ' + name + ' failed:', err); }
+    });
   }
 
   if (document.readyState === 'loading') {

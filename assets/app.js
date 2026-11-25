@@ -27,6 +27,7 @@ const CONTENT={};
 const I18N={or:{'Home':'ମୂଳପୃଷ୍ଠା','Jobs':'ଚାକିରି','Careers':'କ୍ୟାରିୟର୍','Jobs & Careers':'ଚାକିରି ଓ କ୍ୟାରିୟର','Study Library':'ପାଠାଗାର','Mock Tests':'ମକ୍ ଟେଷ୍ଟ','Schemes':'ଯୋଜନା','Schemes & Benefits':'ଯୋଜନା ଓ ସୁବିଧା','Tools':'ଉପକରଣ','Community':'ସମୁଦାୟ','About':'ଆମ ବିଷୟରେ'},hi:{'Home':'मुख्य पृष्ठ','Jobs':'नौकरियाँ','Careers':'करियर','Jobs & Careers':'नौकरियाँ और करियर','Study Library':'अध्ययन पुस्तकालय','Mock Tests':'मॉक टेस्ट','Schemes':'योजनाएँ','Schemes & Benefits':'योजनाएँ और लाभ','Tools':'उपकरण','Community':'समुदाय','About':'हमारे बारे में'}}; // e.g. hi:{'Home':'होम'}
 /* ========================================================== */
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const mk=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n;};
 const ls={g:k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const RES=/^(settings|sidebar|customize|upgrade|downloads|comment-.*)$/;
@@ -186,13 +187,35 @@ if(!window.CSOTheme){
 }
 
 function ctl(){
- setSafeHtml($('#ctl'),'<span class="cso-popup-anchor"><button class="pill cso-ctl-lang" id="bl" aria-label="Language selector"><span class="cso-lang-icon">🌐</span> <span class="cso-lang-name">'+LN[S.lang]+'</span> ⌄</button></span><span class="cso-popup-anchor"><button class="pill cso-ctl-theme" id="bt" aria-label="Select portal theme"></button></span><span class="cso-popup-anchor"><button class="pill cso-ctl-a11y" id="ba">♿ Accessibility ⌄</button></span><span class="pill cso-ctl-zoom"><button class="fz" id="fm" aria-label="Smaller text">A–</button><button class="fz" id="fr" aria-label="Normal text">A</button><button class="fz" id="fp" aria-label="Larger text">A+</button></span>');
+ const ctlRoot=$('#ctl');
+ if(!ctlRoot)return;
+ ctlRoot.replaceChildren();
+ const langWrap=mk('span','cso-popup-anchor');
+ const bl=mk('button','pill cso-ctl-lang');bl.id='bl';bl.type='button';bl.setAttribute('aria-label','Language selector');
+ bl.append(mk('span','cso-lang-icon','🌐'),' ',mk('span','cso-lang-name',LN[S.lang]||'English'),' ⌄');
+ langWrap.appendChild(bl);
+
+ const themeWrap=mk('span','cso-popup-anchor');
+ const bt=mk('button','pill cso-ctl-theme');bt.id='bt';bt.type='button';bt.setAttribute('aria-label','Select portal theme');
+ themeWrap.appendChild(bt);
+
+ const a11yWrap=mk('span','cso-popup-anchor');
+ const ba=mk('button','pill cso-ctl-a11y','♿ Accessibility ⌄');ba.id='ba';ba.type='button';
+ a11yWrap.appendChild(ba);
+
+ const zoomWrap=mk('span','pill cso-ctl-zoom');
+ const fm=mk('button','fz','A–');fm.id='fm';fm.type='button';fm.setAttribute('aria-label','Smaller text');
+ const fr=mk('button','fz','A');fr.id='fr';fr.type='button';fr.setAttribute('aria-label','Normal text');
+ const fp=mk('button','fz','A+');fp.id='fp';fp.type='button';fp.setAttribute('aria-label','Larger text');
+ zoomWrap.append(fm,fr,fp);
+
+ ctlRoot.append(langWrap,themeWrap,a11yWrap,zoomWrap);
  csoSyncThemeUi(window.CSOTheme.getTheme());
- $('#bl').onclick=e=>pop(e.target,Object.keys(LN).map(k=>[LN[k],()=>{S.lang=k;save();apply();ctl();nav();authUI();lu();route();localize();toast('Language: '+LN[k])},S.lang===k]));
- $('#bt').onclick=e=>{e.stopPropagation();pop($('#bt'),CSO_PORTAL_THEMES.map(t=>[t.fullLabel,()=>{window.CSOTheme.setTheme(t.key,true);},window.CSOTheme.getTheme()===t.key]));};
- $('#ba').onclick=e=>pop(e.target,[['High contrast',()=>{S.hc=+!S.hc;save();apply()},S.hc],['Dyslexia-friendly font',()=>{if(window.CSOGlobal)window.CSOGlobal.toggleA11y('dyslexia');},document.documentElement.classList.contains('cso-a11y-dyslexia')],['Lite mode (reduced graphics)',()=>{if(window.CSOGlobal)window.CSOGlobal.toggleA11y('lite');},document.documentElement.classList.contains('cso-a11y-lite')],['Underline links',()=>{S.ul=+!S.ul;save();apply()},S.ul],['Reduce motion',()=>{S.rm=+!S.rm;save();apply()},S.rm],['Reset',()=>{S.hc=S.ul=S.rm=0;S.zoom=1;save();apply();if(window.CSOGlobal)window.CSOGlobal.resetA11y();}]]);
+ bl.onclick=e=>pop(e.target,Object.keys(LN).map(k=>[LN[k],()=>{S.lang=k;save();apply();ctl();nav();authUI();lu();route();localize();toast('Language: '+LN[k])},S.lang===k]));
+ bt.onclick=e=>{e.stopPropagation();pop(bt,CSO_PORTAL_THEMES.map(t=>[t.fullLabel,()=>{window.CSOTheme.setTheme(t.key,true);},window.CSOTheme.getTheme()===t.key]));};
+ ba.onclick=e=>pop(e.target,[['High contrast',()=>{S.hc=+!S.hc;save();apply()},S.hc],['Dyslexia-friendly font',()=>{if(window.CSOGlobal)window.CSOGlobal.toggleA11y('dyslexia');},document.documentElement.classList.contains('cso-a11y-dyslexia')],['Lite mode (reduced graphics)',()=>{if(window.CSOGlobal)window.CSOGlobal.toggleA11y('lite');},document.documentElement.classList.contains('cso-a11y-lite')],['Underline links',()=>{S.ul=+!S.ul;save();apply()},S.ul],['Reduce motion',()=>{S.rm=+!S.rm;save();apply()},S.rm],['Reset',()=>{S.hc=S.ul=S.rm=0;S.zoom=1;save();apply();if(window.CSOGlobal)window.CSOGlobal.resetA11y();}]]);
  const z=d=>{S.zoom=d?Math.max(.85,Math.min(1.3,+(S.zoom+d).toFixed(2))):1;save();apply()};
- $('#fm').onclick=()=>z(-.05);$('#fr').onclick=()=>z(0);$('#fp').onclick=()=>z(.05);
+ fm.onclick=()=>z(-.05);fr.onclick=()=>z(0);fp.onclick=()=>z(.05);
 }
 function heroLang(){
  const words={
@@ -210,7 +233,6 @@ function nav(){
  const w=$('#navw');
  if(!w)return;
  w.replaceChildren();
- const mk=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n;};
  const bar=mk('div','cso-nav-bar-container');
  const mobBtn=mk('button','cso-nav-mobile');mobBtn.type='button';mobBtn.id='cso-menu-toggle';
  mobBtn.setAttribute('aria-expanded','false');mobBtn.setAttribute('aria-controls','cso-nav-items');mobBtn.setAttribute('aria-label','Navigation Menu');
@@ -822,55 +844,65 @@ function nav(){
    a.append(document.createTextNode(translateText(t)));
    par.appendChild(a);
    if(isJobs){
-    const chevBtn=mk('button','cso-nav-arrow cso-jobs-flyout-toggle');chevBtn.type='button';
-    chevBtn.setAttribute('aria-label','Toggle Jobs sectors menu');
-    chevBtn.setAttribute('aria-haspopup','true');chevBtn.setAttribute('aria-expanded','false');chevBtn.setAttribute('aria-controls','cso-jobs-stage1');
-    const cI=mk('span','cso-jobs-chev','▾');cI.setAttribute('aria-hidden','true');chevBtn.appendChild(cI);
-    par.appendChild(chevBtn);
-    ni.appendChild(par);
-    const cascade=buildJobsCascading();
-    ni.appendChild(cascade);
-    wireJobsCascading(ni,a,chevBtn,cascade);
+    try{
+     const chevBtn=mk('button','cso-nav-arrow cso-jobs-flyout-toggle');chevBtn.type='button';
+     chevBtn.setAttribute('aria-label','Toggle Jobs sectors menu');
+     chevBtn.setAttribute('aria-haspopup','true');chevBtn.setAttribute('aria-expanded','false');chevBtn.setAttribute('aria-controls','cso-jobs-stage1');
+     const cI=mk('span','cso-jobs-chev','▾');cI.setAttribute('aria-hidden','true');chevBtn.appendChild(cI);
+     par.appendChild(chevBtn);
+     ni.appendChild(par);
+     const cascade=buildJobsCascading();
+     ni.appendChild(cascade);
+     wireJobsCascading(ni,a,chevBtn,cascade);
+    }catch(err){console.error('[CSO Nav] Jobs menu failed:',err);if(!par.parentNode)ni.appendChild(par);}
    }else if(isCareers){
-    const chevBtn=mk('button','cso-nav-arrow cso-careers-flyout-toggle');chevBtn.type='button';
-    chevBtn.setAttribute('aria-label','Toggle Careers tracks menu');
-    chevBtn.setAttribute('aria-haspopup','true');chevBtn.setAttribute('aria-expanded','false');chevBtn.setAttribute('aria-controls','cso-careers-stage1');
-    const cI=mk('span','cso-jobs-chev','▾');cI.setAttribute('aria-hidden','true');chevBtn.appendChild(cI);
-    par.appendChild(chevBtn);
-    ni.appendChild(par);
-    const cascade=buildCareersCascading();
-    ni.appendChild(cascade);
-    wireCareersCascading(ni,a,chevBtn,cascade);
+    try{
+     const chevBtn=mk('button','cso-nav-arrow cso-careers-flyout-toggle');chevBtn.type='button';
+     chevBtn.setAttribute('aria-label','Toggle Careers tracks menu');
+     chevBtn.setAttribute('aria-haspopup','true');chevBtn.setAttribute('aria-expanded','false');chevBtn.setAttribute('aria-controls','cso-careers-stage1');
+     const cI=mk('span','cso-jobs-chev','▾');cI.setAttribute('aria-hidden','true');chevBtn.appendChild(cI);
+     par.appendChild(chevBtn);
+     ni.appendChild(par);
+     const cascade=buildCareersCascading();
+     ni.appendChild(cascade);
+     wireCareersCascading(ni,a,chevBtn,cascade);
+    }catch(err){console.error('[CSO Nav] Careers menu failed:',err);if(!par.parentNode)ni.appendChild(par);}
    }else if(isSchemes){
-    const chevBtn=mk('button','cso-nav-arrow cso-schemes-flyout-toggle');chevBtn.type='button';
-    chevBtn.setAttribute('aria-label','Toggle Schemes categories menu');
-    chevBtn.setAttribute('aria-haspopup','true');chevBtn.setAttribute('aria-expanded','false');chevBtn.setAttribute('aria-controls','cso-schemes-stage1');
-    const cI=mk('span','cso-jobs-chev','▾');cI.setAttribute('aria-hidden','true');chevBtn.appendChild(cI);
-    par.appendChild(chevBtn);
-    ni.appendChild(par);
-    const cascade=buildSchemesCascading();
-    ni.appendChild(cascade);
-    wireSchemesCascading(ni,a,chevBtn,cascade);
+    try{
+     const chevBtn=mk('button','cso-nav-arrow cso-schemes-flyout-toggle');chevBtn.type='button';
+     chevBtn.setAttribute('aria-label','Toggle Schemes categories menu');
+     chevBtn.setAttribute('aria-haspopup','true');chevBtn.setAttribute('aria-expanded','false');chevBtn.setAttribute('aria-controls','cso-schemes-stage1');
+     const cI=mk('span','cso-jobs-chev','▾');cI.setAttribute('aria-hidden','true');chevBtn.appendChild(cI);
+     par.appendChild(chevBtn);
+     ni.appendChild(par);
+     const cascade=buildSchemesCascading();
+     ni.appendChild(cascade);
+     wireSchemesCascading(ni,a,chevBtn,cascade);
+    }catch(err){console.error('[CSO Nav] Schemes menu failed:',err);if(!par.parentNode)ni.appendChild(par);}
    }else if(isStudy){
-    const chevBtn=mk('button','cso-nav-arrow cso-study-flyout-toggle');chevBtn.type='button';
-    chevBtn.setAttribute('aria-label','Toggle Study Library tracks menu');
-    chevBtn.setAttribute('aria-haspopup','true');chevBtn.setAttribute('aria-expanded','false');chevBtn.setAttribute('aria-controls','cso-study-stage1');
-    const cI=mk('span','cso-jobs-chev','▾');cI.setAttribute('aria-hidden','true');chevBtn.appendChild(cI);
-    par.appendChild(chevBtn);
-    ni.appendChild(par);
-    const cascade=buildStudyDropdown();
-    ni.appendChild(cascade);
-    wireStudyDropdown(ni,a,chevBtn,cascade);
+    try{
+     const chevBtn=mk('button','cso-nav-arrow cso-study-flyout-toggle');chevBtn.type='button';
+     chevBtn.setAttribute('aria-label','Toggle Study Library tracks menu');
+     chevBtn.setAttribute('aria-haspopup','true');chevBtn.setAttribute('aria-expanded','false');chevBtn.setAttribute('aria-controls','cso-study-stage1');
+     const cI=mk('span','cso-jobs-chev','▾');cI.setAttribute('aria-hidden','true');chevBtn.appendChild(cI);
+     par.appendChild(chevBtn);
+     ni.appendChild(par);
+     const cascade=buildStudyDropdown();
+     ni.appendChild(cascade);
+     wireStudyDropdown(ni,a,chevBtn,cascade);
+    }catch(err){console.error('[CSO Nav] Study Library menu failed:',err);if(!par.parentNode)ni.appendChild(par);}
    }else if(isCommunity){
-    const chevBtn=mk('button','cso-nav-arrow cso-community-flyout-toggle');chevBtn.type='button';
-    chevBtn.setAttribute('aria-label','Toggle Community channels menu');
-    chevBtn.setAttribute('aria-haspopup','true');chevBtn.setAttribute('aria-expanded','false');chevBtn.setAttribute('aria-controls','cso-community-stage1');
-    const cI=mk('span','cso-jobs-chev','▾');cI.setAttribute('aria-hidden','true');chevBtn.appendChild(cI);
-    par.appendChild(chevBtn);
-    ni.appendChild(par);
-    const cascade=buildCommunityDropdown();
-    ni.appendChild(cascade);
-    wireCommunityDropdown(ni,a,chevBtn,cascade);
+    try{
+     const chevBtn=mk('button','cso-nav-arrow cso-community-flyout-toggle');chevBtn.type='button';
+     chevBtn.setAttribute('aria-label','Toggle Community channels menu');
+     chevBtn.setAttribute('aria-haspopup','true');chevBtn.setAttribute('aria-expanded','false');chevBtn.setAttribute('aria-controls','cso-community-stage1');
+     const cI=mk('span','cso-jobs-chev','▾');cI.setAttribute('aria-hidden','true');chevBtn.appendChild(cI);
+     par.appendChild(chevBtn);
+     ni.appendChild(par);
+     const cascade=buildCommunityDropdown();
+     ni.appendChild(cascade);
+     wireCommunityDropdown(ni,a,chevBtn,cascade);
+    }catch(err){console.error('[CSO Nav] Community menu failed:',err);if(!par.parentNode)ni.appendChild(par);}
    }else{
     ni.appendChild(par);
    }
@@ -2723,9 +2755,13 @@ function admin(){
 }
 /* CSO admin portal login v1 */
 /* init */
-const home=$('main');home.id='home';const viewMain=mk('main','w');viewMain.id='view';viewMain.hidden=true;home.after(viewMain);
-apply();nav();ctl();authUI();csoRestoreAuthSession();
-$('.top>div').dataset.h='';
+const home=$('main');const viewMain=mk('main','w');viewMain.id='view';viewMain.hidden=true;if(home){home.id='home';home.after(viewMain);}
+try{apply();}catch(e){console.error('[CSO App] apply failed:',e);}
+try{nav();}catch(e){console.error('[CSO App] nav failed:',e);}
+try{ctl();}catch(e){console.error('[CSO App] ctl failed:',e);}
+try{authUI();}catch(e){console.error('[CSO App] authUI failed:',e);}
+try{csoRestoreAuthSession();}catch(e){console.error('[CSO App] restoreAuth failed:',e);}
+const topDiv=$('.top>div');if(topDiv)topDiv.dataset.h='';
 const bind=(el,title)=>{const s=reg(title);el.tabIndex=0;el.setAttribute('role','link');el.addEventListener('click',e=>{e.preventDefault();go(s)});el.addEventListener('keydown',e=>{if(e.key==='Enter')go(s)})};
 $$('a[href="#"]').forEach(a=>{a.dataset.route=slug(clean(a.textContent))});
 $$('.opt').forEach(c=>bind(c,clean($('b',c).textContent)));
