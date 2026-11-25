@@ -881,50 +881,28 @@
   function renderPortalListing(mount) {
     activatePortalShell();
     var hasFilter = Boolean(state.filters.l1 || state.filters.l2 || state.filters.l3 || state.filters.region || state.filters.district || state.filters.qualification || state.filters.stage || state.filters.search);
-    var kpis = computeHeroKpis();
 
     var wrap = el('div', 'jp-portal');
 
-    // 1. Flagship Editorial Hero Banner
-    var hero = el('section', 'jp-hero');
-    hero.setAttribute('aria-label', 'Odisha & Central Government Jobs & Careers');
+    // 1. Compact Editorial Hero Header (v281)
+    var hero = el('section', 'jp-hero jp-hero--compact');
+    hero.setAttribute('aria-label', 'Verified Jobs & Recruitment Notifications');
     var heroTop = el('div', 'jp-hero-top');
-    var eyebrow = el('span', 'jp-eyebrow');
-    eyebrow.appendChild(el('span', 'jp-eyebrow-dot'));
-    eyebrow.appendChild(el('span', '', state.lang === 'or'
-      ? 'ଓଡ଼ିଶା ଏବଂ କେନ୍ଦ୍ର ନିଯୁକ୍ତି ପୋର୍ଟାଲ୍ · ଯାଞ୍ଚିତ .GOV.IN ବିଜ୍ଞପ୍ତି'
-      : 'ODISHA & CENTRAL RECRUITMENT PORTAL · VERIFIED .GOV.IN NOTIFICATIONS'));
-    heroTop.appendChild(eyebrow);
-    heroTop.appendChild(buildLangToggle(function () { renderPortalListing(mount); }));
-    hero.appendChild(heroTop);
-
     var copy = el('div', 'jp-hero-copy');
     copy.appendChild(el('h1', 'jp-hero-title', state.lang === 'or'
-      ? 'ଓଡ଼ିଶା ଏବଂ କେନ୍ଦ୍ର ସରକାରୀ ନିଯୁକ୍ତି ଓ କ୍ୟାରିଅର୍'
-      : 'Odisha & Central Government Jobs & Careers'));
+      ? 'ଯାଞ୍ଚିତ ନିଯୁକ୍ତି ବିଜ୍ଞପ୍ତି'
+      : 'Verified Jobs & Recruitment Notifications'));
     copy.appendChild(el('p', 'jp-hero-sub', state.lang === 'or'
-      ? 'OPSC, OSSC, OSSSC, UPSC, SSC, ବ୍ୟାଙ୍କିଙ୍ଗ୍ ଏବଂ ଓଡ଼ିଶାର ସମସ୍ତ ୩୦ ଜିଲ୍ଲାର ଯାଞ୍ଚିତ ନିଯୁକ୍ତି ବିଜ୍ଞପ୍ତି, ପଦବୀ ବିବରଣୀ, ସିଲାବସ୍ PDF, ଆଡମିଟ୍ କାର୍ଡ ଏବଂ ପରୀକ୍ଷା ତାରିଖ।'
-      : 'Verified recruitment notifications, vacancy breakdowns, syllabus PDFs, admit cards, and exam dates across OPSC, OSSC, OSSSC, UPSC, SSC, Banking & Odisha Districts.'));
-    hero.appendChild(copy);
-
-    var kpiRow = el('div', 'jp-hero-kpis');
-    [
-      [num(kpis.activeCount), state.lang === 'or' ? 'ସକ୍ରିୟ ନିଯୁକ୍ତି' : 'Active Recruitments'],
-      [num(kpis.totalVacancies), state.lang === 'or' ? 'ମୋଟ ପଦବୀ' : 'Total Vacancies'],
-      [num(kpis.closingSoon), state.lang === 'or' ? 'ଏହି ସପ୍ତାହରେ ଶେଷ' : 'Closing This Week'],
-      [num(kpis.deptCount), state.lang === 'or' ? 'ବିଭାଗ / ବୋର୍ଡ' : 'Departments / Boards']
-    ].forEach(function (pair) {
-      var tile = el('div', 'jp-hero-kpi');
-      tile.appendChild(el('strong', 'jp-hero-kpi-val', pair[0]));
-      tile.appendChild(el('span', 'jp-hero-kpi-label', pair[1]));
-      kpiRow.appendChild(tile);
-    });
-    hero.appendChild(kpiRow);
+      ? 'ଓଡ଼ିଶା ସରକାରୀ, କେନ୍ଦ୍ରୀୟ, PSU, NGO ଏବଂ ବିଦେଶୀ ନିଯୁକ୍ତି ସୁଯୋଗ।'
+      : 'Official Odisha State, Central, PSU, NGO & Foreign job openings.'));
+    heroTop.appendChild(copy);
+    heroTop.appendChild(buildLangToggle(function () { renderPortalListing(mount); }));
+    hero.appendChild(heroTop);
     wrap.appendChild(hero);
 
-    // 2. Visual Sector Cards + 4-Column Cascading Filter Bar + Quick-Filter Row
+    // 2. Streamlined Single-Card Filter Bar (Sector Tabs + Compact 1-Row Controls)
     var filterSec = el('section', 'jp-card');
-    filterSec.setAttribute('aria-label', 'Jobs 3-Layer Filter Explorer');
+    filterSec.setAttribute('aria-label', 'Jobs Filter Explorer');
 
     var l1Nodes = state.nodes.filter(function (n) { return Number(n.level) === 1; });
     if (l1Nodes.length) {
@@ -965,56 +943,20 @@
       filterSec.appendChild(sectorStrip);
     }
 
-    // 4-Column Filter Grid
-    var cGrid = el('div', 'jp-cascade-grid');
-    function makeSel(label, opts, val, onChange) {
-      var f = el('div', 'jp-field');
-      var selId = 'jp-sel-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      var lbl = el('label', 'jp-label', label);
-      lbl.setAttribute('for', selId);
-      f.appendChild(lbl);
-      var s = el('select', 'jp-select');
-      s.id = selId;
-      opts.forEach(function (o) {
-        var op = el('option', '', o[1]); op.value = o[0];
-        if (o[0] === val) op.selected = true;
-        s.appendChild(op);
-      });
-      s.addEventListener('change', function () { onChange(s.value); });
-      f.appendChild(s);
-      return f;
+    var l1NodeActive = findNodeById(state.nodes, state.filters.l1);
+    var isForeignSectorActive = Boolean(l1NodeActive && String(l1NodeActive.slug || '').toLowerCase() === 'foreign');
+    if (isForeignSectorActive && ['odisha', 'central', 'all-india'].indexOf(state.filters.region) !== -1) {
+      state.filters.region = '';
     }
 
-    var l2Nodes = state.nodes.filter(function (n) { return Number(n.level) === 2 && (!state.filters.l1 || n.parent_id === state.filters.l1); });
-    var l3Nodes = state.nodes.filter(function (n) { return Number(n.level) === 3 && (!state.filters.l2 || n.parent_id === state.filters.l2); });
-
-    cGrid.appendChild(makeSel(
-      '1. Sector / Main Category',
-      [['', 'All Sectors']].concat(l1Nodes.map(function (n) { return [n.id, pick(n, 'title') + ' (' + (n.published_jobs_count || 0) + ')']; })),
-      state.filters.l1,
-      function (v) { state.filters.l1 = v; state.filters.l2 = ''; state.filters.l3 = ''; loadPortalJobs(mount); }
-    ));
-    cGrid.appendChild(makeSel(
-      '2. Department / Commission',
-      [['', 'All Departments & Boards']].concat(l2Nodes.map(function (n) { return [n.id, pick(n, 'title') + ' (' + (n.published_jobs_count || 0) + ')']; })),
-      state.filters.l2,
-      function (v) { state.filters.l2 = v; state.filters.l3 = ''; loadPortalJobs(mount); }
-    ));
-    cGrid.appendChild(makeSel(
-      '3. Tenure / Cadre Type',
-      [['', 'All Tenure & Cadre Types']].concat(l3Nodes.map(function (n) { return [n.id, pick(n, 'title') + ' (' + (n.published_jobs_count || 0) + ')']; })),
-      state.filters.l3,
-      function (v) { state.filters.l3 = v; loadPortalJobs(mount); }
-    ));
+    var filterRow = el('div', 'jp-filter-row' + (isForeignSectorActive ? ' is-no-scope' : ''));
 
     var qField = el('div', 'jp-field');
-    var qLbl = el('label', 'jp-label', '4. Search by Post, Advt. No. or District');
-    qLbl.setAttribute('for', 'jp-portal-search');
-    qField.appendChild(qLbl);
     var qInp = el('input', 'jp-input');
     qInp.id = 'jp-portal-search';
     qInp.type = 'search';
-    qInp.placeholder = state.lang === 'or' ? 'ପଦବୀ, ବିଜ୍ଞାପନ ନମ୍ବର କିମ୍ବା ଜିଲ୍ଲା ଖୋଜନ୍ତୁ...' : 'Search by Post, Advt. No. or District...';
+    qInp.setAttribute('aria-label', 'Search jobs by post, board, or keyword');
+    qInp.placeholder = state.lang === 'or' ? 'ପଦବୀ, ବୋର୍ଡ କିମ୍ବା କୀୱାର୍ଡ ଖୋଜନ୍ତୁ...' : 'Search by post, board, or keyword...';
     qInp.value = state.filters.search;
     var timer = null;
     qInp.addEventListener('input', function () {
@@ -1023,94 +965,58 @@
       timer = setTimeout(function () { loadPortalJobs(mount); }, 180);
     });
     qField.appendChild(qInp);
-    cGrid.appendChild(qField);
-    filterSec.appendChild(cGrid);
+    filterRow.appendChild(qField);
 
-    // Quick-Filter Pill Row: Qualification, Lifecycle Stage & All 30 Odisha Districts
-    var quickBar = el('div', 'jp-quickbar');
-
-    var qualGroup = el('div', 'jp-quick-group');
-    qualGroup.appendChild(el('span', 'jp-quick-group-label', 'Qualification:'));
-    var qualOptions = QUAL_PRESETS.slice();
-    (state.facets.qualifications || []).forEach(function (fq) {
-      if (fq && qualOptions.indexOf(fq) === -1) qualOptions.push(fq);
-    });
-    qualOptions.slice(0, 6).forEach(function (q) {
-      var b = el('button', 'jp-filter-pill' + (state.filters.qualification === q ? ' is-active' : ''), '🎓 ' + q);
-      b.type = 'button';
-      b.addEventListener('click', function () {
-        state.filters.qualification = state.filters.qualification === q ? '' : q;
-        loadPortalJobs(mount);
-      });
-      qualGroup.appendChild(b);
-    });
-    quickBar.appendChild(qualGroup);
-
-    var stageGroup = el('div', 'jp-quick-group');
-    stageGroup.appendChild(el('span', 'jp-quick-group-label', 'Stage:'));
-    STAGE_PRESETS.forEach(function (pair) {
-      var b = el('button', 'jp-filter-pill' + (state.filters.stage === pair[0] ? ' is-active' : ''), pair[1]);
-      b.type = 'button';
-      b.addEventListener('click', function () {
-        state.filters.stage = state.filters.stage === pair[0] ? '' : pair[0];
-        loadPortalJobs(mount);
-      });
-      stageGroup.appendChild(b);
-    });
-    quickBar.appendChild(stageGroup);
-
-    var l1NodeActive = findNodeById(state.nodes, state.filters.l1);
-    var isForeignSectorActive = Boolean(l1NodeActive && String(l1NodeActive.slug || '').toLowerCase() === 'foreign');
-    if (isForeignSectorActive && ['odisha', 'central', 'all-india'].indexOf(state.filters.region) !== -1) {
-      state.filters.region = '';
-    }
     if (!isForeignSectorActive) {
-      var regGroup = el('div', 'jp-quick-group');
-      regGroup.appendChild(el('span', 'jp-quick-group-label', 'Scope:'));
-      REGION_PRESETS.forEach(function (pair) {
-        var b = el('button', 'jp-filter-pill' + (state.filters.region === pair[0] ? ' is-active' : ''), pair[1]);
-        b.type = 'button';
-        b.addEventListener('click', function () {
-          state.filters.region = state.filters.region === pair[0] ? '' : pair[0];
-          loadPortalJobs(mount);
-        });
-        regGroup.appendChild(b);
+      var scopeField = el('div', 'jp-field');
+      var scopeSel = el('select', 'jp-select');
+      scopeSel.id = 'jp-sel-scope';
+      scopeSel.setAttribute('aria-label', 'Geographic Scope');
+      [['', state.lang === 'or' ? 'ସମସ୍ତ ସ୍କୋପ୍' : 'All Scopes']].concat(
+        REGION_PRESETS.filter(function (p) { return p[0] !== 'foreign'; })
+      ).forEach(function (optPair) {
+        var op = el('option', '', optPair[1]);
+        op.value = optPair[0];
+        if (state.filters.region === optPair[0]) op.selected = true;
+        scopeSel.appendChild(op);
       });
-      quickBar.appendChild(regGroup);
+      scopeSel.addEventListener('change', function () {
+        state.filters.region = scopeSel.value;
+        loadPortalJobs(mount);
+      });
+      scopeField.appendChild(scopeSel);
+      filterRow.appendChild(scopeField);
     }
 
-    var distGroup = el('div', 'jp-quick-group');
-    distGroup.appendChild(el('span', 'jp-quick-group-label', 'Odisha District:'));
-    var distSel = el('select', 'jp-select jp-district-select');
-    distSel.setAttribute('aria-label', 'Filter by Odisha District');
-    var optAllD = el('option', '', 'All 30 Districts');
-    optAllD.value = '';
-    distSel.appendChild(optAllD);
-    ODISHA_DISTRICTS.forEach(function (d) {
-      var op = el('option', '', d);
-      op.value = d;
-      if (state.filters.district === d) op.selected = true;
-      distSel.appendChild(op);
+    var stageField = el('div', 'jp-field');
+    var stageSel = el('select', 'jp-select');
+    stageSel.id = 'jp-sel-stage';
+    stageSel.setAttribute('aria-label', 'Recruitment Stage');
+    [['', state.lang === 'or' ? 'ସମସ୍ତ ପର୍ଯ୍ୟାୟ' : 'All Stages']].concat(STAGE_PRESETS).forEach(function (optPair) {
+      var op = el('option', '', optPair[1]);
+      op.value = optPair[0];
+      if (state.filters.stage === optPair[0]) op.selected = true;
+      stageSel.appendChild(op);
     });
-    distSel.addEventListener('change', function () {
-      state.filters.district = distSel.value;
+    stageSel.addEventListener('change', function () {
+      state.filters.stage = stageSel.value;
       loadPortalJobs(mount);
     });
-    distGroup.appendChild(distSel);
-    quickBar.appendChild(distGroup);
+    stageField.appendChild(stageSel);
+    filterRow.appendChild(stageField);
 
     if (hasFilter) {
-      var rst = el('button', 'jp-btn jp-btn--xs', '✕ Reset Filters');
+      var rst = el('button', 'jp-btn jp-btn--xs jp-reset-btn', state.lang === 'or' ? '✕ ରିସେଟ୍' : '✕ Reset');
       rst.type = 'button';
       rst.addEventListener('click', function () {
         state.filters = { l1: '', l2: '', l3: '', region: '', district: '', qualification: '', stage: '', search: '' };
         loadPortalJobs(mount);
       });
-      quickBar.appendChild(rst);
+      filterRow.appendChild(rst);
     }
-    filterSec.appendChild(quickBar);
+    filterSec.appendChild(filterRow);
 
-    // Active Filter Chips (shows deep-linked sector, sub-category, tenure, region, stage, district)
+    // Active Filter Chips (shows deep-linked sector, dept/sub-category, tenure, region, stage, search)
     var activeChips = [];
     if (state.filters.l1) {
       var n1 = state.nodes.find(function (n) { return n.id === state.filters.l1 || n.slug === state.filters.l1; });
@@ -1118,7 +1024,7 @@
     }
     if (state.filters.l2) {
       var n2 = state.nodes.find(function (n) { return n.id === state.filters.l2 || n.slug === state.filters.l2; });
-      activeChips.push(['Category: ' + (n2 ? pick(n2, 'title') : state.filters.l2), function () { state.filters.l2 = ''; state.filters.l3 = ''; loadPortalJobs(mount); }]);
+      activeChips.push(['Department: ' + (n2 ? pick(n2, 'title') : state.filters.l2), function () { state.filters.l2 = ''; state.filters.l3 = ''; loadPortalJobs(mount); }]);
     }
     if (state.filters.l3) {
       var n3 = state.nodes.find(function (n) { return n.id === state.filters.l3 || n.slug === state.filters.l3; });
@@ -1154,29 +1060,24 @@
     }
     wrap.appendChild(filterSec);
 
-    // 3. Recruitment Cards OR Single Illustrated Empty State + Seeded 3-Layer Departments Directory
+    // 3. Clean Job Cards OR Single Compact Empty State Card
     if (!state.items.length) {
-      var emptyCard = el('section', 'jp-empty-card');
+      var emptyCard = el('section', 'jp-empty-card jp-empty-card--compact');
       emptyCard.setAttribute('aria-label', 'Recruitment Notifications Status');
-      var art = el('div', 'jp-empty-art');
-      art.appendChild(buildEmptyBriefcaseSvg());
-      emptyCard.appendChild(art);
-
-      emptyCard.appendChild(el('h2', 'jp-empty-title', hasFilter
-        ? (state.lang === 'or' ? 'ଆପଣଙ୍କ ଫିଲ୍ଟର୍ ସହିତ କୌଣସି ନିଯୁକ୍ତି ମିଳିଲା ନାହିଁ' : 'No Recruitment Notifications Match Your Selected Filters')
-        : (state.lang === 'or' ? 'ନୂତନ ସରକାରୀ ନିଯୁକ୍ତି ବିଜ୍ଞପ୍ତି ଶୀଘ୍ର ପ୍ରକାଶିତ ହେବ' : 'Fresh Verified Recruitment Notifications Coming Soon')));
-
+      emptyCard.appendChild(el('h2', 'jp-empty-title', state.lang === 'or'
+        ? 'ଏହି ମୁହୂର୍ତ୍ତରେ କୌଣସି ମେଳ ଖାଉଥିବା ନିଯୁକ୍ତି ବିଜ୍ଞପ୍ତି ନାହିଁ'
+        : 'No matching job notifications right now'));
       emptyCard.appendChild(el('p', 'jp-empty-desc', hasFilter
         ? (state.lang === 'or'
-          ? 'ଅନ୍ୟ କ୍ଷେତ୍ର, ବିଭାଗ କିମ୍ବା ଯୋଗ୍ୟତା ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା ସମସ୍ତ ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ।'
-          : 'Try widening your sector, department, qualification, or district filters — or browse our 3-layer Odisha & Central recruitment boards below.')
+          ? 'ଅନ୍ୟ କ୍ଷେତ୍ର କିମ୍ବା ଫିଲ୍ଟର୍ ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ।'
+          : 'Try broadening your sector, scope, or stage selection — or reset filters to view all available openings.')
         : (state.lang === 'or'
-          ? 'ଏହି ପୋର୍ଟାଲ୍ ସିଧାସଳଖ ଯାଞ୍ଚିତ .gov.in ସୂଚନା ସହିତ ଅପଡେଟ୍ ହୁଏ। ତଳେ ଥିବା ବିଭାଗ ଏବଂ ବୋର୍ଡଗୁଡ଼ିକୁ ବ୍ରାଉଜ୍ କରନ୍ତୁ।'
-          : 'Every notice published here is verified against official .gov.in / .nic.in gazettes with vacancy tables, syllabus PDFs, and exam dates. Explore the recruiting boards below.')));
+          ? 'ନୂତନ ଯାଞ୍ଚିତ ନିଯୁକ୍ତି ବିଜ୍ଞପ୍ତି ପ୍ରକାଶିତ ହେବା ମାତ୍ରେ ଏଠାରେ ଦେଖାଯିବ।'
+          : 'New verified Odisha & Central recruitment notifications will appear here as soon as they are published.')));
 
       var emptyActions = el('div', 'jp-pills-row');
       if (hasFilter) {
-        var resetBtn = el('button', 'jp-btn jp-btn--primary', state.lang === 'or' ? 'ସମସ୍ତ ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ' : 'Reset All Filters');
+        var resetBtn = el('button', 'jp-btn jp-btn--primary', state.lang === 'or' ? 'ଫିଲ୍ଟର୍ ରିସେଟ୍ କରନ୍ତୁ' : 'Reset Filters');
         resetBtn.type = 'button';
         resetBtn.addEventListener('click', function () {
           state.filters = { l1: '', l2: '', l3: '', region: '', district: '', qualification: '', stage: '', search: '' };
@@ -1184,20 +1085,15 @@
         });
         emptyActions.appendChild(resetBtn);
       }
-      var studyLink = el('a', 'jp-btn', state.lang === 'or' ? '📚 ଷ୍ଟଡି ଲାଇବ୍ରେରୀ ଦେଖନ୍ତୁ →' : '📚 Explore Study Library →');
-      studyLink.href = '/study-library/';
-      emptyActions.appendChild(studyLink);
-
       if (state.isAdmin) {
-        var adminBtn = el('a', 'jp-btn jp-btn--primary', '+ Publish First Job in Admin Studio ↗');
+        var adminBtn = el('a', 'jp-btn jp-btn--primary', '+ Publish Job in Admin Studio ↗');
         adminBtn.href = '/admin/#folder-jobs-careers';
         emptyActions.appendChild(adminBtn);
       }
-      emptyCard.appendChild(emptyActions);
+      if (emptyActions.children.length) {
+        emptyCard.appendChild(emptyActions);
+      }
       wrap.appendChild(emptyCard);
-
-      // Show Browse 3-Layer Departments Grid so the portal never feels bare
-      renderDepartmentsDirectory(wrap, mount);
     } else {
       var resBar = el('div', 'jp-results-bar');
       resBar.appendChild(el('h2', 'jp-h2', state.lang === 'or'
@@ -1356,7 +1252,7 @@
 
     // Listing mode: single-roundtrip batched bootstrap endpoint + deep-link URL filter hydration
     var rawSector = (params.get('sector') || params.get('l1') || '').trim();
-    var rawSub = (params.get('sub') || params.get('l2') || '').trim();
+    var rawSub = (params.get('dept') || params.get('sub') || params.get('l2') || '').trim();
     var rawTenure = (params.get('tenure') || params.get('l3') || '').trim();
     var rawRegion = (params.get('region') || '').trim().toLowerCase();
     var rawStage = normalizeStageUrlParam(params.get('stage') || '');

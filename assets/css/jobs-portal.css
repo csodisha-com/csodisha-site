@@ -284,6 +284,34 @@
   color: #ffffff;
 }
 
+/* Compact Hero Variant (v281) */
+.jp-hero--compact {
+  padding: 1.25rem 1.5rem;
+  gap: 10px;
+}
+
+.jp-hero--compact .jp-hero-title {
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+}
+
+/* Streamlined Single-Row Filter Bar (v281) */
+.jp-filter-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.jp-filter-row.is-no-scope {
+  grid-template-columns: 1.8fr 1fr auto;
+}
+
+.jp-reset-btn {
+  min-height: 40px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
 /* 3-Layer Cascading Selector & Programmatic Filter Pills (v265) */
 .jp-cascade-grid {
   display: grid;
@@ -300,7 +328,7 @@
 .jp-label {
   font-size: 0.72rem;
   font-weight: 800;
-  color: var(--cso-muted, #475569);
+  color: var(--cso-ink-secondary, #4c5e6e);
   text-transform: uppercase;
   letter-spacing: 0.045em;
 }
@@ -310,9 +338,9 @@
   width: 100%;
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid var(--cso-border, #cbd5e1);
-  background: var(--cso-bg, #f8fafc);
-  color: var(--cso-text, #111827);
+  border: 1px solid var(--cso-border-subtle, #cbd5e1);
+  background: var(--cso-card-subtle, #f8fafc);
+  color: var(--cso-ink-primary, #111827);
   font-size: 0.88rem;
   font-family: inherit;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -321,8 +349,8 @@
 .jp-select:focus,
 .jp-input:focus {
   outline: none;
-  border-color: var(--cso-primary, #15803d);
-  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.16);
+  border-color: var(--cso-brand-primary, #115569);
+  box-shadow: 0 0 0 3px rgba(17, 85, 105, 0.16);
 }
 
 .jp-quickbar {
@@ -984,6 +1012,8 @@
 @media (max-width: 980px) {
   .jp-hero-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .jp-sector-strip { grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); }
+  .jp-filter-row,
+  .jp-filter-row.is-no-scope,
   .jp-cascade-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .jp-tiles-grid,
   .jp-kit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -996,6 +1026,8 @@
 
 @media (max-width: 640px) {
   .jp-hero-kpis,
+  .jp-filter-row,
+  .jp-filter-row.is-no-scope,
   .jp-cascade-grid,
   .jp-tiles-grid,
   .jp-kit-grid,
