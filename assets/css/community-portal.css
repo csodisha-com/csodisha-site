@@ -1413,3 +1413,21 @@ aside.com-sidebar,
     min-width: 0;
   }
 }
+
+/* v298: Dark Night Mode-Only Inactive Hero Language Toggle Button Fix */
+:root[data-theme="dark"] .cp-hero .cp-lang-btn:not(.is-active),
+:root[data-theme="dark"] .cp-lang-btn:not(.is-active),
+:root[data-cso-theme="dark"] .cp-lang-btn:not(.is-active),
+:root[data-cso-resolved-mode="dark"] .cp-lang-btn:not(.is-active) {
+  color: #e2e8f0;
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .cp-hero .cp-lang-btn:not(.is-active),
+  :root[data-theme="system"] .cp-lang-btn:not(.is-active),
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .cp-lang-btn:not(.is-active) {
+    color: #e2e8f0;
+    opacity: 1;
+  }
+}

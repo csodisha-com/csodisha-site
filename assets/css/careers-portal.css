@@ -824,3 +824,42 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* v298: Dark Night Mode-Only Inactive Hero Language Toggle & Drawer Header Ink Fix */
+:root[data-theme="dark"] .crp-hero .crp-lang-btn:not(.is-active),
+:root[data-theme="dark"] .crp-lang-btn:not(.is-active),
+:root[data-cso-theme="dark"] .crp-lang-btn:not(.is-active),
+:root[data-cso-resolved-mode="dark"] .crp-lang-btn:not(.is-active) {
+  color: #e2e8f0;
+  opacity: 1;
+}
+
+:root[data-theme="dark"] .crp-drawer-head,
+:root[data-theme="dark"] .crp-drawer-title,
+:root[data-theme="dark"] .crp-drawer-close,
+:root[data-cso-theme="dark"] .crp-drawer-head,
+:root[data-cso-theme="dark"] .crp-drawer-title,
+:root[data-cso-theme="dark"] .crp-drawer-close,
+:root[data-cso-resolved-mode="dark"] .crp-drawer-head,
+:root[data-cso-resolved-mode="dark"] .crp-drawer-title,
+:root[data-cso-resolved-mode="dark"] .crp-drawer-close {
+  color: #f1f5f9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .crp-hero .crp-lang-btn:not(.is-active),
+  :root[data-theme="system"] .crp-lang-btn:not(.is-active),
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .crp-lang-btn:not(.is-active) {
+    color: #e2e8f0;
+    opacity: 1;
+  }
+
+  :root[data-theme="system"] .crp-drawer-head,
+  :root[data-theme="system"] .crp-drawer-title,
+  :root[data-theme="system"] .crp-drawer-close,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .crp-drawer-head,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .crp-drawer-title,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .crp-drawer-close {
+    color: #f1f5f9;
+  }
+}

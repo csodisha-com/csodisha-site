@@ -1096,3 +1096,54 @@ body[data-theme="odisha"] {
   background-color: var(--cso-surface-elevated-hover, rgba(15, 23, 42, 0.06)) !important;
   color: var(--cso-surface-elevated-hover-ink, var(--cso-surface-elevated-ink, #0f172a)) !important;
 }
+
+/* ==========================================================================
+   10. Dark Night Mode-Only Top Utility Bar Label & <kbd> Ink Fix (v298)
+   ========================================================================== */
+
+:root[data-theme="dark"] #header-top .pill,
+:root[data-theme="dark"] #header-top button,
+:root[data-theme="dark"] .site-header__top .pill,
+:root[data-theme="dark"] .site-header__top .pill span,
+:root[data-theme="dark"] #header-top .pill span,
+:root[data-theme="dark"] #header-top .cso-ctl-search-label,
+:root[data-theme="dark"] #header-top .cso-lang-name,
+:root[data-cso-theme="dark"] #header-top .pill,
+:root[data-cso-theme="dark"] #header-top button,
+:root[data-cso-theme="dark"] #header-top .pill span,
+:root[data-cso-resolved-mode="dark"] #header-top .pill,
+:root[data-cso-resolved-mode="dark"] #header-top button,
+:root[data-cso-resolved-mode="dark"] #header-top .pill span {
+  color: #f1f5f9 !important;
+  opacity: 1 !important;
+}
+
+:root[data-theme="dark"] #header-top kbd,
+:root[data-theme="dark"] #header-top .cso-ctl-search-kbd,
+:root[data-cso-theme="dark"] #header-top kbd,
+:root[data-cso-theme="dark"] #header-top .cso-ctl-search-kbd,
+:root[data-cso-resolved-mode="dark"] #header-top kbd,
+:root[data-cso-resolved-mode="dark"] #header-top .cso-ctl-search-kbd {
+  color: #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] #header-top .pill,
+  :root[data-theme="system"] #header-top button,
+  :root[data-theme="system"] #header-top .pill span,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top .pill,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top button,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top .pill span {
+    color: #f1f5f9 !important;
+    opacity: 1 !important;
+  }
+
+  :root[data-theme="system"] #header-top kbd,
+  :root[data-theme="system"] #header-top .cso-ctl-search-kbd,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top kbd,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top .cso-ctl-search-kbd {
+    color: #cbd5e1 !important;
+    opacity: 1 !important;
+  }
+}

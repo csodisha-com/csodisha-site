@@ -896,3 +896,19 @@
   .sp-scheme-facts { grid-template-columns: 1fr; }
   .sp-pdf-frame { height: 380px; }
 }
+
+/* v298: Dark Night Mode-Only Inactive Hero Language Toggle Button Fix */
+:root[data-theme="dark"] .sp-hero .sp-lang-btn:not(.is-active),
+:root[data-cso-theme="dark"] .sp-hero .sp-lang-btn:not(.is-active),
+:root[data-cso-resolved-mode="dark"] .sp-hero .sp-lang-btn:not(.is-active) {
+  color: #e2e8f0;
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .sp-hero .sp-lang-btn:not(.is-active),
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .sp-hero .sp-lang-btn:not(.is-active) {
+    color: #e2e8f0;
+    opacity: 1;
+  }
+}

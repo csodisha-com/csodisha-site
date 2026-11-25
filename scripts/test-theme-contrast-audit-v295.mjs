@@ -310,5 +310,28 @@ check('5. Strict CSP compliance & cache busting across all active HTML pages, sw
   assert.ok(checked >= 60, `Expected >=60 versioned core/portal/admin assets across HTML pages, got ${checked}`);
 });
 
+check('6. v298 Dark Night mode-only top utility bar (#f1f5f9 / #cbd5e1) & inactive hero lang toggle (#e2e8f0) legibility', () => {
+  for (const rel of ['assets/style.css', 'assets/css/portal-shell.css', 'assets/css/cso-themes.css']) {
+    const css = read(rel);
+    assert.ok(css.includes(':root[data-theme="dark"] #header-top .pill') && css.includes('color: #f1f5f9 !important;'), `${rel} missing Dark Night top utility bar #f1f5f9 rule`);
+    assert.ok(css.includes(':root[data-theme="dark"] #header-top kbd') && css.includes('color: #cbd5e1 !important;'), `${rel} missing Dark Night top utility bar <kbd> #cbd5e1 rule`);
+  }
+  const portalLangChecks = [
+    ['assets/css/community-portal.css', '.cp-lang-btn:not(.is-active)'],
+    ['assets/css/study-portal.css', '.sp-lang-btn:not(.is-active)'],
+    ['assets/css/about-portal.css', '.ap-lang-btn:not(.is-active)'],
+    ['assets/css/schemes-portal.css', '.sp-hero .sp-lang-btn:not(.is-active)'],
+    ['assets/css/jobs-portal.css', '.jp-hero .jp-lang-btn:not(.is-active)'],
+    ['assets/css/careers-portal.css', '.crp-lang-btn:not(.is-active)']
+  ];
+  for (const [rel, sel] of portalLangChecks) {
+    const css = read(rel);
+    assert.ok(css.includes(`:root[data-theme="dark"] ${sel}`) && css.includes('color: #e2e8f0;') && css.includes('opacity: 1;'), `${rel} missing Dark Night inactive lang toggle rule for ${sel}`);
+  }
+  assert.ok(contrastRatio('#f1f5f9', '#070a10') >= 14, 'Dark top bar label contrast must be >= 14:1');
+  assert.ok(contrastRatio('#cbd5e1', '#070a10') >= 10, 'Dark top bar kbd contrast must be >= 10:1');
+  assert.ok(contrastRatio('#e2e8f0', '#0c1724') >= 12, 'Dark hero inactive lang button contrast must be >= 12:1');
+});
+
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);

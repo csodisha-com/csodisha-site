@@ -1307,7 +1307,25 @@ html[data-theme="dark"] .sp-stat-chip.is-amber {
 :root[data-cso-resolved-mode="dark"] .sp-flashcard-side { color: #a5b4fc; }
 :root[data-cso-resolved-mode="dark"] .sp-flashcard.is-flipped .sp-flashcard-side { color: #6ee7b7; }
 :root[data-cso-resolved-mode="dark"] .sp-quiz-opt.is-correct { color: #86efac; }
-:root[data-cso-resolved-mode="dark"] .sp-quiz-opt.is-wrong { color: #fca5a5; }/* ==========================================================================
+:root[data-cso-resolved-mode="dark"] .sp-quiz-opt.is-wrong { color: #fca5a5; }
+
+/* v298: Dark Night Mode-Only Inactive Hero Language Toggle Button Fix */
+:root[data-theme="dark"] .sp-hero .sp-lang-btn:not(.is-active),
+:root[data-theme="dark"] .sp-lang-btn:not(.is-active),
+:root[data-cso-theme="dark"] .sp-lang-btn:not(.is-active),
+:root[data-cso-resolved-mode="dark"] .sp-lang-btn:not(.is-active) {
+  color: #e2e8f0;
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .sp-hero .sp-lang-btn:not(.is-active),
+  :root[data-theme="system"] .sp-lang-btn:not(.is-active),
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .sp-lang-btn:not(.is-active) {
+    color: #e2e8f0;
+    opacity: 1;
+  }
+}/* ==========================================================================
    RESPONSIVE BREAKPOINTS (1280px Desktop -> Tablet -> Mobile)
    ========================================================================== */
 

@@ -1031,3 +1031,21 @@ html[data-theme="odisha"] .abt-portal-arrow {
     grid-template-columns: 1fr;
   }
 }
+
+/* v298: Dark Night Mode-Only Inactive Hero Language Toggle Button Fix */
+:root[data-theme="dark"] .ap-hero .ap-lang-btn:not(.is-active),
+:root[data-theme="dark"] .ap-lang-btn:not(.is-active),
+:root[data-cso-theme="dark"] .ap-lang-btn:not(.is-active),
+:root[data-cso-resolved-mode="dark"] .ap-lang-btn:not(.is-active) {
+  color: #e2e8f0;
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .ap-hero .ap-lang-btn:not(.is-active),
+  :root[data-theme="system"] .ap-lang-btn:not(.is-active),
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .ap-lang-btn:not(.is-active) {
+    color: #e2e8f0;
+    opacity: 1;
+  }
+}

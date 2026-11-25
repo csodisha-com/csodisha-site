@@ -1035,3 +1035,19 @@
   .jp-job-facts { grid-template-columns: 1fr; }
   .jp-pdf-frame { height: 380px; }
 }
+
+/* v298: Dark Night Mode-Only Inactive Hero Language Toggle Button Fix */
+:root[data-theme="dark"] .jp-hero .jp-lang-btn:not(.is-active),
+:root[data-cso-theme="dark"] .jp-hero .jp-lang-btn:not(.is-active),
+:root[data-cso-resolved-mode="dark"] .jp-hero .jp-lang-btn:not(.is-active) {
+  color: #e2e8f0;
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .jp-hero .jp-lang-btn:not(.is-active),
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .jp-hero .jp-lang-btn:not(.is-active) {
+    color: #e2e8f0;
+    opacity: 1;
+  }
+}

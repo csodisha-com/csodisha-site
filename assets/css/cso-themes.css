@@ -560,3 +560,44 @@ body[data-cso-theme="odisha"] {
 .cso-theme-swatch.is-dark { background: #0b0f17; border-color: #14b8a6; }
 .cso-theme-swatch.is-reading { background: #f4ede1; border-color: #854d0e; }
 .cso-theme-swatch.is-utkal-bharat { background: #c2410c; border-color: #7c2d12; }
+
+/* v298: Dark Night Mode-Only Top Utility Bar Label & <kbd> Legibility */
+:root[data-theme="dark"] #header-top .pill,
+:root[data-theme="dark"] #header-top button,
+:root[data-theme="dark"] #header-top .pill span,
+:root[data-cso-theme="dark"] #header-top .pill,
+:root[data-cso-theme="dark"] #header-top button,
+:root[data-cso-theme="dark"] #header-top .pill span,
+:root[data-cso-resolved-mode="dark"] #header-top .pill,
+:root[data-cso-resolved-mode="dark"] #header-top button,
+:root[data-cso-resolved-mode="dark"] #header-top .pill span {
+  color: #f1f5f9 !important;
+  opacity: 1 !important;
+}
+
+:root[data-theme="dark"] #header-top kbd,
+:root[data-theme="dark"] #header-top .cso-ctl-search-kbd,
+:root[data-cso-theme="dark"] #header-top kbd,
+:root[data-cso-resolved-mode="dark"] #header-top kbd {
+  color: #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] #header-top .pill,
+  :root[data-theme="system"] #header-top button,
+  :root[data-theme="system"] #header-top .pill span,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top .pill,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top button,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top .pill span {
+    color: #f1f5f9 !important;
+    opacity: 1 !important;
+  }
+
+  :root[data-theme="system"] #header-top kbd,
+  :root[data-theme="system"] #header-top .cso-ctl-search-kbd,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top kbd {
+    color: #cbd5e1 !important;
+    opacity: 1 !important;
+  }
+}

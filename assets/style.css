@@ -10211,3 +10211,118 @@ footer h4,
   color: var(--cso-link);
   background-color: var(--cso-surface);
 }
+
+/* ==========================================================================
+   v298: Dark Night Mode-Only Top Utility Bar Label & <kbd> Legibility Fix
+   Scoped strictly to Dark Night / OS-dark System (leaves Light/Reading/Odisha untouched)
+   ========================================================================== */
+
+:root[data-theme="dark"] .top,
+:root[data-theme="dark"] .top-bar,
+:root[data-theme="dark"] .utility-bar,
+:root[data-theme="dark"] .header-utility,
+:root[data-theme="dark"] .cso-header-top,
+:root[data-theme="dark"] .site-header__top,
+:root[data-theme="dark"] #header-top,
+:root[data-cso-theme="dark"] .top,
+:root[data-cso-theme="dark"] .site-header__top,
+:root[data-cso-theme="dark"] #header-top,
+:root[data-cso-resolved-mode="dark"] .top,
+:root[data-cso-resolved-mode="dark"] .site-header__top,
+:root[data-cso-resolved-mode="dark"] #header-top,
+:root[data-theme="dark"] .top .pill,
+:root[data-theme="dark"] .top-bar .pill,
+:root[data-theme="dark"] .utility-bar .pill,
+:root[data-theme="dark"] .utility-bar button,
+:root[data-theme="dark"] .utility-bar select,
+:root[data-theme="dark"] .site-header__top .pill,
+:root[data-theme="dark"] #header-top .pill,
+:root[data-theme="dark"] #header-top button,
+:root[data-theme="dark"] #cso-ctl-global-search,
+:root[data-theme="dark"] #cso-global-search-btn,
+:root[data-theme="dark"] .cso-ctl-search,
+:root[data-theme="dark"] .cso-ctl-lang,
+:root[data-theme="dark"] .cso-ctl-theme,
+:root[data-theme="dark"] .cso-ctl-a11y,
+:root[data-theme="dark"] .cso-ctl-saved,
+:root[data-theme="dark"] .top .pill span,
+:root[data-theme="dark"] .site-header__top .pill span,
+:root[data-theme="dark"] #header-top .pill span,
+:root[data-theme="dark"] .top .pill .fz,
+:root[data-theme="dark"] .site-header__top .pill .fz,
+:root[data-theme="dark"] #header-top .pill .fz,
+:root[data-theme="dark"] .cso-ctl-search-label,
+:root[data-theme="dark"] .cso-ctl-search-icon,
+:root[data-theme="dark"] .cso-lang-name,
+:root[data-theme="dark"] .cso-lang-icon,
+:root[data-cso-theme="dark"] .top .pill,
+:root[data-cso-theme="dark"] .site-header__top .pill,
+:root[data-cso-theme="dark"] #header-top .pill,
+:root[data-cso-theme="dark"] #header-top button,
+:root[data-cso-theme="dark"] .top .pill span,
+:root[data-cso-theme="dark"] #header-top .pill span,
+:root[data-cso-theme="dark"] .cso-ctl-search-label,
+:root[data-cso-theme="dark"] .cso-ctl-search-icon,
+:root[data-cso-theme="dark"] .cso-lang-name,
+:root[data-cso-theme="dark"] .cso-lang-icon,
+:root[data-cso-resolved-mode="dark"] .top .pill,
+:root[data-cso-resolved-mode="dark"] .site-header__top .pill,
+:root[data-cso-resolved-mode="dark"] #header-top .pill,
+:root[data-cso-resolved-mode="dark"] #header-top button,
+:root[data-cso-resolved-mode="dark"] .top .pill span,
+:root[data-cso-resolved-mode="dark"] #header-top .pill span,
+:root[data-cso-resolved-mode="dark"] .cso-ctl-search-label,
+:root[data-cso-resolved-mode="dark"] .cso-ctl-search-icon,
+:root[data-cso-resolved-mode="dark"] .cso-lang-name,
+:root[data-cso-resolved-mode="dark"] .cso-lang-icon {
+  color: #f1f5f9 !important;
+  opacity: 1 !important;
+}
+
+:root[data-theme="dark"] .top kbd,
+:root[data-theme="dark"] .site-header__top kbd,
+:root[data-theme="dark"] #header-top kbd,
+:root[data-theme="dark"] .top .cso-ctl-search-kbd,
+:root[data-theme="dark"] .site-header__top .cso-ctl-search-kbd,
+:root[data-theme="dark"] #header-top .cso-ctl-search-kbd,
+:root[data-cso-theme="dark"] .top kbd,
+:root[data-cso-theme="dark"] #header-top .cso-ctl-search-kbd,
+:root[data-cso-resolved-mode="dark"] .top kbd,
+:root[data-cso-resolved-mode="dark"] #header-top .cso-ctl-search-kbd {
+  color: #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .top,
+  :root[data-theme="system"] .site-header__top,
+  :root[data-theme="system"] #header-top,
+  :root[data-theme="system"] .top .pill,
+  :root[data-theme="system"] .site-header__top .pill,
+  :root[data-theme="system"] #header-top .pill,
+  :root[data-theme="system"] #header-top button,
+  :root[data-theme="system"] .top .pill span,
+  :root[data-theme="system"] #header-top .pill span,
+  :root[data-theme="system"] .cso-ctl-search-label,
+  :root[data-theme="system"] .cso-ctl-search-icon,
+  :root[data-theme="system"] .cso-lang-name,
+  :root[data-theme="system"] .cso-lang-icon,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .top .pill,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top .pill,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top button,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .cso-ctl-search-label,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .cso-lang-name {
+    color: #f1f5f9 !important;
+    opacity: 1 !important;
+  }
+
+  :root[data-theme="system"] .top kbd,
+  :root[data-theme="system"] .site-header__top kbd,
+  :root[data-theme="system"] #header-top kbd,
+  :root[data-theme="system"] #header-top .cso-ctl-search-kbd,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) .top kbd,
+  :root[data-cso-theme="system"]:not([data-cso-resolved-mode="light"]) #header-top .cso-ctl-search-kbd {
+    color: #cbd5e1 !important;
+    opacity: 1 !important;
+  }
+}
