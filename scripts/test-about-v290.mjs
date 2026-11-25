@@ -61,13 +61,14 @@ await check('1. /api/public/about/bootstrap serves institutional data & invalida
   assert.ok(backendSrc.includes("X-CSO-Cache-Purged"), 'Admin mutations must set X-CSO-Cache-Purged: 1');
 });
 
-await check('2. /about/ renders compact hero (no .ap-hero-kpis) and all 5 structured institutional cards with 5 portal links', async () => {
+await check('2. /about/ renders compact hero (no .ap-hero-kpis), symmetrical 3-section layout (2 summary cards, 5-card portal strip, single citizen desk & charters footer), and Dark Night WCAG AA+ contrast rules', async () => {
   const html = read('about/index.html');
   assert.ok(html.includes('abt-hero--compact'), 'about/index.html missing .abt-hero--compact');
   assert.ok(!html.includes('ap-hero-kpis'), 'about/index.html must remove bloated KPI strip');
 
   const css = read('assets/css/about-portal.css');
-  assert.ok(css.includes('.abt-hero--compact') && css.includes('.abt-sections-grid') && css.includes('.abt-card'), 'about-portal.css missing minimal classes');
+  assert.ok(css.includes('.abt-hero--compact') && css.includes('.abt-summary-grid') && css.includes('.abt-portals-strip') && css.includes('.abt-desk-card'), 'about-portal.css missing v291 3-section classes');
+  assert.ok(css.includes('html[data-theme="dark"] .abt-card-kicker') && css.includes('#7dd3fc'), 'about-portal.css missing Dark Night WCAG AA+ contrast overrides');
 
   function makeNode(tag) {
     return {
@@ -79,6 +80,7 @@ await check('2. /about/ renders compact hero (no .ap-hero-kpis) and all 5 struct
       appendChild(c) { this.children.push(c); return c; },
       append(...cs) { cs.forEach(c => this.children.push(c)); },
       removeChild(c) { const i = this.children.indexOf(c); if (i >= 0) this.children.splice(i, 1); },
+      remove() {},
       get firstChild() { return this.children[0] || null; },
       addEventListener() {},
       querySelector(sel) { return this.querySelectorAll(sel)[0] || null; },
@@ -110,7 +112,8 @@ await check('2. /about/ renders compact hero (no .ap-hero-kpis) and all 5 struct
       createElement(tag) { return makeNode(tag); },
       createElementNS(_ns, tag) { return makeNode(tag); },
       createTextNode(t) { return { nodeType: 3, textContent: String(t) }; },
-      addEventListener() {}
+      addEventListener() {},
+      removeEventListener() {}
     },
     URLSearchParams,
     localStorage: { getItem() { return null; }, setItem() {} },
@@ -118,7 +121,8 @@ await check('2. /about/ renders compact hero (no .ap-hero-kpis) and all 5 struct
       ok: true, status: 200,
       async json() {
         return {
-          ok: true, nodes: [], pages: [], sources: [], sectors: [],
+          ok: true, nodes: [], sources: [], sectors: [],
+          pages: [{ id: 1, slug: 'cso-editorial-charter', title_en: 'CSO Editorial Charter', summary_en: 'Verified civic reporting charter.' }],
           institutional: {
             title_en: 'About Common Sense Odisha',
             motto_en: 'Be Self-Reliant | Build a Better Tomorrow',
@@ -137,7 +141,19 @@ await check('2. /about/ renders compact hero (no .ap-hero-kpis) and all 5 struct
 
   assert.ok(mount.querySelector('.abt-hero--compact'), 'Must render .abt-hero--compact');
   assert.equal(mount.querySelector('.ap-hero-kpis'), null, 'Must NOT render .ap-hero-kpis');
-  assert.equal(mount.querySelectorAll('.abt-card').length, 5, 'Must render exactly 5 structured institutional cards');
+  assert.equal(mount.querySelector('.ap-cards-grid'), null, 'Must NOT render duplicate bottom Published Institutional Documents card grid');
+
+  const summaryGrid = mount.querySelector('.abt-summary-grid');
+  assert.ok(summaryGrid, 'Must render Section 1 .abt-summary-grid');
+  assert.equal(summaryGrid.querySelectorAll('.abt-card').length, 2, 'Section 1 must have exactly 2 equal-height summary cards');
+
+  const portalStrip = mount.querySelector('.abt-portals-strip');
+  assert.ok(portalStrip, 'Must render Section 2 .abt-portals-strip');
+  assert.equal(portalStrip.querySelectorAll('.abt-portal-card').length, 5, 'Section 2 must render 5 horizontal portal cards');
+
+  const deskCard = mount.querySelector('.abt-desk-card');
+  assert.ok(deskCard, 'Must render Section 3 .abt-desk-card');
+  assert.equal(deskCard.querySelectorAll('.abt-charter-btn').length, 1, 'Section 3 must render published charters as inline modal triggers');
 
   const hrefs = mount.querySelectorAll('a').map(a => a.href);
   for (const required of ['/jobs/', '/careers/', '/schemes/', '/study-library/', '/community/', 'mailto:contact@csodisha.com']) {
@@ -151,11 +167,11 @@ await check('3. About stays a single direct nav link (no dropdown) & Admin Studi
   assert.ok(read('admin/about-publishing-studio.js').includes('Live Synced to Public /about/ Page'), 'About Admin Studio missing Live Synced banner');
 });
 
-await check('4. ?v=20261125v290 cache busting, cso-candidate-cache-v290 & strict CSP compliance', () => {
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v290';"));
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v290';"));
-  assert.ok(read('about/index.html').includes('/assets/js/about-portal.js?v=20261125v290'));
-  assert.ok(read('about/index.html').includes('/assets/css/about-portal.css?v=20261125v290'));
+await check('4. ?v=20261125v291 cache busting, cso-candidate-cache-v291 & strict CSP compliance', () => {
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v291';"));
+  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v291';"));
+  assert.ok(read('about/index.html').includes('/assets/js/about-portal.js?v=20261125v291'));
+  assert.ok(read('about/index.html').includes('/assets/css/about-portal.css?v=20261125v291'));
   assert.ok(read('admin/index.html').includes('admin.js?v=20261125v290'));
   assert.ok(read('admin/index.html').includes('about-publishing-studio.js?v=20261125v290'));
 
