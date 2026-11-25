@@ -272,7 +272,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
   await ensureSemanticSchema(env);
   const cleanQ = String(q || '').trim();
   const normalizedQ = cleanQ.toLowerCase().replace(/\s+/g, ' ');
-  const cacheKey = await sha256Hex(`v325|${type}|${normalizedQ}`);
+  const cacheKey = await sha256Hex(`v326|${type}|${normalizedQ}`);
   const dbg = debugOut || {};
   dbg.provider_attempted = dbg.provider_attempted || [];
   dbg.gemini_status = (env && env.GEMINI_API_KEY && String(env.GEMINI_API_KEY).trim()) ? 'configured' : 'unconfigured';
@@ -348,7 +348,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
   if (geminiKey) {
     dbg.provider_attempted.push('google_gemini');
     try {
-      for (const gemModel of ['gemini-3.5-flash-lite', 'gemini-3.8-flash']) {
+      for (const gemModel of ['gemini-3.5-flash-lite', 'gemini-4-hydrogen', 'gemini-3.8-flash']) {
         const gemRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gemModel}:generateContent`, {
           method: 'POST',
           headers: {

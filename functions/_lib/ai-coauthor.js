@@ -13,6 +13,7 @@ export const VALID_AI_MODES = new Set(['job', 'scheme', 'mcq', 'career']);
 const WORKERS_AI_PRIMARY_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
 const WORKERS_AI_FALLBACK_MODEL = '@cf/ibm-granite/granite-4.0-h-micro';
 const GEMINI_FREE_MODEL = 'gemini-3.5-flash-lite';
+const GEMINI_HYDROGEN_MODEL = 'gemini-4-hydrogen';
 const GEMINI_FALLBACK_MODEL = 'gemini-3.8-flash';
 
 let _schemaReadyDb = null;
@@ -234,7 +235,7 @@ async function logAiGeneration(env, { actorId, targetModule, provider, model, es
 
 async function callGeminiFreeTier(apiKey, prompt) {
   let lastErr = null;
-  for (const model of [GEMINI_FREE_MODEL, GEMINI_FALLBACK_MODEL]) {
+  for (const model of [GEMINI_FREE_MODEL, GEMINI_HYDROGEN_MODEL, GEMINI_FALLBACK_MODEL]) {
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
     const res = await fetch(endpoint, {
       method: 'POST',
