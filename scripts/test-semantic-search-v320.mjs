@@ -65,8 +65,8 @@ function createMockDb({ seedNeurons = 0 } = {}) {
       return { first: { neurons_used: okRows.reduce((a, b) => a + b.estimated_neurons, 0), total_calls: okRows.length } };
     }
     if (/^INSERT INTO ai_generation_logs/i.test(s)) {
-      const [id, actor_id, target_module, model, estimated_neurons, created_at] = params;
-      aiLogs.push({ id, actor_id, target_module, provider: 'cloudflare_workers_ai', model, estimated_neurons, status: 'ok', created_at });
+      const [id, actor_id, target_module, provider, model, estimated_neurons, created_at] = params;
+      aiLogs.push({ id, actor_id, target_module, provider, model, estimated_neurons, status: 'ok', created_at });
       return { run: { success: true } };
     }
     if (/FROM job_articles WHERE id = \?/i.test(s)) {
@@ -209,8 +209,8 @@ await test('4. Wrangler Vectorize binding, migration 0151, CSP compliance & v320
   const mig = read('migrations/0151_semantic_search_v320.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS semantic_index_items'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v321');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v321';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v322');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v322';"));
   assert.ok(read('migrations/0152_ask_ai_answer_cache_v321.sql').includes('CREATE TABLE IF NOT EXISTS semantic_answer_cache'));
 
   const js = read('assets/js/semantic-search.js');
@@ -258,6 +258,52 @@ await test('5. v321 Hybrid RAG grounded answer, general-query fallback & 7-day D
   assert.ok(rGeneral.ai_answer);
   assert.equal(rGeneral.ai_answer.grounded, false);
   assert.equal(llmCalls, 2);
+
+  // 5d. v322: Workers AI returning parsed object + plain text fallback + Gemini primary (0 neurons)
+  const dbObj = createMockDb();
+  const rObj = await runSemanticSearch({
+    DB: dbObj,
+    AI: {
+      async run() {
+        return { response: { answer_en: 'Object response works.', answer_or: 'ଅବଜେକ୍ଟ ଉତ୍ତର କାମ କରେ।' } };
+      }
+    }
+  }, { q: 'OSSC CGL syllabus overview', type: 'all', clientIp: '198.51.100.3' });
+  assert.equal(rObj.ai_answer.answer_en, 'Object response works.');
+
+  const rPlain = await runSemanticSearch({
+    DB: createMockDb(),
+    AI: {
+      async run() {
+        return { response: 'Plain text fallback answer without JSON braces.' };
+      }
+    }
+  }, { q: 'OSSSC PEO exam pattern', type: 'all', clientIp: '198.51.100.4' });
+  assert.equal(rPlain.ai_answer.answer_en, 'Plain text fallback answer without JSON braces.');
+  assert.ok(rPlain.ai_answer.answer_or.length > 0);
+
+  const origFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    if (String(url).includes('generativelanguage.googleapis.com')) {
+      assert.equal(init.headers['x-goog-api-key'], 'gm_key_v322');
+      return new Response(JSON.stringify({
+        candidates: [{ content: { parts: [{ text: JSON.stringify({ answer_en: 'Gemini primary answer.', answer_or: 'ଜେମିନି ଉତ୍ତର।' }) }] } }]
+      }), { status: 200 });
+    }
+    throw new Error('Unexpected fetch');
+  };
+  try {
+    const dbGem = createMockDb();
+    const rGem = await runSemanticSearch({
+      DB: dbGem,
+      GEMINI_API_KEY: 'gm_key_v322'
+    }, { q: 'What is Subhadra Yojana eligibility', type: 'all', clientIp: '198.51.100.5' });
+    assert.equal(rGem.ai_answer.answer_en, 'Gemini primary answer.');
+    assert.equal(dbGem.aiLogs[0].provider, 'google_gemini');
+    assert.equal(dbGem.aiLogs[0].estimated_neurons, 0);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
 });
 
 console.log(`\n=== Smart Semantic Search v320 Results: ${passed} passed, 0 failed ===\n`);

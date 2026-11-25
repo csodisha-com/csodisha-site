@@ -94,18 +94,19 @@ export function buildIndexRecord(type, row) {
   };
 }
 
-async function logSemanticNeurons(env, { actorId, targetModule, neurons, model = EMBEDDING_MODEL }) {
+async function logSemanticNeurons(env, { actorId, targetModule, neurons, model = EMBEDDING_MODEL, provider = 'cloudflare_workers_ai' }) {
   if (!env || !env.DB) return;
   try {
     await env.DB.prepare(
       `INSERT INTO ai_generation_logs (id, actor_id, target_module, provider, model, estimated_neurons, status, created_at)
-       VALUES (?, ?, ?, 'cloudflare_workers_ai', ?, ?, 'ok', ?)`
+       VALUES (?, ?, ?, ?, ?, ?, 'ok', ?)`
     ).bind(
       crypto.randomUUID(),
       String(actorId || 'system'),
       String(targetModule),
+      String(provider),
       String(model),
-      Math.max(1, Math.round(Number(neurons) || 10)),
+      Math.max(0, Math.round(Number(neurons) || 0)),
       new Date().toISOString()
     ).run();
   } catch (_e) {}
@@ -296,9 +297,12 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
     } catch (_e) {}
   }
 
-  // 2. Protect Admin Studio priority (9,000 / 10,000 free neurons cap)
+  const geminiKey = env && env.GEMINI_API_KEY ? String(env.GEMINI_API_KEY).trim() : '';
+  const hasWorkersAi = Boolean(env && env.AI && typeof env.AI.run === 'function');
+
+  // 2. Protect Admin Studio priority (9,000 / 10,000 free neurons cap for Workers AI)
   const usage = await getDailyAiUsage(env);
-  if (usage.neurons_used >= SEMANTIC_NEURON_CAP) {
+  if (!geminiKey && usage.neurons_used >= SEMANTIC_NEURON_CAP) {
     return null;
   }
 
@@ -308,7 +312,7 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
     return null;
   }
 
-  if (!env || !env.AI || typeof env.AI.run !== 'function') {
+  if (!geminiKey && !hasWorkersAi) {
     return null;
   }
 
@@ -328,36 +332,96 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
         `User Question: ${cleanQ}`
       ].join('\n');
 
-  const messages = [
-    { role: 'system', content: 'You output strictly valid JSON with answer_en and answer_or.' },
-    { role: 'user', content: prompt }
-  ];
-
+  let providerUsed = 'cloudflare_workers_ai';
   let modelUsed = ANSWER_PRIMARY_MODEL;
-  let resp;
-  try {
-    resp = await env.AI.run(ANSWER_PRIMARY_MODEL, { messages, max_tokens: 450, temperature: 0.25 });
-  } catch (_err) {
-    modelUsed = ANSWER_FALLBACK_MODEL;
-    resp = await env.AI.run(ANSWER_FALLBACK_MODEL, { messages, max_tokens: 450, temperature: 0.25 });
+  let rawResp = null;
+
+  if (geminiKey) {
+    try {
+      const gemRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': geminiKey
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.25,
+            responseMimeType: 'application/json'
+          }
+        })
+      });
+      if (!gemRes.ok) throw new Error(`Gemini HTTP ${gemRes.status}`);
+      const gemData = await gemRes.json();
+      const gemText = gemData &&
+        gemData.candidates &&
+        gemData.candidates[0] &&
+        gemData.candidates[0].content &&
+        gemData.candidates[0].content.parts &&
+        gemData.candidates[0].content.parts[0] &&
+        gemData.candidates[0].content.parts[0].text;
+      if (!gemText) throw new Error('Gemini returned empty text');
+      rawResp = gemText;
+      providerUsed = 'google_gemini';
+      modelUsed = 'gemini-2.5-flash';
+    } catch (_gemErr) {
+      rawResp = null;
+    }
   }
 
-  const rawText = typeof resp === 'string'
-    ? resp
-    : String((resp && (resp.response || (resp.result && resp.result.response))) || '');
-  if (!rawText) return null;
+  if (rawResp === null) {
+    if (!hasWorkersAi || usage.neurons_used >= SEMANTIC_NEURON_CAP) return null;
+    const messages = [
+      { role: 'system', content: 'You output strictly valid JSON with answer_en and answer_or.' },
+      { role: 'user', content: prompt }
+    ];
+    try {
+      rawResp = await env.AI.run(ANSWER_PRIMARY_MODEL, { messages, max_tokens: 450, temperature: 0.25 });
+    } catch (_err) {
+      modelUsed = ANSWER_FALLBACK_MODEL;
+      rawResp = await env.AI.run(ANSWER_FALLBACK_MODEL, { messages, max_tokens: 450, temperature: 0.25 });
+    }
+  }
 
-  const parsed = extractJsonObject(rawText);
+  let parsed = null;
+  let rawText = '';
+  const inner = (rawResp && typeof rawResp === 'object' && rawResp.response !== undefined)
+    ? rawResp.response
+    : (rawResp && typeof rawResp === 'object' && rawResp.result && rawResp.result.response !== undefined)
+      ? rawResp.result.response
+      : rawResp;
+
+  if (inner && typeof inner === 'object') {
+    parsed = inner;
+    rawText = JSON.stringify(inner);
+  } else {
+    rawText = String(inner || '').trim();
+    if (rawText) {
+      try {
+        parsed = extractJsonObject(rawText);
+      } catch (_parseErr) {
+        parsed = {
+          answer_en: rawText.replace(/^```[\s\S]*?\n|```$/g, '').trim(),
+          answer_or: 'ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ପାଇଁ ଦୟାକରି ଲିଙ୍କ୍ ହୋଇଥିବା ପୃଷ୍ଠା ଏବଂ ସରକାରୀ ବିଜ୍ଞପ୍ତି ଯାଞ୍ଚ କରନ୍ତୁ।'
+        };
+      }
+    }
+  }
+
   const answerEn = String((parsed && parsed.answer_en) || '').trim().slice(0, 1000);
-  const answerOr = String((parsed && parsed.answer_or) || '').trim().slice(0, 1200);
+  const answerOr = String((parsed && parsed.answer_or) || 'ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ପାଇଁ ଦୟାକରି ଲିଙ୍କ୍ ହୋଇଥିବା ପୃଷ୍ଠା ଏବଂ ସରକାରୀ ବିଜ୍ଞପ୍ତି ଯାଞ୍ଚ କରନ୍ତୁ।').trim().slice(0, 1200);
   if (!answerEn) return null;
 
-  const neurons = Math.max(30, Math.min(200, Math.ceil((prompt.length + rawText.length) / 20)));
+  const neurons = providerUsed === 'google_gemini'
+    ? 0
+    : Math.max(30, Math.min(200, Math.ceil((prompt.length + rawText.length) / 20)));
   await logSemanticNeurons(env, {
     actorId: clientIp,
     targetModule: 'ask_csodisha',
     neurons,
-    model: modelUsed
+    model: modelUsed,
+    provider: providerUsed
   });
 
   if (env && env.DB) {
