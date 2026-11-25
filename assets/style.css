@@ -9338,33 +9338,87 @@ img.cso-brand-emblem {
 #cso-main-navbar,
 .main-nav,
 /* ==========================================================================
-   Minimal Two-Stage Cascading Jobs Menu (Stage 1 240px Sectors -> Stage 2 210px 3 Regions, v276)
+   Minimal Two-Stage Cascading Jobs & Careers Menus (v279)
    100% Solid Opaque Elevated Surfaces across System, Dark Night, Reading & Odisha & Bharat
    ========================================================================== */
 :root,
 :root[data-cso-theme="system"],
+:root[data-theme="system"],
 :root[data-cso-resolved-mode="light"] {
   --cso-surface-elevated: #ffffff;
+  --cso-surface-elevated-ink: #0f172a;
+  --cso-surface-elevated-border: #cbd5e1;
+  --cso-surface-elevated-hover: rgba(15, 23, 42, 0.06);
+  --cso-surface-elevated-hover-ink: #0f172a;
   --cso-nav-bg: #eef3f7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-cso-theme="light"]):not([data-cso-theme="reading"]):not([data-cso-theme="utkal-bharat"]):not([data-theme="light"]):not([data-theme="reading"]):not([data-theme="utkal-bharat"]):not([data-theme="odisha"]),
+  :root[data-cso-theme="system"],
+  :root[data-theme="system"] {
+    --cso-surface-elevated: #161b26;
+    --cso-surface-elevated-ink: #f1f5f9;
+    --cso-surface-elevated-border: #2d3748;
+    --cso-surface-elevated-hover: rgba(56, 189, 248, 0.14);
+    --cso-surface-elevated-hover-ink: #f8fafc;
+    --cso-nav-bg: #131e29;
+  }
 }
 
 :root[data-cso-theme="dark"],
 :root[data-cso-theme="system"][data-cso-resolved-mode="dark"],
 :root[data-cso-resolved-mode="dark"],
-:root[data-theme="dark"] {
+:root[data-theme="dark"],
+:root[data-theme="dark-night"],
+html[data-cso-theme="dark"],
+html[data-cso-resolved-mode="dark"],
+html[data-theme="dark"],
+html[data-theme="dark-night"],
+html.dark,
+body[data-cso-theme="dark"],
+body[data-cso-resolved-mode="dark"],
+body[data-theme="dark"],
+body[data-theme="dark-night"],
+body.dark,
+body.theme-dark,
+.dark-theme {
   --cso-surface-elevated: #161b26;
+  --cso-surface-elevated-ink: #f1f5f9;
+  --cso-surface-elevated-border: #2d3748;
+  --cso-surface-elevated-hover: rgba(56, 189, 248, 0.14);
+  --cso-surface-elevated-hover-ink: #f8fafc;
   --cso-nav-bg: #131e29;
 }
 
 :root[data-cso-theme="reading"],
-:root[data-theme="reading"] {
+:root[data-theme="reading"],
+html[data-cso-theme="reading"],
+html[data-theme="reading"],
+body[data-cso-theme="reading"],
+body[data-theme="reading"] {
   --cso-surface-elevated: #faf6ee;
+  --cso-surface-elevated-ink: #292524;
+  --cso-surface-elevated-border: #d6cfc2;
+  --cso-surface-elevated-hover: rgba(15, 23, 42, 0.06);
+  --cso-surface-elevated-hover-ink: #292524;
   --cso-nav-bg: #ede5d4;
 }
 
 :root[data-cso-theme="utkal-bharat"],
-:root[data-theme="utkal-bharat"] {
+:root[data-theme="utkal-bharat"],
+:root[data-theme="odisha"],
+html[data-cso-theme="utkal-bharat"],
+html[data-theme="utkal-bharat"],
+html[data-theme="odisha"],
+body[data-cso-theme="utkal-bharat"],
+body[data-theme="utkal-bharat"],
+body[data-theme="odisha"] {
   --cso-surface-elevated: #fffdf9;
+  --cso-surface-elevated-ink: #1e1b18;
+  --cso-surface-elevated-border: #e7d8c5;
+  --cso-surface-elevated-hover: rgba(15, 23, 42, 0.06);
+  --cso-surface-elevated-hover-ink: #1e1b18;
   --cso-nav-bg: #f4ece0;
 }
 
@@ -9419,6 +9473,10 @@ img.cso-brand-emblem {
   display: block;
 }
 
+#cso-main-navbar .cso-jobs-stage1,
+#cso-main-navbar .cso-jobs-stage2,
+#cso-main-navbar .cso-careers-stage1,
+#cso-main-navbar .cso-careers-stage2,
 .cso-jobs-stage1,
 .cso-jobs-stage2,
 .cso-careers-stage1,
@@ -9427,8 +9485,8 @@ img.cso-brand-emblem {
   opacity: 1;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  color: var(--cso-ink-primary, var(--cso-text, #12202b));
-  border: 1px solid var(--cso-border-subtle, var(--cso-border, #cbd5e1));
+  color: var(--cso-surface-elevated-ink, #0f172a);
+  border: 1px solid var(--cso-surface-elevated-border, #cbd5e1);
   border-radius: 12px;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
   overflow: hidden;
@@ -9583,6 +9641,7 @@ img.cso-brand-emblem {
   display: grid;
   gap: 2px;
   background-color: var(--cso-surface-elevated, #ffffff);
+  color: var(--cso-surface-elevated-ink, #0f172a);
 }
 
 .cso-js1-item,
@@ -9597,6 +9656,10 @@ img.cso-brand-emblem {
   gap: 4px;
 }
 
+#cso-main-navbar .cso-jobs-stage1 .cso-js1-link,
+#cso-main-navbar .cso-jobs-stage2 .cso-js2-link,
+#cso-main-navbar .cso-careers-stage1 .cso-js1-link,
+#cso-main-navbar .cso-careers-stage2 .cso-js2-link,
 .cso-js1-link,
 .cso-js2-link {
   flex: 1 1 auto;
@@ -9607,7 +9670,7 @@ img.cso-brand-emblem {
   padding: 9px 11px;
   min-height: 40px;
   border-radius: 8px;
-  color: var(--cso-ink-primary, var(--cso-text, #12202b)) !important;
+  color: var(--cso-surface-elevated-ink, #0f172a) !important;
   text-decoration: none;
   font-size: 0.87rem;
   font-weight: 700;
@@ -9615,23 +9678,35 @@ img.cso-brand-emblem {
   transition: background-color 0.14s ease, color 0.14s ease;
 }
 
+#cso-main-navbar .cso-jobs-stage1 .cso-js1-left,
+#cso-main-navbar .cso-jobs-stage1 .cso-js1-title,
+#cso-main-navbar .cso-jobs-stage1 .cso-js1-arrow,
+#cso-main-navbar .cso-careers-stage1 .cso-js1-left,
+#cso-main-navbar .cso-careers-stage1 .cso-js1-title,
+#cso-main-navbar .cso-careers-stage1 .cso-js1-arrow,
+.cso-js1-left,
+.cso-js1-title,
+.cso-js1-arrow {
+  color: inherit !important;
+}
+
+#cso-main-navbar .cso-jobs-stage1 .cso-js1-item.is-active .cso-js1-link,
+#cso-main-navbar .cso-jobs-stage1 .cso-js1-link:hover,
+#cso-main-navbar .cso-jobs-stage1 .cso-js1-link:focus-visible,
+#cso-main-navbar .cso-jobs-stage2 .cso-js2-link:hover,
+#cso-main-navbar .cso-jobs-stage2 .cso-js2-link:focus-visible,
+#cso-main-navbar .cso-careers-stage1 .cso-js1-item.is-active .cso-js1-link,
+#cso-main-navbar .cso-careers-stage1 .cso-js1-link:hover,
+#cso-main-navbar .cso-careers-stage1 .cso-js1-link:focus-visible,
+#cso-main-navbar .cso-careers-stage2 .cso-js2-link:hover,
+#cso-main-navbar .cso-careers-stage2 .cso-js2-link:focus-visible,
 .cso-js1-item.is-active .cso-js1-link,
 .cso-js1-link:hover,
 .cso-js1-link:focus-visible,
 .cso-js2-link:hover,
 .cso-js2-link:focus-visible {
-  background-color: var(--cso-nav-sub-bg, var(--cso-card-subtle, #eef3f7));
-  color: var(--cso-nav-pill-bg, #0f4c5c) !important;
-}
-
-:root[data-cso-resolved-mode="dark"] .cso-js1-item.is-active .cso-js1-link,
-:root[data-cso-resolved-mode="dark"] .cso-js1-link:hover,
-:root[data-cso-resolved-mode="dark"] .cso-js2-link:hover,
-:root[data-cso-theme="dark"] .cso-js1-item.is-active .cso-js1-link,
-:root[data-cso-theme="dark"] .cso-js1-link:hover,
-:root[data-cso-theme="dark"] .cso-js2-link:hover {
-  background-color: #212a3b;
-  color: #f8fafc !important;
+  background-color: var(--cso-surface-elevated-hover, rgba(15, 23, 42, 0.06)) !important;
+  color: var(--cso-surface-elevated-hover-ink, var(--cso-surface-elevated-ink, #0f172a)) !important;
 }
 
 .cso-js1-left {
@@ -9679,9 +9754,9 @@ img.cso-brand-emblem {
 
   .cso-js1-mob-exp {
     appearance: none;
-    border: 1px solid var(--cso-border-subtle, #cbd5e1);
-    background-color: var(--cso-nav-sub-bg, #eef3f7);
-    color: var(--cso-ink-primary, #12202b);
+    border: 1px solid var(--cso-surface-elevated-border, #cbd5e1);
+    background-color: var(--cso-surface-elevated, #ffffff);
+    color: var(--cso-surface-elevated-ink, #0f172a) !important;
     border-radius: 8px;
     min-width: 44px;
     min-height: 44px;
@@ -9702,8 +9777,9 @@ img.cso-brand-emblem {
     display: none;
     margin: 4px 0 6px 12px;
     border-radius: 10px;
-    border: 1px solid var(--cso-border-subtle, #d5dfe7);
+    border: 1px solid var(--cso-surface-elevated-border, #cbd5e1);
     background-color: var(--cso-surface-elevated, #ffffff);
+    color: var(--cso-surface-elevated-ink, #0f172a);
     overflow: hidden;
   }
 

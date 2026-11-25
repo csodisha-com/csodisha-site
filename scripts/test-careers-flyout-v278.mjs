@@ -235,8 +235,8 @@ await check('5. Solid opaque 4-theme surfaces, v278 cache busting & strict CSP c
   assert.ok(shellCss.includes('#cso-main-navbar .cso-careers-stage1'), 'portal-shell.css missing .cso-careers-stage1');
   assert.ok(shellCss.includes('#cso-main-navbar .cso-careers-stage2'), 'portal-shell.css missing .cso-careers-stage2');
 
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v278';"), 'sw.js must be cso-candidate-cache-v278');
-  assert.ok(read('functions/_lib/ops-sentinel.js').includes("export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v278';"), 'ops-sentinel.js must be cso-candidate-cache-v278');
+  assert.ok(/const CACHE_NAME = 'cso-candidate-cache-v2(?:7[89]|[89]\d)';/.test(read('sw.js')), 'sw.js must be cso-candidate-cache-v278+');
+  assert.ok(/export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v2(?:7[89]|[89]\d)';/.test(read('functions/_lib/ops-sentinel.js')), 'ops-sentinel.js must be cso-candidate-cache-v278+');
 
   const corePages = [
     'index.html', 'jobs/index.html', 'careers/index.html', 'schemes/index.html',
@@ -244,11 +244,11 @@ await check('5. Solid opaque 4-theme surfaces, v278 cache busting & strict CSP c
   ];
   for (const rel of corePages) {
     const html = read(rel);
-    assert.ok(html.includes('/assets/style.css?v=20261124v278'), `${rel} missing style.css?v=20261124v278`);
+    assert.ok(/\/assets\/style\.css\?v=2026112[45]v2(?:7[89]|[89]\d)/.test(html), `${rel} missing style.css?v=20261124v278+`);
     if (rel === 'index.html') {
-      assert.ok(html.includes('/assets/app.js?v=20261124v278'), 'index.html missing app.js?v=20261124v278');
+      assert.ok(/\/assets\/app\.js\?v=2026112[45]v2(?:7[89]|[89]\d)/.test(html), 'index.html missing app.js?v=20261124v278+');
     } else {
-      assert.ok(html.includes('/assets/shared-header.js?v=20261124v278'), `${rel} missing shared-header.js?v=20261124v278`);
+      assert.ok(/\/assets\/shared-header\.js\?v=2026112[45]v2(?:7[89]|[89]\d)/.test(html), `${rel} missing shared-header.js?v=20261124v278+`);
     }
     assert.ok(!/\sstyle\s*=/i.test(html), `${rel} contains inline style=`);
     assert.ok(!/\son[a-z]+\s*=/i.test(html), `${rel} contains inline on*= handler`);
