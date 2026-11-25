@@ -125,6 +125,7 @@
   var dom = {
     accordionNav: document.getElementById('accordionNav'),
     moduleSearchInput: document.getElementById('moduleSearchInput'),
+    moduleSearchClearBtn: document.getElementById('moduleSearchClearBtn'),
     searchCountBadge: document.getElementById('searchCountBadge'),
     workspaceRoot: document.getElementById('workspaceRoot'),
     breadcrumbFolder: document.getElementById('breadcrumbFolder'),
@@ -167,6 +168,27 @@
     if (className) node.className = className;
     if (text !== undefined && text !== null) node.textContent = String(text);
     return node;
+  }
+
+  function createChevronEl(isOpen, isPlaceholder) {
+    var wrap = el('span', 'cso-nav-chevron cso-folder-chevron' + (isOpen ? ' is-open is-expanded' : '') + (isPlaceholder ? ' is-placeholder' : ''));
+    wrap.setAttribute('aria-hidden', 'true');
+    if (isPlaceholder) return wrap;
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('width', '14');
+    svg.setAttribute('height', '14');
+    svg.setAttribute('viewBox', '0 0 16 16');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    var path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', 'M6 4l4 4-4 4');
+    svg.appendChild(path);
+    wrap.appendChild(svg);
+    return wrap;
   }
 
   function initSessionTimer() {
@@ -337,12 +359,14 @@
       var ovWrap = el('div', 'cso-nav-folder cso-nav-command-overview' + (ovActive ? ' is-current' : ''));
       var ovBtn = el('button', 'cso-nav-folder-btn' + (ovActive ? ' is-active' : ''));
       ovBtn.type = 'button';
+      if (ovActive) ovBtn.setAttribute('aria-current', 'page');
       ovBtn.title = 'Command Overview — live platform telemetry (Alt+0)';
       var ovLeft = el('span', 'cso-nav-folder-left');
-      ovLeft.appendChild(el('span', 'cso-nav-dot'));
-      ovLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83D\uDCCA Command Overview'));
+      ovLeft.appendChild(el('span', 'cso-nav-folder-icon', '\uD83D\uDCCA'));
+      ovLeft.appendChild(el('span', 'cso-nav-folder-title', 'Command Overview'));
       var ovRight = el('span', 'cso-nav-folder-right');
       ovRight.appendChild(el('kbd', 'cs-kbd', 'Alt 0'));
+      ovRight.appendChild(createChevronEl(false, true));
       ovBtn.appendChild(ovLeft);
       ovBtn.appendChild(ovRight);
       ovBtn.addEventListener('click', function () {
@@ -374,11 +398,12 @@
         var folderBtn = el('button', 'cso-nav-folder-btn' + (isCurrentFolder ? ' is-active' : ''));
         folderBtn.type = 'button';
         folderBtn.setAttribute('aria-expanded', String(isExpanded));
+        if (isCurrentFolder) folderBtn.setAttribute('aria-current', 'page');
         if (folderTitleOr) folderBtn.title = folderTitle + ' · ' + folderTitleOr;
 
         var left = el('span', 'cso-nav-folder-left');
-        left.appendChild(el('span', 'cso-nav-dot'));
-        left.appendChild(el('span', 'cso-nav-folder-title', (folder.icon ? folder.icon + ' ' : '') + folderTitle));
+        left.appendChild(el('span', 'cso-nav-folder-icon', folder.icon || '\uD83D\uDCC1'));
+        left.appendChild(el('span', 'cso-nav-folder-title', folderTitle));
 
         var right = el('span', 'cso-nav-folder-right');
         var badgeVal = folder.id === 'folder-jobs-careers' && CSOState.jobsCount !== null
@@ -391,7 +416,7 @@
                 ? CSOState.communityCount
                 : (folder.id === 'folder-about' && CSOState.aboutCount !== null ? CSOState.aboutCount : filteredModules.length))));
         right.appendChild(el('span', 'cso-nav-count cso-tabular', String(badgeVal)));
-        right.appendChild(el('span', 'cso-nav-chevron' + (isExpanded ? ' is-open' : ''), '›'));
+        right.appendChild(createChevronEl(isExpanded, false));
 
         folderBtn.appendChild(left);
         folderBtn.appendChild(right);
@@ -456,6 +481,7 @@
         });
 
         var modList = el('div', 'cso-nav-modules' + (isExpanded ? '' : ' is-collapsed'));
+        modList.hidden = !isExpanded;
         if (folder.id === 'folder-jobs-careers') {
           modList.id = 'jobsSidebarSubnav';
           [
@@ -681,13 +707,14 @@
           crBtn.type = 'button';
           crBtn.id = 'navTabCareers';
           crBtn.setAttribute('aria-expanded', String(crExpanded));
+          if (crActive) crBtn.setAttribute('aria-current', 'page');
           crBtn.title = 'Careers Publishing House — bilingual roadmaps & 3-layer taxonomy (Alt+8)';
           var crLeft = el('span', 'cso-nav-folder-left');
-          crLeft.appendChild(el('span', 'cso-nav-dot'));
-          crLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83E\uDDED Careers'));
+          crLeft.appendChild(el('span', 'cso-nav-folder-icon', '\uD83E\uDDED'));
+          crLeft.appendChild(el('span', 'cso-nav-folder-title', 'Careers'));
           var crRight = el('span', 'cso-nav-folder-right');
           crRight.appendChild(el('span', 'cso-nav-count cso-tabular', CSOState.careersCount === null ? '\u2026' : String(CSOState.careersCount)));
-          crRight.appendChild(el('span', 'cso-nav-chevron' + (crExpanded ? ' is-open' : ''), '▾'));
+          crRight.appendChild(createChevronEl(crExpanded, false));
           crBtn.appendChild(crLeft);
           crBtn.appendChild(crRight);
           crBtn.addEventListener('click', function () {
@@ -704,6 +731,7 @@
 
           var crModList = el('div', 'cso-nav-modules' + (crExpanded ? '' : ' is-collapsed'));
           crModList.id = 'careersSidebarSubnav';
+          crModList.hidden = !crExpanded;
           filteredCrSubs.forEach(function (sub) {
             var isSubActive = crActive && CSOState.activeCareersSubTab === sub.tab && !(sub.tab === 'list' && CSOState.activeCareersTrackSlug);
             var subBtn = el('button', 'cso-nav-mod-btn' + (isSubActive ? ' is-active' : ''));
@@ -758,12 +786,14 @@
       var chBtn = el('button', 'cso-nav-folder-btn' + (chActive ? ' is-active' : ''));
       chBtn.type = 'button';
       chBtn.id = 'navTabCandidateHub';
+      if (chActive) chBtn.setAttribute('aria-current', 'page');
       chBtn.title = 'Candidate Hub — Roster, Governance, Dashboard UI & Features (Alt+7)';
       var chLeft = el('span', 'cso-nav-folder-left');
-      chLeft.appendChild(el('span', 'cso-nav-dot'));
-      chLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83C\uDF93 Candidate Hub'));
+      chLeft.appendChild(el('span', 'cso-nav-folder-icon', '\uD83C\uDF93'));
+      chLeft.appendChild(el('span', 'cso-nav-folder-title', 'Candidate Hub'));
       var chRight = el('span', 'cso-nav-folder-right');
       chRight.appendChild(el('span', 'cso-nav-count cso-tabular', CSOState.candidateCount === null ? '\u2026' : String(CSOState.candidateCount)));
+      chRight.appendChild(createChevronEl(false, true));
       chBtn.appendChild(chLeft);
       chBtn.appendChild(chRight);
       chBtn.addEventListener('click', function () {
@@ -794,14 +824,15 @@
       wsBtn.type = 'button';
       wsBtn.id = 'navTabWebStudio';
       wsBtn.setAttribute('aria-expanded', String(wsExpanded));
+      if (wsActive) wsBtn.setAttribute('aria-current', 'page');
       wsBtn.title = 'Web & Page Studio — Homepage Blocks, Institutional & Legal Pages, Global Snippets (Alt+6)';
       var wsLeft = el('span', 'cso-nav-folder-left');
-      wsLeft.appendChild(el('span', 'cso-nav-dot'));
-      wsLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83C\uDFE0 Web & Page Studio'));
+      wsLeft.appendChild(el('span', 'cso-nav-folder-icon', '\uD83C\uDFE0'));
+      wsLeft.appendChild(el('span', 'cso-nav-folder-title', 'Web & Page Studio'));
       var wsRight = el('span', 'cso-nav-folder-right');
       var wsCntVal = CSOState.webStudioCount !== null ? CSOState.webStudioCount : (CSOState.homepageCount !== null ? CSOState.homepageCount : null);
       wsRight.appendChild(el('span', 'cso-nav-count cso-tabular', wsCntVal === null ? '\u2026' : String(wsCntVal)));
-      wsRight.appendChild(el('span', 'cso-nav-chevron' + (wsExpanded ? ' is-open' : ''), '›'));
+      wsRight.appendChild(createChevronEl(wsExpanded, false));
       wsBtn.appendChild(wsLeft);
       wsBtn.appendChild(wsRight);
       wsBtn.addEventListener('click', function () {
@@ -815,6 +846,7 @@
 
       var wsModList = el('div', 'cso-nav-modules' + (wsExpanded ? '' : ' is-collapsed'));
       wsModList.id = 'webStudioSidebarSubnav';
+      wsModList.hidden = !wsExpanded;
       filteredWsSubs.forEach(function (sub) {
         var isSubActive = wsActive && CSOState.activeWebStudioSubTab === sub.tab;
         var sb = el('button', 'cso-nav-mod-btn' + (isSubActive ? ' is-active' : ''));
@@ -843,12 +875,14 @@
       var fmBtn = el('button', 'cso-nav-folder-btn' + (fmActive ? ' is-active' : ''));
       fmBtn.type = 'button';
       fmBtn.id = 'navTabFileManager';
+      if (fmActive) fmBtn.setAttribute('aria-current', 'page');
       fmBtn.title = 'File & Media Manager — Cloudflare R2 uploads & /files/:key links (Alt+9)';
       var fmLeft = el('span', 'cso-nav-folder-left');
-      fmLeft.appendChild(el('span', 'cso-nav-dot'));
-      fmLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83D\uDCC1 File & Media Manager'));
+      fmLeft.appendChild(el('span', 'cso-nav-folder-icon', '\uD83D\uDCC1'));
+      fmLeft.appendChild(el('span', 'cso-nav-folder-title', 'File & Media Manager'));
       var fmRight = el('span', 'cso-nav-folder-right');
       fmRight.appendChild(el('span', 'cso-nav-count cso-tabular', CSOState.filesCount === null ? '\u2026' : String(CSOState.filesCount)));
+      fmRight.appendChild(createChevronEl(false, true));
       fmBtn.appendChild(fmLeft);
       fmBtn.appendChild(fmRight);
       fmBtn.addEventListener('click', function () {
@@ -879,13 +913,14 @@
       soBtn.type = 'button';
       soBtn.id = 'navTabSystemOps';
       soBtn.setAttribute('aria-expanded', String(soExpanded));
+      if (soActive) soBtn.setAttribute('aria-current', 'page');
       soBtn.title = 'System, Security & Billing — Audit Logs, Sessions, Flags, Redirects & Backups';
       var soLeft = el('span', 'cso-nav-folder-left');
-      soLeft.appendChild(el('span', 'cso-nav-dot'));
-      soLeft.appendChild(el('span', 'cso-nav-folder-title', '\u2699\uFE0F System, Security & Billing'));
+      soLeft.appendChild(el('span', 'cso-nav-folder-icon', '\u2699\uFE0F'));
+      soLeft.appendChild(el('span', 'cso-nav-folder-title', 'System, Security & Billing'));
       var soRight = el('span', 'cso-nav-folder-right');
       soRight.appendChild(el('span', 'cso-nav-count cso-tabular', CSOState.systemOpsCount === null ? '\u2026' : String(CSOState.systemOpsCount)));
-      soRight.appendChild(el('span', 'cso-nav-chevron' + (soExpanded ? ' is-open' : ''), '›'));
+      soRight.appendChild(createChevronEl(soExpanded, false));
       soBtn.appendChild(soLeft);
       soBtn.appendChild(soRight);
       soBtn.addEventListener('click', function () {
@@ -899,6 +934,7 @@
 
       var soModList = el('div', 'cso-nav-modules' + (soExpanded ? '' : ' is-collapsed'));
       soModList.id = 'systemOpsSidebarSubnav';
+      soModList.hidden = !soExpanded;
       filteredSoSubs.forEach(function (sub) {
         var isSoSubActive = soActive && CSOState.activeSystemOpsSubTab === sub.tab;
         var sb = el('button', 'cso-nav-mod-btn' + (isSoSubActive ? ' is-active' : ''));
@@ -925,6 +961,9 @@
       } else {
         dom.searchCountBadge.hidden = true;
       }
+    }
+    if (dom.moduleSearchClearBtn) {
+      dom.moduleSearchClearBtn.hidden = !query;
     }
     dom.accordionNav.scrollTop = prevNavScroll;
   }
@@ -1732,6 +1771,14 @@
       dom.moduleSearchInput.addEventListener('input', function (e) {
         CSOState.searchQuery = e.target.value;
         renderNavigationTree();
+      });
+    }
+    if (dom.moduleSearchClearBtn && dom.moduleSearchInput) {
+      dom.moduleSearchClearBtn.addEventListener('click', function () {
+        dom.moduleSearchInput.value = '';
+        CSOState.searchQuery = '';
+        renderNavigationTree();
+        dom.moduleSearchInput.focus();
       });
     }
 
