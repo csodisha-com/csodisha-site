@@ -9,23 +9,23 @@ import { handleContent } from '../api/content/_public.js';
 export const FREEZE_SETTING_KEY = 'ops_read_only_freeze';
 export const CACHE_WARMER_URLS_KEY = 'ops_cache_warmer_urls';
 export const LAST_CACHE_WARM_KEY = 'ops_last_cache_warm';
-export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v295';
+export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v296';
 
 export const DEFAULT_CACHE_WARMER_ROUTES = [
   '/',
   '/about/',
   '/schemes/',
-  '/study/',
+  '/study-library/',
   '/jobs/',
   '/careers/',
-  '/updates/',
+  '/community/',
   '/sw.js'
 ];
 
 export const CORE_CACHE_ROUTES = [
   '/',
-  '/jobs-careers/',
-  '/schemes-benefits/',
+  '/jobs/',
+  '/schemes/',
   '/study-library/',
   '/api/posts?limit=20',
   '/api/schemes?limit=20'

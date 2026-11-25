@@ -1,12 +1,14 @@
 User-agent: *
 Allow: /
-Allow: /jobs-careers/
-Allow: /schemes-benefits/
+Allow: /jobs/
+Allow: /careers/
+Allow: /schemes/
 Allow: /study-library/
+Allow: /community/
 Allow: /mock-tests/
 Allow: /resources/
-Allow: /about/
 Allow: /current-affairs/
+Allow: /about/
 Disallow: /admin/
 Disallow: /student-dashboard/
 Disallow: /api/admin/

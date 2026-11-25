@@ -79,22 +79,9 @@ function verifyRelativePath(sourceFile, rawUrl, type = 'link') {
   }
 
   // Remove fragment and query parameters
-  const cleanUrl = url.split('#')[0].split('?')[0];
+  const [urlBeforeHash, hashFragment] = url.split('#');
+  const cleanUrl = urlBeforeHash.split('?')[0];
   if (!cleanUrl) return true;
-
-  // Worker-routed /jobs-careers/<section-slug> and /jobs-careers/detail/<slug>
-  if (/^\/jobs-careers\/(jobs-recruitment|career-explorer|eligibility-explorer|courses-exams|scholarships-support|international-overseas|career-development|institutions-portals)\/?$/i.test(cleanUrl)) {
-    if (fs.existsSync(path.join(ROOT_DIR, 'jobs-careers', 'index.html'))) {
-      stats.internalLinksVerified++;
-      return true;
-    }
-  }
-  if (/^\/jobs-careers\/detail\/[^/]+\/?$/i.test(cleanUrl)) {
-    if (fs.existsSync(path.join(ROOT_DIR, 'jobs-careers', 'detail', 'index.html'))) {
-      stats.internalLinksVerified++;
-      return true;
-    }
-  }
 
   const sourceDir = path.dirname(sourceFile);
   let resolvedPath;
@@ -103,13 +90,6 @@ function verifyRelativePath(sourceFile, rawUrl, type = 'link') {
     resolvedPath = path.join(ROOT_DIR, cleanUrl.slice(1));
   } else {
     resolvedPath = path.resolve(sourceDir, cleanUrl);
-  }
-
-  // Check cache
-  if (verifiedFiles.has(resolvedPath)) {
-    if (type === 'asset') stats.assetPathsChecked++;
-    else stats.internalLinksVerified++;
-    return true;
   }
 
   // Resolution candidates
@@ -125,15 +105,30 @@ function verifyRelativePath(sourceFile, rawUrl, type = 'link') {
     candidates.push(resolvedPath + '.html');
   }
 
-  const exists = candidates.some(candidate => {
+  const matchedCandidate = candidates.find(candidate => {
     try {
-      return fs.existsSync(candidate);
+      return fs.existsSync(candidate) && fs.statSync(candidate).isFile();
     } catch {
       return false;
     }
   });
 
-  if (exists) {
+  if (matchedCandidate) {
+    if (type === 'link' && hashFragment && matchedCandidate.endsWith('.html')) {
+      const targetContent = fs.readFileSync(matchedCandidate, 'utf-8');
+      const idRx = new RegExp(`\\sid=["']${hashFragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`, 'i');
+      if (!idRx.test(targetContent)) {
+        const relSource = path.relative(ROOT_DIR, sourceFile);
+        stats.errors.push({
+          source: relSource,
+          type: 'anchor',
+          reference: rawUrl,
+          resolved: `${path.relative(ROOT_DIR, matchedCandidate)}#${hashFragment}`,
+          status: 404
+        });
+        return false;
+      }
+    }
     verifiedFiles.add(resolvedPath);
     if (type === 'asset') stats.assetPathsChecked++;
     else stats.internalLinksVerified++;

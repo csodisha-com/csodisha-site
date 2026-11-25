@@ -10,32 +10,27 @@ const SEO_CACHE = 'public, max-age=300, s-maxage=900';
 
 const STATIC_SITEMAP_ROUTES = [
   { path: '/', changefreq: 'daily', priority: '1.0' },
-  { path: '/jobs-careers/', changefreq: 'daily', priority: '0.9' },
-  { path: '/tools/', changefreq: 'weekly', priority: '0.8' },
-  { path: '/jobs-careers/jobs-recruitment', changefreq: 'daily', priority: '0.8' },
-  { path: '/jobs-careers/career-explorer', changefreq: 'daily', priority: '0.8' },
-  { path: '/jobs-careers/eligibility-explorer', changefreq: 'daily', priority: '0.8' },
-  { path: '/jobs-careers/courses-exams', changefreq: 'daily', priority: '0.8' },
-  { path: '/jobs-careers/scholarships-support', changefreq: 'daily', priority: '0.8' },
-  { path: '/jobs-careers/international-overseas', changefreq: 'daily', priority: '0.8' },
-  { path: '/jobs-careers/career-development', changefreq: 'daily', priority: '0.8' },
-  { path: '/jobs-careers/institutions-portals', changefreq: 'daily', priority: '0.8' },
-  { path: '/current-affairs/', changefreq: 'daily', priority: '0.9' },
-  { path: '/mock-tests/', changefreq: 'daily', priority: '0.8' },
-  { path: '/resources/', changefreq: 'weekly', priority: '0.8' },
-  { path: '/schemes/', changefreq: 'weekly', priority: '0.7' },
-  { path: '/study-library/', changefreq: 'weekly', priority: '0.8' },
+  { path: '/jobs/', changefreq: 'daily', priority: '0.9' },
+  { path: '/careers/', changefreq: 'weekly', priority: '0.9' },
+  { path: '/schemes/', changefreq: 'weekly', priority: '0.9' },
+  { path: '/study-library/', changefreq: 'weekly', priority: '0.9' },
   { path: '/study-library/early-childhood-education/', changefreq: 'weekly', priority: '0.8' },
   { path: '/study-library/otet-osstet/', changefreq: 'weekly', priority: '0.8' },
   { path: '/study-library/opsc-oas/', changefreq: 'weekly', priority: '0.8' },
   { path: '/study-library/osssc-ri-ari-amin/', changefreq: 'weekly', priority: '0.8' },
   { path: '/study-library/odisha-police-oprb/', changefreq: 'weekly', priority: '0.8' },
   { path: '/study-library/cbt-mock-test/', changefreq: 'weekly', priority: '0.8' },
-  { path: '/community/', changefreq: 'monthly', priority: '0.6' },
-  { path: '/about/', changefreq: 'monthly', priority: '0.6' },
+  { path: '/community/', changefreq: 'daily', priority: '0.8' },
+  { path: '/about/', changefreq: 'monthly', priority: '0.7' },
+  { path: '/current-affairs/', changefreq: 'daily', priority: '0.8' },
+  { path: '/mock-tests/', changefreq: 'weekly', priority: '0.8' },
+  { path: '/resources/', changefreq: 'weekly', priority: '0.8' },
+  { path: '/tools/', changefreq: 'weekly', priority: '0.7' },
   { path: '/support/', changefreq: 'monthly', priority: '0.5' },
   { path: '/privacy-policy/', changefreq: 'yearly', priority: '0.3' },
-  { path: '/terms-of-use/', changefreq: 'yearly', priority: '0.3' }
+  { path: '/terms-of-use/', changefreq: 'yearly', priority: '0.3' },
+  { path: '/disclaimer/', changefreq: 'yearly', priority: '0.3' },
+  { path: '/copyright-policy/', changefreq: 'yearly', priority: '0.3' }
 ];
 
 export function xmlEscape(val) {
@@ -133,7 +128,7 @@ export async function handleSitemapXml(request, env) {
       for (const row of (jobsRes.results || [])) {
         if (!row.slug) continue;
         urls.push({
-          loc: `${SITE_ORIGIN}/jobs-careers/?job=${encodeURIComponent(row.slug)}`,
+          loc: `${SITE_ORIGIN}/jobs/?slug=${encodeURIComponent(row.slug)}`,
           lastmod: toIsoLastMod(row.updated_at || row.published_at),
           changefreq: 'daily',
           priority: '0.9'
@@ -257,7 +252,7 @@ export async function handleRssFeed(request, env) {
 
   const itemXml = items.map(r => {
     const link = r.type === 'job'
-      ? `${SITE_ORIGIN}/jobs-careers/?job=${encodeURIComponent(r.slug)}`
+      ? `${SITE_ORIGIN}/jobs/?slug=${encodeURIComponent(r.slug)}`
       : `${SITE_ORIGIN}/current-affairs/?slug=${encodeURIComponent(r.slug)}`;
     const category = r.category || (r.type === 'job' ? (r.organisation || 'Recruitment') : 'Current Affairs');
     const desc = plainTextExcerpt(r.summary || r.body_md || r.title, 280);
@@ -306,9 +301,11 @@ export function handleRobotsTxt(request) {
   const body = [
     'User-agent: *',
     'Allow: /',
-    'Allow: /jobs-careers/',
-    'Allow: /schemes-benefits/',
+    'Allow: /jobs/',
+    'Allow: /careers/',
+    'Allow: /schemes/',
     'Allow: /study-library/',
+    'Allow: /community/',
     'Allow: /mock-tests/',
     'Allow: /resources/',
     'Allow: /about/',
@@ -376,8 +373,9 @@ export async function handleLlmsTxt(request, env) {
     '- Languages: English, Odia (ଓଡ଼ିଆ), Hindi',
     '',
     '## Core Public Knowledge Portals',
-    `- [Jobs & Careers Directory](${SITE_ORIGIN}/jobs-careers/): ${counts.careerNodes} structured career nodes, ${counts.exams} Odisha & National exam tracks (OPSC OAS, OSSC CGL, OSSSC RI/ARI/Amin, OTET, OSSTET, B.Ed., UGC NET), and live recruitment alerts.`,
-    `- [Schemes & Benefits Explorer](${SITE_ORIGIN}/schemes-benefits/): ${counts.schemes} verified Odisha State & Central welfare/scholarship schemes plus eligibility filters and document checklists.`,
+    `- [Jobs & Recruitment Portal](${SITE_ORIGIN}/jobs/): ${counts.careerNodes} structured job notices, ${counts.exams} Odisha & National exam tracks (OPSC OAS, OSSC CGL, OSSSC RI/ARI/Amin, OTET, OSSTET, B.Ed., UGC NET), and live recruitment alerts.`,
+    `- [Careers Explorer](${SITE_ORIGIN}/careers/): Odisha & National career pathways across Civil Services, Engineering/IT, Banking, Healthcare, Agriculture, and career stages.`,
+    `- [Schemes & Benefits Explorer](${SITE_ORIGIN}/schemes/): ${counts.schemes} verified Odisha State & Central welfare/scholarship schemes plus eligibility filters and document checklists.`,
     `- [Study Library & Syllabi](${SITE_ORIGIN}/study-library/): ${counts.studyNodes} structured academic & exam curriculum nodes alongside ${counts.resources} verified syllabi, solved PYQs, Odisha GK notes, BSE Class 10 & CHSE +2 blueprints.`,
     `- [Online CBT Mock Tests](${SITE_ORIGIN}/mock-tests/): Server-graded Odisha exam practice tests with leaderboards and negative-marking rules.`,
     `- [Daily Current Affairs](${SITE_ORIGIN}/current-affairs/): Odisha & National exam-oriented daily briefings.`,

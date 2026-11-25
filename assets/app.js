@@ -5,7 +5,7 @@ const CFG={email:'contact@csodisha.com',social:{instagram:'https://www.instagram
 const NAV=[
  ['jobs','Jobs','💼','/jobs/'],
  ['careers','Careers','🧭','/careers/'],
- ['schemes-benefits','Schemes & Benefits','🏛','/schemes-benefits/'],
+ ['schemes-benefits','Schemes & Benefits','🏛','/schemes/'],
  ['study-library','Study Library','📖','/study-library/'],
  ['community','Community','👥','/community/'],
  ['about','About','ⓘ','/about/']
@@ -2184,12 +2184,12 @@ function csoStudentDashboardHTML(){
   );
 
   const cards = [
-    ['📚', 'Study Library', 'Notes, PDFs and learning resources', 'study-library/'],
-    ['💼', 'Jobs & Careers', 'Explore recruitment and career opportunities', 'jobs-careers/'],
-    ['🎓', 'Exams & Preparation', 'Explore examinations and preparation resources', 'study/examinations/'],
-    ['🤲', 'Schemes & Benefits', 'Discover scholarships and government benefits', 'schemes-benefits/'],
-    ['🧭', 'Career Guidance', 'Explore career pathways and guidance', 'career-guidance/'],
-    ['👥', 'CSO Community', 'Connect with learners across Odisha', 'community/']
+    ['📚', 'Study Library', 'Notes, PDFs and learning resources', '/study-library/'],
+    ['💼', 'Jobs & Recruitment', 'Explore verified Odisha & Central job openings', '/jobs/'],
+    ['🎓', 'Mock Tests & Practice', 'Explore timed mock tests and exam resources', '/mock-tests/'],
+    ['🤲', 'Schemes & Benefits', 'Discover scholarships and government benefits', '/schemes/'],
+    ['🧭', 'Career Roadmaps', 'Explore career pathways and guidance', '/careers/'],
+    ['👥', 'CSO Community', 'Connect with learners across Odisha', '/community/']
   ];
 
   return `
@@ -2645,14 +2645,14 @@ document.addEventListener('click',e=>{
  const d=e.target.closest('[data-h]');if(d){e.preventDefault();if(d.dataset.h.endsWith('/')){location.href=d.dataset.h}else{go(d.dataset.h)}return}
  const m=e.target.closest('[data-m]');if(m){go(m.dataset.m);return}
  const a=e.target.closest('a[href="#"]');if(!a||a.classList.contains('opt'))return;e.preventDefault();
- const s=a.dataset.route||slug(clean(a.textContent)),M={'view-all':'latest-updates','view-all-topics':'popular-topics','view-all-tools':'important-tools','learn-more':'trust-layer','join-now':'community','browse-library':'study-library','home':''};
+ const s=a.dataset.route||slug(clean(a.textContent)),M={'view-all':'latest-updates','view-all-topics':'popular-topics','view-all-tools':'important-tools','learn-more':'about','join-now':'community','browse-library':'study-library','home':''};
  if(s==='get-started')return compass();
- if(s==='community'||s==='join-now'){location.href='community/';return}
- if(s==='about'){location.href='about/';return}
- if(s==='browse-library'){location.href='study-library/';return}
+ if(s==='community'||s==='join-now'){location.href='/community/';return}
+ if(s==='about'){location.href='/about/';return}
+ if(s==='browse-library'){location.href='/study-library/';return}
  go(s in M?M[s]:s)});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'){const d=e.target.closest('.it[data-h], .card.rs[data-h]');if(d)go(d.dataset.h)}});
-function compass(){const m=modal('<h3>CSO Opportunity Compass</h3><p class="mut">What are you looking for?</p><div class="lst cso-compass-lst">'+[['job-opportunity-finder/','💼 I want a Job'],['study/','🎓 I want to Study'],['schemes-benefits/','🤲 I want a Scheme'],['career-guidance/','🧭 I want Career Guidance']].map(([s,t])=>'<a class="card rs" data-h="'+s+'">'+t+'</a>').join('')+'</div>');m.addEventListener('click',e=>{if(e.target.closest('[data-h]'))m.close()})}
+function compass(){const m=modal('<h3>CSO Opportunity Compass</h3><p class="mut">What are you looking for?</p><div class="lst cso-compass-lst">'+[['/jobs/','💼 I want a Job'],['/study-library/','🎓 I want to Study'],['/schemes/','🤲 I want a Scheme'],['/careers/','🧭 I want Career Guidance']].map(([s,t])=>'<a class="card rs" data-h="'+s+'">'+t+'</a>').join('')+'</div>');m.addEventListener('click',e=>{if(e.target.closest('[data-h]'))m.close()})}
 function admin(){
   const m=modal(`
     <section class="cso-admin-login">
@@ -2734,12 +2734,12 @@ $$('a[href="#"]').forEach(a=>{a.dataset.route=slug(clean(a.textContent))});
 $$('.opt').forEach(c=>bind(c,clean($('b',c).textContent)));
 /* CSO-IN Trending Topics directory links v1 */
 const CSO_TRENDING_DESTINATIONS = [
-  'jobs-careers/?section=0',
-  'study-library/?section=3&path=1',
-  'schemes-benefits/?section=1&path=0.1',
-  'study-library/?section=5&path=1',
-  'jobs-careers/?section=6&path=0',
-  'schemes-benefits/?section=0&path=2'
+  '/jobs/',
+  '/study-library/',
+  '/schemes/',
+  '/study-library/',
+  '/careers/',
+  '/schemes/'
 ];
 
 $$('.tp').forEach((c, index) => {

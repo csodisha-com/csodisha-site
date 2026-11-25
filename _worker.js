@@ -415,9 +415,9 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources', '/api/marketing/banners', '/api/marketing/landing-pages', '/api/seo/meta', '/api/seo/robots.txt', '/api/seo/autocomplete',
     '/api/events/upcoming', '/api/config/public', '/api/events/calendar/odisha-all-exams.ics', '/api/events/calendar/opsc-ossc-osssc-deadlines.ics', '/api/events/calendar/admit-cards-results.ics', '/api/events/calendar/workshops-webinars.ics',
     '/api/public/jobs', '/api/public/jobs/list', '/api/public/jobs/tree', '/api/public/jobs/bootstrap', '/api/public/jobs/article',
-    '/api/public/careers/bootstrap', '/api/public/careers/list', '/careers/', '/jobs/', '/jobs-careers/',
-    '/api/public/schemes', '/api/public/schemes/list', '/api/public/schemes/tree', '/api/public/schemes/bootstrap', '/api/public/schemes/article', '/schemes/', '/schemes-benefits/',
-    '/api/public/study', '/api/public/study/tree', '/api/public/study/bootstrap', '/api/public/study/article', '/api/public/study-library/bootstrap', '/api/public/study-library/list', '/study-library/', '/study/',
+    '/api/public/careers/bootstrap', '/api/public/careers/list', '/careers/', '/jobs/',
+    '/api/public/schemes', '/api/public/schemes/list', '/api/public/schemes/tree', '/api/public/schemes/bootstrap', '/api/public/schemes/article', '/schemes/',
+    '/api/public/study', '/api/public/study/tree', '/api/public/study/bootstrap', '/api/public/study/article', '/api/public/study-library/bootstrap', '/api/public/study-library/list', '/study-library/',
     '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/list', '/api/public/community/bootstrap', '/api/public/community/post', '/community/', '/student-dashboard/',
     '/api/public/about/tree', '/api/public/about/pages', '/api/public/about/bootstrap', '/api/public/about/article', '/api/public/about/sources', '/about/',
     '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
@@ -1253,8 +1253,126 @@ export default {
     if (pathname === '/api/candidate/study-progress' && (request.method === 'GET' || request.method === 'POST')) {
       return handleCandidateStudyProgressApi(request, env);
     }
-    if (pathname === '/candidate' || pathname === '/candidate/') {
+    if (pathname === '/candidate' || pathname === '/candidate/' || pathname === '/candidate-hub' || pathname === '/candidate-hub/' || pathname === '/dashboard' || pathname === '/dashboard/' || pathname === '/portal' || pathname === '/portal/') {
       return Response.redirect(new URL('/student-dashboard/', url.origin).toString(), 301);
+    }
+
+    // v296: Clean 301 canonical redirects for retired legacy/duplicate HTML routes
+    const LEGACY_CANONICAL_REDIRECTS = {
+      '/about.html': '/about/',
+      '/accessibility': '/about/',
+      '/accessibility.html': '/about/',
+      '/editorial-policy': '/about/',
+      '/editorial-policy.html': '/about/',
+      '/legal-revisions': '/about/',
+      '/legal-revisions.html': '/about/',
+      '/trust-layer': '/about/',
+      '/trust-layer/': '/about/',
+      '/trust-layer/index.html': '/about/',
+      '/contact': '/about/',
+      '/contact/': '/about/',
+      '/contact.html': '/about/',
+      '/privacy': '/privacy-policy/',
+      '/privacy.html': '/privacy-policy/',
+      '/cookie-policy': '/privacy-policy/',
+      '/cookie-policy.html': '/privacy-policy/',
+      '/terms': '/terms-of-use/',
+      '/terms.html': '/terms-of-use/',
+      '/delivery-policy': '/terms-of-use/',
+      '/delivery-policy.html': '/terms-of-use/',
+      '/refund-policy': '/terms-of-use/',
+      '/refund-policy.html': '/terms-of-use/',
+      '/disclaimer.html': '/disclaimer/',
+      '/copyright': '/copyright-policy/',
+      '/copyright.html': '/copyright-policy/',
+      '/corrections-policy': '/support/',
+      '/corrections-policy.html': '/support/',
+      '/faqs': '/support/#faqs',
+      '/faqs.html': '/support/#faqs',
+      '/community-guidelines': '/community/',
+      '/community-guidelines.html': '/community/',
+      '/community/join': '/community/',
+      '/community/join/': '/community/',
+      '/community/join/index.html': '/community/',
+      '/career-guidance': '/careers/',
+      '/career-guidance/': '/careers/',
+      '/career-guidance/index.html': '/careers/',
+      '/study-path-finder': '/careers/',
+      '/study-path-finder/': '/careers/',
+      '/study-path-finder/index.html': '/careers/',
+      '/opportunity-compass': '/careers/',
+      '/opportunity-compass/': '/careers/',
+      '/opportunity-compass/index.html': '/careers/',
+      '/finder': '/careers/',
+      '/job-opportunity-finder': '/jobs/',
+      '/job-opportunity-finder/': '/jobs/',
+      '/job-opportunity-finder/index.html': '/jobs/',
+      '/scheme-opportunity-finder': '/schemes/',
+      '/scheme-opportunity-finder/': '/schemes/',
+      '/scheme-opportunity-finder/index.html': '/schemes/',
+      '/scholarship-guidance': '/schemes/',
+      '/scholarship-guidance/': '/schemes/',
+      '/scholarship-guidance/index.html': '/schemes/',
+      '/schemes': '/schemes/',
+      '/schemes-benefits': '/schemes/',
+      '/schemes-benefits/': '/schemes/',
+      '/schemes-benefits/index.html': '/schemes/',
+      '/study': '/study-library/',
+      '/study/': '/study-library/',
+      '/study/index.html': '/study-library/',
+      '/study/examinations': '/study-library/',
+      '/study/examinations/': '/study-library/',
+      '/study/examinations/index.html': '/study-library/',
+      '/education-explorer': '/study-library/',
+      '/education-explorer/': '/study-library/',
+      '/education-explorer/index.html': '/study-library/',
+      '/library': '/study-library/',
+      '/jobs': '/jobs/',
+      '/careers': '/careers/',
+      '/community': '/community/',
+      '/about': '/about/'
+    };
+    const exactLegacyRedirect = LEGACY_CANONICAL_REDIRECTS[pathname];
+    if (exactLegacyRedirect) {
+      return Response.redirect(new URL(exactLegacyRedirect, url.origin).toString(), 301);
+    }
+
+    if (pathname === '/about/' && url.searchParams.has('section')) {
+      return Response.redirect(new URL('/about/', url.origin).toString(), 301);
+    }
+
+    if (pathname === '/jobs-careers' || pathname === '/jobs-careers/' || pathname === '/jobs-careers/index.html') {
+      const dest = new URL('/jobs/', url.origin);
+      const qVal = url.searchParams.get('q');
+      const slugVal = url.searchParams.get('slug') || url.searchParams.get('job');
+      if (slugVal) dest.searchParams.set('slug', slugVal);
+      if (qVal) dest.searchParams.set('q', qVal);
+      return Response.redirect(dest.toString(), 301);
+    }
+
+    const legacyJobsTarget = LEGACY_JOBS_REDIRECTS[pathname];
+    if (legacyJobsTarget) {
+      return Response.redirect(new URL(legacyJobsTarget, url.origin).toString(), 301);
+    }
+
+    if (pathname.startsWith('/jobs-careers/') && !pathname.startsWith('/jobs-careers/assets/')) {
+      const detailSlug = matchJobsDetailPath(pathname) || (url.searchParams.get('slug') || '').trim();
+      if (pathname.startsWith('/jobs-careers/detail')) {
+        const dest = new URL('/jobs/', url.origin);
+        if (detailSlug) dest.searchParams.set('slug', detailSlug);
+        return Response.redirect(dest.toString(), 301);
+      }
+      const catMatch = matchJobsCategoryPath(pathname);
+      if (catMatch) {
+        const catTargetMap = {
+          'career-explorer': '/careers/',
+          'career-development': '/careers/',
+          'scholarships-support': '/schemes/',
+          'courses-exams': '/study-library/'
+        };
+        return Response.redirect(new URL(catTargetMap[catMatch.slug] || '/jobs/', url.origin).toString(), 301);
+      }
+      return Response.redirect(new URL('/jobs/', url.origin).toString(), 301);
     }
 
     if (pathname.startsWith('/study-library/')) {
@@ -1265,41 +1383,18 @@ export default {
       const jobsRes = await handlePublicJobsRoute(request, env, url);
       if (jobsRes) return jobsRes;
     }
-    if (pathname === '/careers') {
-      return Response.redirect(new URL('/careers/', url.origin).toString(), 301);
-    }
-    if (pathname === '/about.html' || (pathname === '/about/' && url.searchParams.has('section'))) {
-      return Response.redirect(new URL('/about/', url.origin).toString(), 301);
-    }
-    if (pathname === '/schemes' || pathname === '/schemes-benefits' || pathname === '/schemes-benefits/') {
-      return Response.redirect(new URL('/schemes/', url.origin).toString(), 301);
-    }
     if (pathname.startsWith('/schemes/')) {
       const schemesRes = await handlePublicSchemesRoute(request, env, pathname);
       if (schemesRes) return schemesRes;
-    }
-    if (pathname === '/community') {
-      return Response.redirect(new URL('/community/', url.origin).toString(), 301);
     }
     if (pathname.startsWith('/community/')) {
       const communityRes = await handlePublicCommunityRoute(request, env, pathname);
       if (communityRes) return communityRes;
     }
 
-    const legacyJobsTarget = LEGACY_JOBS_REDIRECTS[pathname];
-    if (legacyJobsTarget) {
-      return Response.redirect(new URL(legacyJobsTarget, url.origin).toString(), 301);
-    }
-
     // Fall back to static asset binding
     if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
-      let assetRequest = request;
-      if (matchJobsCategoryPath(pathname)) {
-        assetRequest = new Request(new URL('/jobs-careers/', url.origin).toString(), request);
-      } else if (matchJobsDetailPath(pathname)) {
-        assetRequest = new Request(new URL('/jobs-careers/detail/', url.origin).toString(), request);
-      }
-      let res = await env.ASSETS.fetch(assetRequest);
+      let res = await env.ASSETS.fetch(request);
       const isPageReq = (request.method === 'GET' || request.method === 'HEAD') && !pathname.startsWith('/api/') && !pathname.startsWith('/assets/') && (pathname.endsWith('/') || pathname.endsWith('.html') || !/\.[a-z0-9]+$/i.test(pathname));
       if (isPageReq) {
         const redirectTarget = await getPageRedirect(env, pathname);
@@ -1325,6 +1420,19 @@ export default {
             if (!res.headers.get('Content-Security-Policy')) {
               res.headers.set('Content-Security-Policy', csp);
             }
+          }
+        }
+        if (res.status === 404 && !live) {
+          const notFoundAsset = await env.ASSETS.fetch(new Request(new URL('/404.html', url.origin).toString(), { method: request.method }));
+          if (notFoundAsset && notFoundAsset.status === 200) {
+            const nfHeaders = new Headers(notFoundAsset.headers);
+            nfHeaders.set('Content-Type', 'text/html; charset=utf-8');
+            nfHeaders.set('Cache-Control', 'no-store');
+            nfHeaders.set('X-Robots-Tag', 'noindex, follow');
+            nfHeaders.set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'");
+            nfHeaders.set('X-Content-Type-Options', 'nosniff');
+            nfHeaders.set('X-Frame-Options', 'SAMEORIGIN');
+            return new Response(request.method === 'HEAD' ? null : notFoundAsset.body, { status: 404, headers: nfHeaders });
           }
         }
       }

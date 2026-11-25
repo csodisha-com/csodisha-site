@@ -3,12 +3,12 @@
 import { hydrateJobsFeedResponse, renderSchemeCard } from './ssr-feeds.js';
 
 export const CSO_SHELL_HEAD_LINKS = [
-  '<link rel="stylesheet" href="/assets/style.css?v=20261125v295">',
-  '<link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261125v295">',
-  '<link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css?v=20261125v295">',
-  '<link rel="stylesheet" href="/assets/css/pages/cso-detail-page.css?v=20261125v295">',
-  '<script src="/assets/shared-header.js?v=20261125v295" defer></script>',
-  '<script src="/assets/js/voice-search.js?v=20261125v295" defer></script>'
+  '<link rel="stylesheet" href="/assets/style.css?v=20261125v296">',
+  '<link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261125v296">',
+  '<link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css?v=20261125v296">',
+  '<link rel="stylesheet" href="/assets/css/pages/cso-detail-page.css?v=20261125v296">',
+  '<script src="/assets/shared-header.js?v=20261125v296" defer></script>',
+  '<script src="/assets/js/voice-search.js?v=20261125v296" defer></script>'
 ].join('\n  ');
 
 export const CSO_SHELL_HEADER = `<header class="top site-header__top" id="header-top" role="banner">
@@ -46,8 +46,9 @@ export const CSO_SHELL_FOOTER = `<footer><div class="w cso-footer-grid">
   <div class="cso-footer-zone2">
     <div class="cso-footer-col">
       <h4>Explore</h4>
-      <a href="/jobs-careers/">Jobs &amp; Careers</a>
-      <a href="/schemes-benefits/">Schemes &amp; Benefits</a>
+      <a href="/jobs/">Jobs</a>
+      <a href="/careers/">Careers</a>
+      <a href="/schemes/">Schemes &amp; Benefits</a>
       <a href="/study-library/">Study Library</a>
       <a href="/community/">Community</a>
       <a href="/about/">About CSO</a>
@@ -59,6 +60,8 @@ export const CSO_SHELL_FOOTER = `<footer><div class="w cso-footer-grid">
       <a href="/support/#suggest-resource">Suggest Resource</a>
       <a href="/privacy-policy/">Privacy Policy</a>
       <a href="/terms-of-use/">Terms of Use</a>
+      <a href="/disclaimer/">Disclaimer</a>
+      <a href="/copyright-policy/">Copyright Policy</a>
     </div>
   </div>
   <div class="cso-footer-zone3">

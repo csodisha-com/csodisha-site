@@ -24,7 +24,7 @@
   const NAV = [
     { key: 'jobs', labelEn: 'Jobs', labelOr: 'ଚାକିରି', fullEn: 'Jobs', fullOr: 'ଚାକିରି', icon: '💼', url: '/jobs/' },
     { key: 'careers', labelEn: 'Careers', labelOr: 'କ୍ୟାରିୟର୍', fullEn: 'Careers', fullOr: 'କ୍ୟାରିୟର୍', icon: '🧭', url: '/careers/' },
-    { key: 'schemes-benefits', labelEn: 'Schemes & Benefits', labelOr: 'ଯୋଜନା ଓ ସୁବିଧା', fullEn: 'Schemes & Benefits', fullOr: 'ଯୋଜନା ଓ ସୁବିଧା', icon: '🏛', url: '/schemes-benefits/' },
+    { key: 'schemes-benefits', labelEn: 'Schemes & Benefits', labelOr: 'ଯୋଜନା ଓ ସୁବିଧା', fullEn: 'Schemes & Benefits', fullOr: 'ଯୋଜନା ଓ ସୁବିଧା', icon: '🏛', url: '/schemes/' },
     { key: 'study-library', labelEn: 'Study Library', labelOr: 'ଅଧ୍ୟୟନ ପାଠାଗାର', fullEn: 'Study Library', fullOr: 'ଅଧ୍ୟୟନ ପାଠାଗାର', icon: '📖', url: '/study-library/' },
     { key: 'community', labelEn: 'Community', labelOr: 'ସମୁଦାୟ', fullEn: 'Community', fullOr: 'ସମୁଦାୟ', icon: '👥', url: '/community/' },
     { key: 'about', labelEn: 'About', labelOr: 'ଆମ ବିଷୟରେ', fullEn: 'About', fullOr: 'ଆମ ବିଷୟରେ', icon: 'ⓘ', url: '/about/' }
@@ -2394,8 +2394,8 @@
     if (!document.getElementById('cso-main-navbar')) header.after(buildNavShell());
   }
   const FOOTER_COLS = [
-    ['Explore', [['Jobs', '/jobs/'], ['Careers', '/careers/'], ['Schemes & Benefits', '/schemes-benefits/'], ['Study Library', '/study-library/'], ['Community', '/community/'], ['About', '/about/']]],
-    ['Support & Legal', [['Help & FAQs', '/support/#faqs'], ['Report an Error', '/support/#report-error'], ['Suggest Resource', '/support/#suggest-resource'], ['Privacy Policy', '/privacy-policy/'], ['Terms of Use', '/terms-of-use/']]]
+    ['Explore', [['Jobs', '/jobs/'], ['Careers', '/careers/'], ['Schemes & Benefits', '/schemes/'], ['Study Library', '/study-library/'], ['Community', '/community/'], ['About', '/about/']]],
+    ['Support & Legal', [['Help & FAQs', '/support/#faqs'], ['Report an Error', '/support/#report-error'], ['Suggest Resource', '/support/#suggest-resource'], ['Privacy Policy', '/privacy-policy/'], ['Terms of Use', '/terms-of-use/'], ['Disclaimer', '/disclaimer/'], ['Copyright Policy', '/copyright-policy/']]]
   ];
   const FOOTER_SOCIAL = [
     ['Instagram', 'https://www.instagram.com/csodisha.official/'],

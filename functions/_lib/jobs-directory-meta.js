@@ -45,24 +45,24 @@ export const JOBS_CATEGORY_SECTIONS = {
 };
 
 export const LEGACY_JOBS_REDIRECTS = {
-  '/jobs-careers/odisha-state-jobs': '/jobs-careers/jobs-recruitment',
-  '/jobs-careers/odisha-state-jobs/': '/jobs-careers/jobs-recruitment',
-  '/jobs-careers/odisha-state-jobs/index.html': '/jobs-careers/jobs-recruitment',
-  '/jobs-careers/central-ssc-railways-banking': '/jobs-careers/jobs-recruitment',
-  '/jobs-careers/central-ssc-railways-banking/': '/jobs-careers/jobs-recruitment',
-  '/jobs-careers/central-ssc-railways-banking/index.html': '/jobs-careers/jobs-recruitment',
-  '/jobs-careers/police-defence': '/jobs-careers/jobs-recruitment',
-  '/jobs-careers/police-defence/': '/jobs-careers/jobs-recruitment',
-  '/jobs-careers/police-defence/index.html': '/jobs-careers/jobs-recruitment',
-  '/jobs-careers/teaching-education': '/jobs-careers/courses-exams',
-  '/jobs-careers/teaching-education/': '/jobs-careers/courses-exams',
-  '/jobs-careers/teaching-education/index.html': '/jobs-careers/courses-exams',
-  '/jobs-careers/psu-technical-healthcare': '/jobs-careers/career-explorer',
-  '/jobs-careers/psu-technical-healthcare/': '/jobs-careers/career-explorer',
-  '/jobs-careers/psu-technical-healthcare/index.html': '/jobs-careers/career-explorer',
-  '/jobs-careers/private-remote-internships': '/jobs-careers/career-development',
-  '/jobs-careers/private-remote-internships/': '/jobs-careers/career-development',
-  '/jobs-careers/private-remote-internships/index.html': '/jobs-careers/career-development'
+  '/jobs-careers/odisha-state-jobs': '/jobs/',
+  '/jobs-careers/odisha-state-jobs/': '/jobs/',
+  '/jobs-careers/odisha-state-jobs/index.html': '/jobs/',
+  '/jobs-careers/central-ssc-railways-banking': '/jobs/',
+  '/jobs-careers/central-ssc-railways-banking/': '/jobs/',
+  '/jobs-careers/central-ssc-railways-banking/index.html': '/jobs/',
+  '/jobs-careers/police-defence': '/jobs/',
+  '/jobs-careers/police-defence/': '/jobs/',
+  '/jobs-careers/police-defence/index.html': '/jobs/',
+  '/jobs-careers/teaching-education': '/study-library/',
+  '/jobs-careers/teaching-education/': '/study-library/',
+  '/jobs-careers/teaching-education/index.html': '/study-library/',
+  '/jobs-careers/psu-technical-healthcare': '/careers/',
+  '/jobs-careers/psu-technical-healthcare/': '/careers/',
+  '/jobs-careers/psu-technical-healthcare/index.html': '/careers/',
+  '/jobs-careers/private-remote-internships': '/careers/',
+  '/jobs-careers/private-remote-internships/': '/careers/',
+  '/jobs-careers/private-remote-internships/index.html': '/careers/'
 };
 
 export function matchJobsCategoryPath(pathname) {

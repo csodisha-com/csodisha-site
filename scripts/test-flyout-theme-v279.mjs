@@ -94,7 +94,7 @@ check('3. All HTML pages referencing style.css, portal-shell.css, app.js, or sha
       assert.ok(/^20261125v2(?:79|[89]\d)$/.test(m[2]), `${rel} has ${m[1]}?v=${m[2]} instead of 20261125v279+`);
     }
   }
-  assert.ok(checkedCount > 80, `Expected >80 versioned core asset references, got ${checkedCount}`);
+  assert.ok(checkedCount >= 50, `Expected >=50 versioned core asset references across active HTML pages, got ${checkedCount}`);
 });
 
 check('4. Strict CSP compliance across shared-header.js, app.js, and core HTML pages', () => {

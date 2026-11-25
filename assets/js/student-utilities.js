@@ -354,7 +354,7 @@
   function buildJobIcs(info) {
     var title = String((info && info.title) || 'Odisha Recruitment Deadline').trim();
     var org = String((info && info.organisation) || 'Common Sense Odisha').trim();
-    var url = String((info && info.url) || 'https://csodisha.com/jobs-careers/').trim();
+    var url = String((info && info.url) || 'https://csodisha.com/jobs/').trim();
     var slug = String((info && info.slug) || title).toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 48) || 'job';
     var parts = parseIsoDateParts(info && info.lastDate);
     if (!parts) return null;

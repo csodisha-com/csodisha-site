@@ -36,8 +36,8 @@ export async function handleAdminPage(request, env) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return plain(405, 'Method not allowed');
   const csp = STRICT_CSP;
 
-  // The pre-suite URL keeps working: send it to the Master Command Suite.
-  if (path === '/admin/legacy' || path === '/admin/legacy.html') {
+  // Retired pre-suite URLs keep working via 301 to the Master Command Suite.
+  if (path === '/admin/legacy' || path === '/admin/legacy.html' || path === '/admin/portal' || path === '/admin/portal.html') {
     return secured(new Response(null, { status: 301 }), csp, { Location: '/admin/' });
   }
 
