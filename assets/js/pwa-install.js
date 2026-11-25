@@ -83,7 +83,7 @@
 
     const left = el('div', 'cso-pwa-banner-left');
     const logo = el('img', 'cso-pwa-banner-icon');
-    logo.src = '/assets/favicon.svg';
+    logo.src = '/assets/img/cso-logo-192.png?v=20261126v330';
     logo.alt = 'CSO Logo';
 
     const copy = el('div', 'cso-pwa-banner-copy');

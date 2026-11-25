@@ -2337,31 +2337,31 @@
     imgs.forEach(node => {
       const isFooterLogo = node.classList.contains('cso-footer-logo') || Boolean(node.closest('.cso-footer-brand-header'));
       if (node.tagName === 'IMG') {
-        node.src = '/assets/img/cso-logo-96.webp';
+        node.src = '/assets/img/cso-logo-96.webp?v=20261126v330';
         if (isFooterLogo) {
           node.alt = '';
           node.setAttribute('aria-hidden', 'true');
         } else {
           node.alt = 'Common Sense Odisha Logo';
         }
-        node.width = 36;
-        node.height = 36;
+        node.width = 54;
+        node.height = 38;
         node.classList.add('cso-brand-emblem');
         if (!node.dataset.emblemBound) {
           node.dataset.emblemBound = '1';
           node.addEventListener('error', () => {
             if (node.dataset.fallbackApplied === '1') return;
             node.dataset.fallbackApplied = '1';
-            node.src = '/assets/img/cso-logo-96.png';
+            node.src = '/assets/img/cso-logo-96.png?v=20261126v330';
           });
         }
       } else {
         const img = document.createElement('img');
-        img.src = '/assets/img/cso-logo-96.webp';
+        img.src = '/assets/img/cso-logo-96.webp?v=20261126v330';
         img.alt = isFooterLogo ? '' : 'Common Sense Odisha Logo';
         if (isFooterLogo) img.setAttribute('aria-hidden', 'true');
-        img.width = 36;
-        img.height = 36;
+        img.width = 54;
+        img.height = 38;
         img.className = 'cso-brand-emblem';
         node.replaceChildren(img);
       }
@@ -2400,10 +2400,10 @@
     brand.href = '/';
     brand.setAttribute('aria-label', 'Common Sense Odisha Home');
     const logo = document.createElement('img');
-    logo.src = '/assets/img/cso-logo-96.webp';
+    logo.src = '/assets/img/cso-logo-96.webp?v=20261126v330';
     logo.alt = 'Common Sense Odisha Logo';
     logo.className = 'cso-brand-logo cso-brand-emblem';
-    logo.width = 36; logo.height = 36;
+    logo.width = 54; logo.height = 38;
     brand.appendChild(logo);
     const adm = el('a', 'adm cso-adm-icon-only cso-adm-stealth');
     adm.href = '/admin/';
@@ -2465,11 +2465,11 @@
     const z1 = el('div', 'cso-footer-zone1');
     const bh = el('div', 'cso-footer-brand-header');
     const logo = document.createElement('img');
-    logo.src = '/assets/img/cso-logo-96.webp';
+    logo.src = '/assets/img/cso-logo-96.webp?v=20261126v330';
     logo.alt = '';
     logo.setAttribute('aria-hidden', 'true');
     logo.className = 'cso-footer-logo cso-brand-emblem';
-    logo.width = 36; logo.height = 36;
+    logo.width = 54; logo.height = 38;
     bh.append(logo, el('div', 'cso-footer-title', 'Common Sense Odisha'));
     const contact = el('p', 'cso-footer-contact', 'Contact: ');
     const mail = el('a', 'cso-footer-contact-link', 'contact@csodisha.com');

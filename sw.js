@@ -11,7 +11,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v329';
+const CACHE_NAME = 'cso-candidate-cache-v330';
 const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
 const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
 
@@ -28,7 +28,8 @@ const PRECACHE_URLS = [
   '/assets/css/portal-shell.css',
   '/assets/app.js',
   '/assets/shared-header.js',
-  '/assets/favicon.svg',
+  '/assets/img/cso-logo-96.webp',
+  '/assets/img/favicon-32x32.png',
   '/manifest.webmanifest'
 ];
 

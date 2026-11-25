@@ -8478,9 +8478,9 @@ select:focus-visible {
 .cso-schemes-badge.cso-brand-emblem,
 .cso-comm-badge.cso-brand-emblem,
 .cso-sl-brand-badge.cso-brand-emblem {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width: auto;
+  height: 38px;
+  border-radius: 6px;
   object-fit: contain;
   background: transparent;
   flex-shrink: 0;

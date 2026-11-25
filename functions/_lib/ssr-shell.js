@@ -15,7 +15,7 @@ export const CSO_SHELL_HEAD_LINKS = [
 export const CSO_SHELL_HEADER = `<a class="cso-skip-link" href="#main-content">Skip to main content</a>
 <header class="top site-header__top" id="header-top" role="banner">
 <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
-  <img src="/assets/img/cso-logo-96.webp" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="36" height="36" fetchpriority="high" decoding="async">
+  <img src="/assets/img/cso-logo-96.webp?v=20261126v330" alt="Common Sense Odisha Logo" class="cso-brand-logo cso-brand-emblem" width="54" height="38" fetchpriority="high" decoding="async">
 </a>
 <span id="ctl" class="cso-contents"></span>
 <span class="sp"></span>
@@ -30,7 +30,7 @@ export const CSO_SHELL_HEADER = `<a class="cso-skip-link" href="#main-content">S
 export const CSO_SHELL_FOOTER = `<footer><div class="w cso-footer-grid">
   <div class="cso-footer-zone1">
     <div class="cso-footer-brand-header">
-      <img src="/assets/img/cso-logo-96.webp" alt="" aria-hidden="true" class="cso-footer-logo cso-brand-emblem" width="36" height="36" loading="lazy" decoding="async">
+      <img src="/assets/img/cso-logo-96.webp?v=20261126v330" alt="" aria-hidden="true" class="cso-footer-logo cso-brand-emblem" width="54" height="38" loading="lazy" decoding="async">
       <div class="cso-footer-title">Common Sense Odisha</div>
     </div>
     <p class="cso-footer-desc">Independent, open-access public resource platform.</p>

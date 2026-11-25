@@ -228,9 +228,10 @@ export function renderInstitutionalPageHtml(row, def, snippets = {}) {
   <meta property="og:title" content="${escShell(titleEn)} | Common Sense Odisha">
   <meta property="og:description" content="${escShell(desc)}">
   <meta property="og:url" content="${escShell(canonical)}">
-  <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png">
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
+  <link rel="icon" href="/assets/img/favicon-16x16.png?v=20261126v330" type="image/png" sizes="16x16">
+  <link rel="icon" href="/favicon.ico?v=20261126v330" sizes="any">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png?v=20261126v330">
   ${CSO_SHELL_HEAD_LINKS}
   <link rel="stylesheet" href="/assets/css/pages/cso-subpage-module.css">
 </head>

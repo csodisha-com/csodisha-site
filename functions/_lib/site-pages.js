@@ -140,7 +140,7 @@ export function buildJsonLd(row, blocks) {
           alternateName: ['CS Odisha', 'CSOdisha', 'କମନ୍ ସେନ୍ସ ଓଡ଼ିଶା'],
           url: 'https://csodisha.com/',
           email: 'contact@csodisha.com',
-          logo: 'https://csodisha.com/assets/images/cso-logo.svg',
+          logo: 'https://csodisha.com/assets/img/cso-logo.png?v=20261126v330',
           areaServed: 'Odisha, India',
           sameAs: [
             'https://www.instagram.com/csodisha.official/',
@@ -358,7 +358,7 @@ export function renderDynamicPage(row, sitewide) {
   const hero = row.hero_title ? `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.hero_title)}</h1>${row.hero_subtitle ? `<p>${esc(row.hero_subtitle)}</p>` : ''}${odiaSub}${row.cta_label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(row.cta_url))}">${esc(row.cta_label)}</a></p>` : ''}</div></section>` : `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.title)}</h1>${odiaSub}</div></section>`;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>${esc(row.title)}</title><meta name="description" content="${esc(row.meta_description)}">${robotsMeta}${ogMeta}${jsonLd}
-<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32.png?v=20261126v330"><link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16.png?v=20261126v330"><link rel="icon" href="/favicon.ico?v=20261126v330" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png?v=20261126v330">
 ${focused ? '' : CSO_SHELL_HEAD_LINKS}
 <link rel="stylesheet" href="/assets/css/design-tokens.css"><link rel="stylesheet" href="/assets/css/ui-kit.css"><link rel="stylesheet" href="/assets/css/public-content.css"><link rel="stylesheet" href="/styles.css"></head>
 <body${focused ? ' class="cso-focused-landing"' : ''}>${focused ? '' : CSO_SHELL_HEADER}

@@ -65,7 +65,7 @@
       img.addEventListener('error', () => {
         if (img.dataset.fallbackApplied === '1') return;
         img.dataset.fallbackApplied = '1';
-        img.src = '/assets/img/cso-logo-96.png';
+        img.src = '/assets/img/cso-logo-96.png?v=20261126v330';
       });
     });
   }
