@@ -2522,6 +2522,92 @@
     if (footer) buildFooter(footer);
   }
 
+  /* v312: Live Sponsored Ad Slot Hydration + Real Impression & Click Telemetry (/api/public/ads) */
+  function hydratePublicAdSlots() {
+    const p = String(window.location.pathname || '/').toLowerCase();
+    if (/^\/(?:admin|login|signup|reset-password|student-dashboard)/.test(p)) return;
+    if (typeof fetch !== 'function') return;
+
+    const slotCandidates = ['site_banner'];
+    if (p === '/' || p === '/index.html') slotCandidates.unshift('home_mid_banner');
+    else if (p.startsWith('/jobs')) slotCandidates.unshift('jobs_top_sponsor');
+    else if (p.startsWith('/careers')) slotCandidates.unshift('careers_top_sponsor');
+    else if (p.startsWith('/schemes')) slotCandidates.unshift('schemes_top_sponsor');
+    else if (p.startsWith('/study')) slotCandidates.unshift('study_top_sponsor');
+    else if (p.startsWith('/mock-tests')) slotCandidates.unshift('mock_tests_banner');
+    else if (p.startsWith('/community')) slotCandidates.unshift('community_top_sponsor');
+
+    const explicitMounts = Array.from(document.querySelectorAll('[data-cso-ad-slot]'));
+    explicitMounts.forEach(m => {
+      const k = (m.getAttribute('data-cso-ad-slot') || '').trim();
+      if (k && !slotCandidates.includes(k)) slotCandidates.push(k);
+    });
+
+    function trackAdEvent(id, event) {
+      const body = JSON.stringify({ id, event });
+      try {
+        if (event === 'click' && navigator.sendBeacon) {
+          navigator.sendBeacon('/api/public/ads/track', new Blob([body], { type: 'application/json' }));
+          return;
+        }
+      } catch (_) {}
+      fetch('/api/public/ads/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+        keepalive: event === 'click'
+      }).catch(() => {});
+    }
+
+    fetch('/api/public/ads?slots=' + encodeURIComponent(slotCandidates.join(',')), { credentials: 'same-origin' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        const items = (data && Array.isArray(data.items)) ? data.items : [];
+        if (!items.length) return;
+        const slot = items[0];
+        if (!slot || !slot.id || !slot.target_url) return;
+
+        const explicit = document.querySelector(`[data-cso-ad-slot="${slot.slot_key}"]`);
+        let host = explicit;
+        if (!host) {
+          const mainEl = document.getElementById('main-content') || document.querySelector('main');
+          if (!mainEl) return;
+          host = el('aside', 'cso-ad-slot-wrap');
+          host.setAttribute('aria-label', slot.badge_text || 'Sponsored');
+          mainEl.appendChild(host);
+        } else {
+          host.replaceChildren();
+        }
+
+        const card = el('a', 'cso-ad-slot-card');
+        card.href = slot.target_url;
+        card.target = '_blank';
+        card.rel = 'sponsored noopener noreferrer';
+
+        if (slot.image_url && (slot.image_url.startsWith('/') || /^https?:\/\//i.test(slot.image_url))) {
+          const img = el('img', 'cso-ad-slot-img');
+          img.src = slot.image_url;
+          img.alt = slot.title || 'Sponsored partner';
+          img.width = 160;
+          img.height = 90;
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          card.appendChild(img);
+        }
+
+        const copy = el('div', 'cso-ad-slot-copy');
+        copy.appendChild(el('span', 'cso-ad-slot-badge', slot.badge_text || 'Sponsored'));
+        copy.appendChild(el('strong', 'cso-ad-slot-title', slot.title || 'Partner Notice'));
+        copy.appendChild(el('span', 'cso-ad-slot-cta', 'Visit Partner ↗'));
+        card.appendChild(copy);
+
+        card.addEventListener('click', () => trackAdEvent(slot.id, 'click'));
+        host.appendChild(card);
+        trackAdEvent(slot.id, 'impression');
+      })
+      .catch(() => {});
+  }
+
   function init() {
     [
       ['ensureAutoShell', ensureAutoShell],
@@ -2535,7 +2621,8 @@
       ['hydrateHeaderNavFromApi', hydrateHeaderNavFromApi],
       ['ensureAdminLink', ensureAdminLink],
       ['updateSavedCountBadge', updateSavedCountBadge],
-      ['syncAuthSession', syncAuthSession]
+      ['syncAuthSession', syncAuthSession],
+      ['hydratePublicAdSlots', hydratePublicAdSlots]
     ].forEach(([name, fn]) => {
       try { fn(); } catch (err) { console.error('[CSO SharedHeader] ' + name + ' failed:', err); }
     });

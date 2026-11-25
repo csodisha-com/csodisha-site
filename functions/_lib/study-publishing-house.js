@@ -12,6 +12,7 @@ import { HttpError, json, readJson, validationError, clientIp } from './http.js'
 import { audit, rateLimit, getActor, STAFF_ROLES } from './rbac.js';
 import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
 import { requireCandidateSession } from './candidate-hub-governance.js';
+import { ensureV311ContentColumns, isFuturePublishAt, logZeroResultSearch } from './radars-v311.js';
 
 const MB = 1024 * 1024;
 const ALLOWED_UPLOAD_MIME = {
@@ -497,6 +498,7 @@ function formatStudyArticle(row, taxMap = new Map(), includeAdminFields = false)
     edition_note_en: row.edition_note_en || '',
     edition_note_or: row.edition_note_or || '',
     scheduled_publish_at: sched,
+    offline_pack: Boolean(row.offline_pack),
     is_featured: Boolean(row.is_featured),
     is_free_access: row.is_free_access === undefined ? true : Boolean(row.is_free_access),
     is_published: isPublished,
@@ -1111,6 +1113,10 @@ export async function handleStudyArticlesAdmin(request, env, actor, articleId, a
     ).run();
 
     const row = await db.prepare('SELECT * FROM study_articles WHERE id = ?').bind(id).first();
+    await ensureV311ContentColumns(db);
+    const offlinePackVal = (body.offline_pack === true || body.offline_pack === 1 || String(body.offline_pack) === '1') ? 1 : 0;
+    await db.prepare('UPDATE study_articles SET offline_pack = ? WHERE id = ?').bind(offlinePackVal, id).run().catch(() => {});
+    if (row) row.offline_pack = offlinePackVal;
     await saveStudyRevision(db, id, row || data, body.change_summary || 'Initial creation', actor.email);
     const { map: taxMap } = await loadTaxonomyMap(db);
     await audit(env, request, actor, data.is_published ? 'study_article.publish' : 'study_article.create', 'study_articles', id, { slug: finalSlug, title_en: data.title_en });
@@ -1171,6 +1177,12 @@ export async function handleStudyArticlesAdmin(request, env, actor, articleId, a
     ).run();
 
     const row = await db.prepare('SELECT * FROM study_articles WHERE id = ?').bind(articleId).first();
+    await ensureV311ContentColumns(db);
+    if (body.offline_pack !== undefined) {
+      const offlinePackVal = (body.offline_pack === true || body.offline_pack === 1 || String(body.offline_pack) === '1') ? 1 : 0;
+      await db.prepare('UPDATE study_articles SET offline_pack = ? WHERE id = ?').bind(offlinePackVal, articleId).run().catch(() => {});
+      if (row) row.offline_pack = offlinePackVal;
+    }
     await saveStudyRevision(db, articleId, row || data, body.change_summary || 'Editorial update', actor.email);
     const { map: taxMap } = await loadTaxonomyMap(db);
     await audit(env, request, actor, data.is_published ? 'study_article.publish' : 'study_article.update', 'study_articles', articleId, { slug: finalSlug });
@@ -1279,7 +1291,9 @@ export async function handlePublicStudyBootstrapApi(request, env) {
   ]).catch(() => [{ results: [] }, { results: [] }]);
 
   const rawNodes = (batchResults[0] && batchResults[0].results) || [];
-  const rawArticles = (batchResults[1] && batchResults[1].results) || [];
+  const nowMs = Date.now();
+  const rawArticles = ((batchResults[1] && batchResults[1].results) || [])
+    .filter(r => !isFuturePublishAt(r.scheduled_publish_at, nowMs));
 
   const taxMap = new Map();
   const counts = new Map();
@@ -1409,7 +1423,7 @@ export async function handlePublicStudyTreeApi(request, env) {
   }, 200, { 'Cache-Control': PUBLIC_CACHE });
 }
 
-export async function handlePublicStudyListApi(request, env) {
+export async function handlePublicStudyListApi(request, env, ctx = null) {
   if (!env || !env.DB) return json({ ok: false, items: [], total: 0 }, 200, { 'Cache-Control': 'no-store' });
   await ensureStudyPublishingSchema(env.DB);
   await publishDueScheduledStudyArticles(env.DB);
@@ -1432,7 +1446,10 @@ export async function handlePublicStudyListApi(request, env) {
     env.DB.prepare('SELECT * FROM study_articles WHERE is_published = 1 ORDER BY is_featured DESC, updated_at DESC').all().catch(() => ({ results: [] }))
   ]);
 
-  const all = (results || []).map(r => formatStudyArticle(r, taxMap, false));
+  const nowMs = Date.now();
+  const all = (results || [])
+    .filter(r => !isFuturePublishAt(r.scheduled_publish_at, nowMs))
+    .map(r => formatStudyArticle(r, taxMap, false));
 
   const typesSet = new Set();
   const diffsSet = new Set();
@@ -1470,6 +1487,10 @@ export async function handlePublicStudyListApi(request, env) {
     if (pa !== pb) return pa - pb;
     return String(b.published_at || b.updated_at).localeCompare(String(a.published_at || a.updated_at));
   });
+
+  if (search && filtered.length === 0) {
+    logZeroResultSearch(env, search, 'study', ctx);
+  }
 
   return json({
     ok: true,

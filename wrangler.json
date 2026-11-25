@@ -19,6 +19,10 @@
     {
       "binding": "MEDIA",
       "bucket_name": "cso-media"
+    },
+    {
+      "binding": "CSO_FILES",
+      "bucket_name": "cso-files"
     }
   ],
   "ai": {

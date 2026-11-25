@@ -8,6 +8,9 @@
   var capsHint = document.getElementById('capsHint');
   var rememberMe = document.getElementById('rememberMe');
   var twofa = document.getElementById('twofa');
+  var twofaBlock = document.getElementById('twofaBlock');
+  var twofaChallengeNote = document.getElementById('twofaChallengeNote');
+  var otpRow = document.getElementById('otpRow');
   var sendOtp = document.getElementById('sendOtp');
   var otpStatus = document.getElementById('otpStatus');
   var themeMenuWrap = document.getElementById('themeMenuWrap');
@@ -248,7 +251,25 @@
       });
       var d = await r.json().catch(function () { return {}; });
       if (!r.ok) {
-        if (d.requires_2fa && twofa) twofa.focus();
+        if (d.requires_2fa) {
+          if (twofaBlock) twofaBlock.classList.add('is-required');
+          if (twofaChallengeNote) {
+            twofaChallengeNote.textContent = d.totp_enabled
+              ? '2FA is active for this staff account. Enter the 6-digit code from your Authenticator app or one of your 8-character backup recovery codes.'
+              : 'Two-factor verification required. Enter your 6-digit code or backup recovery code.';
+            twofaChallengeNote.hidden = false;
+          }
+          if (otpRow && d.can_send_otp === false) otpRow.hidden = true;
+          if (twofa) {
+            twofa.setAttribute('aria-invalid', 'true');
+            twofa.required = true;
+            twofa.focus();
+          }
+          go.disabled = false;
+          go.textContent = 'Verify 2FA & Sign in';
+          show(d.error || 'Enter your 2FA code to complete sign-in.', 'error');
+          return;
+        }
         throw new Error(d.error || 'Sign-in failed.');
       }
       var s = await fetch('/api/admin/session', { credentials: 'same-origin' });

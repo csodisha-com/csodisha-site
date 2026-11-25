@@ -93,6 +93,12 @@
     editingAssigned: null,
     docs: [],
     editingDoc: null,
+    districtAssignments: [],
+    editingDistrictAssignment: null,
+    districtFilter: '',
+    supportTickets: [],
+    supportCounts: { total: 0, open: 0, in_progress: 0, resolved: 0 },
+    supportFilter: 'all',
     root: null,
     refs: {}
   };
@@ -1380,6 +1386,297 @@
   }
 
   // =========================================================================
+  // TAB 6 (v312): 30-DISTRICT "ASSIGNED FOR YOU" PUSH DESK
+  // =========================================================================
+  function loadDistrictAssignments() {
+    var qs = state.districtFilter ? ('?district=' + encodeURIComponent(state.districtFilter)) : '';
+    return api('/api/admin/candidate-ops/assignments' + qs).then(function (d) {
+      state.districtAssignments = d.items || [];
+    }).catch(function () {
+      state.districtAssignments = [];
+    });
+  }
+
+  function renderDistrictPushTab(container) {
+    var split = el('div', 'ch-split');
+
+    // Left: Active 30-District Assignments list
+    var listCard = el('section', 'ch-card');
+    var lh = el('div', 'ch-card__head');
+    lh.appendChild(el('h2', 'ch-card__title', '30-District "Assigned For You" Feed (' + state.districtAssignments.length + ')'));
+
+    var fWrap = el('div', 'ch-filters');
+    var fDist = selectInput('filter_district', [['', 'All Targets'], ['All Odisha', 'All Odisha']].concat(ODISHA_30_DISTRICTS.map(function (d) { return [d, d]; })), state.districtFilter);
+    fDist.setAttribute('aria-label', 'Filter by Odisha district');
+    fDist.addEventListener('change', function () {
+      state.districtFilter = fDist.value;
+      loadDistrictAssignments().then(renderBody);
+    });
+    fWrap.appendChild(fDist);
+    fWrap.appendChild(btn('+ New Push', 'ch-btn is-primary', function () {
+      state.editingDistrictAssignment = null;
+      renderBody();
+    }));
+    lh.appendChild(fWrap);
+    listCard.appendChild(lh);
+
+    if (!state.districtAssignments.length) {
+      listCard.appendChild(el('p', 'ch-muted', 'No 30-district assignments pushed yet (0). Use the form on the right to target All Odisha or any of the 30 Odisha districts.'));
+    } else {
+      var wrap = el('div', 'ch-table-wrap');
+      var tbl = el('table', 'ch-table');
+      var thead = el('thead');
+      var htr = el('tr');
+      ['Resource', 'Target District', 'Exam Goal', 'Expiry', 'Actions'].forEach(function (h) { htr.appendChild(el('th', '', h)); });
+      thead.appendChild(htr);
+      tbl.appendChild(thead);
+
+      var tbody = el('tbody');
+      state.districtAssignments.forEach(function (a) {
+        var tr = el('tr');
+        var td1 = el('td');
+        td1.appendChild(el('strong', '', a.title));
+        td1.appendChild(el('div', 'ch-muted', String(a.resource_type || 'study_pdf').replace(/_/g, ' ') + ' · ' + (a.resource_url || '')));
+        tr.appendChild(td1);
+        tr.appendChild(el('td', '', a.target_district || 'All Odisha'));
+        tr.appendChild(el('td', '', a.target_exam || 'All Exams'));
+        tr.appendChild(el('td', '', a.expires_at ? (a.expires_at + (a.is_expired ? ' (Expired)' : '')) : 'No Expiry'));
+
+        var tdAct = el('td');
+        var acts = el('div', 'ch-row-actions');
+        acts.appendChild(btn('Edit', 'ch-btn ch-btn--xs', function () {
+          state.editingDistrictAssignment = Object.assign({}, a);
+          renderBody();
+        }));
+        acts.appendChild(btn('Delete', 'ch-btn ch-btn--xs is-danger', function () {
+          if (!window.confirm('Delete assignment "' + a.title + '"?')) return;
+          api('/api/admin/candidate-ops/assignments/' + encodeURIComponent(a.id), 'DELETE')
+            .then(function () { toast('Assignment removed', 'ok'); loadDistrictAssignments().then(renderBody); })
+            .catch(function (e) { toast(e.message, 'crimson'); });
+        }));
+        tdAct.appendChild(acts);
+        tr.appendChild(tdAct);
+        tbody.appendChild(tr);
+      });
+      tbl.appendChild(tbody);
+      wrap.appendChild(tbl);
+      listCard.appendChild(wrap);
+    }
+
+    // Right: Create / Edit Targeted Assignment Form
+    var edCard = el('section', 'ch-card');
+    var ed = state.editingDistrictAssignment || {
+      title: '',
+      resource_type: 'study_pdf',
+      resource_url: '',
+      target_district: 'All Odisha',
+      target_exam: '',
+      expires_at: ''
+    };
+    edCard.appendChild(el('h2', 'ch-card__title', ed.id ? 'Edit District Assignment' : 'Push to 30-District "Assigned For You" Feed'));
+    edCard.appendChild(el('p', 'ch-muted', 'Matching active items render immediately inside /student-dashboard/ for candidates in the selected Odisha district & exam goal.'));
+
+    var form = el('form');
+    form.noValidate = true;
+    var grid = el('div', 'ch-form-grid');
+
+    var inTitle = textInput('title', ed.title || '', 'e.g. Khordha OPSC OAS Prelims Mock Pack');
+    var selType = selectInput('resource_type', [
+      ['study_pdf', 'Study PDF'],
+      ['mock_test', 'CBT Mock Test'],
+      ['exam_notice', 'Exam Notice']
+    ], ed.resource_type || 'study_pdf');
+    var inUrl = textInput('resource_url', ed.resource_url || '', '/files/study-pdfs/... or /mock-tests/?test=...');
+    var selDist = selectInput('target_district', [['All Odisha', 'All Odisha (All 30 Districts)']].concat(ODISHA_30_DISTRICTS.map(function (d) { return [d, d]; })), ed.target_district || 'All Odisha');
+    var selExam = selectInput('target_exam', [['', 'All Exam Goals']].concat(EXAM_BOARDS.map(function (b) { return [b, b]; })), ed.target_exam || '');
+    var inExp = textInput('expires_at', ed.expires_at || '', 'YYYY-MM-DD', 'date');
+
+    grid.appendChild(fieldGroup('Title *', inTitle, true));
+    grid.appendChild(fieldGroup('Resource Type', selType));
+    grid.appendChild(fieldGroup('Target District (All Odisha / 30 Districts)', selDist));
+    grid.appendChild(fieldGroup('Target Exam Goal', selExam));
+    grid.appendChild(fieldGroup('Expiry Date (optional)', inExp));
+    grid.appendChild(fieldGroup('Resource URL (/files/... or /mock-tests/...) *', inUrl, true));
+    form.appendChild(grid);
+
+    var helperRow = el('div', 'ch-form-actions');
+    if (window.CSOFilePicker && typeof window.CSOFilePicker.open === 'function') {
+      helperRow.appendChild(btn('📁 Pick PDF / File from R2', 'ch-btn ch-btn--xs', function () {
+        window.CSOFilePicker.open({
+          onSelect: function (file) {
+            if (file && file.clean_url) {
+              inUrl.value = file.clean_url;
+              if (!inTitle.value.trim() && file.original_name) {
+                inTitle.value = file.original_name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ');
+              }
+              toast('Attached ' + file.clean_url, 'ok');
+            }
+          }
+        });
+      }));
+    }
+    form.appendChild(helperRow);
+
+    var acts = el('div', 'ch-form-actions');
+    var svBtn = el('button', 'ch-btn is-primary', ed.id ? 'Update Assignment' : 'Push Live to Candidate Hub →');
+    svBtn.type = 'submit';
+    acts.appendChild(svBtn);
+    if (ed.id) {
+      acts.appendChild(btn('Cancel Edit', 'ch-btn', function () { state.editingDistrictAssignment = null; renderBody(); }));
+    }
+    form.appendChild(acts);
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (!inTitle.value.trim() || !inUrl.value.trim()) {
+        toast('Title and Resource URL are required.', 'crimson');
+        return;
+      }
+      var payload = {
+        title: inTitle.value.trim(),
+        resource_type: selType.value,
+        resource_url: inUrl.value.trim(),
+        target_district: selDist.value,
+        target_exam: selExam.value,
+        expires_at: inExp.value
+      };
+      var req = ed.id
+        ? api('/api/admin/candidate-ops/assignments/' + encodeURIComponent(ed.id), 'PUT', payload)
+        : api('/api/admin/candidate-ops/assignments', 'POST', payload);
+      req.then(function () {
+        toast(ed.id ? 'District assignment updated.' : 'Pushed live to Candidate Hub ("Assigned For You")!', 'ok');
+        state.editingDistrictAssignment = null;
+        loadDistrictAssignments().then(renderBody);
+      }).catch(function (err) { toast(err.message, 'crimson'); });
+    });
+
+    edCard.appendChild(form);
+    split.appendChild(listCard);
+    split.appendChild(edCard);
+    container.appendChild(split);
+  }
+
+  // =========================================================================
+  // TAB 7 (v312): SUPPORT & "REPORT AN ERROR" / "SUGGEST RESOURCE" INBOX
+  // =========================================================================
+  function loadSupportTickets() {
+    var qs = state.supportFilter && state.supportFilter !== 'all'
+      ? ('?status=' + encodeURIComponent(state.supportFilter))
+      : '';
+    return api('/api/admin/candidate-ops/support' + qs).then(function (d) {
+      state.supportTickets = d.items || [];
+      state.supportCounts = d.counts || { total: 0, open: 0, in_progress: 0, resolved: 0 };
+    }).catch(function () {
+      state.supportTickets = [];
+    });
+  }
+
+  function renderSupportInboxTab(container) {
+    var c = state.supportCounts || { total: 0, open: 0, in_progress: 0, resolved: 0 };
+    var kpiRow = el('div', 'ch-kpis');
+    [
+      ['Total Tickets', c.total || 0],
+      ['Open', c.open || 0],
+      ['In Progress', c.in_progress || 0],
+      ['Resolved', c.resolved || 0]
+    ].forEach(function (pair) {
+      var box = el('div', 'ch-kpi');
+      box.appendChild(el('span', 'ch-kpi__lbl', pair[0]));
+      box.appendChild(el('strong', 'ch-kpi__val ch-num', String(pair[1])));
+      kpiRow.appendChild(box);
+    });
+    container.appendChild(kpiRow);
+
+    var card = el('section', 'ch-card');
+    var head = el('div', 'ch-card__head');
+    head.appendChild(el('h2', 'ch-card__title', 'Public Support & Error Reports Inbox'));
+    var filters = el('div', 'ch-filters');
+    [
+      ['all', 'All (' + (c.total || 0) + ')'],
+      ['open', 'Open (' + (c.open || 0) + ')'],
+      ['in_progress', 'In Progress (' + (c.in_progress || 0) + ')'],
+      ['resolved', 'Resolved (' + (c.resolved || 0) + ')']
+    ].forEach(function (f) {
+      var b = btn(f[1], 'ch-btn ch-btn--xs' + (state.supportFilter === f[0] ? ' is-primary' : ''), function () {
+        state.supportFilter = f[0];
+        loadSupportTickets().then(renderBody);
+      });
+      filters.appendChild(b);
+    });
+    head.appendChild(filters);
+    card.appendChild(head);
+
+    if (!state.supportTickets.length) {
+      card.appendChild(el('p', 'ch-muted', 'No public support tickets or error reports found (0). Public submissions via POST /api/public/support (/support/) will appear here in real time.'));
+      container.appendChild(card);
+      return;
+    }
+
+    var wrap = el('div', 'ch-table-wrap');
+    var tbl = el('table', 'ch-table');
+    var thead = el('thead');
+    var htr = el('tr');
+    ['Ticket & Message', 'Type & Page', 'Status', 'Admin Note & Workflow'].forEach(function (h) { htr.appendChild(el('th', '', h)); });
+    thead.appendChild(htr);
+    tbl.appendChild(thead);
+
+    var tbody = el('tbody');
+    state.supportTickets.forEach(function (t) {
+      var tr = el('tr');
+      var tdMsg = el('td');
+      tdMsg.appendChild(el('strong', '', t.subject || '(No subject)'));
+      tdMsg.appendChild(el('div', 'ch-muted', t.message || ''));
+      if (t.contact_email) tdMsg.appendChild(el('div', 'ch-muted', 'Contact: ' + t.contact_email));
+      tdMsg.appendChild(el('div', 'ch-muted', 'Submitted: ' + when(t.created_at)));
+      tr.appendChild(tdMsg);
+
+      var tdMeta = el('td');
+      tdMeta.appendChild(el('span', 'ch-badge', String(t.ticket_type || 'report_error').replace(/_/g, ' ')));
+      if (t.page_url) {
+        var pageDiv = el('div', 'ch-muted', t.page_url);
+        tdMeta.appendChild(pageDiv);
+      }
+      tr.appendChild(tdMeta);
+
+      var tdSt = el('td');
+      var stCls = t.status === 'resolved' ? 'ch-badge--active' : (t.status === 'in_progress' ? 'ch-badge--warn' : 'ch-badge--blocked');
+      tdSt.appendChild(el('span', 'ch-badge ' + stCls, String(t.status || 'open').replace(/_/g, ' ').toUpperCase()));
+      tr.appendChild(tdSt);
+
+      var tdAct = el('td');
+      var noteIn = textInput('admin_note_' + t.id, t.admin_note || '', 'Editorial note / resolution summary');
+      var selSt = selectInput('status_' + t.id, [
+        ['open', 'Open'],
+        ['in_progress', 'In Progress'],
+        ['resolved', 'Resolved']
+      ], t.status || 'open');
+      var actRow = el('div', 'ch-row-actions');
+      actRow.appendChild(btn('Save Status', 'ch-btn ch-btn--xs is-primary', function () {
+        api('/api/admin/candidate-ops/support/' + encodeURIComponent(t.id), 'PUT', {
+          status: selSt.value,
+          admin_note: noteIn.value.trim()
+        }).then(function () {
+          toast('Ticket updated to ' + selSt.value.replace(/_/g, ' '), 'ok');
+          loadSupportTickets().then(renderBody);
+        }).catch(function (e) { toast(e.message, 'crimson'); });
+      }));
+      actRow.appendChild(btn('Delete', 'ch-btn ch-btn--xs is-danger', function () {
+        if (!window.confirm('Delete support ticket "' + t.subject + '"?')) return;
+        api('/api/admin/candidate-ops/support/' + encodeURIComponent(t.id), 'DELETE')
+          .then(function () { toast('Ticket deleted', 'ok'); loadSupportTickets().then(renderBody); })
+          .catch(function (e) { toast(e.message, 'crimson'); });
+      }));
+      tdAct.append(selSt, noteIn, actRow);
+      tr.appendChild(tdAct);
+      tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);
+    wrap.appendChild(tbl);
+    card.appendChild(wrap);
+    container.appendChild(card);
+  }
+
+  // =========================================================================
   // SHELL & TAB ROUTER
   // =========================================================================
   function renderBody() {
@@ -1389,6 +1686,8 @@
     else if (state.tab === 'ui') renderUiManagerTab(body);
     else if (state.tab === 'features') renderFeaturesTab(body);
     else if (state.tab === 'content') renderContentPushTab(body);
+    else if (state.tab === 'district_push') renderDistrictPushTab(body);
+    else if (state.tab === 'support') renderSupportInboxTab(body);
     else if (state.tab === 'docs') renderDocsTab(body);
   }
 
@@ -1397,17 +1696,22 @@
     clear(state.root);
     var wrap = el('div', 'ch-studio');
     var tabs = el('div', 'ch-tabs'); tabs.setAttribute('role', 'tablist');
+    var openCnt = Number((state.supportCounts && state.supportCounts.open) || 0);
     [
       ['roster', 'Candidates Roster & Governance'],
+      ['district_push', '📍 30-District Assigned Push'],
+      ['support', '🎫 Support & Error Inbox' + (openCnt ? ' (' + openCnt + ')' : '')],
       ['ui', 'Dashboard UI Manager & Preview'],
       ['features', 'Add & Manage Features'],
-      ['content', 'Provide Content & Push'],
+      ['content', 'Direct File Upload & Push'],
       ['docs', 'Document Vault Templates']
     ].forEach(function (t) {
       var b = btn(t[1], 'ch-tab' + (state.tab === t[0] ? ' is-active' : ''), function () {
         state.tab = t[0];
         renderShell();
         if (t[0] === 'roster') loadRoster().then(renderBody);
+        else if (t[0] === 'district_push') loadDistrictAssignments().then(renderBody);
+        else if (t[0] === 'support') loadSupportTickets().then(renderBody);
         else if (t[0] === 'ui') api('/api/admin/candidate-hub/ui-config').then(function (d) { state.ui = d.ui_config; renderBody(); });
         else if (t[0] === 'features') loadModules().then(renderBody);
         else if (t[0] === 'content') loadAssigned().then(renderBody);
@@ -1429,14 +1733,16 @@
     renderShell();
     if (headerActions) {
       headerActions.appendChild(btn('Refresh', 'ch-btn', function () {
-        Promise.all([loadRoster(), loadModules(), loadAssigned(), loadDocs()]).then(renderBody).catch(function (e) { toast(e.message, 'crimson'); });
+        Promise.all([loadRoster(), loadDistrictAssignments(), loadSupportTickets(), loadModules(), loadAssigned(), loadDocs()])
+          .then(function () { renderShell(); })
+          .catch(function (e) { toast(e.message, 'crimson'); });
       }));
       var open = el('a', 'ch-btn', 'Open /student-dashboard/ ↗');
       open.href = '/student-dashboard/'; open.target = '_blank'; open.rel = 'noopener noreferrer';
       headerActions.appendChild(open);
     }
-    Promise.all([loadRoster(), loadModules(), loadAssigned(), loadDocs()])
-      .then(renderBody)
+    Promise.all([loadRoster(), loadDistrictAssignments(), loadSupportTickets(), loadModules(), loadAssigned(), loadDocs()])
+      .then(function () { renderShell(); })
       .catch(function (e) { if (state.refs.body) clear(state.refs.body).appendChild(el('p', 'ch-error', 'Failed to load Candidate Hub: ' + e.message)); });
   }
 

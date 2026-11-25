@@ -123,6 +123,20 @@ import {
   handleAboutInquiriesAdmin,
   handleAboutMediaUpload
 } from '../../_lib/about-publishing-house.js';
+import { handleAdminWebStudioApi } from '../../_lib/web-studio-v310.js';
+import { handleAdminFilesApi } from './files.js';
+import { handleAdminSystemOpsApi, recordAdminAuditLog } from './system-ops.js';
+import {
+  handleSanityCheckApi,
+  handlePublishChainApi,
+  handleBulkImportApi,
+  handleDuplicateItemApi
+} from './publish-pipeline.js';
+import { handleAdminRadarsApi } from '../../_lib/radars-v311.js';
+import { handleAdminTotpApi } from './totp.js';
+import { handleAdminMockTestsV312 } from './mock-tests.js';
+import { handleAdminCandidateOpsApi } from './candidate-ops.js';
+import { handleAdminBillingAdsApi } from './billing-ads.js';
 import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
@@ -133,8 +147,8 @@ import {
   handleStudyLibraryDirectoryAdmin
 } from './_ecosystem.js';
 
-export async function handleAdminApi(request, env) {
-  const res = await dispatchAdminApi(request, env);
+export async function handleAdminApi(request, env, ctx = null) {
+  const res = await dispatchAdminApi(request, env, ctx);
   if (request.method !== 'GET' && request.method !== 'HEAD' && res && res.status >= 200 && res.status < 400) {
     await invalidateAllPublicCaches(request);
     try {
@@ -148,7 +162,7 @@ export async function handleAdminApi(request, env) {
   return res;
 }
 
-async function dispatchAdminApi(request, env) {
+async function dispatchAdminApi(request, env, ctx = null) {
   try {
     if (!env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');
     const url = new URL(request.url);
@@ -161,17 +175,89 @@ async function dispatchAdminApi(request, env) {
       return await handleCrawlDrafts(request, env);
     }
 
+    if (resource === 'web-studio') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handleAdminWebStudioApi(request, env, actor, id, sub, ctx);
+    }
+
+    if (resource === 'files') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-upload:${actor.userId}`, 60, 600);
+      return await handleAdminFilesApi(request, env, actor, id, sub, ctx);
+    }
+
+    if (resource === 'system-ops') {
+      const actor = await requireRole(request, env, ['admin']);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handleAdminSystemOpsApi(request, env, actor, id, sub, ctx);
+    }
+
+    if (resource === 'totp') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-totp:${actor.userId}`, 30, 600);
+      return await handleAdminTotpApi(request, env, actor, id, ctx);
+    }
+
+    if (resource === 'candidate-ops') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handleAdminCandidateOpsApi(request, env, actor, id, sub, ctx);
+    }
+
+    if (resource === 'billing-ads') {
+      const actor = await requireRole(request, env, ['admin']);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handleAdminBillingAdsApi(request, env, actor, id, sub, ctx);
+    }
+
+    if (resource === 'sanity-check') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      return await handleSanityCheckApi(request, env, actor);
+    }
+
+    if (resource === 'publish-chain') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handlePublishChainApi(request, env, actor, ctx);
+    }
+
+    if (resource === 'bulk-import') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 40, 300);
+      return await handleBulkImportApi(request, env, actor, ctx);
+    }
+
+    if (resource === 'duplicate-item') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handleDuplicateItemApi(request, env, actor, ctx);
+    }
+
+    if (resource === 'radars') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 40, 300);
+      return await handleAdminRadarsApi(request, env, actor, id, sub, ctx);
+    }
+
     if (COMMAND_SUITE_RESOURCES.includes(resource)) {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
-      return await handleCommandSuiteAdmin(request, env, actor, resource);
+      const csRes = await handleCommandSuiteAdmin(request, env, actor, resource);
+      if (write && csRes && csRes.status >= 200 && csRes.status < 400) {
+        recordAdminAuditLog(env, request, actor, `command_suite.${resource}`, id || resource, { method }, ctx);
+      }
+      return csRes;
     }
 
     if (resource === 'homepage-blocks') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
       const hbRes = await handleHomepageBlocksAdmin(request, env, actor, id, sub);
-      if (write && hbRes && hbRes.status >= 200 && hbRes.status < 400) await invalidateAllPublicCaches(request);
+      if (write && hbRes && hbRes.status >= 200 && hbRes.status < 400) {
+        await invalidateAllPublicCaches(request);
+        recordAdminAuditLog(env, request, actor, `homepage_blocks.${method.toLowerCase()}`, id || 'homepage_blocks', null, ctx);
+      }
       return hbRes;
     }
 
@@ -386,6 +472,20 @@ async function dispatchAdminApi(request, env) {
     const actor = await requireRole(request, env, STAFF_ROLES);
     if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
 
+    const switchRes = await dispatchStaffSwitch(request, env, actor, resource, id, sub, extra, method);
+    if (switchRes) {
+      if (write && switchRes.status >= 200 && switchRes.status < 400) {
+        recordAdminAuditLog(env, request, actor, `content.${resource}.${method.toLowerCase()}`, [id, sub].filter(Boolean).join('/') || resource, null, ctx);
+      }
+      return switchRes;
+    }
+    throw new HttpError(404, 'NOT_FOUND', 'Unknown admin route');
+  } catch (e) {
+    return errorResponse(e);
+  }
+}
+
+async function dispatchStaffSwitch(request, env, actor, resource, id, sub, extra, method) {
     switch (resource) {
       case 'session':
         return json({ user: { id: actor.userId, email: actor.email, role: actor.role } });
@@ -414,7 +514,7 @@ async function dispatchAdminApi(request, env) {
         }
         return await handlePosts(request, env, actor, resource, id, sub);
       case 'mock-tests':
-        return await handleMockTests(request, env, actor, id, sub);
+        return await handleAdminMockTestsV312(request, env, actor, id, sub, extra, null);
       case 'questions':
         if (id && !sub) return await handleQuestion(request, env, actor, id);
         break;
@@ -646,10 +746,7 @@ async function dispatchAdminApi(request, env) {
         }
         break;
     }
-    throw new HttpError(404, 'NOT_FOUND', 'Unknown admin route');
-  } catch (e) {
-    return errorResponse(e);
-  }
+    return null;
 }
 
 async function handleStats(env) {

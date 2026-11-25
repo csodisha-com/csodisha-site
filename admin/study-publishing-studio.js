@@ -52,7 +52,15 @@
     editingArticle: null,
     revisions: [],
     composerOpen: false,
-    extractedDraft: null
+    extractedDraft: null,
+    cbtTests: [],
+    cbtKpis: { total_tests: 0, published_tests: 0, total_questions: 0, total_attempts: 0 },
+    cbtEditingTest: null,
+    cbtSelectedTestId: '',
+    cbtQuestions: [],
+    cbtEditingQuestion: null,
+    cbtCsvDraft: '',
+    cbtCsvPreview: null
   };
 
   function el(tag, cls, text) {
@@ -157,7 +165,8 @@
       api('/api/admin/study/articles' + qs).catch(function () { return { items: [], kpis: S.kpis }; }),
       api('/api/admin/jobs/snippets').catch(function () { return { items: [] }; }),
       api('/api/admin/study/job-options').catch(function () { return { items: [] }; }),
-      api('/api/admin/study/doubts?status=' + encodeURIComponent(S.doubtsFilter)).catch(function () { return { items: [], open_count: 0 }; })
+      api('/api/admin/study/doubts?status=' + encodeURIComponent(S.doubtsFilter)).catch(function () { return { items: [], open_count: 0 }; }),
+      api('/api/admin/mock-tests?limit=100').catch(function () { return { items: [], kpis: S.cbtKpis }; })
     ]);
     S.taxonomyNodes = results[0].nodes || [];
     S.articles = results[1].items || [];
@@ -166,6 +175,16 @@
     S.jobOptions = results[3].items || [];
     S.doubts = results[4].items || [];
     S.doubtsOpenCount = Number(results[4].open_count || S.kpis.open_doubts || 0);
+    S.cbtTests = results[5].items || [];
+    S.cbtKpis = results[5].kpis || {
+      total_tests: S.cbtTests.length,
+      published_tests: S.cbtTests.filter(function (t) { return t.status === 'published'; }).length,
+      total_questions: S.cbtTests.reduce(function (n, t) { return n + Number(t.question_count || 0); }, 0),
+      total_attempts: S.cbtTests.reduce(function (n, t) { return n + Number(t.attempt_count || 0); }, 0)
+    };
+    if (S.cbtSelectedTestId) {
+      await loadCbtQuestions(S.cbtSelectedTestId);
+    }
     if (window.CSOStudio && window.CSOStudio.setStudyCount) {
       window.CSOStudio.setStudyCount(S.kpis.total_modules || S.articles.length);
     }
@@ -196,6 +215,14 @@
       openComposer(null);
     });
 
+    var btnBulk = el('button', 'stps-btn', '📥 Bulk CSV/JSON Import');
+    btnBulk.type = 'button';
+    btnBulk.addEventListener('click', function () {
+      if (window.CSOPublishTools && window.CSOPublishTools.openBulkImporter) {
+        window.CSOPublishTools.openBulkImporter('study', function () { refreshAndRender(); });
+      }
+    });
+
     var btnPortal = el('a', 'stps-btn', 'View Live Study Portal ↗');
     btnPortal.href = '/study-library/?refresh=1';
     btnPortal.target = '_blank';
@@ -208,7 +235,7 @@
       toast('Synced Study Library from live D1.', 'info');
     });
 
-    S.headerActions.append(btnNew, btnPortal, btnRefresh);
+    S.headerActions.append(btnNew, btnBulk, btnPortal, btnRefresh);
   }
 
   function renderTabs(container) {
@@ -222,6 +249,7 @@
     tabs.setAttribute('role', 'tablist');
     var defs = [
       { id: 'articles', label: '📚 Published & Draft Study Materials', count: S.kpis.total_modules || 0 },
+      { id: 'mock_tests', label: '📝 CBT Mock Tests', count: S.cbtKpis.total_tests || S.cbtTests.length || 0 },
       { id: 'taxonomy', label: '🗂 3-Layer Curriculum Hierarchy', count: S.taxonomyNodes.length },
       { id: 'snippets', label: '🧩 Reusable Bilingual Snippets', count: S.snippets.length },
       { id: 'doubts', label: '💬 Reader Doubts & PYQ Corrections', count: S.doubtsOpenCount, alert: S.doubtsOpenCount > 0 }
@@ -423,6 +451,16 @@
       bPrev.type = 'button';
       bPrev.addEventListener('click', function () { openPublicPreviewById(a.id, a.slug, a.is_published); });
 
+      var bDup = el('button', 'stps-btn stps-btn-sm', 'Duplicate');
+      bDup.type = 'button';
+      bDup.addEventListener('click', function () {
+        if (window.CSOPublishTools && window.CSOPublishTools.duplicateItem) {
+          window.CSOPublishTools.duplicateItem('study', a.id, function (cloned) {
+            refreshAndRender().then(function () { if (cloned && cloned.id) loadArticleIntoComposer(cloned.id); });
+          });
+        }
+      });
+
       var bCopy = el('button', 'stps-btn stps-btn-sm', 'Alert Copy');
       bCopy.type = 'button';
       bCopy.addEventListener('click', function () { copyBroadcast(a); });
@@ -440,7 +478,7 @@
         }
       });
 
-      acts.append(bEdit, bPrev, bCopy, bDel);
+      acts.append(bEdit, bPrev, bDup, bCopy, bDel);
       tdAct.appendChild(acts);
       tr.appendChild(tdAct);
       tbody.appendChild(tr);
@@ -996,6 +1034,17 @@
         });
       });
       box.append(f, inp);
+      if (window.CSOFilePicker && window.CSOFilePicker.createPickerButton) {
+        box.appendChild(window.CSOFilePicker.createPickerButton({
+          label: '📁 Upload or Pick File from R2',
+          folder: 'Study',
+          className: 'stps-btn stps-btn-sm',
+          onSelect: function (item) {
+            a[prop] = item.clean_url;
+            inp.value = item.clean_url;
+          }
+        }));
+      }
       return box;
     }
 
@@ -1059,7 +1108,12 @@
     var cbFree = el('input'); cbFree.type = 'checkbox'; cbFree.checked = a.is_free_access !== false;
     cbFree.addEventListener('change', function () { a.is_free_access = cbFree.checked; });
     lblFree.append(cbFree, document.createTextNode('Free Open Access'));
-    flagsRow.append(lblFeat, lblFree);
+
+    var lblOffline = el('label', 'stps-check-inline');
+    var cbOffline = el('input'); cbOffline.type = 'checkbox'; cbOffline.checked = Boolean(a.offline_pack);
+    cbOffline.addEventListener('change', function () { a.offline_pack = cbOffline.checked ? 1 : 0; });
+    lblOffline.append(cbOffline, document.createTextNode('Include in Offline Low-Bandwidth PWA Study Pack'));
+    flagsRow.append(lblFeat, lblFree, lblOffline);
     secPub.appendChild(flagsRow);
 
     if (a.id && S.revisions.length) {
@@ -1107,12 +1161,20 @@
     btnCopyAlert.type = 'button';
     btnCopyAlert.addEventListener('click', function () { copyBroadcast(a); });
 
+    var btnSanity = el('button', 'stps-btn', '✅ Sanity Check');
+    btnSanity.type = 'button';
+    btnSanity.addEventListener('click', function () {
+      if (window.CSOPublishTools && window.CSOPublishTools.runSanityCheck) {
+        window.CSOPublishTools.runSanityCheck('study', a, function () { saveArticle(true, false); });
+      }
+    });
+
     var btnPublish = el('button', 'stps-btn stps-btn-emerald', a.is_published ? 'Update Live Module' : '🚀 Publish Live Now');
     btnPublish.type = 'button';
     btnPublish.addEventListener('click', function () { saveArticle(true, false); });
 
     leftBtns.append(btnDraft, btnPreview, btnCopyAlert);
-    rightBtns.append(btnPublish);
+    rightBtns.append(btnSanity, btnPublish);
     saveBar.append(leftBtns, rightBtns);
     wrap.appendChild(saveBar);
 
@@ -1149,6 +1211,9 @@
       }
       S.editingArticle = res.item;
       toast(publishFlag ? 'Study module published live & edge caches purged!' : 'Draft saved to D1.', 'success');
+      if (publishFlag && window.CSOPublishTools && window.CSOPublishTools.runPublishChain) {
+        window.CSOPublishTools.runPublishChain('study', res.item);
+      }
       if (openPreviewAfter) {
         await openPublicPreviewById(res.item.id, res.item.slug, false);
       }
@@ -1500,6 +1565,486 @@
   }
 
   // ============================================================================
+  // TAB 5 (v312): CBT MOCK TESTS & BILINGUAL QUESTION BANK STUDIO
+  // ============================================================================
+  var CBT_EXAM_CATEGORIES = [
+    'OPSC', 'OSSC', 'OSSSC', 'OTET', 'OSSTET', 'CTET', 'OAVS', 'Odisha Police', 'Banking & PSU', 'SSC & Railways', 'UPSC', 'General GK'
+  ];
+
+  async function loadCbtQuestions(testId) {
+    if (!testId) { S.cbtQuestions = []; return; }
+    try {
+      var res = await api('/api/admin/mock-tests/' + encodeURIComponent(testId) + '/questions');
+      S.cbtQuestions = res.items || [];
+    } catch (_) {
+      S.cbtQuestions = [];
+    }
+  }
+
+  function renderCbtMockTestsTab(container) {
+    var kpiGrid = el('div', 'stps-kpi-grid');
+    [
+      ['Total CBT Mock Tests', S.cbtKpis.total_tests || 0, ''],
+      ['Published Live (/mock-tests/)', S.cbtKpis.published_tests || 0, 'is-emerald'],
+      ['Total Questions in Bank', S.cbtKpis.total_questions || 0, 'is-cobalt'],
+      ['Real Candidate Attempts', S.cbtKpis.total_attempts || 0, 'is-violet']
+    ].forEach(function (k) {
+      var c = el('div', 'stps-kpi ' + k[2]);
+      c.appendChild(el('span', 'stps-kpi-label', k[0]));
+      c.appendChild(el('strong', 'stps-kpi-val', String(k[1])));
+      kpiGrid.appendChild(c);
+    });
+    container.appendChild(kpiGrid);
+
+    // 1. Create / Edit Mock Test Card
+    var edTest = S.cbtEditingTest || {
+      title_en: '',
+      title_or: '',
+      slug: '',
+      exam_category: 'OPSC',
+      duration_minutes: 30,
+      negative_mark: 0.25,
+      status: 'draft'
+    };
+    var formCard = el('section', 'stps-section');
+    var fHead = el('div', 'stps-section-head');
+    fHead.appendChild(el('h3', 'stps-section-title', edTest.id ? 'Edit CBT Mock Test' : 'Create Timed CBT Mock Test'));
+    var liveLink = el('a', 'stps-btn stps-btn-sm', 'Open Public /mock-tests/ ↗');
+    liveLink.href = '/mock-tests/';
+    liveLink.target = '_blank';
+    liveLink.rel = 'noopener noreferrer';
+    fHead.appendChild(liveLink);
+    formCard.appendChild(fHead);
+
+    var tForm = el('form', 'stps-grid-2');
+    tForm.noValidate = true;
+
+    function mkField(labelTxt, inputNode) {
+      var g = el('div', 'stps-field');
+      var l = el('label', 'stps-label', labelTxt);
+      if (inputNode.id) l.setAttribute('for', inputNode.id);
+      g.append(l, inputNode);
+      return g;
+    }
+
+    var inTitleEn = el('input', 'stps-input');
+    inTitleEn.id = 'cbtTitleEn';
+    inTitleEn.placeholder = 'e.g., OPSC OAS Prelims GS Paper I — Full Mock 01';
+    inTitleEn.value = edTest.title_en || '';
+
+    var inTitleOr = el('input', 'stps-input');
+    inTitleOr.id = 'cbtTitleOr';
+    inTitleOr.placeholder = 'ଓଡ଼ିଆ ଶୀର୍ଷକ (ଇଚ୍ଛାଧୀନ)';
+    inTitleOr.value = edTest.title_or || '';
+
+    var inSlug = el('input', 'stps-input');
+    inSlug.id = 'cbtSlug';
+    inSlug.placeholder = 'auto-generated-from-title';
+    inSlug.value = edTest.slug || '';
+
+    var selCat = el('select', 'stps-select');
+    selCat.id = 'cbtExamCategory';
+    CBT_EXAM_CATEGORIES.forEach(function (c) { selCat.appendChild(new Option(c, c)); });
+    if (edTest.exam_category && CBT_EXAM_CATEGORIES.indexOf(edTest.exam_category) === -1) {
+      selCat.appendChild(new Option(edTest.exam_category, edTest.exam_category));
+    }
+    selCat.value = edTest.exam_category || 'OPSC';
+
+    var inDur = el('input', 'stps-input');
+    inDur.id = 'cbtDuration';
+    inDur.type = 'number';
+    inDur.min = '1';
+    inDur.max = '600';
+    inDur.value = String(edTest.duration_minutes || 30);
+
+    var inNeg = el('input', 'stps-input');
+    inNeg.id = 'cbtNegMark';
+    inNeg.type = 'number';
+    inNeg.step = '0.01';
+    inNeg.min = '0';
+    inNeg.max = '10';
+    inNeg.value = String(edTest.negative_mark !== undefined ? edTest.negative_mark : 0.25);
+
+    var selSt = el('select', 'stps-select');
+    selSt.id = 'cbtStatus';
+    selSt.appendChild(new Option('Draft (Hidden)', 'draft'));
+    selSt.appendChild(new Option('Published (Live on /mock-tests/)', 'published'));
+    selSt.value = edTest.status || 'draft';
+
+    tForm.append(
+      mkField('Mock Test Title (EN) *', inTitleEn),
+      mkField('Mock Test Title (ଓଡ଼ିଆ)', inTitleOr),
+      mkField('URL Slug (optional)', inSlug),
+      mkField('Exam Category', selCat),
+      mkField('Duration (Minutes)', inDur),
+      mkField('Negative Mark per Wrong Answer', inNeg),
+      mkField('Status', selSt)
+    );
+
+    var tActs = el('div', 'stps-actions');
+    var saveTestBtn = el('button', 'stps-btn stps-btn-primary', edTest.id ? 'Update Mock Test' : '+ Create Mock Test');
+    saveTestBtn.type = 'submit';
+    tActs.appendChild(saveTestBtn);
+    if (edTest.id) {
+      var cancelEditBtn = el('button', 'stps-btn', 'Cancel Edit');
+      cancelEditBtn.type = 'button';
+      cancelEditBtn.addEventListener('click', function () {
+        S.cbtEditingTest = null;
+        renderWorkspace();
+      });
+      tActs.appendChild(cancelEditBtn);
+    }
+    tForm.appendChild(tActs);
+
+    tForm.addEventListener('submit', async function (ev) {
+      ev.preventDefault();
+      if (!inTitleEn.value.trim()) {
+        toast('Mock Test Title (EN) is required.', 'error');
+        return;
+      }
+      var payload = {
+        title_en: inTitleEn.value.trim(),
+        title_or: inTitleOr.value.trim(),
+        slug: inSlug.value.trim() || undefined,
+        exam_category: selCat.value,
+        duration_minutes: Number(inDur.value) || 30,
+        negative_mark: Number(inNeg.value) || 0,
+        status: selSt.value
+      };
+      try {
+        var res = edTest.id
+          ? await api('/api/admin/mock-tests/' + encodeURIComponent(edTest.id), { method: 'PUT', body: payload })
+          : await api('/api/admin/mock-tests', { method: 'POST', body: payload });
+        S.cbtEditingTest = null;
+        S.cbtSelectedTestId = res.id || (res.item && res.item.id) || S.cbtSelectedTestId;
+        toast(edTest.id ? 'Mock test updated.' : 'Mock test created. Now add questions below!', 'success');
+        await refreshAndRender();
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+
+    formCard.appendChild(tForm);
+    container.appendChild(formCard);
+
+    // 2. Existing Mock Tests Table
+    var listCard = el('section', 'stps-section');
+    listCard.appendChild(el('h3', 'stps-section-title', 'D1 CBT Mock Tests (' + S.cbtTests.length + ')'));
+
+    if (!S.cbtTests.length) {
+      listCard.appendChild(el('div', 'stps-empty', 'No CBT mock tests created yet (0). Use the form above to author your first timed bilingual exam.'));
+    } else {
+      var tblWrap = el('div', 'stps-table-wrap');
+      var tbl = el('table', 'stps-table');
+      var thead = el('thead');
+      var hr = el('tr');
+      ['Exam Title', 'Category', 'Timing & Neg.', 'Questions', 'Attempts', 'Status', 'Actions'].forEach(function (h) {
+        hr.appendChild(el('th', '', h));
+      });
+      thead.appendChild(hr);
+      tbl.appendChild(thead);
+
+      var tbody = el('tbody');
+      S.cbtTests.forEach(function (t) {
+        var tr = el('tr');
+        var tdT = el('td');
+        tdT.appendChild(el('strong', '', t.title_en || t.title));
+        if (t.title_or) tdT.appendChild(el('div', 'stps-row-sub', t.title_or));
+        tdT.appendChild(el('div', 'stps-row-sub', '/mock-tests/?test=' + t.slug));
+        tr.appendChild(tdT);
+
+        tr.appendChild(el('td', '', t.exam_category || '—'));
+        tr.appendChild(el('td', '', (t.duration_minutes || 30) + 'm · −' + (t.negative_mark || 0)));
+        tr.appendChild(el('td', '', String(t.question_count || 0)));
+        tr.appendChild(el('td', '', String(t.attempt_count || 0)));
+
+        var tdSt = el('td');
+        tdSt.appendChild(el('span', 'stps-pill ' + (t.status === 'published' ? 'is-published' : 'is-draft'), String(t.status || 'draft').toUpperCase()));
+        tr.appendChild(tdSt);
+
+        var tdAct = el('td');
+        var acts = el('div', 'stps-actions');
+
+        var qBtn = el('button', 'stps-btn stps-btn-sm' + (S.cbtSelectedTestId === t.id ? ' stps-btn-primary' : ''), 'Manage Questions (' + (t.question_count || 0) + ')');
+        qBtn.type = 'button';
+        qBtn.addEventListener('click', async function () {
+          S.cbtSelectedTestId = t.id;
+          S.cbtEditingQuestion = null;
+          S.cbtCsvPreview = null;
+          await loadCbtQuestions(t.id);
+          renderWorkspace();
+        });
+
+        var edBtn = el('button', 'stps-btn stps-btn-sm', 'Edit');
+        edBtn.type = 'button';
+        edBtn.addEventListener('click', function () {
+          S.cbtEditingTest = Object.assign({}, t);
+          renderWorkspace();
+        });
+
+        var togBtn = el('button', 'stps-btn stps-btn-sm', t.status === 'published' ? 'Unpublish' : 'Publish');
+        togBtn.type = 'button';
+        togBtn.addEventListener('click', async function () {
+          try {
+            var nextSt = t.status === 'published' ? 'draft' : 'published';
+            await api('/api/admin/mock-tests/' + encodeURIComponent(t.id) + '/status', { method: 'POST', body: { status: nextSt } });
+            toast('Mock test ' + nextSt + '.', 'success');
+            await refreshAndRender();
+          } catch (err) {
+            toast(err.message, 'error');
+          }
+        });
+
+        var delBtn = el('button', 'stps-btn stps-btn-sm stps-btn-danger', 'Delete');
+        delBtn.type = 'button';
+        delBtn.addEventListener('click', async function () {
+          if (!window.confirm('Delete mock test "' + (t.title_en || t.title) + '" and its questions?')) return;
+          try {
+            await api('/api/admin/mock-tests/' + encodeURIComponent(t.id), { method: 'DELETE' });
+            if (S.cbtSelectedTestId === t.id) { S.cbtSelectedTestId = ''; S.cbtQuestions = []; }
+            toast('Mock test deleted.', 'success');
+            await refreshAndRender();
+          } catch (err) {
+            toast(err.message, 'error');
+          }
+        });
+
+        acts.append(qBtn, edBtn, togBtn, delBtn);
+        tdAct.appendChild(acts);
+        tr.appendChild(tdAct);
+        tbody.appendChild(tr);
+      });
+      tbl.appendChild(tbody);
+      tblWrap.appendChild(tbl);
+      listCard.appendChild(tblWrap);
+    }
+    container.appendChild(listCard);
+
+    // 3. Selected Test Question Bank & CSV Bulk Importer
+    var activeTest = S.cbtTests.find(function (t) { return t.id === S.cbtSelectedTestId; });
+    if (!activeTest) return;
+
+    var qCard = el('section', 'stps-section');
+    var qHead = el('div', 'stps-section-head');
+    qHead.appendChild(el('h3', 'stps-section-title', 'Question Bank: ' + (activeTest.title_en || activeTest.title) + ' (' + S.cbtQuestions.length + ' Questions)'));
+    var prevTestLink = el('a', 'stps-btn stps-btn-sm', 'Take Live CBT Test ↗');
+    prevTestLink.href = '/mock-tests/?test=' + encodeURIComponent(activeTest.slug);
+    prevTestLink.target = '_blank';
+    prevTestLink.rel = 'noopener noreferrer';
+    qHead.appendChild(prevTestLink);
+    qCard.appendChild(qHead);
+
+    // Add / Edit Question Form
+    var eq = S.cbtEditingQuestion || {
+      question_en: '',
+      question_or: '',
+      options: ['', '', '', ''],
+      correct_index: 0,
+      explanation_en: '',
+      explanation_or: ''
+    };
+    var qForm = el('form', 'stps-grid-2');
+    qForm.noValidate = true;
+
+    var qEn = el('textarea', 'stps-textarea');
+    qEn.id = 'cbtQEn';
+    qEn.rows = 2;
+    qEn.placeholder = 'Enter question stem in English…';
+    qEn.value = eq.question_en || '';
+
+    var qOr = el('textarea', 'stps-textarea');
+    qOr.id = 'cbtQOr';
+    qOr.rows = 2;
+    qOr.placeholder = 'ଓଡ଼ିଆରେ ପ୍ରଶ୍ନ ଲେଖନ୍ତୁ (ଇଚ୍ଛାଧୀନ)…';
+    qOr.value = eq.question_or || '';
+
+    var optInputs = ['A', 'B', 'C', 'D'].map(function (ltr, idx) {
+      var inp = el('input', 'stps-input');
+      inp.id = 'cbtOpt' + ltr;
+      inp.placeholder = 'Option ' + ltr;
+      inp.value = (eq.options && eq.options[idx]) || '';
+      return inp;
+    });
+
+    var selCorr = el('select', 'stps-select');
+    selCorr.id = 'cbtCorrectIdx';
+    [['0', 'Option A (Index 0)'], ['1', 'Option B (Index 1)'], ['2', 'Option C (Index 2)'], ['3', 'Option D (Index 3)']].forEach(function (pair) {
+      selCorr.appendChild(new Option(pair[1], pair[0]));
+    });
+    selCorr.value = String(eq.correct_index !== undefined ? eq.correct_index : 0);
+
+    var expEn = el('textarea', 'stps-textarea');
+    expEn.id = 'cbtExpEn';
+    expEn.rows = 2;
+    expEn.placeholder = 'Official solution / explanation (EN)…';
+    expEn.value = eq.explanation_en || '';
+
+    var expOr = el('textarea', 'stps-textarea');
+    expOr.id = 'cbtExpOr';
+    expOr.rows = 2;
+    expOr.placeholder = 'ସମାଧାନ / ବ୍ୟାଖ୍ୟା (ଓଡ଼ିଆ)…';
+    expOr.value = eq.explanation_or || '';
+
+    qForm.append(
+      mkField('Question (EN) *', qEn),
+      mkField('Question (ଓଡ଼ିଆ)', qOr),
+      mkField('Option A *', optInputs[0]),
+      mkField('Option B *', optInputs[1]),
+      mkField('Option C *', optInputs[2]),
+      mkField('Option D *', optInputs[3]),
+      mkField('Correct Answer *', selCorr),
+      mkField('Explanation (EN)', expEn),
+      mkField('Explanation (ଓଡ଼ିଆ)', expOr)
+    );
+
+    var qFormActs = el('div', 'stps-actions');
+    var saveQBtn = el('button', 'stps-btn stps-btn-primary', eq.id ? 'Update Question' : '+ Add Question to Bank');
+    saveQBtn.type = 'submit';
+    qFormActs.appendChild(saveQBtn);
+    if (eq.id) {
+      var cancelQBtn = el('button', 'stps-btn', 'Cancel Edit');
+      cancelQBtn.type = 'button';
+      cancelQBtn.addEventListener('click', function () { S.cbtEditingQuestion = null; renderWorkspace(); });
+      qFormActs.appendChild(cancelQBtn);
+    }
+    qForm.appendChild(qFormActs);
+
+    qForm.addEventListener('submit', async function (ev) {
+      ev.preventDefault();
+      var payload = {
+        question_en: qEn.value.trim(),
+        question_or: qOr.value.trim(),
+        options: optInputs.map(function (i) { return i.value.trim(); }),
+        correct_index: Number(selCorr.value),
+        explanation_en: expEn.value.trim(),
+        explanation_or: expOr.value.trim()
+      };
+      try {
+        if (eq.id) {
+          await api('/api/admin/mock-tests/' + encodeURIComponent(activeTest.id) + '/questions/' + encodeURIComponent(eq.id), { method: 'PUT', body: payload });
+          toast('Question updated.', 'success');
+        } else {
+          await api('/api/admin/mock-tests/' + encodeURIComponent(activeTest.id) + '/questions', { method: 'POST', body: payload });
+          toast('Question added to bank.', 'success');
+        }
+        S.cbtEditingQuestion = null;
+        await refreshAndRender();
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+    qCard.appendChild(qForm);
+
+    // Bulk CSV Importer sub-panel
+    var csvBox = el('div', 'stps-section');
+    csvBox.appendChild(el('h4', 'stps-section-title', '📥 Bulk Import Questions via CSV'));
+    csvBox.appendChild(el('p', 'stps-row-sub', 'CSV header columns: question_en,question_or,option_a,option_b,option_c,option_d,correct_index,explanation_en,explanation_or (correct_index accepts 0–3 or A–D).'));
+
+    var csvFile = el('input', 'stps-input');
+    csvFile.type = 'file';
+    csvFile.accept = '.csv,text/csv';
+    csvFile.setAttribute('aria-label', 'Upload CSV file of CBT questions');
+
+    var csvTa = el('textarea', 'stps-textarea');
+    csvTa.id = 'cbtCsvInput';
+    csvTa.rows = 4;
+    csvTa.placeholder = 'question_en,question_or,option_a,option_b,option_c,option_d,correct_index,explanation_en,explanation_or';
+    csvTa.value = S.cbtCsvDraft || '';
+    csvTa.addEventListener('input', function () { S.cbtCsvDraft = csvTa.value; });
+
+    csvFile.addEventListener('change', function () {
+      var file = csvFile.files && csvFile.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        S.cbtCsvDraft = String(reader.result || '');
+        csvTa.value = S.cbtCsvDraft;
+        toast('Loaded ' + file.name + ' into CSV preview box.', 'info');
+      };
+      reader.readAsText(file);
+    });
+
+    var csvActs = el('div', 'stps-actions');
+    var btnDry = el('button', 'stps-btn', 'Validate CSV (Dry Run)');
+    btnDry.type = 'button';
+    btnDry.addEventListener('click', async function () {
+      if (!csvTa.value.trim()) { toast('Paste CSV rows or select a .csv file first.', 'error'); return; }
+      try {
+        var r = await api('/api/admin/mock-tests/' + encodeURIComponent(activeTest.id) + '/import-csv', {
+          method: 'POST',
+          body: { csv: csvTa.value, dry_run: true }
+        });
+        S.cbtCsvPreview = r;
+        toast('Validated: ' + r.valid_count + ' valid, ' + r.invalid_count + ' invalid.', r.invalid_count ? 'info' : 'success');
+        renderWorkspace();
+      } catch (err) { toast(err.message, 'error'); }
+    });
+
+    var btnCommit = el('button', 'stps-btn stps-btn-primary', 'Import Valid CSV Questions');
+    btnCommit.type = 'button';
+    btnCommit.addEventListener('click', async function () {
+      if (!csvTa.value.trim()) { toast('Paste CSV rows or select a .csv file first.', 'error'); return; }
+      try {
+        var r = await api('/api/admin/mock-tests/' + encodeURIComponent(activeTest.id) + '/import-csv', {
+          method: 'POST',
+          body: { csv: csvTa.value, dry_run: false, skip_invalid: true }
+        });
+        S.cbtCsvDraft = '';
+        S.cbtCsvPreview = null;
+        toast('Imported ' + r.imported + ' question(s) into D1 (skipped ' + (r.skipped || 0) + ').', 'success');
+        await refreshAndRender();
+      } catch (err) { toast(err.message, 'error'); }
+    });
+
+    csvActs.append(btnDry, btnCommit);
+    csvBox.append(csvFile, csvTa, csvActs);
+    if (S.cbtCsvPreview) {
+      csvBox.appendChild(el('p', 'stps-row-sub', 'Dry-run report: ' + S.cbtCsvPreview.valid_count + ' valid / ' + S.cbtCsvPreview.invalid_count + ' invalid out of ' + S.cbtCsvPreview.total + ' rows.'));
+    }
+    qCard.appendChild(csvBox);
+
+    // Existing Questions list
+    if (!S.cbtQuestions.length) {
+      qCard.appendChild(el('div', 'stps-empty', 'No questions added to this test yet (0). Add manually or bulk-import via CSV above.'));
+    } else {
+      var qList = el('div', 'stps-doubt-list');
+      S.cbtQuestions.forEach(function (q, idx) {
+        var item = el('div', 'stps-doubt-card');
+        var qh = el('div', 'stps-section-head');
+        qh.appendChild(el('strong', '', 'Q' + (idx + 1) + '. ' + q.question_en));
+        qh.appendChild(el('span', 'stps-pill is-published', 'Correct: ' + (q.correct_option || ['A', 'B', 'C', 'D'][q.correct_index] || 'A')));
+        item.appendChild(qh);
+        if (q.question_or) item.appendChild(el('div', 'stps-row-sub', q.question_or));
+        var optsTxt = (q.options || []).map(function (o, i) { return ['A', 'B', 'C', 'D'][i] + ') ' + o; }).join('  ·  ');
+        item.appendChild(el('div', 'stps-row-sub', optsTxt));
+        if (q.explanation_en) item.appendChild(el('div', 'stps-row-sub', 'Explanation: ' + q.explanation_en));
+
+        var qa = el('div', 'stps-actions');
+        var qEd = el('button', 'stps-btn stps-btn-sm', 'Edit');
+        qEd.type = 'button';
+        qEd.addEventListener('click', function () {
+          S.cbtEditingQuestion = Object.assign({}, q);
+          renderWorkspace();
+        });
+        var qDel = el('button', 'stps-btn stps-btn-sm stps-btn-danger', 'Delete');
+        qDel.type = 'button';
+        qDel.addEventListener('click', async function () {
+          if (!window.confirm('Delete Q' + (idx + 1) + '?')) return;
+          await api('/api/admin/mock-tests/' + encodeURIComponent(activeTest.id) + '/questions/' + encodeURIComponent(q.id), { method: 'DELETE' });
+          toast('Question removed.', 'success');
+          await refreshAndRender();
+        });
+        qa.append(qEd, qDel);
+        item.appendChild(qa);
+        qList.appendChild(item);
+      });
+      qCard.appendChild(qList);
+    }
+
+    container.appendChild(qCard);
+  }
+
+  // ============================================================================
   // MASTER RENDER
   // ============================================================================
   function renderWorkspace() {
@@ -1511,6 +2056,8 @@
 
     if (S.composerOpen) {
       renderComposer(shell);
+    } else if (S.activeTab === 'mock_tests') {
+      renderCbtMockTestsTab(shell);
     } else if (S.activeTab === 'taxonomy') {
       renderTaxonomyTab(shell);
     } else if (S.activeTab === 'snippets') {
@@ -1541,7 +2088,7 @@
         return;
       }
       S.composerOpen = false;
-      S.activeTab = ['articles', 'taxonomy', 'snippets', 'doubts'].indexOf(initialTab) !== -1 ? initialTab : 'articles';
+      S.activeTab = ['articles', 'mock_tests', 'taxonomy', 'snippets', 'doubts'].indexOf(initialTab) !== -1 ? initialTab : 'articles';
       renderWorkspace();
       refreshAndRender();
     }

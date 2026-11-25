@@ -3,6 +3,7 @@
 import { HttpError, json, readJson, validationError, clientIp } from './http.js';
 import { audit, rateLimit, getActor, STAFF_ROLES } from './rbac.js';
 import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
+import { ensureV311ContentColumns, isFuturePublishAt, isExpiredTimestamp, logZeroResultSearch } from './radars-v311.js';
 
 export const LIFECYCLE_STAGES = [
   'notification',
@@ -435,9 +436,17 @@ function formatArticle(r, taxMap = null, includePrivate = false) {
     pdf_index_bookmarks: safeJsonArray(r.pdf_index_bookmarks_json),
     extra_attachments: safeJsonArray(r.extra_attachments_json),
     lifecycle_stage: String(r.lifecycle_stage || 'notification'),
-    corrigendum_note_en: String(r.corrigendum_note_en || ''),
+    corrigendum_note_en: String(r.corrigendum_note_en || r.corrigendum_note || ''),
     corrigendum_note_or: String(r.corrigendum_note_or || ''),
-    scheduled_publish_at: String(r.scheduled_publish_at || ''),
+    corrigendum_note: String(r.corrigendum_note || r.corrigendum_note_en || ''),
+    scheduled_publish_at: String(r.scheduled_publish_at || r.publish_at || ''),
+    publish_at: String(r.publish_at || r.scheduled_publish_at || ''),
+    expires_at: String(r.expires_at || r.last_date || ''),
+    notification_url: String(r.notification_url || r.notification_pdf_url || ''),
+    apply_url: String(r.apply_url || r.official_apply_url || ''),
+    admit_card_url: String(r.admit_card_url || ''),
+    answer_key_url: String(r.answer_key_url || ''),
+    result_url: String(r.result_url || ''),
     is_featured: r.is_featured ? 1 : 0,
     is_published: r.is_published ? 1 : 0,
     publication_status: r.is_published ? 'published' : (isScheduled ? 'scheduled' : 'draft'),
@@ -450,7 +459,8 @@ function formatArticle(r, taxMap = null, includePrivate = false) {
     region_scope: deriveRegionScope(r.region_scope, r.location_district, l1 && l1.slug, l2 && l2.slug),
     sector_slug: resolveCanonicalSectorSlug({ category_l1_id: r.category_l1_id, sector_badge: r.sector_badge, taxonomy: { l1 } }),
     public_url: `/jobs/?slug=${encodeURIComponent(String(r.slug || ''))}`,
-    ...expiry
+    ...expiry,
+    ...(isExpiredTimestamp(r.expires_at || r.last_date) ? { is_expired: true, lifecycle_status: 'archived', status_badge: 'Archived / Applications Closed' } : {})
   };
   if (includePrivate) {
     out.preview_token = String(r.preview_token || '');
@@ -1258,6 +1268,24 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
     const createRegion = deriveRegionScope(body.region_scope, data.location_district, (l1Node && l1Node.slug) || data.category_l1_id);
     await db.prepare('UPDATE job_articles SET region_scope = ? WHERE id = ?').bind(createRegion, id).run().catch(() => {});
     if (row) row.region_scope = createRegion;
+    await ensureV311ContentColumns(db);
+    const v311Job = {
+      publish_at: str(body.publish_at !== undefined ? body.publish_at : data.scheduled_publish_at, 40),
+      expires_at: str(body.expires_at !== undefined ? body.expires_at : data.last_date, 40),
+      notification_url: str(body.notification_url !== undefined ? body.notification_url : data.notification_pdf_url, 600),
+      apply_url: str(body.apply_url !== undefined ? body.apply_url : data.official_apply_url, 600),
+      admit_card_url: str(body.admit_card_url, 600),
+      answer_key_url: str(body.answer_key_url, 600),
+      result_url: str(body.result_url, 600),
+      corrigendum_note: str(body.corrigendum_note !== undefined ? body.corrigendum_note : data.corrigendum_note_en, 2000)
+    };
+    await db.prepare(
+      `UPDATE job_articles SET publish_at = ?, expires_at = ?, notification_url = ?, apply_url = ?, admit_card_url = ?, answer_key_url = ?, result_url = ?, corrigendum_note = ? WHERE id = ?`
+    ).bind(
+      v311Job.publish_at, v311Job.expires_at, v311Job.notification_url, v311Job.apply_url,
+      v311Job.admit_card_url, v311Job.answer_key_url, v311Job.result_url, v311Job.corrigendum_note, id
+    ).run().catch(() => {});
+    if (row) Object.assign(row, v311Job);
     await saveArticleRevision(db, id, row || data, body.change_summary || (data.is_published ? 'Initial publish' : 'Initial draft'), actor.email);
     await audit(env, request, actor, data.is_published ? 'jobs_article.publish' : 'jobs_article.create', 'job_articles', id, { slug: finalSlug, title_en: data.title_en });
     await invalidateJobsCaches(request, finalSlug);
@@ -1409,6 +1437,24 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
       await db.prepare('UPDATE job_articles SET region_scope = ? WHERE id = ?').bind(regionVal, articleId).run().catch(() => {});
       if (row) row.region_scope = regionVal;
     }
+    await ensureV311ContentColumns(db);
+    const v311Upd = {
+      publish_at: str(body.publish_at !== undefined ? body.publish_at : (existing.publish_at || data.scheduled_publish_at), 40),
+      expires_at: str(body.expires_at !== undefined ? body.expires_at : (existing.expires_at || data.last_date), 40),
+      notification_url: str(body.notification_url !== undefined ? body.notification_url : (existing.notification_url || data.notification_pdf_url), 600),
+      apply_url: str(body.apply_url !== undefined ? body.apply_url : (existing.apply_url || data.official_apply_url), 600),
+      admit_card_url: str(body.admit_card_url !== undefined ? body.admit_card_url : existing.admit_card_url, 600),
+      answer_key_url: str(body.answer_key_url !== undefined ? body.answer_key_url : existing.answer_key_url, 600),
+      result_url: str(body.result_url !== undefined ? body.result_url : existing.result_url, 600),
+      corrigendum_note: str(body.corrigendum_note !== undefined ? body.corrigendum_note : (existing.corrigendum_note || data.corrigendum_note_en), 2000)
+    };
+    await db.prepare(
+      `UPDATE job_articles SET publish_at = ?, expires_at = ?, notification_url = ?, apply_url = ?, admit_card_url = ?, answer_key_url = ?, result_url = ?, corrigendum_note = ? WHERE id = ?`
+    ).bind(
+      v311Upd.publish_at, v311Upd.expires_at, v311Upd.notification_url, v311Upd.apply_url,
+      v311Upd.admit_card_url, v311Upd.answer_key_url, v311Upd.result_url, v311Upd.corrigendum_note, articleId
+    ).run().catch(() => {});
+    if (row) Object.assign(row, v311Upd);
     await saveArticleRevision(db, articleId, row || data, body.change_summary || 'Editorial update', actor.email);
     await audit(env, request, actor, data.is_published ? 'jobs_article.publish' : 'jobs_article.update', 'job_articles', articleId, { slug: finalSlug });
     await invalidateJobsCaches(request, finalSlug);
@@ -1455,7 +1501,9 @@ export async function handlePublicJobsBootstrapApi(request, env) {
   ]).catch(() => [{ results: [] }, { results: [] }]);
 
   const rawNodes = (batchResults[0] && batchResults[0].results) || [];
-  const rawArticles = (batchResults[1] && batchResults[1].results) || [];
+  const nowMs = Date.now();
+  const rawArticles = ((batchResults[1] && batchResults[1].results) || [])
+    .filter(r => !isFuturePublishAt(r.publish_at || r.scheduled_publish_at, nowMs));
 
   const taxMap = new Map();
   const counts = new Map();
@@ -1586,7 +1634,7 @@ export async function handlePublicJobsTreeApi(request, env) {
   }, 200, { 'Cache-Control': PUBLIC_CACHE });
 }
 
-export async function handlePublicJobsListApi(request, env) {
+export async function handlePublicJobsListApi(request, env, ctx = null) {
   if (!env || !env.DB) return json({ ok: false, items: [], total: 0 }, 200, { 'Cache-Control': 'no-store' });
   await ensureJobsPublishingSchema(env.DB);
   await publishDueScheduledJobs(env.DB);
@@ -1608,7 +1656,10 @@ export async function handlePublicJobsListApi(request, env) {
     env.DB.prepare('SELECT * FROM job_articles WHERE is_published = 1 ORDER BY is_featured DESC, updated_at DESC').all().catch(() => ({ results: [] }))
   ]);
 
-  const all = (results || []).map(r => formatArticle(r, taxMap, false));
+  const nowMs = Date.now();
+  const all = (results || [])
+    .filter(r => !isFuturePublishAt(r.publish_at || r.scheduled_publish_at, nowMs))
+    .map(r => formatArticle(r, taxMap, false));
 
   // Build facets from all published jobs
   const districtsSet = new Set();
@@ -1667,6 +1718,10 @@ export async function handlePublicJobsListApi(request, env) {
     }
     return String(b.published_at || b.updated_at).localeCompare(String(a.published_at || a.updated_at));
   });
+
+  if (search && filtered.length === 0) {
+    logZeroResultSearch(env, search, 'jobs', ctx);
+  }
 
   return json({
     ok: true,

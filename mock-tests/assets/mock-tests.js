@@ -201,7 +201,7 @@
     try {
       const endpoint = examFilter
         ? `/api/content/leaderboard?exam=${encodeURIComponent(examFilter)}`
-        : `/api/content/mock-tests/${encodeURIComponent(slugOrId)}/leaderboard`;
+        : `/api/public/mock-tests/${encodeURIComponent(slugOrId)}/leaderboard`;
       const res = await fetch(endpoint, { credentials: 'same-origin' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -571,11 +571,17 @@
       ansRow.appendChild(el('span', '', `Correct Key: ${corrKey}${corrText}`));
       card.appendChild(ansRow);
 
-      if (item.explanation) {
+      if (item.explanation_en || item.explanation) {
         const exp = el('div', 'cbt-review-exp');
         exp.appendChild(el('strong', '', 'Explanation: '));
-        exp.appendChild(el('span', '', item.explanation));
+        exp.appendChild(el('span', '', item.explanation_en || item.explanation));
         card.appendChild(exp);
+      }
+      if (item.explanation_or && session.showOdia) {
+        const expOr = el('div', 'cbt-review-exp');
+        expOr.appendChild(el('strong', '', 'ବ୍ୟାଖ୍ୟା: '));
+        expOr.appendChild(el('span', '', item.explanation_or));
+        card.appendChild(expOr);
       }
 
       cbtBreakdownEl.appendChild(card);
@@ -599,7 +605,7 @@
     const slugOrId = session.test.slug || session.test.id;
 
     try {
-      const res = await fetch(`/api/content/mock-tests/${encodeURIComponent(slugOrId)}/submit`, {
+      const res = await fetch(`/api/public/mock-tests/${encodeURIComponent(slugOrId)}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -746,7 +752,7 @@
         }
       } catch (_) {}
 
-      const res = await fetch(`/api/content/mock-tests/${encodeURIComponent(slugOrId)}`, { credentials: 'same-origin' });
+      const res = await fetch(`/api/public/mock-tests/${encodeURIComponent(slugOrId)}`, { credentials: 'same-origin' });
       if (!res.ok) throw new Error(res.status === 404 ? 'Mock test not found or no longer active.' : `HTTP ${res.status}`);
       const test = await res.json();
       const questions = Array.isArray(test.questions) ? test.questions : [];
@@ -818,7 +824,7 @@
     if (state.q) params.set('q', state.q);
 
     try {
-      const res = await fetch(`/api/content/mock-tests?${params.toString()}`, { credentials: 'same-origin' });
+      const res = await fetch(`/api/public/mock-tests?${params.toString()}`, { credentials: 'same-origin' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const items = Array.isArray(data.items) ? data.items : [];

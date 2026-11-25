@@ -3,6 +3,7 @@
 // request, so demotions take effect immediately and sessions.role is ignored.
 import { getSessionFromRequest } from '../api/auth/_utils.js';
 import { HttpError, clientIp } from './http.js';
+import { isAdminSessionRevoked } from '../api/admin/system-ops.js';
 
 export const STAFF_ROLES = ['editor', 'admin'];
 export const ALL_ROLES = ['candidate', 'editor', 'admin'];
@@ -14,7 +15,12 @@ export async function getActor(request, env) {
   if (!session) return null;
   const row = await env.DB.prepare('SELECT id, email, role FROM users WHERE id = ?').bind(session.userId).first();
   if (!row) return null;
-  return { userId: row.id, email: row.email, role: row.role || 'candidate', sessionToken: session.token };
+  const role = row.role || 'candidate';
+  if (STAFF_ROLES.includes(role)) {
+    const revoked = await isAdminSessionRevoked(env, session.token);
+    if (revoked) return null;
+  }
+  return { userId: row.id, email: row.email, role, sessionToken: session.token };
 }
 
 // CSRF: mutating requests must come from our own origin AND carry the custom header.

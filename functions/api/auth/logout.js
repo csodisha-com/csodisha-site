@@ -11,6 +11,7 @@ import {
   jsonResponse,
   getSessionFromRequest
 } from './_utils.js';
+import { revokeAdminSessionByToken } from '../admin/system-ops.js';
 
 export async function onRequestOptions() {
   return new Response(null, {
@@ -25,6 +26,7 @@ export async function onRequestPost({ request, env }) {
       const session = await getSessionFromRequest(request, env);
       if (session) {
         await env.DB.prepare('DELETE FROM sessions WHERE token = ?').bind(session.token).run();
+        await revokeAdminSessionByToken(env, session.token);
       }
     }
 

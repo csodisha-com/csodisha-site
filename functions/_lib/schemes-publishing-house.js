@@ -3,6 +3,7 @@
 import { HttpError, json, readJson, validationError, clientIp } from './http.js';
 import { audit, rateLimit, getActor, STAFF_ROLES } from './rbac.js';
 import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
+import { ensureV311ContentColumns, isFuturePublishAt, isExpiredTimestamp, logZeroResultSearch } from './radars-v311.js';
 
 export const SCHEME_STATUSES = ['active', 'ongoing', 'upcoming', 'closed'];
 export const SCHEME_STATUS_LABELS = {
@@ -369,7 +370,11 @@ function formatSchemeArticle(r, taxMap = null, includePrivate = false) {
     scheme_status: String(r.scheme_status || 'active'),
     amendment_note_en: String(r.amendment_note_en || ''),
     amendment_note_or: String(r.amendment_note_or || ''),
-    scheduled_publish_at: String(r.scheduled_publish_at || ''),
+    scheduled_publish_at: String(r.scheduled_publish_at || r.publish_at || ''),
+    publish_at: String(r.publish_at || r.scheduled_publish_at || ''),
+    expires_at: String(r.expires_at || r.last_date || ''),
+    district_codes: String(r.district_codes || ''),
+    required_docs: safeJsonArray(r.required_docs),
     is_featured: r.is_featured ? 1 : 0,
     is_published: r.is_published ? 1 : 0,
     publication_status: r.is_published ? 'published' : (isScheduled ? 'scheduled' : 'draft'),
@@ -380,7 +385,8 @@ function formatSchemeArticle(r, taxMap = null, includePrivate = false) {
     published_at: String(r.published_at || ''),
     updated_at: String(r.updated_at || ''),
     public_url: `/schemes/?slug=${encodeURIComponent(String(r.slug || ''))}`,
-    ...win
+    ...win,
+    ...(!r.is_ongoing && isExpiredTimestamp(r.expires_at || r.last_date) ? { is_expired: true, scheme_status: 'closed', status_badge: 'Archived / Applications Closed' } : {})
   };
   if (includePrivate) {
     out.preview_token = String(r.preview_token || '');
@@ -985,6 +991,16 @@ export async function handleSchemesArticlesAdmin(request, env, actor, articleId,
     ).run();
 
     const row = await db.prepare('SELECT * FROM scheme_articles WHERE id = ?').bind(id).first();
+    await ensureV311ContentColumns(db);
+    const v311Sch = {
+      publish_at: str(body.publish_at !== undefined ? body.publish_at : data.scheduled_publish_at, 40),
+      expires_at: str(body.expires_at !== undefined ? body.expires_at : data.last_date, 40),
+      district_codes: str(body.district_codes, 400),
+      required_docs: JSON.stringify(Array.isArray(body.required_docs) ? body.required_docs : safeJsonArray(body.required_docs))
+    };
+    await db.prepare('UPDATE scheme_articles SET publish_at = ?, expires_at = ?, district_codes = ?, required_docs = ? WHERE id = ?')
+      .bind(v311Sch.publish_at, v311Sch.expires_at, v311Sch.district_codes, v311Sch.required_docs, id).run().catch(() => {});
+    if (row) Object.assign(row, v311Sch);
     await saveSchemeRevision(db, id, row || data, body.change_summary || (data.is_published ? 'Initial publish' : 'Initial draft'), actor.email);
     const { map: taxMap } = await loadSchemeTaxonomyMap(db);
     await audit(env, request, actor, data.is_published ? 'schemes_article.publish' : 'schemes_article.create', 'scheme_articles', id, { slug: finalSlug, title_en: data.title_en });
@@ -1138,6 +1154,18 @@ export async function handleSchemesArticlesAdmin(request, env, actor, articleId,
     ).run();
 
     const row = await db.prepare('SELECT * FROM scheme_articles WHERE id = ?').bind(articleId).first();
+    await ensureV311ContentColumns(db);
+    const v311SchUpd = {
+      publish_at: str(body.publish_at !== undefined ? body.publish_at : (existing.publish_at || data.scheduled_publish_at), 40),
+      expires_at: str(body.expires_at !== undefined ? body.expires_at : (existing.expires_at || data.last_date), 40),
+      district_codes: str(body.district_codes !== undefined ? body.district_codes : existing.district_codes, 400),
+      required_docs: body.required_docs !== undefined
+        ? JSON.stringify(Array.isArray(body.required_docs) ? body.required_docs : safeJsonArray(body.required_docs))
+        : String(existing.required_docs || '[]')
+    };
+    await db.prepare('UPDATE scheme_articles SET publish_at = ?, expires_at = ?, district_codes = ?, required_docs = ? WHERE id = ?')
+      .bind(v311SchUpd.publish_at, v311SchUpd.expires_at, v311SchUpd.district_codes, v311SchUpd.required_docs, articleId).run().catch(() => {});
+    if (row) Object.assign(row, v311SchUpd);
     await saveSchemeRevision(db, articleId, row || data, body.change_summary || 'Editorial update', actor.email);
     const { map: taxMap } = await loadSchemeTaxonomyMap(db);
     await audit(env, request, actor, data.is_published ? 'schemes_article.publish' : 'schemes_article.update', 'scheme_articles', articleId, { slug: finalSlug });
@@ -1184,7 +1212,9 @@ export async function handlePublicSchemesBootstrapApi(request, env) {
   ]).catch(() => [{ results: [] }, { results: [] }]);
 
   const rawNodes = (batchResults[0] && batchResults[0].results) || [];
-  const rawArticles = (batchResults[1] && batchResults[1].results) || [];
+  const nowMs = Date.now();
+  const rawArticles = ((batchResults[1] && batchResults[1].results) || [])
+    .filter(r => !isFuturePublishAt(r.publish_at || r.scheduled_publish_at, nowMs));
 
   const taxMap = new Map();
   const counts = new Map();
@@ -1291,7 +1321,7 @@ export async function handlePublicSchemesTreeApi(request, env) {
   }, 200, { 'Cache-Control': PUBLIC_CACHE });
 }
 
-export async function handlePublicSchemesListApi(request, env) {
+export async function handlePublicSchemesListApi(request, env, ctx = null) {
   if (!env || !env.DB) return json({ ok: false, items: [], total: 0 }, 200, { 'Cache-Control': 'no-store' });
   await ensureSchemesPublishingSchema(env.DB);
   await publishDueScheduledSchemes(env.DB);
@@ -1313,7 +1343,10 @@ export async function handlePublicSchemesListApi(request, env) {
     env.DB.prepare('SELECT * FROM scheme_articles WHERE is_published = 1 ORDER BY is_featured DESC, updated_at DESC').all().catch(() => ({ results: [] }))
   ]);
 
-  const all = (results || []).map(r => formatSchemeArticle(r, taxMap, false));
+  const nowMs = Date.now();
+  const all = (results || [])
+    .filter(r => !isFuturePublishAt(r.publish_at || r.scheduled_publish_at, nowMs))
+    .map(r => formatSchemeArticle(r, taxMap, false));
   const modesSet = new Set();
   const occupationsSet = new Set();
   all.forEach(a => {
@@ -1350,6 +1383,10 @@ export async function handlePublicSchemesListApi(request, env) {
     if (a.is_featured !== b.is_featured) return b.is_featured - a.is_featured;
     return String(b.published_at || b.updated_at).localeCompare(String(a.published_at || a.updated_at));
   });
+
+  if (search && filtered.length === 0) {
+    logZeroResultSearch(env, search, 'schemes', ctx);
+  }
 
   return json({
     ok: true,

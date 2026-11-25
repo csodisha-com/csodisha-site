@@ -10,6 +10,7 @@ import { cleanStr, likeEscape, parsePaging } from './validate.js';
 import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
 import { getCandidateControls, logCandidateAudit, normalizePermissions, ACCOUNT_STATUSES as LEGACY_STATUSES, NOTICE_LEVELS } from './candidate-controls.js';
 import { getSessionFromRequest } from '../api/auth/_utils.js';
+import { getMatchingDistrictAssignments } from '../api/admin/candidate-ops.js';
 
 export const GOV_STATUSES = ['active', 'blocked', 'suspended', 'pending_review'];
 export const ACCESS_TIERS = ['standard', 'verified', 'mentor', 'pro_member', 'permanent_member', 'vip'];
@@ -539,7 +540,22 @@ export async function handleCandidateHubConfigApi(request, env) {
     ]);
 
     const modules = modRows.map(formatModule).filter(m => canCandidateAccessModule(m, gov.access_tier, gov.granted_modules));
-    const assignedItems = filterAssignedItemsForCandidate(assignedRows, ackRows, profile, session.userId);
+    const legacyAssigned = filterAssignedItemsForCandidate(assignedRows, ackRows, profile, session.userId);
+    const districtAssignments = await getMatchingDistrictAssignments(env.DB, {
+      district: profile.district,
+      examGoals: [profile.primaryExam, ...profile.selectedExams, ...profile.targetStreams]
+    });
+    const ackMap = new Map((ackRows || []).map(a => [a.item_id, a]));
+    const enrichedDistrictAssignments = districtAssignments.map(it => {
+      const ack = ackMap.get(it.id);
+      return {
+        ...it,
+        seen: Boolean(ack && ack.seen_at),
+        downloaded: Boolean(ack && ack.downloaded_at),
+        completed: Boolean(ack && ack.completed)
+      };
+    });
+    const assignedItems = [...enrichedDistrictAssignments, ...legacyAssigned];
 
     return json({
       ok: true,
@@ -577,7 +593,22 @@ export async function handleCandidateAssignedItemsApi(request, env) {
                        WHERE cai.is_published = 1 ORDER BY cai.created_at DESC LIMIT 200`),
       safeAll(env.DB, 'SELECT item_id, seen_at, downloaded_at, completed FROM candidate_assigned_acks WHERE user_id = ?', [session.userId])
     ]);
-    return json({ ok: true, items: filterAssignedItemsForCandidate(assignedRows, ackRows, profile, session.userId) });
+    const legacyItems = filterAssignedItemsForCandidate(assignedRows, ackRows, profile, session.userId);
+    const districtAssignments = await getMatchingDistrictAssignments(env.DB, {
+      district: profile.district,
+      examGoals: [profile.primaryExam, ...profile.selectedExams, ...profile.targetStreams]
+    });
+    const ackMap = new Map((ackRows || []).map(a => [a.item_id, a]));
+    const enrichedDistrict = districtAssignments.map(it => {
+      const ack = ackMap.get(it.id);
+      return {
+        ...it,
+        seen: Boolean(ack && ack.seen_at),
+        downloaded: Boolean(ack && ack.downloaded_at),
+        completed: Boolean(ack && ack.completed)
+      };
+    });
+    return json({ ok: true, items: [...enrichedDistrict, ...legacyItems] });
   } catch (e) {
     return restrictedResponse(e);
   }

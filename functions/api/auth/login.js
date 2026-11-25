@@ -12,6 +12,9 @@ import {
   createSession,
   buildSessionCookie
 } from './_utils.js';
+import { hasAccountTotpEnabled, verifyAccountTotpOrRecovery } from '../admin/totp.js';
+import { isTwoFactorConfigured, canSendOtp, verifyTwoFactor } from '../../_lib/admin-2fa.js';
+import { recordAdminAuditLog } from '../admin/system-ops.js';
 
 export async function onRequestOptions() {
   return new Response(null, {
@@ -74,7 +77,7 @@ export async function onRequestPost({ request, env }) {
 
     // 1. Look up user record (from users or candidates table)
     let userRecord = await env.DB.prepare(`
-      SELECT id, email, password_hash, salt, failed_attempts, lockout_until
+      SELECT id, email, password_hash, salt, failed_attempts, lockout_until, role
       FROM users WHERE email = ?
     `).bind(cleanEmail).first();
 
@@ -150,6 +153,47 @@ export async function onRequestPost({ request, env }) {
       }, 401);
     }
 
+    // Staff 2FA gate (v312): enforce per-account TOTP / recovery codes whenever enabled = 1,
+    // or env-level 2FA when configured. Log both successful and failed challenges to admin_audit_logs.
+    const userRole = userRecord.role || 'candidate';
+    if (userRole === 'admin' || userRole === 'editor') {
+      const accountTotp = await hasAccountTotpEnabled(env, userRecord.id);
+      const envTwoFa = isTwoFactorConfigured(env);
+      if (accountTotp || envTwoFa) {
+        const submitted = String(body.twofa_code || body.totp_code || '').trim().slice(0, 24);
+        if (!submitted) {
+          await recordAdminAuditLog(env, request, { userId: userRecord.id, email: userRecord.email, role: userRole }, 'admin.2fa.challenge_required', 'admin_totp_credentials', { totp_enabled: accountTotp });
+          return jsonResponse({
+            success: false,
+            error: 'Enter your 6-digit Authenticator (TOTP) code or an 8-character recovery code.',
+            requires_2fa: true,
+            totp_enabled: accountTotp,
+            can_send_otp: canSendOtp(env)
+          }, 401);
+        }
+        let verified = null;
+        if (accountTotp) {
+          const accRes = await verifyAccountTotpOrRecovery(env, userRecord.id, submitted);
+          if (accRes.ok) verified = accRes;
+        }
+        if (!verified && envTwoFa) {
+          const envOk = await verifyTwoFactor(env, userRecord.id, submitted);
+          if (envOk) verified = { ok: true, method: 'env_2fa' };
+        }
+        if (!verified) {
+          await recordAdminAuditLog(env, request, { userId: userRecord.id, email: userRecord.email, role: userRole }, 'admin.2fa.failed', 'admin_totp_credentials', { email: userRecord.email });
+          return jsonResponse({
+            success: false,
+            error: 'Invalid or expired 2FA / recovery code.',
+            requires_2fa: true,
+            totp_enabled: accountTotp,
+            can_send_otp: canSendOtp(env)
+          }, 401);
+        }
+        await recordAdminAuditLog(env, request, { userId: userRecord.id, email: userRecord.email, role: userRole }, 'admin.2fa.verified', 'admin_totp_credentials', { email: userRecord.email, method: verified.method });
+      }
+    }
+
     // On successful match: Reset failed_attempts to 0 and lockout_until to 0
     await env.DB.batch([
       env.DB.prepare(`
@@ -164,7 +208,7 @@ export async function onRequestPost({ request, env }) {
     const { token: sessionToken } = await createSession(env, {
       userId: userRecord.id,
       email: userRecord.email,
-      role: 'candidate'
+      role: userRole
     });
 
     // Issue Secure, HttpOnly, SameSite=Lax cookie (30-day session)

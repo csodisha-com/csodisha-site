@@ -388,6 +388,14 @@
     head.appendChild(hl);
     var hr = el('div', 'sph-actions-row');
     hr.appendChild(btn('↻ Refresh', 'sph-btn', function () { loadArticles().then(renderCurrentView); }));
+    hr.appendChild(btn('📥 Bulk CSV/JSON Import', 'sph-btn', function () {
+      if (window.CSOPublishTools && window.CSOPublishTools.openBulkImporter) {
+        window.CSOPublishTools.openBulkImporter('schemes', function () {
+          clearSchemesFlyoutCache();
+          loadArticles().then(renderCurrentView);
+        });
+      }
+    }));
     hr.appendChild(btn('+ Publish New Scheme Article', 'sph-btn sph-btn--primary', function () { openComposer(null); }));
     head.appendChild(hr);
     card.appendChild(head);
@@ -488,6 +496,13 @@
             }).catch(function (e) { toast(e.message, 'crimson'); });
           }
         }));
+        acts.appendChild(btn('Duplicate', 'sph-btn sph-btn--xs', function () {
+          if (window.CSOPublishTools && window.CSOPublishTools.duplicateItem) {
+            window.CSOPublishTools.duplicateItem('schemes', a.id, function (cloned) {
+              loadArticles().then(function () { if (cloned) openComposer(cloned); else renderCurrentView(); });
+            });
+          }
+        }));
         acts.appendChild(btn('Broadcast', 'sph-btn sph-btn--xs', function () {
           copyToClipboard(buildBroadcastText(a), 'Copied bilingual Scheme broadcast!');
         }));
@@ -548,6 +563,9 @@
       if (res && res.item) state.draft = Object.assign(emptyDraft(), res.item, { change_summary: '' });
       clearSchemesFlyoutCache();
       toast(publishFlag ? 'Scheme published live & Edge Cache purged!' : 'Scheme draft saved to D1!', 'ok');
+      if (publishFlag && window.CSOPublishTools && window.CSOPublishTools.runPublishChain) {
+        window.CSOPublishTools.runPublishChain('schemes', state.draft);
+      }
       if (openPreview && state.draft.id) {
         return api('/api/admin/schemes/' + encodeURIComponent(state.draft.id) + '/preview-token', 'POST', {}).then(function (p) {
           state.activePreviewUrl = p.preview_url;
@@ -573,6 +591,11 @@
     bL.appendChild(el('strong', '', d.id ? ('Editing: ' + d.title_en) : 'New Welfare Scheme Composer'));
     bar.appendChild(bL);
     var bR = el('div', 'sph-actions-row');
+    bR.appendChild(btn('✅ Sanity Check', 'sph-btn', function () {
+      if (window.CSOPublishTools && window.CSOPublishTools.runSanityCheck) {
+        window.CSOPublishTools.runSanityCheck('schemes', d, function () { saveDraft(true, false); });
+      }
+    }));
     bR.appendChild(btn('📋 Copy Broadcast (EN+ଓଡ଼ିଆ)', 'sph-btn', function () { copyToClipboard(buildBroadcastText(d), 'Bilingual Scheme broadcast copied!'); }));
     bR.appendChild(btn('Save Draft & Open Public Preview ↗', 'sph-btn sph-btn--preview', function () { saveDraft(false, true); }));
     bR.appendChild(btn('Save Draft', 'sph-btn', function () { saveDraft(false, false); }));
@@ -651,7 +674,16 @@
         if (res.extracted_draft) { state.extractedDraft = res.extracted_draft; renderCurrentView(); }
       }
     }));
-    guideW.appendChild(gUrl); pg2.appendChild(guideW);
+    guideW.appendChild(gUrl);
+    if (window.CSOFilePicker && window.CSOFilePicker.createPickerButton) {
+      guideW.appendChild(window.CSOFilePicker.createPickerButton({
+        label: '📁 Upload or Pick File from R2',
+        folder: 'Schemes',
+        className: 'sph-btn sph-btn--xs',
+        onSelect: function (item) { d.guidelines_pdf_url = item.clean_url; gUrl.value = item.clean_url; }
+      }));
+    }
+    pg2.appendChild(guideW);
 
     var formW = el('div', 'sph-field');
     formW.appendChild(el('label', 'sph-label', 'Offline Application Form PDF (Direct R2 Upload)'));
@@ -662,7 +694,16 @@
       hint: 'Downloadable printable form for Block Office / Mo Seba Kendra applicants',
       onUploaded: function (res) { d.application_form_pdf_url = res.url; fUrl.value = res.url; }
     }));
-    formW.appendChild(fUrl); pg2.appendChild(formW);
+    formW.appendChild(fUrl);
+    if (window.CSOFilePicker && window.CSOFilePicker.createPickerButton) {
+      formW.appendChild(window.CSOFilePicker.createPickerButton({
+        label: '📁 Upload or Pick File from R2',
+        folder: 'Schemes',
+        className: 'sph-btn sph-btn--xs',
+        onSelect: function (item) { d.application_form_pdf_url = item.clean_url; fUrl.value = item.clean_url; }
+      }));
+    }
+    pg2.appendChild(formW);
     pdfCard.appendChild(pg2);
 
     if (state.extractedDraft) {
@@ -981,9 +1022,30 @@
     var wAmOr = el('div', 'sph-field'); wAmOr.appendChild(el('label', 'sph-label', 'Government Amendment Note (ଓଡ଼ିଆ)')); wAmOr.appendChild(amOr); pubG.appendChild(wAmOr);
 
     var schI = el('input', 'sph-input'); schI.type = 'datetime-local';
-    schI.value = d.scheduled_publish_at ? String(d.scheduled_publish_at).replace(' ', 'T').slice(0, 16) : '';
-    schI.addEventListener('input', function () { d.scheduled_publish_at = schI.value ? schI.value.replace('T', ' ') + ':00' : ''; });
-    var wSch = el('div', 'sph-field'); wSch.appendChild(el('label', 'sph-label', 'Scheduled Auto-Publish Time (UTC, Optional)')); wSch.appendChild(schI); pubG.appendChild(wSch);
+    schI.value = (d.publish_at || d.scheduled_publish_at) ? String(d.publish_at || d.scheduled_publish_at).replace(' ', 'T').slice(0, 16) : '';
+    schI.addEventListener('input', function () {
+      var v = schI.value ? schI.value.replace('T', ' ') + ':00' : '';
+      d.scheduled_publish_at = v;
+      d.publish_at = v;
+    });
+    var wSch = el('div', 'sph-field'); wSch.appendChild(el('label', 'sph-label', 'Scheduled Auto-Publish Time (publish_at, UTC)')); wSch.appendChild(schI); pubG.appendChild(wSch);
+
+    var expI = el('input', 'sph-input'); expI.type = 'datetime-local';
+    expI.value = d.expires_at ? String(d.expires_at).replace(' ', 'T').slice(0, 16) : '';
+    expI.addEventListener('input', function () { d.expires_at = expI.value ? expI.value.replace('T', ' ') + ':00' : ''; });
+    var wExp = el('div', 'sph-field'); wExp.appendChild(el('label', 'sph-label', 'Auto-Expiry Timestamp (expires_at — Auto-Archives SEO Page)')); wExp.appendChild(expI); pubG.appendChild(wExp);
+
+    var distI = el('input', 'sph-input'); distI.placeholder = 'ALL or Khordha, Cuttack, Puri, Ganjam…';
+    distI.value = Array.isArray(d.district_codes) ? d.district_codes.join(', ') : (d.district_codes || '');
+    distI.addEventListener('input', function () { d.district_codes = distI.value.trim(); });
+    var wDist = el('div', 'sph-field'); wDist.appendChild(el('label', 'sph-label', 'Odisha District Scope (district_codes)')); wDist.appendChild(distI); pubG.appendChild(wDist);
+
+    var reqDocsI = el('input', 'sph-input'); reqDocsI.placeholder = 'Aadhaar, Income Certificate, Caste Certificate, Bank Passbook';
+    reqDocsI.value = Array.isArray(d.required_docs) ? d.required_docs.join(', ') : (d.required_docs || '');
+    reqDocsI.addEventListener('input', function () {
+      d.required_docs = reqDocsI.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    });
+    var wReqDocs = el('div', 'sph-field'); wReqDocs.appendChild(el('label', 'sph-label', 'Candidate Document Vault Sync (required_docs, comma-separated)')); wReqDocs.appendChild(reqDocsI); pubG.appendChild(wReqDocs);
 
     var chgI = el('input', 'sph-input'); chgI.placeholder = 'e.g., Updated income ceiling & Institute Verification date'; chgI.value = d.change_summary || '';
     chgI.addEventListener('input', function () { d.change_summary = chgI.value; });

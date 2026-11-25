@@ -114,7 +114,13 @@
 
   function renderPipeline(d) {
     var box = clear(ov.refs.pipeline);
-    var rows = d.pillars.concat([{ key: 'homepage', label: 'Homepage Studio', available: d.homepage.available, total: d.homepage.total, published: d.homepage.published, draft: d.homepage.draft }]);
+    var wsTotal = (d.web_studio ? (Number(d.web_studio.homepage_blocks || 0) + Number(d.web_studio.institutional_pages || 0) + Number(d.web_studio.site_snippets || 0)) : d.homepage.total);
+    var wsLive = d.homepage.published + (d.web_studio ? (Number(d.web_studio.institutional_pages || 0) + Number(d.web_studio.site_snippets || 0)) : 0);
+    var rows = d.pillars.concat([
+      { key: 'web_studio', label: 'Web & Page Studio', available: d.homepage.available, total: wsTotal, published: wsLive, draft: d.homepage.draft },
+      { key: 'files', label: 'File & Media Manager (R2)', available: true, total: d.files ? Number(d.files.total || 0) : 0, published: d.files ? Number(d.files.total || 0) : 0, draft: 0 },
+      { key: 'system_ops', label: 'Active Redirects & Sessions', available: true, total: d.system_ops ? (Number(d.system_ops.redirects_total || 0) + Number(d.system_ops.active_admin_sessions || 0)) : 0, published: d.system_ops ? (Number(d.system_ops.redirects_active || 0) + Number(d.system_ops.active_admin_sessions || 0)) : 0, draft: 0 }
+    ]);
     rows.forEach(function (p) {
       var row = el('div', 'cs-pipe-row');
       row.appendChild(el('span', 'cs-pipe-label', p.label));
@@ -333,6 +339,138 @@
     return s;
   }
 
+  function openPillarForRadar(pillar, mode, queryHint) {
+    var s = studio();
+    if (queryHint) {
+      window.__CSO_RADAR_QUERY_HINT__ = queryHint;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(queryHint).catch(function () {});
+      }
+    }
+    var target = String(pillar || 'jobs').toLowerCase();
+    if (mode === 'new') {
+      if (target === 'schemes' && s.openSchemesPublishingTab) { s.openSchemesPublishingTab('new'); toast('Draft title copied: "' + queryHint + '" — paste into Schemes composer', 'ok'); return; }
+      if (target === 'study' && s.openStudyPublishingTab) { s.openStudyPublishingTab('new'); toast('Draft topic copied: "' + queryHint + '" — paste into Study composer', 'ok'); return; }
+      if (target === 'careers' && s.openCareersPublishingTab) { s.openCareersPublishingTab('new'); toast('Draft title copied: "' + queryHint + '" — paste into Careers composer', 'ok'); return; }
+      if (s.openJobsPublishingTab) { s.openJobsPublishingTab('new'); toast('Draft title copied: "' + queryHint + '" — paste into Jobs composer', 'ok'); return; }
+    }
+    var folderMap = {
+      jobs: 'folder-jobs-careers',
+      careers: 'folder-careers-studio',
+      schemes: 'folder-schemes-benefits',
+      study: 'folder-study-library',
+      community: 'folder-community',
+      about: 'folder-about'
+    };
+    goFolder(folderMap[target] || 'folder-jobs-careers');
+  }
+
+  function renderRadars(d) {
+    if (!d) return;
+    // 1. Expiring Deadlines Radar (Next 7 Days)
+    if (ov.refs.radarExpiring) {
+      var exBox = clear(ov.refs.radarExpiring);
+      var exItems = (d.expiring_deadlines && d.expiring_deadlines.items) || [];
+      if (!exItems.length) {
+        exBox.appendChild(el('p', 'cs-muted', '0 published Jobs or Schemes expiring in the next 7 days.'));
+      } else {
+        var list1 = el('div', 'cs-radar-list');
+        exItems.slice(0, 10).forEach(function (it) {
+          var row = el('div', 'cs-radar-row');
+          var main = el('div', 'cs-radar-main');
+          main.appendChild(el('strong', '', it.title_en || it.slug));
+          var daysTxt = it.days_left === 0 ? 'Closes today' : (it.days_left + ' day(s) left');
+          main.appendChild(el('div', 'cs-muted', String(it.pillar || '').toUpperCase() + ' · ' + daysTxt + ' · ' + String(it.deadline || '').slice(0, 16)));
+          row.appendChild(main);
+          var act = btn('Quick Edit →', 'cs-btn cs-btn--xs', function () { openPillarForRadar(it.pillar, 'edit'); });
+          row.appendChild(act);
+          list1.appendChild(row);
+        });
+        exBox.appendChild(list1);
+      }
+    }
+
+    // 2. Broken .gov.in Link Sentinel
+    if (ov.refs.radarLinks) {
+      var lkBox = clear(ov.refs.radarLinks);
+      var lh = d.link_health || { total: 0, broken: 0, healthy: 0, items: [] };
+      var summary = el('div', 'cs-radar-summary');
+      summary.appendChild(el('span', 'cs-radar-pill', 'Checked: ' + num(lh.total)));
+      summary.appendChild(el('span', 'cs-radar-pill ' + (lh.broken > 0 ? 'is-danger' : 'is-ok'), 'Broken: ' + num(lh.broken)));
+      summary.appendChild(el('span', 'cs-radar-pill is-ok', 'Healthy: ' + num(lh.healthy)));
+      lkBox.appendChild(summary);
+
+      var brokenItems = (lh.items || []).filter(function (x) { return x.is_broken; });
+      if (!lh.total) {
+        lkBox.appendChild(el('p', 'cs-muted', 'No link health scan recorded yet. Click "Run Link Health Scan" to verify live .gov.in & official URLs.'));
+      } else if (!brokenItems.length) {
+        lkBox.appendChild(el('p', 'cs-muted', 'All ' + num(lh.healthy) + ' scanned official links returned HTTP 200–399.'));
+      } else {
+        var list2 = el('div', 'cs-radar-list');
+        brokenItems.slice(0, 10).forEach(function (it) {
+          var row = el('div', 'cs-radar-row');
+          var main = el('div', 'cs-radar-main');
+          main.appendChild(el('strong', '', (it.item_title || it.item_slug || it.item_id) + ' (' + (it.http_status ? ('HTTP ' + it.http_status) : (it.error_message || 'ERR')) + ')'));
+          main.appendChild(el('div', 'cs-radar-url', it.url));
+          row.appendChild(main);
+          row.appendChild(btn('Fix Link →', 'cs-btn cs-btn--xs is-danger', function () { openPillarForRadar(it.pillar, 'edit'); }));
+          list2.appendChild(row);
+        });
+        lkBox.appendChild(list2);
+      }
+    }
+
+    // 3. Real "Zero-Result" Visitor Search Log
+    if (ov.refs.radarZero) {
+      var zBox = clear(ov.refs.radarZero);
+      var zItems = (d.zero_searches && d.zero_searches.items) || [];
+      if (!zItems.length) {
+        zBox.appendChild(el('p', 'cs-muted', '0 unresolved zero-result searches recorded from public visitors.'));
+      } else {
+        var list3 = el('div', 'cs-radar-list');
+        zItems.slice(0, 10).forEach(function (it) {
+          var row = el('div', 'cs-radar-row');
+          var main = el('div', 'cs-radar-main');
+          main.appendChild(el('strong', '', '"' + it.sample_query + '"'));
+          main.appendChild(el('div', 'cs-muted', num(it.hits) + ' search(es) · ' + String(it.pillar || 'all').toUpperCase() + ' · ' + when(it.last_searched_at)));
+          row.appendChild(main);
+          var actions = el('div', 'cs-radar-actions');
+          actions.appendChild(btn('Create Draft →', 'cs-btn cs-btn--xs', function () {
+            var dest = it.pillar && it.pillar !== 'all' ? it.pillar : 'jobs';
+            openPillarForRadar(dest, 'new', it.sample_query);
+          }));
+          actions.appendChild(btn('Dismiss', 'cs-btn cs-btn--xs', function () {
+            api('radars/zero-searches/dismiss', 'POST', { query_norm: it.query_norm }).then(function () {
+              toast('Dismissed "' + it.sample_query + '"', 'ok');
+              loadRadars();
+            }).catch(function (e) { toast(e.message, 'crimson'); });
+          }));
+          row.appendChild(actions);
+          list3.appendChild(row);
+        });
+        zBox.appendChild(list3);
+      }
+    }
+  }
+
+  function loadRadars() {
+    return api('radars').then(renderRadars).catch(function (e) {
+      if (ov.refs.radarExpiring) clear(ov.refs.radarExpiring).appendChild(el('p', 'cs-error', 'Radars unavailable: ' + e.message));
+    });
+  }
+
+  function runLinkHealthScanNow(triggerBtn) {
+    if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.textContent = 'Scanning official URLs…'; }
+    return api('radars/link-health/scan', 'POST', {}).then(function (r) {
+      toast('Link Health Scan complete: ' + num(r.scanned) + ' URLs checked (' + num(r.broken) + ' broken).', r.broken > 0 ? 'crimson' : 'ok');
+      return loadRadars();
+    }).catch(function (e) {
+      toast('Link scan failed: ' + e.message, 'crimson');
+    }).finally(function () {
+      if (triggerBtn) { triggerBtn.disabled = false; triggerBtn.textContent = '🔍 Run Link Health Scan'; }
+    });
+  }
+
   function renderOverviewTab(wrap) {
     ov.refs.kpis = el('div', 'cs-kpis');
     wrap.appendChild(ov.refs.kpis);
@@ -357,6 +495,34 @@
     }
     launch.appendChild(lg);
     wrap.appendChild(launch);
+
+    // Live Operational Radars (v311 — 100% real D1 / HTTP / visitor search data)
+    var radarGrid = el('div', 'cs-radar-grid');
+
+    var expSec = section('⏰ Expiring Deadlines Radar', 'Next 7 days · Published Jobs & Schemes');
+    ov.refs.radarExpiring = el('div', '');
+    ov.refs.radarExpiring.appendChild(el('p', 'cs-muted', 'Loading upcoming deadlines from D1…'));
+    expSec.appendChild(ov.refs.radarExpiring);
+
+    var linkSec = section('🔗 Broken .gov.in Link Sentinel', 'Live HTTP status verification');
+    var linkBar = el('div', 'cs-filters');
+    var scanBtn = btn('🔍 Run Link Health Scan', 'cs-btn', null);
+    scanBtn.addEventListener('click', function () { runLinkHealthScanNow(scanBtn); });
+    linkBar.appendChild(scanBtn);
+    linkSec.appendChild(linkBar);
+    ov.refs.radarLinks = el('div', '');
+    ov.refs.radarLinks.appendChild(el('p', 'cs-muted', 'Loading link health checks…'));
+    linkSec.appendChild(ov.refs.radarLinks);
+
+    var zeroSec = section('🔎 Real "Zero-Result" Visitor Searches', 'Unmet public demand from search_zero_logs');
+    ov.refs.radarZero = el('div', '');
+    ov.refs.radarZero.appendChild(el('p', 'cs-muted', 'Loading visitor zero-result queries…'));
+    zeroSec.appendChild(ov.refs.radarZero);
+
+    radarGrid.appendChild(expSec);
+    radarGrid.appendChild(linkSec);
+    radarGrid.appendChild(zeroSec);
+    wrap.appendChild(radarGrid);
 
     var trendSec = section('14-Day Activity & Publishing Trend', 'Live D1 time-series (click legend items to toggle)');
     ov.refs.trend = el('div', '');
@@ -421,7 +587,7 @@
     cols2.appendChild(feed); cols2.appendChild(diag);
     wrap.appendChild(cols2);
 
-    loadOverview(); loadFeed(false); loadDiagnostics();
+    loadOverview(); loadRadars(); loadFeed(false); loadDiagnostics();
   }
 
   // ---- Bulk content tab ----
@@ -610,7 +776,13 @@
         items.push({ group: 'Pillars', label: 'Careers', hint: 'Alt+8', keywords: 'careers roadmaps tracks pathways କ୍ୟାରିୟର୍', run: function () { goFolder('folder-careers-studio'); } });
       }
     });
-    items.push({ group: 'Pillars', label: 'Homepage Studio', hint: 'Alt+6', keywords: 'homepage features blocks', run: function () { goFolder(HS_FOLDER); } });
+    items.push({ group: 'Pillars', label: 'Web & Page Studio', hint: 'Alt+6', keywords: 'homepage features blocks legal terms privacy disclaimer snippets', run: function () { goFolder('folder-web-studio'); } });
+    items.push({ group: 'Web & Page Studio', label: 'Web & Page Studio › Institutional & Legal Pages', keywords: 'about terms privacy copyright disclaimer contact', run: function () { if (studio().openWebStudioTab) studio().openWebStudioTab('legal'); else goFolder('folder-web-studio'); } });
+    items.push({ group: 'Web & Page Studio', label: 'Web & Page Studio › Global Snippets & Menus', keywords: 'footer copyright official source disclaimer nav', run: function () { if (studio().openWebStudioTab) studio().openWebStudioTab('snippets'); else goFolder('folder-web-studio'); } });
+    items.push({ group: 'Pillars', label: 'File & Media Manager (R2)', hint: 'Alt+9', keywords: 'files media r2 pdf upload images links', run: function () { goFolder('folder-file-manager'); } });
+    items.push({ group: 'Pillars', label: 'System, Security & Billing', keywords: 'security audit logs sessions feature flags redirects cache backup', run: function () { goFolder('folder-system-ops'); } });
+    items.push({ group: 'System & Security', label: 'System Ops › Security & Audit Logs / Sessions', keywords: 'audit logs active admin sessions revoke', run: function () { if (studio().openSystemOpsTab) studio().openSystemOpsTab('security'); else goFolder('folder-system-ops'); } });
+    items.push({ group: 'System & Security', label: 'System Ops › Feature Flags, Redirects & D1 Backups', keywords: 'maintenance mode flags 301 302 redirects sitemap backup', run: function () { if (studio().openSystemOpsTab) studio().openSystemOpsTab('system'); else goFolder('folder-system-ops'); } });
     items.push({ group: 'Pillars', label: 'Candidate Hub (Roster & Governance)', hint: 'Alt+7', keywords: 'candidates students roster block unblock dashboard ui', run: function () { goFolder('folder-candidate-hub'); } });
     items.push({ group: 'Candidate Hub', label: 'Candidate Hub › Dashboard UI Manager & Preview', keywords: 'theme layout banner grid', run: function () { if (studio().openCandidateHubTab) studio().openCandidateHubTab('ui'); else goFolder('folder-candidate-hub'); } });
     items.push({ group: 'Candidate Hub', label: 'Candidate Hub › Add & Manage Features', keywords: 'feature builder custom widget', run: function () { if (studio().openCandidateHubTab) studio().openCandidateHubTab('features'); else goFolder('folder-candidate-hub'); } });
@@ -820,13 +992,18 @@
       goFolder('folder-careers-studio');
       return;
     }
+    if (e.altKey && !mod && e.code === 'Digit9') {
+      e.preventDefault();
+      goFolder('folder-file-manager');
+      return;
+    }
     if (e.altKey && !mod && /^Digit[0-7]$/.test(e.code || '')) {
       var n = Number(e.code.slice(5));
       var tag = (e.target && e.target.tagName) || '';
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') { /* still allow Alt shortcuts */ }
       e.preventDefault();
       if (n === 0) { goFolder(OV_FOLDER); return; }
-      if (n === 6) { goFolder(HS_FOLDER); return; }
+      if (n === 6) { goFolder('folder-web-studio'); return; }
       if (n === 7) { goFolder('folder-candidate-hub'); return; }
       var schema = studio().getSchema ? studio().getSchema() : null;
       var f = schema && schema.folders && schema.folders[n - 1];

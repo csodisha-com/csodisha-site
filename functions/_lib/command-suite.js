@@ -127,6 +127,39 @@ export async function handleOverviewStats(request, env) {
   const homepage = hp
     ? { available: true, total: Number(hp.total), published: Number(hp.published), draft: Number(hp.total) - Number(hp.published), clicks: Number(hp.clicks) }
     : { available: false, total: 0, published: 0, draft: 0, clicks: 0 };
+
+  // v310: Real live D1 COUNT(*) across all 10 Studio folders (zero mock/placeholder numbers)
+  const [
+    careersRow,
+    instPagesRow,
+    snippetsRow,
+    filesRow,
+    redirectsRow,
+    sessionsRow,
+    auditRow,
+    flagsRow
+  ] = await Promise.all([
+    safeFirst(db, "SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END), 0) AS published FROM careers_articles"),
+    safeFirst(db, 'SELECT COUNT(*) AS total FROM institutional_pages'),
+    safeFirst(db, 'SELECT COUNT(*) AS total FROM site_snippets'),
+    safeFirst(db, "SELECT COUNT(*) AS total, COALESCE(SUM(COALESCE(NULLIF(size_bytes, 0), file_size_bytes, 0)), 0) AS bytes FROM media_files"),
+    safeFirst(db, 'SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END), 0) AS active FROM redirects'),
+    safeFirst(db, "SELECT COUNT(*) AS total FROM admin_sessions WHERE revoked_at IS NULL AND (expires_at = 0 OR expires_at > strftime('%s','now'))"),
+    safeFirst(db, 'SELECT COUNT(*) AS total FROM admin_audit_logs'),
+    safeFirst(db, 'SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN enabled = 1 THEN 1 ELSE 0 END), 0) AS enabled FROM feature_flags')
+  ]);
+  if (careersRow) {
+    const cTot = Number(careersRow.total || 0);
+    const cPub = Number(careersRow.published || 0);
+    pillars.splice(1, 0, { key: 'careers', label: 'Careers', available: true, total: cTot, published: cPub, draft: Math.max(0, cTot - cPub) });
+  } else {
+    pillars.splice(1, 0, { key: 'careers', label: 'Careers', available: false, total: 0, published: 0, draft: 0 });
+  }
+
+  const filesFallback = !filesRow
+    ? await safeFirst(db, 'SELECT COUNT(*) AS total, COALESCE(SUM(size_bytes), 0) AS bytes FROM media_files')
+    : filesRow;
+
   const cand = await safeFirst(db, "SELECT COUNT(*) AS n FROM users WHERE role = 'candidate'");
   const staff = await safeFirst(db, "SELECT COUNT(*) AS n FROM users WHERE role IN ('editor','admin')");
   const cats = await safeFirst(db, "SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN status='published' THEN 1 ELSE 0 END),0) AS published FROM nav_categories");
@@ -146,6 +179,24 @@ export async function handleOverviewStats(request, env) {
     totals: { published, draft },
     pillars,
     homepage,
+    web_studio: {
+      homepage_blocks: homepage.total,
+      institutional_pages: Number((instPagesRow && instPagesRow.total) || 0),
+      site_snippets: Number((snippetsRow && snippetsRow.total) || 0)
+    },
+    files: {
+      total: Number((filesFallback && filesFallback.total) || 0),
+      bytes: Number((filesFallback && filesFallback.bytes) || 0),
+      r2_configured: Boolean(env && env.CSO_FILES)
+    },
+    system_ops: {
+      active_admin_sessions: Number((sessionsRow && sessionsRow.total) || 0),
+      audit_logs: Number((auditRow && auditRow.total) || 0),
+      redirects_total: Number((redirectsRow && redirectsRow.total) || 0),
+      redirects_active: Number((redirectsRow && redirectsRow.active) || 0),
+      flags_persisted: Number((flagsRow && flagsRow.total) || 0),
+      flags_enabled: Number((flagsRow && flagsRow.enabled) || 0)
+    },
     candidates: Number((cand && cand.n) || 0),
     staff: Number((staff && staff.n) || 0),
     categories: { total: Number((cats && cats.total) || 0), published: Number((cats && cats.published) || 0) },
@@ -197,8 +248,9 @@ export async function handleAuditFeed(request, env) {
 }
 
 // ---------- GET /api/admin/system-diagnostics ----------
-const DIAG_TABLES = ['users', 'audit_log', 'homepage_blocks', 'jobs_directory_items', 'schemes_directory_items', 'study_library_items',
-  'community_directory_items', 'cso_current_affairs', 'nav_categories', 'nav_menu_items', 'media_files', 'media_assets', 'site_settings'];
+const DIAG_TABLES = ['users', 'audit_log', 'admin_audit_logs', 'admin_sessions', 'feature_flags', 'redirects', 'institutional_pages', 'site_snippets',
+  'homepage_blocks', 'job_articles', 'careers_articles', 'scheme_articles', 'study_articles', 'community_posts', 'about_articles',
+  'jobs_directory_items', 'schemes_directory_items', 'study_library_items', 'community_directory_items', 'cso_current_affairs', 'nav_categories', 'nav_menu_items', 'media_files', 'site_settings'];
 
 export async function handleDiagnostics(request, env) {
   const db = env.DB;

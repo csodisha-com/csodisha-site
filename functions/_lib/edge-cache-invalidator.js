@@ -139,15 +139,36 @@ export async function invalidateEdgePaths(request, paths = []) {
   }
 }
 
+var EXTRA_INVALIDATORS;
+
+export function registerCacheInvalidator(fn) {
+  if (!EXTRA_INVALIDATORS) EXTRA_INVALIDATORS = new Set();
+  if (typeof fn === 'function') EXTRA_INVALIDATORS.add(fn);
+}
+
 export async function invalidateAllPublicCaches(request, extraPaths = []) {
   try { resetPublicContentMemo(); } catch {}
   try { invalidateSitePagesCache(); } catch {}
   try { resetAboutOverviewMemo(); } catch {}
+  if (EXTRA_INVALIDATORS) {
+    for (const fn of EXTRA_INVALIDATORS) {
+      try { fn(); } catch {}
+    }
+  }
   const allPaths = [
     ...new Set([
       ...NAV_PUBLIC_PATHS,
       ...CONTENT_PUBLIC_PATHS,
       ...SETTINGS_PUBLIC_PATHS,
+      '/terms/',
+      '/terms-of-use/',
+      '/privacy/',
+      '/privacy-policy/',
+      '/copyright/',
+      '/copyright-policy/',
+      '/disclaimer/',
+      '/contact/',
+      '/api/public/web-studio/snippets',
       ...(Array.isArray(extraPaths) ? extraPaths : [])
     ])
   ];

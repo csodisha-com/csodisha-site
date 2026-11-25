@@ -38,6 +38,11 @@
     studyCount: null,
     communityCount: null,
     aboutCount: null,
+    webStudioCount: null,
+    filesCount: null,
+    systemOpsCount: null,
+    activeWebStudioSubTab: 'homepage',
+    activeSystemOpsSubTab: 'security',
     liveBrandSummary: ''
   };
 
@@ -100,6 +105,21 @@
   var CH_MODULE_ID = 'module-candidate-hub';
   function isCandidateHubId(id) {
     return id === CH_FOLDER_ID || id === CH_MODULE_ID || id === 'candidate-hub' || id === 'candidates';
+  }
+  var WS_FOLDER_ID = 'folder-web-studio';
+  var WS_MODULE_ID = 'module-web-studio';
+  function isWebStudioId(id) {
+    return id === WS_FOLDER_ID || id === WS_MODULE_ID || id === 'web-studio';
+  }
+  var FM_FOLDER_ID = 'folder-file-manager';
+  var FM_MODULE_ID = 'module-file-manager';
+  function isFileManagerId(id) {
+    return id === FM_FOLDER_ID || id === FM_MODULE_ID || id === 'file-manager' || id === 'files';
+  }
+  var SO_FOLDER_ID = 'folder-system-ops';
+  var SO_MODULE_ID = 'module-system-ops';
+  function isSystemOpsId(id) {
+    return id === SO_FOLDER_ID || id === SO_MODULE_ID || id === 'system-ops' || id === 'system';
   }
 
   var dom = {
@@ -209,19 +229,18 @@
   }
 
   function syncModuleCountLabels() {
-    if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
-    var pillarCount = masterNavigationSchema.folders.length + 1;
-    document.title = 'CS Odisha — Editorial Studio & Command Suite (' + pillarCount + ' Pillars · Live D1 Sync)';
+    var folderCount = 10;
+    document.title = 'CS Odisha — 10-Folder Editorial Studio & Command Suite (Live D1 / R2)';
     var brandSub = document.querySelector('.cso-brand-sub');
     if (brandSub) {
-      brandSub.textContent = CSOState.liveBrandSummary || (pillarCount + '-Pillar Live D1 Studio');
+      brandSub.textContent = CSOState.liveBrandSummary || (folderCount + '-Folder Live D1 Studio');
     }
     var searchLabel = document.querySelector('label[for="moduleSearchInput"]');
-    if (searchLabel) searchLabel.textContent = 'Filter ' + pillarCount + ' pillars';
-    if (dom.moduleSearchInput) dom.moduleSearchInput.placeholder = 'Filter ' + pillarCount + ' pillars...';
-    if (dom.accordionNav) dom.accordionNav.setAttribute('aria-label', pillarCount + ' Pillars Live Tree');
+    if (searchLabel) searchLabel.textContent = 'Filter ' + folderCount + ' studio folders';
+    if (dom.moduleSearchInput) dom.moduleSearchInput.placeholder = 'Filter ' + folderCount + ' studio folders...';
+    if (dom.accordionNav) dom.accordionNav.setAttribute('aria-label', folderCount + '-Folder Studio Tree');
     var coverageStrong = document.querySelector('.cso-sidebar-footer .cso-text-accent');
-    if (coverageStrong) coverageStrong.textContent = pillarCount + ' / ' + pillarCount;
+    if (coverageStrong) coverageStrong.textContent = folderCount + ' / ' + folderCount;
   }
 
   function refreshBrandSummary() {
@@ -239,7 +258,6 @@
       var stTax = arr[3];
       var cTax = arr[4];
       var aTax = arr[5];
-      var pillarCount = ((masterNavigationSchema && Array.isArray(masterNavigationSchema.folders)) ? masterNavigationSchema.folders.length : 5) + 1;
       var liveItems = ov && ov.totals ? Number(ov.totals.published || 0) : 0;
       var activeCats = (ov && ov.categories ? Number(ov.categories.published || 0) : 0)
         + (jTax && Array.isArray(jTax.nodes) ? jTax.nodes.length : 0)
@@ -249,6 +267,8 @@
         + (aTax && Array.isArray(aTax.nodes) ? aTax.nodes.length : 0);
       var jobsPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'jobs'; }) : null;
       if (jobsPillar) { CSOState.jobsCount = jobsPillar.total; }
+      var careersPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'careers'; }) : null;
+      if (careersPillar && CSOState.careersCount === null) { CSOState.careersCount = careersPillar.total; }
       var schemesPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'schemes'; }) : null;
       if (schemesPillar) { CSOState.schemesCount = schemesPillar.total; }
       var studyPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'study'; }) : null;
@@ -257,7 +277,16 @@
       if (commPillar) { CSOState.communityCount = commPillar.total; }
       var aboutPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'about'; }) : null;
       if (aboutPillar) { CSOState.aboutCount = aboutPillar.total; }
-      CSOState.liveBrandSummary = pillarCount + '-Pillar Live D1 Studio · ' + activeCats + ' Categories · ' + liveItems + ' Live';
+      if (ov && ov.web_studio) {
+        CSOState.webStudioCount = Number(ov.web_studio.homepage_blocks || 0) + Number(ov.web_studio.institutional_pages || 0) + Number(ov.web_studio.site_snippets || 0);
+      }
+      if (ov && ov.files) {
+        CSOState.filesCount = Number(ov.files.total || 0);
+      }
+      if (ov && ov.system_ops) {
+        CSOState.systemOpsCount = Number(ov.system_ops.active_admin_sessions || 0) + Number(ov.system_ops.redirects_active || 0);
+      }
+      CSOState.liveBrandSummary = '10-Folder Live D1 Studio · ' + activeCats + ' Categories · ' + liveItems + ' Live';
       syncModuleCountLabels();
       renderNavigationTree();
     }).catch(function () {});
@@ -325,6 +354,8 @@
     }
 
     masterNavigationSchema.folders.forEach(function (folder) {
+      // Folder #8 consolidates About into Web & Page Studio -> Institutional & Legal Pages
+      if (folder.id === 'folder-about') return;
       var folderTitle = getFolderDisplayTitle(folder);
       var folderTitleOr = getFolderDisplayTitleOr(folder);
       var folderMatches = !query || folderTitle.toLowerCase().includes(query) || folderTitleOr.toLowerCase().includes(query);
@@ -518,10 +549,11 @@
           modList.id = 'studyLibrarySidebarSubnav';
           [
             { tab: 'articles', num: '01', title: 'Published & Draft Resources', tag: 'D1' },
-            { tab: 'taxonomy', num: '02', title: '4-Track & 3-Layer Hierarchy', tag: 'L1-L3' },
-            { tab: 'snippets', num: '03', title: 'Reusable Bilingual Snippets', tag: 'EN/OR' },
-            { tab: 'doubts', num: '04', title: 'Reader Doubts & PYQ Queue', tag: 'Q&A' },
-            { tab: 'new', num: '05', title: '+ Publish Study Resource', tag: 'NEW' }
+            { tab: 'mock_tests', num: '02', title: 'CBT Mock Tests', tag: 'CBT' },
+            { tab: 'taxonomy', num: '03', title: '4-Track & 3-Layer Hierarchy', tag: 'L1-L3' },
+            { tab: 'snippets', num: '04', title: 'Reusable Bilingual Snippets', tag: 'EN/OR' },
+            { tab: 'doubts', num: '05', title: 'Reader Doubts & PYQ Queue', tag: 'Q&A' },
+            { tab: 'new', num: '06', title: '+ Publish Study Resource', tag: 'NEW' }
           ].forEach(function (stSub) {
             var isStActive = isCurrentFolder && CSOState.activeStudySubTab === stSub.tab && !(stSub.tab === 'articles' && CSOState.activeStudyTrackId);
             var stBtn = el('button', 'cso-nav-mod-btn' + (isStActive ? ' is-active' : ''));
@@ -717,29 +749,7 @@
       }
     });
 
-    var hsLabel = 'homepage studio homepage & features';
-    if (!query || hsLabel.indexOf(query) !== -1) {
-      matchCount += 1;
-      var hsActive = CSOState.activeModuleId === HS_MODULE_ID;
-      var hsWrap = el('div', 'cso-nav-folder cso-nav-homepage-studio' + (hsActive ? ' is-current' : ''));
-      var hsBtn = el('button', 'cso-nav-folder-btn' + (hsActive ? ' is-active' : ''));
-      hsBtn.type = 'button';
-      hsBtn.title = 'Homepage & Features — manage every homepage block live from D1';
-      var hsLeft = el('span', 'cso-nav-folder-left');
-      hsLeft.appendChild(el('span', 'cso-nav-dot'));
-      hsLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83C\uDFE0 Homepage Studio'));
-      var hsRight = el('span', 'cso-nav-folder-right');
-      hsRight.appendChild(el('span', 'cso-nav-count cso-tabular', CSOState.homepageCount === null ? '\u2026' : String(CSOState.homepageCount)));
-      hsBtn.appendChild(hsLeft);
-      hsBtn.appendChild(hsRight);
-      hsBtn.addEventListener('click', function () {
-        selectModule(HS_FOLDER_ID, HS_MODULE_ID);
-        if (window.innerWidth <= 900) closeMobileDrawer();
-      });
-      hsWrap.appendChild(hsBtn);
-      dom.accordionNav.appendChild(hsWrap);
-    }
-
+    // 7. Candidate Hub
     var chLabel = 'candidate hub roster governance ui features documents';
     if (!query || chLabel.indexOf(query) !== -1) {
       matchCount += 1;
@@ -747,6 +757,7 @@
       var chWrap = el('div', 'cso-nav-folder cso-nav-candidate-hub' + (chActive ? ' is-current' : ''));
       var chBtn = el('button', 'cso-nav-folder-btn' + (chActive ? ' is-active' : ''));
       chBtn.type = 'button';
+      chBtn.id = 'navTabCandidateHub';
       chBtn.title = 'Candidate Hub — Roster, Governance, Dashboard UI & Features (Alt+7)';
       var chLeft = el('span', 'cso-nav-folder-left');
       chLeft.appendChild(el('span', 'cso-nav-dot'));
@@ -761,6 +772,150 @@
       });
       chWrap.appendChild(chBtn);
       dom.accordionNav.appendChild(chWrap);
+    }
+
+    // 8. Web & Page Studio (Homepage & Blocks, Institutional & Legal Pages, Global Snippets & Menus)
+    var wsSubs = [
+      { tab: 'homepage', num: '01', title: 'Homepage & Blocks', tag: 'HOME', kw: 'homepage blocks popular searches latest updates' },
+      { tab: 'legal', num: '02', title: 'Institutional & Legal Pages', tag: 'D1', kw: 'about terms privacy copyright disclaimer contact legal institutional' },
+      { tab: 'snippets', num: '03', title: 'Global Snippets & Menus', tag: 'EDGE', kw: 'global snippets footer copyright disclaimer navigation menus' }
+    ];
+    var wsLabel = 'web page studio homepage blocks institutional legal pages about terms privacy copyright disclaimer contact snippets menus';
+    var wsMatch = !query || wsLabel.indexOf(query) !== -1;
+    var filteredWsSubs = wsSubs.filter(function (s) {
+      return wsMatch || s.title.toLowerCase().indexOf(query) !== -1 || s.kw.indexOf(query) !== -1;
+    });
+    if (!query || wsMatch || filteredWsSubs.length > 0) {
+      matchCount += filteredWsSubs.length || 1;
+      var wsActive = CSOState.activeFolderId === WS_FOLDER_ID || CSOState.activeFolderId === HS_FOLDER_ID || CSOState.activeFolderId === 'folder-about';
+      var wsExpanded = query ? true : CSOState.expandedFolders.has(WS_FOLDER_ID);
+      var wsWrap = el('div', 'cso-nav-folder cso-nav-web-studio' + (wsActive ? ' is-current' : ''));
+      var wsBtn = el('button', 'cso-nav-folder-btn' + (wsActive ? ' is-active' : ''));
+      wsBtn.type = 'button';
+      wsBtn.id = 'navTabWebStudio';
+      wsBtn.setAttribute('aria-expanded', String(wsExpanded));
+      wsBtn.title = 'Web & Page Studio — Homepage Blocks, Institutional & Legal Pages, Global Snippets (Alt+6)';
+      var wsLeft = el('span', 'cso-nav-folder-left');
+      wsLeft.appendChild(el('span', 'cso-nav-dot'));
+      wsLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83C\uDFE0 Web & Page Studio'));
+      var wsRight = el('span', 'cso-nav-folder-right');
+      var wsCntVal = CSOState.webStudioCount !== null ? CSOState.webStudioCount : (CSOState.homepageCount !== null ? CSOState.homepageCount : null);
+      wsRight.appendChild(el('span', 'cso-nav-count cso-tabular', wsCntVal === null ? '\u2026' : String(wsCntVal)));
+      wsRight.appendChild(el('span', 'cso-nav-chevron' + (wsExpanded ? ' is-open' : ''), '›'));
+      wsBtn.appendChild(wsLeft);
+      wsBtn.appendChild(wsRight);
+      wsBtn.addEventListener('click', function () {
+        if (CSOState.expandedFolders.has(WS_FOLDER_ID)) CSOState.expandedFolders.delete(WS_FOLDER_ID);
+        else CSOState.expandedFolders.add(WS_FOLDER_ID);
+        persistOpenGroups();
+        if (!wsActive) openWebStudio(CSOState.activeWebStudioSubTab || 'homepage');
+        else renderNavigationTree();
+        if (window.innerWidth <= 900) closeMobileDrawer();
+      });
+
+      var wsModList = el('div', 'cso-nav-modules' + (wsExpanded ? '' : ' is-collapsed'));
+      wsModList.id = 'webStudioSidebarSubnav';
+      filteredWsSubs.forEach(function (sub) {
+        var isSubActive = wsActive && CSOState.activeWebStudioSubTab === sub.tab;
+        var sb = el('button', 'cso-nav-mod-btn' + (isSubActive ? ' is-active' : ''));
+        sb.type = 'button';
+        sb.setAttribute('data-web-studio-tab', sub.tab);
+        sb.appendChild(el('span', 'cso-nav-mod-num', sub.num));
+        sb.appendChild(el('span', 'cso-nav-mod-title', sub.title));
+        sb.appendChild(el('span', 'cso-nav-mod-tag is-live', sub.tag));
+        sb.addEventListener('click', function () {
+          openWebStudio(sub.tab);
+          if (window.innerWidth <= 900) closeMobileDrawer();
+        });
+        wsModList.appendChild(sb);
+      });
+      wsWrap.appendChild(wsBtn);
+      wsWrap.appendChild(wsModList);
+      dom.accordionNav.appendChild(wsWrap);
+    }
+
+    // 9. File & Media Manager (Cloudflare R2 CSO_FILES + /files/:key)
+    var fmLabel = 'file media manager r2 uploads pdf images storage links';
+    if (!query || fmLabel.indexOf(query) !== -1) {
+      matchCount += 1;
+      var fmActive = CSOState.activeFolderId === FM_FOLDER_ID || CSOState.activeModuleId === FM_MODULE_ID;
+      var fmWrap = el('div', 'cso-nav-folder cso-nav-file-manager' + (fmActive ? ' is-current' : ''));
+      var fmBtn = el('button', 'cso-nav-folder-btn' + (fmActive ? ' is-active' : ''));
+      fmBtn.type = 'button';
+      fmBtn.id = 'navTabFileManager';
+      fmBtn.title = 'File & Media Manager — Cloudflare R2 uploads & /files/:key links (Alt+9)';
+      var fmLeft = el('span', 'cso-nav-folder-left');
+      fmLeft.appendChild(el('span', 'cso-nav-dot'));
+      fmLeft.appendChild(el('span', 'cso-nav-folder-title', '\uD83D\uDCC1 File & Media Manager'));
+      var fmRight = el('span', 'cso-nav-folder-right');
+      fmRight.appendChild(el('span', 'cso-nav-count cso-tabular', CSOState.filesCount === null ? '\u2026' : String(CSOState.filesCount)));
+      fmBtn.appendChild(fmLeft);
+      fmBtn.appendChild(fmRight);
+      fmBtn.addEventListener('click', function () {
+        openFileManager();
+        if (window.innerWidth <= 900) closeMobileDrawer();
+      });
+      fmWrap.appendChild(fmBtn);
+      dom.accordionNav.appendChild(fmWrap);
+    }
+
+    // 10. System, Security & Billing
+    var soSubs = [
+      { tab: 'security', num: '01', title: 'Security & Audit Logs', tag: '2FA', kw: 'security totp 2fa audit logs sessions force revoke logins' },
+      { tab: 'system', num: '02', title: 'System, Flags & SEO', tag: 'EDGE', kw: 'system feature flags maintenance redirects 301 302 cache purge sitemap backup d1' },
+      { tab: 'billing', num: '03', title: 'Payments & Ads', tag: 'LIVE', kw: 'payments ads billing monetization sponsors coupons plans orders razorpay upi' }
+    ];
+    var soLabel = 'system security billing audit logs sessions feature flags redirects cache purge sitemap backup payments ads';
+    var soMatch = !query || soLabel.indexOf(query) !== -1;
+    var filteredSoSubs = soSubs.filter(function (s) {
+      return soMatch || s.title.toLowerCase().indexOf(query) !== -1 || s.kw.indexOf(query) !== -1;
+    });
+    if (!query || soMatch || filteredSoSubs.length > 0) {
+      matchCount += filteredSoSubs.length || 1;
+      var soActive = CSOState.activeFolderId === SO_FOLDER_ID || CSOState.activeModuleId === SO_MODULE_ID;
+      var soExpanded = query ? true : CSOState.expandedFolders.has(SO_FOLDER_ID);
+      var soWrap = el('div', 'cso-nav-folder cso-nav-system-ops' + (soActive ? ' is-current' : ''));
+      var soBtn = el('button', 'cso-nav-folder-btn' + (soActive ? ' is-active' : ''));
+      soBtn.type = 'button';
+      soBtn.id = 'navTabSystemOps';
+      soBtn.setAttribute('aria-expanded', String(soExpanded));
+      soBtn.title = 'System, Security & Billing — Audit Logs, Sessions, Flags, Redirects & Backups';
+      var soLeft = el('span', 'cso-nav-folder-left');
+      soLeft.appendChild(el('span', 'cso-nav-dot'));
+      soLeft.appendChild(el('span', 'cso-nav-folder-title', '\u2699\uFE0F System, Security & Billing'));
+      var soRight = el('span', 'cso-nav-folder-right');
+      soRight.appendChild(el('span', 'cso-nav-count cso-tabular', CSOState.systemOpsCount === null ? '\u2026' : String(CSOState.systemOpsCount)));
+      soRight.appendChild(el('span', 'cso-nav-chevron' + (soExpanded ? ' is-open' : ''), '›'));
+      soBtn.appendChild(soLeft);
+      soBtn.appendChild(soRight);
+      soBtn.addEventListener('click', function () {
+        if (CSOState.expandedFolders.has(SO_FOLDER_ID)) CSOState.expandedFolders.delete(SO_FOLDER_ID);
+        else CSOState.expandedFolders.add(SO_FOLDER_ID);
+        persistOpenGroups();
+        if (!soActive) openSystemOps(CSOState.activeSystemOpsSubTab || 'security');
+        else renderNavigationTree();
+        if (window.innerWidth <= 900) closeMobileDrawer();
+      });
+
+      var soModList = el('div', 'cso-nav-modules' + (soExpanded ? '' : ' is-collapsed'));
+      soModList.id = 'systemOpsSidebarSubnav';
+      filteredSoSubs.forEach(function (sub) {
+        var isSoSubActive = soActive && CSOState.activeSystemOpsSubTab === sub.tab;
+        var sb = el('button', 'cso-nav-mod-btn' + (isSoSubActive ? ' is-active' : ''));
+        sb.type = 'button';
+        sb.setAttribute('data-system-ops-tab', sub.tab);
+        sb.appendChild(el('span', 'cso-nav-mod-num', sub.num));
+        sb.appendChild(el('span', 'cso-nav-mod-title', sub.title));
+        sb.appendChild(el('span', 'cso-nav-mod-tag is-live', sub.tag));
+        sb.addEventListener('click', function () {
+          openSystemOps(sub.tab);
+          if (window.innerWidth <= 900) closeMobileDrawer();
+        });
+        soModList.appendChild(sb);
+      });
+      soWrap.appendChild(soBtn);
+      soWrap.appendChild(soModList);
+      dom.accordionNav.appendChild(soWrap);
     }
 
     if (dom.searchCountBadge) {
@@ -787,7 +942,10 @@
 
   function resolveModuleTarget(targetId) {
     if (isCareersStudioId(targetId)) return { folderId: CR_FOLDER_ID, moduleId: CR_MODULE_ID };
-    if (isHomepageStudioId(targetId)) return { folderId: HS_FOLDER_ID, moduleId: HS_MODULE_ID };
+    if (isHomepageStudioId(targetId)) return { folderId: WS_FOLDER_ID, moduleId: WS_MODULE_ID };
+    if (isWebStudioId(targetId)) return { folderId: WS_FOLDER_ID, moduleId: WS_MODULE_ID };
+    if (isFileManagerId(targetId)) return { folderId: FM_FOLDER_ID, moduleId: FM_MODULE_ID };
+    if (isSystemOpsId(targetId)) return { folderId: SO_FOLDER_ID, moduleId: SO_MODULE_ID };
     if (isCandidateHubId(targetId)) return { folderId: CH_FOLDER_ID, moduleId: CH_MODULE_ID };
     if (isOverviewId(targetId)) return { folderId: OV_FOLDER_ID, moduleId: OV_MODULE_ID };
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders) || !masterNavigationSchema.folders.length) return null;
@@ -834,25 +992,89 @@
   }
 
   function openHomepageStudio() {
-    CSOState.activeFolderId = HS_FOLDER_ID;
-    CSOState.activeModuleId = HS_MODULE_ID;
-    try { localStorage.setItem('cso_active_module_id', HS_MODULE_ID); } catch (_e) {}
-    if (window.location.hash !== '#homepage-studio' && window.history && window.history.replaceState) {
-      window.history.replaceState(null, '', '#homepage-studio');
+    openWebStudio('homepage');
+  }
+
+  function openWebStudio(initialTab, initialLegalView) {
+    var tabKey = initialTab || CSOState.activeWebStudioSubTab || 'homepage';
+    CSOState.activeFolderId = WS_FOLDER_ID;
+    CSOState.activeModuleId = WS_MODULE_ID;
+    CSOState.activeWebStudioSubTab = tabKey;
+    CSOState.expandedFolders.add(WS_FOLDER_ID);
+    persistOpenGroups();
+    try { localStorage.setItem('cso_active_module_id', WS_MODULE_ID); } catch (_e) {}
+    if (window.location.hash !== '#web-studio' && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#web-studio');
     }
-    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Homepage & Features';
-    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Homepage Studio';
-    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Homepage Studio';
-    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live D1 Sync';
+    var subLabels = { homepage: 'Homepage & Blocks', legal: 'Institutional & Legal Pages', snippets: 'Global Snippets & Menus' };
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Web & Page Studio';
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = subLabels[tabKey] || 'Web & Page Studio';
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'Web & Page Studio';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live D1 · Edge HTML';
     renderNavigationTree();
     clearNode(dom.workspaceRoot);
     clearNode(dom.moduleHeaderActions);
-    if (window.CSOHomepageStudio) {
+    if (window.CSOWebStudio) {
+      window.CSOWebStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, tabKey, initialLegalView);
+    } else if (window.CSOHomepageStudio) {
       window.CSOHomepageStudio.render(dom.workspaceRoot, dom.moduleHeaderActions);
     } else {
       var card = el('div', 'cso-empty-state');
-      card.appendChild(el('h2', '', 'Homepage Studio unavailable'));
-      card.appendChild(el('p', '', 'The Homepage Studio script failed to load. Reload the page.'));
+      card.appendChild(el('h2', '', 'Web & Page Studio unavailable'));
+      card.appendChild(el('p', '', 'The Web & Page Studio script failed to load. Reload the page.'));
+      dom.workspaceRoot.appendChild(card);
+    }
+  }
+
+  function openFileManager() {
+    CSOState.activeFolderId = FM_FOLDER_ID;
+    CSOState.activeModuleId = FM_MODULE_ID;
+    try { localStorage.setItem('cso_active_module_id', FM_MODULE_ID); } catch (_e) {}
+    if (window.location.hash !== '#file-manager' && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#file-manager');
+    }
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'File & Media Manager';
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Cloudflare R2 Storage';
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'File & Media Manager';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'R2 CSO_FILES · /files/:key';
+    renderNavigationTree();
+    clearNode(dom.workspaceRoot);
+    clearNode(dom.moduleHeaderActions);
+    if (window.CSOFileManager) {
+      window.CSOFileManager.render(dom.workspaceRoot, dom.moduleHeaderActions);
+    } else {
+      var card = el('div', 'cso-empty-state');
+      card.appendChild(el('h2', '', 'File & Media Manager unavailable'));
+      card.appendChild(el('p', '', 'The File Manager script failed to load. Reload the page.'));
+      dom.workspaceRoot.appendChild(card);
+    }
+  }
+
+  function openSystemOps(initialTab) {
+    var tabKey = initialTab || CSOState.activeSystemOpsSubTab || 'security';
+    CSOState.activeFolderId = SO_FOLDER_ID;
+    CSOState.activeModuleId = SO_MODULE_ID;
+    CSOState.activeSystemOpsSubTab = tabKey;
+    CSOState.expandedFolders.add(SO_FOLDER_ID);
+    persistOpenGroups();
+    try { localStorage.setItem('cso_active_module_id', SO_MODULE_ID); } catch (_e) {}
+    if (window.location.hash !== '#system-ops' && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#system-ops');
+    }
+    var subLabels = { security: 'Security & Audit Logs', system: 'System, Flags & SEO', billing: 'Payments & Ads' };
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'System, Security & Billing';
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = subLabels[tabKey] || 'Security & Audit Logs';
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'System, Security & Billing';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Edge Guard · Live D1';
+    renderNavigationTree();
+    clearNode(dom.workspaceRoot);
+    clearNode(dom.moduleHeaderActions);
+    if (window.CSOSystemOps) {
+      window.CSOSystemOps.render(dom.workspaceRoot, dom.moduleHeaderActions, tabKey);
+    } else {
+      var card = el('div', 'cso-empty-state');
+      card.appendChild(el('h2', '', 'System & Security Ops unavailable'));
+      card.appendChild(el('p', '', 'The System Ops script failed to load. Reload the page.'));
       dom.workspaceRoot.appendChild(card);
     }
   }
@@ -981,7 +1203,11 @@
   function selectModule(folderId, moduleId) {
     if (isOverviewId(moduleId) || isOverviewId(folderId)) { openCommandOverview(); return; }
     if (isCareersStudioId(moduleId) || isCareersStudioId(folderId)) { openCareersPublishingStudio(); return; }
-    if (isHomepageStudioId(moduleId) || isHomepageStudioId(folderId)) { openHomepageStudio(); return; }
+    if (isWebStudioId(moduleId) || isWebStudioId(folderId)) { openWebStudio(); return; }
+    if (isHomepageStudioId(moduleId) || isHomepageStudioId(folderId)) { openWebStudio('homepage'); return; }
+    if (isFileManagerId(moduleId) || isFileManagerId(folderId)) { openFileManager(); return; }
+    if (isSystemOpsId(moduleId) || isSystemOpsId(folderId)) { openSystemOps(); return; }
+    if (folderId === 'folder-about' || moduleId === 'folder-about') { openWebStudio('legal', 'about_studio'); return; }
     if (isCandidateHubId(moduleId) || isCandidateHubId(folderId)) { openCandidateHubStudio(); return; }
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
     CSOState.activeFolderId = folderId;
@@ -1106,22 +1332,7 @@
   }
 
   function openAboutPublishingStudio(initialTab) {
-    CSOState.activeFolderId = 'folder-about';
-    CSOState.activeModuleId = 'folder-about';
-    try { localStorage.setItem('cso_active_module_id', 'folder-about'); } catch (_e) {}
-    if (window.location.hash !== '#folder-about' && window.history && window.history.replaceState) {
-      window.history.replaceState(null, '', '#folder-about');
-    }
-    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'About';
-    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = 'Institutional Transparency & Governance Studio';
-    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = 'About & Institutional Transparency Studio';
-    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live Instant Sync';
-    renderNavigationTree();
-    clearNode(dom.workspaceRoot);
-    clearNode(dom.moduleHeaderActions);
-    if (window.CSOAboutPublishingStudio) {
-      window.CSOAboutPublishingStudio.render(dom.workspaceRoot, dom.moduleHeaderActions, initialTab || 'pages');
-    }
+    openWebStudio('legal', 'about_studio');
   }
 
   function renderWorkspaceView(folderId, moduleId) {
@@ -1224,6 +1435,12 @@
     if (targetRoute === 'jobs/new' && window.CSOJobsPublishingStudio) {
       closeCreateDropdown();
       openJobsPublishingStudio('new');
+      if (window.innerWidth <= 900) closeMobileDrawer();
+      return;
+    }
+    if (targetRoute === 'mock-tests/new' && window.CSOStudyPublishingStudio) {
+      closeCreateDropdown();
+      openStudyPublishingStudio('mock_tests', '');
       if (window.innerWidth <= 900) closeMobileDrawer();
       return;
     }
@@ -1626,6 +1843,18 @@
     openStudyPublishingTab: function (tab) { openStudyPublishingStudio(tab); },
     openCommunityPublishingTab: function (tab) { openCommunityPublishingStudio(tab); },
     openAboutPublishingTab: function (tab) { openAboutPublishingStudio(tab); },
+    openWebStudioTab: function (tab, legalView) { openWebStudio(tab, legalView); },
+    openFileManager: function () { openFileManager(); },
+    openSystemOpsTab: function (tab) { openSystemOps(tab); },
+    setFilesCount: function (n) {
+      if (CSOState.filesCount !== n) { CSOState.filesCount = n; renderNavigationTree(); }
+    },
+    setWebStudioSubTab: function (tab) {
+      if (tab && CSOState.activeWebStudioSubTab !== tab) { CSOState.activeWebStudioSubTab = tab; renderNavigationTree(); }
+    },
+    setSystemOpsSubTab: function (tab) {
+      if (tab && CSOState.activeSystemOpsSubTab !== tab) { CSOState.activeSystemOpsSubTab = tab; renderNavigationTree(); }
+    },
     refreshBrandSummary: refreshBrandSummary,
     getSchema: function () { return masterNavigationSchema; }
   };

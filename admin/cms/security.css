@@ -1,5 +1,7 @@
 /* Admin 2FA login controls + backup-code panel (external CSS only, strict-CSP safe). */
 .cso-2fa-block{margin:12px 0 4px}
+.cso-2fa-block.is-required{padding:12px 14px;border:1.5px solid var(--cso-accent);border-radius:10px;background:var(--cso-info-bg)}
+.cso-2fa-note{margin:6px 0 0;font-size:12.5px;line-height:1.45;color:var(--cso-info-fg);font-weight:600}
 .cso-2fa-block input{letter-spacing:.12em;text-transform:uppercase}
 .cso-otp-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:10px 0 2px}
 .cso-otp-btn{font-size:13px;padding:7px 12px}

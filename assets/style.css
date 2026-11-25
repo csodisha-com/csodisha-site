@@ -11210,3 +11210,103 @@ nav#cso-hub-top-tabs {
     -webkit-backdrop-filter: none !important;
   }
 }
+
+/* v310: Live Web & Page Studio Institutional Pages & Global Footer Snippets */
+.cso-footer-disclaimer {
+  margin: 6px 0 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cso-footer-ink);
+  opacity: 0.92;
+}
+
+.cso-legal-odia-title {
+  margin: 4px 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cso-ink-soft);
+}
+
+.cso-legal-odia-section {
+  margin-top: 14px;
+}
+
+/* v312: Live Public Sponsored Ad Slot (strictly semantic 4-theme tokens, zero hex) */
+.cso-ad-slot-wrap {
+  margin: 20px auto 12px;
+  max-width: 1120px;
+  width: 100%;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.cso-ad-slot-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.cso-ad-slot-card:hover,
+.cso-ad-slot-card:focus-visible {
+  border-color: var(--cso-accent);
+  background: var(--cso-surface-elevated);
+}
+
+.cso-ad-slot-img {
+  width: 140px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  flex-shrink: 0;
+}
+
+.cso-ad-slot-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cso-ad-slot-badge {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
+  border: 1px solid var(--cso-warn-border);
+}
+
+.cso-ad-slot-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cso-ink);
+  line-height: 1.35;
+}
+
+.cso-ad-slot-cta {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cso-link);
+}
+
+@media (max-width: 640px) {
+  .cso-ad-slot-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cso-ad-slot-img {
+    width: 100%;
+    height: auto;
+    max-height: 140px;
+  }
+}

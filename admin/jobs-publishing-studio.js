@@ -544,6 +544,11 @@
     fhRight.appendChild(btn('↻ Refresh', 'jph-btn', function () {
       loadArticles().then(renderCurrentView).catch(function (e) { toast(e.message, 'crimson'); });
     }));
+    if (window.CSOPublishTools && window.CSOPublishTools.openBulkImporter) {
+      fhRight.appendChild(btn('📥 Bulk CSV/JSON Import', 'jph-btn', function () {
+        window.CSOPublishTools.openBulkImporter('jobs', function () { loadArticles().then(renderCurrentView); });
+      }));
+    }
     fhRight.appendChild(btn('+ Publish New Job Article', 'jph-btn jph-btn--primary', function () {
       openComposer(null);
     }));
@@ -699,6 +704,13 @@
         act.appendChild(btn('Broadcast', 'jph-btn jph-btn--xs', function () {
           copyToClipboard(buildBroadcastText(a), 'Copied bilingual Telegram / WhatsApp broadcast!');
         }));
+        act.appendChild(btn('Duplicate', 'jph-btn jph-btn--xs', function () {
+          if (window.CSOPublishTools && window.CSOPublishTools.duplicateItem) {
+            window.CSOPublishTools.duplicateItem('jobs', a.id, function (cloned) {
+              loadArticles().then(function () { if (cloned) openComposer(cloned); else renderCurrentView(); });
+            });
+          }
+        }));
         act.appendChild(btn('Delete', 'jph-btn jph-btn--xs jph-btn--danger', function () {
           if (!window.confirm('Delete "' + a.title_en + '" permanently?')) return;
           api('/api/admin/jobs/articles/' + encodeURIComponent(a.id), 'DELETE').then(function () {
@@ -765,6 +777,9 @@
         state.draft = Object.assign(emptyDraft(), res.item, { change_summary: '' });
       }
       toast(payload.is_published ? 'Published live & Edge Cache purged!' : 'Draft saved to D1!', 'ok');
+      if (payload.is_published && !openPreviewAfter && window.CSOPublishTools && window.CSOPublishTools.runPublishChain) {
+        window.CSOPublishTools.runPublishChain('jobs', state.draft);
+      }
       if (openPreviewAfter && state.draft.id) {
         return api('/api/admin/jobs/' + encodeURIComponent(state.draft.id) + '/preview-token', 'POST', {}).then(function (p) {
           state.activePreviewUrl = p.preview_url;
@@ -954,6 +969,16 @@
       }
     }));
     notifWrap.appendChild(notifUrlInp);
+    if (window.CSOFilePicker && window.CSOFilePicker.createPickerButton) {
+      var nPickRow = el('div', 'fp-trigger-row');
+      nPickRow.appendChild(window.CSOFilePicker.createPickerButton({
+        folder: 'Jobs',
+        input: notifUrlInp,
+        label: '📁 Upload or Pick File from R2',
+        onSelect: function (u) { d.notification_pdf_url = u; d.notification_url = u; }
+      }));
+      notifWrap.appendChild(nPickRow);
+    }
     pdfGrid.appendChild(notifWrap);
 
     // Syllabus PDF dropzone + URL
@@ -971,6 +996,16 @@
       onUploaded: function (res) { d.syllabus_pdf_url = res.url; sylUrlInp.value = res.url; }
     }));
     sylWrap.appendChild(sylUrlInp);
+    if (window.CSOFilePicker && window.CSOFilePicker.createPickerButton) {
+      var sPickRow = el('div', 'fp-trigger-row');
+      sPickRow.appendChild(window.CSOFilePicker.createPickerButton({
+        folder: 'Jobs',
+        input: sylUrlInp,
+        label: '📁 Upload or Pick File from R2',
+        onSelect: function (u) { d.syllabus_pdf_url = u; }
+      }));
+      sylWrap.appendChild(sPickRow);
+    }
     pdfGrid.appendChild(sylWrap);
     pdfCard.appendChild(pdfGrid);
 
@@ -1032,6 +1067,10 @@
     }
     linksGrid.appendChild(makeUrlField('Official Apply Online URL', 'official_apply_url', 'https://www.opsc.gov.in/Public/OPSC/Default.aspx'));
     linksGrid.appendChild(makeUrlField('Official Website URL', 'official_website_url', 'https://www.opsc.gov.in/'));
+    linksGrid.appendChild(makeUrlField('Notice PDF / Notification URL', 'notification_url', '/files/jobs/... or https://...'));
+    linksGrid.appendChild(makeUrlField('Admit Card Download URL', 'admit_card_url', 'https://...'));
+    linksGrid.appendChild(makeUrlField('Answer Key URL', 'answer_key_url', 'https://...'));
+    linksGrid.appendChild(makeUrlField('Final Result / Merit List URL', 'result_url', 'https://...'));
     pdfCard.appendChild(linksGrid);
     container.appendChild(pdfCard);
 
@@ -1384,13 +1423,34 @@
     var wCorOr = el('div', 'jph-field'); wCorOr.appendChild(el('label', 'jph-label', 'Corrigendum Banner Note (ଓଡ଼ିଆ)')); wCorOr.appendChild(corOr); pg.appendChild(wCorOr);
 
     var schInp = el('input', 'jph-input'); schInp.type = 'datetime-local';
-    schInp.value = d.scheduled_publish_at ? String(d.scheduled_publish_at).replace(' ', 'T').slice(0, 16) : '';
-    schInp.addEventListener('input', function () { d.scheduled_publish_at = schInp.value ? schInp.value.replace('T', ' ') + ':00' : ''; });
-    var wSch = el('div', 'jph-field'); wSch.appendChild(el('label', 'jph-label', 'Scheduled Auto-Publish Time (UTC, Optional)')); wSch.appendChild(schInp); pg.appendChild(wSch);
+    schInp.value = (d.publish_at || d.scheduled_publish_at) ? String(d.publish_at || d.scheduled_publish_at).replace(' ', 'T').slice(0, 16) : '';
+    schInp.addEventListener('input', function () {
+      var val = schInp.value ? schInp.value.replace('T', ' ') + ':00' : '';
+      d.scheduled_publish_at = val;
+      d.publish_at = val;
+    });
+    var wSch = el('div', 'jph-field'); wSch.appendChild(el('label', 'jph-label', 'Scheduled Auto-Publish Time (publish_at UTC)')); wSch.appendChild(schInp); pg.appendChild(wSch);
+
+    var expInp = el('input', 'jph-input'); expInp.type = 'date';
+    expInp.value = (d.expires_at || d.last_date || '').slice(0, 10);
+    expInp.addEventListener('input', function () {
+      d.expires_at = expInp.value;
+      if (!d.last_date) d.last_date = expInp.value;
+    });
+    var wExp = el('div', 'jph-field'); wExp.appendChild(el('label', 'jph-label', 'Auto-Archive Expiry Date (expires_at)')); wExp.appendChild(expInp); pg.appendChild(wExp);
 
     var chgInp = el('input', 'jph-input'); chgInp.placeholder = 'e.g., Added admit card link & updated exam date'; chgInp.value = d.change_summary || '';
     chgInp.addEventListener('input', function () { d.change_summary = chgInp.value; });
     var wChg = el('div', 'jph-field'); wChg.appendChild(el('label', 'jph-label', 'Revision Change Summary')); wChg.appendChild(chgInp); pg.appendChild(wChg);
+
+    if (window.CSOPublishTools && window.CSOPublishTools.runSanityCheck) {
+      var sanityWrap = el('div', 'jph-field');
+      sanityWrap.appendChild(el('label', 'jph-label', 'Pre-Publish Sanity Verification'));
+      sanityWrap.appendChild(btn('✅ Run Pre-Publish Sanity Check', 'jph-btn jph-btn--primary', function () {
+        window.CSOPublishTools.runSanityCheck('jobs', d, function () { saveDraftToServer(true, false); });
+      }));
+      pg.appendChild(sanityWrap);
+    }
 
     pubCard.appendChild(pg);
 

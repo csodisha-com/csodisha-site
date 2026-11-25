@@ -424,8 +424,10 @@
         row.appendChild(main);
 
         const acts = el('div', 'cso-hub-item__actions');
+        if (it.target_district) acts.appendChild(el('span', 'cso-hub-pill', '📍 ' + it.target_district));
+        if (it.target_exam) acts.appendChild(el('span', 'cso-hub-pill', '🎯 ' + it.target_exam));
         if (it.file_ext) acts.appendChild(el('span', 'cso-hub-pill', it.file_ext));
-        acts.appendChild(el('span', 'cso-hub-pill cso-hub-pill--' + it.priority, it.priority));
+        acts.appendChild(el('span', 'cso-hub-pill cso-hub-pill--' + (it.priority || 'high'), it.priority || 'high'));
         const href = safeUrl(it.resource_url);
         if (href) {
           const a = el('a', 'cso-btn cso-btn-sm cso-btn-primary', 'Open / Download ↗');

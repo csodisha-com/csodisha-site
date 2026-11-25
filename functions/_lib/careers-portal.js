@@ -6,6 +6,7 @@
 import { HttpError, json, readJson, validationError } from './http.js';
 import { audit, getActor, STAFF_ROLES } from './rbac.js';
 import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
+import { logZeroResultSearch } from './radars-v311.js';
 
 export const CAREER_STATUSES = ['draft', 'published', 'archived'];
 export const CAREER_TAXONOMY_KINDS = ['track', 'subtrack', 'role_stream', 'region', 'stage'];
@@ -538,7 +539,7 @@ export async function handlePublicCareersBootstrap(request, env) {
 // ============================================================================
 // PUBLIC: GET /api/public/careers/list
 // ============================================================================
-export async function handlePublicCareersList(request, env) {
+export async function handlePublicCareersList(request, env, ctx = null) {
   const url = new URL(request.url);
   const track = str(url.searchParams.get('track'), 80).toLowerCase();
   const subtrack = str(url.searchParams.get('subtrack'), 80).toLowerCase();
@@ -647,6 +648,9 @@ export async function handlePublicCareersList(request, env) {
     const sql = `SELECT * FROM careers_articles WHERE ${where.join(' AND ')} ORDER BY featured DESC, COALESCE(published_at, updated_at) DESC LIMIT ?`;
     const { results } = await env.DB.prepare(sql).bind(...binds, limit).all();
     const items = (results || []).map(r => hydrateArticle(r, false));
+    if (q && items.length === 0) {
+      logZeroResultSearch(env, q, 'careers', ctx);
+    }
 
     return json({
       ok: true,

@@ -11,8 +11,8 @@
   <meta property="og:description" content="Help and Support on Common Sense Odisha.">
   <meta property="og:url" content="https://csodisha.com/support/">
   <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="/assets/style.css?v=20261125v306">
-  <link rel="stylesheet" href="/assets/css/pages/support.css">
+  <link rel="stylesheet" href="/assets/style.css?v=20261125v312">
+  <link rel="stylesheet" href="/assets/css/pages/support.css?v=20261125v312">
 </head>
 <body>
 <a class="cso-skip-link" href="#main-content">Skip to main content</a>
@@ -34,6 +34,47 @@
     <h1>Help &amp; Support</h1>
     <p>Live support articles and FAQs managed in Admin Studio.</p>
   </section>
+  <section class="cso-support-card cso-support-form-card" aria-labelledby="csoSupFormHeading">
+    <h2 id="csoSupFormHeading">Report an Error or Suggest a Resource</h2>
+    <p>Spotted a broken official <code>.gov.in</code> link, outdated exam date, typo, or want to request a syllabus / PYQ? Submit a ticket directly to the CS Odisha Editorial Desk.</p>
+    <form id="csoSupportDeskForm" class="cso-support-form" novalidate>
+      <div class="cso-support-form-grid">
+        <div class="cso-support-field">
+          <label for="csoSupType">Submission Type</label>
+          <select id="csoSupType" name="ticket_type">
+            <option value="report_error">Report an Error / Broken Link / Outdated Date</option>
+            <option value="suggest_resource">Suggest a New Exam / Scheme / Study Resource</option>
+            <option value="general_support">General Candidate Help &amp; Support</option>
+          </select>
+        </div>
+        <div class="cso-support-field">
+          <label for="csoSupPageUrl">Page URL (optional)</label>
+          <input id="csoSupPageUrl" name="page_url" type="text" maxlength="500" placeholder="/jobs/?slug=...">
+        </div>
+        <div class="cso-support-field cso-support-span-full">
+          <label for="csoSupSubject">Subject *</label>
+          <input id="csoSupSubject" name="subject" type="text" maxlength="180" required placeholder="e.g. OPSC OAS Last Date correction or Add OSSSC PYQ">
+        </div>
+        <div class="cso-support-field cso-support-span-full">
+          <label for="csoSupMessage">Details *</label>
+          <textarea id="csoSupMessage" name="message" rows="4" maxlength="3000" required placeholder="Include exact details or official reference link..."></textarea>
+        </div>
+        <div class="cso-support-field">
+          <label for="csoSupEmail">Contact Email (optional)</label>
+          <input id="csoSupEmail" name="contact_email" type="email" maxlength="160" placeholder="you@example.com">
+        </div>
+        <div aria-hidden="true" hidden>
+          <label for="csoSupWebsite">Website</label>
+          <input id="csoSupWebsite" name="website" type="text" tabindex="-1" autocomplete="off">
+        </div>
+      </div>
+      <div class="cso-support-actions">
+        <button id="csoSupSubmitBtn" type="submit" class="cso-support-btn">Submit Ticket →</button>
+        <p id="csoSupStatus" class="cso-support-status" role="status" aria-live="polite"></p>
+      </div>
+    </form>
+  </section>
+
   <section id="cso-clean-page-content" data-page-slug="support" data-pillar-slug="about" aria-live="polite">
     <div class="card cso-empty-state"><p>No items published yet — add categories or content in Admin Studio.</p></div>
   </section>
@@ -76,7 +117,8 @@
   </div>
 </div></footer>
 <script src="/assets/cso-auth-client.js" defer></script>
-<script src="/assets/shared-header.js?v=20261125v305" defer></script>
+<script src="/assets/shared-header.js?v=20261125v312" defer></script>
+<script src="/assets/js/pages/support-desk.js?v=20261125v312" defer></script>
 <script src="/assets/js/pages/cso-clean-page.js?v=20261124v238" defer></script>
 </body>
 </html>

@@ -508,10 +508,17 @@
       toast('Refreshing career guides from D1…', 'info');
       loadData();
     });
+    var bulkBtn = el('button', 'cps-btn', '📥 Bulk CSV/JSON Import');
+    bulkBtn.type = 'button';
+    bulkBtn.addEventListener('click', function () {
+      if (window.CSOPublishTools && window.CSOPublishTools.openBulkImporter) {
+        window.CSOPublishTools.openBulkImporter('careers', function () { loadData(); });
+      }
+    });
     var addBtn = el('button', 'cps-btn cps-btn-primary', '+ Publish New Career Guide');
     addBtn.type = 'button';
     addBtn.addEventListener('click', startNewGuide);
-    headBtns.append(refreshBtn, addBtn);
+    headBtns.append(refreshBtn, bulkBtn, addBtn);
     head.appendChild(headBtns);
 
     // Cascading Filters
@@ -1251,6 +1258,9 @@
         }
         statusMsg.textContent = overrideStatus === 'published' ? 'Published live on /careers/!' : 'Draft saved to D1.';
         toast(overrideStatus === 'published' ? 'Career guide published live & public cache purged!' : 'Draft saved to D1!', 'emerald');
+        if (overrideStatus === 'published' && d && d.item && window.CSOPublishTools && window.CSOPublishTools.runPublishChain) {
+          window.CSOPublishTools.runPublishChain('careers', d.item);
+        }
         if (!opts.skipReload) loadData(true);
         return d && d.item ? d.item : null;
       }).catch(function (err) {
@@ -1292,12 +1302,20 @@
       }
     });
 
+    var btnSanity = el('button', 'cps-btn', '✅ Sanity Check');
+    btnSanity.type = 'button';
+    btnSanity.addEventListener('click', function () {
+      if (window.CSOPublishTools && window.CSOPublishTools.runSanityCheck) {
+        window.CSOPublishTools.runSanityCheck('careers', collectPayload(), function () { persistGuide('published'); });
+      }
+    });
+
     var btnPublishNow = el('button', 'cps-btn cps-btn-publish', 'Publish Now');
     btnPublishNow.type = 'button';
     btnPublishNow.id = 'cpsPublishNowBtn';
     btnPublishNow.addEventListener('click', function () { persistGuide('published'); });
 
-    barActions.append(btnSaveDraft, btnPopupPreview, btnTempLink, btnPublishNow);
+    barActions.append(btnSaveDraft, btnSanity, btnPopupPreview, btnTempLink, btnPublishNow);
     topBar.appendChild(barActions);
 
     card.appendChild(topBar);
@@ -1447,7 +1465,20 @@
           if (!state.linksDraft.length) state.linksDraft.push({ label: '', url: '' });
           renderLinksRows();
         });
-        row.append(lInp, uInp, rmBtn);
+        row.append(lInp, uInp);
+        if (window.CSOFilePicker && window.CSOFilePicker.createPickerButton) {
+          row.appendChild(window.CSOFilePicker.createPickerButton({
+            label: '📁 R2 File',
+            folder: 'Careers',
+            className: 'cps-btn cps-btn-sm',
+            onSelect: function (item) {
+              lk.url = item.clean_url;
+              uInp.value = item.clean_url;
+              if (!lk.label) { lk.label = item.original_name; lInp.value = item.original_name; }
+            }
+          }));
+        }
+        row.appendChild(rmBtn);
         linksList.appendChild(row);
       });
     }

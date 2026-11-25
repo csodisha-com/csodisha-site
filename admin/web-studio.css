@@ -1,0 +1,243 @@
+/* Folder #8: Web & Page Studio (v310) — 100% semantic 4-theme tokens, mobile-first, strict CSP */
+
+.ws-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ws-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
+}
+
+.ws-tab {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--cso-ink-soft);
+  padding: 9px 14px;
+  border-radius: 9px;
+  font: 600 13.5px/1.2 inherit;
+  cursor: pointer;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.ws-tab:hover {
+  background: var(--cso-bg);
+  color: var(--cso-ink);
+}
+
+.ws-tab.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  border-color: var(--cso-accent);
+}
+
+.ws-card {
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ws-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ws-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--cso-ink);
+}
+
+.ws-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--cso-ink-muted);
+}
+
+.ws-page-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ws-pill {
+  appearance: none;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-bg);
+  color: var(--cso-ink);
+  padding: 8px 13px;
+  border-radius: 999px;
+  font: 600 13px/1.2 inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+}
+
+.ws-pill.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  border-color: var(--cso-accent);
+}
+
+.ws-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-bg);
+  color: var(--cso-ink-soft);
+}
+
+.ws-badge--live {
+  background: var(--cso-ok-bg);
+  color: var(--cso-ok-fg);
+  border-color: var(--cso-ok-border);
+}
+
+.ws-badge--fallback {
+  background: var(--cso-info-bg);
+  color: var(--cso-info-fg);
+  border-color: var(--cso-info-border);
+}
+
+.ws-meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--cso-bg);
+  border: 1px solid var(--cso-border);
+  font-size: 12.5px;
+  color: var(--cso-ink-soft);
+}
+
+.ws-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 14px;
+}
+
+.ws-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ws-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--cso-ink-soft);
+}
+
+.ws-input,
+.ws-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg);
+  color: var(--cso-input-ink);
+  font: 500 14px/1.5 inherit;
+}
+
+.ws-textarea {
+  min-height: 180px;
+  resize: vertical;
+}
+
+.ws-textarea--short {
+  min-height: 92px;
+}
+
+.ws-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.ws-btn {
+  appearance: none;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  padding: 9px 15px;
+  border-radius: 10px;
+  font: 600 13.5px/1.2 inherit;
+  cursor: pointer;
+  min-height: 40px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ws-btn--primary {
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  border-color: var(--cso-accent);
+}
+
+.ws-btn--danger {
+  background: var(--cso-err-bg);
+  color: var(--cso-err-fg);
+  border-color: var(--cso-err-border);
+}
+
+.ws-status {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cso-ink-soft);
+}
+
+.ws-embed-host {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ws-sub-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .ws-tab,
+  .ws-pill,
+  .ws-btn {
+    min-height: 44px;
+  }
+  .ws-input,
+  .ws-textarea {
+    font-size: 16px;
+  }
+}

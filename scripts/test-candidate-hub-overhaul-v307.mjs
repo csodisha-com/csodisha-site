@@ -93,12 +93,12 @@ check('4. Mobile Responsiveness (< 1100px / < 960px), 16px Inputs, 44px Targets 
 
 check('5. Strict CSP compliance & v307+ / v309 cache busting + style.css .cso-hub-card override guard', () => {
   const html = read('student-dashboard/index.html');
-  for (const tok of [
-    '/assets/css/student-dashboard-bp.css?v=20261125v309',
-    '/assets/css/candidate-hub-v244.css?v=20261125v309',
-    '/assets/js/student-dashboard.js?v=20261125v308'
+  for (const re of [
+    /\/assets\/css\/student-dashboard-bp\.css\?v=20261125v3(?:09|[1-9]\d)/,
+    /\/assets\/css\/candidate-hub-v244\.css\?v=20261125v3(?:09|[1-9]\d)/,
+    /\/assets\/js\/student-dashboard\.js\?v=20261125v3(?:0[89]|[1-9]\d)/
   ]) {
-    assert.ok(html.includes(tok), `student-dashboard/index.html missing ${tok}`);
+    assert.match(html, re, `student-dashboard/index.html missing versioned asset ${re}`);
   }
   const hubCss = read('assets/css/candidate-hub-v244.css');
   assert.ok(hubCss.includes('#cso-candidate-workspace .cso-hub-card') && hubCss.includes('align-items: stretch;'), 'candidate-hub-v244.css must override assets/style.css .cso-hub-card align-items');

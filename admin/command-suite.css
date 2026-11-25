@@ -328,3 +328,96 @@
   .cs-feed-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .cs-media-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ============================================================================
+   Live Operational Radars (v311) — 100% Semantic Tokens (4-Theme WCAG AA/AAA)
+   ============================================================================ */
+.cs-radar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 14px;
+}
+
+.cs-radar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cs-radar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--studio-card-elev, var(--cso-surface-alt));
+  border: 1px solid var(--studio-border, var(--cso-border));
+}
+
+.cs-radar-main {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.cs-radar-url {
+  font-size: 0.76rem;
+  color: var(--studio-muted, var(--cso-muted));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cs-radar-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.cs-radar-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--studio-card-elev, var(--cso-surface-alt));
+  color: var(--studio-text, var(--cso-text));
+  border: 1px solid var(--studio-border, var(--cso-border));
+}
+
+.cs-radar-pill.is-ok {
+  border-color: var(--cso-brand-primary, var(--cso-primary));
+  color: var(--cso-brand-primary, var(--cso-primary));
+}
+
+.cs-radar-pill.is-danger {
+  border-color: var(--cso-danger, var(--studio-accent));
+  color: var(--cso-danger, var(--studio-accent));
+}
+
+.cs-radar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.cs-btn--xs {
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  min-height: 36px;
+}
+
+@media (max-width: 640px) {
+  .cs-radar-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cs-btn--xs {
+    min-height: 44px;
+    width: 100%;
+    justify-content: center;
+  }
+}

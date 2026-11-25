@@ -304,17 +304,16 @@
       e.preventDefault();
       fbStatusEl.textContent = 'Submitting…';
       try {
-        const res = await fetch('/api/content/feedback', {
+        const res = await fetch('/api/public/support', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'same-origin',
           body: JSON.stringify({
-            kind: fbKindEl.value,
+            ticket_type: fbKindEl.value,
             subject: fbSubjectEl.value.trim(),
-            details: fbDetailsEl.value.trim(),
+            message: fbDetailsEl.value.trim(),
             contact_email: fbEmailEl.value.trim() || undefined,
-            page_url: window.location.pathname + window.location.search,
-            page_title: document.title
+            page_url: window.location.pathname + window.location.search
           })
         });
         const data = await res.json().catch(() => ({}));

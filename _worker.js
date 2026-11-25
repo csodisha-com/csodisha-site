@@ -123,6 +123,24 @@ import {
   handleCandidateAssignedAckApi
 } from './functions/_lib/candidate-hub-governance.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
+import {
+  handlePublicInstitutionalRoute,
+  applySiteSnippetsToResponse,
+  handlePublicWebStudioSnippetsApi
+} from './functions/_lib/web-studio-v310.js';
+import { handlePublicFileDelivery } from './functions/api/admin/files.js';
+import {
+  getPublicFeatureFlags,
+  matchActiveEdgeRedirect,
+  renderMaintenancePageResponse,
+  registerAdminSession,
+  recordAdminAuditLog
+} from './functions/api/admin/system-ops.js';
+import { handlePublicStudyOfflinePackApi } from './functions/_lib/radars-v311.js';
+import { hasAccountTotpEnabled, verifyAccountTotpOrRecovery } from './functions/api/admin/totp.js';
+import { handlePublicMockTestsApi } from './functions/api/public/mock-tests.js';
+import { handlePublicSupportSubmitApi } from './functions/api/public/support.js';
+import { handlePublicAdsApi } from './functions/api/public/ads.js';
 
 // Convert hex string to Uint8Array
 function hexToBuf(hex) {
@@ -175,7 +193,7 @@ async function handleAdminSendOtp(request, env) {
 }
 
 // Strict D1-backed login handler
-async function handleStrictD1Login(request, env) {
+async function handleStrictD1Login(request, env, ctx = null) {
   try {
     let body = {};
     try {
@@ -293,22 +311,47 @@ async function handleStrictD1Login(request, env) {
       });
     }
 
-    // Multi-factor gate (staff only). Enforced only once a 2FA secret is configured,
-    // so initial setup can never lock the admin out. No session is issued before this passes.
-    if ((user.role === 'admin' || user.role === 'editor') && isTwoFactorConfigured(env)) {
-      const submitted = String(body.twofa_code || '').trim().slice(0, 16);
-      if (!submitted) {
-        return new Response(JSON.stringify({ error: 'Enter your 2FA code, a Telegram/Email OTP, or a backup code.', requires_2fa: true, can_send_otp: canSendOtp(env) }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      const okTwoFactor = await verifyTwoFactor(env, user.id, submitted);
-      if (!okTwoFactor) {
-        return new Response(JSON.stringify({ error: 'Invalid or expired 2FA code.', requires_2fa: true, can_send_otp: canSendOtp(env) }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' }
-        });
+    // Multi-factor gate (staff only). Enforced whenever per-account TOTP (v312) is enabled
+    // OR env-level 2FA secrets are configured. Logs both pass & fail challenges to admin_audit_logs.
+    if (user.role === 'admin' || user.role === 'editor') {
+      const accountTotpEnabled = await hasAccountTotpEnabled(env, user.id);
+      const envTwoFaConfigured = isTwoFactorConfigured(env);
+      if (accountTotpEnabled || envTwoFaConfigured) {
+        const submitted = String(body.twofa_code || body.totp_code || '').trim().slice(0, 24);
+        if (!submitted) {
+          recordAdminAuditLog(env, request, { userId: user.id, email: user.email, role: user.role }, 'admin.2fa.challenge_required', 'admin_totp_credentials', { totp_enabled: accountTotpEnabled }, ctx);
+          return new Response(JSON.stringify({
+            error: 'Enter your 6-digit Authenticator (TOTP) code or an 8-character recovery code.',
+            requires_2fa: true,
+            totp_enabled: accountTotpEnabled,
+            can_send_otp: canSendOtp(env)
+          }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        let verified = null;
+        if (accountTotpEnabled) {
+          const accRes = await verifyAccountTotpOrRecovery(env, user.id, submitted);
+          if (accRes.ok) verified = accRes;
+        }
+        if (!verified && envTwoFaConfigured) {
+          const okEnv = await verifyTwoFactor(env, user.id, submitted);
+          if (okEnv) verified = { ok: true, method: 'env_2fa' };
+        }
+        if (!verified) {
+          recordAdminAuditLog(env, request, { userId: user.id, email: user.email, role: user.role }, 'admin.2fa.failed', 'admin_totp_credentials', { email: user.email }, ctx);
+          return new Response(JSON.stringify({
+            error: 'Invalid or expired 2FA / recovery code.',
+            requires_2fa: true,
+            totp_enabled: accountTotpEnabled,
+            can_send_otp: canSendOtp(env)
+          }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        recordAdminAuditLog(env, request, { userId: user.id, email: user.email, role: user.role }, 'admin.2fa.verified', 'admin_totp_credentials', { email: user.email, method: verified.method }, ctx);
       }
     }
 
@@ -319,11 +362,23 @@ async function handleStrictD1Login(request, env) {
 
     // Create an active server session (opaque 256-bit token, 30-day TTL)
     // instead of exposing the raw user id as the session token.
-    const { token: sessionToken } = await createSession(env, {
+    const { token: sessionToken, expiresAt } = await createSession(env, {
       userId: user.id,
       email: user.email,
       role: user.role || 'candidate'
     });
+
+    // v310: Track real staff sessions & record real admin logins asynchronously via ctx.waitUntil()
+    if (user.role === 'admin' || user.role === 'editor') {
+      registerAdminSession(env, request, {
+        token: sessionToken,
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        expiresAt
+      }, ctx);
+      recordAdminAuditLog(env, request, { userId: user.id, email: user.email, role: user.role }, 'admin.login', 'admin_sessions', { role: user.role }, ctx);
+    }
 
     // Fetch candidate profile from candidates table for the response payload
     const candidate = await env.DB.prepare(
@@ -420,6 +475,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/public/study', '/api/public/study/tree', '/api/public/study/bootstrap', '/api/public/study/article', '/api/public/study-library/bootstrap', '/api/public/study-library/list', '/study-library/',
     '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/list', '/api/public/community/bootstrap', '/api/public/community/post', '/community/', '/student-dashboard/',
     '/api/public/about/tree', '/api/public/about/pages', '/api/public/about/bootstrap', '/api/public/about/article', '/api/public/about/sources', '/about/',
+    '/api/public/mock-tests', '/mock-tests/', '/api/public/ads',
     '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
   const allUrls = new Set();
@@ -465,7 +521,7 @@ export default {
 
     // 0c-login. Alias /api/admin/login to strict D1 login handler
     if (pathname === '/api/admin/login') {
-      if (request.method === 'POST') return handleStrictD1Login(request, env);
+      if (request.method === 'POST') return handleStrictD1Login(request, env, ctx);
       return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: { 'Content-Type': 'application/json', Allow: 'POST' } });
     }
 
@@ -477,7 +533,7 @@ export default {
 
     // 0c. CMS: admin JSON API (requireRole + CSRF + rate limits live in the router)
     if (pathname === '/api/admin' || pathname.startsWith('/api/admin/')) {
-      const adminRes = await handleAdminApi(request, env);
+      const adminRes = await handleAdminApi(request, env, ctx);
       if (request.method !== 'GET' && request.method !== 'HEAD' && adminRes.status >= 200 && adminRes.status < 400) {
         const edgeCache = typeof caches !== 'undefined' && caches.default ? caches.default : null;
         await Promise.all([
@@ -486,6 +542,53 @@ export default {
         ]);
       }
       return adminRes;
+    }
+
+    // 0c-files. v310: Live public Cloudflare R2 file delivery (/files/:key)
+    if (pathname.startsWith('/files/')) {
+      return handlePublicFileDelivery(request, env, pathname.slice('/files/'.length));
+    }
+
+    // 0c-flags. v310: Edge-cached Feature Flags & Active 301/302 Redirects enforcement
+    const isStaticAssetPath = pathname.startsWith('/assets/') || pathname === '/sw.js' || pathname === '/manifest.json' || pathname === '/favicon.ico' || pathname === '/robots.txt';
+    if (!isStaticAssetPath && pathname !== '/api/health') {
+      const flags = await getPublicFeatureFlags(env);
+      const isMutating = request.method !== 'GET' && request.method !== 'HEAD' && request.method !== 'OPTIONS';
+
+      if (flags.emergency_read_only_mode && isMutating) {
+        const allowAuth = pathname === '/api/auth/login' || pathname === '/api/auth/logout' || (pathname === '/api/auth' && ['login', 'logout'].includes(url.searchParams.get('action') || ''));
+        if (!allowAuth) {
+          return new Response(JSON.stringify({ ok: false, code: 'READ_ONLY_FREEZE', error: 'Site is currently in emergency read-only mode. Browsing continues normally.' }), {
+            status: 503,
+            headers: { 'Content-Type': 'application/json; charset=utf-8', 'Retry-After': '300', 'Cache-Control': 'no-store' }
+          });
+        }
+      }
+
+      if (!flags.registrations_enabled && isMutating && (pathname === '/api/auth/register' || pathname === '/api/auth/resend-otp' || (pathname === '/api/auth' && ['register', 'resend-otp'].includes(url.searchParams.get('action') || '')))) {
+        return new Response(JSON.stringify({ ok: false, code: 'REGISTRATIONS_DISABLED', error: 'New candidate registrations are temporarily paused by site administration.' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }
+        });
+      }
+
+      if (!flags.community_posting_enabled && isMutating && (pathname.startsWith('/api/public/community/') || pathname.startsWith('/api/community/'))) {
+        return new Response(JSON.stringify({ ok: false, code: 'COMMUNITY_POSTING_DISABLED', error: 'Community posting is temporarily paused by site administration.' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }
+        });
+      }
+
+      if (flags.maintenance_mode && !pathname.startsWith('/api/') && !pathname.startsWith('/login') && !pathname.startsWith('/admin')) {
+        return renderMaintenancePageResponse();
+      }
+
+      if ((request.method === 'GET' || request.method === 'HEAD') && !pathname.startsWith('/api/')) {
+        const edgeRedir = await matchActiveEdgeRedirect(env, pathname);
+        if (edgeRedir && edgeRedir.target_url && edgeRedir.target_url !== pathname) {
+          return Response.redirect(new URL(edgeRedir.target_url, url.origin).toString(), edgeRedir.status_code);
+        }
+      }
     }
 
     // 0d. CMS: public content API + R2 media delivery + authenticated user progress/bookmarks API + Dynamic SEO
@@ -506,6 +609,26 @@ export default {
         recordPublicCachePut(edgeCache, request, slMapRes, ctx);
       }
       return slMapRes;
+    }
+    if (pathname === '/api/public/web-studio/snippets' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicWebStudioSnippetsApi(request, env));
+    }
+    if (pathname === '/api/public/support') {
+      return handlePublicSupportSubmitApi(request, env);
+    }
+    if (pathname === '/api/public/ads' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicAdsApi(request, env, ''));
+    }
+    if (pathname === '/api/public/ads/track' && request.method === 'POST') {
+      return handlePublicAdsApi(request, env, 'track');
+    }
+    if (pathname === '/api/public/mock-tests' || pathname.startsWith('/api/public/mock-tests/')) {
+      const mtParts = pathname.replace(/^\/api\/public\/mock-tests\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
+      const [mtSlug, mtSub] = mtParts;
+      if ((request.method === 'GET' || request.method === 'HEAD') && mtSlug !== 'attempts') {
+        return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicMockTestsApi(request, env, mtSlug || '', mtSub || ''));
+      }
+      return handlePublicMockTestsApi(request, env, mtSlug || '', mtSub || '');
     }
     if (pathname === '/api/public/study-library/items' && (request.method === 'GET' || request.method === 'HEAD')) {
       return handlePublicStudyItemsApi(request, env);
@@ -939,7 +1062,7 @@ export default {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicJobsTreeApi(request, env));
     }
     if ((pathname === '/api/public/jobs' || pathname === '/api/public/jobs/list') && (request.method === 'GET' || request.method === 'HEAD')) {
-      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicJobsListApi(request, env));
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicJobsListApi(request, env, ctx));
     }
     if (pathname === '/api/public/jobs/article' && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicJobsArticleApi(request, env));
@@ -952,9 +1075,9 @@ export default {
     }
     if (pathname === '/api/public/careers/list' && (request.method === 'GET' || request.method === 'HEAD')) {
       if (url.searchParams.has('preview_id') || url.searchParams.has('preview_token')) {
-        return handlePublicCareersList(request, env);
+        return handlePublicCareersList(request, env, ctx);
       }
-      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicCareersList(request, env));
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicCareersList(request, env, ctx));
     }
     if (pathname === '/api/public/jobs-directory/overview' && (request.method === 'GET' || request.method === 'HEAD')) {
       return handlePublicJobsOverviewApi(request, env);
@@ -983,13 +1106,16 @@ export default {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicSchemesTreeApi(request, env));
     }
     if ((pathname === '/api/public/schemes' || pathname === '/api/public/schemes/list') && (request.method === 'GET' || request.method === 'HEAD')) {
-      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicSchemesListApi(request, env));
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicSchemesListApi(request, env, ctx));
     }
     if (pathname === '/api/public/schemes/article' && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicSchemesArticleApi(request, env));
     }
     if (pathname === '/api/public/schemes/telemetry' && request.method === 'POST') {
       return handlePublicSchemesTelemetryApi(request, env);
+    }
+    if (pathname === '/api/public/study/offline-pack' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyOfflinePackApi(request, env));
     }
     if ((pathname === '/api/public/study/bootstrap' || pathname === '/api/public/study-library/bootstrap') && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyBootstrapApi(request, env));
@@ -998,7 +1124,7 @@ export default {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyTreeApi(request, env));
     }
     if ((pathname === '/api/public/study' || pathname === '/api/public/study-library/list') && (request.method === 'GET' || request.method === 'HEAD')) {
-      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyListApi(request, env));
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyListApi(request, env, ctx));
     }
     if (pathname === '/api/public/study/article' && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicStudyArticleApi(request, env));
@@ -1113,7 +1239,7 @@ export default {
         const hit = await edgeCache.match(request);
         if (hit) return hit;
       }
-      const apiRes = await handleContent(request, env);
+      const apiRes = await handleContent(request, env, ctx);
       let finalRes = apiRes;
       if (isAnonGet && apiRes.status === 200) {
         if (!apiRes.headers.has('Cache-Control')) {
@@ -1207,7 +1333,7 @@ export default {
           }
         });
       }
-      if (request.method === 'POST') return handleStrictD1Login(request, env);
+      if (request.method === 'POST') return handleStrictD1Login(request, env, ctx);
     }
 
     // 7. /api/sync
@@ -1256,6 +1382,11 @@ export default {
     if (pathname === '/candidate' || pathname === '/candidate/' || pathname === '/candidate-hub' || pathname === '/candidate-hub/' || pathname === '/dashboard' || pathname === '/dashboard/' || pathname === '/portal' || pathname === '/portal/') {
       return Response.redirect(new URL('/student-dashboard/', url.origin).toString(), 301);
     }
+
+    // v310: Dynamic D1 institutional & legal pages (/about/, /terms/, /privacy/, /copyright/, /disclaimer/, /contact/)
+    // with graceful fallback to static HTML / canonical redirects when uncustomized
+    const instRes = await handlePublicInstitutionalRoute(request, env, pathname, url);
+    if (instRes) return instRes;
 
     // v296: Clean 301 canonical redirects for retired legacy/duplicate HTML routes
     const LEGACY_CANONICAL_REDIRECTS = {
@@ -1442,6 +1573,7 @@ export default {
       const isAuthOrDashboardPath = /^\/(?:login(?:\.html)?|signup(?:\.html)?|reset-password(?:\.html)?|student-dashboard|candidate-hub|candidate|dashboard|portal|saved|admin)(?:\/|$)/i.test(pathname);
       if (res.status === 200 && (request.method === 'GET' || request.method === 'HEAD') && isHtmlResponse) {
         res = await hydrateExplorerIndexHtml(res, pathname, env, url);
+        res = await applySiteSnippetsToResponse(res, env, pathname);
       }
       const isPrimaryPortal = pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|careers|tools|schemes|schemes-benefits|study-library|community|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname);
       if (isHtmlResponse || isPrimaryPortal) {

@@ -8,6 +8,7 @@ import { PUBLIC_VISIBLE_SQL, parsePaging, likeEscape } from '../../_lib/validate
 import { formatTaxonomyRow } from '../admin/_taxonomy.js';
 import { ensureJobTaxonomyColumns } from '../admin/_posts.js';
 import { enforceCandidateControls } from '../../_lib/candidate-controls.js';
+import { logZeroResultSearch } from '../../_lib/radars-v311.js';
 
 const CACHE = 'public, max-age=60, s-maxage=300, stale-while-revalidate=600';
 const notFound = () => json({ error: 'Not found', code: 'NOT_FOUND' }, 404, { 'Cache-Control': 'public, max-age=30' });
@@ -803,7 +804,7 @@ async function handleStudyLibraryDirectory(env, url) {
   }, 200, { 'Cache-Control': CACHE });
 }
 
-async function handleUnifiedSearch(env, url) {
+async function handleUnifiedSearch(env, url, ctx = null) {
   const q = (url.searchParams.get('q') || '').trim().slice(0, 100);
   const typeFilter = (url.searchParams.get('type') || '').trim().toLowerCase();
   const limit = Math.min(24, Math.max(4, parseInt(url.searchParams.get('limit') || '12', 10) || 12));
@@ -907,6 +908,9 @@ async function handleUnifiedSearch(env, url) {
     directory: (dirRes.results || []).length
   };
   const filtered = typeFilter ? all.filter(i => i.type === typeFilter) : all;
+  if (q && filtered.length === 0) {
+    logZeroResultSearch(env, q, typeFilter || 'all', ctx);
+  }
   return json({ query: q, counts, total: filtered.length, items: filtered.slice(0, limit) }, 200, { 'Cache-Control': 'public, max-age=30, s-maxage=60' });
 }
 
@@ -1190,14 +1194,14 @@ async function withEdgeCache(request, fn) {
   return res;
 }
 
-export async function handleContent(request, env) {
+export async function handleContent(request, env, ctx = null) {
   if (request.method === 'GET') {
-    return withEdgeCache(request, () => handleContentUncached(request, env));
+    return withEdgeCache(request, () => handleContentUncached(request, env, ctx));
   }
-  return handleContentUncached(request, env);
+  return handleContentUncached(request, env, ctx);
 }
 
-async function handleContentUncached(request, env) {
+async function handleContentUncached(request, env, ctx = null) {
   if (!env.DB) return json({ error: 'Database unavailable', code: 'NO_DATABASE' }, 500);
   try {
     const url = new URL(request.url);
@@ -1238,7 +1242,7 @@ async function handleContentUncached(request, env) {
       return await handleChangelog(env, url);
     }
     if (resource === 'search') {
-      return await handleUnifiedSearch(env, url);
+      return await handleUnifiedSearch(env, url, ctx);
     }
     if (resource === 'leaderboard') {
       return await handleExamLeaderboard(env, url);

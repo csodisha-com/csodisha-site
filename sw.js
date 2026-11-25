@@ -11,8 +11,9 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v309';
-const EXPECTED_CACHES = [CACHE_NAME];
+const CACHE_NAME = 'cso-candidate-cache-v312';
+const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
+const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
 
 // Authenticated, auth & account routes that must NEVER be served from or written to SW HTML cache.
 const AUTH_NO_STORE_ROUTE_RE = /^\/(?:login(?:\.html)?|signup(?:\.html)?|reset-password(?:\.html)?|student-dashboard|candidate-hub|candidate|dashboard|portal|saved|admin)(?:\/|$)/i;
@@ -52,6 +53,7 @@ const RUNTIME_SWR_ASSETS = [
 const NETWORK_FIRST_API_ROUTES = [
   '/api/candidate/bookmarks',
   '/api/candidate/checklist',
+  '/api/public/study/offline-pack',
   '/api/sync'
 ];
 
@@ -177,6 +179,19 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'CSO_REQUEST_SYNC' && self.registration.sync) {
     self.registration.sync.register('cso-sync').catch(() => {});
   }
+  if (event.data && event.data.type === 'SYNC_OFFLINE_STUDY_PACK') {
+    event.waitUntil((async () => {
+      try {
+        const res = await fetch('/api/public/study/offline-pack', { cache: 'no-cache' });
+        if (!res.ok) return;
+        const manifest = await res.json();
+        const urls = Array.isArray(manifest && manifest.cache_urls) ? manifest.cache_urls : [];
+        if (!urls.length) return;
+        const packCache = await caches.open(OFFLINE_STUDY_CACHE);
+        await Promise.allSettled(urls.slice(0, 30).map((u) => packCache.add(u)));
+      } catch (_) {}
+    })());
+  }
 });
 
 self.addEventListener('fetch', (event) => {
@@ -198,6 +213,21 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (isMutatingRequest(request)) return;
+
+  // Offline study pack PDFs & R2 /files/* assets: cache-first from offline pack, else network + cache
+  if (/^\/files\//.test(url.pathname)) {
+    event.respondWith((async () => {
+      const packCache = await caches.open(OFFLINE_STUDY_CACHE);
+      const cached = await packCache.match(request);
+      if (cached) return cached;
+      try {
+        return await fetch(request);
+      } catch (_) {
+        return new Response('Offline: file not cached yet', { status: 503 });
+      }
+    })());
+    return;
+  }
 
   // Public & general /api/* endpoints must NEVER be served cache-first from SW Cache Storage.
   if (url.pathname.startsWith('/api/') && !isNetworkFirstApi(url)) {
