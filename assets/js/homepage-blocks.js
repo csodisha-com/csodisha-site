@@ -170,7 +170,29 @@
   }
 
   function currentLang() {
-    try { return localStorage.getItem('cso_lang_pref') === 'or' ? 'or' : 'en'; } catch (_) { return 'en'; }
+    try {
+      if (document.documentElement.getAttribute('lang') === 'or') return 'or';
+      if (localStorage.getItem('cso_lang_pref') === 'or') return 'or';
+      if (localStorage.getItem('cso_lang') === 'or') return 'or';
+    } catch (_) {}
+    return 'en';
+  }
+
+  var cachedSections = null;
+
+  function ensureTrendingAboveFeeds() {
+    var allTrending = document.querySelectorAll('#cso-trending-topics, .cso-trending-topics-sec');
+    if (!allTrending.length) return;
+    var primary = allTrending[0];
+    for (var i = 1; i < allTrending.length; i += 1) {
+      allTrending[i].remove();
+    }
+    var feeds = document.getElementById('cso-home-feeds');
+    if (feeds && primary.parentNode && feeds.parentNode === primary.parentNode) {
+      if (primary.compareDocumentPosition(feeds) & Node.DOCUMENT_POSITION_PRECEDING) {
+        feeds.parentNode.insertBefore(primary, feeds);
+      }
+    }
   }
 
   function track(id) {
@@ -195,9 +217,11 @@
   }
 
   function hydrate(sections) {
+    cachedSections = sections;
     var lang = currentLang();
     var home = window.csoHome || {};
     var any = false;
+    ensureTrendingAboveFeeds();
 
     function build(key) { return (sections[key] || []).map(function (it) { return createNode(key, it, lang); }); }
     function has(key) { return Array.isArray(sections[key]); }
@@ -255,8 +279,9 @@
     var retiredCompass = document.getElementById('cso-opportunity-compass');
     if (retiredCompass) retiredCompass.remove();
 
-    var topics = document.querySelector('.trending-grid');
+    var topics = document.querySelector('#cso-trending-topics .trending-grid') || document.querySelector('.trending-grid');
     if (topics && has('trending_topics')) { replaceKids(topics, build('trending_topics')); any = true; }
+    ensureTrendingAboveFeeds();
 
     var tools = document.getElementById('cso-tools-grid');
     if (tools && has('important_tools')) {
@@ -291,9 +316,25 @@
     }, true);
   }
 
+  function wireLangRefresh() {
+    document.addEventListener('click', function (ev) {
+      var pill = ev.target && ev.target.closest ? ev.target.closest('[data-cso-lang], [data-lang]') : null;
+      if (pill && cachedSections) {
+        setTimeout(function () { hydrate(cachedSections); }, 65);
+      }
+    });
+    window.addEventListener('storage', function (e) {
+      if ((e.key === 'cso_lang_pref' || e.key === 'cso_lang') && cachedSections) {
+        hydrate(cachedSections);
+      }
+    });
+  }
+
   function init() {
     if (!document.querySelector('.cso-action-hub-grid, #cso-tools-grid')) return;
+    ensureTrendingAboveFeeds();
     wireClickTracking();
+    wireLangRefresh();
     var forceRefresh = /[?&](refresh|_cb)=/.test(window.location.search || '');
     var url = '/api/public/homepage-blocks' + (forceRefresh ? '?refresh=1' : '');
     fetch(url, { cache: 'no-store', credentials: 'same-origin' })

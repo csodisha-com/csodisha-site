@@ -313,9 +313,18 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v339');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v339';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v340');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v340';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
+
+  // v340: Trending & Popular Topics positioned strictly above compact 2-column feeds with zero duplicates
+  const idxHeroLu = indexHtml.indexOf('id="cso-latest-updates-card"');
+  const idxTrending = indexHtml.indexOf('id="cso-trending-topics"');
+  const idxFeeds = indexHtml.indexOf('id="cso-home-feeds"');
+  assert.ok(idxHeroLu > 0 && idxTrending > idxHeroLu && idxFeeds > idxTrending, 'index.html must order Hero/Latest Updates -> Trending & Popular Topics -> Compact 2-Column Feeds');
+  assert.equal((indexHtml.match(/id="cso-trending-topics"/g) || []).length, 1, 'index.html must contain exactly one #cso-trending-topics section');
+  assert.ok(read('assets/js/homepage-blocks.js').includes('ensureTrendingAboveFeeds'), 'homepage-blocks.js must preserve Trending Topics above compact feeds during hydration');
+  assert.ok(hydJs.includes('ensureTrendingTopicsOrder'), 'home-hydration.js must preserve Trending Topics order and bilingual copy');
 
   // v339: Compact 2-column split grid, slim list rows, zero filler subtitles/footers & Admin Studio section visibility toggles
   assert.ok(indexHtml.includes('class="cso-hf-split-grid" id="cso-home-feeds"'), 'index.html must wrap 6 feeds in .cso-hf-split-grid#cso-home-feeds');

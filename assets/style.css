@@ -11398,6 +11398,79 @@ nav#cso-hub-top-tabs {
   }
 }
 
+/* ===== v340 Trending & Popular Topics Positioned Above Compact 2-Column Feeds (4-Theme WCAG AAA) ===== */
+#cso-trending-topics.cso-trending-topics-sec {
+  margin-top: 14px;
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
+  color: var(--cso-ink);
+}
+
+#cso-trending-topics.cso-trending-topics-sec + .cso-hf-split-grid {
+  margin-top: 0;
+}
+
+#cso-trending-topics .cso-h2-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: var(--cso-link);
+}
+
+#cso-trending-topics .topics-grid {
+  gap: 10px !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+}
+
+#cso-trending-topics .cso-topic-card {
+  min-height: 92px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--cso-surface-elevated);
+  border: 1px solid var(--cso-border);
+  color: var(--cso-ink);
+}
+
+#cso-trending-topics .cso-topic-card:hover,
+#cso-trending-topics .cso-topic-card:focus-visible {
+  border-color: var(--cso-accent);
+  background: var(--cso-surface-alt);
+}
+
+#cso-trending-topics .cso-topic-card__title {
+  color: var(--cso-ink);
+}
+
+#cso-trending-topics .cso-topic-card__desc {
+  color: var(--cso-ink-soft);
+}
+
+@media (max-width: 1024px) {
+  #cso-trending-topics .topics-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #cso-trending-topics.cso-trending-topics-sec {
+    padding: 12px;
+    border-radius: 12px;
+  }
+  #cso-trending-topics .topics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  #cso-trending-topics .cso-topic-card {
+    min-height: 88px;
+    padding: 10px;
+  }
+}
+
 /* ===== v335 Homepage Hero Card & Ask CSOdisha Search Bar Polish (4-Theme WCAG AAA) ===== */
 #cso-hero.hero {
   min-height: 0;

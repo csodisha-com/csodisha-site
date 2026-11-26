@@ -149,7 +149,30 @@
     schemes: { icon: '\uD83C\uDFDB\uFE0F', en: 'Government Schemes', or: 'ସରକାରୀ ଯୋଜନା', allEn: 'All Schemes \u2192', allOr: 'ସବୁ ଯୋଜନା \u2192' }
   };
 
+  function ensureTrendingTopicsOrder() {
+    var allTrending = document.querySelectorAll('#cso-trending-topics, .cso-trending-topics-sec');
+    if (!allTrending.length) return;
+    var primary = allTrending[0];
+    for (var i = 1; i < allTrending.length; i += 1) {
+      allTrending[i].remove();
+    }
+    var feeds = document.getElementById('cso-home-feeds');
+    if (feeds && primary.parentNode && feeds.parentNode === primary.parentNode) {
+      if (primary.compareDocumentPosition(feeds) & Node.DOCUMENT_POSITION_PRECEDING) {
+        feeds.parentNode.insertBefore(primary, feeds);
+      }
+    }
+    var isOr = isOdiaActive();
+    var titleEl = primary.querySelector('h2 .cso-h2-bl');
+    if (titleEl) titleEl.textContent = isOr ? 'ଟ୍ରେଣ୍ଡିଂ ଏବଂ ଲୋକପ୍ରିୟ ବିଷୟ' : 'Trending & Popular Topics';
+    var subEl = primary.querySelector('h2 small');
+    if (subEl) subEl.textContent = isOr ? 'ଶିକ୍ଷା, କ୍ୟାରିୟର, ଯୋଜନା ଏବଂ ସରକାରୀ ସେବା ଖୋଜନ୍ତୁ' : 'Explore education, careers, schemes and public services';
+    var linkEl = primary.querySelector('h2 .cso-h2-link');
+    if (linkEl) linkEl.textContent = isOr ? 'ସବୁ ବିଷୟ ଦେଖନ୍ତୁ \u2192' : 'View All Topics \u2192';
+  }
+
   function localizeFeedHeaders() {
+    ensureTrendingTopicsOrder();
     var isOr = isOdiaActive();
     Object.keys(FEED_HEADER_COPY).forEach(function (key) {
       var cfg = FEED_HEADER_COPY[key];
