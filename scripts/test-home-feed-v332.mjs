@@ -350,12 +350,29 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v351');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v351';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v352');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v352';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
   assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/guides') && CONTENT_PUBLIC_PATHS.includes('/guides/') && CONTENT_PUBLIC_PATHS.includes('/sitemap.xml'), 'CONTENT_PUBLIC_PATHS must purge /api/public/guides, /guides/, and /sitemap.xml');
   assert.ok(hydJs.includes("GUIDE: 'cso-lu-badge cso-lu-badge--guide'"), 'home-hydration.js must map GUIDE badge class');
   assert.ok(read('assets/style.css').includes('.cso-lu-badge--guide'), 'assets/style.css must style .cso-lu-badge--guide');
+
+  // v352: Lower homepage duplicate promo cards removed & tightened 4-col/2-col Important Tools horizontal grid
+  assert.ok(!indexHtml.includes('cso-action-hub-section'), 'Duplicate lower-homepage .cso-action-hub-section must be removed from index.html');
+  assert.ok(!indexHtml.includes('cso-action-hub-grid'), 'Orphaned .cso-action-hub-grid wrapper must be removed from index.html');
+  assert.ok(!indexHtml.includes('Free Study Library'), 'Duplicate Free Study Library promo card must be removed from index.html');
+  assert.ok(!indexHtml.includes('Instant Notice Alerts'), 'Duplicate Instant Notice Alerts promo card must be removed from index.html');
+  assert.ok(!indexHtml.includes('CSO Community Forum'), 'Duplicate CSO Community Forum promo card must be removed from index.html');
+  assert.ok(indexHtml.includes('id="cso-tools"') && indexHtml.includes('data-feed-key="important_tools"'), 'index.html must include #cso-tools with D1 visibility key');
+  assert.ok(indexHtml.includes('data-title-en="Age &amp; Eligibility Date Calculator"') && indexHtml.includes('data-title-or='), 'Important Tools cards must preserve bilingual EN/ଓଡ଼ିଆ attributes');
+  assert.equal((indexHtml.match(/class="card tl tool-card"/g) || []).length, 6, 'Important Tools must render all 6 compact tool cards');
+  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v352') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v352'), 'index.html must reference v352 cache-busted assets');
+  const styleV352 = read('assets/style.css');
+  assert.ok(!styleV352.includes('.cso-action-hub-section'), 'Orphaned .cso-action-hub-section CSS must be removed from style.css');
+  assert.ok(styleV352.includes('grid-template-columns: repeat(4, minmax(0, 1fr)) !important;'), 'Important Tools desktop grid must be 4 columns');
+  assert.ok(styleV352.includes('flex-direction: row !important;') && styleV352.includes('padding: 12px 14px !important;'), 'Important Tools cards must use streamlined horizontal 12px 14px layout');
+  assert.ok(!read('assets/js/homepage-blocks.js').includes("replaceKids(hub"), 'homepage-blocks.js must never re-inject retired action_hub promo cards onto homepage');
+  assert.ok(hydJs.includes("map, 'important_tools'"), 'home-hydration.js must honor Admin Studio important_tools visibility');
 
   // v343: Mobile slide-out drawer sits strictly above backdrop (1210 > 1200) with zero stacking-context trap
   const navStart = indexHtml.indexOf('<nav class="main-nav site-header__nav" id="cso-main-navbar"');

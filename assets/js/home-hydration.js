@@ -213,6 +213,24 @@
       var va = sec.querySelector('.cso-hf-viewall');
       if (va) va.textContent = isOr ? cfg.allOr : cfg.allEn;
     });
+
+    // v352: Localize Important Tools header & compact tool cards (EN / ଓଡ଼ିଆ)
+    var toolsSec = document.getElementById('cso-tools');
+    if (toolsSec) {
+      toolsSec.querySelectorAll('[data-en][data-or]').forEach(function (node) {
+        node.textContent = isOr ? node.getAttribute('data-or') : node.getAttribute('data-en');
+      });
+      toolsSec.querySelectorAll('.tool-card').forEach(function (card) {
+        var b = card.querySelector('b');
+        var sm = card.querySelector('small');
+        var tEn = card.getAttribute('data-title-en');
+        var tOr = card.getAttribute('data-title-or');
+        var sEn = card.getAttribute('data-sub-en');
+        var sOr = card.getAttribute('data-sub-or');
+        if (b && (tEn || tOr)) b.textContent = (isOr && tOr) ? tOr : (tEn || b.textContent);
+        if (sm && (sEn || sOr)) sm.textContent = (isOr && sOr) ? sOr : (sEn || sm.textContent);
+      });
+    }
   }
 
   function applySectionVisibility(vis) {
@@ -229,6 +247,10 @@
     if (wrap) {
       wrap.hidden = visibleCount === 0;
       wrap.classList.toggle('cso-hf-split-grid--single', visibleCount === 1);
+    }
+    var toolsSec = document.getElementById('cso-tools');
+    if (toolsSec && Object.prototype.hasOwnProperty.call(map, 'important_tools')) {
+      toolsSec.hidden = map.important_tools === false;
     }
   }
 

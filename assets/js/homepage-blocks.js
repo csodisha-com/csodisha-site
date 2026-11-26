@@ -138,12 +138,20 @@
     }
     if (section === 'important_tools') {
       node = make('div', 'card tl tool-card');
-      node.appendChild(make('span', 'ic' + (accent ? ' cso-tool-ic-' + accent : ''), item.icon || ''));
+      node.tabIndex = 0;
+      node.setAttribute('role', 'button');
+      var ico = make('span', 'ic' + (accent ? ' cso-tool-ic-' + accent : ''), item.icon || '');
+      ico.setAttribute('aria-hidden', 'true');
+      node.appendChild(ico);
       var body = make('span', '');
       body.appendChild(make('b', '', title));
       body.appendChild(make('small', '', sub));
       node.appendChild(body);
       node.setAttribute('data-hb-id', item.id || '');
+      if (item.title_en) node.setAttribute('data-title-en', item.title_en);
+      if (item.title_or) node.setAttribute('data-title-or', item.title_or);
+      if (item.subtitle_en) node.setAttribute('data-sub-en', item.subtitle_en);
+      if (item.subtitle_or) node.setAttribute('data-sub-or', item.subtitle_or);
       if (item.badge_en) node.setAttribute('data-badge', item.badge_en);
       return node;
     }
@@ -304,8 +312,9 @@
       any = true;
     }
 
-    var hub = document.querySelector('.cso-action-hub-grid');
-    if (hub && has('action_hub')) { replaceKids(hub, build('action_hub')); any = true; }
+    // v352: Duplicate lower-homepage Action Hub promo cards removed; never hydrate or re-inject onto homepage
+    var retiredActionHub = document.querySelector('.cso-action-hub-section');
+    if (retiredActionHub) retiredActionHub.remove();
 
     if (any && lang === 'or' && home.localize) { try { home.localize(document.querySelector('main')); } catch (_) {} }
   }
@@ -333,7 +342,9 @@
   }
 
   function init() {
-    if (!document.querySelector('.cso-action-hub-grid, #cso-tools-grid')) return;
+    if (!document.getElementById('cso-tools-grid')) return;
+    var retiredActionHub = document.querySelector('.cso-action-hub-section');
+    if (retiredActionHub) retiredActionHub.remove();
     ensureTrendingAboveFeeds();
     wireClickTracking();
     wireLangRefresh();

@@ -562,10 +562,10 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
   await Promise.all(waits);
 });
 
-// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v351
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v351 CSS, and cso-candidate-cache-v351 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v351');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v351';"), 'sw.js cache version must be cso-candidate-cache-v351');
+// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v352
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v352 CSS, and cso-candidate-cache-v352 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v352');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v352';"), 'sw.js cache version must be cso-candidate-cache-v352');
 
   const jsFiles = [
     'admin/qr-svg.js',
