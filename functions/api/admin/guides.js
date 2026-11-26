@@ -14,6 +14,7 @@ import { HttpError, json, readJson, validationError } from '../../_lib/http.js';
 import {
   GUIDE_CATEGORIES,
   ensureInformativeGuidesSchema,
+  recordGuideSlugChange,
   slugifyGuide,
   safeGuideUrl,
   normalizeCategory,
@@ -294,6 +295,7 @@ export async function handleAdminGuidesApi(request, env, actor, id = '', sub = '
     }
 
     const saved = await env.DB.prepare('SELECT * FROM informative_guides WHERE id = ?').bind(guideId).first();
+    await recordGuideSlugChange(env.DB, guideId, existing ? existing.slug : '', slug).catch(() => {});
     const formatted = formatGuideRow(saved);
 
     await upsertLatestUpdateMeta(env.DB, {

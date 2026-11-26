@@ -55,6 +55,7 @@ import {
   DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH
 } from '../functions/_lib/informative-guides.js';
 import { handleSitemapXml } from '../functions/api/content/_seo.js';
+import { recordGuideSlugChange } from '../functions/_lib/informative-guides.js';
 import { VALID_AI_MODES } from '../functions/_lib/ai-coauthor.js';
 import { handleAdminAiCoauthorApi } from '../functions/api/admin/ai-coauthor.js';
 import { handleAdminAiProvidersApi } from '../functions/api/admin/ai-providers.js';
@@ -571,9 +572,9 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
 });
 
 // 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v367
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v367 CSS, and cso-candidate-cache-v367 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v367');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v367';"), 'sw.js cache version must be cso-candidate-cache-v367');
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v367 CSS, and cso-candidate-cache-v368 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v368');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v368';"), 'sw.js cache version must be cso-candidate-cache-v368');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -713,9 +714,9 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
   assert.ok(adminHtml.includes('id="headerTranslatorWrap"') && adminHtml.includes('id="btnHeaderOdiaTranslator"') && adminHtml.includes('aria-controls="csoHeaderTranslatorPopover"'), 'admin/index.html must pin #btnHeaderOdiaTranslator in the top header bar');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v367'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v367');
-  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v367'), 'admin/index.html must load studio-translator.js?v=20261126v367');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v367'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v368'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v368');
+  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v368'), 'admin/index.html must load studio-translator.js?v=20261126v368');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v368'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
@@ -832,7 +833,7 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   assert.ok(guidesCss.includes('.gp-detail-grid') && guidesCss.includes('grid-template-columns: 260px minmax(0, 1fr);') && guidesCss.includes('gap: 20px;') && guidesCss.includes('.gp-article-card'), 'assets/css/guides-portal.css must use edge-to-edge 260px + 1fr reading grid with 20px gap on desktop');
   assert.ok(guidesCss.includes('.gp-cover,') && guidesCss.includes('.gp-cover-frame') && guidesCss.includes('.gp-hero-media') && guidesCss.includes('overflow: hidden;') && guidesCss.includes('height: auto;') && guidesCss.includes('aspect-ratio: 16 / 9;') && guidesCss.includes('object-fit: contain;') && !guidesCss.includes('max-height: 440px;'), 'assets/css/guides-portal.css must enforce uncropped 16:9 height: auto + object-fit: contain on cover banners');
   assert.ok(guidesCss.includes('@media (max-width: 768px)') && guidesCss.includes('padding-inline: 8px;') && guidesCss.includes('padding: 14px 12px;'), 'assets/css/guides-portal.css must remove double side margins on mobile (<= 768px)');
-  assert.ok(guidesCss.includes('.gp-inline-figure img') && read('functions/_lib/informative-guides.js').includes('/assets/css/guides-portal.css?v=20261126v367'), 'Informative guides SSR must load guides-portal.css?v=20261126v367 and style .gp-inline-figure img');
+  assert.ok(guidesCss.includes('.gp-inline-figure img') && read('functions/_lib/informative-guides.js').includes('/assets/css/guides-portal.css?v=20261126v368'), 'Informative guides SSR must load guides-portal.css?v=20261126v368 and style .gp-inline-figure img');
   assert.ok(guidesCss.includes('.gp-takeaways') && guidesCss.includes('clear: both;') && guidesCss.includes('z-index: 1;'), 'assets/css/guides-portal.css must prevent .gp-cover overlap on .gp-takeaways');
   assert.ok(guidesCss.includes('.gp-body table tbody td') && guidesCss.includes('color: var(--gp-ink, var(--cso-ink)) !important;') && guidesCss.includes('opacity: 1 !important;'), 'assets/css/guides-portal.css must enforce high-contrast tbody td text');
   assert.ok(guidesCss.includes('.gp-table-wrap') && guidesCss.includes('border-radius: 12px;') && guidesCss.includes('position: sticky;'), 'assets/css/guides-portal.css must style .gp-table-wrap & sticky table headers');
@@ -1395,8 +1396,56 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const adminHtmlV367 = read('admin/index.html');
   assert.ok(hsJs.includes("var TRENDING_API = '/api/admin/trending-topics';") && hsJs.includes('hsTrendingTopicsEditor') && hsJs.includes('Reset to Default 6 Topics'), 'admin/homepage-studio.js must mount v367 Trending & Popular Topics Editor');
   assert.ok(routerJs.includes("if (resource === 'trending-topics')") && routerJs.includes('handleAdminTrendingTopicsApi'), 'functions/api/admin/_router.js must protect /api/admin/trending-topics with RBAC');
-  assert.ok(adminHtmlV367.includes('/admin/homepage-studio.js?v=20261126v367') && adminHtmlV367.includes('/admin/homepage-studio.css?v=20261126v367'), 'admin/index.html must cache-bust homepage-studio assets to v367');
+  assert.ok(adminHtmlV367.includes('/admin/homepage-studio.js?v=20261126v368') && adminHtmlV367.includes('/admin/homepage-studio.css?v=20261126v368'), 'admin/index.html must cache-bust homepage-studio assets to v367');
   await Promise.all(waits);
+});
+
+await check('9. v368 SEO: legacy .html 301 map, clean 200 sitemap (published-only, zero .html/draft), slug-history 301 & noindex 404', async () => {
+  const db = makeD1(false);
+  db.sqlite.exec(read('migrations/0153_informative_guides_v348.sql'));
+  db.sqlite.exec(`
+    CREATE TABLE job_articles (id TEXT, slug TEXT, is_published INTEGER, scheduled_publish_at TEXT, published_at TEXT, updated_at TEXT);
+    CREATE TABLE cso_current_affairs (id TEXT, status TEXT, capsule_date TEXT, updated_at TEXT, created_at TEXT);
+    INSERT INTO job_articles VALUES ('j1','oavs-2026',1,'','2026-11-01','2026-11-02'), ('j2','draft-job',0,'','','2026-11-02');
+    INSERT INTO cso_current_affairs VALUES ('ca1','published','2026-11-26','2026-11-26','2026-11-26'), ('ca2','draft','2026-11-25','','');
+    INSERT INTO informative_guides (id, slug, title_en, status) VALUES ('g1','new-slug','Guide','published'), ('g2','draft-guide','Draft','draft');
+  `);
+  const env = { DB: db };
+
+  // 1. sitemap.xml: HTTP 200, published-only, zero .html, includes /guides/
+  const smRes = await handleSitemapXml(new Request('https://csodisha.com/sitemap.xml'), env);
+  assert.equal(smRes.status, 200);
+  const xml = await smRes.text();
+  const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  assert.ok(locs.includes('https://csodisha.com/guides/') && locs.includes('https://csodisha.com/guides/new-slug'));
+  assert.ok(locs.includes('https://csodisha.com/jobs/?slug=oavs-2026') && locs.includes('https://csodisha.com/current-affairs/?slug=ca1'));
+  assert.ok(!locs.some((l) => l.includes('draft-guide') || l.includes('draft-job') || l.includes('ca2')), 'sitemap must exclude drafts');
+  assert.ok(!locs.some((l) => /\.html?(\?|#|$)/i.test(l)), 'sitemap must contain zero .html URLs');
+  assert.equal(new Set(locs).size, locs.length, 'sitemap must contain no duplicate <loc>');
+
+  // 2. Edited slug -> 301 to current canonical slug; draft/unknown -> 404 with noindex
+  await recordGuideSlugChange(db, 'g1', 'old-slug', 'new-slug');
+  const moved = await handlePublicGuidesRoute(new Request('https://csodisha.com/guides/old-slug?utm=1'), env, new URL('https://csodisha.com/guides/old-slug?utm=1'));
+  assert.equal(moved.status, 301);
+  assert.equal(moved.headers.get('location'), 'https://csodisha.com/guides/new-slug?utm=1');
+  const missing = await handlePublicGuidesRoute(new Request('https://csodisha.com/guides/nope'), env, new URL('https://csodisha.com/guides/nope'));
+  assert.equal(missing.status, 404);
+  const nfHtml = await missing.text();
+  assert.ok(nfHtml.includes('<meta name="robots" content="noindex, follow">') && missing.headers.get('x-robots-tag') === 'noindex, follow');
+  assert.ok(nfHtml.includes('href="/"') && nfHtml.includes('href="/guides/"') && nfHtml.includes('type="search"'), '404 must link to /, /guides/ and search');
+  const draft = await handlePublicGuidesRoute(new Request('https://csodisha.com/guides/draft-guide'), env, new URL('https://csodisha.com/guides/draft-guide'));
+  assert.equal(draft.status, 404);
+
+  // 3. Worker: legacy .html -> 301 canonical map, plain 404 carries noindex; static 404 page is noindex with portal links
+  const workerSrc = read('_worker.js');
+  for (const [from, to] of [['/index.html', '/'], ['/guides.html', '/guides/'], ['/login.html', '/login'], ['/signup.html', '/signup'], ['/about.html', '/about/'], ['/contact.html', '/about/'], ['/privacy.html', '/privacy-policy/'], ['/terms.html', '/terms-of-use/']]) {
+    assert.ok(workerSrc.includes(`'${from}': '${to}'`), `_worker.js must 301 ${from} -> ${to}`);
+    assert.ok(read('_redirects').split(/\r?\n/).every((l) => !l.startsWith(from + ' ') || l.includes(' 301')) , `_redirects ${from} must be 301`);
+  }
+  assert.ok(workerSrc.includes('Response.redirect(legacyDest.toString(), 301)'), 'legacy redirects must be HTTP 301');
+  assert.ok(workerSrc.includes("'X-Robots-Tag': 'noindex, follow'"), 'fallback 404 must send X-Robots-Tag noindex');
+  const html404 = read('404.html');
+  assert.ok(html404.includes('<meta name="robots" content="noindex, follow">') && html404.includes('href="/guides/"') && html404.includes('type="search"'));
 });
 
 console.log(`\n=== v312 Results: ${passed} passed, ${failed} failed ===\n`);

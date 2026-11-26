@@ -1536,6 +1536,12 @@ export default {
 
     // v296: Clean 301 canonical redirects for retired legacy/duplicate HTML routes
     const LEGACY_CANONICAL_REDIRECTS = {
+      // v368: canonical extensionless redirects for legacy .html entry points
+      '/index.html': '/',
+      '/guides.html': '/guides/',
+      '/guides/index.html': '/guides/',
+      '/login.html': '/login',
+      '/signup.html': '/signup',
       '/about.html': '/about/',
       '/accessibility': '/about/',
       '/accessibility.html': '/about/',
@@ -1610,8 +1616,10 @@ export default {
       '/about': '/about/'
     };
     const exactLegacyRedirect = LEGACY_CANONICAL_REDIRECTS[pathname];
-    if (exactLegacyRedirect) {
-      return Response.redirect(new URL(exactLegacyRedirect, url.origin).toString(), 301);
+    if (exactLegacyRedirect && (request.method === 'GET' || request.method === 'HEAD')) {
+      const legacyDest = new URL(exactLegacyRedirect, url.origin);
+      if (url.search && !legacyDest.search && !legacyDest.hash) legacyDest.search = url.search;
+      return Response.redirect(legacyDest.toString(), 301);
     }
 
     if (pathname === '/about/' && url.searchParams.has('section')) {
@@ -1784,7 +1792,7 @@ export default {
       return res;
     }
 
-    return new Response('Not Found', { status: 404 });
+    return new Response('Not Found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Robots-Tag': 'noindex, follow', 'Cache-Control': 'no-store' } });
   },
 
   async scheduled(event, env, ctx) {

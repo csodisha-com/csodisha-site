@@ -60,9 +60,33 @@ export async function ensureInformativeGuidesSchema(db) {
       )
     `),
     db.prepare('CREATE INDEX IF NOT EXISTS idx_informative_guides_pub_sort ON informative_guides(status, is_pinned DESC, updated_at DESC)'),
-    db.prepare('CREATE INDEX IF NOT EXISTS idx_informative_guides_category ON informative_guides(category, status, updated_at DESC)')
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_informative_guides_category ON informative_guides(category, status, updated_at DESC)'),
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS guide_slug_history (
+        old_slug TEXT PRIMARY KEY,
+        guide_id TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `),
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_guide_slug_history_guide ON guide_slug_history(guide_id)')
   ]);
   _guidesSchemaDb = db;
+}
+
+/** v368: remember an edited slug so the old URL 301-redirects to the current canonical slug. */
+export async function recordGuideSlugChange(db, guideId, oldSlug, newSlug) {
+  const o = String(oldSlug || '').trim();
+  const n = String(newSlug || '').trim();
+  if (!db || !guideId) return;
+  await ensureInformativeGuidesSchema(db);
+  // A slug that is live again must never keep redirecting away.
+  if (n) await db.prepare('DELETE FROM guide_slug_history WHERE old_slug = ?').bind(n).run();
+  if (o && n && o !== n) {
+    await db.prepare(
+      `INSERT INTO guide_slug_history (old_slug, guide_id, created_at) VALUES (?, ?, datetime('now'))
+       ON CONFLICT(old_slug) DO UPDATE SET guide_id = excluded.guide_id, created_at = excluded.created_at`
+    ).bind(o, guideId).run();
+  }
 }
 
 export function slugifyGuide(raw) {
@@ -476,7 +500,7 @@ function formatHumanDate(raw) {
   return `${m[3]} ${months[Number(m[2]) - 1] || m[2]} ${m[1]}`;
 }
 
-function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageAlt = '', ogType = 'website', jsonLd = null, origin = 'https://csodisha.com' }) {
+function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageAlt = '', ogType = 'website', jsonLd = null, origin = 'https://csodisha.com', robots = '' }) {
   const cleanOrigin = String(origin || 'https://csodisha.com').replace(/\/+$/, '');
   const resolvedOgImg = ogImage || `${cleanOrigin}${DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH}`;
   const resolvedOgAlt = ogImageAlt || title;
@@ -491,6 +515,7 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageA
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <title>${escShell(title)}</title>
   <meta name="description" content="${escShell(description)}">
+  ${robots ? `<meta name="robots" content="${escShell(robots)}">` : ''}
   <link rel="canonical" href="${escShell(canonical)}">
   <meta property="og:type" content="${escShell(ogType)}">
   <meta property="og:site_name" content="Common Sense Odisha">
@@ -512,8 +537,8 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageA
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v367">
-  <script src="/assets/js/guides-portal.js?v=20261126v367" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v368">
+  <script src="/assets/js/guides-portal.js?v=20261126v368" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -1113,10 +1138,24 @@ export async function handlePublicGuidesRoute(request, env, url) {
   }
 
   if (!row) {
+    // v368: edited slug -> 301 to the current canonical slug instead of 404
+    if (env && env.DB) {
+      try {
+        const moved = await env.DB.prepare(
+          `SELECT g.slug AS slug FROM guide_slug_history h
+           JOIN informative_guides g ON g.id = h.guide_id
+           WHERE h.old_slug = ? AND g.status = 'published' LIMIT 1`
+        ).bind(slug).first();
+        if (moved && moved.slug && moved.slug !== slug) {
+          return Response.redirect(new URL(`/guides/${encodeURIComponent(moved.slug)}${url.search}`, url.origin).toString(), 301);
+        }
+      } catch (_e) {}
+    }
     const head404 = buildGuidesHead({
       title: 'Guide Not Found | Common Sense Odisha',
       description: 'The requested informative guide could not be found. Browse all Odisha & National guides on Common Sense Odisha.',
-      canonical: `${url.origin}/guides/`
+      canonical: `${url.origin}/guides/`,
+      robots: 'noindex, follow'
     });
     const notFoundHtml = `${head404}
 <body class="cso-portal-page cso-guides-page" data-cso-portal="guides" data-guide-lang="en">
@@ -1125,13 +1164,21 @@ ${CSO_SHELL_HEADER}
   <div class="gp-empty-state">
     <h1>Guide Not Found</h1>
     <p>This informative article or guide may have been moved or is still in draft review.</p>
+    <form class="gp-search-bar" action="/guides/" method="get" role="search">
+      <label for="gp404Search" class="cso-sr-only">Search informative guides</label>
+      <input type="search" id="gp404Search" name="q" class="gp-search-input" placeholder="Search guides...">
+      <button type="submit" class="gp-btn-primary">Search</button>
+    </form>
     <a class="gp-btn-primary" href="/guides/">Browse All Informative Guides →</a>
+    <a class="gp-btn-primary" href="/">Back to Home</a>
   </div>
 </main>
 ${CSO_SHELL_FOOTER}
 </body>
 </html>`;
-    return htmlResponse(request.method === 'HEAD' ? '' : notFoundHtml, 404, 'no-store');
+    const nfRes = htmlResponse(request.method === 'HEAD' ? '' : notFoundHtml, 404, 'no-store');
+    nfRes.headers.set('X-Robots-Tag', 'noindex, follow');
+    return nfRes;
   }
 
   const guide = formatGuideRow(row);

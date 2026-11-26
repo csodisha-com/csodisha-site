@@ -88,7 +88,7 @@ export async function handleSitemapXml(request, env) {
 
   if (env && env.DB) {
     try {
-      const [jobsRes, caRes, testsRes, schemesRes, aboutGroupsRes, schemeGroupsRes, studyGroupsRes, guidesRes] = await Promise.all([
+      const [jobsRes, caRes, testsRes, schemesRes, aboutGroupsRes, schemeGroupsRes, studyGroupsRes, guidesRes, jobArtRes, schemeArtRes, studyArtRes, caCapsRes] = await Promise.all([
         env.DB.prepare(
           `SELECT slug, updated_at, published_at FROM posts
            WHERE type = 'job' AND ${PUBLIC_VISIBLE_SQL}
@@ -128,8 +128,65 @@ export async function handleSitemapXml(request, env) {
           `SELECT slug, updated_at, created_at FROM informative_guides
            WHERE status = 'published'
            ORDER BY is_pinned DESC, updated_at DESC LIMIT 1000`
+        ).all().catch(() => ({ results: [] })),
+        env.DB.prepare(
+          `SELECT slug, updated_at, published_at FROM job_articles
+           WHERE is_published = 1 AND (scheduled_publish_at = '' OR scheduled_publish_at IS NULL OR scheduled_publish_at <= datetime('now'))
+           ORDER BY COALESCE(NULLIF(published_at, ''), updated_at) DESC LIMIT 1000`
+        ).all().catch(() => ({ results: [] })),
+        env.DB.prepare(
+          `SELECT slug, updated_at, published_at FROM scheme_articles
+           WHERE is_published = 1 AND (scheduled_publish_at = '' OR scheduled_publish_at IS NULL OR scheduled_publish_at <= datetime('now'))
+           ORDER BY COALESCE(NULLIF(published_at, ''), updated_at) DESC LIMIT 1000`
+        ).all().catch(() => ({ results: [] })),
+        env.DB.prepare(
+          `SELECT slug, updated_at, published_at FROM study_articles
+           WHERE is_published = 1 AND (scheduled_publish_at = '' OR scheduled_publish_at IS NULL OR scheduled_publish_at <= datetime('now'))
+           ORDER BY COALESCE(NULLIF(published_at, ''), updated_at) DESC LIMIT 1000`
+        ).all().catch(() => ({ results: [] })),
+        env.DB.prepare(
+          `SELECT id, updated_at, created_at FROM cso_current_affairs
+           WHERE status = 'published'
+           ORDER BY capsule_date DESC LIMIT 1000`
         ).all().catch(() => ({ results: [] }))
       ]);
+
+      for (const row of (jobArtRes.results || [])) {
+        if (!row.slug) continue;
+        urls.push({
+          loc: `${SITE_ORIGIN}/jobs/?slug=${encodeURIComponent(row.slug)}`,
+          lastmod: toIsoLastMod(row.updated_at || row.published_at),
+          changefreq: 'daily',
+          priority: '0.9'
+        });
+      }
+      for (const row of (schemeArtRes.results || [])) {
+        if (!row.slug) continue;
+        urls.push({
+          loc: `${SITE_ORIGIN}/schemes/?slug=${encodeURIComponent(row.slug)}`,
+          lastmod: toIsoLastMod(row.updated_at || row.published_at),
+          changefreq: 'weekly',
+          priority: '0.8'
+        });
+      }
+      for (const row of (studyArtRes.results || [])) {
+        if (!row.slug) continue;
+        urls.push({
+          loc: `${SITE_ORIGIN}/study-library/?slug=${encodeURIComponent(row.slug)}`,
+          lastmod: toIsoLastMod(row.updated_at || row.published_at),
+          changefreq: 'weekly',
+          priority: '0.8'
+        });
+      }
+      for (const row of (caCapsRes.results || [])) {
+        if (!row.id) continue;
+        urls.push({
+          loc: `${SITE_ORIGIN}/current-affairs/?slug=${encodeURIComponent(row.id)}`,
+          lastmod: toIsoLastMod(row.updated_at || row.created_at),
+          changefreq: 'daily',
+          priority: '0.8'
+        });
+      }
 
       for (const row of (jobsRes.results || [])) {
         if (!row.slug) continue;
@@ -213,6 +270,15 @@ export async function handleSitemapXml(request, env) {
     } catch (e) {
       console.error('sitemap D1 query error:', e);
     }
+  }
+
+  // v368: dedupe, and never emit .html / non-canonical URLs
+  const seenLocs = new Set();
+  for (let i = urls.length - 1; i >= 0; i -= 1) {
+    const u = urls[i];
+    const pathOnly = String(u.loc).replace(SITE_ORIGIN, '').split(/[?#]/)[0];
+    if (/\.html?$/i.test(pathOnly) || seenLocs.has(u.loc)) urls.splice(i, 1);
+    else seenLocs.add(u.loc);
   }
 
   const body =
@@ -314,6 +380,7 @@ export function handleRobotsTxt(request) {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
   }
+
   const body = [
     'User-agent: *',
     'Allow: /',

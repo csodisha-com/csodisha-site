@@ -384,8 +384,8 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v367');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v367';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v368');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v368';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
   assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/guides') && CONTENT_PUBLIC_PATHS.includes('/guides/') && CONTENT_PUBLIC_PATHS.includes('/sitemap.xml') && CONTENT_PUBLIC_PATHS.includes('/api/home/feed'), 'CONTENT_PUBLIC_PATHS must purge /api/public/guides, /guides/, /sitemap.xml, and /api/home/feed');
   assert.ok(hydJs.includes("GUIDE: 'cso-lu-badge cso-lu-badge--guide'"), 'home-hydration.js must map GUIDE badge class');
@@ -400,7 +400,7 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   assert.ok(indexHtml.includes('id="cso-tools"') && indexHtml.includes('data-feed-key="important_tools"'), 'index.html must include #cso-tools with D1 visibility key');
   assert.ok(indexHtml.includes('data-title-en="Age &amp; Eligibility Date Calculator"') && indexHtml.includes('data-title-or='), 'Important Tools cards must preserve bilingual EN/ଓଡ଼ିଆ attributes');
   assert.equal((indexHtml.match(/class="card tl tool-card"/g) || []).length, 6, 'Important Tools must render all 6 compact tool cards');
-  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v367') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v367') && indexHtml.includes('/assets/js/home-hydration.js?v=20261126v367'), 'index.html must reference v367 cache-busted assets');
+  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v368') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v368') && indexHtml.includes('/assets/js/home-hydration.js?v=20261126v368'), 'index.html must reference v367 cache-busted assets');
   const styleV352 = read('assets/style.css');
   assert.ok(!styleV352.includes('.cso-action-hub-section'), 'Orphaned .cso-action-hub-section CSS must be removed from style.css');
   assert.ok(styleV352.includes('grid-template-columns: repeat(4, minmax(0, 1fr)) !important;'), 'Important Tools desktop grid must be 4 columns');
