@@ -435,5 +435,67 @@ check('8. v303 Candidate Hub sidebar nav container, items & mobile drawer bind t
   assert.match(hubHtml, /student-dashboard\.js\?v=2026112[56]v3(?:0[3-9]|[1-9]\d)/);
 });
 
+check('9. v349 Informative Guides cover overflow containment & high-contrast WCAG AAA tbody td across all 4 themes', () => {
+  const guidesCss = read('assets/css/guides-portal.css');
+  assert.ok(
+    guidesCss.includes('.gp-cover,') &&
+    guidesCss.includes('.gp-cover-frame') &&
+    guidesCss.includes('overflow: hidden;') &&
+    guidesCss.includes('max-height: 440px;') &&
+    guidesCss.includes('object-fit: contain;'),
+    'assets/css/guides-portal.css must enforce .gp-cover/.gp-cover-frame overflow containment'
+  );
+  assert.ok(
+    guidesCss.includes('.gp-takeaways') &&
+    guidesCss.includes('position: relative;') &&
+    guidesCss.includes('z-index: 1;') &&
+    guidesCss.includes('clear: both;'),
+    'assets/css/guides-portal.css must isolate .gp-takeaways below cover image'
+  );
+  assert.ok(
+    guidesCss.includes('.gp-table-wrap') &&
+    guidesCss.includes('overflow-x: auto;') &&
+    guidesCss.includes('.gp-body table tbody td') &&
+    guidesCss.includes('.gp-article table tbody td') &&
+    guidesCss.includes('background: var(--gp-surface, var(--cso-surface)) !important;') &&
+    guidesCss.includes('color: var(--gp-ink, var(--cso-ink)) !important;') &&
+    guidesCss.includes('opacity: 1 !important;') &&
+    guidesCss.includes('tbody tr:nth-child(even) td') &&
+    guidesCss.includes('background: var(--gp-surface-alt, var(--cso-surface-alt)) !important;'),
+    'assets/css/guides-portal.css must enforce high-contrast tbody td & zebra row contrast across all 4 themes'
+  );
+  assert.ok(
+    guidesCss.includes('.gp-breadcrumb') && guidesCss.includes('gap: 6px;'),
+    'assets/css/guides-portal.css must style .gp-breadcrumb with gap: 6px'
+  );
+
+  const studioCss = read('admin/studio.css');
+  for (const th of ['system', 'dark', 'reading', 'odisha']) {
+    assert.ok(
+      studioCss.includes(`.cso-guide-preview-frame[data-theme="${th}"]`),
+      `admin/studio.css missing 4-theme preview token block for ${th}`
+    );
+  }
+  assert.ok(
+    studioCss.includes('--gp-ink:') &&
+    studioCss.includes('--gp-surface:') &&
+    studioCss.includes('--gp-surface-alt:') &&
+    studioCss.includes('--cso-text:') &&
+    studioCss.includes('#csoGuideLivePreviewModal .cso-guide-preview-frame table tbody td'),
+    'admin/studio.css must isolate #csoGuideLivePreviewModal table tokens & tbody td contrast from Admin Studio theme leaks'
+  );
+
+  const GUIDE_TABLE_THEMES = {
+    system:  { surface: '#ffffff', alt: '#f1f5f9', ink: '#0f172a' },
+    dark:    { surface: '#121824', alt: '#1a2335', ink: '#f1f5f9' },
+    reading: { surface: '#faf5eb', alt: '#ede3d2', ink: '#241b12' },
+    odisha:  { surface: '#ffffff', alt: '#f7ece0', ink: '#1f140c' }
+  };
+  for (const [name, t] of Object.entries(GUIDE_TABLE_THEMES)) {
+    assert.ok(contrastRatio(t.ink, t.surface) >= 12.0, `${name} guide tbody td ink/surface contrast < 12:1`);
+    assert.ok(contrastRatio(t.ink, t.alt) >= 12.0, `${name} guide zebra tbody td & thead th ink/surface-alt contrast < 12:1`);
+  }
+});
+
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);

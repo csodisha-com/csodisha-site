@@ -4748,21 +4748,31 @@ body.cso-studio-body {
   align-items: stretch;
 }
 
-/* Scoped 4-Theme Token Overrides for Interactive Preview Frame */
+/* Scoped 4-Theme Token Overrides for Interactive Preview Frame (v349 WCAG AAA) */
 .cso-guide-preview-frame[data-theme="system"] {
   --cso-bg: #f8fafc;
   --cso-surface: #ffffff;
   --cso-surface-elevated: #ffffff;
   --cso-surface-alt: #f1f5f9;
   --cso-ink: #0f172a;
+  --cso-text: #0f172a;
   --cso-ink-soft: #334155;
   --cso-ink-muted: #475569;
+  --cso-muted: #475569;
   --cso-accent: #0f766e;
   --cso-accent-ink: #ffffff;
   --cso-link: #0f766e;
   --cso-border: #cbd5e1;
   --cso-badge-verified-bg: #ccfbf1;
   --cso-badge-verified-fg: #115e59;
+  --gp-bg: #f8fafc;
+  --gp-surface: #ffffff;
+  --gp-surface-alt: #f1f5f9;
+  --gp-ink: #0f172a;
+  --gp-ink-muted: #475569;
+  --gp-border: #cbd5e1;
+  --gp-accent: #0f766e;
+  --gp-accent-ink: #ffffff;
 }
 
 .cso-guide-preview-frame[data-theme="dark"] {
@@ -4771,14 +4781,24 @@ body.cso-studio-body {
   --cso-surface-elevated: #161e2e;
   --cso-surface-alt: #1a2335;
   --cso-ink: #f1f5f9;
+  --cso-text: #f1f5f9;
   --cso-ink-soft: #cbd5e1;
   --cso-ink-muted: #94a3b8;
+  --cso-muted: #94a3b8;
   --cso-accent: #14b8a6;
   --cso-accent-ink: #04201d;
   --cso-link: #2dd4bf;
   --cso-border: #263245;
   --cso-badge-verified-bg: #0f2922;
   --cso-badge-verified-fg: #6ee7b7;
+  --gp-bg: #0b0f17;
+  --gp-surface: #121824;
+  --gp-surface-alt: #1a2335;
+  --gp-ink: #f1f5f9;
+  --gp-ink-muted: #94a3b8;
+  --gp-border: #263245;
+  --gp-accent: #14b8a6;
+  --gp-accent-ink: #04201d;
 }
 
 .cso-guide-preview-frame[data-theme="reading"] {
@@ -4787,14 +4807,24 @@ body.cso-studio-body {
   --cso-surface-elevated: #fdf9f1;
   --cso-surface-alt: #ede3d2;
   --cso-ink: #241b12;
+  --cso-text: #241b12;
   --cso-ink-soft: #4a3b2c;
   --cso-ink-muted: #63503d;
+  --cso-muted: #63503d;
   --cso-accent: #854d0e;
   --cso-accent-ink: #ffffff;
   --cso-link: #78350f;
   --cso-border: #d6c8b2;
   --cso-badge-verified-bg: #e7eedd;
   --cso-badge-verified-fg: #2b4a1e;
+  --gp-bg: #f4ede1;
+  --gp-surface: #faf5eb;
+  --gp-surface-alt: #ede3d2;
+  --gp-ink: #241b12;
+  --gp-ink-muted: #63503d;
+  --gp-border: #d6c8b2;
+  --gp-accent: #854d0e;
+  --gp-accent-ink: #ffffff;
 }
 
 .cso-guide-preview-frame[data-theme="odisha"] {
@@ -4803,14 +4833,155 @@ body.cso-studio-body {
   --cso-surface-elevated: #fffdf9;
   --cso-surface-alt: #f7ece0;
   --cso-ink: #1f140c;
+  --cso-text: #1f140c;
   --cso-ink-soft: #4a3423;
   --cso-ink-muted: #694c35;
+  --cso-muted: #694c35;
   --cso-accent: #c2410c;
   --cso-accent-ink: #ffffff;
   --cso-link: #b45309;
   --cso-border: #e4d1bc;
   --cso-badge-verified-bg: #dcfce7;
   --cso-badge-verified-fg: #14532d;
+  --gp-bg: #fdf7f0;
+  --gp-surface: #ffffff;
+  --gp-surface-alt: #f7ece0;
+  --gp-ink: #1f140c;
+  --gp-ink-muted: #694c35;
+  --gp-border: #e4d1bc;
+  --gp-accent: #c2410c;
+  --gp-accent-ink: #ffffff;
+}
+
+/* v349 Preview Modal Isolation: Prevent Admin Studio table/reset CSS leaks into #csoGuideLivePreviewModal */
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-breadcrumb,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .cso-detail-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gp-ink-muted, var(--cso-ink-muted));
+}
+
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-breadcrumb-sep,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .cso-detail-kicker-sep {
+  display: inline-block;
+  padding: 0 2px;
+  opacity: 0.75;
+}
+
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover-figure {
+  display: block;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  margin: 16px 0 22px;
+  background: var(--gp-surface-alt, var(--cso-surface-alt));
+  border: 1px solid var(--gp-border, var(--cso-border));
+}
+
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover-frame {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  background: var(--gp-surface-alt, var(--cso-surface-alt));
+}
+
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover img,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover-figure img,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 440px;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-takeaways {
+  position: relative;
+  z-index: 1;
+  clear: both;
+  margin-top: 20px;
+}
+
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-takeaway-list,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-list {
+  list-style: disc;
+  padding-left: 1.35rem;
+}
+
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-list.is-ordered,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-toc-list {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 16px 0;
+  border: 1px solid var(--gp-border, var(--cso-border));
+  border-radius: 10px;
+  background: var(--gp-surface, var(--cso-surface));
+}
+
+:root[data-cso-theme] #csoGuideLivePreviewModal .cso-guide-preview-frame table,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-body table,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-article table,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  background: var(--gp-surface, var(--cso-surface));
+  color: var(--gp-ink, var(--cso-ink));
+}
+
+:root[data-cso-theme] #csoGuideLivePreviewModal .cso-guide-preview-frame table thead th,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-body table thead th,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-article table thead th,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-table thead th {
+  background: var(--gp-surface-alt, var(--cso-surface-alt)) !important;
+  color: var(--gp-ink, var(--cso-ink)) !important;
+  font-weight: 700;
+  padding: 10px 12px;
+  border: 1px solid var(--gp-border, var(--cso-border));
+  text-align: left;
+  vertical-align: top;
+  opacity: 1 !important;
+}
+
+:root[data-cso-theme] #csoGuideLivePreviewModal .cso-guide-preview-frame table tbody td,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-body table tbody td,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-article table tbody td,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-table tbody td {
+  background: var(--gp-surface, var(--cso-surface)) !important;
+  color: var(--gp-ink, var(--cso-ink)) !important;
+  opacity: 1 !important;
+  padding: 10px 12px;
+  border: 1px solid var(--gp-border, var(--cso-border));
+  vertical-align: top;
+  text-align: left;
+}
+
+:root[data-cso-theme] #csoGuideLivePreviewModal .cso-guide-preview-frame table tbody tr:nth-child(even) td,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-body table tbody tr:nth-child(even) td,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-article table tbody tr:nth-child(even) td,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-table tbody tr:nth-child(even) td {
+  background: var(--gp-surface-alt, var(--cso-surface-alt)) !important;
+  color: var(--gp-ink, var(--cso-ink)) !important;
+  opacity: 1 !important;
 }
 
 @media (max-width: 768px) {

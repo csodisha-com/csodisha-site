@@ -219,6 +219,35 @@
       .slice(0, 96);
   }
 
+  var BLUEPRINT_PLACEHOLDER_SLUGS = (function () {
+    var set = {
+      'preview': true,
+      'untitled': true,
+      'untitled-guide': true,
+      'untitled-informative-guide': true,
+      'auto-generated-url-slug': true,
+      'guide-preview': true
+    };
+    STARTER_TEMPLATES.forEach(function (tpl) {
+      if (tpl.key) set[slugify(tpl.key)] = true;
+      if (tpl.name) set[slugify(tpl.name)] = true;
+      if (tpl.category) set[slugify(tpl.category)] = true;
+    });
+    CATEGORIES.forEach(function (cat) {
+      if (cat.key) set[slugify(cat.key)] = true;
+      if (cat.label) set[slugify(cat.label)] = true;
+      if (cat.shortLabel) set[slugify(cat.shortLabel)] = true;
+    });
+    return set;
+  })();
+
+  function isBlueprintPlaceholderSlug(rawSlug, lastAutoSlug) {
+    var clean = slugify(rawSlug);
+    if (!clean) return true;
+    if (lastAutoSlug && clean === slugify(lastAutoSlug)) return true;
+    return Boolean(BLUEPRINT_PLACEHOLDER_SLUGS[clean]);
+  }
+
   function bustCaches() {
     if (window.CSOQuickCreate && typeof window.CSOQuickCreate.bustHomeCache === 'function') {
       window.CSOQuickCreate.bustHomeCache('all');
@@ -519,7 +548,10 @@
 
     var toolbar = el('div', 'cso-guide-preview-toolbar');
     var tbLeft = el('div', 'cso-guide-preview-tb-group');
-    tbLeft.appendChild(el('strong', 'cso-guide-preview-title', '\uD83D\uDC41\uFE0F Live Preview \u00B7 /guides/' + (draft.slug || slugify(draft.title_en) || 'preview')));
+    var resolvedPreviewSlug = (!draft.slug || isBlueprintPlaceholderSlug(draft.slug))
+      ? (slugify(draft.title_en) || draft.slug || 'preview')
+      : draft.slug;
+    tbLeft.appendChild(el('strong', 'cso-guide-preview-title', '\uD83D\uDC41\uFE0F Live Preview \u00B7 /guides/' + resolvedPreviewSlug));
 
     // Viewport switch
     var vpGroup = el('div', 'cso-guide-preview-seg');
@@ -593,13 +625,18 @@
       var cat = getCategoryMeta(draft.category);
       var main = el('div', 'gp-main gp-reader-main cso-gp-preview-inner');
 
-      // Kicker
-      var kicker = el('div', 'cso-detail-kicker');
+      // Kicker / Breadcrumb
+      var kicker = el('nav', 'gp-breadcrumb cso-detail-kicker');
+      kicker.setAttribute('aria-label', 'Breadcrumb');
+      var sep1 = el('span', 'gp-breadcrumb-sep cso-detail-kicker-sep', '\u203A');
+      sep1.setAttribute('aria-hidden', 'true');
+      var sep2 = el('span', 'gp-breadcrumb-sep cso-detail-kicker-sep', '\u203A');
+      sep2.setAttribute('aria-hidden', 'true');
       kicker.append(
         el('span', '', 'CS ODISHA'),
-        el('span', 'cso-detail-kicker-sep', '\u203A'),
+        sep1,
         el('span', '', 'GUIDES'),
-        el('span', 'cso-detail-kicker-sep', '\u203A'),
+        sep2,
         el('span', '', cat.label.toUpperCase())
       );
       main.appendChild(kicker);
@@ -619,11 +656,13 @@
 
       // Cover Photo
       if (draft.cover_image) {
-        var fig = el('figure', 'gp-cover-figure');
+        var fig = el('figure', 'gp-cover gp-cover-figure');
+        var coverFrame = el('div', 'gp-cover-frame');
         var img = el('img', 'gp-cover-img');
         img.src = draft.cover_image;
         img.alt = draft.cover_caption_en || draft.title_en || 'Cover Photo';
-        fig.appendChild(img);
+        coverFrame.appendChild(img);
+        fig.appendChild(coverFrame);
         var cap = pickLang(draft.cover_caption_en, draft.cover_caption_or);
         if (cap) fig.appendChild(el('figcaption', 'gp-caption', cap));
         main.appendChild(fig);
@@ -649,7 +688,7 @@
         rail.appendChild(tocNav);
       }
 
-      var art = el('article', 'gp-article-body');
+      var art = el('article', 'gp-article gp-article-body');
 
       // Key Takeaways
       var tks = (draft.takeaways || []).filter(function (t) { return t && (t.text_en || t.text_or); });
@@ -665,7 +704,7 @@
       }
 
       // Formatted Body
-      var prose = el('div', 'gp-prose');
+      var prose = el('div', 'gp-body gp-prose');
       prose.appendChild(parsed.fragment);
       art.appendChild(prose);
 
@@ -822,7 +861,9 @@
       ? editing.links.map(function (l) { return { label_en: l.label_en || '', label_or: l.label_or || '', url: l.url || '', is_official: Boolean(l.is_official) }; })
       : [];
 
-    var slugTouched = Boolean(editing && editing.slug);
+    var initialSlugVal = (editing && editing.slug) || '';
+    var lastAutoSlug = initialSlugVal;
+    var slugTouched = Boolean(initialSlugVal && !isBlueprintPlaceholderSlug(initialSlugVal));
 
     // Core Form Inputs
     var selCat = el('select', 'cso-form-select');
@@ -873,10 +914,28 @@
     var inSlug = el('input', 'cso-form-input');
     inSlug.type = 'text';
     inSlug.placeholder = 'auto-generated-url-slug';
-    inSlug.value = (editing && editing.slug) || '';
-    inSlug.addEventListener('input', function () { slugTouched = Boolean(inSlug.value.trim()); });
+    inSlug.value = initialSlugVal;
+
+    function syncSlugFromTitleIfUnmodified() {
+      var derived = slugify(inTitleEn.value);
+      var current = inSlug.value.trim();
+      if (derived && (!slugTouched || !current || isBlueprintPlaceholderSlug(current, lastAutoSlug))) {
+        inSlug.value = derived;
+        lastAutoSlug = derived;
+        slugTouched = false;
+      }
+      return inSlug.value.trim() || derived;
+    }
+
+    inSlug.addEventListener('input', function () {
+      var cur = inSlug.value.trim();
+      slugTouched = Boolean(cur) && !isBlueprintPlaceholderSlug(cur, lastAutoSlug);
+    });
     inTitleEn.addEventListener('input', function () {
-      if (!slugTouched) inSlug.value = slugify(inTitleEn.value);
+      syncSlugFromTitleIfUnmodified();
+    });
+    inTitleEn.addEventListener('change', function () {
+      syncSlugFromTitleIfUnmodified();
     });
 
     var inSumEn = el('textarea', 'cso-form-textarea');
@@ -1234,6 +1293,7 @@
           cta_or: inRelCtaOr.value.trim()
         };
       }
+      var syncedSlug = syncSlugFromTitleIfUnmodified();
       return {
         category: selCat.value,
         scope: selScope.value,
@@ -1243,7 +1303,7 @@
         is_exam: chkExam.checked,
         title_en: inTitleEn.value.trim(),
         title_or: inTitleOr.value.trim(),
-        slug: inSlug.value.trim() || slugify(inTitleEn.value),
+        slug: syncedSlug || slugify(inTitleEn.value),
         summary_en: inSumEn.value.trim(),
         summary_or: inSumOr.value.trim(),
         takeaways: takeawaysList.filter(function (t) { return (t.text_en || '').trim() || (t.text_or || '').trim(); }),
@@ -1319,6 +1379,10 @@
           ? tpl.takeaways.map(function (t) { return { text_en: t.text_en, text_or: t.text_or || '' }; })
           : [{ text_en: '', text_or: '' }];
         drawTakeaways();
+        if (isBlueprintPlaceholderSlug(inSlug.value.trim(), lastAutoSlug)) {
+          slugTouched = false;
+          syncSlugFromTitleIfUnmodified();
+        }
         toast('Applied "' + tpl.name + '" template.', 'ok');
       });
       tplGrid.appendChild(b);
@@ -1366,7 +1430,12 @@
           var d = (res && res.data) || {};
           if (d.title_en) inTitleEn.value = d.title_en;
           if (d.title_or) inTitleOr.value = d.title_or;
-          if (d.slug && !slugTouched) inSlug.value = d.slug;
+          if (d.slug && (!slugTouched || isBlueprintPlaceholderSlug(inSlug.value.trim(), lastAutoSlug))) {
+            inSlug.value = d.slug;
+            lastAutoSlug = d.slug;
+          } else {
+            syncSlugFromTitleIfUnmodified();
+          }
           if (d.summary_en) inSumEn.value = d.summary_en;
           if (d.summary_or) inSumOr.value = d.summary_or;
           if (d.read_minutes) inReadMins.value = String(d.read_minutes);
@@ -1623,6 +1692,7 @@
     btnPreview.type = 'button';
     btnPreview.id = 'btnGuideLivePreview';
     btnPreview.addEventListener('click', function () {
+      syncSlugFromTitleIfUnmodified();
       openLivePreviewModal(collectDraftPayload(), function () { saveGuide('published'); });
     });
 

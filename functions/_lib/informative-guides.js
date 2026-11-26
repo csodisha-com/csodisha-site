@@ -437,8 +437,8 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', jsonLd =
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v348">
-  <script src="/assets/js/guides-portal.js?v=20261126v348" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v349">
+  <script src="/assets/js/guides-portal.js?v=20261126v349" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -595,11 +595,15 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
     { label: 'Guides', url: '/guides/' },
     { label: guide.category_label_en, url: `/guides/?category=${encodeURIComponent(guide.category)}` },
     { label: guide.title_en, url: '' }
-  ]);
+  ])
+    .replace('class="cso-detail-kicker"', 'class="gp-breadcrumb cso-detail-kicker"')
+    .replaceAll('class="cso-detail-kicker-sep"', 'class="gp-breadcrumb-sep cso-detail-kicker-sep"');
 
   const coverHtml = guide.cover_image
-    ? `<figure class="gp-cover-figure">
-        <img src="${escShell(guide.cover_image)}" alt="${escShell(guide.cover_caption_en || guide.title_en)}" class="gp-cover-img" loading="eager" decoding="async">
+    ? `<figure class="gp-cover gp-cover-figure">
+        <div class="gp-cover-frame">
+          <img src="${escShell(guide.cover_image)}" alt="${escShell(guide.cover_caption_en || guide.title_en)}" class="gp-cover-img" loading="eager" decoding="async">
+        </div>
         ${(guide.cover_caption_en || guide.cover_caption_or)
           ? `<figcaption class="gp-caption">
               <span class="gp-lang-en">${escShell(guide.cover_caption_en || guide.cover_caption_or)}</span>
@@ -799,10 +803,10 @@ ${CSO_SHELL_HEADER}
       ${tocEnHtml}
       ${tocOrHtml}
     </aside>
-    <article class="gp-article-body">
+    <article class="gp-article gp-article-body">
       ${takeawaysHtml}
-      <div class="gp-prose gp-lang-en">${enParsed.html}</div>
-      <div class="gp-prose gp-lang-or">${orParsed.html}</div>
+      <div class="gp-body gp-prose gp-lang-en">${enParsed.html}</div>
+      <div class="gp-body gp-prose gp-lang-or">${orParsed.html}</div>
       ${galleryHtml}
       ${pdfsHtml}
       ${linksHtml}
