@@ -112,7 +112,7 @@ export const DEFAULT_TRENDING_TOPICS = [
     title_or: 'ଅଧ୍ୟୟନ ସାମଗ୍ରୀ',
     subtitle_en: 'Notes, PDFs, previous papers, MCQs',
     subtitle_or: 'ନୋଟ୍ସ, PDF, ପୂର୍ବ ବର୍ଷ ପ୍ରଶ୍ନ ଓ MCQ',
-    href: '/guides/?category=study-notes',
+    href: '/study-materials/',
     icon: 'study',
     badge_text: '',
     sort_order: 4,
@@ -305,7 +305,7 @@ export async function computeTrendingTopicCounts(db) {
   const jobs = guideCounts.jobs + jobArticlesCnt + legacyJobsCnt;
   const exams = guideCounts.exams + mockTestsCnt;
   const schemes = guideCounts.schemes + schemesCnt + 8;
-  const study = guideCounts.study + studyArticlesCnt + resourcesCnt;
+  const study = guideCounts.study + studyArticlesCnt + resourcesCnt + 7;
   const career = guideCounts.career + careersCnt;
   const odisha = guideCounts.odisha + caCapsulesCnt + legacyCaCnt;
   const guidesTotal = guidesRows.length;
