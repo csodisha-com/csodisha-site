@@ -157,6 +157,9 @@
       official_url: item.apply_url || item.official_apply_url || item.official_portal_url || '',
       required_docs: item.required_docs || item.required_documents || []
     }).then(function (d) {
+      if (window.CSOQuickCreate && typeof window.CSOQuickCreate.bustHomeCache === 'function') {
+        window.CSOQuickCreate.bustHomeCache();
+      }
       openModal('🚀 Published Live — Publish Chain & Announcement Card');
       var list = [
         ['Homepage Latest Updates (All)', d.homepage_synced ? 'Synced live to D1 homepage_blocks' : 'Skipped', d.homepage_synced ? 'pass' : 'warn'],

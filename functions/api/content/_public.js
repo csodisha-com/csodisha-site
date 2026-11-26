@@ -117,15 +117,110 @@ async function listPosts(env, request, type, orderBy) {
   const { results } = await env.DB.prepare(
     `SELECT ${LIST_COLS} FROM posts WHERE ${w} ORDER BY ${orderBy} LIMIT ? OFFSET ?`
   ).bind(...binds, limit, offset).all();
-  return json({ items: results.map(postSummary), page, limit, total }, 200, { 'Cache-Control': CACHE });
+  let items = results.map(postSummary);
+  let mergedTotal = total;
+
+  if (type === 'current_affair' && page === 1 && env && env.DB) {
+    try {
+      const caWhere = ["status = 'published'"];
+      const caBinds = [];
+      if (cat) { caWhere.push('lower(category) = lower(?)'); caBinds.push(cat); }
+      if (q) {
+        const l = likeEscape(q);
+        caWhere.push("(title_en LIKE ? ESCAPE '\\' OR title_or LIKE ? ESCAPE '\\' OR highlights_en LIKE ? ESCAPE '\\')");
+        caBinds.push(l, l, l);
+      }
+      const caRes = await env.DB.prepare(
+        `SELECT id, capsule_date, title_en, title_or, highlights_en, highlights_or, category, created_at
+         FROM cso_current_affairs
+         WHERE ${caWhere.join(' AND ')}
+         ORDER BY capsule_date DESC, created_at DESC
+         LIMIT ?`
+      ).bind(...caBinds, limit).all();
+      const seen = new Set(items.map(i => i.slug || i.id));
+      const capsuleItems = (caRes.results || []).filter(r => !seen.has(r.id)).map(r => {
+        let hiEn = [], hiOr = [];
+        try { hiEn = JSON.parse(r.highlights_en || '[]'); } catch {}
+        try { hiOr = JSON.parse(r.highlights_or || '[]'); } catch {}
+        return {
+          id: r.id,
+          type: 'current_affair',
+          slug: r.id,
+          title: r.title_en,
+          title_or: r.title_or || '',
+          summary: Array.isArray(hiEn) && hiEn[0] ? String(hiEn[0]) : '',
+          summary_or: Array.isArray(hiOr) && hiOr[0] ? String(hiOr[0]) : '',
+          category: r.category || 'Odisha',
+          tags: [r.category || 'Odisha', 'Current Affairs'],
+          goal_exam_ids: [],
+          cover_url: '',
+          published_at: r.created_at || r.capsule_date,
+          event_date: r.capsule_date
+        };
+      });
+      if (capsuleItems.length) {
+        items = [...capsuleItems, ...items]
+          .sort((a, b) => String(b.event_date || b.published_at || '').localeCompare(String(a.event_date || a.published_at || '')))
+          .slice(0, limit);
+        mergedTotal = total + capsuleItems.length;
+      }
+    } catch { /* cso_current_affairs optional */ }
+  }
+
+  return json({ items, page, limit, total: mergedTotal }, 200, { 'Cache-Control': CACHE });
 }
 
 async function postDetail(env, type, slug) {
   const r = await env.DB.prepare(`SELECT ${LIST_COLS}, body_md, body_md_or FROM posts WHERE type = ? AND slug = ? AND ${PUBLIC_VISIBLE_SQL}`)
     .bind(type, slug).first();
-  if (!r) return notFound();
-  return json({ ...postSummary(r), body_html: renderMarkdown(r.body_md), body_html_or: r.body_md_or ? renderMarkdown(r.body_md_or) : '' },
-    200, { 'Cache-Control': CACHE });
+  if (r) {
+    return json({ ...postSummary(r), body_html: renderMarkdown(r.body_md), body_html_or: r.body_md_or ? renderMarkdown(r.body_md_or) : '' },
+      200, { 'Cache-Control': CACHE });
+  }
+  if (type === 'current_affair' && env && env.DB) {
+    try {
+      const cap = await env.DB.prepare(
+        `SELECT id, capsule_date, title_en, title_or, highlights_en, highlights_or, quiz_json, category, created_at
+         FROM cso_current_affairs WHERE id = ? AND status = 'published'`
+      ).bind(slug).first();
+      if (cap) {
+        let hiEn = [], hiOr = [], quiz = [];
+        try { hiEn = JSON.parse(cap.highlights_en || '[]'); } catch {}
+        try { hiOr = JSON.parse(cap.highlights_or || '[]'); } catch {}
+        try { quiz = JSON.parse(cap.quiz_json || '[]'); } catch {}
+        const mdEnLines = ['## Key Highlights'];
+        (Array.isArray(hiEn) ? hiEn : []).forEach(h => mdEnLines.push(`- ${h}`));
+        if (Array.isArray(quiz) && quiz.length) {
+          mdEnLines.push('', '## Practice MCQs');
+          quiz.forEach((qItem, idx) => {
+            mdEnLines.push(`**Q${idx + 1}. ${qItem.q_en || qItem.question_en || ''}**`);
+            (qItem.options || []).forEach((opt, oi) => mdEnLines.push(`- ${['A', 'B', 'C', 'D'][oi] || oi + 1}) ${opt}`));
+          });
+        }
+        const mdOrLines = Array.isArray(hiOr) && hiOr.length
+          ? ['## ମୁଖ୍ୟ ଅଂଶ', ...hiOr.map(h => `- ${h}`)]
+          : [];
+        return json({
+          id: cap.id,
+          type: 'current_affair',
+          slug: cap.id,
+          title: cap.title_en,
+          title_or: cap.title_or || '',
+          summary: Array.isArray(hiEn) && hiEn[0] ? String(hiEn[0]) : '',
+          summary_or: Array.isArray(hiOr) && hiOr[0] ? String(hiOr[0]) : '',
+          category: cap.category || 'Odisha',
+          tags: [cap.category || 'Odisha', 'Current Affairs'],
+          goal_exam_ids: [],
+          cover_url: '',
+          published_at: cap.created_at || cap.capsule_date,
+          event_date: cap.capsule_date,
+          body_html: renderMarkdown(mdEnLines.join('\n')),
+          body_html_or: mdOrLines.length ? renderMarkdown(mdOrLines.join('\n')) : ''
+        }, 200, { 'Cache-Control': CACHE });
+      }
+    } catch { /* cso_current_affairs optional */ }
+  }
+  return notFound();
 }
 
 const TEST_COLS = 'id, slug, title, title_or, target_exam, duration_minutes, total_marks, negative_marking, published_at';
@@ -1250,7 +1345,18 @@ async function handleContentUncached(request, env, ctx = null) {
     if (resource === 'banner') {
       const b = await readBanner(env);
       const live = b.active && b.headline;
-      return json(live ? { active: true, headline: b.headline, context: b.context, severity: b.severity, ctaText: b.ctaText, ctaUrl: b.ctaUrl, updatedAt: b.updatedAt } : { active: false },
+      return json(live ? {
+        active: true,
+        headline: b.headline,
+        headline_or: b.headline_or || '',
+        context: b.context,
+        context_or: b.context_or || '',
+        badge_label: b.badge_label || '',
+        severity: b.severity,
+        ctaText: b.ctaText,
+        ctaUrl: b.ctaUrl,
+        updatedAt: b.updatedAt
+      } : { active: false },
         200, { 'Cache-Control': 'public, max-age=15, s-maxage=15' });
     }
     if (resource === 'exam-taxonomy') {

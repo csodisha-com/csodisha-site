@@ -11,7 +11,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v331';
+const CACHE_NAME = 'cso-candidate-cache-v332';
 const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
 const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
 
@@ -182,6 +182,20 @@ self.addEventListener('sync', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'CSO_REQUEST_SYNC' && self.registration.sync) {
     self.registration.sync.register('cso-sync').catch(() => {});
+  }
+  if (event.data && event.data.type === 'CSO_BUST_HOME_CACHE') {
+    event.waitUntil((async () => {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        await Promise.allSettled([
+          cache.delete('/'),
+          cache.delete('/index.html'),
+          cache.delete('/api/content/banner'),
+          cache.delete('/api/public/home-feed'),
+          cache.delete('/api/public/homepage-blocks')
+        ]);
+      } catch (_) {}
+    })());
   }
   if (event.data && event.data.type === 'SYNC_OFFLINE_STUDY_PACK') {
     event.waitUntil((async () => {

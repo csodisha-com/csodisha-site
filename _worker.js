@@ -152,6 +152,7 @@ import { hasAccountTotpEnabled, verifyAccountTotpOrRecovery } from './functions/
 import { handlePublicMockTestsApi } from './functions/api/public/mock-tests.js';
 import { handlePublicSupportSubmitApi } from './functions/api/public/support.js';
 import { handlePublicAdsApi } from './functions/api/public/ads.js';
+import { handlePublicHomeFeedApi } from './functions/api/public/home-feed.js';
 
 // Convert hex string to Uint8Array
 function hexToBuf(hex) {
@@ -517,7 +518,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/list', '/api/public/community/bootstrap', '/api/public/community/post', '/community/', '/student-dashboard/',
     '/api/public/about/tree', '/api/public/about/pages', '/api/public/about/bootstrap', '/api/public/about/article', '/api/public/about/sources', '/about/',
     '/api/public/mock-tests', '/mock-tests/', '/api/public/ads',
-    '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
+    '/api/public/home-feed', '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
   const allUrls = new Set();
   for (const p of basePaths) {
@@ -1061,6 +1062,9 @@ export default {
       }
       return toolsRes;
     }
+    if (pathname === '/api/public/home-feed' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicHomeFeedApi(request, env, ctx);
+    }
     if ((pathname === '/api/public/homepage-blocks' || pathname === '/api/homepage/blocks') && (request.method === 'GET' || request.method === 'HEAD')) {
       const bypassEdgeCache = url.searchParams.has('refresh') || url.searchParams.has('_cb');
       if (edgeCache && isAnonGet && !bypassEdgeCache) {
@@ -1600,11 +1604,41 @@ export default {
     }
     if (pathname.startsWith('/jobs/')) {
       const jobsRes = await handlePublicJobsRoute(request, env, url);
+      if (jobsRes && jobsRes.status !== 404) return jobsRes;
+      const jRest = pathname.replace(/^\/jobs\//, '').replace(/\/+$/, '');
+      if (jRest && !jRest.includes('/') && !/\.[a-z0-9]{2,5}$/i.test(jRest) && jRest !== 'index.html') {
+        const dest = new URL('/jobs/', url.origin);
+        dest.searchParams.set('slug', decodeURIComponent(jRest));
+        return Response.redirect(dest.toString(), 302);
+      }
       if (jobsRes) return jobsRes;
     }
     if (pathname.startsWith('/schemes/')) {
       const schemesRes = await handlePublicSchemesRoute(request, env, pathname);
+      if (schemesRes && schemesRes.status !== 404) return schemesRes;
+      const sRest = pathname.replace(/^\/schemes\//, '').replace(/\/+$/, '');
+      if (sRest && !sRest.includes('/') && !/\.[a-z0-9]{2,5}$/i.test(sRest) && sRest !== 'index.html') {
+        const dest = new URL('/schemes/', url.origin);
+        dest.searchParams.set('slug', decodeURIComponent(sRest));
+        return Response.redirect(dest.toString(), 302);
+      }
       if (schemesRes) return schemesRes;
+    }
+    if (pathname.startsWith('/careers/') && !pathname.startsWith('/careers/assets/')) {
+      const cRest = pathname.replace(/^\/careers\//, '').replace(/\/+$/, '');
+      if (cRest && !cRest.includes('/') && !/\.[a-z0-9]{2,5}$/i.test(cRest) && cRest !== 'index.html') {
+        const dest = new URL('/careers/', url.origin);
+        dest.searchParams.set('slug', decodeURIComponent(cRest));
+        return Response.redirect(dest.toString(), 302);
+      }
+    }
+    if (pathname.startsWith('/current-affairs/') && !pathname.startsWith('/current-affairs/assets/')) {
+      const caRest = pathname.replace(/^\/current-affairs\//, '').replace(/\/+$/, '');
+      if (caRest && !caRest.includes('/') && !/\.[a-z0-9]{2,5}$/i.test(caRest) && caRest !== 'index.html') {
+        const dest = new URL('/current-affairs/', url.origin);
+        dest.searchParams.set('slug', decodeURIComponent(caRest));
+        return Response.redirect(dest.toString(), 302);
+      }
     }
     if (pathname.startsWith('/community/')) {
       const communityRes = await handlePublicCommunityRoute(request, env, pathname);

@@ -69,6 +69,26 @@
       .slice(0, 80);
   }
 
+  function bustHomeCache() {
+    var ts = String(Date.now());
+    try { localStorage.setItem('cso_home_feed_bust', ts); } catch (_) {}
+    try {
+      if (typeof window.BroadcastChannel === 'function') {
+        var ch = new BroadcastChannel('cso-publish-sync');
+        ch.postMessage({ type: 'published', ts: ts });
+        ch.close();
+      }
+    } catch (_) {}
+    try {
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'CSO_BUST_HOME_CACHE', ts: ts });
+      }
+    } catch (_) {}
+    try {
+      fetch('/api/public/home-feed?refresh=1&_cb=' + encodeURIComponent(ts), { cache: 'no-store', credentials: 'same-origin' }).catch(function () {});
+    } catch (_) {}
+  }
+
   function apiFetch(url, opts) {
     var o = opts || {};
     var method = (o.method || 'GET').toUpperCase();
@@ -96,6 +116,9 @@
           err.status = r.status;
           err.fields = d && d.fields;
           throw err;
+        }
+        if (method !== 'GET' && method !== 'HEAD' && String(url).indexOf('/ai-coauthor') === -1) {
+          bustHomeCache();
         }
         return d;
       });
@@ -2243,6 +2266,7 @@
   window.CSOQuickCreate = {
     ROUTE_META: ROUTE_META,
     open: open,
-    parseBulkMcqs: parseBulkMcqs
+    parseBulkMcqs: parseBulkMcqs,
+    bustHomeCache: bustHomeCache
   };
 })(window, document);
