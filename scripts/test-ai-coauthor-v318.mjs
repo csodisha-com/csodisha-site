@@ -7,6 +7,8 @@ import {
   generateAiEditorialImage,
   getDailyAiUsage,
   DAILY_FREE_NEURON_BUDGET,
+  DAILY_QUOTA_EXHAUSTED_MESSAGE,
+  estimateWorkersAiNeurons,
   GEMINI_PRO_FIRST_MODELS,
   WORKERS_AI_PRO_MODELS,
   GEMINI_IMAGE_MODELS,
@@ -218,8 +220,8 @@ await test('5. Wrangler AI binding, migration 0149, CSP compliance & v318 cache 
   const mig = read('migrations/0149_ai_coauthor_v318.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS ai_generation_logs'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v356');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v356';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v357');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v357';"));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('window.CSOAiCoAuthor'));
@@ -367,17 +369,28 @@ await test('6. v331 Odia quick translation (single + batch) & AI Title/Slug/Tag 
   }
 });
 
-await test('7. v350 Gemini Pro-first fallback ordering, auto_fix_fill PDF-to-Article schema & POST /api/admin/ai/generate-image R2 storage', async () => {
+await test('7. v357 2026 free-tier Gemini Flash + low-neuron Workers AI cascade, auto_fix_fill PDF-to-Article schema & POST /api/admin/ai/generate-image R2 storage', async () => {
   assert.ok(VALID_AI_MODES.has('auto_fix_fill'), 'VALID_AI_MODES must include auto_fix_fill');
-  assert.deepEqual(GEMINI_PRO_FIRST_MODELS.slice(0, 4), ['gemini-2.5-pro', 'gemini-pro-latest', 'gemini-2.5-flash', 'gemini-2.0-flash']);
-  assert.equal(WORKERS_AI_PRO_MODELS[0], '@cf/meta/llama-3.3-70b-instruct-fp8-fast');
-  assert.equal(WORKERS_AI_PRO_MODELS[1], '@cf/meta/llama-3.1-8b-instruct-fp8-fast');
+  const expectedGemini = [
+    'gemini-3.8-flash',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash'
+  ];
+  assert.deepEqual(GEMINI_PRO_FIRST_MODELS, expectedGemini, 'Gemini cascade must prioritize 2026 free-tier Flash/Flash-Lite models');
+  assert.equal(WORKERS_AI_PRO_MODELS[0], '@cf/google/gemma-4-26b-a4b-it', 'Workers AI must prioritize ultra-efficient Gemma 4 26B first');
+  assert.equal(WORKERS_AI_PRO_MODELS[1], '@cf/meta/llama-3.1-8b-instruct-fp8-fast', 'Workers AI must prioritize Llama 3.1 8B second');
+  assert.equal(WORKERS_AI_PRO_MODELS[2], '@cf/meta/llama-3.3-70b-instruct-fp8-fast', 'Workers AI must keep Llama 3.3 70B after low-neuron models');
+  assert.ok(estimateWorkersAiNeurons('@cf/google/gemma-4-26b-a4b-it', 12000, 12000) < 250, 'Gemma 4 26B full guide must consume < 250 neurons');
+  assert.ok(estimateWorkersAiNeurons('@cf/meta/llama-3.1-8b-instruct-fp8-fast', 12000, 12000) < 250, 'Llama 3.1 8B full guide must consume < 250 neurons');
   assert.deepEqual(GEMINI_IMAGE_MODELS, ['imagen-3.0-generate-002', 'gemini-2.5-flash-image']);
   assert.equal(WORKERS_AI_IMAGE_MODEL, '@cf/black-forest-labs/flux-1-schnell');
 
-  // A. Verify v351 high token limits (16384 Gemini / 8192 Workers AI 70B), anti-summarization prompt & two-pass full Odia translation
+  // A. Verify v351/v357 high token limits (16384 Gemini / 8192 Workers AI Gemma 4 26B), anti-summarization prompt & two-pass full Odia translation
   assert.equal(GEMINI_LONG_MAX_OUTPUT_TOKENS, 16384, 'Gemini maxOutputTokens must be 16384 for long-form guides');
-  assert.equal(WORKERS_AI_70B_MAX_TOKENS, 8192, 'Workers AI 70B max_tokens must be 8192 for long-form guides');
+  assert.equal(WORKERS_AI_70B_MAX_TOKENS, 8192, 'Workers AI long-form max_tokens must be 8192');
 
   const db = createMockDb();
   const attemptedGemini = [];
@@ -402,8 +415,8 @@ await test('7. v350 Gemini Pro-first fallback ordering, auto_fix_fill PDF-to-Art
       async run(model, args) {
         attemptedWorkers.push(model);
         workersCallArgs.push({ model, max_tokens: args && args.max_tokens });
-        if (model === '@cf/meta/llama-3.3-70b-instruct-fp8-fast') {
-          throw new Error('Temporary 70B timeout');
+        if (model === '@cf/google/gemma-4-26b-a4b-it') {
+          throw new Error('Temporary Gemma 4 timeout');
         }
         const userMsg = (args && args.messages && args.messages[1] && args.messages[1].content) || '';
         if (userMsg.includes('"translations"')) {
@@ -455,16 +468,18 @@ await test('7. v350 Gemini Pro-first fallback ordering, auto_fix_fill PDF-to-Art
       actorId: 'adm_1'
     });
 
-    assert.deepEqual(attemptedGemini.slice(0, 4), ['gemini-2.5-pro', 'gemini-pro-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'], 'Pass 1 auto_fix_fill must attempt Gemini Pro first, then Gemini Flash');
-    assert.deepEqual(attemptedGemini.slice(4, 8), ['gemini-2.5-pro', 'gemini-pro-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'], 'Pass 2 translate_fields must also attempt Gemini Pro first');
+    assert.deepEqual(attemptedGemini.slice(0, 6), expectedGemini, 'Pass 1 auto_fix_fill must cascade across 2026 free-tier Gemini Flash/Lite models');
+    assert.deepEqual(attemptedGemini.slice(6, 12), expectedGemini, 'Pass 2 translate_fields must also cascade across 2026 free-tier Gemini Flash/Lite models');
     assert.equal(geminiRequestBodies[0].generationConfig.maxOutputTokens, 16384, 'Gemini Pass 1 must set maxOutputTokens: 16384');
-    assert.equal(geminiRequestBodies[4].generationConfig.maxOutputTokens, 16384, 'Gemini Pass 2 must set maxOutputTokens: 16384');
+    assert.equal(geminiRequestBodies[6].generationConfig.maxOutputTokens, 16384, 'Gemini Pass 2 must set maxOutputTokens: 16384');
     const pass1PromptText = geminiRequestBodies[0].contents[0].parts[0].text;
     assert.ok(pass1PromptText.includes('NEVER summarize, shorten, or omit details') && pass1PromptText.includes('Preserve 100% of every post name'), 'Pass 1 prompt must include strict anti-summarization directive');
-    assert.equal(workersCallArgs[0].model, '@cf/meta/llama-3.3-70b-instruct-fp8-fast');
-    assert.equal(workersCallArgs[0].max_tokens, 8192, 'Workers AI 70B fallback must set max_tokens: 8192');
+    assert.equal(workersCallArgs[0].model, '@cf/google/gemma-4-26b-a4b-it');
+    assert.equal(workersCallArgs[0].max_tokens, 8192, 'Workers AI Gemma 4 26B fallback must set max_tokens: 8192');
+    assert.equal(workersCallArgs[1].model, '@cf/meta/llama-3.1-8b-instruct-fp8-fast');
     assert.equal(autoRes.ok, true);
     assert.equal(autoRes.two_pass_translation, true, 'auto_fix_fill must execute dedicated Pass 2 full Odia translation');
+    assert.ok(autoRes.estimated_neurons < 250, `Low-neuron Workers AI guide must stay < 250 neurons (got ${autoRes.estimated_neurons})`);
     assert.equal(autoRes.data.category, 'exam-strategy');
     assert.equal(autoRes.data.scope, 'Odisha');
     assert.equal(autoRes.data.slug, 'opsc-oas-2026-recruitment-prelims-strategy');
@@ -472,6 +487,22 @@ await test('7. v350 Gemini Pro-first fallback ordering, auto_fix_fill PDF-to-Art
     assert.equal(autoRes.data.takeaways_or.length, 2, 'takeaways_or must align with takeaways_en');
     assert.ok(autoRes.data.official_links.some((l) => l.url.includes('opsc.gov.in')), 'Must extract opsc.gov.in official link');
     assert.ok(autoRes.data.official_links.some((l) => l.url.includes('oshec.odisha.gov.in')), 'Must deterministically extract additional .gov.in PDF links');
+
+    // Verify friendly IST reset message when BOTH Gemini & Workers AI exhaust daily quotas
+    await assert.rejects(
+      () => generateAiCoAuthorDraft({
+        DB: db,
+        GEMINI_API_KEY: 'gm_exhausted',
+        AI: {
+          async run() {
+            const err = new Error('Daily free neurons quota reached (429)');
+            err.status = 429;
+            throw err;
+          }
+        }
+      }, { mode: 'guide', input: 'OPSC OAS Notification 2026', actorId: 'adm_1' }),
+      (err) => err && err.status === 429 && err.message === DAILY_QUOTA_EXHAUSTED_MESSAGE
+    );
   } finally {
     globalThis.fetch = origFetch;
   }
@@ -579,9 +610,9 @@ await test('7. v350 Gemini Pro-first fallback ordering, auto_fix_fill PDF-to-Art
   assert.ok(r2Store.has(svgOut.key));
 });
 
-await test('8. v354 Markdown-preserving translation (translate_markdown): pipe-table preservation, >3,500 char ## chunking & Pro-first cascade', async () => {
+await test('8. v354/v357 Markdown-preserving translation (translate_markdown): pipe-table preservation, 7,500-char ## chunking (15K -> 2 calls) & 2026 Flash cascade', async () => {
   assert.ok(VALID_AI_MODES.has('translate_markdown'), 'VALID_AI_MODES must include translate_markdown');
-  assert.equal(MARKDOWN_CHUNK_CHAR_LIMIT, 3500, 'MARKDOWN_CHUNK_CHAR_LIMIT must be 3500');
+  assert.equal(MARKDOWN_CHUNK_CHAR_LIMIT, 7500, 'MARKDOWN_CHUNK_CHAR_LIMIT must be 7500');
 
   // Verify trailing pipe repair while keeping fenced code untouched
   const repaired = normalizeTranslatedMarkdownPipes('| ପଦବୀ | ବେତନ\n| :--- | :---\n| OAS | Level-12 |\n```txt\n| raw | code\n```');
@@ -589,7 +620,7 @@ await test('8. v354 Markdown-preserving translation (translate_markdown): pipe-t
   assert.ok(repaired.includes('| :--- | :--- |'), 'Must restore dropped trailing pipe on separator row');
   assert.ok(repaired.includes('```txt\n| raw | code\n```'), 'Must leave fenced code block untouched');
 
-  // Build a realistic >4,200 char multi-section Markdown guide with pipe tables, lists, callout, code block, URL & email
+  // Build a realistic ~14,000-char 6-section Markdown guide — would take 5-6 calls at 3,500 chars, but packs into 2 calls at 7,500 chars!
   const fillerPara = 'Candidates applying for Odisha Civil Services Examination must verify Matriculation records, resident certificate validity, category certificates, and Aadhaar-seeded mobile verification well before the portal closing timestamp. '.repeat(9);
   const longMarkdown = [
     '## Overview & Official Schedule',
@@ -610,17 +641,27 @@ await test('8. v354 Markdown-preserving translation (translate_markdown): pipe-t
     '> [!IMPORTANT]',
     '> Keep your OTR registration slip ready before paying examination fees.',
     '',
+    '## Application Fee & Payment Rules',
+    fillerPara,
+    '',
     '## Exam Pattern & Syllabus Structure',
     fillerPara,
     '```text',
     'PRELIMS_GS1 = 200',
     'PRELIMS_CSAT = 200',
-    '```'
+    '```',
+    '',
+    '## Selection Process & Interview Guidelines',
+    fillerPara,
+    '',
+    '## District Exam Centers & Helpline',
+    fillerPara
   ].join('\n');
 
-  assert.ok(longMarkdown.length > 3500, `Test Markdown must exceed 3,500 chars (got ${longMarkdown.length})`);
-  const chunks = splitMarkdownByH2Sections(longMarkdown, 3500);
-  assert.ok(chunks.length >= 2, `Expected >= 2 chunks split by ## headings, got ${chunks.length}`);
+  assert.ok(longMarkdown.length > 12000 && longMarkdown.length <= 15000, `Test Markdown must be ~14K chars (got ${longMarkdown.length})`);
+  assert.ok(splitMarkdownByH2Sections(longMarkdown, 3500).length >= 5, 'At legacy 3,500 limit, 14K guide took 5-6 API calls');
+  const chunks = splitMarkdownByH2Sections(longMarkdown);
+  assert.equal(chunks.length, 2, `Expected 14K-char guide to pack into exactly 2 chunks at 7,500-char limit (got ${chunks.length})`);
   assert.ok(chunks[0].startsWith('## Overview'), 'Chunk 1 must start at first ## heading');
   assert.ok(chunks.some((c) => c.includes('| Post Name | Pay Level | Total Vacancies |')), 'Table block must stay intact inside its chunk');
 
@@ -659,15 +700,15 @@ await test('8. v354 Markdown-preserving translation (translate_markdown): pipe-t
   };
 
   try {
-    const res = await generateAiCoAuthorDraft({ DB: db, GEMINI_API_KEY: 'gm_md_v354' }, {
+    const res = await generateAiCoAuthorDraft({ DB: db, GEMINI_API_KEY: 'gm_md_v357' }, {
       mode: 'translate_markdown',
       input: longMarkdown,
       actorId: 'adm_1'
     });
     assert.equal(res.ok, true);
     assert.equal(res.mode, 'translate_markdown');
-    assert.equal(res.chunks_count, chunks.length, 'Response must report exact chunk count');
-    assert.equal(attemptedModels[0], 'gemini-2.5-pro', 'translate_markdown must prioritize Gemini Pro first');
+    assert.equal(res.chunks_count, 2, 'Response must report 2 batched chunks');
+    assert.equal(attemptedModels[0], 'gemini-3.8-flash', 'translate_markdown must prioritize 2026 free-tier gemini-3.8-flash first');
     assert.ok(tokenBudgets.every((t) => t === 16384), 'translate_markdown must use 16384 Gemini output token cap');
 
     const md = res.data.translated_markdown;
@@ -681,6 +722,11 @@ await test('8. v354 Markdown-preserving translation (translate_markdown): pipe-t
   } finally {
     globalThis.fetch = origFetch;
   }
+
+  // Verify guides-publishing-studio.js defaults Auto-generate Cover to unchecked and includes friendly IST quota message
+  const studioJs = read('admin/guides-publishing-studio.js');
+  assert.ok(studioJs.includes('chkAiAutoCover.checked = false;'), 'Auto-generate AI Cover Photo checkbox must be unchecked by default');
+  assert.ok(studioJs.includes('5:30 AM IST (Workers AI) / 1:30 PM IST (Gemini)'), 'Admin UI must surface friendly IST daily quota reset guidance');
 });
 
 await test('9. v356 Verbatim Body (EN) Lock: pasted body_en (>=200 chars) preserved byte-for-byte during auto_fix_fill while extracting metadata & chunked Odia', async () => {

@@ -1,20 +1,22 @@
 /**
- * 100% Free-Tier Admin Studio AI Co-Author & Editorial Image Service (v350)
- * - Gemini Pro-First Text & PDF-to-Article Pool (`gemini-2.5-pro` -> `gemini-pro-latest` ->
- *   `gemini-2.5-flash` -> `gemini-2.0-flash`) for `auto_fix_fill`, `guide`, and `translate_fields`,
- *   cascading automatically on quota/429/error to Cloudflare Workers AI
- *   (`@cf/meta/llama-3.3-70b-instruct-fp8-fast` -> `@cf/meta/llama-3.1-8b-instruct-fp8-fast`).
+ * 100% Free-Tier Admin Studio AI Co-Author & Editorial Image Service (v357)
+ * - 2026 Free-Tier High-Quota Gemini Flash Pool (`gemini-3.8-flash` -> `gemini-3.6-flash` ->
+ *   `gemini-3.5-flash-lite` -> `gemini-3.1-flash-lite` -> `gemini-2.5-flash` -> `gemini-2.0-flash`),
+ *   cascading automatically on quota/429/error to low-neuron Cloudflare Workers AI
+ *   (`@cf/google/gemma-4-26b-a4b-it` -> `@cf/meta/llama-3.1-8b-instruct-fp8-fast` ->
+ *   `@cf/meta/llama-3.3-70b-instruct-fp8-fast`).
  * - Gemini-First Native Image Generation (`imagen-3.0-generate-002` -> `gemini-2.5-flash-image`),
  *   cascading automatically to Cloudflare Workers AI `@cf/black-forest-labs/flux-1-schnell`
  *   (and clean editorial SVG banner fallback if offline/local), uploaded directly to `cso-media` R2.
  * - Supports structured drafting (`job`, `scheme`, `mcq`, `career`, `guide`, `auto_fix_fill`),
- *   Odisha gov/exam EN->Odia translation (`translate_odia`, `translate_fields`),
+ *   Odisha gov/exam EN->Odia translation (`translate_odia`, `translate_fields`, `translate_markdown`),
  *   and AI Title/Slug/Tag suggestions (`suggest_meta`).
  * - Tracks daily neuron usage in D1 `ai_generation_logs` against Cloudflare's 10,000 Neurons/day free allowance.
  */
 
 export const DAILY_FREE_NEURON_LIMIT = 10000;
 export const DAILY_FREE_NEURON_BUDGET = 9500;
+export const DAILY_QUOTA_EXHAUSTED_MESSAGE = 'Daily AI quota reached — resets at 5:30 AM IST (Workers AI) / 1:30 PM IST (Gemini). You can still edit and publish manually.';
 export const VALID_AI_MODES = new Set([
   'job',
   'scheme',
@@ -29,18 +31,34 @@ export const VALID_AI_MODES = new Set([
 ]);
 
 export const PRO_FIRST_MODES = new Set(['auto_fix_fill', 'guide', 'translate_fields', 'translate_markdown']);
-export const MARKDOWN_CHUNK_CHAR_LIMIT = 3500;
+export const MARKDOWN_CHUNK_CHAR_LIMIT = 7500;
 export const BODY_EN_VERBATIM_LOCK_MIN_CHARS = 200;
-export const GEMINI_PRO_FIRST_MODELS = ['gemini-2.5-pro', 'gemini-pro-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
-export const GEMINI_FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-pro', 'gemini-pro-latest'];
+export const GEMINI_PRO_FIRST_MODELS = [
+  'gemini-3.8-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-2.0-flash'
+];
+export const GEMINI_FLASH_MODELS = [
+  'gemini-3.8-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-2.0-flash'
+];
 export const GEMINI_MODELS = GEMINI_PRO_FIRST_MODELS;
 
 export const WORKERS_AI_PRO_MODELS = [
-  '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+  '@cf/google/gemma-4-26b-a4b-it',
   '@cf/meta/llama-3.1-8b-instruct-fp8-fast',
+  '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
   '@cf/ibm-granite/granite-4.0-h-micro'
 ];
 export const WORKERS_AI_DEFAULT_MODELS = [
+  '@cf/google/gemma-4-26b-a4b-it',
   '@cf/meta/llama-3.1-8b-instruct-fp8-fast',
   '@cf/ibm-granite/granite-4.0-h-micro'
 ];
@@ -844,6 +862,29 @@ function unwrapWorkersAiPayload(resp) {
   return '';
 }
 
+export function estimateWorkersAiNeurons(model, promptChars, outputChars) {
+  const inTok = Math.max(1, Math.ceil(Number(promptChars || 0) / 4));
+  const outTok = Math.max(1, Math.ceil(Number(outputChars || 0) / 4));
+  const m = String(model || '');
+  if (m.includes('gemma-4-26b')) {
+    return Math.max(15, Math.min(240, Math.ceil(inTok * 0.009 + outTok * 0.027)));
+  }
+  if (m.includes('llama-3.1-8b') || m.includes('granite')) {
+    return Math.max(12, Math.min(220, Math.ceil(inTok * 0.0046 + outTok * 0.03)));
+  }
+  if (m.includes('70b')) {
+    return Math.max(80, Math.min(900, Math.ceil((inTok + outTok) * 0.205)));
+  }
+  return Math.max(20, Math.min(240, Math.ceil((inTok + outTok) * 0.02)));
+}
+
+function isQuotaError(err) {
+  if (!err) return false;
+  const status = Number(err.status || err.statusCode || 0);
+  if (status === 429 || status === 403) return true;
+  return /quota|rate.?limit|429|resource.?exhausted|neurons|daily limit/i.test(String(err.message || ''));
+}
+
 async function callWorkersAi(aiBinding, prompt, mode) {
   if (!aiBinding || typeof aiBinding.run !== 'function') {
     throw new Error('Cloudflare Workers AI binding (env.AI) is not configured.');
@@ -857,7 +898,7 @@ async function callWorkersAi(aiBinding, prompt, mode) {
   let lastErr = null;
   for (const model of pool) {
     const maxTok = PRO_FIRST_MODES.has(mode)
-      ? (model.includes('70b') ? WORKERS_AI_70B_MAX_TOKENS : WORKERS_AI_8B_MAX_TOKENS)
+      ? ((model.includes('gemma-4-26b') || model.includes('70b')) ? WORKERS_AI_70B_MAX_TOKENS : WORKERS_AI_8B_MAX_TOKENS)
       : 1400;
     try {
       const resp = await aiBinding.run(model, {
@@ -908,14 +949,37 @@ async function runModelCascade(env, prompt, mode, opts = {}) {
   if (geminiKey) {
     try {
       return await callGeminiFreeTier(geminiKey, prompt, mode, opts);
-    } catch (_geminiErr) {
+    } catch (geminiErr) {
       if (env && env.AI) {
-        return await callWorkersAi(env.AI, prompt, mode);
+        try {
+          return await callWorkersAi(env.AI, prompt, mode);
+        } catch (workersErr) {
+          if (isQuotaError(geminiErr) || isQuotaError(workersErr)) {
+            const qErr = new Error(DAILY_QUOTA_EXHAUSTED_MESSAGE);
+            qErr.status = 429;
+            throw qErr;
+          }
+          throw workersErr;
+        }
       }
-      throw _geminiErr;
+      if (isQuotaError(geminiErr)) {
+        const qErr = new Error(DAILY_QUOTA_EXHAUSTED_MESSAGE);
+        qErr.status = 429;
+        throw qErr;
+      }
+      throw geminiErr;
     }
   }
-  return await callWorkersAi(env && env.AI, prompt, mode);
+  try {
+    return await callWorkersAi(env && env.AI, prompt, mode);
+  } catch (workersErr) {
+    if (isQuotaError(workersErr)) {
+      const qErr = new Error(DAILY_QUOTA_EXHAUSTED_MESSAGE);
+      qErr.status = 429;
+      throw qErr;
+    }
+    throw workersErr;
+  }
 }
 
 export function normalizeTranslatedMarkdownPipes(rawMd) {
@@ -1077,7 +1141,7 @@ async function translateMarkdownDocument(env, rawMarkdown) {
         const translatedChunk = parseTranslateMarkdownResult(res.text, chunk);
         const neurons = res.provider === 'gemini_free'
           ? 0
-          : Math.max(40, Math.min(450, Math.ceil((chunkPrompt.length + res.text.length) / 16)));
+          : estimateWorkersAiNeurons(res.model, chunkPrompt.length, res.text.length);
         return { index: start + offset, translatedChunk, res, neurons };
       })
     );
@@ -1146,7 +1210,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
 
   const usageBefore = await getDailyAiUsage(env);
   if (usageBefore.neurons_used >= DAILY_FREE_NEURON_BUDGET) {
-    const err = new Error('Daily free-tier AI neuron budget (9,500 / 10,000) reached. Resets at 00:00 UTC.');
+    const err = new Error(DAILY_QUOTA_EXHAUSTED_MESSAGE);
     err.status = 429;
     throw err;
   }
@@ -1209,7 +1273,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
         Object.assign(mergedTranslations, (sNorm && sNorm.translations) || {});
         lastMeta = sRes;
         if (sRes.provider !== 'gemini_free') {
-          totalNeurons += Math.max(40, Math.min(450, Math.ceil((sPrompt.length + sRes.text.length) / 16)));
+          totalNeurons += estimateWorkersAiNeurons(sRes.model, sPrompt.length, sRes.text.length);
         }
       }
 
@@ -1281,7 +1345,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   const normalized = normalizeStructuredOutput(cleanMode, parsed, cleanInput || cleanPdfFilename || 'Odisha Guide', extra);
   let estimatedNeurons = result.provider === 'gemini_free'
     ? 0
-    : Math.max(40, Math.min(450, Math.ceil((prompt.length + result.text.length) / 16)));
+    : estimateWorkersAiNeurons(result.model, prompt.length, result.text.length);
   let twoPassTranslation = false;
 
   // Pass 2 (Server-Side Dedicated Full Odia Translation Pass for auto_fix_fill when caller did not split passes)
@@ -1327,7 +1391,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
           }));
         }
         if (trRes.provider !== 'gemini_free') {
-          estimatedNeurons += Math.max(40, Math.min(450, Math.ceil((trPrompt.length + trRes.text.length) / 16)));
+          estimatedNeurons += estimateWorkersAiNeurons(trRes.model, trPrompt.length, trRes.text.length);
         }
       }
       twoPassTranslation = true;

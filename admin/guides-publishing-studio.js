@@ -1696,12 +1696,23 @@
     btnCoverAiGen.addEventListener('click', function () { runCoverAiGeneration(false); });
     btnCoverAiRegen.addEventListener('click', function () { runCoverAiGeneration(true); });
 
-    // ---- 2. AI CO-AUTHOR BAR (Gemini Pro-First + Workers AI Fallback) ----
+    var AI_QUOTA_FRIENDLY_MSG = 'Daily AI quota reached \u2014 resets at 5:30 AM IST (Workers AI) / 1:30 PM IST (Gemini). You can still edit and publish manually.';
+
+    function formatAiErrorMessage(err) {
+      var msg = String((err && err.message) || err || 'AI request failed.');
+      var status = Number(err && err.status);
+      if (status === 429 || /quota|rate.?limit|429|resource.?exhausted|neurons|daily limit/i.test(msg)) {
+        return AI_QUOTA_FRIENDLY_MSG;
+      }
+      return msg;
+    }
+
+    // ---- 2. AI CO-AUTHOR BAR (2026 Free-Tier Gemini Flash + Low-Neuron Workers AI Fallback) ----
     var aiCard = el('section', 'cso-card studio-card cso-guide-ai-bar');
     var aiHead = el('div', 'cso-guide-sec-head');
     aiHead.append(
-      el('h3', 'cso-qc-card-title', '\u2728 AI Co-Author Bar (Gemini Pro-First + Workers AI Fallback)'),
-      el('span', 'cso-pill-badge', 'Gemini Pro \u2192 Flash \u2192 Workers AI \u00B7 Bilingual EN / \u0B13\u0B21\u0B3C\u0B3F\u0B06')
+      el('h3', 'cso-qc-card-title', '\u2728 AI Co-Author Bar (Free-Tier Gemini Flash + Low-Neuron Workers AI)'),
+      el('span', 'cso-pill-badge', 'Gemini 3.8 Flash \u2192 Gemma 4 26B / Llama 8B \u00B7 EN / \u0B13\u0B21\u0B3C\u0B3F\u0B06')
     );
 
     // 1-Click PDF Upload -> Auto-Write Guide Dropzone
@@ -1757,7 +1768,7 @@
     var chkAiAutoCover = el('input');
     chkAiAutoCover.type = 'checkbox';
     chkAiAutoCover.id = 'chkGuideAiAutoCover';
-    chkAiAutoCover.checked = true;
+    chkAiAutoCover.checked = false;
     var lblAutoCover = el('label', 'cso-qc-check');
     lblAutoCover.append(chkAiAutoCover, el('span', '', 'Auto-generate AI Cover Photo if empty'));
     aiOptsRow.append(depthWrap, lblOverwrite, lblAutoCover);
@@ -1907,6 +1918,7 @@
 
       aiStatus.textContent = '2/3 Translating full guide to \u0B13\u0B21\u0B3C\u0B3F\u0B06 (##-chunked Markdown tables & metadata)\u2026';
 
+      var quotaNotice = '';
       var bodyPromise = needBodyOr
         ? apiFetch('/api/admin/ai-coauthor', {
           method: 'POST',
@@ -1915,7 +1927,10 @@
           var md = mdRes && mdRes.data && (mdRes.data.translated_markdown || mdRes.data.translated_or);
           if (md) inBodyOr.value = md;
           return mdRes;
-        }).catch(function () { return null; })
+        }).catch(function (e) {
+          quotaNotice = formatAiErrorMessage(e);
+          return null;
+        })
         : Promise.resolve(null);
 
       var metaPromise = needMetaOr
@@ -1936,11 +1951,17 @@
           drawTakeaways();
           drawLinks();
           return trRes;
-        }).catch(function () { return null; })
+        }).catch(function (e) {
+          if (!quotaNotice) quotaNotice = formatAiErrorMessage(e);
+          return null;
+        })
         : Promise.resolve(null);
 
       return Promise.all([bodyPromise, metaPromise]).then(function (pair) {
         updateWordCountAndReadTime(true);
+        if (quotaNotice && !pair[0] && !pair[1]) {
+          toast(quotaNotice, 'amber');
+        }
         return pair[0] || pair[1];
       });
     }
@@ -2013,8 +2034,9 @@
           });
         });
       }).catch(function (e) {
-        aiStatus.textContent = '\u2715 PDF Auto-Write failed: ' + e.message;
-        toast('PDF Auto-Write failed: ' + e.message, 'crimson');
+        var msg = formatAiErrorMessage(e);
+        aiStatus.textContent = '\u2715 ' + msg;
+        toast(msg, 'amber');
       }).finally(function () {
         setAiBusy(false);
         pdfAutoInput.value = '';
@@ -2093,8 +2115,9 @@
           });
         });
       }).catch(function (e) {
-        aiStatus.textContent = '\u2715 ' + e.message;
-        toast('AI Auto-Fix failed: ' + e.message, 'crimson');
+        var msg = formatAiErrorMessage(e);
+        aiStatus.textContent = '\u2715 ' + msg;
+        toast(msg, 'amber');
       }).finally(function () {
         setAiBusy(false);
       });
@@ -2108,7 +2131,7 @@
         return;
       }
       setAiBusy(true);
-      aiStatus.textContent = 'Generating structured guide outline & draft via Gemini Pro\u2026';
+      aiStatus.textContent = 'Generating structured guide outline & draft via Gemini Flash\u2026';
       apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'guide', input: seed } })
         .then(function (res) {
           var d = (res && res.data) || {};
@@ -2137,8 +2160,9 @@
           toast('AI Outline & Draft generated!', 'ok');
         })
         .catch(function (e) {
-          aiStatus.textContent = '\u2715 ' + e.message;
-          toast('AI Draft failed: ' + e.message, 'crimson');
+          var msg = formatAiErrorMessage(e);
+          aiStatus.textContent = '\u2715 ' + msg;
+          toast(msg, 'amber');
         })
         .finally(function () { setAiBusy(false); });
     });
@@ -2165,8 +2189,9 @@
           toast('SEO metadata applied!', 'ok');
         })
         .catch(function (e) {
-          aiStatus.textContent = '\u2715 ' + e.message;
-          toast('AI Meta suggestion failed: ' + e.message, 'crimson');
+          var msg = formatAiErrorMessage(e);
+          aiStatus.textContent = '\u2715 ' + msg;
+          toast(msg, 'amber');
         })
         .finally(function () { setAiBusy(false); });
     });
@@ -2189,7 +2214,7 @@
         return;
       }
       setAiBusy(true);
-      aiStatus.textContent = 'Translating entire guide into natural Odia (\u0B13\u0B21\u0B3C\u0B3F\u0B06) via Gemini Pro\u2026';
+      aiStatus.textContent = 'Translating entire guide into natural Odia (\u0B13\u0B21\u0B3C\u0B3F\u0B06)\u2026';
       apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'translate_fields', fields: fields } })
         .then(function (res) {
           var tr = (res && res.data && res.data.translations) || {};
@@ -2210,8 +2235,9 @@
           toast('Translated all guide fields & media labels to Odia!', 'ok');
         })
         .catch(function (e) {
-          aiStatus.textContent = '\u2715 ' + e.message;
-          toast('Translation failed: ' + e.message, 'crimson');
+          var msg = formatAiErrorMessage(e);
+          aiStatus.textContent = '\u2715 ' + msg;
+          toast(msg, 'amber');
         })
         .finally(function () { setAiBusy(false); });
     });
@@ -2398,8 +2424,9 @@
         setMdTranslateBusy(false, '\u2713 Translated full Markdown (' + chunks + (chunks === 1 ? ' section' : ' sections') + ' \u00B7 ' + prov + ')');
         toast('Full Markdown body translated to \u0B13\u0B21\u0B3C\u0B3F\u0B06 with tables & headings intact!', 'ok');
       }).catch(function (e) {
-        setMdTranslateBusy(false, '\u2715 Translation failed: ' + e.message);
-        toast('Markdown translation failed: ' + e.message, 'crimson');
+        var msg = formatAiErrorMessage(e);
+        setMdTranslateBusy(false, '\u2715 ' + msg);
+        toast(msg, 'amber');
       });
     });
 
@@ -2439,8 +2466,9 @@
         setMdTranslateBusy(false, '\u2713 Inserted translated ' + (usedSelection ? 'selection' : 'section') + ' into Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06) \u00B7 ' + prov);
         toast('Translated ' + (usedSelection ? 'selection' : 'section') + ' inserted into Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06)!', 'ok');
       }).catch(function (e) {
-        setMdTranslateBusy(false, '\u2715 Translation failed: ' + e.message);
-        toast('Selection translation failed: ' + e.message, 'crimson');
+        var msg = formatAiErrorMessage(e);
+        setMdTranslateBusy(false, '\u2715 ' + msg);
+        toast(msg, 'amber');
       });
     });
 
