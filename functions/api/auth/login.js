@@ -226,16 +226,25 @@ export async function onRequestPost({ request, env }) {
       try { targetStreams = JSON.parse(candidateMeta.target_streams); } catch(e) {}
     }
 
+    const candidatePayload = {
+      id: userRecord.id,
+      email: userRecord.email,
+      username: userRecord.username || (candidateMeta && candidateMeta.username) || null,
+      fullName: candidateMeta ? (candidateMeta.full_name || 'Candidate Aspirant') : 'Candidate Aspirant',
+      name: candidateMeta ? (candidateMeta.full_name || 'Candidate Aspirant') : 'Candidate Aspirant',
+      phone: candidateMeta && candidateMeta.phone ? candidateMeta.phone : '',
+      district: candidateMeta ? (candidateMeta.district || 'Balasore (Baleswar)') : 'Balasore (Baleswar)',
+      targetStreams,
+      role: userRole
+    };
+
     return jsonResponse({
+      ok: true,
       success: true,
+      authenticated: true,
       token: sessionToken,
-      candidate: {
-        id: userRecord.id,
-        email: userRecord.email,
-        fullName: candidateMeta ? (candidateMeta.full_name || 'Candidate Aspirant') : 'Candidate Aspirant',
-        district: candidateMeta ? (candidateMeta.district || 'Balasore (Baleswar)') : 'Balasore (Baleswar)',
-        targetStreams
-      }
+      user: candidatePayload,
+      candidate: candidatePayload
     }, 200, {
       'Set-Cookie': cookieHeader
     });

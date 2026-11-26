@@ -107,6 +107,7 @@ export async function onRequestGet({ request, env }) {
     };
 
     return jsonResponse({
+      ok: true,
       success: true,
       authenticated: true,
       user,

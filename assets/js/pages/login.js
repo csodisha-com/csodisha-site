@@ -166,7 +166,7 @@
         try {
           const res = await fetch('/api/auth/login', {
             method: 'POST',
-            credentials: 'same-origin',
+            credentials: 'include',
             cache: 'no-store',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ identifier, email: identifier, password }),
@@ -176,10 +176,11 @@
 
           const data = await res.json().catch(() => ({}));
 
-          if (res.ok && data.success) {
+          if (res.ok && (data.success || data.ok || data.authenticated)) {
             submitBtn.textContent = 'Access granted! Redirecting...';
-            if (data.candidate) {
-              const sessionPayload = { ...data.candidate, isAuthenticated: true };
+            const userObj = data.user || data.candidate;
+            if (userObj) {
+              const sessionPayload = { ...userObj, isAuthenticated: true };
               localStorage.setItem('cso_candidate_session_v1', JSON.stringify(sessionPayload));
               localStorage.setItem('cso_candidate_profile', JSON.stringify(sessionPayload));
             }
@@ -194,7 +195,7 @@
             const targetUrl = normalizeCanonicalRedirect(redirectParam);
 
             await purgeAuthDashboardCaches();
-            window.location.replace(targetUrl);
+            window.location.assign(targetUrl);
             return;
           }
 

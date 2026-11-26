@@ -169,8 +169,12 @@ await check('1. Static CSP, login UI, auth client, and SW cache v346 checks', as
   assert.ok(!/\.innerHTML\s*=|insertAdjacentHTML|style=|onclick=/i.test(read('assets/js/pages/login.js')), 'login.js must be CSP-safe');
   assert.ok(read('assets/js/pages/login.js').includes('identifier'), 'login.js must send identifier');
   assert.ok(read('assets/cso-auth-client.js').includes('data.identifier || data.userId || data.username || data.email'), 'cso-auth-client.js must support User ID or Email');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v346';"), 'sw.js must be v346');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v347';"), 'sw.js must be v347');
   assert.ok(read('sw.js').includes("url.pathname.startsWith('/api/auth/')"), 'sw.js must bypass /api/auth/');
+  assert.ok(read('sw.js').includes("url.pathname.startsWith('/student-dashboard')"), 'sw.js must bypass /student-dashboard');
+  const guardSrc = read('assets/js/student-auth-guard.js');
+  assert.ok(guardSrc.includes("fetch('/api/auth/me'") && guardSrc.includes("credentials: 'include'"), 'student-auth-guard.js must verify session via /api/auth/me');
+  assert.ok(read('assets/js/pages/login.js').includes('window.location.assign(targetUrl)'), 'login.js must navigate with window.location.assign');
   const workerSrc = read('_worker.js');
   assert.ok(workerSrc.includes('findAuthUserByIdentifier(env, rawIdentifier)'), '_worker.js must use findAuthUserByIdentifier');
   assert.ok(workerSrc.includes("startsWith('oauth_disabled_')"), '_worker.js must guard Google-only accounts');
@@ -348,6 +352,101 @@ await check('3. Google-only password guard + Google OAuth start & callback flow'
   } finally {
     globalThis.fetch = origFetch;
   }
+});
+
+await check('4. End-to-end post-login Cookie -> /student-dashboard/ -> /api/auth/me (no redirect loop)', async () => {
+  const db = createMockD1();
+  const { generateSalt, hashPassword } = await import('../functions/api/auth/_utils.js');
+  const loginMod = await import('../functions/api/auth/login.js');
+  const meMod = await import('../functions/api/auth/me.js');
+
+  const salt = generateSalt();
+  const pwHash = await hashPassword('LoopGuard@2026', salt, 100000);
+  const nowUnix = Math.floor(Date.now() / 1000);
+  db.users.set('cso_usr_loop_1', {
+    id: 'cso_usr_loop_1',
+    email: 'looptest@csodisha.com',
+    username: 'looptest',
+    password_hash: pwHash,
+    salt,
+    role: 'candidate',
+    status: 'active',
+    failed_attempts: 0,
+    lockout_until: 0,
+    created_at: nowUnix,
+    updated_at: nowUnix
+  });
+  db.candidates.set('cso_usr_loop_1', {
+    id: 'cso_usr_loop_1',
+    full_name: 'Loop Test Candidate',
+    email: 'looptest@csodisha.com',
+    username: 'looptest',
+    phone: '9876543211',
+    district: 'Cuttack',
+    password_hash: pwHash,
+    salt,
+    target_streams: '["opsc"]'
+  });
+
+  // 1. POST /api/auth/login
+  const loginRes = await loginMod.onRequestPost({
+    request: new Request('https://csodisha.com/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'cf-connecting-ip': '10.0.0.9' },
+      body: JSON.stringify({ identifier: 'looptest@csodisha.com', password: 'LoopGuard@2026' })
+    }),
+    env: { DB: db }
+  });
+  assert.equal(loginRes.status, 200);
+  const loginJson = await loginRes.json();
+  assert.equal(loginJson.ok, true);
+  assert.equal(loginJson.authenticated, true);
+  assert.ok(loginJson.user && loginJson.user.id === 'cso_usr_loop_1');
+  const setCookie = loginRes.headers.get('Set-Cookie');
+  assert.ok(setCookie && setCookie.includes('cso_session='));
+  assert.ok(!/Domain=/i.test(setCookie), 'Session cookie must not hardcode a mismatched Domain attribute');
+  const cookiePair = setCookie.split(';')[0];
+
+  // 2. GET /api/auth/me with captured cookie
+  const meRes = await meMod.onRequestGet({
+    request: new Request('https://csodisha.com/api/auth/me', {
+      headers: { Cookie: cookiePair }
+    }),
+    env: { DB: db }
+  });
+  assert.equal(meRes.status, 200);
+  const meJson = await meRes.json();
+  assert.equal(meJson.ok, true);
+  assert.equal(meJson.authenticated, true);
+  assert.equal(meJson.user.id, 'cso_usr_loop_1');
+
+  // 3. Simulate student-auth-guard.js with empty localStorage + live /api/auth/me
+  const vm = await import('node:vm');
+  let redirectedTo = null;
+  const store = new Map();
+  const sandbox = {
+    document: {
+      documentElement: { setAttribute() {} },
+      getElementById() { return null; }
+    },
+    window: {
+      location: { replace(u) { redirectedTo = u; } },
+      matchMedia: () => ({ matches: false })
+    },
+    localStorage: {
+      getItem: (k) => store.get(k) || null,
+      setItem: (k, v) => store.set(k, String(v)),
+      removeItem: (k) => store.delete(k)
+    },
+    fetch: async (url) => {
+      assert.equal(url, '/api/auth/me');
+      return new Response(JSON.stringify(meJson), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+  };
+  vm.runInNewContext(read('assets/js/student-auth-guard.js'), sandbox);
+  await new Promise((r) => setTimeout(r, 20));
+  assert.equal(redirectedTo, null, 'Authenticated cookie session must NOT redirect back to /login.html');
+  assert.ok(store.get('cso_candidate_session_v1'), 'Guard must sync localStorage from /api/auth/me');
 });
 
 console.log(`\nCandidate Auth v346 verification: ${passed} passed, ${failed} failed.`);

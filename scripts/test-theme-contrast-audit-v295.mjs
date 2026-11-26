@@ -432,7 +432,7 @@ check('8. v303 Candidate Hub sidebar nav container, items & mobile drawer bind t
   const hubHtml = read('student-dashboard/index.html');
   assert.match(hubHtml, /student-dashboard-bp\.css\?v=20261125v3(?:0[3-9]|[1-9]\d)/);
   assert.match(hubHtml, /candidate-hub-v244\.css\?v=20261125v3(?:0[3-9]|[1-9]\d)/);
-  assert.match(hubHtml, /student-dashboard\.js\?v=20261125v3(?:0[3-9]|[1-9]\d)/);
+  assert.match(hubHtml, /student-dashboard\.js\?v=2026112[56]v3(?:0[3-9]|[1-9]\d)/);
 });
 
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);

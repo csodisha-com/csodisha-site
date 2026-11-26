@@ -28,7 +28,7 @@
     try {
       const response = await fetch(endpoint, {
         method: options.method || "GET",
-        credentials: "same-origin",
+        credentials: "include",
         cache: "no-store",
         headers,
         signal: controller.signal,
@@ -172,7 +172,7 @@
     }
 
     if (
-      result.authenticated !== true ||
+      (result.authenticated !== true && result.ok !== true) ||
       !result.user ||
       typeof result.user !== "object"
     ) {

@@ -468,24 +468,29 @@ async function handleStrictD1Login(request, env, ctx = null) {
       try { targetStreams = JSON.parse(candidate.target_streams); } catch(e) {}
     }
 
+    const candidatePayload = candidate ? {
+      id: candidate.id,
+      fullName: candidate.full_name,
+      name: candidate.full_name,
+      email: candidate.email,
+      username: candidate.username || user.username || null,
+      phone: candidate.phone || '',
+      district: candidate.district,
+      targetStreams,
+      role: user.role || 'candidate'
+    } : {
+      id: user.id,
+      email: user.email,
+      username: user.username || null,
+      role: user.role || 'candidate'
+    };
+
     return new Response(JSON.stringify({
+      ok: true,
       success: true,
-      candidate: candidate ? {
-        id: candidate.id,
-        fullName: candidate.full_name,
-        name: candidate.full_name,
-        email: candidate.email,
-        username: candidate.username || user.username || null,
-        phone: candidate.phone || '',
-        district: candidate.district,
-        targetStreams,
-        role: user.role || 'candidate'
-      } : {
-        id: user.id,
-        email: user.email,
-        username: user.username || null,
-        role: user.role || 'candidate'
-      },
+      authenticated: true,
+      user: candidatePayload,
+      candidate: candidatePayload,
       token: sessionToken
     }), {
       status: 200,

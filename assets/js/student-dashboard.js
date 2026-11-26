@@ -957,8 +957,20 @@
 
     const hubRes = hubSettled.status === 'fulfilled' ? hubSettled.value : null;
     if (hubRes && hubRes.status === 401) {
-      performSignOut();
-      return;
+      try {
+        const meCheck = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
+        if (meCheck.status === 401) {
+          performSignOut();
+          return;
+        }
+        const meJson = await meCheck.json().catch(() => null);
+        if (meJson && meJson.authenticated === false) {
+          performSignOut();
+          return;
+        }
+      } catch {
+        // Keep workspace shell if /api/auth/me is temporarily unreachable
+      }
     }
     if (hubRes && hubRes.status === 403) {
       const errData = await hubRes.json().catch(() => ({}));

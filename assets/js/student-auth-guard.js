@@ -22,22 +22,8 @@
     }
   } catch (e) {}
 
-  try {
-    var raw = localStorage.getItem('cso_candidate_session_v1') || localStorage.getItem('cso_candidate_profile');
-    if (!raw) {
-      window.location.replace('/login.html?redirect=' + encodeURIComponent('/student-dashboard/'));
-      return;
-    }
-    var session = JSON.parse(raw);
-    if (!session || (!session.isAuthenticated && !session.email && !session.id)) {
-      localStorage.removeItem('cso_candidate_session_v1');
-      localStorage.removeItem('cso_candidate_profile');
-      localStorage.removeItem('cso_auth_token');
-      window.location.replace('/login.html?redirect=' + encodeURIComponent('/student-dashboard/'));
-      return;
-    }
-
-    // Hydrate candidate identity immediately to eliminate placeholder name flash
+  function hydrateIdentity(session) {
+    if (!session || typeof session !== 'object') return;
     var displayName = String(session.fullName || session.name || '').trim();
     var displayDistrict = String(session.district || '').trim();
     if (displayName) {
@@ -52,7 +38,54 @@
         if (node) node.textContent = displayDistrict;
       });
     }
-  } catch (e) {
+  }
+
+  function clearClientSessionAndRedirect() {
+    try {
+      localStorage.removeItem('cso_candidate_session_v1');
+      localStorage.removeItem('cso_candidate_profile');
+      localStorage.removeItem('cso_auth_token');
+    } catch (e) {}
     window.location.replace('/login.html?redirect=' + encodeURIComponent('/student-dashboard/'));
+  }
+
+  try {
+    var raw = localStorage.getItem('cso_candidate_session_v1') || localStorage.getItem('cso_candidate_profile');
+    if (raw) {
+      var cachedSession = JSON.parse(raw);
+      if (cachedSession && (cachedSession.isAuthenticated || cachedSession.email || cachedSession.id)) {
+        hydrateIdentity(cachedSession);
+      }
+    }
+  } catch (e) {}
+
+  // Authoritative HttpOnly cookie / D1 session check (supports Google OAuth & cookie-only logins)
+  if (typeof fetch === 'function') {
+    fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' })
+      .then(function (res) {
+        if (res.status === 401) {
+          clearClientSessionAndRedirect();
+          return null;
+        }
+        return res.json().catch(function () { return null; }).then(function (data) {
+          if (!data) return;
+          if (res.ok && (data.authenticated || data.ok || data.user)) {
+            var userObj = data.user || data;
+            var payload = Object.assign({}, userObj, { isAuthenticated: true });
+            try {
+              localStorage.setItem('cso_candidate_session_v1', JSON.stringify(payload));
+              localStorage.setItem('cso_candidate_profile', JSON.stringify(payload));
+            } catch (e) {}
+            hydrateIdentity(payload);
+            return;
+          }
+          if (data.authenticated === false) {
+            clearClientSessionAndRedirect();
+          }
+        });
+      })
+      .catch(function () {
+        // Network error / offline: do not bounce authenticated users prematurely
+      });
   }
 })();
