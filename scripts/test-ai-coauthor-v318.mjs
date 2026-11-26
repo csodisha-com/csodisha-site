@@ -240,8 +240,8 @@ await test('5. Wrangler AI binding, migration 0149, CSP compliance & v318 cache 
   const mig = read('migrations/0149_ai_coauthor_v318.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS ai_generation_logs'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v362');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v362';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v363');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v363';"));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('window.CSOAiCoAuthor'));

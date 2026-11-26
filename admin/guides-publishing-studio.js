@@ -410,8 +410,8 @@
       }));
     }
 
-    // Active Cloudflare Worker Secrets only (unconfigured secrets never appear)
-    var activeEnv = envList.filter(function (ep) { return ep && ep.value && ep.configured !== false; });
+    // Active Cloudflare Worker Secrets only (unconfigured secrets never appear; primary Gemini already listed below)
+    var activeEnv = envList.filter(function (ep) { return ep && ep.value && ep.id !== 'env_gemini' && ep.configured !== false; });
     if (activeEnv.length) {
       addGroup('Configured Worker Secrets', activeEnv.map(function (ep) {
         return {
@@ -626,16 +626,110 @@
       btnSave.textContent = '\uD83D\uDCBE Save Provider';
     }
 
+    var healthResultsMap = {};
+    var testingAllBusy = false;
+
+    function buildHealthBadge(res) {
+      if (!res) return null;
+      var ok = Boolean(res.ok);
+      var txt = ok
+        ? ('\u2705 OK \u00B7 ' + Number(res.latency_ms || 1) + 'ms')
+        : ('\u2715 ' + String(res.message || 'Error').slice(0, 68));
+      var badge = el('span', 'cso-aip-health-badge ' + (ok ? 'is-ok' : 'is-err'), txt);
+      if (res.message) badge.title = String(res.message);
+      return badge;
+    }
+
+    function runTestAllActiveApis() {
+      if (testingAllBusy) return;
+      testingAllBusy = true;
+      var btnAll = document.getElementById('btnTestAllAiProviders');
+      if (btnAll) {
+        btnAll.disabled = true;
+        btnAll.textContent = '\u23F3 Testing All Active APIs\u2026';
+      }
+      setModalStatus('\u23F3 Probing all active Worker secrets and enabled D1 custom providers (10-token "Reply with OK")\u2026', 'warn');
+      apiFetch('/api/admin/ai-providers/test', {
+        method: 'POST',
+        body: { test_all: true }
+      }).then(function (r) {
+        var list = (r && Array.isArray(r.results)) ? r.results : [];
+        healthResultsMap = {};
+        list.forEach(function (item) {
+          if (item && item.id) healthResultsMap[item.id] = item;
+        });
+        var total = list.length;
+        var okCount = list.filter(function (x) { return x && x.ok; }).length;
+        if (!total) {
+          setModalStatus('No active Worker secrets or enabled custom AI providers found to test.', 'warn');
+        } else if (okCount === total) {
+          setModalStatus('\u2705 All ' + okCount + '/' + total + ' active AI APIs passed live health check!', 'ok');
+          toast('All ' + okCount + '/' + total + ' active AI APIs are healthy!', 'ok');
+        } else {
+          setModalStatus('\u26A0\uFE0F Health check complete: ' + okCount + '/' + total + ' active APIs OK (' + (total - okCount) + ' need attention).', okCount > 0 ? 'warn' : 'error');
+          toast('AI Health Check: ' + okCount + '/' + total + ' passed.', 'amber');
+        }
+        renderSavedList(cachedCustomAiProviders);
+      }).catch(function (e) {
+        setModalStatus('\u2715 Batch health check failed: ' + e.message, 'error');
+        toast('Batch health check failed: ' + e.message, 'amber');
+      }).finally(function () {
+        testingAllBusy = false;
+        var btnAfter = document.getElementById('btnTestAllAiProviders');
+        if (btnAfter) {
+          btnAfter.disabled = false;
+          btnAfter.textContent = '\u26A1 Test All Active APIs';
+        }
+      });
+    }
+
     function renderSavedList(providers) {
       clear(listHost);
+
+      var envStrip = el('div', 'cso-aip-env-strip');
+      var envHead = el('div', 'cso-aip-env-head');
+      envHead.appendChild(el('strong', 'cso-aip-env-lbl', '\uD83D\uDD10 Active Worker Secrets & Health Check'));
+      var btnTestAll = el('button', 'cso-pill-btn is-accent cso-aip-test-all-btn', testingAllBusy ? '\u23F3 Testing All Active APIs\u2026' : '\u26A1 Test All Active APIs');
+      btnTestAll.type = 'button';
+      btnTestAll.id = 'btnTestAllAiProviders';
+      btnTestAll.disabled = testingAllBusy;
+      btnTestAll.addEventListener('click', runTestAllActiveApis);
+      envHead.appendChild(btnTestAll);
+      envStrip.appendChild(envHead);
+
+      var envChips = el('div', 'cso-aip-env-chips');
+      var renderedHealthIds = {};
       if (cachedEnvAiProviders && cachedEnvAiProviders.length) {
-        var envStrip = el('div', 'cso-aip-env-strip');
-        envStrip.appendChild(el('strong', 'cso-aip-env-lbl', '\uD83D\uDD10 Active Worker Secrets: '));
         cachedEnvAiProviders.forEach(function (ep) {
-          envStrip.appendChild(el('span', 'cso-pill-badge', ep.label + ' (' + ep.model_id + ')'));
+          var chipRow = el('div', 'cso-aip-env-item');
+          chipRow.setAttribute('data-health-id', ep.id);
+          chipRow.appendChild(el('span', 'cso-pill-badge', ep.label + ' (' + ep.model_id + ')'));
+          var hBadge = buildHealthBadge(healthResultsMap[ep.id]);
+          if (hBadge) {
+            chipRow.appendChild(hBadge);
+            renderedHealthIds[ep.id] = true;
+          }
+          envChips.appendChild(chipRow);
         });
-        listHost.appendChild(envStrip);
+      } else {
+        envChips.appendChild(el('span', 'cso-aip-hint', 'No Worker secret API keys detected yet. Add secrets via Wrangler or save a custom key below.'));
       }
+
+      // Render any probed env result not already in cachedEnvAiProviders
+      Object.keys(healthResultsMap).forEach(function (hid) {
+        var hRes = healthResultsMap[hid];
+        if (!hRes || renderedHealthIds[hid] || hRes.source !== 'env') return;
+        var extraRow = el('div', 'cso-aip-env-item');
+        extraRow.setAttribute('data-health-id', hid);
+        extraRow.appendChild(el('span', 'cso-pill-badge', hRes.label + (hRes.model_id ? ' (' + hRes.model_id + ')' : '')));
+        var eb = buildHealthBadge(hRes);
+        if (eb) extraRow.appendChild(eb);
+        envChips.appendChild(extraRow);
+      });
+
+      envStrip.appendChild(envChips);
+      listHost.appendChild(envStrip);
+
       if (!providers || !providers.length) {
         listHost.appendChild(el('p', 'cso-ca-empty', 'No custom AI providers saved in D1 yet. Pick any of the 12 presets above to activate one.'));
         return;
@@ -653,6 +747,8 @@
           el('span', 'cso-pill-badge', typeBadge),
           el('span', 'cso-pill-badge', p.enabled ? 'Enabled' : 'Disabled')
         );
+        var provHealthBadge = buildHealthBadge(healthResultsMap[p.id]);
+        if (provHealthBadge) topLine.appendChild(provHealthBadge);
         var metaLine = el('div', 'cso-aip-item-meta', p.model_id + ' \u00B7 ' + p.base_url + ' \u00B7 Key: ' + (p.api_key_masked || '****'));
         info.append(topLine, metaLine);
 
@@ -698,9 +794,13 @@
             method: 'POST',
             body: { id: p.id }
           }).then(function (r) {
+            healthResultsMap[p.id] = { id: p.id, label: p.label, source: 'custom', ok: true, latency_ms: r.latency_ms || 1, model_id: r.model_id || p.model_id, message: r.message || 'Connected' };
+            renderSavedList(cachedCustomAiProviders);
             setModalStatus('\u2713 ' + p.label + ': ' + (r.message || 'Connected') + ' (' + (r.latency_ms || 0) + ' ms)', 'ok');
             toast(p.label + ' connected in ' + (r.latency_ms || 0) + ' ms!', 'ok');
           }).catch(function (e) {
+            healthResultsMap[p.id] = { id: p.id, label: p.label, source: 'custom', ok: false, latency_ms: 1, model_id: p.model_id, message: e.message || 'Failed' };
+            renderSavedList(cachedCustomAiProviders);
             setModalStatus('\u2715 Test failed for ' + p.label + ': ' + e.message, 'error');
             toast('Test failed: ' + e.message, 'amber');
           }).finally(function () { bTest.disabled = false; });

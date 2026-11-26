@@ -565,9 +565,9 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
 });
 
 // 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v361
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v362 CSS, and cso-candidate-cache-v362 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v362');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v362';"), 'sw.js cache version must be cso-candidate-cache-v362');
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v363 CSS, and cso-candidate-cache-v363 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v363');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v363';"), 'sw.js cache version must be cso-candidate-cache-v363');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -705,9 +705,9 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
   assert.ok(adminHtml.includes('id="headerTranslatorWrap"') && adminHtml.includes('id="btnHeaderOdiaTranslator"') && adminHtml.includes('aria-controls="csoHeaderTranslatorPopover"'), 'admin/index.html must pin #btnHeaderOdiaTranslator in the top header bar');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v362'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v362');
-  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v362'), 'admin/index.html must load studio-translator.js?v=20261126v362');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v362'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v363'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v363');
+  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v363'), 'admin/index.html must load studio-translator.js?v=20261126v363');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v363'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
@@ -1126,6 +1126,93 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   }
   assert.ok(translatorJs.includes('configured_env_providers') && guidesStudioJs.includes('configured_env_providers'), 'Both Guides Studio and Header Translator must sync configured_env_providers');
   assert.ok(studioCss.includes('.cso-aip-preset-groups') && studioCss.includes('.cso-aip-env-strip'), 'studio.css must style v362 preset groups and active env strip');
+
+  // H. v363: 1-Click Batch Health Check (`POST /api/admin/ai-providers/test` with `{ test_all: true }`) & `#btnTestAllAiProviders` UI
+  assert.ok(guidesStudioJs.includes('btnTestAllAiProviders') && guidesStudioJs.includes('test_all: true') && guidesStudioJs.includes('Test All Active APIs'), 'guides-publishing-studio.js must render #btnTestAllAiProviders and post { test_all: true }');
+  assert.ok(studioCss.includes('.cso-aip-health-badge') && studioCss.includes('.cso-aip-test-all-btn'), 'studio.css must style batch health check button & badges');
+
+  // Seed one enabled D1 provider and one disabled D1 provider (disabled must be skipped)
+  const enabledRes = await handleAdminAiProvidersApi(
+    jsonReq('https://csodisha.com/api/admin/ai-providers', 'POST', {
+      label: 'Custom Sarvam Odia',
+      provider_type: 'openai_compatible',
+      base_url: 'https://api.sarvam.ai/v1',
+      model_id: 'sarvam-105b',
+      api_key: 'sarvam_enabled_secret_xyz',
+      priority: 2,
+      enabled: true
+    }),
+    env, adminActor, '', ctx
+  );
+  const enabledProv = (await enabledRes.json()).provider;
+  const disabledRes = await handleAdminAiProvidersApi(
+    jsonReq('https://csodisha.com/api/admin/ai-providers', 'POST', {
+      label: 'Disabled DeepSeek',
+      provider_type: 'openai_compatible',
+      base_url: 'https://api.deepseek.com/v1',
+      model_id: 'deepseek-chat',
+      api_key: 'sk-disabled-secret-000',
+      priority: 9,
+      enabled: false
+    }),
+    env, adminActor, '', ctx
+  );
+  const disabledProv = (await disabledRes.json()).provider;
+
+  const origBatchFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    const u = String(url);
+    if (u.includes('generativelanguage.googleapis.com')) {
+      return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'OK' }] } }] }), { status: 200 });
+    }
+    if (u.includes('api.groq.com')) {
+      return new Response(JSON.stringify({ choices: [{ message: { content: 'OK' } }] }), { status: 200 });
+    }
+    if (u.includes('router.huggingface.co')) {
+      // Simulate upstream echoing secret in 401 error body -> server MUST scrub secret!
+      return new Response('Invalid token hf_secret_echo_test_999', { status: 401 });
+    }
+    if (u.includes('api.sarvam.ai')) {
+      return new Response(JSON.stringify({ choices: [{ message: { content: 'OK' } }] }), { status: 200 });
+    }
+    throw new Error('Unexpected fetch in test_all: ' + u);
+  };
+
+  try {
+    const batchEnv = {
+      ...env,
+      GEMINI_API_KEY: 'gm_primary_secret_111',
+      GROQ_API_KEY: 'gsk_batch_secret_222',
+      HF_TOKEN: 'hf_secret_echo_test_999'
+    };
+    const testAllRes = await handleAdminAiProvidersApi(
+      jsonReq('https://csodisha.com/api/admin/ai-providers/test', 'POST', { test_all: true }),
+      batchEnv, adminActor, 'test', ctx
+    );
+    assert.equal(testAllRes.status, 200);
+    const testAllJson = await testAllRes.json();
+    assert.equal(testAllJson.ok, true);
+    assert.equal(testAllJson.total, 4, 'Should probe 3 active env secrets + 1 enabled D1 provider (skipping disabled D1 row)');
+    assert.equal(testAllJson.passed, 3, '3 probes should succeed and 1 (HF 401) should report ok: false');
+    assert.ok(!testAllJson.results.some((r) => r.id === disabledProv.id), 'Disabled D1 provider must NOT be probed');
+
+    const byId = Object.fromEntries(testAllJson.results.map((r) => [r.id, r]));
+    assert.equal(byId.env_gemini.ok, true);
+    assert.ok(byId.env_gemini.latency_ms >= 1);
+    assert.equal(byId.env_groq.ok, true);
+    assert.equal(byId[enabledProv.id].ok, true);
+    assert.equal(byId.env_huggingface.ok, false);
+
+    // Ensure ZERO raw API keys appear anywhere in serialized test_all JSON response
+    const rawBatchPayload = JSON.stringify(testAllJson);
+    for (const secret of ['gm_primary_secret_111', 'gsk_batch_secret_222', 'hf_secret_echo_test_999', 'sarvam_enabled_secret_xyz', 'sk-disabled-secret-000']) {
+      assert.ok(!rawBatchPayload.includes(secret), `Batch health check MUST NEVER leak raw key: ${secret}`);
+    }
+  } finally {
+    globalThis.fetch = origBatchFetch;
+    await handleAdminAiProvidersApi(jsonReq(`https://csodisha.com/api/admin/ai-providers/${enabledProv.id}`, 'DELETE'), env, adminActor, enabledProv.id, ctx);
+    await handleAdminAiProvidersApi(jsonReq(`https://csodisha.com/api/admin/ai-providers/${disabledProv.id}`, 'DELETE'), env, adminActor, disabledProv.id, ctx);
+  }
   await Promise.all(waits);
 });
 

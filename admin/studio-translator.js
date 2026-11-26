@@ -177,7 +177,7 @@
           return { value: 'custom:' + p.id, label: '\uD83D\uDD11 ' + p.label + ' (' + p.model_id + ')' };
         }));
       }
-      var activeEnv = activeEnvList.filter(function (ep) { return ep && ep.value && ep.configured !== false; });
+      var activeEnv = activeEnvList.filter(function (ep) { return ep && ep.value && ep.id !== 'env_gemini' && ep.configured !== false; });
       if (activeEnv.length) {
         addGrp('Configured Worker Secrets', activeEnv.map(function (ep) {
           return { value: ep.value, label: '\uD83D\uDD10 ' + ep.label + ' (' + ep.model_id + ')' };

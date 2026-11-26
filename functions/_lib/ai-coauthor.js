@@ -1706,34 +1706,63 @@ function getEnvSecretProviders(env) {
   return list;
 }
 
-export function listConfiguredEnvProviders(env) {
+export function getActiveEnvSecretTargets(env) {
   if (!env || typeof env !== 'object') return [];
-  const active = [];
+  const targets = [];
+  if (env.GEMINI_API_KEY && String(env.GEMINI_API_KEY).trim()) {
+    targets.push({
+      id: 'env_gemini',
+      value: 'gemini:' + GEMINI_PRO_FIRST_MODELS[0],
+      env_var: 'GEMINI_API_KEY',
+      label: 'Google AI Studio (Primary)',
+      provider_type: 'gemini',
+      base_url: 'https://generativelanguage.googleapis.com/v1beta',
+      model_id: GEMINI_PRO_FIRST_MODELS[0],
+      api_key: String(env.GEMINI_API_KEY).trim(),
+      source: 'env'
+    });
+  }
   if (env.GEMINI_API_KEY_2 && String(env.GEMINI_API_KEY_2).trim()) {
-    active.push({
+    targets.push({
       id: 'env_gemini_2',
       value: 'env:gemini_2',
       env_var: 'GEMINI_API_KEY_2',
       label: 'Google AI Studio Backup (Env)',
       provider_type: 'gemini',
+      base_url: 'https://generativelanguage.googleapis.com/v1beta',
       model_id: GEMINI_PRO_FIRST_MODELS[0],
-      configured: true
+      api_key: String(env.GEMINI_API_KEY_2).trim(),
+      source: 'env'
     });
   }
   for (const def of ENV_SECRET_PROVIDER_DEFS) {
     const secretVal = env[def.envVar] ? String(env[def.envVar]).trim() : '';
     if (!secretVal) continue;
-    active.push({
+    targets.push({
       id: def.id,
       value: def.provider_code,
       env_var: def.envVar,
       label: def.label,
       provider_type: def.provider_type,
+      base_url: def.base_url,
       model_id: def.model_id,
-      configured: true
+      api_key: secretVal,
+      source: 'env'
     });
   }
-  return active;
+  return targets;
+}
+
+export function listConfiguredEnvProviders(env) {
+  return getActiveEnvSecretTargets(env).map((t) => ({
+    id: t.id,
+    value: t.value,
+    env_var: t.env_var,
+    label: t.label,
+    provider_type: t.provider_type,
+    model_id: t.model_id,
+    configured: true
+  }));
 }
 
 async function callSingleCustomProvider(provider, prompt, mode, opts = {}) {

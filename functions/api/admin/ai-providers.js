@@ -16,6 +16,7 @@ import {
   maskApiKey,
   validateProviderBaseUrl,
   testAiProviderConnection,
+  getActiveEnvSecretTargets,
   listConfiguredEnvProviders
 } from '../../_lib/ai-coauthor.js';
 import { recordAdminAuditLog } from './system-ops.js';
@@ -52,6 +53,15 @@ function makeProviderId(label) {
   return `aip_${slug}_${Date.now().toString(36).slice(-5)}${Math.random().toString(36).slice(2, 5)}`;
 }
 
+function scrubSecretFromMessage(rawMsg, secretKey) {
+  let msg = String(rawMsg || '').trim();
+  const key = String(secretKey || '').trim();
+  if (key && key.length >= 6 && msg.includes(key)) {
+    msg = msg.split(key).join(maskApiKey(key));
+  }
+  return msg.slice(0, 180);
+}
+
 export async function handleAdminAiProvidersApi(request, env, actor, id = '', ctx = null) {
   if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database binding unavailable');
   await ensureAiProvidersSchema(env.DB);
@@ -69,9 +79,66 @@ export async function handleAdminAiProvidersApi(request, env, actor, id = '', ct
     return json({ ok: true, providers, configured_env_providers });
   }
 
-  // POST /api/admin/ai-providers/test -> test either saved id or unsaved payload
+  // POST /api/admin/ai-providers/test -> batch health check (`{ test_all: true }`) OR single provider test
   if (method === 'POST' && id === 'test') {
     const body = await readJson(request, 24000);
+
+    // v363: 1-Click Batch Health Probe for all active Worker secrets & enabled D1 custom providers
+    if (body && (body.test_all === true || body.test_all === 1 || body.test_all === '1')) {
+      const envTargets = getActiveEnvSecretTargets(env);
+      const { results: dbRows } = await env.DB.prepare(
+        `SELECT id, label, provider_type, base_url, model_id, api_key, priority
+         FROM ai_custom_providers
+         WHERE enabled = 1
+         ORDER BY priority ASC, created_at ASC`
+      ).all();
+
+      const customTargets = (dbRows || [])
+        .filter((r) => r && r.api_key && r.base_url && r.model_id)
+        .map((r) => ({
+          id: String(r.id),
+          label: String(r.label || 'Custom AI'),
+          provider_type: String(r.provider_type || 'openai_compatible').trim().toLowerCase(),
+          base_url: String(r.base_url || '').trim(),
+          model_id: String(r.model_id || '').trim(),
+          api_key: String(r.api_key || '').trim(),
+          source: 'custom'
+        }));
+
+      const allTargets = [...envTargets, ...customTargets];
+      const settled = await Promise.allSettled(
+        allTargets.map(async (t) => {
+          const probe = await testAiProviderConnection(t);
+          return {
+            id: t.id,
+            label: t.label,
+            source: t.source,
+            ok: Boolean(probe && probe.ok),
+            latency_ms: Number((probe && probe.latency_ms) || 1),
+            model_id: String((probe && probe.model_id) || t.model_id || ''),
+            message: scrubSecretFromMessage((probe && probe.message) || (probe && probe.ok ? 'OK' : 'Failed'), t.api_key)
+          };
+        })
+      );
+
+      const results = settled.map((entry, idx) => {
+        const t = allTargets[idx];
+        if (entry.status === 'fulfilled') return entry.value;
+        return {
+          id: t.id,
+          label: t.label,
+          source: t.source,
+          ok: false,
+          latency_ms: 1,
+          model_id: String(t.model_id || ''),
+          message: scrubSecretFromMessage((entry.reason && entry.reason.message) || 'Probe failed', t.api_key)
+        };
+      });
+
+      const passed = results.filter((r) => r.ok).length;
+      return json({ ok: true, total: results.length, passed, results });
+    }
+
     let target = null;
 
     if (body && body.id && !String(body.api_key || '').trim()) {
@@ -122,6 +189,9 @@ export async function handleAdminAiProvidersApi(request, env, actor, id = '', ct
     }
 
     const testResult = await testAiProviderConnection(target);
+    if (testResult && testResult.message) {
+      testResult.message = scrubSecretFromMessage(testResult.message, target.api_key);
+    }
     return json(testResult, testResult.ok ? 200 : 502);
   }
 
