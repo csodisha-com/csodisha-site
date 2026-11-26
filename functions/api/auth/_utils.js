@@ -309,3 +309,143 @@ export async function getSessionFromRequest(request, env) {
   if (!row || (row.expires_at || 0) <= nowUnix) return null;
   return { token: row.token, userId: row.user_id, email: row.email, role: row.role, expiresAt: row.expires_at };
 }
+
+// ---------------------------------------------------------------------------
+// Idempotent D1 Auth Schema Guards & Unified User Lookup (v346)
+// ---------------------------------------------------------------------------
+
+let _authSchemaEnsured = false;
+
+export async function ensureCandidateAuthSchema(env) {
+  if (_authSchemaEnsured || !env || !env.DB) return;
+  try {
+    await env.DB.batch([
+      env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS users (
+          id TEXT PRIMARY KEY,
+          email TEXT NOT NULL UNIQUE,
+          username TEXT,
+          password_hash TEXT NOT NULL,
+          salt TEXT NOT NULL,
+          role TEXT NOT NULL DEFAULT 'candidate',
+          status TEXT DEFAULT 'active',
+          google_sub TEXT,
+          avatar_url TEXT,
+          auth_provider TEXT DEFAULT 'password',
+          failed_attempts INTEGER DEFAULT 0,
+          lockout_until INTEGER DEFAULT 0,
+          created_at INTEGER NOT NULL DEFAULT 0,
+          updated_at INTEGER NOT NULL DEFAULT 0,
+          last_login_at DATETIME
+        )
+      `),
+      env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS candidates (
+          id TEXT PRIMARY KEY,
+          full_name TEXT NOT NULL,
+          email TEXT UNIQUE NOT NULL,
+          username TEXT,
+          phone TEXT,
+          district TEXT NOT NULL DEFAULT 'Khordha (Bhubaneswar)',
+          password_hash TEXT NOT NULL DEFAULT '',
+          salt TEXT NOT NULL DEFAULT '',
+          failed_attempts INTEGER DEFAULT 0,
+          lockout_until INTEGER DEFAULT 0,
+          target_streams TEXT NOT NULL DEFAULT '["opsc","ossc"]',
+          google_sub TEXT,
+          avatar_url TEXT,
+          auth_provider TEXT DEFAULT 'password',
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          last_login_at DATETIME
+        )
+      `),
+      env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS sessions (
+          token TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          email TEXT NOT NULL,
+          role TEXT NOT NULL DEFAULT 'candidate',
+          created_at INTEGER NOT NULL,
+          expires_at INTEGER NOT NULL
+        )
+      `)
+    ]);
+  } catch (_) {}
+
+  const alterStatements = [
+    'ALTER TABLE users ADD COLUMN username TEXT',
+    "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'candidate'",
+    "ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'active'",
+    'ALTER TABLE users ADD COLUMN google_sub TEXT',
+    'ALTER TABLE users ADD COLUMN avatar_url TEXT',
+    "ALTER TABLE users ADD COLUMN auth_provider TEXT DEFAULT 'password'",
+    'ALTER TABLE users ADD COLUMN last_login_at DATETIME',
+    'ALTER TABLE candidates ADD COLUMN username TEXT',
+    'ALTER TABLE candidates ADD COLUMN phone TEXT',
+    'ALTER TABLE candidates ADD COLUMN google_sub TEXT',
+    'ALTER TABLE candidates ADD COLUMN avatar_url TEXT',
+    "ALTER TABLE candidates ADD COLUMN auth_provider TEXT DEFAULT 'password'",
+    'ALTER TABLE candidates ADD COLUMN last_login_at DATETIME'
+  ];
+  for (const sql of alterStatements) {
+    try {
+      await env.DB.prepare(sql).run();
+    } catch (_) {
+      // Column already exists
+    }
+  }
+  _authSchemaEnsured = true;
+}
+
+/**
+ * Look up an account by Email, User ID (`id`), or `username` across `users` and `candidates`.
+ */
+export async function findAuthUserByIdentifier(env, rawIdentifier) {
+  const clean = String(rawIdentifier || '').trim().toLowerCase();
+  if (!clean || !env || !env.DB) return { userRecord: null, candidateMeta: null, cleanIdentifier: clean };
+
+  await ensureCandidateAuthSchema(env);
+
+  let userRecord = await env.DB.prepare(`
+    SELECT id, email, username, password_hash, salt, failed_attempts, lockout_until, role, status, auth_provider
+    FROM users
+    WHERE LOWER(email) = ? OR LOWER(id) = ? OR LOWER(COALESCE(username, '')) = ?
+    LIMIT 1
+  `).bind(clean, clean, clean).first();
+
+  let candidateMeta = null;
+  if (userRecord) {
+    candidateMeta = await env.DB.prepare(`
+      SELECT id, full_name, email, username, phone, district, target_streams
+      FROM candidates
+      WHERE id = ? OR LOWER(email) = ?
+      LIMIT 1
+    `).bind(userRecord.id, String(userRecord.email || '').toLowerCase()).first();
+  } else {
+    const cand = await env.DB.prepare(`
+      SELECT id, full_name, email, username, phone, district, password_hash, salt, failed_attempts, lockout_until, target_streams, auth_provider
+      FROM candidates
+      WHERE LOWER(email) = ? OR LOWER(id) = ? OR LOWER(COALESCE(username, '')) = ?
+      LIMIT 1
+    `).bind(clean, clean, clean).first();
+
+    if (cand) {
+      userRecord = {
+        id: cand.id,
+        email: cand.email,
+        username: cand.username || null,
+        password_hash: cand.password_hash,
+        salt: cand.salt,
+        failed_attempts: cand.failed_attempts || 0,
+        lockout_until: cand.lockout_until || 0,
+        role: 'candidate',
+        status: 'active',
+        auth_provider: cand.auth_provider || 'password',
+        _fromCandidatesOnly: true
+      };
+      candidateMeta = cand;
+    }
+  }
+
+  return { userRecord, candidateMeta, cleanIdentifier: clean };
+}

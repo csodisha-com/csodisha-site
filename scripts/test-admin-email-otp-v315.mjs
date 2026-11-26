@@ -31,8 +31,15 @@ function createMockDb(seedUsers = [], seedFlags = []) {
     if (/^SELECT enabled FROM feature_flags WHERE key = 'admin_email_otp_enabled'/i.test(s)) {
       return { first: flags.find((f) => f.key === 'admin_email_otp_enabled') || null };
     }
-    if (/^SELECT id, email, password_hash, salt, failed_attempts, lockout_until, role FROM users WHERE email = \?/i.test(s)) {
-      return { first: users.find((u) => u.email === params[0]) || null };
+    if (/^SELECT .* FROM users WHERE (?:email = \?|LOWER\(email\) = \?)/i.test(s)) {
+      const ident = String(params[0] || '').toLowerCase();
+      return {
+        first: users.find((u) =>
+          String(u.email || '').toLowerCase() === ident ||
+          String(u.id || '').toLowerCase() === ident ||
+          String(u.username || '').toLowerCase() === ident
+        ) || null
+      };
     }
     if (/^SELECT id, email, role FROM users WHERE id = \?/i.test(s)) {
       return { first: users.find((u) => u.id === params[0]) || null };
@@ -270,8 +277,8 @@ await test('4. Strict CSP, 4-theme tokens, migration 0148 & v315 cache sync', as
   const loginJs = read('admin/cms/login.js');
   assert.ok(!/\.innerHTML|\.outerHTML|insertAdjacentHTML|\.style\./.test(loginJs), 'admin/cms/login.js must remain CSP-safe');
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v345');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v345';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v346');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v346';"));
 });
 
 console.log(`\n=== Admin Email OTP v315 Results: ${passed} passed, 0 failed ===\n`);

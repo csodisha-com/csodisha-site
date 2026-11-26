@@ -15,7 +15,8 @@ import {
   sanitizeFullName,
   constantTimeEqual,
   createSession,
-  buildSessionCookie
+  buildSessionCookie,
+  ensureCandidateAuthSchema
 } from './_utils.js';
 
 const OAUTH_STATE_COOKIE = 'cso_oauth_state';
@@ -41,18 +42,25 @@ function clearStateCookie() {
   return buildStateCookie('', 0);
 }
 
+function sanitizeSafeNext(raw) {
+  const s = String(raw || '').trim();
+  if (!s || !s.startsWith('/') || s.startsWith('//')) return '';
+  if (/^\/(?:login|signup|reset-password)(?:\.html)?(?:\/|$|\?)/i.test(s)) return '';
+  return s.slice(0, 300);
+}
+
 function parseStateCookie(request) {
   const cookie = request.headers.get('Cookie') || '';
   const match = cookie.match(/(?:^|;\s*)cso_oauth_state=([^;]+)/);
   if (!match) return null;
   try {
     const decoded = decodeURIComponent(match[1].trim());
-    const idx = decoded.indexOf(':');
-    if (idx === -1) return null;
-    const state = decoded.slice(0, idx);
-    const mode = decoded.slice(idx + 1) === 'signup' ? 'signup' : 'login';
+    const parts = decoded.split(':');
+    const state = parts[0] || '';
+    const mode = parts[1] === 'signup' ? 'signup' : 'login';
+    const next = parts.length >= 3 ? sanitizeSafeNext(parts.slice(2).join(':')) : '';
     if (!state || !/^[0-9a-f]{32,64}$/i.test(state)) return null;
-    return { state, mode };
+    return { state, mode, next };
   } catch (_e) {
     return null;
   }
@@ -95,6 +103,7 @@ export async function handleGoogleAuthStart({ request, env }) {
   }
 
   const state = generateOAuthState();
+  const nextPath = sanitizeSafeNext(url.searchParams.get('next') || url.searchParams.get('redirect'));
   const redirectUri = `${url.origin}/api/auth/google/callback`;
   const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
   authUrl.searchParams.set('client_id', clientId);
@@ -104,13 +113,15 @@ export async function handleGoogleAuthStart({ request, env }) {
   authUrl.searchParams.set('state', state);
   authUrl.searchParams.set('prompt', 'select_account');
 
-  return redirectWithCookies(authUrl.toString(), [buildStateCookie(`${state}:${mode}`)]);
+  const statePayload = nextPath ? `${state}:${mode}:${nextPath}` : `${state}:${mode}`;
+  return redirectWithCookies(authUrl.toString(), [buildStateCookie(statePayload)]);
 }
 
 export async function handleGoogleAuthCallback({ request, env }) {
   const url = new URL(request.url);
   const parsedCookie = parseStateCookie(request);
   const mode = parsedCookie ? parsedCookie.mode : 'login';
+  const nextPath = parsedCookie ? parsedCookie.next : '';
   const fallbackPath = mode === 'signup' ? '/signup.html' : '/login.html';
   const clearedCookie = clearStateCookie();
 
@@ -129,6 +140,7 @@ export async function handleGoogleAuthCallback({ request, env }) {
   }
 
   try {
+    await ensureCandidateAuthSchema(env);
     const redirectUri = `${url.origin}/api/auth/google/callback`;
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -193,12 +205,16 @@ export async function handleGoogleAuthCallback({ request, env }) {
 
     // 1. Check existing user in `users` by google_sub or lowercase email
     const userRow = await env.DB.prepare(
-      'SELECT id, email, role, google_sub, avatar_url FROM users WHERE google_sub = ? OR LOWER(email) = ? LIMIT 1'
+      'SELECT id, email, role, status, google_sub, avatar_url FROM users WHERE google_sub = ? OR LOWER(email) = ? LIMIT 1'
     ).bind(googleSub, cleanEmail).first();
 
     // Admin isolation: never allow Google OAuth to sign into staff/admin accounts
     if (userRow && (userRow.role === 'admin' || userRow.role === 'editor')) {
       return redirectWithCookies('/login.html?error=google_admin_blocked', [clearedCookie]);
+    }
+    const acctStatus = userRow && userRow.status ? String(userRow.status).toLowerCase() : 'active';
+    if (acctStatus === 'blocked' || acctStatus === 'suspended' || acctStatus === 'banned') {
+      return redirectWithCookies('/login.html?error=account_restricted', [clearedCookie]);
     }
 
     const candRow = await env.DB.prepare(
@@ -284,7 +300,7 @@ export async function handleGoogleAuthCallback({ request, env }) {
       role: 'candidate'
     });
     const sessionCookie = buildSessionCookie(sessionToken);
-    const dest = isNew ? '/student-dashboard/?welcome=1' : '/student-dashboard/';
+    const dest = nextPath ? nextPath : (isNew ? '/student-dashboard/?welcome=1' : '/student-dashboard/');
 
     return redirectWithCookies(dest, [sessionCookie, clearedCookie]);
   } catch (err) {

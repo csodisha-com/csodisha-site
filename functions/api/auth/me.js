@@ -9,7 +9,8 @@
 import {
   CORS_HEADERS,
   jsonResponse,
-  getSessionFromRequest
+  getSessionFromRequest,
+  ensureCandidateAuthSchema
 } from './_utils.js';
 import { getCandidateControls } from '../../_lib/candidate-controls.js';
 import { getCandidateGovernance } from '../../_lib/candidate-hub-governance.js';
@@ -26,6 +27,8 @@ export async function onRequestGet({ request, env }) {
     if (!env || !env.DB) {
       return jsonResponse({ success: false, authenticated: false, error: 'Database service unavailable' }, 500);
     }
+
+    await ensureCandidateAuthSchema(env);
 
     const session = await getSessionFromRequest(request, env);
     if (!session) {

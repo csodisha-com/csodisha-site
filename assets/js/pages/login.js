@@ -55,12 +55,18 @@
       try {
         const errCode = new URLSearchParams(window.location.search).get('error');
         const oauthErrors = {
-          google_not_configured: 'Google sign-in is not configured on this environment yet. Please sign in with your email and password.',
-          google_auth_failed: 'Google sign-in could not be completed. Please try again or use your email and password.',
-          google_admin_blocked: 'Staff and admin accounts must sign in through the dedicated Admin portal.'
+          google_not_configured: 'Google sign-in is not configured on this environment yet. Please sign in with your User ID / email and password.',
+          google_auth_failed: 'Google sign-in could not be completed. Please try again or use your User ID / email and password.',
+          google_admin_blocked: 'Staff and admin accounts must sign in through the dedicated Admin portal.',
+          account_restricted: 'Your candidate account is currently restricted. Please contact support.'
         };
         if (errCode && oauthErrors[errCode]) {
           showError('auth-error-msg', oauthErrors[errCode]);
+        }
+        const googleBtn = document.getElementById('btn-google-login');
+        const nextParam = new URLSearchParams(window.location.search).get('next') || new URLSearchParams(window.location.search).get('redirect');
+        if (googleBtn && nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')) {
+          googleBtn.href = '/api/auth/google?mode=login&next=' + encodeURIComponent(nextParam);
         }
       } catch (e) {}
 
@@ -138,11 +144,11 @@
         const hp = document.getElementById('login-website');
         if (hp && hp.value) return;
 
-        const email = emailInput.value.trim().toLowerCase();
+        const identifier = emailInput.value.trim().toLowerCase();
         const password = pwInput.value;
 
-        if (!email || !email.includes('@')) {
-          showError('auth-error-msg', 'Please enter a valid candidate email address.', emailInput);
+        if (!identifier || identifier.length < 2) {
+          showError('auth-error-msg', 'Please enter your candidate Email Address or User ID.', emailInput);
           emailInput.focus();
           return;
         }
@@ -163,7 +169,7 @@
             credentials: 'same-origin',
             cache: 'no-store',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({ identifier, email: identifier, password }),
             signal: controller.signal
           });
           clearTimeout(timeoutId);

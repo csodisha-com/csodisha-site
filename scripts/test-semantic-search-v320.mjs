@@ -217,8 +217,8 @@ await test('4. Wrangler Vectorize binding, migration 0151, CSP compliance & v320
   const mig = read('migrations/0151_semantic_search_v320.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS semantic_index_items'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v345');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v345';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v346');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v346';"));
   assert.ok(read('migrations/0152_ask_ai_answer_cache_v321.sql').includes('CREATE TABLE IF NOT EXISTS semantic_answer_cache'));
 
   const js = read('assets/js/semantic-search.js');

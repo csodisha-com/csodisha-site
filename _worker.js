@@ -21,7 +21,13 @@ import {
   isAdminEmailOtpEnabled,
   createAndSendAdminEmailOtp
 } from './functions/_lib/admin-email-otp.js';
-import { checkRateLimit, createSession, buildSessionCookie } from './functions/api/auth/_utils.js';
+import {
+  checkRateLimit,
+  createSession,
+  buildSessionCookie,
+  constantTimeEqual,
+  findAuthUserByIdentifier
+} from './functions/api/auth/_utils.js';
 import { handleAdminApi } from './functions/api/admin/_router.js';
 import { isTwoFactorConfigured, canSendOtp, issueOtp, deliverOtp, verifyTwoFactor, OTP_RESEND_SECONDS } from './functions/_lib/admin-2fa.js';
 import { checkReadOnlyFreezeGuard } from './functions/_lib/ops-sentinel.js';
@@ -220,58 +226,59 @@ async function handleAdminSendOtp(request, env) {
 
 // Strict D1-backed login handler
 async function handleStrictD1Login(request, env, ctx = null) {
+  const noStoreHeaders = {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'no-store, private, max-age=0',
+    'Pragma': 'no-cache'
+  };
   try {
     let body = {};
     try {
       body = await request.json();
     } catch {
-      return new Response(JSON.stringify({ error: 'Invalid JSON request payload' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Invalid JSON request payload' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: noStoreHeaders
       });
     }
 
-    const { email, password } = body;
-    if (!email || !password) {
-      return new Response(JSON.stringify({ error: 'Invalid email or password' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
+    const rawIdentifier = body.identifier || body.userId || body.username || body.email;
+    const password = body.password;
+    if (!rawIdentifier || !password) {
+      return new Response(JSON.stringify({ success: false, error: 'Please enter your Email / User ID and password.' }), {
+        status: 400,
+        headers: noStoreHeaders
       });
     }
 
-    // 1. Normalize email
-    const cleanEmail = email.trim().toLowerCase();
-
-    // 1b. Rate limiting: 10 login attempts per IP per 15 minutes
+    // 1. Rate limiting: 10 login attempts per IP per 15 minutes
     const clientIP = request.headers.get('cf-connecting-ip') ||
                      request.headers.get('x-forwarded-for') ||
                      'unknown-ip';
     const rateCheck = checkRateLimit(`login_${clientIP}`, 10, 15 * 60 * 1000);
     if (!rateCheck.allowed) {
-      return new Response(JSON.stringify({ error: 'Too many authentication attempts. Please try again later.' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Too many authentication attempts. Please try again later.' }), {
         status: 429,
-        headers: { 'Content-Type': 'application/json', 'Retry-After': String(rateCheck.retryAfter) }
+        headers: { ...noStoreHeaders, 'Retry-After': String(rateCheck.retryAfter) }
       });
     }
 
-    // 2. Query D1 strictly
+    // 2. Query D1 strictly (supports Email, User ID, or Username across users & candidates)
     if (!env || !env.DB) {
-      return new Response(JSON.stringify({ error: 'Database binding unavailable' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Database binding unavailable' }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: noStoreHeaders
       });
     }
 
-    const user = await env.DB.prepare(
-      'SELECT id, email, password_hash, salt, failed_attempts, lockout_until, role FROM users WHERE email = ?'
-    ).bind(cleanEmail).first();
+    const { userRecord: user, candidateMeta } = await findAuthUserByIdentifier(env, rawIdentifier);
 
     // 3. If user does not exist: Execute dummy PBKDF2 derivation with static salt to prevent timing leaks
     // Cloudflare Workers Web Crypto caps PBKDF2 iterations at 100,000
     if (!user) {
       const dummyKey = await crypto.subtle.importKey(
         'raw',
-        new TextEncoder().encode(password),
+        new TextEncoder().encode(String(password)),
         { name: 'PBKDF2' },
         false,
         ['deriveBits']
@@ -286,25 +293,48 @@ async function handleStrictD1Login(request, env, ctx = null) {
         dummyKey,
         256
       );
-      return new Response(JSON.stringify({ error: 'Invalid email or password' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Invalid User ID / email or password.' }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' }
+        headers: noStoreHeaders
+      });
+    }
+
+    // 3b. Account status check
+    const acctStatus = String(user.status || 'active').toLowerCase();
+    if (acctStatus === 'blocked' || acctStatus === 'suspended' || acctStatus === 'banned') {
+      return new Response(JSON.stringify({
+        success: false,
+        error: `Your account is currently ${acctStatus}. Please contact support.`
+      }), {
+        status: 403,
+        headers: noStoreHeaders
       });
     }
 
     // 4. Check lockout
     const now = Math.floor(Date.now() / 1000);
     if (user.lockout_until && user.lockout_until > now) {
-      return new Response(JSON.stringify({ error: 'Account temporarily locked due to multiple failed attempts. Please try again later.' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Account temporarily locked due to multiple failed attempts. Please try again later.' }), {
         status: 429,
-        headers: { 'Content-Type': 'application/json' }
+        headers: noStoreHeaders
+      });
+    }
+
+    // 4b. Guard Google-only accounts or missing salt/hash before calling hexToBuf
+    if (!user.salt || !user.password_hash || String(user.password_hash).startsWith('oauth_disabled_')) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'This account uses Google Sign-In. Please click "Continue with Google" or use Forgot Password to set a password.'
+      }), {
+        status: 401,
+        headers: noStoreHeaders
       });
     }
 
     // 5. Hash incoming password with user.salt using 100,000 PBKDF2 iterations (Workers runtime limit)
     const passKey = await crypto.subtle.importKey(
       'raw',
-      new TextEncoder().encode(password),
+      new TextEncoder().encode(String(password)),
       { name: 'PBKDF2' },
       false,
       ['deriveBits']
@@ -323,17 +353,20 @@ async function handleStrictD1Login(request, env, ctx = null) {
 
     const derivedHex = bufToHex(derivedBits);
 
-    // 6. Compare derived hash with user.password_hash
-    if (derivedHex !== user.password_hash) {
+    // 6. Compare derived hash with user.password_hash (constant-time)
+    if (!constantTimeEqual(derivedHex, user.password_hash)) {
       const nextAttempts = (user.failed_attempts || 0) + 1;
       const lockUntil = nextAttempts >= 5 ? now + 900 : 0;
-      await env.DB.prepare(
-        'UPDATE users SET failed_attempts = ?, lockout_until = ? WHERE id = ?'
-      ).bind(nextAttempts, lockUntil, user.id).run();
+      await env.DB.batch([
+        env.DB.prepare('UPDATE users SET failed_attempts = ?, lockout_until = ?, updated_at = ? WHERE id = ?')
+          .bind(nextAttempts, lockUntil, now, user.id),
+        env.DB.prepare('UPDATE candidates SET failed_attempts = ?, lockout_until = ? WHERE id = ?')
+          .bind(nextAttempts, lockUntil, user.id)
+      ]).catch(() => {});
 
-      return new Response(JSON.stringify({ error: 'Invalid email or password' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Invalid User ID / email or password.' }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' }
+        headers: noStoreHeaders
       });
     }
 
@@ -397,10 +430,13 @@ async function handleStrictD1Login(request, env, ctx = null) {
       }
     }
 
-    // On match: reset attempts and lockout
-    await env.DB.prepare(
-      'UPDATE users SET failed_attempts = 0, lockout_until = 0 WHERE id = ?'
-    ).bind(user.id).run();
+    // On match: reset attempts, lockout, and update last_login_at
+    await env.DB.batch([
+      env.DB.prepare('UPDATE users SET failed_attempts = 0, lockout_until = 0, updated_at = ?, last_login_at = CURRENT_TIMESTAMP WHERE id = ?')
+        .bind(now, user.id),
+      env.DB.prepare('UPDATE candidates SET failed_attempts = 0, lockout_until = 0, last_login_at = CURRENT_TIMESTAMP WHERE id = ?')
+        .bind(user.id)
+    ]).catch(() => {});
 
     // Create an active server session (opaque 256-bit token, 30-day TTL)
     // instead of exposing the raw user id as the session token.
@@ -423,9 +459,9 @@ async function handleStrictD1Login(request, env, ctx = null) {
     }
 
     // Fetch candidate profile from candidates table for the response payload
-    const candidate = await env.DB.prepare(
-      'SELECT id, full_name, email, phone, district, target_streams FROM candidates WHERE id = ? OR email = ?'
-    ).bind(user.id, cleanEmail).first();
+    const candidate = candidateMeta || await env.DB.prepare(
+      'SELECT id, full_name, email, username, phone, district, target_streams FROM candidates WHERE id = ? OR LOWER(email) = ?'
+    ).bind(user.id, String(user.email || '').toLowerCase()).first();
 
     let targetStreams = ['opsc', 'ossc'];
     if (candidate && candidate.target_streams) {
@@ -439,25 +475,31 @@ async function handleStrictD1Login(request, env, ctx = null) {
         fullName: candidate.full_name,
         name: candidate.full_name,
         email: candidate.email,
+        username: candidate.username || user.username || null,
         phone: candidate.phone || '',
         district: candidate.district,
         targetStreams,
         role: user.role || 'candidate'
-      } : { id: user.id, email: user.email, role: user.role || 'candidate' },
+      } : {
+        id: user.id,
+        email: user.email,
+        username: user.username || null,
+        role: user.role || 'candidate'
+      },
       token: sessionToken
     }), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
+        ...noStoreHeaders,
         'Set-Cookie': buildSessionCookie(sessionToken)
       }
     });
 
   } catch (err) {
     console.error('Strict D1 Login Error:', err);
-    return new Response(JSON.stringify({ error: 'Invalid email or password' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' }
+    return new Response(JSON.stringify({ success: false, error: 'Authentication service error. Please try again.' }), {
+      status: 500,
+      headers: noStoreHeaders
     });
   }
 }

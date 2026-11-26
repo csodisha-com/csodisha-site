@@ -10,7 +10,9 @@ import {
   hashPassword,
   checkRateLimit,
   createSession,
-  buildSessionCookie
+  buildSessionCookie,
+  constantTimeEqual,
+  findAuthUserByIdentifier
 } from './_utils.js';
 import { hasAccountTotpEnabled, verifyAccountTotpOrRecovery } from '../admin/totp.js';
 import { isTwoFactorConfigured, canSendOtp, verifyTwoFactor } from '../../_lib/admin-2fa.js';
@@ -46,17 +48,18 @@ export async function onRequestPost({ request, env }) {
       return jsonResponse({ success: false, error: 'Invalid JSON request payload' }, 400);
     }
 
-    const { email, password } = body;
+    const rawIdentifier = body.identifier || body.userId || body.username || body.email;
+    const password = body.password;
 
-    if (!email || !password) {
+    if (!rawIdentifier || !password) {
       return jsonResponse({
         success: false,
-        error: 'Invalid email or password'
-      }, 401);
+        error: 'Please enter your Email / User ID and password.'
+      }, 400);
     }
 
-    // Input sanitization: Trim and normalize email to lowercase
-    const cleanEmail = String(email).trim().toLowerCase();
+    // Input sanitization: Trim and normalize identifier to lowercase
+    const cleanEmail = String(rawIdentifier).trim().toLowerCase();
     const passStr = String(password);
     const nowUnix = Math.floor(Date.now() / 1000);
 
@@ -76,30 +79,8 @@ export async function onRequestPost({ request, env }) {
       });
     }
 
-    // 1. Look up user record (from users or candidates table)
-    let userRecord = await env.DB.prepare(`
-      SELECT id, email, password_hash, salt, failed_attempts, lockout_until, role
-      FROM users WHERE email = ?
-    `).bind(cleanEmail).first();
-
-    let candidateMeta = null;
-
-    if (!userRecord) {
-      // Check legacy/profile candidates table
-      const cand = await env.DB.prepare(`
-        SELECT id, full_name, email, district, password_hash, salt, failed_attempts, lockout_until, target_streams
-        FROM candidates WHERE email = ?
-      `).bind(cleanEmail).first();
-
-      if (cand) {
-        userRecord = cand;
-        candidateMeta = cand;
-      }
-    } else {
-      candidateMeta = await env.DB.prepare(`
-        SELECT full_name, district, target_streams FROM candidates WHERE id = ?
-      `).bind(userRecord.id).first();
-    }
+    // 1. Look up user record by Email, User ID, or Username (from users or candidates table)
+    const { userRecord, candidateMeta } = await findAuthUserByIdentifier(env, cleanEmail);
 
     // Timing-attack defense:
     // If the user does not exist in D1, run a dummy PBKDF2 derivation with identical 100,000 iteration count
@@ -109,8 +90,16 @@ export async function onRequestPost({ request, env }) {
       await hashPassword(passStr, dummySalt, 100000);
       return jsonResponse({
         success: false,
-        error: 'Invalid email or password'
+        error: 'Invalid User ID / email or password.'
       }, 401);
+    }
+
+    const acctStatus = String(userRecord.status || 'active').toLowerCase();
+    if (acctStatus === 'blocked' || acctStatus === 'suspended' || acctStatus === 'banned') {
+      return jsonResponse({
+        success: false,
+        error: `Your account is currently ${acctStatus}. Please contact support.`
+      }, 403);
     }
 
     // Brute-force & lockout protection:
@@ -123,13 +112,17 @@ export async function onRequestPost({ request, env }) {
       }, 429, { 'Retry-After': String(remainingSeconds) });
     }
 
-    // Password verification with matching salt and 100,000 iterations (Cloudflare Workers Web Crypto limit)
-    let isMatch = false;
-    const computedHash100k = await hashPassword(passStr, userRecord.salt, 100000);
-
-    if (computedHash100k === userRecord.password_hash) {
-      isMatch = true;
+    // Guard Google-only accounts or missing salt/hash
+    if (!userRecord.salt || !userRecord.password_hash || String(userRecord.password_hash).startsWith('oauth_disabled_')) {
+      return jsonResponse({
+        success: false,
+        error: 'This account uses Google Sign-In. Please click "Continue with Google" or use Forgot Password to set a password.'
+      }, 401);
     }
+
+    // Password verification with matching salt and 100,000 iterations (Cloudflare Workers Web Crypto limit)
+    const computedHash100k = await hashPassword(passStr, userRecord.salt, 100000);
+    const isMatch = constantTimeEqual(computedHash100k, userRecord.password_hash);
 
     // On failed password match:
     if (!isMatch) {

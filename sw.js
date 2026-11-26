@@ -11,7 +11,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v345';
+const CACHE_NAME = 'cso-candidate-cache-v346';
 const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
 const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
 
@@ -220,9 +220,10 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Strict Network-Only bypass: /admin* and non-offline /api* routes must NEVER touch SW Cache Storage.
+  // Strict Network-Only bypass: /admin* and /api/auth/* and non-offline /api* routes must NEVER touch SW Cache Storage.
   if (
     url.pathname.startsWith('/admin') ||
+    url.pathname.startsWith('/api/auth/') ||
     (url.pathname.startsWith('/api') && !isNetworkFirstApi(url))
   ) {
     return;

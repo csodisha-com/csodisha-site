@@ -65,15 +65,17 @@
       <form id="candidate-login-form" novalidate>
 
         <div class="form-group">
-          <label for="login-email" class="form-label">Email Address *</label>
+          <label for="login-email" class="form-label">Email Address or User ID *</label>
           <div class="input-wrapper">
             <input
-              type="email"
+              type="text"
               id="login-email"
               name="email"
               class="form-input"
-              placeholder="aspirant@example.com"
-              autocomplete="email"
+              placeholder="aspirant@example.com or Candidate User ID"
+              autocomplete="username"
+              autocapitalize="none"
+              spellcheck="false"
               aria-describedby="auth-error-msg"
               required
             >
@@ -244,7 +246,7 @@
 
   <script src="/assets/cso-auth-client.js" defer></script>
   <script src="/assets/js/cso-safe-dom.js" defer></script>
-<script src="/assets/js/pages/login.js?v=20261125v315" defer></script>
+<script src="/assets/js/pages/login.js?v=20261125v346" defer></script>
 <footer><div class="w cso-footer-grid">
   <div class="cso-footer-zone1">
     <div class="cso-footer-brand-header">

@@ -84,11 +84,13 @@
   }
 
   function validCredentials(data) {
+    const identifier = data && (data.identifier || data.userId || data.username || data.email);
     return data &&
       typeof data === "object" &&
-      typeof data.email === "string" &&
+      typeof identifier === "string" &&
+      identifier.trim().length > 0 &&
+      identifier.length <= 254 &&
       typeof data.password === "string" &&
-      data.email.length <= 254 &&
       data.password.length > 0 &&
       data.password.length <= 128;
   }
@@ -138,10 +140,12 @@
       };
     }
 
+    const identifier = String(data.identifier || data.userId || data.username || data.email).trim();
     return request(API.login, {
       method: "POST",
       body: {
-        email: data.email,
+        identifier,
+        email: identifier,
         password: data.password
       }
     });
