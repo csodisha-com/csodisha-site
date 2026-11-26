@@ -13,6 +13,9 @@ import {
   WORKERS_AI_IMAGE_MODEL,
   GEMINI_LONG_MAX_OUTPUT_TOKENS,
   WORKERS_AI_70B_MAX_TOKENS,
+  MARKDOWN_CHUNK_CHAR_LIMIT,
+  splitMarkdownByH2Sections,
+  normalizeTranslatedMarkdownPipes,
   VALID_AI_MODES
 } from '../functions/_lib/ai-coauthor.js';
 import { onRequestPost as aiCoauthorPost, handleAdminAiGenerateImage } from '../functions/api/admin/ai-coauthor.js';
@@ -214,8 +217,8 @@ await test('5. Wrangler AI binding, migration 0149, CSP compliance & v318 cache 
   const mig = read('migrations/0149_ai_coauthor_v318.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS ai_generation_logs'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v352');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v352';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v354');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v354';"));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('window.CSOAiCoAuthor'));
@@ -575,4 +578,108 @@ await test('7. v350 Gemini Pro-first fallback ordering, auto_fix_fill PDF-to-Art
   assert.ok(r2Store.has(svgOut.key));
 });
 
-console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 Results: ${passed} passed, 0 failed ===\n`);
+await test('8. v354 Markdown-preserving translation (translate_markdown): pipe-table preservation, >3,500 char ## chunking & Pro-first cascade', async () => {
+  assert.ok(VALID_AI_MODES.has('translate_markdown'), 'VALID_AI_MODES must include translate_markdown');
+  assert.equal(MARKDOWN_CHUNK_CHAR_LIMIT, 3500, 'MARKDOWN_CHUNK_CHAR_LIMIT must be 3500');
+
+  // Verify trailing pipe repair while keeping fenced code untouched
+  const repaired = normalizeTranslatedMarkdownPipes('| ପଦବୀ | ବେତନ\n| :--- | :---\n| OAS | Level-12 |\n```txt\n| raw | code\n```');
+  assert.ok(repaired.includes('| ପଦବୀ | ବେତନ |'), 'Must restore dropped trailing pipe on table row');
+  assert.ok(repaired.includes('| :--- | :--- |'), 'Must restore dropped trailing pipe on separator row');
+  assert.ok(repaired.includes('```txt\n| raw | code\n```'), 'Must leave fenced code block untouched');
+
+  // Build a realistic >4,200 char multi-section Markdown guide with pipe tables, lists, callout, code block, URL & email
+  const fillerPara = 'Candidates applying for Odisha Civil Services Examination must verify Matriculation records, resident certificate validity, category certificates, and Aadhaar-seeded mobile verification well before the portal closing timestamp. '.repeat(9);
+  const longMarkdown = [
+    '## Overview & Official Schedule',
+    fillerPara,
+    'Apply exclusively at https://www.opsc.gov.in/ or email helpdesk@opsc.gov.in for OTR queries.',
+    '',
+    '### Post-Wise Vacancy & Pay Scale Table',
+    '| Post Name | Pay Level | Total Vacancies |',
+    '| :--- | :--- | :--- |',
+    '| OAS Group A | ORSP Level-12 | 120 |',
+    '| OFS Group A | ORSP Level-12 | 45 |',
+    '',
+    '## Eligibility & Document Checklist',
+    fillerPara,
+    '- **Citizenship:** Must be a citizen of India and able to read, write, and speak Odia.',
+    '- *Age Limit:* 21 to 38 years as on 01-01-2026.',
+    '',
+    '> [!IMPORTANT]',
+    '> Keep your OTR registration slip ready before paying examination fees.',
+    '',
+    '## Exam Pattern & Syllabus Structure',
+    fillerPara,
+    '```text',
+    'PRELIMS_GS1 = 200',
+    'PRELIMS_CSAT = 200',
+    '```'
+  ].join('\n');
+
+  assert.ok(longMarkdown.length > 3500, `Test Markdown must exceed 3,500 chars (got ${longMarkdown.length})`);
+  const chunks = splitMarkdownByH2Sections(longMarkdown, 3500);
+  assert.ok(chunks.length >= 2, `Expected >= 2 chunks split by ## headings, got ${chunks.length}`);
+  assert.ok(chunks[0].startsWith('## Overview'), 'Chunk 1 must start at first ## heading');
+  assert.ok(chunks.some((c) => c.includes('| Post Name | Pay Level | Total Vacancies |')), 'Table block must stay intact inside its chunk');
+
+  const db = createMockDb();
+  const attemptedModels = [];
+  const tokenBudgets = [];
+  const origFetch = globalThis.fetch;
+
+  globalThis.fetch = async (url, init) => {
+    const u = String(url);
+    const m = u.match(/\/models\/([^:?]+):generateContent/);
+    if (m) {
+      attemptedModels.push(m[1]);
+      const parsedBody = JSON.parse(String(init && init.body || '{}'));
+      tokenBudgets.push(parsedBody.generationConfig && parsedBody.generationConfig.maxOutputTokens);
+      const promptText = parsedBody.contents[0].parts[0].text;
+      assert.ok(promptText.includes('exact pipe-table column counts') && promptText.includes('https://...'), 'Prompt must enforce strict Markdown pipe-table and URL preservation');
+      const marker = 'English Markdown source:\n';
+      const srcChunk = promptText.slice(promptText.indexOf(marker) + marker.length);
+      // Simulate clean Markdown-preserving Odia translation keeping exact syntax, pipes, code blocks, URL & email
+      const translatedChunk = srcChunk
+        .replace('## Overview & Official Schedule', '## ସଂକ୍ଷିପ୍ତ ବିବରଣୀ ଏବଂ ସରକାରୀ ସୂଚୀ')
+        .replace('### Post-Wise Vacancy & Pay Scale Table', '### ପଦବୀ ଓ ବେତନ ତାଲିକା')
+        .replace('| Post Name | Pay Level | Total Vacancies |', '| ପଦବୀ ନାମ | ବେତନ ସ୍ତର | ମୋଟ ଶୂନ୍ୟପଦ |')
+        .replace('## Eligibility & Document Checklist', '## ଯୋଗ୍ୟତା ଏବଂ ଆବଶ୍ୟକୀୟ ଦଲିଲ୍ ତାଲିକା')
+        .replace('## Exam Pattern & Syllabus Structure', '## ପରୀକ୍ଷା ଢାଞ୍ଚା ଏବଂ ସିଲାବସ୍');
+      return new Response(JSON.stringify({
+        candidates: [{
+          content: {
+            parts: [{ text: JSON.stringify({ translated_markdown: translatedChunk }) }]
+          }
+        }]
+      }), { status: 200 });
+    }
+    throw new Error('Unexpected fetch: ' + u);
+  };
+
+  try {
+    const res = await generateAiCoAuthorDraft({ DB: db, GEMINI_API_KEY: 'gm_md_v354' }, {
+      mode: 'translate_markdown',
+      input: longMarkdown,
+      actorId: 'adm_1'
+    });
+    assert.equal(res.ok, true);
+    assert.equal(res.mode, 'translate_markdown');
+    assert.equal(res.chunks_count, chunks.length, 'Response must report exact chunk count');
+    assert.equal(attemptedModels[0], 'gemini-2.5-pro', 'translate_markdown must prioritize Gemini Pro first');
+    assert.ok(tokenBudgets.every((t) => t === 16384), 'translate_markdown must use 16384 Gemini output token cap');
+
+    const md = res.data.translated_markdown;
+    assert.ok(md.includes('## ସଂକ୍ଷିପ୍ତ ବିବରଣୀ ଏବଂ ସରକାରୀ ସୂଚୀ'), 'H2 heading must be preserved & translated');
+    assert.ok(md.includes('### ପଦବୀ ଓ ବେତନ ତାଲିକା'), 'H3 heading must be preserved & translated');
+    assert.ok(md.includes('| ପଦବୀ ନାମ | ବେତନ ସ୍ତର | ମୋଟ ଶୂନ୍ୟପଦ |') && md.includes('| :--- | :--- | :--- |'), 'Pipe table headers & alignment separator row must remain intact');
+    assert.ok(md.includes('| OAS Group A | ORSP Level-12 | 120 |'), 'Pipe table cell structure must preserve exact column counts');
+    assert.ok(md.includes('> [!IMPORTANT]'), 'Callout syntax must remain intact');
+    assert.ok(md.includes('https://www.opsc.gov.in/') && md.includes('helpdesk@opsc.gov.in'), 'Raw URLs and email addresses must remain untouched');
+    assert.ok(md.includes('```text\nPRELIMS_GS1 = 200\nPRELIMS_CSAT = 200\n```'), 'Fenced code block must remain verbatim');
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 Results: ${passed} passed, 0 failed ===\n`);

@@ -24,10 +24,12 @@ export const VALID_AI_MODES = new Set([
   'auto_fix_fill',
   'translate_odia',
   'translate_fields',
+  'translate_markdown',
   'suggest_meta'
 ]);
 
-export const PRO_FIRST_MODES = new Set(['auto_fix_fill', 'guide', 'translate_fields']);
+export const PRO_FIRST_MODES = new Set(['auto_fix_fill', 'guide', 'translate_fields', 'translate_markdown']);
+export const MARKDOWN_CHUNK_CHAR_LIMIT = 3500;
 export const GEMINI_PRO_FIRST_MODELS = ['gemini-2.5-pro', 'gemini-pro-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
 export const GEMINI_FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-pro', 'gemini-pro-latest'];
 export const GEMINI_MODELS = GEMINI_PRO_FIRST_MODELS;
@@ -169,16 +171,39 @@ function buildPromptForMode(mode, rawInput, extra = {}) {
     ].join('\n');
   }
 
+  if (mode === 'translate_markdown') {
+    const text = String(rawInput || '').trim().slice(0, 24000);
+    return [
+      'You are an expert Odisha Government, competitive exam, and editorial Markdown translator (English to Odia / ଓଡ଼ିଆ) for Common Sense Odisha.',
+      'Translate all human-readable English text in the Markdown document below into natural, formal, accurate Odia script (ଓଡ଼ିଆ).',
+      'STRICT MARKDOWN STRUCTURE PRESERVATION RULES (MANDATORY):',
+      '- Keep 100% of Markdown syntax identical:',
+      '  1. Preserve exact heading levels (`##`, `###`, `####`) and never add, drop, or demote headings.',
+      '  2. Preserve exact pipe-table column counts (`| col1 | col2 |`) and exact separator rows (`| :--- | :--- |` or `| --- | --- |`). Translate header labels and cell values in place while keeping every `|` pipe delimiter and every row intact.',
+      '  3. Preserve bullet (`- `, `* `) and numbered (`1. `, `2. `) list markers and leading indentation exactly.',
+      '  4. Preserve inline formatting markers (`**bold**`, `*italic*`, `` `code` ``) and Markdown links (`[translated text](exact-url)`).',
+      '  5. Preserve blockquotes (`>`) and GitHub callout tags (`> [!TIP]`, `> [!WARNING]`, `> [!IMPORTANT]`, `> [!NOTE]`) verbatim.',
+      '  6. Keep fenced code blocks (```...```), raw URLs (`https://...`, `http://...`), and email addresses (`...@...`) completely untouched.',
+      '- Preserve exact dates, numbers, vacancy counts, fees, pay levels, cutoffs, percentages, and currency amounts (e.g., ₹56,100) verbatim.',
+      '- Keep standard exam, board, and government acronyms in English Latin script (OPSC, OSSSC, OSSC, UPSC, UGC NET, NTA, OTET, OSSTET, IBPS, SBI, RRB, DBT, NPCI, OTR, OAS, CGL, RI, PDF, CBT, UR, SEBC, SC, ST, PwD, EWS).',
+      '- NEVER summarize, condense, shorten, or omit any paragraph, bullet item, or table row.',
+      '- Return ONLY a valid JSON object (no markdown fences) with schema: { "translated_markdown": "<full markdown-preserved Odia translation>" }',
+      'English Markdown source:',
+      text
+    ].join('\n');
+  }
+
   if (mode === 'translate_fields') {
     const fieldsObj = extra.fields || {};
     return [
       'You are an expert Odisha Government and competitive exam translator (English to Odia / ଓଡ଼ିଆ) for Common Sense Odisha.',
-      'Translate every English value in the JSON map below into natural, accurate, official Odia script (ଓଡ଼ିଆ).',
+      'Translate every English value in the JSON map below into natural, formal, accurate Odia script (ଓଡ଼ିଆ).',
       'STRICT RULES:',
       '- Return ONLY a valid JSON object (no markdown fences) with schema: { "translations": { "<same_key>": "<odia_translation>" } }.',
       '- Keep every exact key name unchanged.',
       '- NEVER summarize, condense, shorten, or omit ANY section, paragraph, bullet item, callout note, or Markdown table row. Translate 100% of the content section-for-section and table-for-table.',
-      '- Preserve exact dates, numbers, vacancy counts, fees, pay levels, cutoffs, percentages, currency amounts, URLs, Markdown headings (## / ###), Markdown table pipes (`| ... |` and `| --- |`), callouts (`> [!TIP]`, `> [!WARNING]`, `> [!IMPORTANT]`), and newlines verbatim.',
+      '- Keep 100% of Markdown syntax identical: exact `##` / `###` heading levels, exact pipe-table column counts (`| col1 | col2 |` and `| :--- | :--- |` / `| --- | --- |` separator rows), bullet/numbered list indentation, `**bold**` / `*italic*` markers, `>` blockquotes & callouts (`> [!TIP]`, `> [!WARNING]`, `> [!IMPORTANT]`, `> [!NOTE]`), fenced code blocks, raw URLs (`https://...`), and email addresses untouched.',
+      '- Preserve exact dates, numbers, vacancy counts, fees, pay levels, cutoffs, percentages, currency amounts, and newlines verbatim.',
       '- Keep standard acronyms in English script (OPSC, OSSSC, OSSC, UPSC, UGC NET, NTA, OTET, OSSTET, IBPS, SBI, RRB, DBT, NPCI, OTR, OAS, CGL, RI, PDF, CBT, UR, SEBC, SC, ST, PwD, EWS).',
       'English fields JSON:',
       JSON.stringify(fieldsObj)
@@ -359,6 +384,13 @@ function getResponseSchemaForMode(mode) {
       required: ['translated_or']
     };
   }
+  if (mode === 'translate_markdown') {
+    return {
+      type: 'OBJECT',
+      properties: { translated_markdown: { type: 'STRING' } },
+      required: ['translated_markdown']
+    };
+  }
   if (mode === 'suggest_meta') {
     return {
       type: 'OBJECT',
@@ -469,6 +501,14 @@ function normalizeStructuredOutput(mode, rawObj, fallbackInput, extra = {}) {
       obj.translated_or || obj.odia || obj.translation || obj.text || fallbackInput || ''
     ).trim().slice(0, 12000);
     return { translated_or: translated };
+  }
+
+  if (mode === 'translate_markdown') {
+    const rawMd = String(
+      obj.translated_markdown || obj.translated_or || obj.markdown || obj.translation || obj.text || fallbackInput || ''
+    ).trim().slice(0, 96000);
+    const preserved = normalizeTranslatedMarkdownPipes(rawMd);
+    return { translated_markdown: preserved, translated_or: preserved };
   }
 
   if (mode === 'translate_fields') {
@@ -695,7 +735,7 @@ async function callGeminiFreeTier(apiKey, prompt, mode) {
   for (const model of pool) {
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
     const generationConfig = {
-      temperature: mode === 'translate_odia' || mode === 'translate_fields' ? 0.15 : 0.25,
+      temperature: (mode === 'translate_odia' || mode === 'translate_fields' || mode === 'translate_markdown') ? 0.15 : 0.25,
       maxOutputTokens: maxOut,
       responseMimeType: 'application/json'
     };
@@ -762,7 +802,7 @@ async function callWorkersAi(aiBinding, prompt, mode) {
     { role: 'system', content: 'You output strictly valid JSON objects without markdown fences.' },
     { role: 'user', content: prompt }
   ];
-  const temp = (mode === 'translate_odia' || mode === 'translate_fields') ? 0.15 : 0.25;
+  const temp = (mode === 'translate_odia' || mode === 'translate_fields' || mode === 'translate_markdown') ? 0.15 : 0.25;
   const pool = getWorkersAiPoolForMode(mode);
   let lastErr = null;
   for (const model of pool) {
@@ -828,10 +868,190 @@ async function runModelCascade(env, prompt, mode) {
   return await callWorkersAi(env && env.AI, prompt, mode);
 }
 
+export function normalizeTranslatedMarkdownPipes(rawMd) {
+  const lines = String(rawMd || '').replace(/\r\n/g, '\n').split('\n');
+  let inFence = false;
+  const out = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (/^```/.test(trimmed)) {
+      inFence = !inFence;
+      out.push(line);
+      continue;
+    }
+    if (!inFence && trimmed.startsWith('|') && trimmed.indexOf('|', 1) !== -1 && !trimmed.endsWith('|')) {
+      out.push(line.replace(/\s+$/, '') + ' |');
+      continue;
+    }
+    out.push(line);
+  }
+  return out.join('\n').trim();
+}
+
+export function splitMarkdownByH2Sections(rawMarkdown, maxChars = MARKDOWN_CHUNK_CHAR_LIMIT) {
+  const normalized = String(rawMarkdown || '').replace(/\r\n/g, '\n').trim();
+  if (!normalized) return [];
+  const cap = Math.max(500, Number(maxChars) || MARKDOWN_CHUNK_CHAR_LIMIT);
+  if (normalized.length <= cap) return [normalized];
+
+  const lines = normalized.split('\n');
+  const sections = [];
+  let buf = [];
+  let inFence = false;
+  for (const line of lines) {
+    if (/^\s*```/.test(line)) {
+      inFence = !inFence;
+      buf.push(line);
+      continue;
+    }
+    if (!inFence && /^##\s+/.test(line) && buf.length > 0) {
+      const s = buf.join('\n').trim();
+      if (s) sections.push(s);
+      buf = [line];
+    } else {
+      buf.push(line);
+    }
+  }
+  if (buf.length) {
+    const s = buf.join('\n').trim();
+    if (s) sections.push(s);
+  }
+
+  const units = [];
+  for (const sec of sections) {
+    if (sec.length <= cap) {
+      units.push(sec);
+      continue;
+    }
+    const secLines = sec.split('\n');
+    const subParts = [];
+    let subBuf = [];
+    let fence = false;
+    for (const l of secLines) {
+      if (/^\s*```/.test(l)) {
+        fence = !fence;
+        subBuf.push(l);
+        continue;
+      }
+      if (!fence && /^###\s+/.test(l) && subBuf.length > 0) {
+        const piece = subBuf.join('\n').trim();
+        if (piece) subParts.push(piece);
+        subBuf = [l];
+      } else {
+        subBuf.push(l);
+      }
+    }
+    if (subBuf.length) {
+      const piece = subBuf.join('\n').trim();
+      if (piece) subParts.push(piece);
+    }
+
+    for (const sp of subParts) {
+      if (sp.length <= cap) {
+        units.push(sp);
+      } else {
+        const blocks = sp.split(/\n{2,}/);
+        let blkAcc = '';
+        for (const blk of blocks) {
+          if (!blkAcc) {
+            blkAcc = blk;
+          } else if (blkAcc.length + 2 + blk.length <= cap) {
+            blkAcc += '\n\n' + blk;
+          } else {
+            units.push(blkAcc.trim());
+            blkAcc = blk;
+          }
+        }
+        if (blkAcc.trim()) units.push(blkAcc.trim());
+      }
+    }
+  }
+
+  const chunks = [];
+  let cur = '';
+  for (const u of units) {
+    if (!cur) {
+      cur = u;
+    } else if (cur.length + 2 + u.length <= cap) {
+      cur += '\n\n' + u;
+    } else {
+      chunks.push(cur);
+      cur = u;
+    }
+  }
+  if (cur) chunks.push(cur);
+  return chunks;
+}
+
+function parseTranslateMarkdownResult(rawText, fallbackChunk) {
+  try {
+    const parsed = extractJsonObject(rawText);
+    const norm = normalizeStructuredOutput('translate_markdown', parsed, fallbackChunk);
+    return norm.translated_markdown;
+  } catch (parseErr) {
+    const salvaged = String(rawText || '')
+      .replace(/^```(?:json|markdown|md)?\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .replace(/^\{?\s*"translated_markdown"\s*:\s*"?/i, '')
+      .replace(/^\{?\s*"translated_or"\s*:\s*"?/i, '')
+      .replace(/"?\s*\}?$/i, '')
+      .trim();
+    if (salvaged) return normalizeTranslatedMarkdownPipes(salvaged);
+    throw parseErr;
+  }
+}
+
+async function translateMarkdownDocument(env, rawMarkdown) {
+  const chunks = splitMarkdownByH2Sections(rawMarkdown, MARKDOWN_CHUNK_CHAR_LIMIT);
+  if (!chunks.length) {
+    return {
+      translated_markdown: '',
+      chunks_count: 0,
+      provider: 'gemini_free',
+      provider_label: 'Gemini Pro',
+      model: GEMINI_PRO_FIRST_MODELS[0],
+      estimatedNeurons: 0
+    };
+  }
+  const translatedParts = new Array(chunks.length);
+  let lastMeta = null;
+  let totalNeurons = 0;
+  const BATCH_SIZE = 2;
+
+  for (let start = 0; start < chunks.length; start += BATCH_SIZE) {
+    const batch = chunks.slice(start, start + BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map(async (chunk, offset) => {
+        const chunkPrompt = buildPromptForMode('translate_markdown', chunk);
+        const res = await runModelCascade(env, chunkPrompt, 'translate_markdown');
+        const translatedChunk = parseTranslateMarkdownResult(res.text, chunk);
+        const neurons = res.provider === 'gemini_free'
+          ? 0
+          : Math.max(40, Math.min(450, Math.ceil((chunkPrompt.length + res.text.length) / 16)));
+        return { index: start + offset, translatedChunk, res, neurons };
+      })
+    );
+    for (const item of results) {
+      translatedParts[item.index] = item.translatedChunk;
+      lastMeta = item.res;
+      totalNeurons += item.neurons;
+    }
+  }
+
+  return {
+    translated_markdown: normalizeTranslatedMarkdownPipes(translatedParts.join('\n\n')),
+    chunks_count: chunks.length,
+    provider: (lastMeta && lastMeta.provider) || 'gemini_free',
+    provider_label: (lastMeta && lastMeta.provider_label) || 'Gemini Pro',
+    model: (lastMeta && lastMeta.model) || GEMINI_PRO_FIRST_MODELS[0],
+    estimatedNeurons: totalNeurons
+  };
+}
+
 export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId, pdf_text, pdf_filename, draft, overwrite, depth, skip_body_or }) {
   const cleanMode = String(mode || '').trim().toLowerCase();
   if (!VALID_AI_MODES.has(cleanMode)) {
-    const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, career, guide, auto_fix_fill, translate_odia, translate_fields, or suggest_meta.');
+    const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, career, guide, auto_fix_fill, translate_odia, translate_fields, translate_markdown, or suggest_meta.');
     err.status = 400;
     throw err;
   }
@@ -866,7 +1086,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
       cleanInput = String(cleanDraft.title_en).trim();
     }
   } else {
-    const minLen = cleanMode === 'translate_odia' ? 2 : (cleanMode === 'suggest_meta' ? 3 : 8);
+    const minLen = (cleanMode === 'translate_odia' || cleanMode === 'translate_markdown') ? 2 : (cleanMode === 'suggest_meta' ? 3 : 8);
     if (cleanInput.length < minLen) {
       const err = new Error(`Provide at least ${minLen} characters of source notice text or topic.`);
       err.status = 400;
@@ -879,6 +1099,94 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     const err = new Error('Daily free-tier AI neuron budget (9,500 / 10,000) reached. Resets at 00:00 UTC.');
     err.status = 429;
     throw err;
+  }
+
+  // Dedicated Markdown-Safe Translation Mode (auto-splits > 3,500 char bodies by `##` headings)
+  if (cleanMode === 'translate_markdown') {
+    const mdOut = await translateMarkdownDocument(env, cleanInput.slice(0, 64000));
+    await logAiGeneration(env, {
+      actorId,
+      targetModule: cleanMode,
+      provider: mdOut.provider,
+      model: mdOut.model,
+      estimatedNeurons: mdOut.estimatedNeurons,
+      status: 'ok'
+    });
+    const usageAfter = await getDailyAiUsage(env);
+    return {
+      ok: true,
+      mode: cleanMode,
+      chunks_count: mdOut.chunks_count,
+      provider: mdOut.provider,
+      provider_label: mdOut.provider_label,
+      model: mdOut.model,
+      estimated_neurons: mdOut.estimatedNeurons,
+      usage: usageAfter,
+      data: {
+        translated_markdown: mdOut.translated_markdown,
+        translated_or: mdOut.translated_markdown,
+        chunks_count: mdOut.chunks_count
+      }
+    };
+  }
+
+  // Upgraded translate_fields: automatically chunks long Markdown fields (> 3,500 chars) by `##` headings
+  if (cleanMode === 'translate_fields') {
+    const longKeys = Object.keys(cleanFields).filter((k) => cleanFields[k].length > MARKDOWN_CHUNK_CHAR_LIMIT);
+    if (longKeys.length > 0) {
+      const shortFields = {};
+      for (const [k, v] of Object.entries(cleanFields)) {
+        if (!longKeys.includes(k)) shortFields[k] = v;
+      }
+      const mergedTranslations = {};
+      let lastMeta = null;
+      let totalNeurons = 0;
+      let totalChunks = 0;
+
+      for (const lk of longKeys) {
+        const mdOut = await translateMarkdownDocument(env, cleanFields[lk]);
+        mergedTranslations[lk] = mdOut.translated_markdown;
+        totalChunks += mdOut.chunks_count;
+        totalNeurons += mdOut.estimatedNeurons;
+        lastMeta = mdOut;
+      }
+
+      if (Object.keys(shortFields).length > 0) {
+        const sPrompt = buildPromptForMode('translate_fields', JSON.stringify(shortFields), { fields: shortFields });
+        const sRes = await runModelCascade(env, sPrompt, 'translate_fields');
+        const sParsed = extractJsonObject(sRes.text);
+        const sNorm = normalizeStructuredOutput('translate_fields', sParsed, '', { fields: shortFields });
+        Object.assign(mergedTranslations, (sNorm && sNorm.translations) || {});
+        lastMeta = sRes;
+        if (sRes.provider !== 'gemini_free') {
+          totalNeurons += Math.max(40, Math.min(450, Math.ceil((sPrompt.length + sRes.text.length) / 16)));
+        }
+      }
+
+      const provider = (lastMeta && lastMeta.provider) || 'gemini_free';
+      const providerLabel = (lastMeta && lastMeta.provider_label) || (provider === 'gemini_free' ? 'Gemini Pro' : 'Workers AI');
+      const model = (lastMeta && lastMeta.model) || GEMINI_PRO_FIRST_MODELS[0];
+      await logAiGeneration(env, {
+        actorId,
+        targetModule: cleanMode,
+        provider,
+        model,
+        estimatedNeurons: totalNeurons,
+        status: 'ok'
+      });
+      const usageAfter = await getDailyAiUsage(env);
+      return {
+        ok: true,
+        mode: cleanMode,
+        chunks_count: totalChunks,
+        provider,
+        provider_label: providerLabel,
+        model,
+        estimated_neurons: totalNeurons,
+        usage: usageAfter,
+        data: { translations: mergedTranslations }
+      };
+    }
   }
 
   // Pass 1: Exhaustive English + Metadata (dedicates 100% of Pass 1 tokens to body_en when auto_fix_fill)
@@ -922,7 +1230,9 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
 
   // Pass 2 (Server-Side Dedicated Full Odia Translation Pass for auto_fix_fill when caller did not split passes)
   if (useTwoPass && !skipBodyOr && normalized.body_en) {
-    const pass2Fields = { body_or: normalized.body_en };
+    const pass2Fields = {};
+    const bodyIsLong = normalized.body_en.length > MARKDOWN_CHUNK_CHAR_LIMIT;
+    if (!bodyIsLong) pass2Fields.body_or = normalized.body_en;
     if (normalized.title_en) pass2Fields.title_or = normalized.title_en;
     if (normalized.summary_en) pass2Fields.summary_or = normalized.summary_en;
     if (normalized.pdf_title_en) pass2Fields.pdf_title_or = normalized.pdf_title_en;
@@ -935,29 +1245,36 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     });
 
     try {
-      const trPrompt = buildPromptForMode('translate_fields', JSON.stringify(pass2Fields), { fields: pass2Fields });
-      const trRes = await runModelCascade(env, trPrompt, 'translate_fields');
-      const trParsed = extractJsonObject(trRes.text);
-      const trNorm = normalizeStructuredOutput('translate_fields', trParsed, '', { fields: pass2Fields });
-      const tr = (trNorm && trNorm.translations) || {};
-      if (tr.body_or) normalized.body_or = tr.body_or;
-      if (tr.title_or) normalized.title_or = tr.title_or;
-      if (tr.summary_or) normalized.summary_or = tr.summary_or;
-      if (tr.pdf_title_or) normalized.pdf_title_or = tr.pdf_title_or;
-      if (tr.cover_caption_or) normalized.cover_caption_or = tr.cover_caption_or;
-      if (Array.isArray(normalized.takeaways_en) && normalized.takeaways_en.length) {
-        normalized.takeaways_or = normalized.takeaways_en.map((tk, idx) => tr[`tk_${idx}`] || (normalized.takeaways_or && normalized.takeaways_or[idx]) || tk);
+      if (bodyIsLong) {
+        const mdBody = await translateMarkdownDocument(env, normalized.body_en);
+        if (mdBody.translated_markdown) normalized.body_or = mdBody.translated_markdown;
+        estimatedNeurons += mdBody.estimatedNeurons;
       }
-      if (Array.isArray(normalized.official_links)) {
-        normalized.official_links = normalized.official_links.map((lnk, idx) => ({
-          ...lnk,
-          label_or: tr[`lnk_${idx}`] || lnk.label_or || lnk.label_en
-        }));
+      if (Object.keys(pass2Fields).length > 0) {
+        const trPrompt = buildPromptForMode('translate_fields', JSON.stringify(pass2Fields), { fields: pass2Fields });
+        const trRes = await runModelCascade(env, trPrompt, 'translate_fields');
+        const trParsed = extractJsonObject(trRes.text);
+        const trNorm = normalizeStructuredOutput('translate_fields', trParsed, '', { fields: pass2Fields });
+        const tr = (trNorm && trNorm.translations) || {};
+        if (tr.body_or) normalized.body_or = normalizeTranslatedMarkdownPipes(tr.body_or);
+        if (tr.title_or) normalized.title_or = tr.title_or;
+        if (tr.summary_or) normalized.summary_or = tr.summary_or;
+        if (tr.pdf_title_or) normalized.pdf_title_or = tr.pdf_title_or;
+        if (tr.cover_caption_or) normalized.cover_caption_or = tr.cover_caption_or;
+        if (Array.isArray(normalized.takeaways_en) && normalized.takeaways_en.length) {
+          normalized.takeaways_or = normalized.takeaways_en.map((tk, idx) => tr[`tk_${idx}`] || (normalized.takeaways_or && normalized.takeaways_or[idx]) || tk);
+        }
+        if (Array.isArray(normalized.official_links)) {
+          normalized.official_links = normalized.official_links.map((lnk, idx) => ({
+            ...lnk,
+            label_or: tr[`lnk_${idx}`] || lnk.label_or || lnk.label_en
+          }));
+        }
+        if (trRes.provider !== 'gemini_free') {
+          estimatedNeurons += Math.max(40, Math.min(450, Math.ceil((trPrompt.length + trRes.text.length) / 16)));
+        }
       }
       twoPassTranslation = true;
-      if (trRes.provider !== 'gemini_free') {
-        estimatedNeurons += Math.max(40, Math.min(450, Math.ceil((trPrompt.length + trRes.text.length) / 16)));
-      }
     } catch (_pass2Err) {
       // Keep Pass 1 result intact even if Pass 2 encounters a transient error
     }

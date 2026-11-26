@@ -1058,11 +1058,16 @@
     inSumOr.value = (editing && editing.summary_or) || '';
 
     var inBodyEn = el('textarea', 'cso-form-textarea cso-guide-body-ta');
+    inBodyEn.id = 'guideBodyEnInput';
+    inBodyEn.setAttribute('data-cso-lang', 'en');
     inBodyEn.rows = 18;
     inBodyEn.placeholder = '## Overview\nWrite extensive, publication-grade Markdown with ## / ### headings, complete Markdown tables, bullet checklists, and > [!IMPORTANT] callout boxes...';
     inBodyEn.value = (editing && editing.body_en) || '';
 
     var inBodyOr = el('textarea', 'cso-form-textarea cso-guide-body-ta');
+    inBodyOr.id = 'guideBodyOrInput';
+    inBodyOr.setAttribute('data-cso-lang', 'or');
+    inBodyOr.setAttribute('data-cso-odia-body', '1');
     inBodyOr.rows = 18;
     inBodyOr.placeholder = '## \u0B38\u0B02\u0B15\u0B4D\u0B37\u0B3F\u0B2A\u0B4D\u0B24 \u0B2C\u0B3F\u0B2C\u0B30\u0B23\u0B40\n\u0B38\u0B2E\u0B4D\u0B2A\u0B42\u0B30\u0B4D\u0B23\u0B4D\u0B23 \u0B13\u0B21\u0B3C\u0B3F\u0B06 \u0B2C\u0B3F\u0B37\u0B5F\u0B2C\u0B38\u0B4D\u0B24\u0B41...';
     inBodyOr.value = (editing && editing.body_or) || '';
@@ -2202,7 +2207,7 @@
     tkCard.append(tkHead, takeawaysHost);
     shell.appendChild(tkCard);
 
-    // ---- 5. RICH STRUCTURED BODY + FORMATTING TOOLBAR ----
+    // ---- 5. RICH STRUCTURED BODY + FORMATTING & MARKDOWN TRANSLATION TOOLBAR ----
     var bodyCard = el('section', 'cso-card studio-card');
     bodyCard.appendChild(el('h3', 'cso-qc-card-title', '3. Rich Structured Body (EN & \u0B13\u0B21\u0B3C\u0B3F\u0B06)'));
     var activeBodyTarget = inBodyEn;
@@ -2222,8 +2227,177 @@
       fb.addEventListener('click', function () { insertAtCursor(activeBodyTarget, pair[1]); });
       fmtBar.appendChild(fb);
     });
+
+    // Markdown-Preserving EN -> Odia Translation Controls right on the Markdown Editor Toolbar (v354)
+    var fmtSep = el('span', 'cso-guide-fmt-sep');
+    fmtSep.setAttribute('aria-hidden', 'true');
+
+    var btnMdTranslateFull = el('button', 'cso-pill-btn is-accent cso-guide-md-tr-btn', '\uD83C\uDF10 Translate Markdown (EN \u2192 \u0B13\u0B21\u0B3C\u0B3F\u0B06)');
+    btnMdTranslateFull.type = 'button';
+    btnMdTranslateFull.id = 'btnGuideTranslateMdFull';
+    btnMdTranslateFull.title = 'Translate full Body (EN) Markdown into Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06) preserving headings, pipe tables, lists & links';
+
+    var btnMdTranslateSel = el('button', 'cso-pill-btn cso-guide-md-tr-sel-btn', '\uD83C\uDF10 Translate Selection / Section to \u0B13\u0B21\u0B3C\u0B3F\u0B06');
+    btnMdTranslateSel.type = 'button';
+    btnMdTranslateSel.id = 'btnGuideTranslateMdSel';
+    btnMdTranslateSel.title = 'Highlight text in Body (EN) or place cursor inside any ## section to translate and insert into Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06)';
+
+    var mdTrStatusWrap = el('div', 'cso-guide-md-tr-status');
+    mdTrStatusWrap.id = 'guideMdTranslateStatusWrap';
+    mdTrStatusWrap.hidden = true;
+
+    var mdTrBadge = el('span', 'cso-pill-badge cso-guide-md-tr-badge');
+    mdTrBadge.id = 'guideMdTranslateBadge';
+    mdTrBadge.setAttribute('role', 'status');
+    mdTrBadge.setAttribute('aria-live', 'polite');
+
+    var btnMdCopyLast = el('button', 'cso-pill-btn cso-guide-md-copy-btn', '\uD83D\uDCCB Copy Translated \u0B13\u0B21\u0B3C\u0B3F\u0B06');
+    btnMdCopyLast.type = 'button';
+    btnMdCopyLast.id = 'btnGuideCopyTranslatedMd';
+    btnMdCopyLast.hidden = true;
+    var lastTranslatedMdSnippet = '';
+
+    btnMdCopyLast.addEventListener('click', function () {
+      if (!lastTranslatedMdSnippet) return;
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(lastTranslatedMdSnippet).then(function () {
+          toast('Copied translated \u0B13\u0B21\u0B3C\u0B3F\u0B06 Markdown to clipboard!', 'ok');
+        }).catch(function () {
+          toast('Clipboard copy blocked — text is already inside Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06).', 'amber');
+        });
+      } else {
+        toast('Translated text is inserted in Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06).', 'info');
+      }
+    });
+    mdTrStatusWrap.append(mdTrBadge, btnMdCopyLast);
+
+    var savedEnSelection = '';
+    function refreshSelectionButtonLabel() {
+      var start = inBodyEn.selectionStart || 0;
+      var end = inBodyEn.selectionEnd || 0;
+      var sel = end > start ? inBodyEn.value.slice(start, end).trim() : '';
+      savedEnSelection = sel;
+      if (sel.length >= 2) {
+        btnMdTranslateSel.textContent = '\uD83C\uDF10 Translate Selection to \u0B13\u0B21\u0B3C\u0B3F\u0B06 (' + sel.length + ' chars)';
+        btnMdTranslateSel.classList.add('is-has-selection');
+      } else {
+        btnMdTranslateSel.textContent = '\uD83C\uDF10 Translate Selection / Section to \u0B13\u0B21\u0B3C\u0B3F\u0B06';
+        btnMdTranslateSel.classList.remove('is-has-selection');
+      }
+    }
+    inBodyEn.addEventListener('select', refreshSelectionButtonLabel);
+    inBodyEn.addEventListener('keyup', refreshSelectionButtonLabel);
+    inBodyEn.addEventListener('mouseup', refreshSelectionButtonLabel);
+
+    function extractCurrentH2SectionFromBodyEn() {
+      var full = String(inBodyEn.value || '');
+      if (!full.trim()) return '';
+      var pos = Math.max(0, Math.min(full.length, inBodyEn.selectionStart || 0));
+      var headingMatches = [];
+      var re = /^##\s+/gm;
+      var m;
+      while ((m = re.exec(full)) !== null) {
+        headingMatches.push(m.index);
+      }
+      if (!headingMatches.length) return full.trim();
+      var secStart = 0;
+      var secEnd = full.length;
+      for (var i = 0; i < headingMatches.length; i++) {
+        if (headingMatches[i] <= pos) {
+          secStart = headingMatches[i];
+          secEnd = (i + 1 < headingMatches.length) ? headingMatches[i + 1] : full.length;
+        }
+      }
+      return full.slice(secStart, secEnd).trim();
+    }
+
+    function setMdTranslateBusy(busy, badgeText) {
+      btnMdTranslateFull.disabled = busy;
+      btnMdTranslateSel.disabled = busy;
+      mdTrStatusWrap.hidden = false;
+      if (badgeText) mdTrBadge.textContent = badgeText;
+      mdTrBadge.classList.toggle('is-busy', busy);
+    }
+
+    btnMdTranslateFull.addEventListener('click', function () {
+      var src = inBodyEn.value.trim();
+      if (src.length < 2) {
+        toast('Write or paste English Markdown in Body (EN) first.', 'amber');
+        inBodyEn.focus();
+        return;
+      }
+      if (inBodyOr.value.trim() && !window.confirm('Replace existing Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06) with a fresh Markdown-preserved translation of Body (EN)?')) {
+        return;
+      }
+      btnMdCopyLast.hidden = true;
+      setMdTranslateBusy(true, '\u23F3 Translating Markdown sections & tables to \u0B13\u0B21\u0B3C\u0B3F\u0B06\u2026');
+      apiFetch('/api/admin/ai-coauthor', {
+        method: 'POST',
+        body: { mode: 'translate_markdown', input: src }
+      }).then(function (res) {
+        var d = (res && res.data) || {};
+        var outMd = String(d.translated_markdown || d.translated_or || '').trim();
+        if (!outMd) throw new Error('No translated Markdown returned.');
+        inBodyOr.value = outMd;
+        lastTranslatedMdSnippet = outMd;
+        btnMdCopyLast.hidden = false;
+        updateWordCountAndReadTime(false);
+        var chunks = Number(d.chunks_count || (res && res.chunks_count) || 1);
+        var prov = (res && (res.provider_label || res.provider)) || 'Gemini Pro';
+        setMdTranslateBusy(false, '\u2713 Translated full Markdown (' + chunks + (chunks === 1 ? ' section' : ' sections') + ' \u00B7 ' + prov + ')');
+        toast('Full Markdown body translated to \u0B13\u0B21\u0B3C\u0B3F\u0B06 with tables & headings intact!', 'ok');
+      }).catch(function (e) {
+        setMdTranslateBusy(false, '\u2715 Translation failed: ' + e.message);
+        toast('Markdown translation failed: ' + e.message, 'crimson');
+      });
+    });
+
+    btnMdTranslateSel.addEventListener('click', function () {
+      var start = inBodyEn.selectionStart || 0;
+      var end = inBodyEn.selectionEnd || 0;
+      var liveSel = end > start ? inBodyEn.value.slice(start, end).trim() : '';
+      var snippet = liveSel || savedEnSelection || extractCurrentH2SectionFromBodyEn();
+      var usedSelection = Boolean(liveSel || savedEnSelection);
+      if (!snippet || snippet.length < 2) {
+        toast('Highlight text in Body (EN) or place your cursor inside a Markdown section first.', 'amber');
+        inBodyEn.focus();
+        return;
+      }
+      btnMdCopyLast.hidden = true;
+      setMdTranslateBusy(true, usedSelection
+        ? '\u23F3 Translating selected Markdown to \u0B13\u0B21\u0B3C\u0B3F\u0B06\u2026'
+        : '\u23F3 Translating current section & tables to \u0B13\u0B21\u0B3C\u0B3F\u0B06\u2026');
+      apiFetch('/api/admin/ai-coauthor', {
+        method: 'POST',
+        body: { mode: 'translate_markdown', input: snippet }
+      }).then(function (res) {
+        var d = (res && res.data) || {};
+        var outMd = String(d.translated_markdown || d.translated_or || '').trim();
+        if (!outMd) throw new Error('No translated Markdown returned.');
+        lastTranslatedMdSnippet = outMd;
+        btnMdCopyLast.hidden = false;
+        if (!inBodyOr.value.trim()) {
+          inBodyOr.value = outMd;
+        } else if (document.activeElement === inBodyOr || inBodyOr.selectionStart > 0) {
+          insertAtCursor(inBodyOr, outMd);
+        } else {
+          inBodyOr.value = inBodyOr.value.replace(/\s+$/, '') + '\n\n' + outMd;
+        }
+        updateWordCountAndReadTime(false);
+        var prov = (res && (res.provider_label || res.provider)) || 'Gemini Pro';
+        setMdTranslateBusy(false, '\u2713 Inserted translated ' + (usedSelection ? 'selection' : 'section') + ' into Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06) \u00B7 ' + prov);
+        toast('Translated ' + (usedSelection ? 'selection' : 'section') + ' inserted into Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06)!', 'ok');
+      }).catch(function (e) {
+        setMdTranslateBusy(false, '\u2715 Translation failed: ' + e.message);
+        toast('Selection translation failed: ' + e.message, 'crimson');
+      });
+    });
+
+    fmtBar.append(fmtSep, btnMdTranslateFull, btnMdTranslateSel);
+
     bodyCard.append(
       fmtBar,
+      mdTrStatusWrap,
       wordCountBar,
       makeField('Structured Body (English — Markdown headings generate Table of Contents automatically)', inBodyEn, 'cso-span-full'),
       makeField('Structured Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', inBodyOr, 'cso-span-full')

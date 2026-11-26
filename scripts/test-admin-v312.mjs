@@ -562,10 +562,10 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
   await Promise.all(waits);
 });
 
-// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v352
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v352 CSS, and cso-candidate-cache-v352 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v352');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v352';"), 'sw.js cache version must be cso-candidate-cache-v352');
+// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v354
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v354 CSS, and cso-candidate-cache-v354 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v354');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v354';"), 'sw.js cache version must be cso-candidate-cache-v354');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -573,6 +573,7 @@ await check('6. Strict CSP compliance, zero hardcoded hex in v312/v352 CSS, and 
     'admin/system-ops.js',
     'admin/study-publishing-studio.js',
     'admin/guides-publishing-studio.js',
+    'admin/studio-translator.js',
     'admin/candidate-hub-studio.js',
     'admin/admin.js',
     'admin/cms/login.js',
@@ -698,11 +699,12 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const waits = [];
   const ctx = { waitUntil: (p) => waits.push(p) };
 
-  // A. Verify Admin UI wiring (sidebar folder + 6 sub-views, Launchpad, + Create New, CMS, 5 templates, AI buttons, Live Preview modal, v350 PDF Auto-Write & AI Images, v351 Extensive Long-Form UI)
+  // A. Verify Admin UI wiring (sidebar folder + 6 sub-views, Launchpad, + Create New, CMS, 5 templates, AI buttons, Live Preview modal, v350 PDF Auto-Write & AI Images, v351 Extensive Long-Form UI, v354 Markdown Toolbar & Floating Translator)
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v351'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v351');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v351'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v354'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v354');
+  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v354'), 'admin/index.html must load studio-translator.js?v=20261126v354');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v354'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
@@ -754,16 +756,42 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
     'gp-toc-details',
     '1/3 Structuring full English guide',
     '2/3 Translating full guide',
-    '3/3 Filling metadata, links'
+    '3/3 Filling metadata, links',
+    'btnGuideTranslateMdFull',
+    'btnGuideTranslateMdSel',
+    'guideMdTranslateBadge',
+    'btnGuideCopyTranslatedMd',
+    'translate_markdown',
+    'Translating Markdown sections & tables'
   ]) {
     assert.ok(guidesStudioJs.includes(marker), `guides-publishing-studio.js missing required UI marker: ${marker}`);
+  }
+  const translatorJs = read('admin/studio-translator.js');
+  for (const marker of [
+    'csoStudioTranslatorRoot',
+    'btnCsoFloatTranslatorToggle',
+    'csoFloatTranslatorPanel',
+    'csoFloatTranslatorDragHandle',
+    'chkCsoFloatAutoTranslate',
+    'btnCsoFloatTranslateNow',
+    'csoFloatInputEn',
+    'csoFloatOutputOr',
+    'btnCsoFloatCopy',
+    'btnCsoFloatInsert',
+    'btnCsoFloatClear',
+    'AUTO_DEBOUNCE_MS = 800',
+    'translate_markdown',
+    'window.CSOStudioTranslator'
+  ]) {
+    assert.ok(translatorJs.includes(marker), `admin/studio-translator.js missing required marker: ${marker}`);
   }
   assert.ok(fs.existsSync(path.join(ROOT, 'assets/js/vendor/pdfjs/pdf.min.mjs')), 'Self-hosted pdfjs pdf.min.mjs must exist');
   assert.ok(fs.existsSync(path.join(ROOT, 'assets/js/vendor/pdfjs/pdf.worker.min.mjs')), 'Self-hosted pdfjs pdf.worker.min.mjs must exist');
   assert.ok(read('functions/api/admin/_router.js').includes("id === 'generate-image'") && read('functions/api/admin/_router.js').includes('handleAdminAiGenerateImage'), '_router.js must route POST /api/admin/ai/generate-image');
-  assert.ok(VALID_AI_MODES.has('auto_fix_fill') && VALID_AI_MODES.has('guide') && VALID_AI_MODES.has('suggest_meta') && VALID_AI_MODES.has('translate_fields'), 'ai-coauthor.js must support auto_fix_fill, guide, suggest_meta & translate_fields');
+  assert.ok(VALID_AI_MODES.has('auto_fix_fill') && VALID_AI_MODES.has('guide') && VALID_AI_MODES.has('suggest_meta') && VALID_AI_MODES.has('translate_fields') && VALID_AI_MODES.has('translate_markdown'), 'ai-coauthor.js must support auto_fix_fill, guide, suggest_meta, translate_fields & translate_markdown');
   const studioCss = read('admin/studio.css');
   assert.ok(studioCss.includes('.cso-guide-pdf-dropzone') && studioCss.includes('.cso-guide-cover-ai-bar'), 'admin/studio.css must style PDF Auto-Write dropzone & Cover AI bar');
+  assert.ok(studioCss.includes('.cso-ftr-panel') && studioCss.includes('width: 380px;') && studioCss.includes('.cso-ftr-launcher') && studioCss.includes('.cso-guide-md-tr-badge'), 'admin/studio.css must style floating translator panel & Markdown toolbar translation controls');
   assert.ok(studioCss.includes('min-height: 420px;') && studioCss.includes('.cso-guide-wordcount-bar'), 'admin/studio.css must style tall 420px body textareas & word-count bar');
   assert.ok(studioCss.includes('.cso-guide-preview-overlay') && studioCss.includes('.cso-guide-preview-frame.is-mobile-frame'), 'admin/studio.css must style the interactive Live Preview modal & 390px mobile frame');
   assert.ok(studioCss.includes('#csoGuideLivePreviewModal .cso-guide-preview-frame table tbody td') && studioCss.includes('opacity: 1 !important;'), 'admin/studio.css must enforce high-contrast tbody td isolation inside #csoGuideLivePreviewModal');
