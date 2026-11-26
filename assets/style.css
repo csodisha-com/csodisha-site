@@ -5287,155 +5287,7 @@ mark.cso-search-highlight {
 
 
 
-.cso-compass-section {
-  margin: clamp(14px, 2vw, 24px) auto;
-  padding: clamp(14px, 1.8vw, 20px);
-  background: var(--cso-card-bg);
-  border: 1px solid var(--cso-border);
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  box-sizing: border-box;
-}
-
-.cso-compass-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-}
-
-.cso-compass-header__title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.cso-compass-badge {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: rgba(16, 149, 93, 0.12);
-  color: var(--cso-link);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.cso-compass-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--cso-text);
-  margin: 0;
-  line-height: 1.2;
-}
-
-.cso-compass-sub {
-  font-size: 0.76rem;
-  color: var(--cso-text-muted);
-  margin: 2px 0 0;
-}
-
-.cso-compass-cta {
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 5px 12px;
-  border-radius: 6px;
-  background: var(--cso-accent);
-  color: var(--cso-accent-ink);
-  text-decoration: none;
-  transition: opacity 0.15s ease;
-}
-.cso-compass-cta:hover { opacity: 0.88; }/* 3-Card Responsive Row (v333) */
-
-
-.cso-compass-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(10px, 1.4vw, 16px);
-}
-
-@media (max-width: 768px) {
-  .cso-compass-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.cso-compass-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--cso-border);
-  background: var(--cso-surface);
-  text-decoration: none;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-  min-height: 72px;
-  box-sizing: border-box;
-}
-
-.cso-compass-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--cso-link);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-.cso-compass-card__icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 2px;
-}
-
-.cso-compass-card--jobs .cso-compass-card__icon { background: rgba(37, 99, 235, 0.1); color: var(--cso-link); }
-.cso-compass-card--study .cso-compass-card__icon { background: rgba(217, 119, 6, 0.1); color: var(--cso-warn-fg); }
-.cso-compass-card--guidance .cso-compass-card__icon { background: rgba(147, 51, 234, 0.1); color: var(--cso-link); }
-
-.cso-compass-card__info {
-  flex: 1;
-  min-width: 0;
-}
-
-.cso-compass-card__heading {
-  font-size: 0.84rem;
-  font-weight: 700;
-  color: var(--cso-text);
-  margin: 0 0 2px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.cso-compass-card__heading .arrow {
-  font-size: 0.8rem;
-  opacity: 0;
-  transform: translateX(-3px);
-  transition: opacity 0.18s ease, transform 0.18s ease;
-  color: var(--cso-link);
-}
-
-.cso-compass-card:hover .arrow {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.cso-compass-card__desc {
-  font-size: 0.71rem;
-  line-height: 1.25;
-  color: var(--cso-text-muted);
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}/* ==========================================================================
+/* ==========================================================================
    CSO Standalone Emblem & Brand Logo Specifications
    ========================================================================== */
 
@@ -8107,10 +7959,9 @@ select:focus-visible {
   color: var(--cso-primary-fg) !important;
   border-color: var(--cso-primary) !important;
   box-shadow: 0 6px 16px var(--cso-highlight-ring) !important;
-}/* Lower Homepage Cards: Opportunity Compass, Trending Topics, Important Tools & Action Hub CTA Cards */
+}/* Lower Homepage Cards: Trending Topics, Important Tools & Action Hub CTA Cards */
 
 
-.cso-compass-section,
 .cso-trending-topics-sec,
 .cso-tools-sec {
   background: var(--cso-surface) !important;
@@ -8118,13 +7969,11 @@ select:focus-visible {
   color: var(--cso-text) !important;
 }
 
-.cso-compass-title,
 .cso-trending-topics-sec h2 .cso-h2-bl,
 .cso-tools-sec h2 .cso-h2-bl {
   color: var(--cso-text) !important;
 }
 
-.cso-compass-sub,
 .cso-trending-topics-sec h2 small,
 .cso-tools-sec h2 small {
   color: var(--cso-muted) !important;
@@ -8134,7 +7983,6 @@ select:focus-visible {
 .dir-card,
 .update-item,
 .resource-card,
-.cso-compass-card,
 .cso-topic-card,
 .tools-grid .card.tl,
 #cso-tools-grid .card.tl,
@@ -8147,7 +7995,6 @@ select:focus-visible {
   transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms cubic-bezier(0.22, 1, 0.36, 1), background-color 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
-.cso-compass-card__heading,
 .cso-topic-card__title,
 .tool-card b,
 .card.tl b,
@@ -8156,7 +8003,6 @@ select:focus-visible {
   font-weight: 700 !important;
 }
 
-.cso-compass-card__desc,
 .cso-topic-card__desc,
 .tool-card small,
 .card.tl small,
@@ -8168,7 +8014,6 @@ select:focus-visible {
 .dir-card:hover,
 .update-item:hover,
 .resource-card:hover,
-.cso-compass-card:hover,
 .cso-topic-card:hover,
 .tools-grid .card.tl:hover,
 #cso-tools-grid .card.tl:hover,
@@ -8183,7 +8028,6 @@ select:focus-visible {
 
 .dir-card:hover h3,
 .resource-card:hover h3,
-.cso-compass-card:hover .cso-compass-card__heading,
 .cso-topic-card:hover .cso-topic-card__title,
 .tool-card:hover b,
 .card.tl:hover b,

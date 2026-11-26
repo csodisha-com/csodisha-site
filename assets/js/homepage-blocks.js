@@ -228,20 +228,9 @@
       any = true;
     }
 
-    var compass = document.querySelector('.cso-compass-grid');
-    if (compass && has('opportunity_compass')) {
-      var compassItems = (sections.opportunity_compass || []).filter(function (it) {
-        if (!it) return false;
-        if (it.id === 'hb_opportunity_compass_03') return false;
-        if (clean(it.accent_variant).toLowerCase() === 'schemes') return false;
-        if (/schemes\s*&\s*aid/i.test(String(it.title_en || ''))) return false;
-        return true;
-      });
-      if (compassItems.length) {
-        replaceKids(compass, compassItems.map(function (it) { return createNode('opportunity_compass', it, lang); }));
-        any = true;
-      }
-    }
+    // v334: CSO Opportunity Compass removed from homepage; never hydrate or re-inject opportunity_compass blocks
+    var retiredCompass = document.getElementById('cso-opportunity-compass');
+    if (retiredCompass) retiredCompass.remove();
 
     var topics = document.querySelector('.trending-grid');
     if (topics && has('trending_topics')) { replaceKids(topics, build('trending_topics')); any = true; }
@@ -280,7 +269,7 @@
   }
 
   function init() {
-    if (!document.querySelector('.cso-action-hub-grid, #cso-tools-grid, .cso-compass-grid')) return;
+    if (!document.querySelector('.cso-action-hub-grid, #cso-tools-grid')) return;
     wireClickTracking();
     var forceRefresh = /[?&](refresh|_cb)=/.test(window.location.search || '');
     var url = '/api/public/homepage-blocks' + (forceRefresh ? '?refresh=1' : '');

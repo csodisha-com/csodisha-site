@@ -263,17 +263,18 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v333');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v333';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v334');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v334';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
 
-  // v333: Opportunity Compass has 3 equal cards (Schemes & Aid removed)
-  const compassSection = indexHtml.slice(indexHtml.indexOf('id="cso-opportunity-compass"'), indexHtml.indexOf('id="cso-home-jobs-section"'));
-  assert.ok(!compassSection.includes('cso-compass-card--schemes'), 'Schemes & Aid card must be removed from Opportunity Compass');
-  assert.ok(!compassSection.includes('Schemes &amp; Aid'), 'Schemes & Aid text must be removed from Opportunity Compass');
-  assert.equal((compassSection.match(/class="cso-compass-card\b/g) || []).length, 3, 'Opportunity Compass must have exactly 3 cards');
-  assert.ok(read('assets/style.css').includes('grid-template-columns: repeat(3, minmax(0, 1fr));'), 'Opportunity Compass grid must use 3 equal columns');
-  assert.ok(read('assets/js/homepage-blocks.js').includes("hb_opportunity_compass_03"), 'homepage-blocks.js must guard against re-injecting retired Schemes & Aid card');
+  // v334: CSO Opportunity Compass completely removed from homepage HTML, JS hydration & CSS
+  assert.ok(!indexHtml.includes('CSO Opportunity Compass'), 'CSO Opportunity Compass must be completely absent from index.html');
+  assert.ok(!indexHtml.includes('id="cso-opportunity-compass"'), 'id="cso-opportunity-compass" must be completely absent from index.html');
+  assert.ok(!indexHtml.includes('cso-compass-section'), 'cso-compass-section must be completely absent from index.html');
+  assert.ok(!indexHtml.includes('cso-compass-card'), 'cso-compass-card must be completely absent from index.html');
+  assert.ok(!read('assets/style.css').includes('.cso-compass-section'), 'Unused .cso-compass-section CSS must be removed');
+  assert.ok(!read('assets/style.css').includes('.cso-compass-grid'), 'Unused .cso-compass-grid CSS must be removed');
+  assert.ok(!read('assets/js/homepage-blocks.js').includes("replaceKids(compass"), 'homepage-blocks.js must never re-inject opportunity_compass');
 });
 
 console.log(`\n=== Homepage Live Feed v332 Results: ${passed} passed, 0 failed ===\n`);

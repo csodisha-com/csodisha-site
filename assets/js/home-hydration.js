@@ -451,9 +451,6 @@
           if (sec.id === 'sec-badges') {
             var chips = document.querySelector('.chips');
             if (chips) chips.classList.toggle('cso-hidden', !sec.enabled);
-          } else if (sec.id === 'sec-cards') {
-            var compass = document.getElementById('cso-opportunity-compass');
-            if (compass) compass.classList.toggle('cso-hidden', !sec.enabled);
           } else if (sec.id === 'sec-notice') {
             var bannerMount = document.getElementById('csoPublicAnnouncementMount');
             if (bannerMount) bannerMount.classList.toggle('cso-hidden', !sec.enabled);
@@ -491,16 +488,14 @@
     }
   }
 
-  function pruneRetiredCompassCards() {
-    var grid = document.querySelector('#cso-opportunity-compass .cso-compass-grid');
-    if (!grid) return;
-    grid.querySelectorAll('.cso-compass-card--schemes').forEach(function (node) {
+  function removeOpportunityCompass() {
+    document.querySelectorAll('#cso-opportunity-compass, .cso-compass-section').forEach(function (node) {
       node.remove();
     });
   }
 
   function init() {
-    pruneRetiredCompassCards();
+    removeOpportunityCompass();
     mountHomeFeed(false);
     hydrateHomepageConfig();
     bindLiveEvents();
