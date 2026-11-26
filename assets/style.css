@@ -12775,3 +12775,171 @@ nav#cso-hub-top-tabs {
     padding: 4px 10px;
   }
 }
+
+/* ===== v369 Homepage UI Hierarchy: Hero Balance, Live Snapshot, District Filter, Section Badges, 8-Card Tools (4-Theme, Zero Hardcoded Hex) ===== */
+.hero.cso-hero-card,
+#cso-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-self: stretch;
+  border: 1px solid var(--cso-border);
+  box-shadow: 0 1px 2px var(--cso-border), 0 10px 28px -18px var(--cso-ink-soft);
+}
+
+#cso-hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  z-index: 2;
+  background: linear-gradient(90deg, var(--cso-accent), var(--cso-warn-fg));
+  pointer-events: none;
+}
+
+.cso-hero-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  max-width: 660px;
+  margin: 12px auto 0;
+}
+
+.cso-hero-kpi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 58px;
+  padding: 7px 6px;
+  border-radius: 10px;
+  background: var(--cso-surface-elevated);
+  border: 1px solid var(--cso-border);
+  color: var(--cso-ink);
+}
+
+.cso-hero-kpi__n {
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--cso-link);
+}
+
+.cso-hero-kpi__l {
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--cso-ink-soft);
+  text-align: center;
+}
+
+.cso-dist-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 660px;
+  margin: 10px auto 0;
+}
+
+.cso-dist-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-dist-chip,
+.cso-dist-select {
+  min-height: 44px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-dist-chip:hover,
+.cso-dist-chip:focus-visible,
+.cso-dist-chip.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  border-color: var(--cso-accent);
+}
+
+.cso-dist-select {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.cso-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.cso-hf-section {
+  border-color: var(--cso-border);
+  box-shadow: 0 1px 2px var(--cso-border);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.cso-hf-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -14px var(--cso-ink-soft);
+}
+
+.cso-hf-ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: var(--cso-info-bg);
+  border: 1px solid var(--cso-border);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.cso-hf-row__act {
+  min-width: 64px;
+  color: var(--cso-ink);
+  background: var(--cso-surface-alt);
+  border: 1px solid var(--cso-accent);
+}
+
+.cso-hf-row__act:empty::after {
+  content: "Open \2192";
+}
+
+.cso-tools-sec .tool-card .cso-tool-ic-pay,
+.cso-tools-sec .tool-card .cso-tool-ic-dist {
+  background: var(--cso-info-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-hf-section,
+  .cso-hf-section:hover {
+    transition: none;
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .cso-hero-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

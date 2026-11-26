@@ -441,12 +441,31 @@ async function fetchLatestSchemes(db) {
   return merged.slice(0, 4);
 }
 
+async function fetchPortalStats(db) {
+  const stats = { districts: 30, guides: 0, mocks: 0 };
+  const count = async (sql) => {
+    try {
+      const r = await db.prepare(sql).first();
+      return Number((r && r.n) || 0);
+    } catch (_) {
+      return 0;
+    }
+  };
+  const [g, m] = await Promise.all([
+    count("SELECT COUNT(*) AS n FROM informative_guides WHERE status = 'published'"),
+    count('SELECT COUNT(*) AS n FROM mock_tests')
+  ]);
+  stats.guides = g;
+  stats.mocks = m;
+  return stats;
+}
+
 export async function buildPublicHomeFeed(env) {
   const db = env && env.DB;
   if (!db) {
     return {
       ok: true,
-      version: 'v367',
+      version: 'v369',
       generated_at: new Date().toISOString(),
       broadcast: { active: false },
       nav_header: [],
@@ -458,9 +477,12 @@ export async function buildPublicHomeFeed(env) {
       mock_tests: [],
       syllabus_pyq: [],
       careers: [],
-      schemes: []
+      schemes: [],
+      portal_stats: { districts: 30, guides: 0, mocks: 0 }
     };
   }
+
+  const portal_stats = await fetchPortalStats(db);
 
   const [broadcast, nav_header, homeSections, trending_topics, latest_updates, jobs, current_affairs, mock_tests, syllabus_pyq, careers, schemes] = await Promise.all([
     fetchBroadcast(env),
@@ -478,7 +500,7 @@ export async function buildPublicHomeFeed(env) {
 
   return {
     ok: true,
-    version: 'v367',
+    version: 'v369',
     generated_at: new Date().toISOString(),
     broadcast,
     nav_header,
@@ -490,7 +512,8 @@ export async function buildPublicHomeFeed(env) {
     mock_tests,
     syllabus_pyq,
     careers,
-    schemes
+    schemes,
+    portal_stats
   };
 }
 

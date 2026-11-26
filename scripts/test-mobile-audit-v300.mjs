@@ -399,8 +399,8 @@ check('8. v360 Informative Guides edge-to-edge layout (max-width: 100%), uncropp
     'admin/studio.css Live Preview must mirror v360 edge-to-edge 390px mobile padding and uncropped 16:9 cover rules'
   );
   assert.ok(
-    guidesSsr.includes('/assets/css/guides-portal.css?v=20261126v368') &&
-    guidesSsr.includes('/assets/js/guides-portal.js?v=20261126v368') &&
+    guidesSsr.includes('/assets/css/guides-portal.css?v=20261126v369') &&
+    guidesSsr.includes('/assets/js/guides-portal.js?v=20261126v369') &&
     guidesSsr.includes('gp-hero-card') &&
     guidesSsr.includes('gp-toc-card') &&
     guidesSsr.includes('gp-share-bar') &&
@@ -440,6 +440,16 @@ check('9. v367 Trending & Popular Topics 1-column mobile stack (<=480px), >=44px
     hsCss.includes('.hs-tt-card') && hsCss.includes('.hs-tt-grid') && hsCss.includes('grid-template-columns: minmax(0, 1fr);'),
     'admin/homepage-studio.css must collapse Trending Topics editor grid to 1 column on narrow screens'
   );
+});
+
+check('10. v369 Homepage hero KPI strip, district bar & 44px touch targets with reduced-motion guard', () => {
+  const css = read('assets/style.css');
+  const i = css.indexOf('/* ===== v369');
+  assert.ok(i > 0, 'v369 CSS block');
+  const blk = css.slice(i);
+  assert.ok(blk.includes('.cso-dist-chip') && blk.includes('min-height: 44px') && blk.includes('.cso-hero-kpis'));
+  assert.ok(blk.includes('@media (prefers-reduced-motion: reduce)') && blk.includes('translateY(-2px)'));
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'zero hardcoded hex in v369 CSS');
 });
 
 console.log(`\n=== v300 Mobile & WCAG 2.2 Audit Results: ${passed} passed, ${failed} failed ===\n`);

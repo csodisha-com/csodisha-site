@@ -535,5 +535,13 @@ check('10. v367 Trending & Popular Topics semantic 4-theme tokens & WCAG AA/AAA 
   }
 });
 
+check('v369 Homepage section badges, action pills & hero hairline use semantic --cso-* tokens only', () => {
+  const css = read('assets/style.css');
+  const blk = css.slice(css.indexOf('/* ===== v369'));
+  assert.ok(blk.includes('var(--cso-accent)') && blk.includes('var(--cso-warn-fg)') && blk.includes('var(--cso-info-bg)'));
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'v369 CSS must contain zero hardcoded hex');
+  assert.ok(blk.includes('.cso-hf-ic') && blk.includes('.cso-hf-row__act'));
+});
+
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);

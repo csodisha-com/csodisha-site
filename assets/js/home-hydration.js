@@ -398,7 +398,7 @@
     var actHref = opts.actionHref || opts.href;
     var actLink = makeLink(
       'cso-hf-row__act' + (opts.primaryAction ? ' cso-hf-row__act--primary' : ''),
-      opts.actionLabel || '\u2192',
+      (String(opts.actionLabel || '').trim()) || 'Open \u2192',
       actHref,
       Boolean(opts.actionExternal)
     );
@@ -430,7 +430,7 @@
         pill: job.category || job.organisation_en || 'Odisha Govt',
         pillTone: 'accent',
         meta: metaParts.join(' \u2022 '),
-        actionLabel: '\u2192',
+        actionLabel: isOr ? 'ସୂଚନା \u2192' : 'Notice \u2192',
         actionAria: (isOr ? 'ଦେଖନ୍ତୁ: ' : 'View job: ') + title
       }));
     });
@@ -456,7 +456,7 @@
         pill: formatCompactDate(ca.date) || ca.category || 'Daily',
         pillTone: 'info',
         meta: metaParts.join(' \u2022 '),
-        actionLabel: '\u2192',
+        actionLabel: isOr ? 'ବ୍ରିଫ୍ \u2192' : 'Brief \u2192',
         actionAria: (isOr ? 'ପଢ଼ନ୍ତୁ: ' : 'Read brief: ') + title
       }));
     });
@@ -510,7 +510,7 @@
         pill: res.exam_tag || 'Study',
         pillTone: 'info',
         meta: metaParts.join(' \u2022 '),
-        actionLabel: pdfHref ? 'PDF' : '\u2192',
+        actionLabel: pdfHref ? 'PDF' : (isOr ? 'ଖୋଲନ୍ତୁ \u2192' : 'Open \u2192'),
         actionHref: pdfHref || viewHref,
         actionExternal: Boolean(pdfHref),
         primaryAction: Boolean(pdfHref),
@@ -538,7 +538,7 @@
         pill: car.eligibility || car.career_stage || (isOr ? 'କ୍ୟାରିୟର' : 'Roadmap'),
         pillTone: 'ok',
         meta: metaParts.join(' \u2022 '),
-        actionLabel: '\u2192',
+        actionLabel: isOr ? 'ରୋଡମ୍ୟାପ୍ \u2192' : 'Roadmap \u2192',
         actionAria: (isOr ? 'ରୋଡମ୍ୟାପ୍ ଦେଖନ୍ତୁ: ' : 'Explore roadmap: ') + title
       }));
     });
@@ -564,7 +564,7 @@
         pill: sch.department || (isOr ? 'ଓଡ଼ିଶା ସରକାର' : 'Odisha'),
         pillTone: 'ok',
         meta: metaParts.join(' \u2022 '),
-        actionLabel: '\u2192',
+        actionLabel: isOr ? 'ଯୋଜନା \u2192' : 'Scheme \u2192',
         actionAria: (isOr ? 'ଯୋଜନା ଦେଖନ୍ତୁ: ' : 'View scheme: ') + title
       }));
     });
@@ -827,6 +827,63 @@
     renderSyllabusSection(feed.syllabus_pyq);
     renderCareersSection(feed.careers);
     renderSchemesSection(feed.schemes);
+    renderHeroKpis(feed.portal_stats);
+  }
+
+  /* v369: live portal snapshot strip (zero CLS: tiles pre-rendered in index.html) */
+  function renderHeroKpis(stats) {
+    var strip = document.getElementById('cso-hero-kpis');
+    if (!strip || !stats) return;
+    ['districts', 'guides', 'mocks'].forEach(function (k) {
+      var n = strip.querySelector('[data-kpi="' + k + '"]');
+      var v = Number(stats[k]);
+      if (n && isFinite(v) && v >= 0) n.textContent = v.toLocaleString('en-IN');
+    });
+  }
+
+  /* v369: 30-district quick filter (CSP-safe, addEventListener only) */
+  function applyDistrict(d) {
+    var bar = document.getElementById('cso-dist-bar');
+    if (!bar) return;
+    bar.querySelectorAll('.cso-dist-chip').forEach(function (b) {
+      var on = (b.getAttribute('data-district') || '') === d;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    var sel = document.getElementById('cso-dist-select');
+    if (sel && sel.value !== d) sel.value = d;
+    var items = document.querySelectorAll('#cso-lu-list .cso-lu-item');
+    var needle = d.toLowerCase();
+    var hits = 0;
+    items.forEach(function (it) {
+      var match = !needle || (it.textContent || '').toLowerCase().indexOf(needle) !== -1;
+      it.hidden = !match;
+      if (match) hits += 1;
+    });
+    if (needle && !hits) {
+      items.forEach(function (it) { it.hidden = false; });
+      window.location.assign('/guides/?district=' + encodeURIComponent(d));
+    }
+  }
+
+  function bindDistrictFilter() {
+    var bar = document.getElementById('cso-dist-bar');
+    if (!bar || bar.getAttribute('data-bound') === '1') return;
+    bar.setAttribute('data-bound', '1');
+    bar.addEventListener('click', function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest('.cso-dist-chip') : null;
+      if (b) applyDistrict(b.getAttribute('data-district') || '');
+    });
+    var sel = document.getElementById('cso-dist-select');
+    if (sel) sel.addEventListener('change', function () { applyDistrict(sel.value || ''); });
+  }
+
+  function localizeHeroBilingual() {
+    var isOr = isOdiaActive();
+    document.querySelectorAll('#cso-hero-kpis [data-en], #cso-dist-bar [data-en]').forEach(function (n) {
+      var t = isOr ? n.getAttribute('data-or') : n.getAttribute('data-en');
+      if (t) n.textContent = t;
+    });
   }
 
   function buildFeedUrl(forceBust) {
@@ -966,6 +1023,7 @@
     var chipsLbl = document.getElementById('chips-label');
     if (chipsLbl) chipsLbl.textContent = isOr ? 'ଲୋକପ୍ରିୟ ସନ୍ଧାନ:' : 'Popular Searches:';
 
+    localizeHeroBilingual();
     var trustStrip = document.getElementById('cso-hero-trust-strip');
     if (trustStrip) {
       var trustTexts = isOr
@@ -988,6 +1046,7 @@
     removeOpportunityCompass();
     document.querySelectorAll('.lu > .em').forEach(function (x) { x.remove(); });
     localizeHeroCopy();
+    bindDistrictFilter();
     localizeFeedHeaders();
     bindLatestUpdatesTabs();
     localizeLuTabLabels();

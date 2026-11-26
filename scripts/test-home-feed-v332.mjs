@@ -292,7 +292,7 @@ await test('1. GET /api/public/home-feed returns all 7 live content buckets with
 
   const data = await res.json();
   assert.equal(data.ok, true);
-  assert.equal(data.version, 'v367');
+  assert.equal(data.version, 'v369');
   assert.equal(data.broadcast.active, true);
   assert.ok(data.broadcast.id, 'broadcast must include stable dismissal id');
   assert.ok(Array.isArray(data.nav_header) && data.nav_header.length === 3, 'home-feed must include published nav_header links');
@@ -384,8 +384,8 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v368');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v368';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v369');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v369';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
   assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/guides') && CONTENT_PUBLIC_PATHS.includes('/guides/') && CONTENT_PUBLIC_PATHS.includes('/sitemap.xml') && CONTENT_PUBLIC_PATHS.includes('/api/home/feed'), 'CONTENT_PUBLIC_PATHS must purge /api/public/guides, /guides/, /sitemap.xml, and /api/home/feed');
   assert.ok(hydJs.includes("GUIDE: 'cso-lu-badge cso-lu-badge--guide'"), 'home-hydration.js must map GUIDE badge class');
@@ -399,8 +399,8 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   assert.ok(!indexHtml.includes('CSO Community Forum'), 'Duplicate CSO Community Forum promo card must be removed from index.html');
   assert.ok(indexHtml.includes('id="cso-tools"') && indexHtml.includes('data-feed-key="important_tools"'), 'index.html must include #cso-tools with D1 visibility key');
   assert.ok(indexHtml.includes('data-title-en="Age &amp; Eligibility Date Calculator"') && indexHtml.includes('data-title-or='), 'Important Tools cards must preserve bilingual EN/ଓଡ଼ିଆ attributes');
-  assert.equal((indexHtml.match(/class="card tl tool-card"/g) || []).length, 6, 'Important Tools must render all 6 compact tool cards');
-  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v368') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v368') && indexHtml.includes('/assets/js/home-hydration.js?v=20261126v368'), 'index.html must reference v367 cache-busted assets');
+  assert.equal((indexHtml.match(/class="card tl tool-card"/g) || []).length, 8, 'Important Tools must render all 8 (4x2) compact tool cards');
+  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v369') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v369') && indexHtml.includes('/assets/js/home-hydration.js?v=20261126v369'), 'index.html must reference v367 cache-busted assets');
   const styleV352 = read('assets/style.css');
   assert.ok(!styleV352.includes('.cso-action-hub-section'), 'Orphaned .cso-action-hub-section CSS must be removed from style.css');
   assert.ok(styleV352.includes('grid-template-columns: repeat(4, minmax(0, 1fr)) !important;'), 'Important Tools desktop grid must be 4 columns');
@@ -593,7 +593,7 @@ await test('6. v367 Trending & Popular Topics: live D1 counts, bilingual EN/ଓ�
 
   // 1. Public home feed returns all 6 default trending_topics with real D1 counts & Odia titles
   const initialFeed = await buildPublicHomeFeed(env);
-  assert.equal(initialFeed.version, 'v367');
+  assert.equal(initialFeed.version, 'v369');
   assert.ok(Array.isArray(initialFeed.trending_topics) && initialFeed.trending_topics.length === 6, 'trending_topics must return 6 default topics');
   const jobsTopic = initialFeed.trending_topics.find((t) => t.id === 'jobs');
   const examsTopic = initialFeed.trending_topics.find((t) => t.id === 'exams');
@@ -681,6 +681,29 @@ await test('6. v367 Trending & Popular Topics: live D1 counts, bilingual EN/ଓ�
   const hydJs = read('assets/js/home-hydration.js');
   assert.ok(hydJs.includes('renderTrendingTopicsSection') && hydJs.includes('formatTopicCount') && hydJs.includes('toOdiaDigits'), 'home-hydration.js must hydrate live counts & Odia digits');
   assert.ok(read('_worker.js').includes("pathname === '/api/home/feed'"), '_worker.js must alias /api/home/feed');
+});
+
+await test('v369 Homepage: zero blank action pills, 30-district selector, 8-card tools grid, 2026 footer + /guides/ link', async () => {
+  const html = read('index.html');
+  const acts = [...html.matchAll(/<a [^>]*class="cso-hf-row__act[^"]*"[^>]*>([\s\S]*?)<\/a>/g)];
+  assert.ok(acts.length >= 18, 'index.html must keep all 18 feed row action pills');
+  for (const m of acts) assert.ok(m[1].replace(/&[a-z]+;/g, 'x').trim().length > 0, 'blank action pill in index.html');
+  for (const lab of ['Notice &rarr;', 'Brief &rarr;', 'Roadmap &rarr;', 'Scheme &rarr;', '>Start<', '>PDF<']) assert.ok(html.includes(lab), `missing action label ${lab}`);
+  const hyd = read('assets/js/home-hydration.js');
+  assert.ok(hyd.includes("'Notice \\u2192'") && hyd.includes("'Brief \\u2192'") && hyd.includes("'Roadmap \\u2192'") && hyd.includes("'Scheme \\u2192'"), 'hydration must render labelled pills');
+  assert.ok(hyd.includes("|| 'Open \\u2192'"), 'buildCompactFeedRow must never emit an empty pill');
+  const sel = html.match(/<select class="cso-dist-select"[\s\S]*?<\/select>/)[0];
+  const opts = [...sel.matchAll(/<option value="([^"]+)">/g)].map((m) => m[1]);
+  assert.equal(opts.length, 30, 'selector must hold 30 districts');
+  assert.deepEqual(opts, [...opts].sort(), 'districts must be alphabetical');
+  assert.ok(opts[0] === 'Angul' && opts[29] === 'Sundargarh');
+  assert.equal((html.match(/class="cso-hero-kpi"/g) || []).length, 4, '4 KPI tiles');
+  const grid = html.slice(html.indexOf('id="cso-tools-grid"'), html.indexOf('</main>'));
+  assert.equal((grid.match(/class="card tl tool-card"/g) || []).length, 8, '8 tool cards');
+  assert.ok(grid.includes('ORSP Pay &amp; Salary Estimator') && grid.includes('30-District Odisha Explorer'));
+  assert.ok(html.includes('© 2026 Common Sense Odisha. All rights reserved.') && html.includes('<a href="/guides/">Informative Guides</a>'));
+  assert.ok(!/\son[a-z]+="/i.test(html.replace(/<svg[\s\S]*?<\/svg>/g, '')), 'no inline handlers');
+  assert.ok(ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v369');
 });
 
 console.log(`\n=== Homepage Live Feed v332 + v337 + v338 + v339 + v367 Results: ${passed} passed, 0 failed ===\n`);
