@@ -42,6 +42,7 @@ export const CONTENT_PUBLIC_PATHS = [
   '/api/public/jobs/tree',
   '/api/public/jobs/bootstrap',
   '/api/public/jobs/article',
+  '/api/public/jobs-hub',
   '/api/public/careers/bootstrap',
   '/api/public/careers/list',
   '/api/public/schemes',

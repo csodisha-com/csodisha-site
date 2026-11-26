@@ -17,6 +17,13 @@ import { renderPublicGuidesHubHtml, formatGuideRow } from '../functions/_lib/inf
 import { handleSiteConfig, HOME_SECTIONS_KEY } from '../functions/api/admin/_site.js';
 import { ACTIVE_SW_CACHE_VERSION } from '../functions/_lib/ops-sentinel.js';
 import { CONTENT_PUBLIC_PATHS } from '../functions/_lib/edge-cache-invalidator.js';
+import {
+  buildJobsHubPayload,
+  handlePublicJobsHubApi,
+  computeDaysRemaining,
+  isVerifiedGovUrl,
+  ODISHA_30_DISTRICTS
+} from '../functions/api/public/jobs-hub.js';
 
 const ROOT = process.cwd();
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -384,8 +391,8 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v371');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v371';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v372');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v372';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
   assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/guides') && CONTENT_PUBLIC_PATHS.includes('/guides/') && CONTENT_PUBLIC_PATHS.includes('/sitemap.xml') && CONTENT_PUBLIC_PATHS.includes('/api/home/feed'), 'CONTENT_PUBLIC_PATHS must purge /api/public/guides, /guides/, /sitemap.xml, and /api/home/feed');
   assert.ok(hydJs.includes("GUIDE: 'cso-lu-badge cso-lu-badge--guide'"), 'home-hydration.js must map GUIDE badge class');
@@ -400,7 +407,7 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   assert.ok(indexHtml.includes('id="cso-tools"') && indexHtml.includes('data-feed-key="important_tools"'), 'index.html must include #cso-tools with D1 visibility key');
   assert.ok(indexHtml.includes('data-title-en="Age &amp; Eligibility Date Calculator"') && indexHtml.includes('data-title-or='), 'Important Tools cards must preserve bilingual EN/ଓଡ଼ିଆ attributes');
   assert.equal((indexHtml.match(/class="card tl tool-card"/g) || []).length, 8, 'Important Tools must render all 8 (4x2) compact tool cards');
-  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v371') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v371') && indexHtml.includes('/assets/js/home-hydration.js?v=20261126v371'), 'index.html must reference v367 cache-busted assets');
+  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v372') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v372') && indexHtml.includes('/assets/js/home-hydration.js?v=20261126v372'), 'index.html must reference v367 cache-busted assets');
   const styleV352 = read('assets/style.css');
   assert.ok(!styleV352.includes('.cso-action-hub-section'), 'Orphaned .cso-action-hub-section CSS must be removed from style.css');
   assert.ok(styleV352.includes('grid-template-columns: repeat(4, minmax(0, 1fr)) !important;'), 'Important Tools desktop grid must be 4 columns');
@@ -601,7 +608,7 @@ await test('6. v367 Trending & Popular Topics: live D1 counts, bilingual EN/ଓ�
   const studyTopic = initialFeed.trending_topics.find((t) => t.id === 'study');
   const careerTopic = initialFeed.trending_topics.find((t) => t.id === 'career');
   const odishaTopic = initialFeed.trending_topics.find((t) => t.id === 'odisha');
-  assert.equal(jobsTopic.href, '/guides/?category=recruitment');
+  assert.equal(jobsTopic.href, '/jobs/');
   assert.equal(examsTopic.href, '/guides/?category=exam-prep');
   assert.equal(schemesTopic.href, '/guides/?category=scholarships');
   assert.equal(studyTopic.href, '/guides/?category=study-notes');
@@ -671,7 +678,7 @@ await test('6. v367 Trending & Popular Topics: live D1 counts, bilingual EN/ଓ�
   assert.ok(indexHtml.includes('id="cso-trending-topics" data-v367-trending="1"'), 'index.html must tag #cso-trending-topics with data-v367-trending="1"');
   assert.ok(indexHtml.includes('data-en="Trending &amp; Popular Topics"') && indexHtml.includes('data-or="ଟ୍ରେଣ୍ଡିଂ ଓ ଲୋକପ୍ରିୟ ବିଷୟବସ୍ତୁ"'), 'index.html must include bilingual Trending heading');
   assert.ok(indexHtml.includes('href="/guides/" class="cso-h2-link" data-en="View All Topics →" data-or="ସମସ୍ତ ବିଷୟ ଦେଖନ୍ତୁ →"'), 'View All Topics must link directly to /guides/ with bilingual labels');
-  for (const href of ['/guides/?category=recruitment', '/guides/?category=exam-prep', '/guides/?category=scholarships', '/guides/?category=study-notes', '/guides/?category=career', '/guides/?category=odisha-gk']) {
+  for (const href of ['/jobs/', '/guides/?category=exam-prep', '/guides/?category=scholarships', '/guides/?category=study-notes', '/guides/?category=career', '/guides/?category=odisha-gk']) {
     assert.ok(indexHtml.includes(`href="${href}"`), `index.html missing trending card href ${href}`);
   }
   assert.equal((indexHtml.match(/class="cso-topic-count"/g) || []).length, 6, 'index.html must include 6 .cso-topic-count placeholders for zero CLS');
@@ -703,7 +710,7 @@ await test('v369 Homepage: zero blank action pills, 30-district selector, 8-card
   assert.ok(grid.includes('ORSP Pay &amp; Salary Estimator') && grid.includes('30-District Odisha Explorer'));
   assert.ok(html.includes('© 2026 Common Sense Odisha. All rights reserved.') && html.includes('<a href="/guides/">Informative Guides</a>'));
   assert.ok(!/\son[a-z]+="/i.test(html.replace(/<svg[\s\S]*?<\/svg>/g, '')), 'no inline handlers');
-  assert.ok(ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v371');
+  assert.ok(ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v372');
 });
 
 await test('v370 Homepage colored hover/focus CSS uses semantic --cso-* tokens, zero hex, reduced-motion, SW v370', async () => {
@@ -712,8 +719,8 @@ await test('v370 Homepage colored hover/focus CSS uses semantic --cso-* tokens, 
   assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'zero hardcoded hex in v370 CSS');
   for (const t of ['.cso-topic-card--odisha', '#cso-home-jobs-section', '.cso-hf-row:hover .cso-hf-row__act', '.cso-lu-item:hover .cso-lu-cta', 'translateX(3px)', 'border-left: 3px solid transparent', '.cso-dist-chip:hover', '.hero .search-chip:hover']) assert.ok(blk.includes(t), `v370 CSS missing ${t}`);
   assert.ok(blk.includes('@media (prefers-reduced-motion: reduce)'));
-  assert.ok(read('sw.js').includes("cso-candidate-cache-v371") && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v371');
-  assert.ok(read('index.html').includes('?v=20261126v371'));
+  assert.ok(read('sw.js').includes("cso-candidate-cache-v372") && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v372');
+  assert.ok(read('index.html').includes('?v=20261126v372'));
 });
 
 await test('v371 Sharpened colored hover: ID-scoped specificity, purple Exams, tinted washes, ring + glow, SW v371', async () => {
@@ -721,8 +728,92 @@ await test('v371 Sharpened colored hover: ID-scoped specificity, purple Exams, t
   const blk = css.slice(css.indexOf('/* ===== v371'));
   assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk.replace(/#main-content|#cso-trending-topics|#cso-tools/g, '')), 'zero hardcoded hex in v371 CSS');
   for (const t of ['#main-content #cso-trending-topics .cso-topic-card--exams', '#main-content #cso-trending-topics .cso-topic-card:hover .cso-topic-card__badge', 'background: var(--card-accent);', 'color: var(--card-on);', '#main-content .cso-hf-section:hover', '#main-content #cso-tools .card.tl:hover', '#main-content .cso-dist-chip:hover', '#main-content .hero .search-chip:hover', '16%', '15%', '12%']) assert.ok(blk.includes(t), `v371 CSS missing ${t}`);
-  assert.ok(read('sw.js').includes('cso-candidate-cache-v371') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v371');
-  assert.ok(read('index.html').includes('?v=20261126v371'));
+  assert.ok(read('sw.js').includes('cso-candidate-cache-v372') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v372');
+  assert.ok(read('index.html').includes('?v=20261126v372'));
+});
+
+await test('v372 Live Jobs & Recruitment Hub: /api/public/jobs-hub aggregation, IST countdown, .gov.in badge, 30 districts & /jobs/ UI', async () => {
+  assert.equal(ODISHA_30_DISTRICTS.length, 30, 'ODISHA_30_DISTRICTS must contain 30 districts');
+  assert.equal(computeDaysRemaining('2026-11-29', '2026-11-26T10:00:00Z'), 3, 'IST countdown must be 3 days');
+  assert.equal(isVerifiedGovUrl('https://opsc.gov.in/Public/OPSC/Default.aspx'), true);
+  assert.equal(isVerifiedGovUrl('https://odisha.nic.in/portal'), true);
+  assert.equal(isVerifiedGovUrl('https://example.com/fake'), false);
+
+  const mockHubDb = {
+    prepare(sql) {
+      const q = String(sql || '');
+      return {
+        bind() { return this; },
+        async all() {
+          if (q.includes('FROM job_articles')) {
+            return {
+              results: [{
+                id: 'ja1', slug: 'opsc-oas-2026', title_en: 'OPSC OAS 2026 Notification — 399 Posts',
+                title_or: 'OPSC OAS 2026 ବିଜ୍ଞପ୍ତି', summary_en: 'Combined Civil Services exam.',
+                summary_or: '', organisation_en: 'OPSC', total_vacancies: 399,
+                qualification_level: 'Graduate', qualification_summary: 'Graduate',
+                location_district: 'Khordha', last_date: '2026-11-29',
+                official_apply_url: 'https://opsc.gov.in/apply', official_website_url: 'https://opsc.gov.in',
+                lifecycle_stage: 'notification', published_at: '2026-11-20T00:00:00Z', updated_at: '2026-11-20T00:00:00Z'
+              }]
+            };
+          }
+          if (q.includes('FROM posts')) {
+            return {
+              results: [{
+                id: 'p1', slug: 'oavs-admit-card-2026', title: 'OAVS Teacher Admit Card 2026 Released',
+                title_or: 'OAVS ଆଡମିଟ୍ କାର୍ଡ', summary: 'Download hall ticket.',
+                department: 'OAVS', category: 'admit_card', district: 'Cuttack',
+                qualification: 'B.Ed', vacancies: 1342, last_date: '2026-12-10',
+                official_url: 'https://oav.edu.in', published_at: '2026-11-21T00:00:00Z', updated_at: '2026-11-21T00:00:00Z'
+              }]
+            };
+          }
+          if (q.includes('FROM informative_guides')) {
+            return {
+              results: [{
+                id: 'g1', slug: 'osssc-peo-recruitment-guide', title_en: 'OSSSC PEO Recruitment Strategy Guide',
+                title_or: 'OSSSC PEO ନିଯୁକ୍ତି ଗାଇଡ୍', summary_en: 'Complete syllabus & vacancy prep.',
+                summary_or: '', category: 'exam-strategy', tags: 'recruitment,osssc',
+                scope: 'Odisha', is_exam: 1, published_at: '2026-11-22T00:00:00Z', updated_at: '2026-11-22T00:00:00Z'
+              }]
+            };
+          }
+          return { results: [] };
+        }
+      };
+    }
+  };
+
+  const payload = await buildJobsHubPayload(mockHubDb, { nowIso: '2026-11-26T10:00:00Z' });
+  assert.equal(payload.ok, true);
+  assert.equal(payload.version, 'v372');
+  assert.equal(payload.summary.total_active, 3);
+  assert.equal(payload.summary.closing_soon, 1);
+  assert.equal(payload.summary.verified_gov_count, 1);
+  assert.equal(payload.summary.districts_covered, 30);
+  const opsc = payload.items.find((x) => x.organization === 'OPSC');
+  assert.ok(opsc && opsc.is_closing_soon && opsc.days_remaining === 3 && opsc.is_verified_gov && opsc.district === 'Khordha');
+  const guide = payload.items.find((x) => x.source_type === 'guide');
+  assert.ok(guide && guide.detail_url === '/guides/osssc-peo-recruitment-guide');
+
+  const res = await handlePublicJobsHubApi(new Request('https://csodisha.com/api/public/jobs-hub?org=opsc&district=Khordha'), { DB: mockHubDb });
+  assert.equal(res.status, 200);
+  const filtered = await res.json();
+  assert.equal(filtered.items.length, 1);
+  assert.equal(filtered.items[0].organization, 'OPSC');
+
+  const jobsHtml = read('jobs/index.html');
+  assert.ok(jobsHtml.includes('id="cso-jobs-hub-root"') && jobsHtml.includes('/assets/js/jobs-hub.js?v=20261126v372'), '/jobs/index.html must mount jobs-hub.js');
+  assert.ok(jobsHtml.includes('/guides/?category=recruitment'), '/jobs/index.html must cross-link recruitment guides');
+  assert.ok(!/\son[a-z]+="/i.test(jobsHtml.replace(/<svg[\s\S]*?<\/svg>/g, '')), '/jobs/index.html must have zero inline handlers');
+  const sel = jobsHtml.match(/<select id="cso-jh-district"[\s\S]*?<\/select>/)[0];
+  const opts = [...sel.matchAll(/<option value="([^"]+)">/g)].map((m) => m[1]);
+  assert.equal(opts.length, 30, '/jobs/ district selector must hold all 30 Odisha districts');
+  assert.deepEqual(opts, ODISHA_30_DISTRICTS, '/jobs/ districts must be alphabetical Angul -> Sundargarh');
+  assert.ok(read('_worker.js').includes("pathname === '/api/public/jobs-hub'"), '_worker.js must route /api/public/jobs-hub');
+  assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/jobs-hub'), 'edge-cache-invalidator must purge /api/public/jobs-hub');
+  assert.ok(read('sw.js').includes('cso-candidate-cache-v372') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v372');
 });
 
 console.log(`\n=== Homepage Live Feed v332 + v337 + v338 + v339 + v367 Results: ${passed} passed, 0 failed ===\n`);

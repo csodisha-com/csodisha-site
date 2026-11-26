@@ -587,5 +587,20 @@ check('v371 sharpened colored hover: ID-scoped topic cards, purple Exams, 16% wa
   }
 });
 
+check('v372 Jobs & Recruitment Hub CSS: semantic --cso-* tokens only, zero hardcoded hex & >= 4.5:1 urgency/verified badges in all 4 themes', () => {
+  const css = read('assets/style.css');
+  const blk = css.slice(css.indexOf('/* ===== v372'));
+  assert.ok(blk.length > 500, 'v372 CSS block present');
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'v372 CSS must contain zero hardcoded hex');
+  for (const cls of ['.cso-jh-hero', '.cso-jh-summary', '.cso-jh-card:hover', '.cso-jh-deadline--urgent', '.cso-jh-deadline--active', '.cso-jh-pill--gov']) {
+    assert.ok(blk.includes(cls), `v372 CSS missing ${cls}`);
+  }
+  for (const [name, t] of Object.entries(EXPECTED_THEMES)) {
+    assert.ok(contrastRatio(t['--cso-err-fg'], t['--cso-err-bg']) >= 4.5, `${name} urgent deadline badge < 4.5:1`);
+    assert.ok(contrastRatio(t['--cso-ok-fg'], t['--cso-ok-bg']) >= 4.5, `${name} verified/active badge < 4.5:1`);
+    assert.ok(contrastRatio(t['--cso-info-fg'], t['--cso-info-bg']) >= 4.5, `${name} guide badge < 4.5:1`);
+  }
+});
+
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);

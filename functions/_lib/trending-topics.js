@@ -19,8 +19,8 @@ export const GUIDE_TOPIC_ALIASES = {
     label_en: 'Jobs & Recruitment Guides',
     label_or: 'ଚାକିରି ଓ ନିଯୁକ୍ତି ମାର୍ଗଦର୍ଶିକା',
     icon: '💼',
-    categories: ['how-to', 'exam-strategy'],
-    keywords: ['recruit', 'vacancy', 'vacancies', 'oavs', 'opsc', 'ossc', 'osssc', 'job', 'apply', 'notification', 'advt', 'salary', 'pay', 'teacher', 'police', 'clerk', 'peo', 'ri', 'ari', 'amin']
+    categories: ['how-to', 'exam-strategy', 'recruitment', 'job-alert', 'admit-card', 'result'],
+    keywords: ['recruit', 'vacancy', 'vacancies', 'oavs', 'opsc', 'ossc', 'osssc', 'osrtc', 'ibps', 'rrb', 'job', 'job-alert', 'admit card', 'admit-card', 'result', 'answer key', 'apply', 'notification', 'advt', 'salary', 'pay', 'teacher', 'police', 'clerk', 'peo', 'ri', 'ari', 'amin']
   },
   'exam-prep': {
     key: 'exam-prep',
@@ -76,7 +76,7 @@ export const DEFAULT_TRENDING_TOPICS = [
     title_or: 'ଚାକିରି ଓ ନିଯୁକ୍ତି',
     subtitle_en: 'Latest vacancies, state exams, notifications',
     subtitle_or: 'ନୂଆ ନିଯୁକ୍ତି, ରାଜ୍ୟ ପରୀକ୍ଷା ଓ ବିଜ୍ଞପ୍ତି',
-    href: '/guides/?category=recruitment',
+    href: '/jobs/',
     icon: 'jobs',
     badge_text: '2026',
     sort_order: 1,

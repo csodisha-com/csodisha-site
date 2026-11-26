@@ -399,8 +399,8 @@ check('8. v360 Informative Guides edge-to-edge layout (max-width: 100%), uncropp
     'admin/studio.css Live Preview must mirror v360 edge-to-edge 390px mobile padding and uncropped 16:9 cover rules'
   );
   assert.ok(
-    guidesSsr.includes('/assets/css/guides-portal.css?v=20261126v371') &&
-    guidesSsr.includes('/assets/js/guides-portal.js?v=20261126v371') &&
+    guidesSsr.includes('/assets/css/guides-portal.css?v=20261126v372') &&
+    guidesSsr.includes('/assets/js/guides-portal.js?v=20261126v372') &&
     guidesSsr.includes('gp-hero-card') &&
     guidesSsr.includes('gp-toc-card') &&
     guidesSsr.includes('gp-share-bar') &&
@@ -450,6 +450,17 @@ check('10. v369 Homepage hero KPI strip, district bar & 44px touch targets with 
   assert.ok(blk.includes('.cso-dist-chip') && blk.includes('min-height: 44px') && blk.includes('.cso-hero-kpis'));
   assert.ok(blk.includes('@media (prefers-reduced-motion: reduce)') && blk.includes('translateY(-2px)'));
   assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'zero hardcoded hex in v369 CSS');
+});
+
+check('11. v372 Jobs & Recruitment Hub (/jobs/): 30-district selector, 44px touch targets, 1-col mobile stack, zero inline handlers & reduced-motion', () => {
+  const jobsHtml = read('jobs/index.html');
+  assert.ok(jobsHtml.includes('id="cso-jobs-hub-root"') && jobsHtml.includes('id="cso-jh-district"'));
+  assert.ok(!/\son[a-z]+="/i.test(jobsHtml.replace(/<svg[\s\S]*?<\/svg>/g, '')), 'zero inline handlers in jobs/index.html');
+  const css = read('assets/style.css');
+  const blk = css.slice(css.indexOf('/* ===== v372'));
+  assert.ok(blk.includes('.cso-jh-org-pill') && blk.includes('min-height: 44px') && blk.includes('grid-template-columns: 1fr;'));
+  assert.ok(blk.includes('@media (prefers-reduced-motion: reduce)'));
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'zero hardcoded hex in v372 CSS');
 });
 
 console.log(`\n=== v300 Mobile & WCAG 2.2 Audit Results: ${passed} passed, ${failed} failed ===\n`);
