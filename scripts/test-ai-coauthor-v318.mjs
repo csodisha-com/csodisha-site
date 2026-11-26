@@ -222,8 +222,8 @@ await test('5. Wrangler AI binding, migration 0149, CSP compliance & v318 cache 
   const mig = read('migrations/0149_ai_coauthor_v318.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS ai_generation_logs'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v358');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v358';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v359');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v359';"));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('window.CSOAiCoAuthor'));
@@ -967,4 +967,91 @@ await test('10. v358 Resilient JSON repair (parseOrRepairAiJson), cascade retry 
   }
 });
 
-console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 + v358 Results: ${passed} passed, 0 failed ===\n`);
+await test('11. v359 Quota-bypassing local English metadata fallback (D1 cap + upstream 429) & Guides Studio Pass 2 graceful partial success', async () => {
+  const pastedNationalArticle = [
+    '## NTA UGC NET December 2026 Complete Examination & Fellowship Guide',
+    'The National Testing Agency conducts UGC NET for Assistant Professor and Junior Research Fellowship eligibility across Indian universities. Candidates must apply online at https://ugcnet.nta.nic.in/, review institutional accreditation at https://www.ugc.gov.in/, and check university research guidelines on https://niser.edu.in/academics.',
+    '',
+    '### Essential Guidelines & Key Rules',
+    '- Qualifying Marks: General category candidates need 40% aggregate across both papers.',
+    '- Age Limit for JRF: Maximum 30 years with 5 years relaxation for SC, ST, OBC-NCL, PwD, and Women.',
+    '- Exam Pattern: Computer Based Test with Paper 1 (100 marks) and Paper 2 (200 marks), zero negative marking.',
+    '- E-Certificate Validity: Assistant Professor eligibility remains valid for lifetime.',
+    '- Official Verification: Download admit cards and scorecards exclusively from official .nic.in and .gov.in portals.'
+  ].join('\n');
+  assert.ok(pastedNationalArticle.length >= 200);
+
+  // A. D1 daily neuron budget completely exhausted (>= 9500) -> auto_fix_fill MUST bypass quota block and return all English metadata locally
+  const exhaustedDb = createMockDb(9700);
+  const d1QuotaRes = await generateAiCoAuthorDraft({
+    DB: exhaustedDb,
+    GEMINI_API_KEY: 'gm_should_not_even_fail',
+    AI: { async run() { throw new Error('Should not be called when D1 budget cap already exhausted'); } }
+  }, {
+    mode: 'auto_fix_fill',
+    skip_body_or: true,
+    preserve_body_en: true,
+    draft: { category: 'how-to', scope: 'Odisha', body_en: pastedNationalArticle },
+    actorId: 'adm_1'
+  });
+
+  assert.equal(d1QuotaRes.ok, true, 'auto_fix_fill with pasted body_en must succeed locally even when D1 daily neuron budget is exhausted');
+  assert.equal(d1QuotaRes.provider, 'deterministic_fallback');
+  assert.equal(d1QuotaRes.quota_exhausted_odia, true, 'Must signal quota_exhausted_odia: true');
+  assert.equal(d1QuotaRes.body_en_locked, true);
+  assert.equal(d1QuotaRes.data.body_en, pastedNationalArticle, 'Must preserve pasted body_en 100% verbatim');
+  assert.equal(d1QuotaRes.data.title_en, 'NTA UGC NET December 2026 Complete Examination & Fellowship Guide');
+  assert.equal(d1QuotaRes.data.slug, 'nta-ugc-net-december-2026-complete-examination-fellowship-guide');
+  assert.equal(d1QuotaRes.data.category, 'exam-strategy', 'Must infer exam-strategy over default how-to composer value');
+  assert.equal(d1QuotaRes.data.scope, 'National', 'Must infer National scope for NTA UGC NET guide');
+  assert.ok(d1QuotaRes.data.read_minutes >= 1, 'Must compute read_minutes');
+  assert.ok(d1QuotaRes.data.summary_en.includes('National Testing Agency'), 'Must extract summary_en');
+  assert.equal(d1QuotaRes.data.takeaways_en.length, 5, 'Must extract 5 takeaways_en');
+  assert.ok(d1QuotaRes.data.tags.length >= 4 && d1QuotaRes.data.tags.includes('UGC NET'), 'Must derive relevant tags');
+  assert.ok(d1QuotaRes.data.cover_caption_en.includes('NTA UGC NET'), 'Must populate cover_caption_en');
+  assert.ok(d1QuotaRes.data.cover_alt.includes('NTA UGC NET'), 'Must populate cover_alt');
+  assert.ok(d1QuotaRes.data.official_links.some((l) => l.url.includes('ugcnet.nta.nic.in')), 'Must extract .nic.in link');
+  assert.ok(d1QuotaRes.data.official_links.some((l) => l.url.includes('ugc.gov.in')), 'Must extract .gov.in link');
+  assert.ok(d1QuotaRes.data.official_links.some((l) => l.url.includes('niser.edu.in')), 'Must extract .edu.in link');
+
+  // B. Both upstream Gemini AND Cloudflare Workers AI return 429 -> MUST still succeed locally with all English metadata
+  const freshDb = createMockDb();
+  const origFetch429 = globalThis.fetch;
+  globalThis.fetch = async () => new Response('RESOURCE_EXHAUSTED', { status: 429 });
+  try {
+    const upstream429Res = await generateAiCoAuthorDraft({
+      DB: freshDb,
+      GEMINI_API_KEY: 'gm_429_v359',
+      AI: {
+        async run() {
+          const e = new Error('Daily free neurons limit reached (429)');
+          e.status = 429;
+          throw e;
+        }
+      }
+    }, {
+      mode: 'auto_fix_fill',
+      skip_body_or: true,
+      draft: { body_en: pastedNationalArticle },
+      actorId: 'adm_1'
+    });
+    assert.equal(upstream429Res.ok, true, 'Upstream 429 on both Gemini and Workers AI must still succeed locally');
+    assert.equal(upstream429Res.provider, 'deterministic_fallback');
+    assert.equal(upstream429Res.quota_exhausted_odia, true);
+    assert.equal(upstream429Res.data.body_en, pastedNationalArticle);
+    assert.equal(upstream429Res.data.title_en, 'NTA UGC NET December 2026 Complete Examination & Fellowship Guide');
+    assert.equal(upstream429Res.data.official_links.length, 3);
+  } finally {
+    globalThis.fetch = origFetch429;
+  }
+
+  // C. Verify Guides Studio UI wires runGuideAutoFixAndFill() with isolated Pass 2 try/catch and amber notice
+  const studioJs = read('admin/guides-publishing-studio.js');
+  const studioCss = read('admin/studio.css');
+  assert.ok(studioJs.includes('async function runGuideAutoFixAndFill()'), 'guides-publishing-studio.js must define runGuideAutoFixAndFill()');
+  assert.ok(studioJs.includes('quota_exhausted_odia'), 'runGuideAutoFixAndFill() must inspect quota_exhausted_odia');
+  assert.ok(studioJs.includes('English metadata & links auto-filled locally! (Odia auto-translation skipped: daily AI quota resets at 5:30 AM IST / 1:30 PM IST'), 'guides-publishing-studio.js must display the non-blocking amber quota notice');
+  assert.ok(studioJs.includes('is-warn-amber') && studioCss.includes('.cso-guide-ai-progress.is-warn-amber'), 'Amber notice class must be wired in JS and styled in studio.css using semantic tokens');
+});
+
+console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 + v358 + v359 Results: ${passed} passed, 0 failed ===\n`);

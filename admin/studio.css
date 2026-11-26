@@ -4493,6 +4493,19 @@ body.cso-studio-body {
   line-height: 1.4;
 }
 
+.cso-guide-ai-progress.is-warn-amber {
+  display: inline-flex;
+  align-items: center;
+  flex: 1 1 100%;
+  padding: 0.55rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--studio-warn-border);
+  background: var(--studio-warn-bg);
+  color: var(--studio-warn-fg);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
 .cso-guide-wordcount-bar {
   display: flex;
   align-items: center;

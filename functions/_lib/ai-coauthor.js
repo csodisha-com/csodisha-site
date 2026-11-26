@@ -1,12 +1,14 @@
 /**
- * 100% Free-Tier Admin Studio AI Co-Author & Editorial Image Service (v358)
+ * 100% Free-Tier Admin Studio AI Co-Author & Editorial Image Service (v359)
  * - Verified Google AI Studio REST API Gemini Cascade (`gemini-2.5-flash` -> `gemini-2.5-flash-lite` ->
  *   `gemini-2.0-flash` -> `gemini-2.0-flash-lite`) with `responseMimeType: "application/json"` on JSON
  *   modes and `text/plain` on `translate_markdown`, cascading automatically on HTTP errors OR invalid JSON
  *   to Cloudflare Workers AI (`@cf/google/gemma-4-26b-a4b-it` -> `@cf/meta/llama-3.1-8b-instruct-fp8-fast` ->
  *   `@cf/meta/llama-3.3-70b-instruct-fp8-fast`) with `response_format: { type: "json_object" }`.
- * - Resilient JSON extractor/repairer (`parseOrRepairAiJson`) + zero-failure local deterministic metadata
- *   fallback (`buildDeterministicGuideMetadata`) when `body_en` (>= 200 chars) is pasted.
+ * - Resilient JSON extractor/repairer (`parseOrRepairAiJson`) + quota-bypassing deterministic English
+ *   metadata fallback (`buildDeterministicGuideMetadata`) when `body_en` (>= 200 chars) is pasted,
+ *   always returning `ok: true, provider: 'deterministic_fallback', quota_exhausted_odia: true` even when
+ *   daily D1 neuron caps or upstream Gemini/Workers AI endpoints return 429.
  * - Gemini-First Native Image Generation (`imagen-3.0-generate-002` -> `gemini-2.5-flash-image`),
  *   cascading automatically to Cloudflare Workers AI `@cf/black-forest-labs/flux-1-schnell`
  *   (and clean editorial SVG banner fallback if offline/local), uploaded directly to `cso-media` R2.
@@ -691,8 +693,19 @@ function getResponseSchemaForMode(mode, opts = {}) {
 export function extractOfficialUrlsFromText(rawText) {
   const src = String(rawText || '');
   if (!src) return [];
-  const matches = src.match(/(?:https?:\/\/|www\.)[a-z0-9.-]+\.(?:gov\.in|nic\.in|edu\.in|ac\.in|org\.in)(?:\/[^\s<>"')\]},;]*)?/gi) || [];
+  const fullMatches = src.match(/(?:https?:\/\/|www\.)[a-z0-9.-]+\.(?:gov\.in|nic\.in|edu\.in|ac\.in|org\.in)(?:\/[^\s<>"')\]},;]*)?/gi) || [];
+  const bareMatches = [];
+  const bareRe = /(?:^|[\s([{"'])([a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9-]+)*\.(?:gov\.in|nic\.in|edu\.in|ac\.in)(?:\/[^\s<>"')\]},;]*)?)/gi;
+  let bm;
+  while ((bm = bareRe.exec(src)) !== null) {
+    const startIdx = bm.index + (bm[0].length - bm[1].length);
+    const prevCh = startIdx > 0 ? src[startIdx - 1] : '';
+    if (prevCh === '@' || prevCh === '/' || prevCh === '.') continue;
+    bareMatches.push('https://' + bm[1]);
+  }
+  const matches = fullMatches.concat(bareMatches);
   const seen = new Set();
+  const seenHostsWithPath = new Set();
   const out = [];
   for (const raw of matches) {
     let url = String(raw || '').replace(/[.,;:!?)]+$/, '').trim();
@@ -703,9 +716,12 @@ export function extractOfficialUrlsFromText(rawText) {
     if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') continue;
     const norm = parsed.toString().slice(0, 400);
     const key = norm.toLowerCase();
+    const host = parsed.hostname.replace(/^www\./i, '').toLowerCase();
     if (seen.has(key)) continue;
+    // Skip bare host root if we already captured a fuller URL for the exact same host
+    if ((parsed.pathname === '/' || !parsed.pathname) && !parsed.search && seenHostsWithPath.has(host)) continue;
     seen.add(key);
-    const host = parsed.hostname.replace(/^www\./i, '');
+    seenHostsWithPath.add(host);
     const isGov = /(?:^|\.)(gov\.in|nic\.in|edu\.in|ac\.in)$/i.test(host);
     out.push({
       label_en: `${host} Official Portal`,
@@ -1408,7 +1424,11 @@ export function buildDeterministicGuideMetadata(rawBodyEn, extra = {}) {
   const slug = slugifyText(draft.slug || titleEn) || ('guide-' + Date.now().toString(36));
 
   const corpus = `${titleEn}\n${bodyEn.slice(0, 4000)}`;
-  const category = inferGuideCategory(draft.category, corpus);
+  const inferredCat = inferGuideCategory('', corpus);
+  const draftCat = String(draft.category || '').trim().toLowerCase();
+  const category = inferredCat !== 'how-to'
+    ? inferredCat
+    : (VALID_GUIDE_CATEGORIES.has(draftCat) ? draftCat : 'how-to');
   const hasOdishaMarkers = /\b(odisha|opsc|ossc|osssc|otet|osstet|bhubaneswar|cuttack|puri|subhadra|kalia|cm kisan|odisha\.gov\.in)\b/i.test(corpus);
   const hasNationalMarkers = /\b(upsc|ssc|rrb|ibps|nta|ugc net|central government|all india|india\.gov\.in)\b/i.test(corpus);
   const scope = /^national/i.test(String(draft.scope || ''))
@@ -1517,6 +1537,7 @@ export function buildDeterministicGuideMetadata(rawBodyEn, extra = {}) {
 
   const officialLinks = extractOfficialUrlsFromText(`${bodyEn}\n${String(extra.input || '')}`);
   const coverCaptionEn = `${titleEn} — Common Sense Odisha Guide`.slice(0, 200);
+  const coverAlt = `${titleEn} (${scope} official guide illustration)`.slice(0, 200);
 
   return {
     category,
@@ -1540,7 +1561,7 @@ export function buildDeterministicGuideMetadata(rawBodyEn, extra = {}) {
     image_prompt: `Clean editorial photograph representing ${titleEn} in ${scope}, India, daylight civic/educational setting, strictly no text or letters`,
     cover_caption_en: coverCaptionEn,
     cover_caption_or: '',
-    cover_alt: coverCaptionEn
+    cover_alt: coverAlt
   };
 }
 
@@ -1591,7 +1612,7 @@ async function translateMarkdownDocument(env, rawMarkdown) {
   };
 }
 
-export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId, pdf_text, pdf_filename, draft, overwrite, depth, skip_body_or, preserve_body_en }) {
+export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId, pdf_text, pdf_filename, draft, body_en, overwrite, depth, skip_body_or, preserve_body_en }) {
   const cleanMode = String(mode || '').trim().toLowerCase();
   if (!VALID_AI_MODES.has(cleanMode)) {
     const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, career, guide, auto_fix_fill, translate_odia, translate_fields, translate_markdown, or suggest_meta.');
@@ -1606,6 +1627,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   const cleanDepth = String(depth || 'comprehensive').trim().toLowerCase() === 'standard' ? 'standard' : 'comprehensive';
   const skipBodyOr = Boolean(skip_body_or);
   let cleanFields = null;
+  const rawDraftBodyEn = String((cleanDraft && cleanDraft.body_en) || body_en || '');
 
   if (cleanMode === 'translate_fields') {
     cleanFields = normalizeBatchFields(fields, cleanInput);
@@ -1618,7 +1640,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   } else if (cleanMode === 'auto_fix_fill') {
     const combinedLen = cleanPdfText.length + cleanInput.length
       + String((cleanDraft && cleanDraft.title_en) || '').trim().length
-      + String((cleanDraft && cleanDraft.body_en) || '').trim().length
+      + rawDraftBodyEn.trim().length
       + String((cleanDraft && cleanDraft.summary_en) || '').trim().length;
     if (combinedLen < 8) {
       const err = new Error('Upload a PDF or enter at least a title, notes, or rough draft before running AI Auto-Fix & Fill.');
@@ -1637,27 +1659,34 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     }
   }
 
-  const rawDraftBodyEn = String((cleanDraft && cleanDraft.body_en) || '');
   const canUseDeterministicFallback = cleanMode === 'auto_fix_fill' && !cleanPdfText && rawDraftBodyEn.trim().length >= BODY_EN_VERBATIM_LOCK_MIN_CHARS;
+  const buildDeterministicFallbackResult = (usageSnapshot) => {
+    const detData = buildDeterministicGuideMetadata(rawDraftBodyEn, {
+      draft: cleanDraft,
+      input: cleanInput,
+      fallbackTitle: cleanInput || 'Odisha Informative Guide'
+    });
+    return {
+      ok: true,
+      mode: cleanMode,
+      depth: cleanDepth,
+      body_en_locked: true,
+      fallback_used: true,
+      quota_exhausted_odia: true,
+      two_pass_translation: false,
+      provider: 'deterministic_fallback',
+      provider_label: 'Local Metadata Extractor',
+      model: 'deterministic-v359',
+      estimated_neurons: 0,
+      usage: usageSnapshot,
+      data: detData
+    };
+  };
 
   const usageBefore = await getDailyAiUsage(env);
   if (usageBefore.neurons_used >= DAILY_FREE_NEURON_BUDGET) {
     if (canUseDeterministicFallback) {
-      const detData = buildDeterministicGuideMetadata(rawDraftBodyEn, { draft: cleanDraft, input: cleanInput, fallbackTitle: cleanInput || 'Odisha Informative Guide' });
-      return {
-        ok: true,
-        mode: cleanMode,
-        depth: cleanDepth,
-        body_en_locked: true,
-        fallback_used: true,
-        two_pass_translation: false,
-        provider: 'deterministic_fallback',
-        provider_label: 'Local Metadata Extractor',
-        model: 'deterministic-v358',
-        estimated_neurons: 0,
-        usage: usageBefore,
-        data: detData
-      };
+      return buildDeterministicFallbackResult(usageBefore);
     }
     const err = new Error(DAILY_QUOTA_EXHAUSTED_MESSAGE);
     err.status = 429;
@@ -1778,25 +1807,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     parsed = result.parsed || parseOrRepairAiJson(result.text);
   } catch (cascadeErr) {
     if (canUseDeterministicFallback) {
-      const detData = buildDeterministicGuideMetadata(rawDraftBodyEn, {
-        draft: cleanDraft,
-        input: cleanInput,
-        fallbackTitle: cleanInput || 'Odisha Informative Guide'
-      });
-      return {
-        ok: true,
-        mode: cleanMode,
-        depth: cleanDepth,
-        body_en_locked: true,
-        fallback_used: true,
-        two_pass_translation: false,
-        provider: 'deterministic_fallback',
-        provider_label: 'Local Metadata Extractor',
-        model: 'deterministic-v358',
-        estimated_neurons: 0,
-        usage: usageBefore,
-        data: detData
-      };
+      return buildDeterministicFallbackResult(usageBefore);
     }
     throw cascadeErr;
   }
@@ -1806,6 +1817,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     ? 0
     : estimateWorkersAiNeurons(result.model, prompt.length, result.text.length);
   let twoPassTranslation = false;
+  let quotaExhaustedOdia = false;
 
   // Pass 2 (Server-Side Dedicated Full Odia Translation Pass for auto_fix_fill when caller did not split passes)
   if (useTwoPass && !skipBodyOr && normalized.body_en) {
@@ -1854,8 +1866,9 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
         }
       }
       twoPassTranslation = true;
-    } catch (_pass2Err) {
-      // Keep Pass 1 result intact even if Pass 2 encounters a transient error
+    } catch (pass2Err) {
+      if (isQuotaError(pass2Err)) quotaExhaustedOdia = true;
+      // Keep Pass 1 result intact even if Pass 2 encounters a transient or 429 quota error
     }
   }
 
@@ -1874,6 +1887,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     mode: cleanMode,
     depth: cleanDepth,
     body_en_locked: lockBodyEn,
+    quota_exhausted_odia: quotaExhaustedOdia,
     two_pass_translation: twoPassTranslation,
     provider: result.provider,
     provider_label: result.provider_label || (result.provider === 'gemini_free' ? 'Gemini' : 'Workers AI'),

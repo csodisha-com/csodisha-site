@@ -27,6 +27,7 @@ export async function handleAdminAiCoauthorApi(request, env, actor, ctx = null) 
         pdf_text: body.pdf_text,
         pdf_filename: body.pdf_filename,
         draft: body.draft,
+        body_en: body.body_en,
         overwrite: body.overwrite,
         depth: body.depth,
         skip_body_or: body.skip_body_or,

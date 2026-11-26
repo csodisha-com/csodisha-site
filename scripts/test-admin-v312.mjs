@@ -50,6 +50,7 @@ import { handleAdminGuidesApi } from '../functions/api/admin/guides.js';
 import { handlePublicGuidesRoute, handlePublicGuidesApi } from '../functions/_lib/informative-guides.js';
 import { handleSitemapXml } from '../functions/api/content/_seo.js';
 import { VALID_AI_MODES } from '../functions/_lib/ai-coauthor.js';
+import { handleAdminAiCoauthorApi } from '../functions/api/admin/ai-coauthor.js';
 
 const ROOT = process.cwd();
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
@@ -562,10 +563,10 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
   await Promise.all(waits);
 });
 
-// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v358
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v358 CSS, and cso-candidate-cache-v358 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v358');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v358';"), 'sw.js cache version must be cso-candidate-cache-v358');
+// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v359
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v359 CSS, and cso-candidate-cache-v359 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v359');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v359';"), 'sw.js cache version must be cso-candidate-cache-v359');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -703,9 +704,9 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
   assert.ok(adminHtml.includes('id="headerTranslatorWrap"') && adminHtml.includes('id="btnHeaderOdiaTranslator"') && adminHtml.includes('aria-controls="csoHeaderTranslatorPopover"'), 'admin/index.html must pin #btnHeaderOdiaTranslator in the top header bar');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v358'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v358');
-  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v358'), 'admin/index.html must load studio-translator.js?v=20261126v358');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v358'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v359'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v359');
+  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v359'), 'admin/index.html must load studio-translator.js?v=20261126v359');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v359'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
@@ -771,7 +772,11 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
     'gp-detail-shell',
     'gp-detail-grid',
     'gp-hero-media',
-    'gp-article-card'
+    'gp-article-card',
+    'runGuideAutoFixAndFill',
+    'LOCAL_META_QUOTA_NOTICE',
+    'quota_exhausted_odia',
+    'is-warn-amber'
   ]) {
     assert.ok(guidesStudioJs.includes(marker), `guides-publishing-studio.js missing required UI marker: ${marker}`);
   }
@@ -925,6 +930,46 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
     env, adminActor, created.id, '', ctx
   );
   assert.equal(delRes.status, 200);
+
+  // E. v359: Verify POST /api/admin/ai-coauthor (auto_fix_fill) still populates all English metadata locally when daily AI quota is exhausted
+  db.sqlite.exec(read('migrations/0149_ai_coauthor_v318.sql'));
+  db.sqlite.prepare(
+    `INSERT INTO ai_generation_logs (id, actor_id, target_module, provider, model, estimated_neurons, status, created_at)
+     VALUES ('ai_quota_v359', 'adm_1', 'guide', 'cloudflare_workers_ai', '@cf/meta/llama-3.1-8b-instruct-fp8-fast', 9800, 'ok', ?)`
+  ).run(new Date().toISOString());
+  const pastedQuotaBody = [
+    '## Odisha State Scholarship Portal 2026 Complete Application Handbook',
+    'Students belonging to SC, ST, OBC, SEBC, and EBC categories in Odisha can submit Post-Matric Scholarship applications online at https://scholarship.odisha.gov.in/ and verify Aadhaar DBT seeding status via https://npci.org.in/ or https://odisha.nic.in/ and https://utkaluniversity.edu.in/notices.',
+    '',
+    '### Important Steps & Eligibility Rules',
+    '- Permanent resident of Odisha enrolled in a recognized higher education institution.',
+    '- Aadhaar number must be seeded with an active bank account for Direct Benefit Transfer (DBT).',
+    '- Upload valid income certificate, caste certificate, and previous year marksheet.',
+    '- Track institute verification and district officer approval online using application ID.',
+    '- Never share OTP or bank PIN with unauthorized agents; verify only on .gov.in portals.'
+  ].join('\n');
+  const aiQuotaRes = await handleAdminAiCoauthorApi(
+    jsonReq('https://csodisha.com/api/admin/ai-coauthor', 'POST', {
+      mode: 'auto_fix_fill',
+      skip_body_or: true,
+      preserve_body_en: true,
+      draft: { category: 'how-to', scope: 'Odisha', body_en: pastedQuotaBody }
+    }),
+    env, adminActor, ctx
+  );
+  assert.equal(aiQuotaRes.status, 200, 'POST /api/admin/ai-coauthor auto_fix_fill must return 200 locally even when daily AI quota is exhausted');
+  const aiQuotaJson = await aiQuotaRes.json();
+  assert.equal(aiQuotaJson.ok, true);
+  assert.equal(aiQuotaJson.provider, 'deterministic_fallback');
+  assert.equal(aiQuotaJson.quota_exhausted_odia, true);
+  assert.equal(aiQuotaJson.data.body_en, pastedQuotaBody);
+  assert.equal(aiQuotaJson.data.title_en, 'Odisha State Scholarship Portal 2026 Complete Application Handbook');
+  assert.equal(aiQuotaJson.data.category, 'citizen-scheme');
+  assert.equal(aiQuotaJson.data.scope, 'Odisha');
+  assert.ok(aiQuotaJson.data.read_minutes >= 1 && aiQuotaJson.data.summary_en.length > 20);
+  assert.equal(aiQuotaJson.data.takeaways_en.length, 5);
+  assert.ok(aiQuotaJson.data.tags.length >= 4 && aiQuotaJson.data.cover_caption_en && aiQuotaJson.data.cover_alt);
+  assert.ok(aiQuotaJson.data.official_links.some((l) => l.url.includes('scholarship.odisha.gov.in')) && aiQuotaJson.data.official_links.some((l) => l.url.includes('odisha.nic.in')) && aiQuotaJson.data.official_links.some((l) => l.url.includes('utkaluniversity.edu.in')));
   await Promise.all(waits);
 });
 

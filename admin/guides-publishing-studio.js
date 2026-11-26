@@ -1697,11 +1697,17 @@
     btnCoverAiRegen.addEventListener('click', function () { runCoverAiGeneration(true); });
 
     var AI_QUOTA_FRIENDLY_MSG = 'Daily AI quota reached \u2014 resets at 5:30 AM IST (Workers AI) / 1:30 PM IST (Gemini). You can still edit and publish manually.';
+    var LOCAL_META_QUOTA_NOTICE = '\u2705 English metadata & links auto-filled locally! (Odia auto-translation skipped: daily AI quota resets at 5:30 AM IST / 1:30 PM IST \u2014 you can paste Odia manually and publish now.)';
+
+    function isQuotaLikeError(err) {
+      var msg = String((err && err.message) || err || '');
+      var status = Number(err && err.status);
+      return status === 429 || /quota|rate.?limit|429|resource.?exhausted|neurons|daily limit/i.test(msg);
+    }
 
     function formatAiErrorMessage(err) {
       var msg = String((err && err.message) || err || 'AI request failed.');
-      var status = Number(err && err.status);
-      if (status === 429 || /quota|rate.?limit|429|resource.?exhausted|neurons|daily limit/i.test(msg)) {
+      if (isQuotaLikeError(err)) {
         return AI_QUOTA_FRIENDLY_MSG;
       }
       return msg;
@@ -1895,7 +1901,8 @@
       updateWordCountAndReadTime(true);
     }
 
-    function runDedicatedOdiaTranslationPass(overwriteOr, pdfRecord) {
+    function runDedicatedOdiaTranslationPass(overwriteOr, pdfRecord, passOpts) {
+      var throwOnQuota = Boolean(passOpts && passOpts.throwOnQuota);
       var metaFields = {};
       if (inTitleEn.value.trim() && (overwriteOr || !inTitleOr.value.trim())) metaFields.title_or = inTitleEn.value.trim();
       if (inSumEn.value.trim() && (overwriteOr || !inSumOr.value.trim())) metaFields.summary_or = inSumEn.value.trim();
@@ -1916,8 +1923,10 @@
       var needMetaOr = Object.keys(metaFields).length > 0;
       if (!needBodyOr && !needMetaOr) return Promise.resolve(null);
 
+      aiStatus.classList.remove('is-warn-amber');
       aiStatus.textContent = '2/3 Translating full guide to \u0B13\u0B21\u0B3C\u0B3F\u0B06 (##-chunked Markdown tables & metadata)\u2026';
 
+      var firstErr = null;
       var quotaNotice = '';
       var bodyPromise = needBodyOr
         ? apiFetch('/api/admin/ai-coauthor', {
@@ -1928,6 +1937,7 @@
           if (md) inBodyOr.value = md;
           return mdRes;
         }).catch(function (e) {
+          if (!firstErr) firstErr = e;
           quotaNotice = formatAiErrorMessage(e);
           return null;
         })
@@ -1952,6 +1962,7 @@
           drawLinks();
           return trRes;
         }).catch(function (e) {
+          if (!firstErr) firstErr = e;
           if (!quotaNotice) quotaNotice = formatAiErrorMessage(e);
           return null;
         })
@@ -1959,6 +1970,9 @@
 
       return Promise.all([bodyPromise, metaPromise]).then(function (pair) {
         updateWordCountAndReadTime(true);
+        if (firstErr && throwOnQuota && (isQuotaLikeError(firstErr) || (!pair[0] && !pair[1]))) {
+          throw firstErr;
+        }
         if (quotaNotice && !pair[0] && !pair[1]) {
           toast(quotaNotice, 'amber');
         }
@@ -2062,7 +2076,7 @@
       if (f) handlePdfAutoWriteFile(f);
     });
 
-    btnAiAutoFix.addEventListener('click', function () {
+    async function runGuideAutoFixAndFill() {
       var currentDraft = collectDraftPayload();
       var seed = aiSeed.value.trim();
       var pastedBodyEn = inBodyEn.value;
@@ -2074,22 +2088,26 @@
         return;
       }
       setAiBusy(true);
+      aiStatus.classList.remove('is-warn-amber');
       var overwriteMode = chkAiOverwrite.checked;
       aiStatus.textContent = lockBodyEn
         ? '1/3 Body (EN) locked verbatim \u2014 extracting SEO metadata, 5 takeaways & official links\u2026'
         : '1/3 Structuring full English guide & tables (' + selAiDepth.value + ')\u2026';
-      apiFetch('/api/admin/ai-coauthor', {
-        method: 'POST',
-        body: {
-          mode: 'auto_fix_fill',
-          depth: selAiDepth.value,
-          skip_body_or: true,
-          preserve_body_en: lockBodyEn,
-          input: seed,
-          draft: currentDraft,
-          overwrite: overwriteMode
-        }
-      }).then(function (res) {
+
+      try {
+        // Pass 1: Extract & fill all English metadata fields (falls back deterministically locally when Body EN >= 200 chars even under 429 quota exhaustion)
+        var res = await apiFetch('/api/admin/ai-coauthor', {
+          method: 'POST',
+          body: {
+            mode: 'auto_fix_fill',
+            depth: selAiDepth.value,
+            skip_body_or: true,
+            preserve_body_en: lockBodyEn,
+            input: seed,
+            draft: currentDraft,
+            overwrite: overwriteMode
+          }
+        });
         var d = (res && res.data) || {};
         applyAutoFixPayload(d, {
           overwrite: overwriteMode,
@@ -2098,30 +2116,57 @@
           lockedBodyEnValue: pastedBodyEn
         });
         var provLabel = ((res && res.provider_label) || (res && res.provider) || 'AI') + (res && res.model ? (' · ' + res.model) : '');
-        return runDedicatedOdiaTranslationPass(overwriteMode || !inBodyOr.value.trim(), null).then(function () {
-          aiStatus.textContent = '3/3 Filling metadata, links & cover\u2026';
-          var maybeCover = (chkAiAutoCover.checked && (!inCoverUrl.value.trim() || overwriteMode))
-            ? runCoverAiGeneration(false)
-            : Promise.resolve(null);
-          return maybeCover.then(function () {
-            if (lockBodyEn && inBodyEn.value !== pastedBodyEn) {
-              inBodyEn.value = pastedBodyEn;
+        var odiaSkippedDueToQuota = Boolean(res && (res.quota_exhausted_odia || res.provider === 'deterministic_fallback'));
+
+        // Pass 2: Odia translation wrapped in its own try/catch so a 429/quota error NEVER discards Pass 1 English fields
+        if (!odiaSkippedDueToQuota) {
+          try {
+            await runDedicatedOdiaTranslationPass(overwriteMode || !inBodyOr.value.trim(), null, { throwOnQuota: true });
+          } catch (pass2Err) {
+            odiaSkippedDueToQuota = true;
+            if (!isQuotaLikeError(pass2Err)) {
+              // Keep Pass 1 English metadata populated even on transient Pass 2 translation errors
+              toast('English metadata filled; Odia translation skipped (' + formatAiErrorMessage(pass2Err) + ').', 'amber');
             }
-            var wc = updateWordCountAndReadTime(true);
-            aiStatus.textContent = lockBodyEn
-              ? '\u2713 3/3 Complete \u2014 Pasted Body (EN) preserved 100% verbatim & metadata + \u0B13\u0B21\u0B3C\u0B3F\u0B06 filled (' + wc.enWords.toLocaleString() + ' EN \u00B7 ' + wc.orWords.toLocaleString() + ' \u0B13\u0B21\u0B3C\u0B3F\u0B06 words) via ' + provLabel + '!'
-              : '\u2713 3/3 Complete \u2014 Full guide structured & translated (' + wc.enWords.toLocaleString() + ' EN \u00B7 ' + wc.orWords.toLocaleString() + ' \u0B13\u0B21\u0B3C\u0B3F\u0B06 words) via ' + provLabel + '!';
-            toast(lockBodyEn ? 'Pasted Body (EN) locked verbatim — metadata & Odia filled via ' + provLabel + '!' : 'Full guide structured & translated via ' + provLabel + '!', 'ok');
-          });
-        });
-      }).catch(function (e) {
+          }
+        }
+
+        if (lockBodyEn && inBodyEn.value !== pastedBodyEn) {
+          inBodyEn.value = pastedBodyEn;
+        }
+
+        if (odiaSkippedDueToQuota) {
+          updateWordCountAndReadTime(true);
+          aiStatus.classList.add('is-warn-amber');
+          aiStatus.textContent = LOCAL_META_QUOTA_NOTICE;
+          toast(LOCAL_META_QUOTA_NOTICE, 'amber');
+          return;
+        }
+
+        aiStatus.textContent = '3/3 Filling metadata, links & cover\u2026';
+        if (chkAiAutoCover.checked && (!inCoverUrl.value.trim() || overwriteMode)) {
+          await runCoverAiGeneration(false);
+        }
+        if (lockBodyEn && inBodyEn.value !== pastedBodyEn) {
+          inBodyEn.value = pastedBodyEn;
+        }
+        var wc = updateWordCountAndReadTime(true);
+        aiStatus.classList.remove('is-warn-amber');
+        aiStatus.textContent = lockBodyEn
+          ? '\u2713 3/3 Complete \u2014 Pasted Body (EN) preserved 100% verbatim & metadata + \u0B13\u0B21\u0B3C\u0B3F\u0B06 filled (' + wc.enWords.toLocaleString() + ' EN \u00B7 ' + wc.orWords.toLocaleString() + ' \u0B13\u0B21\u0B3C\u0B3F\u0B06 words) via ' + provLabel + '!'
+          : '\u2713 3/3 Complete \u2014 Full guide structured & translated (' + wc.enWords.toLocaleString() + ' EN \u00B7 ' + wc.orWords.toLocaleString() + ' \u0B13\u0B21\u0B3C\u0B3F\u0B06 words) via ' + provLabel + '!';
+        toast(lockBodyEn ? 'Pasted Body (EN) locked verbatim \u2014 metadata & Odia filled via ' + provLabel + '!' : 'Full guide structured & translated via ' + provLabel + '!', 'ok');
+      } catch (e) {
         var msg = formatAiErrorMessage(e);
+        aiStatus.classList.add('is-warn-amber');
         aiStatus.textContent = '\u2715 ' + msg;
         toast(msg, 'amber');
-      }).finally(function () {
+      } finally {
         setAiBusy(false);
-      });
-    });
+      }
+    }
+
+    btnAiAutoFix.addEventListener('click', runGuideAutoFixAndFill);
 
     btnAiDraft.addEventListener('click', function () {
       var seed = aiSeed.value.trim() || inTitleEn.value.trim() || inBodyEn.value.trim();
