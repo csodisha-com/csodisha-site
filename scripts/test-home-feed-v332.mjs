@@ -11,6 +11,7 @@ import {
   upsertLatestUpdateMeta
 } from '../functions/_lib/latest-updates.js';
 import { handleAdminLatestUpdates } from '../functions/api/admin/latest-updates.js';
+import { handleSiteConfig, HOME_SECTIONS_KEY } from '../functions/api/admin/_site.js';
 import { ACTIVE_SW_CACHE_VERSION } from '../functions/_lib/ops-sentinel.js';
 import { CONTENT_PUBLIC_PATHS } from '../functions/_lib/edge-cache-invalidator.js';
 
@@ -19,10 +20,29 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 function createMockDb() {
   const luMeta = new Map();
+  const siteSettings = new Map([
+    ['homepage_banner', {
+      value_json: JSON.stringify({
+        active: true,
+        headline: 'OPSC OAS 2026 Prelims Admit Card Live',
+        headline_or: 'OPSC OAS 2026 ପ୍ରିଲିମ୍ସ ଆଡମିଟ୍ କାର୍ଡ ଉପଲବ୍ଧ',
+        badge_label: 'LIVE ALERT',
+        severity: 'urgent',
+        ctaText: 'Download Now',
+        ctaUrl: '/jobs/'
+      }),
+      updated_at: '2026-11-26T00:00:00Z'
+    }]
+  ]);
   let jobPublished = 1;
 
   const execSql = (sql, params = []) => {
     const s = sql.replace(/\s+/g, ' ').trim();
+    if (/^INSERT INTO site_settings/i.test(s)) {
+      const [key, value_json] = params;
+      siteSettings.set(String(key), { value_json: String(value_json), updated_at: '2026-11-26T08:00:00Z' });
+      return { run: { success: true } };
+    }
     if (/^INSERT INTO cso_latest_updates_meta/i.test(s)) {
       const [entity_type, entity_id, is_pinned, scope, is_exam, updated_at] = params;
       const prev = luMeta.get(`${entity_type}:${entity_id}`);
@@ -38,20 +58,8 @@ function createMockDb() {
       return { run: { success: true } };
     }
     if (/FROM site_settings WHERE key = \?/i.test(s)) {
-      return {
-        first: {
-          value_json: JSON.stringify({
-            active: true,
-            headline: 'OPSC OAS 2026 Prelims Admit Card Live',
-            headline_or: 'OPSC OAS 2026 ପ୍ରିଲିମ୍ସ ଆଡମିଟ୍ କାର୍ଡ ଉପଲବ୍ଧ',
-            badge_label: 'LIVE ALERT',
-            severity: 'urgent',
-            ctaText: 'Download Now',
-            ctaUrl: '/jobs/'
-          }),
-          updated_at: '2026-11-26T00:00:00Z'
-        }
-      };
+      const key = String(params[0] || '');
+      return { first: siteSettings.get(key) || null };
     }
     if (/FROM job_articles/i.test(s)) {
       if (!jobPublished) return { results: [] };
@@ -221,8 +229,16 @@ await test('1. GET /api/public/home-feed returns all 7 live content buckets with
 
   const data = await res.json();
   assert.equal(data.ok, true);
-  assert.equal(data.version, 'v338');
+  assert.equal(data.version, 'v339');
   assert.equal(data.broadcast.active, true);
+  assert.deepEqual(data.section_visibility, {
+    jobs: true,
+    current_affairs: true,
+    mock_tests: true,
+    syllabus_pyq: true,
+    careers: true,
+    schemes: true
+  });
   assert.ok(Array.isArray(data.latest_updates) && data.latest_updates.length >= 6, 'home-feed must include unified latest_updates across tables including mock_tests');
   const jobLu = data.latest_updates.find((x) => x.entity_type === 'job');
   assert.ok(jobLu && jobLu.badge_type === 'JOB' && jobLu.cta_label === 'View Job →' && jobLu.is_external === false);
@@ -297,9 +313,21 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v338');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v338';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v339');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v339';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
+
+  // v339: Compact 2-column split grid, slim list rows, zero filler subtitles/footers & Admin Studio section visibility toggles
+  assert.ok(indexHtml.includes('class="cso-hf-split-grid" id="cso-home-feeds"'), 'index.html must wrap 6 feeds in .cso-hf-split-grid#cso-home-feeds');
+  assert.ok(!indexHtml.includes('class="cso-hf-sub"'), 'index.html must remove redundant .cso-hf-sub section subtitle paragraphs');
+  assert.ok(!indexHtml.includes('Live from Admin Studio') && !indexHtml.includes('Free Access') && !indexHtml.includes('Verified PDFs'), 'index.html must remove legacy filler footers from feed cards');
+  assert.ok(indexHtml.includes('class="cso-hf-row"') && indexHtml.includes('class="cso-hf-row__act'), 'index.html must use slim .cso-hf-row list items');
+  const styleCssV339 = read('assets/style.css');
+  assert.ok(styleCssV339.includes('.cso-hf-split-grid') && styleCssV339.includes('grid-template-columns: repeat(2, minmax(0, 1fr))'), 'style.css must define 2-column .cso-hf-split-grid');
+  assert.ok(styleCssV339.includes('@media (max-width: 960px)'), 'style.css must collapse 2-column split grid below 960px');
+  assert.ok(hydJs.includes('applySectionVisibility') && hydJs.includes('buildCompactFeedRow'), 'home-hydration.js must hydrate compact rows and honor section_visibility');
+  assert.ok(qcJs.includes('Homepage Compact Sections') && qcJs.includes('/api/admin/site'), 'quick-create-studio.js must include Homepage Compact Sections toggle group backed by /api/admin/site');
+  assert.ok(read('functions/api/admin/_router.js').includes("case 'site':"), '_router.js must wire /api/admin/site');
 
   // v337 + v338: Latest Updates homepage DOM, Exams tab, Admin Studio pin/exam/scope controls & live feed panel
   assert.ok(indexHtml.includes('id="cso-latest-updates-card"') && indexHtml.includes('id="cso-lu-list"'), 'index.html must include upgraded Latest Updates card');
@@ -380,4 +408,48 @@ await test('4. v337 Admin /api/admin/latest-updates pin, scope & unpublish immed
   assert.equal(feedAfter.latest_updates.some((it) => it.entity_id === 'job_1'), false, 'Unpublished job must disappear from latest_updates');
 });
 
-console.log(`\n=== Homepage Live Feed v332 + v337 Results: ${passed} passed, 0 failed ===\n`);
+await test('5. v339 Admin /api/admin/site section visibility toggles persist in D1 and sync to /api/public/home-feed', async () => {
+  const db = createMockDb();
+  const env = { DB: db };
+  const actor = { userId: 'adm_1', email: 'admin@csodisha.com', role: 'admin' };
+
+  assert.equal(HOME_SECTIONS_KEY, 'homepage_compact_sections');
+  const getInitial = await handleSiteConfig(new Request('https://csodisha.com/api/admin/site', { method: 'GET' }), env, actor);
+  assert.equal(getInitial.status, 200);
+  const initData = await getInitial.json();
+  assert.equal(initData.ok, true);
+  assert.equal(initData.homepage_sections.jobs, true);
+  assert.equal(initData.homepage_sections.schemes, true);
+
+  const putRes = await handleSiteConfig(new Request('https://csodisha.com/api/admin/site', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      homepage_sections: {
+        jobs: true,
+        current_affairs: false,
+        mock_tests: true,
+        syllabus_pyq: true,
+        careers: false,
+        schemes: true
+      }
+    })
+  }), env, actor);
+  assert.equal(putRes.status, 200);
+  const putData = await putRes.json();
+  assert.equal(putData.homepage_sections.current_affairs, false);
+  assert.equal(putData.homepage_sections.careers, false);
+  assert.equal(putData.homepage_sections.jobs, true);
+
+  const feedAfterToggle = await buildPublicHomeFeed(env);
+  assert.deepEqual(feedAfterToggle.section_visibility, {
+    jobs: true,
+    current_affairs: false,
+    mock_tests: true,
+    syllabus_pyq: true,
+    careers: false,
+    schemes: true
+  });
+});
+
+console.log(`\n=== Homepage Live Feed v332 + v337 + v338 + v339 Results: ${passed} passed, 0 failed ===\n`);

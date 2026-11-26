@@ -70,7 +70,7 @@ import { parsePaging, likeEscape } from '../../_lib/validate.js';
 import { handlePosts, POST_TYPES } from './_posts.js';
 import { handleMockTests, handleQuestion } from './_mock.js';
 import { handleUpload } from './_media.js';
-import { handleBanner, handleSettings, handleResources, handleMediaList, handleIncidents, extraStats } from './_site.js';
+import { handleBanner, handleSiteConfig, handleSettings, handleResources, handleMediaList, handleIncidents, extraStats } from './_site.js';
 import { handlePages } from './pages.js';
 import { handleSeedOdisha } from './seed-odisha.js';
 import { handleAiGeneratePage } from './_ai.js';
@@ -546,6 +546,8 @@ async function dispatchStaffSwitch(request, env, actor, resource, id, sub, extra
       case 'banner':
         if (!id) return await handleBanner(request, env, actor);
         break;
+      case 'site':
+        return await handleSiteConfig(request, env, actor, id);
       case 'settings':
         if (['registration', 'comments', 'payments', 'environment', 'admin-preferences'].includes(id)) {
           return await handleSettingsConfigBatch4Admin(request, env, actor, id, sub);

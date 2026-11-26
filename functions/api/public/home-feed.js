@@ -14,7 +14,7 @@
  *   - schemes         (latest 4 published Government Schemes)
  */
 import { json } from '../../_lib/http.js';
-import { readBanner } from '../admin/_site.js';
+import { readBanner, readHomeSections, defaultHomeSections } from '../admin/_site.js';
 import { ensureMockTestsV312Schema, formatMockTestRow } from '../admin/mock-tests.js';
 import { buildUnifiedLatestUpdates } from '../../_lib/latest-updates.js';
 
@@ -410,9 +410,10 @@ export async function buildPublicHomeFeed(env) {
   if (!db) {
     return {
       ok: true,
-      version: 'v338',
+      version: 'v339',
       generated_at: new Date().toISOString(),
       broadcast: { active: false },
+      section_visibility: defaultHomeSections(),
       latest_updates: [],
       jobs: [],
       current_affairs: [],
@@ -423,8 +424,9 @@ export async function buildPublicHomeFeed(env) {
     };
   }
 
-  const [broadcast, latest_updates, jobs, current_affairs, mock_tests, syllabus_pyq, careers, schemes] = await Promise.all([
+  const [broadcast, homeSections, latest_updates, jobs, current_affairs, mock_tests, syllabus_pyq, careers, schemes] = await Promise.all([
     fetchBroadcast(env),
+    readHomeSections(env).catch(() => ({ sections: defaultHomeSections() })),
     buildUnifiedLatestUpdates(db, { limit: 18 }),
     fetchLatestJobs(db),
     fetchLatestCurrentAffairs(db),
@@ -436,9 +438,10 @@ export async function buildPublicHomeFeed(env) {
 
   return {
     ok: true,
-    version: 'v338',
+    version: 'v339',
     generated_at: new Date().toISOString(),
     broadcast,
+    section_visibility: (homeSections && homeSections.sections) || defaultHomeSections(),
     latest_updates,
     jobs,
     current_affairs,

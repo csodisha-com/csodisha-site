@@ -683,6 +683,111 @@
     }
   }
 
+  function renderHomepageSectionsTogglePanel() {
+    var SECTION_DEFS = [
+      { key: 'jobs', id: 'qcHsJobs', label: '\uD83D\uDCBC Job Alerts & Admit Cards', slot: 'Row 1 \u00B7 Left' },
+      { key: 'current_affairs', id: 'qcHsCa', label: '\uD83D\uDCF0 Daily Current Affairs', slot: 'Row 1 \u00B7 Right' },
+      { key: 'mock_tests', id: 'qcHsMocks', label: '\u23F1\uFE0F Live CBT Mock Tests', slot: 'Row 2 \u00B7 Left' },
+      { key: 'syllabus_pyq', id: 'qcHsSyllabus', label: '\uD83D\uDCD1 Syllabus & PYQ Papers', slot: 'Row 2 \u00B7 Right' },
+      { key: 'careers', id: 'qcHsCareers', label: '\uD83E\uDDED Career Roadmaps', slot: 'Row 3 \u00B7 Left' },
+      { key: 'schemes', id: 'qcHsSchemes', label: '\uD83C\uDFDB\uFE0F Government Schemes', slot: 'Row 3 \u00B7 Right' }
+    ];
+
+    var card = el('section', 'cso-qc-card cso-qc-hs-panel');
+    card.id = 'csoQcHomeSectionsCard';
+    card.appendChild(el('h3', 'cso-qc-card-title', '\uD83D\uDCD0 Homepage Compact Sections'));
+    card.appendChild(el('p', 'cso-qc-hint', 'Toggle visibility for the 6 compact 2-column feed boxes on csodisha.com. Saving updates D1 & busts edge caches immediately.'));
+
+    var grid = el('div', 'cso-qc-hs-grid');
+    var checks = {};
+    var rows = {};
+    var states = {};
+    var statusEl = el('span', 'cso-qc-status');
+    statusEl.setAttribute('role', 'status');
+
+    function syncVisual(key) {
+      var on = Boolean(checks[key] && checks[key].checked);
+      if (rows[key]) rows[key].classList.toggle('is-off', !on);
+      if (states[key]) states[key].textContent = on ? 'Visible' : 'Hidden';
+    }
+
+    function readStateMap() {
+      var out = {};
+      SECTION_DEFS.forEach(function (d) { out[d.key] = Boolean(checks[d.key] && checks[d.key].checked); });
+      return out;
+    }
+
+    function applyStateMap(map) {
+      var src = (map && typeof map === 'object') ? map : {};
+      SECTION_DEFS.forEach(function (d) {
+        checks[d.key].checked = src[d.key] !== false;
+        syncVisual(d.key);
+      });
+    }
+
+    function saveSections(overrideMap) {
+      var payload = overrideMap || readStateMap();
+      if (overrideMap) applyStateMap(overrideMap);
+      statusEl.textContent = 'Saving Homepage Compact Sections & busting caches\u2026';
+      apiFetch('/api/admin/site', { method: 'PUT', body: { homepage_sections: payload } })
+        .then(function (res) {
+          if (res && res.homepage_sections) applyStateMap(res.homepage_sections);
+          statusEl.textContent = '\u2713 Section layout saved live & edge caches purged!';
+          toast('Homepage Compact Sections updated live!', 'ok');
+        })
+        .catch(function (err) {
+          statusEl.textContent = '\u2715 ' + err.message;
+          toast(err.message || 'Failed to save section visibility.', 'crimson');
+        });
+    }
+
+    SECTION_DEFS.forEach(function (def) {
+      var item = el('label', 'cso-qc-hs-item');
+      item.setAttribute('for', def.id);
+      var left = el('span', 'cso-qc-hs-left');
+      var cb = el('input', 'cso-qc-hs-check');
+      cb.type = 'checkbox';
+      cb.id = def.id;
+      cb.checked = true;
+      cb.addEventListener('change', function () {
+        syncVisual(def.key);
+        saveSections();
+      });
+      var txt = el('span', 'cso-qc-hs-text');
+      txt.append(el('span', 'cso-qc-hs-name', def.label), el('span', 'cso-qc-hs-slot', def.slot));
+      left.append(cb, txt);
+      var badge = el('span', 'cso-qc-hs-state', 'Visible');
+      item.append(left, badge);
+      checks[def.key] = cb;
+      rows[def.key] = item;
+      states[def.key] = badge;
+      grid.appendChild(item);
+    });
+    card.appendChild(grid);
+
+    var foot = el('div', 'cso-qc-hs-foot');
+    var saveBtn = el('button', 'cso-qc-btn cso-qc-btn--primary', 'Save Section Layout \u2192');
+    saveBtn.type = 'button';
+    saveBtn.addEventListener('click', function () { saveSections(); });
+    var allOnBtn = el('button', 'cso-qc-btn', 'Show All 6');
+    allOnBtn.type = 'button';
+    allOnBtn.addEventListener('click', function () {
+      var allOn = {};
+      SECTION_DEFS.forEach(function (d) { allOn[d.key] = true; });
+      saveSections(allOn);
+    });
+    foot.append(saveBtn, allOnBtn, statusEl);
+    card.appendChild(foot);
+
+    apiFetch('/api/admin/site').then(function (data) {
+      if (data && (data.homepage_sections || data.sections)) {
+        applyStateMap(data.homepage_sections || data.sections);
+      }
+    }).catch(function () {});
+
+    return { node: card };
+  }
+
   function renderLatestUpdatesControlPanel() {
     var card = el('section', 'cso-qc-card cso-qc-lu-panel');
     var head = el('div', 'cso-qc-label-row');
@@ -2204,8 +2309,8 @@
     }
 
     var built = buildQuickShell(root, headerActions, {
-      badge: '6 / 7 \u00B7 Homepage Broadcast',
-      subtitle: 'Live announcement bar (EN / \u0B13\u0B21\u0B3C\u0B3F\u0B06), badge label, CTA link & active toggle',
+      badge: '6 / 7 \u00B7 Homepage Broadcast & Layout',
+      subtitle: 'Live announcement bar (EN / \u0B13\u0B21\u0B3C\u0B3F\u0B06), Homepage Compact Sections visibility & Latest Updates feed',
       translateAllBtn: translateAllBtn,
       draftLabel: 'Save Draft (Inactive)',
       publishLabel: 'Publish Live Now \u2192',
@@ -2253,6 +2358,7 @@
     var liveLink = el('a', 'cso-qc-btn', 'View Homepage \u2197'); liveLink.href = '/'; liveLink.target = '_blank'; liveLink.rel = 'noopener noreferrer';
     foot.append(btnDraft, btnPub, liveLink, statusEl);
     built.shell.appendChild(foot);
+    built.shell.appendChild(renderHomepageSectionsTogglePanel().node);
     built.shell.appendChild(renderLatestUpdatesControlPanel().node);
 
     // Hydrate current live banner from D1

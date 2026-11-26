@@ -8,9 +8,83 @@ import { scheduleSemanticSync } from '../../_lib/semantic-search.js';
 
 const MEDIA_KEY_RE = /^[0-9a-f-]{36}\.(jpg|png|webp|pdf)$/;
 export const BANNER_KEY = 'homepage_banner';
+export const HOME_SECTIONS_KEY = 'homepage_compact_sections';
+export const HOME_SECTION_KEYS = ['jobs', 'current_affairs', 'mock_tests', 'syllabus_pyq', 'careers', 'schemes'];
 const SEVERITIES = ['info', 'notice', 'urgent'];
 const INCIDENT_LEVELS = ['low', 'medium', 'high', 'critical'];
 export const RESOURCE_KINDS = ['syllabus', 'pyq'];
+
+export function defaultHomeSections() {
+  return {
+    jobs: true,
+    current_affairs: true,
+    mock_tests: true,
+    syllabus_pyq: true,
+    careers: true,
+    schemes: true
+  };
+}
+
+export function normalizeHomeSections(raw) {
+  const base = defaultHomeSections();
+  const src = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
+  for (const key of HOME_SECTION_KEYS) {
+    if (src[key] !== undefined) base[key] = Boolean(src[key]);
+  }
+  return base;
+}
+
+export async function readHomeSections(env) {
+  if (!env || !env.DB) return { sections: defaultHomeSections(), updatedAt: null };
+  try {
+    const row = await env.DB.prepare('SELECT value_json, updated_at FROM site_settings WHERE key = ?').bind(HOME_SECTIONS_KEY).first();
+    if (!row) return { sections: defaultHomeSections(), updatedAt: null };
+    const parsed = JSON.parse(row.value_json || '{}');
+    return {
+      sections: normalizeHomeSections(parsed.sections || parsed.homepage_sections || parsed),
+      updatedAt: row.updated_at || null
+    };
+  } catch {
+    return { sections: defaultHomeSections(), updatedAt: null };
+  }
+}
+
+export async function handleSiteConfig(request, env, actor, id) {
+  if (id && !['homepage-sections', 'sections', 'layout'].includes(id)) {
+    throw new HttpError(404, 'NOT_FOUND', 'Unknown site config resource');
+  }
+  if (request.method === 'GET') {
+    const [banner, sec] = await Promise.all([
+      readBanner(env).catch(() => defaultBanner()),
+      readHomeSections(env)
+    ]);
+    return json({
+      ok: true,
+      banner,
+      homepage_sections: sec.sections,
+      sections: sec.sections,
+      updatedAt: sec.updatedAt
+    });
+  }
+  if (request.method !== 'PUT' && request.method !== 'POST') {
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  }
+  const body = await readJson(request, 20000);
+  const incoming = (body && (body.homepage_sections || body.sections)) || body;
+  const sections = normalizeHomeSections(incoming);
+  await env.DB.prepare(
+    `INSERT INTO site_settings (key, value_json, updated_by, updated_at) VALUES (?, ?, ?, datetime('now'))
+     ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_by = excluded.updated_by, updated_at = excluded.updated_at`
+  ).bind(HOME_SECTIONS_KEY, JSON.stringify({ sections }), actor.userId).run();
+  await audit(env, request, actor, 'site.homepage_sections.update', 'site_settings', HOME_SECTIONS_KEY, { sections });
+  const fresh = await readHomeSections(env);
+  return json({
+    ok: true,
+    homepage_sections: fresh.sections,
+    sections: fresh.sections,
+    updatedAt: fresh.updatedAt || new Date().toISOString()
+  });
+}
 
 export function defaultBanner() {
   return {
