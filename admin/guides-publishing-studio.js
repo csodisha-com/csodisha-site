@@ -722,7 +722,7 @@
     function renderArticleIntoFrame() {
       clear(frame);
       var cat = getCategoryMeta(draft.category);
-      var main = el('div', 'gp-main gp-reader-main cso-gp-preview-inner');
+      var main = el('div', 'gp-main gp-reader-main gp-shell gp-detail-shell cso-gp-preview-inner');
 
       // Kicker / Breadcrumb
       var kicker = el('nav', 'gp-breadcrumb cso-detail-kicker');
@@ -756,7 +756,7 @@
       // Cover Photo
       if (draft.cover_image) {
         var fig = el('figure', 'gp-cover gp-cover-figure');
-        var coverFrame = el('div', 'gp-cover-frame');
+        var coverFrame = el('div', 'gp-cover-frame gp-hero-media');
         var img = el('img', 'gp-cover-img');
         img.src = draft.cover_image;
         img.alt = draft.cover_caption_en || draft.title_en || 'Cover Photo';
@@ -768,7 +768,7 @@
       }
 
       // Reader Layout (TOC + Body)
-      var layout = el('div', 'gp-reader-layout');
+      var layout = el('div', 'gp-reader-layout gp-detail-grid');
       var parsed = buildBodyDomAndToc(pickLang(draft.body_en, draft.body_or), 'pv-' + state.lang);
 
       var rail = el('aside', 'gp-toc-rail');
@@ -795,7 +795,7 @@
         rail.appendChild(tocNav);
       }
 
-      var art = el('article', 'gp-article gp-article-body');
+      var art = el('article', 'gp-article gp-article-body gp-article-card');
 
       // Key Takeaways
       var tks = (draft.takeaways || []).filter(function (t) { return t && (t.text_en || t.text_or); });
@@ -1057,12 +1057,18 @@
     inSumOr.placeholder = '2-\u0B27\u0B3E\u0B21\u0B3C\u0B3F \u0B13\u0B21\u0B3C\u0B3F\u0B06 \u0B38\u0B3E\u0B30\u0B3E\u0B02\u0B36...';
     inSumOr.value = (editing && editing.summary_or) || '';
 
+    var BODY_EN_LOCK_MIN_CHARS = 200;
+
     var inBodyEn = el('textarea', 'cso-form-textarea cso-guide-body-ta');
-    inBodyEn.id = 'guideBodyEnInput';
+    inBodyEn.id = 'inpGuideBodyEn';
     inBodyEn.setAttribute('data-cso-lang', 'en');
     inBodyEn.rows = 18;
-    inBodyEn.placeholder = '## Overview\nWrite extensive, publication-grade Markdown with ## / ### headings, complete Markdown tables, bullet checklists, and > [!IMPORTANT] callout boxes...';
+    inBodyEn.placeholder = '## Overview\nWrite or paste your full English guide Markdown here (>= 200 chars automatically locks verbatim during AI Auto-Fill)...';
     inBodyEn.value = (editing && editing.body_en) || '';
+
+    var bodyEnLockBadge = el('span', 'cso-pill-badge cso-guide-lock-badge', '\uD83D\uDD12 Pasted Text Locked (Auto-Fill will preserve 100% verbatim)');
+    bodyEnLockBadge.id = 'guideBodyEnLockBadge';
+    bodyEnLockBadge.hidden = inBodyEn.value.trim().length < BODY_EN_LOCK_MIN_CHARS;
 
     var inBodyOr = el('textarea', 'cso-form-textarea cso-guide-body-ta');
     inBodyOr.id = 'guideBodyOrInput';
@@ -1081,10 +1087,17 @@
       return trimmed ? trimmed.split(/\s+/).filter(Boolean).length : 0;
     }
 
+    function updateBodyEnLockBadge() {
+      var isLocked = inBodyEn.value.trim().length >= BODY_EN_LOCK_MIN_CHARS;
+      bodyEnLockBadge.hidden = !isLocked;
+      return isLocked;
+    }
+
     function updateWordCountAndReadTime(forceSyncReadMins) {
+      updateBodyEnLockBadge();
       var enWords = countWords(inBodyEn.value);
       var orWords = countWords(inBodyOr.value);
-      var estMins = Math.max(1, Math.min(60, Math.ceil(Math.max(enWords, 1) / 200)));
+      var estMins = Math.max(1, Math.min(120, Math.ceil(Math.max(enWords, 1) / 200)));
       if ((forceSyncReadMins || !readMinsManual) && enWords >= 20) {
         inReadMins.value = String(estMins);
       }
@@ -1093,6 +1106,7 @@
     }
 
     inBodyEn.addEventListener('input', function () { updateWordCountAndReadTime(false); });
+    inBodyEn.addEventListener('paste', function () { window.setTimeout(function () { updateWordCountAndReadTime(false); }, 10); });
     inBodyOr.addEventListener('input', function () { updateWordCountAndReadTime(false); });
 
     // Cover photo inputs
@@ -1783,6 +1797,7 @@
     function applyAutoFixPayload(d, opts) {
       var o = opts || {};
       var overwrite = Boolean(o.overwrite);
+      var lockBodyEn = Boolean(o.lockBodyEn);
       var shouldSet = function (curVal) {
         return overwrite || !String(curVal || '').trim();
       };
@@ -1813,7 +1828,12 @@
       if (Array.isArray(d.tags) && d.tags.length && shouldSet(inTags.value)) {
         inTags.value = d.tags.join(', ');
       }
-      if (d.body_en && (overwrite || !inBodyEn.value.trim() || o.alwaysRepairBody)) {
+      // Byte-for-Byte Preservation Rule: NEVER rewrite or replace pasted Body (EN) when locked
+      if (lockBodyEn) {
+        if (typeof o.lockedBodyEnValue === 'string' && inBodyEn.value !== o.lockedBodyEnValue) {
+          inBodyEn.value = o.lockedBodyEnValue;
+        }
+      } else if (d.body_en && (overwrite || !inBodyEn.value.trim() || o.alwaysRepairBody)) {
         inBodyEn.value = d.body_en;
       }
       if (d.body_or && shouldSet(inBodyOr.value)) {
@@ -1829,7 +1849,8 @@
       if (d.image_prompt && shouldSet(inCoverAiPrompt.value)) {
         inCoverAiPrompt.value = d.image_prompt;
       }
-      if (d.cover_caption_en && shouldSet(inCoverCapEn.value)) inCoverCapEn.value = d.cover_caption_en;
+      var capEnVal = d.cover_caption_en || d.cover_alt || '';
+      if (capEnVal && shouldSet(inCoverCapEn.value)) inCoverCapEn.value = capEnVal;
       if (d.cover_caption_or && shouldSet(inCoverCapOr.value)) inCoverCapOr.value = d.cover_caption_or;
 
       if (o.pdfRecord) {
@@ -1864,48 +1885,63 @@
     }
 
     function runDedicatedOdiaTranslationPass(overwriteOr, pdfRecord) {
-      var fields = {};
-      if (inBodyEn.value.trim() && (overwriteOr || !inBodyOr.value.trim())) {
-        fields.body_or = inBodyEn.value.trim().slice(0, 64000);
-      }
-      if (inTitleEn.value.trim() && (overwriteOr || !inTitleOr.value.trim())) fields.title_or = inTitleEn.value.trim();
-      if (inSumEn.value.trim() && (overwriteOr || !inSumOr.value.trim())) fields.summary_or = inSumEn.value.trim();
-      if (inCoverCapEn.value.trim() && (overwriteOr || !inCoverCapOr.value.trim())) fields.cover_caption_or = inCoverCapEn.value.trim();
-      if (pdfRecord && pdfRecord.title_en) fields.pdf_title_or = pdfRecord.title_en;
+      var metaFields = {};
+      if (inTitleEn.value.trim() && (overwriteOr || !inTitleOr.value.trim())) metaFields.title_or = inTitleEn.value.trim();
+      if (inSumEn.value.trim() && (overwriteOr || !inSumOr.value.trim())) metaFields.summary_or = inSumEn.value.trim();
+      if (inCoverCapEn.value.trim() && (overwriteOr || !inCoverCapOr.value.trim())) metaFields.cover_caption_or = inCoverCapEn.value.trim();
+      if (pdfRecord && pdfRecord.title_en) metaFields.pdf_title_or = pdfRecord.title_en;
       takeawaysList.forEach(function (t, i) {
         if ((t.text_en || '').trim() && (overwriteOr || !(t.text_or || '').trim())) {
-          fields['tk_' + i] = t.text_en.trim();
+          metaFields['tk_' + i] = t.text_en.trim();
         }
       });
       linksList.forEach(function (l, i) {
         if ((l.label_en || '').trim() && (overwriteOr || !(l.label_or || '').trim())) {
-          fields['lnk_' + i] = l.label_en.trim();
+          metaFields['lnk_' + i] = l.label_en.trim();
         }
       });
-      if (!Object.keys(fields).length) return Promise.resolve(null);
 
-      aiStatus.textContent = '2/3 Translating full guide to \u0B13\u0B21\u0B3C\u0B3F\u0B06 (section-for-section & table-for-table)\u2026';
-      return apiFetch('/api/admin/ai-coauthor', {
-        method: 'POST',
-        body: { mode: 'translate_fields', fields: fields }
-      }).then(function (trRes) {
-        var tr = (trRes && trRes.data && trRes.data.translations) || {};
-        if (tr.body_or) inBodyOr.value = tr.body_or;
-        if (tr.title_or) inTitleOr.value = tr.title_or;
-        if (tr.summary_or) inSumOr.value = tr.summary_or;
-        if (tr.cover_caption_or) inCoverCapOr.value = tr.cover_caption_or;
-        if (pdfRecord && tr.pdf_title_or) {
-          pdfRecord.title_or = tr.pdf_title_or;
-          drawPdfs();
-        }
-        takeawaysList.forEach(function (t, i) { if (tr['tk_' + i]) t.text_or = tr['tk_' + i]; });
-        linksList.forEach(function (l, i) { if (tr['lnk_' + i]) l.label_or = tr['lnk_' + i]; });
-        drawTakeaways();
-        drawLinks();
+      var needBodyOr = Boolean(inBodyEn.value.trim() && (overwriteOr || !inBodyOr.value.trim()));
+      var needMetaOr = Object.keys(metaFields).length > 0;
+      if (!needBodyOr && !needMetaOr) return Promise.resolve(null);
+
+      aiStatus.textContent = '2/3 Translating full guide to \u0B13\u0B21\u0B3C\u0B3F\u0B06 (##-chunked Markdown tables & metadata)\u2026';
+
+      var bodyPromise = needBodyOr
+        ? apiFetch('/api/admin/ai-coauthor', {
+          method: 'POST',
+          body: { mode: 'translate_markdown', input: inBodyEn.value.slice(0, 64000) }
+        }).then(function (mdRes) {
+          var md = mdRes && mdRes.data && (mdRes.data.translated_markdown || mdRes.data.translated_or);
+          if (md) inBodyOr.value = md;
+          return mdRes;
+        }).catch(function () { return null; })
+        : Promise.resolve(null);
+
+      var metaPromise = needMetaOr
+        ? apiFetch('/api/admin/ai-coauthor', {
+          method: 'POST',
+          body: { mode: 'translate_fields', fields: metaFields }
+        }).then(function (trRes) {
+          var tr = (trRes && trRes.data && trRes.data.translations) || {};
+          if (tr.title_or) inTitleOr.value = tr.title_or;
+          if (tr.summary_or) inSumOr.value = tr.summary_or;
+          if (tr.cover_caption_or) inCoverCapOr.value = tr.cover_caption_or;
+          if (pdfRecord && tr.pdf_title_or) {
+            pdfRecord.title_or = tr.pdf_title_or;
+            drawPdfs();
+          }
+          takeawaysList.forEach(function (t, i) { if (tr['tk_' + i]) t.text_or = tr['tk_' + i]; });
+          linksList.forEach(function (l, i) { if (tr['lnk_' + i]) l.label_or = tr['lnk_' + i]; });
+          drawTakeaways();
+          drawLinks();
+          return trRes;
+        }).catch(function () { return null; })
+        : Promise.resolve(null);
+
+      return Promise.all([bodyPromise, metaPromise]).then(function (pair) {
         updateWordCountAndReadTime(true);
-        return trRes;
-      }).catch(function () {
-        return null;
+        return pair[0] || pair[1];
       });
     }
 
@@ -2007,7 +2043,9 @@
     btnAiAutoFix.addEventListener('click', function () {
       var currentDraft = collectDraftPayload();
       var seed = aiSeed.value.trim();
-      var totalLen = seed.length + (currentDraft.title_en || '').length + (currentDraft.body_en || '').length + (currentDraft.summary_en || '').length;
+      var pastedBodyEn = inBodyEn.value;
+      var lockBodyEn = pastedBodyEn.trim().length >= BODY_EN_LOCK_MIN_CHARS;
+      var totalLen = seed.length + (currentDraft.title_en || '').length + pastedBodyEn.trim().length + (currentDraft.summary_en || '').length;
       if (totalLen < 8) {
         toast('Paste rough notes/draft in the AI box or Guide Body first, or upload a PDF above.', 'amber');
         aiSeed.focus();
@@ -2015,20 +2053,28 @@
       }
       setAiBusy(true);
       var overwriteMode = chkAiOverwrite.checked;
-      aiStatus.textContent = '1/3 Structuring full English guide & tables (' + selAiDepth.value + ')\u2026';
+      aiStatus.textContent = lockBodyEn
+        ? '1/3 Body (EN) locked verbatim \u2014 extracting SEO metadata, 5 takeaways & official links\u2026'
+        : '1/3 Structuring full English guide & tables (' + selAiDepth.value + ')\u2026';
       apiFetch('/api/admin/ai-coauthor', {
         method: 'POST',
         body: {
           mode: 'auto_fix_fill',
           depth: selAiDepth.value,
           skip_body_or: true,
+          preserve_body_en: lockBodyEn,
           input: seed,
           draft: currentDraft,
           overwrite: overwriteMode
         }
       }).then(function (res) {
         var d = (res && res.data) || {};
-        applyAutoFixPayload(d, { overwrite: overwriteMode, alwaysRepairBody: true });
+        applyAutoFixPayload(d, {
+          overwrite: overwriteMode,
+          alwaysRepairBody: !lockBodyEn,
+          lockBodyEn: lockBodyEn,
+          lockedBodyEnValue: pastedBodyEn
+        });
         var provLabel = ((res && res.provider_label) || (res && res.provider) || 'AI') + (res && res.model ? (' · ' + res.model) : '');
         return runDedicatedOdiaTranslationPass(overwriteMode || !inBodyOr.value.trim(), null).then(function () {
           aiStatus.textContent = '3/3 Filling metadata, links & cover\u2026';
@@ -2036,9 +2082,14 @@
             ? runCoverAiGeneration(false)
             : Promise.resolve(null);
           return maybeCover.then(function () {
+            if (lockBodyEn && inBodyEn.value !== pastedBodyEn) {
+              inBodyEn.value = pastedBodyEn;
+            }
             var wc = updateWordCountAndReadTime(true);
-            aiStatus.textContent = '\u2713 3/3 Complete \u2014 Full guide structured & translated (' + wc.enWords.toLocaleString() + ' EN \u00B7 ' + wc.orWords.toLocaleString() + ' \u0B13\u0B21\u0B3C\u0B3F\u0B06 words) via ' + provLabel + '!';
-            toast('Full guide structured & translated via ' + provLabel + '!', 'ok');
+            aiStatus.textContent = lockBodyEn
+              ? '\u2713 3/3 Complete \u2014 Pasted Body (EN) preserved 100% verbatim & metadata + \u0B13\u0B21\u0B3C\u0B3F\u0B06 filled (' + wc.enWords.toLocaleString() + ' EN \u00B7 ' + wc.orWords.toLocaleString() + ' \u0B13\u0B21\u0B3C\u0B3F\u0B06 words) via ' + provLabel + '!'
+              : '\u2713 3/3 Complete \u2014 Full guide structured & translated (' + wc.enWords.toLocaleString() + ' EN \u00B7 ' + wc.orWords.toLocaleString() + ' \u0B13\u0B21\u0B3C\u0B3F\u0B06 words) via ' + provLabel + '!';
+            toast(lockBodyEn ? 'Pasted Body (EN) locked verbatim — metadata & Odia filled via ' + provLabel + '!' : 'Full guide structured & translated via ' + provLabel + '!', 'ok');
           });
         });
       }).catch(function (e) {
@@ -2395,11 +2446,18 @@
 
     fmtBar.append(fmtSep, btnMdTranslateFull, btnMdTranslateSel);
 
+    var bodyEnField = el('div', 'cso-form-group cso-span-full');
+    var bodyEnLabelRow = el('div', 'cso-guide-body-label-row');
+    var lblBodyEn = el('label', 'cso-form-label', 'Structured Body (English \u2014 Markdown headings generate Table of Contents automatically)');
+    lblBodyEn.setAttribute('for', 'inpGuideBodyEn');
+    bodyEnLabelRow.append(lblBodyEn, bodyEnLockBadge);
+    bodyEnField.append(bodyEnLabelRow, inBodyEn);
+
     bodyCard.append(
       fmtBar,
       mdTrStatusWrap,
       wordCountBar,
-      makeField('Structured Body (English — Markdown headings generate Table of Contents automatically)', inBodyEn, 'cso-span-full'),
+      bodyEnField,
       makeField('Structured Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', inBodyOr, 'cso-span-full')
     );
     updateWordCountAndReadTime(false);

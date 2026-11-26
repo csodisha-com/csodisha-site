@@ -4635,6 +4635,21 @@ body.cso-studio-body {
   font-size: 0.8rem;
 }
 
+.cso-guide-body-label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cso-guide-lock-badge {
+  background: var(--cso-ok-bg);
+  color: var(--cso-ok-fg);
+  border-color: var(--cso-border);
+  font-weight: 700;
+}
+
 .cso-guide-body-ta {
   min-height: 420px;
   resize: vertical;
@@ -4887,7 +4902,7 @@ body.cso-studio-body {
 
 .cso-guide-preview-frame {
   width: 100%;
-  max-width: 1200px;
+  max-width: min(1480px, 96vw);
   margin: 0 auto;
   border-radius: 16px;
   border: 1px solid var(--cso-border);
@@ -4904,16 +4919,20 @@ body.cso-studio-body {
   border-radius: 28px;
 }
 
-.cso-guide-preview-frame.is-mobile-frame .gp-main {
+.cso-guide-preview-frame.is-mobile-frame .gp-main,
+.cso-guide-preview-frame.is-mobile-frame .gp-shell,
+.cso-guide-preview-frame.is-mobile-frame .gp-detail-shell {
   padding: 0.85rem;
 }
 
 .cso-guide-preview-frame.is-mobile-frame .gp-article-head,
-.cso-guide-preview-frame.is-mobile-frame .gp-article-body {
+.cso-guide-preview-frame.is-mobile-frame .gp-article-body,
+.cso-guide-preview-frame.is-mobile-frame .gp-article-card {
   padding: 1rem;
 }
 
-.cso-guide-preview-frame.is-mobile-frame .gp-reader-layout {
+.cso-guide-preview-frame.is-mobile-frame .gp-reader-layout,
+.cso-guide-preview-frame.is-mobile-frame .gp-detail-grid {
   grid-template-columns: 1fr;
 }
 
@@ -5090,22 +5109,26 @@ body.cso-studio-body {
   border: 1px solid var(--gp-border, var(--cso-border));
 }
 
-#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover-frame {
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover-frame,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-hero-media {
   display: block;
   width: 100%;
   overflow: hidden;
+  border-radius: 14px;
   background: var(--gp-surface-alt, var(--cso-surface-alt));
 }
 
 #csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover img,
 #csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover-figure img,
-#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover-img {
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover-img,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-hero-media img {
   display: block;
   width: 100%;
   height: auto;
   max-height: 440px;
-  object-fit: contain;
-  margin: 0 auto;
+  object-fit: cover;
+  border-radius: 14px;
+  margin: 0;
 }
 
 #csoGuideLivePreviewModal .cso-guide-preview-frame .gp-takeaways {

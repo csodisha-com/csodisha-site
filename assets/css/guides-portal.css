@@ -1,16 +1,16 @@
-/* Common Sense Odisha — Informative Articles & Guides Public Hub & Reader (v349)
+/* Common Sense Odisha — Informative Articles & Guides Public Hub & Reader (v356)
  * 100% 4-Theme Semantic Tokens (zero hardcoded hex), WCAG AAA Contrast, Strict CSP. */
 
-.gp-main {
+.gp-main,
+.gp-shell,
+.gp-reader-main,
+.gp-detail-shell {
   width: 100%;
-  max-width: 1280px;
+  max-width: min(1480px, 96vw);
   margin: 0 auto;
-  padding: 1.25rem 1.25rem 3.5rem;
+  padding: 1.25rem clamp(14px, 2vw, 32px) 3.5rem;
+  padding-inline: clamp(14px, 2vw, 32px);
   color: var(--gp-ink, var(--cso-ink, var(--cso-ink-primary)));
-}
-
-.gp-reader-main {
-  max-width: 1180px;
 }
 
 /* Breadcrumb / Kicker Navigation */
@@ -402,22 +402,26 @@
   border: 1px solid var(--gp-border, var(--cso-border));
 }
 
-.gp-cover-frame {
+.gp-cover-frame,
+.gp-hero-media {
   display: block;
   width: 100%;
   overflow: hidden;
+  border-radius: 14px;
   background: var(--gp-surface-alt, var(--cso-surface-alt));
 }
 
 .gp-cover img,
 .gp-cover-figure img,
-.gp-cover-img {
+.gp-cover-img,
+.gp-hero-media img {
   display: block;
   width: 100%;
   height: auto;
   max-height: 440px;
-  object-fit: contain;
-  margin: 0 auto;
+  object-fit: cover;
+  border-radius: 14px;
+  margin: 0;
 }
 
 .gp-caption {
@@ -428,18 +432,31 @@
   border-top: 1px solid var(--gp-border, var(--cso-border));
 }
 
-.gp-reader-layout {
+.gp-reader-layout,
+.gp-detail-grid {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
   align-items: start;
 }
 
 .gp-toc-rail {
-  position: sticky;
-  top: 84px;
-  max-height: calc(100vh - 104px);
-  overflow-y: auto;
+  position: static;
+}
+
+@media (min-width: 1024px) {
+  .gp-reader-layout,
+  .gp-detail-grid {
+    grid-template-columns: 270px minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .gp-toc-rail {
+    position: sticky;
+    top: 84px;
+    max-height: calc(100vh - 104px);
+    overflow-y: auto;
+  }
 }
 
 .gp-toc {
@@ -514,13 +531,15 @@
 }
 
 .gp-article,
-.gp-article-body {
+.gp-article-body,
+.gp-article-card {
   background: var(--gp-surface, var(--cso-surface));
   color: var(--gp-ink, var(--cso-ink));
   border: 1px solid var(--gp-border, var(--cso-border));
   border-radius: 16px;
   padding: 1.5rem 1.75rem;
   min-width: 0;
+  width: 100%;
 }
 
 /* Key Takeaways Box */
@@ -927,21 +946,25 @@
   }
 }
 
-@media (max-width: 960px) {
-  .gp-reader-layout {
+@media (max-width: 1023px) {
+  .gp-reader-layout,
+  .gp-detail-grid {
     grid-template-columns: 1fr;
   }
   .gp-toc-rail {
     position: static;
   }
-  .gp-article-body {
+  .gp-article-body,
+  .gp-article-card {
     padding: 1.15rem;
   }
 }
 
 @media (max-width: 640px) {
-  .gp-main {
-    padding: 0.85rem 0.85rem 2.5rem;
+  .gp-main,
+  .gp-shell,
+  .gp-detail-shell {
+    padding: 0.85rem 14px 2.5rem;
   }
   .gp-hero {
     padding: 1.15rem;

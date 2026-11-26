@@ -562,10 +562,10 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
   await Promise.all(waits);
 });
 
-// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v355
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v355 CSS, and cso-candidate-cache-v355 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v355');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v355';"), 'sw.js cache version must be cso-candidate-cache-v355');
+// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v356
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v356 CSS, and cso-candidate-cache-v356 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v356');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v356';"), 'sw.js cache version must be cso-candidate-cache-v356');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -699,13 +699,13 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const waits = [];
   const ctx = { waitUntil: (p) => waits.push(p) };
 
-  // A. Verify Admin UI wiring (sidebar folder + 6 sub-views, Launchpad, + Create New, CMS, 5 templates, AI buttons, Live Preview modal, v350 PDF Auto-Write & AI Images, v351 Extensive Long-Form UI, v354 Markdown Toolbar, v355 Header-Pinned Translator Popover)
+  // A. Verify Admin UI wiring (sidebar folder + 6 sub-views, Launchpad, + Create New, CMS, 5 templates, AI buttons, Live Preview modal, v350 PDF Auto-Write & AI Images, v351 Extensive Long-Form UI, v354 Markdown Toolbar, v355 Header-Pinned Translator, v356 Body Lock & Wide Layout)
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
   assert.ok(adminHtml.includes('id="headerTranslatorWrap"') && adminHtml.includes('id="btnHeaderOdiaTranslator"') && adminHtml.includes('aria-controls="csoHeaderTranslatorPopover"'), 'admin/index.html must pin #btnHeaderOdiaTranslator in the top header bar');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v355'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v355');
-  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v355'), 'admin/index.html must load studio-translator.js?v=20261126v355');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v355'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v356'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v356');
+  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v356'), 'admin/index.html must load studio-translator.js?v=20261126v356');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v356'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
@@ -763,7 +763,15 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
     'guideMdTranslateBadge',
     'btnGuideCopyTranslatedMd',
     'translate_markdown',
-    'Translating Markdown sections & tables'
+    'Translating Markdown sections & tables',
+    'inpGuideBodyEn',
+    'guideBodyEnLockBadge',
+    'Pasted Text Locked (Auto-Fill will preserve 100% verbatim)',
+    'preserve_body_en',
+    'gp-detail-shell',
+    'gp-detail-grid',
+    'gp-hero-media',
+    'gp-article-card'
   ]) {
     assert.ok(guidesStudioJs.includes(marker), `guides-publishing-studio.js missing required UI marker: ${marker}`);
   }
@@ -801,7 +809,9 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   assert.ok(studioCss.includes('.cso-guide-preview-overlay') && studioCss.includes('.cso-guide-preview-frame.is-mobile-frame'), 'admin/studio.css must style the interactive Live Preview modal & 390px mobile frame');
   assert.ok(studioCss.includes('#csoGuideLivePreviewModal .cso-guide-preview-frame table tbody td') && studioCss.includes('opacity: 1 !important;'), 'admin/studio.css must enforce high-contrast tbody td isolation inside #csoGuideLivePreviewModal');
   const guidesCss = read('assets/css/guides-portal.css');
-  assert.ok(guidesCss.includes('.gp-cover,') && guidesCss.includes('.gp-cover-frame') && guidesCss.includes('overflow: hidden;') && guidesCss.includes('max-height: 440px;'), 'assets/css/guides-portal.css must contain .gp-cover overflow rules');
+  assert.ok(guidesCss.includes('.gp-shell') && guidesCss.includes('.gp-detail-shell') && guidesCss.includes('max-width: min(1480px, 96vw);') && guidesCss.includes('padding-inline: clamp(14px, 2vw, 32px);'), 'assets/css/guides-portal.css must widen .gp-shell/.gp-detail-shell to min(1480px, 96vw)');
+  assert.ok(guidesCss.includes('.gp-detail-grid') && guidesCss.includes('grid-template-columns: 270px minmax(0, 1fr);') && guidesCss.includes('gap: 28px;') && guidesCss.includes('.gp-article-card'), 'assets/css/guides-portal.css must use expanded 270px + 1fr reading grid on desktop');
+  assert.ok(guidesCss.includes('.gp-cover,') && guidesCss.includes('.gp-cover-frame') && guidesCss.includes('.gp-hero-media') && guidesCss.includes('overflow: hidden;') && guidesCss.includes('max-height: 440px;') && guidesCss.includes('object-fit: cover;'), 'assets/css/guides-portal.css must enforce full-bleed .gp-hero-media cover banner');
   assert.ok(guidesCss.includes('.gp-takeaways') && guidesCss.includes('clear: both;') && guidesCss.includes('z-index: 1;'), 'assets/css/guides-portal.css must prevent .gp-cover overlap on .gp-takeaways');
   assert.ok(guidesCss.includes('.gp-body table tbody td') && guidesCss.includes('color: var(--gp-ink, var(--cso-ink)) !important;') && guidesCss.includes('opacity: 1 !important;'), 'assets/css/guides-portal.css must enforce high-contrast tbody td text');
   assert.ok(guidesCss.includes('.gp-table-wrap') && guidesCss.includes('border-radius: 12px;') && guidesCss.includes('position: sticky;'), 'assets/css/guides-portal.css must style .gp-table-wrap & sticky table headers');
@@ -876,7 +886,7 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   assert.ok(artHtml.includes('"@type":"Article"'), '/guides/<slug> must emit valid JSON-LD Article structured data');
   assert.ok(artHtml.includes('class="gp-toc gp-lang-en"') && artHtml.includes('class="gp-toc-details"') && artHtml.includes('Exam Pattern Snapshot'), '/guides/<slug> must auto-generate collapsible Table of Contents from headings');
   assert.ok(artHtml.includes('gp-takeaways') && artHtml.includes('gp-gallery-grid') && artHtml.includes('gp-pdf-card'), '/guides/<slug> must render Key Takeaways, Photo Gallery, and PDF Download Cards');
-  assert.ok(artHtml.includes('class="gp-cover gp-cover-figure"') && artHtml.includes('class="gp-cover-frame"') && artHtml.includes('class="gp-breadcrumb cso-detail-kicker"'), '/guides/<slug> must render contained .gp-cover/.gp-cover-frame and .gp-breadcrumb classes');
+  assert.ok(artHtml.includes('class="gp-cover gp-cover-figure"') && artHtml.includes('class="gp-cover-frame gp-hero-media"') && artHtml.includes('class="gp-breadcrumb cso-detail-kicker"') && artHtml.includes('gp-detail-shell') && artHtml.includes('gp-detail-grid') && artHtml.includes('gp-article-card'), '/guides/<slug> must render wide .gp-detail-shell, .gp-detail-grid, .gp-article-card, full-bleed .gp-hero-media & .gp-breadcrumb classes');
   assert.ok(artHtml.includes('Official .gov.in Verified') && artHtml.includes('https://www.opsc.gov.in/'), '/guides/<slug> must render Verified Official .gov.in Links');
   assert.ok(artHtml.includes('/mock-tests/?test=opsc-oas-gs-mock-01') && artHtml.includes('Start Practice Test →'), '/guides/<slug> must render Related Practice CTA card');
 

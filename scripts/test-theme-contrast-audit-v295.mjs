@@ -440,10 +440,11 @@ check('9. v349 Informative Guides cover overflow containment & high-contrast WCA
   assert.ok(
     guidesCss.includes('.gp-cover,') &&
     guidesCss.includes('.gp-cover-frame') &&
+    guidesCss.includes('.gp-hero-media') &&
     guidesCss.includes('overflow: hidden;') &&
     guidesCss.includes('max-height: 440px;') &&
-    guidesCss.includes('object-fit: contain;'),
-    'assets/css/guides-portal.css must enforce .gp-cover/.gp-cover-frame overflow containment'
+    guidesCss.includes('object-fit: cover;'),
+    'assets/css/guides-portal.css must enforce .gp-cover/.gp-hero-media full-bleed overflow containment'
   );
   assert.ok(
     guidesCss.includes('.gp-takeaways') &&

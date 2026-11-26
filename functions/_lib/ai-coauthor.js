@@ -30,6 +30,7 @@ export const VALID_AI_MODES = new Set([
 
 export const PRO_FIRST_MODES = new Set(['auto_fix_fill', 'guide', 'translate_fields', 'translate_markdown']);
 export const MARKDOWN_CHUNK_CHAR_LIMIT = 3500;
+export const BODY_EN_VERBATIM_LOCK_MIN_CHARS = 200;
 export const GEMINI_PRO_FIRST_MODELS = ['gemini-2.5-pro', 'gemini-pro-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
 export const GEMINI_FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-pro', 'gemini-pro-latest'];
 export const GEMINI_MODELS = GEMINI_PRO_FIRST_MODELS;
@@ -267,6 +268,7 @@ function buildPromptForMode(mode, rawInput, extra = {}) {
     const pdfFilename = String(extra.pdf_filename || '').trim().slice(0, 180);
     const depth = String(extra.depth || 'comprehensive').trim().toLowerCase() === 'standard' ? 'standard' : 'comprehensive';
     const englishFirstPass = Boolean(extra.english_first_pass);
+    const lockBodyEn = Boolean(extra.lock_body_en);
     const draft = extra.draft && typeof extra.draft === 'object' ? extra.draft : {};
     const draftBrief = {
       category: draft.category || '',
@@ -279,6 +281,43 @@ function buildPromptForMode(mode, rawInput, extra = {}) {
       body_en: String(draft.body_en || '').slice(0, 36000)
     };
     const longRawInput = String(rawInput || '').trim().slice(0, 40000);
+
+    if (lockBodyEn) {
+      return [
+        'You are the Senior Bilingual SEO & Metadata Editor for Common Sense Odisha (csodisha.com).',
+        'VERBATIM BODY LOCK MODE (MANDATORY):',
+        '- The user has ALREADY pasted the authoritative English article (`body_en`). It is LOCKED verbatim and MUST NOT be rewritten, edited, summarized, or regenerated.',
+        '- Use the pasted `body_en` strictly as READ-ONLY reference context to extract accurate metadata, concise 2-sentence SEO summary, 5 accurate key takeaways, tags, cover visual caption/alt text, and verified `.gov.in` / `.edu.in` / `.nic.in` links.',
+        '- Set `body_en` to "" and `body_or` to "" in your JSON output (the client & chunked `translate_markdown` pipeline preserve `body_en` byte-for-byte and translate it directly).',
+        'Return ONLY a valid JSON object (no markdown fences) matching this exact schema:',
+        '{',
+        '  "category": "how-to | exam-strategy | citizen-scheme | odisha-gk",',
+        '  "scope": "Odisha | National",',
+        '  "is_exam": true,',
+        '  "read_minutes": 10,',
+        '  "title_en": "Clear SEO-friendly English guide title (50-95 chars)",',
+        '  "title_or": "Natural, accurate Odia (ଓଡ଼ିଆ) title keeping standard acronyms (OPSC, OSSC, OSSSC, NTA, UGC NET, DBT, PDF, CBT)",',
+        '  "slug": "clean-lowercase-hyphenated-slug",',
+        '  "summary_en": "Concise 2-sentence SEO meta description in English",',
+        '  "summary_or": "Concise 2-sentence SEO meta description in Odia (ଓଡ଼ିଆ)",',
+        '  "tags": ["Tag 1", "Tag 2", "Tag 3", "Tag 4", "Tag 5", "Tag 6"],',
+        '  "takeaways_en": ["Accurate takeaway 1", "Takeaway 2", "Takeaway 3", "Takeaway 4", "Takeaway 5"],',
+        '  "takeaways_or": ["ମୁଖ୍ୟ ବିନ୍ଦୁ ୧", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୨", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୩", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୪", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୫"],',
+        '  "body_en": "",',
+        '  "body_or": "",',
+        '  "official_links": [{ "label_en": "Official Portal Name", "label_or": "ସରକାରୀ ପୋର୍ଟାଲ୍", "url": "https://...", "is_official": true }],',
+        '  "image_prompt": "Clean editorial photography scene description matching this topic (no text, no logos, no letters)",',
+        '  "cover_caption_en": "Short editorial caption in English",',
+        '  "cover_caption_or": "ଓଡ଼ିଆରେ ସଂକ୍ଷିପ୍ତ କ୍ୟାପ୍ସନ୍",',
+        '  "cover_alt": "Accessible descriptive alt text for the cover banner"',
+        '}',
+        'STRICT RULES:',
+        '- Provide exactly 5 accurate, high-signal `takeaways_en` (and matching `takeaways_or`) grounded directly in the pasted reference article.',
+        '- Never invent fake dates, vacancy numbers, or fake URLs. Only include URLs in `official_links` that appear verbatim in the reference article or notes.',
+        longRawInput ? `Additional Editorial Notes:\n${longRawInput}` : '',
+        `Read-Only Reference Composer Fields JSON:\n${JSON.stringify(draftBrief)}`
+      ].filter(Boolean).join('\n\n');
+    }
 
     const antiSummaryRules = depth === 'comprehensive'
       ? [
@@ -376,7 +415,7 @@ function buildPromptForMode(mode, rawInput, extra = {}) {
   ].join('\n');
 }
 
-function getResponseSchemaForMode(mode) {
+function getResponseSchemaForMode(mode, opts = {}) {
   if (mode === 'translate_odia') {
     return {
       type: 'OBJECT',
@@ -407,6 +446,11 @@ function getResponseSchemaForMode(mode) {
     };
   }
   if (mode === 'auto_fix_fill') {
+    const reqFields = [
+      'category', 'scope', 'title_en', 'title_or', 'slug',
+      'summary_en', 'summary_or', 'tags', 'takeaways_en', 'takeaways_or'
+    ];
+    if (!opts.lockBodyEn) reqFields.push('body_en');
     return {
       type: 'OBJECT',
       properties: {
@@ -441,13 +485,10 @@ function getResponseSchemaForMode(mode) {
         },
         image_prompt: { type: 'STRING' },
         cover_caption_en: { type: 'STRING' },
-        cover_caption_or: { type: 'STRING' }
+        cover_caption_or: { type: 'STRING' },
+        cover_alt: { type: 'STRING' }
       },
-      required: [
-        'category', 'scope', 'title_en', 'title_or', 'slug',
-        'summary_en', 'summary_or', 'tags', 'takeaways_en', 'takeaways_or',
-        'body_en'
-      ]
+      required: reqFields
     };
   }
   return null;
@@ -575,14 +616,19 @@ function normalizeStructuredOutput(mode, rawObj, fallbackInput, extra = {}) {
     while (takeawaysOr.length < takeawaysEn.length) {
       takeawaysOr.push(takeawaysEn[takeawaysOr.length]);
     }
-    const bodyEn = String(obj.body_en || '').trim().slice(0, 80000);
+    const lockBodyEn = Boolean(extra.lock_body_en && typeof extra.locked_body_en === 'string');
+    const bodyEn = lockBodyEn
+      ? extra.locked_body_en
+      : String(obj.body_en || '').trim().slice(0, 80000);
     const bodyOr = String(obj.body_or || '').trim().slice(0, 96000);
-    const computedWords = bodyEn.split(/\s+/).filter(Boolean).length;
-    const readMinutes = computedWords >= 40
-      ? Math.max(1, Math.min(60, Math.ceil(computedWords / 200)))
-      : (Number.isFinite(Number(obj.read_minutes)) && Number(obj.read_minutes) >= 1
-        ? Math.min(60, Math.round(Number(obj.read_minutes)))
-        : 5);
+    const computedWords = bodyEn.trim() ? bodyEn.trim().split(/\s+/).filter(Boolean).length : 0;
+    const readMinutes = lockBodyEn
+      ? Math.max(1, Math.min(120, Math.ceil(computedWords / 200)))
+      : (computedWords >= 40
+        ? Math.max(1, Math.min(120, Math.ceil(computedWords / 200)))
+        : (Number.isFinite(Number(obj.read_minutes)) && Number(obj.read_minutes) >= 1
+          ? Math.min(120, Math.round(Number(obj.read_minutes)))
+          : 5));
 
     if (mode === 'guide') {
       return {
@@ -630,11 +676,13 @@ function normalizeStructuredOutput(mode, rawObj, fallbackInput, extra = {}) {
     if (Array.isArray(obj.official_links)) {
       obj.official_links.slice(0, 12).forEach(pushLink);
     }
-    extractOfficialUrlsFromText(`${extra.pdf_text || ''}\n${fallbackInput || ''}`).forEach(pushLink);
+    extractOfficialUrlsFromText(`${extra.pdf_text || ''}\n${extra.locked_body_en || ''}\n${fallbackInput || ''}`).forEach(pushLink);
 
     const rawPdfName = String(extra.pdf_filename || '').replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim();
     const pdfTitleEn = String(obj.pdf_title_en || (rawPdfName ? `${rawPdfName} (Official PDF)` : '')).trim().slice(0, 180);
     const pdfTitleOr = String(obj.pdf_title_or || (pdfTitleEn ? `${pdfTitleEn} (ସରକାରୀ PDF)` : '')).trim().slice(0, 220);
+    const coverCaptionEn = String(obj.cover_caption_en || titleEn).trim().slice(0, 220);
+    const coverAlt = String(obj.cover_alt || coverCaptionEn || titleEn).trim().slice(0, 220);
 
     return {
       category,
@@ -651,12 +699,14 @@ function normalizeStructuredOutput(mode, rawObj, fallbackInput, extra = {}) {
       takeaways_or: takeawaysOr,
       body_en: bodyEn,
       body_or: bodyOr,
+      body_en_locked: lockBodyEn,
       pdf_title_en: pdfTitleEn,
       pdf_title_or: pdfTitleOr,
       official_links: mergedLinks.slice(0, 12),
       image_prompt: String(obj.image_prompt || '').trim().slice(0, 500),
-      cover_caption_en: String(obj.cover_caption_en || titleEn).trim().slice(0, 220),
-      cover_caption_or: String(obj.cover_caption_or || titleOr || titleEn).trim().slice(0, 260)
+      cover_caption_en: coverCaptionEn,
+      cover_caption_or: String(obj.cover_caption_or || titleOr || titleEn).trim().slice(0, 260),
+      cover_alt: coverAlt
     };
   }
 
@@ -726,9 +776,9 @@ function getWorkersAiPoolForMode(mode) {
   return PRO_FIRST_MODES.has(mode) ? WORKERS_AI_PRO_MODELS : WORKERS_AI_DEFAULT_MODELS;
 }
 
-async function callGeminiFreeTier(apiKey, prompt, mode) {
+async function callGeminiFreeTier(apiKey, prompt, mode, opts = {}) {
   let lastErr = null;
-  const schema = getResponseSchemaForMode(mode);
+  const schema = getResponseSchemaForMode(mode, opts);
   const pool = getGeminiModelPoolForMode(mode);
   const maxOut = PRO_FIRST_MODES.has(mode) ? GEMINI_LONG_MAX_OUTPUT_TOKENS : 2048;
 
@@ -853,11 +903,11 @@ function normalizeBatchFields(fieldsInput, rawInput) {
   return clean;
 }
 
-async function runModelCascade(env, prompt, mode) {
+async function runModelCascade(env, prompt, mode, opts = {}) {
   const geminiKey = env && env.GEMINI_API_KEY ? String(env.GEMINI_API_KEY).trim() : '';
   if (geminiKey) {
     try {
-      return await callGeminiFreeTier(geminiKey, prompt, mode);
+      return await callGeminiFreeTier(geminiKey, prompt, mode, opts);
     } catch (_geminiErr) {
       if (env && env.AI) {
         return await callWorkersAi(env.AI, prompt, mode);
@@ -1048,7 +1098,7 @@ async function translateMarkdownDocument(env, rawMarkdown) {
   };
 }
 
-export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId, pdf_text, pdf_filename, draft, overwrite, depth, skip_body_or }) {
+export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId, pdf_text, pdf_filename, draft, overwrite, depth, skip_body_or, preserve_body_en }) {
   const cleanMode = String(mode || '').trim().toLowerCase();
   if (!VALID_AI_MODES.has(cleanMode)) {
     const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, career, guide, auto_fix_fill, translate_odia, translate_fields, translate_markdown, or suggest_meta.');
@@ -1189,8 +1239,12 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     }
   }
 
-  // Pass 1: Exhaustive English + Metadata (dedicates 100% of Pass 1 tokens to body_en when auto_fix_fill)
+  // Pass 1: Exhaustive English + Metadata (or Metadata-Only when pasted body_en >= 200 chars is locked verbatim)
   const useTwoPass = cleanMode === 'auto_fix_fill';
+  const rawDraftBodyEn = String((cleanDraft && cleanDraft.body_en) || '');
+  const lockBodyEn = cleanMode === 'auto_fix_fill' && !cleanPdfText && (
+    Boolean(preserve_body_en) || rawDraftBodyEn.trim().length >= BODY_EN_VERBATIM_LOCK_MIN_CHARS
+  ) && rawDraftBodyEn.trim().length > 0;
   const extra = {
     fields: cleanFields,
     kind,
@@ -1199,10 +1253,12 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     draft: cleanDraft,
     overwrite: Boolean(overwrite),
     depth: cleanDepth,
-    english_first_pass: useTwoPass
+    english_first_pass: useTwoPass,
+    lock_body_en: lockBodyEn,
+    locked_body_en: lockBodyEn ? rawDraftBodyEn : ''
   };
   const prompt = buildPromptForMode(cleanMode, cleanInput, extra);
-  const result = await runModelCascade(env, prompt, cleanMode);
+  const result = await runModelCascade(env, prompt, cleanMode, { lockBodyEn });
 
   let parsed;
   try {
@@ -1231,8 +1287,8 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   // Pass 2 (Server-Side Dedicated Full Odia Translation Pass for auto_fix_fill when caller did not split passes)
   if (useTwoPass && !skipBodyOr && normalized.body_en) {
     const pass2Fields = {};
-    const bodyIsLong = normalized.body_en.length > MARKDOWN_CHUNK_CHAR_LIMIT;
-    if (!bodyIsLong) pass2Fields.body_or = normalized.body_en;
+    const useChunkedMdBody = lockBodyEn || normalized.body_en.length > MARKDOWN_CHUNK_CHAR_LIMIT;
+    if (!useChunkedMdBody) pass2Fields.body_or = normalized.body_en;
     if (normalized.title_en) pass2Fields.title_or = normalized.title_en;
     if (normalized.summary_en) pass2Fields.summary_or = normalized.summary_en;
     if (normalized.pdf_title_en) pass2Fields.pdf_title_or = normalized.pdf_title_en;
@@ -1245,7 +1301,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     });
 
     try {
-      if (bodyIsLong) {
+      if (useChunkedMdBody) {
         const mdBody = await translateMarkdownDocument(env, normalized.body_en);
         if (mdBody.translated_markdown) normalized.body_or = mdBody.translated_markdown;
         estimatedNeurons += mdBody.estimatedNeurons;
@@ -1294,6 +1350,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     ok: true,
     mode: cleanMode,
     depth: cleanDepth,
+    body_en_locked: lockBodyEn,
     two_pass_translation: twoPassTranslation,
     provider: result.provider,
     provider_label: result.provider_label || (result.provider === 'gemini_free' ? 'Gemini' : 'Workers AI'),

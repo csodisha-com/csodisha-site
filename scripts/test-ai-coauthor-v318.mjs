@@ -14,6 +14,7 @@ import {
   GEMINI_LONG_MAX_OUTPUT_TOKENS,
   WORKERS_AI_70B_MAX_TOKENS,
   MARKDOWN_CHUNK_CHAR_LIMIT,
+  BODY_EN_VERBATIM_LOCK_MIN_CHARS,
   splitMarkdownByH2Sections,
   normalizeTranslatedMarkdownPipes,
   VALID_AI_MODES
@@ -217,8 +218,8 @@ await test('5. Wrangler AI binding, migration 0149, CSP compliance & v318 cache 
   const mig = read('migrations/0149_ai_coauthor_v318.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS ai_generation_logs'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v355');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v355';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v356');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v356';"));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('window.CSOAiCoAuthor'));
@@ -682,4 +683,121 @@ await test('8. v354 Markdown-preserving translation (translate_markdown): pipe-t
   }
 });
 
-console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 Results: ${passed} passed, 0 failed ===\n`);
+await test('9. v356 Verbatim Body (EN) Lock: pasted body_en (>=200 chars) preserved byte-for-byte during auto_fix_fill while extracting metadata & chunked Odia', async () => {
+  assert.equal(BODY_EN_VERBATIM_LOCK_MIN_CHARS, 200, 'BODY_EN_VERBATIM_LOCK_MIN_CHARS must be 200');
+  const exactPastedBody = [
+    '## OPSC OAS 2026 Notification — Exact Vacancy Table',
+    'Candidates must submit One-Time Registration exclusively on https://www.opsc.gov.in/ and check syllabus updates at https://oshec.odisha.gov.in/curriculum.',
+    '',
+    '| Post Name | Service Group | Pay Level | UR | SEBC | SC | ST | Total |',
+    '| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |',
+    '| Odisha Administrative Service (OAS) | Group A | Level-12 | 52 | 12 | 20 | 26 | 110 |',
+    '| Odisha Finance Service (OFS) | Group A | Level-12 | 21 | 6 | 9 | 12 | 48 |',
+    '',
+    '## Special Reservation & Age Relaxation Rules',
+    '- Women candidates receive 33% horizontal reservation across all categories.',
+    '- SEBC, SC, ST, and Women candidates receive 5 years upper age relaxation beyond 38 years.'
+  ].join('\n');
+  assert.ok(exactPastedBody.length >= 200, 'Test pasted body must be >= 200 chars');
+
+  const db = createMockDb();
+  const seenPrompts = [];
+  const origFetch = globalThis.fetch;
+
+  globalThis.fetch = async (url, init) => {
+    const u = String(url);
+    if (u.includes('generativelanguage.googleapis.com')) {
+      const parsedBody = JSON.parse(String(init && init.body || '{}'));
+      const promptText = parsedBody.contents[0].parts[0].text;
+      seenPrompts.push(promptText);
+
+      if (promptText.includes('VERBATIM BODY LOCK MODE')) {
+        // Even if LLM maliciously tries to return a summarized body_en, server MUST ignore it and keep exactPastedBody verbatim!
+        return new Response(JSON.stringify({
+          candidates: [{
+            content: {
+              parts: [{
+                text: JSON.stringify({
+                  category: 'exam-strategy',
+                  scope: 'Odisha',
+                  is_exam: true,
+                  title_en: 'OPSC OAS & OFS 2026 Complete Vacancy & Age Rules Guide',
+                  title_or: 'OPSC OAS ଓ OFS 2026 ସମ୍ପୂର୍ଣ୍ଣ ପଦବୀ ଏବଂ ବୟସ ନିୟମ',
+                  slug: 'opsc-oas-ofs-2026-vacancy-age-rules',
+                  summary_en: 'Complete guide to OPSC OAS and OFS 2026 category-wise vacancies and age relaxation rules. Verify official portal instructions before submitting OTR.',
+                  summary_or: 'OPSC OAS ଓ OFS 2026 ଶୂନ୍ୟପଦ ଏବଂ ବୟସ କୋହଳ ନିୟମର ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ।',
+                  tags: ['OPSC', 'OAS 2026', 'OFS', 'Odisha Civil Services', 'Reservation'],
+                  takeaways_en: [
+                    'Total 110 OAS and 48 OFS Group A vacancies under ORSP Level-12.',
+                    'Register online exclusively via https://www.opsc.gov.in/.',
+                    '33% horizontal reservation applies for Women candidates.',
+                    '5 years age relaxation applies to SEBC, SC, ST, and Women.',
+                    'Verify updated syllabus guidelines on oshec.odisha.gov.in.'
+                  ],
+                  takeaways_or: ['ମୋଟ 110 OAS ଏବଂ 48 OFS ପଦବୀ।'],
+                  body_en: 'SHORTENED_BY_LLM_MUST_BE_IGNORED',
+                  body_or: '',
+                  cover_caption_en: 'OPSC OAS 2026 Recruitment & Vacancy Breakdown',
+                  cover_caption_or: 'OPSC OAS 2026 ନିଯୁକ୍ତି ବିବରଣୀ',
+                  cover_alt: 'Odisha civil services exam preparation desk banner',
+                  official_links: [{ label_en: 'OPSC Official Portal', label_or: 'OPSC ସରକାରୀ ପୋର୍ଟାଲ୍', url: 'https://www.opsc.gov.in/', is_official: true }]
+                })
+              }]
+            }
+          }]
+        }), { status: 200 });
+      }
+      if (promptText.includes('English Markdown source:')) {
+        return new Response(JSON.stringify({
+          candidates: [{
+            content: {
+              parts: [{
+                text: JSON.stringify({
+                  translated_markdown: '## OPSC OAS 2026 ବିଜ୍ଞପ୍ତି — ସଠିକ୍ ଶୂନ୍ୟପଦ ତାଲିକା\n| ପଦବୀ ନାମ | ସେବା ଗୋଷ୍ଠୀ | ବେତନ ସ୍ତର | UR | SEBC | SC | ST | ମୋଟ |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| OAS | Group A | Level-12 | 52 | 12 | 20 | 26 | 110 |'
+                })
+              }]
+            }
+          }]
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({
+        candidates: [{
+          content: {
+            parts: [{
+              text: JSON.stringify({
+                translations: {
+                  title_or: 'OPSC OAS ଓ OFS 2026 ସମ୍ପୂର୍ଣ୍ଣ ପଦବୀ ଏବଂ ବୟସ ନିୟମ',
+                  summary_or: 'OPSC OAS ଓ OFS 2026 ଶୂନ୍ୟପଦ ଏବଂ ବୟସ କୋହଳ ନିୟମର ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ।'
+                }
+              })
+            }]
+          }
+        }]
+      }), { status: 200 });
+    }
+    throw new Error('Unexpected fetch: ' + u);
+  };
+
+  try {
+    const out = await generateAiCoAuthorDraft({ DB: db, GEMINI_API_KEY: 'gm_lock_v356' }, {
+      mode: 'auto_fix_fill',
+      preserve_body_en: true,
+      draft: { body_en: exactPastedBody },
+      actorId: 'adm_1'
+    });
+    assert.equal(out.ok, true);
+    assert.equal(out.body_en_locked, true, 'Response must confirm body_en_locked: true');
+    assert.equal(out.data.body_en, exactPastedBody, 'Pasted body_en MUST be preserved 100% byte-for-byte verbatim');
+    assert.ok(!out.data.body_en.includes('SHORTENED_BY_LLM'), 'LLM-rewritten body_en must never overwrite locked pasted text');
+    assert.equal(out.data.takeaways_en.length, 5, 'Must extract 5 key takeaways');
+    assert.equal(out.data.cover_alt, 'Odisha civil services exam preparation desk banner');
+    assert.ok(out.data.official_links.some((l) => l.url.includes('opsc.gov.in')) && out.data.official_links.some((l) => l.url.includes('oshec.odisha.gov.in')), 'Must extract all .gov.in links from locked pasted body');
+    assert.ok(out.data.body_or.includes('| ପଦବୀ ନାମ | ସେବା ଗୋଷ୍ଠୀ |'), 'Pass 2 must translate locked body_en via translate_markdown preserving pipe tables');
+    assert.ok(seenPrompts.some((p) => p.includes('VERBATIM BODY LOCK MODE')), 'Pass 1 must use metadata-only VERBATIM BODY LOCK MODE prompt');
+    assert.ok(seenPrompts.some((p) => p.includes('English Markdown source:')), 'Pass 2 must route locked body_en through translate_markdown');
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 Results: ${passed} passed, 0 failed ===\n`);

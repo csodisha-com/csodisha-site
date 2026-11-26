@@ -439,8 +439,8 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', jsonLd =
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v351">
-  <script src="/assets/js/guides-portal.js?v=20261126v351" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v356">
+  <script src="/assets/js/guides-portal.js?v=20261126v356" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -520,7 +520,7 @@ export function renderPublicGuidesHubHtml(guides, url) {
   return `${head}
 <body class="cso-portal-page cso-guides-page" data-cso-portal="guides" data-guide-lang="en">
 ${CSO_SHELL_HEADER}
-<main id="main-content" class="gp-main">
+<main id="main-content" class="gp-main gp-shell">
   <section class="gp-hero">
     <div class="gp-hero-top">
       <div>
@@ -603,7 +603,7 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
 
   const coverHtml = guide.cover_image
     ? `<figure class="gp-cover gp-cover-figure">
-        <div class="gp-cover-frame">
+        <div class="gp-cover-frame gp-hero-media">
           <img src="${escShell(guide.cover_image)}" alt="${escShell(guide.cover_caption_en || guide.title_en)}" class="gp-cover-img" loading="eager" decoding="async">
         </div>
         ${(guide.cover_caption_en || guide.cover_caption_or)
@@ -782,7 +782,7 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
   return `${head}
 <body class="cso-portal-page cso-guide-reader-page" data-cso-portal="guides" data-guide-lang="en">
 ${CSO_SHELL_HEADER}
-<main id="main-content" class="gp-main gp-reader-main">
+<main id="main-content" class="gp-main gp-reader-main gp-shell gp-detail-shell">
   ${kicker}
   <header class="gp-article-head">
     <div class="gp-article-meta-row">
@@ -810,12 +810,12 @@ ${CSO_SHELL_HEADER}
 
   ${coverHtml}
 
-  <div class="gp-reader-layout">
+  <div class="gp-reader-layout gp-detail-grid">
     <aside class="gp-toc-rail">
       ${tocEnHtml}
       ${tocOrHtml}
     </aside>
-    <article class="gp-article gp-article-body">
+    <article class="gp-article gp-article-body gp-article-card">
       ${takeawaysHtml}
       <div class="gp-body gp-prose gp-lang-en">${enParsed.html}</div>
       <div class="gp-body gp-prose gp-lang-or">${orParsed.html}</div>
@@ -949,7 +949,7 @@ export async function handlePublicGuidesRoute(request, env, url) {
     const notFoundHtml = `${head404}
 <body class="cso-portal-page cso-guides-page" data-cso-portal="guides" data-guide-lang="en">
 ${CSO_SHELL_HEADER}
-<main id="main-content" class="gp-main">
+<main id="main-content" class="gp-main gp-shell">
   <div class="gp-empty-state">
     <h1>Guide Not Found</h1>
     <p>This informative article or guide may have been moved or is still in draft review.</p>
