@@ -33,15 +33,21 @@ export async function handleAdminAiCoauthorApi(request, env, actor, ctx = null) 
         skip_body_or: body.skip_body_or,
         preserve_body_en: body.preserve_body_en,
         preferred_model: body.preferred_model,
+        auto_failover: body.auto_failover,
         actorId: (actor && actor.userId) || 'admin'
       });
       return json(result);
     } catch (err) {
       const status = Number(err && err.status) || 502;
-      return json({
+      const payload = {
         ok: false,
-        error: (err && err.message) || 'AI generation failed.'
-      }, status);
+        error: (err && err.message) || 'AI generation failed.',
+        is_daily_quota: Boolean(err && err.is_gemini_workers_daily_quota)
+      };
+      if (Array.isArray(err && err.attempted_errors) && err.attempted_errors.length) {
+        payload.attempted_errors = err.attempted_errors;
+      }
+      return json(payload, status);
     }
   }
 

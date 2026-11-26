@@ -240,8 +240,8 @@ await test('5. Wrangler AI binding, migration 0149, CSP compliance & v318 cache 
   const mig = read('migrations/0149_ai_coauthor_v318.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS ai_generation_logs'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v363');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v363';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v364');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v364';"));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('window.CSOAiCoAuthor'));
@@ -630,9 +630,9 @@ await test('7. v358 Verified Gemini Flash REST cascade + low-neuron Workers AI J
   assert.ok(r2Store.has(svgOut.key));
 });
 
-await test('8. v354/v357 Markdown-preserving translation (translate_markdown): pipe-table preservation, 7,500-char ## chunking (15K -> 2 calls) & 2026 Flash cascade', async () => {
+await test('8. v354/v364 Markdown-preserving translation (translate_markdown): pipe-table preservation, 4,200-char ## chunking for free-tier TPM safety & 2026 Flash cascade', async () => {
   assert.ok(VALID_AI_MODES.has('translate_markdown'), 'VALID_AI_MODES must include translate_markdown');
-  assert.equal(MARKDOWN_CHUNK_CHAR_LIMIT, 7500, 'MARKDOWN_CHUNK_CHAR_LIMIT must be 7500');
+  assert.equal(MARKDOWN_CHUNK_CHAR_LIMIT, 4200, 'MARKDOWN_CHUNK_CHAR_LIMIT must be 4200 to stay comfortably under Groq 6K-8K TPM limits');
 
   // Verify trailing pipe repair while keeping fenced code untouched
   const repaired = normalizeTranslatedMarkdownPipes('| ପଦବୀ | ବେତନ\n| :--- | :---\n| OAS | Level-12 |\n```txt\n| raw | code\n```');
@@ -679,9 +679,9 @@ await test('8. v354/v357 Markdown-preserving translation (translate_markdown): p
   ].join('\n');
 
   assert.ok(longMarkdown.length > 12000 && longMarkdown.length <= 15000, `Test Markdown must be ~14K chars (got ${longMarkdown.length})`);
-  assert.ok(splitMarkdownByH2Sections(longMarkdown, 3500).length >= 5, 'At legacy 3,500 limit, 14K guide took 5-6 API calls');
   const chunks = splitMarkdownByH2Sections(longMarkdown);
-  assert.equal(chunks.length, 2, `Expected 14K-char guide to pack into exactly 2 chunks at 7,500-char limit (got ${chunks.length})`);
+  assert.ok(chunks.length >= 4 && chunks.length <= 6, `Expected 14K-char guide to pack into 4-6 TPM-safe chunks at 4,200-char limit (got ${chunks.length})`);
+  assert.ok(chunks.every((c) => c.length <= 4200), 'Every chunk must stay <= 4,200 chars');
   assert.ok(chunks[0].startsWith('## Overview'), 'Chunk 1 must start at first ## heading');
   assert.ok(chunks.some((c) => c.includes('| Post Name | Pay Level | Total Vacancies |')), 'Table block must stay intact inside its chunk');
 
@@ -728,7 +728,7 @@ await test('8. v354/v357 Markdown-preserving translation (translate_markdown): p
     });
     assert.equal(res.ok, true);
     assert.equal(res.mode, 'translate_markdown');
-    assert.equal(res.chunks_count, 2, 'Response must report 2 batched chunks');
+    assert.equal(res.chunks_count, chunks.length, 'Response must report exact 4,200-char batched chunk count');
     assert.equal(attemptedModels[0], 'gemini-2.5-flash', 'translate_markdown must prioritize verified gemini-2.5-flash first');
     assert.ok(tokenBudgets.every((t) => t === 16384), 'translate_markdown must use 16384 Gemini output token cap');
 
@@ -1381,4 +1381,133 @@ await test('13. v362 12-Provider Adapters: Anthropic Messages API, Sarvam/HF/Gro
   }
 });
 
-console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 + v358 + v359 + v361 + v362 Results: ${passed} passed, 0 failed ===\n`);
+await test('14. v364 Provider-specific diagnostics (no misleading Gemini IST reset on Groq/OpenRouter/HF), Retry-After 429 retry & cross-provider failover', async () => {
+  const db = createMockDb();
+  const origFetch = globalThis.fetch;
+
+  // A. Groq 429, HF 403 & OpenRouter 429 must surface their exact actionable provider messages (NEVER 5:30 AM / 1:30 PM IST!)
+  globalThis.fetch = async (url) => {
+    const u = String(url);
+    if (u.includes('api.groq.com')) {
+      return new Response('rate_limit_exceeded TPM', { status: 429, headers: { 'Retry-After': '0' } });
+    }
+    if (u.includes('router.huggingface.co')) {
+      return new Response('Forbidden: token lacks Inference Providers scope', { status: 403 });
+    }
+    if (u.includes('openrouter.ai')) {
+      return new Response('Upstream free pool busy', { status: 429, headers: { 'Retry-After': '0' } });
+    }
+    throw new Error('Unexpected fetch: ' + u);
+  };
+
+  try {
+    await assert.rejects(
+      () => generateAiCoAuthorDraft({ DB: db, GROQ_API_KEY: 'gsk_test_429' }, {
+        mode: 'translate_odia', input: 'Odisha Govt Notice 2026', preferred_model: 'env:groq', auto_failover: false, actorId: 'adm_1'
+      }),
+      (err) => err
+        && err.status === 429
+        && /Groq/i.test(err.message)
+        && /HTTP 429/i.test(err.message)
+        && !err.message.includes('5:30 AM IST')
+        && !err.message.includes('1:30 PM IST')
+        && err.is_gemini_workers_daily_quota === false
+    );
+
+    await assert.rejects(
+      () => generateAiCoAuthorDraft({ DB: db, HF_TOKEN: 'hf_test_403' }, {
+        mode: 'translate_odia', input: 'Odisha Govt Notice 2026', preferred_model: 'env:huggingface', auto_failover: false, actorId: 'adm_1'
+      }),
+      (err) => err
+        && err.status === 403
+        && /Hugging Face/i.test(err.message)
+        && /Inference Providers/i.test(err.message)
+        && !err.message.includes('5:30 AM IST')
+    );
+
+    await assert.rejects(
+      () => generateAiCoAuthorDraft({ DB: db, OPENROUTER_API_KEY: 'sk-or-test-429' }, {
+        mode: 'translate_odia', input: 'Odisha Govt Notice 2026', preferred_model: 'env:openrouter', auto_failover: false, actorId: 'adm_1'
+      }),
+      (err) => err
+        && err.status === 429
+        && /OpenRouter/i.test(err.message)
+        && /free pool busy/i.test(err.message)
+        && !err.message.includes('5:30 AM IST')
+    );
+
+    // When ALL configured external providers fail in auto mode, return combined provider-specific errors (not Gemini/Workers IST text)
+    await assert.rejects(
+      () => generateAiCoAuthorDraft({ DB: db, GROQ_API_KEY: 'gsk_1', OPENROUTER_API_KEY: 'or_1', HF_TOKEN: 'hf_1' }, {
+        mode: 'translate_odia', input: 'Odisha Govt Notice 2026', preferred_model: 'auto', actorId: 'adm_1'
+      }),
+      (err) => err
+        && /Groq/i.test(err.message)
+        && /OpenRouter/i.test(err.message)
+        && /Hugging Face/i.test(err.message)
+        && !err.message.includes('5:30 AM IST')
+        && Array.isArray(err.attempted_errors)
+        && err.attempted_errors.length === 3
+    );
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+
+  // B. Explicitly selected env:groq hitting 429 retries once honoring Retry-After and succeeds without failing over
+  let groqAttempts = 0;
+  globalThis.fetch = async (url) => {
+    if (String(url).includes('api.groq.com')) {
+      groqAttempts += 1;
+      if (groqAttempts === 1) {
+        return new Response('TPM burst', { status: 429, headers: { 'Retry-After': '0' } });
+      }
+      return new Response(JSON.stringify({
+        choices: [{ message: { content: JSON.stringify({ translated_or: 'Groq ପୁନଃଚେଷ୍ଟା ସଫଳ' }) } }]
+      }), { status: 200 });
+    }
+    throw new Error('Should succeed on Groq retry without touching other providers: ' + url);
+  };
+  try {
+    const retryOk = await generateAiCoAuthorDraft(
+      { DB: db, GROQ_API_KEY: 'gsk_retry', CEREBRAS_API_KEY: 'cbr_backup' },
+      { mode: 'translate_odia', input: 'OPSC OAS Notification 2026', preferred_model: 'env:groq', actorId: 'adm_1' }
+    );
+    assert.equal(retryOk.ok, true);
+    assert.equal(groqAttempts, 2, 'Selected engine must retry once on 429');
+    assert.equal(retryOk.data.translated_or, 'Groq ପୁନଃଚେଷ୍ଟା ସଫଳ');
+    assert.equal(retryOk.fallback_notice, undefined);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+
+  // C. Cross-provider failover: Groq 429 + OpenRouter 429 + HF 403 -> automatically fails over to Cerebras & returns fallback_notice!
+  const hitOrder = [];
+  globalThis.fetch = async (url) => {
+    const u = String(url);
+    hitOrder.push(u);
+    if (u.includes('api.groq.com')) return new Response('TPM burst', { status: 429, headers: { 'Retry-After': '0' } });
+    if (u.includes('openrouter.ai')) return new Response('Busy', { status: 429 });
+    if (u.includes('router.huggingface.co')) return new Response('Forbidden', { status: 403 });
+    if (u.includes('api.cerebras.ai')) {
+      return new Response(JSON.stringify({
+        choices: [{ message: { content: JSON.stringify({ translated_or: 'Cerebras ଫେଲଓଭର ସଫଳ' }) } }]
+      }), { status: 200 });
+    }
+    throw new Error('Unexpected fetch: ' + u);
+  };
+  try {
+    const foRes = await generateAiCoAuthorDraft(
+      { DB: db, GROQ_API_KEY: 'gsk_1', OPENROUTER_API_KEY: 'or_1', HF_TOKEN: 'hf_1', CEREBRAS_API_KEY: 'cbr_1' },
+      { mode: 'translate_odia', input: 'Odisha Civil Services 2026', preferred_model: 'env:groq', actorId: 'adm_1' }
+    );
+    assert.equal(foRes.ok, true);
+    assert.equal(foRes.data.translated_or, 'Cerebras ଫେଲଓଭର ସଫଳ');
+    assert.ok(foRes.provider_model.includes('Cerebras'), 'Must report winning fallback engine in provider_model');
+    assert.ok(foRes.fallback_notice && /Groq/i.test(foRes.fallback_notice) && /Cerebras/i.test(foRes.fallback_notice), 'Must return actionable fallback_notice');
+    assert.ok(hitOrder.some((u) => u.includes('api.groq.com')) && hitOrder.some((u) => u.includes('api.cerebras.ai')));
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 + v358 + v359 + v361 + v362 + v364 Results: ${passed} passed, 0 failed ===\n`);

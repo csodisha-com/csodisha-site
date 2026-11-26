@@ -46,7 +46,8 @@ export const JSON_AI_MODES = new Set([
 ]);
 
 export const PRO_FIRST_MODES = new Set(['auto_fix_fill', 'guide', 'translate_fields', 'translate_markdown']);
-export const MARKDOWN_CHUNK_CHAR_LIMIT = 7500;
+export const MARKDOWN_CHUNK_CHAR_LIMIT = 4200;
+export const MAX_RETRY_AFTER_MS = 3000;
 export const BODY_EN_VERBATIM_LOCK_MIN_CHARS = 200;
 export const GEMINI_PRO_FIRST_MODELS = [
   'gemini-2.5-flash',
@@ -1100,11 +1101,82 @@ function formatProviderModelTag(providerLabel, model) {
   return mdl ? `${lbl} · ${mdl}` : lbl;
 }
 
+function scrubApiKeyFromText(rawText, apiKey) {
+  let txt = String(rawText || '').replace(/\s+/g, ' ').trim();
+  const key = String(apiKey || '').trim();
+  if (key && key.length >= 6 && txt.includes(key)) {
+    txt = txt.split(key).join(maskApiKey(key));
+  }
+  return txt;
+}
+
+function parseRetryAfterMs(res) {
+  if (!res || !res.headers || typeof res.headers.get !== 'function') return 0;
+  const raw = String(res.headers.get('retry-after') || res.headers.get('Retry-After') || '').trim();
+  if (!raw) return 0;
+  const sec = Number(raw);
+  if (Number.isFinite(sec) && sec >= 0) {
+    return Math.min(MAX_RETRY_AFTER_MS, Math.round(sec * 1000));
+  }
+  const dateMs = Date.parse(raw);
+  if (Number.isFinite(dateMs)) {
+    return Math.min(MAX_RETRY_AFTER_MS, Math.max(0, dateMs - Date.now()));
+  }
+  return 0;
+}
+
+function sleepMs(ms) {
+  const wait = Math.max(0, Math.min(MAX_RETRY_AFTER_MS, Number(ms) || 0));
+  if (!wait) return Promise.resolve();
+  return new Promise((resolve) => setTimeout(resolve, wait));
+}
+
+export function formatUpstreamProviderError(label, modelId, status, errTxt = '', baseUrl = '', apiKey = '') {
+  const cleanLabel = String(label || 'AI Provider').trim();
+  const cleanModel = String(modelId || '').trim();
+  const code = Number(status || 0);
+  const url = String(baseUrl || '').toLowerCase();
+  const cleanErr = scrubApiKeyFromText(errTxt, apiKey).slice(0, 140);
+  const suffix = cleanErr ? ` (${cleanErr})` : '';
+  const isHf = url.includes('huggingface.co') || /hugging.?face/i.test(cleanLabel);
+  const isGroq = url.includes('api.groq.com') || /\bgroq\b/i.test(cleanLabel);
+  const isOpenRouter = url.includes('openrouter.ai') || /openrouter/i.test(cleanLabel);
+  const isCerebras = url.includes('cerebras.ai') || /cerebras/i.test(cleanLabel);
+  const isMistral = url.includes('mistral.ai') || /mistral/i.test(cleanLabel);
+  const tag = cleanModel ? `${cleanLabel} (${cleanModel})` : cleanLabel;
+
+  if (isHf) {
+    if (code === 403) return `Hugging Face (${cleanModel || 'Router'}): HTTP 403 — enable 'Inference Providers' permission on HF_TOKEN`;
+    if (code === 401) return `Hugging Face (${cleanModel || 'Router'}): HTTP 401 — invalid or expired HF_TOKEN`;
+    if (code === 429) return `Hugging Face (${cleanModel || 'Router'}): HTTP 429 rate limit — wait briefly or switch engine`;
+  }
+  if (isOpenRouter) {
+    if (code === 429) return `OpenRouter (${cleanModel || 'free'}): HTTP 429 upstream free pool busy — wait briefly or switch engine`;
+    if (code === 402) return `OpenRouter (${cleanModel || 'free'}): HTTP 402 credits required for this model`;
+  }
+  if (isGroq && code === 429) {
+    return `Groq (${cleanModel || 'llama-3.3-70b-versatile'}): HTTP 429 per-minute token/rate limit — wait 15s or switch engine`;
+  }
+  if (isCerebras && code === 429) {
+    return `Cerebras (${cleanModel || 'llama-3.3-70b'}): HTTP 429 per-minute rate limit — wait 15s or switch engine`;
+  }
+  if (isMistral && code === 429) {
+    return `Mistral (${cleanModel || 'mistral-small-latest'}): HTTP 429 rate limit — wait 15s or switch engine`;
+  }
+
+  if (code === 429) return `${tag}: HTTP 429 rate/token limit — wait briefly or switch engine${suffix}`;
+  if (code === 401 || code === 403) return `${tag}: HTTP ${code} authentication or permission denied${suffix}`;
+  if (code === 402) return `${tag}: HTTP 402 credits/billing required${suffix}`;
+  if (code === 404) return `${tag}: HTTP 404 model or endpoint not found${suffix}`;
+  return `${tag}: HTTP ${code || 502}${cleanErr ? ` — ${cleanErr}` : ''}`;
+}
+
 export async function callOpenAiCompatibleProvider(provider, systemPrompt, userPrompt, { jsonMode = false, maxTokens = 4096 } = {}) {
   const baseCheck = validateProviderBaseUrl(provider && provider.base_url);
   if (!baseCheck.ok) {
     const err = new Error(baseCheck.error);
     err.status = 400;
+    err.provider_kind = 'external';
     throw err;
   }
   const apiKey = String((provider && provider.api_key) || '').trim();
@@ -1113,6 +1185,7 @@ export async function callOpenAiCompatibleProvider(provider, systemPrompt, userP
   if (!apiKey || !modelId) {
     const err = new Error('Custom AI provider is missing api_key or model_id.');
     err.status = 400;
+    err.provider_kind = 'external';
     throw err;
   }
 
@@ -1162,8 +1235,11 @@ export async function callOpenAiCompatibleProvider(provider, systemPrompt, userP
 
   if (!res.ok) {
     const errTxt = await res.text().catch(() => '');
-    const err = new Error(`${label} (${modelId}) returned HTTP ${res.status}${errTxt ? `: ${errTxt.slice(0, 140)}` : ''}`);
+    const err = new Error(formatUpstreamProviderError(label, modelId, res.status, errTxt, baseCheck.url, apiKey));
     err.status = res.status;
+    err.provider_kind = 'external';
+    err.provider_label = label;
+    err.retry_after_ms = parseRetryAfterMs(res);
     throw err;
   }
 
@@ -1241,8 +1317,11 @@ export async function callAnthropicMessagesProvider(provider, systemPrompt, user
 
   if (!res.ok) {
     const errTxt = await res.text().catch(() => '');
-    const err = new Error(`${label} (${modelId}) returned HTTP ${res.status}${errTxt ? `: ${errTxt.slice(0, 140)}` : ''}`);
+    const err = new Error(formatUpstreamProviderError(label, modelId, res.status, errTxt, baseCheck.url, apiKey));
     err.status = res.status;
+    err.provider_kind = 'external';
+    err.provider_label = label;
+    err.retry_after_ms = parseRetryAfterMs(res);
     throw err;
   }
 
@@ -1300,8 +1379,15 @@ async function callGeminiSingleEndpoint(apiKey, model, prompt, mode, opts = {}, 
   });
 
   if (!res.ok) {
-    const err = new Error(`Gemini ${model} returned HTTP ${res.status}`);
+    const errTxt = await res.text().catch(() => '');
+    const cleanSnippet = scrubApiKeyFromText(errTxt, apiKey).slice(0, 120);
+    const provLbl = (customMeta && customMeta.provider_label) || 'Gemini';
+    const err = new Error(`${provLbl} (${model}): HTTP ${res.status}${cleanSnippet ? ` — ${cleanSnippet}` : ''}`);
     err.status = res.status;
+    err.provider_kind = (customMeta && customMeta.provider && String(customMeta.provider).startsWith('custom:')) ? 'external' : 'gemini';
+    err.provider_label = provLbl;
+    err.retry_after_ms = parseRetryAfterMs(res);
+    err.is_daily_quota = res.status === 429 || /resource.?exhausted|quota|daily/i.test(cleanSnippet);
     throw err;
   }
 
@@ -1448,8 +1534,18 @@ export function estimateWorkersAiNeurons(model, promptChars, outputChars) {
 function isQuotaError(err) {
   if (!err) return false;
   const status = Number(err.status || err.statusCode || 0);
-  if (status === 429 || status === 403) return true;
+  if (status === 429) return true;
   return /quota|rate.?limit|429|resource.?exhausted|neurons|daily limit/i.test(String(err.message || ''));
+}
+
+function isDailyGeminiOrWorkersQuota(err) {
+  if (!err) return false;
+  if (err.is_gemini_workers_daily_quota) return true;
+  const kind = String(err.provider_kind || '');
+  if (kind && kind !== 'gemini' && kind !== 'workers_ai') return false;
+  const status = Number(err.status || err.statusCode || 0);
+  const msg = String(err.message || '');
+  return status === 429 || Boolean(err.is_daily_quota) || /resource.?exhausted|neurons|daily.*quota|daily.*limit/i.test(msg);
 }
 
 async function callWorkersAi(aiBinding, prompt, mode, opts = {}) {
@@ -1541,8 +1637,16 @@ async function callWorkersAi(aiBinding, prompt, mode, opts = {}) {
       }
       lastErr = new Error(`Workers AI ${model} returned an empty response.`);
     } catch (err) {
+      if (err && typeof err === 'object') {
+        err.provider_kind = 'workers_ai';
+        err.provider_label = 'Workers AI';
+      }
       lastErr = err;
     }
+  }
+  if (lastErr && typeof lastErr === 'object') {
+    lastErr.provider_kind = 'workers_ai';
+    lastErr.provider_label = 'Workers AI';
   }
   throw lastErr || new Error('Workers AI failed.');
 }
@@ -1804,6 +1908,7 @@ async function callSingleCustomProvider(provider, prompt, mode, opts = {}) {
 async function runModelCascade(env, prompt, mode, opts = {}) {
   const pref = String(opts.preferredModel || 'auto').trim();
   const skipWorkersAi = Boolean(opts.skipWorkersAi);
+  const autoFailover = opts.autoFailover !== false;
   const geminiKeys = [
     env && env.GEMINI_API_KEY ? String(env.GEMINI_API_KEY).trim() : '',
     env && env.GEMINI_API_KEY_2 ? String(env.GEMINI_API_KEY_2).trim() : ''
@@ -1818,55 +1923,82 @@ async function runModelCascade(env, prompt, mode, opts = {}) {
   const steps = [];
   const pushCustomStep = (prov) => {
     if (!prov) return;
-    steps.push(() => callSingleCustomProvider(prov, prompt, mode, opts));
+    steps.push({
+      label: prov.label || prov.id || 'Custom AI',
+      kind: 'external',
+      code: prov.provider_code || `custom:${prov.id}`,
+      run: () => callSingleCustomProvider(prov, prompt, mode, opts)
+    });
   };
   const pushGeminiStep = (firstModel = '', keysOverride = null) => {
     const activeKeys = Array.isArray(keysOverride) && keysOverride.length ? keysOverride : geminiKeys;
     if (!activeKeys.length) return;
-    steps.push(() => callGeminiFreeTier(activeKeys, prompt, mode, { ...opts, preferredGeminiModel: firstModel }));
+    steps.push({
+      label: 'Google AI Studio (Gemini)',
+      kind: 'gemini',
+      code: firstModel ? `gemini:${firstModel}` : 'gemini_free',
+      run: () => callGeminiFreeTier(activeKeys, prompt, mode, { ...opts, preferredGeminiModel: firstModel })
+    });
   };
   const pushWorkersStep = (firstModel = '') => {
     if (skipWorkersAi || !env || !env.AI) return;
-    steps.push(() => callWorkersAi(env.AI, prompt, mode, { ...opts, preferredWorkersModel: firstModel }));
+    steps.push({
+      label: 'Cloudflare Workers AI',
+      kind: 'workers_ai',
+      code: firstModel ? `workers:${firstModel}` : 'cloudflare_workers_ai',
+      run: () => callWorkersAi(env.AI, prompt, mode, { ...opts, preferredWorkersModel: firstModel })
+    });
   };
+
+  const isExplicitSelection = pref && pref !== 'auto';
 
   if (pref.startsWith('custom:')) {
     const target = dbCustomProviders.find((p) => String(p.id) === requestedCustomId);
     const restDb = dbCustomProviders.filter((p) => String(p.id) !== requestedCustomId && Number(p.enabled) === 1);
     if (target) pushCustomStep(target);
-    restDb.forEach(pushCustomStep);
-    pushGeminiStep('');
-    envProviders.forEach(pushCustomStep);
-    pushWorkersStep('');
+    if (autoFailover) {
+      restDb.forEach(pushCustomStep);
+      pushGeminiStep('');
+      envProviders.forEach(pushCustomStep);
+      pushWorkersStep('');
+    }
   } else if (pref.startsWith('env:')) {
     if (pref === 'env:gemini_2' && env && env.GEMINI_API_KEY_2 && String(env.GEMINI_API_KEY_2).trim()) {
       const backupKey = String(env.GEMINI_API_KEY_2).trim();
       const primaryKey = env.GEMINI_API_KEY ? String(env.GEMINI_API_KEY).trim() : '';
-      pushGeminiStep('', primaryKey ? [backupKey, primaryKey] : [backupKey]);
-      dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
-      envProviders.forEach(pushCustomStep);
-      pushWorkersStep('');
+      pushGeminiStep('', primaryKey && autoFailover ? [backupKey, primaryKey] : [backupKey]);
+      if (autoFailover) {
+        dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
+        envProviders.forEach(pushCustomStep);
+        pushWorkersStep('');
+      }
     } else {
       const targetEnv = envProviders.find((p) => p.provider_code === pref);
       const restEnv = envProviders.filter((p) => p.provider_code !== pref);
       if (targetEnv) pushCustomStep(targetEnv);
-      dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
-      pushGeminiStep('');
-      restEnv.forEach(pushCustomStep);
-      pushWorkersStep('');
+      if (autoFailover) {
+        dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
+        pushGeminiStep('');
+        restEnv.forEach(pushCustomStep);
+        pushWorkersStep('');
+      }
     }
   } else if (pref.startsWith('gemini:')) {
     const targetModel = pref.slice('gemini:'.length).trim();
     pushGeminiStep(targetModel);
-    dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
-    envProviders.forEach(pushCustomStep);
-    pushWorkersStep('');
+    if (autoFailover) {
+      dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
+      envProviders.forEach(pushCustomStep);
+      pushWorkersStep('');
+    }
   } else if (pref.startsWith('workers:')) {
     const targetModel = pref.slice('workers:'.length).trim();
     pushWorkersStep(targetModel);
-    dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
-    envProviders.forEach(pushCustomStep);
-    pushGeminiStep('');
+    if (autoFailover) {
+      dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
+      envProviders.forEach(pushCustomStep);
+      pushGeminiStep('');
+    }
   } else {
     // Default 'auto': Enabled custom providers (priority ASC) -> Built-in Gemini Flash/Lite -> Active env secret APIs -> Workers AI
     dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
@@ -1876,30 +2008,88 @@ async function runModelCascade(env, prompt, mode, opts = {}) {
   }
 
   if (!steps.length) {
-    throw new Error('No AI provider is configured. Add a Gemini API key, custom provider, or Cloudflare Workers AI binding.');
+    const cfgErr = new Error('No AI provider is configured. Add a Gemini API key, custom provider, or Cloudflare Workers AI binding.');
+    cfgErr.status = 400;
+    throw cfgErr;
   }
 
   let lastErr = null;
-  let sawQuota = false;
-  for (const runStep of steps) {
+  const attemptedErrors = [];
+  const attemptedKinds = [];
+
+  for (let i = 0; i < steps.length; i += 1) {
+    const step = steps[i];
+    attemptedKinds.push(step.kind);
     try {
-      const res = await runStep();
+      const res = await step.run();
       if (res && !res.provider_model) {
         res.provider_model = formatProviderModelTag(res.provider_label || res.provider, res.model);
       }
+      if (attemptedErrors.length > 0 && res) {
+        const firstFail = attemptedErrors[0];
+        res.fallback_notice = `${firstFail.provider} busy/unavailable (${firstFail.reason}) — succeeded via ${res.provider_model}`;
+        res.attempted_errors = attemptedErrors;
+      }
       return res;
     } catch (err) {
-      if (isQuotaError(err)) sawQuota = true;
-      lastErr = err;
+      let finalErr = err;
+      // If an explicitly selected engine hits a 429 burst limit, retry once honoring Retry-After (capped at 3s) before failing over
+      if (i === 0 && isExplicitSelection && Number(err && err.status) === 429) {
+        const waitMs = Math.min(MAX_RETRY_AFTER_MS, Number(err && err.retry_after_ms) || 150);
+        await sleepMs(waitMs);
+        try {
+          const retryRes = await step.run();
+          if (retryRes && !retryRes.provider_model) {
+            retryRes.provider_model = formatProviderModelTag(retryRes.provider_label || retryRes.provider, retryRes.model);
+          }
+          return retryRes;
+        } catch (retryErr) {
+          finalErr = retryErr;
+        }
+      }
+
+      attemptedErrors.push({
+        provider: (finalErr && finalErr.provider_label) || step.label,
+        kind: (finalErr && finalErr.provider_kind) || step.kind,
+        status: Number(finalErr && finalErr.status) || 502,
+        reason: String((finalErr && finalErr.message) || 'Upstream request failed').slice(0, 220),
+        is_daily_quota: isDailyGeminiOrWorkersQuota(finalErr)
+      });
+      lastErr = finalErr;
     }
   }
 
-  if (sawQuota) {
+  // Only emit the Gemini / Workers AI IST daily reset message when ONLY Gemini and/or Workers AI were attempted and hit daily quota/neurons
+  const onlyBuiltInGeminiOrWorkers = attemptedErrors.length > 0 &&
+    attemptedErrors.every((ae) => ae.kind === 'gemini' || ae.kind === 'workers_ai');
+  const allBuiltInQuota = onlyBuiltInGeminiOrWorkers &&
+    attemptedErrors.every((ae) => ae.is_daily_quota || ae.status === 429);
+
+  if (allBuiltInQuota) {
     const qErr = new Error(DAILY_QUOTA_EXHAUSTED_MESSAGE);
     qErr.status = 429;
+    qErr.is_gemini_workers_daily_quota = true;
+    qErr.attempted_errors = attemptedErrors;
     throw qErr;
   }
-  throw lastErr || new Error('All AI providers failed.');
+
+  const primaryStatus = Number((attemptedErrors[0] && attemptedErrors[0].status) || (lastErr && lastErr.status) || 502);
+  const summaryParts = [];
+  const seenMsg = new Set();
+  for (const ae of attemptedErrors) {
+    if (!ae.reason || seenMsg.has(ae.reason)) continue;
+    seenMsg.add(ae.reason);
+    summaryParts.push(ae.reason);
+    if (summaryParts.length >= 3) break;
+  }
+  const combinedMsg = summaryParts.length
+    ? summaryParts.join(' | ')
+    : ((lastErr && lastErr.message) || 'All configured AI providers failed.');
+  const diagErr = new Error(combinedMsg);
+  diagErr.status = primaryStatus;
+  diagErr.is_gemini_workers_daily_quota = false;
+  diagErr.attempted_errors = attemptedErrors;
+  throw diagErr;
 }
 
 export function normalizeTranslatedMarkdownPipes(rawMd) {
@@ -2033,10 +2223,13 @@ function parseTranslateMarkdownResult(rawText, fallbackChunk) {
     } catch (_e) {}
   }
 
-  const plainMd = withoutThink
-    .replace(/^```(?:markdown|md|txt)?\s*/i, '')
-    .replace(/\s*```$/i, '')
-    .trim();
+  let plainMd = withoutThink;
+  if (/^```(?:markdown|md|txt)?\s*\n/i.test(plainMd) && /\n```\s*$/.test(plainMd)) {
+    plainMd = plainMd
+      .replace(/^```(?:markdown|md|txt)?\s*\n/i, '')
+      .replace(/\n```\s*$/, '');
+  }
+  plainMd = plainMd.trim();
   return normalizeTranslatedMarkdownPipes(plainMd || fallbackChunk || '');
 }
 
@@ -2238,6 +2431,7 @@ async function translateMarkdownDocument(env, rawMarkdown, cascadeOpts = {}) {
   let totalNeurons = 0;
   const BATCH_SIZE = 2;
 
+  let fallbackNotice = '';
   for (let start = 0; start < chunks.length; start += BATCH_SIZE) {
     const batch = chunks.slice(start, start + BATCH_SIZE);
     const results = await Promise.all(
@@ -2254,6 +2448,9 @@ async function translateMarkdownDocument(env, rawMarkdown, cascadeOpts = {}) {
     for (const item of results) {
       translatedParts[item.index] = item.translatedChunk;
       lastMeta = item.res;
+      if (item.res && item.res.fallback_notice && !fallbackNotice) {
+        fallbackNotice = item.res.fallback_notice;
+      }
       totalNeurons += item.neurons;
     }
   }
@@ -2268,11 +2465,12 @@ async function translateMarkdownDocument(env, rawMarkdown, cascadeOpts = {}) {
     provider_label: provLbl,
     model: mdl,
     provider_model: (lastMeta && lastMeta.provider_model) || formatProviderModelTag(provLbl, mdl),
+    fallback_notice: fallbackNotice || undefined,
     estimatedNeurons: totalNeurons
   };
 }
 
-export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId, pdf_text, pdf_filename, draft, body_en, overwrite, depth, skip_body_or, preserve_body_en, preferred_model }) {
+export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId, pdf_text, pdf_filename, draft, body_en, overwrite, depth, skip_body_or, preserve_body_en, preferred_model, auto_failover }) {
   const cleanMode = String(mode || '').trim().toLowerCase();
   if (!VALID_AI_MODES.has(cleanMode)) {
     const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, career, guide, auto_fix_fill, translate_odia, translate_fields, translate_markdown, or suggest_meta.');
@@ -2365,16 +2563,18 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     }
     const err = new Error(DAILY_QUOTA_EXHAUSTED_MESSAGE);
     err.status = 429;
+    err.is_gemini_workers_daily_quota = true;
     throw err;
   }
 
   const cascadeOpts = {
     preferredModel: cleanPreferredModel,
     customProviders,
-    skipWorkersAi: neuronsExhausted
+    skipWorkersAi: neuronsExhausted,
+    autoFailover: auto_failover !== false
   };
 
-  // Dedicated Markdown-Safe Translation Mode (auto-splits > 7,500 char bodies by `##` headings)
+  // Dedicated Markdown-Safe Translation Mode (auto-splits > 4,200 char bodies by `##` headings for free-tier TPM safety)
   if (cleanMode === 'translate_markdown') {
     const mdOut = await translateMarkdownDocument(env, cleanInput.slice(0, 64000), cascadeOpts);
     await logAiGeneration(env, {
@@ -2394,6 +2594,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
       provider_label: mdOut.provider_label,
       model: mdOut.model,
       provider_model: mdOut.provider_model,
+      fallback_notice: mdOut.fallback_notice || undefined,
       estimated_neurons: mdOut.estimatedNeurons,
       usage: usageAfter,
       data: {
@@ -2458,6 +2659,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
         provider_label: providerLabel,
         model,
         provider_model: providerModel,
+        fallback_notice: (lastMeta && lastMeta.fallback_notice) || undefined,
         estimated_neurons: totalNeurons,
         usage: usageAfter,
         data: { translations: mergedTranslations }
@@ -2578,6 +2780,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     provider_label: provLabel,
     model: result.model,
     provider_model: result.provider_model || formatProviderModelTag(provLabel, result.model),
+    fallback_notice: result.fallback_notice || undefined,
     estimated_neurons: estimatedNeurons,
     usage: usageAfter,
     data: normalized

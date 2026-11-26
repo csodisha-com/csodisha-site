@@ -415,7 +415,15 @@
       return fetch('/api/admin/ai-coauthor', fetchOpts)
         .then(function (r) {
           return r.json().catch(function () { return {}; }).then(function (d) {
-            if (!r.ok) throw new Error((d && (d.error || d.message)) || ('HTTP ' + r.status));
+            if (!r.ok) {
+              var errMsg = (d && (d.error || d.message)) || ('HTTP ' + r.status);
+              if (d && Array.isArray(d.attempted_errors) && d.attempted_errors.length && errMsg.indexOf('HTTP') === 0) {
+                errMsg = d.attempted_errors.map(function (ae) { return ae && ae.reason; }).filter(Boolean).slice(0, 2).join(' | ') || errMsg;
+              }
+              var httpErr = new Error(errMsg);
+              httpErr.status = r.status;
+              throw httpErr;
+            }
             return d;
           });
         })
@@ -428,10 +436,12 @@
           var prov = (res && (res.provider_model || res.provider_label || res.provider)) || 'Gemini Flash';
           var chunks = Number(d.chunks_count || (res && res.chunks_count) || 1);
           provTag.textContent = prov + (chunks > 1 ? (' \u00B7 ' + chunks + ' chunks') : '');
+          provTag.title = (res && res.fallback_notice) ? res.fallback_notice : prov;
           provTag.hidden = false;
           statusStrip.classList.remove('is-busy', 'is-error');
           statusStrip.classList.add('is-ok');
-          statusStrip.textContent = '\u2713 Live \u0B13\u0B21\u0B3C\u0B3F\u0B06 ready (' + outMd.length.toLocaleString() + ' chars \u00B7 Markdown preserved)';
+          var foNote = (res && res.fallback_notice) ? (' \u00B7 Failover: ' + res.fallback_notice) : '';
+          statusStrip.textContent = '\u2713 Live \u0B13\u0B21\u0B3C\u0B3F\u0B06 ready (' + outMd.length.toLocaleString() + ' chars \u00B7 Markdown preserved)' + foNote;
           return outMd;
         })
         .catch(function (err) {

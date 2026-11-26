@@ -565,9 +565,9 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
 });
 
 // 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v361
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v363 CSS, and cso-candidate-cache-v363 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v363');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v363';"), 'sw.js cache version must be cso-candidate-cache-v363');
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v364 CSS, and cso-candidate-cache-v364 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v364');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v364';"), 'sw.js cache version must be cso-candidate-cache-v364');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -705,9 +705,9 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
   assert.ok(adminHtml.includes('id="headerTranslatorWrap"') && adminHtml.includes('id="btnHeaderOdiaTranslator"') && adminHtml.includes('aria-controls="csoHeaderTranslatorPopover"'), 'admin/index.html must pin #btnHeaderOdiaTranslator in the top header bar');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v363'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v363');
-  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v363'), 'admin/index.html must load studio-translator.js?v=20261126v363');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v363'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v364'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v364');
+  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v364'), 'admin/index.html must load studio-translator.js?v=20261126v364');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v364'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
@@ -1213,6 +1213,52 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
     await handleAdminAiProvidersApi(jsonReq(`https://csodisha.com/api/admin/ai-providers/${enabledProv.id}`, 'DELETE'), env, adminActor, enabledProv.id, ctx);
     await handleAdminAiProvidersApi(jsonReq(`https://csodisha.com/api/admin/ai-providers/${disabledProv.id}`, 'DELETE'), env, adminActor, disabledProv.id, ctx);
   }
+
+  // I. v364: Verify /api/admin/ai-coauthor preserves true Groq/HF provider errors & Admin Studio UI never masks them with Gemini IST quota text
+  const origErrFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    if (String(url).includes('api.groq.com')) {
+      return new Response('TPM limit exceeded', { status: 429, headers: { 'Retry-After': '0' } });
+    }
+    if (String(url).includes('router.huggingface.co')) {
+      return new Response('Forbidden', { status: 403 });
+    }
+    throw new Error('Unexpected fetch: ' + url);
+  };
+  try {
+    const groqErrRes = await handleAdminAiCoauthorApi(
+      jsonReq('https://csodisha.com/api/admin/ai-coauthor', 'POST', {
+        mode: 'translate_odia', input: 'OPSC OAS 2026', preferred_model: 'env:groq', auto_failover: false
+      }),
+      { ...env, GROQ_API_KEY: 'gsk_err_check' },
+      adminActor, ctx
+    );
+    assert.equal(groqErrRes.status, 429);
+    const groqErrJson = await groqErrRes.json();
+    assert.equal(groqErrJson.ok, false);
+    assert.equal(groqErrJson.is_daily_quota, false);
+    assert.ok(/Groq/i.test(groqErrJson.error) && /HTTP 429/i.test(groqErrJson.error), 'API must return exact Groq 429 diagnostic');
+    assert.ok(!groqErrJson.error.includes('5:30 AM IST'), 'Groq 429 must NEVER return Gemini/Workers AI 5:30 AM IST message');
+    assert.ok(Array.isArray(groqErrJson.attempted_errors) && groqErrJson.attempted_errors.length === 1);
+
+    const hfErrRes = await handleAdminAiCoauthorApi(
+      jsonReq('https://csodisha.com/api/admin/ai-coauthor', 'POST', {
+        mode: 'translate_odia', input: 'OPSC OAS 2026', preferred_model: 'env:huggingface', auto_failover: false
+      }),
+      { ...env, HF_TOKEN: 'hf_err_check' },
+      adminActor, ctx
+    );
+    assert.equal(hfErrRes.status, 403);
+    const hfErrJson = await hfErrRes.json();
+    assert.equal(hfErrJson.ok, false);
+    assert.ok(/Hugging Face/i.test(hfErrJson.error) && /Inference Providers/i.test(hfErrJson.error));
+    assert.ok(!hfErrJson.error.includes('5:30 AM IST'));
+  } finally {
+    globalThis.fetch = origErrFetch;
+  }
+  assert.ok(guidesStudioJs.includes('isGeminiWorkersDailyQuotaError') && guidesStudioJs.includes('fallback_notice'), 'guides-publishing-studio.js must distinguish genuine daily quota from provider errors and display fallback_notice');
+  assert.ok(!guidesStudioJs.includes('function isQuotaLikeError'), 'guides-publishing-studio.js must remove catch-all isQuotaLikeError quota rewrite');
+  assert.ok(translatorJs.includes('fallback_notice') && translatorJs.includes('attempted_errors'), 'studio-translator.js must surface fallback_notice and attempted_errors');
   await Promise.all(waits);
 });
 
