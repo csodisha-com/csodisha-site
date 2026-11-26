@@ -1,7 +1,7 @@
 // GET /api/media/<key> — public, immutable-cached R2 delivery.
 import { json } from '../../_lib/http.js';
 
-const KEY_RE = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf)|edu-resources\/(?:digital_library|study_material|notes_pdf|book_reference)\/\d{4}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf)|vault\/(?:pdf|image|video|audio|document|archive)\/\d{4}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf|svg|mp3|mp4|zip)|candidate-assigned\/\d{10,16}-[a-z0-9_-]{1,80}\.(pdf|png|jpg|jpeg|webp|doc|docx|txt|mp3|zip)|guides\/ai-\d{10,16}-[a-z0-9_-]{1,96}\.(jpg|jpeg|png|webp|svg)|(?:jobs-publishing|schemes-publishing|study-publishing|community-publishing|about-publishing)\/\d{10,16}-[a-z0-9_-]{1,80}\.(pdf|png|jpg|jpeg|webp))$/;
+const KEY_RE = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf)|edu-resources\/(?:digital_library|study_material|notes_pdf|book_reference)\/\d{4}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf)|vault\/(?:pdf|image|video|audio|document|archive)\/\d{4}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf|svg|mp3|mp4|zip)|candidate-assigned\/\d{10,16}-[a-z0-9_-]{1,80}\.(pdf|png|jpg|jpeg|webp|doc|docx|txt|mp3|zip)|guides\/[a-z0-9][a-z0-9_-]{1,120}\.(jpg|jpeg|png|webp|svg|pdf)|(?:jobs-publishing|schemes-publishing|study-publishing|community-publishing|about-publishing)\/\d{10,16}-[a-z0-9_-]{1,80}\.(pdf|png|jpg|jpeg|webp))$/;
 const SAFE_TYPES = {
   jpg: 'image/jpeg',
   jpeg: 'image/jpeg',

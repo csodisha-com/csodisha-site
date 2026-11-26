@@ -754,10 +754,28 @@
   border-top: 1px solid var(--cso-border);
 }
 
+/* Inline Infographic Figures inside Guide Body */
+.gp-inline-figure {
+  display: block;
+  margin: 1.35rem 0;
+  border: 1px solid var(--gp-border, var(--cso-border));
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--gp-surface-alt, var(--cso-surface-alt));
+}
+
+.gp-inline-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  margin: 0;
+}
+
 /* Inline Photo Gallery */
 .gp-gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
   gap: 1rem;
 }
 
@@ -771,8 +789,8 @@
 
 .gp-photo-card img {
   width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
   display: block;
 }
 

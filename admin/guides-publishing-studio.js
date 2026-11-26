@@ -589,6 +589,23 @@
         continue;
       }
 
+      if (/^!\[([^\]]{0,260})\]\(([^)\s]{1,600})\)$/.test(line)) {
+        var im = line.match(/^!\[([^\]]{0,260})\]\(([^)\s]{1,600})\)$/);
+        var imgSrc = im && im[2] ? im[2].trim() : '';
+        if (imgSrc && (imgSrc.indexOf('/') === 0 || /^https?:\/\//i.test(imgSrc))) {
+          var fig = el('figure', 'gp-inline-figure');
+          var imEl = el('img', 'gp-inline-img');
+          imEl.src = imgSrc;
+          imEl.alt = (im[1] || 'Guide infographic').trim();
+          imEl.loading = 'lazy';
+          fig.appendChild(imEl);
+          if (im[1] && im[1].trim()) fig.appendChild(el('figcaption', 'gp-caption', im[1].trim()));
+          frag.appendChild(fig);
+          i++;
+          continue;
+        }
+      }
+
       if (/^[-*\u2022]\s+/.test(line)) {
         var ul = el('ul', 'gp-list');
         while (i < lines.length && /^[-*\u2022]\s+/.test(lines[i].trim())) {
@@ -614,7 +631,7 @@
       }
 
       var paraLines = [];
-      while (i < lines.length && lines[i].trim() && !/^(#{2,3}\s|>|\||[-*\u2022]\s|\d+\.\s)/.test(lines[i].trim())) {
+      while (i < lines.length && lines[i].trim() && !/^(#{2,3}\s|>|\||[-*\u2022]\s|\d+\.\s|!\[)/.test(lines[i].trim())) {
         paraLines.push(lines[i].trim());
         i++;
       }

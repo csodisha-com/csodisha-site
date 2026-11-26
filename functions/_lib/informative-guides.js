@@ -320,6 +320,23 @@ export function renderGuideBodyWithToc(rawBody, headingPrefix = 'sec') {
       continue;
     }
 
+    // Standalone Markdown image block: ![Alt / Caption](url)
+    const imgMatch = line.match(/^!\[([^\]]{0,260})\]\(([^)\s]{1,600})\)$/);
+    if (imgMatch) {
+      const cleanSrc = safeGuideUrl(imgMatch[2]);
+      const altText = imgMatch[1].trim() || 'Guide infographic chart';
+      if (cleanSrc) {
+        html.push(
+          `<figure class="gp-inline-figure">` +
+          `<img src="${escShell(cleanSrc)}" alt="${escShell(altText)}" class="gp-inline-img" loading="lazy" decoding="async">` +
+          (imgMatch[1].trim() ? `<figcaption class="gp-caption">${escShell(imgMatch[1].trim())}</figcaption>` : '') +
+          `</figure>`
+        );
+        i += 1;
+        continue;
+      }
+    }
+
     // Headings (## or ###)
     const hMatch = line.match(/^(#{2,3})\s+(.+)$/);
     if (hMatch) {
@@ -398,7 +415,7 @@ export function renderGuideBodyWithToc(rawBody, headingPrefix = 'sec') {
     while (
       i < lines.length &&
       lines[i].trim() &&
-      !/^(#{2,3}\s|>|\||[-*•]\s|\d+\.\s)/.test(lines[i].trim())
+      !/^(#{2,3}\s|>|\||[-*•]\s|\d+\.\s|!\[)/.test(lines[i].trim())
     ) {
       para.push(lines[i].trim());
       i += 1;
