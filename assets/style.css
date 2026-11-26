@@ -5348,21 +5348,16 @@ mark.cso-search-highlight {
   text-decoration: none;
   transition: opacity 0.15s ease;
 }
-.cso-compass-cta:hover { opacity: 0.88; }/* 4-Card Responsive Row */
+.cso-compass-cta:hover { opacity: 0.88; }/* 3-Card Responsive Row (v333) */
 
 
 .cso-compass-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(8px, 1.2vw, 14px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(10px, 1.4vw, 16px);
 }
 
-@media (max-width: 992px) {
-  .cso-compass-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 560px) {
+@media (max-width: 768px) {
   .cso-compass-grid {
     grid-template-columns: 1fr;
   }
@@ -5401,7 +5396,6 @@ mark.cso-search-highlight {
 
 .cso-compass-card--jobs .cso-compass-card__icon { background: rgba(37, 99, 235, 0.1); color: var(--cso-link); }
 .cso-compass-card--study .cso-compass-card__icon { background: rgba(217, 119, 6, 0.1); color: var(--cso-warn-fg); }
-.cso-compass-card--schemes .cso-compass-card__icon { background: rgba(16, 149, 93, 0.1); color: var(--cso-link); }
 .cso-compass-card--guidance .cso-compass-card__icon { background: rgba(147, 51, 234, 0.1); color: var(--cso-link); }
 
 .cso-compass-card__info {

@@ -491,7 +491,16 @@
     }
   }
 
+  function pruneRetiredCompassCards() {
+    var grid = document.querySelector('#cso-opportunity-compass .cso-compass-grid');
+    if (!grid) return;
+    grid.querySelectorAll('.cso-compass-card--schemes').forEach(function (node) {
+      node.remove();
+    });
+  }
+
   function init() {
+    pruneRetiredCompassCards();
     mountHomeFeed(false);
     hydrateHomepageConfig();
     bindLiveEvents();

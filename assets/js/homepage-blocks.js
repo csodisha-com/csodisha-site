@@ -229,7 +229,19 @@
     }
 
     var compass = document.querySelector('.cso-compass-grid');
-    if (compass && has('opportunity_compass')) { replaceKids(compass, build('opportunity_compass')); any = true; }
+    if (compass && has('opportunity_compass')) {
+      var compassItems = (sections.opportunity_compass || []).filter(function (it) {
+        if (!it) return false;
+        if (it.id === 'hb_opportunity_compass_03') return false;
+        if (clean(it.accent_variant).toLowerCase() === 'schemes') return false;
+        if (/schemes\s*&\s*aid/i.test(String(it.title_en || ''))) return false;
+        return true;
+      });
+      if (compassItems.length) {
+        replaceKids(compass, compassItems.map(function (it) { return createNode('opportunity_compass', it, lang); }));
+        any = true;
+      }
+    }
 
     var topics = document.querySelector('.trending-grid');
     if (topics && has('trending_topics')) { replaceKids(topics, build('trending_topics')); any = true; }

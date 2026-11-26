@@ -263,9 +263,17 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v332');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v332';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v333');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v333';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
+
+  // v333: Opportunity Compass has 3 equal cards (Schemes & Aid removed)
+  const compassSection = indexHtml.slice(indexHtml.indexOf('id="cso-opportunity-compass"'), indexHtml.indexOf('id="cso-home-jobs-section"'));
+  assert.ok(!compassSection.includes('cso-compass-card--schemes'), 'Schemes & Aid card must be removed from Opportunity Compass');
+  assert.ok(!compassSection.includes('Schemes &amp; Aid'), 'Schemes & Aid text must be removed from Opportunity Compass');
+  assert.equal((compassSection.match(/class="cso-compass-card\b/g) || []).length, 3, 'Opportunity Compass must have exactly 3 cards');
+  assert.ok(read('assets/style.css').includes('grid-template-columns: repeat(3, minmax(0, 1fr));'), 'Opportunity Compass grid must use 3 equal columns');
+  assert.ok(read('assets/js/homepage-blocks.js').includes("hb_opportunity_compass_03"), 'homepage-blocks.js must guard against re-injecting retired Schemes & Aid card');
 });
 
 console.log(`\n=== Homepage Live Feed v332 Results: ${passed} passed, 0 failed ===\n`);
