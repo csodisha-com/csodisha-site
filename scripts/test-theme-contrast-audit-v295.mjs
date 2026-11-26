@@ -616,5 +616,19 @@ check('v373 Exams & Prep Hub CSS: semantic --cso-* tokens only, zero hardcoded h
   }
 });
 
+check('v374 Scholarships Hub CSS: emerald green hover, semantic --cso-* tokens only, zero hardcoded hex & >= 4.5:1 badge contrast in all 4 themes', () => {
+  const css = read('assets/style.css');
+  const blk = css.slice(css.indexOf('/* ===== v374'));
+  assert.ok(blk.length > 500, 'v374 CSS block present');
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'v374 CSS must contain zero hardcoded hex');
+  for (const cls of ['.cso-sh-hero', '.cso-sh-card:hover', '.cso-sh-amount', '.cso-sh-docs', '.cso-sh-status--urgent']) {
+    assert.ok(blk.includes(cls), `v374 CSS missing ${cls}`);
+  }
+  for (const [name, t] of Object.entries(EXPECTED_THEMES)) {
+    assert.ok(contrastRatio(t['--cso-ok-fg'], t['--cso-ok-bg']) >= 4.5, `${name} scholarship emerald badge contrast < 4.5:1`);
+    assert.ok(contrastRatio(t['--cso-err-fg'], t['--cso-err-bg']) >= 4.5, `${name} closing soon contrast < 4.5:1`);
+  }
+});
+
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);

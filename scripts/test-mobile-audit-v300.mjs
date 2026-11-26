@@ -65,8 +65,8 @@ const htmlFiles = walkFiles(ROOT, '.html');
 
 console.log('\n=== v300 Mobile Compatibility, 4-Theme Visibility & WCAG 2.2 Accessibility Audit ===\n');
 
-check('1. Valid zoom-friendly viewport <meta> tag on all 31 active HTML pages (no zoom locks)', () => {
-  assert.equal(htmlFiles.length, 31, `Expected 31 active HTML files, got ${htmlFiles.length}`);
+check('1. Valid zoom-friendly viewport <meta> tag on all 32 active HTML pages (no zoom locks)', () => {
+  assert.equal(htmlFiles.length, 32, `Expected 32 active HTML files, got ${htmlFiles.length}`);
   for (const full of htmlFiles) {
     const rel = path.relative(ROOT, full);
     const html = fs.readFileSync(full, 'utf8');
@@ -399,8 +399,8 @@ check('8. v360 Informative Guides edge-to-edge layout (max-width: 100%), uncropp
     'admin/studio.css Live Preview must mirror v360 edge-to-edge 390px mobile padding and uncropped 16:9 cover rules'
   );
   assert.ok(
-    guidesSsr.includes('/assets/css/guides-portal.css?v=20261126v373') &&
-    guidesSsr.includes('/assets/js/guides-portal.js?v=20261126v373') &&
+    guidesSsr.includes('/assets/css/guides-portal.css?v=20261126v374') &&
+    guidesSsr.includes('/assets/js/guides-portal.js?v=20261126v374') &&
     guidesSsr.includes('gp-hero-card') &&
     guidesSsr.includes('gp-toc-card') &&
     guidesSsr.includes('gp-share-bar') &&
@@ -472,6 +472,17 @@ check('12. v373 Exams & Prep Hub (/exams/): single <h1>, 44px touch targets, 1-c
   assert.ok(blk.includes('.cso-eh-family-pill') && blk.includes('min-height: 44px') && blk.includes('grid-template-columns: 1fr;'));
   assert.ok(blk.includes('@media (prefers-reduced-motion: reduce)'));
   assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'zero hardcoded hex in v373 CSS');
+});
+
+check('13. v374 Scholarships Hub (/scholarships/): single <h1>, 44px touch targets, 1-col mobile stack, zero inline handlers & reduced-motion', () => {
+  const html = read('scholarships/index.html');
+  assert.equal((html.match(/<h1\b/gi) || []).length, 1, 'scholarships/index.html must have exactly 1 <h1>');
+  assert.ok(!/\son[a-z]+="/i.test(html.replace(/<svg[\s\S]*?<\/svg>/g, '')), 'zero inline handlers in scholarships/index.html');
+  const css = read('assets/style.css');
+  const blk = css.slice(css.indexOf('/* ===== v374'));
+  assert.ok(blk.includes('.cso-sh-level-pill') && blk.includes('min-height: 44px') && blk.includes('grid-template-columns: 1fr;'));
+  assert.ok(blk.includes('@media (prefers-reduced-motion: reduce)'));
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'zero hardcoded hex in v374 CSS');
 });
 
 console.log(`\n=== v300 Mobile & WCAG 2.2 Audit Results: ${passed} passed, ${failed} failed ===\n`);

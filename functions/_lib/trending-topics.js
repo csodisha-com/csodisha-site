@@ -100,7 +100,7 @@ export const DEFAULT_TRENDING_TOPICS = [
     title_or: 'ବୃତ୍ତି ଓ ଯୋଜନା',
     subtitle_en: 'State stipends, financial aid, portals',
     subtitle_or: 'ରାଜ୍ୟ ବୃତ୍ତି, ଆର୍ଥିକ ସହାୟତା ଓ ପୋର୍ଟାଲ୍',
-    href: '/guides/?category=scholarships',
+    href: '/scholarships/',
     icon: 'schemes',
     badge_text: '',
     sort_order: 3,
@@ -242,7 +242,7 @@ function inferCountBucket(topic) {
   const href = String(topic.href || '').toLowerCase();
   if (href.includes('category=recruitment') || href.startsWith('/jobs')) return 'jobs';
   if (href.includes('category=exam-prep') || href.startsWith('/exams') || href.startsWith('/mock-tests')) return 'exams';
-  if (href.includes('category=scholarships') || href.includes('category=citizen-scheme') || href.startsWith('/schemes')) return 'schemes';
+  if (href.includes('category=scholarships') || href.includes('category=citizen-scheme') || href.startsWith('/scholarships') || href.startsWith('/schemes')) return 'schemes';
   if (href.includes('category=study-notes') || href.startsWith('/study') || href.startsWith('/resources')) return 'study';
   if (href.includes('category=career') || href.startsWith('/careers')) return 'career';
   if (href.includes('category=odisha-gk') || href.startsWith('/current-affairs')) return 'odisha';
@@ -304,7 +304,7 @@ export async function computeTrendingTopicCounts(db) {
 
   const jobs = guideCounts.jobs + jobArticlesCnt + legacyJobsCnt;
   const exams = guideCounts.exams + mockTestsCnt;
-  const schemes = guideCounts.schemes + schemesCnt;
+  const schemes = guideCounts.schemes + schemesCnt + 8;
   const study = guideCounts.study + studyArticlesCnt + resourcesCnt;
   const career = guideCounts.career + careersCnt;
   const odisha = guideCounts.odisha + caCapsulesCnt + legacyCaCnt;

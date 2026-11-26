@@ -537,8 +537,8 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageA
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v373">
-  <script src="/assets/js/guides-portal.js?v=20261126v373" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v374">
+  <script src="/assets/js/guides-portal.js?v=20261126v374" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -605,7 +605,7 @@ export function renderPublicGuidesHubHtml(guides, url) {
   });
 
   const topicPillHtml = activeTopicAlias && !GUIDE_CATEGORY_MAP.has(activeCat)
-    ? `<a class="gp-cat-pill is-active" href="/guides/?category=${encodeURIComponent(activeTopicAlias.key)}" data-guide-cat="${escShell(activeTopicAlias.key)}">${escShell(activeTopicAlias.icon)} <span class="gp-lang-en">${escShell(activeTopicAlias.label_en)}</span><span class="gp-lang-or">${escShell(activeTopicAlias.label_or)}</span> <span class="gp-cat-cnt">${filtered.length}</span></a>${activeCat === 'recruitment' ? '\n<a class="gp-cat-pill" href="/jobs/">💼 <span class="gp-lang-en">Open Live Jobs &amp; Recruitment Hub →</span><span class="gp-lang-or">ଲାଇଭ୍ ଚାକିରି ଓ ନିଯୁକ୍ତି ହବ୍ →</span></a>' : ''}${activeCat === 'exam-prep' ? '\n<a class="gp-cat-pill" href="/exams/">🎯 <span class="gp-lang-en">Open Live Exams &amp; Prep Hub →</span><span class="gp-lang-or">ଲାଇଭ୍ ପରୀକ୍ଷା ଓ ପ୍ରସ୍ତୁତି ହବ୍ →</span></a>' : ''}`
+    ? `<a class="gp-cat-pill is-active" href="/guides/?category=${encodeURIComponent(activeTopicAlias.key)}" data-guide-cat="${escShell(activeTopicAlias.key)}">${escShell(activeTopicAlias.icon)} <span class="gp-lang-en">${escShell(activeTopicAlias.label_en)}</span><span class="gp-lang-or">${escShell(activeTopicAlias.label_or)}</span> <span class="gp-cat-cnt">${filtered.length}</span></a>${activeCat === 'recruitment' ? '\n<a class="gp-cat-pill" href="/jobs/">💼 <span class="gp-lang-en">Open Live Jobs &amp; Recruitment Hub →</span><span class="gp-lang-or">ଲାଇଭ୍ ଚାକିରି ଓ ନିଯୁକ୍ତି ହବ୍ →</span></a>' : ''}${activeCat === 'exam-prep' ? '\n<a class="gp-cat-pill" href="/exams/">🎯 <span class="gp-lang-en">Open Live Exams &amp; Prep Hub →</span><span class="gp-lang-or">ଲାଇଭ୍ ପରୀକ୍ଷା ଓ ପ୍ରସ୍ତୁତି ହବ୍ →</span></a>' : ''}${activeCat === 'scholarships' ? '\n<a class="gp-cat-pill" href="/scholarships/">🎓 <span class="gp-lang-en">Open Scholarships &amp; Eligibility Hub →</span><span class="gp-lang-or">ବୃତ୍ତି ଓ ଯୋଗ୍ୟତା ହବ୍ →</span></a>' : ''}`
     : '';
 
   const pillsHtml = [
