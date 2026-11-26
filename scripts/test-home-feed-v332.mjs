@@ -24,11 +24,13 @@ function createMockDb() {
   const execSql = (sql, params = []) => {
     const s = sql.replace(/\s+/g, ' ').trim();
     if (/^INSERT INTO cso_latest_updates_meta/i.test(s)) {
-      const [entity_type, entity_id, is_pinned, scope, updated_at] = params;
-      luMeta.set(`${entity_type}:${entity_id}`, { entity_type, entity_id, is_pinned, scope, updated_at });
+      const [entity_type, entity_id, is_pinned, scope, is_exam, updated_at] = params;
+      const prev = luMeta.get(`${entity_type}:${entity_id}`);
+      const nextExam = (is_exam !== null && is_exam !== undefined) ? is_exam : (prev ? prev.is_exam : null);
+      luMeta.set(`${entity_type}:${entity_id}`, { entity_type, entity_id, is_pinned, scope, is_exam: nextExam, updated_at });
       return { run: { success: true } };
     }
-    if (/^SELECT entity_type, entity_id, is_pinned, scope, updated_at FROM cso_latest_updates_meta/i.test(s)) {
+    if (/^SELECT entity_type, entity_id, is_pinned, scope, is_exam, updated_at FROM cso_latest_updates_meta/i.test(s)) {
       return { results: Array.from(luMeta.values()) };
     }
     if (/^UPDATE job_articles SET is_published = 0/i.test(s)) {
@@ -219,12 +221,15 @@ await test('1. GET /api/public/home-feed returns all 7 live content buckets with
 
   const data = await res.json();
   assert.equal(data.ok, true);
-  assert.equal(data.version, 'v337');
+  assert.equal(data.version, 'v338');
   assert.equal(data.broadcast.active, true);
-  assert.ok(Array.isArray(data.latest_updates) && data.latest_updates.length >= 5, 'home-feed must include unified latest_updates across tables');
+  assert.ok(Array.isArray(data.latest_updates) && data.latest_updates.length >= 6, 'home-feed must include unified latest_updates across tables including mock_tests');
   const jobLu = data.latest_updates.find((x) => x.entity_type === 'job');
   assert.ok(jobLu && jobLu.badge_type === 'JOB' && jobLu.cta_label === 'View Job →' && jobLu.is_external === false);
-  assert.ok(jobLu.filter_tags.includes('all') && jobLu.filter_tags.includes('jobs') && jobLu.filter_tags.includes('odisha'));
+  assert.ok(jobLu.filter_tags.includes('all') && jobLu.filter_tags.includes('jobs') && jobLu.filter_tags.includes('exams') && jobLu.filter_tags.includes('odisha'));
+  const mockLu = data.latest_updates.find((x) => x.entity_type === 'mock_test');
+  assert.ok(mockLu && mockLu.badge_type === 'EXAM' && mockLu.cta_label === 'Start Test →' && mockLu.url === '/mock-tests/?test=opsc-oas-gs-mock-01');
+  assert.ok(mockLu.filter_tags.includes('exams') && mockLu.is_exam === true);
   assert.ok(jobLu.meta_line && !/CS Odisha Editorial Desk/i.test(jobLu.meta_line));
   assert.equal(isExternalHref('https://www.opsc.gov.in/'), true);
   assert.equal(isExternalHref('/jobs/opsc-oas-2026'), false);
@@ -292,15 +297,20 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v337');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v337';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v338');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v338';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
 
-  // v337: Latest Updates homepage DOM, Admin Studio pin/scope controls & live feed panel
+  // v337 + v338: Latest Updates homepage DOM, Exams tab, Admin Studio pin/exam/scope controls & live feed panel
   assert.ok(indexHtml.includes('id="cso-latest-updates-card"') && indexHtml.includes('id="cso-lu-list"'), 'index.html must include upgraded Latest Updates card');
+  assert.ok(indexHtml.includes('data-filter="exams"') && indexHtml.includes('>Exams<'), 'index.html must include Exams filter tab');
+  assert.ok(indexHtml.includes('data-tags="all exams education odisha"'), 'index.html must include Exams static fallback card');
+  assert.ok(read('assets/js/homepage-blocks.js').includes("data-tab') === 'exams'"), 'homepage-blocks.js must preserve Exams tab');
+  assert.ok(read('assets/js/home-hydration.js').includes("exams: 'ପରୀକ୍ଷା'"), 'home-hydration.js must support Odia Exams tab label');
   assert.ok(read('admin/quick-create-studio.js').includes('Pin to Homepage Latest Updates'), 'quick-create-studio.js must include Pin to Homepage Latest Updates');
+  assert.ok(read('admin/quick-create-studio.js').includes('Exams Tag'), 'quick-create-studio.js must include Exams Tag control');
   assert.ok(read('admin/quick-create-studio.js').includes('Latest Updates Live Feed'), 'quick-create-studio.js must include Latest Updates Live Feed panel');
-  assert.ok(read('admin/cms/cms.js').includes('Pin to Homepage Latest Updates'), 'cms.js must include Pin to Homepage Latest Updates');
+  assert.ok(read('admin/cms/cms.js').includes('Pin to Homepage Latest Updates') && read('admin/cms/cms.js').includes('Exams Tag'), 'cms.js must include Pin & Exams Tag controls');
   assert.ok(read('functions/api/admin/_router.js').includes("if (resource === 'latest-updates')"), '_router.js must wire /api/admin/latest-updates');
 
   // v334: CSO Opportunity Compass completely removed from homepage HTML, JS hydration & CSS
@@ -335,8 +345,8 @@ await test('4. v337 Admin /api/admin/latest-updates pin, scope & unpublish immed
   const env = { DB: db };
   const actor = { userId: 'adm_1', email: 'admin@csodisha.com', role: 'admin' };
 
-  // Pin scheme_articles sch_1 with National scope so it sorts #1 ahead of everything else
-  await upsertLatestUpdateMeta(db, { entity_type: 'scheme', entity_id: 'sch_1', is_pinned: 1, scope: 'National' });
+  // Pin scheme_articles sch_1 with National scope + explicit is_exam = 1 override so it appears under Exams too
+  await upsertLatestUpdateMeta(db, { entity_type: 'scheme', entity_id: 'sch_1', is_pinned: 1, scope: 'National', is_exam: 1 });
   const listRes = await handleAdminLatestUpdates(new Request('https://csodisha.com/api/admin/latest-updates', { method: 'GET' }), env, actor);
   assert.equal(listRes.status, 200);
   const listData = await listRes.json();
@@ -344,7 +354,20 @@ await test('4. v337 Admin /api/admin/latest-updates pin, scope & unpublish immed
   assert.equal(listData.items[0].entity_id, 'sch_1');
   assert.equal(listData.items[0].is_pinned, true);
   assert.equal(listData.items[0].scope, 'National');
-  assert.ok(listData.items[0].filter_tags.includes('national'));
+  assert.equal(listData.items[0].is_exam, true);
+  assert.ok(listData.items[0].filter_tags.includes('national') && listData.items[0].filter_tags.includes('exams'));
+
+  // Untag exam via POST /api/admin/latest-updates action='untag_exam'
+  const untagRes = await handleAdminLatestUpdates(new Request('https://csodisha.com/api/admin/latest-updates', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'untag_exam', entity_type: 'scheme', entity_id: 'sch_1', is_pinned: 1, scope: 'National' })
+  }), env, actor);
+  assert.equal(untagRes.status, 200);
+  const feedAfterUntag = await buildPublicHomeFeed(env);
+  const schAfterUntag = feedAfterUntag.latest_updates.find((it) => it.entity_id === 'sch_1');
+  assert.equal(schAfterUntag.is_exam, false);
+  assert.equal(schAfterUntag.filter_tags.includes('exams'), false);
 
   // 1-click Unpublish job_1 removes it from homepage Latest Updates
   const unpubRes = await handleAdminLatestUpdates(new Request('https://csodisha.com/api/admin/latest-updates', {

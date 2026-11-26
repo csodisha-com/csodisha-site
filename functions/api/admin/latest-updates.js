@@ -55,16 +55,22 @@ export async function handleAdminLatestUpdates(request, env, actor, ctx = null) 
     const pinnedFlag = action === 'pin'
       ? 1
       : (action === 'unpin' ? 0 : (body.is_pinned ? 1 : 0));
+    const examArg = action === 'tag_exam'
+      ? 1
+      : (action === 'untag_exam' ? 0 : body.is_exam);
     const saved = await upsertLatestUpdateMeta(env.DB, {
       entity_type: entityType,
       entity_id: entityId,
       is_pinned: pinnedFlag,
-      scope: body.scope || 'Odisha'
+      scope: body.scope || 'Odisha',
+      is_exam: examArg,
+      category_tag: body.category_tag || ''
     });
     if (!saved.ok) throw new HttpError(400, 'VALIDATION_ERROR', saved.error || 'Failed to save Latest Updates metadata.');
     await audit(env, request, actor, `latest_updates.${action}`, entityType, entityId, {
       is_pinned: saved.is_pinned,
-      scope: saved.scope
+      scope: saved.scope,
+      is_exam: saved.is_exam
     });
     return json({ ok: true, item: saved }, 200, { 'Cache-Control': 'no-store' });
   }

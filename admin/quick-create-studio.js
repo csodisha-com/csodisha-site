@@ -614,6 +614,14 @@
     var pinLbl = el('label', 'cso-qc-check cso-qc-lu-pin-lbl');
     pinLbl.append(chkPin, el('span', '', '\uD83D\uDCCC Pin to Homepage Latest Updates'));
 
+    var chkExam = el('input');
+    chkExam.type = 'checkbox';
+    chkExam.id = cfg.examId || ('qcLuExam_' + Math.random().toString(36).slice(2, 6));
+    chkExam.checked = Boolean(cfg.defaultExam);
+
+    var examLbl = el('label', 'cso-qc-check cso-qc-lu-exam-lbl');
+    examLbl.append(chkExam, el('span', '', '\uD83D\uDCDD Exams Tag'));
+
     var scopeWrap = el('label', 'cso-qc-lu-scope-wrap');
     scopeWrap.appendChild(el('span', 'cso-qc-label', 'Homepage Scope'));
     var selScope = el('select', 'cso-qc-select cso-qc-lu-scope-sel');
@@ -624,7 +632,7 @@
     selScope.value = cfg.defaultScope === 'National' ? 'National' : 'Odisha';
     scopeWrap.appendChild(selScope);
 
-    box.append(pinLbl, scopeWrap);
+    box.append(pinLbl, examLbl, scopeWrap);
 
     function syncMeta(entityType, entityId) {
       var cleanId = String(entityId || '').trim();
@@ -636,6 +644,7 @@
           entity_type: entityType,
           entity_id: cleanId,
           is_pinned: chkPin.checked ? 1 : 0,
+          is_exam: chkExam.checked ? 1 : 0,
           scope: selScope.value || 'Odisha'
         }
       }).catch(function () { return null; });
@@ -644,8 +653,10 @@
     return {
       node: box,
       chkPin: chkPin,
+      chkExam: chkExam,
       selScope: selScope,
       isPinned: function () { return chkPin.checked; },
+      isExam: function () { return chkExam.checked; },
       getScope: function () { return selScope.value || 'Odisha'; },
       setScope: function (v) { selScope.value = v === 'National' ? 'National' : 'Odisha'; },
       syncMeta: syncMeta
@@ -657,6 +668,8 @@
     var studio = window.CSOStudio || {};
     if (it.entity_type === 'job' && studio.openJobsPublishingTab) {
       studio.openJobsPublishingTab('articles');
+    } else if (it.entity_type === 'mock_test' && studio.openQuickCreateRoute) {
+      studio.openQuickCreateRoute('mock-tests/new');
     } else if (it.entity_type === 'career' && studio.openCareersPublishingTab) {
       studio.openCareersPublishingTab('list');
     } else if (it.entity_type === 'scheme' && studio.openSchemesPublishingTab) {
@@ -700,6 +713,7 @@
             var topLine = el('div', 'cso-qc-lu-badges');
             topLine.appendChild(el('span', 'cso-qc-badge', it.badge_type || 'UPDATE'));
             topLine.appendChild(el('span', 'cso-qc-badge', it.scope || 'Odisha'));
+            if (it.is_exam) topLine.appendChild(el('span', 'cso-qc-badge', '\uD83D\uDCDD Exams'));
             if (it.is_pinned) topLine.appendChild(el('span', 'cso-qc-badge cso-qc-badge--pin', '\uD83D\uDCCC Pinned'));
             info.appendChild(topLine);
             info.appendChild(el('strong', 'cso-qc-lu-title', it.title_en || 'Untitled'));
@@ -716,7 +730,8 @@
                   action: it.is_pinned ? 'unpin' : 'pin',
                   entity_type: it.entity_type,
                   entity_id: it.entity_id,
-                  scope: it.scope || 'Odisha'
+                  scope: it.scope || 'Odisha',
+                  is_exam: it.is_exam ? 1 : 0
                 }
               }).then(function () {
                 toast(it.is_pinned ? 'Unpinned from top of Latest Updates.' : 'Pinned to top of Latest Updates!', 'ok');
@@ -724,6 +739,29 @@
               }).catch(function (e) {
                 toast(e.message || 'Pin update failed.', 'crimson');
                 btnPin.disabled = false;
+              });
+            });
+
+            var btnExam = el('button', 'cso-qc-btn', it.is_exam ? '\u2713 Exams' : '+ Exams');
+            btnExam.type = 'button';
+            btnExam.addEventListener('click', function () {
+              btnExam.disabled = true;
+              apiFetch('/api/admin/latest-updates', {
+                method: 'POST',
+                body: {
+                  action: it.is_exam ? 'untag_exam' : 'tag_exam',
+                  entity_type: it.entity_type,
+                  entity_id: it.entity_id,
+                  is_pinned: it.is_pinned ? 1 : 0,
+                  scope: it.scope || 'Odisha',
+                  is_exam: it.is_exam ? 0 : 1
+                }
+              }).then(function () {
+                toast(it.is_exam ? 'Removed Exams tag & purged homepage cache.' : 'Tagged under Exams tab & purged homepage cache!', 'ok');
+                loadLiveFeed();
+              }).catch(function (e) {
+                toast(e.message || 'Exams tag update failed.', 'crimson');
+                btnExam.disabled = false;
               });
             });
 
@@ -739,6 +777,7 @@
                   entity_type: it.entity_type,
                   entity_id: it.entity_id,
                   is_pinned: it.is_pinned ? 1 : 0,
+                  is_exam: it.is_exam ? 1 : 0,
                   scope: nextScope
                 }
               }).then(function () {
@@ -775,7 +814,7 @@
               });
             });
 
-            acts.append(btnPin, btnScope, btnEdit, btnUnpub);
+            acts.append(btnPin, btnExam, btnScope, btnEdit, btnUnpub);
             row.append(info, acts);
             listHost.appendChild(row);
           });
@@ -1705,8 +1744,10 @@
           return { testId: testId, slug: finalSlug, imported: (imp && imp.imported) || queuedQuestions.length };
         });
       }).then(function (done) {
+        return luCtrl.syncMeta('mock_test', done.testId || done.slug).then(function () { return done; });
+      }).then(function (done) {
         statusEl.textContent = statusVal === 'published'
-          ? '\u2713 Published Mock Test live at /mock-tests/?test=' + encodeURIComponent(done.slug) + ' (' + done.imported + ' Qs)'
+          ? '\u2713 Published Mock Test live at /mock-tests/?test=' + encodeURIComponent(done.slug) + ' (' + done.imported + ' Qs, Exams tab synced)'
           : '\u2713 Mock Test draft saved (' + done.imported + ' Qs)';
         toast(statusVal === 'published' ? 'CBT Mock Test published live!' : 'Mock Test draft saved!', 'ok');
         queuedQuestions = [];
@@ -1751,7 +1792,7 @@
       makeField('Duration (Minutes)', inDur),
       makeField('Negative Marking', inNeg)
     );
-    var luCtrl = createLatestUpdatesControls({ pinId: 'qcMockLuPin', scopeId: 'qcMockLuScope', defaultScope: 'Odisha' });
+    var luCtrl = createLatestUpdatesControls({ pinId: 'qcMockLuPin', examId: 'qcMockLuExam', scopeId: 'qcMockLuScope', defaultScope: 'Odisha', defaultExam: true });
     selCat.addEventListener('change', function () {
       luCtrl.setScope(/ugc|ctet|ssc|rrb|central|national/i.test(selCat.value) ? 'National' : 'Odisha');
     });
@@ -2067,7 +2108,7 @@
       makeField('Bilingual Description (English)', taDescEn, { full: true }),
       makeField('Bilingual Description (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', taDescOr, { full: true, actionEl: createOdiaTranslateBtn({ getSource: function () { return taDescEn.value; }, targetInput: taDescOr }) })
     );
-    var luCtrl = createLatestUpdatesControls({ pinId: 'qcSylLuPin', scopeId: 'qcSylLuScope', defaultScope: 'Odisha' });
+    var luCtrl = createLatestUpdatesControls({ pinId: 'qcSylLuPin', examId: 'qcSylLuExam', scopeId: 'qcSylLuScope', defaultScope: 'Odisha', defaultExam: true });
     card.appendChild(g);
     card.appendChild(luCtrl.node);
     built.shell.appendChild(card);

@@ -2598,7 +2598,13 @@ function lu(){
   if(window.__CSO_LU_HYDRATED__)return;
   $$('.lu .it,.lu .em').forEach(x=>x.remove());
   const activeCat=String(cat||'All').trim().toLowerCase();
-  const L=csoPublishedUpdates().filter(u=>activeCat==='all'||!activeCat||String(u.cat||'').trim().toLowerCase()===activeCat).slice(0,5);
+  const L=csoPublishedUpdates().filter(u=>{
+    if(activeCat==='all'||!activeCat)return true;
+    if(activeCat==='exams'){
+      return String(u.cat||'').trim().toLowerCase()==='exams'||String(u.tag||'').toUpperCase()==='EXAM'||/exam|admit|result|answer|syllabus|pyq|mock|opsc|ossc|osssc|otet|osstet|ctet|ugc|oavs/i.test(String(u.title||''));
+    }
+    return String(u.cat||'').trim().toLowerCase()===activeCat;
+  }).slice(0,5);
   const html=L.map(u=>{
     const tagMod=u.tag==='SCHEME'?'tg--scheme':u.tag==='EDUCATION'?'tg--edu':u.tag==='GUIDE'?'tg--guide':'';
     const linkHtml=u.article_href

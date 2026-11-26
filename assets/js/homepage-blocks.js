@@ -97,6 +97,7 @@
       node.type = 'button';
       node.setAttribute('role', 'tab');
       node.setAttribute('data-tab', tabKey);
+      node.setAttribute('data-filter', tabKey);
       node.setAttribute('data-category', canonicalCat);
       node.setAttribute('aria-selected', 'false');
       node.setAttribute('aria-pressed', 'false');
@@ -231,6 +232,12 @@
       var hasAll = tabNodes.some(function (n) { return n.getAttribute('data-tab') === 'all'; });
       if (!hasAll) {
         tabNodes.unshift(createNode('latest_updates_tabs', { id: 'hb_latest_updates_tabs_01', title_en: 'All', title_or: 'ସମସ୍ତ' }, lang));
+      }
+      var hasExams = tabNodes.some(function (n) { return n.getAttribute('data-tab') === 'exams'; });
+      if (!hasExams) {
+        var jobsIdx = tabNodes.findIndex(function (n) { return n.getAttribute('data-tab') === 'jobs'; });
+        var examsBtn = createNode('latest_updates_tabs', { id: 'hb_latest_updates_tabs_exams', title_en: 'Exams', title_or: 'ପରୀକ୍ଷା' }, lang);
+        tabNodes.splice(jobsIdx >= 0 ? jobsIdx + 1 : 1, 0, examsBtn);
       }
       if (tabNodes.length) {
         tabNodes[0].className = 'a';

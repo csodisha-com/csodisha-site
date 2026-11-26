@@ -410,7 +410,7 @@ export async function buildPublicHomeFeed(env) {
   if (!db) {
     return {
       ok: true,
-      version: 'v337',
+      version: 'v338',
       generated_at: new Date().toISOString(),
       broadcast: { active: false },
       latest_updates: [],
@@ -425,7 +425,7 @@ export async function buildPublicHomeFeed(env) {
 
   const [broadcast, latest_updates, jobs, current_affairs, mock_tests, syllabus_pyq, careers, schemes] = await Promise.all([
     fetchBroadcast(env),
-    buildUnifiedLatestUpdates(db, { limit: 15 }),
+    buildUnifiedLatestUpdates(db, { limit: 18 }),
     fetchLatestJobs(db),
     fetchLatestCurrentAffairs(db),
     fetchLatestMockTests(db),
@@ -436,7 +436,7 @@ export async function buildPublicHomeFeed(env) {
 
   return {
     ok: true,
-    version: 'v337',
+    version: 'v338',
     generated_at: new Date().toISOString(),
     broadcast,
     latest_updates,

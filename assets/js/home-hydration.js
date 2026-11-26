@@ -336,6 +336,7 @@
 
   var LU_BADGE_CLASS = {
     JOB: 'cso-lu-badge cso-lu-badge--job',
+    EXAM: 'cso-lu-badge cso-lu-badge--exam',
     SCHEME: 'cso-lu-badge cso-lu-badge--scheme',
     STUDY: 'cso-lu-badge cso-lu-badge--study',
     'CURRENT AFFAIRS': 'cso-lu-badge cso-lu-badge--ca',
@@ -348,6 +349,20 @@
       return feed.latest_updates;
     }
     var fallback = [];
+    (feed && feed.mock_tests || []).slice(0, 2).forEach(function (m) {
+      fallback.push({
+        id: 'mock_test:' + (m.id || m.slug),
+        title_en: m.title_en,
+        title_or: m.title_or,
+        url: m.href || '/mock-tests/',
+        badge_type: 'EXAM',
+        filter_tags: ['all', 'exams', 'education', 'odisha'],
+        meta_line: [m.exam_category || 'CBT Mock Test', (m.duration_minutes ? (m.duration_minutes + ' min') : '') + (m.question_count ? (' • ' + m.question_count + ' Qs') : '')].filter(Boolean).join(' • '),
+        cta_label: 'Start Test →',
+        is_external: false,
+        is_pinned: false
+      });
+    });
     (feed && feed.jobs || []).slice(0, 3).forEach(function (j) {
       fallback.push({
         id: 'job:' + (j.id || j.slug),
@@ -355,7 +370,7 @@
         title_or: j.title_or,
         url: j.href || ('/jobs/' + encodeURIComponent(j.slug || '')),
         badge_type: 'JOB',
-        filter_tags: ['all', 'jobs', 'odisha'],
+        filter_tags: ['all', 'jobs', 'exams', 'odisha'],
         meta_line: [j.organisation_en || j.category || 'Odisha Govt', j.last_date ? ('Last Date: ' + formatShortDate(j.last_date)) : (j.district || 'All Odisha')].filter(Boolean).join(' • '),
         cta_label: 'View Job →',
         is_external: false,
@@ -423,11 +438,23 @@
     if (viewAllEl) viewAllEl.textContent = isOr ? 'ସବୁ ଦେଖନ୍ତୁ →' : 'View All →';
 
     var labels = isOr
-      ? { all: 'ସମସ୍ତ', jobs: 'ଚାକିରି', schemes: 'ଯୋଜନା', education: 'ଶିକ୍ଷା', odisha: 'ଓଡ଼ିଶା', national: 'ଜାତୀୟ' }
-      : { all: 'All', jobs: 'Jobs', schemes: 'Schemes', education: 'Education', odisha: 'Odisha', national: 'National' };
+      ? { all: 'ସମସ୍ତ', jobs: 'ଚାକିରି', exams: 'ପରୀକ୍ଷା', schemes: 'ଯୋଜନା', education: 'ଶିକ୍ଷା', odisha: 'ଓଡ଼ିଶା', national: 'ଜାତୀୟ' }
+      : { all: 'All', jobs: 'Jobs', exams: 'Exams', schemes: 'Schemes', education: 'Education', odisha: 'Odisha', national: 'National' };
     panel.querySelectorAll('.tabs button').forEach(function (btn) {
-      var tabKey = String(btn.getAttribute('data-tab') || btn.getAttribute('data-category') || 'all').toLowerCase();
+      var tabKey = String(btn.getAttribute('data-filter') || btn.getAttribute('data-tab') || btn.getAttribute('data-category') || 'all').toLowerCase();
       if (labels[tabKey]) btn.textContent = labels[tabKey];
+    });
+  }
+
+  function filterStaticFallbackLuItems(tabKey) {
+    var listHost = document.getElementById('cso-lu-list');
+    if (!listHost) return;
+    var cards = listHost.querySelectorAll('.cso-lu-fallback');
+    if (!cards.length) return;
+    cards.forEach(function (card) {
+      var tags = String(card.getAttribute('data-tags') || 'all').toLowerCase().split(/\s+/);
+      var visible = !tabKey || tabKey === 'all' || tags.indexOf(tabKey) !== -1;
+      card.hidden = !visible;
     });
   }
 
@@ -443,14 +470,18 @@
       if (!btn || !tabBar.contains(btn)) return;
       ev.preventDefault();
       ev.stopImmediatePropagation();
-      activeLuTab = String(btn.getAttribute('data-tab') || btn.getAttribute('data-category') || 'all').toLowerCase();
+      activeLuTab = String(btn.getAttribute('data-filter') || btn.getAttribute('data-tab') || btn.getAttribute('data-category') || 'all').toLowerCase();
       tabBar.querySelectorAll('button').forEach(function (b) {
         var isAct = b === btn;
         b.classList.toggle('a', isAct);
         b.setAttribute('aria-selected', String(isAct));
         b.setAttribute('aria-pressed', String(isAct));
       });
-      if (lastFeed) renderLatestUpdatesPanel(lastFeed);
+      if (lastFeed && getLatestUpdatesItems(lastFeed).length) {
+        renderLatestUpdatesPanel(lastFeed);
+      } else {
+        filterStaticFallbackLuItems(activeLuTab);
+      }
     }, true);
 
     tabBar.addEventListener('keydown', function (ev) {
@@ -493,6 +524,11 @@
     });
 
     if (!filtered.length) {
+      // If D1 returned 0 items total, keep static fallback cards visible & filtered
+      if (!items.length && listHost.querySelector('.cso-lu-fallback')) {
+        filterStaticFallbackLuItems(activeLuTab);
+        return;
+      }
       var emptyMsg = items.length
         ? (isOr ? 'ଏହି ବର୍ଗରେ ଏବେ କୌଣସି ପ୍ରକାଶିତ ଅପଡେଟ୍ ନାହିଁ।' : 'No published updates in this tab yet — check All or other sections.')
         : (isOr ? 'ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ଅପଡେଟ୍ ପ୍ରକାଶିତ ହୋଇନାହିଁ।' : 'No items published yet — publish content in Admin Studio.');
@@ -692,6 +728,8 @@
   function init() {
     removeOpportunityCompass();
     localizeHeroCopy();
+    bindLatestUpdatesTabs();
+    localizeLuTabLabels();
     mountHomeFeed(false);
     hydrateHomepageConfig();
     bindLiveEvents();

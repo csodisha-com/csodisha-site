@@ -11880,6 +11880,12 @@ nav#cso-hub-top-tabs {
   border-color: var(--cso-accent);
 }
 
+.cso-lu-badge--exam {
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
+  border-color: var(--cso-warn-border, var(--cso-accent));
+}
+
 .cso-lu-badge--scheme {
   background: var(--cso-ok-bg);
   color: var(--cso-ok-fg);
@@ -11971,8 +11977,20 @@ nav#cso-hub-top-tabs {
   line-height: 1.35;
 }
 
-@media (max-width: 640px) {
+.cso-lu-item[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 767px) {
+  .cso-lu-card .cso-lu-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 4px;
+  }
   .cso-lu-card .cso-lu-tabs button {
+    flex: 0 0 auto;
     min-height: 44px;
     padding: 8px 12px;
   }

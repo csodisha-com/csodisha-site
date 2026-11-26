@@ -1277,6 +1277,10 @@
 
     var sb = statusBlock(isNew ? null : item); left.appendChild(sb.node);
     var luPinChk = el('input', { type: 'checkbox', id: 'f-lu-pin' });
+    var luExamChk = el('input', { type: 'checkbox', id: 'f-lu-exam' });
+    if (/exam|admit|result|answer|syllabus|pyq|opsc|ossc|osssc|otet|osstet|ctet|ugc|oavs|b\.?ed/i.test(String((item.title || '') + ' ' + (item.category || '')))) {
+      luExamChk.checked = true;
+    }
     var luScopeSel = el('select', { id: 'f-lu-scope' }, [
       el('option', { value: 'Odisha', text: 'Odisha' }),
       el('option', { value: 'National', text: 'National' })
@@ -1286,6 +1290,10 @@
       el('label', { class: 'check-row', for: 'f-lu-pin' }, [
         luPinChk,
         el('span', { text: '📌 Pin to Homepage Latest Updates' })
+      ]),
+      el('label', { class: 'check-row', for: 'f-lu-exam' }, [
+        luExamChk,
+        el('span', { text: '📝 Exams Tag' })
       ]),
       el('label', { class: 'cso-qc-lu-scope-wrap', for: 'f-lu-scope' }, [
         el('span', { text: 'Homepage Scope' }),
@@ -1390,6 +1398,7 @@
             entity_type: 'post',
             entity_id: String(savedPostId),
             is_pinned: luPinChk && luPinChk.checked ? 1 : 0,
+            is_exam: luExamChk && luExamChk.checked ? 1 : 0,
             scope: luScopeSel ? luScopeSel.value : 'Odisha'
           }).catch(function () {});
         }
@@ -10151,6 +10160,7 @@
               entity_type: 'post',
               entity_id: String(luTargetId),
               is_pinned: luPinCb.checked ? 1 : 0,
+              is_exam: luExamCb.checked ? 1 : 0,
               scope: luScopeSelect.value || 'Odisha'
             }).catch(function () {});
           }
@@ -10175,6 +10185,8 @@
 
       var luPinCb = el('input', { type: 'checkbox' });
       luPinCb.checked = Boolean(isEdit && editing && editing.is_featured);
+      var luExamCb = el('input', { type: 'checkbox' });
+      luExamCb.checked = Boolean(isEdit && editing && /exam|opsc|ossc|osssc|otet|osstet|ctet|ugc|admit|result|syllabus|pyq/i.test(String((editing.title || '') + ' ' + (editing.exam_relevance || ''))));
       var luScopeSelect = el('select', {}, [
         el('option', { value: 'Odisha', text: 'Odisha' }),
         el('option', { value: 'National', text: 'National' })
@@ -10200,6 +10212,7 @@
           el('div', { class: 'field' }, [el('label', { text: 'Exam Relevance (OPSC/OSSSC/OSSC)' }), examInp]),
           el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Feature in Priority Slot')])]),
           el('div', { class: 'field' }, [el('label', {}, [luPinCb, document.createTextNode(' 📌 Pin to Homepage Latest Updates')])]),
+          el('div', { class: 'field' }, [el('label', {}, [luExamCb, document.createTextNode(' 📝 Exams Tag (Show under Exams tab)')])]),
           el('div', { class: 'field' }, [el('label', { text: 'Homepage Scope (Odisha / National)' }), luScopeSelect])
         ]),
         el('div', { class: 'field' }, [
