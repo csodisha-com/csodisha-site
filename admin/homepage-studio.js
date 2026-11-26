@@ -8,6 +8,21 @@
   'use strict';
 
   var API = '/api/admin/homepage-blocks';
+  var TRENDING_API = '/api/admin/trending-topics';
+  var TRENDING_ICONS = [
+    ['jobs', 'Jobs (Briefcase)'],
+    ['exams', 'Exams (Grad Cap)'],
+    ['schemes', 'Scholarships (Medal)'],
+    ['study', 'Study Materials (Book)'],
+    ['career', 'Career Paths (Compass)'],
+    ['odisha', 'Odisha Special (Star)']
+  ];
+  var TRENDING_BADGES = [
+    ['', 'No Highlight Pill'],
+    ['HOT', 'HOT'],
+    ['2026', '2026'],
+    ['NEW', 'NEW']
+  ];
   var MODULE_ID = 'module-homepage-studio';
   var SECTION_META = [
     { key: 'popular_searches', label: 'Popular Searches', hint: 'Quick-filter chips under the hero search box.', accents: [] },
@@ -26,7 +41,8 @@
 
   var state = {
     items: [], stats: null, tab: 'all', query: '', status: 'all',
-    selected: new Set(), editing: null, previewLang: 'en', root: null, refs: {}, busy: false
+    selected: new Set(), editing: null, previewLang: 'en', root: null, refs: {}, busy: false,
+    trendingTopics: [], trendingBusy: false, trendingCustom: false, trendingUpdatedAt: null
   };
 
   function el(tag, cls, text) {
@@ -480,6 +496,308 @@
     mutate(api('/bulk', 'POST', { ids: ids, action: action }), 'Bulk ' + action + ' complete');
   }
 
+  // ---------- v367 Trending & Popular Topics Live D1 Editor ----------
+  function notifyTrendingHomepageSync() {
+    try { localStorage.setItem('cso_home_feed_bust', String(Date.now())); } catch (_) {}
+    if (typeof window.BroadcastChannel === 'function') {
+      try {
+        var ch = new BroadcastChannel('cso-publish-sync');
+        ch.postMessage({ type: 'published', source: 'trending_topics', ts: Date.now() });
+        ch.close();
+      } catch (_) {}
+    }
+  }
+
+  function trendingApi(path, method, body) {
+    var opts = { method: method || 'GET', credentials: 'same-origin', headers: { 'X-CSO-CSRF': '1' } };
+    if (body !== undefined) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    }
+    return fetch(TRENDING_API + (path || ''), opts).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) throw new Error((d && (d.message || d.error)) || ('HTTP ' + r.status));
+        return d;
+      });
+    });
+  }
+
+  function setTrendingStatus(msg, kind) {
+    if (!state.refs.ttStatus) return;
+    state.refs.ttStatus.textContent = msg || '';
+    state.refs.ttStatus.className = 'hs-tt-status' + (kind ? ' is-' + kind : '');
+  }
+
+  function loadTrendingTopics() {
+    setTrendingStatus('Loading live D1 trending topics...', 'info');
+    return trendingApi('', 'GET').then(function (d) {
+      state.trendingTopics = Array.isArray(d.topics) ? d.topics : [];
+      state.trendingCustom = Boolean(d.is_custom);
+      state.trendingUpdatedAt = d.updated_at || null;
+      renderTrendingEditor();
+      setTrendingStatus(
+        state.trendingCustom
+          ? 'Custom D1 configuration active (' + state.trendingTopics.length + ' topics)'
+          : 'Default 6 topics active with live D1 counts',
+        'ok'
+      );
+    }).catch(function (e) {
+      setTrendingStatus('Could not load trending topics: ' + (e.message || 'error'), 'err');
+    });
+  }
+
+  function saveTrendingTopics() {
+    if (state.trendingBusy) return;
+    state.trendingBusy = true;
+    setTrendingStatus('Saving to D1 & purging public homepage cache...', 'info');
+    var payload = state.trendingTopics.map(function (t, idx) {
+      return {
+        id: String(t.id || ('topic-' + (idx + 1))),
+        title_en: String(t.title_en || '').trim(),
+        title_or: String(t.title_or || '').trim(),
+        subtitle_en: String(t.subtitle_en || '').trim(),
+        subtitle_or: String(t.subtitle_or || '').trim(),
+        href: String(t.href || '/guides/').trim(),
+        icon: String(t.icon || 'jobs'),
+        badge_text: String(t.badge_text || '').trim().toUpperCase(),
+        sort_order: idx + 1,
+        enabled: t.enabled !== false
+      };
+    });
+    trendingApi('', 'PUT', { topics: payload }).then(function (d) {
+      state.trendingTopics = Array.isArray(d.topics) ? d.topics : payload;
+      state.trendingCustom = Boolean(d.is_custom);
+      state.trendingUpdatedAt = d.updated_at || null;
+      notifyTrendingHomepageSync();
+      renderTrendingEditor();
+      setTrendingStatus('Saved to D1 & edge cache purged live!', 'ok');
+      toast('Trending & Popular Topics saved (D1 + Edge Cache purged)', 'ok');
+    }).catch(function (e) {
+      setTrendingStatus('Save failed: ' + (e.message || 'error'), 'err');
+      toast(e.message || 'Failed to save trending topics', 'crimson');
+    }).then(function () {
+      state.trendingBusy = false;
+    });
+  }
+
+  function resetTrendingTopics() {
+    if (state.trendingBusy) return;
+    if (!window.confirm('Reset Trending & Popular Topics to the default 6 Odisha topics?')) return;
+    state.trendingBusy = true;
+    setTrendingStatus('Resetting to default 6 topics...', 'info');
+    trendingApi('', 'PUT', { reset: true }).then(function (d) {
+      state.trendingTopics = Array.isArray(d.topics) ? d.topics : [];
+      state.trendingCustom = false;
+      state.trendingUpdatedAt = d.updated_at || null;
+      notifyTrendingHomepageSync();
+      renderTrendingEditor();
+      setTrendingStatus('Reset to default 6 topics & public cache purged.', 'ok');
+      toast('Trending Topics reset to Default 6 Topics', 'ok');
+    }).catch(function (e) {
+      setTrendingStatus('Reset failed: ' + (e.message || 'error'), 'err');
+      toast(e.message || 'Reset failed', 'crimson');
+    }).then(function () {
+      state.trendingBusy = false;
+    });
+  }
+
+  function buildTrendingField(labelText, inputEl) {
+    var box = el('label', 'hs-tt-field');
+    box.appendChild(el('span', 'hs-tt-label', labelText));
+    box.appendChild(inputEl);
+    return box;
+  }
+
+  function renderTrendingEditor() {
+    var list = state.refs.ttList;
+    if (!list) return;
+    clear(list);
+    if (!state.trendingTopics.length) {
+      list.appendChild(el('p', 'hs-muted', 'No trending topics loaded yet.'));
+      return;
+    }
+
+    state.trendingTopics.forEach(function (topic, idx) {
+      var card = el('div', 'hs-tt-item' + (topic.enabled === false ? ' is-disabled' : ''));
+      var top = el('div', 'hs-tt-item__head');
+
+      var headLeft = el('div', 'hs-tt-item__left');
+      headLeft.appendChild(el('span', 'hs-tt-rank cso-tabular', '#' + (idx + 1)));
+      headLeft.appendChild(el('strong', 'hs-tt-item__title', topic.title_en || 'Untitled Topic'));
+      var cnt = Number(topic.item_count || 0) || 0;
+      headLeft.appendChild(el('span', 'hs-pill cso-tabular', cnt + ' live in D1'));
+      top.appendChild(headLeft);
+
+      var headRight = el('div', 'hs-tt-item__actions');
+      var sw = el('label', 'hs-switch');
+      var chk = el('input', '');
+      chk.type = 'checkbox';
+      chk.checked = topic.enabled !== false;
+      chk.setAttribute('aria-label', 'Enable ' + (topic.title_en || 'topic'));
+      chk.addEventListener('change', function () {
+        topic.enabled = chk.checked;
+        card.classList.toggle('is-disabled', !topic.enabled);
+      });
+      sw.appendChild(chk);
+      sw.appendChild(el('span', 'hs-switch__track'));
+      sw.appendChild(el('span', '', 'Show'));
+      headRight.appendChild(sw);
+
+      headRight.appendChild(iconBtn('\u2191', 'Move up', function () {
+        if (idx <= 0) return;
+        var tmp = state.trendingTopics[idx - 1];
+        state.trendingTopics[idx - 1] = state.trendingTopics[idx];
+        state.trendingTopics[idx] = tmp;
+        renderTrendingEditor();
+      }, idx === 0));
+
+      headRight.appendChild(iconBtn('\u2193', 'Move down', function () {
+        if (idx >= state.trendingTopics.length - 1) return;
+        var tmp = state.trendingTopics[idx + 1];
+        state.trendingTopics[idx + 1] = state.trendingTopics[idx];
+        state.trendingTopics[idx] = tmp;
+        renderTrendingEditor();
+      }, idx === state.trendingTopics.length - 1));
+
+      if (state.trendingTopics.length > 1) {
+        headRight.appendChild(iconBtn('\u2715', 'Remove topic', function () {
+          state.trendingTopics.splice(idx, 1);
+          renderTrendingEditor();
+        }, false, 'is-danger'));
+      }
+      top.appendChild(headRight);
+      card.appendChild(top);
+
+      var grid = el('div', 'hs-tt-grid');
+
+      var inTitleEn = el('input', 'cso-form-input');
+      inTitleEn.type = 'text';
+      inTitleEn.value = topic.title_en || '';
+      inTitleEn.placeholder = 'Jobs & Recruitment';
+      inTitleEn.addEventListener('input', function () { topic.title_en = inTitleEn.value; });
+      grid.appendChild(buildTrendingField('Title (English)', inTitleEn));
+
+      var inTitleOr = el('input', 'cso-form-input');
+      inTitleOr.type = 'text';
+      inTitleOr.value = topic.title_or || '';
+      inTitleOr.placeholder = 'ଚାକିରି ଓ ନିଯୁକ୍ତି';
+      inTitleOr.addEventListener('input', function () { topic.title_or = inTitleOr.value; });
+      grid.appendChild(buildTrendingField('Title (ଓଡ଼ିଆ)', inTitleOr));
+
+      var inSubEn = el('input', 'cso-form-input');
+      inSubEn.type = 'text';
+      inSubEn.value = topic.subtitle_en || '';
+      inSubEn.placeholder = 'Latest vacancies, state exams, notifications';
+      inSubEn.addEventListener('input', function () { topic.subtitle_en = inSubEn.value; });
+      grid.appendChild(buildTrendingField('Subtitle (English)', inSubEn));
+
+      var inSubOr = el('input', 'cso-form-input');
+      inSubOr.type = 'text';
+      inSubOr.value = topic.subtitle_or || '';
+      inSubOr.placeholder = 'ନୂଆ ନିଯୁକ୍ତି, ରାଜ୍ୟ ପରୀକ୍ଷା ଓ ବିଜ୍ଞପ୍ତି';
+      inSubOr.addEventListener('input', function () { topic.subtitle_or = inSubOr.value; });
+      grid.appendChild(buildTrendingField('Subtitle (ଓଡ଼ିଆ)', inSubOr));
+
+      var inHref = el('input', 'cso-form-input');
+      inHref.type = 'text';
+      inHref.value = topic.href || '/guides/';
+      inHref.placeholder = '/guides/?category=recruitment';
+      inHref.addEventListener('input', function () { topic.href = inHref.value; });
+      grid.appendChild(buildTrendingField('Destination URL', inHref));
+
+      var selIcon = el('select', 'cso-form-select');
+      TRENDING_ICONS.forEach(function (pair) {
+        var opt = el('option', '', pair[1]);
+        opt.value = pair[0];
+        if ((topic.icon || 'jobs') === pair[0]) opt.selected = true;
+        selIcon.appendChild(opt);
+      });
+      selIcon.addEventListener('change', function () { topic.icon = selIcon.value; });
+      grid.appendChild(buildTrendingField('Icon Accent', selIcon));
+
+      var selBadge = el('select', 'cso-form-select');
+      var curBadge = String(topic.badge_text || '').trim().toUpperCase();
+      var badgeOptions = TRENDING_BADGES.slice();
+      if (curBadge && !badgeOptions.some(function (p) { return p[0] === curBadge; })) {
+        badgeOptions.push([curBadge, curBadge]);
+      }
+      badgeOptions.forEach(function (pair) {
+        var opt = el('option', '', pair[1]);
+        opt.value = pair[0];
+        if (curBadge === pair[0]) opt.selected = true;
+        selBadge.appendChild(opt);
+      });
+      selBadge.addEventListener('change', function () { topic.badge_text = selBadge.value; });
+      grid.appendChild(buildTrendingField('Highlight Pill', selBadge));
+
+      card.appendChild(grid);
+      list.appendChild(card);
+    });
+  }
+
+  function buildTrendingEditorCard() {
+    var sec = el('section', 'cso-card studio-card hs-card hs-tt-card');
+    sec.id = 'hsTrendingTopicsEditor';
+    sec.setAttribute('aria-label', 'Trending & Popular Topics Editor');
+
+    var head = el('div', 'hs-tt-head');
+    var headText = el('div', '');
+    headText.appendChild(el('h3', 'hs-form__title', '🔥 Trending & Popular Topics Editor (Live D1 Counts & Bilingual EN / ଓଡ଼ିଆ)'));
+    headText.appendChild(el('p', 'hs-muted', 'Customize the 6 homepage topic cards, bilingual labels, destination filters (/guides/?category=...), highlight pills (HOT / 2026 / NEW), and order. Saved in D1 site_settings.'));
+    head.appendChild(headText);
+
+    var actions = el('div', 'hs-tt-actions');
+    var btnAdd = el('button', 'hs-btn', '+ Add Topic');
+    btnAdd.type = 'button';
+    btnAdd.addEventListener('click', function () {
+      if (state.trendingTopics.length >= 12) {
+        toast('Maximum 12 trending topics allowed', 'crimson');
+        return;
+      }
+      state.trendingTopics.push({
+        id: 'topic-' + (state.trendingTopics.length + 1),
+        title_en: 'New Topic',
+        title_or: '',
+        subtitle_en: 'Explore verified Odisha guides and resources',
+        subtitle_or: '',
+        href: '/guides/',
+        icon: 'jobs',
+        badge_text: 'NEW',
+        sort_order: state.trendingTopics.length + 1,
+        enabled: true,
+        item_count: 0
+      });
+      renderTrendingEditor();
+    });
+
+    var btnReset = el('button', 'hs-btn', '\u21BA Reset to Default 6 Topics');
+    btnReset.type = 'button';
+    btnReset.id = 'hsBtnResetTrendingTopics';
+    btnReset.addEventListener('click', resetTrendingTopics);
+
+    var btnSave = el('button', 'cso-btn-primary', 'Save Trending Topics');
+    btnSave.type = 'button';
+    btnSave.id = 'hsBtnSaveTrendingTopics';
+    btnSave.addEventListener('click', saveTrendingTopics);
+
+    actions.appendChild(btnAdd);
+    actions.appendChild(btnReset);
+    actions.appendChild(btnSave);
+    head.appendChild(actions);
+    sec.appendChild(head);
+
+    var statusEl = el('div', 'hs-tt-status', '');
+    statusEl.setAttribute('role', 'status');
+    statusEl.setAttribute('aria-live', 'polite');
+    state.refs.ttStatus = statusEl;
+    sec.appendChild(statusEl);
+
+    var listHost = el('div', 'hs-tt-list');
+    state.refs.ttList = listHost;
+    sec.appendChild(listHost);
+    return sec;
+  }
+
   function render(root, headerActions) {
     state.root = root;
     clear(root);
@@ -488,6 +806,8 @@
     var intro = el('div', 'hs-intro');
     intro.appendChild(el('p', '', 'Add, reorder, publish and monitor every homepage feature. Changes go live instantly and refresh public caches.'));
     wrap.appendChild(intro);
+
+    wrap.appendChild(buildTrendingEditorCard());
 
     state.refs.kpis = el('div', 'hs-kpis');
     wrap.appendChild(state.refs.kpis);
@@ -564,6 +884,7 @@
 
     renderForm();
     renderAll();
+    loadTrendingTopics();
     load().then(function () {
       renderAll();
       if (state.pendingEdit) {

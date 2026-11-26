@@ -570,10 +570,10 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
   await Promise.all(waits);
 });
 
-// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v361
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v366 CSS, and cso-candidate-cache-v366 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v366');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v366';"), 'sw.js cache version must be cso-candidate-cache-v366');
+// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v367
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v367 CSS, and cso-candidate-cache-v367 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v367');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v367';"), 'sw.js cache version must be cso-candidate-cache-v367');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -581,10 +581,12 @@ await check('6. Strict CSP compliance, zero hardcoded hex in v312/v366 CSS, and 
     'admin/system-ops.js',
     'admin/study-publishing-studio.js',
     'admin/guides-publishing-studio.js',
+    'admin/homepage-studio.js',
     'admin/studio-translator.js',
     'admin/candidate-hub-studio.js',
     'admin/admin.js',
     'admin/cms/login.js',
+    'assets/js/home-hydration.js',
     'assets/js/guides-portal.js',
     'assets/js/pages/support-desk.js',
     'assets/shared-header.js',
@@ -711,9 +713,9 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
   assert.ok(adminHtml.includes('id="headerTranslatorWrap"') && adminHtml.includes('id="btnHeaderOdiaTranslator"') && adminHtml.includes('aria-controls="csoHeaderTranslatorPopover"'), 'admin/index.html must pin #btnHeaderOdiaTranslator in the top header bar');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v366'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v366');
-  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v366'), 'admin/index.html must load studio-translator.js?v=20261126v366');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v366'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v367'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v367');
+  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v367'), 'admin/index.html must load studio-translator.js?v=20261126v367');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v367'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
@@ -830,7 +832,7 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   assert.ok(guidesCss.includes('.gp-detail-grid') && guidesCss.includes('grid-template-columns: 260px minmax(0, 1fr);') && guidesCss.includes('gap: 20px;') && guidesCss.includes('.gp-article-card'), 'assets/css/guides-portal.css must use edge-to-edge 260px + 1fr reading grid with 20px gap on desktop');
   assert.ok(guidesCss.includes('.gp-cover,') && guidesCss.includes('.gp-cover-frame') && guidesCss.includes('.gp-hero-media') && guidesCss.includes('overflow: hidden;') && guidesCss.includes('height: auto;') && guidesCss.includes('aspect-ratio: 16 / 9;') && guidesCss.includes('object-fit: contain;') && !guidesCss.includes('max-height: 440px;'), 'assets/css/guides-portal.css must enforce uncropped 16:9 height: auto + object-fit: contain on cover banners');
   assert.ok(guidesCss.includes('@media (max-width: 768px)') && guidesCss.includes('padding-inline: 8px;') && guidesCss.includes('padding: 14px 12px;'), 'assets/css/guides-portal.css must remove double side margins on mobile (<= 768px)');
-  assert.ok(guidesCss.includes('.gp-inline-figure img') && read('functions/_lib/informative-guides.js').includes('/assets/css/guides-portal.css?v=20261126v366'), 'Informative guides SSR must load guides-portal.css?v=20261126v366 and style .gp-inline-figure img');
+  assert.ok(guidesCss.includes('.gp-inline-figure img') && read('functions/_lib/informative-guides.js').includes('/assets/css/guides-portal.css?v=20261126v367'), 'Informative guides SSR must load guides-portal.css?v=20261126v367 and style .gp-inline-figure img');
   assert.ok(guidesCss.includes('.gp-takeaways') && guidesCss.includes('clear: both;') && guidesCss.includes('z-index: 1;'), 'assets/css/guides-portal.css must prevent .gp-cover overlap on .gp-takeaways');
   assert.ok(guidesCss.includes('.gp-body table tbody td') && guidesCss.includes('color: var(--gp-ink, var(--cso-ink)) !important;') && guidesCss.includes('opacity: 1 !important;'), 'assets/css/guides-portal.css must enforce high-contrast tbody td text');
   assert.ok(guidesCss.includes('.gp-table-wrap') && guidesCss.includes('border-radius: 12px;') && guidesCss.includes('position: sticky;'), 'assets/css/guides-portal.css must style .gp-table-wrap & sticky table headers');
@@ -1386,6 +1388,14 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   assert.deepEqual(artNode.inLanguage, ['en', 'or']);
   assert.deepEqual(artNode.image, [expectedRasterOg]);
   assert.ok(faqNode && faqNode.mainEntity.length === 1 && faqNode.mainEntity[0].name.includes('negative marking'));
+
+  // 4. v367 Admin Studio Trending & Popular Topics Editor wiring & RBAC route protection
+  const hsJs = read('admin/homepage-studio.js');
+  const routerJs = read('functions/api/admin/_router.js');
+  const adminHtmlV367 = read('admin/index.html');
+  assert.ok(hsJs.includes("var TRENDING_API = '/api/admin/trending-topics';") && hsJs.includes('hsTrendingTopicsEditor') && hsJs.includes('Reset to Default 6 Topics'), 'admin/homepage-studio.js must mount v367 Trending & Popular Topics Editor');
+  assert.ok(routerJs.includes("if (resource === 'trending-topics')") && routerJs.includes('handleAdminTrendingTopicsApi'), 'functions/api/admin/_router.js must protect /api/admin/trending-topics with RBAC');
+  assert.ok(adminHtmlV367.includes('/admin/homepage-studio.js?v=20261126v367') && adminHtmlV367.includes('/admin/homepage-studio.css?v=20261126v367'), 'admin/index.html must cache-bust homepage-studio assets to v367');
   await Promise.all(waits);
 });
 

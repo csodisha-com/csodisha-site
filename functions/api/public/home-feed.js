@@ -17,6 +17,7 @@ import { json } from '../../_lib/http.js';
 import { readBanner, readHomeSections, defaultHomeSections } from '../admin/_site.js';
 import { ensureMockTestsV312Schema, formatMockTestRow } from '../admin/mock-tests.js';
 import { buildUnifiedLatestUpdates } from '../../_lib/latest-updates.js';
+import { buildTrendingTopicsFeed, DEFAULT_TRENDING_TOPICS } from '../../_lib/trending-topics.js';
 
 export const HOME_FEED_CACHE_CONTROL = 'public, max-age=60, s-maxage=120, stale-while-revalidate=180';
 
@@ -445,11 +446,12 @@ export async function buildPublicHomeFeed(env) {
   if (!db) {
     return {
       ok: true,
-      version: 'v341',
+      version: 'v367',
       generated_at: new Date().toISOString(),
       broadcast: { active: false },
       nav_header: [],
       section_visibility: defaultHomeSections(),
+      trending_topics: DEFAULT_TRENDING_TOPICS.map((t) => ({ ...t, item_count: 0 })),
       latest_updates: [],
       jobs: [],
       current_affairs: [],
@@ -460,10 +462,11 @@ export async function buildPublicHomeFeed(env) {
     };
   }
 
-  const [broadcast, nav_header, homeSections, latest_updates, jobs, current_affairs, mock_tests, syllabus_pyq, careers, schemes] = await Promise.all([
+  const [broadcast, nav_header, homeSections, trending_topics, latest_updates, jobs, current_affairs, mock_tests, syllabus_pyq, careers, schemes] = await Promise.all([
     fetchBroadcast(env),
     fetchNavHeader(db),
     readHomeSections(env).catch(() => ({ sections: defaultHomeSections() })),
+    buildTrendingTopicsFeed(env).catch(() => DEFAULT_TRENDING_TOPICS.map((t) => ({ ...t, item_count: 0 }))),
     buildUnifiedLatestUpdates(db, { limit: 18 }),
     fetchLatestJobs(db),
     fetchLatestCurrentAffairs(db),
@@ -475,11 +478,12 @@ export async function buildPublicHomeFeed(env) {
 
   return {
     ok: true,
-    version: 'v341',
+    version: 'v367',
     generated_at: new Date().toISOString(),
     broadcast,
     nav_header,
     section_visibility: (homeSections && homeSections.sections) || defaultHomeSections(),
+    trending_topics,
     latest_updates,
     jobs,
     current_affairs,

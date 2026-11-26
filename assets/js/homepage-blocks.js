@@ -289,8 +289,12 @@
     var retiredCompass = document.getElementById('cso-opportunity-compass');
     if (retiredCompass) retiredCompass.remove();
 
+    var trendingSec = document.getElementById('cso-trending-topics');
     var topics = document.querySelector('#cso-trending-topics .trending-grid') || document.querySelector('.trending-grid');
-    if (topics && has('trending_topics')) { replaceKids(topics, build('trending_topics')); any = true; }
+    if (topics && has('trending_topics') && !(trendingSec && trendingSec.getAttribute('data-v367-trending') === '1')) {
+      replaceKids(topics, build('trending_topics'));
+      any = true;
+    }
     ensureTrendingAboveFeeds();
 
     var tools = document.getElementById('cso-tools-grid');

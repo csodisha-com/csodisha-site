@@ -503,5 +503,37 @@ check('9. v349/v360 Informative Guides edge-to-edge uncropped 16:9 cover contain
   }
 });
 
+check('10. v367 Trending & Popular Topics semantic 4-theme tokens & WCAG AA/AAA badge/pill contrast', () => {
+  const styleCss = read('assets/style.css');
+  const v367Block = styleCss.slice(styleCss.indexOf('v340 / v367 Trending & Popular Topics'), styleCss.indexOf('v341 Sticky Single-Row Header'));
+  assert.ok(v367Block.length > 500, 'Missing v367 Trending & Popular Topics CSS block in assets/style.css');
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v367Block), 'v367 Trending & Popular Topics CSS must use zero hardcoded hex colors');
+  assert.ok(
+    v367Block.includes('var(--cso-surface-alt)') &&
+    v367Block.includes('var(--cso-ink)') &&
+    v367Block.includes('var(--cso-accent)') &&
+    v367Block.includes('var(--cso-accent-ink)') &&
+    v367Block.includes('var(--cso-warn-bg)') &&
+    v367Block.includes('var(--cso-warn-fg)') &&
+    v367Block.includes('var(--cso-ok-bg)') &&
+    v367Block.includes('var(--cso-ok-fg)') &&
+    v367Block.includes('var(--cso-info-bg)') &&
+    v367Block.includes('var(--cso-info-fg)'),
+    'v367 Trending Topics pills & icon badges must bind semantic 4-theme tokens'
+  );
+
+  const hsCss = read('admin/homepage-studio.css');
+  const hsV367Block = hsCss.slice(hsCss.indexOf('v367 Trending & Popular Topics'));
+  assert.ok(hsV367Block.length > 200, 'Missing v367 Trending Topics Editor CSS in admin/homepage-studio.css');
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(hsV367Block), 'v367 Admin Trending Topics Editor CSS must use zero hardcoded hex colors');
+
+  for (const [name, t] of Object.entries(EXPECTED_THEMES)) {
+    assert.ok(contrastRatio(t['--cso-ok-fg'], t['--cso-ok-bg']) >= 4.5, `${name} NEW pill contrast < 4.5:1`);
+    assert.ok(contrastRatio(t['--cso-warn-fg'], t['--cso-warn-bg']) >= 4.5, `${name} HOT pill contrast < 4.5:1`);
+    assert.ok(contrastRatio(t['--cso-info-fg'], t['--cso-info-bg']) >= 4.5, `${name} 2026/info pill contrast < 4.5:1`);
+    assert.ok(contrastRatio(t['--cso-accent-ink'], t['--cso-accent']) >= 4.5, `${name} accent pill contrast < 4.5:1`);
+  }
+});
+
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);

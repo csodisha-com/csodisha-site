@@ -11393,7 +11393,7 @@ nav#cso-hub-top-tabs {
   }
 }
 
-/* ===== v340 Trending & Popular Topics Positioned Above Compact 2-Column Feeds (4-Theme WCAG AAA) ===== */
+/* ===== v340 / v367 Trending & Popular Topics Positioned Above Compact 2-Column Feeds (4-Theme WCAG AAA) ===== */
 #cso-trending-topics.cso-trending-topics-sec {
   margin-top: 14px;
   margin-bottom: 14px;
@@ -11417,32 +11417,164 @@ nav#cso-hub-top-tabs {
   color: var(--cso-link);
 }
 
+#cso-trending-topics .cso-h2-link:focus-visible {
+  outline: 2px solid var(--cso-accent);
+  outline-offset: 2px;
+}
+
 #cso-trending-topics .topics-grid {
   gap: 10px !important;
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
 }
 
 #cso-trending-topics .cso-topic-card {
-  min-height: 92px;
-  padding: 10px 12px;
+  min-height: 104px;
+  padding: 11px 12px;
   border-radius: 11px;
   background: var(--cso-surface-elevated);
   border: 1px solid var(--cso-border);
   color: var(--cso-ink);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 #cso-trending-topics .cso-topic-card:hover,
 #cso-trending-topics .cso-topic-card:focus-visible {
   border-color: var(--cso-accent);
   background: var(--cso-surface-alt);
+  transform: translateY(-2px);
+}
+
+#cso-trending-topics .cso-topic-card:focus-visible {
+  outline: 2px solid var(--cso-accent);
+  outline-offset: 2px;
+}
+
+#cso-trending-topics .cso-topic-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+}
+
+#cso-trending-topics .cso-topic-card__badge {
+  margin-bottom: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt);
+  color: var(--cso-link);
+}
+
+#cso-trending-topics .cso-topic-card--jobs .cso-topic-card__badge,
+#cso-trending-topics .cso-topic-card--study .cso-topic-card__badge {
+  background: var(--cso-info-bg);
+  color: var(--cso-info-fg);
+  border-color: transparent;
+}
+
+#cso-trending-topics .cso-topic-card--exams .cso-topic-card__badge {
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  border-color: transparent;
+}
+
+#cso-trending-topics .cso-topic-card--schemes .cso-topic-card__badge {
+  background: var(--cso-ok-bg);
+  color: var(--cso-ok-fg);
+  border-color: transparent;
+}
+
+#cso-trending-topics .cso-topic-card--career .cso-topic-card__badge {
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
+  border-color: transparent;
+}
+
+#cso-trending-topics .cso-topic-card--odisha .cso-topic-card__badge {
+  background: var(--cso-err-bg);
+  color: var(--cso-err-fg);
+  border-color: transparent;
+}
+
+#cso-trending-topics .cso-topic-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+
+#cso-trending-topics .cso-topic-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--cso-surface-alt);
+  color: var(--cso-ink);
+  border: 1px solid var(--cso-border);
+  font-size: 0.69rem;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+#cso-trending-topics .cso-topic-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#cso-trending-topics .cso-topic-pill--hot {
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
+}
+
+#cso-trending-topics .cso-topic-pill--new {
+  background: var(--cso-ok-bg);
+  color: var(--cso-ok-fg);
+}
+
+#cso-trending-topics .cso-topic-pill--year {
+  background: var(--cso-info-bg);
+  color: var(--cso-info-fg);
 }
 
 #cso-trending-topics .cso-topic-card__title {
   color: var(--cso-ink);
+  gap: 4px;
+}
+
+#cso-trending-topics .cso-topic-card__label {
+  min-width: 0;
 }
 
 #cso-trending-topics .cso-topic-card__desc {
   color: var(--cso-ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #cso-trending-topics .cso-topic-card,
+  #cso-trending-topics .cso-topic-card:hover,
+  #cso-trending-topics .cso-topic-card:focus-visible {
+    transform: none !important;
+    transition: none !important;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -11461,8 +11593,19 @@ nav#cso-hub-top-tabs {
     gap: 8px !important;
   }
   #cso-trending-topics .cso-topic-card {
-    min-height: 88px;
+    min-height: 94px;
     padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  #cso-trending-topics .topics-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+  #cso-trending-topics .cso-topic-card {
+    min-height: 76px;
+    padding: 11px 12px;
   }
 }
 

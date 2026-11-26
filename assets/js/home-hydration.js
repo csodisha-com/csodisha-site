@@ -173,6 +173,132 @@
     schemes: { icon: '\uD83C\uDFDB\uFE0F', en: 'Government Schemes', or: 'ସରକାରୀ ଯୋଜନା', allEn: 'All Schemes \u2192', allOr: 'ସବୁ ଯୋଜନା \u2192' }
   };
 
+  var ODIA_DIGITS = ['୦', '୧', '୨', '୩', '୪', '୫', '୬', '୭', '୮', '୯'];
+
+  function toOdiaDigits(val) {
+    return String(val).replace(/[0-9]/g, function (d) { return ODIA_DIGITS[Number(d)] || d; });
+  }
+
+  function formatTopicCount(count, isOr) {
+    var n = Number(count) || 0;
+    if (n <= 0) return isOr ? 'ଦେଖନ୍ତୁ' : 'Explore';
+    return isOr ? (toOdiaDigits(n) + ' ଲାଇଭ୍') : (String(n) + ' Live');
+  }
+
+  function buildTopicIconSvg(iconKey) {
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('width', '22');
+    svg.setAttribute('height', '22');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('aria-hidden', 'true');
+    function add(tag, attrs) {
+      var node = document.createElementNS(NS, tag);
+      Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+      svg.appendChild(node);
+    }
+    if (iconKey === 'exams') {
+      add('path', { d: 'M22 10v6M2 10l10-5 10 5-10 5z' });
+      add('path', { d: 'M6 12v5c3 3 9 3 12 0v-5' });
+    } else if (iconKey === 'schemes') {
+      add('circle', { cx: '12', cy: '8', r: '7' });
+      add('polyline', { points: '8.21 13.89 7 23 12 20 17 23 15.79 13.88' });
+    } else if (iconKey === 'study') {
+      add('path', { d: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20' });
+      add('path', { d: 'M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z' });
+    } else if (iconKey === 'career') {
+      add('circle', { cx: '12', cy: '12', r: '10' });
+      add('polygon', { points: '16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76' });
+    } else if (iconKey === 'odisha') {
+      add('polygon', { points: '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' });
+    } else {
+      add('rect', { x: '2', y: '7', width: '20', height: '14', rx: '2', ry: '2' });
+      add('path', { d: 'M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16' });
+    }
+    return svg;
+  }
+
+  function topicPillModifier(badgeText) {
+    var b = String(badgeText || '').trim().toUpperCase();
+    if (b === 'HOT') return ' cso-topic-pill--hot';
+    if (b === 'NEW') return ' cso-topic-pill--new';
+    return ' cso-topic-pill--year';
+  }
+
+  function renderTrendingTopicsSection(topics) {
+    var sec = document.getElementById('cso-trending-topics');
+    if (!sec) return;
+    var grid = sec.querySelector('#cso-trending-grid') || sec.querySelector('.trending-grid');
+    if (!grid) return;
+    if (!Array.isArray(topics) || !topics.length) return;
+
+    var enabled = topics.filter(function (t) { return t && t.enabled !== false; });
+    if (!enabled.length) return;
+
+    var isOr = isOdiaActive();
+    var frag = document.createDocumentFragment();
+    enabled.forEach(function (t) {
+      var iconKey = String(t.icon || t.id || 'jobs').toLowerCase();
+      if (['jobs', 'exams', 'schemes', 'study', 'career', 'odisha'].indexOf(iconKey) === -1) iconKey = 'jobs';
+
+      var card = makeLink('cso-topic-card cso-topic-card--' + iconKey, '', t.href || '/guides/', true);
+      card.setAttribute('data-topic-id', String(t.id || iconKey));
+
+      var top = make('div', 'cso-topic-card__top');
+      var badge = make('div', 'cso-topic-card__badge');
+      badge.setAttribute('aria-hidden', 'true');
+      badge.appendChild(buildTopicIconSvg(iconKey));
+      top.appendChild(badge);
+
+      var meta = make('div', 'cso-topic-card__meta');
+      var pillTxt = String(t.badge_text || '').trim();
+      if (pillTxt) {
+        meta.appendChild(make('span', 'cso-topic-pill' + topicPillModifier(pillTxt), pillTxt));
+      }
+      var cnt = Number(t.item_count || 0) || 0;
+      var cntEl = make('span', 'cso-topic-count', formatTopicCount(cnt, isOr));
+      cntEl.setAttribute('data-en', formatTopicCount(cnt, false));
+      cntEl.setAttribute('data-or', formatTopicCount(cnt, true));
+      if (cnt > 0) {
+        cntEl.setAttribute('aria-label', isOr ? (toOdiaDigits(cnt) + 'ଟି ପ୍ରକାଶିତ ବିଷୟ') : (cnt + ' live items'));
+      }
+      meta.appendChild(cntEl);
+      top.appendChild(meta);
+      card.appendChild(top);
+
+      var textBox = make('div', 'cso-topic-card__text');
+      var h3 = make('h3', 'cso-topic-card__title');
+      var titleEn = String(t.title_en || '');
+      var titleOr = String(t.title_or || titleEn);
+      var lbl = make('span', 'cso-topic-card__label', pickBi(titleEn, titleOr));
+      lbl.setAttribute('data-en', titleEn);
+      lbl.setAttribute('data-or', titleOr);
+      h3.appendChild(lbl);
+      h3.appendChild(document.createTextNode(' '));
+      var arrow = make('span', 'arrow', '\u2192');
+      arrow.setAttribute('aria-hidden', 'true');
+      h3.appendChild(arrow);
+      textBox.appendChild(h3);
+
+      var subEn = String(t.subtitle_en || '');
+      var subOr = String(t.subtitle_or || subEn);
+      if (subEn || subOr) {
+        var desc = make('p', 'cso-topic-card__desc', pickBi(subEn, subOr));
+        desc.setAttribute('data-en', subEn);
+        desc.setAttribute('data-or', subOr);
+        textBox.appendChild(desc);
+      }
+
+      card.appendChild(textBox);
+      frag.appendChild(card);
+    });
+
+    grid.replaceChildren(frag);
+  }
+
   function ensureTrendingTopicsOrder() {
     var allTrending = document.querySelectorAll('#cso-trending-topics, .cso-trending-topics-sec');
     if (!allTrending.length) return;
@@ -187,12 +313,10 @@
       }
     }
     var isOr = isOdiaActive();
-    var titleEl = primary.querySelector('h2 .cso-h2-bl');
-    if (titleEl) titleEl.textContent = isOr ? 'ଟ୍ରେଣ୍ଡିଂ ଏବଂ ଲୋକପ୍ରିୟ ବିଷୟ' : 'Trending & Popular Topics';
-    var subEl = primary.querySelector('h2 small');
-    if (subEl) subEl.textContent = isOr ? 'ଶିକ୍ଷା, କ୍ୟାରିୟର, ଯୋଜନା ଏବଂ ସରକାରୀ ସେବା ଖୋଜନ୍ତୁ' : 'Explore education, careers, schemes and public services';
-    var linkEl = primary.querySelector('h2 .cso-h2-link');
-    if (linkEl) linkEl.textContent = isOr ? 'ସବୁ ବିଷୟ ଦେଖନ୍ତୁ \u2192' : 'View All Topics \u2192';
+    primary.querySelectorAll('[data-en][data-or]').forEach(function (node) {
+      var val = isOr ? node.getAttribute('data-or') : node.getAttribute('data-en');
+      if (val) node.textContent = val;
+    });
   }
 
   function localizeFeedHeaders() {
@@ -692,6 +816,9 @@
       window.CSOHeaderNav.applyHeaderLinks(feed.nav_header);
     }
     applySectionVisibility(feed.section_visibility || feed.homepage_sections);
+    if (Array.isArray(feed.trending_topics) && feed.trending_topics.length) {
+      renderTrendingTopicsSection(feed.trending_topics);
+    }
     localizeFeedHeaders();
     renderLatestUpdatesPanel(feed);
     renderJobsSection(feed.jobs);

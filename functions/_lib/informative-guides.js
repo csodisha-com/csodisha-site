@@ -10,6 +10,7 @@
  */
 
 import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, escShell, renderKicker } from './ssr-shell.js';
+import { GUIDE_TOPIC_ALIASES, matchGuideToTopic } from './trending-topics.js';
 
 export const DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH = '/assets/img/icon-512.png';
 
@@ -511,8 +512,8 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageA
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v366">
-  <script src="/assets/js/guides-portal.js?v=20261126v366" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v367">
+  <script src="/assets/js/guides-portal.js?v=20261126v367" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -554,6 +555,7 @@ function buildGuideShareBarHtml(guide, canonical, position = 'header') {
 
 export function renderPublicGuidesHubHtml(guides, url) {
   const activeCat = String(url.searchParams.get('category') || 'all').trim().toLowerCase();
+  const activeTopicAlias = GUIDE_TOPIC_ALIASES[activeCat] || null;
   const activeQ = String(url.searchParams.get('q') || '').trim();
   const origin = url ? url.origin : 'https://csodisha.com';
 
@@ -563,7 +565,13 @@ export function renderPublicGuidesHubHtml(guides, url) {
   });
 
   const filtered = guides.filter((g) => {
-    if (activeCat !== 'all' && g.category !== activeCat) return false;
+    if (activeCat !== 'all') {
+      if (activeTopicAlias) {
+        if (!matchGuideToTopic(g, activeTopicAlias.key)) return false;
+      } else if (g.category !== activeCat) {
+        return false;
+      }
+    }
     if (activeQ) {
       const hay = `${g.title_en} ${g.title_or} ${g.summary_en} ${g.summary_or} ${g.tags}`.toLowerCase();
       if (!hay.includes(activeQ.toLowerCase())) return false;
@@ -571,8 +579,13 @@ export function renderPublicGuidesHubHtml(guides, url) {
     return true;
   });
 
+  const topicPillHtml = activeTopicAlias && !GUIDE_CATEGORY_MAP.has(activeCat)
+    ? `<a class="gp-cat-pill is-active" href="/guides/?category=${encodeURIComponent(activeTopicAlias.key)}" data-guide-cat="${escShell(activeTopicAlias.key)}">${escShell(activeTopicAlias.icon)} <span class="gp-lang-en">${escShell(activeTopicAlias.label_en)}</span><span class="gp-lang-or">${escShell(activeTopicAlias.label_or)}</span> <span class="gp-cat-cnt">${filtered.length}</span></a>`
+    : '';
+
   const pillsHtml = [
     `<a class="gp-cat-pill${activeCat === 'all' ? ' is-active' : ''}" href="/guides/" data-guide-cat="all">All Guides <span class="gp-cat-cnt">${catCounts.all}</span></a>`,
+    ...(topicPillHtml ? [topicPillHtml] : []),
     ...GUIDE_CATEGORIES.map((c) => (
       `<a class="gp-cat-pill${activeCat === c.key ? ' is-active' : ''}" href="/guides/?category=${encodeURIComponent(c.key)}" data-guide-cat="${escShell(c.key)}">${escShell(c.icon)} ${escShell(c.label_en)} <span class="gp-cat-cnt">${catCounts[c.key] || 0}</span></a>`
     ))

@@ -399,8 +399,8 @@ check('8. v360 Informative Guides edge-to-edge layout (max-width: 100%), uncropp
     'admin/studio.css Live Preview must mirror v360 edge-to-edge 390px mobile padding and uncropped 16:9 cover rules'
   );
   assert.ok(
-    guidesSsr.includes('/assets/css/guides-portal.css?v=20261126v366') &&
-    guidesSsr.includes('/assets/js/guides-portal.js?v=20261126v366') &&
+    guidesSsr.includes('/assets/css/guides-portal.css?v=20261126v367') &&
+    guidesSsr.includes('/assets/js/guides-portal.js?v=20261126v367') &&
     guidesSsr.includes('gp-hero-card') &&
     guidesSsr.includes('gp-toc-card') &&
     guidesSsr.includes('gp-share-bar') &&
@@ -421,6 +421,24 @@ check('8. v360 Informative Guides edge-to-edge layout (max-width: 100%), uncropp
     guidesJs.includes('data-native-share') &&
     !/\.innerHTML|\.outerHTML|insertAdjacentHTML|\.style\./.test(guidesJs),
     'guides-portal.css & guides-portal.js must style 44px 4-theme share toolbar and implement strict CSP Copy Link & Native Share handlers'
+  );
+});
+
+check('9. v367 Trending & Popular Topics 1-column mobile stack (<=480px), >=44px touch targets & reduced-motion support', () => {
+  const styleCss = read('assets/style.css');
+  assert.ok(
+    styleCss.includes('#cso-trending-topics .cso-topic-count') &&
+    styleCss.includes('#cso-trending-topics .cso-topic-pill') &&
+    styleCss.includes('@media (max-width: 480px)') &&
+    styleCss.includes('grid-template-columns: minmax(0, 1fr) !important;') &&
+    styleCss.includes('min-height: 44px;') &&
+    styleCss.includes('@media (prefers-reduced-motion: reduce)'),
+    'assets/style.css must stack #cso-trending-topics cleanly to 1 column at <=480px with 44px touch targets and reduced-motion support'
+  );
+  const hsCss = read('admin/homepage-studio.css');
+  assert.ok(
+    hsCss.includes('.hs-tt-card') && hsCss.includes('.hs-tt-grid') && hsCss.includes('grid-template-columns: minmax(0, 1fr);'),
+    'admin/homepage-studio.css must collapse Trending Topics editor grid to 1 column on narrow screens'
   );
 });
 

@@ -11,6 +11,9 @@ import {
   upsertLatestUpdateMeta
 } from '../functions/_lib/latest-updates.js';
 import { handleAdminLatestUpdates } from '../functions/api/admin/latest-updates.js';
+import { handleAdminTrendingTopicsApi } from '../functions/api/admin/trending-topics.js';
+import { TRENDING_TOPICS_SETTING_KEY, DEFAULT_TRENDING_TOPICS } from '../functions/_lib/trending-topics.js';
+import { renderPublicGuidesHubHtml, formatGuideRow } from '../functions/_lib/informative-guides.js';
 import { handleSiteConfig, HOME_SECTIONS_KEY } from '../functions/api/admin/_site.js';
 import { ACTIVE_SW_CACHE_VERSION } from '../functions/_lib/ops-sentinel.js';
 import { CONTENT_PUBLIC_PATHS } from '../functions/_lib/edge-cache-invalidator.js';
@@ -42,6 +45,37 @@ function createMockDb() {
       const [key, value_json] = params;
       siteSettings.set(String(key), { value_json: String(value_json), updated_at: '2026-11-26T08:00:00Z' });
       return { run: { success: true } };
+    }
+    if (/^DELETE FROM site_settings WHERE key = \?/i.test(s)) {
+      siteSettings.delete(String(params[0] || ''));
+      return { run: { success: true } };
+    }
+    if (/^SELECT COUNT\(\*\) AS c FROM job_articles/i.test(s)) {
+      return { first: { c: jobPublished ? 2 : 0 } };
+    }
+    if (/^SELECT COUNT\(\*\) AS c FROM posts WHERE type = 'job'/i.test(s)) {
+      return { first: { c: 1 } };
+    }
+    if (/^SELECT COUNT\(\*\) AS c FROM mock_tests/i.test(s)) {
+      return { first: { c: 3 } };
+    }
+    if (/^SELECT COUNT\(\*\) AS c FROM scheme_articles/i.test(s)) {
+      return { first: { c: 4 } };
+    }
+    if (/^SELECT COUNT\(\*\) AS c FROM study_articles/i.test(s)) {
+      return { first: { c: 5 } };
+    }
+    if (/^SELECT COUNT\(\*\) AS c FROM resources/i.test(s)) {
+      return { first: { c: 2 } };
+    }
+    if (/^SELECT COUNT\(\*\) AS c FROM careers_articles/i.test(s)) {
+      return { first: { c: 3 } };
+    }
+    if (/^SELECT COUNT\(\*\) AS c FROM cso_current_affairs/i.test(s)) {
+      return { first: { c: 6 } };
+    }
+    if (/^SELECT COUNT\(\*\) AS c FROM posts WHERE type = 'current_affair'/i.test(s)) {
+      return { first: { c: 1 } };
     }
     if (/^INSERT INTO cso_latest_updates_meta/i.test(s)) {
       const [entity_type, entity_id, is_pinned, scope, is_exam, updated_at] = params;
@@ -258,7 +292,7 @@ await test('1. GET /api/public/home-feed returns all 7 live content buckets with
 
   const data = await res.json();
   assert.equal(data.ok, true);
-  assert.equal(data.version, 'v341');
+  assert.equal(data.version, 'v367');
   assert.equal(data.broadcast.active, true);
   assert.ok(data.broadcast.id, 'broadcast must include stable dismissal id');
   assert.ok(Array.isArray(data.nav_header) && data.nav_header.length === 3, 'home-feed must include published nav_header links');
@@ -350,10 +384,10 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v366');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v366';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v367');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v367';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
-  assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/guides') && CONTENT_PUBLIC_PATHS.includes('/guides/') && CONTENT_PUBLIC_PATHS.includes('/sitemap.xml'), 'CONTENT_PUBLIC_PATHS must purge /api/public/guides, /guides/, and /sitemap.xml');
+  assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/guides') && CONTENT_PUBLIC_PATHS.includes('/guides/') && CONTENT_PUBLIC_PATHS.includes('/sitemap.xml') && CONTENT_PUBLIC_PATHS.includes('/api/home/feed'), 'CONTENT_PUBLIC_PATHS must purge /api/public/guides, /guides/, /sitemap.xml, and /api/home/feed');
   assert.ok(hydJs.includes("GUIDE: 'cso-lu-badge cso-lu-badge--guide'"), 'home-hydration.js must map GUIDE badge class');
   assert.ok(read('assets/style.css').includes('.cso-lu-badge--guide'), 'assets/style.css must style .cso-lu-badge--guide');
 
@@ -366,7 +400,7 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   assert.ok(indexHtml.includes('id="cso-tools"') && indexHtml.includes('data-feed-key="important_tools"'), 'index.html must include #cso-tools with D1 visibility key');
   assert.ok(indexHtml.includes('data-title-en="Age &amp; Eligibility Date Calculator"') && indexHtml.includes('data-title-or='), 'Important Tools cards must preserve bilingual EN/ଓଡ଼ିଆ attributes');
   assert.equal((indexHtml.match(/class="card tl tool-card"/g) || []).length, 6, 'Important Tools must render all 6 compact tool cards');
-  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v352') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v352'), 'index.html must reference v352 cache-busted assets');
+  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v367') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v367') && indexHtml.includes('/assets/js/home-hydration.js?v=20261126v367'), 'index.html must reference v367 cache-busted assets');
   const styleV352 = read('assets/style.css');
   assert.ok(!styleV352.includes('.cso-action-hub-section'), 'Orphaned .cso-action-hub-section CSS must be removed from style.css');
   assert.ok(styleV352.includes('grid-template-columns: repeat(4, minmax(0, 1fr)) !important;'), 'Important Tools desktop grid must be 4 columns');
@@ -549,4 +583,104 @@ await test('5. v339 Admin /api/admin/site section visibility toggles persist in 
   });
 });
 
-console.log(`\n=== Homepage Live Feed v332 + v337 + v338 + v339 Results: ${passed} passed, 0 failed ===\n`);
+await test('6. v367 Trending & Popular Topics: live D1 counts, bilingual EN/ଓଡ଼ିଆ DOM, smart /guides/?category= routing & Admin API CRUD/reset', async () => {
+  const db = createMockDb();
+  const env = { DB: db };
+  const actor = { userId: 'adm_1', email: 'admin@csodisha.com', role: 'admin' };
+
+  assert.equal(TRENDING_TOPICS_SETTING_KEY, 'homepage_trending_topics_json');
+  assert.equal(DEFAULT_TRENDING_TOPICS.length, 6);
+
+  // 1. Public home feed returns all 6 default trending_topics with real D1 counts & Odia titles
+  const initialFeed = await buildPublicHomeFeed(env);
+  assert.equal(initialFeed.version, 'v367');
+  assert.ok(Array.isArray(initialFeed.trending_topics) && initialFeed.trending_topics.length === 6, 'trending_topics must return 6 default topics');
+  const jobsTopic = initialFeed.trending_topics.find((t) => t.id === 'jobs');
+  const examsTopic = initialFeed.trending_topics.find((t) => t.id === 'exams');
+  const schemesTopic = initialFeed.trending_topics.find((t) => t.id === 'schemes');
+  const studyTopic = initialFeed.trending_topics.find((t) => t.id === 'study');
+  const careerTopic = initialFeed.trending_topics.find((t) => t.id === 'career');
+  const odishaTopic = initialFeed.trending_topics.find((t) => t.id === 'odisha');
+  assert.equal(jobsTopic.href, '/guides/?category=recruitment');
+  assert.equal(examsTopic.href, '/guides/?category=exam-prep');
+  assert.equal(schemesTopic.href, '/guides/?category=scholarships');
+  assert.equal(studyTopic.href, '/guides/?category=study-notes');
+  assert.equal(careerTopic.href, '/guides/?category=career');
+  assert.equal(odishaTopic.href, '/guides/?category=odisha-gk');
+  assert.ok(jobsTopic.item_count >= 3 && examsTopic.item_count >= 4 && schemesTopic.item_count >= 5 && studyTopic.item_count >= 7 && careerTopic.item_count >= 4 && odishaTopic.item_count >= 7, 'Each trending topic must aggregate live D1 counts');
+  assert.ok(jobsTopic.title_or.length > 0 && odishaTopic.title_or.length > 0, 'Every trending topic must carry Odia bilingual labels');
+
+  // 2. Admin GET / PUT custom topics / Reset to Default 6 Topics
+  const adminGet = await handleAdminTrendingTopicsApi(new Request('https://csodisha.com/api/admin/trending-topics', { method: 'GET' }), env, actor);
+  assert.equal(adminGet.status, 200);
+  const adminGetData = await adminGet.json();
+  assert.equal(adminGetData.ok, true);
+  assert.equal(adminGetData.is_custom, false);
+  assert.equal(adminGetData.topics.length, 6);
+
+  const customList = [
+    { ...DEFAULT_TRENDING_TOPICS[1], sort_order: 1, title_en: 'OAVS & OPSC Prep', title_or: 'OAVS ଓ OPSC ପ୍ରସ୍ତୁତି', badge_text: 'HOT', enabled: true },
+    { ...DEFAULT_TRENDING_TOPICS[0], sort_order: 2, badge_text: '2026', enabled: true },
+    { ...DEFAULT_TRENDING_TOPICS[2], sort_order: 3, enabled: false }
+  ];
+  const adminPut = await handleAdminTrendingTopicsApi(new Request('https://csodisha.com/api/admin/trending-topics', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ topics: customList })
+  }), env, actor);
+  assert.equal(adminPut.status, 200);
+  const putData = await adminPut.json();
+  assert.equal(putData.is_custom, true);
+  assert.equal(putData.topics.length, 3);
+
+  const customFeed = await buildPublicHomeFeed(env);
+  assert.equal(customFeed.trending_topics.length, 2, 'Disabled trending topic must be omitted from public feed');
+  assert.equal(customFeed.trending_topics[0].title_en, 'OAVS & OPSC Prep');
+  assert.equal(customFeed.trending_topics[0].title_or, 'OAVS ଓ OPSC ପ୍ରସ୍ତୁତି');
+
+  const adminReset = await handleAdminTrendingTopicsApi(new Request('https://csodisha.com/api/admin/trending-topics', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reset: true })
+  }), env, actor);
+  assert.equal(adminReset.status, 200);
+  const resetFeed = await buildPublicHomeFeed(env);
+  assert.equal(resetFeed.trending_topics.length, 6, 'Reset must restore default 6 trending topics');
+
+  // 3. Smart /guides/?category=<topic> filtering in SSR hub
+  const sampleGuides = [
+    formatGuideRow({ id: 'g1', slug: 'oavs-recruitment-2026', category: 'how-to', title_en: 'OAVS Recruitment 2026 Complete Guide', summary_en: '815 teacher vacancies & apply steps', tags: 'OAVS, Recruitment, Teaching', scope: 'Odisha', is_exam: 1, status: 'published' }),
+    formatGuideRow({ id: 'g2', slug: 'oavs-25-day-prep', category: 'exam-strategy', title_en: 'OAVS 25-Day Preparation Strategy & Notes', summary_en: 'Syllabus, PYQ trend & revision plan', tags: 'Exam Prep, Study Notes, PYQ', scope: 'Odisha', is_exam: 1, status: 'published' }),
+    formatGuideRow({ id: 'g3', slug: 'odisha-post-matric-scholarship', category: 'citizen-scheme', title_en: 'Odisha Post-Matric Scholarship Portal', summary_en: 'DBT financial aid & stipend guide', tags: 'Scholarship, Scheme, Odisha', scope: 'Odisha', is_exam: 0, status: 'published' }),
+    formatGuideRow({ id: 'g4', slug: 'odisha-heritage-gk', category: 'odisha-gk', title_en: 'Odisha Heritage & Konark GK Handbook', summary_en: 'Complete Odisha state history & districts', tags: 'Odisha, Heritage, GK', scope: 'Odisha', is_exam: 0, status: 'published' })
+  ];
+  for (const [alias, expectedSlug] of [
+    ['recruitment', 'oavs-recruitment-2026'],
+    ['exam-prep', 'oavs-25-day-prep'],
+    ['scholarships', 'odisha-post-matric-scholarship'],
+    ['study-notes', 'oavs-25-day-prep'],
+    ['career', 'oavs-recruitment-2026'],
+    ['odisha-gk', 'odisha-heritage-gk']
+  ]) {
+    const html = renderPublicGuidesHubHtml(sampleGuides, new URL(`https://csodisha.com/guides/?category=${alias}`));
+    assert.ok(html.includes(`/guides/${expectedSlug}`), `/guides/?category=${alias} must match ${expectedSlug}`);
+  }
+
+  // 4. Static HTML fallback & client hydration guards
+  const indexHtml = read('index.html');
+  assert.ok(indexHtml.includes('id="cso-trending-topics" data-v367-trending="1"'), 'index.html must tag #cso-trending-topics with data-v367-trending="1"');
+  assert.ok(indexHtml.includes('data-en="Trending &amp; Popular Topics"') && indexHtml.includes('data-or="ଟ୍ରେଣ୍ଡିଂ ଓ ଲୋକପ୍ରିୟ ବିଷୟବସ୍ତୁ"'), 'index.html must include bilingual Trending heading');
+  assert.ok(indexHtml.includes('href="/guides/" class="cso-h2-link" data-en="View All Topics →" data-or="ସମସ୍ତ ବିଷୟ ଦେଖନ୍ତୁ →"'), 'View All Topics must link directly to /guides/ with bilingual labels');
+  for (const href of ['/guides/?category=recruitment', '/guides/?category=exam-prep', '/guides/?category=scholarships', '/guides/?category=study-notes', '/guides/?category=career', '/guides/?category=odisha-gk']) {
+    assert.ok(indexHtml.includes(`href="${href}"`), `index.html missing trending card href ${href}`);
+  }
+  assert.equal((indexHtml.match(/class="cso-topic-count"/g) || []).length, 6, 'index.html must include 6 .cso-topic-count placeholders for zero CLS');
+
+  const blocksJs = read('assets/js/homepage-blocks.js');
+  assert.ok(blocksJs.includes("getAttribute('data-v367-trending') === '1'"), 'homepage-blocks.js must not overwrite v367 trending grid');
+  const hydJs = read('assets/js/home-hydration.js');
+  assert.ok(hydJs.includes('renderTrendingTopicsSection') && hydJs.includes('formatTopicCount') && hydJs.includes('toOdiaDigits'), 'home-hydration.js must hydrate live counts & Odia digits');
+  assert.ok(read('_worker.js').includes("pathname === '/api/home/feed'"), '_worker.js must alias /api/home/feed');
+});
+
+console.log(`\n=== Homepage Live Feed v332 + v337 + v338 + v339 + v367 Results: ${passed} passed, 0 failed ===\n`);

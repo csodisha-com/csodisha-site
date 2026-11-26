@@ -142,6 +142,7 @@ import { handleAdminAiCoauthorApi, handleAdminAiGenerateImage } from './ai-coaut
 import { handleAdminAiProvidersApi, requireAdmin } from './ai-providers.js';
 import { handleAdminSemanticReindexApi } from './semantic-reindex.js';
 import { handleAdminGuidesApi } from './guides.js';
+import { handleAdminTrendingTopicsApi } from './trending-topics.js';
 import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
@@ -288,6 +289,17 @@ async function dispatchAdminApi(request, env, ctx = null) {
         recordAdminAuditLog(env, request, actor, `homepage_blocks.${method.toLowerCase()}`, id || 'homepage_blocks', null, ctx);
       }
       return hbRes;
+    }
+
+    if (resource === 'trending-topics') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      const ttRes = await handleAdminTrendingTopicsApi(request, env, actor, id);
+      if (write && ttRes && ttRes.status >= 200 && ttRes.status < 400) {
+        await invalidateAllPublicCaches(request);
+        recordAdminAuditLog(env, request, actor, `trending_topics.${method.toLowerCase()}`, id || 'trending_topics', null, ctx);
+      }
+      return ttRes;
     }
 
     if (resource === 'current-affairs') {

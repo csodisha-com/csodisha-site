@@ -31,6 +31,7 @@ export const NAV_PUBLIC_PATHS = [
 
 export const CONTENT_PUBLIC_PATHS = [
   '/api/public/home-feed',
+  '/api/home/feed',
   '/api/public/guides',
   '/guides/',
   '/sitemap.xml',

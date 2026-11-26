@@ -71,3 +71,25 @@
 .hs-pv .arrow { color: var(--pv-accent); }
 @media (max-width: 1100px) { .hs-cols { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 600px) { .hs-form__grid { grid-template-columns: minmax(0, 1fr); } .hs-span-2 { grid-column: auto; } .hs-kpi--wide { grid-column: auto; } .hs-row { grid-template-columns: auto minmax(0, 1fr); } .hs-row__actions { grid-column: 1 / -1; } }
+
+/* v367 Trending & Popular Topics Live D1 Editor (4-Theme Semantic Tokens Only) */
+.hs-tt-card { display: flex; flex-direction: column; gap: 12px; }
+.hs-tt-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.hs-tt-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.hs-tt-status { font-size: 0.8rem; color: var(--studio-muted, var(--cso-ink-soft)); min-height: 1.1em; }
+.hs-tt-status.is-ok { color: var(--studio-ok-fg, var(--cso-ok-fg)); font-weight: 600; }
+.hs-tt-status.is-err { color: var(--cso-err-fg); font-weight: 600; }
+.hs-tt-list { display: flex; flex-direction: column; gap: 10px; }
+.hs-tt-item { background: var(--studio-card-elev, var(--cso-surface-alt)); border: 1px solid var(--studio-border, var(--cso-border)); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+.hs-tt-item.is-disabled { opacity: 0.65; }
+.hs-tt-item__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.hs-tt-item__left { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--studio-text, var(--cso-ink)); }
+.hs-tt-rank { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 24px; border-radius: 999px; background: var(--studio-card, var(--cso-surface)); border: 1px solid var(--studio-border, var(--cso-border)); font-size: 0.75rem; font-weight: 700; color: var(--studio-text, var(--cso-ink)); }
+.hs-tt-item__title { font-size: 0.9rem; color: var(--studio-text, var(--cso-ink)); }
+.hs-tt-item__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.hs-tt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px 10px; }
+.hs-tt-field { display: flex; flex-direction: column; gap: 4px; }
+.hs-tt-label { font-size: 0.74rem; font-weight: 700; color: var(--studio-muted, var(--cso-ink-soft)); }
+@media (max-width: 600px) {
+  .hs-tt-grid { grid-template-columns: minmax(0, 1fr); }
+}

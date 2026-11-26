@@ -567,7 +567,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/public/guides', '/guides/',
     '/api/public/about/tree', '/api/public/about/pages', '/api/public/about/bootstrap', '/api/public/about/article', '/api/public/about/sources', '/about/',
     '/api/public/mock-tests', '/mock-tests/', '/api/public/ads',
-    '/api/public/home-feed', '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
+    '/api/public/home-feed', '/api/home/feed', '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
   ];
   const allUrls = new Set();
   for (const p of basePaths) {
@@ -1111,7 +1111,7 @@ export default {
       }
       return toolsRes;
     }
-    if (pathname === '/api/public/home-feed' && (request.method === 'GET' || request.method === 'HEAD')) {
+    if ((pathname === '/api/public/home-feed' || pathname === '/api/home/feed') && (request.method === 'GET' || request.method === 'HEAD')) {
       return handlePublicHomeFeedApi(request, env, ctx);
     }
     if ((pathname === '/api/public/homepage-blocks' || pathname === '/api/homepage/blocks') && (request.method === 'GET' || request.method === 'HEAD')) {
