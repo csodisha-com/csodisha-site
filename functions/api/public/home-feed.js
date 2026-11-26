@@ -255,6 +255,7 @@ async function fetchLatestJobs(db, publishedGuides = []) {
   // Merge published recruitment informative_guides (e.g., OAVS Recruitment 2026 notifications/guides)
   for (const g of (publishedGuides || [])) {
     if (merged.length >= 6) break;
+    if (String(g.category || '').toLowerCase() === 'citizen-scheme') continue;
     if (!matchGuideToTopic(g, 'recruitment')) continue;
     const slug = String(g.slug || g.id || '').trim();
     if (!slug || seenSlugs.has(`guide_${slug}`)) continue;
@@ -284,14 +285,18 @@ async function fetchLatestJobs(db, publishedGuides = []) {
       qualification: '',
       href: guideUrl,
       url: guideUrl,
+      is_guide: true,
       sort_ts: String(g.published_at || g.updated_at || '')
     });
   }
 
   const out = merged
-    .sort((a, b) => String(b.sort_ts).localeCompare(String(a.sort_ts)))
+    .sort((a, b) => {
+      if (Boolean(a.is_guide) !== Boolean(b.is_guide)) return a.is_guide ? 1 : -1;
+      return String(b.sort_ts).localeCompare(String(a.sort_ts));
+    })
     .slice(0, 6)
-    .map(({ sort_ts, ...item }) => item);
+    .map(({ sort_ts, is_guide, ...item }) => item);
 
   const hubPads = [
     { id: 'hub_opsc', slug: 'opsc', title_en: 'Odisha State Government & PSU Recruitments (OPSC / OSSC)', title_or: 'ଓଡ଼ିଶା ସରକାରୀ ନିଯୁକ୍ତି (OPSC / OSSC)', category: 'OPSC / OSSC', org_badge: 'OPSC', badge_tone: 'brand', meta_en: 'All Odisha · Active Notices', meta_or: 'ସମଗ୍ର ଓଡ଼ିଶା · ସକ୍ରିୟ ବିଜ୍ଞପ୍ତି', action_label_en: 'Notice →', action_label_or: 'ବିଜ୍ଞପ୍ତି →', href: '/jobs/?org=opsc', url: '/jobs/?org=opsc', district: 'All Odisha', vacancies: 0, last_date: '' },
