@@ -559,9 +559,31 @@ check('v370 category-coded hover/focus: semantic tokens only, reduced-motion gua
       [t['--cso-info-fg'], t['--cso-info-bg']],
       [t['--cso-warn-fg'], t['--cso-warn-bg']],
       [t['--cso-err-fg'], t['--cso-err-bg']],
-      [mix(t['--cso-info-fg'], t['--cso-err-fg'], 0.6), mix(t['--cso-info-bg'], t['--cso-err-bg'], 0.6)]
+      [mix(t['--cso-info-fg'], t['--cso-err-fg'], 0.52), mix(t['--cso-info-bg'], t['--cso-err-bg'], 0.52)]
     ];
     for (const [fill, on] of pairs) assert.ok(contrastRatio(fill, on) >= 4.5, `${name} v370 solid pill ${fill}/${on} < 4.5:1`);
+  }
+});
+
+check('v371 sharpened colored hover: ID-scoped topic cards, purple Exams, 16% wash + ring + glow, zero hex, >= 4.5:1 accent title on tinted wash in all 4 themes', () => {
+  const css = read('assets/style.css');
+  const blk = css.slice(css.indexOf('/* ===== v371'));
+  assert.ok(blk.length > 500, 'v371 CSS block present');
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk.replace(/#main-content|#cso-trending-topics|#cso-tools/g, '')), 'v371 CSS must contain zero hardcoded hex');
+  assert.ok(blk.includes('#main-content #cso-trending-topics .cso-topic-card--exams { --card-accent: color-mix(in srgb, var(--cso-info-fg) 52%, var(--cso-err-fg) 48%)'), 'Exams purple accent');
+  assert.ok(blk.includes('color-mix(in srgb, var(--card-accent) 65%, var(--cso-ink))'), 'title uses contrast-safe accent/ink mix');
+  assert.ok(blk.includes('0 0 0 1px var(--card-accent), 0 10px 24px -6px color-mix(in srgb, var(--card-accent) 34%, transparent)'));
+  assert.ok(blk.includes('linear-gradient(135deg, color-mix(in srgb, var(--card-accent) 16%, var(--cso-surface)), color-mix(in srgb, var(--card-accent) 8%, var(--cso-surface)))'));
+  const hex2 = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, pa) => '#' + hex2(a).map((v, i) => Math.round(v * pa + hex2(b)[i] * (1 - pa)).toString(16).padStart(2, '0')).join('');
+  for (const [name, t] of Object.entries(EXPECTED_THEMES)) {
+    const accents = [t['--cso-accent'], t['--cso-ok-fg'], t['--cso-info-fg'], t['--cso-warn-fg'], t['--cso-err-fg'], mix(t['--cso-info-fg'], t['--cso-err-fg'], 0.52)];
+    for (const a of accents) {
+      const wash = mix(a, t['--cso-surface'], 0.16);
+      const title = mix(a, t['--cso-ink'], 0.65);
+      assert.ok(contrastRatio(title, wash) >= 4.5, `${name} accent title mix ${title} on 16% wash ${wash} < 4.5:1`);
+      assert.ok(contrastRatio(t['--cso-ink'], wash) >= 7, `${name} body ink on wash < 7:1`);
+    }
   }
 });
 

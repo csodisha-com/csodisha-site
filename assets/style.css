@@ -12956,8 +12956,8 @@ nav#cso-hub-top-tabs {
 .cso-acc-purple,
 .cso-topic-card--exams,
 #cso-home-syllabus-section {
-  --card-accent: color-mix(in srgb, var(--cso-info-fg) 60%, var(--cso-err-fg) 40%);
-  --card-on: color-mix(in srgb, var(--cso-info-bg) 60%, var(--cso-err-bg) 40%);
+  --card-accent: color-mix(in srgb, var(--cso-info-fg) 52%, var(--cso-err-fg) 48%);
+  --card-on: color-mix(in srgb, var(--cso-info-bg) 52%, var(--cso-err-bg) 48%);
 }
 
 .cso-acc-success,
@@ -13035,7 +13035,7 @@ nav#cso-hub-top-tabs {
 }
 
 .cso-lu-item:has(.cso-lu-badge--job) { --card-accent: var(--cso-accent); --card-on: var(--cso-accent-ink); }
-.cso-lu-item:has(.cso-lu-badge--exam) { --card-accent: color-mix(in srgb, var(--cso-info-fg) 60%, var(--cso-err-fg) 40%); --card-on: color-mix(in srgb, var(--cso-info-bg) 60%, var(--cso-err-bg) 40%); }
+.cso-lu-item:has(.cso-lu-badge--exam) { --card-accent: color-mix(in srgb, var(--cso-info-fg) 52%, var(--cso-err-fg) 48%); --card-on: color-mix(in srgb, var(--cso-info-bg) 52%, var(--cso-err-bg) 48%); }
 .cso-lu-item:has(.cso-lu-badge--scheme) { --card-accent: var(--cso-ok-fg); --card-on: var(--cso-ok-bg); }
 .cso-lu-item:has(.cso-lu-badge--study),
 .cso-lu-item:has(.cso-lu-badge--ca) { --card-accent: var(--cso-info-fg); --card-on: var(--cso-info-bg); }
@@ -13073,7 +13073,7 @@ nav#cso-hub-top-tabs {
 
 /* 3a. Important Tools: rotating category accents */
 .cso-tools-sec .card.tl:nth-child(8n+1) { --card-accent: var(--cso-accent); --card-on: var(--cso-accent-ink); }
-.cso-tools-sec .card.tl:nth-child(8n+2) { --card-accent: color-mix(in srgb, var(--cso-info-fg) 60%, var(--cso-err-fg) 40%); --card-on: color-mix(in srgb, var(--cso-info-bg) 60%, var(--cso-err-bg) 40%); }
+.cso-tools-sec .card.tl:nth-child(8n+2) { --card-accent: color-mix(in srgb, var(--cso-info-fg) 52%, var(--cso-err-fg) 48%); --card-on: color-mix(in srgb, var(--cso-info-bg) 52%, var(--cso-err-bg) 48%); }
 .cso-tools-sec .card.tl:nth-child(8n+3) { --card-accent: var(--cso-ok-fg); --card-on: var(--cso-ok-bg); }
 .cso-tools-sec .card.tl:nth-child(8n+4) { --card-accent: var(--cso-info-fg); --card-on: var(--cso-info-bg); }
 .cso-tools-sec .card.tl:nth-child(8n+5) { --card-accent: var(--cso-warn-fg); --card-on: var(--cso-warn-bg); }
@@ -13171,4 +13171,101 @@ nav#cso-hub-top-tabs {
   .cso-tools-sec .card.tl .ic {
     transition: none !important;
   }
+}
+
+/* ===== v371 Sharpened Category-Colored Hover/Focus: ID-scoped specificity, 16% gradient wash, 1px ring + glow (4-Theme, Semantic --cso-* Only, Zero Hardcoded Hex) ===== */
+/* 1. Trending & Popular Topics: ID-scoped so these beat every earlier #cso-trending-topics rule */
+#main-content #cso-trending-topics .cso-topic-card--jobs { --card-accent: var(--cso-accent); --card-on: var(--cso-accent-ink); }
+#main-content #cso-trending-topics .cso-topic-card--exams { --card-accent: color-mix(in srgb, var(--cso-info-fg) 52%, var(--cso-err-fg) 48%); --card-on: color-mix(in srgb, var(--cso-info-bg) 52%, var(--cso-err-bg) 48%); }
+#main-content #cso-trending-topics .cso-topic-card--schemes { --card-accent: var(--cso-ok-fg); --card-on: var(--cso-ok-bg); }
+#main-content #cso-trending-topics .cso-topic-card--study { --card-accent: var(--cso-info-fg); --card-on: var(--cso-info-bg); }
+#main-content #cso-trending-topics .cso-topic-card--career { --card-accent: var(--cso-warn-fg); --card-on: var(--cso-warn-bg); }
+#main-content #cso-trending-topics .cso-topic-card--odisha { --card-accent: var(--cso-err-fg); --card-on: var(--cso-err-bg); }
+
+#main-content #cso-trending-topics .cso-topic-card:hover,
+#main-content #cso-trending-topics .cso-topic-card:focus-visible {
+  border-color: var(--card-accent);
+  box-shadow: 0 0 0 1px var(--card-accent), 0 10px 24px -6px color-mix(in srgb, var(--card-accent) 34%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--card-accent) 16%, var(--cso-surface)), color-mix(in srgb, var(--card-accent) 8%, var(--cso-surface)));
+  outline: none;
+}
+
+#main-content #cso-trending-topics .cso-topic-card:hover .cso-topic-card__badge,
+#main-content #cso-trending-topics .cso-topic-card:focus-visible .cso-topic-card__badge {
+  background: var(--card-accent);
+  color: var(--card-on);
+  border-color: var(--card-accent);
+}
+
+#main-content #cso-trending-topics .cso-topic-card:hover .cso-topic-card__title,
+#main-content #cso-trending-topics .cso-topic-card:hover .cso-topic-card__label,
+#main-content #cso-trending-topics .cso-topic-card:focus-visible .cso-topic-card__title,
+#main-content #cso-trending-topics .cso-topic-card:focus-visible .cso-topic-card__label {
+  color: color-mix(in srgb, var(--card-accent) 65%, var(--cso-ink));
+}
+
+/* 2a. Section panels: full perimeter ring + 4px left bar + glow */
+#main-content .cso-hf-section:hover,
+#main-content .cso-hf-section:focus-within {
+  border-color: var(--card-accent);
+  border-left: 4px solid var(--card-accent);
+  background: color-mix(in srgb, var(--card-accent) 15%, var(--cso-surface));
+  box-shadow: 0 0 0 1px var(--card-accent), 0 10px 24px -6px color-mix(in srgb, var(--card-accent) 34%, transparent);
+}
+
+/* 2b. Rows (12% wash) + solid action pills */
+#main-content .cso-hf-row:hover,
+#main-content .cso-hf-row:focus-within,
+#main-content .cso-lu-item:hover,
+#main-content .cso-lu-item:focus-within {
+  border-left-color: var(--card-accent);
+  background: color-mix(in srgb, var(--card-accent) 12%, var(--cso-surface-elevated));
+}
+
+#main-content .cso-hf-row:hover .cso-hf-row__act,
+#main-content .cso-hf-row:focus-within .cso-hf-row__act,
+#main-content .cso-hf-row__act:hover,
+#main-content .cso-hf-row__act:focus-visible,
+#main-content .cso-lu-item:hover .cso-lu-cta,
+#main-content .cso-lu-item:focus-within .cso-lu-cta,
+#main-content .cso-lu-cta:hover,
+#main-content .cso-lu-cta:focus-visible {
+  background: var(--card-accent);
+  color: var(--card-on);
+  border-color: var(--card-accent);
+  box-shadow: 0 4px 10px -4px color-mix(in srgb, var(--card-accent) 50%, transparent);
+}
+
+/* 2c. 8 tool cards: 15% wash + 1px ring + glow, icon fill, tinted title */
+#main-content #cso-tools .card.tl:hover,
+#main-content #cso-tools .card.tl:focus-visible {
+  border-color: var(--card-accent) !important;
+  background: color-mix(in srgb, var(--card-accent) 15%, var(--cso-surface)) !important;
+  box-shadow: 0 0 0 1px var(--card-accent), 0 10px 24px -6px color-mix(in srgb, var(--card-accent) 34%, transparent) !important;
+}
+
+#main-content #cso-tools .card.tl:hover b,
+#main-content #cso-tools .card.tl:focus-visible b {
+  color: color-mix(in srgb, var(--card-accent) 65%, var(--cso-ink)) !important;
+}
+
+/* 2d. Hero search chips + 30-district chips: border, 16% tint, shadow */
+#main-content .hero .search-chip:hover,
+#main-content .hero .search-chip:focus-visible {
+  border-color: var(--cso-accent);
+  background: color-mix(in srgb, var(--cso-accent) 16%, var(--cso-surface));
+  box-shadow: 0 4px 10px -4px color-mix(in srgb, var(--cso-accent) 45%, transparent);
+}
+
+#main-content .cso-dist-chip:hover,
+#main-content .cso-dist-chip:focus-visible {
+  border-color: var(--cso-warn-fg);
+  background: color-mix(in srgb, var(--cso-warn-fg) 16%, var(--cso-surface-elevated));
+  box-shadow: 0 4px 10px -4px color-mix(in srgb, var(--cso-warn-fg) 45%, transparent);
+}
+
+#main-content .cso-dist-chip.is-active:hover,
+#main-content .cso-dist-chip.is-active:focus-visible {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
 }
