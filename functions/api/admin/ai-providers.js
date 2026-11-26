@@ -15,7 +15,8 @@ import {
   ensureAiProvidersSchema,
   maskApiKey,
   validateProviderBaseUrl,
-  testAiProviderConnection
+  testAiProviderConnection,
+  listConfiguredEnvProviders
 } from '../../_lib/ai-coauthor.js';
 import { recordAdminAuditLog } from './system-ops.js';
 
@@ -23,7 +24,7 @@ export async function requireAdmin(request, env) {
   return requireRole(request, env, ['admin']);
 }
 
-const VALID_PROVIDER_TYPES = new Set(['openai_compatible', 'gemini']);
+const VALID_PROVIDER_TYPES = new Set(['openai_compatible', 'gemini', 'anthropic']);
 
 function sanitizeProviderRow(row) {
   if (!row) return null;
@@ -56,7 +57,7 @@ export async function handleAdminAiProvidersApi(request, env, actor, id = '', ct
   await ensureAiProvidersSchema(env.DB);
   const method = request.method.toUpperCase();
 
-  // GET /api/admin/ai-providers -> list all providers with masked api_key (never expose raw keys)
+  // GET /api/admin/ai-providers -> list all providers with masked api_key + active Worker secret flags (never expose raw keys)
   if (method === 'GET') {
     const { results } = await env.DB.prepare(
       `SELECT id, label, provider_type, base_url, model_id, api_key, enabled, priority, created_at, updated_at
@@ -64,7 +65,8 @@ export async function handleAdminAiProvidersApi(request, env, actor, id = '', ct
        ORDER BY priority ASC, created_at ASC`
     ).all();
     const providers = (results || []).map(sanitizeProviderRow);
-    return json({ ok: true, providers });
+    const configured_env_providers = listConfiguredEnvProviders(env);
+    return json({ ok: true, providers, configured_env_providers });
   }
 
   // POST /api/admin/ai-providers/test -> test either saved id or unsaved payload
@@ -105,7 +107,7 @@ export async function handleAdminAiProvidersApi(request, env, actor, id = '', ct
     }
 
     if (!VALID_PROVIDER_TYPES.has(target.provider_type)) {
-      throw validationError({ provider_type: 'Expected openai_compatible or gemini.' });
+      throw validationError({ provider_type: 'Expected openai_compatible, gemini, or anthropic.' });
     }
     const baseCheck = validateProviderBaseUrl(target.base_url);
     if (!baseCheck.ok) {
@@ -157,7 +159,7 @@ export async function handleAdminAiProvidersApi(request, env, actor, id = '', ct
 
     const errs = {};
     if (!label) errs.label = 'Display label is required.';
-    if (!VALID_PROVIDER_TYPES.has(providerType)) errs.provider_type = 'Provider type must be openai_compatible or gemini.';
+    if (!VALID_PROVIDER_TYPES.has(providerType)) errs.provider_type = 'Provider type must be openai_compatible, gemini, or anthropic.';
     const baseCheck = validateProviderBaseUrl(rawBaseUrl);
     if (!baseCheck.ok) errs.base_url = baseCheck.error;
     if (!modelId) errs.model_id = 'Model ID is required.';

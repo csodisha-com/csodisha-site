@@ -212,67 +212,151 @@
   }
 
   // =========================================================================
-  // v361 MULTI-PROVIDER AI ENGINE SWITCHER & API MANAGER MODAL (STRICT CSP)
+  // v362 MULTI-PROVIDER AI ENGINE SWITCHER & 12-PRESET API MANAGER (STRICT CSP)
   // =========================================================================
   var AI_ENGINE_STORAGE_KEY = 'cso_admin_preferred_ai_model';
   var cachedCustomAiProviders = [];
+  var cachedEnvAiProviders = [];
 
-  var AI_PROVIDER_PRESETS = [
+  var AI_PROVIDER_PRESET_GROUPS = [
     {
-      key: 'groq',
-      chip: '\u26A1 Groq Free',
-      label: 'Groq Free (Llama 3.3 70B)',
-      provider_type: 'openai_compatible',
-      base_url: 'https://api.groq.com/openai/v1',
-      model_id: 'llama-3.3-70b-versatile',
-      hint: 'Fast $0 free tier. Also supports llama-3.1-8b-instant or openai/gpt-oss-120b.'
+      group: 'Free-Tier Ready ($0/Month)',
+      presets: [
+        {
+          key: 'gemini_backup',
+          chip: '\u2728 Google AI Studio (Backup Key)',
+          label: 'Google AI Studio (Backup Key)',
+          provider_type: 'gemini',
+          base_url: 'https://generativelanguage.googleapis.com/v1beta',
+          model_id: 'gemini-2.5-flash',
+          hint: 'Secondary Google AI Studio key for extra free daily Gemini quota (gemini-2.5-flash / gemini-2.5-flash-lite).'
+        },
+        {
+          key: 'groq',
+          chip: '\u26A1 Groq Free',
+          label: 'Groq Free (Llama 3.3 70B)',
+          provider_type: 'openai_compatible',
+          base_url: 'https://api.groq.com/openai/v1',
+          model_id: 'llama-3.3-70b-versatile',
+          hint: 'Fast $0 free tier. Also supports llama-3.1-8b-instant or openai/gpt-oss-120b.'
+        },
+        {
+          key: 'openrouter',
+          chip: '\uD83C\uDF10 OpenRouter Free',
+          label: 'OpenRouter Free Router',
+          provider_type: 'openai_compatible',
+          base_url: 'https://openrouter.ai/api/v1',
+          model_id: 'openrouter/free',
+          hint: 'Auto-routes to active free community models via openrouter.ai.'
+        },
+        {
+          key: 'cerebras',
+          chip: '\uD83D\uDE80 Cerebras Free',
+          label: 'Cerebras Free (Llama 3.3 70B)',
+          provider_type: 'openai_compatible',
+          base_url: 'https://api.cerebras.ai/v1',
+          model_id: 'llama-3.3-70b',
+          hint: 'Ultra-fast free inference endpoint on Cerebras Cloud.'
+        },
+        {
+          key: 'mistral',
+          chip: '\uD83C\uDF2C\uFE0F Mistral Free',
+          label: 'Mistral Free (Small Latest)',
+          provider_type: 'openai_compatible',
+          base_url: 'https://api.mistral.ai/v1',
+          model_id: 'mistral-small-latest',
+          hint: 'Mistral La Plateforme free tier endpoint.'
+        },
+        {
+          key: 'huggingface',
+          chip: '\uD83E\uDD17 Hugging Face Router',
+          label: 'Hugging Face Router (Gemma 4 26B)',
+          provider_type: 'openai_compatible',
+          base_url: 'https://router.huggingface.co/v1',
+          model_id: 'google/gemma-4-26b-a4b-it',
+          hint: 'Uses your Hugging Face token (hf_...) via router.huggingface.co/v1.'
+        }
+      ]
     },
     {
-      key: 'openrouter',
-      chip: '\uD83C\uDF10 OpenRouter Free Router',
-      label: 'OpenRouter Free Router',
-      provider_type: 'openai_compatible',
-      base_url: 'https://openrouter.ai/api/v1',
-      model_id: 'openrouter/free',
-      hint: 'Auto-routes to active free community models via openrouter.ai.'
+      group: 'Indian Language / Odia Specialist',
+      presets: [
+        {
+          key: 'sarvam',
+          chip: '\uD83C\uDDEE\uD83C\uDDF3 Sarvam AI (Sarvam-105B — Odia & Indic)',
+          label: 'Sarvam AI (Sarvam-105B Odia)',
+          provider_type: 'openai_compatible',
+          base_url: 'https://api.sarvam.ai/v1',
+          model_id: 'sarvam-105b',
+          hint: 'High-accuracy Odia & Indian language model via Sarvam AI (Authorization: Bearer <API Key>).'
+        }
+      ]
     },
     {
-      key: 'cerebras',
-      chip: '\uD83D\uDE80 Cerebras Free',
-      label: 'Cerebras Free (Llama 3.3 70B)',
-      provider_type: 'openai_compatible',
-      base_url: 'https://api.cerebras.ai/v1',
-      model_id: 'llama-3.3-70b',
-      hint: 'Ultra-fast free inference endpoint.'
-    },
-    {
-      key: 'mistral',
-      chip: '\uD83C\uDF2C\uFE0F Mistral Free',
-      label: 'Mistral Free (Small Latest)',
-      provider_type: 'openai_compatible',
-      base_url: 'https://api.mistral.ai/v1',
-      model_id: 'mistral-small-latest',
-      hint: 'Mistral La Plateforme free tier endpoint.'
-    },
-    {
-      key: 'gemini_backup',
-      chip: '\u2728 Backup Google Gemini Key',
-      label: 'Backup Google Gemini Key',
-      provider_type: 'gemini',
-      base_url: 'https://generativelanguage.googleapis.com/v1beta',
-      model_id: 'gemini-2.5-flash',
-      hint: 'Use a secondary Google AI Studio key for extra free daily Gemini quota.'
-    },
-    {
-      key: 'custom',
-      chip: '\uD83D\uDD27 Custom OpenAI-Compatible',
-      label: 'Custom OpenAI-Compatible API',
-      provider_type: 'openai_compatible',
-      base_url: '',
-      model_id: '',
-      hint: 'Enter any public https:// OpenAI-compatible /v1 Base URL and Model ID.'
+      group: 'Frontier & Additional APIs (Add Anytime Later)',
+      presets: [
+        {
+          key: 'openai',
+          chip: '\uD83E\uDDE0 OpenAI',
+          label: 'OpenAI (GPT-4o Mini)',
+          provider_type: 'openai_compatible',
+          base_url: 'https://api.openai.com/v1',
+          model_id: 'gpt-4o-mini',
+          hint: 'OpenAI API endpoint. Supports gpt-4o-mini, gpt-4o, or o4-mini.'
+        },
+        {
+          key: 'anthropic',
+          chip: '\uD83D\uDFE0 Anthropic (Claude)',
+          label: 'Anthropic (Claude Sonnet)',
+          provider_type: 'anthropic',
+          base_url: 'https://api.anthropic.com/v1',
+          model_id: 'claude-3-5-sonnet-latest',
+          hint: 'Native Anthropic Messages API (/v1/messages with x-api-key & anthropic-version: 2023-06-01).'
+        },
+        {
+          key: 'xai',
+          chip: '\u2716\uFE0F xAI (Grok)',
+          label: 'xAI (Grok 4.7)',
+          provider_type: 'openai_compatible',
+          base_url: 'https://api.x.ai/v1',
+          model_id: 'grok-4.7',
+          hint: 'xAI Grok OpenAI-compatible endpoint (api.x.ai/v1).'
+        },
+        {
+          key: 'meta',
+          chip: '\u267E\uFE0F Meta Model API (Muse)',
+          label: 'Meta Model API (Muse Spark 1.3)',
+          provider_type: 'openai_compatible',
+          base_url: 'https://api.meta.ai/v1',
+          model_id: 'muse-spark-1.3',
+          hint: 'Meta Model API endpoint (api.meta.ai/v1 · muse-spark-1.3).'
+        },
+        {
+          key: 'deepseek',
+          chip: '\uD83D\uDD35 DeepSeek',
+          label: 'DeepSeek (DeepSeek Chat)',
+          provider_type: 'openai_compatible',
+          base_url: 'https://api.deepseek.com/v1',
+          model_id: 'deepseek-chat',
+          hint: 'DeepSeek OpenAI-compatible API (api.deepseek.com/v1 · deepseek-chat).'
+        },
+        {
+          key: 'custom',
+          chip: '\uD83D\uDD27 Custom OpenAI-Compatible Endpoint',
+          label: 'Custom OpenAI-Compatible API',
+          provider_type: 'openai_compatible',
+          base_url: '',
+          model_id: '',
+          hint: 'Enter any public https:// OpenAI-compatible /v1 Base URL and Model ID.'
+        }
+      ]
     }
   ];
+
+  var AI_PROVIDER_PRESETS = [];
+  AI_PROVIDER_PRESET_GROUPS.forEach(function (g) {
+    g.presets.forEach(function (pr) { AI_PROVIDER_PRESETS.push(pr); });
+  });
 
   function getSavedAiEnginePref() {
     try {
@@ -291,13 +375,15 @@
     return clean;
   }
 
-  function populateAiEngineSelect(selectEl, providersList) {
+  function populateAiEngineSelect(selectEl, providersList, envProvidersList) {
     if (!selectEl) return;
     var wanted = getSavedAiEnginePref();
     var list = Array.isArray(providersList) ? providersList : cachedCustomAiProviders;
+    var envList = Array.isArray(envProvidersList) ? envProvidersList : cachedEnvAiProviders;
     clear(selectEl);
 
     function addGroup(groupLabel, items) {
+      if (!items || !items.length) return;
       var og = el('optgroup');
       og.label = groupLabel;
       items.forEach(function (item) {
@@ -313,6 +399,7 @@
       { value: 'auto', label: '\u2728 Auto Smart Cascade (Custom \u2192 Gemini \u2192 Workers AI)' }
     ]);
 
+    // Active D1-saved keys only (unadded presets stay dormant in "+ Add AI API" catalog)
     var enabledCustom = list.filter(function (p) { return p && p.id && p.enabled !== false; });
     if (enabledCustom.length) {
       addGroup('Custom Added AI APIs', enabledCustom.map(function (p) {
@@ -321,10 +408,17 @@
           label: '\uD83D\uDD11 ' + p.label + ' (' + p.model_id + ')'
         };
       }));
-    } else {
-      addGroup('Custom Added AI APIs', [
-        { value: '__none_custom__', label: 'No custom APIs saved yet (click + Add AI API)', disabled: true }
-      ]);
+    }
+
+    // Active Cloudflare Worker Secrets only (unconfigured secrets never appear)
+    var activeEnv = envList.filter(function (ep) { return ep && ep.value && ep.configured !== false; });
+    if (activeEnv.length) {
+      addGroup('Configured Worker Secrets', activeEnv.map(function (ep) {
+        return {
+          value: ep.value,
+          label: '\uD83D\uDD10 ' + ep.label + ' (' + ep.model_id + ')'
+        };
+      }));
     }
 
     addGroup('Google AI Studio ($0 Free Tier)', [
@@ -357,8 +451,11 @@
   function fetchCustomAiProviders() {
     return apiFetch('/api/admin/ai-providers').then(function (res) {
       cachedCustomAiProviders = (res && Array.isArray(res.providers)) ? res.providers : [];
+      cachedEnvAiProviders = (res && Array.isArray(res.configured_env_providers)) ? res.configured_env_providers : [];
       try {
-        window.dispatchEvent(new CustomEvent('cso:ai-providers-updated', { detail: { providers: cachedCustomAiProviders } }));
+        window.dispatchEvent(new CustomEvent('cso:ai-providers-updated', {
+          detail: { providers: cachedCustomAiProviders, configured_env_providers: cachedEnvAiProviders }
+        }));
       } catch (_e) {}
       return cachedCustomAiProviders;
     }).catch(function () {
@@ -382,8 +479,8 @@
     var head = el('div', 'cso-aip-head');
     var headCopy = el('div', 'cso-aip-head-copy');
     headCopy.append(
-      el('h3', 'cso-aip-title', '\uD83D\uDD11 Multi-Provider AI API Manager'),
-      el('p', 'cso-aip-sub', 'Add free-tier Groq, OpenRouter, Cerebras, Mistral, Backup Gemini, or custom OpenAI-compatible API keys. Stored securely in D1 and masked on read.')
+      el('h3', 'cso-aip-title', '\uD83D\uDD11 Multi-Provider AI API Manager (12 Presets)'),
+      el('p', 'cso-aip-sub', 'Activate any of 12 ready-to-use AI providers—unconfigured presets stay dormant until you save a key. Keys are stored in D1 and always masked on read.')
     );
     var btnClose = el('button', 'cso-pill-btn', '\u2715 Close');
     btnClose.type = 'button';
@@ -392,11 +489,11 @@
 
     var body = el('div', 'cso-aip-body');
 
-    // 1-Click Presets Row
+    // 1-Click Grouped 12-Provider Preset Catalog
     var presetSec = el('div', 'cso-aip-section');
-    presetSec.appendChild(el('div', 'cso-aip-sec-label', '1-Click Provider Presets'));
-    var presetGrid = el('div', 'cso-aip-presets');
-    var presetHint = el('p', 'cso-aip-hint', 'Pick a preset below to pre-fill Base URL & Model ID, then paste your API key and click Test Connection.');
+    presetSec.appendChild(el('div', 'cso-aip-sec-label', '1-Click Provider Preset Catalog (12 Engines + Custom)'));
+    var presetGroupsWrap = el('div', 'cso-aip-preset-groups');
+    var presetHint = el('p', 'cso-aip-hint', 'Pick any preset below to pre-fill Protocol, Base URL & Model ID, then paste your API key and click Test Connection.');
 
     // Form Inputs
     var formGrid = el('div', 'cso-form-grid cso-aip-form-grid');
@@ -418,7 +515,8 @@
     selType.id = 'selAiProvType';
     [
       ['openai_compatible', 'OpenAI-Compatible (/chat/completions)'],
-      ['gemini', 'Google Gemini (:generateContent)']
+      ['gemini', 'Google Gemini (:generateContent)'],
+      ['anthropic', 'Anthropic Claude (/v1/messages)']
     ].forEach(function (pair) {
       var op = el('option', '', pair[1]);
       op.value = pair[0];
@@ -457,25 +555,32 @@
       mkGrp('API Key *', inpApiKey, true)
     );
 
-    AI_PROVIDER_PRESETS.forEach(function (pr) {
-      var pb = el('button', 'cso-pill-btn cso-aip-preset-btn', pr.chip);
-      pb.type = 'button';
-      pb.setAttribute('data-ai-preset', pr.key);
-      pb.addEventListener('click', function () {
-        editingProviderId = '';
-        inpLabel.value = pr.label;
-        selType.value = pr.provider_type;
-        inpBaseUrl.value = pr.base_url;
-        inpModelId.value = pr.model_id;
-        inpApiKey.value = '';
-        inpApiKey.placeholder = 'Paste your ' + pr.chip.replace(/^[^\s]+\s+/, '') + ' API key...';
-        presetHint.textContent = pr.hint;
-        btnSave.textContent = '\uD83D\uDCBE Save Provider';
-        inpApiKey.focus();
+    AI_PROVIDER_PRESET_GROUPS.forEach(function (grp) {
+      var grpBox = el('div', 'cso-aip-preset-group');
+      grpBox.appendChild(el('div', 'cso-aip-preset-group-lbl', grp.group));
+      var presetGrid = el('div', 'cso-aip-presets');
+      grp.presets.forEach(function (pr) {
+        var pb = el('button', 'cso-pill-btn cso-aip-preset-btn', pr.chip);
+        pb.type = 'button';
+        pb.setAttribute('data-ai-preset', pr.key);
+        pb.addEventListener('click', function () {
+          editingProviderId = '';
+          inpLabel.value = pr.label;
+          selType.value = pr.provider_type;
+          inpBaseUrl.value = pr.base_url;
+          inpModelId.value = pr.model_id;
+          inpApiKey.value = '';
+          inpApiKey.placeholder = 'Paste your ' + pr.label + ' API key...';
+          presetHint.textContent = pr.hint;
+          btnSave.textContent = '\uD83D\uDCBE Save Provider';
+          inpApiKey.focus();
+        });
+        presetGrid.appendChild(pb);
       });
-      presetGrid.appendChild(pb);
+      grpBox.appendChild(presetGrid);
+      presetGroupsWrap.appendChild(grpBox);
     });
-    presetSec.append(presetGrid, presetHint);
+    presetSec.append(presetGroupsWrap, presetHint);
 
     var modalStatus = el('div', 'cso-aip-status', 'Ready \u00B7 Add a provider or select a 1-click preset above.');
     modalStatus.id = 'csoAiProvidersModalStatus';
@@ -523,18 +628,29 @@
 
     function renderSavedList(providers) {
       clear(listHost);
+      if (cachedEnvAiProviders && cachedEnvAiProviders.length) {
+        var envStrip = el('div', 'cso-aip-env-strip');
+        envStrip.appendChild(el('strong', 'cso-aip-env-lbl', '\uD83D\uDD10 Active Worker Secrets: '));
+        cachedEnvAiProviders.forEach(function (ep) {
+          envStrip.appendChild(el('span', 'cso-pill-badge', ep.label + ' (' + ep.model_id + ')'));
+        });
+        listHost.appendChild(envStrip);
+      }
       if (!providers || !providers.length) {
-        listHost.appendChild(el('p', 'cso-ca-empty', 'No custom AI providers configured yet. Click any preset above (Groq, OpenRouter, Cerebras, Mistral, Backup Gemini) to add one.'));
+        listHost.appendChild(el('p', 'cso-ca-empty', 'No custom AI providers saved in D1 yet. Pick any of the 12 presets above to activate one.'));
         return;
       }
       providers.forEach(function (p) {
         var row = el('div', 'cso-aip-item' + (p.enabled ? '' : ' is-disabled'));
         var info = el('div', 'cso-aip-item-info');
         var topLine = el('div', 'cso-aip-item-top');
+        var typeBadge = p.provider_type === 'gemini'
+          ? 'Gemini'
+          : (p.provider_type === 'anthropic' ? 'Anthropic' : 'OpenAI-Compat');
         topLine.append(
           el('strong', 'cso-aip-item-name', p.label),
           el('span', 'cso-pill-badge', '#' + p.priority),
-          el('span', 'cso-pill-badge', p.provider_type === 'gemini' ? 'Gemini' : 'OpenAI-Compat'),
+          el('span', 'cso-pill-badge', typeBadge),
           el('span', 'cso-pill-badge', p.enabled ? 'Enabled' : 'Disabled')
         );
         var metaLine = el('div', 'cso-aip-item-meta', p.model_id + ' \u00B7 ' + p.base_url + ' \u00B7 Key: ' + (p.api_key_masked || '****'));
@@ -716,6 +832,8 @@
   window.CSOOpenAiProvidersModal = openAiProvidersManagerModal;
   window.CSOAiEngineHelper = {
     storageKey: AI_ENGINE_STORAGE_KEY,
+    presets: AI_PROVIDER_PRESETS,
+    presetGroups: AI_PROVIDER_PRESET_GROUPS,
     getPref: getSavedAiEnginePref,
     setPref: saveAiEnginePref,
     populateSelect: populateAiEngineSelect,
@@ -2335,17 +2453,18 @@
     window.addEventListener('cso:ai-providers-updated', function (ev) {
       if (!selGuideAiEngine.isConnected) return;
       var list = (ev && ev.detail && ev.detail.providers) || cachedCustomAiProviders;
-      populateAiEngineSelect(selGuideAiEngine, list);
+      var envList = (ev && ev.detail && ev.detail.configured_env_providers) || cachedEnvAiProviders;
+      populateAiEngineSelect(selGuideAiEngine, list, envList);
     });
     window.addEventListener('cso:ai-engine-changed', function (ev) {
       if (!selGuideAiEngine.isConnected) return;
       var nextVal = ev && ev.detail && ev.detail.value;
       if (nextVal && selGuideAiEngine.value !== nextVal) {
-        populateAiEngineSelect(selGuideAiEngine, cachedCustomAiProviders);
+        populateAiEngineSelect(selGuideAiEngine, cachedCustomAiProviders, cachedEnvAiProviders);
       }
     });
     fetchCustomAiProviders().then(function (list) {
-      if (selGuideAiEngine.isConnected) populateAiEngineSelect(selGuideAiEngine, list);
+      if (selGuideAiEngine.isConnected) populateAiEngineSelect(selGuideAiEngine, list, cachedEnvAiProviders);
     });
 
     var aiActions = el('div', 'cso-guide-ai-actions');

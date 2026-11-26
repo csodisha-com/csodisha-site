@@ -23,6 +23,8 @@ import {
   normalizeTranslatedMarkdownPipes,
   VALID_AI_MODES,
   callOpenAiCompatibleProvider,
+  callAnthropicMessagesProvider,
+  listConfiguredEnvProviders,
   maskApiKey,
   validateProviderBaseUrl,
   testAiProviderConnection
@@ -238,8 +240,8 @@ await test('5. Wrangler AI binding, migration 0149, CSP compliance & v318 cache 
   const mig = read('migrations/0149_ai_coauthor_v318.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS ai_generation_logs'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v361');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v361';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v362');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v362';"));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('window.CSOAiCoAuthor'));
@@ -1258,4 +1260,125 @@ await test('12. v361 Multi-Provider AI Router: SSRF validation, OpenAI-compatibl
   }
 });
 
-console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 + v358 + v359 + v361 Results: ${passed} passed, 0 failed ===\n`);
+await test('13. v362 12-Provider Adapters: Anthropic Messages API, Sarvam/HF/Grok/Meta/OpenAI/DeepSeek endpoints & dormant env filtering', async () => {
+  // A. callAnthropicMessagesProvider: /v1/messages, x-api-key, anthropic-version: 2023-06-01, JSON repair & testAiProviderConnection
+  const seen = [];
+  const origFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    const bodyObj = JSON.parse(String(init && init.body || '{}'));
+    seen.push({ url: String(url), headers: init && init.headers, body: bodyObj });
+    if (String(url).includes('api.anthropic.com/v1/messages')) {
+      const isPing = bodyObj.messages && bodyObj.messages[0] && bodyObj.messages[0].content === 'Reply with OK';
+      return new Response(JSON.stringify({
+        content: [{ type: 'text', text: isPing ? 'OK' : '```json\n{"translated_or": "କ୍ଲାଉଡ୍ ଓଡ଼ିଆ ଅନୁବାଦ"}\n```' }]
+      }), { status: 200 });
+    }
+    if (String(url).includes('api.sarvam.ai/v1/chat/completions')) {
+      return new Response(JSON.stringify({
+        choices: [{ message: { content: JSON.stringify({ translated_or: 'ସର୍ବମ୍ ଓଡ଼ିଆ ଅନୁବାଦ' }) } }]
+      }), { status: 200 });
+    }
+    if (String(url).includes('router.huggingface.co/v1/chat/completions')) {
+      return new Response(JSON.stringify({
+        choices: [{ message: { content: JSON.stringify({ translated_or: 'HF Gemma ଓଡ଼ିଆ ଅନୁବାଦ' }) } }]
+      }), { status: 200 });
+    }
+    if (String(url).includes('api.x.ai/v1/chat/completions') || String(url).includes('api.meta.ai/v1/chat/completions') || String(url).includes('api.openai.com/v1/chat/completions') || String(url).includes('api.deepseek.com/v1/chat/completions')) {
+      return new Response(JSON.stringify({
+        choices: [{ message: { content: 'OK' } }]
+      }), { status: 200 });
+    }
+    throw new Error('Unexpected fetch: ' + url);
+  };
+
+  try {
+    const claudeOut = await callAnthropicMessagesProvider(
+      {
+        id: 'prov_claude',
+        label: 'Anthropic (Claude Sonnet)',
+        provider_type: 'anthropic',
+        base_url: 'https://api.anthropic.com/v1',
+        model_id: 'claude-3-5-sonnet-latest',
+        api_key: 'sk-ant-test-key-4455'
+      },
+      'Return JSON only.',
+      'Translate to Odia',
+      { jsonMode: true, maxTokens: 1024 }
+    );
+    assert.equal(seen[0].url, 'https://api.anthropic.com/v1/messages');
+    assert.equal(seen[0].headers['x-api-key'], 'sk-ant-test-key-4455');
+    assert.equal(seen[0].headers['anthropic-version'], '2023-06-01');
+    assert.equal(seen[0].body.system, 'Return JSON only.');
+    assert.deepEqual(seen[0].body.messages, [{ role: 'user', content: 'Translate to Odia' }]);
+    assert.equal(claudeOut.parsed.translated_or, 'କ୍ଲାଉଡ୍ ଓଡ଼ିଆ ଅନୁବାଦ');
+    assert.ok(claudeOut.provider_model.includes('Anthropic') && claudeOut.provider_model.includes('claude-3-5-sonnet-latest'));
+
+    // testAiProviderConnection works for provider_type: 'anthropic'
+    const claudePing = await testAiProviderConnection({
+      label: 'Anthropic Claude',
+      provider_type: 'anthropic',
+      base_url: 'https://api.anthropic.com/v1',
+      model_id: 'claude-3-5-sonnet-latest',
+      api_key: 'sk-ant-test-key-4455'
+    });
+    assert.equal(claudePing.ok, true);
+    assert.equal(claudePing.model_id, 'claude-3-5-sonnet-latest');
+
+    // Sarvam AI (Odia) & Hugging Face Router via callOpenAiCompatibleProvider
+    const sarvamOut = await callOpenAiCompatibleProvider(
+      { label: 'Sarvam AI', base_url: 'https://api.sarvam.ai/v1', model_id: 'sarvam-105b', api_key: 'sarvam_live_1234' },
+      'Return JSON', 'Translate', { jsonMode: true, maxTokens: 512 }
+    );
+    assert.equal(sarvamOut.parsed.translated_or, 'ସର୍ବମ୍ ଓଡ଼ିଆ ଅନୁବାଦ');
+    const sarvamReq = seen.find((r) => r.url.includes('api.sarvam.ai'));
+    assert.equal(sarvamReq.headers.Authorization, 'Bearer sarvam_live_1234');
+    assert.equal(sarvamReq.body.model, 'sarvam-105b');
+
+    const hfOut = await callOpenAiCompatibleProvider(
+      { label: 'Hugging Face Router', base_url: 'https://router.huggingface.co/v1', model_id: 'google/gemma-4-26b-a4b-it', api_key: 'hf_token_9876' },
+      'Return JSON', 'Translate', { jsonMode: true, maxTokens: 512 }
+    );
+    assert.equal(hfOut.parsed.translated_or, 'HF Gemma ଓଡ଼ିଆ ଅନୁବାଦ');
+
+    // Frontier presets (OpenAI, xAI Grok, Meta Muse, DeepSeek) connection tests
+    const frontierProviders = [
+      { label: 'OpenAI', base_url: 'https://api.openai.com/v1', model_id: 'gpt-4o-mini', api_key: 'sk-openai-1111' },
+      { label: 'xAI Grok', base_url: 'https://api.x.ai/v1', model_id: 'grok-4.7', api_key: 'xai-2222' },
+      { label: 'Meta Model API', base_url: 'https://api.meta.ai/v1', model_id: 'muse-spark-1.3', api_key: 'meta-3333' },
+      { label: 'DeepSeek', base_url: 'https://api.deepseek.com/v1', model_id: 'deepseek-chat', api_key: 'sk-ds-4444' }
+    ];
+    for (const fp of frontierProviders) {
+      const ping = await testAiProviderConnection({ ...fp, provider_type: 'openai_compatible' });
+      assert.equal(ping.ok, true, `${fp.label} testAiProviderConnection must succeed`);
+      assert.equal(ping.model_id, fp.model_id);
+    }
+
+    // B. listConfiguredEnvProviders exposes ONLY active secrets & never exposes raw keys; dormant providers never called
+    const activeEnv = listConfiguredEnvProviders({
+      SARVAM_API_KEY: 'sarvam_secret_999',
+      ANTHROPIC_API_KEY: 'sk-ant-secret-888',
+      HF_TOKEN: 'hf_secret_777',
+      OPENAI_API_KEY: '',
+      XAI_API_KEY: undefined
+    });
+    assert.equal(activeEnv.length, 3, 'Only the 3 non-empty secrets should be exposed');
+    assert.deepEqual(activeEnv.map((x) => x.value).sort(), ['env:anthropic', 'env:huggingface', 'env:sarvam']);
+    assert.ok(activeEnv.every((x) => x.api_key === undefined && x.configured === true), 'Never expose raw secret values');
+
+    // C. preferred_model: 'env:anthropic' and 'env:sarvam' route cleanly through generateAiCoAuthorDraft
+    const db = createMockDb();
+    seen.length = 0;
+    const envAnthropicRes = await generateAiCoAuthorDraft(
+      { DB: db, ANTHROPIC_API_KEY: 'sk-ant-secret-888', SARVAM_API_KEY: 'sarvam_secret_999' },
+      { mode: 'translate_odia', input: 'Odisha Civil Services 2026', preferred_model: 'env:anthropic', actorId: 'adm_1' }
+    );
+    assert.equal(envAnthropicRes.ok, true);
+    assert.equal(envAnthropicRes.data.translated_or, 'କ୍ଲାଉଡ୍ ଓଡ଼ିଆ ଅନୁବାଦ');
+    assert.equal(seen.length, 1, 'Dormant or non-selected providers must not be called when preferred env:anthropic succeeds');
+    assert.ok(seen[0].url.includes('api.anthropic.com/v1/messages'));
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 + v358 + v359 + v361 + v362 Results: ${passed} passed, 0 failed ===\n`);

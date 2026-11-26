@@ -121,9 +121,10 @@
     // Popover Body
     var body = el('div', 'cso-htr-body');
 
-    // v361 Synced AI Engine Selector Row (shared with #selGuideAiEngine via cso_admin_preferred_ai_model)
+    // v362 Synced AI Engine Selector Row (shared with #selGuideAiEngine via cso_admin_preferred_ai_model)
     var ENGINE_KEY = 'cso_admin_preferred_ai_model';
     var customProvidersCache = [];
+    var envProvidersCache = [];
 
     function readPrefModel() {
       try {
@@ -149,14 +150,16 @@
     selTrEngine.id = 'selHeaderTranslatorAiEngine';
     selTrEngine.setAttribute('aria-label', 'Translator AI Engine');
 
-    function populateTranslatorEngineSelect(list) {
+    function populateTranslatorEngineSelect(list, envList) {
+      var activeEnvList = Array.isArray(envList) ? envList : envProvidersCache;
       if (window.CSOAiEngineHelper && typeof window.CSOAiEngineHelper.populateSelect === 'function') {
-        window.CSOAiEngineHelper.populateSelect(selTrEngine, list);
+        window.CSOAiEngineHelper.populateSelect(selTrEngine, list, activeEnvList);
         return;
       }
       var wanted = readPrefModel();
       while (selTrEngine.firstChild) selTrEngine.removeChild(selTrEngine.firstChild);
       function addGrp(lbl, opts) {
+        if (!opts || !opts.length) return;
         var og = el('optgroup');
         og.label = lbl;
         opts.forEach(function (it) {
@@ -172,6 +175,12 @@
       if (enabledCustom.length) {
         addGrp('Custom Added AI APIs', enabledCustom.map(function (p) {
           return { value: 'custom:' + p.id, label: '\uD83D\uDD11 ' + p.label + ' (' + p.model_id + ')' };
+        }));
+      }
+      var activeEnv = activeEnvList.filter(function (ep) { return ep && ep.value && ep.configured !== false; });
+      if (activeEnv.length) {
+        addGrp('Configured Worker Secrets', activeEnv.map(function (ep) {
+          return { value: ep.value, label: '\uD83D\uDD10 ' + ep.label + ' (' + ep.model_id + ')' };
         }));
       }
       addGrp('Google AI Studio ($0 Free Tier)', [
@@ -195,7 +204,7 @@
       selTrEngine.value = found ? wanted : 'auto';
     }
 
-    populateTranslatorEngineSelect(customProvidersCache);
+    populateTranslatorEngineSelect(customProvidersCache, envProvidersCache);
     selTrEngine.addEventListener('change', function () {
       writePrefModel(selTrEngine.value);
     });
@@ -203,7 +212,7 @@
     var btnTrManageApis = el('button', 'cso-pill-btn cso-htr-api-btn', '\uD83D\uDD11 APIs');
     btnTrManageApis.type = 'button';
     btnTrManageApis.id = 'btnHeaderTrManageApis';
-    btnTrManageApis.title = 'Manage Custom AI Providers (Groq, OpenRouter, Cerebras, Mistral, Backup Gemini)';
+    btnTrManageApis.title = 'Manage Custom AI Providers (12 Presets: Groq, OpenRouter, Sarvam Odia, Claude, OpenAI, Grok, Meta Muse, HF)';
     btnTrManageApis.addEventListener('click', function () {
       if (typeof window.CSOOpenAiProvidersModal === 'function') {
         closePopover(false);
@@ -221,7 +230,8 @@
         .then(function (d) {
           if (d && Array.isArray(d.providers)) {
             customProvidersCache = d.providers;
-            populateTranslatorEngineSelect(customProvidersCache);
+            envProvidersCache = Array.isArray(d.configured_env_providers) ? d.configured_env_providers : [];
+            populateTranslatorEngineSelect(customProvidersCache, envProvidersCache);
           }
         })
         .catch(function () {});
@@ -229,13 +239,15 @@
 
     window.addEventListener('cso:ai-providers-updated', function (ev) {
       var list = (ev && ev.detail && ev.detail.providers) || customProvidersCache;
+      var envList = (ev && ev.detail && ev.detail.configured_env_providers) || envProvidersCache;
       customProvidersCache = list;
-      populateTranslatorEngineSelect(customProvidersCache);
+      envProvidersCache = envList;
+      populateTranslatorEngineSelect(customProvidersCache, envProvidersCache);
     });
     window.addEventListener('cso:ai-engine-changed', function (ev) {
       var nextVal = ev && ev.detail && ev.detail.value;
       if (nextVal && selTrEngine.value !== nextVal) {
-        populateTranslatorEngineSelect(customProvidersCache);
+        populateTranslatorEngineSelect(customProvidersCache, envProvidersCache);
       }
     });
     loadTranslatorCustomProviders();

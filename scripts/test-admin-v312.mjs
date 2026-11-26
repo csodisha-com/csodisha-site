@@ -565,9 +565,9 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
 });
 
 // 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v361
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v361 CSS, and cso-candidate-cache-v361 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v361');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v361';"), 'sw.js cache version must be cso-candidate-cache-v361');
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v362 CSS, and cso-candidate-cache-v362 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v362');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v362';"), 'sw.js cache version must be cso-candidate-cache-v362');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -705,9 +705,9 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
   assert.ok(adminHtml.includes('id="headerTranslatorWrap"') && adminHtml.includes('id="btnHeaderOdiaTranslator"') && adminHtml.includes('aria-controls="csoHeaderTranslatorPopover"'), 'admin/index.html must pin #btnHeaderOdiaTranslator in the top header bar');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v361'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v361');
-  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v361'), 'admin/index.html must load studio-translator.js?v=20261126v361');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v361'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v362'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v362');
+  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v362'), 'admin/index.html must load studio-translator.js?v=20261126v362');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v362'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
@@ -1054,6 +1054,78 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
     env, adminActor, '', ctx
   )).json();
   assert.equal(listAfterDel.providers.length, 0);
+
+  // G. v362: Anthropic provider CRUD, configured_env_providers active-only filtering & 12-preset UI catalog
+  const createAnthropicRes = await handleAdminAiProvidersApi(
+    jsonReq('https://csodisha.com/api/admin/ai-providers', 'POST', {
+      label: 'Anthropic (Claude Sonnet)',
+      provider_type: 'anthropic',
+      base_url: 'https://api.anthropic.com/v1',
+      model_id: 'claude-3-5-sonnet-latest',
+      api_key: 'sk-ant-api03-live-secret-5566',
+      priority: 3,
+      enabled: true
+    }),
+    env, adminActor, '', ctx
+  );
+  assert.equal(createAnthropicRes.status, 201);
+  const createdAnthropic = (await createAnthropicRes.json()).provider;
+  assert.equal(createdAnthropic.provider_type, 'anthropic');
+  assert.equal(createdAnthropic.api_key_masked, 'sk-...5566');
+  assert.equal(createdAnthropic.api_key, undefined);
+
+  const envWithSecrets = {
+    ...env,
+    SARVAM_API_KEY: 'sarvam_live_key_123',
+    HF_TOKEN: 'hf_live_token_456',
+    META_API_KEY: 'meta_live_key_789',
+    XAI_API_KEY: ''
+  };
+  const listWithEnv = await (await handleAdminAiProvidersApi(
+    new Request('https://csodisha.com/api/admin/ai-providers'),
+    envWithSecrets, adminActor, '', ctx
+  )).json();
+  assert.equal(listWithEnv.providers.length, 1);
+  assert.equal(listWithEnv.configured_env_providers.length, 3, 'Only active non-empty Worker secrets should appear in configured_env_providers');
+  assert.deepEqual(
+    listWithEnv.configured_env_providers.map((p) => p.env_var).sort(),
+    ['HF_TOKEN', 'META_API_KEY', 'SARVAM_API_KEY']
+  );
+  assert.ok(listWithEnv.configured_env_providers.every((p) => p.api_key === undefined), 'configured_env_providers must never leak raw secret values');
+
+  await handleAdminAiProvidersApi(
+    jsonReq(`https://csodisha.com/api/admin/ai-providers/${createdAnthropic.id}`, 'DELETE'),
+    env, adminActor, createdAnthropic.id, ctx
+  );
+
+  // Verify all 12 provider presets & 3 groups exist in guides-publishing-studio.js + active-only sync in studio-translator.js
+  for (const presetMarker of [
+    'Free-Tier Ready ($0/Month)',
+    'Indian Language / Odia Specialist',
+    'Frontier & Additional APIs (Add Anytime Later)',
+    'https://generativelanguage.googleapis.com/v1beta',
+    'https://api.groq.com/openai/v1',
+    'https://openrouter.ai/api/v1',
+    'https://api.cerebras.ai/v1',
+    'https://api.mistral.ai/v1',
+    'https://router.huggingface.co/v1',
+    'google/gemma-4-26b-a4b-it',
+    'https://api.sarvam.ai/v1',
+    'sarvam-105b',
+    'https://api.openai.com/v1',
+    'gpt-4o-mini',
+    'https://api.anthropic.com/v1',
+    'https://api.x.ai/v1',
+    'grok-4.7',
+    'https://api.meta.ai/v1',
+    'muse-spark-1.3',
+    'https://api.deepseek.com/v1',
+    'deepseek-chat'
+  ]) {
+    assert.ok(guidesStudioJs.includes(presetMarker), `guides-publishing-studio.js missing v362 preset marker: ${presetMarker}`);
+  }
+  assert.ok(translatorJs.includes('configured_env_providers') && guidesStudioJs.includes('configured_env_providers'), 'Both Guides Studio and Header Translator must sync configured_env_providers');
+  assert.ok(studioCss.includes('.cso-aip-preset-groups') && studioCss.includes('.cso-aip-env-strip'), 'studio.css must style v362 preset groups and active env strip');
   await Promise.all(waits);
 });
 

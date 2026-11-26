@@ -5690,6 +5690,30 @@ body.cso-studio-body {
   color: var(--studio-muted);
 }
 
+.cso-aip-preset-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.cso-aip-preset-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--studio-border);
+  background: var(--cso-surface-alt);
+}
+
+.cso-aip-preset-group-lbl {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--studio-muted);
+}
+
 .cso-aip-presets {
   display: flex;
   flex-wrap: wrap;
@@ -5697,8 +5721,25 @@ body.cso-studio-body {
 }
 
 .cso-aip-preset-btn {
-  min-height: 38px;
+  min-height: 36px;
+  font-size: 0.78rem;
+}
+
+.cso-aip-env-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--studio-ok-border);
+  background: var(--studio-ok-bg);
+  color: var(--studio-ok-fg);
   font-size: 0.8rem;
+}
+
+.cso-aip-env-lbl {
+  font-weight: 800;
 }
 
 .cso-aip-hint {

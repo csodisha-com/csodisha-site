@@ -1,12 +1,15 @@
 /**
- * 100% Free-Tier Admin Studio Multi-Provider AI Co-Author & Editorial Image Service (v361)
- * - Universal Multi-Provider Router supporting D1-managed `ai_custom_providers` (Groq, OpenRouter,
- *   Cerebras, Mistral, Backup Gemini, Custom OpenAI-Compatible endpoints), Worker environment secrets
- *   (`GEMINI_API_KEY`, `GEMINI_API_KEY_2`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `CEREBRAS_API_KEY`,
- *   `MISTRAL_API_KEY`), verified Google AI Studio Gemini Flash/Lite cascade, Cloudflare Workers AI
- *   low-neuron fallback, and zero-quota `local:deterministic` extraction.
- * - Explicit `preferred_model` routing (`auto`, `custom:<id>`, `gemini:<model>`, `workers:<model>`,
- *   `local:deterministic`) returning `provider_model` on every response.
+ * 100% Free-Tier Admin Studio Multi-Provider AI Co-Author & Editorial Image Service (v362)
+ * - Universal Multi-Protocol Router supporting D1-managed `ai_custom_providers` across 12 provider
+ *   presets (Groq, OpenRouter, Google AI Studio, Mistral, Hugging Face Router, Cerebras, Sarvam AI
+ *   Odia, OpenAI, Anthropic Claude, xAI Grok, Meta Model API Muse, DeepSeek & Custom OpenAI-Compatible),
+ *   optional Worker environment secrets (`GEMINI_API_KEY`, `GEMINI_API_KEY_2`, `GROQ_API_KEY`,
+ *   `OPENROUTER_API_KEY`, `MISTRAL_API_KEY`, `HF_TOKEN`, `CEREBRAS_API_KEY`, `SARVAM_API_KEY`,
+ *   `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `XAI_API_KEY`, `META_API_KEY`, `DEEPSEEK_API_KEY`),
+ *   verified Google AI Studio Gemini Flash/Lite cascade, Cloudflare Workers AI low-neuron fallback,
+ *   and zero-quota `local:deterministic` extraction.
+ * - Explicit `preferred_model` routing (`auto`, `custom:<id>`, `env:<slug>`, `gemini:<model>`,
+ *   `workers:<model>`, `local:deterministic`) returning `provider_model` on every response.
  * - Resilient JSON extractor/repairer (`parseOrRepairAiJson`) + quota-bypassing deterministic English
  *   metadata fallback (`buildDeterministicGuideMetadata`) when `body_en` (>= 200 chars) is pasted.
  * - Gemini-First Native Image Generation (`imagen-3.0-generate-002` -> `gemini-2.5-flash-image`),
@@ -1149,18 +1152,12 @@ export async function callOpenAiCompatibleProvider(provider, systemPrompt, userP
   });
 
   if (!res.ok && jsonMode && (res.status === 400 || res.status === 422)) {
-    const errBody = await res.text().catch(() => '');
-    if (/response_format|json_object|unsupported|not.?supported|invalid/i.test(errBody) || res.status === 400) {
-      res = await fetch(endpoint, {
-        method: 'POST',
-        headers,
-        body: buildBody(false)
-      });
-    } else {
-      const err = new Error(`${label} (${modelId}) returned HTTP ${res.status}`);
-      err.status = res.status;
-      throw err;
-    }
+    await res.text().catch(() => '');
+    res = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      body: buildBody(false)
+    });
   }
 
   if (!res.ok) {
@@ -1184,6 +1181,82 @@ export async function callOpenAiCompatibleProvider(provider, systemPrompt, userP
   }
 
   const providerCode = String((provider && provider.provider_code) || (provider && provider.id ? `custom:${provider.id}` : 'custom_openai'));
+  if (jsonMode) {
+    const parsed = parseOrRepairAiJson(text);
+    return {
+      text,
+      parsed,
+      model: modelId,
+      provider: providerCode,
+      provider_label: label,
+      provider_model: formatProviderModelTag(label, modelId)
+    };
+  }
+  return {
+    text,
+    model: modelId,
+    provider: providerCode,
+    provider_label: label,
+    provider_model: formatProviderModelTag(label, modelId)
+  };
+}
+
+export async function callAnthropicMessagesProvider(provider, systemPrompt, userPrompt, { jsonMode = false, maxTokens = 4096 } = {}) {
+  const baseCheck = validateProviderBaseUrl((provider && provider.base_url) || 'https://api.anthropic.com/v1');
+  if (!baseCheck.ok) {
+    const err = new Error(baseCheck.error);
+    err.status = 400;
+    throw err;
+  }
+  const apiKey = String((provider && provider.api_key) || '').trim();
+  const modelId = String((provider && provider.model_id) || '').trim();
+  const label = String((provider && provider.label) || 'Anthropic Claude').trim();
+  if (!apiKey || !modelId) {
+    const err = new Error('Anthropic AI provider is missing api_key or model_id.');
+    err.status = 400;
+    throw err;
+  }
+
+  const endpoint = baseCheck.url.endsWith('/messages')
+    ? baseCheck.url
+    : `${baseCheck.url}/messages`;
+
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: modelId,
+      max_tokens: Math.max(16, Math.min(16384, Number(maxTokens) || 4096)),
+      temperature: 0.2,
+      system: String(systemPrompt || 'You are a helpful editorial assistant.'),
+      messages: [
+        { role: 'user', content: String(userPrompt || '') }
+      ]
+    })
+  });
+
+  if (!res.ok) {
+    const errTxt = await res.text().catch(() => '');
+    const err = new Error(`${label} (${modelId}) returned HTTP ${res.status}${errTxt ? `: ${errTxt.slice(0, 140)}` : ''}`);
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = await res.json();
+  const blocks = data && Array.isArray(data.content) ? data.content : [];
+  const text = blocks
+    .map((b) => (b && b.type === 'text' && typeof b.text === 'string' ? b.text : (b && typeof b.text === 'string' ? b.text : '')))
+    .join('')
+    .trim();
+  if (!text) {
+    throw new Error(`${label} (${modelId}) returned empty content.`);
+  }
+
+  const providerCode = String((provider && provider.provider_code) || (provider && provider.id ? `custom:${provider.id}` : 'custom_anthropic'));
   if (jsonMode) {
     const parsed = parseOrRepairAiJson(text);
     return {
@@ -1290,6 +1363,13 @@ export async function testAiProviderConnection(provider) {
         { forcePlainText: true, maxOutputTokens: 16, skipSchema: true },
         baseCheck.url,
         { provider: provider.id ? `custom:${provider.id}` : 'custom_gemini', provider_label: provider.label || 'Backup Gemini' }
+      );
+    } else if (providerType === 'anthropic') {
+      out = await callAnthropicMessagesProvider(
+        provider,
+        'Respond concisely.',
+        'Reply with OK',
+        { jsonMode: false, maxTokens: 16 }
       );
     } else {
       out = await callOpenAiCompatibleProvider(
@@ -1505,54 +1585,155 @@ async function loadCustomProvidersFromDb(env, { includeDisabledId = '' } = {}) {
   }
 }
 
+const ENV_SECRET_PROVIDER_DEFS = [
+  {
+    envVar: 'GROQ_API_KEY',
+    id: 'env_groq',
+    provider_code: 'env:groq',
+    label: 'Groq Free (Env)',
+    provider_type: 'openai_compatible',
+    base_url: 'https://api.groq.com/openai/v1',
+    model_id: 'llama-3.3-70b-versatile'
+  },
+  {
+    envVar: 'OPENROUTER_API_KEY',
+    id: 'env_openrouter',
+    provider_code: 'env:openrouter',
+    label: 'OpenRouter Free (Env)',
+    provider_type: 'openai_compatible',
+    base_url: 'https://openrouter.ai/api/v1',
+    model_id: 'openrouter/free'
+  },
+  {
+    envVar: 'CEREBRAS_API_KEY',
+    id: 'env_cerebras',
+    provider_code: 'env:cerebras',
+    label: 'Cerebras Free (Env)',
+    provider_type: 'openai_compatible',
+    base_url: 'https://api.cerebras.ai/v1',
+    model_id: 'llama-3.3-70b'
+  },
+  {
+    envVar: 'MISTRAL_API_KEY',
+    id: 'env_mistral',
+    provider_code: 'env:mistral',
+    label: 'Mistral Free (Env)',
+    provider_type: 'openai_compatible',
+    base_url: 'https://api.mistral.ai/v1',
+    model_id: 'mistral-small-latest'
+  },
+  {
+    envVar: 'HF_TOKEN',
+    id: 'env_huggingface',
+    provider_code: 'env:huggingface',
+    label: 'Hugging Face Router (Env)',
+    provider_type: 'openai_compatible',
+    base_url: 'https://router.huggingface.co/v1',
+    model_id: 'google/gemma-4-26b-a4b-it'
+  },
+  {
+    envVar: 'SARVAM_API_KEY',
+    id: 'env_sarvam',
+    provider_code: 'env:sarvam',
+    label: 'Sarvam AI Odia (Env)',
+    provider_type: 'openai_compatible',
+    base_url: 'https://api.sarvam.ai/v1',
+    model_id: 'sarvam-105b'
+  },
+  {
+    envVar: 'OPENAI_API_KEY',
+    id: 'env_openai',
+    provider_code: 'env:openai',
+    label: 'OpenAI (Env)',
+    provider_type: 'openai_compatible',
+    base_url: 'https://api.openai.com/v1',
+    model_id: 'gpt-4o-mini'
+  },
+  {
+    envVar: 'ANTHROPIC_API_KEY',
+    id: 'env_anthropic',
+    provider_code: 'env:anthropic',
+    label: 'Anthropic Claude (Env)',
+    provider_type: 'anthropic',
+    base_url: 'https://api.anthropic.com/v1',
+    model_id: 'claude-3-5-sonnet-latest'
+  },
+  {
+    envVar: 'XAI_API_KEY',
+    id: 'env_xai',
+    provider_code: 'env:xai',
+    label: 'xAI Grok (Env)',
+    provider_type: 'openai_compatible',
+    base_url: 'https://api.x.ai/v1',
+    model_id: 'grok-4.7'
+  },
+  {
+    envVar: 'META_API_KEY',
+    id: 'env_meta',
+    provider_code: 'env:meta',
+    label: 'Meta Model API Muse (Env)',
+    provider_type: 'openai_compatible',
+    base_url: 'https://api.meta.ai/v1',
+    model_id: 'muse-spark-1.3'
+  },
+  {
+    envVar: 'DEEPSEEK_API_KEY',
+    id: 'env_deepseek',
+    provider_code: 'env:deepseek',
+    label: 'DeepSeek (Env)',
+    provider_type: 'openai_compatible',
+    base_url: 'https://api.deepseek.com/v1',
+    model_id: 'deepseek-chat'
+  }
+];
+
 function getEnvSecretProviders(env) {
   if (!env || typeof env !== 'object') return [];
   const list = [];
-  if (env.GROQ_API_KEY && String(env.GROQ_API_KEY).trim()) {
+  for (const def of ENV_SECRET_PROVIDER_DEFS) {
+    const secretVal = env[def.envVar] ? String(env[def.envVar]).trim() : '';
+    if (!secretVal) continue;
     list.push({
-      id: 'env_groq',
-      provider_code: 'env:groq',
-      label: 'Groq Free (Env)',
-      provider_type: 'openai_compatible',
-      base_url: 'https://api.groq.com/openai/v1',
-      model_id: 'llama-3.3-70b-versatile',
-      api_key: String(env.GROQ_API_KEY).trim()
-    });
-  }
-  if (env.OPENROUTER_API_KEY && String(env.OPENROUTER_API_KEY).trim()) {
-    list.push({
-      id: 'env_openrouter',
-      provider_code: 'env:openrouter',
-      label: 'OpenRouter Free (Env)',
-      provider_type: 'openai_compatible',
-      base_url: 'https://openrouter.ai/api/v1',
-      model_id: 'openrouter/free',
-      api_key: String(env.OPENROUTER_API_KEY).trim()
-    });
-  }
-  if (env.CEREBRAS_API_KEY && String(env.CEREBRAS_API_KEY).trim()) {
-    list.push({
-      id: 'env_cerebras',
-      provider_code: 'env:cerebras',
-      label: 'Cerebras Free (Env)',
-      provider_type: 'openai_compatible',
-      base_url: 'https://api.cerebras.ai/v1',
-      model_id: 'llama-3.3-70b',
-      api_key: String(env.CEREBRAS_API_KEY).trim()
-    });
-  }
-  if (env.MISTRAL_API_KEY && String(env.MISTRAL_API_KEY).trim()) {
-    list.push({
-      id: 'env_mistral',
-      provider_code: 'env:mistral',
-      label: 'Mistral Free (Env)',
-      provider_type: 'openai_compatible',
-      base_url: 'https://api.mistral.ai/v1',
-      model_id: 'mistral-small-latest',
-      api_key: String(env.MISTRAL_API_KEY).trim()
+      id: def.id,
+      provider_code: def.provider_code,
+      label: def.label,
+      provider_type: def.provider_type,
+      base_url: def.base_url,
+      model_id: def.model_id,
+      api_key: secretVal
     });
   }
   return list;
+}
+
+export function listConfiguredEnvProviders(env) {
+  if (!env || typeof env !== 'object') return [];
+  const active = [];
+  if (env.GEMINI_API_KEY_2 && String(env.GEMINI_API_KEY_2).trim()) {
+    active.push({
+      id: 'env_gemini_2',
+      value: 'env:gemini_2',
+      env_var: 'GEMINI_API_KEY_2',
+      label: 'Google AI Studio Backup (Env)',
+      provider_type: 'gemini',
+      model_id: GEMINI_PRO_FIRST_MODELS[0],
+      configured: true
+    });
+  }
+  for (const def of ENV_SECRET_PROVIDER_DEFS) {
+    const secretVal = env[def.envVar] ? String(env[def.envVar]).trim() : '';
+    if (!secretVal) continue;
+    active.push({
+      id: def.id,
+      value: def.provider_code,
+      env_var: def.envVar,
+      label: def.label,
+      provider_type: def.provider_type,
+      model_id: def.model_id,
+      configured: true
+    });
+  }
+  return active;
 }
 
 async function callSingleCustomProvider(provider, prompt, mode, opts = {}) {
@@ -1573,6 +1754,14 @@ async function callSingleCustomProvider(provider, prompt, mode, opts = {}) {
         provider: provider.provider_code || `custom:${provider.id}`,
         provider_label: provider.label || 'Backup Gemini'
       }
+    );
+  }
+  if (pType === 'anthropic') {
+    return callAnthropicMessagesProvider(
+      provider,
+      getSystemPromptForMode(mode),
+      prompt,
+      { jsonMode: expectsJson, maxTokens }
     );
   }
   return callOpenAiCompatibleProvider(
@@ -1602,9 +1791,10 @@ async function runModelCascade(env, prompt, mode, opts = {}) {
     if (!prov) return;
     steps.push(() => callSingleCustomProvider(prov, prompt, mode, opts));
   };
-  const pushGeminiStep = (firstModel = '') => {
-    if (!geminiKeys.length) return;
-    steps.push(() => callGeminiFreeTier(geminiKeys, prompt, mode, { ...opts, preferredGeminiModel: firstModel }));
+  const pushGeminiStep = (firstModel = '', keysOverride = null) => {
+    const activeKeys = Array.isArray(keysOverride) && keysOverride.length ? keysOverride : geminiKeys;
+    if (!activeKeys.length) return;
+    steps.push(() => callGeminiFreeTier(activeKeys, prompt, mode, { ...opts, preferredGeminiModel: firstModel }));
   };
   const pushWorkersStep = (firstModel = '') => {
     if (skipWorkersAi || !env || !env.AI) return;
@@ -1619,6 +1809,23 @@ async function runModelCascade(env, prompt, mode, opts = {}) {
     pushGeminiStep('');
     envProviders.forEach(pushCustomStep);
     pushWorkersStep('');
+  } else if (pref.startsWith('env:')) {
+    if (pref === 'env:gemini_2' && env && env.GEMINI_API_KEY_2 && String(env.GEMINI_API_KEY_2).trim()) {
+      const backupKey = String(env.GEMINI_API_KEY_2).trim();
+      const primaryKey = env.GEMINI_API_KEY ? String(env.GEMINI_API_KEY).trim() : '';
+      pushGeminiStep('', primaryKey ? [backupKey, primaryKey] : [backupKey]);
+      dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
+      envProviders.forEach(pushCustomStep);
+      pushWorkersStep('');
+    } else {
+      const targetEnv = envProviders.find((p) => p.provider_code === pref);
+      const restEnv = envProviders.filter((p) => p.provider_code !== pref);
+      if (targetEnv) pushCustomStep(targetEnv);
+      dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
+      pushGeminiStep('');
+      restEnv.forEach(pushCustomStep);
+      pushWorkersStep('');
+    }
   } else if (pref.startsWith('gemini:')) {
     const targetModel = pref.slice('gemini:'.length).trim();
     pushGeminiStep(targetModel);
@@ -1632,7 +1839,7 @@ async function runModelCascade(env, prompt, mode, opts = {}) {
     envProviders.forEach(pushCustomStep);
     pushGeminiStep('');
   } else {
-    // Default 'auto': Enabled custom providers (priority ASC) -> Built-in Gemini Flash/Lite -> Env secret APIs -> Workers AI
+    // Default 'auto': Enabled custom providers (priority ASC) -> Built-in Gemini Flash/Lite -> Active env secret APIs -> Workers AI
     dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
     pushGeminiStep('');
     envProviders.forEach(pushCustomStep);
