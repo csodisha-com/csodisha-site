@@ -112,6 +112,14 @@ function verifyRelativePath(sourceFile, rawUrl, type = 'link') {
     candidates.push(path.join(fnBase, 'index.js'));
   }
 
+  // Worker-rendered SSR routes (no static file): /guides/ hub and /guides/<slug> (functions/_lib/informative-guides.js)
+  const isSsrGuidesRoute = type === 'link' && /^\/guides(\/[^/]*)?\/?$/.test(cleanUrl)
+    && fs.existsSync(path.join(ROOT_DIR, 'functions', '_lib', 'informative-guides.js'));
+  if (isSsrGuidesRoute) {
+    stats.internalLinksVerified++;
+    return true;
+  }
+
   const matchedCandidate = candidates.find(candidate => {
     try {
       return fs.existsSync(candidate) && fs.statSync(candidate).isFile();
