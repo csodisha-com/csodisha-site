@@ -1,17 +1,15 @@
 /**
- * 100% Free-Tier Admin Studio AI Co-Author & Editorial Image Service (v357)
- * - 2026 Free-Tier High-Quota Gemini Flash Pool (`gemini-3.8-flash` -> `gemini-3.6-flash` ->
- *   `gemini-3.5-flash-lite` -> `gemini-3.1-flash-lite` -> `gemini-2.5-flash` -> `gemini-2.0-flash`),
- *   cascading automatically on quota/429/error to low-neuron Cloudflare Workers AI
- *   (`@cf/google/gemma-4-26b-a4b-it` -> `@cf/meta/llama-3.1-8b-instruct-fp8-fast` ->
- *   `@cf/meta/llama-3.3-70b-instruct-fp8-fast`).
+ * 100% Free-Tier Admin Studio AI Co-Author & Editorial Image Service (v358)
+ * - Verified Google AI Studio REST API Gemini Cascade (`gemini-2.5-flash` -> `gemini-2.5-flash-lite` ->
+ *   `gemini-2.0-flash` -> `gemini-2.0-flash-lite`) with `responseMimeType: "application/json"` on JSON
+ *   modes and `text/plain` on `translate_markdown`, cascading automatically on HTTP errors OR invalid JSON
+ *   to Cloudflare Workers AI (`@cf/google/gemma-4-26b-a4b-it` -> `@cf/meta/llama-3.1-8b-instruct-fp8-fast` ->
+ *   `@cf/meta/llama-3.3-70b-instruct-fp8-fast`) with `response_format: { type: "json_object" }`.
+ * - Resilient JSON extractor/repairer (`parseOrRepairAiJson`) + zero-failure local deterministic metadata
+ *   fallback (`buildDeterministicGuideMetadata`) when `body_en` (>= 200 chars) is pasted.
  * - Gemini-First Native Image Generation (`imagen-3.0-generate-002` -> `gemini-2.5-flash-image`),
  *   cascading automatically to Cloudflare Workers AI `@cf/black-forest-labs/flux-1-schnell`
  *   (and clean editorial SVG banner fallback if offline/local), uploaded directly to `cso-media` R2.
- * - Supports structured drafting (`job`, `scheme`, `mcq`, `career`, `guide`, `auto_fix_fill`),
- *   Odisha gov/exam EN->Odia translation (`translate_odia`, `translate_fields`, `translate_markdown`),
- *   and AI Title/Slug/Tag suggestions (`suggest_meta`).
- * - Tracks daily neuron usage in D1 `ai_generation_logs` against Cloudflare's 10,000 Neurons/day free allowance.
  */
 
 export const DAILY_FREE_NEURON_LIMIT = 10000;
@@ -30,24 +28,32 @@ export const VALID_AI_MODES = new Set([
   'suggest_meta'
 ]);
 
+export const JSON_AI_MODES = new Set([
+  'job',
+  'scheme',
+  'mcq',
+  'career',
+  'guide',
+  'auto_fix_fill',
+  'translate_odia',
+  'translate_fields',
+  'suggest_meta'
+]);
+
 export const PRO_FIRST_MODES = new Set(['auto_fix_fill', 'guide', 'translate_fields', 'translate_markdown']);
 export const MARKDOWN_CHUNK_CHAR_LIMIT = 7500;
 export const BODY_EN_VERBATIM_LOCK_MIN_CHARS = 200;
 export const GEMINI_PRO_FIRST_MODELS = [
-  'gemini-3.8-flash',
-  'gemini-3.6-flash',
-  'gemini-3.5-flash-lite',
-  'gemini-3.1-flash-lite',
   'gemini-2.5-flash',
-  'gemini-2.0-flash'
+  'gemini-2.5-flash-lite',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite'
 ];
 export const GEMINI_FLASH_MODELS = [
-  'gemini-3.8-flash',
-  'gemini-3.6-flash',
-  'gemini-3.5-flash-lite',
-  'gemini-3.1-flash-lite',
   'gemini-2.5-flash',
-  'gemini-2.0-flash'
+  'gemini-2.5-flash-lite',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite'
 ];
 export const GEMINI_MODELS = GEMINI_PRO_FIRST_MODELS;
 
@@ -157,21 +163,191 @@ export function sanitizeAiHtml(raw) {
   return s.slice(0, 12000);
 }
 
-export function extractJsonObject(rawText) {
-  const cleaned = String(rawText || '')
+function escapeControlCharsInsideJsonStrings(src) {
+  let out = '';
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < src.length; i += 1) {
+    const ch = src[i];
+    if (inString) {
+      if (escaped) {
+        out += ch;
+        escaped = false;
+        continue;
+      }
+      if (ch === '\\') {
+        out += ch;
+        escaped = true;
+        continue;
+      }
+      if (ch === '"') {
+        out += ch;
+        inString = false;
+        continue;
+      }
+      if (ch === '\n') {
+        out += '\\n';
+        continue;
+      }
+      if (ch === '\r') {
+        out += '\\r';
+        continue;
+      }
+      if (ch === '\t') {
+        out += '\\t';
+        continue;
+      }
+      const code = ch.charCodeAt(0);
+      if (code < 0x20) {
+        out += ' ';
+        continue;
+      }
+      out += ch;
+    } else {
+      if (ch === '"') inString = true;
+      out += ch;
+    }
+  }
+  return out;
+}
+
+function stripTrailingJsonCommas(src) {
+  let out = '';
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < src.length; i += 1) {
+    const ch = src[i];
+    if (inString) {
+      out += ch;
+      if (escaped) {
+        escaped = false;
+      } else if (ch === '\\') {
+        escaped = true;
+      } else if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+      out += ch;
+      continue;
+    }
+    if (ch === ',') {
+      let j = i + 1;
+      while (j < src.length && /\s/.test(src[j])) j += 1;
+      if (src[j] === '}' || src[j] === ']') {
+        continue;
+      }
+    }
+    out += ch;
+  }
+  return out;
+}
+
+function extractBalancedJsonCandidates(str) {
+  const candidates = [];
+  let searchFrom = 0;
+  while (searchFrom < str.length) {
+    const start = str.indexOf('{', searchFrom);
+    if (start === -1) break;
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    let end = -1;
+    for (let i = start; i < str.length; i += 1) {
+      const ch = str[i];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (ch === '\\') escaped = true;
+        else if (ch === '"') inString = false;
+        continue;
+      }
+      if (ch === '"') {
+        inString = true;
+        continue;
+      }
+      if (ch === '{') depth += 1;
+      else if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+    if (end !== -1) {
+      candidates.push(str.slice(start, end + 1));
+      searchFrom = end + 1;
+    } else {
+      const lastClose = str.lastIndexOf('}');
+      if (lastClose > start) {
+        candidates.push(str.slice(start, lastClose + 1));
+      }
+      break;
+    }
+    if (candidates.length >= 4) break;
+  }
+  return candidates;
+}
+
+function tryRepairAndParseObject(candidate) {
+  const trimmed = String(candidate || '').trim();
+  if (!trimmed) return null;
+  const attempts = [
+    trimmed,
+    stripTrailingJsonCommas(escapeControlCharsInsideJsonStrings(trimmed))
+  ];
+  for (const text of attempts) {
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch (_e) {}
+  }
+  return null;
+}
+
+export function parseOrRepairAiJson(rawText) {
+  const withoutThink = String(rawText || '')
+    .replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi, '')
+    .replace(/<\/?think\b[^>]*>/gi, '')
+    .trim();
+
+  // Check fenced code blocks first if present
+  const fencedMatches = [];
+  const fenceRe = /```(?:json)?\s*([\s\S]*?)```/gi;
+  let fm;
+  while ((fm = fenceRe.exec(withoutThink)) !== null) {
+    if (fm[1] && fm[1].trim()) fencedMatches.push(fm[1].trim());
+  }
+
+  const stripped = withoutThink
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/\s*```$/i, '')
     .trim();
-  try {
-    return JSON.parse(cleaned);
-  } catch (_e) {
-    const start = cleaned.indexOf('{');
-    const end = cleaned.lastIndexOf('}');
-    if (start !== -1 && end > start) {
-      return JSON.parse(cleaned.slice(start, end + 1));
-    }
-    throw new Error('AI response did not contain valid JSON.');
+
+  const directPool = [...fencedMatches, stripped];
+  for (const item of directPool) {
+    const parsed = tryRepairAndParseObject(item);
+    if (parsed) return parsed;
   }
+
+  // Extract outermost balanced `{ ... }` candidates even with surrounding conversational prose
+  for (const item of directPool) {
+    const candidates = extractBalancedJsonCandidates(item);
+    for (const cand of candidates) {
+      const parsed = tryRepairAndParseObject(cand);
+      if (parsed) return parsed;
+    }
+  }
+
+  throw new Error('AI response did not contain valid JSON.');
+}
+
+export function extractJsonObject(rawText) {
+  return parseOrRepairAiJson(rawText);
 }
 
 function buildPromptForMode(mode, rawInput, extra = {}) {
@@ -206,7 +382,7 @@ function buildPromptForMode(mode, rawInput, extra = {}) {
       '- Preserve exact dates, numbers, vacancy counts, fees, pay levels, cutoffs, percentages, and currency amounts (e.g., ₹56,100) verbatim.',
       '- Keep standard exam, board, and government acronyms in English Latin script (OPSC, OSSSC, OSSC, UPSC, UGC NET, NTA, OTET, OSSTET, IBPS, SBI, RRB, DBT, NPCI, OTR, OAS, CGL, RI, PDF, CBT, UR, SEBC, SC, ST, PwD, EWS).',
       '- NEVER summarize, condense, shorten, or omit any paragraph, bullet item, or table row.',
-      '- Return ONLY a valid JSON object (no markdown fences) with schema: { "translated_markdown": "<full markdown-preserved Odia translation>" }',
+      '- Return ONLY the translated Odia Markdown text directly (no conversational intro, no extra explanation).',
       'English Markdown source:',
       text
     ].join('\n');
@@ -796,7 +972,8 @@ function getWorkersAiPoolForMode(mode) {
 
 async function callGeminiFreeTier(apiKey, prompt, mode, opts = {}) {
   let lastErr = null;
-  const schema = getResponseSchemaForMode(mode, opts);
+  const expectsJson = JSON_AI_MODES.has(mode);
+  const schema = expectsJson ? getResponseSchemaForMode(mode, opts) : null;
   const pool = getGeminiModelPoolForMode(mode);
   const maxOut = PRO_FIRST_MODES.has(mode) ? GEMINI_LONG_MAX_OUTPUT_TOKENS : 2048;
 
@@ -805,9 +982,9 @@ async function callGeminiFreeTier(apiKey, prompt, mode, opts = {}) {
     const generationConfig = {
       temperature: (mode === 'translate_odia' || mode === 'translate_fields' || mode === 'translate_markdown') ? 0.15 : 0.25,
       maxOutputTokens: maxOut,
-      responseMimeType: 'application/json'
+      responseMimeType: expectsJson ? 'application/json' : 'text/plain'
     };
-    if (schema) generationConfig.responseSchema = schema;
+    if (expectsJson && schema) generationConfig.responseSchema = schema;
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -828,6 +1005,23 @@ async function callGeminiFreeTier(apiKey, prompt, mode, opts = {}) {
           ? parts.map((p) => (p && typeof p.text === 'string' ? p.text : '')).join('').trim()
           : '';
         if (text) {
+          if (expectsJson) {
+            try {
+              const parsed = parseOrRepairAiJson(text);
+              return {
+                text,
+                parsed,
+                model,
+                provider: 'gemini_free',
+                provider_label: model.includes('pro') ? 'Gemini Pro' : 'Gemini Flash'
+              };
+            } catch (_parseErr) {
+              const pErr = new Error(`Gemini ${model} returned unparseable JSON.`);
+              pErr.code = 'JSON_PARSE_MISS';
+              lastErr = pErr;
+              continue;
+            }
+          }
           return {
             text,
             model,
@@ -889,8 +1083,14 @@ async function callWorkersAi(aiBinding, prompt, mode) {
   if (!aiBinding || typeof aiBinding.run !== 'function') {
     throw new Error('Cloudflare Workers AI binding (env.AI) is not configured.');
   }
+  const expectsJson = JSON_AI_MODES.has(mode);
   const messages = [
-    { role: 'system', content: 'You output strictly valid JSON objects without markdown fences.' },
+    {
+      role: 'system',
+      content: expectsJson
+        ? 'You output strictly valid JSON objects without markdown fences or conversational text.'
+        : 'You output only the translated Odia Markdown preserving 100% of Markdown syntax, headings, and pipe tables.'
+    },
     { role: 'user', content: prompt }
   ];
   const temp = (mode === 'translate_odia' || mode === 'translate_fields' || mode === 'translate_markdown') ? 0.15 : 0.25;
@@ -901,14 +1101,63 @@ async function callWorkersAi(aiBinding, prompt, mode) {
       ? ((model.includes('gemma-4-26b') || model.includes('70b')) ? WORKERS_AI_70B_MAX_TOKENS : WORKERS_AI_8B_MAX_TOKENS)
       : 1400;
     try {
-      const resp = await aiBinding.run(model, {
+      const runOpts = {
         messages,
         max_tokens: maxTok,
         temperature: temp,
         repetition_penalty: 1.06
-      });
+      };
+      if (expectsJson) {
+        runOpts.response_format = { type: 'json_object' };
+      }
+      let resp;
+      try {
+        resp = await aiBinding.run(model, runOpts);
+      } catch (fmtErr) {
+        if (expectsJson && /response_format|json_object|unsupported/i.test(String(fmtErr && fmtErr.message || ''))) {
+          delete runOpts.response_format;
+          resp = await aiBinding.run(model, runOpts);
+        } else {
+          throw fmtErr;
+        }
+      }
       const text = unwrapWorkersAiPayload(resp);
       if (text) {
+        if (expectsJson) {
+          try {
+            const parsed = parseOrRepairAiJson(text);
+            return {
+              text,
+              parsed,
+              model,
+              provider: 'cloudflare_workers_ai',
+              provider_label: 'Workers AI'
+            };
+          } catch (_parseErr) {
+            if (mode === 'translate_odia') {
+              const salvaged = String(text || '')
+                .replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi, '')
+                .replace(/^```(?:json)?\s*/i, '')
+                .replace(/\s*```$/i, '')
+                .replace(/^\{?\s*"translated_or"\s*:\s*"?/i, '')
+                .replace(/"?\s*\}?$/i, '')
+                .trim();
+              if (salvaged) {
+                return {
+                  text,
+                  parsed: { translated_or: salvaged },
+                  model,
+                  provider: 'cloudflare_workers_ai',
+                  provider_label: 'Workers AI'
+                };
+              }
+            }
+            const pErr = new Error(`Workers AI ${model} returned unparseable JSON.`);
+            pErr.code = 'JSON_PARSE_MISS';
+            lastErr = pErr;
+            continue;
+          }
+        }
         return {
           text,
           model,
@@ -1098,21 +1347,201 @@ export function splitMarkdownByH2Sections(rawMarkdown, maxChars = MARKDOWN_CHUNK
 }
 
 function parseTranslateMarkdownResult(rawText, fallbackChunk) {
-  try {
-    const parsed = extractJsonObject(rawText);
-    const norm = normalizeStructuredOutput('translate_markdown', parsed, fallbackChunk);
-    return norm.translated_markdown;
-  } catch (parseErr) {
-    const salvaged = String(rawText || '')
-      .replace(/^```(?:json|markdown|md)?\s*/i, '')
-      .replace(/\s*```$/i, '')
-      .replace(/^\{?\s*"translated_markdown"\s*:\s*"?/i, '')
-      .replace(/^\{?\s*"translated_or"\s*:\s*"?/i, '')
-      .replace(/"?\s*\}?$/i, '')
-      .trim();
-    if (salvaged) return normalizeTranslatedMarkdownPipes(salvaged);
-    throw parseErr;
+  const withoutThink = String(rawText || '')
+    .replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi, '')
+    .replace(/<\/?think\b[^>]*>/gi, '')
+    .trim();
+  if (!withoutThink) return normalizeTranslatedMarkdownPipes(fallbackChunk || '');
+
+  // If a provider still wrapped output in JSON (`{ "translated_markdown": "..." }`), unpack it cleanly
+  if (withoutThink.startsWith('{') || /^```json\b/i.test(withoutThink)) {
+    try {
+      const parsed = parseOrRepairAiJson(withoutThink);
+      const norm = normalizeStructuredOutput('translate_markdown', parsed, fallbackChunk);
+      if (norm && norm.translated_markdown) return norm.translated_markdown;
+    } catch (_e) {}
   }
+
+  const plainMd = withoutThink
+    .replace(/^```(?:markdown|md|txt)?\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
+  return normalizeTranslatedMarkdownPipes(plainMd || fallbackChunk || '');
+}
+
+function stripInlineMarkdownPlain(raw) {
+  return String(raw || '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/[*_`~]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function buildDeterministicGuideMetadata(rawBodyEn, extra = {}) {
+  const bodyEn = String(rawBodyEn || '');
+  const draft = (extra && extra.draft && typeof extra.draft === 'object') ? extra.draft : {};
+  const lines = bodyEn.replace(/\r\n/g, '\n').split('\n');
+
+  let derivedTitle = String(draft.title_en || '').trim();
+  if (!derivedTitle) {
+    for (const line of lines) {
+      const t = line.trim();
+      const hm = t.match(/^#{1,3}\s+(.+)$/);
+      if (hm) {
+        derivedTitle = stripInlineMarkdownPlain(hm[1]);
+        break;
+      }
+    }
+  }
+  if (!derivedTitle) {
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t || t.startsWith('|') || t.startsWith('```') || t.startsWith('>')) continue;
+      const clean = stripInlineMarkdownPlain(t.replace(/^[-*•\d.]+\s+/, ''));
+      if (clean.length >= 6) {
+        derivedTitle = clean.slice(0, 110);
+        break;
+      }
+    }
+  }
+  const titleEn = (derivedTitle || String(extra.fallbackTitle || 'Odisha Informative Guide')).trim().slice(0, 140);
+  const slug = slugifyText(draft.slug || titleEn) || ('guide-' + Date.now().toString(36));
+
+  const corpus = `${titleEn}\n${bodyEn.slice(0, 4000)}`;
+  const category = inferGuideCategory(draft.category, corpus);
+  const hasOdishaMarkers = /\b(odisha|opsc|ossc|osssc|otet|osstet|bhubaneswar|cuttack|puri|subhadra|kalia|cm kisan|odisha\.gov\.in)\b/i.test(corpus);
+  const hasNationalMarkers = /\b(upsc|ssc|rrb|ibps|nta|ugc net|central government|all india|india\.gov\.in)\b/i.test(corpus);
+  const scope = /^national/i.test(String(draft.scope || ''))
+    ? 'National'
+    : (hasOdishaMarkers ? 'Odisha' : (hasNationalMarkers ? 'National' : 'Odisha'));
+  const isExam = category === 'exam-strategy' || category === 'odisha-gk' || /\b(exam|syllabus|prelims|mains|cbt|admit card|cut-?off|recruitment|vacancy)\b/i.test(corpus);
+
+  const words = bodyEn.trim() ? bodyEn.trim().split(/\s+/).filter(Boolean).length : 0;
+  const readMinutes = Math.max(1, Math.min(120, Math.ceil(words / 200)));
+
+  // Extract first 2 clean prose sentences for summary_en
+  const proseLines = [];
+  let inFence = false;
+  for (const line of lines) {
+    const t = line.trim();
+    if (/^```/.test(t)) { inFence = !inFence; continue; }
+    if (inFence || !t || /^#{1,6}\s/.test(t) || t.startsWith('|') || /^>\s*\[!/.test(t)) continue;
+    const clean = stripInlineMarkdownPlain(t.replace(/^>\s?/, '').replace(/^[-*•]\s+/, '').replace(/^\d+\.\s+/, ''));
+    if (clean.length >= 20) proseLines.push(clean);
+    if (proseLines.join(' ').length >= 420) break;
+  }
+  const proseBlob = proseLines.join(' ');
+  const sentences = proseBlob.match(/[^.!?]+[.!?]+/g) || [];
+  let summaryEn = sentences.slice(0, 2).join(' ').trim();
+  if (!summaryEn) summaryEn = proseBlob.slice(0, 260).trim() || `${titleEn} — verified official guide on Common Sense Odisha.`;
+  summaryEn = summaryEn.slice(0, 320);
+
+  // Extract up to 5 key takeaways from bullet lines first, then headings
+  const takeawaysEn = [];
+  const seenTk = new Set();
+  const pushTk = (raw) => {
+    const clean = stripInlineMarkdownPlain(raw).slice(0, 220);
+    if (clean.length < 12) return;
+    const key = clean.toLowerCase();
+    if (seenTk.has(key)) return;
+    seenTk.add(key);
+    takeawaysEn.push(clean);
+  };
+  inFence = false;
+  for (const line of lines) {
+    const t = line.trim();
+    if (/^```/.test(t)) { inFence = !inFence; continue; }
+    if (inFence) continue;
+    const bm = t.match(/^(?:[-*•]|\d+\.)\s+(.+)$/);
+    if (bm) {
+      pushTk(bm[1]);
+      if (takeawaysEn.length >= 5) break;
+    }
+  }
+  if (takeawaysEn.length < 5) {
+    for (const line of lines) {
+      const hm = line.trim().match(/^#{2,3}\s+(.+)$/);
+      if (hm) {
+        pushTk(hm[1]);
+        if (takeawaysEn.length >= 5) break;
+      }
+    }
+  }
+
+  // Derive 5–8 clean tags
+  const keywordTags = [
+    ['OPSC', /\bopsc\b/i],
+    ['OSSC', /\bossc\b/i],
+    ['OSSSC', /\bosssc\b/i],
+    ['OAS', /\boas\b/i],
+    ['OFS', /\bofs\b/i],
+    ['CGL', /\bcgl\b/i],
+    ['OTET', /\botet\b/i],
+    ['OSSTET', /\bosstet\b/i],
+    ['UPSC', /\bupsc\b/i],
+    ['UGC NET', /\bugc\s*net\b/i],
+    ['NTA', /\bnta\b/i],
+    ['Scholarship', /\bscholarship\b/i],
+    ['Welfare Scheme', /\b(scheme|yojana|dbt)\b/i],
+    ['Recruitment', /\b(recruitment|vacancy|vacancies|post)\b/i],
+    ['Exam Strategy', /\b(syllabus|prelims|mains|exam pattern|roadmap)\b/i],
+    ['Odisha GK', /\b(odisha gk|heritage|konark|chilika)\b/i],
+    ['Odisha Govt', /\bodisha\b/i]
+  ];
+  const tags = [];
+  const seenTag = new Set();
+  const pushTag = (t) => {
+    const clean = String(t || '').trim().slice(0, 32);
+    if (!clean) return;
+    const k = clean.toLowerCase();
+    if (seenTag.has(k)) return;
+    seenTag.add(k);
+    tags.push(clean);
+  };
+  for (const [label, re] of keywordTags) {
+    if (re.test(corpus)) pushTag(label);
+    if (tags.length >= 7) break;
+  }
+  pushTag(scope === 'National' ? 'National Guide' : 'Odisha Guide');
+  if (tags.length < 5) {
+    const catDefaults = {
+      'exam-strategy': ['Competitive Exams', 'Preparation Guide', 'Official Notification'],
+      'citizen-scheme': ['Citizen Services', 'Govt Benefits', 'Eligibility Guide'],
+      'odisha-gk': ['Odisha Heritage', 'General Knowledge', 'Study Notes'],
+      'how-to': ['Step-by-Step Guide', 'Citizen How-To', 'Official Portal']
+    };
+    (catDefaults[category] || catDefaults['how-to']).forEach((t) => {
+      if (tags.length < 5) pushTag(t);
+    });
+  }
+
+  const officialLinks = extractOfficialUrlsFromText(`${bodyEn}\n${String(extra.input || '')}`);
+  const coverCaptionEn = `${titleEn} — Common Sense Odisha Guide`.slice(0, 200);
+
+  return {
+    category,
+    scope,
+    is_exam: isExam,
+    read_minutes: readMinutes,
+    title_en: titleEn,
+    title_or: String(draft.title_or || '').trim(),
+    slug,
+    summary_en: summaryEn,
+    summary_or: String(draft.summary_or || '').trim(),
+    tags: tags.slice(0, 8),
+    takeaways_en: takeawaysEn.slice(0, 5),
+    takeaways_or: [],
+    body_en: bodyEn,
+    body_or: String(draft.body_or || '').trim(),
+    body_en_locked: true,
+    pdf_title_en: '',
+    pdf_title_or: '',
+    official_links: officialLinks.slice(0, 12),
+    image_prompt: `Clean editorial photograph representing ${titleEn} in ${scope}, India, daylight civic/educational setting, strictly no text or letters`,
+    cover_caption_en: coverCaptionEn,
+    cover_caption_or: '',
+    cover_alt: coverCaptionEn
+  };
 }
 
 async function translateMarkdownDocument(env, rawMarkdown) {
@@ -1208,8 +1637,28 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     }
   }
 
+  const rawDraftBodyEn = String((cleanDraft && cleanDraft.body_en) || '');
+  const canUseDeterministicFallback = cleanMode === 'auto_fix_fill' && !cleanPdfText && rawDraftBodyEn.trim().length >= BODY_EN_VERBATIM_LOCK_MIN_CHARS;
+
   const usageBefore = await getDailyAiUsage(env);
   if (usageBefore.neurons_used >= DAILY_FREE_NEURON_BUDGET) {
+    if (canUseDeterministicFallback) {
+      const detData = buildDeterministicGuideMetadata(rawDraftBodyEn, { draft: cleanDraft, input: cleanInput, fallbackTitle: cleanInput || 'Odisha Informative Guide' });
+      return {
+        ok: true,
+        mode: cleanMode,
+        depth: cleanDepth,
+        body_en_locked: true,
+        fallback_used: true,
+        two_pass_translation: false,
+        provider: 'deterministic_fallback',
+        provider_label: 'Local Metadata Extractor',
+        model: 'deterministic-v358',
+        estimated_neurons: 0,
+        usage: usageBefore,
+        data: detData
+      };
+    }
     const err = new Error(DAILY_QUOTA_EXHAUSTED_MESSAGE);
     err.status = 429;
     throw err;
@@ -1268,7 +1717,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
       if (Object.keys(shortFields).length > 0) {
         const sPrompt = buildPromptForMode('translate_fields', JSON.stringify(shortFields), { fields: shortFields });
         const sRes = await runModelCascade(env, sPrompt, 'translate_fields');
-        const sParsed = extractJsonObject(sRes.text);
+        const sParsed = sRes.parsed || parseOrRepairAiJson(sRes.text);
         const sNorm = normalizeStructuredOutput('translate_fields', sParsed, '', { fields: shortFields });
         Object.assign(mergedTranslations, (sNorm && sNorm.translations) || {});
         lastMeta = sRes;
@@ -1278,7 +1727,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
       }
 
       const provider = (lastMeta && lastMeta.provider) || 'gemini_free';
-      const providerLabel = (lastMeta && lastMeta.provider_label) || (provider === 'gemini_free' ? 'Gemini Pro' : 'Workers AI');
+      const providerLabel = (lastMeta && lastMeta.provider_label) || (provider === 'gemini_free' ? 'Gemini Flash' : 'Workers AI');
       const model = (lastMeta && lastMeta.model) || GEMINI_PRO_FIRST_MODELS[0];
       await logAiGeneration(env, {
         actorId,
@@ -1305,7 +1754,6 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
 
   // Pass 1: Exhaustive English + Metadata (or Metadata-Only when pasted body_en >= 200 chars is locked verbatim)
   const useTwoPass = cleanMode === 'auto_fix_fill';
-  const rawDraftBodyEn = String((cleanDraft && cleanDraft.body_en) || '');
   const lockBodyEn = cleanMode === 'auto_fix_fill' && !cleanPdfText && (
     Boolean(preserve_body_en) || rawDraftBodyEn.trim().length >= BODY_EN_VERBATIM_LOCK_MIN_CHARS
   ) && rawDraftBodyEn.trim().length > 0;
@@ -1322,24 +1770,35 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     locked_body_en: lockBodyEn ? rawDraftBodyEn : ''
   };
   const prompt = buildPromptForMode(cleanMode, cleanInput, extra);
-  const result = await runModelCascade(env, prompt, cleanMode, { lockBodyEn });
 
-  let parsed;
+  let result = null;
+  let parsed = null;
   try {
-    parsed = extractJsonObject(result.text);
-  } catch (parseErr) {
-    if (cleanMode === 'translate_odia') {
-      const salvaged = String(result.text || '')
-        .replace(/^```(?:json)?\s*/i, '')
-        .replace(/\s*```$/i, '')
-        .replace(/^\{?\s*"translated_or"\s*:\s*"?/i, '')
-        .replace(/"?\s*\}?$/i, '')
-        .trim();
-      if (salvaged) parsed = { translated_or: salvaged };
-      else throw parseErr;
-    } else {
-      throw parseErr;
+    result = await runModelCascade(env, prompt, cleanMode, { lockBodyEn });
+    parsed = result.parsed || parseOrRepairAiJson(result.text);
+  } catch (cascadeErr) {
+    if (canUseDeterministicFallback) {
+      const detData = buildDeterministicGuideMetadata(rawDraftBodyEn, {
+        draft: cleanDraft,
+        input: cleanInput,
+        fallbackTitle: cleanInput || 'Odisha Informative Guide'
+      });
+      return {
+        ok: true,
+        mode: cleanMode,
+        depth: cleanDepth,
+        body_en_locked: true,
+        fallback_used: true,
+        two_pass_translation: false,
+        provider: 'deterministic_fallback',
+        provider_label: 'Local Metadata Extractor',
+        model: 'deterministic-v358',
+        estimated_neurons: 0,
+        usage: usageBefore,
+        data: detData
+      };
     }
+    throw cascadeErr;
   }
 
   const normalized = normalizeStructuredOutput(cleanMode, parsed, cleanInput || cleanPdfFilename || 'Odisha Guide', extra);
@@ -1373,7 +1832,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
       if (Object.keys(pass2Fields).length > 0) {
         const trPrompt = buildPromptForMode('translate_fields', JSON.stringify(pass2Fields), { fields: pass2Fields });
         const trRes = await runModelCascade(env, trPrompt, 'translate_fields');
-        const trParsed = extractJsonObject(trRes.text);
+        const trParsed = trRes.parsed || parseOrRepairAiJson(trRes.text);
         const trNorm = normalizeStructuredOutput('translate_fields', trParsed, '', { fields: pass2Fields });
         const tr = (trNorm && trNorm.translations) || {};
         if (tr.body_or) normalized.body_or = normalizeTranslatedMarkdownPipes(tr.body_or);

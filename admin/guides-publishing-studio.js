@@ -1712,7 +1712,7 @@
     var aiHead = el('div', 'cso-guide-sec-head');
     aiHead.append(
       el('h3', 'cso-qc-card-title', '\u2728 AI Co-Author Bar (Free-Tier Gemini Flash + Low-Neuron Workers AI)'),
-      el('span', 'cso-pill-badge', 'Gemini 3.8 Flash \u2192 Gemma 4 26B / Llama 8B \u00B7 EN / \u0B13\u0B21\u0B3C\u0B3F\u0B06')
+      el('span', 'cso-pill-badge', 'Gemini 2.5 Flash \u2192 Gemma 4 26B / Llama 8B \u00B7 EN / \u0B13\u0B21\u0B3C\u0B3F\u0B06')
     );
 
     // 1-Click PDF Upload -> Auto-Write Guide Dropzone

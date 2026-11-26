@@ -562,10 +562,10 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
   await Promise.all(waits);
 });
 
-// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v357
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v357 CSS, and cso-candidate-cache-v357 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v357');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v357';"), 'sw.js cache version must be cso-candidate-cache-v357');
+// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v358
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v358 CSS, and cso-candidate-cache-v358 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v358');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v358';"), 'sw.js cache version must be cso-candidate-cache-v358');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -703,9 +703,9 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
   assert.ok(adminHtml.includes('id="headerTranslatorWrap"') && adminHtml.includes('id="btnHeaderOdiaTranslator"') && adminHtml.includes('aria-controls="csoHeaderTranslatorPopover"'), 'admin/index.html must pin #btnHeaderOdiaTranslator in the top header bar');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v357'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v357');
-  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v357'), 'admin/index.html must load studio-translator.js?v=20261126v357');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v357'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v358'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v358');
+  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v358'), 'admin/index.html must load studio-translator.js?v=20261126v358');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v358'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {

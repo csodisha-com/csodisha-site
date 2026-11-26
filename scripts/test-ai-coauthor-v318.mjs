@@ -17,6 +17,8 @@ import {
   WORKERS_AI_70B_MAX_TOKENS,
   MARKDOWN_CHUNK_CHAR_LIMIT,
   BODY_EN_VERBATIM_LOCK_MIN_CHARS,
+  parseOrRepairAiJson,
+  buildDeterministicGuideMetadata,
   splitMarkdownByH2Sections,
   normalizeTranslatedMarkdownPipes,
   VALID_AI_MODES
@@ -220,8 +222,8 @@ await test('5. Wrangler AI binding, migration 0149, CSP compliance & v318 cache 
   const mig = read('migrations/0149_ai_coauthor_v318.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS ai_generation_logs'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v357');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v357';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v358');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v358';"));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('window.CSOAiCoAuthor'));
@@ -369,17 +371,15 @@ await test('6. v331 Odia quick translation (single + batch) & AI Title/Slug/Tag 
   }
 });
 
-await test('7. v357 2026 free-tier Gemini Flash + low-neuron Workers AI cascade, auto_fix_fill PDF-to-Article schema & POST /api/admin/ai/generate-image R2 storage', async () => {
+await test('7. v358 Verified Gemini Flash REST cascade + low-neuron Workers AI JSON fallback, auto_fix_fill PDF-to-Article schema & POST /api/admin/ai/generate-image R2 storage', async () => {
   assert.ok(VALID_AI_MODES.has('auto_fix_fill'), 'VALID_AI_MODES must include auto_fix_fill');
   const expectedGemini = [
-    'gemini-3.8-flash',
-    'gemini-3.6-flash',
-    'gemini-3.5-flash-lite',
-    'gemini-3.1-flash-lite',
     'gemini-2.5-flash',
-    'gemini-2.0-flash'
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-lite'
   ];
-  assert.deepEqual(GEMINI_PRO_FIRST_MODELS, expectedGemini, 'Gemini cascade must prioritize 2026 free-tier Flash/Flash-Lite models');
+  assert.deepEqual(GEMINI_PRO_FIRST_MODELS, expectedGemini, 'Gemini cascade must use verified Google AI Studio REST API model IDs');
   assert.equal(WORKERS_AI_PRO_MODELS[0], '@cf/google/gemma-4-26b-a4b-it', 'Workers AI must prioritize ultra-efficient Gemma 4 26B first');
   assert.equal(WORKERS_AI_PRO_MODELS[1], '@cf/meta/llama-3.1-8b-instruct-fp8-fast', 'Workers AI must prioritize Llama 3.1 8B second');
   assert.equal(WORKERS_AI_PRO_MODELS[2], '@cf/meta/llama-3.3-70b-instruct-fp8-fast', 'Workers AI must keep Llama 3.3 70B after low-neuron models');
@@ -388,7 +388,7 @@ await test('7. v357 2026 free-tier Gemini Flash + low-neuron Workers AI cascade,
   assert.deepEqual(GEMINI_IMAGE_MODELS, ['imagen-3.0-generate-002', 'gemini-2.5-flash-image']);
   assert.equal(WORKERS_AI_IMAGE_MODEL, '@cf/black-forest-labs/flux-1-schnell');
 
-  // A. Verify v351/v357 high token limits (16384 Gemini / 8192 Workers AI Gemma 4 26B), anti-summarization prompt & two-pass full Odia translation
+  // A. Verify v351/v358 high token limits (16384 Gemini / 8192 Workers AI Gemma 4 26B), JSON response_format & two-pass full Odia translation
   assert.equal(GEMINI_LONG_MAX_OUTPUT_TOKENS, 16384, 'Gemini maxOutputTokens must be 16384 for long-form guides');
   assert.equal(WORKERS_AI_70B_MAX_TOKENS, 8192, 'Workers AI long-form max_tokens must be 8192');
 
@@ -414,7 +414,7 @@ await test('7. v357 2026 free-tier Gemini Flash + low-neuron Workers AI cascade,
     const mockAiCascade = {
       async run(model, args) {
         attemptedWorkers.push(model);
-        workersCallArgs.push({ model, max_tokens: args && args.max_tokens });
+        workersCallArgs.push({ model, max_tokens: args && args.max_tokens, response_format: args && args.response_format });
         if (model === '@cf/google/gemma-4-26b-a4b-it') {
           throw new Error('Temporary Gemma 4 timeout');
         }
@@ -468,14 +468,16 @@ await test('7. v357 2026 free-tier Gemini Flash + low-neuron Workers AI cascade,
       actorId: 'adm_1'
     });
 
-    assert.deepEqual(attemptedGemini.slice(0, 6), expectedGemini, 'Pass 1 auto_fix_fill must cascade across 2026 free-tier Gemini Flash/Lite models');
-    assert.deepEqual(attemptedGemini.slice(6, 12), expectedGemini, 'Pass 2 translate_fields must also cascade across 2026 free-tier Gemini Flash/Lite models');
+    assert.deepEqual(attemptedGemini.slice(0, 4), expectedGemini, 'Pass 1 auto_fix_fill must cascade across verified Google AI Studio Flash/Lite models');
+    assert.deepEqual(attemptedGemini.slice(4, 8), expectedGemini, 'Pass 2 translate_fields must also cascade across verified Google AI Studio Flash/Lite models');
     assert.equal(geminiRequestBodies[0].generationConfig.maxOutputTokens, 16384, 'Gemini Pass 1 must set maxOutputTokens: 16384');
-    assert.equal(geminiRequestBodies[6].generationConfig.maxOutputTokens, 16384, 'Gemini Pass 2 must set maxOutputTokens: 16384');
+    assert.equal(geminiRequestBodies[0].generationConfig.responseMimeType, 'application/json', 'JSON modes must set responseMimeType: application/json');
+    assert.equal(geminiRequestBodies[4].generationConfig.maxOutputTokens, 16384, 'Gemini Pass 2 must set maxOutputTokens: 16384');
     const pass1PromptText = geminiRequestBodies[0].contents[0].parts[0].text;
     assert.ok(pass1PromptText.includes('NEVER summarize, shorten, or omit details') && pass1PromptText.includes('Preserve 100% of every post name'), 'Pass 1 prompt must include strict anti-summarization directive');
     assert.equal(workersCallArgs[0].model, '@cf/google/gemma-4-26b-a4b-it');
     assert.equal(workersCallArgs[0].max_tokens, 8192, 'Workers AI Gemma 4 26B fallback must set max_tokens: 8192');
+    assert.deepEqual(workersCallArgs[0].response_format, { type: 'json_object' }, 'Workers AI JSON mode must request response_format: { type: "json_object" }');
     assert.equal(workersCallArgs[1].model, '@cf/meta/llama-3.1-8b-instruct-fp8-fast');
     assert.equal(autoRes.ok, true);
     assert.equal(autoRes.two_pass_translation, true, 'auto_fix_fill must execute dedicated Pass 2 full Odia translation');
@@ -677,11 +679,12 @@ await test('8. v354/v357 Markdown-preserving translation (translate_markdown): p
       attemptedModels.push(m[1]);
       const parsedBody = JSON.parse(String(init && init.body || '{}'));
       tokenBudgets.push(parsedBody.generationConfig && parsedBody.generationConfig.maxOutputTokens);
+      assert.equal(parsedBody.generationConfig && parsedBody.generationConfig.responseMimeType, 'text/plain', 'translate_markdown must use text/plain responseMimeType on Gemini');
       const promptText = parsedBody.contents[0].parts[0].text;
       assert.ok(promptText.includes('exact pipe-table column counts') && promptText.includes('https://...'), 'Prompt must enforce strict Markdown pipe-table and URL preservation');
       const marker = 'English Markdown source:\n';
       const srcChunk = promptText.slice(promptText.indexOf(marker) + marker.length);
-      // Simulate clean Markdown-preserving Odia translation keeping exact syntax, pipes, code blocks, URL & email
+      // Simulate clean plain-text Markdown-preserving Odia translation keeping exact syntax, pipes, code blocks, URL & email
       const translatedChunk = srcChunk
         .replace('## Overview & Official Schedule', '## ସଂକ୍ଷିପ୍ତ ବିବରଣୀ ଏବଂ ସରକାରୀ ସୂଚୀ')
         .replace('### Post-Wise Vacancy & Pay Scale Table', '### ପଦବୀ ଓ ବେତନ ତାଲିକା')
@@ -691,7 +694,7 @@ await test('8. v354/v357 Markdown-preserving translation (translate_markdown): p
       return new Response(JSON.stringify({
         candidates: [{
           content: {
-            parts: [{ text: JSON.stringify({ translated_markdown: translatedChunk }) }]
+            parts: [{ text: translatedChunk }]
           }
         }]
       }), { status: 200 });
@@ -700,7 +703,7 @@ await test('8. v354/v357 Markdown-preserving translation (translate_markdown): p
   };
 
   try {
-    const res = await generateAiCoAuthorDraft({ DB: db, GEMINI_API_KEY: 'gm_md_v357' }, {
+    const res = await generateAiCoAuthorDraft({ DB: db, GEMINI_API_KEY: 'gm_md_v358' }, {
       mode: 'translate_markdown',
       input: longMarkdown,
       actorId: 'adm_1'
@@ -708,7 +711,7 @@ await test('8. v354/v357 Markdown-preserving translation (translate_markdown): p
     assert.equal(res.ok, true);
     assert.equal(res.mode, 'translate_markdown');
     assert.equal(res.chunks_count, 2, 'Response must report 2 batched chunks');
-    assert.equal(attemptedModels[0], 'gemini-3.8-flash', 'translate_markdown must prioritize 2026 free-tier gemini-3.8-flash first');
+    assert.equal(attemptedModels[0], 'gemini-2.5-flash', 'translate_markdown must prioritize verified gemini-2.5-flash first');
     assert.ok(tokenBudgets.every((t) => t === 16384), 'translate_markdown must use 16384 Gemini output token cap');
 
     const md = res.data.translated_markdown;
@@ -846,4 +849,122 @@ await test('9. v356 Verbatim Body (EN) Lock: pasted body_en (>=200 chars) preser
   }
 });
 
-console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 Results: ${passed} passed, 0 failed ===\n`);
+await test('10. v358 Resilient JSON repair (parseOrRepairAiJson), cascade retry on invalid JSON & deterministic metadata fallback', async () => {
+  // A. Direct parser repair tests: <think> blocks, fenced JSON, conversational preamble/postamble, raw newlines/tabs in strings & trailing commas
+  const messyOutput = [
+    '<think>Let me analyze the Odisha scheme document carefully...</think>',
+    'Sure! Here is the structured JSON metadata you requested:',
+    '```json',
+    '{',
+    '  "title_en": "Subhadra Yojana Odisha',
+    'Eligibility & DBT Guide",',
+    '  "summary_en": "Line one\twith tab and trailing comma.",',
+    '  "tags": ["Subhadra Yojana", "Odisha DBT",],',
+    '}',
+    '```',
+    'Hope this helps! Let me know if you need another {format}.'
+  ].join('\n');
+
+  const repaired = parseOrRepairAiJson(messyOutput);
+  assert.equal(repaired.title_en, 'Subhadra Yojana Odisha\nEligibility & DBT Guide');
+  assert.equal(repaired.summary_en, 'Line one\twith tab and trailing comma.');
+  assert.deepEqual(repaired.tags, ['Subhadra Yojana', 'Odisha DBT']);
+
+  // B. Cascade retry on HTTP 200 invalid JSON (model 1 returns prose garbage -> model 2 returns valid JSON -> succeeds!)
+  const db = createMockDb();
+  const triedGemini = [];
+  const origFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    const m = String(url).match(/\/models\/([^:?]+):generateContent/);
+    if (m) {
+      triedGemini.push(m[1]);
+      if (m[1] === 'gemini-2.5-flash') {
+        return new Response(JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'Sorry, I am unable to format that right now without JSON.' }] } }]
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({
+        candidates: [{
+          content: {
+            parts: [{
+              text: 'Here is your JSON:\n{"title_en":"OSSC CGL 2026 Guide","title_or":"OSSC CGL 2026 ମାର୍ଗଦର୍ଶିକା","slug":"ossc-cgl-2026-guide","summary_en":"Complete OSSC CGL overview.","summary_or":"OSSC CGL ବିବରଣୀ।","tags":["OSSC","CGL"],"takeaways_en":["Apply on ossc.gov.in"],"takeaways_or":["ossc.gov.in ରେ ଆବେଦନ କରନ୍ତୁ"],"body_en":"## Overview\\nDetails here.","body_or":"## ବିବରଣୀ\\nତଥ୍ୟ"}'
+            }]
+          }
+        }]
+      }), { status: 200 });
+    }
+    throw new Error('Unexpected fetch');
+  };
+
+  try {
+    const retryRes = await generateAiCoAuthorDraft({ DB: db, GEMINI_API_KEY: 'gm_retry_v358' }, {
+      mode: 'guide',
+      input: 'OSSC CGL 2026 exam pattern and syllabus',
+      actorId: 'adm_1'
+    });
+    assert.equal(retryRes.ok, true);
+    assert.deepEqual(triedGemini, ['gemini-2.5-flash', 'gemini-2.5-flash-lite'], 'Invalid JSON from gemini-2.5-flash must automatically retry gemini-2.5-flash-lite');
+    assert.equal(retryRes.model, 'gemini-2.5-flash-lite');
+    assert.equal(retryRes.data.slug, 'ossc-cgl-2026-guide');
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+
+  // C. Zero-failure deterministic fallback when pasted body_en (>=200 chars) exists and EVERY model fails or returns invalid JSON
+  const pastedArticle = [
+    '## OSSC Combined Graduate Level (CGL) 2026 Complete Recruitment Handbook',
+    'The Odisha Staff Selection Commission has released the official Combined Graduate Level notification for 586 Group B and Group C posts across Odisha. Candidates must complete online registration exclusively on https://www.ossc.gov.in/ and download syllabus updates from https://oshec.odisha.gov.in/cgl-syllabus.',
+    '',
+    '### Key Highlights & Eligibility',
+    '- Educational Qualification: Bachelor degree in any discipline with basic computer proficiency.',
+    '- Age Limit: 21 to 38 years with 5 years relaxation for SEBC, SC, ST, and Women candidates.',
+    '- Selection Process: Prelims CBT, Mains Written Paper, and Computer Skill Test.',
+    '- Application Fee: Zero examination fee for all Odisha state candidates.',
+    '- Helpline & Verification: Always verify admission letters strictly on official .gov.in portals.'
+  ].join('\n');
+
+  const detDirect = buildDeterministicGuideMetadata(pastedArticle);
+  assert.equal(detDirect.title_en, 'OSSC Combined Graduate Level (CGL) 2026 Complete Recruitment Handbook');
+  assert.equal(detDirect.category, 'exam-strategy');
+  assert.equal(detDirect.scope, 'Odisha');
+  assert.equal(detDirect.takeaways_en.length, 5);
+  assert.ok(detDirect.official_links.some((l) => l.url.includes('ossc.gov.in')));
+
+  const origFetchFail = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    candidates: [{ content: { parts: [{ text: 'Totally broken non-JSON conversational prose!' }] } }]
+  }), { status: 200 });
+  try {
+    const fallbackRes = await generateAiCoAuthorDraft({
+      DB: db,
+      GEMINI_API_KEY: 'gm_broken_v358',
+      AI: {
+        async run() {
+          return { response: 'Workers AI also returned non-JSON text without braces.' };
+        }
+      }
+    }, {
+      mode: 'auto_fix_fill',
+      skip_body_or: true,
+      draft: { body_en: pastedArticle },
+      actorId: 'adm_1'
+    });
+
+    assert.equal(fallbackRes.ok, true, 'auto_fix_fill with pasted body_en must NEVER fail with invalid JSON error');
+    assert.equal(fallbackRes.fallback_used, true);
+    assert.equal(fallbackRes.provider, 'deterministic_fallback');
+    assert.equal(fallbackRes.body_en_locked, true);
+    assert.equal(fallbackRes.data.body_en, pastedArticle, 'Deterministic fallback must preserve pasted body_en 100% verbatim');
+    assert.equal(fallbackRes.data.title_en, 'OSSC Combined Graduate Level (CGL) 2026 Complete Recruitment Handbook');
+    assert.equal(fallbackRes.data.slug, 'ossc-combined-graduate-level-cgl-2026-complete-recruitment-handbook');
+    assert.equal(fallbackRes.data.scope, 'Odisha');
+    assert.ok(fallbackRes.data.summary_en.includes('586 Group B'), 'Deterministic summary_en must extract clean opening prose sentences');
+    assert.equal(fallbackRes.data.takeaways_en.length, 5, 'Deterministic fallback must extract up to 5 bullet takeaways');
+    assert.ok(fallbackRes.data.tags.includes('OSSC') && fallbackRes.data.tags.includes('CGL'));
+    assert.ok(fallbackRes.data.official_links.some((l) => l.url.includes('ossc.gov.in')) && fallbackRes.data.official_links.some((l) => l.url.includes('oshec.odisha.gov.in')));
+  } finally {
+    globalThis.fetch = origFetchFail;
+  }
+});
+
+console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 + v358 Results: ${passed} passed, 0 failed ===\n`);
