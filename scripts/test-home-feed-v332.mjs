@@ -384,8 +384,8 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v369');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v369';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v370');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v370';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
   assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/guides') && CONTENT_PUBLIC_PATHS.includes('/guides/') && CONTENT_PUBLIC_PATHS.includes('/sitemap.xml') && CONTENT_PUBLIC_PATHS.includes('/api/home/feed'), 'CONTENT_PUBLIC_PATHS must purge /api/public/guides, /guides/, /sitemap.xml, and /api/home/feed');
   assert.ok(hydJs.includes("GUIDE: 'cso-lu-badge cso-lu-badge--guide'"), 'home-hydration.js must map GUIDE badge class');
@@ -400,7 +400,7 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   assert.ok(indexHtml.includes('id="cso-tools"') && indexHtml.includes('data-feed-key="important_tools"'), 'index.html must include #cso-tools with D1 visibility key');
   assert.ok(indexHtml.includes('data-title-en="Age &amp; Eligibility Date Calculator"') && indexHtml.includes('data-title-or='), 'Important Tools cards must preserve bilingual EN/ଓଡ଼ିଆ attributes');
   assert.equal((indexHtml.match(/class="card tl tool-card"/g) || []).length, 8, 'Important Tools must render all 8 (4x2) compact tool cards');
-  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v369') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v369') && indexHtml.includes('/assets/js/home-hydration.js?v=20261126v369'), 'index.html must reference v367 cache-busted assets');
+  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v370') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v370') && indexHtml.includes('/assets/js/home-hydration.js?v=20261126v370'), 'index.html must reference v367 cache-busted assets');
   const styleV352 = read('assets/style.css');
   assert.ok(!styleV352.includes('.cso-action-hub-section'), 'Orphaned .cso-action-hub-section CSS must be removed from style.css');
   assert.ok(styleV352.includes('grid-template-columns: repeat(4, minmax(0, 1fr)) !important;'), 'Important Tools desktop grid must be 4 columns');
@@ -703,7 +703,17 @@ await test('v369 Homepage: zero blank action pills, 30-district selector, 8-card
   assert.ok(grid.includes('ORSP Pay &amp; Salary Estimator') && grid.includes('30-District Odisha Explorer'));
   assert.ok(html.includes('© 2026 Common Sense Odisha. All rights reserved.') && html.includes('<a href="/guides/">Informative Guides</a>'));
   assert.ok(!/\son[a-z]+="/i.test(html.replace(/<svg[\s\S]*?<\/svg>/g, '')), 'no inline handlers');
-  assert.ok(ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v369');
+  assert.ok(ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v370');
+});
+
+await test('v370 Homepage colored hover/focus CSS uses semantic --cso-* tokens, zero hex, reduced-motion, SW v370', async () => {
+  const css = read('assets/style.css');
+  const blk = css.slice(css.indexOf('/* ===== v370'));
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'zero hardcoded hex in v370 CSS');
+  for (const t of ['.cso-topic-card--odisha', '#cso-home-jobs-section', '.cso-hf-row:hover .cso-hf-row__act', '.cso-lu-item:hover .cso-lu-cta', 'translateX(3px)', 'border-left: 3px solid transparent', '.cso-dist-chip:hover', '.hero .search-chip:hover']) assert.ok(blk.includes(t), `v370 CSS missing ${t}`);
+  assert.ok(blk.includes('@media (prefers-reduced-motion: reduce)'));
+  assert.ok(read('sw.js').includes("cso-candidate-cache-v370") && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v370');
+  assert.ok(read('index.html').includes('?v=20261126v370'));
 });
 
 console.log(`\n=== Homepage Live Feed v332 + v337 + v338 + v339 + v367 Results: ${passed} passed, 0 failed ===\n`);

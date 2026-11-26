@@ -543,5 +543,27 @@ check('v369 Homepage section badges, action pills & hero hairline use semantic -
   assert.ok(blk.includes('.cso-hf-ic') && blk.includes('.cso-hf-row__act'));
 });
 
+check('v370 category-coded hover/focus: semantic tokens only, reduced-motion guard, >= 4.5:1 fill/on pairs in all 4 themes', () => {
+  const css = read('assets/style.css');
+  const blk = css.slice(css.indexOf('/* ===== v370'));
+  assert.ok(blk.length > 500, 'v370 CSS block present');
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'v370 CSS must contain zero hardcoded hex');
+  assert.ok(blk.includes('--card-accent') && blk.includes('--card-on') && blk.includes('color-mix(in srgb'));
+  for (const sel of ['.cso-topic-card:hover', '.cso-hf-section:hover', '.cso-hf-row:hover', '.cso-hf-row__act', '.cso-lu-cta', '.cso-tools-sec .card.tl:hover', '.hero .search-chip:hover', '.cso-dist-chip:hover']) assert.ok(blk.includes(sel), `missing ${sel}`);
+  assert.ok(blk.includes('@media (prefers-reduced-motion: reduce)'));
+  const mix = (a, b, pa) => '#' + [1, 3, 5].map((i) => Math.round(parseInt(a.slice(i, i + 2), 16) * pa + parseInt(b.slice(i, i + 2), 16) * (1 - pa)).toString(16).padStart(2, '0')).join('');
+  for (const [name, t] of Object.entries(EXPECTED_THEMES)) {
+    const pairs = [
+      [t['--cso-accent'], t['--cso-accent-ink']],
+      [t['--cso-ok-fg'], t['--cso-ok-bg']],
+      [t['--cso-info-fg'], t['--cso-info-bg']],
+      [t['--cso-warn-fg'], t['--cso-warn-bg']],
+      [t['--cso-err-fg'], t['--cso-err-bg']],
+      [mix(t['--cso-info-fg'], t['--cso-err-fg'], 0.6), mix(t['--cso-info-bg'], t['--cso-err-bg'], 0.6)]
+    ];
+    for (const [fill, on] of pairs) assert.ok(contrastRatio(fill, on) >= 4.5, `${name} v370 solid pill ${fill}/${on} < 4.5:1`);
+  }
+});
+
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);

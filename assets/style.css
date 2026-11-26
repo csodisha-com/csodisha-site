@@ -12943,3 +12943,232 @@ nav#cso-hub-top-tabs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ===== v370 Category-Coded Colored Hover & Focus Effects (4-Theme, Semantic --cso-* Tokens Only, Zero Hardcoded Hex) ===== */
+.cso-acc-brand,
+.cso-topic-card--jobs,
+#cso-home-jobs-section,
+#cso-home-mocks-section {
+  --card-accent: var(--cso-accent);
+  --card-on: var(--cso-accent-ink);
+}
+
+.cso-acc-purple,
+.cso-topic-card--exams,
+#cso-home-syllabus-section {
+  --card-accent: color-mix(in srgb, var(--cso-info-fg) 60%, var(--cso-err-fg) 40%);
+  --card-on: color-mix(in srgb, var(--cso-info-bg) 60%, var(--cso-err-bg) 40%);
+}
+
+.cso-acc-success,
+.cso-topic-card--schemes,
+#cso-home-schemes-section {
+  --card-accent: var(--cso-ok-fg);
+  --card-on: var(--cso-ok-bg);
+}
+
+.cso-acc-info,
+.cso-topic-card--study,
+#cso-home-ca-section {
+  --card-accent: var(--cso-info-fg);
+  --card-on: var(--cso-info-bg);
+}
+
+.cso-acc-saffron,
+.cso-topic-card--career,
+#cso-home-careers-section {
+  --card-accent: var(--cso-warn-fg);
+  --card-on: var(--cso-warn-bg);
+}
+
+.cso-acc-crimson,
+.cso-topic-card--odisha {
+  --card-accent: var(--cso-err-fg);
+  --card-on: var(--cso-err-bg);
+}
+
+/* 1a. Trending & Popular Topics cards */
+.cso-topic-card:hover,
+.cso-topic-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--card-accent, var(--cso-accent));
+  background: color-mix(in srgb, var(--card-accent, var(--cso-accent)) 10%, var(--cso-card-bg));
+  box-shadow: 0 8px 22px -8px color-mix(in srgb, var(--card-accent, var(--cso-accent)) 45%, transparent);
+  outline: 2px solid var(--card-accent, var(--cso-accent));
+  outline-offset: 1px;
+}
+
+.cso-topic-card:hover .cso-topic-card__badge,
+.cso-topic-card:focus-visible .cso-topic-card__badge {
+  background: var(--card-accent, var(--cso-accent));
+  color: var(--card-on, var(--cso-accent-ink));
+}
+
+.cso-topic-card .cso-topic-card__title,
+.cso-topic-card .arrow {
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.cso-topic-card:hover .cso-topic-card__title,
+.cso-topic-card:focus-visible .cso-topic-card__title {
+  color: var(--card-accent, var(--cso-link));
+}
+
+.cso-topic-card:hover .arrow,
+.cso-topic-card:focus-visible .arrow {
+  transform: translateX(4px);
+}
+
+/* 1b. Dual-column section panels */
+.cso-hf-section:hover,
+.cso-hf-section:focus-within {
+  border-color: var(--card-accent, var(--cso-accent));
+  border-left: 4px solid var(--card-accent, var(--cso-accent));
+  box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--card-accent, var(--cso-accent)) 55%, transparent);
+}
+
+/* 2. Row + action pill fills (rows inherit --card-accent from their panel) */
+.cso-hf-row,
+.cso-lu-item {
+  border-left: 3px solid transparent;
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.cso-lu-item:has(.cso-lu-badge--job) { --card-accent: var(--cso-accent); --card-on: var(--cso-accent-ink); }
+.cso-lu-item:has(.cso-lu-badge--exam) { --card-accent: color-mix(in srgb, var(--cso-info-fg) 60%, var(--cso-err-fg) 40%); --card-on: color-mix(in srgb, var(--cso-info-bg) 60%, var(--cso-err-bg) 40%); }
+.cso-lu-item:has(.cso-lu-badge--scheme) { --card-accent: var(--cso-ok-fg); --card-on: var(--cso-ok-bg); }
+.cso-lu-item:has(.cso-lu-badge--study),
+.cso-lu-item:has(.cso-lu-badge--ca) { --card-accent: var(--cso-info-fg); --card-on: var(--cso-info-bg); }
+.cso-lu-item:has(.cso-lu-badge--career),
+.cso-lu-item:has(.cso-lu-badge--guide) { --card-accent: var(--cso-warn-fg); --card-on: var(--cso-warn-bg); }
+.cso-lu-item:has(.cso-lu-badge--community) { --card-accent: var(--cso-err-fg); --card-on: var(--cso-err-bg); }
+
+.cso-hf-row:hover,
+.cso-hf-row:focus-within,
+.cso-lu-item:hover,
+.cso-lu-item:focus-within {
+  border-left-color: var(--card-accent, var(--cso-accent));
+  background: color-mix(in srgb, var(--card-accent, var(--cso-accent)) 9%, var(--cso-surface-elevated));
+  transform: translateX(3px);
+}
+
+.cso-hf-row__act,
+.cso-lu-cta {
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.cso-hf-row:hover .cso-hf-row__act,
+.cso-hf-row:focus-within .cso-hf-row__act,
+.cso-hf-row__act:hover,
+.cso-hf-row__act:focus-visible,
+.cso-lu-item:hover .cso-lu-cta,
+.cso-lu-item:focus-within .cso-lu-cta,
+.cso-lu-cta:hover,
+.cso-lu-cta:focus-visible {
+  background: var(--card-accent, var(--cso-accent));
+  color: var(--card-on, var(--cso-accent-ink));
+  border-color: var(--card-accent, var(--cso-accent));
+  transform: translateX(2px);
+}
+
+/* 3a. Important Tools: rotating category accents */
+.cso-tools-sec .card.tl:nth-child(8n+1) { --card-accent: var(--cso-accent); --card-on: var(--cso-accent-ink); }
+.cso-tools-sec .card.tl:nth-child(8n+2) { --card-accent: color-mix(in srgb, var(--cso-info-fg) 60%, var(--cso-err-fg) 40%); --card-on: color-mix(in srgb, var(--cso-info-bg) 60%, var(--cso-err-bg) 40%); }
+.cso-tools-sec .card.tl:nth-child(8n+3) { --card-accent: var(--cso-ok-fg); --card-on: var(--cso-ok-bg); }
+.cso-tools-sec .card.tl:nth-child(8n+4) { --card-accent: var(--cso-info-fg); --card-on: var(--cso-info-bg); }
+.cso-tools-sec .card.tl:nth-child(8n+5) { --card-accent: var(--cso-warn-fg); --card-on: var(--cso-warn-bg); }
+.cso-tools-sec .card.tl:nth-child(8n+6) { --card-accent: var(--cso-err-fg); --card-on: var(--cso-err-bg); }
+.cso-tools-sec .card.tl:nth-child(8n+7) { --card-accent: var(--cso-accent); --card-on: var(--cso-accent-ink); }
+.cso-tools-sec .card.tl:nth-child(8n+8) { --card-accent: var(--cso-warn-fg); --card-on: var(--cso-warn-bg); }
+
+.tools-grid .card.tl:hover,
+.tools-grid .card.tl:focus-visible,
+#cso-tools-grid .card.tl:hover,
+#cso-tools-grid .card.tl:focus-visible,
+.cso-tools-sec .card.tl:hover,
+.cso-tools-sec .card.tl:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--card-accent) !important;
+  background: color-mix(in srgb, var(--card-accent) 10%, var(--cso-surface)) !important;
+  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--card-accent) 50%, transparent) !important;
+  outline: 2px solid var(--card-accent) !important;
+  outline-offset: 2px !important;
+}
+
+.cso-tools-sec .card.tl .ic {
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease !important;
+}
+
+.cso-tools-sec .card.tl:hover .ic,
+.cso-tools-sec .card.tl:focus-visible .ic {
+  background: var(--card-accent) !important;
+  color: var(--card-on) !important;
+  border-color: var(--card-accent) !important;
+  transform: scale(1.1);
+}
+
+/* 3b. Hero Popular Search + 30-district chips: teal / saffron */
+.hero .search-chip,
+.cso-dist-chip {
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.hero .search-chip:hover,
+.hero .search-chip:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--cso-accent);
+  background: color-mix(in srgb, var(--cso-accent) 12%, var(--cso-surface));
+  color: var(--cso-ink);
+}
+
+.cso-dist-chip:hover,
+.cso-dist-chip:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--cso-warn-fg);
+  background: color-mix(in srgb, var(--cso-warn-fg) 14%, var(--cso-surface-elevated));
+  color: var(--cso-ink);
+}
+
+.cso-dist-chip.is-active,
+.cso-dist-chip.is-active:hover,
+.cso-dist-chip.is-active:focus-visible {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-topic-card:hover,
+  .cso-topic-card:focus-visible,
+  .cso-topic-card:hover .arrow,
+  .cso-topic-card:focus-visible .arrow,
+  .cso-hf-row:hover,
+  .cso-hf-row:focus-within,
+  .cso-lu-item:hover,
+  .cso-lu-item:focus-within,
+  .cso-hf-row:hover .cso-hf-row__act,
+  .cso-lu-item:hover .cso-lu-cta,
+  .hero .search-chip:hover,
+  .cso-dist-chip:hover,
+  .cso-dist-chip:focus-visible {
+    transform: none;
+  }
+  .cso-tools-sec .card.tl:hover,
+  .cso-tools-sec .card.tl:focus-visible,
+  .cso-tools-sec .card.tl:hover .ic,
+  .cso-tools-sec .card.tl:focus-visible .ic {
+    transform: none !important;
+  }
+  .cso-topic-card,
+  .cso-topic-card .cso-topic-card__title,
+  .cso-topic-card .arrow,
+  .cso-hf-row,
+  .cso-lu-item,
+  .cso-hf-row__act,
+  .cso-lu-cta,
+  .hero .search-chip,
+  .cso-dist-chip,
+  .cso-tools-sec .card.tl .ic {
+    transition: none !important;
+  }
+}
