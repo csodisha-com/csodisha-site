@@ -271,7 +271,9 @@
       tabs.setAttribute('role', 'tablist');
       replaceKids(tabs, tabNodes);
       if (home.bindTabs) home.bindTabs();
-      if (home.setCategory) home.setCategory(tabNodes[0] ? (tabNodes[0].getAttribute('data-category') || 'All') : 'All');
+      if (!document.getElementById('cso-lu-list') && home.setCategory) {
+        home.setCategory(tabNodes[0] ? (tabNodes[0].getAttribute('data-category') || 'All') : 'All');
+      }
       any = true;
     }
 

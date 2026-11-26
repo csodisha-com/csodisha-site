@@ -596,9 +596,9 @@
     if (!panel) return;
     var items = getLatestUpdatesItems(feed);
 
-    // Ensure clean list container (remove any legacy ticker windows created before feed arrived)
+    // Ensure clean list container (remove any legacy ticker windows or empty paragraphs)
     panel.classList.remove('cso-ticker-active');
-    panel.querySelectorAll('.cso-ticker-window').forEach(function (x) { x.remove(); });
+    panel.querySelectorAll('.cso-ticker-window, .em, :scope > .it').forEach(function (x) { x.remove(); });
     var listHost = document.getElementById('cso-lu-list');
     if (!listHost) {
       listHost = make('div', 'cso-lu-list');
@@ -622,11 +622,12 @@
       // If D1 returned 0 items total, keep static fallback cards visible & filtered
       if (!items.length && listHost.querySelector('.cso-lu-fallback')) {
         filterStaticFallbackLuItems(activeLuTab);
-        return;
+        var visibleFallbacks = listHost.querySelectorAll('.cso-lu-fallback:not([hidden])');
+        if (visibleFallbacks.length) return;
       }
-      var emptyMsg = items.length
-        ? (isOr ? 'ଏହି ବର୍ଗରେ ଏବେ କୌଣସି ପ୍ରକାଶିତ ଅପଡେଟ୍ ନାହିଁ।' : 'No published updates in this tab yet — check All or other sections.')
-        : (isOr ? 'ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ଅପଡେଟ୍ ପ୍ରକାଶିତ ହୋଇନାହିଁ।' : 'No items published yet — publish content in Admin Studio.');
+      var emptyMsg = isOr
+        ? 'ଏହି ବର୍ଗରେ ଏବେ କୌଣସି ଅପଡେଟ୍ ନାହିଁ। ସବୁ ଅପଡେଟ୍ ଦେଖିବାକୁ "ସମସ୍ତ" କ୍ଲିକ୍ କରନ୍ତୁ।'
+        : 'No updates in this category yet. Click All to view recent updates.';
       var emptyRow = make('div', 'it cso-lu-empty');
       emptyRow.appendChild(make('div', '', emptyMsg));
       listHost.replaceChildren(emptyRow);
@@ -793,11 +794,18 @@
 
   function localizeHeroCopy() {
     var isOr = isOdiaActive();
+    var isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     var inp = document.getElementById('cso-ask-input');
     if (inp) {
-      inp.placeholder = isOr
-        ? 'ଓଡ଼ିଆ କିମ୍ବା ଇଂରାଜୀରେ ପଚାରନ୍ତୁ — ଚାକିରି, ଯୋଜନା, ସିଲାବସ୍, OPSC, ବୃତ୍ତି...'
-        : 'Ask CSOdisha in EN or ଓଡ଼ିଆ — jobs, schemes, syllabus, OPSC, scholarships...';
+      if (isMobile) {
+        inp.placeholder = isOr
+          ? 'ଚାକିରି, ଯୋଜନା, ପରୀକ୍ଷା, ସିଲାବସ୍ ଖୋଜନ୍ତୁ...'
+          : 'Ask jobs, schemes, exams, syllabus...';
+      } else {
+        inp.placeholder = isOr
+          ? 'ଓଡ଼ିଆ କିମ୍ବା ଇଂରାଜୀରେ ପଚାରନ୍ତୁ — ଚାକିରି, ଯୋଜନା, ସିଲାବସ୍, OPSC, ବୃତ୍ତି...'
+          : 'Ask CSOdisha in EN or ଓଡ଼ିଆ — jobs, schemes, syllabus, OPSC, scholarships...';
+      }
     }
     var askLbl = document.querySelector('#cso-hero-ask-btn .cso-hero-ask-label');
     if (askLbl && !(document.getElementById('cso-hero-ask-btn') && document.getElementById('cso-hero-ask-btn').disabled)) {
@@ -828,6 +836,7 @@
 
   function init() {
     removeOpportunityCompass();
+    document.querySelectorAll('.lu > .em').forEach(function (x) { x.remove(); });
     localizeHeroCopy();
     localizeFeedHeaders();
     bindLatestUpdatesTabs();
@@ -835,6 +844,7 @@
     mountHomeFeed(false);
     hydrateHomepageConfig();
     bindLiveEvents();
+    window.addEventListener('resize', localizeHeroCopy);
   }
 
   window.CSOHomeHydration = {

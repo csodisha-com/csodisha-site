@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  var EMPTY_MSG = 'No items published yet — add categories or content in Admin Studio.';
+  var EMPTY_MSG = 'No updates in this category yet. Check back soon or explore other sections.';
 
   function el(tag, cls, text) {
     var node = document.createElement(tag);

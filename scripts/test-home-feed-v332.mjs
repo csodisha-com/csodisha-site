@@ -327,9 +327,17 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v341');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v341';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v342');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v342';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
+
+  // v342: Single-row <1100px mobile header (zero duplicate lang/theme rows), polite public Latest Updates empty state, short mobile search placeholder
+  assert.ok(indexHtml.includes('id="cso-mobile-top-actions"') && indexHtml.includes('id="cso-header-menu-toggle"'), 'index.html must include consolidated single-row mobile header actions');
+  assert.ok(indexHtml.includes('Ask jobs, schemes, exams, syllabus...'), 'index.html must include concise mobile search placeholder');
+  assert.ok(!read('assets/app.js').includes('add categories or content in Admin Studio'), 'app.js must NOT show internal Admin Studio text to public visitors');
+  assert.ok(!hydJs.includes('publish content in Admin Studio') && hydJs.includes('No updates in this category yet. Click All to view recent updates.'), 'home-hydration.js must show polite public empty state without Admin Studio text');
+  assert.ok(hydJs.includes('Ask jobs, schemes, exams, syllabus...') && hydJs.includes('ଚାକିରି, ଯୋଜନା, ପରୀକ୍ଷା, ସିଲାବସ୍ ଖୋଜନ୍ତୁ...'), 'home-hydration.js must use concise bilingual mobile search placeholders');
+  assert.ok(read('assets/app.js').includes('buildDrawerUtilities') && read('assets/style.css').includes('.cso-drawer-utilities'), 'Mobile secondary utilities must live cleanly inside the <1100px slide-out drawer');
 
   // v341: Sticky single-row desktop header, brand name, Candidate Hub, EN|ଓଡ଼ିଆ toggle, 4-theme switcher, broadcast ID dismissal, nav_header sync & <1100px slide-out drawer
   assert.ok(indexHtml.includes('class="cso-sticky-header"') && indexHtml.includes('class="cso-brand-name">Common Sense Odisha<'), 'index.html must include sticky header and Common Sense Odisha brand name');

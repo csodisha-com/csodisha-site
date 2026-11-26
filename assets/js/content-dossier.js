@@ -441,8 +441,8 @@
     if (!matched) {
       clear(rootEl);
       var emptyCard = el('article', 'cso-dossier-card cso-empty-state');
-      emptyCard.appendChild(el('h2', '', 'No items published yet'));
-      emptyCard.appendChild(el('p', '', 'No items published yet — add categories or content in Admin Studio.'));
+      emptyCard.appendChild(el('h2', '', 'No updates in this section yet'));
+      emptyCard.appendChild(el('p', '', 'Check back soon or browse active opportunities in Jobs & Careers.'));
       var backLink = el('a', 'cso-dossier-btn', '← Back to Jobs & Careers');
       backLink.href = '/jobs-careers/';
       emptyCard.appendChild(backLink);

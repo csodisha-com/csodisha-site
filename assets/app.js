@@ -206,6 +206,42 @@ let csoAdminHeaderLinks=null;
 function syncHeaderHubText(){
  const hub=$('#cso-header-hub-link');
  if(hub)hub.textContent=S.lang==='or'?'ପ୍ରାର୍ଥୀ ହବ୍':'Candidate Hub';
+ const mobLang=$('#cso-mob-lang-btn');
+ if(mobLang){
+  mobLang.textContent=S.lang==='or'?'EN':'ଓଡ଼ିଆ';
+  mobLang.setAttribute('data-cso-lang',S.lang==='or'?'en':'or');
+  mobLang.setAttribute('aria-label',S.lang==='or'?'Switch language to English':'Switch language to Odia');
+ }
+ const hdrMenu=$('#cso-header-menu-toggle');
+ if(hdrMenu){
+  hdrMenu.replaceChildren();
+  const hIc=mk('span','','☰');hIc.setAttribute('aria-hidden','true');
+  hdrMenu.append(hIc,mk('span','',S.lang==='or'?'ମେନୁ':'Menu'));
+ }
+}
+
+function ensureMobileTopActions(){
+ const top=$('#header-top');
+ if(!top)return;
+ let box=$('#cso-mobile-top-actions');
+ if(!box){
+  box=mk('div','cso-mobile-top-actions');box.id='cso-mobile-top-actions';
+  const mobLang=mk('button','pill cso-mob-quick-btn',S.lang==='or'?'EN':'ଓଡ଼ିଆ');
+  mobLang.type='button';mobLang.id='cso-mob-lang-btn';
+  const tWrap=mk('span','cso-popup-anchor');
+  const mobTheme=mk('button','pill cso-mob-quick-btn');mobTheme.type='button';mobTheme.id='cso-mob-theme-btn';
+  mobTheme.setAttribute('aria-haspopup','menu');mobTheme.setAttribute('aria-expanded','false');
+  tWrap.appendChild(mobTheme);
+  const menuBtn=mk('button','cso-nav-mobile cso-header-menu-btn');menuBtn.type='button';menuBtn.id='cso-header-menu-toggle';
+  menuBtn.setAttribute('aria-expanded','false');menuBtn.setAttribute('aria-controls','cso-nav-items');
+  menuBtn.setAttribute('aria-label','Open Navigation Menu');
+  box.append(mobLang,tWrap,menuBtn);
+  const acct=$('.acct',top);
+  if(acct)top.insertBefore(box,acct);
+  else top.appendChild(box);
+ }
+ syncHeaderHubText();
+ csoSyncThemeUi(window.CSOTheme.getTheme());
 }
 
 function setAppLang(nextLang,silent){
@@ -261,6 +297,7 @@ function ctl(){
  zoomWrap.append(fm,fr,fp);
 
  ctlRoot.append(langToggle,themeWrap,a11yWrap,zoomWrap);
+ ensureMobileTopActions();
  csoSyncThemeUi(window.CSOTheme.getTheme());
  syncHeaderHubText();
  bt.onclick=e=>{e.stopPropagation();pop(bt,CSO_PORTAL_THEMES.map(t=>[t.fullLabel,()=>{window.CSOTheme.setTheme(t.key,true);},window.CSOTheme.getTheme()===t.key]));};
@@ -269,9 +306,14 @@ function ctl(){
  fm.onclick=()=>z(-.05);fr.onclick=()=>z(0);fp.onclick=()=>z(.05);
 }
 function heroLang(){
- const words={
-  en:['Search jobs, schemes, study materials, articles and more...','Popular Searches:'],
-  or:['ଚାକିରି, ଯୋଜନା, ଅଧ୍ୟୟନ ସାମଗ୍ରୀ ଓ ଲେଖା ଖୋଜନ୍ତୁ...','ଲୋକପ୍ରିୟ ସନ୍ଧାନ:'],
+ const isMob=typeof window!=='undefined'&&window.innerWidth<768;
+ const words=isMob?{
+  en:['Ask jobs, schemes, exams, syllabus...','Popular Searches:'],
+  or:['ଚାକିରି, ଯୋଜନା, ପରୀକ୍ଷା, ସିଲାବସ୍ ଖୋଜନ୍ତୁ...','ଲୋକପ୍ରିୟ ସନ୍ଧାନ:'],
+  hi:['नौकरियाँ, योजनाएँ, परीक्षा, सिलेबस खोजें...','लोकप्रिय खोजें:']
+ }:{
+  en:['Ask CSOdisha in EN or ଓଡ଼ିଆ — jobs, schemes, syllabus, OPSC, scholarships...','Popular Searches:'],
+  or:['ଓଡ଼ିଆ କିମ୍ବା ଇଂରାଜୀରେ ପଚାରନ୍ତୁ — ଚାକିରି, ଯୋଜନା, ସିଲାବସ୍, OPSC, ବୃତ୍ତି...','ଲୋକପ୍ରିୟ ସନ୍ଧାନ:'],
   hi:['नौकरियाँ, योजनाएँ, अध्ययन सामग्री और लेख खोजें...','लोकप्रिय खोजें:']
  };
  const w=words[S.lang]||words.en;
@@ -282,42 +324,73 @@ function heroLang(){
 }
 function setMobileDrawerOpen(open){
  const items=$('#cso-nav-items');
- const toggle=$('#navw .cso-nav-mobile');
+ const toggles=$$('#cso-header-menu-toggle, #navw .cso-nav-mobile');
  const backdrop=$('#cso-mobile-drawer-backdrop');
  if(!items)return;
  const next=Boolean(open);
  items.classList.toggle('cso-mobile-open',next);
- if(toggle)toggle.setAttribute('aria-expanded',String(next));
+ toggles.forEach(t=>t.setAttribute('aria-expanded',String(next)));
  if(backdrop)backdrop.hidden=!next;
  if(document.body)document.body.classList.toggle('cso-modal-open',next);
  if(!next)csoCloseNavDropdowns();
 }
 
+function buildDrawerUtilities(){
+ const foot=mk('div','cso-drawer-foot cso-drawer-utilities');
+ const isOr=S.lang==='or';
+
+ // Account / Candidate Hub row inside drawer
+ const acctRow=mk('div','cso-drawer-acct-row');
+ if(csoAuthUser){
+  const isAdm=csoAuthUser.role==='admin'||csoAuthUser.role==='superadmin';
+  const dashA=mk('a','btn p cso-btn-candidate-hub cso-drawer-hub-btn',isAdm?(isOr?'🛡️ ଆଡମିନ୍ ଷ୍ଟୁଡିଓ':'🛡️ Admin Studio'):(isOr?'👤 ମୋ ଡ୍ୟାସବୋର୍ଡ':'👤 My Dashboard'));
+  dashA.href=isAdm?'/admin/':'/student-dashboard/';
+  acctRow.appendChild(dashA);
+  if(isAdm){
+   const hubA=mk('a','cso-drawer-util-btn',isOr?'👤 ପ୍ରାର୍ଥୀ ହବ୍':'👤 Candidate Hub');
+   hubA.href='/student-dashboard/';
+   acctRow.appendChild(hubA);
+  }
+  const loBtn=mk('button','cso-drawer-util-btn',isOr?'ଲଗଆଉଟ୍':'Logout');
+  loBtn.type='button';loBtn.id='cso-drawer-logout';
+  acctRow.appendChild(loBtn);
+ }else{
+  const hubMob=mk('a','btn p cso-btn-candidate-hub cso-drawer-hub-btn',isOr?'👤 ପ୍ରାର୍ଥୀ ହବ୍ →':'👤 Candidate Hub →');
+  hubMob.href='/student-dashboard/';
+  const authPair=mk('div','cso-drawer-auth-pair');
+  const liBtn=mk('button','cso-drawer-util-btn',isOr?'ଲଗଇନ୍':'Login');liBtn.type='button';liBtn.id='cso-drawer-li';
+  const suBtn=mk('button','cso-drawer-util-btn',isOr?'ସାଇନ୍ ଅପ୍':'Sign Up');suBtn.type='button';suBtn.id='cso-drawer-su';
+  authPair.append(liBtn,suBtn);
+  acctRow.append(hubMob,authPair);
+ }
+
+ // Accessibility & Font Size row inside drawer
+ const a11yRow=mk('div','cso-drawer-a11y-row');
+ const a11yAnchor=mk('span','cso-popup-anchor');
+ const baMob=mk('button','cso-drawer-util-btn cso-ctl-a11y-mobile',isOr?'♿ ସୁବିଧା ବିକଳ୍ପ':'♿ Accessibility');
+ baMob.type='button';baMob.id='ba-mobile';baMob.setAttribute('aria-label','Accessibility options');
+ a11yAnchor.appendChild(baMob);
+ const zoomMob=mk('div','cso-drawer-zoom-group cso-ctl-zoom-mobile');
+ zoomMob.setAttribute('role','group');zoomMob.setAttribute('aria-label','Font size');
+ [['fm-mobile','Smaller text','A–'],['fr-mobile','Normal text','A'],['fp-mobile','Larger text','A+']].forEach(([id,lbl,txt])=>{
+  const b=mk('button','fz cso-drawer-zoom-btn',txt);b.type='button';b.id=id;b.setAttribute('aria-label',lbl);zoomMob.appendChild(b);
+ });
+ a11yRow.append(a11yAnchor,zoomMob);
+
+ foot.append(acctRow,a11yRow);
+ return foot;
+}
+
 function nav(){
  const w=$('#navw');
  if(!w)return;
+ ensureMobileTopActions();
  w.replaceChildren();
  const bar=mk('div','cso-nav-bar-container');
  const mobBtn=mk('button','cso-nav-mobile');mobBtn.type='button';mobBtn.id='cso-menu-toggle';
  mobBtn.setAttribute('aria-expanded','false');mobBtn.setAttribute('aria-controls','cso-nav-items');mobBtn.setAttribute('aria-label','Open Navigation Menu');
  const ham=mk('span','','☰');ham.setAttribute('aria-hidden','true');mobBtn.append(ham,' ',S.lang==='or'?'ମେନୁ':'Menu');
- const mobLang=mk('button','pill cso-mob-quick-btn',S.lang==='or'?'EN':'ଓଡ଼ିଆ');
- mobLang.type='button';mobLang.id='cso-mob-lang-btn';
- mobLang.setAttribute('data-cso-lang',S.lang==='or'?'en':'or');
- mobLang.setAttribute('aria-label',S.lang==='or'?'Switch language to English':'Switch language to Odia');
- const mobThemeWrap=mk('span','cso-popup-anchor');
- const mobTheme=mk('button','pill cso-mob-quick-btn');
- mobTheme.type='button';mobTheme.id='cso-mob-theme-btn';
- mobTheme.setAttribute('aria-haspopup','menu');mobTheme.setAttribute('aria-expanded','false');
- mobThemeWrap.appendChild(mobTheme);
- const cluster=mk('div','cso-mobile-acc-cluster');
- const baMob=mk('button','pill cso-ctl-a11y-mobile acc-btn','♿ Options');baMob.type='button';baMob.id='ba-mobile';baMob.setAttribute('aria-label','Accessibility options');
- const zoomMob=mk('span','pill cso-ctl-zoom-mobile acc-btn');
- [['fm-mobile','Smaller text','A–'],['fr-mobile','Normal text','A'],['fp-mobile','Larger text','A+']].forEach(([id,lbl,txt])=>{
-  const b=mk('button','fz',txt);b.type='button';b.id=id;b.setAttribute('aria-label',lbl);zoomMob.appendChild(b);
- });
- cluster.append(mobLang,mobThemeWrap,baMob,zoomMob);
- bar.append(mobBtn,cluster);
+ bar.appendChild(mobBtn);
  const itemsWrap=mk('div','cso-nav-items');itemsWrap.id='cso-nav-items';
  const drawerHead=mk('div','cso-drawer-head');
  drawerHead.appendChild(mk('strong','cso-drawer-brand',S.lang==='or'?'କମନ୍ ସେନ୍ସ ଓଡ଼ିଶା':'Common Sense Odisha'));
@@ -953,11 +1026,7 @@ function nav(){
    }
    itemsWrap.appendChild(ni);
   });
-  const drawerFoot=mk('div','cso-drawer-foot');
-  const hubMob=mk('a','btn p cso-btn-candidate-hub cso-drawer-hub-btn',S.lang==='or'?'👤 ପ୍ରାର୍ଥୀ ହବ୍ ଖୋଲନ୍ତୁ →':'👤 Candidate Hub →');
-  hubMob.href='/student-dashboard/';
-  drawerFoot.appendChild(hubMob);
-  itemsWrap.appendChild(drawerFoot);
+  itemsWrap.appendChild(buildDrawerUtilities());
  };
  window.CSOHeaderNav={
   applyHeaderLinks:(items)=>{
@@ -1015,7 +1084,7 @@ window.__csoNavDropdownWired=true;
 document.addEventListener('click',e=>{
  const admLink = e.target.closest('a.adm, a[href^="/admin"]');
  if (admLink) return;
- const mobile=e.target.closest('#navw .cso-nav-mobile');
+ const mobile=e.target.closest('#cso-header-menu-toggle, #navw .cso-nav-mobile');
  if(mobile){
   e.preventDefault();
   e.stopPropagation();
@@ -1029,8 +1098,16 @@ document.addEventListener('click',e=>{
   e.preventDefault();
   e.stopPropagation();
   setMobileDrawerOpen(false);
-  const toggle=$('#navw .cso-nav-mobile');
+  const toggle=$('#cso-header-menu-toggle')||$('#navw .cso-nav-mobile');
   if(toggle)toggle.focus();
+  return;
+ }
+ if(e.target.closest('#cso-drawer-li')){setMobileDrawerOpen(false);login();return;}
+ if(e.target.closest('#cso-drawer-su')){setMobileDrawerOpen(false);signup();return;}
+ if(e.target.closest('#cso-drawer-logout')){
+  setMobileDrawerOpen(false);
+  const lo=$('#cso-header-logout-btn');
+  if(lo)lo.click();
   return;
  }
  const mobLangBtn=e.target.closest('#cso-mob-lang-btn');
@@ -1081,7 +1158,8 @@ document.addEventListener('click',e=>{
  }
  const a11yMobile=e.target.closest('#ba-mobile');
  if(a11yMobile){
-  pop(a11yMobile,[['High contrast',()=>{S.hc=+!S.hc;save();apply()},S.hc],['Underline links',()=>{S.ul=+!S.ul;save();apply()},S.ul],['Reduce motion',()=>{S.rm=+!S.rm;save();apply()},S.rm],['Reset',()=>{S.hc=S.ul=S.rm=0;S.zoom=1;save();apply()}]]);
+  e.stopPropagation();
+  pop(a11yMobile,[['High contrast',()=>{S.hc=+!S.hc;save();apply()},S.hc],['Dyslexia-friendly font',()=>{if(window.CSOGlobal)window.CSOGlobal.toggleA11y('dyslexia');},document.documentElement.classList.contains('cso-a11y-dyslexia')],['Lite mode (reduced graphics)',()=>{if(window.CSOGlobal)window.CSOGlobal.toggleA11y('lite');},document.documentElement.classList.contains('cso-a11y-lite')],['Underline links',()=>{S.ul=+!S.ul;save();apply()},S.ul],['Reduce motion',()=>{S.rm=+!S.rm;save();apply()},S.rm],['Reset',()=>{S.hc=S.ul=S.rm=0;S.zoom=1;save();apply();if(window.CSOGlobal)window.CSOGlobal.resetA11y();}]]);
   return;
  }
  const z=d=>{S.zoom=d?Math.max(.85,Math.min(1.3,+(S.zoom+d).toFixed(2))):1;save();apply()};
@@ -1117,7 +1195,7 @@ document.addEventListener('keydown',e=>{
   const items=$('#cso-nav-items');
   if(items&&items.classList.contains('cso-mobile-open')){
    setMobileDrawerOpen(false);
-   const toggle=$('#navw .cso-nav-mobile');
+   const toggle=$('#cso-header-menu-toggle')||$('#navw .cso-nav-mobile');
    if(toggle)toggle.focus();
   }
  }
@@ -1130,7 +1208,8 @@ document.addEventListener('focusout',e=>{
   csoCloseNavDropdowns();
  }
  const items=document.getElementById('cso-nav-items');
- if(items&&items.classList.contains('cso-mobile-open')&&e.relatedTarget&&!navw.contains(e.relatedTarget)){
+ const hdrToggle=document.getElementById('cso-header-menu-toggle');
+ if(items&&items.classList.contains('cso-mobile-open')&&e.relatedTarget&&!items.contains(e.relatedTarget)&&(!hdrToggle||!hdrToggle.contains(e.relatedTarget))){
   setMobileDrawerOpen(false);
  }
 });
@@ -1222,6 +1301,11 @@ function authUI() {
   if (staticHubBtn) {
     staticHubBtn.hidden = Boolean(csoAuthUser);
     syncHeaderHubText();
+  }
+
+  const drawerFootExisting = $('#cso-nav-items .cso-drawer-foot');
+  if (drawerFootExisting && drawerFootExisting.parentNode) {
+    drawerFootExisting.replaceWith(buildDrawerUtilities());
   }
 
   syncMobileNavAuth();
@@ -2698,7 +2782,7 @@ function csoUpdateBadges(u){
 }
 
 function lu(){
-  if(window.__CSO_LU_HYDRATED__)return;
+  if(window.__CSO_LU_HYDRATED__||$('#cso-lu-list .cso-lu-item'))return;
   $$('.lu .it,.lu .em').forEach(x=>x.remove());
   const activeCat=String(cat||'All').trim().toLowerCase();
   const L=csoPublishedUpdates().filter(u=>{
@@ -2733,7 +2817,7 @@ function lu(){
     const emptyP=document.createElement('p');
     emptyP.className='em mut';
     emptyP.setAttribute('role','status');
-    emptyP.textContent='No items published yet — add categories or content in Admin Studio.';
+    emptyP.textContent='No updates in this category yet. Click All to view recent updates.';
     panel.appendChild(emptyP);
     return;
   }

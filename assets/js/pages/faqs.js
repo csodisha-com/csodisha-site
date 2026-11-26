@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  var EMPTY_MSG = 'No items published yet — add categories or content in Admin Studio.';
+  var EMPTY_MSG = 'No FAQs available in this category yet. Select All to view available answers.';
   var activeCategory = 'all';
 
   function el(tag, cls, text) {

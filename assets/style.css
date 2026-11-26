@@ -11804,6 +11804,212 @@ nav#cso-hub-top-tabs {
   }
 }
 
+/* ===== v342 Consolidated Single-Row <1100px Mobile Header & Drawer Utility Bar (Zero Duplicate Controls) ===== */
+.cso-mobile-top-actions {
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .cso-mobile-top-actions {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1099px) {
+  /* Single compact top bar only: Logo+Title | ଓଡ଼ିଆ/EN | Theme | ☰ Menu */
+  #header-top.site-header__top {
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    padding: 5px 10px !important;
+    min-height: 54px !important;
+  }
+
+  #header-top .cso-brand-link {
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: 6px;
+  }
+
+  #header-top .cso-brand-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.88rem;
+  }
+
+  /* Hide duplicate desktop utility controls & auth row in top bar on <1100px (moved cleanly into drawer) */
+  #header-top #ctl,
+  #header-top #bl,
+  #header-top #bt,
+  #header-top #ba,
+  #header-top .cso-ctl-zoom,
+  #header-top .sp,
+  #header-top .acct {
+    display: none !important;
+  }
+
+  /* Show consolidated 3-action mobile cluster in #header-top */
+  #header-top .cso-mobile-top-actions {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  #header-top .cso-mobile-top-actions .cso-mob-quick-btn,
+  #header-top .cso-mobile-top-actions .cso-header-menu-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 0 10px !important;
+    border-radius: 9px !important;
+    background: var(--cso-surface) !important;
+    color: var(--cso-ink) !important;
+    border: 1px solid var(--cso-border) !important;
+    font-size: 0.8rem !important;
+    font-weight: 800 !important;
+    white-space: nowrap;
+    cursor: pointer;
+    box-sizing: border-box;
+  }
+
+  #header-top .cso-mobile-top-actions .cso-mob-quick-btn:hover,
+  #header-top .cso-mobile-top-actions .cso-mob-quick-btn:focus-visible,
+  #header-top .cso-mobile-top-actions .cso-header-menu-btn:hover,
+  #header-top .cso-mobile-top-actions .cso-header-menu-btn:focus-visible {
+    background: var(--cso-surface-alt) !important;
+    border-color: var(--cso-accent) !important;
+    color: var(--cso-ink) !important;
+  }
+
+  /* Collapse the second Tier-2 bar to 0px on <1100px (slide-out drawer lives fixed on viewport) */
+  #cso-main-navbar,
+  .site-header__nav {
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  #cso-main-navbar .cso-nav-bar-container {
+    display: none !important;
+  }
+
+  /* Right-align theme popover inside mobile top bar so it never clips off-screen */
+  #header-top .cso-mobile-top-actions .cso-popup-anchor > .pp {
+    left: auto;
+    right: 0;
+  }
+
+  /* Dedicated Utility Bar inside Slide-Out Drawer */
+  #cso-nav-items.cso-mobile-open .cso-drawer-utilities {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--cso-border);
+  }
+
+  .cso-drawer-acct-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cso-drawer-auth-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .cso-drawer-a11y-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .cso-drawer-a11y-row .cso-popup-anchor > .pp {
+    top: auto;
+    bottom: calc(100% + 6px);
+    left: 0;
+  }
+
+  .cso-drawer-util-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 9px;
+    border: 1px solid var(--cso-border);
+    background: var(--cso-surface-alt);
+    color: var(--cso-ink);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+  }
+
+  .cso-drawer-util-btn:hover,
+  .cso-drawer-util-btn:focus-visible {
+    background: var(--cso-accent);
+    color: var(--cso-accent-ink);
+    border-color: var(--cso-accent);
+  }
+
+  .cso-drawer-zoom-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--cso-border);
+    border-radius: 9px;
+    padding: 2px;
+    background: var(--cso-surface-alt);
+  }
+
+  .cso-drawer-zoom-btn {
+    min-width: 44px;
+    min-height: 44px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--cso-ink);
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .cso-drawer-zoom-btn:hover,
+  .cso-drawer-zoom-btn:focus-visible {
+    background: var(--cso-accent);
+    color: var(--cso-accent-ink);
+  }
+}
+
+@media (max-width: 420px) {
+  #header-top .cso-brand-name {
+    font-size: 0.8rem;
+  }
+  #header-top .cso-mobile-top-actions {
+    gap: 4px;
+  }
+  #header-top .cso-mobile-top-actions .cso-mob-quick-btn,
+  #header-top .cso-mobile-top-actions .cso-header-menu-btn {
+    padding: 0 8px !important;
+    font-size: 0.76rem !important;
+  }
+}
+
 /* ===== v335 Homepage Hero Card & Ask CSOdisha Search Bar Polish (4-Theme WCAG AAA) ===== */
 #cso-hero.hero {
   min-height: 0;
