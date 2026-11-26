@@ -644,5 +644,18 @@ check('v375 Study Materials Hub CSS: royal/info blue hover, semantic --cso-* tok
   }
 });
 
+check('v376 Career Paths Hub CSS: warm saffron/amber hover, semantic --cso-* tokens only, zero hardcoded hex & >= 4.5:1 badge contrast in all 4 themes', () => {
+  const css = read('assets/style.css');
+  const blk = css.slice(css.indexOf('/* ===== v376'));
+  assert.ok(blk.length > 500, 'v376 CSS block present');
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'v376 CSS must contain zero hardcoded hex');
+  for (const cls of ['.cso-cp-hero', '.cso-cp-card:hover', '.cso-cp-stepper', '.cso-cp-pay-badge', '.cso-cp-btn--primary']) {
+    assert.ok(blk.includes(cls), `v376 CSS missing ${cls}`);
+  }
+  for (const [name, t] of Object.entries(EXPECTED_THEMES)) {
+    assert.ok(contrastRatio(t['--cso-warn-fg'], t['--cso-warn-bg']) >= 4.5, `${name} career saffron badge contrast < 4.5:1`);
+  }
+});
+
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);

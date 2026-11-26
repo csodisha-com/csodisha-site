@@ -124,7 +124,7 @@ export const DEFAULT_TRENDING_TOPICS = [
     title_or: 'କ୍ୟାରିଅର ମାର୍ଗଦର୍ଶନ',
     subtitle_en: 'Courses, eligibility, professional growth',
     subtitle_or: 'ପାଠ୍ୟକ୍ରମ, ଯୋଗ୍ୟତା ଓ ବୃତ୍ତିଗତ ଉନ୍ନତି',
-    href: '/guides/?category=career',
+    href: '/career-paths/',
     icon: 'career',
     badge_text: '',
     sort_order: 5,
@@ -244,7 +244,7 @@ function inferCountBucket(topic) {
   if (href.includes('category=exam-prep') || href.startsWith('/exams') || href.startsWith('/mock-tests')) return 'exams';
   if (href.includes('category=scholarships') || href.includes('category=citizen-scheme') || href.startsWith('/scholarships') || href.startsWith('/schemes')) return 'schemes';
   if (href.includes('category=study-notes') || href.startsWith('/study') || href.startsWith('/resources')) return 'study';
-  if (href.includes('category=career') || href.startsWith('/careers')) return 'career';
+  if (href.includes('category=career') || href.startsWith('/career-paths') || href.startsWith('/careers')) return 'career';
   if (href.includes('category=odisha-gk') || href.startsWith('/current-affairs')) return 'odisha';
   if (['jobs', 'exams', 'schemes', 'study', 'career', 'odisha'].includes(id)) return id;
   if (['jobs', 'exams', 'schemes', 'study', 'career', 'odisha'].includes(icon)) return icon;
@@ -306,7 +306,7 @@ export async function computeTrendingTopicCounts(db) {
   const exams = guideCounts.exams + mockTestsCnt;
   const schemes = guideCounts.schemes + schemesCnt + 8;
   const study = guideCounts.study + studyArticlesCnt + resourcesCnt + 7;
-  const career = guideCounts.career + careersCnt;
+  const career = guideCounts.career + careersCnt + 8;
   const odisha = guideCounts.odisha + caCapsulesCnt + legacyCaCnt;
   const guidesTotal = guidesRows.length;
 
