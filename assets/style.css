@@ -15660,3 +15660,431 @@ nav#cso-hub-top-tabs {
     transform: none;
   }
 }
+
+/* ===== v377 Odisha Special, 30-District Explorer & State GK Hub (/odisha-special/) — Crimson/Coral Hover, Semantic --cso-* Only, Zero Hardcoded Hex ===== */
+.cso-odisha-special-main {
+  padding-top: 14px;
+  padding-bottom: 32px;
+}
+
+.cso-odisha-hub-root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--cso-ink);
+}
+
+.cso-od-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 20px 22px;
+  border-radius: 16px;
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
+  box-shadow: 0 2px 10px -6px var(--cso-ink-soft);
+}
+
+.cso-od-hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--cso-err-fg), var(--cso-warn-fg));
+}
+
+.cso-od-hero__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.cso-od-hero__copy {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.cso-od-eyebrow {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cso-err-fg);
+  margin-bottom: 6px;
+}
+
+.cso-od-title {
+  margin: 0 0 6px;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--cso-ink);
+}
+
+.cso-od-sub {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--cso-ink-soft);
+}
+
+.cso-od-hero__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-od-lang-toggle {
+  display: inline-flex;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt);
+  padding: 2px;
+  gap: 2px;
+}
+
+.cso-od-lang-btn {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-od-lang-btn.is-active {
+  background: var(--cso-err-fg);
+  color: var(--cso-err-bg);
+}
+
+.cso-od-crosslink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-err-fg);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-err-fg);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.cso-od-crosslink:hover,
+.cso-od-crosslink:focus-visible {
+  background: var(--cso-err-fg);
+  color: var(--cso-err-bg);
+}
+
+.cso-od-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.cso-od-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--cso-surface-elevated);
+  border: 1px solid var(--cso-border);
+}
+
+.cso-od-kpi__n {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--cso-link);
+}
+
+.cso-od-kpi--crimson .cso-od-kpi__n { color: var(--cso-err-fg); }
+.cso-od-kpi--ok .cso-od-kpi__n { color: var(--cso-ok-fg); }
+
+.cso-od-kpi__l {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--cso-ink-soft);
+}
+
+.cso-od-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
+}
+
+.cso-od-sec-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cso-od-sec-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--cso-ink);
+}
+
+.cso-od-div-pills,
+.cso-od-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-od-div-pill,
+.cso-od-tab {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.cso-od-tab { border-radius: 10px; }
+
+.cso-od-div-pill:hover,
+.cso-od-div-pill:focus-visible,
+.cso-od-tab:hover,
+.cso-od-tab:focus-visible {
+  border-color: var(--cso-err-fg);
+  background: color-mix(in srgb, var(--cso-err-fg) 14%, var(--cso-surface-elevated));
+  transform: translateY(-1px);
+}
+
+.cso-od-div-pill.is-active,
+.cso-od-tab.is-active {
+  background: var(--cso-err-fg);
+  color: var(--cso-err-bg);
+  border-color: var(--cso-err-fg);
+}
+
+.cso-od-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg);
+  color: var(--cso-input-ink);
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.cso-od-gk-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cso-od-status-bar,
+.cso-od-quiz-sub {
+  margin: 4px 0 0;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--cso-ink-soft);
+}
+
+.cso-od-dist-grid,
+.cso-od-grid,
+.cso-od-quiz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+.cso-od-dist-card,
+.cso-od-card {
+  --card-accent: var(--cso-err-fg);
+  --card-on: var(--cso-err-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--cso-surface-elevated);
+  border: 1px solid var(--cso-border);
+  border-left: 4px solid var(--card-accent);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.cso-od-dist-card:hover,
+.cso-od-dist-card:focus-within,
+.cso-od-card:hover,
+.cso-od-card:focus-within {
+  transform: translateY(-2px);
+  border-color: var(--card-accent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--card-accent) 14%, var(--cso-surface)), color-mix(in srgb, var(--card-accent) 6%, var(--cso-surface)));
+  box-shadow: 0 0 0 1px var(--card-accent), 0 10px 24px -8px color-mix(in srgb, var(--card-accent) 34%, transparent);
+}
+
+.cso-od-dist-card__top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.cso-od-div-badge,
+.cso-od-cat-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--cso-err-fg);
+  color: var(--cso-err-bg);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.cso-od-hq-badge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--cso-surface-alt);
+  color: var(--cso-ink);
+  border: 1px solid var(--cso-border);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.cso-od-dist-card__title,
+.cso-od-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.32;
+  color: var(--cso-ink);
+}
+
+.cso-od-card__link {
+  color: var(--cso-ink);
+  text-decoration: none;
+}
+
+.cso-od-card:hover .cso-od-card__link {
+  color: color-mix(in srgb, var(--card-accent) 65%, var(--cso-ink));
+  text-decoration: underline;
+}
+
+.cso-od-card__bi {
+  margin: -4px 0 0;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--cso-ink-soft);
+}
+
+.cso-od-dist-card__famous,
+.cso-od-card__desc {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--cso-ink-soft);
+}
+
+.cso-od-dist-card__actions,
+.cso-od-card__actions {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--cso-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-od-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cso-od-btn--gov { background: var(--cso-info-bg); color: var(--cso-info-fg); border-color: var(--cso-info-border, var(--cso-border)); }
+.cso-od-btn--wa { background: var(--cso-ok-bg); color: var(--cso-ok-fg); border-color: var(--cso-ok-border, var(--cso-border)); }
+.cso-od-btn--primary { margin-left: auto; background: var(--cso-err-fg); color: var(--cso-err-bg); border-color: var(--cso-err-fg); }
+
+.cso-od-q-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--cso-surface-elevated);
+  border: 1px solid var(--cso-border);
+}
+
+.cso-od-q-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cso-od-q-num { padding: 2px 9px; border-radius: 999px; background: var(--cso-err-fg); color: var(--cso-err-bg); font-size: 0.74rem; font-weight: 800; }
+.cso-od-q-text { margin: 0; font-size: 0.92rem; font-weight: 700; line-height: 1.4; color: var(--cso-ink); }
+.cso-od-q-opts { display: grid; grid-template-columns: 1fr; gap: 6px; }
+
+.cso-od-q-opt {
+  min-height: 44px;
+  padding: 8px 12px;
+  text-align: left;
+  border-radius: 9px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cso-od-q-opt.is-correct { background: var(--cso-ok-bg); color: var(--cso-ok-fg); border-color: var(--cso-ok-fg); font-weight: 800; }
+.cso-od-q-opt.is-wrong { background: var(--cso-err-bg); color: var(--cso-err-fg); border-color: var(--cso-err-fg); }
+.cso-od-q-feedback { padding: 8px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; line-height: 1.4; }
+.cso-od-q-feedback.is-correct { background: var(--cso-ok-bg); color: var(--cso-ok-fg); }
+.cso-od-q-feedback.is-wrong { background: var(--cso-err-bg); color: var(--cso-err-fg); }
+
+@media (max-width: 900px) {
+  .cso-od-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .cso-od-hero, .cso-od-section { padding: 14px; }
+  .cso-od-dist-grid, .cso-od-grid, .cso-od-quiz-grid { grid-template-columns: 1fr; }
+  .cso-od-btn--primary { margin-left: 0; flex: 1 1 auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-od-dist-card, .cso-od-dist-card:hover, .cso-od-card, .cso-od-card:hover,
+  .cso-od-div-pill, .cso-od-div-pill:hover, .cso-od-tab, .cso-od-tab:hover {
+    transition: none;
+    transform: none;
+  }
+}

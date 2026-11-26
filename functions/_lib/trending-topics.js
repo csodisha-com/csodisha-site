@@ -136,7 +136,7 @@ export const DEFAULT_TRENDING_TOPICS = [
     title_or: 'ଓଡ଼ିଶା ସ୍ୱତନ୍ତ୍ର',
     subtitle_en: 'State heritage, culture, public updates',
     subtitle_or: 'ଓଡ଼ିଶା ଐତିହ୍ୟ, ସଂସ୍କୃତି ଓ ସାଧାରଣ ଜ୍ଞାନ',
-    href: '/guides/?category=odisha-gk',
+    href: '/odisha-special/',
     icon: 'odisha',
     badge_text: 'NEW',
     sort_order: 6,
@@ -245,7 +245,7 @@ function inferCountBucket(topic) {
   if (href.includes('category=scholarships') || href.includes('category=citizen-scheme') || href.startsWith('/scholarships') || href.startsWith('/schemes')) return 'schemes';
   if (href.includes('category=study-notes') || href.startsWith('/study') || href.startsWith('/resources')) return 'study';
   if (href.includes('category=career') || href.startsWith('/career-paths') || href.startsWith('/careers')) return 'career';
-  if (href.includes('category=odisha-gk') || href.startsWith('/current-affairs')) return 'odisha';
+  if (href.includes('category=odisha-gk') || href.startsWith('/odisha-special') || href.startsWith('/current-affairs')) return 'odisha';
   if (['jobs', 'exams', 'schemes', 'study', 'career', 'odisha'].includes(id)) return id;
   if (['jobs', 'exams', 'schemes', 'study', 'career', 'odisha'].includes(icon)) return icon;
   return 'all';
@@ -307,7 +307,7 @@ export async function computeTrendingTopicCounts(db) {
   const schemes = guideCounts.schemes + schemesCnt + 8;
   const study = guideCounts.study + studyArticlesCnt + resourcesCnt + 7;
   const career = guideCounts.career + careersCnt + 8;
-  const odisha = guideCounts.odisha + caCapsulesCnt + legacyCaCnt;
+  const odisha = guideCounts.odisha + caCapsulesCnt + legacyCaCnt + 30;
   const guidesTotal = guidesRows.length;
 
   return {

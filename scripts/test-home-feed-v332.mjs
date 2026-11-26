@@ -45,6 +45,12 @@ import {
   handlePublicCareersHubApi,
   CORE_CAREER_ROADMAPS
 } from '../functions/api/public/careers-hub.js';
+import {
+  buildOdishaHubPayload,
+  handlePublicOdishaHubApi,
+  ODISHA_30_DISTRICTS_ATLAS,
+  ODISHA_GK_QUIZ
+} from '../functions/api/public/odisha-hub.js';
 
 const ROOT = process.cwd();
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -412,8 +418,8 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v376');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v376';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v377');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v377';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
   assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/guides') && CONTENT_PUBLIC_PATHS.includes('/guides/') && CONTENT_PUBLIC_PATHS.includes('/sitemap.xml') && CONTENT_PUBLIC_PATHS.includes('/api/home/feed'), 'CONTENT_PUBLIC_PATHS must purge /api/public/guides, /guides/, /sitemap.xml, and /api/home/feed');
   assert.ok(hydJs.includes("GUIDE: 'cso-lu-badge cso-lu-badge--guide'"), 'home-hydration.js must map GUIDE badge class');
@@ -428,7 +434,7 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   assert.ok(indexHtml.includes('id="cso-tools"') && indexHtml.includes('data-feed-key="important_tools"'), 'index.html must include #cso-tools with D1 visibility key');
   assert.ok(indexHtml.includes('data-title-en="Age &amp; Eligibility Date Calculator"') && indexHtml.includes('data-title-or='), 'Important Tools cards must preserve bilingual EN/ଓଡ଼ିଆ attributes');
   assert.equal((indexHtml.match(/class="card tl tool-card"/g) || []).length, 8, 'Important Tools must render all 8 (4x2) compact tool cards');
-  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v376') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v376') && indexHtml.includes('/assets/js/home-hydration.js?v=20261126v376'), 'index.html must reference v367 cache-busted assets');
+  assert.ok(indexHtml.includes('/assets/style.css?v=20261126v377') && indexHtml.includes('/assets/js/homepage-blocks.js?v=20261126v377') && indexHtml.includes('/assets/js/home-hydration.js?v=20261126v377'), 'index.html must reference v367 cache-busted assets');
   const styleV352 = read('assets/style.css');
   assert.ok(!styleV352.includes('.cso-action-hub-section'), 'Orphaned .cso-action-hub-section CSS must be removed from style.css');
   assert.ok(styleV352.includes('grid-template-columns: repeat(4, minmax(0, 1fr)) !important;'), 'Important Tools desktop grid must be 4 columns');
@@ -634,7 +640,7 @@ await test('6. v367 Trending & Popular Topics: live D1 counts, bilingual EN/ଓ�
   assert.equal(schemesTopic.href, '/scholarships/');
   assert.equal(studyTopic.href, '/study-materials/');
   assert.equal(careerTopic.href, '/career-paths/');
-  assert.equal(odishaTopic.href, '/guides/?category=odisha-gk');
+  assert.equal(odishaTopic.href, '/odisha-special/');
   assert.ok(jobsTopic.item_count >= 3 && examsTopic.item_count >= 4 && schemesTopic.item_count >= 5 && studyTopic.item_count >= 7 && careerTopic.item_count >= 4 && odishaTopic.item_count >= 7, 'Each trending topic must aggregate live D1 counts');
   assert.ok(jobsTopic.title_or.length > 0 && odishaTopic.title_or.length > 0, 'Every trending topic must carry Odia bilingual labels');
 
@@ -699,7 +705,7 @@ await test('6. v367 Trending & Popular Topics: live D1 counts, bilingual EN/ଓ�
   assert.ok(indexHtml.includes('id="cso-trending-topics" data-v367-trending="1"'), 'index.html must tag #cso-trending-topics with data-v367-trending="1"');
   assert.ok(indexHtml.includes('data-en="Trending &amp; Popular Topics"') && indexHtml.includes('data-or="ଟ୍ରେଣ୍ଡିଂ ଓ ଲୋକପ୍ରିୟ ବିଷୟବସ୍ତୁ"'), 'index.html must include bilingual Trending heading');
   assert.ok(indexHtml.includes('href="/guides/" class="cso-h2-link" data-en="View All Topics →" data-or="ସମସ୍ତ ବିଷୟ ଦେଖନ୍ତୁ →"'), 'View All Topics must link directly to /guides/ with bilingual labels');
-  for (const href of ['/jobs/', '/exams/', '/scholarships/', '/study-materials/', '/career-paths/', '/guides/?category=odisha-gk']) {
+  for (const href of ['/jobs/', '/exams/', '/scholarships/', '/study-materials/', '/career-paths/', '/odisha-special/']) {
     assert.ok(indexHtml.includes(`href="${href}"`), `index.html missing trending card href ${href}`);
   }
   assert.equal((indexHtml.match(/class="cso-topic-count"/g) || []).length, 6, 'index.html must include 6 .cso-topic-count placeholders for zero CLS');
@@ -731,7 +737,7 @@ await test('v369 Homepage: zero blank action pills, 30-district selector, 8-card
   assert.ok(grid.includes('ORSP Pay &amp; Salary Estimator') && grid.includes('30-District Odisha Explorer'));
   assert.ok(html.includes('© 2026 Common Sense Odisha. All rights reserved.') && html.includes('<a href="/guides/">Informative Guides</a>'));
   assert.ok(!/\son[a-z]+="/i.test(html.replace(/<svg[\s\S]*?<\/svg>/g, '')), 'no inline handlers');
-  assert.ok(ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v376');
+  assert.ok(ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v377');
 });
 
 await test('v370 Homepage colored hover/focus CSS uses semantic --cso-* tokens, zero hex, reduced-motion, SW v370', async () => {
@@ -740,8 +746,8 @@ await test('v370 Homepage colored hover/focus CSS uses semantic --cso-* tokens, 
   assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'zero hardcoded hex in v370 CSS');
   for (const t of ['.cso-topic-card--odisha', '#cso-home-jobs-section', '.cso-hf-row:hover .cso-hf-row__act', '.cso-lu-item:hover .cso-lu-cta', 'translateX(3px)', 'border-left: 3px solid transparent', '.cso-dist-chip:hover', '.hero .search-chip:hover']) assert.ok(blk.includes(t), `v370 CSS missing ${t}`);
   assert.ok(blk.includes('@media (prefers-reduced-motion: reduce)'));
-  assert.ok(read('sw.js').includes("cso-candidate-cache-v376") && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v376');
-  assert.ok(read('index.html').includes('?v=20261126v376'));
+  assert.ok(read('sw.js').includes("cso-candidate-cache-v377") && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v377');
+  assert.ok(read('index.html').includes('?v=20261126v377'));
 });
 
 await test('v371 Sharpened colored hover: ID-scoped specificity, purple Exams, tinted washes, ring + glow, SW v371', async () => {
@@ -749,8 +755,8 @@ await test('v371 Sharpened colored hover: ID-scoped specificity, purple Exams, t
   const blk = css.slice(css.indexOf('/* ===== v371'));
   assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk.replace(/#main-content|#cso-trending-topics|#cso-tools/g, '')), 'zero hardcoded hex in v371 CSS');
   for (const t of ['#main-content #cso-trending-topics .cso-topic-card--exams', '#main-content #cso-trending-topics .cso-topic-card:hover .cso-topic-card__badge', 'background: var(--card-accent);', 'color: var(--card-on);', '#main-content .cso-hf-section:hover', '#main-content #cso-tools .card.tl:hover', '#main-content .cso-dist-chip:hover', '#main-content .hero .search-chip:hover', '16%', '15%', '12%']) assert.ok(blk.includes(t), `v371 CSS missing ${t}`);
-  assert.ok(read('sw.js').includes('cso-candidate-cache-v376') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v376');
-  assert.ok(read('index.html').includes('?v=20261126v376'));
+  assert.ok(read('sw.js').includes('cso-candidate-cache-v377') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v377');
+  assert.ok(read('index.html').includes('?v=20261126v377'));
 });
 
 await test('v372 Live Jobs & Recruitment Hub: /api/public/jobs-hub aggregation, IST countdown, .gov.in badge, 30 districts & /jobs/ UI', async () => {
@@ -825,7 +831,7 @@ await test('v372 Live Jobs & Recruitment Hub: /api/public/jobs-hub aggregation, 
   assert.equal(filtered.items[0].organization, 'OPSC');
 
   const jobsHtml = read('jobs/index.html');
-  assert.ok(jobsHtml.includes('id="cso-jobs-hub-root"') && jobsHtml.includes('/assets/js/jobs-hub.js?v=20261126v376'), '/jobs/index.html must mount jobs-hub.js');
+  assert.ok(jobsHtml.includes('id="cso-jobs-hub-root"') && jobsHtml.includes('/assets/js/jobs-hub.js?v=20261126v377'), '/jobs/index.html must mount jobs-hub.js');
   assert.ok(jobsHtml.includes('/guides/?category=recruitment'), '/jobs/index.html must cross-link recruitment guides');
   assert.ok(!/\son[a-z]+="/i.test(jobsHtml.replace(/<svg[\s\S]*?<\/svg>/g, '')), '/jobs/index.html must have zero inline handlers');
   const sel = jobsHtml.match(/<select id="cso-jh-district"[\s\S]*?<\/select>/)[0];
@@ -834,7 +840,7 @@ await test('v372 Live Jobs & Recruitment Hub: /api/public/jobs-hub aggregation, 
   assert.deepEqual(opts, ODISHA_30_DISTRICTS, '/jobs/ districts must be alphabetical Angul -> Sundargarh');
   assert.ok(read('_worker.js').includes("pathname === '/api/public/jobs-hub'"), '_worker.js must route /api/public/jobs-hub');
   assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/jobs-hub'), 'edge-cache-invalidator must purge /api/public/jobs-hub');
-  assert.ok(read('sw.js').includes('cso-candidate-cache-v376') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v376');
+  assert.ok(read('sw.js').includes('cso-candidate-cache-v377') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v377');
 });
 
 await test('v373 Exams & Prep Hub: /api/public/exams-hub 7 flagship tracks, IST countdowns, 5 bilingual MCQs & /exams/ UI', async () => {
@@ -902,12 +908,12 @@ await test('v373 Exams & Prep Hub: /api/public/exams-hub 7 flagship tracks, IST 
   assert.equal(filtered.items.length, 1, 'Mock filter must return CBT mock');
 
   const examsHtml = read('exams/index.html');
-  assert.ok(examsHtml.includes('id="cso-exams-hub-root"') && examsHtml.includes('/assets/js/exams-hub.js?v=20261126v376'));
+  assert.ok(examsHtml.includes('id="cso-exams-hub-root"') && examsHtml.includes('/assets/js/exams-hub.js?v=20261126v377'));
   assert.ok(examsHtml.includes('/guides/?category=exam-prep') && examsHtml.includes('id="cso-eh-quiz-root"'));
   assert.ok(!/\son[a-z]+="/i.test(examsHtml.replace(/<svg[\s\S]*?<\/svg>/g, '')), 'exams/index.html must have zero inline handlers');
   assert.ok(read('_worker.js').includes("pathname === '/api/public/exams-hub'"));
   assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/exams-hub'));
-  assert.ok(read('sw.js').includes('cso-candidate-cache-v376') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v376');
+  assert.ok(read('sw.js').includes('cso-candidate-cache-v377') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v377');
 });
 
 await test('v374 Scholarships Hub: /api/public/scholarships-hub Odisha + NSP schemes, eligibility filters, document checklists & /scholarships/ UI', async () => {
@@ -948,12 +954,12 @@ await test('v374 Scholarships Hub: /api/public/scholarships-hub Odisha + NSP sch
   assert.ok(filtered.items.length >= 1 && filtered.items.every((x) => x.portal_source === 'nsp'), 'NSP filter must return only NSP schemes');
 
   const html = read('scholarships/index.html');
-  assert.ok(html.includes('id="cso-scholarships-hub-root"') && html.includes('/assets/js/scholarships-hub.js?v=20261126v376'));
+  assert.ok(html.includes('id="cso-scholarships-hub-root"') && html.includes('/assets/js/scholarships-hub.js?v=20261126v377'));
   assert.ok(html.includes('/guides/?category=scholarships') && html.includes('id="cso-sh-category"') && html.includes('id="cso-sh-portal"'));
   assert.ok(!/\son[a-z]+="/i.test(html.replace(/<svg[\s\S]*?<\/svg>/g, '')), 'scholarships/index.html must have zero inline handlers');
   assert.ok(read('_worker.js').includes("pathname === '/api/public/scholarships-hub'"));
   assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/scholarships-hub'));
-  assert.ok(read('sw.js').includes('cso-candidate-cache-v376') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v376');
+  assert.ok(read('sw.js').includes('cso-candidate-cache-v377') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v377');
 });
 
 await test('v375 Study Materials Hub: /api/public/study-hub PYQ vault, bilingual filters, offline save & /study-materials/ UI', async () => {
@@ -991,14 +997,14 @@ await test('v375 Study Materials Hub: /api/public/study-hub PYQ vault, bilingual
   assert.ok(filtered.items.length >= 1 && filtered.items.every((x) => x.format_tab === 'pyq' && x.exam_key === 'opsc'));
 
   const html = read('study-materials/index.html');
-  assert.ok(html.includes('id="cso-study-hub-root"') && html.includes('/assets/js/study-materials-hub.js?v=20261126v376'));
+  assert.ok(html.includes('id="cso-study-hub-root"') && html.includes('/assets/js/study-materials-hub.js?v=20261126v377'));
   assert.ok(html.includes('/guides/?category=study-notes') && html.includes('id="cso-sm-subject"') && html.includes('id="cso-sm-language"'));
   assert.ok(!/\son[a-z]+="/i.test(html.replace(/<svg[\s\S]*?<\/svg>/g, '')), 'study-materials/index.html must have zero inline handlers');
   const js = read('assets/js/study-materials-hub.js');
   assert.ok(js.includes('OFFLINE_STUDY_CACHE') && js.includes('caches.open'), 'study-materials-hub.js must implement offline cache save');
   assert.ok(read('_worker.js').includes("pathname === '/api/public/study-hub'"));
   assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/study-hub'));
-  assert.ok(read('sw.js').includes('cso-candidate-cache-v376') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v376');
+  assert.ok(read('sw.js').includes('cso-candidate-cache-v377') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v377');
 });
 
 await test('v376 Career Paths Hub: /api/public/careers-hub 8 ORSP roadmaps, qualification matcher, stage stepper & /career-paths/ UI', async () => {
@@ -1016,12 +1022,42 @@ await test('v376 Career Paths Hub: /api/public/careers-hub 8 ORSP roadmaps, qual
   assert.ok(filtered.items.length >= 2 && filtered.items.every((x) => x.domain_key === 'teaching'));
 
   const html = read('career-paths/index.html');
-  assert.ok(html.includes('id="cso-careers-hub-root"') && html.includes('/assets/js/career-paths-hub.js?v=20261126v376'));
+  assert.ok(html.includes('id="cso-careers-hub-root"') && html.includes('/assets/js/career-paths-hub.js?v=20261126v377'));
   assert.ok(html.includes('/guides/?category=career') && html.includes('data-qual="bed-prof"') && html.includes('data-domain="healthcare"'));
   assert.ok(!/\son[a-z]+="/i.test(html.replace(/<svg[\s\S]*?<\/svg>/g, '')), 'career-paths/index.html must have zero inline handlers');
   assert.ok(read('_worker.js').includes("pathname === '/api/public/careers-hub'"));
   assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/careers-hub'));
-  assert.ok(read('sw.js').includes('cso-candidate-cache-v376') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v376');
+  assert.ok(read('sw.js').includes('cso-candidate-cache-v377') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v377');
+});
+
+await test('v377 Odisha Special Hub: /api/public/odisha-hub 30-district atlas (10 per division), GK capsules, 5 bilingual MCQs & /odisha-special/ UI', async () => {
+  assert.equal(ODISHA_30_DISTRICTS_ATLAS.length, 30, 'Must include all 30 Odisha districts');
+  assert.deepEqual(ODISHA_30_DISTRICTS_ATLAS.map((d) => d.name_en), [...ODISHA_30_DISTRICTS_ATLAS.map((d) => d.name_en)].sort(), '30 districts must be alphabetical');
+  assert.equal(ODISHA_30_DISTRICTS_ATLAS.filter((d) => d.division === 'Central').length, 10, 'Central Division = 10 districts');
+  assert.equal(ODISHA_30_DISTRICTS_ATLAS.filter((d) => d.division === 'Northern').length, 10, 'Northern Division = 10 districts');
+  assert.equal(ODISHA_30_DISTRICTS_ATLAS.filter((d) => d.division === 'Southern').length, 10, 'Southern Division = 10 districts');
+  assert.equal(ODISHA_GK_QUIZ.length, 5, 'Must include 5 bilingual Odisha GK MCQs');
+
+  const payload = await buildOdishaHubPayload(null);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.version, 'v377');
+  assert.equal(payload.summary.districts_covered, 30);
+  assert.ok(payload.items.length >= 4 && payload.odisha_quiz.length === 5);
+
+  const res = await handlePublicOdishaHubApi(new Request('https://csodisha.com/api/public/odisha-hub?division=southern&tab=culture'), {});
+  assert.equal(res.status, 200);
+  const filtered = await res.json();
+  assert.equal(filtered.districts.length, 10);
+  assert.ok(filtered.items.length >= 1 && filtered.items.every((x) => x.tab_key === 'culture'));
+
+  const html = read('odisha-special/index.html');
+  assert.ok(html.includes('id="cso-odisha-hub-root"') && html.includes('/assets/js/odisha-special-hub.js?v=20261126v377'));
+  assert.ok(html.includes('id="districts"') && html.includes('id="cso-od-quiz-root"') && html.includes('/guides/?category=odisha-gk'));
+  assert.ok(!/\son[a-z]+="/i.test(html.replace(/<svg[\s\S]*?<\/svg>/g, '')), 'odisha-special/index.html must have zero inline handlers');
+  assert.ok(read('index.html').includes('href="/odisha-special/#districts"'), 'Homepage 30-District Explorer tool card must link to /odisha-special/#districts');
+  assert.ok(read('_worker.js').includes("pathname === '/api/public/odisha-hub'"));
+  assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/odisha-hub'));
+  assert.ok(read('sw.js').includes('cso-candidate-cache-v377') && ACTIVE_SW_CACHE_VERSION === 'cso-candidate-cache-v377');
 });
 
 console.log(`\n=== Homepage Live Feed v332 + v337 + v338 + v339 + v367 Results: ${passed} passed, 0 failed ===\n`);

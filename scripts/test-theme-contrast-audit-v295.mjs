@@ -657,5 +657,19 @@ check('v376 Career Paths Hub CSS: warm saffron/amber hover, semantic --cso-* tok
   }
 });
 
+check('v377 Odisha Special Hub CSS: crimson/coral hover, semantic --cso-* tokens only, zero hardcoded hex & >= 4.5:1 badge/quiz contrast in all 4 themes', () => {
+  const css = read('assets/style.css');
+  const blk = css.slice(css.indexOf('/* ===== v377'));
+  assert.ok(blk.length > 500, 'v377 CSS block present');
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'v377 CSS must contain zero hardcoded hex');
+  for (const cls of ['.cso-od-hero', '.cso-od-dist-card:hover', '.cso-od-card:hover', '.cso-od-q-opt.is-correct', '.cso-od-q-opt.is-wrong']) {
+    assert.ok(blk.includes(cls), `v377 CSS missing ${cls}`);
+  }
+  for (const [name, t] of Object.entries(EXPECTED_THEMES)) {
+    assert.ok(contrastRatio(t['--cso-err-fg'], t['--cso-err-bg']) >= 4.5, `${name} odisha crimson badge contrast < 4.5:1`);
+    assert.ok(contrastRatio(t['--cso-ok-fg'], t['--cso-ok-bg']) >= 4.5, `${name} quiz correct contrast < 4.5:1`);
+  }
+});
+
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);
