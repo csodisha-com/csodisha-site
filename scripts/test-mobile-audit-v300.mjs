@@ -399,10 +399,28 @@ check('8. v360 Informative Guides edge-to-edge layout (max-width: 100%), uncropp
     'admin/studio.css Live Preview must mirror v360 edge-to-edge 390px mobile padding and uncropped 16:9 cover rules'
   );
   assert.ok(
-    guidesSsr.includes('/assets/css/guides-portal.css?v=20261126v360') &&
+    guidesSsr.includes('/assets/css/guides-portal.css?v=20261126v366') &&
+    guidesSsr.includes('/assets/js/guides-portal.js?v=20261126v366') &&
     guidesSsr.includes('gp-hero-card') &&
-    guidesSsr.includes('gp-toc-card'),
-    'functions/_lib/informative-guides.js must load v360 CSS and emit .gp-hero-card and .gp-toc-card classes'
+    guidesSsr.includes('gp-toc-card') &&
+    guidesSsr.includes('gp-share-bar') &&
+    guidesSsr.includes('api.whatsapp.com/send') &&
+    guidesSsr.includes('t.me/share/url') &&
+    guidesSsr.includes('data-copy-guide-url') &&
+    !/onclick\s*=/i.test(guidesSsr),
+    'functions/_lib/informative-guides.js must load v366 CSS/JS and emit CSP-safe WhatsApp/Telegram/Copy share toolbar with zero inline onclick handlers'
+  );
+  const guidesJs = read('assets/js/guides-portal.js');
+  assert.ok(
+    guidesCss.includes('.gp-share-bar') &&
+    guidesCss.includes('.gp-share-btn') &&
+    guidesCss.includes('.gp-share-wa') &&
+    guidesCss.includes('.gp-share-tg') &&
+    guidesCss.includes('.gp-share-copy') &&
+    guidesJs.includes('data-copy-guide-url') &&
+    guidesJs.includes('data-native-share') &&
+    !/\.innerHTML|\.outerHTML|insertAdjacentHTML|\.style\./.test(guidesJs),
+    'guides-portal.css & guides-portal.js must style 44px 4-theme share toolbar and implement strict CSP Copy Link & Native Share handlers'
   );
 });
 

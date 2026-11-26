@@ -47,7 +47,13 @@ import { ACTIVE_SW_CACHE_VERSION } from '../functions/_lib/ops-sentinel.js';
 import { handleCandidateHubConfigApi, handleCandidateAssignedItemsApi } from '../functions/_lib/candidate-hub-governance.js';
 import { createSession } from '../functions/api/auth/_utils.js';
 import { handleAdminGuidesApi } from '../functions/api/admin/guides.js';
-import { handlePublicGuidesRoute, handlePublicGuidesApi } from '../functions/_lib/informative-guides.js';
+import {
+  handlePublicGuidesRoute,
+  handlePublicGuidesApi,
+  renderPublicGuideArticleHtml,
+  resolveSocialPreviewImageUrl,
+  DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH
+} from '../functions/_lib/informative-guides.js';
 import { handleSitemapXml } from '../functions/api/content/_seo.js';
 import { VALID_AI_MODES } from '../functions/_lib/ai-coauthor.js';
 import { handleAdminAiCoauthorApi } from '../functions/api/admin/ai-coauthor.js';
@@ -565,9 +571,9 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
 });
 
 // 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v361
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v365 CSS, and cso-candidate-cache-v365 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v365');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v365';"), 'sw.js cache version must be cso-candidate-cache-v365');
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v366 CSS, and cso-candidate-cache-v366 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v366');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v366';"), 'sw.js cache version must be cso-candidate-cache-v366');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -705,9 +711,9 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
   assert.ok(adminHtml.includes('id="headerTranslatorWrap"') && adminHtml.includes('id="btnHeaderOdiaTranslator"') && adminHtml.includes('aria-controls="csoHeaderTranslatorPopover"'), 'admin/index.html must pin #btnHeaderOdiaTranslator in the top header bar');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v365'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v365');
-  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v365'), 'admin/index.html must load studio-translator.js?v=20261126v365');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v365'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v366'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v366');
+  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v366'), 'admin/index.html must load studio-translator.js?v=20261126v366');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v366'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
@@ -824,7 +830,7 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   assert.ok(guidesCss.includes('.gp-detail-grid') && guidesCss.includes('grid-template-columns: 260px minmax(0, 1fr);') && guidesCss.includes('gap: 20px;') && guidesCss.includes('.gp-article-card'), 'assets/css/guides-portal.css must use edge-to-edge 260px + 1fr reading grid with 20px gap on desktop');
   assert.ok(guidesCss.includes('.gp-cover,') && guidesCss.includes('.gp-cover-frame') && guidesCss.includes('.gp-hero-media') && guidesCss.includes('overflow: hidden;') && guidesCss.includes('height: auto;') && guidesCss.includes('aspect-ratio: 16 / 9;') && guidesCss.includes('object-fit: contain;') && !guidesCss.includes('max-height: 440px;'), 'assets/css/guides-portal.css must enforce uncropped 16:9 height: auto + object-fit: contain on cover banners');
   assert.ok(guidesCss.includes('@media (max-width: 768px)') && guidesCss.includes('padding-inline: 8px;') && guidesCss.includes('padding: 14px 12px;'), 'assets/css/guides-portal.css must remove double side margins on mobile (<= 768px)');
-  assert.ok(guidesCss.includes('.gp-inline-figure img') && read('functions/_lib/informative-guides.js').includes('/assets/css/guides-portal.css?v=20261126v360'), 'Informative guides SSR must load guides-portal.css?v=20261126v360 and style .gp-inline-figure img');
+  assert.ok(guidesCss.includes('.gp-inline-figure img') && read('functions/_lib/informative-guides.js').includes('/assets/css/guides-portal.css?v=20261126v366'), 'Informative guides SSR must load guides-portal.css?v=20261126v366 and style .gp-inline-figure img');
   assert.ok(guidesCss.includes('.gp-takeaways') && guidesCss.includes('clear: both;') && guidesCss.includes('z-index: 1;'), 'assets/css/guides-portal.css must prevent .gp-cover overlap on .gp-takeaways');
   assert.ok(guidesCss.includes('.gp-body table tbody td') && guidesCss.includes('color: var(--gp-ink, var(--cso-ink)) !important;') && guidesCss.includes('opacity: 1 !important;'), 'assets/css/guides-portal.css must enforce high-contrast tbody td text');
   assert.ok(guidesCss.includes('.gp-table-wrap') && guidesCss.includes('border-radius: 12px;') && guidesCss.includes('position: sticky;'), 'assets/css/guides-portal.css must style .gp-table-wrap & sticky table headers');
@@ -1307,6 +1313,79 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   } finally {
     globalThis.fetch = origV365Fetch;
   }
+
+  // K. v366: WhatsApp/Telegram/Copy-Link share toolbar, raster OG fallback for .svg covers & BreadcrumbList + Article + FAQPage JSON-LD
+  const rasterFallbackDiskPath = path.join(ROOT, DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH.replace(/^\/+/, ''));
+  assert.ok(fs.existsSync(rasterFallbackDiskPath), `Raster OG fallback asset must exist on disk: ${DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH}`);
+
+  // Raster cover keeps absolute raster URL; SVG cover (even with query string) resolves to raster PNG fallback
+  assert.equal(
+    resolveSocialPreviewImageUrl({ cover_image: '/api/media/guides/oavs-cover.jpg' }, 'https://csodisha.com'),
+    'https://csodisha.com/api/media/guides/oavs-cover.jpg'
+  );
+  assert.equal(
+    resolveSocialPreviewImageUrl({ cover_image: '/api/media/guides/oavs-2026-strategy-cover.svg?v=2' }, 'https://csodisha.com'),
+    `https://csodisha.com${DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH}`
+  );
+
+  const svgGuideHtml = renderPublicGuideArticleHtml({
+    slug: 'oavs-2026-strategy-svg-test',
+    category: 'exam-strategy',
+    category_label_en: 'Exam Strategy & Study Handbooks',
+    category_icon: '🎯',
+    title_en: 'OAVS 2026 25-Day Preparation Strategy',
+    title_or: 'OAVS 2026 ୨୫-ଦିନିଆ ପ୍ରସ୍ତୁତି ରଣନୀତି',
+    summary_en: 'Complete remaining-days timetable and high-yield revision plan for OAVS CBT.',
+    summary_or: 'OAVS CBT ପାଇଁ ସମ୍ପୂର୍ଣ୍ଣ ରଣନୀତି।',
+    cover_image: '/api/media/guides/oavs-2026-strategy-cover.svg?v=1',
+    cover_caption_en: 'OAVS 2026 Strategy Banner',
+    body_en: '## Phase 1 Revision\nFocus on Pedagogy and Core Subjects.',
+    body_or: '## ପ୍ରଥମ ପର୍ଯ୍ୟାୟ\nଶିକ୍ଷାଶାସ୍ତ୍ର ଉପରେ ଧ୍ୟାନ ଦିଅନ୍ତୁ।',
+    read_minutes: 6,
+    scope: 'Odisha',
+    is_exam: true,
+    tags: 'OAVS, Teaching, Strategy',
+    created_at: '2026-11-25T10:00:00.000Z',
+    updated_at: '2026-11-26T10:00:00.000Z',
+    faq_json: JSON.stringify([
+      { question: 'Is there negative marking in OAVS CBT 2026?', answer: 'Yes, 0.25 marks are deducted for each wrong answer.' }
+    ])
+  }, [], new URL('https://csodisha.com/guides/oavs-2026-strategy-svg-test'));
+
+  // 1. Header & footer share bars with WhatsApp, Telegram, Copy Link & Native Share and zero inline onclick=
+  assert.ok(!/onclick\s*=/i.test(svgGuideHtml), '/guides/<slug> must contain ZERO inline onclick= handlers');
+  assert.ok(svgGuideHtml.includes('class="gp-share-bar is-header"') && svgGuideHtml.includes('class="gp-share-bar is-footer"'), 'Must render share bar in both article header and footer');
+  assert.ok(svgGuideHtml.includes('https://api.whatsapp.com/send?text='), 'Must render WhatsApp share link');
+  assert.ok(svgGuideHtml.includes('https://t.me/share/url?url=https%3A%2F%2Fcsodisha.com%2Fguides%2Foavs-2026-strategy-svg-test'), 'Must render Telegram share link');
+  assert.ok(svgGuideHtml.includes('data-copy-guide-url="https://csodisha.com/guides/oavs-2026-strategy-svg-test"'), 'Must render CSP-safe Copy Link button');
+  assert.ok(svgGuideHtml.includes('data-native-share'), 'Must render progressive-enhancement Native Share button');
+
+  // 2. Non-.svg raster og:image & twitter:image in <head>, while visible <article> cover keeps the crisp .svg banner
+  const expectedRasterOg = `https://csodisha.com${DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH}`;
+  assert.ok(svgGuideHtml.includes(`<meta property="og:type" content="article">`));
+  assert.ok(svgGuideHtml.includes(`<meta property="og:site_name" content="Common Sense Odisha">`));
+  assert.ok(svgGuideHtml.includes(`<meta property="og:locale" content="en_IN">`) && svgGuideHtml.includes(`<meta property="og:locale:alternate" content="or_IN">`));
+  assert.ok(svgGuideHtml.includes(`<meta property="og:image" content="${expectedRasterOg}">`), 'SVG cover must resolve to raster PNG og:image');
+  assert.ok(svgGuideHtml.includes(`<meta property="og:image:secure_url" content="${expectedRasterOg}">`));
+  assert.ok(svgGuideHtml.includes(`<meta property="og:image:width" content="1200">`) && svgGuideHtml.includes(`<meta property="og:image:height" content="630">`));
+  assert.ok(svgGuideHtml.includes(`<meta name="twitter:card" content="summary_large_image">`) && svgGuideHtml.includes(`<meta name="twitter:image" content="${expectedRasterOg}">`));
+  assert.ok(!/<meta[^>]+(?:og:image|twitter:image)[^>]*\.svg/i.test(svgGuideHtml), 'og:image and twitter:image must NEVER point to an .svg file');
+  assert.ok(svgGuideHtml.includes('<img src="/api/media/guides/oavs-2026-strategy-cover.svg?v=1"'), 'Visible article cover banner must still render the crisp .svg asset');
+
+  // 3. Valid JSON-LD parsing via JSON.parse() with BreadcrumbList, Article & FAQPage nodes
+  const ldMatch = svgGuideHtml.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+  assert.ok(ldMatch && ldMatch[1], '/guides/<slug> must emit JSON-LD script block');
+  const parsedLd = JSON.parse(ldMatch[1]);
+  assert.equal(parsedLd['@context'], 'https://schema.org');
+  assert.ok(Array.isArray(parsedLd['@graph']), 'JSON-LD must emit @graph array');
+  const bcNode = parsedLd['@graph'].find((n) => n['@type'] === 'BreadcrumbList');
+  const artNode = parsedLd['@graph'].find((n) => n['@type'] === 'Article');
+  const faqNode = parsedLd['@graph'].find((n) => n['@type'] === 'FAQPage');
+  assert.ok(bcNode && bcNode.itemListElement.length === 4 && bcNode.itemListElement[0].name === 'Home' && bcNode.itemListElement[1].name === 'Guides');
+  assert.ok(artNode && artNode.headline === 'OAVS 2026 25-Day Preparation Strategy' && artNode.alternativeHeadline === 'OAVS 2026 ୨୫-ଦିନିଆ ପ୍ରସ୍ତୁତି ରଣନୀତି');
+  assert.deepEqual(artNode.inLanguage, ['en', 'or']);
+  assert.deepEqual(artNode.image, [expectedRasterOg]);
+  assert.ok(faqNode && faqNode.mainEntity.length === 1 && faqNode.mainEntity[0].name.includes('negative marking'));
   await Promise.all(waits);
 });
 

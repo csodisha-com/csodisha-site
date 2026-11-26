@@ -912,9 +912,115 @@
 .gp-btn-primary:focus-visible,
 .gp-link-btn:focus-visible,
 .gp-pdf-card:focus-visible,
+.gp-share-btn:focus-visible,
 .gp-search-input:focus-visible {
   outline: 2px solid var(--cso-accent);
   outline-offset: 2px;
+}
+
+/* 1-Click Bilingual Social Share Toolbar (v366 — 4-Theme Semantic Tokens, 44px Touch Targets) */
+.gp-share-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.75rem;
+  margin-top: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid var(--gp-border, var(--cso-border));
+  background: var(--gp-surface-alt, var(--cso-surface-alt));
+  color: var(--gp-ink, var(--cso-ink));
+}
+
+.gp-share-bar.is-header {
+  margin-bottom: 0.9rem;
+}
+
+.gp-article-footer {
+  margin-top: 1.6rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--gp-border, var(--cso-border));
+}
+
+.gp-share-bar.is-footer {
+  margin-top: 0;
+  justify-content: space-between;
+}
+
+.gp-share-label {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--gp-ink-muted, var(--cso-ink-muted));
+  white-space: nowrap;
+}
+
+.gp-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gp-share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--gp-border, var(--cso-border));
+  background: var(--gp-surface, var(--cso-surface));
+  color: var(--gp-ink, var(--cso-ink));
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
+}
+
+.gp-share-btn[hidden] {
+  display: none;
+}
+
+.gp-share-btn:hover {
+  border-color: var(--gp-accent, var(--cso-accent));
+  background: var(--gp-surface-elevated, var(--cso-surface-elevated));
+}
+
+.gp-share-wa {
+  background: var(--cso-ok-bg, var(--cso-surface));
+  color: var(--cso-ok-fg, var(--cso-ink));
+  border-color: var(--cso-ok-border, var(--cso-border));
+}
+
+.gp-share-wa:hover {
+  border-color: var(--cso-ok-fg, var(--cso-accent));
+}
+
+.gp-share-tg {
+  background: var(--cso-info-bg, var(--cso-surface));
+  color: var(--cso-info-fg, var(--cso-ink));
+  border-color: var(--cso-info-border, var(--cso-border));
+}
+
+.gp-share-tg:hover {
+  border-color: var(--cso-info-fg, var(--cso-accent));
+}
+
+.gp-share-copy.is-copied {
+  background: var(--gp-accent, var(--cso-accent));
+  color: var(--cso-accent-ink, var(--cso-surface));
+  border-color: var(--gp-accent, var(--cso-accent));
+}
+
+.gp-share-native {
+  background: var(--gp-surface, var(--cso-surface));
+  color: var(--gp-ink, var(--cso-ink));
 }
 
 /* Related Practice / Alert CTA */
@@ -976,6 +1082,7 @@
   .gp-btn-primary,
   .gp-cat-pill,
   .gp-pdf-card,
+  .gp-share-btn,
   .gp-more-card {
     transition: none;
   }
@@ -1061,5 +1168,22 @@
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+
+  .gp-share-bar {
+    padding: 0.6rem 0.7rem;
+    gap: 0.5rem;
+  }
+
+  .gp-share-actions {
+    width: 100%;
+    gap: 0.45rem;
+  }
+
+  .gp-share-btn {
+    flex: 1 1 auto;
+    min-height: 44px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.82rem;
   }
 }

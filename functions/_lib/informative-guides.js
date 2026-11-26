@@ -1,13 +1,17 @@
 /**
- * Common Sense Odisha — Informative Articles & Guides Engine (v348)
+ * Common Sense Odisha — Informative Articles & Guides Engine (v366)
  * - Idempotent D1 `informative_guides` schema guard
  * - Strict CSP-safe Markdown/Structured body parser + Auto-TOC generator
  * - Public WCAG AAA 4-Theme SSR hub (`/guides/`) & article reader (`/guides/<slug>`)
- *   with JSON-LD `Article`, bilingual EN/ଓଡ଼ିଆ toggle, Key Takeaways, Inline Photo Gallery,
- *   Downloadable PDFs, Verified `.gov.in` Links, and Related Practice/Alert CTA.
+ *   with enriched `BreadcrumbList` + `Article` + `FAQPage` JSON-LD, raster `og:image`
+ *   social preview fallback, 1-click WhatsApp / Telegram / Copy-Link / Native Share toolbar,
+ *   bilingual EN/ଓଡ଼ିଆ toggle, Key Takeaways, Inline Photo Gallery, Downloadable PDFs,
+ *   Verified `.gov.in` Links, and Related Practice/Alert CTA.
  */
 
 import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, escShell, renderKicker } from './ssr-shell.js';
+
+export const DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH = '/assets/img/icon-512.png';
 
 export const GUIDE_CATEGORIES = [
   { key: 'how-to', label_en: 'Step-by-Step How-To Guides', label_or: 'ପର୍ଯ୍ୟାୟକ୍ରମେ ମାର୍ଗଦର୍ଶିକା', short_en: 'How-To Guide', icon: '🧭' },
@@ -203,6 +207,39 @@ export function normalizeRelatedCta(raw) {
   };
 }
 
+export function normalizeFaqs(raw) {
+  const arr = Array.isArray(raw) ? raw : parseJsonSafe(raw, []);
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+      const q = String(item.question || item.question_en || item.q || item.name || '').trim().slice(0, 320);
+      const a = String(item.answer || item.answer_en || item.a || (item.acceptedAnswer && item.acceptedAnswer.text) || '').trim().slice(0, 1200);
+      if (!q || !a) return null;
+      return { question: q, answer: a };
+    })
+    .filter(Boolean)
+    .slice(0, 20);
+}
+
+export function resolveSocialPreviewImageUrl(guide, origin = 'https://csodisha.com') {
+  const cleanOrigin = String(origin || 'https://csodisha.com').replace(/\/+$/, '');
+  const fallbackUrl = `${cleanOrigin}${DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH}`;
+  const raw = String((guide && guide.cover_image) || '').trim();
+  if (!raw) return fallbackUrl;
+  const pathWithoutQuery = raw.split(/[?#]/)[0].trim();
+  if (!pathWithoutQuery || /\.svg$/i.test(pathWithoutQuery)) {
+    return fallbackUrl;
+  }
+  if (raw.startsWith('/') && !raw.startsWith('//')) {
+    return `${cleanOrigin}${raw}`;
+  }
+  if (/^https?:\/\//i.test(raw)) {
+    return raw;
+  }
+  return fallbackUrl;
+}
+
 export function estimateReadMinutes(bodyEn, explicit) {
   const n = Number(explicit);
   if (Number.isFinite(n) && n >= 1 && n <= 120) return Math.round(n);
@@ -218,6 +255,7 @@ export function formatGuideRow(row) {
   const pdfs = normalizePdfs(row.pdfs_json);
   const links = normalizeLinks(row.links_json);
   const relatedCta = normalizeRelatedCta(row.related_cta_json);
+  const faqs = normalizeFaqs(row.faq_json !== undefined ? row.faq_json : row.faqs);
   return {
     id: String(row.id || ''),
     slug: String(row.slug || ''),
@@ -245,6 +283,8 @@ export function formatGuideRow(row) {
     links_json: JSON.stringify(links),
     related_cta: relatedCta,
     related_cta_json: JSON.stringify(relatedCta),
+    faqs,
+    faq_json: JSON.stringify(faqs),
     read_minutes: Number(row.read_minutes) || 5,
     tags: String(row.tags || ''),
     scope: String(row.scope || 'Odisha') === 'National' ? 'National' : 'Odisha',
@@ -435,7 +475,10 @@ function formatHumanDate(raw) {
   return `${m[3]} ${months[Number(m[2]) - 1] || m[2]} ${m[1]}`;
 }
 
-function buildGuidesHead({ title, description, canonical, ogImage = '', jsonLd = null }) {
+function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageAlt = '', ogType = 'website', jsonLd = null, origin = 'https://csodisha.com' }) {
+  const cleanOrigin = String(origin || 'https://csodisha.com').replace(/\/+$/, '');
+  const resolvedOgImg = ogImage || `${cleanOrigin}${DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH}`;
+  const resolvedOgAlt = ogImageAlt || title;
   const ldTag = jsonLd
     ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>`
     : '';
@@ -448,18 +491,65 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', jsonLd =
   <title>${escShell(title)}</title>
   <meta name="description" content="${escShell(description)}">
   <link rel="canonical" href="${escShell(canonical)}">
-  <meta property="og:type" content="${jsonLd ? 'article' : 'website'}">
+  <meta property="og:type" content="${escShell(ogType)}">
+  <meta property="og:site_name" content="Common Sense Odisha">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:locale:alternate" content="or_IN">
   <meta property="og:title" content="${escShell(title)}">
   <meta property="og:description" content="${escShell(description)}">
   <meta property="og:url" content="${escShell(canonical)}">
-  ${ogImage ? `<meta property="og:image" content="${escShell(ogImage)}">` : ''}
+  <meta property="og:image" content="${escShell(resolvedOgImg)}">
+  <meta property="og:image:secure_url" content="${escShell(resolvedOgImg)}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="${escShell(resolvedOgAlt)}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escShell(title)}">
+  <meta name="twitter:description" content="${escShell(description)}">
+  <meta name="twitter:image" content="${escShell(resolvedOgImg)}">
+  <meta name="twitter:image:alt" content="${escShell(resolvedOgAlt)}">
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v360">
-  <script src="/assets/js/guides-portal.js?v=20261126v360" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v366">
+  <script src="/assets/js/guides-portal.js?v=20261126v366" defer></script>
   ${ldTag}
 </head>`;
+}
+
+function buildGuideShareBarHtml(guide, canonical, position = 'header') {
+  const titleEn = String(guide.title_en || 'Common Sense Odisha Guide').trim();
+  const titleOr = String(guide.title_or || '').trim();
+  const hookRaw = String(guide.deadline || guide.summary_en || '').trim().replace(/\s+/g, ' ').slice(0, 160);
+  const titleLines = [titleEn];
+  if (titleOr && titleOr !== titleEn) titleLines.push(titleOr);
+  const waParts = [...titleLines];
+  if (hookRaw) waParts.push(hookRaw);
+  waParts.push(canonical);
+  const waText = waParts.join('\n');
+
+  const tgParts = [...titleLines];
+  if (hookRaw) tgParts.push(hookRaw);
+  const tgText = tgParts.join(' — ');
+
+  const waHref = `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;
+  const tgHref = `https://t.me/share/url?url=${encodeURIComponent(canonical)}&text=${encodeURIComponent(tgText)}`;
+  const posClass = position === 'footer' ? ' is-footer' : ' is-header';
+  const ariaLabel = position === 'footer' ? 'Share this guide from article footer' : 'Share this guide';
+
+  return `<div class="gp-share-bar${posClass}" role="region" aria-label="${escShell(ariaLabel)}">
+      <span class="gp-share-label">
+        <span class="gp-lang-en">Share this guide:</span>
+        <span class="gp-lang-or">ଏହି ମାର୍ଗଦର୍ଶିକା ସେୟାର କରନ୍ତୁ:</span>
+      </span>
+      <div class="gp-share-actions">
+        <a class="gp-share-btn gp-share-wa" href="${escShell(waHref)}" target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp">WhatsApp</a>
+        <a class="gp-share-btn gp-share-tg" href="${escShell(tgHref)}" target="_blank" rel="noopener noreferrer" aria-label="Share on Telegram">Telegram</a>
+        <button type="button" class="gp-share-btn gp-share-copy" data-copy-guide-url="${escShell(canonical)}" aria-label="Copy guide link">Copy Link</button>
+        <button type="button" class="gp-share-btn gp-share-native" data-native-share data-share-title="${escShell(titleEn)}" data-share-text="${escShell(tgText)}" data-share-url="${escShell(canonical)}" hidden aria-label="Share via device menu">Share</button>
+      </div>
+      <span class="gp-share-live cso-sr-only" role="status" aria-live="polite"></span>
+    </div>`;
 }
 
 export function renderPublicGuidesHubHtml(guides, url) {
@@ -531,7 +621,11 @@ export function renderPublicGuidesHubHtml(guides, url) {
   const head = buildGuidesHead({
     title: 'Informative Articles & Guides | Common Sense Odisha',
     description: 'Bilingual Odisha & National step-by-step how-to guides, exam strategy handbooks, government scheme explainers, and Odisha GK deep dives.',
-    canonical: `${origin}/guides/`
+    canonical: `${origin}/guides/`,
+    ogImage: `${origin}${DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH}`,
+    ogImageAlt: 'Common Sense Odisha Informative Articles & Practical Guides',
+    ogType: 'website',
+    origin
   });
 
   return `${head}
@@ -580,22 +674,34 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
   const canonical = `${origin}/guides/${encodeURIComponent(guide.slug)}`;
   const enParsed = renderGuideBodyWithToc(guide.body_en || '', 'en');
   const orParsed = renderGuideBodyWithToc(guide.body_or || guide.body_en || '', 'or');
-  const ogImg = guide.cover_image
-    ? (guide.cover_image.startsWith('/') ? `${origin}${guide.cover_image}` : guide.cover_image)
-    : `${origin}/assets/img/cso-logo-96.png`;
+  const socialOgImg = resolveSocialPreviewImageUrl(guide, origin);
+  const categoryLabelEn = guide.category_label_en || (GUIDE_CATEGORY_MAP.get(guide.category) || GUIDE_CATEGORIES[0]).label_en;
+  const categoryUrl = `${origin}/guides/?category=${encodeURIComponent(guide.category || 'how-to')}`;
+  const faqs = normalizeFaqs(guide.faq_json !== undefined ? guide.faq_json : guide.faqs);
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
+  const breadcrumbLd = {
+    '@type': 'BreadcrumbList',
+    '@id': `${canonical}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${origin}/` },
+      { '@type': 'ListItem', position: 2, name: 'Guides', item: `${origin}/guides/` },
+      { '@type': 'ListItem', position: 3, name: categoryLabelEn, item: categoryUrl },
+      { '@type': 'ListItem', position: 4, name: guide.title_en, item: canonical }
+    ]
+  };
+
+  const articleLd = {
     '@type': 'Article',
+    '@id': `${canonical}#article`,
     headline: guide.title_en,
     alternativeHeadline: guide.title_or || undefined,
     description: guide.summary_en || guide.title_en,
-    image: [ogImg],
+    image: [socialOgImg],
     datePublished: guide.created_at || guide.updated_at || new Date().toISOString(),
     dateModified: guide.updated_at || guide.created_at || new Date().toISOString(),
-    articleSection: guide.category_label_en,
+    articleSection: categoryLabelEn,
     keywords: guide.tags || undefined,
-    inLanguage: guide.body_or ? ['en', 'or'] : 'en',
+    inLanguage: ['en', 'or'],
     author: {
       '@type': 'Organization',
       name: 'Common Sense Odisha',
@@ -605,10 +711,39 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
       '@type': 'Organization',
       name: 'Common Sense Odisha',
       url: origin,
-      logo: { '@type': 'ImageObject', url: `${origin}/assets/img/cso-logo-96.png` }
+      logo: {
+        '@type': 'ImageObject',
+        url: `${origin}${DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH}`,
+        width: 512,
+        height: 512
+      }
     },
     mainEntityOfPage: { '@type': 'WebPage', '@id': canonical }
   };
+
+  const ldGraph = [breadcrumbLd, articleLd];
+  if (faqs.length) {
+    ldGraph.push({
+      '@type': 'FAQPage',
+      '@id': `${canonical}#faq`,
+      mainEntity: faqs.map((f) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: f.answer
+        }
+      }))
+    });
+  }
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': ldGraph
+  };
+
+  const shareBarHeaderHtml = buildGuideShareBarHtml(guide, canonical, 'header');
+  const shareBarFooterHtml = buildGuideShareBarHtml(guide, canonical, 'footer');
 
   const kicker = renderKicker([
     { label: 'Guides', url: '/guides/' },
@@ -792,8 +927,11 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
     title: `${guide.title_en} | Common Sense Odisha`,
     description: guide.summary_en || guide.title_en,
     canonical,
-    ogImage: ogImg,
-    jsonLd
+    ogImage: socialOgImg,
+    ogImageAlt: guide.cover_caption_en || guide.title_en,
+    ogType: 'article',
+    jsonLd,
+    origin
   });
 
   return `${head}
@@ -813,6 +951,7 @@ ${CSO_SHELL_HEADER}
         <button type="button" class="gp-lang-btn" data-set-guide-lang="or" aria-pressed="false">ଓଡ଼ିଆ</button>
       </div>
     </div>
+    ${shareBarHeaderHtml}
     <h1 class="gp-article-title">
       <span class="gp-lang-en">${escShell(guide.title_en)}</span>
       <span class="gp-lang-or">${escShell(guide.title_or || guide.title_en)}</span>
@@ -841,6 +980,9 @@ ${CSO_SHELL_HEADER}
       ${linksHtml}
       ${relatedCtaHtml}
       ${tagsHtml}
+      <footer class="gp-article-footer">
+        ${shareBarFooterHtml}
+      </footer>
     </article>
   </div>
 
