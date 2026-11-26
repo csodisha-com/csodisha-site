@@ -4,6 +4,7 @@ import { HttpError, json, readJson, validationError, clientIp } from './http.js'
 import { audit, rateLimit, getActor, STAFF_ROLES } from './rbac.js';
 import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
 import { ensureV311ContentColumns, isFuturePublishAt, isExpiredTimestamp, logZeroResultSearch } from './radars-v311.js';
+import { scheduleSemanticSync } from './semantic-search.js';
 
 export const SCHEME_STATUSES = ['active', 'ongoing', 'upcoming', 'closed'];
 export const SCHEME_STATUS_LABELS = {
@@ -877,7 +878,7 @@ async function saveSchemeRevision(db, articleId, snapshotRow, summary, actorEmai
   }
 }
 
-export async function handleSchemesArticlesAdmin(request, env, actor, articleId, action) {
+export async function handleSchemesArticlesAdmin(request, env, actor, articleId, action, ctx = null) {
   const db = env.DB;
   await ensureSchemesPublishingSchema(db);
   await publishDueScheduledSchemes(db);
@@ -1004,6 +1005,13 @@ export async function handleSchemesArticlesAdmin(request, env, actor, articleId,
     await saveSchemeRevision(db, id, row || data, body.change_summary || (data.is_published ? 'Initial publish' : 'Initial draft'), actor.email);
     const { map: taxMap } = await loadSchemeTaxonomyMap(db);
     await audit(env, request, actor, data.is_published ? 'schemes_article.publish' : 'schemes_article.create', 'scheme_articles', id, { slug: finalSlug, title_en: data.title_en });
+    scheduleSemanticSync(ctx, env, {
+      action: data.is_published ? 'upsert' : 'delete',
+      type: 'scheme',
+      row: row || { id, slug: finalSlug, title_en: data.title_en, title_or: data.title_or, summary_en: data.summary_en, summary_or: data.summary_or },
+      id,
+      actorId: actor && actor.userId
+    });
     await invalidateSchemesCaches(request, finalSlug);
     const res = json({ ok: true, item: formatSchemeArticle(row, taxMap, true) }, 201);
     res.headers.set('X-CSO-Cache-Purged', '1');
@@ -1089,6 +1097,13 @@ export async function handleSchemesArticlesAdmin(request, env, actor, articleId,
     await saveSchemeRevision(db, articleId, row, `Restored from Revision #${rev.revision_number}`, actor.email);
     const { map: taxMap } = await loadSchemeTaxonomyMap(db);
     await audit(env, request, actor, 'schemes_article.rollback', 'scheme_articles', articleId, { restored_revision: rev.revision_number });
+    scheduleSemanticSync(ctx, env, {
+      action: data.is_published ? 'upsert' : 'delete',
+      type: 'scheme',
+      row: row || { id: articleId, slug: existing.slug, title_en: data.title_en, title_or: data.title_or, summary_en: data.summary_en, summary_or: data.summary_or },
+      id: articleId,
+      actorId: actor && actor.userId
+    });
     await invalidateSchemesCaches(request, existing.slug);
     const res = json({ ok: true, item: formatSchemeArticle(row, taxMap, true) });
     res.headers.set('X-CSO-Cache-Purged', '1');
@@ -1169,6 +1184,13 @@ export async function handleSchemesArticlesAdmin(request, env, actor, articleId,
     await saveSchemeRevision(db, articleId, row || data, body.change_summary || 'Editorial update', actor.email);
     const { map: taxMap } = await loadSchemeTaxonomyMap(db);
     await audit(env, request, actor, data.is_published ? 'schemes_article.publish' : 'schemes_article.update', 'scheme_articles', articleId, { slug: finalSlug });
+    scheduleSemanticSync(ctx, env, {
+      action: data.is_published ? 'upsert' : 'delete',
+      type: 'scheme',
+      row: row || { id: articleId, slug: finalSlug, title_en: data.title_en, title_or: data.title_or, summary_en: data.summary_en, summary_or: data.summary_or },
+      id: articleId,
+      actorId: actor && actor.userId
+    });
     await invalidateSchemesCaches(request, finalSlug);
     const res = json({ ok: true, item: formatSchemeArticle(row, taxMap, true) });
     res.headers.set('X-CSO-Cache-Purged', '1');
@@ -1181,6 +1203,7 @@ export async function handleSchemesArticlesAdmin(request, env, actor, articleId,
     await db.prepare('DELETE FROM scheme_article_revisions WHERE article_id = ?').bind(articleId).run().catch(() => {});
     await db.prepare('DELETE FROM scheme_articles WHERE id = ?').bind(articleId).run();
     await audit(env, request, actor, 'schemes_article.delete', 'scheme_articles', articleId, { slug: existing.slug, title_en: existing.title_en });
+    scheduleSemanticSync(ctx, env, { action: 'delete', type: 'scheme', id: articleId, actorId: actor && actor.userId });
     await invalidateSchemesCaches(request, existing.slug);
     const res = json({ ok: true, deleted: articleId });
     res.headers.set('X-CSO-Cache-Purged', '1');

@@ -6,6 +6,8 @@ import {
   ANSWER_PRIMARY_MODEL,
   SEMANTIC_NEURON_CAP,
   upsertSemanticVector,
+  deleteSemanticVector,
+  scheduleSemanticSync,
   runSemanticSearch
 } from '../functions/_lib/semantic-search.js';
 import { onRequestPost as reindexPost } from '../functions/api/admin/semantic-reindex.js';
@@ -54,6 +56,11 @@ function createMockDb({ seedNeurons = 0 } = {}) {
       const row = { vector_id, entity_type, entity_id, title_en, title_or, url, content_hash, indexed_at };
       if (idx >= 0) indexItems[idx] = row;
       else indexItems.push(row);
+      return { run: { success: true } };
+    }
+    if (/^DELETE FROM semantic_index_items WHERE vector_id = \?/i.test(s)) {
+      const idx = indexItems.findIndex((i) => i.vector_id === params[0]);
+      if (idx >= 0) indexItems.splice(idx, 1);
       return { run: { success: true } };
     }
     if (/^SELECT COUNT\(\*\) AS cnt FROM semantic_index_items/i.test(s)) {
@@ -209,8 +216,8 @@ await test('4. Wrangler Vectorize binding, migration 0151, CSP compliance & v320
   const mig = read('migrations/0151_semantic_search_v320.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS semantic_index_items'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v330');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v330';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v331');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v331';"));
   assert.ok(read('migrations/0152_ask_ai_answer_cache_v321.sql').includes('CREATE TABLE IF NOT EXISTS semantic_answer_cache'));
 
   const js = read('assets/js/semantic-search.js');
@@ -344,4 +351,81 @@ await test('5. v321 Hybrid RAG grounded answer, general-query fallback & 7-day D
   }
 });
 
-console.log(`\n=== Smart Semantic Search v320 Results: ${passed} passed, 0 failed ===\n`);
+await test('6. v331 Auto Vectorize sync on publish/update/archive/delete via ctx.waitUntil + current_affairs entity_type', async () => {
+  const db = createMockDb();
+  const vectors = new Map();
+  const deletedIds = [];
+  const waitPromises = [];
+  const ctx = { waitUntil: (p) => waitPromises.push(p) };
+
+  const env = {
+    DB: db,
+    AI: {
+      async run() {
+        return { data: [new Array(1024).fill(0.25)] };
+      }
+    },
+    VECTORIZE: {
+      async upsert(items) {
+        items.forEach((it) => vectors.set(it.id, it));
+      },
+      async deleteByIds(ids) {
+        ids.forEach((id) => {
+          deletedIds.push(id);
+          vectors.delete(id);
+        });
+      }
+    }
+  };
+
+  // Upsert a Current Affairs item via scheduleSemanticSync + ctx.waitUntil
+  scheduleSemanticSync(ctx, env, {
+    action: 'upsert',
+    type: 'current_affairs',
+    row: {
+      id: 'ca_2026_11',
+      slug: 'odisha-budget-2026-highlights',
+      title_en: 'Odisha State Budget 2026 Highlights',
+      title_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ବଜେଟ୍ 2026 ମୁଖ୍ୟ ଅଂଶ',
+      summary_en: 'Key schemes and allocations for education and agriculture.',
+      category: 'Odisha'
+    },
+    actorId: 'adm_1'
+  });
+  assert.equal(waitPromises.length, 1);
+  await Promise.all(waitPromises);
+  assert.ok(vectors.has('current_affairs:ca_2026_11'));
+  assert.equal(vectors.get('current_affairs:ca_2026_11').metadata.entity_type, 'current_affairs');
+  assert.equal(db.indexItems.length, 1);
+
+  // Archive / delete removes the vector via deleteSemanticVector
+  scheduleSemanticSync(ctx, env, {
+    action: 'delete',
+    type: 'current_affairs',
+    id: 'ca_2026_11'
+  });
+  await Promise.all(waitPromises);
+  assert.ok(deletedIds.includes('current_affairs:ca_2026_11'));
+  assert.equal(vectors.has('current_affairs:ca_2026_11'), false);
+  assert.equal(db.indexItems.length, 0);
+
+  // Verify direct deleteSemanticVector export
+  const delRes = await deleteSemanticVector(env, 'job', 'job_999');
+  assert.equal(delRes.deleted, true);
+  assert.equal(delRes.vector_id, 'job:job_999');
+
+  // Verify automatic sync hooks are wired across all publish endpoints
+  for (const relPath of [
+    'functions/_lib/jobs-publishing-house.js',
+    'functions/_lib/schemes-publishing-house.js',
+    'functions/_lib/study-publishing-house.js',
+    'functions/_lib/careers-portal.js',
+    'functions/api/admin/current-affairs.js',
+    'functions/api/admin/_posts.js',
+    'functions/api/admin/_site.js'
+  ]) {
+    assert.ok(read(relPath).includes('scheduleSemanticSync'), `${relPath} must hook scheduleSemanticSync`);
+  }
+});
+
+console.log(`\n=== Smart Semantic Search v320 + v331 Results: ${passed} passed, 0 failed ===\n`);

@@ -1,18 +1,29 @@
 /**
- * 100% Free-Tier Admin Studio AI Co-Author Service (v318)
- * - Uses Google Gemini 2.5 Flash Free-Tier API ONLY if env.GEMINI_API_KEY is bound.
+ * 100% Free-Tier Admin Studio AI Co-Author Service (v331)
+ * - Uses Google Gemini $0 Free-Tier pool (`gemini-3.5-flash-lite` -> `gemini-3.6-flash` ->
+ *   `gemini-3.8-flash` -> `gemini-3.1-flash-lite` -> `gemma-4-31b-it`) ONLY if env.GEMINI_API_KEY is bound.
  * - Automatically falls back to Cloudflare Workers AI (@cf/meta/llama-3.1-8b-instruct-fp8-fast
  *   or @cf/ibm-granite/granite-4.0-h-micro) when GEMINI_API_KEY is absent or rate-limited (429/5xx).
+ * - Supports structured drafting (`job`, `scheme`, `mcq`, `career`), Odisha gov/exam EN->Odia
+ *   translation (`translate_odia`, `translate_fields`), and AI Title/Slug/Tag suggestions (`suggest_meta`).
  * - Tracks daily neuron usage in D1 `ai_generation_logs` against Cloudflare's 10,000 Neurons/day free allowance.
  */
 
 export const DAILY_FREE_NEURON_LIMIT = 10000;
 export const DAILY_FREE_NEURON_BUDGET = 9500;
-export const VALID_AI_MODES = new Set(['job', 'scheme', 'mcq', 'career']);
+export const VALID_AI_MODES = new Set([
+  'job',
+  'scheme',
+  'mcq',
+  'career',
+  'translate_odia',
+  'translate_fields',
+  'suggest_meta'
+]);
 
 const WORKERS_AI_PRIMARY_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
 const WORKERS_AI_FALLBACK_MODEL = '@cf/ibm-granite/granite-4.0-h-micro';
-const GEMINI_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemma-4-31b-it'];
+export const GEMINI_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemma-4-31b-it'];
 
 let _schemaReadyDb = null;
 
@@ -116,7 +127,58 @@ export function extractJsonObject(rawText) {
   }
 }
 
-function buildPromptForMode(mode, rawInput) {
+function buildPromptForMode(mode, rawInput, extra = {}) {
+  if (mode === 'translate_odia') {
+    const text = String(rawInput || '').trim().slice(0, 6000);
+    return [
+      'You are an expert Odisha Government and competitive exam translator (English to Odia / ଓଡ଼ିଆ) for Common Sense Odisha.',
+      'Translate the English text below into natural, accurate, official Odia script (ଓଡ଼ିଆ) used in Odisha government notifications, OPSC/OSSC/OSSSC/OTET/UGC NET exams, welfare schemes, and news.',
+      'STRICT RULES:',
+      '- Preserve exact dates, numbers, percentages, currency amounts (e.g. ₹56,100), and URLs verbatim.',
+      '- Keep standard exam, board, and government acronyms in English Latin script (e.g. OPSC, OSSSC, OSSC, UPSC, UGC NET, NTA, OTET, OSSTET, IBPS, SBI, RRB, DBT, NPCI, OTR, OAS, CGL, RI, PDF, CBT).',
+      '- Preserve Markdown headings (##), bullet lines (-), and newline breaks exactly.',
+      '- Return ONLY a valid JSON object (no markdown fences): { "translated_or": "accurate Odia translation" }',
+      'English source text:',
+      text
+    ].join('\n');
+  }
+
+  if (mode === 'translate_fields') {
+    const fieldsObj = extra.fields || {};
+    return [
+      'You are an expert Odisha Government and competitive exam translator (English to Odia / ଓଡ଼ିଆ) for Common Sense Odisha.',
+      'Translate every English value in the JSON map below into natural, accurate, official Odia script (ଓଡ଼ିଆ).',
+      'STRICT RULES:',
+      '- Return ONLY a valid JSON object (no markdown fences) with schema: { "translations": { "<same_key>": "<odia_translation>" } }.',
+      '- Keep every exact key name unchanged.',
+      '- Preserve exact dates, numbers, currency amounts, URLs, Markdown formatting, and newlines.',
+      '- Keep standard acronyms in English script (OPSC, OSSSC, OSSC, UPSC, UGC NET, NTA, OTET, OSSTET, IBPS, SBI, RRB, DBT, NPCI, OTR, OAS, CGL, RI, PDF, CBT).',
+      'English fields JSON:',
+      JSON.stringify(fieldsObj)
+    ].join('\n');
+  }
+
+  if (mode === 'suggest_meta') {
+    const text = String(rawInput || '').trim().slice(0, 5000);
+    const kindHint = String(extra.kind || 'public portal article').trim().slice(0, 40);
+    return [
+      `You are an expert bilingual SEO editor for Common Sense Odisha creating headlines, URL slug, and tags for a ${kindHint}.`,
+      'Given the rough topic phrase or pasted official notification text below, return ONLY a valid JSON object (no markdown fences) with this exact schema:',
+      '{',
+      '  "titles_en": ["Crisp, clear English headline option 1", "Headline option 2", "Headline option 3"],',
+      '  "titles_or": ["ସଠିକ୍ ଓଡ଼ିଆ ଶୀର୍ଷକ ୧", "ଓଡ଼ିଆ ଶୀର୍ଷକ ୨", "ଓଡ଼ିଆ ଶୀର୍ଷକ ୩"],',
+      '  "slug": "clean-lowercase-seo-slug-with-hyphens",',
+      '  "tags": ["Tag 1", "Tag 2", "Tag 3", "Tag 4", "Tag 5", "Tag 6"]',
+      '}',
+      'RULES:',
+      '- Provide exactly 3 distinct, high-clarity English headlines (45–95 chars each) and 3 matching natural Odia headlines preserving acronyms (OPSC, OSSC, OSSSC, UGC NET, NTA, etc.).',
+      '- slug must be lowercase ASCII letters, digits, and single hyphens only (max 80 chars, no stopword bloat).',
+      '- tags must contain 5 to 8 concise, high-signal exam/department/topic tags (each <= 30 chars).',
+      'Input topic / notification text:',
+      text
+    ].join('\n');
+  }
+
   const text = String(rawInput || '').trim().slice(0, 6000);
   if (mode === 'mcq') {
     return [
@@ -165,8 +227,80 @@ function buildPromptForMode(mode, rawInput) {
   ].join('\n');
 }
 
-function normalizeStructuredOutput(mode, rawObj, fallbackInput) {
+function getResponseSchemaForMode(mode) {
+  if (mode === 'translate_odia') {
+    return {
+      type: 'OBJECT',
+      properties: { translated_or: { type: 'STRING' } },
+      required: ['translated_or']
+    };
+  }
+  if (mode === 'suggest_meta') {
+    return {
+      type: 'OBJECT',
+      properties: {
+        titles_en: { type: 'ARRAY', items: { type: 'STRING' } },
+        titles_or: { type: 'ARRAY', items: { type: 'STRING' } },
+        slug: { type: 'STRING' },
+        tags: { type: 'ARRAY', items: { type: 'STRING' } }
+      },
+      required: ['titles_en', 'titles_or', 'slug', 'tags']
+    };
+  }
+  return null;
+}
+
+function normalizeStructuredOutput(mode, rawObj, fallbackInput, extra = {}) {
   const obj = rawObj && typeof rawObj === 'object' ? rawObj : {};
+
+  if (mode === 'translate_odia') {
+    const translated = String(
+      obj.translated_or || obj.odia || obj.translation || obj.text || fallbackInput || ''
+    ).trim().slice(0, 12000);
+    return { translated_or: translated };
+  }
+
+  if (mode === 'translate_fields') {
+    const srcFields = extra.fields || {};
+    const rawMap = (obj.translations && typeof obj.translations === 'object' && !Array.isArray(obj.translations))
+      ? obj.translations
+      : obj;
+    const translations = {};
+    for (const k of Object.keys(srcFields)) {
+      const val = rawMap[k];
+      translations[k] = String(val !== undefined && val !== null ? val : srcFields[k]).trim().slice(0, 12000);
+    }
+    return { translations };
+  }
+
+  if (mode === 'suggest_meta') {
+    const cleanSeed = String(fallbackInput || '').trim().split(/\r?\n/)[0].slice(0, 110) || 'Odisha Update';
+    let titlesEn = Array.isArray(obj.titles_en)
+      ? obj.titles_en.map((t) => String(t || '').trim().slice(0, 160)).filter(Boolean).slice(0, 3)
+      : [];
+    if (!titlesEn.length) titlesEn = [cleanSeed];
+    let titlesOr = Array.isArray(obj.titles_or)
+      ? obj.titles_or.map((t) => String(t || '').trim().slice(0, 200)).filter(Boolean).slice(0, 3)
+      : [];
+    while (titlesOr.length < titlesEn.length) {
+      titlesOr.push(titlesEn[titlesOr.length]);
+    }
+    const slug = slugifyText(obj.slug || titlesEn[0] || cleanSeed) || ('post-' + Date.now().toString(36));
+    const rawTags = Array.isArray(obj.tags) ? obj.tags : [];
+    const seenTags = new Set();
+    const tags = [];
+    for (const t of rawTags) {
+      const clean = String(t || '').replace(/^#+/, '').trim().slice(0, 36);
+      if (!clean) continue;
+      const key = clean.toLowerCase();
+      if (seenTags.has(key)) continue;
+      seenTags.add(key);
+      tags.push(clean);
+      if (tags.length >= 8) break;
+    }
+    return { titles_en: titlesEn, titles_or: titlesOr, slug, tags };
+  }
+
   const titleEn = String(obj.title_en || fallbackInput.slice(0, 80) || 'Untitled Draft').trim().slice(0, 180);
   const titleOr = String(obj.title_or || titleEn).trim().slice(0, 220);
   const slug = slugifyText(obj.slug || titleEn) || ('draft-' + Date.now().toString(36));
@@ -231,15 +365,17 @@ async function logAiGeneration(env, { actorId, targetModule, provider, model, es
   } catch (_e) {}
 }
 
-async function callGeminiFreeTier(apiKey, prompt) {
+async function callGeminiFreeTier(apiKey, prompt, mode) {
   let lastErr = null;
+  const schema = getResponseSchemaForMode(mode);
   for (const model of GEMINI_MODELS) {
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
     const generationConfig = {
-      temperature: 0.3,
+      temperature: mode === 'translate_odia' || mode === 'translate_fields' ? 0.15 : 0.3,
       maxOutputTokens: 2048,
       responseMimeType: 'application/json'
     };
+    if (schema) generationConfig.responseSchema = schema;
     if (model.startsWith('gemini-3') || model.startsWith('gemini-4')) {
       generationConfig.thinkingConfig = { thinkingLevel: 'low' };
     }
@@ -271,7 +407,21 @@ async function callGeminiFreeTier(apiKey, prompt) {
   throw lastErr || new Error('Gemini API failed');
 }
 
-async function callWorkersAi(aiBinding, prompt) {
+function unwrapWorkersAiPayload(resp) {
+  if (typeof resp === 'string') return resp;
+  if (resp && typeof resp === 'object') {
+    if (Array.isArray(resp.choices) && resp.choices[0] && resp.choices[0].message && resp.choices[0].message.content !== undefined) {
+      const c = resp.choices[0].message.content;
+      return typeof c === 'string' ? c : JSON.stringify(c);
+    }
+    const inner = resp.response !== undefined ? resp.response : (resp.result && resp.result.response !== undefined ? resp.result.response : null);
+    if (typeof inner === 'string') return inner;
+    if (inner && typeof inner === 'object') return JSON.stringify(inner);
+  }
+  return '';
+}
+
+async function callWorkersAi(aiBinding, prompt, mode) {
   if (!aiBinding || typeof aiBinding.run !== 'function') {
     throw new Error('Cloudflare Workers AI binding (env.AI) is not configured.');
   }
@@ -279,33 +429,65 @@ async function callWorkersAi(aiBinding, prompt) {
     { role: 'system', content: 'You output strictly valid JSON objects without markdown fences.' },
     { role: 'user', content: prompt }
   ];
+  const temp = (mode === 'translate_odia' || mode === 'translate_fields') ? 0.15 : 0.3;
   let modelUsed = WORKERS_AI_PRIMARY_MODEL;
   let resp;
   try {
-    resp = await aiBinding.run(WORKERS_AI_PRIMARY_MODEL, { messages, max_tokens: 1400, temperature: 0.3 });
+    resp = await aiBinding.run(WORKERS_AI_PRIMARY_MODEL, { messages, max_tokens: 1400, temperature: temp, repetition_penalty: 1.1 });
   } catch (_primaryErr) {
     modelUsed = WORKERS_AI_FALLBACK_MODEL;
-    resp = await aiBinding.run(WORKERS_AI_FALLBACK_MODEL, { messages, max_tokens: 1400, temperature: 0.3 });
+    resp = await aiBinding.run(WORKERS_AI_FALLBACK_MODEL, { messages, max_tokens: 1400, temperature: temp, repetition_penalty: 1.1 });
   }
-  const text = typeof resp === 'string'
-    ? resp
-    : String((resp && (resp.response || (resp.result && resp.result.response))) || '');
+  const text = unwrapWorkersAiPayload(resp);
   if (!text) throw new Error('Workers AI returned an empty response.');
   return { text, model: modelUsed, provider: 'cloudflare_workers_ai' };
 }
 
-export async function generateAiCoAuthorDraft(env, { mode, input, actorId }) {
+function normalizeBatchFields(fieldsInput, rawInput) {
+  let obj = fieldsInput;
+  if (!obj && typeof rawInput === 'string' && rawInput.trim().startsWith('{')) {
+    try { obj = JSON.parse(rawInput); } catch (_e) { obj = null; }
+  }
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return {};
+  const clean = {};
+  let count = 0;
+  for (const [k, v] of Object.entries(obj)) {
+    const key = String(k || '').trim().slice(0, 64);
+    const val = String(v || '').trim().slice(0, 3500);
+    if (!key || !val) continue;
+    clean[key] = val;
+    count += 1;
+    if (count >= 16) break;
+  }
+  return clean;
+}
+
+export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId }) {
   const cleanMode = String(mode || '').trim().toLowerCase();
   if (!VALID_AI_MODES.has(cleanMode)) {
-    const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, or career.');
+    const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, career, translate_odia, translate_fields, or suggest_meta.');
     err.status = 400;
     throw err;
   }
-  const cleanInput = String(input || '').trim();
-  if (cleanInput.length < 8) {
-    const err = new Error('Provide at least 8 characters of source notice text or topic.');
-    err.status = 400;
-    throw err;
+
+  let cleanInput = String(input || '').trim();
+  let cleanFields = null;
+
+  if (cleanMode === 'translate_fields') {
+    cleanFields = normalizeBatchFields(fields, cleanInput);
+    if (!Object.keys(cleanFields).length) {
+      const err = new Error('Provide at least one non-empty English field in `fields` to translate.');
+      err.status = 400;
+      throw err;
+    }
+    cleanInput = JSON.stringify(cleanFields);
+  } else {
+    const minLen = cleanMode === 'translate_odia' ? 2 : (cleanMode === 'suggest_meta' ? 3 : 8);
+    if (cleanInput.length < minLen) {
+      const err = new Error(`Provide at least ${minLen} characters of source notice text or topic.`);
+      err.status = 400;
+      throw err;
+    }
   }
 
   const usageBefore = await getDailyAiUsage(env);
@@ -315,30 +497,48 @@ export async function generateAiCoAuthorDraft(env, { mode, input, actorId }) {
     throw err;
   }
 
-  const prompt = buildPromptForMode(cleanMode, cleanInput);
+  const extra = { fields: cleanFields, kind };
+  const prompt = buildPromptForMode(cleanMode, cleanInput, extra);
   const geminiKey = env && env.GEMINI_API_KEY ? String(env.GEMINI_API_KEY).trim() : '';
 
   let result = null;
   if (geminiKey) {
     try {
-      result = await callGeminiFreeTier(geminiKey, prompt);
+      result = await callGeminiFreeTier(geminiKey, prompt, cleanMode);
     } catch (_geminiErr) {
       // Automatic fallback to 100% free Cloudflare Workers AI on 429/5xx/error
       if (env && env.AI) {
-        result = await callWorkersAi(env.AI, prompt);
+        result = await callWorkersAi(env.AI, prompt, cleanMode);
       } else {
         throw _geminiErr;
       }
     }
   } else {
-    result = await callWorkersAi(env && env.AI, prompt);
+    result = await callWorkersAi(env && env.AI, prompt, cleanMode);
   }
 
-  const parsed = extractJsonObject(result.text);
-  const normalized = normalizeStructuredOutput(cleanMode, parsed, cleanInput);
+  let parsed;
+  try {
+    parsed = extractJsonObject(result.text);
+  } catch (parseErr) {
+    if (cleanMode === 'translate_odia') {
+      const salvaged = String(result.text || '')
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .replace(/^\{?\s*"translated_or"\s*:\s*"?/i, '')
+        .replace(/"?\s*\}?$/i, '')
+        .trim();
+      if (salvaged) parsed = { translated_or: salvaged };
+      else throw parseErr;
+    } else {
+      throw parseErr;
+    }
+  }
+
+  const normalized = normalizeStructuredOutput(cleanMode, parsed, cleanInput, extra);
   const estimatedNeurons = result.provider === 'gemini_free'
     ? 0
-    : Math.max(80, Math.min(450, Math.ceil((prompt.length + result.text.length) / 16)));
+    : Math.max(40, Math.min(450, Math.ceil((prompt.length + result.text.length) / 16)));
 
   await logAiGeneration(env, {
     actorId,

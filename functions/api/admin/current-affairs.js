@@ -1,6 +1,7 @@
 import { HttpError, json, readJson, errorResponse, clientIp } from '../../_lib/http.js';
 import { requireRole, rateLimit, audit, STAFF_ROLES } from '../../_lib/rbac.js';
 import { ensureCurrentAffairsSchema, formatCapsuleRow } from '../public/current-affairs.js';
+import { scheduleSemanticSync } from '../../_lib/semantic-search.js';
 
 function normalizeHighlights(raw) {
   if (Array.isArray(raw)) {
@@ -62,11 +63,11 @@ function slugifyId(dateStr, titleEn) {
   return `ca-${dateStr}-${slug || Date.now()}`;
 }
 
-export async function handleAdminCurrentAffairs(request, env, actorArg = null) {
+export async function handleAdminCurrentAffairs(request, env, actorArg = null, ctx = null, pathId = '') {
   try {
     if (!env || !env.DB) throw new HttpError(500, 'NO_DATABASE', 'Database unavailable');
     const actor = actorArg || await requireRole(request, env, STAFF_ROLES);
-    const method = request.method;
+    const method = request.method.toUpperCase();
 
     await ensureCurrentAffairsSchema(env.DB);
 
@@ -83,12 +84,27 @@ export async function handleAdminCurrentAffairs(request, env, actorArg = null) {
       });
     }
 
-    if (method === 'POST') {
+    if (method === 'DELETE') {
+      if (!actorArg) {
+        await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      }
+      const url = new URL(request.url);
+      const targetId = String(pathId || url.searchParams.get('id') || '').trim();
+      if (!targetId) throw new HttpError(400, 'VALIDATION_ERROR', 'Current affairs capsule id is required');
+      await env.DB.prepare('DELETE FROM cso_current_affairs WHERE id = ?').bind(targetId).run();
+      try {
+        await audit(env, actor, 'current_affairs.delete', 'cso_current_affairs', targetId, {}, clientIp(request));
+      } catch {}
+      scheduleSemanticSync(ctx, env, { action: 'delete', type: 'current_affairs', id: targetId, actorId: actor && actor.userId });
+      return json({ ok: true, deleted: true, id: targetId });
+    }
+
+    if (method === 'POST' || method === 'PUT') {
       if (!actorArg) {
         await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
       }
       const body = await readJson(request, 1_000_000);
-      const titleEn = String(body.title_en || '').trim();
+      const titleEn = String(body.title_en || body.title || '').trim();
       if (!titleEn) {
         throw new HttpError(400, 'VALIDATION_ERROR', 'title_en is required');
       }
@@ -98,13 +114,19 @@ export async function handleAdminCurrentAffairs(request, env, actorArg = null) {
         ? rawDate
         : new Date().toISOString().slice(0, 10);
 
-      const id = String(body.id || '').trim() || slugifyId(capsuleDate, titleEn);
+      const rawSlug = String(body.slug || '').trim();
+      const id = String(body.id || pathId || '').trim() || (rawSlug ? slugifyId(capsuleDate, rawSlug) : slugifyId(capsuleDate, titleEn));
       const titleOr = String(body.title_or || '').trim();
-      const highlightsEn = normalizeHighlights(body.highlights_en);
-      const highlightsOr = normalizeHighlights(body.highlights_or);
+      let highlightsEn = normalizeHighlights(body.highlights_en);
+      let highlightsOr = normalizeHighlights(body.highlights_or);
+      const summaryEn = String(body.summary_en || '').trim();
+      const summaryOr = String(body.summary_or || '').trim();
+      if (summaryEn && !highlightsEn.includes(summaryEn)) highlightsEn = [summaryEn, ...highlightsEn].slice(0, 20);
+      if (summaryOr && !highlightsOr.includes(summaryOr)) highlightsOr = [summaryOr, ...highlightsOr].slice(0, 20);
       const quiz = normalizeQuizList(body.quiz !== undefined ? body.quiz : body.quiz_json);
       const category = String(body.category || 'Odisha').trim().slice(0, 60) || 'Odisha';
-      const status = body.status === 'draft' ? 'draft' : 'published';
+      const rawStatus = String(body.status || 'published').trim().toLowerCase();
+      const status = rawStatus === 'draft' ? 'draft' : (rawStatus === 'archived' ? 'archived' : 'published');
       const nowIso = new Date().toISOString();
 
       await env.DB.prepare(
@@ -140,7 +162,7 @@ export async function handleAdminCurrentAffairs(request, env, actorArg = null) {
         await audit(
           env,
           actor,
-          'current_affairs.publish',
+          status === 'published' ? 'current_affairs.publish' : `current_affairs.${status}`,
           'cso_current_affairs',
           id,
           { capsule_date: capsuleDate, status, quiz_count: quiz.length },
@@ -153,10 +175,18 @@ export async function handleAdminCurrentAffairs(request, env, actorArg = null) {
          FROM cso_current_affairs WHERE id = ?`
       ).bind(id).first();
 
+      scheduleSemanticSync(ctx, env, {
+        action: status === 'published' ? 'upsert' : 'delete',
+        type: 'current_affairs',
+        row: saved || { id, slug: id, title_en: titleEn, title_or: titleOr, highlights_en: highlightsEn, highlights_or: highlightsOr },
+        id,
+        actorId: actor && actor.userId
+      });
+
       return json({
         ok: true,
         item: formatCapsuleRow(saved)
-      }, 201);
+      }, method === 'PUT' ? 200 : 201);
     }
 
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
@@ -170,6 +200,14 @@ export async function onRequestGet({ request, env }) {
   return handleAdminCurrentAffairs(request, env);
 }
 
-export async function onRequestPost({ request, env }) {
-  return handleAdminCurrentAffairs(request, env);
+export async function onRequestPost({ request, env, waitUntil }) {
+  return handleAdminCurrentAffairs(request, env, null, typeof waitUntil === 'function' ? { waitUntil } : null);
+}
+
+export async function onRequestPut({ request, env, waitUntil }) {
+  return handleAdminCurrentAffairs(request, env, null, typeof waitUntil === 'function' ? { waitUntil } : null);
+}
+
+export async function onRequestDelete({ request, env, waitUntil }) {
+  return handleAdminCurrentAffairs(request, env, null, typeof waitUntil === 'function' ? { waitUntil } : null);
 }

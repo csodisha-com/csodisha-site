@@ -16,11 +16,13 @@ export async function handleAdminAiCoauthorApi(request, env, actor, ctx = null) 
   }
 
   if (method === 'POST') {
-    const body = await readJson(request, 24000);
+    const body = await readJson(request, 32000);
     try {
       const result = await generateAiCoAuthorDraft(env, {
         mode: body.mode,
-        input: body.input || body.prompt || body.text,
+        input: body.input !== undefined ? body.input : (body.prompt !== undefined ? body.prompt : body.text),
+        fields: body.fields,
+        kind: body.kind,
         actorId: (actor && actor.userId) || 'admin'
       });
       return json(result);

@@ -30,9 +30,14 @@
     bar.setAttribute('role', 'status');
 
     var left = make('div', 'cso-live-banner__left');
-    left.appendChild(make('span', 'cso-live-banner__tag', SEV_TAG[sev]));
-    left.appendChild(make('strong', 'cso-live-banner__headline', data.headline));
-    if (data.context) left.appendChild(make('span', 'cso-live-banner__context', data.context));
+    var badgeTxt = (data.badge_label && String(data.badge_label).trim()) || SEV_TAG[sev];
+    left.appendChild(make('span', 'cso-live-banner__tag', badgeTxt));
+    var isOr = false;
+    try { isOr = document.documentElement.getAttribute('lang') === 'or' || localStorage.getItem('cso_lang') === 'or'; } catch (_) {}
+    var headlineTxt = (isOr && data.headline_or) ? data.headline_or : data.headline;
+    var contextTxt = (isOr && data.context_or) ? data.context_or : data.context;
+    left.appendChild(make('strong', 'cso-live-banner__headline', headlineTxt));
+    if (contextTxt) left.appendChild(make('span', 'cso-live-banner__context', contextTxt));
     if (data.ctaText && data.ctaUrl) {
       var cta = make('a', 'cso-live-banner__cta', data.ctaText + ' \u2192');
       var u = String(data.ctaUrl || '').trim();

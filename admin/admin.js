@@ -1469,6 +1469,19 @@
   }
 
   function openQuickCreateRoute(targetRoute) {
+    if (window.CSOQuickCreate && window.CSOQuickCreate.ROUTE_META && window.CSOQuickCreate.ROUTE_META[targetRoute]) {
+      closeCreateDropdown();
+      clearNode(dom.workspaceRoot);
+      clearNode(dom.moduleHeaderActions);
+      var qMeta = window.CSOQuickCreate.ROUTE_META[targetRoute];
+      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = qMeta.folder || 'Quick Create';
+      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = qMeta.title || 'Create Content';
+      if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = qMeta.title || 'Create Content';
+      if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = qMeta.pill || 'Live D1 / R2';
+      window.CSOQuickCreate.open(targetRoute, dom.workspaceRoot, dom.moduleHeaderActions);
+      if (window.innerWidth <= 900) closeMobileDrawer();
+      return;
+    }
     if (targetRoute === 'careers/new' && window.CSOCareersPublishingStudio) {
       closeCreateDropdown();
       openCareersPublishingStudio('new');
@@ -1885,6 +1898,27 @@
 
       details.appendChild(body);
       return details;
+    },
+    translateToOdia: function (txt) {
+      return window.CSOAiTools ? window.CSOAiTools.translateToOdia(txt) : Promise.reject(new Error('AI Tools unavailable'));
+    },
+    translateFieldsBatch: function (map) {
+      return window.CSOAiTools ? window.CSOAiTools.translateFieldsBatch(map) : Promise.reject(new Error('AI Tools unavailable'));
+    },
+    suggestMeta: function (txt, kind) {
+      return window.CSOAiTools ? window.CSOAiTools.suggestMeta(txt, kind) : Promise.reject(new Error('AI Tools unavailable'));
+    },
+    createOdiaTranslateBtn: function (opts) {
+      return window.CSOAiTools ? window.CSOAiTools.createOdiaTranslateBtn(opts) : document.createDocumentFragment();
+    },
+    createTranslateAllBtn: function (pairsFn, onDone) {
+      return window.CSOAiTools ? window.CSOAiTools.createTranslateAllBtn(pairsFn, onDone) : document.createDocumentFragment();
+    },
+    renderMetaSuggester: function (opts) {
+      return window.CSOAiTools ? window.CSOAiTools.renderMetaSuggester(opts) : document.createDocumentFragment();
+    },
+    createQuickModeToggle: function (initialOn, onChange) {
+      return window.CSOAiTools ? window.CSOAiTools.createQuickModeToggle(initialOn, onChange) : null;
     }
   };
   window.CSOStudio = {

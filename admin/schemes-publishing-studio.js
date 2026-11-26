@@ -591,6 +591,16 @@
     bL.appendChild(el('strong', '', d.id ? ('Editing: ' + d.title_en) : 'New Welfare Scheme Composer'));
     bar.appendChild(bL);
     var bR = el('div', 'sph-actions-row');
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.createTranslateAllBtn) {
+      bR.appendChild(window.CSOAiCoAuthor.createTranslateAllBtn(function () {
+        return [
+          { key: 'title_or', getEn: function () { return d.title_en; }, getOr: function () { return d.title_or; }, setOr: function (v) { d.title_or = v; } },
+          { key: 'department_or', getEn: function () { return d.department_en; }, getOr: function () { return d.department_or; }, setOr: function (v) { d.department_or = v; } },
+          { key: 'summary_or', getEn: function () { return d.summary_en; }, getOr: function () { return d.summary_or; }, setOr: function (v) { d.summary_or = v; } },
+          { key: 'article_body_or', getEn: function () { return d.article_body_en; }, getOr: function () { return d.article_body_or; }, setOr: function (v) { d.article_body_or = v; } }
+        ];
+      }, function () { renderCurrentView(); }));
+    }
     bR.appendChild(btn('✅ Sanity Check', 'sph-btn', function () {
       if (window.CSOPublishTools && window.CSOPublishTools.runSanityCheck) {
         window.CSOPublishTools.runSanityCheck('schemes', d, function () { saveDraft(true, false); });
@@ -602,6 +612,21 @@
     bR.appendChild(btn('Publish Live →', 'sph-btn sph-btn--primary', function () { saveDraft(true, false); }));
     bar.appendChild(bR);
     container.appendChild(bar);
+
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.renderMetaSuggester) {
+      container.appendChild(window.CSOAiCoAuthor.renderMetaSuggester({
+        kind: 'Odisha government welfare scheme',
+        getSeedText: function () { return [d.title_en, d.department_en, d.summary_en].filter(Boolean).join(' — '); },
+        onApplyTitlePair: function (en, or, sl) {
+          d.title_en = en;
+          if (or) d.title_or = or;
+          if (sl && !d._slugTouched) d.slug = sl;
+          state.draft = d;
+          renderCurrentView();
+        },
+        onApplySlug: function (sl) { d.slug = sl; d._slugTouched = true; state.draft = d; renderCurrentView(); }
+      }));
+    }
 
     if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.renderDrawer) {
       container.appendChild(window.CSOAiCoAuthor.renderDrawer({
@@ -794,8 +819,16 @@
     function addInp(label, key, opts) {
       opts = opts || {};
       var w = el('div', 'sph-field' + (opts.span ? ' sph-span-' + opts.span : ''));
-      w.appendChild(el('label', 'sph-label', label));
+      var lblRow = el('div', 'sph-label-row');
+      lblRow.appendChild(el('label', 'sph-label', label));
       var inp = opts.textarea ? el('textarea', 'sph-textarea') : el('input', 'sph-input');
+      if (opts.translateFrom && window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn) {
+        lblRow.appendChild(window.CSOAiCoAuthor.createOdiaTranslateBtn({
+          getSource: function () { return d[opts.translateFrom]; },
+          targetInput: inp
+        }));
+      }
+      w.appendChild(lblRow);
       if (!opts.textarea) inp.type = opts.type || 'text';
       if (opts.placeholder) inp.placeholder = opts.placeholder;
       inp.value = d[key] == null ? '' : String(d[key]);
@@ -828,11 +861,11 @@
 
     addInp('Scheme Title (EN) *', 'title_en', { span: 2, placeholder: 'e.g., Subhadra Yojana Odisha 2026' });
     addInp('URL Slug', 'slug', { id: 'sphSlugInput', placeholder: 'subhadra-yojana-odisha-2026' });
-    addInp('Scheme Title (ଓଡ଼ିଆ)', 'title_or', { span: 2, placeholder: 'ସୁଭଦ୍ରା ଯୋଜନା ଓଡ଼ିଶା ୨୦୨୬' });
+    addInp('Scheme Title (ଓଡ଼ିଆ)', 'title_or', { span: 2, translateFrom: 'title_en', placeholder: 'ସୁଭଦ୍ରା ଯୋଜନା ଓଡ଼ିଶା ୨୦୨୬' });
     addSel('Application Status', 'scheme_status', SCHEME_STATUS_OPTS);
     addSel('Government Scope', 'gov_badge', [['', '-- Select Government Scope --']].concat(GOV_SCOPE_OPTS.map(function (g) { return [g, g]; })));
     addInp('Implementing Department / Ministry (EN)', 'department_en', { placeholder: 'Women & Child Development Dept, Odisha' });
-    addInp('Implementing Department / Ministry (ଓଡ଼ିଆ)', 'department_or', { placeholder: 'ମହିଳା ଓ ଶିଶୁ ବିକାଶ ବିଭାଗ' });
+    addInp('Implementing Department / Ministry (ଓଡ଼ିଆ)', 'department_or', { translateFrom: 'department_en', placeholder: 'ମହିଳା ଓ ଶିଶୁ ବିକାଶ ବିଭାଗ' });
     addInp('Scheme Code / ID', 'scheme_code', { placeholder: 'e.g., ODISHA-WCD-SUBHADRA' });
     addInp('Benefit Amount / Type', 'benefit_amount_summary', { placeholder: 'e.g., ₹10,000 / Year (₹50,000 over 5 yrs)' });
     addInp('Benefit Frequency', 'benefit_frequency', { placeholder: 'Bi-Annual / Annual / Monthly / One-Time' });
@@ -853,7 +886,7 @@
     addInp('Institute Verification Date', 'institute_verification_date', { type: 'date' });
     addInp('DWO / Dept Sanction Date', 'dwo_sanction_date', { type: 'date' });
     addInp('Short Summary (EN)', 'summary_en', { span: 3, textarea: true, placeholder: 'Concise 2-sentence English summary for portal cards & SEO…' });
-    addInp('Short Summary (ଓଡ଼ିଆ)', 'summary_or', { span: 3, textarea: true, placeholder: 'ଓଡ଼ିଆରେ ସଂକ୍ଷିପ୍ତ ବିବରଣୀ…' });
+    addInp('Short Summary (ଓଡ଼ିଆ)', 'summary_or', { span: 3, textarea: true, translateFrom: 'summary_en', placeholder: 'ଓଡ଼ିଆରେ ସଂକ୍ଷିପ୍ତ ବିବରଣୀ…' });
 
     // Allowed Social Categories Multi-Select Chips
     var catWrap = el('div', 'sph-field sph-span-3');
@@ -973,7 +1006,14 @@
 
     var eCols = el('div', 'sph-editor-cols');
     var c1 = el('div', 'sph-field'); c1.appendChild(el('label', 'sph-label', 'Scheme Article Body (EN)')); c1.appendChild(bodyEn);
-    var c2 = el('div', 'sph-field'); c2.appendChild(el('label', 'sph-label', 'Scheme Article Body (ଓଡ଼ିଆ)')); c2.appendChild(bodyOr);
+    var c2 = el('div', 'sph-field');
+    var c2Row = el('div', 'sph-label-row');
+    c2Row.appendChild(el('label', 'sph-label', 'Scheme Article Body (ଓଡ଼ିଆ)'));
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn) {
+      c2Row.appendChild(window.CSOAiCoAuthor.createOdiaTranslateBtn(function () { return bodyEn.value; }, bodyOr, 'body'));
+    }
+    c2.appendChild(c2Row);
+    c2.appendChild(bodyOr);
     eCols.appendChild(c1); eCols.appendChild(c2); edCard.appendChild(eCols);
     container.appendChild(edCard);
 

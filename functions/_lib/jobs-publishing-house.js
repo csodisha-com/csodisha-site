@@ -4,6 +4,7 @@ import { HttpError, json, readJson, validationError, clientIp } from './http.js'
 import { audit, rateLimit, getActor, STAFF_ROLES } from './rbac.js';
 import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
 import { ensureV311ContentColumns, isFuturePublishAt, isExpiredTimestamp, logZeroResultSearch } from './radars-v311.js';
+import { scheduleSemanticSync } from './semantic-search.js';
 
 export const LIFECYCLE_STAGES = [
   'notification',
@@ -1147,7 +1148,7 @@ async function saveArticleRevision(db, articleId, snapshotRow, summary, actorEma
   }
 }
 
-export async function handleJobsArticlesAdmin(request, env, actor, articleId, action) {
+export async function handleJobsArticlesAdmin(request, env, actor, articleId, action, ctx = null) {
   const db = env.DB;
   await ensureJobsPublishingSchema(db);
   await publishDueScheduledJobs(db);
@@ -1288,6 +1289,13 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
     if (row) Object.assign(row, v311Job);
     await saveArticleRevision(db, id, row || data, body.change_summary || (data.is_published ? 'Initial publish' : 'Initial draft'), actor.email);
     await audit(env, request, actor, data.is_published ? 'jobs_article.publish' : 'jobs_article.create', 'job_articles', id, { slug: finalSlug, title_en: data.title_en });
+    scheduleSemanticSync(ctx, env, {
+      action: data.is_published ? 'upsert' : 'delete',
+      type: 'job',
+      row: row || { id, slug: finalSlug, title_en: data.title_en, title_or: data.title_or, summary_en: data.summary_en, summary_or: data.summary_or },
+      id,
+      actorId: actor && actor.userId
+    });
     await invalidateJobsCaches(request, finalSlug);
     const res = json({ ok: true, item: formatArticle(row, taxMap, true) }, 201);
     res.headers.set('X-CSO-Cache-Purged', '1');
@@ -1369,6 +1377,13 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
     await saveArticleRevision(db, articleId, row, `Restored from Revision #${rev.revision_number}`, actor.email);
     const { map: taxMap } = await loadTaxonomyMap(db);
     await audit(env, request, actor, 'jobs_article.rollback', 'job_articles', articleId, { restored_revision: rev.revision_number });
+    scheduleSemanticSync(ctx, env, {
+      action: data.is_published ? 'upsert' : 'delete',
+      type: 'job',
+      row: row || { id: articleId, slug: existing.slug, title_en: data.title_en, title_or: data.title_or, summary_en: data.summary_en, summary_or: data.summary_or },
+      id: articleId,
+      actorId: actor && actor.userId
+    });
     await invalidateJobsCaches(request, existing.slug);
     const res = json({ ok: true, item: formatArticle(row, taxMap, true) });
     res.headers.set('X-CSO-Cache-Purged', '1');
@@ -1457,6 +1472,13 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
     if (row) Object.assign(row, v311Upd);
     await saveArticleRevision(db, articleId, row || data, body.change_summary || 'Editorial update', actor.email);
     await audit(env, request, actor, data.is_published ? 'jobs_article.publish' : 'jobs_article.update', 'job_articles', articleId, { slug: finalSlug });
+    scheduleSemanticSync(ctx, env, {
+      action: data.is_published ? 'upsert' : 'delete',
+      type: 'job',
+      row: row || { id: articleId, slug: finalSlug, title_en: data.title_en, title_or: data.title_or, summary_en: data.summary_en, summary_or: data.summary_or },
+      id: articleId,
+      actorId: actor && actor.userId
+    });
     await invalidateJobsCaches(request, finalSlug);
     const res = json({ ok: true, item: formatArticle(row, taxMap, true) });
     res.headers.set('X-CSO-Cache-Purged', '1');
@@ -1470,6 +1492,7 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
     await db.prepare('DELETE FROM job_article_revisions WHERE article_id = ?').bind(articleId).run().catch(() => {});
     await db.prepare('DELETE FROM job_articles WHERE id = ?').bind(articleId).run();
     await audit(env, request, actor, 'jobs_article.delete', 'job_articles', articleId, { slug: existing.slug, title_en: existing.title_en });
+    scheduleSemanticSync(ctx, env, { action: 'delete', type: 'job', id: articleId, actorId: actor && actor.userId });
     await invalidateJobsCaches(request, existing.slug);
     const res = json({ ok: true, deleted: articleId });
     res.headers.set('X-CSO-Cache-Purged', '1');

@@ -15,7 +15,7 @@ export const ANSWER_PRIMARY_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
 export const ANSWER_FALLBACK_MODEL = '@cf/ibm-granite/granite-4.0-h-micro';
 export const ANSWER_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const SEMANTIC_NEURON_CAP = 9000;
-export const VALID_SEARCH_TYPES = new Set(['all', 'job', 'scheme', 'study', 'career']);
+export const VALID_SEARCH_TYPES = new Set(['all', 'job', 'scheme', 'study', 'career', 'current_affairs']);
 
 let _schemaReadyDb = null;
 
@@ -70,17 +70,30 @@ function buildUrlForType(type, slugOrId) {
   if (type === 'scheme') return `/schemes/?slug=${s}`;
   if (type === 'study') return `/study-library/?slug=${s}`;
   if (type === 'career') return `/careers/?slug=${s}`;
+  if (type === 'current_affairs') return `/current-affairs/?slug=${s}`;
   return `/jobs/?slug=${s}`;
 }
 
 export function buildIndexRecord(type, row) {
   const id = String(row.id || row.slug || '');
   const slug = String(row.slug || row.id || '');
-  const titleEn = String(row.title_en || '').trim();
+  const titleEn = String(row.title_en || row.title || '').trim();
   const titleOr = String(row.title_or || '').trim();
-  const summaryEn = String(row.summary_en || row.subtitle_en || '').trim();
-  const summaryOr = String(row.summary_or || '').trim();
-  const url = buildUrlForType(type, slug);
+  let summaryEn = String(row.summary_en || row.summary || row.subtitle_en || row.description || '').trim();
+  let summaryOr = String(row.summary_or || row.description_or || '').trim();
+  if (!summaryEn && row.highlights_en) {
+    try {
+      const arr = Array.isArray(row.highlights_en) ? row.highlights_en : JSON.parse(String(row.highlights_en));
+      if (Array.isArray(arr)) summaryEn = arr.join(' • ').trim();
+    } catch (_e) {}
+  }
+  if (!summaryOr && row.highlights_or) {
+    try {
+      const arr = Array.isArray(row.highlights_or) ? row.highlights_or : JSON.parse(String(row.highlights_or));
+      if (Array.isArray(arr)) summaryOr = arr.join(' • ').trim();
+    } catch (_e) {}
+  }
+  const url = row.url || buildUrlForType(type, slug);
   const textForEmbedding = [type.toUpperCase(), titleEn, titleOr, summaryEn, summaryOr].filter(Boolean).join(' | ').slice(0, 1800);
   return {
     vector_id: `${type}:${id}`,
@@ -123,7 +136,8 @@ async function generateEmbedding(env, text) {
 
 export async function upsertSemanticVector(env, type, row, actorId = 'admin') {
   await ensureSemanticSchema(env);
-  if (!row || !row.id || !row.title_en) return { skipped: true, reason: 'invalid_row' };
+  const titleVal = row && (row.title_en || row.title);
+  if (!row || !row.id || !titleVal) return { skipped: true, reason: 'invalid_row' };
   if (!env || !env.VECTORIZE || typeof env.VECTORIZE.upsert !== 'function' || !env.AI || typeof env.AI.run !== 'function') {
     return { skipped: true, reason: 'vectorize_unbound' };
   }
@@ -174,6 +188,54 @@ export async function upsertSemanticVector(env, type, row, actorId = 'admin') {
   return { skipped: false, indexed: true, vector_id: rec.vector_id };
 }
 
+export async function deleteSemanticVector(env, type, entityId) {
+  await ensureSemanticSchema(env);
+  const cleanType = String(type || '').trim();
+  const cleanId = String(entityId || '').trim();
+  if (!cleanType || !cleanId) return { deleted: false, reason: 'invalid_id' };
+  const vectorId = `${cleanType}:${cleanId}`;
+
+  if (env && env.VECTORIZE) {
+    try {
+      if (typeof env.VECTORIZE.deleteByIds === 'function') {
+        await env.VECTORIZE.deleteByIds([vectorId]);
+      } else if (typeof env.VECTORIZE.delete === 'function') {
+        await env.VECTORIZE.delete([vectorId]);
+      }
+    } catch (_e) {}
+  }
+
+  if (env && env.DB) {
+    try {
+      await env.DB.prepare('DELETE FROM semantic_index_items WHERE vector_id = ?').bind(vectorId).run();
+    } catch (_e) {}
+  }
+
+  return { deleted: true, vector_id: vectorId };
+}
+
+export function scheduleSemanticSync(ctx, env, { action = 'upsert', type, row = null, id = '', actorId = 'admin' } = {}) {
+  if (!env || !type) return null;
+  const task = (async () => {
+    try {
+      if (action === 'delete') {
+        const targetId = String(id || (row && row.id) || '').trim();
+        if (!targetId) return { deleted: false, reason: 'missing_id' };
+        return await deleteSemanticVector(env, type, targetId);
+      }
+      if (!row || !row.id) return { skipped: true, reason: 'missing_row' };
+      return await upsertSemanticVector(env, type, row, actorId);
+    } catch (_err) {
+      return { skipped: true, reason: 'sync_error' };
+    }
+  })();
+
+  if (ctx && typeof ctx.waitUntil === 'function') {
+    try { ctx.waitUntil(task); } catch (_e) {}
+  }
+  return task;
+}
+
 export async function runKeywordFallbackSearch(env, { q, type = 'all', limit = 8 }) {
   if (!env || !env.DB) return [];
   const like = `%${String(q || '').trim()}%`;
@@ -212,6 +274,14 @@ export async function runKeywordFallbackSearch(env, { q, type = 'all', limit = 8
             ORDER BY updated_at DESC LIMIT ?`
     });
   }
+  if (type === 'all' || type === 'current_affairs') {
+    queries.push({
+      t: 'current_affairs',
+      sql: `SELECT id, id AS slug, title_en, title_or, highlights_en AS summary_en FROM cso_current_affairs
+            WHERE status = 'published' AND (title_en LIKE ? OR title_or LIKE ? OR highlights_en LIKE ? OR highlights_or LIKE ?)
+            ORDER BY capsule_date DESC, updated_at DESC LIMIT ?`
+    });
+  }
 
   for (const item of queries) {
     try {
@@ -241,26 +311,34 @@ async function hydrateMatchFromD1(env, match) {
   if (!type || !entityId || !env || !env.DB) return null;
 
   const tableMap = {
-    job: { table: 'job_articles', cond: 'is_published = 1' },
-    scheme: { table: 'scheme_articles', cond: 'is_published = 1' },
-    study: { table: 'study_articles', cond: 'is_published = 1' },
-    career: { table: 'careers_articles', cond: "status = 'published'" }
+    job: { table: 'job_articles', cond: 'is_published = 1', cols: 'id, slug, title_en, title_or, summary_en' },
+    scheme: { table: 'scheme_articles', cond: 'is_published = 1', cols: 'id, slug, title_en, title_or, summary_en' },
+    study: { table: 'study_articles', cond: 'is_published = 1', cols: 'id, slug, title_en, title_or, summary_en' },
+    career: { table: 'careers_articles', cond: "status = 'published'", cols: 'id, slug, title_en, title_or, summary_en' },
+    current_affairs: { table: 'cso_current_affairs', cond: "status = 'published'", cols: 'id, id AS slug, title_en, title_or, highlights_en AS summary_en' }
   };
   const cfg = tableMap[type];
   if (!cfg) return null;
 
   try {
     const row = await env.DB.prepare(
-      `SELECT id, slug, title_en, title_or, summary_en FROM ${cfg.table} WHERE id = ? AND ${cfg.cond} LIMIT 1`
+      `SELECT ${cfg.cols} FROM ${cfg.table} WHERE id = ? AND ${cfg.cond} LIMIT 1`
     ).bind(entityId).first();
     if (!row) return null;
+    let summaryText = String(row.summary_en || '');
+    if (type === 'current_affairs' && summaryText.startsWith('[')) {
+      try {
+        const arr = JSON.parse(summaryText);
+        if (Array.isArray(arr)) summaryText = arr.join(' • ');
+      } catch (_e) {}
+    }
     return {
       type,
       id: String(row.id),
       title_en: row.title_en || meta.title_en || '',
       title_or: row.title_or || meta.title_or || '',
-      url: buildUrlForType(type, row.slug || row.id),
-      summary: String(row.summary_en || '').slice(0, 180),
+      url: meta.url || buildUrlForType(type, row.slug || row.id),
+      summary: summaryText.slice(0, 180),
       score: Number((match && match.score) || 0.8)
     };
   } catch (_e) {
@@ -615,7 +693,8 @@ export async function reindexPublishedContent(env, { limit = 20, actorId = 'admi
     { type: 'job', sql: 'SELECT id, slug, title_en, title_or, summary_en, summary_or FROM job_articles WHERE is_published = 1 ORDER BY updated_at DESC LIMIT ?' },
     { type: 'scheme', sql: 'SELECT id, slug, title_en, title_or, summary_en, summary_or FROM scheme_articles WHERE is_published = 1 ORDER BY updated_at DESC LIMIT ?' },
     { type: 'study', sql: 'SELECT id, slug, title_en, title_or, summary_en, summary_or FROM study_articles WHERE is_published = 1 ORDER BY updated_at DESC LIMIT ?' },
-    { type: 'career', sql: "SELECT id, slug, title_en, title_or, summary_en, summary_or FROM careers_articles WHERE status = 'published' ORDER BY updated_at DESC LIMIT ?" }
+    { type: 'career', sql: "SELECT id, slug, title_en, title_or, summary_en, summary_or FROM careers_articles WHERE status = 'published' ORDER BY updated_at DESC LIMIT ?" },
+    { type: 'current_affairs', sql: "SELECT id, id AS slug, title_en, title_or, highlights_en, highlights_or FROM cso_current_affairs WHERE status = 'published' ORDER BY capsule_date DESC, updated_at DESC LIMIT ?" }
   ];
 
   let indexed = 0;

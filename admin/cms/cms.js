@@ -1112,13 +1112,72 @@
     }
 
     var tagSugHost = el('div', { class: 'actions cso-tag-suggestions' });
-    left.appendChild(el('div', { class: 'card' }, [
+    var aiMetaCard = el('div', { class: 'card' }, [
       el('div', { class: 'cso-repeat-head' }, [
-        el('strong', { text: '🏷️ Keyword-to-Exam Taxonomy Auto-Tag Suggester' }),
-        el('button', { type: 'button', class: 'btn sm', text: 'Suggest Matching Tags', onclick: refreshTagSuggestions })
+        el('strong', { text: '✨ AI Title, Slug & Tag Suggester' }),
+        el('div', { class: 'actions' }, [
+          el('button', { type: 'button', class: 'btn sm', text: 'Match Exam Taxonomy', onclick: refreshTagSuggestions }),
+          (window.CSOAiCoAuthor && window.CSOAiCoAuthor.createTranslateAllBtn)
+            ? window.CSOAiCoAuthor.createTranslateAllBtn(function () {
+                var pairs = [
+                  ['title', 'title_or'],
+                  ['summary', 'summary_or'],
+                  ['body_md', 'body_md_or']
+                ];
+                return pairs.map(function (p) {
+                  var enNode = left.querySelector('#f-' + p[0]);
+                  var orNode = left.querySelector('#f-' + p[1]);
+                  if (!enNode || !orNode) return null;
+                  return {
+                    key: p[1],
+                    getEn: function () { return enNode.value; },
+                    getOr: function () { return orNode.value; },
+                    targetInput: orNode
+                  };
+                }).filter(Boolean);
+              })
+            : el('span')
+        ])
       ]),
       tagSugHost
-    ]));
+    ]);
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.renderMetaSuggester) {
+      aiMetaCard.appendChild(window.CSOAiCoAuthor.renderMetaSuggester({
+        kind: key === 'jobs' ? 'Odisha government job alert' : 'Odisha current affairs post',
+        getSeedText: function () {
+          var tEl = left.querySelector('#f-title');
+          var oEl = left.querySelector('#f-organisation');
+          var sEl = left.querySelector('#f-summary');
+          return [tEl ? tEl.value : '', oEl ? oEl.value : '', sEl ? sEl.value : ''].filter(Boolean).join(' — ');
+        },
+        onApplyTitlePair: function (en, or, sl) {
+          setFieldVal('f-title', en);
+          if (or) setFieldVal('f-title_or', or);
+          if (sl) {
+            var slEl = left.querySelector('#f-slug');
+            if (slEl && !slEl.value.trim()) setFieldVal('f-slug', sl);
+          }
+        },
+        onApplySlug: function (sl) { setFieldVal('f-slug', sl); },
+        onApplyTag: function (tag) {
+          var tagsInp = left.querySelector('#f-tags');
+          if (!tagsInp) return;
+          var tArr = tagsInp.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+          if (tArr.indexOf(tag) === -1 && tArr.length < 10) tArr.push(tag);
+          setFieldVal('f-tags', tArr.join(', '));
+        },
+        onApplyAllTags: function (tags) {
+          var tagsInp = left.querySelector('#f-tags');
+          if (!tagsInp) return;
+          var tArr = tagsInp.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+          (tags || []).forEach(function (tag) {
+            if (tArr.indexOf(tag) === -1 && tArr.length < 10) tArr.push(tag);
+          });
+          setFieldVal('f-tags', tArr.join(', '));
+        }
+      }));
+    }
+    left.appendChild(aiMetaCard);
 
     var taxonomyCache = [];
     function refreshTagSuggestions() {
@@ -1175,7 +1234,15 @@
         function render() { api('POST', 'preview', { markdown: ta.value }).then(function (d) { renderSanitizedHtml(prev, d.html); }).catch(function () {}); }
         ta.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { render(); schedulePreviewRender(); }, 350); });
         getters[name] = function () { return ta.value; }; render();
-        left.appendChild(el('div', {}, [el('label', { for: fid, text: f[1] }), el('div', { class: 'grid2' }, [ta, prev]), el('div', { class: 'err', 'data-err': fid, hidden: true })]));
+        var mdHead = el('div', { class: 'cso-ai-label-row' }, [el('label', { for: fid, text: f[1] })]);
+        if (/_or$/.test(name) && window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn) {
+          var enMdId = '#f-' + name.replace(/_or$/, '');
+          mdHead.appendChild(window.CSOAiCoAuthor.createOdiaTranslateBtn(function () {
+            var enN = left.querySelector(enMdId);
+            return enN ? enN.value : '';
+          }, ta, 'body'));
+        }
+        left.appendChild(el('div', {}, [mdHead, el('div', { class: 'grid2' }, [ta, prev]), el('div', { class: 'err', 'data-err': fid, hidden: true })]));
       } else {
         var inp = type === 'area' ? el('textarea', { id: fid }) : el('input', { id: fid, type: type === 'tags' ? 'text' : type });
         inp.value = (type === 'tags' || name === 'goal_exam_ids') && Array.isArray(val)
@@ -1184,7 +1251,21 @@
         inp.addEventListener('input', function () { schedulePreviewRender(); });
         inp.addEventListener('change', function () { schedulePreviewRender(); });
         getters[name] = function () { return inp.value; };
-        left.appendChild(field(f[1], inp, fid, f[3]));
+        var fldNode = field(f[1], inp, fid, f[3]);
+        if (/_or$/.test(name) && window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn) {
+          var enInpId = '#f-' + name.replace(/_or$/, '');
+          var origLbl = fldNode.querySelector('label');
+          if (origLbl) {
+            var lRow = el('div', { class: 'cso-ai-label-row' });
+            fldNode.insertBefore(lRow, origLbl);
+            lRow.appendChild(origLbl);
+            lRow.appendChild(window.CSOAiCoAuthor.createOdiaTranslateBtn(function () {
+              var enN = left.querySelector(enInpId);
+              return enN ? enN.value : '';
+            }, inp, name.replace(/_or$/, '')));
+          }
+        }
+        left.appendChild(fldNode);
       }
     });
 
@@ -10067,7 +10148,27 @@
           el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Feature in Priority Slot')])])
         ]),
         el('div', { class: 'field' }, [
-          el('label', { text: 'Interactive Tags (press Enter or , to add)' }),
+          el('label', { text: '✨ AI Title, Slug & Tag Suggester + Interactive Tags (press Enter or , to add)' }),
+          (window.CSOAiCoAuthor && window.CSOAiCoAuthor.renderMetaSuggester)
+            ? window.CSOAiCoAuthor.renderMetaSuggester({
+                kind: postTypeSel.value || 'article',
+                getSeedText: function () { return [titleInp.value, catInp.value, examInp.value].filter(Boolean).join(' — '); },
+                onApplyTitlePair: function (en, or, sl) {
+                  titleInp.value = en;
+                  titleInp.dispatchEvent(new Event('input', { bubbles: true }));
+                  if (sl && !slugInp.value.trim()) {
+                    slugInp.value = sl;
+                    slugInp.dispatchEvent(new Event('input', { bubbles: true }));
+                  }
+                },
+                onApplySlug: function (sl) {
+                  slugInp.value = sl;
+                  slugInp.dispatchEvent(new Event('input', { bubbles: true }));
+                },
+                onApplyTag: function (t) { addTagChip(t); },
+                onApplyAllTags: function (arr) { (arr || []).forEach(addTagChip); }
+              })
+            : el('span'),
           el('div', { class: 'cso-cnt-tag-box' }, [tagChipsWrap, tagSuggestBox])
         ]),
         el('div', { class: 'cso-cnt-media-box' }, [

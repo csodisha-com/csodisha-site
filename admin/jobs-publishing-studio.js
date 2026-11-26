@@ -813,6 +813,17 @@
     bar.appendChild(barLeft);
 
     var barRight = el('div', 'jph-actions-row');
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.createTranslateAllBtn) {
+      barRight.appendChild(window.CSOAiCoAuthor.createTranslateAllBtn(function () {
+        return [
+          { key: 'title_or', getEn: function () { return d.title_en; }, getOr: function () { return d.title_or; }, setOr: function (v) { d.title_or = v; } },
+          { key: 'organisation_or', getEn: function () { return d.organisation_en; }, getOr: function () { return d.organisation_or; }, setOr: function (v) { d.organisation_or = v; } },
+          { key: 'summary_or', getEn: function () { return d.summary_en; }, getOr: function () { return d.summary_or; }, setOr: function (v) { d.summary_or = v; } },
+          { key: 'article_body_or', getEn: function () { return d.article_body_en; }, getOr: function () { return d.article_body_or; }, setOr: function (v) { d.article_body_or = v; } },
+          { key: 'corrigendum_note_or', getEn: function () { return d.corrigendum_note_en; }, getOr: function () { return d.corrigendum_note_or; }, setOr: function (v) { d.corrigendum_note_or = v; } }
+        ];
+      }, function () { renderCurrentView(); }));
+    }
     barRight.appendChild(btn('📋 Copy Broadcast (EN+ଓଡ଼ିଆ)', 'jph-btn', function () {
       copyToClipboard(buildBroadcastText(d), 'Bilingual Telegram / WhatsApp broadcast copied!');
     }));
@@ -827,6 +838,29 @@
     }));
     bar.appendChild(barRight);
     container.appendChild(bar);
+
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.renderMetaSuggester) {
+      container.appendChild(window.CSOAiCoAuthor.renderMetaSuggester({
+        kind: 'Odisha government job recruitment',
+        getSeedText: function () { return [d.title_en, d.organisation_en, d.summary_en].filter(Boolean).join(' — '); },
+        onApplyTitlePair: function (en, or, sl) {
+          d.title_en = en;
+          if (or) d.title_or = or;
+          if (sl && !d._slugTouched) d.slug = sl;
+          state.draft = d;
+          renderCurrentView();
+        },
+        onApplySlug: function (sl) {
+          d.slug = sl;
+          d._slugTouched = true;
+          state.draft = d;
+          renderCurrentView();
+        },
+        onApplyTag: function (tag) {
+          if (!d.sector_badge) d.sector_badge = tag;
+        }
+      }));
+    }
 
     if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.renderDrawer) {
       container.appendChild(window.CSOAiCoAuthor.renderDrawer({
@@ -1101,8 +1135,16 @@
     function addInput(label, key, opts) {
       opts = opts || {};
       var w = el('div', 'jph-field' + (opts.span ? ' jph-span-' + opts.span : ''));
-      w.appendChild(el('label', 'jph-label', label));
+      var lblRow = el('div', 'jph-label-row');
+      lblRow.appendChild(el('label', 'jph-label', label));
       var inp = opts.textarea ? el('textarea', 'jph-textarea') : el('input', 'jph-input');
+      if (opts.translateFrom && window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn) {
+        lblRow.appendChild(window.CSOAiCoAuthor.createOdiaTranslateBtn({
+          getSource: function () { return d[opts.translateFrom]; },
+          targetInput: inp
+        }));
+      }
+      w.appendChild(lblRow);
       if (!opts.textarea) inp.type = opts.type || 'text';
       if (opts.placeholder) inp.placeholder = opts.placeholder;
       inp.value = d[key] == null ? '' : String(d[key]);
@@ -1138,10 +1180,10 @@
 
     addInput('Job Title (EN) *', 'title_en', { span: 2, placeholder: 'e.g., OPSC Odisha Civil Services (OAS) Recruitment 2026' });
     addInput('URL Slug', 'slug', { id: 'jphSlugInput', placeholder: 'opsc-oas-recruitment-2026' });
-    addInput('Job Title (ଓଡ଼ିଆ)', 'title_or', { span: 2, placeholder: 'ଓଡ଼ିଶା ସିଭିଲ୍ ସର୍ଭିସେସ୍ (OAS) ନିଯୁକ୍ତି ୨୦୨୬' });
+    addInput('Job Title (ଓଡ଼ିଆ)', 'title_or', { span: 2, translateFrom: 'title_en', placeholder: 'ଓଡ଼ିଶା ସିଭିଲ୍ ସର୍ଭିସେସ୍ (OAS) ନିଯୁକ୍ତି ୨୦୨୬' });
     addSelect('Lifecycle Stage', 'lifecycle_stage', STAGES);
     addInput('Organisation / Commission (EN)', 'organisation_en', { placeholder: 'e.g., Odisha Public Service Commission (OPSC)' });
-    addInput('Organisation (ଓଡ଼ିଆ)', 'organisation_or', { placeholder: 'ଓଡ଼ିଶା ଲୋକସେବା ଆୟୋଗ' });
+    addInput('Organisation (ଓଡ଼ିଆ)', 'organisation_or', { translateFrom: 'organisation_en', placeholder: 'ଓଡ଼ିଶା ଲୋକସେବା ଆୟୋଗ' });
     addInput('Advt. / Notification No.', 'advt_number', { placeholder: 'e.g., Advt. No. 12 of 2026-27' });
     addInput('Total Vacancies', 'total_vacancies', { type: 'number', placeholder: '399' });
     addInput('Salary / Pay Scale', 'salary_pay_scale', { placeholder: 'ORSP Level-12 (₹56,100 – ₹1,77,500)' });
@@ -1172,7 +1214,7 @@
     addInput('Last Date to Apply', 'last_date', { type: 'date' });
     addInput('Expected Exam Date', 'exam_date', { placeholder: 'e.g., 2026-12-20 or December 2026' });
     addInput('Short Summary (EN)', 'summary_en', { span: 3, textarea: true, placeholder: 'Concise 2-sentence English summary for cards & SEO description…' });
-    addInput('Short Summary (ଓଡ଼ିଆ)', 'summary_or', { span: 3, textarea: true, placeholder: 'ଓଡ଼ିଆରେ ସଂକ୍ଷିପ୍ତ ବିବରଣୀ…' });
+    addInput('Short Summary (ଓଡ଼ିଆ)', 'summary_or', { span: 3, textarea: true, translateFrom: 'summary_en', placeholder: 'ଓଡ଼ିଆରେ ସଂକ୍ଷିପ୍ତ ବିବରଣୀ…' });
 
     var domLbl = el('label', 'jph-check-label');
     var domCb = el('input'); domCb.type = 'checkbox'; domCb.checked = Boolean(d.odisha_domicile_required);
@@ -1309,7 +1351,13 @@
 
     var edCols = el('div', 'jph-editor-cols');
     var colEn = el('div', 'jph-field'); colEn.appendChild(el('label', 'jph-label', 'Article Body (English)')); colEn.appendChild(bodyEn);
-    var colOr = el('div', 'jph-field'); colOr.appendChild(el('label', 'jph-label', 'Article Body (ଓଡ଼ିଆ)')); colOr.appendChild(bodyOr);
+    var colOr = el('div', 'jph-field');
+    var colOrHead = el('div', 'jph-label-row');
+    colOrHead.appendChild(el('label', 'jph-label', 'Article Body (ଓଡ଼ିଆ)'));
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn) {
+      colOrHead.appendChild(window.CSOAiCoAuthor.createOdiaTranslateBtn({ getSource: function () { return bodyEn.value; }, targetInput: bodyOr }));
+    }
+    colOr.appendChild(colOrHead); colOr.appendChild(bodyOr);
     edCols.appendChild(colEn); edCols.appendChild(colOr);
     edCard.appendChild(edCols);
     container.appendChild(edCard);

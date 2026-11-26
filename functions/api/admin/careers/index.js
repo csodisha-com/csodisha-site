@@ -4,13 +4,14 @@ import { handleAdminCareers } from '../../../_lib/careers-portal.js';
 
 export { handleAdminCareers };
 
-async function run({ request, env }) {
+async function run({ request, env, waitUntil }) {
   try {
     const actor = await requireRole(request, env, STAFF_ROLES);
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
     }
-    return await handleAdminCareers(request, env, actor);
+    const ctx = typeof waitUntil === 'function' ? { waitUntil } : null;
+    return await handleAdminCareers(request, env, actor, '', ctx);
   } catch (err) {
     return errorResponse(err);
   }

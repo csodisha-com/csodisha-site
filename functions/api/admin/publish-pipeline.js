@@ -5,6 +5,7 @@ import { invalidateAllPublicCaches } from '../../_lib/edge-cache-invalidator.js'
 import { handleSitemapXml } from '../content/_seo.js';
 import { recordAdminAuditLog } from './system-ops.js';
 import { ensureV311ContentColumns, probeExternalUrl } from '../../_lib/radars-v311.js';
+import { scheduleSemanticSync } from '../../_lib/semantic-search.js';
 
 const PILLAR_CONFIG = {
   jobs: {
@@ -355,6 +356,25 @@ export async function handlePublishChainApi(request, env, actor, ctx = null) {
   } catch { sitemapUrls = 0; }
 
   const inv = await invalidateAllPublicCaches(request, ['/sitemap.xml', targetUrl, '/api/public/study/offline-pack']);
+
+  // 3b. Automatic Vectorize sync for Ask CSOdisha via ctx.waitUntil
+  const semanticTypeMap = { jobs: 'job', schemes: 'scheme', study: 'study', careers: 'career' };
+  const semType = semanticTypeMap[pillar];
+  if (semType && (itemId || slug)) {
+    scheduleSemanticSync(ctx, env, {
+      action: 'upsert',
+      type: semType,
+      row: {
+        id: itemId || slug,
+        slug,
+        title_en: titleEn,
+        title_or: titleOr,
+        summary_en: summaryEn,
+        summary_or: String(body.summary_or || '').trim().slice(0, 400)
+      },
+      actorId: actor && actor.userId
+    });
+  }
 
   // 4. Generate ready-to-copy WhatsApp & Telegram Announcement Card
   const cardText = buildWhatsAppTelegramCard({

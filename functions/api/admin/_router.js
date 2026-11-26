@@ -278,7 +278,7 @@ async function dispatchAdminApi(request, env, ctx = null) {
     if (resource === 'current-affairs') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
-      return await handleAdminCurrentAffairs(request, env, actor);
+      return await handleAdminCurrentAffairs(request, env, actor, ctx, id);
     }
 
     // Admin-only: user role management, URC Batch 1-5 (01-19) & candidate behavior governance.
@@ -486,7 +486,7 @@ async function dispatchAdminApi(request, env, ctx = null) {
     const actor = await requireRole(request, env, STAFF_ROLES);
     if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
 
-    const switchRes = await dispatchStaffSwitch(request, env, actor, resource, id, sub, extra, method);
+    const switchRes = await dispatchStaffSwitch(request, env, actor, resource, id, sub, extra, method, ctx);
     if (switchRes) {
       if (write && switchRes.status >= 200 && switchRes.status < 400) {
         recordAdminAuditLog(env, request, actor, `content.${resource}.${method.toLowerCase()}`, [id, sub].filter(Boolean).join('/') || resource, null, ctx);
@@ -499,7 +499,7 @@ async function dispatchAdminApi(request, env, ctx = null) {
   }
 }
 
-async function dispatchStaffSwitch(request, env, actor, resource, id, sub, extra, method) {
+async function dispatchStaffSwitch(request, env, actor, resource, id, sub, extra, method, ctx = null) {
     switch (resource) {
       case 'session':
         return json({ user: { id: actor.userId, email: actor.email, role: actor.role } });
@@ -513,22 +513,22 @@ async function dispatchStaffSwitch(request, env, actor, resource, id, sub, extra
         return json({ html: renderMarkdown(body.markdown || '') });
       }
       case 'current-affairs':
-        return await handlePosts(request, env, actor, resource, id, sub);
+        return await handlePosts(request, env, actor, resource, id, sub, ctx);
       case 'jobs':
         if (id === 'taxonomy') return await handleJobsTaxonomyAdmin(request, env, actor, sub, extra);
         if (id === 'snippets') return await handleJobsSnippetsAdmin(request, env, actor, sub);
-        if (id === 'articles') return await handleJobsArticlesAdmin(request, env, actor, sub, extra);
+        if (id === 'articles') return await handleJobsArticlesAdmin(request, env, actor, sub, extra, ctx);
         if (id === 'upload') {
           await rateLimit(env, `admin-upload:${actor.userId}`, 40, 600);
           return await handleJobsMediaUpload(request, env, actor);
         }
         if (id === 'study-options' && method === 'GET') return await handleJobsStudyOptions(env);
         if (id && (sub === 'preview-token' || sub === 'revisions' || sub === 'rollback')) {
-          return await handleJobsArticlesAdmin(request, env, actor, id, sub);
+          return await handleJobsArticlesAdmin(request, env, actor, id, sub, ctx);
         }
-        return await handlePosts(request, env, actor, resource, id, sub);
+        return await handlePosts(request, env, actor, resource, id, sub, ctx);
       case 'mock-tests':
-        return await handleAdminMockTestsV312(request, env, actor, id, sub, extra, null);
+        return await handleAdminMockTestsV312(request, env, actor, id, sub, extra, ctx);
       case 'questions':
         if (id && !sub) return await handleQuestion(request, env, actor, id);
         break;
@@ -556,7 +556,7 @@ async function dispatchStaffSwitch(request, env, actor, resource, id, sub, extra
         }
         return await handleSettings(request, env, actor, id);
       case 'resources':
-        if (!sub) return await handleResources(request, env, actor, id);
+        if (!sub) return await handleResources(request, env, actor, id, ctx);
         break;
       case 'pages':
         return await handlePages(request, env, actor, id);
@@ -573,7 +573,7 @@ async function dispatchStaffSwitch(request, env, actor, resource, id, sub, extra
         if (id === 'taxonomy') return await handleAdminCareersTaxonomy(request, env, actor, sub);
         if (id === 'snippets') return await handleAdminCareersSnippets(request, env, actor, sub);
         if (id === 'preview-token') return await handleAdminCareersPreviewToken(request, env, actor);
-        return await handleAdminCareers(request, env, actor, id);
+        return await handleAdminCareers(request, env, actor, id, ctx);
       case 'about':
         if (id === 'taxonomy') return await handleAboutTaxonomyAdmin(request, env, actor, sub, extra);
         if (id === 'articles') return await handleAboutArticlesAdmin(request, env, actor, sub, extra);
@@ -592,13 +592,13 @@ async function dispatchStaffSwitch(request, env, actor, resource, id, sub, extra
         break;
       case 'schemes':
         if (id === 'taxonomy') return await handleSchemesTaxonomyAdmin(request, env, actor, sub, extra);
-        if (id === 'articles') return await handleSchemesArticlesAdmin(request, env, actor, sub, extra);
+        if (id === 'articles') return await handleSchemesArticlesAdmin(request, env, actor, sub, extra, ctx);
         if (id === 'upload') {
           await rateLimit(env, `admin-upload:${actor.userId}`, 40, 600);
           return await handleSchemesMediaUpload(request, env, actor);
         }
         if (id && (sub === 'preview-token' || sub === 'revisions' || sub === 'rollback')) {
-          return await handleSchemesArticlesAdmin(request, env, actor, id, sub);
+          return await handleSchemesArticlesAdmin(request, env, actor, id, sub, ctx);
         }
         if (!sub) return await handleSchemesAdmin(request, env, actor, id);
         break;
@@ -626,7 +626,7 @@ async function dispatchStaffSwitch(request, env, actor, resource, id, sub, extra
         return await handleCommunityDirectoryStudio(request, env, actor, id, sub, extra);
       case 'study':
         if (id === 'taxonomy') return await handleStudyTaxonomyAdmin(request, env, actor, sub, extra);
-        if (id === 'articles') return await handleStudyArticlesAdmin(request, env, actor, sub, extra);
+        if (id === 'articles') return await handleStudyArticlesAdmin(request, env, actor, sub, extra, ctx);
         if (id === 'upload') {
           await rateLimit(env, `admin-upload:${actor.userId}`, 40, 600);
           return await handleStudyMediaUpload(request, env, actor);
@@ -634,7 +634,7 @@ async function dispatchStaffSwitch(request, env, actor, resource, id, sub, extra
         if (id === 'job-options' && method === 'GET') return await handleStudyJobOptions(env);
         if (id === 'doubts') return await handleStudyDoubtsAdmin(request, env, actor, sub);
         if (id && (sub === 'preview-token' || sub === 'revisions' || sub === 'rollback')) {
-          return await handleStudyArticlesAdmin(request, env, actor, id, sub);
+          return await handleStudyArticlesAdmin(request, env, actor, id, sub, ctx);
         }
         break;
       case 'study-library':

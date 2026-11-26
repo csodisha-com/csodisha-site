@@ -1334,10 +1334,43 @@
     btnPublishNow.id = 'cpsPublishNowBtn';
     btnPublishNow.addEventListener('click', function () { persistGuide('published'); });
 
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.createTranslateAllBtn) {
+      barActions.appendChild(window.CSOAiCoAuthor.createTranslateAllBtn(function () {
+        return [
+          { key: 'title_or', getEn: function () { return inpTitleEn.value; }, getOr: function () { return inpTitleOr.value; }, targetInput: inpTitleOr },
+          { key: 'summary_or', getEn: function () { return txtSumEn.value; }, getOr: function () { return txtSumOr.value; }, targetInput: txtSumOr },
+          { key: 'content_body_or', getEn: function () { return txtBodyEn.value; }, getOr: function () { return txtBodyOr.value; }, targetInput: txtBodyOr }
+        ];
+      }));
+    }
     barActions.append(btnSaveDraft, btnSanity, btnPopupPreview, btnTempLink, btnPublishNow);
     topBar.appendChild(barActions);
 
     card.appendChild(topBar);
+
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.renderMetaSuggester) {
+      card.appendChild(window.CSOAiCoAuthor.renderMetaSuggester({
+        kind: 'Odisha career roadmap',
+        getSeedText: function () { return [inpTitleEn.value, inpElig.value, txtSumEn.value].filter(Boolean).join(' — '); },
+        onApplyTitlePair: function (en, or, sl) {
+          inpTitleEn.value = en;
+          if (or) inpTitleOr.value = or;
+          if (sl && !inpSlug.value.trim()) inpSlug.value = sl;
+          toast('Applied bilingual career title pair.', 'emerald');
+        },
+        onApplySlug: function (sl) { inpSlug.value = sl; toast('Applied SEO slug.', 'emerald'); },
+        onApplyTag: function (tag) {
+          var cur = inpExams.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+          if (cur.indexOf(tag) === -1) cur.push(tag);
+          inpExams.value = cur.join(', ');
+        },
+        onApplyAllTags: function (tags) {
+          var cur = inpExams.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+          (tags || []).forEach(function (t) { if (cur.indexOf(t) === -1) cur.push(t); });
+          inpExams.value = cur.join(', ');
+        }
+      }));
+    }
 
     // Active temporary preview link banner (if generated)
     if (state.activePreviewUrl) {
@@ -1375,7 +1408,7 @@
     var grid = el('div', 'cps-form-grid');
     grid.append(
       makeField('Title (English) *', inpTitleEn, false),
-      makeField('Title (ଓଡ଼ିଆ)', inpTitleOr, false),
+      makeField('Title (ଓଡ଼ିଆ)', inpTitleOr, false, window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn ? window.CSOAiCoAuthor.createOdiaTranslateBtn(function () { return inpTitleEn.value; }, inpTitleOr, 'title') : null),
       makeField('URL Slug', inpSlug, false),
       makeField('Publication Status', selStatus, false),
       makeField('1. L1 Career Track', selTrack, false, btnAddTrack),
@@ -1443,9 +1476,9 @@
       makeField('Eligibility Summary', inpElig, false),
       makeField('Key Exams (comma-separated)', inpExams, false),
       makeField('Summary (English)', txtSumEn, false),
-      makeField('Summary (ଓଡ଼ିଆ)', txtSumOr, false),
+      makeField('Summary (ଓଡ଼ିଆ)', txtSumOr, false, window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn ? window.CSOAiCoAuthor.createOdiaTranslateBtn(function () { return txtSumEn.value; }, txtSumOr, 'summary') : null),
       makeField('Structured Roadmap Content (English)', txtBodyEn, true, snipBar),
-      makeField('Structured Roadmap Content (ଓଡ଼ିଆ)', txtBodyOr, true)
+      makeField('Structured Roadmap Content (ଓଡ଼ିଆ)', txtBodyOr, true, window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn ? window.CSOAiCoAuthor.createOdiaTranslateBtn(function () { return txtBodyEn.value; }, txtBodyOr, 'body') : null)
     );
 
     // Official Links editor

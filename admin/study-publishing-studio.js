@@ -649,7 +649,35 @@
     btnBack.addEventListener('click', function () { S.composerOpen = false; renderWorkspace(); });
     topBar.appendChild(btnBack);
     topBar.appendChild(el('h2', 'stps-section-title', a.id ? ('Edit Study Module: ' + a.title_en) : 'Publish New Study Material'));
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.createTranslateAllBtn) {
+      topBar.appendChild(window.CSOAiCoAuthor.createTranslateAllBtn(function () {
+        return [
+          { key: 'title_or', getEn: function () { return a.title_en; }, getOr: function () { return a.title_or; }, setOr: function (v) { a.title_or = v; } },
+          { key: 'subtitle_or', getEn: function () { return a.subtitle_en; }, getOr: function () { return a.subtitle_or; }, setOr: function (v) { a.subtitle_or = v; } },
+          { key: 'summary_or', getEn: function () { return a.summary_en; }, getOr: function () { return a.summary_or; }, setOr: function (v) { a.summary_or = v; } },
+          { key: 'article_body_or', getEn: function () { return a.article_body_en; }, getOr: function () { return a.article_body_or; }, setOr: function (v) { a.article_body_or = v; } },
+          { key: 'edition_note_or', getEn: function () { return a.edition_note_en; }, getOr: function () { return a.edition_note_or; }, setOr: function (v) { a.edition_note_or = v; } }
+        ];
+      }, function () { renderWorkspace(); }));
+    }
     wrap.appendChild(topBar);
+
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.renderMetaSuggester) {
+      wrap.appendChild(window.CSOAiCoAuthor.renderMetaSuggester({
+        kind: 'Odisha exam study notes, syllabus, or PYQ resource',
+        getSeedText: function () { return [a.title_en, a.exam_board_tag, a.summary_en].filter(Boolean).join(' — '); },
+        onApplyTitlePair: function (en, or, sl) {
+          a.title_en = en;
+          if (or) a.title_or = or;
+          if (sl) a.slug = sl;
+          renderWorkspace();
+        },
+        onApplySlug: function (sl) { a.slug = sl; renderWorkspace(); },
+        onApplyTag: function (tag) {
+          if (!a.exam_board_tag) a.exam_board_tag = tag;
+        }
+      }));
+    }
 
     // 1. Cascading 3-Layer Curriculum Selector with Inline "+ Add Option"
     var secTax = el('section', 'stps-section');
@@ -778,24 +806,43 @@
     var sumOr = el('textarea', 'stps-textarea'); sumOr.rows = 3; sumOr.value = a.summary_or || ''; sumOr.placeholder = 'ଓଡ଼ିଆରେ ସଂକ୍ଷିପ୍ତ ବିବରଣୀ';
     sumOr.addEventListener('input', function () { a.summary_or = sumOr.value; });
 
-    function fld(lbl, ctrl) {
+    function fld(lbl, ctrl, extraAction) {
       var d = el('div', 'stps-field');
-      d.appendChild(el('label', '', lbl));
+      var row = el('div', 'stps-section-head');
+      row.appendChild(el('label', '', lbl));
+      if (extraAction) row.appendChild(extraAction);
+      d.appendChild(row);
       d.appendChild(ctrl);
       return d;
     }
 
+    var mkTr = function (getSrc, targetEl) {
+      return (window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn)
+        ? window.CSOAiCoAuthor.createOdiaTranslateBtn({ getSource: getSrc, targetInput: targetEl })
+        : null;
+    };
+
     var gMeta1 = el('div', 'stps-grid-2');
-    gMeta1.append(fld('Title (English) *', titleEnInp), fld('Title (ଓଡ଼ିଆ)', titleOrInp), fld('URL Slug', slugInp), fld('Exam Board Tag', boardInp));
+    gMeta1.append(
+      fld('Title (English) *', titleEnInp),
+      fld('Title (ଓଡ଼ିଆ)', titleOrInp, mkTr(function () { return titleEnInp.value; }, titleOrInp)),
+      fld('URL Slug', slugInp),
+      fld('Exam Board Tag', boardInp)
+    );
     var gMeta2 = el('div', 'stps-grid-3');
     gMeta2.append(
-      fld('Subtitle (EN)', subEnInp), fld('Subtitle (ଓଡ଼ିଆ)', subOrInp), fld('Paper Code', paperInp),
+      fld('Subtitle (EN)', subEnInp),
+      fld('Subtitle (ଓଡ଼ିଆ)', subOrInp, mkTr(function () { return subEnInp.value; }, subOrInp)),
+      fld('Paper Code', paperInp),
       fld('PYQ Year / Cycle', pyqYrInp), fld('Resource Type Badge', resTypeSel), fld('Difficulty Level', diffSel),
       fld('High-Yield Priority', prioSel), fld('Estimated Read (mins)', readMinInp), fld('Negative Marking Rule', negSel),
       fld('Language Medium', medSel)
     );
     var gSum = el('div', 'stps-grid-2');
-    gSum.append(fld('Executive Summary (EN)', sumEn), fld('Executive Summary (ଓଡ଼ିଆ)', sumOr));
+    gSum.append(
+      fld('Executive Summary (EN)', sumEn),
+      fld('Executive Summary (ଓଡ଼ିଆ)', sumOr, mkTr(function () { return sumEn.value; }, sumOr))
+    );
     secMeta.append(gMeta1, gMeta2, gSum);
 
     // Cover Banner Photo Upload + Live Preview
@@ -933,7 +980,12 @@
     var bCol1 = el('div', 'stps-field');
     bCol1.append(el('label', '', 'Lesson & Notes Body (English)'), makeToolbar(bodyEnTa, 'article_body_en'), bodyEnTa);
     var bCol2 = el('div', 'stps-field');
-    bCol2.append(el('label', '', 'Lesson & Notes Body (ଓଡ଼ିଆ)'), makeToolbar(bodyOrTa, 'article_body_or'), bodyOrTa);
+    var bCol2Head = el('div', 'stps-section-head');
+    bCol2Head.appendChild(el('label', '', 'Lesson & Notes Body (ଓଡ଼ିଆ)'));
+    if (window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn) {
+      bCol2Head.appendChild(window.CSOAiCoAuthor.createOdiaTranslateBtn({ getSource: function () { return bodyEnTa.value; }, targetInput: bodyOrTa }));
+    }
+    bCol2.append(bCol2Head, makeToolbar(bodyOrTa, 'article_body_or'), bodyOrTa);
     gBody.append(bCol1, bCol2);
     secBody.appendChild(gBody);
     wrap.appendChild(secBody);
@@ -1652,11 +1704,14 @@
     var tForm = el('form', 'stps-grid-2');
     tForm.noValidate = true;
 
-    function mkField(labelTxt, inputNode) {
+    function mkField(labelTxt, inputNode, extraBtn) {
       var g = el('div', 'stps-field');
+      var row = el('div', 'stps-section-head');
       var l = el('label', 'stps-label', labelTxt);
       if (inputNode.id) l.setAttribute('for', inputNode.id);
-      g.append(l, inputNode);
+      row.appendChild(l);
+      if (extraBtn) row.appendChild(extraBtn);
+      g.append(row, inputNode);
       return g;
     }
 
@@ -1706,7 +1761,7 @@
 
     tForm.append(
       mkField('Mock Test Title (EN) *', inTitleEn),
-      mkField('Mock Test Title (ଓଡ଼ିଆ)', inTitleOr),
+      mkField('Mock Test Title (ଓଡ଼ିଆ)', inTitleOr, (window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn) ? window.CSOAiCoAuthor.createOdiaTranslateBtn({ getSource: function () { return inTitleEn.value; }, targetInput: inTitleOr }) : null),
       mkField('URL Slug (optional)', inSlug),
       mkField('Exam Category', selCat),
       mkField('Duration (Minutes)', inDur),
@@ -1920,14 +1975,14 @@
 
     qForm.append(
       mkField('Question (EN) *', qEn),
-      mkField('Question (ଓଡ଼ିଆ)', qOr),
+      mkField('Question (ଓଡ଼ିଆ)', qOr, window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn ? window.CSOAiCoAuthor.createOdiaTranslateBtn(function () { return qEn.value; }, qOr, 'question') : null),
       mkField('Option A *', optInputs[0]),
       mkField('Option B *', optInputs[1]),
       mkField('Option C *', optInputs[2]),
       mkField('Option D *', optInputs[3]),
       mkField('Correct Answer *', selCorr),
       mkField('Explanation (EN)', expEn),
-      mkField('Explanation (ଓଡ଼ିଆ)', expOr)
+      mkField('Explanation (ଓଡ଼ିଆ)', expOr, window.CSOAiCoAuthor && window.CSOAiCoAuthor.createOdiaTranslateBtn ? window.CSOAiCoAuthor.createOdiaTranslateBtn(function () { return expEn.value; }, expOr, 'explanation') : null)
     );
 
     var qFormActs = el('div', 'stps-actions');

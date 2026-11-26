@@ -3187,12 +3187,14 @@ function initPublicBroadcastBanner() {
     }
 
     if (tagEl) {
-      tagEl.textContent = (data.tag || sevTag).toUpperCase();
+      tagEl.textContent = (data.badge_label || data.tag || sevTag).toUpperCase();
       tagEl.className = 'cso-live-banner__tag';
     }
 
     if (textEl) {
-      textEl.textContent = alertText;
+      let isOrLang = false;
+      try { isOrLang = document.documentElement.getAttribute('lang') === 'or' || localStorage.getItem('cso_lang') === 'or'; } catch (_) {}
+      textEl.textContent = (isOrLang && data.headline_or) ? data.headline_or : alertText;
     }
 
     if (linkEl) {

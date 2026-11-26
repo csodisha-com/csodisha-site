@@ -7,6 +7,7 @@ import { HttpError, json, readJson, validationError } from './http.js';
 import { audit, getActor, STAFF_ROLES } from './rbac.js';
 import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
 import { logZeroResultSearch } from './radars-v311.js';
+import { scheduleSemanticSync } from './semantic-search.js';
 
 export const CAREER_STATUSES = ['draft', 'published', 'archived'];
 export const CAREER_TAXONOMY_KINDS = ['track', 'subtrack', 'role_stream', 'region', 'stage'];
@@ -711,7 +712,7 @@ export async function handleAdminCareersPreviewToken(request, env, actor) {
 // ============================================================================
 // ADMIN: GET / POST / PUT / DELETE /api/admin/careers
 // ============================================================================
-export async function handleAdminCareers(request, env, actor, pathId = '') {
+export async function handleAdminCareers(request, env, actor, pathId = '', ctx = null) {
   await ensureCareersSchema(env.DB);
   const method = request.method.toUpperCase();
   const url = new URL(request.url);
@@ -803,6 +804,7 @@ export async function handleAdminCareers(request, env, actor, pathId = '') {
     if (!existing) throw new HttpError(404, 'NOT_FOUND', 'Career guide not found');
     await env.DB.prepare(`DELETE FROM careers_articles WHERE id = ?`).bind(targetId).run();
     await audit(env, request, actor, 'careers.delete', 'careers_article', targetId, { slug: existing.slug, title: existing.title_en });
+    scheduleSemanticSync(ctx, env, { action: 'delete', type: 'career', id: targetId, actorId: actor && actor.userId });
     await invalidateCareersCaches(request, existing.slug);
     return json({ ok: true, deleted: true, id: targetId }, 200, { 'Cache-Control': 'no-store', 'X-CSO-Cache-Purged': '1' });
   }
@@ -884,6 +886,13 @@ export async function handleAdminCareers(request, env, actor, pathId = '') {
       await audit(env, request, actor, nextStatus === 'published' ? 'careers.publish' : 'careers.unpublish', 'careers_article', targetId, { from: existing.status, to: nextStatus });
       await invalidateCareersCaches(request, existing.slug);
       const updated = await env.DB.prepare(`SELECT * FROM careers_articles WHERE id = ?`).bind(targetId).first();
+      scheduleSemanticSync(ctx, env, {
+        action: nextStatus === 'published' ? 'upsert' : 'delete',
+        type: 'career',
+        row: updated,
+        id: targetId,
+        actorId: actor && actor.userId
+      });
       return json({ ok: true, item: hydrateArticle(updated, true) }, 200, { 'Cache-Control': 'no-store', 'X-CSO-Cache-Purged': '1' });
     }
 
@@ -941,6 +950,13 @@ export async function handleAdminCareers(request, env, actor, pathId = '') {
       await audit(env, request, actor, 'careers.update', 'careers_article', id, { slug: finalSlug, status });
       await invalidateCareersCaches(request, finalSlug);
       const updated = await env.DB.prepare(`SELECT * FROM careers_articles WHERE id = ?`).bind(id).first();
+      scheduleSemanticSync(ctx, env, {
+        action: status === 'published' ? 'upsert' : 'delete',
+        type: 'career',
+        row: updated,
+        id,
+        actorId: actor && actor.userId
+      });
       return json({ ok: true, item: hydrateArticle(updated, true) }, 200, { 'Cache-Control': 'no-store', 'X-CSO-Cache-Purged': '1' });
     }
 
@@ -969,6 +985,13 @@ export async function handleAdminCareers(request, env, actor, pathId = '') {
     await audit(env, request, actor, 'careers.create', 'careers_article', newId, { slug: finalSlug, status });
     await invalidateCareersCaches(request, finalSlug);
     const created = await env.DB.prepare(`SELECT * FROM careers_articles WHERE id = ?`).bind(newId).first();
+    scheduleSemanticSync(ctx, env, {
+      action: status === 'published' ? 'upsert' : 'delete',
+      type: 'career',
+      row: created,
+      id: newId,
+      actorId: actor && actor.userId
+    });
     return json({ ok: true, item: hydrateArticle(created, true) }, 201, { 'Cache-Control': 'no-store', 'X-CSO-Cache-Purged': '1' });
   }
 

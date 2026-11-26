@@ -2,6 +2,7 @@
 import { HttpError, json, readJson, validationError } from '../../_lib/http.js';
 import { audit } from '../../_lib/rbac.js';
 import { cleanStr, slugify, SLUG_RE, isIsoDate, resolveStatus, likeEscape, parsePaging, STATUSES } from '../../_lib/validate.js';
+import { scheduleSemanticSync } from '../../_lib/semantic-search.js';
 
 export const POST_TYPES = { 'current-affairs': 'current_affair', jobs: 'job' };
 const MEDIA_KEY_RE = /^[0-9a-f-]{36}\.(jpg|png|webp|pdf)$/;
@@ -178,8 +179,9 @@ function present(row) {
   };
 }
 
-export async function handlePosts(request, env, actor, typeKey, id, sub) {
+export async function handlePosts(request, env, actor, typeKey, id, sub, ctx = null) {
   const type = POST_TYPES[typeKey];
+  const semanticType = type === 'current_affair' ? 'current_affairs' : 'job';
   if (type === 'job' && env && env.DB) {
     await ensureJobTaxonomyColumns(env.DB);
   }
@@ -227,6 +229,13 @@ export async function handlePosts(request, env, actor, typeKey, id, sub) {
         await audit(env, request, actor, `${type}.goal_alert`, 'post', newId, { title: f.title, subscribers: goalAlertCount });
       }
       await audit(env, request, actor, `${type}.create`, 'post', newId, { title: f.title, status: f.status });
+      scheduleSemanticSync(ctx, env, {
+        action: f.status === 'published' ? 'upsert' : 'delete',
+        type: semanticType,
+        row: { id: newId, slug, title_en: f.title, title_or: f.title_or, summary_en: f.summary, summary_or: f.summary_or },
+        id: newId,
+        actorId: actor && actor.userId
+      });
       return json({ id: newId, slug, goal_alert_queued: goalAlertCount }, 201);
     }
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
@@ -243,6 +252,13 @@ export async function handlePosts(request, env, actor, typeKey, id, sub) {
     await env.DB.prepare('UPDATE posts SET status = ?, published_at = ?, updated_by = ?, updated_at = datetime(\'now\') WHERE id = ?')
       .bind(st.status, st.published_at, actor.userId, id).run();
     await audit(env, request, actor, `${type}.${st.status}`, 'post', id, { title: existing.title, published_at: st.published_at });
+    scheduleSemanticSync(ctx, env, {
+      action: st.status === 'published' ? 'upsert' : 'delete',
+      type: semanticType,
+      row: { id, slug: existing.slug, title_en: existing.title, title_or: existing.title_or, summary_en: existing.summary, summary_or: existing.summary_or },
+      id,
+      actorId: actor && actor.userId
+    });
     return json({ id, status: st.status, published_at: st.published_at });
   }
   if (sub) throw new HttpError(404, 'NOT_FOUND', 'Unknown route');
@@ -263,11 +279,19 @@ export async function handlePosts(request, env, actor, typeKey, id, sub) {
       await audit(env, request, actor, `${type}.goal_alert`, 'post', id, { title: f.title, subscribers: goalAlertCount });
     }
     await audit(env, request, actor, `${type}.update`, 'post', id, { title: f.title, status: f.status });
+    scheduleSemanticSync(ctx, env, {
+      action: f.status === 'published' ? 'upsert' : 'delete',
+      type: semanticType,
+      row: { id, slug, title_en: f.title, title_or: f.title_or, summary_en: f.summary, summary_or: f.summary_or },
+      id,
+      actorId: actor && actor.userId
+    });
     return json({ id, slug, goal_alert_queued: goalAlertCount });
   }
   if (method === 'DELETE') {
     await env.DB.prepare('UPDATE posts SET deleted_at = datetime(\'now\'), updated_by = ?, updated_at = datetime(\'now\') WHERE id = ?').bind(actor.userId, id).run();
     await audit(env, request, actor, `${type}.delete`, 'post', id, { title: existing.title });
+    scheduleSemanticSync(ctx, env, { action: 'delete', type: semanticType, id, actorId: actor && actor.userId });
     return json({ id, deleted: true });
   }
   throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');

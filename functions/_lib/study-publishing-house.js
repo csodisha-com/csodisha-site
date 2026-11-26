@@ -13,6 +13,7 @@ import { audit, rateLimit, getActor, STAFF_ROLES } from './rbac.js';
 import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
 import { requireCandidateSession } from './candidate-hub-governance.js';
 import { ensureV311ContentColumns, isFuturePublishAt, logZeroResultSearch } from './radars-v311.js';
+import { scheduleSemanticSync } from './semantic-search.js';
 
 const MB = 1024 * 1024;
 const ALLOWED_UPLOAD_MIME = {
@@ -940,7 +941,7 @@ async function saveStudyRevision(db, articleId, snapshotObj, changeSummary, crea
   } catch { /* non-fatal */ }
 }
 
-export async function handleStudyArticlesAdmin(request, env, actor, articleId, action) {
+export async function handleStudyArticlesAdmin(request, env, actor, articleId, action, ctx = null) {
   const db = env.DB;
   await ensureStudyPublishingSchema(db);
   await publishDueScheduledStudyArticles(db);
@@ -1017,6 +1018,13 @@ export async function handleStudyArticlesAdmin(request, env, actor, articleId, a
     await saveStudyRevision(db, articleId, updatedRow, `Rolled back to revision #${rev.revision_number}`, actor.email);
     const { map: taxMap } = await loadTaxonomyMap(db);
     await audit(env, request, actor, 'study_article.rollback', 'study_articles', articleId, { revision_number: rev.revision_number });
+    scheduleSemanticSync(ctx, env, {
+      action: updatedRow && updatedRow.is_published ? 'upsert' : 'delete',
+      type: 'study',
+      row: updatedRow,
+      id: articleId,
+      actorId: actor && actor.userId
+    });
     await invalidateStudyCaches(request, updatedRow.slug);
     const res = json({ ok: true, item: formatStudyArticle(updatedRow, taxMap, true) });
     res.headers.set('X-CSO-Cache-Purged', '1');
@@ -1120,6 +1128,13 @@ export async function handleStudyArticlesAdmin(request, env, actor, articleId, a
     await saveStudyRevision(db, id, row || data, body.change_summary || 'Initial creation', actor.email);
     const { map: taxMap } = await loadTaxonomyMap(db);
     await audit(env, request, actor, data.is_published ? 'study_article.publish' : 'study_article.create', 'study_articles', id, { slug: finalSlug, title_en: data.title_en });
+    scheduleSemanticSync(ctx, env, {
+      action: data.is_published ? 'upsert' : 'delete',
+      type: 'study',
+      row: row || { id, slug: finalSlug, title_en: data.title_en, title_or: data.title_or, summary_en: data.summary_en, summary_or: data.summary_or },
+      id,
+      actorId: actor && actor.userId
+    });
     await invalidateStudyCaches(request, finalSlug);
     const res = json({ ok: true, item: formatStudyArticle(row, taxMap, true) }, 201);
     res.headers.set('X-CSO-Cache-Purged', '1');
@@ -1186,6 +1201,13 @@ export async function handleStudyArticlesAdmin(request, env, actor, articleId, a
     await saveStudyRevision(db, articleId, row || data, body.change_summary || 'Editorial update', actor.email);
     const { map: taxMap } = await loadTaxonomyMap(db);
     await audit(env, request, actor, data.is_published ? 'study_article.publish' : 'study_article.update', 'study_articles', articleId, { slug: finalSlug });
+    scheduleSemanticSync(ctx, env, {
+      action: data.is_published ? 'upsert' : 'delete',
+      type: 'study',
+      row: row || { id: articleId, slug: finalSlug, title_en: data.title_en, title_or: data.title_or, summary_en: data.summary_en, summary_or: data.summary_or },
+      id: articleId,
+      actorId: actor && actor.userId
+    });
     await invalidateStudyCaches(request, finalSlug);
     const res = json({ ok: true, item: formatStudyArticle(row, taxMap, true) });
     res.headers.set('X-CSO-Cache-Purged', '1');
@@ -1201,6 +1223,7 @@ export async function handleStudyArticlesAdmin(request, env, actor, articleId, a
     await db.prepare('DELETE FROM study_reader_doubts WHERE article_id = ?').bind(articleId).run().catch(() => {});
     await db.prepare('DELETE FROM study_articles WHERE id = ?').bind(articleId).run();
     await audit(env, request, actor, 'study_article.delete', 'study_articles', articleId, { slug: existing.slug, title_en: existing.title_en });
+    scheduleSemanticSync(ctx, env, { action: 'delete', type: 'study', id: articleId, actorId: actor && actor.userId });
     await invalidateStudyCaches(request, existing.slug);
     const res = json({ ok: true, deleted: articleId });
     res.headers.set('X-CSO-Cache-Purged', '1');

@@ -4,6 +4,7 @@ import { HttpError, json, readJson, validationError } from '../../_lib/http.js';
 import { audit } from '../../_lib/rbac.js';
 import { cleanStr, parsePaging, likeEscape } from '../../_lib/validate.js';
 import { readLastCronRun } from './_cron.js';
+import { scheduleSemanticSync } from '../../_lib/semantic-search.js';
 
 const MEDIA_KEY_RE = /^[0-9a-f-]{36}\.(jpg|png|webp|pdf)$/;
 export const BANNER_KEY = 'homepage_banner';
@@ -12,7 +13,18 @@ const INCIDENT_LEVELS = ['low', 'medium', 'high', 'critical'];
 export const RESOURCE_KINDS = ['syllabus', 'pyq'];
 
 export function defaultBanner() {
-  return { active: false, headline: '', context: '', severity: 'info', ctaText: '', ctaUrl: '', updatedAt: null };
+  return {
+    active: false,
+    headline: '',
+    headline_or: '',
+    badge_label: '',
+    context: '',
+    context_or: '',
+    severity: 'info',
+    ctaText: '',
+    ctaUrl: '',
+    updatedAt: null
+  };
 }
 
 export async function readBanner(env) {
@@ -34,8 +46,14 @@ export async function handleBanner(request, env, actor) {
   const errors = {};
   const headline = cleanStr(body.headline, 160);
   if (headline.length > 160) errors.headline = 'Headline must be 160 characters or fewer';
+  const headline_or = cleanStr(body.headline_or, 220);
+  if (headline_or.length > 220) errors.headline_or = 'Odia headline must be 220 characters or fewer';
+  const badge_label = cleanStr(body.badge_label, 32);
+  if (badge_label.length > 32) errors.badge_label = 'Badge label must be 32 characters or fewer';
   const context = cleanStr(body.context, 300);
   if (context.length > 300) errors.context = 'Context must be 300 characters or fewer';
+  const context_or = cleanStr(body.context_or, 360);
+  if (context_or.length > 360) errors.context_or = 'Odia context must be 360 characters or fewer';
   const ctaText = cleanStr(body.ctaText, 40);
   if (ctaText.length > 40) errors.ctaText = 'Button text must be 40 characters or fewer';
   const ctaUrl = cleanStr(body.ctaUrl, 500);
@@ -46,12 +64,12 @@ export async function handleBanner(request, env, actor) {
   const active = body.active === true;
   if (active && !headline) errors.headline = 'A headline is required to activate the banner';
   if (Object.keys(errors).length) throw validationError(errors);
-  const value = { active, headline, context, severity, ctaText, ctaUrl };
+  const value = { active, headline, headline_or, badge_label, context, context_or, severity, ctaText, ctaUrl };
   await env.DB.prepare(
     `INSERT INTO site_settings (key, value_json, updated_by, updated_at) VALUES (?, ?, ?, datetime('now'))
      ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_by = excluded.updated_by, updated_at = excluded.updated_at`
   ).bind(BANNER_KEY, JSON.stringify(value), actor.userId).run();
-  await audit(env, request, actor, active ? 'banner.publish' : 'banner.deactivate', 'site_settings', BANNER_KEY, { headline, severity });
+  await audit(env, request, actor, active ? 'banner.publish' : 'banner.deactivate', 'site_settings', BANNER_KEY, { headline, badge_label, severity });
   return json(await readBanner(env));
 }
 
@@ -126,7 +144,7 @@ function presentAdminResource(r) {
   };
 }
 
-export async function handleResources(request, env, actor, id) {
+export async function handleResources(request, env, actor, id, ctx = null) {
   const method = request.method; const url = new URL(request.url);
   if (!id) {
     if (method === 'GET') {
@@ -160,6 +178,20 @@ export async function handleResources(request, env, actor, id) {
         f.status, actor.userId, actor.userId
       ).run();
       await audit(env, request, actor, `resource.create`, 'resource', newId, { kind: f.kind, title: f.title, status: f.status });
+      scheduleSemanticSync(ctx, env, {
+        action: f.status === 'published' ? 'upsert' : 'delete',
+        type: 'study',
+        row: {
+          id: newId,
+          slug: cleanStr(body.exam_slug, 80) || newId,
+          title_en: f.title,
+          title_or: cleanStr(body.title_or, 240) || '',
+          summary_en: [f.exam, f.year ? String(f.year) : '', f.description].filter(Boolean).join(' · '),
+          summary_or: cleanStr(body.description_or, 2000) || ''
+        },
+        id: newId,
+        actorId: actor && actor.userId
+      });
       return json({ id: newId }, 201);
     }
     throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
@@ -197,11 +229,26 @@ export async function handleResources(request, env, actor, id) {
       f.status, ...(f.status === 'published' && !publishedAt ? [] : [publishedAt]), actor.userId, id
     ]).run();
     await audit(env, request, actor, 'resource.update', 'resource', id, { kind: f.kind, title: f.title, status: f.status });
+    scheduleSemanticSync(ctx, env, {
+      action: f.status === 'published' ? 'upsert' : 'delete',
+      type: 'study',
+      row: {
+        id,
+        slug: (body.exam_slug !== undefined ? cleanStr(body.exam_slug, 80) : (existing.exam_slug || '')) || id,
+        title_en: f.title,
+        title_or: body.title_or !== undefined ? cleanStr(body.title_or, 240) : (existing.title_or || ''),
+        summary_en: [f.exam, f.year ? String(f.year) : '', f.description].filter(Boolean).join(' · '),
+        summary_or: body.description_or !== undefined ? cleanStr(body.description_or, 2000) : (existing.description_or || '')
+      },
+      id,
+      actorId: actor && actor.userId
+    });
     return json({ id });
   }
   if (method === 'DELETE') {
     await env.DB.prepare("UPDATE resources SET deleted_at = datetime('now'), updated_by = ?, updated_at = datetime('now') WHERE id = ?").bind(actor.userId, id).run();
     await audit(env, request, actor, 'resource.delete', 'resource', id, { title: existing.title });
+    scheduleSemanticSync(ctx, env, { action: 'delete', type: 'study', id, actorId: actor && actor.userId });
     return json({ id, deleted: true });
   }
   throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
