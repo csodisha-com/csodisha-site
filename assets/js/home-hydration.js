@@ -78,19 +78,43 @@
     return a;
   }
 
-  /* 1. Top Homepage Broadcast Ticker */
+  /* 1. Top Homepage Broadcast Ticker (v341: per-broadcast ID dismissal + EN/OR live sync) */
+  function getBroadcastDismissId(data) {
+    if (!data) return '';
+    return String(data.id || data.updatedAt || data.headline || '').trim();
+  }
+
+  function isBroadcastDismissed(bId) {
+    if (!bId) return false;
+    try {
+      if (localStorage.getItem('cso_dismissed_broadcast_id') === bId) return true;
+    } catch (_) {}
+    try {
+      if (sessionStorage.getItem('cso_dismissed_announcement_' + bId)) return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function markBroadcastDismissed(bId) {
+    if (!bId) return;
+    try { localStorage.setItem('cso_dismissed_broadcast_id', bId); } catch (_) {}
+    try { sessionStorage.setItem('cso_dismissed_announcement_' + bId, 'true'); } catch (_) {}
+  }
+
   function renderLiveBanner(data) {
     var mount = document.getElementById('csoPublicAnnouncementMount');
     if (!mount) return;
     mount.textContent = '';
     if (!data || !data.active || !data.headline) return;
-    var key = 'cso_dismissed_announcement_' + (data.updatedAt || data.headline);
-    try { if (sessionStorage.getItem(key)) return; } catch (_) {}
+    var bId = getBroadcastDismissId(data);
+    if (isBroadcastDismissed(bId)) return;
 
     var sev = SEV_CLASS[data.severity] ? data.severity : 'info';
     var bar = make('div', SEV_CLASS[sev]);
     bar.id = 'csoLiveBanner';
     bar.setAttribute('role', 'status');
+    bar.setAttribute('aria-live', 'polite');
+    bar.setAttribute('data-broadcast-id', bId);
 
     var left = make('div', 'cso-live-banner__left');
     var badgeTxt = (data.badge_label && String(data.badge_label).trim()) || SEV_TAG[sev];
@@ -107,13 +131,13 @@
       left.appendChild(cta);
     }
 
-    var close = make('button', 'cso-live-banner__close', '\u00d7');
+    var close = make('button', 'cso-live-banner__close', '\u2715');
     close.type = 'button';
-    close.setAttribute('title', 'Dismiss');
-    close.setAttribute('aria-label', 'Dismiss announcement');
+    close.setAttribute('title', isOdiaActive() ? 'ବନ୍ଦ କରନ୍ତୁ' : 'Dismiss broadcast');
+    close.setAttribute('aria-label', isOdiaActive() ? 'ବ୍ରଡକାଷ୍ଟ ବନ୍ଦ କରନ୍ତୁ' : 'Dismiss broadcast');
     close.addEventListener('click', function () {
       bar.remove();
-      try { sessionStorage.setItem(key, 'true'); } catch (_) {}
+      markBroadcastDismissed(bId);
     });
 
     bar.appendChild(left);
@@ -639,7 +663,10 @@
     if (!feed) return;
     lastFeed = feed;
     window.__CSO_HOME_FEED__ = feed;
-    if (feed.broadcast) renderLiveBanner(feed.broadcast);
+    renderLiveBanner(feed.broadcast || { active: false });
+    if (Array.isArray(feed.nav_header) && feed.nav_header.length && window.CSOHeaderNav && typeof window.CSOHeaderNav.applyHeaderLinks === 'function') {
+      window.CSOHeaderNav.applyHeaderLinks(feed.nav_header);
+    }
     applySectionVisibility(feed.section_visibility || feed.homepage_sections);
     localizeFeedHeaders();
     renderLatestUpdatesPanel(feed);
@@ -732,29 +759,26 @@
   }
 
   function bindLiveEvents() {
+    var onLangRefresh = function () {
+      localizeHeroCopy();
+      localizeFeedHeaders();
+      localizeLuTabLabels();
+      if (lastFeed) renderAllFromFeed(lastFeed);
+    };
+
+    window.addEventListener('cso:langchange', onLangRefresh);
+
     // Re-render immediately when user switches language pills (English / ଓଡ଼ିଆ)
     document.addEventListener('click', function (ev) {
       var pill = ev.target && ev.target.closest ? ev.target.closest('[data-cso-lang], [data-lang]') : null;
-      if (pill) {
-        setTimeout(function () {
-          localizeHeroCopy();
-          localizeFeedHeaders();
-          localizeLuTabLabels();
-          if (lastFeed) renderAllFromFeed(lastFeed);
-        }, 60);
-      }
+      if (pill) setTimeout(onLangRefresh, 60);
     });
 
-    // Cross-tab instant sync when Admin Studio publishes an item
+    // Cross-tab instant sync when Admin Studio publishes an item or updates nav/broadcast
     window.addEventListener('storage', function (e) {
       if (e.key === 'cso_homepage_config') hydrateHomepageConfig();
-      if (e.key === 'cso_home_feed_bust') mountHomeFeed(true);
-      if (e.key === 'cso_lang_pref' || e.key === 'cso_lang') {
-        localizeHeroCopy();
-        localizeFeedHeaders();
-        localizeLuTabLabels();
-        if (lastFeed) renderAllFromFeed(lastFeed);
-      }
+      if (e.key === 'cso_home_feed_bust' || e.key === 'cso_nav_cache_bust') mountHomeFeed(true);
+      if (e.key === 'cso_lang_pref' || e.key === 'cso_lang') onLangRefresh();
     });
 
     if (typeof window.BroadcastChannel === 'function') {

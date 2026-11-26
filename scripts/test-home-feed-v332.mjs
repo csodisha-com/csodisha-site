@@ -61,6 +61,15 @@ function createMockDb() {
       const key = String(params[0] || '');
       return { first: siteSettings.get(key) || null };
     }
+    if (/FROM nav_menu_items/i.test(s)) {
+      return {
+        results: [
+          { id: 'nh_1', label_en: 'Jobs', label_or: 'ଚାକିରି', url: '/jobs/', icon_key: '💼', badge_text_en: 'LIVE', badge_text_or: 'ଲାଇଭ୍', open_new_tab: 0, highlight_style: 'default', sort_order: 1 },
+          { id: 'nh_2', label_en: 'Careers', label_or: 'କ୍ୟାରିୟର୍', url: '/careers/', icon_key: '🧭', badge_text_en: '', badge_text_or: '', open_new_tab: 0, highlight_style: 'default', sort_order: 2 },
+          { id: 'nh_3', label_en: 'Schemes', label_or: 'ଯୋଜନା', url: '/schemes/', icon_key: '🏛', badge_text_en: '', badge_text_or: '', open_new_tab: 0, highlight_style: 'default', sort_order: 3 }
+        ]
+      };
+    }
     if (/FROM job_articles/i.test(s)) {
       if (!jobPublished) return { results: [] };
       return {
@@ -229,8 +238,13 @@ await test('1. GET /api/public/home-feed returns all 7 live content buckets with
 
   const data = await res.json();
   assert.equal(data.ok, true);
-  assert.equal(data.version, 'v339');
+  assert.equal(data.version, 'v341');
   assert.equal(data.broadcast.active, true);
+  assert.ok(data.broadcast.id, 'broadcast must include stable dismissal id');
+  assert.ok(Array.isArray(data.nav_header) && data.nav_header.length === 3, 'home-feed must include published nav_header links');
+  assert.equal(data.nav_header[0].url, '/jobs/');
+  assert.equal(data.nav_header[0].label_or, 'ଚାକିରି');
+  assert.equal(data.nav_header[0].badge_text_en, 'LIVE');
   assert.deepEqual(data.section_visibility, {
     jobs: true,
     current_affairs: true,
@@ -313,9 +327,22 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v340');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v340';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v341');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v341';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
+
+  // v341: Sticky single-row desktop header, brand name, Candidate Hub, EN|ଓଡ଼ିଆ toggle, 4-theme switcher, broadcast ID dismissal, nav_header sync & <1100px slide-out drawer
+  assert.ok(indexHtml.includes('class="cso-sticky-header"') && indexHtml.includes('class="cso-brand-name">Common Sense Odisha<'), 'index.html must include sticky header and Common Sense Odisha brand name');
+  assert.ok(indexHtml.includes('id="cso-header-hub-link"') && indexHtml.includes('href="/student-dashboard/"'), 'index.html must include Candidate Hub button in header');
+  assert.ok(indexHtml.includes('id="cso-mobile-drawer-backdrop"'), 'index.html must include mobile slide-out drawer backdrop');
+  assert.ok(indexHtml.includes('aria-current="page"'), 'index.html static fallback nav must include aria-current="page"');
+  const appJs = read('assets/app.js');
+  assert.ok(appJs.includes('cso-lang-toggle') && appJs.includes('cso:langchange'), 'app.js must provide instant EN|ଓଡ଼ିଆ segmented toggle and cso:langchange event');
+  assert.ok(appJs.includes('window.CSOHeaderNav') && appJs.includes('applyHeaderLinks'), 'app.js must expose CSOHeaderNav.applyHeaderLinks for Admin nav_header sync');
+  assert.ok(appJs.includes('setMobileDrawerOpen') && appJs.includes("classList.toggle('cso-modal-open'"), 'app.js must lock body scroll on mobile slide-out drawer');
+  assert.ok(appJs.includes("ev.key==='ArrowDown'") && appJs.includes("ev.key==='Escape'"), 'app.js 4-theme menu must support keyboard arrow navigation and Escape');
+  assert.ok(hydJs.includes('cso_dismissed_broadcast_id') && hydJs.includes('applyHeaderLinks'), 'home-hydration.js must persist per-broadcast dismissal ID and hydrate nav_header');
+  assert.ok(qcJs.includes('cso_nav_cache_bust') && qcJs.includes("bustHomeCache('nav')"), 'quick-create-studio.js must bust nav & broadcast caches immediately on save');
 
   // v340: Trending & Popular Topics positioned strictly above compact 2-column feeds with zero duplicates
   const idxHeroLu = indexHtml.indexOf('id="cso-latest-updates-card"');

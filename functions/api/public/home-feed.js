@@ -59,9 +59,12 @@ async function fetchBroadcast(env) {
     if (!b || !b.active || !String(b.headline || '').trim()) {
       return { active: false };
     }
+    const headline = String(b.headline || '');
+    const updatedAt = b.updatedAt || null;
     return {
+      id: String(updatedAt || headline),
       active: true,
-      headline: String(b.headline || ''),
+      headline,
       headline_or: String(b.headline_or || ''),
       context: String(b.context || ''),
       context_or: String(b.context_or || ''),
@@ -69,10 +72,42 @@ async function fetchBroadcast(env) {
       severity: String(b.severity || 'info'),
       ctaText: String(b.ctaText || ''),
       ctaUrl: safePublicUrl(b.ctaUrl),
-      updatedAt: b.updatedAt || null
+      updatedAt
     };
   } catch {
     return { active: false };
+  }
+}
+
+async function fetchNavHeader(db) {
+  try {
+    const { results } = await db.prepare(
+      `SELECT id, label_en, label_or, url, icon_key, badge_text_en, badge_text_or,
+              open_new_tab, highlight_style, sort_order
+       FROM nav_menu_items
+       WHERE menu_location = 'header' AND status = 'published'
+       ORDER BY sort_order ASC, updated_at DESC`
+    ).all();
+    return (results || [])
+      .map((r) => {
+        const url = safePublicUrl(r.url);
+        if (!url) return null;
+        return {
+          id: String(r.id || ''),
+          label_en: String(r.label_en || ''),
+          label_or: String(r.label_or || ''),
+          url,
+          icon_key: String(r.icon_key || ''),
+          badge_text_en: String(r.badge_text_en || ''),
+          badge_text_or: String(r.badge_text_or || ''),
+          open_new_tab: Number(r.open_new_tab || 0) === 1,
+          highlight_style: String(r.highlight_style || 'default'),
+          sort_order: Number(r.sort_order || 10)
+        };
+      })
+      .filter((item) => item && item.label_en);
+  } catch {
+    return [];
   }
 }
 
@@ -410,9 +445,10 @@ export async function buildPublicHomeFeed(env) {
   if (!db) {
     return {
       ok: true,
-      version: 'v339',
+      version: 'v341',
       generated_at: new Date().toISOString(),
       broadcast: { active: false },
+      nav_header: [],
       section_visibility: defaultHomeSections(),
       latest_updates: [],
       jobs: [],
@@ -424,8 +460,9 @@ export async function buildPublicHomeFeed(env) {
     };
   }
 
-  const [broadcast, homeSections, latest_updates, jobs, current_affairs, mock_tests, syllabus_pyq, careers, schemes] = await Promise.all([
+  const [broadcast, nav_header, homeSections, latest_updates, jobs, current_affairs, mock_tests, syllabus_pyq, careers, schemes] = await Promise.all([
     fetchBroadcast(env),
+    fetchNavHeader(db),
     readHomeSections(env).catch(() => ({ sections: defaultHomeSections() })),
     buildUnifiedLatestUpdates(db, { limit: 18 }),
     fetchLatestJobs(db),
@@ -438,9 +475,10 @@ export async function buildPublicHomeFeed(env) {
 
   return {
     ok: true,
-    version: 'v339',
+    version: 'v341',
     generated_at: new Date().toISOString(),
     broadcast,
+    nav_header,
     section_visibility: (homeSections && homeSections.sections) || defaultHomeSections(),
     latest_updates,
     jobs,

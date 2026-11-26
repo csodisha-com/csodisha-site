@@ -11471,6 +11471,339 @@ nav#cso-hub-top-tabs {
   }
 }
 
+/* ===== v341 Sticky Single-Row Header, Live Broadcast Ticker, EN|ଓଡ଼ିଆ Toggle, 4-Theme Switcher & <1100px Slide-Out Drawer ===== */
+.cso-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 950;
+  width: 100%;
+  background: var(--cso-surface);
+  border-bottom: 1px solid var(--cso-border);
+}
+
+#header-top .cso-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  flex-shrink: 0;
+  min-height: 44px;
+}
+
+#header-top .cso-brand-name {
+  font-size: 0.96rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--cso-nav-top-ink, var(--cso-ink));
+  white-space: nowrap;
+}
+
+.cso-lang-toggle {
+  display: inline-flex !important;
+  align-items: center;
+  padding: 2px !important;
+  gap: 2px !important;
+  border-radius: 9px !important;
+}
+
+.cso-lang-btn {
+  border: 0;
+  background: transparent;
+  color: var(--cso-nav-top-ink, var(--cso-ink));
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 5px 9px;
+  min-height: 30px;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.cso-lang-btn.is-active,
+.cso-lang-btn[aria-pressed="true"] {
+  background: var(--cso-accent) !important;
+  color: var(--cso-accent-ink) !important;
+}
+
+.pp button.is-active,
+.pp button[aria-checked="true"] {
+  background: var(--cso-surface-alt) !important;
+  color: var(--cso-link) !important;
+  font-weight: 800 !important;
+}
+
+#header-top .cso-header-hub-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+#header-top .cso-header-hub-btn[hidden] {
+  display: none !important;
+}
+
+.cso-nav-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  line-height: 1.3;
+}
+
+.cso-drawer-head,
+.cso-drawer-foot,
+.cso-mobile-drawer-backdrop {
+  display: none;
+}
+
+/* Polished Top Broadcast Ticker */
+.cso-live-banner {
+  min-height: 44px;
+  padding: 7px 16px;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.cso-live-banner__cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.cso-live-banner__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.cso-live-banner__close:hover,
+.cso-live-banner__close:focus-visible {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Desktop (>= 1100px): Crisp single-row header & nav bar without wrapping or overflow */
+@media (min-width: 1100px) {
+  #header-top.site-header__top {
+    flex-wrap: nowrap !important;
+    white-space: nowrap;
+    gap: 10px;
+    min-height: 54px;
+    padding: 6px 18px;
+  }
+
+  #header-top .acct {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  #cso-main-navbar .cso-nav-bar-container {
+    display: none !important;
+  }
+
+  #cso-main-navbar #cso-nav-items {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+  }
+
+  #cso-main-navbar #cso-nav-items a[aria-current="page"] {
+    background: var(--cso-accent);
+    color: var(--cso-accent-ink);
+    border-radius: 8px;
+    font-weight: 800;
+  }
+}
+
+/* Mobile & Tablet (< 1100px): Compact top bar + opaque slide-out navigation drawer */
+@media (max-width: 1099px) {
+  #header-top .cso-header-hub-btn,
+  #header-top .cso-ctl-a11y,
+  #header-top .cso-ctl-zoom {
+    display: none !important;
+  }
+
+  #header-top .cso-brand-name {
+    font-size: 0.9rem;
+  }
+
+  #cso-main-navbar .cso-nav-bar-container {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 4px 10px;
+    box-sizing: border-box;
+  }
+
+  #cso-main-navbar .cso-nav-mobile,
+  #cso-main-navbar #cso-menu-toggle {
+    display: inline-flex !important;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .cso-mob-quick-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 0 10px !important;
+    border-radius: 9px !important;
+    font-size: 0.8rem !important;
+    font-weight: 800 !important;
+    background: var(--cso-surface) !important;
+    color: var(--cso-ink) !important;
+    border: 1px solid var(--cso-border) !important;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .cso-mob-quick-btn:hover,
+  .cso-mob-quick-btn:focus-visible {
+    background: var(--cso-surface-alt) !important;
+    border-color: var(--cso-accent) !important;
+  }
+
+  .cso-mobile-drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1190;
+    background: rgba(15, 23, 42, 0.56);
+  }
+
+  .cso-mobile-drawer-backdrop[hidden] {
+    display: none !important;
+  }
+
+  #cso-main-navbar #cso-nav-items:not(.cso-mobile-open) {
+    display: none !important;
+  }
+
+  #cso-main-navbar #cso-nav-items.cso-mobile-open {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: min(330px, 86vw) !important;
+    max-width: 86vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0 14px 14px 0 !important;
+    z-index: 1200 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    overflow-y: auto !important;
+    background: var(--cso-surface-elevated) !important;
+    color: var(--cso-ink) !important;
+    border: 1px solid var(--cso-border) !important;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 12px calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+    box-sizing: border-box !important;
+  }
+
+  #cso-nav-items.cso-mobile-open .cso-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 10px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--cso-border);
+  }
+
+  .cso-drawer-brand {
+    font-size: 0.94rem;
+    font-weight: 800;
+    color: var(--cso-ink);
+  }
+
+  .cso-drawer-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 9px;
+    border: 1px solid var(--cso-border);
+    background: var(--cso-surface-alt);
+    color: var(--cso-ink);
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .cso-drawer-close:hover,
+  .cso-drawer-close:focus-visible {
+    background: var(--cso-accent);
+    color: var(--cso-accent-ink);
+    border-color: var(--cso-accent);
+  }
+
+  #cso-nav-items.cso-mobile-open .cso-drawer-foot {
+    display: block;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--cso-border);
+  }
+
+  .cso-drawer-hub-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+
+  .cso-live-banner__close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  #header-top .cso-brand-name {
+    font-size: 0.82rem;
+    max-width: 145px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cso-mobile-acc-cluster .cso-ctl-a11y-mobile,
+  .cso-mobile-acc-cluster .cso-ctl-zoom-mobile {
+    display: none !important;
+  }
+}
+
 /* ===== v335 Homepage Hero Card & Ask CSOdisha Search Bar Polish (4-Theme WCAG AAA) ===== */
 #cso-hero.hero {
   min-height: 0;

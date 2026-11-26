@@ -69,23 +69,30 @@
       .slice(0, 80);
   }
 
-  function bustHomeCache() {
+  function bustHomeCache(scope) {
     var ts = String(Date.now());
+    var sc = String(scope || 'all');
     try { localStorage.setItem('cso_home_feed_bust', ts); } catch (_) {}
+    if (sc === 'nav' || sc === 'all') {
+      try { localStorage.setItem('cso_nav_cache_bust', ts); } catch (_) {}
+    }
     try {
       if (typeof window.BroadcastChannel === 'function') {
         var ch = new BroadcastChannel('cso-publish-sync');
-        ch.postMessage({ type: 'published', ts: ts });
+        ch.postMessage({ type: 'published', scope: sc, ts: ts });
         ch.close();
       }
     } catch (_) {}
     try {
       if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({ type: 'CSO_BUST_HOME_CACHE', ts: ts });
+        navigator.serviceWorker.controller.postMessage({ type: 'CSO_BUST_HOME_CACHE', scope: sc, ts: ts });
       }
     } catch (_) {}
     try {
       fetch('/api/public/home-feed?refresh=1&_cb=' + encodeURIComponent(ts), { cache: 'no-store', credentials: 'same-origin' }).catch(function () {});
+      if (sc === 'nav' || sc === 'all') {
+        fetch('/api/nav/config?refresh=1&_cb=' + encodeURIComponent(ts), { cache: 'no-store', credentials: 'same-origin' }).catch(function () {});
+      }
     } catch (_) {}
   }
 
@@ -2298,6 +2305,7 @@
       statusEl.textContent = activeFlag ? 'Publishing Homepage Broadcast live\u2026' : 'Saving broadcast (inactive draft)\u2026';
       apiFetch('/api/admin/banner', { method: 'PUT', body: payload })
         .then(function () {
+          bustHomeCache('broadcast');
           statusEl.textContent = activeFlag ? '\u2713 Broadcast is LIVE on csodisha.com!' : '\u2713 Saved as inactive draft (hidden on homepage).';
           toast(activeFlag ? 'Homepage Broadcast is LIVE!' : 'Homepage Broadcast saved (inactive).', 'ok');
           updatePreview();
@@ -2470,7 +2478,7 @@
       ordered[idx] = ordered[tgt];
       ordered[tgt] = tmp;
       apiFetch(currentTabCfg().endpoint, { method: 'POST', body: { action: 'reorder', ordered_ids: ordered } })
-        .then(function () { toast('Navigation order saved!', 'ok'); loadTab(); })
+        .then(function () { bustHomeCache('nav'); toast('Navigation order saved!', 'ok'); loadTab(); })
         .catch(function (e) { toast(e.message, 'crimson'); });
     }
 
@@ -2496,7 +2504,7 @@
         bDel.addEventListener('click', function () {
           if (!window.confirm('Delete navigation link "' + it.label_en + '"?')) return;
           apiFetch(currentTabCfg().endpoint + '/' + encodeURIComponent(it.id), { method: 'DELETE' })
-            .then(function () { toast('Navigation link deleted!', 'ok'); loadTab(); })
+            .then(function () { bustHomeCache('nav'); toast('Navigation link deleted!', 'ok'); loadTab(); })
             .catch(function (e) { toast(e.message, 'crimson'); });
         });
         acts.append(bUp, bDn, bEd, bDel);
@@ -2563,6 +2571,7 @@
       statusEl.textContent = 'Saving navigation link to D1\u2026';
       apiFetch(ep, { method: editingItem ? 'PUT' : 'POST', body: payload })
         .then(function () {
+          bustHomeCache('nav');
           statusEl.textContent = '\u2713 Saved & edge caches invalidated!';
           toast('Navigation link saved live!', 'ok');
           resetForm();
