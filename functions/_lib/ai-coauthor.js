@@ -1,14 +1,14 @@
 /**
- * 100% Free-Tier Admin Studio AI Co-Author & Editorial Image Service (v359)
- * - Verified Google AI Studio REST API Gemini Cascade (`gemini-2.5-flash` -> `gemini-2.5-flash-lite` ->
- *   `gemini-2.0-flash` -> `gemini-2.0-flash-lite`) with `responseMimeType: "application/json"` on JSON
- *   modes and `text/plain` on `translate_markdown`, cascading automatically on HTTP errors OR invalid JSON
- *   to Cloudflare Workers AI (`@cf/google/gemma-4-26b-a4b-it` -> `@cf/meta/llama-3.1-8b-instruct-fp8-fast` ->
- *   `@cf/meta/llama-3.3-70b-instruct-fp8-fast`) with `response_format: { type: "json_object" }`.
+ * 100% Free-Tier Admin Studio Multi-Provider AI Co-Author & Editorial Image Service (v361)
+ * - Universal Multi-Provider Router supporting D1-managed `ai_custom_providers` (Groq, OpenRouter,
+ *   Cerebras, Mistral, Backup Gemini, Custom OpenAI-Compatible endpoints), Worker environment secrets
+ *   (`GEMINI_API_KEY`, `GEMINI_API_KEY_2`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `CEREBRAS_API_KEY`,
+ *   `MISTRAL_API_KEY`), verified Google AI Studio Gemini Flash/Lite cascade, Cloudflare Workers AI
+ *   low-neuron fallback, and zero-quota `local:deterministic` extraction.
+ * - Explicit `preferred_model` routing (`auto`, `custom:<id>`, `gemini:<model>`, `workers:<model>`,
+ *   `local:deterministic`) returning `provider_model` on every response.
  * - Resilient JSON extractor/repairer (`parseOrRepairAiJson`) + quota-bypassing deterministic English
- *   metadata fallback (`buildDeterministicGuideMetadata`) when `body_en` (>= 200 chars) is pasted,
- *   always returning `ok: true, provider: 'deterministic_fallback', quota_exhausted_odia: true` even when
- *   daily D1 neuron caps or upstream Gemini/Workers AI endpoints return 429.
+ *   metadata fallback (`buildDeterministicGuideMetadata`) when `body_en` (>= 200 chars) is pasted.
  * - Gemini-First Native Image Generation (`imagen-3.0-generate-002` -> `gemini-2.5-flash-image`),
  *   cascading automatically to Cloudflare Workers AI `@cf/black-forest-labs/flux-1-schnell`
  *   (and clean editorial SVG banner fallback if offline/local), uploaded directly to `cso-media` R2.
@@ -81,6 +81,99 @@ export const WORKERS_AI_8B_MAX_TOKENS = 4096;
 const VALID_GUIDE_CATEGORIES = new Set(['how-to', 'exam-strategy', 'citizen-scheme', 'odisha-gk']);
 
 let _schemaReadyDb = null;
+let _providersSchemaDb = null;
+
+export async function ensureAiProvidersSchema(db) {
+  if (!db) return;
+  if (_providersSchemaDb === db) return;
+  try {
+    await db.batch([
+      db.prepare(
+        `CREATE TABLE IF NOT EXISTS ai_custom_providers (
+          id TEXT PRIMARY KEY,
+          label TEXT NOT NULL,
+          provider_type TEXT NOT NULL,
+          base_url TEXT NOT NULL,
+          model_id TEXT NOT NULL,
+          api_key TEXT NOT NULL,
+          enabled INTEGER NOT NULL DEFAULT 1,
+          priority INTEGER NOT NULL DEFAULT 10,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        )`
+      ),
+      db.prepare(
+        `CREATE INDEX IF NOT EXISTS idx_ai_custom_providers_priority
+         ON ai_custom_providers(enabled, priority ASC, created_at ASC)`
+      )
+    ]);
+    _providersSchemaDb = db;
+  } catch (_e) {}
+}
+
+export function maskApiKey(rawKey) {
+  const s = String(rawKey || '').trim();
+  if (!s) return '';
+  if (s.length <= 8) {
+    return s.length <= 4 ? '****' : `${s.slice(0, 2)}...${s.slice(-2)}`;
+  }
+  const sepMatch = s.match(/^([A-Za-z0-9]{1,5}[-_])/);
+  const prefix = sepMatch ? sepMatch[1] : s.slice(0, 4);
+  return `${prefix}...${s.slice(-4)}`;
+}
+
+function isBlockedPrivateHost(hostname) {
+  const host = String(hostname || '').trim().toLowerCase().replace(/^\[|\]$/g, '');
+  if (!host) return true;
+  if (
+    host === 'localhost' ||
+    host.endsWith('.localhost') ||
+    host.endsWith('.local') ||
+    host.endsWith('.internal') ||
+    host.endsWith('.home.arpa') ||
+    host === '0.0.0.0' ||
+    host === '::1' ||
+    host.includes(':')
+  ) {
+    return true;
+  }
+  if (!host.includes('.')) return true;
+  if (/^(?:0x[0-9a-f]+|\d+)$/i.test(host)) return true;
+  const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4) {
+    const a = Number(ipv4[1]);
+    const b = Number(ipv4[2]);
+    if (a > 255 || b > 255 || Number(ipv4[3]) > 255 || Number(ipv4[4]) > 255) return true;
+    if (a === 0 || a === 10 || a === 127 || a >= 224) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true;
+  }
+  return false;
+}
+
+export function validateProviderBaseUrl(rawUrl) {
+  const trimmed = String(rawUrl || '').trim();
+  if (!trimmed) return { ok: false, error: 'Base URL is required.' };
+  let parsed;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return { ok: false, error: 'Invalid Base URL format. Must be a valid https:// URL.' };
+  }
+  if (parsed.protocol !== 'https:') {
+    return { ok: false, error: 'Base URL must use https:// protocol.' };
+  }
+  if (parsed.username || parsed.password) {
+    return { ok: false, error: 'Base URL must not embed credentials.' };
+  }
+  if (isBlockedPrivateHost(parsed.hostname)) {
+    return { ok: false, error: 'Private, loopback, or non-public hostnames are blocked.' };
+  }
+  const cleanPath = parsed.pathname.replace(/\/+$/, '');
+  return { ok: true, url: `${parsed.origin}${cleanPath}` };
+}
 
 export async function ensureAiCoauthorSchema(env) {
   if (!env || !env.DB) return;
@@ -978,81 +1071,265 @@ async function logAiGeneration(env, { actorId, targetModule, provider, model, es
   } catch (_e) {}
 }
 
-function getGeminiModelPoolForMode(mode) {
-  return PRO_FIRST_MODES.has(mode) ? GEMINI_PRO_FIRST_MODELS : GEMINI_FLASH_MODELS;
+function getGeminiModelPoolForMode(mode, preferredModelId = '') {
+  const base = PRO_FIRST_MODES.has(mode) ? GEMINI_PRO_FIRST_MODELS : GEMINI_FLASH_MODELS;
+  const cleanPref = String(preferredModelId || '').trim();
+  if (!cleanPref) return base;
+  return [cleanPref, ...base.filter((m) => m !== cleanPref)];
 }
 
-function getWorkersAiPoolForMode(mode) {
-  return PRO_FIRST_MODES.has(mode) ? WORKERS_AI_PRO_MODELS : WORKERS_AI_DEFAULT_MODELS;
+function getWorkersAiPoolForMode(mode, preferredModelId = '') {
+  const base = PRO_FIRST_MODES.has(mode) ? WORKERS_AI_PRO_MODELS : WORKERS_AI_DEFAULT_MODELS;
+  const cleanPref = String(preferredModelId || '').trim();
+  if (!cleanPref) return base;
+  return [cleanPref, ...base.filter((m) => m !== cleanPref)];
 }
 
-async function callGeminiFreeTier(apiKey, prompt, mode, opts = {}) {
-  let lastErr = null;
-  const expectsJson = JSON_AI_MODES.has(mode);
-  const schema = expectsJson ? getResponseSchemaForMode(mode, opts) : null;
-  const pool = getGeminiModelPoolForMode(mode);
-  const maxOut = PRO_FIRST_MODES.has(mode) ? GEMINI_LONG_MAX_OUTPUT_TOKENS : 2048;
+function getSystemPromptForMode(mode) {
+  return JSON_AI_MODES.has(mode)
+    ? 'You output strictly valid JSON objects without markdown fences or conversational text.'
+    : 'You output only the translated Odia Markdown preserving 100% of Markdown syntax, headings, and pipe tables.';
+}
 
-  for (const model of pool) {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-    const generationConfig = {
-      temperature: (mode === 'translate_odia' || mode === 'translate_fields' || mode === 'translate_markdown') ? 0.15 : 0.25,
-      maxOutputTokens: maxOut,
-      responseMimeType: expectsJson ? 'application/json' : 'text/plain'
+function formatProviderModelTag(providerLabel, model) {
+  const lbl = String(providerLabel || 'AI').trim();
+  const mdl = String(model || '').trim();
+  return mdl ? `${lbl} · ${mdl}` : lbl;
+}
+
+export async function callOpenAiCompatibleProvider(provider, systemPrompt, userPrompt, { jsonMode = false, maxTokens = 4096 } = {}) {
+  const baseCheck = validateProviderBaseUrl(provider && provider.base_url);
+  if (!baseCheck.ok) {
+    const err = new Error(baseCheck.error);
+    err.status = 400;
+    throw err;
+  }
+  const apiKey = String((provider && provider.api_key) || '').trim();
+  const modelId = String((provider && provider.model_id) || '').trim();
+  const label = String((provider && provider.label) || 'Custom AI').trim();
+  if (!apiKey || !modelId) {
+    const err = new Error('Custom AI provider is missing api_key or model_id.');
+    err.status = 400;
+    throw err;
+  }
+
+  const endpoint = baseCheck.url.endsWith('/chat/completions')
+    ? baseCheck.url
+    : `${baseCheck.url}/chat/completions`;
+
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${apiKey}`
+  };
+  if (/openrouter\.ai/i.test(baseCheck.url)) {
+    headers['HTTP-Referer'] = 'https://csodisha.com';
+    headers['X-Title'] = 'Common Sense Odisha';
+  }
+
+  const buildBody = (withJsonFmt) => {
+    const payload = {
+      model: modelId,
+      messages: [
+        { role: 'system', content: String(systemPrompt || 'You are a helpful editorial assistant.') },
+        { role: 'user', content: String(userPrompt || '') }
+      ],
+      temperature: 0.2,
+      max_tokens: Math.max(16, Math.min(16384, Number(maxTokens) || 4096))
     };
-    if (expectsJson && schema) generationConfig.responseSchema = schema;
-    try {
-      const res = await fetch(endpoint, {
+    if (withJsonFmt) {
+      payload.response_format = { type: 'json_object' };
+    }
+    return JSON.stringify(payload);
+  };
+
+  let res = await fetch(endpoint, {
+    method: 'POST',
+    headers,
+    body: buildBody(Boolean(jsonMode))
+  });
+
+  if (!res.ok && jsonMode && (res.status === 400 || res.status === 422)) {
+    const errBody = await res.text().catch(() => '');
+    if (/response_format|json_object|unsupported|not.?supported|invalid/i.test(errBody) || res.status === 400) {
+      res = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig
-        })
+        headers,
+        body: buildBody(false)
       });
-      if (res.ok) {
-        const data = await res.json();
-        const parts = data &&
-          data.candidates &&
-          data.candidates[0] &&
-          data.candidates[0].content &&
-          data.candidates[0].content.parts;
-        const text = Array.isArray(parts)
-          ? parts.map((p) => (p && typeof p.text === 'string' ? p.text : '')).join('').trim()
-          : '';
-        if (text) {
-          if (expectsJson) {
-            try {
-              const parsed = parseOrRepairAiJson(text);
-              return {
-                text,
-                parsed,
-                model,
-                provider: 'gemini_free',
-                provider_label: model.includes('pro') ? 'Gemini Pro' : 'Gemini Flash'
-              };
-            } catch (_parseErr) {
-              const pErr = new Error(`Gemini ${model} returned unparseable JSON.`);
-              pErr.code = 'JSON_PARSE_MISS';
-              lastErr = pErr;
-              continue;
-            }
-          }
-          return {
-            text,
-            model,
-            provider: 'gemini_free',
-            provider_label: model.includes('pro') ? 'Gemini Pro' : 'Gemini Flash'
-          };
-        }
-        lastErr = new Error(`Gemini ${model} returned empty content.`);
-        continue;
-      }
-      const err = new Error(`Gemini ${model} returned HTTP ${res.status}`);
+    } else {
+      const err = new Error(`${label} (${modelId}) returned HTTP ${res.status}`);
       err.status = res.status;
-      lastErr = err;
-    } catch (netErr) {
-      lastErr = netErr;
+      throw err;
+    }
+  }
+
+  if (!res.ok) {
+    const errTxt = await res.text().catch(() => '');
+    const err = new Error(`${label} (${modelId}) returned HTTP ${res.status}${errTxt ? `: ${errTxt.slice(0, 140)}` : ''}`);
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = await res.json();
+  const choice = data && Array.isArray(data.choices) ? data.choices[0] : null;
+  const rawContent = choice && choice.message ? choice.message.content : (choice && choice.text);
+  let text = '';
+  if (typeof rawContent === 'string') {
+    text = rawContent.trim();
+  } else if (Array.isArray(rawContent)) {
+    text = rawContent.map((part) => (part && typeof part.text === 'string' ? part.text : '')).join('').trim();
+  }
+  if (!text) {
+    throw new Error(`${label} (${modelId}) returned empty content.`);
+  }
+
+  const providerCode = String((provider && provider.provider_code) || (provider && provider.id ? `custom:${provider.id}` : 'custom_openai'));
+  if (jsonMode) {
+    const parsed = parseOrRepairAiJson(text);
+    return {
+      text,
+      parsed,
+      model: modelId,
+      provider: providerCode,
+      provider_label: label,
+      provider_model: formatProviderModelTag(label, modelId)
+    };
+  }
+  return {
+    text,
+    model: modelId,
+    provider: providerCode,
+    provider_label: label,
+    provider_model: formatProviderModelTag(label, modelId)
+  };
+}
+
+async function callGeminiSingleEndpoint(apiKey, model, prompt, mode, opts = {}, baseUrl = 'https://generativelanguage.googleapis.com/v1beta', customMeta = null) {
+  const expectsJson = opts.forcePlainText ? false : JSON_AI_MODES.has(mode);
+  const schema = expectsJson && !opts.skipSchema ? getResponseSchemaForMode(mode, opts) : null;
+  const maxOut = opts.maxOutputTokens || (PRO_FIRST_MODES.has(mode) ? GEMINI_LONG_MAX_OUTPUT_TOKENS : 2048);
+  const cleanBase = String(baseUrl || 'https://generativelanguage.googleapis.com/v1beta').replace(/\/+$/, '');
+  const endpoint = `${cleanBase}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const generationConfig = {
+    temperature: (mode === 'translate_odia' || mode === 'translate_fields' || mode === 'translate_markdown') ? 0.15 : 0.25,
+    maxOutputTokens: maxOut,
+    responseMimeType: expectsJson ? 'application/json' : 'text/plain'
+  };
+  if (expectsJson && schema) generationConfig.responseSchema = schema;
+
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig
+    })
+  });
+
+  if (!res.ok) {
+    const err = new Error(`Gemini ${model} returned HTTP ${res.status}`);
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = await res.json();
+  const parts = data &&
+    data.candidates &&
+    data.candidates[0] &&
+    data.candidates[0].content &&
+    data.candidates[0].content.parts;
+  const text = Array.isArray(parts)
+    ? parts.map((p) => (p && typeof p.text === 'string' ? p.text : '')).join('').trim()
+    : '';
+  if (!text) {
+    throw new Error(`Gemini ${model} returned empty content.`);
+  }
+
+  const providerCode = (customMeta && customMeta.provider) || 'gemini_free';
+  const providerLabel = (customMeta && customMeta.provider_label) || (model.includes('pro') ? 'Gemini Pro' : 'Gemini Flash');
+  if (expectsJson) {
+    try {
+      const parsed = parseOrRepairAiJson(text);
+      return {
+        text,
+        parsed,
+        model,
+        provider: providerCode,
+        provider_label: providerLabel,
+        provider_model: formatProviderModelTag(providerLabel, model)
+      };
+    } catch (_parseErr) {
+      const pErr = new Error(`Gemini ${model} returned unparseable JSON.`);
+      pErr.code = 'JSON_PARSE_MISS';
+      throw pErr;
+    }
+  }
+  return {
+    text,
+    model,
+    provider: providerCode,
+    provider_label: providerLabel,
+    provider_model: formatProviderModelTag(providerLabel, model)
+  };
+}
+
+export async function testAiProviderConnection(provider) {
+  const started = Date.now();
+  const modelId = String((provider && provider.model_id) || '').trim();
+  const providerType = String((provider && provider.provider_type) || 'openai_compatible').trim().toLowerCase();
+  try {
+    let out;
+    if (providerType === 'gemini') {
+      const baseCheck = validateProviderBaseUrl(provider.base_url || 'https://generativelanguage.googleapis.com/v1beta');
+      if (!baseCheck.ok) throw new Error(baseCheck.error);
+      out = await callGeminiSingleEndpoint(
+        provider.api_key,
+        modelId,
+        'Reply with OK',
+        'translate_markdown',
+        { forcePlainText: true, maxOutputTokens: 16, skipSchema: true },
+        baseCheck.url,
+        { provider: provider.id ? `custom:${provider.id}` : 'custom_gemini', provider_label: provider.label || 'Backup Gemini' }
+      );
+    } else {
+      out = await callOpenAiCompatibleProvider(
+        provider,
+        'Respond concisely.',
+        'Reply with OK',
+        { jsonMode: false, maxTokens: 16 }
+      );
+    }
+    return {
+      ok: true,
+      latency_ms: Math.max(1, Date.now() - started),
+      model_id: modelId,
+      message: `Connected (${String(out.text || 'OK').slice(0, 60)})`
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      latency_ms: Math.max(1, Date.now() - started),
+      model_id: modelId,
+      message: (err && err.message) || 'Connection test failed.'
+    };
+  }
+}
+
+async function callGeminiFreeTier(apiKeysInput, prompt, mode, opts = {}) {
+  const keys = (Array.isArray(apiKeysInput) ? apiKeysInput : [apiKeysInput])
+    .map((k) => String(k || '').trim())
+    .filter(Boolean);
+  if (!keys.length) throw new Error('Gemini API key is not configured.');
+
+  let lastErr = null;
+  const pool = getGeminiModelPoolForMode(mode, opts.preferredGeminiModel || '');
+  for (const apiKey of keys) {
+    for (const model of pool) {
+      try {
+        return await callGeminiSingleEndpoint(apiKey, model, prompt, mode, opts);
+      } catch (err) {
+        lastErr = err;
+      }
     }
   }
   throw lastErr || new Error('Gemini API failed');
@@ -1095,7 +1372,7 @@ function isQuotaError(err) {
   return /quota|rate.?limit|429|resource.?exhausted|neurons|daily limit/i.test(String(err.message || ''));
 }
 
-async function callWorkersAi(aiBinding, prompt, mode) {
+async function callWorkersAi(aiBinding, prompt, mode, opts = {}) {
   if (!aiBinding || typeof aiBinding.run !== 'function') {
     throw new Error('Cloudflare Workers AI binding (env.AI) is not configured.');
   }
@@ -1103,14 +1380,12 @@ async function callWorkersAi(aiBinding, prompt, mode) {
   const messages = [
     {
       role: 'system',
-      content: expectsJson
-        ? 'You output strictly valid JSON objects without markdown fences or conversational text.'
-        : 'You output only the translated Odia Markdown preserving 100% of Markdown syntax, headings, and pipe tables.'
+      content: getSystemPromptForMode(mode)
     },
     { role: 'user', content: prompt }
   ];
   const temp = (mode === 'translate_odia' || mode === 'translate_fields' || mode === 'translate_markdown') ? 0.15 : 0.25;
-  const pool = getWorkersAiPoolForMode(mode);
+  const pool = getWorkersAiPoolForMode(mode, opts.preferredWorkersModel || '');
   let lastErr = null;
   for (const model of pool) {
     const maxTok = PRO_FIRST_MODES.has(mode)
@@ -1147,7 +1422,8 @@ async function callWorkersAi(aiBinding, prompt, mode) {
               parsed,
               model,
               provider: 'cloudflare_workers_ai',
-              provider_label: 'Workers AI'
+              provider_label: 'Workers AI',
+              provider_model: formatProviderModelTag('Workers AI', model)
             };
           } catch (_parseErr) {
             if (mode === 'translate_odia') {
@@ -1164,7 +1440,8 @@ async function callWorkersAi(aiBinding, prompt, mode) {
                   parsed: { translated_or: salvaged },
                   model,
                   provider: 'cloudflare_workers_ai',
-                  provider_label: 'Workers AI'
+                  provider_label: 'Workers AI',
+                  provider_model: formatProviderModelTag('Workers AI', model)
                 };
               }
             }
@@ -1178,7 +1455,8 @@ async function callWorkersAi(aiBinding, prompt, mode) {
           text,
           model,
           provider: 'cloudflare_workers_ai',
-          provider_label: 'Workers AI'
+          provider_label: 'Workers AI',
+          provider_model: formatProviderModelTag('Workers AI', model)
         };
       }
       lastErr = new Error(`Workers AI ${model} returned an empty response.`);
@@ -1209,42 +1487,183 @@ function normalizeBatchFields(fieldsInput, rawInput) {
   return clean;
 }
 
-async function runModelCascade(env, prompt, mode, opts = {}) {
-  const geminiKey = env && env.GEMINI_API_KEY ? String(env.GEMINI_API_KEY).trim() : '';
-  if (geminiKey) {
-    try {
-      return await callGeminiFreeTier(geminiKey, prompt, mode, opts);
-    } catch (geminiErr) {
-      if (env && env.AI) {
-        try {
-          return await callWorkersAi(env.AI, prompt, mode);
-        } catch (workersErr) {
-          if (isQuotaError(geminiErr) || isQuotaError(workersErr)) {
-            const qErr = new Error(DAILY_QUOTA_EXHAUSTED_MESSAGE);
-            qErr.status = 429;
-            throw qErr;
-          }
-          throw workersErr;
-        }
-      }
-      if (isQuotaError(geminiErr)) {
-        const qErr = new Error(DAILY_QUOTA_EXHAUSTED_MESSAGE);
-        qErr.status = 429;
-        throw qErr;
-      }
-      throw geminiErr;
-    }
-  }
+async function loadCustomProvidersFromDb(env, { includeDisabledId = '' } = {}) {
+  if (!env || !env.DB) return [];
   try {
-    return await callWorkersAi(env && env.AI, prompt, mode);
-  } catch (workersErr) {
-    if (isQuotaError(workersErr)) {
-      const qErr = new Error(DAILY_QUOTA_EXHAUSTED_MESSAGE);
-      qErr.status = 429;
-      throw qErr;
-    }
-    throw workersErr;
+    await ensureAiProvidersSchema(env.DB);
+    const stmt = env.DB.prepare(
+      `SELECT id, label, provider_type, base_url, model_id, api_key, enabled, priority
+       FROM ai_custom_providers
+       WHERE enabled = 1 OR id = ?
+       ORDER BY priority ASC, created_at ASC`
+    ).bind(String(includeDisabledId || ''));
+    if (typeof stmt.all !== 'function') return [];
+    const { results } = await stmt.all();
+    return Array.isArray(results) ? results.filter((r) => r && r.api_key && r.base_url && r.model_id) : [];
+  } catch (_e) {
+    return [];
   }
+}
+
+function getEnvSecretProviders(env) {
+  if (!env || typeof env !== 'object') return [];
+  const list = [];
+  if (env.GROQ_API_KEY && String(env.GROQ_API_KEY).trim()) {
+    list.push({
+      id: 'env_groq',
+      provider_code: 'env:groq',
+      label: 'Groq Free (Env)',
+      provider_type: 'openai_compatible',
+      base_url: 'https://api.groq.com/openai/v1',
+      model_id: 'llama-3.3-70b-versatile',
+      api_key: String(env.GROQ_API_KEY).trim()
+    });
+  }
+  if (env.OPENROUTER_API_KEY && String(env.OPENROUTER_API_KEY).trim()) {
+    list.push({
+      id: 'env_openrouter',
+      provider_code: 'env:openrouter',
+      label: 'OpenRouter Free (Env)',
+      provider_type: 'openai_compatible',
+      base_url: 'https://openrouter.ai/api/v1',
+      model_id: 'openrouter/free',
+      api_key: String(env.OPENROUTER_API_KEY).trim()
+    });
+  }
+  if (env.CEREBRAS_API_KEY && String(env.CEREBRAS_API_KEY).trim()) {
+    list.push({
+      id: 'env_cerebras',
+      provider_code: 'env:cerebras',
+      label: 'Cerebras Free (Env)',
+      provider_type: 'openai_compatible',
+      base_url: 'https://api.cerebras.ai/v1',
+      model_id: 'llama-3.3-70b',
+      api_key: String(env.CEREBRAS_API_KEY).trim()
+    });
+  }
+  if (env.MISTRAL_API_KEY && String(env.MISTRAL_API_KEY).trim()) {
+    list.push({
+      id: 'env_mistral',
+      provider_code: 'env:mistral',
+      label: 'Mistral Free (Env)',
+      provider_type: 'openai_compatible',
+      base_url: 'https://api.mistral.ai/v1',
+      model_id: 'mistral-small-latest',
+      api_key: String(env.MISTRAL_API_KEY).trim()
+    });
+  }
+  return list;
+}
+
+async function callSingleCustomProvider(provider, prompt, mode, opts = {}) {
+  const pType = String(provider.provider_type || 'openai_compatible').trim().toLowerCase();
+  const expectsJson = JSON_AI_MODES.has(mode);
+  const maxTokens = PRO_FIRST_MODES.has(mode) ? 8192 : 2048;
+  if (pType === 'gemini') {
+    const baseCheck = validateProviderBaseUrl(provider.base_url || 'https://generativelanguage.googleapis.com/v1beta');
+    if (!baseCheck.ok) throw new Error(baseCheck.error);
+    return callGeminiSingleEndpoint(
+      provider.api_key,
+      provider.model_id,
+      prompt,
+      mode,
+      opts,
+      baseCheck.url,
+      {
+        provider: provider.provider_code || `custom:${provider.id}`,
+        provider_label: provider.label || 'Backup Gemini'
+      }
+    );
+  }
+  return callOpenAiCompatibleProvider(
+    provider,
+    getSystemPromptForMode(mode),
+    prompt,
+    { jsonMode: expectsJson, maxTokens }
+  );
+}
+
+async function runModelCascade(env, prompt, mode, opts = {}) {
+  const pref = String(opts.preferredModel || 'auto').trim();
+  const skipWorkersAi = Boolean(opts.skipWorkersAi);
+  const geminiKeys = [
+    env && env.GEMINI_API_KEY ? String(env.GEMINI_API_KEY).trim() : '',
+    env && env.GEMINI_API_KEY_2 ? String(env.GEMINI_API_KEY_2).trim() : ''
+  ].filter(Boolean);
+
+  const requestedCustomId = pref.startsWith('custom:') ? pref.slice('custom:'.length).trim() : '';
+  const dbCustomProviders = Array.isArray(opts.customProviders)
+    ? opts.customProviders
+    : await loadCustomProvidersFromDb(env, { includeDisabledId: requestedCustomId });
+  const envProviders = getEnvSecretProviders(env);
+
+  const steps = [];
+  const pushCustomStep = (prov) => {
+    if (!prov) return;
+    steps.push(() => callSingleCustomProvider(prov, prompt, mode, opts));
+  };
+  const pushGeminiStep = (firstModel = '') => {
+    if (!geminiKeys.length) return;
+    steps.push(() => callGeminiFreeTier(geminiKeys, prompt, mode, { ...opts, preferredGeminiModel: firstModel }));
+  };
+  const pushWorkersStep = (firstModel = '') => {
+    if (skipWorkersAi || !env || !env.AI) return;
+    steps.push(() => callWorkersAi(env.AI, prompt, mode, { ...opts, preferredWorkersModel: firstModel }));
+  };
+
+  if (pref.startsWith('custom:')) {
+    const target = dbCustomProviders.find((p) => String(p.id) === requestedCustomId);
+    const restDb = dbCustomProviders.filter((p) => String(p.id) !== requestedCustomId && Number(p.enabled) === 1);
+    if (target) pushCustomStep(target);
+    restDb.forEach(pushCustomStep);
+    pushGeminiStep('');
+    envProviders.forEach(pushCustomStep);
+    pushWorkersStep('');
+  } else if (pref.startsWith('gemini:')) {
+    const targetModel = pref.slice('gemini:'.length).trim();
+    pushGeminiStep(targetModel);
+    dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
+    envProviders.forEach(pushCustomStep);
+    pushWorkersStep('');
+  } else if (pref.startsWith('workers:')) {
+    const targetModel = pref.slice('workers:'.length).trim();
+    pushWorkersStep(targetModel);
+    dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
+    envProviders.forEach(pushCustomStep);
+    pushGeminiStep('');
+  } else {
+    // Default 'auto': Enabled custom providers (priority ASC) -> Built-in Gemini Flash/Lite -> Env secret APIs -> Workers AI
+    dbCustomProviders.filter((p) => Number(p.enabled) === 1).forEach(pushCustomStep);
+    pushGeminiStep('');
+    envProviders.forEach(pushCustomStep);
+    pushWorkersStep('');
+  }
+
+  if (!steps.length) {
+    throw new Error('No AI provider is configured. Add a Gemini API key, custom provider, or Cloudflare Workers AI binding.');
+  }
+
+  let lastErr = null;
+  let sawQuota = false;
+  for (const runStep of steps) {
+    try {
+      const res = await runStep();
+      if (res && !res.provider_model) {
+        res.provider_model = formatProviderModelTag(res.provider_label || res.provider, res.model);
+      }
+      return res;
+    } catch (err) {
+      if (isQuotaError(err)) sawQuota = true;
+      lastErr = err;
+    }
+  }
+
+  if (sawQuota) {
+    const qErr = new Error(DAILY_QUOTA_EXHAUSTED_MESSAGE);
+    qErr.status = 429;
+    throw qErr;
+  }
+  throw lastErr || new Error('All AI providers failed.');
 }
 
 export function normalizeTranslatedMarkdownPipes(rawMd) {
@@ -1565,15 +1984,16 @@ export function buildDeterministicGuideMetadata(rawBodyEn, extra = {}) {
   };
 }
 
-async function translateMarkdownDocument(env, rawMarkdown) {
+async function translateMarkdownDocument(env, rawMarkdown, cascadeOpts = {}) {
   const chunks = splitMarkdownByH2Sections(rawMarkdown, MARKDOWN_CHUNK_CHAR_LIMIT);
   if (!chunks.length) {
     return {
       translated_markdown: '',
       chunks_count: 0,
       provider: 'gemini_free',
-      provider_label: 'Gemini Pro',
+      provider_label: 'Gemini Flash',
       model: GEMINI_PRO_FIRST_MODELS[0],
+      provider_model: formatProviderModelTag('Gemini Flash', GEMINI_PRO_FIRST_MODELS[0]),
       estimatedNeurons: 0
     };
   }
@@ -1587,11 +2007,11 @@ async function translateMarkdownDocument(env, rawMarkdown) {
     const results = await Promise.all(
       batch.map(async (chunk, offset) => {
         const chunkPrompt = buildPromptForMode('translate_markdown', chunk);
-        const res = await runModelCascade(env, chunkPrompt, 'translate_markdown');
+        const res = await runModelCascade(env, chunkPrompt, 'translate_markdown', cascadeOpts);
         const translatedChunk = parseTranslateMarkdownResult(res.text, chunk);
-        const neurons = res.provider === 'gemini_free'
-          ? 0
-          : estimateWorkersAiNeurons(res.model, chunkPrompt.length, res.text.length);
+        const neurons = res.provider === 'cloudflare_workers_ai'
+          ? estimateWorkersAiNeurons(res.model, chunkPrompt.length, res.text.length)
+          : 0;
         return { index: start + offset, translatedChunk, res, neurons };
       })
     );
@@ -1602,17 +2022,21 @@ async function translateMarkdownDocument(env, rawMarkdown) {
     }
   }
 
+  const prov = (lastMeta && lastMeta.provider) || 'gemini_free';
+  const provLbl = (lastMeta && lastMeta.provider_label) || 'Gemini Flash';
+  const mdl = (lastMeta && lastMeta.model) || GEMINI_PRO_FIRST_MODELS[0];
   return {
     translated_markdown: normalizeTranslatedMarkdownPipes(translatedParts.join('\n\n')),
     chunks_count: chunks.length,
-    provider: (lastMeta && lastMeta.provider) || 'gemini_free',
-    provider_label: (lastMeta && lastMeta.provider_label) || 'Gemini Pro',
-    model: (lastMeta && lastMeta.model) || GEMINI_PRO_FIRST_MODELS[0],
+    provider: prov,
+    provider_label: provLbl,
+    model: mdl,
+    provider_model: (lastMeta && lastMeta.provider_model) || formatProviderModelTag(provLbl, mdl),
     estimatedNeurons: totalNeurons
   };
 }
 
-export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId, pdf_text, pdf_filename, draft, body_en, overwrite, depth, skip_body_or, preserve_body_en }) {
+export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId, pdf_text, pdf_filename, draft, body_en, overwrite, depth, skip_body_or, preserve_body_en, preferred_model }) {
   const cleanMode = String(mode || '').trim().toLowerCase();
   if (!VALID_AI_MODES.has(cleanMode)) {
     const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, career, guide, auto_fix_fill, translate_odia, translate_fields, translate_markdown, or suggest_meta.');
@@ -1625,6 +2049,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   const cleanPdfFilename = String(pdf_filename || '').trim().slice(0, 180);
   const cleanDraft = (draft && typeof draft === 'object') ? draft : null;
   const cleanDepth = String(depth || 'comprehensive').trim().toLowerCase() === 'standard' ? 'standard' : 'comprehensive';
+  const cleanPreferredModel = String(preferred_model || 'auto').trim().slice(0, 140) || 'auto';
   const skipBodyOr = Boolean(skip_body_or);
   let cleanFields = null;
   const rawDraftBodyEn = String((cleanDraft && cleanDraft.body_en) || body_en || '');
@@ -1660,8 +2085,8 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   }
 
   const canUseDeterministicFallback = cleanMode === 'auto_fix_fill' && !cleanPdfText && rawDraftBodyEn.trim().length >= BODY_EN_VERBATIM_LOCK_MIN_CHARS;
-  const buildDeterministicFallbackResult = (usageSnapshot) => {
-    const detData = buildDeterministicGuideMetadata(rawDraftBodyEn, {
+  const buildDeterministicFallbackResult = (usageSnapshot, sourceBody = rawDraftBodyEn) => {
+    const detData = buildDeterministicGuideMetadata(sourceBody, {
       draft: cleanDraft,
       input: cleanInput,
       fallbackTitle: cleanInput || 'Odisha Informative Guide'
@@ -1670,13 +2095,14 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
       ok: true,
       mode: cleanMode,
       depth: cleanDepth,
-      body_en_locked: true,
+      body_en_locked: Boolean(rawDraftBodyEn.trim().length >= BODY_EN_VERBATIM_LOCK_MIN_CHARS),
       fallback_used: true,
       quota_exhausted_odia: true,
       two_pass_translation: false,
       provider: 'deterministic_fallback',
       provider_label: 'Local Metadata Extractor',
-      model: 'deterministic-v359',
+      model: 'deterministic-v361',
+      provider_model: 'local:deterministic',
       estimated_neurons: 0,
       usage: usageSnapshot,
       data: detData
@@ -1684,7 +2110,20 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   };
 
   const usageBefore = await getDailyAiUsage(env);
-  if (usageBefore.neurons_used >= DAILY_FREE_NEURON_BUDGET) {
+
+  // Explicit Zero-Quota Local Mode (`local:deterministic`): zero network calls, instant local extraction
+  if (cleanPreferredModel === 'local:deterministic') {
+    const srcForLocal = rawDraftBodyEn.trim() ? rawDraftBodyEn : cleanInput;
+    return buildDeterministicFallbackResult(usageBefore, srcForLocal);
+  }
+
+  const requestedCustomId = cleanPreferredModel.startsWith('custom:') ? cleanPreferredModel.slice('custom:'.length).trim() : '';
+  const customProviders = await loadCustomProvidersFromDb(env, { includeDisabledId: requestedCustomId });
+  const envExternalProviders = getEnvSecretProviders(env);
+  const hasZeroNeuronExternalProvider = customProviders.length > 0 || envExternalProviders.length > 0;
+  const neuronsExhausted = usageBefore.neurons_used >= DAILY_FREE_NEURON_BUDGET;
+
+  if (neuronsExhausted && !hasZeroNeuronExternalProvider) {
     if (canUseDeterministicFallback) {
       return buildDeterministicFallbackResult(usageBefore);
     }
@@ -1693,9 +2132,15 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     throw err;
   }
 
-  // Dedicated Markdown-Safe Translation Mode (auto-splits > 3,500 char bodies by `##` headings)
+  const cascadeOpts = {
+    preferredModel: cleanPreferredModel,
+    customProviders,
+    skipWorkersAi: neuronsExhausted
+  };
+
+  // Dedicated Markdown-Safe Translation Mode (auto-splits > 7,500 char bodies by `##` headings)
   if (cleanMode === 'translate_markdown') {
-    const mdOut = await translateMarkdownDocument(env, cleanInput.slice(0, 64000));
+    const mdOut = await translateMarkdownDocument(env, cleanInput.slice(0, 64000), cascadeOpts);
     await logAiGeneration(env, {
       actorId,
       targetModule: cleanMode,
@@ -1712,6 +2157,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
       provider: mdOut.provider,
       provider_label: mdOut.provider_label,
       model: mdOut.model,
+      provider_model: mdOut.provider_model,
       estimated_neurons: mdOut.estimatedNeurons,
       usage: usageAfter,
       data: {
@@ -1722,7 +2168,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     };
   }
 
-  // Upgraded translate_fields: automatically chunks long Markdown fields (> 3,500 chars) by `##` headings
+  // Upgraded translate_fields: automatically chunks long Markdown fields (> 7,500 chars) by `##` headings
   if (cleanMode === 'translate_fields') {
     const longKeys = Object.keys(cleanFields).filter((k) => cleanFields[k].length > MARKDOWN_CHUNK_CHAR_LIMIT);
     if (longKeys.length > 0) {
@@ -1736,7 +2182,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
       let totalChunks = 0;
 
       for (const lk of longKeys) {
-        const mdOut = await translateMarkdownDocument(env, cleanFields[lk]);
+        const mdOut = await translateMarkdownDocument(env, cleanFields[lk], cascadeOpts);
         mergedTranslations[lk] = mdOut.translated_markdown;
         totalChunks += mdOut.chunks_count;
         totalNeurons += mdOut.estimatedNeurons;
@@ -1745,12 +2191,12 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
 
       if (Object.keys(shortFields).length > 0) {
         const sPrompt = buildPromptForMode('translate_fields', JSON.stringify(shortFields), { fields: shortFields });
-        const sRes = await runModelCascade(env, sPrompt, 'translate_fields');
+        const sRes = await runModelCascade(env, sPrompt, 'translate_fields', cascadeOpts);
         const sParsed = sRes.parsed || parseOrRepairAiJson(sRes.text);
         const sNorm = normalizeStructuredOutput('translate_fields', sParsed, '', { fields: shortFields });
         Object.assign(mergedTranslations, (sNorm && sNorm.translations) || {});
         lastMeta = sRes;
-        if (sRes.provider !== 'gemini_free') {
+        if (sRes.provider === 'cloudflare_workers_ai') {
           totalNeurons += estimateWorkersAiNeurons(sRes.model, sPrompt.length, sRes.text.length);
         }
       }
@@ -1758,6 +2204,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
       const provider = (lastMeta && lastMeta.provider) || 'gemini_free';
       const providerLabel = (lastMeta && lastMeta.provider_label) || (provider === 'gemini_free' ? 'Gemini Flash' : 'Workers AI');
       const model = (lastMeta && lastMeta.model) || GEMINI_PRO_FIRST_MODELS[0];
+      const providerModel = (lastMeta && lastMeta.provider_model) || formatProviderModelTag(providerLabel, model);
       await logAiGeneration(env, {
         actorId,
         targetModule: cleanMode,
@@ -1774,6 +2221,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
         provider,
         provider_label: providerLabel,
         model,
+        provider_model: providerModel,
         estimated_neurons: totalNeurons,
         usage: usageAfter,
         data: { translations: mergedTranslations }
@@ -1803,7 +2251,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   let result = null;
   let parsed = null;
   try {
-    result = await runModelCascade(env, prompt, cleanMode, { lockBodyEn });
+    result = await runModelCascade(env, prompt, cleanMode, { ...cascadeOpts, lockBodyEn });
     parsed = result.parsed || parseOrRepairAiJson(result.text);
   } catch (cascadeErr) {
     if (canUseDeterministicFallback) {
@@ -1813,9 +2261,9 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   }
 
   const normalized = normalizeStructuredOutput(cleanMode, parsed, cleanInput || cleanPdfFilename || 'Odisha Guide', extra);
-  let estimatedNeurons = result.provider === 'gemini_free'
-    ? 0
-    : estimateWorkersAiNeurons(result.model, prompt.length, result.text.length);
+  let estimatedNeurons = result.provider === 'cloudflare_workers_ai'
+    ? estimateWorkersAiNeurons(result.model, prompt.length, result.text.length)
+    : 0;
   let twoPassTranslation = false;
   let quotaExhaustedOdia = false;
 
@@ -1837,13 +2285,13 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
 
     try {
       if (useChunkedMdBody) {
-        const mdBody = await translateMarkdownDocument(env, normalized.body_en);
+        const mdBody = await translateMarkdownDocument(env, normalized.body_en, cascadeOpts);
         if (mdBody.translated_markdown) normalized.body_or = mdBody.translated_markdown;
         estimatedNeurons += mdBody.estimatedNeurons;
       }
       if (Object.keys(pass2Fields).length > 0) {
         const trPrompt = buildPromptForMode('translate_fields', JSON.stringify(pass2Fields), { fields: pass2Fields });
-        const trRes = await runModelCascade(env, trPrompt, 'translate_fields');
+        const trRes = await runModelCascade(env, trPrompt, 'translate_fields', cascadeOpts);
         const trParsed = trRes.parsed || parseOrRepairAiJson(trRes.text);
         const trNorm = normalizeStructuredOutput('translate_fields', trParsed, '', { fields: pass2Fields });
         const tr = (trNorm && trNorm.translations) || {};
@@ -1861,7 +2309,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
             label_or: tr[`lnk_${idx}`] || lnk.label_or || lnk.label_en
           }));
         }
-        if (trRes.provider !== 'gemini_free') {
+        if (trRes.provider === 'cloudflare_workers_ai') {
           estimatedNeurons += estimateWorkersAiNeurons(trRes.model, trPrompt.length, trRes.text.length);
         }
       }
@@ -1882,6 +2330,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   });
 
   const usageAfter = await getDailyAiUsage(env);
+  const provLabel = result.provider_label || (result.provider === 'gemini_free' ? 'Gemini' : 'Workers AI');
   return {
     ok: true,
     mode: cleanMode,
@@ -1890,8 +2339,9 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     quota_exhausted_odia: quotaExhaustedOdia,
     two_pass_translation: twoPassTranslation,
     provider: result.provider,
-    provider_label: result.provider_label || (result.provider === 'gemini_free' ? 'Gemini' : 'Workers AI'),
+    provider_label: provLabel,
     model: result.model,
+    provider_model: result.provider_model || formatProviderModelTag(provLabel, result.model),
     estimated_neurons: estimatedNeurons,
     usage: usageAfter,
     data: normalized

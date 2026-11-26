@@ -21,7 +21,11 @@ import {
   buildDeterministicGuideMetadata,
   splitMarkdownByH2Sections,
   normalizeTranslatedMarkdownPipes,
-  VALID_AI_MODES
+  VALID_AI_MODES,
+  callOpenAiCompatibleProvider,
+  maskApiKey,
+  validateProviderBaseUrl,
+  testAiProviderConnection
 } from '../functions/_lib/ai-coauthor.js';
 import { onRequestPost as aiCoauthorPost, handleAdminAiGenerateImage } from '../functions/api/admin/ai-coauthor.js';
 import { handleMedia } from '../functions/api/media/_serve.js';
@@ -30,8 +34,9 @@ import { ACTIVE_SW_CACHE_VERSION } from '../functions/_lib/ops-sentinel.js';
 const ROOT = process.cwd();
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
-function createMockDb(seedNeurons = 0) {
+function createMockDb(seedNeurons = 0, seedProviders = []) {
   const logs = [];
+  const providers = Array.isArray(seedProviders) ? seedProviders.map((p) => ({ ...p })) : [];
   if (seedNeurons > 0) {
     logs.push({
       id: 'seed_1',
@@ -57,16 +62,24 @@ function createMockDb(seedNeurons = 0) {
         }
       };
     }
+    if (/^SELECT id, label, provider_type, base_url, model_id, api_key, enabled, priority FROM ai_custom_providers/i.test(s)) {
+      const includeDisabledId = String(params[0] || '');
+      const matched = providers
+        .filter((p) => Number(p.enabled) === 1 || (includeDisabledId && String(p.id) === includeDisabledId))
+        .sort((a, b) => Number(a.priority || 10) - Number(b.priority || 10));
+      return { all: { results: matched } };
+    }
     if (/^INSERT INTO ai_generation_logs/i.test(s)) {
       const [id, actor_id, target_module, provider, model, estimated_neurons, status, created_at] = params;
       logs.push({ id, actor_id, target_module, provider, model, estimated_neurons, status, created_at });
       return { run: { success: true } };
     }
-    return { first: null, run: { success: true } };
+    return { first: null, all: { results: [] }, run: { success: true } };
   };
 
   return {
     logs,
+    providers,
     prepare(sql) {
       let bound = [];
       return {
@@ -76,6 +89,9 @@ function createMockDb(seedNeurons = 0) {
         },
         async first() {
           return execSql(sql, bound).first;
+        },
+        async all() {
+          return execSql(sql, bound).all || { results: [] };
         },
         async run() {
           return execSql(sql, bound).run;
@@ -222,8 +238,8 @@ await test('5. Wrangler AI binding, migration 0149, CSP compliance & v318 cache 
   const mig = read('migrations/0149_ai_coauthor_v318.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS ai_generation_logs'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v360');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v360';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v361');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v361';"));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('window.CSOAiCoAuthor'));
@@ -1054,4 +1070,192 @@ await test('11. v359 Quota-bypassing local English metadata fallback (D1 cap + u
   assert.ok(studioJs.includes('is-warn-amber') && studioCss.includes('.cso-guide-ai-progress.is-warn-amber'), 'Amber notice class must be wired in JS and styled in studio.css using semantic tokens');
 });
 
-console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 + v358 + v359 Results: ${passed} passed, 0 failed ===\n`);
+await test('12. v361 Multi-Provider AI Router: SSRF validation, OpenAI-compatible 400 response_format retry, OpenRouter headers, preferred_model routing & GEMINI_API_KEY_2', async () => {
+  // A. Key masking & SSRF URL guard
+  assert.equal(maskApiKey('gsk_1234567890abcdef9f2a'), 'gsk_...9f2a');
+  assert.equal(maskApiKey('sk-or-v1-abcdef1234567890'), 'sk-...7890');
+  assert.equal(validateProviderBaseUrl('https://api.groq.com/openai/v1/').url, 'https://api.groq.com/openai/v1');
+  assert.equal(validateProviderBaseUrl('http://api.groq.com/openai/v1').ok, false, 'Must reject non-HTTPS URLs');
+  assert.equal(validateProviderBaseUrl('https://localhost/v1').ok, false, 'Must block localhost');
+  assert.equal(validateProviderBaseUrl('https://127.0.0.1/v1').ok, false, 'Must block loopback IP');
+  assert.equal(validateProviderBaseUrl('https://10.0.0.5/v1').ok, false, 'Must block RFC1918 10.x');
+  assert.equal(validateProviderBaseUrl('https://192.168.1.10/v1').ok, false, 'Must block RFC1918 192.168.x');
+  assert.equal(validateProviderBaseUrl('https://169.254.169.254/latest').ok, false, 'Must block link-local metadata IP');
+
+  // B. callOpenAiCompatibleProvider: Bearer auth, OpenRouter headers, 400 retry without response_format & JSON repair
+  const capturedReqs = [];
+  const origFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    const parsedBody = JSON.parse(String(init && init.body || '{}'));
+    capturedReqs.push({ url: String(url), headers: init && init.headers, body: parsedBody });
+    if (String(url).includes('openrouter.ai') && parsedBody.response_format) {
+      return new Response('{"error":"response_format json_object unsupported for this free route"}', { status: 400 });
+    }
+    if (String(url).includes('openrouter.ai')) {
+      return new Response(JSON.stringify({
+        choices: [{ message: { content: 'Sure!\n```json\n{"translated_or": "ଓଡ଼ିଶା ସରକାରୀ ନିଯୁକ୍ତି ୨୦୨୬",}\n```' } }]
+      }), { status: 200 });
+    }
+    if (String(url).includes('api.groq.com')) {
+      return new Response(JSON.stringify({
+        choices: [{ message: { content: 'OK' } }]
+      }), { status: 200 });
+    }
+    throw new Error('Unexpected fetch: ' + url);
+  };
+
+  try {
+    const orOut = await callOpenAiCompatibleProvider(
+      {
+        id: 'prov_or',
+        label: 'OpenRouter Free',
+        provider_type: 'openai_compatible',
+        base_url: 'https://openrouter.ai/api/v1',
+        model_id: 'openrouter/free',
+        api_key: 'sk-or-test-key-1234'
+      },
+      'Return JSON only.',
+      'Translate to Odia',
+      { jsonMode: true, maxTokens: 512 }
+    );
+    assert.equal(capturedReqs.length, 2, 'Must retry without response_format after 400 error');
+    assert.equal(capturedReqs[0].url, 'https://openrouter.ai/api/v1/chat/completions');
+    assert.equal(capturedReqs[0].headers.Authorization, 'Bearer sk-or-test-key-1234');
+    assert.equal(capturedReqs[0].headers['HTTP-Referer'], 'https://csodisha.com');
+    assert.equal(capturedReqs[0].headers['X-Title'], 'Common Sense Odisha');
+    assert.deepEqual(capturedReqs[0].body.response_format, { type: 'json_object' });
+    assert.equal(capturedReqs[1].body.response_format, undefined, 'Retry request must omit response_format');
+    assert.equal(orOut.parsed.translated_or, 'ଓଡ଼ିଶା ସରକାରୀ ନିଯୁକ୍ତି ୨୦୨୬');
+    assert.ok(orOut.provider_model.includes('OpenRouter Free') && orOut.provider_model.includes('openrouter/free'));
+
+    // Live ping helper testAiProviderConnection()
+    const pingOut = await testAiProviderConnection({
+      id: 'prov_groq',
+      label: 'Groq Free',
+      provider_type: 'openai_compatible',
+      base_url: 'https://api.groq.com/openai/v1',
+      model_id: 'llama-3.3-70b-versatile',
+      api_key: 'gsk_test_ping_9999'
+    });
+    assert.equal(pingOut.ok, true);
+    assert.equal(pingOut.model_id, 'llama-3.3-70b-versatile');
+    assert.ok(pingOut.latency_ms >= 1);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+
+  // C. preferred_model routing across custom:<id>, gemini:<model> (+ GEMINI_API_KEY_2), workers:<model> & local:deterministic
+  const customRows = [
+    {
+      id: 'groq_main',
+      label: 'Groq Free (Llama 3.3 70B)',
+      provider_type: 'openai_compatible',
+      base_url: 'https://api.groq.com/openai/v1',
+      model_id: 'llama-3.3-70b-versatile',
+      api_key: 'gsk_custom_primary_8888',
+      enabled: 1,
+      priority: 1
+    }
+  ];
+  const dbWithCustom = createMockDb(0, customRows);
+  const callLog = [];
+  const origFetch2 = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    const u = String(url);
+    callLog.push(u);
+    if (u.includes('api.groq.com')) {
+      return new Response(JSON.stringify({
+        choices: [{ message: { content: JSON.stringify({ translated_or: 'Groq ଓଡ଼ିଆ ଅନୁବାଦ' }) } }]
+      }), { status: 200 });
+    }
+    if (u.includes('generativelanguage.googleapis.com')) {
+      if (u.includes('key=gm_key_1')) {
+        return new Response('Quota exceeded', { status: 429 });
+      }
+      if (u.includes('key=gm_key_2')) {
+        return new Response(JSON.stringify({
+          candidates: [{ content: { parts: [{ text: JSON.stringify({ translated_or: 'Backup Key Gemini ଓଡ଼ିଆ ଅନୁବାଦ' }) }] } }]
+        }), { status: 200 });
+      }
+    }
+    throw new Error('Unexpected fetch: ' + u);
+  };
+
+  try {
+    const workersLog = [];
+    const mockWorkers = {
+      async run(model) {
+        workersLog.push(model);
+        return { response: JSON.stringify({ translated_or: 'Workers AI ଓଡ଼ିଆ ଅନୁବାଦ' }) };
+      }
+    };
+    const env = {
+      DB: dbWithCustom,
+      GEMINI_API_KEY: 'gm_key_1',
+      GEMINI_API_KEY_2: 'gm_key_2',
+      AI: mockWorkers
+    };
+
+    // 1. custom:<id> routes straight to Groq custom provider
+    const customRes = await generateAiCoAuthorDraft(env, {
+      mode: 'translate_odia',
+      input: 'Odisha Government Recruitment Notice 2026',
+      preferred_model: 'custom:groq_main',
+      actorId: 'adm_1'
+    });
+    assert.equal(customRes.ok, true);
+    assert.equal(customRes.data.translated_or, 'Groq ଓଡ଼ିଆ ଅନୁବାଦ');
+    assert.ok(customRes.provider_model.includes('Groq Free') && customRes.provider_model.includes('llama-3.3-70b-versatile'));
+    assert.ok(callLog[0].includes('api.groq.com'), 'custom:groq_main must hit Groq endpoint first');
+
+    // 2. gemini:<model_id> targets exact model first & falls over cleanly from GEMINI_API_KEY to GEMINI_API_KEY_2
+    callLog.length = 0;
+    const gemRes = await generateAiCoAuthorDraft(env, {
+      mode: 'translate_odia',
+      input: 'Odisha Teacher Recruitment 2026',
+      preferred_model: 'gemini:gemini-2.5-flash-lite',
+      actorId: 'adm_1'
+    });
+    assert.equal(gemRes.ok, true);
+    assert.equal(gemRes.model, 'gemini-2.5-flash-lite');
+    assert.equal(gemRes.data.translated_or, 'Backup Key Gemini ଓଡ଼ିଆ ଅନୁବାଦ');
+    assert.ok(callLog[0].includes('/models/gemini-2.5-flash-lite:generateContent?key=gm_key_1'), 'Must try preferred Gemini model on key 1 first');
+    assert.ok(callLog.some((u) => u.includes('/models/gemini-2.5-flash-lite:generateContent?key=gm_key_2')), 'Must fail over to GEMINI_API_KEY_2');
+
+    // 3. workers:<model_id> calls Cloudflare Workers AI directly first without touching Gemini or Groq
+    callLog.length = 0;
+    workersLog.length = 0;
+    const wkRes = await generateAiCoAuthorDraft(env, {
+      mode: 'translate_odia',
+      input: 'Subhadra Yojana Status Check 2026',
+      preferred_model: 'workers:@cf/meta/llama-3.1-8b-instruct-fp8-fast',
+      actorId: 'adm_1'
+    });
+    assert.equal(wkRes.ok, true);
+    assert.equal(wkRes.provider, 'cloudflare_workers_ai');
+    assert.equal(wkRes.model, '@cf/meta/llama-3.1-8b-instruct-fp8-fast');
+    assert.equal(callLog.length, 0, 'workers:<model> must bypass external HTTP fetches when Workers AI succeeds');
+    assert.equal(workersLog[0], '@cf/meta/llama-3.1-8b-instruct-fp8-fast');
+
+    // 4. local:deterministic makes ZERO network/AI calls and returns provider_model: 'local:deterministic'
+    callLog.length = 0;
+    workersLog.length = 0;
+    const localBody = '## Odisha Police SI 2026 Official Guide\nApply online at https://odishapolice.gov.in/ for Sub-Inspector vacancies across Odisha.\n- Total posts: 933 regular vacancies.\n- Qualification: Graduation in any stream from a recognized university.\n- Written exam consists of Paper I and Paper II.';
+    const locRes = await generateAiCoAuthorDraft(env, {
+      mode: 'auto_fix_fill',
+      preferred_model: 'local:deterministic',
+      draft: { body_en: localBody },
+      actorId: 'adm_1'
+    });
+    assert.equal(locRes.ok, true);
+    assert.equal(locRes.provider_model, 'local:deterministic');
+    assert.equal(callLog.length, 0, 'local:deterministic must make zero HTTP requests');
+    assert.equal(workersLog.length, 0, 'local:deterministic must make zero Workers AI calls');
+    assert.equal(locRes.data.body_en, localBody);
+    assert.ok(locRes.data.official_links.some((l) => l.url.includes('odishapolice.gov.in')));
+  } finally {
+    globalThis.fetch = origFetch2;
+  }
+});
+
+console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 + v358 + v359 + v361 Results: ${passed} passed, 0 failed ===\n`);

@@ -121,6 +121,125 @@
     // Popover Body
     var body = el('div', 'cso-htr-body');
 
+    // v361 Synced AI Engine Selector Row (shared with #selGuideAiEngine via cso_admin_preferred_ai_model)
+    var ENGINE_KEY = 'cso_admin_preferred_ai_model';
+    var customProvidersCache = [];
+
+    function readPrefModel() {
+      try {
+        return String(window.localStorage.getItem(ENGINE_KEY) || 'auto').trim() || 'auto';
+      } catch (_e) {
+        return 'auto';
+      }
+    }
+
+    function writePrefModel(val) {
+      var clean = String(val || 'auto').trim() || 'auto';
+      try { window.localStorage.setItem(ENGINE_KEY, clean); } catch (_e) {}
+      try {
+        window.dispatchEvent(new CustomEvent('cso:ai-engine-changed', { detail: { value: clean } }));
+      } catch (_e2) {}
+    }
+
+    var engineRow = el('div', 'cso-htr-engine-row');
+    var engineLbl = el('label', 'cso-htr-engine-lbl', '\uD83E\uDD16 Engine');
+    engineLbl.setAttribute('for', 'selHeaderTranslatorAiEngine');
+
+    var selTrEngine = el('select', 'cso-form-select cso-htr-engine-select');
+    selTrEngine.id = 'selHeaderTranslatorAiEngine';
+    selTrEngine.setAttribute('aria-label', 'Translator AI Engine');
+
+    function populateTranslatorEngineSelect(list) {
+      if (window.CSOAiEngineHelper && typeof window.CSOAiEngineHelper.populateSelect === 'function') {
+        window.CSOAiEngineHelper.populateSelect(selTrEngine, list);
+        return;
+      }
+      var wanted = readPrefModel();
+      while (selTrEngine.firstChild) selTrEngine.removeChild(selTrEngine.firstChild);
+      function addGrp(lbl, opts) {
+        var og = el('optgroup');
+        og.label = lbl;
+        opts.forEach(function (it) {
+          var op = el('option', '', it.label);
+          op.value = it.value;
+          if (it.disabled) op.disabled = true;
+          og.appendChild(op);
+        });
+        selTrEngine.appendChild(og);
+      }
+      addGrp('Auto Smart Cascade', [{ value: 'auto', label: '\u2728 Auto Smart Cascade' }]);
+      var enabledCustom = (Array.isArray(list) ? list : []).filter(function (p) { return p && p.id && p.enabled !== false; });
+      if (enabledCustom.length) {
+        addGrp('Custom Added AI APIs', enabledCustom.map(function (p) {
+          return { value: 'custom:' + p.id, label: '\uD83D\uDD11 ' + p.label + ' (' + p.model_id + ')' };
+        }));
+      }
+      addGrp('Google AI Studio ($0 Free Tier)', [
+        { value: 'gemini:gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+        { value: 'gemini:gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
+        { value: 'gemini:gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+        { value: 'gemini:gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash-Lite' }
+      ]);
+      addGrp('Cloudflare Workers AI (10K Neurons/Day)', [
+        { value: 'workers:@cf/google/gemma-4-26b-a4b-it', label: 'Gemma 4 26B A4B (Low-Neuron)' },
+        { value: 'workers:@cf/meta/llama-3.3-70b-instruct-fp8-fast', label: 'Llama 3.3 70B Instruct' },
+        { value: 'workers:@cf/meta/llama-3.1-8b-instruct-fp8-fast', label: 'Llama 3.1 8B Fast' }
+      ]);
+      addGrp('Zero-Quota Local Mode', [
+        { value: 'local:deterministic', label: '\u26A1 Local Deterministic (Zero API)' }
+      ]);
+      var found = false;
+      for (var k = 0; k < selTrEngine.options.length; k++) {
+        if (selTrEngine.options[k].value === wanted && !selTrEngine.options[k].disabled) { found = true; break; }
+      }
+      selTrEngine.value = found ? wanted : 'auto';
+    }
+
+    populateTranslatorEngineSelect(customProvidersCache);
+    selTrEngine.addEventListener('change', function () {
+      writePrefModel(selTrEngine.value);
+    });
+
+    var btnTrManageApis = el('button', 'cso-pill-btn cso-htr-api-btn', '\uD83D\uDD11 APIs');
+    btnTrManageApis.type = 'button';
+    btnTrManageApis.id = 'btnHeaderTrManageApis';
+    btnTrManageApis.title = 'Manage Custom AI Providers (Groq, OpenRouter, Cerebras, Mistral, Backup Gemini)';
+    btnTrManageApis.addEventListener('click', function () {
+      if (typeof window.CSOOpenAiProvidersModal === 'function') {
+        closePopover(false);
+        window.CSOOpenAiProvidersModal();
+      } else {
+        toast('Open Informative Articles & Guides to manage custom AI APIs.', 'info');
+      }
+    });
+
+    engineRow.append(engineLbl, selTrEngine, btnTrManageApis);
+
+    function loadTranslatorCustomProviders() {
+      fetch('/api/admin/ai-providers', { method: 'GET', credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (d && Array.isArray(d.providers)) {
+            customProvidersCache = d.providers;
+            populateTranslatorEngineSelect(customProvidersCache);
+          }
+        })
+        .catch(function () {});
+    }
+
+    window.addEventListener('cso:ai-providers-updated', function (ev) {
+      var list = (ev && ev.detail && ev.detail.providers) || customProvidersCache;
+      customProvidersCache = list;
+      populateTranslatorEngineSelect(customProvidersCache);
+    });
+    window.addEventListener('cso:ai-engine-changed', function (ev) {
+      var nextVal = ev && ev.detail && ev.detail.value;
+      if (nextVal && selTrEngine.value !== nextVal) {
+        populateTranslatorEngineSelect(customProvidersCache);
+      }
+    });
+    loadTranslatorCustomProviders();
+
     // Top Box: English Input
     var topSec = el('div', 'cso-htr-section');
     var topHead = el('div', 'cso-htr-sec-head');
@@ -187,7 +306,7 @@
     actionsRow.append(btnCopy, btnInsert, btnClear);
     botSec.append(botHead, outputOr, actionsRow);
 
-    body.append(topSec, statusStrip, botSec);
+    body.append(engineRow, topSec, statusStrip, botSec);
     popover.append(header, body);
     wrap.appendChild(popover);
 
@@ -273,7 +392,11 @@
           'Content-Type': 'application/json',
           'X-CSO-CSRF': '1'
         },
-        body: JSON.stringify({ mode: 'translate_markdown', input: src })
+        body: JSON.stringify({
+          mode: 'translate_markdown',
+          input: src,
+          preferred_model: (selTrEngine && selTrEngine.value && selTrEngine.value !== '__none_custom__') ? selTrEngine.value : readPrefModel()
+        })
       };
       if (activeAbort) fetchOpts.signal = activeAbort.signal;
 
@@ -290,7 +413,7 @@
           if (!outMd) throw new Error('Empty translation returned.');
           outputOr.value = outMd;
           lastTranslatedSource = src;
-          var prov = (res && (res.provider_label || res.provider)) || 'Gemini Pro';
+          var prov = (res && (res.provider_model || res.provider_label || res.provider)) || 'Gemini Flash';
           var chunks = Number(d.chunks_count || (res && res.chunks_count) || 1);
           provTag.textContent = prov + (chunks > 1 ? (' \u00B7 ' + chunks + ' chunks') : '');
           provTag.hidden = false;

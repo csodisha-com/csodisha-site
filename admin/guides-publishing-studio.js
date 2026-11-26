@@ -211,6 +211,517 @@
     if (typeof window.showToast === 'function') window.showToast(msg, kind || 'info');
   }
 
+  // =========================================================================
+  // v361 MULTI-PROVIDER AI ENGINE SWITCHER & API MANAGER MODAL (STRICT CSP)
+  // =========================================================================
+  var AI_ENGINE_STORAGE_KEY = 'cso_admin_preferred_ai_model';
+  var cachedCustomAiProviders = [];
+
+  var AI_PROVIDER_PRESETS = [
+    {
+      key: 'groq',
+      chip: '\u26A1 Groq Free',
+      label: 'Groq Free (Llama 3.3 70B)',
+      provider_type: 'openai_compatible',
+      base_url: 'https://api.groq.com/openai/v1',
+      model_id: 'llama-3.3-70b-versatile',
+      hint: 'Fast $0 free tier. Also supports llama-3.1-8b-instant or openai/gpt-oss-120b.'
+    },
+    {
+      key: 'openrouter',
+      chip: '\uD83C\uDF10 OpenRouter Free Router',
+      label: 'OpenRouter Free Router',
+      provider_type: 'openai_compatible',
+      base_url: 'https://openrouter.ai/api/v1',
+      model_id: 'openrouter/free',
+      hint: 'Auto-routes to active free community models via openrouter.ai.'
+    },
+    {
+      key: 'cerebras',
+      chip: '\uD83D\uDE80 Cerebras Free',
+      label: 'Cerebras Free (Llama 3.3 70B)',
+      provider_type: 'openai_compatible',
+      base_url: 'https://api.cerebras.ai/v1',
+      model_id: 'llama-3.3-70b',
+      hint: 'Ultra-fast free inference endpoint.'
+    },
+    {
+      key: 'mistral',
+      chip: '\uD83C\uDF2C\uFE0F Mistral Free',
+      label: 'Mistral Free (Small Latest)',
+      provider_type: 'openai_compatible',
+      base_url: 'https://api.mistral.ai/v1',
+      model_id: 'mistral-small-latest',
+      hint: 'Mistral La Plateforme free tier endpoint.'
+    },
+    {
+      key: 'gemini_backup',
+      chip: '\u2728 Backup Google Gemini Key',
+      label: 'Backup Google Gemini Key',
+      provider_type: 'gemini',
+      base_url: 'https://generativelanguage.googleapis.com/v1beta',
+      model_id: 'gemini-2.5-flash',
+      hint: 'Use a secondary Google AI Studio key for extra free daily Gemini quota.'
+    },
+    {
+      key: 'custom',
+      chip: '\uD83D\uDD27 Custom OpenAI-Compatible',
+      label: 'Custom OpenAI-Compatible API',
+      provider_type: 'openai_compatible',
+      base_url: '',
+      model_id: '',
+      hint: 'Enter any public https:// OpenAI-compatible /v1 Base URL and Model ID.'
+    }
+  ];
+
+  function getSavedAiEnginePref() {
+    try {
+      return String(window.localStorage.getItem(AI_ENGINE_STORAGE_KEY) || 'auto').trim() || 'auto';
+    } catch (_e) {
+      return 'auto';
+    }
+  }
+
+  function saveAiEnginePref(val) {
+    var clean = String(val || 'auto').trim() || 'auto';
+    try { window.localStorage.setItem(AI_ENGINE_STORAGE_KEY, clean); } catch (_e) {}
+    try {
+      window.dispatchEvent(new CustomEvent('cso:ai-engine-changed', { detail: { value: clean } }));
+    } catch (_e2) {}
+    return clean;
+  }
+
+  function populateAiEngineSelect(selectEl, providersList) {
+    if (!selectEl) return;
+    var wanted = getSavedAiEnginePref();
+    var list = Array.isArray(providersList) ? providersList : cachedCustomAiProviders;
+    clear(selectEl);
+
+    function addGroup(groupLabel, items) {
+      var og = el('optgroup');
+      og.label = groupLabel;
+      items.forEach(function (item) {
+        var op = el('option', '', item.label);
+        op.value = item.value;
+        if (item.disabled) op.disabled = true;
+        og.appendChild(op);
+      });
+      selectEl.appendChild(og);
+    }
+
+    addGroup('Auto Smart Cascade', [
+      { value: 'auto', label: '\u2728 Auto Smart Cascade (Custom \u2192 Gemini \u2192 Workers AI)' }
+    ]);
+
+    var enabledCustom = list.filter(function (p) { return p && p.id && p.enabled !== false; });
+    if (enabledCustom.length) {
+      addGroup('Custom Added AI APIs', enabledCustom.map(function (p) {
+        return {
+          value: 'custom:' + p.id,
+          label: '\uD83D\uDD11 ' + p.label + ' (' + p.model_id + ')'
+        };
+      }));
+    } else {
+      addGroup('Custom Added AI APIs', [
+        { value: '__none_custom__', label: 'No custom APIs saved yet (click + Add AI API)', disabled: true }
+      ]);
+    }
+
+    addGroup('Google AI Studio ($0 Free Tier)', [
+      { value: 'gemini:gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+      { value: 'gemini:gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
+      { value: 'gemini:gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+      { value: 'gemini:gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash-Lite' }
+    ]);
+
+    addGroup('Cloudflare Workers AI (10K Neurons/Day)', [
+      { value: 'workers:@cf/google/gemma-4-26b-a4b-it', label: 'Gemma 4 26B A4B (Low-Neuron)' },
+      { value: 'workers:@cf/meta/llama-3.3-70b-instruct-fp8-fast', label: 'Llama 3.3 70B Instruct' },
+      { value: 'workers:@cf/meta/llama-3.1-8b-instruct-fp8-fast', label: 'Llama 3.1 8B Fast (Ultra-Low)' }
+    ]);
+
+    addGroup('Zero-Quota Local Mode', [
+      { value: 'local:deterministic', label: '\u26A1 Local Deterministic Extractor (Zero API / Zero Quota)' }
+    ]);
+
+    var hasWanted = false;
+    for (var i = 0; i < selectEl.options.length; i++) {
+      if (selectEl.options[i].value === wanted && !selectEl.options[i].disabled) {
+        hasWanted = true;
+        break;
+      }
+    }
+    selectEl.value = hasWanted ? wanted : 'auto';
+  }
+
+  function fetchCustomAiProviders() {
+    return apiFetch('/api/admin/ai-providers').then(function (res) {
+      cachedCustomAiProviders = (res && Array.isArray(res.providers)) ? res.providers : [];
+      try {
+        window.dispatchEvent(new CustomEvent('cso:ai-providers-updated', { detail: { providers: cachedCustomAiProviders } }));
+      } catch (_e) {}
+      return cachedCustomAiProviders;
+    }).catch(function () {
+      return cachedCustomAiProviders;
+    });
+  }
+
+  function openAiProvidersManagerModal() {
+    var existingModal = document.getElementById('csoAiProvidersModal');
+    if (existingModal) existingModal.remove();
+
+    var editingProviderId = '';
+    var overlay = el('div', 'cso-aip-overlay');
+    overlay.id = 'csoAiProvidersModal';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Multi-Provider AI API Manager');
+
+    var dialog = el('div', 'cso-aip-dialog');
+
+    var head = el('div', 'cso-aip-head');
+    var headCopy = el('div', 'cso-aip-head-copy');
+    headCopy.append(
+      el('h3', 'cso-aip-title', '\uD83D\uDD11 Multi-Provider AI API Manager'),
+      el('p', 'cso-aip-sub', 'Add free-tier Groq, OpenRouter, Cerebras, Mistral, Backup Gemini, or custom OpenAI-compatible API keys. Stored securely in D1 and masked on read.')
+    );
+    var btnClose = el('button', 'cso-pill-btn', '\u2715 Close');
+    btnClose.type = 'button';
+    btnClose.id = 'btnCloseAiProvidersModal';
+    head.append(headCopy, btnClose);
+
+    var body = el('div', 'cso-aip-body');
+
+    // 1-Click Presets Row
+    var presetSec = el('div', 'cso-aip-section');
+    presetSec.appendChild(el('div', 'cso-aip-sec-label', '1-Click Provider Presets'));
+    var presetGrid = el('div', 'cso-aip-presets');
+    var presetHint = el('p', 'cso-aip-hint', 'Pick a preset below to pre-fill Base URL & Model ID, then paste your API key and click Test Connection.');
+
+    // Form Inputs
+    var formGrid = el('div', 'cso-form-grid cso-aip-form-grid');
+
+    function mkGrp(lblTxt, ctrl, full) {
+      var g = el('div', 'cso-form-group' + (full ? ' cso-span-full' : ''));
+      var l = el('label', 'cso-form-label', lblTxt);
+      if (ctrl.id) l.setAttribute('for', ctrl.id);
+      g.append(l, ctrl);
+      return g;
+    }
+
+    var inpLabel = el('input', 'cso-form-input');
+    inpLabel.type = 'text';
+    inpLabel.id = 'inpAiProvLabel';
+    inpLabel.placeholder = 'e.g., Groq Free (Llama 3.3 70B)';
+
+    var selType = el('select', 'cso-form-select');
+    selType.id = 'selAiProvType';
+    [
+      ['openai_compatible', 'OpenAI-Compatible (/chat/completions)'],
+      ['gemini', 'Google Gemini (:generateContent)']
+    ].forEach(function (pair) {
+      var op = el('option', '', pair[1]);
+      op.value = pair[0];
+      selType.appendChild(op);
+    });
+
+    var inpBaseUrl = el('input', 'cso-form-input');
+    inpBaseUrl.type = 'url';
+    inpBaseUrl.id = 'inpAiProvBaseUrl';
+    inpBaseUrl.placeholder = 'https://api.groq.com/openai/v1';
+
+    var inpModelId = el('input', 'cso-form-input');
+    inpModelId.type = 'text';
+    inpModelId.id = 'inpAiProvModelId';
+    inpModelId.placeholder = 'llama-3.3-70b-versatile';
+
+    var inpApiKey = el('input', 'cso-form-input');
+    inpApiKey.type = 'password';
+    inpApiKey.id = 'inpAiProvApiKey';
+    inpApiKey.autocomplete = 'new-password';
+    inpApiKey.placeholder = 'Paste API key (kept masked; leave blank when editing to keep existing key)';
+
+    var inpPriority = el('input', 'cso-form-input');
+    inpPriority.type = 'number';
+    inpPriority.id = 'inpAiProvPriority';
+    inpPriority.min = '1';
+    inpPriority.max = '999';
+    inpPriority.value = '10';
+
+    formGrid.append(
+      mkGrp('Display Label *', inpLabel, false),
+      mkGrp('Provider Type *', selType, false),
+      mkGrp('Base URL (https://) *', inpBaseUrl, true),
+      mkGrp('Model ID *', inpModelId, false),
+      mkGrp('Cascade Priority (1 = highest)', inpPriority, false),
+      mkGrp('API Key *', inpApiKey, true)
+    );
+
+    AI_PROVIDER_PRESETS.forEach(function (pr) {
+      var pb = el('button', 'cso-pill-btn cso-aip-preset-btn', pr.chip);
+      pb.type = 'button';
+      pb.setAttribute('data-ai-preset', pr.key);
+      pb.addEventListener('click', function () {
+        editingProviderId = '';
+        inpLabel.value = pr.label;
+        selType.value = pr.provider_type;
+        inpBaseUrl.value = pr.base_url;
+        inpModelId.value = pr.model_id;
+        inpApiKey.value = '';
+        inpApiKey.placeholder = 'Paste your ' + pr.chip.replace(/^[^\s]+\s+/, '') + ' API key...';
+        presetHint.textContent = pr.hint;
+        btnSave.textContent = '\uD83D\uDCBE Save Provider';
+        inpApiKey.focus();
+      });
+      presetGrid.appendChild(pb);
+    });
+    presetSec.append(presetGrid, presetHint);
+
+    var modalStatus = el('div', 'cso-aip-status', 'Ready \u00B7 Add a provider or select a 1-click preset above.');
+    modalStatus.id = 'csoAiProvidersModalStatus';
+    modalStatus.setAttribute('role', 'status');
+    modalStatus.setAttribute('aria-live', 'polite');
+
+    var btnRow = el('div', 'cso-aip-btn-row');
+    var btnTest = el('button', 'cso-pill-btn is-accent', '\u26A1 Test Connection');
+    btnTest.type = 'button';
+    btnTest.id = 'btnAiProvTest';
+
+    var btnSave = el('button', 'cso-btn cso-btn-primary', '\uD83D\uDCBE Save Provider');
+    btnSave.type = 'button';
+    btnSave.id = 'btnAiProvSave';
+
+    var btnReset = el('button', 'cso-pill-btn', 'Reset Form');
+    btnReset.type = 'button';
+    btnReset.id = 'btnAiProvReset';
+    btnRow.append(btnTest, btnSave, btnReset);
+
+    // Saved Providers Live List
+    var listSec = el('div', 'cso-aip-section');
+    listSec.appendChild(el('div', 'cso-aip-sec-label', 'Saved Custom AI Providers (Ordered by Priority)'));
+    var listHost = el('div', 'cso-aip-list');
+    listHost.id = 'csoAiProvidersList';
+    listSec.appendChild(listHost);
+
+    function setModalStatus(msg, state) {
+      modalStatus.classList.remove('is-ok', 'is-warn', 'is-error');
+      if (state) modalStatus.classList.add('is-' + state);
+      modalStatus.textContent = msg;
+    }
+
+    function resetForm() {
+      editingProviderId = '';
+      inpLabel.value = '';
+      selType.value = 'openai_compatible';
+      inpBaseUrl.value = '';
+      inpModelId.value = '';
+      inpApiKey.value = '';
+      inpApiKey.placeholder = 'Paste API key (kept masked; leave blank when editing to keep existing key)';
+      inpPriority.value = '10';
+      btnSave.textContent = '\uD83D\uDCBE Save Provider';
+    }
+
+    function renderSavedList(providers) {
+      clear(listHost);
+      if (!providers || !providers.length) {
+        listHost.appendChild(el('p', 'cso-ca-empty', 'No custom AI providers configured yet. Click any preset above (Groq, OpenRouter, Cerebras, Mistral, Backup Gemini) to add one.'));
+        return;
+      }
+      providers.forEach(function (p) {
+        var row = el('div', 'cso-aip-item' + (p.enabled ? '' : ' is-disabled'));
+        var info = el('div', 'cso-aip-item-info');
+        var topLine = el('div', 'cso-aip-item-top');
+        topLine.append(
+          el('strong', 'cso-aip-item-name', p.label),
+          el('span', 'cso-pill-badge', '#' + p.priority),
+          el('span', 'cso-pill-badge', p.provider_type === 'gemini' ? 'Gemini' : 'OpenAI-Compat'),
+          el('span', 'cso-pill-badge', p.enabled ? 'Enabled' : 'Disabled')
+        );
+        var metaLine = el('div', 'cso-aip-item-meta', p.model_id + ' \u00B7 ' + p.base_url + ' \u00B7 Key: ' + (p.api_key_masked || '****'));
+        info.append(topLine, metaLine);
+
+        var acts = el('div', 'cso-aip-item-actions');
+
+        var bToggle = el('button', 'cso-pill-btn', p.enabled ? 'Disable' : 'Enable');
+        bToggle.type = 'button';
+        bToggle.addEventListener('click', function () {
+          bToggle.disabled = true;
+          apiFetch('/api/admin/ai-providers', {
+            method: 'POST',
+            body: { id: p.id, enabled: !p.enabled }
+          }).then(function () {
+            setModalStatus((p.enabled ? 'Disabled ' : 'Enabled ') + p.label + '.', 'ok');
+            return refreshProviders();
+          }).catch(function (e) {
+            setModalStatus('\u2715 ' + e.message, 'error');
+          }).finally(function () { bToggle.disabled = false; });
+        });
+
+        var bEdit = el('button', 'cso-pill-btn', 'Edit');
+        bEdit.type = 'button';
+        bEdit.addEventListener('click', function () {
+          editingProviderId = p.id;
+          inpLabel.value = p.label;
+          selType.value = p.provider_type;
+          inpBaseUrl.value = p.base_url;
+          inpModelId.value = p.model_id;
+          inpApiKey.value = '';
+          inpApiKey.placeholder = 'Stored key (' + p.api_key_masked + ') \u2014 leave blank to keep';
+          inpPriority.value = String(p.priority || 10);
+          btnSave.textContent = '\uD83D\uDCBE Update Provider';
+          setModalStatus('Editing "' + p.label + '" (leave API Key blank to preserve stored key).', 'warn');
+          inpLabel.focus();
+        });
+
+        var bTest = el('button', 'cso-pill-btn is-accent', '\u26A1 Test');
+        bTest.type = 'button';
+        bTest.addEventListener('click', function () {
+          bTest.disabled = true;
+          setModalStatus('\u23F3 Testing ' + p.label + ' (' + p.model_id + ')\u2026', 'warn');
+          apiFetch('/api/admin/ai-providers/test', {
+            method: 'POST',
+            body: { id: p.id }
+          }).then(function (r) {
+            setModalStatus('\u2713 ' + p.label + ': ' + (r.message || 'Connected') + ' (' + (r.latency_ms || 0) + ' ms)', 'ok');
+            toast(p.label + ' connected in ' + (r.latency_ms || 0) + ' ms!', 'ok');
+          }).catch(function (e) {
+            setModalStatus('\u2715 Test failed for ' + p.label + ': ' + e.message, 'error');
+            toast('Test failed: ' + e.message, 'amber');
+          }).finally(function () { bTest.disabled = false; });
+        });
+
+        var bDel = el('button', 'cso-pill-btn is-danger', '\uD83D\uDDD1 Delete');
+        bDel.type = 'button';
+        bDel.addEventListener('click', function () {
+          if (!window.confirm('Delete custom AI provider "' + p.label + '"?')) return;
+          bDel.disabled = true;
+          apiFetch('/api/admin/ai-providers/' + encodeURIComponent(p.id), { method: 'DELETE' })
+            .then(function () {
+              if (editingProviderId === p.id) resetForm();
+              setModalStatus('\u2713 Deleted "' + p.label + '".', 'ok');
+              toast('Deleted AI provider "' + p.label + '".', 'ok');
+              return refreshProviders();
+            })
+            .catch(function (e) {
+              setModalStatus('\u2715 ' + e.message, 'error');
+            })
+            .finally(function () { bDel.disabled = false; });
+        });
+
+        acts.append(bToggle, bEdit, bTest, bDel);
+        row.append(info, acts);
+        listHost.appendChild(row);
+      });
+    }
+
+    function refreshProviders() {
+      return fetchCustomAiProviders().then(function (list) {
+        renderSavedList(list);
+        return list;
+      });
+    }
+
+    btnTest.addEventListener('click', function () {
+      var payload = {
+        id: editingProviderId || undefined,
+        label: inpLabel.value.trim() || 'Custom AI',
+        provider_type: selType.value,
+        base_url: inpBaseUrl.value.trim(),
+        model_id: inpModelId.value.trim(),
+        api_key: inpApiKey.value.trim()
+      };
+      if (!payload.base_url || !payload.model_id || (!payload.api_key && !editingProviderId)) {
+        setModalStatus('Enter Base URL, Model ID, and API Key before testing.', 'warn');
+        return;
+      }
+      btnTest.disabled = true;
+      setModalStatus('\u23F3 Sending live 10-token test ("Reply with OK") to ' + payload.model_id + '\u2026', 'warn');
+      apiFetch('/api/admin/ai-providers/test', { method: 'POST', body: payload })
+        .then(function (r) {
+          setModalStatus('\u2713 ' + (r.message || 'Connected') + ' \u00B7 ' + (r.model_id || payload.model_id) + ' (' + (r.latency_ms || 0) + ' ms)', 'ok');
+          toast('Connection OK (' + (r.latency_ms || 0) + ' ms)!', 'ok');
+        })
+        .catch(function (e) {
+          setModalStatus('\u2715 Connection failed: ' + e.message, 'error');
+          toast('Connection failed: ' + e.message, 'amber');
+        })
+        .finally(function () { btnTest.disabled = false; });
+    });
+
+    btnSave.addEventListener('click', function () {
+      var payload = {
+        id: editingProviderId || undefined,
+        label: inpLabel.value.trim(),
+        provider_type: selType.value,
+        base_url: inpBaseUrl.value.trim(),
+        model_id: inpModelId.value.trim(),
+        api_key: inpApiKey.value.trim(),
+        priority: Number(inpPriority.value) || 10,
+        enabled: true
+      };
+      if (!payload.label || !payload.base_url || !payload.model_id || (!payload.api_key && !editingProviderId)) {
+        setModalStatus('Display Label, Base URL, Model ID, and API Key are required.', 'warn');
+        return;
+      }
+      btnSave.disabled = true;
+      setModalStatus('Saving provider to D1\u2026', 'warn');
+      apiFetch('/api/admin/ai-providers', { method: 'POST', body: payload })
+        .then(function (r) {
+          var saved = r && r.provider;
+          resetForm();
+          setModalStatus('\u2713 Saved "' + ((saved && saved.label) || payload.label) + '" to D1!', 'ok');
+          toast('Saved custom AI provider!', 'ok');
+          return refreshProviders().then(function () {
+            if (saved && saved.id) {
+              saveAiEnginePref('custom:' + saved.id);
+            }
+          });
+        })
+        .catch(function (e) {
+          setModalStatus('\u2715 ' + e.message, 'error');
+          toast('Save failed: ' + e.message, 'crimson');
+        })
+        .finally(function () { btnSave.disabled = false; });
+    });
+
+    btnReset.addEventListener('click', function () {
+      resetForm();
+      setModalStatus('Form cleared.', '');
+    });
+
+    function closeModal() {
+      document.removeEventListener('keydown', onEsc);
+      document.body.classList.remove('cso-modal-open');
+      overlay.remove();
+    }
+    function onEsc(e) {
+      if (e.key === 'Escape') closeModal();
+    }
+    btnClose.addEventListener('click', closeModal);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener('keydown', onEsc);
+    document.body.classList.add('cso-modal-open');
+
+    body.append(presetSec, formGrid, modalStatus, btnRow, listSec);
+    dialog.append(head, body);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    listHost.appendChild(el('p', 'cso-ca-empty', 'Loading saved providers from D1\u2026'));
+    refreshProviders();
+  }
+
+  window.CSOOpenAiProvidersModal = openAiProvidersManagerModal;
+  window.CSOAiEngineHelper = {
+    storageKey: AI_ENGINE_STORAGE_KEY,
+    getPref: getSavedAiEnginePref,
+    setPref: saveAiEnginePref,
+    populateSelect: populateAiEngineSelect,
+    fetchProviders: fetchCustomAiProviders
+  };
+
   function slugify(raw) {
     return String(raw || '')
       .toLowerCase()
@@ -1796,6 +2307,47 @@
     lblAutoCover.append(chkAiAutoCover, el('span', '', 'Auto-generate AI Cover Photo if empty'));
     aiOptsRow.append(depthWrap, lblOverwrite, lblAutoCover);
 
+    // v361 Multi-Provider AI Engine Switcher & + Add AI API Control Row
+    var aiEngineRow = el('div', 'cso-ai-engine-bar');
+    var engineLblWrap = el('label', 'cso-ai-engine-wrap');
+    engineLblWrap.appendChild(el('span', 'cso-guide-depth-lbl', '\uD83E\uDD16 AI Engine:'));
+    var selGuideAiEngine = el('select', 'cso-form-select cso-ai-engine-select');
+    selGuideAiEngine.id = 'selGuideAiEngine';
+    selGuideAiEngine.setAttribute('aria-label', 'Select AI Engine or Custom Provider');
+    populateAiEngineSelect(selGuideAiEngine, cachedCustomAiProviders);
+    selGuideAiEngine.addEventListener('change', function () {
+      saveAiEnginePref(selGuideAiEngine.value);
+    });
+    engineLblWrap.appendChild(selGuideAiEngine);
+
+    var btnOpenAiProviders = el('button', 'cso-pill-btn cso-ai-add-api-btn', '\uD83D\uDD11 + Add AI API');
+    btnOpenAiProviders.type = 'button';
+    btnOpenAiProviders.id = 'btnOpenAiProvidersModal';
+    btnOpenAiProviders.addEventListener('click', openAiProvidersManagerModal);
+    aiEngineRow.append(engineLblWrap, btnOpenAiProviders);
+
+    function getSelectedAiEngine() {
+      return (selGuideAiEngine && selGuideAiEngine.value && selGuideAiEngine.value !== '__none_custom__')
+        ? selGuideAiEngine.value
+        : getSavedAiEnginePref();
+    }
+
+    window.addEventListener('cso:ai-providers-updated', function (ev) {
+      if (!selGuideAiEngine.isConnected) return;
+      var list = (ev && ev.detail && ev.detail.providers) || cachedCustomAiProviders;
+      populateAiEngineSelect(selGuideAiEngine, list);
+    });
+    window.addEventListener('cso:ai-engine-changed', function (ev) {
+      if (!selGuideAiEngine.isConnected) return;
+      var nextVal = ev && ev.detail && ev.detail.value;
+      if (nextVal && selGuideAiEngine.value !== nextVal) {
+        populateAiEngineSelect(selGuideAiEngine, cachedCustomAiProviders);
+      }
+    });
+    fetchCustomAiProviders().then(function (list) {
+      if (selGuideAiEngine.isConnected) populateAiEngineSelect(selGuideAiEngine, list);
+    });
+
     var aiActions = el('div', 'cso-guide-ai-actions');
 
     var btnAiAutoFix = el('button', 'cso-btn cso-btn-primary', '\u2728 AI Auto-Fix & Fill Everything');
@@ -1826,6 +2378,7 @@
       btnAiMeta.disabled = busy;
       btnAiFullOr.disabled = busy;
       selAiDepth.disabled = busy;
+      selGuideAiEngine.disabled = busy;
     }
 
     function applyAutoFixPayload(d, opts) {
@@ -1948,7 +2501,7 @@
       var bodyPromise = needBodyOr
         ? apiFetch('/api/admin/ai-coauthor', {
           method: 'POST',
-          body: { mode: 'translate_markdown', input: inBodyEn.value.slice(0, 64000) }
+          body: { mode: 'translate_markdown', input: inBodyEn.value.slice(0, 64000), preferred_model: getSelectedAiEngine() }
         }).then(function (mdRes) {
           var md = mdRes && mdRes.data && (mdRes.data.translated_markdown || mdRes.data.translated_or);
           if (md) inBodyOr.value = md;
@@ -1963,7 +2516,7 @@
       var metaPromise = needMetaOr
         ? apiFetch('/api/admin/ai-coauthor', {
           method: 'POST',
-          body: { mode: 'translate_fields', fields: metaFields }
+          body: { mode: 'translate_fields', fields: metaFields, preferred_model: getSelectedAiEngine() }
         }).then(function (trRes) {
           var tr = (trRes && trRes.data && trRes.data.translations) || {};
           if (tr.title_or) inTitleOr.value = tr.title_or;
@@ -2042,6 +2595,7 @@
             mode: 'auto_fix_fill',
             depth: selAiDepth.value,
             skip_body_or: true,
+            preferred_model: getSelectedAiEngine(),
             pdf_text: extracted.text,
             pdf_filename: file.name || 'official-document.pdf',
             input: aiSeed.value.trim(),
@@ -2051,7 +2605,7 @@
         }).then(function (res) {
           var d = (res && res.data) || {};
           applyAutoFixPayload(d, { overwrite: true, alwaysRepairBody: true, pdfRecord: pdfRec });
-          var provLabel = ((res && res.provider_label) || (res && res.provider) || 'AI') + (res && res.model ? (' · ' + res.model) : '');
+          var provLabel = (res && res.provider_model) || (((res && res.provider_label) || (res && res.provider) || 'AI') + (res && res.model ? (' · ' + res.model) : ''));
           return runDedicatedOdiaTranslationPass(true, pdfRec).then(function () {
             aiStatus.textContent = '3/3 Filling metadata, links & cover\u2026';
             var maybeCover = (chkAiAutoCover.checked && (!inCoverUrl.value.trim() || chkAiOverwrite.checked))
@@ -2120,6 +2674,7 @@
             depth: selAiDepth.value,
             skip_body_or: true,
             preserve_body_en: lockBodyEn,
+            preferred_model: getSelectedAiEngine(),
             input: seed,
             draft: currentDraft,
             overwrite: overwriteMode
@@ -2132,7 +2687,7 @@
           lockBodyEn: lockBodyEn,
           lockedBodyEnValue: pastedBodyEn
         });
-        var provLabel = ((res && res.provider_label) || (res && res.provider) || 'AI') + (res && res.model ? (' · ' + res.model) : '');
+        var provLabel = (res && res.provider_model) || (((res && res.provider_label) || (res && res.provider) || 'AI') + (res && res.model ? (' · ' + res.model) : ''));
         var odiaSkippedDueToQuota = Boolean(res && (res.quota_exhausted_odia || res.provider === 'deterministic_fallback'));
 
         // Pass 2: Odia translation wrapped in its own try/catch so a 429/quota error NEVER discards Pass 1 English fields
@@ -2193,8 +2748,8 @@
         return;
       }
       setAiBusy(true);
-      aiStatus.textContent = 'Generating structured guide outline & draft via Gemini Flash\u2026';
-      apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'guide', input: seed } })
+      aiStatus.textContent = 'Generating structured guide outline & draft\u2026';
+      apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'guide', input: seed, preferred_model: getSelectedAiEngine() } })
         .then(function (res) {
           var d = (res && res.data) || {};
           if (d.title_en) inTitleEn.value = d.title_en;
@@ -2217,9 +2772,10 @@
             });
             drawTakeaways();
           }
-          var provLabel = ((res && res.provider_label) || (res && res.provider) || 'Free AI') + (res && res.model ? (' · ' + res.model) : '');
+          var provLabel = (res && res.provider_model) || (((res && res.provider_label) || (res && res.provider) || 'Free AI') + (res && res.model ? (' · ' + res.model) : ''));
+          aiStatus.classList.remove('is-warn-amber');
           aiStatus.textContent = '\u2713 Draft generated via ' + provLabel + '!';
-          toast('AI Outline & Draft generated!', 'ok');
+          toast('AI Outline & Draft generated via ' + provLabel + '!', 'ok');
         })
         .catch(function (e) {
           var msg = formatAiErrorMessage(e);
@@ -2237,7 +2793,7 @@
       }
       setAiBusy(true);
       aiStatus.textContent = 'Suggesting SEO Title, Slug, Summary & Tags\u2026';
-      apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'suggest_meta', input: seed, kind: 'informative guide' } })
+      apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'suggest_meta', input: seed, kind: 'informative guide', preferred_model: getSelectedAiEngine() } })
         .then(function (res) {
           var d = (res && res.data) || {};
           if (Array.isArray(d.titles_en) && d.titles_en[0]) inTitleEn.value = d.titles_en[0];
@@ -2247,7 +2803,9 @@
           if (d.summary_or) inSumOr.value = d.summary_or;
           if (d.read_minutes) inReadMins.value = String(d.read_minutes);
           if (Array.isArray(d.tags) && d.tags.length) inTags.value = d.tags.join(', ');
-          aiStatus.textContent = '\u2713 SEO Title, Slug, Summary & Tags updated!';
+          var provLabel = (res && res.provider_model) || ((res && res.provider_label) || 'AI');
+          aiStatus.classList.remove('is-warn-amber');
+          aiStatus.textContent = '\u2713 SEO Title, Slug, Summary & Tags updated via ' + provLabel + '!';
           toast('SEO metadata applied!', 'ok');
         })
         .catch(function (e) {
@@ -2277,7 +2835,7 @@
       }
       setAiBusy(true);
       aiStatus.textContent = 'Translating entire guide into natural Odia (\u0B13\u0B21\u0B3C\u0B3F\u0B06)\u2026';
-      apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'translate_fields', fields: fields } })
+      apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'translate_fields', fields: fields, preferred_model: getSelectedAiEngine() } })
         .then(function (res) {
           var tr = (res && res.data && res.data.translations) || {};
           if (tr.title_or) inTitleOr.value = tr.title_or;
@@ -2292,7 +2850,8 @@
           linksList.forEach(function (l, i) { if (tr['lnk_' + i]) l.label_or = tr['lnk_' + i]; });
           drawTakeaways(); drawPhotos(); drawPdfs(); drawLinks();
           updateWordCountAndReadTime(false);
-          var provLabel = ((res && res.provider_label) || (res && res.provider) || 'Free AI') + (res && res.model ? (' · ' + res.model) : '');
+          var provLabel = (res && res.provider_model) || (((res && res.provider_label) || (res && res.provider) || 'Free AI') + (res && res.model ? (' · ' + res.model) : ''));
+          aiStatus.classList.remove('is-warn-amber');
           aiStatus.textContent = '\u2713 Full guide translated into Odia via ' + provLabel + '!';
           toast('Translated all guide fields & media labels to Odia!', 'ok');
         })
@@ -2305,7 +2864,7 @@
     });
 
     aiActions.append(btnAiAutoFix, btnAiDraft, btnAiMeta, btnAiFullOr, aiStatus);
-    aiCard.append(aiHead, pdfDropzone, aiSeed, aiOptsRow, aiActions);
+    aiCard.append(aiHead, pdfDropzone, aiSeed, aiOptsRow, aiEngineRow, aiActions);
     shell.appendChild(aiCard);
 
     // ---- 3. STRUCTURED METADATA & BILINGUAL CONTENT ----
@@ -2472,7 +3031,7 @@
       setMdTranslateBusy(true, '\u23F3 Translating Markdown sections & tables to \u0B13\u0B21\u0B3C\u0B3F\u0B06\u2026');
       apiFetch('/api/admin/ai-coauthor', {
         method: 'POST',
-        body: { mode: 'translate_markdown', input: src }
+        body: { mode: 'translate_markdown', input: src, preferred_model: getSelectedAiEngine() }
       }).then(function (res) {
         var d = (res && res.data) || {};
         var outMd = String(d.translated_markdown || d.translated_or || '').trim();
@@ -2482,7 +3041,7 @@
         btnMdCopyLast.hidden = false;
         updateWordCountAndReadTime(false);
         var chunks = Number(d.chunks_count || (res && res.chunks_count) || 1);
-        var prov = (res && (res.provider_label || res.provider)) || 'Gemini Pro';
+        var prov = (res && (res.provider_model || res.provider_label || res.provider)) || 'Gemini Flash';
         setMdTranslateBusy(false, '\u2713 Translated full Markdown (' + chunks + (chunks === 1 ? ' section' : ' sections') + ' \u00B7 ' + prov + ')');
         toast('Full Markdown body translated to \u0B13\u0B21\u0B3C\u0B3F\u0B06 with tables & headings intact!', 'ok');
       }).catch(function (e) {
@@ -2509,7 +3068,7 @@
         : '\u23F3 Translating current section & tables to \u0B13\u0B21\u0B3C\u0B3F\u0B06\u2026');
       apiFetch('/api/admin/ai-coauthor', {
         method: 'POST',
-        body: { mode: 'translate_markdown', input: snippet }
+        body: { mode: 'translate_markdown', input: snippet, preferred_model: getSelectedAiEngine() }
       }).then(function (res) {
         var d = (res && res.data) || {};
         var outMd = String(d.translated_markdown || d.translated_or || '').trim();

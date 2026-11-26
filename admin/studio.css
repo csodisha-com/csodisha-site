@@ -5547,3 +5547,273 @@ body.cso-studio-body {
     font-size: max(16px, 1rem);
   }
 }
+
+/* ============================================================================
+ * v361 Multi-Provider AI Engine Switcher & API Manager Modal (Strict CSP / 4-Theme AAA)
+ * ============================================================================ */
+.cso-ai-engine-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--studio-border);
+  background: var(--cso-surface-alt);
+}
+
+.cso-ai-engine-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.cso-ai-engine-select {
+  flex: 1 1 220px;
+  min-width: 0;
+  min-height: 40px;
+}
+
+.cso-ai-add-api-btn {
+  min-height: 40px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cso-htr-engine-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.55rem;
+  border-radius: 9px;
+  border: 1px solid var(--studio-border);
+  background: var(--cso-surface-alt);
+}
+
+.cso-htr-engine-lbl {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--studio-text);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cso-htr-engine-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.78rem;
+}
+
+.cso-htr-api-btn {
+  min-height: 36px;
+  padding: 0 0.6rem;
+  font-size: 0.76rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cso-aip-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: var(--cso-scrim, rgba(15, 23, 42, 0.72));
+}
+
+.cso-aip-dialog {
+  width: min(760px, 100%);
+  max-height: min(90dvh, 860px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  border: 1px solid var(--studio-border);
+  background-color: var(--cso-surface-elevated);
+  color: var(--studio-text);
+  box-shadow: var(--cso-card-shadow);
+  opacity: 1;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: hidden;
+}
+
+.cso-aip-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--studio-border);
+  background: var(--cso-surface-alt);
+}
+
+.cso-aip-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--studio-text);
+}
+
+.cso-aip-sub {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--studio-muted);
+}
+
+.cso-aip-body {
+  padding: 1rem 1.25rem 1.35rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.cso-aip-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cso-aip-sec-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--studio-muted);
+}
+
+.cso-aip-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.cso-aip-preset-btn {
+  min-height: 38px;
+  font-size: 0.8rem;
+}
+
+.cso-aip-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--studio-muted);
+}
+
+.cso-aip-status {
+  padding: 0.55rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--studio-border);
+  background: var(--cso-surface-alt);
+  color: var(--studio-text);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.cso-aip-status.is-ok {
+  border-color: var(--studio-ok-border);
+  background: var(--studio-ok-bg);
+  color: var(--studio-ok-fg);
+}
+
+.cso-aip-status.is-warn {
+  border-color: var(--studio-warn-border);
+  background: var(--studio-warn-bg);
+  color: var(--studio-warn-fg);
+}
+
+.cso-aip-status.is-error {
+  border-color: var(--studio-err-border);
+  background: var(--studio-err-bg);
+  color: var(--studio-err-fg);
+}
+
+.cso-aip-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.cso-aip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cso-aip-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid var(--studio-border);
+  background: var(--studio-surface);
+}
+
+.cso-aip-item.is-disabled {
+  opacity: 0.72;
+}
+
+.cso-aip-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.cso-aip-item-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cso-aip-item-name {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--studio-text);
+}
+
+.cso-aip-item-meta {
+  font-size: 0.78rem;
+  color: var(--studio-muted);
+  word-break: break-all;
+}
+
+.cso-aip-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+@media (max-width: 640px) {
+  .cso-aip-overlay {
+    padding: 8px;
+  }
+
+  .cso-aip-dialog {
+    max-height: 94dvh;
+  }
+
+  .cso-ai-engine-wrap {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cso-ai-add-api-btn,
+  .cso-aip-preset-btn {
+    min-height: 44px;
+  }
+}

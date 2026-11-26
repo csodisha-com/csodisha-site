@@ -51,6 +51,7 @@ import { handlePublicGuidesRoute, handlePublicGuidesApi } from '../functions/_li
 import { handleSitemapXml } from '../functions/api/content/_seo.js';
 import { VALID_AI_MODES } from '../functions/_lib/ai-coauthor.js';
 import { handleAdminAiCoauthorApi } from '../functions/api/admin/ai-coauthor.js';
+import { handleAdminAiProvidersApi } from '../functions/api/admin/ai-providers.js';
 
 const ROOT = process.cwd();
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
@@ -563,10 +564,10 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
   await Promise.all(waits);
 });
 
-// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v360
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v360 CSS, and cso-candidate-cache-v360 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v360');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v360';"), 'sw.js cache version must be cso-candidate-cache-v360');
+// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v361
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v361 CSS, and cso-candidate-cache-v361 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v361');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v361';"), 'sw.js cache version must be cso-candidate-cache-v361');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -704,9 +705,9 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
   assert.ok(adminHtml.includes('id="headerTranslatorWrap"') && adminHtml.includes('id="btnHeaderOdiaTranslator"') && adminHtml.includes('aria-controls="csoHeaderTranslatorPopover"'), 'admin/index.html must pin #btnHeaderOdiaTranslator in the top header bar');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v360'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v360');
-  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v360'), 'admin/index.html must load studio-translator.js?v=20261126v360');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v360'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v361'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v361');
+  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v361'), 'admin/index.html must load studio-translator.js?v=20261126v361');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v361'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
@@ -776,7 +777,12 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
     'runGuideAutoFixAndFill',
     'LOCAL_META_QUOTA_NOTICE',
     'quota_exhausted_odia',
-    'is-warn-amber'
+    'is-warn-amber',
+    'selGuideAiEngine',
+    'btnOpenAiProvidersModal',
+    'csoAiProvidersModal',
+    'cso_admin_preferred_ai_model',
+    'AI_PROVIDER_PRESETS'
   ]) {
     assert.ok(guidesStudioJs.includes(marker), `guides-publishing-studio.js missing required UI marker: ${marker}`);
   }
@@ -972,6 +978,82 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   assert.equal(aiQuotaJson.data.takeaways_en.length, 5);
   assert.ok(aiQuotaJson.data.tags.length >= 4 && aiQuotaJson.data.cover_caption_en && aiQuotaJson.data.cover_alt);
   assert.ok(aiQuotaJson.data.official_links.some((l) => l.url.includes('scholarship.odisha.gov.in')) && aiQuotaJson.data.official_links.some((l) => l.url.includes('odisha.nic.in')) && aiQuotaJson.data.official_links.some((l) => l.url.includes('utkaluniversity.edu.in')));
+
+  // F. v361: Multi-Provider AI API Manager CRUD, Key Masking, SSRF Guard, Preserve-Key on Edit & UI Wiring
+  db.sqlite.exec(read('migrations/0155_ai_providers_v361.sql'));
+  const routerSrc = read('functions/api/admin/_router.js');
+  assert.ok(routerSrc.includes("resource === 'ai-providers'") && routerSrc.includes('requireAdmin'), '_router.js must guard /api/admin/ai-providers with requireAdmin');
+  assert.ok(translatorJs.includes('selHeaderTranslatorAiEngine') && translatorJs.includes('cso_admin_preferred_ai_model'), 'studio-translator.js must wire synced #selHeaderTranslatorAiEngine');
+  assert.ok(studioCss.includes('.cso-aip-dialog') && studioCss.includes('.cso-ai-engine-bar'), 'studio.css must style AI Engine switcher & AI Providers modal');
+
+  // Block insecure http:// and private loopback SSRF URLs
+  await assert.rejects(
+    () => handleAdminAiProvidersApi(
+      jsonReq('https://csodisha.com/api/admin/ai-providers', 'POST', {
+        label: 'Bad Localhost', provider_type: 'openai_compatible', base_url: 'https://127.0.0.1/v1', model_id: 'x', api_key: 'sk-1234567890'
+      }),
+      env, adminActor, '', ctx
+    ),
+    (e) => e && (e.status === 400 || e.status === 422) && /blocked|https/i.test(String(e.message || ''))
+  );
+
+  // Create Groq custom provider
+  const createProvRes = await handleAdminAiProvidersApi(
+    jsonReq('https://csodisha.com/api/admin/ai-providers', 'POST', {
+      label: 'Groq Free (Llama 3.3 70B)',
+      provider_type: 'openai_compatible',
+      base_url: 'https://api.groq.com/openai/v1/',
+      model_id: 'llama-3.3-70b-versatile',
+      api_key: 'gsk_secret_live_key_998877',
+      priority: 5,
+      enabled: true
+    }),
+    env, adminActor, '', ctx
+  );
+  assert.equal(createProvRes.status, 201);
+  const createdProv = (await createProvRes.json()).provider;
+  assert.equal(createdProv.api_key_masked, 'gsk_...8877', 'API key must be masked on response');
+  assert.equal(createdProv.api_key, undefined, 'Raw API key must NEVER be returned to client');
+
+  // GET list returns masked key only
+  const listProvJson = await (await handleAdminAiProvidersApi(
+    new Request('https://csodisha.com/api/admin/ai-providers'),
+    env, adminActor, '', ctx
+  )).json();
+  assert.equal(listProvJson.providers.length, 1);
+  assert.equal(listProvJson.providers[0].api_key_masked, 'gsk_...8877');
+  assert.equal(listProvJson.providers[0].api_key, undefined);
+
+  // Update with blank api_key preserves stored secret key
+  const updProvRes = await handleAdminAiProvidersApi(
+    jsonReq('https://csodisha.com/api/admin/ai-providers', 'POST', {
+      id: createdProv.id,
+      label: 'Groq Free Priority #1',
+      provider_type: 'openai_compatible',
+      base_url: 'https://api.groq.com/openai/v1',
+      model_id: 'llama-3.3-70b-versatile',
+      api_key: '',
+      priority: 1,
+      enabled: true
+    }),
+    env, adminActor, '', ctx
+  );
+  assert.equal(updProvRes.status, 200);
+  const rawAfterUpd = db.sqlite.prepare('SELECT api_key, priority FROM ai_custom_providers WHERE id = ?').get(createdProv.id);
+  assert.equal(rawAfterUpd.api_key, 'gsk_secret_live_key_998877', 'Blank api_key on update must preserve existing stored secret');
+  assert.equal(Number(rawAfterUpd.priority), 1);
+
+  // Delete provider
+  const delProvRes = await handleAdminAiProvidersApi(
+    jsonReq(`https://csodisha.com/api/admin/ai-providers/${createdProv.id}`, 'DELETE'),
+    env, adminActor, createdProv.id, ctx
+  );
+  assert.equal(delProvRes.status, 200);
+  const listAfterDel = await (await handleAdminAiProvidersApi(
+    new Request('https://csodisha.com/api/admin/ai-providers'),
+    env, adminActor, '', ctx
+  )).json();
+  assert.equal(listAfterDel.providers.length, 0);
   await Promise.all(waits);
 });
 

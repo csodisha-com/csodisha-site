@@ -32,6 +32,7 @@ export async function handleAdminAiCoauthorApi(request, env, actor, ctx = null) 
         depth: body.depth,
         skip_body_or: body.skip_body_or,
         preserve_body_en: body.preserve_body_en,
+        preferred_model: body.preferred_model,
         actorId: (actor && actor.userId) || 'admin'
       });
       return json(result);
