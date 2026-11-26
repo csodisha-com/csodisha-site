@@ -1,0 +1,1913 @@
+/**
+ * Common Sense Odisha — Informative Articles & Guides Publishing Studio (v348)
+ * - Dedicated Sidebar Folder & Sub-Views (All, How-To, Exam Strategy, Citizen/Schemes, Odisha GK, Drafts)
+ * - 5 One-Click Structured Starter Blueprint Templates
+ * - Structured Bilingual Inputs, Key Takeaways Repeater & Quick Markdown Formatting Toolbar
+ * - Cover Photo + Inline Photo Gallery (cso-media R2), Downloadable PDFs (cso-files R2),
+ *   Verified Official Links (.gov.in Badge) & Related Practice/Alert Linker
+ * - Full AI Co-Author Bar ($0/mo Gemini + Workers AI: Outline/Draft, Title/Slug/Summary/Tags, 1-Click EN -> Odia)
+ * - Interactive Full-Screen Live Preview Modal (Desktop/Mobile, EN/Odia, 4-Theme Switcher, Direct Publish Live)
+ * Strict CSP-compliant: pure DOM APIs only, zero innerHTML / outerHTML / inline style / inline handlers.
+ */
+(function (window, document) {
+  'use strict';
+
+  var CATEGORIES = [
+    { key: 'how-to', label: 'Step-by-Step How-To Guides', shortLabel: 'How-To Guide', icon: '\uD83E\uDDED' },
+    { key: 'exam-strategy', label: 'Exam Strategy & Study Handbooks', shortLabel: 'Exam Handbook', icon: '\uD83C\uDFAF' },
+    { key: 'citizen-scheme', label: 'Citizen & Scheme Explainers', shortLabel: 'Scheme Explainer', icon: '\uD83C\uDFDB\uFE0F' },
+    { key: 'odisha-gk', label: 'Odisha GK & Heritage', shortLabel: 'Odisha GK', icon: '\uD83C\uDFFA' }
+  ];
+
+  var SUBVIEWS = [
+    { key: 'all', num: '01', title: 'All Articles & Guides', tag: 'ALL' },
+    { key: 'how-to', num: '02', title: 'Step-by-Step How-To Guides', tag: 'HOW-TO' },
+    { key: 'exam-strategy', num: '03', title: 'Exam Strategy & Study Handbooks', tag: 'EXAM' },
+    { key: 'citizen-scheme', num: '04', title: 'Citizen & Scheme Explainers', tag: 'SCHEME' },
+    { key: 'odisha-gk', num: '05', title: 'Odisha GK & Heritage', tag: 'GK' },
+    { key: 'drafts', num: '06', title: 'Drafts', tag: 'DRAFT' }
+  ];
+
+  var STARTER_TEMPLATES = [
+    {
+      key: 'how-to',
+      name: 'Step-by-Step How-To Guide',
+      icon: '\uD83E\uDDED',
+      category: 'how-to',
+      isExam: false,
+      readMinutes: 6,
+      summaryEn: 'Complete step-by-step walkthrough covering eligibility, required documents, online application steps, and common errors to avoid.',
+      takeaways: [
+        { text_en: 'Verify eligibility criteria and keep scanned documents ready before starting.', text_or: '' },
+        { text_en: 'Complete online registration only on the verified official .gov.in portal.', text_or: '' },
+        { text_en: 'Download and save the final acknowledgement receipt PDF for tracking.', text_or: '' }
+      ],
+      bodyEn: [
+        '## Overview',
+        'Explain clearly what this process helps citizens or candidates achieve in Odisha, who conducts it, and key timelines.',
+        '',
+        '## Eligibility & Required Documents',
+        '- Resident / Domicile proof (Odisha Resident Certificate)',
+        '- Identity proof (Aadhaar / Voter ID / PAN)',
+        '- Educational certificates and recent passport-size photograph',
+        '',
+        '| Document | Format | Max Size |',
+        '| --- | --- | --- |',
+        '| Passport Photo | JPG / PNG | 50 KB |',
+        '| Supporting Certificate | PDF | 200 KB |',
+        '',
+        '## Step-by-Step Application/Process',
+        '1. Visit the verified official government portal listed below.',
+        '2. Complete One-Time Registration (OTR) using your mobile number and email.',
+        '3. Fill in personal, educational, and address details accurately.',
+        '4. Upload scanned documents and preview the complete form before final submission.',
+        '5. Save the confirmation PDF and application reference number.',
+        '',
+        '## Common Mistakes to Avoid',
+        '> [!WARNING]',
+        '> Do not submit blurry document scans or mismatched date-of-birth entries between Matriculation Certificate and Aadhaar.',
+        '',
+        '## Official Links & Downloads',
+        'Use the verified official links and downloadable official notification PDFs attached at the bottom of this guide.'
+      ].join('\n')
+    },
+    {
+      key: 'exam-strategy',
+      name: 'Exam Strategy & Study Handbook',
+      icon: '\uD83C\uDFAF',
+      category: 'exam-strategy',
+      isExam: true,
+      readMinutes: 8,
+      summaryEn: 'Structured exam preparation handbook with exam pattern snapshot, high-yield syllabus breakdown, 30/60-day study roadmap, and PYQ practice strategy.',
+      takeaways: [
+        { text_en: 'Focus 60% of revision time on high-weightage Odisha GK, Reasoning, and Core Paper topics.', text_or: '' },
+        { text_en: 'Solve at least 5 years of Previous Year Question Papers (PYQs) under timed CBT conditions.', text_or: '' },
+        { text_en: 'Maintain a daily mistake notebook to eliminate negative marking.', text_or: '' }
+      ],
+      bodyEn: [
+        '## Exam Pattern Snapshot',
+        '| Stage | Mode | Questions / Marks | Duration | Negative Marking |',
+        '| --- | --- | --- | --- | --- |',
+        '| Prelims | CBT / OMR | 100 Qs / 100 Marks | 90 Mins | 0.25 |',
+        '| Mains | Written / CBT | 200 Marks | 180 Mins | As notified |',
+        '',
+        '## High-Yield Syllabus Breakdown',
+        '### Core Scoring Areas',
+        '- Odisha History, Geography, Polity & Welfare Schemes',
+        '- General Studies & Current Affairs (last 8-12 months)',
+        '- Quantitative Aptitude, Data Interpretation & Logical Reasoning',
+        '- Odia & English Language Comprehension',
+        '',
+        '## 30/60-Day Study Roadmap',
+        '1. **Days 1-20 (Foundation):** Complete standard NCERT + Odisha Board core chapters and concise notes.',
+        '2. **Days 21-40 (PYQ & Sectional Practice):** Solve topic-wise PYQs and daily 25-question drills.',
+        '3. **Days 41-60 (Full CBT Mocks & Revision):** Attempt 2 full-length CBT mocks weekly and revise error logs.',
+        '',
+        '> [!TIP]',
+        '> Review every mock test on the same day—analyzing wrong and skipped questions boosts accuracy faster than reading new books.',
+        '',
+        '## PYQ PDFs & CBT Practice Links',
+        'Download the official syllabus and previous year papers attached below, then launch the linked CBT Mock Test.'
+      ].join('\n')
+    },
+    {
+      key: 'citizen-scheme',
+      name: 'Citizen & Government Scheme Explainer',
+      icon: '\uD83C\uDFDB\uFE0F',
+      category: 'citizen-scheme',
+      isExam: false,
+      readMinutes: 5,
+      summaryEn: 'Plain-language citizen guide detailing financial/service benefits, eligibility criteria, required documents checklist, and official helpline.',
+      takeaways: [
+        { text_en: 'Direct Benefit Transfer (DBT) requires an Aadhaar-seeded, NPCI-mapped active bank account.', text_or: '' },
+        { text_en: 'Application is 100% free on the official portal or Mo Seba Kendra / CSC.', text_or: '' },
+        { text_en: 'Check beneficiary status online using your Application ID or Aadhaar number.', text_or: '' }
+      ],
+      bodyEn: [
+        '## Key Financial/Service Benefits',
+        '| Benefit Component | Amount / Coverage | Disbursement Mode |',
+        '| --- | --- | --- |',
+        '| Primary Assistance | As per Govt. Order | Direct Benefit Transfer (DBT) |',
+        '| Frequency | Annual / Installments | Aadhaar-seeded Bank Account |',
+        '',
+        '## Who Can Apply',
+        '- Permanent residents of Odisha meeting the notified income/category criteria.',
+        '- Exclusions: Verify official exclusion clauses in the attached Government Guideline PDF.',
+        '',
+        '## Documents Checklist',
+        '- Aadhaar Card (linked with mobile number)',
+        '- Bank Passbook with active DBT / NPCI seeding',
+        '- Income / Caste / Residence Certificate (as applicable)',
+        '- Ration Card / NFSA / SFSS Card (if required)',
+        '',
+        '> [!IMPORTANT]',
+        '> Never share OTPs or pay unauthorized middlemen. Verify status strictly on the official .gov.in portal.',
+        '',
+        '## Official Portal & Helpline',
+        'Access the verified official scheme portal and citizen helpline details in the Verified Official Links table below.'
+      ].join('\n')
+    },
+    {
+      key: 'odisha-gk',
+      name: 'Odisha GK & Heritage Deep Dive',
+      icon: '\uD83C\uDFFA',
+      category: 'odisha-gk',
+      isExam: true,
+      readMinutes: 7,
+      summaryEn: 'Exam-focused Odisha GK & Heritage deep dive with quick facts box, historical & geographical context, and high-probability Prelims/Mains takeaways.',
+      takeaways: [
+        { text_en: 'Covers frequently tested facts for OPSC OAS, OSSC CGL, OSSSC RI/ARI/Amin, and Odisha Police exams.', text_or: '' },
+        { text_en: 'Structured timeline and regional geography notes ideal for quick last-week revision.', text_or: '' }
+      ],
+      bodyEn: [
+        '## Quick Exam Facts Box',
+        '| Fact Parameter | Exam-Ready Detail |',
+        '| --- | --- |',
+        '| Region / District | Odisha |',
+        '| Historical Era / Dynasty | Mention key dynasty & century |',
+        '| Key Significance | Cultural, administrative, or ecological importance |',
+        '',
+        '## Historical & Geographical Context',
+        'Summarize the historical origin, geographic location, major rivers/districts involved, and cultural evolution in clear short paragraphs.',
+        '',
+        '## Key Prelims/Mains Takeaways',
+        '- **Prelims Focus:** Exact dates, monuments, rivers, wildlife sanctuaries, GI tags, and official awards.',
+        '- **Mains Focus:** Socio-economic impact, heritage preservation initiatives, and Odisha cultural identity.',
+        '',
+        '> [!NOTE]',
+        '> Compare related Odisha static GK topics alongside recent Odisha Government current affairs updates.',
+        '',
+        '## Reference PDFs',
+        'Download the compiled revision notes and reference PDFs attached below for offline study.'
+      ].join('\n')
+    },
+    {
+      key: 'blank',
+      name: 'Blank Custom Guide',
+      icon: '\uD83D\uDCDD',
+      category: 'how-to',
+      isExam: false,
+      readMinutes: 5,
+      summaryEn: '',
+      takeaways: [],
+      bodyEn: '## Overview\n\nStart writing your structured guide here...\n'
+    }
+  ];
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function clear(node) {
+    while (node && node.firstChild) node.removeChild(node.firstChild);
+    return node;
+  }
+
+  function toast(msg, kind) {
+    if (typeof window.showToast === 'function') window.showToast(msg, kind || 'info');
+  }
+
+  function slugify(raw) {
+    return String(raw || '')
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 96);
+  }
+
+  function bustCaches() {
+    if (window.CSOQuickCreate && typeof window.CSOQuickCreate.bustHomeCache === 'function') {
+      window.CSOQuickCreate.bustHomeCache('all');
+    }
+  }
+
+  function apiFetch(url, opts) {
+    var o = opts || {};
+    var method = (o.method || 'GET').toUpperCase();
+    var headers = Object.assign({}, o.headers || {});
+    if (method !== 'GET' && method !== 'HEAD') {
+      headers['X-CSO-CSRF'] = '1';
+      if (!(o.body instanceof FormData) && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+      }
+    }
+    var body = o.body;
+    if (body && !(body instanceof FormData) && typeof body !== 'string') {
+      body = JSON.stringify(body);
+    }
+    return fetch(url, {
+      method: method,
+      credentials: 'same-origin',
+      headers: headers,
+      body: body
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) {
+          var err = new Error((d && (d.error || d.message)) || ('HTTP ' + r.status));
+          err.status = r.status;
+          throw err;
+        }
+        if (method !== 'GET' && method !== 'HEAD' && String(url).indexOf('/ai-coauthor') === -1) {
+          bustCaches();
+        }
+        return d;
+      });
+    });
+  }
+
+  function uploadImageToMediaR2(file) {
+    var fd = new FormData();
+    fd.append('file', file);
+    return apiFetch('/api/admin/media/upload', { method: 'POST', body: fd }).then(function (res) {
+      var u = res && (res.url || (res.item && (res.item.clean_url || res.item.url)));
+      if (!u) throw new Error('Media upload succeeded but no URL returned.');
+      return { url: u, size_bytes: res.size_bytes || 0 };
+    });
+  }
+
+  function uploadPdfToFilesR2(file) {
+    var fd = new FormData();
+    fd.append('file', file);
+    fd.append('folder', 'Study PDFs');
+    return apiFetch('/api/admin/files/upload', { method: 'POST', body: fd }).then(function (res) {
+      var item = (res && res.item) || res || {};
+      var u = item.clean_url || item.url;
+      if (!u) throw new Error('PDF upload succeeded but no URL returned.');
+      return {
+        url: u,
+        size_bytes: Number(item.size_bytes || file.size || 0),
+        original_name: item.original_name || file.name || ''
+      };
+    });
+  }
+
+  function formatBytesLabel(bytes) {
+    var n = Number(bytes || 0);
+    if (!n) return 'Official PDF';
+    if (n < 1024 * 1024) return 'PDF · ' + Math.max(1, Math.round(n / 1024)) + ' KB';
+    return 'PDF · ' + (n / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function getCategoryMeta(key) {
+    for (var i = 0; i < CATEGORIES.length; i++) {
+      if (CATEGORIES[i].key === key) return CATEGORIES[i];
+    }
+    return CATEGORIES[0];
+  }
+
+  function insertAtCursor(textarea, snippet) {
+    if (!textarea) return;
+    var start = textarea.selectionStart || 0;
+    var end = textarea.selectionEnd || 0;
+    var val = textarea.value || '';
+    var prefix = start > 0 && val.charAt(start - 1) !== '\n' ? '\n\n' : '';
+    textarea.value = val.slice(0, start) + prefix + snippet + val.slice(end);
+    textarea.focus();
+    var pos = start + prefix.length + snippet.length;
+    try { textarea.setSelectionRange(pos, pos); } catch (_) {}
+  }
+
+  // =========================================================================
+  // CSP-SAFE CLIENT MARKDOWN RENDERER + TOC BUILDER (FOR LIVE PREVIEW MODAL)
+  // =========================================================================
+  function appendInlineFormatted(parent, rawText) {
+    var text = String(rawText || '');
+    var tokenRe = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)\s]+\))/g;
+    var lastIdx = 0;
+    var match;
+    while ((match = tokenRe.exec(text)) !== null) {
+      if (match.index > lastIdx) {
+        parent.appendChild(document.createTextNode(text.slice(lastIdx, match.index)));
+      }
+      var tok = match[0];
+      if (tok.startsWith('**') && tok.endsWith('**')) {
+        parent.appendChild(el('strong', '', tok.slice(2, -2)));
+      } else if (tok.startsWith('*') && tok.endsWith('*')) {
+        parent.appendChild(el('em', '', tok.slice(1, -1)));
+      } else if (tok.startsWith('`') && tok.endsWith('`')) {
+        parent.appendChild(el('code', '', tok.slice(1, -1)));
+      } else if (tok.startsWith('[')) {
+        var lm = tok.match(/^\[([^\]]+)\]\(([^)\s]+)\)$/);
+        if (lm) {
+          var href = lm[2];
+          if (/^https?:\/\//i.test(href) || (href.startsWith('/') && !href.startsWith('//'))) {
+            var a = el('a', '', lm[1]);
+            a.href = href;
+            if (/^https?:\/\//i.test(href)) {
+              a.target = '_blank';
+              a.rel = 'noopener noreferrer';
+            }
+            parent.appendChild(a);
+          } else {
+            parent.appendChild(document.createTextNode(lm[1]));
+          }
+        }
+      }
+      lastIdx = match.index + tok.length;
+    }
+    if (lastIdx < text.length) {
+      parent.appendChild(document.createTextNode(text.slice(lastIdx)));
+    }
+  }
+
+  function normalizeHtmlLikeBody(rawBody) {
+    var s = String(rawBody || '').replace(/\r\n/g, '\n');
+    if (/<(?:h[23]|p|li|strong|em|br)\b/i.test(s)) {
+      s = s
+        .replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, '\n## $1\n')
+        .replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, '\n### $1\n')
+        .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '\n- $1')
+        .replace(/<strong[^>]*>([\s\S]*?)<\/strong>/gi, '**$1**')
+        .replace(/<b[^>]*>([\s\S]*?)<\/b>/gi, '**$1**')
+        .replace(/<em[^>]*>([\s\S]*?)<\/em>/gi, '*$1*')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/?(?:p|ul|ol|div|section|article)[^>]*>/gi, '\n')
+        .replace(/<[^>]+>/g, '');
+    }
+    return s;
+  }
+
+  function buildBodyDomAndToc(rawBody, prefix) {
+    var frag = document.createDocumentFragment();
+    var toc = [];
+    var lines = normalizeHtmlLikeBody(rawBody).split('\n');
+    var used = {};
+    var i = 0;
+
+    function mkId(txt) {
+      var base = slugify(txt).slice(0, 48) || prefix;
+      var id = prefix + '-' + base;
+      var c = 2;
+      while (used[id]) { id = prefix + '-' + base + '-' + (c++); }
+      used[id] = true;
+      return id;
+    }
+
+    while (i < lines.length) {
+      var line = lines[i].trim();
+      if (!line) { i++; continue; }
+
+      var hm = line.match(/^(#{2,3})\s+(.+)$/);
+      if (hm) {
+        var lvl = hm[1].length;
+        var hText = hm[2].trim();
+        var hid = mkId(hText);
+        toc.push({ id: hid, level: lvl, text: hText });
+        var hNode = el('h' + lvl, 'gp-h' + lvl);
+        hNode.id = hid;
+        appendInlineFormatted(hNode, hText);
+        frag.appendChild(hNode);
+        i++;
+        continue;
+      }
+
+      if (line.startsWith('>')) {
+        var qLines = [];
+        while (i < lines.length && lines[i].trim().startsWith('>')) {
+          qLines.push(lines[i].trim().replace(/^>\s?/, ''));
+          i++;
+        }
+        var badge = '';
+        if (qLines[0] && /^\[!(NOTE|TIP|IMPORTANT|WARNING)\]/i.test(qLines[0])) {
+          badge = qLines.shift().replace(/^\[!([A-Z]+)\]\s*/i, '$1').toUpperCase();
+        }
+        var aside = el('aside', 'gp-callout' + (badge ? ' is-' + badge.toLowerCase() : ''));
+        if (badge) aside.appendChild(el('div', 'gp-callout-tag', badge));
+        qLines.filter(Boolean).forEach(function (ql) {
+          var p = el('p');
+          appendInlineFormatted(p, ql);
+          aside.appendChild(p);
+        });
+        frag.appendChild(aside);
+        continue;
+      }
+
+      if (line.startsWith('|') && line.endsWith('|') && i + 1 < lines.length && /^\|[\s:-]+(?:\|[\s:-]+)*\|$/.test(lines[i + 1].trim())) {
+        var parseRow = function (r) { return r.replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (c) { return c.trim(); }); };
+        var headers = parseRow(line);
+        i += 2;
+        var rows = [];
+        while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
+          rows.push(parseRow(lines[i].trim()));
+          i++;
+        }
+        var wrap = el('div', 'gp-table-wrap');
+        var tbl = el('table', 'gp-table');
+        var thead = el('thead');
+        var trh = el('tr');
+        headers.forEach(function (h) {
+          var th = el('th');
+          appendInlineFormatted(th, h);
+          trh.appendChild(th);
+        });
+        thead.appendChild(trh);
+        var tbody = el('tbody');
+        rows.forEach(function (r) {
+          var tr = el('tr');
+          headers.forEach(function (_, ci) {
+            var td = el('td');
+            appendInlineFormatted(td, r[ci] || '');
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        tbl.append(thead, tbody);
+        wrap.appendChild(tbl);
+        frag.appendChild(wrap);
+        continue;
+      }
+
+      if (/^[-*\u2022]\s+/.test(line)) {
+        var ul = el('ul', 'gp-list');
+        while (i < lines.length && /^[-*\u2022]\s+/.test(lines[i].trim())) {
+          var li = el('li');
+          appendInlineFormatted(li, lines[i].trim().replace(/^[-*\u2022]\s+/, ''));
+          ul.appendChild(li);
+          i++;
+        }
+        frag.appendChild(ul);
+        continue;
+      }
+
+      if (/^\d+\.\s+/.test(line)) {
+        var ol = el('ol', 'gp-list is-ordered');
+        while (i < lines.length && /^\d+\.\s+/.test(lines[i].trim())) {
+          var oli = el('li');
+          appendInlineFormatted(oli, lines[i].trim().replace(/^\d+\.\s+/, ''));
+          ol.appendChild(oli);
+          i++;
+        }
+        frag.appendChild(ol);
+        continue;
+      }
+
+      var paraLines = [];
+      while (i < lines.length && lines[i].trim() && !/^(#{2,3}\s|>|\||[-*\u2022]\s|\d+\.\s)/.test(lines[i].trim())) {
+        paraLines.push(lines[i].trim());
+        i++;
+      }
+      var pNode = el('p', 'gp-para');
+      appendInlineFormatted(pNode, paraLines.join(' '));
+      frag.appendChild(pNode);
+    }
+
+    return { fragment: frag, toc: toc };
+  }
+
+  // =========================================================================
+  // INTERACTIVE FULL-SCREEN LIVE PREVIEW MODAL
+  // =========================================================================
+  function openLivePreviewModal(draft, onPublishLive) {
+    var existing = document.getElementById('csoGuideLivePreviewModal');
+    if (existing) existing.remove();
+
+    var state = {
+      viewport: 'desktop', // desktop | mobile
+      lang: 'en',          // en | or
+      theme: 'system'      // system | dark | reading | utkal-bharat
+    };
+
+    var overlay = el('div', 'cso-guide-preview-overlay');
+    overlay.id = 'csoGuideLivePreviewModal';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Live Pre-Publish Guide Preview');
+
+    var toolbar = el('div', 'cso-guide-preview-toolbar');
+    var tbLeft = el('div', 'cso-guide-preview-tb-group');
+    tbLeft.appendChild(el('strong', 'cso-guide-preview-title', '\uD83D\uDC41\uFE0F Live Preview \u00B7 /guides/' + (draft.slug || slugify(draft.title_en) || 'preview')));
+
+    // Viewport switch
+    var vpGroup = el('div', 'cso-guide-preview-seg');
+    var btnDesk = el('button', 'cso-guide-preview-seg-btn is-active', '\uD83D\uDDA5\uFE0F Desktop (100%)');
+    btnDesk.type = 'button';
+    var btnMob = el('button', 'cso-guide-preview-seg-btn', '\uD83D\uDCF1 Mobile (390px)');
+    btnMob.type = 'button';
+    vpGroup.append(btnDesk, btnMob);
+
+    // Language switch
+    var langGroup = el('div', 'cso-guide-preview-seg');
+    var btnEn = el('button', 'cso-guide-preview-seg-btn is-active', 'English');
+    btnEn.type = 'button';
+    var btnOr = el('button', 'cso-guide-preview-seg-btn', '\u0B13\u0B21\u0B3C\u0B3F\u0B06');
+    btnOr.type = 'button';
+    langGroup.append(btnEn, btnOr);
+
+    // 4-Theme selector
+    var themeSel = el('select', 'cso-form-select cso-guide-preview-theme-sel');
+    themeSel.setAttribute('aria-label', 'Preview Theme');
+    [
+      ['system', 'System Light'],
+      ['dark', 'Dark Night'],
+      ['reading', 'Reading Mode'],
+      ['utkal-bharat', 'Odisha & Bharat']
+    ].forEach(function (pair) {
+      var op = el('option', '', pair[1]);
+      op.value = pair[0];
+      themeSel.appendChild(op);
+    });
+
+    var tbRight = el('div', 'cso-guide-preview-tb-group');
+    var btnPublish = el('button', 'cso-btn cso-btn-primary', '\uD83D\uDE80 Publish Live');
+    btnPublish.type = 'button';
+    var btnClose = el('button', 'cso-pill-btn', '\u2715 Close');
+    btnClose.type = 'button';
+    tbRight.append(btnPublish, btnClose);
+
+    toolbar.append(tbLeft, vpGroup, langGroup, themeSel, tbRight);
+
+    var stageWrap = el('div', 'cso-guide-preview-stage-wrap');
+    var frame = el('div', 'cso-guide-preview-frame');
+    frame.setAttribute('data-cso-theme', 'system');
+    frame.setAttribute('data-theme', 'system');
+    frame.setAttribute('data-cso-resolved-mode', 'light');
+    frame.setAttribute('data-guide-lang', 'en');
+    stageWrap.appendChild(frame);
+
+    function applyPreviewControls() {
+      btnDesk.classList.toggle('is-active', state.viewport === 'desktop');
+      btnMob.classList.toggle('is-active', state.viewport === 'mobile');
+      frame.classList.toggle('is-mobile-frame', state.viewport === 'mobile');
+
+      btnEn.classList.toggle('is-active', state.lang === 'en');
+      btnOr.classList.toggle('is-active', state.lang === 'or');
+      frame.setAttribute('data-guide-lang', state.lang);
+
+      frame.setAttribute('data-cso-theme', state.theme);
+      frame.setAttribute('data-theme', state.theme === 'utkal-bharat' ? 'odisha' : state.theme);
+      frame.setAttribute('data-cso-resolved-mode', state.theme === 'dark' ? 'dark' : 'light');
+      renderArticleIntoFrame();
+    }
+
+    function pickLang(enVal, orVal) {
+      if (state.lang === 'or' && String(orVal || '').trim()) return String(orVal).trim();
+      return String(enVal || orVal || '').trim();
+    }
+
+    function renderArticleIntoFrame() {
+      clear(frame);
+      var cat = getCategoryMeta(draft.category);
+      var main = el('div', 'gp-main gp-reader-main cso-gp-preview-inner');
+
+      // Kicker
+      var kicker = el('div', 'cso-detail-kicker');
+      kicker.append(
+        el('span', '', 'CS ODISHA'),
+        el('span', 'cso-detail-kicker-sep', '\u203A'),
+        el('span', '', 'GUIDES'),
+        el('span', 'cso-detail-kicker-sep', '\u203A'),
+        el('span', '', cat.label.toUpperCase())
+      );
+      main.appendChild(kicker);
+
+      // Header Card
+      var head = el('header', 'gp-article-head');
+      var metaRow = el('div', 'gp-article-meta-row');
+      metaRow.appendChild(el('span', 'gp-badge', cat.icon + ' ' + cat.label));
+      metaRow.appendChild(el('span', 'gp-meta-pill', '\u23F1\uFE0F ' + (draft.read_minutes || 5) + ' min read'));
+      metaRow.appendChild(el('span', 'gp-meta-pill', draft.scope || 'Odisha'));
+      if (draft.is_exam) metaRow.appendChild(el('span', 'gp-meta-pill is-exam', '\uD83D\uDCDD Exam Relevant'));
+      head.appendChild(metaRow);
+      head.appendChild(el('h1', 'gp-article-title', pickLang(draft.title_en, draft.title_or) || 'Untitled Informative Guide'));
+      var sumTxt = pickLang(draft.summary_en, draft.summary_or);
+      if (sumTxt) head.appendChild(el('p', 'gp-article-summary', sumTxt));
+      main.appendChild(head);
+
+      // Cover Photo
+      if (draft.cover_image) {
+        var fig = el('figure', 'gp-cover-figure');
+        var img = el('img', 'gp-cover-img');
+        img.src = draft.cover_image;
+        img.alt = draft.cover_caption_en || draft.title_en || 'Cover Photo';
+        fig.appendChild(img);
+        var cap = pickLang(draft.cover_caption_en, draft.cover_caption_or);
+        if (cap) fig.appendChild(el('figcaption', 'gp-caption', cap));
+        main.appendChild(fig);
+      }
+
+      // Reader Layout (TOC + Body)
+      var layout = el('div', 'gp-reader-layout');
+      var parsed = buildBodyDomAndToc(pickLang(draft.body_en, draft.body_or), 'pv-' + state.lang);
+
+      var rail = el('aside', 'gp-toc-rail');
+      if (parsed.toc.length) {
+        var tocNav = el('nav', 'gp-toc');
+        tocNav.appendChild(el('div', 'gp-toc-title', state.lang === 'or' ? '\u0B2C\u0B3F\u0B37\u0B5F\u0B38\u0B42\u0B1A\u0B40' : 'On This Page'));
+        var ol = el('ol', 'gp-toc-list');
+        parsed.toc.forEach(function (h) {
+          var li = el('li', 'is-lvl-' + h.level);
+          var a = el('a', '', h.text);
+          a.href = '#' + h.id;
+          li.appendChild(a);
+          ol.appendChild(li);
+        });
+        tocNav.appendChild(ol);
+        rail.appendChild(tocNav);
+      }
+
+      var art = el('article', 'gp-article-body');
+
+      // Key Takeaways
+      var tks = (draft.takeaways || []).filter(function (t) { return t && (t.text_en || t.text_or); });
+      if (tks.length) {
+        var tkSec = el('section', 'gp-takeaways');
+        tkSec.appendChild(el('h2', 'gp-sec-title', state.lang === 'or' ? '\uD83D\uDCCC \u0B2E\u0B41\u0B16\u0B4D\u0B5F \u0B2C\u0B3F\u0B28\u0B4D\u0B26\u0B41\u0B38\u0B2E\u0B42\u0B39' : '\uD83D\uDCCC Key Takeaways'));
+        var tkUl = el('ul', 'gp-takeaway-list');
+        tks.forEach(function (t) {
+          tkUl.appendChild(el('li', '', pickLang(t.text_en, t.text_or)));
+        });
+        tkSec.appendChild(tkUl);
+        art.appendChild(tkSec);
+      }
+
+      // Formatted Body
+      var prose = el('div', 'gp-prose');
+      prose.appendChild(parsed.fragment);
+      art.appendChild(prose);
+
+      // Inline Photo Gallery
+      var photos = (draft.photos || []).filter(function (p) { return p && p.url; });
+      if (photos.length) {
+        var phSec = el('section', 'gp-section gp-gallery-sec');
+        phSec.appendChild(el('h2', 'gp-sec-title', state.lang === 'or' ? '\uD83D\uDDBC\uFE0F \u0B1A\u0B3F\u0B24\u0B4D\u0B30 \u0B13 \u0B2B\u0B1F\u0B4B' : '\uD83D\uDDBC\uFE0F Visual Walkthrough & Reference Photos'));
+        var pg = el('div', 'gp-gallery-grid');
+        photos.forEach(function (p) {
+          var pf = el('figure', 'gp-photo-card');
+          var pi = el('img');
+          pi.src = p.url;
+          pi.alt = p.alt || p.caption_en || 'Guide photo';
+          pf.appendChild(pi);
+          var pc = pickLang(p.caption_en, p.caption_or);
+          if (pc) pf.appendChild(el('figcaption', 'gp-caption', pc));
+          pg.appendChild(pf);
+        });
+        phSec.appendChild(pg);
+        art.appendChild(phSec);
+      }
+
+      // Downloadable PDFs
+      var pdfs = (draft.pdfs || []).filter(function (d) { return d && d.url && d.title_en; });
+      if (pdfs.length) {
+        var pdfSec = el('section', 'gp-section gp-pdfs-sec');
+        pdfSec.appendChild(el('h2', 'gp-sec-title', state.lang === 'or' ? '\uD83D\uDCC4 \u0B21\u0B3E\u0B09\u0B28\u0B32\u0B4B\u0B21\u0B4D \u0B2F\u0B4B\u0B17\u0B4D\u0B5F PDF' : '\uD83D\uDCC4 Downloadable PDFs & Official Documents'));
+        var pdg = el('div', 'gp-pdf-grid');
+        pdfs.forEach(function (d) {
+          var a = el('a', 'gp-pdf-card');
+          a.href = d.url;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.appendChild(el('span', 'gp-pdf-ico', 'PDF'));
+          var info = el('span', 'gp-pdf-info');
+          info.appendChild(el('strong', 'gp-pdf-title', pickLang(d.title_en, d.title_or)));
+          info.appendChild(el('span', 'gp-pdf-badge', d.badge || 'Official PDF'));
+          a.appendChild(info);
+          a.appendChild(el('span', 'gp-pdf-dl', 'Download \u2193'));
+          pdg.appendChild(a);
+        });
+        pdfSec.appendChild(pdg);
+        art.appendChild(pdfSec);
+      }
+
+      // Verified Official Links
+      var links = (draft.links || []).filter(function (l) { return l && l.url && l.label_en; });
+      if (links.length) {
+        var lkSec = el('section', 'gp-section gp-links-sec');
+        lkSec.appendChild(el('h2', 'gp-sec-title', state.lang === 'or' ? '\uD83D\uDD17 \u0B2F\u0B3E\u0B1E\u0B4D\u0B1A \u0B39\u0B4B\u0B07\u0B25\u0B3F\u0B2C\u0B3E \u0B38\u0B30\u0B15\u0B3E\u0B30\u0B40 \u0B32\u0B3F\u0B19\u0B4D\u0B15\u0B4D' : '\uD83D\uDD17 Verified Official Links & References'));
+        var tw = el('div', 'gp-table-wrap');
+        var tb = el('table', 'gp-table gp-links-table');
+        var th = el('thead');
+        var thr = el('tr');
+        ['Resource / Portal', 'Verification', 'Action'].forEach(function (c) { thr.appendChild(el('th', '', c)); });
+        th.appendChild(thr);
+        var tbd = el('tbody');
+        links.forEach(function (l) {
+          var tr = el('tr');
+          tr.appendChild(el('td', '', pickLang(l.label_en, l.label_or)));
+          var tdv = el('td');
+          tdv.appendChild(el('span', l.is_official ? 'gp-gov-badge' : 'gp-ref-badge', l.is_official ? '\u2713 Official .gov.in Verified' : 'Reference'));
+          tr.appendChild(tdv);
+          var tda = el('td');
+          var la = el('a', 'gp-link-btn', 'Open Link \u2197');
+          la.href = l.url;
+          la.target = '_blank';
+          la.rel = 'noopener noreferrer';
+          tda.appendChild(la);
+          tr.appendChild(tda);
+          tbd.appendChild(tr);
+        });
+        tb.append(th, tbd);
+        tw.appendChild(tb);
+        lkSec.appendChild(tw);
+        art.appendChild(lkSec);
+      }
+
+      // Related Practice / Alert CTA
+      var cta = draft.related_cta;
+      if (cta && (cta.slug || cta.url)) {
+        var cSec = el('section', 'gp-related-cta');
+        var copy = el('div', 'gp-related-cta-copy');
+        var lbl = cta.type === 'mock_test' ? '\u23F1\uFE0F Related CBT Mock Test' : (cta.type === 'job' ? '\uD83D\uDCBC Related Recruitment Alert' : (cta.type === 'scheme' ? '\uD83C\uDFDB\uFE0F Related Government Scheme' : '\uD83D\uDE80 Recommended Action'));
+        copy.appendChild(el('span', 'gp-badge', lbl));
+        copy.appendChild(el('h2', 'gp-related-cta-title', pickLang(cta.title_en, cta.title_or) || cta.slug));
+        var cBtn = el('a', 'gp-btn-primary', pickLang(cta.cta_en || 'Open Resource \u2192', cta.cta_or));
+        cBtn.href = cta.url || '#';
+        cSec.append(copy, cBtn);
+        art.appendChild(cSec);
+      }
+
+      layout.append(rail, art);
+      main.appendChild(layout);
+      frame.appendChild(main);
+    }
+
+    function closeModal() {
+      document.removeEventListener('keydown', onEsc);
+      document.body.classList.remove('cso-modal-open');
+      overlay.remove();
+    }
+    function onEsc(e) { if (e.key === 'Escape') closeModal(); }
+
+    btnDesk.addEventListener('click', function () { state.viewport = 'desktop'; applyPreviewControls(); });
+    btnMob.addEventListener('click', function () { state.viewport = 'mobile'; applyPreviewControls(); });
+    btnEn.addEventListener('click', function () { state.lang = 'en'; applyPreviewControls(); });
+    btnOr.addEventListener('click', function () { state.lang = 'or'; applyPreviewControls(); });
+    themeSel.addEventListener('change', function () { state.theme = themeSel.value; applyPreviewControls(); });
+    btnClose.addEventListener('click', closeModal);
+    btnPublish.addEventListener('click', function () {
+      closeModal();
+      if (typeof onPublishLive === 'function') onPublishLive();
+    });
+    document.addEventListener('keydown', onEsc);
+    document.body.classList.add('cso-modal-open');
+
+    overlay.append(toolbar, stageWrap);
+    document.body.appendChild(overlay);
+    applyPreviewControls();
+  }
+
+  // =========================================================================
+  // COMPOSER VIEW (TEMPLATES + AI BAR + MEDIA REPEATERS + LIVE PREVIEW)
+  // =========================================================================
+  function renderComposer(root, headerActions, existingGuide, opts) {
+    var options = opts || {};
+    var onBack = typeof options.onBack === 'function' ? options.onBack : function () { renderFolderView(root, headerActions, 'all'); };
+    var editing = existingGuide && existingGuide.id ? existingGuide : null;
+
+    clear(root);
+    if (headerActions) {
+      clear(headerActions);
+      var hdrBack = el('button', 'cso-pill-btn', '\u2190 Back to Articles & Guides');
+      hdrBack.type = 'button';
+      hdrBack.addEventListener('click', onBack);
+      headerActions.appendChild(hdrBack);
+    }
+
+    var shell = el('div', 'cso-guides-studio');
+
+    // State for repeaters
+    var takeawaysList = editing && Array.isArray(editing.takeaways) && editing.takeaways.length
+      ? editing.takeaways.map(function (t) { return { text_en: t.text_en || '', text_or: t.text_or || '' }; })
+      : [{ text_en: '', text_or: '' }];
+    var photosList = editing && Array.isArray(editing.photos)
+      ? editing.photos.map(function (p) { return { url: p.url || '', caption_en: p.caption_en || '', caption_or: p.caption_or || '', alt: p.alt || '' }; })
+      : [];
+    var pdfsList = editing && Array.isArray(editing.pdfs)
+      ? editing.pdfs.map(function (d) { return { title_en: d.title_en || '', title_or: d.title_or || '', url: d.url || '', badge: d.badge || 'Official PDF' }; })
+      : [];
+    var linksList = editing && Array.isArray(editing.links)
+      ? editing.links.map(function (l) { return { label_en: l.label_en || '', label_or: l.label_or || '', url: l.url || '', is_official: Boolean(l.is_official) }; })
+      : [];
+
+    var slugTouched = Boolean(editing && editing.slug);
+
+    // Core Form Inputs
+    var selCat = el('select', 'cso-form-select');
+    CATEGORIES.forEach(function (c) {
+      var op = el('option', '', c.icon + ' ' + c.label);
+      op.value = c.key;
+      selCat.appendChild(op);
+    });
+    selCat.value = (editing && editing.category) || options.initialCategory || 'how-to';
+
+    var selScope = el('select', 'cso-form-select');
+    [['Odisha', 'Odisha State'], ['National', 'National / All-India']].forEach(function (p) {
+      var op = el('option', '', p[1]);
+      op.value = p[0];
+      selScope.appendChild(op);
+    });
+    selScope.value = (editing && editing.scope) || 'Odisha';
+
+    var inReadMins = el('input', 'cso-form-input');
+    inReadMins.type = 'number';
+    inReadMins.min = '1';
+    inReadMins.max = '120';
+    inReadMins.value = String((editing && editing.read_minutes) || 5);
+
+    var inTags = el('input', 'cso-form-input');
+    inTags.type = 'text';
+    inTags.placeholder = 'e.g., OPSC, OAS, Odisha Scholarship, How-To';
+    inTags.value = (editing && editing.tags) || '';
+
+    var chkPin = el('input');
+    chkPin.type = 'checkbox';
+    chkPin.checked = Boolean(editing && editing.is_pinned);
+
+    var chkExam = el('input');
+    chkExam.type = 'checkbox';
+    chkExam.checked = Boolean(editing ? editing.is_exam : selCat.value === 'exam-strategy');
+
+    var inTitleEn = el('input', 'cso-form-input');
+    inTitleEn.type = 'text';
+    inTitleEn.placeholder = 'Clear, informative English guide title...';
+    inTitleEn.value = (editing && editing.title_en) || '';
+
+    var inTitleOr = el('input', 'cso-form-input');
+    inTitleOr.type = 'text';
+    inTitleOr.placeholder = '\u0B13\u0B21\u0B3C\u0B3F\u0B06 \u0B36\u0B40\u0B30\u0B4D\u0B37\u0B15...';
+    inTitleOr.value = (editing && editing.title_or) || '';
+
+    var inSlug = el('input', 'cso-form-input');
+    inSlug.type = 'text';
+    inSlug.placeholder = 'auto-generated-url-slug';
+    inSlug.value = (editing && editing.slug) || '';
+    inSlug.addEventListener('input', function () { slugTouched = Boolean(inSlug.value.trim()); });
+    inTitleEn.addEventListener('input', function () {
+      if (!slugTouched) inSlug.value = slugify(inTitleEn.value);
+    });
+
+    var inSumEn = el('textarea', 'cso-form-textarea');
+    inSumEn.rows = 2;
+    inSumEn.placeholder = 'Concise 2-line English summary for hub cards and Google SEO...';
+    inSumEn.value = (editing && editing.summary_en) || '';
+
+    var inSumOr = el('textarea', 'cso-form-textarea');
+    inSumOr.rows = 2;
+    inSumOr.placeholder = '2-\u0B27\u0B3E\u0B21\u0B3C\u0B3F \u0B13\u0B21\u0B3C\u0B3F\u0B06 \u0B38\u0B3E\u0B30\u0B3E\u0B02\u0B36...';
+    inSumOr.value = (editing && editing.summary_or) || '';
+
+    var inBodyEn = el('textarea', 'cso-form-textarea cso-guide-body-ta');
+    inBodyEn.rows = 14;
+    inBodyEn.placeholder = '## Overview\nWrite structured Markdown with ## headings, bullet lists, > [!TIP] callout boxes, and Markdown tables...';
+    inBodyEn.value = (editing && editing.body_en) || '';
+
+    var inBodyOr = el('textarea', 'cso-form-textarea cso-guide-body-ta');
+    inBodyOr.rows = 12;
+    inBodyOr.placeholder = '## \u0B38\u0B02\u0B15\u0B4D\u0B37\u0B3F\u0B2A\u0B4D\u0B24 \u0B2C\u0B3F\u0B2C\u0B30\u0B23\u0B40\n\u0B13\u0B21\u0B3C\u0B3F\u0B06 \u0B2C\u0B3F\u0B37\u0B5F\u0B2C\u0B38\u0B4D\u0B24\u0B41...';
+    inBodyOr.value = (editing && editing.body_or) || '';
+
+    // Cover photo inputs
+    var inCoverUrl = el('input', 'cso-form-input');
+    inCoverUrl.type = 'url';
+    inCoverUrl.placeholder = '/api/media/... or https://...';
+    inCoverUrl.value = (editing && editing.cover_image) || '';
+
+    var inCoverCapEn = el('input', 'cso-form-input');
+    inCoverCapEn.type = 'text';
+    inCoverCapEn.placeholder = 'Cover caption & accessible alt text (EN)';
+    inCoverCapEn.value = (editing && editing.cover_caption_en) || '';
+
+    var inCoverCapOr = el('input', 'cso-form-input');
+    inCoverCapOr.type = 'text';
+    inCoverCapOr.placeholder = '\u0B15\u0B2D\u0B30\u0B4D \u0B2B\u0B1F\u0B4B \u0B15\u0B4D\u0B5F\u0B3E\u0B2A\u0B4D\u0B38\u0B28\u0B4D (\u0B13\u0B21\u0B3C\u0B3F\u0B06)';
+    inCoverCapOr.value = (editing && editing.cover_caption_or) || '';
+
+    // Related Practice / Alert Linker
+    var relObj = (editing && editing.related_cta) || {};
+    var selRelType = el('select', 'cso-form-select');
+    [
+      ['', 'None (No related action card)'],
+      ['mock_test', '\u23F1\uFE0F Related CBT Mock Test'],
+      ['job', '\uD83D\uDCBC Related Job Alert'],
+      ['scheme', '\uD83C\uDFDB\uFE0F Related Government Scheme'],
+      ['custom', '\uD83D\uDD17 Custom Internal / Official Link']
+    ].forEach(function (p) {
+      var op = el('option', '', p[1]);
+      op.value = p[0];
+      selRelType.appendChild(op);
+    });
+    selRelType.value = relObj.type || '';
+
+    var inRelSlug = el('input', 'cso-form-input');
+    inRelSlug.type = 'text';
+    inRelSlug.setAttribute('list', 'csoGuideRelatedSlugList');
+    inRelSlug.placeholder = 'Pick or enter slug / path (e.g., opsc-oas-prelims-mock-1 or /mock-tests/)';
+    inRelSlug.value = relObj.slug || relObj.url || '';
+
+    var relDatalist = el('datalist');
+    relDatalist.id = 'csoGuideRelatedSlugList';
+
+    function populateRelatedSlugSuggestions(kind) {
+      clear(relDatalist);
+      var ep = kind === 'mock_test' ? '/api/admin/mock-tests?limit=30'
+        : (kind === 'job' ? '/api/admin/jobs/articles?limit=30'
+          : (kind === 'scheme' ? '/api/admin/schemes/articles?limit=30' : ''));
+      if (!ep) return;
+      apiFetch(ep).then(function (d) {
+        var rows = (d && (d.items || d.tests || d.articles)) || [];
+        rows.forEach(function (item) {
+          var s = item && (item.slug || item.id);
+          if (!s) return;
+          var op = el('option');
+          op.value = String(s);
+          op.label = String(item.title_en || item.title || s);
+          relDatalist.appendChild(op);
+        });
+      }).catch(function () {});
+    }
+    selRelType.addEventListener('change', function () { populateRelatedSlugSuggestions(selRelType.value); });
+    if (selRelType.value) populateRelatedSlugSuggestions(selRelType.value);
+
+    var inRelTitleEn = el('input', 'cso-form-input');
+    inRelTitleEn.type = 'text';
+    inRelTitleEn.placeholder = 'Action card heading (EN, e.g., Practice OPSC OAS Full Mock Test)';
+    inRelTitleEn.value = relObj.title_en || '';
+
+    var inRelTitleOr = el('input', 'cso-form-input');
+    inRelTitleOr.type = 'text';
+    inRelTitleOr.placeholder = 'Action card heading (\u0B13\u0B21\u0B3C\u0B3F\u0B06)';
+    inRelTitleOr.value = relObj.title_or || '';
+
+    var inRelCtaEn = el('input', 'cso-form-input');
+    inRelCtaEn.type = 'text';
+    inRelCtaEn.placeholder = 'Button label (EN, e.g., Start Practice Test \u2192)';
+    inRelCtaEn.value = relObj.cta_en || '';
+
+    var inRelCtaOr = el('input', 'cso-form-input');
+    inRelCtaOr.type = 'text';
+    inRelCtaOr.placeholder = 'Button label (\u0B13\u0B21\u0B3C\u0B3F\u0B06)';
+    inRelCtaOr.value = relObj.cta_or || '';
+
+    var statusMsg = el('span', 'cso-ca-status');
+    statusMsg.setAttribute('role', 'status');
+    statusMsg.setAttribute('aria-live', 'polite');
+
+    function makeField(labelText, control, extraClass) {
+      var grp = el('div', 'cso-form-group' + (extraClass ? ' ' + extraClass : ''));
+      grp.appendChild(el('label', 'cso-form-label', labelText));
+      grp.appendChild(control);
+      return grp;
+    }
+
+    // ---- Repeaters ----
+    var takeawaysHost = el('div', 'cso-guide-repeater-list');
+    function drawTakeaways() {
+      clear(takeawaysHost);
+      takeawaysList.forEach(function (row, idx) {
+        var r = el('div', 'cso-guide-repeater-row cso-guide-repeater-2col');
+        var iEn = el('input', 'cso-form-input');
+        iEn.placeholder = 'Key takeaway #' + (idx + 1) + ' (English)';
+        iEn.value = row.text_en || '';
+        iEn.addEventListener('input', function () { row.text_en = iEn.value; });
+
+        var iOr = el('input', 'cso-form-input');
+        iOr.placeholder = '\u0B2E\u0B41\u0B16\u0B4D\u0B5F \u0B24\u0B25\u0B4D\u0B5F #' + (idx + 1) + ' (\u0B13\u0B21\u0B3C\u0B3F\u0B06)';
+        iOr.value = row.text_or || '';
+        iOr.addEventListener('input', function () { row.text_or = iOr.value; });
+
+        var del = el('button', 'cso-pill-btn is-danger', '\u2715');
+        del.type = 'button';
+        del.title = 'Remove takeaway';
+        del.addEventListener('click', function () {
+          takeawaysList.splice(idx, 1);
+          drawTakeaways();
+        });
+        r.append(iEn, iOr, del);
+        takeawaysHost.appendChild(r);
+      });
+    }
+
+    var photosHost = el('div', 'cso-guide-repeater-list');
+    function drawPhotos() {
+      clear(photosHost);
+      if (!photosList.length) {
+        photosHost.appendChild(el('p', 'cso-ca-empty', 'No inline gallery photos added yet. Click "+ Add Photo" to upload to cso-media R2 or link an image URL.'));
+      }
+      photosList.forEach(function (p, idx) {
+        var card = el('div', 'cso-guide-slot-card');
+        var topRow = el('div', 'cso-guide-slot-row');
+        var iUrl = el('input', 'cso-form-input');
+        iUrl.type = 'url';
+        iUrl.placeholder = 'Image URL (/api/media/... or https://...)';
+        iUrl.value = p.url || '';
+        iUrl.addEventListener('input', function () { p.url = iUrl.value; });
+
+        var fInput = el('input');
+        fInput.type = 'file';
+        fInput.accept = 'image/jpeg,image/png,image/webp';
+        fInput.hidden = true;
+        var upBtn = el('button', 'cso-pill-btn', '\u2B06 Upload Image (R2)');
+        upBtn.type = 'button';
+        upBtn.addEventListener('click', function () { fInput.click(); });
+        fInput.addEventListener('change', function () {
+          if (!fInput.files || !fInput.files[0]) return;
+          upBtn.disabled = true;
+          upBtn.textContent = 'Uploading\u2026';
+          uploadImageToMediaR2(fInput.files[0]).then(function (r) {
+            p.url = r.url;
+            iUrl.value = r.url;
+            toast('Photo uploaded to cso-media R2!', 'ok');
+          }).catch(function (e) {
+            toast('Upload failed: ' + e.message, 'crimson');
+          }).finally(function () {
+            upBtn.disabled = false;
+            upBtn.textContent = '\u2B06 Upload Image (R2)';
+            fInput.value = '';
+          });
+        });
+
+        var rmBtn = el('button', 'cso-pill-btn is-danger', '\u2715 Remove');
+        rmBtn.type = 'button';
+        rmBtn.addEventListener('click', function () { photosList.splice(idx, 1); drawPhotos(); });
+
+        topRow.append(iUrl, fInput, upBtn, rmBtn);
+
+        var capRow = el('div', 'cso-guide-repeater-3col');
+        var iCapEn = el('input', 'cso-form-input');
+        iCapEn.placeholder = 'Caption (English)';
+        iCapEn.value = p.caption_en || '';
+        iCapEn.addEventListener('input', function () { p.caption_en = iCapEn.value; });
+
+        var iCapOr = el('input', 'cso-form-input');
+        iCapOr.placeholder = 'Caption (\u0B13\u0B21\u0B3C\u0B3F\u0B06)';
+        iCapOr.value = p.caption_or || '';
+        iCapOr.addEventListener('input', function () { p.caption_or = iCapOr.value; });
+
+        var iAlt = el('input', 'cso-form-input');
+        iAlt.placeholder = 'Alt Text (Accessibility)';
+        iAlt.value = p.alt || '';
+        iAlt.addEventListener('input', function () { p.alt = iAlt.value; });
+
+        capRow.append(iCapEn, iCapOr, iAlt);
+        card.append(topRow, capRow);
+        photosHost.appendChild(card);
+      });
+    }
+
+    var pdfsHost = el('div', 'cso-guide-repeater-list');
+    function drawPdfs() {
+      clear(pdfsHost);
+      if (!pdfsList.length) {
+        pdfsHost.appendChild(el('p', 'cso-ca-empty', 'No downloadable PDFs attached yet. Upload directly to cso-files R2 or paste an official .gov.in PDF URL.'));
+      }
+      pdfsList.forEach(function (d, idx) {
+        var card = el('div', 'cso-guide-slot-card');
+        var r1 = el('div', 'cso-guide-repeater-3col');
+        var iTEn = el('input', 'cso-form-input');
+        iTEn.placeholder = 'Document Title (English, e.g., Official Notification PDF)';
+        iTEn.value = d.title_en || '';
+        iTEn.addEventListener('input', function () { d.title_en = iTEn.value; });
+
+        var iTOr = el('input', 'cso-form-input');
+        iTOr.placeholder = 'Document Title (\u0B13\u0B21\u0B3C\u0B3F\u0B06)';
+        iTOr.value = d.title_or || '';
+        iTOr.addEventListener('input', function () { d.title_or = iTOr.value; });
+
+        var iBadge = el('input', 'cso-form-input');
+        iBadge.placeholder = 'Badge / Size (e.g., Syllabus PDF · 1.2 MB)';
+        iBadge.value = d.badge || '';
+        iBadge.addEventListener('input', function () { d.badge = iBadge.value; });
+        r1.append(iTEn, iTOr, iBadge);
+
+        var r2 = el('div', 'cso-guide-slot-row');
+        var iUrl = el('input', 'cso-form-input');
+        iUrl.type = 'url';
+        iUrl.placeholder = 'PDF URL (/files/... or https://...gov.in/...pdf)';
+        iUrl.value = d.url || '';
+        iUrl.addEventListener('input', function () { d.url = iUrl.value; });
+
+        var fInput = el('input');
+        fInput.type = 'file';
+        fInput.accept = 'application/pdf';
+        fInput.hidden = true;
+        var upBtn = el('button', 'cso-pill-btn', '\u2B06 Upload PDF (cso-files R2)');
+        upBtn.type = 'button';
+        upBtn.addEventListener('click', function () { fInput.click(); });
+        fInput.addEventListener('change', function () {
+          if (!fInput.files || !fInput.files[0]) return;
+          upBtn.disabled = true;
+          upBtn.textContent = 'Uploading PDF\u2026';
+          uploadPdfToFilesR2(fInput.files[0]).then(function (r) {
+            d.url = r.url;
+            iUrl.value = r.url;
+            if (!d.title_en && r.original_name) {
+              d.title_en = r.original_name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ');
+              iTEn.value = d.title_en;
+            }
+            if (!d.badge || d.badge === 'Official PDF') {
+              d.badge = formatBytesLabel(r.size_bytes);
+              iBadge.value = d.badge;
+            }
+            toast('PDF uploaded to cso-files R2!', 'ok');
+          }).catch(function (e) {
+            toast('PDF upload failed: ' + e.message, 'crimson');
+          }).finally(function () {
+            upBtn.disabled = false;
+            upBtn.textContent = '\u2B06 Upload PDF (cso-files R2)';
+            fInput.value = '';
+          });
+        });
+
+        var rmBtn = el('button', 'cso-pill-btn is-danger', '\u2715 Remove');
+        rmBtn.type = 'button';
+        rmBtn.addEventListener('click', function () { pdfsList.splice(idx, 1); drawPdfs(); });
+
+        r2.append(iUrl, fInput, upBtn, rmBtn);
+        card.append(r1, r2);
+        pdfsHost.appendChild(card);
+      });
+    }
+
+    var linksHost = el('div', 'cso-guide-repeater-list');
+    function drawLinks() {
+      clear(linksHost);
+      if (!linksList.length) {
+        linksHost.appendChild(el('p', 'cso-ca-empty', 'No verified reference links added yet. Click "+ Add Reference Link" to add official .gov.in portals or internal pages.'));
+      }
+      linksList.forEach(function (l, idx) {
+        var card = el('div', 'cso-guide-slot-card');
+        var r1 = el('div', 'cso-guide-repeater-3col');
+        var iLEn = el('input', 'cso-form-input');
+        iLEn.placeholder = 'Button Label (English, e.g., OPSC Official Portal)';
+        iLEn.value = l.label_en || '';
+        iLEn.addEventListener('input', function () { l.label_en = iLEn.value; });
+
+        var iLOr = el('input', 'cso-form-input');
+        iLOr.placeholder = 'Button Label (\u0B13\u0B21\u0B3C\u0B3F\u0B06)';
+        iLOr.value = l.label_or || '';
+        iLOr.addEventListener('input', function () { l.label_or = iLOr.value; });
+
+        var iUrl = el('input', 'cso-form-input');
+        iUrl.type = 'url';
+        iUrl.placeholder = 'https://www.opsc.gov.in/ or /jobs/';
+        iUrl.value = l.url || '';
+        iUrl.addEventListener('input', function () {
+          l.url = iUrl.value;
+          if (/\.gov\.in\b|\.nic\.in\b/i.test(l.url) && !l._userToggled) {
+            l.is_official = true;
+            chkGov.checked = true;
+          }
+        });
+        r1.append(iLEn, iLOr, iUrl);
+
+        var r2 = el('div', 'cso-guide-slot-row');
+        var govLbl = el('label', 'cso-qc-check');
+        var chkGov = el('input');
+        chkGov.type = 'checkbox';
+        chkGov.checked = Boolean(l.is_official);
+        chkGov.addEventListener('change', function () {
+          l._userToggled = true;
+          l.is_official = chkGov.checked;
+        });
+        govLbl.append(chkGov, el('span', '', '\u2713 Official .gov.in Verified Badge'));
+
+        var rmBtn = el('button', 'cso-pill-btn is-danger', '\u2715 Remove');
+        rmBtn.type = 'button';
+        rmBtn.addEventListener('click', function () { linksList.splice(idx, 1); drawLinks(); });
+
+        r2.append(govLbl, rmBtn);
+        card.append(r1, r2);
+        linksHost.appendChild(card);
+      });
+    }
+
+    function collectDraftPayload(overrideStatus) {
+      var relSlug = inRelSlug.value.trim();
+      var relType = selRelType.value;
+      var relatedCta = {};
+      if (relType && relSlug) {
+        var rUrl = relSlug.startsWith('/') || /^https?:\/\//i.test(relSlug)
+          ? relSlug
+          : (relType === 'mock_test' ? '/mock-tests/?test=' + encodeURIComponent(relSlug)
+            : (relType === 'job' ? '/jobs/' + encodeURIComponent(relSlug)
+              : (relType === 'scheme' ? '/schemes/' + encodeURIComponent(relSlug) : relSlug)));
+        relatedCta = {
+          type: relType,
+          slug: relSlug,
+          url: rUrl,
+          title_en: inRelTitleEn.value.trim(),
+          title_or: inRelTitleOr.value.trim(),
+          cta_en: inRelCtaEn.value.trim(),
+          cta_or: inRelCtaOr.value.trim()
+        };
+      }
+      return {
+        category: selCat.value,
+        scope: selScope.value,
+        read_minutes: Number(inReadMins.value) || 5,
+        tags: inTags.value.trim(),
+        is_pinned: chkPin.checked,
+        is_exam: chkExam.checked,
+        title_en: inTitleEn.value.trim(),
+        title_or: inTitleOr.value.trim(),
+        slug: inSlug.value.trim() || slugify(inTitleEn.value),
+        summary_en: inSumEn.value.trim(),
+        summary_or: inSumOr.value.trim(),
+        takeaways: takeawaysList.filter(function (t) { return (t.text_en || '').trim() || (t.text_or || '').trim(); }),
+        body_en: inBodyEn.value,
+        body_or: inBodyOr.value,
+        cover_image: inCoverUrl.value.trim(),
+        cover_caption_en: inCoverCapEn.value.trim(),
+        cover_caption_or: inCoverCapOr.value.trim(),
+        photos: photosList.filter(function (p) { return (p.url || '').trim(); }),
+        pdfs: pdfsList.filter(function (d) { return (d.url || '').trim() && (d.title_en || '').trim(); }),
+        links: linksList.filter(function (l) { return (l.url || '').trim() && (l.label_en || '').trim(); }),
+        related_cta: relatedCta,
+        status: overrideStatus || (editing && editing.status) || 'draft'
+      };
+    }
+
+    function saveGuide(targetStatus) {
+      var payload = collectDraftPayload(targetStatus);
+      if (!payload.title_en) {
+        statusMsg.textContent = 'Title (English) is required.';
+        toast('Please enter a Guide Title (English).', 'amber');
+        inTitleEn.focus();
+        return;
+      }
+      statusMsg.textContent = targetStatus === 'published' ? 'Publishing live & syncing Vectorize + Homepage\u2026' : 'Saving draft to D1\u2026';
+      var ep = editing ? ('/api/admin/guides/' + encodeURIComponent(editing.id)) : '/api/admin/guides';
+      apiFetch(ep, { method: editing ? 'PUT' : 'POST', body: payload })
+        .then(function (res) {
+          var item = res && res.item;
+          if (item) editing = item;
+          if (item && item.slug) inSlug.value = item.slug;
+          statusMsg.textContent = targetStatus === 'published'
+            ? '\u2713 Published live at ' + (item ? item.url : '/guides/') + '!'
+            : '\u2713 Draft saved in D1.';
+          toast(targetStatus === 'published' ? 'Guide published live & synced to Homepage + Search!' : 'Guide draft saved!', 'ok');
+          if (typeof window.CSOStudioRefreshGuideCount === 'function') window.CSOStudioRefreshGuideCount();
+        })
+        .catch(function (err) {
+          statusMsg.textContent = '\u2715 ' + err.message;
+          toast(err.message || 'Save failed.', 'crimson');
+        });
+    }
+
+    // ---- 1. STARTER BLUEPRINT SELECTOR ----
+    var tplCard = el('section', 'cso-card studio-card cso-guide-tpl-card');
+    var tplHead = el('div', 'cso-guide-sec-head');
+    tplHead.append(
+      el('h3', 'cso-qc-card-title', '\uD83D\uDCD0 Starter Blueprint Selector (1-Click Templates)'),
+      el('span', 'cso-text-muted', 'Pre-fills clean headings, checklists, callout boxes & tables')
+    );
+    var tplGrid = el('div', 'cso-guide-tpl-grid');
+    STARTER_TEMPLATES.forEach(function (tpl) {
+      var b = el('button', 'cso-guide-tpl-btn');
+      b.type = 'button';
+      b.setAttribute('data-guide-template', tpl.key);
+      b.append(
+        el('span', 'cso-guide-tpl-ico', tpl.icon),
+        el('strong', '', tpl.name)
+      );
+      b.addEventListener('click', function () {
+        var hasExisting = Boolean(inBodyEn.value.trim() || inBodyOr.value.trim() || inTitleEn.value.trim() || inSumEn.value.trim());
+        if (hasExisting && !window.confirm('Apply "' + tpl.name + '" blueprint? This will overwrite the current body and starter takeaways.')) {
+          return;
+        }
+        tplGrid.querySelectorAll('.cso-guide-tpl-btn').forEach(function (x) { x.classList.remove('is-selected'); });
+        b.classList.add('is-selected');
+        selCat.value = tpl.category;
+        chkExam.checked = tpl.isExam;
+        inReadMins.value = String(tpl.readMinutes || 5);
+        if (tpl.summaryEn && !inSumEn.value.trim()) inSumEn.value = tpl.summaryEn;
+        inBodyEn.value = tpl.bodyEn;
+        takeawaysList = tpl.takeaways.length
+          ? tpl.takeaways.map(function (t) { return { text_en: t.text_en, text_or: t.text_or || '' }; })
+          : [{ text_en: '', text_or: '' }];
+        drawTakeaways();
+        toast('Applied "' + tpl.name + '" template.', 'ok');
+      });
+      tplGrid.appendChild(b);
+    });
+    tplCard.append(tplHead, tplGrid);
+    shell.appendChild(tplCard);
+
+    // ---- 2. AI CO-AUTHOR BAR ($0/mo Gemini + Workers AI Pool) ----
+    var aiCard = el('section', 'cso-card studio-card cso-guide-ai-bar');
+    var aiHead = el('div', 'cso-guide-sec-head');
+    aiHead.append(
+      el('h3', 'cso-qc-card-title', '\u2728 AI Co-Author Bar ($0/mo Gemini + Workers AI Pool)'),
+      el('span', 'cso-pill-badge', 'Auto-Fallback \u00B7 Bilingual EN / \u0B13\u0B21\u0B3C\u0B3F\u0B06')
+    );
+    var aiSeed = el('textarea', 'cso-form-textarea');
+    aiSeed.rows = 2;
+    aiSeed.placeholder = 'Enter a topic or paste official notification notes (e.g., "How to apply for Odisha Post-Matric Scholarship 2026 on scholarship.odisha.gov.in")...';
+
+    var aiActions = el('div', 'cso-guide-ai-actions');
+    var btnAiDraft = el('button', 'cso-pill-btn is-accent', '\u2728 AI Outline & Draft Generator');
+    btnAiDraft.type = 'button';
+    btnAiDraft.id = 'btnGuideAiDraft';
+
+    var btnAiMeta = el('button', 'cso-pill-btn', '\u2728 AI Title, Slug, Summary & Tags');
+    btnAiMeta.type = 'button';
+    btnAiMeta.id = 'btnGuideAiMeta';
+
+    var btnAiFullOr = el('button', 'cso-pill-btn', '\uD83C\uDF10 1-Click EN \u2192 \u0B13\u0B21\u0B3C\u0B3F\u0B06 Full Guide Translate');
+    btnAiFullOr.type = 'button';
+    btnAiFullOr.id = 'btnGuideAiTranslateAll';
+
+    var aiStatus = el('span', 'cso-text-muted');
+
+    btnAiDraft.addEventListener('click', function () {
+      var seed = aiSeed.value.trim() || inTitleEn.value.trim() || inBodyEn.value.trim();
+      if (seed.length < 8) {
+        toast('Enter at least 8 characters of topic or notes in the AI box first.', 'amber');
+        aiSeed.focus();
+        return;
+      }
+      btnAiDraft.disabled = true;
+      aiStatus.textContent = 'Generating structured guide outline & draft\u2026';
+      apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'guide', input: seed } })
+        .then(function (res) {
+          var d = (res && res.data) || {};
+          if (d.title_en) inTitleEn.value = d.title_en;
+          if (d.title_or) inTitleOr.value = d.title_or;
+          if (d.slug && !slugTouched) inSlug.value = d.slug;
+          if (d.summary_en) inSumEn.value = d.summary_en;
+          if (d.summary_or) inSumOr.value = d.summary_or;
+          if (d.read_minutes) inReadMins.value = String(d.read_minutes);
+          if (Array.isArray(d.tags) && d.tags.length) inTags.value = d.tags.join(', ');
+          if (d.body_en) inBodyEn.value = d.body_en;
+          if (d.body_or) inBodyOr.value = d.body_or;
+          if (Array.isArray(d.takeaways_en) && d.takeaways_en.length) {
+            takeawaysList = d.takeaways_en.map(function (t, idx) {
+              return { text_en: t, text_or: (d.takeaways_or && d.takeaways_or[idx]) || '' };
+            });
+            drawTakeaways();
+          }
+          aiStatus.textContent = '\u2713 Draft generated via ' + ((res && res.provider) || 'Free AI') + '!';
+          toast('AI Outline & Draft generated!', 'ok');
+        })
+        .catch(function (e) {
+          aiStatus.textContent = '\u2715 ' + e.message;
+          toast('AI Draft failed: ' + e.message, 'crimson');
+        })
+        .finally(function () { btnAiDraft.disabled = false; });
+    });
+
+    btnAiMeta.addEventListener('click', function () {
+      var seed = (inBodyEn.value.trim() || aiSeed.value.trim() || inTitleEn.value.trim()).slice(0, 4500);
+      if (seed.length < 3) {
+        toast('Write a draft body or topic phrase first.', 'amber');
+        return;
+      }
+      btnAiMeta.disabled = true;
+      aiStatus.textContent = 'Suggesting SEO Title, Slug, Summary & Tags\u2026';
+      apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'suggest_meta', input: seed, kind: 'informative guide' } })
+        .then(function (res) {
+          var d = (res && res.data) || {};
+          if (Array.isArray(d.titles_en) && d.titles_en[0]) inTitleEn.value = d.titles_en[0];
+          if (Array.isArray(d.titles_or) && d.titles_or[0]) inTitleOr.value = d.titles_or[0];
+          if (d.slug) { inSlug.value = d.slug; slugTouched = true; }
+          if (d.summary_en) inSumEn.value = d.summary_en;
+          if (d.summary_or) inSumOr.value = d.summary_or;
+          if (d.read_minutes) inReadMins.value = String(d.read_minutes);
+          if (Array.isArray(d.tags) && d.tags.length) inTags.value = d.tags.join(', ');
+          aiStatus.textContent = '\u2713 SEO Title, Slug, Summary & Tags updated!';
+          toast('SEO metadata applied!', 'ok');
+        })
+        .catch(function (e) {
+          aiStatus.textContent = '\u2715 ' + e.message;
+          toast('AI Meta suggestion failed: ' + e.message, 'crimson');
+        })
+        .finally(function () { btnAiMeta.disabled = false; });
+    });
+
+    btnAiFullOr.addEventListener('click', function () {
+      var fields = {};
+      if (inTitleEn.value.trim()) fields.title_or = inTitleEn.value.trim();
+      if (inSumEn.value.trim()) fields.summary_or = inSumEn.value.trim();
+      if (inCoverCapEn.value.trim()) fields.cover_caption_or = inCoverCapEn.value.trim();
+      if (inBodyEn.value.trim()) fields.body_or = inBodyEn.value.trim().slice(0, 7800);
+      if (inRelTitleEn.value.trim()) fields.rel_title_or = inRelTitleEn.value.trim();
+      if (inRelCtaEn.value.trim()) fields.rel_cta_or = inRelCtaEn.value.trim();
+      takeawaysList.forEach(function (t, i) { if ((t.text_en || '').trim()) fields['tk_' + i] = t.text_en.trim(); });
+      photosList.forEach(function (p, i) { if ((p.caption_en || '').trim()) fields['ph_' + i] = p.caption_en.trim(); });
+      pdfsList.forEach(function (d, i) { if ((d.title_en || '').trim()) fields['pdf_' + i] = d.title_en.trim(); });
+      linksList.forEach(function (l, i) { if ((l.label_en || '').trim()) fields['lnk_' + i] = l.label_en.trim(); });
+
+      if (!Object.keys(fields).length) {
+        toast('Add English title, summary, or body text first to translate into Odia.', 'amber');
+        return;
+      }
+      btnAiFullOr.disabled = true;
+      aiStatus.textContent = 'Translating entire guide into natural Odia (\u0B13\u0B21\u0B3C\u0B3F\u0B06)\u2026';
+      apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'translate_fields', fields: fields } })
+        .then(function (res) {
+          var tr = (res && res.data && res.data.translations) || {};
+          if (tr.title_or) inTitleOr.value = tr.title_or;
+          if (tr.summary_or) inSumOr.value = tr.summary_or;
+          if (tr.cover_caption_or) inCoverCapOr.value = tr.cover_caption_or;
+          if (tr.body_or) inBodyOr.value = tr.body_or;
+          if (tr.rel_title_or) inRelTitleOr.value = tr.rel_title_or;
+          if (tr.rel_cta_or) inRelCtaOr.value = tr.rel_cta_or;
+          takeawaysList.forEach(function (t, i) { if (tr['tk_' + i]) t.text_or = tr['tk_' + i]; });
+          photosList.forEach(function (p, i) { if (tr['ph_' + i]) p.caption_or = tr['ph_' + i]; });
+          pdfsList.forEach(function (d, i) { if (tr['pdf_' + i]) d.title_or = tr['pdf_' + i]; });
+          linksList.forEach(function (l, i) { if (tr['lnk_' + i]) l.label_or = tr['lnk_' + i]; });
+          drawTakeaways(); drawPhotos(); drawPdfs(); drawLinks();
+          aiStatus.textContent = '\u2713 Full guide translated into Odia!';
+          toast('Translated all guide fields & media labels to Odia!', 'ok');
+        })
+        .catch(function (e) {
+          aiStatus.textContent = '\u2715 ' + e.message;
+          toast('Translation failed: ' + e.message, 'crimson');
+        })
+        .finally(function () { btnAiFullOr.disabled = false; });
+    });
+
+    aiActions.append(btnAiDraft, btnAiMeta, btnAiFullOr, aiStatus);
+    aiCard.append(aiHead, aiSeed, aiActions);
+    shell.appendChild(aiCard);
+
+    // ---- 3. STRUCTURED METADATA & BILINGUAL CONTENT ----
+    var metaCard = el('section', 'cso-card studio-card');
+    metaCard.appendChild(el('h3', 'cso-qc-card-title', '1. Guide Details, Bilingual Titles & Summary'));
+    var g1 = el('div', 'cso-form-grid');
+    g1.append(
+      makeField('Category *', selCat),
+      makeField('Scope (Odisha / National)', selScope),
+      makeField('Estimated Reading Time (mins)', inReadMins),
+      makeField('Tags (comma-separated)', inTags),
+      makeField('Title (English) *', inTitleEn, 'cso-span-full'),
+      makeField('Title (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', inTitleOr, 'cso-span-full'),
+      makeField('URL Slug (/guides/<slug>)', inSlug, 'cso-span-full'),
+      makeField('2-Line Summary (English)', inSumEn),
+      makeField('2-Line Summary (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', inSumOr)
+    );
+    var checksRow = el('div', 'cso-guide-checks-row');
+    var pinLbl = el('label', 'cso-qc-check');
+    pinLbl.append(chkPin, el('span', '', '\uD83D\uDCCC Pin to Homepage Latest Updates'));
+    var examLbl = el('label', 'cso-qc-check');
+    examLbl.append(chkExam, el('span', '', '\uD83D\uDCDD Tag under Exams Filter'));
+    checksRow.append(pinLbl, examLbl);
+    metaCard.append(g1, checksRow);
+    shell.appendChild(metaCard);
+
+    // ---- 4. KEY TAKEAWAYS REPEATER ----
+    var tkCard = el('section', 'cso-card studio-card');
+    var tkHead = el('div', 'cso-guide-sec-head');
+    tkHead.appendChild(el('h3', 'cso-qc-card-title', '2. Key Takeaways (Bilingual Highlight Bullets)'));
+    var btnAddTk = el('button', 'cso-pill-btn', '+ Add Takeaway');
+    btnAddTk.type = 'button';
+    btnAddTk.addEventListener('click', function () {
+      takeawaysList.push({ text_en: '', text_or: '' });
+      drawTakeaways();
+    });
+    tkHead.appendChild(btnAddTk);
+    tkCard.append(tkHead, takeawaysHost);
+    shell.appendChild(tkCard);
+
+    // ---- 5. RICH STRUCTURED BODY + FORMATTING TOOLBAR ----
+    var bodyCard = el('section', 'cso-card studio-card');
+    bodyCard.appendChild(el('h3', 'cso-qc-card-title', '3. Rich Structured Body (EN & \u0B13\u0B21\u0B3C\u0B3F\u0B06)'));
+    var activeBodyTarget = inBodyEn;
+    inBodyEn.addEventListener('focus', function () { activeBodyTarget = inBodyEn; });
+    inBodyOr.addEventListener('focus', function () { activeBodyTarget = inBodyOr; });
+
+    var fmtBar = el('div', 'cso-guide-fmt-bar');
+    [
+      ['H2 Heading', '## Section Heading\n'],
+      ['H3 Subheading', '### Subheading\n'],
+      ['Bullet List', '- Point 1\n- Point 2\n- Point 3\n'],
+      ['Callout Box', '> [!TIP]\n> Important practical advice for Odisha aspirants.\n'],
+      ['Table', '| Column 1 | Column 2 | Details |\n| --- | --- | --- |\n| Item A | Value | Notes |\n']
+    ].forEach(function (pair) {
+      var fb = el('button', 'cso-pill-btn', '+ ' + pair[0]);
+      fb.type = 'button';
+      fb.addEventListener('click', function () { insertAtCursor(activeBodyTarget, pair[1]); });
+      fmtBar.appendChild(fb);
+    });
+    bodyCard.append(
+      fmtBar,
+      makeField('Structured Body (English — Markdown headings generate Table of Contents automatically)', inBodyEn, 'cso-span-full'),
+      makeField('Structured Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', inBodyOr, 'cso-span-full')
+    );
+    shell.appendChild(bodyCard);
+
+    // ---- 6. COVER PHOTO & INLINE PHOTO GALLERY (cso-media R2) ----
+    var photoCard = el('section', 'cso-card studio-card');
+    var phHead = el('div', 'cso-guide-sec-head');
+    phHead.appendChild(el('h3', 'cso-qc-card-title', '4. Cover Photo & Inline Photo Gallery (cso-media R2)'));
+    var btnAddPhoto = el('button', 'cso-pill-btn', '+ Add Gallery Photo');
+    btnAddPhoto.type = 'button';
+    btnAddPhoto.addEventListener('click', function () {
+      photosList.push({ url: '', caption_en: '', caption_or: '', alt: '' });
+      drawPhotos();
+    });
+    phHead.appendChild(btnAddPhoto);
+
+    var coverFile = el('input');
+    coverFile.type = 'file';
+    coverFile.accept = 'image/jpeg,image/png,image/webp';
+    coverFile.hidden = true;
+    var btnCoverUp = el('button', 'cso-pill-btn', '\u2B06 Upload Cover Photo (cso-media R2)');
+    btnCoverUp.type = 'button';
+    btnCoverUp.addEventListener('click', function () { coverFile.click(); });
+    coverFile.addEventListener('change', function () {
+      if (!coverFile.files || !coverFile.files[0]) return;
+      btnCoverUp.disabled = true;
+      btnCoverUp.textContent = 'Uploading Cover\u2026';
+      uploadImageToMediaR2(coverFile.files[0]).then(function (r) {
+        inCoverUrl.value = r.url;
+        toast('Cover photo uploaded to cso-media R2!', 'ok');
+      }).catch(function (e) {
+        toast('Cover upload failed: ' + e.message, 'crimson');
+      }).finally(function () {
+        btnCoverUp.disabled = false;
+        btnCoverUp.textContent = '\u2B06 Upload Cover Photo (cso-media R2)';
+        coverFile.value = '';
+      });
+    });
+
+    var coverRow = el('div', 'cso-guide-slot-row');
+    coverRow.append(inCoverUrl, coverFile, btnCoverUp);
+    var coverCaps = el('div', 'cso-form-grid');
+    coverCaps.append(
+      makeField('Cover Caption & Alt Text (EN)', inCoverCapEn),
+      makeField('Cover Caption (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', inCoverCapOr)
+    );
+    photoCard.append(phHead, el('label', 'cso-form-label', 'Cover Photo URL or Direct R2 Upload'), coverRow, coverCaps, el('h4', 'cso-guide-sublabel', 'Inline Photo Gallery'), photosHost);
+    shell.appendChild(photoCard);
+
+    // ---- 7. DOWNLOADABLE PDFs (cso-files R2) ----
+    var pdfCard = el('section', 'cso-card studio-card');
+    var pdfHead = el('div', 'cso-guide-sec-head');
+    pdfHead.appendChild(el('h3', 'cso-qc-card-title', '5. Downloadable PDFs (cso-files R2 or .gov.in PDF URL)'));
+    var btnAddPdf = el('button', 'cso-pill-btn', '+ Add PDF Attachment');
+    btnAddPdf.type = 'button';
+    btnAddPdf.addEventListener('click', function () {
+      pdfsList.push({ title_en: '', title_or: '', url: '', badge: 'Official Notification PDF' });
+      drawPdfs();
+    });
+    pdfHead.appendChild(btnAddPdf);
+    pdfCard.append(pdfHead, pdfsHost);
+    shell.appendChild(pdfCard);
+
+    // ---- 8. VERIFIED REFERENCE LINKS ----
+    var linkCard = el('section', 'cso-card studio-card');
+    var lkHead = el('div', 'cso-guide-sec-head');
+    lkHead.appendChild(el('h3', 'cso-qc-card-title', '6. Verified Reference Links & Official .gov.in Portals'));
+    var btnAddLink = el('button', 'cso-pill-btn', '+ Add Reference Link');
+    btnAddLink.type = 'button';
+    btnAddLink.addEventListener('click', function () {
+      linksList.push({ label_en: '', label_or: '', url: '', is_official: true });
+      drawLinks();
+    });
+    lkHead.appendChild(btnAddLink);
+    linkCard.append(lkHead, linksHost);
+    shell.appendChild(linkCard);
+
+    // ---- 9. RELATED PRACTICE / ALERT LINKER ----
+    var relCard = el('section', 'cso-card studio-card');
+    relCard.appendChild(el('h3', 'cso-qc-card-title', '7. Related Practice / Alert Linker (Bottom Action Card)'));
+    var gRel = el('div', 'cso-form-grid');
+    gRel.append(
+      makeField('Related Resource Type', selRelType),
+      makeField('Target Slug or Path', inRelSlug),
+      makeField('Action Card Title (EN)', inRelTitleEn),
+      makeField('Action Card Title (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', inRelTitleOr),
+      makeField('CTA Button Label (EN)', inRelCtaEn),
+      makeField('CTA Button Label (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', inRelCtaOr)
+    );
+    relCard.append(relDatalist, gRel);
+    shell.appendChild(relCard);
+
+    // ---- 10. PUBLISH BAR (LIVE PREVIEW + SAVE DRAFT + PUBLISH LIVE) ----
+    var bar = el('div', 'cso-guide-publish-bar');
+    var btnPreview = el('button', 'cso-pill-btn is-accent', '\uD83D\uDC41\uFE0F Live Preview');
+    btnPreview.type = 'button';
+    btnPreview.id = 'btnGuideLivePreview';
+    btnPreview.addEventListener('click', function () {
+      openLivePreviewModal(collectDraftPayload(), function () { saveGuide('published'); });
+    });
+
+    var btnDraft = el('button', 'cso-pill-btn', 'Save Draft');
+    btnDraft.type = 'button';
+    btnDraft.addEventListener('click', function () { saveGuide('draft'); });
+
+    var btnPub = el('button', 'cso-btn cso-btn-primary', '\uD83D\uDE80 Publish Live');
+    btnPub.type = 'button';
+    btnPub.addEventListener('click', function () { saveGuide('published'); });
+
+    var btnCancel = el('button', 'cso-pill-btn', '\u2190 Back to List');
+    btnCancel.type = 'button';
+    btnCancel.addEventListener('click', onBack);
+
+    bar.append(btnPreview, btnDraft, btnPub, btnCancel, statusMsg);
+    shell.appendChild(bar);
+
+    drawTakeaways();
+    drawPhotos();
+    drawPdfs();
+    drawLinks();
+    root.appendChild(shell);
+  }
+
+  // =========================================================================
+  // FOLDER LIST VIEW (SEARCH, FILTER, EDIT, DUPLICATE, PIN, PUBLISH, DELETE)
+  // =========================================================================
+  function renderFolderView(root, headerActions, initialFilter) {
+    var activeFilter = initialFilter || 'all';
+    var state = {
+      items: [],
+      counts: {},
+      q: '',
+      statusFilter: activeFilter === 'drafts' ? 'draft' : '',
+      catFilter: (activeFilter !== 'all' && activeFilter !== 'drafts') ? activeFilter : 'all'
+    };
+
+    clear(root);
+    if (headerActions) {
+      clear(headerActions);
+      var hdrNew = el('button', 'cso-btn cso-btn-primary', '+ New Article / Guide');
+      hdrNew.type = 'button';
+      hdrNew.addEventListener('click', function () {
+        renderComposer(root, headerActions, null, {
+          initialCategory: state.catFilter !== 'all' ? state.catFilter : 'how-to',
+          onBack: function () { renderFolderView(root, headerActions, activeFilter); }
+        });
+      });
+      var hdrLive = el('a', 'cso-pill-btn', 'Open /guides/ \u2197');
+      hdrLive.href = '/guides/';
+      hdrLive.target = '_blank';
+      hdrLive.rel = 'noopener noreferrer';
+      headerActions.append(hdrLive, hdrNew);
+    }
+
+    var shell = el('div', 'cso-guides-studio');
+
+    // Subview Tabs
+    var tabBar = el('div', 'cso-guide-tabs');
+    function drawTabs() {
+      clear(tabBar);
+      SUBVIEWS.forEach(function (sv) {
+        var isAct = (sv.key === 'drafts' && state.statusFilter === 'draft' && state.catFilter === 'all')
+          || (sv.key === 'all' && state.catFilter === 'all' && !state.statusFilter)
+          || (sv.key !== 'all' && sv.key !== 'drafts' && state.catFilter === sv.key && state.statusFilter !== 'draft');
+        var cnt = state.counts[sv.key];
+        var b = el('button', 'cso-pill-btn' + (isAct ? ' is-active' : ''), sv.title + (cnt !== undefined ? ' (' + cnt + ')' : ''));
+        b.type = 'button';
+        b.addEventListener('click', function () {
+          activeFilter = sv.key;
+          if (sv.key === 'drafts') {
+            state.catFilter = 'all';
+            state.statusFilter = 'draft';
+          } else if (sv.key === 'all') {
+            state.catFilter = 'all';
+            state.statusFilter = '';
+          } else {
+            state.catFilter = sv.key;
+            state.statusFilter = '';
+          }
+          selCatFilter.value = state.catFilter;
+          selStatus.value = state.statusFilter;
+          if (window.CSOStudio && typeof window.CSOStudio.setGuidesSubTab === 'function') {
+            window.CSOStudio.setGuidesSubTab(sv.key);
+          }
+          loadList();
+        });
+        tabBar.appendChild(b);
+      });
+    }
+
+    // Filter Toolbar
+    var filterBar = el('div', 'cso-card studio-card cso-guide-filter-bar');
+    var inSearch = el('input', 'cso-form-input');
+    inSearch.type = 'search';
+    inSearch.placeholder = 'Search guides by title, slug, or tag\u2026';
+
+    var selCatFilter = el('select', 'cso-form-select');
+    selCatFilter.setAttribute('aria-label', 'Filter by category');
+    var allCatOpt = el('option', '', 'All Categories');
+    allCatOpt.value = 'all';
+    selCatFilter.appendChild(allCatOpt);
+    CATEGORIES.forEach(function (c) {
+      var op = el('option', '', c.icon + ' ' + c.label);
+      op.value = c.key;
+      selCatFilter.appendChild(op);
+    });
+    selCatFilter.value = state.catFilter;
+
+    var selStatus = el('select', 'cso-form-select');
+    selStatus.setAttribute('aria-label', 'Filter by status');
+    [['', 'All Statuses'], ['published', 'Published Live'], ['draft', 'Drafts Only']].forEach(function (p) {
+      var op = el('option', '', p[1]);
+      op.value = p[0];
+      selStatus.appendChild(op);
+    });
+    selStatus.value = state.statusFilter;
+
+    var btnRef = el('button', 'cso-pill-btn', '\u21BB Refresh');
+    btnRef.type = 'button';
+    var btnCreate = el('button', 'cso-btn cso-btn-primary', '+ Create Informative Guide');
+    btnCreate.type = 'button';
+    btnCreate.addEventListener('click', function () {
+      renderComposer(root, headerActions, null, {
+        initialCategory: state.catFilter !== 'all' ? state.catFilter : 'how-to',
+        onBack: function () { renderFolderView(root, headerActions, activeFilter); }
+      });
+    });
+
+    inSearch.addEventListener('input', function () { state.q = inSearch.value.trim(); drawList(); });
+    selCatFilter.addEventListener('change', function () {
+      state.catFilter = selCatFilter.value || 'all';
+      activeFilter = state.statusFilter === 'draft' && state.catFilter === 'all' ? 'drafts' : state.catFilter;
+      loadList();
+    });
+    selStatus.addEventListener('change', function () { state.statusFilter = selStatus.value; loadList(); });
+    btnRef.addEventListener('click', loadList);
+    filterBar.append(inSearch, selCatFilter, selStatus, btnRef, btnCreate);
+
+    var listHost = el('div', 'cso-guide-list-host');
+
+    function drawList() {
+      clear(listHost);
+      var q = state.q.toLowerCase();
+      var rows = state.items.filter(function (g) {
+        if (!q) return true;
+        return (g.title_en + ' ' + g.title_or + ' ' + g.slug + ' ' + g.tags).toLowerCase().indexOf(q) !== -1;
+      });
+
+      if (!rows.length) {
+        var empty = el('div', 'cso-card studio-card cso-guide-empty');
+        empty.appendChild(el('h3', '', 'No Informative Articles & Guides in this view yet'));
+        empty.appendChild(el('p', 'cso-text-muted', 'Start with a 1-click structured template (How-To, Exam Strategy, Scheme Explainer, or Odisha GK) and publish live to /guides/.'));
+        var cta = el('button', 'cso-btn cso-btn-primary', '+ Create First Informative Guide');
+        cta.type = 'button';
+        cta.addEventListener('click', function () {
+          renderComposer(root, headerActions, null, {
+            initialCategory: state.catFilter !== 'all' ? state.catFilter : 'how-to',
+            onBack: function () { renderFolderView(root, headerActions, activeFilter); }
+          });
+        });
+        empty.appendChild(cta);
+        listHost.appendChild(empty);
+        return;
+      }
+
+      rows.forEach(function (g) {
+        var card = el('article', 'cso-card studio-card cso-guide-row-card');
+        var main = el('div', 'cso-guide-row-main');
+        var badges = el('div', 'cso-guide-row-badges');
+        badges.appendChild(el('span', 'cso-pill-badge', g.category_icon + ' ' + g.category_short_en));
+        badges.appendChild(el('span', 'cso-pill-badge ' + (g.status === 'published' ? 'is-live' : 'is-draft'), g.status === 'published' ? 'Published Live' : 'Draft'));
+        if (g.is_pinned) badges.appendChild(el('span', 'cso-pill-badge is-pinned', '\uD83D\uDCCC Pinned'));
+        if (g.is_exam) badges.appendChild(el('span', 'cso-pill-badge', '\uD83D\uDCDD Exams'));
+        badges.appendChild(el('span', 'cso-text-muted', g.scope + ' \u00B7 ' + g.read_minutes + ' min read'));
+
+        main.append(
+          badges,
+          el('h4', 'cso-guide-row-title', g.title_en),
+          el('p', 'cso-text-muted', '/guides/' + g.slug + (g.title_or ? ' \u00B7 ' + g.title_or : ''))
+        );
+
+        var actions = el('div', 'cso-guide-row-actions');
+        var bEdit = el('button', 'cso-pill-btn', 'Edit');
+        bEdit.type = 'button';
+        bEdit.addEventListener('click', function () {
+          renderComposer(root, headerActions, g, {
+            onBack: function () { renderFolderView(root, headerActions, activeFilter); }
+          });
+        });
+
+        var bPrev = el('button', 'cso-pill-btn', '\uD83D\uDC41\uFE0F Preview');
+        bPrev.type = 'button';
+        bPrev.addEventListener('click', function () {
+          openLivePreviewModal(g, function () {
+            apiFetch('/api/admin/guides/' + encodeURIComponent(g.id), { method: 'PATCH', body: { status: 'published' } })
+              .then(function () { toast('Guide published live!', 'ok'); loadList(); })
+              .catch(function (e) { toast(e.message, 'crimson'); });
+          });
+        });
+
+        var bDup = el('button', 'cso-pill-btn', 'Duplicate');
+        bDup.type = 'button';
+        bDup.addEventListener('click', function () {
+          apiFetch('/api/admin/guides/' + encodeURIComponent(g.id) + '/duplicate', { method: 'POST', body: {} })
+            .then(function () { toast('Guide duplicated as Draft template!', 'ok'); loadList(); })
+            .catch(function (e) { toast(e.message, 'crimson'); });
+        });
+
+        var bPin = el('button', 'cso-pill-btn', g.is_pinned ? 'Unpin' : '\uD83D\uDCCC Pin');
+        bPin.type = 'button';
+        bPin.addEventListener('click', function () {
+          apiFetch('/api/admin/guides/' + encodeURIComponent(g.id), { method: 'PATCH', body: { is_pinned: !g.is_pinned } })
+            .then(function () { toast(g.is_pinned ? 'Unpinned from Homepage Latest Updates.' : 'Pinned to Homepage Latest Updates!', 'ok'); loadList(); })
+            .catch(function (e) { toast(e.message, 'crimson'); });
+        });
+
+        var bTog = el('button', 'cso-pill-btn', g.status === 'published' ? 'Move to Draft' : 'Publish Live');
+        bTog.type = 'button';
+        bTog.addEventListener('click', function () {
+          var nextSt = g.status === 'published' ? 'draft' : 'published';
+          apiFetch('/api/admin/guides/' + encodeURIComponent(g.id), { method: 'PATCH', body: { status: nextSt } })
+            .then(function () { toast(nextSt === 'published' ? 'Published live!' : 'Moved to Draft.', 'ok'); loadList(); })
+            .catch(function (e) { toast(e.message, 'crimson'); });
+        });
+
+        var bDel = el('button', 'cso-pill-btn is-danger', 'Delete');
+        bDel.type = 'button';
+        bDel.addEventListener('click', function () {
+          if (!window.confirm('Permanently delete "' + g.title_en + '"? This removes it from /guides/, Homepage Latest Updates, and Vectorize search.')) return;
+          apiFetch('/api/admin/guides/' + encodeURIComponent(g.id), { method: 'DELETE' })
+            .then(function () { toast('Guide deleted.', 'ok'); loadList(); })
+            .catch(function (e) { toast(e.message, 'crimson'); });
+        });
+
+        actions.append(bEdit, bPrev, bDup, bPin, bTog);
+        if (g.status === 'published') {
+          var aView = el('a', 'cso-pill-btn', 'View \u2197');
+          aView.href = g.url;
+          aView.target = '_blank';
+          aView.rel = 'noopener noreferrer';
+          actions.appendChild(aView);
+        }
+        actions.appendChild(bDel);
+
+        card.append(main, actions);
+        listHost.appendChild(card);
+      });
+    }
+
+    function loadList() {
+      var qs = [];
+      if (state.catFilter && state.catFilter !== 'all') qs.push('category=' + encodeURIComponent(state.catFilter));
+      if (state.statusFilter) qs.push('status=' + encodeURIComponent(state.statusFilter));
+      var url = '/api/admin/guides' + (qs.length ? '?' + qs.join('&') : '');
+      listHost.textContent = 'Loading Informative Articles & Guides from D1\u2026';
+      apiFetch(url)
+        .then(function (d) {
+          state.items = (d && d.items) || [];
+          state.counts = (d && d.counts) || {};
+          drawTabs();
+          drawList();
+          if (typeof window.CSOStudioUpdateGuideCounts === 'function') {
+            window.CSOStudioUpdateGuideCounts(state.counts);
+          }
+        })
+        .catch(function (e) {
+          clear(listHost);
+          listHost.appendChild(el('p', 'cso-ca-empty', 'Failed to load guides: ' + e.message));
+        });
+    }
+
+    shell.append(tabBar, filterBar, listHost);
+    root.appendChild(shell);
+    drawTabs();
+    loadList();
+  }
+
+  window.CSOGuidesPublishingStudio = {
+    CATEGORIES: CATEGORIES,
+    SUBVIEWS: SUBVIEWS,
+    STARTER_TEMPLATES: STARTER_TEMPLATES,
+    renderFolderView: renderFolderView,
+    renderComposer: renderComposer,
+    openLivePreviewModal: openLivePreviewModal
+  };
+})(window, document);

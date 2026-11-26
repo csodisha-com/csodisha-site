@@ -15,7 +15,7 @@ export const ANSWER_PRIMARY_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
 export const ANSWER_FALLBACK_MODEL = '@cf/ibm-granite/granite-4.0-h-micro';
 export const ANSWER_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const SEMANTIC_NEURON_CAP = 9000;
-export const VALID_SEARCH_TYPES = new Set(['all', 'job', 'scheme', 'study', 'career', 'current_affairs']);
+export const VALID_SEARCH_TYPES = new Set(['all', 'job', 'scheme', 'study', 'career', 'current_affairs', 'guide']);
 
 let _schemaReadyDb = null;
 
@@ -71,6 +71,7 @@ function buildUrlForType(type, slugOrId) {
   if (type === 'study') return `/study-library/?slug=${s}`;
   if (type === 'career') return `/careers/?slug=${s}`;
   if (type === 'current_affairs') return `/current-affairs/?slug=${s}`;
+  if (type === 'guide') return `/guides/${s}`;
   return `/jobs/?slug=${s}`;
 }
 
@@ -282,6 +283,14 @@ export async function runKeywordFallbackSearch(env, { q, type = 'all', limit = 8
             ORDER BY capsule_date DESC, updated_at DESC LIMIT ?`
     });
   }
+  if (type === 'all' || type === 'guide') {
+    queries.push({
+      t: 'guide',
+      sql: `SELECT id, slug, title_en, title_or, summary_en FROM informative_guides
+            WHERE status = 'published' AND (title_en LIKE ? OR title_or LIKE ? OR summary_en LIKE ? OR tags LIKE ?)
+            ORDER BY is_pinned DESC, updated_at DESC LIMIT ?`
+    });
+  }
 
   for (const item of queries) {
     try {
@@ -315,7 +324,8 @@ async function hydrateMatchFromD1(env, match) {
     scheme: { table: 'scheme_articles', cond: 'is_published = 1', cols: 'id, slug, title_en, title_or, summary_en' },
     study: { table: 'study_articles', cond: 'is_published = 1', cols: 'id, slug, title_en, title_or, summary_en' },
     career: { table: 'careers_articles', cond: "status = 'published'", cols: 'id, slug, title_en, title_or, summary_en' },
-    current_affairs: { table: 'cso_current_affairs', cond: "status = 'published'", cols: 'id, id AS slug, title_en, title_or, highlights_en AS summary_en' }
+    current_affairs: { table: 'cso_current_affairs', cond: "status = 'published'", cols: 'id, id AS slug, title_en, title_or, highlights_en AS summary_en' },
+    guide: { table: 'informative_guides', cond: "status = 'published'", cols: 'id, slug, title_en, title_or, summary_en' }
   };
   const cfg = tableMap[type];
   if (!cfg) return null;
@@ -708,7 +718,8 @@ export async function reindexPublishedContent(env, { limit = 20, actorId = 'admi
     { type: 'scheme', sql: 'SELECT id, slug, title_en, title_or, summary_en, summary_or FROM scheme_articles WHERE is_published = 1 ORDER BY updated_at DESC LIMIT ?' },
     { type: 'study', sql: 'SELECT id, slug, title_en, title_or, summary_en, summary_or FROM study_articles WHERE is_published = 1 ORDER BY updated_at DESC LIMIT ?' },
     { type: 'career', sql: "SELECT id, slug, title_en, title_or, summary_en, summary_or FROM careers_articles WHERE status = 'published' ORDER BY updated_at DESC LIMIT ?" },
-    { type: 'current_affairs', sql: "SELECT id, id AS slug, title_en, title_or, highlights_en, highlights_or FROM cso_current_affairs WHERE status = 'published' ORDER BY capsule_date DESC, updated_at DESC LIMIT ?" }
+    { type: 'current_affairs', sql: "SELECT id, id AS slug, title_en, title_or, highlights_en, highlights_or FROM cso_current_affairs WHERE status = 'published' ORDER BY capsule_date DESC, updated_at DESC LIMIT ?" },
+    { type: 'guide', sql: "SELECT id, slug, title_en, title_or, summary_en, summary_or FROM informative_guides WHERE status = 'published' ORDER BY updated_at DESC LIMIT ?" }
   ];
 
   let indexed = 0;

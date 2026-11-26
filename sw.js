@@ -11,7 +11,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v347';
+const CACHE_NAME = 'cso-candidate-cache-v348';
 const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
 const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
 
@@ -46,7 +46,9 @@ const RUNTIME_SWR_ASSETS = [
   '/assets/css/community-portal.css',
   '/assets/js/community-portal.js',
   '/assets/css/about-portal.css',
-  '/assets/js/about-portal.js'
+  '/assets/js/about-portal.js',
+  '/assets/css/guides-portal.css',
+  '/assets/js/guides-portal.js'
 ];
 
 // Candidate-state GET APIs: network-first with cache fallback (offline reads).
@@ -192,7 +194,9 @@ self.addEventListener('message', (event) => {
           cache.delete('/index.html'),
           cache.delete('/api/content/banner'),
           cache.delete('/api/public/home-feed'),
-          cache.delete('/api/public/homepage-blocks')
+          cache.delete('/api/public/homepage-blocks'),
+          cache.delete('/api/public/guides'),
+          cache.delete('/guides/')
         ]);
       } catch (_) {}
     })());

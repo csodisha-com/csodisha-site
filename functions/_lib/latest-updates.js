@@ -23,6 +23,7 @@ const VALID_ENTITY_TYPES = new Set([
   'current_affairs',
   'study',
   'career',
+  'guide',
   'post',
   'community'
 ]);
@@ -32,6 +33,7 @@ const DEFAULT_CTAS = {
   EXAM: 'Start Test →',
   SCHEME: 'Check Scheme →',
   STUDY: 'Read Guide →',
+  GUIDE: 'Read Guide →',
   'CURRENT AFFAIRS': 'Read Brief →',
   CAREER: 'View Roadmap →',
   COMMUNITY: 'Join Discussion →'
@@ -199,6 +201,8 @@ export async function unpublishLatestUpdateItem(db, entityType, entityId) {
     await db.prepare(`UPDATE cso_current_affairs SET status = 'draft', updated_at = ? WHERE id = ?`).bind(now, id).run();
   } else if (t === 'career') {
     await db.prepare(`UPDATE careers_articles SET status = 'draft', updated_at = ? WHERE id = ? OR slug = ?`).bind(now, id, id).run();
+  } else if (t === 'guide') {
+    await db.prepare(`UPDATE informative_guides SET status = 'draft', updated_at = ? WHERE id = ? OR slug = ?`).bind(now, id, id).run();
   } else if (t === 'post') {
     await db.prepare(`UPDATE posts SET status = 'draft', updated_at = ? WHERE id = ? OR slug = ?`).bind(now, id, id).run();
   } else if (t === 'community') {
@@ -611,6 +615,54 @@ export async function buildUnifiedLatestUpdates(db, { limit = 18 } = {}) {
             meta_line: buildMetaLine([isPoll ? 'Community Poll' : 'Community Forum', formatShortDate(r.updated_at || r.created_at) || 'All Odisha']),
             cta_label: cta.cta_label,
             is_external: cta.is_external,
+            updated_at: String(r.updated_at || r.created_at || '')
+          });
+        }
+      } catch {}
+    })(),
+
+    // 9. informative_guides (Informative Articles & Guides -> GUIDE + Read Guide →)
+    (async () => {
+      try {
+        const { results } = await db.prepare(
+          `SELECT id, slug, category, title_en, title_or, read_minutes, tags, scope, is_pinned, is_exam, created_at, updated_at
+           FROM informative_guides
+           WHERE status = 'published'
+           ORDER BY is_pinned DESC, updated_at DESC
+           LIMIT 8`
+        ).all();
+        const catLabels = {
+          'how-to': 'How-To Guide',
+          'exam-strategy': 'Exam Strategy',
+          'citizen-scheme': 'Scheme Explainer',
+          'odisha-gk': 'Odisha GK & Heritage'
+        };
+        for (const r of (results || [])) {
+          const id = String(r.id || r.slug || '').trim();
+          const slug = String(r.slug || id).trim();
+          if (!id || !slug) continue;
+          const ov = getOverride('guide', id, slug);
+          const scope = (ov && ov.scope) || normalizeScope(r.scope, [r.title_en, r.tags]);
+          const isPinned = ov ? ov.is_pinned : Number(r.is_pinned || 0) === 1;
+          const autoExam = Number(r.is_exam || 0) === 1 || String(r.category || '') === 'exam-strategy' || isExamRelated([r.title_en, r.tags]);
+          const isExam = resolveExamFlag(ov, autoExam);
+          const url = `/guides/${encodeURIComponent(slug)}`;
+          rawItems.push({
+            id: `guide:${id}`,
+            entity_type: 'guide',
+            entity_id: id,
+            slug,
+            title_en: String(r.title_en || ''),
+            title_or: String(r.title_or || ''),
+            url,
+            badge_type: 'GUIDE',
+            filter_tags: buildFilterTags('education', scope, isExam),
+            scope,
+            is_pinned: isPinned,
+            is_exam: isExam,
+            meta_line: buildMetaLine([catLabels[r.category] || 'Informative Guide', `${Number(r.read_minutes) || 5} min read`]),
+            cta_label: 'Read Guide →',
+            is_external: false,
             updated_at: String(r.updated_at || r.created_at || '')
           });
         }

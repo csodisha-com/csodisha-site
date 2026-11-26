@@ -20,6 +20,7 @@ export const NAV_PUBLIC_PATHS = [
   '/schemes/',
   '/study/',
   '/study-library/',
+  '/guides/',
   '/resources/',
   '/mock-tests/',
   '/current-affairs/',
@@ -30,6 +31,9 @@ export const NAV_PUBLIC_PATHS = [
 
 export const CONTENT_PUBLIC_PATHS = [
   '/api/public/home-feed',
+  '/api/public/guides',
+  '/guides/',
+  '/sitemap.xml',
   '/api/public/homepage-blocks',
   '/api/homepage/blocks',
   '/api/public/jobs',

@@ -219,7 +219,7 @@ check('4. Opaque 4-theme mobile overlays, >= 4.5:1 WCAG AA contrast, JS a11y hoo
   assert.match(read('functions/_lib/ssr-shell.js'), /style\.css\?v=20261125v3\d\d/);
   assert.match(read('index.html'), /style\.css\?v=20261125v3\d\d/);
   assert.match(read('community/index.html'), /community-portal\.css\?v=20261125v3\d\d/);
-  assert.match(read('admin/index.html'), /studio\.css\?v=20261125v3\d\d/);
+  assert.match(read('admin/index.html'), /studio\.css\?v=2026112[56]v3\d\d/);
 });
 
 check('5. v301 Mobile bar buttons (☰ Menu, ♿ Options, A– A A+) use var(--cso-ink)/var(--cso-border) with >= 7:1 contrast across all 4 themes', () => {

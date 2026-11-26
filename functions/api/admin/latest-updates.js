@@ -18,6 +18,7 @@ const VECTOR_TYPE_MAP = {
   study: 'study',
   career: 'career',
   current_affairs: 'current_affairs',
+  guide: 'guide',
   post: 'job'
 };
 

@@ -9551,7 +9551,7 @@
   /* ---------- router ---------- */
   function buildNav() {
     var nav = clear(document.getElementById('nav'));
-    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/about-directory', 'About CSO'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/jobs-directory', 'Jobs Directory'], ['#/schemes', 'Schemes'], ['#/schemes-directory', 'Schemes Tree'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/study-library-directory', 'Study Directory'], ['#/freshness', 'Freshness Audit'], ['#/feedback', 'Feedback Queue'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/security', 'Security'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
+    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/guides', '📚 Informative Guides'], ['#/about-directory', 'About CSO'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/jobs-directory', 'Jobs Directory'], ['#/schemes', 'Schemes'], ['#/schemes-directory', 'Schemes Tree'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/study-library-directory', 'Study Directory'], ['#/freshness', 'Freshness Audit'], ['#/feedback', 'Feedback Queue'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/security', 'Security'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
       .forEach(function (l) { nav.appendChild(el('a', { href: l[0] }, l[1])); });
   }
   function contentPublishingStudioPanel(mode) {
@@ -15943,8 +15943,50 @@
     main.appendChild(studyLibraryStudioPanel(domainSlug || 'early-childhood'));
   }
 
+  async function viewInformativeGuides(subPath) {
+    setTitle('Informative Articles & Guides');
+    var host = el('div', { class: 'cso-cms-guides-host' });
+    main.appendChild(host);
+    if (window.CSOGuidesPublishingStudio) {
+      if (subPath === 'new') {
+        window.CSOGuidesPublishingStudio.renderComposer(host, null, null, {
+          onBack: function () { go('guides'); }
+        });
+        return;
+      }
+      var validViews = ['all', 'how-to', 'exam-strategy', 'citizen-scheme', 'odisha-gk', 'drafts'];
+      if (subPath && validViews.indexOf(subPath) === -1) {
+        try {
+          var res = await api('GET', 'guides/' + encodeURIComponent(subPath));
+          if (res && res.item) {
+            window.CSOGuidesPublishingStudio.renderComposer(host, null, res.item, {
+              onBack: function () { go('guides'); }
+            });
+            return;
+          }
+        } catch (_e) {}
+      }
+      window.CSOGuidesPublishingStudio.renderFolderView(host, null, subPath || 'all');
+      return;
+    }
+    var data = await api('GET', 'guides');
+    var items = (data && data.items) || [];
+    var card = el('div', { class: 'cso-ops-card' }, [
+      el('h3', { text: 'Informative Articles & Guides (' + items.length + ')' }),
+      el('p', { class: 'muted sm', text: 'Open the full Admin Studio at /admin/#informative-guides for Starter Templates, R2 Photos/PDFs, AI Co-Author, and Live Preview.' })
+    ]);
+    items.forEach(function (g) {
+      card.appendChild(el('div', { class: 'cso-ops-head' }, [
+        el('strong', { text: g.title_en }),
+        el('a', { class: 'btn sm', href: '/guides/' + encodeURIComponent(g.slug), target: '_blank', rel: 'noopener noreferrer', text: 'View ↗' })
+      ]));
+    });
+    host.appendChild(card);
+  }
+
   var VIEWS = {
     dashboard: function () { return viewDashboard(); },
+    guides: function (parts) { return viewInformativeGuides(parts[1]); },
     content: function (parts) { return viewContentStudio(parts[1]); },
     'study-library': function (parts) { return viewStudyLibraryStudio(parts[1]); },
     pages: function (parts) { return viewSitePages(parts[1] === 'legal' ? 'Information & Legal' : (parts[1] === 'workspace' ? 'Candidate Workspace' : '')); },

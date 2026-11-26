@@ -140,6 +140,7 @@ import { handleAdminCandidateOpsApi } from './candidate-ops.js';
 import { handleAdminBillingAdsApi } from './billing-ads.js';
 import { handleAdminAiCoauthorApi } from './ai-coauthor.js';
 import { handleAdminSemanticReindexApi } from './semantic-reindex.js';
+import { handleAdminGuidesApi } from './guides.js';
 import {
   handleJobsDirectoryAdmin,
   handleSchemesAdmin,
@@ -253,6 +254,12 @@ async function dispatchAdminApi(request, env, ctx = null) {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-ai:${actor.userId}`, 20, 600);
       return await handleAdminSemanticReindexApi(request, env, actor);
+    }
+
+    if (resource === 'guides') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      return await handleAdminGuidesApi(request, env, actor, id, sub, ctx);
     }
 
     if (COMMAND_SUITE_RESOURCES.includes(resource)) {

@@ -12530,6 +12530,12 @@ nav#cso-hub-top-tabs {
   border-color: var(--cso-info-border, var(--cso-border));
 }
 
+.cso-lu-badge--guide {
+  background: var(--cso-ok-bg);
+  color: var(--cso-ok-fg);
+  border-color: var(--cso-ok-border, var(--cso-accent));
+}
+
 .cso-lu-badge--ca {
   background: var(--cso-warn-bg);
   color: var(--cso-warn-fg);

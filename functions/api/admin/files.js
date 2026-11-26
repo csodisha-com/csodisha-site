@@ -234,6 +234,7 @@ const REFERENCE_TARGETS = [
   { table: 'homepage_blocks', idCol: 'id', titleCol: 'title_en', cols: ['target_url', 'badge_text', 'subtitle_en', 'metadata_json'] },
   { table: 'candidate_assigned_items', idCol: 'id', titleCol: 'title', cols: ['resource_url', 'description'] },
   { table: 'site_pages', idCol: 'route', titleCol: 'title', cols: ['blocks_json', 'reusable_sections_json'] },
+  { table: 'informative_guides', idCol: 'id', titleCol: 'title_en', cols: ['cover_image', 'photos_json', 'pdfs_json', 'links_json', 'body_en', 'body_or'] },
   { table: 'posts', idCol: 'id', titleCol: 'title', cols: ['body_md', 'apply_url', 'pdf_url'] }
 ];
 

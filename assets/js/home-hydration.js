@@ -434,6 +434,7 @@
     EXAM: 'cso-lu-badge cso-lu-badge--exam',
     SCHEME: 'cso-lu-badge cso-lu-badge--scheme',
     STUDY: 'cso-lu-badge cso-lu-badge--study',
+    GUIDE: 'cso-lu-badge cso-lu-badge--guide',
     'CURRENT AFFAIRS': 'cso-lu-badge cso-lu-badge--ca',
     CAREER: 'cso-lu-badge cso-lu-badge--career',
     COMMUNITY: 'cso-lu-badge cso-lu-badge--community'

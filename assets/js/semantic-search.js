@@ -18,6 +18,7 @@
     scheme: 'Scheme',
     study: 'Study',
     career: 'Career',
+    guide: 'Guide',
     current_affairs: 'Current Affairs'
   };
 
@@ -28,6 +29,7 @@
       .replace(/\/schemes-benefits\/?/gi, 'Government Schemes')
       .replace(/\/schemes\/?/gi, 'Government Schemes')
       .replace(/\/study-library\/?/gi, 'Study Library')
+      .replace(/\/guides\/?/gi, 'Informative Guides')
       .replace(/\/mock-tests\/?/gi, 'CBT Mock Tests')
       .replace(/\/current-affairs\/?/gi, 'Current Affairs')
       .replace(/\/careers\/?/gi, 'Careers')
@@ -237,6 +239,7 @@
       ['job', 'Jobs'],
       ['scheme', 'Schemes'],
       ['study', 'Study'],
+      ['guide', 'Guides'],
       ['career', 'Careers']
     ].forEach(function (pair) {
       var opt = document.createElement('option');

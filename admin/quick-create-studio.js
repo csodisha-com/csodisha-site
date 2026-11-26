@@ -683,6 +683,8 @@
       studio.openSchemesPublishingTab('articles');
     } else if (it.entity_type === 'study' && studio.openStudyPublishingTab) {
       studio.openStudyPublishingTab('articles');
+    } else if (it.entity_type === 'guide' && studio.openGuidesPublishingTab) {
+      studio.openGuidesPublishingTab('all');
     } else if (it.entity_type === 'current_affairs' && studio.openQuickCreateRoute) {
       studio.openQuickCreateRoute('current-affairs/new');
     } else if (it.url) {
@@ -2636,9 +2638,33 @@
   }
 
   // =========================================================================
-  // 4. DISPATCHER FOR ALL 7 + CREATE NEW WORKFLOWS
+  // WORKFLOW 8: INFORMATIVE ARTICLE / GUIDE (guides/new)
+  // =========================================================================
+  function renderQuickInformativeGuide(root, headerActions) {
+    if (window.CSOGuidesPublishingStudio && typeof window.CSOGuidesPublishingStudio.renderComposer === 'function') {
+      window.CSOGuidesPublishingStudio.renderComposer(root, headerActions, null, {
+        onBack: function () {
+          if (window.CSOStudio && typeof window.CSOStudio.openGuidesPublishingTab === 'function') {
+            window.CSOStudio.openGuidesPublishingTab('all');
+          } else if (window.CSOGuidesPublishingStudio.renderFolderView) {
+            window.CSOGuidesPublishingStudio.renderFolderView(root, headerActions, 'all');
+          }
+        }
+      });
+      return;
+    }
+    clear(root);
+    var card = el('section', 'cso-qc-card');
+    card.appendChild(el('h3', 'cso-qc-card-title', '\uD83D\uDCDA Informative Articles & Guides Studio'));
+    card.appendChild(el('p', 'cso-qc-hint', 'Reload Admin Studio to initialize the Informative Guides composer script.'));
+    root.appendChild(card);
+  }
+
+  // =========================================================================
+  // 4. DISPATCHER FOR ALL 8 + CREATE NEW WORKFLOWS
   // =========================================================================
   var ROUTE_META = {
+    'guides/new': { folder: 'Informative Articles & Guides', title: 'New Informative Article / Guide', pill: 'Templates \u00B7 R2 Media \u00B7 AI \u00B7 Live Preview', render: renderQuickInformativeGuide },
     'jobs/new': { folder: 'Jobs', title: 'New Job Alert', pill: 'Quick Publish \u00B7 D1 / Vectorize', render: renderQuickJobAlert },
     'careers/new': { folder: 'Careers', title: 'New Career Roadmap', pill: 'Quick Publish \u00B7 D1 / Vectorize', render: renderQuickCareerRoadmap },
     'current-affairs/new': { folder: 'Study Library', title: 'New Current Affairs Post', pill: 'Quick Publish \u00B7 D1 / Vectorize', render: renderQuickCurrentAffairs },

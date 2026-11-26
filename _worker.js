@@ -131,6 +131,7 @@ import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPos
 import { handleCandidateAiAssistant } from './functions/api/candidate/ai-assistant.js';
 import { handlePublicSemanticSearch } from './functions/api/search/semantic.js';
 import { reindexPublishedContent } from './functions/_lib/semantic-search.js';
+import { handlePublicGuidesRoute, handlePublicGuidesApi } from './functions/_lib/informative-guides.js';
 import {
   handleCandidateHubConfigApi,
   handleCandidateMatchesApi,
@@ -563,6 +564,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/public/schemes', '/api/public/schemes/list', '/api/public/schemes/tree', '/api/public/schemes/bootstrap', '/api/public/schemes/article', '/schemes/',
     '/api/public/study', '/api/public/study/tree', '/api/public/study/bootstrap', '/api/public/study/article', '/api/public/study-library/bootstrap', '/api/public/study-library/list', '/study-library/',
     '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/list', '/api/public/community/bootstrap', '/api/public/community/post', '/community/', '/student-dashboard/',
+    '/api/public/guides', '/guides/',
     '/api/public/about/tree', '/api/public/about/pages', '/api/public/about/bootstrap', '/api/public/about/article', '/api/public/about/sources', '/about/',
     '/api/public/mock-tests', '/mock-tests/', '/api/public/ads',
     '/api/public/home-feed', '/api/public/homepage-blocks', '/api/homepage/blocks', '/', '/index.html', '/api/content/exam-taxonomy', '/api/content/banner', '/api/content/search', '/api/content/leaderboard'
@@ -1496,6 +1498,11 @@ export default {
       return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET' } });
     }
 
+    // 9d. /api/public/guides (v348 Informative Articles & Guides Public Feed)
+    if (pathname === '/api/public/guides' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicGuidesApi(request, env, url));
+    }
+
     // 9b. v244 Candidate Hub Governance & Live Workspace APIs
     if (pathname === '/api/candidate/hub-config' && (request.method === 'GET' || request.method === 'HEAD')) {
       return handleCandidateHubConfigApi(request, env);
@@ -1687,6 +1694,10 @@ export default {
         return Response.redirect(dest.toString(), 302);
       }
     }
+    if (pathname === '/guides' || pathname.startsWith('/guides/')) {
+      const guidesRes = await handlePublicGuidesRoute(request, env, url);
+      if (guidesRes) return guidesRes;
+    }
     if (pathname.startsWith('/community/')) {
       const communityRes = await handlePublicCommunityRoute(request, env, pathname);
       if (communityRes) return communityRes;
@@ -1744,7 +1755,7 @@ export default {
         res = await hydrateExplorerIndexHtml(res, pathname, env, url);
         res = await applySiteSnippetsToResponse(res, env, pathname);
       }
-      const isPrimaryPortal = pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|careers|tools|schemes|schemes-benefits|study-library|community|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname);
+      const isPrimaryPortal = pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|careers|guides|tools|schemes|schemes-benefits|study-library|community|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname);
       if (isHtmlResponse || isPrimaryPortal) {
         const headers = new Headers(res.headers);
         headers.set(

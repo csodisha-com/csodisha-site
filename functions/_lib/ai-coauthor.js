@@ -16,6 +16,7 @@ export const VALID_AI_MODES = new Set([
   'scheme',
   'mcq',
   'career',
+  'guide',
   'translate_odia',
   'translate_fields',
   'suggest_meta'
@@ -168,6 +169,9 @@ function buildPromptForMode(mode, rawInput, extra = {}) {
       '  "titles_en": ["Crisp, clear English headline option 1", "Headline option 2", "Headline option 3"],',
       '  "titles_or": ["ସଠିକ୍ ଓଡ଼ିଆ ଶୀର୍ଷକ ୧", "ଓଡ଼ିଆ ଶୀର୍ଷକ ୨", "ଓଡ଼ିଆ ଶୀର୍ଷକ ୩"],',
       '  "slug": "clean-lowercase-seo-slug-with-hyphens",',
+      '  "summary_en": "2-sentence SEO summary in English",',
+      '  "summary_or": "2-sentence SEO summary in Odia (ଓଡ଼ିଆ)",',
+      '  "read_minutes": 5,',
       '  "tags": ["Tag 1", "Tag 2", "Tag 3", "Tag 4", "Tag 5", "Tag 6"]',
       '}',
       'RULES:',
@@ -207,6 +211,30 @@ function buildPromptForMode(mode, rawInput, extra = {}) {
     ].join('\n');
   }
 
+  if (mode === 'guide') {
+    return [
+      'You are an expert Odisha & National editorial guide author for Common Sense Odisha.',
+      'Draft a well-structured, accurate informative guide from the topic or official notes below.',
+      'Return ONLY a valid JSON object (no markdown fences) with this exact schema:',
+      '{',
+      '  "title_en": "Clear SEO-friendly English guide title",',
+      '  "title_or": "Natural Odia (ଓଡ଼ିଆ) translation of the title",',
+      '  "slug": "lowercase-hyphenated-slug",',
+      '  "summary_en": "Concise 2-sentence English summary",',
+      '  "summary_or": "Concise 2-sentence Odia summary",',
+      '  "read_minutes": 6,',
+      '  "tags": ["Tag 1", "Tag 2", "Tag 3", "Tag 4", "Tag 5"],',
+      '  "takeaways_en": ["Key takeaway 1", "Key takeaway 2", "Key takeaway 3", "Key takeaway 4"],',
+      '  "takeaways_or": ["ମୁଖ୍ୟ ତଥ୍ୟ ୧", "ମୁଖ୍ୟ ତଥ୍ୟ ୨", "ମୁଖ୍ୟ ତଥ୍ୟ ୩", "ମୁଖ୍ୟ ତଥ୍ୟ ୪"],',
+      '  "body_en": "## Overview\\nClear intro...\\n\\n## Step-by-Step Process\\n1. Step one...\\n\\n> [!TIP]\\n> Practical tip...\\n\\n## Quick Summary Table\\n| Item | Details |\\n| --- | --- |\\n| Authority | ... |",',
+      '  "body_or": "## ସଂକ୍ଷିପ୍ତ ବିବରଣୀ\\n..."',
+      '}',
+      'RULES: Use clean Markdown headings (## / ###), bullet lists, callout boxes (> [!TIP]), and Markdown tables. Never invent fake URLs.',
+      'Topic / Official Notes:',
+      text
+    ].join('\n');
+  }
+
   const domainLabel = mode === 'scheme'
     ? 'Odisha & Central Government Welfare Scheme'
     : (mode === 'career' ? 'Odisha & National Career Roadmap' : 'Odisha & National Government Job Recruitment');
@@ -242,6 +270,9 @@ function getResponseSchemaForMode(mode) {
         titles_en: { type: 'ARRAY', items: { type: 'STRING' } },
         titles_or: { type: 'ARRAY', items: { type: 'STRING' } },
         slug: { type: 'STRING' },
+        summary_en: { type: 'STRING' },
+        summary_or: { type: 'STRING' },
+        read_minutes: { type: 'INTEGER' },
         tags: { type: 'ARRAY', items: { type: 'STRING' } }
       },
       required: ['titles_en', 'titles_or', 'slug', 'tags']
@@ -298,7 +329,13 @@ function normalizeStructuredOutput(mode, rawObj, fallbackInput, extra = {}) {
       tags.push(clean);
       if (tags.length >= 8) break;
     }
-    return { titles_en: titlesEn, titles_or: titlesOr, slug, tags };
+    const summaryEn = String(obj.summary_en || '').trim().slice(0, 600);
+    const summaryOr = String(obj.summary_or || '').trim().slice(0, 800);
+    const wordEst = Math.max(1, Math.min(60, Math.ceil(String(fallbackInput || '').trim().split(/\s+/).filter(Boolean).length / 200) || 5));
+    const readMinutes = Number.isFinite(Number(obj.read_minutes)) && Number(obj.read_minutes) >= 1
+      ? Math.min(60, Math.round(Number(obj.read_minutes)))
+      : wordEst;
+    return { titles_en: titlesEn, titles_or: titlesOr, slug, summary_en: summaryEn, summary_or: summaryOr, read_minutes: readMinutes, tags };
   }
 
   const titleEn = String(obj.title_en || fallbackInput.slice(0, 80) || 'Untitled Draft').trim().slice(0, 180);
@@ -306,6 +343,33 @@ function normalizeStructuredOutput(mode, rawObj, fallbackInput, extra = {}) {
   const slug = slugifyText(obj.slug || titleEn) || ('draft-' + Date.now().toString(36));
   const summaryEn = String(obj.summary_en || '').trim().slice(0, 2000);
   const summaryOr = String(obj.summary_or || '').trim().slice(0, 2500);
+
+  if (mode === 'guide') {
+    const rawTags = Array.isArray(obj.tags) ? obj.tags : String(obj.tags || '').split(',');
+    const tags = rawTags.map((t) => String(t || '').trim().slice(0, 36)).filter(Boolean).slice(0, 8);
+    const takeawaysEn = (Array.isArray(obj.takeaways_en) ? obj.takeaways_en : [])
+      .map((t) => String(t || '').trim().slice(0, 300)).filter(Boolean).slice(0, 10);
+    const takeawaysOr = (Array.isArray(obj.takeaways_or) ? obj.takeaways_or : [])
+      .map((t) => String(t || '').trim().slice(0, 380)).filter(Boolean).slice(0, 10);
+    const bodyEn = String(obj.body_en || '').trim().slice(0, 32000);
+    const bodyOr = String(obj.body_or || '').trim().slice(0, 40000);
+    const readMinutes = Number.isFinite(Number(obj.read_minutes)) && Number(obj.read_minutes) >= 1
+      ? Math.min(60, Math.round(Number(obj.read_minutes)))
+      : Math.max(2, Math.ceil(bodyEn.split(/\s+/).filter(Boolean).length / 200) || 5);
+    return {
+      title_en: titleEn,
+      title_or: titleOr,
+      slug,
+      summary_en: summaryEn,
+      summary_or: summaryOr,
+      read_minutes: readMinutes,
+      tags,
+      takeaways_en: takeawaysEn,
+      takeaways_or: takeawaysOr,
+      body_en: bodyEn,
+      body_or: bodyOr
+    };
+  }
 
   if (mode === 'mcq') {
     const rawQs = Array.isArray(obj.questions) ? obj.questions : [];
@@ -372,7 +436,7 @@ async function callGeminiFreeTier(apiKey, prompt, mode) {
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
     const generationConfig = {
       temperature: mode === 'translate_odia' || mode === 'translate_fields' ? 0.15 : 0.3,
-      maxOutputTokens: 2048,
+      maxOutputTokens: (mode === 'guide' || mode === 'translate_fields') ? 4096 : 2048,
       responseMimeType: 'application/json'
     };
     if (schema) generationConfig.responseSchema = schema;
@@ -430,13 +494,14 @@ async function callWorkersAi(aiBinding, prompt, mode) {
     { role: 'user', content: prompt }
   ];
   const temp = (mode === 'translate_odia' || mode === 'translate_fields') ? 0.15 : 0.3;
+  const maxTok = (mode === 'guide' || mode === 'translate_fields') ? 2800 : 1400;
   let modelUsed = WORKERS_AI_PRIMARY_MODEL;
   let resp;
   try {
-    resp = await aiBinding.run(WORKERS_AI_PRIMARY_MODEL, { messages, max_tokens: 1400, temperature: temp, repetition_penalty: 1.1 });
+    resp = await aiBinding.run(WORKERS_AI_PRIMARY_MODEL, { messages, max_tokens: maxTok, temperature: temp, repetition_penalty: 1.1 });
   } catch (_primaryErr) {
     modelUsed = WORKERS_AI_FALLBACK_MODEL;
-    resp = await aiBinding.run(WORKERS_AI_FALLBACK_MODEL, { messages, max_tokens: 1400, temperature: temp, repetition_penalty: 1.1 });
+    resp = await aiBinding.run(WORKERS_AI_FALLBACK_MODEL, { messages, max_tokens: maxTok, temperature: temp, repetition_penalty: 1.1 });
   }
   const text = unwrapWorkersAiPayload(resp);
   if (!text) throw new Error('Workers AI returned an empty response.');
@@ -453,11 +518,12 @@ function normalizeBatchFields(fieldsInput, rawInput) {
   let count = 0;
   for (const [k, v] of Object.entries(obj)) {
     const key = String(k || '').trim().slice(0, 64);
-    const val = String(v || '').trim().slice(0, 3500);
+    const limit = key === 'body_or' ? 8000 : 3500;
+    const val = String(v || '').trim().slice(0, limit);
     if (!key || !val) continue;
     clean[key] = val;
     count += 1;
-    if (count >= 16) break;
+    if (count >= 36) break;
   }
   return clean;
 }
@@ -465,7 +531,7 @@ function normalizeBatchFields(fieldsInput, rawInput) {
 export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId }) {
   const cleanMode = String(mode || '').trim().toLowerCase();
   if (!VALID_AI_MODES.has(cleanMode)) {
-    const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, career, translate_odia, translate_fields, or suggest_meta.');
+    const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, career, guide, translate_odia, translate_fields, or suggest_meta.');
     err.status = 400;
     throw err;
   }

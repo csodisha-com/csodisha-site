@@ -204,6 +204,26 @@ function createMockDb() {
         ]
       };
     }
+    if (/FROM informative_guides/i.test(s)) {
+      return {
+        results: [
+          {
+            id: 'guide_1',
+            slug: 'how-to-apply-odisha-post-matric-scholarship',
+            category: 'how-to',
+            title_en: 'How to Apply for Odisha Post-Matric Scholarship 2026',
+            title_or: 'ଓଡ଼ିଶା ପୋଷ୍ଟ-ମ୍ୟାଟ୍ରିକ୍ ବୃତ୍ତି ୨୦୨୬ କିପରି ଆବେଦନ କରିବେ',
+            read_minutes: 6,
+            tags: 'Odisha Scholarship, How-To, Exam',
+            scope: 'Odisha',
+            is_pinned: 0,
+            is_exam: 1,
+            created_at: '2026-11-26T01:00:00Z',
+            updated_at: '2026-11-26T01:00:00Z'
+          }
+        ]
+      };
+    }
     return { first: null, results: [], run: { success: true } };
   };
 
@@ -260,6 +280,9 @@ await test('1. GET /api/public/home-feed returns all 7 live content buckets with
   const mockLu = data.latest_updates.find((x) => x.entity_type === 'mock_test');
   assert.ok(mockLu && mockLu.badge_type === 'EXAM' && mockLu.cta_label === 'Start Test →' && mockLu.url === '/mock-tests/?test=opsc-oas-gs-mock-01');
   assert.ok(mockLu.filter_tags.includes('exams') && mockLu.is_exam === true);
+  const guideLu = data.latest_updates.find((x) => x.entity_type === 'guide');
+  assert.ok(guideLu && guideLu.badge_type === 'GUIDE' && guideLu.cta_label === 'Read Guide →' && guideLu.url === '/guides/how-to-apply-odisha-post-matric-scholarship', 'home-feed latest_updates must include published informative_guides with GUIDE badge & Read Guide → CTA');
+  assert.ok(guideLu.filter_tags.includes('education') && guideLu.filter_tags.includes('exams') && guideLu.filter_tags.includes('odisha'), 'informative_guides item must include education + exams filter tags when tagged');
   assert.ok(jobLu.meta_line && !/CS Odisha Editorial Desk/i.test(jobLu.meta_line));
   assert.equal(isExternalHref('https://www.opsc.gov.in/'), true);
   assert.equal(isExternalHref('/jobs/opsc-oas-2026'), false);
@@ -327,9 +350,12 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v347');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v347';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v348');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v348';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
+  assert.ok(CONTENT_PUBLIC_PATHS.includes('/api/public/guides') && CONTENT_PUBLIC_PATHS.includes('/guides/') && CONTENT_PUBLIC_PATHS.includes('/sitemap.xml'), 'CONTENT_PUBLIC_PATHS must purge /api/public/guides, /guides/, and /sitemap.xml');
+  assert.ok(hydJs.includes("GUIDE: 'cso-lu-badge cso-lu-badge--guide'"), 'home-hydration.js must map GUIDE badge class');
+  assert.ok(read('assets/style.css').includes('.cso-lu-badge--guide'), 'assets/style.css must style .cso-lu-badge--guide');
 
   // v343: Mobile slide-out drawer sits strictly above backdrop (1210 > 1200) with zero stacking-context trap
   const navStart = indexHtml.indexOf('<nav class="main-nav site-header__nav" id="cso-main-navbar"');

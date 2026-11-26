@@ -12,6 +12,7 @@ export const PILLAR_TABLES = {
   jobs: { label: 'Jobs', table: 'jobs_directory_items', title: 'title', slug: 'slug' },
   schemes: { label: 'Schemes & Benefits', table: 'schemes_directory_items', title: 'title', slug: 'slug' },
   study: { label: 'Study Library', table: 'study_library_items', title: 'title', slug: 'slug' },
+  guides: { label: 'Informative Articles & Guides', table: 'informative_guides', title: 'title_en', slug: 'slug' },
   community: { label: 'Community', table: 'community_directory_items', title: 'title', slug: 'slug' },
   about: { label: 'About', table: 'about_directory_items', title: 'title', slug: 'slug' },
   current_affairs: { label: 'Current Affairs', table: 'cso_current_affairs', title: 'title_en', slug: null }
@@ -23,6 +24,7 @@ const AUDIT_PILLAR_PATTERNS = {
   careers: ['%career%'],
   schemes: ['%scheme%'],
   study: ['%study%', '%current_affair%', '%current-affair%', '%mock%', '%syllabus%', '%edu%'],
+  guides: ['%guide%'],
   community: ['%communit%', '%forum%'],
   about: ['%about%'],
   navigation: ['%nav%', '%categor%', '%menu%'],
@@ -249,7 +251,7 @@ export async function handleAuditFeed(request, env) {
 
 // ---------- GET /api/admin/system-diagnostics ----------
 const DIAG_TABLES = ['users', 'audit_log', 'admin_audit_logs', 'admin_sessions', 'feature_flags', 'redirects', 'institutional_pages', 'site_snippets',
-  'homepage_blocks', 'job_articles', 'careers_articles', 'scheme_articles', 'study_articles', 'community_posts', 'about_articles',
+  'homepage_blocks', 'job_articles', 'careers_articles', 'scheme_articles', 'study_articles', 'informative_guides', 'community_posts', 'about_articles',
   'jobs_directory_items', 'schemes_directory_items', 'study_library_items', 'community_directory_items', 'cso_current_affairs', 'nav_categories', 'nav_menu_items', 'media_files', 'site_settings'];
 
 export async function handleDiagnostics(request, env) {
@@ -288,7 +290,7 @@ export async function handlePurgeCaches(request, env, actor) {
 
 // ---------- GET /api/admin/command-index (palette search corpus) ----------
 export async function handleCommandIndex(request, env) {
-  const [blocks, cats, menus, jobArts, schemeArts, studyArts, commPosts, aboutArts] = await Promise.all([
+  const [blocks, cats, menus, jobArts, schemeArts, studyArts, commPosts, aboutArts, guides] = await Promise.all([
     safeAll(env.DB, 'SELECT id, section_key, title_en, is_published FROM homepage_blocks ORDER BY section_key, sort_order LIMIT 200'),
     safeAll(env.DB, 'SELECT id, name_en, name_or, landing_url, status FROM nav_categories ORDER BY sort_order LIMIT 200'),
     safeAll(env.DB, "SELECT id, label_en, label_or, url, status FROM nav_menu_items WHERE menu_location = 'header' ORDER BY sort_order LIMIT 200"),
@@ -296,7 +298,8 @@ export async function handleCommandIndex(request, env) {
     safeAll(env.DB, 'SELECT id, slug, title_en, department_en, is_published FROM scheme_articles ORDER BY updated_at DESC LIMIT 100'),
     safeAll(env.DB, 'SELECT id, slug, title_en, resource_type_badge, exam_board_tag, is_published FROM study_articles ORDER BY updated_at DESC LIMIT 100'),
     safeAll(env.DB, 'SELECT id, slug, title_en, post_type, moderation_status FROM community_posts ORDER BY updated_at DESC LIMIT 100'),
-    safeAll(env.DB, 'SELECT id, slug, title_en, doc_type_badge, is_published FROM about_articles ORDER BY updated_at DESC LIMIT 100')
+    safeAll(env.DB, 'SELECT id, slug, title_en, doc_type_badge, is_published FROM about_articles ORDER BY updated_at DESC LIMIT 100'),
+    safeAll(env.DB, 'SELECT id, slug, title_en, category, status FROM informative_guides ORDER BY updated_at DESC LIMIT 100')
   ]);
   return json({
     ok: true,
@@ -307,7 +310,8 @@ export async function handleCommandIndex(request, env) {
     scheme_articles: schemeArts || [],
     study_articles: studyArts || [],
     community_posts: commPosts || [],
-    about_articles: aboutArts || []
+    about_articles: aboutArts || [],
+    informative_guides: guides || []
   });
 }
 

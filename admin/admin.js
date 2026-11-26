@@ -23,6 +23,9 @@
     activeStudySubTab: 'articles',
     activeStudyTrackId: '',
     studyTrackNodes: [],
+    activeGuidesSubTab: 'all',
+    guidesCount: null,
+    guidesSubCounts: {},
     activeCommunitySubTab: 'feed',
     activeCommunityChannelId: '',
     communityChannelNodes: [],
@@ -95,6 +98,11 @@
   var CR_MODULE_ID = 'module-careers-studio';
   function isCareersStudioId(id) {
     return id === CR_FOLDER_ID || id === CR_MODULE_ID || id === 'careers' || id === 'careers-studio';
+  }
+  var IG_FOLDER_ID = 'folder-informative-guides';
+  var IG_MODULE_ID = 'module-informative-guides';
+  function isInformativeGuidesId(id) {
+    return id === IG_FOLDER_ID || id === IG_MODULE_ID || id === 'guides' || id === 'informative-guides';
   }
   var HS_FOLDER_ID = 'folder-homepage-studio';
   var HS_MODULE_ID = 'module-homepage-studio';
@@ -300,6 +308,8 @@
       if (schemesPillar) { CSOState.schemesCount = schemesPillar.total; }
       var studyPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'study'; }) : null;
       if (studyPillar) { CSOState.studyCount = studyPillar.total; }
+      var guidesPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'guides'; }) : null;
+      if (guidesPillar && CSOState.guidesCount === null) { CSOState.guidesCount = guidesPillar.total; }
       var commPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'community'; }) : null;
       if (commPillar) { CSOState.communityCount = commPillar.total; }
       var aboutPillar = ov && Array.isArray(ov.pillars) ? ov.pillars.find(function (p) { return p.key === 'about'; }) : null;
@@ -785,6 +795,78 @@
           dom.accordionNav.appendChild(crWrap);
         }
       }
+
+      if (folder.id === 'folder-study-library') {
+        var guidesSubItems = [
+          { tab: 'all', num: '01', title: 'All Articles & Guides', tag: 'ALL', kw: 'all informative articles guides hub' },
+          { tab: 'how-to', num: '02', title: 'Step-by-Step How-To Guides', tag: 'HOW-TO', kw: 'step by step how-to walkthrough application guides' },
+          { tab: 'exam-strategy', num: '03', title: 'Exam Strategy & Study Handbooks', tag: 'EXAM', kw: 'exam strategy study handbook roadmap pyq' },
+          { tab: 'citizen-scheme', num: '04', title: 'Citizen & Scheme Explainers', tag: 'SCHEME', kw: 'citizen government scheme explainers benefits dbt' },
+          { tab: 'odisha-gk', num: '05', title: 'Odisha GK & Heritage', tag: 'GK', kw: 'odisha gk heritage history geography culture' },
+          { tab: 'drafts', num: '06', title: 'Drafts', tag: 'DRAFT', kw: 'drafts unpublished guides review' }
+        ];
+        var igLabel = 'informative articles guides how-to exam strategy handbooks citizen scheme explainers odisha gk heritage drafts ମାର୍ଗଦର୍ଶିକା';
+        var igParentMatch = !query || igLabel.indexOf(query) !== -1;
+        var filteredIgSubs = guidesSubItems.filter(function (s) {
+          return igParentMatch || s.title.toLowerCase().indexOf(query) !== -1 || s.kw.indexOf(query) !== -1;
+        });
+        if (!query || igParentMatch || filteredIgSubs.length > 0) {
+          matchCount += filteredIgSubs.length || 1;
+          var igActive = CSOState.activeFolderId === IG_FOLDER_ID || CSOState.activeModuleId === IG_MODULE_ID;
+          var igExpanded = query ? true : CSOState.expandedFolders.has(IG_FOLDER_ID);
+          var igWrap = el('div', 'cso-nav-folder cso-nav-informative-guides' + (igActive ? ' is-current' : ''));
+          var igBtn = el('button', 'cso-nav-folder-btn' + (igActive ? ' is-active' : ''));
+          igBtn.type = 'button';
+          igBtn.id = 'navTabInformativeGuides';
+          igBtn.setAttribute('aria-expanded', String(igExpanded));
+          if (igActive) igBtn.setAttribute('aria-current', 'page');
+          igBtn.title = 'Informative Articles & Guides — Starter Templates, Photos, PDFs, AI & Live Preview';
+          var igLeft = el('span', 'cso-nav-folder-left');
+          igLeft.appendChild(el('span', 'cso-nav-folder-icon', '\uD83D\uDCDA'));
+          igLeft.appendChild(el('span', 'cso-nav-folder-title', 'Informative Articles & Guides'));
+          var igRight = el('span', 'cso-nav-folder-right');
+          igRight.appendChild(el('span', 'cso-nav-count cso-tabular', CSOState.guidesCount === null ? '\u2026' : String(CSOState.guidesCount)));
+          igRight.appendChild(createChevronEl(igExpanded, false));
+          igBtn.appendChild(igLeft);
+          igBtn.appendChild(igRight);
+          igBtn.addEventListener('click', function () {
+            if (CSOState.expandedFolders.has(IG_FOLDER_ID)) CSOState.expandedFolders.delete(IG_FOLDER_ID);
+            else CSOState.expandedFolders.add(IG_FOLDER_ID);
+            persistOpenGroups();
+            if (!igActive) {
+              openInformativeGuidesStudio('all');
+            } else {
+              renderNavigationTree();
+            }
+            if (window.innerWidth <= 900) closeMobileDrawer();
+          });
+
+          var igModList = el('div', 'cso-nav-modules' + (igExpanded ? '' : ' is-collapsed'));
+          igModList.id = 'informativeGuidesSidebarSubnav';
+          igModList.hidden = !igExpanded;
+          filteredIgSubs.forEach(function (sub) {
+            var isSubActive = igActive && CSOState.activeGuidesSubTab === sub.tab;
+            var subBtn = el('button', 'cso-nav-mod-btn' + (isSubActive ? ' is-active' : ''));
+            subBtn.type = 'button';
+            subBtn.setAttribute('data-guides-tab', sub.tab);
+            subBtn.appendChild(el('span', 'cso-nav-mod-num', sub.num));
+            subBtn.appendChild(el('span', 'cso-nav-mod-title', sub.title));
+            var subCnt = CSOState.guidesSubCounts && CSOState.guidesSubCounts[sub.tab] !== undefined
+              ? String(CSOState.guidesSubCounts[sub.tab])
+              : sub.tag;
+            subBtn.appendChild(el('span', 'cso-nav-mod-tag is-live cso-tabular', subCnt));
+            subBtn.addEventListener('click', function () {
+              openInformativeGuidesStudio(sub.tab);
+              if (window.innerWidth <= 900) closeMobileDrawer();
+            });
+            igModList.appendChild(subBtn);
+          });
+
+          igWrap.appendChild(igBtn);
+          igWrap.appendChild(igModList);
+          dom.accordionNav.appendChild(igWrap);
+        }
+      }
     });
 
     // 7. Candidate Hub
@@ -991,6 +1073,7 @@
 
   function resolveModuleTarget(targetId) {
     if (isCareersStudioId(targetId)) return { folderId: CR_FOLDER_ID, moduleId: CR_MODULE_ID };
+    if (isInformativeGuidesId(targetId)) return { folderId: IG_FOLDER_ID, moduleId: IG_MODULE_ID };
     if (isHomepageStudioId(targetId)) return { folderId: WS_FOLDER_ID, moduleId: WS_MODULE_ID };
     if (isWebStudioId(targetId)) return { folderId: WS_FOLDER_ID, moduleId: WS_MODULE_ID };
     if (isFileManagerId(targetId)) return { folderId: FM_FOLDER_ID, moduleId: FM_MODULE_ID };
@@ -1181,6 +1264,69 @@
     }
   }
 
+  function openInformativeGuidesStudio(initialTab, existingGuide) {
+    var tabKey = initialTab || 'all';
+    CSOState.activeFolderId = IG_FOLDER_ID;
+    CSOState.activeModuleId = IG_MODULE_ID;
+    CSOState.activeGuidesSubTab = tabKey === 'new' ? 'all' : tabKey;
+    CSOState.expandedFolders.add(IG_FOLDER_ID);
+    persistOpenGroups();
+    try { localStorage.setItem('cso_active_module_id', IG_MODULE_ID); } catch (_e) {}
+    if (window.location.hash !== '#informative-guides' && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#informative-guides');
+    }
+    var subLabels = {
+      all: 'All Articles & Guides',
+      'how-to': 'Step-by-Step How-To Guides',
+      'exam-strategy': 'Exam Strategy & Study Handbooks',
+      'citizen-scheme': 'Citizen & Scheme Explainers',
+      'odisha-gk': 'Odisha GK & Heritage',
+      drafts: 'Drafts',
+      new: 'New Informative Article / Guide'
+    };
+    if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = 'Informative Articles & Guides';
+    if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = subLabels[tabKey] || 'All Articles & Guides';
+    if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = tabKey === 'new' ? 'New Informative Article / Guide' : 'Informative Articles & Guides';
+    if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = 'Live /guides/ · R2 · Vectorize';
+    renderNavigationTree();
+    clearNode(dom.workspaceRoot);
+    clearNode(dom.moduleHeaderActions);
+    if (window.CSOGuidesPublishingStudio) {
+      if (tabKey === 'new' || existingGuide) {
+        window.CSOGuidesPublishingStudio.renderComposer(dom.workspaceRoot, dom.moduleHeaderActions, existingGuide || null, {
+          onBack: function () { openInformativeGuidesStudio(CSOState.activeGuidesSubTab || 'all'); }
+        });
+      } else {
+        window.CSOGuidesPublishingStudio.renderFolderView(dom.workspaceRoot, dom.moduleHeaderActions, tabKey);
+      }
+    } else {
+      var card = el('div', 'cso-empty-state');
+      card.appendChild(el('h2', '', 'Informative Articles & Guides Studio unavailable'));
+      card.appendChild(el('p', '', 'The Guides Publishing Studio script failed to load. Reload the page.'));
+      dom.workspaceRoot.appendChild(card);
+    }
+  }
+
+  function refreshGuideCount() {
+    fetch('/api/admin/guides?limit=1', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && d.counts) {
+          CSOState.guidesCount = Number(d.counts.all || 0);
+          CSOState.guidesSubCounts = d.counts;
+          renderNavigationTree();
+        }
+      })
+      .catch(function () {});
+  }
+  window.CSOStudioRefreshGuideCount = refreshGuideCount;
+  window.CSOStudioUpdateGuideCounts = function (counts) {
+    if (!counts || typeof counts !== 'object') return;
+    CSOState.guidesCount = Number(counts.all || 0);
+    CSOState.guidesSubCounts = counts;
+    renderNavigationTree();
+  };
+
   function refreshHomepageCount() {
     fetch('/api/admin/jobs/taxonomy', { credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -1247,11 +1393,13 @@
         if (d && d.kpis) { CSOState.candidateCount = d.kpis.total_candidates; renderNavigationTree(); }
       })
       .catch(function () {});
+    refreshGuideCount();
   }
 
   function selectModule(folderId, moduleId) {
     if (isOverviewId(moduleId) || isOverviewId(folderId)) { openCommandOverview(); return; }
     if (isCareersStudioId(moduleId) || isCareersStudioId(folderId)) { openCareersPublishingStudio(); return; }
+    if (isInformativeGuidesId(moduleId) || isInformativeGuidesId(folderId)) { openInformativeGuidesStudio('all'); return; }
     if (isWebStudioId(moduleId) || isWebStudioId(folderId)) { openWebStudio(); return; }
     if (isHomepageStudioId(moduleId) || isHomepageStudioId(folderId)) { openWebStudio('homepage'); return; }
     if (isFileManagerId(moduleId) || isFileManagerId(folderId)) { openFileManager(); return; }
@@ -1489,6 +1637,12 @@
       if (dom.activeModuleTitleText) dom.activeModuleTitleText.textContent = qMeta.title || 'Create Content';
       if (dom.activeModuleIdPill) dom.activeModuleIdPill.textContent = qMeta.pill || 'Live D1 / R2';
       window.CSOQuickCreate.open(targetRoute, dom.workspaceRoot, dom.moduleHeaderActions);
+      if (window.innerWidth <= 900) closeMobileDrawer();
+      return;
+    }
+    if (targetRoute === 'guides/new' && window.CSOGuidesPublishingStudio) {
+      closeCreateDropdown();
+      openInformativeGuidesStudio('new');
       if (window.innerWidth <= 900) closeMobileDrawer();
       return;
     }
@@ -2082,6 +2236,11 @@
     openCareersPublishingTab: function (tab) { openCareersPublishingStudio(tab); },
     openSchemesPublishingTab: function (tab) { openSchemesPublishingStudio(tab); },
     openStudyPublishingTab: function (tab) { openStudyPublishingStudio(tab); },
+    openGuidesPublishingTab: function (tab) { openInformativeGuidesStudio(tab || 'all'); },
+    openGuidesComposer: function (guide) { openInformativeGuidesStudio('new', guide || null); },
+    setGuidesSubTab: function (tab) {
+      if (tab && CSOState.activeGuidesSubTab !== tab) { CSOState.activeGuidesSubTab = tab; renderNavigationTree(); }
+    },
     openCommunityPublishingTab: function (tab) { openCommunityPublishingStudio(tab); },
     openAboutPublishingTab: function (tab) { openAboutPublishingStudio(tab); },
     openWebStudioTab: function (tab, legalView) { openWebStudio(tab, legalView); },

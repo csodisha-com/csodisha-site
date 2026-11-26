@@ -46,6 +46,10 @@ import { handlePublicAdsApi } from '../functions/api/public/ads.js';
 import { ACTIVE_SW_CACHE_VERSION } from '../functions/_lib/ops-sentinel.js';
 import { handleCandidateHubConfigApi, handleCandidateAssignedItemsApi } from '../functions/_lib/candidate-hub-governance.js';
 import { createSession } from '../functions/api/auth/_utils.js';
+import { handleAdminGuidesApi } from '../functions/api/admin/guides.js';
+import { handlePublicGuidesRoute, handlePublicGuidesApi } from '../functions/_lib/informative-guides.js';
+import { handleSitemapXml } from '../functions/api/content/_seo.js';
+import { VALID_AI_MODES } from '../functions/_lib/ai-coauthor.js';
 
 const ROOT = process.cwd();
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
@@ -558,19 +562,21 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
   await Promise.all(waits);
 });
 
-// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v312
-await check('6. Strict CSP compliance, zero hardcoded hex in v312 CSS, and cso-candidate-cache-v347 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v347');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v347';"), 'sw.js cache version must be cso-candidate-cache-v347');
+// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v348
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v348 CSS, and cso-candidate-cache-v348 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v348');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v348';"), 'sw.js cache version must be cso-candidate-cache-v348');
 
   const jsFiles = [
     'admin/qr-svg.js',
     'admin/billing-ads.js',
     'admin/system-ops.js',
     'admin/study-publishing-studio.js',
+    'admin/guides-publishing-studio.js',
     'admin/candidate-hub-studio.js',
     'admin/admin.js',
     'admin/cms/login.js',
+    'assets/js/guides-portal.js',
     'assets/js/pages/support-desk.js',
     'assets/shared-header.js',
     'mock-tests/assets/mock-tests.js'
@@ -582,7 +588,7 @@ await check('6. Strict CSP compliance, zero hardcoded hex in v312 CSS, and cso-c
     }
   }
 
-  for (const cssRel of ['admin/system-ops.css', 'assets/css/pages/support.css']) {
+  for (const cssRel of ['admin/system-ops.css', 'assets/css/pages/support.css', 'assets/css/guides-portal.css']) {
     const css = read(cssRel).replace(/\/\*[\s\S]*?\*\//g, '');
     assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(css), `${cssRel} must use semantic --cso-* tokens only (zero hardcoded hex)`);
   }
@@ -681,6 +687,165 @@ await check('7. Live /student-dashboard/ API merges 30-district assignments & _w
     assert.ok(routerSrc.includes(marker), `functions/api/admin/_router.js missing v312 marker: ${marker}`);
   }
 
+  await Promise.all(waits);
+});
+
+// 8. v348 Informative Articles & Guides Studio, Templates, Media Slots, AI, Live Preview, CRUD, SSR & Sitemap
+await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Preview, CRUD API, /guides/<slug> SSR & sitemap.xml', async () => {
+  const db = makeD1(false);
+  db.sqlite.exec(read('migrations/0153_informative_guides_v348.sql'));
+  const env = { DB: db };
+  const waits = [];
+  const ctx = { waitUntil: (p) => waits.push(p) };
+
+  // A. Verify Admin UI wiring (sidebar folder + 6 sub-views, Launchpad, + Create New, CMS, 5 templates, AI buttons, Live Preview modal)
+  const adminHtml = read('admin/index.html');
+  assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v348'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v348');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v348'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+
+  const adminJs = read('admin/admin.js');
+  for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
+    assert.ok(adminJs.includes(sub), `admin/admin.js sidebar missing Informative Guides sub-view: ${sub}`);
+  }
+  assert.ok(read('admin/command-suite.js').includes('Informative Article / Guide'), 'command-suite.js Launchpad must include Informative Article / Guide card');
+  assert.ok(read('admin/quick-create-studio.js').includes("'guides/new'"), 'quick-create-studio.js must route guides/new');
+  assert.ok(read('admin/cms/cms.js').includes('viewInformativeGuides') && read('admin/cms/cms.js').includes('#/guides'), 'cms.js must wire Informative Guides');
+
+  const guidesStudioJs = read('admin/guides-publishing-studio.js');
+  for (const tplName of [
+    'Step-by-Step How-To Guide',
+    'Exam Strategy & Study Handbook',
+    'Citizen & Government Scheme Explainer',
+    'Odisha GK & Heritage Deep Dive',
+    'Blank Custom Guide'
+  ]) {
+    assert.ok(guidesStudioJs.includes(tplName), `guides-publishing-studio.js missing starter template: ${tplName}`);
+  }
+  for (const marker of [
+    'btnGuideAiDraft',
+    'btnGuideAiMeta',
+    'btnGuideAiTranslateAll',
+    'btnGuideLivePreview',
+    'openLivePreviewModal',
+    'Desktop (100%)',
+    'Mobile (390px)',
+    'is-mobile-frame',
+    '/api/admin/media/upload',
+    '/api/admin/files/upload'
+  ]) {
+    assert.ok(guidesStudioJs.includes(marker), `guides-publishing-studio.js missing required UI marker: ${marker}`);
+  }
+  assert.ok(VALID_AI_MODES.has('guide') && VALID_AI_MODES.has('suggest_meta') && VALID_AI_MODES.has('translate_fields'), 'ai-coauthor.js must support guide, suggest_meta & translate_fields');
+  const studioCss = read('admin/studio.css');
+  assert.ok(studioCss.includes('.cso-guide-preview-overlay') && studioCss.includes('.cso-guide-preview-frame.is-mobile-frame'), 'admin/studio.css must style the interactive Live Preview modal & 390px mobile frame');
+
+  // B. Real Admin CRUD API roundtrip with Photos, PDFs, Verified .gov.in Links, Key Takeaways & Related CTA
+  const createRes = await handleAdminGuidesApi(
+    jsonReq('https://csodisha.com/api/admin/guides', 'POST', {
+      category: 'exam-strategy',
+      scope: 'Odisha',
+      read_minutes: 7,
+      tags: 'OPSC, OAS, Strategy',
+      is_pinned: true,
+      is_exam: true,
+      status: 'published',
+      title_en: 'OPSC OAS Prelims 60-Day Strategy Handbook',
+      title_or: 'OPSC OAS ପ୍ରିଲିମ୍ସ ୬୦-ଦିନିଆ ରଣନୀତି ପୁସ୍ତିକା',
+      slug: 'opsc-oas-prelims-60-day-handbook',
+      summary_en: 'Complete 60-day study schedule, high-yield Odisha GK syllabus breakdown, and PYQ practice roadmap.',
+      summary_or: 'ସମ୍ପୂର୍ଣ୍ଣ ୬୦-ଦିନିଆ ଅଧ୍ୟୟନ ରୋଡମ୍ୟାପ୍ ଏବଂ PYQ ଅଭ୍ୟାସ ଯୋଜନା।',
+      takeaways: [
+        { text_en: 'Prioritize Odisha History, Geography, and Polity for 40% of GS Paper I.', text_or: 'ଓଡ଼ିଶା ଇତିହାସ ଓ ଭୂଗୋଳ ଉପରେ ବିଶେଷ ଧ୍ୟାନ ଦିଅନ୍ତୁ।' }
+      ],
+      body_en: '## Exam Pattern Snapshot\nOPSC OAS Prelims consists of GS Paper I & CSAT.\n\n### High-Yield Syllabus Breakdown\n- Odisha GK & Schemes\n- Indian Polity\n\n> [!TIP]\n> Attempt 2 timed CBT mock tests every week.\n\n| Paper | Marks |\n| --- | --- |\n| GS-I | 200 |',
+      body_or: '## ପରୀକ୍ଷା ଢାଞ୍ଚା\nOPSC OAS ପ୍ରିଲିମ୍ସରେ ଦୁଇଟି ପେପର୍ ଅଛି।',
+      cover_image: '/api/media/vault/image/2026/opsc-cover.webp',
+      cover_caption_en: 'OPSC OAS Preparation Desk',
+      cover_caption_or: 'OPSC OAS ପ୍ରସ୍ତୁତି',
+      photos: [
+        { url: '/api/media/vault/image/2026/study-plan.webp', caption_en: '60-Day Study Chart', caption_or: '୬୦-ଦିନିଆ ଚାର୍ଟ', alt: 'OPSC OAS 60-Day Study Plan Chart' }
+      ],
+      pdfs: [
+        { title_en: 'OPSC OAS Official Syllabus PDF', title_or: 'OPSC OAS ସରକାରୀ ସିଲାବସ୍ PDF', url: '/files/study-pdfs/opsc-oas-syllabus.pdf', badge: 'Syllabus PDF · 1.2 MB' }
+      ],
+      links: [
+        { label_en: 'OPSC Official Portal', label_or: 'OPSC ସରକାରୀ ପୋର୍ଟାଲ୍', url: 'https://www.opsc.gov.in/', is_official: true }
+      ],
+      related_cta: {
+        type: 'mock_test',
+        slug: 'opsc-oas-gs-mock-01',
+        title_en: 'Practice OPSC OAS Full-Length CBT Mock',
+        title_or: 'OPSC OAS ସମ୍ପୂର୍ଣ୍ଣ CBT ମକ୍ ଟେଷ୍ଟ ଅଭ୍ୟାସ କରନ୍ତୁ',
+        cta_en: 'Start Practice Test →'
+      }
+    }),
+    env, adminActor, '', '', ctx
+  );
+  assert.equal(createRes.status, 201);
+  const created = (await createRes.json()).item;
+  assert.equal(created.slug, 'opsc-oas-prelims-60-day-handbook');
+  assert.equal(created.photos.length, 1);
+  assert.equal(created.pdfs.length, 1);
+  assert.equal(created.links.length, 1);
+  assert.equal(created.links[0].is_official, true);
+  assert.equal(created.takeaways.length, 1);
+  assert.equal(created.related_cta.url, '/mock-tests/?test=opsc-oas-gs-mock-01');
+
+  // C. Public /guides/ Hub & /guides/<slug> SSR rendering + JSON-LD Article + Auto-TOC + /sitemap.xml
+  const hubRes = await handlePublicGuidesRoute(new Request('https://csodisha.com/guides/'), env, new URL('https://csodisha.com/guides/'));
+  assert.equal(hubRes.status, 200);
+  const hubHtml = await hubRes.text();
+  assert.ok(hubHtml.includes('OPSC OAS Prelims 60-Day Strategy Handbook') && hubHtml.includes('/guides/opsc-oas-prelims-60-day-handbook'), '/guides/ hub must list published guide');
+
+  const artRes = await handlePublicGuidesRoute(
+    new Request('https://csodisha.com/guides/opsc-oas-prelims-60-day-handbook'),
+    env,
+    new URL('https://csodisha.com/guides/opsc-oas-prelims-60-day-handbook')
+  );
+  assert.equal(artRes.status, 200);
+  const artHtml = await artRes.text();
+  assert.ok(artHtml.includes('"@type":"Article"'), '/guides/<slug> must emit valid JSON-LD Article structured data');
+  assert.ok(artHtml.includes('class="gp-toc gp-lang-en"') && artHtml.includes('Exam Pattern Snapshot'), '/guides/<slug> must auto-generate Table of Contents from headings');
+  assert.ok(artHtml.includes('gp-takeaways') && artHtml.includes('gp-gallery-grid') && artHtml.includes('gp-pdf-card'), '/guides/<slug> must render Key Takeaways, Photo Gallery, and PDF Download Cards');
+  assert.ok(artHtml.includes('Official .gov.in Verified') && artHtml.includes('https://www.opsc.gov.in/'), '/guides/<slug> must render Verified Official .gov.in Links');
+  assert.ok(artHtml.includes('/mock-tests/?test=opsc-oas-gs-mock-01') && artHtml.includes('Start Practice Test →'), '/guides/<slug> must render Related Practice CTA card');
+
+  const apiRes = await handlePublicGuidesApi(new Request('https://csodisha.com/api/public/guides'), env, new URL('https://csodisha.com/api/public/guides'));
+  assert.equal(apiRes.status, 200);
+  assert.equal((await apiRes.json()).items.length, 1);
+
+  const smRes = await handleSitemapXml(new Request('https://csodisha.com/sitemap.xml'), env);
+  assert.equal(smRes.status, 200);
+  const smXml = await smRes.text();
+  assert.ok(smXml.includes('https://csodisha.com/guides/') && smXml.includes('https://csodisha.com/guides/opsc-oas-prelims-60-day-handbook'), '/sitemap.xml must include /guides/ and published /guides/<slug>');
+
+  // D. Duplicate as Draft template, PATCH toggle Draft (hides from public 404), and DELETE cleanup
+  const dupRes = await handleAdminGuidesApi(
+    jsonReq(`https://csodisha.com/api/admin/guides/${created.id}/duplicate`, 'POST', {}),
+    env, adminActor, created.id, 'duplicate', ctx
+  );
+  assert.equal(dupRes.status, 201);
+  const dupItem = (await dupRes.json()).item;
+  assert.equal(dupItem.status, 'draft');
+
+  const patchRes = await handleAdminGuidesApi(
+    jsonReq(`https://csodisha.com/api/admin/guides/${created.id}`, 'PATCH', { status: 'draft', is_pinned: false }),
+    env, adminActor, created.id, '', ctx
+  );
+  assert.equal(patchRes.status, 200);
+  const draftPublicRes = await handlePublicGuidesRoute(
+    new Request('https://csodisha.com/guides/opsc-oas-prelims-60-day-handbook'),
+    env,
+    new URL('https://csodisha.com/guides/opsc-oas-prelims-60-day-handbook')
+  );
+  assert.equal(draftPublicRes.status, 404, 'Draft guide must not be served publicly');
+
+  const delRes = await handleAdminGuidesApi(
+    jsonReq(`https://csodisha.com/api/admin/guides/${created.id}`, 'DELETE'),
+    env, adminActor, created.id, '', ctx
+  );
+  assert.equal(delRes.status, 200);
   await Promise.all(waits);
 });
 

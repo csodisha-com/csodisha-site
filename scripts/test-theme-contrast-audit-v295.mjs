@@ -304,7 +304,7 @@ check('5. Strict CSP compliance & cache busting across all active HTML pages, sw
     let m;
     while ((m = coreAssetRe.exec(html)) !== null) {
       checked++;
-      assert.match(m[1], /^20261125v(?:29[5-9]|3\d\d)$/, `${rel} has stale query version ?v=${m[1]} (expected 20261125v295+)`);
+      assert.match(m[1], /^2026112[56]v(?:29[5-9]|3\d\d)$/, `${rel} has stale query version ?v=${m[1]} (expected 20261125v295+)`);
     }
   }
   assert.ok(checked >= 60, `Expected >=60 versioned core/portal/admin assets across HTML pages, got ${checked}`);

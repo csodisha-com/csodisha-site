@@ -14,6 +14,7 @@ const STATIC_SITEMAP_ROUTES = [
   { path: '/careers/', changefreq: 'weekly', priority: '0.9' },
   { path: '/schemes/', changefreq: 'weekly', priority: '0.9' },
   { path: '/study-library/', changefreq: 'weekly', priority: '0.9' },
+  { path: '/guides/', changefreq: 'daily', priority: '0.9' },
   { path: '/study-library/early-childhood-education/', changefreq: 'weekly', priority: '0.8' },
   { path: '/study-library/otet-osstet/', changefreq: 'weekly', priority: '0.8' },
   { path: '/study-library/opsc-oas/', changefreq: 'weekly', priority: '0.8' },
@@ -87,22 +88,22 @@ export async function handleSitemapXml(request, env) {
 
   if (env && env.DB) {
     try {
-      const [jobsRes, caRes, testsRes, schemesRes, aboutGroupsRes, schemeGroupsRes, studyGroupsRes] = await Promise.all([
+      const [jobsRes, caRes, testsRes, schemesRes, aboutGroupsRes, schemeGroupsRes, studyGroupsRes, guidesRes] = await Promise.all([
         env.DB.prepare(
           `SELECT slug, updated_at, published_at FROM posts
            WHERE type = 'job' AND ${PUBLIC_VISIBLE_SQL}
            ORDER BY COALESCE(published_at, updated_at) DESC LIMIT 1000`
-        ).all(),
+        ).all().catch(() => ({ results: [] })),
         env.DB.prepare(
           `SELECT slug, updated_at, published_at FROM posts
            WHERE type = 'current_affair' AND ${PUBLIC_VISIBLE_SQL}
            ORDER BY COALESCE(published_at, updated_at) DESC LIMIT 1000`
-        ).all(),
+        ).all().catch(() => ({ results: [] })),
         env.DB.prepare(
           `SELECT slug, updated_at, published_at FROM mock_tests
            WHERE ${PUBLIC_VISIBLE_SQL}
            ORDER BY COALESCE(published_at, updated_at) DESC LIMIT 500`
-        ).all(),
+        ).all().catch(() => ({ results: [] })),
         env.DB.prepare(
           `SELECT slug, updated_at FROM schemes_directory
            WHERE status = 'published' AND deleted_at IS NULL
@@ -122,6 +123,11 @@ export async function handleSitemapXml(request, env) {
           `SELECT slug, updated_at FROM study_library_nodes
            WHERE level = 'group' AND status = 'published'
            ORDER BY sort_order ASC LIMIT 50`
+        ).all().catch(() => ({ results: [] })),
+        env.DB.prepare(
+          `SELECT slug, updated_at, created_at FROM informative_guides
+           WHERE status = 'published'
+           ORDER BY is_pinned DESC, updated_at DESC LIMIT 1000`
         ).all().catch(() => ({ results: [] }))
       ]);
 
@@ -192,6 +198,16 @@ export async function handleSitemapXml(request, env) {
           lastmod: toIsoLastMod(row.updated_at),
           changefreq: 'weekly',
           priority: '0.7'
+        });
+      }
+
+      for (const row of (guidesRes.results || [])) {
+        if (!row.slug) continue;
+        urls.push({
+          loc: `${SITE_ORIGIN}/guides/${encodeURIComponent(row.slug)}`,
+          lastmod: toIsoLastMod(row.updated_at || row.created_at),
+          changefreq: 'weekly',
+          priority: '0.85'
         });
       }
     } catch (e) {

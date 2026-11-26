@@ -12,7 +12,7 @@
   var OV_MODULE = 'module-command-overview';
   var HS_FOLDER = 'folder-homepage-studio';
   var HS_MODULE = 'module-homepage-studio';
-  var PILLAR_LABELS = { jobs: 'Jobs', careers: 'Careers', schemes: 'Schemes & Benefits', study: 'Study Library', community: 'Community', about: 'About', current_affairs: 'Current Affairs' };
+  var PILLAR_LABELS = { jobs: 'Jobs', careers: 'Careers', schemes: 'Schemes & Benefits', study: 'Study Library', guides: 'Informative Articles & Guides', community: 'Community', about: 'About', current_affairs: 'Current Affairs' };
   var FOLDER_PILLAR = { 'folder-jobs-careers': 'jobs', 'folder-schemes-benefits': 'schemes', 'folder-study-library': 'study', 'folder-community': 'community', 'folder-about': 'about' };
 
   // ---------- helpers ----------
@@ -349,6 +349,7 @@
     }
     var target = String(pillar || 'jobs').toLowerCase();
     if (mode === 'new') {
+      if (target === 'guides' && s.openRoute) { s.openRoute('guides/new'); toast('Draft topic copied: "' + queryHint + '" — paste into Guides composer', 'ok'); return; }
       if (target === 'schemes' && s.openSchemesPublishingTab) { s.openSchemesPublishingTab('new'); toast('Draft title copied: "' + queryHint + '" — paste into Schemes composer', 'ok'); return; }
       if (target === 'study' && s.openStudyPublishingTab) { s.openStudyPublishingTab('new'); toast('Draft topic copied: "' + queryHint + '" — paste into Study composer', 'ok'); return; }
       if (target === 'careers' && s.openCareersPublishingTab) { s.openCareersPublishingTab('new'); toast('Draft title copied: "' + queryHint + '" — paste into Careers composer', 'ok'); return; }
@@ -359,6 +360,7 @@
       careers: 'folder-careers-studio',
       schemes: 'folder-schemes-benefits',
       study: 'folder-study-library',
+      guides: 'folder-informative-guides',
       community: 'folder-community',
       about: 'folder-about'
     };
@@ -479,13 +481,15 @@
     var lg = el('div', 'cs-launch-grid');
     if (window.CSOVisualAnalytics) {
       var VA = window.CSOVisualAnalytics;
+      lg.appendChild(VA.quickActionTile({ title: 'Informative Article / Guide', desc: 'Templates, photos, PDFs, AI & live preview', icon: '📚', tone: 'emerald', onClick: function () { studio().openRoute('guides/new'); } }));
       lg.appendChild(VA.quickActionTile({ title: 'Job Notice', desc: 'Recruitment, vacancies & deadlines', icon: '💼', tone: 'emerald', onClick: function () { studio().openRoute('jobs/new'); } }));
       lg.appendChild(VA.quickActionTile({ title: 'Government Scheme', desc: 'Welfare & scholarship schemes', icon: '🏛', tone: 'cobalt', onClick: function () { goFolder('folder-schemes-benefits'); } }));
-      lg.appendChild(VA.quickActionTile({ title: 'Study Material / PYQ', desc: 'Notes, syllabus & previous papers', icon: '📚', tone: 'violet', onClick: function () { goFolder('folder-study-library'); } }));
+      lg.appendChild(VA.quickActionTile({ title: 'Study Material / PYQ', desc: 'Notes, syllabus & previous papers', icon: '📖', tone: 'violet', onClick: function () { goFolder('folder-study-library'); } }));
       lg.appendChild(VA.quickActionTile({ title: 'Current Affairs Capsule', desc: 'Daily brief + 5 MCQs', icon: '📰', tone: 'amber', onClick: function () { studio().openRoute('current-affairs/new'); } }));
       lg.appendChild(VA.quickActionTile({ title: 'Homepage Block', desc: 'Chip, card, tool or hub item', icon: '🏠', tone: 'rose', onClick: newHomepageBlock }));
       lg.appendChild(VA.quickActionTile({ title: 'Candidate Push / Hub', desc: 'Roster, UI & direct R2 file push', icon: '🎓', tone: 'cobalt', onClick: function () { goFolder('folder-candidate-hub'); } }));
     } else {
+      lg.appendChild(launchCard('📚 Informative Article / Guide', 'Templates, photos, PDFs, AI & live preview', function () { studio().openRoute('guides/new'); }));
       lg.appendChild(launchCard('Job Notice', 'Recruitment, vacancies & deadlines', function () { studio().openRoute('jobs/new'); }));
       lg.appendChild(launchCard('Government Scheme', 'Welfare & scholarship schemes', function () { goFolder('folder-schemes-benefits'); }));
       lg.appendChild(launchCard('Study Material / PYQ', 'Notes, syllabus & previous papers', function () { goFolder('folder-study-library'); }));
@@ -572,7 +576,7 @@
     var cols2 = el('div', 'cs-cols');
     var feed = section('Recent Activity & Audit Trail', 'Admin mutations, newest first');
     var filters = el('div', 'cs-filters');
-    filters.appendChild(filterSelect('Pillar', [['', 'All pillars'], ['jobs', 'Jobs'], ['careers', 'Careers'], ['schemes', 'Schemes & Benefits'], ['study', 'Study Library'], ['community', 'Community'], ['about', 'About'], ['homepage', 'Homepage Studio'], ['navigation', 'Navigation'], ['media', 'Media'], ['system', 'System']], ov.feed.pillar, function (v) { ov.feed.pillar = v; loadFeed(false); }));
+    filters.appendChild(filterSelect('Pillar', [['', 'All pillars'], ['jobs', 'Jobs'], ['careers', 'Careers'], ['schemes', 'Schemes & Benefits'], ['study', 'Study Library'], ['guides', 'Informative Articles & Guides'], ['community', 'Community'], ['about', 'About'], ['homepage', 'Homepage Studio'], ['navigation', 'Navigation'], ['media', 'Media'], ['system', 'System']], ov.feed.pillar, function (v) { ov.feed.pillar = v; loadFeed(false); }));
     filters.appendChild(filterSelect('Action', [['', 'All actions'], ['create', 'Created'], ['update', 'Edited'], ['publish', 'Published'], ['unpublish', 'Unpublished'], ['delete', 'Deleted']], ov.feed.type, function (v) { ov.feed.type = v; loadFeed(false); }));
     feed.appendChild(filters);
     ov.refs.feed = el('div', 'cs-feed');
@@ -801,6 +805,13 @@
     items.push({ group: 'Study Library Studio', label: 'Study Library Studio › + Publish New Study Material', keywords: 'study notes syllabus pyq mcq flashcards opsc ossc', run: function () { if (studio().openStudyPublishingTab) studio().openStudyPublishingTab('new'); else goFolder('folder-study-library'); } });
     items.push({ group: 'Study Library Studio', label: 'Study Library Studio › 3-Layer Curriculum Hierarchy', keywords: 'exam track subject paper chapter taxonomy', run: function () { if (studio().openStudyPublishingTab) studio().openStudyPublishingTab('taxonomy'); else goFolder('folder-study-library'); } });
     items.push({ group: 'Study Library Studio', label: 'Study Library Studio › Reader Doubts & PYQ Corrections Queue', keywords: 'doubts pyq typo corrections feedback', run: function () { if (studio().openStudyPublishingTab) studio().openStudyPublishingTab('doubts'); else goFolder('folder-study-library'); } });
+    items.push({ group: 'Informative Articles & Guides', label: 'Informative Articles & Guides › All Articles & Guides', keywords: 'guides informative articles how-to handbooks explainers odisha gk drafts', run: function () { if (studio().openGuidesPublishingTab) studio().openGuidesPublishingTab('all'); else goFolder('folder-informative-guides'); } });
+    items.push({ group: 'Informative Articles & Guides', label: 'Informative Articles & Guides › + Create New Article / Guide', keywords: 'new guide article blueprint template how-to exam strategy handbook scheme explainer', run: function () { studio().openRoute('guides/new'); } });
+    items.push({ group: 'Informative Articles & Guides', label: 'Informative Articles & Guides › Step-by-Step How-To Guides', keywords: 'how-to walkthrough application steps guides', run: function () { if (studio().openGuidesPublishingTab) studio().openGuidesPublishingTab('how-to'); else goFolder('folder-informative-guides'); } });
+    items.push({ group: 'Informative Articles & Guides', label: 'Informative Articles & Guides › Exam Strategy & Study Handbooks', keywords: 'exam strategy study handbook roadmap pyq', run: function () { if (studio().openGuidesPublishingTab) studio().openGuidesPublishingTab('exam-strategy'); else goFolder('folder-informative-guides'); } });
+    items.push({ group: 'Informative Articles & Guides', label: 'Informative Articles & Guides › Citizen & Scheme Explainers', keywords: 'citizen scheme explainer benefits dbt', run: function () { if (studio().openGuidesPublishingTab) studio().openGuidesPublishingTab('citizen-scheme'); else goFolder('folder-informative-guides'); } });
+    items.push({ group: 'Informative Articles & Guides', label: 'Informative Articles & Guides › Odisha GK & Heritage', keywords: 'odisha gk heritage history geography culture', run: function () { if (studio().openGuidesPublishingTab) studio().openGuidesPublishingTab('odisha-gk'); else goFolder('folder-informative-guides'); } });
+    items.push({ group: 'Informative Articles & Guides', label: 'Informative Articles & Guides › Drafts', keywords: 'guides drafts unpublished articles', run: function () { if (studio().openGuidesPublishingTab) studio().openGuidesPublishingTab('drafts'); else goFolder('folder-informative-guides'); } });
     items.push({ group: 'Community Studio', label: 'Community Studio › + Publish Spotlight / Poll / Daily Quiz', keywords: 'community spotlight poll daily quiz challenge', run: function () { if (studio().openCommunityPublishingTab) studio().openCommunityPublishingTab('new'); else goFolder('folder-community'); } });
     items.push({ group: 'Community Studio', label: 'Community Studio › 3-Layer Interest Circles', keywords: 'community circles districts groups posting policy', run: function () { if (studio().openCommunityPublishingTab) studio().openCommunityPublishingTab('taxonomy'); else goFolder('folder-community'); } });
     items.push({ group: 'Community Studio', label: 'Community Studio › Pro & Permanent Contributor Rewards', keywords: 'pro member permanent contributor xp rewards', run: function () { if (studio().openCommunityPublishingTab) studio().openCommunityPublishingTab('rewards'); else goFolder('folder-community'); } });
@@ -867,6 +878,12 @@
       out.push({ group: 'About Pages', label: ab.title_en + (ab.is_published ? '' : ' · draft'), keywords: (ab.page_type || '') + ' ' + (ab.slug || ''), run: function () {
         if (studio().openAboutPublishingTab) studio().openAboutPublishingTab('pages');
         else goFolder('folder-about');
+      } });
+    });
+    (r.informative_guides || []).forEach(function (gd) {
+      out.push({ group: 'Informative Guides', label: gd.title_en + (gd.status === 'published' ? '' : ' · draft'), keywords: (gd.category || '') + ' ' + (gd.slug || ''), run: function () {
+        if (studio().openGuidesPublishingTab) studio().openGuidesPublishingTab('all');
+        else goFolder('folder-informative-guides');
       } });
     });
     return out;
