@@ -327,8 +327,8 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v343');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v343';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v344');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v344';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
 
   // v343: Mobile slide-out drawer sits strictly above backdrop (1210 > 1200) with zero stacking-context trap

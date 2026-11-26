@@ -153,9 +153,14 @@
     themeMenuWrap: document.getElementById('themeMenuWrap'),
     themeMenuBtn: document.getElementById('themeMenuBtn'),
     themeMenuPopover: document.getElementById('themeMenuPopover'),
+    adminUserMenuWrap: document.getElementById('adminUserMenuWrap'),
+    btnAdminUserMenu: document.getElementById('btnAdminUserMenu'),
+    adminUserDropdown: document.getElementById('adminUserDropdown'),
     adminUserEmail: document.getElementById('adminUserEmail'),
     adminUserRole: document.getElementById('adminUserRole'),
-    adminUserInitials: document.getElementById('adminUserInitials')
+    adminUserInitials: document.getElementById('adminUserInitials'),
+    adminDropdownEmail: document.getElementById('adminDropdownEmail'),
+    adminDropdownRole: document.getElementById('adminDropdownRole')
   };
 
   function clearNode(node) {
@@ -335,8 +340,12 @@
       var d = await res.json();
       if (d && d.user) {
         try { localStorage.setItem('cso_admin_active', '1'); } catch (_) {}
-        if (dom.adminUserEmail) dom.adminUserEmail.textContent = d.user.email || 'Staff Account';
-        if (dom.adminUserRole) dom.adminUserRole.textContent = String(d.user.role || 'staff').toUpperCase();
+        var userEmail = d.user.email || 'Staff Account';
+        var userRole = String(d.user.role || 'staff').toUpperCase();
+        if (dom.adminUserEmail) dom.adminUserEmail.textContent = userEmail;
+        if (dom.adminUserRole) dom.adminUserRole.textContent = userRole;
+        if (dom.adminDropdownEmail) dom.adminDropdownEmail.textContent = userEmail;
+        if (dom.adminDropdownRole) dom.adminDropdownRole.textContent = userRole + ' • Live D1 / R2';
         if (dom.adminUserInitials) {
           var email = String(d.user.email || 'ST');
           dom.adminUserInitials.textContent = email.slice(0, 2).toUpperCase();
@@ -1669,10 +1678,17 @@
     }
   });
 
+  function closeAdminUserMenu() {
+    if (dom.adminUserDropdown) dom.adminUserDropdown.hidden = true;
+    if (dom.btnAdminUserMenu) dom.btnAdminUserMenu.setAttribute('aria-expanded', 'false');
+  }
+
   function wireTopbarEvents() {
     if (dom.btnCreateNewMenu && dom.createNewDropdown) {
       dom.btnCreateNewMenu.addEventListener('click', function (e) {
         e.stopPropagation();
+        closeAdminUserMenu();
+        closeThemePopover();
         var nextHidden = !dom.createNewDropdown.hidden;
         dom.createNewDropdown.hidden = nextHidden;
         dom.btnCreateNewMenu.setAttribute('aria-expanded', String(!nextHidden));
@@ -1691,12 +1707,59 @@
       });
     }
 
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') {
+    if (dom.btnAdminUserMenu && dom.adminUserDropdown) {
+      dom.btnAdminUserMenu.addEventListener('click', function (e) {
+        e.stopPropagation();
         closeCreateDropdown();
         closeThemePopover();
+        var nextHidden = !dom.adminUserDropdown.hidden;
+        dom.adminUserDropdown.hidden = nextHidden;
+        dom.btnAdminUserMenu.setAttribute('aria-expanded', String(!nextHidden));
+      });
+
+      dom.adminUserDropdown.querySelectorAll('[data-admin-menu-action]').forEach(function (item) {
+        item.addEventListener('click', function () {
+          var action = item.getAttribute('data-admin-menu-action');
+          closeAdminUserMenu();
+          if (action === 'palette') {
+            if (window.CSOCommandSuite && typeof window.CSOCommandSuite.openPalette === 'function') {
+              window.CSOCommandSuite.openPalette();
+            }
+          } else if (action === 'users') {
+            selectModule(CH_FOLDER_ID, CH_MODULE_ID);
+          } else if (action === 'ops') {
+            selectModule(SO_FOLDER_ID, SO_MODULE_ID);
+            fetch('/api/admin/purge-caches', {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: { 'Content-Type': 'application/json', 'X-CSO-CSRF': '1' },
+              body: '{}'
+            })
+              .then(function (r) { if (r.ok) showToast('Public edge caches purged!', 'ok'); })
+              .catch(function () {});
+          } else if (action === 'signout') {
+            var signOutBtn = document.getElementById('btnSignOut');
+            if (signOutBtn) signOutBtn.click();
+          }
+        });
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!dom.adminUserDropdown.hidden && dom.adminUserMenuWrap && !dom.adminUserMenuWrap.contains(e.target)) {
+          closeAdminUserMenu();
+        }
+      });
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        var wasUserMenuOpen = dom.adminUserDropdown && !dom.adminUserDropdown.hidden;
+        closeCreateDropdown();
+        closeThemePopover();
+        closeAdminUserMenu();
         closeModal();
         closeMobileDrawer();
+        if (wasUserMenuOpen && dom.btnAdminUserMenu) dom.btnAdminUserMenu.focus();
       } else if ((e.ctrlKey || e.metaKey) && e.key === '\\') {
         e.preventDefault();
         var nextCollapsed = !(dom.shell && dom.shell.classList.contains('cso-sidebar-collapsed'));

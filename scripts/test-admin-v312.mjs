@@ -559,9 +559,9 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
 });
 
 // 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v312
-await check('6. Strict CSP compliance, zero hardcoded hex in v312 CSS, and cso-candidate-cache-v343 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v343');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v343';"), 'sw.js cache version must be cso-candidate-cache-v343');
+await check('6. Strict CSP compliance, zero hardcoded hex in v312 CSS, and cso-candidate-cache-v344 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v344');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v344';"), 'sw.js cache version must be cso-candidate-cache-v344');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -590,6 +590,17 @@ await check('6. Strict CSP compliance, zero hardcoded hex in v312 CSS, and cso-c
   // Ensure [Coming in v312] placeholder is completely replaced
   assert.ok(!read('admin/admin.js').includes('[Coming in v312]'), 'admin/admin.js must replace [Coming in v312] placeholder');
   assert.ok(!read('admin/system-ops.js').includes('[Coming in v312]'), 'admin/system-ops.js must replace [Coming in v312] placeholder');
+
+  // v344: Admin ▾ topbar dropdown button, menu items, z-index 1300 & click/Escape wiring
+  const adminHtml = read('admin/index.html');
+  const adminJs = read('admin/admin.js');
+  const studioCss = read('admin/studio.css');
+  assert.ok(adminHtml.includes('id="btnAdminUserMenu"') && adminHtml.includes('id="adminUserDropdown"'), 'admin/index.html must include #btnAdminUserMenu and #adminUserDropdown');
+  for (const act of ['palette', 'users', 'ops', 'live', 'signout']) {
+    assert.ok(adminHtml.includes(`data-admin-menu-action="${act}"`), `admin/index.html missing Admin dropdown action ${act}`);
+  }
+  assert.ok(adminJs.includes('closeAdminUserMenu') && adminJs.includes('btnAdminUserMenu.addEventListener'), 'admin/admin.js must wire #btnAdminUserMenu toggle, outside click, and Escape close');
+  assert.ok(studioCss.includes('.cso-user-dropdown') && studioCss.includes('z-index: 1300;'), 'admin/studio.css must layer .cso-user-dropdown at z-index 1300');
 });
 
 // 7. End-to-End Candidate Hub 30-District Live Feed + _worker.js & _router.js Wiring Check

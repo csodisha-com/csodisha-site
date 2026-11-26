@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="/assets/css/cso-themes.css?v=20261125v310">
   <link rel="stylesheet" href="/admin/suite.css?v=20261125v300">
   <link rel="stylesheet" href="/admin/cms/cms-embed.css?v=20261125v304">
-  <link rel="stylesheet" href="/admin/studio.css?v=20261125v339">
+  <link rel="stylesheet" href="/admin/studio.css?v=20261125v344">
   <link rel="stylesheet" href="/admin/homepage-studio.css?v=20261125v306">
   <link rel="stylesheet" href="/admin/visual-analytics.css?v=20261125v300">
   <link rel="stylesheet" href="/admin/command-suite.css?v=20261125v311">
@@ -120,12 +120,41 @@
         </div>
       </div>
 
-      <div class="cso-user-pill">
-        <span class="cso-user-admin-label" aria-hidden="true">Admin ▾</span>
-        <div class="cso-user-avatar" id="adminUserInitials" aria-hidden="true">ST</div>
-        <div class="cso-user-meta">
-          <p id="adminUserEmail" class="cso-user-email">Staff Session</p>
-          <span id="adminUserRole" class="cso-user-role">Verifying…</span>
+      <div class="cso-user-menu-wrap" id="adminUserMenuWrap">
+        <button type="button" id="btnAdminUserMenu" class="cso-user-pill" aria-haspopup="menu" aria-expanded="false" aria-controls="adminUserDropdown" title="Admin Account &amp; Quick Actions">
+          <span class="cso-user-admin-label">Admin ▾</span>
+          <div class="cso-user-avatar" id="adminUserInitials" aria-hidden="true">ST</div>
+          <div class="cso-user-meta">
+            <p id="adminUserEmail" class="cso-user-email">Staff Session</p>
+            <span id="adminUserRole" class="cso-user-role">Verifying…</span>
+          </div>
+          <svg class="cso-svg-caret cso-user-caret" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div id="adminUserDropdown" class="cso-user-dropdown" role="menu" aria-label="Admin Account Menu" hidden>
+          <div class="cso-user-dropdown-head">
+            <strong id="adminDropdownEmail" class="cso-user-dropdown-email">Staff Session</strong>
+            <span id="adminDropdownRole" class="cso-user-dropdown-badge">Admin • Live D1 / R2</span>
+          </div>
+          <button type="button" class="cso-user-menu-item" role="menuitem" data-admin-menu-action="palette">
+            <strong>Command Palette (Ctrl+K)</strong>
+            <span>Jump to any tool or module</span>
+          </button>
+          <button type="button" class="cso-user-menu-item" role="menuitem" data-admin-menu-action="users">
+            <strong>Users, Roles &amp; Staff</strong>
+            <span>Candidates, roles &amp; authority</span>
+          </button>
+          <button type="button" class="cso-user-menu-item" role="menuitem" data-admin-menu-action="ops">
+            <strong>Ops Sentinel &amp; Cache Purge</strong>
+            <span>System health &amp; purge edge cache</span>
+          </button>
+          <a href="/" target="_blank" rel="noopener noreferrer" class="cso-user-menu-item" role="menuitem" data-admin-menu-action="live">
+            <strong>View Live Portal (csodisha.com)</strong>
+            <span>Open public site in new tab ↗</span>
+          </a>
+          <button type="button" class="cso-user-menu-item is-danger" role="menuitem" data-admin-menu-action="signout">
+            <strong>Sign Out</strong>
+            <span>End admin session securely</span>
+          </button>
         </div>
       </div>
 
@@ -703,7 +732,7 @@
   <script src="/admin/billing-ads.js?v=20261125v312" defer></script>
   <script src="/admin/system-ops.js?v=20261125v320" defer></script>
   <script src="/admin/command-suite.js?v=20261125v311" defer></script>
-  <script src="/admin/quick-create-studio.js?v=20261125v341" defer></script>
-  <script src="/admin/admin.js?v=20261125v331" defer></script>
+  <script src="/admin/quick-create-studio.js?v=20261125v344" defer></script>
+  <script src="/admin/admin.js?v=20261125v344" defer></script>
 </body>
 </html>

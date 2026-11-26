@@ -262,8 +262,8 @@ await test('4. Active models (no deprecated llama-3.2-3b), migration 0150, CSP &
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS candidate_ai_cache'));
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS candidate_ai_usage'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v343');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v343';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v344');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v344';"));
 
   const sdHtml = read('student-dashboard/index.html');
   assert.ok(!/\son[a-z]+\s*=|\sstyle\s*=/i.test(sdHtml), 'student-dashboard/index.html must remain strictly CSP-safe');
