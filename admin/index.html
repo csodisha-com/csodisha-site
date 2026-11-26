@@ -13,10 +13,10 @@
   <link rel="stylesheet" href="/assets/css/cso-themes.css?v=20261125v310">
   <link rel="stylesheet" href="/admin/suite.css?v=20261125v300">
   <link rel="stylesheet" href="/admin/cms/cms-embed.css?v=20261125v304">
-  <link rel="stylesheet" href="/admin/studio.css?v=20261125v344">
+  <link rel="stylesheet" href="/admin/studio.css?v=20261125v345">
   <link rel="stylesheet" href="/admin/homepage-studio.css?v=20261125v306">
   <link rel="stylesheet" href="/admin/visual-analytics.css?v=20261125v300">
-  <link rel="stylesheet" href="/admin/command-suite.css?v=20261125v311">
+  <link rel="stylesheet" href="/admin/command-suite.css?v=20261125v345">
   <link rel="stylesheet" href="/admin/candidate-hub-studio.css?v=20261125v300">
   <link rel="stylesheet" href="/admin/jobs-publishing-studio.css?v=20261125v304">
   <link rel="stylesheet" href="/admin/careers-publishing-studio.css?v=20261125v300">
@@ -62,11 +62,6 @@
       <div class="cso-telemetry-pill">
         <span class="cso-live-dot" aria-hidden="true"></span>
         <span>D1 &amp; R2 Live</span>
-      </div>
-      <a href="/" target="_blank" rel="noopener noreferrer" class="cso-pill-link" title="Open Public Website in New Tab">Live Site ↗</a>
-      <div class="cso-telemetry-pill cso-tabular">
-        <span>Session:</span>
-        <strong id="sessionTimer">00:00:00</strong>
       </div>
     </div>
 
@@ -122,18 +117,17 @@
 
       <div class="cso-user-menu-wrap" id="adminUserMenuWrap">
         <button type="button" id="btnAdminUserMenu" class="cso-user-pill" aria-haspopup="menu" aria-expanded="false" aria-controls="adminUserDropdown" title="Admin Account &amp; Quick Actions">
-          <span class="cso-user-admin-label">Admin ▾</span>
           <div class="cso-user-avatar" id="adminUserInitials" aria-hidden="true">ST</div>
-          <div class="cso-user-meta">
-            <p id="adminUserEmail" class="cso-user-email">Staff Session</p>
-            <span id="adminUserRole" class="cso-user-role">Verifying…</span>
-          </div>
+          <span class="cso-user-admin-label">Admin</span>
           <svg class="cso-svg-caret cso-user-caret" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div id="adminUserDropdown" class="cso-user-dropdown" role="menu" aria-label="Admin Account Menu" hidden>
           <div class="cso-user-dropdown-head">
             <strong id="adminDropdownEmail" class="cso-user-dropdown-email">Staff Session</strong>
-            <span id="adminDropdownRole" class="cso-user-dropdown-badge">Admin • Live D1 / R2</span>
+            <div class="cso-user-dropdown-meta">
+              <span id="adminDropdownRole" class="cso-user-dropdown-badge">Admin • Live D1 / R2</span>
+              <span class="cso-user-session-badge cso-tabular">Session: <strong id="sessionTimer">00:00:00</strong></span>
+            </div>
           </div>
           <button type="button" class="cso-user-menu-item" role="menuitem" data-admin-menu-action="palette">
             <strong>Command Palette (Ctrl+K)</strong>
@@ -731,8 +725,8 @@
   <script src="/admin/qr-svg.js?v=20261125v312" defer></script>
   <script src="/admin/billing-ads.js?v=20261125v312" defer></script>
   <script src="/admin/system-ops.js?v=20261125v320" defer></script>
-  <script src="/admin/command-suite.js?v=20261125v311" defer></script>
+  <script src="/admin/command-suite.js?v=20261125v345" defer></script>
   <script src="/admin/quick-create-studio.js?v=20261125v344" defer></script>
-  <script src="/admin/admin.js?v=20261125v344" defer></script>
+  <script src="/admin/admin.js?v=20261125v345" defer></script>
 </body>
 </html>

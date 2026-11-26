@@ -119,6 +119,13 @@
   min-width: 0;
 }
 
+.cso-topbar-center {
+  flex: 1 1 auto;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .cso-topbar-right {
   flex-shrink: 0;
 }
@@ -400,6 +407,7 @@
 
 .cso-create-menu-wrap {
   position: relative;
+  flex-shrink: 0;
 }
 
 .cso-btn-create {
@@ -416,6 +424,7 @@
   align-items: center;
   gap: 6px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .cso-btn-create:hover {
@@ -474,16 +483,17 @@
 .cso-user-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   min-height: 44px;
-  padding: 4px 8px 4px 10px;
-  border: 0;
-  border-left: 1px solid var(--studio-border);
+  padding: 4px 10px;
+  border: 1px solid var(--studio-border);
   border-radius: 10px;
-  background: transparent;
+  background: var(--studio-card);
   color: var(--studio-text);
   font-family: inherit;
   text-align: left;
+  white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
@@ -491,11 +501,22 @@
 .cso-user-pill:hover,
 .cso-user-pill[aria-expanded="true"] {
   background: var(--studio-card-elev);
+  border-color: var(--studio-accent);
+}
+
+.cso-user-admin-label {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--studio-text);
+  white-space: nowrap;
 }
 
 .cso-user-caret {
   color: var(--studio-muted);
   transition: transform 0.15s ease;
+  flex-shrink: 0;
 }
 
 .cso-user-pill[aria-expanded="true"] .cso-user-caret {
@@ -507,7 +528,7 @@
   right: 0;
   top: calc(100% + 6px);
   z-index: 1300;
-  min-width: 236px;
+  min-width: 260px;
   max-width: calc(100vw - 16px);
   padding: 6px;
   border-radius: 12px;
@@ -533,7 +554,25 @@
   border-bottom: 1px solid var(--cso-border);
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 5px;
+}
+
+.cso-user-dropdown-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cso-user-session-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cso-ink-muted);
+}
+
+.cso-user-session-badge strong {
+  color: var(--cso-ink);
 }
 
 .cso-user-dropdown-email {
@@ -2798,7 +2837,6 @@ input[type="checkbox"] {
 }/* v158 Admin Studio mobile overhaul */
 
 
-.cso-user-admin-label,
 .cso-drawer-close { display: none; }
 .cso-kpi-card { padding-bottom: 18px; }
 .cso-kpi-card .cso-spark { margin-bottom: 4px; display: block; }
@@ -2827,13 +2865,10 @@ input[type="checkbox"] {
   .cso-brand-text { display: block; }
   .cso-brand-sub { display: none; }
   .cso-theme-menu-wrap { display: none; }
-  .cso-user-pill { padding: 0; border-left: 0; }
-  .cso-user-avatar, .cso-user-meta, .cso-user-caret { display: none; }
+  .cso-user-pill { padding: 0 10px; }
+  .cso-user-avatar, .cso-user-meta { display: none; }
   .cso-user-admin-label {
-    display: inline-flex; align-items: center; justify-content: center;
-    min-height: 44px; padding: 0 10px; border-radius: 10px;
-    border: 1px solid var(--studio-border); background: var(--studio-card);
-    color: var(--studio-text); font-size: 12px; font-weight: 700; white-space: nowrap;
+    font-size: 12px;
   }
   .cso-form-grid { grid-template-columns: 1fr; }
   .cso-form-grid input, .cso-form-grid select, .cso-form-grid textarea,

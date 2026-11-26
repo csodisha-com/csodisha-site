@@ -346,6 +346,7 @@
         if (dom.adminUserRole) dom.adminUserRole.textContent = userRole;
         if (dom.adminDropdownEmail) dom.adminDropdownEmail.textContent = userEmail;
         if (dom.adminDropdownRole) dom.adminDropdownRole.textContent = userRole + ' • Live D1 / R2';
+        if (dom.btnAdminUserMenu) dom.btnAdminUserMenu.title = userEmail + ' (' + userRole + ')';
         if (dom.adminUserInitials) {
           var email = String(d.user.email || 'ST');
           dom.adminUserInitials.textContent = email.slice(0, 2).toUpperCase();

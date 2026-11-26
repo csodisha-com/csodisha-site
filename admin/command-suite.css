@@ -11,14 +11,17 @@
 /* Topbar Command Palette & Media Triggers */
 .cs-topbar-search {
   display: inline-flex; align-items: center; gap: 10px;
-  min-width: 195px; justify-content: space-between;
+  flex: 1 1 180px; min-width: 140px; max-width: 280px; justify-content: space-between;
   background: var(--studio-card-elev, var(--cso-surface-alt));
   color: var(--studio-muted, var(--cso-muted));
   border: 1px solid var(--studio-border, var(--cso-border));
   border-radius: 9px; padding: 6px 10px;
   font: inherit; font-size: 0.82rem; cursor: pointer;
-  white-space: nowrap; flex-shrink: 0;
+  white-space: nowrap; min-height: 40px;
   transition: border-color 0.15s, background-color 0.15s;
+}
+.cs-topbar-search > span {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
 }
 .cs-topbar-search:hover, .cs-topbar-search:focus-visible {
   border-color: var(--studio-accent, var(--cso-primary));
@@ -30,9 +33,9 @@
   background: var(--studio-card, var(--cso-surface));
   color: var(--studio-text, var(--cso-text));
   border: 1px solid var(--studio-border, var(--cso-border));
-  border-radius: 9px; padding: 6px 11px;
+  border-radius: 9px; padding: 6px 11px; min-height: 40px;
   font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer;
-  white-space: nowrap; flex-shrink: 0; min-width: max-content;
+  white-space: nowrap; flex-shrink: 0;
   transition: border-color 0.15s;
 }
 .cs-topbar-media:hover, .cs-topbar-media:focus-visible {

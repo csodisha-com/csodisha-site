@@ -559,9 +559,9 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
 });
 
 // 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v312
-await check('6. Strict CSP compliance, zero hardcoded hex in v312 CSS, and cso-candidate-cache-v344 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v344');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v344';"), 'sw.js cache version must be cso-candidate-cache-v344');
+await check('6. Strict CSP compliance, zero hardcoded hex in v312 CSS, and cso-candidate-cache-v345 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v345');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v345';"), 'sw.js cache version must be cso-candidate-cache-v345');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -601,6 +601,14 @@ await check('6. Strict CSP compliance, zero hardcoded hex in v312 CSS, and cso-c
   }
   assert.ok(adminJs.includes('closeAdminUserMenu') && adminJs.includes('btnAdminUserMenu.addEventListener'), 'admin/admin.js must wire #btnAdminUserMenu toggle, outside click, and Escape close');
   assert.ok(studioCss.includes('.cso-user-dropdown') && studioCss.includes('z-index: 1300;'), 'admin/studio.css must layer .cso-user-dropdown at z-index 1300');
+
+  // v345: Topbar flex sizing, zero overlap between Media Library & + Create New, and sessionTimer inside Admin dropdown
+  const csCss = read('admin/command-suite.css');
+  assert.ok(csCss.includes('flex: 1 1 180px; min-width: 140px; max-width: 280px;'), 'command-suite.css must size .cs-topbar-search flexibly');
+  assert.ok(!adminHtml.includes('Live Site ↗'), 'admin/index.html must remove duplicate Live Site ↗ pill from topbar');
+  const ddIdx = adminHtml.indexOf('id="adminUserDropdown"');
+  const timerIdx = adminHtml.indexOf('id="sessionTimer"');
+  assert.ok(ddIdx > 0 && timerIdx > ddIdx, 'admin/index.html must place #sessionTimer inside #adminUserDropdown');
 });
 
 // 7. End-to-End Candidate Hub 30-District Live Feed + _worker.js & _router.js Wiring Check
