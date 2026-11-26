@@ -411,6 +411,14 @@
     return row;
   }
 
+  function mapBadgeTone(tone, fallback) {
+    if (tone === 'brand' || tone === 'accent') return 'accent';
+    if (tone === 'warning' || tone === 'warn') return 'warn';
+    if (tone === 'info') return 'info';
+    if (tone === 'ok' || tone === 'success') return 'ok';
+    return fallback || 'accent';
+  }
+
   /* 2. Latest Job Alerts & Admit Cards (up to 4 compact rows) */
   function renderJobsSection(jobs) {
     var grid = document.getElementById('cso-home-jobs-grid');
@@ -418,19 +426,26 @@
     var isOr = isOdiaActive();
     var frag = document.createDocumentFragment();
     jobs.slice(0, 4).forEach(function (job) {
-      var href = safeHref(job.href) || ('/jobs/' + encodeURIComponent(job.slug || job.id || ''));
+      var href = safeHref(job.url || job.href) || ('/jobs/?slug=' + encodeURIComponent(job.slug || job.id || ''));
       var title = pickBi(job.title_en, job.title_or, 'Job Notification');
-      var metaParts = [];
-      if (job.last_date) metaParts.push((isOr ? 'ଶେଷ: ' : 'Last Date: ') + formatCompactDate(job.last_date));
-      if (Number(job.vacancies || 0) > 0) metaParts.push(Number(job.vacancies).toLocaleString('en-IN') + (isOr ? ' ପଦବୀ' : ' Posts'));
-      else if (job.district) metaParts.push(job.district);
+      var metaText = isOr ? (job.meta_or || '') : (job.meta_en || '');
+      if (!metaText) {
+        var metaParts = [];
+        if (job.last_date) metaParts.push((isOr ? 'ଶେଷ: ' : 'Last Date: ') + formatCompactDate(job.last_date));
+        if (Number(job.vacancies || 0) > 0) metaParts.push(Number(job.vacancies).toLocaleString('en-IN') + (isOr ? ' ପଦବୀ' : ' Posts'));
+        else if (job.district) metaParts.push(job.district);
+        metaText = metaParts.join(' \u2022 ');
+      }
+      var actLabel = isOr
+        ? (job.action_label_or || 'ବିଜ୍ଞପ୍ତି \u2192')
+        : (job.action_label_en || 'Notice \u2192');
       frag.appendChild(buildCompactFeedRow({
         title: title,
         href: href,
-        pill: job.category || job.organisation_en || 'Odisha Govt',
-        pillTone: 'accent',
-        meta: metaParts.join(' \u2022 '),
-        actionLabel: isOr ? 'ସୂଚନା \u2192' : 'Notice \u2192',
+        pill: job.org_badge || job.category || job.organisation_en || 'Odisha Govt',
+        pillTone: mapBadgeTone(job.badge_tone, 'accent'),
+        meta: metaText,
+        actionLabel: actLabel,
         actionAria: (isOr ? 'ଦେଖନ୍ତୁ: ' : 'View job: ') + title
       }));
     });
@@ -807,6 +822,16 @@
     listHost.replaceChildren(frag);
   }
 
+  function renderHomeFeedSections(feed) {
+    if (!feed) return;
+    renderJobsSection(feed.jobs);
+    renderCurrentAffairsSection(feed.current_affairs);
+    renderMockTestsSection(feed.mocks || feed.mock_tests);
+    renderSyllabusSection(feed.study || feed.syllabus_pyq);
+    renderCareersSection(feed.careers);
+    renderSchemesSection(feed.schemes);
+  }
+
   function renderAllFromFeed(feed) {
     if (!feed) return;
     lastFeed = feed;
@@ -821,12 +846,7 @@
     }
     localizeFeedHeaders();
     renderLatestUpdatesPanel(feed);
-    renderJobsSection(feed.jobs);
-    renderCurrentAffairsSection(feed.current_affairs);
-    renderMockTestsSection(feed.mock_tests);
-    renderSyllabusSection(feed.syllabus_pyq);
-    renderCareersSection(feed.careers);
-    renderSchemesSection(feed.schemes);
+    renderHomeFeedSections(feed);
     renderHeroKpis(feed.portal_stats);
   }
 

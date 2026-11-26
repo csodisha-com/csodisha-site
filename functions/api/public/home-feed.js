@@ -17,7 +17,33 @@ import { json } from '../../_lib/http.js';
 import { readBanner, readHomeSections, defaultHomeSections } from '../admin/_site.js';
 import { ensureMockTestsV312Schema, formatMockTestRow } from '../admin/mock-tests.js';
 import { buildUnifiedLatestUpdates } from '../../_lib/latest-updates.js';
-import { buildTrendingTopicsFeed, DEFAULT_TRENDING_TOPICS } from '../../_lib/trending-topics.js';
+import { buildTrendingTopicsFeed, DEFAULT_TRENDING_TOPICS, matchGuideToTopic } from '../../_lib/trending-topics.js';
+import { normalizeOrganization, getIstDateYmd } from './jobs-hub.js';
+import { CORE_STUDY_PACKS } from './study-hub.js';
+import { CORE_CAREER_ROADMAPS } from './careers-hub.js';
+import { FLAGSHIP_SCHOLARSHIPS } from './scholarships-hub.js';
+
+function formatIstShortDate(raw) {
+  const s = String(raw || '').slice(0, 10);
+  const p = s.split('-');
+  if (p.length !== 3) return '';
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${Number(p[2])} ${months[Number(p[1]) - 1] || p[1]}`;
+}
+
+function orgBadgeTone(orgGroup) {
+  if (orgGroup === 'opsc' || orgGroup === 'oavs') return 'brand';
+  if (orgGroup === 'ossc' || orgGroup === 'osssc') return 'info';
+  if (orgGroup === 'central' || orgGroup === 'police') return 'warning';
+  return 'brand';
+}
+
+function extractPostCount(rawNum, blob = '') {
+  const n = Number(rawNum || 0);
+  if (Number.isFinite(n) && n > 0) return Math.floor(n);
+  const m = String(blob || '').match(/\b(\d{1,5})\s*(?:posts?|vacancies|seats|teachers?)\b/i);
+  return m ? Number(m[1]) : 0;
+}
 
 export const HOME_FEED_CACHE_CONTROL = 'public, max-age=60, s-maxage=120, stale-while-revalidate=180';
 
@@ -112,7 +138,23 @@ async function fetchNavHeader(db) {
   }
 }
 
-async function fetchLatestJobs(db) {
+async function fetchPublishedGuidesForFeed(db) {
+  try {
+    const { results } = await db.prepare(
+      `SELECT id, slug, title_en, title_or, summary_en, summary_or, category, tags, scope,
+              is_exam, published_at, updated_at
+       FROM informative_guides
+       WHERE status = 'published'
+       ORDER BY COALESCE(NULLIF(published_at, ''), updated_at) DESC
+       LIMIT 60`
+    ).all();
+    return results || [];
+  } catch {
+    return [];
+  }
+}
+
+async function fetchLatestJobs(db, publishedGuides = []) {
   const merged = [];
   const seenSlugs = new Set();
 
@@ -131,20 +173,36 @@ async function fetchLatestJobs(db) {
       const slug = String(r.slug || r.id || '').trim();
       if (!slug || seenSlugs.has(slug)) continue;
       seenSlugs.add(slug);
+      const org = normalizeOrganization(r.organisation_en || r.sector_badge, r.title_en);
+      const vacancies = extractPostCount(r.total_vacancies, r.title_en);
+      const district = String(r.location_district || 'All Odisha');
+      const lastDate = String(r.last_date || '');
+      const metaEnParts = [];
+      if (vacancies > 0) metaEnParts.push(`${vacancies.toLocaleString('en-IN')} Posts`);
+      if (district) metaEnParts.push(district);
+      if (lastDate) metaEnParts.push(`Last Date: ${formatIstShortDate(lastDate) || lastDate}`);
+      const url = `/jobs/?slug=${encodeURIComponent(slug)}`;
       merged.push({
         id: String(r.id || slug),
         slug,
         title_en: String(r.title_en || ''),
         title_or: String(r.title_or || ''),
-        last_date: String(r.last_date || ''),
-        vacancies: Number(r.total_vacancies || 0) || 0,
-        district: String(r.location_district || 'All Odisha'),
-        category: String(r.sector_badge || r.organisation_en || 'Odisha Govt'),
-        organisation_en: String(r.organisation_en || ''),
+        last_date: lastDate,
+        vacancies,
+        district,
+        category: String(r.sector_badge || r.organisation_en || org.organization),
+        org_badge: org.organization,
+        badge_tone: orgBadgeTone(org.org_group),
+        meta_en: metaEnParts.join(' · ') || 'Active Notice',
+        meta_or: vacancies > 0 ? `${vacancies.toLocaleString('en-IN')} ପଦବୀ · ${district}` : 'ସକ୍ରିୟ ବିଜ୍ଞପ୍ତି',
+        action_label_en: 'Notice →',
+        action_label_or: 'ବିଜ୍ଞପ୍ତି →',
+        organisation_en: String(r.organisation_en || org.organization),
         organisation_or: String(r.organisation_or || ''),
         lifecycle_stage: String(r.lifecycle_stage || 'notification'),
         qualification: String(r.qualification_summary || ''),
         href: `/jobs/${encodeURIComponent(slug)}`,
+        url,
         sort_ts: String(r.published_at || r.updated_at || '')
       });
     }
@@ -163,30 +221,88 @@ async function fetchLatestJobs(db) {
         const slug = String(r.slug || r.id || '').trim();
         if (!slug || seenSlugs.has(slug)) continue;
         seenSlugs.add(slug);
+        const org = normalizeOrganization(r.organisation || r.category, r.title);
+        const vacancies = extractPostCount(r.vacancies, r.title);
+        const district = String(r.district_tag || r.state || 'All Odisha');
+        const url = `/jobs/?id=${encodeURIComponent(String(r.id || slug))}`;
         merged.push({
           id: String(r.id || slug),
           slug,
           title_en: String(r.title || ''),
           title_or: String(r.title_or || ''),
           last_date: String(r.last_date || ''),
-          vacancies: Number(r.vacancies || 0) || 0,
-          district: String(r.district_tag || r.state || 'All Odisha'),
-          category: String(r.category || r.organisation || 'Odisha Govt'),
-          organisation_en: String(r.organisation || ''),
+          vacancies,
+          district,
+          category: String(r.category || r.organisation || org.organization),
+          org_badge: org.organization,
+          badge_tone: orgBadgeTone(org.org_group),
+          meta_en: vacancies > 0 ? `${vacancies.toLocaleString('en-IN')} Posts · ${district}` : `${district} · Active Notice`,
+          meta_or: vacancies > 0 ? `${vacancies.toLocaleString('en-IN')} ପଦବୀ · ${district}` : `${district} · ସକ୍ରିୟ ବିଜ୍ଞପ୍ତି`,
+          action_label_en: 'Notice →',
+          action_label_or: 'ବିଜ୍ଞପ୍ତି →',
+          organisation_en: String(r.organisation || org.organization),
           organisation_or: '',
           lifecycle_stage: String(r.stage || 'notification'),
           qualification: String(r.qualification || ''),
           href: `/jobs/${encodeURIComponent(slug)}`,
+          url,
           sort_ts: String(r.published_at || r.updated_at || '')
         });
       }
     } catch { /* legacy posts table optional */ }
   }
 
-  return merged
+  // Merge published recruitment informative_guides (e.g., OAVS Recruitment 2026 notifications/guides)
+  for (const g of (publishedGuides || [])) {
+    if (merged.length >= 6) break;
+    if (!matchGuideToTopic(g, 'recruitment')) continue;
+    const slug = String(g.slug || g.id || '').trim();
+    if (!slug || seenSlugs.has(`guide_${slug}`)) continue;
+    seenSlugs.add(`guide_${slug}`);
+    const blob = `${g.title_en || ''} ${g.summary_en || ''} ${g.tags || ''}`;
+    const org = normalizeOrganization('', blob);
+    const vacancies = extractPostCount(0, blob);
+    const guideUrl = `/guides/${encodeURIComponent(slug)}`;
+    merged.push({
+      id: `guide_${g.id || slug}`,
+      slug,
+      title_en: String(g.title_en || ''),
+      title_or: String(g.title_or || ''),
+      last_date: '',
+      vacancies,
+      district: 'All Odisha',
+      category: org.organization,
+      org_badge: org.organization,
+      badge_tone: orgBadgeTone(org.org_group),
+      meta_en: vacancies > 0 ? `${vacancies.toLocaleString('en-IN')} Posts · All Odisha` : 'Admit Card / Recruitment Guide',
+      meta_or: vacancies > 0 ? `${vacancies.toLocaleString('en-IN')} ପଦବୀ · ସମଗ୍ର ଓଡ଼ିଶା` : 'ନିଯୁକ୍ତି ଓ ଆଡମିଟ୍ କାର୍ଡ ଗାଇଡ୍',
+      action_label_en: 'Guide →',
+      action_label_or: 'ଗାଇଡ୍ →',
+      organisation_en: org.organization,
+      organisation_or: '',
+      lifecycle_stage: 'notification',
+      qualification: '',
+      href: guideUrl,
+      url: guideUrl,
+      sort_ts: String(g.published_at || g.updated_at || '')
+    });
+  }
+
+  const out = merged
     .sort((a, b) => String(b.sort_ts).localeCompare(String(a.sort_ts)))
     .slice(0, 6)
     .map(({ sort_ts, ...item }) => item);
+
+  const hubPads = [
+    { id: 'hub_opsc', slug: 'opsc', title_en: 'Odisha State Government & PSU Recruitments (OPSC / OSSC)', title_or: 'ଓଡ଼ିଶା ସରକାରୀ ନିଯୁକ୍ତି (OPSC / OSSC)', category: 'OPSC / OSSC', org_badge: 'OPSC', badge_tone: 'brand', meta_en: 'All Odisha · Active Notices', meta_or: 'ସମଗ୍ର ଓଡ଼ିଶା · ସକ୍ରିୟ ବିଜ୍ଞପ୍ତି', action_label_en: 'Notice →', action_label_or: 'ବିଜ୍ଞପ୍ତି →', href: '/jobs/?org=opsc', url: '/jobs/?org=opsc', district: 'All Odisha', vacancies: 0, last_date: '' },
+    { id: 'hub_osssc', slug: 'osssc', title_en: 'OSSSC District Vacancies, Admit Cards & Exam Schedules', title_or: 'OSSSC ଜିଲ୍ଲା ପଦବୀ ଓ ଆଡମିଟ୍ କାର୍ଡ', category: 'OSSSC', org_badge: 'OSSSC', badge_tone: 'info', meta_en: '30 Districts · Admit Cards', meta_or: '୩୦ ଜିଲ୍ଲା · ଆଡମିଟ୍ କାର୍ଡ', action_label_en: 'Notice →', action_label_or: 'ବିଜ୍ଞପ୍ତି →', href: '/jobs/?org=osssc', url: '/jobs/?org=osssc', district: '30 Districts', vacancies: 0, last_date: '' },
+    { id: 'hub_central', slug: 'central', title_en: 'SSC, RRB, IBPS & Central Government Job Deadlines', title_or: 'SSC, RRB, IBPS ଓ କେନ୍ଦ୍ରୀୟ ଚାକିରି', category: 'Central', org_badge: 'Central', badge_tone: 'warning', meta_en: 'Closing Soon · Official Portals', meta_or: 'ଶୀଘ୍ର ଶେଷ · ଅଫିସିଆଲ୍ ପୋର୍ଟାଲ୍', action_label_en: 'Notice →', action_label_or: 'ବିଜ୍ଞପ୍ତି →', href: '/jobs/?org=central', url: '/jobs/?org=central', district: 'All India', vacancies: 0, last_date: '' }
+  ];
+  for (const pad of hubPads) {
+    if (out.length >= 3) break;
+    out.push(pad);
+  }
+  return out;
 }
 
 async function fetchLatestCurrentAffairs(db) {
@@ -261,6 +377,188 @@ async function fetchLatestCurrentAffairs(db) {
     .sort((a, b) => String(b.sort_ts).localeCompare(String(a.sort_ts)))
     .slice(0, 5)
     .map(({ sort_ts, ...item }) => item);
+}
+
+function enrichCurrentAffairsWithGuides(baseItems, publishedGuides = []) {
+  const out = [...baseItems];
+  const seen = new Set(out.map((x) => x.slug));
+  const istShort = formatIstShortDate(getIstDateYmd());
+  for (const g of (publishedGuides || [])) {
+    if (out.length >= 4) break;
+    if (!matchGuideToTopic(g, 'odisha-gk')) continue;
+    const slug = String(g.slug || g.id || '').trim();
+    if (!slug || seen.has(slug)) continue;
+    seen.add(slug);
+    const dStr = String(g.published_at || g.updated_at || '').slice(0, 10) || getIstDateYmd();
+    const url = `/guides/${encodeURIComponent(slug)}`;
+    out.push({
+      id: `guide_${g.id || slug}`,
+      slug,
+      title_en: String(g.title_en || ''),
+      title_or: String(g.title_or || ''),
+      date: dStr,
+      ist_date_badge: formatIstShortDate(dStr) || istShort,
+      category: 'Odisha Special',
+      summary_en: String(g.summary_en || ''),
+      summary_or: String(g.summary_or || ''),
+      highlights_count: 0,
+      quiz_count: 0,
+      action_label_en: 'Brief →',
+      action_label_or: 'ବ୍ରିଫ୍ →',
+      href: url,
+      url
+    });
+  }
+  const pads = [
+    { id: 'od_pad_1', slug: 'odisha-special', title_en: 'Odisha 30-District Atlas, GI Tags & Daily State GK Brief', title_or: 'ଓଡ଼ିଶା ୩୦ ଜିଲ୍ଲା ଆଟଲାସ୍, GI ଟ୍ୟାଗ୍ ଓ ସାଧାରଣ ଜ୍ଞାନ', date: getIstDateYmd(), ist_date_badge: istShort, category: 'Odisha Special', highlights_count: 0, quiz_count: 5, action_label_en: 'Brief →', action_label_or: 'ବ୍ରିଫ୍ →', href: '/odisha-special/', url: '/odisha-special/' }
+  ];
+  if (out.length < 3) {
+    for (const p of pads) { if (out.length < 3) out.push(p); }
+  }
+  return out.slice(0, 5);
+}
+
+function enrichMocksForHome(baseMocks) {
+  const out = baseMocks.map((m) => ({ ...m, url: m.href, action_label_en: 'Start', action_label_or: 'ଆରମ୍ଭ' }));
+  const pads = [
+    { id: 'eh_mock_oavs', slug: 'oavs-2026', title_en: 'OAVS 2026 & Teaching Aptitude Bilingual CBT Drill', title_or: 'OAVS ୨୦୨୬ CBT ଅଭ୍ୟାସ ଟେଷ୍ଟ', exam_category: 'OAVS', duration_minutes: 45, question_count: 50, negative_marking: 0.25, href: '/exams/', url: '/exams/', action_label_en: 'Start', action_label_or: 'ଆରମ୍ଭ' },
+    { id: 'eh_mock_opsc', slug: 'opsc-oas', title_en: 'OPSC OAS & OSSC CGL Prelims Quick 5-MCQ Exam Drill', title_or: 'OPSC OAS ଓ OSSC CGL ପ୍ରିଲିମ୍ସ ଅଭ୍ୟାସ', exam_category: 'OPSC / OSSC', duration_minutes: 15, question_count: 5, negative_marking: 0, href: '/exams/#cso-eh-drill', url: '/exams/#cso-eh-drill', action_label_en: 'Start', action_label_or: 'ଆରମ୍ଭ' },
+    { id: 'eh_mock_otet', slug: 'otet-osstet', title_en: 'OTET, OSSTET & UGC NET Paper-1 Practice Mock Series', title_or: 'OTET, OSSTET ଓ UGC NET ମକ୍ ସିରିଜ୍', exam_category: 'TET / NET', duration_minutes: 60, question_count: 50, negative_marking: 0, href: '/exams/', url: '/exams/', action_label_en: 'Start', action_label_or: 'ଆରମ୍ଭ' }
+  ];
+  for (const p of pads) {
+    if (out.length >= 3) break;
+    out.push(p);
+  }
+  return out.slice(0, 4);
+}
+
+function enrichStudyForHome(baseStudy, publishedGuides = []) {
+  const out = baseStudy.map((s) => ({ ...s, url: s.pdf_url || s.view_url }));
+  const seen = new Set(out.map((x) => x.slug));
+  for (const g of (publishedGuides || [])) {
+    if (out.length >= 4) break;
+    if (!matchGuideToTopic(g, 'study-notes')) continue;
+    const slug = String(g.slug || g.id || '').trim();
+    if (!slug || seen.has(slug)) continue;
+    seen.add(slug);
+    const url = `/guides/${encodeURIComponent(slug)}`;
+    out.push({
+      id: `guide_${g.id || slug}`,
+      slug,
+      title_en: String(g.title_en || ''),
+      title_or: String(g.title_or || ''),
+      exam_tag: 'Study Guide',
+      year: '2026',
+      resource_type: 'Notes',
+      pdf_url: '',
+      view_url: url,
+      url
+    });
+  }
+  for (const pack of CORE_STUDY_PACKS) {
+    if (out.length >= 3) break;
+    out.push({
+      id: pack.id,
+      slug: pack.id,
+      title_en: pack.title_en,
+      title_or: pack.title_or,
+      exam_tag: pack.exam_tag,
+      year: pack.year,
+      resource_type: pack.file_format,
+      pdf_url: pack.pdf_url,
+      view_url: '/study-materials/',
+      url: '/study-materials/'
+    });
+  }
+  return out.slice(0, 6);
+}
+
+function enrichCareersForHome(baseCareers, publishedGuides = []) {
+  const out = baseCareers.map((c) => ({ ...c, url: c.href, action_label_en: 'Roadmap →', action_label_or: 'ରୋଡମ୍ୟାପ୍ →' }));
+  const seen = new Set(out.map((x) => x.slug));
+  for (const g of (publishedGuides || [])) {
+    if (out.length >= 4) break;
+    if (!matchGuideToTopic(g, 'career')) continue;
+    const slug = String(g.slug || g.id || '').trim();
+    if (!slug || seen.has(slug)) continue;
+    seen.add(slug);
+    const url = `/guides/${encodeURIComponent(slug)}`;
+    out.push({
+      id: `guide_${g.id || slug}`,
+      slug,
+      title_en: String(g.title_en || ''),
+      title_or: String(g.title_or || ''),
+      eligibility: 'Career Guide',
+      pay_band: 'ORSP 7th Pay',
+      career_stage: 'Roadmap',
+      href: url,
+      url,
+      action_label_en: 'Roadmap →',
+      action_label_or: 'ରୋଡମ୍ୟାପ୍ →'
+    });
+  }
+  for (const rm of CORE_CAREER_ROADMAPS) {
+    if (out.length >= 3) break;
+    out.push({
+      id: rm.id,
+      slug: rm.id,
+      title_en: rm.title_en,
+      title_or: rm.title_or,
+      eligibility: rm.min_qualification,
+      pay_band: rm.pay_level,
+      career_stage: rm.domain,
+      href: '/career-paths/',
+      url: '/career-paths/',
+      action_label_en: 'Roadmap →',
+      action_label_or: 'ରୋଡମ୍ୟାପ୍ →'
+    });
+  }
+  return out.slice(0, 4);
+}
+
+function enrichSchemesForHome(baseSchemes, publishedGuides = []) {
+  const out = baseSchemes.map((s) => ({ ...s, url: s.href, action_label_en: 'Scheme →', action_label_or: 'ଯୋଜନା →' }));
+  const seen = new Set(out.map((x) => x.slug));
+  for (const g of (publishedGuides || [])) {
+    if (out.length >= 4) break;
+    if (!matchGuideToTopic(g, 'scholarships')) continue;
+    const slug = String(g.slug || g.id || '').trim();
+    if (!slug || seen.has(slug)) continue;
+    seen.add(slug);
+    const url = `/guides/${encodeURIComponent(slug)}`;
+    out.push({
+      id: `guide_${g.id || slug}`,
+      slug,
+      title_en: String(g.title_en || ''),
+      title_or: String(g.title_or || ''),
+      benefit_summary: String(g.summary_en || 'DBT Scholarship & Welfare Guide'),
+      department: 'Odisha Scholarship Portal',
+      last_date: '',
+      is_ongoing: true,
+      href: url,
+      url,
+      action_label_en: 'Scheme →',
+      action_label_or: 'ଯୋଜନା →'
+    });
+  }
+  for (const sc of FLAGSHIP_SCHOLARSHIPS) {
+    if (out.length >= 3) break;
+    out.push({
+      id: sc.id,
+      slug: sc.id,
+      title_en: sc.title_en,
+      title_or: sc.title_or,
+      benefit_summary: sc.amount_summary,
+      department: sc.department_en,
+      last_date: sc.last_date,
+      is_ongoing: false,
+      href: '/scholarships/',
+      url: '/scholarships/',
+      action_label_en: 'Scheme →',
+      action_label_or: 'ଯୋଜନା →'
+    });
+  }
+  return out.slice(0, 4);
 }
 
 async function fetchLatestMockTests(db) {
@@ -465,7 +763,7 @@ export async function buildPublicHomeFeed(env) {
   if (!db) {
     return {
       ok: true,
-      version: 'v369',
+      version: 'v378',
       generated_at: new Date().toISOString(),
       broadcast: { active: false },
       nav_header: [],
@@ -475,22 +773,27 @@ export async function buildPublicHomeFeed(env) {
       jobs: [],
       current_affairs: [],
       mock_tests: [],
+      mocks: [],
       syllabus_pyq: [],
+      study: [],
       careers: [],
       schemes: [],
       portal_stats: { districts: 30, guides: 0, mocks: 0 }
     };
   }
 
-  const portal_stats = await fetchPortalStats(db);
+  const [portal_stats, publishedGuides] = await Promise.all([
+    fetchPortalStats(db),
+    fetchPublishedGuidesForFeed(db)
+  ]);
 
-  const [broadcast, nav_header, homeSections, trending_topics, latest_updates, jobs, current_affairs, mock_tests, syllabus_pyq, careers, schemes] = await Promise.all([
+  const [broadcast, nav_header, homeSections, trending_topics, latest_updates, jobs, rawCa, rawMocks, rawStudy, rawCareers, rawSchemes] = await Promise.all([
     fetchBroadcast(env),
     fetchNavHeader(db),
     readHomeSections(env).catch(() => ({ sections: defaultHomeSections() })),
     buildTrendingTopicsFeed(env).catch(() => DEFAULT_TRENDING_TOPICS.map((t) => ({ ...t, item_count: 0 }))),
     buildUnifiedLatestUpdates(db, { limit: 18 }),
-    fetchLatestJobs(db),
+    fetchLatestJobs(db, publishedGuides),
     fetchLatestCurrentAffairs(db),
     fetchLatestMockTests(db),
     fetchLatestSyllabusPyq(db),
@@ -498,9 +801,15 @@ export async function buildPublicHomeFeed(env) {
     fetchLatestSchemes(db)
   ]);
 
+  const current_affairs = enrichCurrentAffairsWithGuides(rawCa, publishedGuides);
+  const mock_tests = enrichMocksForHome(rawMocks);
+  const syllabus_pyq = enrichStudyForHome(rawStudy, publishedGuides);
+  const careers = enrichCareersForHome(rawCareers, publishedGuides);
+  const schemes = enrichSchemesForHome(rawSchemes, publishedGuides);
+
   return {
     ok: true,
-    version: 'v369',
+    version: 'v378',
     generated_at: new Date().toISOString(),
     broadcast,
     nav_header,
@@ -510,7 +819,9 @@ export async function buildPublicHomeFeed(env) {
     jobs,
     current_affairs,
     mock_tests,
+    mocks: mock_tests,
     syllabus_pyq,
+    study: syllabus_pyq,
     careers,
     schemes,
     portal_stats
