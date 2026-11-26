@@ -356,5 +356,55 @@ check('7. v343 Mobile slide-out drawer sits strictly above #cso-mobile-drawer-ba
   assert.ok(sharedJs.includes('ensureSharedDrawerBackdrop') && sharedJs.includes("classList.toggle('cso-drawer-open'"), 'shared-header.js must mount backdrop cleanly and toggle cso-drawer-open');
 });
 
+check('8. v360 Informative Guides edge-to-edge layout (max-width: 100%), uncropped 16:9 covers & zero 390px horizontal overflow', () => {
+  const guidesCss = read('assets/css/guides-portal.css');
+  const studioCss = read('admin/studio.css');
+  const guidesSsr = read('functions/_lib/informative-guides.js');
+
+  assert.ok(
+    guidesCss.includes('max-width: 100%;') &&
+    guidesCss.includes('padding-inline: clamp(12px, 1.4vw, 24px);') &&
+    guidesCss.includes('grid-template-columns: 260px minmax(0, 1fr);') &&
+    guidesCss.includes('gap: 20px;'),
+    'guides-portal.css must use true edge-to-edge max-width: 100% layout on laptop/desktop'
+  );
+  assert.ok(
+    guidesCss.includes('overflow-x: clip;') &&
+    guidesCss.includes('@media (max-width: 768px)') &&
+    guidesCss.includes('padding-inline: 8px;') &&
+    guidesCss.includes('.gp-hero-card') &&
+    guidesCss.includes('.gp-article-card') &&
+    guidesCss.includes('.gp-toc-card') &&
+    guidesCss.includes('.gp-inline-figure') &&
+    guidesCss.includes('padding: 14px 12px;') &&
+    guidesCss.includes('border-radius: 12px;') &&
+    guidesCss.includes('.gp-table-wrap') &&
+    guidesCss.includes('overflow-x: auto;'),
+    'guides-portal.css must eliminate double side margins at <= 768px (390px) and scope horizontal scrolling strictly inside .gp-table-wrap'
+  );
+  assert.ok(
+    guidesCss.includes('aspect-ratio: 16 / 9;') &&
+    guidesCss.includes('object-fit: contain;') &&
+    guidesCss.includes('height: auto;') &&
+    !guidesCss.includes('max-height: 440px;') &&
+    guidesCss.includes('.gp-inline-figure img'),
+    'guides-portal.css must keep 16:9 cover banners and inline SVG figures uncropped at height: auto'
+  );
+  assert.ok(
+    studioCss.includes('.cso-guide-preview-frame.is-mobile-frame') &&
+    studioCss.includes('padding-inline: 8px;') &&
+    studioCss.includes('aspect-ratio: 16 / 9;') &&
+    studioCss.includes('object-fit: contain;') &&
+    !studioCss.slice(studioCss.indexOf('#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover img')).includes('max-height: 440px;'),
+    'admin/studio.css Live Preview must mirror v360 edge-to-edge 390px mobile padding and uncropped 16:9 cover rules'
+  );
+  assert.ok(
+    guidesSsr.includes('/assets/css/guides-portal.css?v=20261126v360') &&
+    guidesSsr.includes('gp-hero-card') &&
+    guidesSsr.includes('gp-toc-card'),
+    'functions/_lib/informative-guides.js must load v360 CSS and emit .gp-hero-card and .gp-toc-card classes'
+  );
+});
+
 console.log(`\n=== v300 Mobile & WCAG 2.2 Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);

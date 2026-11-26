@@ -456,8 +456,8 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', jsonLd =
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v356">
-  <script src="/assets/js/guides-portal.js?v=20261126v356" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v360">
+  <script src="/assets/js/guides-portal.js?v=20261126v360" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -538,7 +538,7 @@ export function renderPublicGuidesHubHtml(guides, url) {
 <body class="cso-portal-page cso-guides-page" data-cso-portal="guides" data-guide-lang="en">
 ${CSO_SHELL_HEADER}
 <main id="main-content" class="gp-main gp-shell">
-  <section class="gp-hero">
+  <section class="gp-hero gp-hero-card">
     <div class="gp-hero-top">
       <div>
         <div class="gp-eyebrow">INFORMATIVE ARTICLES &amp; GUIDES · ମାର୍ଗଦର୍ଶିକା</div>
@@ -648,7 +648,7 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
     : '';
 
   const tocEnHtml = enParsed.toc.length
-    ? `<nav class="gp-toc gp-lang-en" aria-label="Table of Contents">
+    ? `<nav class="gp-toc gp-toc-card gp-lang-en" aria-label="Table of Contents">
         <details class="gp-toc-details" open>
           <summary class="gp-toc-summary">
             <span class="gp-toc-title">📑 On This Page (${enParsed.toc.length})</span>
@@ -661,7 +661,7 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
       </nav>`
     : '';
   const tocOrHtml = orParsed.toc.length
-    ? `<nav class="gp-toc gp-lang-or" aria-label="ବିଷୟସୂଚୀ">
+    ? `<nav class="gp-toc gp-toc-card gp-lang-or" aria-label="ବିଷୟସୂଚୀ">
         <details class="gp-toc-details" open>
           <summary class="gp-toc-summary">
             <span class="gp-toc-title">📑 ବିଷୟସୂଚୀ (${orParsed.toc.length})</span>
@@ -801,7 +801,7 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
 ${CSO_SHELL_HEADER}
 <main id="main-content" class="gp-main gp-reader-main gp-shell gp-detail-shell">
   ${kicker}
-  <header class="gp-article-head">
+  <header class="gp-article-head gp-hero-card">
     <div class="gp-article-meta-row">
       <span class="gp-badge">${escShell(guide.category_icon)} ${escShell(guide.category_label_en)}</span>
       <span class="gp-meta-pill">⏱️ ${escShell(guide.read_minutes)} min read</span>

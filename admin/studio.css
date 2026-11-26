@@ -4915,7 +4915,7 @@ body.cso-studio-body {
 
 .cso-guide-preview-frame {
   width: 100%;
-  max-width: min(1480px, 96vw);
+  max-width: 100%;
   margin: 0 auto;
   border-radius: 16px;
   border: 1px solid var(--cso-border);
@@ -4935,13 +4935,23 @@ body.cso-studio-body {
 .cso-guide-preview-frame.is-mobile-frame .gp-main,
 .cso-guide-preview-frame.is-mobile-frame .gp-shell,
 .cso-guide-preview-frame.is-mobile-frame .gp-detail-shell {
-  padding: 0.85rem;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.75rem 8px 2rem;
+  padding-inline: 8px;
 }
 
+.cso-guide-preview-frame.is-mobile-frame .gp-hero,
+.cso-guide-preview-frame.is-mobile-frame .gp-hero-card,
 .cso-guide-preview-frame.is-mobile-frame .gp-article-head,
 .cso-guide-preview-frame.is-mobile-frame .gp-article-body,
-.cso-guide-preview-frame.is-mobile-frame .gp-article-card {
-  padding: 1rem;
+.cso-guide-preview-frame.is-mobile-frame .gp-article-card,
+.cso-guide-preview-frame.is-mobile-frame .gp-toc,
+.cso-guide-preview-frame.is-mobile-frame .gp-toc-card,
+.cso-guide-preview-frame.is-mobile-frame .gp-inline-figure {
+  width: 100%;
+  padding: 14px 12px;
+  border-radius: 12px;
 }
 
 .cso-guide-preview-frame.is-mobile-frame .gp-reader-layout,
@@ -5134,14 +5144,23 @@ body.cso-studio-body {
 #csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover img,
 #csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover-figure img,
 #csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover-img,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-cover-frame img,
 #csoGuideLivePreviewModal .cso-guide-preview-frame .gp-hero-media img {
-  display: block;
   width: 100%;
   height: auto;
-  max-height: 440px;
-  object-fit: cover;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  display: block;
   border-radius: 14px;
   margin: 0;
+}
+
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-inline-figure img,
+#csoGuideLivePreviewModal .cso-guide-preview-frame .gp-inline-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
 }
 
 #csoGuideLivePreviewModal .cso-guide-preview-frame .gp-takeaways {

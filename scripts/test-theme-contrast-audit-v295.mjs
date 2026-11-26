@@ -435,16 +435,21 @@ check('8. v303 Candidate Hub sidebar nav container, items & mobile drawer bind t
   assert.match(hubHtml, /student-dashboard\.js\?v=2026112[56]v3(?:0[3-9]|[1-9]\d)/);
 });
 
-check('9. v349 Informative Guides cover overflow containment & high-contrast WCAG AAA tbody td across all 4 themes', () => {
+check('9. v349/v360 Informative Guides edge-to-edge uncropped 16:9 cover containment & high-contrast WCAG AAA tbody td across all 4 themes', () => {
   const guidesCss = read('assets/css/guides-portal.css');
   assert.ok(
+    guidesCss.includes('.gp-shell') &&
+    guidesCss.includes('.gp-detail-shell') &&
+    guidesCss.includes('max-width: 100%;') &&
     guidesCss.includes('.gp-cover,') &&
     guidesCss.includes('.gp-cover-frame') &&
     guidesCss.includes('.gp-hero-media') &&
     guidesCss.includes('overflow: hidden;') &&
-    guidesCss.includes('max-height: 440px;') &&
-    guidesCss.includes('object-fit: cover;'),
-    'assets/css/guides-portal.css must enforce .gp-cover/.gp-hero-media full-bleed overflow containment'
+    guidesCss.includes('height: auto;') &&
+    guidesCss.includes('aspect-ratio: 16 / 9;') &&
+    guidesCss.includes('object-fit: contain;') &&
+    !guidesCss.includes('max-height: 440px;'),
+    'assets/css/guides-portal.css must enforce edge-to-edge max-width: 100% and uncropped 16:9 height: auto + object-fit: contain covers'
   );
   assert.ok(
     guidesCss.includes('.gp-takeaways') &&

@@ -1,16 +1,23 @@
-/* Common Sense Odisha — Informative Articles & Guides Public Hub & Reader (v356)
- * 100% 4-Theme Semantic Tokens (zero hardcoded hex), WCAG AAA Contrast, Strict CSP. */
+/* Common Sense Odisha — Informative Articles & Guides Public Hub & Reader (v360)
+ * Edge-to-edge laptop & 390px mobile layout, uncropped 16:9 covers, 100% 4-Theme Semantic Tokens (zero hardcoded hex), WCAG AAA Contrast, Strict CSP. */
+
+.cso-guides-page,
+.cso-guide-reader-page {
+  overflow-x: clip;
+}
 
 .gp-main,
 .gp-shell,
 .gp-reader-main,
 .gp-detail-shell {
+  box-sizing: border-box;
   width: 100%;
-  max-width: min(1480px, 96vw);
-  margin: 0 auto;
-  padding: 1.25rem clamp(14px, 2vw, 32px) 3.5rem;
-  padding-inline: clamp(14px, 2vw, 32px);
+  max-width: 100%;
+  margin: 0;
+  padding: 1.1rem clamp(12px, 1.4vw, 24px) 3rem;
+  padding-inline: clamp(12px, 1.4vw, 24px);
   color: var(--gp-ink, var(--cso-ink, var(--cso-ink-primary)));
+  overflow-x: clip;
 }
 
 /* Breadcrumb / Kicker Navigation */
@@ -235,8 +242,9 @@
 
 .gp-card-media img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
   display: block;
 }
 
@@ -414,12 +422,13 @@
 .gp-cover img,
 .gp-cover-figure img,
 .gp-cover-img,
+.gp-cover-frame img,
 .gp-hero-media img {
-  display: block;
   width: 100%;
   height: auto;
-  max-height: 440px;
-  object-fit: cover;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  display: block;
   border-radius: 14px;
   margin: 0;
 }
@@ -442,13 +451,14 @@
 
 .gp-toc-rail {
   position: static;
+  min-width: 0;
 }
 
 @media (min-width: 1024px) {
   .gp-reader-layout,
   .gp-detail-grid {
-    grid-template-columns: 270px minmax(0, 1fr);
-    gap: 28px;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 20px;
   }
 
   .gp-toc-rail {
@@ -459,7 +469,10 @@
   }
 }
 
-.gp-toc {
+.gp-toc,
+.gp-toc-card {
+  box-sizing: border-box;
+  width: 100%;
   background: var(--gp-surface, var(--cso-surface));
   border: 1px solid var(--gp-border, var(--cso-border));
   border-radius: 12px;
@@ -756,7 +769,10 @@
 
 /* Inline Infographic Figures inside Guide Body */
 .gp-inline-figure {
+  box-sizing: border-box;
   display: block;
+  width: 100%;
+  max-width: 100%;
   margin: 1.35rem 0;
   border: 1px solid var(--gp-border, var(--cso-border));
   border-radius: 14px;
@@ -764,10 +780,11 @@
   background: var(--gp-surface-alt, var(--cso-surface-alt));
 }
 
+.gp-inline-figure img,
 .gp-inline-img {
-  display: block;
   width: 100%;
   height: auto;
+  display: block;
   object-fit: contain;
   margin: 0;
 }
@@ -968,29 +985,81 @@
   .gp-reader-layout,
   .gp-detail-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
   .gp-toc-rail {
     position: static;
   }
   .gp-article-body,
   .gp-article-card {
-    padding: 1.15rem;
+    padding: 1.1rem;
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .gp-main,
   .gp-shell,
+  .gp-reader-main,
   .gp-detail-shell {
-    padding: 0.85rem 14px 2.5rem;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0.75rem 8px 2.25rem;
+    padding-inline: 8px;
   }
-  .gp-hero {
-    padding: 1.15rem;
+
+  .gp-hero,
+  .gp-hero-card,
+  .gp-article-head,
+  .gp-article,
+  .gp-article-body,
+  .gp-article-card,
+  .gp-toc,
+  .gp-toc-card,
+  .gp-inline-figure {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    padding: 14px 12px;
+    border-radius: 12px;
   }
+
+  .gp-cover,
+  .gp-cover-figure {
+    margin: 12px 0 16px;
+    border-radius: 12px;
+  }
+
+  .gp-cover-frame,
+  .gp-hero-media,
+  .gp-cover img,
+  .gp-cover-figure img,
+  .gp-cover-img,
+  .gp-cover-frame img,
+  .gp-hero-media img {
+    border-radius: 12px;
+  }
+
+  .gp-takeaways {
+    padding: 12px;
+  }
+
+  .gp-article-meta-row .gp-lang-switch {
+    margin-left: 0;
+  }
+
   .gp-search-bar {
     flex-direction: column;
   }
+
   .gp-grid {
     grid-template-columns: 1fr;
+  }
+
+  .gp-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
