@@ -17,7 +17,7 @@ export async function handleAdminAiCoauthorApi(request, env, actor, ctx = null) 
   }
 
   if (method === 'POST') {
-    const body = await readJson(request, 180000);
+    const body = await readJson(request, 260000);
     try {
       const result = await generateAiCoAuthorDraft(env, {
         mode: body.mode,
@@ -28,6 +28,8 @@ export async function handleAdminAiCoauthorApi(request, env, actor, ctx = null) 
         pdf_filename: body.pdf_filename,
         draft: body.draft,
         overwrite: body.overwrite,
+        depth: body.depth,
+        skip_body_or: body.skip_body_or,
         actorId: (actor && actor.userId) || 'admin'
       });
       return json(result);

@@ -11,6 +11,8 @@ import {
   WORKERS_AI_PRO_MODELS,
   GEMINI_IMAGE_MODELS,
   WORKERS_AI_IMAGE_MODEL,
+  GEMINI_LONG_MAX_OUTPUT_TOKENS,
+  WORKERS_AI_70B_MAX_TOKENS,
   VALID_AI_MODES
 } from '../functions/_lib/ai-coauthor.js';
 import { onRequestPost as aiCoauthorPost, handleAdminAiGenerateImage } from '../functions/api/admin/ai-coauthor.js';
@@ -212,8 +214,8 @@ await test('5. Wrangler AI binding, migration 0149, CSP compliance & v318 cache 
   const mig = read('migrations/0149_ai_coauthor_v318.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS ai_generation_logs'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v350');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v350';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v351');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v351';"));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('window.CSOAiCoAuthor'));
@@ -369,17 +371,23 @@ await test('7. v350 Gemini Pro-first fallback ordering, auto_fix_fill PDF-to-Art
   assert.deepEqual(GEMINI_IMAGE_MODELS, ['imagen-3.0-generate-002', 'gemini-2.5-flash-image']);
   assert.equal(WORKERS_AI_IMAGE_MODEL, '@cf/black-forest-labs/flux-1-schnell');
 
-  // A. Verify Gemini Pro-first cascade order -> Gemini Flash -> Workers AI 70B -> 8B for auto_fix_fill
+  // A. Verify v351 high token limits (16384 Gemini / 8192 Workers AI 70B), anti-summarization prompt & two-pass full Odia translation
+  assert.equal(GEMINI_LONG_MAX_OUTPUT_TOKENS, 16384, 'Gemini maxOutputTokens must be 16384 for long-form guides');
+  assert.equal(WORKERS_AI_70B_MAX_TOKENS, 8192, 'Workers AI 70B max_tokens must be 8192 for long-form guides');
+
   const db = createMockDb();
   const attemptedGemini = [];
+  const geminiRequestBodies = [];
   const attemptedWorkers = [];
+  const workersCallArgs = [];
   const origFetch = globalThis.fetch;
 
-  globalThis.fetch = async (url) => {
+  globalThis.fetch = async (url, init) => {
     const u = String(url);
     const m = u.match(/\/models\/([^:?]+):generateContent/);
     if (m) {
       attemptedGemini.push(m[1]);
+      geminiRequestBodies.push(JSON.parse(String(init && init.body || '{}')));
       return new Response('Quota exceeded', { status: 429 });
     }
     throw new Error('Unexpected fetch: ' + u);
@@ -387,10 +395,29 @@ await test('7. v350 Gemini Pro-first fallback ordering, auto_fix_fill PDF-to-Art
 
   try {
     const mockAiCascade = {
-      async run(model) {
+      async run(model, args) {
         attemptedWorkers.push(model);
+        workersCallArgs.push({ model, max_tokens: args && args.max_tokens });
         if (model === '@cf/meta/llama-3.3-70b-instruct-fp8-fast') {
           throw new Error('Temporary 70B timeout');
+        }
+        const userMsg = (args && args.messages && args.messages[1] && args.messages[1].content) || '';
+        if (userMsg.includes('"translations"')) {
+          return {
+            response: JSON.stringify({
+              translations: {
+                body_or: '## ସଂକ୍ଷିପ୍ତ ବିବରଣୀ\nOPSC OAS 2026 ସମ୍ପୂର୍ଣ୍ଣ ନିଯୁକ୍ତି ବିବରଣୀ।\n\n## ପଦବୀ ଓ ବେତନ ତାଲିକା\n| ପଦବୀ | ଶୂନ୍ୟପଦ |\n| --- | --- |\n| OAS | 120 |',
+                title_or: 'OPSC OAS 2026 ନିଯୁକ୍ତି ଏବଂ ପ୍ରିଲିମ୍ସ ପରୀକ୍ଷା ରଣନୀତି',
+                summary_or: 'OPSC OAS 2026 ପଦବୀ, ଯୋଗ୍ୟତା, ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ତାରିଖ ଏବଂ ପରୀକ୍ଷା ରୋଡମ୍ୟାପ୍।',
+                pdf_title_or: 'OPSC OAS 2026 ସରକାରୀ ବିଜ୍ଞପ୍ତି PDF',
+                cover_caption_or: 'OPSC OAS 2026 ପରୀକ୍ଷା ମାର୍ଗଦର୍ଶିକା',
+                tk_0: 'ଶେଷ ତାରିଖ ପୂର୍ବରୁ opsc.gov.in ରେ ଅନଲାଇନ୍ ଆବେଦନ କରନ୍ତୁ।',
+                tk_1: 'ପ୍ରିଲିମ୍ସରେ GS Paper I ଏବଂ CSAT ଅନ୍ତର୍ଭୁକ୍ତ।',
+                lnk_0: 'OPSC ସରକାରୀ ପୋର୍ଟାଲ୍',
+                lnk_1: 'OSHEC ସିଲାବସ୍ ପୋର୍ଟାଲ୍'
+              }
+            })
+          };
         }
         return {
           response: JSON.stringify({
@@ -407,7 +434,7 @@ await test('7. v350 Gemini Pro-first fallback ordering, auto_fix_fill PDF-to-Art
             takeaways_en: ['Apply online exclusively on opsc.gov.in before closing date.', 'Prelims consists of GS Paper I and CSAT.'],
             takeaways_or: ['ଶେଷ ତାରିଖ ପୂର୍ବରୁ opsc.gov.in ରେ ଅନଲାଇନ୍ ଆବେଦନ କରନ୍ତୁ।'],
             body_en: '## Overview\nOPSC OAS 2026 recruitment details extracted from official PDF.\n\n## Key Vacancy Table\n| Post | Vacancies |\n| --- | --- |\n| OAS | 120 |',
-            body_or: '## ସଂକ୍ଷିପ୍ତ ବିବରଣୀ\nOPSC OAS 2026 ନିଯୁକ୍ତି ବିବରଣୀ।',
+            body_or: '',
             pdf_title_en: 'OPSC OAS 2026 Official Notification PDF',
             pdf_title_or: 'OPSC OAS 2026 ସରକାରୀ ବିଜ୍ଞପ୍ତି PDF',
             official_links: [{ label_en: 'OPSC Official Portal', label_or: 'OPSC ପୋର୍ଟାଲ୍', url: 'https://www.opsc.gov.in/', is_official: true }]
@@ -418,17 +445,26 @@ await test('7. v350 Gemini Pro-first fallback ordering, auto_fix_fill PDF-to-Art
 
     const autoRes = await generateAiCoAuthorDraft({ DB: db, AI: mockAiCascade, GEMINI_API_KEY: 'gm_pro_test' }, {
       mode: 'auto_fix_fill',
+      depth: 'comprehensive',
       pdf_filename: 'opsc-oas-2026-advt.pdf',
       pdf_text: 'Odisha Public Service Commission Advt No 09 of 2026. Total 120 OAS vacancies. Apply online at https://www.opsc.gov.in/ and check syllabus at https://oshec.odisha.gov.in/syllabus.pdf.',
       actorId: 'adm_1'
     });
 
-    assert.deepEqual(attemptedGemini, ['gemini-2.5-pro', 'gemini-pro-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'], 'auto_fix_fill must attempt Gemini Pro first, then Gemini Flash');
-    assert.deepEqual(attemptedWorkers, ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/meta/llama-3.1-8b-instruct-fp8-fast'], 'Workers AI fallback must try 70B then 8B');
+    assert.deepEqual(attemptedGemini.slice(0, 4), ['gemini-2.5-pro', 'gemini-pro-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'], 'Pass 1 auto_fix_fill must attempt Gemini Pro first, then Gemini Flash');
+    assert.deepEqual(attemptedGemini.slice(4, 8), ['gemini-2.5-pro', 'gemini-pro-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'], 'Pass 2 translate_fields must also attempt Gemini Pro first');
+    assert.equal(geminiRequestBodies[0].generationConfig.maxOutputTokens, 16384, 'Gemini Pass 1 must set maxOutputTokens: 16384');
+    assert.equal(geminiRequestBodies[4].generationConfig.maxOutputTokens, 16384, 'Gemini Pass 2 must set maxOutputTokens: 16384');
+    const pass1PromptText = geminiRequestBodies[0].contents[0].parts[0].text;
+    assert.ok(pass1PromptText.includes('NEVER summarize, shorten, or omit details') && pass1PromptText.includes('Preserve 100% of every post name'), 'Pass 1 prompt must include strict anti-summarization directive');
+    assert.equal(workersCallArgs[0].model, '@cf/meta/llama-3.3-70b-instruct-fp8-fast');
+    assert.equal(workersCallArgs[0].max_tokens, 8192, 'Workers AI 70B fallback must set max_tokens: 8192');
     assert.equal(autoRes.ok, true);
+    assert.equal(autoRes.two_pass_translation, true, 'auto_fix_fill must execute dedicated Pass 2 full Odia translation');
     assert.equal(autoRes.data.category, 'exam-strategy');
     assert.equal(autoRes.data.scope, 'Odisha');
     assert.equal(autoRes.data.slug, 'opsc-oas-2026-recruitment-prelims-strategy');
+    assert.ok(autoRes.data.body_or.includes('| ପଦବୀ | ଶୂନ୍ୟପଦ |'), 'Pass 2 must populate full Odia Markdown tables matching body_en');
     assert.equal(autoRes.data.takeaways_or.length, 2, 'takeaways_or must align with takeaways_en');
     assert.ok(autoRes.data.official_links.some((l) => l.url.includes('opsc.gov.in')), 'Must extract opsc.gov.in official link');
     assert.ok(autoRes.data.official_links.some((l) => l.url.includes('oshec.odisha.gov.in')), 'Must deterministically extract additional .gov.in PDF links');

@@ -344,9 +344,11 @@ export function renderGuideBodyWithToc(rawBody, headingPrefix = 'sec') {
         badge = quoteLines.shift().replace(/^\[!([A-Z]+)\]\s*/i, '$1').toUpperCase();
       }
       const inner = quoteLines.filter(Boolean).map((q) => `<p>${renderInlineFmt(q)}</p>`).join('');
+      const badgeLabel = badge ? `📌 ${badge}` : '📌 IMPORTANT NOTE / EXAM RULE';
+      const variant = badge ? badge.toLowerCase() : 'note';
       html.push(
-        `<aside class="gp-callout${badge ? ' is-' + badge.toLowerCase() : ''}">` +
-        (badge ? `<div class="gp-callout-tag">${escShell(badge)}</div>` : '') +
+        `<aside class="gp-callout is-${escShell(variant)}">` +
+        `<div class="gp-callout-tag">${escShell(badgeLabel)}</div>` +
         inner +
         `</aside>`
       );
@@ -437,8 +439,8 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', jsonLd =
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v349">
-  <script src="/assets/js/guides-portal.js?v=20261126v349" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261126v351">
+  <script src="/assets/js/guides-portal.js?v=20261126v351" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -630,18 +632,28 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
 
   const tocEnHtml = enParsed.toc.length
     ? `<nav class="gp-toc gp-lang-en" aria-label="Table of Contents">
-        <div class="gp-toc-title">On This Page</div>
-        <ol class="gp-toc-list">
-          ${enParsed.toc.map((h) => `<li class="is-lvl-${h.level}"><a href="#${escShell(h.id)}">${escShell(h.text)}</a></li>`).join('\n')}
-        </ol>
+        <details class="gp-toc-details" open>
+          <summary class="gp-toc-summary">
+            <span class="gp-toc-title">📑 On This Page (${enParsed.toc.length})</span>
+            <span class="gp-toc-chevron" aria-hidden="true">▾</span>
+          </summary>
+          <ol class="gp-toc-list">
+            ${enParsed.toc.map((h) => `<li class="is-lvl-${h.level}"><a href="#${escShell(h.id)}">${escShell(h.text)}</a></li>`).join('\n')}
+          </ol>
+        </details>
       </nav>`
     : '';
   const tocOrHtml = orParsed.toc.length
     ? `<nav class="gp-toc gp-lang-or" aria-label="ବିଷୟସୂଚୀ">
-        <div class="gp-toc-title">ବିଷୟସୂଚୀ</div>
-        <ol class="gp-toc-list">
-          ${orParsed.toc.map((h) => `<li class="is-lvl-${h.level}"><a href="#${escShell(h.id)}">${escShell(h.text)}</a></li>`).join('\n')}
-        </ol>
+        <details class="gp-toc-details" open>
+          <summary class="gp-toc-summary">
+            <span class="gp-toc-title">📑 ବିଷୟସୂଚୀ (${orParsed.toc.length})</span>
+            <span class="gp-toc-chevron" aria-hidden="true">▾</span>
+          </summary>
+          <ol class="gp-toc-list">
+            ${orParsed.toc.map((h) => `<li class="is-lvl-${h.level}"><a href="#${escShell(h.id)}">${escShell(h.text)}</a></li>`).join('\n')}
+          </ol>
+        </details>
       </nav>`
     : '';
 

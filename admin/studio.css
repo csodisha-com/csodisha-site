@@ -4467,6 +4467,48 @@ body.cso-studio-body {
   margin-top: 0.65rem;
 }
 
+.cso-guide-depth-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.cso-guide-depth-lbl {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+  white-space: nowrap;
+}
+
+.cso-guide-depth-select {
+  width: auto;
+  min-width: 260px;
+  max-width: 100%;
+  min-height: 40px;
+}
+
+.cso-guide-ai-progress {
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.cso-guide-wordcount-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  margin-bottom: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
 .cso-guide-ai-actions {
   display: flex;
   flex-wrap: wrap;
@@ -4549,9 +4591,11 @@ body.cso-studio-body {
 }
 
 .cso-guide-body-ta {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.9rem;
-  line-height: 1.55;
+  min-height: 420px;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92rem;
+  line-height: 1.65;
 }
 
 /* Repeaters & R2 Media Slots */
@@ -4837,7 +4881,7 @@ body.cso-studio-body {
   align-items: stretch;
 }
 
-/* Scoped 4-Theme Token Overrides for Interactive Preview Frame (v349 WCAG AAA) */
+/* Scoped 4-Theme Token Overrides for Interactive Preview Frame (v351 WCAG AAA) */
 .cso-guide-preview-frame[data-theme="system"] {
   --cso-bg: #f8fafc;
   --cso-surface: #ffffff;
@@ -4852,6 +4896,12 @@ body.cso-studio-body {
   --cso-accent-ink: #ffffff;
   --cso-link: #0f766e;
   --cso-border: #cbd5e1;
+  --cso-ok-bg: #dcfce7;
+  --cso-ok-fg: #14532d;
+  --cso-warn-bg: #fef3c7;
+  --cso-warn-fg: #78350f;
+  --cso-info-bg: #e0f2fe;
+  --cso-info-fg: #0c4a6e;
   --cso-badge-verified-bg: #ccfbf1;
   --cso-badge-verified-fg: #115e59;
   --gp-bg: #f8fafc;
@@ -4878,6 +4928,12 @@ body.cso-studio-body {
   --cso-accent-ink: #04201d;
   --cso-link: #2dd4bf;
   --cso-border: #263245;
+  --cso-ok-bg: #0f2922;
+  --cso-ok-fg: #6ee7b7;
+  --cso-warn-bg: #2c2110;
+  --cso-warn-fg: #fcd34d;
+  --cso-info-bg: #112538;
+  --cso-info-fg: #7dd3fc;
   --cso-badge-verified-bg: #0f2922;
   --cso-badge-verified-fg: #6ee7b7;
   --gp-bg: #0b0f17;
@@ -4904,6 +4960,12 @@ body.cso-studio-body {
   --cso-accent-ink: #ffffff;
   --cso-link: #78350f;
   --cso-border: #d6c8b2;
+  --cso-ok-bg: #e7eedd;
+  --cso-ok-fg: #2b4a1e;
+  --cso-warn-bg: #f5e6c8;
+  --cso-warn-fg: #6b3b09;
+  --cso-info-bg: #ebe3d5;
+  --cso-info-fg: #4a3520;
   --cso-badge-verified-bg: #e7eedd;
   --cso-badge-verified-fg: #2b4a1e;
   --gp-bg: #f4ede1;
@@ -4930,6 +4992,12 @@ body.cso-studio-body {
   --cso-accent-ink: #ffffff;
   --cso-link: #b45309;
   --cso-border: #e4d1bc;
+  --cso-ok-bg: #dcfce7;
+  --cso-ok-fg: #14532d;
+  --cso-warn-bg: #ffedd5;
+  --cso-warn-fg: #9a3412;
+  --cso-info-bg: #fef3c7;
+  --cso-info-fg: #78350f;
   --cso-badge-verified-bg: #dcfce7;
   --cso-badge-verified-fg: #14532d;
   --gp-bg: #fdf7f0;
@@ -5019,9 +5087,9 @@ body.cso-studio-body {
   max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  margin: 16px 0;
+  margin: 18px 0;
   border: 1px solid var(--gp-border, var(--cso-border));
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--gp-surface, var(--cso-surface));
 }
 
@@ -5041,10 +5109,13 @@ body.cso-studio-body {
 #csoGuideLivePreviewModal .cso-guide-preview-frame .gp-body table thead th,
 #csoGuideLivePreviewModal .cso-guide-preview-frame .gp-article table thead th,
 #csoGuideLivePreviewModal .cso-guide-preview-frame .gp-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   background: var(--gp-surface-alt, var(--cso-surface-alt)) !important;
   color: var(--gp-ink, var(--cso-ink)) !important;
   font-weight: 700;
-  padding: 10px 12px;
+  padding: 11px 14px;
   border: 1px solid var(--gp-border, var(--cso-border));
   text-align: left;
   vertical-align: top;
@@ -5058,7 +5129,7 @@ body.cso-studio-body {
   background: var(--gp-surface, var(--cso-surface)) !important;
   color: var(--gp-ink, var(--cso-ink)) !important;
   opacity: 1 !important;
-  padding: 10px 12px;
+  padding: 11px 14px;
   border: 1px solid var(--gp-border, var(--cso-border));
   vertical-align: top;
   text-align: left;

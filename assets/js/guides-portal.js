@@ -25,6 +25,26 @@
       });
     });
 
+    // Collapsible Table of Contents on mobile (<= 960px), expanded & sticky on desktop
+    var isMobileMq = window.matchMedia && window.matchMedia('(max-width: 960px)');
+    var tocDetailsList = Array.prototype.slice.call(document.querySelectorAll('.gp-toc-details'));
+    if (tocDetailsList.length && isMobileMq) {
+      var syncTocState = function () {
+        var compact = isMobileMq.matches;
+        tocDetailsList.forEach(function (det) {
+          det.open = !compact;
+        });
+      };
+      syncTocState();
+      tocDetailsList.forEach(function (det) {
+        det.querySelectorAll('a[href^="#"]').forEach(function (link) {
+          link.addEventListener('click', function () {
+            if (isMobileMq.matches) det.open = false;
+          });
+        });
+      });
+    }
+
     // Live instant search filter on /guides/ hub
     var searchInput = document.getElementById('gpHubSearch');
     var grid = document.getElementById('gpGuidesGrid');

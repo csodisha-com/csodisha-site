@@ -356,7 +356,7 @@
       return loadSelfHostedPdfJs().then(function (pdfjsLib) {
         var loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buf.slice(0)), useSystemFonts: true });
         return loadingTask.promise.then(function (pdfDoc) {
-          var totalPages = Math.min(Number(pdfDoc.numPages || 0), 30);
+          var totalPages = Math.min(Number(pdfDoc.numPages || 0), 35);
           var pageNums = [];
           for (var p = 1; p <= totalPages; p++) pageNums.push(p);
           var pagesText = [];
@@ -402,7 +402,7 @@
               });
             });
           }, Promise.resolve()).then(function () {
-            var full = pagesText.join('\n\n').trim().slice(0, 36000);
+            var full = pagesText.join('\n\n').trim().slice(0, 60000);
             if (!full) full = extractPdfTextFallback(buf);
             return { text: full, pageCount: Number(pdfDoc.numPages || 0) };
           });
@@ -543,8 +543,8 @@
         if (qLines[0] && /^\[!(NOTE|TIP|IMPORTANT|WARNING)\]/i.test(qLines[0])) {
           badge = qLines.shift().replace(/^\[!([A-Z]+)\]\s*/i, '$1').toUpperCase();
         }
-        var aside = el('aside', 'gp-callout' + (badge ? ' is-' + badge.toLowerCase() : ''));
-        if (badge) aside.appendChild(el('div', 'gp-callout-tag', badge));
+        var aside = el('aside', 'gp-callout is-' + (badge ? badge.toLowerCase() : 'note'));
+        aside.appendChild(el('div', 'gp-callout-tag', badge ? ('\uD83D\uDCCC ' + badge) : '\uD83D\uDCCC IMPORTANT NOTE / EXAM RULE'));
         qLines.filter(Boolean).forEach(function (ql) {
           var p = el('p');
           appendInlineFormatted(p, ql);
@@ -774,7 +774,14 @@
       var rail = el('aside', 'gp-toc-rail');
       if (parsed.toc.length) {
         var tocNav = el('nav', 'gp-toc');
-        tocNav.appendChild(el('div', 'gp-toc-title', state.lang === 'or' ? '\u0B2C\u0B3F\u0B37\u0B5F\u0B38\u0B42\u0B1A\u0B40' : 'On This Page'));
+        tocNav.setAttribute('aria-label', state.lang === 'or' ? '\u0B2C\u0B3F\u0B37\u0B5F\u0B38\u0B42\u0B1A\u0B40' : 'Table of Contents');
+        var tocDetails = el('details', 'gp-toc-details');
+        tocDetails.open = state.viewport !== 'mobile';
+        var tocSummary = el('summary', 'gp-toc-summary');
+        tocSummary.appendChild(el('span', 'gp-toc-title', (state.lang === 'or' ? '\uD83D\uDCD1 \u0B2C\u0B3F\u0B37\u0B5F\u0B38\u0B42\u0B1A\u0B40' : '\uD83D\uDCD1 On This Page') + ' (' + parsed.toc.length + ')'));
+        var chev = el('span', 'gp-toc-chevron', '\u25BE');
+        chev.setAttribute('aria-hidden', 'true');
+        tocSummary.appendChild(chev);
         var ol = el('ol', 'gp-toc-list');
         parsed.toc.forEach(function (h) {
           var li = el('li', 'is-lvl-' + h.level);
@@ -783,7 +790,8 @@
           li.appendChild(a);
           ol.appendChild(li);
         });
-        tocNav.appendChild(ol);
+        tocDetails.append(tocSummary, ol);
+        tocNav.appendChild(tocDetails);
         rail.appendChild(tocNav);
       }
 
@@ -986,6 +994,8 @@
     inReadMins.min = '1';
     inReadMins.max = '120';
     inReadMins.value = String((editing && editing.read_minutes) || 5);
+    var readMinsManual = Boolean(editing && editing.read_minutes);
+    inReadMins.addEventListener('input', function () { readMinsManual = true; });
 
     var inTags = el('input', 'cso-form-input');
     inTags.type = 'text';
@@ -1048,14 +1058,37 @@
     inSumOr.value = (editing && editing.summary_or) || '';
 
     var inBodyEn = el('textarea', 'cso-form-textarea cso-guide-body-ta');
-    inBodyEn.rows = 14;
-    inBodyEn.placeholder = '## Overview\nWrite structured Markdown with ## headings, bullet lists, > [!TIP] callout boxes, and Markdown tables...';
+    inBodyEn.rows = 18;
+    inBodyEn.placeholder = '## Overview\nWrite extensive, publication-grade Markdown with ## / ### headings, complete Markdown tables, bullet checklists, and > [!IMPORTANT] callout boxes...';
     inBodyEn.value = (editing && editing.body_en) || '';
 
     var inBodyOr = el('textarea', 'cso-form-textarea cso-guide-body-ta');
-    inBodyOr.rows = 12;
-    inBodyOr.placeholder = '## \u0B38\u0B02\u0B15\u0B4D\u0B37\u0B3F\u0B2A\u0B4D\u0B24 \u0B2C\u0B3F\u0B2C\u0B30\u0B23\u0B40\n\u0B13\u0B21\u0B3C\u0B3F\u0B06 \u0B2C\u0B3F\u0B37\u0B5F\u0B2C\u0B38\u0B4D\u0B24\u0B41...';
+    inBodyOr.rows = 18;
+    inBodyOr.placeholder = '## \u0B38\u0B02\u0B15\u0B4D\u0B37\u0B3F\u0B2A\u0B4D\u0B24 \u0B2C\u0B3F\u0B2C\u0B30\u0B23\u0B40\n\u0B38\u0B2E\u0B4D\u0B2A\u0B42\u0B30\u0B4D\u0B23\u0B4D\u0B23 \u0B13\u0B21\u0B3C\u0B3F\u0B06 \u0B2C\u0B3F\u0B37\u0B5F\u0B2C\u0B38\u0B4D\u0B24\u0B41...';
     inBodyOr.value = (editing && editing.body_or) || '';
+
+    var wordCountBar = el('div', 'cso-guide-wordcount-bar');
+    wordCountBar.id = 'guideBodyWordCount';
+    wordCountBar.setAttribute('aria-live', 'polite');
+
+    function countWords(str) {
+      var trimmed = String(str || '').trim();
+      return trimmed ? trimmed.split(/\s+/).filter(Boolean).length : 0;
+    }
+
+    function updateWordCountAndReadTime(forceSyncReadMins) {
+      var enWords = countWords(inBodyEn.value);
+      var orWords = countWords(inBodyOr.value);
+      var estMins = Math.max(1, Math.min(60, Math.ceil(Math.max(enWords, 1) / 200)));
+      if ((forceSyncReadMins || !readMinsManual) && enWords >= 20) {
+        inReadMins.value = String(estMins);
+      }
+      wordCountBar.textContent = '\uD83D\uDCCA Word Count: ' + enWords.toLocaleString() + ' EN words (~' + estMins + ' min read at 200 wpm) \u00B7 ' + orWords.toLocaleString() + ' \u0B13\u0B21\u0B3C\u0B3F\u0B06 words';
+      return { enWords: enWords, orWords: orWords, estMins: estMins };
+    }
+
+    inBodyEn.addEventListener('input', function () { updateWordCountAndReadTime(false); });
+    inBodyOr.addEventListener('input', function () { updateWordCountAndReadTime(false); });
 
     // Cover photo inputs
     var inCoverUrl = el('input', 'cso-form-input');
@@ -1676,8 +1709,25 @@
     aiSeed.rows = 3;
     aiSeed.placeholder = 'Enter a topic, paste rough notes, or drop an official PDF above (e.g., "OPSC OAS 2026 Notification" or paste raw notice text to repair & auto-fill)...';
 
-    // Options row (Overwrite toggle + Auto-generate AI Cover checkbox)
+    // Options row (Output Depth Selector + Overwrite toggle + Auto-generate AI Cover checkbox)
     var aiOptsRow = el('div', 'cso-guide-ai-options');
+
+    var depthWrap = el('label', 'cso-guide-depth-wrap');
+    depthWrap.appendChild(el('span', 'cso-guide-depth-lbl', 'Output Depth:'));
+    var selAiDepth = el('select', 'cso-form-select cso-guide-depth-select');
+    selAiDepth.id = 'selGuideAiDepth';
+    selAiDepth.setAttribute('aria-label', 'AI Output Depth');
+    [
+      ['comprehensive', '\uD83D\uDCDA Comprehensive & Exhaustive (Full Detail \u2014 No Summary)'],
+      ['standard', '\uD83D\uDCDD Standard Guide']
+    ].forEach(function (pair) {
+      var op = el('option', '', pair[1]);
+      op.value = pair[0];
+      selAiDepth.appendChild(op);
+    });
+    selAiDepth.value = 'comprehensive';
+    depthWrap.appendChild(selAiDepth);
+
     var chkAiOverwrite = el('input');
     chkAiOverwrite.type = 'checkbox';
     chkAiOverwrite.id = 'chkGuideAiOverwrite';
@@ -1691,7 +1741,7 @@
     chkAiAutoCover.checked = true;
     var lblAutoCover = el('label', 'cso-qc-check');
     lblAutoCover.append(chkAiAutoCover, el('span', '', 'Auto-generate AI Cover Photo if empty'));
-    aiOptsRow.append(lblOverwrite, lblAutoCover);
+    aiOptsRow.append(depthWrap, lblOverwrite, lblAutoCover);
 
     var aiActions = el('div', 'cso-guide-ai-actions');
 
@@ -1711,8 +1761,10 @@
     btnAiFullOr.type = 'button';
     btnAiFullOr.id = 'btnGuideAiTranslateAll';
 
-    var aiStatus = el('span', 'cso-text-muted');
+    var aiStatus = el('span', 'cso-text-muted cso-guide-ai-progress');
     aiStatus.id = 'guideAiCoauthorStatus';
+    aiStatus.setAttribute('role', 'status');
+    aiStatus.setAttribute('aria-live', 'polite');
 
     function setAiBusy(busy) {
       btnPdfAutoWrite.disabled = busy;
@@ -1720,6 +1772,7 @@
       btnAiDraft.disabled = busy;
       btnAiMeta.disabled = busy;
       btnAiFullOr.disabled = busy;
+      selAiDepth.disabled = busy;
     }
 
     function applyAutoFixPayload(d, opts) {
@@ -1801,6 +1854,54 @@
         });
         if (addedLinks) drawLinks();
       }
+      readMinsManual = false;
+      updateWordCountAndReadTime(true);
+    }
+
+    function runDedicatedOdiaTranslationPass(overwriteOr, pdfRecord) {
+      var fields = {};
+      if (inBodyEn.value.trim() && (overwriteOr || !inBodyOr.value.trim())) {
+        fields.body_or = inBodyEn.value.trim().slice(0, 64000);
+      }
+      if (inTitleEn.value.trim() && (overwriteOr || !inTitleOr.value.trim())) fields.title_or = inTitleEn.value.trim();
+      if (inSumEn.value.trim() && (overwriteOr || !inSumOr.value.trim())) fields.summary_or = inSumEn.value.trim();
+      if (inCoverCapEn.value.trim() && (overwriteOr || !inCoverCapOr.value.trim())) fields.cover_caption_or = inCoverCapEn.value.trim();
+      if (pdfRecord && pdfRecord.title_en) fields.pdf_title_or = pdfRecord.title_en;
+      takeawaysList.forEach(function (t, i) {
+        if ((t.text_en || '').trim() && (overwriteOr || !(t.text_or || '').trim())) {
+          fields['tk_' + i] = t.text_en.trim();
+        }
+      });
+      linksList.forEach(function (l, i) {
+        if ((l.label_en || '').trim() && (overwriteOr || !(l.label_or || '').trim())) {
+          fields['lnk_' + i] = l.label_en.trim();
+        }
+      });
+      if (!Object.keys(fields).length) return Promise.resolve(null);
+
+      aiStatus.textContent = '2/3 Translating full guide to \u0B13\u0B21\u0B3C\u0B3F\u0B06 (section-for-section & table-for-table)\u2026';
+      return apiFetch('/api/admin/ai-coauthor', {
+        method: 'POST',
+        body: { mode: 'translate_fields', fields: fields }
+      }).then(function (trRes) {
+        var tr = (trRes && trRes.data && trRes.data.translations) || {};
+        if (tr.body_or) inBodyOr.value = tr.body_or;
+        if (tr.title_or) inTitleOr.value = tr.title_or;
+        if (tr.summary_or) inSumOr.value = tr.summary_or;
+        if (tr.cover_caption_or) inCoverCapOr.value = tr.cover_caption_or;
+        if (pdfRecord && tr.pdf_title_or) {
+          pdfRecord.title_or = tr.pdf_title_or;
+          drawPdfs();
+        }
+        takeawaysList.forEach(function (t, i) { if (tr['tk_' + i]) t.text_or = tr['tk_' + i]; });
+        linksList.forEach(function (l, i) { if (tr['lnk_' + i]) l.label_or = tr['lnk_' + i]; });
+        drawTakeaways();
+        drawLinks();
+        updateWordCountAndReadTime(true);
+        return trRes;
+      }).catch(function () {
+        return null;
+      });
     }
 
     function handlePdfAutoWriteFile(file) {
@@ -1810,7 +1911,7 @@
         return;
       }
       setAiBusy(true);
-      aiStatus.textContent = '\uD83D\uDCC4 Extracting PDF pages (pdfjs-dist) & uploading to cso-files R2\u2026';
+      aiStatus.textContent = '1/3 Extracting PDF pages (pdfjs-dist) & uploading to cso-files R2\u2026';
 
       Promise.all([
         extractTextFromPdfFile(file),
@@ -1841,11 +1942,13 @@
           return null;
         }
 
-        aiStatus.textContent = '\u2728 Extracted ' + (extracted.pageCount || 'all') + ' page(s) · Auto-writing bilingual guide via Gemini Pro\u2026';
+        aiStatus.textContent = '1/3 Structuring full English guide & tables (' + (extracted.pageCount || 'all') + ' pages \u00B7 ' + selAiDepth.value + ')\u2026';
         return apiFetch('/api/admin/ai-coauthor', {
           method: 'POST',
           body: {
             mode: 'auto_fix_fill',
+            depth: selAiDepth.value,
+            skip_body_or: true,
             pdf_text: extracted.text,
             pdf_filename: file.name || 'official-document.pdf',
             input: aiSeed.value.trim(),
@@ -1856,12 +1959,17 @@
           var d = (res && res.data) || {};
           applyAutoFixPayload(d, { overwrite: true, alwaysRepairBody: true, pdfRecord: pdfRec });
           var provLabel = ((res && res.provider_label) || (res && res.provider) || 'AI') + (res && res.model ? (' · ' + res.model) : '');
-          aiStatus.textContent = '\u2713 PDF uploaded, attached & full bilingual guide written via ' + provLabel + '!';
-          toast('PDF uploaded & full bilingual guide auto-written via ' + provLabel + '!', 'ok');
-          if (chkAiAutoCover.checked && (!inCoverUrl.value.trim() || chkAiOverwrite.checked)) {
-            return runCoverAiGeneration(false);
-          }
-          return null;
+          return runDedicatedOdiaTranslationPass(true, pdfRec).then(function () {
+            aiStatus.textContent = '3/3 Filling metadata, links & cover\u2026';
+            var maybeCover = (chkAiAutoCover.checked && (!inCoverUrl.value.trim() || chkAiOverwrite.checked))
+              ? runCoverAiGeneration(false)
+              : Promise.resolve(null);
+            return maybeCover.then(function () {
+              var wc = updateWordCountAndReadTime(true);
+              aiStatus.textContent = '\u2713 3/3 Complete \u2014 PDF attached & full bilingual guide written (' + wc.enWords.toLocaleString() + ' EN \u00B7 ' + wc.orWords.toLocaleString() + ' \u0B13\u0B21\u0B3C\u0B3F\u0B06 words) via ' + provLabel + '!';
+              toast('PDF uploaded & exhaustive bilingual guide written via ' + provLabel + '!', 'ok');
+            });
+          });
         });
       }).catch(function (e) {
         aiStatus.textContent = '\u2715 PDF Auto-Write failed: ' + e.message;
@@ -1901,25 +2009,33 @@
         return;
       }
       setAiBusy(true);
-      aiStatus.textContent = '\u2728 Repairing Markdown, translating to Odia & auto-filling all fields via Gemini Pro\u2026';
+      var overwriteMode = chkAiOverwrite.checked;
+      aiStatus.textContent = '1/3 Structuring full English guide & tables (' + selAiDepth.value + ')\u2026';
       apiFetch('/api/admin/ai-coauthor', {
         method: 'POST',
         body: {
           mode: 'auto_fix_fill',
+          depth: selAiDepth.value,
+          skip_body_or: true,
           input: seed,
           draft: currentDraft,
-          overwrite: chkAiOverwrite.checked
+          overwrite: overwriteMode
         }
       }).then(function (res) {
         var d = (res && res.data) || {};
-        applyAutoFixPayload(d, { overwrite: chkAiOverwrite.checked, alwaysRepairBody: true });
+        applyAutoFixPayload(d, { overwrite: overwriteMode, alwaysRepairBody: true });
         var provLabel = ((res && res.provider_label) || (res && res.provider) || 'AI') + (res && res.model ? (' · ' + res.model) : '');
-        aiStatus.textContent = '\u2713 Auto-Fixed & Filled via ' + provLabel + '!';
-        toast('Guide repaired & bilingual fields filled via ' + provLabel + '!', 'ok');
-        if (chkAiAutoCover.checked && (!inCoverUrl.value.trim() || chkAiOverwrite.checked)) {
-          return runCoverAiGeneration(false);
-        }
-        return null;
+        return runDedicatedOdiaTranslationPass(overwriteMode || !inBodyOr.value.trim(), null).then(function () {
+          aiStatus.textContent = '3/3 Filling metadata, links & cover\u2026';
+          var maybeCover = (chkAiAutoCover.checked && (!inCoverUrl.value.trim() || overwriteMode))
+            ? runCoverAiGeneration(false)
+            : Promise.resolve(null);
+          return maybeCover.then(function () {
+            var wc = updateWordCountAndReadTime(true);
+            aiStatus.textContent = '\u2713 3/3 Complete \u2014 Full guide structured & translated (' + wc.enWords.toLocaleString() + ' EN \u00B7 ' + wc.orWords.toLocaleString() + ' \u0B13\u0B21\u0B3C\u0B3F\u0B06 words) via ' + provLabel + '!';
+            toast('Full guide structured & translated via ' + provLabel + '!', 'ok');
+          });
+        });
       }).catch(function (e) {
         aiStatus.textContent = '\u2715 ' + e.message;
         toast('AI Auto-Fix failed: ' + e.message, 'crimson');
@@ -2004,7 +2120,7 @@
       if (inTitleEn.value.trim()) fields.title_or = inTitleEn.value.trim();
       if (inSumEn.value.trim()) fields.summary_or = inSumEn.value.trim();
       if (inCoverCapEn.value.trim()) fields.cover_caption_or = inCoverCapEn.value.trim();
-      if (inBodyEn.value.trim()) fields.body_or = inBodyEn.value.trim().slice(0, 7800);
+      if (inBodyEn.value.trim()) fields.body_or = inBodyEn.value.trim().slice(0, 64000);
       if (inRelTitleEn.value.trim()) fields.rel_title_or = inRelTitleEn.value.trim();
       if (inRelCtaEn.value.trim()) fields.rel_cta_or = inRelCtaEn.value.trim();
       takeawaysList.forEach(function (t, i) { if ((t.text_en || '').trim()) fields['tk_' + i] = t.text_en.trim(); });
@@ -2032,6 +2148,7 @@
           pdfsList.forEach(function (d, i) { if (tr['pdf_' + i]) d.title_or = tr['pdf_' + i]; });
           linksList.forEach(function (l, i) { if (tr['lnk_' + i]) l.label_or = tr['lnk_' + i]; });
           drawTakeaways(); drawPhotos(); drawPdfs(); drawLinks();
+          updateWordCountAndReadTime(false);
           var provLabel = ((res && res.provider_label) || (res && res.provider) || 'Free AI') + (res && res.model ? (' · ' + res.model) : '');
           aiStatus.textContent = '\u2713 Full guide translated into Odia via ' + provLabel + '!';
           toast('Translated all guide fields & media labels to Odia!', 'ok');
@@ -2107,9 +2224,11 @@
     });
     bodyCard.append(
       fmtBar,
+      wordCountBar,
       makeField('Structured Body (English — Markdown headings generate Table of Contents automatically)', inBodyEn, 'cso-span-full'),
       makeField('Structured Body (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', inBodyOr, 'cso-span-full')
     );
+    updateWordCountAndReadTime(false);
     shell.appendChild(bodyCard);
 
     // ---- 6. COVER PHOTO & INLINE PHOTO GALLERY (cso-media R2 + AI Image Generation) ----

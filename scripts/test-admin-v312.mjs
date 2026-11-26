@@ -562,10 +562,10 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
   await Promise.all(waits);
 });
 
-// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v350
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v350 CSS, and cso-candidate-cache-v350 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v350');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v350';"), 'sw.js cache version must be cso-candidate-cache-v350');
+// 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v351
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v351 CSS, and cso-candidate-cache-v351 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v351');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v351';"), 'sw.js cache version must be cso-candidate-cache-v351');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -698,11 +698,11 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const waits = [];
   const ctx = { waitUntil: (p) => waits.push(p) };
 
-  // A. Verify Admin UI wiring (sidebar folder + 6 sub-views, Launchpad, + Create New, CMS, 5 templates, AI buttons, Live Preview modal, v350 PDF Auto-Write & AI Images)
+  // A. Verify Admin UI wiring (sidebar folder + 6 sub-views, Launchpad, + Create New, CMS, 5 templates, AI buttons, Live Preview modal, v350 PDF Auto-Write & AI Images, v351 Extensive Long-Form UI)
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v350'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v350');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v350'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v351'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v351');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v351'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
@@ -747,7 +747,14 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
     'syncSlugFromTitleIfUnmodified',
     'isBlueprintPlaceholderSlug',
     'gp-cover-frame',
-    'gp-breadcrumb'
+    'gp-breadcrumb',
+    'selGuideAiDepth',
+    'guideBodyWordCount',
+    'runDedicatedOdiaTranslationPass',
+    'gp-toc-details',
+    '1/3 Structuring full English guide',
+    '2/3 Translating full guide',
+    '3/3 Filling metadata, links'
   ]) {
     assert.ok(guidesStudioJs.includes(marker), `guides-publishing-studio.js missing required UI marker: ${marker}`);
   }
@@ -757,12 +764,15 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   assert.ok(VALID_AI_MODES.has('auto_fix_fill') && VALID_AI_MODES.has('guide') && VALID_AI_MODES.has('suggest_meta') && VALID_AI_MODES.has('translate_fields'), 'ai-coauthor.js must support auto_fix_fill, guide, suggest_meta & translate_fields');
   const studioCss = read('admin/studio.css');
   assert.ok(studioCss.includes('.cso-guide-pdf-dropzone') && studioCss.includes('.cso-guide-cover-ai-bar'), 'admin/studio.css must style PDF Auto-Write dropzone & Cover AI bar');
+  assert.ok(studioCss.includes('min-height: 420px;') && studioCss.includes('.cso-guide-wordcount-bar'), 'admin/studio.css must style tall 420px body textareas & word-count bar');
   assert.ok(studioCss.includes('.cso-guide-preview-overlay') && studioCss.includes('.cso-guide-preview-frame.is-mobile-frame'), 'admin/studio.css must style the interactive Live Preview modal & 390px mobile frame');
   assert.ok(studioCss.includes('#csoGuideLivePreviewModal .cso-guide-preview-frame table tbody td') && studioCss.includes('opacity: 1 !important;'), 'admin/studio.css must enforce high-contrast tbody td isolation inside #csoGuideLivePreviewModal');
   const guidesCss = read('assets/css/guides-portal.css');
   assert.ok(guidesCss.includes('.gp-cover,') && guidesCss.includes('.gp-cover-frame') && guidesCss.includes('overflow: hidden;') && guidesCss.includes('max-height: 440px;'), 'assets/css/guides-portal.css must contain .gp-cover overflow rules');
   assert.ok(guidesCss.includes('.gp-takeaways') && guidesCss.includes('clear: both;') && guidesCss.includes('z-index: 1;'), 'assets/css/guides-portal.css must prevent .gp-cover overlap on .gp-takeaways');
   assert.ok(guidesCss.includes('.gp-body table tbody td') && guidesCss.includes('color: var(--gp-ink, var(--cso-ink)) !important;') && guidesCss.includes('opacity: 1 !important;'), 'assets/css/guides-portal.css must enforce high-contrast tbody td text');
+  assert.ok(guidesCss.includes('.gp-table-wrap') && guidesCss.includes('border-radius: 12px;') && guidesCss.includes('position: sticky;'), 'assets/css/guides-portal.css must style .gp-table-wrap & sticky table headers');
+  assert.ok(guidesCss.includes('.gp-callout.is-warning') && guidesCss.includes('.gp-toc-details') && guidesCss.includes('scroll-margin-top: 90px;'), 'assets/css/guides-portal.css must style callout cards, collapsible TOC & heading scroll margins');
   assert.ok(guidesCss.includes('.gp-breadcrumb') && guidesCss.includes('gap: 6px;'), 'assets/css/guides-portal.css must space .gp-breadcrumb segments cleanly');
 
   // B. Real Admin CRUD API roundtrip with Photos, PDFs, Verified .gov.in Links, Key Takeaways & Related CTA
@@ -831,7 +841,7 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   assert.equal(artRes.status, 200);
   const artHtml = await artRes.text();
   assert.ok(artHtml.includes('"@type":"Article"'), '/guides/<slug> must emit valid JSON-LD Article structured data');
-  assert.ok(artHtml.includes('class="gp-toc gp-lang-en"') && artHtml.includes('Exam Pattern Snapshot'), '/guides/<slug> must auto-generate Table of Contents from headings');
+  assert.ok(artHtml.includes('class="gp-toc gp-lang-en"') && artHtml.includes('class="gp-toc-details"') && artHtml.includes('Exam Pattern Snapshot'), '/guides/<slug> must auto-generate collapsible Table of Contents from headings');
   assert.ok(artHtml.includes('gp-takeaways') && artHtml.includes('gp-gallery-grid') && artHtml.includes('gp-pdf-card'), '/guides/<slug> must render Key Takeaways, Photo Gallery, and PDF Download Cards');
   assert.ok(artHtml.includes('class="gp-cover gp-cover-figure"') && artHtml.includes('class="gp-cover-frame"') && artHtml.includes('class="gp-breadcrumb cso-detail-kicker"'), '/guides/<slug> must render contained .gp-cover/.gp-cover-frame and .gp-breadcrumb classes');
   assert.ok(artHtml.includes('Official .gov.in Verified') && artHtml.includes('https://www.opsc.gov.in/'), '/guides/<slug> must render Verified Official .gov.in Links');

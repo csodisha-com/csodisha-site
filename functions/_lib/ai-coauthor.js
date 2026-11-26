@@ -45,6 +45,10 @@ export const WORKERS_AI_DEFAULT_MODELS = [
 export const GEMINI_IMAGE_MODELS = ['imagen-3.0-generate-002', 'gemini-2.5-flash-image'];
 export const WORKERS_AI_IMAGE_MODEL = '@cf/black-forest-labs/flux-1-schnell';
 
+export const GEMINI_LONG_MAX_OUTPUT_TOKENS = 16384;
+export const WORKERS_AI_70B_MAX_TOKENS = 8192;
+export const WORKERS_AI_8B_MAX_TOKENS = 4096;
+
 const VALID_GUIDE_CATEGORIES = new Set(['how-to', 'exam-strategy', 'citizen-scheme', 'odisha-gk']);
 
 let _schemaReadyDb = null;
@@ -173,8 +177,9 @@ function buildPromptForMode(mode, rawInput, extra = {}) {
       'STRICT RULES:',
       '- Return ONLY a valid JSON object (no markdown fences) with schema: { "translations": { "<same_key>": "<odia_translation>" } }.',
       '- Keep every exact key name unchanged.',
-      '- Preserve exact dates, numbers, currency amounts, URLs, Markdown formatting, and newlines.',
-      '- Keep standard acronyms in English script (OPSC, OSSSC, OSSC, UPSC, UGC NET, NTA, OTET, OSSTET, IBPS, SBI, RRB, DBT, NPCI, OTR, OAS, CGL, RI, PDF, CBT).',
+      '- NEVER summarize, condense, shorten, or omit ANY section, paragraph, bullet item, callout note, or Markdown table row. Translate 100% of the content section-for-section and table-for-table.',
+      '- Preserve exact dates, numbers, vacancy counts, fees, pay levels, cutoffs, percentages, currency amounts, URLs, Markdown headings (## / ###), Markdown table pipes (`| ... |` and `| --- |`), callouts (`> [!TIP]`, `> [!WARNING]`, `> [!IMPORTANT]`), and newlines verbatim.',
+      '- Keep standard acronyms in English script (OPSC, OSSSC, OSSC, UPSC, UGC NET, NTA, OTET, OSSTET, IBPS, SBI, RRB, DBT, NPCI, OTR, OAS, CGL, RI, PDF, CBT, UR, SEBC, SC, ST, PwD, EWS).',
       'English fields JSON:',
       JSON.stringify(fieldsObj)
     ].join('\n');
@@ -233,40 +238,58 @@ function buildPromptForMode(mode, rawInput, extra = {}) {
   }
 
   if (mode === 'auto_fix_fill') {
-    const pdfText = String(extra.pdf_text || '').trim().slice(0, 26000);
+    const pdfText = String(extra.pdf_text || '').trim().slice(0, 56000);
     const pdfFilename = String(extra.pdf_filename || '').trim().slice(0, 180);
+    const depth = String(extra.depth || 'comprehensive').trim().toLowerCase() === 'standard' ? 'standard' : 'comprehensive';
+    const englishFirstPass = Boolean(extra.english_first_pass);
     const draft = extra.draft && typeof extra.draft === 'object' ? extra.draft : {};
     const draftBrief = {
       category: draft.category || '',
       scope: draft.scope || '',
-      title_en: String(draft.title_en || '').slice(0, 200),
-      title_or: String(draft.title_or || '').slice(0, 240),
+      title_en: String(draft.title_en || '').slice(0, 220),
+      title_or: String(draft.title_or || '').slice(0, 260),
       slug: String(draft.slug || '').slice(0, 120),
-      summary_en: String(draft.summary_en || '').slice(0, 600),
-      tags: String(draft.tags || '').slice(0, 200),
-      body_en: String(draft.body_en || '').slice(0, 12000)
+      summary_en: String(draft.summary_en || '').slice(0, 800),
+      tags: String(draft.tags || '').slice(0, 240),
+      body_en: String(draft.body_en || '').slice(0, 36000)
     };
+    const longRawInput = String(rawInput || '').trim().slice(0, 40000);
+
+    const antiSummaryRules = depth === 'comprehensive'
+      ? [
+          'CRITICAL ANTI-SUMMARIZATION DIRECTIVE (MANDATORY):',
+          '- Keep `summary_en` and `summary_or` as concise 2-sentence meta descriptions, but NEVER summarize, shorten, or omit details in `body_en` or `body_or`.',
+          '- Preserve 100% of every post name, pay level, vacancy count, category reservation, educational qualification, age relaxation, fee figure, exam stage, qualifying cutoff, exam city, and date from the source text/PDF.',
+          '- Expand thin explanations into clear, detailed, well-organized Markdown sections with `##` and `###` headings, complete Markdown tables, bullet checklists, and `>` callout notes.',
+          '- NEVER write "etc.", "various posts", "see official PDF for table", or collapse multi-row tables. Reproduce EVERY single row, category-wise breakup, syllabus topic, exam center, and instruction completely.'
+        ].join('\n')
+      : 'Keep `summary_en` and `summary_or` concise (2 sentences) and organize `body_en` clearly with `##`/`###` headings, Markdown tables, bullet checklists, and `>` callout notes without omitting key facts or dates.';
+
     return [
       'You are the Senior Bilingual Editor for Common Sense Odisha (csodisha.com).',
       pdfText
-        ? `An official PDF document ("${pdfFilename || 'official-notification.pdf'}") was uploaded. Systematically extract ALL verified details (post names, vacancies, eligibility, age limits, fee, exam pattern, important dates, selection stages, application steps, helpline, and official .gov.in/.edu.in/.nic.in URLs) and write a complete, publication-ready bilingual guide.`
-        : 'Repair, format, and auto-complete the draft guide below. Fix broken Markdown headings (## / ###), align Markdown tables cleanly, remove messy copy-paste artifacts, generate complete bilingual EN + Odia (ଓଡ଼ିଆ) metadata & body, and extract any official .gov.in/.edu.in/.nic.in links present in the source.',
+        ? `An official PDF document ("${pdfFilename || 'official-notification.pdf'}") was uploaded. Systematically extract ALL verified details (every post name, pay level, vacancy breakup, category reservation, educational qualification, age limit & relaxation, fee figure, exam pattern, syllabus, qualifying cutoff, exam cities, important dates, selection stages, application steps, helpline, and official .gov.in/.edu.in/.nic.in URLs) and build an extensive, publication-grade guide.`
+        : 'Repair, expand, structure, and auto-complete the draft guide below into an extensive, publication-grade article. Fix broken Markdown headings (## / ###), align all Markdown tables cleanly, remove messy copy-paste artifacts, and extract every official .gov.in/.edu.in/.nic.in link present in the source.',
+      antiSummaryRules,
+      englishFirstPass
+        ? 'TWO-PASS MODE (PASS 1 — EXHAUSTIVE ENGLISH + METADATA): Dedicate 100% of your output budget to making `body_en` completely exhaustive, richly structured, and zero-omission. Set `body_or` to "" (a dedicated full-length Odia translation pass will immediately translate `body_en` section-for-section).'
+        : 'Produce BOTH exhaustive `body_en` and full section-for-section `body_or` matching every heading and table row.',
       'Return ONLY a valid JSON object (no markdown fences) matching this exact schema:',
       '{',
       '  "category": "how-to | exam-strategy | citizen-scheme | odisha-gk",',
       '  "scope": "Odisha | National",',
       '  "is_exam": true,',
-      '  "read_minutes": 6,',
+      '  "read_minutes": 10,',
       '  "title_en": "Clear SEO-friendly English guide title (50-95 chars)",',
       '  "title_or": "Natural, accurate Odia (ଓଡ଼ିଆ) title keeping standard acronyms (OPSC, OSSC, OSSSC, NTA, UGC NET, DBT, PDF, CBT)",',
       '  "slug": "clean-lowercase-hyphenated-slug",',
-      '  "summary_en": "Concise 2-sentence SEO summary in English",',
-      '  "summary_or": "Concise 2-sentence SEO summary in Odia (ଓଡ଼ିଆ)",',
+      '  "summary_en": "Concise 2-sentence SEO meta description in English",',
+      '  "summary_or": "Concise 2-sentence SEO meta description in Odia (ଓଡ଼ିଆ)",',
       '  "tags": ["Tag 1", "Tag 2", "Tag 3", "Tag 4", "Tag 5", "Tag 6"],',
-      '  "takeaways_en": ["Actionable takeaway 1", "Takeaway 2", "Takeaway 3", "Takeaway 4"],',
-      '  "takeaways_or": ["ମୁଖ୍ୟ ବିନ୍ଦୁ ୧", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୨", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୩", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୪"],',
-      '  "body_en": "## Overview\\n...\\n\\n## Key Dates & Vacancy / Eligibility Table\\n| Parameter | Details |\\n| --- | --- |\\n| Authority | ... |\\n\\n## Step-by-Step Process / Preparation Checklist\\n1. ...\\n\\n> [!TIP]\\n> Practical advice...",',
-      '  "body_or": "## ସଂକ୍ଷିପ୍ତ ବିବରଣୀ\\n...",',
+      '  "takeaways_en": ["Actionable takeaway 1", "Takeaway 2", "Takeaway 3", "Takeaway 4", "Takeaway 5"],',
+      '  "takeaways_or": ["ମୁଖ୍ୟ ବିନ୍ଦୁ ୧", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୨", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୩", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୪", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୫"],',
+      '  "body_en": "## Overview\\n...\\n\\n## Post-Wise Vacancy & Pay Scale Breakdown\\n| Post | Pay Level | UR | SEBC | SC | ST | Total |\\n| --- | --- | --- | --- | --- | --- | --- |\\n| ... |\\n\\n## Eligibility, Age Limit & Relaxation\\n...\\n\\n## Exam Pattern, Qualifying Cutoff & Syllabus\\n...\\n\\n## Important Dates, Application Fee & Exam Cities\\n...\\n\\n> [!IMPORTANT]\\n> Exact official rule or critical reminder...",',
+      englishFirstPass ? '  "body_or": "",' : '  "body_or": "## ସଂକ୍ଷିପ୍ତ ବିବରଣୀ\\n...",',
       '  "pdf_title_en": "Clean human title for the uploaded PDF (e.g., OPSC OAS Official Notification PDF)",',
       '  "pdf_title_or": "ଅପଲୋଡ୍ ହୋଇଥିବା PDF ର ଓଡ଼ିଆ ଶୀର୍ଷକ",',
       '  "official_links": [{ "label_en": "Official Portal Name", "label_or": "ସରକାରୀ ପୋର୍ଟାଲ୍", "url": "https://...", "is_official": true }],',
@@ -276,10 +299,10 @@ function buildPromptForMode(mode, rawInput, extra = {}) {
       '}',
       'STRICT RULES:',
       '- Never invent fake dates, vacancy numbers, or fake URLs. Only place URLs into official_links that appear verbatim in the source text/PDF.',
-      '- Preserve exact numbers, dates, fees, pay scales, and acronyms verbatim in both English and Odia.',
+      '- Preserve exact numbers, dates, fees, pay scales, cutoffs, and acronyms verbatim.',
       '- Format all tabular data as valid GitHub-Flavored Markdown tables (`| Col 1 | Col 2 |` + `| --- | --- |`).',
       pdfText ? `Extracted PDF Text (${pdfFilename || 'document.pdf'}):\n${pdfText}` : '',
-      text ? `Additional Editorial Notes / Pasted Draft:\n${text}` : '',
+      longRawInput ? `Additional Editorial Notes / Pasted Draft:\n${longRawInput}` : '',
       (draftBrief.title_en || draftBrief.body_en) ? `Existing Composer Fields JSON:\n${JSON.stringify(draftBrief)}` : ''
     ].filter(Boolean).join('\n\n');
   }
@@ -391,7 +414,7 @@ function getResponseSchemaForMode(mode) {
       required: [
         'category', 'scope', 'title_en', 'title_or', 'slug',
         'summary_en', 'summary_or', 'tags', 'takeaways_en', 'takeaways_or',
-        'body_en', 'body_or'
+        'body_en'
       ]
     };
   }
@@ -456,7 +479,8 @@ function normalizeStructuredOutput(mode, rawObj, fallbackInput, extra = {}) {
     const translations = {};
     for (const k of Object.keys(srcFields)) {
       const val = rawMap[k];
-      translations[k] = String(val !== undefined && val !== null ? val : srcFields[k]).trim().slice(0, 12000);
+      const maxLen = k === 'body_or' ? 96000 : 12000;
+      translations[k] = String(val !== undefined && val !== null ? val : srcFields[k]).trim().slice(0, maxLen);
     }
     return { translations };
   }
@@ -511,11 +535,14 @@ function normalizeStructuredOutput(mode, rawObj, fallbackInput, extra = {}) {
     while (takeawaysOr.length < takeawaysEn.length) {
       takeawaysOr.push(takeawaysEn[takeawaysOr.length]);
     }
-    const bodyEn = String(obj.body_en || '').trim().slice(0, 42000);
-    const bodyOr = String(obj.body_or || '').trim().slice(0, 48000);
-    const readMinutes = Number.isFinite(Number(obj.read_minutes)) && Number(obj.read_minutes) >= 1
-      ? Math.min(60, Math.round(Number(obj.read_minutes)))
-      : Math.max(2, Math.ceil(bodyEn.split(/\s+/).filter(Boolean).length / 200) || 5);
+    const bodyEn = String(obj.body_en || '').trim().slice(0, 80000);
+    const bodyOr = String(obj.body_or || '').trim().slice(0, 96000);
+    const computedWords = bodyEn.split(/\s+/).filter(Boolean).length;
+    const readMinutes = computedWords >= 40
+      ? Math.max(1, Math.min(60, Math.ceil(computedWords / 200)))
+      : (Number.isFinite(Number(obj.read_minutes)) && Number(obj.read_minutes) >= 1
+        ? Math.min(60, Math.round(Number(obj.read_minutes)))
+        : 5);
 
     if (mode === 'guide') {
       return {
@@ -663,9 +690,7 @@ async function callGeminiFreeTier(apiKey, prompt, mode) {
   let lastErr = null;
   const schema = getResponseSchemaForMode(mode);
   const pool = getGeminiModelPoolForMode(mode);
-  const maxOut = mode === 'auto_fix_fill'
-    ? 8192
-    : ((mode === 'guide' || mode === 'translate_fields') ? 6144 : 2048);
+  const maxOut = PRO_FIRST_MODES.has(mode) ? GEMINI_LONG_MAX_OUTPUT_TOKENS : 2048;
 
   for (const model of pool) {
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
@@ -738,18 +763,18 @@ async function callWorkersAi(aiBinding, prompt, mode) {
     { role: 'user', content: prompt }
   ];
   const temp = (mode === 'translate_odia' || mode === 'translate_fields') ? 0.15 : 0.25;
-  const maxTok = mode === 'auto_fix_fill'
-    ? 3600
-    : ((mode === 'guide' || mode === 'translate_fields') ? 2800 : 1400);
   const pool = getWorkersAiPoolForMode(mode);
   let lastErr = null;
   for (const model of pool) {
+    const maxTok = PRO_FIRST_MODES.has(mode)
+      ? (model.includes('70b') ? WORKERS_AI_70B_MAX_TOKENS : WORKERS_AI_8B_MAX_TOKENS)
+      : 1400;
     try {
       const resp = await aiBinding.run(model, {
         messages,
         max_tokens: maxTok,
         temperature: temp,
-        repetition_penalty: 1.08
+        repetition_penalty: 1.06
       });
       const text = unwrapWorkersAiPayload(resp);
       if (text) {
@@ -778,17 +803,32 @@ function normalizeBatchFields(fieldsInput, rawInput) {
   let count = 0;
   for (const [k, v] of Object.entries(obj)) {
     const key = String(k || '').trim().slice(0, 64);
-    const limit = key === 'body_or' ? 8000 : 3500;
+    const limit = key === 'body_or' ? 64000 : 4000;
     const val = String(v || '').trim().slice(0, limit);
     if (!key || !val) continue;
     clean[key] = val;
     count += 1;
-    if (count >= 36) break;
+    if (count >= 48) break;
   }
   return clean;
 }
 
-export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId, pdf_text, pdf_filename, draft, overwrite }) {
+async function runModelCascade(env, prompt, mode) {
+  const geminiKey = env && env.GEMINI_API_KEY ? String(env.GEMINI_API_KEY).trim() : '';
+  if (geminiKey) {
+    try {
+      return await callGeminiFreeTier(geminiKey, prompt, mode);
+    } catch (_geminiErr) {
+      if (env && env.AI) {
+        return await callWorkersAi(env.AI, prompt, mode);
+      }
+      throw _geminiErr;
+    }
+  }
+  return await callWorkersAi(env && env.AI, prompt, mode);
+}
+
+export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId, pdf_text, pdf_filename, draft, overwrite, depth, skip_body_or }) {
   const cleanMode = String(mode || '').trim().toLowerCase();
   if (!VALID_AI_MODES.has(cleanMode)) {
     const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, career, guide, auto_fix_fill, translate_odia, translate_fields, or suggest_meta.');
@@ -797,9 +837,11 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   }
 
   let cleanInput = String(input || '').trim();
-  const cleanPdfText = String(pdf_text || '').trim().slice(0, 36000);
+  const cleanPdfText = String(pdf_text || '').trim().slice(0, 64000);
   const cleanPdfFilename = String(pdf_filename || '').trim().slice(0, 180);
   const cleanDraft = (draft && typeof draft === 'object') ? draft : null;
+  const cleanDepth = String(depth || 'comprehensive').trim().toLowerCase() === 'standard' ? 'standard' : 'comprehensive';
+  const skipBodyOr = Boolean(skip_body_or);
   let cleanFields = null;
 
   if (cleanMode === 'translate_fields') {
@@ -839,32 +881,20 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     throw err;
   }
 
+  // Pass 1: Exhaustive English + Metadata (dedicates 100% of Pass 1 tokens to body_en when auto_fix_fill)
+  const useTwoPass = cleanMode === 'auto_fix_fill';
   const extra = {
     fields: cleanFields,
     kind,
     pdf_text: cleanPdfText,
     pdf_filename: cleanPdfFilename,
     draft: cleanDraft,
-    overwrite: Boolean(overwrite)
+    overwrite: Boolean(overwrite),
+    depth: cleanDepth,
+    english_first_pass: useTwoPass
   };
   const prompt = buildPromptForMode(cleanMode, cleanInput, extra);
-  const geminiKey = env && env.GEMINI_API_KEY ? String(env.GEMINI_API_KEY).trim() : '';
-
-  let result = null;
-  if (geminiKey) {
-    try {
-      result = await callGeminiFreeTier(geminiKey, prompt, cleanMode);
-    } catch (_geminiErr) {
-      // Automatic fallback to 100% free Cloudflare Workers AI on 429/5xx/error
-      if (env && env.AI) {
-        result = await callWorkersAi(env.AI, prompt, cleanMode);
-      } else {
-        throw _geminiErr;
-      }
-    }
-  } else {
-    result = await callWorkersAi(env && env.AI, prompt, cleanMode);
-  }
+  const result = await runModelCascade(env, prompt, cleanMode);
 
   let parsed;
   try {
@@ -885,9 +915,53 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   }
 
   const normalized = normalizeStructuredOutput(cleanMode, parsed, cleanInput || cleanPdfFilename || 'Odisha Guide', extra);
-  const estimatedNeurons = result.provider === 'gemini_free'
+  let estimatedNeurons = result.provider === 'gemini_free'
     ? 0
     : Math.max(40, Math.min(450, Math.ceil((prompt.length + result.text.length) / 16)));
+  let twoPassTranslation = false;
+
+  // Pass 2 (Server-Side Dedicated Full Odia Translation Pass for auto_fix_fill when caller did not split passes)
+  if (useTwoPass && !skipBodyOr && normalized.body_en) {
+    const pass2Fields = { body_or: normalized.body_en };
+    if (normalized.title_en) pass2Fields.title_or = normalized.title_en;
+    if (normalized.summary_en) pass2Fields.summary_or = normalized.summary_en;
+    if (normalized.pdf_title_en) pass2Fields.pdf_title_or = normalized.pdf_title_en;
+    if (normalized.cover_caption_en) pass2Fields.cover_caption_or = normalized.cover_caption_en;
+    (normalized.takeaways_en || []).forEach((tk, idx) => {
+      if (tk) pass2Fields[`tk_${idx}`] = tk;
+    });
+    (normalized.official_links || []).forEach((lnk, idx) => {
+      if (lnk && lnk.label_en) pass2Fields[`lnk_${idx}`] = lnk.label_en;
+    });
+
+    try {
+      const trPrompt = buildPromptForMode('translate_fields', JSON.stringify(pass2Fields), { fields: pass2Fields });
+      const trRes = await runModelCascade(env, trPrompt, 'translate_fields');
+      const trParsed = extractJsonObject(trRes.text);
+      const trNorm = normalizeStructuredOutput('translate_fields', trParsed, '', { fields: pass2Fields });
+      const tr = (trNorm && trNorm.translations) || {};
+      if (tr.body_or) normalized.body_or = tr.body_or;
+      if (tr.title_or) normalized.title_or = tr.title_or;
+      if (tr.summary_or) normalized.summary_or = tr.summary_or;
+      if (tr.pdf_title_or) normalized.pdf_title_or = tr.pdf_title_or;
+      if (tr.cover_caption_or) normalized.cover_caption_or = tr.cover_caption_or;
+      if (Array.isArray(normalized.takeaways_en) && normalized.takeaways_en.length) {
+        normalized.takeaways_or = normalized.takeaways_en.map((tk, idx) => tr[`tk_${idx}`] || (normalized.takeaways_or && normalized.takeaways_or[idx]) || tk);
+      }
+      if (Array.isArray(normalized.official_links)) {
+        normalized.official_links = normalized.official_links.map((lnk, idx) => ({
+          ...lnk,
+          label_or: tr[`lnk_${idx}`] || lnk.label_or || lnk.label_en
+        }));
+      }
+      twoPassTranslation = true;
+      if (trRes.provider !== 'gemini_free') {
+        estimatedNeurons += Math.max(40, Math.min(450, Math.ceil((trPrompt.length + trRes.text.length) / 16)));
+      }
+    } catch (_pass2Err) {
+      // Keep Pass 1 result intact even if Pass 2 encounters a transient error
+    }
+  }
 
   await logAiGeneration(env, {
     actorId,
@@ -902,6 +976,8 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
   return {
     ok: true,
     mode: cleanMode,
+    depth: cleanDepth,
+    two_pass_translation: twoPassTranslation,
     provider: result.provider,
     provider_label: result.provider_label || (result.provider === 'gemini_free' ? 'Gemini' : 'Workers AI'),
     model: result.model,
