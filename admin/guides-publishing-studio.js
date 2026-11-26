@@ -234,11 +234,11 @@
         {
           key: 'groq',
           chip: '\u26A1 Groq Free',
-          label: 'Groq Free (Llama 3.3 70B)',
+          label: 'Groq Free (Llama 3.1 8B Instant)',
           provider_type: 'openai_compatible',
           base_url: 'https://api.groq.com/openai/v1',
-          model_id: 'llama-3.3-70b-versatile',
-          hint: 'Fast $0 free tier. Also supports llama-3.1-8b-instant or openai/gpt-oss-120b.'
+          model_id: 'llama-3.1-8b-instant',
+          hint: 'Fast $0 free tier. Uses llama-3.1-8b-instant with automatic fallback to openai/gpt-oss-120b or meta-llama/llama-4-scout-17b-16e-instruct.'
         },
         {
           key: 'openrouter',
@@ -423,9 +423,7 @@
 
     addGroup('Google AI Studio ($0 Free Tier)', [
       { value: 'gemini:gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-      { value: 'gemini:gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
-      { value: 'gemini:gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
-      { value: 'gemini:gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash-Lite' }
+      { value: 'gemini:gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' }
     ]);
 
     addGroup('Cloudflare Workers AI (10K Neurons/Day)', [
@@ -509,7 +507,7 @@
     var inpLabel = el('input', 'cso-form-input');
     inpLabel.type = 'text';
     inpLabel.id = 'inpAiProvLabel';
-    inpLabel.placeholder = 'e.g., Groq Free (Llama 3.3 70B)';
+    inpLabel.placeholder = 'e.g., Groq Free (Llama 3.1 8B Instant)';
 
     var selType = el('select', 'cso-form-select');
     selType.id = 'selAiProvType';
@@ -531,7 +529,7 @@
     var inpModelId = el('input', 'cso-form-input');
     inpModelId.type = 'text';
     inpModelId.id = 'inpAiProvModelId';
-    inpModelId.placeholder = 'llama-3.3-70b-versatile';
+    inpModelId.placeholder = 'llama-3.1-8b-instant';
 
     var inpApiKey = el('input', 'cso-form-input');
     inpApiKey.type = 'password';

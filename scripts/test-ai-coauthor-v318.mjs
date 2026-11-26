@@ -24,6 +24,9 @@ import {
   VALID_AI_MODES,
   callOpenAiCompatibleProvider,
   callAnthropicMessagesProvider,
+  discoverLiveOpenAiChatModel,
+  GROQ_DEFAULT_MODEL,
+  GROQ_FALLBACK_MODELS,
   listConfiguredEnvProviders,
   maskApiKey,
   validateProviderBaseUrl,
@@ -240,8 +243,8 @@ await test('5. Wrangler AI binding, migration 0149, CSP compliance & v318 cache 
   const mig = read('migrations/0149_ai_coauthor_v318.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS ai_generation_logs'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v364');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v364';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v365');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v365';"));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('window.CSOAiCoAuthor'));
@@ -389,15 +392,13 @@ await test('6. v331 Odia quick translation (single + batch) & AI Title/Slug/Tag 
   }
 });
 
-await test('7. v358 Verified Gemini Flash REST cascade + low-neuron Workers AI JSON fallback, auto_fix_fill PDF-to-Article schema & POST /api/admin/ai/generate-image R2 storage', async () => {
+await test('7. v358/v365 Active Gemini 2.5 Flash REST cascade + low-neuron Workers AI JSON fallback, auto_fix_fill PDF-to-Article schema & POST /api/admin/ai/generate-image R2 storage', async () => {
   assert.ok(VALID_AI_MODES.has('auto_fix_fill'), 'VALID_AI_MODES must include auto_fix_fill');
   const expectedGemini = [
     'gemini-2.5-flash',
-    'gemini-2.5-flash-lite',
-    'gemini-2.0-flash',
-    'gemini-2.0-flash-lite'
+    'gemini-2.5-flash-lite'
   ];
-  assert.deepEqual(GEMINI_PRO_FIRST_MODELS, expectedGemini, 'Gemini cascade must use verified Google AI Studio REST API model IDs');
+  assert.deepEqual(GEMINI_PRO_FIRST_MODELS, expectedGemini, 'Gemini cascade must use active 2026 Gemini 2.5 Flash/Lite models only');
   assert.equal(WORKERS_AI_PRO_MODELS[0], '@cf/google/gemma-4-26b-a4b-it', 'Workers AI must prioritize ultra-efficient Gemma 4 26B first');
   assert.equal(WORKERS_AI_PRO_MODELS[1], '@cf/meta/llama-3.1-8b-instruct-fp8-fast', 'Workers AI must prioritize Llama 3.1 8B second');
   assert.equal(WORKERS_AI_PRO_MODELS[2], '@cf/meta/llama-3.3-70b-instruct-fp8-fast', 'Workers AI must keep Llama 3.3 70B after low-neuron models');
@@ -486,11 +487,11 @@ await test('7. v358 Verified Gemini Flash REST cascade + low-neuron Workers AI J
       actorId: 'adm_1'
     });
 
-    assert.deepEqual(attemptedGemini.slice(0, 4), expectedGemini, 'Pass 1 auto_fix_fill must cascade across verified Google AI Studio Flash/Lite models');
-    assert.deepEqual(attemptedGemini.slice(4, 8), expectedGemini, 'Pass 2 translate_fields must also cascade across verified Google AI Studio Flash/Lite models');
+    assert.deepEqual(attemptedGemini.slice(0, 2), expectedGemini, 'Pass 1 auto_fix_fill must cascade across active Gemini 2.5 Flash/Lite models');
+    assert.deepEqual(attemptedGemini.slice(2, 4), expectedGemini, 'Pass 2 translate_fields must also cascade across active Gemini 2.5 Flash/Lite models');
     assert.equal(geminiRequestBodies[0].generationConfig.maxOutputTokens, 16384, 'Gemini Pass 1 must set maxOutputTokens: 16384');
     assert.equal(geminiRequestBodies[0].generationConfig.responseMimeType, 'application/json', 'JSON modes must set responseMimeType: application/json');
-    assert.equal(geminiRequestBodies[4].generationConfig.maxOutputTokens, 16384, 'Gemini Pass 2 must set maxOutputTokens: 16384');
+    assert.equal(geminiRequestBodies[2].generationConfig.maxOutputTokens, 16384, 'Gemini Pass 2 must set maxOutputTokens: 16384');
     const pass1PromptText = geminiRequestBodies[0].contents[0].parts[0].text;
     assert.ok(pass1PromptText.includes('NEVER summarize, shorten, or omit details') && pass1PromptText.includes('Preserve 100% of every post name'), 'Pass 1 prompt must include strict anti-summarization directive');
     assert.equal(workersCallArgs[0].model, '@cf/google/gemma-4-26b-a4b-it');
@@ -1510,4 +1511,114 @@ await test('14. v364 Provider-specific diagnostics (no misleading Gemini IST res
   }
 });
 
-console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 + v358 + v359 + v361 + v362 + v364 Results: ${passed} passed, 0 failed ===\n`);
+await test('15. v365 OpenRouter Authorization preservation, zero retired gemini-2.0-* models, Groq 2026 defaults & HTTP 404 /models auto-discovery', async () => {
+  // A. Zero retired gemini-2.0-* strings across backend & Admin UI + 2026 Groq defaults
+  assert.equal(GROQ_DEFAULT_MODEL, 'llama-3.1-8b-instant');
+  assert.deepEqual(GROQ_FALLBACK_MODELS, ['openai/gpt-oss-120b', 'meta-llama/llama-4-scout-17b-16e-instruct']);
+  for (const relPath of [
+    'functions/_lib/ai-coauthor.js',
+    'functions/api/admin/_ai.js',
+    'admin/guides-publishing-studio.js',
+    'admin/studio-translator.js'
+  ]) {
+    assert.ok(!read(relPath).includes('gemini-2.0-'), `${relPath} must contain zero retired gemini-2.0-* model references`);
+  }
+
+  // B. OpenRouter preserves Authorization: Bearer alongside HTTP-Referer/X-Title, trims whitespace/duplicate Bearer, and skips empty keys
+  const reqs = [];
+  const origFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    const u = String(url);
+    const method = String((init && init.method) || 'GET').toUpperCase();
+    const bodyObj = init && init.body ? JSON.parse(String(init.body)) : null;
+    reqs.push({ url: u, method, headers: init && init.headers, body: bodyObj });
+
+    if (u === 'https://openrouter.ai/api/v1/chat/completions') {
+      return new Response(JSON.stringify({
+        choices: [{ message: { content: JSON.stringify({ translated_or: 'OpenRouter Auth ସଫଳ' }) } }]
+      }), { status: 200 });
+    }
+    if (u === 'https://api.groq.com/openai/v1/chat/completions') {
+      if (bodyObj && bodyObj.model === 'retired-llama-model') {
+        return new Response('{"error":"The model retired-llama-model does not exist"}', { status: 404 });
+      }
+      if (bodyObj && bodyObj.model === 'openai/gpt-oss-120b') {
+        return new Response(JSON.stringify({
+          choices: [{ message: { content: JSON.stringify({ translated_or: 'Auto-Discovered Model ସଫଳ' }) } }]
+        }), { status: 200 });
+      }
+    }
+    if (u === 'https://api.groq.com/openai/v1/models') {
+      return new Response(JSON.stringify({
+        data: [
+          { id: 'whisper-large-v3' },
+          { id: 'text-embedding-3-small' },
+          { id: 'playai-tts' },
+          { id: 'openai/gpt-oss-120b' },
+          { id: 'meta-llama/llama-4-scout-17b-16e-instruct' }
+        ]
+      }), { status: 200 });
+    }
+    throw new Error('Unexpected fetch: ' + u);
+  };
+
+  try {
+    // OpenRouter with padded "Bearer " prefix -> clean single Authorization: Bearer + OpenRouter headers
+    const orRes = await callOpenAiCompatibleProvider(
+      {
+        label: 'OpenRouter Free',
+        base_url: 'https://openrouter.ai/api/v1',
+        model_id: 'openrouter/free',
+        api_key: '  Bearer sk-or-v1-live-token-7788  '
+      },
+      'Return JSON',
+      'Translate',
+      { jsonMode: true, maxTokens: 256 }
+    );
+    assert.equal(orRes.parsed.translated_or, 'OpenRouter Auth ସଫଳ');
+    assert.equal(reqs[0].headers.Authorization, 'Bearer sk-or-v1-live-token-7788', 'Authorization: Bearer must be preserved alongside OpenRouter headers');
+    assert.equal(reqs[0].headers['HTTP-Referer'], 'https://csodisha.com');
+    assert.equal(reqs[0].headers['X-Title'], 'Common Sense Odisha');
+
+    // Empty / whitespace-only api_key must throw MISSING_API_KEY without calling fetch
+    const countBeforeEmpty = reqs.length;
+    await assert.rejects(
+      () => callOpenAiCompatibleProvider(
+        { label: 'Empty Key', base_url: 'https://openrouter.ai/api/v1', model_id: 'openrouter/free', api_key: '   ' },
+        'Sys', 'User'
+      ),
+      (err) => err && err.code === 'MISSING_API_KEY'
+    );
+    assert.equal(reqs.length, countBeforeEmpty, 'Empty API key must NEVER send an unauthenticated network request');
+
+    // C. HTTP 404 model auto-discovery via GET <base_url>/models skips whisper/embedding/tts and retries with live chat model!
+    reqs.length = 0;
+    const autoDiscRes = await callOpenAiCompatibleProvider(
+      {
+        label: 'Groq Free',
+        base_url: 'https://api.groq.com/openai/v1',
+        model_id: 'retired-llama-model',
+        api_key: 'gsk_live_404_discovery'
+      },
+      'Return JSON',
+      'Translate',
+      { jsonMode: true, maxTokens: 256 }
+    );
+    assert.equal(autoDiscRes.model, 'openai/gpt-oss-120b', 'Must pick active non-embedding/non-whisper chat model from /models');
+    assert.equal(autoDiscRes.discovered_model, 'openai/gpt-oss-120b');
+    assert.equal(autoDiscRes.parsed.translated_or, 'Auto-Discovered Model ସଫଳ');
+    assert.equal(reqs.length, 3, 'Expected: initial 404 POST -> GET /models -> retried 200 POST');
+    assert.equal(reqs[1].method, 'GET');
+    assert.equal(reqs[1].url, 'https://api.groq.com/openai/v1/models');
+    assert.equal(reqs[1].headers.Authorization, 'Bearer gsk_live_404_discovery');
+    assert.equal(reqs[2].body.model, 'openai/gpt-oss-120b');
+
+    // Direct helper test confirming whisper/embedding exclusion
+    const picked = await discoverLiveOpenAiChatModel('https://api.groq.com/openai/v1', 'gsk_live_404_discovery', 'retired-llama-model', GROQ_FALLBACK_MODELS);
+    assert.equal(picked, 'openai/gpt-oss-120b');
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 + v354 + v356 + v358 + v359 + v361 + v362 + v364 + v365 Results: ${passed} passed, 0 failed ===\n`);

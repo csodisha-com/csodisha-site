@@ -51,17 +51,15 @@ export const MAX_RETRY_AFTER_MS = 3000;
 export const BODY_EN_VERBATIM_LOCK_MIN_CHARS = 200;
 export const GEMINI_PRO_FIRST_MODELS = [
   'gemini-2.5-flash',
-  'gemini-2.5-flash-lite',
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-lite'
+  'gemini-2.5-flash-lite'
 ];
 export const GEMINI_FLASH_MODELS = [
   'gemini-2.5-flash',
-  'gemini-2.5-flash-lite',
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-lite'
+  'gemini-2.5-flash-lite'
 ];
 export const GEMINI_MODELS = GEMINI_PRO_FIRST_MODELS;
+export const GROQ_DEFAULT_MODEL = 'llama-3.1-8b-instant';
+export const GROQ_FALLBACK_MODELS = ['openai/gpt-oss-120b', 'meta-llama/llama-4-scout-17b-16e-instruct'];
 
 export const WORKERS_AI_PRO_MODELS = [
   '@cf/google/gemma-4-26b-a4b-it',
@@ -1155,7 +1153,7 @@ export function formatUpstreamProviderError(label, modelId, status, errTxt = '',
     if (code === 402) return `OpenRouter (${cleanModel || 'free'}): HTTP 402 credits required for this model`;
   }
   if (isGroq && code === 429) {
-    return `Groq (${cleanModel || 'llama-3.3-70b-versatile'}): HTTP 429 per-minute token/rate limit — wait 15s or switch engine`;
+    return `Groq (${cleanModel || GROQ_DEFAULT_MODEL}): HTTP 429 per-minute token/rate limit — wait 15s or switch engine`;
   }
   if (isCerebras && code === 429) {
     return `Cerebras (${cleanModel || 'llama-3.3-70b'}): HTTP 429 per-minute rate limit — wait 15s or switch engine`;
@@ -1171,6 +1169,84 @@ export function formatUpstreamProviderError(label, modelId, status, errTxt = '',
   return `${tag}: HTTP ${code || 502}${cleanErr ? ` — ${cleanErr}` : ''}`;
 }
 
+function normalizeApiSecret(rawKey) {
+  return String(rawKey || '').trim().replace(/^Bearer\s+/i, '').trim();
+}
+
+function isNonChatModelId(id) {
+  return /(embed|embedding|whisper|tts|audio|speech|transcrib|dall-e|flux|imagen|stable-diffusion|moderation|rerank|bge-|e5-|playai|orpheus|kokoro|guard|safeguard|prompt-guard|text-similarity|audio-preview)/i.test(String(id || ''));
+}
+
+function pickBestDiscoveredChatModel(modelIds, failedModelId, preferredFallbacks = [], isOpenRouter = false) {
+  const failed = String(failedModelId || '').trim().toLowerCase();
+  const cleanIds = [];
+  const seen = new Set();
+  for (const raw of (modelIds || [])) {
+    const id = String(raw || '').trim();
+    if (!id) continue;
+    const low = id.toLowerCase();
+    if (low === failed || seen.has(low) || isNonChatModelId(id)) continue;
+    seen.add(low);
+    cleanIds.push(id);
+  }
+  if (!cleanIds.length) return '';
+
+  // 1. Prefer explicit fallback candidates if returned live by the provider's /models endpoint
+  for (const fb of (Array.isArray(preferredFallbacks) ? preferredFallbacks : [])) {
+    const match = cleanIds.find((id) => id.toLowerCase() === String(fb || '').trim().toLowerCase());
+    if (match) return match;
+  }
+
+  // 2. Prefer known chat/instruct model families (prioritizing :free models on OpenRouter)
+  const rankModel = (id) => {
+    const low = id.toLowerCase();
+    let score = 0;
+    if (isOpenRouter && low.endsWith(':free')) score += 50;
+    if (/\bllama\b|llama[-_/]/i.test(low)) score += 35;
+    else if (/\bgemma\b|gemma[-_/]/i.test(low)) score += 32;
+    else if (/\bqwen\b|qwen[-_/]/i.test(low)) score += 30;
+    else if (/\bmistral\b|mistral[-_/]/i.test(low)) score += 28;
+    else if (/gpt-oss/i.test(low)) score += 26;
+    else if (/deepseek/i.test(low)) score += 24;
+    if (/instruct|chat|instant|versatile|scout|maverick/i.test(low)) score += 10;
+    return score;
+  };
+
+  let best = cleanIds[0];
+  let bestScore = rankModel(best);
+  for (let i = 1; i < cleanIds.length; i += 1) {
+    const s = rankModel(cleanIds[i]);
+    if (s > bestScore) {
+      bestScore = s;
+      best = cleanIds[i];
+    }
+  }
+  return best;
+}
+
+export async function discoverLiveOpenAiChatModel(baseUrl, apiKey, failedModelId = '', fallbackModels = []) {
+  const cleanKey = normalizeApiSecret(apiKey);
+  if (!cleanKey) return '';
+  const modelsBase = String(baseUrl || '').replace(/\/chat\/completions\/?$/i, '').replace(/\/+$/, '');
+  const isOpenRouter = /openrouter\.ai/i.test(modelsBase);
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${cleanKey}`,
+    ...(isOpenRouter ? { 'HTTP-Referer': 'https://csodisha.com', 'X-Title': 'Common Sense Odisha' } : {})
+  };
+  try {
+    const mRes = await fetch(`${modelsBase}/models`, { method: 'GET', headers });
+    if (!mRes.ok) return '';
+    const mJson = await mRes.json().catch(() => null);
+    const list = Array.isArray(mJson && mJson.data)
+      ? mJson.data.map((m) => (m && typeof m === 'object' ? (m.id || m.model || '') : String(m || '')))
+      : (Array.isArray(mJson) ? mJson.map((m) => (m && typeof m === 'object' ? (m.id || '') : String(m || ''))) : []);
+    return pickBestDiscoveredChatModel(list, failedModelId, fallbackModels, isOpenRouter);
+  } catch (_e) {
+    return '';
+  }
+}
+
 export async function callOpenAiCompatibleProvider(provider, systemPrompt, userPrompt, { jsonMode = false, maxTokens = 4096 } = {}) {
   const baseCheck = validateProviderBaseUrl(provider && provider.base_url);
   if (!baseCheck.ok) {
@@ -1179,11 +1255,19 @@ export async function callOpenAiCompatibleProvider(provider, systemPrompt, userP
     err.provider_kind = 'external';
     throw err;
   }
-  const apiKey = String((provider && provider.api_key) || '').trim();
-  const modelId = String((provider && provider.model_id) || '').trim();
+  const apiKey = normalizeApiSecret(provider && provider.api_key);
+  const initialModelId = String((provider && provider.model_id) || '').trim();
   const label = String((provider && provider.label) || 'Custom AI').trim();
-  if (!apiKey || !modelId) {
-    const err = new Error('Custom AI provider is missing api_key or model_id.');
+  if (!apiKey) {
+    const err = new Error(`${label} skipped: API key is empty.`);
+    err.status = 400;
+    err.code = 'MISSING_API_KEY';
+    err.skipped = true;
+    err.provider_kind = 'external';
+    throw err;
+  }
+  if (!initialModelId) {
+    const err = new Error('Custom AI provider is missing model_id.');
     err.status = 400;
     err.provider_kind = 'external';
     throw err;
@@ -1192,19 +1276,21 @@ export async function callOpenAiCompatibleProvider(provider, systemPrompt, userP
   const endpoint = baseCheck.url.endsWith('/chat/completions')
     ? baseCheck.url
     : `${baseCheck.url}/chat/completions`;
+  const isOpenRouter = /openrouter\.ai/i.test(baseCheck.url);
+  const isGroq = /api\.groq\.com/i.test(baseCheck.url) || /\bgroq\b/i.test(label);
+  const fallbackCandidates = Array.isArray(provider && provider.fallback_models)
+    ? provider.fallback_models
+    : (isGroq ? GROQ_FALLBACK_MODELS : []);
 
   const headers = {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${apiKey}`
+    Authorization: `Bearer ${apiKey}`,
+    ...(isOpenRouter ? { 'HTTP-Referer': 'https://csodisha.com', 'X-Title': 'Common Sense Odisha' } : {})
   };
-  if (/openrouter\.ai/i.test(baseCheck.url)) {
-    headers['HTTP-Referer'] = 'https://csodisha.com';
-    headers['X-Title'] = 'Common Sense Odisha';
-  }
 
-  const buildBody = (withJsonFmt) => {
+  const buildBody = (targetModel, withJsonFmt) => {
     const payload = {
-      model: modelId,
+      model: targetModel,
       messages: [
         { role: 'system', content: String(systemPrompt || 'You are a helpful editorial assistant.') },
         { role: 'user', content: String(userPrompt || '') }
@@ -1218,24 +1304,42 @@ export async function callOpenAiCompatibleProvider(provider, systemPrompt, userP
     return JSON.stringify(payload);
   };
 
-  let res = await fetch(endpoint, {
-    method: 'POST',
-    headers,
-    body: buildBody(Boolean(jsonMode))
-  });
-
-  if (!res.ok && jsonMode && (res.status === 400 || res.status === 422)) {
-    await res.text().catch(() => '');
-    res = await fetch(endpoint, {
+  const invokeModel = async (targetModel) => {
+    let resp = await fetch(endpoint, {
       method: 'POST',
       headers,
-      body: buildBody(false)
+      body: buildBody(targetModel, Boolean(jsonMode))
     });
+    if (!resp.ok && jsonMode && (resp.status === 400 || resp.status === 422)) {
+      await resp.text().catch(() => '');
+      resp = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: buildBody(targetModel, false)
+      });
+    }
+    return resp;
+  };
+
+  let activeModelId = initialModelId;
+  let discoveredModel = '';
+  let res = await invokeModel(activeModelId);
+
+  // v365: On HTTP 404 (retired/unavailable model), auto-discover a live chat model via GET <base_url>/models & retry immediately
+  if (!res.ok && res.status === 404) {
+    await res.text().catch(() => '');
+    const liveCandidate = await discoverLiveOpenAiChatModel(baseCheck.url, apiKey, activeModelId, fallbackCandidates);
+    const retryModel = liveCandidate || fallbackCandidates.find((m) => String(m || '').trim().toLowerCase() !== activeModelId.toLowerCase()) || '';
+    if (retryModel) {
+      activeModelId = retryModel;
+      discoveredModel = retryModel;
+      res = await invokeModel(activeModelId);
+    }
   }
 
   if (!res.ok) {
     const errTxt = await res.text().catch(() => '');
-    const err = new Error(formatUpstreamProviderError(label, modelId, res.status, errTxt, baseCheck.url, apiKey));
+    const err = new Error(formatUpstreamProviderError(label, activeModelId, res.status, errTxt, baseCheck.url, apiKey));
     err.status = res.status;
     err.provider_kind = 'external';
     err.provider_label = label;
@@ -1253,7 +1357,7 @@ export async function callOpenAiCompatibleProvider(provider, systemPrompt, userP
     text = rawContent.map((part) => (part && typeof part.text === 'string' ? part.text : '')).join('').trim();
   }
   if (!text) {
-    throw new Error(`${label} (${modelId}) returned empty content.`);
+    throw new Error(`${label} (${activeModelId}) returned empty content.`);
   }
 
   const providerCode = String((provider && provider.provider_code) || (provider && provider.id ? `custom:${provider.id}` : 'custom_openai'));
@@ -1262,18 +1366,20 @@ export async function callOpenAiCompatibleProvider(provider, systemPrompt, userP
     return {
       text,
       parsed,
-      model: modelId,
+      model: activeModelId,
+      discovered_model: discoveredModel || undefined,
       provider: providerCode,
       provider_label: label,
-      provider_model: formatProviderModelTag(label, modelId)
+      provider_model: formatProviderModelTag(label, activeModelId)
     };
   }
   return {
     text,
-    model: modelId,
+    model: activeModelId,
+    discovered_model: discoveredModel || undefined,
     provider: providerCode,
     provider_label: label,
-    provider_model: formatProviderModelTag(label, modelId)
+    provider_model: formatProviderModelTag(label, activeModelId)
   };
 }
 
@@ -1468,7 +1574,7 @@ export async function testAiProviderConnection(provider) {
     return {
       ok: true,
       latency_ms: Math.max(1, Date.now() - started),
-      model_id: modelId,
+      model_id: (out && out.model) || modelId,
       message: `Connected (${String(out.text || 'OK').slice(0, 60)})`
     };
   } catch (err) {
@@ -1683,7 +1789,9 @@ async function loadCustomProvidersFromDb(env, { includeDisabledId = '' } = {}) {
     ).bind(String(includeDisabledId || ''));
     if (typeof stmt.all !== 'function') return [];
     const { results } = await stmt.all();
-    return Array.isArray(results) ? results.filter((r) => r && r.api_key && r.base_url && r.model_id) : [];
+    return Array.isArray(results)
+      ? results.filter((r) => r && normalizeApiSecret(r.api_key) && String(r.base_url || '').trim() && String(r.model_id || '').trim())
+      : [];
   } catch (_e) {
     return [];
   }
@@ -1697,7 +1805,8 @@ const ENV_SECRET_PROVIDER_DEFS = [
     label: 'Groq Free (Env)',
     provider_type: 'openai_compatible',
     base_url: 'https://api.groq.com/openai/v1',
-    model_id: 'llama-3.3-70b-versatile'
+    model_id: GROQ_DEFAULT_MODEL,
+    fallback_models: GROQ_FALLBACK_MODELS
   },
   {
     envVar: 'OPENROUTER_API_KEY',
@@ -1795,7 +1904,7 @@ function getEnvSecretProviders(env) {
   if (!env || typeof env !== 'object') return [];
   const list = [];
   for (const def of ENV_SECRET_PROVIDER_DEFS) {
-    const secretVal = env[def.envVar] ? String(env[def.envVar]).trim() : '';
+    const secretVal = normalizeApiSecret(env[def.envVar]);
     if (!secretVal) continue;
     list.push({
       id: def.id,
@@ -1804,6 +1913,7 @@ function getEnvSecretProviders(env) {
       provider_type: def.provider_type,
       base_url: def.base_url,
       model_id: def.model_id,
+      fallback_models: def.fallback_models,
       api_key: secretVal
     });
   }
@@ -1813,7 +1923,8 @@ function getEnvSecretProviders(env) {
 export function getActiveEnvSecretTargets(env) {
   if (!env || typeof env !== 'object') return [];
   const targets = [];
-  if (env.GEMINI_API_KEY && String(env.GEMINI_API_KEY).trim()) {
+  const primaryGeminiKey = normalizeApiSecret(env.GEMINI_API_KEY);
+  if (primaryGeminiKey) {
     targets.push({
       id: 'env_gemini',
       value: 'gemini:' + GEMINI_PRO_FIRST_MODELS[0],
@@ -1822,11 +1933,12 @@ export function getActiveEnvSecretTargets(env) {
       provider_type: 'gemini',
       base_url: 'https://generativelanguage.googleapis.com/v1beta',
       model_id: GEMINI_PRO_FIRST_MODELS[0],
-      api_key: String(env.GEMINI_API_KEY).trim(),
+      api_key: primaryGeminiKey,
       source: 'env'
     });
   }
-  if (env.GEMINI_API_KEY_2 && String(env.GEMINI_API_KEY_2).trim()) {
+  const backupGeminiKey = normalizeApiSecret(env.GEMINI_API_KEY_2);
+  if (backupGeminiKey) {
     targets.push({
       id: 'env_gemini_2',
       value: 'env:gemini_2',
@@ -1835,12 +1947,12 @@ export function getActiveEnvSecretTargets(env) {
       provider_type: 'gemini',
       base_url: 'https://generativelanguage.googleapis.com/v1beta',
       model_id: GEMINI_PRO_FIRST_MODELS[0],
-      api_key: String(env.GEMINI_API_KEY_2).trim(),
+      api_key: backupGeminiKey,
       source: 'env'
     });
   }
   for (const def of ENV_SECRET_PROVIDER_DEFS) {
-    const secretVal = env[def.envVar] ? String(env[def.envVar]).trim() : '';
+    const secretVal = normalizeApiSecret(env[def.envVar]);
     if (!secretVal) continue;
     targets.push({
       id: def.id,
@@ -1850,6 +1962,7 @@ export function getActiveEnvSecretTargets(env) {
       provider_type: def.provider_type,
       base_url: def.base_url,
       model_id: def.model_id,
+      fallback_models: def.fallback_models,
       api_key: secretVal,
       source: 'env'
     });
@@ -1922,7 +2035,7 @@ async function runModelCascade(env, prompt, mode, opts = {}) {
 
   const steps = [];
   const pushCustomStep = (prov) => {
-    if (!prov) return;
+    if (!prov || !normalizeApiSecret(prov.api_key)) return;
     steps.push({
       label: prov.label || prov.id || 'Custom AI',
       kind: 'external',

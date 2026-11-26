@@ -185,9 +185,7 @@
       }
       addGrp('Google AI Studio ($0 Free Tier)', [
         { value: 'gemini:gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-        { value: 'gemini:gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
-        { value: 'gemini:gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
-        { value: 'gemini:gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash-Lite' }
+        { value: 'gemini:gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' }
       ]);
       addGrp('Cloudflare Workers AI (10K Neurons/Day)', [
         { value: 'workers:@cf/google/gemma-4-26b-a4b-it', label: 'Gemma 4 26B A4B (Low-Neuron)' },

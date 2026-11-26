@@ -565,9 +565,9 @@ await check('5. Folder #10 Payments & Ads: gateway readiness, zero fake orders, 
 });
 
 // 6. Strict CSP, 4-theme Zero Hardcoded Hex & SW Cache Version v361
-await check('6. Strict CSP compliance, zero hardcoded hex in v312/v364 CSS, and cso-candidate-cache-v364 sync', async () => {
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v364');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v364';"), 'sw.js cache version must be cso-candidate-cache-v364');
+await check('6. Strict CSP compliance, zero hardcoded hex in v312/v365 CSS, and cso-candidate-cache-v365 sync', async () => {
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v365');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v365';"), 'sw.js cache version must be cso-candidate-cache-v365');
 
   const jsFiles = [
     'admin/qr-svg.js',
@@ -705,9 +705,9 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   const adminHtml = read('admin/index.html');
   assert.ok(adminHtml.includes('data-create-target="guides/new"'), 'admin/index.html + Create New must include Informative Article / Guide');
   assert.ok(adminHtml.includes('id="headerTranslatorWrap"') && adminHtml.includes('id="btnHeaderOdiaTranslator"') && adminHtml.includes('aria-controls="csoHeaderTranslatorPopover"'), 'admin/index.html must pin #btnHeaderOdiaTranslator in the top header bar');
-  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v364'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v364');
-  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v364'), 'admin/index.html must load studio-translator.js?v=20261126v364');
-  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v364'), 'admin/index.html must load guides-portal.css for identical Live Preview');
+  assert.ok(adminHtml.includes('/admin/guides-publishing-studio.js?v=20261126v365'), 'admin/index.html must load guides-publishing-studio.js?v=20261126v365');
+  assert.ok(adminHtml.includes('/admin/studio-translator.js?v=20261126v365'), 'admin/index.html must load studio-translator.js?v=20261126v365');
+  assert.ok(adminHtml.includes('/assets/css/guides-portal.css?v=20261126v365'), 'admin/index.html must load guides-portal.css for identical Live Preview');
 
   const adminJs = read('admin/admin.js');
   for (const sub of ['All Articles & Guides', 'Step-by-Step How-To Guides', 'Exam Strategy & Study Handbooks', 'Citizen & Scheme Explainers', 'Odisha GK & Heritage', 'Drafts']) {
@@ -1259,6 +1259,54 @@ await check('8. v348 Informative Articles & Guides: folder/templates/AI/Live Pre
   assert.ok(guidesStudioJs.includes('isGeminiWorkersDailyQuotaError') && guidesStudioJs.includes('fallback_notice'), 'guides-publishing-studio.js must distinguish genuine daily quota from provider errors and display fallback_notice');
   assert.ok(!guidesStudioJs.includes('function isQuotaLikeError'), 'guides-publishing-studio.js must remove catch-all isQuotaLikeError quota rewrite');
   assert.ok(translatorJs.includes('fallback_notice') && translatorJs.includes('attempted_errors'), 'studio-translator.js must surface fallback_notice and attempted_errors');
+
+  // J. v365: Zero retired gemini-2.0-* strings, Groq llama-3.1-8b-instant default & live /test 404 model auto-discovery + OpenRouter Authorization header
+  for (const rel of ['functions/_lib/ai-coauthor.js', 'functions/api/admin/_ai.js', 'admin/guides-publishing-studio.js', 'admin/studio-translator.js']) {
+    assert.ok(!read(rel).includes('gemini-2.0-'), `${rel} must not contain retired gemini-2.0-* models`);
+  }
+  assert.ok(guidesStudioJs.includes("model_id: 'llama-3.1-8b-instant'"), 'Groq preset must default to llama-3.1-8b-instant');
+
+  const origV365Fetch = globalThis.fetch;
+  const v365HeadersSeen = [];
+  globalThis.fetch = async (url, init) => {
+    const u = String(url);
+    const bodyObj = init && init.body ? JSON.parse(String(init.body)) : null;
+    v365HeadersSeen.push({ url: u, headers: init && init.headers, model: bodyObj && bodyObj.model });
+    if (u === 'https://openrouter.ai/api/v1/chat/completions') {
+      if (bodyObj && bodyObj.model === 'retired-openrouter-model') {
+        return new Response('Model not found', { status: 404 });
+      }
+      return new Response(JSON.stringify({ choices: [{ message: { content: 'OK' } }] }), { status: 200 });
+    }
+    if (u === 'https://openrouter.ai/api/v1/models') {
+      return new Response(JSON.stringify({
+        data: [
+          { id: 'openai/text-embedding-3-large' },
+          { id: 'meta-llama/llama-3.3-70b-instruct:free' }
+        ]
+      }), { status: 200 });
+    }
+    throw new Error('Unexpected fetch in v365 test: ' + u);
+  };
+  try {
+    const orTestRes = await handleAdminAiProvidersApi(
+      jsonReq('https://csodisha.com/api/admin/ai-providers/test', 'POST', {
+        label: 'OpenRouter Free',
+        provider_type: 'openai_compatible',
+        base_url: 'https://openrouter.ai/api/v1',
+        model_id: 'retired-openrouter-model',
+        api_key: 'sk-or-v1-check-9911'
+      }),
+      env, adminActor, 'test', ctx
+    );
+    assert.equal(orTestRes.status, 200);
+    const orTestJson = await orTestRes.json();
+    assert.equal(orTestJson.ok, true);
+    assert.equal(orTestJson.model_id, 'meta-llama/llama-3.3-70b-instruct:free', 'HTTP 404 must auto-discover live :free chat model via /models');
+    assert.ok(v365HeadersSeen.every((h) => h.headers && h.headers.Authorization === 'Bearer sk-or-v1-check-9911' && h.headers['HTTP-Referer'] === 'https://csodisha.com'));
+  } finally {
+    globalThis.fetch = origV365Fetch;
+  }
   await Promise.all(waits);
 });
 
