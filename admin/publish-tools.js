@@ -155,7 +155,9 @@
       summary_en: item.summary_en || '',
       expires_at: item.expires_at || item.last_date || '',
       official_url: item.apply_url || item.official_apply_url || item.official_portal_url || '',
-      required_docs: item.required_docs || item.required_documents || []
+      required_docs: item.required_docs || item.required_documents || [],
+      is_pinned: Boolean(item.is_pinned || item.is_featured),
+      scope: item.scope || ''
     }).then(function (d) {
       if (window.CSOQuickCreate && typeof window.CSOQuickCreate.bustHomeCache === 'function') {
         window.CSOQuickCreate.bustHomeCache();

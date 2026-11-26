@@ -601,6 +601,197 @@
   }
 
   // =========================================================================
+  // 2B. LATEST UPDATES PIN/SCOPE CONTROLS & LIVE FEED QUICK-CONTROL PANEL (v337)
+  // =========================================================================
+  function createLatestUpdatesControls(opts) {
+    var cfg = opts || {};
+    var box = el('div', 'cso-qc-lu-bar');
+    var chkPin = el('input');
+    chkPin.type = 'checkbox';
+    chkPin.id = cfg.pinId || ('qcLuPin_' + Math.random().toString(36).slice(2, 6));
+    chkPin.checked = Boolean(cfg.defaultPinned);
+
+    var pinLbl = el('label', 'cso-qc-check cso-qc-lu-pin-lbl');
+    pinLbl.append(chkPin, el('span', '', '\uD83D\uDCCC Pin to Homepage Latest Updates'));
+
+    var scopeWrap = el('label', 'cso-qc-lu-scope-wrap');
+    scopeWrap.appendChild(el('span', 'cso-qc-label', 'Homepage Scope'));
+    var selScope = el('select', 'cso-qc-select cso-qc-lu-scope-sel');
+    selScope.id = cfg.scopeId || ('qcLuScope_' + Math.random().toString(36).slice(2, 6));
+    [['Odisha', 'Odisha'], ['National', 'National']].forEach(function (pair) {
+      selScope.appendChild(new Option(pair[1], pair[0]));
+    });
+    selScope.value = cfg.defaultScope === 'National' ? 'National' : 'Odisha';
+    scopeWrap.appendChild(selScope);
+
+    box.append(pinLbl, scopeWrap);
+
+    function syncMeta(entityType, entityId) {
+      var cleanId = String(entityId || '').trim();
+      if (!entityType || !cleanId) return Promise.resolve(null);
+      return apiFetch('/api/admin/latest-updates', {
+        method: 'POST',
+        body: {
+          action: 'set_meta',
+          entity_type: entityType,
+          entity_id: cleanId,
+          is_pinned: chkPin.checked ? 1 : 0,
+          scope: selScope.value || 'Odisha'
+        }
+      }).catch(function () { return null; });
+    }
+
+    return {
+      node: box,
+      chkPin: chkPin,
+      selScope: selScope,
+      isPinned: function () { return chkPin.checked; },
+      getScope: function () { return selScope.value || 'Odisha'; },
+      setScope: function (v) { selScope.value = v === 'National' ? 'National' : 'Odisha'; },
+      syncMeta: syncMeta
+    };
+  }
+
+  function openEditorForLatestUpdateItem(it) {
+    if (!it) return;
+    var studio = window.CSOStudio || {};
+    if (it.entity_type === 'job' && studio.openJobsPublishingTab) {
+      studio.openJobsPublishingTab('articles');
+    } else if (it.entity_type === 'career' && studio.openCareersPublishingTab) {
+      studio.openCareersPublishingTab('list');
+    } else if (it.entity_type === 'scheme' && studio.openSchemesPublishingTab) {
+      studio.openSchemesPublishingTab('articles');
+    } else if (it.entity_type === 'study' && studio.openStudyPublishingTab) {
+      studio.openStudyPublishingTab('articles');
+    } else if (it.entity_type === 'current_affairs' && studio.openQuickCreateRoute) {
+      studio.openQuickCreateRoute('current-affairs/new');
+    } else if (it.url) {
+      window.open(it.url, '_blank', 'noopener,noreferrer');
+    }
+  }
+
+  function renderLatestUpdatesControlPanel() {
+    var card = el('section', 'cso-qc-card cso-qc-lu-panel');
+    var head = el('div', 'cso-qc-label-row');
+    head.appendChild(el('h3', 'cso-qc-card-title', '\uD83D\uDCCC Latest Updates Live Feed (Homepage Sync)'));
+    var refreshBtn = el('button', 'cso-ai-tr-btn', '\u21BB Refresh Live Feed');
+    refreshBtn.type = 'button';
+    head.appendChild(refreshBtn);
+    card.appendChild(head);
+    card.appendChild(el('p', 'cso-qc-hint', 'Exact items currently appearing in the homepage Latest Updates box. Pin, switch Odisha/National scope, edit, or unpublish with instant cache purge.'));
+
+    var listHost = el('div', 'cso-qc-feed');
+    card.appendChild(listHost);
+
+    function loadLiveFeed() {
+      clear(listHost);
+      listHost.appendChild(el('p', 'cso-qc-hint', 'Loading live homepage Latest Updates from D1\u2026'));
+      apiFetch('/api/admin/latest-updates?limit=15')
+        .then(function (data) {
+          clear(listHost);
+          var items = (data && Array.isArray(data.items)) ? data.items : [];
+          if (!items.length) {
+            listHost.appendChild(el('p', 'cso-qc-hint', 'No published items in Latest Updates yet. Publish any Job, Scheme, Study Resource, Career Roadmap, or Current Affairs post to see it live here.'));
+            return;
+          }
+          items.forEach(function (it) {
+            var row = el('div', 'cso-qc-feed-row cso-qc-lu-row');
+            var info = el('div', 'cso-qc-lu-info');
+            var topLine = el('div', 'cso-qc-lu-badges');
+            topLine.appendChild(el('span', 'cso-qc-badge', it.badge_type || 'UPDATE'));
+            topLine.appendChild(el('span', 'cso-qc-badge', it.scope || 'Odisha'));
+            if (it.is_pinned) topLine.appendChild(el('span', 'cso-qc-badge cso-qc-badge--pin', '\uD83D\uDCCC Pinned'));
+            info.appendChild(topLine);
+            info.appendChild(el('strong', 'cso-qc-lu-title', it.title_en || 'Untitled'));
+            if (it.meta_line) info.appendChild(el('span', 'cso-qc-hint', it.meta_line));
+
+            var acts = el('div', 'cso-qc-feed-actions');
+            var btnPin = el('button', 'cso-qc-btn', it.is_pinned ? 'Unpin' : '\uD83D\uDCCC Pin');
+            btnPin.type = 'button';
+            btnPin.addEventListener('click', function () {
+              btnPin.disabled = true;
+              apiFetch('/api/admin/latest-updates', {
+                method: 'POST',
+                body: {
+                  action: it.is_pinned ? 'unpin' : 'pin',
+                  entity_type: it.entity_type,
+                  entity_id: it.entity_id,
+                  scope: it.scope || 'Odisha'
+                }
+              }).then(function () {
+                toast(it.is_pinned ? 'Unpinned from top of Latest Updates.' : 'Pinned to top of Latest Updates!', 'ok');
+                loadLiveFeed();
+              }).catch(function (e) {
+                toast(e.message || 'Pin update failed.', 'crimson');
+                btnPin.disabled = false;
+              });
+            });
+
+            var nextScope = it.scope === 'National' ? 'Odisha' : 'National';
+            var btnScope = el('button', 'cso-qc-btn', 'Set ' + nextScope);
+            btnScope.type = 'button';
+            btnScope.addEventListener('click', function () {
+              btnScope.disabled = true;
+              apiFetch('/api/admin/latest-updates', {
+                method: 'POST',
+                body: {
+                  action: 'set_meta',
+                  entity_type: it.entity_type,
+                  entity_id: it.entity_id,
+                  is_pinned: it.is_pinned ? 1 : 0,
+                  scope: nextScope
+                }
+              }).then(function () {
+                toast('Moved item scope to ' + nextScope + '.', 'ok');
+                loadLiveFeed();
+              }).catch(function (e) {
+                toast(e.message || 'Scope update failed.', 'crimson');
+                btnScope.disabled = false;
+              });
+            });
+
+            var btnEdit = el('button', 'cso-qc-btn', 'Edit');
+            btnEdit.type = 'button';
+            btnEdit.addEventListener('click', function () { openEditorForLatestUpdateItem(it); });
+
+            var btnUnpub = el('button', 'cso-qc-btn cso-qc-btn--danger', 'Unpublish');
+            btnUnpub.type = 'button';
+            btnUnpub.addEventListener('click', function () {
+              if (!window.confirm('Unpublish "' + it.title_en + '" and remove it from Homepage Latest Updates?')) return;
+              btnUnpub.disabled = true;
+              apiFetch('/api/admin/latest-updates', {
+                method: 'POST',
+                body: {
+                  action: 'unpublish',
+                  entity_type: it.entity_type,
+                  entity_id: it.entity_id
+                }
+              }).then(function () {
+                toast('Unpublished & purged homepage cache.', 'ok');
+                loadLiveFeed();
+              }).catch(function (e) {
+                toast(e.message || 'Unpublish failed.', 'crimson');
+                btnUnpub.disabled = false;
+              });
+            });
+
+            acts.append(btnPin, btnScope, btnEdit, btnUnpub);
+            row.append(info, acts);
+            listHost.appendChild(row);
+          });
+        })
+        .catch(function (err) {
+          clear(listHost);
+          listHost.appendChild(el('p', 'cso-qc-hint', 'Unable to load Latest Updates feed: ' + err.message));
+        });
+    }
+
+    refreshBtn.addEventListener('click', loadLiveFeed);
+    loadLiveFeed();
+    return { node: card, reload: loadLiveFeed };
+  }
+
+  // =========================================================================
   // 3. SHARED SHELL FOR ALL 7 QUICK-CREATE WORKFLOWS
   // =========================================================================
   function buildQuickShell(root, headerActions, cfg) {
@@ -615,6 +806,26 @@
     left.appendChild(el('span', 'cso-qc-sub', cfg.subtitle || 'Sensible defaults pre-filled — publish in under 60 seconds.'));
 
     var right = el('div', 'cso-qc-top-actions');
+    var luDrawerHost = el('div', 'cso-qc-lu-drawer');
+    luDrawerHost.hidden = true;
+    var luPanelMounted = null;
+    if (cfg.showLiveFeedToggle !== false) {
+      var btnLiveFeed = el('button', 'cso-qc-btn', '\uD83D\uDCCC Latest Updates Feed');
+      btnLiveFeed.type = 'button';
+      btnLiveFeed.addEventListener('click', function () {
+        luDrawerHost.hidden = !luDrawerHost.hidden;
+        if (!luDrawerHost.hidden) {
+          if (!luPanelMounted) {
+            luPanelMounted = renderLatestUpdatesControlPanel();
+            luDrawerHost.appendChild(luPanelMounted.node);
+          } else {
+            luPanelMounted.reload();
+          }
+        }
+      });
+      right.appendChild(btnLiveFeed);
+    }
+
     var quickToggle = null;
     if (cfg.hasAdvanced !== false) {
       quickToggle = createQuickModeToggle(readQuickModePref(true), function (isQuick) {
@@ -635,6 +846,7 @@
 
     topBar.append(left, right);
     shell.appendChild(topBar);
+    shell.appendChild(luDrawerHost);
     root.appendChild(shell);
 
     if (headerActions) {
@@ -754,7 +966,7 @@
         notification_pdf_url: inPdfUrl.value.trim(),
         notification_url: inPdfUrl.value.trim(),
         location_district: selDist.value || 'All Odisha',
-        region_scope: selDist.value === 'Foreign / Overseas' ? 'foreign' : (selDist.value === 'All India' ? 'central' : 'odisha'),
+        region_scope: luCtrl.getScope() === 'National' ? 'central' : (selDist.value === 'Foreign / Overseas' ? 'foreign' : 'odisha'),
         lifecycle_stage: selStage.value || 'notification',
         advt_number: inAdvt.value.trim(),
         salary_pay_scale: inPay.value.trim(),
@@ -762,7 +974,7 @@
         summary_or: taSumOr.value.trim(),
         article_body_en: taBodyEn.value.trim(),
         article_body_or: taBodyOr.value.trim(),
-        is_featured: chkFeat.checked ? 1 : 0,
+        is_featured: (chkFeat.checked || luCtrl.isPinned()) ? 1 : 0,
         is_published: publishFlag ? 1 : 0
       };
       statusEl.textContent = publishFlag ? 'Publishing Job Alert live & syncing Vectorize\u2026' : 'Saving draft to D1\u2026';
@@ -770,8 +982,11 @@
       apiFetch(url, { method: savedId ? 'PUT' : 'POST', body: payload })
         .then(function (res) {
           if (res && res.item && res.item.id) savedId = res.item.id;
+          return luCtrl.syncMeta('job', savedId || slug).then(function () { return res; });
+        })
+        .then(function (res) {
           statusEl.textContent = publishFlag
-            ? '\u2713 Published live at /jobs/?slug=' + encodeURIComponent((res.item && res.item.slug) || slug) + ' (Vectorize synced)'
+            ? '\u2713 Published live at /jobs/?slug=' + encodeURIComponent((res.item && res.item.slug) || slug) + ' (Vectorize + Latest Updates synced)'
             : '\u2713 Draft saved to D1 (ID: ' + savedId + ')';
           toast(publishFlag ? 'Job Alert published live & synced to Ask CSOdisha!' : 'Job Alert draft saved!', 'ok');
           if (window.CSOStudio && window.CSOStudio.refreshBrandSummary) window.CSOStudio.refreshBrandSummary();
@@ -829,7 +1044,13 @@
       makeField('Key Summary (English)', taSumEn, { full: true }),
       makeField('Key Summary (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', taSumOr, { full: true, actionEl: createOdiaTranslateBtn({ getSource: function () { return taSumEn.value; }, targetInput: taSumOr }) })
     );
+    var luCtrl = createLatestUpdatesControls({ pinId: 'qcJobLuPin', scopeId: 'qcJobLuScope', defaultScope: 'Odisha' });
+    selDist.addEventListener('change', function () {
+      if (selDist.value === 'All India') luCtrl.setScope('National');
+      else luCtrl.setScope('Odisha');
+    });
     card.appendChild(g);
+    card.appendChild(luCtrl.node);
     built.shell.appendChild(card);
 
     // Collapsible Advanced Accordion
@@ -959,14 +1180,17 @@
         roadmap_body_or: taBodyOr.value.trim(),
         official_links: prepLinks.filter(function (l) { return l.url && l.url.trim(); }),
         status: statusVal,
-        featured: chkFeat.checked ? 1 : 0
+        featured: (chkFeat.checked || luCtrl.isPinned()) ? 1 : 0
       };
       statusEl.textContent = statusVal === 'published' ? 'Publishing Career Roadmap live & syncing Vectorize\u2026' : 'Saving draft to D1\u2026';
       apiFetch('/api/admin/careers', { method: 'POST', body: payload })
         .then(function (res) {
           if (res && res.item && res.item.id) savedId = res.item.id;
+          return luCtrl.syncMeta('career', savedId || slug).then(function () { return res; });
+        })
+        .then(function (res) {
           statusEl.textContent = statusVal === 'published'
-            ? '\u2713 Published live at /careers/?slug=' + encodeURIComponent((res.item && res.item.slug) || slug) + ' (Vectorize synced)'
+            ? '\u2713 Published live at /careers/?slug=' + encodeURIComponent((res.item && res.item.slug) || slug) + ' (Vectorize + Latest Updates synced)'
             : '\u2713 Career draft saved to D1 (ID: ' + savedId + ')';
           toast(statusVal === 'published' ? 'Career Roadmap published live & synced to Ask CSOdisha!' : 'Career Roadmap draft saved!', 'ok');
           if (window.CSOStudio && window.CSOStudio.refreshBrandSummary) window.CSOStudio.refreshBrandSummary();
@@ -1047,8 +1271,13 @@
     }
     addLinkBtn.addEventListener('click', function () { prepLinks.push({ label: '', url: '' }); drawLinks(); });
     drawLinks();
+    var luCtrl = createLatestUpdatesControls({ pinId: 'qcCarLuPin', scopeId: 'qcCarLuScope', defaultScope: 'Odisha' });
+    selRegion.addEventListener('change', function () {
+      luCtrl.setScope(selRegion.value === 'odisha' ? 'Odisha' : 'National');
+    });
     linksWrap.append(linksHead, linksList);
     card.appendChild(linksWrap);
+    card.appendChild(luCtrl.node);
     built.shell.appendChild(card);
 
     var adv = buildAdvAccordion('Advanced SEO Tags & Highlight Settings', built.quickToggle);
@@ -1246,8 +1475,11 @@
       apiFetch('/api/admin/current-affairs', { method: 'POST', body: payload })
         .then(function (res) {
           editingId = (res && res.item && res.item.id) || '';
+          return luCtrl.syncMeta('current_affairs', editingId).then(function () { return res; });
+        })
+        .then(function () {
           statusEl.textContent = statusVal === 'published'
-            ? '\u2713 Published Current Affairs capsule (' + editingId + ') & synced to Ask CSOdisha!'
+            ? '\u2713 Published Current Affairs capsule (' + editingId + ') & synced to Latest Updates + Ask CSOdisha!'
             : '\u2713 Saved draft (' + editingId + ')';
           toast(statusVal === 'published' ? 'Current Affairs post published live!' : 'Current Affairs draft saved!', 'ok');
           if (statusVal === 'published') {
@@ -1301,7 +1533,12 @@
       makeField('Bullet Highlights (English, 1 per line)', taHlEn),
       makeField('Bullet Highlights (\u0B13\u0B21\u0B3C\u0B3F\u0B06, 1 per line)', taHlOr, { actionEl: createOdiaTranslateBtn({ getSource: function () { return taHlEn.value; }, targetInput: taHlOr }) })
     );
+    var luCtrl = createLatestUpdatesControls({ pinId: 'qcCaLuPin', scopeId: 'qcCaLuScope', defaultScope: 'Odisha' });
+    selCat.addEventListener('change', function () {
+      luCtrl.setScope(/national|international|india|central/i.test(selCat.value) ? 'National' : 'Odisha');
+    });
     card.appendChild(g);
+    card.appendChild(luCtrl.node);
     built.shell.appendChild(card);
 
     var adv = buildAdvAccordion('Optional 3\u20135 Practice MCQs & SEO Tags', built.quickToggle);
@@ -1514,7 +1751,12 @@
       makeField('Duration (Minutes)', inDur),
       makeField('Negative Marking', inNeg)
     );
+    var luCtrl = createLatestUpdatesControls({ pinId: 'qcMockLuPin', scopeId: 'qcMockLuScope', defaultScope: 'Odisha' });
+    selCat.addEventListener('change', function () {
+      luCtrl.setScope(/ugc|ctet|ssc|rrb|central|national/i.test(selCat.value) ? 'National' : 'Odisha');
+    });
     card.appendChild(g);
+    card.appendChild(luCtrl.node);
     built.shell.appendChild(card);
 
     // Quick Bulk-Paste MCQ Parser Card
@@ -1758,7 +2000,7 @@
         pyq_pdf_url: isPyq ? pdfUrl : '',
         answer_key_pdf_url: isKey ? pdfUrl : '',
         offline_pack: chkOffline.checked ? 1 : 0,
-        is_featured: chkFeat.checked ? 1 : 0,
+        is_featured: (chkFeat.checked || luCtrl.isPinned()) ? 1 : 0,
         is_free_access: 1,
         is_published: publishFlag ? 1 : 0
       };
@@ -1767,8 +2009,11 @@
       apiFetch(url, { method: savedId ? 'PUT' : 'POST', body: payload })
         .then(function (res) {
           if (res && res.item && res.item.id) savedId = res.item.id;
+          return luCtrl.syncMeta('study', savedId || slug).then(function () { return res; });
+        })
+        .then(function (res) {
           statusEl.textContent = publishFlag
-            ? '\u2713 Published live at /study-library/?slug=' + encodeURIComponent((res.item && res.item.slug) || slug) + ' (Vectorize synced)'
+            ? '\u2713 Published live at /study-library/?slug=' + encodeURIComponent((res.item && res.item.slug) || slug) + ' (Vectorize + Latest Updates synced)'
             : '\u2713 Draft saved to D1 (ID: ' + savedId + ')';
           toast(publishFlag ? 'Syllabus / PYQ Resource published live!' : 'Resource draft saved!', 'ok');
           if (window.CSOStudio && window.CSOStudio.refreshBrandSummary) window.CSOStudio.refreshBrandSummary();
@@ -1822,7 +2067,9 @@
       makeField('Bilingual Description (English)', taDescEn, { full: true }),
       makeField('Bilingual Description (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', taDescOr, { full: true, actionEl: createOdiaTranslateBtn({ getSource: function () { return taDescEn.value; }, targetInput: taDescOr }) })
     );
+    var luCtrl = createLatestUpdatesControls({ pinId: 'qcSylLuPin', scopeId: 'qcSylLuScope', defaultScope: 'Odisha' });
     card.appendChild(g);
+    card.appendChild(luCtrl.node);
     built.shell.appendChild(card);
 
     var adv = buildAdvAccordion('Advanced SEO Tags & Offline PWA Pack', built.quickToggle);
@@ -1965,6 +2212,7 @@
     var liveLink = el('a', 'cso-qc-btn', 'View Homepage \u2197'); liveLink.href = '/'; liveLink.target = '_blank'; liveLink.rel = 'noopener noreferrer';
     foot.append(btnDraft, btnPub, liveLink, statusEl);
     built.shell.appendChild(foot);
+    built.shell.appendChild(renderLatestUpdatesControlPanel().node);
 
     // Hydrate current live banner from D1
     apiFetch('/api/admin/banner').then(function (b) {

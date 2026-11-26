@@ -2595,6 +2595,7 @@ function csoUpdateBadges(u){
 }
 
 function lu(){
+  if(window.__CSO_LU_HYDRATED__)return;
   $$('.lu .it,.lu .em').forEach(x=>x.remove());
   const activeCat=String(cat||'All').trim().toLowerCase();
   const L=csoPublishedUpdates().filter(u=>activeCat==='all'||!activeCat||String(u.cat||'').trim().toLowerCase()===activeCat).slice(0,5);
@@ -2784,7 +2785,9 @@ $$('.tp').forEach((c, index) => {
   TOPICS.push([title, destination, $('small', c).textContent]);
 });
 $$('.tl.card').forEach(c=>{const t=clean($('b',c).textContent);bind(c,t);if(c.closest('.sec').textContent.includes('Important Tools'))TOOLS.push([t,slug(t),$('small',c).textContent])});
-const bindLuTabs=()=>$$('.lu .tabs button').forEach(s=>{
+const bindLuTabs=()=>{
+  if(window.__CSO_LU_HYDRATED__)return;
+  $$('.lu .tabs button').forEach(s=>{
   const canonical=(s.dataset.category||s.textContent||'').trim()||'All';
   s.dataset.category=canonical;
   if(!s.dataset.tab)s.dataset.tab=canonical.toLowerCase();
@@ -2801,7 +2804,8 @@ const bindLuTabs=()=>$$('.lu .tabs button').forEach(s=>{
     lu();
     localize($('.lu'));
   };
-});
+  });
+};
 bindLuTabs();
 window.csoHome=Object.assign(window.csoHome||{},{bindTabs:bindLuTabs,bindTool:bind,localize,setCategory:(nextCat)=>{cat=nextCat||'All';lu();}});
 lu();

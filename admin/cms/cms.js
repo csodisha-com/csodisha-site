@@ -1276,6 +1276,22 @@
     }
 
     var sb = statusBlock(isNew ? null : item); left.appendChild(sb.node);
+    var luPinChk = el('input', { type: 'checkbox', id: 'f-lu-pin' });
+    var luScopeSel = el('select', { id: 'f-lu-scope' }, [
+      el('option', { value: 'Odisha', text: 'Odisha' }),
+      el('option', { value: 'National', text: 'National' })
+    ]);
+    if (/central|national|all[\s-]?india/i.test(String(item.state || item.category || ''))) luScopeSel.value = 'National';
+    left.appendChild(el('div', { class: 'cso-qc-lu-bar' }, [
+      el('label', { class: 'check-row', for: 'f-lu-pin' }, [
+        luPinChk,
+        el('span', { text: '📌 Pin to Homepage Latest Updates' })
+      ]),
+      el('label', { class: 'cso-qc-lu-scope-wrap', for: 'f-lu-scope' }, [
+        el('span', { text: 'Homepage Scope' }),
+        luScopeSel
+      ])
+    ]));
     var alertChk = el('input', { type: 'checkbox', id: 'f-send-goal-alert' });
     left.appendChild(el('label', { class: 'check-row', for: 'f-send-goal-alert' }, [
       alertChk,
@@ -1367,6 +1383,19 @@
       try {
         showErrors(form, {});
         var r = isNew ? await api('POST', T.path, body) : await api('PUT', T.path + '/' + id, body);
+        var savedPostId = (r && r.id) || id;
+        if (savedPostId && savedPostId !== 'new') {
+          api('POST', 'latest-updates', {
+            action: 'set_meta',
+            entity_type: 'post',
+            entity_id: String(savedPostId),
+            is_pinned: luPinChk && luPinChk.checked ? 1 : 0,
+            scope: luScopeSel ? luScopeSel.value : 'Odisha'
+          }).catch(function () {});
+        }
+        if (window.CSOQuickCreate && typeof window.CSOQuickCreate.bustHomeCache === 'function') {
+          window.CSOQuickCreate.bustHomeCache();
+        }
         toast(r.goal_alert_queued ? ('Saved & queued Goal Alert (' + r.goal_alert_queued + ' subscribers)') : 'Saved');
         if (isNew) go('/' + key + '/' + r.id); else { clear(main); await viewPostForm(key, id); return; }
       } catch (err) { showErrors(form, err.fields); toast(err.message, true); }
@@ -10107,12 +10136,26 @@
             seo_title: seoTitleInp.value.trim(),
             seo_description: seoDescInp.value.trim()
           };
+          var savedRes;
           if (isEdit) {
-            await api('PUT', 'content/posts/' + encodeURIComponent(editing.id), payload);
+            savedRes = await api('PUT', 'content/posts/' + encodeURIComponent(editing.id), payload);
             toast('Updated post and saved revision snapshot');
           } else {
-            await api('POST', 'content/posts', payload);
+            savedRes = await api('POST', 'content/posts', payload);
             toast('Created new content item');
+          }
+          var luTargetId = (isEdit ? editing.id : (savedRes && (savedRes.id || (savedRes.item && savedRes.item.id)))) || payload.slug;
+          if (luTargetId) {
+            api('POST', 'latest-updates', {
+              action: 'set_meta',
+              entity_type: 'post',
+              entity_id: String(luTargetId),
+              is_pinned: luPinCb.checked ? 1 : 0,
+              scope: luScopeSelect.value || 'Odisha'
+            }).catch(function () {});
+          }
+          if (window.CSOQuickCreate && typeof window.CSOQuickCreate.bustHomeCache === 'function') {
+            window.CSOQuickCreate.bustHomeCache();
           }
           closeComposer();
           await load();
@@ -10130,6 +10173,16 @@
       ]));
       card.appendChild(piiWarnBox);
 
+      var luPinCb = el('input', { type: 'checkbox' });
+      luPinCb.checked = Boolean(isEdit && editing && editing.is_featured);
+      var luScopeSelect = el('select', {}, [
+        el('option', { value: 'Odisha', text: 'Odisha' }),
+        el('option', { value: 'National', text: 'National' })
+      ]);
+      if (isEdit && editing && /national|central|india/i.test(String(editing.category || editing.district_tag || ''))) {
+        luScopeSelect.value = 'National';
+      }
+
       var leftPane = el('div', { class: 'cso-cnt-editor-pane' }, [
         el('div', { class: 'cso-ops-grid-2' }, [
           el('div', { class: 'field' }, [el('label', {}, [document.createTextNode('Title *'), titleCount]), titleInp]),
@@ -10145,7 +10198,9 @@
           el('div', { class: 'field' }, [el('label', { text: 'District Tag (News / Regional)' }), districtInp]),
           el('div', { class: 'field' }, [el('label', { text: 'Source Citation' }), sourceInp]),
           el('div', { class: 'field' }, [el('label', { text: 'Exam Relevance (OPSC/OSSSC/OSSC)' }), examInp]),
-          el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Feature in Priority Slot')])])
+          el('div', { class: 'field' }, [el('label', {}, [featCb, document.createTextNode(' Feature in Priority Slot')])]),
+          el('div', { class: 'field' }, [el('label', {}, [luPinCb, document.createTextNode(' 📌 Pin to Homepage Latest Updates')])]),
+          el('div', { class: 'field' }, [el('label', { text: 'Homepage Scope (Odisha / National)' }), luScopeSelect])
         ]),
         el('div', { class: 'field' }, [
           el('label', { text: '✨ AI Title, Slug & Tag Suggester + Interactive Tags (press Enter or , to add)' }),

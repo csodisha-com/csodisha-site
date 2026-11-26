@@ -4038,3 +4038,70 @@ body.cso-studio-body {
     grid-template-columns: 1fr;
   }
 }
+
+/* v337 Latest Updates Pin/Scope Bar & Live Feed Control Panel (4-Theme Semantic Tokens) */
+.cso-qc-lu-bar {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cso-qc-lu-scope-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+}
+
+.cso-qc-lu-scope-sel {
+  min-width: 128px;
+  min-height: 44px;
+}
+
+.cso-qc-lu-drawer {
+  margin-bottom: 14px;
+}
+
+.cso-qc-lu-drawer[hidden] {
+  display: none;
+}
+
+.cso-qc-lu-row {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.cso-qc-lu-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 260px;
+}
+
+.cso-qc-lu-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cso-qc-badge--pin {
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  border-color: var(--cso-accent);
+}
+
+.cso-qc-lu-title {
+  font-size: 0.94rem;
+  color: var(--cso-ink);
+  line-height: 1.35;
+}

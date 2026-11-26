@@ -79,6 +79,7 @@ import { handleExamTaxonomy } from './_taxonomy.js';
 import { handleAdminCandidates } from './_candidates.js';
 import { handleCrawlDrafts } from './crawl-drafts.js';
 import { handleAdminCurrentAffairs } from './current-affairs.js';
+import { handleAdminLatestUpdates } from './latest-updates.js';
 import { invalidateAllPublicCaches } from '../../_lib/edge-cache-invalidator.js';
 import { handleHomepageBlocksAdmin } from '../../_lib/homepage-studio.js';
 import { COMMAND_SUITE_RESOURCES, handleCommandSuiteAdmin } from '../../_lib/command-suite.js';
@@ -279,6 +280,16 @@ async function dispatchAdminApi(request, env, ctx = null) {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
       return await handleAdminCurrentAffairs(request, env, actor, ctx, id);
+    }
+
+    if (resource === 'latest-updates') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      const luRes = await handleAdminLatestUpdates(request, env, actor, ctx);
+      if (write && luRes && luRes.status >= 200 && luRes.status < 400) {
+        await invalidateAllPublicCaches(request);
+      }
+      return luRes;
     }
 
     // Admin-only: user role management, URC Batch 1-5 (01-19) & candidate behavior governance.

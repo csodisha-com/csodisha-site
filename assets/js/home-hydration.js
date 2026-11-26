@@ -330,42 +330,202 @@
     grid.replaceChildren(frag);
   }
 
-  /* Populate hero Latest Updates card when empty & live items exist */
-  function hydrateLatestUpdatesIfEmpty(feed) {
+  /* 8. Unified Latest Updates Card with Working 6-Tab Filtering (v337) */
+  var activeLuTab = 'all';
+  var luTabsBound = false;
+
+  var LU_BADGE_CLASS = {
+    JOB: 'cso-lu-badge cso-lu-badge--job',
+    SCHEME: 'cso-lu-badge cso-lu-badge--scheme',
+    STUDY: 'cso-lu-badge cso-lu-badge--study',
+    'CURRENT AFFAIRS': 'cso-lu-badge cso-lu-badge--ca',
+    CAREER: 'cso-lu-badge cso-lu-badge--career',
+    COMMUNITY: 'cso-lu-badge cso-lu-badge--community'
+  };
+
+  function getLatestUpdatesItems(feed) {
+    if (feed && Array.isArray(feed.latest_updates) && feed.latest_updates.length) {
+      return feed.latest_updates;
+    }
+    var fallback = [];
+    (feed && feed.jobs || []).slice(0, 3).forEach(function (j) {
+      fallback.push({
+        id: 'job:' + (j.id || j.slug),
+        title_en: j.title_en,
+        title_or: j.title_or,
+        url: j.href || ('/jobs/' + encodeURIComponent(j.slug || '')),
+        badge_type: 'JOB',
+        filter_tags: ['all', 'jobs', 'odisha'],
+        meta_line: [j.organisation_en || j.category || 'Odisha Govt', j.last_date ? ('Last Date: ' + formatShortDate(j.last_date)) : (j.district || 'All Odisha')].filter(Boolean).join(' • '),
+        cta_label: 'View Job →',
+        is_external: false,
+        is_pinned: false
+      });
+    });
+    (feed && feed.schemes || []).slice(0, 2).forEach(function (s) {
+      fallback.push({
+        id: 'scheme:' + (s.id || s.slug),
+        title_en: s.title_en,
+        title_or: s.title_or,
+        url: s.href || ('/schemes/' + encodeURIComponent(s.slug || '')),
+        badge_type: 'SCHEME',
+        filter_tags: ['all', 'schemes', 'odisha'],
+        meta_line: [s.department || 'Govt. of Odisha', s.is_ongoing ? 'Ongoing' : formatShortDate(s.last_date)].filter(Boolean).join(' • '),
+        cta_label: 'Check Scheme →',
+        is_external: false,
+        is_pinned: false
+      });
+    });
+    (feed && feed.current_affairs || []).slice(0, 2).forEach(function (c) {
+      fallback.push({
+        id: 'ca:' + (c.id || c.slug),
+        title_en: c.title_en,
+        title_or: c.title_or,
+        url: c.href || ('/current-affairs/' + encodeURIComponent(c.slug || '')),
+        badge_type: 'CURRENT AFFAIRS',
+        filter_tags: ['all', 'education', /national/i.test(c.category || '') ? 'national' : 'odisha'],
+        meta_line: [formatShortDate(c.date), c.category || 'Odisha'].filter(Boolean).join(' • '),
+        cta_label: 'Read Brief →',
+        is_external: false,
+        is_pinned: false
+      });
+    });
+    (feed && feed.syllabus_pyq || []).slice(0, 2).forEach(function (r) {
+      fallback.push({
+        id: 'study:' + (r.id || r.slug),
+        title_en: r.title_en,
+        title_or: r.title_or,
+        url: r.view_url || '/study-library/',
+        badge_type: 'STUDY',
+        filter_tags: ['all', 'education', 'odisha'],
+        meta_line: [r.exam_tag || 'Study Library', r.year || r.resource_type || 'Syllabus'].filter(Boolean).join(' • '),
+        cta_label: 'Read Guide →',
+        is_external: false,
+        is_pinned: false
+      });
+    });
+    return fallback;
+  }
+
+  function localizeLuTabLabels() {
     var panel = document.querySelector('.lu');
     if (!panel) return;
-    var hasLiveRows = panel.querySelector('.cso-update-row');
-    if (hasLiveRows) return;
+    var isOr = isOdiaActive();
+    var titleEl = panel.querySelector('.cso-lu-title');
+    if (titleEl) {
+      titleEl.replaceChildren();
+      var ico = make('span', '', '\uD83D\uDD14');
+      ico.setAttribute('aria-hidden', 'true');
+      titleEl.appendChild(ico);
+      titleEl.appendChild(document.createTextNode(isOr ? ' ସର୍ବଶେଷ ଅପଡେଟ୍' : ' Latest Updates'));
+    }
+    var viewAllEl = panel.querySelector('.cso-lu-viewall');
+    if (viewAllEl) viewAllEl.textContent = isOr ? 'ସବୁ ଦେଖନ୍ତୁ →' : 'View All →';
 
-    var combined = [];
-    (feed.jobs || []).slice(0, 2).forEach(function (j) {
-      combined.push({ tag: 'JOB', cls: '', title: pickBi(j.title_en, j.title_or), meta: j.last_date ? ('Last date: ' + formatShortDate(j.last_date)) : (j.category || 'Jobs'), href: j.href });
+    var labels = isOr
+      ? { all: 'ସମସ୍ତ', jobs: 'ଚାକିରି', schemes: 'ଯୋଜନା', education: 'ଶିକ୍ଷା', odisha: 'ଓଡ଼ିଶା', national: 'ଜାତୀୟ' }
+      : { all: 'All', jobs: 'Jobs', schemes: 'Schemes', education: 'Education', odisha: 'Odisha', national: 'National' };
+    panel.querySelectorAll('.tabs button').forEach(function (btn) {
+      var tabKey = String(btn.getAttribute('data-tab') || btn.getAttribute('data-category') || 'all').toLowerCase();
+      if (labels[tabKey]) btn.textContent = labels[tabKey];
     });
-    (feed.current_affairs || []).slice(0, 2).forEach(function (c) {
-      combined.push({ tag: 'CA', cls: 'tg--guide', title: pickBi(c.title_en, c.title_or), meta: c.date ? formatShortDate(c.date) : (c.category || 'Current Affairs'), href: c.href });
-    });
-    (feed.schemes || []).slice(0, 1).forEach(function (s) {
-      combined.push({ tag: 'SCHEME', cls: 'tg--scheme', title: pickBi(s.title_en, s.title_or), meta: s.department || 'Schemes', href: s.href });
-    });
-    (feed.syllabus_pyq || []).slice(0, 1).forEach(function (r) {
-      combined.push({ tag: 'STUDY', cls: 'tg--edu', title: pickBi(r.title_en, r.title_or), meta: r.exam_tag || 'Study Library', href: r.view_url });
-    });
-    if (!combined.length) return;
+  }
 
-    panel.querySelectorAll('.cso-lu-empty, .em').forEach(function (n) { n.remove(); });
+  function bindLatestUpdatesTabs() {
+    var panel = document.querySelector('.lu');
+    if (!panel || luTabsBound) return;
+    var tabBar = panel.querySelector('.tabs');
+    if (!tabBar) return;
+    luTabsBound = true;
+
+    tabBar.addEventListener('click', function (ev) {
+      var btn = ev.target && ev.target.closest ? ev.target.closest('button[role="tab"], button') : null;
+      if (!btn || !tabBar.contains(btn)) return;
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
+      activeLuTab = String(btn.getAttribute('data-tab') || btn.getAttribute('data-category') || 'all').toLowerCase();
+      tabBar.querySelectorAll('button').forEach(function (b) {
+        var isAct = b === btn;
+        b.classList.toggle('a', isAct);
+        b.setAttribute('aria-selected', String(isAct));
+        b.setAttribute('aria-pressed', String(isAct));
+      });
+      if (lastFeed) renderLatestUpdatesPanel(lastFeed);
+    }, true);
+
+    tabBar.addEventListener('keydown', function (ev) {
+      if (ev.key !== 'ArrowRight' && ev.key !== 'ArrowLeft') return;
+      var btns = Array.prototype.slice.call(tabBar.querySelectorAll('button'));
+      var idx = btns.indexOf(document.activeElement);
+      if (idx < 0 || !btns.length) return;
+      ev.preventDefault();
+      var next = btns[(idx + (ev.key === 'ArrowRight' ? 1 : btns.length - 1)) % btns.length];
+      next.focus();
+      next.click();
+    });
+  }
+
+  function renderLatestUpdatesPanel(feed) {
+    var panel = document.querySelector('.lu');
+    if (!panel) return;
+    var items = getLatestUpdatesItems(feed);
+
+    // Ensure clean list container (remove any legacy ticker windows created before feed arrived)
+    panel.classList.remove('cso-ticker-active');
+    panel.querySelectorAll('.cso-ticker-window').forEach(function (x) { x.remove(); });
+    var listHost = document.getElementById('cso-lu-list');
+    if (!listHost) {
+      listHost = make('div', 'cso-lu-list');
+      listHost.id = 'cso-lu-list';
+      listHost.setAttribute('aria-live', 'polite');
+      panel.appendChild(listHost);
+    }
+
+    window.__CSO_LU_HYDRATED__ = true;
+    bindLatestUpdatesTabs();
+    localizeLuTabLabels();
+
+    var isOr = isOdiaActive();
+    var filtered = items.filter(function (it) {
+      if (!activeLuTab || activeLuTab === 'all') return true;
+      var tags = Array.isArray(it.filter_tags) ? it.filter_tags : [];
+      return tags.indexOf(activeLuTab) !== -1;
+    });
+
+    if (!filtered.length) {
+      var emptyMsg = items.length
+        ? (isOr ? 'ଏହି ବର୍ଗରେ ଏବେ କୌଣସି ପ୍ରକାଶିତ ଅପଡେଟ୍ ନାହିଁ।' : 'No published updates in this tab yet — check All or other sections.')
+        : (isOr ? 'ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ଅପଡେଟ୍ ପ୍ରକାଶିତ ହୋଇନାହିଁ।' : 'No items published yet — publish content in Admin Studio.');
+      var emptyRow = make('div', 'it cso-lu-empty');
+      emptyRow.appendChild(make('div', '', emptyMsg));
+      listHost.replaceChildren(emptyRow);
+      return;
+    }
+
     var frag = document.createDocumentFragment();
-    combined.slice(0, 5).forEach(function (u) {
-      var row = make('div', 'it cso-update-row');
-      row.appendChild(make('span', 'tg ' + u.cls, u.tag));
-      var main = make('span', 'cso-update-main');
-      var a = makeLink('', '', u.href, false);
-      a.appendChild(make('strong', '', u.title));
-      main.appendChild(a);
-      main.appendChild(make('small', '', u.meta));
-      row.appendChild(main);
+    filtered.slice(0, 5).forEach(function (u) {
+      var row = make('article', 'cso-lu-item');
+      var topMeta = make('div', 'cso-lu-item-top');
+      var badgeType = String(u.badge_type || 'JOB').toUpperCase();
+      topMeta.appendChild(make('span', LU_BADGE_CLASS[badgeType] || 'cso-lu-badge', badgeType));
+      if (u.is_pinned) {
+        topMeta.appendChild(make('span', 'cso-lu-pin-chip', isOr ? '📌 ପିନ୍' : '📌 Pinned'));
+      }
+      var href = safeHref(u.url) || '/jobs/';
+      var ctaText = String(u.cta_label || (u.is_external ? 'Official Source ↗' : 'View Details →'));
+      var ctaLink = makeLink('cso-lu-cta' + (u.is_external ? ' cso-lu-cta--ext' : ''), ctaText, href, Boolean(u.is_external));
+      topMeta.appendChild(ctaLink);
+      row.appendChild(topMeta);
+
+      var titleLink = makeLink('cso-lu-item-title', pickBi(u.title_en, u.title_or, 'Update'), href, Boolean(u.is_external));
+      row.appendChild(titleLink);
+
+      if (u.meta_line) {
+        row.appendChild(make('div', 'cso-lu-item-meta', u.meta_line));
+      }
       frag.appendChild(row);
     });
-    panel.appendChild(frag);
+    listHost.replaceChildren(frag);
   }
 
   function renderAllFromFeed(feed) {
@@ -373,13 +533,13 @@
     lastFeed = feed;
     window.__CSO_HOME_FEED__ = feed;
     if (feed.broadcast) renderLiveBanner(feed.broadcast);
+    renderLatestUpdatesPanel(feed);
     renderJobsSection(feed.jobs);
     renderCurrentAffairsSection(feed.current_affairs);
     renderMockTestsSection(feed.mock_tests);
     renderSyllabusSection(feed.syllabus_pyq);
     renderCareersSection(feed.careers);
     renderSchemesSection(feed.schemes);
-    hydrateLatestUpdatesIfEmpty(feed);
   }
 
   function buildFeedUrl(forceBust) {

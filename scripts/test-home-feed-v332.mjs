@@ -6,6 +6,11 @@ import {
   buildPublicHomeFeed,
   handlePublicHomeFeedApi
 } from '../functions/api/public/home-feed.js';
+import {
+  isExternalHref,
+  upsertLatestUpdateMeta
+} from '../functions/_lib/latest-updates.js';
+import { handleAdminLatestUpdates } from '../functions/api/admin/latest-updates.js';
 import { ACTIVE_SW_CACHE_VERSION } from '../functions/_lib/ops-sentinel.js';
 import { CONTENT_PUBLIC_PATHS } from '../functions/_lib/edge-cache-invalidator.js';
 
@@ -13,8 +18,23 @@ const ROOT = process.cwd();
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 function createMockDb() {
-  const execSql = (sql) => {
+  const luMeta = new Map();
+  let jobPublished = 1;
+
+  const execSql = (sql, params = []) => {
     const s = sql.replace(/\s+/g, ' ').trim();
+    if (/^INSERT INTO cso_latest_updates_meta/i.test(s)) {
+      const [entity_type, entity_id, is_pinned, scope, updated_at] = params;
+      luMeta.set(`${entity_type}:${entity_id}`, { entity_type, entity_id, is_pinned, scope, updated_at });
+      return { run: { success: true } };
+    }
+    if (/^SELECT entity_type, entity_id, is_pinned, scope, updated_at FROM cso_latest_updates_meta/i.test(s)) {
+      return { results: Array.from(luMeta.values()) };
+    }
+    if (/^UPDATE job_articles SET is_published = 0/i.test(s)) {
+      jobPublished = 0;
+      return { run: { success: true } };
+    }
     if (/FROM site_settings WHERE key = \?/i.test(s)) {
       return {
         first: {
@@ -32,6 +52,7 @@ function createMockDb() {
       };
     }
     if (/FROM job_articles/i.test(s)) {
+      if (!jobPublished) return { results: [] };
       return {
         results: [
           {
@@ -169,11 +190,12 @@ function createMockDb() {
 
   return {
     prepare(sql) {
+      let bound = [];
       return {
-        bind() { return this; },
-        async first() { return execSql(sql).first ?? null; },
-        async all() { return { results: execSql(sql).results || [] }; },
-        async run() { return { success: true }; }
+        bind(...args) { bound = args; return this; },
+        async first() { return execSql(sql, bound).first ?? null; },
+        async all() { return { results: execSql(sql, bound).results || [] }; },
+        async run() { return execSql(sql, bound).run || { success: true }; }
       };
     }
   };
@@ -197,8 +219,15 @@ await test('1. GET /api/public/home-feed returns all 7 live content buckets with
 
   const data = await res.json();
   assert.equal(data.ok, true);
-  assert.equal(data.version, 'v332');
+  assert.equal(data.version, 'v337');
   assert.equal(data.broadcast.active, true);
+  assert.ok(Array.isArray(data.latest_updates) && data.latest_updates.length >= 5, 'home-feed must include unified latest_updates across tables');
+  const jobLu = data.latest_updates.find((x) => x.entity_type === 'job');
+  assert.ok(jobLu && jobLu.badge_type === 'JOB' && jobLu.cta_label === 'View Job →' && jobLu.is_external === false);
+  assert.ok(jobLu.filter_tags.includes('all') && jobLu.filter_tags.includes('jobs') && jobLu.filter_tags.includes('odisha'));
+  assert.ok(jobLu.meta_line && !/CS Odisha Editorial Desk/i.test(jobLu.meta_line));
+  assert.equal(isExternalHref('https://www.opsc.gov.in/'), true);
+  assert.equal(isExternalHref('/jobs/opsc-oas-2026'), false);
   assert.equal(data.broadcast.badge_label, 'LIVE ALERT');
   assert.ok(data.broadcast.headline_or.includes('OPSC'));
 
@@ -263,9 +292,16 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v336');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v336';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v337');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v337';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
+
+  // v337: Latest Updates homepage DOM, Admin Studio pin/scope controls & live feed panel
+  assert.ok(indexHtml.includes('id="cso-latest-updates-card"') && indexHtml.includes('id="cso-lu-list"'), 'index.html must include upgraded Latest Updates card');
+  assert.ok(read('admin/quick-create-studio.js').includes('Pin to Homepage Latest Updates'), 'quick-create-studio.js must include Pin to Homepage Latest Updates');
+  assert.ok(read('admin/quick-create-studio.js').includes('Latest Updates Live Feed'), 'quick-create-studio.js must include Latest Updates Live Feed panel');
+  assert.ok(read('admin/cms/cms.js').includes('Pin to Homepage Latest Updates'), 'cms.js must include Pin to Homepage Latest Updates');
+  assert.ok(read('functions/api/admin/_router.js').includes("if (resource === 'latest-updates')"), '_router.js must wire /api/admin/latest-updates');
 
   // v334: CSO Opportunity Compass completely removed from homepage HTML, JS hydration & CSS
   assert.ok(!indexHtml.includes('CSO Opportunity Compass'), 'CSO Opportunity Compass must be completely absent from index.html');
@@ -294,4 +330,31 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   assert.ok(read('assets/app.js').includes('window.CSOAskSearch'), 'app.js chips & form must invoke window.CSOAskSearch');
 });
 
-console.log(`\n=== Homepage Live Feed v332 Results: ${passed} passed, 0 failed ===\n`);
+await test('4. v337 Admin /api/admin/latest-updates pin, scope & unpublish immediately control homepage Latest Updates order', async () => {
+  const db = createMockDb();
+  const env = { DB: db };
+  const actor = { userId: 'adm_1', email: 'admin@csodisha.com', role: 'admin' };
+
+  // Pin scheme_articles sch_1 with National scope so it sorts #1 ahead of everything else
+  await upsertLatestUpdateMeta(db, { entity_type: 'scheme', entity_id: 'sch_1', is_pinned: 1, scope: 'National' });
+  const listRes = await handleAdminLatestUpdates(new Request('https://csodisha.com/api/admin/latest-updates', { method: 'GET' }), env, actor);
+  assert.equal(listRes.status, 200);
+  const listData = await listRes.json();
+  assert.equal(listData.ok, true);
+  assert.equal(listData.items[0].entity_id, 'sch_1');
+  assert.equal(listData.items[0].is_pinned, true);
+  assert.equal(listData.items[0].scope, 'National');
+  assert.ok(listData.items[0].filter_tags.includes('national'));
+
+  // 1-click Unpublish job_1 removes it from homepage Latest Updates
+  const unpubRes = await handleAdminLatestUpdates(new Request('https://csodisha.com/api/admin/latest-updates', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'unpublish', entity_type: 'job', entity_id: 'job_1' })
+  }), env, actor);
+  assert.equal(unpubRes.status, 200);
+  const feedAfter = await buildPublicHomeFeed(env);
+  assert.equal(feedAfter.latest_updates.some((it) => it.entity_id === 'job_1'), false, 'Unpublished job must disappear from latest_updates');
+});
+
+console.log(`\n=== Homepage Live Feed v332 + v337 Results: ${passed} passed, 0 failed ===\n`);

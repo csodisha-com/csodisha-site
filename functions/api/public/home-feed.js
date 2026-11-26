@@ -16,6 +16,7 @@
 import { json } from '../../_lib/http.js';
 import { readBanner } from '../admin/_site.js';
 import { ensureMockTestsV312Schema, formatMockTestRow } from '../admin/mock-tests.js';
+import { buildUnifiedLatestUpdates } from '../../_lib/latest-updates.js';
 
 export const HOME_FEED_CACHE_CONTROL = 'public, max-age=60, s-maxage=120, stale-while-revalidate=180';
 
@@ -409,9 +410,10 @@ export async function buildPublicHomeFeed(env) {
   if (!db) {
     return {
       ok: true,
-      version: 'v332',
+      version: 'v337',
       generated_at: new Date().toISOString(),
       broadcast: { active: false },
+      latest_updates: [],
       jobs: [],
       current_affairs: [],
       mock_tests: [],
@@ -421,8 +423,9 @@ export async function buildPublicHomeFeed(env) {
     };
   }
 
-  const [broadcast, jobs, current_affairs, mock_tests, syllabus_pyq, careers, schemes] = await Promise.all([
+  const [broadcast, latest_updates, jobs, current_affairs, mock_tests, syllabus_pyq, careers, schemes] = await Promise.all([
     fetchBroadcast(env),
+    buildUnifiedLatestUpdates(db, { limit: 15 }),
     fetchLatestJobs(db),
     fetchLatestCurrentAffairs(db),
     fetchLatestMockTests(db),
@@ -433,9 +436,10 @@ export async function buildPublicHomeFeed(env) {
 
   return {
     ok: true,
-    version: 'v332',
+    version: 'v337',
     generated_at: new Date().toISOString(),
     broadcast,
+    latest_updates,
     jobs,
     current_affairs,
     mock_tests,
