@@ -466,8 +466,11 @@
     // Re-render immediately when user switches language pills (English / ଓଡ଼ିଆ)
     document.addEventListener('click', function (ev) {
       var pill = ev.target && ev.target.closest ? ev.target.closest('[data-cso-lang], [data-lang]') : null;
-      if (pill && lastFeed) {
-        setTimeout(function () { renderAllFromFeed(lastFeed); }, 60);
+      if (pill) {
+        setTimeout(function () {
+          localizeHeroCopy();
+          if (lastFeed) renderAllFromFeed(lastFeed);
+        }, 60);
       }
     });
 
@@ -475,7 +478,10 @@
     window.addEventListener('storage', function (e) {
       if (e.key === 'cso_homepage_config') hydrateHomepageConfig();
       if (e.key === 'cso_home_feed_bust') mountHomeFeed(true);
-      if ((e.key === 'cso_lang_pref' || e.key === 'cso_lang') && lastFeed) renderAllFromFeed(lastFeed);
+      if (e.key === 'cso_lang_pref' || e.key === 'cso_lang') {
+        localizeHeroCopy();
+        if (lastFeed) renderAllFromFeed(lastFeed);
+      }
     });
 
     if (typeof window.BroadcastChannel === 'function') {
@@ -488,6 +494,35 @@
     }
   }
 
+  function localizeHeroCopy() {
+    var isOr = isOdiaActive();
+    var inp = document.getElementById('cso-ask-input');
+    if (inp) {
+      inp.placeholder = isOr
+        ? 'ଓଡ଼ିଆ କିମ୍ବା ଇଂରାଜୀରେ ପଚାରନ୍ତୁ — ଚାକିରି, ଯୋଜନା, ସିଲାବସ୍, OPSC, ବୃତ୍ତି...'
+        : 'Ask CSOdisha in EN or ଓଡ଼ିଆ — jobs, schemes, syllabus, OPSC, scholarships...';
+    }
+    var askLbl = document.querySelector('#cso-hero-ask-btn .cso-hero-ask-label');
+    if (askLbl && !(document.getElementById('cso-hero-ask-btn') && document.getElementById('cso-hero-ask-btn').disabled)) {
+      askLbl.textContent = isOr ? '✨ ପଚାରନ୍ତୁ' : '✨ Ask';
+    }
+    var clr = document.getElementById('cso-hero-clear');
+    if (clr) clr.textContent = isOr ? '✕ ସଫା କରନ୍ତୁ' : '✕ Clear';
+    var chipsLbl = document.getElementById('chips-label');
+    if (chipsLbl) chipsLbl.textContent = isOr ? 'ଲୋକପ୍ରିୟ ସନ୍ଧାନ:' : 'Popular Searches:';
+
+    var trustStrip = document.getElementById('cso-hero-trust-strip');
+    if (trustStrip) {
+      var trustTexts = isOr
+        ? ['୩୦ ଓଡ଼ିଶା ଜିଲ୍ଲା', 'ଦ୍ୱିଭାଷୀ EN / ଓଡ଼ିଆ', 'ଯାଞ୍ଚିତ .gov.in ପୋର୍ଟାଲ୍']
+        : ['30 Odisha Districts', 'Bilingual EN / ଓଡ଼ିଆ', 'Verified .gov.in Portals'];
+      trustStrip.querySelectorAll('[data-trust-idx]').forEach(function (node) {
+        var idx = Number(node.getAttribute('data-trust-idx'));
+        if (trustTexts[idx]) node.textContent = trustTexts[idx];
+      });
+    }
+  }
+
   function removeOpportunityCompass() {
     document.querySelectorAll('#cso-opportunity-compass, .cso-compass-section').forEach(function (node) {
       node.remove();
@@ -496,6 +531,7 @@
 
   function init() {
     removeOpportunityCompass();
+    localizeHeroCopy();
     mountHomeFeed(false);
     hydrateHomepageConfig();
     bindLiveEvents();

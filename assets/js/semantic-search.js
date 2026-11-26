@@ -1,4 +1,8 @@
-/* "Ask CSOdisha" Smart Semantic Search Client (v320) — 100% CSP-Safe */
+/* "Ask CSOdisha" Smart Semantic Search Client (v335) — 100% CSP-Safe
+ * On homepage (index.html), integrates directly with the Hero Search Bar (#sf, #cso-ask-input,
+ * #cso-hero-clear, #cso-hero-ask-results) & Popular Searches chips for a single clean search UX.
+ * On portal subpages (/jobs/, /schemes/, /study-library/, /careers/), mounts #csoAskSearchBar.
+ */
 (function () {
   'use strict';
 
@@ -13,10 +17,190 @@
     job: 'Job',
     scheme: 'Scheme',
     study: 'Study',
-    career: 'Career'
+    career: 'Career',
+    current_affairs: 'Current Affairs'
   };
 
+  function renderSemanticResults(resultsBox, q, data, onReset) {
+    resultsBox.hidden = false;
+    resultsBox.replaceChildren();
+
+    var meta = el('div', 'cso-ask-meta');
+    meta.appendChild(el('span', '', (data.results || []).length + ' matching article(s) for "' + q + '"'));
+    var metaRight = el('div', 'cso-ask-meta-right');
+    metaRight.appendChild(el('span', 'cso-ask-mode-badge', data.mode === 'semantic' ? 'Semantic AI Match' : 'Instant Keyword Match'));
+    var panelResetBtn = el('button', 'cso-ask-clear-btn cso-ask-panel-reset-btn', '✕ Close / Reset');
+    panelResetBtn.type = 'button';
+    panelResetBtn.setAttribute('aria-label', 'Close and reset Ask CSOdisha results');
+    panelResetBtn.addEventListener('click', onReset);
+    metaRight.appendChild(panelResetBtn);
+    meta.appendChild(metaRight);
+    resultsBox.appendChild(meta);
+
+    if (data.ai_answer && data.ai_answer.answer_en) {
+      var ansCard = el('div', 'cso-ask-answer-card');
+      var ansHead = el('div', 'cso-ask-answer-head');
+      ansHead.appendChild(el('strong', 'cso-ask-answer-title', '✨ CSOdisha AI Answer'));
+      var badges = el('div', 'cso-ask-answer-badges');
+      badges.appendChild(el(
+        'span',
+        'cso-ask-mode-badge',
+        data.ai_answer.grounded ? 'Grounded in CSOdisha Articles' : 'General Odisha Guidance — Verify Official Notification'
+      ));
+      if (data.ai_answer.cached) {
+        badges.appendChild(el('span', 'cso-ask-type-badge', 'Instant Cache'));
+      }
+      ansHead.appendChild(badges);
+      ansCard.appendChild(ansHead);
+      ansCard.appendChild(el('p', 'cso-ask-answer-en', data.ai_answer.answer_en));
+      if (data.ai_answer.answer_or) {
+        ansCard.appendChild(el('p', 'cso-ask-answer-or', data.ai_answer.answer_or));
+      }
+      resultsBox.appendChild(ansCard);
+    }
+
+    if (!data.results || !data.results.length) {
+      var chips = el('div', 'cso-ask-portal-chips');
+      [
+        ['/jobs/', 'Browse Jobs →'],
+        ['/schemes/', 'Browse Schemes →'],
+        ['/study-library/', 'Study Library →'],
+        ['/mock-tests/', 'CBT Mock Tests →']
+      ].forEach(function (pair) {
+        var link = el('a', 'cso-ask-type-badge cso-ask-portal-link', pair[1]);
+        link.href = pair[0];
+        chips.appendChild(link);
+      });
+      resultsBox.appendChild(chips);
+      return;
+    }
+
+    data.results.forEach(function (item) {
+      var a = el('a', 'cso-ask-item');
+      a.href = item.url || '/';
+      var head = el('div', 'cso-ask-item-head');
+      head.appendChild(el('span', 'cso-ask-type-badge', TYPE_LABELS[item.type] || 'Resource'));
+      head.appendChild(el('span', 'cso-ask-item-title', item.title_en || 'Untitled'));
+      a.appendChild(head);
+      if (item.title_or) a.appendChild(el('span', 'cso-ask-item-or', item.title_or));
+      if (item.summary) a.appendChild(el('p', 'cso-ask-item-summary', item.summary));
+      resultsBox.appendChild(a);
+    });
+  }
+
+  function wireHeroAskSearch() {
+    var heroForm = document.getElementById('sf');
+    var heroInput = document.getElementById('cso-ask-input');
+    var heroResults = document.getElementById('cso-hero-ask-results');
+    if (!heroForm || !heroInput || !heroResults) return false;
+
+    var clearBtn = document.getElementById('cso-hero-clear');
+    var submitBtn = document.getElementById('cso-hero-ask-btn') || heroForm.querySelector('button[type="submit"]');
+    var labelEl = submitBtn ? submitBtn.querySelector('.cso-hero-ask-label') : null;
+    var activeController = null;
+
+    function setBtnBusy(busy) {
+      if (!submitBtn) return;
+      submitBtn.disabled = busy;
+      if (labelEl) {
+        var isOr = false;
+        try { isOr = document.documentElement.getAttribute('lang') === 'or' || localStorage.getItem('cso_lang_pref') === 'or'; } catch (_) {}
+        labelEl.textContent = busy ? (isOr ? 'ଖୋଜୁଛି…' : 'Asking…') : (isOr ? '✨ ପଚାରନ୍ତୁ' : '✨ Ask');
+      }
+    }
+
+    function syncClearVisibility() {
+      if (!clearBtn) return;
+      clearBtn.hidden = !heroInput.value.trim() && heroResults.hidden;
+    }
+
+    function resetHeroSearch() {
+      if (activeController) {
+        activeController.abort();
+        activeController = null;
+      }
+      heroInput.value = '';
+      heroResults.replaceChildren();
+      heroResults.hidden = true;
+      setBtnBusy(false);
+      var dd = document.getElementById('cso-search-autocomplete');
+      if (dd) dd.hidden = true;
+      syncClearVisibility();
+      heroInput.focus();
+    }
+
+    function runHeroSearch(rawQuery, filterType) {
+      var q = String(rawQuery !== undefined ? rawQuery : heroInput.value).trim();
+      if (rawQuery !== undefined) heroInput.value = q;
+      var dd = document.getElementById('cso-search-autocomplete');
+      if (dd) dd.hidden = true;
+
+      if (q.length < 2) {
+        heroResults.hidden = false;
+        heroResults.replaceChildren(el('p', 'cso-ask-item-summary', 'Enter at least 2 characters in English or ଓଡ଼ିଆ.'));
+        syncClearVisibility();
+        heroInput.focus();
+        return;
+      }
+
+      if (activeController) activeController.abort();
+      var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      activeController = controller;
+      setBtnBusy(true);
+      syncClearVisibility();
+
+      var reqType = filterType || 'all';
+      fetch('/api/search/semantic?q=' + encodeURIComponent(q) + '&type=' + encodeURIComponent(reqType), {
+        credentials: 'same-origin',
+        signal: controller ? controller.signal : undefined
+      })
+        .then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (d) {
+            if (!r.ok || !d.ok) throw new Error(d.error || 'Search unavailable.');
+            return d;
+          });
+        })
+        .then(function (data) {
+          renderSemanticResults(heroResults, q, data, resetHeroSearch);
+        })
+        .catch(function (err) {
+          if (err && err.name === 'AbortError') return;
+          heroResults.hidden = false;
+          heroResults.replaceChildren(el('p', 'cso-ask-item-summary', err.message || 'Search failed.'));
+        })
+        .finally(function () {
+          if (activeController === controller) activeController = null;
+          setBtnBusy(false);
+          syncClearVisibility();
+        });
+    }
+
+    if (clearBtn) clearBtn.addEventListener('click', resetHeroSearch);
+    heroInput.addEventListener('input', syncClearVisibility);
+    heroForm.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && (!heroResults.hidden || heroInput.value.trim())) {
+        e.preventDefault();
+        resetHeroSearch();
+      }
+    });
+    heroForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      runHeroSearch(heroInput.value, 'all');
+    });
+
+    syncClearVisibility();
+    window.CSOAskSearch = {
+      run: runHeroSearch,
+      reset: resetHeroSearch,
+      syncClear: syncClearVisibility
+    };
+    return true;
+  }
+
   function mountAskBar() {
+    // Homepage hero search bar handles Ask CSOdisha natively without mounting a duplicate bar
+    if (wireHeroAskSearch()) return;
+
     var main = document.getElementById('main-content') || document.querySelector('main');
     if (!main || document.getElementById('csoAskSearchBar')) return;
 
@@ -127,69 +311,7 @@
           });
         })
         .then(function (data) {
-          resultsBox.hidden = false;
-          resultsBox.replaceChildren();
-          var meta = el('div', 'cso-ask-meta');
-          meta.appendChild(el('span', '', (data.results || []).length + ' matching article(s) for "' + q + '"'));
-          var metaRight = el('div', 'cso-ask-meta-right');
-          metaRight.appendChild(el('span', 'cso-ask-mode-badge', data.mode === 'semantic' ? 'Semantic AI Match' : 'Instant Keyword Match'));
-          var panelResetBtn = el('button', 'cso-ask-clear-btn cso-ask-panel-reset-btn', '✕ Close / Reset');
-          panelResetBtn.type = 'button';
-          panelResetBtn.setAttribute('aria-label', 'Close and reset Ask CSOdisha results');
-          panelResetBtn.addEventListener('click', resetSearch);
-          metaRight.appendChild(panelResetBtn);
-          meta.appendChild(metaRight);
-          resultsBox.appendChild(meta);
-
-          if (data.ai_answer && data.ai_answer.answer_en) {
-            var ansCard = el('div', 'cso-ask-answer-card');
-            var ansHead = el('div', 'cso-ask-answer-head');
-            ansHead.appendChild(el('strong', 'cso-ask-answer-title', '✨ CSOdisha AI Answer'));
-            var badges = el('div', 'cso-ask-answer-badges');
-            badges.appendChild(el(
-              'span',
-              'cso-ask-mode-badge',
-              data.ai_answer.grounded ? 'Grounded in CSOdisha Articles' : 'General Odisha Guidance — Verify Official Notification'
-            ));
-            if (data.ai_answer.cached) {
-              badges.appendChild(el('span', 'cso-ask-type-badge', 'Instant Cache'));
-            }
-            ansHead.appendChild(badges);
-            ansCard.appendChild(ansHead);
-            ansCard.appendChild(el('p', 'cso-ask-answer-en', data.ai_answer.answer_en));
-            if (data.ai_answer.answer_or) {
-              ansCard.appendChild(el('p', 'cso-ask-answer-or', data.ai_answer.answer_or));
-            }
-            resultsBox.appendChild(ansCard);
-          }
-
-          if (!data.results || !data.results.length) {
-            var chips = el('div', 'cso-ask-portal-chips');
-            [
-              ['/jobs/', 'Browse Jobs →'],
-              ['/schemes/', 'Browse Schemes →'],
-              ['/study-library/', 'Study Library →'],
-              ['/mock-tests/', 'CBT Mock Tests →']
-            ].forEach(function (pair) {
-              var link = el('a', 'cso-ask-type-badge cso-ask-portal-link', pair[1]);
-              link.href = pair[0];
-              chips.appendChild(link);
-            });
-            resultsBox.appendChild(chips);
-            return;
-          }
-
-          data.results.forEach(function (item) {
-            var a = el('a', 'cso-ask-item');
-            a.href = item.url || '/';
-            var head = el('div', 'cso-ask-item-head');
-            head.appendChild(el('span', 'cso-ask-type-badge', TYPE_LABELS[item.type] || 'Resource'));
-            head.appendChild(el('span', 'cso-ask-item-title', item.title_en || 'Untitled'));
-            a.appendChild(head);
-            if (item.title_or) a.appendChild(el('span', 'cso-ask-item-or', item.title_or));
-            if (item.summary) a.appendChild(el('p', 'cso-ask-item-summary', item.summary));
-            resultsBox.appendChild(a);
-          });
+          renderSemanticResults(resultsBox, q, data, resetSearch);
         })
         .catch(function (err) {
           if (err && err.name === 'AbortError') return;
@@ -203,6 +325,16 @@
           syncClearVisibility();
         });
     });
+
+    window.CSOAskSearch = {
+      run: function (q) {
+        input.value = String(q || '').trim();
+        syncClearVisibility();
+        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      },
+      reset: resetSearch,
+      syncClear: syncClearVisibility
+    };
   }
 
   if (document.readyState === 'loading') {

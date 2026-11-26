@@ -38,14 +38,23 @@
     }
 
     var activeRec = null;
-    var defaultText = btn.textContent || '🎙️';
+    var defaultNodes = Array.prototype.slice.call(btn.childNodes).map(function (n) { return n.cloneNode(true); });
+
+    function restoreDefaultContent() {
+      btn.replaceChildren();
+      if (defaultNodes.length) {
+        defaultNodes.forEach(function (n) { btn.appendChild(n.cloneNode(true)); });
+      } else {
+        btn.textContent = '🎙';
+      }
+    }
 
     function resetState() {
       activeRec = null;
       btn.classList.remove('is-listening');
       btn.setAttribute('aria-pressed', 'false');
       btn.setAttribute('aria-label', 'Voice Search');
-      btn.textContent = defaultText;
+      restoreDefaultContent();
     }
 
     btn.addEventListener('click', function () {
@@ -62,8 +71,8 @@
         rec.maxAlternatives = 1;
         btn.classList.add('is-listening');
         btn.setAttribute('aria-pressed', 'true');
-        btn.setAttribute('aria-label', 'Listening…');
-        btn.textContent = 'Listening…';
+        btn.setAttribute('aria-label', 'Listening… Click to stop');
+        btn.textContent = '● Listening…';
 
         rec.addEventListener('result', function (ev) {
           var transcript = '';
@@ -74,6 +83,12 @@
             input.value = transcript;
             input.dispatchEvent(new Event('input', { bubbles: true }));
             input.focus();
+            if (window.CSOAskSearch && typeof window.CSOAskSearch.run === 'function') {
+              window.CSOAskSearch.run(transcript);
+            } else if (input.form) {
+              if (typeof input.form.requestSubmit === 'function') input.form.requestSubmit();
+              else input.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+            }
           }
         });
         rec.addEventListener('end', resetState);
@@ -93,8 +108,12 @@
     var smic = document.getElementById('smic');
     var homeInput = document.getElementById('cso-ask-input');
     if (smic && homeInput) {
-      if (!supported) smic.hidden = true;
-      else bindVoiceControl(smic, homeInput);
+      if (!supported) {
+        smic.hidden = true;
+      } else {
+        smic.hidden = false;
+        bindVoiceControl(smic, homeInput);
+      }
     }
 
     // 2. Explorer top search bars

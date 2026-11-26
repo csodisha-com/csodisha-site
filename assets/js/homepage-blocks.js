@@ -203,9 +203,25 @@
 
     var chips = document.querySelector('.chips');
     if (chips && has('popular_searches')) {
-      var chipNodes = build('popular_searches');
+      var chipNodes = build('popular_searches').slice(0, 8);
       replaceKids(chips, chipNodes, '.chips-label');
-      chipNodes.forEach(function (n) { if (home.bindChip) home.bindChip(n); });
+      chipNodes.forEach(function (n) {
+        if (home.bindChip) {
+          home.bindChip(n);
+        } else {
+          n.addEventListener('click', function () {
+            var q = (n.textContent || '').trim();
+            var inp = document.getElementById('cso-ask-input');
+            if (inp) {
+              inp.value = q;
+              inp.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (window.CSOAskSearch && typeof window.CSOAskSearch.run === 'function') {
+              window.CSOAskSearch.run(q);
+            }
+          });
+        }
+      });
       any = true;
     }
 

@@ -263,8 +263,8 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v334');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v334';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v335');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v335';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
 
   // v334: CSO Opportunity Compass completely removed from homepage HTML, JS hydration & CSS
@@ -275,6 +275,17 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   assert.ok(!read('assets/style.css').includes('.cso-compass-section'), 'Unused .cso-compass-section CSS must be removed');
   assert.ok(!read('assets/style.css').includes('.cso-compass-grid'), 'Unused .cso-compass-grid CSS must be removed');
   assert.ok(!read('assets/js/homepage-blocks.js').includes("replaceKids(compass"), 'homepage-blocks.js must never re-inject opportunity_compass');
+
+  // v335: Hero card & Ask CSOdisha search bar polish
+  assert.ok(!indexHtml.includes('class="sr-icon"'), 'Duplicate left magnifying glass .sr-icon must be removed from hero search');
+  assert.ok(indexHtml.includes('id="cso-hero-clear"') && indexHtml.includes('✕ Clear'), 'Hero search must include ✕ Clear reset button');
+  assert.ok(indexHtml.includes('id="cso-hero-ask-btn"') && indexHtml.includes('✨ Ask'), 'Hero search must include single SVG ✨ Ask submit button');
+  assert.match(indexHtml, /<button[^>]+id="smic"[^>]+hidden\b/, 'Voice mic button #smic must be hidden by default in HTML');
+  assert.ok(indexHtml.includes('id="cso-hero-trust-strip"') && indexHtml.includes('30 Odisha Districts'), 'Hero card must include semantic trust strip');
+  const heroChipsBlock = indexHtml.slice(indexHtml.indexOf('class="chips"'), indexHtml.indexOf('id="cso-hero-trust-strip"'));
+  assert.equal((heroChipsBlock.match(/class="search-chip"/g) || []).length, 8, 'Popular Searches must contain 8 balanced chips');
+  assert.ok(read('assets/js/semantic-search.js').includes('window.CSOAskSearch'), 'semantic-search.js must expose window.CSOAskSearch');
+  assert.ok(read('assets/app.js').includes('window.CSOAskSearch'), 'app.js chips & form must invoke window.CSOAskSearch');
 });
 
 console.log(`\n=== Homepage Live Feed v332 Results: ${passed} passed, 0 failed ===\n`);

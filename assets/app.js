@@ -3118,21 +3118,37 @@ function setupGlobalSearch() {
       e.preventDefault();
       closeSearchAutocomplete();
       const searchInp = getSearchInput();
-      runSearch(searchInp ? searchInp.value : '');
+      const val = searchInp ? searchInp.value : '';
+      if (window.CSOAskSearch && typeof window.CSOAskSearch.run === 'function') {
+        window.CSOAskSearch.run(val);
+        return;
+      }
+      runSearch(val);
     };
   }
 
   const smic = $('#smic');
   if (smic && form) {
-    smic.onclick = () => voice(getSearchInput(), form);
+    const hasSpeech = typeof (window.SpeechRecognition || window.webkitSpeechRecognition) === 'function';
+    smic.hidden = !hasSpeech;
+    if (hasSpeech && !(window.CSOVoiceSearch && smic.dataset.csoVoiceBound === '1')) {
+      smic.onclick = () => voice(getSearchInput(), form);
+    }
   }
 
   const bindChip = c => {
     c.onclick = () => {
       const searchInp = getSearchInput();
-      const val = ORIGINAL_TEXT.get(c.firstChild) || c.textContent;
-      if (searchInp) searchInp.value = val;
+      const val = (ORIGINAL_TEXT.get(c.firstChild) || c.textContent || '').trim();
+      if (searchInp) {
+        searchInp.value = val;
+        searchInp.dispatchEvent(new Event('input', { bubbles: true }));
+      }
       closeSearchAutocomplete();
+      if (window.CSOAskSearch && typeof window.CSOAskSearch.run === 'function') {
+        window.CSOAskSearch.run(val);
+        return;
+      }
       runSearch(val);
     };
   };
