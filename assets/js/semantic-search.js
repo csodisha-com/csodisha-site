@@ -21,7 +21,20 @@
     current_affairs: 'Current Affairs'
   };
 
-  function renderSemanticResults(resultsBox, q, data, onReset) {
+  function formatHumanSectionNames(raw) {
+    return String(raw || '')
+      .replace(/\/jobs-careers\/?/gi, 'Jobs')
+      .replace(/\/jobs\/?/gi, 'Jobs')
+      .replace(/\/schemes-benefits\/?/gi, 'Government Schemes')
+      .replace(/\/schemes\/?/gi, 'Government Schemes')
+      .replace(/\/study-library\/?/gi, 'Study Library')
+      .replace(/\/mock-tests\/?/gi, 'CBT Mock Tests')
+      .replace(/\/current-affairs\/?/gi, 'Current Affairs')
+      .replace(/\/careers\/?/gi, 'Careers')
+      .replace(/\/resources\/?/gi, 'Syllabus & PYQs');
+  }
+
+  function renderSemanticResults(resultsBox, q, data) {
     resultsBox.hidden = false;
     resultsBox.replaceChildren();
 
@@ -29,11 +42,6 @@
     meta.appendChild(el('span', '', (data.results || []).length + ' matching article(s) for "' + q + '"'));
     var metaRight = el('div', 'cso-ask-meta-right');
     metaRight.appendChild(el('span', 'cso-ask-mode-badge', data.mode === 'semantic' ? 'Semantic AI Match' : 'Instant Keyword Match'));
-    var panelResetBtn = el('button', 'cso-ask-clear-btn cso-ask-panel-reset-btn', '✕ Close / Reset');
-    panelResetBtn.type = 'button';
-    panelResetBtn.setAttribute('aria-label', 'Close and reset Ask CSOdisha results');
-    panelResetBtn.addEventListener('click', onReset);
-    metaRight.appendChild(panelResetBtn);
     meta.appendChild(metaRight);
     resultsBox.appendChild(meta);
 
@@ -52,9 +60,9 @@
       }
       ansHead.appendChild(badges);
       ansCard.appendChild(ansHead);
-      ansCard.appendChild(el('p', 'cso-ask-answer-en', data.ai_answer.answer_en));
+      ansCard.appendChild(el('p', 'cso-ask-answer-en', formatHumanSectionNames(data.ai_answer.answer_en)));
       if (data.ai_answer.answer_or) {
-        ansCard.appendChild(el('p', 'cso-ask-answer-or', data.ai_answer.answer_or));
+        ansCard.appendChild(el('p', 'cso-ask-answer-or', formatHumanSectionNames(data.ai_answer.answer_or)));
       }
       resultsBox.appendChild(ansCard);
     }
@@ -110,8 +118,9 @@
     }
 
     function syncClearVisibility() {
-      if (!clearBtn) return;
-      clearBtn.hidden = !heroInput.value.trim() && heroResults.hidden;
+      var hasActive = Boolean(heroInput.value.trim()) || !heroResults.hidden;
+      heroForm.classList.toggle('has-query', hasActive);
+      if (clearBtn) clearBtn.hidden = !hasActive;
     }
 
     function resetHeroSearch() {
@@ -161,7 +170,7 @@
           });
         })
         .then(function (data) {
-          renderSemanticResults(heroResults, q, data, resetHeroSearch);
+          renderSemanticResults(heroResults, q, data);
         })
         .catch(function (err) {
           if (err && err.name === 'AbortError') return;
@@ -311,7 +320,7 @@
           });
         })
         .then(function (data) {
-          renderSemanticResults(resultsBox, q, data, resetSearch);
+          renderSemanticResults(resultsBox, q, data);
         })
         .catch(function (err) {
           if (err && err.name === 'AbortError') return;

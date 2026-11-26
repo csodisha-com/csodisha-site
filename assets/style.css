@@ -11590,34 +11590,105 @@ nav#cso-hub-top-tabs {
   display: none !important;
 }
 
+/* v336: High-contrast WCAG AAA (>= 13:1) text isolation inside #cso-hero-ask-results
+   Prevents legacy .hero p / .cso-hero-content p white-on-hero rules from leaking onto the card */
+#cso-hero #cso-hero-ask-results .cso-ask-answer-card {
+  background: var(--cso-surface-alt, var(--cso-surface)) !important;
+  border: 1px solid var(--cso-border) !important;
+  border-left: 4px solid var(--cso-accent) !important;
+  color: var(--cso-ink) !important;
+  padding: 14px 16px !important;
+  opacity: 1 !important;
+}
+
+#cso-hero #cso-hero-ask-results .cso-ask-answer-title,
+#cso-hero #cso-hero-ask-results .cso-ask-item-title {
+  color: var(--cso-ink) !important;
+  text-shadow: none !important;
+}
+
+#cso-hero #cso-hero-ask-results p,
+#cso-hero #cso-hero-ask-results .cso-ask-answer-en,
+#cso-hero #cso-hero-ask-results .cso-ask-answer-or {
+  color: var(--cso-ink) !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  font-size: 0.92rem !important;
+  font-weight: 500 !important;
+  line-height: 1.58 !important;
+  margin: 0 !important;
+}
+
+#cso-hero #cso-hero-ask-results .cso-ask-item-summary,
+#cso-hero #cso-hero-ask-results .cso-ask-item-or,
+#cso-hero #cso-hero-ask-results .cso-ask-meta {
+  color: var(--cso-ink-soft) !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+
+#cso-hero #cso-hero-ask-results .cso-ask-mode-badge,
+#cso-hero #cso-hero-ask-results .cso-ask-type-badge {
+  background: var(--cso-surface) !important;
+  color: var(--cso-ink) !important;
+  border: 1px solid var(--cso-border) !important;
+  text-shadow: none !important;
+}
+
+#cso-hero #cso-hero-ask-results .cso-ask-portal-link:hover,
+#cso-hero #cso-hero-ask-results .cso-ask-portal-link:focus-visible {
+  background: var(--cso-accent) !important;
+  color: var(--cso-accent-ink) !important;
+  border-color: var(--cso-accent) !important;
+}
+
+/* v336: Hide Ctrl + K shortcut badge whenever search input is focused or active */
+#cso-hero #sf:focus-within .cso-search-kbd,
+#cso-hero #sf.has-query .cso-search-kbd {
+  display: none !important;
+}
+
 #cso-hero .chips {
   width: 100%;
-  max-width: 660px;
+  max-width: 720px;
   margin: 2px auto 0;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 #cso-hero .chips-label {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
-  padding: 5px 12px;
+  min-height: 32px;
+  padding: 4px 10px;
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 #cso-hero .search-chip {
-  min-height: 36px;
-  padding: 6px 13px;
+  min-height: 32px;
+  padding: 5px 10px;
   border-radius: 999px;
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   line-height: 1.2;
+  white-space: nowrap;
+}
+
+@media (min-width: 901px) {
+  #cso-hero .chips {
+    flex-wrap: nowrap;
+    gap: 5px;
+  }
+  #cso-hero .search-chip {
+    padding: 5px 9px;
+    font-size: 0.8125rem;
+  }
 }
 
 .cso-hero-trust-strip {

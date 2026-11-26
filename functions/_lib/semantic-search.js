@@ -346,11 +346,24 @@ async function hydrateMatchFromD1(env, match) {
   }
 }
 
+export function cleanSectionPathsInText(text) {
+  return String(text || '')
+    .replace(/\/jobs-careers\/?/gi, 'Jobs')
+    .replace(/\/jobs\/?/gi, 'Jobs')
+    .replace(/\/schemes-benefits\/?/gi, 'Government Schemes')
+    .replace(/\/schemes\/?/gi, 'Government Schemes')
+    .replace(/\/study-library\/?/gi, 'Study Library')
+    .replace(/\/mock-tests\/?/gi, 'CBT Mock Tests')
+    .replace(/\/current-affairs\/?/gi, 'Current Affairs')
+    .replace(/\/careers\/?/gi, 'Careers')
+    .replace(/\/resources\/?/gi, 'Syllabus & PYQs');
+}
+
 export async function generateAskCsoAnswer(env, { q, type = 'all', results = [], clientIp = 'anon', debugOut = null }) {
   await ensureSemanticSchema(env);
   const cleanQ = String(q || '').trim();
   const normalizedQ = cleanQ.toLowerCase().replace(/\s+/g, ' ');
-  const cacheKey = await sha256Hex(`v328|${type}|${normalizedQ}`);
+  const cacheKey = await sha256Hex(`v336|${type}|${normalizedQ}`);
   const dbg = debugOut || {};
   dbg.provider_attempted = dbg.provider_attempted || [];
   dbg.gemini_status = (env && env.GEMINI_API_KEY && String(env.GEMINI_API_KEY).trim()) ? 'configured' : 'unconfigured';
@@ -371,8 +384,8 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
           ).bind(cacheKey).run().catch(() => {});
           dbg.gemini_status = 'cache_hit';
           return {
-            answer_en: cached.answer_en,
-            answer_or: cached.answer_or || '',
+            answer_en: cleanSectionPathsInText(cached.answer_en),
+            answer_or: cleanSectionPathsInText(cached.answer_or || ''),
             grounded: cached.source_mode === 'grounded',
             cached: true
           };
@@ -408,13 +421,14 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
     ? [
         'You are Ask CSOdisha, a helpful bilingual Odisha & National public resource assistant.',
         'Answer the user question grounded strictly in these matched CSOdisha articles. Remind the user to verify official dates on the linked page.',
+        'Refer to portal sections using clean human-readable names (Jobs, Government Schemes, Study Library, CBT Mock Tests, Careers, Current Affairs) and NEVER output raw slash URL paths like /jobs/ or /mock-tests/.',
         'Return ONLY a valid JSON object: { "answer_en": "2-3 concise sentences in English", "answer_or": "2-3 concise sentences in Odia (ଓଡ଼ିଆ)" }.',
         `Matched Articles: ${JSON.stringify(results.slice(0, 6).map((r) => ({ type: r.type, title_en: r.title_en, title_or: r.title_or, summary: r.summary, url: r.url })))}`,
         `User Question: ${cleanQ}`
       ].join('\n')
     : [
         'You are Ask CSOdisha, an Odisha competitive exam (OPSC, OSSC, OSSSC, OTET), government welfare scheme, and career advisor.',
-        'No published CSOdisha article matched yet. Provide helpful general Odisha guidance in 2-3 crisp sentences in English and 2-3 sentences in Odia (ଓଡ଼ିଆ), and suggest checking /jobs/, /schemes/, /study-library/, or /mock-tests/ and verifying official notifications.',
+        'No published CSOdisha article matched yet. Provide helpful general Odisha guidance in 2-3 crisp sentences in English and 2-3 sentences in Odia (ଓଡ଼ିଆ). Suggest checking the Jobs, Government Schemes, Study Library, or CBT Mock Tests sections and verifying official notifications. NEVER include raw slash paths like /jobs/ or /mock-tests/ in your prose.',
         'Return ONLY a valid JSON object: { "answer_en": "...", "answer_or": "..." }.',
         `User Question: ${cleanQ}`
       ].join('\n');
@@ -567,8 +581,8 @@ export async function generateAskCsoAnswer(env, { q, type = 'all', results = [],
     }
   }
 
-  const answerEn = String((parsed && parsed.answer_en) || '').trim().slice(0, 1000);
-  const answerOr = String((parsed && parsed.answer_or) || 'ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ପାଇଁ ଦୟାକରି ଲିଙ୍କ୍ ହୋଇଥିବା ପୃଷ୍ଠା ଏବଂ ସରକାରୀ ବିଜ୍ଞପ୍ତି ଯାଞ୍ଚ କରନ୍ତୁ।').trim().slice(0, 1200);
+  const answerEn = cleanSectionPathsInText(String((parsed && parsed.answer_en) || '').trim()).slice(0, 1000);
+  const answerOr = cleanSectionPathsInText(String((parsed && parsed.answer_or) || 'ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ପାଇଁ ଦୟାକରି ଲିଙ୍କ୍ ହୋଇଥିବା ପୃଷ୍ଠା ଏବଂ ସରକାରୀ ବିଜ୍ଞପ୍ତି ଯାଞ୍ଚ କରନ୍ତୁ।').trim()).slice(0, 1200);
   if (!answerEn) {
     dbg.error = dbg.error || 'Empty answer_en after parsing';
     return null;

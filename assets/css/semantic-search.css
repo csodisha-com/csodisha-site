@@ -153,11 +153,12 @@
   color: var(--cso-muted);
 }
 .cso-ask-answer-card {
-  padding: 12px 14px;
+  padding: 14px 16px;
   border-radius: 12px;
-  border: 1px solid var(--cso-accent);
-  background: var(--cso-highlight-bg, var(--cso-surface-alt));
-  color: var(--cso-text);
+  border: 1px solid var(--cso-border);
+  border-left: 4px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink, var(--cso-text));
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -170,9 +171,9 @@
   gap: 8px;
 }
 .cso-ask-answer-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--cso-text);
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--cso-ink, var(--cso-text));
 }
 .cso-ask-answer-badges {
   display: flex;
@@ -182,9 +183,11 @@
 .cso-ask-answer-en,
 .cso-ask-answer-or {
   margin: 0;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--cso-text);
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--cso-ink, var(--cso-text));
+  text-shadow: none;
 }
 .cso-ask-portal-chips {
   display: flex;

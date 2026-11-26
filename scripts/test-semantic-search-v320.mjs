@@ -8,6 +8,7 @@ import {
   upsertSemanticVector,
   deleteSemanticVector,
   scheduleSemanticSync,
+  cleanSectionPathsInText,
   runSemanticSearch
 } from '../functions/_lib/semantic-search.js';
 import { onRequestPost as reindexPost } from '../functions/api/admin/semantic-reindex.js';
@@ -216,8 +217,8 @@ await test('4. Wrangler Vectorize binding, migration 0151, CSP compliance & v320
   const mig = read('migrations/0151_semantic_search_v320.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS semantic_index_items'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v335');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v335';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v336');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v336';"));
   assert.ok(read('migrations/0152_ask_ai_answer_cache_v321.sql').includes('CREATE TABLE IF NOT EXISTS semantic_answer_cache'));
 
   const js = read('assets/js/semantic-search.js');
@@ -426,6 +427,10 @@ await test('6. v331 Auto Vectorize sync on publish/update/archive/delete via ctx
   ]) {
     assert.ok(read(relPath).includes('scheduleSemanticSync'), `${relPath} must hook scheduleSemanticSync`);
   }
+
+  // v336: Raw slash section paths cleaned into human-readable section names
+  const cleaned = cleanSectionPathsInText('Check /jobs/, /schemes/, /study-library/, and /mock-tests/ for updates.');
+  assert.equal(cleaned, 'Check Jobs, Government Schemes, Study Library, and CBT Mock Tests for updates.');
 });
 
 console.log(`\n=== Smart Semantic Search v320 + v331 Results: ${passed} passed, 0 failed ===\n`);

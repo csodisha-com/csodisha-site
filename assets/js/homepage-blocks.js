@@ -203,7 +203,7 @@
 
     var chips = document.querySelector('.chips');
     if (chips && has('popular_searches')) {
-      var chipNodes = build('popular_searches').slice(0, 8);
+      var chipNodes = build('popular_searches').slice(0, 7);
       replaceKids(chips, chipNodes, '.chips-label');
       chipNodes.forEach(function (n) {
         if (home.bindChip) {
