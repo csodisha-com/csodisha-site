@@ -11573,6 +11573,7 @@ nav#cso-hub-top-tabs {
   min-height: 44px;
   padding: 7px 16px;
   gap: 10px;
+  z-index: 960;
   box-sizing: border-box;
 }
 
@@ -11690,14 +11691,42 @@ nav#cso-hub-top-tabs {
 
   .cso-mobile-drawer-backdrop {
     display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 1190;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 1200 !important;
     background: rgba(15, 23, 42, 0.56);
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    pointer-events: auto !important;
   }
 
   .cso-mobile-drawer-backdrop[hidden] {
     display: none !important;
+  }
+
+  /* v343: Prevent .cso-sticky-header / #cso-main-navbar / #navw from trapping drawer below backdrop */
+  html.cso-drawer-open .cso-sticky-header,
+  body.cso-drawer-open .cso-sticky-header,
+  html.cso-drawer-open #cso-main-navbar,
+  body.cso-drawer-open #cso-main-navbar {
+    z-index: 1210 !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html.cso-drawer-open #header-top,
+  body.cso-drawer-open #header-top {
+    position: relative;
+    z-index: 1 !important;
+  }
+
+  html.cso-drawer-open #navw,
+  body.cso-drawer-open #navw {
+    z-index: auto !important;
+    transform: none !important;
+    filter: none !important;
   }
 
   #cso-main-navbar #cso-nav-items:not(.cso-mobile-open) {
@@ -11715,7 +11744,7 @@ nav#cso-hub-top-tabs {
     max-height: 100dvh !important;
     margin: 0 !important;
     border-radius: 0 14px 14px 0 !important;
-    z-index: 1200 !important;
+    z-index: 1210 !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 6px !important;
@@ -11724,10 +11753,16 @@ nav#cso-hub-top-tabs {
     color: var(--cso-ink) !important;
     border: 1px solid var(--cso-border) !important;
     opacity: 1 !important;
+    filter: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+    pointer-events: auto !important;
     padding: calc(10px + env(safe-area-inset-top, 0px)) 12px calc(18px + env(safe-area-inset-bottom, 0px)) !important;
     box-sizing: border-box !important;
+  }
+
+  #cso-nav-items.cso-mobile-open .pp {
+    z-index: 1220 !important;
   }
 
   #cso-nav-items.cso-mobile-open .cso-drawer-head {
@@ -11816,8 +11851,8 @@ nav#cso-hub-top-tabs {
 }
 
 @media (max-width: 1099px) {
-  /* Single compact top bar only: Logo+Title | ଓଡ଼ିଆ/EN | Theme | ☰ Menu */
-  #header-top.site-header__top {
+  /* Single compact top bar only on pages with consolidated mobile header (index.html / app.js) */
+  body.cso-v342-mobile-hdr #header-top.site-header__top {
     flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: space-between !important;
@@ -11826,13 +11861,13 @@ nav#cso-hub-top-tabs {
     min-height: 54px !important;
   }
 
-  #header-top .cso-brand-link {
+  body.cso-v342-mobile-hdr #header-top .cso-brand-link {
     min-width: 0;
     flex: 1 1 auto;
     gap: 6px;
   }
 
-  #header-top .cso-brand-name {
+  body.cso-v342-mobile-hdr #header-top .cso-brand-name {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -11841,26 +11876,26 @@ nav#cso-hub-top-tabs {
   }
 
   /* Hide duplicate desktop utility controls & auth row in top bar on <1100px (moved cleanly into drawer) */
-  #header-top #ctl,
-  #header-top #bl,
-  #header-top #bt,
-  #header-top #ba,
-  #header-top .cso-ctl-zoom,
-  #header-top .sp,
-  #header-top .acct {
+  body.cso-v342-mobile-hdr #header-top #ctl,
+  body.cso-v342-mobile-hdr #header-top #bl,
+  body.cso-v342-mobile-hdr #header-top #bt,
+  body.cso-v342-mobile-hdr #header-top #ba,
+  body.cso-v342-mobile-hdr #header-top .cso-ctl-zoom,
+  body.cso-v342-mobile-hdr #header-top .sp,
+  body.cso-v342-mobile-hdr #header-top .acct {
     display: none !important;
   }
 
   /* Show consolidated 3-action mobile cluster in #header-top */
-  #header-top .cso-mobile-top-actions {
+  body.cso-v342-mobile-hdr #header-top .cso-mobile-top-actions {
     display: inline-flex !important;
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
   }
 
-  #header-top .cso-mobile-top-actions .cso-mob-quick-btn,
-  #header-top .cso-mobile-top-actions .cso-header-menu-btn {
+  body.cso-v342-mobile-hdr #header-top .cso-mobile-top-actions .cso-mob-quick-btn,
+  body.cso-v342-mobile-hdr #header-top .cso-mobile-top-actions .cso-header-menu-btn {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
@@ -11879,25 +11914,25 @@ nav#cso-hub-top-tabs {
     box-sizing: border-box;
   }
 
-  #header-top .cso-mobile-top-actions .cso-mob-quick-btn:hover,
-  #header-top .cso-mobile-top-actions .cso-mob-quick-btn:focus-visible,
-  #header-top .cso-mobile-top-actions .cso-header-menu-btn:hover,
-  #header-top .cso-mobile-top-actions .cso-header-menu-btn:focus-visible {
+  body.cso-v342-mobile-hdr #header-top .cso-mobile-top-actions .cso-mob-quick-btn:hover,
+  body.cso-v342-mobile-hdr #header-top .cso-mobile-top-actions .cso-mob-quick-btn:focus-visible,
+  body.cso-v342-mobile-hdr #header-top .cso-mobile-top-actions .cso-header-menu-btn:hover,
+  body.cso-v342-mobile-hdr #header-top .cso-mobile-top-actions .cso-header-menu-btn:focus-visible {
     background: var(--cso-surface-alt) !important;
     border-color: var(--cso-accent) !important;
     color: var(--cso-ink) !important;
   }
 
   /* Collapse the second Tier-2 bar to 0px on <1100px (slide-out drawer lives fixed on viewport) */
-  #cso-main-navbar,
-  .site-header__nav {
+  body.cso-v342-mobile-hdr #cso-main-navbar,
+  body.cso-v342-mobile-hdr .site-header__nav {
     min-height: 0 !important;
     padding: 0 !important;
     border: 0 !important;
     background: transparent !important;
   }
 
-  #cso-main-navbar .cso-nav-bar-container {
+  body.cso-v342-mobile-hdr #cso-main-navbar .cso-nav-bar-container {
     display: none !important;
   }
 

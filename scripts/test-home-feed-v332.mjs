@@ -327,9 +327,19 @@ await test('3. Edge cache invalidation, worker routing, homepage DOM & strict CS
   const qcJs = read('admin/quick-create-studio.js');
   assert.ok(qcJs.includes('bustHomeCache') && qcJs.includes('cso_home_feed_bust'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v342');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v342';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v343');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v343';"));
   assert.ok(read('sw.js').includes('CSO_BUST_HOME_CACHE'));
+
+  // v343: Mobile slide-out drawer sits strictly above backdrop (1210 > 1200) with zero stacking-context trap
+  const navStart = indexHtml.indexOf('<nav class="main-nav site-header__nav" id="cso-main-navbar"');
+  const navEnd = indexHtml.indexOf('</nav>', navStart);
+  const backdropIdx = indexHtml.indexOf('id="cso-mobile-drawer-backdrop"');
+  assert.ok(backdropIdx > navStart && backdropIdx < navEnd, 'index.html must mount #cso-mobile-drawer-backdrop inside #cso-main-navbar');
+  const styleV343 = read('assets/style.css');
+  assert.ok(styleV343.includes('html.cso-drawer-open .cso-sticky-header') && styleV343.includes('z-index: 1210 !important;'), 'style.css must elevate .cso-sticky-header and drawer to z-index 1210 when open');
+  assert.ok(styleV343.includes('z-index: 1200 !important;') && styleV343.includes('pointer-events: auto !important;'), 'style.css must layer backdrop at 1200 strictly below interactive drawer at 1210');
+  assert.ok(read('assets/app.js').includes("classList.toggle('cso-drawer-open'") && read('assets/shared-header.js').includes("classList.toggle('cso-drawer-open'"), 'Both app.js and shared-header.js must toggle cso-drawer-open');
 
   // v342: Single-row <1100px mobile header (zero duplicate lang/theme rows), polite public Latest Updates empty state, short mobile search placeholder
   assert.ok(indexHtml.includes('id="cso-mobile-top-actions"') && indexHtml.includes('id="cso-header-menu-toggle"'), 'index.html must include consolidated single-row mobile header actions');

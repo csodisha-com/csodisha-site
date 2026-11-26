@@ -223,6 +223,7 @@ function syncHeaderHubText(){
 function ensureMobileTopActions(){
  const top=$('#header-top');
  if(!top)return;
+ if(document.body)document.body.classList.add('cso-v342-mobile-hdr');
  let box=$('#cso-mobile-top-actions');
  if(!box){
   box=mk('div','cso-mobile-top-actions');box.id='cso-mobile-top-actions';
@@ -322,16 +323,35 @@ function heroLang(){
  const cp=$('.chips span');
  if(cp)cp.textContent=w[1];
 }
+function ensureDrawerBackdrop(){
+ const navBar=$('#cso-main-navbar');
+ const navw=$('#navw');
+ let backdrop=$('#cso-mobile-drawer-backdrop');
+ if(!backdrop){
+  backdrop=mk('div','cso-mobile-drawer-backdrop');
+  backdrop.id='cso-mobile-drawer-backdrop';
+  backdrop.hidden=true;
+ }
+ if(navBar&&backdrop.parentNode!==navBar){
+  if(navw&&navw.parentNode===navBar)navBar.insertBefore(backdrop,navw);
+  else navBar.prepend(backdrop);
+ }
+ return backdrop;
+}
 function setMobileDrawerOpen(open){
  const items=$('#cso-nav-items');
  const toggles=$$('#cso-header-menu-toggle, #navw .cso-nav-mobile');
- const backdrop=$('#cso-mobile-drawer-backdrop');
+ const backdrop=ensureDrawerBackdrop();
  if(!items)return;
  const next=Boolean(open);
  items.classList.toggle('cso-mobile-open',next);
  toggles.forEach(t=>t.setAttribute('aria-expanded',String(next)));
  if(backdrop)backdrop.hidden=!next;
- if(document.body)document.body.classList.toggle('cso-modal-open',next);
+ document.documentElement.classList.toggle('cso-drawer-open',next);
+ if(document.body){
+  document.body.classList.toggle('cso-drawer-open',next);
+  document.body.classList.toggle('cso-modal-open',next);
+ }
  if(!next)csoCloseNavDropdowns();
 }
 

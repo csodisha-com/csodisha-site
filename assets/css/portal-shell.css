@@ -959,6 +959,23 @@ body[data-theme="odisha"] {
   z-index: 950 !important;
 }
 
+html.cso-drawer-open .cso-sticky-header,
+body.cso-drawer-open .cso-sticky-header,
+html.cso-drawer-open #cso-main-navbar,
+body.cso-drawer-open #cso-main-navbar {
+  z-index: 1210 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.cso-drawer-open #navw,
+body.cso-drawer-open #navw {
+  z-index: auto !important;
+  transform: none !important;
+  filter: none !important;
+}
+
 @media (min-width: 1100px) {
   #cso-main-navbar,
   #cso-main-navbar .w,

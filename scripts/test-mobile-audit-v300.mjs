@@ -320,5 +320,41 @@ check('6. v302 Expanded mobile nav drawer (< 1100px) & nested sub-menus bind to 
   }
 });
 
+check('7. v343 Mobile slide-out drawer sits strictly above #cso-mobile-drawer-backdrop (1210 > 1200) with zero stacking-context trap', () => {
+  const styleCss = read('assets/style.css');
+  const shellCss = read('assets/css/portal-shell.css');
+  const indexHtml = read('index.html');
+  const appJs = read('assets/app.js');
+  const sharedJs = read('assets/shared-header.js');
+
+  const bdMatch = styleCss.match(/\.cso-mobile-drawer-backdrop\s*\{[^}]*z-index:\s*(\d+)/);
+  const drMatch = styleCss.match(/#cso-main-navbar\s+#cso-nav-items\.cso-mobile-open\s*\{[^}]*z-index:\s*(\d+)/);
+  assert.ok(bdMatch && drMatch, 'assets/style.css must declare explicit z-index on .cso-mobile-drawer-backdrop and #cso-nav-items.cso-mobile-open');
+  const bdZ = Number(bdMatch[1]);
+  const drZ = Number(drMatch[1]);
+  assert.ok(drZ > bdZ, `Mobile drawer z-index (${drZ}) must be strictly greater than backdrop z-index (${bdZ})`);
+  assert.equal(bdZ, 1200, `Expected backdrop z-index 1200, got ${bdZ}`);
+  assert.equal(drZ, 1210, `Expected open drawer z-index 1210, got ${drZ}`);
+
+  const stickyLiftMatch = styleCss.match(/html\.cso-drawer-open\s+\.cso-sticky-header[\s\S]*?\{[^}]*z-index:\s*(\d+)/);
+  assert.ok(stickyLiftMatch && Number(stickyLiftMatch[1]) >= drZ, '.cso-sticky-header must elevate to >= drawer z-index when cso-drawer-open is active so it cannot trap the drawer below backdrop');
+  assert.ok(shellCss.includes('html.cso-drawer-open #cso-main-navbar') && shellCss.includes('z-index: 1210 !important;'), 'portal-shell.css must elevate #cso-main-navbar to 1210 when cso-drawer-open is active');
+
+  const drawerBlockMatch = styleCss.match(/#cso-main-navbar\s+#cso-nav-items\.cso-mobile-open\s*\{([^}]*)\}/);
+  assert.ok(drawerBlockMatch, 'Missing #cso-main-navbar #cso-nav-items.cso-mobile-open block');
+  assert.ok(drawerBlockMatch[1].includes('filter: none !important;'), 'Open drawer must enforce filter: none');
+  assert.ok(drawerBlockMatch[1].includes('backdrop-filter: none !important;'), 'Open drawer must enforce backdrop-filter: none');
+  assert.ok(drawerBlockMatch[1].includes('pointer-events: auto !important;'), 'Open drawer must enforce pointer-events: auto');
+  assert.ok(drawerBlockMatch[1].includes('opacity: 1 !important;'), 'Open drawer must enforce opacity: 1');
+
+  const navStart = indexHtml.indexOf('<nav class="main-nav site-header__nav" id="cso-main-navbar"');
+  const navEnd = indexHtml.indexOf('</nav>', navStart);
+  const bdIdx = indexHtml.indexOf('id="cso-mobile-drawer-backdrop"');
+  assert.ok(bdIdx > navStart && bdIdx < navEnd, 'index.html must place #cso-mobile-drawer-backdrop inside #cso-main-navbar');
+
+  assert.ok(appJs.includes('ensureDrawerBackdrop') && appJs.includes("classList.toggle('cso-drawer-open'"), 'app.js must mount backdrop cleanly and toggle cso-drawer-open');
+  assert.ok(sharedJs.includes('ensureSharedDrawerBackdrop') && sharedJs.includes("classList.toggle('cso-drawer-open'"), 'shared-header.js must mount backdrop cleanly and toggle cso-drawer-open');
+});
+
 console.log(`\n=== v300 Mobile & WCAG 2.2 Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);

@@ -2112,6 +2112,39 @@
     if (existing) existing.remove();
   }
 
+  function ensureSharedDrawerBackdrop() {
+    const navBar = document.getElementById('cso-main-navbar');
+    const navw = document.getElementById('navw');
+    let backdrop = document.getElementById('cso-mobile-drawer-backdrop');
+    if (!backdrop) {
+      backdrop = el('div', 'cso-mobile-drawer-backdrop');
+      backdrop.id = 'cso-mobile-drawer-backdrop';
+      backdrop.hidden = true;
+    }
+    if (navBar && backdrop.parentNode !== navBar) {
+      if (navw && navw.parentNode === navBar) navBar.insertBefore(backdrop, navw);
+      else navBar.prepend(backdrop);
+    }
+    return backdrop;
+  }
+
+  function setSharedDrawerOpen(open) {
+    const items = document.getElementById('cso-nav-items');
+    const toggle = document.querySelector('#navw .cso-nav-mobile');
+    const backdrop = ensureSharedDrawerBackdrop();
+    if (!items) return;
+    const next = Boolean(open);
+    items.classList.toggle('cso-mobile-open', next);
+    if (toggle) toggle.setAttribute('aria-expanded', String(next));
+    if (backdrop) backdrop.hidden = !next;
+    document.documentElement.classList.toggle('cso-drawer-open', next);
+    if (document.body) {
+      document.body.classList.toggle('cso-drawer-open', next);
+      document.body.classList.toggle('cso-modal-open', next);
+    }
+    if (!next) closeDropdowns();
+  }
+
   if (!window.__csoNavDropdownWired) {
   window.__csoNavDropdownWired = true;
   document.addEventListener('click', e => {
@@ -2123,15 +2156,21 @@
     if (!e.target.closest('.cso-mobile-auth-wrapper')) {
       closeAuthDropdown();
     }
+    if (e.target.closest('#cso-mobile-drawer-backdrop')) {
+      e.preventDefault();
+      e.stopPropagation();
+      setSharedDrawerOpen(false);
+      const toggle = document.querySelector('#navw .cso-nav-mobile');
+      if (toggle) toggle.focus();
+      return;
+    }
     const mobile = e.target.closest('#navw .cso-nav-mobile');
     if (mobile) {
       e.preventDefault();
       e.stopPropagation();
       const items = document.getElementById('cso-nav-items');
       if (items) {
-        const open = items.classList.toggle('cso-mobile-open');
-        mobile.setAttribute('aria-expanded', String(open));
-        if (!open) closeDropdowns();
+        setSharedDrawerOpen(!items.classList.contains('cso-mobile-open'));
       }
       return;
     }
@@ -2221,18 +2260,12 @@
       return;
     }
     if (e.target.closest('#navw a')) {
-      closeDropdowns();
-      const items = document.getElementById('cso-nav-items');
-      if (items) items.classList.remove('cso-mobile-open');
-      const toggle = document.querySelector('#navw .cso-nav-mobile');
-      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+      setSharedDrawerOpen(false);
     } else if (!e.target.closest('#navw')) {
       closeDropdowns();
       const items = document.getElementById('cso-nav-items');
       if (items && items.classList.contains('cso-mobile-open')) {
-        items.classList.remove('cso-mobile-open');
-        const toggle = document.querySelector('#navw .cso-nav-mobile');
-        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        setSharedDrawerOpen(false);
       }
     }
   });
@@ -2247,12 +2280,9 @@
       closeDropdowns();
       const items = document.getElementById('cso-nav-items');
       if (items && items.classList.contains('cso-mobile-open')) {
-        items.classList.remove('cso-mobile-open');
+        setSharedDrawerOpen(false);
         const toggle = document.querySelector('#navw .cso-nav-mobile');
-        if (toggle) {
-          toggle.setAttribute('aria-expanded', 'false');
-          toggle.focus();
-        }
+        if (toggle) toggle.focus();
       }
     }
   });
