@@ -69,6 +69,7 @@ import { handlePublicTelemetryOutboundApi } from './functions/_lib/analytics-tel
 import { handlePublicAboutOverviewApi } from './functions/api/public/about-overview.js';
 import { handlePublicCurrentAffairsApi } from './functions/api/public/current-affairs.js';
 import { handlePublicJobsHubApi } from './functions/api/public/jobs-hub.js';
+import { handlePublicExamsHubApi } from './functions/api/public/exams-hub.js';
 import { handlePublicHomepageBlocksApi, handlePublicHomepageBlockClick } from './functions/_lib/homepage-studio.js';
 import {
   handlePublicJobsBootstrapApi,
@@ -560,8 +561,8 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/community/posts', '/api/community/qna', '/api/search/synonyms', '/api/public/about-overview', '/api/public/current-affairs', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources', '/api/marketing/banners', '/api/marketing/landing-pages', '/api/seo/meta', '/api/seo/robots.txt', '/api/seo/autocomplete',
     '/api/events/upcoming', '/api/config/public', '/api/events/calendar/odisha-all-exams.ics', '/api/events/calendar/opsc-ossc-osssc-deadlines.ics', '/api/events/calendar/admit-cards-results.ics', '/api/events/calendar/workshops-webinars.ics',
-    '/api/public/jobs', '/api/public/jobs/list', '/api/public/jobs/tree', '/api/public/jobs/bootstrap', '/api/public/jobs/article', '/api/public/jobs-hub',
-    '/api/public/careers/bootstrap', '/api/public/careers/list', '/careers/', '/jobs/',
+    '/api/public/jobs', '/api/public/jobs/list', '/api/public/jobs/tree', '/api/public/jobs/bootstrap', '/api/public/jobs/article', '/api/public/jobs-hub', '/api/public/exams-hub',
+    '/api/public/careers/bootstrap', '/api/public/careers/list', '/careers/', '/jobs/', '/exams/',
     '/api/public/schemes', '/api/public/schemes/list', '/api/public/schemes/tree', '/api/public/schemes/bootstrap', '/api/public/schemes/article', '/schemes/',
     '/api/public/study', '/api/public/study/tree', '/api/public/study/bootstrap', '/api/public/study/article', '/api/public/study-library/bootstrap', '/api/public/study-library/list', '/study-library/',
     '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/list', '/api/public/community/bootstrap', '/api/public/community/post', '/community/', '/student-dashboard/',
@@ -1161,6 +1162,9 @@ export default {
       }
       return jobsMapRes;
     }
+    if (pathname === '/api/public/exams-hub' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicExamsHubApi(request, env));
+    }
     if (pathname === '/api/public/jobs-hub' && (request.method === 'GET' || request.method === 'HEAD')) {
       return serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, () => handlePublicJobsHubApi(request, env));
     }
@@ -1615,6 +1619,9 @@ export default {
       '/education-explorer/index.html': '/study-library/',
       '/library': '/study-library/',
       '/jobs': '/jobs/',
+      '/exams': '/exams/',
+      '/exams.html': '/exams/',
+      '/exams/index.html': '/exams/',
       '/careers': '/careers/',
       '/community': '/community/',
       '/about': '/about/'

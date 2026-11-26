@@ -602,5 +602,19 @@ check('v372 Jobs & Recruitment Hub CSS: semantic --cso-* tokens only, zero hardc
   }
 });
 
+check('v373 Exams & Prep Hub CSS: semantic --cso-* tokens only, zero hardcoded hex & >= 4.5:1 countdown/MCQ feedback contrast in all 4 themes', () => {
+  const css = read('assets/style.css');
+  const blk = css.slice(css.indexOf('/* ===== v373'));
+  assert.ok(blk.length > 500, 'v373 CSS block present');
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(blk), 'v373 CSS must contain zero hardcoded hex');
+  for (const cls of ['.cso-eh-hero', '.cso-eh-track:hover', '.cso-eh-countdown--urgent', '.cso-eh-q-opt.is-correct', '.cso-eh-q-opt.is-wrong']) {
+    assert.ok(blk.includes(cls), `v373 CSS missing ${cls}`);
+  }
+  for (const [name, t] of Object.entries(EXPECTED_THEMES)) {
+    assert.ok(contrastRatio(t['--cso-ok-fg'], t['--cso-ok-bg']) >= 4.5, `${name} MCQ correct contrast < 4.5:1`);
+    assert.ok(contrastRatio(t['--cso-err-fg'], t['--cso-err-bg']) >= 4.5, `${name} MCQ wrong / urgent countdown contrast < 4.5:1`);
+  }
+});
+
 console.log(`\n=== v295 Theme Audit Results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);

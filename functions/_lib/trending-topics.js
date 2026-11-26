@@ -88,7 +88,7 @@ export const DEFAULT_TRENDING_TOPICS = [
     title_or: 'ପରୀକ୍ଷା ଓ ପ୍ରସ୍ତୁତି',
     subtitle_en: 'OTET, OSSTET, UGC NET, OPSC syllabus',
     subtitle_or: 'OTET, OSSTET, UGC NET, OPSC ସିଲାବସ୍',
-    href: '/guides/?category=exam-prep',
+    href: '/exams/',
     icon: 'exams',
     badge_text: 'HOT',
     sort_order: 2,
@@ -241,7 +241,7 @@ function inferCountBucket(topic) {
   const icon = String(topic.icon || '').toLowerCase();
   const href = String(topic.href || '').toLowerCase();
   if (href.includes('category=recruitment') || href.startsWith('/jobs')) return 'jobs';
-  if (href.includes('category=exam-prep') || href.startsWith('/mock-tests')) return 'exams';
+  if (href.includes('category=exam-prep') || href.startsWith('/exams') || href.startsWith('/mock-tests')) return 'exams';
   if (href.includes('category=scholarships') || href.includes('category=citizen-scheme') || href.startsWith('/schemes')) return 'schemes';
   if (href.includes('category=study-notes') || href.startsWith('/study') || href.startsWith('/resources')) return 'study';
   if (href.includes('category=career') || href.startsWith('/careers')) return 'career';

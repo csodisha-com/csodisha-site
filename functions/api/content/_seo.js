@@ -11,6 +11,7 @@ const SEO_CACHE = 'public, max-age=300, s-maxage=900';
 const STATIC_SITEMAP_ROUTES = [
   { path: '/', changefreq: 'daily', priority: '1.0' },
   { path: '/jobs/', changefreq: 'daily', priority: '0.9' },
+  { path: '/exams/', changefreq: 'daily', priority: '0.9' },
   { path: '/careers/', changefreq: 'weekly', priority: '0.9' },
   { path: '/schemes/', changefreq: 'weekly', priority: '0.9' },
   { path: '/study-library/', changefreq: 'weekly', priority: '0.9' },
@@ -385,6 +386,7 @@ export function handleRobotsTxt(request) {
     'User-agent: *',
     'Allow: /',
     'Allow: /jobs/',
+    'Allow: /exams/',
     'Allow: /careers/',
     'Allow: /schemes/',
     'Allow: /study-library/',
