@@ -4,10 +4,17 @@ import path from 'node:path';
 import {
   sanitizeAiHtml,
   generateAiCoAuthorDraft,
+  generateAiEditorialImage,
   getDailyAiUsage,
-  DAILY_FREE_NEURON_BUDGET
+  DAILY_FREE_NEURON_BUDGET,
+  GEMINI_PRO_FIRST_MODELS,
+  WORKERS_AI_PRO_MODELS,
+  GEMINI_IMAGE_MODELS,
+  WORKERS_AI_IMAGE_MODEL,
+  VALID_AI_MODES
 } from '../functions/_lib/ai-coauthor.js';
-import { onRequestPost as aiCoauthorPost } from '../functions/api/admin/ai-coauthor.js';
+import { onRequestPost as aiCoauthorPost, handleAdminAiGenerateImage } from '../functions/api/admin/ai-coauthor.js';
+import { handleMedia } from '../functions/api/media/_serve.js';
 import { ACTIVE_SW_CACHE_VERSION } from '../functions/_lib/ops-sentinel.js';
 
 const ROOT = process.cwd();
@@ -205,8 +212,8 @@ await test('5. Wrangler AI binding, migration 0149, CSP compliance & v318 cache 
   const mig = read('migrations/0149_ai_coauthor_v318.sql');
   assert.ok(mig.includes('CREATE TABLE IF NOT EXISTS ai_generation_logs'));
 
-  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v349');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v349';"));
+  assert.equal(ACTIVE_SW_CACHE_VERSION, 'cso-candidate-cache-v350');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v350';"));
 
   const adminJs = read('admin/admin.js');
   assert.ok(adminJs.includes('window.CSOAiCoAuthor'));
@@ -354,4 +361,182 @@ await test('6. v331 Odia quick translation (single + batch) & AI Title/Slug/Tag 
   }
 });
 
-console.log(`\n=== Free-Tier AI Co-Author v318 + v331 Results: ${passed} passed, 0 failed ===\n`);
+await test('7. v350 Gemini Pro-first fallback ordering, auto_fix_fill PDF-to-Article schema & POST /api/admin/ai/generate-image R2 storage', async () => {
+  assert.ok(VALID_AI_MODES.has('auto_fix_fill'), 'VALID_AI_MODES must include auto_fix_fill');
+  assert.deepEqual(GEMINI_PRO_FIRST_MODELS.slice(0, 4), ['gemini-2.5-pro', 'gemini-pro-latest', 'gemini-2.5-flash', 'gemini-2.0-flash']);
+  assert.equal(WORKERS_AI_PRO_MODELS[0], '@cf/meta/llama-3.3-70b-instruct-fp8-fast');
+  assert.equal(WORKERS_AI_PRO_MODELS[1], '@cf/meta/llama-3.1-8b-instruct-fp8-fast');
+  assert.deepEqual(GEMINI_IMAGE_MODELS, ['imagen-3.0-generate-002', 'gemini-2.5-flash-image']);
+  assert.equal(WORKERS_AI_IMAGE_MODEL, '@cf/black-forest-labs/flux-1-schnell');
+
+  // A. Verify Gemini Pro-first cascade order -> Gemini Flash -> Workers AI 70B -> 8B for auto_fix_fill
+  const db = createMockDb();
+  const attemptedGemini = [];
+  const attemptedWorkers = [];
+  const origFetch = globalThis.fetch;
+
+  globalThis.fetch = async (url) => {
+    const u = String(url);
+    const m = u.match(/\/models\/([^:?]+):generateContent/);
+    if (m) {
+      attemptedGemini.push(m[1]);
+      return new Response('Quota exceeded', { status: 429 });
+    }
+    throw new Error('Unexpected fetch: ' + u);
+  };
+
+  try {
+    const mockAiCascade = {
+      async run(model) {
+        attemptedWorkers.push(model);
+        if (model === '@cf/meta/llama-3.3-70b-instruct-fp8-fast') {
+          throw new Error('Temporary 70B timeout');
+        }
+        return {
+          response: JSON.stringify({
+            category: 'exam-strategy',
+            scope: 'Odisha',
+            is_exam: true,
+            read_minutes: 7,
+            title_en: 'OPSC OAS 2026 Recruitment & Prelims Exam Strategy Guide',
+            title_or: 'OPSC OAS 2026 ନିଯୁକ୍ତି ଏବଂ ପ୍ରିଲିମ୍ସ ପରୀକ୍ଷା ରଣନୀତି',
+            slug: 'opsc-oas-2026-recruitment-prelims-strategy',
+            summary_en: 'Complete breakdown of OPSC OAS 2026 vacancies, eligibility, important dates, and exam roadmap.',
+            summary_or: 'OPSC OAS 2026 ପଦବୀ, ଯୋଗ୍ୟତା, ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ତାରିଖ ଏବଂ ପରୀକ୍ଷା ରୋଡମ୍ୟାପ୍।',
+            tags: ['OPSC', 'OAS 2026', 'Odisha Civil Services', 'Exam Strategy', 'Prelims'],
+            takeaways_en: ['Apply online exclusively on opsc.gov.in before closing date.', 'Prelims consists of GS Paper I and CSAT.'],
+            takeaways_or: ['ଶେଷ ତାରିଖ ପୂର୍ବରୁ opsc.gov.in ରେ ଅନଲାଇନ୍ ଆବେଦନ କରନ୍ତୁ।'],
+            body_en: '## Overview\nOPSC OAS 2026 recruitment details extracted from official PDF.\n\n## Key Vacancy Table\n| Post | Vacancies |\n| --- | --- |\n| OAS | 120 |',
+            body_or: '## ସଂକ୍ଷିପ୍ତ ବିବରଣୀ\nOPSC OAS 2026 ନିଯୁକ୍ତି ବିବରଣୀ।',
+            pdf_title_en: 'OPSC OAS 2026 Official Notification PDF',
+            pdf_title_or: 'OPSC OAS 2026 ସରକାରୀ ବିଜ୍ଞପ୍ତି PDF',
+            official_links: [{ label_en: 'OPSC Official Portal', label_or: 'OPSC ପୋର୍ଟାଲ୍', url: 'https://www.opsc.gov.in/', is_official: true }]
+          })
+        };
+      }
+    };
+
+    const autoRes = await generateAiCoAuthorDraft({ DB: db, AI: mockAiCascade, GEMINI_API_KEY: 'gm_pro_test' }, {
+      mode: 'auto_fix_fill',
+      pdf_filename: 'opsc-oas-2026-advt.pdf',
+      pdf_text: 'Odisha Public Service Commission Advt No 09 of 2026. Total 120 OAS vacancies. Apply online at https://www.opsc.gov.in/ and check syllabus at https://oshec.odisha.gov.in/syllabus.pdf.',
+      actorId: 'adm_1'
+    });
+
+    assert.deepEqual(attemptedGemini, ['gemini-2.5-pro', 'gemini-pro-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'], 'auto_fix_fill must attempt Gemini Pro first, then Gemini Flash');
+    assert.deepEqual(attemptedWorkers, ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/meta/llama-3.1-8b-instruct-fp8-fast'], 'Workers AI fallback must try 70B then 8B');
+    assert.equal(autoRes.ok, true);
+    assert.equal(autoRes.data.category, 'exam-strategy');
+    assert.equal(autoRes.data.scope, 'Odisha');
+    assert.equal(autoRes.data.slug, 'opsc-oas-2026-recruitment-prelims-strategy');
+    assert.equal(autoRes.data.takeaways_or.length, 2, 'takeaways_or must align with takeaways_en');
+    assert.ok(autoRes.data.official_links.some((l) => l.url.includes('opsc.gov.in')), 'Must extract opsc.gov.in official link');
+    assert.ok(autoRes.data.official_links.some((l) => l.url.includes('oshec.odisha.gov.in')), 'Must deterministically extract additional .gov.in PDF links');
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+
+  // B. Verify Gemini-First Image Generation -> Workers AI FLUX -> R2 cso-media storage & /api/media/_serve.js delivery
+  const r2Store = new Map();
+  const mockMediaR2 = {
+    async put(key, val, opts) { r2Store.set(key, { bytes: val, opts }); },
+    async get(key) {
+      const hit = r2Store.get(key);
+      if (!hit) return null;
+      return { body: hit.bytes, size: hit.bytes.byteLength, httpEtag: 'etag123' };
+    }
+  };
+  const fakeJpegBytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]);
+  const fakeJpegB64 = Buffer.from(fakeJpegBytes).toString('base64');
+
+  const imgModelsTried = [];
+  const origFetchImg = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    const u = String(url);
+    if (u.includes('imagen-3.0-generate-002:predict')) {
+      imgModelsTried.push('imagen-3.0-generate-002');
+      return new Response('Quota', { status: 429 });
+    }
+    if (u.includes('gemini-2.5-flash-image:generateContent')) {
+      imgModelsTried.push('gemini-2.5-flash-image');
+      return new Response(JSON.stringify({
+        candidates: [{
+          content: {
+            parts: [{ inlineData: { mimeType: 'image/jpeg', data: fakeJpegB64 } }]
+          }
+        }]
+      }), { status: 200 });
+    }
+    throw new Error('Unexpected image fetch: ' + u);
+  };
+
+  try {
+    const imgRes = await handleAdminAiGenerateImage(
+      new Request('https://csodisha.com/api/admin/ai/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title_en: 'OPSC OAS Prelims 2026 Guide',
+          category: 'exam-strategy',
+          scope: 'Odisha',
+          aspect_ratio: '16:9'
+        })
+      }),
+      { DB: db, MEDIA: mockMediaR2, GEMINI_API_KEY: 'gm_img_test' },
+      { userId: 'adm_1', email: 'admin@csodisha.com' }
+    );
+    assert.equal(imgRes.status, 201);
+    const imgData = await imgRes.json();
+    assert.deepEqual(imgModelsTried, ['imagen-3.0-generate-002', 'gemini-2.5-flash-image'], 'Image API must attempt Imagen 3 then gemini-2.5-flash-image');
+    assert.equal(imgData.ok, true);
+    assert.equal(imgData.provider, 'gemini_image');
+    assert.match(imgData.url, /^\/api\/media\/guides\/ai-\d+-opsc-oas-prelims-2026-guide\.jpg$/);
+    assert.ok(r2Store.has(imgData.key), 'Generated cover must be stored in cso-media R2');
+    assert.ok(imgData.alt_en && imgData.caption_en && imgData.caption_or);
+
+    // Verify /api/media/_serve.js serves the stored guides/ai-*.jpg key with 200 OK
+    const serveRes = await handleMedia(
+      new Request('https://csodisha.com' + imgData.url, { method: 'GET' }),
+      { MEDIA: mockMediaR2 },
+      null
+    );
+    assert.equal(serveRes.status, 200, '/api/media/_serve.js must serve guides/ai-*.jpg with 200 OK');
+    assert.equal(serveRes.headers.get('Content-Type'), 'image/jpeg');
+  } finally {
+    globalThis.fetch = origFetchImg;
+  }
+
+  // C. Verify automatic fallback to Workers AI @cf/black-forest-labs/flux-1-schnell when Gemini fails
+  const fluxCalls = [];
+  const fluxOut = await generateAiEditorialImage(
+    {
+      DB: db,
+      MEDIA: mockMediaR2,
+      AI: {
+        async run(model, args) {
+          fluxCalls.push({ model, steps: args && args.steps });
+          return { image: fakeJpegB64 };
+        }
+      }
+    },
+    { title_en: 'Subhadra Yojana Guide', category: 'citizen-scheme', scope: 'Odisha', actorId: 'adm_1' }
+  );
+  assert.equal(fluxOut.ok, true);
+  assert.equal(fluxOut.provider, 'cloudflare_workers_ai');
+  assert.equal(fluxCalls.length, 1);
+  assert.equal(fluxCalls[0].model, '@cf/black-forest-labs/flux-1-schnell');
+  assert.equal(fluxCalls[0].steps, 4);
+  assert.ok(r2Store.has(fluxOut.key));
+
+  // D. Verify clean offline SVG fallback when neither Gemini nor Workers AI is available
+  const svgOut = await generateAiEditorialImage(
+    { DB: db, MEDIA: mockMediaR2 },
+    { title_en: 'Konark Sun Temple Heritage', category: 'odisha-gk', scope: 'Odisha', actorId: 'adm_1' }
+  );
+  assert.equal(svgOut.ok, true);
+  assert.equal(svgOut.provider, 'svg_fallback');
+  assert.match(svgOut.url, /\.svg$/);
+  assert.ok(r2Store.has(svgOut.key));
+});
+
+console.log(`\n=== Free-Tier AI Co-Author v318 + v331 + v350 Results: ${passed} passed, 0 failed ===\n`);

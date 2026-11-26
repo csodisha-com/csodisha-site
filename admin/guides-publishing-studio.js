@@ -1,11 +1,12 @@
 /**
- * Common Sense Odisha — Informative Articles & Guides Publishing Studio (v348)
+ * Common Sense Odisha — Informative Articles & Guides Publishing Studio (v350)
  * - Dedicated Sidebar Folder & Sub-Views (All, How-To, Exam Strategy, Citizen/Schemes, Odisha GK, Drafts)
  * - 5 One-Click Structured Starter Blueprint Templates
  * - Structured Bilingual Inputs, Key Takeaways Repeater & Quick Markdown Formatting Toolbar
- * - Cover Photo + Inline Photo Gallery (cso-media R2), Downloadable PDFs (cso-files R2),
+ * - Cover Photo + AI Cover Generator + Inline Photo Gallery (cso-media R2), Downloadable PDFs (cso-files R2),
  *   Verified Official Links (.gov.in Badge) & Related Practice/Alert Linker
- * - Full AI Co-Author Bar ($0/mo Gemini + Workers AI: Outline/Draft, Title/Slug/Summary/Tags, 1-Click EN -> Odia)
+ * - Gemini Pro-First AI Co-Author Bar: 1-Click PDF Upload -> Auto-Write Guide (lazy self-hosted pdfjs-dist),
+ *   AI Auto-Fix & Fill Everything, Outline/Draft, Title/Slug/Summary/Tags, 1-Click EN -> Odia
  * - Interactive Full-Screen Live Preview Modal (Desktop/Mobile, EN/Odia, 4-Theme Switcher, Direct Publish Live)
  * Strict CSP-compliant: pure DOM APIs only, zero innerHTML / outerHTML / inline style / inline handlers.
  */
@@ -317,8 +318,106 @@
   function formatBytesLabel(bytes) {
     var n = Number(bytes || 0);
     if (!n) return 'Official PDF';
-    if (n < 1024 * 1024) return 'PDF · ' + Math.max(1, Math.round(n / 1024)) + ' KB';
-    return 'PDF · ' + (n / (1024 * 1024)).toFixed(1) + ' MB';
+    if (n < 1024 * 1024) return 'Official PDF · ' + Math.max(1, Math.round(n / 1024)) + ' KB';
+    return 'Official PDF · ' + (n / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  var _pdfjsLibPromise = null;
+  function loadSelfHostedPdfJs() {
+    if (!_pdfjsLibPromise) {
+      _pdfjsLibPromise = import('/assets/js/vendor/pdfjs/pdf.min.mjs').then(function (lib) {
+        if (lib && lib.GlobalWorkerOptions) {
+          lib.GlobalWorkerOptions.workerSrc = '/assets/js/vendor/pdfjs/pdf.worker.min.mjs';
+        }
+        return lib;
+      });
+    }
+    return _pdfjsLibPromise;
+  }
+
+  function extractPdfTextFallback(arrayBuf) {
+    try {
+      var raw = new TextDecoder('latin1').decode(new Uint8Array(arrayBuf).slice(0, 1500000));
+      var chunks = [];
+      var re = /\(([^()\\]{3,240})\)/g;
+      var m;
+      while ((m = re.exec(raw)) !== null && chunks.length < 1800) {
+        var cleaned = m[1].replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim();
+        if (cleaned.length >= 3) chunks.push(cleaned);
+      }
+      return chunks.join(' ').slice(0, 34000);
+    } catch (_e) {
+      return '';
+    }
+  }
+
+  function extractTextFromPdfFile(file) {
+    return file.arrayBuffer().then(function (buf) {
+      return loadSelfHostedPdfJs().then(function (pdfjsLib) {
+        var loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buf.slice(0)), useSystemFonts: true });
+        return loadingTask.promise.then(function (pdfDoc) {
+          var totalPages = Math.min(Number(pdfDoc.numPages || 0), 30);
+          var pageNums = [];
+          for (var p = 1; p <= totalPages; p++) pageNums.push(p);
+          var pagesText = [];
+          return pageNums.reduce(function (chain, pageNum) {
+            return chain.then(function () {
+              return pdfDoc.getPage(pageNum).then(function (page) {
+                return page.getTextContent().then(function (tc) {
+                  var items = (tc && Array.isArray(tc.items)) ? tc.items : [];
+                  var rows = [];
+                  items.forEach(function (it) {
+                    var str = String((it && it.str) || '').trim();
+                    if (!str) return;
+                    var tx = (it.transform && it.transform[4]) || 0;
+                    var ty = (it.transform && it.transform[5]) || 0;
+                    var row = null;
+                    for (var ri = 0; ri < rows.length; ri++) {
+                      if (Math.abs(rows[ri].y - ty) <= 3.5) { row = rows[ri]; break; }
+                    }
+                    if (!row) {
+                      row = { y: ty, cells: [] };
+                      rows.push(row);
+                    }
+                    row.cells.push({ x: tx, text: str });
+                  });
+                  rows.sort(function (a, b) { return b.y - a.y; });
+                  var pageLines = rows.map(function (r) {
+                    r.cells.sort(function (a, b) { return a.x - b.x; });
+                    var parts = [];
+                    for (var ci = 0; ci < r.cells.length; ci++) {
+                      if (ci > 0 && (r.cells[ci].x - r.cells[ci - 1].x) > 38) {
+                        parts.push(' | ');
+                      } else if (ci > 0) {
+                        parts.push(' ');
+                      }
+                      parts.push(r.cells[ci].text);
+                    }
+                    return parts.join('').replace(/\s{2,}/g, ' ').trim();
+                  }).filter(Boolean);
+                  if (pageLines.length) {
+                    pagesText.push('--- Page ' + pageNum + ' ---\n' + pageLines.join('\n'));
+                  }
+                });
+              });
+            });
+          }, Promise.resolve()).then(function () {
+            var full = pagesText.join('\n\n').trim().slice(0, 36000);
+            if (!full) full = extractPdfTextFallback(buf);
+            return { text: full, pageCount: Number(pdfDoc.numPages || 0) };
+          });
+        });
+      }).catch(function () {
+        return { text: extractPdfTextFallback(buf), pageCount: 0 };
+      });
+    });
+  }
+
+  function requestAiGeneratedImage(payload) {
+    return apiFetch('/api/admin/ai/generate-image', {
+      method: 'POST',
+      body: payload || {}
+    });
   }
 
   function getCategoryMeta(key) {
@@ -1083,22 +1182,40 @@
     function drawPhotos() {
       clear(photosHost);
       if (!photosList.length) {
-        photosHost.appendChild(el('p', 'cso-ca-empty', 'No inline gallery photos added yet. Click "+ Add Photo" to upload to cso-media R2 or link an image URL.'));
+        photosHost.appendChild(el('p', 'cso-ca-empty', 'No inline gallery photos added yet. Click "+ Add Gallery Photo" or "🎨 + AI Illustration" to upload or generate section visuals.'));
       }
       photosList.forEach(function (p, idx) {
         var card = el('div', 'cso-guide-slot-card');
         var topRow = el('div', 'cso-guide-slot-row');
+
+        var thumb = el('img', 'cso-guide-slot-thumb');
+        thumb.alt = p.alt || p.caption_en || 'Gallery visual preview';
+        if (p.url) {
+          thumb.src = p.url;
+          thumb.hidden = false;
+        } else {
+          thumb.hidden = true;
+        }
+
         var iUrl = el('input', 'cso-form-input');
         iUrl.type = 'url';
         iUrl.placeholder = 'Image URL (/api/media/... or https://...)';
         iUrl.value = p.url || '';
-        iUrl.addEventListener('input', function () { p.url = iUrl.value; });
+        iUrl.addEventListener('input', function () {
+          p.url = iUrl.value;
+          if (p.url.trim()) {
+            thumb.src = p.url.trim();
+            thumb.hidden = false;
+          } else {
+            thumb.hidden = true;
+          }
+        });
 
         var fInput = el('input');
         fInput.type = 'file';
         fInput.accept = 'image/jpeg,image/png,image/webp';
         fInput.hidden = true;
-        var upBtn = el('button', 'cso-pill-btn', '\u2B06 Upload Image (R2)');
+        var upBtn = el('button', 'cso-pill-btn', '\u2B06 Upload (R2)');
         upBtn.type = 'button';
         upBtn.addEventListener('click', function () { fInput.click(); });
         fInput.addEventListener('change', function () {
@@ -1107,13 +1224,18 @@
           upBtn.textContent = 'Uploading\u2026';
           uploadImageToMediaR2(fInput.files[0]).then(function (r) {
             p.url = r.url;
+            p.provider_label = 'R2 Upload';
             iUrl.value = r.url;
+            thumb.src = r.url;
+            thumb.hidden = false;
+            provBadge.textContent = '\u2713 Uploaded to cso-media R2';
+            provBadge.hidden = false;
             toast('Photo uploaded to cso-media R2!', 'ok');
           }).catch(function (e) {
             toast('Upload failed: ' + e.message, 'crimson');
           }).finally(function () {
             upBtn.disabled = false;
-            upBtn.textContent = '\u2B06 Upload Image (R2)';
+            upBtn.textContent = '\u2B06 Upload (R2)';
             fInput.value = '';
           });
         });
@@ -1122,7 +1244,53 @@
         rmBtn.type = 'button';
         rmBtn.addEventListener('click', function () { photosList.splice(idx, 1); drawPhotos(); });
 
-        topRow.append(iUrl, fInput, upBtn, rmBtn);
+        topRow.append(thumb, iUrl, fInput, upBtn, rmBtn);
+
+        var aiRow = el('div', 'cso-guide-slot-row');
+        var iAiPrompt = el('input', 'cso-form-input');
+        iAiPrompt.type = 'text';
+        iAiPrompt.placeholder = 'Optional AI illustration prompt (e.g., Odisha campus study roadmap visual)...';
+        iAiPrompt.value = p.ai_prompt || '';
+        iAiPrompt.addEventListener('input', function () { p.ai_prompt = iAiPrompt.value; });
+
+        var aiIllusBtn = el('button', 'cso-pill-btn is-accent', '\uD83C\uDFA8 AI Illustration');
+        aiIllusBtn.type = 'button';
+        var provBadge = el('span', 'cso-pill-badge cso-guide-provider-badge');
+        if (p.provider_label) {
+          provBadge.textContent = '\u2728 ' + p.provider_label;
+          provBadge.hidden = false;
+        } else {
+          provBadge.hidden = true;
+        }
+
+        aiIllusBtn.addEventListener('click', function () {
+          aiIllusBtn.disabled = true;
+          aiIllusBtn.textContent = '\uD83C\uDFA8 Generating\u2026';
+          var scenePrompt = iAiPrompt.value.trim() || p.caption_en || '';
+          var titleHint = p.caption_en || inTitleEn.value.trim() || 'Odisha Informative Guide Section Illustration';
+          requestAiGeneratedImage({
+            prompt: scenePrompt,
+            title_en: titleHint,
+            category: selCat.value,
+            scope: selScope.value,
+            aspect_ratio: '16:9'
+          }).then(function (r) {
+            p.url = r.url || '';
+            p.caption_en = p.caption_en || r.caption_en || titleHint;
+            p.caption_or = p.caption_or || r.caption_or || '';
+            p.alt = p.alt || r.alt_en || titleHint;
+            p.provider_label = (r.provider_label || r.provider || 'AI') + (r.model ? (' · ' + r.model) : '');
+            drawPhotos();
+            toast('AI Illustration generated via ' + (r.provider_label || r.provider) + '!', 'ok');
+          }).catch(function (e) {
+            toast('AI Illustration failed: ' + e.message, 'crimson');
+          }).finally(function () {
+            aiIllusBtn.disabled = false;
+            aiIllusBtn.textContent = '\uD83C\uDFA8 AI Illustration';
+          });
+        });
+
+        aiRow.append(iAiPrompt, aiIllusBtn, provBadge);
 
         var capRow = el('div', 'cso-guide-repeater-3col');
         var iCapEn = el('input', 'cso-form-input');
@@ -1141,7 +1309,7 @@
         iAlt.addEventListener('input', function () { p.alt = iAlt.value; });
 
         capRow.append(iCapEn, iCapOr, iAlt);
-        card.append(topRow, capRow);
+        card.append(topRow, aiRow, capRow);
         photosHost.appendChild(card);
       });
     }
@@ -1390,18 +1558,147 @@
     tplCard.append(tplHead, tplGrid);
     shell.appendChild(tplCard);
 
-    // ---- 2. AI CO-AUTHOR BAR ($0/mo Gemini + Workers AI Pool) ----
+    // Cover AI controls declared ahead so PDF Auto-Write / Auto-Fix can trigger AI Cover generation
+    var inCoverAiPrompt = el('input', 'cso-form-input');
+    inCoverAiPrompt.type = 'text';
+    inCoverAiPrompt.id = 'inGuideCoverAiPrompt';
+    inCoverAiPrompt.placeholder = 'Optional AI cover visual prompt (leave blank to auto-craft from Guide Title, Category & Scope)...';
+
+    var coverProviderBadge = el('span', 'cso-pill-badge cso-guide-provider-badge');
+    coverProviderBadge.id = 'guideCoverAiProviderBadge';
+    coverProviderBadge.hidden = true;
+
+    var coverThumb = el('img', 'cso-guide-cover-thumb');
+    coverThumb.alt = 'Cover photo preview';
+    if (inCoverUrl.value.trim()) {
+      coverThumb.src = inCoverUrl.value.trim();
+      coverThumb.hidden = false;
+    } else {
+      coverThumb.hidden = true;
+    }
+    inCoverUrl.addEventListener('input', function () {
+      var u = inCoverUrl.value.trim();
+      if (u) {
+        coverThumb.src = u;
+        coverThumb.hidden = false;
+      } else {
+        coverThumb.hidden = true;
+      }
+    });
+
+    var btnCoverAiGen = el('button', 'cso-pill-btn is-accent', '\uD83C\uDFA8 Generate Cover with AI');
+    btnCoverAiGen.type = 'button';
+    btnCoverAiGen.id = 'btnGuideCoverAiGen';
+
+    var btnCoverAiRegen = el('button', 'cso-pill-btn', '\uD83D\uDD04 Regenerate');
+    btnCoverAiRegen.type = 'button';
+    btnCoverAiRegen.id = 'btnGuideCoverAiRegen';
+
+    function runCoverAiGeneration(isRegenerate) {
+      var titleVal = inTitleEn.value.trim();
+      var promptVal = inCoverAiPrompt.value.trim();
+      if (!titleVal && !promptVal) {
+        toast('Enter a Guide Title (EN) or AI Cover Prompt first.', 'amber');
+        inTitleEn.focus();
+        return Promise.resolve(null);
+      }
+      btnCoverAiGen.disabled = true;
+      btnCoverAiRegen.disabled = true;
+      coverProviderBadge.hidden = false;
+      coverProviderBadge.textContent = isRegenerate ? 'Regenerating via Gemini / Workers AI\u2026' : 'Generating Cover via Gemini / Workers AI\u2026';
+      var promptToSend = promptVal;
+      if (isRegenerate && promptToSend) {
+        promptToSend = promptToSend + ' (fresh editorial angle and composition)';
+      }
+      return requestAiGeneratedImage({
+        prompt: promptToSend,
+        title_en: titleVal || promptVal.slice(0, 120),
+        category: selCat.value,
+        scope: selScope.value,
+        aspect_ratio: '16:9'
+      }).then(function (r) {
+        if (r && r.url) {
+          inCoverUrl.value = r.url;
+          coverThumb.src = r.url;
+          coverThumb.hidden = false;
+        }
+        if (r && r.caption_en && (!inCoverCapEn.value.trim() || isRegenerate)) inCoverCapEn.value = r.caption_en;
+        if (r && r.caption_or && (!inCoverCapOr.value.trim() || isRegenerate)) inCoverCapOr.value = r.caption_or;
+        var provTxt = (r && r.provider_label) || (r && r.provider) || 'AI';
+        var mdlTxt = (r && r.model) ? (' · ' + r.model) : '';
+        coverProviderBadge.textContent = '\u2728 Generated via ' + provTxt + mdlTxt;
+        coverProviderBadge.hidden = false;
+        toast('AI Cover Photo saved to cso-media R2 via ' + provTxt + '!', 'ok');
+        return r;
+      }).catch(function (e) {
+        coverProviderBadge.textContent = '\u2715 Cover AI failed: ' + e.message;
+        coverProviderBadge.hidden = false;
+        toast('AI Cover generation failed: ' + e.message, 'crimson');
+        return null;
+      }).finally(function () {
+        btnCoverAiGen.disabled = false;
+        btnCoverAiRegen.disabled = false;
+      });
+    }
+
+    btnCoverAiGen.addEventListener('click', function () { runCoverAiGeneration(false); });
+    btnCoverAiRegen.addEventListener('click', function () { runCoverAiGeneration(true); });
+
+    // ---- 2. AI CO-AUTHOR BAR (Gemini Pro-First + Workers AI Fallback) ----
     var aiCard = el('section', 'cso-card studio-card cso-guide-ai-bar');
     var aiHead = el('div', 'cso-guide-sec-head');
     aiHead.append(
-      el('h3', 'cso-qc-card-title', '\u2728 AI Co-Author Bar ($0/mo Gemini + Workers AI Pool)'),
-      el('span', 'cso-pill-badge', 'Auto-Fallback \u00B7 Bilingual EN / \u0B13\u0B21\u0B3C\u0B3F\u0B06')
+      el('h3', 'cso-qc-card-title', '\u2728 AI Co-Author Bar (Gemini Pro-First + Workers AI Fallback)'),
+      el('span', 'cso-pill-badge', 'Gemini Pro \u2192 Flash \u2192 Workers AI \u00B7 Bilingual EN / \u0B13\u0B21\u0B3C\u0B3F\u0B06')
     );
+
+    // 1-Click PDF Upload -> Auto-Write Guide Dropzone
+    var pdfAutoInput = el('input');
+    pdfAutoInput.type = 'file';
+    pdfAutoInput.accept = 'application/pdf';
+    pdfAutoInput.id = 'inputGuidePdfAutoWrite';
+    pdfAutoInput.hidden = true;
+
+    var pdfDropzone = el('div', 'cso-guide-pdf-dropzone');
+    pdfDropzone.id = 'guidePdfDropzone';
+    var pdfDropCopy = el('div', 'cso-guide-pdf-drop-copy');
+    pdfDropCopy.append(
+      el('strong', '', '\uD83D\uDCC4 1-Click PDF Upload \u2192 Auto-Write Bilingual Guide'),
+      el('span', 'cso-text-muted', 'Drop an official Odisha / National notification, syllabus, or scheme PDF here — extracts all pages via pdfjs-dist, uploads to cso-files R2, attaches Official PDF, writes structured Markdown + tables + Odia translation & extracts verified .gov.in links.')
+    );
+    var btnPdfAutoWrite = el('button', 'cso-btn cso-btn-primary', '\uD83D\uDCC4 Upload PDF \u2192 Auto-Write Guide');
+    btnPdfAutoWrite.type = 'button';
+    btnPdfAutoWrite.id = 'btnGuidePdfAutoWrite';
+    btnPdfAutoWrite.addEventListener('click', function () { pdfAutoInput.click(); });
+    pdfDropzone.append(pdfDropCopy, btnPdfAutoWrite, pdfAutoInput);
+
     var aiSeed = el('textarea', 'cso-form-textarea');
-    aiSeed.rows = 2;
-    aiSeed.placeholder = 'Enter a topic or paste official notification notes (e.g., "How to apply for Odisha Post-Matric Scholarship 2026 on scholarship.odisha.gov.in")...';
+    aiSeed.rows = 3;
+    aiSeed.placeholder = 'Enter a topic, paste rough notes, or drop an official PDF above (e.g., "OPSC OAS 2026 Notification" or paste raw notice text to repair & auto-fill)...';
+
+    // Options row (Overwrite toggle + Auto-generate AI Cover checkbox)
+    var aiOptsRow = el('div', 'cso-guide-ai-options');
+    var chkAiOverwrite = el('input');
+    chkAiOverwrite.type = 'checkbox';
+    chkAiOverwrite.id = 'chkGuideAiOverwrite';
+    chkAiOverwrite.checked = false;
+    var lblOverwrite = el('label', 'cso-qc-check');
+    lblOverwrite.append(chkAiOverwrite, el('span', '', 'Overwrite existing fields'));
+
+    var chkAiAutoCover = el('input');
+    chkAiAutoCover.type = 'checkbox';
+    chkAiAutoCover.id = 'chkGuideAiAutoCover';
+    chkAiAutoCover.checked = true;
+    var lblAutoCover = el('label', 'cso-qc-check');
+    lblAutoCover.append(chkAiAutoCover, el('span', '', 'Auto-generate AI Cover Photo if empty'));
+    aiOptsRow.append(lblOverwrite, lblAutoCover);
 
     var aiActions = el('div', 'cso-guide-ai-actions');
+
+    var btnAiAutoFix = el('button', 'cso-btn cso-btn-primary', '\u2728 AI Auto-Fix & Fill Everything');
+    btnAiAutoFix.type = 'button';
+    btnAiAutoFix.id = 'btnGuideAiAutoFix';
+
     var btnAiDraft = el('button', 'cso-pill-btn is-accent', '\u2728 AI Outline & Draft Generator');
     btnAiDraft.type = 'button';
     btnAiDraft.id = 'btnGuideAiDraft';
@@ -1415,6 +1712,221 @@
     btnAiFullOr.id = 'btnGuideAiTranslateAll';
 
     var aiStatus = el('span', 'cso-text-muted');
+    aiStatus.id = 'guideAiCoauthorStatus';
+
+    function setAiBusy(busy) {
+      btnPdfAutoWrite.disabled = busy;
+      btnAiAutoFix.disabled = busy;
+      btnAiDraft.disabled = busy;
+      btnAiMeta.disabled = busy;
+      btnAiFullOr.disabled = busy;
+    }
+
+    function applyAutoFixPayload(d, opts) {
+      var o = opts || {};
+      var overwrite = Boolean(o.overwrite);
+      var shouldSet = function (curVal) {
+        return overwrite || !String(curVal || '').trim();
+      };
+
+      if (d.category && ['how-to', 'exam-strategy', 'citizen-scheme', 'odisha-gk'].indexOf(d.category) !== -1) {
+        if (overwrite || !editing) selCat.value = d.category;
+      }
+      if (d.scope === 'Odisha' || d.scope === 'National') {
+        if (overwrite || !editing) selScope.value = d.scope;
+      }
+      if (typeof d.is_exam === 'boolean' && (overwrite || !editing)) {
+        chkExam.checked = d.is_exam;
+      }
+      if (d.read_minutes && (overwrite || !inReadMins.value || Number(inReadMins.value) === 5)) {
+        inReadMins.value = String(d.read_minutes);
+      }
+      if (d.title_en && shouldSet(inTitleEn.value)) inTitleEn.value = d.title_en;
+      if (d.title_or && shouldSet(inTitleOr.value)) inTitleOr.value = d.title_or;
+      if (d.slug && (overwrite || !slugTouched || isBlueprintPlaceholderSlug(inSlug.value.trim(), lastAutoSlug))) {
+        inSlug.value = d.slug;
+        lastAutoSlug = d.slug;
+        slugTouched = false;
+      } else {
+        syncSlugFromTitleIfUnmodified();
+      }
+      if (d.summary_en && shouldSet(inSumEn.value)) inSumEn.value = d.summary_en;
+      if (d.summary_or && shouldSet(inSumOr.value)) inSumOr.value = d.summary_or;
+      if (Array.isArray(d.tags) && d.tags.length && shouldSet(inTags.value)) {
+        inTags.value = d.tags.join(', ');
+      }
+      if (d.body_en && (overwrite || !inBodyEn.value.trim() || o.alwaysRepairBody)) {
+        inBodyEn.value = d.body_en;
+      }
+      if (d.body_or && shouldSet(inBodyOr.value)) {
+        inBodyOr.value = d.body_or;
+      }
+      var hasTakeaways = takeawaysList.some(function (t) { return (t.text_en || '').trim(); });
+      if (Array.isArray(d.takeaways_en) && d.takeaways_en.length && (overwrite || !hasTakeaways)) {
+        takeawaysList = d.takeaways_en.map(function (t, idx) {
+          return { text_en: t, text_or: (d.takeaways_or && d.takeaways_or[idx]) || '' };
+        });
+        drawTakeaways();
+      }
+      if (d.image_prompt && shouldSet(inCoverAiPrompt.value)) {
+        inCoverAiPrompt.value = d.image_prompt;
+      }
+      if (d.cover_caption_en && shouldSet(inCoverCapEn.value)) inCoverCapEn.value = d.cover_caption_en;
+      if (d.cover_caption_or && shouldSet(inCoverCapOr.value)) inCoverCapOr.value = d.cover_caption_or;
+
+      if (o.pdfRecord) {
+        if (d.pdf_title_en) o.pdfRecord.title_en = d.pdf_title_en;
+        if (d.pdf_title_or) o.pdfRecord.title_or = d.pdf_title_or;
+        drawPdfs();
+      }
+
+      if (Array.isArray(d.official_links) && d.official_links.length) {
+        var existingUrls = {};
+        linksList.forEach(function (l) {
+          if (l && l.url) existingUrls[String(l.url).trim().toLowerCase()] = true;
+        });
+        var addedLinks = 0;
+        d.official_links.forEach(function (lnk) {
+          if (!lnk || !lnk.url) return;
+          var key = String(lnk.url).trim().toLowerCase();
+          if (existingUrls[key]) return;
+          existingUrls[key] = true;
+          linksList.push({
+            label_en: lnk.label_en || lnk.url,
+            label_or: lnk.label_or || lnk.label_en || lnk.url,
+            url: lnk.url,
+            is_official: lnk.is_official !== false
+          });
+          addedLinks++;
+        });
+        if (addedLinks) drawLinks();
+      }
+    }
+
+    function handlePdfAutoWriteFile(file) {
+      if (!file) return;
+      if (!/\.pdf$/i.test(file.name || '') && file.type !== 'application/pdf') {
+        toast('Please upload a valid .pdf file.', 'amber');
+        return;
+      }
+      setAiBusy(true);
+      aiStatus.textContent = '\uD83D\uDCC4 Extracting PDF pages (pdfjs-dist) & uploading to cso-files R2\u2026';
+
+      Promise.all([
+        extractTextFromPdfFile(file),
+        uploadPdfToFilesR2(file)
+      ]).then(function (pair) {
+        var extracted = pair[0] || { text: '', pageCount: 0 };
+        var uploaded = pair[1];
+        var cleanBaseTitle = (uploaded.original_name || file.name || 'Official Document')
+          .replace(/\.pdf$/i, '')
+          .replace(/[-_]+/g, ' ')
+          .trim();
+
+        var pdfRec = {
+          title_en: cleanBaseTitle + ' (Official PDF)',
+          title_or: cleanBaseTitle + ' (\u0B38\u0B30\u0B15\u0B3E\u0B30\u0B40 PDF)',
+          url: uploaded.url,
+          badge: formatBytesLabel(uploaded.size_bytes || file.size)
+        };
+        var alreadyHas = pdfsList.some(function (x) { return x && x.url === pdfRec.url; });
+        if (!alreadyHas) {
+          pdfsList.push(pdfRec);
+          drawPdfs();
+        }
+
+        if (!extracted.text || extracted.text.length < 20) {
+          aiStatus.textContent = '\u26A0 PDF uploaded & attached to Downloadable PDFs, but minimal selectable text was found (scanned PDF). Paste notes above and click AI Auto-Fix.';
+          toast('PDF attached to Downloadable PDFs (scanned image PDF detected).', 'amber');
+          return null;
+        }
+
+        aiStatus.textContent = '\u2728 Extracted ' + (extracted.pageCount || 'all') + ' page(s) · Auto-writing bilingual guide via Gemini Pro\u2026';
+        return apiFetch('/api/admin/ai-coauthor', {
+          method: 'POST',
+          body: {
+            mode: 'auto_fix_fill',
+            pdf_text: extracted.text,
+            pdf_filename: file.name || 'official-document.pdf',
+            input: aiSeed.value.trim(),
+            draft: collectDraftPayload(),
+            overwrite: true
+          }
+        }).then(function (res) {
+          var d = (res && res.data) || {};
+          applyAutoFixPayload(d, { overwrite: true, alwaysRepairBody: true, pdfRecord: pdfRec });
+          var provLabel = ((res && res.provider_label) || (res && res.provider) || 'AI') + (res && res.model ? (' · ' + res.model) : '');
+          aiStatus.textContent = '\u2713 PDF uploaded, attached & full bilingual guide written via ' + provLabel + '!';
+          toast('PDF uploaded & full bilingual guide auto-written via ' + provLabel + '!', 'ok');
+          if (chkAiAutoCover.checked && (!inCoverUrl.value.trim() || chkAiOverwrite.checked)) {
+            return runCoverAiGeneration(false);
+          }
+          return null;
+        });
+      }).catch(function (e) {
+        aiStatus.textContent = '\u2715 PDF Auto-Write failed: ' + e.message;
+        toast('PDF Auto-Write failed: ' + e.message, 'crimson');
+      }).finally(function () {
+        setAiBusy(false);
+        pdfAutoInput.value = '';
+      });
+    }
+
+    pdfAutoInput.addEventListener('change', function () {
+      if (pdfAutoInput.files && pdfAutoInput.files[0]) {
+        handlePdfAutoWriteFile(pdfAutoInput.files[0]);
+      }
+    });
+    pdfDropzone.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      pdfDropzone.classList.add('is-dragover');
+    });
+    pdfDropzone.addEventListener('dragleave', function () {
+      pdfDropzone.classList.remove('is-dragover');
+    });
+    pdfDropzone.addEventListener('drop', function (e) {
+      e.preventDefault();
+      pdfDropzone.classList.remove('is-dragover');
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) handlePdfAutoWriteFile(f);
+    });
+
+    btnAiAutoFix.addEventListener('click', function () {
+      var currentDraft = collectDraftPayload();
+      var seed = aiSeed.value.trim();
+      var totalLen = seed.length + (currentDraft.title_en || '').length + (currentDraft.body_en || '').length + (currentDraft.summary_en || '').length;
+      if (totalLen < 8) {
+        toast('Paste rough notes/draft in the AI box or Guide Body first, or upload a PDF above.', 'amber');
+        aiSeed.focus();
+        return;
+      }
+      setAiBusy(true);
+      aiStatus.textContent = '\u2728 Repairing Markdown, translating to Odia & auto-filling all fields via Gemini Pro\u2026';
+      apiFetch('/api/admin/ai-coauthor', {
+        method: 'POST',
+        body: {
+          mode: 'auto_fix_fill',
+          input: seed,
+          draft: currentDraft,
+          overwrite: chkAiOverwrite.checked
+        }
+      }).then(function (res) {
+        var d = (res && res.data) || {};
+        applyAutoFixPayload(d, { overwrite: chkAiOverwrite.checked, alwaysRepairBody: true });
+        var provLabel = ((res && res.provider_label) || (res && res.provider) || 'AI') + (res && res.model ? (' · ' + res.model) : '');
+        aiStatus.textContent = '\u2713 Auto-Fixed & Filled via ' + provLabel + '!';
+        toast('Guide repaired & bilingual fields filled via ' + provLabel + '!', 'ok');
+        if (chkAiAutoCover.checked && (!inCoverUrl.value.trim() || chkAiOverwrite.checked)) {
+          return runCoverAiGeneration(false);
+        }
+        return null;
+      }).catch(function (e) {
+        aiStatus.textContent = '\u2715 ' + e.message;
+        toast('AI Auto-Fix failed: ' + e.message, 'crimson');
+      }).finally(function () {
+        setAiBusy(false);
+      });
+    });
 
     btnAiDraft.addEventListener('click', function () {
       var seed = aiSeed.value.trim() || inTitleEn.value.trim() || inBodyEn.value.trim();
@@ -1423,8 +1935,8 @@
         aiSeed.focus();
         return;
       }
-      btnAiDraft.disabled = true;
-      aiStatus.textContent = 'Generating structured guide outline & draft\u2026';
+      setAiBusy(true);
+      aiStatus.textContent = 'Generating structured guide outline & draft via Gemini Pro\u2026';
       apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'guide', input: seed } })
         .then(function (res) {
           var d = (res && res.data) || {};
@@ -1448,14 +1960,15 @@
             });
             drawTakeaways();
           }
-          aiStatus.textContent = '\u2713 Draft generated via ' + ((res && res.provider) || 'Free AI') + '!';
+          var provLabel = ((res && res.provider_label) || (res && res.provider) || 'Free AI') + (res && res.model ? (' · ' + res.model) : '');
+          aiStatus.textContent = '\u2713 Draft generated via ' + provLabel + '!';
           toast('AI Outline & Draft generated!', 'ok');
         })
         .catch(function (e) {
           aiStatus.textContent = '\u2715 ' + e.message;
           toast('AI Draft failed: ' + e.message, 'crimson');
         })
-        .finally(function () { btnAiDraft.disabled = false; });
+        .finally(function () { setAiBusy(false); });
     });
 
     btnAiMeta.addEventListener('click', function () {
@@ -1464,7 +1977,7 @@
         toast('Write a draft body or topic phrase first.', 'amber');
         return;
       }
-      btnAiMeta.disabled = true;
+      setAiBusy(true);
       aiStatus.textContent = 'Suggesting SEO Title, Slug, Summary & Tags\u2026';
       apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'suggest_meta', input: seed, kind: 'informative guide' } })
         .then(function (res) {
@@ -1483,7 +1996,7 @@
           aiStatus.textContent = '\u2715 ' + e.message;
           toast('AI Meta suggestion failed: ' + e.message, 'crimson');
         })
-        .finally(function () { btnAiMeta.disabled = false; });
+        .finally(function () { setAiBusy(false); });
     });
 
     btnAiFullOr.addEventListener('click', function () {
@@ -1503,8 +2016,8 @@
         toast('Add English title, summary, or body text first to translate into Odia.', 'amber');
         return;
       }
-      btnAiFullOr.disabled = true;
-      aiStatus.textContent = 'Translating entire guide into natural Odia (\u0B13\u0B21\u0B3C\u0B3F\u0B06)\u2026';
+      setAiBusy(true);
+      aiStatus.textContent = 'Translating entire guide into natural Odia (\u0B13\u0B21\u0B3C\u0B3F\u0B06) via Gemini Pro\u2026';
       apiFetch('/api/admin/ai-coauthor', { method: 'POST', body: { mode: 'translate_fields', fields: fields } })
         .then(function (res) {
           var tr = (res && res.data && res.data.translations) || {};
@@ -1519,18 +2032,19 @@
           pdfsList.forEach(function (d, i) { if (tr['pdf_' + i]) d.title_or = tr['pdf_' + i]; });
           linksList.forEach(function (l, i) { if (tr['lnk_' + i]) l.label_or = tr['lnk_' + i]; });
           drawTakeaways(); drawPhotos(); drawPdfs(); drawLinks();
-          aiStatus.textContent = '\u2713 Full guide translated into Odia!';
+          var provLabel = ((res && res.provider_label) || (res && res.provider) || 'Free AI') + (res && res.model ? (' · ' + res.model) : '');
+          aiStatus.textContent = '\u2713 Full guide translated into Odia via ' + provLabel + '!';
           toast('Translated all guide fields & media labels to Odia!', 'ok');
         })
         .catch(function (e) {
           aiStatus.textContent = '\u2715 ' + e.message;
           toast('Translation failed: ' + e.message, 'crimson');
         })
-        .finally(function () { btnAiFullOr.disabled = false; });
+        .finally(function () { setAiBusy(false); });
     });
 
-    aiActions.append(btnAiDraft, btnAiMeta, btnAiFullOr, aiStatus);
-    aiCard.append(aiHead, aiSeed, aiActions);
+    aiActions.append(btnAiAutoFix, btnAiDraft, btnAiMeta, btnAiFullOr, aiStatus);
+    aiCard.append(aiHead, pdfDropzone, aiSeed, aiOptsRow, aiActions);
     shell.appendChild(aiCard);
 
     // ---- 3. STRUCTURED METADATA & BILINGUAL CONTENT ----
@@ -1598,17 +2112,50 @@
     );
     shell.appendChild(bodyCard);
 
-    // ---- 6. COVER PHOTO & INLINE PHOTO GALLERY (cso-media R2) ----
+    // ---- 6. COVER PHOTO & INLINE PHOTO GALLERY (cso-media R2 + AI Image Generation) ----
     var photoCard = el('section', 'cso-card studio-card');
     var phHead = el('div', 'cso-guide-sec-head');
-    phHead.appendChild(el('h3', 'cso-qc-card-title', '4. Cover Photo & Inline Photo Gallery (cso-media R2)'));
+    phHead.appendChild(el('h3', 'cso-qc-card-title', '4. Cover Photo & Inline Photo Gallery (cso-media R2 + AI Visuals)'));
+    var phHeadBtns = el('div', 'cso-guide-hdr-btns');
     var btnAddPhoto = el('button', 'cso-pill-btn', '+ Add Gallery Photo');
     btnAddPhoto.type = 'button';
     btnAddPhoto.addEventListener('click', function () {
-      photosList.push({ url: '', caption_en: '', caption_or: '', alt: '' });
+      photosList.push({ url: '', caption_en: '', caption_or: '', alt: '', ai_prompt: '', provider_label: '' });
       drawPhotos();
     });
-    phHead.appendChild(btnAddPhoto);
+    var btnAddAiIllus = el('button', 'cso-pill-btn is-accent', '\uD83C\uDFA8 + AI Illustration');
+    btnAddAiIllus.type = 'button';
+    btnAddAiIllus.id = 'btnGuideAddAiIllustration';
+    btnAddAiIllus.addEventListener('click', function () {
+      btnAddAiIllus.disabled = true;
+      btnAddAiIllus.textContent = '\uD83C\uDFA8 Generating\u2026';
+      var sectionTitle = inTitleEn.value.trim() || 'Odisha Study Visual';
+      requestAiGeneratedImage({
+        prompt: '',
+        title_en: sectionTitle + ' — Visual Walkthrough',
+        category: selCat.value,
+        scope: selScope.value,
+        aspect_ratio: '16:9'
+      }).then(function (r) {
+        photosList.push({
+          url: r.url || '',
+          caption_en: r.caption_en || sectionTitle,
+          caption_or: r.caption_or || '',
+          alt: r.alt_en || sectionTitle,
+          ai_prompt: '',
+          provider_label: (r.provider_label || r.provider || 'AI') + (r.model ? (' · ' + r.model) : '')
+        });
+        drawPhotos();
+        toast('AI section illustration added via ' + (r.provider_label || r.provider) + '!', 'ok');
+      }).catch(function (e) {
+        toast('AI Illustration failed: ' + e.message, 'crimson');
+      }).finally(function () {
+        btnAddAiIllus.disabled = false;
+        btnAddAiIllus.textContent = '\uD83C\uDFA8 + AI Illustration';
+      });
+    });
+    phHeadBtns.append(btnAddAiIllus, btnAddPhoto);
+    phHead.appendChild(phHeadBtns);
 
     var coverFile = el('input');
     coverFile.type = 'file';
@@ -1623,6 +2170,10 @@
       btnCoverUp.textContent = 'Uploading Cover\u2026';
       uploadImageToMediaR2(coverFile.files[0]).then(function (r) {
         inCoverUrl.value = r.url;
+        coverThumb.src = r.url;
+        coverThumb.hidden = false;
+        coverProviderBadge.textContent = '\u2713 Uploaded to cso-media R2';
+        coverProviderBadge.hidden = false;
         toast('Cover photo uploaded to cso-media R2!', 'ok');
       }).catch(function (e) {
         toast('Cover upload failed: ' + e.message, 'crimson');
@@ -1635,12 +2186,25 @@
 
     var coverRow = el('div', 'cso-guide-slot-row');
     coverRow.append(inCoverUrl, coverFile, btnCoverUp);
+
+    var coverAiBar = el('div', 'cso-guide-cover-ai-bar');
+    coverAiBar.append(inCoverAiPrompt, btnCoverAiGen, btnCoverAiRegen, coverProviderBadge);
+
     var coverCaps = el('div', 'cso-form-grid');
     coverCaps.append(
       makeField('Cover Caption & Alt Text (EN)', inCoverCapEn),
       makeField('Cover Caption (\u0B13\u0B21\u0B3C\u0B3F\u0B06)', inCoverCapOr)
     );
-    photoCard.append(phHead, el('label', 'cso-form-label', 'Cover Photo URL or Direct R2 Upload'), coverRow, coverCaps, el('h4', 'cso-guide-sublabel', 'Inline Photo Gallery'), photosHost);
+    photoCard.append(
+      phHead,
+      el('label', 'cso-form-label', 'Cover Photo URL, Direct R2 Upload, or AI Cover Generator (Gemini-First + Workers AI Fallback)'),
+      coverRow,
+      coverAiBar,
+      coverThumb,
+      coverCaps,
+      el('h4', 'cso-guide-sublabel', 'Inline Photo Gallery'),
+      photosHost
+    );
     shell.appendChild(photoCard);
 
     // ---- 7. DOWNLOADABLE PDFs (cso-files R2) ----

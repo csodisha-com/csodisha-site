@@ -4425,9 +4425,46 @@ body.cso-studio-body {
   flex-shrink: 0;
 }
 
-/* AI Co-Author Bar */
+/* AI Co-Author Bar (v350 PDF Auto-Write, Auto-Fix & Fill, AI Cover & Gallery Controls) */
 .cso-guide-ai-bar {
   border-left: 4px solid var(--cso-accent);
+}
+
+.cso-guide-pdf-dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 12px;
+  border: 2px dashed var(--cso-border);
+  background: var(--cso-surface-alt);
+  color: var(--cso-ink);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-guide-pdf-dropzone.is-dragover,
+.cso-guide-pdf-dropzone:hover {
+  border-color: var(--cso-accent);
+  background: var(--cso-surface);
+}
+
+.cso-guide-pdf-drop-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.cso-guide-ai-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.65rem;
 }
 
 .cso-guide-ai-actions {
@@ -4436,6 +4473,58 @@ body.cso-studio-body {
   align-items: center;
   gap: 0.6rem;
   margin-top: 0.7rem;
+}
+
+.cso-guide-hdr-btns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cso-guide-cover-ai-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.6rem;
+  margin-bottom: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt);
+}
+
+.cso-guide-cover-ai-bar .cso-form-input {
+  flex: 1 1 260px;
+}
+
+.cso-guide-cover-thumb {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt);
+  margin: 0 0 0.85rem;
+}
+
+.cso-guide-slot-thumb {
+  display: block;
+  width: 72px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  flex-shrink: 0;
+}
+
+.cso-guide-provider-badge {
+  white-space: nowrap;
+  font-weight: 700;
 }
 
 .cso-guide-checks-row {

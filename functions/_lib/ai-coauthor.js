@@ -1,11 +1,15 @@
 /**
- * 100% Free-Tier Admin Studio AI Co-Author Service (v331)
- * - Uses Google Gemini $0 Free-Tier pool (`gemini-3.5-flash-lite` -> `gemini-3.6-flash` ->
- *   `gemini-3.8-flash` -> `gemini-3.1-flash-lite` -> `gemma-4-31b-it`) ONLY if env.GEMINI_API_KEY is bound.
- * - Automatically falls back to Cloudflare Workers AI (@cf/meta/llama-3.1-8b-instruct-fp8-fast
- *   or @cf/ibm-granite/granite-4.0-h-micro) when GEMINI_API_KEY is absent or rate-limited (429/5xx).
- * - Supports structured drafting (`job`, `scheme`, `mcq`, `career`), Odisha gov/exam EN->Odia
- *   translation (`translate_odia`, `translate_fields`), and AI Title/Slug/Tag suggestions (`suggest_meta`).
+ * 100% Free-Tier Admin Studio AI Co-Author & Editorial Image Service (v350)
+ * - Gemini Pro-First Text & PDF-to-Article Pool (`gemini-2.5-pro` -> `gemini-pro-latest` ->
+ *   `gemini-2.5-flash` -> `gemini-2.0-flash`) for `auto_fix_fill`, `guide`, and `translate_fields`,
+ *   cascading automatically on quota/429/error to Cloudflare Workers AI
+ *   (`@cf/meta/llama-3.3-70b-instruct-fp8-fast` -> `@cf/meta/llama-3.1-8b-instruct-fp8-fast`).
+ * - Gemini-First Native Image Generation (`imagen-3.0-generate-002` -> `gemini-2.5-flash-image`),
+ *   cascading automatically to Cloudflare Workers AI `@cf/black-forest-labs/flux-1-schnell`
+ *   (and clean editorial SVG banner fallback if offline/local), uploaded directly to `cso-media` R2.
+ * - Supports structured drafting (`job`, `scheme`, `mcq`, `career`, `guide`, `auto_fix_fill`),
+ *   Odisha gov/exam EN->Odia translation (`translate_odia`, `translate_fields`),
+ *   and AI Title/Slug/Tag suggestions (`suggest_meta`).
  * - Tracks daily neuron usage in D1 `ai_generation_logs` against Cloudflare's 10,000 Neurons/day free allowance.
  */
 
@@ -17,14 +21,31 @@ export const VALID_AI_MODES = new Set([
   'mcq',
   'career',
   'guide',
+  'auto_fix_fill',
   'translate_odia',
   'translate_fields',
   'suggest_meta'
 ]);
 
-const WORKERS_AI_PRIMARY_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
-const WORKERS_AI_FALLBACK_MODEL = '@cf/ibm-granite/granite-4.0-h-micro';
-export const GEMINI_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemma-4-31b-it'];
+export const PRO_FIRST_MODES = new Set(['auto_fix_fill', 'guide', 'translate_fields']);
+export const GEMINI_PRO_FIRST_MODELS = ['gemini-2.5-pro', 'gemini-pro-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+export const GEMINI_FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-pro', 'gemini-pro-latest'];
+export const GEMINI_MODELS = GEMINI_PRO_FIRST_MODELS;
+
+export const WORKERS_AI_PRO_MODELS = [
+  '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+  '@cf/meta/llama-3.1-8b-instruct-fp8-fast',
+  '@cf/ibm-granite/granite-4.0-h-micro'
+];
+export const WORKERS_AI_DEFAULT_MODELS = [
+  '@cf/meta/llama-3.1-8b-instruct-fp8-fast',
+  '@cf/ibm-granite/granite-4.0-h-micro'
+];
+
+export const GEMINI_IMAGE_MODELS = ['imagen-3.0-generate-002', 'gemini-2.5-flash-image'];
+export const WORKERS_AI_IMAGE_MODEL = '@cf/black-forest-labs/flux-1-schnell';
+
+const VALID_GUIDE_CATEGORIES = new Set(['how-to', 'exam-strategy', 'citizen-scheme', 'odisha-gk']);
 
 let _schemaReadyDb = null;
 
@@ -211,6 +232,58 @@ function buildPromptForMode(mode, rawInput, extra = {}) {
     ].join('\n');
   }
 
+  if (mode === 'auto_fix_fill') {
+    const pdfText = String(extra.pdf_text || '').trim().slice(0, 26000);
+    const pdfFilename = String(extra.pdf_filename || '').trim().slice(0, 180);
+    const draft = extra.draft && typeof extra.draft === 'object' ? extra.draft : {};
+    const draftBrief = {
+      category: draft.category || '',
+      scope: draft.scope || '',
+      title_en: String(draft.title_en || '').slice(0, 200),
+      title_or: String(draft.title_or || '').slice(0, 240),
+      slug: String(draft.slug || '').slice(0, 120),
+      summary_en: String(draft.summary_en || '').slice(0, 600),
+      tags: String(draft.tags || '').slice(0, 200),
+      body_en: String(draft.body_en || '').slice(0, 12000)
+    };
+    return [
+      'You are the Senior Bilingual Editor for Common Sense Odisha (csodisha.com).',
+      pdfText
+        ? `An official PDF document ("${pdfFilename || 'official-notification.pdf'}") was uploaded. Systematically extract ALL verified details (post names, vacancies, eligibility, age limits, fee, exam pattern, important dates, selection stages, application steps, helpline, and official .gov.in/.edu.in/.nic.in URLs) and write a complete, publication-ready bilingual guide.`
+        : 'Repair, format, and auto-complete the draft guide below. Fix broken Markdown headings (## / ###), align Markdown tables cleanly, remove messy copy-paste artifacts, generate complete bilingual EN + Odia (ଓଡ଼ିଆ) metadata & body, and extract any official .gov.in/.edu.in/.nic.in links present in the source.',
+      'Return ONLY a valid JSON object (no markdown fences) matching this exact schema:',
+      '{',
+      '  "category": "how-to | exam-strategy | citizen-scheme | odisha-gk",',
+      '  "scope": "Odisha | National",',
+      '  "is_exam": true,',
+      '  "read_minutes": 6,',
+      '  "title_en": "Clear SEO-friendly English guide title (50-95 chars)",',
+      '  "title_or": "Natural, accurate Odia (ଓଡ଼ିଆ) title keeping standard acronyms (OPSC, OSSC, OSSSC, NTA, UGC NET, DBT, PDF, CBT)",',
+      '  "slug": "clean-lowercase-hyphenated-slug",',
+      '  "summary_en": "Concise 2-sentence SEO summary in English",',
+      '  "summary_or": "Concise 2-sentence SEO summary in Odia (ଓଡ଼ିଆ)",',
+      '  "tags": ["Tag 1", "Tag 2", "Tag 3", "Tag 4", "Tag 5", "Tag 6"],',
+      '  "takeaways_en": ["Actionable takeaway 1", "Takeaway 2", "Takeaway 3", "Takeaway 4"],',
+      '  "takeaways_or": ["ମୁଖ୍ୟ ବିନ୍ଦୁ ୧", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୨", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୩", "ମୁଖ୍ୟ ବିନ୍ଦୁ ୪"],',
+      '  "body_en": "## Overview\\n...\\n\\n## Key Dates & Vacancy / Eligibility Table\\n| Parameter | Details |\\n| --- | --- |\\n| Authority | ... |\\n\\n## Step-by-Step Process / Preparation Checklist\\n1. ...\\n\\n> [!TIP]\\n> Practical advice...",',
+      '  "body_or": "## ସଂକ୍ଷିପ୍ତ ବିବରଣୀ\\n...",',
+      '  "pdf_title_en": "Clean human title for the uploaded PDF (e.g., OPSC OAS Official Notification PDF)",',
+      '  "pdf_title_or": "ଅପଲୋଡ୍ ହୋଇଥିବା PDF ର ଓଡ଼ିଆ ଶୀର୍ଷକ",',
+      '  "official_links": [{ "label_en": "Official Portal Name", "label_or": "ସରକାରୀ ପୋର୍ଟାଲ୍", "url": "https://...", "is_official": true }],',
+      '  "image_prompt": "Clean editorial photography scene description matching this topic (no text, no logos, no letters)",',
+      '  "cover_caption_en": "Short editorial caption in English",',
+      '  "cover_caption_or": "ଓଡ଼ିଆରେ ସଂକ୍ଷିପ୍ତ କ୍ୟାପ୍ସନ୍"',
+      '}',
+      'STRICT RULES:',
+      '- Never invent fake dates, vacancy numbers, or fake URLs. Only place URLs into official_links that appear verbatim in the source text/PDF.',
+      '- Preserve exact numbers, dates, fees, pay scales, and acronyms verbatim in both English and Odia.',
+      '- Format all tabular data as valid GitHub-Flavored Markdown tables (`| Col 1 | Col 2 |` + `| --- | --- |`).',
+      pdfText ? `Extracted PDF Text (${pdfFilename || 'document.pdf'}):\n${pdfText}` : '',
+      text ? `Additional Editorial Notes / Pasted Draft:\n${text}` : '',
+      (draftBrief.title_en || draftBrief.body_en) ? `Existing Composer Fields JSON:\n${JSON.stringify(draftBrief)}` : ''
+    ].filter(Boolean).join('\n\n');
+  }
+
   if (mode === 'guide') {
     return [
       'You are an expert Odisha & National editorial guide author for Common Sense Odisha.',
@@ -278,7 +351,91 @@ function getResponseSchemaForMode(mode) {
       required: ['titles_en', 'titles_or', 'slug', 'tags']
     };
   }
+  if (mode === 'auto_fix_fill') {
+    return {
+      type: 'OBJECT',
+      properties: {
+        category: { type: 'STRING' },
+        scope: { type: 'STRING' },
+        is_exam: { type: 'BOOLEAN' },
+        read_minutes: { type: 'INTEGER' },
+        title_en: { type: 'STRING' },
+        title_or: { type: 'STRING' },
+        slug: { type: 'STRING' },
+        summary_en: { type: 'STRING' },
+        summary_or: { type: 'STRING' },
+        tags: { type: 'ARRAY', items: { type: 'STRING' } },
+        takeaways_en: { type: 'ARRAY', items: { type: 'STRING' } },
+        takeaways_or: { type: 'ARRAY', items: { type: 'STRING' } },
+        body_en: { type: 'STRING' },
+        body_or: { type: 'STRING' },
+        pdf_title_en: { type: 'STRING' },
+        pdf_title_or: { type: 'STRING' },
+        official_links: {
+          type: 'ARRAY',
+          items: {
+            type: 'OBJECT',
+            properties: {
+              label_en: { type: 'STRING' },
+              label_or: { type: 'STRING' },
+              url: { type: 'STRING' },
+              is_official: { type: 'BOOLEAN' }
+            },
+            required: ['label_en', 'url']
+          }
+        },
+        image_prompt: { type: 'STRING' },
+        cover_caption_en: { type: 'STRING' },
+        cover_caption_or: { type: 'STRING' }
+      },
+      required: [
+        'category', 'scope', 'title_en', 'title_or', 'slug',
+        'summary_en', 'summary_or', 'tags', 'takeaways_en', 'takeaways_or',
+        'body_en', 'body_or'
+      ]
+    };
+  }
   return null;
+}
+
+export function extractOfficialUrlsFromText(rawText) {
+  const src = String(rawText || '');
+  if (!src) return [];
+  const matches = src.match(/(?:https?:\/\/|www\.)[a-z0-9.-]+\.(?:gov\.in|nic\.in|edu\.in|ac\.in|org\.in)(?:\/[^\s<>"')\]},;]*)?/gi) || [];
+  const seen = new Set();
+  const out = [];
+  for (const raw of matches) {
+    let url = String(raw || '').replace(/[.,;:!?)]+$/, '').trim();
+    if (!url) continue;
+    if (/^www\./i.test(url)) url = 'https://' + url;
+    let parsed;
+    try { parsed = new URL(url); } catch { continue; }
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') continue;
+    const norm = parsed.toString().slice(0, 400);
+    const key = norm.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const host = parsed.hostname.replace(/^www\./i, '');
+    const isGov = /(?:^|\.)(gov\.in|nic\.in|edu\.in|ac\.in)$/i.test(host);
+    out.push({
+      label_en: `${host} Official Portal`,
+      label_or: `${host} ସରକାରୀ ପୋର୍ଟାଲ୍`,
+      url: norm,
+      is_official: isGov
+    });
+    if (out.length >= 12) break;
+  }
+  return out;
+}
+
+function inferGuideCategory(rawCat, textCorpus) {
+  const c = String(rawCat || '').trim().toLowerCase();
+  if (VALID_GUIDE_CATEGORIES.has(c)) return c;
+  const hay = `${c} ${String(textCorpus || '').slice(0, 2000)}`.toLowerCase();
+  if (/\b(scheme|yojana|dbt|scholarship|subsidy|pension|ration|beneficiary|subhadra|kalia|cm kisan)\b/.test(hay)) return 'citizen-scheme';
+  if (/\b(syllabus|exam pattern|prelims|mains|pyq|cbt|mock test|opsc|ossc|osssc|otet|osstet|ugc net|cut-?off|roadmap|strategy)\b/.test(hay)) return 'exam-strategy';
+  if (/\b(odisha gk|heritage|konark|chilika|dynasty|kalinga|district|river|sanctuary|temple|history of odisha)\b/.test(hay)) return 'odisha-gk';
+  return 'how-to';
 }
 
 function normalizeStructuredOutput(mode, rawObj, fallbackInput, extra = {}) {
@@ -344,30 +501,95 @@ function normalizeStructuredOutput(mode, rawObj, fallbackInput, extra = {}) {
   const summaryEn = String(obj.summary_en || '').trim().slice(0, 2000);
   const summaryOr = String(obj.summary_or || '').trim().slice(0, 2500);
 
-  if (mode === 'guide') {
+  if (mode === 'auto_fix_fill' || mode === 'guide') {
     const rawTags = Array.isArray(obj.tags) ? obj.tags : String(obj.tags || '').split(',');
-    const tags = rawTags.map((t) => String(t || '').trim().slice(0, 36)).filter(Boolean).slice(0, 8);
+    const tags = [...new Set(rawTags.map((t) => String(t || '').replace(/^#+/, '').trim().slice(0, 36)).filter(Boolean))].slice(0, 8);
     const takeawaysEn = (Array.isArray(obj.takeaways_en) ? obj.takeaways_en : [])
       .map((t) => String(t || '').trim().slice(0, 300)).filter(Boolean).slice(0, 10);
     const takeawaysOr = (Array.isArray(obj.takeaways_or) ? obj.takeaways_or : [])
       .map((t) => String(t || '').trim().slice(0, 380)).filter(Boolean).slice(0, 10);
-    const bodyEn = String(obj.body_en || '').trim().slice(0, 32000);
-    const bodyOr = String(obj.body_or || '').trim().slice(0, 40000);
+    while (takeawaysOr.length < takeawaysEn.length) {
+      takeawaysOr.push(takeawaysEn[takeawaysOr.length]);
+    }
+    const bodyEn = String(obj.body_en || '').trim().slice(0, 42000);
+    const bodyOr = String(obj.body_or || '').trim().slice(0, 48000);
     const readMinutes = Number.isFinite(Number(obj.read_minutes)) && Number(obj.read_minutes) >= 1
       ? Math.min(60, Math.round(Number(obj.read_minutes)))
       : Math.max(2, Math.ceil(bodyEn.split(/\s+/).filter(Boolean).length / 200) || 5);
+
+    if (mode === 'guide') {
+      return {
+        title_en: titleEn,
+        title_or: titleOr,
+        slug,
+        summary_en: summaryEn,
+        summary_or: summaryOr,
+        read_minutes: readMinutes,
+        tags,
+        takeaways_en: takeawaysEn,
+        takeaways_or: takeawaysOr,
+        body_en: bodyEn,
+        body_or: bodyOr
+      };
+    }
+
+    const corpus = `${titleEn} ${summaryEn} ${bodyEn.slice(0, 1800)} ${String(extra.pdf_text || '').slice(0, 1800)}`;
+    const category = inferGuideCategory(obj.category, corpus);
+    const scope = /^national/i.test(String(obj.scope || '')) ? 'National' : 'Odisha';
+    const isExam = typeof obj.is_exam === 'boolean'
+      ? obj.is_exam
+      : (category === 'exam-strategy' || category === 'odisha-gk');
+
+    const seenUrls = new Set();
+    const mergedLinks = [];
+    const pushLink = (item) => {
+      if (!item || !item.url) return;
+      const u = String(item.url || '').trim();
+      if (!/^https?:\/\//i.test(u) && !(u.startsWith('/') && !u.startsWith('//'))) return;
+      const key = u.toLowerCase();
+      if (seenUrls.has(key)) return;
+      seenUrls.add(key);
+      const isOfficial = typeof item.is_official === 'boolean'
+        ? item.is_official
+        : /\.(?:gov|nic|edu|ac)\.in\b/i.test(u);
+      mergedLinks.push({
+        label_en: String(item.label_en || item.label || u).trim().slice(0, 160),
+        label_or: String(item.label_or || item.label_en || item.label || u).trim().slice(0, 200),
+        url: u.slice(0, 400),
+        is_official: isOfficial
+      });
+    };
+
+    if (Array.isArray(obj.official_links)) {
+      obj.official_links.slice(0, 12).forEach(pushLink);
+    }
+    extractOfficialUrlsFromText(`${extra.pdf_text || ''}\n${fallbackInput || ''}`).forEach(pushLink);
+
+    const rawPdfName = String(extra.pdf_filename || '').replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim();
+    const pdfTitleEn = String(obj.pdf_title_en || (rawPdfName ? `${rawPdfName} (Official PDF)` : '')).trim().slice(0, 180);
+    const pdfTitleOr = String(obj.pdf_title_or || (pdfTitleEn ? `${pdfTitleEn} (ସରକାରୀ PDF)` : '')).trim().slice(0, 220);
+
     return {
+      category,
+      scope,
+      is_exam: isExam,
+      read_minutes: readMinutes,
       title_en: titleEn,
       title_or: titleOr,
       slug,
       summary_en: summaryEn,
       summary_or: summaryOr,
-      read_minutes: readMinutes,
       tags,
       takeaways_en: takeawaysEn,
       takeaways_or: takeawaysOr,
       body_en: bodyEn,
-      body_or: bodyOr
+      body_or: bodyOr,
+      pdf_title_en: pdfTitleEn,
+      pdf_title_or: pdfTitleOr,
+      official_links: mergedLinks.slice(0, 12),
+      image_prompt: String(obj.image_prompt || '').trim().slice(0, 500),
+      cover_caption_en: String(obj.cover_caption_en || titleEn).trim().slice(0, 220),
+      cover_caption_or: String(obj.cover_caption_or || titleOr || titleEn).trim().slice(0, 260)
     };
   }
 
@@ -429,44 +651,66 @@ async function logAiGeneration(env, { actorId, targetModule, provider, model, es
   } catch (_e) {}
 }
 
+function getGeminiModelPoolForMode(mode) {
+  return PRO_FIRST_MODES.has(mode) ? GEMINI_PRO_FIRST_MODELS : GEMINI_FLASH_MODELS;
+}
+
+function getWorkersAiPoolForMode(mode) {
+  return PRO_FIRST_MODES.has(mode) ? WORKERS_AI_PRO_MODELS : WORKERS_AI_DEFAULT_MODELS;
+}
+
 async function callGeminiFreeTier(apiKey, prompt, mode) {
   let lastErr = null;
   const schema = getResponseSchemaForMode(mode);
-  for (const model of GEMINI_MODELS) {
+  const pool = getGeminiModelPoolForMode(mode);
+  const maxOut = mode === 'auto_fix_fill'
+    ? 8192
+    : ((mode === 'guide' || mode === 'translate_fields') ? 6144 : 2048);
+
+  for (const model of pool) {
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
     const generationConfig = {
-      temperature: mode === 'translate_odia' || mode === 'translate_fields' ? 0.15 : 0.3,
-      maxOutputTokens: (mode === 'guide' || mode === 'translate_fields') ? 4096 : 2048,
+      temperature: mode === 'translate_odia' || mode === 'translate_fields' ? 0.15 : 0.25,
+      maxOutputTokens: maxOut,
       responseMimeType: 'application/json'
     };
     if (schema) generationConfig.responseSchema = schema;
-    if (model.startsWith('gemini-3') || model.startsWith('gemini-4')) {
-      generationConfig.thinkingConfig = { thinkingLevel: 'low' };
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const parts = data &&
+          data.candidates &&
+          data.candidates[0] &&
+          data.candidates[0].content &&
+          data.candidates[0].content.parts;
+        const text = Array.isArray(parts)
+          ? parts.map((p) => (p && typeof p.text === 'string' ? p.text : '')).join('').trim()
+          : '';
+        if (text) {
+          return {
+            text,
+            model,
+            provider: 'gemini_free',
+            provider_label: model.includes('pro') ? 'Gemini Pro' : 'Gemini Flash'
+          };
+        }
+        lastErr = new Error(`Gemini ${model} returned empty content.`);
+        continue;
+      }
+      const err = new Error(`Gemini ${model} returned HTTP ${res.status}`);
+      err.status = res.status;
+      lastErr = err;
+    } catch (netErr) {
+      lastErr = netErr;
     }
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig
-      })
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const text = data &&
-        data.candidates &&
-        data.candidates[0] &&
-        data.candidates[0].content &&
-        data.candidates[0].content.parts &&
-        data.candidates[0].content.parts[0] &&
-        data.candidates[0].content.parts[0].text;
-      if (!text) throw new Error('Gemini API returned empty content.');
-      return { text, model, provider: 'gemini_free' };
-    }
-    const err = new Error(`Gemini API returned HTTP ${res.status}`);
-    err.status = res.status;
-    lastErr = err;
-    if (res.status !== 404 && res.status !== 429 && res.status !== 503) throw err;
   }
   throw lastErr || new Error('Gemini API failed');
 }
@@ -493,19 +737,35 @@ async function callWorkersAi(aiBinding, prompt, mode) {
     { role: 'system', content: 'You output strictly valid JSON objects without markdown fences.' },
     { role: 'user', content: prompt }
   ];
-  const temp = (mode === 'translate_odia' || mode === 'translate_fields') ? 0.15 : 0.3;
-  const maxTok = (mode === 'guide' || mode === 'translate_fields') ? 2800 : 1400;
-  let modelUsed = WORKERS_AI_PRIMARY_MODEL;
-  let resp;
-  try {
-    resp = await aiBinding.run(WORKERS_AI_PRIMARY_MODEL, { messages, max_tokens: maxTok, temperature: temp, repetition_penalty: 1.1 });
-  } catch (_primaryErr) {
-    modelUsed = WORKERS_AI_FALLBACK_MODEL;
-    resp = await aiBinding.run(WORKERS_AI_FALLBACK_MODEL, { messages, max_tokens: maxTok, temperature: temp, repetition_penalty: 1.1 });
+  const temp = (mode === 'translate_odia' || mode === 'translate_fields') ? 0.15 : 0.25;
+  const maxTok = mode === 'auto_fix_fill'
+    ? 3600
+    : ((mode === 'guide' || mode === 'translate_fields') ? 2800 : 1400);
+  const pool = getWorkersAiPoolForMode(mode);
+  let lastErr = null;
+  for (const model of pool) {
+    try {
+      const resp = await aiBinding.run(model, {
+        messages,
+        max_tokens: maxTok,
+        temperature: temp,
+        repetition_penalty: 1.08
+      });
+      const text = unwrapWorkersAiPayload(resp);
+      if (text) {
+        return {
+          text,
+          model,
+          provider: 'cloudflare_workers_ai',
+          provider_label: 'Workers AI'
+        };
+      }
+      lastErr = new Error(`Workers AI ${model} returned an empty response.`);
+    } catch (err) {
+      lastErr = err;
+    }
   }
-  const text = unwrapWorkersAiPayload(resp);
-  if (!text) throw new Error('Workers AI returned an empty response.');
-  return { text, model: modelUsed, provider: 'cloudflare_workers_ai' };
+  throw lastErr || new Error('Workers AI failed.');
 }
 
 function normalizeBatchFields(fieldsInput, rawInput) {
@@ -528,15 +788,18 @@ function normalizeBatchFields(fieldsInput, rawInput) {
   return clean;
 }
 
-export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId }) {
+export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, actorId, pdf_text, pdf_filename, draft, overwrite }) {
   const cleanMode = String(mode || '').trim().toLowerCase();
   if (!VALID_AI_MODES.has(cleanMode)) {
-    const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, career, guide, translate_odia, translate_fields, or suggest_meta.');
+    const err = new Error('Invalid AI Co-Author mode. Expected job, scheme, mcq, career, guide, auto_fix_fill, translate_odia, translate_fields, or suggest_meta.');
     err.status = 400;
     throw err;
   }
 
   let cleanInput = String(input || '').trim();
+  const cleanPdfText = String(pdf_text || '').trim().slice(0, 36000);
+  const cleanPdfFilename = String(pdf_filename || '').trim().slice(0, 180);
+  const cleanDraft = (draft && typeof draft === 'object') ? draft : null;
   let cleanFields = null;
 
   if (cleanMode === 'translate_fields') {
@@ -547,6 +810,19 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
       throw err;
     }
     cleanInput = JSON.stringify(cleanFields);
+  } else if (cleanMode === 'auto_fix_fill') {
+    const combinedLen = cleanPdfText.length + cleanInput.length
+      + String((cleanDraft && cleanDraft.title_en) || '').trim().length
+      + String((cleanDraft && cleanDraft.body_en) || '').trim().length
+      + String((cleanDraft && cleanDraft.summary_en) || '').trim().length;
+    if (combinedLen < 8) {
+      const err = new Error('Upload a PDF or enter at least a title, notes, or rough draft before running AI Auto-Fix & Fill.');
+      err.status = 400;
+      throw err;
+    }
+    if (!cleanInput && cleanDraft && cleanDraft.title_en) {
+      cleanInput = String(cleanDraft.title_en).trim();
+    }
   } else {
     const minLen = cleanMode === 'translate_odia' ? 2 : (cleanMode === 'suggest_meta' ? 3 : 8);
     if (cleanInput.length < minLen) {
@@ -563,7 +839,14 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     throw err;
   }
 
-  const extra = { fields: cleanFields, kind };
+  const extra = {
+    fields: cleanFields,
+    kind,
+    pdf_text: cleanPdfText,
+    pdf_filename: cleanPdfFilename,
+    draft: cleanDraft,
+    overwrite: Boolean(overwrite)
+  };
   const prompt = buildPromptForMode(cleanMode, cleanInput, extra);
   const geminiKey = env && env.GEMINI_API_KEY ? String(env.GEMINI_API_KEY).trim() : '';
 
@@ -601,7 +884,7 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     }
   }
 
-  const normalized = normalizeStructuredOutput(cleanMode, parsed, cleanInput, extra);
+  const normalized = normalizeStructuredOutput(cleanMode, parsed, cleanInput || cleanPdfFilename || 'Odisha Guide', extra);
   const estimatedNeurons = result.provider === 'gemini_free'
     ? 0
     : Math.max(40, Math.min(450, Math.ceil((prompt.length + result.text.length) / 16)));
@@ -620,9 +903,336 @@ export async function generateAiCoAuthorDraft(env, { mode, input, fields, kind, 
     ok: true,
     mode: cleanMode,
     provider: result.provider,
+    provider_label: result.provider_label || (result.provider === 'gemini_free' ? 'Gemini' : 'Workers AI'),
     model: result.model,
     estimated_neurons: estimatedNeurons,
     usage: usageAfter,
     data: normalized
+  };
+}
+
+// ============================================================================
+// GEMINI-FIRST EDITORIAL IMAGE GENERATION -> WORKERS AI FLUX -> SVG FALLBACK
+// Stores directly in `cso-media` R2 (`guides/ai-<timestamp>-<slug>.<ext>`)
+// ============================================================================
+
+function base64ToUint8Array(b64) {
+  const clean = String(b64 || '').replace(/^data:[^;]+;base64,/, '').replace(/\s+/g, '');
+  if (!clean) return null;
+  const bin = atob(clean);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i += 1) {
+    out[i] = bin.charCodeAt(i);
+  }
+  return out.byteLength ? out : null;
+}
+
+function detectImageBytesFormat(bytes, fallbackMime = 'image/jpeg') {
+  if (bytes && bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return { mime: 'image/jpeg', ext: 'jpg' };
+  }
+  if (bytes && bytes.length >= 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+    return { mime: 'image/png', ext: 'png' };
+  }
+  if (bytes && bytes.length >= 12 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) {
+    return { mime: 'image/webp', ext: 'webp' };
+  }
+  const lower = String(fallbackMime || '').toLowerCase();
+  if (lower.includes('png')) return { mime: 'image/png', ext: 'png' };
+  if (lower.includes('webp')) return { mime: 'image/webp', ext: 'webp' };
+  if (lower.includes('svg')) return { mime: 'image/svg+xml', ext: 'svg' };
+  return { mime: 'image/jpeg', ext: 'jpg' };
+}
+
+export function synthesizeEditorialImagePrompt({ prompt, title_en, category, scope }) {
+  const custom = String(prompt || '').trim().slice(0, 600);
+  const title = String(title_en || 'Odisha Education and Governance Guide').trim().slice(0, 160);
+  const cat = String(category || 'how-to').trim().toLowerCase();
+  const region = /^national/i.test(String(scope || '')) ? 'India National' : 'Odisha, India';
+
+  if (custom) {
+    return `${custom}. Clean editorial photography style, crisp lighting, balanced composition, strictly no text, no letters, no numbers, no watermark.`;
+  }
+
+  const sceneByCat = {
+    'how-to': `Warm daylight editorial photograph of a student and citizen in ${region} calmly using a laptop at a clean modern study desk with neat folders, teal and sandstone civic tones, shallow depth of field`,
+    'exam-strategy': `Clean editorial photograph of a focused civil services study desk in ${region} with organized notebooks, wooden pen, modern tablet showing abstract geometric progress visuals, warm natural window light, university library atmosphere`,
+    'citizen-scheme': `Uplifting daylight editorial photograph representing public welfare and digital governance in ${region}, vibrant green campus and community center, hopeful students and citizens, crisp documentary lighting`,
+    'odisha-gk': `Stunning editorial magazine photograph inspired by Odisha heritage architecture, carved sandstone artistry, serene coastal rivers, and lush Eastern Ghats landscape at golden sunrise`
+  };
+  const baseScene = sceneByCat[cat] || sceneByCat['how-to'];
+  return `${baseScene}, visually themed around "${title}". High-resolution editorial cover banner, strictly no text, no typography, no words, no numbers, no watermarks, no logos.`;
+}
+
+function escSvgXml(raw) {
+  return String(raw || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function buildEditorialSvgBanner({ title_en, category, scope }) {
+  const title = String(title_en || 'Common Sense Odisha Informative Guide').trim().slice(0, 84);
+  const catLabels = {
+    'how-to': 'STEP-BY-STEP HOW-TO GUIDE',
+    'exam-strategy': 'EXAM STRATEGY & STUDY HANDBOOK',
+    'citizen-scheme': 'CITIZEN & SCHEME EXPLAINER',
+    'odisha-gk': 'ODISHA GK & HERITAGE'
+  };
+  const badge = catLabels[String(category || '').toLowerCase()] || 'INFORMATIVE GUIDE';
+  const region = /^national/i.test(String(scope || '')) ? 'NATIONAL · INDIA' : 'ODISHA STATE PORTAL';
+  const words = title.split(/\s+/);
+  const line1 = [];
+  const line2 = [];
+  for (const w of words) {
+    if (line1.join(' ').length + w.length + 1 <= 40 || line1.length === 0) line1.push(w);
+    else line2.push(w);
+  }
+  const svg = [
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675" role="img" aria-label="' + escSvgXml(title) + '">',
+    '  <defs>',
+    '    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">',
+    '      <stop offset="0%" stop-color="#0b2545"/>',
+    '      <stop offset="55%" stop-color="#0f766e"/>',
+    '      <stop offset="100%" stop-color="#134e4a"/>',
+    '    </linearGradient>',
+    '  </defs>',
+    '  <rect width="1200" height="675" fill="url(#bg)"/>',
+    '  <circle cx="1040" cy="140" r="190" fill="#ffffff" fill-opacity="0.06"/>',
+    '  <circle cx="1040" cy="140" r="120" fill="none" stroke="#f59e0b" stroke-opacity="0.35" stroke-width="3"/>',
+    '  <circle cx="160" cy="590" r="220" fill="#ffffff" fill-opacity="0.05"/>',
+    '  <rect x="76" y="76" width="440" height="44" rx="22" fill="#ffffff" fill-opacity="0.14"/>',
+    '  <text x="102" y="105" fill="#fef3c7" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" letter-spacing="1.5">' + escSvgXml(badge) + '</text>',
+    '  <text x="76" y="275" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="800">' + escSvgXml(line1.join(' ')) + '</text>',
+    line2.length ? '  <text x="76" y="340" fill="#e2e8f0" font-family="system-ui, -apple-system, sans-serif" font-size="44" font-weight="700">' + escSvgXml(line2.join(' ').slice(0, 44)) + '</text>' : '',
+    '  <line x1="76" y1="415" x2="310" y2="415" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>',
+    '  <text x="76" y="565" fill="#cbd5e1" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700">COMMON SENSE ODISHA · ' + escSvgXml(region) + '</text>',
+    '</svg>'
+  ].filter(Boolean).join('\n');
+  return new TextEncoder().encode(svg);
+}
+
+async function callGeminiNativeImage(apiKey, finalPrompt, aspectRatio) {
+  let lastErr = null;
+
+  // 1. Primary: Imagen 3 (`imagen-3.0-generate-002:predict`)
+  try {
+    const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${encodeURIComponent(apiKey)}`;
+    const res = await fetch(imagenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        instances: [{ prompt: finalPrompt }],
+        parameters: {
+          sampleCount: 1,
+          aspectRatio: aspectRatio || '16:9',
+          outputOptions: { mimeType: 'image/jpeg' }
+        }
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const pred = data && Array.isArray(data.predictions) ? data.predictions[0] : null;
+      const b64 = pred && (pred.bytesBase64Encoded || (pred.image && pred.image.bytesBase64Encoded));
+      const bytes = base64ToUint8Array(b64);
+      if (bytes) {
+        const fmt = detectImageBytesFormat(bytes, (pred && pred.mimeType) || 'image/jpeg');
+        return { bytes, mime: fmt.mime, ext: fmt.ext, provider: 'gemini_imagen', provider_label: 'Gemini', model: 'imagen-3.0-generate-002' };
+      }
+    } else {
+      lastErr = new Error(`Gemini Imagen 3 returned HTTP ${res.status}`);
+    }
+  } catch (err) {
+    lastErr = err;
+  }
+
+  // 2. Secondary: Gemini Native Image (`gemini-2.5-flash-image:generateContent`)
+  try {
+    const nativeUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const res = await fetch(nativeUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: finalPrompt }] }],
+        generationConfig: {
+          responseModalities: ['IMAGE']
+        }
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+      if (Array.isArray(parts)) {
+        for (const p of parts) {
+          const inl = p && (p.inlineData || p.inline_data);
+          if (inl && inl.data) {
+            const bytes = base64ToUint8Array(inl.data);
+            if (bytes) {
+              const fmt = detectImageBytesFormat(bytes, inl.mimeType || inl.mime_type || 'image/jpeg');
+              return { bytes, mime: fmt.mime, ext: fmt.ext, provider: 'gemini_image', provider_label: 'Gemini', model: 'gemini-2.5-flash-image' };
+            }
+          }
+        }
+      }
+      lastErr = new Error('Gemini 2.5 Flash Image returned no image data.');
+    } else {
+      lastErr = new Error(`Gemini 2.5 Flash Image returned HTTP ${res.status}`);
+    }
+  } catch (err) {
+    lastErr = err;
+  }
+
+  throw lastErr || new Error('Gemini image generation failed.');
+}
+
+async function callWorkersAiFluxImage(aiBinding, finalPrompt) {
+  if (!aiBinding || typeof aiBinding.run !== 'function') {
+    throw new Error('Workers AI binding unavailable.');
+  }
+  const resp = await aiBinding.run(WORKERS_AI_IMAGE_MODEL, {
+    prompt: finalPrompt,
+    steps: 4
+  });
+  let bytes = null;
+  if (resp && typeof resp === 'object' && typeof resp.image === 'string') {
+    bytes = base64ToUint8Array(resp.image);
+  } else if (resp instanceof Uint8Array) {
+    bytes = resp;
+  } else if (resp instanceof ArrayBuffer) {
+    bytes = new Uint8Array(resp);
+  } else if (resp && typeof resp.getReader === 'function') {
+    const ab = await new Response(resp).arrayBuffer();
+    bytes = new Uint8Array(ab);
+  }
+  if (!bytes || !bytes.byteLength) {
+    throw new Error('Workers AI FLUX returned empty image bytes.');
+  }
+  const fmt = detectImageBytesFormat(bytes, 'image/jpeg');
+  return {
+    bytes,
+    mime: fmt.mime,
+    ext: fmt.ext,
+    provider: 'cloudflare_workers_ai',
+    provider_label: 'Workers AI',
+    model: WORKERS_AI_IMAGE_MODEL
+  };
+}
+
+export async function generateAiEditorialImage(env, { prompt, title_en, category, scope, aspect_ratio, actorId, actorEmail }) {
+  const cleanTitle = String(title_en || '').trim().slice(0, 180) || 'Common Sense Odisha Guide';
+  const cleanCat = VALID_GUIDE_CATEGORIES.has(String(category || '').trim().toLowerCase())
+    ? String(category).trim().toLowerCase()
+    : 'how-to';
+  const cleanScope = /^national/i.test(String(scope || '')) ? 'National' : 'Odisha';
+  const cleanAspect = ['16:9', '4:3', '1:1', '3:2'].includes(String(aspect_ratio || '')) ? String(aspect_ratio) : '16:9';
+  const finalPrompt = synthesizeEditorialImagePrompt({
+    prompt,
+    title_en: cleanTitle,
+    category: cleanCat,
+    scope: cleanScope
+  });
+
+  const geminiKey = env && env.GEMINI_API_KEY ? String(env.GEMINI_API_KEY).trim() : '';
+  let generated = null;
+
+  if (geminiKey) {
+    try {
+      generated = await callGeminiNativeImage(geminiKey, finalPrompt, cleanAspect);
+    } catch (_gemErr) {
+      generated = null;
+    }
+  }
+
+  if (!generated && env && env.AI) {
+    try {
+      generated = await callWorkersAiFluxImage(env.AI, finalPrompt);
+    } catch (_cfErr) {
+      generated = null;
+    }
+  }
+
+  if (!generated) {
+    const svgBytes = buildEditorialSvgBanner({ title_en: cleanTitle, category: cleanCat, scope: cleanScope });
+    generated = {
+      bytes: svgBytes,
+      mime: 'image/svg+xml',
+      ext: 'svg',
+      provider: 'svg_fallback',
+      provider_label: 'Editorial Banner Fallback',
+      model: 'editorial-svg-banner'
+    };
+  }
+
+  const ts = Date.now();
+  const baseSlug = slugifyText(cleanTitle).slice(0, 56) || 'guide-cover';
+  const ext = generated.ext || 'jpg';
+  const filename = `ai-${ts}-${baseSlug}.${ext}`;
+  const r2Key = `guides/${filename}`;
+  const publicUrl = `/api/media/${r2Key}`;
+
+  if (env && env.MEDIA && typeof env.MEDIA.put === 'function') {
+    await env.MEDIA.put(r2Key, generated.bytes, {
+      httpMetadata: {
+        contentType: generated.mime,
+        cacheControl: 'public, max-age=31536000, immutable'
+      }
+    });
+  }
+
+  const altEn = `${cleanTitle} — editorial illustration (${cleanScope})`;
+  const captionEn = `${cleanTitle} — Common Sense Odisha Editorial Guide`;
+  const captionOr = `${cleanTitle} — କମନ୍ ସେନ୍ସ ଓଡ଼ିଶା ମାର୍ଗଦର୍ଶିକା`;
+
+  // Register metadata in Admin Media Library (`media_files` + legacy `media_assets`, best-effort)
+  if (env && env.DB) {
+    const fileId = `mfile-ai-${ts.toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+    const fileSlug = `${baseSlug}-ai-${ts.toString(36)}`.slice(0, 96);
+    try {
+      await env.DB.prepare(
+        `INSERT INTO media_files (id, slug, folder_id, file_category, storage_provider, r2_key, public_url, original_filename, title_en, title_or, alt_or_caption_en, alt_or_caption_or, mime_type, file_size_bytes, access_tier, tags_json, status, uploaded_by)
+         VALUES (?, ?, 'mf-branding-images', 'image', 'r2_primary', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'public', ?, 'published', ?)`
+      ).bind(
+        fileId, fileSlug, r2Key, publicUrl, filename, cleanTitle, captionOr, altEn, captionOr,
+        generated.mime, generated.bytes.byteLength,
+        JSON.stringify(['ai-generated', 'guide', cleanCat]),
+        String(actorEmail || actorId || 'admin').slice(0, 120)
+      ).run();
+    } catch (_e1) {}
+    try {
+      await env.DB.prepare(
+        `INSERT OR IGNORE INTO media_assets (id, object_key, kind, mime_type, size_bytes, original_name, uploaded_by)
+         VALUES (?, ?, 'image', ?, ?, ?, ?)`
+      ).bind(
+        fileId, r2Key, generated.mime, generated.bytes.byteLength, filename, String(actorId || 'admin')
+      ).run();
+    } catch (_e2) {}
+  }
+
+  await ensureAiCoauthorSchema(env);
+  await logAiGeneration(env, {
+    actorId: actorId || 'admin',
+    targetModule: 'generate_image',
+    provider: generated.provider,
+    model: generated.model,
+    estimatedNeurons: generated.provider === 'cloudflare_workers_ai' ? 120 : 0,
+    status: 'ok'
+  });
+
+  return {
+    ok: true,
+    url: publicUrl,
+    key: r2Key,
+    filename,
+    mime_type: generated.mime,
+    size_bytes: generated.bytes.byteLength,
+    provider: generated.provider,
+    provider_label: generated.provider_label,
+    model: generated.model,
+    prompt: finalPrompt,
+    alt_en: altEn,
+    caption_en: captionEn,
+    caption_or: captionOr
   };
 }

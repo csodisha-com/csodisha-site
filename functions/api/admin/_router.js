@@ -138,7 +138,7 @@ import { handleAdminTotpApi } from './totp.js';
 import { handleAdminMockTestsV312 } from './mock-tests.js';
 import { handleAdminCandidateOpsApi } from './candidate-ops.js';
 import { handleAdminBillingAdsApi } from './billing-ads.js';
-import { handleAdminAiCoauthorApi } from './ai-coauthor.js';
+import { handleAdminAiCoauthorApi, handleAdminAiGenerateImage } from './ai-coauthor.js';
 import { handleAdminSemanticReindexApi } from './semantic-reindex.js';
 import { handleAdminGuidesApi } from './guides.js';
 import {
@@ -712,6 +712,10 @@ async function dispatchStaffSwitch(request, env, actor, resource, id, sub, extra
         break;
       case 'ai':
         if (id === 'generate-page') return await handleAiGeneratePage(request, env, actor);
+        if (id === 'generate-image' && method === 'POST') {
+          await rateLimit(env, `admin-ai-img:${actor.userId}`, 25, 600);
+          return await handleAdminAiGenerateImage(request, env, actor);
+        }
         break;
       case 'utils':
         if (id === 'check-links' && method === 'POST') return await handleCheckLinks(request, env);
