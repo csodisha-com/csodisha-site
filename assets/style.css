@@ -26628,3 +26628,322 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+
+/* ============================================================================
+   v432: Odisha 30-District Exam Center & Travel Logistics Planner
+   4-theme semantic var(--cso-*) tokens only; zero hardcoded hex; 320px-safe
+   ============================================================================ */
+.cso-dec-root {
+  margin: 24px 0;
+}
+
+.cso-dec-card {
+  display: grid;
+  gap: 16px;
+  padding: clamp(16px, 2.5vw, 24px);
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  box-shadow: var(--cso-shadow-sm, none);
+}
+
+.cso-dec-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.cso-dec-head-copy {
+  display: grid;
+  gap: 6px;
+  max-width: 780px;
+}
+
+.cso-dec-eyebrow {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--cso-accent);
+  text-transform: uppercase;
+}
+
+.cso-dec-title {
+  margin: 0;
+  font-size: clamp(1.16rem, 2.2vw, 1.46rem);
+  line-height: 1.25;
+  color: var(--cso-ink);
+}
+
+.cso-dec-sub {
+  margin: 0;
+  font-size: 0.89rem;
+  line-height: 1.48;
+  color: var(--cso-muted);
+}
+
+.cso-dec-lang-toggle {
+  display: inline-flex;
+  border: 1px solid var(--cso-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-dec-lang-btn {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-dec-lang-btn.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-dec-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+}
+
+.cso-dec-field {
+  display: grid;
+  gap: 5px;
+}
+
+.cso-dec-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+}
+
+.cso-dec-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.88rem;
+}
+
+.cso-dec-advisory {
+  display: grid;
+  gap: 5px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-ok-border, var(--cso-accent));
+  background: var(--cso-ok-bg, var(--cso-surface-alt));
+}
+
+.cso-dec-advisory--same-division-inter {
+  border-color: var(--cso-info-border, var(--cso-accent));
+  background: var(--cso-info-bg, var(--cso-surface-alt));
+}
+
+.cso-dec-advisory--cross-division-overnight {
+  border-color: var(--cso-warn-border, var(--cso-border));
+  background: var(--cso-warn-bg, var(--cso-surface-alt));
+}
+
+.cso-dec-advisory-title {
+  font-size: 0.94rem;
+  color: var(--cso-ink);
+}
+
+.cso-dec-advisory-body {
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--cso-muted);
+}
+
+.cso-dec-dossier {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-dec-dossier-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.cso-dec-dossier-title {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--cso-ink);
+}
+
+.cso-dec-boards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cso-dec-board-pill {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-ok-border, var(--cso-accent));
+  background: var(--cso-ok-bg, var(--cso-surface));
+  color: var(--cso-ok-fg, var(--cso-accent));
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.cso-dec-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 10px;
+}
+
+.cso-dec-info-box {
+  display: grid;
+  gap: 4px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-dec-info-key {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--cso-accent);
+}
+
+.cso-dec-info-val {
+  font-size: 0.83rem;
+  line-height: 1.42;
+  color: var(--cso-ink);
+}
+
+.cso-dec-helplines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-dec-help-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.79rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cso-dec-help-chip--link {
+  border-color: var(--cso-accent);
+  color: var(--cso-accent);
+}
+
+.cso-dec-div-bar,
+.cso-dec-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-dec-div-btn,
+.cso-dec-chip {
+  min-height: 44px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-dec-div-btn.is-active,
+.cso-dec-chip.is-active {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-dec-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.cso-dec-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-dec-btn--primary {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-dec-btn:focus-visible,
+.cso-dec-div-btn:focus-visible,
+.cso-dec-chip:focus-visible,
+.cso-dec-lang-btn:focus-visible,
+.cso-dec-input:focus-visible {
+  outline: 2px solid var(--cso-focus, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+.cso-dec-copy-status {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--cso-ok-fg, var(--cso-accent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-dec-btn,
+  .cso-dec-div-btn,
+  .cso-dec-chip {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-dec-lang-toggle,
+  .cso-dec-form-grid,
+  .cso-dec-div-bar,
+  .cso-dec-chips,
+  .cso-dec-actions {
+    display: none !important;
+  }
+}

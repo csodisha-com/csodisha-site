@@ -46,7 +46,7 @@ assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(qlBlock), 'v423 CSS block must have zero h
 assert.ok(qlBlock.includes('prefers-reduced-motion'), 'v423 CSS must include prefers-reduced-motion guard');
 
 // 5. SW & Ops-Sentinel cache sync
-assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v431'"), 'sw.js must bump CACHE_NAME to v423');
-assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v431'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v423');
+assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v432'"), 'sw.js must bump CACHE_NAME to v423');
+assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v432'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v423');
 
 console.log('✅ v423 Global Header Nav, Mobile Drawer & Homepage Quick-Launch Audit PASSED');
