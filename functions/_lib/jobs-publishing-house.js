@@ -485,6 +485,7 @@ async function invalidateJobsCaches(request, slug = '') {
     '/api/public/jobs/tree',
     '/api/public/jobs/article',
     '/api/public/article-quiz',
+    '/api/public/search-index',
     '/api/public/home-feed',
     '/api/events/upcoming',
     '/jobs/',

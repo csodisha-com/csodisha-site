@@ -506,15 +506,18 @@
     });
     a11yWrap.appendChild(a11yBtn);
 
-    const searchBtn = el('button', 'pill cso-ctl-search');
+    const searchBtn = el('button', 'pill cso-ctl-search cso-ks-trigger');
     searchBtn.type = 'button';
     searchBtn.id = 'cso-ctl-global-search';
-    searchBtn.setAttribute('aria-label', 'Open global D1 search (Ctrl+K)');
+    searchBtn.setAttribute('data-cso-search-trigger', '1');
+    searchBtn.setAttribute('aria-label', 'Open instant search (Ctrl+K)');
     searchBtn.appendChild(el('span', 'cso-ctl-search-icon', '🔍'));
     searchBtn.appendChild(el('span', 'cso-ctl-search-label', 'Search'));
-    searchBtn.appendChild(el('kbd', 'cso-ctl-search-kbd', 'Ctrl+K'));
+    searchBtn.appendChild(el('kbd', 'cso-ctl-search-kbd cso-ks-kbd', 'Ctrl K'));
     searchBtn.addEventListener('click', () => {
-      if (window.CSOGlobal && typeof window.CSOGlobal.openSearch === 'function') {
+      if (window.CSOInstantSearch && typeof window.CSOInstantSearch.openOverlay === 'function') {
+        window.CSOInstantSearch.openOverlay(searchBtn);
+      } else if (window.CSOGlobal && typeof window.CSOGlobal.openSearch === 'function') {
         window.CSOGlobal.openSearch('');
       }
     });
