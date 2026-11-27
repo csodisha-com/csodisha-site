@@ -26947,3 +26947,278 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+
+/* ============================================================================
+   v433: Odisha Govt Job & Exam Clean-Sheet Study Packet Compiler
+   4-theme semantic var(--cso-*) tokens only; zero hardcoded hex; 320px-safe
+   ============================================================================ */
+.cso-spc-root {
+  margin: 24px 0;
+}
+
+.cso-spc-card {
+  display: grid;
+  gap: 16px;
+  padding: clamp(16px, 2.5vw, 24px);
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  box-shadow: var(--cso-shadow-sm, none);
+}
+
+.cso-spc-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.cso-spc-head-copy {
+  display: grid;
+  gap: 6px;
+  max-width: 780px;
+}
+
+.cso-spc-eyebrow {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--cso-accent);
+  text-transform: uppercase;
+}
+
+.cso-spc-title {
+  margin: 0;
+  font-size: clamp(1.16rem, 2.2vw, 1.46rem);
+  line-height: 1.25;
+  color: var(--cso-ink);
+}
+
+.cso-spc-sub {
+  margin: 0;
+  font-size: 0.89rem;
+  line-height: 1.48;
+  color: var(--cso-muted);
+}
+
+.cso-spc-lang-toggle {
+  display: inline-flex;
+  border: 1px solid var(--cso-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-spc-lang-btn {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-spc-lang-btn.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-spc-form {
+  display: grid;
+  gap: 12px;
+}
+
+.cso-spc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+}
+
+.cso-spc-field {
+  display: grid;
+  gap: 5px;
+}
+
+.cso-spc-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+}
+
+.cso-spc-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.88rem;
+}
+
+.cso-spc-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-spc-toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-spc-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cso-accent);
+  flex: none;
+}
+
+.cso-spc-preview {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-ok-border, var(--cso-accent));
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-spc-preview-head {
+  display: grid;
+  gap: 4px;
+  border-bottom: 1px solid var(--cso-border);
+  padding-bottom: 10px;
+}
+
+.cso-spc-preview-title {
+  margin: 0;
+  font-size: 1.04rem;
+  color: var(--cso-ink);
+}
+
+.cso-spc-preview-meta {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cso-muted);
+}
+
+.cso-spc-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 12px;
+}
+
+.cso-spc-section {
+  display: grid;
+  gap: 7px;
+  align-content: start;
+  padding: 13px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-spc-sec-title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--cso-accent);
+}
+
+.cso-spc-sec-body {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--cso-ink);
+}
+
+.cso-spc-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  font-size: 0.8rem;
+  line-height: 1.42;
+  color: var(--cso-muted);
+}
+
+.cso-spc-empty {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--cso-muted);
+}
+
+.cso-spc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.cso-spc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-spc-btn--primary {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-spc-btn:focus-visible,
+.cso-spc-lang-btn:focus-visible,
+.cso-spc-input:focus-visible {
+  outline: 2px solid var(--cso-focus, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+.cso-spc-copy-status {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--cso-ok-fg, var(--cso-accent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-spc-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-spc-lang-toggle,
+  .cso-spc-form,
+  .cso-spc-actions {
+    display: none !important;
+  }
+  .cso-spc-preview {
+    border: 1px solid var(--cso-border);
+    break-inside: avoid;
+  }
+}

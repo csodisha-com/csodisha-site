@@ -11,11 +11,11 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v432';
+const CACHE_NAME = 'cso-candidate-cache-v433';
 const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
 const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
 
-// v432: Candidate Offline Toolkit Pre-Cache Manifest (low-connectivity Odisha districts)
+// v433: Candidate Offline Toolkit Pre-Cache Manifest (low-connectivity Odisha districts)
 const CANDIDATE_TOOLKIT_URLS = [
   '/tools/',
   '/exams/',
@@ -27,39 +27,40 @@ const CANDIDATE_TOOLKIT_URLS = [
   '/schemes/',
   '/current-affairs/',
   '/odisha-special/',
-  '/assets/style.css?v=20261127v432',
-  '/assets/css/cso-themes.css?v=20261127v432',
-  '/assets/shared-header.js?v=20261127v432',
-  '/assets/js/offline-toolkit-hub.js?v=20261127v432',
-  '/assets/js/candidate-data-backup.js?v=20261127v432',
-  '/assets/js/admissions-counselling-tracker.js?v=20261127v432',
-  '/assets/js/pyq-vault-analyzer.js?v=20261127v432',
-  '/assets/js/holiday-exam-logistics.js?v=20261127v432',
-  '/assets/js/typing-skill-arena.js?v=20261127v432',
-  '/assets/js/macp-progression-simulator.js?v=20261127v432',
-  '/assets/js/pet-pst-standards-checker.js?v=20261127v432',
-  '/assets/js/edistrict-service-walkthrough.js?v=20261127v432',
-  '/assets/js/teacher-eligibility-checker.js?v=20261127v432',
-  '/assets/js/income-tax-takehome-estimator.js?v=20261127v432',
-  '/assets/js/tools-quick-jump-directory.js?v=20261127v432',
-  '/assets/js/scholarship-aid-finder.js?v=20261127v432',
-  '/assets/js/district-exam-center-planner.js?v=20261127v432',
-  '/assets/js/orsp-salary-estimator.js?v=20261127v432',
-  '/assets/js/photo-signature-resizer.js?v=20261127v432',
-  '/assets/js/certificate-fee-matrix.js?v=20261127v432',
-  '/assets/js/cgpa-percentage-converter.js?v=20261127v432',
-  '/assets/js/exam-calendar-tracker.js?v=20261127v432',
-  '/assets/js/results-cutoff-estimator.js?v=20261127v432',
-  '/assets/js/service-rules-pension-guide.js?v=20261127v432',
-  '/assets/js/study-streak-planner.js?v=20261127v432',
-  '/assets/js/odisha-admin-directory.js?v=20261127v432',
-  '/assets/js/mock-tests-hub.js?v=20261127v432',
-  '/assets/js/schemes-eligibility-finder.js?v=20261127v432',
-  '/assets/js/current-affairs-hub.js?v=20261127v432',
-  '/assets/js/ics-calendar-export.js?v=20261127v432',
-  '/assets/js/saved-alerts-drawer.js?v=20261127v432',
-  '/assets/js/candidate-watchlist.js?v=20261127v432',
-  '/assets/js/odisha-district-filter.js?v=20261127v432'
+  '/assets/style.css?v=20261127v433',
+  '/assets/css/cso-themes.css?v=20261127v433',
+  '/assets/shared-header.js?v=20261127v433',
+  '/assets/js/offline-toolkit-hub.js?v=20261127v433',
+  '/assets/js/candidate-data-backup.js?v=20261127v433',
+  '/assets/js/admissions-counselling-tracker.js?v=20261127v433',
+  '/assets/js/pyq-vault-analyzer.js?v=20261127v433',
+  '/assets/js/holiday-exam-logistics.js?v=20261127v433',
+  '/assets/js/typing-skill-arena.js?v=20261127v433',
+  '/assets/js/macp-progression-simulator.js?v=20261127v433',
+  '/assets/js/pet-pst-standards-checker.js?v=20261127v433',
+  '/assets/js/edistrict-service-walkthrough.js?v=20261127v433',
+  '/assets/js/teacher-eligibility-checker.js?v=20261127v433',
+  '/assets/js/income-tax-takehome-estimator.js?v=20261127v433',
+  '/assets/js/tools-quick-jump-directory.js?v=20261127v433',
+  '/assets/js/scholarship-aid-finder.js?v=20261127v433',
+  '/assets/js/district-exam-center-planner.js?v=20261127v433',
+  '/assets/js/study-packet-compiler.js?v=20261127v433',
+  '/assets/js/orsp-salary-estimator.js?v=20261127v433',
+  '/assets/js/photo-signature-resizer.js?v=20261127v433',
+  '/assets/js/certificate-fee-matrix.js?v=20261127v433',
+  '/assets/js/cgpa-percentage-converter.js?v=20261127v433',
+  '/assets/js/exam-calendar-tracker.js?v=20261127v433',
+  '/assets/js/results-cutoff-estimator.js?v=20261127v433',
+  '/assets/js/service-rules-pension-guide.js?v=20261127v433',
+  '/assets/js/study-streak-planner.js?v=20261127v433',
+  '/assets/js/odisha-admin-directory.js?v=20261127v433',
+  '/assets/js/mock-tests-hub.js?v=20261127v433',
+  '/assets/js/schemes-eligibility-finder.js?v=20261127v433',
+  '/assets/js/current-affairs-hub.js?v=20261127v433',
+  '/assets/js/ics-calendar-export.js?v=20261127v433',
+  '/assets/js/saved-alerts-drawer.js?v=20261127v433',
+  '/assets/js/candidate-watchlist.js?v=20261127v433',
+  '/assets/js/odisha-district-filter.js?v=20261127v433'
 ];
 
 // Authenticated, auth & account routes that must NEVER be served from or written to SW HTML cache.
