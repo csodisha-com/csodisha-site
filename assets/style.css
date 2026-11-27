@@ -19542,3 +19542,71 @@ nav#cso-hub-top-tabs {
     transition: none !important;
   }
 }
+
+/* ==========================================================================
+   v407: Mock Test Hub — Countdown Actions, Timer Controls, Bilingual & Print
+   ========================================================================== */
+
+.cso-mtd-ctrl-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.cso-mtd-cd-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cso-mtd-q-or,
+.cso-mtd-rev-or {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--cso-ink-muted);
+  line-height: 1.45;
+}
+
+.cso-mtd-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-mtd-confirm-txt {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+  margin-right: auto;
+}
+
+.cso-mtd-weak-callout {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+@media print {
+  .cso-mtd-cd-actions,
+  .cso-mtd-ctrl-stack,
+  .cso-mtd-btn,
+  .cso-mtd-pill {
+    display: none !important;
+  }
+
+  .cso-mtd-scorecard,
+  .cso-mtd-rev-item {
+    break-inside: avoid;
+    border-color: var(--cso-border);
+  }
+}
