@@ -73,9 +73,9 @@ assert.equal(oneYrExp.status, 'valid');
 
 // 3. Markup (/guides/ SSR + /tools/ HTML), Strict CSP, 4-Theme CSS & v411 Cache Sync
 assert.ok(guidesSsr.includes('id="cso-certificate-fee-matrix-root"'), 'informative-guides.js (/guides/) must mount #cso-certificate-fee-matrix-root');
-assert.ok(guidesSsr.includes('/assets/js/certificate-fee-matrix.js?v=20261127v417'), 'informative-guides.js must load certificate-fee-matrix.js?v=20261127v417');
+assert.ok(guidesSsr.includes('/assets/js/certificate-fee-matrix.js?v=20261127v418'), 'informative-guides.js must load certificate-fee-matrix.js?v=20261127v418');
 assert.match(toolsHtml, /id="cso-certificate-fee-matrix-root"/, 'tools/index.html must mount #cso-certificate-fee-matrix-root');
-assert.match(toolsHtml, /\/assets\/js\/certificate-fee-matrix\.js\?v=20261127v417/, 'tools/index.html must load certificate-fee-matrix.js?v=20261127v417');
+assert.match(toolsHtml, /\/assets\/js\/certificate-fee-matrix\.js\?v=20261127v418/, 'tools/index.html must load certificate-fee-matrix.js?v=20261127v418');
 assert.ok(!/\sstyle="/i.test(toolsHtml), 'tools/index.html must have zero inline style attributes');
 assert.ok(!/\son[a-z]+="/i.test(toolsHtml), 'tools/index.html must have zero inline on* handlers');
 assert.ok(!cfmSrc.includes('.innerHTML') && !cfmSrc.includes('.outerHTML') && !cfmSrc.includes('insertAdjacentHTML') && !cfmSrc.includes('.style.'), 'certificate-fee-matrix.js must obey strict CSP');
@@ -89,7 +89,7 @@ assert.ok(v411Css.includes('prefers-reduced-motion: reduce'), 'v411 CSS must res
 assert.ok(v411Css.includes('@media print'), 'v411 CSS must include @media print support');
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v411Css), 'v411 CSS block must have zero hardcoded hex values');
 
-assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v417'"), 'sw.js CACHE_NAME must be v411');
-assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v417'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v411');
+assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v418'"), 'sw.js CACHE_NAME must be v411');
+assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v418'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v411');
 
 console.log('✅ v411 Bilingual Odisha Certificate Validity & Fee Waiver Matrix Audit PASSED');
