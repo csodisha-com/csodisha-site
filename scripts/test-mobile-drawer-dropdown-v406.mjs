@@ -16,7 +16,7 @@ console.log('=== v406 Mobile Navigation Drawer Dropdown & Slide-Accordion Audit 
 // 1. Static HTML & Script Wiring + Strict CSP
 assert.match(indexHtml, /id="cso-header-menu-toggle"[^>]*aria-expanded="false"[^>]*aria-controls="cso-nav-items"/, 'index.html mobile menu button must declare aria-expanded and aria-controls');
 assert.match(indexHtml, /id="cso-nav-items"/, 'index.html must contain #cso-nav-items');
-assert.match(indexHtml, /assets\/app\.js\?v=20261127v40[6-9]/, 'index.html must load v406+ assets/app.js');
+assert.match(indexHtml, /assets\/app\.js\?v=20261127v4\d\d/, 'index.html must load v406+ assets/app.js');
 
 for (const [label, src] of [['assets/app.js', appJs], ['assets/shared-header.js', sharedHeaderJs]]) {
   assert.ok(src.includes('if(!window.__csoNavDropdownWired)') || src.includes('if (!window.__csoNavDropdownWired)'), `${label} must have idempotent __csoNavDropdownWired guard`);

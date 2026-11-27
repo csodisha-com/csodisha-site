@@ -20145,3 +20145,300 @@ nav#cso-hub-top-tabs {
     transition: none;
   }
 }
+
+/* ==========================================================================
+   v410: Interactive Odisha Scheme & Scholarship Eligibility Finder (/schemes/)
+   ========================================================================== */
+
+.cso-sef-root {
+  margin: 0 0 22px;
+}
+
+.cso-sef-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+}
+
+.cso-sef-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cso-sef-head-left {
+  display: grid;
+  gap: 6px;
+  max-width: 800px;
+}
+
+.cso-sef-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.cso-sef-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+  line-height: 1.3;
+}
+
+.cso-sef-sub {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--cso-ink-muted);
+  line-height: 1.45;
+}
+
+.cso-sef-lang-group,
+.cso-sef-pill-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-sef-sec-lbl {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-sef-pill,
+.cso-sef-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.cso-sef-pill:hover,
+.cso-sef-pill:focus-visible,
+.cso-sef-btn:hover,
+.cso-sef-btn:focus-visible {
+  border-color: var(--cso-accent);
+}
+
+.cso-sef-pill.is-active,
+.cso-sef-btn.is-saved {
+  border-color: var(--cso-accent);
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-sef-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.cso-sef-field {
+  display: grid;
+  gap: 4px;
+}
+
+.cso-sef-field-lbl {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+}
+
+.cso-sef-select,
+.cso-sef-input {
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 0.92rem;
+}
+
+.cso-sef-summary {
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--cso-accent);
+}
+
+.cso-sef-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 14px;
+}
+
+.cso-sef-item {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  transition: border-color 0.16s ease;
+}
+
+.cso-sef-item:hover {
+  border-color: var(--cso-accent);
+}
+
+.cso-sef-item-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.cso-sef-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.cso-sef-status.is-eligible {
+  border-color: var(--cso-accent);
+  color: var(--cso-accent);
+}
+
+.cso-sef-benefit {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.cso-sef-item-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+  line-height: 1.3;
+}
+
+.cso-sef-item-sum {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--cso-ink-muted);
+  line-height: 1.45;
+}
+
+.cso-sef-elig-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: var(--cso-ink);
+  line-height: 1.4;
+}
+
+.cso-sef-docs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.cso-sef-docs-lbl {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--cso-ink-muted);
+}
+
+.cso-sef-doc-chip {
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.cso-sef-item-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cso-sef-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.cso-sef-empty {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink-muted);
+  font-size: 0.88rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-sef-pill,
+  .cso-sef-btn,
+  .cso-sef-item {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-sef-pill-bar,
+  .cso-sef-controls,
+  .cso-sef-lang-group,
+  .cso-sef-btn {
+    display: none !important;
+  }
+
+  .cso-sef-item {
+    break-inside: avoid;
+  }
+}
