@@ -24741,3 +24741,268 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+/* ===== v426: Odisha Police SI, Constable, Forest Guard & Excise PET/PST Checker (.cso-pps-*) ===== */
+.cso-pps-root {
+  margin: 20px 0;
+}
+
+.cso-pps-wrap {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated, var(--cso-surface));
+  color: var(--cso-ink);
+}
+
+.cso-pps-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.cso-pps-title {
+  margin: 0;
+  font-size: 1.32rem;
+  line-height: 1.3;
+  color: var(--cso-ink);
+}
+
+.cso-pps-sub {
+  margin: 6px 0 0;
+  font-size: 0.92rem;
+  color: var(--cso-muted);
+  max-width: 78ch;
+}
+
+.cso-pps-head-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-pps-lang-toggle {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  padding: 3px;
+  gap: 4px;
+}
+
+.cso-pps-lang-btn {
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-pps-lang-btn.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-pps-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 10px;
+}
+
+.cso-pps-field {
+  display: grid;
+  gap: 6px;
+}
+
+.cso-pps-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cso-muted);
+}
+
+.cso-pps-select,
+.cso-pps-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 1rem;
+}
+
+.cso-pps-verdict {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--cso-accent);
+  background: var(--cso-surface);
+  font-size: 0.94rem;
+  font-weight: 800;
+}
+
+.cso-pps-verdict.is-pass {
+  border-color: var(--cso-ok, var(--cso-accent));
+  color: var(--cso-ok, var(--cso-accent));
+}
+
+.cso-pps-verdict.is-warn {
+  border-color: var(--cso-danger, var(--cso-accent));
+  color: var(--cso-danger, var(--cso-accent));
+}
+
+.cso-pps-matrix {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 245px), 1fr));
+  gap: 10px;
+}
+
+.cso-pps-check {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-pps-check.is-pass {
+  border-color: var(--cso-ok, var(--cso-accent));
+}
+
+.cso-pps-check.is-fail {
+  border-color: var(--cso-danger, var(--cso-accent));
+}
+
+.cso-pps-check__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.cso-pps-pill-stat {
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.cso-pps-check__vals {
+  font-size: 0.8rem;
+  color: var(--cso-muted);
+}
+
+.cso-pps-bar-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--cso-border);
+  overflow: hidden;
+}
+
+.cso-pps-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cso-accent);
+}
+
+.cso-pps-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.cso-pps-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-pps-btn--primary {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-pps-btn:focus-visible,
+.cso-pps-lang-btn:focus-visible {
+  outline: 2px solid var(--cso-focus, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+.cso-pps-copy-status {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--cso-ok, var(--cso-accent));
+}
+
+.cso-pps-ref {
+  display: grid;
+  gap: 8px;
+}
+
+.cso-pps-ref__title {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--cso-ink);
+}
+
+.cso-pps-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-pps-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.cso-pps-table th,
+.cso-pps-table td {
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--cso-border);
+  color: var(--cso-ink);
+}
+
+.cso-pps-table th {
+  background: var(--cso-surface-alt, var(--cso-surface));
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-pps-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-pps-head-controls,
+  .cso-pps-form,
+  .cso-pps-actions {
+    display: none !important;
+  }
+}

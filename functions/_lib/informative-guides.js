@@ -541,15 +541,16 @@ function buildGuidesHead({ title, description, body = '', canonical, ogImage = '
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v425">
-  <script src="/assets/js/guides-portal.js?v=20261127v425" defer></script>
-  <script src="/assets/js/ics-calendar-export.js?v=20261127v425" defer></script>
-  <script src="/assets/js/saved-alerts-drawer.js?v=20261127v425" defer></script>
-  <script src="/assets/js/article-mini-quiz.js?v=20261127v425" defer></script>
-  <script src="/assets/js/certificate-fee-matrix.js?v=20261127v425" defer></script>
-  <script src="/assets/js/service-rules-pension-guide.js?v=20261127v425" defer></script>
-  <script src="/assets/js/pyq-vault-analyzer.js?v=20261127v425" defer></script>
-  <script src="/assets/js/holiday-exam-logistics.js?v=20261127v425" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v426">
+  <script src="/assets/js/guides-portal.js?v=20261127v426" defer></script>
+  <script src="/assets/js/ics-calendar-export.js?v=20261127v426" defer></script>
+  <script src="/assets/js/saved-alerts-drawer.js?v=20261127v426" defer></script>
+  <script src="/assets/js/article-mini-quiz.js?v=20261127v426" defer></script>
+  <script src="/assets/js/certificate-fee-matrix.js?v=20261127v426" defer></script>
+  <script src="/assets/js/service-rules-pension-guide.js?v=20261127v426" defer></script>
+  <script src="/assets/js/pyq-vault-analyzer.js?v=20261127v426" defer></script>
+  <script src="/assets/js/holiday-exam-logistics.js?v=20261127v426" defer></script>
+  <script src="/assets/js/pet-pst-standards-checker.js?v=20261127v426" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -718,6 +719,7 @@ ${CSO_SHELL_HEADER}
   <section id="cso-service-rules-guide-root" class="cso-srp-root" aria-label="Odisha Govt Leave, TA/DA and NPS vs UPS Pension Quick Reference"></section>
   <section id="cso-pyq-vault-analyzer-root" class="cso-pyq-root" aria-label="Odisha Govt PYQ Paper Vault and Topic Weightage Analyzer"></section>
   <section id="cso-holiday-exam-logistics-root" class="cso-hel-root" aria-label="Odisha Govt Holiday, Treasury and Exam-Day Logistics Calendar"></section>
+  <section id="cso-pet-pst-standards-root" class="cso-pps-root" aria-label="Odisha Police SI, Constable, Forest Guard and Excise PET/PST Standards Checker"></section>
 </main>
 ${CSO_SHELL_FOOTER}
 </body>

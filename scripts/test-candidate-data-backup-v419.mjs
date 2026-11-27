@@ -154,10 +154,10 @@ assert.equal(decodedFromUrl.ok, true, 'decodeStudyPack must also accept full sha
 
 // 8. HTML mount, CSS tokens & SW / Ops-Sentinel sync
 assert.ok(htmlSrc.includes('id="cso-candidate-data-backup-root"'), 'tools/index.html must mount #cso-candidate-data-backup-root');
-assert.ok(htmlSrc.includes('/assets/js/candidate-data-backup.js?v=20261127v425'), 'tools/index.html must load candidate-data-backup.js?v=20261127v425');
-assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v425'"), 'sw.js must bump CACHE_NAME to v419');
-assert.ok(swSrc.includes("'/assets/js/candidate-data-backup.js?v=20261127v425'"), 'sw.js must precache candidate-data-backup.js');
-assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v425'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v419');
+assert.ok(htmlSrc.includes('/assets/js/candidate-data-backup.js?v=20261127v426'), 'tools/index.html must load candidate-data-backup.js?v=20261127v426');
+assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v426'"), 'sw.js must bump CACHE_NAME to v419');
+assert.ok(swSrc.includes("'/assets/js/candidate-data-backup.js?v=20261127v426'"), 'sw.js must precache candidate-data-backup.js');
+assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v426'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v419');
 
 const cdbCssIdx = cssSrc.indexOf('/* ===== v419:');
 assert.ok(cdbCssIdx !== -1, 'assets/style.css must contain v419 .cso-cdb-* CSS block');
