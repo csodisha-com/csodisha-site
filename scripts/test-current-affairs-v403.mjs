@@ -15,7 +15,7 @@ import vm from 'node:vm';
 // 1. HTML Shell & Strict CSP validation
 const html = fs.readFileSync('current-affairs/index.html', 'utf8');
 assert.ok(html.includes('<link rel="canonical" href="https://csodisha.com/current-affairs/">'), 'Canonical URL present');
-assert.ok(html.includes('/assets/js/current-affairs-hub.js?v=20261127v405'), 'Loads current-affairs-hub.js?v=20261127v405');
+assert.ok(html.includes('/assets/js/current-affairs-hub.js?v=20261127v406'), 'Loads current-affairs-hub.js?v=20261127v406');
 assert.ok(html.includes('id="cso-ca-topic-pills"'), 'Topic filter toolbar mounted');
 assert.ok(html.includes('id="cso-ca-date-pills"'), 'Date window filter toolbar mounted');
 assert.ok(html.includes('id="cso-ca-quiz-root"'), '10-MCQ practice drill mounted');
