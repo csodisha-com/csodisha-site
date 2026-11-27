@@ -216,6 +216,18 @@
 
     // 4. Offline & Backup
     {
+      id: 'candidate-profile-sync',
+      category: 'offline-backup',
+      targetId: 'cso-candidate-profile-sync-root',
+      badgeEn: '1-Click Auto-Fill',
+      badgeOr: '୧-କ୍ଲିକ୍ ଅଟୋ-ଫିଲ୍',
+      titleEn: 'Unified Candidate Profile Auto-Fill & Cross-Tool Sync Bar',
+      titleOr: 'ଏକୀକୃତ ପ୍ରାର୍ଥୀ ପ୍ରୋଫାଇଲ୍ ଅଟୋ-ଫିଲ୍ ଓ କ୍ରସ୍-ଟୁଲ୍ ସିଙ୍କ୍',
+      descEn: 'Save DOB, Category, Gender, District & Qualification once to auto-fill all 5 candidate tools.',
+      descOr: 'ଜନ୍ମ ତାରିଖ, ବର୍ଗ, ଲିଙ୍ଗ, ଜିଲ୍ଲା ଓ ଯୋଗ୍ୟତା ଥରେ ସେଭ୍ କରି ସମସ୍ତ ୫ଟି ଟୁଲ୍ ଅଟୋ-ଫିଲ୍ କରନ୍ତୁ।',
+      keywords: 'profile autofill sync dob category district qualification pwbd ପ୍ରୋଫାଇଲ୍ ସିଙ୍କ୍'
+    },
+    {
       id: 'candidate-data-backup',
       category: 'offline-backup',
       targetId: 'cso-candidate-data-backup-root',
