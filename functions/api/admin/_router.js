@@ -90,7 +90,9 @@ import {
   handleJobsSnippetsAdmin,
   handleJobsArticlesAdmin,
   handleJobsMediaUpload,
-  handleJobsStudyOptions
+  handleJobsStudyOptions,
+  handleAdminDeadlinesHealth,
+  handleAdminDeadlinesAction
 } from '../../_lib/jobs-publishing-house.js';
 import {
   handleAdminCareers,
@@ -397,6 +399,17 @@ async function dispatchAdminApi(request, env, ctx = null) {
         await ensureMarketingAdvertisingBatch3Schema(env.DB);
       }
       return await handleMarketingAdvertisingBatch1Admin(request, env, actor, id, sub, extra);
+    }
+    if (resource === 'deadlines') {
+      const actor = await requireRole(request, env, STAFF_ROLES);
+      if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (id === 'health' && method === 'GET') {
+        return await handleAdminDeadlinesHealth(request, env);
+      }
+      if (id === 'action' && method === 'POST') {
+        return await handleAdminDeadlinesAction(request, env, actor, ctx);
+      }
+      throw new HttpError(404, 'NOT_FOUND', 'Unknown deadlines endpoint');
     }
     if (resource === 'seo') {
       const actor = await requireRole(request, env, STAFF_ROLES);

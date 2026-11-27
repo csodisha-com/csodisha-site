@@ -703,6 +703,9 @@
     if (window.CSOSeoInspector && typeof window.CSOSeoInspector.buildSeoInspectorCard === 'function') {
       container.appendChild(window.CSOSeoInspector.buildSeoInspectorCard());
     }
+    if (window.CSODeadlineHealthPanel && typeof window.CSODeadlineHealthPanel.buildDeadlineHealthCard === 'function') {
+      container.appendChild(window.CSODeadlineHealthPanel.buildDeadlineHealthCard());
+    }
     var k = state.kpis || {
       total_jobs: 0, published_live: 0, scheduled_or_draft: 0,
       closing_soon: 0, total_vacancies: 0, total_apply_clicks: 0, total_pdf_downloads: 0
@@ -2885,6 +2888,226 @@
 
     window.CSOSeoInspector = {
       buildSeoInspectorCard: buildSeoInspectorCard
+    };
+  })();
+
+  // =========================================================================
+  // v399: Admin Studio Active Deadlines & Expiring Notices Health Panel
+  // Strict CSP-safe (zero inline styles/handlers, semantic 4-theme tokens)
+  // =========================================================================
+  (function initCSODeadlineHealthPanel() {
+    var cachedHealth = null;
+
+    function openJobInEditor(item) {
+      if (!item || !item.id) return;
+      api('/api/admin/jobs/articles/' + encodeURIComponent(item.id)).then(function (d) {
+        var art = (d && d.item) ? d.item : item;
+        if (window.CSOStudio && typeof window.CSOStudio.openModule === 'function') {
+          try { window.CSOStudio.openModule('jobs'); } catch (_) {}
+        }
+        state.tab = 'articles';
+        openComposer(art);
+      }).catch(function () {
+        state.tab = 'articles';
+        openComposer(item);
+      });
+    }
+
+    function buildDeadlineHealthCard() {
+      var card = el('section', 'jph-card jph-dh-panel');
+      card.setAttribute('data-cso-deadline-health', '1');
+      card.setAttribute('aria-label', 'Active Deadlines and Expiring Notices Health');
+
+      var head = el('div', 'jph-dh-head');
+      var headCopy = el('div', 'jph-dh-head-copy');
+      headCopy.appendChild(el('h3', 'jph-dh-title', '⏰ Active Deadlines & Expiring Notices Health | ସକ୍ରିୟ ଶେଷ ତାରିଖ ସ୍ୱାସ୍ଥ୍ୟ'));
+      headCopy.appendChild(el('p', 'jph-dh-sub', 'Monitor notices expiring within 72h IST or already past deadline; extend, close, or archive in one click.'));
+      head.appendChild(headCopy);
+
+      var refreshBtn = el('button', 'jph-btn jph-btn--sm jph-dh-refresh', '↻ Refresh Deadlines');
+      refreshBtn.type = 'button';
+      head.appendChild(refreshBtn);
+      card.appendChild(head);
+
+      var tabsRow = el('div', 'jph-dh-tabs');
+      tabsRow.setAttribute('role', 'tablist');
+      tabsRow.setAttribute('aria-label', 'Deadline urgency buckets');
+      card.appendChild(tabsRow);
+
+      var statusNote = el('div', 'jph-dh-status');
+      statusNote.setAttribute('role', 'status');
+      statusNote.setAttribute('aria-live', 'polite');
+      card.appendChild(statusNote);
+
+      var listHost = el('div', 'jph-dh-list');
+      card.appendChild(listHost);
+
+      var activeBucket = 'urgent';
+
+      function runAction(item, payload, rowBtn) {
+        if (rowBtn) rowBtn.disabled = true;
+        statusNote.textContent = 'Updating notice & purging public edge caches…';
+        api('/api/admin/deadlines/action', {
+          method: 'POST',
+          body: JSON.stringify(Object.assign({ id: item.id, slug: item.slug }, payload))
+        }).then(function () {
+          var msg = '✅ Deadline updated & public caches purged';
+          statusNote.textContent = msg;
+          toast(msg, 'green');
+          cachedHealth = null;
+          loadHealth(true);
+          if (typeof loadArticles === 'function') {
+            loadArticles().catch(function () {});
+          }
+        }).catch(function (err) {
+          statusNote.textContent = 'Action failed: ' + err.message;
+          toast(err.message, 'crimson');
+        }).finally(function () {
+          if (rowBtn) rowBtn.disabled = false;
+        });
+      }
+
+      function renderHealth(data) {
+        clear(tabsRow);
+        clear(listHost);
+        if (!data || !data.buckets) {
+          listHost.appendChild(el('div', 'jph-dh-empty', 'Loading active deadlines from Cloudflare D1…'));
+          return;
+        }
+        var exp = Array.isArray(data.buckets.expired) ? data.buckets.expired : [];
+        var soon = Array.isArray(data.buckets.expiring_72h) ? data.buckets.expiring_72h : [];
+        var upc = Array.isArray(data.buckets.upcoming) ? data.buckets.upcoming : [];
+
+        if (activeBucket === 'urgent') {
+          activeBucket = exp.length ? 'expired' : (soon.length ? 'expiring_72h' : 'upcoming');
+        }
+
+        var tabDefs = [
+          { key: 'expired', tone: 'is-danger', label: '🔴 Expired Still Open (' + exp.length + ')', items: exp },
+          { key: 'expiring_72h', tone: 'is-warn', label: '🟠 Expiring <= 72h (' + soon.length + ')', items: soon },
+          { key: 'upcoming', tone: 'is-ok', label: '🟢 Active Upcoming (' + upc.length + ')', items: upc }
+        ];
+
+        var currentItems = [];
+        tabDefs.forEach(function (t) {
+          var isAct = activeBucket === t.key;
+          if (isAct) currentItems = t.items;
+          var b = el('button', 'jph-dh-pill ' + t.tone + (isAct ? ' is-active' : ''), t.label);
+          b.type = 'button';
+          b.setAttribute('role', 'tab');
+          b.setAttribute('data-dh-bucket', t.key);
+          b.setAttribute('aria-selected', isAct ? 'true' : 'false');
+          b.addEventListener('click', function () {
+            activeBucket = t.key;
+            renderHealth(data);
+          });
+          tabsRow.appendChild(b);
+        });
+
+        if (!currentItems.length) {
+          listHost.appendChild(el('div', 'jph-dh-empty', activeBucket === 'expired'
+            ? 'No expired notices left open. Everything is clean!'
+            : (activeBucket === 'expiring_72h'
+              ? 'No notices expiring within the next 72 hours.'
+              : 'No upcoming deadline notices tracked yet.')));
+          return;
+        }
+
+        currentItems.slice(0, 12).forEach(function (item) {
+          var row = el('div', 'jph-dh-row');
+
+          var info = el('div', 'jph-dh-row-info');
+          var topLine = el('div', 'jph-dh-row-top');
+          var badgeTone = item.bucket === 'expired' ? 'is-danger' : (item.bucket === 'expiring_72h' ? 'is-warn' : 'is-ok');
+          topLine.appendChild(el('span', 'jph-dh-badge ' + badgeTone, item.deadline_label || item.deadline_iso));
+          topLine.appendChild(el('span', 'jph-dh-date', '📅 ' + item.deadline_iso));
+          if (item.org) topLine.appendChild(el('span', 'jph-dh-org', item.org));
+          info.appendChild(topLine);
+
+          info.appendChild(el('div', 'jph-dh-row-title', item.title_en || item.slug));
+          if (item.title_or && item.title_or !== item.title_en) {
+            info.appendChild(el('div', 'jph-dh-row-or', item.title_or));
+          }
+          row.appendChild(info);
+
+          var acts = el('div', 'jph-dh-row-acts');
+
+          var ext7 = el('button', 'jph-dh-act-btn jph-dh-act-btn--primary', '📅 +7 Days');
+          ext7.type = 'button';
+          ext7.addEventListener('click', function () {
+            runAction(item, { action: 'extend_date', add_days: 7 }, ext7);
+          });
+          acts.appendChild(ext7);
+
+          var customWrap = el('div', 'jph-dh-custom-date');
+          var dateInp = el('input', 'jph-dh-date-input');
+          dateInp.type = 'date';
+          dateInp.value = item.deadline_iso || '';
+          dateInp.setAttribute('aria-label', 'Set custom deadline date for ' + (item.title_en || item.slug));
+          var setBtn = el('button', 'jph-dh-act-btn', 'Set Date');
+          setBtn.type = 'button';
+          setBtn.addEventListener('click', function () {
+            if (!dateInp.value) return;
+            runAction(item, { action: 'extend_date', new_date: dateInp.value }, setBtn);
+          });
+          customWrap.append(dateInp, setBtn);
+          acts.appendChild(customWrap);
+
+          var closeBtn = el('button', 'jph-dh-act-btn', '🔒 Mark Closed');
+          closeBtn.type = 'button';
+          closeBtn.addEventListener('click', function () {
+            runAction(item, { action: 'mark_closed' }, closeBtn);
+          });
+          acts.appendChild(closeBtn);
+
+          var archBtn = el('button', 'jph-dh-act-btn jph-dh-act-btn--danger', '📦 Archive');
+          archBtn.type = 'button';
+          archBtn.addEventListener('click', function () {
+            runAction(item, { action: 'archive' }, archBtn);
+          });
+          acts.appendChild(archBtn);
+
+          var editBtn = el('button', 'jph-dh-act-btn', '✏️ Edit');
+          editBtn.type = 'button';
+          editBtn.addEventListener('click', function () {
+            openJobInEditor(item);
+          });
+          acts.appendChild(editBtn);
+
+          row.appendChild(acts);
+          listHost.appendChild(row);
+        });
+      }
+
+      function loadHealth(force) {
+        if (cachedHealth && !force) {
+          renderHealth(cachedHealth);
+          return;
+        }
+        refreshBtn.disabled = true;
+        api('/api/admin/deadlines/health').then(function (res) {
+          cachedHealth = res;
+          renderHealth(res);
+          statusNote.textContent = '';
+        }).catch(function (err) {
+          statusNote.textContent = 'Could not load deadline health: ' + err.message;
+        }).finally(function () {
+          refreshBtn.disabled = false;
+        });
+      }
+
+      refreshBtn.addEventListener('click', function () {
+        loadHealth(true);
+      });
+
+      renderHealth(cachedHealth);
+      loadHealth(!cachedHealth);
+      return card;
+    }
+
+    window.CSODeadlineHealthPanel = {
+      version: 'v399',
+      buildDeadlineHealthCard: buildDeadlineHealthCard
     };
   })();
 })(window, document);

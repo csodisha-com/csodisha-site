@@ -3816,10 +3816,12 @@
     }
 
     if (window.CSOSeoInspector && typeof window.CSOSeoInspector.buildSeoInspectorCard === 'function') {
-      shell.append(window.CSOSeoInspector.buildSeoInspectorCard(), tabBar, filterBar, listHost);
-    } else {
-      shell.append(tabBar, filterBar, listHost);
+      shell.appendChild(window.CSOSeoInspector.buildSeoInspectorCard());
     }
+    if (window.CSODeadlineHealthPanel && typeof window.CSODeadlineHealthPanel.buildDeadlineHealthCard === 'function') {
+      shell.appendChild(window.CSODeadlineHealthPanel.buildDeadlineHealthCard());
+    }
+    shell.append(tabBar, filterBar, listHost);
     root.appendChild(shell);
     drawTabs();
     loadList();

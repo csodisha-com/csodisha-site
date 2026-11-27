@@ -1937,3 +1937,291 @@ export async function handlePublicJobsTelemetryApi(request, env) {
   }
   return json({ ok: true, event }, 200, { 'Cache-Control': 'no-store' });
 }
+
+// ============================================================================
+// v399: Admin Studio Active Deadlines & Expiring Notices Health Engine
+// ============================================================================
+const IST_OFFSET_MS = 330 * 60 * 1000;
+
+function extractYmdDate(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  const m = s.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : '';
+}
+
+function getIstTodayYmd(nowDate = new Date()) {
+  const ist = new Date(nowDate.getTime() + IST_OFFSET_MS);
+  const y = ist.getUTCFullYear();
+  const m = String(ist.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(ist.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function addDaysToYmd(ymd, days) {
+  const parts = String(ymd || '').split('-').map(Number);
+  if (parts.length !== 3 || parts.some(Number.isNaN)) return '';
+  const dt = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2] + Number(days || 0)));
+  const y = dt.getUTCFullYear();
+  const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(dt.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function formatReadableDate(ymd) {
+  const parts = String(ymd || '').split('-').map(Number);
+  if (parts.length !== 3 || parts.some(Number.isNaN)) return String(ymd || '');
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${String(parts[2]).padStart(2, '0')} ${months[parts[1] - 1] || ''} ${parts[0]}`.trim();
+}
+
+export function classifyNoticeDeadline(row, nowDate = new Date()) {
+  if (!row || typeof row !== 'object') return null;
+  const now = nowDate instanceof Date ? nowDate : new Date(nowDate);
+  const candidates = [
+    ['walk_in_date', row.walk_in_date],
+    ['application_end_date', row.application_end_date],
+    ['deadline_iso', row.deadline_iso],
+    ['last_date', row.last_date],
+    ['expires_at', row.expires_at],
+    ['exam_date', row.exam_date]
+  ];
+  let deadlineYmd = '';
+  let deadlineField = 'last_date';
+  for (const [field, val] of candidates) {
+    const ymd = extractYmdDate(val);
+    if (ymd) {
+      deadlineYmd = ymd;
+      deadlineField = field === 'exam_date' ? 'exam_date' : 'last_date';
+      break;
+    }
+  }
+  if (!deadlineYmd) return null;
+
+  const [y, m, d] = deadlineYmd.split('-').map(Number);
+  // End of deadline day in IST (23:59:59+05:30)
+  const cutoffUtcMs = Date.UTC(y, m - 1, d, 23, 59, 59) - IST_OFFSET_MS;
+  const deltaHoursRaw = (cutoffUtcMs - now.getTime()) / 3600000;
+  const deltaHours = Math.round(deltaHoursRaw * 10) / 10;
+
+  const todayIst = getIstTodayYmd(now);
+  const [ty, tm, td] = todayIst.split('-').map(Number);
+  const dayDelta = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(ty, tm - 1, td)) / 86400000);
+  const isWalkIn = /walk-?in/i.test(`${row.title_en || ''} ${row.selection_mode || ''} ${row.summary_en || ''}`);
+
+  let bucket = 'upcoming';
+  let deadlineLabel = '';
+  if (deltaHours < 0) {
+    bucket = 'expired';
+    const absHours = Math.max(1, Math.round(Math.abs(deltaHours)));
+    const absDays = Math.abs(dayDelta);
+    deadlineLabel = absDays >= 1 ? `Expired ${absDays}d ago` : `Expired ${absHours}h ago`;
+  } else if (deltaHours <= 72) {
+    bucket = 'expiring_72h';
+    if (dayDelta === 0) {
+      deadlineLabel = isWalkIn ? 'Walk-in Today' : `Closes in ${Math.max(1, Math.round(deltaHours))}h`;
+    } else if (dayDelta === 1) {
+      deadlineLabel = isWalkIn ? 'Walk-in Tomorrow' : 'Closes Tomorrow';
+    } else {
+      deadlineLabel = `Closes in ${Math.max(1, Math.round(deltaHours))}h`;
+    }
+  } else {
+    bucket = 'upcoming';
+    deadlineLabel = `${isWalkIn ? 'Walk-in' : 'Closes'} in ${Math.max(3, dayDelta)}d`;
+  }
+
+  const stage = String(row.lifecycle_stage || 'notification').toLowerCase().trim() || 'notification';
+  return {
+    id: String(row.id || row.slug || ''),
+    slug: String(row.slug || ''),
+    title_en: String(row.title_en || 'Untitled Notice'),
+    title_or: String(row.title_or || ''),
+    org: String(row.organisation_en || row.sector_badge || 'Odisha Govt'),
+    category: stage,
+    status: stage === 'closed' ? 'closed' : 'active',
+    deadline_iso: deadlineYmd,
+    deadline_field: deadlineField,
+    deadline_label: deadlineLabel,
+    delta_hours: deltaHours,
+    bucket
+  };
+}
+
+export async function handleAdminDeadlinesHealth(request, env, options = {}) {
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DB', 'Database binding unavailable');
+  await ensureJobsPublishingSchema(env.DB);
+  const now = options.now instanceof Date ? options.now : new Date();
+
+  const { results } = await env.DB.prepare(
+    `SELECT id, slug, title_en, title_or, summary_en, organisation_en, sector_badge,
+            selection_mode, lifecycle_stage, last_date, exam_date, expires_at,
+            is_published, updated_at
+     FROM job_articles
+     WHERE is_published = 1
+       AND LOWER(COALESCE(lifecycle_stage, 'notification')) != 'closed'
+     ORDER BY updated_at DESC
+     LIMIT 250`
+  ).all().catch(() => ({ results: [] }));
+
+  const expired = [];
+  const expiring72h = [];
+  const upcoming = [];
+
+  for (const row of (results || [])) {
+    const item = classifyNoticeDeadline(row, now);
+    if (!item) continue;
+    if (item.bucket === 'expired') expired.push(item);
+    else if (item.bucket === 'expiring_72h') expiring72h.push(item);
+    else upcoming.push(item);
+  }
+
+  expired.sort((a, b) => a.delta_hours - b.delta_hours);
+  expiring72h.sort((a, b) => a.delta_hours - b.delta_hours);
+  upcoming.sort((a, b) => a.delta_hours - b.delta_hours);
+
+  const summary = {
+    expired_count: expired.length,
+    expiring_72h_count: expiring72h.length,
+    upcoming_count: upcoming.length,
+    total_tracked: expired.length + expiring72h.length + upcoming.length
+  };
+
+  return json({
+    ok: true,
+    generated_at: now.toISOString(),
+    summary,
+    ...summary,
+    items: [...expired, ...expiring72h, ...upcoming],
+    buckets: {
+      expired,
+      expiring_72h: expiring72h,
+      upcoming
+    }
+  }, 200, { 'Cache-Control': 'no-store' });
+}
+
+export async function handleAdminDeadlinesAction(request, env, actor, ctx = null) {
+  if (request.method !== 'POST') throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Use POST');
+  if (!env || !env.DB) throw new HttpError(500, 'NO_DB', 'Database binding unavailable');
+  await ensureJobsPublishingSchema(env.DB);
+
+  const body = await readJson(request, 16000);
+  const action = String(body.action || '').trim().toLowerCase();
+  const id = str(body.id, 120);
+  const slug = str(body.slug, 180);
+  if (!['extend_date', 'mark_closed', 'archive'].includes(action)) {
+    throw validationError('action must be extend_date, mark_closed, or archive');
+  }
+  if (!id && !slug) {
+    throw validationError('Notice id or slug is required');
+  }
+
+  const row = id
+    ? await env.DB.prepare('SELECT * FROM job_articles WHERE id = ? OR slug = ? LIMIT 1').bind(id, id).first()
+    : await env.DB.prepare('SELECT * FROM job_articles WHERE slug = ? LIMIT 1').bind(slug).first();
+  if (!row) throw new HttpError(404, 'NOT_FOUND', 'Notice not found');
+
+  let updatedDate = '';
+  let nextStatus = row.lifecycle_stage || 'notification';
+
+  if (action === 'extend_date') {
+    const explicitDate = extractYmdDate(body.new_date);
+    const oldYmd = extractYmdDate(row.last_date || row.expires_at || row.exam_date);
+    const todayIst = getIstTodayYmd(new Date());
+    const addDays = Math.max(1, Math.min(365, Number(body.add_days) || 7));
+    if (explicitDate) {
+      updatedDate = explicitDate;
+    } else {
+      const baseYmd = (oldYmd && oldYmd >= todayIst) ? oldYmd : todayIst;
+      updatedDate = addDaysToYmd(baseYmd, addDays);
+    }
+    if (!updatedDate) throw validationError('Could not compute valid YYYY-MM-DD deadline date');
+
+    const targetCol = extractYmdDate(row.last_date) || !extractYmdDate(row.exam_date) ? 'last_date' : 'exam_date';
+    const nextExpires = extractYmdDate(row.expires_at) ? updatedDate : (row.expires_at || '');
+    let nextImportantDates = row.important_dates_json || '[]';
+    try {
+      const parsed = JSON.parse(nextImportantDates);
+      if (Array.isArray(parsed) && parsed.length) {
+        const oldReadable = oldYmd ? formatReadableDate(oldYmd) : '';
+        const newReadable = formatReadableDate(updatedDate);
+        const updatedArr = parsed.map((entry) => {
+          if (!entry || typeof entry !== 'object') return entry;
+          const lbl = String(entry.label || entry.event || '').toLowerCase();
+          const val = String(entry.date || entry.value || '');
+          const matchesOld = (oldYmd && val.includes(oldYmd)) || (oldReadable && val.toLowerCase().includes(oldReadable.toLowerCase()));
+          const matchesLast = /last\s*date|closing|walk-?in|deadline/.test(lbl);
+          if (matchesOld || matchesLast) {
+            const copy = { ...entry };
+            if ('date' in copy) copy.date = newReadable;
+            if ('value' in copy) copy.value = newReadable;
+            return copy;
+          }
+          return entry;
+        });
+        nextImportantDates = JSON.stringify(updatedArr);
+      }
+    } catch { /* keep existing important_dates_json intact */ }
+
+    nextStatus = String(row.lifecycle_stage || '').toLowerCase() === 'closed' ? 'notification' : (row.lifecycle_stage || 'notification');
+    await env.DB.prepare(
+      `UPDATE job_articles
+       SET ${targetCol} = ?,
+           expires_at = ?,
+           important_dates_json = ?,
+           lifecycle_stage = ?,
+           is_published = 1,
+           updated_at = datetime('now')
+       WHERE id = ?`
+    ).bind(updatedDate, nextExpires, nextImportantDates, nextStatus, row.id).run();
+  } else if (action === 'mark_closed') {
+    nextStatus = 'closed';
+    await env.DB.prepare(
+      `UPDATE job_articles
+       SET lifecycle_stage = 'closed',
+           is_published = 1,
+           updated_at = datetime('now')
+       WHERE id = ?`
+    ).bind(row.id).run();
+  } else if (action === 'archive') {
+    nextStatus = 'archived';
+    await env.DB.prepare(
+      `UPDATE job_articles
+       SET is_published = 0,
+           lifecycle_stage = 'closed',
+           updated_at = datetime('now')
+       WHERE id = ?`
+    ).bind(row.id).run();
+  }
+
+  try {
+    await audit(env, request, actor, 'jobs.deadline_action', 'job_articles', row.id, {
+      slug: row.slug,
+      action,
+      new_date: updatedDate || undefined,
+      status: nextStatus
+    });
+  } catch { /* best effort audit */ }
+
+  await invalidateJobsCaches(request, row.slug);
+
+  const pingUrls = [
+    `https://csodisha.com/jobs/${encodeURIComponent(row.slug)}`,
+    'https://csodisha.com/jobs/',
+    'https://csodisha.com/updates/'
+  ];
+  const indexnow = pingIndexNowUrls(env, pingUrls, ctx);
+
+  const res = json({
+    ok: true,
+    action,
+    id: row.id,
+    slug: row.slug,
+    new_date: updatedDate || extractYmdDate(row.last_date || row.exam_date),
+    status: nextStatus,
+    cache_purged: true,
+    indexnow
+  }, 200, { 'Cache-Control': 'no-store' });
+  res.headers.set('X-CSO-Cache-Purged', '1');
+  return res;
+}
