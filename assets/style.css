@@ -20716,3 +20716,220 @@ nav#cso-hub-top-tabs {
     break-inside: avoid;
   }
 }
+
+/* ==========================================================================
+   v412: Odisha University CGPA / SGPA to Percentage & Marks Converter
+   ========================================================================== */
+
+.cso-cgpa-root {
+  margin: 20px 0 24px;
+}
+
+.cso-cgpa-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+}
+
+.cso-cgpa-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cso-cgpa-head-left {
+  display: grid;
+  gap: 6px;
+  max-width: 780px;
+}
+
+.cso-cgpa-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.cso-cgpa-title {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+  line-height: 1.3;
+}
+
+.cso-cgpa-sub,
+.cso-cgpa-note {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--cso-ink-muted);
+  line-height: 1.45;
+}
+
+.cso-cgpa-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-cgpa-pill,
+.cso-cgpa-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.cso-cgpa-pill.is-active,
+.cso-cgpa-btn--primary {
+  border-color: var(--cso-accent);
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-cgpa-field {
+  display: grid;
+  gap: 4px;
+}
+
+.cso-cgpa-field-lbl {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-cgpa-select,
+.cso-cgpa-input {
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 0.92rem;
+}
+
+.cso-cgpa-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.cso-cgpa-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.cso-cgpa-sem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
+  gap: 10px;
+}
+
+.cso-cgpa-sem-card {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-cgpa-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.cso-cgpa-kpi {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-cgpa-kpi-k {
+  font-size: 0.76rem;
+  color: var(--cso-ink-muted);
+  font-weight: 600;
+}
+
+.cso-cgpa-kpi-v {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-cgpa-subhead {
+  margin: 4px 0 0;
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-cgpa-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+}
+
+.cso-cgpa-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+}
+
+.cso-cgpa-table th,
+.cso-cgpa-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--cso-border);
+  text-align: left;
+}
+
+.cso-cgpa-table th {
+  background: var(--cso-surface-alt, var(--cso-surface));
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-cgpa-pill,
+  .cso-cgpa-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-cgpa-actions,
+  .cso-cgpa-btn,
+  .cso-cgpa-pill {
+    display: none !important;
+  }
+}
