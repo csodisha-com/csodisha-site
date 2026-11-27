@@ -21369,3 +21369,329 @@ nav#cso-hub-top-tabs {
     transition: none;
   }
 }
+
+/* ==========================================================================
+   v415: Interactive Odisha Result, Cut-Off & Merit Rank Estimator (/results/)
+   ========================================================================== */
+
+.cso-results-main {
+  padding-top: 16px;
+  padding-bottom: 32px;
+}
+
+.cso-rce-hero {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+}
+
+.cso-rce-crumb {
+  font-size: 0.8rem;
+  color: var(--cso-ink-muted);
+}
+
+.cso-rce-crumb a {
+  color: var(--cso-accent);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.cso-rce-hero-title {
+  margin: 0;
+  font-size: clamp(1.3rem, 2.6vw, 1.85rem);
+  font-weight: 900;
+  color: var(--cso-ink);
+  line-height: 1.25;
+}
+
+.cso-rce-hero-sub {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--cso-ink-muted);
+  line-height: 1.45;
+}
+
+.cso-rce-wrap {
+  display: grid;
+  gap: 20px;
+}
+
+.cso-rce-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+}
+
+.cso-rce-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cso-rce-head-left {
+  display: grid;
+  gap: 6px;
+  max-width: 780px;
+}
+
+.cso-rce-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.cso-rce-title {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+  line-height: 1.3;
+}
+
+.cso-rce-sub,
+.cso-rce-note {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--cso-ink-muted);
+  line-height: 1.45;
+}
+
+.cso-rce-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-rce-pill,
+.cso-rce-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.cso-rce-pill.is-active,
+.cso-rce-btn--primary,
+.cso-rce-btn.is-saved {
+  border-color: var(--cso-accent);
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-rce-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.cso-rce-field {
+  display: grid;
+  gap: 4px;
+}
+
+.cso-rce-field-lbl {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-rce-select,
+.cso-rce-input {
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 0.92rem;
+}
+
+.cso-rce-helper {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-rce-verdict {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+}
+
+.cso-rce-verdict-zone {
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.cso-rce-verdict-tier {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--cso-ink-muted);
+}
+
+.cso-rce-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.cso-rce-kpi {
+  display: grid;
+  gap: 3px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-rce-kpi-k {
+  font-size: 0.75rem;
+  color: var(--cso-ink-muted);
+  font-weight: 700;
+}
+
+.cso-rce-kpi-v {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-rce-bars {
+  display: grid;
+  gap: 8px;
+}
+
+.cso-rce-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 14px;
+}
+
+.cso-rce-item {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+}
+
+.cso-rce-item-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.cso-rce-tag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  color: var(--cso-accent);
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.cso-rce-date {
+  font-size: 0.76rem;
+  color: var(--cso-ink-muted);
+  font-weight: 700;
+}
+
+.cso-rce-item-title {
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+  line-height: 1.3;
+}
+
+.cso-rce-cutoff-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cso-rce-cut-chip {
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.cso-rce-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 8px;
+  color: var(--cso-accent);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.cso-rce-link:hover,
+.cso-rce-link:focus-visible {
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-rce-pill,
+  .cso-rce-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-rce-actions,
+  .cso-rce-controls,
+  .cso-rce-helper {
+    display: none !important;
+  }
+
+  .cso-rce-item {
+    break-inside: avoid;
+  }
+}
