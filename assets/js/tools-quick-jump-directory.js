@@ -190,6 +190,18 @@
       keywords: 'certificate validity fee waiver sc st sebc pwbd obc ews ପ୍ରମାଣପତ୍ର ବୈଧତା ଫି ଛାଡ଼'
     },
     {
+      id: 'document-pack-validator',
+      category: 'certificates',
+      targetId: 'cso-document-pack-validator-root',
+      badgeEn: 'Image-to-PDF & KB',
+      badgeOr: 'PDF ଓ KB ଯାଞ୍ଚ',
+      titleEn: 'Odisha Govt Document Pack, Image-to-PDF & Size Validator',
+      titleOr: 'ଓଡ଼ିଶା ସରକାରୀ ଡକ୍ୟୁମେଣ୍ଟ ପ୍ୟାକ୍, PDF ଓ ସାଇଜ୍ ଯାଞ୍ଚ',
+      descEn: 'Validate OPSC/OSSC/OSSSC/OJEE KB & pixel specs, compress JPGs & export A4 PDFs offline.',
+      descOr: 'OPSC/OSSC/OSSSC/OJEE ସାଇଜ୍ ଯାଞ୍ଚ, JPG କମ୍ପ୍ରେସ୍ ଓ A4 PDF ଅଫଲାଇନ୍ ପ୍ରସ୍ତୁତ କରନ୍ତୁ।',
+      keywords: 'pdf validator compress document pack opsc ossc osssc ojee kb image ପ୍ରମାଣପତ୍ର PDF'
+    },
+    {
       id: 'photo-signature-resizer',
       category: 'certificates',
       targetId: 'cso-photo-signature-resizer-root',

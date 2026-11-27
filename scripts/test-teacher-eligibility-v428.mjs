@@ -84,12 +84,12 @@ assert.equal(petOk.status, 'eligible');
 
 // 7. Mounts on /exams/ & SSR /guides/, SW & Ops-Sentinel sync
 assert.ok(examsHtml.includes('id="cso-teacher-eligibility-root"'), 'exams/index.html must mount #cso-teacher-eligibility-root');
-assert.ok(examsHtml.includes('/assets/js/teacher-eligibility-checker.js?v=20261127v437'), 'exams/index.html must load teacher-eligibility-checker.js?v=20261127v437');
+assert.ok(examsHtml.includes('/assets/js/teacher-eligibility-checker.js?v=20261127v440'), 'exams/index.html must load teacher-eligibility-checker.js?v=20261127v440');
 assert.ok(guidesSsr.includes('id="cso-teacher-eligibility-root"'), 'informative-guides.js must mount #cso-teacher-eligibility-root');
-assert.ok(guidesSsr.includes('/assets/js/teacher-eligibility-checker.js?v=20261127v437'), 'informative-guides.js must load teacher-eligibility-checker.js?v=20261127v437');
-assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v437'"), 'sw.js must bump CACHE_NAME to v428');
-assert.ok(swSrc.includes("'/assets/js/teacher-eligibility-checker.js?v=20261127v437'"), 'sw.js must precache teacher-eligibility-checker.js');
-assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v437'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v428');
+assert.ok(guidesSsr.includes('/assets/js/teacher-eligibility-checker.js?v=20261127v440'), 'informative-guides.js must load teacher-eligibility-checker.js?v=20261127v440');
+assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v440'"), 'sw.js must bump CACHE_NAME to v428');
+assert.ok(swSrc.includes("'/assets/js/teacher-eligibility-checker.js?v=20261127v440'"), 'sw.js must precache teacher-eligibility-checker.js');
+assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v440'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v428');
 
 // 8. CSS 4-theme semantic tokens check
 const tecIdx = cssSrc.indexOf('/* ===== v428:');
