@@ -20442,3 +20442,277 @@ nav#cso-hub-top-tabs {
     break-inside: avoid;
   }
 }
+
+/* ==========================================================================
+   v411: Bilingual Odisha Certificate Validity & Fee Waiver Matrix
+   ========================================================================== */
+
+.cso-cfm-root {
+  margin: 20px 0 24px;
+}
+
+.cso-cfm-card {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+}
+
+.cso-cfm-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cso-cfm-head-left {
+  display: grid;
+  gap: 6px;
+  max-width: 780px;
+}
+
+.cso-cfm-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.cso-cfm-title {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+  line-height: 1.3;
+}
+
+.cso-cfm-sub {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--cso-ink-muted);
+  line-height: 1.45;
+}
+
+.cso-cfm-actions,
+.cso-cfm-pill-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-cfm-pill,
+.cso-cfm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.cso-cfm-pill.is-active {
+  border-color: var(--cso-accent);
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-cfm-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.cso-cfm-field {
+  display: grid;
+  gap: 4px;
+}
+
+.cso-cfm-field-lbl,
+.cso-cfm-sec-lbl {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-cfm-select,
+.cso-cfm-input {
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 0.92rem;
+}
+
+.cso-cfm-expiry-box {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-cfm-expiry-res {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.cso-cfm-subhead {
+  margin: 4px 0 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-cfm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+}
+
+.cso-cfm-item {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+}
+
+.cso-cfm-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cso-cfm-tag {
+  display: inline-flex;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  color: var(--cso-accent);
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.cso-cfm-item-title {
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-cfm-meta {
+  font-size: 0.81rem;
+  color: var(--cso-ink);
+  line-height: 1.4;
+}
+
+.cso-cfm-note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--cso-ink-muted);
+  line-height: 1.4;
+}
+
+.cso-cfm-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--cso-accent);
+  font-size: 0.83rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.cso-cfm-link:hover,
+.cso-cfm-link:focus-visible {
+  text-decoration: underline;
+}
+
+.cso-cfm-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+}
+
+.cso-cfm-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+}
+
+.cso-cfm-table th,
+.cso-cfm-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--cso-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.cso-cfm-table th {
+  background: var(--cso-surface-alt, var(--cso-surface));
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-cfm-table td.is-highlight {
+  background: var(--cso-surface-alt, var(--cso-surface));
+  font-weight: 800;
+  color: var(--cso-accent);
+}
+
+.cso-cfm-td-note {
+  margin-top: 3px;
+  font-size: 0.76rem;
+  color: var(--cso-ink-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-cfm-pill,
+  .cso-cfm-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-cfm-actions,
+  .cso-cfm-pill-bar,
+  .cso-cfm-controls,
+  .cso-cfm-expiry-box {
+    display: none !important;
+  }
+
+  .cso-cfm-item {
+    break-inside: avoid;
+  }
+}
