@@ -60,7 +60,7 @@ assert.equal(osscFinal.length, 2, 'OSSC Final Merit filter must return CGLRE Mai
 
 // 3. Markup, Strict CSP, 4-Theme CSS & v415 SW Cache Sync
 assert.match(resultsHtml, /id="cso-results-cutoff-estimator-root"/, 'results/index.html must mount #cso-results-cutoff-estimator-root');
-assert.match(resultsHtml, /\/assets\/js\/results-cutoff-estimator\.js\?v=20261127v423/, 'results/index.html must load results-cutoff-estimator.js?v=20261127v423');
+assert.match(resultsHtml, /\/assets\/js\/results-cutoff-estimator\.js\?v=20261127v424/, 'results/index.html must load results-cutoff-estimator.js?v=20261127v424');
 assert.ok(!/\sstyle="/i.test(resultsHtml), 'results/index.html must have zero inline style attributes');
 assert.ok(!/\son[a-z]+="/i.test(resultsHtml), 'results/index.html must have zero inline on* handlers');
 assert.ok(!rceSrc.includes('.innerHTML') && !rceSrc.includes('.outerHTML') && !rceSrc.includes('insertAdjacentHTML') && !rceSrc.includes('.style.'), 'results-cutoff-estimator.js must obey strict CSP');
@@ -74,8 +74,8 @@ assert.ok(v415Css.includes('prefers-reduced-motion: reduce'), 'v415 CSS must res
 assert.ok(v415Css.includes('@media print'), 'v415 CSS must include @media print support');
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v415Css), 'v415 CSS block must have zero hardcoded hex values');
 
-assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v423'"), 'sw.js CACHE_NAME must be v415');
-assert.ok(swJs.includes("'/results/'") && swJs.includes("'/assets/js/results-cutoff-estimator.js?v=20261127v423'"), 'sw.js must pre-cache /results/ and results-cutoff-estimator.js');
-assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v423'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v415');
+assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v424'"), 'sw.js CACHE_NAME must be v415');
+assert.ok(swJs.includes("'/results/'") && swJs.includes("'/assets/js/results-cutoff-estimator.js?v=20261127v424'"), 'sw.js must pre-cache /results/ and results-cutoff-estimator.js');
+assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v424'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v415');
 
 console.log('✅ v415 Interactive Odisha Result, Cut-Off & Merit Rank Estimator Audit PASSED');

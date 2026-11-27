@@ -97,9 +97,9 @@ const jobsHubJs = fs.readFileSync('assets/js/jobs-hub.js', 'utf8');
 const updatesJs = fs.readFileSync('assets/js/updates-newsroom.js', 'utf8');
 const styleCss = fs.readFileSync('assets/style.css', 'utf8');
 
-assert.ok(jobsHtml.includes('/assets/js/odisha-district-filter.js?v=20261127v423'), 'jobs/index.html loads odisha-district-filter.js');
+assert.ok(jobsHtml.includes('/assets/js/odisha-district-filter.js?v=20261127v424'), 'jobs/index.html loads odisha-district-filter.js');
 assert.ok(jobsHtml.includes('id="cso-jobs-district-bar"'), 'jobs/index.html mounts #cso-jobs-district-bar');
-assert.ok(updatesHtml.includes('/assets/js/odisha-district-filter.js?v=20261127v423'), 'updates/index.html loads odisha-district-filter.js');
+assert.ok(updatesHtml.includes('/assets/js/odisha-district-filter.js?v=20261127v424'), 'updates/index.html loads odisha-district-filter.js');
 assert.ok(updatesHtml.includes('id="cso-updates-district-bar"'), 'updates/index.html mounts #cso-updates-district-bar');
 assert.ok(jobsHubJs.includes('CSODistrictFilter.mountSelectorBar'), 'jobs-hub.js mounts CSODistrictFilter');
 assert.ok(updatesJs.includes('CSODistrictFilter.mountSelectorBar'), 'updates-newsroom.js mounts CSODistrictFilter');
