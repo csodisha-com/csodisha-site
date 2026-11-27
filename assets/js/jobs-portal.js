@@ -719,6 +719,13 @@
       wrap.appendChild(kitSec);
     }
 
+    // 11b. v387: Interactive 25-MCQ "Test Yourself" Practice Drill (detail view only)
+    var quizMount = el('section', 'cso-aq-root');
+    quizMount.id = 'cso-article-quiz-root';
+    quizMount.setAttribute('data-quiz-type', 'job');
+    quizMount.setAttribute('data-quiz-slug', String(a.slug || ''));
+    wrap.appendChild(quizMount);
+
     // 12. Related Active Jobs (up to 3)
     var related = payload.related_jobs || [];
     if (related.length) {
@@ -731,6 +738,9 @@
     }
 
     mount.appendChild(wrap);
+    if (window.CSOArticleMiniQuiz && typeof window.CSOArticleMiniQuiz.mount === 'function') {
+      window.CSOArticleMiniQuiz.mount(quizMount);
+    }
     injectJobPostingJsonLd(a);
   }
 

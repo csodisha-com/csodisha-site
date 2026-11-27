@@ -31,7 +31,7 @@ for (const f of files) {
   if (shell && !autoF && !(/cso-footer-zone1/.test(h) && /cso-footer-zone2/.test(h) && /cso-footer-zone3/.test(h))) bad('missing 3-zone portal footer (or data-cso-auto-footer)');
   if (/\sstyle\s*=\s*["']/i.test(h)) bad('inline style="" attribute');
   if (/<style[\s>]/i.test(h)) bad('inline <style> block (CSP style-src self): extract to /assets/css/pages/*.css');
-  for (const m of h.matchAll(/<script\b([^>]*)>/gi)) if (!/\bsrc\s*=/.test(m[1]) && !/type=["']application\/(ld\+json)["']/.test(m[1])) bad('inline <script>');
+  for (const m of h.matchAll(/<script\b([^>]*)>/gi)) if (!/\bsrc\s*=/.test(m[1]) && !/type=["']application\/(ld\+json|json)["']/.test(m[1])) bad('inline <script>');
   for (const m of h.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/gi)) if (m[1].startsWith('/')) scriptsSeen.add(m[1].split('?')[0]);
 }
 for (const s of scriptsSeen) {
@@ -57,7 +57,7 @@ for (const f of fnFiles) {
   if (/Current Affairs\s*<\/a>/.test(code)) bad('legacy "Current Affairs" nav header in SSR template');
   if (/<span[^>]*(badge|brand-mark)[^>]*>\s*CSO?\s*<\/span>/.test(code)) bad('legacy green square CSO badge in SSR template');
   if (/<style[\s>]/i.test(code)) bad('inline <style> in SSR template');
-  if (/<script(?![^>]*(\bsrc=|ld\+json))[^>]*>/i.test(code.replace(/\/<script[^/]*\//g, ''))) bad('inline <script> in SSR template');
+  if (/<script(?![^>]*(\bsrc=|application\/(ld\+)?json))[^>]*>/i.test(code.replace(/\/<script[^/]*\//g, ''))) bad('inline <script> in SSR template');
   if (/\sstyle=\\?["']/i.test(code)) bad('inline style="" in SSR template');
   if (/\.innerHTML\b/.test(code)) bad('.innerHTML in SSR template');
   if (!/ssr-shell\.js/.test(code) && !/cso-main-navbar/.test(code)) bad('SSR template does not use canonical shell (functions/_lib/ssr-shell.js)');

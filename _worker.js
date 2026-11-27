@@ -54,6 +54,7 @@ import { getPublishedNavBatch2Config } from './functions/_lib/categories-nav-bat
 import { getPublishedNavBatch3Config } from './functions/_lib/categories-nav-batch3.js';
 import { handlePublicJobsRoute } from './functions/_lib/jobs-directory-ssr.js';
 import { buildJobDetailJsonLdBlocks, injectJsonLdAndMetaIntoHtml, toAbsoluteHttpsUrl } from './functions/_lib/rich-results-jsonld.js';
+import { buildArticleMiniQuizPayload, handlePublicArticleQuizApi, serializeQuizJson } from './functions/_lib/article-mini-quiz.js';
 import { handlePublicJobsOverviewApi, handlePublicJobsItemsApi, handlePublicJobsSuggestApi, handleJobsDirectorySitemapXml } from './functions/_lib/jobs-directory-studio.js';
 import { LEGACY_JOBS_REDIRECTS, matchJobsCategoryPath, matchJobsDetailPath } from './functions/_lib/jobs-directory-meta.js';
 import { handlePublicSchemesRoute } from './functions/_lib/schemes-directory-ssr.js';
@@ -1121,6 +1122,9 @@ export default {
     if ((pathname === '/api/public/home-feed' || pathname === '/api/home/feed') && (request.method === 'GET' || request.method === 'HEAD')) {
       return handlePublicHomeFeedApi(request, env, ctx);
     }
+    if (pathname === '/api/public/article-quiz' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return handlePublicArticleQuizApi(request, env);
+    }
     if ((pathname === '/api/public/homepage-blocks' || pathname === '/api/homepage/blocks') && (request.method === 'GET' || request.method === 'HEAD')) {
       const bypassEdgeCache = url.searchParams.has('refresh') || url.searchParams.has('_cb');
       if (edgeCache && isAnonGet && !bypassEdgeCache) {
@@ -1724,13 +1728,17 @@ export default {
               const canonical = `${origin}/jobs/${encodeURIComponent(row.slug)}`;
               const ogImage = toAbsoluteHttpsUrl(row.cover_image_url, origin) || `${origin}/assets/img/icon-512.png`;
               const jsonLdBlocks = buildJobDetailJsonLdBlocks(row, origin);
+              const quizPayload = buildArticleMiniQuizPayload(row, 'job');
               const hydratedHtml = injectJsonLdAndMetaIntoHtml(baseHtml, {
                 title: row.title_en,
                 description: row.summary_en || row.title_en,
                 canonical,
                 ogImage,
                 jsonLdBlocks
-              });
+              }).replace(
+                /<\/body>/i,
+                `  <script type="application/json" id="cso-article-quiz-data">${serializeQuizJson(quizPayload)}</script>\n</body>`
+              );
               return new Response(hydratedHtml, {
                 status: 200,
                 headers: {

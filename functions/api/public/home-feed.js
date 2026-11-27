@@ -998,7 +998,7 @@ export async function buildPublicHomeFeed(env) {
   if (!db) {
     return {
       ok: true,
-      version: 'v386',
+      version: 'v387',
       generated_at: new Date().toISOString(),
       broadcast: { active: false },
       nav_header: [],
@@ -1048,7 +1048,7 @@ export async function buildPublicHomeFeed(env) {
 
   return {
     ok: true,
-    version: 'v386',
+    version: 'v387',
     generated_at: new Date().toISOString(),
     broadcast,
     nav_header,

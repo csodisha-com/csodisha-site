@@ -12,6 +12,7 @@
 import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, escShell, renderKicker } from './ssr-shell.js';
 import { GUIDE_TOPIC_ALIASES, matchGuideToTopic } from './trending-topics.js';
 import { buildGuideDetailJsonLdBlocks } from './rich-results-jsonld.js';
+import { buildArticleMiniQuizPayload, serializeQuizJson } from './article-mini-quiz.js';
 
 export const DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH = '/assets/img/icon-512.png';
 
@@ -538,8 +539,9 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageA
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v386">
-  <script src="/assets/js/guides-portal.js?v=20261127v386" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v387">
+  <script src="/assets/js/guides-portal.js?v=20261127v387" defer></script>
+  <script src="/assets/js/article-mini-quiz.js?v=20261127v387" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -961,6 +963,8 @@ ${CSO_SHELL_HEADER}
       ${linksHtml}
       ${relatedCtaHtml}
       ${tagsHtml}
+      <section id="cso-article-quiz-root" class="cso-aq-root" data-quiz-type="guide" data-quiz-slug="${escShell(guide.slug)}"></section>
+      <script type="application/json" id="cso-article-quiz-data">${serializeQuizJson(buildArticleMiniQuizPayload(guide, 'guide'))}</script>
       <footer class="gp-article-footer">
         ${shareBarFooterHtml}
       </footer>
