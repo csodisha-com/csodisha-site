@@ -11,7 +11,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v378';
+const CACHE_NAME = 'cso-candidate-cache-v379';
 const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
 const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
 
@@ -219,9 +219,15 @@ self.addEventListener('message', (event) => {
 self.addEventListener('fetch', (event) => {
   const request = event.request;
 
-  if (request.method !== 'GET') return;
+  // Non-GET / mutating requests pass straight through to the browser network stack.
+  if (request.method !== 'GET' || isMutatingRequest(request)) return;
 
-  const url = new URL(request.url);
+  let url;
+  try {
+    url = new URL(request.url);
+  } catch (_) {
+    return;
+  }
   if (url.origin !== self.location.origin) return;
 
   // Strict Network-Only bypass: /admin*, /student-dashboard*, /api/auth/*, and non-offline /api* routes must NEVER touch SW Cache Storage.
@@ -234,14 +240,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (isMutatingRequest(request)) return;
-
-  // Offline study pack PDFs & R2 /files/* assets: cache-first from offline pack, else network + cache
+  // Offline study pack PDFs & R2 /files/* assets: cache-first from offline pack, else network fetch
   if (/^\/files\//.test(url.pathname)) {
     event.respondWith((async () => {
-      const packCache = await caches.open(OFFLINE_STUDY_CACHE);
-      const cached = await packCache.match(request);
-      if (cached) return cached;
+      try {
+        const packCache = await caches.open(OFFLINE_STUDY_CACHE);
+        const cached = await packCache.match(request);
+        if (cached) return cached;
+      } catch (_) {
+        // Failed cache lookup: fall through to network fetch
+      }
       try {
         return await fetch(request);
       } catch (_) {
@@ -256,19 +264,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 1. Candidate-state APIs: network-first with cache fallback.
+  // 1. Candidate-state APIs: network-first with safe cache fallback.
   if (isNetworkFirstApi(url)) {
     event.respondWith((async () => {
-      const cache = await caches.open(CACHE_NAME);
       try {
         const networkResponse = await fetch(request);
         if (networkResponse && networkResponse.ok) {
-          cache.put(request, networkResponse.clone());
+          caches.open(CACHE_NAME)
+            .then((cache) => cache.put(request, networkResponse.clone()))
+            .catch(() => {});
         }
         return networkResponse;
-      } catch (err) {
-        const cached = await cache.match(request);
-        if (cached) return cached;
+      } catch (_) {
+        try {
+          const cache = await caches.open(CACHE_NAME);
+          const cached = await cache.match(request);
+          if (cached) return cached;
+        } catch (_) {}
         return new Response(
           JSON.stringify({ success: false, error: 'Offline: cached copy unavailable' }),
           { status: 503, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
@@ -278,27 +290,32 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. HTML Navigations:
+  // 2. HTML Navigations (request.mode === 'navigate' or text/html):
   //    - Auth & Candidate Dashboard routes: Strict Network-First with cache: 'no-store'
   //      and ZERO SW HTML caching (prevents stale pre-login or old-layout flashes).
-  //    - Public HTML routes: Network-First (cache: 'no-cache') with 1.5s timeout fallback.
+  //    - Public HTML routes: Network-First (cache: 'no-cache') with 1.5s timeout and safe
+  //      try/catch fallback to cached page -> cached /index.html -> /offline.html -> Response.error().
   const acceptHeader = (request.headers && request.headers.get('accept')) || '';
   if (request.mode === 'navigate' || acceptHeader.includes('text/html')) {
     if (isAuthNoStorePath(url.pathname)) {
       event.respondWith((async () => {
         try {
           return await fetch(request, { cache: 'no-store', credentials: 'same-origin' });
-        } catch (err) {
-          const cache = await caches.open(CACHE_NAME);
-          const offlinePage = await cache.match('/offline.html');
-          return offlinePage || Response.error();
+        } catch (_) {
+          try {
+            const cache = await caches.open(CACHE_NAME);
+            const offlinePage = await cache.match('/offline.html');
+            if (offlinePage) return offlinePage;
+            const indexPage = await cache.match('/index.html');
+            if (indexPage) return indexPage;
+          } catch (_) {}
+          return Response.error();
         }
       })());
       return;
     }
 
     event.respondWith((async () => {
-      const cache = await caches.open(CACHE_NAME);
       const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       const timer = controller ? setTimeout(() => controller.abort(), 1500) : null;
       try {
@@ -309,15 +326,23 @@ self.addEventListener('fetch', (event) => {
         if (timer) clearTimeout(timer);
         const cc = (networkResponse && networkResponse.headers && networkResponse.headers.get('cache-control')) || '';
         if (networkResponse && networkResponse.ok && !/\b(no-store|private)\b/i.test(cc)) {
-          cache.put(request, networkResponse.clone()).catch(() => {});
+          caches.open(CACHE_NAME)
+            .then((cache) => cache.put(request, networkResponse.clone()))
+            .catch(() => {});
         }
         return networkResponse;
-      } catch (err) {
+      } catch (_) {
         if (timer) clearTimeout(timer);
-        const cachedPage = await cache.match(request);
-        if (cachedPage) return cachedPage;
-        const offlinePage = await cache.match('/offline.html');
-        return offlinePage || Response.error();
+        try {
+          const cache = await caches.open(CACHE_NAME);
+          const cachedPage = await cache.match(request);
+          if (cachedPage) return cachedPage;
+          const indexPage = await cache.match('/index.html');
+          if (indexPage) return indexPage;
+          const offlinePage = await cache.match('/offline.html');
+          if (offlinePage) return offlinePage;
+        } catch (_) {}
+        return Response.error();
       }
     })());
     return;
@@ -329,12 +354,24 @@ self.addEventListener('fetch', (event) => {
   }
 
   // 3. Static assets & visited portal assets: Stale-While-Revalidate (instant paint + background refresh).
+  //    Failed cache lookups pass straight through to fetch(request).
   event.respondWith((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(request);
+    let cache = null;
+    let cached = null;
+    try {
+      cache = await caches.open(CACHE_NAME);
+      cached = await cache.match(request);
+    } catch (_) {
+      try {
+        return await fetch(request);
+      } catch (_) {
+        return Response.error();
+      }
+    }
+
     const isTrackedPortalAsset = RUNTIME_SWR_ASSETS.some(p => url.pathname === p);
     const networkFetch = fetch(request).then((networkResponse) => {
-      if (networkResponse && networkResponse.ok) {
+      if (networkResponse && networkResponse.ok && cache) {
         cache.put(request, networkResponse.clone()).catch(() => {});
       }
       return networkResponse;

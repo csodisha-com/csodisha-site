@@ -216,10 +216,10 @@ check('4. Opaque 4-theme mobile overlays, >= 4.5:1 WCAG AA contrast, JS a11y hoo
   // Verify v300+ cache busting
   assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v3\d\d';/);
   assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v3\d\d';/);
-  assert.match(read('functions/_lib/ssr-shell.js'), /style\.css\?v=2026112[56]v3\d\d/);
-  assert.match(read('index.html'), /style\.css\?v=2026112[56]v3\d\d/);
-  assert.match(read('community/index.html'), /community-portal\.css\?v=2026112[56]v3\d\d/);
-  assert.match(read('admin/index.html'), /studio\.css\?v=2026112[56]v3\d\d/);
+  assert.match(read('functions/_lib/ssr-shell.js'), /style\.css\?v=2026112[5-7]v3\d\d/);
+  assert.match(read('index.html'), /style\.css\?v=2026112[5-7]v3\d\d/);
+  assert.match(read('community/index.html'), /community-portal\.css\?v=2026112[5-7]v3\d\d/);
+  assert.match(read('admin/index.html'), /studio\.css\?v=2026112[5-7]v3\d\d/);
 });
 
 check('5. v301 Mobile bar buttons (☰ Menu, ♿ Options, A– A A+) use var(--cso-ink)/var(--cso-border) with >= 7:1 contrast across all 4 themes', () => {
@@ -399,8 +399,8 @@ check('8. v360 Informative Guides edge-to-edge layout (max-width: 100%), uncropp
     'admin/studio.css Live Preview must mirror v360 edge-to-edge 390px mobile padding and uncropped 16:9 cover rules'
   );
   assert.ok(
-    guidesSsr.includes('/assets/css/guides-portal.css?v=20261126v378') &&
-    guidesSsr.includes('/assets/js/guides-portal.js?v=20261126v378') &&
+    guidesSsr.includes('/assets/css/guides-portal.css?v=20261127v379') &&
+    guidesSsr.includes('/assets/js/guides-portal.js?v=20261127v379') &&
     guidesSsr.includes('gp-hero-card') &&
     guidesSsr.includes('gp-toc-card') &&
     guidesSsr.includes('gp-share-bar') &&

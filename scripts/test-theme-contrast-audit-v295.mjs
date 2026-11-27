@@ -304,7 +304,7 @@ check('5. Strict CSP compliance & cache busting across all active HTML pages, sw
     let m;
     while ((m = coreAssetRe.exec(html)) !== null) {
       checked++;
-      assert.match(m[1], /^2026112[56]v(?:29[5-9]|3\d\d)$/, `${rel} has stale query version ?v=${m[1]} (expected 20261125v295+)`);
+      assert.match(m[1], /^2026112[5-7]v(?:29[5-9]|3\d\d)$/, `${rel} has stale query version ?v=${m[1]} (expected 20261125v295+)`);
     }
   }
   assert.ok(checked >= 60, `Expected >=60 versioned core/portal/admin assets across HTML pages, got ${checked}`);
@@ -432,7 +432,7 @@ check('8. v303 Candidate Hub sidebar nav container, items & mobile drawer bind t
   const hubHtml = read('student-dashboard/index.html');
   assert.match(hubHtml, /student-dashboard-bp\.css\?v=20261125v3(?:0[3-9]|[1-9]\d)/);
   assert.match(hubHtml, /candidate-hub-v244\.css\?v=20261125v3(?:0[3-9]|[1-9]\d)/);
-  assert.match(hubHtml, /student-dashboard\.js\?v=2026112[56]v3(?:0[3-9]|[1-9]\d)/);
+  assert.match(hubHtml, /student-dashboard\.js\?v=2026112[5-7]v3(?:0[3-9]|[1-9]\d)/);
 });
 
 check('9. v349/v360 Informative Guides edge-to-edge uncropped 16:9 cover containment & high-contrast WCAG AAA tbody td across all 4 themes', () => {
