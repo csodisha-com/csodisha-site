@@ -52,7 +52,7 @@ assert.equal(formMarks.rounded, 1968);
 
 // 3. Markup, Strict CSP, 4-Theme CSS & v412 Cache Sync
 assert.match(toolsHtml, /id="cso-cgpa-converter-root"/, 'tools/index.html must mount #cso-cgpa-converter-root');
-assert.match(toolsHtml, /\/assets\/js\/cgpa-percentage-converter\.js\?v=20261127v416/, 'tools/index.html must load cgpa-percentage-converter.js?v=20261127v416');
+assert.match(toolsHtml, /\/assets\/js\/cgpa-percentage-converter\.js\?v=20261127v417/, 'tools/index.html must load cgpa-percentage-converter.js?v=20261127v417');
 assert.ok(!/\sstyle="/i.test(toolsHtml), 'tools/index.html must have zero inline style attributes');
 assert.ok(!/\son[a-z]+="/i.test(toolsHtml), 'tools/index.html must have zero inline on* handlers');
 assert.ok(!cgpaSrc.includes('.innerHTML') && !cgpaSrc.includes('.outerHTML') && !cgpaSrc.includes('insertAdjacentHTML') && !cgpaSrc.includes('.style.'), 'cgpa-percentage-converter.js must obey strict CSP');
@@ -66,7 +66,7 @@ assert.ok(v412Css.includes('prefers-reduced-motion: reduce'), 'v412 CSS must res
 assert.ok(v412Css.includes('@media print'), 'v412 CSS must include @media print support');
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v412Css), 'v412 CSS block must have zero hardcoded hex values');
 
-assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v416'"), 'sw.js CACHE_NAME must be v412');
-assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v416'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v412');
+assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v417'"), 'sw.js CACHE_NAME must be v412');
+assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v417'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v412');
 
 console.log('✅ v412 Odisha University CGPA / SGPA to Percentage & Marks Converter Audit PASSED');

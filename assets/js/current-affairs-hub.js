@@ -527,6 +527,15 @@
           b.addEventListener('click', function () {
             if (Object.prototype.hasOwnProperty.call(state.answers, q.id)) return;
             state.answers[q.id] = oi;
+            if (win && win.CSOStudyStreakPlanner && typeof win.CSOStudyStreakPlanner.recordPracticeActivity === 'function') {
+              win.CSOStudyStreakPlanner.recordPracticeActivity({
+                count: 1,
+                correct: oi === q.ans ? 1 : 0,
+                topicKey: q.topic || 'odisha-governance',
+                topicLabel: q.topic || 'Current Affairs',
+                source: 'current-affairs'
+              });
+            }
             var updated = scoreMcqAttempt(state.quizSet, state.answers);
             if (updated.answered === updated.total) {
               saveBestScore(updated.correct, updated.total);

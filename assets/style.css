@@ -21948,3 +21948,226 @@ nav#cso-hub-top-tabs {
     break-inside: avoid;
   }
 }
+
+/* ==========================================================================
+   v417: Candidate Study Streak, Daily Goal & 7-Day Revision Planner
+   ========================================================================== */
+
+.cso-ssp-root {
+  margin: 0 0 20px;
+}
+
+.cso-ssp-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+}
+
+.cso-ssp-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cso-ssp-head-left {
+  display: grid;
+  gap: 6px;
+}
+
+.cso-ssp-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.cso-ssp-title {
+  margin: 0;
+  font-size: 1.16rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+  line-height: 1.3;
+}
+
+.cso-ssp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-ssp-lbl {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-ssp-pill,
+.cso-ssp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.cso-ssp-pill.is-active,
+.cso-ssp-btn--primary {
+  border-color: var(--cso-accent);
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-ssp-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+  gap: 10px;
+}
+
+.cso-ssp-kpi {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-ssp-kpi-k {
+  font-size: 0.74rem;
+  color: var(--cso-ink-muted);
+  font-weight: 700;
+}
+
+.cso-ssp-kpi-v {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-ssp-subhead {
+  margin: 4px 0 0;
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-ssp-weak-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 10px;
+}
+
+.cso-ssp-weak-item {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-ssp-weak-name {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-ssp-weak-meta {
+  font-size: 0.78rem;
+  color: var(--cso-ink-muted);
+  font-weight: 600;
+}
+
+.cso-ssp-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--cso-accent);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.cso-ssp-link:hover,
+.cso-ssp-link:focus-visible {
+  text-decoration: underline;
+}
+
+.cso-ssp-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 155px), 1fr));
+  gap: 8px;
+}
+
+.cso-ssp-cal-cell {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-ssp-cal-cell.is-today {
+  border-color: var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-ssp-cal-day {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-ssp-cal-stat {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--cso-accent);
+}
+
+.cso-ssp-cal-select {
+  min-height: 44px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 0.8rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-ssp-pill,
+  .cso-ssp-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-ssp-actions,
+  .cso-ssp-btn,
+  .cso-ssp-pill {
+    display: none !important;
+  }
+}

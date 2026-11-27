@@ -501,6 +501,15 @@
       var drill = getActiveDrill();
       var res = evaluateDrillAttempt(drill.questions, state.answers, state.negativeMark);
       saveHistory(drill.key, drill.title, res, state.elapsedSec);
+      if (win && win.CSOStudyStreakPlanner && typeof win.CSOStudyStreakPlanner.recordPracticeActivity === 'function') {
+        win.CSOStudyStreakPlanner.recordPracticeActivity({
+          count: res.answered,
+          correct: res.correct,
+          topicKey: drill.key === 'mixed-grand' ? 'odisha-gk' : drill.key,
+          topicLabel: drill.title,
+          source: 'mock-tests'
+        });
+      }
       state.mode = 'submitted';
       state.reviewFilter = 'all';
       render();

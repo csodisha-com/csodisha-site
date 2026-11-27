@@ -34,9 +34,9 @@ for (const label of ['All', 'Jobs', 'Exams &amp; Admit Cards', 'Results', 'Guide
   assert.ok(html.includes(label), `updates/index.html must display category label ${label}`);
 }
 
-assert.ok(html.includes('/assets/js/updates-newsroom.js?v=20261127v416'), 'updates/index.html must load updates-newsroom.js?v=20261127v416');
-assert.ok(html.includes('/assets/js/saved-alerts-drawer.js?v=20261127v416'), 'updates/index.html must load saved-alerts-drawer.js');
-assert.ok(html.includes('/assets/js/ics-calendar-export.js?v=20261127v416'), 'updates/index.html must load ics-calendar-export.js');
+assert.ok(html.includes('/assets/js/updates-newsroom.js?v=20261127v417'), 'updates/index.html must load updates-newsroom.js?v=20261127v417');
+assert.ok(html.includes('/assets/js/saved-alerts-drawer.js?v=20261127v417'), 'updates/index.html must load saved-alerts-drawer.js');
+assert.ok(html.includes('/assets/js/ics-calendar-export.js?v=20261127v417'), 'updates/index.html must load ics-calendar-export.js');
 assert.ok(!/\sstyle\s*=\s*["']/i.test(html), 'updates/index.html must have zero inline style="" attributes');
 assert.ok(!/\son[a-z]+\s*=\s*["']/i.test(html), 'updates/index.html must have zero inline on* event handlers');
 assert.ok(!/<style[\s>]/i.test(html), 'updates/index.html must have zero inline <style> blocks');
