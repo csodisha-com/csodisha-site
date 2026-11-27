@@ -34,7 +34,7 @@ vm.runInNewContext(wlSrc, sandbox);
 
 const wl = sandbox.CSOWatchlist;
 const df = sandbox.CSODistrictFilter;
-assert.ok(wl && wl.version === 'v404', 'CSOWatchlist v404 loaded');
+assert.ok(wl && /^v40[48]$/.test(wl.version), 'CSOWatchlist v404+ loaded');
 assert.equal(wl.hasPreferences(), false, 'Starts empty before preferences are saved');
 
 // 1. Save preferences with alias normalization (bhawanipatna -> kalahandi, bhubaneswar -> khordha)
@@ -85,9 +85,9 @@ const jobsHubJs = fs.readFileSync('assets/js/jobs-hub.js', 'utf8');
 const updatesJs = fs.readFileSync('assets/js/updates-newsroom.js', 'utf8');
 const styleCss = fs.readFileSync('assets/style.css', 'utf8');
 
-assert.ok(jobsHtml.includes('/assets/js/candidate-watchlist.js?v=20261127v407'), 'jobs/index.html loads candidate-watchlist.js');
+assert.ok(jobsHtml.includes('/assets/js/candidate-watchlist.js?v=20261127v408'), 'jobs/index.html loads candidate-watchlist.js');
 assert.ok(jobsHtml.includes('id="cso-jobs-watchlist-bar"'), 'jobs/index.html mounts #cso-jobs-watchlist-bar');
-assert.ok(updatesHtml.includes('/assets/js/candidate-watchlist.js?v=20261127v407'), 'updates/index.html loads candidate-watchlist.js');
+assert.ok(updatesHtml.includes('/assets/js/candidate-watchlist.js?v=20261127v408'), 'updates/index.html loads candidate-watchlist.js');
 assert.ok(updatesHtml.includes('id="cso-updates-watchlist-bar"'), 'updates/index.html mounts #cso-updates-watchlist-bar');
 assert.ok(jobsHubJs.includes('CSOWatchlist.mountWatchlistBar') && jobsHubJs.includes('CSOWatchlist.createMatchBadge'), 'jobs-hub.js integrates CSOWatchlist bar & card badges');
 assert.ok(updatesJs.includes('CSOWatchlist.mountWatchlistBar') && updatesJs.includes('CSOWatchlist.createMatchBadge'), 'updates-newsroom.js integrates CSOWatchlist bar & card badges');

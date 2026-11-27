@@ -956,6 +956,29 @@
     renderLatestUpdatesPanel(feed);
     renderHomeFeedSections(feed);
     renderHeroKpis(feed.portal_stats);
+    syncHomepageWatchlistDigest(feed);
+  }
+
+  var digestController = null;
+  function syncHomepageWatchlistDigest(feed) {
+    var mountEl = document.getElementById('cso-home-watchlist-digest-root');
+    if (!mountEl || !window.CSOWatchlist || typeof window.CSOWatchlist.mountHomepageDigestBanner !== 'function') return;
+    var combined = [];
+    if (feed && typeof feed === 'object') {
+      ['jobs', 'guides', 'current_affairs', 'schemes', 'mock_tests', 'study_materials'].forEach(function (k) {
+        if (Array.isArray(feed[k])) combined = combined.concat(feed[k]);
+      });
+    }
+    var lang = isOdiaActive() ? 'or' : 'en';
+    if (!digestController) {
+      digestController = window.CSOWatchlist.mountHomepageDigestBanner(mountEl, {
+        items: combined,
+        lang: lang,
+        fetchSearchIndex: true
+      });
+    } else if (typeof digestController.refresh === 'function') {
+      digestController.refresh(combined, lang);
+    }
   }
 
   /* v369: live portal snapshot strip (zero CLS: tiles pre-rendered in index.html) */

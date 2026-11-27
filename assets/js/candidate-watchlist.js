@@ -442,9 +442,350 @@
     };
   }
 
+  var DIGEST_SEEN_KEY = 'cso_watchlist_digest_seen_v1';
+
+  function loadDigestSeen() {
+    try {
+      var raw = win && win.localStorage && win.localStorage.getItem(DIGEST_SEEN_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          return {
+            initialized: true,
+            lastVisitIso: String(parsed.lastVisitIso || ''),
+            dismissedSignature: String(parsed.dismissedSignature || ''),
+            seenSlugs: Array.isArray(parsed.seenSlugs) ? parsed.seenSlugs.map(String) : []
+          };
+        }
+      }
+    } catch (_) {}
+    return { initialized: false, lastVisitIso: '', dismissedSignature: '', seenSlugs: [] };
+  }
+
+  function saveDigestSeen(ledger) {
+    var clean = {
+      lastVisitIso: String((ledger && ledger.lastVisitIso) || new Date().toISOString()),
+      dismissedSignature: String((ledger && ledger.dismissedSignature) || ''),
+      seenSlugs: Array.isArray(ledger && ledger.seenSlugs)
+        ? Array.from(new Set(ledger.seenSlugs.map(String))).slice(-250)
+        : []
+    };
+    try {
+      if (win && win.localStorage) {
+        win.localStorage.setItem(DIGEST_SEEN_KEY, JSON.stringify(clean));
+      }
+    } catch (_) {}
+    return Object.assign({ initialized: true }, clean);
+  }
+
+  function extractItemSlug(item) {
+    if (!item || typeof item !== 'object') return '';
+    var raw = item.slug || item.id || item.url || item.href || item.title || item.title_en || '';
+    return String(raw).trim().toLowerCase();
+  }
+
+  function formatDigestBadge(item, prefs, isOr, dfApiOverride) {
+    var p = normalizePrefs(prefs || loadPreferences());
+    var dfApi = dfApiOverride || (win && win.CSODistrictFilter);
+    var hay = extractHaystack(item);
+    var hayLower = hay.toLowerCase();
+
+    for (var i = 0; i < p.districts.length; i += 1) {
+      var slug = p.districts[i];
+      var hitDist = (dfApi && typeof dfApi.matchDistrict === 'function')
+        ? dfApi.matchDistrict(item, slug, { includeStatewide: false })
+        : (hayLower.indexOf(slug) !== -1);
+      if (hitDist) {
+        var dObj = dfApi && typeof dfApi.getDistrictBySlug === 'function' ? dfApi.getDistrictBySlug(slug) : null;
+        return '📍 ' + (dObj ? (isOr ? dObj.or : dObj.en) : slug);
+      }
+    }
+
+    for (var ti = 0; ti < p.tracks.length; ti += 1) {
+      var tKey = p.tracks[ti];
+      var trackDef = EXAM_TRACKS.find(function (t) { return t.key === tKey; });
+      if (trackDef && trackDef.pattern.test(hay)) {
+        return '🎓 ' + (isOr ? trackDef.or : trackDef.en);
+      }
+    }
+
+    for (var ki = 0; ki < p.keywords.length; ki += 1) {
+      var kw = p.keywords[ki];
+      if (kw && hayLower.indexOf(kw.toLowerCase()) !== -1) {
+        return '🔎 ' + kw;
+      }
+    }
+    return isOr ? '⭐ ୱାଚଲିଷ୍ଟ' : '⭐ Watchlist';
+  }
+
+  function formatRelativeIstDate(raw) {
+    var s = String(raw || '').trim();
+    if (!s) return 'Live IST';
+    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return s.slice(0, 16);
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var mo = months[Number(m[2]) - 1] || m[2];
+    return m[3] + ' ' + mo + ' ' + m[1];
+  }
+
+  function safeItemHref(item) {
+    if (!item || typeof item !== 'object') return '/jobs/';
+    var raw = String(item.url || item.href || '').trim();
+    if (/^\/(?!\/)/.test(raw) || /^https?:\/\//i.test(raw)) return raw;
+    if (item.slug) {
+      var kind = String(item.type || item.kind || '').toLowerCase();
+      if (kind.indexOf('guide') !== -1) return '/guides/' + encodeURIComponent(item.slug);
+      if (kind.indexOf('scheme') !== -1) return '/schemes/?slug=' + encodeURIComponent(item.slug);
+      return '/jobs/' + encodeURIComponent(item.slug);
+    }
+    return '/jobs/';
+  }
+
+  function dedupeItems(items) {
+    var seen = {};
+    var out = [];
+    var list = Array.isArray(items) ? items : [];
+    for (var i = 0; i < list.length; i += 1) {
+      var it = list[i];
+      if (!it || typeof it !== 'object') continue;
+      var k = extractItemSlug(it);
+      if (!k || seen[k]) continue;
+      seen[k] = true;
+      out.push(it);
+    }
+    return out;
+  }
+
+  function collectDigestMatches(items, prefs, seenState, dfApiOverride, isOr) {
+    var p = normalizePrefs(prefs || loadPreferences());
+    if (!hasPreferences(p)) {
+      return { allMatched: [], unseen: [], signature: '' };
+    }
+    var ledger = seenState || loadDigestSeen();
+    var seenSet = {};
+    (ledger.seenSlugs || []).forEach(function (s) { seenSet[String(s).toLowerCase()] = true; });
+
+    var unique = dedupeItems(items);
+    var allMatched = [];
+    var unseen = [];
+
+    for (var i = 0; i < unique.length; i += 1) {
+      var item = unique[i];
+      var res = matchesWatchlist(item, p, dfApiOverride);
+      if (!res.matched) continue;
+      var slug = extractItemSlug(item);
+      var bi = item._cso_bilingual || {};
+      var entry = {
+        item: item,
+        slug: slug,
+        title: String(item.title_en || item.title || bi.title_en || 'Untitled Alert').trim(),
+        title_or: String(item.title_or || bi.title_or || '').trim(),
+        url: safeItemHref(item),
+        reasons: res.reasons,
+        primaryBadge: formatDigestBadge(item, p, Boolean(isOr), dfApiOverride),
+        dateLabel: formatRelativeIstDate(item.published_at || item.updated_at || item.created_at || item.deadline_iso || '')
+      };
+      allMatched.push(entry);
+      if (!seenSet[slug]) unseen.push(entry);
+    }
+
+    var signature = unseen.map(function (u) { return u.slug; }).sort().join('|');
+    return {
+      allMatched: allMatched,
+      unseen: unseen,
+      signature: signature
+    };
+  }
+
+  function detectActiveLang(explicitLang) {
+    if (explicitLang === 'or' || explicitLang === 'en') return explicitLang;
+    try {
+      if (doc && doc.documentElement && doc.documentElement.getAttribute('lang') === 'or') return 'or';
+      if (win && win.localStorage) {
+        if (win.localStorage.getItem('cso_lang_pref') === 'or' || win.localStorage.getItem('cso_lang') === 'or') return 'or';
+      }
+    } catch (_) {}
+    return 'en';
+  }
+
+  function mountHomepageDigestBanner(mountEl, options) {
+    if (!doc || !mountEl) return null;
+    var opts = options || {};
+    var state = {
+      items: Array.isArray(opts.items) ? opts.items.slice() : [],
+      lang: detectActiveLang(opts.lang),
+      editorOpen: false,
+      dfApi: opts.dfApi || (win && win.CSODistrictFilter)
+    };
+
+    function render() {
+      var prefs = loadPreferences();
+      if (!hasPreferences(prefs)) {
+        mountEl.replaceChildren();
+        mountEl.hidden = true;
+        return;
+      }
+
+      var ledger = loadDigestSeen();
+      // Optional baseline seeding mode for first-run silent initialization
+      if (!ledger.initialized && opts.initializeBaseline === true) {
+        var base = collectDigestMatches(state.items, prefs, ledger, state.dfApi, state.lang === 'or');
+        saveDigestSeen({
+          lastVisitIso: new Date().toISOString(),
+          dismissedSignature: base.signature,
+          seenSlugs: base.allMatched.map(function (m) { return m.slug; })
+        });
+        mountEl.replaceChildren();
+        mountEl.hidden = true;
+        return;
+      }
+
+      var isOr = state.lang === 'or';
+      var digest = collectDigestMatches(state.items, prefs, ledger, state.dfApi, isOr);
+
+      if (!digest.unseen.length || (ledger.dismissedSignature && ledger.dismissedSignature === digest.signature)) {
+        mountEl.replaceChildren();
+        mountEl.hidden = true;
+        return;
+      }
+
+      mountEl.hidden = false;
+      var section = el('section', 'cso-wl-digest');
+      section.id = 'cso-home-watchlist-digest';
+      section.setAttribute('role', 'region');
+      section.setAttribute('aria-label', isOr ? 'ୱାଚଲିଷ୍ଟ ନୂଆ ଅପଡେଟ୍' : 'New Watchlist Matches Since Your Last Visit');
+
+      var head = el('div', 'cso-wl-digest-head');
+      var headLeft = el('div', 'cso-wl-digest-title-wrap');
+      headLeft.appendChild(el('span', 'cso-wl-digest-pill', isOr ? ('⭐ ' + digest.unseen.length + ' ନୂଆ') : ('⭐ ' + digest.unseen.length + ' New')));
+      headLeft.appendChild(el('h2', 'cso-wl-digest-title', isOr
+        ? ('ଆପଣଙ୍କ ୱାଚଲିଷ୍ଟ ପାଇଁ ' + digest.unseen.length + 'ଟି ନୂଆ ଅପଡେଟ୍')
+        : ('New Watchlist Matches Since Your Last Visit (' + digest.unseen.length + ')')));
+      head.appendChild(headLeft);
+
+      var dismissBtn = el('button', 'cso-wl-digest-dismiss', isOr ? '✓ ଦେଖାଯାଇଛି' : '✓ Mark Seen & Dismiss');
+      dismissBtn.type = 'button';
+      dismissBtn.setAttribute('data-wl-digest-dismiss', '1');
+      dismissBtn.addEventListener('click', dismissCurrent);
+      head.appendChild(dismissBtn);
+      section.appendChild(head);
+
+      var listEl = el('div', 'cso-wl-digest-list');
+      digest.unseen.slice(0, 3).forEach(function (entry) {
+        var card = el('a', 'cso-wl-digest-item');
+        card.setAttribute('href', entry.url);
+        var meta = el('div', 'cso-wl-digest-meta');
+        meta.appendChild(el('span', 'cso-wl-digest-badge', entry.primaryBadge));
+        meta.appendChild(el('span', 'cso-wl-digest-date', entry.dateLabel));
+        card.appendChild(meta);
+        card.appendChild(el('div', 'cso-wl-digest-item-title', (isOr && entry.title_or) ? entry.title_or : entry.title));
+        listEl.appendChild(card);
+      });
+      section.appendChild(listEl);
+
+      var foot = el('div', 'cso-wl-digest-foot');
+      var viewAll = el('a', 'cso-wl-digest-cta', isOr ? 'ସବୁ ମେଳ ଅପଡେଟ୍ ଦେଖନ୍ତୁ →' : 'View All Matching Alerts →');
+      viewAll.setAttribute('href', '/jobs/?watchlist=1');
+      var updatesLink = el('a', 'cso-wl-digest-link', isOr ? 'ନ୍ୟୁଜରୁମ୍ (/updates/) →' : 'Newsroom (/updates/) →');
+      updatesLink.setAttribute('href', '/updates/?watchlist=1');
+
+      var editBtn = el('button', 'cso-wl-digest-edit-btn', isOr
+        ? (state.editorOpen ? '✓ ବନ୍ଦ କରନ୍ତୁ' : '⚙ ୱାଚଲିଷ୍ଟ ବଦଳାନ୍ତୁ')
+        : (state.editorOpen ? '✓ Done' : '⚙ Edit Watchlist'));
+      editBtn.type = 'button';
+      editBtn.setAttribute('aria-expanded', state.editorOpen ? 'true' : 'false');
+      editBtn.addEventListener('click', function () {
+        state.editorOpen = !state.editorOpen;
+        render();
+      });
+
+      foot.append(viewAll, updatesLink, editBtn);
+      section.appendChild(foot);
+
+      if (state.editorOpen) {
+        var edHost = el('div', 'cso-wl-digest-editor');
+        mountWatchlistBar(edHost, {
+          lang: state.lang,
+          items: state.items,
+          onChange: function () { render(); }
+        });
+        section.appendChild(edHost);
+      }
+
+      mountEl.replaceChildren(section);
+    }
+
+    function dismissCurrent() {
+      var prefs = loadPreferences();
+      var ledger = loadDigestSeen();
+      var digest = collectDigestMatches(state.items, prefs, ledger, state.dfApi, state.lang === 'or');
+      var mergedSlugs = (ledger.seenSlugs || []).concat(digest.allMatched.map(function (m) { return m.slug; }));
+      saveDigestSeen({
+        lastVisitIso: new Date().toISOString(),
+        dismissedSignature: digest.signature,
+        seenSlugs: mergedSlugs
+      });
+      mountEl.replaceChildren();
+      mountEl.hidden = true;
+    }
+
+    if (opts.fetchSearchIndex && typeof fetch === 'function') {
+      fetch('/api/public/search-index', { credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (payload) {
+          var incoming = payload && Array.isArray(payload.items) ? payload.items : [];
+          if (!incoming.length) return;
+          state.items = dedupeItems(state.items.concat(incoming));
+          render();
+        })
+        .catch(function () {});
+    }
+
+    if (win && typeof win.addEventListener === 'function' && !mountEl.__csoDigestListenersWired) {
+      mountEl.__csoDigestListenersWired = true;
+      win.addEventListener('storage', function (ev) {
+        if (!ev) return;
+        if (ev.key === STORAGE_KEY || ev.key === DIGEST_SEEN_KEY) {
+          render();
+        } else if (ev.key === 'cso_lang' || ev.key === 'cso_lang_pref') {
+          state.lang = detectActiveLang();
+          render();
+        }
+      });
+      win.addEventListener('cso:lang-change', function (ev) {
+        var nextLang = ev && ev.detail && ev.detail.lang ? ev.detail.lang : detectActiveLang();
+        state.lang = nextLang === 'or' ? 'or' : 'en';
+        render();
+      });
+    }
+
+    render();
+
+    return {
+      refresh: function (nextItems, nextLang) {
+        if (Array.isArray(nextItems)) state.items = dedupeItems(state.items.concat(nextItems));
+        if (nextLang) state.lang = nextLang === 'or' ? 'or' : 'en';
+        render();
+      },
+      dismiss: dismissCurrent,
+      getState: function () {
+        var prefs = loadPreferences();
+        var ledger = loadDigestSeen();
+        var digest = collectDigestMatches(state.items, prefs, ledger, state.dfApi, state.lang === 'or');
+        return {
+          hidden: Boolean(mountEl.hidden),
+          unseenCount: digest.unseen.length,
+          signature: digest.signature,
+          ledger: ledger
+        };
+      }
+    };
+  }
+
   return {
-    version: 'v404',
+    version: 'v408',
     STORAGE_KEY: STORAGE_KEY,
+    DIGEST_SEEN_KEY: DIGEST_SEEN_KEY,
     EXAM_TRACKS: EXAM_TRACKS,
     loadPreferences: loadPreferences,
     savePreferences: savePreferences,
@@ -452,6 +793,10 @@
     matchesWatchlist: matchesWatchlist,
     countMatches: countMatches,
     createMatchBadge: createMatchBadge,
-    mountWatchlistBar: mountWatchlistBar
+    mountWatchlistBar: mountWatchlistBar,
+    loadDigestSeen: loadDigestSeen,
+    saveDigestSeen: saveDigestSeen,
+    collectDigestMatches: collectDigestMatches,
+    mountHomepageDigestBanner: mountHomepageDigestBanner
   };
 });
