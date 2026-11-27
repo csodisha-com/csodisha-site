@@ -76,11 +76,11 @@ assert.equal(prog3.pct, 38);
 
 // 5. HTML mount, Sitemap, SW & Ops-Sentinel sync
 assert.ok(htmlSrc.includes('id="cso-admissions-counselling-root"'), 'admissions/index.html must mount #cso-admissions-counselling-root');
-assert.ok(htmlSrc.includes('/assets/js/admissions-counselling-tracker.js?v=20261127v435'), 'admissions/index.html must load admissions-counselling-tracker.js?v=20261127v435');
+assert.ok(htmlSrc.includes('/assets/js/admissions-counselling-tracker.js?v=20261127v436'), 'admissions/index.html must load admissions-counselling-tracker.js?v=20261127v436');
 assert.ok(smSrc.includes("'/admissions/'"), 'dynamic-sitemap.js must include /admissions/');
-assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v435'"), 'sw.js must bump CACHE_NAME to v420');
-assert.ok(swSrc.includes("'/admissions/'") && swSrc.includes("'/assets/js/admissions-counselling-tracker.js?v=20261127v435'"), 'sw.js must precache /admissions/ and tracker JS');
-assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v435'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v420');
+assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v436'"), 'sw.js must bump CACHE_NAME to v420');
+assert.ok(swSrc.includes("'/admissions/'") && swSrc.includes("'/assets/js/admissions-counselling-tracker.js?v=20261127v436'"), 'sw.js must precache /admissions/ and tracker JS');
+assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v436'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v420');
 
 // 6. CSS 4-theme semantic tokens check
 const actCssIdx = cssSrc.indexOf('/* ===== v420:');

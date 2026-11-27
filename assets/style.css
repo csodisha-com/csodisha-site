@@ -27855,3 +27855,311 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+
+/* ============================================================================
+   v436: Odisha Govt Leave Encashment, Gratuity & Commutation Corpus Calculator
+   4-theme semantic var(--cso-*) tokens only; zero hardcoded hex; 320px-safe
+   ============================================================================ */
+.cso-rcc-root {
+  margin: 24px 0;
+}
+
+.cso-rcc-card {
+  display: grid;
+  gap: 16px;
+  padding: clamp(16px, 2.5vw, 24px);
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  box-shadow: var(--cso-shadow-sm, none);
+}
+
+.cso-rcc-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.cso-rcc-head-copy {
+  display: grid;
+  gap: 6px;
+  max-width: 780px;
+}
+
+.cso-rcc-eyebrow {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--cso-accent);
+  text-transform: uppercase;
+}
+
+.cso-rcc-title {
+  margin: 0;
+  font-size: clamp(1.16rem, 2.2vw, 1.46rem);
+  line-height: 1.25;
+  color: var(--cso-ink);
+}
+
+.cso-rcc-sub {
+  margin: 0;
+  font-size: 0.89rem;
+  line-height: 1.48;
+  color: var(--cso-muted);
+}
+
+.cso-rcc-lang-toggle {
+  display: inline-flex;
+  border: 1px solid var(--cso-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-rcc-lang-btn {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-rcc-lang-btn.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-rcc-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-rcc-pill {
+  min-height: 44px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-rcc-pill.is-active {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-rcc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 215px), 1fr));
+  gap: 12px;
+}
+
+.cso-rcc-field {
+  display: grid;
+  gap: 5px;
+}
+
+.cso-rcc-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+}
+
+.cso-rcc-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.88rem;
+}
+
+.cso-rcc-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 195px), 1fr));
+  gap: 10px;
+}
+
+.cso-rcc-kpi {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-rcc-kpi--win {
+  border-color: var(--cso-ok-border, var(--cso-accent));
+  background: var(--cso-ok-bg, var(--cso-surface-alt));
+}
+
+.cso-rcc-kpi-lbl {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--cso-muted);
+}
+
+.cso-rcc-kpi-val {
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-rcc-kpi-sub {
+  font-size: 0.76rem;
+  color: var(--cso-muted);
+}
+
+.cso-rcc-bars {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-rcc-bar-row {
+  display: grid;
+  gap: 5px;
+}
+
+.cso-rcc-bar-lbl {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+}
+
+.cso-rcc-bar-track {
+  height: 12px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--cso-border);
+  overflow: hidden;
+}
+
+.cso-rcc-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cso-accent);
+  transition: width 0.2s ease;
+}
+
+.cso-rcc-fill--el {
+  background: var(--cso-accent);
+}
+
+.cso-rcc-fill--dcrg {
+  background: var(--cso-ok-fg, var(--cso-accent));
+}
+
+.cso-rcc-fill--comm {
+  background: var(--cso-warn-fg, var(--cso-accent));
+}
+
+.cso-rcc-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-rcc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+}
+
+.cso-rcc-table th,
+.cso-rcc-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--cso-border);
+  color: var(--cso-ink);
+}
+
+.cso-rcc-table th {
+  background: var(--cso-surface-alt, var(--cso-surface));
+  font-weight: 800;
+}
+
+.cso-rcc-row-hi td {
+  font-weight: 800;
+  background: var(--cso-ok-bg, var(--cso-surface-alt));
+}
+
+.cso-rcc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.cso-rcc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-rcc-btn--primary {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-rcc-btn:focus-visible,
+.cso-rcc-pill:focus-visible,
+.cso-rcc-lang-btn:focus-visible,
+.cso-rcc-input:focus-visible {
+  outline: 2px solid var(--cso-focus, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+.cso-rcc-copy-status {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--cso-ok-fg, var(--cso-accent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-rcc-btn,
+  .cso-rcc-pill,
+  .cso-rcc-bar-fill {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-rcc-lang-toggle,
+  .cso-rcc-presets,
+  .cso-rcc-grid,
+  .cso-rcc-actions {
+    display: none !important;
+  }
+}
