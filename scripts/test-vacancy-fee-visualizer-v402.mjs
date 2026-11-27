@@ -88,7 +88,7 @@ const jobsPortalJs = fs.readFileSync('assets/js/jobs-portal.js', 'utf8');
 const adminJobsJs = fs.readFileSync('admin/jobs-publishing-studio.js', 'utf8');
 const styleCss = fs.readFileSync('assets/style.css', 'utf8');
 
-assert.ok(jobsHtml.includes('/assets/js/job-vacancy-fee-visualizer.js?v=20261127v443'), 'jobs/index.html loads job-vacancy-fee-visualizer.js');
+assert.ok(jobsHtml.includes('/assets/js/job-vacancy-fee-visualizer.js?v=20261127v446'), 'jobs/index.html loads job-vacancy-fee-visualizer.js');
 assert.ok(!jobsHtml.includes('id="cso-vacancy-fee-viz-root"'), '/jobs/ hub static HTML omits detail visualizer root');
 assert.ok(jobsPortalJs.includes("vfvMount.id = 'cso-vacancy-fee-viz-root'"), 'jobs-portal.js mounts #cso-vacancy-fee-viz-root in detail view');
 assert.ok(jobsPortalJs.includes('CSOJobVacancyFeeViz.mount'), 'jobs-portal.js invokes CSOJobVacancyFeeViz.mount');

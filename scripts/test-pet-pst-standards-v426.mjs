@@ -77,12 +77,12 @@ assert.equal(excFemPass.overallEligible, true);
 
 // 7. Mounts on /tools/ & SSR /guides/, SW & Ops-Sentinel sync
 assert.ok(toolsHtml.includes('id="cso-pet-pst-standards-root"'), 'tools/index.html must mount #cso-pet-pst-standards-root');
-assert.ok(toolsHtml.includes('/assets/js/pet-pst-standards-checker.js?v=20261127v443'), 'tools/index.html must load pet-pst-standards-checker.js?v=20261127v443');
+assert.ok(toolsHtml.includes('/assets/js/pet-pst-standards-checker.js?v=20261127v446'), 'tools/index.html must load pet-pst-standards-checker.js?v=20261127v446');
 assert.ok(guidesSsr.includes('id="cso-pet-pst-standards-root"'), 'informative-guides.js must mount #cso-pet-pst-standards-root');
-assert.ok(guidesSsr.includes('/assets/js/pet-pst-standards-checker.js?v=20261127v443'), 'informative-guides.js must load pet-pst-standards-checker.js?v=20261127v443');
-assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v443'"), 'sw.js must bump CACHE_NAME to v426');
-assert.ok(swSrc.includes("'/assets/js/pet-pst-standards-checker.js?v=20261127v443'"), 'sw.js must precache pet-pst-standards-checker.js');
-assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v443'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v426');
+assert.ok(guidesSsr.includes('/assets/js/pet-pst-standards-checker.js?v=20261127v446'), 'informative-guides.js must load pet-pst-standards-checker.js?v=20261127v446');
+assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v446'"), 'sw.js must bump CACHE_NAME to v426');
+assert.ok(swSrc.includes("'/assets/js/pet-pst-standards-checker.js?v=20261127v446'"), 'sw.js must precache pet-pst-standards-checker.js');
+assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v446'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v426');
 
 // 8. CSS 4-theme semantic tokens check
 const ppsIdx = cssSrc.indexOf('/* ===== v426:');

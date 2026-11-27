@@ -163,6 +163,18 @@
       descOr: 'TGT, PGT, ହିନ୍ଦୀ, ସଂସ୍କୃତ, PET ଓ OTET ବିଷୟ ସଂଯୋଗ ଓ ଯୋଗ୍ୟତା ଯାଞ୍ଚ କରନ୍ତୁ।',
       keywords: 'teacher ltr ssd oav otet osstet tgt pgt bed deled eligibility ଶିକ୍ଷକ ଯୋଗ୍ୟତା'
     },
+    {
+      id: 'negative-marking-simulator',
+      category: 'exam-practice',
+      targetId: 'cso-negative-marking-simulator-root',
+      badgeEn: 'Strategy Sim',
+      badgeOr: 'ରଣନୀତି ସିମୁଲେଟର୍',
+      titleEn: 'Negative-Marking Risk & Attempt Strategy Simulator',
+      titleOr: 'ନେଗେଟିଭ୍-ମାର୍କିଂ ବିପଦ ଓ ପ୍ରୟାସ ରଣନୀତି ସିମୁଲେଟର୍',
+      descEn: 'Simulate OPSC (+2/-0.66), OSSC/OSSSC (+1/-0.25) & TET break-even accuracy and 50-50 elimination gains.',
+      descOr: 'OPSC, OSSC, OSSSC ଓ TET ପାଇଁ ବ୍ରେକ୍-ଇଭେନ୍ ସଠିକତା ଓ 50-50 ଏଲିମିନେସନ୍ ଲାଭ ହିସାବ କରନ୍ତୁ।',
+      keywords: 'negative marking opsc ossc osssc oprb tet 50-50 guess break even attempt strategy ନେଗେଟିଭ୍ ମାର୍କିଂ'
+    },
 
     // 3. Certificates & Verification
     {
@@ -262,6 +274,18 @@
       descEn: 'Check offline pre-cache readiness for low-connectivity Odisha districts & refresh cache.',
       descOr: 'କମ୍ ଇଣ୍ଟରନେଟ୍ ଅଞ୍ଚଳ ପାଇଁ ଅଫଲାଇନ୍ ଟୁଲକିଟ୍ କ୍ୟାଶ୍ ସ୍ଥିତି ଯାଞ୍ଚ ଓ ରିଫ୍ରେଶ୍ କରନ୍ତୁ।',
       keywords: 'offline pwa cache service worker toolkit status low connectivity ଅଫଲାଇନ୍ କ୍ୟାଶ୍'
+    },
+    {
+      id: 'subscription-alert-hub',
+      category: 'offline-backup',
+      targetId: 'cso-subscription-alert-hub-root',
+      badgeEn: 'RSS / JSON / ICS',
+      badgeOr: 'ଆଲର୍ଟ ଫିଡ୍',
+      titleEn: 'Multi-Channel RSS / JSON / ICS Subscription & Alert Hub',
+      titleOr: 'RSS / JSON / କ୍ୟାଲେଣ୍ଡର ଆଲର୍ଟ ଓ ସବସ୍କ୍ରିପସନ୍ ହବ୍',
+      descEn: 'Generate filtered Odisha district/category RSS & JSON feeds and export batch .ics deadline calendars.',
+      descOr: 'ଜିଲ୍ଲା ଓ ବର୍ଗ ଅନୁସାରେ RSS/JSON ଫିଡ୍ URL ପାଆନ୍ତୁ ଓ ବ୍ୟାଚ୍ .ics କ୍ୟାଲେଣ୍ଡର ଡାଉନଲୋଡ୍ କରନ୍ତୁ।',
+      keywords: 'rss json feed ics calendar subscription alerts deadlines odisha updates ଫିଡ୍ କ୍ୟାଲେଣ୍ଡର ଆଲର୍ଟ'
     }
   ];
 

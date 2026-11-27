@@ -541,19 +541,20 @@ function buildGuidesHead({ title, description, body = '', canonical, ogImage = '
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v443">
-  <script src="/assets/js/guides-portal.js?v=20261127v443" defer></script>
-  <script src="/assets/js/ics-calendar-export.js?v=20261127v443" defer></script>
-  <script src="/assets/js/saved-alerts-drawer.js?v=20261127v443" defer></script>
-  <script src="/assets/js/article-mini-quiz.js?v=20261127v443" defer></script>
-  <script src="/assets/js/certificate-fee-matrix.js?v=20261127v443" defer></script>
-  <script src="/assets/js/service-rules-pension-guide.js?v=20261127v443" defer></script>
-  <script src="/assets/js/pyq-vault-analyzer.js?v=20261127v443" defer></script>
-  <script src="/assets/js/holiday-exam-logistics.js?v=20261127v443" defer></script>
-  <script src="/assets/js/pet-pst-standards-checker.js?v=20261127v443" defer></script>
-  <script src="/assets/js/edistrict-service-walkthrough.js?v=20261127v443" defer></script>
-  <script src="/assets/js/teacher-eligibility-checker.js?v=20261127v443" defer></script>
-  <script src="/assets/js/study-packet-compiler.js?v=20261127v443" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v446">
+  <script src="/assets/js/guides-portal.js?v=20261127v446" defer></script>
+  <script src="/assets/js/ics-calendar-export.js?v=20261127v446" defer></script>
+  <script src="/assets/js/saved-alerts-drawer.js?v=20261127v446" defer></script>
+  <script src="/assets/js/article-mini-quiz.js?v=20261127v446" defer></script>
+  <script src="/assets/js/certificate-fee-matrix.js?v=20261127v446" defer></script>
+  <script src="/assets/js/service-rules-pension-guide.js?v=20261127v446" defer></script>
+  <script src="/assets/js/pyq-vault-analyzer.js?v=20261127v446" defer></script>
+  <script src="/assets/js/holiday-exam-logistics.js?v=20261127v446" defer></script>
+  <script src="/assets/js/pet-pst-standards-checker.js?v=20261127v446" defer></script>
+  <script src="/assets/js/edistrict-service-walkthrough.js?v=20261127v446" defer></script>
+  <script src="/assets/js/teacher-eligibility-checker.js?v=20261127v446" defer></script>
+  <script src="/assets/js/study-packet-compiler.js?v=20261127v446" defer></script>
+  <script src="/assets/js/transfer-tada-calculator.js?v=20261127v446" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -726,6 +727,7 @@ ${CSO_SHELL_HEADER}
   <section id="cso-edistrict-walkthrough-root" class="cso-edw-root" aria-label="e-District Odisha Certificate and Revenue Service Walkthrough"></section>
   <section id="cso-teacher-eligibility-root" class="cso-tec-root" aria-label="Odisha Govt Teacher Eligibility and Subject-Combination Checker"></section>
   <section id="cso-study-packet-compiler-root" class="cso-spc-root" aria-label="Odisha Govt Job and Exam Clean-Sheet Study Packet Compiler"></section>
+  <section id="cso-transfer-tada-calculator-root" class="cso-ttc-root" aria-label="Odisha Govt Employee Transfer, Joining Time and TA/DA Rule Calculator"></section>
 </main>
 ${CSO_SHELL_FOOTER}
 </body>

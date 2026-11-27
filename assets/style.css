@@ -29209,3 +29209,367 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+/* ============================================================================
+   v444 / v445 / v446: Negative-Marking Simulator (.cso-nms-*), Transfer &
+   TA/DA Calculator (.cso-ttc-*), RSS/JSON/ICS Subscription Alert Hub (.cso-sah-*)
+   Strict 4-theme var(--cso-*) semantic tokens, zero hardcoded hex, >=44px tap
+   ============================================================================ */
+
+.cso-nms-root,
+.cso-ttc-root,
+.cso-sah-root {
+  margin: 1.5rem 0;
+  color: var(--cso-ink-primary, var(--text));
+}
+
+.cso-nms-card,
+.cso-ttc-card,
+.cso-sah-card {
+  background: var(--cso-card-bg, var(--surface));
+  border: 1px solid var(--cso-border-subtle, var(--border));
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: var(--cso-card-shadow, 0 4px 16px rgba(0, 0, 0, 0.06));
+}
+
+.cso-nms-head,
+.cso-ttc-head,
+.cso-sah-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.cso-nms-eyebrow,
+.cso-ttc-eyebrow,
+.cso-sah-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cso-brand-primary, var(--primary));
+  margin: 0 0 0.25rem 0;
+}
+
+.cso-nms-title,
+.cso-ttc-title,
+.cso-sah-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem 0;
+  color: var(--cso-ink-primary, var(--text));
+}
+
+.cso-nms-sub,
+.cso-ttc-sub,
+.cso-sah-sub {
+  font-size: 0.92rem;
+  margin: 0;
+  color: var(--cso-ink-secondary, var(--muted));
+}
+
+.cso-nms-lang-toggle,
+.cso-ttc-lang-toggle,
+.cso-sah-lang-toggle {
+  display: inline-flex;
+  gap: 0.35rem;
+  background: var(--cso-card-subtle, var(--surface-alt));
+  border: 1px solid var(--cso-border-subtle, var(--border));
+  border-radius: 999px;
+  padding: 0.25rem;
+}
+
+.cso-nms-lang-btn,
+.cso-ttc-lang-btn,
+.cso-sah-lang-btn {
+  min-height: 44px;
+  padding: 0.4rem 0.9rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--cso-ink-primary, var(--text));
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.cso-nms-lang-btn[aria-pressed="true"],
+.cso-ttc-lang-btn[aria-pressed="true"],
+.cso-sah-lang-btn[aria-pressed="true"] {
+  background: var(--cso-pill-active-bg, var(--primary));
+  color: var(--cso-pill-active-fg, var(--surface));
+}
+
+.cso-nms-grid,
+.cso-ttc-grid,
+.cso-sah-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.cso-nms-field,
+.cso-ttc-field,
+.cso-sah-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cso-nms-field label,
+.cso-ttc-field label,
+.cso-sah-field label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cso-ink-secondary, var(--muted));
+}
+
+.cso-nms-input,
+.cso-ttc-input,
+.cso-ttc-select,
+.cso-sah-select {
+  min-height: 44px;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border-subtle, var(--border));
+  background: var(--cso-card-subtle, var(--surface-alt));
+  color: var(--cso-ink-primary, var(--text));
+  font-size: 0.92rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cso-nms-presets,
+.cso-nms-actions,
+.cso-ttc-actions,
+.cso-sah-actions,
+.cso-sah-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+}
+
+.cso-nms-btn,
+.cso-nms-preset-btn,
+.cso-ttc-btn,
+.cso-sah-btn,
+.cso-sah-tab-btn {
+  min-height: 44px;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border-subtle, var(--border));
+  background: var(--cso-card-subtle, var(--surface-alt));
+  color: var(--cso-ink-primary, var(--text));
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.cso-nms-btn--primary,
+.cso-nms-preset-btn[aria-pressed="true"],
+.cso-ttc-btn--primary,
+.cso-sah-btn--primary,
+.cso-sah-tab-btn[aria-pressed="true"] {
+  background: var(--cso-cta-bg, var(--primary));
+  color: var(--cso-cta-fg, var(--surface));
+  border-color: transparent;
+}
+
+.cso-nms-status,
+.cso-ttc-status,
+.cso-sah-status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-height: 1.25rem;
+  color: var(--cso-brand-primary, var(--primary));
+  margin: 0.25rem 0 0.5rem 0;
+}
+
+/* v444: Verdict & Comparison */
+.cso-nms-verdict {
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--cso-border-subtle, var(--border));
+  background: var(--cso-badge-verified-bg, var(--surface-alt));
+  color: var(--cso-badge-verified-fg, var(--text));
+}
+
+.cso-nms-kpis,
+.cso-ttc-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 175px), 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.cso-nms-kpi,
+.cso-ttc-kpi {
+  background: var(--cso-card-subtle, var(--surface-alt));
+  border: 1px solid var(--cso-border-subtle, var(--border));
+  border-radius: 12px;
+  padding: 0.8rem 0.9rem;
+}
+
+.cso-nms-kpi-label,
+.cso-ttc-kpi-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--cso-ink-secondary, var(--muted));
+}
+
+.cso-nms-kpi-val,
+.cso-ttc-kpi-val {
+  font-size: 1.18rem;
+  font-weight: 800;
+  margin-top: 0.2rem;
+  color: var(--cso-ink-primary, var(--text));
+}
+
+.cso-nms-comp {
+  background: var(--cso-card-subtle, var(--surface-alt));
+  border: 1px solid var(--cso-border-subtle, var(--border));
+  border-radius: 12px;
+  padding: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+.cso-nms-comp-title {
+  font-size: 0.98rem;
+  font-weight: 800;
+  margin: 0 0 0.7rem 0;
+}
+
+.cso-nms-comp-row {
+  margin-bottom: 0.7rem;
+}
+
+.cso-nms-comp-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.4rem;
+  font-size: 0.86rem;
+  margin-bottom: 0.3rem;
+}
+
+/* v445: Transfer Checkbox & Table */
+.cso-ttc-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 44px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 0.85rem;
+  cursor: pointer;
+}
+
+.cso-ttc-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--cso-border-subtle, var(--border));
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.cso-ttc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.cso-ttc-table th,
+.cso-ttc-table td {
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid var(--cso-border-subtle, var(--border));
+}
+
+.cso-ttc-table th {
+  background: var(--cso-card-subtle, var(--surface-alt));
+  color: var(--cso-ink-secondary, var(--muted));
+  font-weight: 700;
+  width: 36%;
+}
+
+/* v446: Subscription Endpoints & Live Feed Preview */
+.cso-sah-endpoints {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.cso-sah-ep-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  background: var(--cso-card-subtle, var(--surface-alt));
+  border: 1px solid var(--cso-border-subtle, var(--border));
+}
+
+.cso-sah-ep-badge {
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--cso-pill-active-bg, var(--primary));
+  color: var(--cso-pill-active-fg, var(--surface));
+}
+
+.cso-sah-ep-url {
+  font-size: 0.84rem;
+  word-break: break-all;
+  color: var(--cso-ink-primary, var(--text));
+}
+
+.cso-sah-preview {
+  background: var(--cso-card-subtle, var(--surface-alt));
+  border: 1px solid var(--cso-border-subtle, var(--border));
+  border-radius: 12px;
+  padding: 0.9rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  overflow-x: auto;
+  max-height: 320px;
+  margin: 0;
+  color: var(--cso-ink-primary, var(--text));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-nms-btn,
+  .cso-ttc-btn,
+  .cso-sah-btn {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media print {
+  .cso-nms-lang-toggle,
+  .cso-nms-presets,
+  .cso-nms-grid,
+  .cso-nms-actions,
+  .cso-ttc-lang-toggle,
+  .cso-ttc-grid,
+  .cso-ttc-check,
+  .cso-ttc-actions,
+  .cso-sah-lang-toggle,
+  .cso-sah-grid,
+  .cso-sah-actions,
+  .cso-sah-tabs {
+    display: none !important;
+  }
+}
