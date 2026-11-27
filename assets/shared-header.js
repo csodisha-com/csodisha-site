@@ -1653,6 +1653,7 @@
     const items = [
       { slug: 'study-materials', icon: '📚', title_en: 'Study Materials & Notes', title_or: 'ଅଧ୍ୟୟନ ସାମଗ୍ରୀ ଓ ନୋଟ୍ସ', href: '/study-materials/' },
       { slug: 'guides', icon: '📘', title_en: 'Informative Guides', title_or: 'ସୂଚନାମୂଳକ ଗାଇଡ୍', href: '/guides/' },
+      { slug: 'updates', icon: '📰', title_en: 'All Updates (Newsroom)', title_or: 'ସମସ୍ତ ଅପଡେଟ୍ (ନ୍ୟୁଜରୁମ୍)', href: '/updates/' },
       { slug: 'mock-tests', icon: '⏱️', title_en: 'Live CBT Mock Tests', title_or: 'ଲାଇଭ୍ CBT ମକ୍ ଟେଷ୍ଟ', href: '/mock-tests/' },
       { slug: 'pyq', icon: '📑', title_en: 'Syllabus & PYQ Papers', title_or: 'ସିଲାବସ୍ ଓ ପୂର୍ବ ବର୍ଷ ପ୍ରଶ୍ନ (PYQ)', href: '/study-materials/#pyq' }
     ];

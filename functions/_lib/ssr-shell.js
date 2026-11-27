@@ -59,6 +59,7 @@ export const CSO_SHELL_FOOTER = `<footer><div class="w cso-footer-grid">
       <a href="/career-paths/">Career Paths</a>
       <a href="/odisha-special/">Odisha Special</a>
       <a href="/guides/">Informative Guides</a>
+      <a href="/updates/">All Updates (Newsroom)</a>
     </div>
     <div class="cso-footer-col">
       <h4>Quick Hubs</h4>

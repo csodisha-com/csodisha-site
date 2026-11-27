@@ -572,7 +572,7 @@ async function invalidatePublicEdgeCache(edgeCache, origin) {
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources', '/api/marketing/banners', '/api/marketing/landing-pages', '/api/seo/meta', '/api/seo/robots.txt', '/api/seo/autocomplete',
     '/api/events/upcoming', '/api/config/public', '/api/events/calendar/odisha-all-exams.ics', '/api/events/calendar/opsc-ossc-osssc-deadlines.ics', '/api/events/calendar/admit-cards-results.ics', '/api/events/calendar/workshops-webinars.ics',
     '/api/public/jobs', '/api/public/jobs/list', '/api/public/jobs/tree', '/api/public/jobs/bootstrap', '/api/public/jobs/article', '/api/public/jobs-hub', '/api/public/exams-hub', '/api/public/scholarships-hub', '/api/public/study-hub', '/api/public/careers-hub', '/api/public/odisha-hub', '/api/public/search-index',
-    '/api/public/careers/bootstrap', '/api/public/careers/list', '/careers/', '/jobs/', '/exams/', '/scholarships/', '/study-materials/', '/career-paths/', '/odisha-special/',
+    '/api/public/careers/bootstrap', '/api/public/careers/list', '/careers/', '/jobs/', '/exams/', '/scholarships/', '/study-materials/', '/career-paths/', '/odisha-special/', '/updates/',
     '/api/public/schemes', '/api/public/schemes/list', '/api/public/schemes/tree', '/api/public/schemes/bootstrap', '/api/public/schemes/article', '/schemes/',
     '/api/public/study', '/api/public/study/tree', '/api/public/study/bootstrap', '/api/public/study/article', '/api/public/study-library/bootstrap', '/api/public/study-library/list', '/study-library/',
     '/api/public/community/tree', '/api/public/community/posts', '/api/public/community/list', '/api/public/community/bootstrap', '/api/public/community/post', '/community/', '/student-dashboard/',
@@ -1659,6 +1659,9 @@ export default {
       '/education-explorer/index.html': '/study-library/',
       '/library': '/study-library/',
       '/jobs': '/jobs/',
+      '/updates': '/updates/',
+      '/updates.html': '/updates/',
+      '/updates/index.html': '/updates/',
       '/exams': '/exams/',
       '/exams.html': '/exams/',
       '/exams/index.html': '/exams/',
@@ -1872,7 +1875,7 @@ export default {
         res = await hydrateExplorerIndexHtml(res, pathname, env, url);
         res = await applySiteSnippetsToResponse(res, env, pathname);
       }
-      const isPrimaryPortal = pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|careers|guides|tools|schemes|schemes-benefits|study-library|community|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname);
+      const isPrimaryPortal = pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|jobs|careers|guides|updates|tools|schemes|schemes-benefits|study-library|community|current-affairs|mock-tests|resources|student-dashboard|about)(\/|$)/.test(pathname);
       if (isHtmlResponse || isPrimaryPortal) {
         const headers = new Headers(res.headers);
         headers.set(

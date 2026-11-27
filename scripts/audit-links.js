@@ -115,7 +115,7 @@ function verifyRelativePath(sourceFile, rawUrl, type = 'link') {
   // Worker-rendered SSR routes (no static file): /guides/, /sitemap.xml, /feed.xml, /rss.xml, /feed.json
   const isSsrGuidesRoute = type === 'link' && /^\/guides(\/[^/]*)?\/?$/.test(cleanUrl)
     && fs.existsSync(path.join(ROOT_DIR, 'functions', '_lib', 'informative-guides.js'));
-  const isDynamicSeoFeedRoute = type === 'link' && /^\/(sitemap\.xml|feed\.xml|rss\.xml|feed\.json)$/.test(cleanUrl)
+  const isDynamicSeoFeedRoute = (type === 'link' || type === 'fetch') && /^\/(sitemap\.xml|feed\.xml|rss\.xml|feed\.json)$/.test(cleanUrl)
     && fs.existsSync(path.join(ROOT_DIR, 'functions', '_lib', 'syndication-feeds.js'));
   if (isSsrGuidesRoute || isDynamicSeoFeedRoute) {
     stats.internalLinksVerified++;
@@ -240,8 +240,13 @@ function auditJsFiles(jsFiles) {
       const fetchUrl = match[1];
       stats.fetchCallsChecked++;
 
-      // If it's an API route handled by auth or backend, skip static file check
-      if (fetchUrl.startsWith('/api/') || fetchUrl.startsWith('api/') || /^https?:\/\//i.test(fetchUrl)) {
+      // If it's an API route or Worker-rendered syndication feed handled by backend, skip static file check
+      if (
+        fetchUrl.startsWith('/api/') ||
+        fetchUrl.startsWith('api/') ||
+        /^\/(feed\.json|feed\.xml|rss\.xml|sitemap\.xml)(\?|$)/i.test(fetchUrl) ||
+        /^https?:\/\//i.test(fetchUrl)
+      ) {
         continue;
       }
 

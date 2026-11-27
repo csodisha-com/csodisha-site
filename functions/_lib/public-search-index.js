@@ -73,6 +73,15 @@ export const CORE_SEARCH_HUBS = [
     keywords: 'guides handbook how-to exam strategy bulletin syllabus'
   },
   {
+    id: 'hub:updates',
+    url: '/updates/',
+    title_en: 'All Odisha Updates & Chronological Newsroom',
+    title_or: 'ସମସ୍ତ ଓଡ଼ିଶା ଅପଡେଟ୍ ଓ ନ୍ୟୁଜରୁମ୍',
+    org: 'Common Sense Odisha',
+    district: 'All Odisha & National',
+    keywords: 'updates newsroom archive chronological rss json feed latest jobs exams results guides'
+  },
+  {
     id: 'hub:mock-tests',
     url: '/mock-tests/',
     title_en: 'Live CBT Mock Tests',
