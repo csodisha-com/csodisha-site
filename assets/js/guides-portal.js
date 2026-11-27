@@ -74,6 +74,12 @@
         return;
       }
 
+      var printBtn = ev.target && ev.target.closest ? ev.target.closest('[data-cso-print-btn]') : null;
+      if (printBtn) {
+        window.print();
+        return;
+      }
+
       var nativeBtn = ev.target && ev.target.closest ? ev.target.closest('[data-native-share]') : null;
       if (nativeBtn && typeof navigator.share === 'function') {
         var shareTitle = nativeBtn.getAttribute('data-share-title') || document.title;

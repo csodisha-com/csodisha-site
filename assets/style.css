@@ -16415,3 +16415,222 @@ nav#cso-hub-top-tabs {
     transition: none;
   }
 }
+
+/* ===== v390: Public Article Print / Save-as-PDF Clean Sheet (@media print) ===== */
+.cso-print-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.cso-print-btn:hover,
+.cso-print-btn:focus-visible {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  outline: 2px solid var(--cso-accent);
+  outline-offset: 2px;
+}
+
+.cso-print-masthead,
+.cso-print-footer {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-print-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  @page {
+    margin: 14mm 12mm;
+  }
+
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: rgb(15 23 42) !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html,
+  body {
+    background: rgb(255 255 255) !important;
+    color: rgb(15 23 42) !important;
+    font-size: 11pt;
+    line-height: 1.5;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Strip non-essential chrome, navbars, drawers, controls, quizzes & footers */
+  .cso-header,
+  header.top,
+  .site-header__top,
+  nav,
+  .main-nav,
+  #cso-main-navbar,
+  #cso-mobile-drawer,
+  #cso-mobile-drawer-backdrop,
+  #csoPublicAnnouncementMount,
+  .cso-skip-link,
+  .jp-article-top,
+  .jp-lang-toggle,
+  .gp-lang-switch,
+  .gp-toc-rail,
+  .gp-share-bar,
+  .gp-more-section,
+  .gp-tags-row,
+  .cso-ics-btn,
+  .cso-ics-guide-bar,
+  .cso-ics-cell-wrap,
+  .cso-print-btn,
+  .jp-pills-row,
+  .jp-elig-banner,
+  .jp-preview-banner,
+  .jp-related-card,
+  .jp-pdf-frame,
+  #cso-article-quiz-root,
+  .cso-article-quiz,
+  .cso-aq-root,
+  footer.site-footer,
+  .cso-site-footer,
+  footer.gp-article-footer,
+  .back-to-top,
+  #backToTop {
+    display: none !important;
+  }
+
+  /* Print-only attribution masthead & footer */
+  .cso-print-masthead {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding-bottom: 6pt;
+    margin-bottom: 10pt;
+    border-bottom: 1.5pt solid rgb(15 23 42) !important;
+    font-size: 9pt;
+  }
+
+  .cso-print-masthead__brand {
+    font-weight: 800;
+    font-size: 10pt;
+  }
+
+  .cso-print-masthead__url {
+    font-size: 8.5pt;
+    word-break: break-all;
+  }
+
+  .cso-print-footer {
+    display: block !important;
+    margin-top: 14pt;
+    padding-top: 6pt;
+    border-top: 1pt solid rgb(203 213 225) !important;
+    font-size: 8.5pt;
+    word-break: break-all;
+  }
+
+  /* Single-column full-width article layout */
+  main,
+  #main-content,
+  .gp-main,
+  .gp-reader-layout,
+  .gp-detail-grid,
+  .gp-article,
+  .gp-article-head,
+  .jp-article,
+  .jp-card,
+  .cso-jobs-main {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  .jp-card,
+  .gp-takeaways,
+  .jp-tile,
+  .jp-callout {
+    border: 1pt solid rgb(203 213 225) !important;
+    border-radius: 4pt !important;
+    padding: 8pt !important;
+    margin-bottom: 10pt !important;
+  }
+
+  /* Page-break safety for tables, rows, figures & summary boxes */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 8pt 0 12pt !important;
+    font-size: 9.5pt;
+  }
+
+  th,
+  td {
+    border: 1pt solid rgb(203 213 225) !important;
+    padding: 5pt 6pt !important;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr,
+  figure,
+  img,
+  .jp-tile,
+  .jp-callout,
+  .gp-takeaways,
+  .gp-pdf-item,
+  .gp-link-item {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Visible official URLs next to external links on paper / saved PDFs */
+  .jp-prose a[href^="http"]::after,
+  .jp-card a[href^="http"]::after,
+  .gp-prose a[href^="http"]::after,
+  .gp-links-list a[href^="http"]::after,
+  .gp-pdfs-list a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 8.5pt;
+    word-break: break-all;
+  }
+}

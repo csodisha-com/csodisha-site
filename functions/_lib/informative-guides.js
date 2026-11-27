@@ -544,10 +544,10 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageA
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v389">
-  <script src="/assets/js/guides-portal.js?v=20261127v389" defer></script>
-  <script src="/assets/js/ics-calendar-export.js?v=20261127v389" defer></script>
-  <script src="/assets/js/article-mini-quiz.js?v=20261127v389" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v390">
+  <script src="/assets/js/guides-portal.js?v=20261127v390" defer></script>
+  <script src="/assets/js/ics-calendar-export.js?v=20261127v390" defer></script>
+  <script src="/assets/js/article-mini-quiz.js?v=20261127v390" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -581,6 +581,7 @@ function buildGuideShareBarHtml(guide, canonical, position = 'header') {
         <a class="gp-share-btn gp-share-wa" href="${escShell(waHref)}" target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp">WhatsApp</a>
         <a class="gp-share-btn gp-share-tg" href="${escShell(tgHref)}" target="_blank" rel="noopener noreferrer" aria-label="Share on Telegram">Telegram</a>
         <button type="button" class="gp-share-btn gp-share-copy" data-copy-guide-url="${escShell(canonical)}" aria-label="Copy guide link">Copy Link</button>
+        ${position === 'header' ? '<button type="button" class="gp-share-btn cso-print-btn" data-cso-print-btn="1" aria-label="Print or save clean PDF guide"><span class="gp-lang-en">🖨️ Print / Save Clean Guide</span><span class="gp-lang-or">🖨️ ପ୍ରିଣ୍ଟ / PDF ସେଭ୍ କରନ୍ତୁ</span></button>' : ''}
         <button type="button" class="gp-share-btn gp-share-native" data-native-share data-share-title="${escShell(titleEn)}" data-share-text="${escShell(tgText)}" data-share-url="${escShell(canonical)}" hidden aria-label="Share via device menu">Share</button>
       </div>
       <span class="gp-share-live cso-sr-only" role="status" aria-live="polite"></span>
@@ -927,6 +928,10 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
 <body class="cso-portal-page cso-guide-reader-page" data-cso-portal="guides" data-guide-lang="en">
 ${CSO_SHELL_HEADER}
 <main id="main-content" class="gp-main gp-reader-main gp-shell gp-detail-shell">
+  <div class="cso-print-masthead">
+    <strong class="cso-print-masthead__brand">Common Sense Odisha (csodisha.com)</strong>
+    <span class="cso-print-masthead__url">${escShell(canonical)}</span>
+  </div>
   ${kicker}
   <header class="gp-article-head gp-hero-card">
     <div class="gp-article-meta-row">
@@ -974,6 +979,7 @@ ${CSO_SHELL_HEADER}
       <footer class="gp-article-footer">
         ${shareBarFooterHtml}
       </footer>
+      <div class="cso-print-footer">Source: Common Sense Odisha (csodisha.com) · ${escShell(canonical)}</div>
     </article>
   </div>
 

@@ -502,6 +502,13 @@
     var wrap = el('div', 'jp-article');
     document.title = (pick(a, 'title') || a.title_en) + ' | CS Odisha Jobs';
 
+    // 0. Print-Only Clean-Sheet Masthead (v390)
+    var canonicalJobUrl = (window.location.origin || 'https://csodisha.com') + '/jobs/' + encodeURIComponent(a.slug || '');
+    var printHead = el('div', 'cso-print-masthead');
+    printHead.appendChild(el('strong', 'cso-print-masthead__brand', 'Common Sense Odisha (csodisha.com)'));
+    printHead.appendChild(el('span', 'cso-print-masthead__url', canonicalJobUrl));
+    wrap.appendChild(printHead);
+
     // 1. Floating Admin Draft Preview Banner
     if (payload.is_preview) {
       var pv = el('div', 'jp-preview-banner');
@@ -597,6 +604,12 @@
       icsBtn.addEventListener('click', function () { downloadJobIcs(a, icsBtn); });
       actRow.appendChild(icsBtn);
     }
+    var printBtn = el('button', 'jp-btn cso-print-btn', state.lang === 'or' ? '🖨️ ପ୍ରିଣ୍ଟ / PDF ସେଭ୍ କରନ୍ତୁ' : '🖨️ Print / Save Clean Guide');
+    printBtn.type = 'button';
+    printBtn.setAttribute('data-cso-print-btn', '1');
+    printBtn.setAttribute('aria-label', state.lang === 'or' ? 'ପ୍ରିଣ୍ଟ କିମ୍ବା PDF ସେଭ୍ କରନ୍ତୁ' : 'Print or save clean PDF guide');
+    printBtn.addEventListener('click', function () { window.print(); });
+    actRow.appendChild(printBtn);
     if (a.official_website_url && safeHref(a.official_website_url)) {
       var webA = el('a', 'jp-btn', 'Official Website ↗');
       webA.href = safeHref(a.official_website_url);
@@ -789,13 +802,18 @@
     // 12. Related Active Jobs (up to 3)
     var related = payload.related_jobs || [];
     if (related.length) {
-      var relSec = el('section', 'jp-card');
+      var relSec = el('section', 'jp-card jp-related-card');
       relSec.appendChild(el('h2', 'jp-h2', 'Related Active Opportunities'));
       var relGrid = el('div', 'jp-jobs-grid');
       related.forEach(function (r) { relGrid.appendChild(buildJobCard(r)); });
       relSec.appendChild(relGrid);
       wrap.appendChild(relSec);
     }
+
+    // 13. Print-Only Clean-Sheet Attribution Footer (v390)
+    var printFoot = el('div', 'cso-print-footer');
+    printFoot.textContent = 'Source: Common Sense Odisha (csodisha.com) · ' + canonicalJobUrl;
+    wrap.appendChild(printFoot);
 
     mount.appendChild(wrap);
     if (window.CSOArticleMiniQuiz && typeof window.CSOArticleMiniQuiz.mount === 'function') {

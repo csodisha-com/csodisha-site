@@ -11,7 +11,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v389';
+const CACHE_NAME = 'cso-candidate-cache-v390';
 const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
 const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
 
