@@ -399,8 +399,8 @@ check('8. v360 Informative Guides edge-to-edge layout (max-width: 100%), uncropp
     'admin/studio.css Live Preview must mirror v360 edge-to-edge 390px mobile padding and uncropped 16:9 cover rules'
   );
   assert.ok(
-    guidesSsr.includes('/assets/css/guides-portal.css?v=20261127v388') &&
-    guidesSsr.includes('/assets/js/guides-portal.js?v=20261127v388') &&
+    guidesSsr.includes('/assets/css/guides-portal.css?v=20261127v389') &&
+    guidesSsr.includes('/assets/js/guides-portal.js?v=20261127v389') &&
     guidesSsr.includes('gp-hero-card') &&
     guidesSsr.includes('gp-toc-card') &&
     guidesSsr.includes('gp-share-bar') &&

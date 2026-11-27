@@ -116,6 +116,24 @@
       guideBtn.setAttribute('href', tr.primary_guide_url || '/guides/?category=exam-prep');
       acts.appendChild(guideBtn);
 
+      if (tr.exam_date && window.CSOCalendarExport && typeof window.CSOCalendarExport.createCalendarButton === 'function') {
+        var calTrackBtn = window.CSOCalendarExport.createCalendarButton({
+          event: {
+            uid: 'exam-track-' + tr.id + '-' + tr.exam_date,
+            summary: tr.name_en + ' (' + tr.stage + ')',
+            date: tr.exam_date,
+            location: 'Odisha / Exam Center (Check Admit Card)',
+            url: (window.location.origin || 'https://csodisha.com') + (tr.primary_guide_url || '/exams/'),
+            description: 'Conducting Body: ' + tr.conducting_body + ' · Pattern: ' + tr.pattern_summary
+          },
+          filename: tr.id + '-exam',
+          isOr: orMode,
+          compact: true,
+          ariaLabel: 'Add ' + tr.name_en + ' exam date to calendar (.ics)'
+        });
+        if (calTrackBtn) acts.appendChild(calTrackBtn);
+      }
+
       var shareUrl = (window.location.origin || 'https://csodisha.com') + '/exams/';
       var waText = tr.name_en + ' (' + tr.stage + ') — Free Mock Tests & Strategy Guide on CSOdisha: ' + shareUrl;
       var waBtn = el('a', 'cso-eh-btn cso-eh-btn--wa', 'WhatsApp');
@@ -194,6 +212,27 @@
       var cta = el('a', 'cso-eh-btn cso-eh-btn--primary', it.resource_type === 'mock' ? (orMode ? 'ଆରମ୍ଭ କରନ୍ତୁ →' : 'Start Mock →') : (orMode ? 'ପଢ଼ନ୍ତୁ →' : 'Open Resource →'));
       cta.setAttribute('href', it.detail_url || '/guides/?category=exam-prep');
       foot.appendChild(cta);
+      if (window.CSOCalendarExport && typeof window.CSOCalendarExport.parseDateRange === 'function') {
+        var rawDt = it.exam_date || it.last_date || it.title_en || it.summary_en || '';
+        var parsedDt = window.CSOCalendarExport.parseDateRange(rawDt);
+        if (parsedDt) {
+          var resCalBtn = window.CSOCalendarExport.createCalendarButton({
+            event: {
+              uid: 'exam-res-' + (it.slug || it.id || 'item') + '-' + parsedDt.isoStart,
+              summary: it.title_en || 'Exam Update',
+              date: rawDt,
+              location: 'Online / Official Portal',
+              url: (window.location.origin || 'https://csodisha.com') + (it.detail_url || '/exams/'),
+              description: it.summary_en || ''
+            },
+            filename: (it.slug || it.id || 'exam-update'),
+            isOr: orMode,
+            compact: true,
+            ariaLabel: 'Add ' + (it.title_en || 'exam date') + ' to calendar (.ics)'
+          });
+          if (resCalBtn) foot.appendChild(resCalBtn);
+        }
+      }
       card.appendChild(foot);
 
       frag.appendChild(card);

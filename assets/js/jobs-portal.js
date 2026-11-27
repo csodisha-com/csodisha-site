@@ -249,10 +249,30 @@
   }
 
   // ---------- Structured Table Helper ----------
-  function buildStructuredTable(title, rows, cols) {
+  function buildStructuredTable(title, rows, cols, icsArticle) {
     if (!Array.isArray(rows) || !rows.length) return null;
     var sec = el('section', 'jp-card');
-    sec.appendChild(el('h2', 'jp-h2', title));
+    var calApi = window.CSOCalendarExport;
+    var isOr = state.lang === 'or';
+    if (icsArticle && calApi && typeof calApi.extractEventsFromJobArticle === 'function') {
+      var headRow = el('div', 'cso-ics-table-head');
+      headRow.appendChild(el('h2', 'jp-h2', title));
+      var bundleEvs = calApi.extractEventsFromJobArticle(icsArticle);
+      if (bundleEvs.length >= 2) {
+        var bBtn = calApi.createCalendarButton({
+          isBundle: true,
+          events: bundleEvs,
+          filename: icsArticle.slug || icsArticle.id || 'job-dates',
+          isOr: isOr,
+          labelEn: '📅 Save All ' + bundleEvs.length + ' Key Dates (.ics)',
+          labelOr: '📅 ସବୁ ' + bundleEvs.length + ' ତାରିଖ ସେଭ୍ କରନ୍ତୁ (.ics)'
+        });
+        if (bBtn) headRow.appendChild(bBtn);
+      }
+      sec.appendChild(headRow);
+    } else {
+      sec.appendChild(el('h2', 'jp-h2', title));
+    }
     var wrap = el('div', 'jp-table-wrap');
     var table = el('table', 'jp-table');
     var thead = el('thead');
@@ -265,7 +285,32 @@
       var tr = el('tr');
       cols.forEach(function (c) {
         var val = r && r[c[0]] !== undefined && r[c[0]] !== null ? String(r[c[0]]) : '—';
-        tr.appendChild(el('td', '', val || '—'));
+        var td = el('td', '', val || '—');
+        if (icsArticle && c[0] === 'date' && calApi && typeof calApi.parseDateRange === 'function' && calApi.parseDateRange(val)) {
+          var milestoneLbl = String((r && (r.event || r.milestone)) || 'Key Date').trim();
+          var evObj = {
+            uid: (icsArticle.slug || icsArticle.id || 'job') + '-' + milestoneLbl,
+            summary: (icsArticle.title_en || 'Job Notification') + ' — ' + milestoneLbl,
+            date: val,
+            location: (icsArticle.location_district && !/^all\s+odisha$/i.test(icsArticle.location_district)) ? (icsArticle.location_district + ', Odisha') : 'Odisha / Official Portal',
+            url: (window.location.origin || 'https://csodisha.com') + '/jobs/' + encodeURIComponent(icsArticle.slug || ''),
+            officialUrl: icsArticle.official_apply_url || icsArticle.notification_pdf_url || icsArticle.official_website_url || '',
+            description: (r && r.note ? (r.note + ' · ') : '') + (icsArticle.organisation_en ? ('Authority: ' + icsArticle.organisation_en) : '')
+          };
+          var rowBtn = calApi.createCalendarButton({
+            event: evObj,
+            filename: (icsArticle.slug || 'job') + '-' + milestoneLbl,
+            isOr: isOr,
+            compact: true,
+            ariaLabel: 'Add ' + milestoneLbl + ' to calendar (.ics)'
+          });
+          if (rowBtn) {
+            var holder = el('div', 'cso-ics-cell-wrap');
+            holder.appendChild(rowBtn);
+            td.appendChild(holder);
+          }
+        }
+        tr.appendChild(td);
       });
       tbody.appendChild(tr);
     });
@@ -275,8 +320,15 @@
     return sec;
   }
 
-  // ---------- .ics Calendar Download Fallback ----------
-  function downloadJobIcs(article) {
+  // ---------- .ics Calendar Download (v389 RFC 5545) ----------
+  function downloadJobIcs(article, btnEl) {
+    var calApi = window.CSOCalendarExport;
+    var isOr = state.lang === 'or';
+    if (calApi && typeof calApi.extractEventsFromJobArticle === 'function') {
+      var evs = calApi.extractEventsFromJobArticle(article);
+      if (evs.length > 1) return calApi.downloadEventBundle(evs, article.slug || article.id, btnEl, isOr);
+      if (evs.length === 1) return calApi.downloadSingleEvent(evs[0], article.slug || article.id, btnEl, isOr);
+    }
     var item = {
       id: article.slug || article.id,
       title: article.title_en,
@@ -531,10 +583,18 @@
     trackBtn.addEventListener('click', function () { trackJobInCandidateHub(a, trackBtn); });
     actRow.appendChild(trackBtn);
 
-    if (a.last_date || a.exam_date) {
-      var icsBtn = el('button', 'jp-btn', '📅 Download .ics Calendar Reminder');
+    var jobCalEvents = (window.CSOCalendarExport && typeof window.CSOCalendarExport.extractEventsFromJobArticle === 'function')
+      ? window.CSOCalendarExport.extractEventsFromJobArticle(a)
+      : [];
+    if (jobCalEvents.length || a.last_date || a.exam_date) {
+      var isOrLang = state.lang === 'or';
+      var icsLabel = jobCalEvents.length > 1
+        ? (isOrLang ? ('📅 ସବୁ ' + jobCalEvents.length + ' ମୁଖ୍ୟ ତାରିଖ ସେଭ୍ କରନ୍ତୁ (.ics)') : ('📅 Save All ' + jobCalEvents.length + ' Key Dates (.ics)'))
+        : (isOrLang ? '📅 କ୍ୟାଲେଣ୍ଡରରେ ଯୋଡନ୍ତୁ (.ics)' : '📅 Add to Calendar (.ics)');
+      var icsBtn = el('button', 'jp-btn cso-ics-btn' + (jobCalEvents.length > 1 ? ' cso-ics-btn--bundle' : ''), icsLabel);
       icsBtn.type = 'button';
-      icsBtn.addEventListener('click', function () { downloadJobIcs(a); });
+      icsBtn.setAttribute('data-cso-ics-btn', jobCalEvents.length > 1 ? 'bundle' : 'single');
+      icsBtn.addEventListener('click', function () { downloadJobIcs(a, icsBtn); });
       actRow.appendChild(icsBtn);
     }
     if (a.official_website_url && safeHref(a.official_website_url)) {
@@ -613,7 +673,7 @@
     // 9. Structured Tables (Vacancies, Important Dates, Fee Structure, Selection Steps, Cutoff Reference)
     var tables = [
       buildStructuredTable('Post-wise Vacancy & Qualification Breakdown', a.vacancy_breakdown, [['post_name', 'Post / Cadre'], ['vacancies', 'Vacancies'], ['qualification', 'Qualification'], ['pay_level', 'Pay Scale']]),
-      buildStructuredTable('Important Dates Timeline', a.important_dates, [['event', 'Milestone'], ['date', 'Date'], ['note', 'Remarks']]),
+      buildStructuredTable('Important Dates Timeline', a.important_dates, [['event', 'Milestone'], ['date', 'Date'], ['note', 'Remarks']], a),
       buildStructuredTable('Application Fee by Category', a.fee_structure, [['category', 'Category'], ['amount', 'Fee Amount'], ['payment_mode', 'Payment Mode']]),
       buildStructuredTable('Selection Process Steps', a.selection_steps, [['step', 'Step'], ['stage_name', 'Stage'], ['marks_duration', 'Marks / Duration'], ['details', 'Details']]),
       buildStructuredTable('Previous Cycle Cutoff & Vacancy Reference', a.cutoff_reference, [['year', 'Year'], ['category', 'Category'], ['vacancies', 'Prev Vacancies'], ['cutoff_marks', 'Cutoff Marks']])
