@@ -26228,3 +26228,403 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+
+/* ============================================================================
+   v431: Odisha Scholarship & Student Financial Aid Finder (/schemes/, /admissions/)
+   4-theme semantic var(--cso-*) tokens only; zero hardcoded hex; 320px-safe
+   ============================================================================ */
+.cso-saf-root {
+  margin: 24px 0;
+}
+
+.cso-saf-card {
+  display: grid;
+  gap: 18px;
+  padding: clamp(16px, 2.5vw, 24px);
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  box-shadow: var(--cso-shadow-sm, none);
+}
+
+.cso-saf-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.cso-saf-head-copy {
+  display: grid;
+  gap: 6px;
+  max-width: 780px;
+}
+
+.cso-saf-eyebrow {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--cso-accent);
+  text-transform: uppercase;
+}
+
+.cso-saf-title {
+  margin: 0;
+  font-size: clamp(1.18rem, 2.2vw, 1.48rem);
+  line-height: 1.25;
+  color: var(--cso-ink);
+}
+
+.cso-saf-sub {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--cso-muted);
+}
+
+.cso-saf-lang-toggle {
+  display: inline-flex;
+  border: 1px solid var(--cso-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-saf-lang-btn {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-saf-lang-btn.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-saf-form {
+  display: grid;
+  gap: 12px;
+}
+
+.cso-saf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+}
+
+.cso-saf-field {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+}
+
+.cso-saf-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+}
+
+.cso-saf-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.88rem;
+}
+
+.cso-saf-presets,
+.cso-saf-specials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-saf-preset-btn {
+  min-height: 44px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-saf-preset-btn.is-active {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-saf-check-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cso-saf-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cso-accent);
+  flex: none;
+}
+
+.cso-saf-summary {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-ok-border, var(--cso-accent));
+  background: var(--cso-ok-bg, var(--cso-surface-alt));
+  color: var(--cso-ink);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.cso-saf-schemes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 14px;
+}
+
+.cso-saf-scheme {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-saf-scheme--ok {
+  border-color: var(--cso-ok-border, var(--cso-accent));
+}
+
+.cso-saf-scheme--warn {
+  border-color: var(--cso-warn-border, var(--cso-border));
+}
+
+.cso-saf-scheme-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cso-saf-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+}
+
+.cso-saf-badge--ok {
+  border-color: var(--cso-ok-border, var(--cso-accent));
+  background: var(--cso-ok-bg, var(--cso-surface));
+  color: var(--cso-ok-fg, var(--cso-accent));
+}
+
+.cso-saf-badge--warn {
+  border-color: var(--cso-warn-border, var(--cso-border));
+  background: var(--cso-warn-bg, var(--cso-surface));
+  color: var(--cso-warn-fg, var(--cso-ink));
+}
+
+.cso-saf-badge--stack {
+  border-color: var(--cso-info-border, var(--cso-accent));
+  background: var(--cso-info-bg, var(--cso-surface));
+  color: var(--cso-accent);
+}
+
+.cso-saf-scheme-title {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.35;
+  color: var(--cso-ink);
+}
+
+.cso-saf-scheme-dept {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cso-muted);
+}
+
+.cso-saf-scheme-desc {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--cso-ink);
+  flex: 1 1 auto;
+}
+
+.cso-saf-meta {
+  display: grid;
+  gap: 5px;
+}
+
+.cso-saf-meta-pill {
+  font-size: 0.78rem;
+  color: var(--cso-muted);
+  line-height: 1.38;
+}
+
+.cso-saf-reason {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--cso-warn-border, var(--cso-border));
+  background: var(--cso-warn-bg, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.cso-saf-scheme-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-saf-checklist {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-saf-checklist-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.cso-saf-sec-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-saf-meter {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-ok-border, var(--cso-accent));
+  background: var(--cso-ok-bg, var(--cso-surface));
+  color: var(--cso-ok-fg, var(--cso-accent));
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.cso-saf-checklist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 8px;
+}
+
+.cso-saf-chk-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.cso-saf-chk-item.is-done {
+  border-color: var(--cso-ok-border, var(--cso-accent));
+  background: var(--cso-ok-bg, var(--cso-surface));
+}
+
+.cso-saf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.cso-saf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 13px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-saf-btn--primary {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-saf-btn:focus-visible,
+.cso-saf-preset-btn:focus-visible,
+.cso-saf-lang-btn:focus-visible,
+.cso-saf-input:focus-visible {
+  outline: 2px solid var(--cso-focus, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+.cso-saf-copy-status {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--cso-ok-fg, var(--cso-accent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-saf-btn,
+  .cso-saf-preset-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-saf-lang-toggle,
+  .cso-saf-form,
+  .cso-saf-scheme-actions,
+  .cso-saf-actions {
+    display: none !important;
+  }
+}
