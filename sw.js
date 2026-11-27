@@ -11,9 +11,36 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v413';
+const CACHE_NAME = 'cso-candidate-cache-v414';
 const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
 const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
+
+// v414: Candidate Offline Toolkit Pre-Cache Manifest (low-connectivity Odisha districts)
+const CANDIDATE_TOOLKIT_URLS = [
+  '/tools/',
+  '/exams/',
+  '/mock-tests/',
+  '/career-paths/',
+  '/guides/',
+  '/schemes/',
+  '/current-affairs/',
+  '/assets/style.css?v=20261127v414',
+  '/assets/css/cso-themes.css?v=20261127v414',
+  '/assets/shared-header.js?v=20261127v414',
+  '/assets/js/offline-toolkit-hub.js?v=20261127v414',
+  '/assets/js/orsp-salary-estimator.js?v=20261127v414',
+  '/assets/js/photo-signature-resizer.js?v=20261127v414',
+  '/assets/js/certificate-fee-matrix.js?v=20261127v414',
+  '/assets/js/cgpa-percentage-converter.js?v=20261127v414',
+  '/assets/js/exam-calendar-tracker.js?v=20261127v414',
+  '/assets/js/mock-tests-hub.js?v=20261127v414',
+  '/assets/js/schemes-eligibility-finder.js?v=20261127v414',
+  '/assets/js/current-affairs-hub.js?v=20261127v414',
+  '/assets/js/ics-calendar-export.js?v=20261127v414',
+  '/assets/js/saved-alerts-drawer.js?v=20261127v414',
+  '/assets/js/candidate-watchlist.js?v=20261127v414',
+  '/assets/js/odisha-district-filter.js?v=20261127v414'
+];
 
 // Authenticated, auth & account routes that must NEVER be served from or written to SW HTML cache.
 const AUTH_NO_STORE_ROUTE_RE = /^\/(?:login(?:\.html)?|signup(?:\.html)?|reset-password(?:\.html)?|student-dashboard|candidate-hub|candidate|dashboard|portal|saved|admin)(?:\/|$)/i;
@@ -214,6 +241,79 @@ self.addEventListener('message', (event) => {
       } catch (_) {}
     })());
   }
+  if (event.data && event.data.type === 'CSO_PRECACHE_TOOLKIT') {
+    event.waitUntil((async () => {
+      const replyTarget = event.source;
+      const total = CANDIDATE_TOOLKIT_URLS.length;
+      let completed = 0;
+      let cachedCount = 0;
+      const availability = {};
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        await Promise.allSettled(CANDIDATE_TOOLKIT_URLS.map(async (u) => {
+          try {
+            const resp = await fetch(u, { cache: 'no-cache', credentials: 'same-origin' });
+            if (resp && resp.ok) {
+              await cache.put(u, resp.clone());
+              availability[u] = true;
+              cachedCount += 1;
+            } else {
+              availability[u] = false;
+            }
+          } catch (_) {
+            availability[u] = false;
+          } finally {
+            completed += 1;
+            if (replyTarget && typeof replyTarget.postMessage === 'function') {
+              replyTarget.postMessage({
+                type: 'CSO_PRECACHE_PROGRESS',
+                completed,
+                total,
+                cachedCount,
+                cacheName: CACHE_NAME
+              });
+            }
+          }
+        }));
+      } catch (_) {}
+      if (replyTarget && typeof replyTarget.postMessage === 'function') {
+        replyTarget.postMessage({
+          type: 'CSO_PRECACHE_COMPLETE',
+          completed,
+          total,
+          cachedCount,
+          availability,
+          cacheName: CACHE_NAME,
+          syncedAtIso: new Date().toISOString()
+        });
+      }
+    })());
+  }
+  if (event.data && event.data.type === 'CSO_GET_TOOLKIT_STATUS') {
+    event.waitUntil((async () => {
+      const replyTarget = event.source;
+      const availability = {};
+      let cachedCount = 0;
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        await Promise.allSettled(CANDIDATE_TOOLKIT_URLS.map(async (u) => {
+          const hit = await cache.match(u);
+          const ok = Boolean(hit);
+          availability[u] = ok;
+          if (ok) cachedCount += 1;
+        }));
+      } catch (_) {}
+      if (replyTarget && typeof replyTarget.postMessage === 'function') {
+        replyTarget.postMessage({
+          type: 'CSO_TOOLKIT_STATUS',
+          total: CANDIDATE_TOOLKIT_URLS.length,
+          cachedCount,
+          availability,
+          cacheName: CACHE_NAME
+        });
+      }
+    })());
+  }
 });
 
 self.addEventListener('fetch', (event) => {
@@ -335,7 +435,7 @@ self.addEventListener('fetch', (event) => {
         if (timer) clearTimeout(timer);
         try {
           const cache = await caches.open(CACHE_NAME);
-          const cachedPage = await cache.match(request);
+          const cachedPage = (await cache.match(request)) || (await cache.match(url.pathname));
           if (cachedPage) return cachedPage;
           const indexPage = await cache.match('/index.html');
           if (indexPage) return indexPage;

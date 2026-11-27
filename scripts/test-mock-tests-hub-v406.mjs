@@ -70,7 +70,7 @@ assert.equal(daysToDec31, 34);
 
 const html = fs.readFileSync('mock-tests/index.html', 'utf8');
 assert.ok(html.includes('id="cso-mock-tests-hub-root"'), 'mock-tests/index.html mounts #cso-mock-tests-hub-root');
-assert.ok(html.includes('/assets/js/mock-tests-hub.js?v=20261127v413'), 'mock-tests/index.html loads mock-tests-hub.js');
+assert.ok(html.includes('/assets/js/mock-tests-hub.js?v=20261127v414'), 'mock-tests/index.html loads mock-tests-hub.js');
 assert.ok(!/\sstyle\s*=\s*["']/i.test(html) && !/\son[a-z]+\s*=\s*["']/i.test(html), 'mock-tests/index.html has zero inline styles/handlers');
 
 const styleCss = fs.readFileSync('assets/style.css', 'utf8');
