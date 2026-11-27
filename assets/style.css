@@ -18635,3 +18635,146 @@ nav#cso-hub-top-tabs {
     line-height: 1.45;
   }
 }
+
+/* ===== v404: Candidate Saved-Search & District Alert Watchlist (4-Theme Semantic Tokens) ===== */
+.cso-wl-mount {
+  width: 100%;
+}
+
+.cso-wl-bar {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-wl-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.cso-wl-filter-btn,
+.cso-wl-edit-btn,
+.cso-wl-clear-btn,
+.cso-wl-toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.cso-wl-filter-btn.is-active,
+.cso-wl-edit-btn.is-open,
+.cso-wl-toggle-pill.is-selected,
+.cso-wl-filter-btn:hover,
+.cso-wl-edit-btn:hover {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-wl-pinned {
+  flex: 1 1 200px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.cso-wl-hint {
+  font-size: 0.8rem;
+  color: var(--cso-ink-muted);
+}
+
+.cso-wl-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  background: var(--cso-info-bg);
+  color: var(--cso-info-fg);
+}
+
+.cso-wl-drawer {
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--cso-border);
+}
+
+.cso-wl-sec-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--cso-ink-muted);
+}
+
+.cso-wl-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cso-wl-kw-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-wl-kw-input {
+  flex: 1 1 220px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.88rem;
+}
+
+.cso-wl-match-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-un-card.is-watchlist-match,
+.cso-jh-card.is-watchlist-match {
+  border-color: var(--cso-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-wl-filter-btn,
+  .cso-wl-edit-btn,
+  .cso-wl-toggle-pill {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-wl-mount,
+  .cso-wl-bar {
+    display: none !important;
+  }
+}

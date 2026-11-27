@@ -22,12 +22,14 @@
     category: 'all',
     district: '',
     includeStatewide: true,
+    watchlistOnly: false,
     q: '',
     sort: 'newest',
     visibleCount: PAGE_SIZE,
     items: []
   };
   var districtBarCtrl = null;
+  var watchlistBarCtrl = null;
 
   var CAT_TABS = [
     { key: 'all', en: 'All', or: 'ସବୁ' },
@@ -64,6 +66,9 @@
       var it = list[i];
       if (!it) continue;
       var bi = it._cso_bilingual || {};
+      if (o.watchlistOnly && win && win.CSOWatchlist && typeof win.CSOWatchlist.matchesWatchlist === 'function') {
+        if (!win.CSOWatchlist.matchesWatchlist(it).matched) continue;
+      }
       if (dist && win && win.CSODistrictFilter && typeof win.CSODistrictFilter.matchDistrict === 'function') {
         if (!win.CSODistrictFilter.matchDistrict(it, dist, { includeStatewide: includeStatewide })) continue;
       }
@@ -190,6 +195,7 @@
       category: state.category,
       district: state.district,
       includeStatewide: state.includeStatewide,
+      watchlistOnly: state.watchlistOnly,
       q: state.q,
       sort: state.sort
     });
@@ -239,6 +245,13 @@
 
         var top = el('div', 'cso-un-card__top');
         top.appendChild(el('span', 'cso-un-badge', bi.category || 'Update'));
+        if (win.CSOWatchlist && typeof win.CSOWatchlist.createMatchBadge === 'function') {
+          var wlBadge = win.CSOWatchlist.createMatchBadge(it, null, orMode);
+          if (wlBadge) {
+            card.classList.add('is-watchlist-match');
+            top.appendChild(wlBadge);
+          }
+        }
         if (bi.org) top.appendChild(el('span', 'cso-un-org', bi.org));
         var pubDate = formatIstDate(it.date_published || it.date_modified);
         if (pubDate) top.appendChild(el('span', 'cso-un-date', '🗓️ ' + pubDate));
@@ -325,6 +338,20 @@
       }
     } catch (_) {}
 
+    var wlHost = doc.getElementById('cso-updates-watchlist-bar');
+    if (wlHost && win.CSOWatchlist && typeof win.CSOWatchlist.mountWatchlistBar === 'function') {
+      watchlistBarCtrl = win.CSOWatchlist.mountWatchlistBar(wlHost, {
+        activeOnly: state.watchlistOnly,
+        lang: state.lang,
+        items: state.items,
+        onChange: function (next) {
+          state.watchlistOnly = Boolean(next && next.activeOnly);
+          state.visibleCount = PAGE_SIZE;
+          render();
+        }
+      });
+    }
+
     var distHost = doc.getElementById('cso-updates-district-bar');
     if (distHost && win.CSODistrictFilter && typeof win.CSODistrictFilter.mountSelectorBar === 'function') {
       districtBarCtrl = win.CSODistrictFilter.mountSelectorBar(distHost, {
@@ -346,6 +373,7 @@
         state.lang = b.getAttribute('data-un-lang') === 'or' ? 'or' : 'en';
         localizeStatic();
         if (districtBarCtrl) districtBarCtrl.update({ lang: state.lang });
+        if (watchlistBarCtrl) watchlistBarCtrl.update({ lang: state.lang });
         render();
       });
     });
@@ -397,6 +425,13 @@
           districtBarCtrl.update({
             district: state.district,
             includeStatewide: state.includeStatewide,
+            lang: state.lang,
+            items: state.items
+          });
+        }
+        if (watchlistBarCtrl) {
+          watchlistBarCtrl.update({
+            activeOnly: state.watchlistOnly,
             lang: state.lang,
             items: state.items
           });

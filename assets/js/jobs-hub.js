@@ -14,9 +14,10 @@
     lang: 'en',
     allItems: [],
     summary: { total_active: 0, closing_soon: 0, districts_covered: 30, verified_gov_count: 0 },
-    filters: { q: '', org: 'all', type: 'all', district: '', includeStatewide: true, qual: '' }
+    filters: { q: '', org: 'all', type: 'all', district: '', includeStatewide: true, watchlistOnly: false, qual: '' }
   };
   var districtBarCtrl = null;
+  var watchlistBarCtrl = null;
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -62,6 +63,9 @@
       if (f.type === 'admit-cards' && it.category !== 'Admit Card') return false;
       if (f.type === 'results' && it.category !== 'Result' && it.category !== 'Answer Key') return false;
       if (f.type === 'guides' && it.source_type !== 'guide' && it.category !== 'Strategy Guide') return false;
+    }
+    if (f.watchlistOnly && window.CSOWatchlist && typeof window.CSOWatchlist.matchesWatchlist === 'function') {
+      if (!window.CSOWatchlist.matchesWatchlist(it).matched) return false;
     }
     if (f.district) {
       if (window.CSODistrictFilter && typeof window.CSODistrictFilter.matchDistrict === 'function') {
@@ -150,6 +154,13 @@
 
     // Metadata pills: posts, qualification, district
     var pills = el('div', 'cso-jh-card__pills');
+    if (window.CSOWatchlist && typeof window.CSOWatchlist.createMatchBadge === 'function') {
+      var wlBadge = window.CSOWatchlist.createMatchBadge(it, null, orMode);
+      if (wlBadge) {
+        card.classList.add('is-watchlist-match');
+        pills.appendChild(wlBadge);
+      }
+    }
     if (Number(it.total_posts || 0) > 0) {
       pills.appendChild(el('span', 'cso-jh-pill cso-jh-pill--posts', Number(it.total_posts).toLocaleString('en-IN') + (orMode ? ' ପଦବୀ' : ' Posts')));
     }
@@ -252,12 +263,13 @@
   }
 
   function resetFilters() {
-    state.filters = { q: '', org: 'all', type: 'all', district: '', includeStatewide: true, qual: '' };
+    state.filters = { q: '', org: 'all', type: 'all', district: '', includeStatewide: true, watchlistOnly: false, qual: '' };
     if (window.CSODistrictFilter && typeof window.CSODistrictFilter.syncUrlParams === 'function') {
       window.CSODistrictFilter.syncUrlParams('', true);
     }
     syncControlsToState();
     if (districtBarCtrl) districtBarCtrl.update({ district: '', includeStatewide: true, lang: state.lang, items: state.allItems });
+    if (watchlistBarCtrl) watchlistBarCtrl.update({ activeOnly: false, lang: state.lang, items: state.allItems });
     renderGrid();
   }
 
@@ -338,6 +350,7 @@
         state.lang = langBtn.getAttribute('data-lang') === 'or' ? 'or' : 'en';
         localizeStaticCopy();
         if (districtBarCtrl) districtBarCtrl.update({ lang: state.lang });
+        if (watchlistBarCtrl) watchlistBarCtrl.update({ lang: state.lang });
         renderGrid();
       }
     });
@@ -381,6 +394,19 @@
     }
     state.filters.qual = (params.get('qual') || params.get('qualification') || '').trim();
 
+    var wlMount = document.getElementById('cso-jobs-watchlist-bar');
+    if (wlMount && window.CSOWatchlist && typeof window.CSOWatchlist.mountWatchlistBar === 'function') {
+      watchlistBarCtrl = window.CSOWatchlist.mountWatchlistBar(wlMount, {
+        activeOnly: state.filters.watchlistOnly,
+        lang: state.lang,
+        items: state.allItems,
+        onChange: function (next) {
+          state.filters.watchlistOnly = Boolean(next && next.activeOnly);
+          renderGrid();
+        }
+      });
+    }
+
     var distMount = document.getElementById('cso-jobs-district-bar');
     if (distMount && window.CSODistrictFilter && typeof window.CSODistrictFilter.mountSelectorBar === 'function') {
       districtBarCtrl = window.CSODistrictFilter.mountSelectorBar(distMount, {
@@ -414,6 +440,13 @@
             districtBarCtrl.update({
               district: state.filters.district,
               includeStatewide: state.filters.includeStatewide,
+              lang: state.lang,
+              items: state.allItems
+            });
+          }
+          if (watchlistBarCtrl) {
+            watchlistBarCtrl.update({
+              activeOnly: state.filters.watchlistOnly,
               lang: state.lang,
               items: state.allItems
             });
