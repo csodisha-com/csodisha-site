@@ -2302,9 +2302,19 @@
           if (item) editing = item;
           if (item && item.slug) inSlug.value = item.slug;
           statusMsg.textContent = targetStatus === 'published'
-            ? '\u2713 Published live at ' + (item ? item.url : '/guides/') + '!'
+            ? '\u2713 Published & Homepage Cache Purged — Live at ' + (item ? item.url : '/guides/')
             : '\u2713 Draft saved in D1.';
-          toast(targetStatus === 'published' ? 'Guide published live & synced to Homepage + Search!' : 'Guide draft saved!', 'ok');
+          if (targetStatus === 'published') {
+            try {
+              localStorage.setItem('cso_home_feed_bust', String(Date.now()));
+              if (typeof window.BroadcastChannel === 'function') {
+                var ch = new BroadcastChannel('cso-publish-sync');
+                ch.postMessage({ type: 'published', slug: item ? item.slug : '' });
+                ch.close();
+              }
+            } catch (_) {}
+          }
+          toast(targetStatus === 'published' ? 'Published & Homepage Cache Purged — View Live on Homepage ↗' : 'Guide draft saved!', 'ok');
           if (typeof window.CSOStudioRefreshGuideCount === 'function') window.CSOStudioRefreshGuideCount();
         })
         .catch(function (err) {

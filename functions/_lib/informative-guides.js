@@ -537,8 +537,8 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageA
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v383">
-  <script src="/assets/js/guides-portal.js?v=20261127v383" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v384">
+  <script src="/assets/js/guides-portal.js?v=20261127v384" defer></script>
   ${ldTag}
 </head>`;
 }

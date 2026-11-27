@@ -776,7 +776,23 @@
       if (res && res.item) {
         state.draft = Object.assign(emptyDraft(), res.item, { change_summary: '' });
       }
-      toast(payload.is_published ? 'Published live & Edge Cache purged!' : 'Draft saved to D1!', 'ok');
+      if (payload.is_published) {
+        state.lastPublishedInfo = {
+          title: state.draft.title_en || 'Post',
+          slug: state.draft.slug || '',
+          stage: state.draft.lifecycle_stage || 'notification',
+          ts: Date.now()
+        };
+        try {
+          localStorage.setItem('cso_home_feed_bust', String(Date.now()));
+          if (typeof window.BroadcastChannel === 'function') {
+            var ch = new BroadcastChannel('cso-publish-sync');
+            ch.postMessage({ type: 'published', slug: state.draft.slug || '' });
+            ch.close();
+          }
+        } catch (_) {}
+      }
+      toast(payload.is_published ? 'Published & Homepage Cache Purged — View Live on Homepage ↗' : 'Draft saved to D1!', 'ok');
       if (payload.is_published && !openPreviewAfter && window.CSOPublishTools && window.CSOPublishTools.runPublishChain) {
         window.CSOPublishTools.runPublishChain('jobs', state.draft);
       }
@@ -1181,7 +1197,74 @@
     addInput('Job Title (EN) *', 'title_en', { span: 2, placeholder: 'e.g., OPSC Odisha Civil Services (OAS) Recruitment 2026' });
     addInput('URL Slug', 'slug', { id: 'jphSlugInput', placeholder: 'opsc-oas-recruitment-2026' });
     addInput('Job Title (ଓଡ଼ିଆ)', 'title_or', { span: 2, translateFrom: 'title_en', placeholder: 'ଓଡ଼ିଶା ସିଭିଲ୍ ସର୍ଭିସେସ୍ (OAS) ନିଯୁକ୍ତି ୨୦୨୬' });
-    addSelect('Lifecycle Stage', 'lifecycle_stage', STAGES);
+    addSelect('Lifecycle Stage', 'lifecycle_stage', STAGES.concat([['current_affairs', 'Daily Current Affairs']]));
+
+    // v384: 1-Click Homepage & Hub Placement Segmented Pill Selector (EN / ଓଡ଼ିଆ)
+    var PLACEMENT_OPTIONS = [
+      { key: 'job_alert', stage: 'notification', icon: '💼', en: 'Job Alert', or: 'ଚାକିରି ବିଜ୍ଞପ୍ତି', card: 'Job Alerts (jobs[])', hub: '/jobs/', cta: 'Notice →' },
+      { key: 'exam_update', stage: 'admit_card', icon: '🪪', en: 'Exam Update & Admit Card', or: 'ପରୀକ୍ଷା ସୂଚନା ଓ ଆଡମିଟ୍ କାର୍ଡ', card: 'Exam Updates & Admit Cards (exam_updates[])', hub: '/exams/', cta: 'Admit Card →' },
+      { key: 'exam_result', stage: 'result', icon: '🏆', en: 'Exam Result', or: 'ପରୀକ୍ଷା ଫଳାଫଳ', card: 'Results (results[])', hub: '/exams/#results', cta: 'Result →' },
+      { key: 'current_affairs', stage: 'current_affairs', icon: '📰', en: 'Current Affairs', or: 'ଦୈନିକ ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ', card: 'Daily Current Affairs (current_affairs[])', hub: '/odisha-special/', cta: 'Brief →' }
+    ];
+    function detectPlacementKey(draft) {
+      var st = String((draft && draft.lifecycle_stage) || '').toLowerCase();
+      if (st === 'result') return 'exam_result';
+      if (st === 'admit_card' || st === 'exam_date' || st === 'answer_key') return 'exam_update';
+      if (st === 'current_affairs') return 'current_affairs';
+      var t = String((draft && draft.title_en) || '').toLowerCase();
+      if (/\b(result out|scorecard|osstet result)\b/.test(t)) return 'exam_result';
+      if (/\b(admit card|city slip|exam schedule|22nd edition)\b/.test(t)) return 'exam_update';
+      return 'job_alert';
+    }
+    var placementWrap = el('div', 'jph-field jph-span-3 jph-placement-box');
+    placementWrap.appendChild(el('label', 'jph-label', 'Homepage & Hub Placement / ହୋମପେଜ୍ ଓ ହବ୍ ସ୍ଥାନ (1-Click Routing)'));
+    var pillGroup = el('div', 'jph-placement-pills');
+    pillGroup.setAttribute('role', 'radiogroup');
+    pillGroup.setAttribute('aria-label', 'Homepage & Hub Placement');
+    var previewBadge = el('div', 'jph-placement-preview');
+    var activeKey = detectPlacementKey(d);
+    function renderPlacementPreview(opt) {
+      clear(previewBadge);
+      previewBadge.appendChild(el('span', 'jph-placement-preview-tag', opt.icon + ' ' + opt.card));
+      previewBadge.appendChild(el('span', 'jph-placement-preview-meta', 'Hub: ' + opt.hub + ' · Action Button: '));
+      previewBadge.appendChild(el('strong', 'jph-placement-preview-cta', opt.cta));
+    }
+    PLACEMENT_OPTIONS.forEach(function (opt) {
+      var isSel = opt.key === activeKey;
+      var pBtn = el('button', 'jph-placement-pill' + (isSel ? ' is-active' : ''));
+      pBtn.type = 'button';
+      pBtn.setAttribute('role', 'radio');
+      pBtn.setAttribute('aria-checked', String(isSel));
+      pBtn.setAttribute('data-placement', opt.key);
+      pBtn.appendChild(el('span', 'jph-placement-pill-en', opt.icon + ' ' + opt.en));
+      pBtn.appendChild(el('span', 'jph-placement-pill-or', opt.or));
+      pBtn.addEventListener('click', function () {
+        d.lifecycle_stage = opt.stage;
+        pillGroup.querySelectorAll('.jph-placement-pill').forEach(function (b) {
+          var on = b === pBtn;
+          b.classList.toggle('is-active', on);
+          b.setAttribute('aria-checked', String(on));
+        });
+        var stageSel = cg.querySelector('select.jph-select');
+        if (stageSel) stageSel.value = opt.stage;
+        renderPlacementPreview(opt);
+      });
+      pillGroup.appendChild(pBtn);
+      if (isSel) renderPlacementPreview(opt);
+    });
+    placementWrap.appendChild(pillGroup);
+    placementWrap.appendChild(previewBadge);
+    if (state.lastPublishedInfo && state.lastPublishedInfo.slug === d.slug) {
+      var liveBanner = el('div', 'jph-publish-confirm');
+      liveBanner.appendChild(el('span', '', '✓ Published & Homepage Cache Purged.'));
+      var liveLink = el('a', 'jph-publish-confirm-link', 'View Live on Homepage ↗');
+      liveLink.href = '/?refresh=1';
+      liveLink.target = '_blank';
+      liveLink.rel = 'noopener noreferrer';
+      liveBanner.appendChild(liveLink);
+      placementWrap.appendChild(liveBanner);
+    }
+    cg.appendChild(placementWrap);
     addInput('Organisation / Commission (EN)', 'organisation_en', { placeholder: 'e.g., Odisha Public Service Commission (OPSC)' });
     addInput('Organisation (ଓଡ଼ିଆ)', 'organisation_or', { translateFrom: 'organisation_en', placeholder: 'ଓଡ଼ିଶା ଲୋକସେବା ଆୟୋଗ' });
     addInput('Advt. / Notification No.', 'advt_number', { placeholder: 'e.g., Advt. No. 12 of 2026-27' });

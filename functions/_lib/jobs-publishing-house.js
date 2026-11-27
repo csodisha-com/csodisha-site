@@ -12,6 +12,7 @@ export const LIFECYCLE_STAGES = [
   'admit_card',
   'answer_key',
   'result',
+  'current_affairs',
   'closed'
 ];
 
@@ -21,6 +22,7 @@ export const LIFECYCLE_STAGE_LABELS = {
   admit_card: 'Admit Card Out',
   answer_key: 'Answer Key Released',
   result: 'Result Declared',
+  current_affairs: 'Daily Current Affairs',
   closed: 'Recruitment Completed'
 };
 

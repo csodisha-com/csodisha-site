@@ -165,7 +165,7 @@ async function fetchLatestJobs(db, publishedGuides = []) {
               lifecycle_stage, qualification_summary, selection_mode, notification_pdf_url, published_at, updated_at
        FROM job_articles
        WHERE is_published = 1
-         AND LOWER(COALESCE(lifecycle_stage, 'notification')) NOT IN ('admit_card', 'exam_date', 'answer_key', 'result')
+         AND LOWER(COALESCE(lifecycle_stage, 'notification')) NOT IN ('admit_card', 'exam_date', 'answer_key', 'result', 'current_affairs')
          AND (scheduled_publish_at = '' OR scheduled_publish_at IS NULL OR scheduled_publish_at <= datetime('now'))
        ORDER BY COALESCE(NULLIF(published_at, ''), updated_at) DESC, updated_at DESC
        LIMIT 6`
@@ -511,6 +511,38 @@ async function fetchLatestResults(db, publishedGuides = []) {
 async function fetchLatestCurrentAffairs(db) {
   const merged = [];
   const seenKeys = new Set();
+
+  try {
+    const { results } = await db.prepare(
+      `SELECT id, slug, title_en, title_or, summary_en, summary_or, organisation_en, lifecycle_stage, published_at, updated_at
+       FROM job_articles
+       WHERE is_published = 1
+         AND LOWER(COALESCE(lifecycle_stage, '')) = 'current_affairs'
+         AND (scheduled_publish_at = '' OR scheduled_publish_at IS NULL OR scheduled_publish_at <= datetime('now'))
+       ORDER BY COALESCE(NULLIF(published_at, ''), updated_at) DESC, updated_at DESC
+       LIMIT 4`
+    ).all();
+    for (const r of (results || [])) {
+      if (String(r.lifecycle_stage || '').toLowerCase() !== 'current_affairs') continue;
+      const slug = String(r.slug || r.id || '').trim();
+      if (!slug || seenKeys.has(slug)) continue;
+      seenKeys.add(slug);
+      merged.push({
+        id: String(r.id || slug),
+        slug,
+        title_en: String(r.title_en || ''),
+        title_or: String(r.title_or || ''),
+        date: String(r.published_at || r.updated_at || '').slice(0, 10),
+        category: String(r.organisation_en || 'Odisha'),
+        summary_en: String(r.summary_en || ''),
+        summary_or: String(r.summary_or || ''),
+        highlights_count: 1,
+        quiz_count: 0,
+        href: `/jobs/?slug=${encodeURIComponent(slug)}`,
+        sort_ts: String(r.published_at || r.updated_at || '')
+      });
+    }
+  } catch { /* job_articles optional */ }
 
   try {
     const { results } = await db.prepare(
@@ -966,7 +998,7 @@ export async function buildPublicHomeFeed(env) {
   if (!db) {
     return {
       ok: true,
-      version: 'v383',
+      version: 'v384',
       generated_at: new Date().toISOString(),
       broadcast: { active: false },
       nav_header: [],
@@ -1016,7 +1048,7 @@ export async function buildPublicHomeFeed(env) {
 
   return {
     ok: true,
-    version: 'v383',
+    version: 'v384',
     generated_at: new Date().toISOString(),
     broadcast,
     nav_header,

@@ -702,3 +702,111 @@
   .jph-snippets-grid { grid-template-columns: 1fr; }
   .jph-span-2 { grid-column: auto; }
 }
+
+/* ===== v384: 1-Click Homepage & Hub Placement Segmented Pill Selector (Strict CSP, 4-Theme Semantic Tokens) ===== */
+.jph-placement-box {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  display: grid;
+  gap: 10px;
+}
+
+.jph-placement-pills {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  gap: 8px;
+}
+
+.jph-placement-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.jph-placement-pill:hover,
+.jph-placement-pill:focus-visible {
+  border-color: var(--cso-accent);
+  outline: 2px solid var(--cso-accent);
+  outline-offset: 1px;
+}
+
+.jph-placement-pill.is-active {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.jph-placement-pill-en {
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.jph-placement-pill-or {
+  font-size: 0.76rem;
+  opacity: 0.92;
+  line-height: 1.25;
+}
+
+.jph-placement-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
+  font-size: 0.82rem;
+  color: var(--cso-ink);
+}
+
+.jph-placement-preview-tag {
+  font-weight: 800;
+  color: var(--cso-link);
+}
+
+.jph-placement-preview-meta {
+  color: var(--cso-ink-muted);
+}
+
+.jph-placement-preview-cta {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+  font-size: 0.78rem;
+}
+
+.jph-publish-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-accent);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.jph-publish-confirm-link {
+  color: var(--cso-link);
+  font-weight: 800;
+  text-decoration: underline;
+}

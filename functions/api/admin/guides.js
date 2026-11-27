@@ -32,7 +32,7 @@ import { scheduleSemanticSync } from '../../_lib/semantic-search.js';
 import { recordAdminAuditLog } from './system-ops.js';
 
 function purgeGuideEdgePaths(request, ctx, slugs = []) {
-  const paths = ['/api/public/home-feed', '/api/public/guides', '/guides/', '/sitemap.xml'];
+  const paths = ['/api/public/home-feed', '/api/public/jobs-hub', '/api/public/exams-hub', '/', '/index.html', '/api/public/guides', '/guides/', '/sitemap.xml'];
   for (const s of slugs) {
     const clean = String(s || '').trim();
     if (clean) paths.push(`/guides/${encodeURIComponent(clean)}`);
