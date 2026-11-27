@@ -34,7 +34,7 @@ import { pingIndexNowUrls } from '../../_lib/indexnow-pinger.js';
 import { recordAdminAuditLog } from './system-ops.js';
 
 function purgeGuideEdgePaths(request, ctx, slugs = []) {
-  const paths = ['/api/public/home-feed', '/api/public/jobs-hub', '/api/public/exams-hub', '/api/public/article-quiz', '/', '/index.html', '/api/public/guides', '/guides/', '/sitemap.xml'];
+  const paths = ['/api/public/home-feed', '/api/public/jobs-hub', '/api/public/exams-hub', '/api/public/article-quiz', '/', '/index.html', '/api/public/guides', '/guides/', '/sitemap.xml', '/feed.xml', '/rss.xml', '/feed.json'];
   for (const s of slugs) {
     const clean = String(s || '').trim();
     if (clean) {

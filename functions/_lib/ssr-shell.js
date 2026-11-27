@@ -3,6 +3,8 @@
 import { hydrateJobsFeedResponse, renderSchemeCard } from './ssr-feeds.js';
 
 export const CSO_SHELL_HEAD_LINKS = [
+  '<link rel="alternate" type="application/rss+xml" title="Common Sense Odisha — Bilingual Alerts (RSS)" href="https://csodisha.com/feed.xml">',
+  '<link rel="alternate" type="application/feed+json" title="Common Sense Odisha — Bilingual Alerts (JSON Feed)" href="https://csodisha.com/feed.json">',
   '<link rel="stylesheet" href="/assets/css/cso-themes.css?v=20261125v304">',
   '<link rel="stylesheet" href="/assets/style.css?v=20261125v306">',
   '<link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261125v304">',
@@ -64,6 +66,8 @@ export const CSO_SHELL_FOOTER = `<footer><div class="w cso-footer-grid">
       <a href="/schemes/">Odisha Welfare Schemes</a>
       <a href="/community/">Community</a>
       <a href="/about/">About CSO</a>
+      <a href="/feed.xml">RSS Feed</a>
+      <a href="/feed.json">JSON Feed</a>
     </div>
     <div class="cso-footer-col">
       <h4>Support &amp; Legal</h4>

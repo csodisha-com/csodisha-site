@@ -2771,12 +2771,22 @@
       var refreshBtn = el('button', 'jph-btn jph-btn--sm', '🔄 Refresh Stats');
       refreshBtn.type = 'button';
 
-      var sitemapLink = el('a', 'jph-btn jph-btn--sm', '🗺️ Open /sitemap.xml ↗');
+      var sitemapLink = el('a', 'jph-btn jph-btn--sm', '🗺️ /sitemap.xml ↗');
       sitemapLink.href = '/sitemap.xml';
       sitemapLink.target = '_blank';
       sitemapLink.rel = 'noopener noreferrer';
 
-      actions.append(pingBtn, refreshBtn, sitemapLink);
+      var rssLink = el('a', 'jph-btn jph-btn--sm', '📡 /feed.xml ↗');
+      rssLink.href = '/feed.xml';
+      rssLink.target = '_blank';
+      rssLink.rel = 'noopener noreferrer';
+
+      var jsonFeedLink = el('a', 'jph-btn jph-btn--sm', '{ } /feed.json ↗');
+      jsonFeedLink.href = '/feed.json';
+      jsonFeedLink.target = '_blank';
+      jsonFeedLink.rel = 'noopener noreferrer';
+
+      actions.append(pingBtn, refreshBtn, sitemapLink, rssLink, jsonFeedLink);
       head.appendChild(actions);
       card.appendChild(head);
 

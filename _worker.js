@@ -57,6 +57,7 @@ import { buildJobDetailJsonLdBlocks, injectJsonLdAndMetaIntoHtml, toAbsoluteHttp
 import { buildArticleMiniQuizPayload, handlePublicArticleQuizApi, serializeQuizJson } from './functions/_lib/article-mini-quiz.js';
 import { handleDynamicSitemapXml, handleDynamicRobotsTxt } from './functions/_lib/dynamic-sitemap.js';
 import { isIndexNowKeyPath, handleIndexNowKeyTxt } from './functions/_lib/indexnow-pinger.js';
+import { handlePublicRssFeedXml, handlePublicJsonFeed } from './functions/_lib/syndication-feeds.js';
 import { handlePublicJobsOverviewApi, handlePublicJobsItemsApi, handlePublicJobsSuggestApi, handleJobsDirectorySitemapXml } from './functions/_lib/jobs-directory-studio.js';
 import { LEGACY_JOBS_REDIRECTS, matchJobsCategoryPath, matchJobsDetailPath } from './functions/_lib/jobs-directory-meta.js';
 import { handlePublicSchemesRoute } from './functions/_lib/schemes-directory-ssr.js';
@@ -564,7 +565,7 @@ async function serveEdgeCachedPublicApi(request, edgeCache, ctx, isAnonGet, hand
 async function invalidatePublicEdgeCache(edgeCache, origin) {
   if (!edgeCache) return;
   const basePaths = [
-    '/sitemap.xml', '/sitemap-study-library.xml', '/sitemap-jobs.xml', '/sitemap-schemes.xml', '/sitemap-community.xml', '/feed.xml', '/rss.xml', '/robots.txt', '/llms.txt',
+    '/sitemap.xml', '/sitemap-study-library.xml', '/sitemap-jobs.xml', '/sitemap-schemes.xml', '/sitemap-community.xml', '/feed.xml', '/rss.xml', '/feed.json', '/robots.txt', '/llms.txt',
     '/api/content/jobs', '/api/content/current-affairs', '/api/content/jobs-directory',
     '/api/content/about-directory', '/api/content/schemes-directory', '/api/content/study-library-directory', '/api/public/study-library/items', '/api/edu/resources', '/api/edu/taxonomy', '/api/edu/examinations', '/api/edu/admit-results', '/api/edu/syllabi', '/api/edu/pyqs', '/api/edu/quizzes', '/api/edu/mock-tests', '/api/edu/answer-keys', '/api/edu/collections', '/api/edu/scholarships', '/api/edu/careers', '/api/edu/student-hub', '/api/edu/tools', '/api/finance/catalog', '/api/nav/config', '/api/public/jobs-directory/overview', '/api/public/jobs-directory/items', '/api/public/schemes-directory/overview', '/api/public/schemes-directory/items', '/api/public/community-directory/overview', '/api/public/community-directory/items', '/api/community/posts', '/api/community/qna', '/api/search/synonyms', '/api/public/about-overview', '/api/public/current-affairs', '/api/content/platform-stats', '/api/content/changelog',
     '/api/content/schemes', '/api/content/mock-tests', '/api/content/resources', '/api/marketing/banners', '/api/marketing/landing-pages', '/api/seo/meta', '/api/seo/robots.txt', '/api/seo/autocomplete',
@@ -1358,7 +1359,7 @@ export default {
     if ((request.method === 'GET' || request.method === 'HEAD') && isIndexNowKeyPath(pathname, env)) {
       return handleIndexNowKeyTxt(env);
     }
-    if (pathname === '/sitemap.xml' || pathname === '/feed.xml' || pathname === '/rss.xml' || pathname === '/robots.txt' || pathname === '/llms.txt') {
+    if (pathname === '/sitemap.xml' || pathname === '/feed.xml' || pathname === '/rss.xml' || pathname === '/feed.json' || pathname === '/robots.txt' || pathname === '/llms.txt') {
       if (edgeCache && isAnonGet) {
         const hit = await edgeCache.match(request);
         if (hit) return hit;
@@ -1367,7 +1368,8 @@ export default {
       if (pathname === '/sitemap.xml') seoRes = await handleDynamicSitemapXml(request, env);
       else if (pathname === '/robots.txt') seoRes = handleDynamicRobotsTxt();
       else if (pathname === '/llms.txt') seoRes = await handleLlmsTxt(request, env);
-      else seoRes = await handleRssFeed(request, env);
+      else if (pathname === '/feed.json') seoRes = await handlePublicJsonFeed(request, env);
+      else seoRes = await handlePublicRssFeedXml(request, env);
       if (isAnonGet && seoRes.status === 200) {
         recordPublicCachePut(edgeCache, request, seoRes, ctx);
       }

@@ -490,6 +490,9 @@ async function invalidateJobsCaches(request, slug = '') {
     '/jobs/',
     '/jobs-careers/',
     '/sitemap.xml',
+    '/feed.xml',
+    '/rss.xml',
+    '/feed.json',
     '/',
     '/index.html'
   ];

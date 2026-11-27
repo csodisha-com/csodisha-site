@@ -112,10 +112,12 @@ function verifyRelativePath(sourceFile, rawUrl, type = 'link') {
     candidates.push(path.join(fnBase, 'index.js'));
   }
 
-  // Worker-rendered SSR routes (no static file): /guides/ hub and /guides/<slug> (functions/_lib/informative-guides.js)
+  // Worker-rendered SSR routes (no static file): /guides/, /sitemap.xml, /feed.xml, /rss.xml, /feed.json
   const isSsrGuidesRoute = type === 'link' && /^\/guides(\/[^/]*)?\/?$/.test(cleanUrl)
     && fs.existsSync(path.join(ROOT_DIR, 'functions', '_lib', 'informative-guides.js'));
-  if (isSsrGuidesRoute) {
+  const isDynamicSeoFeedRoute = type === 'link' && /^\/(sitemap\.xml|feed\.xml|rss\.xml|feed\.json)$/.test(cleanUrl)
+    && fs.existsSync(path.join(ROOT_DIR, 'functions', '_lib', 'syndication-feeds.js'));
+  if (isSsrGuidesRoute || isDynamicSeoFeedRoute) {
     stats.internalLinksVerified++;
     return true;
   }
