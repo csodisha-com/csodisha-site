@@ -300,6 +300,22 @@
 
     var popover = el('div', 'jph-alert-popover');
     popover.hidden = true;
+
+    // v392: Live WhatsApp / Telegram Social Link Card Preview
+    var ogCard = el('div', 'jph-og-preview');
+    ogCard.appendChild(el('div', 'jph-og-preview__kicker', '🖼️ Link Card Preview (WhatsApp / Telegram / X)'));
+    var ogInner = el('div', 'jph-og-preview__card');
+    var ogImg = el('img', 'jph-og-preview__img');
+    ogImg.alt = 'Social preview cover thumbnail';
+    ogImg.loading = 'lazy';
+    var ogMeta = el('div', 'jph-og-preview__meta');
+    var ogDomain = el('div', 'jph-og-preview__domain', 'csodisha.com');
+    var ogTitle = el('div', 'jph-og-preview__title', '');
+    var ogDesc = el('div', 'jph-og-preview__desc', '');
+    ogMeta.append(ogDomain, ogTitle, ogDesc);
+    ogInner.append(ogImg, ogMeta);
+    ogCard.appendChild(ogInner);
+
     var previewTa = el('textarea', 'jph-textarea jph-alert-textarea');
     previewTa.setAttribute('aria-label', 'Editable WhatsApp / Telegram alert text');
     previewTa.addEventListener('input', function () { customEdited = true; });
@@ -309,11 +325,19 @@
       customEdited = false;
       previewTa.value = formatSocialAlertText(getRecordFn(), channel, kind);
     });
-    popover.append(previewTa, resetBtn);
+    popover.append(ogCard, previewTa, resetBtn);
 
     function syncPreview() {
+      var rec = getRecordFn() || {};
+      var rawImg = String(rec.cover_image_url || rec.cover_image || '').trim();
+      ogImg.src = rawImg && (rawImg.startsWith('/') || /^https?:\/\//i.test(rawImg)) ? rawImg : '/assets/img/cso-logo-400.webp';
+      ogTitle.textContent = String(rec.title_en || 'Common Sense Odisha').trim().slice(0, 95);
+      var rawDesc = String(rec.summary_en || rec.article_body_en || rec.body_en || rec.title_en || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      ogDesc.textContent = rawDesc.slice(0, 160);
+      var slug = String(rec.slug || '').trim();
+      ogDomain.textContent = 'csodisha.com/' + (kind === 'guide' ? 'guides/' : 'jobs/') + (slug || '');
       if (!customEdited) {
-        previewTa.value = formatSocialAlertText(getRecordFn(), channel, kind);
+        previewTa.value = formatSocialAlertText(rec, channel, kind);
       }
     }
 

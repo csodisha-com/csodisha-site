@@ -8,9 +8,11 @@
  *  - Hub list pages (`/jobs/`, `/guides/`) NEVER emit `JobPosting`
  */
 
+import { buildSocialMetaTags, stripExistingSocialMetaTags } from './social-meta-tags.js';
+
 const SITE_ORIGIN = 'https://csodisha.com';
 const PUBLISHER_LOGO_URL = `${SITE_ORIGIN}/assets/img/cso-logo-192.png`;
-const FALLBACK_COVER_URL = `${SITE_ORIGIN}/assets/img/icon-512.png`;
+const FALLBACK_COVER_URL = `${SITE_ORIGIN}/assets/img/cso-logo-400.webp`;
 
 const NON_VACANCY_STAGES = new Set([
   'exam_update',
@@ -311,12 +313,22 @@ export function buildGuideDetailJsonLdBlocks(guide, origin = SITE_ORIGIN, catego
   return blocks;
 }
 
-export function injectJsonLdAndMetaIntoHtml(baseHtml, { title, description, canonical, ogImage, jsonLdBlocks = [] }) {
-  let html = String(baseHtml || '');
+export function injectJsonLdAndMetaIntoHtml(baseHtml, {
+  title,
+  description,
+  body = '',
+  canonical,
+  ogImage,
+  ogType = 'article',
+  publishedTime = '',
+  modifiedTime = '',
+  origin = SITE_ORIGIN,
+  jsonLdBlocks = []
+}) {
+  let html = stripExistingSocialMetaTags(String(baseHtml || ''));
   const safeTitle = escapeHtmlAttr(title || 'Common Sense Odisha');
   const safeDesc = escapeHtmlAttr(description || '');
   const safeCanon = escapeHtmlAttr(canonical || '');
-  const safeImg = escapeHtmlAttr(ogImage || FALLBACK_COVER_URL);
 
   if (/<title>[\s\S]*?<\/title>/i.test(html)) {
     html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${safeTitle} | Common Sense Odisha</title>`);
@@ -332,16 +344,22 @@ export function injectJsonLdAndMetaIntoHtml(baseHtml, { title, description, cano
     }
   }
 
-  const ogTags = [
-    `<meta property="og:title" content="${safeTitle}">`,
-    safeDesc ? `<meta property="og:description" content="${safeDesc}">` : '',
-    safeCanon ? `<meta property="og:url" content="${safeCanon}">` : '',
-    `<meta property="og:image" content="${safeImg}">`
-  ].filter(Boolean).join('\n  ');
+  const socialMeta = buildSocialMetaTags({
+    origin,
+    ogType,
+    url: canonical,
+    title,
+    description,
+    body,
+    image: ogImage,
+    imageAlt: title,
+    publishedTime,
+    modifiedTime
+  });
 
   const ldScripts = (Array.isArray(jsonLdBlocks) ? jsonLdBlocks : [])
     .map((b) => `<script type="application/ld+json">${serializeJsonLd(b)}</script>`)
     .join('\n  ');
 
-  return html.replace(/<\/head>/i, `  ${ogTags}\n  ${ldScripts}\n</head>`);
+  return html.replace(/<\/head>/i, `  ${socialMeta}\n  ${ldScripts}\n</head>`);
 }

@@ -13,6 +13,7 @@ import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, escShell, ren
 import { GUIDE_TOPIC_ALIASES, matchGuideToTopic } from './trending-topics.js';
 import { buildGuideDetailJsonLdBlocks } from './rich-results-jsonld.js';
 import { buildArticleMiniQuizPayload, serializeQuizJson } from './article-mini-quiz.js';
+import { buildSocialMetaTags } from './social-meta-tags.js';
 
 export const DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH = '/assets/img/icon-512.png';
 
@@ -507,10 +508,22 @@ function formatHumanDate(raw) {
   return `${m[3]} ${months[Number(m[2]) - 1] || m[2]} ${m[1]}`;
 }
 
-function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageAlt = '', ogType = 'website', jsonLd = null, origin = 'https://csodisha.com', robots = '' }) {
+function buildGuidesHead({ title, description, body = '', canonical, ogImage = '', ogImageAlt = '', ogType = 'website', publishedTime = '', modifiedTime = '', jsonLd = null, origin = 'https://csodisha.com', robots = '' }) {
   const cleanOrigin = String(origin || 'https://csodisha.com').replace(/\/+$/, '');
   const resolvedOgImg = ogImage || `${cleanOrigin}${DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH}`;
   const resolvedOgAlt = ogImageAlt || title;
+  const socialMeta = buildSocialMetaTags({
+    origin: cleanOrigin,
+    ogType,
+    url: canonical,
+    title,
+    description,
+    body,
+    image: resolvedOgImg,
+    imageAlt: resolvedOgAlt,
+    publishedTime,
+    modifiedTime
+  });
   const ldTag = jsonLd
     ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>`
     : '';
@@ -524,31 +537,15 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageA
   <meta name="description" content="${escShell(description)}">
   ${robots ? `<meta name="robots" content="${escShell(robots)}">` : ''}
   <link rel="canonical" href="${escShell(canonical)}">
-  <meta property="og:type" content="${escShell(ogType)}">
-  <meta property="og:site_name" content="Common Sense Odisha">
-  <meta property="og:locale" content="en_IN">
-  <meta property="og:locale:alternate" content="or_IN">
-  <meta property="og:title" content="${escShell(title)}">
-  <meta property="og:description" content="${escShell(description)}">
-  <meta property="og:url" content="${escShell(canonical)}">
-  <meta property="og:image" content="${escShell(resolvedOgImg)}">
-  <meta property="og:image:secure_url" content="${escShell(resolvedOgImg)}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="${escShell(resolvedOgAlt)}">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${escShell(title)}">
-  <meta name="twitter:description" content="${escShell(description)}">
-  <meta name="twitter:image" content="${escShell(resolvedOgImg)}">
-  <meta name="twitter:image:alt" content="${escShell(resolvedOgAlt)}">
+  ${socialMeta}
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v391">
-  <script src="/assets/js/guides-portal.js?v=20261127v391" defer></script>
-  <script src="/assets/js/ics-calendar-export.js?v=20261127v391" defer></script>
-  <script src="/assets/js/saved-alerts-drawer.js?v=20261127v391" defer></script>
-  <script src="/assets/js/article-mini-quiz.js?v=20261127v391" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v392">
+  <script src="/assets/js/guides-portal.js?v=20261127v392" defer></script>
+  <script src="/assets/js/ics-calendar-export.js?v=20261127v392" defer></script>
+  <script src="/assets/js/saved-alerts-drawer.js?v=20261127v392" defer></script>
+  <script src="/assets/js/article-mini-quiz.js?v=20261127v392" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -916,11 +913,14 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
 
   const head = buildGuidesHead({
     title: `${guide.title_en} | Common Sense Odisha`,
-    description: guide.summary_en || guide.title_en,
+    description: guide.summary_en || '',
+    body: guide.body_en || '',
     canonical,
     ogImage: socialOgImg,
     ogImageAlt: guide.cover_caption_en || guide.title_en,
     ogType: 'article',
+    publishedTime: guide.created_at || guide.updated_at || '',
+    modifiedTime: guide.updated_at || guide.created_at || '',
     jsonLd,
     origin
   });

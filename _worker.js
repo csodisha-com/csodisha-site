@@ -1726,14 +1726,19 @@ export default {
               const baseHtml = await shellRes.text();
               const origin = url.origin || 'https://csodisha.com';
               const canonical = `${origin}/jobs/${encodeURIComponent(row.slug)}`;
-              const ogImage = toAbsoluteHttpsUrl(row.cover_image_url, origin) || `${origin}/assets/img/icon-512.png`;
+              const ogImage = toAbsoluteHttpsUrl(row.cover_image_url, origin) || `${origin}/assets/img/cso-logo-400.webp`;
               const jsonLdBlocks = buildJobDetailJsonLdBlocks(row, origin);
               const quizPayload = buildArticleMiniQuizPayload(row, 'job');
               const hydratedHtml = injectJsonLdAndMetaIntoHtml(baseHtml, {
                 title: row.title_en,
-                description: row.summary_en || row.title_en,
+                description: row.summary_en || '',
+                body: row.article_body_en || '',
                 canonical,
                 ogImage,
+                ogType: 'article',
+                publishedTime: row.published_at || row.updated_at || '',
+                modifiedTime: row.updated_at || row.published_at || '',
+                origin,
                 jsonLdBlocks
               }).replace(
                 /<\/body>/i,
