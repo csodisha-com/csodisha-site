@@ -134,6 +134,22 @@
         if (calTrackBtn) acts.appendChild(calTrackBtn);
       }
 
+      if (window.CSOSavedAlerts && typeof window.CSOSavedAlerts.createBookmarkButton === 'function') {
+        var bmTrackBtn = window.CSOSavedAlerts.createBookmarkButton({
+          id: 'exam:' + tr.id,
+          slug: tr.id,
+          url: tr.primary_guide_url || '/exams/',
+          title_en: tr.name_en,
+          title_or: tr.name_or || '',
+          org: tr.conducting_body,
+          category: 'exam_update',
+          deadline_iso: tr.exam_date || '',
+          deadline_label: tr.stage || 'Exam Date',
+          venue_or_mode: 'Odisha / Exam Center'
+        }, { isOr: orMode, compact: true });
+        if (bmTrackBtn) acts.appendChild(bmTrackBtn);
+      }
+
       var shareUrl = (window.location.origin || 'https://csodisha.com') + '/exams/';
       var waText = tr.name_en + ' (' + tr.stage + ') — Free Mock Tests & Strategy Guide on CSOdisha: ' + shareUrl;
       var waBtn = el('a', 'cso-eh-btn cso-eh-btn--wa', 'WhatsApp');
@@ -232,6 +248,19 @@
           });
           if (resCalBtn) foot.appendChild(resCalBtn);
         }
+      }
+      if (window.CSOSavedAlerts && typeof window.CSOSavedAlerts.createBookmarkButton === 'function') {
+        var bmResBtn = window.CSOSavedAlerts.createBookmarkButton({
+          id: 'exam-res:' + (it.slug || it.id || it.title_en),
+          slug: it.slug || it.id || '',
+          url: it.detail_url || '/exams/',
+          title_en: it.title_en || 'Exam Update',
+          title_or: it.title_or || '',
+          org: it.exam_tag || 'Odisha Exams',
+          category: 'exam_update',
+          deadline_iso: it.exam_date || it.last_date || it.title_en || ''
+        }, { isOr: orMode, compact: true });
+        if (bmResBtn) foot.appendChild(bmResBtn);
       }
       card.appendChild(foot);
 

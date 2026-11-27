@@ -404,6 +404,10 @@
   }
 
   function openSavedDrawer() {
+    if (window.CSOSavedAlerts && typeof window.CSOSavedAlerts.openDrawer === 'function') {
+      window.CSOSavedAlerts.openDrawer();
+      return;
+    }
     const backdrop = ensureSavedDrawer();
     renderSavedDrawerContents();
     backdrop.hidden = false;
@@ -418,13 +422,22 @@
     const savedBtn = el('button', 'pill cso-ctl-saved');
     savedBtn.id = 'cso-ctl-saved';
     savedBtn.type = 'button';
-    savedBtn.setAttribute('aria-label', 'Open saved bookmarks');
-    const starSpan = el('span', '', '★');
+    savedBtn.setAttribute('data-cso-saved-trigger', '1');
+    savedBtn.setAttribute('aria-label', 'Open My Saved Alerts drawer');
+    const starSpan = el('span', '', '🔖');
     starSpan.setAttribute('aria-hidden', 'true');
     const savedTxt = el('span', '', 'Saved');
-    const countBadge = el('span', 'cso-saved-badge', String(getSavedBookmarksList().length));
+    const initSavedLen = (window.CSOSavedAlerts && typeof window.CSOSavedAlerts.getAll === 'function')
+      ? window.CSOSavedAlerts.getAll().length
+      : getSavedBookmarksList().length;
+    const countBadge = el('span', 'cso-saved-badge', String(initSavedLen));
     countBadge.id = 'cso-saved-count';
-    savedBtn.append(starSpan, ' ', savedTxt, ' ', countBadge);
+    countBadge.setAttribute('data-cso-saved-count', '1');
+    const urgentDot = el('span', 'cso-sa-urgent-dot');
+    urgentDot.setAttribute('data-cso-saved-urgent', '1');
+    urgentDot.setAttribute('aria-hidden', 'true');
+    urgentDot.hidden = !(window.CSOSavedAlerts && typeof window.CSOSavedAlerts.getUrgentCount === 'function' && window.CSOSavedAlerts.getUrgentCount() > 0);
+    savedBtn.append(starSpan, ' ', savedTxt, ' ', countBadge, urgentDot);
     savedBtn.addEventListener('click', openSavedDrawer);
 
     const langWrap = el('span', 'cso-popup-anchor');
@@ -2005,13 +2018,22 @@
     const navSavedBtn = el('button', 'pill cso-ctl-saved cso-nav-saved-pill acc-btn');
     navSavedBtn.id = 'cso-ctl-saved';
     navSavedBtn.type = 'button';
-    navSavedBtn.setAttribute('aria-label', 'Open saved bookmarks');
-    const navSavedStar = el('span', '', '★');
+    navSavedBtn.setAttribute('data-cso-saved-trigger', '1');
+    navSavedBtn.setAttribute('aria-label', 'Open My Saved Alerts drawer');
+    const navSavedStar = el('span', '', '🔖');
     navSavedStar.setAttribute('aria-hidden', 'true');
     const navSavedTxt = el('span', '', 'Saved');
-    const navSavedCount = el('span', 'cso-saved-badge', String(getSavedBookmarksList().length));
+    const navInitLen = (window.CSOSavedAlerts && typeof window.CSOSavedAlerts.getAll === 'function')
+      ? window.CSOSavedAlerts.getAll().length
+      : getSavedBookmarksList().length;
+    const navSavedCount = el('span', 'cso-saved-badge', String(navInitLen));
     navSavedCount.id = 'cso-saved-count';
-    navSavedBtn.append(navSavedStar, ' ', navSavedTxt, ' ', navSavedCount);
+    navSavedCount.setAttribute('data-cso-saved-count', '1');
+    const navUrgentDot = el('span', 'cso-sa-urgent-dot');
+    navUrgentDot.setAttribute('data-cso-saved-urgent', '1');
+    navUrgentDot.setAttribute('aria-hidden', 'true');
+    navUrgentDot.hidden = !(window.CSOSavedAlerts && typeof window.CSOSavedAlerts.getUrgentCount === 'function' && window.CSOSavedAlerts.getUrgentCount() > 0);
+    navSavedBtn.append(navSavedStar, ' ', navSavedTxt, ' ', navSavedCount, navUrgentDot);
     navSavedBtn.addEventListener('click', openSavedDrawer);
 
     const accCluster = el('div', 'cso-mobile-acc-cluster');

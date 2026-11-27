@@ -610,6 +610,22 @@
     printBtn.setAttribute('aria-label', state.lang === 'or' ? 'ପ୍ରିଣ୍ଟ କିମ୍ବା PDF ସେଭ୍ କରନ୍ତୁ' : 'Print or save clean PDF guide');
     printBtn.addEventListener('click', function () { window.print(); });
     actRow.appendChild(printBtn);
+    if (window.CSOSavedAlerts && typeof window.CSOSavedAlerts.createBookmarkButton === 'function') {
+      var saveDetailBtn = window.CSOSavedAlerts.createBookmarkButton({
+        id: 'job:' + (a.slug || a.id),
+        slug: a.slug || a.id,
+        url: '/jobs/' + encodeURIComponent(a.slug || ''),
+        title_en: a.title_en,
+        title_or: a.title_or || '',
+        org: a.organisation_en || a.sector_badge || 'Odisha Govt',
+        category: a.lifecycle_stage === 'result' ? 'result' : (a.lifecycle_stage === 'admit_card' || a.lifecycle_stage === 'exam_date' ? 'exam_update' : 'job_alert'),
+        deadline_iso: a.last_date || a.exam_date || '',
+        deadline_label: /walk-?in/i.test(a.title_en || '') ? 'Walk-in Interview' : 'Last Date',
+        venue_or_mode: a.location_district || 'Odisha / Official Portal',
+        official_url: a.official_apply_url || a.notification_pdf_url || a.official_website_url || ''
+      }, { isOr: state.lang === 'or', extraClass: 'jp-btn' });
+      if (saveDetailBtn) actRow.appendChild(saveDetailBtn);
+    }
     if (a.official_website_url && safeHref(a.official_website_url)) {
       var webA = el('a', 'jp-btn', 'Official Website ↗');
       webA.href = safeHref(a.official_website_url);
@@ -901,6 +917,22 @@
       appA.target = '_blank';
       appA.rel = 'noopener noreferrer';
       foot.appendChild(appA);
+    }
+    if (window.CSOSavedAlerts && typeof window.CSOSavedAlerts.createBookmarkButton === 'function') {
+      var saveCardBtn = window.CSOSavedAlerts.createBookmarkButton({
+        id: 'job:' + (job.slug || job.id),
+        slug: job.slug || job.id,
+        url: '/jobs/' + encodeURIComponent(job.slug || ''),
+        title_en: job.title_en,
+        title_or: job.title_or || '',
+        org: job.organisation_en || job.sector_badge || 'Odisha Govt',
+        category: job.lifecycle_stage === 'result' ? 'result' : (job.lifecycle_stage === 'admit_card' || job.lifecycle_stage === 'exam_date' ? 'exam_update' : 'job_alert'),
+        deadline_iso: job.last_date || job.exam_date || '',
+        deadline_label: /walk-?in/i.test(job.title_en || '') ? 'Walk-in Interview' : 'Last Date',
+        venue_or_mode: job.location_district || 'Odisha / Official Portal',
+        official_url: job.official_apply_url || ''
+      }, { isOr: state.lang === 'or', compact: true });
+      if (saveCardBtn) foot.appendChild(saveCardBtn);
     }
     body.appendChild(foot);
     card.appendChild(body);

@@ -409,7 +409,15 @@
       actLink.setAttribute('target', '_blank');
       actLink.setAttribute('rel', 'noopener noreferrer');
     }
-    row.appendChild(actLink);
+    if (opts.saveItem && window.CSOSavedAlerts && typeof window.CSOSavedAlerts.createBookmarkButton === 'function') {
+      var actWrap = make('div', 'cso-hf-row__actions');
+      var bmBtn = window.CSOSavedAlerts.createBookmarkButton(opts.saveItem, { compact: true, isOr: isOdiaActive() });
+      if (bmBtn) actWrap.appendChild(bmBtn);
+      actWrap.appendChild(actLink);
+      row.appendChild(actWrap);
+    } else {
+      row.appendChild(actLink);
+    }
     return row;
   }
 
@@ -448,7 +456,20 @@
         pillTone: mapBadgeTone(job.badge_tone, 'accent'),
         meta: metaText,
         actionLabel: actLabel,
-        actionAria: (isOr ? 'ଦେଖନ୍ତୁ: ' : 'View job: ') + title
+        actionAria: (isOr ? 'ଦେଖନ୍ତୁ: ' : 'View job: ') + title,
+        saveItem: {
+          id: 'job:' + (job.slug || job.id || title),
+          slug: job.slug || job.id || '',
+          url: href,
+          title_en: job.title_en || title,
+          title_or: job.title_or || '',
+          org: job.organisation_en || job.org_badge || 'Odisha Govt',
+          category: 'job_alert',
+          deadline_iso: job.last_date || job.exam_date || '',
+          deadline_label: /walk-?in/i.test(job.title_en || '') ? 'Walk-in Interview' : 'Last Date',
+          venue_or_mode: job.district || 'Odisha / Official Portal',
+          official_url: job.official_apply_url || ''
+        }
       }));
     });
     grid.replaceChildren(frag);
@@ -474,7 +495,18 @@
         pillTone: mapBadgeTone(ex.badge_tone, 'info'),
         meta: metaText,
         actionLabel: actLabel,
-        actionAria: (isOr ? 'ଦେଖନ୍ତୁ: ' : 'View exam update: ') + title
+        actionAria: (isOr ? 'ଦେଖନ୍ତୁ: ' : 'View exam update: ') + title,
+        saveItem: {
+          id: 'exam:' + (ex.slug || ex.id || title),
+          slug: ex.slug || ex.id || '',
+          url: href,
+          title_en: ex.title_en || title,
+          title_or: ex.title_or || '',
+          org: ex.org_badge || 'Exam Board',
+          category: 'exam_update',
+          deadline_iso: ex.exam_date || ex.last_date || ex.meta_en || '',
+          deadline_label: 'Exam / Admit Card'
+        }
       }));
     });
     grid.replaceChildren(frag);
@@ -500,7 +532,18 @@
         pillTone: mapBadgeTone(res.badge_tone, 'ok'),
         meta: metaText,
         actionLabel: actLabel,
-        actionAria: (isOr ? 'ଫଳାଫଳ ଦେଖନ୍ତୁ: ' : 'View result: ') + title
+        actionAria: (isOr ? 'ଫଳାଫଳ ଦେଖନ୍ତୁ: ' : 'View result: ') + title,
+        saveItem: {
+          id: 'result:' + (res.slug || res.id || title),
+          slug: res.slug || res.id || '',
+          url: href,
+          title_en: res.title_en || title,
+          title_or: res.title_or || '',
+          org: res.org_badge || 'Board Result',
+          category: 'result',
+          deadline_iso: res.last_date || res.meta_en || '',
+          deadline_label: 'Result / OMR Window'
+        }
       }));
     });
     grid.replaceChildren(frag);
@@ -526,7 +569,17 @@
         pillTone: 'info',
         meta: metaParts.join(' \u2022 '),
         actionLabel: isOr ? 'ବ୍ରିଫ୍ \u2192' : 'Brief \u2192',
-        actionAria: (isOr ? 'ପଢ଼ନ୍ତୁ: ' : 'Read brief: ') + title
+        actionAria: (isOr ? 'ପଢ଼ନ୍ତୁ: ' : 'Read brief: ') + title,
+        saveItem: {
+          id: 'ca:' + (ca.slug || ca.id || ca.date || title),
+          slug: ca.slug || ca.id || '',
+          url: href,
+          title_en: ca.title_en || title,
+          title_or: ca.title_or || '',
+          org: ca.category || 'Current Affairs',
+          category: 'guide',
+          deadline_iso: ''
+        }
       }));
     });
     grid.replaceChildren(frag);
