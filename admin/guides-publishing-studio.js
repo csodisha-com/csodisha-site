@@ -3815,7 +3815,11 @@
         });
     }
 
-    shell.append(tabBar, filterBar, listHost);
+    if (window.CSOSeoInspector && typeof window.CSOSeoInspector.buildSeoInspectorCard === 'function') {
+      shell.append(window.CSOSeoInspector.buildSeoInspectorCard(), tabBar, filterBar, listHost);
+    } else {
+      shell.append(tabBar, filterBar, listHost);
+    }
     root.appendChild(shell);
     drawTabs();
     loadList();

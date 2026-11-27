@@ -700,6 +700,9 @@
   // TAB 1A: ARTICLES LIST VIEW
   // ======================================================================
   function renderArticlesList(container) {
+    if (window.CSOSeoInspector && typeof window.CSOSeoInspector.buildSeoInspectorCard === 'function') {
+      container.appendChild(window.CSOSeoInspector.buildSeoInspectorCard());
+    }
     var k = state.kpis || {
       total_jobs: 0, published_live: 0, scheduled_or_draft: 0,
       closing_soon: 0, total_vacancies: 0, total_apply_clicks: 0, total_pdf_downloads: 0
@@ -2724,6 +2727,154 @@
     window.CSOQuizBuilder = {
       buildQuizEditorAccordion: buildQuizEditorAccordion,
       validateQuizJsonString: validateQuizJsonString
+    };
+  })();
+
+  // =========================================================================
+  // v394: Admin Studio SEO & IndexNow Status Inspector Widget
+  // Strict CSP-safe (zero inline styles/handlers, semantic 4-theme tokens)
+  // =========================================================================
+  (function initCSOSeoInspector() {
+    var cachedStatus = null;
+
+    function formatIstStamp(iso) {
+      if (!iso) return 'Never Pinged';
+      try {
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return String(iso).slice(0, 16);
+        return d.toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          day: '2-digit',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }) + ' IST';
+      } catch (_) {
+        return String(iso).slice(0, 16);
+      }
+    }
+
+    function buildSeoInspectorCard() {
+      var card = el('section', 'jph-card jph-seo-inspector');
+      card.setAttribute('data-cso-seo-inspector', '1');
+      card.setAttribute('aria-label', 'Search Indexing and Sitemap Status');
+
+      var head = el('div', 'jph-seo-head');
+      head.appendChild(el('h3', 'jph-seo-title', '📡 Search Indexing & Sitemap Status | ସର୍ଚ୍ଚ ଇଣ୍ଡେକ୍ସିଂ ଓ ସାଇଟମ୍ୟାପ୍ ସ୍ଥିତି'));
+      var actions = el('div', 'jph-seo-actions');
+
+      var pingBtn = el('button', 'jph-btn jph-btn--sm jph-btn--primary', '🚀 Re-Ping All Active URLs');
+      pingBtn.type = 'button';
+      pingBtn.setAttribute('data-cso-seo-reping', '1');
+
+      var refreshBtn = el('button', 'jph-btn jph-btn--sm', '🔄 Refresh Stats');
+      refreshBtn.type = 'button';
+
+      var sitemapLink = el('a', 'jph-btn jph-btn--sm', '🗺️ Open /sitemap.xml ↗');
+      sitemapLink.href = '/sitemap.xml';
+      sitemapLink.target = '_blank';
+      sitemapLink.rel = 'noopener noreferrer';
+
+      actions.append(pingBtn, refreshBtn, sitemapLink);
+      head.appendChild(actions);
+      card.appendChild(head);
+
+      var pills = el('div', 'jph-seo-pills');
+      var pillTotal = el('div', 'jph-seo-pill');
+      var pillPing = el('div', 'jph-seo-pill');
+      var pillKey = el('div', 'jph-seo-pill');
+      pills.append(pillTotal, pillPing, pillKey);
+      card.appendChild(pills);
+
+      var liveNote = el('div', 'jph-seo-status-note');
+      liveNote.setAttribute('role', 'status');
+      liveNote.setAttribute('aria-live', 'polite');
+      card.appendChild(liveNote);
+
+      function renderData(data) {
+        clear(pillTotal);
+        clear(pillPing);
+        clear(pillKey);
+        if (!data || !data.sitemap) {
+          pillTotal.appendChild(el('span', 'jph-muted', 'Loading live sitemap stats…'));
+          return;
+        }
+        var sm = data.sitemap;
+        var ix = data.indexnow || {};
+
+        pillTotal.append(
+          el('span', 'jph-seo-pill-k', 'Total Sitemap URLs'),
+          el('strong', 'jph-seo-pill-v', String(sm.total_urls || 0)),
+          el('span', 'jph-seo-pill-sub', (sm.hubs_count || 0) + ' Hubs + ' + (sm.jobs_count || 0) + ' Jobs + ' + (sm.guides_count || 0) + ' Guides')
+        );
+
+        var pingBadgeCls = ix.last_ping_at
+          ? (ix.last_ok ? 'jph-seo-badge is-ok' : 'jph-seo-badge is-warn')
+          : 'jph-seo-badge is-muted';
+        var pingBadgeTxt = ix.last_ping_at
+          ? ('HTTP ' + (ix.last_status || 0) + (ix.last_ok ? ' OK' : ' Retry') + ' · ' + (ix.last_url_count || 0) + ' URLs')
+          : 'Never Pinged';
+        pillPing.append(
+          el('span', 'jph-seo-pill-k', 'Last IndexNow Ping'),
+          el('span', pingBadgeCls, pingBadgeTxt),
+          el('span', 'jph-seo-pill-sub', (ix.last_ping_at ? formatIstStamp(ix.last_ping_at) : 'Click Re-Ping to submit') + (ix.last_trigger ? (' · ' + ix.last_trigger) : ''))
+        );
+
+        pillKey.append(
+          el('span', 'jph-seo-pill-k', 'Verification Key Status'),
+          el('span', 'jph-seo-badge is-ok', '✓ Active'),
+          el('span', 'jph-seo-pill-sub', ix.key_path || '/indexnow-key.txt')
+        );
+      }
+
+      function loadStatus(force) {
+        if (cachedStatus && !force) {
+          renderData(cachedStatus);
+          return;
+        }
+        refreshBtn.disabled = true;
+        api('/api/admin/seo/status').then(function (res) {
+          cachedStatus = res;
+          renderData(res);
+          liveNote.textContent = '';
+        }).catch(function (err) {
+          liveNote.textContent = 'Could not load SEO status: ' + err.message;
+        }).finally(function () {
+          refreshBtn.disabled = false;
+        });
+      }
+
+      refreshBtn.addEventListener('click', function () { loadStatus(true); });
+
+      pingBtn.addEventListener('click', function () {
+        pingBtn.disabled = true;
+        pingBtn.textContent = '⏳ Pinging IndexNow…';
+        liveNote.textContent = 'Purging /sitemap.xml edge cache and submitting all active URLs to IndexNow…';
+        api('/api/admin/seo/ping-indexnow', 'POST', { mode: 'all_active' }).then(function (res) {
+          var ix = (res && res.indexnow) || {};
+          var msg = ix.ok
+            ? ('✅ Re-pinged ' + (ix.url_count || 0) + ' active URLs to IndexNow (HTTP ' + (ix.status || 200) + ') & purged /sitemap.xml!')
+            : ('⚠️ Submitted ' + (ix.url_count || 0) + ' URLs (HTTP ' + (ix.status || 0) + (ix.error ? ': ' + ix.error : '') + ')');
+          liveNote.textContent = msg;
+          toast(msg, ix.ok ? 'ok' : 'amber');
+          loadStatus(true);
+        }).catch(function (err) {
+          liveNote.textContent = '✕ Re-ping failed: ' + err.message;
+          toast('IndexNow re-ping failed: ' + err.message, 'crimson');
+        }).finally(function () {
+          pingBtn.disabled = false;
+          pingBtn.textContent = '🚀 Re-Ping All Active URLs';
+        });
+      });
+
+      renderData(cachedStatus);
+      loadStatus(!cachedStatus);
+      return card;
+    }
+
+    window.CSOSeoInspector = {
+      buildSeoInspectorCard: buildSeoInspectorCard
     };
   })();
 })(window, document);

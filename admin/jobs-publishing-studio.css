@@ -1206,3 +1206,97 @@
   color: var(--cso-ink-muted);
   line-height: 1.35;
 }
+
+/* ===== v394: Admin Studio SEO & IndexNow Status Inspector Widget (4-Theme Semantic Tokens) ===== */
+.jph-seo-inspector {
+  display: grid;
+  gap: 10px;
+}
+
+.jph-seo-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.jph-seo-title {
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.jph-seo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.jph-seo-pills {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.jph-seo-pill {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.jph-seo-pill-k {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--cso-ink-muted);
+}
+
+.jph-seo-pill-v {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.jph-seo-pill-sub {
+  font-size: 0.75rem;
+  color: var(--cso-ink-muted);
+  word-break: break-all;
+}
+
+.jph-seo-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.jph-seo-badge.is-ok {
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.jph-seo-badge.is-warn {
+  background: var(--cso-warn-bg, var(--cso-surface));
+  color: var(--cso-warn-fg, var(--cso-ink));
+  border: 1px solid var(--cso-border);
+}
+
+.jph-seo-badge.is-muted {
+  background: var(--cso-surface);
+  color: var(--cso-ink-muted);
+  border: 1px solid var(--cso-border);
+}
+
+.jph-seo-status-note {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cso-ink-muted);
+}
