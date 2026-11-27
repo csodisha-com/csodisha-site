@@ -190,6 +190,171 @@
     }
   }
 
+  // v386: 1-Click WhatsApp & Telegram Bilingual Alert Generator (shared with Guides Studio)
+  function copyTextSilent(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).catch(function () {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.className = 'jph-file-hidden';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (_) {}
+        ta.remove();
+      });
+    }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.className = 'jph-file-hidden';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (_) {}
+    ta.remove();
+    return Promise.resolve();
+  }
+
+  function detectAlertChannelMeta(rec) {
+    var st = String((rec && rec.lifecycle_stage) || '').toLowerCase();
+    var blob = String((rec && (rec.title_en || '')) + ' ' + (rec && (rec.tags || ''))).toLowerCase();
+    if (st === 'result' || /\b(result out|scorecard|osstet result)\b/.test(blob)) {
+      return { emoji: '🏆', header: 'EXAM RESULT OUT | ପରୀକ୍ଷା ଫଳାଫଳ' };
+    }
+    if (st === 'admit_card' || st === 'exam_date' || st === 'answer_key' || /\b(admit card|city slip|exam schedule|22nd edition|ugc net)\b/.test(blob)) {
+      return { emoji: '🪪', header: 'EXAM & ADMIT CARD UPDATE | ପରୀକ୍ଷା ସୂଚନା' };
+    }
+    if (st === 'current_affairs') {
+      return { emoji: '📰', header: 'DAILY CURRENT AFFAIRS | ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ' };
+    }
+    return { emoji: '🚨', header: 'ODISHA JOB ALERT | ଚାକିରି ବିଜ୍ଞପ୍ତି' };
+  }
+
+  function formatSocialAlertText(rec, channel, kind) {
+    var b = channel === 'telegram' ? '**' : '*';
+    var meta = detectAlertChannelMeta(rec || {});
+    var lines = [meta.emoji + ' ' + b + meta.header + b, ''];
+    var titleEn = String((rec && rec.title_en) || '').trim();
+    var titleOr = String((rec && rec.title_or) || '').trim();
+    if (titleEn) lines.push(b + titleEn + b);
+    if (titleOr) lines.push(titleOr);
+    lines.push('');
+
+    var org = String((rec && (rec.organisation_en || rec.organization || rec.sector_badge)) || '').trim();
+    if (org) lines.push('🏛️ Authority / Org: ' + org);
+
+    var postParts = [];
+    if (Number((rec && rec.total_vacancies) || 0) > 0) postParts.push(num(rec.total_vacancies) + ' Posts');
+    if (rec && rec.advt_number) postParts.push('Advt: ' + String(rec.advt_number).trim());
+    if (postParts.length) lines.push('📌 Posts / Edition / Advt: ' + postParts.join(' · '));
+
+    var keyDate = String((rec && (rec.last_date || rec.exam_date)) || '').trim();
+    if (keyDate) lines.push('📅 Key Date / Deadline: ' + keyDate);
+
+    var slug = String((rec && rec.slug) || '').trim();
+    var routePrefix = kind === 'guide' ? 'guides' : 'jobs';
+    var publicUrl = slug ? ('https://csodisha.com/' + routePrefix + '/' + encodeURIComponent(slug)) : ('https://csodisha.com/' + routePrefix + '/');
+    lines.push('');
+    lines.push('🔗 Full Details & Bilingual Guide: ' + publicUrl);
+
+    var officialLink = '';
+    if (rec) {
+      officialLink = String(rec.notification_pdf_url || rec.result_url || rec.admit_card_url || rec.official_apply_url || rec.official_website_url || '').trim();
+      if (!officialLink && Array.isArray(rec.pdfs) && rec.pdfs[0] && rec.pdfs[0].url) officialLink = rec.pdfs[0].url;
+      if (!officialLink && Array.isArray(rec.links)) {
+        var offL = rec.links.find(function (l) { return l && l.is_official && l.url; });
+        if (offL) officialLink = offL.url;
+      }
+    }
+    if (officialLink && /^https?:\/\//i.test(officialLink)) {
+      lines.push('📄 Official Notification PDF / Result Link: ' + officialLink);
+    }
+
+    lines.push('');
+    lines.push('📲 Join Common Sense Odisha (csodisha.com) for verified Odisha Jobs, Admit Cards & Results');
+    return lines.join('\n');
+  }
+
+  function buildAlertGeneratorWidget(getRecordFn, kind) {
+    var box = el('div', 'jph-alert-gen');
+    var bar = el('div', 'jph-alert-gen-bar');
+    var channel = 'whatsapp';
+    var customEdited = false;
+
+    var chWrap = el('div', 'jph-alert-ch-pills');
+    chWrap.setAttribute('role', 'group');
+    chWrap.setAttribute('aria-label', 'Social alert format');
+    var waBtn = el('button', 'jph-alert-ch-pill is-active', 'WhatsApp');
+    waBtn.type = 'button';
+    waBtn.setAttribute('aria-pressed', 'true');
+    var tgBtn = el('button', 'jph-alert-ch-pill', 'Telegram');
+    tgBtn.type = 'button';
+    tgBtn.setAttribute('aria-pressed', 'false');
+    chWrap.append(waBtn, tgBtn);
+
+    var copyBtn = el('button', 'jph-btn jph-btn--xs jph-btn--primary jph-alert-copy-btn', '📋 Copy Alert Post');
+    copyBtn.type = 'button';
+
+    var prevBtn = el('button', 'jph-btn jph-btn--xs jph-alert-prev-btn', '👁️ Preview / Edit Text');
+    prevBtn.type = 'button';
+    prevBtn.setAttribute('aria-expanded', 'false');
+
+    var popover = el('div', 'jph-alert-popover');
+    popover.hidden = true;
+    var previewTa = el('textarea', 'jph-textarea jph-alert-textarea');
+    previewTa.setAttribute('aria-label', 'Editable WhatsApp / Telegram alert text');
+    previewTa.addEventListener('input', function () { customEdited = true; });
+    var resetBtn = el('button', 'jph-btn jph-btn--xs', '↻ Reset Template');
+    resetBtn.type = 'button';
+    resetBtn.addEventListener('click', function () {
+      customEdited = false;
+      previewTa.value = formatSocialAlertText(getRecordFn(), channel, kind);
+    });
+    popover.append(previewTa, resetBtn);
+
+    function syncPreview() {
+      if (!customEdited) {
+        previewTa.value = formatSocialAlertText(getRecordFn(), channel, kind);
+      }
+    }
+
+    function setChannel(nextCh) {
+      channel = nextCh;
+      customEdited = false;
+      waBtn.classList.toggle('is-active', channel === 'whatsapp');
+      waBtn.setAttribute('aria-pressed', String(channel === 'whatsapp'));
+      tgBtn.classList.toggle('is-active', channel === 'telegram');
+      tgBtn.setAttribute('aria-pressed', String(channel === 'telegram'));
+      syncPreview();
+    }
+
+    waBtn.addEventListener('click', function () { setChannel('whatsapp'); });
+    tgBtn.addEventListener('click', function () { setChannel('telegram'); });
+
+    prevBtn.addEventListener('click', function () {
+      var open = popover.hidden;
+      popover.hidden = !open;
+      prevBtn.setAttribute('aria-expanded', String(open));
+      if (open) syncPreview();
+    });
+
+    copyBtn.addEventListener('click', function () {
+      var txt = (customEdited && previewTa.value.trim()) ? previewTa.value : formatSocialAlertText(getRecordFn(), channel, kind);
+      copyTextSilent(txt).then(function () {
+        copyBtn.textContent = '✅ Copied!';
+        toast((channel === 'telegram' ? 'Telegram' : 'WhatsApp') + ' bilingual alert copied!', 'ok');
+        setTimeout(function () { copyBtn.textContent = '📋 Copy Alert Post'; }, 2500);
+      });
+    });
+
+    bar.append(chWrap, copyBtn, prevBtn);
+    box.append(bar, popover);
+    return box;
+  }
+
+  window.CSOAlertGenerator = {
+    formatSocialAlertText: formatSocialAlertText,
+    buildAlertGeneratorWidget: buildAlertGeneratorWidget
+  };
+
   function buildBroadcastText(art) {
     var titleEn = art.title_en || 'New Job Recruitment';
     var titleOr = art.title_or || titleEn;
@@ -1256,13 +1421,21 @@
     placementWrap.appendChild(previewBadge);
     if (state.lastPublishedInfo && state.lastPublishedInfo.slug === d.slug) {
       var liveBanner = el('div', 'jph-publish-confirm');
-      liveBanner.appendChild(el('span', '', '✓ Published & Homepage Cache Purged.'));
+      var liveLeft = el('div', 'jph-publish-confirm-left');
+      liveLeft.appendChild(el('span', '', '✓ Published & Homepage Cache Purged.'));
       var liveLink = el('a', 'jph-publish-confirm-link', 'View Live on Homepage ↗');
       liveLink.href = '/?refresh=1';
       liveLink.target = '_blank';
       liveLink.rel = 'noopener noreferrer';
-      liveBanner.appendChild(liveLink);
+      liveLeft.appendChild(liveLink);
+      liveBanner.appendChild(liveLeft);
+      liveBanner.appendChild(buildAlertGeneratorWidget(function () { return d; }, 'job'));
       placementWrap.appendChild(liveBanner);
+    } else if (d.id || d.slug) {
+      var shareBar = el('div', 'jph-publish-confirm jph-publish-confirm--subtle');
+      shareBar.appendChild(el('span', 'jph-muted', '1-Click WhatsApp / Telegram Alert:'));
+      shareBar.appendChild(buildAlertGeneratorWidget(function () { return d; }, 'job'));
+      placementWrap.appendChild(shareBar);
     }
     cg.appendChild(placementWrap);
     addInput('Organisation / Commission (EN)', 'organisation_en', { placeholder: 'e.g., Odisha Public Service Commission (OPSC)' });

@@ -810,3 +810,73 @@
   font-weight: 800;
   text-decoration: underline;
 }
+
+/* ===== v386: 1-Click WhatsApp & Telegram Alert Generator (Strict CSP, 4-Theme Semantic Tokens) ===== */
+.jph-publish-confirm-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.jph-publish-confirm--subtle {
+  border-color: var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.jph-alert-gen {
+  display: grid;
+  gap: 8px;
+}
+
+.jph-alert-gen-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.jph-alert-ch-pills {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  padding: 2px;
+  gap: 2px;
+}
+
+.jph-alert-ch-pill {
+  border: 0;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: transparent;
+  color: var(--cso-ink-muted);
+  cursor: pointer;
+}
+
+.jph-alert-ch-pill.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.jph-alert-popover {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.jph-alert-popover[hidden] {
+  display: none;
+}
+
+.jph-alert-textarea {
+  min-height: 150px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}

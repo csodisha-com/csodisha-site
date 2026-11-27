@@ -1941,6 +1941,25 @@
     statusMsg.setAttribute('role', 'status');
     statusMsg.setAttribute('aria-live', 'polite');
 
+    var guideAlertBar = el('div', 'jph-publish-confirm jph-publish-confirm--subtle');
+    var guideAlertLeft = el('div', 'jph-publish-confirm-left');
+    guideAlertLeft.appendChild(el('span', 'jph-muted', '1-Click WhatsApp / Telegram Alert:'));
+    var guideHomeLink = el('a', 'jph-publish-confirm-link', 'View Live on Homepage ↗');
+    guideHomeLink.href = '/?refresh=1';
+    guideHomeLink.target = '_blank';
+    guideHomeLink.rel = 'noopener noreferrer';
+    guideAlertLeft.appendChild(guideHomeLink);
+    guideAlertBar.appendChild(guideAlertLeft);
+    var guideAlertWidgetSlot = el('div', 'jph-alert-gen-slot');
+    guideAlertBar.appendChild(guideAlertWidgetSlot);
+    if (window.CSOAlertGenerator && typeof window.CSOAlertGenerator.buildAlertGeneratorWidget === 'function') {
+      guideAlertWidgetSlot.appendChild(
+        window.CSOAlertGenerator.buildAlertGeneratorWidget(function () {
+          return collectDraftPayload((editing && editing.status) || 'published');
+        }, 'guide')
+      );
+    }
+
     function makeField(labelText, control, extraClass) {
       var grp = el('div', 'cso-form-group' + (extraClass ? ' ' + extraClass : ''));
       grp.appendChild(el('label', 'cso-form-label', labelText));
@@ -2365,6 +2384,7 @@
     });
     tplCard.append(tplHead, tplGrid);
     shell.appendChild(tplCard);
+    shell.appendChild(guideAlertBar);
 
     // Cover AI controls declared ahead so PDF Auto-Write / Auto-Fix can trigger AI Cover generation
     var inCoverAiPrompt = el('input', 'cso-form-input');
