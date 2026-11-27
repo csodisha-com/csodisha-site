@@ -17778,7 +17778,176 @@ nav#cso-hub-top-tabs {
   .cso-un-toolbar,
   .cso-un-lang-toggle,
   .cso-un-card__acts,
-  .cso-un-more-wrap {
+  .cso-un-more-wrap,
+  .cso-df-mount,
+  .cso-df-bar {
     display: none !important;
+  }
+}
+
+/* ===== v400: 30-District Odisha Recruitment & Exam Filter Bar (4-Theme Semantic Tokens) ===== */
+.cso-df-mount {
+  width: 100%;
+}
+
+.cso-df-bar {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-df-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cso-df-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-df-head-ctl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-df-sw-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-df-sw-check {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cso-accent);
+  cursor: pointer;
+}
+
+.cso-df-select {
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.cso-df-drawer-btn {
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.cso-df-drawer-btn.is-open,
+.cso-df-drawer-btn:hover,
+.cso-df-drawer-btn:focus-visible {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-df-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-df-chip,
+.cso-df-grid-pill {
+  min-height: 44px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.cso-df-chip.is-active,
+.cso-df-grid-pill.is-active,
+.cso-df-chip:hover,
+.cso-df-grid-pill:hover {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-df-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--cso-border);
+}
+
+.cso-df-active-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--cso-info-bg);
+  color: var(--cso-info-fg);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.cso-df-clear-btn {
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cso-df-clear-btn:hover,
+.cso-df-clear-btn:focus-visible {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-df-drawer-btn,
+  .cso-df-chip,
+  .cso-df-grid-pill {
+    transition: none;
   }
 }

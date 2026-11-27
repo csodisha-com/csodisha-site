@@ -14,8 +14,9 @@
     lang: 'en',
     allItems: [],
     summary: { total_active: 0, closing_soon: 0, districts_covered: 30, verified_gov_count: 0 },
-    filters: { q: '', org: 'all', type: 'all', district: '', qual: '' }
+    filters: { q: '', org: 'all', type: 'all', district: '', includeStatewide: true, qual: '' }
   };
+  var districtBarCtrl = null;
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -63,7 +64,11 @@
       if (f.type === 'guides' && it.source_type !== 'guide' && it.category !== 'Strategy Guide') return false;
     }
     if (f.district) {
-      if (it.district !== f.district && it.district !== 'All Odisha') return false;
+      if (window.CSODistrictFilter && typeof window.CSODistrictFilter.matchDistrict === 'function') {
+        if (!window.CSODistrictFilter.matchDistrict(it, f.district, { includeStatewide: f.includeStatewide })) return false;
+      } else if (it.district !== f.district && it.district !== 'All Odisha') {
+        return false;
+      }
     }
     if (f.qual) {
       var qv = String(it.qualification || '').toLowerCase();
@@ -247,8 +252,12 @@
   }
 
   function resetFilters() {
-    state.filters = { q: '', org: 'all', type: 'all', district: '', qual: '' };
+    state.filters = { q: '', org: 'all', type: 'all', district: '', includeStatewide: true, qual: '' };
+    if (window.CSODistrictFilter && typeof window.CSODistrictFilter.syncUrlParams === 'function') {
+      window.CSODistrictFilter.syncUrlParams('', true);
+    }
     syncControlsToState();
+    if (districtBarCtrl) districtBarCtrl.update({ district: '', includeStatewide: true, lang: state.lang, items: state.allItems });
     renderGrid();
   }
 
@@ -287,7 +296,14 @@
     var distSel = document.getElementById('cso-jh-district');
     if (distSel) {
       distSel.addEventListener('change', function () {
-        state.filters.district = distSel.value || '';
+        var rawDist = distSel.value || '';
+        state.filters.district = (window.CSODistrictFilter && window.CSODistrictFilter.resolveDistrictSlug)
+          ? window.CSODistrictFilter.resolveDistrictSlug(rawDist)
+          : rawDist;
+        if (window.CSODistrictFilter && window.CSODistrictFilter.syncUrlParams) {
+          window.CSODistrictFilter.syncUrlParams(state.filters.district, state.filters.includeStatewide);
+        }
+        if (districtBarCtrl) districtBarCtrl.update({ district: state.filters.district, includeStatewide: state.filters.includeStatewide, lang: state.lang, items: state.allItems });
         renderGrid();
       });
     }
@@ -321,6 +337,7 @@
       if (langBtn) {
         state.lang = langBtn.getAttribute('data-lang') === 'or' ? 'or' : 'en';
         localizeStaticCopy();
+        if (districtBarCtrl) districtBarCtrl.update({ lang: state.lang });
         renderGrid();
       }
     });
@@ -355,8 +372,32 @@
     state.filters.q = (params.get('q') || params.get('search') || '').trim();
     state.filters.org = (params.get('org') || 'all').trim().toLowerCase() || 'all';
     state.filters.type = (params.get('type') || params.get('category') || 'all').trim().toLowerCase() || 'all';
-    state.filters.district = (params.get('district') || '').trim();
+    if (window.CSODistrictFilter && typeof window.CSODistrictFilter.readUrlParams === 'function') {
+      var dfParams = window.CSODistrictFilter.readUrlParams(window.location.href);
+      state.filters.district = dfParams.district;
+      state.filters.includeStatewide = dfParams.includeStatewide;
+    } else {
+      state.filters.district = (params.get('district') || '').trim();
+    }
     state.filters.qual = (params.get('qual') || params.get('qualification') || '').trim();
+
+    var distMount = document.getElementById('cso-jobs-district-bar');
+    if (distMount && window.CSODistrictFilter && typeof window.CSODistrictFilter.mountSelectorBar === 'function') {
+      districtBarCtrl = window.CSODistrictFilter.mountSelectorBar(distMount, {
+        district: state.filters.district,
+        includeStatewide: state.filters.includeStatewide,
+        lang: state.lang,
+        items: state.allItems,
+        onChange: function (next) {
+          state.filters.district = next.district;
+          state.filters.includeStatewide = next.includeStatewide;
+          var dObj = window.CSODistrictFilter.getDistrictBySlug(next.district);
+          var distSelEl = document.getElementById('cso-jh-district');
+          if (distSelEl) distSelEl.value = dObj ? dObj.en : '';
+          renderGrid();
+        }
+      });
+    }
 
     bindEvents();
     syncControlsToState();
@@ -369,6 +410,14 @@
           state.allItems = Array.isArray(data.items) ? data.items : [];
           state.summary = data.summary || state.summary;
           updateSummaryStrip(state.summary);
+          if (districtBarCtrl) {
+            districtBarCtrl.update({
+              district: state.filters.district,
+              includeStatewide: state.filters.includeStatewide,
+              lang: state.lang,
+              items: state.allItems
+            });
+          }
         }
         renderGrid();
       })

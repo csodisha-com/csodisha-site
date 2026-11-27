@@ -20,11 +20,14 @@
   var state = {
     lang: 'en',
     category: 'all',
+    district: '',
+    includeStatewide: true,
     q: '',
     sort: 'newest',
     visibleCount: PAGE_SIZE,
     items: []
   };
+  var districtBarCtrl = null;
 
   var CAT_TABS = [
     { key: 'all', en: 'All', or: 'ସବୁ' },
@@ -49,6 +52,8 @@
     var list = Array.isArray(items) ? items : [];
     var o = opts || {};
     var cat = String(o.category || 'all').toLowerCase();
+    var dist = String(o.district || '').trim().toLowerCase();
+    var includeStatewide = o.includeStatewide !== undefined ? Boolean(o.includeStatewide) : true;
     var q = String(o.q || '').trim().toLowerCase();
     var sort = String(o.sort || 'newest').toLowerCase();
 
@@ -59,8 +64,11 @@
       var it = list[i];
       if (!it) continue;
       var bi = it._cso_bilingual || {};
+      if (dist && win && win.CSODistrictFilter && typeof win.CSODistrictFilter.matchDistrict === 'function') {
+        if (!win.CSODistrictFilter.matchDistrict(it, dist, { includeStatewide: includeStatewide })) continue;
+      }
       if (q) {
-        var hay = [it.title, it.summary, bi.title_en, bi.title_or, bi.summary_en, bi.summary_or, bi.org, bi.category].join(' ').toLowerCase();
+        var hay = [it.title, it.summary, bi.title_en, bi.title_or, bi.summary_en, bi.summary_or, bi.org, bi.district, bi.category].join(' ').toLowerCase();
         if (hay.indexOf(q) === -1) continue;
       }
       var bucket = classifyFeedItem(it);
@@ -178,7 +186,13 @@
     if (!listHost) return;
 
     var orMode = state.lang === 'or';
-    var out = filterAndSortItems(state.items, { category: state.category, q: state.q, sort: state.sort });
+    var out = filterAndSortItems(state.items, {
+      category: state.category,
+      district: state.district,
+      includeStatewide: state.includeStatewide,
+      q: state.q,
+      sort: state.sort
+    });
     syncSubscribeLinks();
 
     if (pillsHost) {
@@ -304,12 +318,34 @@
       var u = new URL(win.location.href);
       var cat = String(u.searchParams.get('category') || '').toLowerCase();
       if (['jobs', 'exams', 'results', 'guides'].indexOf(cat) !== -1) state.category = cat;
+      if (win.CSODistrictFilter && typeof win.CSODistrictFilter.readUrlParams === 'function') {
+        var dfp = win.CSODistrictFilter.readUrlParams(win.location.href);
+        state.district = dfp.district;
+        state.includeStatewide = dfp.includeStatewide;
+      }
     } catch (_) {}
+
+    var distHost = doc.getElementById('cso-updates-district-bar');
+    if (distHost && win.CSODistrictFilter && typeof win.CSODistrictFilter.mountSelectorBar === 'function') {
+      districtBarCtrl = win.CSODistrictFilter.mountSelectorBar(distHost, {
+        district: state.district,
+        includeStatewide: state.includeStatewide,
+        lang: state.lang,
+        items: state.items,
+        onChange: function (next) {
+          state.district = next.district;
+          state.includeStatewide = next.includeStatewide;
+          state.visibleCount = PAGE_SIZE;
+          render();
+        }
+      });
+    }
 
     root.querySelectorAll('[data-un-lang]').forEach(function (b) {
       b.addEventListener('click', function () {
         state.lang = b.getAttribute('data-un-lang') === 'or' ? 'or' : 'en';
         localizeStatic();
+        if (districtBarCtrl) districtBarCtrl.update({ lang: state.lang });
         render();
       });
     });
@@ -357,6 +393,14 @@
       .then(function (r) { return r.json(); })
       .then(function (d) {
         state.items = Array.isArray(d && d.items) ? d.items : [];
+        if (districtBarCtrl) {
+          districtBarCtrl.update({
+            district: state.district,
+            includeStatewide: state.includeStatewide,
+            lang: state.lang,
+            items: state.items
+          });
+        }
         render();
       })
       .catch(function () {

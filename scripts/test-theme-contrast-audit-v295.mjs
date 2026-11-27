@@ -284,8 +284,8 @@ check('4. Elevated overlays enforce opacity: 1 & backdrop-filter: none; JS syncs
 });
 
 check('5. Strict CSP compliance & cache busting across all active HTML pages, sw.js & ops-sentinel.js', () => {
-  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v(?:29[5-9]|3\d\d)';/);
-  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v(?:29[5-9]|3\d\d)';/);
+  assert.match(read('sw.js'), /const CACHE_NAME = 'cso-candidate-cache-v(?:29[5-9]|3\d\d|4\d\d)';/);
+  assert.match(read('functions/_lib/ops-sentinel.js'), /export const ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v(?:29[5-9]|3\d\d|4\d\d)';/);
 
   for (const rel of ['assets/shared-header.js', 'assets/app.js', 'admin/admin.js', 'assets/js/community-portal.js', 'assets/js/careers-portal.js']) {
     const codeOnly = read(rel).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
@@ -304,7 +304,7 @@ check('5. Strict CSP compliance & cache busting across all active HTML pages, sw
     let m;
     while ((m = coreAssetRe.exec(html)) !== null) {
       checked++;
-      assert.match(m[1], /^2026112[5-7]v(?:29[5-9]|3\d\d)$/, `${rel} has stale query version ?v=${m[1]} (expected 20261125v295+)`);
+      assert.match(m[1], /^2026112[5-7]v(?:29[5-9]|3\d\d|4\d\d)$/, `${rel} has stale query version ?v=${m[1]} (expected 20261125v295+)`);
     }
   }
   assert.ok(checked >= 60, `Expected >=60 versioned core/portal/admin assets across HTML pages, got ${checked}`);

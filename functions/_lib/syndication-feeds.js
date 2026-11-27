@@ -103,6 +103,7 @@ function normalizeFeedEntry(row, kind, origin = SITE_ORIGIN) {
 
   const image = resolveAbsImage(isJob ? row.cover_image_url : row.cover_image, cleanOrigin);
   const org = stripPlain(isJob ? (row.organisation_en || row.sector_badge) : (row.scope || 'Common Sense Odisha'), 120);
+  const district = stripPlain(isJob ? (row.location_district || 'All Odisha') : (row.scope === 'National' ? 'All India' : 'All Odisha'), 80) || 'All Odisha';
   const deadlineIso = isJob ? String(row.last_date || row.exam_date || '').trim() : '';
   const officialUrl = isJob
     ? String(row.official_apply_url || row.result_url || row.notification_pdf_url || row.official_website_url || '').trim()
@@ -150,6 +151,7 @@ function normalizeFeedEntry(row, kind, origin = SITE_ORIGIN) {
     date_modified: modifiedIso,
     pub_date_rfc2822: toRfc2822(publishedIso),
     sort_ts: sortTs,
+    district,
     tags: [cls.label, org].filter(Boolean),
     _cso_bilingual: {
       title_en: titleEn,
@@ -157,6 +159,7 @@ function normalizeFeedEntry(row, kind, origin = SITE_ORIGIN) {
       summary_en: summaryEn,
       summary_or: summaryOr,
       org,
+      district,
       category: cls.label,
       official_url: officialUrl,
       deadline_iso: deadlineIso
@@ -271,6 +274,7 @@ export function renderJsonFeed11(items, options = {}) {
       image: it.image,
       date_published: it.date_published,
       date_modified: it.date_modified,
+      district: it.district || 'All Odisha',
       tags: it.tags,
       _cso_bilingual: it._cso_bilingual
     }))
