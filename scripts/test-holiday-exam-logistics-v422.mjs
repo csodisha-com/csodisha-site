@@ -77,12 +77,12 @@ assert.equal(prog.pct, 50);
 
 // 5. Mounts on /exams/ & SSR /guides/, SW & Ops-Sentinel sync
 assert.ok(examsHtml.includes('id="cso-holiday-exam-logistics-root"'), 'exams/index.html must mount #cso-holiday-exam-logistics-root');
-assert.ok(examsHtml.includes('/assets/js/holiday-exam-logistics.js?v=20261127v424'), 'exams/index.html must load holiday-exam-logistics.js?v=20261127v424');
+assert.ok(examsHtml.includes('/assets/js/holiday-exam-logistics.js?v=20261127v425'), 'exams/index.html must load holiday-exam-logistics.js?v=20261127v425');
 assert.ok(guidesSsr.includes('id="cso-holiday-exam-logistics-root"'), 'informative-guides.js must mount #cso-holiday-exam-logistics-root');
-assert.ok(guidesSsr.includes('/assets/js/holiday-exam-logistics.js?v=20261127v424'), 'informative-guides.js must load holiday-exam-logistics.js?v=20261127v424');
-assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v424'"), 'sw.js must bump CACHE_NAME to v422');
-assert.ok(swSrc.includes("'/assets/js/holiday-exam-logistics.js?v=20261127v424'"), 'sw.js must precache holiday-exam-logistics.js');
-assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v424'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v422');
+assert.ok(guidesSsr.includes('/assets/js/holiday-exam-logistics.js?v=20261127v425'), 'informative-guides.js must load holiday-exam-logistics.js?v=20261127v425');
+assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v425'"), 'sw.js must bump CACHE_NAME to v422');
+assert.ok(swSrc.includes("'/assets/js/holiday-exam-logistics.js?v=20261127v425'"), 'sw.js must precache holiday-exam-logistics.js');
+assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v425'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v422');
 
 // 6. CSS 4-theme semantic tokens check
 const helCssIdx = cssSrc.indexOf('/* ===== v422:');
