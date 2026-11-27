@@ -107,12 +107,12 @@ assert.equal(resSlow.gapWpm, 15);
 
 // 4. Mounts on /tools/ & /mock-tests/, SW & Ops-Sentinel sync
 assert.ok(toolsHtml.includes('id="cso-typing-skill-arena-root"'), 'tools/index.html must mount #cso-typing-skill-arena-root');
-assert.ok(toolsHtml.includes('/assets/js/typing-skill-arena.js?v=20261127v428'), 'tools/index.html must load typing-skill-arena.js?v=20261127v428');
+assert.ok(toolsHtml.includes('/assets/js/typing-skill-arena.js?v=20261127v429'), 'tools/index.html must load typing-skill-arena.js?v=20261127v429');
 assert.ok(mtHtml.includes('id="cso-typing-skill-arena-root"'), 'mock-tests/index.html must mount #cso-typing-skill-arena-root');
-assert.ok(mtHtml.includes('/assets/js/typing-skill-arena.js?v=20261127v428'), 'mock-tests/index.html must load typing-skill-arena.js?v=20261127v428');
-assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v428'"), 'sw.js must bump CACHE_NAME to v424');
-assert.ok(swSrc.includes("'/assets/js/typing-skill-arena.js?v=20261127v428'"), 'sw.js must precache typing-skill-arena.js');
-assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v428'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v424');
+assert.ok(mtHtml.includes('/assets/js/typing-skill-arena.js?v=20261127v429'), 'mock-tests/index.html must load typing-skill-arena.js?v=20261127v429');
+assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v429'"), 'sw.js must bump CACHE_NAME to v424');
+assert.ok(swSrc.includes("'/assets/js/typing-skill-arena.js?v=20261127v429'"), 'sw.js must precache typing-skill-arena.js');
+assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v429'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v424');
 
 // 5. CSS semantic 4-theme tokens check
 const tsaIdx = cssSrc.indexOf('/* ===== v424:');

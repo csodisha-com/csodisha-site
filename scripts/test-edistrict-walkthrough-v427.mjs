@@ -82,12 +82,12 @@ assert.ok(declOr.includes('ସୁମିତ୍ରା ଦାସ') && declOr.includ
 
 // 5. Mounts on /tools/ & SSR /guides/, SW & Ops-Sentinel sync
 assert.ok(toolsHtml.includes('id="cso-edistrict-walkthrough-root"'), 'tools/index.html must mount #cso-edistrict-walkthrough-root');
-assert.ok(toolsHtml.includes('/assets/js/edistrict-service-walkthrough.js?v=20261127v428'), 'tools/index.html must load edistrict-service-walkthrough.js?v=20261127v428');
+assert.ok(toolsHtml.includes('/assets/js/edistrict-service-walkthrough.js?v=20261127v429'), 'tools/index.html must load edistrict-service-walkthrough.js?v=20261127v429');
 assert.ok(guidesSsr.includes('id="cso-edistrict-walkthrough-root"'), 'informative-guides.js must mount #cso-edistrict-walkthrough-root');
-assert.ok(guidesSsr.includes('/assets/js/edistrict-service-walkthrough.js?v=20261127v428'), 'informative-guides.js must load edistrict-service-walkthrough.js?v=20261127v428');
-assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v428'"), 'sw.js must bump CACHE_NAME to v427');
-assert.ok(swSrc.includes("'/assets/js/edistrict-service-walkthrough.js?v=20261127v428'"), 'sw.js must precache edistrict-service-walkthrough.js');
-assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v428'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v427');
+assert.ok(guidesSsr.includes('/assets/js/edistrict-service-walkthrough.js?v=20261127v429'), 'informative-guides.js must load edistrict-service-walkthrough.js?v=20261127v429');
+assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v429'"), 'sw.js must bump CACHE_NAME to v427');
+assert.ok(swSrc.includes("'/assets/js/edistrict-service-walkthrough.js?v=20261127v429'"), 'sw.js must precache edistrict-service-walkthrough.js');
+assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v429'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v427');
 
 // 6. CSS 4-theme semantic tokens check
 const edwIdx = cssSrc.indexOf('/* ===== v427:');

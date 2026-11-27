@@ -8,7 +8,7 @@
  *     (Junagarh -> Kalahandi, Athmallik -> Angul, Bhanjanagar -> Ganjam), and /jobs/?district=<slug> links.
  *  3) odisha-special/index.html mounts #cso-odisha-admin-directory-root & loads v418 JS with strict CSP,
  *     assets/style.css styles .cso-oad-* with var(--cso-*) tokens and zero hardcoded hex,
- *     and sw.js + ops-sentinel.js sync cso-candidate-cache-v428.
+ *     and sw.js + ops-sentinel.js sync cso-candidate-cache-v429.
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -117,10 +117,10 @@ assert.equal(rSouthern.length, 10, 'Southern division filter must return 10 dist
 
 // 5. HTML mount & SW / Ops-Sentinel cache sync
 assert.ok(htmlSrc.includes('id="cso-odisha-admin-directory-root"'), 'odisha-special/index.html must mount #cso-odisha-admin-directory-root');
-assert.ok(htmlSrc.includes('/assets/js/odisha-admin-directory.js?v=20261127v428'), 'odisha-special/index.html must load odisha-admin-directory.js?v=20261127v428');
-assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v428'"), 'sw.js must bump CACHE_NAME to v418');
-assert.ok(swSrc.includes("'/assets/js/odisha-admin-directory.js?v=20261127v428'"), 'sw.js must precache odisha-admin-directory.js');
-assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v428'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v418');
+assert.ok(htmlSrc.includes('/assets/js/odisha-admin-directory.js?v=20261127v429'), 'odisha-special/index.html must load odisha-admin-directory.js?v=20261127v429');
+assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v429'"), 'sw.js must bump CACHE_NAME to v418');
+assert.ok(swSrc.includes("'/assets/js/odisha-admin-directory.js?v=20261127v429'"), 'sw.js must precache odisha-admin-directory.js');
+assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v429'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v418');
 
 // 6. CSS 4-theme semantic token check (zero hardcoded hex in .cso-oad-* block)
 const oadCssIdx = cssSrc.indexOf('/* ===== v418:');

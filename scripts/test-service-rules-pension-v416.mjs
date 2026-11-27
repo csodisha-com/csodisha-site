@@ -59,9 +59,9 @@ assert.equal(upsFloor.ups.basicPension, 10000, 'UPS must enforce ₹10,000/month
 
 // 3. Markup (/career-paths/ + /guides/ SSR), Strict CSP, 4-Theme CSS & v416 SW Cache Sync
 assert.match(cpHtml, /id="cso-service-rules-guide-root"/, 'career-paths/index.html must mount #cso-service-rules-guide-root');
-assert.match(cpHtml, /\/assets\/js\/service-rules-pension-guide\.js\?v=20261127v428/, 'career-paths/index.html must load service-rules-pension-guide.js?v=20261127v428');
+assert.match(cpHtml, /\/assets\/js\/service-rules-pension-guide\.js\?v=20261127v429/, 'career-paths/index.html must load service-rules-pension-guide.js?v=20261127v429');
 assert.ok(guidesSsr.includes('id="cso-service-rules-guide-root"'), 'informative-guides.js (/guides/) must mount #cso-service-rules-guide-root');
-assert.ok(guidesSsr.includes('/assets/js/service-rules-pension-guide.js?v=20261127v428'), 'informative-guides.js must load service-rules-pension-guide.js?v=20261127v428');
+assert.ok(guidesSsr.includes('/assets/js/service-rules-pension-guide.js?v=20261127v429'), 'informative-guides.js must load service-rules-pension-guide.js?v=20261127v429');
 assert.ok(!/\sstyle="/i.test(cpHtml), 'career-paths/index.html must have zero inline style attributes');
 assert.ok(!/\son[a-z]+="/i.test(cpHtml), 'career-paths/index.html must have zero inline on* handlers');
 assert.ok(!srpSrc.includes('.innerHTML') && !srpSrc.includes('.outerHTML') && !srpSrc.includes('insertAdjacentHTML') && !srpSrc.includes('.style.'), 'service-rules-pension-guide.js must obey strict CSP');
@@ -75,8 +75,8 @@ assert.ok(v416Css.includes('prefers-reduced-motion: reduce'), 'v416 CSS must res
 assert.ok(v416Css.includes('@media print'), 'v416 CSS must include @media print support');
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v416Css), 'v416 CSS block must have zero hardcoded hex values');
 
-assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v428'"), 'sw.js CACHE_NAME must be v416');
-assert.ok(swJs.includes("'/assets/js/service-rules-pension-guide.js?v=20261127v428'"), 'sw.js must pre-cache service-rules-pension-guide.js');
-assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v428'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v416');
+assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v429'"), 'sw.js CACHE_NAME must be v416');
+assert.ok(swJs.includes("'/assets/js/service-rules-pension-guide.js?v=20261127v429'"), 'sw.js must pre-cache service-rules-pension-guide.js');
+assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v429'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v416');
 
 console.log('✅ v416 Odisha Govt Leave, TA/DA & NPS vs. UPS Pension Quick-Reference Audit PASSED');

@@ -64,7 +64,7 @@ assert.ok(fittedSign.kb >= 10 && fittedSign.kb <= 20, `Expected 10..20 KB, got $
 
 // 3. Markup, Strict CSP, 4-Theme CSS & v409 Cache Sync
 assert.match(toolsHtml, /id="cso-photo-signature-resizer-root"/, 'tools/index.html must mount #cso-photo-signature-resizer-root');
-assert.match(toolsHtml, /\/assets\/js\/photo-signature-resizer\.js\?v=20261127v428/, 'tools/index.html must load photo-signature-resizer.js?v=20261127v428');
+assert.match(toolsHtml, /\/assets\/js\/photo-signature-resizer\.js\?v=20261127v429/, 'tools/index.html must load photo-signature-resizer.js?v=20261127v429');
 assert.ok(!/\sstyle="/i.test(toolsHtml), 'tools/index.html must have zero inline style attributes');
 assert.ok(!/\son[a-z]+="/i.test(toolsHtml), 'tools/index.html must have zero inline on* handlers');
 assert.ok(!psrSrc.includes('.innerHTML') && !psrSrc.includes('.outerHTML') && !psrSrc.includes('insertAdjacentHTML') && !psrSrc.includes('.style.'), 'photo-signature-resizer.js must obey strict CSP');
@@ -77,7 +77,7 @@ assert.ok(v409Css.includes('min-height: 44px'), 'v409 CSS must enforce >=44px to
 assert.ok(v409Css.includes('prefers-reduced-motion: reduce'), 'v409 CSS must respect prefers-reduced-motion');
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v409Css), 'v409 CSS block must have zero hardcoded hex values');
 
-assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v428'"), 'sw.js CACHE_NAME must be v409');
-assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v428'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v409');
+assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v429'"), 'sw.js CACHE_NAME must be v409');
+assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v429'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v409');
 
 console.log('✅ v409 Browser-Side Photo, Signature & Thumb Impression Resizer Audit PASSED');
