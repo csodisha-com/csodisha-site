@@ -22813,3 +22813,376 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+/* ===== v420: Odisha Polytechnic, ITI, B.Ed. & Higher-Ed Admission & Counselling Tracker (.cso-act-*) ===== */
+.cso-admissions-main {
+  display: grid;
+  gap: 18px;
+  padding-top: 16px;
+  padding-bottom: 36px;
+}
+
+.cso-act-hero {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated, var(--cso-surface));
+  color: var(--cso-ink);
+}
+
+.cso-act-crumb {
+  font-size: 0.84rem;
+  color: var(--cso-muted);
+}
+
+.cso-act-crumb a {
+  color: var(--cso-accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cso-act-hero-title {
+  margin: 0;
+  font-size: 1.55rem;
+  line-height: 1.25;
+  color: var(--cso-ink);
+}
+
+.cso-act-hero-sub {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--cso-muted);
+  max-width: 82ch;
+}
+
+.cso-act-wrap {
+  display: grid;
+  gap: 16px;
+}
+
+.cso-act-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.cso-act-lang-toggle {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  padding: 3px;
+  gap: 4px;
+}
+
+.cso-act-lang-btn {
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--cso-ink);
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-act-lang-btn.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-act-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-act-pill {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.cso-act-pill.is-active {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-act-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.cso-act-field {
+  display: grid;
+  gap: 6px;
+}
+
+.cso-act-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cso-muted);
+}
+
+.cso-act-select,
+.cso-act-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 1rem;
+}
+
+.cso-act-status {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--cso-muted);
+}
+
+.cso-act-live {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-ok, var(--cso-accent));
+  background: var(--cso-surface);
+}
+
+.cso-act-live__title {
+  margin: 0;
+  font-size: 0.96rem;
+  color: var(--cso-ok, var(--cso-accent));
+}
+
+.cso-act-live__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-act-live__item {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cso-act-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 14px;
+}
+
+.cso-act-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+}
+
+.cso-act-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cso-act-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.cso-act-badge--auth {
+  border-color: var(--cso-accent);
+  color: var(--cso-accent);
+}
+
+.cso-act-card__title {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  color: var(--cso-ink);
+}
+
+.cso-act-card__elig,
+.cso-act-card__seats {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--cso-muted);
+}
+
+.cso-act-steps {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  font-size: 0.83rem;
+  color: var(--cso-ink);
+}
+
+.cso-act-actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--cso-border);
+}
+
+.cso-act-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-act-btn--primary {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-act-btn:focus-visible,
+.cso-act-pill:focus-visible,
+.cso-act-lang-btn:focus-visible {
+  outline: 2px solid var(--cso-focus, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+.cso-act-checklist {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated, var(--cso-surface));
+}
+
+.cso-act-checklist__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.cso-act-checklist__title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--cso-ink);
+}
+
+.cso-act-checklist__meter {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  color: var(--cso-accent);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.cso-act-checklist__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 8px;
+}
+
+.cso-act-doc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cso-act-doc-item.is-checked {
+  border-color: var(--cso-ok, var(--cso-accent));
+}
+
+.cso-act-doc-cb {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.cso-act-empty {
+  grid-column: 1 / -1;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px dashed var(--cso-border);
+  text-align: center;
+  color: var(--cso-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-act-pill,
+  .cso-act-btn,
+  .cso-act-lang-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-act-topbar,
+  .cso-act-pills,
+  .cso-act-filters,
+  .cso-act-actions {
+    display: none !important;
+  }
+  .cso-act-card {
+    break-inside: avoid;
+  }
+}

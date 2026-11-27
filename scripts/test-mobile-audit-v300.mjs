@@ -65,8 +65,8 @@ const htmlFiles = walkFiles(ROOT, '.html');
 
 console.log('\n=== v300 Mobile Compatibility, 4-Theme Visibility & WCAG 2.2 Accessibility Audit ===\n');
 
-check('1. Valid zoom-friendly viewport <meta> tag on all 37 active HTML pages (no zoom locks)', () => {
-  assert.equal(htmlFiles.length, 37, `Expected 37 active HTML files, got ${htmlFiles.length}`);
+check('1. Valid zoom-friendly viewport <meta> tag on all 38 active HTML pages (no zoom locks)', () => {
+  assert.equal(htmlFiles.length, 38, `Expected 38 active HTML files, got ${htmlFiles.length}`);
   for (const full of htmlFiles) {
     const rel = path.relative(ROOT, full);
     const html = fs.readFileSync(full, 'utf8');
@@ -399,8 +399,8 @@ check('8. v360 Informative Guides edge-to-edge layout (max-width: 100%), uncropp
     'admin/studio.css Live Preview must mirror v360 edge-to-edge 390px mobile padding and uncropped 16:9 cover rules'
   );
   assert.ok(
-    guidesSsr.includes('/assets/css/guides-portal.css?v=20261127v419') &&
-    guidesSsr.includes('/assets/js/guides-portal.js?v=20261127v419') &&
+    guidesSsr.includes('/assets/css/guides-portal.css?v=20261127v420') &&
+    guidesSsr.includes('/assets/js/guides-portal.js?v=20261127v420') &&
     guidesSsr.includes('gp-hero-card') &&
     guidesSsr.includes('gp-toc-card') &&
     guidesSsr.includes('gp-share-bar') &&

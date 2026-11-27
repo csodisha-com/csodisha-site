@@ -11,42 +11,44 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v419';
+const CACHE_NAME = 'cso-candidate-cache-v420';
 const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
 const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
 
-// v419: Candidate Offline Toolkit Pre-Cache Manifest (low-connectivity Odisha districts)
+// v420: Candidate Offline Toolkit Pre-Cache Manifest (low-connectivity Odisha districts)
 const CANDIDATE_TOOLKIT_URLS = [
   '/tools/',
   '/exams/',
   '/results/',
+  '/admissions/',
   '/mock-tests/',
   '/career-paths/',
   '/guides/',
   '/schemes/',
   '/current-affairs/',
   '/odisha-special/',
-  '/assets/style.css?v=20261127v419',
-  '/assets/css/cso-themes.css?v=20261127v419',
-  '/assets/shared-header.js?v=20261127v419',
-  '/assets/js/offline-toolkit-hub.js?v=20261127v419',
-  '/assets/js/candidate-data-backup.js?v=20261127v419',
-  '/assets/js/orsp-salary-estimator.js?v=20261127v419',
-  '/assets/js/photo-signature-resizer.js?v=20261127v419',
-  '/assets/js/certificate-fee-matrix.js?v=20261127v419',
-  '/assets/js/cgpa-percentage-converter.js?v=20261127v419',
-  '/assets/js/exam-calendar-tracker.js?v=20261127v419',
-  '/assets/js/results-cutoff-estimator.js?v=20261127v419',
-  '/assets/js/service-rules-pension-guide.js?v=20261127v419',
-  '/assets/js/study-streak-planner.js?v=20261127v419',
-  '/assets/js/odisha-admin-directory.js?v=20261127v419',
-  '/assets/js/mock-tests-hub.js?v=20261127v419',
-  '/assets/js/schemes-eligibility-finder.js?v=20261127v419',
-  '/assets/js/current-affairs-hub.js?v=20261127v419',
-  '/assets/js/ics-calendar-export.js?v=20261127v419',
-  '/assets/js/saved-alerts-drawer.js?v=20261127v419',
-  '/assets/js/candidate-watchlist.js?v=20261127v419',
-  '/assets/js/odisha-district-filter.js?v=20261127v419'
+  '/assets/style.css?v=20261127v420',
+  '/assets/css/cso-themes.css?v=20261127v420',
+  '/assets/shared-header.js?v=20261127v420',
+  '/assets/js/offline-toolkit-hub.js?v=20261127v420',
+  '/assets/js/candidate-data-backup.js?v=20261127v420',
+  '/assets/js/admissions-counselling-tracker.js?v=20261127v420',
+  '/assets/js/orsp-salary-estimator.js?v=20261127v420',
+  '/assets/js/photo-signature-resizer.js?v=20261127v420',
+  '/assets/js/certificate-fee-matrix.js?v=20261127v420',
+  '/assets/js/cgpa-percentage-converter.js?v=20261127v420',
+  '/assets/js/exam-calendar-tracker.js?v=20261127v420',
+  '/assets/js/results-cutoff-estimator.js?v=20261127v420',
+  '/assets/js/service-rules-pension-guide.js?v=20261127v420',
+  '/assets/js/study-streak-planner.js?v=20261127v420',
+  '/assets/js/odisha-admin-directory.js?v=20261127v420',
+  '/assets/js/mock-tests-hub.js?v=20261127v420',
+  '/assets/js/schemes-eligibility-finder.js?v=20261127v420',
+  '/assets/js/current-affairs-hub.js?v=20261127v420',
+  '/assets/js/ics-calendar-export.js?v=20261127v420',
+  '/assets/js/saved-alerts-drawer.js?v=20261127v420',
+  '/assets/js/candidate-watchlist.js?v=20261127v420',
+  '/assets/js/odisha-district-filter.js?v=20261127v420'
 ];
 
 // Authenticated, auth & account routes that must NEVER be served from or written to SW HTML cache.

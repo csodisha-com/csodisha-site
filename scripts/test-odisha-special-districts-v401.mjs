@@ -1,7 +1,7 @@
 /**
  * v401: /odisha-special/ 30-District Live Counters & Deep Links Verification Suite
  * Validates:
- *  1. odisha-special/index.html loads odisha-district-filter.js?v=20261127v419 and mounts the
+ *  1. odisha-special/index.html loads odisha-district-filter.js?v=20261127v420 and mounts the
  *     30-district live summary strip & counters with zero inline style or on* attributes
  *  2. All 30 canonical Odisha districts resolve valid /jobs/?district=<slug> and /updates/?district=<slug>
  *     deep links and compute accurate district-specific counts against /api/public/search-index data
@@ -14,8 +14,8 @@ import { buildSearchIndexRecords } from '../functions/_lib/public-search-index.j
 
 // 1. Validate odisha-special/index.html & CSS strict CSP + wiring
 const html = fs.readFileSync('odisha-special/index.html', 'utf8');
-assert.ok(html.includes('/assets/js/odisha-district-filter.js?v=20261127v419'), 'odisha-special/index.html must load odisha-district-filter.js?v=20261127v419');
-assert.ok(html.includes('/assets/js/odisha-special-hub.js?v=20261127v419'), 'odisha-special/index.html must load odisha-special-hub.js?v=20261127v419');
+assert.ok(html.includes('/assets/js/odisha-district-filter.js?v=20261127v420'), 'odisha-special/index.html must load odisha-district-filter.js?v=20261127v420');
+assert.ok(html.includes('/assets/js/odisha-special-hub.js?v=20261127v420'), 'odisha-special/index.html must load odisha-special-hub.js?v=20261127v420');
 assert.ok(html.includes('id="cso-od-dist-live-strip"'), 'odisha-special/index.html must include live summary strip');
 assert.ok(html.includes('href="/jobs/"'), 'odisha-special/index.html must include View All Odisha Jobs CTA');
 assert.ok(!/\sstyle\s*=\s*["']/i.test(html), 'odisha-special/index.html must have zero inline style="" attributes');
