@@ -20933,3 +20933,254 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+/* ==========================================================================
+   v413: Interactive Odisha Exam Calendar & Admit Card Tracker (/exams/)
+   ========================================================================== */
+
+.cso-ect-root {
+  margin: 18px 0 24px;
+}
+
+.cso-ect-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+}
+
+.cso-ect-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cso-ect-head-left {
+  display: grid;
+  gap: 6px;
+  max-width: 780px;
+}
+
+.cso-ect-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.cso-ect-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+  line-height: 1.3;
+}
+
+.cso-ect-sub {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--cso-ink-muted);
+  line-height: 1.45;
+}
+
+.cso-ect-actions,
+.cso-ect-pill-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-ect-pill,
+.cso-ect-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.cso-ect-pill.is-active,
+.cso-ect-btn.is-saved {
+  border-color: var(--cso-accent);
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-ect-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.cso-ect-field {
+  display: grid;
+  gap: 4px;
+}
+
+.cso-ect-field-lbl {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-ect-select,
+.cso-ect-input {
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 0.92rem;
+}
+
+.cso-ect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 14px;
+}
+
+.cso-ect-item {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+}
+
+.cso-ect-item-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.cso-ect-board-tag {
+  display: inline-flex;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.cso-ect-cd-pill {
+  display: inline-flex;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.cso-ect-item-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+  line-height: 1.3;
+}
+
+.cso-ect-milestones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cso-ect-ms {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-ect-ms-k {
+  font-size: 0.72rem;
+  color: var(--cso-ink-muted);
+  font-weight: 700;
+}
+
+.cso-ect-ms-v {
+  font-size: 0.8rem;
+  color: var(--cso-ink);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.cso-ect-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.cso-ect-empty {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink-muted);
+  font-size: 0.88rem;
+}
+
+@media (max-width: 520px) {
+  .cso-ect-milestones {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-ect-pill,
+  .cso-ect-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-ect-pill-bar,
+  .cso-ect-controls,
+  .cso-ect-actions {
+    display: none !important;
+  }
+
+  .cso-ect-item {
+    break-inside: avoid;
+  }
+}
