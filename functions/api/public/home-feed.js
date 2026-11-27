@@ -179,16 +179,17 @@ async function fetchLatestJobs(db, publishedGuides = []) {
       const lastDate = String(r.last_date || '');
       const stage = String(r.lifecycle_stage || 'notification').toLowerCase();
       const isAdmitCard = stage === 'admit_card';
+      const isResult = stage === 'result';
       const metaEnParts = [];
       if (vacancies > 0) metaEnParts.push(`${vacancies.toLocaleString('en-IN')} Posts`);
       if (district) metaEnParts.push(district);
-      if (lastDate) metaEnParts.push(`${isAdmitCard ? 'Exam' : 'Last Date'}: ${formatIstShortDate(lastDate) || lastDate}`);
+      if (lastDate) metaEnParts.push(`${isResult ? 'OMR till' : (isAdmitCard ? 'Exam' : 'Last Date')}: ${formatIstShortDate(lastDate) || lastDate}`);
       const metaOrParts = [];
       if (vacancies > 0) metaOrParts.push(`${vacancies.toLocaleString('en-IN')} ପଦବୀ`);
       if (district) metaOrParts.push(district);
-      if (lastDate) metaOrParts.push(`${isAdmitCard ? 'ପରୀକ୍ଷା' : 'ଶେଷ'}: ${formatIstShortDate(lastDate) || lastDate}`);
+      if (lastDate) metaOrParts.push(`${isResult ? 'OMR' : (isAdmitCard ? 'ପରୀକ୍ଷା' : 'ଶେଷ')}: ${formatIstShortDate(lastDate) || lastDate}`);
       const url = `/jobs/?slug=${encodeURIComponent(slug)}`;
-      const tone = org.organization === 'MMU'
+      const tone = (org.organization === 'MMU' || org.organization === 'BSE Odisha')
         ? 'ok'
         : (org.organization === 'CBSE' ? 'info' : orgBadgeTone(org.org_group));
       merged.push({
@@ -204,8 +205,8 @@ async function fetchLatestJobs(db, publishedGuides = []) {
         badge_tone: tone,
         meta_en: metaEnParts.join(' · ') || 'Active Notice',
         meta_or: metaOrParts.join(' · ') || 'ସକ୍ରିୟ ବିଜ୍ଞପ୍ତି',
-        action_label_en: isAdmitCard ? 'Admit Card →' : 'Notice →',
-        action_label_or: isAdmitCard ? 'ଆଡମିଟ୍ କାର୍ଡ →' : 'ବିଜ୍ଞପ୍ତି →',
+        action_label_en: isResult ? 'Result →' : (isAdmitCard ? 'Admit Card →' : 'Notice →'),
+        action_label_or: isResult ? 'ଫଳାଫଳ →' : (isAdmitCard ? 'ଆଡମିଟ୍ କାର୍ଡ →' : 'ବିଜ୍ଞପ୍ତି →'),
         organisation_en: String(r.organisation_en || org.organization),
         organisation_or: String(r.organisation_or || ''),
         lifecycle_stage: stage,

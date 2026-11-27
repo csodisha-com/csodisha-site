@@ -200,11 +200,17 @@
         currentUl = null;
         var src = safeHref(imgMatch[2]);
         if (src) {
+          var fig = el('figure', 'jp-inline-figure');
           var img = el('img', 'jp-inline-img');
           img.src = src;
           img.alt = imgMatch[1] || '';
           img.loading = 'lazy';
-          container.appendChild(img);
+          img.decoding = 'async';
+          fig.appendChild(img);
+          if (imgMatch[1]) {
+            fig.appendChild(el('figcaption', 'jp-inline-caption', imgMatch[1]));
+          }
+          container.appendChild(fig);
         }
         return;
       }

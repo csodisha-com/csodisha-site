@@ -358,7 +358,7 @@ export async function buildExamsHubPayload(db, { nowIso } = {}) {
   for (const j of jobItems) {
     const st = String(j.lifecycle_stage || '').toLowerCase();
     const blob = `${j.title_en || ''} ${j.summary_en || ''} ${j.organisation_en || ''}`;
-    if (!['admit_card', 'exam_date', 'answer_key'].includes(st) && !/(admit card|exam city|exam date|syllabus|answer key)/i.test(blob)) {
+    if (!['admit_card', 'exam_date', 'answer_key', 'result'].includes(st) && !/(admit card|exam city|exam date|syllabus|answer key|result)/i.test(blob)) {
       continue;
     }
     const slug = cleanText(j.slug || j.id, 140);
