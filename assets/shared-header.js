@@ -1074,61 +1074,37 @@
       }
     }
 
-    sectors.forEach(sec => {
-      const slugLower = String(sec.slug || '').toLowerCase();
-      const hasStage2 = slugLower !== 'foreign';
-      const li = el('li', 'cso-js1-item' + (hasStage2 ? '' : ' is-direct-only'));
-      li.dataset.jsSector = sec.slug || '';
+    const JOBS_ALIGNED_ITEMS = [
+      { slug: 'job-alerts', icon: '💼', title_en: 'Job Alerts', title_or: 'ଚାକିରି ବିଜ୍ଞପ୍ତି', href: '/jobs/' },
+      { slug: 'exam-updates', icon: '🪪', title_en: 'Exam Updates & Admit Cards', title_or: 'ପରୀକ୍ଷା ସୂଚନା ଓ ଆଡମିଟ୍ କାର୍ଡ', href: '/exams/' },
+      { slug: 'results', icon: '🏆', title_en: 'Results', title_or: 'ପରୀକ୍ଷା ଫଳାଫଳ', href: '/exams/#results' },
+      { slug: 'odisha-recruitments', icon: '🏛️', title_en: 'Odisha State & University Recruitments', title_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ଓ ବିଶ୍ୱବିଦ୍ୟାଳୟ ନିଯୁକ୍ତି', href: '/jobs/#odisha' }
+    ];
+    const curPath = (window.location && window.location.pathname) ? window.location.pathname : '';
+    const curHash = (window.location && window.location.hash) ? window.location.hash : '';
+
+    JOBS_ALIGNED_ITEMS.forEach(item => {
+      const li = el('li', 'cso-js1-item is-direct-only');
+      li.dataset.jsSector = item.slug;
 
       const row = el('div', 'cso-js1-row');
-      const a = el('a', 'cso-js1-link');
-      a.href = '/jobs/?sector=' + encodeURIComponent(sec.slug || 'government');
+      const isCur = item.href.indexOf('#') !== -1
+        ? (curPath + curHash === item.href)
+        : (curPath === item.href && !curHash);
+      const a = el('a', 'cso-js1-link' + (isCur ? ' on' : ''));
+      a.href = item.href;
+      if (isCur) a.setAttribute('aria-current', 'page');
 
       const left = el('span', 'cso-js1-left');
-      const ic = el('span', 'cso-js1-icon', sec.icon || '💼');
+      const ic = el('span', 'cso-js1-icon', item.icon);
       ic.setAttribute('aria-hidden', 'true');
-      left.append(ic, el('span', 'cso-js1-title', isOr ? (sec.title_or || sec.title_en) : sec.title_en));
+      left.append(ic, el('span', 'cso-js1-title', isOr ? item.title_or : item.title_en));
       a.appendChild(left);
-
-      if (hasStage2) {
-        const arrow = el('span', 'cso-js1-arrow', '›');
-        arrow.setAttribute('aria-hidden', 'true');
-        a.appendChild(arrow);
-      }
-
       row.appendChild(a);
-      if (hasStage2) {
-        const mobExp = el('button', 'cso-js1-mob-exp', '▾');
-        mobExp.type = 'button';
-        mobExp.setAttribute('aria-expanded', 'false');
-        mobExp.setAttribute('aria-label', 'Expand ' + (sec.title_en || 'sector') + ' regions');
-        mobExp.addEventListener('click', ev => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          const isOpen = li.classList.toggle('is-mob-open');
-          mobExp.setAttribute('aria-expanded', String(isOpen));
-        });
-        row.appendChild(mobExp);
-        li.append(row, buildMobileAccordionSub(sec, isOr));
-      } else {
-        li.appendChild(row);
-      }
+      li.appendChild(row);
 
-      li.addEventListener('mouseenter', () => {
-        if (window.innerWidth < 1100) return;
-        activateSector(sec, li, hasStage2);
-      });
-      a.addEventListener('focus', () => {
-        if (window.innerWidth < 1100) return;
-        activateSector(sec, li, hasStage2);
-      });
       a.addEventListener('keydown', ev => {
-        if (ev.key === 'ArrowRight' && hasStage2 && window.innerWidth >= 1100) {
-          ev.preventDefault();
-          activateSector(sec, li, true);
-          const firstS2 = stage2El.querySelector('a');
-          if (firstS2) firstS2.focus();
-        } else if (ev.key === 'ArrowDown') {
+        if (ev.key === 'ArrowDown') {
           ev.preventDefault();
           const nextLi = li.nextElementSibling;
           if (nextLi) { const na = nextLi.querySelector('.cso-js1-link'); if (na) na.focus(); }
@@ -1312,29 +1288,39 @@
   function populateCareersStage1List(stage1List) {
     if (!stage1List) return;
     const isOr = S.lang === 'or';
-    const tracks = getActiveCareersTracks();
     stage1List.replaceChildren();
 
-    const items = tracks.map(tr => ({
-      slug: tr.slug || 'civil-services',
-      icon: tr.icon || '🧭',
-      title: isOr ? (tr.label_or || tr.label_en) : tr.label_en,
-      href: '/careers/?track=' + encodeURIComponent(tr.slug || 'civil-services')
-    }));
-    items.push({
-      slug: 'all',
-      icon: '📋',
-      title: isOr ? 'ସମସ୍ତ କ୍ୟାରିୟର୍ ରୋଡମ୍ୟାପ୍' : 'All Career Roadmaps',
-      href: '/careers/'
-    });
+    const curPath = (window.location && window.location.pathname) ? window.location.pathname : '';
+    const items = [
+      {
+        slug: 'career-paths',
+        icon: '🧭',
+        title: isOr ? 'କ୍ୟାରିଅର ପଥ ଓ ORSP ୭ମ ବେତନ' : 'Career Paths & ORSP 7th Pay Explorer',
+        href: '/career-paths/'
+      },
+      {
+        slug: 'odisha-special',
+        icon: '🗺️',
+        title: isOr ? 'ଓଡ଼ିଶା ସ୍ୱତନ୍ତ୍ର ଓ ୩୦ ଜିଲ୍ଲା ଆଟଲାସ୍' : 'Odisha Special & 30-District Atlas',
+        href: '/odisha-special/'
+      },
+      {
+        slug: 'career-roadmaps',
+        icon: '📋',
+        title: isOr ? 'କ୍ୟାରିଅର ରୋଡମ୍ୟାପ୍ ଓ ଗାଇଡ୍' : 'Career Roadmaps & Guides',
+        href: '/careers/'
+      }
+    ];
 
     items.forEach(item => {
       const li = el('li', 'cso-js1-item is-direct-only');
       li.dataset.crTrack = item.slug;
 
       const row = el('div', 'cso-js1-row');
-      const a = el('a', 'cso-js1-link');
+      const isCur = curPath === item.href;
+      const a = el('a', 'cso-js1-link' + (isCur ? ' on' : ''));
       a.href = item.href;
+      if (isCur) a.setAttribute('aria-current', 'page');
 
       const left = el('span', 'cso-js1-left');
       const ic = el('span', 'cso-js1-icon', item.icon);
@@ -1486,16 +1472,16 @@
     });
   }
 
-  // ---- Minimal 3-Item Schemes & Benefits Dropdown (v284 — single vertical dropdown, no Stage 2) ----
+  // ---- Aligned Schemes & Benefits Dropdown (v383) ----
   const SCHEMES_DROPDOWN_ITEMS = [
-    { slug: 'odisha', icon: '🏛️', title_en: 'Odisha State Schemes', title_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ଯୋଜନା', href: '/schemes/?scope=odisha' },
-    { slug: 'central', icon: '🇮🇳', title_en: 'Central Government Schemes', title_or: 'କେନ୍ଦ୍ର ସରକାରୀ ଯୋଜନା', href: '/schemes/?scope=central' },
-    { slug: 'all', icon: '📋', title_en: 'All Schemes & Benefits', title_or: 'ସମସ୍ତ ଯୋଜନା ଓ ସୁବିଧା', href: '/schemes/' }
+    { slug: 'scholarships', icon: '🎓', title_en: 'Scholarships Hub', title_or: 'ଛାତ୍ରବୃତ୍ତି ହବ୍', href: '/scholarships/' },
+    { slug: 'odisha-schemes', icon: '🏛️', title_en: 'Odisha Welfare Schemes', title_or: 'ଓଡ଼ିଶା କଲ୍ୟାଣ ଯୋଜନା', href: '/schemes/' }
   ];
 
   function renderSchemesStage1(stage1List) {
     if (!stage1List) return;
     const isOr = S.lang === 'or';
+    const curPath = (window.location && window.location.pathname) ? window.location.pathname : '';
     stage1List.replaceChildren();
 
     SCHEMES_DROPDOWN_ITEMS.forEach(item => {
@@ -1503,8 +1489,10 @@
       li.dataset.schScope = item.slug;
 
       const row = el('div', 'cso-js1-row');
-      const a = el('a', 'cso-js1-link');
+      const isCur = curPath === item.href;
+      const a = el('a', 'cso-js1-link' + (isCur ? ' on' : ''));
       a.href = item.href;
+      if (isCur) a.setAttribute('aria-current', 'page');
 
       const left = el('span', 'cso-js1-left');
       const ic = el('span', 'cso-js1-icon', item.icon);
@@ -1644,28 +1632,25 @@
     if (!stage1List) return;
     stage1List.replaceChildren();
     const isOr = S.lang === 'or';
-    const tracks = getStudyDropdownTracks();
-    const items = tracks.map(t => ({
-      slug: t.slug,
-      icon: t.icon || '📚',
-      title_en: t.title_en || t.slug,
-      title_or: t.title_or || t.title_en || t.slug,
-      href: '/study-library/?track=' + encodeURIComponent(t.slug || '')
-    }));
-    items.push({
-      slug: 'all',
-      icon: '📖',
-      title_en: 'All Study Resources',
-      title_or: 'ସମସ୍ତ ଅଧ୍ୟୟନ ସାମଗ୍ରୀ',
-      href: '/study-library/'
-    });
+    const curPath = (window.location && window.location.pathname) ? window.location.pathname : '';
+    const curHash = (window.location && window.location.hash) ? window.location.hash : '';
+    const items = [
+      { slug: 'study-materials', icon: '📚', title_en: 'Study Materials & Notes', title_or: 'ଅଧ୍ୟୟନ ସାମଗ୍ରୀ ଓ ନୋଟ୍ସ', href: '/study-materials/' },
+      { slug: 'guides', icon: '📘', title_en: 'Informative Guides', title_or: 'ସୂଚନାମୂଳକ ଗାଇଡ୍', href: '/guides/' },
+      { slug: 'mock-tests', icon: '⏱️', title_en: 'Live CBT Mock Tests', title_or: 'ଲାଇଭ୍ CBT ମକ୍ ଟେଷ୍ଟ', href: '/mock-tests/' },
+      { slug: 'pyq', icon: '📑', title_en: 'Syllabus & PYQ Papers', title_or: 'ସିଲାବସ୍ ଓ ପୂର୍ବ ବର୍ଷ ପ୍ରଶ୍ନ (PYQ)', href: '/study-materials/#pyq' }
+    ];
 
     items.forEach(item => {
-      const li = el('li', 'cso-js1-item');
+      const li = el('li', 'cso-js1-item is-direct-only');
       li.dataset.track = item.slug;
       const row = el('div', 'cso-js1-row');
-      const a = el('a', 'cso-js1-link');
+      const isCur = item.href.indexOf('#') !== -1
+        ? (curPath + curHash === item.href)
+        : (curPath === item.href && !curHash);
+      const a = el('a', 'cso-js1-link' + (isCur ? ' on' : ''));
       a.href = item.href;
+      if (isCur) a.setAttribute('aria-current', 'page');
       const left = el('span', 'cso-js1-left');
       const ic = el('span', 'cso-js1-icon', item.icon);
       ic.setAttribute('aria-hidden', 'true');

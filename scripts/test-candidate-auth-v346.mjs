@@ -169,7 +169,7 @@ await check('1. Static CSP, login UI, auth client, and SW cache v346 checks', as
   assert.ok(!/\.innerHTML\s*=|insertAdjacentHTML|style=|onclick=/i.test(read('assets/js/pages/login.js')), 'login.js must be CSP-safe');
   assert.ok(read('assets/js/pages/login.js').includes('identifier'), 'login.js must send identifier');
   assert.ok(read('assets/cso-auth-client.js').includes('data.identifier || data.userId || data.username || data.email'), 'cso-auth-client.js must support User ID or Email');
-  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v382';"), 'sw.js must be v367');
+  assert.ok(read('sw.js').includes("const CACHE_NAME = 'cso-candidate-cache-v383';"), 'sw.js must be v367');
   assert.ok(read('sw.js').includes("url.pathname.startsWith('/api/auth/')"), 'sw.js must bypass /api/auth/');
   assert.ok(read('sw.js').includes("url.pathname.startsWith('/student-dashboard')"), 'sw.js must bypass /student-dashboard');
   const guardSrc = read('assets/js/student-auth-guard.js');
