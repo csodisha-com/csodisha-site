@@ -18778,3 +18778,340 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+/* ===== v405: Interactive Odisha Govt ORSP 7th Pay Matrix & In-Hand Salary Estimator (4-Theme Semantic Tokens) ===== */
+.cso-orsp-root {
+  margin-top: 20px;
+}
+
+.cso-orsp-card {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-orsp-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cso-orsp-head-copy {
+  flex: 1 1 320px;
+  display: grid;
+  gap: 5px;
+}
+
+.cso-orsp-eyebrow {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--cso-accent);
+  letter-spacing: 0.04em;
+}
+
+.cso-orsp-title {
+  margin: 0;
+  font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-orsp-sub {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--cso-ink-muted);
+  line-height: 1.5;
+}
+
+.cso-orsp-head-ctl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-orsp-lang-toggle {
+  display: inline-flex;
+  border: 1px solid var(--cso-border);
+  border-radius: 999px;
+  padding: 3px;
+  background: var(--cso-surface-alt, var(--cso-surface));
+  gap: 4px;
+}
+
+.cso-orsp-lang-btn {
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--cso-ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cso-orsp-lang-btn.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-orsp-btn,
+.cso-orsp-pill,
+.cso-orsp-mini-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.cso-orsp-pill,
+.cso-orsp-mini-pill {
+  border-radius: 999px;
+}
+
+.cso-orsp-btn--primary,
+.cso-orsp-pill.is-active,
+.cso-orsp-mini-pill.is-active,
+.cso-orsp-btn:hover,
+.cso-orsp-pill:hover,
+.cso-orsp-mini-pill:hover {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-orsp-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-orsp-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.cso-orsp-field {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.cso-orsp-field--wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 720px) {
+  .cso-orsp-field--wide {
+    grid-column: span 1;
+  }
+}
+
+.cso-orsp-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--cso-ink-muted);
+}
+
+.cso-orsp-select,
+.cso-orsp-input {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cso-orsp-input--sm {
+  width: 84px;
+  flex: 0 0 84px;
+}
+
+.cso-orsp-inline,
+.cso-orsp-inline-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.cso-orsp-inline-head {
+  justify-content: space-between;
+}
+
+.cso-orsp-pt-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-orsp-check {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cso-accent);
+  cursor: pointer;
+}
+
+.cso-orsp-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.cso-orsp-kpi {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-orsp-kpi.is-accent {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-orsp-kpi.is-accent .cso-orsp-kpi-k,
+.cso-orsp-kpi.is-accent .cso-orsp-kpi-v {
+  color: var(--cso-accent-ink);
+}
+
+.cso-orsp-kpi-k {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--cso-ink-muted);
+}
+
+.cso-orsp-kpi-v {
+  font-size: 1.32rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-orsp-bar-wrap {
+  display: grid;
+  gap: 6px;
+}
+
+.cso-orsp-bar-track {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--cso-warn-bg);
+  overflow: hidden;
+}
+
+.cso-orsp-bar-net {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cso-accent);
+}
+
+.cso-orsp-bar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cso-ink-muted);
+}
+
+.cso-orsp-tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.cso-orsp-box {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  align-content: start;
+  overflow-x: auto;
+}
+
+.cso-orsp-box-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-orsp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.cso-orsp-table th,
+.cso-orsp-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--cso-border);
+  text-align: left;
+  color: var(--cso-ink);
+}
+
+.cso-orsp-table th {
+  font-weight: 800;
+  color: var(--cso-ink-muted);
+}
+
+.cso-orsp-table tr.is-total td {
+  font-weight: 800;
+  background: var(--cso-surface);
+}
+
+.cso-orsp-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cso-orsp-num.is-strong {
+  font-weight: 800;
+  color: var(--cso-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-orsp-btn,
+  .cso-orsp-pill,
+  .cso-orsp-mini-pill {
+    transition: none;
+  }
+}
