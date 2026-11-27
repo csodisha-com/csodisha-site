@@ -1048,17 +1048,84 @@ function nav(){
   });
   itemsWrap.appendChild(buildDrawerUtilities());
  };
+ function csoGetOpenPillarKey(container){
+  if(!container)return '';
+  const openNi=container.querySelector('.ni.cso-open, .ni.is-open');
+  if(!openNi)return '';
+  const pillarClasses=['cso-ni-jobs','cso-ni-careers','cso-ni-schemes','cso-ni-study','cso-ni-community'];
+  for(let i=0;i<pillarClasses.length;i++){
+   if(openNi.classList.contains(pillarClasses[i]))return pillarClasses[i];
+  }
+  const trig=openNi.querySelector('.cso-nav-parent > a');
+  return trig?String(trig.getAttribute('href')||''):'';
+ }
+ function csoRestoreOpenPillar(container,key){
+  if(!container||!key)return;
+  let targetNi=null;
+  if(key.startsWith('cso-ni-')){
+   targetNi=container.querySelector('.ni.'+key);
+  }else{
+   const links=container.querySelectorAll('.ni > .cso-nav-parent > a');
+   for(let i=0;i<links.length;i++){
+    if(String(links[i].getAttribute('href')||'')===key){targetNi=links[i].closest('.ni');break;}
+   }
+  }
+  if(!targetNi)return;
+  targetNi.classList.add('cso-open','is-open');
+  const arrow=targetNi.querySelector('.cso-nav-arrow');
+  if(arrow)arrow.setAttribute('aria-expanded','true');
+  const trigA=targetNi.querySelector('.cso-nav-parent > a[aria-haspopup="true"]');
+  if(trigA)trigA.setAttribute('aria-expanded','true');
+ }
+ function csoToggleNavAccordion(parent,forceOpen){
+  if(!parent)return false;
+  const isCurrentlyOpen=parent.classList.contains('cso-open')||parent.classList.contains('is-open');
+  const open=typeof forceOpen==='boolean'?forceOpen:!isCurrentlyOpen;
+  csoCloseNavDropdowns(parent);
+  parent.classList.toggle('cso-open',open);
+  parent.classList.toggle('is-open',open);
+  const arrow=parent.querySelector('.cso-nav-arrow');
+  if(arrow)arrow.setAttribute('aria-expanded',String(open));
+  const trigA=parent.querySelector('.cso-nav-parent > a[aria-haspopup="true"]');
+  if(trigA)trigA.setAttribute('aria-expanded',String(open));
+  if(parent.classList.contains('cso-ni-jobs')){
+   const cascade=parent.querySelector('.cso-jobs-cascade');
+   if(cascade&&!open)cascade.classList.remove('is-stage2-open');
+   if(open&&typeof window.__csoHydrateJobsFlyout==='function')window.__csoHydrateJobsFlyout(cascade);
+  }else if(parent.classList.contains('cso-ni-careers')){
+   const cascade=parent.querySelector('.cso-careers-cascade');
+   if(cascade&&!open)cascade.classList.remove('is-stage2-open');
+   if(open&&typeof window.__csoHydrateCareersFlyout==='function')window.__csoHydrateCareersFlyout(cascade);
+  }else if(parent.classList.contains('cso-ni-schemes')){
+   const cascade=parent.querySelector('.cso-schemes-cascade');
+   if(cascade&&!open)cascade.classList.remove('is-stage2-open');
+   if(open&&typeof window.__csoHydrateSchemesFlyout==='function')window.__csoHydrateSchemesFlyout(cascade);
+  }else if(parent.classList.contains('cso-ni-study')){
+   const cascade=parent.querySelector('.cso-study-cascade');
+   if(open&&typeof window.__csoHydrateStudyDropdown==='function')window.__csoHydrateStudyDropdown(cascade);
+  }else if(parent.classList.contains('cso-ni-community')){
+   const cascade=parent.querySelector('.cso-community-cascade');
+   if(open&&typeof window.__csoHydrateCommunityDropdown==='function')window.__csoHydrateCommunityDropdown(cascade);
+  }
+  return open;
+ }
  window.CSOHeaderNav={
   applyHeaderLinks:(items)=>{
    if(!Array.isArray(items)||!items.length)return;
+   const prevOpenKey=csoGetOpenPillarKey(itemsWrap);
    const sorted=[...items].sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0));
    csoAdminHeaderLinks=sorted;
    renderList(sorted);
+   if(prevOpenKey)csoRestoreOpenPillar(itemsWrap,prevOpenKey);
    setActive(location.hash.slice(1));
   },
   setLang:setAppLang,
   openDrawer:()=>setMobileDrawerOpen(true),
-  closeDrawer:()=>setMobileDrawerOpen(false)
+  closeDrawer:()=>setMobileDrawerOpen(false),
+  toggleAccordion:(target,forceOpen)=>{
+   const node=typeof target==='string'?document.querySelector(target):target;
+   return csoToggleNavAccordion(node?node.closest('.ni')||node:null,forceOpen);
+  }
  };
  renderList(csoAdminHeaderLinks&&csoAdminHeaderLinks.length?csoAdminHeaderLinks:NAV);
  w.append(bar,itemsWrap);
@@ -1073,9 +1140,11 @@ function nav(){
    .then(r=>r.ok?r.json():null)
    .then(data=>{
     if(!data||!Array.isArray(data.header)||!data.header.length)return;
+    const prevOpenKey=csoGetOpenPillarKey(itemsWrap);
     const hdr=[...data.header].sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0));
     csoAdminHeaderLinks=hdr;
     renderList(hdr);
+    if(prevOpenKey)csoRestoreOpenPillar(itemsWrap,prevOpenKey);
     setActive(location.hash.slice(1));
    }).catch(()=>{});
  }
@@ -1149,32 +1218,24 @@ document.addEventListener('click',e=>{
   e.preventDefault();
   e.stopPropagation();
   const parent=arrow.closest('.ni');
-  const open=!parent.classList.contains('cso-open');
-  csoCloseNavDropdowns(parent);
-  parent.classList.toggle('cso-open',open);
-  arrow.setAttribute('aria-expanded',String(open));
-  const trigA=parent.querySelector('.cso-nav-parent > a[aria-haspopup="true"]');
-  if(trigA)trigA.setAttribute('aria-expanded',String(open));
-  if(parent.classList.contains('cso-ni-jobs')){
-   const cascade=parent.querySelector('.cso-jobs-cascade');
-   if(cascade&&!open)cascade.classList.remove('is-stage2-open');
-   if(open&&typeof window.__csoHydrateJobsFlyout==='function')window.__csoHydrateJobsFlyout(cascade);
-  }else if(parent.classList.contains('cso-ni-careers')){
-   const cascade=parent.querySelector('.cso-careers-cascade');
-   if(cascade&&!open)cascade.classList.remove('is-stage2-open');
-   if(open&&typeof window.__csoHydrateCareersFlyout==='function')window.__csoHydrateCareersFlyout(cascade);
-  }else if(parent.classList.contains('cso-ni-schemes')){
-   const cascade=parent.querySelector('.cso-schemes-cascade');
-   if(cascade&&!open)cascade.classList.remove('is-stage2-open');
-   if(open&&typeof window.__csoHydrateSchemesFlyout==='function')window.__csoHydrateSchemesFlyout(cascade);
-  }else if(parent.classList.contains('cso-ni-study')){
-   const cascade=parent.querySelector('.cso-study-cascade');
-   if(open&&typeof window.__csoHydrateStudyDropdown==='function')window.__csoHydrateStudyDropdown(cascade);
-  }else if(parent.classList.contains('cso-ni-community')){
-   const cascade=parent.querySelector('.cso-community-cascade');
-   if(open&&typeof window.__csoHydrateCommunityDropdown==='function')window.__csoHydrateCommunityDropdown(cascade);
+  if(parent&&window.CSOHeaderNav&&typeof window.CSOHeaderNav.toggleAccordion==='function'){
+   window.CSOHeaderNav.toggleAccordion(parent);
   }
   return;
+ }
+ const parentTriggerLink=e.target.closest('#navw .cso-nav-parent > a[aria-haspopup="true"]');
+ if(parentTriggerLink){
+  const items=$('#cso-nav-items');
+  const isMobileMode=window.innerWidth<1100||Boolean(items&&items.classList.contains('cso-mobile-open'));
+  if(isMobileMode){
+   e.preventDefault();
+   e.stopPropagation();
+   const parent=parentTriggerLink.closest('.ni');
+   if(parent&&window.CSOHeaderNav&&typeof window.CSOHeaderNav.toggleAccordion==='function'){
+    window.CSOHeaderNav.toggleAccordion(parent);
+   }
+   return;
+  }
  }
  const a11yMobile=e.target.closest('#ba-mobile');
  if(a11yMobile){
@@ -1221,16 +1282,15 @@ document.addEventListener('keydown',e=>{
  }
 });
 document.addEventListener('focusout',e=>{
+ const items=document.getElementById('cso-nav-items');
+ if(window.innerWidth<1100||(items&&items.classList.contains('cso-mobile-open'))){
+  return;
+ }
  const navw=document.getElementById('navw');
  if(!navw)return;
  const openItem=navw.querySelector('.ni.cso-open');
  if(openItem&&e.relatedTarget&&!openItem.contains(e.relatedTarget)){
   csoCloseNavDropdowns();
- }
- const items=document.getElementById('cso-nav-items');
- const hdrToggle=document.getElementById('cso-header-menu-toggle');
- if(items&&items.classList.contains('cso-mobile-open')&&e.relatedTarget&&!items.contains(e.relatedTarget)&&(!hdrToggle||!hdrToggle.contains(e.relatedTarget))){
-  setMobileDrawerOpen(false);
  }
 });
 window.addEventListener('resize', () => {

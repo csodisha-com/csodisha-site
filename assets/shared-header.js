@@ -2003,16 +2003,53 @@
     });
   }
 
+  function getOpenPillarKey(container) {
+    if (!container) return '';
+    const openNi = container.querySelector('.ni.cso-open, .ni.is-open');
+    if (!openNi) return '';
+    const pillarClasses = ['cso-ni-jobs', 'cso-ni-careers', 'cso-ni-schemes', 'cso-ni-study', 'cso-ni-community'];
+    for (let i = 0; i < pillarClasses.length; i++) {
+      if (openNi.classList.contains(pillarClasses[i])) return pillarClasses[i];
+    }
+    const trig = openNi.querySelector('.cso-nav-parent > a');
+    return trig ? String(trig.getAttribute('href') || '') : '';
+  }
+
+  function restoreOpenPillar(container, key) {
+    if (!container || !key) return;
+    let targetNi = null;
+    if (key.startsWith('cso-ni-')) {
+      targetNi = container.querySelector('.ni.' + key);
+    } else {
+      const links = container.querySelectorAll('.ni > .cso-nav-parent > a');
+      for (let i = 0; i < links.length; i++) {
+        if (String(links[i].getAttribute('href') || '') === key) {
+          targetNi = links[i].closest('.ni');
+          break;
+        }
+      }
+    }
+    if (!targetNi) return;
+    targetNi.classList.add('cso-open', 'is-open');
+    const arrow = targetNi.querySelector('.cso-nav-arrow');
+    if (arrow) arrow.setAttribute('aria-expanded', 'true');
+    const trigA = targetNi.querySelector('.cso-nav-parent > a[aria-haspopup="true"]');
+    if (trigA) trigA.setAttribute('aria-expanded', 'true');
+  }
+
   function renderNav() {
     const navw = document.getElementById('navw');
     if (!navw) return;
+    const prevItems = document.getElementById('cso-nav-items');
+    const wasDrawerOpen = Boolean(prevItems && prevItems.classList.contains('cso-mobile-open'));
+    const prevOpenKey = getOpenPillarKey(prevItems);
     navw.replaceChildren();
 
     const bar = el('div', 'cso-nav-bar-container');
     const mobToggle = el('button', 'cso-nav-mobile');
     mobToggle.type = 'button';
     mobToggle.id = 'cso-menu-toggle';
-    mobToggle.setAttribute('aria-expanded', 'false');
+    mobToggle.setAttribute('aria-expanded', String(wasDrawerOpen));
     mobToggle.setAttribute('aria-controls', 'cso-nav-items');
     mobToggle.setAttribute('aria-label', 'Navigation Menu');
     const ham = el('span', '', '☰');
@@ -2068,12 +2105,14 @@
 
     const navItems = el('div', 'cso-nav-items');
     navItems.id = 'cso-nav-items';
+    if (wasDrawerOpen) navItems.classList.add('cso-mobile-open');
 
     if (lastLiveNavPayload) {
       renderPillarNodes(navItems, lastLiveNavPayload.items, lastLiveNavPayload.megaByParent);
     } else {
       renderPillarNodes(navItems, NAV, null);
     }
+    if (prevOpenKey) restoreOpenPillar(navItems, prevOpenKey);
 
     navw.append(bar, navItems);
   }
@@ -2086,6 +2125,7 @@
         if (!data || !Array.isArray(data.header) || !data.header.length) return;
         const navItems = document.getElementById('cso-nav-items');
         if (!navItems) return;
+        const prevOpenKey = getOpenPillarKey(navItems);
         const user = getActiveUser();
         const visibleItems = data.header.filter(it => {
           const urlStr = String(it.url || '').toLowerCase();
@@ -2113,6 +2153,7 @@
         lastLiveNavPayload = { items: visibleItems, megaByParent };
         const mobAuth = document.getElementById('cso-nav-mobile-auth');
         renderPillarNodes(navItems, visibleItems, megaByParent);
+        if (prevOpenKey) restoreOpenPillar(navItems, prevOpenKey);
         if (mobAuth && !user) navItems.appendChild(mobAuth);
       })
       .catch(() => {});
@@ -2156,6 +2197,58 @@
     if (!next) closeDropdowns();
   }
 
+  function toggleSharedNavAccordion(parent, forceOpen) {
+    if (!parent) return false;
+    const isCurrentlyOpen = parent.classList.contains('cso-open') || parent.classList.contains('is-open');
+    const open = typeof forceOpen === 'boolean' ? forceOpen : !isCurrentlyOpen;
+    closeDropdowns(parent);
+    parent.classList.toggle('cso-open', open);
+    parent.classList.toggle('is-open', open);
+    const arrow = parent.querySelector('.cso-nav-arrow');
+    if (arrow) arrow.setAttribute('aria-expanded', String(open));
+    const trigA = parent.querySelector('.cso-nav-parent > a[aria-haspopup="true"]');
+    if (trigA) trigA.setAttribute('aria-expanded', String(open));
+    if (open && parent.classList.contains('cso-ni-jobs')) {
+      const cascade = parent.querySelector('.cso-jobs-cascade');
+      if (cascade) {
+        hydrateJobsFlyoutFromD1(cascade, cascade.querySelector('.cso-js1-list'), cascade.querySelector('.cso-jobs-stage2'));
+      }
+    } else if (open && parent.classList.contains('cso-ni-careers')) {
+      const cascade = parent.querySelector('.cso-careers-cascade');
+      if (cascade) {
+        hydrateCareersFlyoutFromD1(cascade.querySelector('.cso-js1-list'));
+      }
+    } else if (open && parent.classList.contains('cso-ni-schemes')) {
+      const cascade = parent.querySelector('.cso-schemes-cascade');
+      if (cascade) {
+        hydrateSchemesFlyoutFromD1(cascade, cascade.querySelector('.cso-js1-list'), cascade.querySelector('.cso-schemes-stage2'));
+      }
+    } else if (open && parent.classList.contains('cso-ni-study')) {
+      const cascade = parent.querySelector('.cso-study-cascade');
+      if (cascade) {
+        hydrateStudyDropdownFromD1(cascade.querySelector('.cso-js1-list'));
+      }
+    } else if (open && parent.classList.contains('cso-ni-community')) {
+      const cascade = parent.querySelector('.cso-community-cascade');
+      if (cascade) {
+        hydrateCommunityDropdownFromD1(cascade.querySelector('.cso-js1-list'));
+      }
+    } else if (!open) {
+      const cascade = parent.querySelector('.cso-jobs-cascade, .cso-careers-cascade, .cso-schemes-cascade, .cso-study-cascade, .cso-community-cascade');
+      if (cascade) cascade.classList.remove('is-stage2-open');
+    }
+    return open;
+  }
+
+  window.CSOSharedHeaderNav = {
+    openDrawer: () => setSharedDrawerOpen(true),
+    closeDrawer: () => setSharedDrawerOpen(false),
+    toggleAccordion: (target, forceOpen) => {
+      const node = typeof target === 'string' ? document.querySelector(target) : target;
+      return toggleSharedNavAccordion(node ? node.closest('.ni') || node : null, forceOpen);
+    }
+  };
+
   if (!window.__csoNavDropdownWired) {
   window.__csoNavDropdownWired = true;
   document.addEventListener('click', e => {
@@ -2190,44 +2283,20 @@
       e.preventDefault();
       e.stopPropagation();
       const parent = arrow.closest('.ni');
-      if (parent) {
-        const open = !parent.classList.contains('cso-open');
-        closeDropdowns(parent);
-        parent.classList.toggle('cso-open', open);
-        arrow.setAttribute('aria-expanded', String(open));
-        const trigA = parent.querySelector('.cso-nav-parent > a[aria-haspopup="true"]');
-        if (trigA) trigA.setAttribute('aria-expanded', String(open));
-        if (open && parent.classList.contains('cso-ni-jobs')) {
-          const cascade = parent.querySelector('.cso-jobs-cascade');
-          if (cascade) {
-            hydrateJobsFlyoutFromD1(cascade, cascade.querySelector('.cso-js1-list'), cascade.querySelector('.cso-jobs-stage2'));
-          }
-        } else if (open && parent.classList.contains('cso-ni-careers')) {
-          const cascade = parent.querySelector('.cso-careers-cascade');
-          if (cascade) {
-            hydrateCareersFlyoutFromD1(cascade.querySelector('.cso-js1-list'));
-          }
-        } else if (open && parent.classList.contains('cso-ni-schemes')) {
-          const cascade = parent.querySelector('.cso-schemes-cascade');
-          if (cascade) {
-            hydrateSchemesFlyoutFromD1(cascade, cascade.querySelector('.cso-js1-list'), cascade.querySelector('.cso-schemes-stage2'));
-          }
-        } else if (open && parent.classList.contains('cso-ni-study')) {
-          const cascade = parent.querySelector('.cso-study-cascade');
-          if (cascade) {
-            hydrateStudyDropdownFromD1(cascade.querySelector('.cso-js1-list'));
-          }
-        } else if (open && parent.classList.contains('cso-ni-community')) {
-          const cascade = parent.querySelector('.cso-community-cascade');
-          if (cascade) {
-            hydrateCommunityDropdownFromD1(cascade.querySelector('.cso-js1-list'));
-          }
-        } else if (!open && (parent.classList.contains('cso-ni-jobs') || parent.classList.contains('cso-ni-careers') || parent.classList.contains('cso-ni-schemes') || parent.classList.contains('cso-ni-study') || parent.classList.contains('cso-ni-community'))) {
-          const cascade = parent.querySelector('.cso-jobs-cascade, .cso-careers-cascade, .cso-schemes-cascade, .cso-study-cascade, .cso-community-cascade');
-          if (cascade) cascade.classList.remove('is-stage2-open');
-        }
-      }
+      if (parent) toggleSharedNavAccordion(parent);
       return;
+    }
+    const parentTriggerLink = e.target.closest('#navw .cso-nav-parent > a[aria-haspopup="true"]');
+    if (parentTriggerLink) {
+      const items = document.getElementById('cso-nav-items');
+      const isMobileMode = window.innerWidth < 1100 || Boolean(items && items.classList.contains('cso-mobile-open'));
+      if (isMobileMode) {
+        e.preventDefault();
+        e.stopPropagation();
+        const parent = parentTriggerLink.closest('.ni');
+        if (parent) toggleSharedNavAccordion(parent);
+        return;
+      }
     }
     const a11yMobile = e.target.closest('#cso-ctl-a11y-mobile');
     if (a11yMobile) {
@@ -2299,23 +2368,21 @@
   });
 
   document.addEventListener('focusout', e => {
+    const items = document.getElementById('cso-nav-items');
+    if (window.innerWidth < 1100 || (items && items.classList.contains('cso-mobile-open'))) {
+      return;
+    }
     const navw = document.getElementById('navw');
     if (!navw) return;
     const openItem = navw.querySelector('.ni.cso-open');
     if (openItem && e.relatedTarget && !openItem.contains(e.relatedTarget)) {
       closeDropdowns();
     }
-    const items = document.getElementById('cso-nav-items');
-    if (items && items.classList.contains('cso-mobile-open') && e.relatedTarget && !navw.contains(e.relatedTarget)) {
-      items.classList.remove('cso-mobile-open');
-      const toggle = navw.querySelector('.cso-nav-mobile');
-      if (toggle) toggle.setAttribute('aria-expanded', 'false');
-      closeDropdowns();
-    }
   });
 
   window.addEventListener('scroll', () => {
-    if (window.innerWidth > 768) {
+    const items = document.getElementById('cso-nav-items');
+    if (window.innerWidth >= 1100 && !(items && items.classList.contains('cso-mobile-open'))) {
       closeDropdowns();
       closeAuthDropdown();
     }
@@ -2323,13 +2390,11 @@
 
   window.addEventListener('resize', () => {
     syncMobileControlsVisibility();
-    if (window.innerWidth > 768) {
+    if (window.innerWidth >= 1100) {
       closeDropdowns();
       const items = document.getElementById('cso-nav-items');
       if (items && items.classList.contains('cso-mobile-open')) {
-        items.classList.remove('cso-mobile-open');
-        const toggle = document.querySelector('#navw .cso-nav-mobile');
-        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        setSharedDrawerOpen(false);
       }
     }
   });

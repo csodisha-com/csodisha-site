@@ -19405,3 +19405,140 @@ nav#cso-hub-top-tabs {
     transition: none;
   }
 }
+
+/* ==========================================================================
+   v406: Mobile Navigation Drawer & Smooth Slide-Accordion Contract (< 1100px)
+   ========================================================================== */
+
+@keyframes csoDrawerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes csoAccordionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1099px) {
+  #cso-main-navbar #cso-nav-items.cso-mobile-open,
+  #navw #cso-nav-items.cso-mobile-open,
+  .cso-nav-items.cso-mobile-open {
+    max-height: calc(100dvh - 76px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    animation: csoDrawerSlideIn 0.2s ease-out;
+  }
+
+  #cso-nav-items.cso-mobile-open .ni {
+    overflow: visible;
+  }
+
+  #cso-nav-items.cso-mobile-open .cso-nav-parent {
+    min-height: 44px;
+    border-radius: 10px;
+    transition: background-color 0.16s ease, border-color 0.16s ease;
+  }
+
+  #cso-nav-items.cso-mobile-open .cso-nav-parent > a,
+  #cso-nav-items.cso-mobile-open .cso-nav-arrow {
+    min-height: 44px;
+  }
+
+  #cso-nav-items.cso-mobile-open .cso-nav-arrow {
+    min-width: 44px;
+    transition: transform 0.2s ease, background-color 0.16s ease;
+  }
+
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .cso-nav-parent > .cso-nav-arrow,
+  #cso-nav-items.cso-mobile-open .ni.is-open > .cso-nav-parent > .cso-nav-arrow {
+    transform: rotate(180deg);
+  }
+
+  #cso-nav-items.cso-mobile-open .cso-jobs-cascade,
+  #cso-nav-items.cso-mobile-open .cso-careers-cascade,
+  #cso-nav-items.cso-mobile-open .cso-schemes-cascade,
+  #cso-nav-items.cso-mobile-open .cso-study-cascade,
+  #cso-nav-items.cso-mobile-open .cso-community-cascade {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 6px 0 4px !important;
+    padding: 0 !important;
+    z-index: auto !important;
+  }
+
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .cso-jobs-cascade,
+  #cso-nav-items.cso-mobile-open .ni.is-open > .cso-jobs-cascade,
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .cso-careers-cascade,
+  #cso-nav-items.cso-mobile-open .ni.is-open > .cso-careers-cascade,
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .cso-schemes-cascade,
+  #cso-nav-items.cso-mobile-open .ni.is-open > .cso-schemes-cascade,
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .cso-study-cascade,
+  #cso-nav-items.cso-mobile-open .ni.is-open > .cso-study-cascade,
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .cso-community-cascade,
+  #cso-nav-items.cso-mobile-open .ni.is-open > .cso-community-cascade,
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .dd,
+  #cso-nav-items.cso-mobile-open .ni.is-open > .dd {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    animation: csoAccordionReveal 0.18s ease-out;
+  }
+
+  #cso-nav-items.cso-mobile-open .cso-jobs-stage1,
+  #cso-nav-items.cso-mobile-open .cso-careers-stage1,
+  #cso-nav-items.cso-mobile-open .cso-schemes-stage1,
+  #cso-nav-items.cso-mobile-open .cso-study-stage1,
+  #cso-nav-items.cso-mobile-open .cso-community-stage1 {
+    width: 100% !important;
+    box-shadow: none !important;
+    border: 1px solid var(--cso-border) !important;
+    background: var(--cso-surface-elevated) !important;
+    color: var(--cso-ink) !important;
+  }
+
+  #cso-nav-items.cso-mobile-open .cso-js1-link,
+  #cso-nav-items.cso-mobile-open .cso-js2-link,
+  #cso-nav-items.cso-mobile-open .dd a {
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #cso-main-navbar #cso-nav-items.cso-mobile-open,
+  #navw #cso-nav-items.cso-mobile-open,
+  .cso-nav-items.cso-mobile-open,
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .cso-jobs-cascade,
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .cso-careers-cascade,
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .cso-schemes-cascade,
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .cso-study-cascade,
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .cso-community-cascade,
+  #cso-nav-items.cso-mobile-open .ni.cso-open > .dd {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  #cso-nav-items.cso-mobile-open .cso-nav-parent,
+  #cso-nav-items.cso-mobile-open .cso-nav-arrow {
+    transition: none !important;
+  }
+}

@@ -269,7 +269,7 @@ check('3. Zero unguarded hardcoded hex light/dark collisions across ALL CSS file
   const ssr = read('functions/_lib/ssr-shell.js');
   assert.match(ssr, /\/assets\/style\.css\?v=20261125v(?:29[5-9]|3\d\d)/, 'ssr-shell.js must link versioned style.css');
   assert.match(ssr, /\/assets\/css\/portal-shell\.css\?v=20261125v(?:29[5-9]|3\d\d)/, 'ssr-shell.js must link versioned portal-shell.css');
-  assert.match(ssr, /\/assets\/shared-header\.js\?v=20261125v(?:29[5-9]|3\d\d)/, 'ssr-shell.js must link versioned shared-header.js');
+  assert.match(ssr, /\/assets\/shared-header\.js\?v=2026112[5-9]v(?:29[5-9]|3\d\d|4\d\d)/, 'ssr-shell.js must link versioned shared-header.js');
 });
 
 check('4. Elevated overlays enforce opacity: 1 & backdrop-filter: none; JS syncs data-theme + data-cso-theme', () => {
