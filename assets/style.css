@@ -23567,3 +23567,425 @@ nav#cso-hub-top-tabs {
     break-inside: avoid;
   }
 }
+
+/* ===== v422: Odisha Govt Holiday, Treasury & Exam-Day Logistics Calendar (.cso-hel-*) ===== */
+.cso-hel-root {
+  margin: 20px 0;
+}
+
+.cso-hel-wrap {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated, var(--cso-surface));
+  color: var(--cso-ink);
+}
+
+.cso-hel-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.cso-hel-title {
+  margin: 0;
+  font-size: 1.32rem;
+  line-height: 1.3;
+  color: var(--cso-ink);
+}
+
+.cso-hel-sub {
+  margin: 6px 0 0;
+  font-size: 0.92rem;
+  color: var(--cso-muted);
+  max-width: 78ch;
+}
+
+.cso-hel-head-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-hel-lang-toggle {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  padding: 3px;
+  gap: 4px;
+}
+
+.cso-hel-lang-btn {
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-hel-lang-btn.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-hel-section {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-hel-sec-title {
+  margin: 0;
+  font-size: 1.08rem;
+  color: var(--cso-ink);
+}
+
+.cso-hel-helper {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.cso-hel-pills,
+.cso-hel-mode-row,
+.cso-hel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.cso-hel-pill {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.cso-hel-pill.is-active {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-hel-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.cso-hel-field {
+  display: grid;
+  gap: 6px;
+}
+
+.cso-hel-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cso-muted);
+}
+
+.cso-hel-select,
+.cso-hel-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 1rem;
+}
+
+.cso-hel-hol-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 265px), 1fr));
+  gap: 10px;
+}
+
+.cso-hel-hol-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-hel-hol-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+  align-items: center;
+}
+
+.cso-hel-date-pill {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--cso-accent);
+}
+
+.cso-hel-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cso-hel-badge {
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.cso-hel-badge--gaz {
+  border-color: var(--cso-accent);
+  color: var(--cso-accent);
+}
+
+.cso-hel-badge--bank {
+  border-color: var(--cso-ok, var(--cso-accent));
+  color: var(--cso-ok, var(--cso-accent));
+}
+
+.cso-hel-hol-name {
+  font-size: 0.94rem;
+  color: var(--cso-ink);
+}
+
+.cso-hel-hol-note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--cso-muted);
+  line-height: 1.4;
+}
+
+.cso-hel-timeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 195px), 1fr));
+  gap: 10px;
+}
+
+.cso-hel-ms {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-hel-ms.is-cutoff {
+  border-color: var(--cso-danger, var(--cso-accent));
+}
+
+.cso-hel-ms__time {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--cso-accent);
+}
+
+.cso-hel-ms.is-cutoff .cso-hel-ms__time {
+  color: var(--cso-danger, var(--cso-accent));
+}
+
+.cso-hel-ms__label {
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-hel-ms__note {
+  font-size: 0.78rem;
+  color: var(--cso-muted);
+}
+
+.cso-hel-checklist {
+  display: grid;
+  gap: 10px;
+}
+
+.cso-hel-check-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-hel-check-title {
+  margin: 0;
+  font-size: 0.98rem;
+  color: var(--cso-ink);
+}
+
+.cso-hel-meter {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  color: var(--cso-accent);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.cso-hel-check-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 8px;
+}
+
+.cso-hel-check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cso-hel-check-item.is-checked {
+  border-color: var(--cso-ok, var(--cso-accent));
+}
+
+.cso-hel-cb {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.cso-hel-rules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 10px;
+}
+
+.cso-hel-rule-card {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-ok, var(--cso-accent));
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-hel-rule-card--warn {
+  border-color: var(--cso-danger, var(--cso-accent));
+}
+
+.cso-hel-rule-title {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+  color: var(--cso-ink);
+}
+
+.cso-hel-rule-body {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--cso-muted);
+  line-height: 1.45;
+}
+
+.cso-hel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-hel-btn--sm {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.cso-hel-btn--primary {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-hel-btn:focus-visible,
+.cso-hel-pill:focus-visible,
+.cso-hel-lang-btn:focus-visible {
+  outline: 2px solid var(--cso-focus, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+.cso-hel-copy-status {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--cso-ok, var(--cso-accent));
+}
+
+.cso-hel-empty {
+  grid-column: 1 / -1;
+  padding: 18px;
+  text-align: center;
+  color: var(--cso-muted);
+  border: 1px dashed var(--cso-border);
+  border-radius: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-hel-pill,
+  .cso-hel-btn,
+  .cso-hel-lang-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-hel-head-controls,
+  .cso-hel-pills,
+  .cso-hel-filters,
+  .cso-hel-actions,
+  .cso-hel-btn--sm {
+    display: none !important;
+  }
+  .cso-hel-hol-card,
+  .cso-hel-ms {
+    break-inside: avoid;
+  }
+}

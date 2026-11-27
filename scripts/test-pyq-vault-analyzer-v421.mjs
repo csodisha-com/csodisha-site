@@ -67,12 +67,12 @@ assert.ok(api.filterPapers({ query: 'Amin' }).some((p) => p.examKey === 'osssc-c
 
 // 5. Mounts on /mock-tests/ & SSR /guides/, SW & Ops-Sentinel sync
 assert.ok(mtHtml.includes('id="cso-pyq-vault-analyzer-root"'), 'mock-tests/index.html must mount #cso-pyq-vault-analyzer-root');
-assert.ok(mtHtml.includes('/assets/js/pyq-vault-analyzer.js?v=20261127v421'), 'mock-tests/index.html must load pyq-vault-analyzer.js?v=20261127v421');
+assert.ok(mtHtml.includes('/assets/js/pyq-vault-analyzer.js?v=20261127v422'), 'mock-tests/index.html must load pyq-vault-analyzer.js?v=20261127v422');
 assert.ok(guidesSsr.includes('id="cso-pyq-vault-analyzer-root"'), 'informative-guides.js must mount #cso-pyq-vault-analyzer-root');
-assert.ok(guidesSsr.includes('/assets/js/pyq-vault-analyzer.js?v=20261127v421'), 'informative-guides.js must load pyq-vault-analyzer.js?v=20261127v421');
-assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v421'"), 'sw.js must bump CACHE_NAME to v421');
-assert.ok(swSrc.includes("'/assets/js/pyq-vault-analyzer.js?v=20261127v421'"), 'sw.js must precache pyq-vault-analyzer.js');
-assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v421'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v421');
+assert.ok(guidesSsr.includes('/assets/js/pyq-vault-analyzer.js?v=20261127v422'), 'informative-guides.js must load pyq-vault-analyzer.js?v=20261127v422');
+assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v422'"), 'sw.js must bump CACHE_NAME to v421');
+assert.ok(swSrc.includes("'/assets/js/pyq-vault-analyzer.js?v=20261127v422'"), 'sw.js must precache pyq-vault-analyzer.js');
+assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v422'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v421');
 
 // 6. CSS 4-theme semantic tokens check
 const pyqCssIdx = cssSrc.indexOf('/* ===== v421:');
