@@ -16,12 +16,13 @@
   <link rel="icon" href="/assets/img/favicon-16x16.png?v=20261126v330" type="image/png" sizes="16x16">
   <link rel="icon" href="/favicon.ico?v=20261126v330" sizes="any">
   <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png?v=20261126v330">
-  <link rel="stylesheet" href="/assets/css/cso-themes.css?v=20261127v400">
-  <link rel="stylesheet" href="/assets/style.css?v=20261127v400">
+  <link rel="stylesheet" href="/assets/css/cso-themes.css?v=20261127v401">
+  <link rel="stylesheet" href="/assets/style.css?v=20261127v401">
   <link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261125v304">
-  <link rel="stylesheet" href="/assets/css/semantic-search.css?v=20261127v400">
-  <script src="/assets/js/semantic-search.js?v=20261127v400" defer></script>
-  <script src="/assets/js/odisha-special-hub.js?v=20261127v400" defer></script>
+  <link rel="stylesheet" href="/assets/css/semantic-search.css?v=20261127v401">
+  <script src="/assets/js/semantic-search.js?v=20261127v401" defer></script>
+  <script src="/assets/js/odisha-district-filter.js?v=20261127v401" defer></script>
+  <script src="/assets/js/odisha-special-hub.js?v=20261127v401" defer></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -86,6 +87,10 @@
             <button type="button" class="cso-od-div-pill" data-division="northern" aria-pressed="false" data-en="Northern Division (10)" data-or="ଉତ୍ତରାଞ୍ଚଳ ଡିଭିଜନ୍ (୧୦)">Northern Division (10)</button>
             <button type="button" class="cso-od-div-pill" data-division="southern" aria-pressed="false" data-en="Southern Division (10)" data-or="ଦକ୍ଷିଣାଞ୍ଚଳ ଡିଭିଜନ୍ (୧୦)">Southern Division (10)</button>
           </div>
+        </div>
+        <div class="cso-od-live-strip" id="cso-od-dist-live-strip" role="status" aria-live="polite">
+          <span class="cso-od-live-strip__text" data-en="📍 Live district-tagged notices across Odisha's 30 districts — loading counters…" data-or="📍 ଓଡ଼ିଶାର ୩୦ ଜିଲ୍ଲାରେ ଲାଇଭ୍ ବିଜ୍ଞପ୍ତି — ଗଣନା ଲୋଡ୍ ହେଉଛି…">📍 Live district-tagged notices across Odisha's 30 districts — loading counters…</span>
+          <a class="cso-od-btn cso-od-btn--primary cso-od-live-strip__cta" href="/jobs/" data-en="View All Odisha Jobs →" data-or="ସମସ୍ତ ଓଡ଼ିଶା ଚାକିରି ଦେଖନ୍ତୁ →">View All Odisha Jobs →</a>
         </div>
         <input type="search" id="cso-od-dist-search" class="cso-od-input" placeholder="Search district, headquarters, Chilika, Simlipal, Hirakud, GI tag..." aria-label="Search Odisha districts">
         <div class="cso-od-status-bar" id="cso-od-dist-count" aria-live="polite">Loading 30 Odisha districts…</div>

@@ -17951,3 +17951,65 @@ nav#cso-hub-top-tabs {
     transition: none;
   }
 }
+
+/* ===== v401: /odisha-special/ 30-District Live Counters & Deep Links (4-Theme Semantic Tokens) ===== */
+.cso-od-live-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-od-live-strip__text {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-od-live-strip__cta {
+  min-height: 44px;
+}
+
+.cso-od-dist-live-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.cso-od-live-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.cso-od-live-badge.is-jobs {
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-od-live-badge.is-updates {
+  background: var(--cso-info-bg);
+  color: var(--cso-info-fg);
+}
+
+.cso-od-live-badge.is-statewide {
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink-muted);
+  border: 1px solid var(--cso-border);
+}
+
+@media print {
+  .cso-od-live-strip,
+  .cso-od-dist-card__actions {
+    display: none !important;
+  }
+}

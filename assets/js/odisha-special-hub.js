@@ -15,8 +15,70 @@
     items: [],
     quiz: [],
     answers: {},
+    districtStats: { bySlug: {}, totalDistrictTagged: 0, totalLive: 0 },
     filters: { division: 'all', distQ: '', tab: 'all', itemQ: '' }
   };
+
+  function resolveCanonicalDistrictSlug(d, dfApi) {
+    var api = dfApi || window.CSODistrictFilter;
+    var raw = (d && (d.slug || d.name_en)) || '';
+    if (api && typeof api.resolveDistrictSlug === 'function') {
+      var r = api.resolveDistrictSlug(raw);
+      if (r) return r;
+    }
+    return String(raw).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  function computeDistrictLiveStats(searchItems, dfApi) {
+    var api = dfApi || window.CSODistrictFilter;
+    var list = Array.isArray(searchItems) ? searchItems : [];
+    var nonHub = list.filter(function (it) {
+      return it && it.type !== 'hub';
+    });
+    var bySlug = {};
+    var matchedItemIds = {};
+    var districtsList = (api && Array.isArray(api.DISTRICTS)) ? api.DISTRICTS : [];
+
+    for (var i = 0; i < districtsList.length; i += 1) {
+      var slug = districtsList[i].slug;
+      var activeJobs = 0;
+      var totalUpdates = 0;
+      for (var k = 0; k < nonHub.length; k += 1) {
+        var it = nonHub[k];
+        if (api && typeof api.matchDistrict === 'function' && api.matchDistrict(it, slug, { includeStatewide: false })) {
+          totalUpdates += 1;
+          if (it.type === 'job_alert') activeJobs += 1;
+          matchedItemIds[it.id || it.url || String(k)] = true;
+        }
+      }
+      bySlug[slug] = {
+        slug: slug,
+        active_jobs: activeJobs,
+        total_updates: totalUpdates,
+        jobs_url: '/jobs/?district=' + encodeURIComponent(slug),
+        updates_url: '/updates/?district=' + encodeURIComponent(slug)
+      };
+    }
+
+    return {
+      bySlug: bySlug,
+      totalDistrictTagged: Object.keys(matchedItemIds).length,
+      totalLive: nonHub.length
+    };
+  }
+
+  function updateLiveStrip() {
+    var strip = document.getElementById('cso-od-dist-live-strip');
+    if (!strip) return;
+    var txtEl = strip.querySelector('.cso-od-live-strip__text');
+    if (!txtEl) return;
+    var orMode = isOdia();
+    var tagged = state.districtStats.totalDistrictTagged || 0;
+    var totalLive = state.districtStats.totalLive || 0;
+    txtEl.textContent = orMode
+      ? ('📍 ଓଡ଼ିଶାର ୩୦ ଜିଲ୍ଲାରେ ' + tagged + ' ଟି ଜିଲ୍ଲା-ସ୍ତରୀୟ ବିଜ୍ଞପ୍ତି (ମୋଟ ' + totalLive + ' ଟି ସକ୍ରିୟ ଅପଡେଟ୍)')
+      : ('📍 ' + tagged + ' district-tagged notices live across Odisha\'s 30 districts (' + totalLive + ' total live alerts)');
+  }
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -77,21 +139,55 @@
       top.appendChild(el('span', 'cso-od-hq-badge', (orMode ? 'ସଦର: ' : 'HQ: ') + (orMode ? d.hq_or : d.hq_en)));
       card.appendChild(top);
 
+      var slug = resolveCanonicalDistrictSlug(d);
+      var st = (state.districtStats && state.districtStats.bySlug && state.districtStats.bySlug[slug]) || {
+        active_jobs: 0,
+        total_updates: 0,
+        jobs_url: '/jobs/?district=' + encodeURIComponent(slug),
+        updates_url: '/updates/?district=' + encodeURIComponent(slug)
+      };
+
       var title = orMode ? d.name_or : d.name_en;
       var sub = orMode ? d.name_en : d.name_or;
       card.appendChild(el('h3', 'cso-od-dist-card__title', title + ' (' + sub + ')'));
+
+      var liveBadges = el('div', 'cso-od-dist-live-badges');
+      if (st.active_jobs > 0) {
+        liveBadges.appendChild(el('span', 'cso-od-live-badge is-jobs', orMode
+          ? ('🟢 ' + st.active_jobs + ' ସକ୍ରିୟ ଚାକିରି')
+          : ('🟢 ' + st.active_jobs + ' Active ' + (st.active_jobs === 1 ? 'Job' : 'Jobs'))));
+      }
+      if (st.total_updates > 0) {
+        liveBadges.appendChild(el('span', 'cso-od-live-badge is-updates', orMode
+          ? ('📋 ' + st.total_updates + ' ଅପଡେଟ୍')
+          : ('📋 ' + st.total_updates + ' ' + (st.total_updates === 1 ? 'Update' : 'Updates'))));
+      } else {
+        var swBadge = el('span', 'cso-od-live-badge is-statewide', orMode ? '🌐 ସାରା ଓଡ଼ିଶା ଯୋଗ୍ୟ' : '🌐 Statewide Eligible');
+        swBadge.title = orMode
+          ? 'ଏହି ଜିଲ୍ଲାର ପ୍ରାର୍ଥୀମାନେ ସମସ୍ତ ରାଜ୍ୟ-ସ୍ତରୀୟ ଓଡ଼ିଶା ବିଜ୍ଞପ୍ତି ପାଇଁ ଯୋଗ୍ୟ।'
+          : 'Candidates from this district are eligible for all statewide Odisha vacancies.';
+        liveBadges.appendChild(swBadge);
+      }
+      card.appendChild(liveBadges);
+
       card.appendChild(el('p', 'cso-od-dist-card__famous', orMode ? d.famous_for_or : d.famous_for_en));
 
       var acts = el('div', 'cso-od-dist-card__actions');
+      var jobsLink = el('a', 'cso-od-btn cso-od-btn--primary', orMode
+        ? ('💼 ' + d.name_or + ' ଚାକିରି →')
+        : ('💼 Jobs in ' + d.name_en + ' →'));
+      jobsLink.setAttribute('href', st.jobs_url);
+      acts.appendChild(jobsLink);
+
+      var updatesLink = el('a', 'cso-od-btn cso-od-btn--outline', orMode ? '📰 ସମସ୍ତ ଅପଡେଟ୍ →' : '📰 All Updates →');
+      updatesLink.setAttribute('href', st.updates_url);
+      acts.appendChild(updatesLink);
+
       var portal = el('a', 'cso-od-btn cso-od-btn--gov', orMode ? '✓ .odisha.gov.in ↗' : '✓ Official Portal ↗');
       portal.setAttribute('href', d.district_portal_url || 'https://odisha.gov.in/');
       portal.setAttribute('target', '_blank');
       portal.setAttribute('rel', 'noopener noreferrer');
       acts.appendChild(portal);
-
-      var updates = el('a', 'cso-od-btn cso-od-btn--primary', orMode ? 'ଜିଲ୍ଲା ଅପଡେଟ୍ →' : 'View District Updates →');
-      updates.setAttribute('href', '/guides/?district=' + encodeURIComponent(d.name_en));
-      acts.appendChild(updates);
 
       card.appendChild(acts);
       frag.appendChild(card);
@@ -300,6 +396,7 @@
       if (langBtn) {
         state.lang = langBtn.getAttribute('data-lang') === 'or' ? 'or' : 'en';
         localizeStaticCopy();
+        updateLiveStrip();
         renderDistricts();
         renderItems();
         renderQuiz();
@@ -335,27 +432,40 @@
     syncControls();
     localizeStaticCopy();
 
-    fetch('/api/public/odisha-hub', { credentials: 'same-origin' })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (data) {
-        if (data && data.ok) {
-          state.districts = Array.isArray(data.districts) ? data.districts : [];
-          state.items = Array.isArray(data.items) ? data.items : [];
-          state.quiz = Array.isArray(data.odisha_quiz) ? data.odisha_quiz : [];
-          updateSummary(data.summary);
-        }
-        renderDistricts();
-        renderItems();
-        renderQuiz();
-      })
-      .catch(function () {
-        renderDistricts();
-        renderItems();
-        renderQuiz();
-      });
+    Promise.all([
+      fetch('/api/public/odisha-hub', { credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .catch(function () { return null; }),
+      fetch('/api/public/search-index', { credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .catch(function () { return null; })
+    ]).then(function (results) {
+      var data = results[0];
+      var searchData = results[1];
+      if (data && data.ok) {
+        state.districts = Array.isArray(data.districts) ? data.districts : [];
+        state.items = Array.isArray(data.items) ? data.items : [];
+        state.quiz = Array.isArray(data.odisha_quiz) ? data.odisha_quiz : [];
+        updateSummary(data.summary);
+      }
+      if (searchData && Array.isArray(searchData.items)) {
+        state.districtStats = computeDistrictLiveStats(searchData.items, window.CSODistrictFilter);
+      }
+      updateLiveStrip();
+      renderDistricts();
+      renderItems();
+      renderQuiz();
+    });
   }
 
-  window.CSOOdishaSpecialHub = { init: init };
+  var hubApi = {
+    version: 'v401',
+    init: init,
+    computeDistrictLiveStats: computeDistrictLiveStats,
+    resolveCanonicalDistrictSlug: resolveCanonicalDistrictSlug
+  };
+  window.CSOOdishaSpecialHub = hubApi;
+  window.CSOOdishaHub = hubApi;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })(window, document);
