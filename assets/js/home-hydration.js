@@ -933,8 +933,10 @@
     }
 
     var url = buildFeedUrl(forceBust);
-    var fetchOpts = { credentials: 'same-origin' };
-    if (url.indexOf('_cb=') !== -1) fetchOpts.cache = 'no-store';
+    var fetchOpts = {
+      credentials: 'same-origin',
+      cache: url.indexOf('_cb=') !== -1 ? 'no-store' : 'no-cache'
+    };
 
     fetch(url, fetchOpts)
       .then(function (r) { return r.ok ? r.json() : null; })

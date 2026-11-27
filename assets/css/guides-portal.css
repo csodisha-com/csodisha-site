@@ -426,8 +426,11 @@
 .gp-hero-media img {
   width: 100%;
   height: auto;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1200 / 630;
+  max-height: 380px;
   object-fit: contain;
+  object-position: center;
+  background: var(--gp-surface-alt, var(--cso-surface-alt, #0f172a));
   display: block;
   border-radius: 14px;
   margin: 0;

@@ -876,8 +876,11 @@
 
 .sp-hero-banner {
   width: 100%;
-  max-height: 300px;
-  object-fit: cover;
+  aspect-ratio: 1200 / 630;
+  max-height: 380px;
+  object-fit: contain;
+  object-position: center;
+  background: var(--cso-card-subtle, #0f172a);
   display: block;
 }
 

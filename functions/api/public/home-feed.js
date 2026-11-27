@@ -142,10 +142,10 @@ async function fetchPublishedGuidesForFeed(db) {
   try {
     const { results } = await db.prepare(
       `SELECT id, slug, title_en, title_or, summary_en, summary_or, category, tags, scope,
-              is_exam, published_at, updated_at
+              is_exam, created_at, updated_at
        FROM informative_guides
        WHERE status = 'published'
-       ORDER BY COALESCE(NULLIF(published_at, ''), updated_at) DESC
+       ORDER BY updated_at DESC
        LIMIT 60`
     ).all();
     return results || [];
@@ -162,7 +162,7 @@ async function fetchLatestJobs(db, publishedGuides = []) {
     const { results } = await db.prepare(
       `SELECT id, slug, title_en, title_or, last_date, total_vacancies,
               location_district, sector_badge, organisation_en, organisation_or,
-              lifecycle_stage, qualification_summary, published_at, updated_at
+              lifecycle_stage, qualification_summary, notification_pdf_url, published_at, updated_at
        FROM job_articles
        WHERE is_published = 1
          AND (scheduled_publish_at = '' OR scheduled_publish_at IS NULL OR scheduled_publish_at <= datetime('now'))
@@ -177,11 +177,20 @@ async function fetchLatestJobs(db, publishedGuides = []) {
       const vacancies = extractPostCount(r.total_vacancies, r.title_en);
       const district = String(r.location_district || 'All Odisha');
       const lastDate = String(r.last_date || '');
+      const stage = String(r.lifecycle_stage || 'notification').toLowerCase();
+      const isAdmitCard = stage === 'admit_card';
       const metaEnParts = [];
       if (vacancies > 0) metaEnParts.push(`${vacancies.toLocaleString('en-IN')} Posts`);
       if (district) metaEnParts.push(district);
-      if (lastDate) metaEnParts.push(`Last Date: ${formatIstShortDate(lastDate) || lastDate}`);
+      if (lastDate) metaEnParts.push(`${isAdmitCard ? 'Exam' : 'Last Date'}: ${formatIstShortDate(lastDate) || lastDate}`);
+      const metaOrParts = [];
+      if (vacancies > 0) metaOrParts.push(`${vacancies.toLocaleString('en-IN')} ପଦବୀ`);
+      if (district) metaOrParts.push(district);
+      if (lastDate) metaOrParts.push(`${isAdmitCard ? 'ପରୀକ୍ଷା' : 'ଶେଷ'}: ${formatIstShortDate(lastDate) || lastDate}`);
       const url = `/jobs/?slug=${encodeURIComponent(slug)}`;
+      const tone = org.organization === 'MMU'
+        ? 'ok'
+        : (org.organization === 'CBSE' ? 'info' : orgBadgeTone(org.org_group));
       merged.push({
         id: String(r.id || slug),
         slug,
@@ -192,15 +201,16 @@ async function fetchLatestJobs(db, publishedGuides = []) {
         district,
         category: String(r.sector_badge || r.organisation_en || org.organization),
         org_badge: org.organization,
-        badge_tone: orgBadgeTone(org.org_group),
+        badge_tone: tone,
         meta_en: metaEnParts.join(' · ') || 'Active Notice',
-        meta_or: vacancies > 0 ? `${vacancies.toLocaleString('en-IN')} ପଦବୀ · ${district}` : 'ସକ୍ରିୟ ବିଜ୍ଞପ୍ତି',
-        action_label_en: 'Notice →',
-        action_label_or: 'ବିଜ୍ଞପ୍ତି →',
+        meta_or: metaOrParts.join(' · ') || 'ସକ୍ରିୟ ବିଜ୍ଞପ୍ତି',
+        action_label_en: isAdmitCard ? 'Admit Card →' : 'Notice →',
+        action_label_or: isAdmitCard ? 'ଆଡମିଟ୍ କାର୍ଡ →' : 'ବିଜ୍ଞପ୍ତି →',
         organisation_en: String(r.organisation_en || org.organization),
         organisation_or: String(r.organisation_or || ''),
-        lifecycle_stage: String(r.lifecycle_stage || 'notification'),
+        lifecycle_stage: stage,
         qualification: String(r.qualification_summary || ''),
+        notification_pdf_url: String(r.notification_pdf_url || ''),
         href: `/jobs/${encodeURIComponent(slug)}`,
         url,
         sort_ts: String(r.published_at || r.updated_at || '')
@@ -768,7 +778,7 @@ export async function buildPublicHomeFeed(env) {
   if (!db) {
     return {
       ok: true,
-      version: 'v379',
+      version: 'v381',
       generated_at: new Date().toISOString(),
       broadcast: { active: false },
       nav_header: [],
@@ -814,7 +824,7 @@ export async function buildPublicHomeFeed(env) {
 
   return {
     ok: true,
-    version: 'v379',
+    version: 'v381',
     generated_at: new Date().toISOString(),
     broadcast,
     nav_header,
@@ -851,8 +861,11 @@ export async function handlePublicHomeFeedApi(request, env, ctx = null) {
   };
   const res = json(payload, 200, headers);
 
-  if (cache && request.method === 'GET' && !bypass) {
-    const putP = cache.put(cacheKey, res.clone()).catch(() => {});
+  if (cache && request.method === 'GET') {
+    const cacheableRes = bypass
+      ? json(payload, 200, { 'Cache-Control': HOME_FEED_CACHE_CONTROL, 'Vary': 'Accept-Encoding' })
+      : res.clone();
+    const putP = cache.put(cacheKey, cacheableRes).catch(() => {});
     if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(putP);
     else await putP;
   }
