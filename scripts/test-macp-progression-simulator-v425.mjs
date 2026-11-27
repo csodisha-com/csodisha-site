@@ -64,10 +64,10 @@ for (const tr of api.CADRE_TRACKS) {
 
 // 5. HTML mount, SW & Ops-Sentinel sync
 assert.ok(htmlSrc.includes('id="cso-macp-progression-simulator-root"'), 'career-paths/index.html must mount #cso-macp-progression-simulator-root');
-assert.ok(htmlSrc.includes('/assets/js/macp-progression-simulator.js?v=20261127v434'), 'career-paths/index.html must load macp-progression-simulator.js?v=20261127v434');
-assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v434'"), 'sw.js must bump CACHE_NAME to v425');
-assert.ok(swSrc.includes("'/assets/js/macp-progression-simulator.js?v=20261127v434'"), 'sw.js must precache macp-progression-simulator.js');
-assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v434'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v425');
+assert.ok(htmlSrc.includes('/assets/js/macp-progression-simulator.js?v=20261127v435'), 'career-paths/index.html must load macp-progression-simulator.js?v=20261127v435');
+assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v435'"), 'sw.js must bump CACHE_NAME to v425');
+assert.ok(swSrc.includes("'/assets/js/macp-progression-simulator.js?v=20261127v435'"), 'sw.js must precache macp-progression-simulator.js');
+assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v435'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v425');
 
 // 6. CSS 4-theme semantic tokens check
 const mpsIdx = cssSrc.indexOf('/* ===== v425:');

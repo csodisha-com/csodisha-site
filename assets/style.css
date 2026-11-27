@@ -27541,3 +27541,317 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+
+/* ============================================================================
+   v435: Odisha Govt Recruitment Answer Key & Raw-to-Normalized Score Calculator
+   4-theme semantic var(--cso-*) tokens only; zero hardcoded hex; 320px-safe
+   ============================================================================ */
+.cso-akn-root {
+  margin: 24px 0;
+}
+
+.cso-akn-card {
+  display: grid;
+  gap: 16px;
+  padding: clamp(16px, 2.5vw, 24px);
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  box-shadow: var(--cso-shadow-sm, none);
+}
+
+.cso-akn-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.cso-akn-head-copy {
+  display: grid;
+  gap: 6px;
+  max-width: 780px;
+}
+
+.cso-akn-eyebrow {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--cso-accent);
+  text-transform: uppercase;
+}
+
+.cso-akn-title {
+  margin: 0;
+  font-size: clamp(1.16rem, 2.2vw, 1.46rem);
+  line-height: 1.25;
+  color: var(--cso-ink);
+}
+
+.cso-akn-sub {
+  margin: 0;
+  font-size: 0.89rem;
+  line-height: 1.48;
+  color: var(--cso-muted);
+}
+
+.cso-akn-lang-toggle {
+  display: inline-flex;
+  border: 1px solid var(--cso-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-akn-lang-btn {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-akn-lang-btn.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-akn-form {
+  display: grid;
+  gap: 12px;
+}
+
+.cso-akn-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 12px;
+}
+
+.cso-akn-field {
+  display: grid;
+  gap: 5px;
+}
+
+.cso-akn-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+}
+
+.cso-akn-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.88rem;
+}
+
+.cso-akn-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 10px;
+}
+
+.cso-akn-kpi {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-akn-kpi--win {
+  border-color: var(--cso-ok-border, var(--cso-accent));
+  background: var(--cso-ok-bg, var(--cso-surface-alt));
+}
+
+.cso-akn-kpi-lbl {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--cso-muted);
+}
+
+.cso-akn-kpi-val {
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-akn-kpi-sub {
+  font-size: 0.76rem;
+  color: var(--cso-muted);
+}
+
+.cso-akn-bars {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-akn-bar-row {
+  display: grid;
+  gap: 5px;
+}
+
+.cso-akn-bar-lbl {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+}
+
+.cso-akn-bar-track {
+  height: 12px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--cso-border);
+  overflow: hidden;
+}
+
+.cso-akn-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cso-accent);
+  transition: width 0.2s ease;
+}
+
+.cso-akn-fill--norm {
+  background: var(--cso-ok-fg, var(--cso-accent));
+}
+
+.cso-akn-fill--raw {
+  background: var(--cso-warn-fg, var(--cso-accent));
+}
+
+.cso-akn-fill--acc {
+  background: var(--cso-accent);
+}
+
+.cso-akn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.cso-akn-objections {
+  display: grid;
+  gap: 12px;
+}
+
+.cso-akn-sec-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-akn-obj-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 12px;
+}
+
+.cso-akn-obj-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-akn-obj-badge {
+  align-self: flex-start;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-ok-border, var(--cso-accent));
+  background: var(--cso-ok-bg, var(--cso-surface));
+  color: var(--cso-ok-fg, var(--cso-accent));
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.cso-akn-obj-title {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--cso-ink);
+}
+
+.cso-akn-obj-meta {
+  margin: 0;
+  font-size: 0.79rem;
+  line-height: 1.4;
+  color: var(--cso-muted);
+}
+
+.cso-akn-obj-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.cso-akn-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 13px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-akn-btn--primary {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-akn-btn:focus-visible,
+.cso-akn-lang-btn:focus-visible,
+.cso-akn-input:focus-visible {
+  outline: 2px solid var(--cso-focus, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+.cso-akn-copy-status {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--cso-ok-fg, var(--cso-accent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-akn-btn,
+  .cso-akn-bar-fill {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-akn-lang-toggle,
+  .cso-akn-form,
+  .cso-akn-actions,
+  .cso-akn-obj-actions {
+    display: none !important;
+  }
+}

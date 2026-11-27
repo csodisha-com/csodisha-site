@@ -64,7 +64,7 @@ assert.ok(seniorBpl.some(s => s.id === 'madhu-babu-pension-yojana'), 'Senior/PwB
 
 // 3. Markup, Strict CSP, 4-Theme CSS & v410 Cache Sync
 assert.match(schemesHtml, /id="cso-schemes-eligibility-finder-root"/, 'schemes/index.html must mount #cso-schemes-eligibility-finder-root');
-assert.match(schemesHtml, /\/assets\/js\/schemes-eligibility-finder\.js\?v=20261127v434/, 'schemes/index.html must load schemes-eligibility-finder.js?v=20261127v434');
+assert.match(schemesHtml, /\/assets\/js\/schemes-eligibility-finder\.js\?v=20261127v435/, 'schemes/index.html must load schemes-eligibility-finder.js?v=20261127v435');
 assert.ok(!/\sstyle="/i.test(schemesHtml), 'schemes/index.html must have zero inline style attributes');
 assert.ok(!/\son[a-z]+="/i.test(schemesHtml), 'schemes/index.html must have zero inline on* handlers');
 assert.ok(!sefSrc.includes('.innerHTML') && !sefSrc.includes('.outerHTML') && !sefSrc.includes('insertAdjacentHTML') && !sefSrc.includes('.style.'), 'schemes-eligibility-finder.js must obey strict CSP');
@@ -78,7 +78,7 @@ assert.ok(v410Css.includes('prefers-reduced-motion: reduce'), 'v410 CSS must res
 assert.ok(v410Css.includes('@media print'), 'v410 CSS must include @media print support');
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v410Css), 'v410 CSS block must have zero hardcoded hex values');
 
-assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v434'"), 'sw.js CACHE_NAME must be v410');
-assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v434'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v410');
+assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v435'"), 'sw.js CACHE_NAME must be v410');
+assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v435'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v410');
 
 console.log('✅ v410 Interactive Odisha Scheme & Scholarship Eligibility Finder Audit PASSED');
