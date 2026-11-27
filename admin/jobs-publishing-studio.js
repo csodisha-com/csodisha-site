@@ -1658,6 +1658,24 @@
     container.appendChild(edCard);
 
     // SECTION 5: No-Code Visual Tables & Lifecycle Thread Builder
+    var vfvPresetBar = el('div', 'jph-actions-row');
+    vfvPresetBar.appendChild(btn('🪑 + Load UR/SEBC/SC/ST/PwBD Vacancy Split Preset', 'jph-btn jph-btn--sm', function () {
+      ['UR (Unreserved)', 'SEBC', 'SC', 'ST', 'PwBD'].forEach(function (cat) {
+        d.vacancy_breakdown.push({ post_name: cat, vacancies: '0', qualification: d.qualification_level || 'Graduate', pay_level: d.salary_pay_scale || '' });
+      });
+      toast('Added UR / SEBC / SC / ST / PwBD vacancy split rows — fill counts & save', 'green');
+      renderCurrentView();
+    }));
+    vfvPresetBar.appendChild(btn('💳 + Load Odisha Fee Exemption Preset (UR/SEBC/SC/ST/PwBD)', 'jph-btn jph-btn--sm', function () {
+      d.fee_structure.push(
+        { category: 'UR / SEBC', amount: '₹0 (Exempted by Govt. of Odisha)', payment_mode: 'Exempted' },
+        { category: 'SC / ST / PwBD', amount: '₹0 (Exempted)', payment_mode: 'Exempted' }
+      );
+      toast('Added Odisha category fee exemption rows', 'green');
+      renderCurrentView();
+    }));
+    container.appendChild(vfvPresetBar);
+
     container.appendChild(buildDynamicTableCard(
       '5A. Post-wise Vacancy & Qualification Table',
       'Rendered as a structured responsive table on the public job article.',

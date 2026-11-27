@@ -699,6 +699,15 @@
       wrap.appendChild(proseCard);
     }
 
+    // 8b. v402: Interactive Exam Fee & Category-Wise Vacancy Visualizer (detail view only)
+    var vfvMount = el('section', 'cso-vfv-root');
+    vfvMount.id = 'cso-vacancy-fee-viz-root';
+    vfvMount.setAttribute('data-job-slug', String(a.slug || ''));
+    wrap.appendChild(vfvMount);
+    if (window.CSOJobVacancyFeeViz && typeof window.CSOJobVacancyFeeViz.mount === 'function') {
+      window.CSOJobVacancyFeeViz.mount(vfvMount, a, { isOr: state.lang === 'or' });
+    }
+
     // 9. Structured Tables (Vacancies, Important Dates, Fee Structure, Selection Steps, Cutoff Reference)
     var tables = [
       buildStructuredTable('Post-wise Vacancy & Qualification Breakdown', a.vacancy_breakdown, [['post_name', 'Post / Cadre'], ['vacancies', 'Vacancies'], ['qualification', 'Qualification'], ['pay_level', 'Pay Scale']]),

@@ -18013,3 +18013,240 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+/* ===== v402: Interactive Exam Fee & Category-Wise Vacancy Visualizer (4-Theme Semantic Tokens) ===== */
+.cso-vfv-root[hidden] {
+  display: none;
+}
+
+.cso-vfv-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-vfv-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cso-vfv-head-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.cso-vfv-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-vfv-sub {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--cso-ink-muted);
+}
+
+.cso-vfv-total-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-vfv-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-vfv-pill {
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.cso-vfv-pill.is-active,
+.cso-vfv-pill:hover,
+.cso-vfv-pill:focus-visible {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-vfv-highlight {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--cso-info-bg);
+  color: var(--cso-info-fg);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.cso-vfv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.cso-vfv-panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  align-content: start;
+}
+
+.cso-vfv-panel-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-vfv-bars,
+.cso-vfv-fee-list {
+  display: grid;
+  gap: 8px;
+}
+
+.cso-vfv-bar-row {
+  display: grid;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.cso-vfv-bar-row.is-selected,
+.cso-vfv-fee-row.is-selected {
+  border-color: var(--cso-accent);
+  background: var(--cso-surface);
+}
+
+.cso-vfv-bar-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+}
+
+.cso-vfv-bar-val {
+  color: var(--cso-ink-muted);
+  white-space: nowrap;
+}
+
+.cso-vfv-bar-track {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--cso-border);
+  overflow: hidden;
+}
+
+.cso-vfv-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cso-accent);
+}
+
+.cso-vfv-bar--w0 { width: 0%; }
+.cso-vfv-bar--w5 { width: 5%; }
+.cso-vfv-bar--w10 { width: 10%; }
+.cso-vfv-bar--w15 { width: 15%; }
+.cso-vfv-bar--w20 { width: 20%; }
+.cso-vfv-bar--w25 { width: 25%; }
+.cso-vfv-bar--w30 { width: 30%; }
+.cso-vfv-bar--w35 { width: 35%; }
+.cso-vfv-bar--w40 { width: 40%; }
+.cso-vfv-bar--w45 { width: 45%; }
+.cso-vfv-bar--w50 { width: 50%; }
+.cso-vfv-bar--w55 { width: 55%; }
+.cso-vfv-bar--w60 { width: 60%; }
+.cso-vfv-bar--w65 { width: 65%; }
+.cso-vfv-bar--w70 { width: 70%; }
+.cso-vfv-bar--w75 { width: 75%; }
+.cso-vfv-bar--w80 { width: 80%; }
+.cso-vfv-bar--w85 { width: 85%; }
+.cso-vfv-bar--w90 { width: 90%; }
+.cso-vfv-bar--w95 { width: 95%; }
+.cso-vfv-bar--w100 { width: 100%; }
+
+.cso-vfv-fee-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-vfv-fee-cat {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-vfv-fee-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cso-vfv-fee-badge {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
+}
+
+.cso-vfv-fee-badge.is-exempt {
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-vfv-fee-mode {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--cso-ink-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-vfv-pill {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-vfv-pills {
+    display: none !important;
+  }
+}
