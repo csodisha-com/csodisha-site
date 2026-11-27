@@ -11162,6 +11162,18 @@ nav#cso-hub-top-tabs {
   grid-template-columns: 1fr;
 }
 
+.cso-hf-section--wide {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 900px) {
+  .cso-hf-section--wide .cso-hf-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 14px;
+  }
+}
+
 .cso-hf-section {
   background: var(--cso-surface);
   border: 1px solid var(--cso-border);

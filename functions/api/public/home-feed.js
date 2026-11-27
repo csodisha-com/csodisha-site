@@ -162,9 +162,10 @@ async function fetchLatestJobs(db, publishedGuides = []) {
     const { results } = await db.prepare(
       `SELECT id, slug, title_en, title_or, last_date, total_vacancies,
               location_district, sector_badge, organisation_en, organisation_or,
-              lifecycle_stage, qualification_summary, notification_pdf_url, published_at, updated_at
+              lifecycle_stage, qualification_summary, selection_mode, notification_pdf_url, published_at, updated_at
        FROM job_articles
        WHERE is_published = 1
+         AND LOWER(COALESCE(lifecycle_stage, 'notification')) NOT IN ('admit_card', 'exam_date', 'answer_key', 'result')
          AND (scheduled_publish_at = '' OR scheduled_publish_at IS NULL OR scheduled_publish_at <= datetime('now'))
        ORDER BY COALESCE(NULLIF(published_at, ''), updated_at) DESC, updated_at DESC
        LIMIT 6`
@@ -178,16 +179,15 @@ async function fetchLatestJobs(db, publishedGuides = []) {
       const district = String(r.location_district || 'All Odisha');
       const lastDate = String(r.last_date || '');
       const stage = String(r.lifecycle_stage || 'notification').toLowerCase();
-      const isAdmitCard = stage === 'admit_card';
-      const isResult = stage === 'result';
+      const isWalkIn = /walk[\s-]?in/i.test(`${r.selection_mode || ''} ${r.title_en || ''}`);
       const metaEnParts = [];
       if (vacancies > 0) metaEnParts.push(`${vacancies.toLocaleString('en-IN')} Posts`);
       if (district) metaEnParts.push(district);
-      if (lastDate) metaEnParts.push(`${isResult ? 'OMR till' : (isAdmitCard ? 'Exam' : 'Last Date')}: ${formatIstShortDate(lastDate) || lastDate}`);
+      if (lastDate) metaEnParts.push(`${isWalkIn ? 'Walk-in' : 'Last Date'}: ${formatIstShortDate(lastDate) || lastDate}`);
       const metaOrParts = [];
       if (vacancies > 0) metaOrParts.push(`${vacancies.toLocaleString('en-IN')} ପଦବୀ`);
       if (district) metaOrParts.push(district);
-      if (lastDate) metaOrParts.push(`${isResult ? 'OMR' : (isAdmitCard ? 'ପରୀକ୍ଷା' : 'ଶେଷ')}: ${formatIstShortDate(lastDate) || lastDate}`);
+      if (lastDate) metaOrParts.push(`${isWalkIn ? 'ଇଣ୍ଟରଭ୍ୟୁ' : 'ଶେଷ'}: ${formatIstShortDate(lastDate) || lastDate}`);
       const url = `/jobs/?slug=${encodeURIComponent(slug)}`;
       const tone = (org.organization === 'MMU' || org.organization === 'BSE Odisha')
         ? 'ok'
@@ -205,8 +205,8 @@ async function fetchLatestJobs(db, publishedGuides = []) {
         badge_tone: tone,
         meta_en: metaEnParts.join(' · ') || 'Active Notice',
         meta_or: metaOrParts.join(' · ') || 'ସକ୍ରିୟ ବିଜ୍ଞପ୍ତି',
-        action_label_en: isResult ? 'Result →' : (isAdmitCard ? 'Admit Card →' : 'Notice →'),
-        action_label_or: isResult ? 'ଫଳାଫଳ →' : (isAdmitCard ? 'ଆଡମିଟ୍ କାର୍ଡ →' : 'ବିଜ୍ଞପ୍ତି →'),
+        action_label_en: 'Notice →',
+        action_label_or: 'ବିଜ୍ଞପ୍ତି →',
         organisation_en: String(r.organisation_en || org.organization),
         organisation_or: String(r.organisation_or || ''),
         lifecycle_stage: stage,
@@ -263,13 +263,15 @@ async function fetchLatestJobs(db, publishedGuides = []) {
     } catch { /* legacy posts table optional */ }
   }
 
-  // Merge published recruitment informative_guides (e.g., OAVS Recruitment 2026 notifications/guides)
+  // Merge published recruitment informative_guides (excluding exam-only schedules & result notices)
   for (const g of (publishedGuides || [])) {
     if (merged.length >= 6) break;
     if (String(g.category || '').toLowerCase() === 'citizen-scheme') continue;
     if (!matchGuideToTopic(g, 'recruitment')) continue;
+    const gBlob = `${g.title_en || ''} ${g.tags || ''}`.toLowerCase();
+    if (/\b(result|scorecard|omr|admit card|city slip|exam schedule)\b/.test(gBlob) && !/\b(posts?|vacancies|recruitment)\b/.test(gBlob)) continue;
     const slug = String(g.slug || g.id || '').trim();
-    if (!slug || seenSlugs.has(`guide_${slug}`)) continue;
+    if (!slug || seenSlugs.has(slug) || seenSlugs.has(`guide_${slug}`)) continue;
     seenSlugs.add(`guide_${slug}`);
     const blob = `${g.title_en || ''} ${g.summary_en || ''} ${g.tags || ''}`;
     const org = normalizeOrganization('', blob);
@@ -315,6 +317,191 @@ async function fetchLatestJobs(db, publishedGuides = []) {
     { id: 'hub_central', slug: 'central', title_en: 'SSC, RRB, IBPS & Central Government Job Deadlines', title_or: 'SSC, RRB, IBPS ଓ କେନ୍ଦ୍ରୀୟ ଚାକିରି', category: 'Central', org_badge: 'Central', badge_tone: 'warning', meta_en: 'Closing Soon · Official Portals', meta_or: 'ଶୀଘ୍ର ଶେଷ · ଅଫିସିଆଲ୍ ପୋର୍ଟାଲ୍', action_label_en: 'Notice →', action_label_or: 'ବିଜ୍ଞପ୍ତି →', href: '/jobs/?org=central', url: '/jobs/?org=central', district: 'All India', vacancies: 0, last_date: '' }
   ];
   for (const pad of hubPads) {
+    if (out.length >= 3) break;
+    out.push(pad);
+  }
+  return out;
+}
+
+async function fetchLatestExamUpdates(db, publishedGuides = []) {
+  const merged = [];
+  const seenSlugs = new Set();
+
+  try {
+    const { results } = await db.prepare(
+      `SELECT id, slug, title_en, title_or, last_date, exam_date,
+              location_district, sector_badge, organisation_en, organisation_or,
+              lifecycle_stage, published_at, updated_at
+       FROM job_articles
+       WHERE is_published = 1
+         AND LOWER(COALESCE(lifecycle_stage, '')) IN ('admit_card', 'exam_date', 'answer_key')
+         AND (scheduled_publish_at = '' OR scheduled_publish_at IS NULL OR scheduled_publish_at <= datetime('now'))
+       ORDER BY COALESCE(NULLIF(published_at, ''), updated_at) DESC, updated_at DESC
+       LIMIT 6`
+    ).all();
+    for (const r of (results || [])) {
+      const slug = String(r.slug || r.id || '').trim();
+      if (!slug || seenSlugs.has(slug)) continue;
+      seenSlugs.add(slug);
+      const stage = String(r.lifecycle_stage || 'admit_card').toLowerCase();
+      const org = normalizeOrganization(r.organisation_en || r.sector_badge, r.title_en);
+      const isAdmit = stage === 'admit_card';
+      const examDt = String(r.exam_date || r.last_date || '');
+      const lastDt = String(r.last_date || '');
+      const isCtet22 = /ctet.*22nd|22nd.*ctet/i.test(String(r.title_en || ''));
+      const metaEn = isCtet22
+        ? 'Exam: 12–13 Dec 2026 · City Slip: 15 Days · Admit Card: 2 Days'
+        : (examDt ? `Exam: ${formatIstShortDate(examDt) || examDt} · ${isAdmit ? 'Admit Card Alert' : 'Exam Schedule'}` : 'Official Exam Notice');
+      const metaOr = isCtet22
+        ? 'ପରୀକ୍ଷା: ୧୨–୧୩ ଡିସେମ୍ବର ୨୦୨୬ · ଆଡମିଟ୍ କାର୍ଡ: ୨ ଦିନ ପୂର୍ବରୁ'
+        : (examDt ? `ପରୀକ୍ଷା: ${formatIstShortDate(examDt) || examDt}` : 'ସରକାରୀ ପରୀକ୍ଷା ସୂଚନା');
+      merged.push({
+        id: String(r.id || slug),
+        slug,
+        title_en: String(r.title_en || ''),
+        title_or: String(r.title_or || ''),
+        org_badge: org.organization,
+        badge_tone: org.organization === 'CBSE' ? 'info' : orgBadgeTone(org.org_group),
+        meta_en: metaEn,
+        meta_or: metaOr,
+        action_label_en: isAdmit ? 'Admit Card →' : 'Schedule →',
+        action_label_or: isAdmit ? 'ଆଡମିଟ୍ କାର୍ଡ →' : 'ସୂଚୀ →',
+        lifecycle_stage: stage,
+        last_date: lastDt,
+        href: `/guides/${encodeURIComponent(slug)}`,
+        url: `/jobs/?slug=${encodeURIComponent(slug)}`,
+        is_guide: false,
+        sort_ts: String(r.published_at || r.updated_at || '')
+      });
+    }
+  } catch { /* job_articles optional */ }
+
+  for (const g of (publishedGuides || [])) {
+    if (merged.length >= 6) break;
+    const slug = String(g.slug || g.id || '').trim();
+    if (!slug || seenSlugs.has(slug)) continue;
+    const blob = `${g.title_en || ''} ${g.tags || ''} ${g.summary_en || ''}`.toLowerCase();
+    if (/\b(result|scorecard|omr)\b/.test(blob) && !/\b(admit card|exam schedule|city slip)\b/.test(blob)) continue;
+    if (!/\b(ugc net|ctet|admit card|city slip|exam schedule|exam date|nta|syllabus|oavs.*strategy)\b/.test(blob)) continue;
+    seenSlugs.add(slug);
+    const isNta = /\b(ugc net|nta)\b/.test(blob);
+    const isCbse = /\b(ctet|cbse)\b/.test(blob);
+    const orgBadge = isNta ? 'NTA' : (isCbse ? 'CBSE' : normalizeOrganization('', blob).organization);
+    const isAdmit = /\b(admit card|city slip)\b/.test(blob) && !isNta;
+    const metaEn = isNta
+      ? 'CBT: Dec 14–18 & 21, 2026 · Odia Shift 2'
+      : (isCbse ? 'Syllabus, Fee Rules & Odisha Centres (181/182)' : 'Exam Schedule & Prep Guidelines');
+    const metaOr = isNta
+      ? 'ପରୀକ୍ଷା: ଡିସେମ୍ବର ୧୪–୧୮ ଓ ୨୧ · ଓଡ଼ିଆ ଶିଫ୍ଟ-୨'
+      : (isCbse ? 'ପାଠ୍ୟକ୍ରମ ଓ ଓଡ଼ିଶା ପରୀକ୍ଷା କେନ୍ଦ୍ର (୧୮୧/୧୮୨)' : 'ପରୀକ୍ଷା ସୂଚୀ ଓ ମାର୍ଗଦର୍ଶିକା');
+    merged.push({
+      id: `examguide_${g.id || slug}`,
+      slug,
+      title_en: String(g.title_en || ''),
+      title_or: String(g.title_or || ''),
+      org_badge: orgBadge,
+      badge_tone: isNta ? 'warning' : (isCbse ? 'info' : 'brand'),
+      meta_en: metaEn,
+      meta_or: metaOr,
+      action_label_en: isAdmit ? 'Admit Card →' : 'Schedule →',
+      action_label_or: isAdmit ? 'ଆଡମିଟ୍ କାର୍ଡ →' : 'ସୂଚୀ →',
+      lifecycle_stage: isAdmit ? 'admit_card' : 'exam_date',
+      last_date: '',
+      href: `/guides/${encodeURIComponent(slug)}`,
+      url: `/guides/${encodeURIComponent(slug)}`,
+      is_guide: true,
+      sort_ts: String(g.updated_at || g.created_at || '')
+    });
+  }
+
+  return merged
+    .sort((a, b) => {
+      if (Boolean(a.is_guide) !== Boolean(b.is_guide)) return a.is_guide ? 1 : -1;
+      return String(b.sort_ts).localeCompare(String(a.sort_ts));
+    })
+    .slice(0, 4)
+    .map(({ sort_ts, is_guide, ...item }) => item);
+}
+
+async function fetchLatestResults(db, publishedGuides = []) {
+  const merged = [];
+  const seenSlugs = new Set();
+
+  try {
+    const { results } = await db.prepare(
+      `SELECT id, slug, title_en, title_or, last_date,
+              location_district, sector_badge, organisation_en, organisation_or,
+              lifecycle_stage, result_url, published_at, updated_at
+       FROM job_articles
+       WHERE is_published = 1
+         AND LOWER(COALESCE(lifecycle_stage, '')) = 'result'
+         AND (scheduled_publish_at = '' OR scheduled_publish_at IS NULL OR scheduled_publish_at <= datetime('now'))
+       ORDER BY COALESCE(NULLIF(published_at, ''), updated_at) DESC, updated_at DESC
+       LIMIT 6`
+    ).all();
+    for (const r of (results || [])) {
+      const slug = String(r.slug || r.id || '').trim();
+      if (!slug || seenSlugs.has(slug)) continue;
+      seenSlugs.add(slug);
+      const org = normalizeOrganization(r.organisation_en || r.sector_badge, r.title_en);
+      const isOsstet = /osstet/i.test(String(r.title_en || ''));
+      merged.push({
+        id: String(r.id || slug),
+        slug,
+        title_en: String(r.title_en || ''),
+        title_or: String(r.title_or || ''),
+        org_badge: org.organization,
+        badge_tone: 'ok',
+        meta_en: isOsstet
+          ? 'Result Out · Certificate from 25 Nov · OMR till 2 Dec 2026'
+          : `Result Declared · ${String(r.location_district || 'All Odisha')}`,
+        meta_or: isOsstet
+          ? 'ରେଜଲ୍ଟ ପ୍ରକାଶିତ · OMR ୨ ଡିସେମ୍ବର ପର୍ଯ୍ୟନ୍ତ'
+          : `ଫଳାଫଳ ପ୍ରକାଶିତ · ${String(r.location_district || 'ସମଗ୍ର ଓଡ଼ିଶା')}`,
+        action_label_en: 'Result →',
+        action_label_or: 'ଫଳାଫଳ →',
+        result_url: String(r.result_url || ''),
+        href: `/jobs/${encodeURIComponent(slug)}`,
+        url: `/jobs/?slug=${encodeURIComponent(slug)}`,
+        sort_ts: String(r.published_at || r.updated_at || '')
+      });
+    }
+  } catch { /* job_articles optional */ }
+
+  for (const g of (publishedGuides || [])) {
+    if (merged.length >= 4) break;
+    const slug = String(g.slug || g.id || '').trim();
+    if (!slug || seenSlugs.has(slug)) continue;
+    const blob = `${g.title_en || ''} ${g.tags || ''}`.toLowerCase();
+    if (!/\b(result|scorecard|merit list)\b/.test(blob)) continue;
+    seenSlugs.add(slug);
+    merged.push({
+      id: `resguide_${g.id || slug}`,
+      slug,
+      title_en: String(g.title_en || ''),
+      title_or: String(g.title_or || ''),
+      org_badge: normalizeOrganization('', blob).organization,
+      badge_tone: 'ok',
+      meta_en: 'Scorecard & Merit List Guide',
+      meta_or: 'ସ୍କୋରକାର୍ଡ ଓ ମେରିଟ୍ ଲିଷ୍ଟ',
+      action_label_en: 'Result →',
+      action_label_or: 'ଫଳାଫଳ →',
+      href: `/guides/${encodeURIComponent(slug)}`,
+      url: `/guides/${encodeURIComponent(slug)}`,
+      sort_ts: String(g.updated_at || g.created_at || '')
+    });
+  }
+
+  const out = merged
+    .sort((a, b) => String(b.sort_ts).localeCompare(String(a.sort_ts)))
+    .slice(0, 4)
+    .map(({ sort_ts, ...item }) => item);
+
+  const resultPads = [
+    { id: 'res_opsc_ossc', slug: 'opsc-ossc-results', title_en: 'OPSC, OSSC & OSSSC Written Exam Results & Merit Lists', title_or: 'OPSC, OSSC ଓ OSSSC ଲିଖିତ ପରୀକ୍ଷା ଫଳାଫଳ ଏବଂ ମେରିଟ୍ ଲିଷ୍ଟ', org_badge: 'Odisha Govt', badge_tone: 'brand', meta_en: 'Cut-off Marks · Selection Lists', meta_or: 'କଟ୍-ଅଫ୍ ନମ୍ବର · ଚୟନ ତାଲିକା', action_label_en: 'Result →', action_label_or: 'ଫଳାଫଳ →', href: '/jobs/?stage=result', url: '/jobs/?stage=result' },
+    { id: 'res_teaching', slug: 'teaching-results', title_en: 'OTET, OSSTET, OAVS & Central Teaching Exam Scorecards', title_or: 'OTET, OSSTET, OAVS ଓ କେନ୍ଦ୍ରୀୟ ଶିକ୍ଷକ ପରୀକ୍ଷା ସ୍କୋରକାର୍ଡ', org_badge: 'Teaching', badge_tone: 'info', meta_en: 'Scorecards · Answer Keys', meta_or: 'ସ୍କୋରକାର୍ଡ · ଉତ୍ତର କୁଞ୍ଜିକା', action_label_en: 'Result →', action_label_or: 'ଫଳାଫଳ →', href: '/exams/#results', url: '/exams/#results' }
+  ];
+  for (const pad of resultPads) {
     if (out.length >= 3) break;
     out.push(pad);
   }
@@ -779,7 +966,7 @@ export async function buildPublicHomeFeed(env) {
   if (!db) {
     return {
       ok: true,
-      version: 'v381',
+      version: 'v382',
       generated_at: new Date().toISOString(),
       broadcast: { active: false },
       nav_header: [],
@@ -787,6 +974,8 @@ export async function buildPublicHomeFeed(env) {
       trending_topics: DEFAULT_TRENDING_TOPICS.map((t) => ({ ...t, item_count: 0 })),
       latest_updates: [],
       jobs: [],
+      exam_updates: [],
+      results: [],
       current_affairs: [],
       mock_tests: [],
       mocks: [],
@@ -803,13 +992,15 @@ export async function buildPublicHomeFeed(env) {
     fetchPublishedGuidesForFeed(db)
   ]);
 
-  const [broadcast, nav_header, homeSections, trending_topics, latest_updates, jobs, rawCa, rawMocks, rawStudy, rawCareers, rawSchemes] = await Promise.all([
+  const [broadcast, nav_header, homeSections, trending_topics, latest_updates, jobs, exam_updates, results, rawCa, rawMocks, rawStudy, rawCareers, rawSchemes] = await Promise.all([
     fetchBroadcast(env),
     fetchNavHeader(db),
     readHomeSections(env).catch(() => ({ sections: defaultHomeSections() })),
     buildTrendingTopicsFeed(env).catch(() => DEFAULT_TRENDING_TOPICS.map((t) => ({ ...t, item_count: 0 }))),
     buildUnifiedLatestUpdates(db, { limit: 18 }),
     fetchLatestJobs(db, publishedGuides),
+    fetchLatestExamUpdates(db, publishedGuides),
+    fetchLatestResults(db, publishedGuides),
     fetchLatestCurrentAffairs(db),
     fetchLatestMockTests(db),
     fetchLatestSyllabusPyq(db),
@@ -825,7 +1016,7 @@ export async function buildPublicHomeFeed(env) {
 
   return {
     ok: true,
-    version: 'v381',
+    version: 'v382',
     generated_at: new Date().toISOString(),
     broadcast,
     nav_header,
@@ -833,6 +1024,8 @@ export async function buildPublicHomeFeed(env) {
     trending_topics,
     latest_updates,
     jobs,
+    exam_updates,
+    results,
     current_affairs,
     mock_tests,
     mocks: mock_tests,

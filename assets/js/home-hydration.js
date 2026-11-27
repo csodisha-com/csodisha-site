@@ -157,19 +157,21 @@
 
   var FEED_SECTION_MAP = {
     jobs: 'cso-home-jobs-section',
+    exam_updates: 'cso-home-exams-section',
+    results: 'cso-home-results-section',
     current_affairs: 'cso-home-ca-section',
     mock_tests: 'cso-home-mocks-section',
     syllabus_pyq: 'cso-home-syllabus-section',
-    careers: 'cso-home-careers-section',
     schemes: 'cso-home-schemes-section'
   };
 
   var FEED_HEADER_COPY = {
-    jobs: { icon: '\uD83D\uDCBC', en: 'Job Alerts & Admit Cards', or: 'ଚାକିରି ଏବଂ ଆଡମିଟ୍ କାର୍ଡ', allEn: 'All Jobs \u2192', allOr: 'ସବୁ ଚାକିରି \u2192' },
+    jobs: { icon: '\uD83D\uDCBC', en: 'Job Alerts', or: 'ଚାକିରି ବିଜ୍ଞପ୍ତି', allEn: 'All Jobs \u2192', allOr: 'ସବୁ ଚାକିରି \u2192' },
+    exam_updates: { icon: '\uD83E\uDEAA', en: 'Exam Updates & Admit Cards', or: 'ପରୀକ୍ଷା ସୂଚନା ଓ ଆଡମିଟ୍ କାର୍ଡ', allEn: 'All Exams \u2192', allOr: 'ସବୁ ପରୀକ୍ଷା \u2192' },
+    results: { icon: '\uD83C\uDFC6', en: 'Results', or: 'ପରୀକ୍ଷା ଫଳାଫଳ', allEn: 'All Results \u2192', allOr: 'ସବୁ ଫଳାଫଳ \u2192' },
     current_affairs: { icon: '\uD83D\uDCF0', en: 'Daily Current Affairs', or: 'ଦୈନିକ ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ', allEn: 'All Briefs \u2192', allOr: 'ସବୁ ସମ୍ବାଦ \u2192' },
     mock_tests: { icon: '\u23F1\uFE0F', en: 'Live CBT Mock Tests', or: 'ଲାଇଭ୍ CBT ମକ୍ ଟେଷ୍ଟ', allEn: 'All Tests \u2192', allOr: 'ସବୁ ପରୀକ୍ଷା \u2192' },
     syllabus_pyq: { icon: '\uD83D\uDCD1', en: 'Syllabus & PYQ Papers', or: 'ସିଲାବସ୍ ଏବଂ PYQ ପେପର୍', allEn: 'Study Library \u2192', allOr: 'ଅଧ୍ୟୟନ ଲାଇବ୍ରେରୀ \u2192' },
-    careers: { icon: '\uD83E\uDDED', en: 'Career Roadmaps', or: 'କ୍ୟାରିୟର ରୋଡମ୍ୟାପ୍', allEn: 'All Roadmaps \u2192', allOr: 'ସବୁ ରୋଡମ୍ୟାପ୍ \u2192' },
     schemes: { icon: '\uD83C\uDFDB\uFE0F', en: 'Government Schemes', or: 'ସରକାରୀ ଯୋଜନା', allEn: 'All Schemes \u2192', allOr: 'ସବୁ ଯୋଜନା \u2192' }
   };
 
@@ -447,6 +449,58 @@
         meta: metaText,
         actionLabel: actLabel,
         actionAria: (isOr ? 'ଦେଖନ୍ତୁ: ' : 'View job: ') + title
+      }));
+    });
+    grid.replaceChildren(frag);
+  }
+
+  /* 2b. Exam Updates & Admit Cards (up to 4 compact rows) */
+  function renderExamUpdatesSection(items) {
+    var grid = document.getElementById('cso-home-exams-grid');
+    if (!grid || !Array.isArray(items) || !items.length) return;
+    var isOr = isOdiaActive();
+    var frag = document.createDocumentFragment();
+    items.slice(0, 4).forEach(function (ex) {
+      var href = safeHref(ex.url || ex.href) || '/exams/';
+      var title = pickBi(ex.title_en, ex.title_or, 'Exam Update');
+      var metaText = isOr ? (ex.meta_or || ex.meta_en || '') : (ex.meta_en || '');
+      var actLabel = isOr
+        ? (ex.action_label_or || 'ସୂଚୀ \u2192')
+        : (ex.action_label_en || 'Schedule \u2192');
+      frag.appendChild(buildCompactFeedRow({
+        title: title,
+        href: href,
+        pill: ex.org_badge || 'Exam',
+        pillTone: mapBadgeTone(ex.badge_tone, 'info'),
+        meta: metaText,
+        actionLabel: actLabel,
+        actionAria: (isOr ? 'ଦେଖନ୍ତୁ: ' : 'View exam update: ') + title
+      }));
+    });
+    grid.replaceChildren(frag);
+  }
+
+  /* 2c. Results (up to 4 compact rows) */
+  function renderResultsSection(items) {
+    var grid = document.getElementById('cso-home-results-grid');
+    if (!grid || !Array.isArray(items) || !items.length) return;
+    var isOr = isOdiaActive();
+    var frag = document.createDocumentFragment();
+    items.slice(0, 4).forEach(function (res) {
+      var href = safeHref(res.url || res.href) || '/exams/#results';
+      var title = pickBi(res.title_en, res.title_or, 'Exam Result');
+      var metaText = isOr ? (res.meta_or || res.meta_en || '') : (res.meta_en || '');
+      var actLabel = isOr
+        ? (res.action_label_or || 'ଫଳାଫଳ \u2192')
+        : (res.action_label_en || 'Result \u2192');
+      frag.appendChild(buildCompactFeedRow({
+        title: title,
+        href: href,
+        pill: res.org_badge || 'Result',
+        pillTone: mapBadgeTone(res.badge_tone, 'ok'),
+        meta: metaText,
+        actionLabel: actLabel,
+        actionAria: (isOr ? 'ଫଳାଫଳ ଦେଖନ୍ତୁ: ' : 'View result: ') + title
       }));
     });
     grid.replaceChildren(frag);
@@ -825,10 +879,11 @@
   function renderHomeFeedSections(feed) {
     if (!feed) return;
     renderJobsSection(feed.jobs);
+    renderExamUpdatesSection(feed.exam_updates);
+    renderResultsSection(feed.results);
     renderCurrentAffairsSection(feed.current_affairs);
     renderMockTestsSection(feed.mocks || feed.mock_tests);
     renderSyllabusSection(feed.study || feed.syllabus_pyq);
-    renderCareersSection(feed.careers);
     renderSchemesSection(feed.schemes);
   }
 
