@@ -25335,3 +25335,302 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+/* ===== v428: Odisha Govt Teacher (LTR/SSD/OAV/OTET/OSSTET) Eligibility Checker (.cso-tec-*) ===== */
+.cso-tec-root {
+  margin: 20px 0;
+}
+
+.cso-tec-wrap {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated, var(--cso-surface));
+  color: var(--cso-ink);
+}
+
+.cso-tec-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.cso-tec-title {
+  margin: 0;
+  font-size: 1.32rem;
+  line-height: 1.3;
+  color: var(--cso-ink);
+}
+
+.cso-tec-sub {
+  margin: 6px 0 0;
+  font-size: 0.92rem;
+  color: var(--cso-muted);
+  max-width: 78ch;
+}
+
+.cso-tec-head-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-tec-lang-toggle {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  padding: 3px;
+  gap: 4px;
+}
+
+.cso-tec-lang-btn {
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-tec-lang-btn.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-tec-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 10px;
+}
+
+.cso-tec-field {
+  display: grid;
+  gap: 6px;
+}
+
+.cso-tec-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cso-muted);
+}
+
+.cso-tec-select,
+.cso-tec-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 1rem;
+}
+
+.cso-tec-subjects {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-tec-sub-head {
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-tec-sub-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-tec-sub-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-tec-sub-pill.is-checked {
+  border-color: var(--cso-accent);
+  color: var(--cso-accent);
+}
+
+.cso-tec-cb {
+  width: 18px;
+  height: 18px;
+}
+
+.cso-tec-verdict {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--cso-accent);
+  background: var(--cso-surface);
+  font-size: 0.94rem;
+  font-weight: 800;
+}
+
+.cso-tec-verdict.is-eligible {
+  border-color: var(--cso-ok, var(--cso-accent));
+  color: var(--cso-ok, var(--cso-accent));
+}
+
+.cso-tec-verdict.is-not_eligible {
+  border-color: var(--cso-danger, var(--cso-accent));
+  color: var(--cso-danger, var(--cso-accent));
+}
+
+.cso-tec-checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 10px;
+}
+
+.cso-tec-check {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-tec-check.is-pass {
+  border-color: var(--cso-ok, var(--cso-accent));
+}
+
+.cso-tec-check.is-fail {
+  border-color: var(--cso-danger, var(--cso-accent));
+}
+
+.cso-tec-check__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+}
+
+.cso-tec-stat {
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.cso-tec-check__det {
+  font-size: 0.8rem;
+  color: var(--cso-muted);
+  line-height: 1.4;
+}
+
+.cso-tec-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.cso-tec-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-tec-btn--primary {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-tec-btn:focus-visible,
+.cso-tec-lang-btn:focus-visible {
+  outline: 2px solid var(--cso-focus, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+.cso-tec-copy-status {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--cso-ok, var(--cso-accent));
+}
+
+.cso-tec-matrix {
+  display: grid;
+  gap: 8px;
+}
+
+.cso-tec-matrix__title {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--cso-ink);
+}
+
+.cso-tec-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-tec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.cso-tec-table th,
+.cso-tec-table td {
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--cso-border);
+  color: var(--cso-ink);
+}
+
+.cso-tec-table th {
+  background: var(--cso-surface-alt, var(--cso-surface));
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-tec-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-tec-head-controls,
+  .cso-tec-form,
+  .cso-tec-subjects,
+  .cso-tec-actions {
+    display: none !important;
+  }
+}
