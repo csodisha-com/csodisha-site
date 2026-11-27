@@ -42,6 +42,18 @@
       keywords: 'salary orsp 7th pay da hra nps gpf basic level in-hand ବେତନ ଦରମା ସାଲାରୀ'
     },
     {
+      id: 'multi-post-eligibility',
+      category: 'calculators',
+      targetId: 'cso-multi-post-eligibility-root',
+      badgeEn: 'Age & Fee Matrix',
+      badgeOr: 'ବୟସ ଓ ଫି ମ୍ୟାଟ୍ରିକ୍ସ',
+      titleEn: 'Multi-Post Age Relaxation & ₹0 Fee Exemption Matrix',
+      titleOr: 'ଏକାଧିକ ପଦବୀ ବୟସ ଛାଡ଼ ଓ ₹0 ଫି ଛାଡ଼ ମ୍ୟାଟ୍ରିକ୍ସ',
+      descEn: 'Evaluate DOB, category, gender & PwBD age cutoffs and fee waivers across all Odisha drives.',
+      descOr: 'ଜନ୍ମ ତାରିଖ, ବର୍ଗ, ଲିଙ୍ଗ ଓ PwBD ଅନୁସାରେ ସମସ୍ତ ନିଯୁକ୍ତିର ବୟସ ଓ ଫି ଛାଡ଼ ଯାଞ୍ଚ କରନ୍ତୁ।',
+      keywords: 'age dob relaxation fee exemption multi post matrix opsc ossc osssc pwbd ବୟସ ଫି ଛାଡ଼'
+    },
+    {
       id: 'cgpa-converter',
       category: 'calculators',
       targetId: 'cso-cgpa-converter-root',
