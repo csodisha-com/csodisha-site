@@ -1195,6 +1195,31 @@
     });
   }
 
+  function hydrateQuickLaunchHubCounts() {
+    var resBadge = document.querySelector('[data-qlaunch-count="results"]');
+    var admBadge = document.querySelector('[data-qlaunch-count="admissions"]');
+    if (!resBadge && !admBadge) return;
+    if (typeof fetch !== 'function') return;
+    fetch('/api/public/search-index', { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !Array.isArray(data.items)) return;
+        var resRe = /\b(result|cut[\s-]?off|merit|scorecard|answer\s*key)\b/i;
+        var admRe = /\b(admission|counselling|counseling|sams|ojee|polytechnic|iti\b|cpet|itep|ncet|diploma)\b/i;
+        var resCount = 0;
+        var admCount = 0;
+        data.items.forEach(function (it) {
+          if (!it || it.type === 'hub') return;
+          var hay = [it.title, it.summary, it.category, it.org].filter(Boolean).join(' ');
+          if (resRe.test(hay)) resCount += 1;
+          if (admRe.test(hay)) admCount += 1;
+        });
+        if (resBadge && resCount > 0) resBadge.textContent = resCount + ' Live Result Notices';
+        if (admBadge && admCount > 0) admBadge.textContent = admCount + ' Live Admission Notices';
+      })
+      .catch(function () {});
+  }
+
   function init() {
     removeOpportunityCompass();
     document.querySelectorAll('.lu > .em').forEach(function (x) { x.remove(); });
@@ -1205,6 +1230,7 @@
     localizeLuTabLabels();
     mountHomeFeed(false);
     hydrateHomepageConfig();
+    hydrateQuickLaunchHubCounts();
     bindLiveEvents();
     window.addEventListener('resize', localizeHeroCopy);
   }

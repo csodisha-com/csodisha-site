@@ -10,7 +10,7 @@ export const CSO_SHELL_HEAD_LINKS = [
   '<link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261125v304">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css?v=20261125v304">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-detail-page.css?v=20261125v304">',
-  '<script src="/assets/shared-header.js?v=20261127v422" defer></script>',
+  '<script src="/assets/shared-header.js?v=20261127v423" defer></script>',
   '<script src="/assets/js/instant-search-overlay.js?v=20261127v396" defer></script>',
   '<script src="/assets/js/voice-search.js?v=20261125v304" defer></script>'
 ].join('\n  ');
@@ -53,7 +53,8 @@ export const CSO_SHELL_FOOTER = `<footer><div class="w cso-footer-grid">
       <h4>Explore</h4>
       <a href="/jobs/">Job Alerts</a>
       <a href="/exams/">Exam Updates &amp; Admit Cards</a>
-      <a href="/exams/#results">Exam Results</a>
+      <a href="/results/">Results &amp; Cut-Offs</a>
+      <a href="/admissions/">Admissions &amp; Counselling</a>
       <a href="/scholarships/">Scholarships</a>
       <a href="/study-materials/">Study Materials</a>
       <a href="/career-paths/">Career Paths</a>

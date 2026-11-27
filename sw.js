@@ -11,7 +11,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v422';
+const CACHE_NAME = 'cso-candidate-cache-v423';
 const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
 const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
 
@@ -27,30 +27,30 @@ const CANDIDATE_TOOLKIT_URLS = [
   '/schemes/',
   '/current-affairs/',
   '/odisha-special/',
-  '/assets/style.css?v=20261127v422',
-  '/assets/css/cso-themes.css?v=20261127v422',
-  '/assets/shared-header.js?v=20261127v422',
-  '/assets/js/offline-toolkit-hub.js?v=20261127v422',
-  '/assets/js/candidate-data-backup.js?v=20261127v422',
-  '/assets/js/admissions-counselling-tracker.js?v=20261127v422',
-  '/assets/js/pyq-vault-analyzer.js?v=20261127v422',
-  '/assets/js/holiday-exam-logistics.js?v=20261127v422',
-  '/assets/js/orsp-salary-estimator.js?v=20261127v422',
-  '/assets/js/photo-signature-resizer.js?v=20261127v422',
-  '/assets/js/certificate-fee-matrix.js?v=20261127v422',
-  '/assets/js/cgpa-percentage-converter.js?v=20261127v422',
-  '/assets/js/exam-calendar-tracker.js?v=20261127v422',
-  '/assets/js/results-cutoff-estimator.js?v=20261127v422',
-  '/assets/js/service-rules-pension-guide.js?v=20261127v422',
-  '/assets/js/study-streak-planner.js?v=20261127v422',
-  '/assets/js/odisha-admin-directory.js?v=20261127v422',
-  '/assets/js/mock-tests-hub.js?v=20261127v422',
-  '/assets/js/schemes-eligibility-finder.js?v=20261127v422',
-  '/assets/js/current-affairs-hub.js?v=20261127v422',
-  '/assets/js/ics-calendar-export.js?v=20261127v422',
-  '/assets/js/saved-alerts-drawer.js?v=20261127v422',
-  '/assets/js/candidate-watchlist.js?v=20261127v422',
-  '/assets/js/odisha-district-filter.js?v=20261127v422'
+  '/assets/style.css?v=20261127v423',
+  '/assets/css/cso-themes.css?v=20261127v423',
+  '/assets/shared-header.js?v=20261127v423',
+  '/assets/js/offline-toolkit-hub.js?v=20261127v423',
+  '/assets/js/candidate-data-backup.js?v=20261127v423',
+  '/assets/js/admissions-counselling-tracker.js?v=20261127v423',
+  '/assets/js/pyq-vault-analyzer.js?v=20261127v423',
+  '/assets/js/holiday-exam-logistics.js?v=20261127v423',
+  '/assets/js/orsp-salary-estimator.js?v=20261127v423',
+  '/assets/js/photo-signature-resizer.js?v=20261127v423',
+  '/assets/js/certificate-fee-matrix.js?v=20261127v423',
+  '/assets/js/cgpa-percentage-converter.js?v=20261127v423',
+  '/assets/js/exam-calendar-tracker.js?v=20261127v423',
+  '/assets/js/results-cutoff-estimator.js?v=20261127v423',
+  '/assets/js/service-rules-pension-guide.js?v=20261127v423',
+  '/assets/js/study-streak-planner.js?v=20261127v423',
+  '/assets/js/odisha-admin-directory.js?v=20261127v423',
+  '/assets/js/mock-tests-hub.js?v=20261127v423',
+  '/assets/js/schemes-eligibility-finder.js?v=20261127v423',
+  '/assets/js/current-affairs-hub.js?v=20261127v423',
+  '/assets/js/ics-calendar-export.js?v=20261127v423',
+  '/assets/js/saved-alerts-drawer.js?v=20261127v423',
+  '/assets/js/candidate-watchlist.js?v=20261127v423',
+  '/assets/js/odisha-district-filter.js?v=20261127v423'
 ];
 
 // Authenticated, auth & account routes that must NEVER be served from or written to SW HTML cache.

@@ -761,7 +761,7 @@
     const p = String(pathStr || '/').toLowerCase();
     if (p === '/' || p === '/index.html' || p === '') return '';
     if (p.startsWith('/careers') || p.startsWith('/career-guidance')) return 'careers';
-    if (p.startsWith('/jobs-careers') || p.startsWith('/jobs') || p.startsWith('/job-opportunity-finder')) return 'jobs';
+    if (p.startsWith('/jobs-careers') || p.startsWith('/jobs') || p.startsWith('/results') || p.startsWith('/admissions') || p.startsWith('/job-opportunity-finder')) return 'jobs';
     if (p.startsWith('/schemes-benefits') || p.startsWith('/schemes') || p.startsWith('/scholarship-guidance') || p.startsWith('/scheme-opportunity-finder')) return 'schemes-benefits';
     if (p.startsWith('/study-library') || p.startsWith('/study') || p.startsWith('/resources') || p.startsWith('/current-affairs') || p.startsWith('/mock-tests') || p.startsWith('/education-explorer') || p.startsWith('/study-path-finder')) return 'study-library';
     if (p.startsWith('/community') || p.startsWith('/support')) return 'community';
@@ -1093,7 +1093,8 @@
     const JOBS_ALIGNED_ITEMS = [
       { slug: 'job-alerts', icon: '💼', title_en: 'Job Alerts', title_or: 'ଚାକିରି ବିଜ୍ଞପ୍ତି', href: '/jobs/' },
       { slug: 'exam-updates', icon: '🪪', title_en: 'Exam Updates & Admit Cards', title_or: 'ପରୀକ୍ଷା ସୂଚନା ଓ ଆଡମିଟ୍ କାର୍ଡ', href: '/exams/' },
-      { slug: 'results', icon: '🏆', title_en: 'Results', title_or: 'ପରୀକ୍ଷା ଫଳାଫଳ', href: '/exams/#results' },
+      { slug: 'results', icon: '🏆', title_en: 'Results & Cut-Offs', title_or: 'ଫଳାଫଳ ଓ କଟ୍-ଅଫ୍', href: '/results/' },
+      { slug: 'admissions', icon: '🎓', title_en: 'Admissions & Counselling', title_or: 'ନାମଲେଖା ଓ କାଉନସେଲିଂ', href: '/admissions/' },
       { slug: 'odisha-recruitments', icon: '🏛️', title_en: 'Odisha State & University Recruitments', title_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ଓ ବିଶ୍ୱବିଦ୍ୟାଳୟ ନିଯୁକ୍ତି', href: '/jobs/#odisha' }
     ];
     const curPath = (window.location && window.location.pathname) ? window.location.pathname : '';
@@ -2554,6 +2555,7 @@
   }
   const FOOTER_COLS = [
     ['Explore', [['Jobs', '/jobs/'], ['Careers', '/careers/'], ['Schemes & Benefits', '/schemes/'], ['Study Library', '/study-library/'], ['Community', '/community/'], ['About', '/about/']]],
+    ['Quick Candidate Hubs', [['Results & Cut-Offs', '/results/'], ['Admissions & Counselling', '/admissions/'], ['Exam Updates & Admit Cards', '/exams/'], ['Live CBT Mock Tests', '/mock-tests/'], ['Candidate Tools', '/tools/']]],
     ['Support & Legal', [['Help & FAQs', '/support/#faqs'], ['Report an Error', '/support/#report-error'], ['Suggest Resource', '/support/#suggest-resource'], ['Privacy Policy', '/privacy-policy/'], ['Terms of Use', '/terms-of-use/'], ['Disclaimer', '/disclaimer/'], ['Copyright Policy', '/copyright-policy/']]]
   ];
   const FOOTER_SOCIAL = [
