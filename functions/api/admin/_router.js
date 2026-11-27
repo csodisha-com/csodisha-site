@@ -49,6 +49,7 @@ import { handleSeoSearchDiscoveryBatch1Admin } from '../../_lib/seo-search-disco
 import { handleSeoSearchDiscoveryBatch2Admin, ensureSeoSearchDiscoveryBatch2Schema, getFull8ModuleSeoOverview } from '../../_lib/seo-search-discovery-batch2.js';
 import { handleSeoSearchDiscoveryBatch3Admin, ensureSeoSearchDiscoveryBatch3Schema, getFull12ModuleSeoOverview } from '../../_lib/seo-search-discovery-batch3.js';
 import { handleSeoSearchDiscoveryBatch4Admin, ensureSeoSearchDiscoveryBatch4Schema, getFull16ModuleSeoOverview } from '../../_lib/seo-search-discovery-batch4.js';
+import { handleAdminPingIndexNow } from '../../_lib/indexnow-pinger.js';
 import { handleEventsSchedulingBatch1Admin } from '../../_lib/events-scheduling-batch1.js';
 import { handleEventsSchedulingBatch2Admin, ensureEventsSchedulingBatch2Schema, getFull6ModuleEventsOverview } from '../../_lib/events-scheduling-batch2.js';
 import { handleEventsSchedulingBatch3Admin, ensureEventsSchedulingBatch3Schema, getFull9ModuleEventsOverview } from '../../_lib/events-scheduling-batch3.js';
@@ -400,6 +401,9 @@ async function dispatchAdminApi(request, env, ctx = null) {
     if (resource === 'seo') {
       const actor = await requireRole(request, env, STAFF_ROLES);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+      if (id === 'ping-indexnow' && method === 'POST') {
+        return await handleAdminPingIndexNow(request, env, ctx);
+      }
       if (['rich-snippets', 'link-graph', 'slug-normalizer', 'search-intent'].includes(id)) {
         return await handleSeoSearchDiscoveryBatch4Admin(request, env, actor, id, sub, extra);
       }

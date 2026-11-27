@@ -6,6 +6,7 @@ import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
 import { ensureV311ContentColumns, isFuturePublishAt, isExpiredTimestamp, logZeroResultSearch } from './radars-v311.js';
 import { scheduleSemanticSync } from './semantic-search.js';
 import { validateAndNormalizeQuizJson } from './article-mini-quiz.js';
+import { pingIndexNowUrls } from './indexnow-pinger.js';
 
 export const LIFECYCLE_STAGES = [
   'notification',
@@ -488,6 +489,7 @@ async function invalidateJobsCaches(request, slug = '') {
     '/api/events/upcoming',
     '/jobs/',
     '/jobs-careers/',
+    '/sitemap.xml',
     '/',
     '/index.html'
   ];
@@ -1309,7 +1311,10 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
       actorId: actor && actor.userId
     });
     await invalidateJobsCaches(request, finalSlug);
-    const res = json({ ok: true, item: formatArticle(row, taxMap, true) }, 201);
+    const indexnow = data.is_published
+      ? pingIndexNowUrls(env, [`https://csodisha.com/jobs/${encodeURIComponent(finalSlug)}`, 'https://csodisha.com/', 'https://csodisha.com/jobs/'], ctx)
+      : { queued: false, urls: [] };
+    const res = json({ ok: true, item: formatArticle(row, taxMap, true), indexnow }, 201);
     res.headers.set('X-CSO-Cache-Purged', '1');
     return res;
   }
@@ -1492,7 +1497,10 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
       actorId: actor && actor.userId
     });
     await invalidateJobsCaches(request, finalSlug);
-    const res = json({ ok: true, item: formatArticle(row, taxMap, true) });
+    const indexnow = data.is_published
+      ? pingIndexNowUrls(env, [`https://csodisha.com/jobs/${encodeURIComponent(finalSlug)}`, 'https://csodisha.com/', 'https://csodisha.com/jobs/'], ctx)
+      : { queued: false, urls: [] };
+    const res = json({ ok: true, item: formatArticle(row, taxMap, true), indexnow });
     res.headers.set('X-CSO-Cache-Purged', '1');
     return res;
   }

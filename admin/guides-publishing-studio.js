@@ -2344,7 +2344,8 @@
               }
             } catch (_) {}
           }
-          toast(targetStatus === 'published' ? 'Published & Homepage Cache Purged — View Live on Homepage ↗' : 'Guide draft saved!', 'ok');
+          var pingNote = (res && res.indexnow && res.indexnow.queued) ? ' · 📡 Sitemap & IndexNow Pinged' : '';
+          toast(targetStatus === 'published' ? ('Published & Homepage Cache Purged' + pingNote + ' — View Live on Homepage ↗') : 'Guide draft saved!', 'ok');
           if (typeof window.CSOStudioRefreshGuideCount === 'function') window.CSOStudioRefreshGuideCount();
         })
         .catch(function (err) {

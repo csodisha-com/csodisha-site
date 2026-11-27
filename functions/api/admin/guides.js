@@ -30,6 +30,7 @@ import { upsertLatestUpdateMeta, unpublishLatestUpdateItem, normalizeScope } fro
 import { invalidateEdgePaths } from '../../_lib/edge-cache-invalidator.js';
 import { scheduleSemanticSync } from '../../_lib/semantic-search.js';
 import { validateAndNormalizeQuizJson } from '../../_lib/article-mini-quiz.js';
+import { pingIndexNowUrls } from '../../_lib/indexnow-pinger.js';
 import { recordAdminAuditLog } from './system-ops.js';
 
 function purgeGuideEdgePaths(request, ctx, slugs = []) {
@@ -224,7 +225,10 @@ export async function handleAdminGuidesApi(request, env, actor, id = '', sub = '
 
     recordAdminAuditLog(env, request, actor, 'guides.patch', formatted.id, { status: formatted.status, is_pinned: formatted.is_pinned }, ctx);
     await purgeGuideEdgePaths(request, ctx, [formatted.slug]);
-    return json({ ok: true, item: formatted });
+    const indexnow = formatted.status === 'published'
+      ? pingIndexNowUrls(env, [`https://csodisha.com/guides/${encodeURIComponent(formatted.slug)}`, 'https://csodisha.com/', 'https://csodisha.com/guides/'], ctx)
+      : { queued: false, urls: [] };
+    return json({ ok: true, item: formatted, indexnow });
   }
 
   // POST /api/admin/guides or PUT /api/admin/guides/:id
@@ -322,7 +326,10 @@ export async function handleAdminGuidesApi(request, env, actor, id = '', sub = '
 
     recordAdminAuditLog(env, request, actor, existing ? 'guides.update' : 'guides.create', formatted.id, { slug: formatted.slug, status: formatted.status }, ctx);
     await purgeGuideEdgePaths(request, ctx, [formatted.slug, existing && existing.slug !== formatted.slug ? existing.slug : '']);
-    return json({ ok: true, item: formatted }, existing ? 200 : 201);
+    const indexnow = formatted.status === 'published'
+      ? pingIndexNowUrls(env, [`https://csodisha.com/guides/${encodeURIComponent(formatted.slug)}`, 'https://csodisha.com/', 'https://csodisha.com/guides/'], ctx)
+      : { queued: false, urls: [] };
+    return json({ ok: true, item: formatted, indexnow }, existing ? 200 : 201);
   }
 
   // DELETE /api/admin/guides/:id

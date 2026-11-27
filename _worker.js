@@ -55,6 +55,8 @@ import { getPublishedNavBatch3Config } from './functions/_lib/categories-nav-bat
 import { handlePublicJobsRoute } from './functions/_lib/jobs-directory-ssr.js';
 import { buildJobDetailJsonLdBlocks, injectJsonLdAndMetaIntoHtml, toAbsoluteHttpsUrl } from './functions/_lib/rich-results-jsonld.js';
 import { buildArticleMiniQuizPayload, handlePublicArticleQuizApi, serializeQuizJson } from './functions/_lib/article-mini-quiz.js';
+import { handleDynamicSitemapXml, handleDynamicRobotsTxt } from './functions/_lib/dynamic-sitemap.js';
+import { isIndexNowKeyPath, handleIndexNowKeyTxt } from './functions/_lib/indexnow-pinger.js';
 import { handlePublicJobsOverviewApi, handlePublicJobsItemsApi, handlePublicJobsSuggestApi, handleJobsDirectorySitemapXml } from './functions/_lib/jobs-directory-studio.js';
 import { LEGACY_JOBS_REDIRECTS, matchJobsCategoryPath, matchJobsDetailPath } from './functions/_lib/jobs-directory-meta.js';
 import { handlePublicSchemesRoute } from './functions/_lib/schemes-directory-ssr.js';
@@ -660,7 +662,7 @@ export default {
     }
 
     // 0c-flags. v310: Edge-cached Feature Flags & Active 301/302 Redirects enforcement
-    const isStaticAssetPath = pathname.startsWith('/assets/') || pathname === '/sw.js' || pathname === '/manifest.json' || pathname === '/favicon.ico' || pathname === '/robots.txt';
+    const isStaticAssetPath = pathname.startsWith('/assets/') || pathname === '/sw.js' || pathname === '/manifest.json' || pathname === '/favicon.ico';
     if (!isStaticAssetPath && pathname !== '/api/health') {
       const flags = await getPublicFeatureFlags(env);
       const isMutating = request.method !== 'GET' && request.method !== 'HEAD' && request.method !== 'OPTIONS';
@@ -1353,14 +1355,17 @@ export default {
       }
       return caRes;
     }
+    if ((request.method === 'GET' || request.method === 'HEAD') && isIndexNowKeyPath(pathname, env)) {
+      return handleIndexNowKeyTxt(env);
+    }
     if (pathname === '/sitemap.xml' || pathname === '/feed.xml' || pathname === '/rss.xml' || pathname === '/robots.txt' || pathname === '/llms.txt') {
       if (edgeCache && isAnonGet) {
         const hit = await edgeCache.match(request);
         if (hit) return hit;
       }
       let seoRes;
-      if (pathname === '/sitemap.xml') seoRes = await handleSitemapXml(request, env);
-      else if (pathname === '/robots.txt') seoRes = handleRobotsTxt(request);
+      if (pathname === '/sitemap.xml') seoRes = await handleDynamicSitemapXml(request, env);
+      else if (pathname === '/robots.txt') seoRes = handleDynamicRobotsTxt();
       else if (pathname === '/llms.txt') seoRes = await handleLlmsTxt(request, env);
       else seoRes = await handleRssFeed(request, env);
       if (isAnonGet && seoRes.status === 200) {

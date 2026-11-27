@@ -989,7 +989,8 @@
           }
         } catch (_) {}
       }
-      toast(payload.is_published ? 'Published & Homepage Cache Purged — View Live on Homepage ↗' : 'Draft saved to D1!', 'ok');
+      var pingNote = (res && res.indexnow && res.indexnow.queued) ? ' · 📡 Sitemap & IndexNow Pinged' : '';
+      toast(payload.is_published ? ('Published & Homepage Cache Purged' + pingNote + ' — View Live on Homepage ↗') : 'Draft saved to D1!', 'ok');
       if (payload.is_published && !openPreviewAfter && window.CSOPublishTools && window.CSOPublishTools.runPublishChain) {
         window.CSOPublishTools.runPublishChain('jobs', state.draft);
       }
