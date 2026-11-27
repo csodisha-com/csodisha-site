@@ -808,6 +808,12 @@
       wrap.appendChild(kitSec);
     }
 
+    // 11a. v397: Interactive Application Document Checklist & Age Eligibility Quick-Checker (detail view only)
+    var readinessMount = el('section', 'cso-jr-root');
+    readinessMount.id = 'cso-job-readiness-root';
+    readinessMount.setAttribute('data-job-slug', String(a.slug || ''));
+    wrap.appendChild(readinessMount);
+
     // 11b. v387: Interactive 25-MCQ "Test Yourself" Practice Drill (detail view only)
     var quizMount = el('section', 'cso-aq-root');
     quizMount.id = 'cso-article-quiz-root';
@@ -832,6 +838,9 @@
     wrap.appendChild(printFoot);
 
     mount.appendChild(wrap);
+    if (window.CSOJobReadiness && typeof window.CSOJobReadiness.mount === 'function') {
+      window.CSOJobReadiness.mount(readinessMount, a, state.lang);
+    }
     if (window.CSOArticleMiniQuiz && typeof window.CSOArticleMiniQuiz.mount === 'function') {
       window.CSOArticleMiniQuiz.mount(quizMount);
     }

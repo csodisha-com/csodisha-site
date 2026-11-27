@@ -541,11 +541,11 @@ function buildGuidesHead({ title, description, body = '', canonical, ogImage = '
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v396">
-  <script src="/assets/js/guides-portal.js?v=20261127v396" defer></script>
-  <script src="/assets/js/ics-calendar-export.js?v=20261127v396" defer></script>
-  <script src="/assets/js/saved-alerts-drawer.js?v=20261127v396" defer></script>
-  <script src="/assets/js/article-mini-quiz.js?v=20261127v396" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v397">
+  <script src="/assets/js/guides-portal.js?v=20261127v397" defer></script>
+  <script src="/assets/js/ics-calendar-export.js?v=20261127v397" defer></script>
+  <script src="/assets/js/saved-alerts-drawer.js?v=20261127v397" defer></script>
+  <script src="/assets/js/article-mini-quiz.js?v=20261127v397" defer></script>
   ${ldTag}
 </head>`;
 }

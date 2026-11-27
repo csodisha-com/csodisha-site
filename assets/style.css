@@ -17220,3 +17220,264 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+/* ===== v397: Interactive Application Document Checklist & Age Eligibility Quick-Checker (4-Theme Semantic Tokens) ===== */
+.cso-jr-card {
+  border: 1px solid var(--cso-border);
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  display: grid;
+  gap: 14px;
+}
+
+.cso-jr-head {
+  display: grid;
+  gap: 4px;
+}
+
+.cso-jr-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-jr-sub {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--cso-ink-muted);
+}
+
+.cso-jr-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 820px) {
+  .cso-jr-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cso-jr-panel {
+  border: 1px solid var(--cso-border);
+  border-radius: 12px;
+  padding: 14px;
+  background: var(--cso-surface-alt, var(--cso-surface));
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.cso-jr-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cso-jr-h3 {
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-jr-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+}
+
+.cso-jr-badge.is-ready {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-jr-progress {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  accent-color: var(--cso-accent);
+}
+
+.cso-jr-list {
+  display: grid;
+  gap: 6px;
+}
+
+.cso-jr-check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--cso-ink);
+}
+
+.cso-jr-check-row.is-checked {
+  border-color: var(--cso-accent);
+}
+
+.cso-jr-checkbox {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--cso-accent);
+}
+
+.cso-jr-add-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-jr-input {
+  flex: 1 1 180px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.9rem;
+}
+
+.cso-jr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-jr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.cso-jr-btn:hover,
+.cso-jr-btn:focus-visible {
+  background: var(--cso-accent);
+  color: var(--cso-accent-ink);
+}
+
+.cso-jr-btn--muted {
+  border-color: var(--cso-border);
+  color: var(--cso-ink-muted);
+}
+
+.cso-jr-form {
+  display: grid;
+  gap: 10px;
+}
+
+.cso-jr-field {
+  display: grid;
+  gap: 4px;
+}
+
+.cso-jr-field[hidden] {
+  display: none;
+}
+
+.cso-jr-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cso-ink-muted);
+}
+
+.cso-jr-rem-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--cso-ink);
+  cursor: pointer;
+}
+
+.cso-jr-result {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  display: grid;
+  gap: 8px;
+}
+
+.cso-jr-age-readout {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-jr-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.cso-jr-pill--ok {
+  background: var(--cso-ok-bg);
+  color: var(--cso-ok-fg);
+}
+
+.cso-jr-pill--warn {
+  background: var(--cso-warn-bg);
+  color: var(--cso-warn-fg);
+}
+
+.cso-jr-pill--info {
+  background: var(--cso-info-bg);
+  color: var(--cso-info-fg);
+}
+
+.cso-jr-muted {
+  font-size: 0.8rem;
+  color: var(--cso-ink-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-jr-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-jr-root,
+  .cso-jr-card {
+    display: none !important;
+  }
+}
