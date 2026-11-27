@@ -29,13 +29,18 @@ import {
 import { upsertLatestUpdateMeta, unpublishLatestUpdateItem, normalizeScope } from '../../_lib/latest-updates.js';
 import { invalidateEdgePaths } from '../../_lib/edge-cache-invalidator.js';
 import { scheduleSemanticSync } from '../../_lib/semantic-search.js';
+import { validateAndNormalizeQuizJson } from '../../_lib/article-mini-quiz.js';
 import { recordAdminAuditLog } from './system-ops.js';
 
 function purgeGuideEdgePaths(request, ctx, slugs = []) {
-  const paths = ['/api/public/home-feed', '/api/public/jobs-hub', '/api/public/exams-hub', '/', '/index.html', '/api/public/guides', '/guides/', '/sitemap.xml'];
+  const paths = ['/api/public/home-feed', '/api/public/jobs-hub', '/api/public/exams-hub', '/api/public/article-quiz', '/', '/index.html', '/api/public/guides', '/guides/', '/sitemap.xml'];
   for (const s of slugs) {
     const clean = String(s || '').trim();
-    if (clean) paths.push(`/guides/${encodeURIComponent(clean)}`);
+    if (clean) {
+      paths.push(`/guides/${encodeURIComponent(clean)}`);
+      paths.push(`/api/public/article-quiz?type=guide&slug=${encodeURIComponent(clean)}`);
+      paths.push(`/api/public/article-quiz?type=guide&slug=${encodeURIComponent(clean)}&auto_only=1`);
+    }
   }
   const p = invalidateEdgePaths(request, paths).catch(() => {});
   if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(p);
@@ -158,13 +163,13 @@ export async function handleAdminGuidesApi(request, env, actor, id = '', sub = '
       INSERT INTO informative_guides (
         id, slug, category, title_en, title_or, summary_en, summary_or, takeaways_json,
         body_en, body_or, cover_image, cover_caption_en, cover_caption_or,
-        photos_json, pdfs_json, links_json, related_cta_json,
+        photos_json, pdfs_json, links_json, related_cta_json, quiz_json,
         read_minutes, tags, scope, is_pinned, is_exam, status, author_email, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 'draft', ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 'draft', ?, ?, ?)
     `).bind(
       newId, newSlug, orig.category, copyTitleEn, copyTitleOr, orig.summary_en, orig.summary_or,
       orig.takeaways_json, orig.body_en, orig.body_or, orig.cover_image, orig.cover_caption_en, orig.cover_caption_or,
-      orig.photos_json, orig.pdfs_json, orig.links_json, orig.related_cta_json,
+      orig.photos_json, orig.pdfs_json, orig.links_json, orig.related_cta_json, String(orig.quiz_json || ''),
       orig.read_minutes, orig.tags, orig.scope, orig.is_exam, actorEmail, now, now
     ).run();
 
@@ -247,6 +252,9 @@ export async function handleAdminGuidesApi(request, env, actor, id = '', sub = '
     const pdfs = normalizePdfs(body.pdfs !== undefined ? body.pdfs : body.pdfs_json);
     const links = normalizeLinks(body.links !== undefined ? body.links : body.links_json);
     const relatedCta = normalizeRelatedCta(body.related_cta !== undefined ? body.related_cta : body.related_cta_json);
+    const quizJson = body.quiz_json !== undefined
+      ? validateAndNormalizeQuizJson(body.quiz_json)
+      : (existing ? String(existing.quiz_json || '') : '');
     const readMinutes = estimateReadMinutes(bodyEn, body.read_minutes);
     const tags = Array.isArray(body.tags)
       ? body.tags.map((t) => String(t || '').trim()).filter(Boolean).join(', ').slice(0, 300)
@@ -266,7 +274,7 @@ export async function handleAdminGuidesApi(request, env, actor, id = '', sub = '
           slug = ?, category = ?, title_en = ?, title_or = ?, summary_en = ?, summary_or = ?,
           takeaways_json = ?, body_en = ?, body_or = ?,
           cover_image = ?, cover_caption_en = ?, cover_caption_or = ?,
-          photos_json = ?, pdfs_json = ?, links_json = ?, related_cta_json = ?,
+          photos_json = ?, pdfs_json = ?, links_json = ?, related_cta_json = ?, quiz_json = ?,
           read_minutes = ?, tags = ?, scope = ?, is_pinned = ?, is_exam = ?, status = ?,
           updated_at = ?
         WHERE id = ?
@@ -274,7 +282,7 @@ export async function handleAdminGuidesApi(request, env, actor, id = '', sub = '
         slug, category, titleEn, titleOr, summaryEn, summaryOr,
         JSON.stringify(takeaways), bodyEn, bodyOr,
         coverImage, coverCaptionEn, coverCaptionOr,
-        JSON.stringify(photos), JSON.stringify(pdfs), JSON.stringify(links), JSON.stringify(relatedCta),
+        JSON.stringify(photos), JSON.stringify(pdfs), JSON.stringify(links), JSON.stringify(relatedCta), quizJson,
         readMinutes, tags, scope, isPinned, isExam, status,
         now, guideId
       ).run();
@@ -283,13 +291,13 @@ export async function handleAdminGuidesApi(request, env, actor, id = '', sub = '
         INSERT INTO informative_guides (
           id, slug, category, title_en, title_or, summary_en, summary_or, takeaways_json,
           body_en, body_or, cover_image, cover_caption_en, cover_caption_or,
-          photos_json, pdfs_json, links_json, related_cta_json,
+          photos_json, pdfs_json, links_json, related_cta_json, quiz_json,
           read_minutes, tags, scope, is_pinned, is_exam, status, author_email, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         guideId, slug, category, titleEn, titleOr, summaryEn, summaryOr, JSON.stringify(takeaways),
         bodyEn, bodyOr, coverImage, coverCaptionEn, coverCaptionOr,
-        JSON.stringify(photos), JSON.stringify(pdfs), JSON.stringify(links), JSON.stringify(relatedCta),
+        JSON.stringify(photos), JSON.stringify(pdfs), JSON.stringify(links), JSON.stringify(relatedCta), quizJson,
         readMinutes, tags, scope, isPinned, isExam, status, actorEmail, now, now
       ).run();
     }

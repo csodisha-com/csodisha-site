@@ -1,17 +1,97 @@
 /**
- * Common Sense Odisha — Grounded Bilingual 25-MCQ Article Mini-Quiz Engine (v387)
+ * Common Sense Odisha — Grounded Bilingual 25-MCQ Article Mini-Quiz Engine (v388)
  * Zero Hallucinations:
- *  - Priority 1: Custom `quiz_json` / `mcqs` stored on the D1 record if present
+ *  - Priority 1: Custom `quiz_json` stored on the D1 record (`{ mode: "extend" | "override", questions: [...] }` or legacy `[...]`)
  *  - Priority 2: Deterministic fact-grounded MCQs extracted directly from the article's
  *    verified D1 columns & Markdown tables (authority, advt/notice no., vacancies, pass %,
  *    exam/walk-in/deadline dates, qualification, official portal URL) paired with
  *    verified subject/exam-pattern bilingual MCQs (Pedagogy/CDP for Teaching/CTET/OSSTET/ITEP;
  *    Teaching & Research Aptitude for UGC NET; Odisha GK & Polity for state notices) up to 25 MCQs.
  */
-import { json } from './http.js';
+import { json, validationError } from './http.js';
 
 export function serializeQuizJson(payload) {
   return JSON.stringify(payload).replace(/</g, '\\u003c');
+}
+
+function normalizeCustomQuestion(q, idx) {
+  if (!q || typeof q !== 'object' || Array.isArray(q)) {
+    throw validationError({ quiz_json: `Question #${idx + 1} must be a JSON object.` });
+  }
+  const questionEn = String(q.question_en || '').trim().slice(0, 600);
+  if (!questionEn) {
+    throw validationError({ quiz_json: `Question #${idx + 1} is missing required "question_en".` });
+  }
+  const questionOr = String(q.question_or || questionEn).trim().slice(0, 800);
+  if (!Array.isArray(q.options_en) || q.options_en.length !== 4) {
+    throw validationError({ quiz_json: `Question #${idx + 1} must include exactly 4 items in "options_en".` });
+  }
+  const optionsEn = q.options_en.map((o) => String(o || '').trim().slice(0, 300));
+  if (optionsEn.some((o) => !o)) {
+    throw validationError({ quiz_json: `Question #${idx + 1} has an empty option in "options_en".` });
+  }
+  const rawOr = Array.isArray(q.options_or) && q.options_or.length === 4 ? q.options_or : optionsEn;
+  const optionsOr = rawOr.map((o, i) => String(o || optionsEn[i]).trim().slice(0, 400) || optionsEn[i]);
+
+  const rawIdx = q.answer_index !== undefined ? q.answer_index : q.correct_index;
+  const answerIdx = Number(rawIdx);
+  if (!Number.isInteger(answerIdx) || answerIdx < 0 || answerIdx > 3) {
+    throw validationError({ quiz_json: `Question #${idx + 1} must specify "answer_index" between 0 and 3.` });
+  }
+  return {
+    id: String(q.id || `custom_q_${idx + 1}`).trim().slice(0, 64) || `custom_q_${idx + 1}`,
+    tag: String(q.tag || 'Custom MCQ').trim().slice(0, 64) || 'Custom MCQ',
+    question_en: questionEn,
+    question_or: questionOr,
+    options_en: optionsEn,
+    options_or: optionsOr,
+    answer_index: answerIdx,
+    correct_index: answerIdx,
+    explanation_en: String(q.explanation_en || '').trim().slice(0, 800),
+    explanation_or: String(q.explanation_or || q.explanation_en || '').trim().slice(0, 1000)
+  };
+}
+
+/**
+ * Validates and normalizes `quiz_json` for Admin Studio persistence (v388).
+ * Accepts empty string, legacy array `[...]`, or `{ mode: 'extend' | 'override', questions: [...] }`.
+ * Throws `validationError` (HTTP 400) on malformed JSON or invalid MCQ structure.
+ */
+export function validateAndNormalizeQuizJson(raw) {
+  if (raw === null || raw === undefined) return '';
+  if (typeof raw === 'string' && !raw.trim()) return '';
+  let parsed = raw;
+  if (typeof raw === 'string') {
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      throw validationError({ quiz_json: 'Malformed JSON in quiz_json. Please fix syntax errors before saving.' });
+    }
+  }
+  let mode = 'extend';
+  let list = null;
+  if (Array.isArray(parsed)) {
+    list = parsed;
+  } else if (parsed && typeof parsed === 'object') {
+    const rawMode = String(parsed.mode || 'extend').trim().toLowerCase();
+    if (rawMode !== 'extend' && rawMode !== 'override') {
+      throw validationError({ quiz_json: 'quiz_json "mode" must be either "extend" or "override".' });
+    }
+    mode = rawMode;
+    if (!Array.isArray(parsed.questions)) {
+      throw validationError({ quiz_json: 'quiz_json must contain a "questions" array.' });
+    }
+    list = parsed.questions;
+  } else {
+    throw validationError({ quiz_json: 'quiz_json must be a JSON object { mode, questions } or an array of questions.' });
+  }
+
+  if (list.length === 0) return '';
+  if (list.length > 25) {
+    throw validationError({ quiz_json: 'quiz_json supports at most 25 custom MCQs per post.' });
+  }
+  const normalized = list.map((q, idx) => normalizeCustomQuestion(q, idx));
+  return JSON.stringify({ mode, questions: normalized });
 }
 
 function cleanText(raw, max = 220) {
@@ -569,6 +649,8 @@ export function buildArticleMiniQuizPayload(record, kind = 'job', dbExtraMcqs = 
     const key = String(q.question_en).trim().toLowerCase().slice(0, 90);
     if (seenPrompts.has(key)) return;
     seenPrompts.add(key);
+    const rawIdx = q.answer_index !== undefined ? q.answer_index : q.correct_index;
+    const safeIdx = Number.isInteger(Number(rawIdx)) && Number(rawIdx) >= 0 && Number(rawIdx) < q.options_en.length ? Number(rawIdx) : 0;
     out.push({
       id: String(q.id || `q_${out.length + 1}`),
       tag: String(q.tag || 'Practice'),
@@ -576,41 +658,62 @@ export function buildArticleMiniQuizPayload(record, kind = 'job', dbExtraMcqs = 
       question_or: String(q.question_or || q.question_en),
       options_en: q.options_en.map(String),
       options_or: Array.isArray(q.options_or) && q.options_or.length === q.options_en.length ? q.options_or.map(String) : q.options_en.map(String),
-      correct_index: Number.isFinite(Number(q.correct_index)) ? Number(q.correct_index) : 0,
+      answer_index: safeIdx,
+      correct_index: safeIdx,
       explanation_en: String(q.explanation_en || ''),
       explanation_or: String(q.explanation_or || q.explanation_en || '')
     });
   }
 
-  // Priority 1: Custom quiz_json on the record
+  // Priority 1: Custom quiz_json on the record ({ mode: "extend" | "override", questions: [...] } or legacy [...])
+  let customMode = 'extend';
+  let customCount = 0;
   if (record && record.quiz_json) {
     try {
       const parsed = typeof record.quiz_json === 'string' ? JSON.parse(record.quiz_json) : record.quiz_json;
-      if (Array.isArray(parsed)) parsed.forEach(pushUnique);
+      let customList = [];
+      if (Array.isArray(parsed)) {
+        customList = parsed;
+      } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.questions)) {
+        customMode = String(parsed.mode || 'extend').trim().toLowerCase() === 'override' ? 'override' : 'extend';
+        customList = parsed.questions;
+      }
+      const before = out.length;
+      for (const cq of customList) {
+        if (out.length >= 25) break;
+        pushUnique(cq);
+      }
+      customCount = out.length - before;
     } catch {}
   }
 
-  // Priority 2a: Article-specific verified fact MCQs
-  extractFactMcqs(record || {}, kind).forEach(pushUnique);
+  const shouldFillAuto = !(customMode === 'override' && customCount > 0);
+  if (shouldFillAuto) {
+    // Priority 2a: Article-specific verified fact MCQs
+    extractFactMcqs(record || {}, kind).forEach(pushUnique);
 
-  // Priority 2b: Optional D1 question bank rows
-  if (Array.isArray(dbExtraMcqs)) dbExtraMcqs.forEach(pushUnique);
+    // Priority 2b: Optional D1 question bank rows
+    if (Array.isArray(dbExtraMcqs)) dbExtraMcqs.forEach(pushUnique);
 
-  // Priority 2c: Matched verified bilingual subject banks up to 25 MCQs
-  for (const bq of selectSubjectBanks(record || {})) {
-    if (out.length >= 25) break;
-    pushUnique(bq);
+    // Priority 2c: Matched verified bilingual subject banks up to 25 MCQs
+    for (const bq of selectSubjectBanks(record || {})) {
+      if (out.length >= 25) break;
+      pushUnique(bq);
+    }
   }
 
+  const finalQuestions = out.slice(0, 25);
   return {
     ok: true,
-    version: 'v387',
+    version: 'v388',
     type: kind,
     slug: String((record && record.slug) || ''),
     title_en: cleanText(record && record.title_en, 160),
     title_or: cleanText(record && record.title_or, 180),
-    total: out.length,
-    questions: out.slice(0, 25)
+    quiz_mode: customCount > 0 ? customMode : 'auto',
+    custom_count: customCount,
+    total: finalQuestions.length,
+    questions: finalQuestions
   };
 }
 
@@ -618,6 +721,7 @@ export async function handlePublicArticleQuizApi(request, env) {
   const url = new URL(request.url);
   const type = String(url.searchParams.get('type') || 'job').trim().toLowerCase() === 'guide' ? 'guide' : 'job';
   const slug = String(url.searchParams.get('slug') || '').trim();
+  const autoOnly = url.searchParams.get('auto_only') === '1';
   if (!slug) return json({ ok: false, error: 'Missing slug parameter' }, 400);
   if (!env || !env.DB) return json({ ok: false, error: 'Database unavailable' }, 503);
 
@@ -629,6 +733,7 @@ export async function handlePublicArticleQuizApi(request, env) {
   }
   if (!row) return json({ ok: false, error: 'Article not found' }, 404);
 
-  const payload = buildArticleMiniQuizPayload(row, type);
+  const sourceRow = autoOnly ? { ...row, quiz_json: '' } : row;
+  const payload = buildArticleMiniQuizPayload(sourceRow, type);
   return json(payload, 200, { 'Cache-Control': 'public, max-age=120, s-maxage=600, stale-while-revalidate=120' });
 }

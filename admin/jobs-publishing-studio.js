@@ -162,6 +162,7 @@
       syllabus_pdf_url: '',
       pdf_index_bookmarks: [],
       extra_attachments: [],
+      quiz_json: '',
       lifecycle_stage: 'notification',
       corrigendum_note_en: '',
       corrigendum_note_or: '',
@@ -928,6 +929,13 @@
     if (!d.title_en || !d.title_en.trim()) {
       toast('Please enter the English Job Title before saving.', 'crimson');
       return Promise.reject(new Error('Title required'));
+    }
+    if (d.quiz_json && window.CSOQuizBuilder && typeof window.CSOQuizBuilder.validateQuizJsonString === 'function') {
+      var qCheck = window.CSOQuizBuilder.validateQuizJsonString(d.quiz_json);
+      if (!qCheck.ok) {
+        toast('Practice Quiz JSON error: ' + qCheck.error, 'crimson');
+        return Promise.reject(new Error(qCheck.error));
+      }
     }
     if (!d.slug) d.slug = slugify(d.title_en);
     var payload = Object.assign({}, d, {
@@ -1732,6 +1740,16 @@
     studyCard.appendChild(chipBox);
     container.appendChild(studyCard);
 
+    // SECTION 6D: Practice Quiz Editor (quiz_json Builder — v388)
+    if (window.CSOQuizBuilder && typeof window.CSOQuizBuilder.buildQuizEditorAccordion === 'function') {
+      container.appendChild(window.CSOQuizBuilder.buildQuizEditorAccordion({
+        type: 'job',
+        getSlug: function () { return d.slug || slugify(d.title_en); },
+        getQuizJson: function () { return d.quiz_json || ''; },
+        setQuizJson: function (val) { d.quiz_json = val; }
+      }));
+    }
+
     // SECTION 7: Scheduled Publishing, Corrigendum Alert & Revision History
     var pubCard = el('section', 'jph-card');
     pubCard.appendChild(el('h3', 'jph-card-title', '7. Corrigendum Alert, Scheduled Publish & Revision History'));
@@ -2118,4 +2136,569 @@
     },
     buildBroadcastText: buildBroadcastText
   };
+
+  // =========================================================================
+  // v388: Reusable Admin Studio Custom Quiz Editor (quiz_json Builder)
+  // Strict CSP-safe (zero DOM markup injection, zero inline styles, 4-theme tokens)
+  // =========================================================================
+  (function initCSOQuizBuilder() {
+    var OPTION_LETTERS = ['A', 'B', 'C', 'D'];
+    var uidCounter = 1;
+
+    function parseQuizState(raw) {
+      var fallback = { mode: 'extend', questions: [] };
+      if (!raw || !String(raw).trim()) return fallback;
+      try {
+        var parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        var mode = 'extend';
+        var list = [];
+        if (Array.isArray(parsed)) {
+          list = parsed;
+        } else if (parsed && typeof parsed === 'object') {
+          mode = String(parsed.mode || 'extend').toLowerCase() === 'override' ? 'override' : 'extend';
+          list = Array.isArray(parsed.questions) ? parsed.questions : [];
+        }
+        var clean = list.slice(0, 25).map(function (q, idx) {
+          var optsEn = Array.isArray(q && q.options_en) ? q.options_en.slice(0, 4).map(String) : [];
+          while (optsEn.length < 4) optsEn.push('');
+          var optsOr = Array.isArray(q && q.options_or) ? q.options_or.slice(0, 4).map(String) : [];
+          while (optsOr.length < 4) optsOr.push('');
+          var rawIdx = q && q.answer_index !== undefined ? q.answer_index : (q && q.correct_index !== undefined ? q.correct_index : 0);
+          var ansIdx = Number.isInteger(Number(rawIdx)) && Number(rawIdx) >= 0 && Number(rawIdx) <= 3 ? Number(rawIdx) : 0;
+          return {
+            id: String((q && q.id) || ('custom_q_' + (idx + 1))),
+            tag: String((q && q.tag) || 'Custom MCQ'),
+            question_en: String((q && q.question_en) || ''),
+            question_or: String((q && q.question_or) || ''),
+            options_en: optsEn,
+            options_or: optsOr,
+            answer_index: ansIdx,
+            explanation_en: String((q && q.explanation_en) || ''),
+            explanation_or: String((q && q.explanation_or) || '')
+          };
+        });
+        return { mode: mode, questions: clean };
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    function validateQuizJsonString(raw) {
+      if (!raw || !String(raw).trim()) return { ok: true, normalized: '' };
+      var parsed;
+      try {
+        parsed = JSON.parse(String(raw));
+      } catch (err) {
+        return { ok: false, error: 'Invalid JSON syntax: ' + (err && err.message ? err.message : 'parse error') };
+      }
+      var mode = 'extend';
+      var list = null;
+      if (Array.isArray(parsed)) {
+        list = parsed;
+      } else if (parsed && typeof parsed === 'object') {
+        mode = String(parsed.mode || 'extend').toLowerCase();
+        if (mode !== 'extend' && mode !== 'override') {
+          return { ok: false, error: '"mode" must be "extend" or "override".' };
+        }
+        if (!Array.isArray(parsed.questions)) {
+          return { ok: false, error: 'Missing "questions" array.' };
+        }
+        list = parsed.questions;
+      } else {
+        return { ok: false, error: 'Must be an object { mode, questions } or an array.' };
+      }
+      if (list.length > 25) return { ok: false, error: 'Maximum 25 custom MCQs allowed.' };
+      for (var i = 0; i < list.length; i += 1) {
+        var q = list[i];
+        if (!q || typeof q !== 'object') return { ok: false, error: 'Question #' + (i + 1) + ' must be an object.' };
+        if (!String(q.question_en || '').trim()) return { ok: false, error: 'Question #' + (i + 1) + ' requires question_en.' };
+        if (!Array.isArray(q.options_en) || q.options_en.length !== 4 || q.options_en.some(function (o) { return !String(o || '').trim(); })) {
+          return { ok: false, error: 'Question #' + (i + 1) + ' requires 4 non-empty options_en.' };
+        }
+        var ai = q.answer_index !== undefined ? Number(q.answer_index) : Number(q.correct_index);
+        if (!Number.isInteger(ai) || ai < 0 || ai > 3) {
+          return { ok: false, error: 'Question #' + (i + 1) + ' requires answer_index 0..3.' };
+        }
+      }
+      return { ok: true, normalized: list.length ? JSON.stringify({ mode: mode, questions: list }) : '' };
+    }
+
+    function blankMcq(idx) {
+      return {
+        id: 'custom_q_' + Date.now().toString(36) + '_' + idx,
+        tag: 'Custom MCQ',
+        question_en: '',
+        question_or: '',
+        options_en: ['', '', '', ''],
+        options_or: ['', '', '', ''],
+        answer_index: 0,
+        explanation_en: '',
+        explanation_or: ''
+      };
+    }
+
+    function buildQuizEditorAccordion(opts) {
+      var type = (opts && opts.type === 'guide') ? 'guide' : 'job';
+      var getSlug = (opts && typeof opts.getSlug === 'function') ? opts.getSlug : function () { return ''; };
+      var getQuizJson = (opts && typeof opts.getQuizJson === 'function') ? opts.getQuizJson : function () { return ''; };
+      var setQuizJson = (opts && typeof opts.setQuizJson === 'function') ? opts.setQuizJson : function () {};
+
+      var qState = parseQuizState(getQuizJson());
+      var rawOpen = false;
+      var previewOpen = false;
+      var autoQuestions = null;
+      var autoLoading = false;
+      var autoError = '';
+
+      var details = el('details', 'jph-card jph-quiz-details');
+      details.setAttribute('data-cso-quiz-builder', type);
+      if (qState.questions.length > 0) details.open = true;
+
+      var summary = el('summary', 'jph-quiz-summary');
+      var sumLeft = el('span', 'jph-quiz-summary-title', '🧠 Practice Quiz Editor (quiz_json Builder) | ଅଭ୍ୟାସ ପ୍ରଶ୍ନ ସମ୍ପାଦକ');
+      var sumBadge = el('span', 'jph-quiz-badge');
+      summary.appendChild(sumLeft);
+      summary.appendChild(sumBadge);
+      details.appendChild(summary);
+
+      var body = el('div', 'jph-quiz-body');
+      details.appendChild(body);
+
+      var rawArea = el('textarea', 'jph-textarea jph-quiz-raw');
+      rawArea.rows = 10;
+      rawArea.setAttribute('aria-label', 'Raw quiz_json editor');
+      var rawStatus = el('div', 'jph-quiz-raw-status');
+      rawStatus.setAttribute('role', 'status');
+      rawStatus.setAttribute('aria-live', 'polite');
+
+      function updateBadge() {
+        var n = qState.questions.length;
+        if (!n) {
+          sumBadge.textContent = 'Auto-Extracted (Default)';
+          sumBadge.className = 'jph-quiz-badge';
+        } else if (qState.mode === 'override') {
+          sumBadge.textContent = 'Override · ' + n + ' Custom MCQ' + (n === 1 ? '' : 's');
+          sumBadge.className = 'jph-quiz-badge is-override';
+        } else {
+          sumBadge.textContent = 'Extend · ' + n + ' Custom MCQ' + (n === 1 ? '' : 's');
+          sumBadge.className = 'jph-quiz-badge is-extend';
+        }
+      }
+
+      function serializeStateToParent(syncRaw) {
+        var strVal = qState.questions.length
+          ? JSON.stringify({ mode: qState.mode, questions: qState.questions })
+          : '';
+        setQuizJson(strVal);
+        updateBadge();
+        if (syncRaw !== false) {
+          rawArea.value = qState.questions.length
+            ? JSON.stringify({ mode: qState.mode, questions: qState.questions }, null, 2)
+            : '';
+          rawStatus.textContent = qState.questions.length
+            ? ('Valid JSON · ' + qState.questions.length + ' custom MCQ' + (qState.questions.length === 1 ? '' : 's') + ' (' + qState.mode + ')')
+            : 'Empty (uses auto-extracted 25-MCQ drill)';
+          rawStatus.className = 'jph-quiz-raw-status is-ok';
+        }
+      }
+
+      // 1. Mode Switcher
+      var modeBar = el('div', 'jph-quiz-mode-bar');
+      modeBar.setAttribute('role', 'radiogroup');
+      modeBar.setAttribute('aria-label', 'Quiz Merge Mode');
+      var modeLabel = el('span', 'jph-label', 'Delivery Mode:');
+      modeBar.appendChild(modeLabel);
+
+      var modePills = el('div', 'jph-quiz-mode-pills');
+      var modes = [
+        { key: 'extend', label: '➕ Extend Auto-Extracted Drill', hint: 'Custom MCQs first, then auto-extracted facts & subject MCQs up to 25' },
+        { key: 'override', label: '🔄 Override Auto-Extracted Drill', hint: 'Serve ONLY your custom MCQs on this page' }
+      ];
+      var modeBtns = {};
+      modes.forEach(function (m) {
+        var b = el('button', 'jph-quiz-mode-pill' + (qState.mode === m.key ? ' is-active' : ''), m.label);
+        b.type = 'button';
+        b.title = m.hint;
+        b.setAttribute('role', 'radio');
+        b.setAttribute('aria-checked', qState.mode === m.key ? 'true' : 'false');
+        b.addEventListener('click', function () {
+          qState.mode = m.key;
+          Object.keys(modeBtns).forEach(function (k) {
+            var active = k === qState.mode;
+            modeBtns[k].className = 'jph-quiz-mode-pill' + (active ? ' is-active' : '');
+            modeBtns[k].setAttribute('aria-checked', active ? 'true' : 'false');
+          });
+          serializeStateToParent(true);
+        });
+        modeBtns[m.key] = b;
+        modePills.appendChild(b);
+      });
+      modeBar.appendChild(modePills);
+      body.appendChild(modeBar);
+
+      // 2. Action Toolbar
+      var toolbar = el('div', 'jph-quiz-toolbar');
+      var previewHost = el('div', 'jph-quiz-preview-drawer');
+      previewHost.hidden = true;
+      var rawWrap = el('div', 'jph-quiz-raw-wrap');
+      rawWrap.hidden = true;
+      var listHost = el('div', 'jph-quiz-list');
+
+      var btnPreviewAuto = btn('👁 Preview Auto-Extracted Questions', 'jph-btn jph-btn--sm', function () {
+        previewOpen = !previewOpen;
+        previewHost.hidden = !previewOpen;
+        if (previewOpen && autoQuestions === null && !autoLoading) {
+          fetchAutoPreview();
+        } else {
+          renderPreviewDrawer();
+        }
+      });
+
+      var btnAddMcq = btn('+ Add Custom MCQ', 'jph-btn jph-btn--sm jph-btn--primary', function () {
+        if (qState.questions.length >= 25) {
+          toast('Maximum 25 custom MCQs per article reached.', 'amber');
+          return;
+        }
+        qState.questions.push(blankMcq(qState.questions.length + 1));
+        serializeStateToParent(true);
+        renderCards();
+      });
+
+      var btnRawToggle = btn('{ } View / Edit Raw quiz_json', 'jph-btn jph-btn--sm', function () {
+        rawOpen = !rawOpen;
+        rawWrap.hidden = !rawOpen;
+        btnRawToggle.className = 'jph-btn jph-btn--sm' + (rawOpen ? ' is-active' : '');
+      });
+
+      var btnClearAll = btn('🧹 Clear Custom MCQs (Revert to Auto)', 'jph-btn jph-btn--sm jph-btn--danger', function () {
+        if (qState.questions.length && !window.confirm('Clear all custom MCQs and revert this post to the auto-extracted drill?')) return;
+        qState.questions = [];
+        qState.mode = 'extend';
+        Object.keys(modeBtns).forEach(function (k) {
+          var active = k === 'extend';
+          modeBtns[k].className = 'jph-quiz-mode-pill' + (active ? ' is-active' : '');
+          modeBtns[k].setAttribute('aria-checked', active ? 'true' : 'false');
+        });
+        serializeStateToParent(true);
+        renderCards();
+        toast('Cleared custom MCQs — post will use auto-extracted drill on save.', 'ok');
+      });
+
+      toolbar.append(btnPreviewAuto, btnAddMcq, btnRawToggle, btnClearAll);
+      body.appendChild(toolbar);
+
+      // 3. Auto-Preview Drawer
+      function fetchAutoPreview() {
+        var slug = String(getSlug() || '').trim();
+        if (!slug) {
+          autoError = 'Enter a title / slug and save & publish this post first to preview live auto-extracted questions.';
+          renderPreviewDrawer();
+          return;
+        }
+        autoLoading = true;
+        autoError = '';
+        renderPreviewDrawer();
+        fetch('/api/public/article-quiz?type=' + encodeURIComponent(type) + '&slug=' + encodeURIComponent(slug) + '&auto_only=1', { credentials: 'same-origin' })
+          .then(function (r) {
+            return r.json().catch(function () { return {}; }).then(function (d) {
+              if (!r.ok) throw new Error((d && d.error) || ('HTTP ' + r.status));
+              return d;
+            });
+          })
+          .then(function (data) {
+            autoQuestions = Array.isArray(data && data.questions) ? data.questions : [];
+            autoLoading = false;
+            renderPreviewDrawer();
+          })
+          .catch(function (err) {
+            autoLoading = false;
+            autoQuestions = [];
+            autoError = 'Could not load live auto-extracted drill (' + err.message + '). Publish the post first to inspect its live auto-extracted MCQs.';
+            renderPreviewDrawer();
+          });
+      }
+
+      function renderPreviewDrawer() {
+        clear(previewHost);
+        var pHead = el('div', 'jph-quiz-preview-head');
+        pHead.appendChild(el('strong', '', 'Auto-Extracted Bilingual Drill Preview (' + (autoQuestions ? autoQuestions.length : 0) + ' MCQs)'));
+        var pBtns = el('div', 'jph-actions-row');
+        pBtns.appendChild(btn('↻ Refresh', 'jph-btn jph-btn--xs', function () {
+          autoQuestions = null;
+          fetchAutoPreview();
+        }));
+        pBtns.appendChild(btn('Close ✕', 'jph-btn jph-btn--xs', function () {
+          previewOpen = false;
+          previewHost.hidden = true;
+        }));
+        pHead.appendChild(pBtns);
+        previewHost.appendChild(pHead);
+
+        if (autoLoading) {
+          previewHost.appendChild(el('div', 'jph-muted', 'Fetching auto-extracted MCQs from /api/public/article-quiz…'));
+          return;
+        }
+        if (autoError) {
+          previewHost.appendChild(el('div', 'jph-muted', autoError));
+          return;
+        }
+        if (!autoQuestions || !autoQuestions.length) {
+          previewHost.appendChild(el('div', 'jph-muted', 'No auto-extracted questions returned yet.'));
+          return;
+        }
+        var pList = el('div', 'jph-quiz-preview-list');
+        autoQuestions.forEach(function (aq, idx) {
+          var row = el('div', 'jph-quiz-preview-item');
+          var txt = el('div', 'jph-quiz-preview-copy');
+          txt.appendChild(el('div', 'jph-quiz-preview-q', 'Q' + (idx + 1) + ' [' + (aq.tag || 'Auto') + ']: ' + (aq.question_en || '')));
+          var ansIdx = aq.answer_index !== undefined ? aq.answer_index : (aq.correct_index || 0);
+          var ansText = Array.isArray(aq.options_en) && aq.options_en[ansIdx] ? aq.options_en[ansIdx] : '';
+          txt.appendChild(el('div', 'jph-muted', 'Ans (' + (OPTION_LETTERS[ansIdx] || 'A') + '): ' + ansText));
+          row.appendChild(txt);
+          row.appendChild(btn('📥 Clone into Custom Editor', 'jph-btn jph-btn--xs', function () {
+            if (qState.questions.length >= 25) {
+              toast('Maximum 25 custom MCQs reached.', 'amber');
+              return;
+            }
+            var cloned = {
+              id: 'cloned_' + Date.now().toString(36) + '_' + (qState.questions.length + 1),
+              tag: String(aq.tag || 'Custom MCQ'),
+              question_en: String(aq.question_en || ''),
+              question_or: String(aq.question_or || aq.question_en || ''),
+              options_en: (Array.isArray(aq.options_en) ? aq.options_en.slice(0, 4) : ['', '', '', '']),
+              options_or: (Array.isArray(aq.options_or) ? aq.options_or.slice(0, 4) : ['', '', '', '']),
+              answer_index: Number.isInteger(Number(ansIdx)) ? Number(ansIdx) : 0,
+              explanation_en: String(aq.explanation_en || ''),
+              explanation_or: String(aq.explanation_or || aq.explanation_en || '')
+            };
+            while (cloned.options_en.length < 4) cloned.options_en.push('');
+            while (cloned.options_or.length < 4) cloned.options_or.push('');
+            qState.questions.push(cloned);
+            serializeStateToParent(true);
+            renderCards();
+            toast('Cloned Q' + (idx + 1) + ' into Custom Quiz Editor!', 'ok');
+          }));
+          pList.appendChild(row);
+        });
+        previewHost.appendChild(pList);
+      }
+      body.appendChild(previewHost);
+
+      // 4. Raw JSON Inspector
+      rawWrap.appendChild(el('label', 'jph-label', 'Raw quiz_json Payload ({ "mode": "extend" | "override", "questions": [...] })'));
+      rawArea.addEventListener('input', function () {
+        var val = rawArea.value.trim();
+        if (!val) {
+          qState.questions = [];
+          qState.mode = 'extend';
+          setQuizJson('');
+          updateBadge();
+          renderCards();
+          rawStatus.textContent = 'Empty (uses auto-extracted 25-MCQ drill)';
+          rawStatus.className = 'jph-quiz-raw-status is-ok';
+          return;
+        }
+        var chk = validateQuizJsonString(val);
+        if (!chk.ok) {
+          setQuizJson(val);
+          rawStatus.textContent = '⚠ ' + chk.error;
+          rawStatus.className = 'jph-quiz-raw-status is-err';
+          return;
+        }
+        qState = parseQuizState(val);
+        Object.keys(modeBtns).forEach(function (k) {
+          var active = k === qState.mode;
+          modeBtns[k].className = 'jph-quiz-mode-pill' + (active ? ' is-active' : '');
+          modeBtns[k].setAttribute('aria-checked', active ? 'true' : 'false');
+        });
+        setQuizJson(chk.normalized);
+        updateBadge();
+        renderCards();
+        rawStatus.textContent = '✓ Valid JSON synced with builder (' + qState.questions.length + ' MCQs, mode: ' + qState.mode + ')';
+        rawStatus.className = 'jph-quiz-raw-status is-ok';
+      });
+      rawWrap.appendChild(rawArea);
+      rawWrap.appendChild(rawStatus);
+      body.appendChild(rawWrap);
+
+      // 5. Repeatable Bilingual MCQ Cards
+      function renderCards() {
+        clear(listHost);
+        if (!qState.questions.length) {
+          listHost.appendChild(el('div', 'jph-quiz-empty', 'No custom MCQs added yet. This post currently serves the auto-extracted 25-MCQ bilingual drill. Click "+ Add Custom MCQ" or "👁 Preview Auto-Extracted Questions" to customize.'));
+          return;
+        }
+        qState.questions.forEach(function (q, idx) {
+          var card = el('div', 'jph-quiz-card');
+          var radioGroupName = 'cso_quiz_ans_' + (uidCounter++);
+
+          var head = el('div', 'jph-quiz-card-head');
+          var headLeft = el('div', 'jph-quiz-card-head-left');
+          headLeft.appendChild(el('span', 'jph-quiz-num', 'Q' + (idx + 1)));
+          var tagInp = el('input', 'jph-input jph-quiz-tag-input');
+          tagInp.placeholder = 'Tag (e.g., Official Fact, Odisha GK)';
+          tagInp.value = q.tag || '';
+          tagInp.setAttribute('aria-label', 'Question ' + (idx + 1) + ' tag');
+          tagInp.addEventListener('input', function () {
+            q.tag = tagInp.value;
+            serializeStateToParent(true);
+          });
+          headLeft.appendChild(tagInp);
+
+          var headBtns = el('div', 'jph-actions-row');
+          var bUp = btn('↑', 'jph-btn jph-btn--xs', function () {
+            if (idx === 0) return;
+            var tmp = qState.questions[idx - 1];
+            qState.questions[idx - 1] = qState.questions[idx];
+            qState.questions[idx] = tmp;
+            serializeStateToParent(true);
+            renderCards();
+          });
+          bUp.title = 'Move Up';
+          bUp.disabled = idx === 0;
+
+          var bDown = btn('↓', 'jph-btn jph-btn--xs', function () {
+            if (idx >= qState.questions.length - 1) return;
+            var tmp = qState.questions[idx + 1];
+            qState.questions[idx + 1] = qState.questions[idx];
+            qState.questions[idx] = tmp;
+            serializeStateToParent(true);
+            renderCards();
+          });
+          bDown.title = 'Move Down';
+          bDown.disabled = idx >= qState.questions.length - 1;
+
+          var bDup = btn('⧉', 'jph-btn jph-btn--xs', function () {
+            if (qState.questions.length >= 25) {
+              toast('Maximum 25 custom MCQs reached.', 'amber');
+              return;
+            }
+            var copy = JSON.parse(JSON.stringify(q));
+            copy.id = 'custom_q_' + Date.now().toString(36) + '_' + (qState.questions.length + 1);
+            qState.questions.splice(idx + 1, 0, copy);
+            serializeStateToParent(true);
+            renderCards();
+          });
+          bDup.title = 'Duplicate Question';
+
+          var bDel = btn('✕', 'jph-btn jph-btn--xs jph-btn--danger', function () {
+            qState.questions.splice(idx, 1);
+            serializeStateToParent(true);
+            renderCards();
+          });
+          bDel.title = 'Delete Question';
+
+          headBtns.append(bUp, bDown, bDup, bDel);
+          head.append(headLeft, headBtns);
+          card.appendChild(head);
+
+          // Question EN & OR
+          var qGrid = el('div', 'jph-form-grid jph-form-grid--2');
+          var qEnWrap = el('div', 'jph-field');
+          qEnWrap.appendChild(el('label', 'jph-label', 'Question (English) *'));
+          var qEn = el('textarea', 'jph-textarea jph-quiz-q-input');
+          qEn.rows = 2;
+          qEn.placeholder = 'Enter question in English…';
+          qEn.value = q.question_en || '';
+          qEn.addEventListener('input', function () {
+            q.question_en = qEn.value;
+            serializeStateToParent(true);
+          });
+          qEnWrap.appendChild(qEn);
+
+          var qOrWrap = el('div', 'jph-field');
+          qOrWrap.appendChild(el('label', 'jph-label', 'Question (ଓଡ଼ିଆ)'));
+          var qOr = el('textarea', 'jph-textarea jph-quiz-q-input');
+          qOr.rows = 2;
+          qOr.placeholder = 'ଓଡ଼ିଆରେ ପ୍ରଶ୍ନ ଲେଖନ୍ତୁ…';
+          qOr.value = q.question_or || '';
+          qOr.addEventListener('input', function () {
+            q.question_or = qOr.value;
+            serializeStateToParent(true);
+          });
+          qOrWrap.appendChild(qOr);
+          qGrid.append(qEnWrap, qOrWrap);
+          card.appendChild(qGrid);
+
+          // 4 Option rows (A, B, C, D) with answer_index radio
+          var optsBox = el('div', 'jph-quiz-opts');
+          optsBox.appendChild(el('div', 'jph-label', 'Options (Select the radio button for the correct answer A–D)'));
+          OPTION_LETTERS.forEach(function (letter, optIdx) {
+            var optRow = el('div', 'jph-quiz-opt-row' + (q.answer_index === optIdx ? ' is-correct' : ''));
+            var radLabel = el('label', 'jph-quiz-radio-lbl');
+            var rad = el('input');
+            rad.type = 'radio';
+            rad.name = radioGroupName;
+            rad.checked = q.answer_index === optIdx;
+            rad.setAttribute('aria-label', 'Mark Option ' + letter + ' as correct');
+            rad.addEventListener('change', function () {
+              if (!rad.checked) return;
+              q.answer_index = optIdx;
+              serializeStateToParent(true);
+              renderCards();
+            });
+            radLabel.append(rad, el('span', 'jph-quiz-opt-letter', letter));
+
+            var oEn = el('input', 'jph-input');
+            oEn.placeholder = 'Option ' + letter + ' (English) *';
+            oEn.value = (q.options_en && q.options_en[optIdx]) || '';
+            oEn.addEventListener('input', function () {
+              q.options_en[optIdx] = oEn.value;
+              serializeStateToParent(true);
+            });
+
+            var oOr = el('input', 'jph-input');
+            oOr.placeholder = 'ବିକଳ୍ପ ' + letter + ' (ଓଡ଼ିଆ)';
+            oOr.value = (q.options_or && q.options_or[optIdx]) || '';
+            oOr.addEventListener('input', function () {
+              q.options_or[optIdx] = oOr.value;
+              serializeStateToParent(true);
+            });
+
+            optRow.append(radLabel, oEn, oOr);
+            optsBox.appendChild(optRow);
+          });
+          card.appendChild(optsBox);
+
+          // Explanation EN & OR
+          var expGrid = el('div', 'jph-form-grid jph-form-grid--2');
+          var eEnWrap = el('div', 'jph-field');
+          eEnWrap.appendChild(el('label', 'jph-label', 'Explanation (English)'));
+          var eEn = el('input', 'jph-input');
+          eEn.placeholder = 'Why this option is correct (English)…';
+          eEn.value = q.explanation_en || '';
+          eEn.addEventListener('input', function () {
+            q.explanation_en = eEn.value;
+            serializeStateToParent(true);
+          });
+          eEnWrap.appendChild(eEn);
+
+          var eOrWrap = el('div', 'jph-field');
+          eOrWrap.appendChild(el('label', 'jph-label', 'Explanation (ଓଡ଼ିଆ)'));
+          var eOr = el('input', 'jph-input');
+          eOr.placeholder = 'ସଠିକ୍ ଉତ୍ତରର ବ୍ୟାଖ୍ୟା (ଓଡ଼ିଆ)…';
+          eOr.value = q.explanation_or || '';
+          eOr.addEventListener('input', function () {
+            q.explanation_or = eOr.value;
+            serializeStateToParent(true);
+          });
+          eOrWrap.appendChild(eOr);
+          expGrid.append(eEnWrap, eOrWrap);
+          card.appendChild(expGrid);
+
+          listHost.appendChild(card);
+        });
+      }
+
+      body.appendChild(listHost);
+      serializeStateToParent(true);
+      renderCards();
+      return details;
+    }
+
+    window.CSOQuizBuilder = {
+      buildQuizEditorAccordion: buildQuizEditorAccordion,
+      validateQuizJsonString: validateQuizJsonString
+    };
+  })();
 })(window, document);

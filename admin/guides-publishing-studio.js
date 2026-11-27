@@ -2258,6 +2258,8 @@
       });
     }
 
+    var guideQuizJson = (editing && editing.quiz_json) ? String(editing.quiz_json) : '';
+
     function collectDraftPayload(overrideStatus) {
       var relSlug = inRelSlug.value.trim();
       var relType = selRelType.value;
@@ -2301,6 +2303,7 @@
         pdfs: pdfsList.filter(function (d) { return (d.url || '').trim() && (d.title_en || '').trim(); }),
         links: linksList.filter(function (l) { return (l.url || '').trim() && (l.label_en || '').trim(); }),
         related_cta: relatedCta,
+        quiz_json: guideQuizJson,
         status: overrideStatus || (editing && editing.status) || 'draft'
       };
     }
@@ -2312,6 +2315,14 @@
         toast('Please enter a Guide Title (English).', 'amber');
         inTitleEn.focus();
         return;
+      }
+      if (payload.quiz_json && window.CSOQuizBuilder && typeof window.CSOQuizBuilder.validateQuizJsonString === 'function') {
+        var qCheck = window.CSOQuizBuilder.validateQuizJsonString(payload.quiz_json);
+        if (!qCheck.ok) {
+          statusMsg.textContent = 'Practice Quiz JSON error: ' + qCheck.error;
+          toast('Practice Quiz JSON error: ' + qCheck.error, 'amber');
+          return;
+        }
       }
       statusMsg.textContent = targetStatus === 'published' ? 'Publishing live & syncing Vectorize + Homepage\u2026' : 'Saving draft to D1\u2026';
       var ep = editing ? ('/api/admin/guides/' + encodeURIComponent(editing.id)) : '/api/admin/guides';
@@ -3512,6 +3523,16 @@
     );
     relCard.append(relDatalist, gRel);
     shell.appendChild(relCard);
+
+    // ---- 9B. PRACTICE QUIZ EDITOR (quiz_json Builder — v388) ----
+    if (window.CSOQuizBuilder && typeof window.CSOQuizBuilder.buildQuizEditorAccordion === 'function') {
+      shell.appendChild(window.CSOQuizBuilder.buildQuizEditorAccordion({
+        type: 'guide',
+        getSlug: function () { return inSlug.value.trim() || slugify(inTitleEn.value); },
+        getQuizJson: function () { return guideQuizJson; },
+        setQuizJson: function (val) { guideQuizJson = val; }
+      }));
+    }
 
     // ---- 10. PUBLISH BAR (LIVE PREVIEW + SAVE DRAFT + PUBLISH LIVE) ----
     var bar = el('div', 'cso-guide-publish-bar');

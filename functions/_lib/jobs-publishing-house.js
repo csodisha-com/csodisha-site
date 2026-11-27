@@ -5,6 +5,7 @@ import { audit, rateLimit, getActor, STAFF_ROLES } from './rbac.js';
 import { invalidateAllPublicCaches } from './edge-cache-invalidator.js';
 import { ensureV311ContentColumns, isFuturePublishAt, isExpiredTimestamp, logZeroResultSearch } from './radars-v311.js';
 import { scheduleSemanticSync } from './semantic-search.js';
+import { validateAndNormalizeQuizJson } from './article-mini-quiz.js';
 
 export const LIFECYCLE_STAGES = [
   'notification',
@@ -167,6 +168,7 @@ export async function ensureJobsPublishingSchema(db) {
       syllabus_pdf_url TEXT NOT NULL DEFAULT '',
       pdf_index_bookmarks_json TEXT NOT NULL DEFAULT '[]',
       extra_attachments_json TEXT NOT NULL DEFAULT '[]',
+      quiz_json TEXT NOT NULL DEFAULT '',
       lifecycle_stage TEXT NOT NULL DEFAULT 'notification',
       corrigendum_note_en TEXT NOT NULL DEFAULT '',
       corrigendum_note_or TEXT NOT NULL DEFAULT '',
@@ -207,6 +209,7 @@ export async function ensureJobsPublishingSchema(db) {
   for (const s of stmts) {
     try { await db.prepare(s).run(); } catch { /* mock db or already exists */ }
   }
+  try { await db.prepare("ALTER TABLE job_articles ADD COLUMN quiz_json TEXT NOT NULL DEFAULT ''").run(); } catch { /* column already exists */ }
   _schemaReady = true;
 }
 
@@ -438,6 +441,7 @@ function formatArticle(r, taxMap = null, includePrivate = false) {
     syllabus_pdf_url: String(r.syllabus_pdf_url || ''),
     pdf_index_bookmarks: safeJsonArray(r.pdf_index_bookmarks_json),
     extra_attachments: safeJsonArray(r.extra_attachments_json),
+    quiz_json: String(r.quiz_json || ''),
     lifecycle_stage: String(r.lifecycle_stage || 'notification'),
     corrigendum_note_en: String(r.corrigendum_note_en || r.corrigendum_note || ''),
     corrigendum_note_or: String(r.corrigendum_note_or || ''),
@@ -479,6 +483,8 @@ async function invalidateJobsCaches(request, slug = '') {
     '/api/public/jobs/bootstrap',
     '/api/public/jobs/tree',
     '/api/public/jobs/article',
+    '/api/public/article-quiz',
+    '/api/public/home-feed',
     '/api/events/upcoming',
     '/jobs/',
     '/jobs-careers/',
@@ -487,7 +493,10 @@ async function invalidateJobsCaches(request, slug = '') {
   ];
   if (slug) {
     extra.push(`/api/public/jobs/article?slug=${encodeURIComponent(slug)}`);
+    extra.push(`/api/public/article-quiz?type=job&slug=${encodeURIComponent(slug)}`);
+    extra.push(`/api/public/article-quiz?type=job&slug=${encodeURIComponent(slug)}&auto_only=1`);
     extra.push(`/jobs/?slug=${encodeURIComponent(slug)}`);
+    extra.push(`/jobs/${encodeURIComponent(slug)}`);
   }
   try {
     await invalidateAllPublicCaches(request, extra);
@@ -1121,6 +1130,7 @@ function normalizeArticlePayload(body, existing = null) {
     syllabus_pdf_url: syllabusPdfUrl,
     pdf_index_bookmarks_json: sanitizeJsonTable(body.pdf_index_bookmarks ?? body.pdf_index_bookmarks_json, existing && existing.pdf_index_bookmarks_json),
     extra_attachments_json: sanitizeJsonTable(body.extra_attachments ?? body.extra_attachments_json, existing && existing.extra_attachments_json, ['url']),
+    quiz_json: body.quiz_json !== undefined ? validateAndNormalizeQuizJson(body.quiz_json) : (existing ? String(existing.quiz_json || '') : ''),
     lifecycle_stage: safeStage,
     corrigendum_note_en: pick('corrigendum_note_en', 1000),
     corrigendum_note_or: pick('corrigendum_note_or', 1000),
@@ -1231,7 +1241,7 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
         vacancy_breakdown_json, important_dates_json, fee_structure_json,
         selection_steps_json, cutoff_reference_json, lifecycle_updates_json, linked_study_ids_json,
         official_apply_url, official_website_url, notification_pdf_url, syllabus_pdf_url,
-        pdf_index_bookmarks_json, extra_attachments_json, lifecycle_stage,
+        pdf_index_bookmarks_json, extra_attachments_json, quiz_json, lifecycle_stage,
         corrigendum_note_en, corrigendum_note_or, scheduled_publish_at,
         is_featured, is_published, published_at, updated_at
       ) VALUES (
@@ -1245,7 +1255,7 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
         ?, ?, ?,
         ?, ?, ?, ?,
         ?, ?, ?, ?,
-        ?, ?, ?,
+        ?, ?, ?, ?,
         ?, ?, ?,
         ?, ?, ?, datetime('now')
       )`
@@ -1260,7 +1270,7 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
       data.vacancy_breakdown_json, data.important_dates_json, data.fee_structure_json,
       data.selection_steps_json, data.cutoff_reference_json, data.lifecycle_updates_json, data.linked_study_ids_json,
       data.official_apply_url, data.official_website_url, data.notification_pdf_url, data.syllabus_pdf_url,
-      data.pdf_index_bookmarks_json, data.extra_attachments_json, data.lifecycle_stage,
+      data.pdf_index_bookmarks_json, data.extra_attachments_json, data.quiz_json, data.lifecycle_stage,
       data.corrigendum_note_en, data.corrigendum_note_or, data.scheduled_publish_at,
       data.is_featured, data.is_published, data.published_at
     ).run();
@@ -1356,7 +1366,7 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
         vacancy_breakdown_json = ?, important_dates_json = ?, fee_structure_json = ?,
         selection_steps_json = ?, cutoff_reference_json = ?, lifecycle_updates_json = ?, linked_study_ids_json = ?,
         official_apply_url = ?, official_website_url = ?, notification_pdf_url = ?, syllabus_pdf_url = ?,
-        pdf_index_bookmarks_json = ?, extra_attachments_json = ?, lifecycle_stage = ?,
+        pdf_index_bookmarks_json = ?, extra_attachments_json = ?, quiz_json = ?, lifecycle_stage = ?,
         corrigendum_note_en = ?, corrigendum_note_or = ?, scheduled_publish_at = ?,
         is_featured = ?, is_published = ?, updated_at = datetime('now')
        WHERE id = ?`
@@ -1371,7 +1381,7 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
       data.vacancy_breakdown_json, data.important_dates_json, data.fee_structure_json,
       data.selection_steps_json, data.cutoff_reference_json, data.lifecycle_updates_json, data.linked_study_ids_json,
       data.official_apply_url, data.official_website_url, data.notification_pdf_url, data.syllabus_pdf_url,
-      data.pdf_index_bookmarks_json, data.extra_attachments_json, data.lifecycle_stage,
+      data.pdf_index_bookmarks_json, data.extra_attachments_json, data.quiz_json, data.lifecycle_stage,
       data.corrigendum_note_en, data.corrigendum_note_or, data.scheduled_publish_at,
       data.is_featured, data.is_published, articleId
     ).run();
@@ -1426,7 +1436,7 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
         vacancy_breakdown_json = ?, important_dates_json = ?, fee_structure_json = ?,
         selection_steps_json = ?, cutoff_reference_json = ?, lifecycle_updates_json = ?, linked_study_ids_json = ?,
         official_apply_url = ?, official_website_url = ?, notification_pdf_url = ?, syllabus_pdf_url = ?,
-        pdf_index_bookmarks_json = ?, extra_attachments_json = ?, lifecycle_stage = ?,
+        pdf_index_bookmarks_json = ?, extra_attachments_json = ?, quiz_json = ?, lifecycle_stage = ?,
         corrigendum_note_en = ?, corrigendum_note_or = ?, scheduled_publish_at = ?,
         is_featured = ?, is_published = ?, published_at = ?, updated_at = datetime('now')
        WHERE id = ?`
@@ -1441,7 +1451,7 @@ export async function handleJobsArticlesAdmin(request, env, actor, articleId, ac
       data.vacancy_breakdown_json, data.important_dates_json, data.fee_structure_json,
       data.selection_steps_json, data.cutoff_reference_json, data.lifecycle_updates_json, data.linked_study_ids_json,
       data.official_apply_url, data.official_website_url, data.notification_pdf_url, data.syllabus_pdf_url,
-      data.pdf_index_bookmarks_json, data.extra_attachments_json, data.lifecycle_stage,
+      data.pdf_index_bookmarks_json, data.extra_attachments_json, data.quiz_json, data.lifecycle_stage,
       data.corrigendum_note_en, data.corrigendum_note_or, data.scheduled_publish_at,
       data.is_featured, data.is_published, data.published_at, articleId
     ).run();

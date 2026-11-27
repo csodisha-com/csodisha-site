@@ -28,7 +28,7 @@ check('1. MMU Bhawanipatna job emits grounded bilingual 25-MCQ set with exact D1
     lifecycle_stage: 'notification'
   };
   const payload = buildArticleMiniQuizPayload(mmu, 'job');
-  assert.equal(payload.version, 'v387');
+  assert.match(String(payload.version), /^v38[78]$/);
   assert.equal(payload.questions.length, 25, 'Should assemble 25 distinct bilingual MCQs');
   const vacQ = payload.questions.find((q) => q.id.endsWith('_f_vac'));
   assert.ok(vacQ && vacQ.options_en[vacQ.correct_index] === '31 Posts', 'Vacancy MCQ must match exact D1 count 31');

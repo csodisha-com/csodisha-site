@@ -50,6 +50,7 @@ export async function ensureInformativeGuidesSchema(db) {
         pdfs_json TEXT NOT NULL DEFAULT '[]',
         links_json TEXT NOT NULL DEFAULT '[]',
         related_cta_json TEXT NOT NULL DEFAULT '{}',
+        quiz_json TEXT NOT NULL DEFAULT '',
         read_minutes INTEGER NOT NULL DEFAULT 5,
         tags TEXT NOT NULL DEFAULT '',
         scope TEXT NOT NULL DEFAULT 'Odisha',
@@ -72,6 +73,9 @@ export async function ensureInformativeGuidesSchema(db) {
     `),
     db.prepare('CREATE INDEX IF NOT EXISTS idx_guide_slug_history_guide ON guide_slug_history(guide_id)')
   ]);
+  try {
+    await db.prepare("ALTER TABLE informative_guides ADD COLUMN quiz_json TEXT NOT NULL DEFAULT ''").run();
+  } catch { /* column already exists */ }
   _guidesSchemaDb = db;
 }
 
@@ -310,6 +314,7 @@ export function formatGuideRow(row) {
     links_json: JSON.stringify(links),
     related_cta: relatedCta,
     related_cta_json: JSON.stringify(relatedCta),
+    quiz_json: String(row.quiz_json || ''),
     faqs,
     faq_json: JSON.stringify(faqs),
     read_minutes: Number(row.read_minutes) || 5,
@@ -539,9 +544,9 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageA
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v387">
-  <script src="/assets/js/guides-portal.js?v=20261127v387" defer></script>
-  <script src="/assets/js/article-mini-quiz.js?v=20261127v387" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v388">
+  <script src="/assets/js/guides-portal.js?v=20261127v388" defer></script>
+  <script src="/assets/js/article-mini-quiz.js?v=20261127v388" defer></script>
   ${ldTag}
 </head>`;
 }
