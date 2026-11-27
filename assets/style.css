@@ -19810,3 +19810,338 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+/* ==========================================================================
+   v409: Browser-Side Photo, Signature & Thumb Impression Resizer (/tools/)
+   ========================================================================== */
+
+.cso-psr-root {
+  margin: 0 0 24px;
+}
+
+.cso-psr-card {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+}
+
+.cso-psr-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cso-psr-head-left {
+  display: grid;
+  gap: 6px;
+  max-width: 780px;
+}
+
+.cso-psr-privacy-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.cso-psr-title {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+  line-height: 1.3;
+}
+
+.cso-psr-sub {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--cso-ink-muted);
+  line-height: 1.45;
+}
+
+.cso-psr-lang-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cso-psr-sec-label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-psr-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.cso-psr-preset-btn {
+  display: grid;
+  gap: 3px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.cso-psr-preset-btn:hover,
+.cso-psr-preset-btn:focus-visible {
+  border-color: var(--cso-accent);
+}
+
+.cso-psr-preset-btn.is-active {
+  border-color: var(--cso-accent);
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-psr-preset-name {
+  font-size: 0.83rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.cso-psr-preset-note {
+  font-size: 0.75rem;
+  opacity: 0.88;
+}
+
+.cso-psr-custom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.cso-psr-field {
+  display: grid;
+  gap: 4px;
+}
+
+.cso-psr-field-lbl {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cso-ink);
+}
+
+.cso-psr-input {
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 0.95rem;
+}
+
+.cso-psr-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.cso-psr-controls,
+.cso-psr-preview-pane {
+  display: grid;
+  gap: 12px;
+}
+
+.cso-psr-dropzone {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px dashed var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  transition: border-color 0.16s ease;
+}
+
+.cso-psr-dropzone.is-dragover {
+  border-color: var(--cso-accent);
+}
+
+.cso-psr-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.cso-psr-drop-hint {
+  font-size: 0.8rem;
+  color: var(--cso-ink-muted);
+}
+
+.cso-psr-sample-row,
+.cso-psr-toggle-row,
+.cso-psr-dl-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-psr-btn,
+.cso-psr-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.cso-psr-btn--primary,
+.cso-psr-pill.is-active {
+  border-color: var(--cso-accent);
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-psr-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cso-psr-sliders {
+  display: grid;
+  gap: 10px;
+}
+
+.cso-psr-slider-row {
+  display: grid;
+  gap: 4px;
+}
+
+.cso-psr-slider-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cso-psr-slider-val {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--cso-accent);
+}
+
+.cso-psr-range {
+  width: 100%;
+  min-height: 36px;
+  accent-color: var(--cso-accent);
+}
+
+.cso-psr-canvas-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  overflow: auto;
+}
+
+.cso-psr-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--cso-border);
+  border-radius: 6px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.cso-psr-readout {
+  display: grid;
+  gap: 10px;
+}
+
+.cso-psr-readout-empty {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink-muted);
+  font-size: 0.84rem;
+}
+
+.cso-psr-status {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.cso-psr-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cso-psr-stat {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-psr-stat-k {
+  font-size: 0.74rem;
+  color: var(--cso-ink-muted);
+  font-weight: 600;
+}
+
+.cso-psr-stat-v {
+  font-size: 0.86rem;
+  color: var(--cso-ink);
+  font-weight: 800;
+}
+
+@media (max-width: 860px) {
+  .cso-psr-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-psr-preset-btn,
+  .cso-psr-btn,
+  .cso-psr-pill,
+  .cso-psr-dropzone {
+    transition: none;
+  }
+}
