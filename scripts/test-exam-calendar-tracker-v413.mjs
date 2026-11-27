@@ -58,7 +58,7 @@ assert.equal(cd, 15, 'IST countdown from 2026-11-27 to 2026-12-12 must be 15 day
 
 // 3. Markup, Strict CSP, 4-Theme CSS & v413 Cache Sync
 assert.match(examsHtml, /id="cso-exam-calendar-tracker-root"/, 'exams/index.html must mount #cso-exam-calendar-tracker-root');
-assert.match(examsHtml, /\/assets\/js\/exam-calendar-tracker\.js\?v=20261127v426/, 'exams/index.html must load exam-calendar-tracker.js?v=20261127v426');
+assert.match(examsHtml, /\/assets\/js\/exam-calendar-tracker\.js\?v=20261127v427/, 'exams/index.html must load exam-calendar-tracker.js?v=20261127v427');
 assert.ok(!/\sstyle="/i.test(examsHtml), 'exams/index.html must have zero inline style attributes');
 assert.ok(!/\son[a-z]+="/i.test(examsHtml), 'exams/index.html must have zero inline on* handlers');
 assert.ok(!ectSrc.includes('.innerHTML') && !ectSrc.includes('.outerHTML') && !ectSrc.includes('insertAdjacentHTML') && !ectSrc.includes('.style.'), 'exam-calendar-tracker.js must obey strict CSP');
@@ -72,7 +72,7 @@ assert.ok(v413Css.includes('prefers-reduced-motion: reduce'), 'v413 CSS must res
 assert.ok(v413Css.includes('@media print'), 'v413 CSS must include @media print support');
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v413Css), 'v413 CSS block must have zero hardcoded hex values');
 
-assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v426'"), 'sw.js CACHE_NAME must be v413');
-assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v426'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v413');
+assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v427'"), 'sw.js CACHE_NAME must be v413');
+assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v427'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v413');
 
 console.log('✅ v413 Interactive Odisha Exam Calendar & Admit Card Tracker Audit PASSED');
