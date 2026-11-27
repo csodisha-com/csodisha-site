@@ -10,7 +10,7 @@ export const CSO_SHELL_HEAD_LINKS = [
   '<link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261125v304">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-dir-topbar.css?v=20261125v304">',
   '<link rel="stylesheet" href="/assets/css/pages/cso-detail-page.css?v=20261125v304">',
-  '<script src="/assets/shared-header.js?v=20261127v415" defer></script>',
+  '<script src="/assets/shared-header.js?v=20261127v416" defer></script>',
   '<script src="/assets/js/instant-search-overlay.js?v=20261127v396" defer></script>',
   '<script src="/assets/js/voice-search.js?v=20261125v304" defer></script>'
 ].join('\n  ');

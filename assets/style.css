@@ -21695,3 +21695,256 @@ nav#cso-hub-top-tabs {
     break-inside: avoid;
   }
 }
+
+/* ==========================================================================
+   v416: Odisha Govt Leave, TA/DA & NPS vs. UPS Pension Quick-Reference
+   ========================================================================== */
+
+.cso-srp-root {
+  margin: 20px 0 24px;
+}
+
+.cso-srp-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated);
+  color: var(--cso-ink);
+}
+
+.cso-srp-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cso-srp-head-left {
+  display: grid;
+  gap: 6px;
+  max-width: 780px;
+}
+
+.cso-srp-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.cso-srp-title {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+  line-height: 1.3;
+}
+
+.cso-srp-sub,
+.cso-srp-note {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--cso-ink-muted);
+  line-height: 1.45;
+}
+
+.cso-srp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-srp-pill,
+.cso-srp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.cso-srp-pill.is-active {
+  border-color: var(--cso-accent);
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-srp-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+  gap: 10px;
+}
+
+.cso-srp-field {
+  display: grid;
+  gap: 4px;
+}
+
+.cso-srp-field-lbl {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-srp-select,
+.cso-srp-input {
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 0.92rem;
+}
+
+.cso-srp-subhead {
+  margin: 6px 0 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-srp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 12px;
+}
+
+.cso-srp-cmp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 14px;
+}
+
+.cso-srp-item {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+}
+
+.cso-srp-item.is-featured {
+  border-color: var(--cso-accent);
+}
+
+.cso-srp-tag {
+  display: inline-flex;
+  width: fit-content;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  color: var(--cso-accent);
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.cso-srp-item-title {
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-srp-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 5px;
+  font-size: 0.84rem;
+  color: var(--cso-ink);
+  line-height: 1.4;
+}
+
+.cso-srp-highlight-box {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  align-items: end;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cso-accent);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-srp-el-out {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--cso-ink);
+}
+
+.cso-srp-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border);
+}
+
+.cso-srp-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+}
+
+.cso-srp-table th,
+.cso-srp-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--cso-border);
+  text-align: left;
+}
+
+.cso-srp-table th {
+  background: var(--cso-surface-alt, var(--cso-surface));
+  font-weight: 800;
+}
+
+.cso-srp-table tr.is-active td {
+  background: var(--cso-surface-alt, var(--cso-surface));
+  font-weight: 800;
+  color: var(--cso-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-srp-pill,
+  .cso-srp-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-srp-actions,
+  .cso-srp-controls {
+    display: none !important;
+  }
+
+  .cso-srp-item {
+    break-inside: avoid;
+  }
+}
