@@ -15,7 +15,7 @@
 })(function (win, doc) {
   'use strict';
 
-  var CACHE_NAME = 'cso-candidate-cache-v420';
+  var CACHE_NAME = 'cso-candidate-cache-v421';
   var META_KEY = 'cso_offline_toolkit_meta_v1';
 
   var TOOLKIT_URLS = [
@@ -26,22 +26,22 @@
     '/guides/',
     '/schemes/',
     '/current-affairs/',
-    '/assets/style.css?v=20261127v420',
-    '/assets/css/cso-themes.css?v=20261127v420',
-    '/assets/shared-header.js?v=20261127v420',
-    '/assets/js/offline-toolkit-hub.js?v=20261127v420',
-    '/assets/js/orsp-salary-estimator.js?v=20261127v420',
-    '/assets/js/photo-signature-resizer.js?v=20261127v420',
-    '/assets/js/certificate-fee-matrix.js?v=20261127v420',
-    '/assets/js/cgpa-percentage-converter.js?v=20261127v420',
-    '/assets/js/exam-calendar-tracker.js?v=20261127v420',
-    '/assets/js/mock-tests-hub.js?v=20261127v420',
-    '/assets/js/schemes-eligibility-finder.js?v=20261127v420',
-    '/assets/js/current-affairs-hub.js?v=20261127v420',
-    '/assets/js/ics-calendar-export.js?v=20261127v420',
-    '/assets/js/saved-alerts-drawer.js?v=20261127v420',
-    '/assets/js/candidate-watchlist.js?v=20261127v420',
-    '/assets/js/odisha-district-filter.js?v=20261127v420'
+    '/assets/style.css?v=20261127v421',
+    '/assets/css/cso-themes.css?v=20261127v421',
+    '/assets/shared-header.js?v=20261127v421',
+    '/assets/js/offline-toolkit-hub.js?v=20261127v421',
+    '/assets/js/orsp-salary-estimator.js?v=20261127v421',
+    '/assets/js/photo-signature-resizer.js?v=20261127v421',
+    '/assets/js/certificate-fee-matrix.js?v=20261127v421',
+    '/assets/js/cgpa-percentage-converter.js?v=20261127v421',
+    '/assets/js/exam-calendar-tracker.js?v=20261127v421',
+    '/assets/js/mock-tests-hub.js?v=20261127v421',
+    '/assets/js/schemes-eligibility-finder.js?v=20261127v421',
+    '/assets/js/current-affairs-hub.js?v=20261127v421',
+    '/assets/js/ics-calendar-export.js?v=20261127v421',
+    '/assets/js/saved-alerts-drawer.js?v=20261127v421',
+    '/assets/js/candidate-watchlist.js?v=20261127v421',
+    '/assets/js/odisha-district-filter.js?v=20261127v421'
   ];
 
   var TOOLKIT_ITEMS = [
@@ -50,42 +50,42 @@
       en: 'ORSP 7th Pay Salary Estimator',
       or: 'ORSP ସପ୍ତମ ବେତନ ହିସାବ',
       href: '/tools/#cso-orsp-salary-estimator-root',
-      assetUrl: '/assets/js/orsp-salary-estimator.js?v=20261127v420'
+      assetUrl: '/assets/js/orsp-salary-estimator.js?v=20261127v421'
     },
     {
       key: 'photo-resizer',
       en: 'Photo, Signature & Thumb Resizer',
       or: 'ଫଟୋ, ଦସ୍ତଖତ ଓ ଆଙ୍ଗୁଠି ଛାପ ରିସାଇଜର୍',
       href: '/tools/#cso-photo-signature-resizer-root',
-      assetUrl: '/assets/js/photo-signature-resizer.js?v=20261127v420'
+      assetUrl: '/assets/js/photo-signature-resizer.js?v=20261127v421'
     },
     {
       key: 'cert-matrix',
       en: 'Odisha Certificate & Fee Waiver Matrix',
       or: 'ଓଡ଼ିଶା ପ୍ରମାଣପତ୍ର ଓ ଫି ଛାଡ଼ ସାରଣୀ',
       href: '/tools/#cso-certificate-fee-matrix-root',
-      assetUrl: '/assets/js/certificate-fee-matrix.js?v=20261127v420'
+      assetUrl: '/assets/js/certificate-fee-matrix.js?v=20261127v421'
     },
     {
       key: 'cgpa-converter',
       en: 'Odisha University CGPA / SGPA Converter',
       or: 'ଓଡ଼ିଶା ବିଶ୍ୱବିଦ୍ୟାଳୟ CGPA କନଭର୍ଟର୍',
       href: '/tools/#cso-cgpa-converter-root',
-      assetUrl: '/assets/js/cgpa-percentage-converter.js?v=20261127v420'
+      assetUrl: '/assets/js/cgpa-percentage-converter.js?v=20261127v421'
     },
     {
       key: 'exam-calendar',
       en: 'Odisha Exam Calendar & Admit Card Tracker',
       or: 'ଓଡ଼ିଶା ପରୀକ୍ଷା କ୍ୟାଲେଣ୍ଡର ଓ ଆଡମିଟ୍ କାର୍ଡ',
       href: '/exams/',
-      assetUrl: '/assets/js/exam-calendar-tracker.js?v=20261127v420'
+      assetUrl: '/assets/js/exam-calendar-tracker.js?v=20261127v421'
     },
     {
       key: 'mock-tests',
       en: '25-MCQ Sectional Mock Test Series',
       or: '୨୫-MCQ ବିଭାଗୀୟ ମକ୍ ଟେଷ୍ଟ ସିରିଜ୍',
       href: '/mock-tests/',
-      assetUrl: '/assets/js/mock-tests-hub.js?v=20261127v420'
+      assetUrl: '/assets/js/mock-tests-hub.js?v=20261127v421'
     }
   ];
 

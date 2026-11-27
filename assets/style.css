@@ -23186,3 +23186,384 @@ nav#cso-hub-top-tabs {
     break-inside: avoid;
   }
 }
+
+/* ===== v421: Odisha Govt PYQ Paper Vault & Topic Weightage Analyzer (.cso-pyq-*) ===== */
+.cso-pyq-root {
+  margin: 20px 0;
+}
+
+.cso-pyq-wrap {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-elevated, var(--cso-surface));
+  color: var(--cso-ink);
+}
+
+.cso-pyq-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.cso-pyq-title {
+  margin: 0;
+  font-size: 1.32rem;
+  line-height: 1.3;
+  color: var(--cso-ink);
+}
+
+.cso-pyq-sub {
+  margin: 6px 0 0;
+  font-size: 0.92rem;
+  color: var(--cso-muted);
+  max-width: 78ch;
+}
+
+.cso-pyq-head-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-pyq-lang-toggle {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  padding: 3px;
+  gap: 4px;
+}
+
+.cso-pyq-lang-btn {
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-pyq-lang-btn.is-active {
+  background: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-pyq-pills,
+.cso-pyq-wswitch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-pyq-pill,
+.cso-pyq-wtab {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.cso-pyq-pill.is-active,
+.cso-pyq-wtab.is-active {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-pyq-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.cso-pyq-field {
+  display: grid;
+  gap: 6px;
+}
+
+.cso-pyq-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cso-muted);
+}
+
+.cso-pyq-select,
+.cso-pyq-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-input-bg, var(--cso-surface));
+  color: var(--cso-input-ink, var(--cso-ink));
+  font-size: 1rem;
+}
+
+.cso-pyq-weightage {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+}
+
+.cso-pyq-whead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-pyq-wtitle {
+  margin: 0;
+  font-size: 1.02rem;
+  color: var(--cso-ink);
+}
+
+.cso-pyq-neg-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-accent);
+  color: var(--cso-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.cso-pyq-bars {
+  display: grid;
+  gap: 12px;
+}
+
+.cso-pyq-bar-row {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+}
+
+.cso-pyq-bar-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.cso-pyq-bar-name {
+  color: var(--cso-ink);
+}
+
+.cso-pyq-bar-stat {
+  font-weight: 800;
+  color: var(--cso-accent);
+}
+
+.cso-pyq-bar-track {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--cso-border);
+  overflow: hidden;
+}
+
+.cso-pyq-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cso-accent);
+}
+
+.cso-pyq-bar-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.cso-pyq-subtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cso-pyq-subtag {
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.cso-pyq-launch {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--cso-accent);
+  color: var(--cso-accent);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.cso-pyq-status {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--cso-muted);
+}
+
+.cso-pyq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 14px;
+}
+
+.cso-pyq-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface);
+  color: var(--cso-ink);
+}
+
+.cso-pyq-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cso-pyq-badge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.cso-pyq-badge--board {
+  border-color: var(--cso-accent);
+  color: var(--cso-accent);
+}
+
+.cso-pyq-card__title {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.35;
+  color: var(--cso-ink);
+}
+
+.cso-pyq-card__meta {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--cso-muted);
+}
+
+.cso-pyq-top-topics {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  font-size: 0.83rem;
+  color: var(--cso-ink);
+}
+
+.cso-pyq-actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--cso-border);
+}
+
+.cso-pyq-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt, var(--cso-surface));
+  color: var(--cso-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cso-pyq-btn--primary {
+  background: var(--cso-accent);
+  border-color: var(--cso-accent);
+  color: var(--cso-on-accent, var(--cso-surface));
+}
+
+.cso-pyq-btn:focus-visible,
+.cso-pyq-pill:focus-visible,
+.cso-pyq-wtab:focus-visible,
+.cso-pyq-lang-btn:focus-visible {
+  outline: 2px solid var(--cso-focus, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+.cso-pyq-empty {
+  grid-column: 1 / -1;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px dashed var(--cso-border);
+  text-align: center;
+  color: var(--cso-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-pyq-pill,
+  .cso-pyq-wtab,
+  .cso-pyq-btn,
+  .cso-pyq-lang-btn {
+    transition: none;
+  }
+}
+
+@media print {
+  .cso-pyq-head-controls,
+  .cso-pyq-pills,
+  .cso-pyq-filters,
+  .cso-pyq-wswitch,
+  .cso-pyq-actions,
+  .cso-pyq-launch {
+    display: none !important;
+  }
+  .cso-pyq-card {
+    break-inside: avoid;
+  }
+}

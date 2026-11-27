@@ -85,8 +85,8 @@ assert.equal(det.is_past, false);
 
 // 3. Markup, Strict CSP, 4-Theme CSS & v407 Cache Sync
 assert.match(mockHtml, /id="cso-mock-tests-hub-root"/, 'mock-tests/index.html must mount #cso-mock-tests-hub-root');
-assert.match(mockHtml, /\/assets\/js\/ics-calendar-export\.js\?v=20261127v420/, 'mock-tests/index.html must load ics-calendar-export.js v407');
-assert.match(mockHtml, /\/assets\/js\/mock-tests-hub\.js\?v=20261127v420/, 'mock-tests/index.html must load mock-tests-hub.js v407');
+assert.match(mockHtml, /\/assets\/js\/ics-calendar-export\.js\?v=20261127v421/, 'mock-tests/index.html must load ics-calendar-export.js v407');
+assert.match(mockHtml, /\/assets\/js\/mock-tests-hub\.js\?v=20261127v421/, 'mock-tests/index.html must load mock-tests-hub.js v407');
 assert.ok(!/\sstyle="/i.test(mockHtml), 'mock-tests/index.html must have zero inline style attributes');
 assert.ok(!/\son[a-z]+="/i.test(mockHtml), 'mock-tests/index.html must have zero inline on* handlers');
 assert.ok(!hubSrc.includes('.innerHTML') && !hubSrc.includes('.outerHTML') && !hubSrc.includes('insertAdjacentHTML') && !hubSrc.includes('.style.'), 'mock-tests-hub.js must obey strict CSP');
@@ -97,7 +97,7 @@ const v407Css = styleCss.slice(v407CssIdx);
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v407Css), 'v407 CSS block must have zero hardcoded hex colors');
 assert.ok(v407Css.includes('@media print'), 'v407 CSS block must include clean @media print support');
 
-assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v420'"), 'sw.js CACHE_NAME must be v407');
-assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v420'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v407');
+assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v421'"), 'sw.js CACHE_NAME must be v407');
+assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v421'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v407');
 
 console.log('✅ v407 Interactive Mock Test Series & Exam-Day Countdown Hub Audit PASSED');
