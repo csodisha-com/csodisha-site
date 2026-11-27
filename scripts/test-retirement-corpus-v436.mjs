@@ -76,7 +76,7 @@ assert.ok(!/\.style\.[a-zA-Z]+\s*=/.test(jsCode), 'JS must not mutate .style.*')
 const careerHtml = read('career-paths/index.html');
 const mounts = careerHtml.match(/id=["']cso-retirement-corpus-root["']/g) || [];
 assert.equal(mounts.length, 1, 'career-paths/index.html must have exactly one #cso-retirement-corpus-root');
-assert.ok(careerHtml.includes('/assets/js/retirement-corpus-calculator.js?v=20261127v440'), 'career-paths/index.html must load retirement-corpus-calculator.js?v=20261127v440');
+assert.ok(careerHtml.includes('/assets/js/retirement-corpus-calculator.js?v=20261127v443'), 'career-paths/index.html must load retirement-corpus-calculator.js?v=20261127v443');
 assert.ok(!/\son[a-z]+\s*=/i.test(careerHtml), 'career-paths/index.html must have zero inline on* attributes');
 assert.ok(!/\sstyle\s*=/i.test(careerHtml), 'career-paths/index.html must have zero inline style attributes');
 
@@ -89,10 +89,10 @@ assert.ok(rccBlock.includes('var(--cso-'), 'CSS must use semantic var(--cso-*) t
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(rccBlock), 'v436 CSS block must have zero hardcoded hex colors');
 
 const sw = read('sw.js');
-assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v440'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v440');
-assert.ok(sw.includes('/assets/js/retirement-corpus-calculator.js?v=20261127v440'), 'sw.js must pre-cache retirement-corpus-calculator.js?v=20261127v440');
+assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v443'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v443');
+assert.ok(sw.includes('/assets/js/retirement-corpus-calculator.js?v=20261127v443'), 'sw.js must pre-cache retirement-corpus-calculator.js?v=20261127v443');
 
 const ops = read('functions/_lib/ops-sentinel.js');
-assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v440'"), 'ops-sentinel.js must match cso-candidate-cache-v440');
+assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v443'"), 'ops-sentinel.js must match cso-candidate-cache-v443');
 
 console.log('✅ v436 Odisha Govt Leave Encashment, Gratuity & Commutation Corpus Calculator tests passed!');
