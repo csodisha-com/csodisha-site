@@ -53,6 +53,7 @@ import { invalidateAllPublicCaches } from './functions/_lib/edge-cache-invalidat
 import { getPublishedNavBatch2Config } from './functions/_lib/categories-nav-batch2.js';
 import { getPublishedNavBatch3Config } from './functions/_lib/categories-nav-batch3.js';
 import { handlePublicJobsRoute } from './functions/_lib/jobs-directory-ssr.js';
+import { buildJobDetailJsonLdBlocks, injectJsonLdAndMetaIntoHtml, toAbsoluteHttpsUrl } from './functions/_lib/rich-results-jsonld.js';
 import { handlePublicJobsOverviewApi, handlePublicJobsItemsApi, handlePublicJobsSuggestApi, handleJobsDirectorySitemapXml } from './functions/_lib/jobs-directory-studio.js';
 import { LEGACY_JOBS_REDIRECTS, matchJobsCategoryPath, matchJobsDetailPath } from './functions/_lib/jobs-directory-meta.js';
 import { handlePublicSchemesRoute } from './functions/_lib/schemes-directory-ssr.js';
@@ -1704,9 +1705,46 @@ export default {
       if (studyRes) return studyRes;
     }
     if (pathname.startsWith('/jobs/')) {
+      const jRest = pathname.replace(/^\/jobs\//, '').replace(/\/+$/, '');
+      const querySlug = (url.searchParams.get('slug') || '').trim();
+      const jobArticleSlug = (jRest && !jRest.includes('/') && !/\.[a-z0-9]{2,5}$/i.test(jRest) && jRest !== 'index.html')
+        ? decodeURIComponent(jRest)
+        : ((pathname === '/jobs/' || pathname === '/jobs/index.html') && querySlug ? querySlug : '');
+
+      if (jobArticleSlug && env.DB && env.ASSETS) {
+        try {
+          const row = await env.DB.prepare(
+            `SELECT * FROM job_articles WHERE slug = ? AND is_published = 1 LIMIT 1`
+          ).bind(jobArticleSlug).first();
+          if (row) {
+            const shellRes = await env.ASSETS.fetch(new Request(new URL('/jobs/index.html', url.origin)));
+            if (shellRes.ok) {
+              const baseHtml = await shellRes.text();
+              const origin = url.origin || 'https://csodisha.com';
+              const canonical = `${origin}/jobs/${encodeURIComponent(row.slug)}`;
+              const ogImage = toAbsoluteHttpsUrl(row.cover_image_url, origin) || `${origin}/assets/img/icon-512.png`;
+              const jsonLdBlocks = buildJobDetailJsonLdBlocks(row, origin);
+              const hydratedHtml = injectJsonLdAndMetaIntoHtml(baseHtml, {
+                title: row.title_en,
+                description: row.summary_en || row.title_en,
+                canonical,
+                ogImage,
+                jsonLdBlocks
+              });
+              return new Response(hydratedHtml, {
+                status: 200,
+                headers: {
+                  'Content-Type': 'text/html; charset=utf-8',
+                  'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=60'
+                }
+              });
+            }
+          }
+        } catch { /* fall through to legacy directory / SPA redirect */ }
+      }
+
       const jobsRes = await handlePublicJobsRoute(request, env, url);
       if (jobsRes && jobsRes.status !== 404) return jobsRes;
-      const jRest = pathname.replace(/^\/jobs\//, '').replace(/\/+$/, '');
       if (jRest && !jRest.includes('/') && !/\.[a-z0-9]{2,5}$/i.test(jRest) && jRest !== 'index.html') {
         const dest = new URL('/jobs/', url.origin);
         dest.searchParams.set('slug', decodeURIComponent(jRest));

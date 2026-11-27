@@ -11,6 +11,7 @@
 
 import { CSO_SHELL_HEAD_LINKS, CSO_SHELL_HEADER, CSO_SHELL_FOOTER, escShell, renderKicker } from './ssr-shell.js';
 import { GUIDE_TOPIC_ALIASES, matchGuideToTopic } from './trending-topics.js';
+import { buildGuideDetailJsonLdBlocks } from './rich-results-jsonld.js';
 
 export const DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH = '/assets/img/icon-512.png';
 
@@ -537,8 +538,8 @@ function buildGuidesHead({ title, description, canonical, ogImage = '', ogImageA
   <link rel="icon" href="/assets/img/favicon-32x32.png?v=20261126v330" type="image/png" sizes="32x32">
   <link rel="manifest" href="/manifest.webmanifest">
   ${CSO_SHELL_HEAD_LINKS}
-  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v384">
-  <script src="/assets/js/guides-portal.js?v=20261127v384" defer></script>
+  <link rel="stylesheet" href="/assets/css/guides-portal.css?v=20261127v385">
+  <script src="/assets/js/guides-portal.js?v=20261127v385" defer></script>
   ${ldTag}
 </head>`;
 }
@@ -717,67 +718,9 @@ export function renderPublicGuideArticleHtml(guide, relatedGuides = [], url = nu
   const categoryUrl = `${origin}/guides/?category=${encodeURIComponent(guide.category || 'how-to')}`;
   const faqs = normalizeFaqs(guide.faq_json !== undefined ? guide.faq_json : guide.faqs);
 
-  const breadcrumbLd = {
-    '@type': 'BreadcrumbList',
-    '@id': `${canonical}#breadcrumb`,
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: `${origin}/` },
-      { '@type': 'ListItem', position: 2, name: 'Guides', item: `${origin}/guides/` },
-      { '@type': 'ListItem', position: 3, name: categoryLabelEn, item: categoryUrl },
-      { '@type': 'ListItem', position: 4, name: guide.title_en, item: canonical }
-    ]
-  };
-
-  const articleLd = {
-    '@type': 'Article',
-    '@id': `${canonical}#article`,
-    headline: guide.title_en,
-    alternativeHeadline: guide.title_or || undefined,
-    description: guide.summary_en || guide.title_en,
-    image: [socialOgImg],
-    datePublished: guide.created_at || guide.updated_at || new Date().toISOString(),
-    dateModified: guide.updated_at || guide.created_at || new Date().toISOString(),
-    articleSection: categoryLabelEn,
-    keywords: guide.tags || undefined,
-    inLanguage: ['en', 'or'],
-    author: {
-      '@type': 'Organization',
-      name: 'Common Sense Odisha',
-      url: origin
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: 'Common Sense Odisha',
-      url: origin,
-      logo: {
-        '@type': 'ImageObject',
-        url: `${origin}${DEFAULT_GUIDE_SOCIAL_OG_IMAGE_PATH}`,
-        width: 512,
-        height: 512
-      }
-    },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': canonical }
-  };
-
-  const ldGraph = [breadcrumbLd, articleLd];
-  if (faqs.length) {
-    ldGraph.push({
-      '@type': 'FAQPage',
-      '@id': `${canonical}#faq`,
-      mainEntity: faqs.map((f) => ({
-        '@type': 'Question',
-        name: f.question,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: f.answer
-        }
-      }))
-    });
-  }
-
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@graph': ldGraph
+    '@graph': buildGuideDetailJsonLdBlocks(guide, origin, categoryLabelEn, faqs)
   };
 
   const shareBarHeaderHtml = buildGuideShareBarHtml(guide, canonical, 'header');

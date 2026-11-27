@@ -1219,6 +1219,12 @@
 
     var params = new URLSearchParams(window.location.search || '');
     var slug = (params.get('slug') || '').trim();
+    if (!slug) {
+      var pathRest = (window.location.pathname || '').replace(/^\/jobs\//, '').replace(/\/+$/, '');
+      if (pathRest && pathRest.indexOf('/') === -1 && pathRest !== 'index.html') {
+        try { slug = decodeURIComponent(pathRest); } catch (_) { slug = pathRest; }
+      }
+    }
     var previewToken = (params.get('preview_token') || '').trim();
 
     if (slug) {
