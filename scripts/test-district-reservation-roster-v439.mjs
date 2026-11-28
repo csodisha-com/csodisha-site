@@ -61,7 +61,7 @@ assert.ok(!/\.style\.[a-zA-Z]+\s*=/.test(jsCode));
 for (const htmlPath of ['jobs/index.html', 'odisha-special/index.html']) {
   const html = read(htmlPath);
   assert.equal((html.match(/id=["']cso-district-reservation-root["']/g) || []).length, 1, `${htmlPath} must mount #cso-district-reservation-root`);
-  assert.ok(html.includes('/assets/js/district-reservation-roster.js?v=20261127v446'));
+  assert.ok(html.includes('/assets/js/district-reservation-roster.js?v=20261127v449'));
   assert.ok(!/\son[a-z]+\s*=/i.test(html) && !/\sstyle\s*=/i.test(html));
 }
 
@@ -70,6 +70,6 @@ const blk = css.slice(css.indexOf('v438 / v439 / v440: Document Pack Validator')
 assert.ok(blk.includes('.cso-drr-card') && blk.includes('var(--cso-') && !/#[0-9a-fA-F]{3,8}\b/.test(blk));
 
 const sw = read('sw.js');
-assert.ok(sw.includes('/assets/js/district-reservation-roster.js?v=20261127v446'));
+assert.ok(sw.includes('/assets/js/district-reservation-roster.js?v=20261127v449'));
 
 console.log('✅ v439 Odisha 30-District & 314-Block Reservation Roster Explorer tests passed!');

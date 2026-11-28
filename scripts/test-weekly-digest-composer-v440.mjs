@@ -63,7 +63,7 @@ assert.ok(!/\.style\.[a-zA-Z]+\s*=/.test(jsCode));
 for (const htmlPath of ['updates/index.html', 'admin/index.html']) {
   const html = read(htmlPath);
   assert.equal((html.match(/id=["']cso-weekly-digest-composer-root["']/g) || []).length, 1, `${htmlPath} must mount #cso-weekly-digest-composer-root`);
-  assert.ok(html.includes('/assets/js/weekly-digest-composer.js?v=20261127v446'));
+  assert.ok(html.includes('/assets/js/weekly-digest-composer.js?v=20261127v449'));
 }
 
 const updatesHtml = read('updates/index.html');
@@ -74,10 +74,10 @@ const blk = css.slice(css.indexOf('v438 / v439 / v440: Document Pack Validator')
 assert.ok(blk.includes('.cso-wdc-card') && blk.includes('var(--cso-') && !/#[0-9a-fA-F]{3,8}\b/.test(blk));
 
 const sw = read('sw.js');
-assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v446'"));
-assert.ok(sw.includes('/assets/js/weekly-digest-composer.js?v=20261127v446'));
+assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v449'"));
+assert.ok(sw.includes('/assets/js/weekly-digest-composer.js?v=20261127v449'));
 
 const ops = read('functions/_lib/ops-sentinel.js');
-assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v446'"));
+assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v449'"));
 
 console.log('✅ v440 Odisha Govt Weekly Digest Card & Bulletin Composer tests passed!');

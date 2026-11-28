@@ -176,6 +176,43 @@
       keywords: 'negative marking opsc ossc osssc oprb tet 50-50 guess break even attempt strategy ନେଗେଟିଭ୍ ମାର୍କିଂ'
     },
 
+    {
+      id: 'syllabus-mastery-tracker',
+      category: 'exam-practice',
+      href: '/exams/#cso-syllabus-mastery-tracker-root',
+      badgeEn: 'Exams Hub',
+      badgeOr: 'ପରୀକ୍ଷା ହବ୍',
+      titleEn: 'Exam Syllabus & Topic Mastery Tracker',
+      titleOr: 'ପରୀକ୍ଷା ପାଠ୍ୟକ୍ରମ ଓ ବିଷୟ ଆୟତ୍ତ ଟ୍ରାକର୍',
+      descEn: 'Track OPSC OAS, OSSC CGLRE, OSSSC, OPRB SI & teacher syllabi with weightage-weighted readiness.',
+      descOr: 'OPSC OAS, OSSC CGLRE, OSSSC, OPRB SI ଓ ଶିକ୍ଷକ ପାଠ୍ୟକ୍ରମ ଓଜନ-ଭିତ୍ତିକ ପ୍ରସ୍ତୁତି ସହ ଟ୍ରାକ୍ କରନ୍ତୁ।',
+      keywords: 'syllabus mastery tracker weightage readiness opsc oas ossc cglre osssc oprb si teacher revision ପାଠ୍ୟକ୍ରମ'
+    },
+    {
+      id: 'employee-advance-gpf-calculator',
+      category: 'calculators',
+      href: '/career-paths/#cso-employee-advance-gpf-root',
+      badgeEn: 'Career Paths',
+      badgeOr: 'କ୍ୟାରିଅର୍ ପାଥ୍',
+      titleEn: 'Employee HBA, GPF Withdrawal & Festival Advance Calculator',
+      titleOr: 'କର୍ମଚାରୀ HBA, GPF ଉତ୍ତୋଳନ ଓ ଉତ୍ସବ ଅଗ୍ରିମ କାଲକୁଲେଟର',
+      descEn: 'Compute HBA on 34 months Basic Pay, GPF part-final limits and the Festival Advance schedule.',
+      descOr: '34 ମାସ ମୌଳିକ ବେତନ ଆଧାରିତ HBA, GPF ଉତ୍ତୋଳନ ସୀମା ଓ ଉତ୍ସବ ଅଗ୍ରିମ ହିସାବ କରନ୍ତୁ।',
+      keywords: 'hba house building advance gpf withdrawal festival advance computer two wheeler odisha finance ଅଗ୍ରିମ'
+    },
+    {
+      id: 'application-grievance-tracker',
+      category: 'exam-practice',
+      href: '/jobs/#cso-application-grievance-root',
+      badgeEn: 'Jobs Hub',
+      badgeOr: 'ଜବ୍ସ ହବ୍',
+      titleEn: 'Application Status & Grievance Escalation Tracker',
+      titleOr: 'ଆବେଦନ ସ୍ଥିତି ଓ ଅଭିଯୋଗ ବୃଦ୍ଧି ଟ୍ରାକର୍',
+      descEn: 'Local application ledger, commission helpdesks and 1-click Representation / RTI letter generator.',
+      descOr: 'ସ୍ଥାନୀୟ ଆବେଦନ ଲେଜର୍, ଆୟୋଗ ହେଲ୍ପଡେସ୍କ ଓ ପ୍ରତିନିଧିତ୍ୱ / RTI ପତ୍ର ଜେନେରେଟର୍।',
+      keywords: 'application status admit card grievance rti representation opsc ossc osssc oprb oavs jana sunani ଆବେଦନ ଅଭିଯୋଗ'
+    },
+
     // 3. Certificates & Verification
     {
       id: 'edistrict-walkthrough',

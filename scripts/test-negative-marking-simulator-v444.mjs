@@ -56,7 +56,7 @@ assert.equal(tet.verdictCode, 'attempt-all', 'Skipped questions under zero negat
 for (const htmlPath of ['mock-tests/index.html', 'tools/index.html']) {
   const html = fs.readFileSync(htmlPath, 'utf8');
   assert.ok(html.includes('id="cso-negative-marking-simulator-root"'), `${htmlPath} mounts #cso-negative-marking-simulator-root`);
-  assert.ok(html.includes('/assets/js/negative-marking-simulator.js?v=20261127v446'), `${htmlPath} loads negative-marking-simulator.js v446`);
+  assert.ok(html.includes('/assets/js/negative-marking-simulator.js?v=20261127v449'), `${htmlPath} loads negative-marking-simulator.js v446`);
 }
 
 const qj = fs.readFileSync('assets/js/tools-quick-jump-directory.js', 'utf8');
@@ -66,6 +66,6 @@ assert.ok(qj.includes("id: 'negative-marking-simulator'") && qj.includes("target
 const css = fs.readFileSync('assets/style.css', 'utf8');
 assert.ok(css.includes('.cso-nms-root') && css.includes('.cso-nms-verdict'), 'CSS defines .cso-nms-* styles');
 const sw = fs.readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes("'/assets/js/negative-marking-simulator.js?v=20261127v446'"), 'sw.js precaches negative-marking-simulator.js');
+assert.ok(sw.includes("'/assets/js/negative-marking-simulator.js?v=20261127v449'"), 'sw.js precaches negative-marking-simulator.js');
 
 console.log('PASS: v444 Negative-Marking Risk & Attempt Strategy Simulator suite verified.');

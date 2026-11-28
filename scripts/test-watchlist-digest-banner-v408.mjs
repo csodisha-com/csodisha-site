@@ -19,8 +19,8 @@ const opsJs = read('functions/_lib/ops-sentinel.js');
 
 // 1. Markup, Script Wiring & Strict CSP
 assert.match(indexHtml, /id="cso-home-watchlist-digest-root"/, 'index.html must mount #cso-home-watchlist-digest-root');
-assert.match(indexHtml, /\/assets\/js\/odisha-district-filter\.js\?v=20261127v446/, 'index.html must load odisha-district-filter.js?v=20261127v446');
-assert.match(indexHtml, /\/assets\/js\/candidate-watchlist\.js\?v=20261127v446/, 'index.html must load candidate-watchlist.js?v=20261127v446');
+assert.match(indexHtml, /\/assets\/js\/odisha-district-filter\.js\?v=20261127v449/, 'index.html must load odisha-district-filter.js?v=20261127v449');
+assert.match(indexHtml, /\/assets\/js\/candidate-watchlist\.js\?v=20261127v449/, 'index.html must load candidate-watchlist.js?v=20261127v449');
 assert.ok(!/\sstyle="/i.test(indexHtml), 'index.html must have zero inline style attributes');
 assert.ok(!/\son[a-z]+="/i.test(indexHtml), 'index.html must have zero inline on* handlers');
 assert.ok(homeHydrationSrc.includes('mountHomepageDigestBanner'), 'home-hydration.js must invoke mountHomepageDigestBanner');
@@ -156,7 +156,7 @@ assert.ok(v408Css.includes('prefers-reduced-motion: reduce'), 'v408 CSS must res
 assert.ok(v408Css.includes('@media print'), 'v408 CSS must hide digest banner in @media print');
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v408Css), 'v408 CSS block must have zero hardcoded hex values');
 
-assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v446'"), 'sw.js CACHE_NAME must be v408');
-assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v446'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v408');
+assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v449'"), 'sw.js CACHE_NAME must be v408');
+assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v449'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v408');
 
 console.log('✅ v408 Homepage Local-First Watchlist Digest Banner Audit PASSED');

@@ -61,7 +61,7 @@ assert.equal(r3.entry.nextDueAt, now + 86400000, 'Box 1 scheduled +1 day');
 for (const htmlPath of ['current-affairs/index.html', 'mock-tests/index.html']) {
   const html = fs.readFileSync(htmlPath, 'utf8');
   assert.ok(html.includes('id="cso-gk-flashcard-deck-root"'), `${htmlPath} mounts #cso-gk-flashcard-deck-root`);
-  assert.ok(html.includes('/assets/js/gk-flashcard-deck.js?v=20261127v446'), `${htmlPath} loads gk-flashcard-deck.js v443`);
+  assert.ok(html.includes('/assets/js/gk-flashcard-deck.js?v=20261127v449'), `${htmlPath} loads gk-flashcard-deck.js v443`);
 }
 
 // 4. Verify CSS, SW cache & ops-sentinel version sync
@@ -69,10 +69,10 @@ const css = fs.readFileSync('assets/style.css', 'utf8');
 assert.ok(css.includes('.cso-gfd-root') && css.includes('.cso-gfd-stage'), 'CSS defines .cso-gfd-* styles');
 
 const sw = fs.readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes("const CACHE_NAME = 'cso-candidate-cache-v446';"), 'sw.js CACHE_NAME is cso-candidate-cache-v446');
-assert.ok(sw.includes("'/assets/js/gk-flashcard-deck.js?v=20261127v446'"), 'sw.js precaches gk-flashcard-deck.js');
+assert.ok(sw.includes("const CACHE_NAME = 'cso-candidate-cache-v449';"), 'sw.js CACHE_NAME is cso-candidate-cache-v449');
+assert.ok(sw.includes("'/assets/js/gk-flashcard-deck.js?v=20261127v449'"), 'sw.js precaches gk-flashcard-deck.js');
 
 const ops = fs.readFileSync('functions/_lib/ops-sentinel.js', 'utf8');
-assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v446'"), 'ops-sentinel.js synced to v443');
+assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v449'"), 'ops-sentinel.js synced to v443');
 
 console.log('PASS: v443 30-Card Odisha GK & Current Affairs Leitner Flashcard Deck suite verified.');

@@ -71,13 +71,13 @@ assert.equal(rHq.foodDaPerDay, 800, 'Level 7 food DA ₹800/day');
 for (const p of ['career-paths/index.html', 'functions/_lib/informative-guides.js']) {
   const txt = fs.readFileSync(p, 'utf8');
   assert.ok(txt.includes('id="cso-transfer-tada-calculator-root"'), `${p} mounts #cso-transfer-tada-calculator-root`);
-  assert.ok(txt.includes('/assets/js/transfer-tada-calculator.js?v=20261127v446'), `${p} loads transfer-tada-calculator.js v446`);
+  assert.ok(txt.includes('/assets/js/transfer-tada-calculator.js?v=20261127v449'), `${p} loads transfer-tada-calculator.js v446`);
 }
 
 // 4. Verify CSS & SW precache
 const css = fs.readFileSync('assets/style.css', 'utf8');
 assert.ok(css.includes('.cso-ttc-root') && css.includes('.cso-ttc-table'), 'CSS defines .cso-ttc-* styles');
 const sw = fs.readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes("'/assets/js/transfer-tada-calculator.js?v=20261127v446'"), 'sw.js precaches transfer-tada-calculator.js');
+assert.ok(sw.includes("'/assets/js/transfer-tada-calculator.js?v=20261127v449'"), 'sw.js precaches transfer-tada-calculator.js');
 
 console.log('PASS: v445 Odisha Govt Employee Transfer, Joining Time & TA/DA Rule Calculator suite verified.');

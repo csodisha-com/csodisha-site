@@ -62,7 +62,7 @@
   }
 
   function getIstDateKey(dateObj) {
-    var d = dateObj instanceof Date ? dateObj : new Date();
+    var d = (dateObj && typeof dateObj.getTime === 'function') ? dateObj : new Date();
     var ist = new Date(d.getTime() + 330 * 60000);
     return ist.getUTCFullYear() + '-' + pad2(ist.getUTCMonth() + 1) + '-' + pad2(ist.getUTCDate());
   }

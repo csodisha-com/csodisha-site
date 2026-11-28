@@ -96,7 +96,7 @@ for (const htmlPath of ['results/index.html', 'mock-tests/index.html']) {
   const html = read(htmlPath);
   const mounts = html.match(/id=["']cso-answer-key-normalizer-root["']/g) || [];
   assert.equal(mounts.length, 1, `${htmlPath} must have exactly one #cso-answer-key-normalizer-root`);
-  assert.ok(html.includes('/assets/js/answer-key-normalizer.js?v=20261127v446'), `${htmlPath} must load answer-key-normalizer.js?v=20261127v446`);
+  assert.ok(html.includes('/assets/js/answer-key-normalizer.js?v=20261127v449'), `${htmlPath} must load answer-key-normalizer.js?v=20261127v449`);
   assert.ok(!/\son[a-z]+\s*=/i.test(html), `${htmlPath} must have zero inline on* attributes`);
   assert.ok(!/\sstyle\s*=/i.test(html), `${htmlPath} must have zero inline style attributes`);
 }
@@ -110,10 +110,10 @@ assert.ok(aknBlock.includes('var(--cso-'), 'CSS must use semantic var(--cso-*) t
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(aknBlock), 'v435 CSS block must have zero hardcoded hex colors');
 
 const sw = read('sw.js');
-assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v446'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v446');
-assert.ok(sw.includes('/assets/js/answer-key-normalizer.js?v=20261127v446'), 'sw.js must pre-cache answer-key-normalizer.js?v=20261127v446');
+assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v449'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v449');
+assert.ok(sw.includes('/assets/js/answer-key-normalizer.js?v=20261127v449'), 'sw.js must pre-cache answer-key-normalizer.js?v=20261127v449');
 
 const ops = read('functions/_lib/ops-sentinel.js');
-assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v446'"), 'ops-sentinel.js must match cso-candidate-cache-v446');
+assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v449'"), 'ops-sentinel.js must match cso-candidate-cache-v449');
 
 console.log('✅ v435 Odisha Govt Answer Key & Raw-to-Normalized Score Calculator tests passed!');

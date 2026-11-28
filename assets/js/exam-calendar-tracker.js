@@ -272,7 +272,7 @@
   function computeExamCountdown(dateIso, nowDate) {
     var parts = String(dateIso || '').split('-').map(Number);
     if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
-    var now = nowDate instanceof Date ? nowDate : new Date();
+    var now = (nowDate && typeof nowDate.getTime === 'function') ? nowDate : new Date();
     var istNow = new Date(now.getTime() + 330 * 60000);
     var todayUtc = Date.UTC(istNow.getUTCFullYear(), istNow.getUTCMonth(), istNow.getUTCDate());
     var targetUtc = Date.UTC(parts[0], parts[1] - 1, parts[2]);

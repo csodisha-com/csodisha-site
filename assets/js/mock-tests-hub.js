@@ -266,7 +266,7 @@
   }
 
   function computeCountdownDays(dateIso, nowDate) {
-    var now = nowDate instanceof Date ? nowDate : new Date();
+    var now = (nowDate && typeof nowDate.getTime === 'function') ? nowDate : new Date();
     var istNow = new Date(now.getTime() + 330 * 60000);
     var todayUtc = Date.UTC(istNow.getUTCFullYear(), istNow.getUTCMonth(), istNow.getUTCDate());
     var parts = String(dateIso || '').split('-').map(Number);
@@ -276,7 +276,7 @@
   }
 
   function computeCountdownDetails(dateIso, nowDate) {
-    var now = nowDate instanceof Date ? nowDate : new Date();
+    var now = (nowDate && typeof nowDate.getTime === 'function') ? nowDate : new Date();
     var parts = String(dateIso || '').split('-').map(Number);
     if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
     // Target 09:00 AM IST on exam date (UTC = 03:30)
