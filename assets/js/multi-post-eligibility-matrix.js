@@ -332,22 +332,49 @@
     });
   }
 
+  function loadUnifiedProfile() {
+    try {
+      var raw = win.localStorage && win.localStorage.getItem('cso_unified_candidate_profile_v1');
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   function mount(container) {
     if (!doc || !container) return null;
     var saved = loadPrefs() || {};
+    var unified = loadUnifiedProfile() || {};
+    var compactProfileMode = container.getAttribute('data-cso-compact-profile') === '1';
     var state = {
       lang: saved.lang === 'or' ? 'or' : 'en',
-      dob: saved.dob || '1999-03-04',
-      gender: saved.gender || 'male',
-      category: saved.category || 'ur',
-      qualification: saved.qualification || 'graduate',
-      pwbd: Boolean(saved.pwbd),
+      dob: unified.dob || saved.dob || '1999-03-04',
+      gender: unified.gender || saved.gender || 'male',
+      category: unified.category || saved.category || 'ur',
+      qualification: unified.qualification || saved.qualification || 'graduate',
+      pwbd: unified.pwbd !== undefined ? Boolean(unified.pwbd) : Boolean(saved.pwbd),
       exServiceman: Boolean(saved.exServiceman),
       inService: Boolean(saved.inService),
-      viewFilter: saved.viewFilter || 'all'
+      viewFilter: saved.viewFilter || 'all',
+      showLocalOverride: false
     };
 
     var activeNotices = DEFAULT_NOTICES.slice();
+
+    // Live cross-tool sync from Unified Candidate Profile Sync Bar (cso:profile-synced)
+    if (typeof win.addEventListener === 'function') {
+      win.addEventListener('cso:profile-synced', function (ev) {
+        var det = ev && ev.detail;
+        if (!det || typeof det !== 'object') return;
+        if (det.dob) state.dob = det.dob;
+        if (det.gender) state.gender = det.gender;
+        if (det.category) state.category = det.category;
+        if (det.qualification) state.qualification = det.qualification;
+        if (det.pwbd !== undefined) state.pwbd = Boolean(det.pwbd);
+        savePrefs(state);
+        render();
+      });
+    }
 
     // Hydrate any live D1 job notices from /api/public/search-index without blocking initial render
     if (typeof win.fetch === 'function') {
@@ -422,88 +449,134 @@
       head.appendChild(langToggle);
       card.appendChild(head);
 
-      // Profile Form
+      // Profile Form (compact summary strip on /jobs/ when unified sync bar is active; full form on /tools/)
       var form = el('div', 'cso-mpe-form');
-      var grid = el('div', 'cso-mpe-grid');
+      if (compactProfileMode && !state.showLocalOverride) {
+        var qualObj = QUAL_LEVELS.find(function (q) { return q.id === state.qualification; }) || QUAL_LEVELS[3];
+        var summaryStrip = el('div', 'cso-mpe-profile-strip');
+        summaryStrip.setAttribute('data-cso-mpe-compact-summary', '1');
+        var pillsWrap = el('div', 'cso-mpe-profile-pills');
+        pillsWrap.appendChild(el('span', 'cso-mpe-profile-pill', (orMode ? '🎂 DOB: ' : '🎂 DOB: ') + state.dob));
+        pillsWrap.appendChild(el('span', 'cso-mpe-profile-pill', '🏷️ ' + String(state.category || 'ur').toUpperCase()));
+        pillsWrap.appendChild(el('span', 'cso-mpe-profile-pill', '👤 ' + (state.gender === 'female' ? (orMode ? 'ମହିଳା' : 'Female') : (state.gender === 'transgender' ? (orMode ? 'ତୃତୀୟ ଲିଙ୍ଗ' : 'Transgender') : (orMode ? 'ପୁରୁଷ' : 'Male')))));
+        pillsWrap.appendChild(el('span', 'cso-mpe-profile-pill', '🎓 ' + (orMode ? qualObj.or : qualObj.en)));
+        if (state.pwbd) pillsWrap.appendChild(el('span', 'cso-mpe-profile-pill cso-mpe-profile-pill--accent', '♿ PwBD'));
+        summaryStrip.appendChild(pillsWrap);
 
-      function addField(label, ctrl) {
-        var box = el('div', 'cso-mpe-field');
-        var lbl = el('label', 'cso-mpe-label', label);
-        if (ctrl.id) lbl.setAttribute('for', ctrl.id);
-        box.appendChild(lbl);
-        box.appendChild(ctrl);
-        grid.appendChild(box);
+        var stripActions = el('div', 'cso-mpe-profile-actions');
+        var editJump = el('a', 'cso-mpe-edit-link', orMode ? 'ପ୍ରୋଫାଇଲ୍ ସମ୍ପାଦନ ↑' : 'Edit Profile ↑');
+        editJump.setAttribute('href', '#cso-candidate-profile-sync-root');
+        editJump.addEventListener('click', function (ev) {
+          var target = doc.getElementById('cso-candidate-profile-sync-root');
+          if (target && typeof target.scrollIntoView === 'function') {
+            ev.preventDefault();
+            try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) { target.scrollIntoView(); }
+            var dobEl = doc.getElementById('cso-cps-dob');
+            if (dobEl && typeof dobEl.focus === 'function') dobEl.focus();
+          }
+        });
+        stripActions.appendChild(editJump);
+        summaryStrip.appendChild(stripActions);
+        form.appendChild(summaryStrip);
+
+        // Keep special service toggles inline (not present in unified profile bar)
+        var compactToggles = el('div', 'cso-mpe-toggles');
+        [
+          { key: 'exServiceman', en: 'Ex-Serviceman', or: 'ପୂର୍ବତନ ସୈନିକ (Ex-Serviceman)' },
+          { key: 'inService', en: 'In-Service Odisha Govt Employee', or: 'ଓଡ଼ିଶା ସରକାରୀ କର୍ମଚାରୀ (In-Service)' }
+        ].forEach(function (tg) {
+          var lbl = el('label', 'cso-mpe-check-pill');
+          var cb = el('input', 'cso-mpe-checkbox');
+          cb.type = 'checkbox';
+          cb.checked = Boolean(state[tg.key]);
+          cb.addEventListener('change', function () { state[tg.key] = cb.checked; persistAndRender(); });
+          lbl.appendChild(cb);
+          lbl.appendChild(el('span', '', orMode ? tg.or : tg.en));
+          compactToggles.appendChild(lbl);
+        });
+        form.appendChild(compactToggles);
+      } else {
+        var grid = el('div', 'cso-mpe-grid');
+
+        function addField(label, ctrl) {
+          var box = el('div', 'cso-mpe-field');
+          var lbl = el('label', 'cso-mpe-label', label);
+          if (ctrl.id) lbl.setAttribute('for', ctrl.id);
+          box.appendChild(lbl);
+          box.appendChild(ctrl);
+          grid.appendChild(box);
+        }
+
+        var dobInp = el('input', 'cso-mpe-input');
+        dobInp.id = 'cso-mpe-dob';
+        dobInp.type = 'date';
+        dobInp.value = state.dob;
+        dobInp.addEventListener('change', function () { state.dob = dobInp.value || '1999-03-04'; persistAndRender(); });
+        addField(orMode ? 'ଜନ୍ମ ତାରିଖ (Date of Birth)' : 'Date of Birth (YYYY-MM-DD)', dobInp);
+
+        var genSel = el('select', 'cso-mpe-input');
+        genSel.id = 'cso-mpe-gender';
+        [
+          { id: 'male', en: 'Male', or: 'ପୁରୁଷ (Male)' },
+          { id: 'female', en: 'Female (+5 yrs State / Fee Waiver)', or: 'ମହିଳା (+5 ବର୍ଷ ଛାଡ଼)' },
+          { id: 'transgender', en: 'Transgender', or: 'ତୃତୀୟ ଲିଙ୍ଗ' }
+        ].forEach(function (g) {
+          var opt = el('option', '', orMode ? g.or : g.en);
+          opt.value = g.id;
+          if (g.id === state.gender) opt.selected = true;
+          genSel.appendChild(opt);
+        });
+        genSel.addEventListener('change', function () { state.gender = genSel.value; persistAndRender(); });
+        addField(orMode ? 'ଲିଙ୍ଗ (Gender)' : 'Gender', genSel);
+
+        var catSel = el('select', 'cso-mpe-input');
+        catSel.id = 'cso-mpe-cat';
+        [
+          { id: 'ur', en: 'UR / General', or: 'ସାଧାରଣ (UR)' },
+          { id: 'ews', en: 'EWS (Economically Weaker)', or: 'EWS' },
+          { id: 'sebc', en: 'SEBC / OBC', or: 'SEBC / OBC' },
+          { id: 'sc', en: 'SC (Scheduled Caste)', or: 'SC (ଅନୁସୂଚିତ ଜାତି)' },
+          { id: 'st', en: 'ST (Scheduled Tribe)', or: 'ST (ଅନୁସୂଚିତ ଜନଜାତି)' }
+        ].forEach(function (c) {
+          var opt = el('option', '', orMode ? c.or : c.en);
+          opt.value = c.id;
+          if (c.id === state.category) opt.selected = true;
+          catSel.appendChild(opt);
+        });
+        catSel.addEventListener('change', function () { state.category = catSel.value; persistAndRender(); });
+        addField(orMode ? 'ସାମାଜିକ ବର୍ଗ (Category)' : 'Social Category', catSel);
+
+        var qualSel = el('select', 'cso-mpe-input');
+        qualSel.id = 'cso-mpe-qual';
+        QUAL_LEVELS.forEach(function (q) {
+          var opt = el('option', '', orMode ? q.or : q.en);
+          opt.value = q.id;
+          if (q.id === state.qualification) opt.selected = true;
+          qualSel.appendChild(opt);
+        });
+        qualSel.addEventListener('change', function () { state.qualification = qualSel.value; persistAndRender(); });
+        addField(orMode ? 'ଶିକ୍ଷାଗତ ଯୋଗ୍ୟତା' : 'Highest Qualification', qualSel);
+
+        form.appendChild(grid);
+
+        // Special Toggles
+        var toggles = el('div', 'cso-mpe-toggles');
+        [
+          { key: 'pwbd', en: 'PwBD (≥ 40% Disability · +10/+15 yrs)', or: 'ଭିନ୍ନକ୍ଷମ PwBD (≥ 40% · +10/+15 ବର୍ଷ)' },
+          { key: 'exServiceman', en: 'Ex-Serviceman', or: 'ପୂର୍ବତନ ସୈନିକ (Ex-Serviceman)' },
+          { key: 'inService', en: 'In-Service Odisha Govt Employee', or: 'ଓଡ଼ିଶା ସରକାରୀ କର୍ମଚାରୀ (In-Service)' }
+        ].forEach(function (tg) {
+          var lbl = el('label', 'cso-mpe-check-pill');
+          var cb = el('input', 'cso-mpe-checkbox');
+          cb.type = 'checkbox';
+          cb.checked = Boolean(state[tg.key]);
+          cb.addEventListener('change', function () { state[tg.key] = cb.checked; persistAndRender(); });
+          lbl.appendChild(cb);
+          lbl.appendChild(el('span', '', orMode ? tg.or : tg.en));
+          toggles.appendChild(lbl);
+        });
+        form.appendChild(toggles);
       }
-
-      var dobInp = el('input', 'cso-mpe-input');
-      dobInp.id = 'cso-mpe-dob';
-      dobInp.type = 'date';
-      dobInp.value = state.dob;
-      dobInp.addEventListener('change', function () { state.dob = dobInp.value || '1999-03-04'; persistAndRender(); });
-      addField(orMode ? 'ଜନ୍ମ ତାରିଖ (Date of Birth)' : 'Date of Birth (YYYY-MM-DD)', dobInp);
-
-      var genSel = el('select', 'cso-mpe-input');
-      genSel.id = 'cso-mpe-gender';
-      [
-        { id: 'male', en: 'Male', or: 'ପୁରୁଷ (Male)' },
-        { id: 'female', en: 'Female (+5 yrs State / Fee Waiver)', or: 'ମହିଳା (+5 ବର୍ଷ ଛାଡ଼)' },
-        { id: 'transgender', en: 'Transgender', or: 'ତୃତୀୟ ଲିଙ୍ଗ' }
-      ].forEach(function (g) {
-        var opt = el('option', '', orMode ? g.or : g.en);
-        opt.value = g.id;
-        if (g.id === state.gender) opt.selected = true;
-        genSel.appendChild(opt);
-      });
-      genSel.addEventListener('change', function () { state.gender = genSel.value; persistAndRender(); });
-      addField(orMode ? 'ଲିଙ୍ଗ (Gender)' : 'Gender', genSel);
-
-      var catSel = el('select', 'cso-mpe-input');
-      catSel.id = 'cso-mpe-cat';
-      [
-        { id: 'ur', en: 'UR / General', or: 'ସାଧାରଣ (UR)' },
-        { id: 'ews', en: 'EWS (Economically Weaker)', or: 'EWS' },
-        { id: 'sebc', en: 'SEBC / OBC', or: 'SEBC / OBC' },
-        { id: 'sc', en: 'SC (Scheduled Caste)', or: 'SC (ଅନୁସୂଚିତ ଜାତି)' },
-        { id: 'st', en: 'ST (Scheduled Tribe)', or: 'ST (ଅନୁସୂଚିତ ଜନଜାତି)' }
-      ].forEach(function (c) {
-        var opt = el('option', '', orMode ? c.or : c.en);
-        opt.value = c.id;
-        if (c.id === state.category) opt.selected = true;
-        catSel.appendChild(opt);
-      });
-      catSel.addEventListener('change', function () { state.category = catSel.value; persistAndRender(); });
-      addField(orMode ? 'ସାମାଜିକ ବର୍ଗ (Category)' : 'Social Category', catSel);
-
-      var qualSel = el('select', 'cso-mpe-input');
-      qualSel.id = 'cso-mpe-qual';
-      QUAL_LEVELS.forEach(function (q) {
-        var opt = el('option', '', orMode ? q.or : q.en);
-        opt.value = q.id;
-        if (q.id === state.qualification) opt.selected = true;
-        qualSel.appendChild(opt);
-      });
-      qualSel.addEventListener('change', function () { state.qualification = qualSel.value; persistAndRender(); });
-      addField(orMode ? 'ଶିକ୍ଷାଗତ ଯୋଗ୍ୟତା' : 'Highest Qualification', qualSel);
-
-      form.appendChild(grid);
-
-      // Special Toggles
-      var toggles = el('div', 'cso-mpe-toggles');
-      [
-        { key: 'pwbd', en: 'PwBD (≥ 40% Disability · +10/+15 yrs)', or: 'ଭିନ୍ନକ୍ଷମ PwBD (≥ 40% · +10/+15 ବର୍ଷ)' },
-        { key: 'exServiceman', en: 'Ex-Serviceman', or: 'ପୂର୍ବତନ ସୈନିକ (Ex-Serviceman)' },
-        { key: 'inService', en: 'In-Service Odisha Govt Employee', or: 'ଓଡ଼ିଶା ସରକାରୀ କର୍ମଚାରୀ (In-Service)' }
-      ].forEach(function (tg) {
-        var lbl = el('label', 'cso-mpe-check-pill');
-        var cb = el('input', 'cso-mpe-checkbox');
-        cb.type = 'checkbox';
-        cb.checked = Boolean(state[tg.key]);
-        cb.addEventListener('change', function () { state[tg.key] = cb.checked; persistAndRender(); });
-        lbl.appendChild(cb);
-        lbl.appendChild(el('span', '', orMode ? tg.or : tg.en));
-        toggles.appendChild(lbl);
-      });
-      form.appendChild(toggles);
       card.appendChild(form);
 
       // KPI Strip

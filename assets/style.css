@@ -30127,3 +30127,357 @@ nav#cso-hub-top-tabs {
     break-inside: avoid;
   }
 }
+
+/* ============================================================================
+   v451: Compact /jobs/ Hierarchy — Zone 1 Hero + Unified Profile Toolbar,
+   Zone 2 Enriched Job Cards, Zone 3 4-Tab Workspace (.cso-jwt-*),
+   and Zone 4 Compact 2-Column QR Flyer Studio (.cso-qfg-workspace 1.15fr / 0.85fr)
+   Strict 4-theme var(--cso-*) semantic tokens, zero hardcoded hex, >=44px tap
+   ============================================================================ */
+
+.cso-jobs-zone1,
+.cso-jobs-zone2 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.cso-jh-hero--compact {
+  padding: 14px 18px;
+}
+
+.cso-jh-summary--pulse {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 12px;
+}
+
+@media (max-width: 640px) {
+  .cso-jh-summary--pulse {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cso-cps-root--compact {
+  margin: 0;
+}
+
+.cso-cps-root--compact .cso-cps-card {
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+}
+
+.cso-cps-root--compact .cso-cps-head {
+  margin-bottom: 0.6rem;
+}
+
+.cso-cps-root--compact .cso-cps-title {
+  font-size: 1rem;
+}
+
+.cso-cps-root--compact .cso-cps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 155px), 1fr));
+  gap: 0.55rem;
+  margin-bottom: 0.6rem;
+}
+
+.cso-cps-root--compact .cso-cps-actions {
+  margin-bottom: 0;
+}
+
+/* Zone 1/3 Deduplicated Active Profile Pill Strip in Multi-Post Eligibility Matrix */
+.cso-mpe-profile-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+  background: var(--cso-card-subtle, var(--cso-surface-alt));
+  margin-bottom: 0.75rem;
+}
+
+.cso-mpe-profile-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.cso-mpe-profile-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: var(--cso-card-bg, var(--cso-surface));
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+  color: var(--cso-ink-primary, var(--cso-ink));
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.cso-mpe-profile-pill--accent {
+  background: var(--cso-badge-verified-bg, var(--cso-surface-alt));
+  color: var(--cso-badge-verified-fg, var(--cso-ink));
+}
+
+.cso-mpe-edit-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--cso-brand-primary, var(--cso-accent));
+  background: var(--cso-card-bg, var(--cso-surface));
+  color: var(--cso-brand-primary, var(--cso-link));
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.cso-mpe-edit-link:hover,
+.cso-mpe-edit-link:focus-visible {
+  background: var(--cso-cta-bg, var(--cso-accent));
+  color: var(--cso-cta-fg, var(--cso-accent-ink));
+  outline: 2px solid var(--cso-brand-accent, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+/* Zone 2 Enriched Job Card Quick Actions */
+.cso-jh-btn--save,
+.cso-jh-btn--qr {
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+  background: var(--cso-card-subtle, var(--cso-surface-alt));
+  color: var(--cso-ink-primary, var(--cso-ink));
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cso-jh-btn--save.is-saved {
+  background: var(--cso-badge-verified-bg, var(--cso-surface-alt));
+  color: var(--cso-badge-verified-fg, var(--cso-ink));
+  border-color: var(--cso-badge-verified-fg, var(--cso-accent));
+}
+
+.cso-jh-btn--save:hover,
+.cso-jh-btn--save:focus-visible,
+.cso-jh-btn--qr:hover,
+.cso-jh-btn--qr:focus-visible {
+  border-color: var(--cso-brand-primary, var(--cso-accent));
+  outline: 2px solid var(--cso-brand-accent, var(--cso-accent));
+  outline-offset: 1px;
+}
+
+/* Zone 3: 4-Tab Interactive Candidate Workspace (.cso-jwt-*) */
+.cso-jwt-root {
+  margin: 1.5rem 0 1.75rem;
+  padding: 1rem 1.15rem;
+  border-radius: 16px;
+  background: var(--cso-card-bg, var(--cso-surface));
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+  box-shadow: var(--cso-card-shadow, none);
+  color: var(--cso-ink-primary, var(--cso-ink));
+}
+
+.cso-jwt-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.cso-jwt-head-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.cso-jwt-eyebrow {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cso-brand-primary, var(--cso-link));
+}
+
+.cso-jwt-title {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--cso-ink-primary, var(--cso-ink));
+}
+
+.cso-jwt-tablist {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+  padding: 0.35rem;
+  border-radius: 12px;
+  background: var(--cso-card-subtle, var(--cso-surface-alt));
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 960px) {
+  .cso-jwt-tablist {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 540px) {
+  .cso-jwt-tablist {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cso-jwt-tab,
+.cso-jwt-expand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.5rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+  background: var(--cso-card-bg, var(--cso-surface));
+  color: var(--cso-ink-primary, var(--cso-ink));
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.cso-jwt-tab:hover,
+.cso-jwt-tab:focus-visible,
+.cso-jwt-expand-btn:hover,
+.cso-jwt-expand-btn:focus-visible {
+  border-color: var(--cso-brand-primary, var(--cso-accent));
+  outline: 2px solid var(--cso-brand-accent, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+.cso-jwt-tab[aria-selected="true"],
+.cso-jwt-tab.is-active,
+.cso-jwt-expand-btn[aria-pressed="true"] {
+  background: var(--cso-pill-active-bg, var(--cso-accent));
+  color: var(--cso-pill-active-fg, var(--cso-accent-ink));
+  border-color: transparent;
+}
+
+.cso-jwt-panel {
+  margin: 0;
+}
+
+.cso-jwt-panel[hidden] {
+  display: none;
+}
+
+.cso-jwt-panel > section {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.cso-jwt-root[data-cso-expand-all="1"] .cso-jwt-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Zone 4: Compact 2-Column QR Flyer Studio (1.15fr controls left, 0.85fr framed canvas right) */
+.cso-qfg-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 1.1rem;
+  align-items: start;
+}
+
+@media (max-width: 899px) {
+  .cso-qfg-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cso-qfg-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.cso-qfg-controls .cso-qfg-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  margin-bottom: 0.25rem;
+}
+
+.cso-qfg-controls .cso-qfg-actions {
+  margin-bottom: 0;
+}
+
+.cso-qfg-preview-col {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.cso-qfg-preview-col .cso-qfg-canvas-wrap {
+  width: 100%;
+  max-width: 390px;
+  padding: 0.75rem;
+  border-radius: 14px;
+  background: var(--cso-card-bg, var(--cso-surface));
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+  box-shadow: var(--cso-card-shadow, none);
+}
+
+.cso-qfg-preview-col .cso-qfg-canvas {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  max-height: 460px;
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-jwt-tab,
+  .cso-jwt-expand-btn,
+  .cso-mpe-edit-link,
+  .cso-jh-btn--save,
+  .cso-jh-btn--qr {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media print {
+  .cso-jwt-tablist,
+  .cso-jwt-expand-btn,
+  .cso-mpe-edit-link,
+  .cso-jh-btn--save,
+  .cso-jh-btn--qr {
+    display: none !important;
+  }
+
+  .cso-jwt-root {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .cso-jwt-panel.is-active {
+    display: block !important;
+  }
+}

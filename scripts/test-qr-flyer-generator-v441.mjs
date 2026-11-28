@@ -60,7 +60,7 @@ assert.ok(waText.includes(sample.titleOr), 'WhatsApp alert includes Odia title')
 for (const htmlPath of ['jobs/index.html', 'admin/index.html']) {
   const html = fs.readFileSync(htmlPath, 'utf8');
   assert.ok(html.includes('id="cso-qr-flyer-generator-root"'), `${htmlPath} mounts #cso-qr-flyer-generator-root`);
-  assert.ok(html.includes('/assets/js/qr-flyer-generator.js?v=20261128v450'), `${htmlPath} loads qr-flyer-generator.js v443`);
+  assert.ok(html.includes('/assets/js/qr-flyer-generator.js?v=20261128v451'), `${htmlPath} loads qr-flyer-generator.js v443`);
 }
 
 // 4. Verify CSS & Service Worker precache
@@ -68,6 +68,6 @@ const css = fs.readFileSync('assets/style.css', 'utf8');
 assert.ok(css.includes('.cso-qfg-root') && css.includes('.cso-qfg-canvas'), 'CSS defines .cso-qfg-* styles');
 
 const sw = fs.readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes("'/assets/js/qr-flyer-generator.js?v=20261128v450'"), 'sw.js precaches qr-flyer-generator.js');
+assert.ok(sw.includes("'/assets/js/qr-flyer-generator.js?v=20261128v451'"), 'sw.js precaches qr-flyer-generator.js');
 
 console.log('PASS: v441 QR Flyer & SMS/WhatsApp Quick-Alert Generator suite verified.');

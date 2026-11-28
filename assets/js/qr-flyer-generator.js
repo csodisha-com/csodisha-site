@@ -573,16 +573,21 @@
       addField('Notice Title (ଓଡ଼ିଆ)', makeText('cso-qfg-tor', state.titleOr, function (v) { state.titleOr = v; persistAndRender(); }));
       addField('Deep Link URL (with UTM)', makeText('cso-qfg-url', state.url, function (v) { state.url = v || 'https://csodisha.com/jobs/'; persistAndRender(); }));
       addField('Center / Library / Mo Seva Kendra Footer', makeText('cso-qfg-foot', state.footerNote, function (v) { state.footerNote = v; persistAndRender(); }));
-      card.appendChild(grid);
+
+      // v451: Compact 2-Column QR Flyer Studio (1.15fr controls left, 0.85fr framed poster right)
+      var workspace = el('div', 'cso-qfg-workspace');
+      var controlsCol = el('div', 'cso-qfg-controls');
+      controlsCol.appendChild(grid);
 
       // Canvas Preview
+      var previewCol = el('div', 'cso-qfg-preview-col');
       var canvasWrap = el('div', 'cso-qfg-canvas-wrap');
       var canvasEl = doc.createElement('canvas');
       canvasEl.className = 'cso-qfg-canvas';
       canvasEl.setAttribute('aria-label', 'Scannable QR recruitment flyer preview');
       renderFlyerCanvas(canvasEl, state);
       canvasWrap.appendChild(canvasEl);
-      card.appendChild(canvasWrap);
+      previewCol.appendChild(canvasWrap);
 
       // Actions
       var actions = el('div', 'cso-qfg-actions');
@@ -629,9 +634,29 @@
       printBtn.addEventListener('click', function () { if (typeof win.print === 'function') win.print(); });
       actions.appendChild(printBtn);
       actions.appendChild(statusEl);
-      card.appendChild(actions);
+      controlsCol.appendChild(actions);
+
+      workspace.appendChild(controlsCol);
+      workspace.appendChild(previewCol);
+      card.appendChild(workspace);
 
       container.replaceChildren(card);
+    }
+
+    if (typeof win.addEventListener === 'function') {
+      win.addEventListener('cso:qr-flyer-load', function (ev) {
+        var det = ev && ev.detail;
+        if (!det || typeof det !== 'object') return;
+        if (det.board) state.board = det.board;
+        if (det.titleEn) state.titleEn = det.titleEn;
+        if (det.titleOr !== undefined) state.titleOr = det.titleOr || det.titleEn || state.titleOr;
+        if (det.vacancies) state.vacancies = det.vacancies;
+        if (det.qualification) state.qualification = det.qualification;
+        if (det.lastDate) state.lastDate = det.lastDate;
+        if (det.fee) state.fee = det.fee;
+        if (det.url) state.url = det.url;
+        persistAndRender();
+      });
     }
 
     render();

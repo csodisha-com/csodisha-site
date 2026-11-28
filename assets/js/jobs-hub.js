@@ -175,32 +175,69 @@
     }
     card.appendChild(pills);
 
-    // Action footer: WhatsApp Share + Official Portal + Full Details / Read Guide ->
+    // Action footer: View Details + Save + QR Flyer + Official Portal (v451 enriched quick actions)
     var actions = el('div', 'cso-jh-card__actions');
 
+    var ctaLabel = it.source_type === 'guide'
+      ? (orMode ? 'ଗାଇଡ୍ ପଢ଼ନ୍ତୁ →' : 'Read Guide →')
+      : (orMode ? 'ବିବରଣୀ ଦେଖନ୍ତୁ →' : 'View Details');
+    var detailBtn = el('a', 'cso-jh-btn cso-jh-btn--primary', ctaLabel);
+    detailBtn.setAttribute('href', it.detail_url || '/jobs/');
+    actions.appendChild(detailBtn);
+
+    var alertId = 'job-' + String(it.slug || it.id || it.title_en || 'notice').toLowerCase().replace(/[^a-z0-9-]+/g, '-').slice(0, 48);
+    var isSaved = Boolean(window.CSOSavedAlerts && typeof window.CSOSavedAlerts.isSaved === 'function' && window.CSOSavedAlerts.isSaved(alertId));
+    var saveBtn = el('button', 'cso-jh-btn cso-jh-btn--save' + (isSaved ? ' is-saved' : ''), isSaved ? (orMode ? '★ ସେଭ୍' : '★ Saved') : (orMode ? '☆ ସେଭ୍' : '☆ Save'));
+    saveBtn.type = 'button';
+    saveBtn.setAttribute('aria-pressed', isSaved ? 'true' : 'false');
+    saveBtn.setAttribute('aria-label', (isSaved ? 'Remove from saved: ' : 'Save job notice: ') + (it.title_en || 'Notice'));
+    saveBtn.addEventListener('click', function () {
+      if (window.CSOSavedAlerts && typeof window.CSOSavedAlerts.toggleAlert === 'function') {
+        window.CSOSavedAlerts.toggleAlert({
+          id: alertId,
+          title: it.title_en || 'Odisha Recruitment',
+          category: it.category || 'Recruitment',
+          deadline: it.last_date || '',
+          url: it.detail_url || '/jobs/'
+        });
+        var nowSaved = window.CSOSavedAlerts.isSaved(alertId);
+        saveBtn.classList.toggle('is-saved', nowSaved);
+        saveBtn.setAttribute('aria-pressed', nowSaved ? 'true' : 'false');
+        saveBtn.textContent = nowSaved ? (orMode ? '★ ସେଭ୍' : '★ Saved') : (orMode ? '☆ ସେଭ୍' : '☆ Save');
+      }
+    });
+    actions.appendChild(saveBtn);
+
     var shareUrl = (window.location.origin || 'https://csodisha.com') + (it.detail_url || '/jobs/');
-    var waText = (it.title_en || 'Odisha Recruitment') + (it.last_date ? (' (Last Date: ' + it.last_date + ')') : '') + ' — ' + shareUrl;
-    var waBtn = el('a', 'cso-jh-btn cso-jh-btn--wa', orMode ? 'WhatsApp' : 'WhatsApp');
-    waBtn.setAttribute('href', 'https://wa.me/?text=' + encodeURIComponent(waText));
-    waBtn.setAttribute('target', '_blank');
-    waBtn.setAttribute('rel', 'noopener noreferrer');
-    waBtn.setAttribute('aria-label', 'Share on WhatsApp: ' + (it.title_en || 'Notice'));
-    actions.appendChild(waBtn);
+    var qrBtn = el('button', 'cso-jh-btn cso-jh-btn--qr', orMode ? '📲 QR ଫ୍ଲାୟର୍' : '📲 QR Flyer');
+    qrBtn.type = 'button';
+    qrBtn.setAttribute('aria-label', 'Open QR Flyer for: ' + (it.title_en || 'Notice'));
+    qrBtn.addEventListener('click', function () {
+      try {
+        window.dispatchEvent(new window.CustomEvent('cso:qr-flyer-load', {
+          detail: {
+            board: it.organization || 'Odisha Govt',
+            titleEn: it.title_en || 'Odisha Recruitment Notification',
+            titleOr: it.title_or || it.title_en || '',
+            vacancies: Number(it.total_posts || 0) > 0 ? (Number(it.total_posts).toLocaleString('en-IN') + ' Posts') : 'See Notification',
+            qualification: it.qualification || 'Post-Specific',
+            lastDate: it.last_date || 'Check Official Portal',
+            fee: it.org_group === 'central' ? 'As per Central Norms' : '₹0 (Odisha State Fee Exempted)',
+            url: shareUrl
+          }
+        }));
+        window.dispatchEvent(new window.CustomEvent('cso:jobs-open-tab', { detail: { tab: 'qr', scroll: true } }));
+      } catch (_) {}
+    });
+    actions.appendChild(qrBtn);
 
     if (it.official_url && it.is_verified_gov) {
-      var offBtn = el('a', 'cso-jh-btn cso-jh-btn--gov', orMode ? 'ଅଫିସିଆଲ୍ ପୋର୍ଟାଲ୍ ↗' : 'Official Portal ↗');
+      var offBtn = el('a', 'cso-jh-btn cso-jh-btn--gov', orMode ? 'ପୋର୍ଟାଲ୍ ↗' : 'Official Portal ↗');
       offBtn.setAttribute('href', it.official_url);
       offBtn.setAttribute('target', '_blank');
       offBtn.setAttribute('rel', 'noopener noreferrer');
       actions.appendChild(offBtn);
     }
-
-    var ctaLabel = it.source_type === 'guide'
-      ? (orMode ? 'ଗାଇଡ୍ ପଢ଼ନ୍ତୁ →' : 'Read Guide →')
-      : (orMode ? 'ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ →' : 'Full Details →');
-    var detailBtn = el('a', 'cso-jh-btn cso-jh-btn--primary', ctaLabel);
-    detailBtn.setAttribute('href', it.detail_url || '/jobs/');
-    actions.appendChild(detailBtn);
 
     card.appendChild(actions);
     return card;
