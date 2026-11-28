@@ -67,7 +67,7 @@ assert.ok(!/\.style\.[a-zA-Z]+\s*=/.test(jsCode));
 
 const toolsHtml = read('tools/index.html');
 assert.equal((toolsHtml.match(/id=["']cso-document-pack-validator-root["']/g) || []).length, 1);
-assert.ok(toolsHtml.includes('/assets/js/document-pack-validator.js?v=20261128v455'));
+assert.ok(toolsHtml.includes('/assets/js/document-pack-validator.js?v=20261128v456'));
 assert.ok(!/\son[a-z]+\s*=/i.test(toolsHtml) && !/\sstyle\s*=/i.test(toolsHtml));
 
 const qj = read('assets/js/tools-quick-jump-directory.js');
@@ -78,6 +78,6 @@ const blk = css.slice(css.indexOf('v438 / v439 / v440: Document Pack Validator')
 assert.ok(blk.includes('.cso-dpv-card') && blk.includes('var(--cso-') && !/#[0-9a-fA-F]{3,8}\b/.test(blk));
 
 const sw = read('sw.js');
-assert.ok(sw.includes('/assets/js/document-pack-validator.js?v=20261128v455'));
+assert.ok(sw.includes('/assets/js/document-pack-validator.js?v=20261128v456'));
 
 console.log('✅ v438 Odisha Govt Document Pack, Image-to-PDF & Size Validator tests passed!');

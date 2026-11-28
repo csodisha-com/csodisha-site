@@ -43,7 +43,7 @@
       saveRoadmap: '☆ Save',
       savedRoadmap: '★ Saved',
       compareAdd: '+ Compare',
-      compareAdded: '✓ Compare',
+      compareAdded: '✓ Comparing',
       compareBarLabel: 'Compare Selected',
       compareOpenBtn: 'Compare Selected',
       compareClearBtn: 'Clear',
@@ -1134,6 +1134,8 @@
     accentBar.setAttribute('aria-hidden', 'true');
     card.appendChild(accentBar);
 
+    // v456: Card Header Row — Track/Meta Badges on Left + Compact '+ Compare' Pill on Top-Right
+    var headRow = el('div', 'crp-card-head-row');
     var badges = el('div', 'crp-card-badges');
     badges.appendChild(el('span', 'crp-badge crp-badge-track', (trackMeta.icon || '🧭') + ' ' + pick(trackMeta.label_en, trackMeta.label_or)));
     badges.appendChild(el('span', 'crp-badge crp-badge-subtle', pick(item.scope_label_en, item.scope_label_or)));
@@ -1146,6 +1148,17 @@
     if (item.status && item.status !== 'published') {
       badges.appendChild(el('span', 'crp-preview-badge', 'UNPUBLISHED ' + item.status.toUpperCase()));
     }
+
+    var comparing = isInCompare(item.slug);
+    var cmpBtn = el('button', 'crp-compare-btn crp-compare-btn--header' + (comparing ? ' is-comparing' : ''), comparing ? t.compareAdded : t.compareAdd);
+    cmpBtn.type = 'button';
+    cmpBtn.setAttribute('data-crp-compare-slug', item.slug);
+    cmpBtn.setAttribute('aria-pressed', comparing ? 'true' : 'false');
+    cmpBtn.setAttribute('aria-label', 'Compare ' + item.title_en);
+    cmpBtn.addEventListener('click', function () {
+      toggleCompare(item.slug);
+    });
+    headRow.append(badges, cmpBtn);
 
     // Item 3: Crisp English line 1 + Clean Odia-only line 2 (no duplicate English parentheticals)
     var cleanOr = item.title_or_clean || (lib ? lib.cleanOdiaSubtitle(item.title_or) : item.title_or);
@@ -1182,21 +1195,27 @@
       msList.appendChild(li);
     });
 
-    // Item 14: Direct Action Shortcuts (Live Jobs, Salary Calc, Syllabus)
-    var shortcuts = el('div', 'crp-card-shortcuts');
+    // v456: Compact Single-Line Quick-Links Strip (Live Jobs · Salary Calc · Syllabus)
+    var shortcuts = el('div', 'crp-card-shortcuts crp-card-shortcuts--v456');
     shortcuts.setAttribute('aria-label', 'Quick Tools');
-    [
-      { label: '💼 ' + t.shortcutJobs, href: '/jobs/' },
-      { label: '🧮 ' + t.shortcutSalary, href: '/career-paths/#cso-orsp-salary-root' },
-      { label: '📘 ' + t.shortcutSyllabus, href: '/exams/#cso-syllabus-mastery-tracker-root' }
-    ].forEach(function (sc) {
-      var a = el('a', 'crp-shortcut-link', sc.label);
+    var shortcutList = [
+      { label: t.shortcutJobs, href: '/jobs/' },
+      { label: t.shortcutSalary, href: '/career-paths/#cso-orsp-salary-root' },
+      { label: t.shortcutSyllabus, href: '/exams/#cso-syllabus-mastery-tracker-root' }
+    ];
+    shortcutList.forEach(function (sc, idx) {
+      if (idx > 0) {
+        var sep = el('span', 'crp-shortcut-sep', '·');
+        sep.setAttribute('aria-hidden', 'true');
+        shortcuts.appendChild(sep);
+      }
+      var a = el('a', 'crp-shortcut-link crp-shortcut-link--v456', sc.label);
       a.href = sc.href;
       shortcuts.appendChild(a);
     });
 
-    // Item 2, 4, 7: Bottom-Pinned Single-Line Action Footer + Compare Toggle
-    var foot = el('div', 'crp-card-foot crp-card-foot--v453 crp-card-foot--v455');
+    // v456: Single Horizontal Action Footer Row ('View Full Roadmap' flex:1 + '☆ Save')
+    var foot = el('div', 'crp-card-foot crp-card-foot--v453 crp-card-foot--v455 crp-card-foot--v456');
     var openBtn = el('button', 'crp-btn crp-btn-primary', t.openRoadmap);
     openBtn.type = 'button';
     openBtn.addEventListener('click', function () {
@@ -1204,20 +1223,9 @@
     });
 
     var saveBtn = createSaveButton(item);
+    foot.append(openBtn, saveBtn);
 
-    var comparing = isInCompare(item.slug);
-    var cmpBtn = el('button', 'crp-btn crp-compare-btn' + (comparing ? ' is-comparing' : ''), comparing ? t.compareAdded : t.compareAdd);
-    cmpBtn.type = 'button';
-    cmpBtn.setAttribute('data-crp-compare-slug', item.slug);
-    cmpBtn.setAttribute('aria-pressed', comparing ? 'true' : 'false');
-    cmpBtn.setAttribute('aria-label', 'Compare ' + item.title_en);
-    cmpBtn.addEventListener('click', function () {
-      toggleCompare(item.slug);
-    });
-
-    foot.append(openBtn, saveBtn, cmpBtn);
-
-    card.append(badges, titleBlock, payStrip, summary, msList, shortcuts, foot);
+    card.append(headRow, titleBlock, payStrip, summary, msList, shortcuts, foot);
     return card;
   }
 

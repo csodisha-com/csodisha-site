@@ -66,7 +66,7 @@ for (const [key, tabId, panelId, mountId] of expectedTabs) {
   assert.equal((jobsHtml.match(new RegExp(`id=["']${mountId}["']`, 'g')) || []).length, 1, `Exactly one #${mountId} in jobs/index.html`);
 }
 assert.ok(wsSlice.includes('id="cso-multi-post-eligibility-root"') && wsSlice.includes('data-cso-compact-profile="1"'), '#cso-multi-post-eligibility-root on /jobs/ must enable compact deduplicated profile mode');
-assert.ok(jobsHtml.includes('/assets/js/jobs-workspace-tabs.js?v=20261128v455'), 'jobs/index.html must load jobs-workspace-tabs.js?v=20261128v455');
+assert.ok(jobsHtml.includes('/assets/js/jobs-workspace-tabs.js?v=20261128v456'), 'jobs/index.html must load jobs-workspace-tabs.js?v=20261128v456');
 
 // 4. Interactive sandbox test for window.CSOJobsWorkspaceTabs (click, keyboard arrows, localStorage, expand-all, cso:jobs-open-tab)
 function makeNode(tag, attrs = {}) {
@@ -187,8 +187,8 @@ assert.ok(v451Css.includes('var(--cso-'), 'v451 CSS must use semantic var(--cso-
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v451Css), 'v451 CSS must have zero hardcoded hex colors');
 
 // 8. SW & Ops-Sentinel v451 cache sync
-assert.ok(swJs.includes("const CACHE_NAME = 'cso-candidate-cache-v455'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v455');
-assert.ok(swJs.includes("'/assets/js/jobs-workspace-tabs.js?v=20261128v455'"), 'sw.js must precache jobs-workspace-tabs.js?v=20261128v455');
-assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v455'"), 'ops-sentinel.js must match cso-candidate-cache-v455');
+assert.ok(swJs.includes("const CACHE_NAME = 'cso-candidate-cache-v456'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v456');
+assert.ok(swJs.includes("'/assets/js/jobs-workspace-tabs.js?v=20261128v456'"), 'sw.js must precache jobs-workspace-tabs.js?v=20261128v456');
+assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v456'"), 'ops-sentinel.js must match cso-candidate-cache-v456');
 
 console.log('PASS: v451 Compact /jobs/ Hierarchy, Deduplicated Profile, 4-Tab Workspace & 2-Col QR Studio verified.');

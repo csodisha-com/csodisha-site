@@ -73,7 +73,7 @@ for (const htmlPath of ['exams/index.html', 'odisha-special/index.html']) {
   const html = read(htmlPath);
   const mounts = html.match(/id=["']cso-district-exam-center-root["']/g) || [];
   assert.equal(mounts.length, 1, `${htmlPath} must have exactly one #cso-district-exam-center-root`);
-  assert.ok(html.includes('/assets/js/district-exam-center-planner.js?v=20261128v455'), `${htmlPath} must load district-exam-center-planner.js?v=20261128v455`);
+  assert.ok(html.includes('/assets/js/district-exam-center-planner.js?v=20261128v456'), `${htmlPath} must load district-exam-center-planner.js?v=20261128v456`);
   assert.ok(!/\son[a-z]+\s*=/i.test(html), `${htmlPath} must have zero inline on* attributes`);
   assert.ok(!/\sstyle\s*=/i.test(html), `${htmlPath} must have zero inline style attributes`);
 }
@@ -87,10 +87,10 @@ assert.ok(decBlock.includes('var(--cso-'), 'CSS must use semantic var(--cso-*) t
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(decBlock), 'v432 CSS block must have zero hardcoded hex colors');
 
 const sw = read('sw.js');
-assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v455'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v455');
-assert.ok(sw.includes('/assets/js/district-exam-center-planner.js?v=20261128v455'), 'sw.js must pre-cache district-exam-center-planner.js?v=20261128v455');
+assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v456'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v456');
+assert.ok(sw.includes('/assets/js/district-exam-center-planner.js?v=20261128v456'), 'sw.js must pre-cache district-exam-center-planner.js?v=20261128v456');
 
 const ops = read('functions/_lib/ops-sentinel.js');
-assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v455'"), 'ops-sentinel.js must match cso-candidate-cache-v455');
+assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v456'"), 'ops-sentinel.js must match cso-candidate-cache-v456');
 
 console.log('✅ v432 Odisha 30-District Exam Center & Travel Logistics Planner tests passed!');

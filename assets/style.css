@@ -31765,3 +31765,153 @@ nav#cso-hub-top-tabs {
     display: none !important;
   }
 }
+
+/* ==========================================================================
+ * v456 — /careers/ Visual Micro-Tweaks: Full-Width 3-Col Grid, Header Compare
+ * Pill & Single-Line Quick-Links Strip (100% var(--cso-*) 4-Theme Tokens)
+ * ========================================================================== */
+
+/* 1. Full-Width 3-Column Grouped & Desktop Grid (zero empty 4th column) */
+.crp-cards-grid--v455,
+.crp-track-group .crp-cards-grid--v455 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1099px) {
+  .crp-cards-grid--v455,
+  .crp-track-group .crp-cards-grid--v455 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 719px) {
+  .crp-cards-grid--v455,
+  .crp-track-group .crp-cards-grid--v455 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 2. Header-Positioned '+ Compare' Pill & Clean 2-Button Single-Row Footer */
+.crp-card-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.crp-card-head-row .crp-card-badges {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.crp-compare-btn--header {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1.5px solid var(--cso-border-subtle);
+  background: var(--cso-card-subtle);
+  color: var(--cso-ink-primary);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.crp-compare-btn--header:hover,
+.crp-compare-btn--header:focus-visible {
+  border-color: var(--cso-active-track, var(--cso-brand-primary));
+  background: var(--cso-card-bg);
+}
+
+.crp-compare-btn--header.is-comparing {
+  background: var(--cso-info-bg, var(--cso-badge-verified-bg));
+  color: var(--cso-info-fg, var(--cso-badge-verified-fg));
+  border-color: var(--cso-info-border, var(--cso-brand-primary));
+}
+
+.crp-card-foot--v456 {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.crp-card-foot--v456 .crp-btn-primary {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.crp-card-foot--v456 .crp-save-btn {
+  flex: 0 0 auto;
+}
+
+/* 3. Compact Single-Line Non-Wrapping Quick-Links Strip Above Footer */
+.crp-card-shortcuts--v456 {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--cso-card-subtle);
+  border: 1px solid var(--cso-border-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.crp-shortcut-link--v456 {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--cso-link, var(--cso-brand-primary));
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.crp-shortcut-link--v456:hover,
+.crp-shortcut-link--v456:focus-visible {
+  background: transparent;
+  text-decoration: underline;
+}
+
+.crp-shortcut-sep {
+  color: var(--cso-ink-secondary);
+  font-weight: 800;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+@media (max-width: 1099px) {
+  .crp-compare-btn--header {
+    min-height: 44px;
+    padding: 6px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crp-compare-btn--header {
+    transition: none !important;
+  }
+}
+
+@media print {
+  .crp-compare-btn--header,
+  .crp-card-shortcuts--v456,
+  .crp-card-foot--v456 {
+    display: none !important;
+  }
+}
