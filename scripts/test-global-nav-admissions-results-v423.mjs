@@ -11,6 +11,7 @@ const ROOT = process.cwd();
 console.log('=== v423 Global Header Nav, Mobile Drawer & Homepage Quick-Launch (/admissions/ & /results/) Audit ===');
 
 const headerJs = fs.readFileSync(path.join(ROOT, 'assets/shared-header.js'), 'utf8');
+const appJs = fs.readFileSync(path.join(ROOT, 'assets/app.js'), 'utf8');
 const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const homeHydrationJs = fs.readFileSync(path.join(ROOT, 'assets/js/home-hydration.js'), 'utf8');
 const ssrShellJs = fs.readFileSync(path.join(ROOT, 'functions/_lib/ssr-shell.js'), 'utf8');
@@ -18,12 +19,35 @@ const cssSrc = fs.readFileSync(path.join(ROOT, 'assets/style.css'), 'utf8');
 const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
 const opsSrc = fs.readFileSync(path.join(ROOT, 'functions/_lib/ops-sentinel.js'), 'utf8');
 
-// 1. shared-header.js exposes /results/ and /admissions/ in nav dropdown/mobile drawer & footer + active route
-assert.ok(headerJs.includes("href: '/results/'") && headerJs.includes("title_en: 'Results & Cut-Offs'"), 'shared-header.js must expose /results/ in desktop & mobile Jobs dropdown');
-assert.ok(headerJs.includes("href: '/admissions/'") && headerJs.includes("title_en: 'Admissions & Counselling'"), 'shared-header.js must expose /admissions/ in desktop & mobile Jobs dropdown');
-assert.ok(headerJs.includes("p.startsWith('/results')") && headerJs.includes("p.startsWith('/admissions')"), 'shared-header.js resolveActivePillar must recognize /results/ and /admissions/');
+// 1. Both shared-header.js and app.js expose identical canonical dropdowns including /results/ & /admissions/
+for (const [label, src] of [['assets/shared-header.js', headerJs], ['assets/app.js', appJs]]) {
+  assert.ok(src.includes("href:'/results/'") || src.includes("href: '/results/'"), `${label} must expose /results/ in desktop & mobile Jobs dropdown`);
+  assert.ok(src.includes("title_en:'Results & Cut-Offs'") || src.includes("title_en: 'Results & Cut-Offs'"), `${label} must include Results & Cut-Offs label`);
+  assert.ok(src.includes("href:'/admissions/'") || src.includes("href: '/admissions/'"), `${label} must expose /admissions/ in desktop & mobile Jobs dropdown`);
+  assert.ok(src.includes("title_en:'Admissions & Counselling'") || src.includes("title_en: 'Admissions & Counselling'"), `${label} must include Admissions & Counselling label`);
+  assert.ok(src.includes("p.startsWith('/results')") && src.includes("p.startsWith('/admissions')"), `${label} active pillar resolver must recognize /results/ and /admissions/`);
+  assert.ok(src.includes('aria-current'), `${label} must set aria-current on active links`);
+  assert.ok(src.includes('CSO_CANONICAL_NAV_DROPDOWNS'), `${label} must define CSO_CANONICAL_NAV_DROPDOWNS`);
+}
 assert.ok(headerJs.includes("['Results & Cut-Offs', '/results/']") && headerJs.includes("['Admissions & Counselling', '/admissions/']"), 'shared-header.js FOOTER_COLS must expose /results/ and /admissions/');
-assert.ok(headerJs.includes("aria-current"), 'shared-header.js must set aria-current on active links');
+
+// 1b. v450: Verify exact parity of CSO_CANONICAL_NAV_DROPDOWNS between app.js & shared-header.js + static/SSR nav shells
+const parseCanonical = (src) => {
+  const m = src.match(/const\s+CSO_CANONICAL_NAV_DROPDOWNS\s*=\s*(\{[\s\S]*?\n\s*\});/);
+  assert.ok(m, 'CSO_CANONICAL_NAV_DROPDOWNS definition must exist');
+  return new Function(`return (${m[1]});`)();
+};
+assert.deepEqual(parseCanonical(appJs), parseCanonical(headerJs), 'app.js and shared-header.js must define identical dropdown links');
+const normNav = (html) => {
+  const m = html.match(/<nav\b[^>]*id="cso-main-navbar"[^>]*>[\s\S]*?<\/nav>/i);
+  assert.ok(m, 'Expected #cso-main-navbar');
+  return m[0].replace(/\s+aria-current="page"/gi, '').replace(/class="cso-nav-home\s+on"/gi, 'class="cso-nav-home"').replace(/\s+/g, ' ').trim();
+};
+const idxNav = normNav(indexHtml);
+for (const rel of ['jobs/index.html', 'exams/index.html', 'tools/index.html', 'career-paths/index.html', 'updates/index.html', 'functions/_lib/ssr-shell.js']) {
+  const txt = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+  assert.equal(normNav(txt), idxNav, `${rel} navbar dropdown markup must match index.html`);
+}
 
 // 2. SSR shell footer exposes /results/ and /admissions/
 assert.ok(ssrShellJs.includes('href="/results/"') && ssrShellJs.includes('href="/admissions/"'), 'ssr-shell.js footer must link to /results/ and /admissions/');
@@ -46,7 +70,7 @@ assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(qlBlock), 'v423 CSS block must have zero h
 assert.ok(qlBlock.includes('prefers-reduced-motion'), 'v423 CSS must include prefers-reduced-motion guard');
 
 // 5. SW & Ops-Sentinel cache sync
-assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v449'"), 'sw.js must bump CACHE_NAME to v423');
-assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v449'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v423');
+assert.ok(swSrc.includes("const CACHE_NAME = 'cso-candidate-cache-v450'"), 'sw.js must bump CACHE_NAME to v423');
+assert.ok(opsSrc.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v450'"), 'ops-sentinel.js must bump ACTIVE_SW_CACHE_VERSION to v423');
 
 console.log('✅ v423 Global Header Nav, Mobile Drawer & Homepage Quick-Launch Audit PASSED');

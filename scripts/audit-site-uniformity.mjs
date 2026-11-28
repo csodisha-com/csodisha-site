@@ -13,6 +13,24 @@ const files = [];
 })(root);
 const errors = [];
 const scriptsSeen = new Set();
+const NAV_RE = /<nav\b[^>]*id=["']cso-main-navbar["'][^>]*>[\s\S]*?<\/nav>/i;
+const normalizeNavMarkup = (navHtml) => String(navHtml || '')
+  .replace(/\s+aria-current=["']page["']/gi, '')
+  .replace(/class=["']cso-nav-home\s+on["']/gi, 'class="cso-nav-home"')
+  .replace(/\s+/g, ' ')
+  .trim();
+const indexHtmlSrc = readFileSync(join(root, 'index.html'), 'utf8');
+const indexNavMatch = indexHtmlSrc.match(NAV_RE);
+const canonicalNavNorm = indexNavMatch ? normalizeNavMarkup(indexNavMatch[0]) : '';
+if (!canonicalNavNorm) {
+  errors.push('index.html: missing canonical #cso-main-navbar');
+} else {
+  for (const stageId of ['cso-mobile-drawer-backdrop', 'cso-jobs-stage1', 'cso-careers-stage1', 'cso-schemes-stage1', 'cso-study-stage1', 'cso-community-stage1']) {
+    if (!canonicalNavNorm.includes(`id="${stageId}"`)) {
+      errors.push(`index.html: canonical #cso-main-navbar missing #${stageId}`);
+    }
+  }
+}
 for (const f of files) {
   const rel = relative(root, f);
   const h = readFileSync(f, 'utf8');
@@ -26,6 +44,12 @@ for (const f of files) {
   if (shell && !/href=["']\/assets\/style\.css/.test(h)) bad('missing /assets/style.css');
   if (shell && rel !== 'index.html' && !/src=["']\/assets\/shared-header\.js[^"']*["'][^>]*defer|defer[^>]*src=["']\/assets\/shared-header\.js/.test(h)) bad('missing deferred /assets/shared-header.js');
   if (shell && !auto && !(/id=["']header-top["']/.test(h) && /id=["']cso-main-navbar["']/.test(h))) bad('missing #header-top/#cso-main-navbar (or data-cso-auto-shell)');
+  if (shell && !auto && canonicalNavNorm) {
+    const mNav = h.match(NAV_RE);
+    if (!mNav || normalizeNavMarkup(mNav[0]) !== canonicalNavNorm) {
+      bad('#cso-main-navbar dropdown structure/links diverged from index.html');
+    }
+  }
   if (shell && !auto && !/cso-logo-96\.webp/.test(h)) bad('missing cso-logo-96.webp');
   if (/class=["'][^"']*(?<![\w-])(brand-mark|logo-square|cs-badge|cso-badge)(?![\w-])/.test(h) || />\s*CSO?\s*</.test(h)) bad('legacy CS/CSO badge');
   if (shell && !autoF && !(/cso-footer-zone1/.test(h) && /cso-footer-zone2/.test(h) && /cso-footer-zone3/.test(h))) bad('missing 3-zone portal footer (or data-cso-auto-footer)');
@@ -61,6 +85,35 @@ for (const f of fnFiles) {
   if (/\sstyle=\\?["']/i.test(code)) bad('inline style="" in SSR template');
   if (/\.innerHTML\b/.test(code)) bad('.innerHTML in SSR template');
   if (!/ssr-shell\.js/.test(code) && !/cso-main-navbar/.test(code)) bad('SSR template does not use canonical shell (functions/_lib/ssr-shell.js)');
+}
+// v450: verify SSR canonical shell (functions/_lib/ssr-shell.js) and client nav scripts (app.js & shared-header.js) match index.html
+const ssrShellSrc = readFileSync(join(root, 'functions/_lib/ssr-shell.js'), 'utf8');
+const ssrNavMatch = ssrShellSrc.match(NAV_RE);
+if (!ssrNavMatch || (canonicalNavNorm && normalizeNavMarkup(ssrNavMatch[0]) !== canonicalNavNorm)) {
+  errors.push('functions/_lib/ssr-shell.js: CSO_SHELL_HEADER #cso-main-navbar diverged from index.html');
+}
+const extractCanonicalDropdowns = (src, label) => {
+  const m = src.match(/const\s+CSO_CANONICAL_NAV_DROPDOWNS\s*=\s*(\{[\s\S]*?\n\s*\});/);
+  if (!m) { errors.push(`${label}: missing CSO_CANONICAL_NAV_DROPDOWNS single-source definition`); return null; }
+  try {
+    return new Function(`return (${m[1]});`)();
+  } catch (e) {
+    errors.push(`${label}: failed to parse CSO_CANONICAL_NAV_DROPDOWNS (${e.message})`);
+    return null;
+  }
+};
+const appDropdowns = extractCanonicalDropdowns(readFileSync(join(root, 'assets/app.js'), 'utf8'), 'assets/app.js');
+const sharedDropdowns = extractCanonicalDropdowns(readFileSync(join(root, 'assets/shared-header.js'), 'utf8'), 'assets/shared-header.js');
+if (appDropdowns && sharedDropdowns) {
+  if (JSON.stringify(appDropdowns) !== JSON.stringify(sharedDropdowns)) {
+    errors.push('assets/app.js vs assets/shared-header.js: CSO_CANONICAL_NAV_DROPDOWNS mismatch');
+  } else {
+    const htmlHrefs = Array.from(canonicalNavNorm.matchAll(/class="cso-js1-link"\s+href="([^"]+)"/g)).map((x) => x[1]);
+    const jsHrefs = ['jobs', 'careers', 'schemes', 'study', 'community'].flatMap((k) => (appDropdowns[k] || []).map((it) => it.href));
+    if (JSON.stringify(htmlHrefs) !== JSON.stringify(jsHrefs)) {
+      errors.push(`Canonical navbar dropdown href mismatch between index.html (${htmlHrefs.join(', ')}) and JS (${jsHrefs.join(', ')})`);
+    }
+  }
 }
 console.log(`Audited ${fnFiles.length} functions/*.js files for SSR shell compliance.`);
 console.log(`Audited ${files.length} HTML files.`);

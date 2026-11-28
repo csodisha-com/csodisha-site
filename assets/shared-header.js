@@ -760,10 +760,10 @@
   function resolveActivePillar(pathStr) {
     const p = String(pathStr || '/').toLowerCase();
     if (p === '/' || p === '/index.html' || p === '') return '';
-    if (p.startsWith('/careers') || p.startsWith('/career-guidance')) return 'careers';
-    if (p.startsWith('/jobs-careers') || p.startsWith('/jobs') || p.startsWith('/results') || p.startsWith('/admissions') || p.startsWith('/job-opportunity-finder')) return 'jobs';
-    if (p.startsWith('/schemes-benefits') || p.startsWith('/schemes') || p.startsWith('/scholarship-guidance') || p.startsWith('/scheme-opportunity-finder')) return 'schemes-benefits';
-    if (p.startsWith('/study-library') || p.startsWith('/study') || p.startsWith('/resources') || p.startsWith('/current-affairs') || p.startsWith('/mock-tests') || p.startsWith('/education-explorer') || p.startsWith('/study-path-finder')) return 'study-library';
+    if (p.startsWith('/careers') || p.startsWith('/career-paths') || p.startsWith('/career-guidance') || p.startsWith('/odisha-special')) return 'careers';
+    if (p.startsWith('/jobs-careers') || p.startsWith('/jobs') || p.startsWith('/exams') || p.startsWith('/results') || p.startsWith('/admissions') || p.startsWith('/job-opportunity-finder')) return 'jobs';
+    if (p.startsWith('/schemes-benefits') || p.startsWith('/schemes') || p.startsWith('/scholarships') || p.startsWith('/scholarship-guidance') || p.startsWith('/scheme-opportunity-finder')) return 'schemes-benefits';
+    if (p.startsWith('/study-library') || p.startsWith('/study') || p.startsWith('/resources') || p.startsWith('/current-affairs') || p.startsWith('/mock-tests') || p.startsWith('/guides') || p.startsWith('/updates') || p.startsWith('/tools') || p.startsWith('/education-explorer') || p.startsWith('/study-path-finder')) return 'study-library';
     if (p.startsWith('/community') || p.startsWith('/support')) return 'community';
     if (p.startsWith('/about') || p.startsWith('/trust-layer') || p.startsWith('/privacy-policy') || p.startsWith('/terms-of-use') || p.startsWith('/disclaimer') || p.startsWith('/copyright-policy')) return 'about';
     return '';
@@ -1001,113 +1001,58 @@
     });
   }
 
-  const JOBS_FLYOUT_CACHE_KEY = 'cso_jobs_flyout_v277';
-  let jobsFlyoutData = null;
-  let jobsFlyoutFetchStarted = false;
-
-  const JOBS_DEFAULT_SECTORS = [
-    { id: 'jtax_l1_government', slug: 'government', icon: '🏛️', title_en: 'Government', title_or: 'ସରକାରୀ ଚାକିରି' },
-    { id: 'jtax_l1_private', slug: 'private', icon: '💼', title_en: 'Private', title_or: 'ବେସରକାରୀ ଚାକିରି' },
-    { id: 'jtax_l1_psu', slug: 'psu', icon: '🏭', title_en: 'PSUs', title_or: 'ରାଷ୍ଟ୍ରାୟତ୍ତ ଉଦ୍ୟୋଗ (PSU)' },
-    { id: 'jtax_l1_ngo', slug: 'ngo', icon: '🤝', title_en: 'NGOs / Non-Profit', title_or: 'ଏନଜିଓ / ଅଣ-ଲାଭଜନକ' },
-    { id: 'jtax_l1_foreign', slug: 'foreign', icon: '✈️', title_en: 'Foreign Jobs', title_or: 'ବିଦେଶୀ ଚାକିରି' }
-  ];
-
-  const JOBS_STAGE2_REGIONS = [
-    { key: 'central', labelEn: 'Central', labelOr: 'କେନ୍ଦ୍ର' },
-    { key: 'odisha', labelEn: 'Odisha', labelOr: 'ଓଡ଼ିଶା' },
-    { key: 'all-india', labelEn: 'All Over India', labelOr: 'ସମଗ୍ର ଭାରତ' }
-  ];
-
-  function readJobsFlyoutCache() {
-    if (jobsFlyoutData) return jobsFlyoutData;
-    try {
-      const raw = sessionStorage.getItem(JOBS_FLYOUT_CACHE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.ts && (Date.now() - parsed.ts < 120000) && Array.isArray(parsed.sectors) && parsed.sectors.length) {
-          jobsFlyoutData = parsed;
-          return parsed;
-        }
-      }
-    } catch (_e) {}
-    return null;
-  }
-
-  function getActiveJobsSectors() {
-    const cached = readJobsFlyoutCache();
-    if (cached && Array.isArray(cached.sectors) && cached.sectors.length) return cached.sectors;
-    return JOBS_DEFAULT_SECTORS;
-  }
-
-  function buildStage2RegionList(sector, isOr) {
-    const secSlug = encodeURIComponent((sector && sector.slug) || 'government');
-    const ul = el('ul', 'cso-js2-list');
-    JOBS_STAGE2_REGIONS.forEach(reg => {
-      const li = el('li', 'cso-js2-item');
-      const a = el('a', 'cso-js2-link', isOr ? reg.labelOr : reg.labelEn);
-      a.href = '/jobs/?sector=' + secSlug + '&region=' + reg.key;
-      li.appendChild(a);
-      ul.appendChild(li);
-    });
-    return ul;
-  }
-
-  function renderStage2Contents(stage2El, sector, isOr) {
-    stage2El.replaceChildren();
-    if (!sector) return;
-    stage2El.appendChild(buildStage2RegionList(sector, isOr));
-  }
-
-  function buildMobileAccordionSub(sector, isOr) {
-    const box = el('div', 'cso-js1-mob-sub');
-    box.appendChild(buildStage2RegionList(sector, isOr));
-    return box;
-  }
-
-  function populateStage1List(cascade, stage1List, stage2El) {
-    const isOr = S.lang === 'or';
-    const sectors = getActiveJobsSectors();
-    stage1List.replaceChildren();
-
-    function activateSector(sec, itemEl, openStage2) {
-      stage1List.querySelectorAll('.cso-js1-item.is-active').forEach(elItem => elItem.classList.remove('is-active'));
-      if (itemEl) itemEl.classList.add('is-active');
-      const isDirectOnly = String((sec && sec.slug) || '').toLowerCase() === 'foreign';
-      if (isDirectOnly) {
-        cascade.classList.remove('is-stage2-open');
-        stage2El.replaceChildren();
-        return;
-      }
-      renderStage2Contents(stage2El, sec, isOr);
-      if (openStage2 && window.innerWidth >= 1100) {
-        cascade.classList.add('is-stage2-open');
-        const stage1Box = cascade.querySelector('.cso-jobs-stage1');
-        if (stage1Box) {
-          const rect = stage1Box.getBoundingClientRect();
-          stage2El.classList.toggle('is-flip-left', rect.right + 224 > window.innerWidth);
-        }
-      }
-    }
-
-    const JOBS_ALIGNED_ITEMS = [
+  // v450: Single-source-of-truth canonical aligned dropdowns (exact parity with assets/app.js & SSR shells)
+  const CSO_CANONICAL_NAV_DROPDOWNS = {
+    jobs: [
       { slug: 'job-alerts', icon: '💼', title_en: 'Job Alerts', title_or: 'ଚାକିରି ବିଜ୍ଞପ୍ତି', href: '/jobs/' },
       { slug: 'exam-updates', icon: '🪪', title_en: 'Exam Updates & Admit Cards', title_or: 'ପରୀକ୍ଷା ସୂଚନା ଓ ଆଡମିଟ୍ କାର୍ଡ', href: '/exams/' },
       { slug: 'results', icon: '🏆', title_en: 'Results & Cut-Offs', title_or: 'ଫଳାଫଳ ଓ କଟ୍-ଅଫ୍', href: '/results/' },
       { slug: 'admissions', icon: '🎓', title_en: 'Admissions & Counselling', title_or: 'ନାମଲେଖା ଓ କାଉନସେଲିଂ', href: '/admissions/' },
       { slug: 'odisha-recruitments', icon: '🏛️', title_en: 'Odisha State & University Recruitments', title_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ଓ ବିଶ୍ୱବିଦ୍ୟାଳୟ ନିଯୁକ୍ତି', href: '/jobs/#odisha' }
-    ];
+    ],
+    careers: [
+      { slug: 'career-paths', icon: '🧭', title_en: 'Career Paths & ORSP 7th Pay Explorer', title_or: 'କ୍ୟାରିଅର ପଥ ଓ ORSP ୭ମ ବେତନ', href: '/career-paths/' },
+      { slug: 'odisha-special', icon: '🗺️', title_en: 'Odisha Special & 30-District Atlas', title_or: 'ଓଡ଼ିଶା ସ୍ୱତନ୍ତ୍ର ଓ ୩୦ ଜିଲ୍ଲା ଆଟଲାସ୍', href: '/odisha-special/' },
+      { slug: 'career-roadmaps', icon: '📋', title_en: 'Career Roadmaps & Guides', title_or: 'କ୍ୟାରିଅର ରୋଡମ୍ୟାପ୍ ଓ ଗାଇଡ୍', href: '/careers/' }
+    ],
+    schemes: [
+      { slug: 'scholarships', icon: '🎓', title_en: 'Scholarships Hub', title_or: 'ଛାତ୍ରବୃତ୍ତି ହବ୍', href: '/scholarships/' },
+      { slug: 'odisha-schemes', icon: '🏛️', title_en: 'Odisha Welfare Schemes', title_or: 'ଓଡ଼ିଶା କଲ୍ୟାଣ ଯୋଜନା', href: '/schemes/' }
+    ],
+    study: [
+      { slug: 'study-materials', icon: '📚', title_en: 'Study Materials & Notes', title_or: 'ଅଧ୍ୟୟନ ସାମଗ୍ରୀ ଓ ନୋଟ୍ସ', href: '/study-materials/' },
+      { slug: 'guides', icon: '📘', title_en: 'Informative Guides', title_or: 'ସୂଚନାମୂଳକ ଗାଇଡ୍', href: '/guides/' },
+      { slug: 'updates', icon: '📰', title_en: 'All Updates (Newsroom)', title_or: 'ସମସ୍ତ ଅପଡେଟ୍ (ନ୍ୟୁଜରୁମ୍)', href: '/updates/' },
+      { slug: 'mock-tests', icon: '⏱️', title_en: 'Live CBT Mock Tests', title_or: 'ଲାଇଭ୍ CBT ମକ୍ ଟେଷ୍ଟ', href: '/mock-tests/' },
+      { slug: 'pyq', icon: '📑', title_en: 'Syllabus & PYQ Papers', title_or: 'ସିଲାବସ୍ ଓ ପୂର୍ବ ବର୍ଷ ପ୍ରଶ୍ନ (PYQ)', href: '/study-materials/#pyq' }
+    ],
+    community: [
+      { slug: 'exam-career-qa', icon: '❓', title_en: 'Exam & Career Q&A', title_or: 'ପରୀକ୍ଷା ଓ କ୍ୟାରିୟର ପ୍ରଶ୍ନୋତ୍ତର', href: '/community/?channel=exam-career-qa' },
+      { slug: 'schemes-citizen-help', icon: '🏛️', title_en: 'Odisha Schemes & Citizen Help', title_or: 'ଓଡ଼ିଶା ଯୋଜନା ଓ ନାଗରିକ ସହାୟତା', href: '/community/?channel=schemes-citizen-help' },
+      { slug: 'study-groups-notes', icon: '📚', title_en: 'Study Groups & Peer Notes', title_or: 'ଅଧ୍ୟୟନ ଦଳ ଓ ସହପାଠୀ ନୋଟ୍ସ', href: '/community/?channel=study-groups-notes' },
+      { slug: 'success-stories-mentorship', icon: '🏆', title_en: 'Success Stories & Mentorship', title_or: 'ସଫଳତା କାହାଣୀ ଓ ମାର୍ଗଦର୍ଶନ', href: '/community/?channel=success-stories-mentorship' },
+      { slug: 'all', icon: '🌐', title_en: 'All Community Discussions', title_or: 'ସମସ୍ତ ସମୁଦାୟ ଆଲୋଚନା', href: '/community/' }
+    ]
+  };
+  window.CSO_CANONICAL_NAV_DROPDOWNS = CSO_CANONICAL_NAV_DROPDOWNS;
+
+  function renderCanonicalStage1(stage1List, items, dataAttrKey) {
+    if (!stage1List) return;
+    const isOr = S.lang === 'or';
     const curPath = (window.location && window.location.pathname) ? window.location.pathname : '';
     const curHash = (window.location && window.location.hash) ? window.location.hash : '';
+    const curSearch = (window.location && window.location.search) ? window.location.search : '';
+    stage1List.replaceChildren();
 
-    JOBS_ALIGNED_ITEMS.forEach(item => {
+    (items || []).forEach(item => {
       const li = el('li', 'cso-js1-item is-direct-only');
-      li.dataset.jsSector = item.slug;
+      if (dataAttrKey) li.dataset[dataAttrKey] = item.slug;
 
       const row = el('div', 'cso-js1-row');
-      const isCur = item.href.indexOf('#') !== -1
-        ? (curPath + curHash === item.href)
-        : (curPath === item.href && !curHash);
+      let isCur = false;
+      if (item.href.indexOf('#') !== -1) isCur = (curPath + curHash === item.href);
+      else if (item.href.indexOf('?') !== -1) isCur = (curPath + curSearch === item.href);
+      else isCur = (curPath === item.href && !curHash && !curSearch);
       const a = el('a', 'cso-js1-link' + (isCur ? ' on' : ''));
       a.href = item.href;
       if (isCur) a.setAttribute('aria-current', 'page');
@@ -1115,7 +1060,7 @@
       const left = el('span', 'cso-js1-left');
       const ic = el('span', 'cso-js1-icon', item.icon);
       ic.setAttribute('aria-hidden', 'true');
-      left.append(ic, el('span', 'cso-js1-title', isOr ? item.title_or : item.title_en));
+      left.append(ic, el('span', 'cso-js1-title', isOr ? (item.title_or || item.title_en) : item.title_en));
       a.appendChild(left);
       row.appendChild(a);
       li.appendChild(row);
@@ -1136,39 +1081,12 @@
     });
   }
 
-  function hydrateJobsFlyoutFromD1(cascade, stage1List, stage2El) {
-    const cached = readJobsFlyoutCache();
-    if (cached) {
-      populateStage1List(cascade, stage1List, stage2El);
-      return;
-    }
-    if (jobsFlyoutFetchStarted || typeof fetch !== 'function') return;
-    jobsFlyoutFetchStarted = true;
-    fetch('/api/public/jobs/bootstrap', { credentials: 'same-origin' })
-      .then(r => (r.ok ? r.json() : null))
-      .then(d => {
-        if (!d || !d.ok) return;
-        let sectors = [];
-        if (Array.isArray(d.nav_sectors) && d.nav_sectors.length) {
-          sectors = d.nav_sectors.map(l1 => ({
-            id: l1.id, slug: l1.slug, title_en: l1.title_en, title_or: l1.title_or || l1.title_en, icon: l1.icon || '💼'
-          }));
-        } else if (Array.isArray(d.tree) && d.tree.length) {
-          sectors = d.tree.map(l1 => ({
-            id: l1.id, slug: l1.slug, title_en: l1.title_en, title_or: l1.title_or || l1.title_en, icon: l1.icon || '💼'
-          }));
-        } else {
-          sectors = JOBS_DEFAULT_SECTORS;
-        }
-        jobsFlyoutData = { ts: Date.now(), sectors };
-        try { sessionStorage.setItem(JOBS_FLYOUT_CACHE_KEY, JSON.stringify(jobsFlyoutData)); } catch (_e) {}
-        document.querySelectorAll('.cso-jobs-cascade').forEach(cEl => {
-          const s1 = cEl.querySelector('.cso-js1-list');
-          const s2 = cEl.querySelector('.cso-jobs-stage2');
-          if (s1 && s2) populateStage1List(cEl, s1, s2);
-        });
-      })
-      .catch(() => {});
+  function populateStage1List(cascade, stage1List) {
+    renderCanonicalStage1(stage1List, CSO_CANONICAL_NAV_DROPDOWNS.jobs, 'jsSector');
+  }
+
+  function hydrateJobsFlyoutFromD1(cascade, stage1List) {
+    populateStage1List(cascade, stage1List);
   }
 
   function buildJobsCascadingMenu() {
@@ -1176,7 +1094,6 @@
     const cascade = el('div', 'cso-jobs-cascade');
     cascade.id = 'cso-jobs-cascade';
 
-    // Stage 1 — Minimal Vertical Sector List (240px)
     const stage1 = el('div', 'cso-jobs-stage1');
     stage1.id = 'cso-jobs-stage1';
     stage1.setAttribute('role', 'region');
@@ -1185,38 +1102,22 @@
     const list = el('ul', 'cso-js1-list');
     stage1.appendChild(list);
 
-    // Stage 2 — Minimal Right-Side Slide Flyout (210px, Central / Odisha / All Over India)
-    const stage2 = el('div', 'cso-jobs-stage2');
-    stage2.id = 'cso-jobs-stage2';
-    stage2.setAttribute('role', 'region');
-    stage2.setAttribute('aria-label', isOr ? 'ଭୌଗୋଳିକ ପରିସର' : 'Geographic scopes');
-    stage2.addEventListener('keydown', ev => {
-      if (ev.key === 'ArrowLeft') {
-        ev.preventDefault();
-        const activeLink = list.querySelector('.cso-js1-item.is-active .cso-js1-link') || list.querySelector('.cso-js1-link');
-        if (activeLink) activeLink.focus();
-      }
-    });
-
-    populateStage1List(cascade, list, stage2);
-    cascade.append(stage1, stage2);
+    populateStage1List(cascade, list);
+    cascade.appendChild(stage1);
     return cascade;
   }
 
   function wireJobsCascadingInteractions(ni, triggerA, chevBtn, cascade) {
     let hoverCloseTimer = null;
     const stage1List = cascade.querySelector('.cso-js1-list');
-    const stage2El = cascade.querySelector('.cso-jobs-stage2');
 
     function setOpen(open) {
       if (open) {
         closeDropdowns(ni);
-        hydrateJobsFlyoutFromD1(cascade, stage1List, stage2El);
-      } else {
-        cascade.classList.remove('is-stage2-open');
-        stage1List.querySelectorAll('.cso-js1-item.is-active').forEach(it => it.classList.remove('is-active'));
+        populateStage1List(cascade, stage1List);
       }
       ni.classList.toggle('cso-open', open);
+      ni.classList.toggle('is-open', open);
       triggerA.setAttribute('aria-expanded', String(open));
       chevBtn.setAttribute('aria-expanded', String(open));
     }
@@ -1268,135 +1169,12 @@
     });
   }
 
-  const CAREERS_FLYOUT_CACHE_KEY = 'cso_careers_flyout_v278';
-  let careersFlyoutData = null;
-  let careersFlyoutFetchStarted = false;
-
-  const CAREERS_DEFAULT_TRACKS = [
-    { id: 'ctax-track-civil-services', slug: 'civil-services', icon: '🏛️', label_en: 'Civil Services', label_or: 'ସିଭିଲ୍ ସର୍ଭିସେସ୍' },
-    { id: 'ctax-track-engineering-it', slug: 'engineering-it', icon: '💻', label_en: 'Engineering / IT', label_or: 'ଇଞ୍ଜିନିୟରିଂ / ଆଇଟି' },
-    { id: 'ctax-track-banking-finance', slug: 'banking-finance', icon: '🏦', label_en: 'Banking & Finance', label_or: 'ବ୍ୟାଙ୍କିଂ ଓ ଅର୍ଥନୀତି' },
-    { id: 'ctax-track-healthcare', slug: 'healthcare', icon: '🩺', label_en: 'Healthcare', label_or: 'ସ୍ୱାସ୍ଥ୍ୟ ସେବା' },
-    { id: 'ctax-track-agriculture', slug: 'agriculture', icon: '🌾', label_en: 'Agriculture', label_or: 'କୃଷି ଓ ଆନୁଷଙ୍ଗିକ' },
-    { id: 'ctax-track-pathways', slug: 'pathways', icon: '🧭', label_en: 'Career Stage & Pathways', label_or: 'କ୍ୟାରିୟର୍ ପର୍ଯ୍ୟାୟ ଓ ମାର୍ଗ' }
-  ];
-
-  function readCareersFlyoutCache() {
-    if (careersFlyoutData) return careersFlyoutData;
-    try {
-      const raw = sessionStorage.getItem(CAREERS_FLYOUT_CACHE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.ts && (Date.now() - parsed.ts < 120000) && Array.isArray(parsed.tracks) && parsed.tracks.length) {
-          careersFlyoutData = parsed;
-          return parsed;
-        }
-      }
-    } catch (_e) {}
-    return null;
-  }
-
-  function getActiveCareersTracks() {
-    const cached = readCareersFlyoutCache();
-    if (cached && Array.isArray(cached.tracks) && cached.tracks.length) return cached.tracks;
-    return CAREERS_DEFAULT_TRACKS;
-  }
-
   function populateCareersStage1List(stage1List) {
-    if (!stage1List) return;
-    const isOr = S.lang === 'or';
-    stage1List.replaceChildren();
-
-    const curPath = (window.location && window.location.pathname) ? window.location.pathname : '';
-    const items = [
-      {
-        slug: 'career-paths',
-        icon: '🧭',
-        title: isOr ? 'କ୍ୟାରିଅର ପଥ ଓ ORSP ୭ମ ବେତନ' : 'Career Paths & ORSP 7th Pay Explorer',
-        href: '/career-paths/'
-      },
-      {
-        slug: 'odisha-special',
-        icon: '🗺️',
-        title: isOr ? 'ଓଡ଼ିଶା ସ୍ୱତନ୍ତ୍ର ଓ ୩୦ ଜିଲ୍ଲା ଆଟଲାସ୍' : 'Odisha Special & 30-District Atlas',
-        href: '/odisha-special/'
-      },
-      {
-        slug: 'career-roadmaps',
-        icon: '📋',
-        title: isOr ? 'କ୍ୟାରିଅର ରୋଡମ୍ୟାପ୍ ଓ ଗାଇଡ୍' : 'Career Roadmaps & Guides',
-        href: '/careers/'
-      }
-    ];
-
-    items.forEach(item => {
-      const li = el('li', 'cso-js1-item is-direct-only');
-      li.dataset.crTrack = item.slug;
-
-      const row = el('div', 'cso-js1-row');
-      const isCur = curPath === item.href;
-      const a = el('a', 'cso-js1-link' + (isCur ? ' on' : ''));
-      a.href = item.href;
-      if (isCur) a.setAttribute('aria-current', 'page');
-
-      const left = el('span', 'cso-js1-left');
-      const ic = el('span', 'cso-js1-icon', item.icon);
-      ic.setAttribute('aria-hidden', 'true');
-      left.append(ic, el('span', 'cso-js1-title', item.title));
-      a.appendChild(left);
-
-      row.appendChild(a);
-      li.appendChild(row);
-
-      a.addEventListener('keydown', ev => {
-        if (ev.key === 'ArrowDown') {
-          ev.preventDefault();
-          const nextLi = li.nextElementSibling;
-          if (nextLi) { const na = nextLi.querySelector('.cso-js1-link'); if (na) na.focus(); }
-        } else if (ev.key === 'ArrowUp') {
-          ev.preventDefault();
-          const prevLi = li.previousElementSibling;
-          if (prevLi) { const pa = prevLi.querySelector('.cso-js1-link'); if (pa) pa.focus(); }
-        }
-      });
-
-      stage1List.appendChild(li);
-    });
+    renderCanonicalStage1(stage1List, CSO_CANONICAL_NAV_DROPDOWNS.careers, 'crTrack');
   }
 
   function hydrateCareersFlyoutFromD1(stage1List) {
-    const cached = readCareersFlyoutCache();
-    if (cached) {
-      populateCareersStage1List(stage1List);
-      return;
-    }
-    if (careersFlyoutFetchStarted || typeof fetch !== 'function') return;
-    careersFlyoutFetchStarted = true;
-    fetch('/api/public/careers/bootstrap', { credentials: 'same-origin' })
-      .then(r => (r.ok ? r.json() : null))
-      .then(d => {
-        if (!d || !d.ok) return;
-        let tracks = [];
-        if (Array.isArray(d.nav_tracks) && d.nav_tracks.length) {
-          tracks = d.nav_tracks;
-        } else if (d.taxonomy && Array.isArray(d.taxonomy.tracks) && d.taxonomy.tracks.length) {
-          tracks = d.taxonomy.tracks.map(tr => ({
-            id: tr.id,
-            slug: tr.slug,
-            label_en: tr.label_en,
-            label_or: tr.label_or || tr.label_en,
-            icon: tr.icon || '🧭'
-          }));
-        } else {
-          tracks = CAREERS_DEFAULT_TRACKS;
-        }
-        careersFlyoutData = { ts: Date.now(), tracks };
-        try { sessionStorage.setItem(CAREERS_FLYOUT_CACHE_KEY, JSON.stringify(careersFlyoutData)); } catch (_e) {}
-        document.querySelectorAll('.cso-careers-cascade .cso-js1-list').forEach(s1 => {
-          populateCareersStage1List(s1);
-        });
-      })
-      .catch(() => {});
+    populateCareersStage1List(stage1List);
   }
 
   function buildCareersCascadingMenu() {
@@ -1425,9 +1203,7 @@
     function setOpen(open) {
       if (open) {
         closeDropdowns(ni);
-        hydrateCareersFlyoutFromD1(stage1List);
-      } else {
-        stage1List.querySelectorAll('.cso-js1-item.is-active').forEach(it => it.classList.remove('is-active'));
+        populateCareersStage1List(stage1List);
       }
       ni.classList.toggle('cso-open', open);
       ni.classList.toggle('is-open', open);
@@ -1489,51 +1265,8 @@
     });
   }
 
-  // ---- Aligned Schemes & Benefits Dropdown (v383) ----
-  const SCHEMES_DROPDOWN_ITEMS = [
-    { slug: 'scholarships', icon: '🎓', title_en: 'Scholarships Hub', title_or: 'ଛାତ୍ରବୃତ୍ତି ହବ୍', href: '/scholarships/' },
-    { slug: 'odisha-schemes', icon: '🏛️', title_en: 'Odisha Welfare Schemes', title_or: 'ଓଡ଼ିଶା କଲ୍ୟାଣ ଯୋଜନା', href: '/schemes/' }
-  ];
-
   function renderSchemesStage1(stage1List) {
-    if (!stage1List) return;
-    const isOr = S.lang === 'or';
-    const curPath = (window.location && window.location.pathname) ? window.location.pathname : '';
-    stage1List.replaceChildren();
-
-    SCHEMES_DROPDOWN_ITEMS.forEach(item => {
-      const li = el('li', 'cso-js1-item is-direct-only');
-      li.dataset.schScope = item.slug;
-
-      const row = el('div', 'cso-js1-row');
-      const isCur = curPath === item.href;
-      const a = el('a', 'cso-js1-link' + (isCur ? ' on' : ''));
-      a.href = item.href;
-      if (isCur) a.setAttribute('aria-current', 'page');
-
-      const left = el('span', 'cso-js1-left');
-      const ic = el('span', 'cso-js1-icon', item.icon);
-      ic.setAttribute('aria-hidden', 'true');
-      left.append(ic, el('span', 'cso-js1-title', isOr ? item.title_or : item.title_en));
-      a.appendChild(left);
-
-      row.appendChild(a);
-      li.appendChild(row);
-
-      a.addEventListener('keydown', ev => {
-        if (ev.key === 'ArrowDown') {
-          ev.preventDefault();
-          const nextLi = li.nextElementSibling;
-          if (nextLi) { const na = nextLi.querySelector('.cso-js1-link'); if (na) na.focus(); }
-        } else if (ev.key === 'ArrowUp') {
-          ev.preventDefault();
-          const prevLi = li.previousElementSibling;
-          if (prevLi) { const pa = prevLi.querySelector('.cso-js1-link'); if (pa) pa.focus(); }
-        }
-      });
-
-      stage1List.appendChild(li);
-    });
+    renderCanonicalStage1(stage1List, CSO_CANONICAL_NAV_DROPDOWNS.schemes, 'schScope');
   }
 
   function hydrateSchemesFlyoutFromD1(cascade, stage1List) {
@@ -1567,6 +1300,7 @@
         renderSchemesStage1(stage1List);
       }
       ni.classList.toggle('cso-open', open);
+      ni.classList.toggle('is-open', open);
       triggerA.setAttribute('aria-expanded', String(open));
       chevBtn.setAttribute('aria-expanded', String(open));
     }
@@ -1618,108 +1352,12 @@
     });
   }
 
-  // v286: Single-Stage Vertical Study Library ▾ Dropdown (ONLY 5 items, NO Stage 2 slideout, NO › chevrons)
-  const STUDY_DROPDOWN_CACHE_KEY = 'cso_study_library_dropdown_v286';
-  const STUDY_RETIRED_SLUGS = new Set(['skill-coding-digital', 'previous-papers-mock-tests']);
-  const STUDY_DEFAULT_TRACKS = [
-    { id: 'stl_l1_central_exams', slug: 'central-competitive-exams', icon: '🇮🇳', title_en: 'Central Competitive Exams', title_or: 'କେନ୍ଦ୍ରୀୟ ପ୍ରତିଯୋଗିତାମୂଳକ ପରୀକ୍ଷା' },
-    { id: 'stl_l1_odisha_state', slug: 'odisha-state-exams', icon: '🏛️', title_en: 'Odisha State Exams', title_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ପରୀକ୍ଷା' },
-    { id: 'stl_l1_teaching_educator', slug: 'teaching-educator-exams', icon: '🎓', title_en: 'Teaching & Educator Exams', title_or: 'ଶିକ୍ଷକ ଓ ଶିକ୍ଷାଦାନ ପରୀକ୍ଷା' },
-    { id: 'stl_l1_school_board', slug: 'school-board-notes', icon: '📘', title_en: 'School & Board Exams', title_or: 'ବିଦ୍ୟାଳୟ ଓ ବୋର୍ଡ ପରୀକ୍ଷା' }
-  ];
-  let studyDropdownTracks = null;
-  let studyDropdownFetchStarted = false;
-
-  function getStudyDropdownTracks() {
-    if (Array.isArray(studyDropdownTracks) && studyDropdownTracks.length) return studyDropdownTracks;
-    try {
-      const raw = window.sessionStorage.getItem(STUDY_DROPDOWN_CACHE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.tracks) && parsed.tracks.length && (Date.now() - Number(parsed.ts || 0) < 300000)) {
-          studyDropdownTracks = parsed.tracks;
-          return studyDropdownTracks;
-        }
-      }
-    } catch (_e) {}
-    return STUDY_DEFAULT_TRACKS;
-  }
-
   function renderStudyStage1(stage1List) {
-    if (!stage1List) return;
-    stage1List.replaceChildren();
-    const isOr = S.lang === 'or';
-    const curPath = (window.location && window.location.pathname) ? window.location.pathname : '';
-    const curHash = (window.location && window.location.hash) ? window.location.hash : '';
-    const items = [
-      { slug: 'study-materials', icon: '📚', title_en: 'Study Materials & Notes', title_or: 'ଅଧ୍ୟୟନ ସାମଗ୍ରୀ ଓ ନୋଟ୍ସ', href: '/study-materials/' },
-      { slug: 'guides', icon: '📘', title_en: 'Informative Guides', title_or: 'ସୂଚନାମୂଳକ ଗାଇଡ୍', href: '/guides/' },
-      { slug: 'updates', icon: '📰', title_en: 'All Updates (Newsroom)', title_or: 'ସମସ୍ତ ଅପଡେଟ୍ (ନ୍ୟୁଜରୁମ୍)', href: '/updates/' },
-      { slug: 'mock-tests', icon: '⏱️', title_en: 'Live CBT Mock Tests', title_or: 'ଲାଇଭ୍ CBT ମକ୍ ଟେଷ୍ଟ', href: '/mock-tests/' },
-      { slug: 'pyq', icon: '📑', title_en: 'Syllabus & PYQ Papers', title_or: 'ସିଲାବସ୍ ଓ ପୂର୍ବ ବର୍ଷ ପ୍ରଶ୍ନ (PYQ)', href: '/study-materials/#pyq' }
-    ];
-
-    items.forEach(item => {
-      const li = el('li', 'cso-js1-item is-direct-only');
-      li.dataset.track = item.slug;
-      const row = el('div', 'cso-js1-row');
-      const isCur = item.href.indexOf('#') !== -1
-        ? (curPath + curHash === item.href)
-        : (curPath === item.href && !curHash);
-      const a = el('a', 'cso-js1-link' + (isCur ? ' on' : ''));
-      a.href = item.href;
-      if (isCur) a.setAttribute('aria-current', 'page');
-      const left = el('span', 'cso-js1-left');
-      const ic = el('span', 'cso-js1-icon', item.icon);
-      ic.setAttribute('aria-hidden', 'true');
-      left.append(ic, el('span', 'cso-js1-title', isOr ? item.title_or : item.title_en));
-      a.appendChild(left);
-      row.appendChild(a);
-      li.appendChild(row);
-
-      a.addEventListener('keydown', ev => {
-        if (ev.key === 'ArrowDown') {
-          ev.preventDefault();
-          const nextLi = li.nextElementSibling;
-          if (nextLi) { const na = nextLi.querySelector('.cso-js1-link'); if (na) na.focus(); }
-        } else if (ev.key === 'ArrowUp') {
-          ev.preventDefault();
-          const prevLi = li.previousElementSibling;
-          if (prevLi) { const pa = prevLi.querySelector('.cso-js1-link'); if (pa) pa.focus(); }
-        }
-      });
-
-      stage1List.appendChild(li);
-    });
+    renderCanonicalStage1(stage1List, CSO_CANONICAL_NAV_DROPDOWNS.study, 'track');
   }
 
   function hydrateStudyDropdownFromD1(stage1List) {
     renderStudyStage1(stage1List);
-    if (studyDropdownFetchStarted || typeof fetch !== 'function') return;
-    studyDropdownFetchStarted = true;
-    fetch('/api/public/study-library/bootstrap', { credentials: 'same-origin' })
-      .then(r => (r.ok ? r.json() : null))
-      .then(data => {
-        if (data && Array.isArray(data.nav_tracks) && data.nav_tracks.length) {
-          const filtered = data.nav_tracks
-            .filter(t => t && !STUDY_RETIRED_SLUGS.has(String(t.slug || '').toLowerCase()))
-            .map(t => ({
-              id: t.id,
-              slug: t.slug,
-              icon: t.icon || '📚',
-              title_en: t.slug === 'school-board-notes' ? 'School & Board Exams' : t.title_en,
-              title_or: t.slug === 'school-board-notes' ? 'ବିଦ୍ୟାଳୟ ଓ ବୋର୍ଡ ପରୀକ୍ଷା' : (t.title_or || t.title_en)
-            }));
-          if (filtered.length) {
-            studyDropdownTracks = filtered;
-            try {
-              window.sessionStorage.setItem(STUDY_DROPDOWN_CACHE_KEY, JSON.stringify({ ts: Date.now(), tracks: studyDropdownTracks }));
-            } catch (_e) {}
-            document.querySelectorAll('#cso-study-stage1 .cso-js1-list').forEach(listEl => renderStudyStage1(listEl));
-          }
-        }
-      })
-      .catch(() => {});
   }
 
   function buildStudyDropdownMenu() {
@@ -1747,7 +1385,7 @@
     function setOpen(open) {
       if (open) {
         closeDropdowns(ni);
-        hydrateStudyDropdownFromD1(stage1List);
+        renderStudyStage1(stage1List);
       }
       ni.classList.toggle('cso-open', open);
       ni.classList.toggle('is-open', open);
@@ -1809,112 +1447,12 @@
     });
   }
 
-  // v287: Single-Stage Vertical Community ▾ Dropdown (ONLY 5 items, NO Stage 2 slideout, NO › chevrons)
-  const COMMUNITY_DROPDOWN_CACHE_KEY = 'cso_community_dropdown_v287';
-  const COMMUNITY_CANONICAL_SLUGS = new Set([
-    'exam-career-qa',
-    'schemes-citizen-help',
-    'study-groups-notes',
-    'success-stories-mentorship'
-  ]);
-  const COMMUNITY_DEFAULT_CHANNELS = [
-    { id: 'comm_l1_exam_career_qa', slug: 'exam-career-qa', icon: '❓', title_en: 'Exam & Career Q&A', title_or: 'ପରୀକ୍ଷା ଓ କ୍ୟାରିୟର ପ୍ରଶ୍ନୋତ୍ତର' },
-    { id: 'comm_l1_schemes_citizen_help', slug: 'schemes-citizen-help', icon: '🏛️', title_en: 'Odisha Schemes & Citizen Help', title_or: 'ଓଡ଼ିଶା ଯୋଜନା ଓ ନାଗରିକ ସହାୟତା' },
-    { id: 'comm_l1_study_groups_notes', slug: 'study-groups-notes', icon: '📚', title_en: 'Study Groups & Peer Notes', title_or: 'ଅଧ୍ୟୟନ ଦଳ ଓ ସହପାଠୀ ନୋଟ୍ସ' },
-    { id: 'comm_l1_success_stories', slug: 'success-stories-mentorship', icon: '🏆', title_en: 'Success Stories & Mentorship', title_or: 'ସଫଳତା କାହାଣୀ ଓ ମାର୍ଗଦର୍ଶନ' }
-  ];
-  let communityDropdownChannels = null;
-  let communityDropdownFetchStarted = false;
-
-  function getCommunityDropdownChannels() {
-    if (Array.isArray(communityDropdownChannels) && communityDropdownChannels.length) return communityDropdownChannels;
-    try {
-      const raw = window.sessionStorage.getItem(COMMUNITY_DROPDOWN_CACHE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.channels) && parsed.channels.length && (Date.now() - Number(parsed.ts || 0) < 300000)) {
-          communityDropdownChannels = parsed.channels;
-          return communityDropdownChannels;
-        }
-      }
-    } catch (_e) {}
-    return COMMUNITY_DEFAULT_CHANNELS;
-  }
-
   function renderCommunityStage1(stage1List) {
-    if (!stage1List) return;
-    stage1List.replaceChildren();
-    const isOr = S.lang === 'or';
-    const channels = getCommunityDropdownChannels();
-    const items = channels.map(ch => ({
-      slug: ch.slug,
-      icon: ch.icon || '💬',
-      title_en: ch.title_en || ch.slug,
-      title_or: ch.title_or || ch.title_en || ch.slug,
-      href: '/community/?channel=' + encodeURIComponent(ch.slug || '')
-    }));
-    items.push({
-      slug: 'all',
-      icon: '🌐',
-      title_en: 'All Community Discussions',
-      title_or: 'ସମସ୍ତ ସମୁଦାୟ ଆଲୋଚନା',
-      href: '/community/'
-    });
-
-    items.forEach(item => {
-      const li = el('li', 'cso-js1-item');
-      li.dataset.channel = item.slug;
-      const row = el('div', 'cso-js1-row');
-      const a = el('a', 'cso-js1-link');
-      a.href = item.href;
-      const left = el('span', 'cso-js1-left');
-      const ic = el('span', 'cso-js1-icon', item.icon);
-      ic.setAttribute('aria-hidden', 'true');
-      left.append(ic, el('span', 'cso-js1-title', isOr ? item.title_or : item.title_en));
-      a.appendChild(left);
-      row.appendChild(a);
-      li.appendChild(row);
-
-      a.addEventListener('keydown', ev => {
-        if (ev.key === 'ArrowDown') {
-          ev.preventDefault();
-          const nextLi = li.nextElementSibling;
-          if (nextLi) { const na = nextLi.querySelector('.cso-js1-link'); if (na) na.focus(); }
-        } else if (ev.key === 'ArrowUp') {
-          ev.preventDefault();
-          const prevLi = li.previousElementSibling;
-          if (prevLi) { const pa = prevLi.querySelector('.cso-js1-link'); if (pa) pa.focus(); }
-        }
-      });
-
-      stage1List.appendChild(li);
-    });
+    renderCanonicalStage1(stage1List, CSO_CANONICAL_NAV_DROPDOWNS.community, 'channel');
   }
 
   function hydrateCommunityDropdownFromD1(stage1List) {
     renderCommunityStage1(stage1List);
-    if (communityDropdownFetchStarted || typeof fetch !== 'function') return;
-    communityDropdownFetchStarted = true;
-    fetch('/api/public/community/bootstrap', { credentials: 'same-origin' })
-      .then(r => (r.ok ? r.json() : null))
-      .then(data => {
-        if (data && Array.isArray(data.nav_channels) && data.nav_channels.length) {
-          const canonical = data.nav_channels.filter(c => c && COMMUNITY_CANONICAL_SLUGS.has(String(c.slug || '').toLowerCase()));
-          const source = canonical.length ? canonical : COMMUNITY_DEFAULT_CHANNELS;
-          communityDropdownChannels = source.map(c => ({
-            id: c.id,
-            slug: c.slug,
-            icon: c.icon || '💬',
-            title_en: c.title_en,
-            title_or: c.title_or || c.title_en
-          }));
-          try {
-            window.sessionStorage.setItem(COMMUNITY_DROPDOWN_CACHE_KEY, JSON.stringify({ ts: Date.now(), channels: communityDropdownChannels }));
-          } catch (_e) {}
-          document.querySelectorAll('#cso-community-stage1 .cso-js1-list').forEach(listEl => renderCommunityStage1(listEl));
-        }
-      })
-      .catch(() => {});
   }
 
   function buildCommunityDropdownMenu() {
@@ -1942,7 +1480,7 @@
     function setOpen(open) {
       if (open) {
         closeDropdowns(ni);
-        hydrateCommunityDropdownFromD1(stage1List);
+        renderCommunityStage1(stage1List);
       }
       ni.classList.toggle('cso-open', open);
       ni.classList.toggle('is-open', open);
