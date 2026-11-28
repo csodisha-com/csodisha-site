@@ -121,13 +121,29 @@
     return el('span', 'cso-jh-deadline cso-jh-deadline--active', orMode ? 'ସକ୍ରିୟ' : 'Active');
   }
 
+  function getBoardMonogram(it) {
+    var grp = String((it && it.org_group) || '').toLowerCase();
+    var org = String((it && it.organization) || '').toUpperCase();
+    if (grp === 'opsc' || org.indexOf('OPSC') !== -1) return 'OP';
+    if (grp === 'osssc' || org.indexOf('OSSSC') !== -1) return 'SS';
+    if (grp === 'ossc' || org.indexOf('OSSC') !== -1) return 'OS';
+    if (grp === 'oavs' || org.indexOf('OAVS') !== -1) return 'OA';
+    if (grp === 'police' || org.indexOf('POLICE') !== -1 || org.indexOf('OPRB') !== -1) return 'PL';
+    if (grp === 'central' || org.indexOf('SSC') !== -1 || org.indexOf('RRB') !== -1) return 'CG';
+    var letters = org.replace(/[^A-Z]/g, '').slice(0, 2);
+    return letters || 'OD';
+  }
+
   function buildCard(it) {
     var orMode = isOdia();
     var card = el('article', 'cso-jh-card ' + getCardAccentClass(it));
 
-    // Top row: Org badge + Category badge + Deadline countdown
+    // Top row: Board monogram + Org badge + Category badge + Deadline countdown
     var top = el('div', 'cso-jh-card__top');
     var leftMeta = el('div', 'cso-jh-card__badges');
+    var mono = el('span', 'cso-jh-monogram', getBoardMonogram(it));
+    mono.setAttribute('aria-hidden', 'true');
+    leftMeta.appendChild(mono);
     leftMeta.appendChild(el('span', 'cso-jh-org-badge', it.organization || 'Govt. of Odisha'));
     leftMeta.appendChild(el('span', 'cso-jh-cat-badge', it.category || 'Latest Vacancy'));
     top.appendChild(leftMeta);

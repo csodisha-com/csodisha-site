@@ -361,7 +361,7 @@
 
     var activeNotices = DEFAULT_NOTICES.slice();
 
-    // Live cross-tool sync from Unified Candidate Profile Sync Bar (cso:profile-synced)
+    // Live cross-tool sync from Unified Candidate Profile Sync Bar (cso:profile-synced) & global language switch
     if (typeof win.addEventListener === 'function') {
       win.addEventListener('cso:profile-synced', function (ev) {
         var det = ev && ev.detail;
@@ -373,6 +373,13 @@
         if (det.pwbd !== undefined) state.pwbd = Boolean(det.pwbd);
         savePrefs(state);
         render();
+      });
+      win.addEventListener('cso:lang-change', function (ev) {
+        var l = ev && ev.detail && ev.detail.lang;
+        if (l === 'or' || l === 'en') {
+          state.lang = l;
+          render();
+        }
       });
     }
 
@@ -436,17 +443,19 @@
         : 'Enter your DOB, category, gender & qualification once to verify exact age-on-cutoff, GA&PG Dept relaxations & ₹0 fee exemptions across all active drives.'));
       head.appendChild(headCopy);
 
-      var langToggle = el('div', 'cso-mpe-lang-toggle');
-      langToggle.setAttribute('role', 'group');
-      langToggle.setAttribute('aria-label', 'Language toggle');
-      ['en', 'or'].forEach(function (lk) {
-        var lb = el('button', 'cso-mpe-lang-btn' + (state.lang === lk ? ' is-active' : ''), lk === 'en' ? 'English' : 'ଓଡ଼ିଆ');
-        lb.type = 'button';
-        lb.setAttribute('aria-pressed', state.lang === lk ? 'true' : 'false');
-        lb.addEventListener('click', function () { state.lang = lk; persistAndRender(); });
-        langToggle.appendChild(lb);
-      });
-      head.appendChild(langToggle);
+      if (!compactProfileMode) {
+        var langToggle = el('div', 'cso-mpe-lang-toggle');
+        langToggle.setAttribute('role', 'group');
+        langToggle.setAttribute('aria-label', 'Language toggle');
+        ['en', 'or'].forEach(function (lk) {
+          var lb = el('button', 'cso-mpe-lang-btn' + (state.lang === lk ? ' is-active' : ''), lk === 'en' ? 'English' : 'ଓଡ଼ିଆ');
+          lb.type = 'button';
+          lb.setAttribute('aria-pressed', state.lang === lk ? 'true' : 'false');
+          lb.addEventListener('click', function () { state.lang = lk; persistAndRender(); });
+          langToggle.appendChild(lb);
+        });
+        head.appendChild(langToggle);
+      }
       card.appendChild(head);
 
       // Profile Form (compact summary strip on /jobs/ when unified sync bar is active; full form on /tools/)
@@ -470,6 +479,7 @@
           var target = doc.getElementById('cso-candidate-profile-sync-root');
           if (target && typeof target.scrollIntoView === 'function') {
             ev.preventDefault();
+            try { win.dispatchEvent(new win.CustomEvent('cso:open-profile-editor')); } catch (_) {}
             try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) { target.scrollIntoView(); }
             var dobEl = doc.getElementById('cso-cps-dob');
             if (dobEl && typeof dobEl.focus === 'function') dobEl.focus();
@@ -647,7 +657,8 @@
             ? (orMode ? '⚠️ କମ୍ ବୟସ' : '⚠️ UNDER-AGE')
             : (r.status === 'over-age' ? (orMode ? '❌ ଅଧିକ ବୟସ' : '❌ OVER-AGE') : (orMode ? '⚠️ ଯୋଗ୍ୟତା ଆବଶ୍ୟକ' : '⚠️ QUALIFICATION')));
         var tdSt = el('td');
-        tdSt.appendChild(el('span', 'cso-mpe-badge cso-mpe-badge--' + (r.status === 'eligible' ? 'ok' : 'warn'), stLabel));
+        var badgeMod = r.status === 'eligible' ? 'ok' : (r.status === 'over-age' ? 'danger' : 'warn');
+        tdSt.appendChild(el('span', 'cso-mpe-badge cso-mpe-badge--' + badgeMod, stLabel));
         tr.appendChild(tdSt);
 
         var tdAct = el('td');

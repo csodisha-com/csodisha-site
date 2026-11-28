@@ -172,12 +172,83 @@
   function mount(container) {
     if (!doc || !container) return null;
     var saved = readJson(PROFILE_KEY);
-    var state = Object.assign({ lang: 'en', lastSynced: Boolean(saved) }, normalizeProfile(saved || DEFAULT_PROFILE));
+    var collapsible = container.getAttribute('data-cso-collapsible') === '1';
+    var state = Object.assign({
+      lang: (doc.documentElement && (doc.documentElement.getAttribute('lang') === 'or' || doc.documentElement.getAttribute('data-cso-lang') === 'or')) ? 'or' : 'en',
+      lastSynced: Boolean(saved),
+      expanded: !collapsible
+    }, normalizeProfile(saved || DEFAULT_PROFILE));
+
+    var QUAL_LABELS = {
+      '10th': { en: '10th Pass', or: '୧୦ମ ପାସ୍' },
+      'plus-2': { en: '12th / +2', or: '+୨ ପାସ୍' },
+      'iti-diploma': { en: 'ITI / Diploma', or: 'ITI / ଡିପ୍ଲୋମା' },
+      'graduate': { en: 'Graduate', or: 'ସ୍ନାତକ' },
+      'bed-deled': { en: 'B.Ed. / D.El.Ed.', or: 'B.Ed. / D.El.Ed.' },
+      'pg': { en: 'Post-Graduate', or: 'ସ୍ନାତକୋତ୍ତର' }
+    };
+
+    if (typeof win.addEventListener === 'function') {
+      win.addEventListener('cso:lang-change', function (ev) {
+        var l = ev && ev.detail && ev.detail.lang;
+        if (l === 'or' || l === 'en') { state.lang = l; render(); }
+      });
+      win.addEventListener('cso:open-profile-editor', function () {
+        state.expanded = true;
+        render();
+        var dobEl = doc.getElementById('cso-cps-dob');
+        if (dobEl && typeof dobEl.focus === 'function') dobEl.focus();
+      });
+    }
 
     function render() {
       var orMode = state.lang === 'or';
-      var card = el('div', 'cso-cps-card');
+      var card = el('div', 'cso-cps-card' + (collapsible && !state.expanded ? ' is-collapsed' : ''));
       card.setAttribute('data-cso-profile-sync-bar', '1');
+
+      if (collapsible && !state.expanded) {
+        var qObj = QUAL_LABELS[state.qualification] || QUAL_LABELS.graduate;
+        var gTxt = state.gender === 'female' ? (orMode ? 'ମହିଳା' : 'Female') : (state.gender === 'transgender' ? (orMode ? 'ତୃତୀୟ ଲିଙ୍ଗ' : 'Transgender') : (orMode ? 'ପୁରୁଷ' : 'Male'));
+        var chipBar = el('div', 'cso-cps-chip-bar');
+        chipBar.setAttribute('data-cso-cps-chip-bar', '1');
+
+        var chipSummary = el('div', 'cso-cps-chip-summary');
+        var parts = [
+          '👤 ' + state.dob,
+          String(state.category || 'ur').toUpperCase(),
+          gTxt,
+          state.homeDistrict,
+          orMode ? qObj.or : qObj.en
+        ];
+        if (state.pwbd) parts.push('♿ PwBD');
+        parts.forEach(function (pt, idx) {
+          if (idx > 0) chipSummary.appendChild(el('span', 'cso-cps-chip-sep', '·'));
+          chipSummary.appendChild(el('span', 'cso-cps-chip-item', pt));
+        });
+        var syncPill = el('span', 'cso-cps-badge cso-cps-badge--inline', state.lastSynced
+          ? (orMode ? '✅ ସିଙ୍କ୍' : '✅ Synced')
+          : (orMode ? '✅ ସିଙ୍କ୍ ପ୍ରସ୍ତୁତ' : '✅ Synced'));
+        syncPill.setAttribute('role', 'status');
+        syncPill.setAttribute('aria-live', 'polite');
+        chipSummary.appendChild(el('span', 'cso-cps-chip-sep', '·'));
+        chipSummary.appendChild(syncPill);
+        chipBar.appendChild(chipSummary);
+
+        var editBtn = el('button', 'cso-cps-btn cso-cps-edit-toggle', orMode ? '✏️ ପ୍ରୋଫାଇଲ୍ ସମ୍ପାଦନ' : 'Edit Profile');
+        editBtn.type = 'button';
+        editBtn.setAttribute('aria-expanded', 'false');
+        editBtn.addEventListener('click', function () {
+          state.expanded = true;
+          render();
+          var dobEl = doc.getElementById('cso-cps-dob');
+          if (dobEl && typeof dobEl.focus === 'function') dobEl.focus();
+        });
+        chipBar.appendChild(editBtn);
+
+        card.appendChild(chipBar);
+        container.replaceChildren(card);
+        return;
+      }
 
       // Header
       var head = el('div', 'cso-cps-head');
@@ -198,15 +269,26 @@
       statusBadge.setAttribute('aria-live', 'polite');
       headCtl.appendChild(statusBadge);
 
-      var langToggle = el('div', 'cso-cps-lang-toggle');
-      ['en', 'or'].forEach(function (lk) {
-        var lb = el('button', 'cso-cps-lang-btn' + (state.lang === lk ? ' is-active' : ''), lk === 'en' ? 'EN' : 'ଓଡ଼ିଆ');
-        lb.type = 'button';
-        lb.setAttribute('aria-pressed', state.lang === lk ? 'true' : 'false');
-        lb.addEventListener('click', function () { state.lang = lk; render(); });
-        langToggle.appendChild(lb);
-      });
-      headCtl.appendChild(langToggle);
+      if (collapsible) {
+        var collapseBtn = el('button', 'cso-cps-btn cso-cps-edit-toggle', orMode ? '✓ ବନ୍ଦ କରନ୍ତୁ' : 'Done');
+        collapseBtn.type = 'button';
+        collapseBtn.setAttribute('aria-expanded', 'true');
+        collapseBtn.addEventListener('click', function () {
+          state.expanded = false;
+          render();
+        });
+        headCtl.appendChild(collapseBtn);
+      } else {
+        var langToggle = el('div', 'cso-cps-lang-toggle');
+        ['en', 'or'].forEach(function (lk) {
+          var lb = el('button', 'cso-cps-lang-btn' + (state.lang === lk ? ' is-active' : ''), lk === 'en' ? 'EN' : 'ଓଡ଼ିଆ');
+          lb.type = 'button';
+          lb.setAttribute('aria-pressed', state.lang === lk ? 'true' : 'false');
+          lb.addEventListener('click', function () { state.lang = lk; render(); });
+          langToggle.appendChild(lb);
+        });
+        headCtl.appendChild(langToggle);
+      }
       head.appendChild(headCtl);
       card.appendChild(head);
 
@@ -307,6 +389,7 @@
       syncBtn.addEventListener('click', function () {
         syncProfileAcrossTools(state);
         state.lastSynced = true;
+        if (collapsible) state.expanded = false;
         render();
       });
       foot.appendChild(syncBtn);

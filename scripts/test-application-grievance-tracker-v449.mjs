@@ -125,9 +125,9 @@ assert.ok(dom.all(root).some((n) => n.className === 'cso-agt-letter' && n.textCo
 for (const p of ['jobs/index.html', 'functions/_lib/informative-guides.js']) {
   const txt = fs.readFileSync(p, 'utf8');
   assert.ok(txt.includes('id="cso-application-grievance-root"'), p + ' mounts root');
-  assert.ok(txt.includes('/assets/js/application-status-grievance-tracker.js?v=20261128v451'), p + ' loads script v449');
+  assert.ok(txt.includes('/assets/js/application-status-grievance-tracker.js?v=20261128v452'), p + ' loads script v449');
 }
-assert.ok(fs.readFileSync('sw.js', 'utf8').includes("'/assets/js/application-status-grievance-tracker.js?v=20261128v451'"));
+assert.ok(fs.readFileSync('sw.js', 'utf8').includes("'/assets/js/application-status-grievance-tracker.js?v=20261128v452'"));
 const css = fs.readFileSync('assets/style.css', 'utf8');
 for (const sel of ['.cso-agt-card', '.cso-agt-row', '.cso-agt-letter', '.cso-agt-table']) assert.ok(css.includes(sel), 'CSS defines ' + sel);
 const agtRules = (css.slice(css.indexOf('.cso-smt-root')).match(/[^{}]*\.cso-agt-[^{]*\{[^}]*\}/g)) || [];

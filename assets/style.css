@@ -30481,3 +30481,388 @@ nav#cso-hub-top-tabs {
     display: block !important;
   }
 }
+
+/* ============================================================================
+   v452: Visual Beautification & UI Organization Pass (/jobs/ + Global Ask Bar)
+   - Polished Global 'Ask CSOdisha' capsule bar (permanently preserved)
+   - Tinted Gradient Hero + Inline Stat Pills + Collapsible 1-line Profile Chip Bar
+   - Combined Watchlist/Count Strip + Auto-Fit Cards with Board Top Borders,
+     Monograms & Standardized Primary Brand 'View Details' CTA
+   - High-Contrast Zebra Eligibility Matrix + Segmented Workspace Tabs with
+     Live Count Badges & Sticky Jump Strip + Dot-Grid QR Poster Stage
+   Strict 4-theme var(--cso-*) semantic tokens, zero hardcoded hex, >=44px tap
+   ============================================================================ */
+
+/* 1. Global 'Ask CSOdisha' Search Capsule Polish */
+.cso-ask-bar {
+  border-radius: 18px;
+  padding: 10px 14px;
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+  background: linear-gradient(135deg, var(--cso-card-bg, var(--cso-surface)), color-mix(in srgb, var(--cso-accent) 5%, var(--cso-card-bg, var(--cso-surface))));
+  box-shadow: var(--cso-card-shadow, none);
+}
+
+.cso-ask-bar:focus-within {
+  border-color: var(--cso-brand-primary, var(--cso-accent));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cso-accent) 22%, transparent);
+}
+
+.cso-ask-bar .cso-ask-input {
+  border-radius: 999px;
+  padding: 8px 16px;
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+  background: var(--cso-input-bg, var(--cso-card-subtle, var(--cso-surface-alt)));
+  color: var(--cso-ink-primary, var(--cso-ink));
+}
+
+.cso-ask-bar .cso-ask-input:focus-visible {
+  outline: none;
+  border-color: var(--cso-brand-primary, var(--cso-accent));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cso-accent) 24%, transparent);
+}
+
+.cso-ask-bar .cso-ask-select {
+  border-radius: 999px;
+  padding: 8px 14px;
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+  background: var(--cso-card-subtle, var(--cso-surface-alt));
+  color: var(--cso-ink-primary, var(--cso-ink));
+  font-weight: 700;
+}
+
+.cso-ask-bar .cso-ask-btn {
+  border-radius: 999px;
+  padding: 8px 18px;
+  background: var(--cso-cta-bg, var(--cso-accent));
+  color: var(--cso-cta-fg, var(--cso-accent-ink));
+  border-color: transparent;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.cso-ask-bar .cso-ask-btn:hover,
+.cso-ask-bar .cso-ask-btn:focus-visible {
+  outline: 2px solid var(--cso-brand-accent, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+/* 2. Tinted Gradient Hero & Inline Stat Pills on /jobs/ */
+.cso-jh-hero--compact {
+  background: linear-gradient(135deg, var(--cso-card-bg, var(--cso-surface)) 0%, color-mix(in srgb, var(--cso-accent) 10%, var(--cso-card-bg, var(--cso-surface))) 100%);
+  border: 1px solid color-mix(in srgb, var(--cso-accent) 26%, var(--cso-border-subtle, var(--cso-border)));
+  padding: 14px 18px;
+}
+
+.cso-jh-hero__right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cso-jh-summary--pulse {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0;
+}
+
+.cso-jh-stat-pill {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--cso-card-bg, var(--cso-surface-elevated));
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+  min-height: 36px;
+}
+
+.cso-jh-stat-pill .cso-jh-kpi__n {
+  font-size: 0.96rem;
+  line-height: 1;
+}
+
+.cso-jh-stat-pill .cso-jh-kpi__l {
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+/* 3. Collapsible 1-Line Candidate Profile Chip Bar */
+.cso-cps-card.is-collapsed {
+  padding: 0.55rem 0.9rem;
+}
+
+.cso-cps-chip-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.cso-cps-chip-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--cso-ink-primary, var(--cso-ink));
+}
+
+.cso-cps-chip-item {
+  white-space: nowrap;
+}
+
+.cso-cps-chip-sep {
+  color: var(--cso-ink-secondary, var(--cso-ink-soft));
+  font-weight: 800;
+}
+
+.cso-cps-badge--inline {
+  padding: 2px 9px;
+  font-size: 0.76rem;
+}
+
+.cso-cps-edit-toggle {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cso-brand-primary, var(--cso-accent));
+  background: var(--cso-card-bg, var(--cso-surface));
+  color: var(--cso-brand-primary, var(--cso-link));
+  font-weight: 800;
+}
+
+.cso-cps-edit-toggle:hover,
+.cso-cps-edit-toggle:focus-visible {
+  background: var(--cso-cta-bg, var(--cso-accent));
+  color: var(--cso-cta-fg, var(--cso-accent-ink));
+  outline: 2px solid var(--cso-brand-accent, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+/* 4. Unified Watchlist + Count Strip & Merged District Bar */
+.cso-df-mount--merged[hidden] {
+  display: none;
+}
+
+.cso-jh-status-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 12px;
+  background: var(--cso-card-subtle, var(--cso-surface-alt));
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+}
+
+.cso-wl-mount--inline {
+  margin: 0;
+  flex: 1 1 280px;
+}
+
+.cso-wl-mount--inline .cso-wl-bar {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* 5. Auto-Fit Job Cards, Board Top Accent Borders, Monograms & Primary Brand CTA */
+#cso-jh-grid.cso-jh-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr));
+  gap: 1rem;
+}
+
+.cso-jh-card {
+  border-left: 1px solid var(--cso-border-subtle, var(--cso-border));
+  border-top: 3px solid var(--card-accent);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.cso-jh-card:hover,
+.cso-jh-card:focus-within {
+  transform: translateY(-3px);
+}
+
+.cso-jh-monogram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--card-accent);
+  color: var(--card-on);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+}
+
+.cso-jh-card__actions {
+  margin-top: auto;
+}
+
+.cso-jh-card .cso-jh-btn--primary {
+  margin-left: 0;
+  background: var(--cso-cta-bg, var(--cso-accent));
+  color: var(--cso-cta-fg, var(--cso-accent-ink));
+  border-color: var(--cso-cta-bg, var(--cso-accent));
+}
+
+.cso-jh-card .cso-jh-btn--primary:hover,
+.cso-jh-card .cso-jh-btn--primary:focus-visible {
+  outline: 2px solid var(--cso-brand-accent, var(--cso-accent));
+  outline-offset: 2px;
+}
+
+/* 6. High-Contrast Zebra Eligibility Matrix */
+.cso-mpe-table th,
+.cso-mpe-table td {
+  padding: 7px 10px;
+}
+
+.cso-mpe-table tbody tr:nth-child(even) {
+  background: var(--cso-card-subtle, var(--cso-surface-alt));
+}
+
+.cso-mpe-badge--ok {
+  border-color: var(--cso-ok-border, var(--cso-badge-verified-fg, var(--cso-accent)));
+  background: var(--cso-ok-bg, var(--cso-badge-verified-bg, var(--cso-surface-alt)));
+  color: var(--cso-ok-fg, var(--cso-badge-verified-fg, var(--cso-ink)));
+}
+
+.cso-mpe-badge--danger {
+  border-color: var(--cso-err-border, var(--cso-err-fg));
+  background: var(--cso-err-bg, var(--cso-surface-alt));
+  color: var(--cso-err-fg, var(--cso-ink));
+}
+
+.cso-mpe-badge--warn {
+  border-color: var(--cso-warn-border, var(--cso-warn-fg));
+  background: var(--cso-warn-bg, var(--cso-surface-alt));
+  color: var(--cso-warn-fg, var(--cso-ink));
+}
+
+/* 7. Segmented Workspace Tabs with Live Count Badges & Sticky Jump Strip */
+.cso-jwt-sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 0.5rem 0 0.25rem;
+  background: var(--cso-card-bg, var(--cso-surface));
+}
+
+.cso-jwt-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cso-jwt-jump-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+  background: var(--cso-card-subtle, var(--cso-surface-alt));
+  color: var(--cso-ink-primary, var(--cso-ink));
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cso-jwt-tablist {
+  border-radius: 999px;
+  padding: 0.3rem;
+}
+
+@media (max-width: 960px) {
+  .cso-jwt-tablist {
+    border-radius: 14px;
+  }
+}
+
+.cso-jwt-tab {
+  border-radius: 999px;
+  gap: 0.45rem;
+  border-color: transparent;
+  background: transparent;
+}
+
+.cso-jwt-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  background: var(--cso-card-bg, var(--cso-surface));
+  color: var(--cso-ink-primary, var(--cso-ink));
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+}
+
+.cso-jwt-tab[aria-selected="true"] .cso-jwt-badge,
+.cso-jwt-tab.is-active .cso-jwt-badge {
+  background: color-mix(in srgb, var(--cso-pill-active-fg, var(--cso-accent-ink)) 18%, transparent);
+  color: var(--cso-pill-active-fg, var(--cso-accent-ink));
+  border-color: color-mix(in srgb, var(--cso-pill-active-fg, var(--cso-accent-ink)) 35%, transparent);
+}
+
+/* 8. Dot-Grid QR Poster Stage */
+.cso-qfg-preview-col .cso-qfg-canvas-wrap {
+  background-color: var(--cso-card-subtle, var(--cso-surface-alt));
+  background-image: radial-gradient(color-mix(in srgb, var(--cso-ink-secondary, var(--cso-ink-soft)) 26%, transparent) 1px, transparent 1px);
+  background-size: 14px 14px;
+  padding: 1rem;
+}
+
+/* 9. Subtle Footer Build Pill (Moved Out of Header) */
+.cso-footer-build-pill {
+  margin-top: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--cso-ink-secondary, var(--cso-ink-soft));
+  background: var(--cso-card-subtle, var(--cso-surface-alt));
+  border: 1px solid var(--cso-border-subtle, var(--cso-border));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-jh-card,
+  .cso-cps-edit-toggle,
+  .cso-ask-bar,
+  .cso-jwt-jump-link {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+@media print {
+  .cso-jwt-sticky-bar {
+    position: static;
+  }
+  .cso-jwt-jump-link,
+  .cso-cps-edit-toggle {
+    display: none !important;
+  }
+}

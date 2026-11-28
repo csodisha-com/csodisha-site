@@ -461,6 +461,7 @@
           applySettings();
           renderControls();
           renderNav();
+          try { window.dispatchEvent(new CustomEvent('cso:lang-change', { detail: { lang: k } })); } catch (_) {}
         },
         S.lang === k
       ]));
@@ -1875,6 +1876,7 @@
         applySettings();
         renderControls();
         renderNav();
+        try { window.dispatchEvent(new CustomEvent('cso:lang-change', { detail: { lang: l } })); } catch (_) {}
       }
       return;
     }

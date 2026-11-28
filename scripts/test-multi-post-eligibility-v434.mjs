@@ -90,7 +90,7 @@ for (const htmlPath of ['jobs/index.html', 'tools/index.html']) {
   const html = read(htmlPath);
   const mounts = html.match(/id=["']cso-multi-post-eligibility-root["']/g) || [];
   assert.equal(mounts.length, 1, `${htmlPath} must have exactly one #cso-multi-post-eligibility-root`);
-  assert.ok(html.includes('/assets/js/multi-post-eligibility-matrix.js?v=20261128v451'), `${htmlPath} must load multi-post-eligibility-matrix.js?v=20261128v451`);
+  assert.ok(html.includes('/assets/js/multi-post-eligibility-matrix.js?v=20261128v452'), `${htmlPath} must load multi-post-eligibility-matrix.js?v=20261128v452`);
   assert.ok(!/\son[a-z]+\s*=/i.test(html), `${htmlPath} must have zero inline on* attributes`);
   assert.ok(!/\sstyle\s*=/i.test(html), `${htmlPath} must have zero inline style attributes`);
 }
@@ -107,10 +107,10 @@ assert.ok(mpeBlock.includes('var(--cso-'), 'CSS must use semantic var(--cso-*) t
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(mpeBlock), 'v434 CSS block must have zero hardcoded hex colors');
 
 const sw = read('sw.js');
-assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v451'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v451');
-assert.ok(sw.includes('/assets/js/multi-post-eligibility-matrix.js?v=20261128v451'), 'sw.js must pre-cache multi-post-eligibility-matrix.js?v=20261128v451');
+assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v452'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v452');
+assert.ok(sw.includes('/assets/js/multi-post-eligibility-matrix.js?v=20261128v452'), 'sw.js must pre-cache multi-post-eligibility-matrix.js?v=20261128v452');
 
 const ops = read('functions/_lib/ops-sentinel.js');
-assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v451'"), 'ops-sentinel.js must match cso-candidate-cache-v451');
+assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v452'"), 'ops-sentinel.js must match cso-candidate-cache-v452');
 
 console.log('✅ v434 Odisha Govt Multi-Post Age Relaxation & Fee Exemption Matrix tests passed!');

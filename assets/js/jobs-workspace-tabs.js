@@ -96,6 +96,35 @@
     var panels = Array.prototype.slice.call(container.querySelectorAll('[role="tabpanel"][data-jobs-panel]'));
     var expandBtn = container.querySelector('[data-jobs-expand-all]');
 
+    function readBadgeCounts() {
+      var counts = { eligibility: 8, roster: 30, applications: 2, qr: 3 };
+      try {
+        if (win.CSOMultiPostEligibilityMatrix && typeof win.CSOMultiPostEligibilityMatrix.evaluateMultiPostEligibility === 'function') {
+          var rawProf = win.localStorage && (win.localStorage.getItem('cso_unified_candidate_profile_v1') || win.localStorage.getItem('cso_multi_post_profile_v1'));
+          var prof = rawProf ? JSON.parse(rawProf) : {};
+          var evRes = win.CSOMultiPostEligibilityMatrix.evaluateMultiPostEligibility(prof);
+          if (evRes && evRes.summary) counts.eligibility = evRes.summary.eligibleCount;
+        }
+      } catch (_) {}
+      try {
+        var rawLedger = win.localStorage && win.localStorage.getItem('cso_personal_applications_ledger_v1');
+        if (rawLedger) {
+          var arr = JSON.parse(rawLedger);
+          if (Array.isArray(arr)) counts.applications = arr.length;
+        }
+      } catch (_) {}
+      return counts;
+    }
+
+    function syncBadges() {
+      var counts = readBadgeCounts();
+      tabBtns.forEach(function (btn) {
+        var k = btn.getAttribute('data-jobs-tab');
+        var badge = btn.querySelector ? btn.querySelector('.cso-jwt-badge') : null;
+        if (badge && k in counts) badge.textContent = String(counts[k]);
+      });
+    }
+
     function localize() {
       var isOr = state.lang === 'or';
       container.querySelectorAll('[data-en]').forEach(function (n) {
@@ -107,6 +136,7 @@
           ? (isOr ? '⤡ ଟ୍ୟାବ୍ ଭ୍ୟୁକୁ ଫେରନ୍ତୁ' : '⤡ Collapse to Tabs')
           : (isOr ? '⤢ ସବୁ ଖୋଲି ଦେଖାନ୍ତୁ' : '⤢ Show All Expanded');
       }
+      syncBadges();
     }
 
     function applyState() {
@@ -197,6 +227,12 @@
           state.lang = l;
           localize();
         }
+      });
+      win.addEventListener('cso:profile-synced', function () {
+        syncBadges();
+      });
+      win.addEventListener('storage', function () {
+        syncBadges();
       });
     }
 
