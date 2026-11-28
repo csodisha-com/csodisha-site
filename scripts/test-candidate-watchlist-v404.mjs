@@ -85,9 +85,9 @@ const jobsHubJs = fs.readFileSync('assets/js/jobs-hub.js', 'utf8');
 const updatesJs = fs.readFileSync('assets/js/updates-newsroom.js', 'utf8');
 const styleCss = fs.readFileSync('assets/style.css', 'utf8');
 
-assert.ok(jobsHtml.includes('/assets/js/candidate-watchlist.js?v=20261128v452'), 'jobs/index.html loads candidate-watchlist.js');
+assert.ok(jobsHtml.includes('/assets/js/candidate-watchlist.js?v=20261128v453'), 'jobs/index.html loads candidate-watchlist.js');
 assert.ok(jobsHtml.includes('id="cso-jobs-watchlist-bar"'), 'jobs/index.html mounts #cso-jobs-watchlist-bar');
-assert.ok(updatesHtml.includes('/assets/js/candidate-watchlist.js?v=20261128v452'), 'updates/index.html loads candidate-watchlist.js');
+assert.ok(updatesHtml.includes('/assets/js/candidate-watchlist.js?v=20261128v453'), 'updates/index.html loads candidate-watchlist.js');
 assert.ok(updatesHtml.includes('id="cso-updates-watchlist-bar"'), 'updates/index.html mounts #cso-updates-watchlist-bar');
 assert.ok(jobsHubJs.includes('CSOWatchlist.mountWatchlistBar') && jobsHubJs.includes('CSOWatchlist.createMatchBadge'), 'jobs-hub.js integrates CSOWatchlist bar & card badges');
 assert.ok(updatesJs.includes('CSOWatchlist.mountWatchlistBar') && updatesJs.includes('CSOWatchlist.createMatchBadge'), 'updates-newsroom.js integrates CSOWatchlist bar & card badges');

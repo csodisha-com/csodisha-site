@@ -97,7 +97,7 @@ for (const htmlPath of ['schemes/index.html', 'admissions/index.html']) {
   const html = read(htmlPath);
   const mounts = html.match(/id=["']cso-scholarship-aid-finder-root["']/g) || [];
   assert.equal(mounts.length, 1, `${htmlPath} must have exactly one #cso-scholarship-aid-finder-root`);
-  assert.ok(html.includes('/assets/js/scholarship-aid-finder.js?v=20261128v452'), `${htmlPath} must load scholarship-aid-finder.js?v=20261128v452`);
+  assert.ok(html.includes('/assets/js/scholarship-aid-finder.js?v=20261128v453'), `${htmlPath} must load scholarship-aid-finder.js?v=20261128v453`);
   assert.ok(!/\son[a-z]+\s*=/i.test(html), `${htmlPath} must have zero inline on* attributes`);
   assert.ok(!/\sstyle\s*=/i.test(html), `${htmlPath} must have zero inline style attributes`);
 }
@@ -111,10 +111,10 @@ assert.ok(safBlock.includes('var(--cso-'), 'CSS must use semantic var(--cso-*) t
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(safBlock), 'v431 CSS block must have zero hardcoded hex colors');
 
 const sw = read('sw.js');
-assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v452'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v452');
-assert.ok(sw.includes('/assets/js/scholarship-aid-finder.js?v=20261128v452'), 'sw.js must pre-cache scholarship-aid-finder.js?v=20261128v452');
+assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v453'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v453');
+assert.ok(sw.includes('/assets/js/scholarship-aid-finder.js?v=20261128v453'), 'sw.js must pre-cache scholarship-aid-finder.js?v=20261128v453');
 
 const ops = read('functions/_lib/ops-sentinel.js');
-assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v452'"), 'ops-sentinel.js must match cso-candidate-cache-v452');
+assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v453'"), 'ops-sentinel.js must match cso-candidate-cache-v453');
 
 console.log('✅ v431 Odisha Scholarship & Student Financial Aid Finder tests passed!');

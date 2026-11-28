@@ -28,8 +28,8 @@ const opsJs = read('functions/_lib/ops-sentinel.js');
 
 // 1. Permanently preserve Global 'Ask CSOdisha' search & assistant bar on / and /jobs/
 assert.ok(indexHtml.includes('id="cso-ask-input"') && indexHtml.includes('id="cso-hero-ask-btn"') && indexHtml.includes('Ask CSOdisha'), 'index.html must preserve global Ask CSOdisha search bar');
-assert.ok(indexHtml.includes('/assets/js/semantic-search.js?v=20261128v452'), 'index.html must load semantic-search.js v452');
-assert.ok(jobsHtml.includes('/assets/css/semantic-search.css?v=20261128v452') && jobsHtml.includes('/assets/js/semantic-search.js?v=20261128v452'), 'jobs/index.html must permanently load semantic-search Ask CSOdisha bar');
+assert.ok(indexHtml.includes('/assets/js/semantic-search.js?v=20261128v453'), 'index.html must load semantic-search.js v452');
+assert.ok(jobsHtml.includes('/assets/css/semantic-search.css?v=20261128v453') && jobsHtml.includes('/assets/js/semantic-search.js?v=20261128v453'), 'jobs/index.html must permanently load semantic-search Ask CSOdisha bar');
 assert.ok(semanticJs.includes("bar.id = 'csoAskSearchBar'") && semanticJs.includes("'Ask CSOdisha'"), 'semantic-search.js must mount #csoAskSearchBar with Ask CSOdisha CTA');
 assert.ok(!/\.cso-ask-bar\s*\{[^}]*display\s*:\s*none/i.test(styleCss), 'assets/style.css must never hide .cso-ask-bar');
 
@@ -114,7 +114,7 @@ assert.ok(mpeJs.includes("'danger'"), 'OVER-AGE uses dedicated high-contrast dan
 const headerSlice = jobsHtml.slice(jobsHtml.indexOf('<header'), jobsHtml.indexOf('</header>'));
 assert.ok(!/cso-candidate-cache-v\d+/.test(headerSlice), 'Header must not display technical cache-version pill');
 const footerSlice = jobsHtml.slice(jobsHtml.indexOf('<footer'));
-assert.ok(footerSlice.includes('class="cso-footer-build-pill"') && footerSlice.includes('cso-candidate-cache-v452'), 'Footer displays clean build cache pill');
+assert.ok(footerSlice.includes('class="cso-footer-build-pill"') && footerSlice.includes('cso-candidate-cache-v453'), 'Footer displays clean build cache pill');
 
 // 7. v452 CSS tokens, zero hardcoded hex, auto-fit 310px grid, primary brand CTA, zebra table, dot-grid stage, reduced-motion
 const v452Idx = styleCss.indexOf('v452: Visual Beautification & UI Organization Pass');
@@ -131,7 +131,7 @@ assert.ok(v452Css.includes('var(--cso-'), 'v452 CSS uses semantic var(--cso-*) t
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v452Css), 'v452 CSS has zero hardcoded hex colors');
 
 // 8. SW & Ops-Sentinel v452 cache sync
-assert.ok(swJs.includes("const CACHE_NAME = 'cso-candidate-cache-v452'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v452');
-assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v452'"), 'ops-sentinel.js must match cso-candidate-cache-v452');
+assert.ok(swJs.includes("const CACHE_NAME = 'cso-candidate-cache-v453'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v453');
+assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v453'"), 'ops-sentinel.js must match cso-candidate-cache-v453');
 
 console.log('PASS: v452 /jobs/ Visual Polish & Permanent Ask CSOdisha Bar verified.');

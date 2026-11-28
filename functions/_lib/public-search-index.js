@@ -55,6 +55,15 @@ export const CORE_SEARCH_HUBS = [
     keywords: 'career paths roadmap orsp 7th pay salary matrix oas oes ri peo'
   },
   {
+    id: 'hub:careers',
+    url: '/careers/',
+    title_en: 'Odisha & National Career Roadmaps Explorer (18 Tracks)',
+    title_or: 'ଓଡ଼ିଶା ଓ ଜାତୀୟ କ୍ୟାରିୟର୍ ରୋଡମ୍ୟାପ୍ ଏକ୍ସପ୍ଲୋରର୍',
+    org: 'OPSC · OSSC · OSSSC · PSU · Banking · Healthcare · Agriculture',
+    district: 'All Odisha & National',
+    keywords: 'careers roadmap oas cglre optcl gate sbi ibps rbi nabard oscb omhs nursing ayush aao vas ouat macp after 10th +2 graduate'
+  },
+  {
     id: 'hub:odisha-special',
     url: '/odisha-special/',
     title_en: 'Odisha Special & 30-District Atlas',

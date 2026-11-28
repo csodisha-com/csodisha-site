@@ -2017,7 +2017,13 @@
   }
 
   function dedupeFooterBrand() {
-    document.querySelectorAll('.cso-footer-zone1').forEach(z1 => {
+    // v453: Guarantee a single footer and non-duplicated brand/column headings across all pages
+    const allFooters = Array.from(document.querySelectorAll('body > footer'));
+    allFooters.forEach((ft, idx) => {
+      if (idx > 0) ft.remove();
+    });
+    document.querySelectorAll('.cso-footer-zone1').forEach((z1, zIdx) => {
+      if (zIdx > 0) { z1.remove(); return; }
       const headers = z1.querySelectorAll('.cso-footer-brand-header');
       headers.forEach((h, idx) => {
         if (idx > 0) h.remove();
@@ -2025,6 +2031,19 @@
       const titles = z1.querySelectorAll('.cso-footer-title');
       titles.forEach((t, idx) => {
         if (idx > 0) t.remove();
+      });
+    });
+    document.querySelectorAll('.cso-footer-zone2').forEach((z2, zIdx) => {
+      if (zIdx > 0) { z2.remove(); return; }
+      const seenCols = new Set();
+      z2.querySelectorAll('.cso-footer-col').forEach(col => {
+        const h4 = col.querySelector('h4');
+        const key = (h4 ? h4.textContent : '').trim().toLowerCase();
+        if (key && seenCols.has(key)) {
+          col.remove();
+        } else if (key) {
+          seenCols.add(key);
+        }
       });
     });
   }

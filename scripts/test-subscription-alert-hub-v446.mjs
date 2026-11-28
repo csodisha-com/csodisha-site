@@ -45,7 +45,7 @@ assert.ok(ics.trim().endsWith('END:VCALENDAR'), 'ICS ends with END:VCALENDAR');
 for (const htmlPath of ['updates/index.html', 'tools/index.html']) {
   const html = fs.readFileSync(htmlPath, 'utf8');
   assert.ok(html.includes('id="cso-subscription-alert-hub-root"'), `${htmlPath} mounts #cso-subscription-alert-hub-root`);
-  assert.ok(html.includes('/assets/js/subscription-alert-hub.js?v=20261128v452'), `${htmlPath} loads subscription-alert-hub.js v446`);
+  assert.ok(html.includes('/assets/js/subscription-alert-hub.js?v=20261128v453'), `${htmlPath} loads subscription-alert-hub.js v446`);
 }
 
 const qj = fs.readFileSync('assets/js/tools-quick-jump-directory.js', 'utf8');
@@ -55,9 +55,9 @@ assert.ok(qj.includes("id: 'subscription-alert-hub'") && qj.includes("targetId: 
 const css = fs.readFileSync('assets/style.css', 'utf8');
 assert.ok(css.includes('.cso-sah-root') && css.includes('.cso-sah-preview'), 'CSS defines .cso-sah-* styles');
 const sw = fs.readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes("const CACHE_NAME = 'cso-candidate-cache-v452';"), 'sw.js CACHE_NAME is cso-candidate-cache-v452');
-assert.ok(sw.includes("'/assets/js/subscription-alert-hub.js?v=20261128v452'"), 'sw.js precaches subscription-alert-hub.js');
+assert.ok(sw.includes("const CACHE_NAME = 'cso-candidate-cache-v453';"), 'sw.js CACHE_NAME is cso-candidate-cache-v453');
+assert.ok(sw.includes("'/assets/js/subscription-alert-hub.js?v=20261128v453'"), 'sw.js precaches subscription-alert-hub.js');
 const ops = fs.readFileSync('functions/_lib/ops-sentinel.js', 'utf8');
-assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v452'"), 'ops-sentinel.js synced to v446');
+assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v453'"), 'ops-sentinel.js synced to v446');
 
 console.log('PASS: v446 Multi-Channel RSS/JSON/ICS Subscription & Alert Hub suite verified.');
