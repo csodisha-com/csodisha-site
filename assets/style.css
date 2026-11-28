@@ -31226,3 +31226,542 @@ nav#cso-hub-top-tabs {
     box-shadow: none;
   }
 }
+
+/* ==========================================================================
+ * v455 — /careers/ 15-Item Visual, Layout, Stepper, Compare & Profile Polish
+ * 100% var(--cso-*) semantic 4-theme tokens (zero hardcoded hex colors)
+ * ========================================================================== */
+
+/* Item 8: 6 Distinct Semantic Color-Coded Track Identity Tokens */
+:root {
+  --cso-track-civil: var(--cso-brand-primary);
+  --cso-track-eng: var(--cso-info-fg, var(--cso-link));
+  --cso-track-bank: var(--cso-brand-gold, var(--cso-warn-fg));
+  --cso-track-health: var(--cso-ok-fg, var(--cso-accent));
+  --cso-track-agri: color-mix(in srgb, var(--cso-ok-fg, var(--cso-accent)) 64%, var(--cso-brand-gold, var(--cso-warn-fg)));
+  --cso-track-pathway: var(--cso-err-fg, var(--cso-brand-deep));
+}
+
+.crp-track--civil { --cso-active-track: var(--cso-track-civil); }
+.crp-track--eng { --cso-active-track: var(--cso-track-eng); }
+.crp-track--bank { --cso-active-track: var(--cso-track-bank); }
+.crp-track--health { --cso-active-track: var(--cso-track-health); }
+.crp-track--agri { --cso-active-track: var(--cso-track-agri); }
+.crp-track--pathway { --cso-active-track: var(--cso-track-pathway); }
+
+/* Matcher Header + My Eligible Paths Toggle (Item 12) */
+.crp-matcher-head-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.crp-eligible-toggle {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--cso-ok-border, var(--cso-border-subtle));
+  background: var(--cso-ok-bg, var(--cso-badge-verified-bg));
+  color: var(--cso-ok-fg, var(--cso-badge-verified-fg));
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.14s ease, background-color 0.16s ease, color 0.16s ease;
+}
+
+.crp-eligible-toggle.is-active {
+  background: var(--cso-ok-fg, var(--cso-cta-bg));
+  color: var(--cso-cta-fg);
+  border-color: var(--cso-ok-fg, var(--cso-cta-bg));
+}
+
+/* Item 6: 4-Column Matcher Bar with Sort Selector */
+.crp-matcher-grid--v455 {
+  display: grid;
+  grid-template-columns: 1fr 0.95fr 1fr 1.45fr;
+  gap: 12px;
+  align-items: end;
+}
+
+.crp-matcher-grid--v455.has-reset {
+  grid-template-columns: 1fr 0.95fr 1fr 1.3fr auto;
+}
+
+/* Item 13: Sticky Track Jump-Bar on Scroll + Item 5 View Toggle */
+.crp-track-bar-sticky {
+  position: sticky;
+  top: var(--cso-sticky-nav-offset, 56px);
+  z-index: 40;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--cso-card-bg) 94%, transparent);
+  border: 1.5px solid var(--cso-border-subtle);
+  box-shadow: var(--cso-card-shadow);
+  backdrop-filter: blur(8px);
+}
+
+.crp-track-bar-sticky .crp-track-pill {
+  min-height: 44px;
+  border-color: color-mix(in srgb, var(--cso-active-track, var(--cso-border-subtle)) 32%, var(--cso-border-subtle));
+}
+
+.crp-track-bar-sticky .crp-track-pill:hover {
+  border-color: var(--cso-active-track, var(--cso-brand-primary));
+}
+
+.crp-track-bar-sticky .crp-track-pill.is-active {
+  background: var(--cso-active-track, var(--cso-pill-active-bg));
+  border-color: var(--cso-active-track, var(--cso-pill-active-bg));
+  color: var(--cso-pill-active-fg);
+}
+
+.crp-view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--cso-card-subtle);
+  border: 1px solid var(--cso-border-subtle);
+}
+
+.crp-view-toggle-btn {
+  appearance: none;
+  border: 0;
+  min-height: 38px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--cso-ink-secondary);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.crp-view-toggle-btn.is-active {
+  background: var(--cso-cta-bg);
+  color: var(--cso-cta-fg);
+}
+
+/* Item 5: Grouped Track Sections */
+.crp-track-groups {
+  display: grid;
+  gap: 26px;
+}
+
+.crp-track-group {
+  display: grid;
+  gap: 14px;
+}
+
+.crp-track-group-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--cso-card-bg);
+  border: 1px solid var(--cso-border-subtle);
+  border-left: 5px solid var(--cso-active-track, var(--cso-brand-primary));
+}
+
+.crp-track-group-title-wrap {
+  display: grid;
+  gap: 3px;
+}
+
+.crp-track-group-title {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--cso-ink-primary);
+}
+
+.crp-track-group-desc {
+  margin: 0;
+  font-size: 0.83rem;
+  color: var(--cso-ink-secondary);
+}
+
+.crp-track-group-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 2px 11px;
+  border-radius: 999px;
+  background: var(--cso-active-track, var(--cso-pill-active-bg));
+  color: var(--cso-pill-active-fg);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+/* Item 1: Fix 5-Column Card Squeeze on Wide Desktop (355px min width -> clean 3-4 cols) */
+.crp-cards-grid--v455 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 355px), 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* Item 2 & Item 8: Equal-Height Flex Cards with Color-Coded Track Top Border */
+.crp-card--v455 {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  gap: 11px;
+}
+
+.crp-card--v455 .crp-card-accent-bar {
+  height: 5px;
+  background: var(--cso-active-track, var(--cso-brand-primary));
+}
+
+.crp-card--v455 .crp-badge-track {
+  background: color-mix(in srgb, var(--cso-active-track, var(--cso-brand-primary)) 14%, var(--cso-card-bg));
+  color: var(--cso-active-track, var(--cso-brand-primary));
+  border: 1px solid color-mix(in srgb, var(--cso-active-track, var(--cso-brand-primary)) 28%, transparent);
+}
+
+.crp-badge-match {
+  background: var(--cso-ok-bg, var(--cso-badge-verified-bg));
+  color: var(--cso-ok-fg, var(--cso-badge-verified-fg));
+  border: 1px solid var(--cso-ok-border, var(--cso-border-subtle));
+}
+
+/* Item 10: Crisp 1-Line Standardized Pay Pill */
+.crp-card-pay-badge--v455 {
+  max-width: 100%;
+  min-height: 32px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.crp-card-pay-badge--v455 .crp-pay-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Item 11: Clamp Card Descriptions to 2 Lines */
+.crp-card-summary--clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Item 9: Vertical Timeline Stepper for 3-Step Milestones */
+.crp-card-milestones--v455 {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  padding: 12px 12px 12px 14px;
+}
+
+.crp-card-milestones--v455 .crp-card-ms-step {
+  position: relative;
+  align-items: center;
+  gap: 10px;
+}
+
+.crp-card-milestones--v455 .crp-card-ms-step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 22px;
+  bottom: -12px;
+  width: 2px;
+  background: color-mix(in srgb, var(--cso-active-track, var(--cso-brand-primary)) 45%, var(--cso-border-subtle));
+}
+
+.crp-card-milestones--v455 .crp-card-ms-dot {
+  position: relative;
+  z-index: 1;
+  background: var(--cso-active-track, var(--cso-pill-active-bg));
+  color: var(--cso-pill-active-fg);
+}
+
+/* Item 14: Compact Direct Action Shortcuts Inside Cards */
+.crp-card-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.crp-shortcut-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 3px 9px;
+  border-radius: 8px;
+  background: var(--cso-card-subtle);
+  border: 1px solid var(--cso-border-subtle);
+  color: var(--cso-link, var(--cso-brand-primary));
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.crp-shortcut-link:hover,
+.crp-shortcut-link:focus-visible {
+  border-color: var(--cso-brand-primary);
+  background: var(--cso-card-bg);
+  text-decoration: underline;
+}
+
+/* Item 2 & Item 4: Pinned Bottom Action Footer with Single-Line Buttons */
+.crp-card-foot--v455 {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--cso-border-subtle);
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.crp-card-foot--v455 .crp-btn {
+  min-height: 44px;
+  padding: 8px 11px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+}
+
+.crp-card-foot--v455 .crp-btn-primary {
+  flex: 1 1 auto;
+}
+
+.crp-compare-btn.is-comparing {
+  background: var(--cso-info-bg, var(--cso-badge-verified-bg));
+  color: var(--cso-info-fg, var(--cso-badge-verified-fg));
+  border-color: var(--cso-info-border, var(--cso-brand-primary));
+}
+
+/* Item 7: Floating Comparison Bar & Accessible Side-by-Side Comparison Modal */
+.crp-compare-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 950;
+  width: min(960px, calc(100vw - 24px));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--cso-surface-elevated, var(--cso-card-bg));
+  color: var(--cso-ink-primary);
+  border: 2px solid var(--cso-brand-primary);
+  box-shadow: var(--cso-card-shadow);
+}
+
+.crp-compare-bar[hidden] {
+  display: none;
+}
+
+.crp-compare-bar-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.crp-compare-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 240px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--cso-card-subtle);
+  border: 1px solid var(--cso-border-subtle);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cso-ink-primary);
+}
+
+.crp-compare-chip-lbl {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crp-compare-chip-rem {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--cso-ink-secondary);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.crp-compare-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crp-compare-bar-actions .crp-btn {
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.crp-compare-backdrop {
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.crp-compare-modal {
+  width: min(1080px, 100%);
+  max-height: 90dvh;
+  border-radius: 18px;
+  background: var(--cso-surface-elevated, var(--cso-card-bg));
+  color: var(--cso-ink-primary);
+  border: 1.5px solid var(--cso-border-subtle);
+  box-shadow: var(--cso-card-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.crp-compare-body {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 20px;
+}
+
+.crp-compare-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.crp-compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+  font-size: 0.86rem;
+}
+
+.crp-compare-table th,
+.crp-compare-table td {
+  padding: 12px 14px;
+  border: 1px solid var(--cso-border-subtle);
+  vertical-align: top;
+  text-align: left;
+}
+
+.crp-cmp-th-metric,
+.crp-cmp-row-label {
+  width: 165px;
+  background: var(--cso-card-subtle);
+  font-weight: 800;
+  color: var(--cso-ink-primary);
+}
+
+.crp-cmp-th-track {
+  background: var(--cso-card-bg);
+  border-top: 4px solid var(--cso-active-track, var(--cso-brand-primary));
+}
+
+.crp-cmp-track-tag {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--cso-active-track, var(--cso-brand-primary));
+  margin-bottom: 4px;
+}
+
+.crp-cmp-track-name {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--cso-ink-primary);
+  margin-bottom: 8px;
+}
+
+.crp-cmp-col-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.crp-btn-xs {
+  min-height: 36px;
+  padding: 5px 10px;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.crp-cmp-cell {
+  line-height: 1.5;
+  color: var(--cso-ink-primary);
+}
+
+@media (max-width: 1024px) {
+  .crp-matcher-grid--v455,
+  .crp-matcher-grid--v455.has-reset {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .crp-matcher-grid--v455,
+  .crp-matcher-grid--v455.has-reset {
+    grid-template-columns: 1fr;
+  }
+  .crp-track-bar-sticky {
+    position: static;
+  }
+  .crp-card-foot--v455 {
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crp-eligible-toggle,
+  .crp-view-toggle-btn,
+  .crp-shortcut-link {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+@media print {
+  .crp-track-bar-sticky,
+  .crp-compare-bar,
+  .crp-card-shortcuts,
+  .crp-card-foot--v455 {
+    display: none !important;
+  }
+}

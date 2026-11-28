@@ -71,9 +71,9 @@ assert.equal(cal[4].focusTrack, 'Weak-Topic Revision', 'Custom focus track for t
 
 // 3. Markup, Hooks, Strict CSP, 4-Theme CSS & v417 SW Cache Sync
 assert.match(mockHtml, /id="cso-study-streak-planner-root"/, 'mock-tests/index.html must mount #cso-study-streak-planner-root');
-assert.match(mockHtml, /\/assets\/js\/study-streak-planner\.js\?v=20261128v454/, 'mock-tests/index.html must load study-streak-planner.js?v=20261128v454');
+assert.match(mockHtml, /\/assets\/js\/study-streak-planner\.js\?v=20261128v455/, 'mock-tests/index.html must load study-streak-planner.js?v=20261128v455');
 assert.match(caHtml, /id="cso-study-streak-planner-root"/, 'current-affairs/index.html must mount #cso-study-streak-planner-root');
-assert.match(caHtml, /\/assets\/js\/study-streak-planner\.js\?v=20261128v454/, 'current-affairs/index.html must load study-streak-planner.js?v=20261128v454');
+assert.match(caHtml, /\/assets\/js\/study-streak-planner\.js\?v=20261128v455/, 'current-affairs/index.html must load study-streak-planner.js?v=20261128v455');
 assert.ok(mockJs.includes('CSOStudyStreakPlanner') && caJs.includes('CSOStudyStreakPlanner'), 'Both mock-tests-hub.js and current-affairs-hub.js must log practice activity to CSOStudyStreakPlanner');
 assert.ok(!/\sstyle="/i.test(mockHtml) && !/\son[a-z]+="/i.test(mockHtml), 'mock-tests/index.html strict CSP');
 assert.ok(!/\sstyle="/i.test(caHtml) && !/\son[a-z]+="/i.test(caHtml), 'current-affairs/index.html strict CSP');
@@ -88,8 +88,8 @@ assert.ok(v417Css.includes('prefers-reduced-motion: reduce'), 'v417 CSS must res
 assert.ok(v417Css.includes('@media print'), 'v417 CSS must include @media print support');
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(v417Css), 'v417 CSS block must have zero hardcoded hex values');
 
-assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v454'"), 'sw.js CACHE_NAME must be v417');
-assert.ok(swJs.includes("'/assets/js/study-streak-planner.js?v=20261128v454'"), 'sw.js must pre-cache study-streak-planner.js');
-assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v454'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v417');
+assert.ok(swJs.includes("CACHE_NAME = 'cso-candidate-cache-v455'"), 'sw.js CACHE_NAME must be v417');
+assert.ok(swJs.includes("'/assets/js/study-streak-planner.js?v=20261128v455'"), 'sw.js must pre-cache study-streak-planner.js');
+assert.ok(opsJs.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v455'"), 'ops-sentinel.js ACTIVE_SW_CACHE_VERSION must be v417');
 
 console.log('✅ v417 Candidate Study Streak, Daily Goal & Revision Planner Audit PASSED');

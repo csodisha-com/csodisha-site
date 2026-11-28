@@ -72,13 +72,13 @@ assert.equal(api.nextOrspCell(44900), 46200);
 // 3. Verify HTML mount in career-paths/index.html
 const html = fs.readFileSync('career-paths/index.html', 'utf8');
 assert.ok(html.includes('id="cso-pay-arrear-calculator-root"'), 'career-paths/index.html mounts #cso-pay-arrear-calculator-root');
-assert.ok(html.includes('/assets/js/pay-arrear-calculator.js?v=20261128v454'), 'career-paths/index.html loads pay-arrear-calculator.js v443');
+assert.ok(html.includes('/assets/js/pay-arrear-calculator.js?v=20261128v455'), 'career-paths/index.html loads pay-arrear-calculator.js v443');
 
 // 4. Verify CSS & Service Worker precache
 const css = fs.readFileSync('assets/style.css', 'utf8');
 assert.ok(css.includes('.cso-pac-root') && css.includes('.cso-pac-table'), 'CSS defines .cso-pac-* styles');
 
 const sw = fs.readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes("'/assets/js/pay-arrear-calculator.js?v=20261128v454'"), 'sw.js precaches pay-arrear-calculator.js');
+assert.ok(sw.includes("'/assets/js/pay-arrear-calculator.js?v=20261128v455'"), 'sw.js precaches pay-arrear-calculator.js');
 
 console.log('PASS: v442 Odisha Govt Pay Arrear, DA Hike & Back-Pay Calculator suite verified.');

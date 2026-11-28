@@ -9,7 +9,7 @@
  *  3. Cross-origin requests, /api/*, and /admin/* bypass SW interception cleanly without throwing.
  *  4. Client-side SW scripts (pwa-install.js, app.js, shared-header.js) never auto-reload on
  *     controllerchange during initial page load.
- *  5. sw.js & functions/_lib/ops-sentinel.js are synced to cso-candidate-cache-v454.
+ *  5. sw.js & functions/_lib/ops-sentinel.js are synced to cso-candidate-cache-v455.
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -26,8 +26,8 @@ const appCode = read('assets/app.js');
 const sharedHeaderCode = read('assets/shared-header.js');
 
 // 1. Static cache version & contract checks
-assert.match(swCode, /const CACHE_NAME = 'cso-candidate-cache-v454';/, 'sw.js CACHE_NAME must be cso-candidate-cache-v454');
-assert.match(opsCode, /ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v454'/, 'ops-sentinel.js must match cso-candidate-cache-v454');
+assert.match(swCode, /const CACHE_NAME = 'cso-candidate-cache-v455';/, 'sw.js CACHE_NAME must be cso-candidate-cache-v455');
+assert.match(opsCode, /ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v455'/, 'ops-sentinel.js must match cso-candidate-cache-v455');
 assert.ok(swCode.includes('self.registration.navigationPreload'), 'sw.js must check self.registration.navigationPreload');
 assert.ok(swCode.includes('navigationPreload.enable()'), 'sw.js must enable navigationPreload on activate');
 assert.ok(swCode.includes('event.preloadResponse'), 'sw.js must consume event.preloadResponse on navigate');
@@ -85,7 +85,7 @@ function createSwHarness({ fetchImpl, cachedMap }) {
     caches: {
       async open() { return mockCache; },
       async match(req, opts) { return mockCache.match(req, opts); },
-      async keys() { return ['cso-candidate-cache-v453', 'cso-candidate-cache-v454']; },
+      async keys() { return ['cso-candidate-cache-v453', 'cso-candidate-cache-v455']; },
       async delete(k) { deletedCaches.push(k); return true; }
     },
     fetch: fetchImpl,

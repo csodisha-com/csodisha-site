@@ -568,9 +568,26 @@
     let candidate = null;
     try {
       const raw = localStorage.getItem('cso_candidate_session_v1');
-      if (raw) candidate = JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // v455: require an authenticated session object (id/email/role) so public visitors never see staff/hub pills
+        if (parsed && typeof parsed === 'object' && (parsed.email || parsed.id || parsed.user_id)) {
+          candidate = parsed;
+        }
+      }
     } catch (e) {}
-    return candidate || (window.CSOAuthClient && typeof window.CSOAuthClient.getUser === 'function' ? window.CSOAuthClient.getUser() : null);
+    const fromClient = (window.CSOAuthClient && typeof window.CSOAuthClient.getUser === 'function')
+      ? window.CSOAuthClient.getUser()
+      : null;
+    const active = candidate || (fromClient && (fromClient.email || fromClient.id || fromClient.user_id) ? fromClient : null);
+    if (active && (active.role === 'admin' || active.role === 'superadmin')) {
+      try {
+        if (localStorage.getItem('cso_admin_active') !== '1') {
+          return Object.assign({}, active, { role: 'candidate' });
+        }
+      } catch (e) {}
+    }
+    return active;
   }
 
   function formatAccountLabel(user) {

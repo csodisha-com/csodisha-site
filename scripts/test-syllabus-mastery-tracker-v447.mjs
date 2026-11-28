@@ -124,10 +124,10 @@ assert.equal(JSON.parse(store.cso_syllabus_mastery_v1).lang, 'or');
 for (const p of ['exams/index.html', 'mock-tests/index.html']) {
   const txt = fs.readFileSync(p, 'utf8');
   assert.ok(txt.includes('id="cso-syllabus-mastery-tracker-root"'), p + ' mounts root');
-  assert.ok(txt.includes('/assets/js/syllabus-mastery-tracker.js?v=20261128v454'), p + ' loads script v449');
+  assert.ok(txt.includes('/assets/js/syllabus-mastery-tracker.js?v=20261128v455'), p + ' loads script v449');
 }
 const sw = fs.readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes("'/assets/js/syllabus-mastery-tracker.js?v=20261128v454'"), 'sw.js precaches tracker');
+assert.ok(sw.includes("'/assets/js/syllabus-mastery-tracker.js?v=20261128v455'"), 'sw.js precaches tracker');
 const css = fs.readFileSync('assets/style.css', 'utf8');
 for (const sel of ['.cso-smt-card', '.cso-smt-chapter', '.cso-smt-status-btn', '.cso-smt-weak']) assert.ok(css.includes(sel), 'CSS defines ' + sel);
 const block = css.slice(css.indexOf('.cso-smt-root'));

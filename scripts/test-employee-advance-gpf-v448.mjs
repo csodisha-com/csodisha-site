@@ -113,8 +113,8 @@ assert.ok(win.CSOEmployeeAdvanceGpfCalculator.buildSummaryText(inst.getState(), 
 // Mount, SW, CSS
 const html = fs.readFileSync('career-paths/index.html', 'utf8');
 assert.ok(html.includes('id="cso-employee-advance-gpf-root"'), '/career-paths/ mounts root');
-assert.ok(html.includes('/assets/js/employee-advance-gpf-calculator.js?v=20261128v454'), '/career-paths/ loads script v449');
-assert.ok(fs.readFileSync('sw.js', 'utf8').includes("'/assets/js/employee-advance-gpf-calculator.js?v=20261128v454'"));
+assert.ok(html.includes('/assets/js/employee-advance-gpf-calculator.js?v=20261128v455'), '/career-paths/ loads script v449');
+assert.ok(fs.readFileSync('sw.js', 'utf8').includes("'/assets/js/employee-advance-gpf-calculator.js?v=20261128v455'"));
 const css = fs.readFileSync('assets/style.css', 'utf8');
 for (const sel of ['.cso-eag-card', '.cso-eag-kpi', '.cso-eag-table', '.cso-eag-verdict']) assert.ok(css.includes(sel), 'CSS defines ' + sel);
 const eagRules = (css.slice(css.indexOf('.cso-smt-root')).match(/[^{}]*\.cso-eag-[^{]*\{[^}]*\}/g)) || [];

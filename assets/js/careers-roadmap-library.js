@@ -1,7 +1,9 @@
 /**
- * Common Sense Odisha — Bilingual 18-Roadmap Career Library & Matcher Engine (v453)
- * Provides 18 verified EN / ଓଡ଼ିଆ career roadmaps across all 6 career tracks
- * merged cleanly with live Cloudflare D1 career guides so track counters never show 0.
+ * Common Sense Odisha — Bilingual 18-Roadmap Career Library, Sorter & Matcher Engine (v455)
+ * Provides 18 verified EN / ଓଡ଼ିଆ career roadmaps across all 6 career tracks merged cleanly
+ * with live Cloudflare D1 career guides, plus Quick-Sort (Most Popular / Highest Starting Pay /
+ * Early Entry), Unified Candidate Profile Qualification Matcher, clean Odia-only subtitles,
+ * standardized 1-line pay pills, and 3-track comparison metadata.
  * Strict CSP-compliant: pure data + pure functions, zero unsafe markup injection,
  * zero inline style mutations, zero inline event handlers.
  */
@@ -14,7 +16,7 @@
 })(function () {
   'use strict';
 
-  var VERSION = 'v453';
+  var VERSION = 'v455';
 
   var TRACKS = [
     {
@@ -22,56 +24,62 @@
       aliases: ['civil-services', 'civil_services', 'oas-ias'],
       icon: '🏛️',
       accent: 'civil',
+      cssVar: '--cso-track-civil',
       label_en: 'Civil Services',
       label_or: 'ସିଭିଲ୍ ସର୍ଭିସେସ୍',
       desc_en: 'OPSC OAS/OFS/OPS, OSSC CGLRE, OSSSC District Cadre & Police SI',
-      desc_or: 'OPSC OAS/OFS/OPS, OSSC CGLRE, OSSSC ଜିଲ୍ଲା କ୍ୟାଡର୍ ଓ ପୋଲିସ୍ SI'
+      desc_or: 'ଓଡ଼ିଶା ପ୍ରଶାସନିକ ସେବା, OSSC CGLRE, ଜିଲ୍ଲା କ୍ୟାଡର୍ ଓ ପୋଲିସ୍ SI'
     },
     {
       slug: 'engineering-it',
       aliases: ['engineering-it', 'engineering_it', 'tech', 'engineering'],
       icon: '💻',
-      accent: 'tech',
+      accent: 'eng',
+      cssVar: '--cso-track-eng',
       label_en: 'Engineering & IT',
       label_or: 'ଇଞ୍ଜିନିୟରିଂ ଓ ଆଇଟି',
       desc_en: 'OPTCL/OHPC GATE PSU, OSSC/OPSC AEE-JE & Odisha IT/Semiconductor',
-      desc_or: 'OPTCL/OHPC GATE PSU, OSSC/OPSC AEE-JE ଓ ଓଡ଼ିଶା IT/ସେମିକଣ୍ଡକ୍ଟର୍'
+      desc_or: 'ରାଜ୍ୟ ଶକ୍ତି ନିଗମ, ସରକାରୀ ଇଞ୍ଜିନିୟରିଂ ଓ ଓଡ଼ିଶା ଆଇଟି-ସେମିକଣ୍ଡକ୍ଟର୍'
     },
     {
       slug: 'banking-finance',
       aliases: ['banking-finance', 'banking_finance', 'banking', 'finance'],
       icon: '🏦',
-      accent: 'finance',
+      accent: 'bank',
+      cssVar: '--cso-track-bank',
       label_en: 'Banking & Finance',
       label_or: 'ବ୍ୟାଙ୍କିଂ ଓ ଅର୍ଥନୀତି',
       desc_en: 'SBI/IBPS/Odisha RRB, RBI Grade B/NABARD & OSCB/DCCB Banking',
-      desc_or: 'SBI/IBPS/ଓଡ଼ିଶା RRB, RBI Grade B/NABARD ଓ OSCB/DCCB ବ୍ୟାଙ୍କିଂ'
+      desc_or: 'ରାଷ୍ଟ୍ରାୟତ୍ତ ବ୍ୟାଙ୍କ, ଓଡ଼ିଶା ଗ୍ରାମ୍ୟ ବ୍ୟାଙ୍କ, RBI/NABARD ଓ ସମବାୟ ବ୍ୟାଙ୍କ'
     },
     {
       slug: 'healthcare',
       aliases: ['healthcare', 'health', 'medical'],
       icon: '🩺',
       accent: 'health',
+      cssVar: '--cso-track-health',
       label_en: 'Healthcare',
       label_or: 'ସ୍ୱାସ୍ଥ୍ୟସେବା',
       desc_en: 'OPSC OMHS Medical Officer, OSSSC Nursing/Paramedical & AYUSH/CHO',
-      desc_or: 'OPSC OMHS ମେଡିକାଲ୍ ଅଫିସର୍, OSSSC ନର୍ସିଂ/ଫାର୍ମାସିଷ୍ଟ ଓ AYUSH/CHO'
+      desc_or: 'ଓଡ଼ିଶା ସ୍ୱାସ୍ଥ୍ୟ ସେବା ଡାକ୍ତର, ନର୍ସିଂ, ଫାର୍ମାସିଷ୍ଟ ଓ ଆୟୁଷ-CHO'
     },
     {
       slug: 'agriculture',
       aliases: ['agriculture', 'agri', 'veterinary', 'forestry'],
       icon: '🌾',
       accent: 'agri',
+      cssVar: '--cso-track-agri',
       label_en: 'Agriculture',
       label_or: 'କୃଷି ଓ ପଶୁପାଳନ',
       desc_en: 'OPSC AAO/AHO, F&ARD VAS/Livestock Inspector & OUAT/ICAR Agri-Business',
-      desc_or: 'OPSC AAO/AHO, F&ARD VAS/ପଶୁଧନ ନିରୀକ୍ଷକ ଓ OUAT/ICAR କୃଷି-ବ୍ୟବସାୟ'
+      desc_or: 'କୃଷି ଓ ଉଦ୍ୟାନକୃଷି ଅଧିକାରୀ, ପଶୁଚିକିତ୍ସା ଓ ଏଗ୍ରି-ବିଜନେସ୍ ମାର୍ଗ'
     },
     {
       slug: 'career-pathways',
       aliases: ['career-pathways', 'pathways', 'career_pathways', 'stage-pathways'],
       icon: '🧭',
-      accent: 'pathways',
+      accent: 'pathway',
+      cssVar: '--cso-track-pathway',
       label_en: 'Career Stage & Pathways',
       label_or: 'କ୍ୟାରିୟର୍ ପର୍ଯ୍ୟାୟ ଓ ମାର୍ଗ',
       desc_en: 'After 10th/+2 Early Entry, Final-Year Graduate Blueprint & In-Service MACP',
@@ -92,6 +100,12 @@
     { slug: '', label_en: 'All Scopes', label_or: 'ସମସ୍ତ ସ୍କୋପ୍' },
     { slug: 'odisha-state', label_en: 'Odisha State', label_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ' },
     { slug: 'national-central', label_en: 'National / Central', label_or: 'ଜାତୀୟ / କେନ୍ଦ୍ରୀୟ' }
+  ];
+
+  var SORT_OPTIONS = [
+    { slug: 'popular', label_en: 'Most Popular', label_or: 'ସର୍ବାଧିକ ଲୋକପ୍ରିୟ' },
+    { slug: 'highest-pay', label_en: 'Highest Starting Pay', label_or: 'ସର୍ବାଧିକ ପ୍ରାରମ୍ଭିକ ଦରମା' },
+    { slug: 'early-entry', label_en: 'Early Entry (+2 / Grad)', label_or: 'ଶୀଘ୍ର ପ୍ରବେଶ (+୨ / ସ୍ନାତକ)' }
   ];
 
   var TRACK_ALIAS_MAP = {};
@@ -120,13 +134,13 @@
   function normalizeStage(raw) {
     var s = String(raw || '').toLowerCase().trim();
     if (!s) return '';
-    if (s === 'after-10th-12th' || s === 'after-10th' || s === 'after-12th' || s === '10th-12th' || s === 'plus2' || s === 'high-school') {
+    if (s === 'after-10th-12th' || s === 'after-10th' || s === 'after-12th' || s === '10th-12th' || s === 'plus2' || s === 'plus-2' || s === '10th' || s === 'high-school') {
       return 'after-10th-12th';
     }
-    if (s === 'graduate' || s === 'undergraduate' || s === 'degree' || s === 'final-year') {
+    if (s === 'graduate' || s === 'undergraduate' || s === 'degree' || s === 'final-year' || s === 'bed-deled') {
       return 'graduate';
     }
-    if (s === 'diploma-btech' || s === 'diploma' || s === 'btech' || s === 'engineering' || s === 'technical') {
+    if (s === 'diploma-btech' || s === 'diploma' || s === 'btech' || s === 'iti-diploma' || s === 'engineering' || s === 'technical') {
       return 'diploma-btech';
     }
     if (s === 'pg-medical' || s === 'postgraduate' || s === 'pg' || s === 'medical' || s === 'mbbs' || s === 'professional') {
@@ -136,6 +150,22 @@
       return 'in-service';
     }
     return s;
+  }
+
+  /**
+   * Strips redundant Latin parentheticals & leading English acronyms from card line-2
+   * Odia subtitles so English cards display pure, non-repetitive ଓଡ଼ିଆ text on line 2.
+   */
+  function cleanOdiaSubtitle(rawOr) {
+    var s = String(rawOr || '').trim();
+    if (!s) return '';
+    // Remove purely-ASCII parenthetical groups like "(OAS / OFS / OPS / ORS)" or "(AYUSH)"
+    s = s.replace(/\s*\([A-Za-z0-9\s/&,.\-+–—]+\)/g, '');
+    // Remove leading Latin-only acronym prefixes like "OPSC / F&ARD " or "SBI PO / " before Odia script
+    s = s.replace(/^[A-Za-z0-9/&,+.\-\s–—]+(?=[\u0B00-\u0B7F])/, '');
+    // Collapse stray slash/dash separators left next to ASCII tokens
+    s = s.replace(/\s{2,}/g, ' ').replace(/^[\s\-–—·/]+|[\s\-–—·/]+$/g, '').trim();
+    return s || String(rawOr || '').trim();
   }
 
   var BUILT_IN_ROADMAPS = [
@@ -154,23 +184,30 @@
       stage_tags: ['graduate', 'pg-medical'],
       stage_label_en: 'Graduate',
       stage_label_or: 'ସ୍ନାତକ',
+      popularity_rank: 1,
+      starting_pay_num: 56100,
+      entry_order: 3,
+      age_min: 21,
+      age_max_ur: 38,
       featured: 1,
       status: 'published',
       is_builtin: true,
       title_en: 'OPSC Odisha Civil Services (OAS / OFS / OPS / ORS)',
-      title_or: 'OPSC ଓଡ଼ିଶା ପ୍ରଶାସନିକ ସେବା (OAS / OFS / OPS / ORS)',
+      title_or: 'ଓଡ଼ିଶା ପ୍ରଶାସନିକ, ଅର୍ଥ, ପୋଲିସ୍ ଓ ରାଜସ୍ୱ ସେବା',
       summary_en: 'Flagship Odisha Group-A & Group-B executive pathway into District Administration, State Finance, Police DSP, and Revenue Tahasildar cadres.',
       summary_or: 'ଜିଲ୍ଲା ପ୍ରଶାସନ, ରାଜ୍ୟ ଅର୍ଥସେବା, ପୋଲିସ୍ DSP ଏବଂ ରାଜସ୍ୱ ତହସିଲଦାର ପଦବୀ ପାଇଁ ଓଡ଼ିଶାର ଶୀର୍ଷ Group-A ଓ Group-B ପରୀକ୍ଷା ମାର୍ଗ।',
-      orsp_level: 'ORSP L-12 · ₹56,100',
+      orsp_level: 'ORSP L-12 · ₹56,100 Basic',
+      pay_pill_en: 'ORSP L-12 · ₹56,100 Basic',
+      pay_pill_or: 'ORSP L-12 · ₹୫୬,୧୦୦ ମୂଳ ବେତନ',
       salary_band: 'ORSP Level-12 (₹56,100 Basic; ~₹89,000+ Gross with DA & HRA)',
       salary_band_or: 'ORSP ଲେଭେଲ୍-୧୨ (₹୫୬,୧୦୦ ମୂଳ ବେତନ; DA ଓ HRA ସହ ~₹୮୯,୦୦୦+)',
       pay_allowances_en: 'ORSP 7th Pay Level-12 (₹56,100–₹1,77,500) for OAS/OFS/OPS Group-A; Level-10 (₹44,900) for ORS/OT&AS Group-B + 53%+ DA, HRA (10%–20%), Govt Quarters, Official Vehicle (field postings), and NPS/UPS benefits.',
       pay_allowances_or: 'OAS/OFS/OPS (Group-A) ପାଇଁ ORSP L-12 (₹୫୬,୧୦୦–₹୧,୭୭,୫୦୦) ଏବଂ ORS/OT&AS (Group-B) ପାଇଁ L-10 (₹୪୪,୯୦୦) + DA, HRA, ସରକାରୀ ବାସଭବନ ଓ NPS/UPS ସୁବିଧା।',
       eligibility_summary: 'Any Bachelor’s Degree + Odia read/write/speak (ME standard). Age: 21–38 yrs (UR), +5 yrs SC/ST/SEBC/Women.',
       eligibility_summary_or: 'ଯେକୌଣସି ସ୍ନାତକ ଡିଗ୍ରୀ + ଓଡ଼ିଆ ପଢ଼ିବା/ଲେଖିବା/କହିବା (ME ସ୍ତର)। ବୟସ: ୨୧–୩୮ ବର୍ଷ (UR), SC/ST/SEBC/ମହିଳା +୫ ବର୍ଷ ଛାଡ଼।',
-      age_window_en: '21 to 38 years (UR) · Up to 43 yrs for SC/ST/SEBC/Women · Up to 48 yrs for PwBD · Zero State Exam Fee.',
-      age_window_or: '୨୧ ରୁ ୩୮ ବର୍ଷ (UR) · SC/ST/SEBC/ମହିଳା ୪୩ ବର୍ଷ ପର୍ଯ୍ୟନ୍ତ · PwBD ୪୮ ବର୍ଷ · ରାଜ୍ୟ ପରୀକ୍ଷା ଫିସ୍ ₹୦।',
-      key_exams: 'OPSC OCS Prelims (GS + CSAT) → Mains (9 Papers, 1750 Marks) → Personality Test (250 Marks)',
+      age_window_en: '21–38 yrs (UR) · 43 yrs SC/ST/SEBC/Women · 48 yrs PwBD · ₹0 Fee',
+      age_window_or: '୨୧–୩୮ ବର୍ଷ (UR) · SC/ST/SEBC/ମହିଳା ୪୩ ବର୍ଷ · PwBD ୪୮ ବର୍ଷ · ₹୦ ଫିସ୍',
+      key_exams: 'OPSC OCS Prelims (GS + CSAT) → Mains (9 Papers) → Interview',
       selection_stages_en: [
         'Stage 1 — Prelims (Objective): GS Paper I (200M) + CSAT Paper II (200M, 33% qualifying, 1/3rd negative).',
         'Stage 2 — Mains (Written, 1750M): Qualifying Odia & English + Essay (250M) + 4 GS Papers (1000M) + 1 Optional (500M).',
@@ -196,6 +233,8 @@
         '୫–୧୦ ବର୍ଷ: OAS (SB) — ସବ୍-କଲେକ୍ଟର୍ / ADM / ଅଣ୍ଡର୍ ସେକ୍ରେଟାରୀ (L-13/14)।',
         '୧୦–୧୫+ ବର୍ଷ: ସ୍ପେଶାଲ୍ ସେକ୍ରେଟାରୀ → IAS କନଫରମେଣ୍ଟ୍।'
       ],
+      rank_5_15_en: 'Sub-Collector / ADM → Special Secretary / IAS Conferment',
+      rank_5_15_or: 'ସବ୍-କଲେକ୍ଟର୍ / ADM → ସ୍ପେଶାଲ୍ ସେକ୍ରେଟାରୀ / IAS',
       required_certificates_en: [
         'HSC / 10th Certificate (DOB + Odia language proof)',
         'Graduation Provisional / Original Certificate & Marksheets',
@@ -227,23 +266,30 @@
       stage_tags: ['graduate'],
       stage_label_en: 'Graduate',
       stage_label_or: 'ସ୍ନାତକ',
+      popularity_rank: 2,
+      starting_pay_num: 35400,
+      entry_order: 3,
+      age_min: 21,
+      age_max_ur: 38,
       featured: 1,
       status: 'published',
       is_builtin: true,
       title_en: 'OSSC CGLRE & Departmental Cadres (Inspector, Auditor, ASO)',
-      title_or: 'OSSC CGLRE ଓ ବିଭାଗୀୟ ପଦବୀ (ଇନ୍ସପେକ୍ଟର, ଅଡିଟର, ASO)',
+      title_or: 'ରାଜ୍ୟ ସ୍ନାତକ ସ୍ତରୀୟ ବିଭାଗୀୟ ପଦବୀ — ଇନ୍ସପେକ୍ଟର, ଅଡିଟର ଓ ASO',
       summary_en: 'Fast-track Group-B & Group-C graduate state recruitment for Inspector of Supplies, Auditor, Junior Assistant (HoD), and Secretariat ASO roles.',
       summary_or: 'ଯୋଗାଣ ନିରୀକ୍ଷକ, ଅଡିଟର, HoD ଜୁନିୟର ଆସିଷ୍ଟାଣ୍ଟ ଏବଂ ସଚିବାଳୟ ASO ପାଇଁ OSSC ର ସବୁଠୁ ଲୋକପ୍ରିୟ ସ୍ନାତକ ନିଯୁକ୍ତି ମାର୍ଗ।',
-      orsp_level: 'ORSP L-9 · ₹35,400',
+      orsp_level: 'ORSP L-9 · ₹35,400 Basic',
+      pay_pill_en: 'ORSP L-9 · ₹35,400 Basic',
+      pay_pill_or: 'ORSP L-9 · ₹୩୫,୪୦୦ ମୂଳ ବେତନ',
       salary_band: 'ORSP Level-9 (₹35,400 Basic; ~₹56,000+ Gross) · Level-7 for Jr. Asst',
       salary_band_or: 'ORSP ଲେଭେଲ୍-୯ (₹୩୫,୪୦୦ ମୂଳ ବେତନ; ~₹୫୬,୦୦୦+ ଗ୍ରସ୍)',
       pay_allowances_en: 'ORSP Level-9 (₹35,400–₹1,12,400) for Inspector of Cooperative Societies, Auditor, Marketing Intelligence Inspector & ASO; Level-7 (₹25,500) for Junior Assistant (HoD) + DA, HRA, Medical & MACP.',
       pay_allowances_or: 'ଇନ୍ସପେକ୍ଟର, ଅଡିଟର ଓ ASO ପାଇଁ ORSP L-9 (₹୩୫,୪୦୦–₹୧,୧୨,୪୦୦) ଏବଂ ଜୁନିୟର ଆସିଷ୍ଟାଣ୍ଟ ପାଇଁ L-7 (₹୨୫,୫୦୦) + DA, HRA ଓ MACP।',
       eligibility_summary: 'Bachelor’s Degree in any discipline + Basic Computer Knowledge + Odia up to Class 7/10. Age: 21–38 yrs.',
       eligibility_summary_or: 'ଯେକୌଣସି ବିଭାଗରେ ସ୍ନାତକ + କମ୍ପ୍ୟୁଟର ଜ୍ଞାନ + ଓଡ଼ିଆ (୭ମ/୧୦ମ)। ବୟସ: ୨୧–୩୮ ବର୍ଷ।',
-      age_window_en: '21 to 38 years (UR) · +5 yrs SC/ST/SEBC/Women · +10 yrs PwBD · ₹0 OSSC Application Fee.',
-      age_window_or: '୨୧–୩୮ ବର୍ଷ (UR) · SC/ST/SEBC/ମହିଳା +୫ ବର୍ଷ · PwBD +୧୦ ବର୍ଷ · OSSC ଆବେଦନ ଫିସ୍ ₹୦।',
-      key_exams: 'OSSC CGLRE Prelims (OMR/CBT) → Mains (Language + GS/Math) → Computer Skill Test → Certificate Verification',
+      age_window_en: '21–38 yrs (UR) · +5 yrs SC/ST/SEBC/Women · +10 yrs PwBD · ₹0 Fee',
+      age_window_or: '୨୧–୩୮ ବର୍ଷ (UR) · SC/ST/SEBC/ମହିଳା +୫ ବର୍ଷ · PwBD +୧୦ ବର୍ଷ · ₹୦ ଫିସ୍',
+      key_exams: 'OSSC CGLRE Prelims → Mains (Language + GS) → Computer Skill Test',
       selection_stages_en: [
         'Stage 1 — Preliminary Exam (150 Marks, 150 Mins): Arithmetic, Data Interpretation, Logical Reasoning, Current Affairs & Computer.',
         'Stage 2 — Main Written Exam (200 Marks): Paper I (Odia & English Language — 100M) + Paper II (General Studies — 100M).',
@@ -269,6 +315,8 @@
         '୬–୧୨ ବର୍ଷ: ସିନିୟର ଆସିଷ୍ଟାଣ୍ଟ / ସେକ୍ସନ ଅଫିସର୍ (L-10/11)।',
         '୧୨–୧୮ ବର୍ଷ: ଏଷ୍ଟାବ୍ଲିଶମେଣ୍ଟ ଅଫିସର୍ / ଆସିଷ୍ଟାଣ୍ଟ ଡାଇରେକ୍ଟର୍ (L-12)।'
       ],
+      rank_5_15_en: 'Section Officer / Senior Inspector → Asst. Director (L-12)',
+      rank_5_15_or: 'ସେକ୍ସନ ଅଫିସର୍ / ସିନିୟର ଇନ୍ସପେକ୍ଟର → ଆସିଷ୍ଟାଣ୍ଟ ଡାଇରେକ୍ଟର୍',
       required_certificates_en: [
         '10th, +2 & Graduation Marksheets & Certificates',
         'Odia Pass Certificate (HSC / ME Standard)',
@@ -285,7 +333,7 @@
       roadmap_body_or: '### OSSC CGLRE ସଫଳତା କୌଶଳ\n- ପ୍ରିଲିମ୍ସ ପାଇଁ ଦଶମ ସ୍ତରର ଗଣିତ ଓ ଡାଟା ଇଣ୍ଟରପ୍ରିଟେସନ୍ ଉପରେ ଅଧିକ ଅଭ୍ୟାସ କରନ୍ତୁ।\n- ମେନ୍ସ ପାଇଁ ଓଡ଼ିଆ ଅନୁବାଦ, ସାରାଂଶ ଲିଖନ ଓ ଇଂରାଜୀ ବ୍ୟାକରଣ ମଜବୁତ କରନ୍ତୁ।\n- ସ୍କିଲ୍ ଟେଷ୍ଟ ପୂର୍ବରୁ MS Word, Excel ଓ PowerPoint ଅଭ୍ୟାସ କରନ୍ତୁ।',
       official_links: [
         { label: 'OSSC Official Portal', url: 'https://www.ossc.gov.in' },
-        { label: 'CSO ORSP Pay Calculator', url: '/career-paths/' }
+        { label: 'CSO ORSP Pay Calculator', url: '/career-paths/#cso-orsp-salary-root' }
       ]
     },
     {
@@ -300,23 +348,30 @@
       stage_tags: ['after-10th-12th', 'graduate'],
       stage_label_en: 'After 10th / +2 · Graduate',
       stage_label_or: '+୨ / ସ୍ନାତକ',
+      popularity_rank: 3,
+      starting_pay_num: 35400,
+      entry_order: 1,
+      age_min: 18,
+      age_max_ur: 38,
       featured: 0,
       status: 'published',
       is_builtin: true,
-      title_en: 'OSSSC Combined District Cadre (RI / ARI / Amin / SFS / Forest Guard) & Odisha Police SI Path',
-      title_or: 'OSSSC ଜିଲ୍ଲା କ୍ୟାଡର୍ (RI / ARI / ଅମିନ / ଫରେଷ୍ଟ ଗାର୍ଡ) ଓ ଓଡ଼ିଶା ପୋଲିସ୍ SI',
+      title_en: 'OSSSC District Cadre (RI / ARI / Amin / Forest Guard) & Police SI',
+      title_or: 'ଜିଲ୍ଲା ରାଜସ୍ୱ, ବନବିଭାଗ ଓ ଓଡ଼ିଶା ପୋଲିସ୍ ସବ୍-ଇନ୍ସପେକ୍ଟର ପଦବୀ',
       summary_en: 'High-vacancy district-level Odisha recruitment covering Revenue, Forest, Panchayat (PEO), and Uniformed Police Sub-Inspector pathways.',
       summary_or: 'ରାଜସ୍ୱ (RI/ARI/ଅମିନ), ବନବିଭାଗ (ଫରେଷ୍ଟ ଗାର୍ଡ/ଫରେଷ୍ଟର୍) ଏବଂ ଓଡ଼ିଶା ପୋଲିସ୍ SI ପାଇଁ ସର୍ବାଧିକ ପଦବୀ ବିଶିଷ୍ଟ ରାଜ୍ୟ ନିଯୁକ୍ତି ମାର୍ଗ।',
       orsp_level: 'ORSP L-4 to L-9 · ₹19,900–₹35,400',
+      pay_pill_en: 'ORSP L-4–L-9 · ₹19.9k–₹35.4k',
+      pay_pill_or: 'ORSP L-4–L-9 · ₹୧୯.୯k–₹୩୫.୪k',
       salary_band: 'ORSP L-4 (₹19,900 Forest Guard/ARI) · L-9 (₹35,400 RI & Police SI)',
       salary_band_or: 'ORSP L-4 (₹୧୯,୯୦୦ ଫରେଷ୍ଟ ଗାର୍ଡ/ARI) · L-9 (₹୩୫,୪୦୦ RI ଓ ପୋଲିସ୍ SI)',
       pay_allowances_en: 'ORSP Level-4 (₹19,900) for Forest Guard/ARI/Amin, Level-5 (₹21,700) for PEO/Forester, Level-9 (₹35,400) for Revenue Inspector (RI) & Odisha Police SI + Uniform/Ration Allowance (Police/Forest), DA & HRA.',
       pay_allowances_or: 'ଫରେଷ୍ଟ ଗାର୍ଡ/ARI/ଅମିନ ପାଇଁ L-4 (₹୧୯,୯୦୦), PEO/ଫରେଷ୍ଟର୍ ପାଇଁ L-5 (₹୨୧,୭୦୦) ଏବଂ RI ଓ ପୋଲିସ୍ SI ପାଇଁ L-9 (₹୩୫,୪୦୦) + ପୋଷାକ/ରାସନ ଭତ୍ତା ଓ DA/HRA।',
       eligibility_summary: '+2 for ARI/Amin/PEO/Forest Guard; Graduation for RI & Odisha Police SI. PET/PST required for Police & Forest.',
       eligibility_summary_or: 'ARI/ଅମିନ/PEO/ଫରେଷ୍ଟ ଗାର୍ଡ ପାଇଁ +୨; RI ଓ ପୋଲିସ୍ SI ପାଇଁ ସ୍ନାତକ। ପୋଲିସ୍ ଓ ବନବିଭାଗ ପାଇଁ ଶାରୀରିକ ପରୀକ୍ଷା (PET/PST) ଆବଶ୍ୟକ।',
-      age_window_en: '18–38 yrs (OSSSC District Cadres) · 21–25 yrs (Odisha Police SI, +5 yrs SC/ST/SEBC/Women).',
-      age_window_or: '୧୮–୩୮ ବର୍ଷ (OSSSC) · ୨୧–୨୫ ବର୍ଷ (ପୋଲିସ୍ SI, SC/ST/SEBC/ମହିଳା +୫ ବର୍ଷ ଛାଡ଼)।',
-      key_exams: 'OSSSC CRE (Prelims + Mains + Skill) · OPRB Odisha Police SI (Written + PET/PST)',
+      age_window_en: '18–38 yrs (OSSSC) · 21–25 yrs (Police SI, +5 yrs SC/ST/SEBC/Women)',
+      age_window_or: '୧୮–୩୮ ବର୍ଷ (OSSSC) · ୨୧–୨୫ ବର୍ଷ (ପୋଲିସ୍ SI, +୫ ବର୍ଷ ଛାଡ଼)',
+      key_exams: 'OSSSC CRE (Prelims + Mains + Skill) · OPRB Police SI (CBT + PET)',
       selection_stages_en: [
         'Stage 1 — Objective Written CBT/OMR (Math, Odia, English, GK, Computer — 0.25/0.33 negative marking).',
         'Stage 2 — Practical Skill Test (RI/ARI/Amin/PEO) OR Physical Standard & Efficiency Test (Running, Long Jump, Walking for Police SI & Forest).',
@@ -342,6 +397,8 @@
         '୬–୧୨ ବର୍ଷ: RI / ରେଭିନ୍ୟୁ ସୁପରଭାଇଜର୍ / ପୋଲିସ୍ ଇନ୍ସପେକ୍ଟର (L-9/10)।',
         '୧୨–୧୮ ବର୍ଷ: ଅତିରିକ୍ତ ତହସିଲଦାର (ORS) / ରେଞ୍ଜ ଅଫିସର୍ / DSP (OPS)।'
       ],
+      rank_5_15_en: 'Revenue Supervisor / Police Inspector → Addl. Tahasildar / DSP',
+      rank_5_15_or: 'ରେଭିନ୍ୟୁ ସୁପରଭାଇଜର୍ / ଇନ୍ସପେକ୍ଟର → ଅତିରିକ୍ତ ତହସିଲଦାର / DSP',
       required_certificates_en: [
         '10th, +2 / Graduation Certificates & Odia Proficiency Proof',
         'District Employment Exchange Registration (where applicable)',
@@ -377,23 +434,30 @@
       stage_tags: ['diploma-btech', 'graduate'],
       stage_label_en: 'Diploma / B.Tech',
       stage_label_or: 'B.Tech / B.E.',
+      popularity_rank: 5,
+      starting_pay_num: 60000,
+      entry_order: 2,
+      age_min: 21,
+      age_max_ur: 32,
       featured: 1,
       status: 'published',
       is_builtin: true,
       title_en: 'OPTCL / OHPC / GRIDCO / OPGC & Central PSU GATE Engineer',
-      title_or: 'OPTCL / OHPC / GRIDCO / OPGC ଏବଂ କେନ୍ଦ୍ରୀୟ PSU GATE ଇଞ୍ଜିନିୟର୍',
+      title_or: 'ଓଡ଼ିଶା ଶକ୍ତି ନିଗମ ଓ କେନ୍ଦ୍ରୀୟ PSU GATE ଇଞ୍ଜିନିୟର୍',
       summary_en: 'Management Trainee & Graduate Engineer Executive pathway into Odisha power utilities (OPTCL, OHPC, OPGC) and Maharatna PSUs (NALCO, NTPC, IOCL, MCL, RSP).',
       summary_or: 'ଓଡ଼ିଶାର ଶକ୍ତି ନିଗମ (OPTCL, OHPC, GRIDCO, OPGC) ଏବଂ ମହାରତ୍ନ PSU (NALCO, NTPC, IOCL, MCL) ରେ GATE ମାଧ୍ୟମରେ କାର୍ଯ୍ୟନିର୍ବାହୀ ଇଞ୍ଜିନିୟର୍ ନିଯୁକ୍ତି।',
-      orsp_level: 'ORSP L-10–12 / PSU E2 · ₹50,000–₹1,60,000',
+      orsp_level: 'PSU E2 / ORSP L-10+',
+      pay_pill_en: 'PSU E2 / ORSP L-10+ · ₹50k–₹60k',
+      pay_pill_or: 'PSU E2 / ORSP L-10+ · ₹୫୦k–₹୬୦k',
       salary_band: 'ORSP L-10–12 (OPTCL/OHPC) · IDA E2 ₹50,000–₹1,60,000 (~₹14–₹19 LPA CTC)',
       salary_band_or: 'ORSP L-10–12 (OPTCL/OHPC) · PSU E2 ₹୫୦,୦୦୦–₹୧,୬୦,୦୦୦ (~₹୧୪–₹୧୯ LPA)',
       pay_allowances_en: 'State Power PSUs (OPTCL/OHPC/GRIDCO): ORSP Level-10/12 (₹56,100 Basic after training). Central Maharatnas (NALCO, NTPC, IOCL, SAIL): IDA E2 Scale ₹50,000–₹1,60,000 + 44% IDA + 35% Cafeteria Perks + PRP + Township.',
       pay_allowances_or: 'OPTCL/OHPC ରେ ORSP L-10/12 ଏବଂ NALCO/NTPC/IOCL ରେ IDA E2 (₹୫୦,୦୦୦–₹୧,୬୦,୦୦୦) + ୪୪% IDA + ୩୫% ପର୍କସ୍ + PRP + ଟାଉନସିପ୍।',
       eligibility_summary: 'B.Tech / B.E. (60% UR, 50% SC/ST) in Electrical, Mechanical, Civil, C&I, IT/CS + Valid GATE Score (or OPTCL CBT).',
       eligibility_summary_or: 'Electrical, Mechanical, Civil, C&I, IT/CS ରେ B.Tech/B.E. (୬୦% UR, ୫୦% SC/ST) + ବୈଧ GATE ସ୍କୋର୍।',
-      age_window_en: '21–32 yrs (OPTCL/OHPC, +5 yrs SC/ST/SEBC/Women) · 27–30 yrs (Central Maharatna PSUs).',
-      age_window_or: '୨୧–୩୨ ବର୍ଷ (OPTCL/OHPC, +୫ ବର୍ଷ ଛାଡ଼) · ୨୭–୩୦ ବର୍ଷ (କେନ୍ଦ୍ରୀୟ PSU)।',
-      key_exams: 'GATE (EE / ME / CE / EC / CS) → PSU Shortlisting / OPTCL CBT → GD & Personal Interview',
+      age_window_en: '21–32 yrs (OPTCL/OHPC, +5 yrs cat) · 27–30 yrs (Central PSU)',
+      age_window_or: '୨୧–୩୨ ବର୍ଷ (OPTCL/OHPC) · ୨୭–୩୦ ବର୍ଷ (କେନ୍ଦ୍ରୀୟ PSU)',
+      key_exams: 'GATE (EE / ME / CE / EC / CS) → PSU Shortlisting → GD & Interview',
       selection_stages_en: [
         'Stage 1 — GATE Exam (100 Marks: 15M General Aptitude + 13M Engg Math + 72M Core Branch) or OPTCL CBT.',
         'Stage 2 — Branch-Wise Shortlisting (85% GATE Weightage in most PSUs) & Document Verification.',
@@ -419,6 +483,8 @@
         '୪–୧୦ ବର୍ଷ: ଡେପୁଟି ମ୍ୟାନେଜର୍ (E3) → ମ୍ୟାନେଜର୍ (E4)।',
         '୧୦–୧୫+ ବର୍ଷ: ସିନିୟର ମ୍ୟାନେଜର୍ (E5) → DGM / GM (E6–E7)।'
       ],
+      rank_5_15_en: 'Manager (E4) → Senior Manager (E5) / DGM (E6)',
+      rank_5_15_or: 'ମ୍ୟାନେଜର୍ (E4) → ସିନିୟର ମ୍ୟାନେଜର୍ / DGM (E6)',
       required_certificates_en: [
         'B.Tech / B.E. Degree & All-Semester CGPA-to-Percentage Conversion Formula',
         'Valid GATE Scorecard (Current Recruitment Year)',
@@ -451,23 +517,30 @@
       stage_tags: ['diploma-btech'],
       stage_label_en: 'Diploma / B.Tech',
       stage_label_or: 'ଡିପ୍ଲୋମା / B.Tech',
+      popularity_rank: 6,
+      starting_pay_num: 56100,
+      entry_order: 2,
+      age_min: 21,
+      age_max_ur: 38,
       featured: 1,
       status: 'published',
       is_builtin: true,
       title_en: 'OSSC / OPSC AEE & JE (Civil / Electrical / Mechanical)',
-      title_or: 'OSSC / OPSC AEE ଓ JE (ସିଭିଲ୍ / ଇଲେକ୍ଟ୍ରିକାଲ୍ / ମେକାନିକାଲ୍)',
+      title_or: 'ରାଜ୍ୟ ସରକାରୀ ସହକାରୀ ନିର୍ବାହୀ ଓ କନିଷ୍ଠ ଯନ୍ତ୍ରୀ (ସିଭିଲ୍/ଇଲେକ୍ଟ୍ରିକାଲ୍/ମେକାନିକାଲ୍)',
       summary_en: 'Odisha Engineering Service (OPSC AEE Group-A) and Combined Technical Services (OSSC CTSRE Junior Engineer) in Works, Water Resources, Rural Development & H&UD.',
       summary_or: 'ପୂର୍ତ୍ତ, ଜଳସମ୍ପଦ, ଗ୍ରାମ୍ୟ ଉନ୍ନୟନ ଓ ନଗର ଉନ୍ନୟନ ବିଭାଗରେ OPSC AEE (Group-A) ଏବଂ OSSC CTSRE ଜୁନିୟର ଇଞ୍ଜିନିୟର୍ (JE) ନିଯୁକ୍ତି।',
-      orsp_level: 'ORSP L-9 to L-12 · ₹35,400–₹56,100',
+      orsp_level: 'ORSP L-9–L-12 · ₹35.4k–₹56.1k',
+      pay_pill_en: 'ORSP L-9–L-12 · ₹35.4k–₹56.1k',
+      pay_pill_or: 'ORSP L-9–L-12 · ₹୩୫.୪k–₹୫୬.୧k',
       salary_band: 'ORSP L-9 (₹35,400 OSSC JE) · L-12 (₹56,100 OPSC AEE Group-A)',
       salary_band_or: 'ORSP L-9 (₹୩୫,୪୦୦ OSSC JE) · L-12 (₹୫୬,୧୦୦ OPSC AEE Group-A)',
       pay_allowances_en: 'OSSC Junior Engineer (CTSRE): ORSP Level-9 (₹35,400 Basic; ~₹56,000+ Gross). OPSC Assistant Executive Engineer (AEE): ORSP Level-12 (₹56,100 Basic; ~₹89,000+ Gross) + Field Allowance, DA, HRA & Govt Accommodation.',
       pay_allowances_or: 'OSSC JE ପାଇଁ ORSP L-9 (₹୩୫,୪୦୦) ଏବଂ OPSC AEE (Group-A) ପାଇଁ ORSP L-12 (₹୫୬,୧୦୦) + DA, HRA ଓ ସରକାରୀ ବାସଭବନ।',
       eligibility_summary: 'Diploma in Civil/Elec/Mech for OSSC JE; B.Tech/B.E. + Valid GATE Score (or OPSC Written) for OPSC AEE. Odia mandatory.',
       eligibility_summary_or: 'OSSC JE ପାଇଁ ଡିପ୍ଲୋମା; OPSC AEE ପାଇଁ B.Tech + ବୈଧ GATE ସ୍କୋର୍ (କିମ୍ବା ଲିଖିତ ପରୀକ୍ଷା)। ଓଡ଼ିଆ ବାଧ୍ୟତାମୂଳକ।',
-      age_window_en: '21–38 yrs (UR) · +5 yrs SC/ST/SEBC/Women · +10 yrs PwBD · ₹0 State Fee.',
-      age_window_or: '୨୧–୩୮ ବର୍ଷ (UR) · SC/ST/SEBC/ମହିଳା +୫ ବର୍ଷ · PwBD +୧୦ ବର୍ଷ · ଫିସ୍ ₹୦।',
-      key_exams: 'OSSC CTSRE (Prelims + Technical Mains) · OPSC AEE (GATE 90% + Interview 10% or Written)',
+      age_window_en: '21–38 yrs (UR) · +5 yrs SC/ST/SEBC/Women · +10 yrs PwBD · ₹0 Fee',
+      age_window_or: '୨୧–୩୮ ବର୍ଷ (UR) · SC/ST/SEBC/ମହିଳା +୫ ବର୍ଷ · PwBD +୧୦ ବର୍ଷ · ₹୦ ଫିସ୍',
+      key_exams: 'OSSC CTSRE (Prelims + Tech Mains) · OPSC AEE (GATE + Viva)',
       selection_stages_en: [
         'OSSC CTSRE JE: Prelims (150M Non-Tech Arithmetic/DI/Reasoning/Computer) → Mains (200M Branch Technical Paper) → Certificate Verification.',
         'OPSC AEE: Valid GATE Score Shortlisting (90% Weightage in recent Water Resources/Works rules) → Viva-Voce Interview (10%).',
@@ -493,6 +566,8 @@
         '୬–୧୨ ବର୍ଷ: ଡେପୁଟି ଏକ୍ସିକ୍ୟୁଟିଭ୍ ଇଞ୍ଜିନିୟର୍ / EE (L-13/14)।',
         '୧୨–୧୮+ ବର୍ଷ: ସୁପରିଣ୍ଟେଣ୍ଡିଂ ଇଞ୍ଜିନିୟର୍ → ଚିଫ୍ ଇଞ୍ଜିନିୟର୍ (L-15/16)।'
       ],
+      rank_5_15_en: 'Executive Engineer (L-14) → Superintending / Chief Engineer',
+      rank_5_15_or: 'ନିର୍ବାହୀ ଯନ୍ତ୍ରୀ (L-14) → ମୁଖ୍ୟ ଯନ୍ତ୍ରୀ (L-15/16)',
       required_certificates_en: [
         'Diploma (SCTE&VT / AICTE) or B.Tech Degree & Marksheets',
         'Odia Pass Proof (HSC / ME Standard)',
@@ -524,23 +599,30 @@
       stage_tags: ['after-10th-12th', 'graduate', 'diploma-btech'],
       stage_label_en: 'After +2 · Graduate · B.Tech',
       stage_label_or: '+୨ / ସ୍ନାତକ / B.Tech',
+      popularity_rank: 11,
+      starting_pay_num: 50000,
+      entry_order: 2,
+      age_min: 18,
+      age_max_ur: 60,
       featured: 0,
       status: 'published',
       is_builtin: true,
-      title_en: 'IT / Software Engineering & Odisha Semiconductor / GCC / Startup Track',
-      title_or: 'IT / ସଫ୍ଟୱେର୍ ଇଞ୍ଜିନିୟରିଂ ଏବଂ ଓଡ଼ିଶା ସେମିକଣ୍ଡକ୍ଟର୍ / GCC / ଷ୍ଟାର୍ଟଅପ୍ ମାର୍ଗ',
+      title_en: 'IT / Software Engineering & Odisha Semiconductor / GCC Track',
+      title_or: 'ସଫ୍ଟୱେର୍ ଇଞ୍ଜିନିୟରିଂ, ଭୁବନେଶ୍ୱର GCC ଓ ସେମିକଣ୍ଡକ୍ଟର୍ କ୍ୟାରିୟର୍',
       summary_en: 'Industry roadmap covering Bhubaneswar Infocity/Infovalley GCCs (IBM, Deloitte, TCS, Infosys, Mindtree), Odisha Semiconductor/VLSI Policy hubs, and National product tech.',
       summary_or: 'ଭୁବନେଶ୍ୱର ଇନଫୋସିଟି/ଇନଫୋଭ୍ୟାଲି GCC (IBM, Deloitte, TCS, Infosys), ଓଡ଼ିଶା ସେମିକଣ୍ଡକ୍ଟର୍/VLSI ନୀତି ହବ୍ ଏବଂ ଜାତୀୟ ପ୍ରଡକ୍ଟ ଟେକ୍ କ୍ୟାରିୟର୍।',
       orsp_level: 'Industry · ₹4.5–₹24 LPA',
+      pay_pill_en: 'IT / VLSI · ₹4.5–₹24 LPA',
+      pay_pill_or: 'ଆଇଟି / VLSI · ₹୪.୫–₹୨୪ LPA',
       salary_band: '₹4.5–₹9 LPA (Fresher IT/GCC) · ₹10–₹24+ LPA (VLSI / Product / Senior)',
       salary_band_or: '₹୪.୫–₹୯ LPA (ଫ୍ରେସର୍ IT/GCC) · ₹୧୦–₹୨୪+ LPA (VLSI / ପ୍ରଡକ୍ଟ)',
       pay_allowances_en: 'Bhubaneswar GCC & IT Services: ₹4.5–₹9 LPA entry (SDE-1 / Cloud / Data); Semiconductor/VLSI (SiCSem, RIR Power, Fabless Design) & National Product Firms: ₹10–₹24+ LPA + ESOPs + Performance Bonus + Health Cover.',
       pay_allowances_or: 'ଭୁବନେଶ୍ୱର GCC/IT ରେ ₹୪.୫–₹୯ LPA ଏବଂ ସେମିକଣ୍ଡକ୍ଟର୍/VLSI ଓ ପ୍ରଡକ୍ଟ କମ୍ପାନୀରେ ₹୧୦–₹୨୪+ LPA + ESOPs + ବୋନସ୍।',
       eligibility_summary: 'B.Tech/B.E. (CS/IT/ECE/EE), MCA, BCA/B.Sc. CS, or Diploma + Portfolio/Certifications. Strong DSA, Cloud, or VLSI skills.',
       eligibility_summary_or: 'B.Tech (CS/IT/ECE/EE), MCA, BCA/B.Sc. CS କିମ୍ବା ଡିପ୍ଲୋମା + ପ୍ରୋଜେକ୍ଟ ପୋର୍ଟଫୋଲିଓ। DSA, କ୍ଲାଉଡ୍ କିମ୍ବା VLSI ଦକ୍ଷତା।',
-      age_window_en: 'No upper age bar (Merit & Portfolio-driven across startups, GCCs & global remote teams).',
-      age_window_or: 'କୌଣସି ବୟସ ସୀମା ନାହିଁ (ଦକ୍ଷତା ଓ ପ୍ରୋଜେକ୍ଟ ପୋର୍ଟଫୋଲିଓ ଆଧାରିତ)।',
-      key_exams: 'TCS NQT / Infosys SP / GATE CS-EC / Campus Drives / Open-Source & Kaggle / VLSI Design Assessments',
+      age_window_en: 'No upper age bar · Portfolio & Coding-driven hiring',
+      age_window_or: 'କୌଣସି ବୟସ ସୀମା ନାହିଁ · ଦକ୍ଷତା ଆଧାରିତ ନିଯୁକ୍ତି',
+      key_exams: 'TCS NQT / Infosys SP / GATE CS-EC / Campus & VLSI Assessments',
       selection_stages_en: [
         'Stage 1 — Online Coding / Aptitude Test (DSA, SQL, OS/DBMS or Verilog/Digital Electronics for VLSI).',
         'Stage 2 — 2 Technical Rounds (Live Problem Solving, System/API Design, Deployed GitHub Projects).',
@@ -566,6 +648,8 @@
         '୩–୭ ବର୍ଷ: ସିନିୟର ଇଞ୍ଜିନିୟର୍ / ଟେକ୍ ଲିଡ୍ (SDE-2/3)।',
         '୭–୧୫+ ବର୍ଷ: ଷ୍ଟାଫ୍ ଇଞ୍ଜିନିୟର୍ / ଇଞ୍ଜିନିୟରିଂ ମ୍ୟାନେଜର୍ / ଷ୍ଟାର୍ଟଅପ୍ ପ୍ରତିଷ୍ଠାତା।'
       ],
+      rank_5_15_en: 'Tech Lead / SDE-3 → Staff Engineer / Engineering Manager',
+      rank_5_15_or: 'ଟେକ୍ ଲିଡ୍ → ଷ୍ଟାଫ୍ ଇଞ୍ଜିନିୟର୍ / ଇଞ୍ଜିନିୟରିଂ ମ୍ୟାନେଜର୍',
       required_certificates_en: [
         'Clean 1-Page ATS Resume + Active GitHub / Portfolio URL',
         'B.Tech / MCA / BCA / Diploma Transcripts',
@@ -601,23 +685,30 @@
       stage_tags: ['graduate'],
       stage_label_en: 'Graduate',
       stage_label_or: 'ସ୍ନାତକ',
+      popularity_rank: 4,
+      starting_pay_num: 48480,
+      entry_order: 3,
+      age_min: 20,
+      age_max_ur: 30,
       featured: 1,
       status: 'published',
       is_builtin: true,
-      title_en: 'SBI PO / Clerk & IBPS PO / Clerk / RRB Officer (Odisha Gramya Bank & Utkal Grameen Bank)',
-      title_or: 'SBI PO / କ୍ଲର୍କ ଏବଂ IBPS PO / କ୍ଲର୍କ / RRB (ଓଡ଼ିଶା ଗ୍ରାମ୍ୟ ବ୍ୟାଙ୍କ ଓ ଉତ୍କଳ ଗ୍ରାମୀଣ ବ୍ୟାଙ୍କ)',
+      title_en: 'SBI / IBPS PO & Clerk · Odisha Gramya & Utkal Grameen Bank',
+      title_or: 'ରାଷ୍ଟ୍ରାୟତ୍ତ ବ୍ୟାଙ୍କ PO/କ୍ଲର୍କ ଏବଂ ଓଡ଼ିଶା ଗ୍ରାମ୍ୟ ଓ ଉତ୍କଳ ଗ୍ରାମୀଣ ବ୍ୟାଙ୍କ',
       summary_en: 'Annual predictable public-sector banking calendar with Odisha state-wise clerical & RRB vacancies backed by Local Odia Language Proficiency Test (LPT).',
       summary_or: 'ସ୍ଥାନୀୟ ଓଡ଼ିଆ ଭାଷା ପରୀକ୍ଷା (LPT) ସହିତ SBI, IBPS PO/କ୍ଲର୍କ ଏବଂ ଓଡ଼ିଶା ଗ୍ରାମ୍ୟ ବ୍ୟାଙ୍କ / ଉତ୍କଳ ଗ୍ରାମୀଣ ବ୍ୟାଙ୍କରେ ପ୍ରତିବର୍ଷ ନିୟମିତ ବ୍ୟାଙ୍କିଂ ନିଯୁକ୍ତି।',
-      orsp_level: '12th Bipartite · ₹48,480 PO / ₹24,050 Clerk',
+      orsp_level: 'IBPS / SBI Scale-I · ₹48,480',
+      pay_pill_en: 'IBPS / SBI Scale-I · ₹48,480',
+      pay_pill_or: 'IBPS / SBI Scale-I · ₹୪୮,୪୮୦',
       salary_band: 'PO ₹48,480 Basic (~₹82,000+ Gross + Lease) · Clerk ₹24,050 (~₹42,000 Gross)',
       salary_band_or: 'PO ₹୪୮,୪୮୦ ମୂଳ ବେତନ (~₹୮୨,୦୦୦+ ଗ୍ରସ୍) · କ୍ଲର୍କ ₹୨୪,୦୫୦ (~₹୪୨,୦୦୦)',
       pay_allowances_en: '12th Bipartite Settlement: Probationary Officer (JMGS-I) starts at ₹48,480 Basic + DA + Leased House Accommodation (₹10k–₹30k) + Petrol + Newspaper + Medical; Clerk starts at ₹24,050 Basic + DA + HRA + Special Allowance.',
       pay_allowances_or: '୧୨ତମ ଦ୍ୱିପାକ୍ଷିକ ଚୁକ୍ତି: PO (JMGS-I) ₹୪୮,୪୮୦ + DA + ଘରଭଡ଼ା ଲିଜ୍ + ପେଟ୍ରୋଲ୍ ଭତ୍ତା; କ୍ଲର୍କ ₹୨୪,୦୫୦ + DA + HRA + ସ୍ୱତନ୍ତ୍ର ଭତ୍ତା।',
       eligibility_summary: 'Any Graduation Degree + Computer Literacy + Local Language Odia (10th/12th Marksheet or LPT for Odisha Circle/RRB).',
       eligibility_summary_or: 'ଯେକୌଣସି ସ୍ନାତକ ଡିଗ୍ରୀ + କମ୍ପ୍ୟୁଟର ଜ୍ଞାନ + ଓଡ଼ିଆ ଭାଷା ଦକ୍ଷତା (ଦଶମ/ଦ୍ୱାଦଶ କିମ୍ବା LPT)।',
-      age_window_en: '20–28 yrs (Clerk) · 20–30 yrs (PO / RRB Officer Scale-I) · +3 yrs OBC-NCL · +5 yrs SC/ST.',
-      age_window_or: '୨୦–୨୮ ବର୍ଷ (କ୍ଲର୍କ) · ୨୦–୩୦ ବର୍ଷ (PO / RRB) · OBC-NCL +୩ ବର୍ଷ · SC/ST +୫ ବର୍ଷ।',
-      key_exams: 'SBI PO/JA · IBPS PO/Clerk · IBPS RRB PO/Office Assistant (OGB & UGB)',
+      age_window_en: '20–28 yrs (Clerk) · 20–30 yrs (PO/RRB) · +3 OBC · +5 SC/ST',
+      age_window_or: '୨୦–୨୮ ବର୍ଷ (କ୍ଲର୍କ) · ୨୦–୩୦ ବର୍ଷ (PO/RRB) · +୩ OBC · +୫ SC/ST',
+      key_exams: 'SBI PO/JA · IBPS PO/Clerk · IBPS RRB Officer (OGB & UGB)',
       selection_stages_en: [
         'Stage 1 — Prelims (100 Marks, 60 Mins): English, Quantitative Aptitude & Reasoning (Sectional timing in SBI/IBPS; NO English in RRB Prelims).',
         'Stage 2 — Mains (200 Marks + Descriptive Essay/Letter for PO): Reasoning & Computer, Data Analysis, General/Banking Awareness, English/Odia.',
@@ -643,6 +734,8 @@
         '୪–୧୦ ବର୍ଷ: ବ୍ରାଞ୍ଚ ମ୍ୟାନେଜର୍ (Scale-III) → ଚିଫ୍ ମ୍ୟାନେଜର୍ (Scale-IV)।',
         '୧୦–୧୫+ ବର୍ଷ: AGM (Scale-V) → DGM / GM।'
       ],
+      rank_5_15_en: 'Branch Manager (Scale-III) → Chief Manager / AGM (Scale-V)',
+      rank_5_15_or: 'ବ୍ରାଞ୍ଚ ମ୍ୟାନେଜର୍ (Scale-III) → ଚିଫ୍ ମ୍ୟାନେଜର୍ / AGM',
       required_certificates_en: [
         'Graduation Degree & Semester Marksheets (Percentage Calculation Proof)',
         'Class 10 / 12 Marksheet showing Odia as a Subject (for Odisha Circle / RRB LPT Exemption)',
@@ -674,23 +767,30 @@
       stage_tags: ['graduate', 'pg-medical'],
       stage_label_en: 'Graduate / Post-Graduate',
       stage_label_or: 'ସ୍ନାତକ / ସ୍ନାତକୋତ୍ତର',
+      popularity_rank: 9,
+      starting_pay_num: 78450,
+      entry_order: 4,
+      age_min: 21,
+      age_max_ur: 30,
       featured: 1,
       status: 'published',
       is_builtin: true,
-      title_en: 'RBI Grade B / NABARD Grade A / SEBI Officer (Regulatory Bodies)',
-      title_or: 'RBI ଗ୍ରେଡ୍-B / NABARD ଗ୍ରେଡ୍-A / SEBI ଅଫିସର୍ (ନିୟାମକ ସଂସ୍ଥା)',
+      title_en: 'RBI Grade B / NABARD Grade A / SEBI Regulatory Officer',
+      title_or: 'ଭାରତୀୟ ରିଜର୍ଭ ବ୍ୟାଙ୍କ, ନାବାର୍ଡ ଓ ସେବି ନିୟାମକ ଅଧିକାରୀ',
       summary_en: 'India’s premier financial policy and regulatory officer cadres overseeing monetary policy, rural development (NABARD), and capital markets (SEBI).',
       summary_or: 'ମୁଦ୍ରାନୀତି (RBI), ଗ୍ରାମୀଣ ଓ କୃଷି ବିକାଶ (NABARD) ଏବଂ ପୁଞ୍ଜିବଜାର (SEBI) ରେ ଭାରତର ସର୍ବୋଚ୍ଚ ଆର୍ଥିକ ନିୟାମକ ଅଫିସର୍ କ୍ୟାରିୟର୍।',
-      orsp_level: 'Regulatory · ₹55,200–₹78,450 Basic',
+      orsp_level: 'RBI Gr-B · ₹55,200 Basic',
+      pay_pill_en: 'RBI Gr-B · ₹55,200 Basic (~₹1.3L)',
+      pay_pill_or: 'RBI ଗ୍ରେଡ୍-B · ₹୫୫,୨୦୦ (~₹୧.୩L)',
       salary_band: '₹55,200 Basic (RBI Gr-B; ~₹1.25–₹1.45L/mo Gross) · ₹44,500 (NABARD/SEBI)',
       salary_band_or: 'RBI ଗ୍ରେଡ୍-B ₹୫୫,୨୦୦ ମୂଳ ବେତନ (~₹୧.୨୫–₹୧.୪୫ ଲକ୍ଷ/ମାସ) · NABARD/SEBI ~₹୧L+',
       pay_allowances_en: 'RBI Grade B: ₹55,200 Basic + DA + Local Allowance + Grade Allowance + Staff Quarters / High Lease (₹1.25–₹1.45L/mo total value) + Education/Briefcase/Fuel Perks. NABARD Grade A & SEBI Grade A offer ~₹1.0–₹1.3L/mo CTC.',
       pay_allowances_or: 'RBI ଗ୍ରେଡ୍-B ରେ ₹୫୫,୨୦୦ ମୂଳ ବେତନ + DA + ସରକାରୀ କ୍ୱାର୍ଟର୍ସ/ଲିଜ୍ (~₹୧.୨୫–₹୧.୪୫ ଲକ୍ଷ/ମାସ) ଏବଂ NABARD/SEBI ରେ ~₹୧.୦–₹୧.୩ ଲକ୍ଷ/ମାସ।',
       eligibility_summary: 'RBI Gr-B: Graduation (60% UR, 50% SC/ST/PwBD); NABARD Gr-A: Graduation/Agri/Finance; SEBI Gr-A: PG / CA / B.Tech / LLB.',
       eligibility_summary_or: 'RBI ଗ୍ରେଡ୍-B: ସ୍ନାତକ (୬୦% UR); NABARD ଗ୍ରେଡ୍-A: ସ୍ନାତକ/କୃଷି/ଅର୍ଥନୀତି; SEBI ଗ୍ରେଡ୍-A: ସ୍ନାତକୋତ୍ତର / CA / B.Tech / LLB।',
-      age_window_en: '21–30 yrs (UR) · +3 yrs OBC-NCL · +5 yrs SC/ST · +2/+4 yrs M.Phil/Ph.D (RBI).',
-      age_window_or: '୨୧–୩୦ ବର୍ଷ (UR) · OBC +୩ ବର୍ଷ · SC/ST +୫ ବର୍ଷ · M.Phil/Ph.D ଅତିରିକ୍ତ ଛାଡ଼।',
-      key_exams: 'RBI Grade B (Phase I + Phase II ESI/FM/Eng + Interview) · NABARD Grade A · SEBI Grade A',
+      age_window_en: '21–30 yrs (UR) · +3 yrs OBC · +5 yrs SC/ST · +2/+4 yrs PG/PhD',
+      age_window_or: '୨୧–୩୦ ବର୍ଷ (UR) · +୩ OBC · +୫ SC/ST · PG/PhD ଛାଡ଼',
+      key_exams: 'RBI Grade B (Phase I + Phase II + Interview) · NABARD & SEBI Gr-A',
       selection_stages_en: [
         'Stage 1 — Phase I Objective Screening (GA, Quant, Reasoning, English; plus ESI & ARD in NABARD or Commerce/Costing in SEBI).',
         'Stage 2 — Phase II (Objective + Typed Descriptive Papers): Economic & Social Issues (ESI), Finance & Management (FM) / ARD, and English Descriptive.',
@@ -716,6 +816,8 @@
         '୫–୧୦ ବର୍ଷ: AGM (ଗ୍ରେଡ୍ C) → DGM (ଗ୍ରେଡ୍ D)।',
         '୧୦–୧୫+ ବର୍ଷ: GM (ଗ୍ରେଡ୍ E) → CGM / କାର୍ଯ୍ୟନିର୍ବାହୀ ନିର୍ଦ୍ଦେଶକ।'
       ],
+      rank_5_15_en: 'AGM (Grade C) → DGM / General Manager (Grade E)',
+      rank_5_15_or: 'AGM (ଗ୍ରେଡ୍ C) → DGM / ଜେନେରାଲ୍ ମ୍ୟାନେଜର୍ (ଗ୍ରେଡ୍ E)',
       required_certificates_en: [
         'Graduation / Post-Graduation Degree & Percentage Equivalency Certificate',
         'Central OBC-NCL / SC / ST / EWS / PwBD Certificate',
@@ -748,23 +850,30 @@
       stage_tags: ['graduate'],
       stage_label_en: 'Graduate',
       stage_label_or: 'ସ୍ନାତକ',
+      popularity_rank: 12,
+      starting_pay_num: 35400,
+      entry_order: 3,
+      age_min: 21,
+      age_max_ur: 32,
       featured: 0,
       status: 'published',
       is_builtin: true,
-      title_en: 'Odisha State Cooperative Bank (OSCB) & DCCB Assistant Manager / Banking Assistant',
-      title_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ସମବାୟ ବ୍ୟାଙ୍କ (OSCB) ଓ DCCB ଆସିଷ୍ଟାଣ୍ଟ ମ୍ୟାନେଜର୍ / ବ୍ୟାଙ୍କିଂ ଆସିଷ୍ଟାଣ୍ଟ',
+      title_en: 'Odisha State Cooperative Bank (OSCB) & DCCB Officer / Assistant',
+      title_or: 'ଓଡ଼ିଶା ରାଜ୍ୟ ସମବାୟ ବ୍ୟାଙ୍କ ଓ ଜିଲ୍ଲା ସମବାୟ ବ୍ୟାଙ୍କ ଅଧିକାରୀ',
       summary_en: 'Home-state banking career posted strictly inside Odisha across OSCB Headquarters (Bhubaneswar) and 17 District Central Cooperative Banks (DCCBs).',
       summary_or: 'ଓଡ଼ିଶା ଭିତରେ ସ୍ଥାୟୀ ପୋଷ୍ଟିଂ — ଭୁବନେଶ୍ୱର OSCB ମୁଖ୍ୟାଳୟ ଏବଂ ୧୭ଟି ଜିଲ୍ଲା କେନ୍ଦ୍ରୀୟ ସମବାୟ ବ୍ୟାଙ୍କ (DCCB) ରେ ବ୍ୟାଙ୍କିଂ କ୍ୟାରିୟର୍।',
-      orsp_level: 'Co-op Pay · ₹35,400 AM / ₹21,700 BA',
+      orsp_level: 'Co-op Pay · ₹35,400 AM',
+      pay_pill_en: 'Co-op Pay · ₹35,400 AM / ₹21.7k BA',
+      pay_pill_or: 'ସମବାୟ ବେତନ · ₹୩୫,୪୦୦ AM',
       salary_band: 'Assistant Manager Gr-II ₹35,400 Basic · Banking Assistant Gr-II ₹21,700 Basic',
       salary_band_or: 'ଆସିଷ୍ଟାଣ୍ଟ ମ୍ୟାନେଜର୍ ₹୩୫,୪୦୦ · ବ୍ୟାଙ୍କିଂ ଆସିଷ୍ଟାଣ୍ଟ ₹୨୧,୭୦୦ + DA/HRA',
       pay_allowances_en: 'OSCB / DCCB State Cooperative Pay Matrix aligned with ORSP: Assistant Manager Grade-II (₹35,400–₹1,12,400) and Banking Assistant Grade-II (₹21,700–₹69,100) + State DA, HRA, Medical & Home-District Posting Stability.',
       pay_allowances_or: 'ORSP ଅନୁଯାୟୀ OSCB/DCCB ବେତନ: ଆସିଷ୍ଟାଣ୍ଟ ମ୍ୟାନେଜର୍ (₹୩୫,୪୦୦–₹୧,୧୨,୪୦୦) ଓ ବ୍ୟାଙ୍କିଂ ଆସିଷ୍ଟାଣ୍ଟ (₹୨୧,୭୦୦–₹୬୯,୧୦୦) + ରାଜ୍ୟ DA, HRA ଓ ନିଜ ଜିଲ୍ଲାରେ ପୋଷ୍ଟିଂ ସୁବିଧା।',
       eligibility_summary: 'Graduation in any discipline + Odia pass at HSC/ME + Proficiency in Computer Applications. Age: 21–32 yrs.',
       eligibility_summary_or: 'ସ୍ନାତକ ଡିଗ୍ରୀ + HSC/ME ରେ ଓଡ଼ିଆ ପାସ୍ + କମ୍ପ୍ୟୁଟର ଦକ୍ଷତା। ବୟସ: ୨୧–୩୨ ବର୍ଷ।',
-      age_window_en: '21 to 32 years (UR) · +5 yrs SC/ST/SEBC/Women · +10 yrs PwBD.',
-      age_window_or: '୨୧ ରୁ ୩୨ ବର୍ଷ (UR) · SC/ST/SEBC/ମହିଳା +୫ ବର୍ଷ · PwBD +୧୦ ବର୍ଷ।',
-      key_exams: 'OSCB / RCS Odisha Recruitment Exam (IBPS Conducted Prelims + Mains)',
+      age_window_en: '21–32 yrs (UR) · +5 yrs SC/ST/SEBC/Women · +10 yrs PwBD',
+      age_window_or: '୨୧–୩୨ ବର୍ଷ (UR) · SC/ST/SEBC/ମହିଳା +୫ ବର୍ଷ · PwBD +୧୦ ବର୍ଷ',
+      key_exams: 'OSCB / RCS Odisha IBPS-Conducted Prelims + Mains',
       selection_stages_en: [
         'Stage 1 — Online Preliminary Exam (100 Marks, 60 Mins): English, Numerical Ability & Reasoning.',
         'Stage 2 — Online Main Exam (160 Marks, 120 Mins): General/Financial Awareness, English, Reasoning, Quantitative Aptitude & Computer.',
@@ -790,6 +899,8 @@
         '୫–୧୨ ବର୍ଷ: ବ୍ରାଞ୍ଚ ମ୍ୟାନେଜର୍ / ମ୍ୟାନେଜର୍ (ଗ୍ରେଡ୍-୧)।',
         '୧୨–୧୮+ ବର୍ଷ: ଡେପୁଟି ଜେନେରାଲ୍ ମ୍ୟାନେଜର୍ / DCCB CEO।'
       ],
+      rank_5_15_en: 'DCCB Branch Manager → DGM / CEO of District Co-op Bank',
+      rank_5_15_or: 'DCCB ବ୍ରାଞ୍ଚ ମ୍ୟାନେଜର୍ → DGM / ସମବାୟ ବ୍ୟାଙ୍କ CEO',
       required_certificates_en: [
         'Graduation Certificate & Marksheets',
         'Odia Language Pass Certificate (Class 10 / ME)',
@@ -825,23 +936,30 @@
       stage_tags: ['pg-medical'],
       stage_label_en: 'Post-Graduate / Medical',
       stage_label_or: 'MBBS / BDS / ମେଡିକାଲ୍',
+      popularity_rank: 7,
+      starting_pay_num: 67320,
+      entry_order: 4,
+      age_min: 21,
+      age_max_ur: 38,
       featured: 1,
       status: 'published',
       is_builtin: true,
       title_en: 'OPSC Medical Officer (OMHS Cadre) & Dental Surgeon',
-      title_or: 'OPSC ମେଡିକାଲ୍ ଅଫିସର୍ (OMHS କ୍ୟାଡର୍) ଓ ଡେଣ୍ଟାଲ୍ ସର୍ଜନ୍',
+      title_or: 'ଓଡ଼ିଶା ସରକାରୀ ମେଡିକାଲ୍ ଅଫିସର୍ ଓ ଦନ୍ତ ଚିକିତ୍ସକ କ୍ୟାଡର୍',
       summary_en: 'Permanent Group-A Odisha Medical & Health Services (OMHS) doctor cadre with KBK/V-1 to V-4 rural incentives and PG in-service quota benefits.',
       summary_or: 'ସ୍ଥାୟୀ Group-A ଓଡ଼ିଶା ମେଡିକାଲ୍ ଓ ସ୍ୱାସ୍ଥ୍ୟ ସେବା (OMHS) ଡାକ୍ତର କ୍ୟାଡର୍ — ଗ୍ରାମାଞ୍ଚଳ ପ୍ରୋତ୍ସାହନ ଭତ୍ତା ଓ PG ଇନ୍-ସର୍ଭିସ୍ କୋଟା ସୁବିଧା ସହିତ।',
-      orsp_level: 'ORSP L-12 · ₹56,100 + NPA + Rural Incentive',
+      orsp_level: 'ORSP L-12 · ₹56,100 + NPA',
+      pay_pill_en: 'ORSP L-12 · ₹56,100 + NPA',
+      pay_pill_or: 'ORSP L-12 · ₹୫୬,୧୦୦ + NPA',
       salary_band: 'ORSP L-12 (₹56,100 Basic + DA + HRA + KBK/Rural Place-Based Incentive)',
       salary_band_or: 'ORSP L-12 (₹୫୬,୧୦୦ + DA + HRA + ଗ୍ରାମାଞ୍ଚଳ/KBK ପ୍ରୋତ୍ସାହନ ଭତ୍ତା)',
       pay_allowances_en: 'ORSP Level-12 (₹56,100–₹1,77,500) + DA + HRA + Place-Based Vulnerability Incentive (V1–V4 / KBK districts up to ₹20k–₹40k/mo) + Higher Pay on PG completion + In-Service NEET-PG Weightage.',
       pay_allowances_or: 'ORSP L-12 (₹୫୬,୧୦୦–₹୧,୭୭,୫୦୦) + DA + HRA + V1–V4/KBK ଗ୍ରାମାଞ୍ଚଳ ପ୍ରୋତ୍ସାହନ ଭତ୍ତା + NEET-PG ଇନ୍-ସର୍ଭିସ୍ ୱେଟେଜ୍।',
       eligibility_summary: 'MBBS (OMHS MO) or BDS (Dental Surgeon) + Permanent Odisha Medical / Dental Council Registration + Odia proficiency.',
       eligibility_summary_or: 'MBBS (OMHS MO) କିମ୍ବା BDS (ଡେଣ୍ଟାଲ୍ ସର୍ଜନ୍) + ଓଡ଼ିଶା ମେଡିକାଲ୍/ଡେଣ୍ଟାଲ୍ କାଉନସିଲ୍ ପଞ୍ଜୀକରଣ + ଓଡ଼ିଆ ଜ୍ଞାନ।',
-      age_window_en: '21–38 yrs (UR) · +5 yrs SC/ST/SEBC/Women · Extra age relaxation for NHM/Contractual Odisha doctors.',
-      age_window_or: '୨୧–୩୮ ବର୍ଷ (UR) · SC/ST/SEBC/ମହିଳା +୫ ବର୍ଷ · NHM/ଚୁକ୍ତିଭିତ୍ତିକ ଡାକ୍ତରଙ୍କ ପାଇଁ ଅତିରିକ୍ତ ବୟସ ଛାଡ଼।',
-      key_exams: 'OPSC Medical Officer (Assistant Surgeon) Written MCQ Exam (200 Questions, 200 Marks, No Negative Marking)',
+      age_window_en: '21–38 yrs (UR) · +5 yrs SC/ST/SEBC/Women · NHM contractual relaxation',
+      age_window_or: '୨୧–୩୮ ବର୍ଷ (UR) · +୫ ବର୍ଷ ଛାଡ଼ · NHM ଅତିରିକ୍ତ ଛାଡ଼',
+      key_exams: 'OPSC Medical Officer Single-Paper Written MCQ (200M)',
       selection_stages_en: [
         'Stage 1 — OPSC Single-Paper Written MCQ Exam (200 Marks, 3 Hours: Pre-Clinical, Para-Clinical & Clinical MBBS/BDS Subjects).',
         'Stage 2 — Merit List with Contractual Service Weightage (1%–5% per year for NHM/State Govt doctors, as notified).',
@@ -867,6 +985,8 @@
         '୫–୧୧ ବର୍ଷ: ସିନିୟର MO / ସ୍ପେଶାଲିଷ୍ଟ (DACP L-13/14)।',
         '୧୧–୧୮+ ବର୍ଷ: ADMO / CDM&PHO (L-15/16)।'
       ],
+      rank_5_15_en: 'Senior MO / Specialist (L-14) → ADMO / CDM&PHO (L-16)',
+      rank_5_15_or: 'ସିନିୟର MO / ସ୍ପେଶାଲିଷ୍ଟ → ADMO / CDM&PHO (L-16)',
       required_certificates_en: [
         'MBBS / BDS Degree + Compulsory Rotating Internship Completion Certificate',
         'Valid Permanent Registration with Odisha Council of Medical Registration (OCMR) / OSDC',
@@ -898,23 +1018,30 @@
       stage_tags: ['after-10th-12th', 'diploma-btech', 'graduate'],
       stage_label_en: 'After +2 · Diploma / B.Sc.',
       stage_label_or: '+୨ / ଡିପ୍ଲୋମା / B.Sc.',
+      popularity_rank: 8,
+      starting_pay_num: 29200,
+      entry_order: 2,
+      age_min: 21,
+      age_max_ur: 38,
       featured: 1,
       status: 'published',
       is_builtin: true,
-      title_en: 'OSSSC Nursing Officer, Pharmacist, Radiographer & Lab Technician',
-      title_or: 'OSSSC ନର୍ସିଂ ଅଫିସର୍, ଫାର୍ମାସିଷ୍ଟ, ରେଡିଓଗ୍ରାଫର୍ ଓ ଲ୍ୟାବ୍ ଟେକ୍ନିସିଆନ୍',
+      title_en: 'OSSSC Nursing Officer, Pharmacist, Radiographer & Lab Tech',
+      title_or: 'ଜିଲ୍ଲା ସ୍ୱାସ୍ଥ୍ୟ କ୍ୟାଡର୍ — ନର୍ସିଂ ଅଫିସର୍, ଫାର୍ମାସିଷ୍ଟ ଓ ଲ୍ୟାବ୍ ଟେକ୍ନିସିଆନ୍',
       summary_en: 'Large-scale district cadre healthcare recruitment across 30 Odisha DHHs, Medical Colleges (SCB/MKCG/VIMSAR), CHCs, and PHCs.',
       summary_or: 'ଓଡ଼ିଶାର ୩୦ ଜିଲ୍ଲା ମୁଖ୍ୟ ଚିକିତ୍ସାଳୟ (DHH), ମେଡିକାଲ୍ କଲେଜ (SCB/MKCG/VIMSAR), CHC ଓ PHC ରେ ନର୍ସିଂ ଓ ପାରାମେଡିକାଲ୍ ନିଯୁକ୍ତି।',
-      orsp_level: 'ORSP L-7 to L-8 · ₹25,500–₹29,200',
+      orsp_level: 'ORSP L-7–L-8 · ₹25.5k–₹29.2k',
+      pay_pill_en: 'ORSP L-7–L-8 · ₹25.5k–₹29.2k',
+      pay_pill_or: 'ORSP L-7–L-8 · ₹୨୫.୫k–₹୨୯.୨k',
       salary_band: 'ORSP L-8 (₹29,200 Nursing Officer) · L-7 (₹25,500 Pharmacist/LT/Radiographer)',
       salary_band_or: 'ORSP L-8 (₹୨୯,୨୦୦ ନର୍ସିଂ ଅଫିସର୍) · L-7 (₹୨୫,୫୦୦ ଫାର୍ମାସିଷ୍ଟ/LT/ରେଡିଓଗ୍ରାଫର୍)',
       pay_allowances_en: 'ORSP Level-8 (₹29,200–₹92,300) for Nursing Officer; Level-7 (₹25,500–₹81,100) for Pharmacist, Radiographer & Laboratory Technician (LT); Level-5 (₹21,700) for MPHW(F/M) + DA, HRA, Uniform & Washing Allowance.',
       pay_allowances_or: 'ନର୍ସିଂ ଅଫିସର୍ ପାଇଁ L-8 (₹୨୯,୨୦୦) ଏବଂ ଫାର୍ମାସିଷ୍ଟ, ରେଡିଓଗ୍ରାଫର୍ ଓ LT ପାଇଁ L-7 (₹୨୫,୫୦୦) + DA, HRA ଓ ୟୁନିଫର୍ମ ଭତ୍ତା।',
       eligibility_summary: '+2 Science + GNM / B.Sc. Nursing (ONMRC), D.Pharm / B.Pharm (OSPC), DMLT / DMRT + Odisha Paramedical Council Registration.',
       eligibility_summary_or: '+୨ ବିଜ୍ଞାନ + GNM/B.Sc. Nursing (ONMRC), D.Pharm/B.Pharm (OSPC) କିମ୍ବା DMLT/DMRT + ଓଡ଼ିଶା କାଉନସିଲ୍ ପଞ୍ଜୀକରଣ।',
-      age_window_en: '21–38 yrs (UR) · +5 yrs SC/ST/SEBC/Women · Extra contractual weightage for COVID/NHM staff.',
-      age_window_or: '୨୧–୩୮ ବର୍ଷ (UR) · SC/ST/SEBC/ମହିଳା +୫ ବର୍ଷ · NHM/ଚୁକ୍ତିଭିତ୍ତିକ କର୍ମଚାରୀଙ୍କ ପାଇଁ ଅତିରିକ୍ତ ୱେଟେଜ୍।',
-      key_exams: 'OSSSC Nursing Officer / Pharmacist / LT / Radiographer / MPHW Written Exam (100 Marks)',
+      age_window_en: '21–38 yrs (UR) · +5 yrs SC/ST/SEBC/Women · Contractual weightage',
+      age_window_or: '୨୧–୩୮ ବର୍ଷ (UR) · +୫ ବର୍ଷ ଛାଡ଼ · NHM ୱେଟେଜ୍',
+      key_exams: 'OSSSC Nursing / Pharmacist / LT / Radiographer MCQ (100M)',
       selection_stages_en: [
         'Stage 1 — Written MCQ Exam (100 Marks, 2 Hours): 60M Core Professional Syllabus + 25M Practical Skill Scenarios + 10M Arithmetic + 5M English (0.25 negative).',
         'Stage 2 — Addition of Contractual Experience Marks (for eligible Odisha Govt / NHM staff).',
@@ -940,6 +1067,8 @@
         '୬–୧୨ ବର୍ଷ: ସିନିୟର ନର୍ସିଂ ଅଫିସର୍ / ଚିଫ୍ ଫାର୍ମାସିଷ୍ଟ (L-9/10)।',
         '୧୨–୧୮+ ବର୍ଷ: ଆସିଷ୍ଟାଣ୍ଟ ନର୍ସିଂ ସୁପରିଣ୍ଟେଣ୍ଡେଣ୍ଟ / ମ୍ୟାଟ୍ରନ୍ (L-11)।'
       ],
+      rank_5_15_en: 'Senior Nursing Officer / Chief Pharmacist → Matron (L-11)',
+      rank_5_15_or: 'ସିନିୟର ନର୍ସିଂ ଅଫିସର୍ / ଚିଫ୍ ଫାର୍ମାସିଷ୍ଟ → ମ୍ୟାଟ୍ରନ୍',
       required_certificates_en: [
         '10th, +2 Science & GNM / B.Sc. Nursing / D.Pharm / DMLT / DMRT Marksheets',
         'Valid Odisha Nursing (ONMRC) / Pharmacy (OSPC) / Allied Medical Council Registration',
@@ -971,23 +1100,30 @@
       stage_tags: ['graduate', 'pg-medical'],
       stage_label_en: 'BAMS / BHMS / B.Sc. Nursing',
       stage_label_or: 'BAMS / BHMS / B.Sc. ନର୍ସିଂ',
+      popularity_rank: 15,
+      starting_pay_num: 44900,
+      entry_order: 4,
+      age_min: 21,
+      age_max_ur: 38,
       featured: 0,
       status: 'published',
       is_builtin: true,
       title_en: 'OPSC Ayurvedic / Homoeopathic MO (AYUSH) & NHM Odisha CHO',
-      title_or: 'OPSC ଆୟୁର୍ବେଦିକ / ହୋମିଓପାଥିକ MO (AYUSH) ଏବଂ NHM ଓଡ଼ିଶା CHO',
+      title_or: 'ଓଡ଼ିଶା ଆୟୁର୍ବେଦିକ ଓ ହୋମିଓପାଥିକ ଡାକ୍ତର ଏବଂ କମ୍ୟୁନିଟି ହେଲ୍ଥ ଅଫିସର୍',
       summary_en: 'Permanent OPSC Group-B AYUSH Medical Officer cadre and NHM Odisha Community Health Officer (CHO) leadership roles at Ayushman Arogya Mandirs.',
       summary_or: 'ସ୍ଥାୟୀ OPSC Group-B ଆୟୁଷ ମେଡିକାଲ୍ ଅଫିସର୍ ଏବଂ ଆୟୁଷ୍ମାନ ଆରୋଗ୍ୟ ମନ୍ଦିରରେ NHM ଓଡ଼ିଶା କମ୍ୟୁନିଟି ହେଲ୍ଥ ଅଫିସର୍ (CHO) କ୍ୟାରିୟର୍।',
-      orsp_level: 'ORSP L-10 ₹44,900 · CHO ₹40,000',
+      orsp_level: 'ORSP L-10 · ₹44,900 Basic',
+      pay_pill_en: 'ORSP L-10 ₹44,900 · CHO ₹40k',
+      pay_pill_or: 'ORSP L-10 ₹୪୪,୯୦୦ · CHO ₹୪୦k',
       salary_band: 'ORSP L-10 (₹44,900 OPSC AYUSH MO) · ₹25,000 + ₹15,000 PBI (NHM CHO)',
       salary_band_or: 'ORSP L-10 (₹୪୪,୯୦୦ OPSC AYUSH MO) · ₹୨୫,୦୦୦ + ₹୧୫,୦୦୦ PBI (NHM CHO)',
       pay_allowances_en: 'OPSC Ayurvedic / Homoeopathic MO: ORSP Level-10 (₹44,900–₹1,42,400) + State DA, HRA & Govt Pension/NPS. NHM Odisha CHO: ₹25,000 fixed remuneration + up to ₹15,000 Performance-Based Incentive (PBI) = ₹40,000/mo + annual increment.',
       pay_allowances_or: 'OPSC ଆୟୁଷ MO ପାଇଁ ORSP L-10 (₹୪୪,୯୦୦) + DA/HRA ଏବଂ NHM CHO ପାଇଁ ₹୨୫,୦୦୦ + ₹୧୫,୦୦୦ ପ୍ରୋତ୍ସାହନ (ମୋଟ ₹୪୦,୦୦୦/ମାସ)।',
       eligibility_summary: 'BAMS / BHMS + State AYUSH Registration for OPSC MO; B.Sc. Nursing (with Integrated CPCH) / GNM + Bridge Course for NHM CHO.',
       eligibility_summary_or: 'OPSC MO ପାଇଁ BAMS/BHMS + ରାଜ୍ୟ ପଞ୍ଜୀକରଣ; NHM CHO ପାଇଁ B.Sc. Nursing (CPCH) / GNM।',
-      age_window_en: '21–38 yrs (OPSC AYUSH MO) · 21–40 yrs (NHM Odisha CHO, +5 yrs SC/ST/SEBC/Women).',
-      age_window_or: '୨୧–୩୮ ବର୍ଷ (OPSC AYUSH MO) · ୨୧–୪୦ ବର୍ଷ (NHM CHO, +୫ ବର୍ଷ ଛାଡ଼)।',
-      key_exams: 'OPSC AMO/HMO Written Exam (2 Papers × 100 Marks) · NHM Odisha CHO Merit / CBT',
+      age_window_en: '21–38 yrs (OPSC AYUSH) · 21–40 yrs (NHM CHO, +5 yrs cat)',
+      age_window_or: '୨୧–୩୮ ବର୍ଷ (ଆୟୁଷ) · ୨୧–୪୦ ବର୍ଷ (NHM CHO)',
+      key_exams: 'OPSC AMO/HMO Written (2 Papers × 100M) · NHM CHO Merit/CBT',
       selection_stages_en: [
         'OPSC AYUSH MO: Paper I (100M Basic & Pre-Clinical) + Paper II (100M Clinical BAMS/BHMS) → Document Verification.',
         'NHM Odisha CHO: Online Application → Career Merit / Screening Test → CPCH Bridge Verification (if needed) → District HWCs Posting.',
@@ -1013,6 +1149,8 @@
         '୬–୧୨ ବର୍ଷ: ସିନିୟର ଆୟୁଷ MO / ଜିଲ୍ଲା ଆୟୁଷ MO (L-11/12)।',
         '୧୨–୧୮+ ବର୍ଷ: ଯୁଗ୍ମ ନିର୍ଦ୍ଦେଶକ / ଆୟୁଷ ନିର୍ଦ୍ଦେଶକ (L-13/14)।'
       ],
+      rank_5_15_en: 'District AYUSH MO (L-12) → Joint Director / Director AYUSH',
+      rank_5_15_or: 'ଜିଲ୍ଲା ଆୟୁଷ MO (L-12) → ଯୁଗ୍ମ ନିର୍ଦ୍ଦେଶକ / ନିର୍ଦ୍ଦେଶକ',
       required_certificates_en: [
         'BAMS / BHMS Degree + Internship Proof + Odisha State Board of Ayurvedic/Homoeopathic Medicine Regn',
         'B.Sc. Nursing + Integrated CPCH Certificate (for NHM CHO)',
@@ -1046,23 +1184,30 @@
       stage_tags: ['graduate', 'pg-medical'],
       stage_label_en: 'B.Sc. Agriculture / Horticulture',
       stage_label_or: 'B.Sc. କୃଷି / ଉଦ୍ୟାନକୃଷି',
+      popularity_rank: 10,
+      starting_pay_num: 44900,
+      entry_order: 3,
+      age_min: 21,
+      age_max_ur: 38,
       featured: 1,
       status: 'published',
       is_builtin: true,
-      title_en: 'OPSC Assistant Agriculture Officer (AAO) & Assistant Horticulture Officer (AHO)',
-      title_or: 'OPSC ଆସିଷ୍ଟାଣ୍ଟ ଏଗ୍ରିକଲଚର୍ ଅଫିସର୍ (AAO) ଓ ଆସିଷ୍ଟାଣ୍ଟ ହର୍ଟିକଲଚର୍ ଅଫିସର୍ (AHO)',
+      title_en: 'OPSC Assistant Agriculture Officer (AAO) & Horticulture (AHO)',
+      title_or: 'ଓଡ଼ିଶା ସହକାରୀ କୃଷି ଓ ଉଦ୍ୟାନକୃଷି ଅଧିକାରୀ',
       summary_en: 'Premier Class-II Group-B officer pathway under Odisha Dept. of Agriculture & Farmers’ Empowerment (DA&FE) leading block-level crop and horticulture programmes.',
       summary_or: 'ଓଡ଼ିଶା କୃଷି ଓ କୃଷକ ସଶକ୍ତିକରଣ ବିଭାଗ (DA&FE) ଅଧୀନରେ ବ୍ଲକ୍-ସ୍ତରୀୟ କୃଷି ଓ ଉଦ୍ୟାନକୃଷି କାର୍ଯ୍ୟକ୍ରମର ନେତୃତ୍ୱ ନେଉଥିବା Group-B ଅଫିସର୍ କ୍ୟାରିୟର୍।',
-      orsp_level: 'ORSP L-10 · ₹44,900',
+      orsp_level: 'ORSP L-10 · ₹44,900 Basic',
+      pay_pill_en: 'ORSP L-10 · ₹44,900 Basic',
+      pay_pill_or: 'ORSP L-10 · ₹୪୪,୯୦୦ ମୂଳ ବେତନ',
       salary_band: 'ORSP Level-10 (₹44,900 Basic; ~₹71,000+ Gross with DA & HRA)',
       salary_band_or: 'ORSP ଲେଭେଲ୍-୧୦ (₹୪୪,୯୦୦ ମୂଳ ବେତନ; DA ଓ HRA ସହ ~₹୭୧,୦୦୦+)',
       pay_allowances_en: 'ORSP Level-10 (₹44,900–₹1,42,400) Class-II Group-B Gazetted Officer + 53%+ DA, HRA, Field Travel Allowance, Govt Quarter (Block/Sub-Division), and NPS/UPS benefits.',
       pay_allowances_or: 'ORSP L-10 (₹୪୪,୯୦୦–₹୧,୪୨,୪୦୦) ଗେଜେଟେଡ୍ Group-B ଅଫିସର୍ + DA, HRA, ଫିଲ୍ଡ ଭତ୍ତା ଓ ସରକାରୀ ବାସଭବନ।',
       eligibility_summary: 'B.Sc. (Hons.) Agriculture for AAO; B.Sc. (Hons.) Horticulture / Agriculture for AHO (ICAR/OUAT recognized) + Odia proficiency.',
       eligibility_summary_or: 'AAO ପାଇଁ B.Sc. କୃଷି; AHO ପାଇଁ B.Sc. ଉଦ୍ୟାନକୃଷି / କୃଷି (OUAT/ICAR ସ୍ୱୀକୃତ) + ଓଡ଼ିଆ ଜ୍ଞାନ।',
-      age_window_en: '21–38 yrs (UR) · +5 yrs SC/ST/SEBC/Women · +10 yrs PwBD · ₹0 OPSC Fee.',
-      age_window_or: '୨୧–୩୮ ବର୍ଷ (UR) · SC/ST/SEBC/ମହିଳା +୫ ବର୍ଷ · PwBD +୧୦ ବର୍ଷ · ଫିସ୍ ₹୦।',
-      key_exams: 'OPSC AAO / AHO Written Exam (2 Papers × 100 Marks = 200M) → Viva-Voce Interview (25 Marks)',
+      age_window_en: '21–38 yrs (UR) · +5 yrs SC/ST/SEBC/Women · +10 yrs PwBD · ₹0 Fee',
+      age_window_or: '୨୧–୩୮ ବର୍ଷ (UR) · +୫ ବର୍ଷ ଛାଡ଼ · PwBD +୧୦ ବର୍ଷ · ₹୦ ଫିସ୍',
+      key_exams: 'OPSC AAO/AHO Written (2 Papers × 100M) → Viva-Voce (25M)',
       selection_stages_en: [
         'Stage 1 — Written MCQ Exam (200 Marks, 0.25 negative): Paper I (Agronomy, Soil Science, Plant Breeding, Seed Tech) + Paper II (Horticulture, Pathology, Entomology, Extension & Agri-Economics).',
         'Stage 2 — Viva-Voce Interview (25 Marks) at OPSC, Cuttack.',
@@ -1088,6 +1233,8 @@
         '୬–୧୨ ବର୍ଷ: ବ୍ଲକ୍ ଏଗ୍ରିକଲଚର୍ ଅଫିସର୍ / SDAO (L-11/12)।',
         '୧୨–୧୮+ ବର୍ଷ: ଜିଲ୍ଲା କୃଷି ଅଧିକାରୀ / CDAO (L-13/14)।'
       ],
+      rank_5_15_en: 'Block Agri Officer / SDAO → Chief District Agri Officer (CDAO)',
+      rank_5_15_or: 'ବ୍ଲକ୍ କୃଷି ଅଧିକାରୀ / SDAO → ଜିଲ୍ଲା ମୁଖ୍ୟ କୃଷି ଅଧିକାରୀ',
       required_certificates_en: [
         'B.Sc. (Hons.) Agriculture / Horticulture Degree & OGPA-to-Percentage Certificate',
         'HSC / 10th Odia Language Proof',
@@ -1117,23 +1264,30 @@
       stage_tags: ['after-10th-12th', 'graduate', 'pg-medical'],
       stage_label_en: '+2 · B.V.Sc. & A.H.',
       stage_label_or: '+୨ / B.V.Sc. & A.H.',
+      popularity_rank: 14,
+      starting_pay_num: 56100,
+      entry_order: 2,
+      age_min: 18,
+      age_max_ur: 38,
       featured: 0,
       status: 'published',
       is_builtin: true,
-      title_en: 'OPSC / F&ARD Veterinary Assistant Surgeon (VAS) & OSSSC Livestock Inspector (LI)',
-      title_or: 'OPSC / F&ARD ଭେଟେରିନାରୀ ଆସିଷ୍ଟାଣ୍ଟ ସର୍ଜନ୍ (VAS) ଓ OSSSC ପଶୁଧନ ନିରୀକ୍ଷକ (LI)',
+      title_en: 'OPSC Veterinary Assistant Surgeon (VAS) & OSSSC Livestock Inspector',
+      title_or: 'ପ୍ରାଣୀସମ୍ପଦ ବିଭାଗ — ଭେଟେରିନାରୀ ସର୍ଜନ୍ ଓ ପଶୁଧନ ନିରୀକ୍ଷକ',
       summary_en: 'Dual-tier Odisha Fisheries & Animal Resources Development (F&ARD) career ladder — Class-I/II VAS for B.V.Sc. graduates and OSSSC LI for +2 Science/Vocational youth.',
       summary_or: 'ଓଡ଼ିଶା ମତ୍ସ୍ୟ ଓ ପ୍ରାଣୀସମ୍ପଦ ବିକାଶ (F&ARD) ବିଭାଗର ଦ୍ୱିସ୍ତରୀୟ କ୍ୟାରିୟର୍ — B.V.Sc. ପାଇଁ OPSC VAS ଏବଂ +୨ ବିଜ୍ଞାନ/ଧନ୍ଦାମୂଳକ ପାଇଁ OSSSC ପଶୁଧନ ନିରୀକ୍ଷକ।',
-      orsp_level: 'ORSP L-5 ₹21,700 (LI) · L-12 ₹56,100 (VAS)',
+      orsp_level: 'ORSP L-5 ₹21.7k · L-12 ₹56.1k',
+      pay_pill_en: 'ORSP L-5 ₹21.7k · L-12 ₹56.1k',
+      pay_pill_or: 'ORSP L-5 ₹୨୧.୭k · L-12 ₹୫୬.୧k',
       salary_band: 'ORSP L-12 (₹56,100 OPSC VAS) · L-5 (₹21,700 OSSSC Livestock Inspector)',
       salary_band_or: 'ORSP L-12 (₹୫୬,୧୦୦ OPSC VAS) · L-5 (₹୨୧,୭୦୦ ପଶୁଧନ ନିରୀକ୍ଷକ)',
       pay_allowances_en: 'OPSC Veterinary Assistant Surgeon (VAS): Group-A/B ORSP Level-10/12 (₹44,900–₹56,100 Basic) + DA + HRA + NPA (as per rules). OSSSC Livestock Inspector (LI): ORSP Level-5 (₹21,700–₹69,100) + State DA + HRA + Field Mobility.',
       pay_allowances_or: 'OPSC VAS ପାଇଁ ORSP L-10/12 (₹୪୪,୯୦୦–₹୫୬,୧୦୦) ଏବଂ OSSSC ପଶୁଧନ ନିରୀକ୍ଷକ ପାଇଁ L-5 (₹୨୧,୭୦୦) + DA ଓ HRA।',
       eligibility_summary: 'VAS: B.V.Sc. & A.H. + Odisha Veterinary Council (OVC) Regn. LI: +2 Vocational (Animal Husbandry/Dairy) or +2 Science + Cycling/Physical test.',
       eligibility_summary_or: 'VAS: B.V.Sc. & A.H. + ଓଡ଼ିଶା ଭେଟେରିନାରୀ କାଉନସିଲ୍ ପଞ୍ଜୀକରଣ। LI: +୨ ଧନ୍ଦାମୂଳକ (ପଶୁପାଳନ) କିମ୍ବା +୨ ବିଜ୍ଞାନ + ସାଇକେଲ୍/ଶାରୀରିକ ପରୀକ୍ଷା।',
-      age_window_en: '21–38 yrs (OPSC VAS) · 18–38 yrs (OSSSC LI) · +5 yrs SC/ST/SEBC/Women · ₹0 State Fee.',
-      age_window_or: '୨୧–୩୮ ବର୍ଷ (OPSC VAS) · ୧୮–୩୮ ବର୍ଷ (OSSSC LI) · +୫ ବର୍ଷ ଛାଡ଼ · ଫିସ୍ ₹୦।',
-      key_exams: 'OPSC VAS (2 Written Papers × 100M + Interview) · OSSSC Livestock Inspector (130M CBT + Physical Test)',
+      age_window_en: '21–38 yrs (VAS) · 18–38 yrs (LI) · +5 yrs SC/ST/SEBC/Women',
+      age_window_or: '୨୧–୩୮ ବର୍ଷ (VAS) · ୧୮–୩୮ ବର୍ଷ (LI) · +୫ ବର୍ଷ ଛାଡ଼',
+      key_exams: 'OPSC VAS (2 Papers + Interview) · OSSSC LI (CBT + Physical)',
       selection_stages_en: [
         'OPSC VAS: Written MCQ (2 Papers covering Veterinary Medicine, Surgery, Gynaecology, Animal Nutrition & Breeding) → Viva-Voce.',
         'OSSSC LI: Objective CBT (English, Odia, Arithmetic, GK & Animal Husbandry/Science) → Physical Standard & Cycling Test → 2-Year Training (for non-vocational) → District Posting.'
@@ -1157,6 +1311,8 @@
         '୬–୧୨ ବର୍ଷ: ବ୍ଲକ୍ ଭେଟେରିନାରୀ ଅଫିସର୍ (BVO) / ସିନିୟର LI।',
         '୧୨–୧୮+ ବର୍ଷ: ଜିଲ୍ଲା ମୁଖ୍ୟ ପଶୁଚିକିତ୍ସା ଅଧିକାରୀ (CDVO, L-14/15)।'
       ],
+      rank_5_15_en: 'Block Veterinary Officer (BVO) → Chief District VO (CDVO)',
+      rank_5_15_or: 'ବ୍ଲକ୍ ଭେଟେରିନାରୀ ଅଫିସର୍ → ଜିଲ୍ଲା ମୁଖ୍ୟ ପଶୁଚିକିତ୍ସା ଅଧିକାରୀ',
       required_certificates_en: [
         'B.V.Sc. & A.H. Degree + Valid OVC Registration (for OPSC VAS)',
         '+2 Vocational (Dairying/Poultry) or +2 Science Certificate (for OSSSC LI)',
@@ -1187,23 +1343,30 @@
       stage_tags: ['after-10th-12th', 'graduate', 'pg-medical'],
       stage_label_en: '+2 · Graduate · PG / Research',
       stage_label_or: '+୨ / ସ୍ନାତକ / ଗବେଷଣା',
+      popularity_rank: 17,
+      starting_pay_num: 48480,
+      entry_order: 3,
+      age_min: 17,
+      age_max_ur: 32,
       featured: 0,
       status: 'published',
       is_builtin: true,
-      title_en: 'OUAT / ICAR JRF-SRF, Agriculture Extension, Agri-Business & FPO Management Track',
-      title_or: 'OUAT / ICAR JRF-SRF, କୃଷି ସମ୍ପ୍ରସାରଣ, ଏଗ୍ରି-ବିଜନେସ୍ ଓ FPO ପରିଚାଳନା',
+      title_en: 'OUAT / ICAR JRF-SRF, Agriculture Extension & Agri-Business Track',
+      title_or: 'କୃଷି ଗବେଷଣା, ସମ୍ପ୍ରସାରଣ, ଏଗ୍ରି-ବିଜନେସ୍ ଓ FPO ପରିଚାଳନା',
       summary_en: 'Academic, research, and high-growth private/cooperative agribusiness career path via OUAT Bhubaneswar, ICAR-IARI/NRRI Cuttack, IBPS AFO, and FPO/Agri-Tech leadership.',
       summary_or: 'OUAT ଭୁବନେଶ୍ୱର, ICAR-NRRI କଟକ, IBPS AFO ଏବଂ FPO / ଏଗ୍ରି-ଟେକ୍ ନେତୃତ୍ୱ ମାଧ୍ୟମରେ ଗବେଷଣା ଓ ଏଗ୍ରି-ବିଜନେସ୍ କ୍ୟାରିୟର୍।',
-      orsp_level: 'JRF ₹37,000/mo · Agri-Biz ₹6–₹16 LPA',
+      orsp_level: 'JRF ₹37k/mo · AFO ₹48.4k',
+      pay_pill_en: 'JRF ₹37k/mo · AFO ₹48.4k',
+      pay_pill_or: 'JRF ₹୩୭k/ମାସ · AFO ₹୪୮.୪k',
       salary_band: 'ICAR JRF/SRF ₹37,000–₹42,000/mo · IBPS AFO ₹48,480 · ABM ₹8–₹16 LPA',
       salary_band_or: 'ICAR JRF ₹୩୭,୦୦୦/ମାସ · IBPS AFO ₹୪୮,୪୮୦ · ଏଗ୍ରି-ବିଜନେସ୍ ₹୮–₹୧୬ LPA',
       pay_allowances_en: 'ICAR-AIEEA PG/PhD Fellowship: ₹12,640–₹37,000/mo + HRA; ARS Scientist (ICAR/NRRI/CIFA): 7th CPC Level-10 (₹57,700 Basic); IBPS Specialist Agriculture Field Officer (AFO): ₹48,480 Basic; IIM-A/MANAGE ABM: ₹8–₹18 LPA.',
       pay_allowances_or: 'ICAR-JRF/SRF ଫେଲୋସିପ୍ ₹୩୭,୦୦୦/ମାସ, ARS ବୈଜ୍ଞାନିକ (L-10 ₹୫୭,୭୦୦), IBPS AFO (₹୪୮,୪୮୦) ଏବଂ ABM ମ୍ୟାନେଜମେଣ୍ଟ (₹୮–₹୧୮ LPA)।',
       eligibility_summary: '+2 Science for OUAT UG; B.Sc. Agri/Hort/Forestry/Fisheries for ICAR JRF, IBPS AFO, CAT/MANAGE ABM, and FPO CEO roles.',
       eligibility_summary_or: 'OUAT UG ପାଇଁ +୨ ବିଜ୍ଞାନ; ICAR JRF, IBPS AFO, ABM ଓ FPO CEO ପାଇଁ B.Sc. କୃଷି/ଉଦ୍ୟାନକୃଷି/ମତ୍ସ୍ୟ।',
-      age_window_en: '17+ yrs (OUAT UG) · 20–30 yrs (IBPS AFO) · 21–32 yrs (ICAR ARS Scientist) · No cap for FPO/Agri-Tech.',
-      age_window_or: '୧୭+ ବର୍ଷ (OUAT UG) · ୨୦–୩୦ ବର୍ଷ (IBPS AFO) · ୨୧–୩୨ ବର୍ଷ (ARS ବୈଜ୍ଞାନିକ)।',
-      key_exams: 'OUAT Entrance · ICAR AIEEA PG / JRF · ASRB NET / ARS · IBPS SO (AFO) · CAT / MANAGE ABM',
+      age_window_en: '17+ yrs (OUAT) · 20–30 yrs (IBPS AFO) · 21–32 yrs (ARS)',
+      age_window_or: '୧୭+ ବର୍ଷ (OUAT) · ୨୦–୩୦ ବର୍ଷ (AFO) · ୨୧–୩୨ ବର୍ଷ (ARS)',
+      key_exams: 'OUAT · ICAR AIEEA JRF · ASRB NET/ARS · IBPS AFO · MANAGE ABM',
       selection_stages_en: [
         'Track A (Research/Academia): OUAT UG → ICAR AIEEA (PG/JRF) → Ph.D. / ASRB NET → Assistant Professor (OUAT) or ICAR-ARS Scientist (NRRI Cuttack, CIFA Bhubaneswar).',
         'Track B (Banking & Agri-Business): B.Sc. Agri → IBPS SO (AFO) OR MBA Agri-Business (MANAGE Hyderabad / IIM / XUB) → Agri-Finance, Seed/Input Manager, or NABARD FPO CEO.'
@@ -1227,6 +1390,8 @@
         '୫–୧୦ ବର୍ଷ: ସିନିୟର ବୈଜ୍ଞାନିକ / ଏଗ୍ରି-କ୍ରେଡିଟ୍ ହେଡ୍।',
         '୧୦–୧୫+ ବର୍ଷ: ପ୍ରିନ୍ସିପାଲ୍ ବୈଜ୍ଞାନିକ (L-14) / ଚିଫ୍ ଏଗ୍ରି ଅଫିସର୍।'
       ],
+      rank_5_15_en: 'Senior Scientist (L-12) → Principal Scientist / Chief Agri Officer',
+      rank_5_15_or: 'ସିନିୟର ବୈଜ୍ଞାନିକ → ପ୍ରିନ୍ସିପାଲ୍ ବୈଜ୍ଞାନିକ / ଚିଫ୍ ଏଗ୍ରି ଅଫିସର୍',
       required_certificates_en: [
         'OUAT / ICAR Accredited Degree & Transcripts',
         'ICAR AIEEA / ASRB NET / CAT / IBPS Scorecard',
@@ -1263,23 +1428,30 @@
       stage_tags: ['after-10th-12th'],
       stage_label_en: 'After 10th / +2',
       stage_label_or: 'ଦଶମ / +୨ ପରେ',
+      popularity_rank: 13,
+      starting_pay_num: 21700,
+      entry_order: 1,
+      age_min: 18,
+      age_max_ur: 27,
       featured: 1,
       status: 'published',
       is_builtin: true,
-      title_en: 'After 10th & +2 Early-Entry Govt & Skill Pathways (Odisha Police Constable, Forest Guard, SSC CHSL, ITI / Polytechnic)',
-      title_or: 'ଦଶମ ଓ +୨ ପରେ ପ୍ରାରମ୍ଭିକ ସରକାରୀ ଚାକିରି ଓ ଦକ୍ଷତା ମାର୍ଗ (ପୋଲିସ୍ କନେଷ୍ଟବଲ୍, ଫରେଷ୍ଟ ଗାର୍ଡ, SSC CHSL, ITI/ପଲିଟେକ୍ନିକ୍)',
-      summary_en: 'Practical early financial independence blueprint for 18–23 yr youth across Odisha uniformed services, Central SSC CHSL/MTS/GD, Railways ALP/Technician, and Skilled-in-Odisha ITI/Polytechnic.',
+      title_en: 'After 10th & +2 Early-Entry Govt & Skill Pathways',
+      title_or: 'ଦଶମ ଓ +୨ ପରେ ପ୍ରାରମ୍ଭିକ ସରକାରୀ ଚାକିରି ଓ ଦକ୍ଷତା ମାର୍ଗ',
+      summary_en: 'Practical early financial independence blueprint for 18–23 yr youth across Odisha Police Constable, Forest Guard, SSC CHSL/MTS/GD, Railways ALP, and ITI/Polytechnic.',
       summary_or: '୧୮–୨୩ ବର୍ଷର ଯୁବପିଢ଼ିଙ୍କ ପାଇଁ ଓଡ଼ିଶା ପୋଲିସ୍ କନେଷ୍ଟବଲ୍, ଫରେଷ୍ଟ ଗାର୍ଡ, SSC CHSL/MTS/GD, ରେଳବାଇ ALP ଏବଂ ସ୍କିଲ୍ଡ-ଇନ୍-ଓଡ଼ିଶା ITI/ପଲିଟେକ୍ନିକ୍ ମାର୍ଗ।',
-      orsp_level: 'ORSP L-3–L-5 · ₹18,000–₹21,700',
+      orsp_level: 'ORSP L-3–L-5 · ₹18k–₹21.7k',
+      pay_pill_en: 'ORSP L-3–L-5 · ₹18k–₹21.7k',
+      pay_pill_or: 'ORSP L-3–L-5 · ₹୧୮k–₹୨୧.୭k',
       salary_band: 'ORSP L-3–L-5 (₹18,000–₹21,700) · 7th CPC L-2–L-4 (₹19,900–₹25,500)',
       salary_band_or: 'ORSP L-3–L-5 (₹୧୮,୦୦୦–₹୨୧,୭୦୦) · କେନ୍ଦ୍ରୀୟ L-2–L-4 (₹୧୯,୯୦୦–₹୨୫,୫୦୦)',
       pay_allowances_en: 'Odisha Police Constable / Sepoy (ORSP L-5 ₹21,700), Forest Guard (L-4 ₹19,900), SSC CHSL LDC/DEO (7th CPC L-2/L-4 ₹19,900–₹25,500), Railway ALP/Technician (L-2/L-5) + DA, HRA, Ration/Uniform & In-Service Degree Permission.',
       pay_allowances_or: 'ଓଡ଼ିଶା ପୋଲିସ୍ କନେଷ୍ଟବଲ୍ (L-5 ₹୨୧,୭୦୦), ଫରେଷ୍ଟ ଗାର୍ଡ (L-4 ₹୧୯,୯୦୦), SSC CHSL (₹୧୯,୯୦୦–₹୨୫,୫୦୦) ଓ ରେଳବାଇ ALP/ଟେକ୍ନିସିଆନ୍ + DA/HRA।',
       eligibility_summary: '10th Pass (OSAP/IRB Sepoy, SSC MTS/GD, ITI, RRB Group-D) or +2 Pass (District Police Constable, Forest Guard, SSC CHSL, OSSSC PEO/ARI).',
       eligibility_summary_or: 'ଦଶମ ପାସ୍ (ସେପୟ, SSC MTS/GD, ITI, RRB) କିମ୍ବା +୨ ପାସ୍ (ପୋଲିସ୍ କନେଷ୍ଟବଲ୍, ଫରେଷ୍ଟ ଗାର୍ଡ, SSC CHSL, OSSSC PEO/ARI)।',
-      age_window_en: '18–23 yrs (Police Constable/SSC GD) · 18–27 yrs (SSC CHSL) · 18–38 yrs (OSSSC) · Category Relaxations apply.',
-      age_window_or: '୧୮–୨୩ ବର୍ଷ (କନେଷ୍ଟବଲ୍/SSC GD) · ୧୮–୨୭ ବର୍ଷ (SSC CHSL) · ୧୮–୩୮ ବର୍ଷ (OSSSC)।',
-      key_exams: 'OPRB Constable/Sepoy · OSSSC Forest Guard/PEO · SSC CHSL/MTS/GD · RRB ALP/Tech · SAMS ITI / Diploma',
+      age_window_en: '18–23 yrs (Constable/GD) · 18–27 yrs (CHSL) · 18–38 yrs (OSSSC)',
+      age_window_or: '୧୮–୨୩ ବର୍ଷ (କନେଷ୍ଟବଲ୍/GD) · ୧୮–୨୭ ବର୍ଷ (CHSL) · ୧୮–୩୮ ବର୍ଷ (OSSSC)',
+      key_exams: 'OPRB Constable · OSSSC Forest Guard · SSC CHSL/GD · RRB ALP · ITI',
       selection_stages_en: [
         'Uniformed Track (Constable / Forest Guard / SSC GD): CBT Written Exam → Physical Measurement & Running/Walking (PET/PST) → Medical.',
         'Clerical Track (SSC CHSL / OSSSC PEO-JA): Tier-I & Tier-II Objective CBT → 35 WPM Typing / Computer Skill Test.',
@@ -1305,6 +1477,8 @@
         '୫–୧୦ ବର୍ଷ: ASI / ସିନିୟର କ୍ଲର୍କ / OSSC CGL କିମ୍ବା OAS ପରୀକ୍ଷା।',
         '୧୦–୧୮+ ବର୍ଷ: ସବ୍-ଇନ୍ସପେକ୍ଟର / ଅଫିସ୍ ସୁପରିଣ୍ଟେଣ୍ଡେଣ୍ଟ (L-9/11)।'
       ],
+      rank_5_15_en: 'ASI / Senior Clerk → Sub-Inspector / Section Officer (L-9–L-11)',
+      rank_5_15_or: 'ASI / ସିନିୟର କ୍ଲର୍କ → ସବ୍-ଇନ୍ସପେକ୍ଟର / ସେକ୍ସନ ଅଫିସର୍',
       required_certificates_en: [
         'BSE Odisha 10th & CHSE +2 Marksheets & Passing Certificates',
         'NCVT ITI Trade / SCTE&VT Diploma Certificate (for Technical Track)',
@@ -1337,23 +1511,30 @@
       stage_tags: ['graduate'],
       stage_label_en: 'Graduate (Final Year / Fresh)',
       stage_label_or: 'ଶେଷ ବର୍ଷ / ନୂତନ ସ୍ନାତକ',
+      popularity_rank: 16,
+      starting_pay_num: 35400,
+      entry_order: 3,
+      age_min: 20,
+      age_max_ur: 38,
       featured: 1,
       status: 'published',
       is_builtin: true,
-      title_en: 'Final-Year Graduate Parallel Exam Blueprint (OPSC + OSSC + OSSSC + IBPS 12-Month Prep Matrix)',
-      title_or: 'ଶେଷ ବର୍ଷ ସ୍ନାତକ ସମାନ୍ତରାଳ ପରୀକ୍ଷା ବ୍ଲୁପ୍ରିଣ୍ଟ୍ (OPSC + OSSC + OSSSC + IBPS ୧୨-ମାସିଆ ମ୍ୟାଟ୍ରିକ୍ସ)',
-      summary_en: 'Structured 12-month unified timetable allowing final-year & fresh Odisha graduates to target 4 high-probability exams simultaneously without syllabus burnout.',
+      title_en: 'Final-Year Graduate Parallel Exam Blueprint (12-Month Matrix)',
+      title_or: 'ଶେଷ ବର୍ଷ ସ୍ନାତକ ସମାନ୍ତରାଳ ପରୀକ୍ଷା ୧୨-ମାସିଆ ପ୍ରସ୍ତୁତି ବ୍ଲୁପ୍ରିଣ୍ଟ୍',
+      summary_en: 'Structured 12-month unified timetable allowing final-year & fresh Odisha graduates to target OPSC, OSSC, OSSSC, and IBPS simultaneously without burnout.',
       summary_or: 'ଅନାବଶ୍ୟକ ଚାପ ବିନା ଗୋଟିଏ ୧୨-ମାସିଆ ଯୋଜନାରେ OPSC, OSSC CGLRE, OSSSC RI/PEO ଏବଂ IBPS ବ୍ୟାଙ୍କିଂ — ୪ଟି ପରୀକ୍ଷାକୁ ଏକାସାଙ୍ଗରେ ପ୍ରସ୍ତୁତ କରିବାର ବ୍ଲୁପ୍ରିଣ୍ଟ୍।',
-      orsp_level: 'ORSP L-7 to L-12 · ₹25,500–₹56,100',
+      orsp_level: 'ORSP L-7–L-12 · ₹25.5k–₹56.1k',
+      pay_pill_en: 'ORSP L-7–L-12 · ₹25.5k–₹56.1k',
+      pay_pill_or: 'ORSP L-7–L-12 · ₹୨୫.୫k–₹୫୬.୧k',
       salary_band: 'ORSP L-7 to L-12 (₹25,500–₹56,100) + IBPS PO/Clerk Scale',
       salary_band_or: 'ORSP L-7 ରୁ L-12 (₹୨୫,୫୦୦–₹୫୬,୧୦୦) + IBPS ବ୍ୟାଙ୍କିଂ ସ୍କେଲ୍',
       pay_allowances_en: 'Unlocks parallel entry into OSSSC District Cadre (ORSP L-4–L-9), OSSC CGLRE (L-7–L-9), IBPS Clerk/PO/RRB (₹24k–₹48k Basic), and OPSC OCS (L-12 ₹56,100) within 12–18 months of graduation.',
       pay_allowances_or: 'ସ୍ନାତକ ପରେ ୧୨–୧୮ ମାସ ମଧ୍ୟରେ OSSSC (L-4–9), OSSC CGLRE (L-7–9), IBPS ବ୍ୟାଙ୍କିଂ ଓ OPSC OCS (L-12) ପାଇଁ ସମାନ୍ତରାଳ ପ୍ରସ୍ତୁତି।',
       eligibility_summary: 'Final-Year or Fresh Bachelor’s Degree (BA/B.Sc./B.Com/B.Tech/BBA) + Basic Computer + Odia up to HSC/ME.',
       eligibility_summary_or: 'ଶେଷ ବର୍ଷ କିମ୍ବା ନୂତନ ସ୍ନାତକ (BA/B.Sc./B.Com/B.Tech) + କମ୍ପ୍ୟୁଟର ଜ୍ଞାନ + ଓଡ଼ିଆ।',
-      age_window_en: '20–30 yrs (IBPS/SBI) · 21–38 yrs (OPSC / OSSC / OSSSC) · Ideal start: 5th/6th Semester.',
-      age_window_or: '୨୦–୩୦ ବର୍ଷ (IBPS/SBI) · ୨୧–୩୮ ବର୍ଷ (OPSC/OSSC/OSSSC) · ଶ୍ରେଷ୍ଠ ଆରମ୍ଭ: ୫ମ/୬ଷ୍ଠ ସେମିଷ୍ଟର୍।',
-      key_exams: 'Months 1–4 Core Overlap → Months 5–8 OSSC/OSSSC/IBPS Mocks → Months 9–12 OPSC Mains & Skill Tests',
+      age_window_en: '20–30 yrs (IBPS/SBI) · 21–38 yrs (OPSC/OSSC/OSSSC)',
+      age_window_or: '୨୦–୩୦ ବର୍ଷ (IBPS/SBI) · ୨୧–୩୮ ବର୍ଷ (OPSC/OSSC/OSSSC)',
+      key_exams: 'OPSC OCS + OSSC CGLRE + OSSSC CRE + IBPS PO/Clerk Unified Plan',
       selection_stages_en: [
         'Months 1–4 (70% Shared Core): Daily 2h Arithmetic/DI + 1.5h Reasoning + 1h English/Odia Grammar + 1.5h NCERT GS & Odisha GK.',
         'Months 5–8 (Exam-Specific Sprints): Attempt IBPS RRB/Clerk/PO + OSSC CGLRE + OSSSC CRE Prelims/Mains with timed CBT mocks.',
@@ -1379,6 +1560,8 @@
         'ବର୍ଷ ୨–୪ ଉନ୍ନତି: ଦରମା ସହିତ OPSC OAS / RBI ଗ୍ରେଡ୍-B / UPSC ପ୍ରସ୍ତୁତି।',
         'ବର୍ଷ ୫–୧୫+: Group-A ଗେଜେଟେଡ୍ ଅଫିସର୍ / ସିନିୟର ମ୍ୟାନେଜର୍।'
       ],
+      rank_5_15_en: 'Year-1 Safety Job → Group-A Gazetted / Senior Manager',
+      rank_5_15_or: 'ପ୍ରଥମ ବର୍ଷ ଚାକିରି → Group-A ଗେଜେଟେଡ୍ ଅଫିସର୍',
       required_certificates_en: [
         'Provisional Degree & Consolidated Marksheet immediately upon Final Semester result',
         'PGDCA / Basic Computer Certificate + Odia HSC Certificate',
@@ -1394,7 +1577,7 @@
       roadmap_body_en: '### Why the Parallel Matrix Works\n- Nearly 70% of OSSC CGLRE, OSSSC CRE, IBPS, and OPSC Prelims CSAT/GS overlaps.\n- Track your syllabus completion week-by-week in CSOdisha’s Syllabus Mastery Tracker and simulate negative marking in the CBT Mock Hub.',
       roadmap_body_or: '### ସମାନ୍ତରାଳ ମ୍ୟାଟ୍ରିକ୍ସ କାହିଁକି ସଫଳ?\n- OSSC CGLRE, OSSSC CRE, IBPS ଓ OPSC ପ୍ରିଲିମ୍ସର ପ୍ରାୟ ୭୦% ସିଲାବସ୍ ସମାନ।\n- CSO ସିଲାବସ୍ ମାଷ୍ଟରୀ ଟ୍ରାକର୍ ଓ CBT ମକ୍ ଟେଷ୍ଟ ହବ୍ ମାଧ୍ୟମରେ ସାପ୍ତାହିକ ପ୍ରଗତି ମାପନ୍ତୁ।',
       official_links: [
-        { label: 'CSO Syllabus Mastery Tracker', url: '/exams/' },
+        { label: 'CSO Syllabus Mastery Tracker', url: '/exams/#cso-syllabus-mastery-tracker-root' },
         { label: 'CSO Live CBT Mock Tests', url: '/mock-tests/' }
       ]
     },
@@ -1410,23 +1593,30 @@
       stage_tags: ['in-service'],
       stage_label_en: 'In-Service / Working Pro',
       stage_label_or: 'ଚାକିରିରତ / ପଦୋନ୍ନତି',
+      popularity_rank: 18,
+      starting_pay_num: 44900,
+      entry_order: 5,
+      age_min: 22,
+      age_max_ur: 55,
       featured: 0,
       status: 'published',
       is_builtin: true,
-      title_en: 'In-Service & Working Professional Career Switch / Departmental Promotion Track (MACP, Departmental Accounts / Law Exam, Lateral Tech / Management)',
-      title_or: 'ଚାକିରିରତ କର୍ମଚାରୀ ପଦୋନ୍ନତି ଓ କ୍ୟାରିୟର୍ ପରିବର୍ତ୍ତନ ମାର୍ଗ (MACP, ବିଭାଗୀୟ ଆକାଉଣ୍ଟସ୍/ଆଇନ ପରୀକ୍ଷା, ଲ୍ୟାଟେରାଲ୍ ଟେକ୍/ମ୍ୟାନେଜମେଣ୍ଟ)',
-      summary_en: 'Growth blueprint for Odisha Govt employees (10/20/30-Yr RACP/MACP, Departmental Accounts/OAS Selection, OCS Study Leave) and mid-career private professionals switching into Tech/Analytics/MBA.',
+      title_en: 'In-Service Promotion, MACP & Working Professional Switch Track',
+      title_or: 'ଚାକିରିରତ କର୍ମଚାରୀ ପଦୋନ୍ନତି, MACP ଓ କ୍ୟାରିୟର୍ ପରିବର୍ତ୍ତନ ମାର୍ଗ',
+      summary_en: 'Growth blueprint for Odisha Govt employees (10/20/30-Yr RACP/MACP, Departmental Accounts/Law Exam, OAS Selection) and mid-career professionals switching into Tech/MBA.',
       summary_or: 'ଓଡ଼ିଶା ସରକାରୀ କର୍ମଚାରୀଙ୍କ ପାଇଁ MACP (୧୦/୨୦/୩୦ ବର୍ଷ), ବିଭାଗୀୟ ଆକାଉଣ୍ଟସ୍/ଆଇନ ପରୀକ୍ଷା, OAS ଚୟନ ଏବଂ ଘରୋଇ କର୍ମଚାରୀଙ୍କ ପାଇଁ ଟେକ୍/MBA କ୍ୟାରିୟର୍ ସୁଇଚ୍ ମାର୍ଗ।',
-      orsp_level: 'ORSP L-10 to L-14 · MACP / Lateral',
+      orsp_level: 'ORSP L-10–L-14 · MACP Upgrade',
+      pay_pill_en: 'ORSP L-10–L-14 · MACP / Lateral',
+      pay_pill_or: 'ORSP L-10–L-14 · MACP ପଦୋନ୍ନତି',
       salary_band: 'ORSP MACP 10/20/30-Yr Pay Upgrade (L-10–L-14) · Lateral 30–70% Hike',
       salary_band_or: 'ORSP MACP ୧୦/୨୦/୩୦-ବର୍ଷ ବେତନ ବୃଦ୍ଧି (L-10–L-14) · ଲ୍ୟାଟେରାଲ୍ ୩୦–୭୦% ବୃଦ୍ଧି',
       pay_allowances_en: 'Odisha Govt In-Service: Guaranteed RACP/MACP financial upgradation at 10, 20 & 30 years of service + Departmental Accounts Exam increments + HBA/GPF/NPS-UPS optimization + Study Leave/NOC for higher posts.',
       pay_allowances_or: 'ଓଡ଼ିଶା ସରକାରୀ କର୍ମଚାରୀଙ୍କ ପାଇଁ ୧୦, ୨୦ ଓ ୩୦ ବର୍ଷରେ MACP ବେତନ ବୃଦ୍ଧି + ବିଭାଗୀୟ ପରୀକ୍ଷା ଇନକ୍ରିମେଣ୍ଟ + HBA/GPF/NPS-UPS ସୁବିଧା।',
       eligibility_summary: 'Confirmed Odisha State / Central Govt employees (for Departmental Exams, MACP & In-Service Age/Quota) OR Working Professionals (2+ yrs experience for Executive MBA / Lateral Switch).',
       eligibility_summary_or: 'ସ୍ଥାୟୀ ରାଜ୍ୟ/କେନ୍ଦ୍ରୀୟ ସରକାରୀ କର୍ମଚାରୀ (MACP ଓ ବିଭାଗୀୟ ପରୀକ୍ଷା ପାଇଁ) କିମ୍ବା ୨+ ବର୍ଷ ଅଭିଜ୍ଞ ଘରୋଇ କର୍ମଚାରୀ।',
-      age_window_en: 'In-Service Govt Employees get up to 45–50 yrs age relaxation in specified state/departmental recruitment; Zero upper age limit for MACP & Lateral switches.',
-      age_window_or: 'ସରକାରୀ କର୍ମଚାରୀଙ୍କୁ ବିଭାଗୀୟ ପରୀକ୍ଷାରେ ୪୫–୫୦ ବର୍ଷ ପର୍ଯ୍ୟନ୍ତ ବୟସ ଛାଡ଼; MACP ଓ ଲ୍ୟାଟେରାଲ୍ ସୁଇଚ୍ ପାଇଁ ବୟସ ସୀମା ନାହିଁ।',
-      key_exams: 'Odisha Departmental Accounts & Law Exam · LDCE (SSC/Railways/Banks) · OPSC In-Service Selection · Executive MBA / Cloud-AI Certs',
+      age_window_en: 'Up to 45–50 yrs (Govt Departmental) · No bar for MACP / Lateral',
+      age_window_or: '୪୫–୫୦ ବର୍ଷ (ବିଭାଗୀୟ ପରୀକ୍ଷା) · MACP ପାଇଁ ବୟସ ସୀମା ନାହିଁ',
+      key_exams: 'Odisha Dept Accounts/Law Exam · LDCE · OPSC In-Service · Exec MBA',
       selection_stages_en: [
         'Govt Departmental Path: Confirm probation → Clear Departmental Accounts/Revenue/Law Exam (Board of Revenue / Madhusudan Das Regional Academy) → Apply for LDCE / DPC Promotion / MACP fixation.',
         'Higher Govt Upgrade: Obtain Prior Intimation / NOC from Cadre Controlling Authority → Appear in OPSC OCS / UPSC / Central Deputation.',
@@ -1452,6 +1642,8 @@
         '୨୦ ବର୍ଷ: ଦ୍ୱିତୀୟ MACP / ଗେଜେଟେଡ୍ କ୍ୟାଡର୍ ପ୍ରବେଶ (L-11/12)।',
         '୩୦ ବର୍ଷ: ତୃତୀୟ MACP / ବରିଷ୍ଠ ପଦବୀ ଓ ପେନସନ୍ ଅପ୍ଟିମାଇଜେସନ୍ (L-13/14)।'
       ],
+      rank_5_15_en: '10/20/30-Yr MACP Jump (L-10–L-14) / Gazetted DPC Cadre',
+      rank_5_15_or: '୧୦/୨୦/୩୦-ବର୍ଷ MACP ବୃଦ୍ଧି (L-10–L-14) / ଗେଜେଟେଡ୍ ପଦବୀ',
       required_certificates_en: [
         'Updated Service Book, PAR / CCR Grading (5 Years) & Vigilance Clearance',
         'Departmental Accounts / Revenue / Law Exam Pass Notification',
@@ -1467,7 +1659,7 @@
       roadmap_body_en: '### In-Service Growth & MACP Optimization\n- Use CSOdisha’s MACP Progression Simulator, Employee HBA/GPF Advance Calculator, and ORSP 7th Pay Estimator on `/career-paths/` to verify every increment and pay-fixation option (Option-I vs Option-II under ORSP Rule 12).\n- Never miss Departmental Exam windows — clearing Accounts/Law early removes promotion bottlenecks.',
       roadmap_body_or: '### ଚାକିରିରତ କର୍ମଚାରୀ ପଦୋନ୍ନତି ଓ MACP ମାର୍ଗ\n- `/career-paths/` ରେ ଥିବା CSO MACP ସିମୁଲେଟର୍, HBA/GPF କାଲକୁଲେଟର୍ ଏବଂ ORSP ବେତନ ଏଷ୍ଟିମେଟର୍ ବ୍ୟବହାର କରି ସଠିକ୍ ବେତନ ଫିକ୍ସେସନ୍ ଯାଞ୍ଚ କରନ୍ତୁ।\n- ପଦୋନ୍ନତି ବାଧା ଦୂର କରିବାକୁ ବିଭାଗୀୟ ଆକାଉଣ୍ଟସ୍/ଆଇନ ପରୀକ୍ଷା ଶୀଘ୍ର ପାସ୍ କରନ୍ତୁ।',
       official_links: [
-        { label: 'CSO MACP & ORSP Calculator', url: '/career-paths/' },
+        { label: 'CSO MACP & ORSP Calculator', url: '/career-paths/#cso-orsp-salary-root' },
         { label: 'HRMS Odisha Portal', url: 'https://hrmsodisha.gov.in' },
         { label: 'Finance Dept Odisha (ORSP)', url: 'https://finance.odisha.gov.in' }
       ]
@@ -1487,6 +1679,27 @@
     return Object.keys(set);
   }
 
+  function inferStartingPayNum(raw) {
+    if (typeof raw.starting_pay_num === 'number' && !isNaN(raw.starting_pay_num)) return raw.starting_pay_num;
+    var s = String(raw.pay_pill_en || raw.orsp_level || raw.salary_band || '');
+    var m = s.match(/₹\s*([\d,]+)/);
+    if (m) {
+      var n = parseInt(m[1].replace(/,/g, ''), 10);
+      if (!isNaN(n)) return n < 1000 ? n * 1000 : n;
+    }
+    return 30000;
+  }
+
+  function inferEntryOrder(stage) {
+    var s = normalizeStage(stage);
+    if (s === 'after-10th-12th') return 1;
+    if (s === 'diploma-btech') return 2;
+    if (s === 'graduate') return 3;
+    if (s === 'pg-medical') return 4;
+    if (s === 'in-service') return 5;
+    return 3;
+  }
+
   function normalizeLiveItem(raw, idx) {
     if (!raw || typeof raw !== 'object') return null;
     var track = normalizeTrackSlug(raw.track_slug) || 'career-pathways';
@@ -1496,12 +1709,17 @@
     var titleEn = String(raw.title_en || raw.title_or || 'Career Roadmap').trim();
     var titleOr = String(raw.title_or || titleEn).trim();
     var salaryBand = String(raw.salary_band || 'As per ORSP / Official Pay Matrix').trim();
+    var payPillEn = String(raw.pay_pill_en || raw.orsp_level || salaryBand).trim().slice(0, 36);
+    var payPillOr = String(raw.pay_pill_or || payPillEn).trim().slice(0, 42);
 
     var milestones = Array.isArray(raw.milestones) && raw.milestones.length ? raw.milestones : [
       { step: '1', label_en: 'Check Eligibility & Syllabus', label_or: 'ଯୋଗ୍ୟତା ଓ ସିଲାବସ୍ ଯାଞ୍ଚ' },
       { step: '2', label_en: 'Clear Selection Stages', label_or: 'ଚୟନ ପର୍ଯ୍ୟାୟ ସଫଳତା' },
       { step: '3', label_en: 'Document Verification & Joining', label_or: 'ଡକ୍ୟୁମେଣ୍ଟ ଯାଞ୍ଚ ଓ ଯୋଗଦାନ' }
     ];
+
+    var promoEn = Array.isArray(raw.promotion_ladder_en) ? raw.promotion_ladder_en : [];
+    var promoOr = Array.isArray(raw.promotion_ladder_or) ? raw.promotion_ladder_or : [];
 
     return {
       id: String(raw.id || ('d1-' + slug)),
@@ -1516,14 +1734,22 @@
       stage_tags: extractStages({ career_stage: stage, stage_tags: raw.stage_tags }),
       stage_label_en: raw.stage_label_en || (STAGE_OPTIONS.find(function (o) { return o.slug === stage; }) || { label_en: 'Graduate' }).label_en,
       stage_label_or: raw.stage_label_or || (STAGE_OPTIONS.find(function (o) { return o.slug === stage; }) || { label_or: 'ସ୍ନାତକ' }).label_or,
+      popularity_rank: typeof raw.popularity_rank === 'number' ? raw.popularity_rank : (idx + 1),
+      starting_pay_num: inferStartingPayNum(raw),
+      entry_order: typeof raw.entry_order === 'number' ? raw.entry_order : inferEntryOrder(stage),
+      age_min: typeof raw.age_min === 'number' ? raw.age_min : 18,
+      age_max_ur: typeof raw.age_max_ur === 'number' ? raw.age_max_ur : 38,
       featured: raw.featured ? 1 : 0,
       status: String(raw.status || 'published'),
       is_builtin: Boolean(raw.is_builtin),
       title_en: titleEn,
       title_or: titleOr,
+      title_or_clean: cleanOdiaSubtitle(titleOr),
       summary_en: String(raw.summary_en || raw.summary_or || 'Structured bilingual career roadmap with eligibility, exams, pay band, and promotion ladder.'),
       summary_or: String(raw.summary_or || raw.summary_en || 'ଯୋଗ୍ୟତା, ପରୀକ୍ଷା, ଦରମା ଓ ପଦୋନ୍ନତି ସହିତ ସମ୍ପୂର୍ଣ୍ଣ କ୍ୟାରିୟର୍ ରୋଡମ୍ୟାପ୍।'),
-      orsp_level: String(raw.orsp_level || salaryBand.slice(0, 44)),
+      orsp_level: payPillEn,
+      pay_pill_en: payPillEn,
+      pay_pill_or: payPillOr,
       salary_band: salaryBand,
       salary_band_or: String(raw.salary_band_or || salaryBand),
       pay_allowances_en: String(raw.pay_allowances_en || salaryBand),
@@ -1536,8 +1762,10 @@
       selection_stages_en: Array.isArray(raw.selection_stages_en) ? raw.selection_stages_en : [],
       selection_stages_or: Array.isArray(raw.selection_stages_or) ? raw.selection_stages_or : [],
       milestones: milestones,
-      promotion_ladder_en: Array.isArray(raw.promotion_ladder_en) ? raw.promotion_ladder_en : [],
-      promotion_ladder_or: Array.isArray(raw.promotion_ladder_or) ? raw.promotion_ladder_or : [],
+      promotion_ladder_en: promoEn,
+      promotion_ladder_or: promoOr,
+      rank_5_15_en: String(raw.rank_5_15_en || (promoEn[promoEn.length - 1] || 'Senior Gazetted / Leadership Cadre')),
+      rank_5_15_or: String(raw.rank_5_15_or || (promoOr[promoOr.length - 1] || 'ବରିଷ୍ଠ ଅଧିକାରୀ / ନେତୃତ୍ୱ ପଦବୀ')),
       required_certificates_en: Array.isArray(raw.required_certificates_en) ? raw.required_certificates_en : [],
       required_certificates_or: Array.isArray(raw.required_certificates_or) ? raw.required_certificates_or : [],
       roadmap_body_en: String(raw.roadmap_body_en || ''),
@@ -1546,11 +1774,6 @@
     };
   }
 
-  /**
-   * Merges live Cloudflare D1 career roadmaps with the 18 built-in bilingual roadmaps.
-   * Deduplicates by slug (live D1 overrides built-in if same slug) while guaranteeing
-   * every track stays populated and never displays 0 counts.
-   */
   function getAllCareerRoadmaps(liveD1Items) {
     var liveList = Array.isArray(liveD1Items) ? liveD1Items : [];
     var bySlug = {};
@@ -1573,6 +1796,93 @@
     });
 
     return merged;
+  }
+
+  function computeAgeYears(dobIso, refDate) {
+    if (!dobIso || !/^\d{4}-\d{2}-\d{2}$/.test(String(dobIso))) return null;
+    var parts = String(dobIso).split('-').map(Number);
+    var now = refDate instanceof Date ? refDate : new Date();
+    var age = now.getFullYear() - parts[0];
+    var mDiff = (now.getMonth() + 1) - parts[1];
+    if (mDiff < 0 || (mDiff === 0 && now.getDate() < parts[2])) age -= 1;
+    return age >= 0 && age <= 100 ? age : null;
+  }
+
+  /**
+   * Evaluates whether a career roadmap matches a saved candidate profile from
+   * localStorage['cso_unified_candidate_profile_v1'] ({ dob, category, gender, qualification, pwbd }).
+   */
+  function evaluateCandidateMatch(roadmap, profile, refDate) {
+    if (!roadmap || !profile || typeof profile !== 'object') {
+      return { matched: false, qualMatched: false, ageEligible: true, candidateAge: null };
+    }
+    var qual = String(profile.qualification || '').toLowerCase().trim();
+    var allowedStages = [];
+    if (qual === '10th' || qual === 'plus-2') {
+      allowedStages = ['after-10th-12th'];
+    } else if (qual === 'iti-diploma') {
+      allowedStages = ['after-10th-12th', 'diploma-btech'];
+    } else if (qual === 'graduate' || qual === 'bed-deled') {
+      allowedStages = ['after-10th-12th', 'graduate'];
+    } else if (qual === 'pg') {
+      allowedStages = ['after-10th-12th', 'graduate', 'pg-medical'];
+    } else if (qual === 'in-service') {
+      allowedStages = ['in-service', 'graduate'];
+    }
+
+    var rmStages = extractStages(roadmap);
+    var qualMatched = allowedStages.some(function (st) {
+      return rmStages.indexOf(st) !== -1;
+    });
+
+    var age = computeAgeYears(profile.dob, refDate);
+    var ageEligible = true;
+    if (age !== null) {
+      var minA = typeof roadmap.age_min === 'number' ? roadmap.age_min : 18;
+      var maxA = typeof roadmap.age_max_ur === 'number' ? roadmap.age_max_ur : 38;
+      var cat = String(profile.category || 'ur').toLowerCase();
+      var gender = String(profile.gender || 'male').toLowerCase();
+      var relax = 0;
+      if (cat === 'sc' || cat === 'st' || cat === 'sebc' || gender === 'female') relax = Math.max(relax, 5);
+      if (profile.pwbd) relax = Math.max(relax, 10);
+      ageEligible = age >= minA && age <= (maxA + relax);
+    }
+
+    return {
+      matched: Boolean(qualMatched && ageEligible),
+      qualMatched: qualMatched,
+      ageEligible: ageEligible,
+      candidateAge: age
+    };
+  }
+
+  /**
+   * Sorts roadmaps by 'popular' (default), 'highest-pay' (starting pay descending),
+   * or 'early-entry' (earliest entry qualification 10th/+2 -> Diploma -> Grad -> PG -> In-Service).
+   */
+  function sortCareerRoadmaps(roadmaps, sortKey) {
+    var arr = Array.isArray(roadmaps) ? roadmaps.slice() : [];
+    var key = String(sortKey || 'popular').toLowerCase().trim();
+    if (key === 'highest-pay') {
+      arr.sort(function (a, b) {
+        var diff = (b.starting_pay_num || 0) - (a.starting_pay_num || 0);
+        if (diff !== 0) return diff;
+        return (a.popularity_rank || 99) - (b.popularity_rank || 99);
+      });
+      return arr;
+    }
+    if (key === 'early-entry') {
+      arr.sort(function (a, b) {
+        var diff = (a.entry_order || 3) - (b.entry_order || 3);
+        if (diff !== 0) return diff;
+        return (a.popularity_rank || 99) - (b.popularity_rank || 99);
+      });
+      return arr;
+    }
+    arr.sort(function (a, b) {
+      return (a.popularity_rank || 99) - (b.popularity_rank || 99);
+    });
+    return arr;
   }
 
   function matchesScope(itemScope, filterScope) {
@@ -1598,12 +1908,13 @@
     var hay = [
       item.title_en,
       item.title_or,
+      item.title_or_clean,
       item.summary_en,
       item.summary_or,
       item.key_exams,
       item.eligibility_summary,
       item.salary_band,
-      item.orsp_level,
+      item.pay_pill_en,
       item.track_slug,
       item.subtrack_slug,
       item.scope_label_en,
@@ -1616,10 +1927,6 @@
     return true;
   }
 
-  /**
-   * Filters career roadmaps by track, subtrack, scope/region, stage, and search query,
-   * while computing dynamic per-track counts under the active matcher criteria.
-   */
   function filterCareerRoadmaps(roadmaps, filters) {
     var list = Array.isArray(roadmaps) ? roadmaps : getAllCareerRoadmaps([]);
     var f = filters || {};
@@ -1628,19 +1935,26 @@
     var fScope = normalizeScope(f.scope || f.region || '');
     var fStage = normalizeStage(f.stage || '');
     var fQuery = String(f.q || '').trim();
+    var fOnlyEligible = Boolean(f.onlyEligible && f.profile);
+    var fSort = String(f.sort || 'popular');
 
     var trackCounts = {};
     TRACKS.forEach(function (t) {
       trackCounts[t.slug] = 0;
     });
 
-    // Base set matching matcher controls (stage + scope + search query) for live track pill counters
+    var eligibleCount = 0;
     var baseMatched = [];
     for (var i = 0; i < list.length; i += 1) {
       var item = list[i];
       if (!matchesScope(item.region_scope, fScope)) continue;
       if (!matchesStage(item, fStage)) continue;
       if (!matchesQuery(item, fQuery)) continue;
+
+      var isElig = f.profile ? evaluateCandidateMatch(item, f.profile).matched : false;
+      if (isElig) eligibleCount += 1;
+      if (fOnlyEligible && !isElig) continue;
+
       baseMatched.push(item);
       var tSlug = normalizeTrackSlug(item.track_slug) || 'career-pathways';
       trackCounts[tSlug] = (trackCounts[tSlug] || 0) + 1;
@@ -1652,10 +1966,13 @@
       return true;
     });
 
+    filtered = sortCareerRoadmaps(filtered, fSort);
+
     return {
       items: filtered,
       total: filtered.length,
       allTracksTotal: baseMatched.length,
+      eligibleCount: eligibleCount,
       trackCounts: trackCounts,
       track_counts: trackCounts
     };
@@ -1675,10 +1992,14 @@
     TRACKS: TRACKS,
     STAGE_OPTIONS: STAGE_OPTIONS,
     SCOPE_OPTIONS: SCOPE_OPTIONS,
+    SORT_OPTIONS: SORT_OPTIONS,
     BUILT_IN_ROADMAPS: BUILT_IN_ROADMAPS,
     normalizeTrackSlug: normalizeTrackSlug,
     normalizeScope: normalizeScope,
     normalizeStage: normalizeStage,
+    cleanOdiaSubtitle: cleanOdiaSubtitle,
+    evaluateCandidateMatch: evaluateCandidateMatch,
+    sortCareerRoadmaps: sortCareerRoadmaps,
     getTrackMeta: getTrackMeta,
     getAllCareerRoadmaps: getAllCareerRoadmaps,
     filterCareerRoadmaps: filterCareerRoadmaps
