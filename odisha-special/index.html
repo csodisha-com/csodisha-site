@@ -16,17 +16,18 @@
   <link rel="icon" href="/assets/img/favicon-16x16.png?v=20261126v330" type="image/png" sizes="16x16">
   <link rel="icon" href="/favicon.ico?v=20261126v330" sizes="any">
   <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png?v=20261126v330">
-  <link rel="stylesheet" href="/assets/css/cso-themes.css?v=20261128v456">
-  <link rel="stylesheet" href="/assets/style.css?v=20261128v456">
-  <link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261125v304">
-  <link rel="stylesheet" href="/assets/css/semantic-search.css?v=20261128v456">
-  <script src="/assets/js/semantic-search.js?v=20261128v456" defer></script>
-  <script src="/assets/js/odisha-district-filter.js?v=20261128v456" defer></script>
-  <script src="/assets/js/candidate-watchlist.js?v=20261128v456" defer></script>
-  <script src="/assets/js/odisha-special-hub.js?v=20261128v456" defer></script>
-  <script src="/assets/js/odisha-admin-directory.js?v=20261128v456" defer></script>
-  <script src="/assets/js/district-exam-center-planner.js?v=20261128v456" defer></script>
-  <script src="/assets/js/district-reservation-roster.js?v=20261128v456" defer></script>
+  <link rel="stylesheet" href="/assets/css/cso-themes.css?v=20261128v457">
+  <link rel="stylesheet" href="/assets/style.css?v=20261128v457">
+  <link rel="stylesheet" href="/assets/css/portal-shell.css?v=20261128v457">
+  <link rel="stylesheet" href="/assets/css/semantic-search.css?v=20261128v457">
+  <script src="/assets/js/semantic-search.js?v=20261128v457" defer></script>
+  <script src="/assets/js/odisha-district-filter.js?v=20261128v457" defer></script>
+  <script src="/assets/js/candidate-watchlist.js?v=20261128v457" defer></script>
+  <script src="/assets/js/odisha-admin-directory.js?v=20261128v457" defer></script>
+  <script src="/assets/js/odisha-special-hub.js?v=20261128v457" defer></script>
+  <script src="/assets/js/district-exam-center-planner.js?v=20261128v457" defer></script>
+  <script src="/assets/js/district-reservation-roster.js?v=20261128v457" defer></script>
+  <script src="/assets/js/odisha-special-workspace-tabs.js?v=20261128v457" defer></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -51,95 +52,117 @@
     </a>
     <span id="ctl" class="cso-contents"></span>
     <span class="sp"></span>
-    <div class="acct"><a class="adm cso-adm-icon-only" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a><span class="cso-desktop-auth-icon" aria-hidden="true">👤</span><span id="auth" class="cso-contents"></span></div>
+    <div class="acct"><a class="adm cso-adm-icon-only cso-adm-stealth" href="/admin/" role="button" aria-label="Admin" title="Admin"><svg class="adm-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg></a><span class="cso-desktop-auth-icon" aria-hidden="true">👤</span><span id="auth" class="cso-contents"></span></div>
   </header>
   <nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="cso-mobile-drawer-backdrop" id="cso-mobile-drawer-backdrop" hidden></div><div class="w" id="navw"><div class="cso-nav-items" id="cso-nav-items"><a href="/" class="cso-nav-home"><span aria-hidden="true">🏠</span> Home</a><div class="ni cso-ni-jobs cso-nav-jobs-wrap" data-pillar="jobs"><div class="cso-nav-parent"><a href="/jobs/" data-m="jobs" aria-haspopup="true" aria-expanded="false" aria-controls="cso-jobs-stage1"><span aria-hidden="true">💼</span> Jobs</a><button type="button" class="cso-nav-arrow cso-jobs-flyout-toggle" aria-label="Toggle Jobs sectors menu" aria-haspopup="true" aria-expanded="false" aria-controls="cso-jobs-stage1"><span class="cso-jobs-chev" aria-hidden="true">▾</span></button></div><div class="cso-jobs-cascade" id="cso-jobs-cascade"><div class="cso-jobs-stage1" id="cso-jobs-stage1" role="region" aria-label="Jobs sectors menu"><ul class="cso-js1-list"><li class="cso-js1-item is-direct-only" data-js-sector="job-alerts"><div class="cso-js1-row"><a class="cso-js1-link" href="/jobs/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">💼</span><span class="cso-js1-title">Job Alerts</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-js-sector="exam-updates"><div class="cso-js1-row"><a class="cso-js1-link" href="/exams/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">🪪</span><span class="cso-js1-title">Exam Updates &amp; Admit Cards</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-js-sector="results"><div class="cso-js1-row"><a class="cso-js1-link" href="/results/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">🏆</span><span class="cso-js1-title">Results &amp; Cut-Offs</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-js-sector="admissions"><div class="cso-js1-row"><a class="cso-js1-link" href="/admissions/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">🎓</span><span class="cso-js1-title">Admissions &amp; Counselling</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-js-sector="odisha-recruitments"><div class="cso-js1-row"><a class="cso-js1-link" href="/jobs/#odisha"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">🏛️</span><span class="cso-js1-title">Odisha State &amp; University Recruitments</span></span></a></div></li></ul></div></div></div><div class="ni cso-ni-careers cso-nav-careers-wrap" data-pillar="careers"><div class="cso-nav-parent"><a href="/careers/" data-m="careers" aria-haspopup="true" aria-expanded="false" aria-controls="cso-careers-stage1"><span aria-hidden="true">🧭</span> Careers</a><button type="button" class="cso-nav-arrow cso-careers-flyout-toggle" aria-label="Toggle Careers tracks menu" aria-haspopup="true" aria-expanded="false" aria-controls="cso-careers-stage1"><span class="cso-jobs-chev" aria-hidden="true">▾</span></button></div><div class="cso-careers-cascade" id="cso-careers-cascade"><div class="cso-careers-stage1" id="cso-careers-stage1" role="region" aria-label="Career tracks menu"><ul class="cso-js1-list"><li class="cso-js1-item is-direct-only" data-cr-track="career-paths"><div class="cso-js1-row"><a class="cso-js1-link" href="/career-paths/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">🧭</span><span class="cso-js1-title">Career Paths &amp; ORSP 7th Pay Explorer</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-cr-track="odisha-special"><div class="cso-js1-row"><a class="cso-js1-link" href="/odisha-special/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">🗺️</span><span class="cso-js1-title">Odisha Special &amp; 30-District Atlas</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-cr-track="career-roadmaps"><div class="cso-js1-row"><a class="cso-js1-link" href="/careers/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">📋</span><span class="cso-js1-title">Career Roadmaps &amp; Guides</span></span></a></div></li></ul></div></div></div><div class="ni cso-ni-schemes cso-nav-schemes-wrap" data-pillar="schemes-benefits"><div class="cso-nav-parent"><a href="/schemes/" data-m="schemes-benefits" aria-haspopup="true" aria-expanded="false" aria-controls="cso-schemes-stage1"><span aria-hidden="true">🏛</span> Schemes &amp; Benefits</a><button type="button" class="cso-nav-arrow cso-schemes-flyout-toggle" aria-label="Toggle Schemes categories menu" aria-haspopup="true" aria-expanded="false" aria-controls="cso-schemes-stage1"><span class="cso-jobs-chev" aria-hidden="true">▾</span></button></div><div class="cso-schemes-cascade" id="cso-schemes-cascade"><div class="cso-schemes-stage1" id="cso-schemes-stage1" role="region" aria-label="Schemes &amp; Benefits"><ul class="cso-js1-list"><li class="cso-js1-item is-direct-only" data-sch-scope="scholarships"><div class="cso-js1-row"><a class="cso-js1-link" href="/scholarships/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">🎓</span><span class="cso-js1-title">Scholarships Hub</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-sch-scope="odisha-schemes"><div class="cso-js1-row"><a class="cso-js1-link" href="/schemes/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">🏛️</span><span class="cso-js1-title">Odisha Welfare Schemes</span></span></a></div></li></ul></div></div></div><div class="ni cso-ni-study cso-nav-study-wrap" data-pillar="study-library"><div class="cso-nav-parent"><a href="/study-library/" data-m="study-library" aria-haspopup="true" aria-expanded="false" aria-controls="cso-study-stage1"><span aria-hidden="true">📖</span> Study Library</a><button type="button" class="cso-nav-arrow cso-study-flyout-toggle" aria-label="Toggle Study Library tracks menu" aria-haspopup="true" aria-expanded="false" aria-controls="cso-study-stage1"><span class="cso-jobs-chev" aria-hidden="true">▾</span></button></div><div class="cso-study-cascade" id="cso-study-cascade"><div class="cso-study-stage1" id="cso-study-stage1" role="region" aria-label="Study Library Tracks"><ul class="cso-js1-list"><li class="cso-js1-item is-direct-only" data-track="study-materials"><div class="cso-js1-row"><a class="cso-js1-link" href="/study-materials/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">📚</span><span class="cso-js1-title">Study Materials &amp; Notes</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-track="guides"><div class="cso-js1-row"><a class="cso-js1-link" href="/guides/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">📘</span><span class="cso-js1-title">Informative Guides</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-track="updates"><div class="cso-js1-row"><a class="cso-js1-link" href="/updates/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">📰</span><span class="cso-js1-title">All Updates (Newsroom)</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-track="mock-tests"><div class="cso-js1-row"><a class="cso-js1-link" href="/mock-tests/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">⏱️</span><span class="cso-js1-title">Live CBT Mock Tests</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-track="pyq"><div class="cso-js1-row"><a class="cso-js1-link" href="/study-materials/#pyq"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">📑</span><span class="cso-js1-title">Syllabus &amp; PYQ Papers</span></span></a></div></li></ul></div></div></div><div class="ni cso-ni-community cso-nav-community-wrap" data-pillar="community"><div class="cso-nav-parent"><a href="/community/" data-m="community" aria-haspopup="true" aria-expanded="false" aria-controls="cso-community-stage1"><span aria-hidden="true">👥</span> Community</a><button type="button" class="cso-nav-arrow cso-community-flyout-toggle" aria-label="Toggle Community channels menu" aria-haspopup="true" aria-expanded="false" aria-controls="cso-community-stage1"><span class="cso-jobs-chev" aria-hidden="true">▾</span></button></div><div class="cso-community-cascade" id="cso-community-cascade"><div class="cso-community-stage1" id="cso-community-stage1" role="region" aria-label="Community Channels"><ul class="cso-js1-list"><li class="cso-js1-item is-direct-only" data-channel="exam-career-qa"><div class="cso-js1-row"><a class="cso-js1-link" href="/community/?channel=exam-career-qa"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">❓</span><span class="cso-js1-title">Exam &amp; Career Q&amp;A</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-channel="schemes-citizen-help"><div class="cso-js1-row"><a class="cso-js1-link" href="/community/?channel=schemes-citizen-help"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">🏛️</span><span class="cso-js1-title">Odisha Schemes &amp; Citizen Help</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-channel="study-groups-notes"><div class="cso-js1-row"><a class="cso-js1-link" href="/community/?channel=study-groups-notes"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">📚</span><span class="cso-js1-title">Study Groups &amp; Peer Notes</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-channel="success-stories-mentorship"><div class="cso-js1-row"><a class="cso-js1-link" href="/community/?channel=success-stories-mentorship"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">🏆</span><span class="cso-js1-title">Success Stories &amp; Mentorship</span></span></a></div></li><li class="cso-js1-item is-direct-only" data-channel="all"><div class="cso-js1-row"><a class="cso-js1-link" href="/community/"><span class="cso-js1-left"><span class="cso-js1-icon" aria-hidden="true">🌐</span><span class="cso-js1-title">All Community Discussions</span></span></a></div></li></ul></div></div></div><div class="ni" data-pillar="about"><div class="cso-nav-parent"><a href="/about/" data-m="about"><span aria-hidden="true">ⓘ</span> About</a></div></div></div></div></nav>
 
   <main id="main-content" class="w cso-odisha-special-main">
     <section id="cso-odisha-hub-root" class="cso-odisha-hub-root" aria-label="Odisha Special and 30-District Explorer">
-      <div class="cso-od-hero">
+      <div class="cso-od-hero cso-od-hero--v457">
         <div class="cso-od-hero__top">
           <div class="cso-od-hero__copy">
-            <div class="cso-od-eyebrow" data-en="🏺 ODISHA SPECIAL — 30-DISTRICT ATLAS, STATE GK &amp; HERITAGE" data-or="🏺 ଓଡ଼ିଶା ସ୍ୱତନ୍ତ୍ର — ୩୦ ଜିଲ୍ଲା ଆଟଲାସ୍, ସାଧାରଣ ଜ୍ଞାନ ଓ ଐତିହ୍ୟ">🏺 ODISHA SPECIAL — 30-DISTRICT ATLAS, STATE GK &amp; HERITAGE</div>
-            <h1 class="cso-od-title" data-en="Odisha Special &amp; 30-District Command Hub" data-or="ଓଡ଼ିଶା ସ୍ୱତନ୍ତ୍ର ଓ ୩୦ ଜିଲ୍ଲା ଏକ୍ସପ୍ଲୋରର">Odisha Special &amp; 30-District Command Hub</h1>
-            <p class="cso-od-sub" data-en="Explore all 30 Odisha districts across Central, Northern &amp; Southern divisions, official .odisha.gov.in portals, History, Geography, GI Tags, and daily Odisha GK MCQs." data-or="କେନ୍ଦ୍ରୀୟ, ଉତ୍ତରାଞ୍ଚଳ ଓ ଦକ୍ଷିଣାଞ୍ଚଳ ଡିଭିଜନର ସମସ୍ତ ୩୦ ଜିଲ୍ଲା, ଅଫିସିଆଲ୍ ପୋର୍ଟାଲ୍, ଇତିହାସ, ଭୂଗୋଳ, GI ଟ୍ୟାଗ୍ ଓ ଓଡ଼ିଶା GK ଅଭ୍ୟାସ କରନ୍ତୁ।">Explore all 30 Odisha districts across Central, Northern &amp; Southern divisions, official .odisha.gov.in portals, History, Geography, GI Tags, and daily Odisha GK MCQs.</p>
+            <div class="cso-od-eyebrow" data-en="🏺 ODISHA SPECIAL — UNIFIED 30-DISTRICT &amp; 314-BLOCK ATLAS" data-or="🏺 ଓଡ଼ିଶା ସ୍ୱତନ୍ତ୍ର — ୩୦ ଜିଲ୍ଲା ଓ ୩୧୪ ବ୍ଲକ୍ ଆଟଲାସ୍">🏺 ODISHA SPECIAL — UNIFIED 30-DISTRICT &amp; 314-BLOCK ATLAS</div>
+            <h1 class="cso-od-title" data-en="Odisha Special &amp; 30-District Atlas" data-or="ଓଡ଼ିଶା ସ୍ୱତନ୍ତ୍ର ଓ ୩୦ ଜିଲ୍ଲା ଆଟଲାସ୍">Odisha Special &amp; 30-District Atlas</h1>
+            <p class="cso-od-sub" data-en="Explore all 30 Odisha districts, 314 Panchayat Samiti blocks, live district jobs, exam center transit, reservation rosters, GI tags, and Odisha GK." data-or="ଓଡ଼ିଶାର ୩୦ ଜିଲ୍ଲା, ୩୧୪ ପଞ୍ଚାୟତ ସମିତି ବ୍ଲକ୍, ଲାଇଭ୍ ଜିଲ୍ଲା ଚାକିରି, ପରୀକ୍ଷା ଯାତାୟାତ, ସଂରକ୍ଷଣ ରୋଷ୍ଟର୍ ଓ ଓଡ଼ିଶା GK ଅଭ୍ୟାସ କରନ୍ତୁ।">Explore all 30 Odisha districts, 314 Panchayat Samiti blocks, live district jobs, exam center transit, reservation rosters, GI tags, and Odisha GK.</p>
           </div>
-          <div class="cso-od-hero__controls">
-            <div class="cso-od-lang-toggle" role="group" aria-label="Language switch">
-              <button type="button" class="cso-od-lang-btn is-active" data-lang="en" aria-pressed="true">English</button>
-              <button type="button" class="cso-od-lang-btn" data-lang="or" aria-pressed="false">ଓଡ଼ିଆ</button>
+          <div class="cso-od-hero__right">
+            <div class="cso-od-hero-pills" role="group" aria-label="Odisha Special snapshot">
+              <span class="cso-od-hero-pill"><b data-od-kpi="districts">30</b> <span data-en="Districts" data-or="ଜିଲ୍ଲା">Districts</span></span>
+              <span class="cso-od-hero-pill"><b>314</b> <span data-en="Blocks" data-or="ବ୍ଲକ୍">Blocks</span></span>
+              <span class="cso-od-hero-pill"><b>3</b> <span data-en="Revenue Divisions" data-or="ରାଜସ୍ୱ ଡିଭିଜନ୍">Revenue Divisions</span></span>
+              <span class="cso-od-hero-pill cso-od-hero-pill--live"><b data-od-kpi="live-jobs">0</b> <span data-en="Live District Jobs" data-or="ଲାଇଭ୍ ଜିଲ୍ଲା ଚାକିରି">Live District Jobs</span></span>
             </div>
             <a href="/guides/?category=odisha-gk" class="cso-od-crosslink" data-en="📘 Odisha GK Guides →" data-or="📘 ଓଡ଼ିଶା GK ଗାଇଡ୍ →">📘 Odisha GK Guides →</a>
           </div>
         </div>
-
-        <div class="cso-od-summary" role="group" aria-label="Odisha Special snapshot">
-          <div class="cso-od-kpi cso-od-kpi--crimson"><b class="cso-od-kpi__n" data-od-kpi="districts">30</b><span class="cso-od-kpi__l" data-en="30 Districts Covered" data-or="୩୦ ଜିଲ୍ଲା ଆବୃତ">30 Districts Covered</span></div>
-          <div class="cso-od-kpi"><b class="cso-od-kpi__n" data-od-kpi="capsules">4</b><span class="cso-od-kpi__l" data-en="Odisha GK &amp; Heritage Capsules" data-or="ଓଡ଼ିଶା GK ଓ ଐତିହ୍ୟ କ୍ୟାପସୁଲ୍">Odisha GK &amp; Heritage Capsules</span></div>
-          <div class="cso-od-kpi"><b class="cso-od-kpi__n" data-od-kpi="gi">16</b><span class="cso-od-kpi__l" data-en="GI Tags &amp; Culture Highlights" data-or="GI ଟ୍ୟାଗ୍ ଓ ସଂସ୍କୃତି">GI Tags &amp; Culture Highlights</span></div>
-          <div class="cso-od-kpi cso-od-kpi--ok"><b class="cso-od-kpi__n" data-od-kpi="updates">4</b><span class="cso-od-kpi__l" data-en="Live State Updates &amp; Guides" data-or="ଲାଇଭ୍ ରାଜ୍ୟ ଅପଡେଟ୍ ଓ ଗାଇଡ୍">Live State Updates &amp; Guides</span></div>
-        </div>
       </div>
 
-      <!-- Interactive 30-District Explorer -->
-      <section class="cso-od-section" id="districts" aria-labelledby="cso-od-dist-heading">
+      <!-- Unified 30-District & 314-Block Atlas (v457) -->
+      <section class="cso-od-section cso-od-atlas-section" id="districts" aria-labelledby="cso-od-dist-heading">
         <div class="cso-od-sec-head">
-          <h2 class="cso-od-sec-title" id="cso-od-dist-heading" data-en="🗺️ Interactive 30-District Odisha Explorer" data-or="🗺️ ୩୦ ଜିଲ୍ଲା ଓଡ଼ିଶା ଏକ୍ସପ୍ଲୋରର">🗺️ Interactive 30-District Odisha Explorer</h2>
-          <div class="cso-od-div-pills" role="group" aria-label="Filter districts by administrative division">
-            <button type="button" class="cso-od-div-pill is-active" data-division="all" aria-pressed="true" data-en="All 30 Districts" data-or="ସମସ୍ତ ୩୦ ଜିଲ୍ଲା">All 30 Districts</button>
-            <button type="button" class="cso-od-div-pill" data-division="central" aria-pressed="false" data-en="Central Division (10)" data-or="କେନ୍ଦ୍ରୀୟ ଡିଭିଜନ୍ (୧୦)">Central Division (10)</button>
-            <button type="button" class="cso-od-div-pill" data-division="northern" aria-pressed="false" data-en="Northern Division (10)" data-or="ଉତ୍ତରାଞ୍ଚଳ ଡିଭିଜନ୍ (୧୦)">Northern Division (10)</button>
-            <button type="button" class="cso-od-div-pill" data-division="southern" aria-pressed="false" data-en="Southern Division (10)" data-or="ଦକ୍ଷିଣାଞ୍ଚଳ ଡିଭିଜନ୍ (୧୦)">Southern Division (10)</button>
+          <h2 class="cso-od-sec-title" id="cso-od-dist-heading" data-en="🗺️ Unified 30-District &amp; 314-Block Odisha Atlas" data-or="🗺️ ୩୦ ଜିଲ୍ଲା ଓ ୩୧୪ ବ୍ଲକ୍ ଓଡ଼ିଶା ଆଟଲାସ୍">🗺️ Unified 30-District &amp; 314-Block Odisha Atlas</h2>
+          <div class="cso-od-atlas-view-toggle" role="group" aria-label="District Atlas View Mode">
+            <button type="button" class="cso-od-view-btn is-active" id="cso-od-view-cards" data-od-view-mode="cards" aria-pressed="true" data-en="⊞ Cards Grid" data-or="⊞ କାର୍ଡ ଗ୍ରିଡ୍">⊞ Cards Grid</button>
+            <button type="button" class="cso-od-view-btn" id="cso-od-view-table" data-od-view-mode="table" aria-pressed="false" data-en="☰ Compact Table" data-or="☰ ସାରଣୀ ଭ୍ୟୁ">☰ Compact Table</button>
           </div>
+        </div>
+        <div class="cso-od-atlas-toolbar">
+          <div class="cso-od-div-pills" role="group" aria-label="Filter districts by Revenue Division">
+            <button type="button" class="cso-od-div-pill is-active" data-division="all" aria-pressed="true" data-en="All 30 Districts" data-or="ସମସ୍ତ ୩୦ ଜିଲ୍ଲା">All 30 Districts</button>
+            <button type="button" class="cso-od-div-pill cso-od-div--central" data-division="central" aria-pressed="false" data-en="Central Division (10)" data-or="କେନ୍ଦ୍ରୀୟ ଡିଭିଜନ୍ (୧୦)">Central Division (10)</button>
+            <button type="button" class="cso-od-div-pill cso-od-div--northern" data-division="northern" aria-pressed="false" data-en="Northern Division (10)" data-or="ଉତ୍ତରାଞ୍ଚଳ ଡିଭିଜନ୍ (୧୦)">Northern Division (10)</button>
+            <button type="button" class="cso-od-div-pill cso-od-div--southern" data-division="southern" aria-pressed="false" data-en="Southern Division (10)" data-or="ଦକ୍ଷିଣାଞ୍ଚଳ ଡିଭିଜନ୍ (୧୦)">Southern Division (10)</button>
+          </div>
+          <button type="button" class="cso-od-active-toggle" id="cso-od-active-jobs-toggle" aria-pressed="false" data-en="🟢 Active Jobs Only" data-or="🟢 କେବଳ ସକ୍ରିୟ ଚାକିରି">🟢 Active Jobs Only</button>
         </div>
         <div class="cso-od-live-strip" id="cso-od-dist-live-strip" role="status" aria-live="polite">
-          <span class="cso-od-live-strip__text" data-en="📍 Live district-tagged notices across Odisha's 30 districts — loading counters…" data-or="📍 ଓଡ଼ିଶାର ୩୦ ଜିଲ୍ଲାରେ ଲାଇଭ୍ ବିଜ୍ଞପ୍ତି — ଗଣନା ଲୋଡ୍ ହେଉଛି…">📍 Live district-tagged notices across Odisha's 30 districts — loading counters…</span>
+          <span class="cso-od-live-strip__text" data-en="📍 Live district-tagged notices across Odisha's 30 districts &amp; 314 blocks — loading counters…" data-or="📍 ଓଡ଼ିଶାର ୩୦ ଜିଲ୍ଲା ଓ ୩୧୪ ବ୍ଲକ୍ ରେ ଲାଇଭ୍ ବିଜ୍ଞପ୍ତି — ଗଣନା ଲୋଡ୍ ହେଉଛି…">📍 Live district-tagged notices across Odisha's 30 districts &amp; 314 blocks — loading counters…</span>
           <a class="cso-od-btn cso-od-btn--primary cso-od-live-strip__cta" href="/jobs/" data-en="View All Odisha Jobs →" data-or="ସମସ୍ତ ଓଡ଼ିଶା ଚାକିରି ଦେଖନ୍ତୁ →">View All Odisha Jobs →</a>
         </div>
-        <input type="search" id="cso-od-dist-search" class="cso-od-input" placeholder="Search district, headquarters, Chilika, Simlipal, Hirakud, GI tag..." aria-label="Search Odisha districts">
-        <div class="cso-od-status-bar" id="cso-od-dist-count" aria-live="polite">Loading 30 Odisha districts…</div>
-        <div class="cso-od-dist-grid" id="cso-od-districts-grid" aria-live="polite"></div>
+        <input type="search" id="cso-od-dist-search" class="cso-od-input" placeholder="Search district, block (314), HQ, PIN, RTO (OD-02), Chilika, Simlipal, GI tag..." aria-label="Search Odisha districts and 314 blocks">
+        <div class="cso-od-status-bar" id="cso-od-dist-count" aria-live="polite">Loading 30 Odisha districts &amp; 314 blocks…</div>
+        <div class="cso-od-dist-grid cso-od-dist-grid--v457" id="cso-od-districts-grid" aria-live="polite"></div>
       </section>
 
-      <!-- Interactive 30-District & 314-Block Administrative Directory (v418) -->
-      <section class="cso-od-section" id="admin-directory" aria-labelledby="cso-oad-heading">
-        <div id="cso-odisha-admin-directory-root"></div>
-      </section>
+      <!-- Unified Data Bridge Mount (v418 contract preserved without rendering duplicate 30-card grid) -->
+      <div id="cso-odisha-admin-directory-root" class="cso-oad-unified-bridge" data-cso-unified-atlas="1" hidden></div>
 
-      <!-- Interactive 30-District Exam Center & Travel Logistics Planner (v432) -->
-      <section id="cso-district-exam-center-root" class="cso-dec-root" aria-label="Odisha 30-District Exam Center and Travel Logistics Planner"></section>
-
-      <!-- Interactive 30-District & 314-Block Reservation Roster Explorer (v439) -->
-      <section id="cso-district-reservation-root" class="cso-drr-root" aria-label="Odisha 30-District and 314-Block Reservation Roster Explorer"></section>
-
-      <!-- Odisha GK, Heritage & Public Updates Feed -->
-      <section class="cso-od-section" aria-labelledby="cso-od-gk-heading">
-        <div class="cso-od-sec-head">
-          <h2 class="cso-od-sec-title" id="cso-od-gk-heading" data-en="📜 Odisha GK, Heritage &amp; State Governance Feed" data-or="📜 ଓଡ଼ିଶା GK, ଐତିହ୍ୟ ଓ ରାଜ୍ୟ ଶାସନ">📜 Odisha GK, Heritage &amp; State Governance Feed</h2>
-        </div>
-        <div class="cso-od-gk-controls">
-          <input type="search" id="cso-od-item-search" class="cso-od-input" placeholder="Search Paika Rebellion, Mahanadi, Ramsar, Rasagola GI, Assembly..." aria-label="Search Odisha GK capsules">
-          <div class="cso-od-tabs" role="tablist" aria-label="Filter Odisha Special capsules">
-            <button type="button" role="tab" class="cso-od-tab is-active" data-tab="all" aria-selected="true" data-en="All Odisha Special" data-or="ସବୁ ବିଷୟ">All Odisha Special</button>
-            <button type="button" role="tab" class="cso-od-tab" data-tab="history" aria-selected="false" data-en="History &amp; Freedom Movement" data-or="ଇତିହାସ ଓ ସ୍ୱାଧୀନତା ସଂଗ୍ରାମ">History &amp; Freedom Movement</button>
-            <button type="button" role="tab" class="cso-od-tab" data-tab="geography" aria-selected="false" data-en="Geography &amp; Rivers" data-or="ଭୂଗୋଳ ଓ ନଦୀ">Geography &amp; Rivers</button>
-            <button type="button" role="tab" class="cso-od-tab" data-tab="culture" aria-selected="false" data-en="Art, Culture &amp; GI Tags" data-or="କଳା, ସଂସ୍କୃତି ଓ GI ଟ୍ୟାଗ୍">Art, Culture &amp; GI Tags</button>
-            <button type="button" role="tab" class="cso-od-tab" data-tab="governance" aria-selected="false" data-en="State Governance &amp; Updates" data-or="ରାଜ୍ୟ ଶାସନ ଓ ଅପଡେଟ୍">State Governance &amp; Updates</button>
+      <!-- 3-Tab Odisha Special Utility Workspace (v457) -->
+      <section id="cso-odisha-special-workspace-tabs" class="cso-od-ws" aria-label="Odisha Special Interactive Workspace">
+        <div class="cso-od-ws-bar">
+          <div class="cso-od-ws-tablist" role="tablist" aria-label="Odisha Special Workspace Tools">
+            <button type="button" role="tab" class="cso-od-ws-tab is-active" id="cso-od-ws-tab-travel" data-od-ws-tab="travel" aria-selected="true" aria-controls="cso-od-ws-panel-travel" tabindex="0">
+              <span data-en="🚆 Exam Center &amp; Travel Logistics" data-or="🚆 ପରୀକ୍ଷା କେନ୍ଦ୍ର ଓ ଯାତାୟାତ">🚆 Exam Center &amp; Travel Logistics</span>
+            </button>
+            <button type="button" role="tab" class="cso-od-ws-tab" id="cso-od-ws-tab-roster" data-od-ws-tab="roster" aria-selected="false" aria-controls="cso-od-ws-panel-roster" tabindex="-1">
+              <span data-en="📊 District Reservation Roster" data-or="📊 ଜିଲ୍ଲା ସଂରକ୍ଷଣ ରୋଷ୍ଟର୍">📊 District Reservation Roster</span>
+            </button>
+            <button type="button" role="tab" class="cso-od-ws-tab" id="cso-od-ws-tab-heritage" data-od-ws-tab="heritage-gk" aria-selected="false" aria-controls="cso-od-ws-panel-heritage" tabindex="-1">
+              <span data-en="🏛️ Heritage, GI Tags &amp; Odisha GK Vault" data-or="🏛️ ଐତିହ୍ୟ, GI ଟ୍ୟାଗ୍ ଓ ଓଡ଼ିଶା GK ଭଲ୍ଟ">🏛️ Heritage, GI Tags &amp; Odisha GK Vault</span>
+            </button>
           </div>
+          <button type="button" class="cso-od-ws-expand-btn" data-od-ws-expand-all="1" aria-pressed="false">⤢ Show All Expanded</button>
         </div>
-        <div class="cso-od-grid" id="cso-od-items-grid" aria-live="polite"></div>
-      </section>
 
-      <!-- Interactive 5-Question Odisha GK Practice Drill -->
-      <section class="cso-od-section" id="cso-od-drill" aria-labelledby="cso-od-quiz-heading">
-        <div class="cso-od-sec-head">
-          <div>
-            <h2 class="cso-od-sec-title" id="cso-od-quiz-heading" data-en="⚡ Odisha GK 5-MCQ Practice Drill (EN / ଓଡ଼ିଆ)" data-or="⚡ ଓଡ଼ିଶା GK ୫-ପ୍ରଶ୍ନ ଅଭ୍ୟାସ ଡ୍ରିଲ୍">⚡ Odisha GK 5-MCQ Practice Drill (EN / ଓଡ଼ିଆ)</h2>
-            <p class="cso-od-quiz-sub" id="cso-od-quiz-score" aria-live="polite">Score: 0 / 5 (0 answered)</p>
-          </div>
-          <button type="button" class="cso-od-btn cso-od-btn--outline" id="cso-od-quiz-reset" data-en="↻ Reset Drill" data-or="↻ ପୁନଃ ଆରମ୍ଭ">↻ Reset Drill</button>
+        <div class="cso-od-ws-panel is-active" id="cso-od-ws-panel-travel" role="tabpanel" aria-labelledby="cso-od-ws-tab-travel" data-od-ws-panel="travel">
+          <section id="cso-district-exam-center-root" class="cso-dec-root" data-cso-travel-root="cso-exam-travel-planner-root" aria-label="Odisha 30-District Exam Center and Travel Logistics Planner"></section>
         </div>
-        <div class="cso-od-quiz-grid" id="cso-od-quiz-root" aria-live="polite"></div>
+
+        <div class="cso-od-ws-panel" id="cso-od-ws-panel-roster" role="tabpanel" aria-labelledby="cso-od-ws-tab-roster" data-od-ws-panel="roster" hidden>
+          <section id="cso-district-reservation-root" class="cso-drr-root" aria-label="Odisha 30-District and 314-Block Reservation Roster Explorer"></section>
+        </div>
+
+        <div class="cso-od-ws-panel" id="cso-od-ws-panel-heritage" role="tabpanel" aria-labelledby="cso-od-ws-tab-heritage" data-od-ws-panel="heritage-gk" hidden>
+          <!-- Odisha GK, Heritage & Public Updates Feed -->
+          <section class="cso-od-section" id="cso-od-heritage-gk-panel" aria-labelledby="cso-od-gk-heading">
+            <div class="cso-od-sec-head">
+              <h2 class="cso-od-sec-title" id="cso-od-gk-heading" data-en="📜 Odisha GK, Heritage &amp; State Governance Feed" data-or="📜 ଓଡ଼ିଶା GK, ଐତିହ୍ୟ ଓ ରାଜ୍ୟ ଶାସନ">📜 Odisha GK, Heritage &amp; State Governance Feed</h2>
+            </div>
+            <div class="cso-od-gk-controls">
+              <input type="search" id="cso-od-item-search" class="cso-od-input" placeholder="Search Paika Rebellion, Mahanadi, Ramsar, Rasagola GI, Assembly..." aria-label="Search Odisha GK capsules">
+              <div class="cso-od-tabs" role="tablist" aria-label="Filter Odisha Special capsules">
+                <button type="button" role="tab" class="cso-od-tab is-active" data-tab="all" aria-selected="true" data-en="All Odisha Special" data-or="ସବୁ ବିଷୟ">All Odisha Special</button>
+                <button type="button" role="tab" class="cso-od-tab" data-tab="history" aria-selected="false" data-en="History &amp; Freedom Movement" data-or="ଇତିହାସ ଓ ସ୍ୱାଧୀନତା ସଂଗ୍ରାମ">History &amp; Freedom Movement</button>
+                <button type="button" role="tab" class="cso-od-tab" data-tab="geography" aria-selected="false" data-en="Geography &amp; Rivers" data-or="ଭୂଗୋଳ ଓ ନଦୀ">Geography &amp; Rivers</button>
+                <button type="button" role="tab" class="cso-od-tab" data-tab="culture" aria-selected="false" data-en="Art, Culture &amp; GI Tags" data-or="କଳା, ସଂସ୍କୃତି ଓ GI ଟ୍ୟାଗ୍">Art, Culture &amp; GI Tags</button>
+                <button type="button" role="tab" class="cso-od-tab" data-tab="governance" aria-selected="false" data-en="State Governance &amp; Updates" data-or="ରାଜ୍ୟ ଶାସନ ଓ ଅପଡେଟ୍">State Governance &amp; Updates</button>
+              </div>
+            </div>
+            <div class="cso-od-grid" id="cso-od-items-grid" aria-live="polite"></div>
+          </section>
+
+          <!-- Interactive 5-Question Odisha GK Practice Drill -->
+          <section class="cso-od-section" id="cso-od-drill" aria-labelledby="cso-od-quiz-heading">
+            <div class="cso-od-sec-head">
+              <div>
+                <h2 class="cso-od-sec-title" id="cso-od-quiz-heading" data-en="⚡ Odisha GK 5-MCQ Practice Drill (EN / ଓଡ଼ିଆ)" data-or="⚡ ଓଡ଼ିଶା GK ୫-ପ୍ରଶ୍ନ ଅଭ୍ୟାସ ଡ୍ରିଲ୍">⚡ Odisha GK 5-MCQ Practice Drill (EN / ଓଡ଼ିଆ)</h2>
+                <p class="cso-od-quiz-sub" id="cso-od-quiz-score" aria-live="polite">Score: 0 / 5 (0 answered)</p>
+              </div>
+              <button type="button" class="cso-od-btn cso-od-btn--outline" id="cso-od-quiz-reset" data-en="↻ Reset Drill" data-or="↻ ପୁନଃ ଆରମ୍ଭ">↻ Reset Drill</button>
+            </div>
+            <div class="cso-od-quiz-grid" id="cso-od-quiz-root" aria-live="polite"></div>
+          </section>
+        </div>
       </section>
     </section>
   </main>
@@ -195,9 +218,10 @@
         <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
         <button type="button" class="cso-footer-lang-pill" data-cso-lang="hi">हिन्दी</button>
       </div>
+      <div class="cso-footer-build-pill" aria-label="Portal cache version">cso-candidate-cache-v457</div>
     </div>
   </div></footer>
   <script src="/assets/cso-auth-client.js?v=20261114f" defer></script>
-  <script src="/assets/shared-header.js?v=20261128v456" defer></script>
+  <script src="/assets/shared-header.js?v=20261128v457" defer></script>
 </body>
 </html>

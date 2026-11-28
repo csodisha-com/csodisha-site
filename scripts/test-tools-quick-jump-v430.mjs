@@ -67,7 +67,7 @@ const quickJumpIdx = toolsHtml.indexOf('id="cso-tools-quick-jump-root"');
 const firstToolIdx = toolsHtml.indexOf('id="cso-offline-toolkit-hub-root"');
 assert.ok(quickJumpIdx > 0, 'tools/index.html must mount #cso-tools-quick-jump-root');
 assert.ok(quickJumpIdx < firstToolIdx, '#cso-tools-quick-jump-root must appear above the first tool section');
-assert.ok(toolsHtml.includes('/assets/js/tools-quick-jump-directory.js?v=20261128v456'), 'tools/index.html must load tools-quick-jump-directory.js?v=20261128v456');
+assert.ok(toolsHtml.includes('/assets/js/tools-quick-jump-directory.js?v=20261128v457'), 'tools/index.html must load tools-quick-jump-directory.js?v=20261128v457');
 assert.ok(!/\son[a-z]+\s*=/i.test(toolsHtml), 'tools/index.html must have zero inline on* attributes');
 assert.ok(!/\sstyle\s*=/i.test(toolsHtml), 'tools/index.html must have zero inline style attributes');
 
@@ -84,10 +84,10 @@ assert.ok(tqjBlock.includes('var(--cso-'), 'CSS must use semantic var(--cso-*) t
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(tqjBlock), 'v430 CSS block must have zero hardcoded hex colors');
 
 const sw = read('sw.js');
-assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v456'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v456');
-assert.ok(sw.includes('/assets/js/tools-quick-jump-directory.js?v=20261128v456'), 'sw.js must pre-cache tools-quick-jump-directory.js?v=20261128v456');
+assert.ok(sw.includes("CACHE_NAME = 'cso-candidate-cache-v457'"), 'sw.js CACHE_NAME must be cso-candidate-cache-v457');
+assert.ok(sw.includes('/assets/js/tools-quick-jump-directory.js?v=20261128v457'), 'sw.js must pre-cache tools-quick-jump-directory.js?v=20261128v457');
 
 const ops = read('functions/_lib/ops-sentinel.js');
-assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v456'"), 'ops-sentinel.js must match cso-candidate-cache-v456');
+assert.ok(ops.includes("ACTIVE_SW_CACHE_VERSION = 'cso-candidate-cache-v457'"), 'ops-sentinel.js must match cso-candidate-cache-v457');
 
 console.log('✅ v430 Candidate Toolkit Quick-Jump Directory & Live Search Index tests passed!');

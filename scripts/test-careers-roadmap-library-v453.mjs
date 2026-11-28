@@ -104,11 +104,11 @@ const odiaSearch = lib.filterCareerRoadmaps(allRoadmaps, { q: 'ସମବାୟ' 
 assert.ok(odiaSearch.total >= 1 && odiaSearch.items.some((x) => /OSCB/i.test(x.title_en)), 'Odia keyword search must match OSCB roadmap');
 
 // 4. Verify careers/index.html structure, Ask CSOdisha preservation, script wiring & non-duplicated footer
-assert.match(careersHtml, /semantic-search\.js\?v=20261128v456/, 'careers/index.html must preserve permanent Ask CSOdisha search script');
-assert.match(careersHtml, /careers-roadmap-library\.js\?v=20261128v456/, 'careers/index.html must load careers-roadmap-library.js');
-assert.match(careersHtml, /saved-alerts-drawer\.js\?v=20261128v456/, 'careers/index.html must load saved-alerts-drawer.js');
-assert.match(careersHtml, /careers-portal\.js\?v=20261128v456/, 'careers/index.html must load careers-portal.js');
-assert.match(careersHtml, /cso-candidate-cache-v456/, 'careers/index.html footer must show cso-candidate-cache-v456');
+assert.match(careersHtml, /semantic-search\.js\?v=20261128v457/, 'careers/index.html must preserve permanent Ask CSOdisha search script');
+assert.match(careersHtml, /careers-roadmap-library\.js\?v=20261128v457/, 'careers/index.html must load careers-roadmap-library.js');
+assert.match(careersHtml, /saved-alerts-drawer\.js\?v=20261128v457/, 'careers/index.html must load saved-alerts-drawer.js');
+assert.match(careersHtml, /careers-portal\.js\?v=20261128v457/, 'careers/index.html must load careers-portal.js');
+assert.match(careersHtml, /cso-candidate-cache-v457/, 'careers/index.html footer must show cso-candidate-cache-v457');
 
 const footerMatch = careersHtml.match(/<footer[\s\S]*?<\/footer>/i);
 assert.ok(footerMatch, 'careers/index.html must have a <footer>');
@@ -153,8 +153,8 @@ assert.match(v453Css, /prefers-reduced-motion:\s*reduce/, 'v453 CSS must support
 assert.match(v453Css, /@media print/, 'v453 CSS must include clean @media print rules');
 
 // 8. Verify SW & ops-sentinel cache version sync
-assert.match(swJs, /CACHE_NAME\s*=\s*'cso-candidate-cache-v456'/, 'sw.js CACHE_NAME must be cso-candidate-cache-v456');
-assert.match(swJs, /\/assets\/js\/careers-roadmap-library\.js\?v=20261128v456/, 'sw.js CANDIDATE_TOOLKIT_URLS must precache careers-roadmap-library.js?v=20261128v456');
-assert.match(opsSentinelJs, /ACTIVE_SW_CACHE_VERSION\s*=\s*'cso-candidate-cache-v456'/, 'ops-sentinel.js must match cso-candidate-cache-v456');
+assert.match(swJs, /CACHE_NAME\s*=\s*'cso-candidate-cache-v457'/, 'sw.js CACHE_NAME must be cso-candidate-cache-v457');
+assert.match(swJs, /\/assets\/js\/careers-roadmap-library\.js\?v=20261128v457/, 'sw.js CANDIDATE_TOOLKIT_URLS must precache careers-roadmap-library.js?v=20261128v457');
+assert.match(opsSentinelJs, /ACTIVE_SW_CACHE_VERSION\s*=\s*'cso-candidate-cache-v457'/, 'ops-sentinel.js must match cso-candidate-cache-v457');
 
 console.log('PASS: v453 /careers/ 18-roadmap library, matcher, milestone drawer, footer cleanup, CSP & SW cache audit passed.');

@@ -95,7 +95,7 @@ assert.match(portalCode, /\/jobs\//, 'Must include Live Jobs direct shortcut');
 
 // Item 15: Clean Public Header & Permanent Ask CSOdisha Bar
 assert.match(careersHtml, /cso-adm-icon-only cso-adm-stealth/, 'careers/index.html admin link must carry cso-adm-stealth so public visitors do not see Admin icon');
-assert.match(careersHtml, /semantic-search\.js\?v=20261128v456/, 'careers/index.html must preserve permanent Ask CSOdisha search bar');
+assert.match(careersHtml, /semantic-search\.js\?v=20261128v457/, 'careers/index.html must preserve permanent Ask CSOdisha search bar');
 assert.match(sharedHeaderJs, /parsed\.email \|\| parsed\.id \|\| parsed\.user_id/, 'shared-header.js must require authenticated session object before showing Admin Studio / Candidate Hub pills');
 
 // Strict CSP checks across JS & HTML
@@ -126,7 +126,7 @@ assert.match(v455Css, /prefers-reduced-motion:\s*reduce/, 'Must support prefers-
 assert.match(v455Css, /@media print/, 'Must include clean print rules');
 
 // SW & ops-sentinel v455 sync
-assert.match(swJs, /CACHE_NAME\s*=\s*'cso-candidate-cache-v456'/, 'sw.js must be bumped to cso-candidate-cache-v456');
-assert.match(opsJs, /ACTIVE_SW_CACHE_VERSION\s*=\s*'cso-candidate-cache-v456'/, 'ops-sentinel.js must be bumped to cso-candidate-cache-v456');
+assert.match(swJs, /CACHE_NAME\s*=\s*'cso-candidate-cache-v457'/, 'sw.js must be bumped to cso-candidate-cache-v457');
+assert.match(opsJs, /ACTIVE_SW_CACHE_VERSION\s*=\s*'cso-candidate-cache-v457'/, 'ops-sentinel.js must be bumped to cso-candidate-cache-v457');
 
 console.log('PASS: v455 /careers/ 15-item visual polish, stepper, compare drawer, sort, profile match, CSP & SW audit passed.');

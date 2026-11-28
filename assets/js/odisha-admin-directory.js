@@ -725,6 +725,11 @@
     if (!doc) return null;
     var root = containerEl || doc.getElementById(ROOT_ID);
     if (!root) return null;
+    // v457: Skip rendering a duplicate second 30-district grid when unified into the single Atlas
+    if (!containerEl && root.getAttribute('data-cso-unified-atlas') === '1') {
+      root.replaceChildren();
+      return { unified: true, totals: getTotals() };
+    }
 
     var totals = getTotals();
     var state = {

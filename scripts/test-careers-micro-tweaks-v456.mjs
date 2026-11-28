@@ -42,12 +42,12 @@ assert.match(portalCode, /crp-shortcut-sep/, 'Quick-links strip must separate Li
 assert.match(v456Css, /\.crp-card-shortcuts--v456[\s\S]*flex-wrap:\s*nowrap[\s\S]*white-space:\s*nowrap[\s\S]*overflow:\s*hidden[\s\S]*text-overflow:\s*ellipsis/, 'Quick-links strip must be single-line non-wrapping with ellipsis');
 
 // 4. Permanent Ask CSOdisha Bar, Strict CSP & v456 Cache Sync
-assert.match(careersHtml, /semantic-search\.js\?v=20261128v456/, 'careers/index.html must preserve permanent Ask CSOdisha bar');
+assert.match(careersHtml, /semantic-search\.js\?v=20261128v457/, 'careers/index.html must preserve permanent Ask CSOdisha bar');
 assert.doesNotMatch(portalCode, /\.innerHTML\b|\.outerHTML\b|insertAdjacentHTML/i, 'careers-portal.js must not use unsafe markup injection');
 assert.doesNotMatch(portalCode, /\.style\.[a-zA-Z]/, 'careers-portal.js must not mutate inline styles');
 assert.doesNotMatch(careersHtml, /\sstyle\s*=\s*["']/i, 'careers/index.html must have zero inline style=""');
 assert.doesNotMatch(careersHtml, /\son[a-z]+\s*=\s*["']/i, 'careers/index.html must have zero inline on*=""');
-assert.match(swJs, /CACHE_NAME\s*=\s*'cso-candidate-cache-v456'/, 'sw.js must be bumped to cso-candidate-cache-v456');
-assert.match(opsJs, /ACTIVE_SW_CACHE_VERSION\s*=\s*'cso-candidate-cache-v456'/, 'ops-sentinel.js must be bumped to cso-candidate-cache-v456');
+assert.match(swJs, /CACHE_NAME\s*=\s*'cso-candidate-cache-v457'/, 'sw.js must be bumped to cso-candidate-cache-v457');
+assert.match(opsJs, /ACTIVE_SW_CACHE_VERSION\s*=\s*'cso-candidate-cache-v457'/, 'ops-sentinel.js must be bumped to cso-candidate-cache-v457');
 
 console.log('PASS: v456 /careers/ 3-column grid, header Compare pill, single-line quick-links strip, CSP & SW cache audit passed.');

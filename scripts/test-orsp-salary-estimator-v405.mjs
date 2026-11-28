@@ -75,9 +75,9 @@ const toolsHtml = fs.readFileSync('tools/index.html', 'utf8');
 const styleCss = fs.readFileSync('assets/style.css', 'utf8');
 
 assert.ok(cpHtml.includes('id="cso-orsp-salary-estimator-root"'), 'career-paths/index.html mounts #cso-orsp-salary-estimator-root');
-assert.ok(cpHtml.includes('/assets/js/orsp-salary-estimator.js?v=20261128v456'), 'career-paths/index.html loads orsp-salary-estimator.js');
+assert.ok(cpHtml.includes('/assets/js/orsp-salary-estimator.js?v=20261128v457'), 'career-paths/index.html loads orsp-salary-estimator.js');
 assert.ok(toolsHtml.includes('id="cso-orsp-salary-estimator-root"'), 'tools/index.html mounts #cso-orsp-salary-estimator-root');
-assert.ok(toolsHtml.includes('/assets/js/orsp-salary-estimator.js?v=20261128v456'), 'tools/index.html loads orsp-salary-estimator.js');
+assert.ok(toolsHtml.includes('/assets/js/orsp-salary-estimator.js?v=20261128v457'), 'tools/index.html loads orsp-salary-estimator.js');
 
 assert.ok(!/\sstyle\s*=\s*["']/i.test(cpHtml) && !/\son[a-z]+\s*=\s*["']/i.test(cpHtml), 'career-paths/index.html has zero inline styles/handlers');
 assert.ok(!/\sstyle\s*=\s*["']/i.test(toolsHtml) && !/\son[a-z]+\s*=\s*["']/i.test(toolsHtml), 'tools/index.html has zero inline styles/handlers');
