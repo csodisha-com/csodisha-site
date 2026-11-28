@@ -11,7 +11,7 @@
  *  - Background `sync` event drains the IndexedDB mutation queue
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v453';
+const CACHE_NAME = 'cso-candidate-cache-v454';
 const OFFLINE_STUDY_CACHE = 'cso-offline-study-packs-v1';
 const EXPECTED_CACHES = [CACHE_NAME, OFFLINE_STUDY_CACHE];
 
@@ -28,58 +28,58 @@ const CANDIDATE_TOOLKIT_URLS = [
   '/schemes/',
   '/current-affairs/',
   '/odisha-special/',
-  '/assets/style.css?v=20261128v453',
-  '/assets/css/cso-themes.css?v=20261128v453',
-  '/assets/shared-header.js?v=20261128v453',
-  '/assets/js/offline-toolkit-hub.js?v=20261128v453',
-  '/assets/js/candidate-data-backup.js?v=20261128v453',
-  '/assets/js/admissions-counselling-tracker.js?v=20261128v453',
-  '/assets/js/pyq-vault-analyzer.js?v=20261128v453',
-  '/assets/js/holiday-exam-logistics.js?v=20261128v453',
-  '/assets/js/typing-skill-arena.js?v=20261128v453',
-  '/assets/js/macp-progression-simulator.js?v=20261128v453',
-  '/assets/js/pet-pst-standards-checker.js?v=20261128v453',
-  '/assets/js/edistrict-service-walkthrough.js?v=20261128v453',
-  '/assets/js/teacher-eligibility-checker.js?v=20261128v453',
-  '/assets/js/income-tax-takehome-estimator.js?v=20261128v453',
-  '/assets/js/tools-quick-jump-directory.js?v=20261128v453',
-  '/assets/js/scholarship-aid-finder.js?v=20261128v453',
-  '/assets/js/district-exam-center-planner.js?v=20261128v453',
-  '/assets/js/study-packet-compiler.js?v=20261128v453',
-  '/assets/js/multi-post-eligibility-matrix.js?v=20261128v453',
-  '/assets/js/answer-key-normalizer.js?v=20261128v453',
-  '/assets/js/retirement-corpus-calculator.js?v=20261128v453',
-  '/assets/js/candidate-profile-sync-bar.js?v=20261128v453',
-  '/assets/js/document-pack-validator.js?v=20261128v453',
-  '/assets/js/district-reservation-roster.js?v=20261128v453',
-  '/assets/js/weekly-digest-composer.js?v=20261128v453',
-  '/assets/js/qr-flyer-generator.js?v=20261128v453',
-  '/assets/js/pay-arrear-calculator.js?v=20261128v453',
-  '/assets/js/gk-flashcard-deck.js?v=20261128v453',
-  '/assets/js/negative-marking-simulator.js?v=20261128v453',
-  '/assets/js/transfer-tada-calculator.js?v=20261128v453',
-  '/assets/js/subscription-alert-hub.js?v=20261128v453',
-  '/assets/js/syllabus-mastery-tracker.js?v=20261128v453',
-  '/assets/js/employee-advance-gpf-calculator.js?v=20261128v453',
-  '/assets/js/application-status-grievance-tracker.js?v=20261128v453',
-  '/assets/js/jobs-workspace-tabs.js?v=20261128v453',
-  '/assets/js/careers-roadmap-library.js?v=20261128v453',
-  '/assets/js/orsp-salary-estimator.js?v=20261128v453',
-  '/assets/js/photo-signature-resizer.js?v=20261128v453',
-  '/assets/js/certificate-fee-matrix.js?v=20261128v453',
-  '/assets/js/cgpa-percentage-converter.js?v=20261128v453',
-  '/assets/js/exam-calendar-tracker.js?v=20261128v453',
-  '/assets/js/results-cutoff-estimator.js?v=20261128v453',
-  '/assets/js/service-rules-pension-guide.js?v=20261128v453',
-  '/assets/js/study-streak-planner.js?v=20261128v453',
-  '/assets/js/odisha-admin-directory.js?v=20261128v453',
-  '/assets/js/mock-tests-hub.js?v=20261128v453',
-  '/assets/js/schemes-eligibility-finder.js?v=20261128v453',
-  '/assets/js/current-affairs-hub.js?v=20261128v453',
-  '/assets/js/ics-calendar-export.js?v=20261128v453',
-  '/assets/js/saved-alerts-drawer.js?v=20261128v453',
-  '/assets/js/candidate-watchlist.js?v=20261128v453',
-  '/assets/js/odisha-district-filter.js?v=20261128v453'
+  '/assets/style.css?v=20261128v454',
+  '/assets/css/cso-themes.css?v=20261128v454',
+  '/assets/shared-header.js?v=20261128v454',
+  '/assets/js/offline-toolkit-hub.js?v=20261128v454',
+  '/assets/js/candidate-data-backup.js?v=20261128v454',
+  '/assets/js/admissions-counselling-tracker.js?v=20261128v454',
+  '/assets/js/pyq-vault-analyzer.js?v=20261128v454',
+  '/assets/js/holiday-exam-logistics.js?v=20261128v454',
+  '/assets/js/typing-skill-arena.js?v=20261128v454',
+  '/assets/js/macp-progression-simulator.js?v=20261128v454',
+  '/assets/js/pet-pst-standards-checker.js?v=20261128v454',
+  '/assets/js/edistrict-service-walkthrough.js?v=20261128v454',
+  '/assets/js/teacher-eligibility-checker.js?v=20261128v454',
+  '/assets/js/income-tax-takehome-estimator.js?v=20261128v454',
+  '/assets/js/tools-quick-jump-directory.js?v=20261128v454',
+  '/assets/js/scholarship-aid-finder.js?v=20261128v454',
+  '/assets/js/district-exam-center-planner.js?v=20261128v454',
+  '/assets/js/study-packet-compiler.js?v=20261128v454',
+  '/assets/js/multi-post-eligibility-matrix.js?v=20261128v454',
+  '/assets/js/answer-key-normalizer.js?v=20261128v454',
+  '/assets/js/retirement-corpus-calculator.js?v=20261128v454',
+  '/assets/js/candidate-profile-sync-bar.js?v=20261128v454',
+  '/assets/js/document-pack-validator.js?v=20261128v454',
+  '/assets/js/district-reservation-roster.js?v=20261128v454',
+  '/assets/js/weekly-digest-composer.js?v=20261128v454',
+  '/assets/js/qr-flyer-generator.js?v=20261128v454',
+  '/assets/js/pay-arrear-calculator.js?v=20261128v454',
+  '/assets/js/gk-flashcard-deck.js?v=20261128v454',
+  '/assets/js/negative-marking-simulator.js?v=20261128v454',
+  '/assets/js/transfer-tada-calculator.js?v=20261128v454',
+  '/assets/js/subscription-alert-hub.js?v=20261128v454',
+  '/assets/js/syllabus-mastery-tracker.js?v=20261128v454',
+  '/assets/js/employee-advance-gpf-calculator.js?v=20261128v454',
+  '/assets/js/application-status-grievance-tracker.js?v=20261128v454',
+  '/assets/js/jobs-workspace-tabs.js?v=20261128v454',
+  '/assets/js/careers-roadmap-library.js?v=20261128v454',
+  '/assets/js/orsp-salary-estimator.js?v=20261128v454',
+  '/assets/js/photo-signature-resizer.js?v=20261128v454',
+  '/assets/js/certificate-fee-matrix.js?v=20261128v454',
+  '/assets/js/cgpa-percentage-converter.js?v=20261128v454',
+  '/assets/js/exam-calendar-tracker.js?v=20261128v454',
+  '/assets/js/results-cutoff-estimator.js?v=20261128v454',
+  '/assets/js/service-rules-pension-guide.js?v=20261128v454',
+  '/assets/js/study-streak-planner.js?v=20261128v454',
+  '/assets/js/odisha-admin-directory.js?v=20261128v454',
+  '/assets/js/mock-tests-hub.js?v=20261128v454',
+  '/assets/js/schemes-eligibility-finder.js?v=20261128v454',
+  '/assets/js/current-affairs-hub.js?v=20261128v454',
+  '/assets/js/ics-calendar-export.js?v=20261128v454',
+  '/assets/js/saved-alerts-drawer.js?v=20261128v454',
+  '/assets/js/candidate-watchlist.js?v=20261128v454',
+  '/assets/js/odisha-district-filter.js?v=20261128v454'
 ];
 
 // Authenticated, auth & account routes that must NEVER be served from or written to SW HTML cache.
@@ -158,34 +158,43 @@ self.addEventListener('message', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
+  event.waitUntil((async () => {
+    try {
+      if (self.registration && self.registration.navigationPreload && typeof self.registration.navigationPreload.enable === 'function') {
+        await self.registration.navigationPreload.enable();
+      }
+    } catch (_) {}
+
+    try {
+      const keys = await caches.keys();
+      await Promise.all(
         keys.filter((key) => !EXPECTED_CACHES.includes(key))
           .map((key) => caches.delete(key))
       );
-    }).then(async () => {
-      try {
-        const remainingKeys = await caches.keys();
-        await Promise.all(remainingKeys.map(async (cacheKey) => {
-          const cache = await caches.open(cacheKey);
-          const cachedReqs = await cache.keys();
-          await Promise.all(
-            cachedReqs
-              .filter((req) => {
-                try {
-                  const p = new URL(req.url).pathname;
-                  return p.startsWith('/admin') || isAuthNoStorePath(p) || p.startsWith('/api/auth/');
-                } catch (_) {
-                  return false;
-                }
-              })
-              .map((req) => cache.delete(req))
-          );
-        }));
-      } catch (_) {}
-    }).then(() => self.clients.claim())
-  );
+    } catch (_) {}
+
+    try {
+      const remainingKeys = await caches.keys();
+      await Promise.all(remainingKeys.map(async (cacheKey) => {
+        const cache = await caches.open(cacheKey);
+        const cachedReqs = await cache.keys();
+        await Promise.all(
+          cachedReqs
+            .filter((req) => {
+              try {
+                const p = new URL(req.url).pathname;
+                return p.startsWith('/admin') || isAuthNoStorePath(p) || p.startsWith('/api/auth/');
+              } catch (_) {
+                return false;
+              }
+            })
+            .map((req) => cache.delete(req))
+        );
+      }));
+    } catch (_) {}
+
+    await self.clients.claim();
+  })());
 });
 
 async function swDrainSyncQueue() {
@@ -433,8 +442,10 @@ self.addEventListener('fetch', (event) => {
   // 2. HTML Navigations (request.mode === 'navigate' or text/html):
   //    - Auth & Candidate Dashboard routes: Strict Network-First with cache: 'no-store'
   //      and ZERO SW HTML caching (prevents stale pre-login or old-layout flashes).
-  //    - Public HTML routes: Network-First (cache: 'no-cache') with 1.5s timeout and safe
-  //      try/catch fallback to cached page -> cached /index.html -> /offline.html -> Response.error().
+  //    - Public HTML routes (v454): Consume event.preloadResponse first if available,
+  //      falling back cleanly to fetch(request) and then cached HTML shell
+  //      (caches.match(request, { ignoreSearch: true }) || caches.match('/index.html') || '/offline.html')
+  //      inside a try/catch block so event.respondWith() NEVER rejects with an uncaught error.
   const acceptHeader = (request.headers && request.headers.get('accept')) || '';
   if (request.mode === 'navigate' || acceptHeader.includes('text/html')) {
     if (isAuthNoStorePath(url.pathname)) {
@@ -443,27 +454,38 @@ self.addEventListener('fetch', (event) => {
           return await fetch(request, { cache: 'no-store', credentials: 'same-origin' });
         } catch (_) {
           try {
-            const cache = await caches.open(CACHE_NAME);
-            const offlinePage = await cache.match('/offline.html');
+            const offlinePage = await caches.match('/offline.html');
             if (offlinePage) return offlinePage;
-            const indexPage = await cache.match('/index.html');
+            const indexPage = await caches.match('/index.html');
             if (indexPage) return indexPage;
           } catch (_) {}
-          return Response.error();
+          return new Response(
+            '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Connection Unavailable — Common Sense Odisha</title></head><body><h1>Connection temporarily unavailable</h1><p>Please reload to try again.</p></body></html>',
+            { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+          );
         }
       })());
       return;
     }
 
     event.respondWith((async () => {
-      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      const timer = controller ? setTimeout(() => controller.abort(), 1500) : null;
       try {
-        const fetchOpts = controller
-          ? { cache: 'no-cache', signal: controller.signal }
-          : { cache: 'no-cache' };
-        const networkResponse = await fetch(request, fetchOpts);
-        if (timer) clearTimeout(timer);
+        const preloaded = event.preloadResponse ? await event.preloadResponse : null;
+        if (preloaded && preloaded.ok) {
+          const ccPre = (preloaded.headers && preloaded.headers.get('cache-control')) || '';
+          if (!/\b(no-store|private)\b/i.test(ccPre)) {
+            caches.open(CACHE_NAME)
+              .then((cache) => cache.put(request, preloaded.clone()))
+              .catch(() => {});
+          }
+          return preloaded;
+        }
+      } catch (_) {
+        // Navigation preload failed or unavailable — fall through to live network fetch.
+      }
+
+      try {
+        const networkResponse = await fetch(request);
         const cc = (networkResponse && networkResponse.headers && networkResponse.headers.get('cache-control')) || '';
         if (networkResponse && networkResponse.ok && !/\b(no-store|private)\b/i.test(cc)) {
           caches.open(CACHE_NAME)
@@ -472,17 +494,18 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       } catch (_) {
-        if (timer) clearTimeout(timer);
         try {
-          const cache = await caches.open(CACHE_NAME);
-          const cachedPage = (await cache.match(request)) || (await cache.match(url.pathname));
-          if (cachedPage) return cachedPage;
-          const indexPage = await cache.match('/index.html');
-          if (indexPage) return indexPage;
-          const offlinePage = await cache.match('/offline.html');
-          if (offlinePage) return offlinePage;
+          const cachedMatch =
+            (await caches.match(request, { ignoreSearch: true })) ||
+            (await caches.match(url.pathname, { ignoreSearch: true })) ||
+            (await caches.match('/index.html')) ||
+            (await caches.match('/offline.html'));
+          if (cachedMatch) return cachedMatch;
         } catch (_) {}
-        return Response.error();
+        return new Response(
+          '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Offline — Common Sense Odisha</title></head><body><h1>Common Sense Odisha</h1><p>You appear to be offline. Please check your connection and reload.</p></body></html>',
+          { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+        );
       }
     })());
     return;

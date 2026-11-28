@@ -5,14 +5,26 @@
 (function () {
   'use strict';
 
-  // 1. Service Worker Registration & Update Detection
+  // 1. Service Worker Registration & Update Detection (v454: never auto-reload on controllerchange)
   let hadController = !!('serviceWorker' in navigator && navigator.serviceWorker.controller);
+  let userRequestedSwReload = false;
 
   function notifySwUpdate(registration) {
     if (typeof CustomEvent === 'function') {
       window.dispatchEvent(new CustomEvent('cso:sw-update-available', { detail: { registration } }));
     }
   }
+
+  // Only reload on controllerchange when the user explicitly clicks an Update Available action.
+  window.CSOApplySwUpdate = function applySwUpdate(registration) {
+    userRequestedSwReload = true;
+    const waiting = registration && registration.waiting;
+    if (waiting && typeof waiting.postMessage === 'function') {
+      waiting.postMessage({ type: 'SKIP_WAITING' });
+    } else {
+      window.location.reload();
+    }
+  };
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -38,6 +50,11 @@
     });
 
     navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (userRequestedSwReload) {
+        userRequestedSwReload = false;
+        window.location.reload();
+        return;
+      }
       if (hadController) {
         notifySwUpdate(null);
       }
